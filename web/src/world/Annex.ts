@@ -456,6 +456,13 @@ export class RecordsAnnex {
     this.exitHinge.rotation.y = -1.4 * k;
   }
 
+  /** The tubes with the power (1) or without it (0: world/saroPower.ts), as glass. */
+  private tubeCol = [new THREE.Color(0xeef3ff), new THREE.Color(0x6d7378)];
+  setPower(k: number) {
+    this.tubeOn.color.copy(this.tubeCol[0]).multiplyScalar(0.06 + 0.94 * k);
+    this.tubeDim.color.copy(this.tubeCol[1]).multiplyScalar(0.12 + 0.88 * k);
+  }
+
   // A tired tube flickers now and then.
   update(t: number) {
     this.glow.update(t);

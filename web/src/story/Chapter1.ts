@@ -97,6 +97,10 @@ export class Chapter1 {
   field: FieldShots | null = null;          // set by a later chapter while it runs
   free: FreeShots | null = null;            // the album's free frames (main.ts)
   lab: (() => boolean) | null = null;       // a later chapter's use of the wet bench; true when handled
+  /** SARO has no power (story/saroDark.ts): the bench, the B-12 control, the motor bus and the case
+   *  frames wait for the light (nothing is lost in the dark; a print in the fixer comes up as it would). */
+  dark: (() => boolean) | null = null;
+  private inDark(text: string) { if (!this.dark?.()) return false; this.d.ui.toast(text, 2.8); return true; }
   private images: Record<string, THREE.Texture> = {};
   private anim: { vane?: { from: number; to: number; t0: number }; fix?: number } = {};
   private busy: string | null = null;     // a timed step at the wet bench
@@ -314,6 +318,7 @@ export class Chapter1 {
     inter.add({ id: 'motorBus', object: yard.objs.motorBus, range: 2.4,
       label: () => !this.active ? null : this.s.log ? 'Read motor bus S-03' : 'Check motor bus S-03',
       use: () => {
+        if (this.inDark('The inspection glass is dark. No power to the cabinet.')) return;
         audio.play('click', { gain: 0.5, at: pos(yard.objs.motorBus) });
         const doc = this.docS03();
         ui.document(doc, () => {
@@ -338,7 +343,7 @@ export class Chapter1 {
         const dev = f.which === 1 ? this.s.dev1 : this.s.dev2;
         return dev === 0 ? 'Process sealed film' : dev === 1 ? 'Transfer print to fixer' : 'Collect processed print';
       },
-      use: () => this.useWetBench() });
+      use: () => { if (!this.inDark('Too dark to work at the bench. Wait for the light.')) this.useWetBench(); } });
 
     inter.add({ id: 'archive', object: yard.objs.archive, range: 2.4,
       label: () => {
@@ -349,7 +354,7 @@ export class Chapter1 {
         if (s.f1 && s.dev1 >= 3) return 'Reference file';
         return 'Archive bench';
       },
-      use: () => this.useArchive() });
+      use: () => { if (!this.inDark('Too dark to see the prints. Wait for the light.')) this.useArchive(); } });
 
     inter.add({ id: 'b12Control', object: yard.objs.b12Control, range: 2.4,
       label: () => {
@@ -359,7 +364,7 @@ export class Chapter1 {
         if (s.method) return 'B-12 / review control settings';
         return 'B-12 / local reference control';
       },
-      use: () => this.useB12() });
+      use: () => { if (!this.inDark('The B-12 control is dead. No power.')) this.useB12(); } });
 
     inter.add({ id: 'vane', object: yard.objs.vane, range: 3.2,
       label: () => this.active ? 'B-12 reference vane' : null,
@@ -371,6 +376,7 @@ export class Chapter1 {
       label: () => !this.active ? null : this.s.stage === 'file-report' ? 'File local investigation' : this.s.filed ? 'Read filed chapter report' : 'Night report',
       use: () => {
         const s = this.s;
+        if (this.inDark('Too dark to read the report. Wait for the light.')) return;
         if (s.stage === 'file-report' || s.filed) P.localReport(ui, { text: this.reportText(), filed: s.filed, onFile: () => this.fileReport() });
         else toast('SARO night report: observation, method, conclusion. Nothing to file yet.');
       } });
@@ -732,6 +738,7 @@ export class Chapter1 {
     if (!s.log) return { text: 'READ THE S-03 MOTOR LOG FIRST', ok: false, near: onApron };
     if (!s.f1) {
       if (!onApron) return { text: 'MOVE TO THE S-03 SERVICE APRON', ok: false };
+      if (this.dark?.()) return { text: 'TOO DARK FOR THE FRAME // WAIT FOR THE LIGHT', ok: false, near: true };
       const dish = ext.dishes.find((d) => d.id === 'S-03')!;
       const c = ext.dishArray.feedPosition(dish).lerp(new THREE.Vector3(dish.x, 12.4 * dish.scale, dish.z), 0.5);
       if (!fcam.inFrame(c, 0.36, 0.64, 0.30, 0.65)) return { text: 'ALIGN THE CENTRAL ANTENNA IN THE FRAME', ok: false, near: true };
@@ -744,6 +751,7 @@ export class Chapter1 {
     const atMark = Math.hypot(p.x - YARD.sightMark.x, p.z - YARD.sightMark.z) <= 3.5;
     if (!s.method || !this.settled || !s.observed) return { text: s.method && !this.settled ? 'WAIT FOR THE REFERENCE VANE TO SETTLE' : 'NOTE THE B-12 OBSERVATION FIRST', ok: false, near: atMark && !!s.method };
     if (!atMark) return { text: 'MOVE TO THE B-12 SIGHT LINE MARK', ok: false };
+    if (this.dark?.()) return { text: 'TOO DARK FOR THE FRAME // WAIT FOR THE LIGHT', ok: false, near: true };
     const v = yard.vane.getWorldPosition(new THREE.Vector3());
     if (!fcam.inFrame(v, 0.22, 0.78, 0.23, 0.78)) return { text: 'FRAME THE B-12 REFERENCE VANE AND ITS FIXED BRACKET', ok: false, near: true };
     if (!fcam.clearLine(v, yard.occluders)) return { text: 'REFERENCE OBSTRUCTED // FIND A CLEAR LINE OF SIGHT', ok: false, near: true };

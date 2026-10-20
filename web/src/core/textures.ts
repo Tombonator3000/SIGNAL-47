@@ -588,12 +588,34 @@ export function serviceRecordTex() {
 }
 
 // A strip of telex roll: yellowish paper with upper-case type.
+const TELEX_TEX = ['ZCZC WX2250', 'SARO OPS', 'WX ADVISORY 2250', 'TSTMS W OF MAGDALENA', 'MTNS MOVG NE 15 KT.', 'NNNN', '', 'ZCZC NET2300', 'ALL SITES', 'NET STATUS 2300 MST', 'SITE 03 - NORMAL', 'SITE 11 - NORMAL', 'SARO - NORMAL', 'NNNN'];
+function paintTelex(g: CanvasRenderingContext2D, w: number, h: number, lines: string[]) {
+  g.fillStyle = '#efe8c8'; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(38,38,42,.85)'; g.font = '9px "Special Elite", serif';
+  // the newest lines are by the platen, at the bottom; what does not fit has gone over the top
+  const fit = Math.floor((h - 18) / 13) + 1, show = lines.slice(Math.max(0, lines.length - fit));
+  show.forEach((l, i) => g.fillText(l, 8, 18 + i * 13));
+}
 export function telexPaperTex() {
-  return canvasTex(128, 256, (g, w, h) => {
-    g.fillStyle = '#efe8c8'; g.fillRect(0, 0, w, h);
-    g.fillStyle = 'rgba(38,38,42,.85)'; g.font = '9px "Special Elite", serif';
-    ['ZCZC WX2250', 'SARO OPS', 'WX ADVISORY 2250', 'TSTMS W OF MAGDALENA', 'MTNS MOVG NE 15 KT.', 'NNNN', '', 'ZCZC NET2300', 'ALL SITES', 'NET STATUS 2300 MST', 'SITE 03 - NORMAL', 'SITE 11 - NORMAL', 'SARO - NORMAL', 'NNNN'].forEach((l, i) => g.fillText(l, 8, 18 + i * 13));
-  });
+  return canvasTex(128, 256, (g, w, h) => paintTelex(g, w, h, TELEX_TEX));
+}
+/** The roll with messages printed after last evening's (Hondo Valley's, story/saroDark.ts), each
+ *  wrapped to the strip's width; none: last evening's roll again. */
+export function paintTelexPaper(tex: THREE.CanvasTexture, more: string[]) {
+  const c = tex.image as HTMLCanvasElement, g = c.getContext('2d'); if (!g) return;
+  const lines = [...TELEX_TEX];
+  for (const m of more) {
+    lines.push('');
+    for (const row of m.split('\n')) {
+      let cur = '';
+      for (const word of row.split(' ')) {
+        if (cur && (cur + ' ' + word).length > 20) { lines.push(cur); cur = word; } else cur = cur ? cur + ' ' + word : word;
+      }
+      lines.push(cur);
+    }
+  }
+  paintTelex(g, c.width, c.height, lines);
+  tex.needsUpdate = true;
 }
 
 // The spine label of the exceptions binder.

@@ -185,6 +185,8 @@ export class DishArray {
     for (const p of this.parts) p.mesh.visible = p.dishes.some((d) => seen.has(d));
   }
 
+  /** The red aircraft lamps, one point each (world/saroPower.ts: they go out with SARO's power). */
+  get beaconGlow() { return this.beacons; }
   /** The red lamp's blink, moved along (dishes that follow the player blink together). */
   beaconPhase(i: number, phase: number) { this.beacons.setPhase(i, phase); }
 

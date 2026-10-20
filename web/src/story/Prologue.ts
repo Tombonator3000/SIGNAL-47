@@ -23,7 +23,7 @@ import type { FieldCamera } from '../core/FieldCamera';
 import type { Collider } from '../world/ControlRoom';
 import { openTerminal } from '../ui/Terminal';
 import { halleyPosterTex } from '../core/textures';
-import { BINDER, SERVICE, TELEX_EVENING, telex, interferenceCard, halleyPoster, OpsTerminal, type LogLine } from './nightshift';
+import { BINDER, SERVICE, TELEX_EVENING, telex, telexHondo, HONDO_NOTE, interferenceCard, halleyPoster, OpsTerminal, type LogLine } from './nightshift';
 import { CaseBoard, type BoardSave, type RegionId } from './caseBoard';
 import type { BoardHook, RuleBook } from './boardRules';
 
@@ -36,6 +36,9 @@ export type Phase = typeof ORDER[number];
 const START_CLOCK = 23 * 3600 + 41 * 60;        // 23:41:00
 const SKIP_CLOCK = 2 * 3600 + 13 * 60 + 41;     // 02:13:41, residual shows at 02:13:47
 const EVENT_AZ = 26, EVENT_EL = 32;
+// the relay goes first (relayFirst): after the console is left to the sweep, K3 trips; forty seconds
+// later the lights dip (the service record's 40 s) for most of a second; then the skip
+const RELAY_FIRST = 7.0, DIP_AFTER = 40, DIP_LEN = 0.7, DIP_SKIP = 4.6;
 const PARK_AZ = 18, SURVEY_EL = 48;
 
 import { pad, clockText, angleText } from './time';
@@ -117,7 +120,10 @@ The distance field is negative. Minus thirty-nine light years. The solver has no
 export interface NightShiftState { papers: string[]; k3Open: boolean; log: LogLine[]; solveAt: number | null; jacket?: boolean;
   /** the threads on Night Shift's cork from the exceptions binder to the nights Caliche lost
    *  (story/lostNights.ts; saves from before 20 October have none) */
-  ln?: string[] }
+  ln?: string[];
+  /** when Hondo Valley's telex was filed (the minute SARO went dark, story/saroDark.ts): it is on
+   *  the roll from then on (saves from before 20 October have none) */
+  hondo?: number }
 export interface SavedCase { s: CaseState; ch2?: Ch2State; ch3?: Ch3State; ch4?: Ch4State; ch5?: Ch5State; ns?: NightShiftState; notes: string[]; clock: number;
   /** where the cards lie on the case board (saves from before 18 October have none) */
   board?: BoardSave }
@@ -150,6 +156,8 @@ export class Prologue {
   notes: string[] = [];
   docs: DocSpec[] = [];
   onFinish?: () => void;
+  /** The first time out into the yard in chapter one (main.ts: the yard holds its breath). */
+  onFirstOut?: () => void;
   onCheckpoint?: (name: string) => void;
   ch1: Chapter1;
   ch2: Chapter2;
@@ -180,6 +188,7 @@ export class Prologue {
   private alarmOn = false;
   private skipQueued = false;
   private flicker = 0;
+  private dipT = 0;
   private crtGlitch = 0;
   private mugFall: { t: number; v: THREE.Vector3; spin: number; stage: 0 | 1 } | null = null;
   private shards: { m: THREE.Mesh; v: THREE.Vector3; w: THREE.Vector3; rest: boolean }[] = [];
@@ -294,7 +303,7 @@ export class Prologue {
   // One saved case for every chapter: a later chapter's state rides along once it has begun.
   private composeCase(s: CaseState): SavedCase {
     return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined, ch5: this.ch5?.started ? this.ch5.s : undefined,
-      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket, ln: [...(this.ns.ln ?? [])] }, notes: [...this.notes], clock: this.clock,
+      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket, ln: [...(this.ns.ln ?? [])], hondo: this.ns.hondo }, notes: [...this.notes], clock: this.clock,
       board: { pos: { ...this.boardSave?.pos } } };
   }
   private setPhase(p: Phase) { this.phase = p; }
@@ -392,6 +401,7 @@ export class Prologue {
 
     inter.add({ id: 'rack', object: o.rack, label: () => this.ns.k3Open ? 'Reset RX bank 3' : this.powered ? 'RX bank 3' : 'Power up RX bank 3',
       use: () => {
+        if (this.dark) { toast('The rack is dead. No power anywhere.'); return; }
         if (this.ns.k3Open) { this.resetK3(); return; }
         if (this.powered) { toast('Bank 3 online. Sixteen green, two amber. Amber is normal, according to Dale.'); return; }
         this.powerUp(false);
@@ -400,6 +410,7 @@ export class Prologue {
     inter.add({ id: 'crtCenter', object: o.crtCenter, range: 2.6,
       label: () => this.cinematic ? null : !this.powered ? 'Receiver console' : this.alarmOn ? 'Check the spectrum' : 'Use receiver console',
       use: () => {
+        if (this.dark) { toast('Dead screen. No power.'); return; }
         if (!this.powered) { toast('Dead screen. RX bank 3 is still off.'); audio.play('click', { gain: 0.4 }); return; }
         if (this.ns.k3Open) { toast('Dead screen. Bank 3 has tripped again. The lever is on the rack.'); audio.play('click', { gain: 0.4 }); return; }
         this.alarmOn = false;
@@ -451,10 +462,13 @@ export class Prologue {
       inter.add({ id, object, range, label: () => this.cinematic ? null : label, use: () => { const d = doc(); ui.document(d, () => this.filePaper(d)); } });
     paper('excBinder', o.binder, 'Exceptions binder', () => BINDER);   // not 'binder': that is the archive's service copies
     paper('serviceRecord', o.serviceRecord, 'Service record', () => SERVICE);
-    paper('telex', o.telex, 'Telex roll', () => telex(TELEX_EVENING));
+    // (Hondo Valley's message is on it once it has come: story/saroDark.ts; the first reading of it
+    // is written down)
+    inter.add({ id: 'telex', object: o.telex, range: 2.4, label: () => this.cinematic ? null : 'Telex roll',
+      use: () => { const d = telex(this.telexRoll()); ui.document(d, () => { this.filePaper(d); if (this.ns.hondo !== undefined) this.note(HONDO_NOTE(this.ns.hondo)); }); } });
     paper('rfiCard', o.rfiCard, "Dale's card", () => interferenceCard(this.rx.stage >= 3));
     paper('halley', o.halley, "Halley's comet poster", () => halleyPoster(this.halleyImage()), 2.8);
-    inter.add({ id: 'opsTerminal', object: o.opsTerminal, range: 2.4, label: () => this.cinematic ? null : 'Operations terminal', use: () => this.openOps() });
+    inter.add({ id: 'opsTerminal', object: o.opsTerminal, range: 2.4, label: () => this.cinematic ? null : 'Operations terminal', use: () => { if (this.dark) toast('Dead screen. No power.'); else this.openOps(); } });
     inter.add({ id: 'jacket', object: o.jacket, range: 2.4, label: () => this.cinematic || this.ns.jacket ? null : 'Your jacket',
       use: () => ui.toast('SARO issue, with a reflective band all the way round. Too warm for in here.', 3.2) });
     inter.add({ id: 'radio', object: o.radio, range: 2.6, label: () => this.radioOn ? 'Turn the radio off' : 'Turn the radio on', use: () => this.toggleRadio() });
@@ -466,7 +480,7 @@ export class Prologue {
     if (i < 0) this.docs.push(doc); else this.docs[i] = doc;
   }
   private paperById(id: string): DocSpec | null {
-    return ({ binder: BINDER, service: SERVICE, telex: telex(TELEX_EVENING), rfiCard: interferenceCard(this.rx.stage >= 3), halley: halleyPoster(this.halleyImage()) } as Record<string, DocSpec>)[id] ?? null;
+    return ({ binder: BINDER, service: SERVICE, telex: telex(this.telexRoll()), rfiCard: interferenceCard(this.rx.stage >= 3), halley: halleyPoster(this.halleyImage()) } as Record<string, DocSpec>)[id] ?? null;
   }
   // the poster as a picture for the document view; kept once it is drawn on Codex's picture
   private halleyImage() {
@@ -504,6 +518,7 @@ export class Prologue {
 
   private toggleRadio() {
     const { audio, room, ui } = this.d;
+    if (this.dark) { ui.toast('Nothing. The power is out.'); return; }
     this.radioOn = !this.radioOn;
     audio.play('click', { gain: 0.35, rate: 1.3 });
     audio.amRadio(this.radioOn ? this.worldPos(room.objs.radio).setY(1.45) : null);
@@ -513,17 +528,51 @@ export class Prologue {
 
   // Relay K3 drops RX bank 3 out, seven seconds before the impact (KAPITLER.md: the
   // service record says it trips before the power goes, not after).
-  private tripK3() {
+  private tripK3(sound = true) {
     const { room, audio } = this.d;
     if (!this.powered || this.ns.k3Open) return;
     this.ns.k3Open = true;
     this.log('RX BANK 3  K3 OPEN');
     const at = this.worldPos(room.objs.rack);
-    audio.play(audio.or('rack_switch', 'switch'), { gain: 1.0, rate: 0.62, at });
-    audio.play('thudSoft', { gain: 0.45, rate: 1.4, at, when: 0.03 });
+    if (sound) {
+      audio.play(audio.or('rack_switch', 'switch'), { gain: 1.0, rate: 0.62, at });
+      audio.play('thudSoft', { gain: 0.45, rate: 1.4, at, when: 0.03 });
+    }
     this.decoder.stop();
     this.applyK3(true);
   }
+  /** K3 goes first, in chapter one (story/saroDark.ts, which plays the clack as it is heard from
+   *  where the player is): it trips (true), or, already open since the impact, it has nothing left
+   *  to trip and the log writes it down anyway (false). */
+  relayClack(): boolean {
+    if (this.powered && !this.ns.k3Open) { this.tripK3(false); return true; }
+    this.log('RX BANK 3  K3 OPEN');
+    return false;
+  }
+  /** The rack's lever and the bank, for the dark (story/saroDark.ts). */
+  get rackAt() { return this.worldPos(this.d.room.objs.rack); }
+  get telexAt() { return this.worldPos(this.d.room.objs.telex).setY(0.9); }
+  /** What is on the telex roll now: last evening's traffic, and Hondo Valley's once it has come. */
+  telexRoll() { return [...TELEX_EVENING, ...this.rollMore()]; }
+  private rollMore() { return this.ns.hondo === undefined ? [] : [telexHondo(this.ns.hondo)]; }
+  /** Hondo Valley's telex has printed (story/saroDark.ts): on the roll, in the log (at `at`, in the
+   *  night's order), kept with the case. */
+  hondoTelex(filed: number, at = this.clock) {
+    if (this.ns.hondo !== undefined) return;
+    this.ns.hondo = Math.round(filed);
+    this.consoleLog('TELEX RECEIVED  HONDO VALLEY', at);
+    this.d.room.setTelexRoll(this.rollMore());
+    const i = this.docs.findIndex((x) => x.id === 'telex');
+    if (i >= 0) this.docs[i] = telex(this.telexRoll());
+  }
+  /** SARO without power (story/saroDark.ts): the radio on the cabinets goes with it, and comes back. */
+  powerOut(out: boolean) {
+    const { audio, room } = this.d;
+    this.dark = out;
+    if (this.radioOn && audio.ctx) audio.amRadio(out ? null : this.worldPos(room.objs.radio).setY(1.45));
+  }
+  /** The power is out at SARO (story/saroDark.ts): the screens stay dark. */
+  dark = false;
   private applyK3(open: boolean) {
     const { room, audio } = this.d;
     this.rx.powered = !open;
@@ -617,12 +666,45 @@ export class Prologue {
     if (this.rx.stage === 2 && this.phase === 'survey' && !this.skipQueued) {
       this.skipQueued = true;
       this.after(2.5, () => this.d.ui.toast('Nothing to do now but watch a sweep that takes all night.', 3.5));
-      this.after(7.5, () => this.timeSkip(), 'skip');
+      this.after(RELAY_FIRST, () => this.relayFirst(), 'skip');
     }
   }
 
+  // The relay goes first (FORSLAG.md, 20 October, small change 2; the service record: "TRIPPED 40
+  // SEC BEFORE OUTAGE ... IT TRIPS BEFORE, NOT AFTER"). Before the night skips on, K3 trips by itself
+  // with the clack the player will hear again (02:13, and 02:29 through the wall: story/saroDark.ts),
+  // and forty seconds later the lights dip. The lever is on the rack under the service record; the
+  // skip puts bank 3 back on if the player has not. Then the night skips to 02:13.
+  private relayFirst() {
+    if (this.phase !== 'survey') return;
+    this.tripK3();
+    this.after(0.5, () => this.d.ui.toast('A clack from the rack. Bank 3 has dropped out again.', 3.4));
+    this.after(DIP_AFTER, () => this.lightsDip(), 'skip');
+  }
+  private lightsDip() {
+    const { ui, audio, room } = this.d;
+    if (this.phase !== 'survey') return;
+    this.dipT = DIP_LEN;
+    this.crtGlitch = DIP_LEN;
+    this.log('LINE POWER  DIP 0.7 S');
+    // the building takes it: a low knock through the floor, the room's hum sags with the lights
+    audio.play('thudSoft', { gain: 0.55, rate: 0.45, at: this.worldPos(room.objs.rack).setY(0.2) });
+    audio.holdRoomTone(0.2, 0.04);
+    this.after(DIP_LEN, () => audio.holdRoomTone(1, 0.35));
+    this.after(1.3, () => ui.toast('The lights dip. Forty seconds after the relay.', 3.8));
+    this.note(`${clockText(this.clock, false)}. K3 tripped by itself. Forty seconds later the lights dipped. The service record says it does that: it trips before, not after.`);
+    this.after(DIP_SKIP, () => this.timeSkip(), 'skip');
+  }
+
   private timeSkip() {
-    const { ui, player } = this.d;
+    const { ui, player, room } = this.d;
+    // (the bank back on, if the player left it out: somebody threw the lever in the hours between)
+    if (this.ns.k3Open) {
+      this.ns.k3Open = false;
+      this.ns.log.push([Math.round(this.clock) + 95, 'RX BANK 3  K3 CLOSED']); this.opsDirty = true;
+      this.applyK3(false);
+      room.lever.rotation.z = 0.6;
+    }
     this.setPhase('skip');
     this.cinematic = true;
     ui.fade(true, '02:13');
@@ -974,6 +1056,14 @@ export class Prologue {
         room.tubes.forEach((tb, i) => { tb.material = i === 3 ? materialFor(M.emissiveTubeOff) : M.emissiveTube; });
       }
     }
+    // the lights dip forty seconds after the relay (relayFirst): the room sags for most of a second
+    if (this.dipT > 0) {
+      this.dipT -= dt;
+      const on = this.dipT <= 0, k = on ? 1 : 0.18 + 0.14 * Math.random();
+      room.lights.ceiling.forEach((l, i) => { l.intensity = this.base.ceiling[i] * k; });
+      room.lights.lamps.forEach((l, i) => { l.intensity = this.base.lamps[i] * (on ? 1 : 0.35); });
+      room.tubes.forEach((tb) => { tb.material = on || Math.random() > 0.55 ? M.emissiveTube : materialFor(M.emissiveTubeOff); });
+    }
     if (this.crtGlitch > 0) this.crtGlitch -= dt;
 
     // mug walks off the desk edge, falls, shatters
@@ -1015,6 +1105,7 @@ export class Prologue {
       this.ns.jacket = true;
       room.objs.jacket.visible = false;
       this.d.ui.toast('Cold out. You take your jacket.', 2.6);
+      this.onFirstOut?.();
     }
 
     // dishes arrive
@@ -1044,6 +1135,7 @@ export class Prologue {
   // ---------- CRT screens (called ~12 times a second) ----------
   drawCrts(t: number) {
     const { room } = this.d;
+    if (this.dark) return;
     this.drawOps(t);
     if (!this.powered) return;
     const glitch = this.crtGlitch > 0 && Math.random() < 0.6;
@@ -1171,6 +1263,8 @@ export class Prologue {
     this.notes = []; this.docs = [];
     this.bootT = this.solveT = this.printT = this.lineDeadT = -1;
     this.ns = { papers: [], k3Open: false, log: [], solveAt: null, jacket: false };
+    room.setTelexRoll([]);
+    this.dark = false; this.dipT = 0;
     this.boardSave = { pos: {} };
     room.objs.jacket.visible = true;
     this.opsLines = []; this.opsDirty = true;
@@ -1386,12 +1480,14 @@ export class Prologue {
     // (a save from before 4 October has none of it; then K3 was reset after the impact)
     const e = saved?.s?.eventClock ?? this.eventClock;
     this.ns = saved?.ns
-      ? { papers: [...saved.ns.papers], k3Open: saved.ns.k3Open, log: saved.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: saved.ns.solveAt, jacket: !!saved.ns.jacket, ln: [...(saved.ns.ln ?? [])] }
+      ? { papers: [...saved.ns.papers], k3Open: saved.ns.k3Open, log: saved.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: saved.ns.solveAt, jacket: !!saved.ns.jacket, ln: [...(saved.ns.ln ?? [])],
+        hondo: Number.isFinite(saved.ns.hondo) ? saved.ns.hondo : undefined }
       : { papers: [], k3Open: false, solveAt: e - 60, log: [[23 * 3600 + 44 * 60, 'RX BANK 3  K3 CLOSED'], [e - 60, 'SOLVE  RANGE NEGATIVE'],
         [e - 47, 'STATION CLOCK  WWVB REFERENCE LOST'], [e - 7, 'RX BANK 3  K3 OPEN'], [e, 'LINE POWER  DIP 1.2 S'],
         [e, 'STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47'], [e + 3, 'ARRAY  S-01 TO S-27 MOTION  NO COMMAND'], [e + 70, 'RX BANK 3  K3 CLOSED']] };
     for (const id of this.ns.papers) { const d = this.paperById(id); if (d) this.docs.push(d); }
     this.applyK3(this.ns.k3Open);
+    room.setTelexRoll(this.rollMore());
     room.objs.jacket.visible = !this.ns.jacket;
     this.opsDirty = true;
     this.phase = 'end';

@@ -52,7 +52,8 @@ export class Field {
   gateProxy!: THREE.Object3D;
   gateLeaf: Collider = { minX: GATE.x0 - 0.08, maxX: GATE.x0 + 0.02, minZ: FENCE_Z - (GATE.x1 - GATE.x0) - 0.05, maxZ: FENCE_Z };
   private gateHinge = new THREE.Group();
-  private glow = new GlowPoints();
+  /** The drive cabinets' lamps (world/saroPower.ts: out with SARO's power). */
+  readonly glow = new GlowPoints();
   private screen: THREE.Mesh;
   private scr = T.screenCanvas(SCREEN_W, SCREEN_H);
   /** The cabinet whose readout is lit, and what it shows (main.ts asks, story/field.ts draws). */

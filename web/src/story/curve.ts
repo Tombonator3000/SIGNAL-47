@@ -44,6 +44,12 @@ import type { SeenEntry, SeenLog } from './seen';
 // its first three minutes, the breath after a peak (as long as the rest after one that never came,
 // EBB), and lets go into the hurried build. The rest is shorter there; nothing comes in it.
 //
+// Chapter one has a 47 of its own that is the story's (story/saroDark.ts): SARO goes dark at 02:29,
+// forty seconds after the relay. It is not the curve's to time and comes whatever its phase (never on
+// top of another thing: one at a time), but it is the chapter's one 47 all the same: until it has come
+// or its window (02:29 to 02:40) is past, no other 47 may take chapter one (CurveIn.keep), and when it
+// comes it lands the peak like the other 47s, so the rest follows it.
+//
 // The face on the film (core/filmFace.ts) is not held back: it is on the print the player takes.
 // When it is looked at large, that is the peak. The second call of the payphone after room 6 is the
 // story's and not the curve's either. Neither are the things found as they were left (the deputy's
@@ -76,6 +82,9 @@ export interface CurveIn {
    *  television, the payphone's first call): the player is where it happens and it could come but
    *  for the curve. The build hurries to the peak, and the peak is kept for it. */
   waiting?: boolean;
+  /** A 47 of the story's may still come in this chapter (story/saroDark.ts, chapter one): the
+   *  chapter's one extra 47 is kept for it. */
+  keep?: boolean;
 }
 
 const PLAIN = 600;                                  // ten minutes of plain night after the prologue
@@ -94,10 +103,10 @@ const FROM: Record<CurveKind, number> = { sign: 0.12, call: 0.3, cutout: 0.12, p
 const CUTOUT_UNTIL = 0.78;
 /** The peaks that are heard or felt (they count when they come), and those that count only once
  *  they were seen (story/seen.ts, looking). */
-const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel'] };
+const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel', 'blackout'] };
 const SEEN: Record<string, (what: string) => boolean> = { glimpse: (w) => w !== 'on film', face: () => true, event: (w) => w === 'lights' };
 /** The 47-second ones (the per-chapter limit). */
-const LONG = new Set(['scare:silence', 'event:bulletin', 'event:phone', 'event:tv']);
+const LONG = new Set(['scare:silence', 'event:bulletin', 'event:phone', 'event:tv', 'event:blackout']);
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
@@ -138,6 +147,8 @@ export class NightCurve {
   /** How many of each started in this cycle (the calls, the cutout, the events). */
   readonly took = { call: 0, cutout: 0, event: 0 };
   private chapter = '';
+  /** The chapter's 47 is kept for the story's own (CurveIn.keep). */
+  private keep = false;
   private held = true;
   private busy = false;
   private signT = 0;
@@ -152,7 +163,7 @@ export class NightCurve {
   may(kind: CurveKind): boolean {
     if (this.free) return true;
     if (this.held || this.busy) return false;
-    if (kind === 'long' && this.long.has(this.chapter)) return false;
+    if (kind === 'long' && (this.long.has(this.chapter) || this.keep)) return false;
     // the peak this is hurrying to is kept for the 47 that waits here: nothing else takes it
     if (this.pulled && kind !== 'long' && kind !== 'sign') return false;
     const s = this.strength;
@@ -196,10 +207,11 @@ export class NightCurve {
 
   update(dt: number, s: CurveIn) {
     this.chapter = s.chapter;
-    this.held = s.held; this.busy = s.busy;
+    this.held = s.held; this.busy = s.busy; this.keep = !!s.keep;
     this.sign = false;
-    // (not for a chapter that has had its extra 47: then there is nothing here to hurry for)
-    this.pulled = !this.free && !!s.waiting && !this.long.has(s.chapter);
+    // (not for a chapter that has had its extra 47, or keeps it for the story's: then there is
+    // nothing here to hurry for)
+    this.pulled = !this.free && !!s.waiting && !this.long.has(s.chapter) && !this.keep;
     if (!CHAPTERS.includes(s.chapter)) { if (this.phase !== 'off') this.stop(); return; }
     if (this.phase === 'off') this.begin();
     this.strength = clamp01((((s.clock % 86400) + 86400) % 86400 - NIGHT0) / (NIGHT1 - NIGHT0));
