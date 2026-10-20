@@ -76,6 +76,7 @@ import { TAG_RANCH, TAGS } from './drive/herd';
 import { MotelTv } from './story/motelTv';
 import { OfficePhone } from './story/officePhone';
 import { TruckOnB, type TruckOnBIn } from './story/truckOnB';
+import { TruckTaken, type TruckTakenIn } from './story/truckTaken';
 import { FieldBook } from './story/fieldBook';
 import { LostNights } from './story/lostNights';
 import { BINDER } from './story/nightshift';
@@ -335,7 +336,9 @@ async function boot() {
       goIn: () => world.goRoom6(), goOut: () => world.leaveRoom6(), brick: () => world.crossing.brick,
       driveTo: () => world.driveToMotel(() => {}),
       driven: () => world.tripSecs,
-      cb: (lines, onEnd) => cb.call(lines, null, (l, duration) => { if (mode === 'play' && !game.cinematic) ui.toast(`CB, ${l.by}: "${l.text}"`, duration ?? Math.min(8, 2.4 + l.text.length / 22), () => audio.ctx!.currentTime); }, onEnd) > 0,
+      // (not in the middle of the time away, in the truck or out of it: Nora's call waits for it; nor
+      // as the truck comes onto B at the turn-off when it could come there: story/truckTaken.ts, ahead)
+      cb: (lines, onEnd) => !(abduction!.busy || truckTaken.busy || truckTaken.ahead) && cb.call(lines, null, (l, duration) => { if (mode === 'play' && !game.cinematic) ui.toast(`CB, ${l.by}: "${l.text}"`, duration ?? Math.min(8, 2.4 + l.text.length / 22), () => audio.ctx!.currentTime); }, onEnd) > 0,
     },
     allNight: {
       area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
@@ -489,6 +492,19 @@ async function boot() {
     file: (doc) => { const i = game.docs.findIndex((x) => x.id === doc.id); if (i < 0) game.docs.push(doc); else game.docs[i] = doc; },
     keyStall: () => { world.keyStall = true; }, save: () => { if (mode === 'play') requestAutosave(false); },
     shine: (at) => bandShine(at),
+    // the time away in the truck (story/truckTaken.ts): the truck, its cab and the head's look in it
+    cab: {
+      inCab: () => world.driving,
+      group: () => (world.cab?.truck ?? (world.area === 'saro' ? world.saroTruck : null))?.group ?? null,
+      look: (yaw, pitch) => world.cab?.drive.setLook(yaw, pitch),
+      lookNow: () => world.cab?.drive.look ?? null,
+      lookBox: (b) => { const c = world.cab; if (c) c.drive.lookBox = b; },
+      plan: () => truckTaken.planned(),
+      wake: (lost, inCab) => truckTaken.wake(lost, inCab),
+      woke: (a, b, inCab) => truckTaken.woke(a, b, inCab),
+      backText: () => truckTaken.backText(),
+      light: (k) => world.cab?.truck.lightFromAbove(k),
+    },
   });
   // the recording walks the player's last 47 seconds where they were taken, once, later, within
   // sight (story/recording.ts; FORSLAG.md, 20 October, item 9 B)
@@ -656,6 +672,21 @@ async function boot() {
     toast: (text, secs) => ui.toast(text, secs),
     // a relay in the dash with each blink: a smaller K3
     tick: () => { audio.play(audio.or('rack_switch', 'switch'), { gain: 0.22, rate: 1.3, lp: 2400 }); },
+    save: () => { if (mode === 'play') requestAutosave(false); } });
+  // taken in the truck (story/truckTaken.ts; FORSLAG.md, 20 October, item 10): southbound over B at
+  // SARO's turn-off, at the night's peak, the warning comes in the cab; the truck is found 300 m on,
+  // nose to the north, the radio on 1090, the odometer 31.4 miles more than at SARO
+  const truckTaken = new TruckTaken({ trouble: world.trouble, radio: carRadio, audio, seen: townSeen,
+    begin: () => abduction!.beginCab(abductIn(true)),
+    hold: (k) => world.holdTruck(k), hush: (on) => world.hushTruck(on),
+    roof: () => { const t = world.cab?.truck ?? world.truckHere(); return t ? t.group.localToWorld(new THREE.Vector3(0, 1.85, 0.15)) : null; },
+    truck: () => { const t = world.cab?.truck ?? (world.area === 'saro' ? world.truckHere() : null); return t ? { x: t.group.position.x, z: t.group.position.z, h: t.group.rotation.y } : null; },
+    moveDriven: (x, z, h) => world.moveDriven(x, z, h), moveParked: (x, z, h) => world.moveParked(x, z, h, world.grounds.floorAt(x, z)),
+    headlights: (on) => world.cab?.truck.setHeadlights(on),
+    frost: (k) => (world.cab?.truck ?? world.saroTruck)?.setFrost(k),
+    odometer: () => world.odometer, odoAtSaro: () => world.odoAtSaro, addMiles: (m) => world.addMiles(m),
+    keyStall: () => { world.keyStall = true; }, ground: (x, z) => world.grounds.floorAt(x, z),
+    toast: (text, secs) => ui.toast(text, secs), note: (text) => game.note(text),
     save: () => { if (mode === 'play') requestAutosave(false); } });
   // T. Vega's field book in the drawer in the hut at STATION 01, and the envelope for plate 4 on
   // the motel office's counter (story/fieldBook.ts; FORSLAG.md, 20 October, item 3 and small
@@ -872,10 +903,16 @@ async function boot() {
     // in the truck: Use (E) turns the key when the engine has died and waits for it, or gets
     // out where the truck stands when it is stopped (Tom, 16 October)
     if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) {
+      // (held at the wheel on waking: nothing, story/abduction.ts)
+      if (abduction!.holds) return;
+      // (after :40 in the truck's warning there is nothing left to turn it over with: story/truckTaken.ts)
+      if (truckTaken.useKey(abduction!.warn?.t ?? null)) return;
       if (world.trouble.turnKey()) return;
       if (radioAimed()) { turnRadio(); return; }
-      // (not out in the middle of the truck's count on B: story/truckOnB.ts)
-      if (!truckB.racing) world.getOutHere();
+      // (not out in the middle of the truck's count on B: story/truckOnB.ts; nor by Use in its warning
+      // on B, story/truckTaken.ts: E is the key there, and Q or the Get out button the way out, so a
+      // hand on E as the engine dies, before the key is wanted, does not put the player in the road)
+      if (!truckB.racing && !truckTaken.warning) world.getOutHere();
       return;
     }
     if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
@@ -884,12 +921,21 @@ async function boot() {
     if (it) it.use();
   }
 
+  /** Out of the truck in its warning on B, with the engine dead (story/truckTaken.ts): Q, or the
+   *  Get out button on a phone, while Use turns the key. */
+  function runOut() {
+    if (mode !== 'play' || ui.modal || game.cinematic || !world.driving || abduction!.holds) return;
+    if (truckTaken.warning && world.canGetOut(true)) world.getOutHere(true);
+  }
+  ui.onAlt = runOut;
   input.onKey = (code) => {
     if (code === 'F2' && dev) { dev.toggle(); return; }
     if (mode !== 'play') return;
     if (code === 'KeyE' || code === 'Enter') {
       if (ui.modal) { if (ui.modal.classList.contains('docview')) ui.close(); return; }
       useCurrent();
+    } else if (code === 'KeyQ') {
+      if (!ui.modal) runOut();
     } else if (code === 'KeyM' || code === 'KeyI' || code === 'KeyH') {
       // the map, the kit and the controls, straight to their tabs in the notebook
       if (ui.modal) { if (ui.modal.querySelector('.notebook')) ui.close(); return; }
@@ -1064,7 +1110,8 @@ async function boot() {
     // prologue, which keeps no case yet, gets the plain ten minutes when chapter one begins)
     curve.restore(o.state?.curve, !!o.state?.case);
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
-    recWalk.reset(); stationTaken.reset();
+    recWalk.reset(); stationTaken.reset(); truckTaken.reset();
+    world.odoRestore(o.state?.odo);   // (the miles on the odometer tonight; an older case has none)
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
     pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset(); ninth.reset();
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
@@ -1111,7 +1158,8 @@ async function boot() {
     follow.reset(); arrayBack.reset(); recWalk.reset(); stationTaken.reset();
     archive.halt(); arrayTip.reset();
     world.stopDriving();
-    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); reelTape.stop(); officePhone.reset(); truckB.reset(); audio.stopPhoneCalls(); radio.reset(0);
+    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); reelTape.stop(); officePhone.reset(); truckB.reset(); truckTaken.reset(); audio.stopPhoneCalls(); radio.reset(0);
+    world.odoRestore(null);
     seenQuiet = true;
     curve.restore(null, false);
     game.reset();
@@ -1254,7 +1302,9 @@ async function boot() {
     return { ok, enabled: abductOn, line, along: abAlong, clock: game.clock, nextFixed: FIXED[game.phase]?.() ?? -1e9,
       late: game.phase === 'ch3' || game.phase === 'ch4', calm: calmFlash,
       // out among the dishes before they have turned: a little sooner there (story/dishesFollow.ts)
-      boost: line === 'B' && !abduction?.data.dishes && nearArray(p.x, p.z) ? 1.5 : 1 };
+      boost: line === 'B' && !abduction?.data.dishes && nearArray(p.x, p.z) ? 1.5 : 1,
+      // the warning in the truck: the truck has let go (story/truckTaken.ts)
+      cabFree: truckTaken.free !== null };
   }
   /** Why everyone does not go at STATION 01 right now (story/stationTaken.ts; null: it begins):
    *  after N. Vega's call in chapter three, on foot outside the hut a step or two from its door,
@@ -1283,7 +1333,7 @@ async function boot() {
     for (const sp of abduction!.data.spots) {
       const area = sp.scene === 'road' ? 'diner' : sp.scene, take = new THREE.Vector3(...sp.take);
       out.push({ kind: 'away', clock: sp.clock, line: lineHere(take, area)?.line ?? (sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C'),
-        at: sp.scene === 'saro' ? (sp.take[2] > 64 ? { spot: 'highway', m: sp.take[2] } : { spot: 'yard' }) : sp.scene === 'station01' ? { spot: 'station01' } : undefined });
+        at: sp.scene === 'saro' ? (sp.take[2] > 64 || sp.cab ? { spot: 'highway', m: Math.max(0, sp.take[2]) } : { spot: 'yard' }) : sp.scene === 'station01' ? { spot: 'station01' } : undefined });
     }
     return out.sort((a, b) => a.clock - b.clock);
   }
@@ -1544,7 +1594,8 @@ async function boot() {
   // taken (story/abduction.ts, the recordings), the first time the eyes are on it
   const was = { glimpse: null as string | null, calls: 0, cutSeen: 0, road: null as Roadside['last'], stage: 'calm', over: null as string | null,
     follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false, dark: 'idle', darkFig: false, office: 'idle' as string, array: false,
-    arc: 'idle' as string, tip: 'idle' as string, r47: false, walk: 'idle' as string, third: false };
+    arc: 'idle' as string, tip: 'idle' as string, r47: false, walk: 'idle' as string, truck: 'idle' as string, third: false };
+  let truckEntry: SeenEntry | null = null;
   let walkEntry: SeenEntry | null = null;
   let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null, darkEntry: SeenEntry | null = null, officeEntry: SeenEntry | null = null, arrayEntry: SeenEntry | null = null;
   let arcEntry: SeenEntry | null = null, r47Entry: SeenEntry | null = null;
@@ -1555,8 +1606,9 @@ async function boot() {
     Object.assign(was, { glimpse: glimpses.up, calls: calls.count, cutSeen: cutouts.seen, road: roadside.last, stage: abduction!.stage, over: abduction!.overPhase,
       follow: follow.mode, roof: roofSteps.busy, lights: lineLights.state, regular: !!ch5.s.regular, event: game.ch6.stage === 'event',
       records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)), reel: reelTape.busy,
-      dark: saroDark.phase, darkFig: !!saroDark.figureAt, office: officePhone.state, array: arrayBack.busy, arc: archive.phase, tip: arrayTip.mode, r47: reel047.playing, walk: recWalk.phase });
-    warnEntry = overEntry = reelEntry = darkEntry = officeEntry = arrayEntry = arcEntry = r47Entry = walkEntry = null;
+      dark: saroDark.phase, darkFig: !!saroDark.figureAt, office: officePhone.state, array: arrayBack.busy, arc: archive.phase, tip: arrayTip.mode, r47: reel047.playing, walk: recWalk.phase,
+      truck: truckTaken.phase });
+    warnEntry = overEntry = reelEntry = darkEntry = officeEntry = arrayEntry = arcEntry = r47Entry = walkEntry = truckEntry = null;
   }
   function seenStep(dt: number) {
     if (seenQuiet) return;
@@ -1607,6 +1659,16 @@ async function boot() {
       if (st === 'warning' && was.stage === 'calm') warnEntry = saw('abduction', 'warning', { looking: null });
       else if (was.stage === 'warning' && warnEntry) { warnEntry.end = st === 'light' ? 'taken' : 'away'; warnEntry = null; }
       was.stage = st;
+    }
+    // taken in the truck (story/truckTaken.ts): written when the warning comes in the cab, where the
+    // truck was; how it ended: the key, out and away ('ran'), taken, or Missing time turned off
+    if (truckTaken.phase !== was.truck) {
+      if (was.truck === 'idle' && truckTaken.phase === 'warning') {
+        const tr = truckNow();
+        truckEntry = saw('abduction', 'truck', { at: tr ? tr.group.position : null, line: 'B', looking: null, watch: null });
+      }
+      if ((truckTaken.phase === 'tail' || truckTaken.phase === 'idle') && truckEntry) { truckEntry.end = truckTaken.ended ?? 'away'; truckEntry = null; }
+      was.truck = truckTaken.phase;
     }
     const op = ab.overPhase;
     if (op === 'there' && was.over !== 'there') {
@@ -1725,6 +1787,8 @@ async function boot() {
       || cutouts.up === 'post'
       // (the truck on B, its count and a few seconds after: story/truckOnB.ts)
       || truckB.busy
+      // (taken in the truck, from the pass over B to a few seconds after the waking: story/truckTaken.ts)
+      || truckTaken.busy
       // (the recording walking where the player was taken: story/recording.ts)
       || recWalk.busy;
   }
@@ -1843,7 +1907,7 @@ async function boot() {
     const tvFrame = game.docs.find((d) => d.id === 'motel-tv-frame')?.image;
     const state: GameState = {
       v: 2, checkpoint, case: game.snapshotCase(), area: world.driving && tk ? tk.area : world.area, doors: doors.states(), flashlight: flashlight.have,
-      truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data, seen: seenLog.data, curve: curve.data,
+      truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data, seen: seenLog.data, curve: curve.data, odo: world.odoSave,
       album: album.data,
       motelTv: tvFrame ? { id: 'motel-tv-frame', url: tvFrame } : undefined,
       // on your back after the time away, Continue stands you up looking ahead
@@ -1905,7 +1969,7 @@ async function boot() {
     // (a warning left in the middle: its tone and pressure would go on droning under the title)
     abduction!.halt();
     saroDark.halt();   // (and the power back, before the room is put back as the night began)
-    follow.reset(); arrayBack.reset(); recWalk.reset(); stationTaken.reset();
+    follow.reset(); arrayBack.reset(); recWalk.reset(); stationTaken.reset(); truckTaken.reset();
     archive.halt(); arrayTip.reset();
     world.stopDriving();
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
@@ -2119,6 +2183,7 @@ async function boot() {
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
   Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)
+  Object.assign((window as any).S47, { truckTaken, truckTakenIn: () => truckTakenIn() });   // taken in the truck (tools/f_car_taken.py)
   // the archive's phone, the dishes it tips and reel 047 (tools/f_archive.py)
   Object.assign((window as any).S47, { archive, arrayTip, reel047, arcIn: () => arcIn(), arcWhere: () => arcWhere() });
   Object.assign((window as any).S47, { arrayBack, arrayGate: () => arrayGate() });   // the array put back (tools/f_array_back.py)
@@ -2267,6 +2332,14 @@ async function boot() {
           const s = abductIn(true);
           if (world.area !== 'station01' || world.indoors(player.pos) || abduction!.busy) ui.toast(abduction!.busy ? 'Already under way' : 'Outside the hut at STATION 01', 2);
           else { abduction!.force(s); abduction!.data.station = 'taken'; stationTaken.begin(game.clock); } } },
+        // (story/truckTaken.ts)
+        { label: `Taken in the truck: ${truckTaken.phase}${truckTaken.taken ? ', had' : ''}, ${truckTaken.tries} tries`, run: () => {
+          const s = truckTakenIn();
+          if (truckTaken.busy || abduction!.busy) ui.toast('Already under way', 2);
+          else if (!s.trip) ui.toast('Drive: in the truck on SARO\'s ground', 2.4);
+          else truckTaken.start(s); } },
+        { label: 'Taken in the truck: the next pass over B, southbound', run: () => { truckTaken.force = true; ui.toast('The next time south over B at the turn-off', 2.4); } },
+        { label: 'Taken in the truck: not had tonight (again)', run: () => { for (const k of [...townSeen]) if (k.startsWith('tt:')) townSeen.delete(k); } },
         { label: 'The recording walks (the nearest time away)', run: () => {
           const me = playerAt(), sc = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
           const r = abduction!.recordings().filter((x) => x.path && x.scene === sc).sort((a, b) => a.take.distanceTo(me) - b.take.distanceTo(me))[0];
@@ -2459,6 +2532,29 @@ async function boot() {
       from: world.tripNow?.from ?? null, metres: world.tripNow?.metres ?? 0, calm: calmFlash,
     };
   }
+  /** What taken in the truck needs to know (story/truckTaken.ts): the driven truck on the map in SARO's
+   *  area, its speed and which way it faces, whether the time away may come (the curve's peak, the
+   *  time away's own conditions, one at a time), a rung of the truck on B due, the warning, and
+   *  where the player is from the truck. */
+  function truckTakenIn(modalOpen = !!ui.modal): TruckTakenIn {
+    const ab = abduction!, tr = world.driving ? truckNow() : null, here = world.area === 'saro' ? tr ?? world.truckHere() : null;
+    const foot = !world.driving && here ? Math.hypot(player.pos.x - here.group.position.x, player.pos.z - here.group.position.z) : 0;
+    return {
+      ok: !modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
+        && !oneAtATime() && !audio.phonePlaying && !cb.busy && !world.trouble.kind,
+      // (the curve's peak itself: not when it stands aside for a test of one thing)
+      may: !curve.free && curve.may('abduct'),
+      allowed: ab.mayBegin(abductIn(true)), enabled: abductOn,
+      trip: world.driving && world.leg === 'saro' && world.tripSecs !== null,
+      at: tr && world.area === 'saro' ? mapOf(tr.group.position) : null,
+      speed: world.driving ? world.drivingSpeed : 0,
+      south: tr ? -Math.cos(tr.group.rotation.y) : 0,
+      due: truckB.due(truckBIn(modalOpen)),
+      stage: ab.stage, warnT: ab.warn?.t ?? null,
+      inCab: world.driving, away: foot, north: here && !world.driving ? here.group.position.z - player.pos.z : 0,
+      clock: game.clock, over: ab.overPhase !== null,
+    };
+  }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -2472,9 +2568,11 @@ async function boot() {
       const active = mode === 'play' && !modalOpen && !game.cinematic && !abduction!.holds;
       const look = input.consumeLook();
       if (world.driving) {
-        // the truck: forward and back are throttle and brake, sideways is steering
+        // the truck: forward and back are throttle and brake, sideways is steering (held on waking at
+        // the wheel: only the eyes, stiffly, towards what is on the bonnet; story/abduction.ts)
         const m = active ? input.move() : { x: 0, z: 0 };
-        if (!modalOpen) world.update(dt, t, { steer: m.x, throttle: -m.z }, active ? { x: look.x, y: invertY ? -look.y : look.y } : { x: 0, y: 0 });
+        const ly = invertY ? -look.y : look.y;
+        if (!modalOpen) world.update(dt, t, { steer: m.x, throttle: -m.z }, active ? { x: look.x, y: ly } : mode === 'play' && abduction!.holds ? abduction!.cabGaze(look.x, ly) : { x: 0, y: 0 });
       } else {
         if (active) {
           const fine = 1 - 0.6 * zoomK;   // finer aim through the closer look
@@ -2603,6 +2701,8 @@ async function boot() {
       // the truck on B (story/truckOnB.ts), and the compass on the dash of the truck being driven
       if (mode === 'play') {
         truckB.update(modalOpen ? 0 : dt, truckBIn(modalOpen));
+        // (after it: a rung that is due has the pass over B; story/truckTaken.ts)
+        truckTaken.update(modalOpen ? 0 : dt, truckTakenIn(modalOpen));
         const ct = world.driving ? truckNow() : null;
         if (ct) { ct.compassNorth = world.skyYaw; ct.compassPull = truckB.pull; }
       }
@@ -2661,9 +2761,12 @@ async function boot() {
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
         const live = mode === 'play' && !modalOpen && !game.cinematic;
-        const key = live && world.driving && world.trouble.wantsKey, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && world.canGetOut();
+        const key = live && world.driving && world.trouble.wantsKey && !abduction!.holds, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && !truckTaken.warning && world.canGetOut();
+        // (in the truck's warning on B, stopped: out of it, as well as the key, the whole time and not
+        // only while the key is wanted, so it does not blink away with each turn; story/truckTaken.ts)
+        const run = live && !abduction!.holds && truckTaken.warning && world.canGetOut(true);
         if ((out || key || aimR) !== canOut) { canOut = out || key || aimR; document.documentElement.classList.toggle('can-out', canOut); }
-        ui.prompt(key ? 'Turn the key' : aimR ? radioLabel() : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode);
+        ui.prompt(key ? 'Turn the key' : aimR ? radioLabel() : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode, run ? 'Get out' : null);
         ui.hint(false);
         ui.examine(null);
       }
@@ -2706,7 +2809,7 @@ async function boot() {
     ext.dishArray.cull(camera);
     vhs.render(scene, camera, performance.now() / 1000);
   }
-  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing + ' ' + score.track : ''}${mode === 'play' ? '\n' + curve.text() + '\n' + truckB.text() + '\n' + seenLog.text(innerWidth < 600 ? 5 : 8) : ''}`);
+  const hud = () => new DebugHud(renderer, () => `${quality}   ${innerWidth}x${innerHeight}   ${mode}${mode === 'play' ? '  ' + game.phase : ''}${game.phase === 'ch1' ? '  ' + ch1.s.stage : ''}${game.phase === 'ch2' ? '  ' + ch2.s.stage : ''}${game.phase === 'ch3' ? '  ' + ch3.s.stage + '  ' + world.area : ''}${game.phase === 'ch4' ? '  ' + ch4.s.stage + '  ' + world.area : ''}${game.phase === 'ch5' ? '  ' + ch5.s.stage + '  ' + world.area : ''}${game.phase === 'ch6' ? '  ' + game.ch6.stage + '  ' + world.area : ''}${world.free ? '  free drive' : ''}${devRun ? '  dev' : ''}${score?.playing ? '  music ' + score.playing + ' ' + score.track : ''}${mode === 'play' ? '\n' + curve.text() + '\n' + truckB.text() + '  ' + truckTaken.text() + '\n' + seenLog.text(innerWidth < 600 ? 5 : 8) : ''}`);
   let debug: DebugHud | null = debugOn ? hud() : null;
   function frame(now: number) {
     requestAnimationFrame(frame);

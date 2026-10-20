@@ -223,6 +223,63 @@ export class World {
   trouble = new TruckTrouble();
   /** The next time the truck is got into, its engine is dead and wants the key (story/abduction.ts). */
   keyStall = false;
+  // ---------- the odometer (story/truckTaken.ts: 31.4 miles more than at SARO) ----------
+  /** Metres the truck has been driven since the shift began (not on a free drive), and miles on its
+   *  odometer that were not driven by anyone in it. */
+  private odoM = 0;
+  private odoX = 0;
+  /** The miles on the odometer since the shift began (the work order's MILES OUT is 84,217). */
+  get odometer() { return this.odoM / 1609.344 + this.odoX; }
+  /** It read this when the truck last set out from SARO's ground (null: not yet tonight). */
+  odoAtSaro: number | null = null;
+  /** Miles on the odometer that nobody drove (story/truckTaken.ts). */
+  addMiles(miles: number) { this.odoX += miles; this.truckHere()?.setOdometer(this.odometer); }
+  /** What is kept with the case: metres driven, and miles not. */
+  get odoSave() { return { m: Math.round(this.odoM), x: Math.round(this.odoX * 1000) / 1000, ...(this.odoAtSaro !== null ? { s: Math.round(this.odoAtSaro * 1000) / 1000 } : {}) }; }
+  odoRestore(v: { m?: unknown; x?: unknown; s?: unknown } | null | undefined) {
+    const n = (x: unknown) => typeof x === 'number' && Number.isFinite(x) && x >= 0 ? x : 0;
+    this.odoM = n(v?.m); this.odoX = n(v?.x); this.odoAtSaro = typeof v?.s === 'number' && Number.isFinite(v.s) ? v.s : null;
+    for (const t of [this.saroTruck, this.truck, this.parked, this.oldTruck, ...Object.values(this.legs).map((L) => L?.truck)]) t?.setOdometer(this.odometer);
+  }
+
+  // ---------- the truck held from outside (story/truckTaken.ts) ----------
+  /** The truck being driven and its controller, or null (on the old road too). */
+  get cab(): { truck: Truck; drive: DriveController } | null {
+    const L = this.driving && this.leg ? this.legs[this.leg] : null;
+    return L ? { truck: L.truck, drive: L.drive } : null;
+  }
+  /** Something holds the truck being driven back, m/s² (0: let go). */
+  holdTruck(k: number) { const c = this.cab; if (c) c.drive.held = k; }
+  /** Every sound of the truck gone (the engine, the starter, the tyres), or back. */
+  hushTruck(on: boolean) { this.engine?.hush(on); }
+  /** The truck being driven, put down somewhere else on its area's ground, standing, the engine
+   *  off and quiet (story/truckTaken.ts: where the player wakes in it). The trip goes on from
+   *  there; it is where the truck stands now, for a save made in it (truckSave) and for the
+   *  player's body (a save puts them back beside it, at a door). */
+  moveDriven(x: number, z: number, heading: number) {
+    const id = this.leg, L = id ? this.legs[id] : null, trip = this.trip;
+    if (!this.driving || !L || !trip) return false;
+    L.drive.place(new THREE.Vector3(x, 0, z), heading);
+    L.drive.engine = false;
+    this.engine?.still();
+    const g = L.truck.group, home = this.trucksHome.find((h) => h.t === L.truck);
+    if (home) Object.assign(home, { x: g.position.x, y: g.position.y, z: g.position.z, h: g.rotation.y, p: g.rotation.x, r: g.rotation.z });
+    const place = this.placeOfLeg(id!);
+    if (place) trip.home = place;
+    trip.start.copy(g.position); trip.left = true;
+    const v = this.doorSpot(L.truck, this.walkOf(id!));
+    if (v) this.d.player.place(v.x, v.z, heading);
+    return true;
+  }
+  /** The truck standing on SARO's ground, put down somewhere else on it (no one in it). */
+  moveParked(x: number, z: number, heading: number, y = 0) {
+    const t = this.saroTruck;
+    if (this.driving || !t || (this.truckAt !== 'saro' && this.truckAt !== 'motel')) return false;
+    t.group.position.set(x, y, z); t.group.rotation.set(0, heading, 0, 'YXZ');
+    this.truckAt = 'saro';
+    this.parkAt('saro');
+    return true;
+  }
   /** Whether random trouble may come now (main.ts: the night, no cinematic). */
   troubleOk?: () => boolean;
   private legs: Partial<Record<LegId, { area: DriveArea & { park?: { minX: number; maxX: number; minZ: number; maxZ: number } | null; routes?: Partial<Record<string, THREE.Vector3[]>> }; drive: DriveController; truck: Truck }>> = {};
@@ -894,6 +951,7 @@ export class World {
         free: !!o.free, start: (o.at?.pos ?? g.position).clone(), left: false, secs: 0, metres: 0, n: ++this.tripNo };
       this.leg = leg0;
       if (!o.free) { this.truckAt = null; for (const id of TRUCKS) this.parkAt(id); }
+      if (!o.free && from === 'saro') this.odoAtSaro = this.odometer;
       L.drive.place(o.at?.pos ?? g.position.clone(), o.at?.heading ?? g.rotation.y);
       this.lightsOn(L.truck);
       this.enter(areaOf(leg0));
@@ -1062,18 +1120,19 @@ export class World {
    *  the road has ground of its own walked by something to walk to (by the herd, by the deputy's
    *  car). Not on a free drive (the developer menu puts everything back after it). E or Use gets
    *  out, and the phone shows its button by this (main.ts). */
-  canGetOut() {
+  canGetOut(dead = false) {
     const id = this.leg, trip = this.trip;
-    if (!this.driving || this.busy || !id || !trip || trip.free || this.trouble.wantsKey) return false;
+    if (!this.driving || this.busy || !id || !trip || trip.free || (this.trouble.wantsKey && !dead)) return false;
     const L = this.legs[id], place = this.placeOfLeg(id);
     if (!L || !place || Math.abs(L.drive.speed) > 0.6) return false;
     // (by the diner and anywhere in Caliche's street, as since 16 October)
     if (id === 'road' && this.atDiner(L.drive.pos)) return true;
     return !!this.doorSpot(L.truck, this.walkOf(id));
   }
-  /** Out of the truck where it stands; the trip ends as if it had been left on a lot. */
-  getOutHere() {
-    if (!this.canGetOut()) return false;
+  /** Out of the truck where it stands; the trip ends as if it had been left on a lot. dead: also
+   *  with the engine dead and wanting the key (story/truckTaken.ts: out and away from it). */
+  getOutHere(dead = false) {
+    if (!this.canGetOut(dead)) return false;
     const id = this.leg!, q = this.legs[id]!.drive.pos;
     const place = id === 'saro' && inBox(this.parkBox('motel'), q) ? 'motel' : this.placeOfLeg(id)!;
     // on the highway the player walks in the diner's area: on the story's trips that have not needed
@@ -1381,8 +1440,10 @@ export class World {
     // trouble with the truck, on the story's trips and the player's own (not chapter six's road)
     if (this.driving && this.trip && id !== 'roswell') this.trouble.step(dt, D, N.truck, this.engine, this.troubleOk?.() ?? false);
     if (this.engine) { this.engine.set(D.rpm, D.load); this.engine.tyres(D.surface.kind, Math.abs(D.speed)); }
+    // the odometer turns with the miles driven (not on a free drive: the developer menu puts it all back)
+    if (this.driving && !this.trip?.free && this.free === null) this.odoM += Math.abs(D.speed) * dt;
     this.dashT -= dt;
-    if (this.dashT <= 0) { this.dashT = 0.1; N.truck.setDash({ mph: D.mph, rpm: D.rpm, clock: this.d.clock(), fuel: id === 'roswell' ? 0.55 : 0.62 }); }
+    if (this.dashT <= 0) { this.dashT = 0.1; N.truck.setDash({ mph: D.mph, rpm: D.rpm, clock: this.d.clock(), fuel: id === 'roswell' ? 0.55 : 0.62 }); N.truck.setOdometer(this.odometer); }
     // a camera that has left the cab sees the whole truck in this very frame
     this.d.camera.updateMatrixWorld();
     N.truck.viewFrom(this.d.camera);

@@ -140,6 +140,9 @@ html.text-large .examine { font-size: 27px; }
 .touch .use { right: calc(env(safe-area-inset-right, 0px) + 22px); bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
   min-width: 96px; height: 96px; padding: 0 18px; font-size: 26px; opacity: .35; }
 .touch .use.ready { opacity: 1; border-color: var(--amber); color: var(--amber); }
+/* the second thing to do while the first is offered (story/truckTaken.ts: Get out while the key is wanted) */
+.touch .alt { right: calc(env(safe-area-inset-right, 0px) + 22px); bottom: calc(env(safe-area-inset-bottom, 0px) + 136px); height: 56px; padding: 0 20px; font-size: 22px; border-color: var(--amber); color: var(--amber); }
+.prompt .alt { margin-left: 22px; }
 .touch .notes { right: calc(env(safe-area-inset-right, 0px) + 22px); top: calc(env(safe-area-inset-top, 0px) + 54px); height: 48px; padding: 0 18px; font-size: 22px; }
 .touch .pause { left: calc(env(safe-area-inset-left, 0px) + 16px); top: calc(env(safe-area-inset-top, 0px) + 14px); width: 48px; height: 48px; font-size: 22px; }
 .touch .hint { position: absolute; left: 24px; bottom: calc(env(safe-area-inset-bottom, 0px) + 30px); font-family: var(--term); font-size: 18px; color: rgba(255,255,255,.4); }

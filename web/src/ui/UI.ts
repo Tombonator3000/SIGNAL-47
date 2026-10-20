@@ -109,9 +109,12 @@ export class UI {
   private lockHint: HTMLElement;
   touch: HTMLElement;
   useBtn: HTMLButtonElement;
+  private altBtn: HTMLButtonElement;
   fadeEl: HTMLElement;
   onModalChange?: (open: boolean) => void;
   onUse?: () => void;
+  /** The second thing the prompt offers (Q, or its button on a phone). */
+  onAlt?: () => void;
   onNotes?: () => void;
   onPause?: () => void;
   onCamera?: () => void;
@@ -150,6 +153,7 @@ export class UI {
         <button class="tbtn radio" hidden>Radio</button>
         <button class="tbtn zoom">Zoom</button>
         <button class="tbtn use">Use</button>
+        <button class="tbtn alt" hidden></button>
       </div>
       <div class="fade passive"><div class="fade-text"></div></div>`);
     this.hud = this.root.querySelector('.hud')!;
@@ -178,6 +182,8 @@ export class UI {
     zoom.addEventListener('pointerdown', hold(true));
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) zoom.addEventListener(ev, hold(false));
     this.useBtn.addEventListener('click', () => this.onUse?.());
+    this.altBtn = this.root.querySelector('.touch .alt')!;
+    this.altBtn.addEventListener('click', () => this.onAlt?.());
     this.root.querySelector('.touch .notes')!.addEventListener('click', () => this.onNotes?.());
     this.root.querySelector('.touch .pause')!.addEventListener('click', () => this.onPause?.());
   }
@@ -187,15 +193,21 @@ export class UI {
     this.touch.hidden = !(on && touch);
   }
 
-  prompt(label: string | null, touch: boolean) {
+  /** What Use does here (E, the Use button), or null; and a second thing that can be done at the
+   *  same time (Q, its own button on a phone: story/truckTaken.ts, Get out while the key is wanted). */
+  prompt(label: string | null, touch: boolean, alt: string | null = null) {
     this.cross.classList.toggle('active', !!label);
+    const a = alt;
+    if (this.altBtn.hidden !== (!a || !touch)) this.altBtn.hidden = !a || !touch;
+    if (a && touch && this.altBtn.textContent !== a) this.altBtn.textContent = a;
     if (touch) {
       this.useBtn.classList.toggle('ready', !!label);
       this.useBtn.textContent = label ? label : 'Use';
       this.promptEl.classList.remove('show');
     } else {
-      this.promptEl.classList.toggle('show', !!label);
-      if (label) this.promptEl.innerHTML = `<kbd>E</kbd>${esc(label)}`;
+      this.promptEl.classList.toggle('show', !!(label || a));
+      // (the second thing on its own while Use offers nothing: Q Get out while the starter turns)
+      if (label || a) this.promptEl.innerHTML = `${label ? `<kbd>E</kbd>${esc(label)}` : ''}${a ? `<span class="alt"${label ? '' : ' style="margin-left:0"'}><kbd>Q</kbd>${esc(a)}</span>` : ''}`;
     }
   }
 

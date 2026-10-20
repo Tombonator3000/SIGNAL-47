@@ -39,6 +39,8 @@ export interface TroubleOpts {
   /** blink with a count: soft, the lights dip and come back smoothly instead of going out (Settings,
    *  Flashing images: slow fades). */
   soft?: boolean;
+  /** stall: already dead when it begins (no dying, no sound of it): found that way (story/truckTaken.ts). */
+  dead?: boolean;
 }
 
 type Stage = 'dying' | 'dead' | 'pause' | 'cranking' | 'catching';
@@ -71,6 +73,10 @@ export class TruckTrouble {
   private next = rnd(0.5, 1.5);
   private touched = false;   // the truck has been changed and must be given back
   private power = 1;
+  /** Everything electric in the truck, 0..1, on top of whatever the trouble does (the lights, the
+   *  dash, the radio): the battery going down under something else (story/truckTaken.ts). 1 is the
+   *  truck's own; reset() gives it back. */
+  dim = 1;
 
   /** What is wrong now, or null. */
   get kind() { return this.a?.kind ?? null; }
@@ -78,7 +84,7 @@ export class TruckTrouble {
   get wantsKey() { const a = this.a; return !!a && a.kind === 'stall' && a.key && !a.hold && (a.stage === 'dead' || a.stage === 'pause'); }
   /** What the radio gets, 0..1 (core/radio.ts): nothing while the starter turns, a stutter with
    *  the lights. On the battery alone it plays on. */
-  get radioLevel() { return this.power; }
+  get radioLevel() { return this.power * this.dim; }
   /** The engine is dead (or being started). */
   get dead() { const a = this.a; return !!a && a.kind === 'stall' && a.stage !== 'catching'; }
   /** What a stall is doing now (dying, dead, pause after a turn that failed, cranking, catching), or null. */
@@ -96,18 +102,21 @@ export class TruckTrouble {
     const len = o.len ?? (kind === 'sputter' ? rnd(1.2, 2.6) : kind === 'flicker' ? rnd(0.8, 2.4) : kind === 'blink' ? (count ? count * per + 0.05 : 0.55) : kind === 'dashOut' ? rnd(2.5, 6) : 0);
     const need = o.tries === undefined ? (Math.random() < 0.55 ? 2 : 1) : Math.max(1, o.tries);
     this.a = { kind, t: 0, len, st: 0, hold: !!o.hold, key: !!o.key, tries: 0, need, count, per, soft: !!o.soft, beat: 0, v: 1 };
-    if (kind === 'stall') { this.a.stage = 'dying'; this.turns = 0; }
+    if (kind === 'stall') { this.a.stage = o.dead ? 'dead' : 'dying'; this.turns = 0; if (o.dead) this.a.heard = 'dying'; }
     this.count++;
     this.onTrouble?.(kind);
     return true;
   }
   /** A held stall may be started again (the story lets go of it). */
   release() { if (this.a?.kind === 'stall') { this.a.hold = false; if (this.a.stage === 'dead') this.a.st = 0; } }
+  /** The turn of the key this stall catches on, from now (story/truckTaken.ts: Infinity, it never
+   *  will; the turns already made count). */
+  catchOn(n: number) { if (this.a?.kind === 'stall') this.a.need = Math.max(1, n); }
   /** The player turns the key (when wantsKey). */
   turnKey() { const a = this.a; if (!this.wantsKey || !a) return false; a.stage = 'cranking'; a.st = 0; this.turns++; return true; }
   /** Everything as it was: the engine runs, the lights and the instruments are the truck's own. */
   reset(truck?: Truck | null, drive?: DriveController | null) {
-    this.a = null; this.power = 1;
+    this.a = null; this.power = 1; this.dim = 1;
     if (drive) { drive.engine = true; drive.power = 1; }
     if (truck && this.touched) { truck.setLightLevel(1); truck.setDashLevel(null); truck.setWarnings({}); truck.setGaugePower(1); }
     this.touched = false;
@@ -134,7 +143,13 @@ export class TruckTrouble {
       }
     }
     const a = this.a;
-    if (!a) { this.power = 1; if (this.touched) this.reset(truck, drive); return; }
+    if (!a) {
+      this.power = 1;
+      // (nothing wrong with the truck itself, but its electrics held down from outside)
+      if (this.dim < 1) { this.touched = true; truck.setLightLevel(this.dim); truck.setDashLevel(this.dim); truck.setWarnings({}); return; }
+      if (this.touched) this.reset(truck, drive);
+      return;
+    }
     a.t += dt;
     this.touched = true;
     let light = 1, dash = 1, gauges = 1;
@@ -176,10 +191,11 @@ export class TruckTrouble {
     } else this.stall(dt, a, drive, sound, (l, d, w) => { light = l; dash = d; Object.assign(warn, w); });
 
     this.power = this.a?.kind === 'stall' && this.a.stage === 'cranking' ? 0.04 : this.a?.kind === 'flicker' || this.a?.kind === 'blink' ? light : 1;
-    truck.setLightLevel(light);
-    truck.setDashLevel(dash);
+    truck.setLightLevel(light * this.dim);
+    truck.setDashLevel(dash * this.dim);
     truck.setGaugePower(gauges);
-    truck.setWarnings(warn);
+    // (the warning lamps go with every other light when the battery has gone)
+    truck.setWarnings(this.dim < 0.12 ? {} : warn);
   }
 
   private stall(dt: number, a: Active, drive: DriveController, sound: EngineSound | null, out: (light: number, dash: number, warn: { oil?: boolean; volts?: boolean }) => void) {
@@ -195,6 +211,7 @@ export class TruckTrouble {
         break;
       case 'dead':
         a.heard = 'dead';
+        drive.engine = false;   // (a stall found dead never went through dying)
         out(0.72, 0.85, ign);
         // the driver turns the key once the truck has slowed (or after a while), unless the story holds it
         if (!a.hold && !a.key && (a.st > 2.4 || (Math.abs(drive.speed) < 2 && a.st > 1.2))) { a.stage = 'cranking'; a.st = 0; }

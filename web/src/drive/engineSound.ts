@@ -57,6 +57,10 @@ export class EngineSound {
   private running = false;
   private stalled = false;
   private level = 0.1;
+  /** Everything the truck sounds is gone (hush): the engine, the starter, the tyres. */
+  private hushed = false;
+  /** The level the truck's sound is at when it is not hushed. */
+  private get master() { return this.hushed ? 0 : MASTER; }
 
   constructor(private ctx: AudioContext, dest: AudioNode) {
     this.out = ctx.createGain(); this.out.gain.value = 0; this.out.connect(dest);
@@ -153,7 +157,7 @@ export class EngineSound {
     this.running = true; this.stalled = false;
     const t = this.ctx.currentTime;
     this.out.gain.cancelScheduledValues(t);
-    this.out.gain.setTargetAtTime(MASTER, t, 0.25);
+    this.out.gain.setTargetAtTime(this.master, t, 0.25);
     this.set(650, 0);
     // the key: it turns over and catches, and the idle comes up under it
     if (fresh && this.once('start', 1.1) && this.eng) { const g = this.eng.bus.gain; g.cancelScheduledValues(t); g.setValueAtTime(0, t); g.setValueAtTime(0, t + 1.3); g.linearRampToValueAtTime(this.level, t + 2.6); }
@@ -219,6 +223,27 @@ export class EngineSound {
     e.noise.gain.setTargetAtTime(0, t + 0.2, 0.2);
   }
 
+  /** All of the truck's sound goes, at once and together, and stays gone (story/truckTaken.ts: the
+   *  engine note and the tyres drop out at :16 as the footsteps do on foot; the starter turns in
+   *  silence after it), or comes back. */
+  hush(on: boolean) {
+    if (on === this.hushed) return;
+    this.hushed = on;
+    const t = this.ctx.currentTime;
+    this.out.gain.cancelScheduledValues(t);
+    this.out.gain.setTargetAtTime(on ? 0 : this.eng ? MASTER : 0, t, on ? 0.012 : 0.3);
+  }
+  /** The engine is off and quiet, found that way (no wind-down): the key starts it (restart). */
+  still() {
+    const e = this.eng;
+    if (!e) return;
+    this.stalled = true;
+    const t = this.ctx.currentTime;
+    e.bus.gain.cancelScheduledValues(t); e.bus.gain.setValueAtTime(0, t);
+    e.noise.gain.cancelScheduledValues(t); e.noise.gain.setValueAtTime(0, t);
+    if (this.tyre) for (const g of Object.values(this.tyre)) { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0, t); }
+  }
+
   /** A misfire (drive/trouble.ts): the note drops out for a moment, with a dull pop in the
    *  exhaust. k 0..1 is how hard. */
   cough(k = 1) {
@@ -241,7 +266,7 @@ export class EngineSound {
     if (!this.eng) this.build();
     const t = c.currentTime;
     this.out.gain.cancelScheduledValues(t);
-    this.out.gain.setTargetAtTime(MASTER, t, 0.05);
+    this.out.gain.setTargetAtTime(this.master, t, 0.05);
     const o = c.createOscillator(); o.type = 'sawtooth';
     o.frequency.setValueAtTime(115, t); o.frequency.linearRampToValueAtTime(135, t + secs);
     const lp = this.filter('lowpass', 900, 1.2), env = this.gain(0), am = this.gain(0.5);
@@ -272,7 +297,7 @@ export class EngineSound {
     e.bus.gain.linearRampToValueAtTime(this.level * 1.6, t + 0.15);
     e.bus.gain.setTargetAtTime(this.level, t + 0.3, 0.3);
     this.out.gain.cancelScheduledValues(t);
-    this.out.gain.setTargetAtTime(MASTER, t, 0.05);
+    this.out.gain.setTargetAtTime(this.master, t, 0.05);
     this.set(1400, 0.4);
   }
 

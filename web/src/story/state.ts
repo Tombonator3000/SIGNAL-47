@@ -21,6 +21,7 @@ export interface GameState {
   motelTv?: { id: string; url: string };   // the witnessed office frame, in the shared photo store
   seen?: import('./seen').SeenEntry[];   // what the night did and whether it was seen (story/seen.ts; older saves have none)
   curve?: import('./curve').CurveSave;   // where the night's one curve was (story/curve.ts; older saves have none)
+  odo?: { m: number; x: number; s?: number };   // the truck's odometer tonight: metres driven, miles not, the reading at SARO (World.odoSave; older saves have none)
 }
 
 /** Where the truck was left and how it stands: the place (World.truckAt), its position and its

@@ -101,6 +101,18 @@ export class DriveController {
   engine = true;
   /** 0..1, how much of its pull the engine gives (a misfire, drive/trouble.ts); 1 normally. */
   power = 1;
+  /** m/s² of something holding the truck back, brakes or none (story/truckTaken.ts: the truck slows
+   *  to a stop on B as if taken hold of); 0 normally. */
+  held = 0;
+  /** The head's look kept within this (radians; the waking in the cab, story/abduction.ts), or null. */
+  lookBox: { yaw: [number, number]; pitch: [number, number] } | null = null;
+  /** The head's look now, from straight ahead (yaw, left positive) and level (pitch, up positive). */
+  get look() { return { yaw: this.yaw, pitch: this.pitch }; }
+  /** Turn the head to this look at once (the waking in the cab), the camera with it in this frame. */
+  setLook(yaw: number, pitch: number) {
+    this.yaw = yaw; this.pitch = pitch; this.idle = 0;
+    this.pose(0, this.steer * lockAt(this.speed, this.surface.grip), false);
+  }
   onArrive?: () => void;
   onBump?: (speed: number) => void;
   /** In reverse gear (S held at a stop). */
@@ -135,7 +147,7 @@ export class DriveController {
     this.pos.set(pos.x, 0, pos.z);
     this.heading = heading;
     this.speed = 0; this.steer = 0; this.reverse = false; this.gear = 1; this.accel = 0; this.yawRate = 0;
-    this.yaw = 0; this.pitch = PITCH0; this.arrived = false; this.engine = true; this.power = 1;
+    this.yaw = 0; this.pitch = PITCH0; this.arrived = false; this.engine = true; this.power = 1; this.held = 0; this.lookBox = null;
     const g = this.ground();
     Object.assign(this.body, { y: g.y, vy: 0, pitch: g.pitch, vp: 0, roll: g.roll, vr: 0 });
     this.surface = this.area.surface(this.pos.x, this.pos.z);
@@ -185,7 +197,7 @@ export class DriveController {
     } else this.shiftHold = 0;
     // rolling resistance (more on loose ground), air, engine braking, soft ground above its top speed
     const rough = s.rough ?? ROUGH[s.kind];
-    let drag = 0.18 + 0.5 * rough + 0.0009 * v * v + (!pulling && this.engine ? 0.25 : 0);
+    let drag = 0.18 + 0.5 * rough + 0.0009 * v * v + (!pulling && this.engine ? 0.25 : 0) + this.held;
     if (Math.abs(v) > s.top) drag += (Math.abs(v) - s.top) * 0.45;
     a -= Math.sign(v) * drag;
     this.accel = a;
@@ -238,6 +250,8 @@ export class DriveController {
     if (look.x || look.y) this.idle = 0; else this.idle += dt;
     this.yaw = THREE.MathUtils.clamp(this.yaw - look.x, -YAW_MAX, YAW_MAX);
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.y, -0.9, 0.6);
+    const lb = this.lookBox;
+    if (lb) { this.yaw = THREE.MathUtils.clamp(this.yaw, lb.yaw[0], lb.yaw[1]); this.pitch = THREE.MathUtils.clamp(this.pitch, lb.pitch[0], lb.pitch[1]); }
     if (this.speed > 2 && this.idle > 0.8) {
       const k = 1 - Math.exp(-dt * 1.4 * Math.min(1, this.speed / 8));
       this.yaw += (0 - this.yaw) * k; this.pitch += (PITCH0 - this.pitch) * k;
