@@ -256,6 +256,14 @@ async def main():
         await aim_at(-1.75, 9.25, -1.12, 1.42, 9.25)
         check(await aimed() == 'recPhone' and await label('recPhone') == 'Call the key holder', 'wall phone offers the call')
         await use('recPhone')
+        # the archive's phone comes first (story/archivePhone.ts; tools/f_archive.py has all of it): lifted to
+        # call the key holder, the line is already open, the room before it happens, 47 s, the drawer, the dishes
+        for _ in range(140):
+            if await ev("S47.archive.phase") == 'done': break
+            await tick(1.0)
+        check(await ev("S47.archive.phase") == 'done' and await ev("S47.archive.how") == 'lift' and await ev("S47.townSeen.has('arc:done')"),
+              'the archive\'s phone first: the line already open, and 47 s after it went dead the drawer and the dishes')
+        await use('recPhone')
         seen = ''
         for _ in range(30):
             await tick(1.0)

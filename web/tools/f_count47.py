@@ -307,6 +307,8 @@ async def main():
 
         # ---------- the payphone's first call ----------
         await ev("S47.jump('chapter2'); S47.tick(1.0); S47.game.d.ui.close(); S47.tick(0.2)")
+        # (chapter two keeps its 47 for the archive's phone: here it stands aside, tools/f_archive.py has it)
+        await ev("S47.archive.off = true")
         await ev("S47.nightEvents['wait'] = 1e9; S47.glimpses['wait'] = 1e9; S47.calls.next = 1e9; S47.cutouts['wait'] = 1e9")
         await ev("window.__p = S47.world.prepare('diner')")
         for _ in range(150):
