@@ -37,6 +37,13 @@ export interface PowerParts {
   site: FloodSet;
   /** A fake lamp's strength as the game wants it (core/ultra.ts, Ultra.strength). */
   strength: (set: FloodSet, i: number) => number;
+  /** Unlit surfaces SARO's lamps light (the stencils on the yard's concrete, the B-12 plate, the
+   *  array fence and its gate, the lettering on the wing): with the sodium lamps, down to what the
+   *  starlight and the highway leave of them (critic, 20 October: at full they read as lit). */
+  paint?: THREE.MeshBasicMaterial[];
+  /** Lit glass on SARO's power (the S-03 motor bus's readout, the vending machine): out with the
+   *  inside, and back with it. */
+  screens?: THREE.MeshBasicMaterial[];
 }
 
 interface GlowSnap { g: GlowPoints; col: Float32Array; pick: number[]; sodium: boolean[]; last: Float32Array }
@@ -45,6 +52,7 @@ interface Snap {
   tubes: THREE.Material[]; screens: boolean[]; door: THREE.Material | THREE.Material[];
   lab: number; annex: number;
   red: THREE.Color[]; bulb: THREE.Color;
+  paint: THREE.Color[]; glass: THREE.Color[];
   glows: GlowSnap[];
   slots: { i: number; w: number; last: number }[];
   /** The inside is back as it was and left alone from now on. */
@@ -52,6 +60,8 @@ interface Snap {
 }
 
 const OFF_GLASS = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+/** What is left of the unlit paint in the dark (PowerParts.paint). */
+const PAINT_DARK = 0.36;
 /** Warm, high sodium heads among the glows (the same test as world/airlight.ts). */
 const isSodium = (r: number, g: number, b: number) => r > 0.85 && g > 0.3 && g < 0.62 && b < 0.26;
 /** Where SARO is in its own scene: not the highway's lamp line (x -20), the motel down the road or
@@ -80,6 +90,7 @@ export class SaroPower {
     const { site, strength } = this.p;
     // the lamps' own glass (the yard's lamp posts and the desk lamps' bulbs: M.lampBulb is SARO's only)
     M.lampBulb.color.copy(s.bulb).multiplyScalar(0.012 + 0.988 * sodium);
+    (this.p.paint ?? []).forEach((m, i) => m.color.copy(s.paint[i]).multiplyScalar(PAINT_DARK + (1 - PAINT_DARK) * sodium));
     for (const gs of s.glows) {
       const a = gs.g.points.geometry.getAttribute('aCol') as THREE.BufferAttribute | undefined;
       if (!a) continue;
@@ -122,6 +133,7 @@ export class SaroPower {
     annex.flood.scale.value = s.annex * inner;
     annex.setPower(inner);
     yard.redGlass.forEach((m, i) => m.color.copy(s.red[i]).multiplyScalar(0.008 + 0.992 * inner));
+    (this.p.screens ?? []).forEach((m, i) => m.color.copy(s.glass[i]).multiplyScalar(0.01 + 0.99 * inner));
   }
   /** The power is back and everything as it was before the cut (or as the game has set it since). */
   restore() {
@@ -166,6 +178,7 @@ export class SaroPower {
       door: room.doorLight.material,
       lab: yard.labFlood.scale.value, annex: annex.flood.scale.value,
       red: yard.redGlass.map((m) => m.color.clone()), bulb: M.lampBulb.color.clone(),
+      paint: (this.p.paint ?? []).map((m) => m.color.clone()), glass: (this.p.screens ?? []).map((m) => m.color.clone()),
       glows, slots, settled: false,
     };
   }

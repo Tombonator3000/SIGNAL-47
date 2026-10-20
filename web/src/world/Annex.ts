@@ -44,6 +44,9 @@ export class RecordsAnnex {
    *  archive boxes (the STATION 01 box among them) and the chair, lit by the annex's tubes. */
   readonly models = new ModelSwap('annex', (m) => this.lit(m));
   private tubeDim = new THREE.MeshBasicMaterial({ color: 0x6d7378 });
+  /** The vending machine's lit front (world/saroPower.ts: dark with the power; the EXIT sign is on
+   *  its battery and stays). */
+  readonly screens: THREE.MeshBasicMaterial[] = [];
 
   constructor() {
     const st = new THREE.Group();
@@ -270,6 +273,7 @@ export class RecordsAnnex {
     box(vm, 0.8, 1.8, 0.72, this.mat({ color: 0x2a3036, roughness: 0.5, metalness: 0.4 }), 0, 0.9, 0);
     const face = plane(vm, 0.74, 1.48, new THREE.MeshBasicMaterial({ map: T.vendingFront(), toneMapped: false, color: 0xd8dde0 }), 0, 1.0, -0.365, Math.PI);
     noMerge(face);
+    this.screens.push(face.material as THREE.MeshBasicMaterial);
     mergeStatic(vm);
     this.interior.add(vm);
     this.objs.vending = vm;

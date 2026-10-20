@@ -1132,7 +1132,8 @@ async function boot() {
     };
   }
   // ---------- 02:29: SARO goes dark, and Hondo writes (story/saroDark.ts; chapter one, once) ----------
-  const saroPower = new SaroPower({ room, yard, annex, ext, fieldGlow: world.field.glow, site: siteFlood, strength: (set, i) => ultra.strength(set, i) });
+  const saroPower = new SaroPower({ room, yard, annex, ext, fieldGlow: world.field.glow, site: siteFlood, strength: (set, i) => ultra.strength(set, i),
+    paint: [...yard.paint, ...ext.paint, ...world.field.paint], screens: [...yard.screens, ...annex.screens] });
   const saroDark = new SaroDark({
     audio, power: saroPower, scene,
     ground: (x, z) => world.grounds.floorAt(x, z),
@@ -1144,6 +1145,7 @@ async function boot() {
     hush: (secs, level, tau, back) => audio.night?.hush(secs, level, tau, back),
     toast: (text, secs) => ui.toast(text, secs),
     note: (text) => { game.note(text); requestAutosave(false); },
+    calm: () => calmFlash,
   });
   ch1.dark = () => saroDark.dark;
   /** Where the player is for it: the photo lab, out in the yard and the grounds close by, the control room. */
@@ -2137,8 +2139,9 @@ async function boot() {
       if (mode === 'play') saroDark.update(dt, darkIn(!game.cinematic && sky.uniforms.uDawn.value < 0.3, modalOpen));
       // a night that never went dark still has Hondo Valley's telex, printed at 02:29 with nobody there
       if (mode === 'play' && game.ns.hondo === undefined && saroDark.phase === 'idle' && game.at('ch1')) {
+        // (not before its minute: a chapter one done early has chapter two before 02:29)
         const c = ((game.clock % 86400) + 86400) % 86400;
-        if (game.phase !== 'ch1' || (c >= SaroDark.FILED + 11 * 60 && c < 12 * 3600)) game.hondoTelex(SaroDark.FILED, SaroDark.FILED + 14);
+        if (c >= SaroDark.FILED && c < 12 * 3600 && (game.phase !== 'ch1' || c >= SaroDark.FILED + 11 * 60)) game.hondoTelex(SaroDark.FILED, SaroDark.FILED + 14);
       }
       if (mode === 'play') cutouts.update(dt, { ...cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy),
         // (in the night's builds, and not once the sky greys: FORSLAG.md, 20 October, item 1)

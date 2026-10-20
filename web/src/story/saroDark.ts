@@ -26,14 +26,16 @@ import { telexHondo } from './nightshift';
 //                a breath later the crickets and the wind too. Your own footsteps are left. The eyes
 //                need a while: the starlight comes up slowly. The highway's street lamps west of the
 //                site and the motel's sign down the road stay lit: it is only SARO.
-//   the dark     47 seconds. A few seconds into it, at the far edge of SARO's grounds (out on the
-//                windows side towards the highway, whose lamps still light the ground beyond: where
-//                the player can see it from, out of the middle of the view), a small figure stands
-//                quite still: the outline from the glimpses (core/roadside.ts), black against the
-//                light it stands in front of. Tom, 20 October: "Spenning og skummelt slår faste
-//                regler". It bends two rules of HENDELSER.md, section 4, here only: it stands nearer
-//                than 40 m (some 11 to 20), and it does not go when it is looked at. It goes with a closer look (the zoom), the flashlight on it, walking up
-//                to it, and with the light.
+//   the dark     47 seconds. A few seconds into it, where the player can see it from and out of the
+//                middle of the view, a small figure stands quite still: the outline from the glimpses
+//                (core/roadside.ts), black against what is lighter behind it. Up on a roof against
+//                the stars where it can be (the control room's, over the empty room; the east
+//                wing's), else out on the windows side towards the highway, whose lamps still light
+//                the ground beyond (DARK_SPOTS). In the lab, a few seconds in, the doorway is the one
+//                thing left to see. Tom, 20 October: "Spenning og skummelt slår faste regler". It
+//                bends two rules of HENDELSER.md, section 4, here only: it stands nearer than 40 m
+//                (some 7 to 20), and it does not go when it is looked at. It goes with a closer look
+//                (the zoom), the flashlight on it, walking up to it, and with the light.
 //   the light    the power comes back: the tubes, the safelights and the screens at once, the sodium
 //                lamps dim and warming up over half a minute; the hum, the crickets all at once.
 //                The figure is not there. K3 stays open.
@@ -65,20 +67,33 @@ const T1 = 2 * 3600 + 40 * 60;              // after this it does not come
 const YARD_FROM = T0 + 150, ROOM_FROM = T0 + 420;   // the lab first; the yard from 02:31:30; the room from 02:36
 const RELAY = 40, SAG = 31, DARK = 47;
 const FIG_FROM = 6.5, FIG_ANY = 20;         // the figure: out of the middle of the view from 6.5 s, anywhere seen from 20 s
+const FIG_GROUND = 12;                      // on the ground only from 12 s (a roof first, if one comes into view by then)
 const TELEX_AFTER = 2.6, CPS = 10.5;        // the teleprinter: seconds after the light, characters a second
 const SODIUM = 28;                          // the sodium lamps, from dim to full after the light
 const STRIKE = 0.45;                        // the tubes and safelights stutter as they strike
 const ADAPT = { low: 0.32, high: 1.3, secs: 14 };   // the starlight as the eyes open (the sky light's share)
 
-/** Where it can stand: the far edges of the yard, in SARO's terms (feet on the ground there). */
-export interface DarkSpot { id: string; x: number; z: number; where: string }
-// (both out on the grounds on the windows side, towards the highway, whose lamps are not SARO's and
-// still light the ground beyond: seen from the walk north of the lab, from B-12, and through the
-// control room's windows, what stands there is black against that light)
+/** Where it can stand, in SARO's terms: on the ground (feet on it there), or up on a roof (`roof`:
+ *  the height of its top, and which of BUILDINGS it is). */
+export interface DarkSpot { id: string; x: number; z: number; where: string; roof?: { y: number; on: number } }
+// Up on a roof first, where it can be (critic, 20 October: on a phone the figure out on the ground
+// was a dark stick of a dozen pixels against the dark): black against the stars, which is the one
+// thing that stays light when SARO goes dark. The control room's roof at its north-east corner, over
+// the empty room where K3 went (seen from the lab's doorway, the walk, the apron and B-12, 7 to 15 m;
+// in chapter two the steps go over the records room's roof next to it: story/roofSteps.ts), and the
+// east wing's at its north-west corner (from the apron and B-12, over the lab). Else out on the
+// grounds on the windows side, towards the highway, whose lamps are not SARO's and still light the
+// ground beyond: seen from the walk north of the lab, from B-12, and through the control room's
+// windows, what stands there is black against that light.
 export const DARK_SPOTS: DarkSpot[] = [
+  { id: 'roof', x: 5.3, z: -3.9, where: 'up on the roof of the control room, at the corner, against the stars', roof: { y: 3.6, on: 0 } },
+  { id: 'wing', x: 21.3, z: -4.9, where: 'up on the roof of the east wing, against the stars', roof: { y: 3.6, on: 3 } },
   { id: 'grounds', x: -6.5, z: -12.5, where: 'out on the grounds by the windows, at the edge of the highway\'s light' },
   { id: 'fence', x: -9.0, z: -17.5, where: 'out by the fence towards the highway, at the edge of its light' },
 ];
+/** How far from the eye a spot may be (m, along the ground): further than this it is too small to
+ *  be anything (and up on a roof, the near edge decides how close: overEdge). */
+const REACH = { roof: [5, 30], ground: [11, 60] } as const;
 
 // What the eyes can see through at SARO: the buildings' footprints (xz), each with the openings it has
 // (a door, when it is open; the control room's windows on the north side).
@@ -91,10 +106,14 @@ const BUILDINGS: Box[] = [
 ];
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 /** Whether the line from a to b (xz) gets out of and past SARO's buildings (and `more` in the way:
- *  the truck on its pad). */
-export function clearAt(a: THREE.Vector3, b: THREE.Vector3, open: (door: string) => boolean, more: readonly Rect[] = []) {
+ *  the truck on its pad). `on`: b stands on the roof of that one of BUILDINGS, which does not stand
+ *  in the way (unless the eye is inside it: from in there no roof is seen). */
+export function clearAt(a: THREE.Vector3, b: THREE.Vector3, open: (door: string) => boolean, more: readonly Rect[] = [], on = -1) {
   const dx = b.x - a.x, dz = b.z - a.z;
-  for (const r of [...BUILDINGS, ...more.map((m) => ({ ...m, holes: [] as Box['holes'] }))]) {
+  const boxes = [...BUILDINGS, ...more.map((m) => ({ ...m, holes: [] as Box['holes'] }))];
+  for (let i = 0; i < boxes.length; i++) {
+    const r = boxes[i];
+    if (i === on) { if (a.x > r.minX && a.x < r.maxX && a.z > r.minZ && a.z < r.maxZ) return false; continue; }
     // the segment's part inside the box (Liang-Barsky)
     let t0 = 0, t1 = 1, side0: Box['holes'][0]['side'] | null = null, side1: Box['holes'][0]['side'] | null = null;
     const clip = (p: number, q: number, enter: Box['holes'][0]['side'], leave: Box['holes'][0]['side']) => {
@@ -119,6 +138,17 @@ export function clearAt(a: THREE.Vector3, b: THREE.Vector3, open: (door: string)
     return false;   // straight across a building
   }
   return true;
+}
+
+/** Whether, from the eye, a figure up on a roof shows over the roof's near edge down to its
+ *  shoulders (close under the wall the edge hides it). */
+function overEdge(eye: THREE.Vector3, spot: DarkSpot, dist: number) {
+  if (!spot.roof) return true;
+  const r = BUILDINGS[spot.roof.on], dx = spot.x - eye.x, dz = spot.z - eye.z;
+  let t0 = 0;   // where the line from the eye first gets over the footprint
+  for (const [p, q] of [[-dx, eye.x - r.minX], [dx, r.maxX - eye.x], [-dz, eye.z - r.minZ], [dz, r.maxZ - eye.z]]) if (p < 0) t0 = Math.max(t0, q / p);
+  const edge = Math.max(0.01, t0 * dist), up = spot.roof.y - eye.y;
+  return (up + 0.7) / dist > up / edge;
 }
 
 export interface DarkIn {
@@ -161,6 +191,8 @@ export interface DarkDeps {
   hush: (secs: number, level: number, tau: number, back: number) => void;
   toast: (text: string, secs: number) => void;
   note: (text: string) => void;
+  /** Settings, Flashing images: slow fades (the tubes strike without their stutter). */
+  calm?: () => boolean;
 }
 
 export class SaroDark {
@@ -191,6 +223,10 @@ export class SaroDark {
   private sodiumT = -1;
   private sagT = -1;
   private nowClock = 0;
+  /** Out where SARO's lamps could be seen going (the yard, or the control room's windows) at some
+   *  point in the dark; in the lab all the time, only the safelight and the hum were (the note). */
+  private sawOut = false;
+  private doorway = false;
 
   constructor(private d: DarkDeps) {
     // black against the night, with the faintest cold edge of the starlight on it
@@ -269,6 +305,7 @@ export class SaroDark {
   private goDark(s: DarkIn) {
     const { power, audio, rack } = this.d;
     this.phase = 'dark'; this.t = 0; this.sagT = -1;
+    this.sawOut = s.where === 'yard' || s.where === 'room'; this.doorway = false;
     power.cut();
     const at = rack();
     audio.contactor(at, s.where === 'room' ? 1 : 1.3);
@@ -288,6 +325,10 @@ export class SaroDark {
 
   private darkStep(s: DarkIn) {
     if (this.hushAt >= 0 && this.t >= this.hushAt) { this.hushAt = -1; this.d.hush(600, 0, 0.9, 0.2); }
+    if (s.where === 'yard' || s.where === 'room') this.sawOut = true;
+    // in the black of the lab, the one thing left to see is the way out (and from its doorway the
+    // control room's roof against the stars)
+    if (!this.doorway && this.t >= 6 && s.where === 'lab' && s.open('lab')) { this.doorway = true; this.d.toast('Only the doorway, grey with starlight.', 3.4); }
     s.cam.getWorldPosition(this.eye);
     if (this.fig.visible) this.watch(s);
     else if (!this.figure && this.t >= FIG_FROM) this.place(s);
@@ -298,15 +339,18 @@ export class SaroDark {
    *  anywhere they can see it). */
   private place(s: DarkIn) {
     const f = s.cam.getWorldDirection(new THREE.Vector3());
-    let best: { spot: DarkSpot; p: THREE.Vector3; off: number } | null = null;
+    let best: { spot: DarkSpot; p: THREE.Vector3; off: number; score: number } | null = null;
     for (const spot of DARK_SPOTS) {
-      const p = new THREE.Vector3(spot.x, this.d.ground(spot.x, spot.z), spot.z);
+      const p = new THREE.Vector3(spot.x, spot.roof ? spot.roof.y : this.d.ground(spot.x, spot.z), spot.z);
       const head = p.clone().setY(p.y + this.sil.headY);
-      const dist = Math.hypot(head.x - this.eye.x, head.z - this.eye.z);
-      if (dist < 11 || dist > 60 || !clearAt(this.eye, head, s.open, s.blocks)) continue;
+      const dist = Math.hypot(head.x - this.eye.x, head.z - this.eye.z), [lo, hi] = REACH[spot.roof ? 'roof' : 'ground'];
+      if ((!spot.roof && this.t < FIG_GROUND) || dist < lo || dist > hi || !overEdge(this.eye, spot, Math.hypot(spot.x - this.eye.x, spot.z - this.eye.z))
+        || !clearAt(this.eye, head, s.open, s.blocks, spot.roof?.on ?? -1)) continue;
       const off = THREE.MathUtils.radToDeg(f.angleTo(head.clone().sub(this.eye)));
       if (off < 38 && this.t < FIG_ANY) continue;
-      if (!best || off > best.off) best = { spot, p, off };
+      // (a roof where there is one: against the stars it reads, on a phone too)
+      const score = off + (spot.roof ? 1000 : 0);
+      if (!best || score > best.score) best = { spot, p, off, score };
     }
     if (!best) return;
     this.fig.position.copy(best.p);
@@ -323,7 +367,9 @@ export class SaroDark {
     let gone: string | null = null;
     if (s.zoom > 0.25 && facing(s.cam, this.head, 120, 14)) gone = 'zoom';
     else if (s.torch && dist < 70 && facing(s.cam, this.head, 70, 40)) gone = 'flashlight';
-    else if (dist < 9) gone = 'near';
+    // (up on a roof: only right under it, where its edge hides it anyway; walk past and look back
+    // and it is still there)
+    else if (DARK_SPOTS.find((x) => x.id === fg.id)?.roof ? Math.hypot(this.head.x - this.eye.x, this.head.z - this.eye.z) < 3 : dist < 9) gone = 'near';
     if (gone) { fg.gone = gone; this.fig.visible = false; }
   }
 
@@ -373,9 +419,11 @@ export class SaroDark {
     if (this.noted) return;
     this.noted = true;
     const hm = clockText(this.at, false);
+    // (what was seen of it: from the lab all along only the safelight and the hum went)
+    const went = this.sawOut ? 'every light at SARO went out, the red lamps on the dishes too' : 'the power went: the safelight, the hum, everything';
     this.d.note(this.wasOpen
-      ? `${hm}. A clack from the rack, in the empty control room: K3, with nothing left to trip. It tripped anyway. Forty seconds later every light at SARO went out, the red lamps on the dishes too. For 47 s. The telex ran when the power came back.`
-      : `${hm}. In the empty control room K3 tripped. Forty seconds later every light at SARO went out, the red lamps on the dishes too. For 47 s. The telex ran when the power came back.`);
+      ? `${hm}. A clack from the rack, in the empty control room: K3, with nothing left to trip. It tripped anyway. Forty seconds later ${went}. For 47 s. The telex ran when the power came back.`
+      : `${hm}. In the empty control room K3 tripped. Forty seconds later ${went}. For 47 s. The telex ran when the power came back.`);
     const f = this.figure, spot = f ? DARK_SPOTS.find((x) => x.id === f.id) : null;
     if (f && f.looked && spot) this.d.note(`${hm}. In the dark, ${spot.where}: someone small, standing quite still. ${f.gone === 'light' ? 'Not there when the lights came back.' : 'Then not there.'}`);
   }
@@ -385,7 +433,10 @@ export class SaroDark {
     if (this.sodiumT < 0) return;
     this.sodiumT += dt;
     const k = Math.min(1, this.sodiumT / SODIUM), e = 0.06 + 0.94 * k * k * (3 - 2 * k);
-    if (this.sodiumT < STRIKE) this.d.power.set(Math.random() > 0.45 ? 1 : 0.12, e);
+    // the strike: on, two short drop-outs, on (the same every time and at any frame rate: not a
+    // strobe); with Flashing images on slow fades, straight on
+    const T = this.sodiumT, drop = !this.d.calm?.() && ((T > 0.07 && T < 0.16) || (T > 0.25 && T < 0.31));
+    if (this.sodiumT < STRIKE) this.d.power.set(drop ? 0.12 : 1, e);
     else { this.d.power.settle(); this.d.power.set(1, e); }
     if (k >= 1) { this.sodiumT = -1; this.d.power.restore(); }
   }

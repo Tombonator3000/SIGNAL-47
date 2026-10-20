@@ -20,6 +20,10 @@
 #       the figure: out of the middle of the view where the eyes can reach (the windows side, from
 #       the walk or the control room's windows), stays while looked at, gone with a closer look, and
 #       not there when the light comes back; written in the night's log
+#       (critic, 20 October) the unlit paint (the stencils, the fence, the lettering) dims with the
+#       lamps and the S-03 motor bus's glass goes dark, all exactly back after; in the lab the
+#       doorway is captioned, and from it the figure stands up on the control room's roof against
+#       the stars; the note says only what the lab saw; a chapter two before 02:29 gets no telex yet
 #       the light: everything back at once, the sodium lamps dim and up in half a minute, then
 #       exactly as before; the telex runs, Hondo Valley's message on the roll (the words of
 #       KAPITLER.md), the console log lines, the notes; K3 stays open; once; saved; after Continue
@@ -73,7 +77,8 @@ HELPERS = """(() => {
       let bmax = 0; for (let i = 0; i < beacons.count; i++) bmax = Math.max(bmax, beacons.getX(i));
       return { saro: snap ? snap.slots.map((s) => site.pos[s.i].w) : null, base: snap ? snap.slots.map((s) => s.w) : null, slots: snap ? snap.slots.length : 0,
         highway: hw, lab: S47.yard.labFlood.scale.value, red: Math.max(...S47.yard.redGlass.map((m) => m.color.r)), beacons: beacons.count, bmax,
-        ceiling: S47.room.lights.ceiling.map((l) => l.intensity), tubeOn: S47.room.tubes.filter((t) => t.material.type === 'MeshBasicMaterial').length };
+        ceiling: S47.room.lights.ceiling.map((l) => l.intensity), tubeOn: S47.room.tubes.filter((t) => t.material.type === 'MeshBasicMaterial').length,
+        bus: S47.yard.screens[0].color.r, sight: S47.yard.paint[1].color.r, fence: S47.ext.paint.map((m) => +m.color.r.toFixed(4)), vend: S47.annex.screens[0].color.r };
     },
     // the yard's own lamp posts (the floods at their heads): the w of each, from the site set
     yardLamps() { const site = S47.floodSets.find((s) => s.key === 'site'); const out = []; for (let i = 0; i < site.count; i++) { const p = site.pos[i]; if (p.x > 6 && p.x < 13 && p.z > -10 && p.z < 12 && p.y > 3) out.push(+p.w.toFixed(3)); } return out; },
@@ -267,6 +272,7 @@ async def main():
               'written in the night\'s log; the curve lands on it as chapter one\'s 47')
         check(await ev("S47.saveBlock()") == 'Not right now. Let the moment finish first.' and await ev("S47.oneAtATime()"), 'no saving, and nothing else starts while it runs')
         await shot('desk_c1_relay_lab')
+        pre = await ev("T.lamps()")
         await until(f"{D}.t >= 31.0", 40, 0.25)
         sag = await ev("({ out: S47.saroPower.out, inner: S47.saroPower.inner, hum: S47.audio.humHeld })")
         await tick(0.5)
@@ -278,6 +284,8 @@ async def main():
               and all(c == 0 for c in L['ceiling']) and L['tubeOn'] == 0,
               f"at :40 every light that is SARO's goes out: {L['slots']} lamps outside, the lab's, the safelights' glass, the 27 red lamps, the control room")
         check(len(L['highway']) >= 3 and all(w > 0 for w in L['highway']), f"the highway's lamps stay lit ({L['highway']})")
+        check(L['bus'] < 0.05 * pre['bus'] and L['vend'] < 0.05 * pre['vend'] and abs(L['sight'] - 0.36 * pre['sight']) < 0.01 and all(abs(a - 0.36 * b0) < 0.01 for a, b0 in zip(L['fence'], pre['fence'])),
+              f"the motor bus's glass and the vending machine go dark, the stencils and the fence dim ({L['bus']:.3f}, {L['sight']:.3f} of {pre['sight']:.3f})")
         await tick(0.5, 4); await pg.wait_for_timeout(500)
         snd = await ev("({ hum: S47.audio.humHeld, tone: S47.audio.roomToneHeld })")
         check(snd['hum'] == 0 and snd['tone'] < 0.1 and 'LINE POWER  FAIL' in await ev("T.log()") and await ev("T.said('The safelight dies, and the hum with it. Black.')"),
@@ -293,11 +301,14 @@ async def main():
         check(await ev("S47.game.ns.k3Open") and await ev("T.said('The rack is dead.')"), 'and the rack is dead (K3 cannot be put back in the dark)')
 
         # ---------- the figure, from the walk ----------
-        await ev("T.aim(9.4, -9.0, 30, 1.2, -9)"); await tick(0.25, 16)
+        await ev("T.aim(9.4, -9.0, 30, 1.2, -9)"); await tick(0.25, 4)
+        # (out on the ground only from 12 s into the dark: a roof first if one comes into view)
+        await until(f"!!{D}.figureAt", 14, 0.25)
         f = await ev("T.dark()")
-        check(f['fig'] and f['fig']['id'] == 'grounds' and f['up'] and not f['fig']['looked'], f'out on the walk, looking away: it stands out by the windows side ({f["fig"]})')
+        check(f['fig'] and f['fig']['id'] == 'roof' and f['up'] and not f['fig']['looked'], f'out on the walk, looking away: it stands up on the control room\'s roof behind you ({f["fig"]})')
         await shot('desk_c3_walk_away')
-        await ev("T.look(-6.5, 0.5, -12.5)"); await tick(0.25, 4)
+        # (turned to it, the eye a little beside it: the dot not on its head)
+        await ev("T.look(6.3, 4.3, -4.7)"); await tick(0.25, 4)
         f = await ev("T.dark()")
         check(f['up'] and f['fig']['looked'], 'turned to it, it is there, and it stays while it is looked at')
         await shot('desk_c4_figure')
@@ -319,7 +330,7 @@ async def main():
               f'the telex runs for {tx} s and Hondo Valley\'s message is on the roll (filed {clack_clock})')
         notes = await ev("S47.game.notes.slice()")
         check(any('In the empty control room K3 tripped. Forty seconds later every light at SARO went out' in n for n in notes)
-              and any('out on the grounds by the windows' in n and 'someone small, standing quite still' in n and 'Not there when the lights came back' in n for n in notes),
+              and any('up on the roof of the control room' in n and 'someone small, standing quite still' in n and 'Not there when the lights came back' in n for n in notes),
               'two notes: the relay and the dark, and the figure that was looked at')
         check(await ev(f"{D}.phase") == 'done' and await ev("S47.game.ns.k3Open") and await ev("S47.game.d.inter.get('rack').label()") == 'Reset RX bank 3' and not await ev("S47.oneAtATime()"),
               'done; K3 stays open, the lever on the rack')
@@ -333,6 +344,8 @@ async def main():
         y1 = await ev("T.yardLamps()")
         work = await ev("({ w: S47.floodSets.find((s) => s.key === 'site').pos[S47.yard.workLamp].w, g: S47.yard.glow.points.geometry.getAttribute('aCol').getX(S47.yard['workGlow']) })")
         check(not await ev("S47.saroPower.out") and all(b0 > 0 for b0 in y1) and y1 != y0, f'the sodium lamps warm up and everything is as before ({y0} to {y1})')
+        L = await ev("T.lamps()")
+        check(all(abs(L[k] - pre[k]) < 1e-6 for k in ('bus', 'sight', 'vend')) and L['fence'] == pre['fence'], 'the glass, the stencils and the fence exactly as they were')
         check(work['w'] == 0 and work['g'] == 0, f'a lamp the game shielded while they warmed up stays shielded ({work})')
         await ev("S47.yard.setWorkLamp(1)")
         await shot('desk_c6_after')
@@ -397,7 +410,8 @@ async def main():
         await until(f"{D}.phase === 'dark'", 45, 0.25); await tick(0.5)
         await shot('phone_c2_dark_lab')
         # into the control room (the windows), facing away; then the figure out of the windows
-        await ev("T.aim(1.2, -2.6, 6, 1.2, 0)"); await tick(0.25, 30)
+        await ev("T.aim(1.2, -2.6, 6, 1.2, 0)"); await tick(0.25, 8)
+        await until(f"!!{D}.figureAt", 14, 0.25)
         f = await ev("T.dark()")
         await ev("T.look(-6.5, 0.5, -12.5)"); await tick(0.25, 2)
         f = await ev("T.dark()")
@@ -419,8 +433,32 @@ async def main():
         await shot('phone_c6_telex')
         check('RANGE SOLUTION NEGATIVE. REQUEST PROCEDURE.' in await ev("document.querySelector('.docview').textContent"), 'phone: the telex reads on a phone')
         await ev("S47.game.d.ui.close()"); await tick(0.2)
+        # ---------- a night put back to before it: from the lab, the doorway, the roof against the stars ----------
+        await ev("""(() => { const g = S47.game; S47.saroDark.halt(); g.ns.hondo = undefined; g.ns.log = g.ns.log.filter((l) => l[1] !== 'TELEX RECEIVED  HONDO VALLEY');
+          S47.room.setTelexRoll([]); S47.saroDark.restore(false); S47.curve.long.delete('ch1'); g.clock = 2 * 3600 + 33 * 60; T.toasts.length = 0;
+          if (!S47.doors.isOpen('lab')) g.d.inter.get('labDoor').use(); return true; })()""")
+        await tick(0.5, 3)
+        await aim(LAB)
+        t5 = await until(f"{D}.phase === 'dark'", 50, 0.25)
+        await tick(0.5, 14)
+        check(t5 is not None and await ev("T.said('Only the doorway, grey with starlight.')") and not await ev(f"{D}.figureAt"), 'phone: black in the lab, and a few seconds on the doorway is the one thing left (nothing stands where it cannot be seen)')
+        await ev("T.aim(12.4, -1.2, 12.4, 1.6, -20)"); await tick(0.25, 4)
+        f = await ev("T.dark()")
+        check(f['fig'] and f['fig']['id'] == 'roof' and f['up'], f"phone: from the doorway, looking out along the walk, it stands up on the control room's roof ({f['fig']})")
+        await ev("T.look(5.3, 4.5, -3.9)"); await tick(0.25, 4)
+        f = await ev("T.dark()")
+        await shot('phone_c7_roof')
+        check(f['up'] and f['fig']['looked'], 'phone: turned to it, black against the stars, it stays')
+        await until(f"{D}.phase === 'done'", 80, 0.25)
+        notes = await ev("S47.game.notes.slice()")
+        check(any('the power went: the safelight, the hum, everything' in n for n in notes) and any('up on the roof of the control room' in n and 'Not there when the lights came back' in n for n in notes),
+              'phone: the notes say what the lab saw, and the figure on the roof, gone with the light')
         # not in chapter two, even as if it had not come (and there the curve has its 47 again)
-        await ev("S47.jump('chapter2'); S47.tick(1.0); S47.nightEvents['wait'] = 1e9; S47.game.d.ui.close(); S47.saroDark.restore(false); S47.game.clock = 2 * 3600 + 30 * 60")
+        await ev("S47.jump('chapter2'); S47.tick(1.0); S47.nightEvents['wait'] = 1e9; S47.game.d.ui.close(); S47.saroDark.restore(false); S47.game.ns.hondo = undefined; S47.game.clock = 2 * 3600 + 22 * 60")
+        await tick(0.5, 4)
+        early = await ev("S47.game.ns.hondo")
+        await ev("S47.game.clock = 2 * 3600 + 30 * 60"); await tick(0.5, 2)
+        check(early is None and await ev("S47.game.ns.hondo") == 2 * 3600 + 29 * 60, 'chapter two before 02:29: no telex yet; from 02:29 it is on the roll, printed with nobody there')
         await aim(LAB); await tick(1, 15)
         await ev("S47.curve.force('build', 0.7)")
         check(await ev("S47.game.phase") == 'ch2' and await ev(f"{D}.phase") == 'idle' and await ev("S47.curve.may('long')"), 'not in chapter two (and there the curve has its 47 again)')

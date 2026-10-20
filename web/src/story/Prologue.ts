@@ -1059,10 +1059,11 @@ export class Prologue {
     // the lights dip forty seconds after the relay (relayFirst): the room sags for most of a second
     if (this.dipT > 0) {
       this.dipT -= dt;
-      const on = this.dipT <= 0, k = on ? 1 : 0.18 + 0.14 * Math.random();
+      // (one sag and back, the same at any frame rate: not a strobe)
+      const on = this.dipT <= 0, k = on ? 1 : 0.24;
       room.lights.ceiling.forEach((l, i) => { l.intensity = this.base.ceiling[i] * k; });
       room.lights.lamps.forEach((l, i) => { l.intensity = this.base.lamps[i] * (on ? 1 : 0.35); });
-      room.tubes.forEach((tb) => { tb.material = on || Math.random() > 0.55 ? M.emissiveTube : materialFor(M.emissiveTubeOff); });
+      room.tubes.forEach((tb) => { tb.material = on ? M.emissiveTube : materialFor(M.emissiveTubeOff); });
     }
     if (this.crtGlitch > 0) this.crtGlitch -= dt;
 
