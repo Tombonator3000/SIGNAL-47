@@ -241,6 +241,9 @@ async def main():
 
         # ---------- 6: chapter five, to the diner on 1230 ----------
         await ev("S47.jump('chapter5'); S47.tick(1.0); S47.nightEvents['wait'] = 1e9")
+        # (the truck on B stands aside: after room 6 its engine dies at the turn-off and waits for a key
+        # no autopilot turns, story/truckOnB.ts, tools/f_car_b.py)
+        await ev("S47.truckB.off = true")
         for _ in range(30):
             await tick(5.0)
             if await ev("S47.radio.stations.roswell.free"): break

@@ -342,3 +342,34 @@ export function dashAtlas() {
   s.tex.minFilter = THREE.LinearMipmapLinearFilter;
   return { tex: s.tex, drawClock, drawRadio };
 }
+
+// ---------- the compass ball on the instrument hood ----------
+/** The card of the dash compass (Truck.ts): a band round a drum floating in the ball, read
+ *  through its window. Like the dash compasses of the time it is printed for reading from the
+ *  driver's side: the heading is the mark under the lubber line, so round the band the marks run
+ *  backwards, N, 33, 30, W ... Letters at the cardinal points, numbers every 30 degrees (3 is 030),
+ *  ticks every 5, the N in red. 1024 x 128; u 0 is N, the heading at u is 360 x (1 - u). */
+export function compassCardTex() {
+  return canvasTex(1024, 128, (g, w, h) => {
+    g.fillStyle = '#0c0d0d'; g.fillRect(0, 0, w, h);
+    const xOf = (deg: number) => w * (1 - deg / 360);
+    const both = (x: number, f: (x: number) => void) => { f(x); if (x < 90) f(x + w); if (x > w - 90) f(x - w); };
+    // (big numerals: from the seat the ball is a few centimetres across, and it has to read on a phone)
+    g.strokeStyle = '#e9e1c8';
+    for (let d = 0; d < 360; d += 5) {
+      const long = d % 30 === 0, mid = d % 10 === 0;
+      g.lineWidth = long ? 5 : 3;
+      both(xOf(d), (x) => { g.beginPath(); g.moveTo(x, h); g.lineTo(x, h - (long ? 24 : mid ? 18 : 10)); g.stroke(); });
+    }
+    const LABEL: Record<number, string> = { 0: 'N', 30: '3', 60: '6', 90: 'E', 120: '12', 150: '15', 180: 'S', 210: '21', 240: '24', 270: 'W', 300: '30', 330: '33' };
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    for (const [d, t] of Object.entries(LABEL)) {
+      const deg = Number(d), card = deg % 90 === 0;
+      g.fillStyle = deg === 0 ? '#ff5a28' : '#f1ead2';
+      g.font = `700 ${card ? 94 : 84}px Oswald`;
+      both(xOf(deg), (x) => g.fillText(t, x, 98, 78));
+    }
+    // a thin rule along the top edge, as the drum's rim
+    g.fillStyle = '#5b5648'; g.fillRect(0, 0, w, 5);
+  }, undefined);
+}

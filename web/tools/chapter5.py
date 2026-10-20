@@ -71,6 +71,9 @@ async def main():
 
         # ---------- five o'clock, outside room 6 ----------
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter5'); S47.tick(1.0)")
+        # (the truck on B stands aside: after room 6 the engine dies at SARO's turn-off and waits for
+        # the key, story/truckOnB.ts; tools/f_car_b.py drives through it)
+        await ev("S47.truckB.off = true")
         check(await ev("S47.game.phase") == 'ch5' and await s5('stage') == 'to-truck', 'chapter five starts: to the truck')
         check(await ev("S47.game.chapterTitle()") == 'Chapter 5: All Night', 'chapter title')
         check(await ev("S47.game.clock % 86400 >= 5 * 3600"), 'the clock is past five')
