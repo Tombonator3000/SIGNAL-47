@@ -71,8 +71,9 @@ const ordinal = (n: number) => ORD[n] ?? `${n}th`;
 
 export type ArrayStage = 'idle' | 'armed' | 'slew' | 'hold' | 'signal' | 'back' | 'settle';
 /** Why the console will not do it now: before 02:15 (nothing to resume), held for the supervisor,
- *  the dishes moving by themselves, or one of the night's things going (one at a time). */
-export type ArrayGate = 'early' | 'release' | 'moving' | 'busy' | null;
+ *  the dishes moving by themselves or tipped down by the archive's phone, or one of the night's
+ *  things going (one at a time). */
+export type ArrayGate = 'early' | 'release' | 'moving' | 'tipped' | 'busy' | null;
 
 /** One try, by the night's clock (whole seconds): the command, on the schedule, leaving it (47 s
  *  after: the lamps' four and seven), turning back, home at 026. */
@@ -234,6 +235,8 @@ export class ArrayBack {
     if (gate === 'early') return 'ARRAY ON SURVEY TRACK.\nNOTHING TO RESUME.';
     if (gate === 'release') return '%ARRAY-E-HELD, array held, no schedule entry\n-ARRAY-I-SUPV, release by supervisor only';
     if (gate === 'moving') return '%ARRAY-E-DRVMOTION, drives in motion\n-ARRAY-I-NOCMD, no command';
+    // (tipped down on 026 by the archive's phone, story/archiveDishes.ts: they do not answer)
+    if (gate === 'tipped') return '%ARRAY-E-DRVNORESP, drives not responding\n-ARRAY-I-POS, S-01 TO S-27  AZ 026  EL 02\n-ARRAY-I-NOCMD, no command';
     if (gate === 'busy') return '%ARRAY-W-LINKBUSY, array link busy\n-ARRAY-I-RETRY, retry';
     const last = this.d.store.get()?.runs.slice(-1)[0];
     this.begin();

@@ -89,7 +89,7 @@ ON CALL:   DR. E. WARD, SHIFT SUPERVISOR
 Along the bottom, in Ward's handwriting: "Before the morning series, I need a report I can sign. Start with calibration. Keep the paper if it gives you anything you cannot account for. E.W."`,
 };
 
-function printout(clock: number): DocSpec {
+export function printout(clock: number): DocSpec {
   const lines = [
     'SARO RX/DSP   DIRECTION SOLVE',
     '------------------------------',
@@ -447,9 +447,10 @@ export class Prologue {
       } });
 
     inter.add({ id: 'printer', object: o.printer,
-      label: () => this.phase === 'printed' ? 'Tear off the printout' : this.phase === 'printing' ? null : 'Printer',
+      label: () => this.phase === 'printed' ? 'Tear off the printout' : this.phase === 'printing' ? null : this.printerHook?.label() ?? 'Printer',
       use: () => {
         if (this.phase === 'printed') this.tearPrintout();
+        else if (this.printerHook?.use()) return;
         else toast('Dot matrix printer. A box of fan-fold paper under the table.');
       } });
 
@@ -561,6 +562,10 @@ export class Prologue {
   }
   /** The rack's lever and the bank, for the dark (story/saroDark.ts). */
   get rackAt() { return this.worldPos(this.d.room.objs.rack); }
+  /** Bank 3 is in: powered, K3 closed (story/archivePhone.ts: what the printer gets at :47). */
+  get bankIn() { return this.powered && !this.ns.k3Open; }
+  /** The printer by the rack has a sheet of the archive's phone's in it (story/archivePhone.ts). */
+  printerHook?: { label: () => string | null; use: () => boolean };
   get telexAt() { return this.worldPos(this.d.room.objs.telex).setY(0.9); }
   /** What is on the telex roll now: last evening's traffic, and Hondo Valley's once it has come. */
   telexRoll() { return [...TELEX_EVENING, ...this.rollMore()]; }

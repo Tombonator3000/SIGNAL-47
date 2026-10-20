@@ -20,12 +20,15 @@ export class DecoderDesk {
   constructor(private d: { ui: UI; audio: AudioSys; room: ControlRoom; inter: Interaction; locked: () => boolean; recorded: () => string; busy: () => boolean; power: () => boolean }) {
     const { inter, room } = d;
     inter.add({ id: 'decoder', object: room.objs.decoder, range: 2.4,
-      label: () => this.playing ? 'Signal processor (playing)' : 'Signal processor',
-      use: () => this.open() });
+      label: () => this.reel?.label() ?? (this.playing ? 'Signal processor (playing)' : 'Signal processor'),
+      use: () => { if (this.reel?.use()) return; this.open(); } });
     this.drawScreen();
   }
 
   get playing() { return !!this.player?.playing; }
+  /** Reel 047 on the deck (story/reel047.ts, story/archivePhone.ts; set by main.ts): its label and its
+   *  use while it is in the kit or playing, and whether it has the display and the reels now. */
+  reel?: { label: () => string | null; use: () => boolean; owns: () => boolean };
 
   private open() {
     const { ui, audio } = this.d;
@@ -65,6 +68,7 @@ export class DecoderDesk {
   // ---------- per frame ----------
   update(dt: number) {
     this.player?.update();
+    if (this.reel?.owns()) return;   // (reel 047 is on the deck: it has the display and the reels)
     if (this.playing) {
       this.spin += dt * (this.params.mode === 'raw' ? 2.4 : 1.6) / this.params.stretch;
       this.d.room.reels.forEach((r, i) => { r.rotation.x = this.spin * (i ? 0.8 : 1.15); });
