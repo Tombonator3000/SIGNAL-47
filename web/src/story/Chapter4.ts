@@ -372,7 +372,7 @@ export class Chapter4 {
     extra('register', 'Guest register', 'A register in her handwriting. Room 6: N. Vega, every night since the spring.');
     extra('keyBoard', 'Key board', 'Ten hooks with brass tags. The hook for 6 is empty.');
     extra('officePhone', 'Field telephone', 'An oak wall telephone with a crank. The cable runs out through the back wall and on to STATION 01.');
-    extra('envelope', 'Sealed envelope', 'An envelope addressed to T. Vega, care of Sierra Motor Court. Postmarked July 1947, never opened.');
+    // (the envelope on the counter is the field book's, any time of the night: story/fieldBook.ts)
     if (px.message) inter.add({ id: 'court:message', object: px.message, label: () => on() ? 'A note on the counter' : null,
       use: () => {
         ui.toast('In pencil, on the back of a bill: "Room 6. The door is open. N."', 4);

@@ -713,6 +713,10 @@ export class Station01 {
   lampCovered = false;
   receiverOn = true;
   hutLightOn = true;
+  /** The drawer under the bench (story/fieldBook.ts): out, or where it has stood since 1947. */
+  drawerOpen = false;
+  private drawerK = 0;
+  private drawerZ = 0;
   /** The bought models (world/licensedModels.ts): the chair in the hut, in the hut's floods, and
    *  the field lamp's battery in the station's. (The receiver on the bench stays the code's valve
    *  set with its slide-rule dial: the story has it older than anything at SARO.) */
@@ -855,6 +859,7 @@ export class Station01 {
       boards: this.litIn({ map: artTexture('floorboards', [1 / 1.2, 1 / 1.2]), roughness: 0.85 }),
       ceiling: this.litIn({ map: woodIn, color: 0x9a8a78, roughness: 0.9 }),
       woodIn: this.litIn({ map: woodIn, roughness: 0.75 }),
+      drawer: this.litIn({ map: woodIn, color: 0xb39a7e, roughness: 0.7 }),
       blackIn: this.litIn({ color: 0x1c1b1a, roughness: 0.55, metalness: 0.2 }),
       crinkle: this.litIn({ color: 0x2b2c2a, roughness: 0.8, metalness: 0.3 }),
       chrome: this.litIn({ color: 0xb8b6ae, roughness: 0.25, metalness: 0.85 }),
@@ -1428,6 +1433,41 @@ export class Station01 {
     this.slot.desk = addFlood(dl.x - 0.4 + this.o.x, dl.y + 0.2 + this.o.y, dl.z + 0.2 + this.o.z, BASE.desk, 0xffd090, hutFlood);
     this.gx.desk = this.glow.add(dl.x - 0.25, dl.y + 0.29, dl.z + 0.14, 0.28, 0xffd59a);
 
+    // a shallow drawer under the bench top, below the lamp, with T. Vega's third field book in it
+    // (story/fieldBook.ts): its own group, so it can slide out (setDrawer); what is in it shows
+    // only when it is out
+    {
+      const dw = new THREE.Group(), W = 0.44, D = 0.46, y = top - 0.1, zf = z0 + 0.738;
+      // the opening in the bench's front rail: its dark gap, and the dark inside it when it is out
+      box(s, W + 0.02, 0.112, 0.003, m.blackIn, -10.45, y, z0 + 0.7265);
+      dw.position.set(-10.45, y, zf);
+      box(dw, W, 0.1, 0.022, m.drawer, 0, 0, 0);                                   // the front
+      box(dw, 0.07, 0.022, 0.026, m.chrome, 0, 0.004, 0.022);                       // its pull
+      box(dw, W - 0.03, 0.008, D, m.woodIn, 0, -0.038, -D / 2);                     // the bottom
+      for (const sx of [-1, 1]) box(dw, 0.012, 0.07, D, m.woodIn, sx * (W / 2 - 0.022), -0.006, -D / 2);
+      box(dw, W - 0.03, 0.07, 0.012, m.woodIn, 0, -0.006, -D + 0.006);              // the back
+      const inside = new THREE.Group();
+      inside.position.set(0, -0.034, 0);
+      // the book: green cloth over boards, the pages' edge showing, a pencil and a rubber band
+      const bk = new THREE.Group(); bk.position.set(-0.06, 0.011, -0.15); bk.rotation.y = 0.16;
+      box(bk, 0.105, 0.02, 0.17, m.cloth, 0, 0, 0);
+      box(bk, 0.006, 0.014, 0.162, m.paperIn, 0.053, 0, 0);
+      box(bk, 0.098, 0.014, 0.004, m.paperIn, 0, 0, 0.084);
+      box(bk, 0.04, 0.0015, 0.05, m.paperIn, -0.01, 0.0108, 0.03);               // a label on the cover
+      inside.add(bk);
+      const pen = new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, 0.15, 6), m.ledger);
+      pen.position.set(0.1, 0.004, -0.12); pen.rotation.set(Math.PI / 2, 0, 0.35); inside.add(pen);
+      const band = new THREE.Mesh(new THREE.TorusGeometry(0.02, 0.0018, 4, 10), m.blackIn);
+      band.position.set(0.15, 0.002, -0.28); band.rotation.x = Math.PI / 2; inside.add(band);
+      inside.visible = false;
+      dw.add(noMerge(inside));
+      mergeStatic(inside); mergeStatic(dw);
+      this.interior.add(dw);
+      this.objs.drawer = dw; this.objs.drawerInside = inside;
+      this.drawerZ = zf;
+      this.proxy('drawer', W + 0.06, 0.16, 0.24, -10.45, y, zf + 0.06);
+    }
+
     // the framed 1947 arrangement above the bench
     const fx = -11.15, fy = 1.78, fz = z0 + 0.025;
     plane(s, 0.6, 0.2625, m.diagram, fx, fy, fz + 0.012);
@@ -1908,9 +1948,29 @@ export class Station01 {
     this.setGlow(this.gx.winE, 0x6a4018, on ? 1 : 0);
   }
 
-  update(_dt: number, t: number) {
+  /** The drawer under the bench out (with what is in it to be seen) or in. `now`: at once (a save). */
+  setDrawer(open: boolean, now = false) {
+    this.drawerOpen = open;
+    if (now) this.drawerK = open ? 1 : 0;
+    this.placeDrawer();
+  }
+  private placeDrawer() {
+    const dw = this.objs.drawer, inside = this.objs.drawerInside;
+    if (!dw) return;
+    const k = this.drawerK, e = k * k * (3 - 2 * k);
+    dw.position.z = this.drawerZ + 0.27 * e;
+    if (inside) inside.visible = k > 0.05;
+  }
+
+  update(dt: number, t: number) {
     this.glow.update(t);
     this.fxTime.value = t;
+    // the drawer slides (0.45 s), a little stiff at the start
+    const want = this.drawerOpen ? 1 : 0;
+    if (this.drawerK !== want) {
+      this.drawerK = want > this.drawerK ? Math.min(1, this.drawerK + dt / 0.45) : Math.max(0, this.drawerK - dt / 0.35);
+      this.placeDrawer();
+    }
     // the bulb over the door is loose in its socket: now and then it dips
     const dip = Math.sin(t * 0.83) > 0.93 && Math.sin(t * 31 + Math.sin(t * 5)) > -0.2;
     const k = dip ? 0.3 + 0.25 * Math.abs(Math.sin(t * 47)) : 0.95 + 0.05 * Math.sin(t * 13.7) * Math.sin(t * 4.1);

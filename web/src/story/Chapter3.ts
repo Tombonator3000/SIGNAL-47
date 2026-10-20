@@ -11,6 +11,7 @@ import type { BoardCard } from '../ui/Board';
 import { RuleBook, type BoardHook, type BookNote, type BookRule } from './boardRules';
 import * as D from './drawings';
 import { clockText } from './time';
+import type { FbSave } from './fieldBook';
 
 // Chapter three, "The Survey Station" (K3 in the design bible). Ported from the Unity
 // field pass (Station26): P06, which fixed point moved, with FRAME 03; P07, the local
@@ -40,6 +41,8 @@ export interface Ch3State {
   called: boolean;
   dev: number;            // the field roll: 0 sealed, 1 developed, 2 print in fixer, 3 collected
   links?: string[];       // this chapter's threads on the case board, 'a|b' sorted
+  /** T. Vega's field book from the drawer in the hut, once read (story/fieldBook.ts). */
+  fb?: FbSave;
 }
 
 // What chapter three needs from STATION 01 (world/Station01.ts).
@@ -331,6 +334,8 @@ export class Chapter3 {
       { text: 'Read the 1947 timing log (E10)', done: s.readE10 },
       { text: 'Match the two timing records (P09)', done: s.p09 },
     );
+    // once the player has been in at the bench: the drawer under it, which nothing asks for
+    if (s.heard || s.readE10) t.push({ text: 'The drawer under the hut bench (optional)', done: !!s.fb });
     if (s.p09) t.push({ text: 'Answer the field telephone', done: s.called });
     if (s.called) t.push(
       { text: 'Drive back to SARO', done: s.stage === 'develop' || s.stage === 'complete' },

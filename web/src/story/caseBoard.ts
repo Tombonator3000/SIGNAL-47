@@ -13,17 +13,21 @@ export interface BoardSave { pos: Record<string, [number, number]> }
 
 // Six patches of cork, one per part of the night, in reading order: three across, two down.
 const RW = 1180, RH = 760, GAP = 60, M = 40, LABEL = 40;
+// The second row's patches go further down: under chapter three's records there is room for
+// T. Vega's field book and what of tonight it has (story/fieldBook.ts). The first row, and every
+// place a card was left in, stay where they were.
+const MORE = 560;
 const REGIONS = [
   ['ns', 'NIGHT SHIFT'], ['ch1', '1  THE SECOND EXPOSURE'], ['ch2', '2  THE AMENDED RECORD'],
   ['ch3', '3  THE SURVEY STATION'], ['ch4', '4  ROOM 6'], ['ch5', '5  ALL NIGHT'],
 ] as const;
 export type RegionId = typeof REGIONS[number][0];
-const rect = (i: number) => ({ x: M + (i % 3) * (RW + GAP), y: M + LABEL + Math.floor(i / 3) * (RH + GAP + LABEL), w: RW, h: RH });
+const rect = (i: number) => ({ x: M + (i % 3) * (RW + GAP), y: M + LABEL + Math.floor(i / 3) * (RH + GAP + LABEL), w: RW, h: RH + (i >= 3 ? MORE : 0) });
 // The board grows with the night: as wide as the patches reached so far, the second row
 // from chapter three on, so there is no bare cork for what has not happened yet.
 const sizeAt = (now: number) => {
   const cols = Math.min(3, now + 1), rows = now >= 3 ? 2 : 1;
-  return { w: 2 * M + cols * RW + (cols - 1) * GAP, h: 2 * M + rows * (RH + LABEL) + (rows - 1) * GAP };
+  return { w: 2 * M + cols * RW + (cols - 1) * GAP, h: 2 * M + rows * (RH + LABEL) + (rows - 1) * GAP + (rows > 1 ? MORE : 0) };
 };
 
 // Which part of the night a paper belongs to when no chapter lays it out itself. Anything
@@ -31,7 +35,7 @@ const sizeAt = (now: number) => {
 const GROUP: Record<string, RegionId> = {
   log: 'ns', workorder: 'ns', printout: 'ns', binder: 'ns', service: 'ns', rfiCard: 'ns', halley: 'ns', telex: 'ns',
   s03log: 'ch1', refsheet: 'ch1', frame01: 'ch1', frame02: 'ch1', observation: 'ch1', finding: 'ch1',
-  access: 'ch2', casemap: 'ch2', s1diagram: 'ch3', e14: 'ch5', e15: 'ch5',
+  access: 'ch2', casemap: 'ch2', s1diagram: 'ch3', e14: 'ch5', e15: 'ch5', env4: 'ch4',
 };
 
 export interface CaseBoardHost {

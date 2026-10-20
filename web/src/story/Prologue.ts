@@ -25,7 +25,7 @@ import { openTerminal } from '../ui/Terminal';
 import { halleyPosterTex } from '../core/textures';
 import { BINDER, SERVICE, TELEX_EVENING, telex, interferenceCard, halleyPoster, OpsTerminal, type LogLine } from './nightshift';
 import { CaseBoard, type BoardSave, type RegionId } from './caseBoard';
-import type { BoardHook } from './boardRules';
+import type { BoardHook, RuleBook } from './boardRules';
 
 // The prologue, "Night Shift". Order of beats follows the Unity PrologueDirector,
 // with the story beats from the latest ChatGPT outline layered on top.
@@ -207,7 +207,7 @@ export class Prologue {
     this.board = new CaseBoard({
       ui: d.ui,
       docs: () => this.docs,
-      books: () => [this.ch1, this.ch2, this.ch3, this.ch4, this.ch5].filter((c) => c?.started).map((c) => c.book),
+      books: () => [...[this.ch1, this.ch2, this.ch3, this.ch4, this.ch5].filter((c) => c?.started).map((c) => c.book), ...this.extraBooks()],
       region: () => this.boardRegion(),
       layout: () => this.boardSave,
       save: () => { if (this.at('ch1')) d.saveCase(this.composeCase(this.ch1.s)); },
@@ -325,9 +325,13 @@ export class Prologue {
   note(s: string) { if (!this.notes.includes(s)) this.notes.push(s); }
   /** The notebook's map and kit, put together where the world is known (main.ts). */
   notebookExtras: (() => NbExtras) | null = null;
+  /** Books on the case board besides the chapters' own (T. Vega's field book, story/fieldBook.ts). */
+  extraBooks: () => RuleBook[] = () => [];
+  /** A paper from the notebook that opens in a view of its own (true), not the document view. */
+  openDoc: ((doc: DocSpec) => boolean) | null = null;
   openNotebook() {
     const ui = this.d.ui;
-    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => ui.document(doc, () => {}), this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : this.phase === 'ch5' ? 'Chapter five' : this.phase === 'ch6' ? 'Chapter six' : 'Tonight',
+    ui.notebook(this.tasks(), this.notes, this.docs, (doc) => { if (!this.openDoc?.(doc)) ui.document(doc, () => {}); }, this.phase === 'ch1' ? 'Chapter one' : this.phase === 'ch2' ? 'Chapter two' : this.phase === 'ch3' ? 'Chapter three' : this.phase === 'ch4' ? 'Chapter four' : this.phase === 'ch5' ? 'Chapter five' : this.phase === 'ch6' ? 'Chapter six' : 'Tonight',
       // the case board can be laid out from the journal at any time
       () => this.openBoard(),
       this.notebookExtras?.() ?? {});

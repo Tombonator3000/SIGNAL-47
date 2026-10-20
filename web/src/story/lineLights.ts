@@ -19,6 +19,9 @@ export interface LineLightsIn {
 export class LineLights {
   state: 'none' | 'pace' | 'off' = 'none';
   done = false;
+  /** T. Vega's field book has them (story/fieldBook.ts): not seen yet, they may come northbound too,
+   *  on the way back. */
+  anyWay = false;
   private pts: THREE.Points;
   private mat: THREE.PointsMaterial;
   private base: THREE.Vector3[] = [];
@@ -38,8 +41,8 @@ export class LineLights {
     const tr = s.truck;
     if (this.state === 'none') {
       if (this.done || !s.ok || !tr) { if (tr) this.lastZ = tr.z; return; }
-      const south = tr.z - this.lastZ > 0.05; this.lastZ = tr.z;
-      if (south && tr.z > 120 && tr.z < 240) this.begin(tr, s);
+      const dz = tr.z - this.lastZ; this.lastZ = tr.z;
+      if ((dz > 0.05 || (this.anyWay && dz < -0.05)) && tr.z > 120 && tr.z < 240) this.begin(tr, s);
       return;
     }
     this.t += dt;
@@ -66,5 +69,5 @@ export class LineLights {
     this.base.forEach((b, i) => a.setXYZ(i, b.x, b.y, b.z)); a.needsUpdate = true;
   }
   /** A new night or a case opened: whether it has been seen in it. */
-  reset(done: boolean) { this.done = done; this.state = 'none'; this.pts.visible = false; }
+  reset(done: boolean) { this.done = done; this.state = 'none'; this.pts.visible = false; this.anyWay = false; }
 }
