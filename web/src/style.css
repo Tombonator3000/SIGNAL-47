@@ -754,6 +754,9 @@ html.text-large .prompt { font-size: 28px; }
 .bcard.away { background: rgba(235,227,207,.45); }
 .bcard.k-photo, .bcard.k-map { background: #f6f2ea; padding: 8px 8px 8px; }
 .bcard.k-photo .bcard-img, .bcard.k-map .bcard-img { width: 100%; margin: 4px 0; max-height: 150px; object-fit: cover; background: #111; }
+/* (the card for the patch with no stars, story/starHole.ts: placed in a free spot before its print has
+   loaded, so the print keeps its shape from the start and the card does not grow over its neighbours) */
+.bcard[data-card="hole"] .bcard-img { aspect-ratio: 8 / 5; }
 .bcard.k-sealed { background: #2b2a2c; color: #d8d2c4; }
 .bcard.k-sealed .bcard-head b { color: #ffb09a; }
 .bcard.k-sealed .bcard-sum { color: #bdb6a6; }

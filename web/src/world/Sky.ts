@@ -9,6 +9,41 @@ const B = new THREE.Vector3(0.5, 0.78, -0.36).normalize();
 const BAND_N = new THREE.Vector3().crossVectors(A, B).normalize();
 const CORE = new THREE.Vector3(-0.25, 0.42, -0.87).normalize();
 const _fog = new THREE.Color();
+const DEG = Math.PI / 180;
+/** A direction in the sky's own terms: azimuth clockwise from north (north is -Z, east +X), elevation. */
+export const skyDir = (az: number, el: number, v = new THREE.Vector3()) =>
+  v.set(Math.sin(az * DEG) * Math.cos(el * DEG), Math.sin(el * DEG), -Math.cos(az * DEG) * Math.cos(el * DEG));
+
+// No stars where the antennas point (FORSLAG.md, 20 October, "Valg for Tom" 6; Tom: "Spenning og
+// skummelt slår faste regler"). From 02:15 every dish stands at az 026, el 32 with nobody driving it
+// (canon; story/arrayBack.ts HOME, world/Dish.ts aims the same way), and there, from the same
+// moment, a round patch of the sky has no stars in it. Nothing is drawn: the dome's air (the
+// gradient, the glow off the towns, the dawn) goes on through it as everywhere else; only what is
+// beyond the air is missing, the stars, the Milky Way's light and a shooting star that crosses it
+// (it goes in and comes out the other side). The rim goes soft over most of a degree, so it reads
+// as something in front of the stars, not a hole in a picture. It is held to the dishes, not to the
+// stars, and it never grows. Faint by design: it is there for whoever looks up along the dishes.
+//   inner, outer: its radius, degrees (no star at all inside inner; all of them outside outer)
+//   after:        seconds after the impact that it begins (the dishes have come round to it by then:
+//                 they start 3 s after it and take about 7; Prologue.turnDishes), so 02:15:22 with
+//                 the night's own impact at 02:15:12 (Sky.holeFrom, set by main.ts from the case)
+//   fade:         the seconds it takes to come in (not a pop)
+export const STAR_HOLE = { az: 26, el: 32, inner: 1.6, outer: 2.4, after: 10, fade: 100 } as const;
+/** How much of the hole there is at a clock (seconds since midnight; the evening has none), when it
+ *  begins at `from` (seconds since midnight; Infinity: not tonight yet). */
+export function starHoleAt(clock: number, from: number) {
+  const s = ((clock % 86400) + 86400) % 86400;
+  if (s > 12 * 3600 || !Number.isFinite(from)) return 0;
+  const k = THREE.MathUtils.clamp((s - from) / STAR_HOLE.fade, 0, 1);
+  return k * k * (3 - 2 * k);
+}
+// (measured as the chord between two directions, which keeps its precision at a degree or two
+// where the cosine has none left in a phone's fragment shader)
+const chord = (deg: number) => 2 * Math.sin(deg * DEG / 2);
+/** The mask, for every shader of the sky that draws something beyond the air. */
+const HOLE_GLSL = /* glsl */`
+  uniform vec3 uHoleDir; uniform vec2 uHoleR; uniform float uHole;
+  float holeAt(vec3 d) { return uHole * (1.0 - smoothstep(uHoleR.x, uHoleR.y, length(d - uHoleDir))); }`;
 
 export class Sky {
   group = new THREE.Group();
@@ -25,7 +60,18 @@ export class Sky {
     // the lit places from here (SARO, Caliche): the horizontal direction in the sky's own terms (x, z),
     // how bright, and how wide (radians); set each frame by world/backdrop.ts, which uses them too
     uGlow: { value: Array.from({ length: GLOWS }, () => new THREE.Vector4(1, 0, 0, 1)) },
+    // where the stars are missing (STAR_HOLE): the direction, the radii as chords, and how much (setClock)
+    uHoleDir: { value: skyDir(STAR_HOLE.az, STAR_HOLE.el) },
+    uHoleR: { value: new THREE.Vector2(chord(STAR_HOLE.inner), chord(STAR_HOLE.outer)) },
+    uHole: { value: 0 },
   };
+  /** Where the stars are missing, in the sky's own terms (turned with the sky in an area, World.skyYaw). */
+  readonly holeDir: THREE.Vector3 = this.uniforms.uHoleDir.value;
+  /** How much of it there is now, 0 to 1 (setClock). */
+  get hole() { return this.uniforms.uHole.value; }
+  /** When it begins tonight (seconds since midnight): STAR_HOLE.after past the impact, or Infinity
+   *  before the dishes have turned (main.ts sets it each frame). */
+  holeFrom = 2 * 3600 + 15 * 60 + 12 + STAR_HOLE.after;
   /** Colour of the haze at the horizon now: the scene's fog follows it (main.ts). */
   fogColor = new THREE.Color(0x0b0f19);
   private dawnLift = 1;
@@ -49,7 +95,7 @@ export class Sky {
     const dome = new THREE.Mesh(
       new THREE.SphereGeometry(3000, 48, 24),
       new THREE.ShaderMaterial({
-        uniforms: { ...this.uniforms, uPanorama: { value: this.milkyWay() } },
+        uniforms: { ...this.uniforms, uPanorama: { value: this.milkyWay() }, uHoleSky: this.holeSky },
         side: THREE.BackSide, depthWrite: false, fog: false,
         vertexShader: /* glsl */`
           varying vec3 vDir;
@@ -60,8 +106,8 @@ export class Sky {
           }`,
         fragmentShader: /* glsl */`
           uniform float uTime, uFlash, uDawn, uSun; uniform vec3 uFlashDir, uBandN, uCore, uSunDir; uniform vec4 uGlow[${GLOWS}];
-          uniform sampler2D uPanorama;
-          varying vec3 vDir;
+          uniform sampler2D uPanorama; uniform vec3 uHoleSky;
+          varying vec3 vDir;${HOLE_GLSL}
           float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
           float noise(vec3 x) {
             vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
@@ -95,12 +141,18 @@ export class Sky {
             vec3 mwCol = mix(vec3(0.30, 0.27, 0.42), vec3(0.62, 0.46, 0.40), c2 * bulge * 0.6);
             float lum = (band * c1 * 0.65 + core * c2 * 0.9) * bulge;
             lum *= 1.0 - dust * core * 0.9;
+            // where the dishes point, nothing from beyond the air (STAR_HOLE)
+            float hole = holeAt(d);
+            lum *= 1.0 - hole;
             col += mwCol * lum * 0.20 * smoothstep(-0.02, 0.18, h);
             // The source is a full-sphere equirectangular map, horizon at v=0.5, with its
             // painted stars taken out (milkyWay()); the stars are the points of makeStars().
             // sRGB textures are decoded to linear values by WebGL's sampler.
             vec2 skyUV = vec2(atan(d.z, d.x) / 6.2831853 + 0.5, asin(clamp(d.y, -1.0, 1.0)) / 3.1415927 + 0.5);
             vec3 painted = texture2D(uPanorama, skyUV).rgb;
+            // (in the hole the painted sky keeps its own colour, the mean round it, and loses whatever
+            // the band or its glow had there: neither darker nor lighter than the sky round it)
+            painted = mix(painted, uHoleSky, hole);
             col = mix(col, painted * 2.0, 0.72 * smoothstep(-0.03, 0.14, h));
             // distant lightning inside a storm on the horizon
             float fa = max(dot(d, uFlashDir), 0.0);
@@ -151,22 +203,23 @@ export class Sky {
     g.setAttribute('aS', new THREE.BufferAttribute(aS, 1));
     g.setIndex(idx);
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uI: { value: 0 } },
+      uniforms: { uI: { value: 0 }, uHoleDir: this.uniforms.uHoleDir, uHoleR: this.uniforms.uHoleR, uHole: this.uniforms.uHole },
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, side: THREE.DoubleSide,
       vertexShader: /* glsl */`
-        attribute float aT; attribute float aS; varying float vT; varying float vS;
+        attribute float aT; attribute float aS; varying float vT; varying float vS; varying vec3 vDir;
         void main() {
-          vT = aT; vS = aS;
+          vT = aT; vS = aS; vDir = position;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
           gl_Position.z = gl_Position.w * 0.99999;   // as far as the stars: anything on the ground hides it
         }`,
       fragmentShader: /* glsl */`
-        uniform float uI; varying float vT; varying float vS;
+        uniform float uI; varying float vT; varying float vS; varying vec3 vDir;${HOLE_GLSL}
         void main() {
           // a soft line, brightest and widest at the head, the tail fading out behind it
           float across = 1.0 - vS * vS;
           float a = across * (pow(vT, 1.5) + 2.5 * smoothstep(0.86, 1.0, vT));
-          gl_FragColor = vec4(vec3(0.86, 0.92, 1.0) * a * uI, 1.0);
+          // it goes into the hole where the dishes point and comes out the other side (STAR_HOLE)
+          gl_FragColor = vec4(vec3(0.86, 0.92, 1.0) * a * uI * (1.0 - holeAt(normalize(vDir))), 1.0);
         }`,
     });
     const m = new THREE.Mesh(g, mat);
@@ -254,6 +307,8 @@ export class Sky {
     const k = s > 12 * 3600 ? 0 : THREE.MathUtils.clamp((s - (4 * 3600 + 40 * 60)) / (50 * 60), 0, 1);
     const dawn = Math.pow(k, 1.6) * this.dawnLift;
     this.uniforms.uDawn.value = dawn;
+    // from 02:15, where the dishes point (it fades with the stars at dawn, by itself)
+    this.uniforms.uHole.value = starHoleAt(clock, this.holeFrom);
     this.fogColor.setRGB(0.043, 0.059, 0.098).lerp(_fog.setRGB(0.19, 0.2, 0.25), dawn * 0.8);
     // the sun: azimuth 79 degrees, rising about 0.18 degrees a minute; its upper limb reaches
     // the horizon at 05:30, so the glow shows a few minutes before
@@ -278,6 +333,8 @@ export class Sky {
   // filtered. The band's brightness is kept for makeStars(), so the sharp stars thicken
   // along it as the real ones do.
   private band: { w: number; h: number; lum: Float32Array } | null = null;
+  /** The painted sky's own colour just outside the hole (linear), what the dome shows inside it. */
+  private holeSky = { value: new THREE.Color(0.006, 0.008, 0.02) };
   /** How long taking the painted stars out took (tools/sky.py reports it). */
   filterMs = 0;
   private milkyWay() {
@@ -316,6 +373,22 @@ export class Sky {
       px[o] *= k; px[o + 1] *= k; px[o + 2] *= k;
     }
     g.putImageData(img, 0, 0);
+    // the painted sky round the hole, half a degree out from its rim, all the way round: its mean
+    // colour is what the dome shows inside it (so it is neither darker nor lighter than round it)
+    {
+      const h = this.uniforms.uHoleDir.value, a = new THREE.Vector3(0, 1, 0).cross(h).normalize(), c = new THREE.Vector3().crossVectors(h, a);
+      const r = (STAR_HOLE.outer + 0.6) * DEG, v = new THREE.Vector3(), one = new THREE.Color(), sum = new THREE.Color(0, 0, 0), N = 32;
+      for (let k = 0; k < N; k++) {
+        const t = k / N * Math.PI * 2;
+        v.copy(h).multiplyScalar(Math.cos(r)).addScaledVector(a, Math.sin(r) * Math.cos(t)).addScaledVector(c, Math.sin(r) * Math.sin(t)).normalize();
+        // (as the dome samples it: v = 1 is the zenith, the canvas has it at the top)
+        const x = Math.floor((Math.atan2(v.z, v.x) / (Math.PI * 2) + 0.5) * W) % W;
+        const y = Math.min(ROWS - 1, Math.max(0, Math.floor((0.5 - Math.asin(THREE.MathUtils.clamp(v.y, -1, 1)) / Math.PI) * H)));
+        const o = (y * W + x) * 4;
+        sum.add(one.setRGB(px[o] / 255, px[o + 1] / 255, px[o + 2] / 255, THREE.SRGBColorSpace));
+      }
+      this.holeSky.value.copy(sum.multiplyScalar(1 / N));
+    }
     // the band's brightness at a quarter size, for the stars
     const bw = W / 4, bh = ROWS / 4, band = new Float32Array(bw * bh);
     let max = 0;
@@ -379,11 +452,11 @@ export class Sky {
     g.setAttribute('aCol', new THREE.BufferAttribute(col, 3));
     g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uTime: this.uniforms.uTime, uPR: this.pixelRatio, uDawn: this.uniforms.uDawn },
+      uniforms: { uTime: this.uniforms.uTime, uPR: this.pixelRatio, uDawn: this.uniforms.uDawn, uHoleDir: this.uniforms.uHoleDir, uHoleR: this.uniforms.uHoleR, uHole: this.uniforms.uHole },
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
       vertexShader: /* glsl */`
         attribute float aSize; attribute vec3 aCol; attribute float aPh;
-        uniform float uTime, uPR, uDawn; varying vec3 vCol; varying float vSharp;
+        uniform float uTime, uPR, uDawn; varying vec3 vCol; varying float vSharp;${HOLE_GLSL}
         void main() {
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           gl_Position = projectionMatrix * mv;
@@ -395,6 +468,8 @@ export class Sky {
           vCol = aCol * tw * (0.3 + 0.7 * horizon);
           // at dawn the faint stars go first; the brightest hang on until near sunrise
           vCol *= clamp(1.0 - uDawn * (2.2 - 1.2 * min(length(aCol), 1.0)), 0.0, 1.0);
+          // none where the dishes point; at the rim they thin out (STAR_HOLE)
+          vCol *= 1.0 - holeAt(normalize(position));
           gl_PointSize = max(1.0, aSize * uPR);
           vSharp = aSize > 1.2 ? 1.0 : 0.0;
           gl_Position.z = gl_Position.w * 0.99999;
