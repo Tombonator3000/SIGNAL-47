@@ -8,6 +8,7 @@ import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { dressAnnex } from './dressing';
 import { buildRoofFrost, type Corner, type RoofFrost } from './roofFrost';
+import { buildArchive047, type Archive047 } from './archive047';
 
 // Chapter two location: the south corridor behind the control room and the SARO records
 // room off it. A small extension of the main building, as the design bible asks for.
@@ -72,7 +73,13 @@ export class RecordsAnnex {
     // the frost the steps on the roof leave (story/roofSteps.ts), outside with the shell
     this.frost = buildRoofFrost();
     this.group.add(this.frost.group, this.frost.hit.unit, this.frost.hit.sw, this.frost.hit.se);
+    // the fire drawer behind the STATION 01 box, the switchboard and its call recorder (story/archivePhone.ts)
+    this.arc = buildArchive047((p) => this.mat(p));
+    this.interior.add(this.arc.group);
   }
+
+  /** The archive's phone (story/archivePhone.ts): the drawer in the wall, the switchboard, the recorder. */
+  readonly arc: Archive047;
 
   /** The frost on the roof unit and on the lip at one corner (story/roofSteps.ts), or none. */
   readonly frost: RoofFrost;
@@ -85,11 +92,14 @@ export class RecordsAnnex {
   }
 
   /** The tubes while something stands on the roof (story/roofSteps.ts): 'steady' holds the tired one
-   *  lit, without its flicker; 'stutter' lets it go with a run of flickers; null as it was. */
-  private tubeHold: 'steady' | 'stutter' | null = null;
+   *  lit, without its flicker; 'stutter' lets it go with a run of flickers; 'out' puts it out (the
+   *  archive's phone, story/archivePhone.ts: seven seconds before); null as it was. */
+  private tubeHold: 'steady' | 'stutter' | 'out' | null = null;
   private stutterLeft = 0;
   private lastT = -1;
-  holdTubes(mode: 'steady' | 'stutter' | null) {
+  /** How the tired tube is held now (tests). */
+  get tubeMode() { return this.tubeHold; }
+  holdTubes(mode: 'steady' | 'stutter' | 'out' | null) {
     this.tubeHold = mode;
     if (mode === 'stutter') this.stutterLeft = 0.75;
   }
@@ -474,6 +484,7 @@ export class RecordsAnnex {
     this.dustStep(dt);
     if (this.tubeHold === 'stutter' && (this.stutterLeft -= dt) <= 0) this.tubeHold = null;
     const on = this.tubeHold === 'steady' ? true
+      : this.tubeHold === 'out' ? false
       : this.tubeHold === 'stutter' ? Math.sin(t * 53) + Math.sin(t * 31) > -0.2
       : !(Math.sin(t * 0.37) > 0.985 && Math.sin(t * 41) > 0);
     this.flickerTube.material = on ? this.tubeOn : this.tubeDim;

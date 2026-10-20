@@ -154,6 +154,10 @@ export class Chapter2 {
   ringing = false;
   s: Ch2State = fresh();
   onEnd?: () => void;
+  /** The archive's phone (story/archivePhone.ts, set by main.ts): while it rings, the phones answer
+   *  it; while it is still to come, lifting the wall phone finds its line open. use() false leaves
+   *  the phone the chapter's own. */
+  phoneHook?: { label: () => string | null; use: (where: 'room' | 'desk') => boolean };
   /** Nothing else of the night's going (main.ts, oneAtATime): Ward's second call waits for it. */
   quiet: (() => boolean) | null = null;
   /** The array has been put back on the schedule at least once tonight (story/arrayBack.ts). */
@@ -271,9 +275,10 @@ export class Chapter2 {
     audio.loop('ring2', 'phoneRing', { gain: 1.0, at: this.pos(room.objs.phone) });
     this.g.after(1.0, () => ui.toast('The phone again. The supervisor\'s line.', 3));
   }
-  phoneLabel() { return this.ringing ? 'Answer the phone' : this.s.called || this.s.answered ? 'Telephone' : null; }
+  phoneLabel() { return this.ringing ? 'Answer the phone' : this.phoneHook?.label() ?? (this.s.called || this.s.answered ? 'Telephone' : null); }
   usePhone() {
     const { audio, ui, room } = this.d;
+    if (!this.ringing && this.phoneHook?.use('desk')) return;
     if (!this.ringing) { ui.toast(this.s.answered ? 'Ward said what she had to say. The records room is down the south corridor.' : 'Internal line and one outside line.'); return; }
     if (this.ringBack) { this.answerBack(); return; }
     this.ringing = false;
@@ -349,7 +354,8 @@ export class Chapter2 {
     inter.add({ id: 'binder', object: o.binder, label: () => on() ? 'Service copies, reference records' : null, use: () => this.takeBinder() });
     inter.add({ id: 'lineage', object: o.lineage, label: () => on() ? 'Maintenance card index' : null, use: () => this.takeLineage() });
     inter.add({ id: 'workTable', object: o.workTable, label: () => on() ? (this.anyRead() ? 'Lay out the records' : 'Work table') : null, use: () => this.openTable() });
-    inter.add({ id: 'recPhone', object: o.recPhone, label: () => on() ? (this.s.stage === 'call-nora' ? 'Call the key holder' : 'Wall phone') : null, use: () => this.useRecPhone() });
+    inter.add({ id: 'recPhone', object: o.recPhone, label: () => on() ? (this.phoneHook?.label() ?? (this.s.stage === 'call-nora' ? 'Call the key holder' : 'Wall phone')) : null,
+      use: () => { if (!this.phoneHook?.use('room')) this.useRecPhone(); } });
     inter.add({ id: 'vending', object: o.vending, label: () => on() ? 'Vending machine' : null, use: () => ui.toast('Cola, orange soda, peanut butter crackers. Somebody\'s dime is stuck in the coin return.') });
     inter.add({ id: 'officeDoor', object: o.officeDoor, label: () => on() ? 'Operations office' : null, use: () => ui.toast('Locked. Dale took the key home.') });
     inter.add({ id: 'restroomDoor', object: o.restroomDoor, label: () => on() ? 'Restrooms' : null, use: () => ui.toast('Not now.') });

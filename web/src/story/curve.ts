@@ -50,6 +50,14 @@ import type { SeenEntry, SeenLog } from './seen';
 // or its window (02:29 to 02:40) is past, no other 47 may take chapter one (CurveIn.keep), and when it
 // comes it lands the peak like the other 47s, so the rest follows it.
 //
+// Chapter two has one too (story/archivePhone.ts): the archive's phone, the phone from the future a
+// second time, in the records room. It is the story's as well (the room's last quiet moment, after the
+// steps on the roof; or the wall phone lifted to call the key holder), and chapter two keeps its one
+// 47 for it until it has come (keep), so the silence on the shoulder, the bulletin from 1947, the
+// payphone and the motel's television wait for chapter three. When it comes it lands the peak.
+// Reel 047 on the signal processor afterwards is the player's own, like Earl's reel: heard, it lands
+// the peak too.
+//
 // The face on the film (core/filmFace.ts) is not held back: it is on the print the player takes.
 // When it is looked at large, that is the peak. The second call of the payphone after room 6 is the
 // story's and not the curve's either, and so is the crank telephone in the motel office in chapter
@@ -116,7 +124,7 @@ const FROM: Record<CurveKind, number> = { sign: 0.12, call: 0.3, cutout: 0.12, p
 const CUTOUT_UNTIL = 0.78;
 /** The peaks that are heard or felt (they count when they come), and those that count only once
  *  they were seen (story/seen.ts, looking). */
-const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel', 'blackout', 'officephone', 'array'] };
+const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel', 'blackout', 'officephone', 'array', 'archive', 'reel047'] };
 /** Peaks the player can make again and again (the array put back on the schedule, story/arrayBack.ts):
  *  each lands the curve, but one that comes in a rest does not start the rest over. */
 const AGAIN = new Set(['event:array']);
@@ -124,7 +132,7 @@ const SEEN: Record<string, (what: string) => boolean> = { glimpse: (w) => w !== 
   // (the recording walking where the player was taken, story/recording.ts)
   scare: (w) => w.startsWith('walk ') };
 /** The 47-second ones (the per-chapter limit). */
-const LONG = new Set(['scare:silence', 'event:bulletin', 'event:phone', 'event:tv', 'event:blackout']);
+const LONG = new Set(['scare:silence', 'event:bulletin', 'event:phone', 'event:tv', 'event:blackout', 'event:archive']);
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;

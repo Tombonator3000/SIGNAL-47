@@ -323,7 +323,10 @@ async def main():
         await ev("S47.jump('chapter2'); S47.tick(1.0); S47.game.d.ui.close(); S47.tick(0.2)")
         await ev(f"{C}.force('peak')"); await tick(0.1)
         await ev("S47.player.place(-2, -24, 0); S47.tick(0.3)")
-        check(await ev(f"{C}.may('long')") and await ev(f"{C}.phase") == 'peak', 'chapter two: its own extra 47 may come at a peak')
+        # (chapter two keeps its 47 for the archive's phone until it has come: story/archivePhone.ts, tools/f_archive.py)
+        check(not await ev(f"{C}.may('long')") and await ev(f"{C}.phase") == 'peak', 'chapter two: its extra 47 is kept for the archive\'s phone')
+        await ev("S47.archive.off = true"); await tick(0.1)
+        check(await ev(f"{C}.may('long')") and await ev(f"{C}.phase") == 'peak', 'chapter two without it: its own extra 47 may come at a peak')
 
         # ---------- on S47 and the ?debug overlay ----------
         await ev(f"{C}.force('build', 0.42); {C}['signT'] = 1e9"); await tick(0.1)

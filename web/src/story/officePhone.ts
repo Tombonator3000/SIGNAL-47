@@ -193,7 +193,7 @@ const LINK = 'ol:';   // a thread on the board, kept in the town's part of the c
 /** The office's own bell, made once: two small brass gongs a little apart in pitch and a clapper
  *  between them, struck in turn as fast as the generator at the other end is turned (it comes up to
  *  speed and slows with each turn of the handle), each gong ringing on in its partials. */
-function crankBell(ctx: BaseAudioContext): AudioBuffer {
+export function crankBell(ctx: BaseAudioContext): AudioBuffer {
   const sr = 16000, len = Math.round(sr * BELL_LOOP);   // (the top partial is near 6.1 kHz)
   const buf = ctx.createBuffer(1, len, sr), out = buf.getChannelData(0);
   // [ratio, level, seconds to fall to 1/e]: a small hemispherical gong
