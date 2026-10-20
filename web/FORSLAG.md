@@ -4,6 +4,108 @@ Skrevet 3. oktober 2026, etter at kapittel 1 ("The Second Exposure") kom inn i n
 
 En kortere versjon som kan deles, med en statuskolonne for beslutningene, en testliste og en grafikktabell for ChatGPT, ligger i Claude Docs: https://claude.ai/artifact/XQhxbdHbroo7gx7GuytZmK (privat til Tom deler den).
 
+## Mer spenning, skrekk, romvesen og mysterier, 20. oktober (Tom spurte)
+
+Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Ingenting her er bygget.
+
+### Det jeg ville bygget først
+
+Rangert. Alt her passer med reglene i `memory.md` og `HENDELSER.md`, med unntakene som er nevnt.
+
+1. **Ett trykk for hele natta, og papp-romvesenet får en slutt.** Etter Ward er natta bare natt i ti minutter. Så hoper tegnene seg opp (sirissene tynnes, lykta hakker, et rop bak S-11), toppen kommer, og så 8 til 12 minutter der ingenting kan skje. Papp-romvesenet kommer høyst tre ganger. Den tredje gangen står formen ytterst i frontlysene, og når lysene når fram, er det en refleksstolpe: "The same shape. There was nothing there when I got to it."
+   - Hvorfor: `HENDELSER.md` §4 beskriver trykket, men koden har fire flate tidtakere, og rop og papp har ikke tak (pappen heller ingen grygrense, `main.ts:1508`). Det blir tapet, eller komikk. Høyst én ekstra 47-hendelse per kapittel.
+   - Pass på: taket snur Toms ønske fra 18. oktober (`core/cutouts.ts`), så det er hans valg.
+   - Kap. 1 til 5. Bygger på trykket i `abduction.ts`, `main.ts:1491-1530`, de fire tidtakerne og `Ambience.hush`. Middels til stor.
+
+2. **Advarselen varer alltid 47 sekunder.** Når advarselen begynner, går klokka i hjørnet over til sekunder, slik stasjonsklokka gjorde 02:13. Ved :16 et pip og skrittene blir borte, ved :31 trykktonen, ved :40 dør lykta slik K3 slo ut. Den som husker prologen, vet at det er sju sekunder igjen, og løper.
+   - Hvorfor: nedtellingen er det spilleren har lært med kroppen. I dag varer advarselen 20 til 47 s (`abduction.ts:152`). Det er Toms godkjente spesifikasjon og bryter ikke R3, men en fast lengde gjør bortføringen til et løp, og sekunder er det tydeligste varselet på telefon.
+   - Kap. 1 til 4. Bygger på `warning()` (lykta slukker allerede ved 0,85 av lengden, altså 40 av 47) og `clockText`. Liten.
+
+3. **Tomás' feltbok: hans juli er i natt.** I hytteskuffen på STATION 01 ligger "T. VEGA / FIELD BOOK 3 / JUNE-JULY 47": kyrne vendt mot stasjonen, tre bank i taket på bilen, lampene som gikk ut med hundene, en fylkesbil med motoren i gang og ingen i. Siste side: "Three on plate 4. There were two of us." En tråd til ditt eget notat holder: "He wrote it in July 1947. I saw it tonight." Det du ikke har sett ennå, ser du etter på veien tilbake.
+   - Hvorfor: det største grepet mot at hendelsene aldri når saken. Spilleren finner R5 selv, og resten av natta blir forventning uten at noe jager. Bygger spor 10 (ingen "plate 4" i `src`).
+   - Kap. 3. Bygger på `Chapter3.ts` og `boardRules.ts`; hver hendelse trenger et kort knyttet til nøkkelen den har (`ev:`, `ne:`, `mark:`). Stor.
+
+4. **02:29: SARO blir mørkt, og Hondo skriver.** Mens spilleren er i labben, klakker K3 i det tomme kontrollrommet. Førti sekunder senere går alle lys på SARO ut i 47 sekunder, også mørkeromslampa og de røde lampene på antennene, og en liten silhuett står ytterst på plassen. Når strømmen kommer, går telexen: "FM HONDO VALLEY RADIO STN / RANGE SOLUTION NEGATIVE. REQUEST PROCEDURE."
+   - Hvorfor: labhalvdelen av kap. 1 får en topp, og reléregelen kommer igjen når spilleren vet hva klakket betyr. Det retter også en blindvei: Ward sier "I read the telex. All of it." (`Chapter5.ts:364`), men telexen finnes ikke. Den er spesifisert i `KAPITLER.md` (The Second Exposure, Nytt).
+   - Pass på: K3 kan stå åpent fra nedtellingen (`ns.k3Open`), og et bilde i fremkalleren må ikke ødelegges.
+   - Kap. 1, 02:29 til 02:40. Bygger på `telex()`, `tripK3()` og lampene i `ServiceYard.ts`. Middels.
+
+5. **Kapittel 2 får én topp i arkivet.** Rundt 03:13 skriver samtaleskriveren ved veksleren "IN TRK1 EXT 201" av seg selv, og 47 sekunder senere ringer veggtelefonen: kontrollrommet 02:13, skriveren, et dunk, et gisp, koppen. Rekker spilleren å legge inn bank 3 før :47, skriver konsollen samme løsning med det gamle klokkeslettet; ellers kommer arket blankt. Bak 1947-boksen står spole 047 ("NOT FOR CATALOGUE"): 4/7, en sveiv, et klipp, 47 sekunder ingenting, et relé, -32 LY.
+   - Hvorfor: kap. 2 er uten spenning, og telefonen kommer ellers ikke igjen før THE EVENT. Et avtrykk av 02:13 holder R5, og strimmelen viser "02:13 IN EXT 201 FROM EXT 201". Spolen fullfører spor 6 og betaler seg mot FRAME 04, E10 og Noras tilståelse.
+   - Rettelse: stempelet er det spilleren fikk (`ns.solveAt`), ikke 02:13:47.
+   - Kap. 2. Bygger på `recPhone` i `Annex.ts`, `resetK3`, SHOW TAPES og `Decoder.ts`. Stor. Den sterkere varianten er valg 1 under.
+
+6. **Den siste mila.** Forbi sjumilsstolpen åpner CB-en seg selv: en motor som din, liten, som hoster og dør, mens din egen går. Førtisju sekunder senere er bilen på C, og din motor dør. "Turn the key" kommer opp som hver gang i natt; solenoiden klikker fire, en pause, sju, og den starter aldri. Døra: "The handle moves. The door does not."
+   - Hvorfor: kap. 6 er ni minutter med alt slått av. Varselet 47 s før er prologens grammatikk (R3), og nøkkelen som reddet spilleren hele natta, tas bort; svaret i 4/7 er av samme slag som walkien (R5).
+   - Avveid mellom dommerne: lyden går gjennom CB-en, så bilradioen fortsatt er første slag i THE EVENT, og CB-en spiller bare motoren, uten klikkene, så 4/7 er spart til 05:29. Utløses på avstand, fordi klokka kryper.
+   - Kap. 6. Bygger på `Chapter6.ts`, `core/cb.ts` (bare stemmer i dag) og `walkie.ts`; `event()` trenger egen nøkkelmelding og `can-out` for touch. Middels.
+
+7. **Kontortelefonen spiller deg av.** Første gang du kommer inn på motellkontoret, ringer sveivetelefonen. I røret, smalt: planker som knirker, hyttedøra, bærebølgen og to lukkere med samme mellomrom som FRAME 03 og 04. "The office line to the hut. Someone walking on the boards. A shutter, then another. I took two frames out there."
+   - Hvorfor: telefonen er koblet til STATION 01, men bare en rekvisitt (`Chapter4.ts:374`). Linja gjentar det som ble registrert, og nå er spilleren på den. Den forbereder P12 og 05:29:47, og alle spillere når den.
+   - Kap. 4, før rom 6. Bygger på `s.f3` og `s.f4` i `Chapter3.ts`, `phoneLine` og sveiveringen. Middels.
+
+8. **Fire, og ikke ennå sju: bilen på B.** Fra kap. 2, første gang du kjører over B, går radioen til bærebølge et sekund, motoren feiler, og lampene blinker fire ganger. Etter rom 6 dør motoren, OIL og VOLTS lyser, og den tar på andre forsøk og blinker sju. Kompasset på dashbordet står på 026 over B, og på den gamle veien glir det mot 026 fra mil 6.
+   - Hvorfor: en stige mot 05:29 og tegnene i bilen fra `HENDELSER.md` §8 for dem som kjører overalt, med `drive/trouble.ts`, som står ubrukt. Den lærer nøkkelen som punkt 6 tar bort. Blinkene teller opp her; fargene i frontlysene er spart til 05:29.
+   - Forutsetning: én plassering av B. Lysene svinger ved m 330 (`lineLights.ts`), kartnotatet sier "just south of the motel" (`main.ts:1435`), og STATION 01 ligger rundt 840 m sør for SARO.
+   - Kap. 2 til 5. Bygger på `trouble.ts` (blinkingen finnes bare i `Chapter6.event`) og `drive/Truck.ts`. Middels.
+
+9. **Bortføringen får følger.** Ved STATION 01 må alle gå. Har ingen tatt spilleren ennå, starter advarselen på vei fra hytta etter Noras samtale. Senere går noen i SARO-jakke dine siste 47 sekunder der du ble tatt: stopper der du stoppet, løper det samme snublende løpet, står stille og begynner på nytt. Nora: "You have been out on the line. One side of your face." Nestlederen har tørket blod under nesa og har ikke merket det.
+   - Hvorfor: "minst én før kapittel 5" er bare et trykkpåslag i dag (`abduction.ts:147`). Opptaket viser R5 på spillerens egen kropp, og merket gjør tiden borte ekte.
+   - Pass på: `calm()` trenger 18 minutter før 04:35, så samtalen må være over rundt 04:17; det er et varsel, ikke en garanti. Noras "Tomás came back from it like that in June" er ny bakgrunn Tom må godta.
+   - Kap. 3 til 5. Bygger på `record()` og `recordsStep` (en sti på 47 s per sted), P10 i `Chapter4.ts` og `caliche.ts`. Middels.
+
+10. **Tatt i bilen.** 02:40, sørover. Der B krysser, glir radioen til bærebølge, motoren dør og frontlysene synker. Vrir du raskt, tar den; løper du nordover langs skulderen, kommer du også fri. Ellers tre bank i taket, hvitt lys ovenfra, svart, og 03:19 sitter du 300 m lenger fram med nesa mot nord og radioen på 1090: "The odometer reads 31.4 miles more than it did at SARO."
+    - Hvorfor: i dag skjer bortføringer bare til fots, men `HENDELSER.md:176` sier "ute eller i bilen". Telleren er Hill-sporet i 1986-maskinvare. Dashbordet blir bare mørkt.
+    - Rettelser: `failFirst` gir høyst ett mislykket forsøk, og `wake()` går ut fra at spilleren er til fots, så bilen må flyttes.
+    - Kap. 1 til 4. Bygger på `trouble.ts`, `World.keyStall`, `abduction.ts` og `abductIn` (krever i dag `!world.driving`). Stor.
+
+11. **De negative nettene er Caliches tapte netter.** På NIGHT SHIFT-korken holder en tråd fra permens -38 10/19/85 til nestlederens grønne nål: "The night SARO printed -38, the attendant lost two hours on the old road." Når 1983 og 1981 er fylt inn, kommer et spørsmål uten svar: "-39 tonight. Who loses time tonight?" Gir du Earl datoen før 04:00, spiller han spolen fra september 1981: gutten sier nattens setninger ord for ord, med tomrom der Earl svarte i natt. "I answered him tonight. He wasn't answering me."
+    - Hvorfor: det binder vitnene til forløperne og gjør vitnekortene til et resonnement; en levende mann svarte et opptak (R5). Allerede sådd i `caliche.ts:295-299` og `336-353`, og i permens 09/22/81 01:52:07.
+    - Kap. 2 og senere. Bygger på en ny `ns`-regelbok i `boardRules.ts`, `BOY_CALL`, noen Earl-klipp og mørkeromsloggen fra `KAPITLER.md`. Middels.
+
+12. **Sett arrayen tilbake. Den går tilbake.** Ward: "Put the array back on the schedule and tell me it stays there." Spilleren skriver ARRAY RESUME, og alle 27 svinger mot 042. Førtisju sekunder senere blinker de røde lampene fire og sju, og alle svinger tilbake til 026 med MOTION NO COMMAND i loggen. Hver gang.
+    - Hvorfor: nattevakten mislykkes med den virkelige jobben, med egne hender (R1). Det bygger S-03-historikken, og Ward kan si i kap. 5: "You tried it three times. It went back three times."
+    - Kap. 2 til 4, etter FRAME 02. Bygger på `OpsTerminal`, `Dish.point` og `story/field.ts`. Middels.
+
+### Valg for Tom: dristigere ideer som endrer reglene
+
+Disse trenger Toms beslutning. Hver bryter eller bøyer noe som står fast.
+
+1. **Telefonen fra framtida en gang til.** Arkivtelefonen spiller rommet før det skjer: et dunk gjennom betong, en skuff som ruller ut. Ved 47 s starter alle 27 drivmotorer, skuffen med spole 047 slår opp, og antennene har vippet ned mot horisonten langs 026. Bryter: telefonen fra framtida hører til prologen, og antennene forlater el 32. Gir det sterkeste skremmet kap. 2 kan få, men prologtelefonen mister noe. Erstatter punkt 5.
+2. **Antennene senker seg mot deg.** Under en advarsel i feltet kommer fatene ned og følger deg. Bryter R5 ("nothing in the world acts because the player is there", `HENDELSER.md:42`) og az 026 / el 32. Varianten som passer: fatene svinger én gang, mot gresset der du kommer til å våkne (en forløper, R3).
+3. **Noe står over deg når du våkner.** Halvannet sekund øverst i bildet: et lite hode bøyd over deg, 3 m unna, borte når blikket løfter seg. Bryter: aldri nærmere enn rundt 40 m (`HENDELSER.md:84`). Ikke ansikt, ingen bevegelse, ingen lyd. Malt omriss, ikke boksfiguren. Passer i stedet: de tre på åsen.
+4. **Den tredje før rulleteksten.** (a) Et svakt reflekterende bånd ute langs C på FRAME 03, og Nora snur bildet uten et ord; (b) noen i SARO-jakke 9 m foran bilen 05:29:10, med båndet i frontlysenes farger; (c) ingenting. Bøyer: bildet etter rulleteksten er eneste avsløring, og det tomme setet pekes aldri på (`HISTORIE.md:118-122`). (a) er mildest; båndet legges inn når lukkeren går (R4).
+5. **Ett ansikt før 05:29.** I kanten av et fritt bilde i kap. 4, uskarpt nær linsa: siden av et blekt hode og ett svart øye i blitsen. Bryter: ansiktet er spart til THE EVENT (`HENDELSER.md:313`). Gir det mest direkte svaret på "mer alien horror", men FLASH blir gjenkjennelse. Den ene dommeren mente prisen er for høy. Mildest: halve ansiktet.
+6. **Ingen stjerner der antennene peker.** En rund flekk uten stjerner ved az 026, el 32 fra 02:15, og det siste bildet i uttrekket har samme hull. Bøyer "the world is honest" (`SPILLDESIGN.md:60`) og kan se ut som en grafikkfeil. Billig i `Sky.ts`. Hold det svakt, og la det ikke vokse.
+
+Også et valg: lette, for korte skritt over arkivtaket i kap. 2, med rim på takaggregatet etterpå. Billig, men bryter "De lager ingen lyd, ikke engang skritt" (`HENDELSER.md:84`).
+
+### Små grep
+
+1. **Gården holder pusten.** 02:16, første gang ut: helt stille, så kommer sirissene én og én over 47 s. `Prologue.ts:998`, `Ambience.hush`.
+2. **Reléet går først.** 23:52 slår K3 ut før skippet, og 40 s senere dipper lyset. 40 s er servicekortets ("TRIPPED 40 SEC BEFORE OUTAGE"); i nedtellingen er det 7 s. Tom velger.
+3. **Konvolutten mot lampa.** "Plate 4. 1 print. 35c." Mot lampa: tre små skikkelser. La "There were two of us" være Tomás' setning.
+4. **Sjåførens klokke.** Den står på 11:58, mot permens 10/19/85 23:58:31. En slepelapp fra bensinstasjonen kan bære de tapte timene.
+5. **Morgenen holder pusten.** 05:13 i dineren stopper fuglene og kjøleren. "There. Some mornings about now." ("Every morning" strider mot `Chapter5.ts:426`.)
+6. **Kortet ender på en ring.** Telefonen ringer under CHAPTER TWO. Oppsummeringene står, fordi stemmene er nøklet på teksten.
+7. **Linjene møtes.** Dra linjene videre på kartet. Notatet i `main.ts:1435` sier allerede "through STATION 01" og må skrives om.
+8. **En tråd du ikke husker.** Etter en bortføring: en blyanttråd med "same" i din hånd, aldri på et P-spørsmål.
+
+### Forslag til rekkefølge
+
+1. Én modul for A, B og C på bakken, så punkt 1 og 2, og en teller over hva som ble sett.
+2. Små grep 1 og 2, Hondo (4) og arkivet (5, eller valg 1).
+3. Bilen: 8, så 10, så 6. Stigen lærer nøkkelen som 05:29 tar bort.
+4. Saken: 3 og 11, konvolutten og klokka.
+5. 9, 7 og 12.
+6. Den niende kua, blodløs ved B-fløyen på STATION 01 (570 m fra beitet), passer når som helst i kap. 3, men er kroppsskrekk Tom bør se først.
+
+Tell 47-ene: dette legger til minst fem. Motor, stillhet, 4/7 og pust høres allerede i walkien, telefonautomaten og THE EVENT; derfor ingen klikk på CB-en i punkt 6.
+
+### Hull
+
+Ingen foreslo måling: en logg over hva som skjedde og ble sett, og spilletid per kapittel, så man vet om glimtene sees på telefon. Ingenting sier hva den som slår av Missing time får i stedet. Lydslagene trenger teksting, nye linjer trenger stemmer, og hvert engangsslag trenger en `townSeen`-nøkkel og oppdaterte `tools/*.py`. Fortsatt tomt: mil 0 til 6 på den gamle veien, Caliche etter 04:50 og hytta på STATION 01. Ikke tatt opp: glimtet bak labbens glass, figuren blant kyrne, "STA 01 / B", nettverkstelexen (SITE 03, SITE 11) og en lydflate fra den kjøpte pakken som følger trykket.
+
 ## Forbedringer, 16. oktober kveld (Tom spurte)
 
 Det jeg tror gir mest for innsatsen står øverst. Ingenting her er bygget.
