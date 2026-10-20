@@ -281,6 +281,7 @@ async def main():
         over = await ev(f"{A}.overPhase")
         if over:
             check(await mode() == 'watch', f'one of them over the player on waking ({over}): the way the player lies is the abduction\'s, and the dishes wait on the place')
+            if await until(f"{A}.overPhase === 'there'", 3, 0.1): await pg.screenshot(path=f'{OUT}/d05a_over_you_and_the_dishes.png')
             gone = await until(f"{A}.overPhase === null", 6, 0.1)
             offs = await ev(f"{F}.state.filter((r) => r.on && r.tier === 0).map((r) => __off(r.id, __eye()))")
             check(gone and await mode() == 'watch' and offs and all(o[0] < 1 and o[1] < 1 for o in offs),
