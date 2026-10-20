@@ -24,6 +24,7 @@ import type { Collider } from '../world/ControlRoom';
 import { openTerminal } from '../ui/Terminal';
 import { halleyPosterTex } from '../core/textures';
 import { BINDER, SERVICE, TELEX_EVENING, telex, telexHondo, HONDO_NOTE, interferenceCard, halleyPoster, OpsTerminal, type LogLine } from './nightshift';
+import { copyArraySave, type ArraySave } from './arrayBack';
 import { CaseBoard, type BoardSave, type RegionId } from './caseBoard';
 import type { BoardHook, RuleBook } from './boardRules';
 
@@ -121,6 +122,9 @@ export interface NightShiftState { papers: string[]; k3Open: boolean; log: LogLi
   /** the threads on Night Shift's cork from the exceptions binder to the nights Caliche lost
    *  (story/lostNights.ts; saves from before 20 October have none) */
   ln?: string[];
+  /** each time the array was put back on the schedule and went back (story/arrayBack.ts; saves
+   *  from before 20 October have none) */
+  array?: ArraySave;
   /** when Hondo Valley's telex was filed (the minute SARO went dark, story/saroDark.ts): it is on
    *  the roll from then on (saves from before 20 October have none) */
   hondo?: number }
@@ -178,6 +182,10 @@ export class Prologue {
   private opsDirty = true;
   private opsT = 0;
   private halleyImg: string | undefined;
+  /** The array put back on the schedule (story/arrayBack.ts, set by main.ts): the status screen's
+   *  mode and bottom line while it runs, and what the status terminal says. */
+  arrayStatus: (() => { mode: string; line: string | null; warn: boolean } | null) | null = null;
+  arrayText: (() => string | null) | null = null;
   readonly ops = new OpsTerminal(() => ({ clock: this.clock, solveAt: this.ns.solveAt, log: this.ns.log, future: this.phase === 'ch5' }));
 
   private timers: { at: number; fn: () => void; tag?: string }[] = [];
@@ -303,7 +311,7 @@ export class Prologue {
   // One saved case for every chapter: a later chapter's state rides along once it has begun.
   private composeCase(s: CaseState): SavedCase {
     return { s, ch2: this.ch2?.started ? this.ch2.s : undefined, ch3: this.ch3?.started ? this.ch3.s : undefined, ch4: this.ch4?.started ? this.ch4.s : undefined, ch5: this.ch5?.started ? this.ch5.s : undefined,
-      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket, ln: [...(this.ns.ln ?? [])], hondo: this.ns.hondo }, notes: [...this.notes], clock: this.clock,
+      ns: { papers: [...this.ns.papers], k3Open: this.ns.k3Open, log: this.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: this.ns.solveAt, jacket: !!this.ns.jacket, ln: [...(this.ns.ln ?? [])], array: copyArraySave(this.ns.array), hondo: this.ns.hondo }, notes: [...this.notes], clock: this.clock,
       board: { pos: { ...this.boardSave?.pos } } };
   }
   private setPhase(p: Phase) { this.phase = p; }
@@ -421,7 +429,9 @@ export class Prologue {
     inter.add({ id: 'crtLeft', object: o.crtLeft, range: 2.6, label: () => 'Status terminal',
       use: () => {
         if (!this.powered) { toast('No power.'); return; }
-        if (this.at('event')) toast('S-01 to S-27: no control command recorded.');
+        const at = this.arrayText?.();
+        if (at) toast(at);
+        else if (this.at('event')) toast('S-01 to S-27: no control command recorded.');
         else if (this.rx.stage >= 2) toast(`Array on survey schedule. Az ${pad(this.d.ext.dishes[0].curAz, 3)}, el ${SURVEY_EL}. Nothing logged since midnight.`);
         else toast('Array parked. Receiver needs calibrating before the survey can start.');
       } });
@@ -1193,21 +1203,24 @@ export class Prologue {
 
   private drawStatus(g: CanvasRenderingContext2D) {
     this.clear(g);
-    const ev = this.at('event');
+    const ev = this.at('event'), arr = ev ? this.arrayStatus?.() ?? null : null;
     this.txt(g, 'SARO  ARRAY STATUS', 18, 34, 28);
     this.txt(g, clockText(this.clock), 384, 34, 26);
-    const mode = ev ? 'NO SCHEDULE ENTRY' : this.rx.stage >= 2 ? 'SURVEY  H-LINE' : this.rx.stage === 1 ? 'INTERFERENCE CHECK' : 'CALIBRATION';
+    const mode = arr ? arr.mode : ev ? 'NO SCHEDULE ENTRY' : this.rx.stage >= 2 ? 'SURVEY  H-LINE' : this.rx.stage === 1 ? 'INTERFERENCE CHECK' : 'CALIBRATION';
     this.txt(g, `RX BANK 3   ONLINE`, 18, 68, 22);
-    this.txt(g, `MODE        ${mode}`, 18, 92, 22, ev ? '#ffd27a' : '#8cffa4');
+    this.txt(g, `MODE        ${mode}`, 18, 92, 22, ev && (!arr || arr.warn) ? '#ffd27a' : '#8cffa4');
     this.txt(g, `SCHEDULE    AZ 042  EL 48  UNTIL 06:00`, 18, 116, 22);
     g.fillStyle = 'rgba(140,255,164,.35)'; g.fillRect(18, 128, 476, 1);
     const ds = this.d.ext.dishes;
+    // all 27, three columns of nine (two of eight drew S-09 to S-27 on top of each other)
     ds.forEach((d, i) => {
-      const col = i < 8 ? 0 : 1, row = i % 8;
+      const col = Math.floor(i / 9), row = i % 9;
       const mv = d.moving ? '>' : ' ';
-      this.txt(g, `${d.id} ${angleText(d.curAz, 3)} ${angleText(d.curEl)}${mv}`, 18 + col * 250, 156 + row * 26, 22, (d.moving || d.rogue) && ev ? '#ffd27a' : '#8cffa4');
+      this.txt(g, `${d.id} ${angleText(d.curAz, 3)} ${angleText(d.curEl)}${mv}`, 18 + col * 164, 152 + row * 23, 20, (d.rogue || d.back || (d.moving && !arr)) && ev ? '#ffd27a' : '#8cffa4');
     });
-    if (ev && Math.floor(this.gt * 2) % 2 === 0) this.txt(g, 'NO CONTROL COMMAND RECORDED', 18, 372, 24, '#ffd27a');
+    // (the array on the schedule: its count, steady; going back with no command, blinking)
+    if (arr?.line && (!arr.warn || Math.floor(this.gt * 2) % 2 === 0)) this.txt(g, arr.line, 18, 372, 24, arr.warn ? '#ffd27a' : '#c8ffd2');
+    else if (!arr && ev && Math.floor(this.gt * 2) % 2 === 0) this.txt(g, 'NO CONTROL COMMAND RECORDED', 18, 372, 24, '#ffd27a');
   }
 
   private drawSpectrumCrt(g: CanvasRenderingContext2D, t: number) {
@@ -1482,7 +1495,7 @@ export class Prologue {
     const e = saved?.s?.eventClock ?? this.eventClock;
     this.ns = saved?.ns
       ? { papers: [...saved.ns.papers], k3Open: saved.ns.k3Open, log: saved.ns.log.map((l) => [l[0], l[1]] as LogLine), solveAt: saved.ns.solveAt, jacket: !!saved.ns.jacket, ln: [...(saved.ns.ln ?? [])],
-        hondo: Number.isFinite(saved.ns.hondo) ? saved.ns.hondo : undefined }
+        array: copyArraySave(saved.ns.array), hondo: Number.isFinite(saved.ns.hondo) ? saved.ns.hondo : undefined }
       : { papers: [], k3Open: false, solveAt: e - 60, log: [[23 * 3600 + 44 * 60, 'RX BANK 3  K3 CLOSED'], [e - 60, 'SOLVE  RANGE NEGATIVE'],
         [e - 47, 'STATION CLOCK  WWVB REFERENCE LOST'], [e - 7, 'RX BANK 3  K3 OPEN'], [e, 'LINE POWER  DIP 1.2 S'],
         [e, 'STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47'], [e + 3, 'ARRAY  S-01 TO S-27 MOTION  NO COMMAND'], [e + 70, 'RX BANK 3  K3 CLOSED']] };

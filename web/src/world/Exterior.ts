@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge } from './kit';
+import { M, box, cyl, plane, addFlood, floodlit, mergeStatic, noMerge, setFlood, flood } from './kit';
 import { Dish, DishArray } from './Dish';
 import { GlowPoints } from './glow';
 import { desertGround } from './flora';
@@ -45,6 +45,11 @@ export class Exterior {
    *  the power (world/saroPower.ts). */
   readonly paint: THREE.MeshBasicMaterial[] = [];
   private statics = new THREE.Group();
+  /** The lamps on the posts out in the field, and the sodium floods the first five carry
+   *  (story/arrayBack.ts puts them out for the array's four and seven, and back). */
+  private fieldLamps: { flood: number; w: number; glow: number; at: THREE.Vector3 }[] = [];
+  /** How the field's lamps are now (tests). */
+  fieldNow: 'on' | 'out' | 'red' = 'on';
 
   constructor() {
     this.ground();
@@ -104,14 +109,19 @@ export class Exterior {
     this.dishArray = new DishArray(this.dishes);
     this.group.add(this.dishArray.group);
     // sodium floods near the closest dishes
-    addFlood(30, 3, -30, 46); addFlood(-10, 3, -42, 40); addFlood(-40, 3, -56, 34);
-    addFlood(12, 3, -78, 30); addFlood(48, 3, -86, 28);
+    const floods = [[30, -30, 46], [-10, -42, 40], [-40, -56, 34], [12, -78, 30], [48, -86, 28]].map(([x, z, w]) => ({ flood: addFlood(x, 3, z, w), w }));
+    // (wide area floods: never a real light in the PC tier, not even dimmed for the array's four
+    // and seven, story/arrayBack.ts, when they would fall in its range)
+    for (const f of floods) if (f.flood >= 0) flood.skip.add(f.flood);
     const lamp = (x: number, z: number, h = 7) => {
       cyl(this.statics, 0.12, 0.16, h, M.pole, x, h / 2 - 0.6, z, 6);
-      this.glow.add(x, h - 0.5, z, 2.6, 0xffb45a);
+      return this.glow.add(x, h - 0.5, z, 2.6, 0xffb45a);
     };
     // the first five carry the floods; one of the others stood in the middle of the highway (-24, -106)
-    LAMPS.forEach(([x, z], i) => lamp(x, z, i < 5 ? 7 : 6));
+    LAMPS.forEach(([x, z], i) => {
+      const g = lamp(x, z, i < 5 ? 7 : 6);
+      this.fieldLamps.push({ ...(floods[i] ?? { flood: -1, w: 0 }), glow: g, at: new THREE.Vector3(x, (i < 5 ? 7 : 6) - 0.5, z) });
+    });
   }
 
   private road() {
@@ -215,6 +225,18 @@ export class Exterior {
     const gap = (x: number) => (x > -28.6 && x < -19.4) || (x > GATE.x0 - 0.8 && x < GATE.x1 + 0.8);
     for (let x = -80; x <= 60; x += 7) if (!gap(x)) cyl(this.statics, 0.05, 0.05, 2.6, M.pole, x, 0.6, FENCE_Z, 5);
     for (const x of [-28.6, -19.4]) cyl(this.statics, 0.06, 0.06, 2.7, M.pole, x, 0.6, FENCE_Z, 5);
+  }
+
+  /** The floods out in the field and their lamps: as built (on), out (0), or red at this strength
+   *  (the light of the dishes' own lamps on them, story/arrayBack.ts). */
+  fieldLights(k: number | 'on', red = false) {
+    this.fieldNow = k === 'on' ? 'on' : red ? 'red' : 'out';
+    const hide = new THREE.Vector3();
+    for (const l of this.fieldLamps) {
+      const on = k === 'on';
+      if (l.flood >= 0) { setFlood(l.flood, on ? l.w : l.w * (k as number)); flood.col[l.flood].set(on || !red ? 0xff9a45 : 0xff1e10); }
+      this.glow.setPosition(l.glow, on ? l.at : hide.copy(l.at).setY(-999));
+    }
   }
 
   update(dt: number, t: number) {

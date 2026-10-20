@@ -211,8 +211,14 @@ function reelDate(n: number) {
   return `${pad(d.getUTCDate())}-${MON[d.getUTCMonth()]}-${String(d.getUTCFullYear()).slice(2)}`;
 }
 
+/** Commands from outside Night Shift (story/arrayBack.ts: ARRAY RESUME): its answer to one of
+ *  its own (null: not one of them), the buttons it offers now, and its lines in HELP. */
+export interface OpsMore { run(cmd: string): string | null; buttons(): string[]; help: string[] }
+
 export class OpsTerminal {
   private extra = new Set<string>();
+  /** The array's commands (main.ts sets it). */
+  more: OpsMore | null = null;
   constructor(private view: () => OpsView) {}
 
   header() {
@@ -221,14 +227,17 @@ export class OpsTerminal {
   }
   /** The commands offered as buttons; a few appear once the screen has shown why. */
   buttons() {
-    return ['DIR SURVEY.RAW', 'SHOW EXCEPTIONS', 'SHOW TAPES', 'SHOW LOG', 'HELP', ...this.extra];
+    return ['DIR SURVEY.RAW', 'SHOW EXCEPTIONS', 'SHOW TAPES', 'SHOW LOG', 'HELP', ...(this.more?.buttons() ?? []), ...this.extra];
   }
 
   run(input: string): string {
     const v = this.view();
     const cmd = input.trim().toUpperCase().replace(/\s+/g, ' ');
     if (!cmd) return '';
-    if (cmd === 'HELP') return 'COMMANDS\n  DIR SURVEY.RAW     SURVEY FILES\n  TYPE <FILE>        FILE HEADER\n  SHOW EXCEPTIONS    SOLVER EXCEPTIONS\n  SHOW TAPES [A-B]   RAW TAPE CATALOGUE\n  SHOW LOG           CONSOLE LOG\n  LOGOUT';
+    if (cmd === 'HELP') return ['COMMANDS', '  DIR SURVEY.RAW     SURVEY FILES', '  TYPE <FILE>        FILE HEADER', '  SHOW EXCEPTIONS    SOLVER EXCEPTIONS',
+      '  SHOW TAPES [A-B]   RAW TAPE CATALOGUE', '  SHOW LOG           CONSOLE LOG', ...(this.more?.help ?? []), '  LOGOUT'].join('\n');
+    const more = this.more?.run(cmd);
+    if (more != null) return more;
     if (cmd === 'DIR' || cmd === 'DIR SURVEY.RAW' || cmd === 'DIRECTORY' || cmd === 'DIRECTORY SURVEY.RAW') return this.dir(v);
     if (cmd.startsWith('TYPE ')) return this.type(v, cmd.slice(5).trim());
     if (cmd === 'SHOW EXCEPTIONS' || cmd === 'SHOW EXCEPTIONS/SOLVER') return this.exceptions(v);
