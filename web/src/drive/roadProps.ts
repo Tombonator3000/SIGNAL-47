@@ -217,13 +217,23 @@ export function fences(b: Build, keep: Keep = () => true) {
 }
 
 // ---------- delineator posts: the reflectors glint in the headlights (RoadArea.update) ----------
-export function delineators(b: Build, keep: Keep = () => true) {
-  const list: THREE.Matrix4[] = [], glints: { i: number; p: THREE.Vector3 }[] = [];
+/** Where the delineator posts stand along the highway (road-local x, z; the foot at surfaceY):
+ *  both shoulders, every 80 m, not across the survey track's mouth, the motel's lot or Caliche.
+ *  core/cutouts.ts has the shape at the end of the headlights stand in front of one. */
+export function delineatorSpots(): [number, number][] {
+  const out: [number, number][] = [];
   for (const side of [-1, 1]) for (let z = -1000 + (side > 0 ? 40 : 0); z <= 2900; z += 80) {
     if (side < 0 && z > 470 && z < 570) continue; // the mouth of the survey track
     if (side < 0 && z > MOTEL.z - 42 && z < MOTEL.z + 42) continue; // the motel's lot
     if (z > DINER.z - 30 && z < TOWN.z1) continue; // the way into the diner's lot, the old road's mouth, Caliche
-    const x = side * 7.2, y = surfaceY(x, z);
+    out.push([side * 7.2, z]);
+  }
+  return out;
+}
+export function delineators(b: Build, keep: Keep = () => true) {
+  const list: THREE.Matrix4[] = [], glints: { i: number; p: THREE.Vector3 }[] = [];
+  for (const [x, z] of delineatorSpots()) {
+    const y = surfaceY(x, z);
     if (!keep(x, z)) continue;
     list.push(place(x, y, z, 0, 1, (hash(x, z) - 0.5) * 0.05));
     const p = new THREE.Vector3(x, y + 1.05, z);

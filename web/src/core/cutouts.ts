@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { artLoaded, artTexture, loadArtSome } from './art';
-import { eachVariant } from './quality';
+import { eachVariant, materialFor } from './quality';
+import { floodlit, type FloodSet } from '../world/kit';
 
 // The souvenir shop's cardboard alien, anywhere (Tom, 18 October: it should keep turning up in
 // different places, quite at random, all through the game). One cutout, about 1.5 m, on a
@@ -8,7 +9,15 @@ import { eachVariant } from './quality';
 // there the next time they turn round: in a corridor, on the pad, behind the diner. Driving,
 // it stands on the shoulder ahead of the truck. Once it has been seen and the player has looked
 // away, it is gone, and a while later it is somewhere else. It never moves while it is looked at.
-// main.ts decides when it may (not in the prologue, a cinematic or the time away).
+// main.ts decides when it may (not in the prologue, a cinematic or the time away), and the night's
+// curve when (story/curve.ts): in its build, never in the quiet after a peak, and never at the
+// peak's moment (one put out and not yet found is gone again as soon as it is out of the view).
+//
+// Once in the night (FORSLAG.md, 20 October, item 1), when the player has met it twice already
+// and is driving in a build: the same shape stands at the far end of the headlights, on the
+// shoulder. When the lights reach it they stutter, and it is a reflector post (placePost: it
+// stands in front of one of the highway's delineators, drive/roadProps.ts). "The same shape. There
+// was nothing there when I got to it."
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -39,13 +48,32 @@ export interface CutoutsIn {
   foot: { pos: THREE.Vector3; walkable: (x: number, z: number) => boolean; floor: (x: number, z: number) => number; blocked: (x: number, z: number) => boolean } | null;
   /** Driving a road it can stand beside: the truck, its heading, and the ground. */
   drive: { pos: THREE.Vector3; dir: THREE.Vector3; ground: (x: number, z: number) => number } | null;
+  /** The night's curve lets it turn up now (story/curve.ts); left out, it may. */
+  may?: boolean;
+  /** One put out and not yet found may stay (the curve's build is still on); left out, it may. */
+  keep?: boolean;
+  /** How much sooner it turns up than its own pace (the curve's build). */
+  pace?: number;
+  /** The lights stutter (the headlights driving, else the flashlight): the shape at the end of them
+   *  is only a post. */
+  blink?: () => void;
+  /** The fake lamps of the area shown (world/kit.ts): on the shoulder the card catches the
+   *  headlights as the posts there do. */
+  flood?: FloodSet | null;
 }
 
 export class Cutouts {
-  /** Where it stands now ('foot' or 'shoulder'), for the developer menu and the tests. */
-  up: 'foot' | 'shoulder' | null = null;
+  /** Where it stands now ('foot' or 'shoulder'; 'post': the shape at the end of the headlights),
+   *  for the developer menu and the tests. */
+  up: 'foot' | 'shoulder' | 'post' | null = null;
   /** How many times it has been seen tonight. */
   seen = 0;
+  /** How many times it has been put out tonight (the curve counts them in a cycle). */
+  placed = 0;
+  /** The shape at the end of the headlights: how near the truck was when the lights stuttered,
+   *  and whether it had been looked at before (the tests). */
+  post: { dist: number; looked: boolean } | null = null;
+  private reveal = -1;
   private fig = new THREE.Group();
   private wait = rnd(40, 120);
   private looked = 0;
@@ -53,13 +81,16 @@ export class Cutouts {
   private away = 0;
   private age = 0;
   private mat: THREE.MeshStandardMaterial;
+  private card: THREE.Mesh;
+  /** The card lit by an area's lamps (the shoulder, in the headlights), one for each set. */
+  private lit = new Map<FloodSet, THREE.MeshStandardMaterial>();
   private asked = false;
 
-  constructor(scene: THREE.Scene, private note: (first: boolean) => void) {
+  constructor(scene: THREE.Scene, private note: (first: boolean) => void, private postNote: (looked: boolean) => void = () => {}) {
     // a little of its own paint shows even in the dark, so it reads as cardboard and not as them
     const tex = artLoaded('cutout') ? artTexture('cutout') : cutoutTexture();
     const mat = this.mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
-    const card = new THREE.Mesh(new THREE.PlaneGeometry(0.76, 1.52), mat);
+    const card = this.card = new THREE.Mesh(new THREE.PlaneGeometry(0.76, 1.52), mat);
     card.position.y = 0.76; card.rotation.y = Math.PI;
     const stick = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.05), new THREE.MeshStandardMaterial({ color: 0x6b5a44, roughness: 1 }));
     stick.position.set(0, 0.3, 0.03);
@@ -77,6 +108,11 @@ export class Cutouts {
   }
 
   update(dt: number, s: CutoutsIn) {
+    // on the shoulder it is in the headlights like the posts beside it; on foot as it always was
+    const want = (this.up === 'shoulder' || this.up === 'post') && s.flood ? this.litMat(s.flood) : this.mat;
+    const m = materialFor(want);
+    if (this.card.material !== m) this.card.material = m;
+    if (this.up === 'post') return this.postStep(dt, s);
     if (this.up) {
       this.age += dt;
       const v = this.view(s.cam, this.fig.position);
@@ -88,13 +124,16 @@ export class Cutouts {
       } else this.away += dt;
       // seen and looked away from, left behind, or never found: gone, when nobody is looking
       const done = (this.wasSeen && this.away > 2.5) || (this.up === 'shoulder' && v.dist > 260 && this.age > 8) || this.age > 300;
-      if (lost || (done && !v.inView)) this.hide(rnd(70, 200));
+      // the curve's build is over (or something else is going) and nobody has found it: not there
+      const withdrawn = !this.wasSeen && s.keep === false;
+      if (lost || ((done || withdrawn) && !v.inView)) this.hide(withdrawn ? rnd(20, 60) : rnd(70, 200));
       return;
     }
     if (!s.ok) return;
     // the painted cutout (round 14) is fetched once the night may show it, and put on the card
     if (!this.asked) { this.asked = true; void loadArtSome(['cutout']).then(() => this.paint()); }
-    this.wait -= dt;
+    if (s.may === false) return;
+    this.wait -= dt * (s.pace ?? 1);
     if (this.wait > 0) return;
     if (!this.place(s)) this.wait = rnd(4, 10);   // nowhere out of sight just now: soon
   }
@@ -123,22 +162,65 @@ export class Cutouts {
     if (!at) return false;
     this.fig.position.copy(at);
     this.fig.rotation.y = Math.atan2(cp.x - at.x, cp.z - at.z) + rnd(-0.35, 0.35);   // more or less facing the player
-    this.fig.visible = true; this.up = kind;
+    this.fig.visible = true; this.up = kind; this.placed++;
     this.looked = 0; this.away = 0; this.age = 0; this.wasSeen = false;
     return true;
+  }
+
+  /** The shape at the far end of the headlights, once in the night (main.ts finds the post: a
+   *  delineator ahead on the shoulder, out beyond the lights). It stands just in front of the post,
+   *  so the post is behind the card, facing the one coming. */
+  placePost(post: THREE.Vector3, from: THREE.Vector3) {
+    if (this.up) return false;
+    const to = new THREE.Vector3(from.x - post.x, 0, from.z - post.z);
+    if (to.lengthSq() < 1) return false;
+    to.normalize();
+    this.fig.position.copy(post).addScaledVector(to, 0.16);
+    this.fig.rotation.y = Math.atan2(to.x, to.z);
+    this.fig.visible = true; this.up = 'post'; this.post = null; this.reveal = -1;
+    this.looked = 0; this.away = 0; this.age = 0; this.wasSeen = false;
+    return true;
+  }
+  /** Coming up on it. When the lights reach it they stutter, and in the dark of that it is a post. */
+  private postStep(dt: number, s: CutoutsIn) {
+    this.age += dt;
+    const p = this.fig.position, v = this.view(s.cam, p);
+    const src = s.drive?.pos ?? s.foot?.pos ?? null;
+    const d = src ? Math.hypot(p.x - src.x, p.z - src.z) : Infinity;
+    // (looked at once it is in the lights, where it can be made out)
+    if (v.inView && v.dist < 70) this.looked += dt;
+    if (this.reveal >= 0) {
+      // (seen coming, it goes in the notebook; never looked at, there was only ever a post, and it may come in a later build)
+      if ((this.reveal += dt) >= 0.09) { const looked = this.looked > 0.6; this.post = { dist: d, looked }; this.hide(rnd(70, 200)); if (looked) this.postNote(looked); }
+      return;
+    }
+    // the headlights (or the flashlight, on foot) are full on it: near enough to see it is the cutout
+    if (s.ok && d < (s.drive ? 20 : 12)) { this.reveal = 0; s.blink?.(); return; }
+    // turned back, gone by another way, out of the truck, or never got to: gone, unseen, when nobody looks
+    if (!v.inView && (!s.ok || d > 280 || this.age > 90)) this.hide(rnd(30, 90));
   }
   private paint() {
     if (!artLoaded('cutout') || this.mat.map?.name === 'art/cutout') return;
     const old = this.mat.map, tex = artTexture('cutout');
-    // on Low the card wears a cheaper copy of the material (core/quality.ts): both get it
-    eachVariant(this.mat, (v) => { const m = v as THREE.MeshStandardMaterial; m.map = tex; m.emissiveMap = tex; m.needsUpdate = true; });
+    // on Low the card wears a cheaper copy of the material (core/quality.ts): both get it, and the lit ones
+    for (const mat of [this.mat, ...this.lit.values()]) eachVariant(mat, (v) => { const m = v as THREE.MeshStandardMaterial; m.map = tex; m.emissiveMap = tex; m.needsUpdate = true; });
     old?.dispose();
+  }
+  /** The card as an area's lamps light it (the road's posts take 0.012 too: drive/roadProps.ts). */
+  private litMat(set: FloodSet) {
+    let m = this.lit.get(set);
+    if (!m) {
+      const b = this.mat;
+      m = floodlit(new THREE.MeshStandardMaterial({ map: b.map, emissiveMap: b.emissiveMap, emissive: 0xffffff, emissiveIntensity: b.emissiveIntensity, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }), 0.012, set);
+      this.lit.set(set, m);
+    }
+    return m;
   }
   get position() { return this.fig.position; }
   /** Where it stands (its middle) while it is up (story/seen.ts), or null. */
   get where() { return this.up ? this.mid.copy(this.fig.position).setY(this.fig.position.y + 0.8) : null; }
   private mid = new THREE.Vector3();
-  private hide(wait: number) { this.fig.visible = false; this.up = null; this.wait = wait; }
+  private hide(wait: number) { this.fig.visible = false; this.up = null; this.wait = wait; this.reveal = -1; }
   /** A new night, the title, a save opened. */
-  reset() { this.hide(rnd(40, 120)); this.seen = 0; }
+  reset() { this.hide(rnd(40, 120)); this.seen = 0; this.placed = 0; this.post = null; this.reveal = -1; }
 }

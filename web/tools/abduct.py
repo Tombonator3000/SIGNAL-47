@@ -43,7 +43,8 @@ async def main():
                 if await stage() == st: return True
                 await ev(f"S47.tick({step})")
             return await stage() == st
-        await ev("S47.hold = true; S47.jump('chapter2'); S47.tick(1.0)")
+        # (the night's one curve, story/curve.ts, stands aside here: this is the time away on its own timer; tools/f_curve.py has them together)
+        await ev("S47.hold = true; S47.curve.free = true; S47.jump('chapter2'); S47.tick(1.0)")
         await ev("S47.game.d.ui.close(); S47.game.clock = 2 * 3600 + 58 * 60; S47.tick(0.2)")
         await ev("S47.world.enter('saro'); S47.player.place(-24, 200, Math.PI); S47.tick(0.3)")
         ab = await ev("(() => { const s = S47.abductIn(); return [s.line, s.nextFixed, s.enabled]; })()")
@@ -129,7 +130,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.hold = true; S47.tick(0.5)")
+        await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.5)")
         kept = await ev(f"[{A}.data.count, !!S47.scene.getObjectByName('abduct:ring'), !!S47.scene.getObjectByName('abduct:record'), S47.game.docs.some((d) => d.id === 'away1')]")
         check(kept[0] >= 1 and kept[1] and kept[2] and kept[3], f'after Continue: the time away is kept, the ring, the recording and the exposure ({kept})')
 

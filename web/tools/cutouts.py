@@ -27,7 +27,8 @@ async def main():
         ev = pg.evaluate
         C = "S47.cutouts"
         up = lambda: ev(f"{C}.up")
-        await ev("S47.hold = true; S47.tick(1.0)")
+        # (the night's one curve, story/curve.ts, stands aside here: this is the cutout on its own timer; tools/f_curve.py has them together)
+        await ev("S47.hold = true; S47.curve.free = true; S47.tick(1.0)")
         await ev(f"{C}['wait'] = 0; S47.tick(0.5)")
         check(await up() is None, 'the prologue: not yet')
 

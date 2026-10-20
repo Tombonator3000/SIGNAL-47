@@ -19,7 +19,8 @@ import { artImage, artLoaded, artTexture, loadArtSome, ALIEN_ART, type ArtId } f
 //                 the view, and more than 40 m off). Looked at, it was not there.
 //
 // Nothing chases and nothing answers (HENDELSER.md, the rules). Nothing in the prologue, and
-// nothing once THE EVENT has the night (main.ts decides when it may run).
+// nothing once THE EVENT has the night (main.ts decides when it may run). The car, the silence and
+// the roof wait for the night's curve (story/curve.ts); the line hums whenever.
 
 const POLE_X = 15 - SARO_IN_ROAD.x;                  // the telephone line, road x 15 (roadProps.poles)
 const poleZ = (k: number) => { const z0 = -1900 + 45 * k; return z0 + (hash(z0, 1) - 0.5) * 4 - SARO_IN_ROAD.z; };
@@ -38,6 +39,9 @@ export interface RoadsideIn {
   flicker: (k: number) => void;
   /** The silence is over: write it down. */
   silenceOver: () => void;
+  /** The night's curve (story/curve.ts): may the car come now (an event), the silence (47 s, a
+   *  peak) or the one on the roof (a glimpse)? Left out, they may. */
+  may?: (what: 'car' | 'silence' | 'roof') => boolean;
 }
 
 export class Roadside {
@@ -120,7 +124,7 @@ export class Roadside {
   // ---------- the car far down the highway ----------
   private carStep(dt: number, o: RoadsideIn) {
     this.carAgain = Math.max(0, this.carAgain - dt);
-    if (!this.car && o.ok && !this.silent && this.carAgain <= 0 && this.onFoot > this.carNext && o.pos.z > 150 && o.pos.z < MOTEL_RECT.minZ - 20) this.carNow(o.pos);
+    if (!this.car && o.ok && !this.silent && this.carAgain <= 0 && this.onFoot > this.carNext && o.pos.z > 150 && o.pos.z < MOTEL_RECT.minZ - 20 && (o.may?.('car') ?? true)) this.carNow(o.pos);
     const c = this.car;
     if (!c) return;
     c.t += dt;
@@ -166,7 +170,7 @@ export class Roadside {
       if (this.silenceT <= 0) { this.silent = false; o.silenceOver(); }
       return;
     }
-    if (o.ok && !o.silenceDone && !this.car && this.walked > 100 && o.pos.z > 260 && o.pos.z < MOTEL_RECT.minZ - 90) this.silenceNow(o);
+    if (o.ok && !o.silenceDone && !this.car && this.walked > 100 && o.pos.z > 260 && o.pos.z < MOTEL_RECT.minZ - 90 && (o.may?.('silence') ?? true)) this.silenceNow(o);
   }
   /** 47 seconds with no sound (the developer menu, the tests). */
   silenceNow(o: Pick<RoadsideIn, 'hush' | 'flicker'>) {
@@ -182,7 +186,7 @@ export class Roadside {
     const p = o.pos, d = p.distanceTo(ROOF);
     // coming down towards the motel: the first time the player looks away from it, and not
     // every time, someone is there (only ever where it is not being looked at)
-    if (this.roof === 'none' && o.ok && !this.silent && p.z > MOTEL_RECT.minZ - 170 && p.z < MOTEL_RECT.minZ - 45 && this.offCentre(o.cam) > 32) {
+    if (this.roof === 'none' && o.ok && !this.silent && p.z > MOTEL_RECT.minZ - 170 && p.z < MOTEL_RECT.minZ - 45 && this.offCentre(o.cam) > 32 && (o.may?.('roof') ?? true)) {
       if (Math.random() < 0.6) this.roofNow(); else this.roof = 'gone';
     }
     if (this.roof !== 'up') return;

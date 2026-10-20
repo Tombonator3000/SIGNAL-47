@@ -41,7 +41,8 @@ import type { LineId } from './lines';
 //
 // At least 40 minutes of the night between two, at most three in a night; the director sees to
 // one before chapter five. The setting turns them off (on by default). main.ts decides when it
-// may run (chapters one to four, at night, no panel, no cinematic); story/lines.ts where the lines are.
+// may run (chapters one to four, at night, no panel, no cinematic), the night's curve when (its
+// peak, story/curve.ts); story/lines.ts where the lines are.
 //
 // The single frames are ChatGPT's where they have come (ART_BRIEF.md, round 14, abduct/; asked for
 // when the warning starts): the light with your legs in it, the truck standing open, three of them
@@ -68,6 +69,9 @@ export interface AbductIn {
   /** How much faster the pressure rises here (the antenna field before its dishes have turned,
    *  story/dishesFollow.ts); 1 when left out. */
   boost?: number;
+  /** The night's curve (story/curve.ts) is at its peak: the warning may begin. Before that the
+   *  pressure on the line still rises, and waits at the top. Left out, it may. */
+  may?: boolean;
 }
 export interface AbductDeps {
   audio: AudioSys;
@@ -210,6 +214,8 @@ export class Abduction {
     // one before chapter five is due and has not come
     const day = ((s.clock % 86400) + 86400) % 86400, k = THREE.MathUtils.clamp((day - 2.3 * 3600) / (2.5 * 3600), 0, 1);
     this.pressure += dt / 360 * (0.7 + 0.8 * k) * (s.late && this.data.count === 0 ? 2.5 : 1) * (s.boost ?? 1);
+    // (alone on a line in the build, it waits at the top for the peak)
+    if (s.may === false) { this.pressure = Math.min(this.pressure, this.top); return; }
     if (this.pressure >= this.top) this.begin(s);
   }
   /** Start the warning now (the developer menu, the tests). */
