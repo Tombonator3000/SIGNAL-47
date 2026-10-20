@@ -51,11 +51,13 @@ import { TownEvents, townMarks, ON_B } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
 import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
+import { RoofSteps, type RoofIn } from './story/roofSteps';
 import { Abduction, type AbductIn } from './story/abduction';
+import { DishesFollow, nearArray } from './story/dishesFollow';
 import { LineLights } from './story/lineLights';
 import { Pasture, PASTURE_M } from './story/pasture';
 import { MotelTv } from './story/motelTv';
-import { Album, rollText } from './core/album';
+import { Album, rollText, FACE_LINE } from './core/album';
 import { albumSubjects } from './story/albumSubjects';
 import { albumArt } from './ui/album';
 import { surfaceY } from './drive/roadTerrain';
@@ -378,6 +380,8 @@ async function boot() {
   });
   // the time away (story/abduction.ts): a frame of the scene from a camera of its own, drawn at once
   const shotCanvas = document.createElement('canvas'); shotCanvas.width = 640; shotCanvas.height = 400;
+  let probeRT: THREE.WebGLRenderTarget | null = null;
+  const PROBE_SKY = new THREE.Color(1, 0, 1);
   abduction = new Abduction({
     audio, player, scene, overlay: document.body, flashlight,
     shoot: (cam) => {
@@ -388,16 +392,42 @@ async function boot() {
         return shotCanvas;
       } catch { return null; }
     },
+    // what would be behind them on waking (story/abduction.ts): small, before the tape, with the
+    // antennas and the lamps' discs as this camera has them, and the open sky in one flat colour
+    // (PROBE_SKY) so it can be told from anything standing against it
+    probe: (cam, w, h) => {
+      try {
+        if (!probeRT || probeRT.width !== w || probeRT.height !== h) { probeRT?.dispose(); probeRT = new THREE.WebGLRenderTarget(w, h); }
+        const gs = glowScale.value, bg = scene.background, skyOn = sky.group.visible;
+        glowScale.value = h / (2 * Math.tan(cam.fov * Math.PI / 360));
+        sky.group.visible = false; scene.background = PROBE_SKY;
+        ext.dishArray.cull(cam);
+        try { renderer.setRenderTarget(probeRT); renderer.render(scene, cam); }
+        finally { renderer.setRenderTarget(null); sky.group.visible = skyOn; scene.background = bg; glowScale.value = gs; }
+        const px = new Uint8Array(w * h * 4);
+        renderer.readRenderTargetPixels(probeRT, 0, 0, w, h, px);
+        return px;
+      } catch { return null; }
+    },
     ground: (x, z) => player.floor ? player.floor(x, z) : 0,
     standable: (x, z) => player.walkable(x, z) && !player.colliders.some((c) => x > c.minX - .4 && x < c.maxX + .4 && z > c.minZ - .4 && z < c.maxZ + .4),
     // on the highway south of SARO: in the grass on the west verge, not on the road
     settle: (q) => { if (world.area === 'saro' && world.crossing.onHighway(q)) q.x = -30.6; },
-    hush: (secs, level) => audio.night?.hush(secs, level), glitch: (k) => { vhs.glitch = k; },
+    hush: (secs, level, tau, back) => audio.night?.hush(secs, level, tau, back), glitch: (k) => { vhs.glitch = k; },
     skipClock: (sec) => { game.clock += sec; }, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
     camera: () => fcam.have,
     file: (doc) => { const i = game.docs.findIndex((x) => x.id === doc.id); if (i < 0) game.docs.push(doc); else game.docs[i] = doc; },
     keyStall: () => { world.keyStall = true; }, save: () => { if (mode === 'play') requestAutosave(false); },
   });
+  // the dishes come down out of 026 and follow the player through a warning in the antenna field,
+  // once in the night (story/dishesFollow.ts; FORSLAG.md, 20 October, Valg for Tom 2), kept with
+  // the time away
+  const follow = new DishesFollow({ dishes: ext.dishes, array: ext.dishArray, audio,
+    store: { get: () => abduction!.data.dishes, set: (v) => { abduction!.data.dishes = v; } },
+    ground: (x, z) => world.grounds.floorAt(x, z),
+    toast: (text, secs) => ui.toast(text, secs), note: (text) => game.note(text), log: (text, at) => game.consoleLog(text, at),
+    save: () => { if (mode === 'play') requestAutosave(false); }, face: (yaw) => { player.yaw = yaw; } });
+  const followEye = new THREE.Vector3(), followView = new THREE.Vector3();
   // HENDELSER.md, events 2 and 10, on B: the herd in the pasture south of the motel, facing 026
   // (story/pasture.ts), and the television in the motel's office (story/motelTv.ts); both kept
   // with the town's part of the case
@@ -432,7 +462,22 @@ async function boot() {
       else if (left === 5 || left === 0) ui.toast(left ? '5 free frames left on the roll.' : 'That was the last free frame on the roll.', 3);
       requestAutosave(false);
     },
+    // once in the night: the face a foot from the lens, on the first free frame out of doors in
+    // chapter four (core/filmFace.ts). Only on the print; in the scene there is nothing.
+    face: () => mode === 'play' && game.phase === 'ch4' && space === 'yard' && !world.driving && !game.cinematic && !abduction!.busy,
+    // the first close look at it, come up: the night goes quiet round the player while it is
+    // looked at, the music with it, and the notebook gets a line in the player's hand (in words
+    // both narrators have, so the notebook can still be read aloud; the print says the rest)
+    faceSeen: (shot) => {
+      audio.night?.hush(FACE_QUIET, 0.02);
+      faceQuiet = FACE_QUIET;
+      game.note(`${clockText(shot.clock, false)}, ${shot.place.replace(/^The /, 'the ')}. ${FACE_LINE}`);
+      requestAutosave(false);
+    },
   });
+  /** Seconds the night and the music keep quiet from the first close look at the face. */
+  const FACE_QUIET = 34;
+  let faceQuiet = 0;
   ch1.free = { left: () => album.left, expose: () => { album.expose(); } };
   // the barricades across the old road, seen from the diner's lot (World.setStoryPlaces)
   // random trouble with the truck (when the story or the developer menu turns it on): at night
@@ -744,11 +789,12 @@ async function boot() {
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
-    pasture.reset(); motelTv.reset();
+    pasture.reset(); motelTv.reset(); roofSteps.reset();
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
+    follow.restore();   // after the log is back (game.start): a save made while the dishes were out
     for (const doc of townWitnessDocs(townSeen)) fileSideDoc(doc);
     motelTv.refile(o.state?.motelTv?.url);
     restoringNow = false; restoring = null;
@@ -776,8 +822,9 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
+    follow.reset();
     world.stopDriving();
-    roadside.reset(); townEvents.reset(); nightEvents.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
+    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -870,7 +917,9 @@ async function boot() {
       else if (world.area === 'station01' && !world.indoors(p)) { line = 'C'; abAlong.set(1, 0, 0); }
     }
     return { ok, enabled: abductOn, line, along: abAlong, clock: game.clock, nextFixed: FIXED[game.phase]?.() ?? -1e9,
-      late: game.phase === 'ch3' || game.phase === 'ch4', calm: calmFlash };
+      late: game.phase === 'ch3' || game.phase === 'ch4', calm: calmFlash,
+      // out among the dishes before they have turned: a little sooner there (story/dishesFollow.ts)
+      boost: line === 'B' && !abduction?.data.dishes && nearArray(p.x, p.z) ? 1.5 : 1 };
   }
   // the marks on the notebook's map: the town's events on A (the cutout and the deputy's car on the
   // highway north of it), the lights on B, and the times away where they happened
@@ -908,6 +957,36 @@ async function boot() {
     silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }); },
     place: () => placeName(), silent: () => roadside.silent,
   });
+  // ---------- light steps on the records room roof, once in chapter two (story/roofSteps.ts) ----------
+  const roofSteps = new RoofSteps({
+    audio, seen: townSeen, inter,
+    note: (text) => { game.note(text); requestAutosave(false); },
+    toast: (text, secs) => ui.toast(text, secs),
+    frost: (corner) => annex.setRoofFrost(corner),
+    tubes: (mode) => annex.holdTubes(mode),
+    // (a little in front of the face, so it falls through the view whether the player looks up or not)
+    dust: (x, z) => { const f = camera.getWorldDirection(new THREE.Vector3()).setY(0); if (f.lengthSq() < 1e-6) f.set(0, 0, -1); f.normalize(); annex.sift(x + f.x * 0.7, z + f.z * 0.7); },
+    puff: (x, z, n) => annex.sift(x, z, n, 0.16, 0.3),
+    tubeAt: new THREE.Vector3(-4.6, 2.7, 8.0),   // the tired tube (Annex.flickerTube)
+    hit: annex.frost.hit,
+    outside: () => world.area === 'saro' && !world.driving && space === 'yard',
+    clock: () => game.clock,
+  });
+  function roofIn(ok: boolean): RoofIn {
+    const p = player.pos, stage = ch2.s.stage;
+    return {
+      ok: ok && game.phase === 'ch2' && ch2.active && (stage === 'records' || stage === 'call-nora') && !game.decoder.playing
+        && !abduction!.busy && !nightEvents.busy && !roadside.silent && townEvents.now === 'none',
+      quiet: !ui.modal && !game.cinematic && !audio.phonePlaying,
+      hold: game.cinematic || audio.phonePlaying,
+      inRoom: world.area === 'saro' && !world.driving && inside(annex.zone.records, p),
+      muffled: world.area === 'saro' && space !== 'yard',
+      pos: p, clock: game.clock,
+      read: Object.values(ch2.s.read).some(Boolean),
+      lastQuiet: stage === 'call-nora',
+      chapter: game.phase === 'ch2',
+    };
+  }
   function nightIn(ok: boolean): NightIn {
     const tr = world.truckHere(), out = world.area === 'saro' ? space === 'yard' : !world.indoors(player.pos);
     const moving = player.pos.distanceTo(lastFoot) > 0.004; lastFoot.copy(player.pos);
@@ -975,11 +1054,17 @@ async function boot() {
       truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data,
       album: album.data,
       motelTv: tvFrame ? { id: 'motel-tv-frame', url: tvFrame } : undefined,
-      pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
+      // on your back after the time away, Continue stands you up looking ahead
+      pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: abduction!.holds ? -0.06 : player.pitch },
     };
+    // the picture without what stands over you on waking (story/abduction.ts)
+    const over = abduction!.hideOver(true);
+    if (over) draw();
+    const thumb = captureThumb();
+    if (over) { abduction!.hideOver(false); draw(); }
     return saves.save(caseId, kind, slot, state, {
       chapter: game.chapterTitle(), place: placeName(),
-      clock: prologue ? '02:13' : clockText(game.clock, false), playtime, thumb: captureThumb(),
+      clock: prologue ? '02:13' : clockText(game.clock, false), playtime, thumb,
     });
   }
   // Progress asks for an autosave; it is written after the next frame, once the game may be saved.
@@ -1025,6 +1110,7 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
+    follow.reset();
     world.stopDriving();
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
@@ -1102,12 +1188,17 @@ async function boot() {
     begin: () => game.beginChapter2(null),
   });
   // End of chapter two: the key holder sends you to the station first.
-  ch2.onEnd = () => chapterBreak({
-    closed: 'THE AMENDED RECORD // P04 AND P05 RECORDED',
-    recap: 'The 1947 record was changed: the service copy leaves out C. B-12 still carries STATION 01, and the key holder wants you at the cut cable before you come to her.',
-    next: 'CHAPTER THREE', title: 'THE SURVEY STATION',
-    begin: () => game.beginChapter3(null),
-  });
+  // (if the steps on the records room roof are still going, the call to the key holder having come
+  // in the middle of them, the chapter waits for them to finish: story/roofSteps.ts)
+  ch2.onEnd = () => {
+    const end = () => roofSteps.busy && game.phase === 'ch2' ? game.after(0.25, end) : chapterBreak({
+      closed: 'THE AMENDED RECORD // P04 AND P05 RECORDED',
+      recap: 'The 1947 record was changed: the service copy leaves out C. B-12 still carries STATION 01, and the key holder wants you at the cut cable before you come to her.',
+      next: 'CHAPTER THREE', title: 'THE SURVEY STATION',
+      begin: () => game.beginChapter3(null),
+    });
+    end();
+  };
   // End of chapter three: the prints are filed, and N. Vega is waiting across the road.
   ch3.onEnd = () => chapterBreak({
     closed: 'THE SURVEY STATION // P06 TO P09 RECORDED',
@@ -1161,6 +1252,7 @@ async function boot() {
       earlDialogue.stop();
       narrator.stop(); npcDialogue.stop(); ui.chapterCard(null);
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
+      follow.reset();
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
     game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
@@ -1194,9 +1286,13 @@ async function boot() {
   Object.assign((window as any).S47, {
     album, albumArt,
     albumSubjects: () => subjectsHere().map((s) => ({ name: s.name, n: s.at.length, odd: !!s.odd })),
+    // the face on the film (tools/horror_face.py): where the player is, and how long the night keeps quiet
+    space: () => space, faceQuiet: () => faceQuiet,
   });
 
   Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
+  Object.assign((window as any).S47, { follow });   // the dishes that follow (tools/horror_dishes.py)
+  Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
   Object.assign((window as any).S47, { models: licensedModels });
 
@@ -1269,12 +1365,16 @@ async function boot() {
         { label: '1420 signs off (03:59:40)', run: () => { game.clock = SIGN_OFF - 20; } },
         { label: 'Roswell signs on (04:59:50)', run: () => { game.clock = SIGN_ON - 10; } },
       ] });
-      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then.', items: [
+      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then. The face on the film comes once, on the first free frame out of doors in chapter four.', items: [
         { label: 'A sound out in the dark', run: () => calls.now() },
+        { label: album.forceFace ? 'The face on the film: on the next free frame' : `The face on the film${album.data.face ? ' (taken)' : ''}: put it on the next free frame`, run: () => { album.forceFace = true; }, on: album.forceFace },
       ] });
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
         { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
+      ] });
+      groups.push({ title: 'The records room', note: 'Once in chapter two, at a quiet moment in the records room: light steps on the roof, right over you.', items: [
+        { label: `Steps on the roof: ${roofSteps.phase}`, run: () => { if (!roofSteps.now(roofIn(true))) ui.toast('Only from the records room, once', 2); } },
       ] });
       groups.push({ title: 'The highway', note: 'On foot on the shoulder between SARO and the motel at night: the line hums, a car far off, the silence once, someone on the roof. The CB in the truck.', items: [
         { label: 'Headlights far down the highway', run: () => roadside.carNow(player.pos) },
@@ -1285,6 +1385,11 @@ async function boot() {
         { label: 'A tumbleweed', run: () => { if (!world.life.tumbleNow(true)) ui.toast('No open ground for one here', 2); } },
         { label: 'A call on the CB', run: () => cb.call([{ text: 'SARO seven, this is Sierra. You hear me?', who: 'woman', by: 'N. VEGA' }], world.driving ? null : world.truckHere()?.group.position ?? null,
           (l) => ui.toast(`CB, ${l.by}: "${l.text}"`, 4)) },
+      ] });
+      // the time away (story/abduction.ts), and the dishes that follow in the antenna field (story/dishesFollow.ts)
+      groups.push({ title: 'Missing time', note: 'Alone outdoors on a line at night. In the antenna field the warning brings the dishes down, once in a night.', items: [
+        { label: 'Begin the warning here', run: () => { const s = abductIn(true); if (abduction!.busy || !s.line) ui.toast(abduction!.busy ? 'Already under way' : 'Not on a line here', 2); else abduction!.begin(s); } },
+        { label: abduction!.data.dishes ? 'The dishes: done tonight (let them again)' : 'The dishes: not yet tonight', run: () => { follow.reset(); delete abduction!.data.dishes; } },
       ] });
     }
     if (mode === 'play' && score) {
@@ -1437,7 +1542,7 @@ async function boot() {
       }
     }
   }
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard; }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy; }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -1460,7 +1565,11 @@ async function boot() {
           player.look(look.x * fine, (invertY ? -look.y : look.y) * fine);
           const m = input.move();
           player.update(dt, m.x, m.z, m.run);
-        } else player.update(dt, 0, 0, false);
+        } else {
+          // held on waking: only the eyes, up, towards what is over you (story/abduction.ts)
+          if (mode === 'play' && !modalOpen && abduction!.holds) abduction!.gaze(look.x, invertY ? -look.y : look.y);
+          player.update(dt, 0, 0, false);
+        }
         world.update(dt, t, null, { x: 0, y: 0 });
       }
       game.update(dt, t, modalOpen);
@@ -1480,6 +1589,12 @@ async function boot() {
       if (devWait?.ok()) { const f = devWait.fn; devWait = null; f(); }
       doors.update(dt);
       if (mode === 'play') { radioStep(dt); audio.nightLife(dt, player.pos, game.clock); score?.update(dt, musicWant(), musicHeld()); }
+      // the print with the face has come up (core/album.ts): said once, when nothing else holds the player
+      if (faceQuiet > 0) faceQuiet -= dt;
+      if (mode === 'play' && !modalOpen && !game.cinematic) {
+        const up = album.faceUp(game.clock);
+        if (up) { ui.toast(`The print from ${clockText(up.clock, false)} has come up.`, 3.6); requestAutosave(false); }
+      }
       if (mode === 'play') roadside.update(dt, {
         ok: !modalOpen && !game.cinematic && !world.driving && world.area === 'saro' && world.crossing.onHighway(player.pos) && game.at('ch1') && game.phase !== 'ch6'
           && sky.uniforms.uDawn.value < 0.3,
@@ -1504,7 +1619,8 @@ async function boot() {
         });
       }
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
-      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none'));
+      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy));
+      if (mode === 'play') roofSteps.update(dt, roofIn(true));
       if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
       if (mode === 'play') {
         // the flashlight flickers near the strange events (todo.md): through the silence on the
@@ -1521,12 +1637,18 @@ async function boot() {
         clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z),
       });
       if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy);
-      if (mode === 'play') {
+      // the notebook or a paper open holds the warning where it is, as it holds the clock: it is not
+      // a way out (abduction.ts lets the warning pass when ok goes false), and the dishes wait too
+      if (mode === 'play' && !(modalOpen && abduction!.stage === 'warning')) {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
-          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy));
-      }
+          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy));
+        // the eyes from where the player stands now (the waking puts them down in the grass this step)
+        follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro', onFoot: !world.driving,
+          eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),
+          clock: game.clock, backAt: ab.backAt, calm: calmFlash, woke: ab.data.last, over: ab.overPhase !== null });
+      } else if (mode === 'play') follow.wait();
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }

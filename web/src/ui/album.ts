@@ -23,8 +23,9 @@ export const albumArt = () => Object.fromEntries(Object.entries(ART).map(([k, v]
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 const TILT = [-1.4, 0.9, -0.5, 1.3, -1, 0.4, 1.1, -0.7];
-// a print still coming up: pale, flat and cold at first
-const developing = (k: number) => k >= 1 ? '' : `filter:brightness(${(1 + 0.9 * (1 - k)).toFixed(2)}) contrast(${(0.25 + 0.75 * k).toFixed(2)}) saturate(${k.toFixed(2)})`;
+// a print still coming up: pale, flat and cold at first, and soft, the shapes before the
+// detail (so what is at the edge of a frame comes up out of the murk; core/filmFace.ts)
+const developing = (k: number) => k >= 1 ? '' : `filter:brightness(${(1 + 0.9 * (1 - k)).toFixed(2)}) contrast(${(0.25 + 0.75 * k).toFixed(2)}) saturate(${k.toFixed(2)})${k < 0.85 ? ` blur(calc(var(--w, 300px) * ${(0.012 * (1 - k / 0.85) ** 1.5).toFixed(4)}));clip-path:inset(0)` : ''}`;
 const corners = '<i class="al-c tl"></i><i class="al-c tr"></i><i class="al-c bl"></i><i class="al-c br"></i>';
 
 /** The tab's page: the case prints and the free frames. `photos` are the photograph papers. */
@@ -52,11 +53,11 @@ export function bindAlbum(root: HTMLElement, v: AlbumView | undefined, reading?:
   root.querySelectorAll<HTMLButtonElement>('[data-f]').forEach((b) => b.addEventListener('click', (e) => {
     e.stopPropagation();
     const i = shots.findIndex((s) => s.id === b.dataset.f);
-    if (i >= 0) big(root, shots, i, reading);
+    if (i >= 0) big(root, shots, i, reading, v?.look);
   }));
 }
 
-function big(root: HTMLElement, shots: AlbumView['shots'], at: number, reading?: AlbumReading) {
+function big(root: HTMLElement, shots: AlbumView['shots'], at: number, reading?: AlbumReading, look?: AlbumView['look']) {
   const el = document.createElement('div');
   el.className = 'al-view';
   el.setAttribute('role', 'dialog');
@@ -75,6 +76,7 @@ function big(root: HTMLElement, shots: AlbumView['shots'], at: number, reading?:
       <button class="al-nav next" data-v="next" aria-label="Next photograph"${i < shots.length - 1 ? '' : ' disabled'}>&rsaquo;</button>
       <button class="al-back" data-v="back"><kbd>E</kbd>Back to the album</button>`;
     if (!readingBound) { disposeReading = reading?.show(el); readingBound = true; }
+    look?.(s.id);   // the album is told which print is being looked at (core/album.ts, the face)
   };
   const go = (k: number) => { const j = i + k; if (j >= 0 && j < shots.length) { i = j; show(); } };
   const close = () => { reading?.change(); disposeReading?.(); el.remove(); removeEventListener('keydown', key, true); };

@@ -115,10 +115,12 @@ export class Ambience {
   }
 
   /** The night goes quiet for a few seconds, the crickets and the wind together, and comes back
-   *  slowly (core/calls.ts: before something out in the dark). */
-  hush(secs: number, level = 0.08) {
+   *  slowly (core/calls.ts: before something out in the dark). tau and back: how fast it goes to
+   *  level and comes back (about a third of each in seconds: story/abduction.ts starts the
+   *  crickets again all at once). */
+  hush(secs: number, level = 0.08, tau = 0.35, back = 2.2) {
     const g = this.quiet.gain, now = this.ctx.currentTime;
-    g.cancelScheduledValues(now); g.setTargetAtTime(level, now, 0.35); g.setTargetAtTime(1, now + secs, 2.2);
+    g.cancelScheduledValues(now); g.setTargetAtTime(level, now, tau); g.setTargetAtTime(1, now + secs, back);
   }
 
   /** Where the listener is: outside, indoors (muffled) or in the cab (under the engine). */

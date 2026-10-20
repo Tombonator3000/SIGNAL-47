@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PHOTO_W, PHOTO_H, PHOTO_FOV, type FieldCamera } from './FieldCamera';
 import { Silhouette } from './roadside';
 import { clockText } from '../story/time';
+import { filmFace, filmFaceEye } from './filmFace';
 
 // The free camera and the album (todo.md, after They Are Here; SPILLDESIGN.md, point 6). Once the
 // field camera is had, the shutter takes a picture of anything, anywhere, away from the case's
@@ -19,17 +20,38 @@ import { clockText } from '../story/time';
 // frame whom the eye did not see, with a faint pale smear round them: "Nobody was there when I
 // took it." At most twice in a night, never in the first three frames. A glimpse the frame
 // catches (core/glimpses.ts) gets the same smear and the same line.
+//
+// Once in the night, closer than that (FORSLAG.md, 20 October, "Valg for Tom" 5; Tom: "Spenning og
+// skummelt slår faste regler"): the first free frame taken out of doors in chapter four keeps, at
+// its edge and a foot from the lens, the side of a pale head and one black eye with the flash in
+// it (core/filmFace.ts). Every player who takes a free frame outside in chapter four gets it, on
+// the shoulder of the highway, on the motel's lot or in the yard at SARO. It is never in the
+// scene. The caption is written once the print has come up; when it has, the game says so once,
+// and the first time the developed print is looked at closely the night goes quiet and the
+// notebook gets a line (main.ts). Kept with the album, so it comes back with a save and does not
+// come again.
 
 export const ROLL = 36;
 /** Seconds of the night for an instant print to come up in the album. */
 const DEVELOP = 90;
 export const NOBODY = 'Nobody was there when I took it.';
+/** The caption on the print with the face (core/filmFace.ts): the words under the figures far off,
+ *  now under a face at the lens. Nothing more is said; the print says the rest. (Both narrators
+ *  have it recorded, so Read description works on this print too.) */
+export const FACE_LINE = NOBODY;
 
 export interface AlbumShot { id: string; url: string; clock: number; place: string; text: string; odd?: boolean }
+/** The print with the face: which one, whether the game has said it has come up, and whether it
+ *  has been looked at closely since. */
+export interface FaceSave { id: string; up?: boolean; seen?: boolean }
 /** What is kept with the case (GameState.album). */
-export interface AlbumSave { shots: AlbumShot[]; ghosts: number }
-/** The album as the notebook shows it (ui/album.ts). */
-export interface AlbumView { roll: number; left: number; shots: { id: string; url: string; text: string; meta: string; dev: number; odd: boolean }[] }
+export interface AlbumSave { shots: AlbumShot[]; ghosts: number; face?: FaceSave }
+/** The album as the notebook shows it (ui/album.ts). `look` is told each time a print is opened big. */
+export interface AlbumView {
+  roll: number; left: number;
+  shots: { id: string; url: string; text: string; meta: string; dev: number; odd: boolean }[];
+  look?: (id: string) => void;
+}
 
 /** Something that can be named under a photograph. */
 export interface Subject {
@@ -74,6 +96,10 @@ export interface AlbumDeps {
   skip: () => THREE.Object3D[];
   /** The shutter's sound and flash, a word on the roll, the save. */
   done: (shot: AlbumShot, first: boolean, left: number) => void;
+  /** A free frame taken here and now may keep the face (main.ts: chapter four, out of doors, on foot). */
+  face: () => boolean;
+  /** The print with the face has been looked at closely for the first time, come up. */
+  faceSeen: (shot: AlbumShot) => void;
 }
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -84,8 +110,10 @@ export class Album {
   data: AlbumSave = { shots: [], ghosts: 0 };
   /** Tests: the next frame keeps the figure, where there is ground for it. */
   forceGhost = false;
+  /** The developer menu: the next free frame keeps the face, anywhere, even if one has already. */
+  forceFace = false;
   /** Tests: what the last caption was made from, how bright the frame was, how long it took. */
-  last: { names: string[]; odd: string[]; mean: number; ms: number; lookMs: number; ghost: boolean } | null = null;
+  last: { names: string[]; odd: string[]; mean: number; ms: number; lookMs: number; ghost: boolean; face: boolean; eye?: { u: number; v: number } } | null = null;
   private sil: Silhouette;
   private ghost: THREE.Group;
   private halos: THREE.Mesh[] = [];
@@ -129,9 +157,12 @@ export class Album {
     this.sil.wake();
     fcam.sync();
     const clock = d.clock(), place = d.place(), n = this.data.shots.length;
+    // the face a foot from the lens, once (core/filmFace.ts); a frame that keeps it keeps nothing else
+    const face = this.forceFace || (!this.data.face && d.face());
+    this.forceFace = false;
     // someone at the edge of the frame, on the film only
     const day = ((clock % 86400) + 86400) % 86400, k = THREE.MathUtils.clamp((day - 2.5 * 3600) / (2.5 * 3600), 0, 1);
-    const ground = this.data.ghosts < 2 && (this.forceGhost || (n >= 3 && Math.random() < 0.05 + 0.12 * k)) ? d.ghostGround() : null;
+    const ground = !face && this.data.ghosts < 2 && (this.forceGhost || (n >= 3 && Math.random() < 0.05 + 0.12 * k)) ? d.ghostGround() : null;
     this.forceGhost = false;
     const ghostAt = ground ? this.placeGhost(ground) : null;
     const list = d.subjects();
@@ -143,10 +174,12 @@ export class Album {
     if (!ghostAt) this.ghost.position.set(fcam.photoCam.position.x, -9000, fcam.photoCam.position.z);
     const glimpse = seen.some((x) => x.s.odd === NOBODY && x.s.name === 'someone') ? d.scene.getObjectByName('glimpse') : null;
     this.placeHalos([ghostAt, glimpse?.visible ? glimpse.position : null].filter((p): p is THREE.Vector3 => !!p));
+    const seed = Math.floor(clock * 1000) + n * 7919, side: 1 | -1 = (seed >>> 4) & 1 ? 1 : -1;
     const { canvas, mean } = fcam.snap({
       before: () => { d.before(); this.ghost.visible = true; this.halos.forEach((h) => { h.visible = true; }); },
       after: () => { this.ghost.visible = false; this.halos.forEach((h) => { h.visible = false; }); },
-      restore: d.view.restore, seed: Math.floor(clock * 1000) + n * 7919, w: small ? 320 : 640,
+      restore: d.view.restore, seed, w: small ? 320 : 640,
+      post: face ? (raw) => filmFace(raw, seed, side) : undefined,
     });
     d.view.draw();
     const url = canvas.toDataURL('image/jpeg', small ? 0.62 : 0.74);
@@ -155,11 +188,13 @@ export class Album {
     if (ghostAt && odd.includes(NOBODY)) this.data.ghosts++;
     // "S-03 and B-12.", "Halley's comet, low in the south, and the truck."
     const main = names.length ? names.join(names[0].includes(',') ? ', and ' : ' and ') + '.' : mean < 15 && !odd.length ? 'Too dark. Nothing came out.' : '';
-    const text = [main.charAt(0).toUpperCase() + main.slice(1), ...odd].filter(Boolean).join(' ');
+    // the print with the face is written about for that alone
+    const text = face ? FACE_LINE : [main.charAt(0).toUpperCase() + main.slice(1), ...odd].filter(Boolean).join(' ');
     const shot: AlbumShot = { id: `free${n + 1}@${Math.round(clock)}`, url, clock, place, text };
-    if (odd.length) shot.odd = true;
+    if (odd.length || face) shot.odd = true;
     this.data.shots.push(shot);
-    this.last = { names, odd, mean, ms: performance.now() - t0, lookMs: t1 - t0, ghost: !!ghostAt };
+    if (face) this.data.face = { id: shot.id };
+    this.last = { names, odd, mean, ms: performance.now() - t0, lookMs: t1 - t0, ghost: !!ghostAt, face, eye: face ? filmFaceEye(side) : undefined };
     d.done(shot, n === 0, this.left);
     return shot;
   }
@@ -174,15 +209,42 @@ export class Album {
   /** A save opened, or a new night. */
   restore(v: AlbumSave | null | undefined) {
     this.data = v ? { shots: [...(v.shots ?? [])], ghosts: v.ghosts ?? 0 } : { shots: [], ghosts: 0 };
+    if (v?.face) this.data.face = { ...v.face };
     this.ghost.visible = false;
   }
 
-  /** For the notebook: each print, how far it has come up by now. */
+  /** How far a print has come up by `clock`, 0 to 1. */
+  private dev(s: AlbumShot, clock: number) { return THREE.MathUtils.clamp((clock - s.clock) / DEVELOP, 0, 1); }
+  /** The print with the face, if the roll has one. */
+  get faceShot() { const id = this.data.face?.id; return id ? this.data.shots.find((s) => s.id === id) ?? null : null; }
+
+  /** Every frame of play: the print with the face, the moment it has come up (once in the night). */
+  faceUp(clock: number) {
+    const f = this.data.face, s = this.faceShot;
+    if (!f || f.up || !s || this.dev(s, clock) < 1) return null;
+    f.up = true;
+    return s;
+  }
+
+  /** A print opened big in the notebook: the first close look at the face, come up. */
+  looked(id: string) {
+    const f = this.data.face, s = this.faceShot;
+    if (!f || f.seen || !s || s.id !== id || this.dev(s, this.d.clock()) < 1) return;
+    f.seen = f.up = true;
+    this.d.faceSeen(s);
+  }
+
+  /** For the notebook: each print, how far it has come up by now. The caption on the print with
+   *  the face is written once it has come up. */
   view(clock: number): AlbumView {
+    const face = this.data.face?.id;
     return {
       roll: ROLL, left: this.left,
-      shots: this.data.shots.map((s) => ({ id: s.id, url: s.url, text: s.text, meta: `${s.place}, ${clockText(s.clock, false)}`,
-        dev: THREE.MathUtils.clamp((clock - s.clock) / DEVELOP, 0, 1), odd: !!s.odd })),
+      shots: this.data.shots.map((s) => {
+        const dev = this.dev(s, clock);
+        return { id: s.id, url: s.url, text: s.id === face && dev < 1 ? '' : s.text, meta: `${s.place}, ${clockText(s.clock, false)}`, dev, odd: !!s.odd };
+      }),
+      look: (id) => this.looked(id),
     };
   }
 

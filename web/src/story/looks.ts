@@ -67,6 +67,8 @@ export function bindLooks(d: LooksDeps) {
       examine: () => {
         const az = pad(dish.curAz), el = Math.round(dish.curEl);
         if (dish.moving) return `${dish.id}. It is turning, the drive motors whining. Az ${az}, el ${el}.`;
+        // come down out of 026 by itself (story/dishesFollow.ts), standing a moment where it turned to
+        if (dish.rogue) return `${dish.id}. It has come down out of 026 and stopped. Az ${az}, el ${el}. Nobody sent a command.`;
         // after 02:13 every dish in the array stands at 026, and nobody sent a command
         if (az === '026') return `${dish.id}. Az 026, el ${el}. Every dish in the array points the same way.`;
         return `${dish.id}. ${line} Az ${az}, el ${el}.`;

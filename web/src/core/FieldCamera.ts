@@ -104,8 +104,9 @@ export class FieldCamera {
 
   // A free frame for the album (core/album.ts): the same render and the same film as a case
   // print, `w` pixels wide (640, or 320 where the saves have no IndexedDB), without the paper.
+  // `post` may draw on the frame before the film goes over it (core/filmFace.ts).
   // Returns the picture and how bright it came out on average (0 to 255).
-  snap(o: { before: () => void; after: () => void; restore: () => void; seed: number; w: number }) {
+  snap(o: { before: () => void; after: () => void; restore: () => void; seed: number; w: number; post?: (raw: HTMLCanvasElement) => void }) {
     const r = this.renderer, w = o.w, h = Math.round(w * PHOTO_H / PHOTO_W);
     const exp = r.toneMappingExposure, glow = glowScale.value;
     o.before();
@@ -121,6 +122,7 @@ export class FieldCamera {
     glowScale.value = glow;
     o.after();
     o.restore();
+    o.post?.(raw);
     const mean = filmLook(raw, o.seed);
     return { canvas: raw, mean };
   }

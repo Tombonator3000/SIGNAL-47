@@ -16,7 +16,7 @@ OUT = sys.argv[1]
 WANT = sys.argv[2] if len(sys.argv) > 2 else None
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
 NAMES = ['call_tone', 'door_heavy', 'door_latch', 'door_light', 'handset_down', 'keys', 'line_hush', 'pour', 'pressure',
-         'rack_switch', 'radio_crackle_long', 'radio_crackle_short', 'radio_static', 'small_switch', 'tv_hum']
+         'rack_switch', 'radio_crackle_long', 'radio_crackle_short', 'radio_static', 'roof_steps', 'small_switch', 'tv_hum']
 checks = []
 def check(ok, what):
     checks.append(('PASS' if ok else 'FAIL', what)); print(('PASS ' if ok else 'FAIL ') + what, flush=True)

@@ -38,7 +38,7 @@ const SKIP_CLOCK = 2 * 3600 + 13 * 60 + 41;     // 02:13:41, residual shows at 0
 const EVENT_AZ = 26, EVENT_EL = 32;
 const PARK_AZ = 18, SURVEY_EL = 48;
 
-import { pad, clockText } from './time';
+import { pad, clockText, angleText } from './time';
 export { clockText };
 
 const LOG: DocSpec = {
@@ -473,6 +473,15 @@ export class Prologue {
 
   // the console log: what the operations terminal shows under SHOW LOG
   private log(text: string) { this.ns.log.push([Math.round(this.clock), text]); this.opsDirty = true; }
+  /** A line in the console log from outside the story (the array that moves by itself,
+   *  story/dishesFollow.ts), at its own time, in order among the others. */
+  consoleLog(text: string, at = this.clock) {
+    // in the night's order: the evening before midnight comes first
+    const night = (v: number) => { const d = ((v % 86400) + 86400) % 86400; return d >= 12 * 3600 ? d - 86400 : d; };
+    const c = Math.round(at), i = this.ns.log.findIndex((l) => night(l[0]) > night(c));
+    this.ns.log.splice(i < 0 ? this.ns.log.length : i, 0, [c, text]);
+    this.opsDirty = true;
+  }
 
   private openOps() {
     const { ui, audio } = this.d;
@@ -1096,7 +1105,7 @@ export class Prologue {
     ds.forEach((d, i) => {
       const col = i < 8 ? 0 : 1, row = i % 8;
       const mv = d.moving ? '>' : ' ';
-      this.txt(g, `${d.id} ${pad(d.curAz, 3)}.${Math.floor((d.curAz % 1) * 10)} ${pad(d.curEl)}.${Math.floor((d.curEl % 1) * 10)}${mv}`, 18 + col * 250, 156 + row * 26, 22, d.moving && ev ? '#ffd27a' : '#8cffa4');
+      this.txt(g, `${d.id} ${angleText(d.curAz, 3)} ${angleText(d.curEl)}${mv}`, 18 + col * 250, 156 + row * 26, 22, (d.moving || d.rogue) && ev ? '#ffd27a' : '#8cffa4');
     });
     if (ev && Math.floor(this.gt * 2) % 2 === 0) this.txt(g, 'NO CONTROL COMMAND RECORDED', 18, 372, 24, '#ffd27a');
   }
@@ -1122,8 +1131,8 @@ export class Prologue {
     g.fillStyle = '#c8ffd2'; g.beginPath(); g.arc(cx + Math.sin(a) * rr, cy - Math.cos(a) * rr, 5, 0, Math.PI * 2); g.fill();
     this.txt(g, 'N', cx - 5, cy - r - 8, 20);
     this.txt(g, 'TRACKING', 300, 40, 28);
-    this.txt(g, `AZ ${pad(d0.curAz, 3)}.${Math.floor((d0.curAz % 1) * 10)}`, 300, 80, 30);
-    this.txt(g, `EL ${pad(d0.curEl)}.${Math.floor((d0.curEl % 1) * 10)}`, 300, 112, 30);
+    this.txt(g, `AZ ${angleText(d0.curAz, 3)}`, 300, 80, 30);
+    this.txt(g, `EL ${angleText(d0.curEl)}`, 300, 112, 30);
     const x = 300;
     if (this.phase === 'solving') {
       const p = Math.min(1, (this.gt - this.solveT) / 4.2);

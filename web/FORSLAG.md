@@ -6,7 +6,7 @@ En kortere versjon som kan deles, med en statuskolonne for beslutningene, en tes
 
 ## Mer spenning, skrekk, romvesen og mysterier, 20. oktober (Tom spurte)
 
-Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Ingenting her er bygget.
+Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober (merket under); resten er ikke bygget.
 
 ### Det jeg ville bygget først
 
@@ -69,16 +69,16 @@ Rangert. Alt her passer med reglene i `memory.md` og `HENDELSER.md`, med unntake
 
 ### Valg for Tom: dristigere ideer som endrer reglene
 
-Disse trenger Toms beslutning. Hver bryter eller bøyer noe som står fast.
+Disse trenger Toms beslutning. Hver bryter eller bøyer noe som står fast. Tom valgte 2, 3, 5 og skrittene på taket 20. oktober («Spenning og skummelt slår faste regler»); reglene som er løftet, står i `HENDELSER.md` punkt 12.
 
 1. **Telefonen fra framtida en gang til.** Arkivtelefonen spiller rommet før det skjer: et dunk gjennom betong, en skuff som ruller ut. Ved 47 s starter alle 27 drivmotorer, skuffen med spole 047 slår opp, og antennene har vippet ned mot horisonten langs 026. Bryter: telefonen fra framtida hører til prologen, og antennene forlater el 32. Gir det sterkeste skremmet kap. 2 kan få, men prologtelefonen mister noe. Erstatter punkt 5.
-2. **Antennene senker seg mot deg.** Under en advarsel i feltet kommer fatene ned og følger deg. Bryter R5 ("nothing in the world acts because the player is there", `HENDELSER.md:42`) og az 026 / el 32. Varianten som passer: fatene svinger én gang, mot gresset der du kommer til å våkne (en forløper, R3).
-3. **Noe står over deg når du våkner.** Halvannet sekund øverst i bildet: et lite hode bøyd over deg, 3 m unna, borte når blikket løfter seg. Bryter: aldri nærmere enn rundt 40 m (`HENDELSER.md:84`). Ikke ansikt, ingen bevegelse, ingen lyd. Malt omriss, ikke boksfiguren. Passer i stedet: de tre på åsen.
+2. **Bygget 20. oktober (den fulle versjonen, `story/dishesFollow.ts`). Antennene senker seg mot deg.** Under en advarsel i feltet kommer fatene ned og følger deg. Bryter R5 ("nothing in the world acts because the player is there", `HENDELSER.md:42`) og az 026 / el 32. Varianten som passer: fatene svinger én gang, mot gresset der du kommer til å våkne (en forløper, R3).
+3. **Bygget 20. oktober (`story/abduction.ts`, omrisset bøyd i `core/roadside.ts`). Noe står over deg når du våkner.** Halvannet sekund øverst i bildet: et lite hode bøyd over deg, 3 m unna, borte når blikket løfter seg. Bryter: aldri nærmere enn rundt 40 m (`HENDELSER.md:84`). Ikke ansikt, ingen bevegelse, ingen lyd. Malt omriss, ikke boksfiguren. Passer i stedet: de tre på åsen.
 4. **Den tredje før rulleteksten.** (a) Et svakt reflekterende bånd ute langs C på FRAME 03, og Nora snur bildet uten et ord; (b) noen i SARO-jakke 9 m foran bilen 05:29:10, med båndet i frontlysenes farger; (c) ingenting. Bøyer: bildet etter rulleteksten er eneste avsløring, og det tomme setet pekes aldri på (`HISTORIE.md:118-122`). (a) er mildest; båndet legges inn når lukkeren går (R4).
-5. **Ett ansikt før 05:29.** I kanten av et fritt bilde i kap. 4, uskarpt nær linsa: siden av et blekt hode og ett svart øye i blitsen. Bryter: ansiktet er spart til THE EVENT (`HENDELSER.md:313`). Gir det mest direkte svaret på "mer alien horror", men FLASH blir gjenkjennelse. Den ene dommeren mente prisen er for høy. Mildest: halve ansiktet.
+5. **Bygget 20. oktober (`core/filmFace.ts`: siden av hodet og ett øye, resten utenfor bildet eller i mørket). Ett ansikt før 05:29.** I kanten av et fritt bilde i kap. 4, uskarpt nær linsa: siden av et blekt hode og ett svart øye i blitsen. Bryter: ansiktet er spart til THE EVENT (`HENDELSER.md:313`). Gir det mest direkte svaret på "mer alien horror", men FLASH blir gjenkjennelse. Den ene dommeren mente prisen er for høy. Mildest: halve ansiktet.
 6. **Ingen stjerner der antennene peker.** En rund flekk uten stjerner ved az 026, el 32 fra 02:15, og det siste bildet i uttrekket har samme hull. Bøyer "the world is honest" (`SPILLDESIGN.md:60`) og kan se ut som en grafikkfeil. Billig i `Sky.ts`. Hold det svakt, og la det ikke vokse.
 
-Også et valg: lette, for korte skritt over arkivtaket i kap. 2, med rim på takaggregatet etterpå. Billig, men bryter "De lager ingen lyd, ikke engang skritt" (`HENDELSER.md:84`).
+Også et valg, **bygget 20. oktober** (`story/roofSteps.ts`, `world/roofFrost.ts`): lette, for korte skritt over arkivtaket i kap. 2, med rim på takaggregatet etterpå. Billig, men bryter "De lager ingen lyd, ikke engang skritt" (`HENDELSER.md:84`).
 
 ### Små grep
 

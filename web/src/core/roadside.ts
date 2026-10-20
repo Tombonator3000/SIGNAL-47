@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { AudioSys } from './Audio';
 import { hash } from '../drive/roadShape';
 import { SARO_IN_ROAD, MOTEL_AT, MOTEL_RECT } from '../world/geo';
-import { artLoaded, artTexture, loadArtSome, ALIEN_ART, type ArtId } from './art';
+import { artImage, artLoaded, artTexture, loadArtSome, ALIEN_ART, type ArtId } from './art';
 
 // The walk down the highway to Sierra Motor Court, 650 m on the shoulder at night (Tom's
 // improvements, 16 October: make the way between the places a place). The first, small step
@@ -209,8 +209,10 @@ export class Roadside {
 // turns round its own upright to whoever looks (an outline has no sides), dark, the light only along
 // its edge, never a face. Until then (or if they do not come), a low figure in code: a shell a
 // little larger round it, its inside faces only, gives the edge.
-export type Pose = 'stand' | 'turned' | 'far';
-const POSE_ART: Record<Pose, ArtId> = { stand: 'silhouetteStand', turned: 'silhouetteTurned', far: 'silhouetteFar' };
+// 'bent' is only ever near, over you on waking (story/abduction.ts): the standing picture with its
+// head brought down to you and a little to one side (bentArt below).
+export type Pose = 'stand' | 'turned' | 'far' | 'bent';
+const POSE_ART: Record<Pose, ArtId> = { stand: 'silhouetteStand', turned: 'silhouetteTurned', far: 'silhouetteFar', bent: 'silhouetteStand' };
 let asked: Promise<void> | null = null;
 /** The outlines are fetched once, the first time the night may show one of them. */
 const askArt = () => (asked ??= loadArtSome(ALIEN_ART));
@@ -220,6 +222,42 @@ const CARD_H = 1.36, CARD_W = 0.68, FEET = 0.074 * CARD_H;
 // The light along the pictures' edge is a cold grey; the colour given is what it should be.
 const EDGE = new THREE.Color(0x141923);
 const _p = new THREE.Vector3(), _c = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
+
+/** The middle of the head in the standing pictures, metres above the ground. */
+const HEAD_MID = 1.1;
+let bent: { tex: THREE.CanvasTexture; head: number } | null | false = null;
+/** The standing picture with the head bent: cut off at the neck (the narrowest row under it) and
+ *  put back lower, into the shoulders, tipped a little to one side: from below, a head looking down
+ *  at you. Made once from the picture itself, so it is the same outline as everywhere else. */
+function bentArt() {
+  if (bent !== null) return bent || null;
+  if (!artLoaded('silhouetteStand')) return null;
+  // (a picture the page may not read back, from another origin: then it stands as it is)
+  try { bent = makeBent(); } catch { bent = false; }
+  return bent || null;
+}
+function makeBent() {
+  const im = artImage('silhouetteStand'), W = im.naturalWidth || im.width, H = im.naturalHeight || im.height;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d', { willReadFrequently: true })!;
+  g.drawImage(im, 0, 0, W, H);
+  const a = g.getImageData(0, 0, W, H).data;
+  const row = (y: number) => { let n = 0, sx = 0; for (let x = 0; x < W; x++) if (a[(y * W + x) * 4 + 3] > 128) { n++; sx += x; } return { n, mid: n ? sx / n : W / 2 }; };
+  let top = 0; while (top < H && row(top).n === 0) top++;
+  let neck = top + Math.round(H * 0.16), nw = Infinity;
+  for (let y = top + Math.round(H * 0.08); y < top + Math.round(H * 0.24); y++) { const r = row(y); if (r.n > 0 && r.n < nw) { nw = r.n; neck = y; } }
+  const cx = row(neck).mid, headH = neck - top;
+  // down by about a third of the head, into the shoulders; tipped to one side, about 15 degrees
+  const drop = Math.round(headH * 0.34), tilt = -0.26;
+  g.clearRect(0, 0, W, neck);
+  g.save(); g.translate(cx, neck + drop); g.rotate(tilt); g.scale(1.06, 1.06);
+  g.drawImage(im, 0, 0, W, neck, -cx, -neck, W, neck);
+  g.restore();
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; tex.name = 'art/silhouetteBent';
+  // where the head's middle is now, in the card's metres above the feet
+  const mid = top + headH / 2 + drop;
+  return { tex, head: CARD_H - FEET - (mid / H) * CARD_H };
+}
 
 export class Silhouette {
   readonly group = new THREE.Group();
@@ -273,11 +311,13 @@ export class Silhouette {
     this.card = mat;
     this.pose(this.want); this.rim(this.edge);
   }
-  /** Standing, turned half aside as if listening, or far off and soft in the haze. */
+  /** Standing, turned half aside as if listening, far off and soft in the haze, or bent to you. */
   pose(p: Pose) {
     this.want = p;
-    if (this.card) this.card.map = artTexture(artLoaded(POSE_ART[p]) ? POSE_ART[p] : POSE_ART.stand);
+    if (this.card) this.card.map = (p === 'bent' ? bentArt()?.tex : null) ?? artTexture(artLoaded(POSE_ART[p]) ? POSE_ART[p] : POSE_ART.stand);
   }
+  /** How high the middle of its head is, in metres, as it stands now (the picture's or the code's). */
+  get headY() { return this.card && this.want === 'bent' ? bentArt()?.head ?? HEAD_MID : HEAD_MID; }
   /** The colour of the light along its edge (what is behind it where it stands). */
   rim(hex: number) {
     this.edge = hex;
