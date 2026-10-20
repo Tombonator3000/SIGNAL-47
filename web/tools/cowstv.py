@@ -271,7 +271,7 @@ async def main():
         check(not any('Three on one line' in n for n in nb), 'two marks on B: no line yet')
         await ev("S47.townSeen.add('mark:lights@' + Math.round(S47.game.clock - 1800))"); await tick(1.5)
         nn = await notes()
-        check(any('Three on one line' in n and 'just south of the motel' in n and 'west-south-west' in n for n in nn) and await seen('lineB'), 'three on B: drawn in on the map, as the map has it')
+        check(any('Three on one line' in n and 'turn-off to SARO' in n and 'south-west, through STATION 01' in n for n in nn) and await seen('lineB'), 'three on B: drawn in on the map, as the map has it')
         m = await ev("S47.game.notebookExtras().map")
         open(f'{OUT}/m01_map.png', 'wb').write(base64.b64decode(m.split(',', 1)[1]))
 

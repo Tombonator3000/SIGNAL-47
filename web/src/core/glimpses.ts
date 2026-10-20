@@ -62,6 +62,9 @@ export class Glimpses {
     scene.add(this.fig);
   }
 
+  /** Where its head is while it stands somewhere (story/seen.ts), or null. */
+  get where() { return this.up ? this.head.copy(this.fig.position).setY(this.fig.position.y + 0.6) : null; }
+  private head = new THREE.Vector3();
   /** Degrees from the middle of the view to the figure, and whether it is in the view at all. */
   private sight(cam: THREE.PerspectiveCamera, at: THREE.Vector3) {
     const c = cam.getWorldPosition(new THREE.Vector3()), f = cam.getWorldDirection(new THREE.Vector3());

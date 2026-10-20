@@ -22,6 +22,7 @@ Prioritert. Flytt ferdige punkter til log.md.
   - *Skrittene:* Start at «2 The Amended Record», gå til arkivrommet, les et papir og stå stille, eller DEV > The records room > «Steps on the roof». Lytt med hodetelefoner. Se etter: om de 10 s helt stille høres ut som en lydfeil, og om støvet og tekstene bærer det med lyden av. Gå ut og se rimet på takaggregatet (zoom).
   - Ytelse på ekte telefon er ikke målt for noen av dem. Ingen har lyttet til motorene eller skrittene ennå.
 - [ ] Nye fortellerlinjer for de fire (en fyldigere linje under ansiktet, «a pale head, one black eye», og toasten «The print from ... has come up.», som ikke har opptak). Best gjort samlet nå som de fire er flettet.
+- [ ] **Tom prøver linje B og loggen over hva som ble sett** (PR #121, `story/lines.ts`, `story/seen.ts`). Raskest: `?dev&debug` bak adressen, DEV > Start at «2 The Amended Record», gå ut i servicegården og DEV > Missing time > «Begin the warning here» og bli tatt, to ganger. Sett deg så i lastebilen og kjør sørover mot motellet i mørket, og se til høyre (vest): tre lys holder følge og svinger av sørvest langs B mot STATION 01. Det tredje merket på B tegner streken på kartet gjennom avkjøringen til SARO og gir notatet «Three on one line». Loggen står nederst i fps-panelet (de siste 8 linjene, 5 på telefon). Se etter: om lysene sees i det hele tatt (de står rundt 82° til høyre når man ser fram), og om panelet dekker Notes-knappen på telefon. Det nye B-notatet har ikke Serling- eller Kinski-opptak.
 
 ## Fra Tom 19. oktober kveld
 

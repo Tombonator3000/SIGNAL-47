@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { STATION_TRACK, STATION_TRUCK, STATION_GROUND, STATION_PAD, STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE } from './stationLayout';
+import { STATION_TRACK, STATION_TRUCK, STATION_GROUND, STATION_PAD, STATION_FENCE, STATION_GATE, STATION_HUT, STATION_SHED, STATION_POLE, STATION_TRANSIT, STATION_SIGHT_A, STATION_VANE_B } from './stationLayout';
 import { stationMesas, STATION_FAR_LIGHTS, hazed } from './horizon';
 import { stationToRoad, stationLand, outside, inRect, STATION_PATCH } from './geo';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -58,13 +58,13 @@ const DOOR = { x0: -10.5, x1: -9.4, h: 2.0 };       // opening in the south wall
 const WIN_S = { x0: -12.3, x1: -11.3 };             // south window
 const WIN_E = { z0: 2.3, z1: 3.3 };                 // east window, towards the transit
 const SILL = 0.95, HEAD = 1.85;
-const T = new THREE.Vector3(3, 0, -4);              // transit pier
+const T = new THREE.Vector3(STATION_TRANSIT.x, 0, STATION_TRANSIT.z);   // transit pier (story/lines.ts lays A, B and C out from it)
 const PIER = { bottom: G - 0.1, top: 1.05, half0: 0.45, half1: 0.26 };
-const SIGHT = new THREE.Vector3(1, 0, -1).normalize();
+const SIGHT = new THREE.Vector3(STATION_SIGHT_A.x, 0, STATION_SIGHT_A.z).normalize();
 const OFF = new THREE.Vector3(1, 0, 1).normalize();
 const FOOT_A = T.clone().addScaledVector(SIGHT, 11);
 const POST_A = T.clone().addScaledVector(SIGHT, 10).addScaledVector(OFF, 3);
-const POST_B = new THREE.Vector3(-7.4, 0, -10.0);
+const POST_B = new THREE.Vector3(STATION_VANE_B.x, 0, STATION_VANE_B.z);
 const STAKES = Array.from({ length: 13 }, (_, i) => 8 + i * 4);   // x of the C stakes
 const LAMP = new THREE.Vector3(1.6, 0, -2.6);
 const CABLE_R = 0.025;
