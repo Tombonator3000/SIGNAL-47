@@ -61,6 +61,9 @@ export interface FollowIn {
   calm: boolean;
   /** The clock the player woke at, after the time away (its notes have it). */
   woke: number;
+  /** One of them is standing over the player on waking (story/abduction.ts): which way the player
+   *  lies is the abduction's (they against something lighter), and the dishes' watch waits for it. */
+  over?: boolean;
 }
 export interface FollowDeps {
   dishes: Dish[];
@@ -190,7 +193,7 @@ export class DishesFollow {
         break;
       case 'hold': if ((this.holdT -= dt) <= 0) this.goHome(s); break;
       case 'away': if (s.stage === 'back') this.woke(s); else if (s.stage === 'calm') this.goHome(s); break;
-      case 'watch': if ((this.holdT -= dt) <= 0) this.goHome(s); break;
+      case 'watch': if (!s.over && (this.holdT -= dt) <= 0) this.goHome(s); break;
       case 'home': break;
     }
     if ((this.mode as string) === 'idle') return;   // ended above
@@ -303,8 +306,9 @@ export class DishesFollow {
       if (a.h < 140) ids.push(r.d.id);
       if (a.h < 80 && (!watcher || a.h < watcher.h)) watcher = { r, h: a.h };
     }
-    // the view lifts from the stars towards the nearest of them, a little to one side
-    if (watcher) this.d.face(Math.atan2(-(watcher.r.d.x - s.eye.x), -(watcher.r.d.z - s.eye.z)) + rnd(-0.22, 0.22));
+    // the view lifts from the stars towards the nearest of them, a little to one side (not with one
+    // of them over the player: the abduction has turned the player for that, and they are over it)
+    if (watcher && !s.over) this.d.face(Math.atan2(-(watcher.r.d.x - s.eye.x), -(watcher.r.d.z - s.eye.z)) + rnd(-0.22, 0.22));
     const who = ids.length > 3 ? `${ids.slice(0, 3).join(', ')} and the others` : list(ids);
     if (ids.length) this.d.note(`${clockText(s.woke, false)}. When I woke, ${who} ${ids.length > 1 ? 'were' : 'was'} pointing down at the grass where I lay. ${ids.length > 1 ? 'They' : 'It'} had turned to it when the light came, before I was there.`);
   }

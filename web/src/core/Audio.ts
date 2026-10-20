@@ -302,7 +302,8 @@ export class AudioSys {
 
   startRoomTone() {
     const ctx = this.ctx; if (!ctx || this.roomTone) return;
-    const g = ctx.createGain(); g.gain.value = 0.0; g.connect(this.amb);
+    const g = ctx.createGain(); g.gain.value = 0.0;
+    this.toneHold = ctx.createGain(); g.connect(this.toneHold); this.toneHold.connect(this.amb);
     const n = this.noiseSrc(true); const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
     const ng = ctx.createGain(); ng.gain.value = 0.22; n.connect(lp); lp.connect(ng); ng.connect(g); n.start();
     const hum = ctx.createOscillator(); hum.frequency.value = 60; const hg = ctx.createGain(); hg.gain.value = 0.035; hum.connect(hg); hg.connect(g); hum.start();
@@ -310,6 +311,20 @@ export class AudioSys {
     g.gain.setTargetAtTime(0.5, ctx.currentTime, 1.5);
     this.roomTone = g;
   }
+
+  /** The room's hum held down (0) or let back (1), over where setSpace() keeps it (story/roofSteps.ts:
+   *  it drops out while something stands on the records room roof). tau: how fast. */
+  private toneHold: GainNode | null = null;
+  holdRoomTone(level: number, tau = 0.1) {
+    const ctx = this.ctx, h = this.toneHold; if (!ctx || !h) return;
+    // (from where it is now: a cancelled glide would otherwise jump back to where it began, a click)
+    const t = ctx.currentTime, g = h.gain as AudioParam & { cancelAndHoldAtTime?: (t: number) => AudioParam };
+    if (g.cancelAndHoldAtTime) g.cancelAndHoldAtTime(t);
+    else { const v = g.value; g.cancelScheduledValues(t); g.setValueAtTime(v, t); }
+    g.setTargetAtTime(level, t, tau);
+  }
+  /** Where the hum is held now (tests). */
+  get roomToneHeld() { return this.toneHold?.gain.value ?? 1; }
 
   // Receiver tone: a sine whose loudness follows lock quality, plus band noise.
   startCarrier() {
