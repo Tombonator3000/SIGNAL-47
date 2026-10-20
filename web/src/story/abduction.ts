@@ -4,6 +4,7 @@ import type { Player } from '../player/Player';
 import type { DocSpec } from '../ui/UI';
 import { clockText } from './time';
 import { artImage, artLoaded, loadArtSome, ABDUCT_ART, type ArtId } from '../core/art';
+import { Silhouette } from '../core/roadside';
 
 // The time away (HENDELSER.md, section 8; Tom, 16 October: yes to all four questions). On foot,
 // alone, outdoors on one of the lines, at night: the pressure rises, and at the top of it they
@@ -17,6 +18,15 @@ import { artImage, artLoaded, loadArtSome, ABDUCT_ART, type ArtId } from '../cor
 //                frames (the light; the grass from above with your shadow in it; a hand with
 //                fingers too long at the edge; yourself lying in the grass from above), black.
 //   lost time    17 to 47 minutes, never past the next fixed point of the story.
+//   over you     (FORSLAG.md, "Valg for Tom" 3; Tom, 20 October: "Spenning og skummelt slår
+//                faste regler") on your back, the stars, and no sound at all, not even the
+//                crickets. You blink and lift your head to look down along yourself, and at the
+//                top of the view, a few metres off beyond your feet, one of them stands with its
+//                head bent to you: the outline from the glimpses, against the sky, nearer than they
+//                ever come, and still. A second and a half, or until your eyes go up to it, and it
+//                is not there; the crickets start again all at once and the flashlight comes on.
+//                The first time it is a little aside and some way off; the second time nearer, in
+//                the frost round you; the third time there are no stars first, and there are two.
 //   back         on your back in the grass, the stars; the view lifts. 100 to 400 m further
 //                along, in a ring of flattened grass with frost on it; the flashlight beside
 //                you, on. The truck's engine has died where it stood and wants the key.
@@ -65,7 +75,9 @@ export interface AbductDeps {
   /** Off the asphalt, onto the verge, where the place has one (main.ts). */
   settle?: (p: THREE.Vector3) => void;
   flashlight: { have: boolean; on: boolean; flicker: (k: number) => void };
-  hush: (secs: number, level: number) => void;
+  /** The night's sounds to level (in about tau seconds), and back to all of them after secs
+   *  (in about back seconds): Ambience.hush. */
+  hush: (secs: number, level: number, tau?: number, back?: number) => void;
   glitch: (k: number) => void;
   skipClock: (sec: number) => void;
   note: (text: string) => void;
@@ -77,11 +89,28 @@ export interface AbductDeps {
   save: () => void;
 }
 /** What is kept with the case. */
-export interface AbductSave { count: number; last: number; spots: { scene: string; take: [number, number, number]; back: [number, number, number]; clock: number; pic?: string; doc?: DocSpec }[] }
+export interface AbductSave { count: number; last: number; spots: { scene: string; take: [number, number, number]; back: [number, number, number]; clock: number; pic?: string; doc?: DocSpec;
+  /** Which time it was that one of them stood over you on waking (1 to 3); absent when none did
+   *  (Missing time turned off on the way, the outlines not there, a case from before 20 October). */
+  over?: number }[] }
 
 type Stage = 'calm' | 'warning' | 'light' | 'taken' | 'black' | 'back';
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const MAX = 3, GAP = 40 * 60, MIN_LOST = 17 * 60;
+// Over you on waking, the three times: whether the stars come first (then the blink, the head
+// lifted behind it); how far off each one stands beyond your feet (metres) and how far aside in the
+// frame (of the half width); and up, where the nearest one's head is in the frame (of the half
+// height above the middle): the view is turned down along you just so far, on any screen, so every
+// player has it there without looking for it. Then how long it stays, at most.
+const STARS_T = 1.3, BLINK_T = 0.24, OVER_T = 1.5;
+const OVER: { stars: boolean; up: number; at: { dist: number; side: number }[] }[] = [
+  { stars: true, up: 0.66, at: [{ dist: 2.8, side: 0.2 }] },
+  { stars: true, up: 0.6, at: [{ dist: 1.85, side: -0.05 }] },
+  { stars: false, up: 0.64, at: [{ dist: 2.2, side: -0.3 }, { dist: 3.7, side: 0.38 }] },
+];
+/** How high their heads are (the outlines' cards, a figure of 1.2 m: roadside.ts), and the cold
+ *  light of the sky along their edges out here. */
+const HEAD_Y = 1.1, OVER_RIM = 0x232c3a;
 
 export class Abduction {
   stage: Stage = 'calm';
@@ -107,10 +136,18 @@ export class Abduction {
   private records: { g: THREE.Group; scene: string }[] = [];
   private lying: THREE.Group;
   private hadLight = false;
+  /** Over you on waking (the outlines are asked for when the warning starts), and where it is up
+   *  to: the stars first, the blink, then there; and each one's head as seen from the eye, to know
+   *  when the eyes have gone to it. */
+  private overFigs: Silhouette[] = [new Silhouette('abduct:over', OVER_RIM, 'turned'), new Silhouette('abduct:over', OVER_RIM, 'stand')];
+  private over: { v: number; t: number; phase: 'stars' | 'blink' | 'there'; pitch: number; yaw: number; dirs: THREE.Vector3[]; off: number[] } | null = null;
 
   constructor(private d: AbductDeps) {
     const css = document.createElement('style');
-    css.textContent = '.abduct-light::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:39;opacity:var(--abduct,0);background:radial-gradient(ellipse at 50% -10%,#fff 0%,#eef4f6 45%,rgba(220,232,236,.85) 100%)}';
+    css.textContent = '.abduct-light::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:39;opacity:var(--abduct,0);background:radial-gradient(ellipse at 50% -10%,#fff 0%,#eef4f6 45%,rgba(220,232,236,.85) 100%)}'
+      // while one of them is over you, nothing on the screen but the night (the words, the buttons
+      // come back with the crickets)
+      + 'html.abduct-held .hud,html.abduct-held .touch{visibility:hidden!important}';
     document.head.appendChild(css);
     this.canvas = document.createElement('canvas'); this.canvas.width = 640; this.canvas.height = 400;
     this.canvas.className = 'abduct-frame';
@@ -131,7 +168,7 @@ export class Abduction {
       case 'light': return this.light(s);
       case 'taken': return this.taken(s);
       case 'black': if (this.st > 2) this.wake(s); return;
-      case 'back': return this.back(dt);
+      case 'back': return this.over ? this.overStep(dt, s) : this.back(dt);
     }
   }
 
@@ -153,6 +190,7 @@ export class Abduction {
     this.hadLight = this.d.flashlight.on;
     this.take.copy(this.d.player.pos);
     void loadArtSome(ABDUCT_ART);
+    for (const f of this.overFigs) f.wake();
     this.d.hush(this.warnLen + 12, 0);
     this.bed?.stop(); this.bed = this.d.audio.pressure();
     void s;
@@ -216,12 +254,11 @@ export class Abduction {
     const back = this.further(this.take, s.along);
     p.place(back.x, back.z, p.yaw + rnd(-2, 2));
     p.pitch = 1.3; p.eye = 0.35;
+    p.update(0, 0, 0, false);   // the view is there on the first frame after the black, not the one before
     back.y = d.ground(back.x, back.z); this.take.y = d.ground(this.take.x, this.take.z);
     this.ring(back);
-    if (d.flashlight.have) d.flashlight.on = true;
     d.flashlight.flicker(0);
     d.audio.suspend(false);
-    d.hush(6, 0.2);
     this.canvas.style.display = 'none';
     this.silent = false;
     this.data.count++; this.data.last = t1;
@@ -242,8 +279,90 @@ export class Abduction {
         d.file(spot.doc);
       }
     }
-    d.save();
+    // over you: the first, the second, the third time (not with Missing time turned off on the way,
+    // nor without the outlines: never the figure in code this near). After the pictures from
+    // above, so it is in none of them. Until it is not there, no sound at all and no light; the case
+    // is kept from then (a save has a picture of the frame).
+    const v = Math.min(OVER.length, this.data.count) - 1;
+    if (s.enabled && this.overFigs[0].painted) { spot.over = v + 1; this.overStart(v); }
+    else { if (d.flashlight.have) d.flashlight.on = true; d.hush(6, 0.2); d.save(); }
     this.stage = 'back'; this.st = 0;
+  }
+
+  // ---------- over you ----------
+  private overStart(v: number) {
+    const p = this.d.player;
+    this.over = { v, t: 0, phase: 'stars', pitch: p.pitch, yaw: p.yaw, dirs: [], off: [] };
+    this.d.hush(60, 0, 0.05);
+    document.documentElement.classList.add('abduct-held');
+    if (!OVER[v].stars) this.overReveal();
+  }
+  /** The head lifted to look down along yourself, and them where they stand. */
+  private overReveal() {
+    const o = this.over!, p = this.d.player, cam = p.camera, spec = OVER[o.v];
+    const ty = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2), tx = ty * cam.aspect;
+    // turned down just so far that the nearest head is at its height in the frame
+    p.pitch = Math.atan2(HEAD_Y - p.eye, spec.at[0].dist) - Math.atan(spec.up * ty);
+    p.update(0, 0, 0, false);
+    o.pitch = p.pitch; o.yaw = p.yaw; o.phase = 'there'; o.t = 0;
+    const fwd = new THREE.Vector3(-Math.sin(p.yaw), 0, -Math.cos(p.yaw)), right = new THREE.Vector3(Math.cos(p.yaw), 0, -Math.sin(p.yaw));
+    const eye = cam.position.clone(), look = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(p.pitch, p.yaw, 0, 'YXZ'));
+    spec.at.forEach((a, i) => {
+      const f = this.overFigs[i], b = Math.atan(a.side * tx);
+      const at = p.pos.clone().addScaledVector(fwd, a.dist * Math.cos(b)).addScaledVector(right, a.dist * Math.sin(b));
+      f.group.position.set(at.x, this.d.ground(at.x, at.z), at.z);
+      f.group.visible = true; this.d.scene.add(f.group);
+      f.group.traverse((x) => { x.renderOrder = 2; });   // over the frost it stands in, not under it
+      const head = new THREE.Vector3(at.x, f.group.position.y + HEAD_Y, at.z).sub(eye).normalize();
+      o.dirs.push(head); o.off.push(look.angleTo(head));
+    });
+  }
+  /** Still on your back: the stars, the blink, then it is there for a second and a half. It goes
+   *  when that is up, or when the eyes go to it; and not with an effect: it was not there. */
+  private overStep(dt: number, s: AbductIn) {
+    const o = this.over!, p = this.d.player;
+    if (!s.enabled) { this.overGone(); return; }   // Missing time turned off in the pause menu: not there
+    o.t += dt;
+    if (o.phase === 'stars') {
+      if (o.t >= STARS_T) { o.phase = 'blink'; o.t = 0; this.show(null); }
+      return;
+    }
+    if (o.phase === 'blink') {
+      if (o.t >= BLINK_T) { this.overReveal(); this.canvas.style.display = 'none'; }
+      return;
+    }
+    const look = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(p.pitch, p.yaw, 0, 'YXZ'));
+    if (o.t >= OVER_T || o.dirs.some((d, i) => look.angleTo(d) < o.off[i] - 0.05)) this.overGone();
+  }
+  private overGone() {
+    this.overDrop();
+    // the crickets, all at once, and the rest of the night after them; the light, on
+    this.d.hush(5, 0.6, 0.06, 1.8);
+    if (this.d.flashlight.have) this.d.flashlight.on = true;
+    this.d.save();
+    this.st = 0;
+  }
+  private overDrop() {
+    for (const f of this.overFigs) { f.group.visible = false; f.group.removeFromParent(); }
+    document.documentElement.classList.remove('abduct-held');
+    if (this.over?.phase === 'blink') this.canvas.style.display = 'none';
+    this.over = null;
+  }
+  /** The look while you are held (main.ts): only while one of them is there, and stiffly; towards
+   *  it is enough. */
+  gaze(dx: number, dy: number) {
+    const o = this.over, p = this.d.player;
+    if (!o || o.phase !== 'there') return;
+    p.yaw = THREE.MathUtils.clamp(p.yaw - dx * 0.45, o.yaw - 0.4, o.yaw + 0.4);
+    p.pitch = THREE.MathUtils.clamp(p.pitch - dy * 0.45, o.pitch - 0.3, o.pitch + 0.5);
+  }
+  /** Where waking is up to with one of them over you, or null (the tests). */
+  get overPhase() { return this.over?.phase ?? null; }
+  /** A save's picture is taken without them (main.ts writeSave); true when they were there. */
+  hideOver(hide: boolean) {
+    if (this.over?.phase !== 'there') return false;
+    for (const f of this.overFigs) if (f.group.parent) f.group.visible = !hide;
+    return true;
   }
   private back(dt: number) {
     const p = this.d.player, k = Math.min(1, this.st / 6);
@@ -264,8 +383,9 @@ export class Abduction {
 
   // ---------- what is left ----------
   private ring(at: THREE.Vector3) {
+    // (patchy, soft at both edges: seen from the grass, lying in it, as well as standing)
     const geo = new THREE.RingGeometry(1.3, 2.7, 40, 1); geo.rotateX(-Math.PI / 2);
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xc8d4dc, transparent: true, opacity: 0.2, depthWrite: false }));
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xc8d4dc, map: frost(), transparent: true, opacity: 0.32, depthWrite: false }));
     m.position.set(at.x, at.y + 0.03, at.z); m.name = 'abduct:ring';
     this.d.scene.add(m); this.rings.push(m);
   }
@@ -333,6 +453,7 @@ export class Abduction {
   private clear() {
     this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15);
     this.canvas.style.display = 'none'; this.d.overlay.classList.remove('abduct-light');
+    this.overDrop();
     for (const m of this.rings) { m.removeFromParent(); m.geometry.dispose(); (m.material as THREE.Material).dispose(); }
     for (const r of this.records) r.g.removeFromParent();
     this.rings = []; this.records = [];
@@ -340,6 +461,38 @@ export class Abduction {
 }
 
 // ---------- the figures and the frames ----------
+/** The frost on the flattened grass: thick in the middle of the ring, thinning out at both edges in
+ *  patches, as frost lies (white where the alpha is; the ring's own UVs are flat, so a square). */
+let frostTex: THREE.CanvasTexture | null = null;
+function frost() {
+  if (frostTex) return frostTex;
+  const N = 256, c = document.createElement('canvas'); c.width = c.height = N;
+  const g = c.getContext('2d')!, im = g.createImageData(N, N);
+  let sd = 47;
+  const r = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+  // a coarse noise of a few octaves, round the ring
+  const cells = Array.from({ length: 3 }, (_, o) => { const n = 8 << o; return { n, v: Array.from({ length: n * n }, r) }; });
+  const noise = (x: number, y: number) => {
+    let t = 0, w = 0;
+    cells.forEach(({ n, v }, o) => {
+      const fx = x * (n - 1), fy = y * (n - 1), ix = Math.floor(fx), iy = Math.floor(fy), ax = fx - ix, ay = fy - iy;
+      const at = (i: number, j: number) => v[Math.min(n - 1, j) * n + Math.min(n - 1, i)];
+      const k = 1 / (1 + o);
+      t += k * ((at(ix, iy) * (1 - ax) + at(ix + 1, iy) * ax) * (1 - ay) + (at(ix, iy + 1) * (1 - ax) + at(ix + 1, iy + 1) * ax) * ay); w += k;
+    });
+    return t / w;
+  };
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const u = (x + 0.5) / N * 2 - 1, v = (y + 0.5) / N * 2 - 1, d = Math.hypot(u, v) * 2.7;   // metres from the middle
+    const band = THREE.MathUtils.smoothstep(d, 1.25, 1.75) * (1 - THREE.MathUtils.smoothstep(d, 2.0, 2.72));
+    // patches, and in them the grain of the frost on each blade
+    const a = band * THREE.MathUtils.clamp((noise((x + 0.5) / N, (y + 0.5) / N) - 0.32) * 2.4, 0, 1) * (0.55 + 0.45 * r());
+    const i = (y * N + x) * 4; im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = Math.round(255 * a);
+  }
+  g.putImageData(im, 0, 0);
+  frostTex = new THREE.CanvasTexture(c); frostTex.colorSpace = THREE.SRGBColorSpace;
+  return frostTex;
+}
 /** Someone in a SARO jacket, the reflective band across it: standing, or lying on their back. */
 function jacketFigure(lying: boolean) {
   const g = new THREE.Group(), body = new THREE.Group();

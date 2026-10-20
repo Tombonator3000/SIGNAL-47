@@ -392,7 +392,7 @@ async function boot() {
     standable: (x, z) => player.walkable(x, z) && !player.colliders.some((c) => x > c.minX - .4 && x < c.maxX + .4 && z > c.minZ - .4 && z < c.maxZ + .4),
     // on the highway south of SARO: in the grass on the west verge, not on the road
     settle: (q) => { if (world.area === 'saro' && world.crossing.onHighway(q)) q.x = -30.6; },
-    hush: (secs, level) => audio.night?.hush(secs, level), glitch: (k) => { vhs.glitch = k; },
+    hush: (secs, level, tau, back) => audio.night?.hush(secs, level, tau, back), glitch: (k) => { vhs.glitch = k; },
     skipClock: (sec) => { game.clock += sec; }, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
     camera: () => fcam.have,
     file: (doc) => { const i = game.docs.findIndex((x) => x.id === doc.id); if (i < 0) game.docs.push(doc); else game.docs[i] = doc; },
@@ -975,11 +975,17 @@ async function boot() {
       truck: tk?.at ?? world.truckAt, truckPose: tk?.pose ?? null, town: [...townSeen], abduct: abduction!.data,
       album: album.data,
       motelTv: tvFrame ? { id: 'motel-tv-frame', url: tvFrame } : undefined,
-      pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: player.pitch },
+      // on your back after the time away, Continue stands you up looking ahead
+      pose: prologue ? null : { x: player.pos.x, z: player.pos.z, yaw: player.yaw, pitch: abduction!.holds ? -0.06 : player.pitch },
     };
+    // the picture without what stands over you on waking (story/abduction.ts)
+    const over = abduction!.hideOver(true);
+    if (over) draw();
+    const thumb = captureThumb();
+    if (over) { abduction!.hideOver(false); draw(); }
     return saves.save(caseId, kind, slot, state, {
       chapter: game.chapterTitle(), place: placeName(),
-      clock: prologue ? '02:13' : clockText(game.clock, false), playtime, thumb: captureThumb(),
+      clock: prologue ? '02:13' : clockText(game.clock, false), playtime, thumb,
     });
   }
   // Progress asks for an autosave; it is written after the next frame, once the game may be saved.
@@ -1437,7 +1443,7 @@ async function boot() {
       }
     }
   }
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard; }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy; }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -1460,7 +1466,11 @@ async function boot() {
           player.look(look.x * fine, (invertY ? -look.y : look.y) * fine);
           const m = input.move();
           player.update(dt, m.x, m.z, m.run);
-        } else player.update(dt, 0, 0, false);
+        } else {
+          // held on waking: only the eyes, up, towards what is over you (story/abduction.ts)
+          if (mode === 'play' && !modalOpen && abduction!.holds) abduction!.gaze(look.x, invertY ? -look.y : look.y);
+          player.update(dt, 0, 0, false);
+        }
         world.update(dt, t, null, { x: 0, y: 0 });
       }
       game.update(dt, t, modalOpen);
