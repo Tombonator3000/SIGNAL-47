@@ -15,6 +15,10 @@ export class Dish {
   tgtAz: number; tgtEl: number;
   slew = 6; // degrees per second
   phase = Math.random() * 6;
+  /** Driven by nothing on the console (story/dishesFollow.ts): it moves by itself, and how fast
+   *  it turns now (degrees per second, both axes), for the readouts and the closer look. */
+  rogue = false;
+  spin = 0;
 
   // lod 0: full model. lod 1: far dish, no back truss, fewer segments, metal base.
   constructor(public id: string, public x: number, public z: number, public scale = 1, az0 = 42, el0 = 48, public lod: 0 | 1 = 0) {
@@ -23,7 +27,7 @@ export class Dish {
 
   point(az: number, el: number, slew?: number) { this.tgtAz = az; this.tgtEl = el; if (slew) this.slew = slew; }
   snap(az: number, el: number) { this.curAz = this.tgtAz = az; this.curEl = this.tgtEl = el; }
-  get moving() { return Math.abs(this.curAz - this.tgtAz) > 0.05 || Math.abs(this.curEl - this.tgtEl) > 0.05; }
+  get moving() { return this.spin > 0.05 || Math.abs(this.curAz - this.tgtAz) > 0.05 || Math.abs(this.curEl - this.tgtEl) > 0.05; }
 
   update(dt: number) {
     const step = this.slew * dt;
@@ -180,6 +184,9 @@ export class DishArray {
     }
     for (const p of this.parts) p.mesh.visible = p.dishes.some((d) => seen.has(d));
   }
+
+  /** The red lamp's blink, moved along (dishes that follow the player blink together). */
+  beaconPhase(i: number, phase: number) { this.beacons.setPhase(i, phase); }
 
   // World position of a dish's feed (for aiming cameras and lights at it).
   feedPosition(d: Dish, out = new THREE.Vector3()) {

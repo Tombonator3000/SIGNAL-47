@@ -4,6 +4,7 @@ import type { Dish } from '../world/Dish';
 import type { Interaction } from '../core/Interaction';
 import type { AudioSys } from '../core/Audio';
 import type { Doors } from '../world/Doors';
+import { angleText } from './time';
 
 // What the antenna field says (world/Field.ts): the walk gate in the array fence, a drive cabinet
 // at each antenna's foot with a readout behind its glass, and a closer look at each pedestal.
@@ -24,7 +25,7 @@ export interface FieldDeps {
 
 // where every antenna turned to at 02:15 (Prologue.ts, EVENT_AZ and EVENT_EL), and the night's schedule
 const TURNED = { az: 26, el: 32 }, SCHED = { az: 42, el: 48 };
-const deg = (v: number, n: number) => `${String(Math.floor(v)).padStart(n, '0')}.${Math.floor((v % 1) * 10)}`;
+const deg = (v: number, n: number) => angleText(v, n);
 
 // A closer look at the cabinets: the sign is the same on all of them, the wear is not
 const WEAR = [
@@ -63,11 +64,14 @@ export function bindField(field: Field, d: FieldDeps) {
         if (junction || !x) { d.toast('S-03 cable junction. Its readings go to the motor bus cabinet on the east walk.', 3.6); return; }
         field.showReadout(cab, () => {
           const t = turned(x);
+          // moving by itself (story/dishesFollow.ts): the encoder runs, and nothing commands it
           return { head: `DRIVE ${id}   SARO ARRAY`,
-            rows: [`ENCODER  AZ ${deg(x.curAz, 3)}  EL ${deg(x.curEl, 2)}`, `SCHED    AZ 0${SCHED.az}    EL ${SCHED.el}`, t ? 'CMD RCVD 0' : 'CONTROL  CONSOLE'],
-            warn: t ? 'NO CONTROL COMMAND' : x.moving ? 'SLEWING' : null };
+            rows: [`ENCODER  AZ ${deg(x.curAz, 3)}  EL ${deg(x.curEl, 2)}`, `SCHED    AZ 0${SCHED.az}    EL ${SCHED.el}`, t || x.rogue ? 'CMD RCVD 0' : 'CONTROL  CONSOLE'],
+            warn: x.rogue ? (x.moving ? 'SLEWING  NO COMMAND' : 'NO CONTROL COMMAND') : t ? 'NO CONTROL COMMAND' : x.moving ? 'SLEWING' : null };
         });
-        d.toast(turned(x)
+        d.toast(x.rogue
+          ? `${id}. Encoder az ${deg(x.curAz, 3)}, el ${deg(x.curEl, 2)}${x.moving ? ', and running' : ''}. Commands received: 0.`
+          : turned(x)
           ? `${id}. Encoder az ${deg(x.curAz, 3)}, el ${deg(x.curEl, 2)}. Scheduled az 0${SCHED.az}, el ${SCHED.el}. Commands received: 0.`
           : `${id}. Encoder az ${deg(x.curAz, 3)}, el ${deg(x.curEl, 2)}, on the console's track.`, 4.6);
       },
@@ -79,6 +83,7 @@ export function bindField(field: Field, d: FieldDeps) {
       examine: () => {
         const x = dish(id);
         if (!d.here() || !x) return null;
+        if (x.rogue) return `${id}. It has come down out of 026: az ${deg(x.curAz, 3)}, el ${deg(x.curEl, 2)}. Nobody is at the console.`;
         return turned(x) ? `${id}. It points where the other twenty-six point: az ${deg(x.curAz, 3)}, el ${deg(x.curEl, 2)}. Only the red lamp on the feed moves.`
           : `${id}. On the survey track with the others: az ${deg(x.curAz, 3)}, el ${deg(x.curEl, 2)}.`;
       } });
