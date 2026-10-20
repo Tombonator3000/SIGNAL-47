@@ -918,6 +918,7 @@ async function boot() {
     tubes: (mode) => annex.holdTubes(mode),
     // (a little in front of the face, so it falls through the view whether the player looks up or not)
     dust: (x, z) => { const f = camera.getWorldDirection(new THREE.Vector3()).setY(0); if (f.lengthSq() < 1e-6) f.set(0, 0, -1); f.normalize(); annex.sift(x + f.x * 0.7, z + f.z * 0.7); },
+    puff: (x, z, n) => annex.sift(x, z, n, 0.16, 0.3),
     tubeAt: new THREE.Vector3(-4.6, 2.7, 8.0),   // the tired tube (Annex.flickerTube)
     hit: annex.frost.hit,
     outside: () => world.area === 'saro' && !world.driving && space === 'yard',
@@ -1132,12 +1133,17 @@ async function boot() {
     begin: () => game.beginChapter2(null),
   });
   // End of chapter two: the key holder sends you to the station first.
-  ch2.onEnd = () => chapterBreak({
-    closed: 'THE AMENDED RECORD // P04 AND P05 RECORDED',
-    recap: 'The 1947 record was changed: the service copy leaves out C. B-12 still carries STATION 01, and the key holder wants you at the cut cable before you come to her.',
-    next: 'CHAPTER THREE', title: 'THE SURVEY STATION',
-    begin: () => game.beginChapter3(null),
-  });
+  // (if the steps on the records room roof are still going, the call to the key holder having come
+  // in the middle of them, the chapter waits for them to finish: story/roofSteps.ts)
+  ch2.onEnd = () => {
+    const end = () => roofSteps.busy && game.phase === 'ch2' ? game.after(0.25, end) : chapterBreak({
+      closed: 'THE AMENDED RECORD // P04 AND P05 RECORDED',
+      recap: 'The 1947 record was changed: the service copy leaves out C. B-12 still carries STATION 01, and the key holder wants you at the cut cable before you come to her.',
+      next: 'CHAPTER THREE', title: 'THE SURVEY STATION',
+      begin: () => game.beginChapter3(null),
+    });
+    end();
+  };
   // End of chapter three: the prints are filed, and N. Vega is waiting across the road.
   ch3.onEnd = () => chapterBreak({
     closed: 'THE SURVEY STATION // P06 TO P09 RECORDED',

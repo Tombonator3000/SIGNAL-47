@@ -16,6 +16,10 @@
 #   - saved: the save holds roof:steps and the corner; after Continue the frost is there, the steps
 #     never come again, the note is not doubled
 #   - from outside: the frost on the unit and on the lip, a closer look says so and writes it down once
+#   - seen with the sound down: a few motes of dust out of the ceiling under the steps that come over
+#     the room, while they come; the captions keep time (one while they come, one when they stop)
+#   - the call to the key holder in the middle of them: they wait for the call, then finish, and the
+#     chapter waits for them (with Missing time off: it is not an abduction)
 #   - desktop 1280x720 and phone 412x892 with touch; no console errors or warnings
 # Usage: python3 tools/horror_roof.py OUTDIR
 import asyncio, sys, json, os, math
@@ -186,9 +190,15 @@ async def main():
         # follow them in: a step back towards the door while they come (they go where the player goes)
         await tick(1.2)
         await ev("S47.player.place(-3.3, 7.45, S47.player.yaw); S47.tick(0.05)")
+        motes, told = 0, False
         for _ in range(200):
             if (await roof())['phase'] != 'come': break
+            motes = max(motes, await ev("S47.annex.dustLive"))
+            j = ' '.join(await ev("T.toasts"))
+            told = told or ('Footsteps on the roof' in j and 'right over you' not in j)
             await tick(0.1)
+        check(motes >= 6, f'while they come, dust shakes out of the ceiling under them ({motes} motes in the air at most)')
+        check(told, 'captioned while they come, before they stop')
         await tick(0.1)
         r = await roof()
         b1 = [l for l in r['log'] if l['burst'] == 1]
@@ -332,6 +342,52 @@ async def main():
         await ev("S47.input.zoomHeld = false"); await tick(0.3)
         print('\n'.join(errs[:30]) or 'desktop: no console errors/warnings')
         check(not errs, 'desktop: console clean')
+        await ctx.close()
+
+        # ======================= the call to the key holder in the middle of them =======================
+        ctx, pg, errs = await page(b, 1280, 720, False)
+        ev = pg.evaluate
+        async def tick(s, n=1):
+            for _ in range(n): await ev(f"S47.tick({s})")
+        roof = lambda: ev("T.roof()")
+        s2 = lambda k: ev(f"S47.ch2.s.{k}")
+        await ev("S47.hold = true; S47.setAbductions(false); S47.jump('chapter2'); S47.tick(1.5); S47.nightEvents['wait'] = 1e9")
+        await ev("S47.game.d.inter.get('phone').use()"); await tick(1, 12)
+        # the board done (P04 and P05 recorded): the key holder is next, the room's last quiet moment
+        await ev("Object.assign(S47.ch2.s, { p04: true, p05: true, stage: 'call-nora' })")
+        await ev("T.aim(-1.75, 9.25, -1.12, 1.42, 9.25)")
+        waited = 0.0
+        while waited < 12 and (await roof())['phase'] == 'idle':
+            await tick(0.25); waited += 0.25
+        check((await roof())['phase'] == 'come' and waited <= 5, f'call-nora, Missing time off: the steps begin by themselves {waited:.1f} s into the quiet before the call')
+        await tick(0.1, 10)
+        await ev("S47.game.d.inter.get('recPhone').use()"); await tick(0.05)
+        n0 = len((await roof())['log'])
+        held = True
+        for _ in range(80):
+            if await s2('called'): break
+            await tick(0.5)
+            if await ev("S47.game.cinematic"): held = held and len((await roof())['log']) <= n0 + 1
+        r = await roof()
+        check(await s2('called') and held and r['phase'] == 'come', f'they wait while the line is open ({n0} steps before the call, {len(r["log"])} when she hangs up)')
+        phase_at_done, card_early = None, False
+        for _ in range(400):
+            card_early = card_early or (await ev("!!document.querySelector('.chapter-card')") and (await roof())['phase'] != 'done')
+            if (await roof())['phase'] == 'done': phase_at_done = await ev("S47.game.phase"); break
+            await tick(0.1)
+        r = await roof()
+        b2 = [l for l in r['log'] if l['burst'] == 2]
+        check(r['phase'] == 'done' and len(b2) >= 5 and r['frost'] and phase_at_done == 'ch2' and not card_early, f'after the call they finish (the beat, {len(b2)} further off, the frost), still in chapter two, no chapter card over them')
+        for _ in range(80):
+            if await ev("!!document.querySelector('.chapter-card')"): break
+            await tick(0.25)
+        check(await ev("!!document.querySelector('.chapter-card')"), 'then the chapter card')
+        for _ in range(80):
+            if await ev("S47.game.phase") == 'ch3' and not await ev("S47.game.cinematic"): break
+            await tick(0.25)
+        check(await ev("S47.game.phase") == 'ch3' and (await roof())['phase'] == 'done', 'and chapter three begins as before')
+        print('\n'.join(errs[:30]) or 'call: no console errors/warnings')
+        check(not errs, 'call: console clean')
         await ctx.close()
 
         # ======================= phone, touch (and Kenney's steps standing in) =======================

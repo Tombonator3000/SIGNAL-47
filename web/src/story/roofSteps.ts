@@ -33,7 +33,9 @@ import { clockText } from './time';
 // is on its sheet-metal top, 0.8 m higher, and the metal gives a short dull ring. Outside or in the control room the slab's filter is off and the walls do it.
 // Kept in the night's seen set (main.ts `townSeen`, saved as `town`): `roof:steps` when they come,
 // `roof:sw` / `roof:se` for the corner (the frost), `roof:frost` once the frost has been looked at.
-// Captioned with two short lines (the game captions its sounds as toasts).
+// Captioned in time with them (the game captions its sounds as toasts): once while they come, when
+// they stop, when they go. Under each that comes over the room a few motes of dust shake out of the
+// ceiling, so the steps can be seen crossing it with the sound down (a phone, at night).
 
 export interface RoofIn {
   /** Chapter two at the records stage or ready to call the key holder, nothing else of the night's
@@ -67,6 +69,8 @@ export interface RoofDeps {
   frost: (corner: Corner | null) => void;
   /** Dust from the ceiling where it stops (Annex.sift, a little in front of the player's face). */
   dust: (x: number, z: number) => void;
+  /** A few motes shaken loose under one step that comes over the rooms (Annex.sift, small). */
+  puff: (x: number, z: number, n: number) => void;
   /** The tubes in the records room (Annex.holdTubes). */
   tubes: (mode: 'steady' | 'stutter' | null) => void;
   /** Where the tired tube hangs, for the tick when the hum comes back. */
@@ -96,13 +100,18 @@ const KENNEY = ['stepGravel0', 'stepGravel1', 'stepGravel2', 'stepGravel3', 'ste
  *  step, and low; held 8 dB down while they come, so they stand 13 over it), the first ones across
  *  the roof some 11 dB under the last, coming up out of the hum. */
 const LEVEL = { lic: 0.245, kenney: 0.217, thump: 0.079, ring: 0.1 };
+// under the deck: the corridor and the records room (Annex.ts), where dust can come down through the view
+const ROOMS = { x0: -6.0, x1: -1.0, z0: 4.85, z1: 10.5 };
 // the roof unit over the records room (Annex.ts), its top
 const UNIT = { x0: -5.0, x1: -3.4, z0: 8.05, z1: 9.15, y: 4.06 };
 
 const UNIT_PLAIN = 'The unit on the records room roof, its louvres furred with dust.';
 const UNIT_FROST = 'The unit on the records room roof is white with frost, thickest along the top edge and down the side over the table. Nothing else up there has any. It is not cold enough for frost tonight.';
 const LIP_FROST = 'A crust of frost on the lip of the roof at this corner. Nowhere else along the edge.';
-const CAPTION_1 = 'Footsteps on the roof. Light, and closer together than anyone walks. They stop right over you.';
+// the captions keep time with what is heard (the game captions its sounds as toasts; on a phone
+// with the sound down they are the steps): while they come, when they stop, when they go
+const CAPTION_COME = 'Footsteps on the roof. Light and quick, closer together than anyone walks.';
+const CAPTION_STOP = 'They stop, right over you.';
 const CAPTION_2 = 'Again, further off, out to the edge of the roof. Then nothing.';
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -121,6 +130,8 @@ export class RoofSteps {
   private queue: Step[] = [];
   private cues: { at: number; fn: () => void }[] = [];
   private walk = { pos: new THREE.Vector2(), n: 0, next: 0, settle: 0, hesitated: false, planned: false };
+  /** The first caption has been shown (while they come). */
+  private told = false;
   private target = new THREE.Vector2();
   private muffled = true;
   private sources = new Set<AudioScheduledSourceNode>();
@@ -142,6 +153,9 @@ export class RoofSteps {
     const s = this.d.seen;
     this.corner = s.has('roof:sw') ? 'sw' : s.has('roof:se') ? 'se' : null;
     this.phase = s.has('roof:steps') ? 'done' : 'idle';
+    // saved while they were still coming (a paper filed mid-way autosaves): they will not come
+    // again, so what they left is up there all the same
+    if (this.phase === 'done' && !this.corner) { this.corner = 'sw'; s.add('roof:sw'); }
     this.d.frost(this.corner);
     this.room = 0; this.quiet = 0; this.still = 0; this.last.set(1e9, 0, 0);
   }
@@ -185,8 +199,20 @@ export class RoofSteps {
     const ctx = this.d.audio.ctx;
     while (this.queue.length && this.queue[0].at <= this.t + AHEAD) {
       const st = this.queue.shift()!;
-      this.log.push({ t: st.at, x: st.x, z: st.z, d: Math.hypot(st.x - s.pos.x, st.z - s.pos.z), burst: st.burst });
+      const d = Math.hypot(st.x - s.pos.x, st.z - s.pos.z);
+      this.log.push({ t: st.at, x: st.x, z: st.z, d, burst: st.burst });
       if (ctx) this.play(st, Math.max(0, st.at - this.t));
+      // over the rooms and near enough to see: a few motes shaken out of the ceiling under it
+      // (the last of the first ones and the trickle where it stops are cued in stopped())
+      if (s.inRoom && st.x > ROOMS.x0 && st.x < ROOMS.x1 && st.z > ROOMS.z0 && st.z < ROOMS.z1 && d < 4.5) {
+        const n = st.burst === 1 ? (d < 1.6 ? 7 : 4) : 3;
+        this.cue(st.at, () => this.d.puff(st.x, st.z, n));
+      }
+      // the caption keeps time with them: once they are near enough to be plain, while they come
+      if (st.burst === 1 && !this.told && (d < 3.2 || this.walk.n >= 9)) {
+        this.told = true;
+        this.cue(st.at + 0.15, () => this.d.toast(CAPTION_COME, 4.2));
+      }
     }
     while (this.cues.length && this.cues[0].at <= this.t) this.cues.shift()!.fn();
   }
@@ -199,7 +225,7 @@ export class RoofSteps {
   }
 
   private start(s: RoofIn) {
-    this.phase = 'come'; this.t = 0; this.log = []; this.queue = []; this.cues = [];
+    this.phase = 'come'; this.t = 0; this.log = []; this.queue = []; this.cues = []; this.told = false;
     this.d.seen.add('roof:steps');           // never twice, even if the night is left in the middle
     this.bought = !!this.d.audio.lic('roof_steps');
     this.clockAt = this.d.clock();
@@ -265,7 +291,7 @@ export class RoofSteps {
     this.cue(at + 0.02, () => this.d.frost(c));   // up there now; nobody outside to see it come
     this.cue(at + 0.05, () => this.d.dust(where.x, where.y));
     this.cue(at + 0.9, () => { this.d.audio.holdRoomTone(0, 0.09); this.d.tubes('steady'); this.d.audio.night?.hush(BEAT + 4, 0); });
-    this.cue(at + 1.0, () => this.d.toast(CAPTION_1, 5));
+    this.cue(at + 0.45, () => this.d.toast(CAPTION_STOP, 4.5));
     // once more, further off: from where it stands now (it moved without a sound) to the lip
     const C = CORNER[c], away = C.clone().sub(where), len = away.length(), dir = away.clone().normalize();
     const b0 = where.clone().addScaledVector(dir, THREE.MathUtils.clamp(len - 1.8, 1.6, len - 0.6));

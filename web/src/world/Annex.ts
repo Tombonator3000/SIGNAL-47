@@ -91,44 +91,52 @@ export class RecordsAnnex {
     if (mode === 'stutter') this.stutterLeft = 0.75;
   }
 
-  /** A thin trickle of dust from the ceiling at (x, z), falling to the floor (story/roofSteps.ts:
-   *  where the steps stop, right over the player). Drawn with the rooms; gone after six seconds. */
-  private dust: { pts: THREE.Points; pos: Float32Array; v: Float32Array; delay: Float32Array; t: number; mat: THREE.PointsMaterial } | null = null;
-  sift(x: number, z: number) {
-    const N = 56, r = Math.random;
+  /** Dust shaken out of the ceiling at (x, z), falling to the floor (story/roofSteps.ts): a few motes
+   *  under each step that comes over the room (n small, quick), and a thin trickle where they stop,
+   *  right over the player (the default: 56 motes over some two seconds). One pool of motes, drawn
+   *  with the rooms; each mote is gone when it reaches the floor, the pool hidden when all are. */
+  private dust: { pts: THREE.Points; pos: Float32Array; v: Float32Array; at: Float32Array; live: Uint8Array; t: number; next: number } | null = null;
+  sift(x: number, z: number, n = 56, spread = 0.12, delay = 2.2) {
+    const N = 192, r = Math.random;
     if (!this.dust) {
-      const pos = new Float32Array(N * 3), geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(N * 3).fill(-50), geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       // a soft round mote, not a square
       const c = document.createElement('canvas'); c.width = c.height = 32;
       const g = c.getContext('2d')!, gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
       gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
       g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
-      const mat = new THREE.PointsMaterial({ color: 0xcfc7b6, map: new THREE.CanvasTexture(c), size: 0.012, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false });
+      const mat = new THREE.PointsMaterial({ color: 0xcfc7b6, map: new THREE.CanvasTexture(c), size: 0.014, sizeAttenuation: true, transparent: true, opacity: 0.6, depthWrite: false });
       const pts = new THREE.Points(geo, mat);
       pts.frustumCulled = false; pts.name = 'annex:dust'; pts.visible = false;
       this.interior.add(pts);
-      this.dust = { pts, pos, v: new Float32Array(N), delay: new Float32Array(N), t: 0, mat };
+      this.dust = { pts, pos, v: new Float32Array(N), at: new Float32Array(N), live: new Uint8Array(N), t: 0, next: 0 };
     }
     const d = this.dust;
-    for (let i = 0; i < N; i++) {
-      d.pos[i * 3] = x + (r() - 0.5) * 0.12; d.pos[i * 3 + 1] = 2.775; d.pos[i * 3 + 2] = z + (r() - 0.5) * 0.05;
-      d.v[i] = 0.18 + r() * 0.34; d.delay[i] = r() ** 1.7 * 2.2;
+    for (let k = 0; k < n; k++) {
+      const i = d.next; d.next = (d.next + 1) % N;
+      d.pos[i * 3] = x + (r() - 0.5) * spread; d.pos[i * 3 + 1] = 2.775; d.pos[i * 3 + 2] = z + (r() - 0.5) * spread * 0.6;
+      d.v[i] = 0.18 + r() * 0.34; d.at[i] = d.t + r() ** 1.7 * delay; d.live[i] = 1;
     }
-    d.t = 0; d.pts.visible = true;
+    d.pts.visible = true;
     (d.pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
   }
+  /** Motes in the air now (tests). */
+  get dustLive() { return this.dust && this.dust.pts.visible ? this.dust.live.reduce((a, b) => a + b, 0) : 0; }
   private dustStep(dt: number) {
     const d = this.dust; if (!d || !d.pts.visible) return;
     d.t += dt;
+    let any = false;
     for (let i = 0; i < d.v.length; i++) {
-      if (d.t < d.delay[i] || d.pos[i * 3 + 1] < 0.02) continue;
+      if (!d.live[i]) continue;
+      any = true;
+      if (d.t < d.at[i]) continue;              // still caught in the seam
       d.pos[i * 3 + 1] -= d.v[i] * dt;
       d.pos[i * 3] += Math.sin((d.t + i) * 2.3) * 0.03 * dt;
+      if (d.pos[i * 3 + 1] < 0.02) { d.live[i] = 0; d.pos[i * 3 + 1] = -50; }
     }
     (d.pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
-    d.mat.opacity = 0.6 * Math.min(1, d.t / 0.15) * (d.t > 4.6 ? Math.max(0, 1 - (d.t - 4.6) / 1.6) : 1);
-    if (d.t > 6.2) d.pts.visible = false;
+    if (!any) d.pts.visible = false;
   }
 
   private col(minX: number, maxX: number, minZ: number, maxZ: number) { this.colliders.push({ minX, maxX, minZ, maxZ }); }
