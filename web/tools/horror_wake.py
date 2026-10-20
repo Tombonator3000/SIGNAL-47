@@ -7,9 +7,15 @@
 # the third with no stars first and two of them. Once each time, kept with the case, never again
 # after Continue; nothing with Missing time off, before or on the way; not in the save's picture,
 # and the save stands you up. Desktop 1280x720 and a phone 412x892 with touch.
+# That it is seen, not only placed: each time the frame with them is compared with the same frame
+# without them, round each head (black against the sky or something lit, never lost against the
+# dark); yourself, lying, along the bottom of the view; the way you lie chosen for that (ground for
+# them to stand on, nothing in the way); the eyes going up through the game's own look (the mouse,
+# a finger), and not when they go down.
 # Usage (from web/): python3 tools/horror_wake.py OUTDIR
-import asyncio, sys, json, os, math, base64
+import asyncio, sys, json, os, math, base64, io
 from playwright.async_api import async_playwright
+from PIL import Image, ImageStat
 
 OUT = sys.argv[1]
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -23,9 +29,35 @@ A = "S47.abduction()"
 WHERE = """(() => { const T = S47.three, c = S47.camera; c.updateMatrixWorld(true);
   const out = []; S47.scene.traverse((o) => { if (o.name === 'abduct:over' && o.visible && o.parent) {
     const h = new T.Vector3(o.position.x, o.position.y + 1.1, o.position.z).project(c);
-    out.push({ d: Math.hypot(o.position.x - S47.player.pos.x, o.position.z - S47.player.pos.z), x: h.x, y: h.y, card: !!o.getObjectByName('abduct:over:card') }); } });
+    const card = o.getObjectByName('abduct:over:card');
+    out.push({ d: Math.hypot(o.position.x - S47.player.pos.x, o.position.z - S47.player.pos.z), x: h.x, y: h.y, card: !!card, bent: !!card && card.material.map.name === 'art/silhouetteBent' }); } });
   return out; })()"""
 HELD = "document.documentElement.classList.contains('abduct-held')"
+# each head in the screenshot's pixels, and about how big
+HEADS = """(() => { const T = S47.three, c = S47.camera; c.updateMatrixWorld(true); const r = new T.Vector3(1, 0, 0).applyQuaternion(c.quaternion);
+  return S47.abduction().overHeads.map((h) => { const a = new T.Vector3(...h).project(c), b = new T.Vector3(...h).addScaledVector(r, 0.11).project(c);
+    return { x: (a.x + 1) / 2 * innerWidth, y: (1 - a.y) / 2 * innerHeight, r: Math.abs(b.x - a.x) / 2 * innerWidth }; }); })()"""
+SELF = "(() => { const g = S47.scene.getObjectByName('abduct:self'); return !!(g && g.visible && g.parent); })()"
+
+async def shown(pg, tag):
+    """The frame with them and the same frame without them: round each head, how much darker it is
+    with them there (grey levels), and how much of it."""
+    heads = await pg.evaluate(HEADS)
+    a = Image.open(io.BytesIO(await pg.screenshot(path=f'{OUT}/{tag}.png'))).convert('L')
+    await pg.evaluate("S47.abduction().hideOver(true); S47.tick(1 / 30)")
+    b = Image.open(io.BytesIO(await pg.screenshot(path=f'{OUT}/{tag}_without.png'))).convert('L')
+    await pg.evaluate("S47.abduction().hideOver(false); S47.tick(1 / 30)")
+    out = []
+    for h in heads:
+        r = max(3, h['r']); box = (int(h['x'] - r), int(h['y'] - r), int(h['x'] + r) + 1, int(h['y'] + r) + 1)
+        pa, pb = a.crop(box).tobytes(), b.crop(box).tobytes()
+        dark = sum(y - x for x, y in zip(pa, pb)) / len(pa)
+        part = sum(1 for x, y in zip(pa, pb) if y - x >= 4) / len(pa)
+        out.append({'dark': round(dark, 1), 'part': round(part, 2), 'behind': round(sum(pb) / len(pb), 1)})
+    return out
+def stands_out(v):
+    # black against the night sky is some ten grey levels; against a lit dish or wall far more
+    return bool(v) and all(x['dark'] >= 5 and x['part'] >= 0.5 for x in v)
 
 async def new_page(b, w, h, touch, errs):
     ctx = await b.new_context(viewport={'width': w, 'height': h}, has_touch=touch, is_mobile=touch)
@@ -95,12 +127,20 @@ async def main():
         w1 = await ev(WHERE)
         check(len(w1) == 1 and w1[0]['card'] and 0.4 < w1[0]['y'] < 0.95 and abs(w1[0]['x']) < 0.8,
               f'one of them, the painted outline, its head at the top of the view ({w1})')
+        check(bool(w1) and w1[0]['bent'], 'its head bent down to you (the standing outline, the head brought down into the shoulders)')
         check(bool(w1) and 2 <= w1[0]['d'] <= 3.6, f'standing a few metres off beyond your feet ({w1[0]["d"]:.2f} m)' if w1 else 'standing a few metres off')
         pitch = await ev("S47.player.pitch")
         check(-0.6 < pitch < 0.2 and await ev("S47.player.eye") < 0.5, f'the head lifted to look down along yourself, still lying (pitch {pitch:.2f})')
         quiet = await ev("(() => { const n = S47.audio.night; return n && n.ctx.state === 'running' ? n.quiet.gain.value : null; })()")
         check(quiet is None or quiet < 0.15, f'no sound from the night while it is there (crickets and wind at {quiet})')
-        await pg.screenshot(path=f'{OUT}/w1_there.png')
+        v1 = await shown(pg, 'w1_there')
+        check(stands_out(v1), f'and it is seen: black round its head against what is behind it ({v1})')
+        check(await ev(SELF), 'yourself along the bottom of the view, on your back: the body, the legs, the boots up')
+        fac = await ev(f"{A}.facings")
+        best = min(range(len(fac)), key=lambda i: (0 if fac[i]['reach'] else 100) + fac[i]['against'] - (0.01 if i == 0 else 0))
+        yaw = await ev("S47.player.yaw")
+        check(len(fac) == 8 and fac[best]['reach'] and abs(math.remainder(yaw - fac[best]['yaw'], 2 * math.pi)) < 1e-6,
+              f'lying the way of eight where it stands out best, on ground it can stand on ({[(round(f["against"], 2), f["reach"]) for f in fac]})')
         # it does not move while it is there
         p0 = await ev("(() => { const g = S47.scene.getObjectByName('abduct:over'); return [g.position.x, g.position.y, g.position.z]; })()")
         await ev("S47.tick(0.6)")
@@ -111,8 +151,8 @@ async def main():
             await ev("S47.tick(1 / 30)")
         t_there = await ev("S47.runTime()") - t0
         check(1.4 <= t_there <= 1.6, f'and then not there, after about a second and a half ({t_there:.2f} s)')
-        after = await ev(f"[{HELD}, S47.flashlight.on, {A}.stage, {A}.data.spots.at(-1).over]")
-        check(not after[0] and after[1] and after[2] == 'back', f'the words and the buttons back, the flashlight on, and the view lifts ({after})')
+        after = await ev(f"[{HELD}, S47.flashlight.on, {A}.stage, {A}.data.spots.at(-1).over, {SELF}]")
+        check(not after[0] and after[1] and after[2] == 'back' and not after[4], f'the words and the buttons back, the flashlight on, and the view lifts ({after})')
         check(not await ev(WHERE) and not await ev("!!S47.scene.getObjectByName('abduct:over')"), 'it is not in the scene at all')
         check(after[3] == 1, f'kept with the case: the first time ({after[3]})')
         await pg.screenshot(path=f'{OUT}/w1_gone.png')
@@ -137,17 +177,31 @@ async def main():
         w2 = await ev(WHERE)
         check(len(w2) == 1 and bool(w1) and w2[0]['d'] < w1[0]['d'] - 0.5 and abs(w2[0]['x']) < abs(w1[0]['x']),
               f'nearer than the first time, and nearer the middle ({w2[0]["d"]:.2f} m, x {w2[0]["x"]:.2f})' if w2 else 'nearer')
-        await pg.screenshot(path=f'{OUT}/w2_there.png')
+        v2 = await shown(pg, 'w2_there')
+        check(stands_out(v2), f'and seen ({v2})')
         # a save while it is there: the picture without it, standing you up; Continue from it later
         await ev("S47.saveNow('manual', 1)"); await pg.wait_for_timeout(400)
         mid = await ev("""(async () => { const m = S47.saves.list(S47.caseId()).find((x) => x.kind === 'manual' && x.slot === 1);
           const s = await S47.saves.load(m.id); return { pitch: s.pose.pitch, thumb: m.thumb }; })()""")
         check(abs(mid['pitch'] + 0.06) < 1e-6, f'a save made while it is there stands you up on Continue (pitch {mid["pitch"]})')
         if mid['thumb']: open(f'{OUT}/w2_save_thumb.jpg', 'wb').write(base64.b64decode(mid['thumb'].split(',', 1)[1]))
+        # its picture is the frame without them: round the head it is as the frame without them
+        if mid['thumb']:
+            th = Image.open(f'{OUT}/w2_save_thumb.jpg').convert('L')
+            wi, wo = (Image.open(f'{OUT}/w2_there{x}.png').convert('L').resize(th.size) for x in ('', '_without'))
+            hd = (await ev(HEADS))[0]; sx, sy = th.size[0] / 1280, th.size[1] / 720
+            box = (int(hd['x'] * sx) - 3, int(hd['y'] * sy) - 3, int(hd['x'] * sx) + 4, int(hd['y'] * sy) + 4)
+            m = [ImageStat.Stat(im.crop(box)).mean[0] for im in (th, wi, wo)]
+            check(abs(m[0] - m[2]) < abs(m[0] - m[1]), f'and its picture does not have it (round the head: picture {m[0]:.1f}, with {m[1]:.1f}, without {m[2]:.1f})')
+        else: check(False, 'and its picture does not have it (no picture)')
         check(await ev(f"{A}.overPhase") == 'there' and len(await ev(WHERE)) == 1, 'and it is still there after the save')
-        await ev(f"{A}.gaze(0, -0.12); S47.tick(0.05)")
+        # the eyes, through the game's own look (a mouse moved, a finger drawn): down, away from it,
+        # and it stays; then up to it, and it is not there
+        await ev("S47.input.lookDY = 0.08; S47.tick(1 / 30)")
+        stays = await ev(f"{A}.overPhase") == 'there' and len(await ev(WHERE)) == 1
+        await ev("S47.input.lookDY = -0.3; S47.tick(1 / 30)")
         gone = await ev(f"{A}.overPhase")
-        check(gone is None and not await ev(WHERE), 'the eyes go up to it, and it is not there (long before its second and a half)')
+        check(stays and gone is None and not await ev(WHERE) and not await ev(SELF), f'the eyes down: still there ({stays}); up to it, and it is not there, long before its second and a half')
         for _ in range(60):
             if await ev(f"{A}.stage") == 'calm': break
             await ev("S47.tick(0.25)")
@@ -157,8 +211,10 @@ async def main():
         check(st == 'back' and ph == 'there', f'the third time: no stars first ({st}, {ph})')
         await ev("S47.tick(0.05)")
         w3 = await ev(WHERE)
-        check(len(w3) == 2 and all(w['card'] for w in w3) and max(w['y'] for w in w3) < 0.95, f'two of them ({w3})')
-        await pg.screenshot(path=f'{OUT}/w3_there.png')
+        check(len(w3) == 2 and all(w['card'] for w in w3) and max(w['y'] for w in w3) < 0.95 and [w['bent'] for w in w3] == [True, False],
+              f'two of them, the nearer bent to you, the other turned aside ({w3})')
+        v3 = await shown(pg, 'w3_there')
+        check(stands_out(v3), f'both seen ({v3})')
         await ev("S47.tick(1.6)")
         check(not await ev(WHERE) and await ev(f"{A}.data.spots.at(-1).over") == 3, 'gone, and kept: the third time')
         for _ in range(60):
@@ -224,7 +280,8 @@ async def main():
         vis = await ev("[getComputedStyle(document.querySelector('.touch')).visibility, getComputedStyle(document.querySelector('.hud')).visibility]")
         check(ok and len(f1) == 1 and 0.4 < f1[0]['y'] < 0.95 and abs(f1[0]['x']) < 0.8 and vis == ['hidden', 'hidden'],
               f'phone: the first time, its head at the top of the view, no buttons over it ({f1}, {vis})')
-        await pg.screenshot(path=f'{OUT}/phone_w1_there.png')
+        pv1 = await shown(pg, 'phone_w1_there')
+        check(stands_out(pv1) and await ev(SELF), f'phone: seen, and yourself along the bottom ({pv1})')
         await ev("S47.tick(1.6)")
         vis = await ev("getComputedStyle(document.querySelector('.touch')).visibility")
         check(not await ev(WHERE) and vis == 'visible', f'phone: gone, the buttons back ({vis})')
@@ -236,8 +293,8 @@ async def main():
         ok = st == 'back' and await to_there(pg)
         await ev("S47.tick(0.05)")
         f2 = await ev(WHERE)
-        check(ok and len(f2) == 1 and 0.3 < f2[0]['y'] < 0.95, f'phone: the second time ({f2})')
-        await pg.screenshot(path=f'{OUT}/phone_w2_there.png')
+        pv2 = await shown(pg, 'phone_w2_there')
+        check(ok and len(f2) == 1 and 0.3 < f2[0]['y'] < 0.95 and stands_out(pv2), f'phone: the second time, seen ({f2}, {pv2})')
         await ev("S47.tick(1.6)")
         for _ in range(60):
             if await ev(f"{A}.stage") == 'calm': break
@@ -245,8 +302,8 @@ async def main():
         st, ph = await taken(pg, 2)
         await ev("S47.tick(0.05)")
         f3 = await ev(WHERE)
-        check(st == 'back' and ph == 'there' and len(f3) == 2, f'phone: the third time, two of them ({f3})')
-        await pg.screenshot(path=f'{OUT}/phone_w3_there.png')
+        pv3 = await shown(pg, 'phone_w3_there')
+        check(st == 'back' and ph == 'there' and len(f3) == 2 and stands_out(pv3), f'phone: the third time, two of them, seen ({f3}, {pv3})')
 
         noise = [e for e in errs if 'favicon' not in e and 'GPU stall' not in e]
         check(not noise, 'no console errors or warnings' + ('' if not noise else ': ' + '; '.join(noise[:4])))

@@ -4,7 +4,7 @@ import type { Player } from '../player/Player';
 import type { DocSpec } from '../ui/UI';
 import { clockText } from './time';
 import { artImage, artLoaded, loadArtSome, ABDUCT_ART, type ArtId } from '../core/art';
-import { Silhouette } from '../core/roadside';
+import { Silhouette, type Pose } from '../core/roadside';
 
 // The time away (HENDELSER.md, section 8; Tom, 16 October: yes to all four questions). On foot,
 // alone, outdoors on one of the lines, at night: the pressure rises, and at the top of it they
@@ -20,13 +20,15 @@ import { Silhouette } from '../core/roadside';
 //   lost time    17 to 47 minutes, never past the next fixed point of the story.
 //   over you     (FORSLAG.md, "Valg for Tom" 3; Tom, 20 October: "Spenning og skummelt slår
 //                faste regler") on your back, the stars, and no sound at all, not even the
-//                crickets. You blink and lift your head to look down along yourself, and at the
-//                top of the view, a few metres off beyond your feet, one of them stands with its
-//                head bent to you: the outline from the glimpses, against the sky, nearer than they
-//                ever come, and still. A second and a half, or until your eyes go up to it, and it
-//                is not there; the crickets start again all at once and the flashlight comes on.
-//                The first time it is a little aside and some way off; the second time nearer, in
-//                the frost round you; the third time there are no stars first, and there are two.
+//                crickets. You blink and lift your head to look down along yourself (your chest,
+//                your legs, your boots up against the frost), and at the top of the view, a few
+//                metres off beyond your feet, one of them stands with its head bent down to you:
+//                the outline from the glimpses, black against the sky or something lit (you lie
+//                the way where it stands out), nearer than they ever come, and still. A second and
+//                a half, or until your eyes go up to it, and it is not there; the crickets start
+//                again all at once and the flashlight comes on. The first time it is a little
+//                aside and some way off; the second time nearer, just past your boots, in the
+//                frost round you; the third time there are no stars first, and there are two.
 //   back         on your back in the grass, the stars; the view lifts. 100 to 400 m further
 //                along, in a ring of flattened grass with frost on it; the flashlight beside
 //                you, on. The truck's engine has died where it stood and wants the key.
@@ -69,6 +71,9 @@ export interface AbductDeps {
   overlay: HTMLElement;
   /** A frame of the scene seen by this camera, drawn at once (main.ts renders it). */
   shoot: (cam: THREE.PerspectiveCamera) => HTMLCanvasElement | null;
+  /** The scene from this camera, small (w by h, RGBA, the bottom row first), as it is before the
+   *  tape, with the open sky pure magenta: what would be behind them (main.ts). */
+  probe?: (cam: THREE.PerspectiveCamera, w: number, h: number) => Uint8Array | null;
   ground: (x: number, z: number) => number;
   /** Ground a player can stand on (the area's zones, minus the boxes in the way). */
   standable: (x: number, z: number) => boolean;
@@ -98,19 +103,24 @@ type Stage = 'calm' | 'warning' | 'light' | 'taken' | 'black' | 'back';
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const MAX = 3, GAP = 40 * 60, MIN_LOST = 17 * 60;
 // Over you on waking, the three times: whether the stars come first (then the blink, the head
-// lifted behind it); how far off each one stands beyond your feet (metres) and how far aside in the
-// frame (of the half width); and up, where the nearest one's head is in the frame (of the half
-// height above the middle): the view is turned down along you just so far, on any screen, so every
-// player has it there without looking for it. Then how long it stays, at most.
+// lifted behind it); how far off each one stands beyond your feet (metres), how far aside in the
+// frame (of the half width) and how (the nearest with its head bent down to you); and up, where
+// the nearest one's head is in the frame (of the half height above the middle): the view is turned
+// down along you just so far, on any screen, so every player has it there without looking for it.
+// Then how long it stays, at most.
 const STARS_T = 1.3, BLINK_T = 0.24, OVER_T = 1.5;
-const OVER: { stars: boolean; up: number; at: { dist: number; side: number }[] }[] = [
-  { stars: true, up: 0.66, at: [{ dist: 2.8, side: 0.2 }] },
-  { stars: true, up: 0.6, at: [{ dist: 1.85, side: -0.05 }] },
-  { stars: false, up: 0.64, at: [{ dist: 2.2, side: -0.3 }, { dist: 3.7, side: 0.38 }] },
+const OVER: { stars: boolean; up: number; at: { dist: number; side: number; pose: Pose }[] }[] = [
+  { stars: true, up: 0.66, at: [{ dist: 2.8, side: 0.2, pose: 'bent' }] },
+  { stars: true, up: 0.6, at: [{ dist: 1.85, side: -0.05, pose: 'bent' }] },
+  { stars: false, up: 0.64, at: [{ dist: 2.2, side: -0.3, pose: 'bent' }, { dist: 3.7, side: 0.38, pose: 'turned' }] },
 ];
-/** How high their heads are (the outlines' cards, a figure of 1.2 m: roadside.ts), and the cold
- *  light of the sky along their edges out here. */
-const HEAD_Y = 1.1, OVER_RIM = 0x232c3a;
+/** The cold light of the sky along their edges out here. */
+const OVER_RIM = 0x232c3a;
+/** Which way you lie is chosen from this many (the view along you), for them to stand against
+ *  the sky; the picture it is judged by is this many pixels across (main.ts, probe). */
+const FACINGS = 8, PROBE_W = 112;
+/** How well the open night sky stands behind them, as against a lit thing (0.6 at most). */
+const SKY_AS = 0.32;
 
 export class Abduction {
   stage: Stage = 'calm';
@@ -139,8 +149,14 @@ export class Abduction {
   /** Over you on waking (the outlines are asked for when the warning starts), and where it is up
    *  to: the stars first, the blink, then there; and each one's head as seen from the eye, to know
    *  when the eyes have gone to it. */
-  private overFigs: Silhouette[] = [new Silhouette('abduct:over', OVER_RIM, 'turned'), new Silhouette('abduct:over', OVER_RIM, 'stand')];
-  private over: { v: number; t: number; phase: 'stars' | 'blink' | 'there'; pitch: number; yaw: number; dirs: THREE.Vector3[]; off: number[] } | null = null;
+  private overFigs: Silhouette[] = [new Silhouette('abduct:over', OVER_RIM, 'bent'), new Silhouette('abduct:over', OVER_RIM, 'turned')];
+  private over: { v: number; t: number; phase: 'stars' | 'blink' | 'there'; pitch: number; yaw: number; dirs: THREE.Vector3[]; off: number[]; heads: THREE.Vector3[] } | null = null;
+  /** Yourself as the eye has you, looking down along you on your back (only while one is there). */
+  private self = selfFigure();
+  private probeCam = new THREE.PerspectiveCamera();
+  /** How each way you could have lain looked for them to stand in (the tests): its yaw, whether
+   *  they could stand there, and how badly they would stand out (lower is better: see against). */
+  facings: { yaw: number; reach: boolean; against: number }[] = [];
 
   constructor(private d: AbductDeps) {
     const css = document.createElement('style');
@@ -292,30 +308,118 @@ export class Abduction {
   // ---------- over you ----------
   private overStart(v: number) {
     const p = this.d.player;
-    this.over = { v, t: 0, phase: 'stars', pitch: p.pitch, yaw: p.yaw, dirs: [], off: [] };
+    OVER[v].at.forEach((a, i) => this.overFigs[i].pose(a.pose));
+    // which way you lie: still black, so the looking round is not seen
+    p.yaw = this.facing(v);
+    p.update(0, 0, 0, false);
+    this.over = { v, t: 0, phase: 'stars', pitch: p.pitch, yaw: p.yaw, dirs: [], off: [], heads: [] };
     this.d.hush(60, 0, 0.05);
     document.documentElement.classList.add('abduct-held');
     if (!OVER[v].stars) this.overReveal();
   }
   /** The head lifted to look down along yourself, and them where they stand. */
   private overReveal() {
-    const o = this.over!, p = this.d.player, cam = p.camera, spec = OVER[o.v];
-    const ty = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2), tx = ty * cam.aspect;
-    // turned down just so far that the nearest head is at its height in the frame
-    p.pitch = Math.atan2(HEAD_Y - p.eye, spec.at[0].dist) - Math.atan(spec.up * ty);
+    const o = this.over!, p = this.d.player, cam = p.camera;
+    const L = this.layout(o.v, p.yaw);
+    p.pitch = L.pitch;
     p.update(0, 0, 0, false);
+    cam.updateMatrixWorld(true);
     o.pitch = p.pitch; o.yaw = p.yaw; o.phase = 'there'; o.t = 0;
-    const fwd = new THREE.Vector3(-Math.sin(p.yaw), 0, -Math.cos(p.yaw)), right = new THREE.Vector3(Math.cos(p.yaw), 0, -Math.sin(p.yaw));
     const eye = cam.position.clone(), look = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(p.pitch, p.yaw, 0, 'YXZ'));
-    spec.at.forEach((a, i) => {
-      const f = this.overFigs[i], b = Math.atan(a.side * tx);
-      const at = p.pos.clone().addScaledVector(fwd, a.dist * Math.cos(b)).addScaledVector(right, a.dist * Math.sin(b));
-      f.group.position.set(at.x, this.d.ground(at.x, at.z), at.z);
+    L.at.forEach((a, i) => {
+      const f = this.overFigs[i];
+      f.group.position.copy(a.q);
       f.group.visible = true; this.d.scene.add(f.group);
       f.group.traverse((x) => { x.renderOrder = 2; });   // over the frost it stands in, not under it
-      const head = new THREE.Vector3(at.x, f.group.position.y + HEAD_Y, at.z).sub(eye).normalize();
-      o.dirs.push(head); o.off.push(look.angleTo(head));
+      const at = new THREE.Vector3(a.q.x, a.head, a.q.z), head = at.clone().sub(eye).normalize();
+      o.heads.push(at); o.dirs.push(head); o.off.push(look.angleTo(head));
     });
+    // and you, along the bottom of the view: the jacket, the jeans, the boots up, dark
+    this.self.position.set(p.pos.x, p.floorY, p.pos.z); this.self.rotation.y = p.yaw;
+    this.self.visible = true; this.d.scene.add(this.self);
+  }
+  /** Where they stand this time if you lie facing yaw (on the ground there, the head's height), and
+   *  how far the view is turned down for the nearest one's head to be at its height in the frame. */
+  private layout(v: number, yaw: number) {
+    const p = this.d.player, cam = p.camera, spec = OVER[v];
+    const ty = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2), tx = ty * cam.aspect;
+    const fwd = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)), right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+    const eyeY = p.floorY + p.eye;
+    const at = spec.at.map((a, i) => {
+      const b = Math.atan(a.side * tx);
+      const q = p.pos.clone().addScaledVector(fwd, a.dist * Math.cos(b)).addScaledVector(right, a.dist * Math.sin(b));
+      q.y = this.d.ground(q.x, q.z);
+      return { q, head: q.y + this.overFigs[i].headY };
+    });
+    return { at, right, pitch: Math.atan2(at[0].head - eyeY, spec.at[0].dist) - Math.atan(spec.up * ty) };
+  }
+  /** Which way you lie. Of a few ways round, one where they have ground to stand on with nothing
+   *  between them and you, and stand out black against something lighter (HENDELSER.md, section 7:
+   *  always a silhouette against something lighter): the sky, a lit dish, a lit wall, evenly behind
+   *  the head and shoulders; not lost against the dark, not under a lamp's glare. The one you fell
+   *  is kept when it is as good as any. */
+  private facing(v: number) {
+    const p = this.d.player;
+    this.facings = [];
+    let best = p.yaw, bestScore = Infinity;
+    for (let i = 0; i < FACINGS; i++) {
+      const yaw = p.yaw + (i * 2 * Math.PI) / FACINGS, L = this.layout(v, yaw);
+      const reach = L.at.every((a) => this.reach(a.q)), against = this.against(L, yaw);
+      this.facings.push({ yaw, reach, against });
+      const score = (reach ? 0 : 100) + against - (i === 0 ? 0.01 : 0);
+      if (score < bestScore) { bestScore = score; best = yaw; }
+    }
+    return best;
+  }
+  /** Ground one of them could stand on, and nothing in the way between it and you. */
+  private reach(q: THREE.Vector3) {
+    const p = this.d.player.pos;
+    for (const k of [0.5, 0.75, 1]) if (!this.d.standable(p.x + (q.x - p.x) * k, p.z + (q.z - p.z) * k)) return false;
+    return true;
+  }
+  /** How badly they would stand out, seen from where you lie facing yaw (lower is better): in a small
+   *  picture of the scene without them, behind each head and shoulders, how much is open sky (the
+   *  stars go out round the outline), and where it is not, how dark and how uneven what stands
+   *  there is (they are black: lost against the dark side of a dish, a pole, an edge, clear against
+   *  a lit dish or a lit wall); and how much glare there is round about (a lamp's disc behind or
+   *  beside the head washes the outline out on the tape, and is a halo). */
+  private against(L: ReturnType<Abduction['layout']>, yaw: number) {
+    const probe = this.d.probe;
+    if (!probe) return 0;
+    const p = this.d.player, cam = p.camera, pc = this.probeCam;
+    pc.fov = cam.fov; pc.aspect = cam.aspect; pc.near = cam.near; pc.far = cam.far; pc.updateProjectionMatrix();
+    pc.position.set(p.pos.x, p.floorY + p.eye, p.pos.z); pc.rotation.set(L.pitch, yaw, 0, 'YXZ'); pc.updateMatrixWorld(true);
+    const w = cam.aspect >= 1 ? PROBE_W : Math.round(PROBE_W * 0.6), h = Math.max(24, Math.round(w / cam.aspect));
+    const px = probe(pc, w, h);
+    if (!px) return 0;
+    const v = new THREE.Vector3();
+    // the pixels of a box standing at q: half metres either side, from y0 to y1 above the ground
+    const box = (q: THREE.Vector3, half: number, y0: number, y1: number) => {
+      v.copy(q).addScaledVector(L.right, -half).setY(q.y + y1).project(pc);
+      const ax = v.x, ay = v.y;
+      v.copy(q).addScaledVector(L.right, half).setY(q.y + y0).project(pc);
+      const cx = (n: number) => THREE.MathUtils.clamp(Math.round((n + 1) / 2 * w), 0, w), cy = (n: number) => THREE.MathUtils.clamp(Math.round((n + 1) / 2 * h), 0, h);
+      return [cx(ax), cx(v.x), cy(v.y), cy(ay)];
+    };
+    const sky = (i: number) => px[i] > 246 && px[i + 1] < 10 && px[i + 2] > 246;
+    const lum = (i: number) => Math.pow((0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255, 1 / 2.2);
+    let score = 0;
+    for (const a of L.at) {
+      const hy = a.head - a.q.y;
+      const [x0, x1, y0, y1] = box(a.q, 0.34, hy - 0.36, hy + 0.3);
+      let n = 0, open = 0, sum = 0, sq = 0;
+      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+        const i = (y * w + x) * 4; n++;
+        if (sky(i)) open++; else { const l = lum(i); sum += l; sq += l * l; }
+      }
+      const [X0, X1, Y0, Y1] = box(a.q, 1.5, 0.25, hy + 1.4);
+      let N = 0, hot = 0;
+      for (let y = Y0; y < Y1; y++) for (let x = X0; x < X1; x++) { const i = (y * w + x) * 4; N++; if (!sky(i) && lum(i) > 0.7) hot++; }
+      const k = n - open, mean = k ? sum / k : 0, sd = k ? Math.sqrt(Math.max(0, sq / k - mean * mean)) : 0;
+      const skyF = n ? open / n : 0, glare = N ? hot / N : 0;
+      score += -(skyF * SKY_AS + (1 - skyF) * (Math.min(mean, 0.6) - 1.5 * sd)) + 5 * glare;
+    }
+    return score;
   }
   /** Still on your back: the stars, the blink, then it is there for a second and a half. It goes
    *  when that is up, or when the eyes go to it; and not with an effect: it was not there. */
@@ -344,6 +448,7 @@ export class Abduction {
   }
   private overDrop() {
     for (const f of this.overFigs) { f.group.visible = false; f.group.removeFromParent(); }
+    this.self.visible = false; this.self.removeFromParent();
     document.documentElement.classList.remove('abduct-held');
     if (this.over?.phase === 'blink') this.canvas.style.display = 'none';
     this.over = null;
@@ -358,10 +463,13 @@ export class Abduction {
   }
   /** Where waking is up to with one of them over you, or null (the tests). */
   get overPhase() { return this.over?.phase ?? null; }
+  /** The middle of each one's head while they are there (the tests). */
+  get overHeads() { return this.over?.phase === 'there' ? this.over.heads.map((h) => h.toArray()) : []; }
   /** A save's picture is taken without them (main.ts writeSave); true when they were there. */
   hideOver(hide: boolean) {
     if (this.over?.phase !== 'there') return false;
     for (const f of this.overFigs) if (f.group.parent) f.group.visible = !hide;
+    this.self.visible = !hide;
     return true;
   }
   private back(dt: number) {
@@ -492,6 +600,28 @@ function frost() {
   g.putImageData(im, 0, 0);
   frostTex = new THREE.CanvasTexture(c); frostTex.colorSpace = THREE.SRGBColorSpace;
   return frostTex;
+}
+/** You, as the eye has you on your back with the head lifted, looking down along yourself: the
+ *  jacket over the chest, the jeans, the boots standing up at the end; built facing -z from under
+ *  the eye, dark (no light on you: the flashlight is out), only ever an outline against the frost. */
+function selfFigure() {
+  const g = new THREE.Group(); g.name = 'abduct:self';
+  const coat = new THREE.MeshBasicMaterial({ color: 0x0d0f12 });
+  const jeans = new THREE.MeshBasicMaterial({ color: 0x0c0f14 }), boot = new THREE.MeshBasicMaterial({ color: 0x090807 });
+  const put = (geo: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number, rx = 0, sx = 1) => {
+    const b = new THREE.Mesh(geo, m); b.position.set(x, y, z); b.rotation.x = rx; b.scale.x = sx; g.add(b);
+  };
+  // the chest and the belly, lying along the view, low
+  put(new THREE.CapsuleGeometry(0.1, 0.4, 4, 10), coat, 0, 0.06, -0.34, Math.PI / 2, 1.7);
+  for (const sd of [-1, 1]) {
+    // the legs a little apart, from the hips to the ankles, and the boots up, toes a little out
+    put(new THREE.CapsuleGeometry(0.068, 0.82, 4, 8), jeans, sd * 0.115, 0.075, -1.06, Math.PI / 2);
+    const b = new THREE.Mesh(new THREE.CapsuleGeometry(0.052, 0.12, 4, 8), boot);
+    b.position.set(sd * 0.125, 0.14, -1.55); b.rotation.set(-0.22, 0, sd * 0.26); b.scale.z = 1.4; g.add(b);
+  }
+  g.traverse((x) => { x.frustumCulled = false; });
+  g.visible = false;
+  return g;
 }
 /** Someone in a SARO jacket, the reflective band across it: standing, or lying on their back. */
 function jacketFigure(lying: boolean) {

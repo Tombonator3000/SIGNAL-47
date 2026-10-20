@@ -378,6 +378,8 @@ async function boot() {
   });
   // the time away (story/abduction.ts): a frame of the scene from a camera of its own, drawn at once
   const shotCanvas = document.createElement('canvas'); shotCanvas.width = 640; shotCanvas.height = 400;
+  let probeRT: THREE.WebGLRenderTarget | null = null;
+  const PROBE_SKY = new THREE.Color(1, 0, 1);
   abduction = new Abduction({
     audio, player, scene, overlay: document.body, flashlight,
     shoot: (cam) => {
@@ -386,6 +388,23 @@ async function boot() {
         const src = renderer.domElement, g = shotCanvas.getContext('2d')!, k = Math.min(src.width / 640, src.height / 400);
         g.drawImage(src, (src.width - 640 * k) / 2, (src.height - 400 * k) / 2, 640 * k, 400 * k, 0, 0, 640, 400);
         return shotCanvas;
+      } catch { return null; }
+    },
+    // what would be behind them on waking (story/abduction.ts): small, before the tape, with the
+    // antennas and the lamps' discs as this camera has them, and the open sky in one flat colour
+    // (PROBE_SKY) so it can be told from anything standing against it
+    probe: (cam, w, h) => {
+      try {
+        if (!probeRT || probeRT.width !== w || probeRT.height !== h) { probeRT?.dispose(); probeRT = new THREE.WebGLRenderTarget(w, h); }
+        const gs = glowScale.value, bg = scene.background, skyOn = sky.group.visible;
+        glowScale.value = h / (2 * Math.tan(cam.fov * Math.PI / 360));
+        sky.group.visible = false; scene.background = PROBE_SKY;
+        ext.dishArray.cull(cam);
+        try { renderer.setRenderTarget(probeRT); renderer.render(scene, cam); }
+        finally { renderer.setRenderTarget(null); sky.group.visible = skyOn; scene.background = bg; glowScale.value = gs; }
+        const px = new Uint8Array(w * h * 4);
+        renderer.readRenderTargetPixels(probeRT, 0, 0, w, h, px);
+        return px;
       } catch { return null; }
     },
     ground: (x, z) => player.floor ? player.floor(x, z) : 0,
