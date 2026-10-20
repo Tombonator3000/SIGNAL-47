@@ -7,6 +7,7 @@ import { artTexture } from '../core/art';
 import type { Collider } from './ControlRoom';
 import type { Zone } from '../player/Player';
 import { dressAnnex } from './dressing';
+import { buildRoofFrost, type Corner, type RoofFrost } from './roofFrost';
 
 // Chapter two location: the south corridor behind the control room and the SARO records
 // room off it. A small extension of the main building, as the design bible asks for.
@@ -65,6 +66,69 @@ export class RecordsAnnex {
     dressAnnex({ add: (o) => this.interior.add(o), mat: (p) => this.mat(p), col: (a, b, c, d) => this.col(a, b, c, d), swap: this.models });
     this.group.add(this.glow.build());
     this.models.place((L, add) => this.placeModels(L, add));
+    // the frost the steps on the roof leave (story/roofSteps.ts), outside with the shell
+    this.frost = buildRoofFrost();
+    this.group.add(this.frost.group, this.frost.hit.unit, this.frost.hit.sw, this.frost.hit.se);
+  }
+
+  /** The frost on the roof unit and on the lip at one corner (story/roofSteps.ts), or none. */
+  readonly frost: RoofFrost;
+  frostAt: Corner | null = null;
+  setRoofFrost(corner: Corner | null) {
+    this.frostAt = corner;
+    this.frost.group.visible = !!corner;
+    this.frost.lips.sw.visible = corner === 'sw';
+    this.frost.lips.se.visible = corner === 'se';
+  }
+
+  /** The tubes while something stands on the roof (story/roofSteps.ts): 'steady' holds the tired one
+   *  lit, without its flicker; 'stutter' lets it go with a run of flickers; null as it was. */
+  private tubeHold: 'steady' | 'stutter' | null = null;
+  private stutterLeft = 0;
+  private lastT = -1;
+  holdTubes(mode: 'steady' | 'stutter' | null) {
+    this.tubeHold = mode;
+    if (mode === 'stutter') this.stutterLeft = 0.75;
+  }
+
+  /** A thin trickle of dust from the ceiling at (x, z), falling to the floor (story/roofSteps.ts:
+   *  where the steps stop, right over the player). Drawn with the rooms; gone after six seconds. */
+  private dust: { pts: THREE.Points; pos: Float32Array; v: Float32Array; delay: Float32Array; t: number; mat: THREE.PointsMaterial } | null = null;
+  sift(x: number, z: number) {
+    const N = 56, r = Math.random;
+    if (!this.dust) {
+      const pos = new Float32Array(N * 3), geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      // a soft round mote, not a square
+      const c = document.createElement('canvas'); c.width = c.height = 32;
+      const g = c.getContext('2d')!, gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+      const mat = new THREE.PointsMaterial({ color: 0xcfc7b6, map: new THREE.CanvasTexture(c), size: 0.012, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false });
+      const pts = new THREE.Points(geo, mat);
+      pts.frustumCulled = false; pts.name = 'annex:dust'; pts.visible = false;
+      this.interior.add(pts);
+      this.dust = { pts, pos, v: new Float32Array(N), delay: new Float32Array(N), t: 0, mat };
+    }
+    const d = this.dust;
+    for (let i = 0; i < N; i++) {
+      d.pos[i * 3] = x + (r() - 0.5) * 0.12; d.pos[i * 3 + 1] = 2.775; d.pos[i * 3 + 2] = z + (r() - 0.5) * 0.05;
+      d.v[i] = 0.18 + r() * 0.34; d.delay[i] = r() ** 1.7 * 2.2;
+    }
+    d.t = 0; d.pts.visible = true;
+    (d.pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+  }
+  private dustStep(dt: number) {
+    const d = this.dust; if (!d || !d.pts.visible) return;
+    d.t += dt;
+    for (let i = 0; i < d.v.length; i++) {
+      if (d.t < d.delay[i] || d.pos[i * 3 + 1] < 0.02) continue;
+      d.pos[i * 3 + 1] -= d.v[i] * dt;
+      d.pos[i * 3] += Math.sin((d.t + i) * 2.3) * 0.03 * dt;
+    }
+    (d.pts.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+    d.mat.opacity = 0.6 * Math.min(1, d.t / 0.15) * (d.t > 4.6 ? Math.max(0, 1 - (d.t - 4.6) / 1.6) : 1);
+    if (d.t > 6.2) d.pts.visible = false;
   }
 
   private col(minX: number, maxX: number, minZ: number, maxZ: number) { this.colliders.push({ minX, maxX, minZ, maxZ }); }
@@ -387,7 +451,12 @@ export class RecordsAnnex {
   // A tired tube flickers now and then.
   update(t: number) {
     this.glow.update(t);
-    const on = !(Math.sin(t * 0.37) > 0.985 && Math.sin(t * 41) > 0);
+    const dt = this.lastT < 0 ? 0 : Math.max(0, Math.min(0.1, t - this.lastT)); this.lastT = t;
+    this.dustStep(dt);
+    if (this.tubeHold === 'stutter' && (this.stutterLeft -= dt) <= 0) this.tubeHold = null;
+    const on = this.tubeHold === 'steady' ? true
+      : this.tubeHold === 'stutter' ? Math.sin(t * 53) + Math.sin(t * 31) > -0.2
+      : !(Math.sin(t * 0.37) > 0.985 && Math.sin(t * 41) > 0);
     this.flickerTube.material = on ? this.tubeOn : this.tubeDim;
     setFlood(this.flicker, on ? 5.5 : 1.8, this.flood);
   }

@@ -51,6 +51,7 @@ import { TownEvents, townMarks, ON_B } from './story/townEvents';
 import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
 import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
+import { RoofSteps, type RoofIn } from './story/roofSteps';
 import { Abduction, type AbductIn } from './story/abduction';
 import { LineLights } from './story/lineLights';
 import { Pasture, PASTURE_M } from './story/pasture';
@@ -744,7 +745,7 @@ async function boot() {
     flashlight.have = !!o.state?.flashlight; flashlight.on = false;
     townSeen.clear(); for (const id of o.state?.town ?? []) townSeen.add(id);
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
-    pasture.reset(); motelTv.reset();
+    pasture.reset(); motelTv.reset(); roofSteps.reset();
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     game.start(o.state?.checkpoint ?? o.jump);
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
@@ -777,7 +778,7 @@ async function boot() {
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
     world.stopDriving();
-    roadside.reset(); townEvents.reset(); nightEvents.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
+    roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     game.reset();
     world.enter('saro');
     pendingAuto = false;
@@ -908,6 +909,35 @@ async function boot() {
     silence: () => { silencePlace = placeName(); roadside.silenceNow({ hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence') }); },
     place: () => placeName(), silent: () => roadside.silent,
   });
+  // ---------- light steps on the records room roof, once in chapter two (story/roofSteps.ts) ----------
+  const roofSteps = new RoofSteps({
+    audio, seen: townSeen, inter,
+    note: (text) => { game.note(text); requestAutosave(false); },
+    toast: (text, secs) => ui.toast(text, secs),
+    frost: (corner) => annex.setRoofFrost(corner),
+    tubes: (mode) => annex.holdTubes(mode),
+    // (a little in front of the face, so it falls through the view whether the player looks up or not)
+    dust: (x, z) => { const f = camera.getWorldDirection(new THREE.Vector3()).setY(0); if (f.lengthSq() < 1e-6) f.set(0, 0, -1); f.normalize(); annex.sift(x + f.x * 0.7, z + f.z * 0.7); },
+    tubeAt: new THREE.Vector3(-4.6, 2.7, 8.0),   // the tired tube (Annex.flickerTube)
+    hit: annex.frost.hit,
+    outside: () => world.area === 'saro' && !world.driving && space === 'yard',
+    clock: () => game.clock,
+  });
+  function roofIn(ok: boolean): RoofIn {
+    const p = player.pos, stage = ch2.s.stage;
+    return {
+      ok: ok && game.phase === 'ch2' && ch2.active && (stage === 'records' || stage === 'call-nora') && !game.decoder.playing
+        && !abduction!.busy && !nightEvents.busy && !roadside.silent && townEvents.now === 'none',
+      quiet: !ui.modal && !game.cinematic && !audio.phonePlaying,
+      hold: game.cinematic || audio.phonePlaying,
+      inRoom: world.area === 'saro' && !world.driving && inside(annex.zone.records, p),
+      muffled: world.area === 'saro' && space !== 'yard',
+      pos: p, clock: game.clock,
+      read: Object.values(ch2.s.read).some(Boolean),
+      lastQuiet: stage === 'call-nora',
+      chapter: game.phase === 'ch2',
+    };
+  }
   function nightIn(ok: boolean): NightIn {
     const tr = world.truckHere(), out = world.area === 'saro' ? space === 'yard' : !world.indoors(player.pos);
     const moving = player.pos.distanceTo(lastFoot) > 0.004; lastFoot.copy(player.pos);
@@ -1197,6 +1227,7 @@ async function boot() {
   });
 
   Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
+  Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
   Object.assign((window as any).S47, { models: licensedModels });
 
@@ -1275,6 +1306,9 @@ async function boot() {
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
         { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
+      ] });
+      groups.push({ title: 'The records room', note: 'Once in chapter two, at a quiet moment in the records room: light steps on the roof, right over you.', items: [
+        { label: `Steps on the roof: ${roofSteps.phase}`, run: () => { if (!roofSteps.now(roofIn(true))) ui.toast('Only from the records room, once', 2); } },
       ] });
       groups.push({ title: 'The highway', note: 'On foot on the shoulder between SARO and the motel at night: the line hums, a car far off, the silence once, someone on the roof. The CB in the truck.', items: [
         { label: 'Headlights far down the highway', run: () => roadside.carNow(player.pos) },
@@ -1437,7 +1471,7 @@ async function boot() {
       }
     }
   }
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard; }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || roofSteps.busy; }
   const dbg = { hold: false };
   let inCab = false;
   const townAt = new THREE.Vector3();
@@ -1504,7 +1538,8 @@ async function boot() {
         });
       }
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
-      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none'));
+      if (mode === 'play') nightEvents.update(dt, nightIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy));
+      if (mode === 'play') roofSteps.update(dt, roofIn(true));
       if (mode === 'play') cutouts.update(dt, cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy));
       if (mode === 'play') {
         // the flashlight flickers near the strange events (todo.md): through the silence on the
