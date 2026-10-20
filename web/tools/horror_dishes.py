@@ -275,13 +275,24 @@ async def main():
         check(await mode() == 'watch' and back and math.hypot(pos[0] - back[0], pos[1] - back[1]) < 0.5 and offs and all(o[0] < 1 and o[1] < 1 for o in offs),
               f'waking there: they are pointing down at the player lying in the grass ({[(round(o[0], 1), round(o[1], 1), round(o[2])) for o in offs]})')
         face = await ev(f"(() => {{ const r = {F}.state.filter((r) => r.on).map((r) => [r.id, __off(r.id, __eye())[2]]).sort((a, b) => a[1] - b[1])[0]; const d = S47.ext.dishes.find((x) => x.id === r[0]); const y = Math.atan2(-(d.x - S47.player.pos.x), -(d.z - S47.player.pos.z)); return [r[0], Math.abs(Math.atan2(Math.sin(y - S47.player.yaw), Math.cos(y - S47.player.yaw)))]; }})()")
-        check(face[1] < 0.3, f'the view lifts towards the nearest of them, {face[0]} ({face[1]:.2f} rad off)')
+        # with one of them over the player on waking (story/abduction.ts, the outlines there and Missing
+        # time on), the abduction turns the player to stand it against something lighter, and the
+        # dishes wait on the place until it is gone; without it the view lifts towards the nearest
+        over = await ev(f"{A}.overPhase")
+        if over:
+            check(await mode() == 'watch', f'one of them over the player on waking ({over}): the way the player lies is the abduction\'s, and the dishes wait on the place')
+            gone = await until(f"{A}.overPhase === null", 6, 0.1)
+            offs = await ev(f"{F}.state.filter((r) => r.on && r.tier === 0).map((r) => __off(r.id, __eye()))")
+            check(gone and await mode() == 'watch' and offs and all(o[0] < 1 and o[1] < 1 for o in offs),
+                  f'once it is not there, they are still pointing down at the player ({[(round(o[0], 1), round(o[1], 1)) for o in offs]})')
+        else:
+            check(face[1] < 0.3, f'the view lifts towards the nearest of them, {face[0]} ({face[1]:.2f} rad off)')
         await pg.wait_for_timeout(4200)   # the warning's lines gone (real time)
         await tick(3.2)
         await pg.screenshot(path=f'{OUT}/d05_waking.png')
         notes = await ev("S47.game.notes.slice()")
         check(any('When I woke' in x and 'pointing down at the grass where I lay' in x for x in notes), 'the notebook: they were pointing down at the grass where I lay')
-        check(await until(f"{F}.mode === 'home'", 10, 0.5), 'a few seconds, and they let go')
+        check(await until(f"{F}.mode === 'home'", 14, 0.5), 'a few seconds, and they let go')
         check(await until(f"{F}.mode === 'idle'", 200, 2) and await ev("__home()"), 'and go back to 026, every one exactly')
         log = await ev("S47.game.ops.run('SHOW LOG')")
         check(log.count('DRIVES  AZ 026 EL 32') >= 2, 'the log: the array back home after the time away')
@@ -313,7 +324,9 @@ async def main():
         # and by the gate, where the floods light them (the night let go again for the picture)
         await ev(f"delete {A}.data.dishes; S47.player.place({X}, {Z}, {yaw_to(X, Z, -16, -52)}); S47.player.pitch = 0.34; S47.flashlight.on = true; S47.tick(0.3)")
         await pg.wait_for_timeout(3000)
-        check(await warning(30), 'phone: a warning by the gate')
+        ok = await warning(30)
+        if not ok: print('  (why not:', await ev(f"(() => {{ const s = S47.abductIn(true), a = {A}; return [a.stage, s.ok, s.line, s.enabled, s.clock, s.nextFixed, a.data.count, a.data.last, S47.game.phase, !!S47.game.d.ui.modal, S47.game.cinematic, S47.roofSteps.busy, S47.follow.mode]; }})()"), ')', flush=True)
+        check(ok, 'phone: a warning by the gate')
         await tick(0.5, 24)
         check(await ev("__off('S-02', __eye())[0] < 4"), 'phone: S-02 on the player')
         await pg.screenshot(path=f'{OUT}/p03_phone_s02.png')
