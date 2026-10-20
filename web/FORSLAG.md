@@ -6,13 +6,13 @@ En kortere versjon som kan deles, med en statuskolonne for beslutningene, en tes
 
 ## Mer spenning, skrekk, romvesen og mysterier, 20. oktober (Tom spurte)
 
-Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober, og det samme er første del av rekkefølgens punkt 1: én modul for linjene på bakken og en logg over hva som ble sett (bygget 20. oktober, PR #121), punkt 3 med lite grep 3: Tomás' feltbok og konvolutten for plate 4 (bygget 20. oktober, PR #122), og punkt 1: ett trykk for hele natta og papp-romvesenet som blir en refleksstolpe (bygget 20. oktober, PR #N). Det som er bygget, er merket under; resten er ikke bygget.
+Tom 20. oktober: mer spennende, mer skrekk, mer alien horror, mere mysterier. Forslagene kom fra fem vinkler (uhygge, romvesen, mysterier, innsats og kroker), og to dommere gikk gjennom dem: én så på hva spilleren får, én på om det lar seg bygge og passer med kanon. Det under bruker rettelsene deres, og det som bøyer eller bryter en regel, står for seg under Valg for Tom. Fire av valgene er bygget 20. oktober, og det samme er første del av rekkefølgens punkt 1: én modul for linjene på bakken og en logg over hva som ble sett (bygget 20. oktober, PR #121), punkt 3 med lite grep 3: Tomás' feltbok og konvolutten for plate 4 (bygget 20. oktober, PR #122), og punkt 1: ett trykk for hele natta og papp-romvesenet som blir en refleksstolpe (bygget 20. oktober, PR #123). Det som er bygget, er merket under; resten er ikke bygget.
 
 ### Det jeg ville bygget først
 
 Rangert. Alt her passer med reglene i `memory.md` og `HENDELSER.md`, med unntakene som er nevnt.
 
-1. **Bygget 20. oktober, PR #N (`story/curve.ts`; stolpen i `core/cutouts.ts`, `postStep` i `main.ts`). Ett trykk for hele natta, og papp-romvesenet får en slutt.** Etter Ward er natta bare natt i ti minutter. Så hoper tegnene seg opp (sirissene tynnes, lykta hakker, et rop bak S-11), toppen kommer, og så 8 til 12 minutter der ingenting kan skje. Papp-romvesenet kommer høyst tre ganger. Den tredje gangen står formen ytterst i frontlysene, og når lysene når fram, er det en refleksstolpe: "The same shape. There was nothing there when I got to it."
+1. **Bygget 20. oktober, PR #123 (`story/curve.ts`; stolpen i `core/cutouts.ts`, `postStep` i `main.ts`). Ett trykk for hele natta, og papp-romvesenet får en slutt.** Etter Ward er natta bare natt i ti minutter. Så hoper tegnene seg opp (sirissene tynnes, lykta hakker, et rop bak S-11), toppen kommer, og så 8 til 12 minutter der ingenting kan skje. Papp-romvesenet kommer høyst tre ganger. Den tredje gangen står formen ytterst i frontlysene, og når lysene når fram, er det en refleksstolpe: "The same shape. There was nothing there when I got to it."
    - Hvorfor: `HENDELSER.md` §4 beskriver trykket, men koden har fire flate tidtakere, og rop og papp har ikke tak (pappen heller ingen grygrense, `main.ts:1508`). Det blir tapet, eller komikk. Høyst én ekstra 47-hendelse per kapittel.
    - Pass på: taket snur Toms ønske fra 18. oktober (`core/cutouts.ts`), så det er hans valg.
    - Kap. 1 til 5. Bygger på trykket i `abduction.ts`, `main.ts:1491-1530`, de fire tidtakerne og `Ambience.hush`. Middels til stor.
@@ -96,7 +96,7 @@ Også et valg, **bygget 20. oktober** (`story/roofSteps.ts`, `world/roofFrost.ts
 
 ### Forslag til rekkefølge
 
-1. Én modul for A, B og C på bakken, så punkt 1 og 2, og en teller over hva som ble sett. **Modulen og telleren er bygget 20. oktober, PR #121** (`story/lines.ts`, `story/seen.ts`), og punkt 1 er bygget 20. oktober, PR #N (`story/curve.ts`); punkt 2 er ikke bygget.
+1. Én modul for A, B og C på bakken, så punkt 1 og 2, og en teller over hva som ble sett. **Modulen og telleren er bygget 20. oktober, PR #121** (`story/lines.ts`, `story/seen.ts`), og punkt 1 er bygget 20. oktober, PR #123 (`story/curve.ts`); punkt 2 er ikke bygget.
 2. Små grep 1 og 2, Hondo (4) og arkivet (5, eller valg 1).
 3. Bilen: 8, så 10, så 6. Stigen lærer nøkkelen som 05:29 tar bort.
 4. Saken: 3 og 11, konvolutten og klokka. **3 og konvolutten er bygget 20. oktober, PR #122**; 11 og klokka er ikke bygget.
