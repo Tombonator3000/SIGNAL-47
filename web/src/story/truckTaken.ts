@@ -35,6 +35,8 @@ import { clockText } from './time';
 //   the key  (Use, E, or the Use button on a phone): the first turn turns it over and does not catch,
 //            the second nearly; the third catches, if it is begun before the beep at :16. A quick and
 //            persistent hand has the engine going in five or six seconds; after :16 it never will.
+//            The second warning in the truck in a night, once the key has got it away, it never
+//            catches at all ("Nearly.", then "It does not catch this time."): out is the way then.
 //   out      stopped, Get out (Q, or the Get out button): out of the truck and RUN metres away from
 //            it before the light, any way (back up the shoulder towards SARO is the nearest light).
 //            Got back into, the truck is as dead as it was.
@@ -168,6 +170,8 @@ export class TruckTaken {
   ladderPasses = 0;
   /** The turns of the key in this warning, and the clock it began at. */
   turns = 0;
+  /** This warning's key never catches (the night's second in the truck, after the key got away once). */
+  keyProof = false;
   private at = 0;
   private armed = false;
   private pass: 'ladder' | 'free' | null = null;
@@ -201,6 +205,11 @@ export class TruckTaken {
   get busy() { return this.phase !== 'idle'; }
   /** In the 47 seconds, the engine dead: the key and Get out are offered (main.ts). */
   get warning() { return this.phase === 'warning' && !this.free; }
+  /** The truck is coming onto B on a trip or on it, and it could come on this pass (main.ts: N. Vega's
+   *  CB call in chapter four, nine seconds out from the pad, would otherwise begin just as the truck
+   *  reaches the turn-off and keep the crossing from the night: it waits the second or two). */
+  get ahead() { return this.phase === 'idle' && this.could && this.armed && this.pass !== 'ladder' && this.dist !== null && this.dist < REARM; }
+  private could = false;
 
   update(dt: number, s: TruckTakenIn) {
     const d = this.d;
@@ -214,6 +223,7 @@ export class TruckTaken {
     const off = s.at ? Math.abs(offset('B', s.at[0], s.at[1])) : null;
     this.dist = off;
     if (off === null || off > REARM || !s.trip) { this.armed = true; this.pass = null; }
+    this.could = s.trip && !this.off && !this.taken && this.tries < TRIES && s.enabled && s.allowed && (s.may || this.force) && !s.due;
     switch (this.phase) {
       case 'idle': {
         if (!s.trip || off === null || off >= ON || !this.armed) return;
@@ -247,7 +257,10 @@ export class TruckTaken {
     // the radio slides off its station under the static first (it is on), then the bare carrier
     this.radioWas = d.radio.on;
     if (!d.radio.drift(1.1, 1)) d.radio.carrier(0.5);
-    d.trouble.start('stall', { key: true, tries: CATCH });
+    // (the second time tonight, after the key got the truck away once, it never catches: they have a
+    // better hold of it, and the way out is out of it)
+    this.keyProof = [...d.seen].some((k) => k.startsWith('tt:key@'));
+    d.trouble.start('stall', { key: true, tries: this.keyProof ? Infinity : CATCH });
     d.hold(HELD);
     d.begin();
     d.toast(this.radioWas ? 'The radio slides off the station into a bare carrier. The engine dies.' : 'The radio is off. A carrier comes out of it anyway. The engine dies.', 3.4);
@@ -271,8 +284,9 @@ export class TruckTaken {
     if (this.free) return;
     if (s.inCab) {
       // (got back into it: as dead as it was, and three turns again before the beep)
-      if (tr.kind !== 'stall') tr.start('stall', { key: true, tries: t < BEAT.steps ? CATCH : Infinity, dead: true });
-      if (this.wasOut) { this.wasOut = false; tr.catchOn(t < BEAT.steps ? CATCH : Infinity); this.turns = tr.turns; this.failedTold.clear(); }
+      const can = t < BEAT.steps && !this.keyProof ? CATCH : Infinity;
+      if (tr.kind !== 'stall') tr.start('stall', { key: true, tries: can, dead: true });
+      if (this.wasOut) { this.wasOut = false; tr.catchOn(can); this.turns = tr.turns; this.failedTold.clear(); }
       // the third turn catches if it was begun before the beep; after it, never
       if (t >= BEAT.steps && tr.turns < CATCH) tr.catchOn(Infinity);
       d.hold(HELD);
@@ -284,6 +298,7 @@ export class TruckTaken {
       }
       if (tr.stage === 'pause' && this.turns === 1 && !this.failedTold.has(1)) { this.failedTold.add(1); d.toast('It turns over and will not catch.', 2.6); }
       if (tr.stage === 'pause' && this.turns === 2 && !this.failedTold.has(2) && t < BEAT.steps) { this.failedTold.add(2); d.toast('It turns over. Nearly.', 2.4); }
+      if (tr.stage === 'pause' && this.turns === 3 && !this.failedTold.has(3) && t < BEAT.steps && this.keyProof) { this.failedTold.add(3); d.toast('The third turn. It does not catch this time.', 2.8); }
       // it caught: they let go
       if (tr.stage === 'catching') { this.free = 'key'; this.release(); return; }
     } else {
@@ -360,8 +375,8 @@ export class TruckTaken {
     const d = this.d, k = this.knocksOwed, a = clockText(this.at, false);
     const knocks = k ? 'Then three knocks on the roof of the cab, slow, from above' : 'Then the three knocks on the roof of the cab again, slow, from above';
     d.note(inCab
-      ? `${a}. The turn-off to SARO, on B. The radio slid over to a bare carrier, the engine died under me and the headlights sank. The key would not catch. At forty seconds every light in the truck went out. ${knocks}, and the light.`
-      : `${a}. The turn-off to SARO, on B. The engine died under me, the radio went to a bare carrier and the key would not catch. I got out, and did not get far enough. ${knocks}, behind me, and the light.`);
+      ? `${a}. The turn-off to SARO, on B. The radio slid over to a bare carrier, the engine died under me and the headlights sank. ${this.turns ? 'The key would not catch.' : 'I never turned the key.'} At forty seconds every light in the truck went out. ${knocks}, and the light.`
+      : `${a}. The turn-off to SARO, on B. The engine died under me and the radio went to a bare carrier${this.turns ? ', and the key would not catch' : ''}. I got out, and did not get far enough. ${knocks}, behind me, and the light.`);
     d.note(inCab
       ? `${b}. At the wheel, three hundred metres further on, in the southbound lane with the nose to the north. The engine off, every light off. The radio on, on 1090. I never have it on 1090.`
       : `${b}. On my back on the verge. The truck beside me, three hundred metres on from where I left it, the nose to the north. Its radio on, on 1090.`);
@@ -401,7 +416,12 @@ export class TruckTaken {
     } else if (how === 'ran') {
       d.seen.add(`tt:ran@${Math.round(this.at)}`);
       d.keyStall();
-      d.note(`${a}. The turn-off to SARO, on B. The engine died under me, the radio went to a bare carrier and the headlights sank, and the key would not catch. I got out and ran${this.north > RUN * 0.6 ? ', back up the shoulder towards SARO' : ''}. When I looked back, the truck was standing in the road with its lights out. Then the crickets again.`);
+      // (out and away after the knocks had come: heard, they were the night's, if it still owed them)
+      if (this.knocked && this.knocksOwed && !d.seen.has('ne:knocks1')) d.seen.add('ne:knocks1');
+      const knocks = this.knocked ? ' Behind me, three knocks on the roof of the cab, slow, from above.' : '';
+      // (on the screen too, as the key's way out has its toast: the player is out in the dark with nothing else)
+      d.toast('The crickets, all at once. Behind you the truck stands in the road with its lights out.', 4.2);
+      d.note(`${a}. The turn-off to SARO, on B. The engine died under me, the radio went to a bare carrier and the headlights sank${this.turns ? ', and the key would not catch' : ''}. I got out and ran${this.north > RUN * 0.6 ? ', back up the shoulder towards SARO' : ''}.${knocks} When I looked back, the truck was standing in the road with its lights out. Then the crickets again.`);
     }
     d.save();
     this.phase = how === 'off' ? 'idle' : 'tail'; this.t = 0;

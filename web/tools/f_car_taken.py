@@ -26,6 +26,10 @@
 #   - out of the truck but standing by it at :47: taken all the same; on the verge beside the truck,
 #     which is 300 m on, nose north, its radio on 1090
 #   - Missing time turned off in the middle: it passes, the truck its own again
+#   - chapter four, the usual way (the critic): the story's drive from the pad to the motel with
+#     N. Vega's CB call due; the warning at the turn-off before the call, which waits; E as the engine
+#     dies keeps the player at the wheel; the key; the CB after; the second warning in the truck the
+#     key never catches ("The third turn. It does not catch this time."), out and away, the toast
 #   - phone 412x892 with touch: the Use button turns the key and the Get out button is there with it;
 #     taken; the one on the bonnet in a portrait view; the odometer; screenshots
 #   - no console errors or warnings
@@ -492,6 +496,89 @@ async def main():
         await ev("S47.world.autopilot = null")
         check(trip and trip['to'] == 'station01' and first and -30 < first['x'] < -18 and 10 < first['z'] < 40,
               f'chapter three, the story\'s drive out of SARO to STATION 01 at a peak: it comes as the truck turns south out of the service road onto the highway ({first and [round(first["x"], 1), round(first["z"], 1), round(first["speed"], 1)]})')
+        await ctx.close()
+
+        # ---------- the usual way in chapter four (the critic, 21 October): the story's drive to the motel
+        # with N. Vega's CB call due nine seconds out, four had in chapter three; E as the engine dies;
+        # the key; the CB after it; the second time the key never catches, and out is the way ----------
+        ctx, pg, errs = await page(b, 1280, 720, False)
+        all_errs.append(('desk4', errs))
+        ev = pg.evaluate
+        async def tick4(s): await ev(f"S47.tick({s}, 20)")
+        async def drive4(until, dt=0.05, max_s=40):
+            seen = []
+            for i in range(int(max_s / dt)):
+                await tick4(dt); s = await ev("T.st()"); seen.append(s)
+                if until(s): break
+            return seen
+        await ev("S47.hold = true; S47.jump('chapter4'); S47.tick(1.0)")
+        await ev("S47.nightEvents['wait'] = 1e9; if (S47.archive) S47.archive.off = true; S47.game.d.ui.close(); S47.setAbductions(true); S47.townSeen.add('truckB:4'); S47.officePhone.reset()")
+        await ev("S47.game.d.inter.get('truck').use()")
+        for _ in range(120):
+            await tick4(0.25)
+            if await ev("S47.world.driving"): break
+        trip = await ev("S47.world.tripNow")
+        await ev("S47.curve.free = false; S47.curve.force('peak'); S47.tick(0.05, 20); S47.world.autopilot = 13")
+        ss, cbFirst = [], False
+        for _ in range(600):
+            await tick4(0.05)
+            s = await ev("T.st()"); s['cb'] = await ev("S47.cb.busy"); ss.append(s)
+            if s['cb'] and s['phase'] == 'idle': cbFirst = True
+            if s['phase'] == 'warning' or s['z'] > 120: break
+        await ev("S47.world.autopilot = null")
+        w = ss[-1]
+        check(trip and trip['to'] == 'motel' and w['phase'] == 'warning' and not cbFirst and -30 < w['x'] < -18 and 10 < w['z'] < 40 and not await ev("S47.ch4.s.cb"),
+              f'chapter four, the drive to the motel at a peak: it comes at the turn-off, N. Vega\'s CB call waiting for it ({[round(w["x"], 1), round(w["z"], 1)]}, CB first: {cbFirst})')
+        # E as the engine dies, stopped but before the key is wanted (the plain Get out used to be Use's
+        # then): still at the wheel; Q Get out on the screen
+        ss = await drive4(lambda s: abs(s['speed']) < 0.5 or s['tstage'] != 'dying', dt=1 / 30, max_s=3)
+        s0 = ss[-1]
+        await pg.keyboard.press('KeyE'); await tick4(0.05)
+        s = await ev("T.st()")
+        check(s0['tstage'] == 'dying' and s['driving'] and 'QGet out' in s['prompt'] and 'Turn the key' not in s['prompt'],
+              f'E as the engine dies, the truck stopped: still at the wheel (Use is the key here, not the door), Q Get out offered ({s0["tstage"]}, {s0["speed"]:.2f} m/s, "{s["prompt"]}")')
+        ss = await drive4(lambda s: s['key'], max_s=4)
+        for k in range(3):
+            await pg.keyboard.press('KeyE')
+            ss = await drive4(lambda s: s['tstage'] in ('pause', 'catching') or s['kind'] is None, max_s=3)
+            if ss[-1]['tstage'] == 'pause': ss = await drive4(lambda s: s['key'], max_s=2)
+        ss = await drive4(lambda s: s['stage'] == 'calm', max_s=3)
+        check(ss[-1]['free'] == 'key', f'three turns, quickly: it catches ({ss[-1]["free"]})')
+        ss = await drive4(lambda s: s['phase'] == 'idle', dt=0.25, max_s=14)
+        await ev("S47.world.autopilot = 13")
+        cbAt = None
+        for _ in range(300):
+            await tick4(0.1)
+            if cbAt is None and await ev("S47.cb.busy"): cbAt = await ev("T.st()")
+            if cbAt is not None and any('SARO seven' in t for t in await ev("T.toasts.slice(-4)")): break
+        check(cbAt is not None and cbAt['phase'] == 'idle' and any('SARO seven' in t for t in await ev("T.toasts.slice(-4)")), f'then N. Vega on the CB, after it ({cbAt and round(cbAt["z"])})')
+        # (to the end of her call: its note; the truck left standing where it is, not driven on to the lot)
+        await ev("S47.world.autopilot = null; S47.world.testInput = { steer: 0, throttle: -1 }"); await tick4(1.5); await ev("T.stop()")
+        # (the call runs on the audio clock, in real time)
+        for _ in range(240):
+            await tick4(0.1); await pg.wait_for_timeout(400)
+            if await ev("S47.game.notes.some((n) => n.includes(\"on the truck's CB\"))") and not await ev("S47.cb.busy"): break
+        await ev("S47.world.autopilot = null")
+        # the second warning in the truck tonight: the key never catches; out and away
+        await ev("S47.curve.force('peak'); S47.tick(0.05); S47.game.d.ui.clearToasts(); T.toasts.length = 0")
+        await ev("T.south(-90, 20)")
+        ss = await drive4(lambda s: s['phase'] == 'warning', max_s=14)
+        check(ss[-1]['phase'] == 'warning' and ss[-1]['tries'] == 2 and await ev("S47.truckTaken.keyProof"), 'the second time tonight, after the key: the warning, and this time the key will not do')
+        caught = False
+        for _ in range(int(18 / 0.05)):
+            await tick4(0.05); s = await ev("T.st()")
+            if s['key'] and (s['warn'] or 0) < 15: await pg.keyboard.press('KeyE')
+            if s['free'] == 'key' or s['tstage'] == 'catching': caught = True
+            if (s['warn'] or 0) > 17 or s['stage'] != 'warning': break
+        tl = await ev("T.toasts.slice()")
+        check(not caught and s['turns'] >= 3 and 'It turns over. Nearly.' in tl and 'The third turn. It does not catch this time.' in tl, f'E every time it is wanted: {s["turns"]} turns, it never catches ({tl[-3:]})')
+        await pg.keyboard.press('KeyQ')
+        await drive4(lambda s: not s['driving'], max_s=3); await tick4(0.4)
+        await ev("S47.player.yaw = 0; S47.input.keys.add('KeyW'); S47.input.keys.add('ShiftLeft')")
+        ss = await drive4(lambda s: s['stage'] in ('calm', 'light'), max_s=30)
+        await ev("S47.input.keys.clear()")
+        await drive4(lambda s: s['ended'] == 'ran', max_s=1)
+        check(ss[-1]['free'] == 'ran' and 'The crickets, all at once. Behind you the truck stands in the road with its lights out.' in await ev("T.toasts.slice(-3)"), 'Q and away up the shoulder: it passes, and says so')
         await ctx.close()
 
         # ---------- desktop ----------

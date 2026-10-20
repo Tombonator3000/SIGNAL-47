@@ -203,13 +203,16 @@ const OVER_RIM = 0x232c3a;
 // blink; the head comes up to look out through the glass, and one of them is on the bonnet with its
 // head bent down to the windshield, black against SARO's lamps 300 m off (the truck faces north).
 // Where each stands, in the truck's own metres (x right, z forward negative; the bonnet's top is at
-// HOOD), nearer each time: the first at the front of the bonnet, the second up against the glass,
-// the third time two, the second one turned aside, with no dark first.
+// HOOD). Not nearer each time as on foot: nearer than about 2.3 m from the eye the roof over the
+// windshield takes the head off it (seen from the seat the header is some 19 degrees up), and the
+// head is what it is. So the first at the front of the bonnet, a little to the left; the second
+// straight in front of the driver and a little closer, as near as the glass shows all of it; the
+// third time two, the second one turned aside, with no dark first.
 const HOOD = 1.12, SLUMP = -0.78;
 const OVER_CAB: { stars: boolean; up: number; at: { x: number; z: number; pose: Pose }[] }[] = [
   { stars: true, up: 0.3, at: [{ x: -0.3, z: -2.45, pose: 'bent' }] },
-  { stars: true, up: 0.26, at: [{ x: -0.48, z: -1.8, pose: 'bent' }] },
-  { stars: false, up: 0.28, at: [{ x: -0.55, z: -1.95, pose: 'bent' }, { x: 0.5, z: -2.5, pose: 'turned' }] },
+  { stars: true, up: 0.27, at: [{ x: -0.42, z: -2.34, pose: 'bent' }] },
+  { stars: false, up: 0.28, at: [{ x: -0.62, z: -2.4, pose: 'bent' }, { x: 0.46, z: -2.5, pose: 'turned' }] },
 ];
 /** The driver's eye in the cab, the truck's own metres (drive/Truck.ts driverEye). */
 const CAB_EYE = new THREE.Vector3(-0.42, 1.48, 0.2);

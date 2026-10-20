@@ -334,8 +334,9 @@ async function boot() {
       goIn: () => world.goRoom6(), goOut: () => world.leaveRoom6(), brick: () => world.crossing.brick,
       driveTo: () => world.driveToMotel(() => {}),
       driven: () => world.tripSecs,
-      // (not in the middle of the time away, in the truck or out of it: Nora's call waits for it)
-      cb: (lines, onEnd) => !(abduction!.busy || truckTaken.busy) && cb.call(lines, null, (l, duration) => { if (mode === 'play' && !game.cinematic) ui.toast(`CB, ${l.by}: "${l.text}"`, duration ?? Math.min(8, 2.4 + l.text.length / 22), () => audio.ctx!.currentTime); }, onEnd) > 0,
+      // (not in the middle of the time away, in the truck or out of it: Nora's call waits for it; nor
+      // as the truck comes onto B at the turn-off when it could come there: story/truckTaken.ts, ahead)
+      cb: (lines, onEnd) => !(abduction!.busy || truckTaken.busy || truckTaken.ahead) && cb.call(lines, null, (l, duration) => { if (mode === 'play' && !game.cinematic) ui.toast(`CB, ${l.by}: "${l.text}"`, duration ?? Math.min(8, 2.4 + l.text.length / 22), () => audio.ctx!.currentTime); }, onEnd) > 0,
     },
     allNight: {
       area: () => world.area, diner: () => world.diner, dinerTruck: () => world.dinerTruckProxy,
@@ -861,8 +862,10 @@ async function boot() {
       if (truckTaken.useKey(abduction!.warn?.t ?? null)) return;
       if (world.trouble.turnKey()) return;
       if (radioAimed()) { turnRadio(); return; }
-      // (not out in the middle of the truck's count on B: story/truckOnB.ts)
-      if (!truckB.racing) world.getOutHere();
+      // (not out in the middle of the truck's count on B: story/truckOnB.ts; nor by Use in its warning
+      // on B, story/truckTaken.ts: E is the key there, and Q or the Get out button the way out, so a
+      // hand on E as the engine dies, before the key is wanted, does not put the player in the road)
+      if (!truckB.racing && !truckTaken.warning) world.getOutHere();
       return;
     }
     if (mode !== 'play' || ui.modal || game.cinematic || world.driving) return;
@@ -2706,9 +2709,10 @@ async function boot() {
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
       } else {
         const live = mode === 'play' && !modalOpen && !game.cinematic;
-        const key = live && world.driving && world.trouble.wantsKey && !abduction!.holds, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && world.canGetOut();
-        // (in the truck's warning on B, stopped: out of it, as well as the key; story/truckTaken.ts)
-        const run = key && truckTaken.warning && world.canGetOut(true);
+        const key = live && world.driving && world.trouble.wantsKey && !abduction!.holds, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && !truckTaken.warning && world.canGetOut();
+        // (in the truck's warning on B, stopped: out of it, as well as the key, the whole time and not
+        // only while the key is wanted, so it does not blink away with each turn; story/truckTaken.ts)
+        const run = live && !abduction!.holds && truckTaken.warning && world.canGetOut(true);
         if ((out || key || aimR) !== canOut) { canOut = out || key || aimR; document.documentElement.classList.toggle('can-out', canOut); }
         ui.prompt(key ? 'Turn the key' : aimR ? radioLabel() : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode, run ? 'Get out' : null);
         ui.hint(false);

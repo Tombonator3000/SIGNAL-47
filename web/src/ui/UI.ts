@@ -197,7 +197,7 @@ export class UI {
    *  same time (Q, its own button on a phone: story/truckTaken.ts, Get out while the key is wanted). */
   prompt(label: string | null, touch: boolean, alt: string | null = null) {
     this.cross.classList.toggle('active', !!label);
-    const a = alt && label ? alt : null;
+    const a = alt;
     if (this.altBtn.hidden !== (!a || !touch)) this.altBtn.hidden = !a || !touch;
     if (a && touch && this.altBtn.textContent !== a) this.altBtn.textContent = a;
     if (touch) {
@@ -205,8 +205,9 @@ export class UI {
       this.useBtn.textContent = label ? label : 'Use';
       this.promptEl.classList.remove('show');
     } else {
-      this.promptEl.classList.toggle('show', !!label);
-      if (label) this.promptEl.innerHTML = `<kbd>E</kbd>${esc(label)}${a ? `<span class="alt"><kbd>Q</kbd>${esc(a)}</span>` : ''}`;
+      this.promptEl.classList.toggle('show', !!(label || a));
+      // (the second thing on its own while Use offers nothing: Q Get out while the starter turns)
+      if (label || a) this.promptEl.innerHTML = `${label ? `<kbd>E</kbd>${esc(label)}` : ''}${a ? `<span class="alt"${label ? '' : ' style="margin-left:0"'}><kbd>Q</kbd>${esc(a)}</span>` : ''}`;
     }
   }
 
