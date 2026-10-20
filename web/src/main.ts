@@ -908,6 +908,8 @@ async function boot() {
   function saveBlock(): string | null {
     if (devRun) return 'This is a developer run. Nothing is saved.';
     if (mode !== 'play' || !caseId) return 'There is no night running to save.';
+    // (the 47 seconds of the warning are a race: a save and Continue is not a way out of them)
+    if (abduction?.racing) return 'Not right now. Let the moment finish first.';
     return game.saveBlock();
   }
   // ---------- the notebook's map and kit (Tom, 16 October) ----------
@@ -1298,6 +1300,9 @@ async function boot() {
       exposed: world.driving || space === 'yard',
       busy: oneAtATime(),
       peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0,
+      // a 47 that belongs to a place waits there for the player: the curve hurries for it (as of the
+      // last step: they are looked at after the curve)
+      waiting: motelTv.waiting || townEvents.waiting,
     });
     if (audio.night) audio.night.thin = curve.thin;
     if (curve.sign) curveSign();
@@ -1600,6 +1605,8 @@ async function boot() {
     game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
+    // why the save menu would say no right now (null: it may save)
+    saveBlock: () => saveBlock(),
     playtime: () => playtime, runTime: () => t, caseId: () => caseId, score: () => score, musicTracks: () => Object.keys(TRACKS),
     // tests: the scene as the lights leave it, before the tape: how many colour values would not
     // fit the half-float targets the picture is drawn into (over 65504, or not a number at all),
@@ -1895,7 +1902,7 @@ async function boot() {
     pasture.update(dt, { ok, area: world.area === 'saro' ? 'saro' : world.area === 'road' || world.area === 'diner' ? 'road' : null, cam: camera, clock: game.clock,
       driving: world.driving });
     motelTv.update(dt, { ok, saro: world.area === 'saro', here: world.area === 'saro' && !world.driving && (inside(motelOffice, p) || Math.hypot(p.x - officeDoor.x, p.z - officeDoor.z) < 5),
-      truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock, may: curve.may('long') });
+      truckOnLot: world.truckAt === 'motel', cam: camera, clock: game.clock, may: curve.may('long'), unrest: curve.unrest });
     if ((lineBCheck += dt) > 1 && !townSeen.has('lineB')) {
       lineBCheck = 0;
       if (mapMarks().filter((m) => m.line === 'B').length >= 3) {
@@ -1986,7 +1993,7 @@ async function boot() {
             && (sky.uniforms.uDawn.value < 0.3 || game.phase === 'ch5') && !abduction!.busy && !nightEvents.busy,
           inTown: world.area === 'diner' && !world.indoors(cp) && !!world.town?.inTown(cp.x, cp.z),
           later: game.at('ch5'), cam: camera, clock: game.clock, t,
-          may: curve.may('event'), mayLong: curve.may('long'),
+          may: curve.may('event'), mayLong: curve.may('long'), unrest: curve.unrest,
         });
       }
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
@@ -2039,6 +2046,8 @@ async function boot() {
           eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),
           clock: game.clock, backAt: ab.backAt, calm: calmFlash, woke: ab.data.last, over: ab.overPhase !== null });
       } else if (mode === 'play') follow.wait();
+      // the corner clock in seconds while the warning counts its 47 (story/abduction.ts, warnClock)
+      ui.clockSeconds(mode === 'play' ? abduction!.warnClock : null);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }

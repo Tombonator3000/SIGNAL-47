@@ -116,6 +116,10 @@ html.text-large .examine { font-size: 27px; }
 @keyframes toastOut { to { opacity: 0; } }
 .clockline { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: calc(env(safe-area-inset-right, 0px) + 18px);
   font-family: var(--term); font-size: 22px; color: rgba(140,255,164,.75); text-shadow: 0 0 8px rgba(80,255,120,.35); }
+/* the warning before the time away (story/abduction.ts): the clock in seconds, counting its 47, the
+   seconds in the amber the console counted the line drop in at 02:13 */
+.clockline.secs { color: rgba(140,255,164,.92); }
+.clockline.secs .ss { color: #ffd27a; text-shadow: 0 0 8px rgba(255,196,96,.45), 0 1px 2px #000; }
 
 .lockhint { position: absolute; left: 50%; top: calc(50% - 58px); transform: translateX(-50%); font-family: var(--term); font-size: 22px;
   color: rgba(240,234,216,.7); text-shadow: 0 1px 3px #000; opacity: 0; transition: opacity .3s; white-space: nowrap; }

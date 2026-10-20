@@ -20,6 +20,12 @@ import { clockText } from './time';
 // may bring it back later. At least ten minutes of the night after the last event, as in town
 // (story/townEvents.ts).
 //
+// It is one of the 47-second events, and those come at the night's peak (story/curve.ts). While
+// the player is in the office with the truck on the lot and nothing else stands in its way, it is
+// waiting (`waiting`): the curve hurries its build to the peak and keeps the peak for it. The set
+// shows the hurry (`unrest`, the curve's level): the test card begins to slip, a roll now and
+// then, the tone wavering and the hum of the carrier coming up under it, until the card goes.
+//
 // Round 15 supplies the blank test card. The lot must be the actual scene: a painted fallback
 // cannot say where this night's truck stood. A witnessed frame is kept with the case and can
 // be looked at again, from the television or the notebook's album.
@@ -42,6 +48,8 @@ export interface MotelTvIn {
   /** The night's curve (story/curve.ts) lets the carrier come now (47 s: a peak, one extra in a
    *  chapter); left out, it may. */
   may?: boolean;
+  /** 0..1: the curve is hurrying to its peak for this (NightCurve.unrest); the test card slips. */
+  unrest?: number;
 }
 export interface MotelTvDeps {
   motel: MotelFront;
@@ -122,6 +130,15 @@ export class MotelTv {
 
   /** Something on the set other than the test card. */
   get busy() { return this.mode !== 'card'; }
+  /** It could come now but for the night's curve: the player in the office or at its door, the
+   *  truck on the lot, not seen tonight, its hours, ten minutes after the last event (story/curve.ts
+   *  hurries for it). Set by update(). */
+  waiting = false;
+  /** How far the test card has slipped (0..1), and a roll of the picture under way. */
+  private unrest = 0;
+  private roll: { y: number; v: number } | null = null;
+  /** How many times the picture has rolled tonight (the tests). */
+  slips = 0;
   /** And the player is near enough to hear it (the music keeps out of its way). */
   get heard() { return this.busy && this.dist < 30; }
   private dist = Infinity;
@@ -138,10 +155,13 @@ export class MotelTv {
     const cam = s.cam.getWorldPosition(new THREE.Vector3()), dist = s.saro ? cam.distanceTo(this.tvAt) : Infinity;
     this.dist = dist;
     this.dwell = s.ok && s.here ? this.dwell + dt : 0;
+    const could = this.mode === 'card' && s.ok && s.saro && s.here && !this.d.seen.has('ev:tv') && s.truckOnLot && s.clock >= this.notBefore && s.clock - this.last() >= GAP
+      && day >= 2 * 3600 + 30 * 60 && day < 5 * 3600 + 5 * 60;
+    this.waiting = could;
+    this.unrest = could ? THREE.MathUtils.clamp(s.unrest ?? 0, 0, 1) : 0;
     switch (this.mode) {
       case 'card':
-        if (s.ok && s.saro && s.may !== false && !this.d.seen.has('ev:tv') && s.truckOnLot && this.dwell > DWELL && s.clock >= this.notBefore && s.clock - this.last() >= GAP
-          && day >= 2 * 3600 + 30 * 60 && day < 5 * 3600 + 5 * 60) {
+        if (could && s.may !== false && this.dwell > DWELL) {
           this.carrier();
           this.d.toast('On the television the test card is gone: a blank grey screen, and the hum of a carrier with nothing on it.', 5.5);
         }
@@ -172,7 +192,7 @@ export class MotelTv {
     this.d.motel.setTvLight(s.saro ? k * (0.94 + 0.06 * Math.random()) : 0, this.light);
   }
 
-  private carrier() { this.mode = 'carrier'; this.t = 0; this.toWarm = null; this.canWitness = false; this.click(); }
+  private carrier() { this.mode = 'carrier'; this.t = 0; this.toWarm = null; this.canWitness = false; this.roll = null; this.click(); }
 
   private missed(clock: number) {
     this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = clock + GAP;
@@ -327,7 +347,23 @@ export class MotelTv {
     } else {
       // a little overscan, and the picture jitters by a line now and then
       const src = this.mode === 'frame' && this.frame ? this.frame : this.card, j = Math.random() < 0.08 ? 1 : 0;
-      g.drawImage(src, 6, 5, W - 12, H - 10, 0, j, w, h);
+      const u = this.mode === 'card' ? this.unrest : 0;
+      // the curve hurrying for it (story/curve.ts): the card slips, the vertical hold losing it
+      // now and then, the picture rolling down through the frame once with the black bar between
+      if (u > 0.08 && !this.roll && Math.random() < 0.012 + 0.09 * u * u) { this.roll = { y: 0, v: h * (0.5 + 1.6 * u) }; this.slips++; }
+      if (this.roll) {
+        const r = this.roll, y = Math.round(r.y), bar = Math.max(3, Math.round(h * 0.07));
+        g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+        g.drawImage(src, 6, 5, W - 12, H - 10, 0, y, w, h);
+        g.drawImage(src, 6, 5, W - 12, H - 10, 0, y - h - bar, w, h);
+        g.fillStyle = '#050505'; g.fillRect(0, y - bar, w, bar);
+        if ((r.y += r.v / 15) >= h + bar) this.roll = null;
+      } else g.drawImage(src, 6, 5, W - 12, H - 10, 0, j, w, h);
+      // and the lines tearing sideways for a moment
+      if (u > 0.2 && Math.random() < 0.25 * u) {
+        const y0 = Math.floor(Math.random() * h), n = 2 + Math.floor(Math.random() * h * 0.12 * u);
+        g.drawImage(c, 0, y0, w, n, Math.round((Math.random() - 0.3) * w * 0.08 * u), y0, w, n);
+      }
     }
     // the tube: scan lines, a little snow, the dark corners, the brightness breathing
     g.fillStyle = 'rgba(0,0,0,.24)';
@@ -368,8 +404,10 @@ export class MotelTv {
       this.snd = { tone, hum, humK: hb ? 1.8 : 1, hiss, whine, stop: () => { for (const o of [tOsc, hOsc, n, wOsc]) { try { o.stop(); } catch { /* stopped */ } } spk.disconnect(); } };
     }
     const m = this.mode, now = ctx.currentTime, set = (g: GainNode, v: number) => g.gain.setTargetAtTime(v, now, 0.04);
-    set(this.snd.tone, m === 'card' ? 0.03 : 0);
-    set(this.snd.hum, m === 'carrier' ? 0.11 * this.snd.humK : 0);
+    // slipping: the tone wavers and drops out for a moment, the carrier's hum comes up under it
+    const u = m === 'card' ? this.unrest : 0, waver = u > 0 ? 1 - u * (0.35 + 0.65 * Math.random() * Math.random()) : 1;
+    set(this.snd.tone, m === 'card' ? 0.03 * (this.roll ? 0.3 : waver) : 0);
+    set(this.snd.hum, m === 'carrier' ? 0.11 * this.snd.humK : 0.05 * u * u * this.snd.humK);
     set(this.snd.hiss, m === 'carrier' ? 0.014 : m === 'card' ? 0.006 : 0);
     set(this.snd.whine, m === 'frame' ? 0 : 0.0016);
   }
@@ -386,6 +424,7 @@ export class MotelTv {
   /** A new night or a case opened: the test card, and whether it has been seen in it. */
   reset() {
     this.mode = 'card'; this.t = 0; this.dwell = 0; this.notBefore = 0; this.frame = null; this.toWarm = null; this.canWitness = false;
+    this.waiting = false; this.unrest = 0; this.roll = null;
     this.silence();
     this.paint(0);
   }

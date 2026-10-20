@@ -28,6 +28,16 @@ import type { SeenEntry, SeenLog } from './seen';
 // six, when THE EVENT has the night. One thing at a time stays as it was: while one of the night's
 // things is going, nothing else may start (main.ts, `oneAtATime`).
 //
+// Two of the 47-second events belong to a place and wait there for the player: the motel office's
+// television (story/motelTv.ts; the truck on the lot) and the payphone's first call in Caliche
+// (story/townEvents.ts; 02:40 to 04:45). Indoors the build goes at a third of its pace, and in a
+// rest nothing may come, so a visit to the office or the gas station missed them more often than
+// not (PR #123's critic). Where one of them is waiting now, the curve hurries: what is left of the
+// build goes in at most HURRY seconds, indoors too, and the peak keeps itself for that event (no
+// glimpse, no call, no other event takes it; the peak does not ebb while the player stays). It
+// still never comes in a rest, never on top of another thing, and never as a second extra 47 in a
+// chapter. The place shows the hurry: the test card slips, the payphone's bell tinks in its box.
+//
 // The face on the film (core/filmFace.ts) is not held back: it is on the print the player takes.
 // When it is looked at large, that is the peak. The second call of the payphone after room 6 is the
 // story's and not the curve's either. Neither are the things found as they were left (the deputy's
@@ -56,6 +66,10 @@ export interface CurveIn {
   peaking: boolean;
   /** The night's clock, seconds since midnight. */
   clock: number;
+  /** One of the 47-second events that belong to a place is waiting there now (the motel office's
+   *  television, the payphone's first call): the player is where it happens and it could come but
+   *  for the curve. The build hurries to the peak, and the peak is kept for it. */
+  waiting?: boolean;
 }
 
 const PLAIN = 600;                                  // ten minutes of plain night after the prologue
@@ -64,6 +78,7 @@ const EBB: [number, number] = [180, 240];           // after a peak that never c
 const SHORT = 150;                                  // a night put back from a case without a curve
 const BUILD: [number, number] = [390, 170];         // the build's length at 02:16 and at 05:29 (play seconds)
 const PEAK: [number, number] = [300, 240];          // how long the peak waits, out in the night, for something to land
+const HURRY = 40;                                   // a waiting 47 here: the rest of the build in at most this (play seconds)
 const NIGHT0 = 2 * 3600 + 16 * 60, NIGHT1 = 5 * 3600 + 29 * 60;
 const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'];
 /** How far into the build each kind may start (glimpses and the time away only at the peak). */
@@ -105,6 +120,12 @@ export class NightCurve {
   free = false;
   /** A small sign is due now (main.ts gives one where it can: the flashlight, the dash, the radio). */
   sign = false;
+  /** A 47-second event is waiting where the player is (CurveIn.waiting), and the curve hurries
+   *  for it: the build to the peak, and the peak kept for it. */
+  pulled = false;
+  /** 0..1 while the curve hurries in the build (the place shows it: the test card slips, the
+   *  payphone's bell tinks); 0 otherwise. */
+  get unrest() { return this.pulled && this.phase === 'build' ? this.level : 0; }
   /** How many of each started in this cycle (the calls, the cutout, the events). */
   readonly took = { call: 0, cutout: 0, event: 0 };
   private chapter = '';
@@ -123,6 +144,8 @@ export class NightCurve {
     if (this.free) return true;
     if (this.held || this.busy) return false;
     if (kind === 'long' && this.long.has(this.chapter)) return false;
+    // the peak this is hurrying to is kept for the 47 that waits here: nothing else takes it
+    if (this.pulled && kind !== 'long' && kind !== 'sign') return false;
     const s = this.strength;
     if (kind === 'call' && this.took.call >= (s > 0.45 ? 2 : 1)) return false;
     if (kind === 'event' && this.took.event >= (s > 0.5 ? 2 : 1)) return false;
@@ -166,6 +189,8 @@ export class NightCurve {
     this.chapter = s.chapter;
     this.held = s.held; this.busy = s.busy;
     this.sign = false;
+    // (not for a chapter that has had its extra 47: then there is nothing here to hurry for)
+    this.pulled = !this.free && !!s.waiting && !this.long.has(s.chapter);
     if (!CHAPTERS.includes(s.chapter)) { if (this.phase !== 'off') this.stop(); return; }
     if (this.phase === 'off') this.begin();
     this.strength = clamp01((((s.clock % 86400) + 86400) % 86400 - NIGHT0) / (NIGHT1 - NIGHT0));
@@ -179,18 +204,22 @@ export class NightCurve {
       case 'plain':
         if ((this.t += dt) >= this.len) this.to('build');
         break;
-      case 'build':
-        // indoors the night goes on building, but slowly: it is out there it is felt
-        this.t += dt * (exposed ? 1 : 0.35);
+      case 'build': {
+        // indoors the night goes on building, but slowly: it is out there it is felt; where a 47
+        // waits for the player, what is left of it goes in at most HURRY seconds, indoors too
+        const pace = exposed ? 1 : 0.35;
+        this.t += dt * (this.pulled ? Math.max(pace, this.len / HURRY) : pace);
         this.level = clamp01(this.t / this.len);
         this.signs(dt, exposed, busy);
         if (this.level >= 1) this.to('peak');
         break;
+      }
       case 'peak':
         this.level = 1;
         this.signs(dt, exposed, busy);
-        // the peak waits while the player is somewhere it cannot reach them, or while something runs
-        if (exposed && !busy && (this.t += dt) >= this.len) { this.ebb = true; this.to('rest'); }
+        // the peak waits while the player is somewhere it cannot reach them, or while something runs,
+        // or while the 47 it is kept for waits for them here
+        if (exposed && !busy && !this.pulled && (this.t += dt) >= this.len) { this.ebb = true; this.to('rest'); }
         break;
       case 'rest':
         this.level = Math.max(0, this.level - dt / 20);
@@ -262,7 +291,7 @@ export class NightCurve {
     if (this.resume === 'short') this.to('rest', SHORT);
     else this.to('plain');
   }
-  private stop() { this.phase = 'off'; this.t = 0; this.len = 0; this.level = 0; this.pending = []; }
+  private stop() { this.phase = 'off'; this.t = 0; this.len = 0; this.level = 0; this.pending = []; this.pulled = false; }
 
   /** What is kept with the case. */
   get data(): CurveSave {
@@ -301,6 +330,6 @@ export class NightCurve {
   text() {
     if (this.phase === 'off') return `curve off${this.free ? ' (free)' : ''}`;
     const l = [...this.long];
-    return `curve ${this.phase} ${this.level.toFixed(2)} ${this.left}s c${this.cycle} s${this.strength.toFixed(2)}${l.length ? ' 47:' + l.join(',') : ''}${this.landed ? ' last ' + this.landed.what.slice(0, 10) : ''}${this.free ? ' free' : ''}`;
+    return `curve ${this.phase} ${this.level.toFixed(2)} ${this.left}s c${this.cycle} s${this.strength.toFixed(2)}${this.pulled ? ' pull' : ''}${l.length ? ' 47:' + l.join(',') : ''}${this.landed ? ' last ' + this.landed.what.slice(0, 10) : ''}${this.free ? ' free' : ''}`;
   }
 }

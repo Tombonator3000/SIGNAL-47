@@ -11,9 +11,16 @@ import type { LineId } from './lines';
 // alone, outdoors on one of the lines, at night: the pressure rises, and at the top of it they
 // take a recording of you, the way you take a picture of an antenna. Nobody in the game says so.
 //
-//   the warning  20 to 47 s: the crickets stop, then the player's own footsteps, the flashlight
-//                stutters and dies, a deep pressure tone. Get off the line or in among people
-//                before the light comes, and it passes.
+//   the warning  always 47 s, timed as the 47 s after the line went dead at 02:13 (Prologue.
+//                startCountdown: the low beep at 16, the printer at 31, K3 at 40, the event at 47;
+//                FORSLAG.md, 20 October, item 2). The corner clock goes over to seconds, as the
+//                station clock showed them that night, and counts the warning's own: HH:MM:00 to :47
+//                (warnClock). At once the crickets stop. At :16 a small beep, and the player's own
+//                footsteps are gone. At :31 the pressure comes in, and the flashlight starts to
+//                stutter. At :40 it dies with the click K3 made. Whoever remembers the prologue
+//                knows there are seven seconds left. Get off the line or in among people before the
+//                light comes, and it passes: from the start of it there is time to reach shelter
+//                some 140 m off at a run, from :40 some 20 m.
 //   the light    white, from above, from nothing to be seen.
 //   the taking   the picture freezes with a tracking fault, the sound is cut, a few single
 //                frames (the light; the grass from above with your shadow in it; a hand with
@@ -113,6 +120,10 @@ export interface AbductSave { count: number; last: number; spots: { scene: strin
 type Stage = 'calm' | 'warning' | 'light' | 'taken' | 'black' | 'back';
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const MAX = 3, GAP = 40 * 60, MIN_LOST = 17 * 60;
+/** The warning's length, and its beats: the 47 seconds after the line went dead in the prologue
+ *  (Prologue.startCountdown), the same seconds (story/dishesFollow.ts times the dishes by them). */
+export const WARN = 47;
+export const BEAT = { steps: 16, tone: 31, dark: 40 } as const;
 // Over you on waking, the three times: whether the stars come first (then the blink, the head
 // lifted behind it); how far off each one stands beyond your feet (metres), how far aside in the
 // frame (of the half width) and how (the nearest with its head bent down to you); and up, where
@@ -143,7 +154,11 @@ export class Abduction {
   /** The scene the player is in, as main.ts names it (rings and recordings belong to one). */
   sceneId = 'saro';
   private st = 0;
-  private warnLen = 30;
+  private warnLen = WARN;
+  /** Where in the warning it is up to (0: begun; 1: the beep, 2: the pressure, 3: the dark), and
+   *  the clock it began at (the corner clock counts from its minute). */
+  private beat = 0;
+  private warnFrom = 0;
   private top = 1;
   private lost = 0;
   private from = 0;
@@ -187,10 +202,22 @@ export class Abduction {
   }
 
   get busy() { return this.stage !== 'calm'; }
-  /** How far into the warning, and how long it runs (seconds); null outside it. */
+  /** How far into the warning, and how long it runs (seconds, 47 but for the tests); null outside it. */
   get warn(): { t: number; len: number } | null { return this.stage === 'warning' ? { t: this.st, len: this.warnLen } : null; }
   /** Holds the player still (the taking and the waking). */
   get holds() { return this.stage === 'light' || this.stage === 'taken' || this.stage === 'black' || this.stage === 'back'; }
+  /** The corner clock while the warning runs (main.ts, UI.clockSeconds): the minute it began, and
+   *  the warning's own seconds, 00 to 47, the way the station clock showed seconds at 02:13; held
+   *  at 47 through the light and the taking, until the waking has the night's clock back. Null
+   *  otherwise. */
+  get warnClock(): { hm: string; ss: string } | null {
+    const s = this.stage === 'warning' ? Math.min(this.warnLen, Math.floor(this.st)) : this.stage === 'light' || this.stage === 'taken' || this.stage === 'black' ? this.warnLen : -1;
+    if (s < 0) return null;
+    return { hm: clockText(this.warnFrom, false), ss: String(Math.round(s)).padStart(2, '0') };
+  }
+  /** Whether the warning or the taking is under way (main.ts: no save then; the save menu is not a
+   *  way out of the 47 seconds). The waking saves the case itself. */
+  get racing() { return this.stage === 'warning' || this.stage === 'light' || this.stage === 'taken' || this.stage === 'black'; }
 
   update(dt: number, s: AbductIn) {
     this.st += dt;
@@ -220,30 +247,44 @@ export class Abduction {
   }
   /** Start the warning now (the developer menu, the tests). */
   begin(s: AbductIn) {
-    this.stage = 'warning'; this.st = 0; this.warnLen = rnd(20, 47); this.silent = false;
+    this.stage = 'warning'; this.st = 0; this.warnLen = WARN; this.silent = false;
+    this.beat = 0; this.warnFrom = s.clock;
     this.hadLight = this.d.flashlight.on;
     this.take.copy(this.d.player.pos);
     void loadArtSome(ABDUCT_ART);
     for (const f of this.overFigs) f.wake();
     this.d.hush(this.warnLen + 12, 0);
     this.bed?.stop(); this.bed = this.d.audio.pressure();
-    void s;
   }
   private warning(_dt: number, s: AbductIn) {
-    const t = this.st, w = this.warnLen;
+    const t = this.st, w = this.warnLen, a = this.d.audio;
     // got away: off the line, inside, among people, before the light
     if (!s.ok || !s.line || !s.enabled) { this.passOver(); return; }
-    if (t > w * 0.3) this.silent = true;
-    if (t > w * 0.45) this.d.flashlight.flicker(THREE.MathUtils.clamp((t - w * 0.45) / (w * 0.4), 0, 1));
-    if (t > w * 0.85 && this.d.flashlight.on) this.d.flashlight.on = false;
-    if (t > w * 0.5 && !this.tone) this.toneOn();
-    if (this.tone) this.tone.gain.gain.value = 0.05 + 0.25 * THREE.MathUtils.clamp((t - w * 0.5) / (w * 0.5), 0, 1);
-    // the pressure comes up slowly from nothing, and is all there by the light (held through it)
-    if (this.bed) this.bed.gain.gain.value = 0.04 + 0.46 * Math.min(1, t / w) ** 2;
+    // :16, the beep of 02:13 (the same low tone, and a small one over it that a phone's speaker
+    // plays), and the footsteps are gone
+    if (t >= BEAT.steps && this.beat < 1) {
+      this.beat = 1; this.silent = true;
+      a.beep(52, 2.8, 0.09, 0, 'sine'); a.beep(1046, 0.05, 0.035, 0, 'sine');
+    }
+    // :31, the pressure: in at once, then rising to the light; the flashlight begins to stutter
+    if (t >= BEAT.tone && this.beat < 2) { this.beat = 2; if (!this.tone) this.toneOn(); }
+    const k = THREE.MathUtils.clamp((t - BEAT.tone) / (w - BEAT.tone), 0, 1);
+    if (this.tone) this.tone.gain.gain.value = 0.08 + 0.22 * k;
+    if (this.bed) this.bed.gain.gain.value = t < BEAT.tone ? 0.015 : Math.min(0.3 * Math.min(1, (t - BEAT.tone) / 0.8) + 0.2 * k, 0.5);
+    if (t >= BEAT.tone && t < BEAT.dark) this.d.flashlight.flicker(0.2 + 0.8 * (t - BEAT.tone) / (BEAT.dark - BEAT.tone));
+    // :40, it dies, with the click K3 made when it tripped seven seconds before the event; seven
+    // seconds of the dark (it does not come on again before the light)
+    if (t >= BEAT.dark && this.beat < 3) {
+      this.beat = 3;
+      a.play(a.or('rack_switch', 'switch'), { gain: 0.75, rate: 0.62 });
+      a.play('thudSoft', { gain: 0.32, rate: 1.4, when: 0.03 });
+      this.d.flashlight.flicker(0);
+    }
+    if (this.beat >= 3 && this.d.flashlight.on) this.d.flashlight.on = false;
     if (t >= w) { this.stage = 'light'; this.st = 0; this.take.copy(this.d.player.pos); this.from = s.clock; this.backAt = this.further(this.take, s.along); }
   }
   private passOver() {
-    this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15);
+    this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15); this.beat = 0;
     this.toneOff(); this.d.flashlight.flicker(0); this.d.hush(0.1, 1);
     this.bed?.stop(1); this.bed = null;   // got away: it ebbs over a few seconds
     if (this.hadLight && this.d.flashlight.have) this.d.flashlight.on = true;
@@ -586,7 +627,7 @@ export class Abduction {
   /** The exposures that were not the player's, back among the papers (after the case is opened). */
   refile() { for (const sp of this.data.spots) if (sp.doc) this.d.file(sp.doc); }
   private clear() {
-    this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.pressure = 0; this.top = rnd(0.85, 1.15); this.backAt = null;
+    this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.beat = 0; this.pressure = 0; this.top = rnd(0.85, 1.15); this.backAt = null;
     this.canvas.style.display = 'none'; this.d.overlay.classList.remove('abduct-light');
     this.overDrop();
     for (const m of this.rings) { m.removeFromParent(); m.geometry.dispose(); (m.material as THREE.Material).dispose(); }
