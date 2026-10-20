@@ -611,6 +611,13 @@ export class Abduction {
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
     const o = [37, 52.5, 74].map((f) => { const x = ctx.createOscillator(); x.frequency.value = f; x.connect(lp); x.start(); return x; });
     lp.connect(g); g.connect(this.d.audio.sfx);
+    // without the bought pressure (a build without the licensed folder, as Pages has it) all of the
+    // tone is below what a phone's speaker plays, and :31 would pass unheard there: a little of its
+    // upper partials over it, a hair off so they beat slowly (the ear puts the 74 Hz back under them)
+    if (!this.bed) {
+      const up = ctx.createGain(); up.gain.value = 0.16; up.connect(g);
+      for (const f of [222.3, 296.5, 369.4]) { const x = ctx.createOscillator(); x.frequency.value = f; x.connect(up); x.start(); o.push(x); }
+    }
     this.tone = { gain: g, stop: () => { for (const x of o) { try { x.stop(); } catch { /* stopped */ } } g.disconnect(); } };
   }
   private toneOff() { this.tone?.stop(); this.tone = null; }
@@ -623,6 +630,15 @@ export class Abduction {
       this.ring(new THREE.Vector3(...sp.back));
       this.record(new THREE.Vector3(...sp.take), sp.scene);
     }
+  }
+  /** Out to the title in the middle of it (main.ts, toTitle): nothing of the warning or the taking is
+   *  left running behind the title (the tone, the pressure, the light, the frames, the night hushed
+   *  for the rest of the 47 seconds, the flashlight's stutter). The case's data stays as it is; the
+   *  night opened next restores its own. */
+  halt() {
+    if (this.stage === 'calm') return;
+    this.d.flashlight.flicker(0); this.d.hush(0.1, 1); this.d.glitch(0);
+    this.clear();
   }
   /** The exposures that were not the player's, back among the papers (after the case is opened). */
   refile() { for (const sp of this.data.spots) if (sp.doc) this.d.file(sp.doc); }

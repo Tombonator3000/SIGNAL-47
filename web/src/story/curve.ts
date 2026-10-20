@@ -37,6 +37,10 @@ import type { SeenEntry, SeenLog } from './seen';
 // glimpse, no call, no other event takes it; the peak does not ebb while the player stays). It
 // still never comes in a rest, never on top of another thing, and never as a second extra 47 in a
 // chapter. The place shows the hurry: the test card slips, the payphone's bell tinks in its box.
+// A rest is most of the night, though (8 to 12 minutes of every cycle), and a visit falls in one
+// more often than not: so where the player stays on (LINGER) by a waiting 47, the rest keeps only
+// its first three minutes, the breath after a peak (as long as the rest after one that never came,
+// EBB), and lets go into the hurried build. The rest is shorter there; nothing comes in it.
 //
 // The face on the film (core/filmFace.ts) is not held back: it is on the print the player takes.
 // When it is looked at large, that is the peak. The second call of the payphone after room 6 is the
@@ -79,6 +83,7 @@ const SHORT = 150;                                  // a night put back from a c
 const BUILD: [number, number] = [390, 170];         // the build's length at 02:16 and at 05:29 (play seconds)
 const PEAK: [number, number] = [300, 240];          // how long the peak waits, out in the night, for something to land
 const HURRY = 40;                                   // a waiting 47 here: the rest of the build in at most this (play seconds)
+const LINGER = 5;                                   // and staying by it this long, the rest lets go after its first EBB[0] s
 const NIGHT0 = 2 * 3600 + 16 * 60, NIGHT1 = 5 * 3600 + 29 * 60;
 const CHAPTERS = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'];
 /** How far into the build each kind may start (glimpses and the time away only at the peak). */
@@ -126,6 +131,8 @@ export class NightCurve {
   /** 0..1 while the curve hurries in the build (the place shows it: the test card slips, the
    *  payphone's bell tinks); 0 otherwise. */
   get unrest() { return this.pulled && this.phase === 'build' ? this.level : 0; }
+  /** How long the player has stayed by the waiting 47 (play seconds; LINGER). */
+  private pullT = 0;
   /** How many of each started in this cycle (the calls, the cutout, the events). */
   readonly took = { call: 0, cutout: 0, event: 0 };
   private chapter = '';
@@ -200,6 +207,7 @@ export class NightCurve {
   }
 
   private step(dt: number, exposed: boolean, busy: boolean, peaking: boolean) {
+    this.pullT = this.pulled ? this.pullT + dt : 0;
     switch (this.phase) {
       case 'plain':
         if ((this.t += dt) >= this.len) this.to('build');
@@ -223,7 +231,8 @@ export class NightCurve {
         break;
       case 'rest':
         this.level = Math.max(0, this.level - dt / 20);
-        if (!peaking && (this.t += dt) >= this.len) this.to('build');
+        // (staying by a 47 that waits there: only the breath after the peak, then the hurried build)
+        if (!peaking && ((this.t += dt) >= this.len || (this.pulled && this.pullT >= LINGER && this.t >= EBB[0]))) this.to('build');
         break;
     }
   }
@@ -291,7 +300,7 @@ export class NightCurve {
     if (this.resume === 'short') this.to('rest', SHORT);
     else this.to('plain');
   }
-  private stop() { this.phase = 'off'; this.t = 0; this.len = 0; this.level = 0; this.pending = []; this.pulled = false; }
+  private stop() { this.phase = 'off'; this.t = 0; this.len = 0; this.level = 0; this.pending = []; this.pulled = false; this.pullT = 0; }
 
   /** What is kept with the case. */
   get data(): CurveSave {

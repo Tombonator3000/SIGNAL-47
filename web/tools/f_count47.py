@@ -10,9 +10,10 @@
 #     at the pressure and you do not; from the lot's edge seven seconds are enough
 #   - the dishes in the field start a breath after :16, the far ones not before :31; home at 026/32
 #   - the curve: the warning lands the peak and the rest waits for the 47 s to be over
-#   - the motel TV: in the office during a rest nothing comes; in a build the curve hurries (the test
-#     card slips), the carrier comes within some twenty seconds, indoors, and nothing else may start;
-#     not on top of another thing; witnessed, it lands the peak; once
+#   - the motel TV: in the office during a rest nothing comes (staying on, the rest lets go after its
+#     first three minutes); in a build the curve hurries (the test card slips), the carrier comes
+#     within some twenty seconds, indoors, and nothing else may start; not on top of another thing;
+#     witnessed, it lands the peak; once
 #   - the payphone's first call: the same, outdoors in Caliche (the bell tinks in its box)
 #   - desktop 1280x720 and a phone 412x892 with touch; no console errors or warnings
 # Usage (from web/): python3 tools/f_count47.py OUTDIR   (S47_URL for another build)
@@ -253,6 +254,10 @@ async def main():
         st = await ev(f"({{ mode: S47.motelTv.mode, waiting: S47.motelTv.waiting, pulled: {C}.pulled, phase: {C}.phase, t: {C}.t, long: {C}.may('long') }})")
         check(st['mode'] == 'card' and st['waiting'] and st['pulled'] and st['phase'] == 'rest' and 28 < st['t'] - r0 < 32 and not st['long'],
               f'in the office with the truck on the lot, in a rest: it waits, but nothing comes, and the rest is not cut short ({st})')
+        # staying on: the rest keeps the breath after the peak (its first three minutes) and lets go
+        rl = await ev(f"(() => {{ const c = {C}, len = c.len; let n = 0, tv = []; while (c.phase === 'rest' && n++ < 1000) {{ S47.tick(0.5); tv.push(S47.motelTv.mode); }} return {{ phase: c.phase, rest: {st['t']} + n * 0.5, len, card: tv.every((m) => m === 'card') }}; }})()")
+        check(rl['phase'] == 'build' and 178 <= rl['rest'] <= 183 and rl['len'] > 300 and rl['card'],
+              f'staying on in the office: the rest lets go after its first three minutes ({rl["rest"]:.0f} of {rl["len"]:.0f} s), nothing on the set in it')
         # not on top of another thing: at the peak, while steps go on behind
         await ev(f"{C}.force('peak')")
         stp = await ev("S47.nightEvents.now('steps', S47.nightIn())")

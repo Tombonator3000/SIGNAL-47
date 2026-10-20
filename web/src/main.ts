@@ -893,6 +893,7 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
+    abduction!.halt();   // (a warning left in the middle: nothing of it runs on)
     follow.reset();
     world.stopDriving();
     roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
@@ -1456,6 +1457,8 @@ async function boot() {
     score?.stop();
     if (audio.ctx) { audio.stop('music', 1.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
+    // (a warning left in the middle: its tone and pressure would go on droning under the title)
+    abduction!.halt();
     follow.reset();
     world.stopDriving();
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
