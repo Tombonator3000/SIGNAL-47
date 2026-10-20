@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { M, box, cyl, rod } from './kit';
 import { GlowPoints } from './glow';
+import { canvasTex } from '../core/textures';
 
 const DEG = Math.PI / 180;
 const R = 9, F = 7.2;                       // reflector radius and focal length (dish-local metres)
@@ -19,6 +20,8 @@ export class Dish {
    *  it turns now (degrees per second, both axes), for the readouts and the closer look. */
   rogue = false;
   spin = 0;
+  /** Turning back to 026 by itself after the schedule, without a sound (story/arrayBack.ts). */
+  back = false;
 
   // lod 0: full model. lod 1: far dish, no back truss, fewer segments, metal base.
   constructor(public id: string, public x: number, public z: number, public scale = 1, az0 = 42, el0 = 48, public lod: 0 | 1 = 0) {
@@ -113,6 +116,10 @@ export class DishArray {
   group = new THREE.Group();
   private parts: { mesh: THREE.InstancedMesh; level: 0 | 1 | 2; dishes: Dish[] }[] = [];
   private beacons = new GlowPoints();
+  /** The lamps' flare (story/arrayBack.ts, the four and seven): a wide red haze round each lamp,
+   *  wider than the dish, so that from behind a reflector its rim stands out against it. Made the
+   *  first time it is wanted, and drawn only while it flares. */
+  private flare: GlowPoints | null = null;
   private last: number[] = [];
   private mats = [new THREE.Matrix4(), new THREE.Matrix4(), new THREE.Matrix4()];
 
@@ -159,6 +166,7 @@ export class DishArray {
       if (!changed.has(d)) return;
       d.matrices(root, az, el);
       this.beacons.setPosition(i, v.copy(BEACON).applyMatrix4(el));
+      this.flare?.setPosition(i, v);
     });
   }
 
@@ -187,6 +195,29 @@ export class DishArray {
 
   /** The red lamp's blink, moved along (dishes that follow the player blink together). */
   beaconPhase(i: number, phase: number) { this.beacons.setPhase(i, phase); }
+  /** Every red lamp at one brightness at once (the array's four and seven, story/arrayBack.ts),
+   *  with its flare this bright (0: none), or blinking again (null). */
+  holdBeacons(level: number | null, flare = 0) {
+    this.beacons.hold(level);
+    if (flare > 0 && !this.flare) {
+      // a small bright core and a long faint tail: light in the night air, not a disc
+      const haze = canvasTex(64, 64, (g, w, h) => {
+        const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.07, 'rgba(255,255,255,.55)'); gr.addColorStop(0.22, 'rgba(255,255,255,.16)');
+        gr.addColorStop(0.5, 'rgba(255,255,255,.045)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      });
+      const f = new GlowPoints(haze), [root, az, el] = this.mats, v = new THREE.Vector3();
+      for (const d of this.dishes) { d.matrices(root, az, el); v.copy(BEACON).applyMatrix4(el); f.add(v.x, v.y, v.z, 30 * d.scale, 0xff2410); }
+      this.group.add(f.build());
+      this.flare = f;
+    }
+    if (this.flare) { this.flare.points.visible = flare > 0; this.flare.hold(flare); }
+  }
+  /** Where the lamps are held now (tests), or null while they blink. */
+  get beaconsHeld() { return this.beacons.held; }
+  /** How bright the flare is now (tests): 0 while it is not drawn. */
+  get flaring() { return this.flare?.points.visible ? this.flare.held ?? 0 : 0; }
 
   // World position of a dish's feed (for aiming cameras and lights at it).
   feedPosition(d: Dish, out = new THREE.Vector3()) {

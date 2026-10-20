@@ -13,19 +13,22 @@ export class GlowPoints {
   private size: number[] = [];
   private blink: number[] = [];
   private uTime = { value: 0 };
+  /** All of them held at one brightness instead of their blink (the array's lamps, story/arrayBack.ts). */
+  private uHold = { value: 0 };
+  private uLevel = { value: 1 };
 
   constructor(map: THREE.Texture = glowSprite()) {
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uMap: { value: map }, uTime: this.uTime, uPx: glowScale },
+      uniforms: { uMap: { value: map }, uTime: this.uTime, uPx: glowScale, uHold: this.uHold, uLevel: this.uLevel },
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
       vertexShader: /* glsl */`
         attribute vec3 aCol; attribute float aSize; attribute vec2 aBlink;
-        uniform float uTime, uPx; varying vec3 vCol;
+        uniform float uTime, uPx, uHold, uLevel; varying vec3 vCol;
         void main() {
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           gl_Position = projectionMatrix * mv;
           float b = aBlink.x > 0.0 ? 0.55 + 0.45 * max(0.0, sin(uTime * aBlink.x + aBlink.y)) : 1.0;
-          vCol = aCol * b;
+          vCol = aCol * mix(b, uLevel, uHold);
           gl_PointSize = aSize * uPx / max(-mv.z, 0.1);
         }`,
       // same result as an additive SpriteMaterial: colour times texture, weighted by alpha
@@ -70,6 +73,11 @@ export class GlowPoints {
     if (!a || a.getY(i) === phase) return;
     a.setY(i, phase); a.needsUpdate = true;
   }
+
+  /** Hold every point at one brightness (0 dark, 1 its full colour, more for a flash), or let
+   *  them blink again (null). */
+  hold(level: number | null) { this.uHold.value = level === null ? 0 : 1; if (level !== null) this.uLevel.value = level; }
+  get held() { return this.uHold.value ? this.uLevel.value : null; }
 
   update(t: number) { this.uTime.value = t; }
 }

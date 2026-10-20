@@ -36,6 +36,9 @@ export interface Ch2State {
   wrong04: number; wrong05: number;
   called: boolean;
   links?: string[];         // this chapter's threads on the case board, 'a|b' sorted, in the order made
+  /** Ward called back and asked for the array on the schedule (story/arrayBack.ts; older saves
+   *  do not have it) */
+  arrayAsk?: boolean;
 }
 
 export interface Chapter2Host {
@@ -70,6 +73,16 @@ const LINEAGE = 'SARO / REFERENCE LINEAGE / B-12\n\nThe B-12 comparison vane ret
 const INDEX = 'PLATE / 1947 / STATION 01\n\nFixed-point mark: outlined triangle with a short horizontal bar beneath it.\nArrangement: A - B - C.\nService index: B-12.\nField destination: OLD SURVEY STATION.\n\nRETURN CHECK: Match both STATION 01 and the fixed-point mark. A similar triangle without the bar is a general elevation symbol and is not a matching survey reference.';
 const ACCESS = 'FIELD ACCESS / OLD SURVEY STATION\nSURVEY: STATION 01\n\nACCESS ROAD UNSURFACED. GATE LOCKED.\n\nKEY HOLDER:  N. VEGA\n             SIERRA MOTOR COURT\n             (505) 555-0119\n\nDO NOT DISTURB THE FIXED-POINT MARKS.';
 const PHONE = '5055550119';
+// Ward calls back once, a few seconds after her first call (FORSLAG.md, 20 October, item 12): the
+// array. These two lines have no recording (core/phoneScripts.ts has the 24 there are), so they are
+// captions on the line, as every unrecorded call is (AudioSys.phoneCall gives null).
+const WARD_ARRAY = [
+  { by: 'WARD', text: 'Reyes. One more thing.' },
+  { by: 'WARD', text: 'Put the array back on the schedule and tell me it stays there.' },
+];
+/** How long the line rings for her before it stops, and how long after that it rings again (with the
+ *  player back in the control room). */
+const BACK_RING = 24, BACK_AGAIN = 40;
 
 const SUPPORTED_04 = 'SUPPORTED / E07 records A, B and C and a retained mark with the lamp isolated. E06 omits C, the closing sight line, and calls the mark a development fault. The report was changed; motive remains unknown.';
 const SUPPORTED_05 = 'SUPPORTED / B-12 retains STATION 01. The archive sleeve matches its ID and triangle-with-bar fixed-point mark. OLD SURVEY STATION is the supported destination. Field access prepared. The matching sleeve also holds the field access sheet.';
@@ -128,12 +141,23 @@ const WHERE: Record<P.SourceKey, string> = {
 };
 
 
+const inRoom = (room: ControlRoom, p: THREE.Vector3) => { const b = room.bounds; return p.x >= b.minX && p.x <= b.maxX && p.z >= b.minZ && p.z <= b.maxZ; };
+
 export class Chapter2 {
   active = false;
   started = false;          // part of the saved case once begun
   ringing = false;
   s: Ch2State = fresh();
   onEnd?: () => void;
+  /** Nothing else of the night's going (main.ts, oneAtATime): Ward's second call waits for it. */
+  quiet: (() => boolean) | null = null;
+  /** The array has been put back on the schedule at least once tonight (story/arrayBack.ts). */
+  arrayTried: (() => boolean) | null = null;
+  /** The ringing is Ward calling back about the array; seconds until she does (-1: not to come),
+   *  and how long it has rung. */
+  ringBack = false;
+  private backT = -1;
+  private backRing = 0;
   private images: { original?: string; amended?: string; index?: string; icons?: Record<Marker, string> } = {};
   /** P04 and P05 on the case board: the records' lines, the questions and the rules. */
   readonly book: RuleBook;
@@ -168,12 +192,15 @@ export class Chapter2 {
     this.s = saved ? { ...fresh(), ...saved, read: { ...fresh().read, ...saved.read } } : fresh();
     this.applyWorld();
     if (this.s.stage === 'ward-call') this.ring();
+    // a case kept between her two calls: she calls back once the player is in the control room
+    else if (this.s.answered && !this.s.arrayAsk) this.backT = 6;
     this.d.save();
   }
 
   reset() {
     const { audio } = this.d;
     this.active = false; this.started = false; this.ringing = false;
+    this.ringBack = false; this.backT = -1; this.backRing = 0;
     this.s = fresh();
     if (audio.ctx) audio.stop('ring2');
   }
@@ -228,6 +255,7 @@ export class Chapter2 {
       { text: 'Record a supported field destination (P05)', done: s.p05 },
     );
     if (s.p05) t.push({ text: 'Call the key holder for STATION 01', done: s.called });
+    if (s.arrayAsk) t.push({ text: 'Put the array back on the schedule (operations terminal)', done: this.arrayTried?.() ?? false });
     return t;
   }
 
@@ -242,6 +270,7 @@ export class Chapter2 {
   usePhone() {
     const { audio, ui, room } = this.d;
     if (!this.ringing) { ui.toast(this.s.answered ? 'Ward said what she had to say. The records room is down the south corridor.' : 'Internal line and one outside line.'); return; }
+    if (this.ringBack) { this.answerBack(); return; }
     this.ringing = false;
     audio.stop('ring2', 0.02);
     room.handset.visible = false;
@@ -262,6 +291,37 @@ export class Chapter2 {
       this.s.stage = 'records';
       this.g.note(`${this.time()}. Dr. Ward read the B-12 report and is holding the morning series. Check the reference record: where did the B-12 reference come from?`);
       ui.toast('Ward hangs up. The records room is down the south corridor.', 3.6);
+      if (!this.s.arrayAsk) this.backT = 5;
+      this.save();
+    });
+  }
+  // ---------- Ward again: the array (story/arrayBack.ts) ----------
+  private callBack() {
+    const { audio, room, ui } = this.d;
+    this.ringing = true; this.ringBack = true; this.backRing = 0; this.backT = -1;
+    audio.loop('ring2', 'phoneRing', { gain: 1.0, at: this.pos(room.objs.phone) });
+    ui.toast('The supervisor\'s line again.', 3);
+  }
+  private answerBack() {
+    const { audio, ui, room } = this.d;
+    this.ringing = false; this.ringBack = false;
+    audio.stop('ring2', 0.02);
+    room.handset.visible = false;
+    this.g.cinematic = true;
+    const spoken = audio.phoneCall(WARD_ARRAY);
+    if (spoken) {
+      for (const cue of spoken.cues) this.g.after(cue.at, () => ui.toast(`${cue.by}: "${cue.text}"`, Math.max(2, cue.duration)));
+    } else {
+      audio.callLine(7.6);
+      this.g.after(0.3, () => ui.toast(`WARD: "${WARD_ARRAY[0].text}"`, 2.4));
+      this.g.after(2.8, () => ui.toast(`WARD: "${WARD_ARRAY[1].text}"`, 4.6));
+    }
+    this.g.after(spoken ? spoken.duration + 0.1 : 7.7, () => {
+      room.handset.visible = true;
+      this.g.cinematic = false;
+      this.s.arrayAsk = true;
+      this.g.note(`${this.time()}. Ward called back. "Put the array back on the schedule and tell me it stays there." The operations terminal on the west desk: ARRAY RESUME.`);
+      ui.toast('She hangs up. The operations terminal is on the west desk.', 3.4);
       this.save();
     });
   }
@@ -429,6 +489,9 @@ export class Chapter2 {
     const finish = () => {
       this.g.cinematic = false;
       s.called = true; s.stage = 'complete';
+      // (the chapter ends: Ward does not call back about the array now; the console still has it)
+      if (this.ringBack) { this.ringing = false; this.ringBack = false; this.d.audio.stop('ring2', 0.3); }
+      this.backT = -1;
       this.file(this.docMap());
       this.g.note(`${this.time()}. Called the key holder. N. Vega, Sierra Motor Court. She wants me at the cut cable at STATION 01 before I come to her, and she wants the originals, not copies.`);
       ui.toast('She hangs up before you can ask anything else.', 3.4);
@@ -510,7 +573,16 @@ export class Chapter2 {
       ui.toast('SARO records room.', 2.4);
       this.save();
     }
-    void dt;
+    // Ward calls back about the array a few seconds after her first call, with the player in the
+    // control room and nothing else going; let ring, it stops, and she tries again later
+    if (this.ringBack && this.ringing && (this.backRing += dt) > BACK_RING) {
+      this.ringing = false; this.ringBack = false; this.backT = BACK_AGAIN;
+      this.d.audio.stop('ring2', 0.3);
+      if (inRoom(room, p)) ui.toast('The ringing stops.', 2.4);
+    } else if (!this.ringing && this.backT >= 0 && !this.s.arrayAsk && !this.g.cinematic && this.s.stage !== 'complete') {
+      if (this.backT > 0) this.backT = Math.max(0, this.backT - dt);
+      else if (inRoom(room, p) && (this.quiet?.() ?? true)) this.callBack();
+    }
     ui.objective(this.objective());
   }
 }

@@ -66,6 +66,8 @@ export function bindLooks(d: LooksDeps) {
     inter.add({ id: 'look:' + dish.id, object: g, label: () => null, use: () => {}, look: true, examineRange: 60,
       examine: () => {
         const az = pad(dish.curAz), el = Math.round(dish.curEl);
+        // back off the schedule by itself (story/arrayBack.ts): no motor
+        if (dish.back) return `${dish.id}. It is turning back towards 026, and there is no sound from it at all. Az ${az}, el ${el}.`;
         if (dish.moving) return `${dish.id}. It is turning, the drive motors whining. Az ${az}, el ${el}.`;
         // come down out of 026 by itself (story/dishesFollow.ts), standing a moment where it turned to
         if (dish.rogue) return `${dish.id}. It has come down out of 026 and stopped. Az ${az}, el ${el}. Nobody sent a command.`;

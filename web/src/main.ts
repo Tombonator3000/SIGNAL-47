@@ -58,6 +58,7 @@ import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
 import { RoofSteps, type RoofIn } from './story/roofSteps';
 import { Abduction, type AbductIn } from './story/abduction';
 import { DishesFollow, nearArray } from './story/dishesFollow';
+import { ArrayBack, type ArrayGate } from './story/arrayBack';
 import { LineLights } from './story/lineLights';
 import { Pasture } from './story/pasture';
 import { MotelTv } from './story/motelTv';
@@ -470,6 +471,35 @@ async function boot() {
     toast: (text, secs) => ui.toast(text, secs), note: (text) => game.note(text), log: (text, at) => game.consoleLog(text, at),
     save: () => { if (mode === 'play') requestAutosave(false); }, face: (yaw) => { player.yaw = yaw; } });
   const followEye = new THREE.Vector3(), followView = new THREE.Vector3();
+  // the array put back on the schedule from the operations terminal, and going back by itself 47
+  // seconds later, every time (story/arrayBack.ts; FORSLAG.md, 20 October, item 12), kept with
+  // Night Shift's part of the case; Ward asks for it in chapter two and has the count in chapter five
+  const arrayBack = new ArrayBack({ dishes: ext.dishes, array: ext.dishArray, audio,
+    store: { get: () => game.ns.array, set: (v) => { game.ns.array = v; } },
+    clock: () => game.clock, log: (text, at) => game.consoleLog(text, at), note: (text) => game.note(text),
+    toast: (text, secs) => ui.toast(text, secs), save: () => { if (mode === 'play') requestAutosave(false); },
+    hush: (secs, level, tau, back) => audio.night?.hush(secs, level, tau, back),
+    s03: () => { game.ch1.refileS03(); game.board.refresh(); }, field: (k, red) => ext.fieldLights(k, red) });
+  /** Why the console will not put the array back now (null: it will): before 02:15 there is nothing
+   *  to resume; until Ward has asked it is held for her; not while the dishes move by themselves,
+   *  nor while one of the night's things is going (one at a time). */
+  function arrayGate(): ArrayGate {
+    if (!game.at('event')) return 'early';
+    if (!game.at('ch2') || game.phase === 'ch6' || (game.phase === 'ch2' && !game.ch2.s.arrayAsk)) return 'release';
+    if (abduction!.busy || follow.mode !== 'idle') return 'moving';
+    if (oneAtATime() || audio.phonePlaying || cb.busy) return 'busy';
+    return null;
+  }
+  // the console offers it once Ward has asked (or from chapter three, or once it has been done)
+  const arrayOffered = () => mode === 'play' && game.at('ch2') && game.phase !== 'ch6' && (game.ch2.s.arrayAsk || game.at('ch3') || arrayBack.count > 0);
+  game.ops.more = { run: (c) => arrayBack.command(c, arrayGate()), buttons: () => arrayOffered() ? ['ARRAY RESUME'] : [], help: ['  ARRAY RESUME       ARRAY TO SCHEDULE'] };
+  game.arrayStatus = () => arrayBack.status();
+  game.arrayText = () => arrayBack.statusText();
+  game.ch1.s03Since = () => arrayBack.history();
+  game.ch2.arrayTried = () => arrayBack.count > 0 || arrayBack.busy;
+  game.ch5.arrayCount = () => arrayBack.count;
+  game.ch2.quiet = () => !oneAtATime() && !audio.phonePlaying;
+  const arrayEye = new THREE.Vector3();
   // HENDELSER.md, events 2 and 10, on B: the herd in the pasture south of the motel, facing 026
   // (story/pasture.ts), and the television in the motel's office (story/motelTv.ts); both kept
   // with the town's part of the case
@@ -896,6 +926,7 @@ async function boot() {
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
     follow.restore();   // after the log is back (game.start): a save made while the dishes were out
+    arrayBack.restore();   // and one made while the array was on the schedule (story/arrayBack.ts)
     fieldBook.restore();   // after chapter three's state is back (game.start)
     for (const doc of townWitnessDocs(townSeen)) fileSideDoc(doc);
     reelTape.stop(); lostNights.restore();
@@ -927,7 +958,7 @@ async function boot() {
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
     abduction!.halt();   // (a warning left in the middle: nothing of it runs on)
-    follow.reset();
+    follow.reset(); arrayBack.reset();
     world.stopDriving();
     roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); reelTape.stop(); officePhone.reset(); audio.stopPhoneCalls(); radio.reset(0);
     seenQuiet = true;
@@ -944,6 +975,8 @@ async function boot() {
     if (mode !== 'play' || !caseId) return 'There is no night running to save.';
     // (the 47 seconds of the warning are a race: a save and Continue is not a way out of them)
     if (abduction?.racing) return 'Not right now. Let the moment finish first.';
+    // (the array on the schedule and going back: 47 seconds and the rest of it, story/arrayBack.ts)
+    if (arrayBack.busy) return 'Not right now. Let the moment finish first.';
     return game.saveBlock();
   }
   // ---------- the notebook's map and kit (Tom, 16 October) ----------
@@ -1121,7 +1154,7 @@ async function boot() {
     const p = player.pos, stage = ch2.s.stage;
     return {
       ok: ok && game.phase === 'ch2' && ch2.active && (stage === 'records' || stage === 'call-nora') && !game.decoder.playing
-        && !abduction!.busy && !nightEvents.busy && !roadside.silent && townEvents.now === 'none',
+        && !abduction!.busy && !nightEvents.busy && !roadside.silent && townEvents.now === 'none' && !arrayBack.busy && !ch2.ringing,
       quiet: !ui.modal && !game.cinematic && !audio.phonePlaying,
       hold: game.cinematic || audio.phonePlaying,
       inRoom: world.area === 'saro' && !world.driving && inside(annex.zone.records, p),
@@ -1218,15 +1251,15 @@ async function boot() {
   // the regular's cup, THE EVENT; and the one in the SARO jacket standing where the player was
   // taken (story/abduction.ts, the recordings), the first time the eyes are on it
   const was = { glimpse: null as string | null, calls: 0, cutSeen: 0, road: null as Roadside['last'], stage: 'calm', over: null as string | null,
-    follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false, office: 'idle' as string };
-  let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null, officeEntry: SeenEntry | null = null;
+    follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false, office: 'idle' as string, array: false };
+  let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null, officeEntry: SeenEntry | null = null, arrayEntry: SeenEntry | null = null;
   const recordV = new THREE.Vector3();
   /** Where things stand now, without writing anything down (a night started or put back). */
   function seenSync() {
     Object.assign(was, { glimpse: glimpses.up, calls: calls.count, cutSeen: cutouts.seen, road: roadside.last, stage: abduction!.stage, over: abduction!.overPhase,
       follow: follow.mode, roof: roofSteps.busy, lights: lineLights.state, regular: !!ch5.s.regular, event: game.ch6.stage === 'event',
-      records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)), reel: reelTape.busy, office: officePhone.state });
-    warnEntry = overEntry = reelEntry = officeEntry = null;
+      records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)), reel: reelTape.busy, office: officePhone.state, array: arrayBack.busy });
+    warnEntry = overEntry = reelEntry = officeEntry = arrayEntry = null;
   }
   function seenStep(dt: number) {
     if (seenQuiet) return;
@@ -1314,6 +1347,14 @@ async function boot() {
       } else if (officePhone.state === 'idle' && officeEntry) { officeEntry.end = officePhone.result ?? 'away'; officeEntry = null; }
       was.office = officePhone.state;
     }
+    // the array put back on the schedule from the console (story/arrayBack.ts): written down as the
+    // command goes in, felt (the curve lands on it); looked at if the array was in view while it ran
+    if (arrayBack.busy !== was.array) {
+      if (arrayBack.busy) arrayEntry = saw('event', 'array', { at: arrayBack.centre.clone(), looking: false,
+        watch: { pos: () => arrayBack.busy && (space === 'yard' || inside(room.bounds, player.pos)) ? arrayBack.centre : null, secs: 150, range: 700, deg: 55, until: () => !arrayBack.busy } });
+      else if (arrayEntry) { arrayEntry.end = 'back'; arrayEntry = null; }
+      was.array = arrayBack.busy;
+    }
     const ev = game.ch6.stage === 'event';
     if (ev && !was.event) saw('event', 'THE EVENT', { line: 'C', looking: null });
     was.event = ev;
@@ -1335,6 +1376,8 @@ async function boot() {
   function oneAtATime() {
     return abduction!.busy || nightEvents.running || roadside.silent || townEvents.now !== 'none' || roofSteps.busy || motelTv.busy
       || lineLights.state !== 'none' || faceQuiet > 0 || reelTape.busy || officePhone.busy
+      // (the array put back on the schedule, until it has gone back: story/arrayBack.ts)
+      || arrayBack.busy
       // (the shape at the end of the headlights, until the lights have reached it)
       || cutouts.up === 'post';
   }
@@ -1349,7 +1392,7 @@ async function boot() {
       held: modalOpen || game.cinematic || audio.phonePlaying || world.area === 'room6' || (game.phase === 'ch5' && inDiner),
       exposed: world.driving || space === 'yard',
       busy: oneAtATime(),
-      peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0 || reelTape.busy || officePhone.state !== 'idle',
+      peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0 || reelTape.busy || officePhone.state !== 'idle' || arrayBack.busy,
       // a 47 that belongs to a place waits there for the player: the curve hurries for it (as of the
       // last step: they are looked at after the curve)
       waiting: motelTv.waiting || townEvents.waiting,
@@ -1508,7 +1551,7 @@ async function boot() {
     motelTv.silence();
     // (a warning left in the middle: its tone and pressure would go on droning under the title)
     abduction!.halt();
-    follow.reset();
+    follow.reset(); arrayBack.reset();
     world.stopDriving();
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
     curve.restore(null, false);
@@ -1651,7 +1694,7 @@ async function boot() {
       earlDialogue.stop();
       narrator.stop(); npcDialogue.stop(); ui.chapterCard(null);
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
-      follow.reset();
+      follow.reset(); arrayBack.reset();
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
     },
     game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
@@ -1704,6 +1747,7 @@ async function boot() {
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
+  Object.assign((window as any).S47, { arrayBack, arrayGate: () => arrayGate() });   // the array put back (tools/f_array_back.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
   Object.assign((window as any).S47, { models: licensedModels });
 
@@ -1790,6 +1834,9 @@ async function boot() {
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
         { label: `The office TV: ${motelTv.mode}`, run: () => motelTv.now() },
+      ] });
+      groups.push({ title: 'The array', note: 'From chapter two, once Ward has called back: ARRAY RESUME at the operations terminal puts all 27 on the schedule. 47 seconds later they go back to 026, every time.', items: [
+        { label: `The array: ${arrayBack.stage}${arrayBack.count ? ` (${arrayBack.count} tonight)` : ''}`, run: () => { if (!game.at('ch1')) ui.toast('Only after 02:15', 2); else if (arrayBack.busy) ui.toast('It is going already', 2); else arrayBack.command('ARRAY RESUME', null); } },
       ] });
       groups.push({ title: 'The office telephone', note: 'In chapter four, before room 6 is over, the first time you come to the motel office on foot: the crank telephone rings, and down the line comes what it registered of you at STATION 01.', items: [
         { label: `The office telephone: ${officePhone.state}${officePhone.heard ? ' (heard)' : ''}`, run: () => { if (!officePhone.ringNow()) ui.toast('It is ringing already, or off the hook', 2); } },
@@ -1980,7 +2027,7 @@ async function boot() {
       }
     }
   }
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy || reelTape.busy || officePhone.busy; }
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy || reelTape.busy || officePhone.busy || arrayBack.busy; }
   /** What the crank telephone in the motel office needs to know (story/officePhone.ts): on foot in
    *  the office, on the motel's court or within earshot of the office's open door (22 m, the
    *  shoulder beside it too), chapter four before room 6 is over, nothing else going. Every way to
@@ -2052,7 +2099,7 @@ async function boot() {
       if (mode === 'play') curveStep(dt, modalOpen);
       if (mode === 'play') roadside.update(dt, {
         ok: !modalOpen && !game.cinematic && !world.driving && world.area === 'saro' && world.crossing.onHighway(player.pos) && game.at('ch1') && game.phase !== 'ch6'
-          && sky.uniforms.uDawn.value < 0.3,
+          && sky.uniforms.uDawn.value < 0.3 && !arrayBack.busy,
         pos: player.pos, cam: camera,
         silenceDone: game.notes.some((n) => n.includes('No sound for 47 s')),
         hush: (secs, level) => audio.night?.hush(secs, level), flicker: (k) => flashlight.flicker(k, 'silence'),
@@ -2060,7 +2107,7 @@ async function boot() {
         may: (w) => curve.may(w === 'car' ? 'event' : w === 'silence' ? 'long' : 'glimpse'),
       });
       if (mode === 'play') calls.update(dt, {
-        ok: !modalOpen && !game.cinematic && !world.driving && flashlight.have && flashlight.on && space === 'yard' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent,
+        ok: !modalOpen && !game.cinematic && !world.driving && flashlight.have && flashlight.on && space === 'yard' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !arrayBack.busy,
         cam: camera, flicker: (k) => flashlight.flicker(k), hush: (secs) => audio.night?.hush(secs),
         may: curve.may('call'), pace: curve.pace('call'),
       });
@@ -2077,7 +2124,7 @@ async function boot() {
         });
       }
       // one thing at a time: not while the town has one of its own going (story/townEvents.ts)
-      const nightOk = !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy && !reelTape.busy && !officePhone.busy;
+      const nightOk = !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && townEvents.now === 'none' && !roofSteps.busy && !reelTape.busy && !officePhone.busy && !arrayBack.busy;
       if (mode === 'play') nightEvents.update(dt, { ...nightIn(nightOk), may: curve.may('event'), mayLong: curve.may('long'), pace: curve.pace('event') });
       // T. Vega's field book: what it has, seen after it was read; the knocks on the roof it has, on a
       // drive after it, when nothing else of the night's is going on (one thing at a time), and when
@@ -2092,7 +2139,7 @@ async function boot() {
         if (!curve.may('scare') && !ri.lastQuiet) ri.ok = false;
         roofSteps.update(dt, ri);
       }
-      if (mode === 'play') cutouts.update(dt, { ...cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy),
+      if (mode === 'play') cutouts.update(dt, { ...cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy && !arrayBack.busy),
         // (in the night's builds, and not once the sky greys: FORSLAG.md, 20 October, item 1)
         may: curve.may('cutout') && sky.uniforms.uDawn.value < 0.3, keep: curve.cutoutKeep, pace: curve.pace('cutout'),
         flood: world.driving ? (world.area === 'saro' ? siteFlood : world.area === 'road' || world.area === 'diner' ? roadFlood : null) : null,
@@ -2106,23 +2153,34 @@ async function boot() {
         flashlight.flicker(glimpses.up ? 0.3 : 0, 'glimpse');
         flashlight.flicker(townEvents.now !== 'none' && world.area === 'diner' ? 0.35 : 0, 'town');
       }
-      if (mode === 'play') glimpses.update(dt, { ...glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy),
+      if (mode === 'play') glimpses.update(dt, { ...glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && !arrayBack.busy),
         may: curve.may('glimpse'), pace: curve.pace('glimpse') });
       if (mode === 'play') lineLights.update(dt, {
-        ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy,
+        ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !arrayBack.busy,
         truck: world.driving && world.area === 'saro' ? world.truckHere()?.group.position ?? null : null,
         clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z), may: curve.may('event'),
       });
       // (the office's television waits while its telephone rings or is off the hook: one at a time)
-      if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !officePhone.busy);
+      if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !officePhone.busy && !arrayBack.busy);
       if (mode === 'play') officePhone.update(dt, officeIn(modalOpen));
+      // the array put back on the schedule (story/arrayBack.ts): its time stops while a panel is open,
+      // as the night's does; before the time away, which may not begin while it runs (and if it
+      // does, from the developer menu, the array leaves the schedule for it)
+      if (mode === 'play') {
+        const inSaro = world.area === 'saro', onFoot = inSaro && !world.driving;
+        arrayBack.update(modalOpen ? 0 : dt, { saro: inSaro, room: onFoot && inside(room.bounds, player.pos), outside: onFoot && space === 'yard',
+          cam: camera, eye: arrayEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), warning: abduction!.stage !== 'calm',
+          taken: follow.mode === 'idle' ? null : new Set(follow.state.map((r) => r.id)), followIdle: follow.mode === 'idle', calm: calmFlash });
+      }
       // the notebook or a paper open holds the warning where it is, as it holds the clock: it is not
       // a way out (abduction.ts lets the warning pass when ok goes false), and the dishes wait too
       if (mode === 'play' && !(modalOpen && abduction!.stage === 'warning')) {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, { ...abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
-          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy && !reelTape.busy && !officePhone.busy), may: curve.may('abduct') });
+          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy && !reelTape.busy && !officePhone.busy
+          // (not to begin while the array is on the schedule; one that has begun is not cut by it)
+          && !(arrayBack.busy && ab.stage === 'calm')), may: curve.may('abduct') });
         // the eyes from where the player stands now (the waking puts them down in the grass this step)
         follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro', onFoot: !world.driving,
           eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),
