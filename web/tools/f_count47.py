@@ -242,7 +242,9 @@ async def main():
         check(await ev(f"{A}.stage") == 'calm' and await ev(f"{C}.t") > 1, 'got away: now the rest counts')
 
         # ---------- the motel TV ----------
-        await ev("S47.jump('chapter4'); S47.tick(1.0); S47.game.d.ui.close(); S47.tick(0.2)")
+        # (the office telephone rings first in chapter four as the player comes to the office
+        # (story/officePhone.ts, tools/f_office_phone.py): had already here, so the set is alone)
+        await ev("S47.jump('chapter4'); S47.townSeen.add('ev:office'); S47.tick(1.0); S47.game.d.ui.close(); S47.tick(0.2)")
         await ev("S47.nightEvents['wait'] = 1e9; S47.glimpses['wait'] = 1e9; S47.calls.next = 1e9; S47.cutouts['wait'] = 1e9")
         await ev("S47.game.clock = 4 * 3600 + 10 * 60; S47.world.placeTruck('motel'); S47.world.enter('saro'); S47.tick(0.2); T.clearTv()")
         motel = await ev("(() => { const m = S47.world.motel, v = m.tv.group.getWorldPosition(new S47.three.Vector3()), a = m.anchors.officeInside; return { tv: [v.x, v.y, v.z], a: [a.x, a.z] }; })()")
@@ -356,7 +358,7 @@ async def main():
         await e2("S47.input.keys.clear(); S47.player.place(S47.room.spawn.x, S47.room.spawn.z, 0); S47.tick(0.3)")
         check(await e2(f"{A}.stage") == 'calm' and not (await e2("T.clock()"))[1], 'phone: indoors before the light, it passes; the clock is the night\'s again')
         # the slipping card on a phone
-        await e2("S47.curve.free = false; S47.jump('chapter4'); S47.tick(1.0); S47.game.d.ui.close(); S47.tick(0.2)")
+        await e2("S47.curve.free = false; S47.jump('chapter4'); S47.townSeen.add('ev:office'); S47.tick(1.0); S47.game.d.ui.close(); S47.tick(0.2)")
         await e2("S47.nightEvents['wait'] = 1e9; S47.glimpses['wait'] = 1e9; S47.calls.next = 1e9; S47.cutouts['wait'] = 1e9")
         await e2("S47.game.clock = 4 * 3600 + 10 * 60; S47.world.placeTruck('motel'); S47.world.enter('saro'); S47.tick(0.2); T.clearTv()")
         motel = await e2("(() => { const m = S47.world.motel, v = m.tv.group.getWorldPosition(new S47.three.Vector3()), a = m.anchors.officeInside; return { tv: [v.x, v.y, v.z], a: [a.x, a.z] }; })()")

@@ -46,7 +46,8 @@ import type { SeenEntry, SeenLog } from './seen';
 //
 // The face on the film (core/filmFace.ts) is not held back: it is on the print the player takes.
 // When it is looked at large, that is the peak. The second call of the payphone after room 6 is the
-// story's and not the curve's either. Neither are the things found as they were left (the deputy's
+// story's and not the curve's either, and so is the crank telephone in the motel office in chapter
+// four (story/officePhone.ts); when they come, both land the peak. Neither are the things found as they were left (the deputy's
 // car, the herd facing 026, the cutout of event 6 on the shoulder north of Caliche).
 
 export type CurvePhase = 'off' | 'plain' | 'build' | 'peak' | 'rest';
@@ -94,7 +95,7 @@ const FROM: Record<CurveKind, number> = { sign: 0.12, call: 0.3, cutout: 0.12, p
 const CUTOUT_UNTIL = 0.78;
 /** The peaks that are heard or felt (they count when they come), and those that count only once
  *  they were seen (story/seen.ts, looking). */
-const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel'] };
+const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel', 'officephone'] };
 const SEEN: Record<string, (what: string) => boolean> = { glimpse: (w) => w !== 'on film', face: () => true, event: (w) => w === 'lights' };
 /** The 47-second ones (the per-chapter limit). */
 const LONG = new Set(['scare:silence', 'event:bulletin', 'event:phone', 'event:tv']);
