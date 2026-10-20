@@ -32,6 +32,9 @@ export interface FbSave { at: number; times: Partial<Record<FbEvent, string>>; h
 /** Seconds into a drive after the book before the knocks may come (the track out of the
  *  station, between the gate and the highway, on the way back). */
 export const KNOCK_AFTER = 20;
+/** Seconds with nothing else of the night's going on before them (the night director keeps its
+ *  own events minutes apart; the book's knocks do not come on the heels of one of them). */
+export const KNOCK_QUIET = 30;
 
 export interface FieldBookDeps {
   ui: UI; audio: AudioSys;
@@ -130,7 +133,10 @@ export class FieldBook {
   /** Seen since the book was read, and written down in a moment (after the event's own note). */
   private pending = new Map<FbEvent, number>();
   private driveT = 0;
+  private calm = 0;
   private knocked = false;
+  /** The drawer is sliding out and the book about to open (a second Use waits for it). */
+  private opening = false;
   private frontArt: string | null = null;
   /** Opened, and not read to the end yet: the minutes it had when it was first opened. */
   private draft: Partial<Record<FbEvent, string>> | null = null;
@@ -172,7 +178,9 @@ export class FieldBook {
       : 'A shallow drawer under the bench top, below the lamp. The pull is worn bright.';
   }
   useDrawer() {
+    if (this.opening) return;
     if (this.read || this.draft) { this.openBook(this.s?.page ?? 0); return; }
+    this.opening = true;
     this.d.drawer(true);
     this.d.audio.play(this.d.audio.or('door_latch', 'switch'), { gain: 0.22, rate: 0.7 });
     this.d.audio.play('thudSoft', { gain: 0.18, rate: 1.7, when: 0.25 });
@@ -182,6 +190,7 @@ export class FieldBook {
   /** The book, open at a page. It is read once the last page has been turned to and it is put
    *  back; until then it keeps the minutes it had when it was first opened (it does not change). */
   openBook(start = this.s?.page ?? 0) {
+    this.opening = false;
     const times = this.s?.times ?? (this.draft ??= this.timesNow());
     const pages = fbPages(times);
     let end = false;
@@ -297,18 +306,19 @@ export class FieldBook {
       this.d.refresh();
       this.d.save();
     }
-    // the knocks: some way into a drive, once nothing else is going on
+    // the knocks: some way into a drive, once nothing else is going on, and has not been for a while
     if (this.has('knocks') || this.knocked) return;
+    this.calm = o.ok ? this.calm + dt : 0;
     if (!o.driving) { this.driveT = 0; return; }
     if (!o.ok) return;
     this.driveT += dt;
-    if (this.driveT > KNOCK_AFTER && o.knock()) this.knocked = true;
+    if (this.driveT > KNOCK_AFTER && this.calm > KNOCK_QUIET && o.knock()) this.knocked = true;
   }
 
   // ---------- a case opened ----------
   /** After a load: the papers back in the notebook, the drawer as it was left. */
   restore() {
-    this.pending.clear(); this.driveT = 0; this.knocked = false; this.draft = null;
+    this.pending.clear(); this.driveT = 0; this.calm = 0; this.knocked = false; this.draft = null; this.opening = false;
     if (this.read) this.d.file(this.doc());
     if (this.d.seen.has('env:lamp')) this.d.file(this.envelopeDoc());
     this.d.drawer(this.read, true);

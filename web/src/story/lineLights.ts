@@ -42,7 +42,7 @@ export class LineLights {
     if (this.state === 'none') {
       if (this.done || !s.ok || !tr) { if (tr) this.lastZ = tr.z; return; }
       const dz = tr.z - this.lastZ; this.lastZ = tr.z;
-      if ((dz > 0.05 || (this.anyWay && dz < -0.05)) && tr.z > 120 && tr.z < 240) this.begin(tr, s);
+      if ((dz > 0.05 || (this.anyWay && dz < -0.05)) && tr.z > 120 && tr.z < 240) this.begin(tr, s, dz > 0 ? 1 : -1);
       return;
     }
     this.t += dt;
@@ -61,9 +61,10 @@ export class LineLights {
     this.base.forEach((b, i) => a.setXYZ(i, b.x, b.y + Math.sin(this.t * 0.7 + i) * 0.4, b.z));
     a.needsUpdate = true;
   }
-  private begin(tr: THREE.Vector3, s: LineLightsIn) {
+  /** `ahead`: +1 driving south, -1 north; the three stand a little ahead of abreast either way. */
+  private begin(tr: THREE.Vector3, s: LineLightsIn, ahead = 1) {
     this.done = true; this.state = 'pace'; this.t = 0; this.lastZ = tr.z;
-    this.base = [0, 1, 2].map((i) => { const x = tr.x - 210 - i * 6, z = tr.z + 30 + i * 16; return new THREE.Vector3(x, s.ground(x, z) + 19 + i * 1.5, z); });
+    this.base = [0, 1, 2].map((i) => { const x = tr.x - 210 - i * 6, z = tr.z + ahead * (30 + i * 16); return new THREE.Vector3(x, s.ground(x, z) + 19 + i * 1.5, z); });
     this.pts.visible = true; this.mat.opacity = 0;
     const a = this.pts.geometry.getAttribute('position') as THREE.BufferAttribute;
     this.base.forEach((b, i) => a.setXYZ(i, b.x, b.y, b.z)); a.needsUpdate = true;

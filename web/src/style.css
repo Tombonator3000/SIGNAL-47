@@ -906,3 +906,19 @@ html.text-large .prompt { font-size: 28px; }
   .fbook .page.fb-page.last .hand { font-size: 24px; }
   .fenv .page.fenv-pic { width: min(390px, 92vw); }
 }
+/* a phone on its side: the page as tall as the screen allows and the words beside it, so the top
+   of the page is not cut off (the field book is the handwriting; the envelope its picture) */
+@media (max-height: 560px) and (orientation: landscape) {
+  .docview.fbook, .docview.fenv { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-rows: none; overflow: hidden; }
+  .fbook .page-wrap, .fenv .page-wrap { padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px calc(env(safe-area-inset-bottom, 0px) + 12px) calc(env(safe-area-inset-left, 0px) + 12px); }
+  .fbook .page.fb-page { height: calc(100vh - 24px); height: calc(100dvh - 24px); width: auto; max-width: 100%; padding: 8% 7% 6% 15%; }
+  .fbook .page.fb-page .hand { font-size: 15px; line-height: 19px; }
+  .fbook .page.fb-page.cover .hand { padding-top: 8%; }
+  .fbook .page.fb-page.last .hand { font-size: 20px; padding-top: 34%; }
+  .fbook .fb-no { font-size: 14px; }
+  .fbook .text, .fenv .text { padding: calc(env(safe-area-inset-top, 0px) + 14px) calc(env(safe-area-inset-right, 0px) + 18px) calc(env(safe-area-inset-bottom, 0px) + 10px) 8px; }
+  .fbook .text h3, .fenv .text h3 { font-size: 20px; margin-bottom: 8px; }
+  .fbook .text p, .fenv .text p { font-size: 14px; line-height: 1.45; margin-bottom: 8px; }
+  .fbook .text .controls, .fenv .text .controls { padding-top: 8px; font-size: 19px; }
+  .fenv .page.fenv-pic { width: 100%; }
+}

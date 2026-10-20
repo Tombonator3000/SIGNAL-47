@@ -24,7 +24,10 @@
 #     is out at the station, the book opens from Papers in its own view at the page it was left at
 #   - the envelope: on the office counter, any chapter; held up to the lamp it changes, writes one
 #     note, goes in Papers and on the board; the thread to the last page holds
-#   - desktop 1280x720 and phone 412x892 with touch; no console errors or warnings
+#   - the drawer used twice in a moment slides out once; the knocks wait for 30 s with nothing else
+#     going on; northbound the lights stand ahead of abreast, as southbound
+#   - desktop 1280x720, phone 412x892 and a phone on its side (844x390) with touch: the whole page
+#     on the screen; no console errors or warnings
 # Usage: python3 tools/f_fieldbook.py OUTDIR
 import asyncio, sys, json, os, math, re
 from playwright.async_api import async_playwright
@@ -154,10 +157,12 @@ async def main():
         check(hud and 'drawer under the bench' in hud, f'a closer look at it ({hud})')
         await shot('desk_01_drawer_shut')
         n0 = len(await notes())
-        await ev("S47.game.d.inter.get('s1drawer').use()")
+        # (Use twice in a moment, as a player pressing E again while it slides: it opens once)
+        await ev("S47.game.d.inter.get('s1drawer').use(); S47.game.d.inter.get('s1drawer').use()")
         for _ in range(8): await tick(0.2)
         await pg.wait_for_selector('.fbook')
-        check(await ev("S47.world.site.drawerOpen") and 'field book in green cloth' in ' '.join(await ev("T.toasts")), 'it slides out: a field book in green cloth, and it opens')
+        check(await ev("S47.world.site.drawerOpen") and await ev("T.toasts.filter((t) => t.includes('field book in green cloth')).length") == 1
+              and await ev("document.querySelectorAll('.fbook').length") == 1, 'it slides out, once: a field book in green cloth, and it opens')
         hand = lambda: ev("document.querySelector('.fbook [data-hand]').textContent")
         cover = await hand()
         check('T. VEGA' in cover and 'FIELD BOOK 3' in cover and 'JUNE - JULY 47' in cover, 'the first page: T. VEGA / FIELD BOOK 3 / JUNE - JULY 47')
@@ -330,8 +335,9 @@ async def main():
         await shot('desk_10_board_plate')
         await click('.board-wrap .lp-close'); await tick(0.2)
         # the lights northbound: only once the book has them, and not seen (event 7 is southbound)
-        LL = "(() => { const L = S47.lineLights, V = S47.three.Vector3, tr = new V(-24, 0, 236), o = { ok: false, truck: tr, clock: S47.game.clock, ground: () => 0 }; L.reset(false); L.anyWay = %s; L.update(0.1, o); o.ok = true; tr.z = 235; L.update(0.1, o); tr.z = 234; L.update(0.1, o); const st = L.state; L.reset(true); return st; })()"
-        check(await ev(LL % 'false') == 'none' and await ev(LL % 'true') == 'pace', 'northbound, the lights along B come only when the book has foretold them')
+        LL = "(() => { const L = S47.lineLights, V = S47.three.Vector3, tr = new V(-24, 0, 236), o = { ok: false, truck: tr, clock: S47.game.clock, ground: () => 0 }; L.reset(false); L.anyWay = %s; L.update(0.1, o); o.ok = true; tr.z = 235; L.update(0.1, o); tr.z = 234; L.update(0.1, o); const st = L.state, z = S47.scene.getObjectByName('lineLights').geometry.getAttribute('position').getZ(0); L.reset(true); return [st, z < tr.z]; })()"
+        nb = await ev(LL % 'true')
+        check((await ev(LL % 'false'))[0] == 'none' and nb[0] == 'pace' and nb[1], f'northbound, the lights along B come only when the book has foretold them, and stand a little ahead, as they do southbound ({nb})')
         bad = [e for e in errs if 'favicon' not in e]
         check(not bad, f'desktop: no console errors or warnings ({bad[:4]})')
         await ctx.close()
@@ -400,6 +406,31 @@ async def main():
         await pg.tap('.fenv [data-a=back]')
         bad = [e for e in errs if 'favicon' not in e]
         check(not bad, f'phone: no console errors or warnings ({bad[:4]})')
+        await ctx.close()
+
+        # ======================= phone on its side =======================
+        ctx, pg, errs = await page(b, 844, 390, True)
+        ev = pg.evaluate
+        await ev("S47.hold = true; S47.jump('chapter3'); S47.tick(1.0); S47.setAbductions(false); S47.nightEvents['wait'] = 1e9")
+        await ev("S47.fieldBook.openBook(0)"); await pg.wait_for_selector('.fbook'); await pg.wait_for_timeout(300)
+        GEO = """(() => { const p = document.querySelector('.fbook [data-page]').getBoundingClientRect(), h = document.querySelector('.fbook [data-hand]').getBoundingClientRect();
+          const n = document.querySelector('.fbook [data-a=next]').getBoundingClientRect(), t = document.querySelector('.fbook .text').getBoundingClientRect();
+          return p.top >= -1 && p.bottom <= innerHeight + 1 && h.top >= p.top && h.bottom <= p.bottom + 1 && p.right <= t.left + 2 && n.bottom <= innerHeight + 1; })()"""
+        fit = []
+        for i in range(9):
+            fit.append(await ev(GEO))
+            if i == 3: await pg.screenshot(path=f'{OUT}/land_01_herd_page.png')
+            if i < 8: await pg.tap('.fbook [data-a=next]'); await pg.wait_for_timeout(150)
+        check(all(fit), f'phone on its side (844x390): each page whole on the screen, its writing on it, the words beside it ({fit})')
+        await pg.tap('.fbook [data-a=back]'); await ev("S47.tick(0.3)")
+        await ev("S47.world.enter('saro'); S47.tick(0.2); S47.fieldBook.useEnvelope(); S47.tick(0.1)")
+        await pg.wait_for_selector('.fenv')
+        await pg.tap('.fenv [data-a=lamp]'); await pg.wait_for_timeout(1400)
+        await pg.screenshot(path=f'{OUT}/land_02_envelope_lamp.png')
+        check(await ev("(() => { const r = document.querySelector('.fenv .page').getBoundingClientRect(); return r.top >= -1 && r.bottom <= innerHeight + 1 && r.right <= innerWidth; })()"), 'on its side: the envelope against the lamp whole on the screen')
+        await pg.tap('.fenv [data-a=back]')
+        bad = [e for e in errs if 'favicon' not in e]
+        check(not bad, f'phone on its side: no console errors or warnings ({bad[:4]})')
         await ctx.close()
         await b.close()
     n = sum(1 for c in checks if c[0] == 'PASS')

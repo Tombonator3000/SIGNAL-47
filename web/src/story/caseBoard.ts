@@ -77,10 +77,14 @@ export class CaseBoard {
     for (const b of this.books()) for (const c of b.cards()) out.push({ ...c, region: c.region ?? b.key });
     const claimed = new Set(out.flatMap((c) => [c.id, c.doc ?? '']));
     for (const b of this.books()) for (const q of b.o.questions) if (q.doc) claimed.add(q.doc);
+    const now = REGIONS.findIndex((r) => r[0] === this.h.region());
     for (const d of this.h.docs()) {
       // a finding is its question's card; a paper a chapter lays out itself is on its card
       if (/^p\d\d$/.test(d.id) || claimed.has(d.id)) continue;
-      const region = GROUP[d.id] ?? (this.seen[d.id] ??= this.h.region());
+      // a paper of a later part of the night that turns up early (the envelope for plate 4 is on
+      // the office counter from chapter one) lies where it turned up, not on cork not laid out yet
+      const g = GROUP[d.id];
+      const region = g && !this.seen[d.id] && REGIONS.findIndex((r) => r[0] === g) <= now ? g : (this.seen[d.id] ??= this.h.region());
       out.push(docCard(d, region));
     }
     this.cardPins.clear();
