@@ -105,7 +105,7 @@ Små, hyppige og lette å bortforklare. De er varsel, og de er det som lærer sp
 - Bilradioen glir over i sus på alle stasjoner i noen sekunder.
 - En svak, høy tone i ørene, som etter et smell.
 
-**Bygget 20. oktober (PR #N): fire, og ikke ennå sju, bilen på B** (`story/truckOnB.ts`, `FORSLAG.md` punkt 8). Tegnene i bilen som en stige mot 05:29, der B krysser riksveien ved avkjøringen til SARO. Fra kapittel 2, første gang over B: bærebølgen i radioen (også når den er av), en feiltenning og alt lys i bilen ut fire ganger, jevnt, med et relé i dashbordet. Etter rom 6, neste gang over B eller ut fra motellplassen: motoren dør, OIL og VOLTS, nøkkelen to ganger, og så sju. Kulekompasset på dashbordet står på 026 over B, og på den gamle veien glir det mot 026 fra mil 6. Fire er et tegn og tar oppbyggingens hendelse; sju lander toppen. Én ting om gangen, ingen lagring mens det går, og fargene i frontlysene er spart til 05:29. Test: `tools/f_car_b.py`.
+**Bygget 20. oktober (PR #131): fire, og ikke ennå sju, bilen på B** (`story/truckOnB.ts`, `FORSLAG.md` punkt 8). Tegnene i bilen som en stige mot 05:29, der B krysser riksveien ved avkjøringen til SARO. Fra kapittel 2, første gang over B: bærebølgen i radioen (også når den er av), en feiltenning og alt lys i bilen ut fire ganger, jevnt, med et relé i dashbordet. Etter rom 6, neste gang over B eller ut fra motellplassen: motoren dør, OIL og VOLTS, nøkkelen to ganger, og så sju. Kulekompasset på dashbordet står på 026 over B, og på den gamle veien glir det mot 026 fra mil 6. Fire er et tegn og tar oppbyggingens hendelse; sju lander toppen. Én ting om gangen, ingen lagring mens det går, og fargene i frontlysene er spart til 05:29. Test: `tools/f_car_b.py`.
 
 ## 6. Hendelsene
 

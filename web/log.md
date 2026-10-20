@@ -1177,7 +1177,7 @@ Nettleserprøven fant 13 reelle manglende nærblikktekster i Caliche, etter at k
 
 ### Claude Code: fire, og ikke ennå sju, bilen på B, 20. oktober
 
-- 2026-10-20 21:23 UTC: punkt 8 i `FORSLAG.md` (20. oktober), bygget på grenen `f-car-b` (`ff8e7fb`, rettelser fra kritikeren `b17a270`), flettet med main etter PR #130 og flettet som PR #N.
+- 2026-10-20 21:23 UTC: punkt 8 i `FORSLAG.md` (20. oktober), bygget på grenen `f-car-b` (`ff8e7fb`, rettelser fra kritikeren `b17a270`), flettet med main etter PR #130 og flettet som PR #131.
   - Stigen i bilen der B krysser riksveien ved avkjøringen til SARO (`story/truckOnB.ts`): fra kapittel 2, første gang over B, bærebølgen i radioen (også når den er av), en feiltenning, og alt lys i bilen ut nøyaktig fire ganger med et relé i dashbordet; notat og merke på B. Etter rom 6, neste gang over B eller ut fra motellplassen: motoren dør, OIL og VOLTS, bærebølgen, «Turn the key» to ganger (første tar ikke), så sju blink og «Seven.»; notatet ender «Four, the last time.». Et kulekompass på instrumenthuset (`drive/Truck.ts`) står på 026 over B og glir mot 026 fra mil 6 på den gamle veien.
   - Gjenbrukbart til punkt 6: tellede blink (`blink { count, per, soft }`) og stans som tar på et gitt forsøk (`stall { tries }`, `Infinity` tar aldri) i `drive/trouble.ts`, `Receiver.carrier()` i `core/radio.ts`.
   - Én ting om gangen (`truckB.busy` i `oneAtATime`, 8 s hale); fire tar oppbyggingens hendelse, sju lander toppen (`truck7`, `truck7m` i `FELT`); ingen lagring mens det går; lagret i `townSeen`.
