@@ -703,7 +703,9 @@ export class Chapter4 {
     this.after = how === 'table'
       ? 'Her hand stops on PHOTO 03. She looks at it for a long moment, then turns it face down on the table and keeps her hand flat on it. She does not say anything.'
       : 'PHOTO 03 is under it, from the same roll. She slides it out, looks at it for a long moment, and turns it face down on the table. She does not say anything.';
-    this.g.note(`${this.time()}. N. Vega turned PHOTO 03 face down on her table and kept her hand on it. She did not say a word about it.`);
+    this.g.note(how === 'table'
+      ? `${this.time()}. N. Vega turned PHOTO 03 face down on her table and kept her hand on it. She did not say a word about it.`
+      : `${this.time()}. N. Vega turned PHOTO 03 face down on her table. It was under PHOTO 04, from the same roll. She did not say a word about it.`);
   }
 
   choose(id: string) {
@@ -781,6 +783,8 @@ export class Chapter4 {
     const s = this.s;
     s.mark = true;
     this.mode = 'menu';
+    // (PHOTO 03 face down was told under the lines before these: not under these)
+    this.after = null;
     this.lines = [
       aside(later ? 'She looks up when you come to the table, and does not look away. She tips the shade of the lamp towards you.'
         : 'You sit. She does not. She tips the shade of the lamp towards you and looks at the side of your face.'),

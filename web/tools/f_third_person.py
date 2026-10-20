@@ -159,17 +159,17 @@ class Run:
         return status, await ev("S47.ch3.s.f3 ? { targets: S47.ch3.s.f3.targets, url: S47.ch3.s.f3.url } : null")
 
     # ---------- chapter six: THE EVENT ----------
-    async def to_line(self, speed=16):
+    async def to_line(self, speed=16, start_mi=8.12):
         ev = self.ev
         await ev("S47.game.d.ui.close(); S47.jump('chapter6'); S47.tick(0.5)")
         for _ in range(80):
             await self.tick(0.25); await self.pg.wait_for_timeout(100)
             if await ev("S47.world.area === 'roswell' && S47.world.driving"): break
-        await ev(f"""(() => {{ const r = S47.world.oldRoad, d = S47.world.oldDrive, s = {s_at(8.12)};
+        await ev(f"""(() => {{ const r = S47.world.oldRoad, d = S47.world.oldDrive, s = {s_at(start_mi)};
               const a = r.lane(s), b2 = r.lane(s + 4); d.place(a, Math.atan2(-(b2.x - a.x), -(b2.z - a.z))); }})()""")
         await self.tick(0.1)
         await ev(AUTO + f"({speed})")
-        for _ in range(900):
+        for _ in range(3000):
             await ev("S47.tick(1 / 30)")
             if await ev("S47.ch6.stage") == 'event': break
     async def shows(self, name):
@@ -339,18 +339,22 @@ async def nora(R, f3):
     await R.tap('.talk [data-c=lamp]'); await R.tick(0.2)
     await R.tap('.talk [data-c=cable]'); await R.pg.wait_for_timeout(5200)
     a = await ev(AFTER)
-    check(a is not None and 'under it, from the same roll' in a['text'] and a['op'] > 0.9, f'it comes under PHOTO 04 from the same roll, and she turns it ({(a or {}).get("text", "")[:50]})')
+    check(a is not None and 'under it, from the same roll' in a['text'] and a['op'] > 0.9 and len(await ev("T.notes('under PHOTO 04, from the same roll')")) == 1,
+          f'it comes under PHOTO 04 from the same roll, and she turns it; the note says so ({(a or {}).get("text", "")[:50]})')
     await R.shot('a08_nora_roll')
 
 async def event(R, steady=False, phone=False):
-    """(b) chapter six: the third one in the headlights."""
+    """(b) chapter six: the third one in the headlights. (The phone comes to the line at the old road's
+    55 mph from mile 7.7, as one drives it: the truck still stands 9 m short of it.)"""
     ev = R.ev
-    await R.to_line(16)
+    if phone: await R.to_line(24.6, 7.7)
+    else: await R.to_line(16)
+    v0 = await ev("S47.world.oldDrive.speed")
     await R.to(0.3)
     s = await ev("T.third()")
     calls0 = await ev("S47.renderer.info.render.calls")
-    check(s['stage'] == 'event' and s['shown'] and 25 < s['dist'] < 80 and abs(s['ground']) < 0.05 and abs(s['lane']) < 3.5,
-          f'05:29:00, the night takes the truck: someone on the road ahead, where it will stand ({s["dist"]:.0f} m ahead, {s["lane"]:.1f} m from the middle of the road)')
+    check(s['stage'] == 'event' and s['shown'] and 25 < s['dist'] < 135 and abs(s['ground']) < 0.05 and abs(s['lane']) < 3.5,
+          f'05:29:00 at {v0:.1f} m/s, the night takes the truck: someone on the road ahead, where it will stand ({s["dist"]:.0f} m ahead, {s["lane"]:.1f} m from the middle of the road)')
     at0 = s['at']
     await R.to(5.0); await R.shot('b01_rolling_up')
     await R.to(9.6)
