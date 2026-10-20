@@ -154,6 +154,8 @@ export class DishesFollow {
   private moved = false;
   private lockAt = new THREE.Vector3();
   private firstFar = -1;
+  /** The notebook has what they did (record): it gets their going home too. */
+  private noted = false;
   private sound: Drives;
 
   constructor(private d: FollowDeps) { this.sound = new Drives(d.audio); }
@@ -166,6 +168,9 @@ export class DishesFollow {
       aim: [r.aim.x, r.aim.y, r.aim.z], push: r.push > 0 }));
   }
   get voices() { return this.sound.live; }
+  /** Held still (main.ts: the notebook open in the warning holds the night): nothing turns, so
+   *  no motor is heard; update() takes it up again. */
+  wait() { if (this.mode !== 'idle') this.sound.rest(); }
 
   update(dt: number, s: FollowIn) {
     if (this.mode === 'idle') {
@@ -197,7 +202,7 @@ export class DishesFollow {
   private begin(s: FollowIn) {
     this.mode = 'follow'; this.t = 0; this.clock0 = s.clock; this.len = s.warning?.len ?? 30;
     this.rigs.clear(); this.skip.clear(); this.common = null; this.firstFar = -1; this.chooseT = 1;
-    this.said = { start: false, lock: false, move: false };
+    this.said = { start: false, lock: false, move: false }; this.noted = false;
     this.from.copy(s.eye); this.moved = false;
     this.choose(s.eye);
     this.d.store.set({ clock: Math.round(s.clock), ids: [], back: false });
@@ -265,7 +270,8 @@ export class DishesFollow {
   /** Got away: they stay on the place a while. */
   private hold(s: FollowIn) {
     this.mode = 'hold'; this.holdT = HOLD;
-    this.record(' When I got away from them they stayed on the place a while, and then went back to 026 by themselves, slowly.');
+    // what was seen, when it was seen: that they went back is written once they are back (end)
+    this.record(' When I got away from them they stayed on the place where I had been.');
   }
   /** The light: away from the player all at once, to the grass where the player will wake. */
   private away(s: FollowIn) {
@@ -309,12 +315,14 @@ export class DishesFollow {
       if (r.on && r.tier === 0 && !r.run && this.t - r.clunkT > 1) { r.run = true; r.still = 0; r.clunkT = this.t; this.sound.clunk(r.d, true, s.calm, rnd(0.1, 0.9)); }
     }
   }
-  /** Gone from SARO's area: home at once (end() puts each one there). */
-  private home(clock: number) { this.end(clock); }
-  private end(clock: number) {
+  /** Gone from SARO's area: home at once (end() puts each one there), unseen. */
+  private home(clock: number) { this.end(clock, false); }
+  private end(clock: number, seen = true) {
     const on = [...this.rigs.values()].filter((r) => r.on).sort((a, b) => a.onAt - b.onAt);
     for (const r of this.rigs.values()) this.release(r);
     this.d.log(`ARRAY  ${on.length} DRIVES  AZ 026 EL 32  NO COMMAND`, clock);
+    if (seen && this.noted && on.length) this.d.note(`${clockText(clock, false)}. ${on.length === 1 ? `${on[0].d.id} is back on 026 by itself` : 'They are back on 026, every one of them, by themselves'}. Nobody sent a command.`);
+    this.noted = false;
     this.d.store.set({ clock: Math.round(this.clock0), ids: on.map((r) => r.d.id), back: true });
     this.sound.close();
     this.rigs.clear(); this.mode = 'idle';
@@ -331,6 +339,7 @@ export class DishesFollow {
     const far = on.filter((r) => r.tier > 0).map((r) => r.d.id);
     if (far.length && this.firstFar >= 0) this.d.log(`ARRAY  ${far.slice(0, 5).join(' ')}${far.length > 5 ? ` +${far.length - 5}` : ''}  MOTION  NO COMMAND`, this.firstFar);
     if (!near.length) return;
+    this.noted = true;
     const one = near.length === 1, saw = on.some((r) => r.ever);
     const after1 = !more ? '' : more > 12 ? `, and most of the array further out after ${one ? 'it' : 'them'}` : `, and ${word(more)} more further out after ${one ? 'it' : 'them'}`;
     const they = one && !more ? 'it' : 'they';
@@ -399,7 +408,7 @@ export class DishesFollow {
   reset() {
     this.sound.close();
     for (const r of this.rigs.values()) this.release(r);
-    this.rigs.clear(); this.mode = 'idle'; this.t = 0;
+    this.rigs.clear(); this.mode = 'idle'; this.t = 0; this.noted = false;
   }
   /** After a case is opened (the abduction's save restored, the log with it): a save made while
    *  they were out has them home, and the line that says so. */
@@ -407,6 +416,8 @@ export class DishesFollow {
     this.reset();
     const v = this.d.store.get();
     if (v && !v.back) {
+      // saved as it began (begin), before any drive was in the log: the log has them move, too
+      if (!v.ids.length) this.d.log('ARRAY  MOTION  NO COMMAND', v.clock + 3);
       this.d.log(`ARRAY  ${v.ids.length ? `${v.ids.length} DRIVES  ` : ''}AZ 026 EL 32  NO COMMAND`, v.clock + 90);
       this.d.store.set({ ...v, back: true });
     }
@@ -496,6 +507,13 @@ class Drives {
     const g = ctx.createGain(); g.gain.value = 0;
     osc.connect(lp); lp.connect(g); g.connect(this.audio.amb); osc.start();
     this.bed = { osc, g };
+  }
+  /** Quiet for now, fading (the night held still under the notebook); the next update brings them back. */
+  rest() {
+    const t = this.audio.ctx?.currentTime ?? 0;
+    for (const v of this.voices) v.set(null, this.time);
+    if (this.bed) this.bed.g.gain.setTargetAtTime(0, t, 0.3);
+    this.tick = 0;
   }
   /** Silent at once (the sound back after the time away). */
   hush() {

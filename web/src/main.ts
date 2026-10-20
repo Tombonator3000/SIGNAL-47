@@ -1543,7 +1543,9 @@ async function boot() {
         clock: game.clock, ground: (x, z) => world.grounds.floorAt(x, z),
       });
       if (mode === 'play') eventsOnB(dt, !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy);
-      if (mode === 'play') {
+      // the notebook or a paper open holds the warning where it is, as it holds the clock: it is not
+      // a way out (abduction.ts lets the warning pass when ok goes false), and the dishes wait too
+      if (mode === 'play' && !(modalOpen && abduction!.stage === 'warning')) {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
@@ -1552,7 +1554,7 @@ async function boot() {
         follow.update(dt, { stage: ab.stage, warning: ab.warn, saro: world.area === 'saro', onFoot: !world.driving,
           eye: followEye.set(player.pos.x, player.floorY + player.eye, player.pos.z), view: camera.getWorldDirection(followView),
           clock: game.clock, backAt: ab.backAt, calm: calmFlash, woke: ab.data.last });
-      }
+      } else if (mode === 'play') follow.wait();
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }

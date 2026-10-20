@@ -185,6 +185,8 @@ async def main():
         check(await stage() == 'calm' and await mode() == 'hold', 'indoors: the warning passes; the dishes stay on the place')
         await tick(2)
         check(len(await ev("__out()")) == nout, 'two seconds on, still there')
+        early = await ev("S47.game.notes.filter((x) => x.includes('came down out of 026') || x.includes('back on 026'))")
+        check(len(early) == 1 and 'went back' not in early[0] and 'back on 026' not in early[0], 'the notebook, while they are still out: what was seen, and not yet that they went back')
         await ev("S47.player.place(-1.0, -2.4, 0); S47.player.pitch = 0.16; S47.tick(4)")   # at the control room's windows, looking out at the array
         await pg.screenshot(path=f'{OUT}/d03_from_the_window.png')
         check(await until(f"{F}.mode === 'idle'", 200, 2), 'slowly, every one goes back')
@@ -204,7 +206,9 @@ async def main():
         await ev("S47.game.d.ui.close(); S47.tick(0.2)")
         notes = await ev("S47.game.notes.slice()")
         n = [x for x in notes if 'came down out of 026' in x]
-        check(len(n) == 1 and 'When I moved, they followed.' in n[0] and 'went back to 026' in n[0], f'the notebook: "{n[0][:150] if n else ""}..."')
+        back = [x for x in notes if 'back on 026' in x]
+        check(len(n) == 1 and 'When I moved, they followed.' in n[0] and 'stayed on the place' in n[0] and len(back) == 1 and notes.index(back[0]) > notes.index(n[0]),
+              f'the notebook: "{n[0][:150] if n else ""}...", and once they were home: "{back[0] if back else ""}"')
 
         # ---------- once ----------
         await ev(f"S47.player.place({X}, {Z}, 0); S47.tick(0.3)")
@@ -235,11 +239,30 @@ async def main():
         await ev("S47.hold = true; S47.tick(0.5)"); await ev(HELPERS)
         kept = await ev(f"[{A}.data.dishes, S47.game.ops.run('SHOW LOG').split('\\n').filter((r) => r.includes('ARRAY  2 DRIVES  AZ 026 EL 32')).length, __home()]")
         check(kept[0]['back'] and kept[1] == 1 and kept[2], f'a save made while they were out: home after Continue, and the line that says so ({kept})')
+        # saved as it began, before any drive was in the log (begin saves at once)
+        await ev(f"{A}.data.dishes = {{ clock: S47.game.clock - 20, ids: [], back: false }}")
+        await ev("S47.saveNow('manual', 0)"); await pg.wait_for_timeout(600)
+        await pg.reload()
+        await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
+        await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
+        await ev("S47.hold = true; S47.tick(0.5)"); await ev(HELPERS)
+        rows = (await ev("S47.game.ops.run('SHOW LOG')")).split('\n')
+        mv = [i for i, r in enumerate(rows) if r.endswith('ARRAY  MOTION  NO COMMAND')]
+        hm = [i for i, r in enumerate(rows) if r.endswith('ARRAY  AZ 026 EL 32  NO COMMAND')]
+        check(len(mv) == 1 and len(hm) == 1 and mv[0] < hm[0] and await ev("__home()"), f'a save made as it began: after Continue the log has them move and come home ({rows[mv[0]] if mv else ""} / {rows[hm[0]] if hm else ""})')
 
         # ---------- taken: they turn to where you will wake ----------
         await ev(f"delete {A}.data.dishes; {A}.data.count = 0; S47.game.clock = 3 * 3600 + 40 * 60")
         await ev(f"S47.world.enter('saro'); S47.flashlight.have = true; S47.flashlight.on = true; S47.input.locked = true; S47.player.place({X}, {Z}, {yaw_to(X, Z, -16, -52)}); S47.player.pitch = 0.3; S47.tick(0.3)")
         check(await warning(24), 'a night where they have not: the warning in the field, standing still')
+        # the notebook open in the middle of it holds it, as it holds the clock: not a way out
+        await tick(0.5, 10)
+        w0, c1 = await ev(f"{A}.warn.t"), await ev("S47.game.clock")
+        await ev("S47.game.openNotebook(); S47.tick(0.5); S47.tick(0.5); S47.tick(0.5)")
+        held = await ev(f"[!!S47.game.d.ui.modal, {A}.stage, {A}.warn && {A}.warn.t, {F}.mode, S47.game.clock, {F}.voices.length]")
+        await ev("S47.game.d.ui.close(); S47.tick(0.05)")
+        check(held[0] and held[1] == 'warning' and abs(held[2] - w0) < 0.01 and held[3] == 'follow' and abs(held[4] - c1) < 0.01 and held[5] == 0 and await stage() == 'warning',
+              f'the notebook opened in the middle of it: the warning and the dishes wait with the clock, their motors quiet, and go on when it is closed ({held[1:4]}, {held[5]} voices)')
         check(await until(f"{A}.stage === 'light'", 30, 0.25), 'the warning runs its length: the light')
         await tick(0.3)
         back = await ev(f"{A}.backAt && [{A}.backAt.x, {A}.backAt.z]")
