@@ -259,6 +259,9 @@ export class DishesFollow {
     if ((this.chooseT -= dt) <= 0) { this.chooseT = 1; this.promote(s.eye); }
     if (!this.moved && Math.hypot(s.eye.x - this.from.x, s.eye.z - this.from.z) > 3) this.moved = true;
     for (const r of this.rigs.values()) {
+      // (one not started yet starts from where its dish is then: the array may have been moving,
+      // story/arrayBack.ts; standing at 026 as it usually is, nothing changes)
+      if (!r.on && (r.az !== norm(r.d.curAz) || r.el !== r.d.curEl)) { r.az = norm(r.d.curAz); r.el = r.d.curEl; r.rate = rateFor(r.d, r.tier, s.eye, r.az); }
       if (!r.on && this.t >= r.at) this.start(r, s);
       if (r.on) r.aim.copy(s.eye);
     }

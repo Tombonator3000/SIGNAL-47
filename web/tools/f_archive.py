@@ -336,6 +336,11 @@ async def main():
         await ev("S47.input.keys.clear(); S47.player.place(S47.room.spawn.x, S47.room.spawn.z, 0); S47.tick(0.3)")
         await ev("T.until(() => S47.abduction().stage === 'calm', 20, 0.25)")
         await ev("T.quiet()")
+        # nor ARRAY RESUME on the operations terminal (story/arrayBack.ts): the tipped array does not answer
+        r = await ev("(() => { const s = S47.game.ch2.s, was = s.arrayAsk; s.arrayAsk = true; const r = { gate: S47.arrayGate(), out: S47.arrayBack.command('ARRAY RESUME', S47.arrayGate()) }; s.arrayAsk = was; "
+                     "return { ...r, stage: S47.arrayBack.stage, el: [Math.min(...S47.ext.dishes.map((d) => d.curEl)), Math.max(...S47.ext.dishes.map((d) => d.curEl))] }; })()")
+        check(r['gate'] == 'tipped' and 'DRVNORESP' in (r['out'] or '') and r['stage'] == 'idle' and r['el'] == [2, 2],
+              f'ARRAY RESUME while they are tipped: "{(r["out"] or "").splitlines()[0] if r["out"] else None}", nothing moves')
 
         # ---------- reel 047 on the deck ----------
         await ev("T.aim(4.6, -1.55, 5.45, 1.2, -1.55)")

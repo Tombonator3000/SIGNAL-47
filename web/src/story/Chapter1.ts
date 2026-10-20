@@ -97,6 +97,9 @@ export class Chapter1 {
   field: FieldShots | null = null;          // set by a later chapter while it runs
   free: FreeShots | null = null;            // the album's free frames (main.ts)
   lab: (() => boolean) | null = null;       // a later chapter's use of the wet bench; true when handled
+  /** S-03's local controller log since 02:15: each time the array was put back on the schedule and
+   *  went back by itself (story/arrayBack.ts, set by main.ts); null or nothing in it before then. */
+  s03Since: (() => { cmds: number; text: string } | null) | null = null;
   /** SARO has no power (story/saroDark.ts): the bench, the B-12 control, the motor bus and the case
    *  frames wait for the light (nothing is lost in the dark; a print in the fixer comes up as it would). */
   dark: (() => boolean) | null = null;
@@ -843,12 +846,19 @@ export class Chapter1 {
 
   // ---------- documents ----------
   private docS03(): DocSpec {
+    // since then, the array put back on the schedule from the console and gone back by itself:
+    // each command the controller had, and each turn back that nobody commanded
+    const since = this.s03Since?.() ?? null;
+    const more = since ? ` Since then the controller has had ${since.cmds === 1 ? 'one command' : `${since.cmds} commands`} from the console, to the schedule. ${since.cmds === 1 ? 'It went' : 'Each time it went'} to 042, and back to 026 with no command.` : '';
     return {
       id: 's03log', kind: 'typed', title: 'S-03 / No command recorded', stamp: 'MOTOR BUS',
-      page: `SARO ARRAY / MOTOR BUS S-03\nLOCAL CONTROLLER LOG // ${clockText(this.s.eventClock, false)}\n\nENCODER HEADING:   026 DEGREES\nSCHEDULED HEADING: 042 DEGREES\n\nCOMMANDS RECEIVED: 0\nLOCAL OVERRIDE:    NONE`,
-      transcript: 'The antenna moved. The controller did not send a command.\n\nA thin line of condensation runs across the warm inspection glass.',
+      page: `SARO ARRAY / MOTOR BUS S-03\nLOCAL CONTROLLER LOG // ${clockText(this.s.eventClock, false)}\n\nENCODER HEADING:   026 DEGREES\nSCHEDULED HEADING: 042 DEGREES\n\nCOMMANDS RECEIVED: 0\nLOCAL OVERRIDE:    NONE${since ? `\n\n${since.text}` : ''}`,
+      transcript: `The antenna moved. The controller did not send a command.${more}\n\nA thin line of condensation runs across the warm inspection glass.`,
     };
   }
+  /** S-03's log has more in it (story/arrayBack.ts): the notebook's copy as the cabinet has it now,
+   *  once it was read. */
+  refileS03() { if (this.s.log) this.file(this.docS03()); }
   private docSheet(): DocSpec {
     return {
       id: 'refsheet', kind: 'typed', title: 'B-12 / Reference installation sheet', stamp: '11-86',

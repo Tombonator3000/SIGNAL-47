@@ -8,6 +8,7 @@ import * as P from '../ui/Panels';
 import { mapOverlay } from '../ui/MapOverlay';
 import { SERVICE_MAP, serviceMap } from './drawings';
 import { clockText } from './time';
+import { times } from './arrayBack';
 import { RuleBook } from './boardRules';
 
 // Chapter five, "All Night" (KAPITLER.md). 05:00 to 05:20. Out of room 6 to the truck, on the
@@ -32,6 +33,8 @@ export interface Ch5State {
   /** HENDELSER.md, event 11: the cup poured for the regular nobody sees (added 17 October; older
    *  saves do not have it, and that is no). */
   regular?: boolean;
+  /** Ward has the count of the array's tries (story/arrayBack.ts; older saves do not have it) */
+  arrayTold?: boolean;
   tracing: [number, number] | null;   // where the tracing lies on the map
   p13: boolean; wrong13: number;
 }
@@ -101,6 +104,9 @@ export class Chapter5 {
     choices(october: boolean): { id: string; label: string }[];
     choose(id: string): Line[] | null;
   } | null = null;
+  /** How many times tonight the array was put back on the schedule and went back by itself
+   *  (story/arrayBack.ts, set by main.ts): Ward has the count. */
+  arrayCount: (() => number) | null = null;
   private lines: Line[] = [];
   private who: Who | null = null;
   private panel: { refresh: () => void } | null = null;
@@ -416,6 +422,8 @@ export class Chapter5 {
     }
     if (this.who === 'ward' && !s.ward) {
       v.choices.push({ id: 'what', label: 'Ask what they said' });
+      // only when it was tried (the console log is hers to read): the count, not a word before
+      if (!s.arrayTold && (this.arrayCount?.() ?? 0) > 0) v.choices.push({ id: 'array', label: 'Tell her the array would not stay on the schedule' });
       v.choices.push({ id: 'road', label: 'Tell her you are checking the old road first' });
     }
     if (this.who === 'ward' && s.ward) v.choices.push({ id: 'bye', label: 'Hang up' });
@@ -485,6 +493,14 @@ export class Chapter5 {
     }
     if (this.who === 'ward') {
       if (id === 'what') this.lines = [...this.lines.slice(-2), you('What did they say?'), E('Enough. I am not doing this on a pay phone.')];
+      // (new lines: no recording, so text on the panel only, as with every reply that has none)
+      if (id === 'array' && !s.arrayTold) {
+        const n = this.arrayCount?.() ?? 0, k = times(n);
+        s.arrayTold = true;
+        this.lines = [...this.lines.slice(-2), you('I put the array back on the schedule. It would not stay there.'),
+          E(n === 1 ? 'You tried it once. It went back once.' : `You tried it ${k}. It went back ${k}.`), aside('A pause on the line.'), E('Leave it where it is.')];
+        this.g.note(`${this.time()}. Ward already had it from the console log: "You tried it ${k}. It went back ${k}." Then: "Leave it where it is."`);
+      }
       if (id === 'road') {
         s.ward = true;
         this.lines = [
