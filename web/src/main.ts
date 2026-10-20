@@ -1190,15 +1190,15 @@ async function boot() {
   // the regular's cup, THE EVENT; and the one in the SARO jacket standing where the player was
   // taken (story/abduction.ts, the recordings), the first time the eyes are on it
   const was = { glimpse: null as string | null, calls: 0, cutSeen: 0, road: null as Roadside['last'], stage: 'calm', over: null as string | null,
-    follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>() };
-  let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null;
+    follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false };
+  let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null;
   const recordV = new THREE.Vector3();
   /** Where things stand now, without writing anything down (a night started or put back). */
   function seenSync() {
     Object.assign(was, { glimpse: glimpses.up, calls: calls.count, cutSeen: cutouts.seen, road: roadside.last, stage: abduction!.stage, over: abduction!.overPhase,
       follow: follow.mode, roof: roofSteps.busy, lights: lineLights.state, regular: !!ch5.s.regular, event: game.ch6.stage === 'event',
-      records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)) });
-    warnEntry = overEntry = null;
+      records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)), reel: reelTape.busy });
+    warnEntry = overEntry = reelEntry = null;
   }
   function seenStep(dt: number) {
     if (seenQuiet) return;
@@ -1269,6 +1269,13 @@ async function boot() {
     if (!!ch5.s.regular !== was.regular) {
       if (ch5.s.regular) { const at = eventAt('regular'); saw('event', 'regular', { at, map: at ? undefined : lines.PLACES.regular, line: lines.lineOfMark('regular'), watch: at ? { secs: 3, range: EVENT_RANGE.regular } : null }); }
       was.regular = !!ch5.s.regular;
+    }
+    // Earl's reel from 9/22/81 (core/reelTape.ts): only heard, at the studio door; how it ended,
+    // heard to the end or walked away from
+    if (reelTape.busy !== was.reel) {
+      if (reelTape.busy) reelEntry = saw('event', 'reel', { looking: null });
+      else if (reelEntry) { reelEntry.end = townSeen.has('ln:reel') ? 'heard' : 'away'; reelEntry = null; }
+      was.reel = reelTape.busy;
     }
     const ev = game.ch6.stage === 'event';
     if (ev && !was.event) saw('event', 'THE EVENT', { line: 'C', looking: null });
@@ -1572,8 +1579,8 @@ async function boot() {
     lineHere: () => { const tr = truckNow(); return { player: lineHere(playerAt()), truck: tr ? lineHere(tr.group.position) : null }; } });
   Object.assign((window as any).S47, { follow });   // the dishes that follow (tools/horror_dishes.py)
   Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
-  Object.assign((window as any).S47, { fieldBook });
-  Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
+  Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
+  Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   // tests: the bought models, and the code's props in their place (tools/licensed_models.py)
   Object.assign((window as any).S47, { models: licensedModels });
 

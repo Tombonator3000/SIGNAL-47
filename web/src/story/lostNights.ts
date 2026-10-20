@@ -171,13 +171,19 @@ export class LostNights {
       n85h: { text: 'The attendant\'s two hours last October: out at a quarter to two, back at twenty-five past four, for a forty minute job.' },
       n85w: { text: '11:58 on the ticket and on his watch. It stopped with the engine, and it never went again.' },
       n83h: { text: 'The deputy\'s pin and the woman on the bench: her husband, March 1983. Forty-seven minutes.' },
-      n81h: { text: 'The same boy, the same September: the call Earl kept on reel and never played back.' },
+      // (what Earl did with the reel changes once he has played it to the player: the notes say so)
+      n81h: { get text() { return seen.has(K.reel)
+        ? 'The same boy, the same September: the call Earl kept on reel. He played it for me tonight.'
+        : 'The same boy, the same September: the call Earl kept on reel and never played back.'; } },
       n83: { get text() { return seen.has(K.wife)
         ? 'The night SARO printed -36, a man in Caliche went out to his cattle and was gone forty-seven minutes.'
         : 'The night SARO printed -36, a man in Caliche lost track of the time.'; } },
-      n81: { get text() { return seen.has(K.tape)
-        ? 'The night SARO printed -34, a boy called the radio in Caliche, and the station was off the air.'
-        : 'The night SARO printed -34, a boy called the radio in Caliche.'; } },
+      // (with Earl's reel known and not yet heard, the note says where that night is kept: the way
+      // back to the studio door)
+      n81: { get text() { return !seen.has(K.tape)
+        ? 'The night SARO printed -34, a boy called the radio in Caliche.'
+        : seen.has(K.reel) ? 'The night SARO printed -34, a boy called the radio in Caliche, and the station was off the air.'
+        : 'The night SARO printed -34, a boy called the radio in Caliche, and the station was off the air. Earl still has that call on reel. The binder has the minute: 01:52.'; } },
       nreel: { text: 'The boy on the Night Line tonight is on Earl\'s reel from September 1981, word for word. Earl answered a recording.' },
     };
     this.book = new RuleBook({
@@ -219,7 +225,9 @@ export class LostNights {
     each(N81, (a, b) => tie(a, b, a === 'ln.b81' || b === 'ln.b81' ? 'n81' : 'n81h'));
     tie('ln.reel', 'ln.boy', 'nreel');
     // tonight's boy and the boy of 1981, before the reel has been heard: the thread holds, thin
-    for (const b of ['ln.g81', 'ln.w81']) out.push({ a: 'ln.boy', b, text: 'A boy on the radio, tonight and in September 1981. Earl kept the one from 1981. He has never played it.' });
+    for (const b of ['ln.g81', 'ln.w81']) out.push({ a: 'ln.boy', b, get text() { return self.d.seen.has(K.reel)
+      ? 'A boy on the radio, tonight and in September 1981. Earl played me the one from 1981: the same words.'
+      : 'A boy on the radio, tonight and in September 1981. Earl kept the one from 1981. He has never played it.'; } });
     return out;
   }
   private say(note: string) {
@@ -337,7 +345,7 @@ export class LostNights {
         o.lines([
           aside('He stops the deck. He does not rewind it.'),
           ...(heard ? [aside('Word for word what you heard on the Night Line tonight.')] : [EA('That\'s what he said tonight. On the air. Every word.')]),
-          EA('Where it goes quiet, that\'s me. That\'s how long I talked to him. Both times.'),
+          EA('Where it goes quiet, that\'s me. That\'s how long I talked to him tonight. To the second.'),
           EA('I answered him tonight.'),
           EA('He wasn\'t answering me.'),
           EA('Station was off that night in eighty-one. There was nobody on the air to answer him.'),
@@ -408,7 +416,7 @@ export class LostNights {
         aside('You put the yellow carbon down by his plate. He reads it without picking it up.'),
         D('That\'s my rig.'),
         D('Nobody towed me. She came back on by herself, and I drove her in.'),
-        you('It says you were in the cab. It says he had you on this lot by four.'),
+        you('It says you were in the cab. It says he had you on this lot at twenty-five past four.'),
         aside('He looks at his watch for a long time.'),
         D('I sat there a minute. Then she came back.'),
         aside('He pushes the carbon back across the counter and picks up his fork. He does not eat.'),

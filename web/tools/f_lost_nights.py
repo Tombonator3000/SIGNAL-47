@@ -57,9 +57,14 @@ HELPERS = """(() => {
       const a = S47.audio, ctx = a.ctx; if (T.an) return;
       const an = ctx.createAnalyser(); an.fftSize = 2048; a.sfx.connect(an); T.an = an; T.rms = [];
       const buf = new Float32Array(an.fftSize);
-      T.iv = setInterval(() => { an.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; T.rms.push([ctx.currentTime, Math.sqrt(s / buf.length)]); }, 30);
+      const am = ctx.createAnalyser(); am.fftSize = 2048; a.master.connect(am); T.am = am; T.mrms = [];
+      T.iv = setInterval(() => {
+        an.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; T.rms.push([ctx.currentTime, Math.sqrt(s / buf.length)]);
+        am.getFloatTimeDomainData(buf); s = 0; for (const v of buf) s += v * v; T.mrms.push([ctx.currentTime, Math.sqrt(s / buf.length)]);
+      }, 30);
     },
     rmsIn(a, b) { const v = T.rms.filter(([t]) => t >= a && t <= b).map(([, r]) => r); return v.length ? v.reduce((x, y) => x + y, 0) / v.length : null; },
+    mIn(a, b) { const v = T.mrms.filter(([t]) => t >= a && t <= b).map(([, r]) => r); return v.length ? v.reduce((x, y) => x + y, 0) / v.length : null; },
   };
   return true;
 })()"""
@@ -206,6 +211,7 @@ async def main():
         r = await R.thread('ln.b81', 'ln.w81')
         check(r.endswith('And a question with it: ' + Q39) and await R.has('[data-q="ln.q39"]') and await ev("T.has('ln:81')"),
               f'-34 to Earl\'s boy, and the question comes with it ({r})')
+        check('Earl still has that call on reel. The binder has the minute: 01:52.' in r, 'the 1981 note says where that night is kept: the way back to Earl')
         q = await ev("document.querySelector('[data-q=\"ln.q39\"]').textContent")
         st = await ev("document.querySelector('.board-status').textContent")
         check(Q39 in q and 'OPEN' in q and 'Nobody has an answer for it. Not yet.' in q and not await R.has('[data-record="ln.q39"]') and st.startswith('OPEN:') and '-39' in st.split('/')[0],
@@ -265,9 +271,15 @@ async def main():
         voice = [await ev(f"T.rmsIn({t0} + {c['at']} + 0.3, {t0} + {c['at']} + {c['secs']} - 0.3)") for c in boys]
         ok = lead and all(hole_rms) and all(voice) and all(h < lead * 0.75 for h in hole_rms) and min(voice) > lead * 1.5
         check(bool(ok), f'measured: the tape\'s hiss before he speaks {lead and round(lead, 4)}, in the holes {[round(h or 0, 4) for h in hole_rms]}, the boy {[round(v or 0, 4) for v in voice]}')
+        mlead = await ev(f"T.mIn({t0} + {boys[0]['at']} - 1.2, {t0} + {boys[0]['at']} - 0.15)")
+        mhole = [await ev(f"T.mIn({t0} + {h['at']} + 0.15, {t0} + {h['at']} + {h['secs']} - 0.1)") for h in holes]
+        check(bool(mlead and all(mhole) and all(h < mlead * 0.6 for h in mhole)),
+              f'the whole mix (the night, the radios, the music too) drops in the holes: {mlead and round(mlead, 4)} before, {[round(h or 0, 4) for h in mhole]} in them')
         rl = [l['text'] for l in ls]
         check('I answered him tonight.' in rl and "He wasn't answering me." in rl and 'He left room for me anyway.' in rl and any('Word for word what you heard on the Night Line tonight' in t for t in rl),
               'then Earl: "I answered him tonight." "He wasn\'t answering me."')
+        seen = await ev("S47.seen.filter((e) => e.what === 'reel').map((e) => [e.kind, e.end || null, e.looking])")
+        check(seen == [['event', 'away', None], ['event', 'heard', None]], f'the seen log has the reel twice: walked away from, then heard ({seen})')
         earl_after = await ev("(document.querySelector('[data-reading-kind=\"earl-dialogue\"] [data-reading-status]') || {}).textContent || ''")
         check('could not be played' not in earl_after and (earl_after == '' or 'No recording' in earl_after), f'his new lines are text: "{earl_after}"')
         await R.shot('d05_reel_after')
@@ -291,6 +303,12 @@ async def main():
         await R.board('ns')
         r = await R.thread('ln.reel', 'ln.boy')
         check('Earl answered a recording.' in r, f'the reel and tonight\'s boy: {r}')
+        r = await R.thread('ln.reel', 'ln.w81')
+        r2 = await R.thread('ln.boy', 'ln.g81')
+        n81 = await ev("[...document.querySelectorAll('.bnote')].map((n) => n.textContent).find((t) => t.includes('-34')) || ''")
+        check('He played it for me tonight.' in r and 'never' not in r and 'the same words' in r2 and 'never' not in r2
+              and 'off the air' in n81 and 'still has' not in n81,
+              f'once he has played it, nothing on the board says he never did ({r} / {r2} / {n81})')
         # a time away: the minutes under the question, in the player's hand
         await ev("S47.game.note('03:04 to 03:41. Nothing.'); S47.game.board.refresh()"); await tick(0.05)
         q = await ev("document.querySelector('[data-q=\"ln.q39\"]').textContent")
@@ -348,6 +366,7 @@ async def main():
         await R.choose('ln:tow')
         ls = [l['text'] for l in await ev("T.lines()")]
         check('Nobody towed me. She came back on by herself, and I drove her in.' in ls and await ev("T.count('He does not remember a tow')") == 1, 'shown the ticket: nobody towed him')
+        check(any('at twenty-five past four' in t for t in ls), 'what Reyes reads him off the ticket is the ticket\'s time (in at 4:25)')
         await pg.wait_for_timeout(5000)
         await R.shot('d07_driver_ticket')
         await R.close()
