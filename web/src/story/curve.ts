@@ -68,8 +68,8 @@ import type { SeenEntry, SeenLog } from './seen';
 //
 // The truck on B (story/truckOnB.ts) is the story's too, on its place: the turn-off to SARO. Its four
 // blinks are a strong sign, written as an event that is not felt, so they take the build's event and
-// not the peak; the engine dying there after room 6, the key twice and the seven blinks are felt, and
-// land the peak like the office's telephone.
+// not the peak; the engine dying there after room 6 (or pulling out of the motel's lot, truck7m), the
+// key twice and the seven blinks are felt, and land the peak like the office's telephone.
 
 export type CurvePhase = 'off' | 'plain' | 'build' | 'peak' | 'rest';
 /** What the night's things ask about: a small sign (the flashlight, the dash, the radio), a call
@@ -119,7 +119,7 @@ const FROM: Record<CurveKind, number> = { sign: 0.12, call: 0.3, cutout: 0.12, p
 const CUTOUT_UNTIL = 0.78;
 /** The peaks that are heard or felt (they count when they come), and those that count only once
  *  they were seen (story/seen.ts, looking). */
-const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel', 'blackout', 'officephone', 'array', 'archive', 'reel047', 'truck7'] };
+const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps'], scare: ['silence'], event: ['bulletin', 'phone', 'phone2', 'tv', 'lamps', 'reel', 'blackout', 'officephone', 'array', 'archive', 'reel047', 'truck7', 'truck7m'] };
 /** Peaks the player can make again and again (the array put back on the schedule, story/arrayBack.ts):
  *  each lands the curve, but one that comes in a rest does not start the rest over. */
 const AGAIN = new Set(['event:array']);

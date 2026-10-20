@@ -1201,7 +1201,7 @@ async def run_trip(browser, args, report, trip_id, url, out):
         await page.wait_for_function('S47.started()')
         await page.evaluate("S47.hold=true; S47.setQuality('high'); S47.setPicture('off'); S47.tick(0.3)")
         if trip_id == 'saro_diner':
-            await page.evaluate("S47.jump('chapter5'); S47.world.placeTruck('saro'); S47.world.driveToDiner(()=>{})")
+            await page.evaluate("S47.jump('chapter5'); S47.truckB.off = true; S47.world.placeTruck('saro'); S47.world.driveToDiner(()=>{})")
         else:
             await page.evaluate("S47.jump('chapter6')")
         # Promise/asset loading needs real event-loop time, not just accelerated game time.

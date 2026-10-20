@@ -66,13 +66,16 @@ export const B12: MapPt = site(YARD.vane.x, YARD.vane.z);
  *    cows, cows2    the herd in the pasture (drive/roadShape.ts HERD)
  *    tv             the office of Sierra Motor Court (world/MotelFront.ts)
  *    truck4, truck7 the truck on B, where B crosses the highway at SARO's turn-off (story/truckOnB.ts;
- *                   set below, once B is known) */
+ *                   set below, once B is known)
+ *    truck7m        the truck's seven on the highway in front of Sierra Motor Court's lot, pulling out
+ *                   of it after room 6 (story/truckOnB.ts; the motel is B's ground, 400 m off it) */
 export const PLACES: Record<string, MapPt> = {
   phone: [-15.5, 2064.6], phone2: [-15.5, 2064.6], repeat: [-13.8, 2071],
   lamps: [-7, 2146], boy: [32, 2036], regular: [DINER.x - 4.8, DINER.z],
   cutout: [-6.4, 1450], car: [DEPUTY_CAR.x, DEPUTY_CAR.z],
   lights: [-210, 30], cows: [HERD.x, HERD.z], cows2: [HERD.x, HERD.z],
   tv: site(-41.1 + MOTEL_AT.x, 24.1 + MOTEL_AT.z),
+  truck7m: [0, site(0, 11.25 + MOTEL_AT.z)[1]],
 };
 
 interface Straight {

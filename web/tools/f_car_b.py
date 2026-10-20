@@ -17,6 +17,11 @@
 #     it catches; then every light out exactly seven times, the relay with each; "Seven.", the note
 #     ("Four, the last time."), the key, the curve lands on it and rests, the seen log; over B again:
 #     nothing; the second mark on the map, its time under the first
+#   - the way most come out of room 6, the truck on the motel's lot where a driver leaves it ("Drive to
+#     Mesa Diner"): the drive never goes over B again, so the engine dies as the truck pulls out onto
+#     the highway (B's ground); the key twice, seven; the note, the mark on B in front of the motel,
+#     the seen log; a radio line is not captioned while the radio gives only the carrier
+#   - Flashing images: slow fades: the four's blinks dip softly (never out), still four of them
 #   - the old road (chapter six): the compass reads the road at mile 6, between at 6.9, on 026 from
 #     7.6 on while the road runs north-east; the toast once
 #   - phone 412x892 with touch: four in chapter two, the stall in chapter five with the Use button
@@ -89,7 +94,7 @@ HELPERS = """(() => {
   return true;
 })()"""
 
-async def page(b, w, h, touch):
+async def page(b, w, h, touch, calm=False):
     ctx = await b.new_context(viewport={'width': w, 'height': h}, is_mobile=touch, has_touch=touch)
     pg = await ctx.new_page(); pg.set_default_timeout(240000)
     errs = []
@@ -97,6 +102,7 @@ async def page(b, w, h, touch):
     pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
     init = "try{localStorage.setItem('s47.serlingNarrator','false');}catch{}"
     await pg.add_init_script(init)
+    if calm: await pg.add_init_script("try{localStorage.setItem('s47.calmFlash','true');}catch{}")
     await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
     await pg.goto(URL)
     await pg.evaluate("localStorage.clear()")
@@ -187,7 +193,7 @@ async def main():
                 await ev("S47.game.d.ui.clearToasts()")
             n0 = await ev("S47.game.notes.length")
             p0 = await ev("T.plays.length")
-            took0 = await ev("S47.curve.took.event")
+            took0 = await ev("S47.curve.took.event"); seen0 = await ev("S47.seen.length")
             shots = {}
             tones = []
             async def step4(i, s):
@@ -239,7 +245,9 @@ async def main():
             sn = await ev("T.seen('truck4')")
             check(len(sn) == 1 and sn[0]['kind'] == 'event' and sn[0]['line'] == 'B' and 'in the truck' in sn[0]['place'], f'{tag}: the seen log: the event, on B, in the truck ({sn})')
             took = await ev("S47.curve.took.event"); landed = await ev("S47.curve.landed && S47.curve.landed.what")
-            check(took == took0 + 1 and landed != 'truck4', f'{tag}: the curve takes it as the build\'s event, not its peak (events {took0} to {took}, landed {landed})')
+            # (anything else the night gave meanwhile, the boy on Night Line say, counts as well)
+            others = await ev(f"S47.seen.slice({seen0}).filter((e) => e.what !== 'truck4').map((e) => e.kind + ':' + e.what)")
+            check(took >= took0 + 1 and took <= took0 + 1 + len(others) and landed != 'truck4', f'{tag}: the curve takes it as the build\'s event, not its peak (events {took0} to {took}, landed {landed}, others {others})')
             # its tail: nothing starts for a few seconds after, then free
             check(await ev("S47.oneAtATime()") and not await ev("S47.curve.may('event')"), f'{tag}: just after it, still one at a time')
             ss = await south(z0=120, v=12, until=lambda s: s['phase'] == 'idle', max_s=12)
@@ -374,6 +382,64 @@ async def main():
                 await shot('10_map')
                 await ev("S47.game.d.ui.close(true)"); await tick(0.2)
 
+                # ---------- the way most come out of room 6: the truck on the motel's lot ----------
+                # (a driver leaves it there in chapter four; the drive south to the diner never goes over B)
+                await ev("for (const k of [...S47.townSeen]) if (k.startsWith('truckB:7') || k.startsWith('mark:truck7')) S47.townSeen.delete(k)")
+                await ev("S47.jump('chapter5'); S47.tick(1.0)"); await quiet()
+                await ev("S47.world.placeTruck('motel'); S47.tick(0.3)")
+                check(await ev("S47.truckB.four && !S47.truckB.seven && S47.world.truckAt === 'motel' && S47.truckBIn().after6"), 'out of room 6, the truck on the motel\'s lot, where a driver leaves it')
+                check(await ev("S47.game.d.inter.get('truck').label()") == 'Drive to Mesa Diner' and await get_in(), 'in the truck on the motel\'s lot: "Drive to Mesa Diner"')
+                # (the station on the air at this hour: Night Line signs off at four, Roswell on at five)
+                sta = await ev("S47.radio.stations.roswell.onAir ? 'roswell' : 'caliche'")
+                await ev(f"S47.carRadio.set(true, '{sta}'); S47.game.d.ui.clearToasts()"); await tick(0.3)
+                n0 = await ev("S47.game.notes.length"); p0 = await ev("T.plays.length")
+                await ev("S47.world.autopilot = 13")
+                ss = []
+                for _ in range(600):
+                    await tick(0.05); s0 = await st(); ss.append(s0)
+                    if s0['phase'] == 'stall' and s0['key']: break
+                await ev("S47.world.autopilot = null")
+                fs = next((s for s in ss if s['phase'] == 'stall'), None)
+                trip = await ev("S47.world.tripNow")
+                check(fs is not None and trip and trip['from'] == 'motel' and trip['metres'] < 60 and fs['speed'] > 3,
+                      f'pulling out of the motel\'s lot onto the highway, the engine dies ({trip and round(trip["metres"])} m out, {fs and fs["speed"]:.1f} m/s, {fs and fs["dist"]:.0f} m from B)')
+                st0 = await st()
+                check(not st0['engine'] and 'OIL' in st0['lamps'] and 'VOLTS' in st0['lamps'] and st0['carrying'] and st0['key'], 'there: dead, OIL and VOLTS, the carrier, "Turn the key"')
+                # a station line while only the carrier plays: not captioned
+                strong = await ev(f"S47.radio.stations['{sta}'].strength(S47.radio.clock, S47.radio.time)")
+                await ev(f"S47.radio.onLine('{sta}', 'A line under the carrier.', null, 2)")
+                check(strong >= 0.35 and 'RADIO: "A line under the carrier."' not in await ev("T.toasts.slice(-4)"), f'a station line under the bare carrier is not captioned ({sta}, {strong:.2f})')
+                await ev("T.hold()"); await tick(0.25, 8)
+                await pg.keyboard.press('KeyE')
+                for _ in range(60):
+                    await tick(0.05); s = await st()
+                    if s['stage'] == 'pause' and s['key']: break
+                check(not s['engine'] and await ev("S47.world.trouble.turns") == 1, 'E: it turns over and does not catch')
+                await pg.keyboard.press('KeyE')
+                seq = []
+                for _ in range(300):
+                    await tick(0.05); s = await st(); seq.append(s)
+                    if s['phase'] == 'seven' and s['level'] < 0.1 and s['blinked'] == 3 and 'motel7' not in shots:
+                        shots['motel7'] = 1; await shot('12_motel_seven_dark', crop=True)
+                    if s['phase'] == 'tail': break
+                runs = dark_runs([s['level'] for s in seq if s['phase'] == 'seven' and s['kind'] == 'blink'], 0.05)
+                check(len(runs) == 7 and await ev("S47.world.trouble.turns") == 2, f'E again: it catches, then every light out seven times ({len(runs)})')
+                nn = [n for n in (await ev("S47.game.notes.slice()"))[n0:] if 'seven times' in n]
+                check(len(nn) == 1 and 'Out of Sierra Motor Court onto the highway.' in nn[0] and nn[0].endswith('Four, the last time.'), f'the note: {nn[:1]}')
+                sn = await ev("T.seen('truck7m')")
+                check(len(sn) == 1 and sn[0]['kind'] == 'event' and sn[0]['line'] == 'B', f'the seen log: the event, on B ({sn})')
+                mk = [m for m in await ev("S47.mapMarks()") if m['kind'] == 'truck7m']
+                check(len(mk) == 1 and mk[0]['line'] == 'B' and mk[0]['at']['spot'] == 'highway' and abs(mk[0]['at']['m'] - 661) < 3, f'the map: a mark on B in front of the motel ({mk})')
+                await tick(0.5); await shot('13_motel_seven', crop=True)
+                # (and once the carrier has let go, a station line is captioned again, as ever)
+                await ev(f"S47.radio.onLine('{sta}', 'A line after the carrier.', null, 2)")
+                check(not (await st())['carrying'] and 'RADIO: "A line after the carrier."' in await ev("T.toasts.slice(-4)"), 'after it, a station line is captioned again')
+                await ev("S47.world.testInput = null"); await out()
+                await ev("S47.game.openNotebook()"); await tick(0.2)
+                await pg.click('.notebook [data-t=map]'); await pg.wait_for_timeout(400)
+                await shot('14_map_motel')
+                await ev("S47.game.d.ui.close(true)"); await tick(0.2)
+
                 # ---------- the old road: the compass slides to 026 from mile 6 ----------
                 await ev("S47.jump('chapter6'); S47.tick(0.5)")
                 for _ in range(80):
@@ -399,9 +465,38 @@ async def main():
             print('\n'.join(bad[:30]) or f'{tag}: no console errors/warnings')
             check(not bad, f'{tag}: console clean')
 
+        async def calm_session(pg, errs):
+            ev = pg.evaluate
+            async def tick(s, n=1):
+                for _ in range(n): await ev(f"S47.tick({s}, 20)")
+            await ev("S47.hold = true; S47.jump('chapter2'); S47.tick(1.0)")
+            await ev("S47.nightEvents['wait'] = 1e9; S47.setAbductions(false); if (S47.archive) S47.archive.off = true")
+            await ev("S47.game.d.inter.get('truck').use()")
+            for _ in range(120):
+                await tick(0.25)
+                if await ev("S47.world.driving"): break
+            p0 = await ev("T.plays.length")
+            await ev("T.lane(-25.8, -90, Math.PI, 20)")
+            ss = []
+            for _ in range(800):
+                await tick(0.05); s = await ev("T.st()"); ss.append(s)
+                if s['phase'] == 'tail': break
+            lv = [s['level'] for s in ss if s['phase'] == 'four' and s['kind'] == 'blink']
+            dips = sum(1 for i in range(1, len(lv) - 1) if lv[i] < 0.75 and lv[i] <= lv[i - 1] and lv[i] < lv[i + 1])
+            nt = sum(1 for t in (await ev("T.plays.slice(%d)" % p0)) if t in ('switch', 'lic:rack_switch'))
+            check(lv and min(lv) > 0.35 and not dark_runs(lv, 0.05) and dips == 4 and nt == 4 and await ev("S47.truckB.four"),
+                  f'slow fades: the four\'s blinks dip softly, never out (lowest {min(lv) if lv else None:.2f}), four of them ({dips} dips, {nt} ticks)')
+            await ev("S47.world.testInput = null")
+            bad = [e for e in errs if 'GPU stall' not in e]
+            check(not bad, f'slow fades: console clean {bad[:3]}')
+
         # ======================= desktop =======================
         ctx, pg, errs = await page(b, 1280, 720, False)
         await session(pg, errs, False)
+        await ctx.close()
+        # ======================= Flashing images: slow fades =======================
+        ctx, pg, errs = await page(b, 1280, 720, False, calm=True)
+        await calm_session(pg, errs)
         await ctx.close()
         # ======================= phone, touch =======================
         ctx, pg, errs = await page(b, 412, 892, True)

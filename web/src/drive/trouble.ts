@@ -36,6 +36,9 @@ export interface TroubleOpts {
   count?: number;
   /** blink with a count: seconds from one blink to the next (half of it dark). */
   per?: number;
+  /** blink with a count: soft, the lights dip and come back smoothly instead of going out (Settings,
+   *  Flashing images: slow fades). */
+  soft?: boolean;
 }
 
 type Stage = 'dying' | 'dead' | 'pause' | 'cranking' | 'catching';
@@ -44,7 +47,7 @@ interface Active {
   // the stall
   stage?: Stage; st: number; hold: boolean; key: boolean; tries: number; need: number;
   /** a counted blink: how many, and the time from one to the next */
-  count: number; per: number;
+  count: number; per: number; soft: boolean;
   /** The stage whose sound has been started (once per stage). */
   heard?: Stage;
   // the patterns: misfires and flickers, a value held until its time runs out
@@ -92,7 +95,7 @@ export class TruckTrouble {
     const count = kind === 'blink' ? Math.max(0, Math.round(o.count ?? 0)) : 0, per = o.per ?? 0.5;
     const len = o.len ?? (kind === 'sputter' ? rnd(1.2, 2.6) : kind === 'flicker' ? rnd(0.8, 2.4) : kind === 'blink' ? (count ? count * per + 0.05 : 0.55) : kind === 'dashOut' ? rnd(2.5, 6) : 0);
     const need = o.tries === undefined ? (Math.random() < 0.55 ? 2 : 1) : Math.max(1, o.tries);
-    this.a = { kind, t: 0, len, st: 0, hold: !!o.hold, key: !!o.key, tries: 0, need, count, per, beat: 0, v: 1 };
+    this.a = { kind, t: 0, len, st: 0, hold: !!o.hold, key: !!o.key, tries: 0, need, count, per, soft: !!o.soft, beat: 0, v: 1 };
     if (kind === 'stall') { this.a.stage = 'dying'; this.turns = 0; }
     this.count++;
     this.onTrouble?.(kind);
@@ -154,8 +157,10 @@ export class TruckTrouble {
       light = k; dash = k;
       if (a.t > a.len) this.a = null;
     } else if (a.kind === 'blink' && a.count) {
-      // counted: every light out for the dark half of each, evenly, and on again; no stutter
-      light = this.blinkDark ? 0.02 : 1;
+      // counted: every light out for the dark half of each, evenly, and on again; no stutter (soft:
+      // a smooth dip to under half, each the same, for slow fades)
+      const ph = a.t < a.count * a.per ? (a.t % a.per) / a.per : 1;
+      light = a.soft ? 1 - 0.58 * Math.sin(Math.PI * Math.min(1, ph * 1.6)) ** 2 : this.blinkDark ? 0.02 : 1;
       dash = light;
       if (a.t > a.len) this.a = null;
     } else if (a.kind === 'blink') {

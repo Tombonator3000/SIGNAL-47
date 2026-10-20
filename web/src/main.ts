@@ -1137,7 +1137,7 @@ async function boot() {
   function mapMarks(): NonNullable<MapView['marks']> {
     const hwy = (roadZ: number): MapView['at'] => ({ spot: 'highway', m: lines.mSouth(roadZ) });
     const out: NonNullable<MapView['marks']> = townMarks(townSeen).map((m) => ({ ...m, line: lines.lineOfMark(m.kind),
-      at: m.kind === 'tv' ? { spot: 'office' } : ['cutout', 'car', 'lights', 'cows', 'truck4', 'truck7'].includes(m.kind) ? hwy(lines.PLACES[m.kind][1]) : undefined }));
+      at: m.kind === 'tv' ? { spot: 'office' } : ['cutout', 'car', 'lights', 'cows', 'truck4', 'truck7', 'truck7m'].includes(m.kind) ? hwy(lines.PLACES[m.kind][1]) : undefined }));
     for (const sp of abduction!.data.spots) {
       const area = sp.scene === 'road' ? 'diner' : sp.scene, take = new THREE.Vector3(...sp.take);
       out.push({ kind: 'away', clock: sp.clock, line: lineHere(take, area)?.line ?? (sp.scene === 'saro' ? 'B' : sp.scene === 'road' ? 'A' : 'C'),
@@ -1950,8 +1950,8 @@ async function boot() {
   Object.assign((window as any).S47, { saroDark, saroPower, darkIn: () => darkIn(true, !!ui.modal), darkWhere: () => darkWhere() });
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
-  Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });
-  Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)   // the office telephone (tools/f_office_phone.py)
+  Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
+  Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)
   // the archive's phone, the dishes it tips and reel 047 (tools/f_archive.py)
   Object.assign((window as any).S47, { archive, arrayTip, reel047, arcIn: () => arcIn(), arcWhere: () => arcWhere() });
   Object.assign((window as any).S47, { arrayBack, arrayGate: () => arrayGate() });   // the array put back (tools/f_array_back.py)
@@ -2211,7 +2211,8 @@ async function boot() {
   }
   // A station's line is captioned once while the truck or counter radio can be heard.
   radio.onLine = (id, text, by, duration) => {
-    const car = carRadio.live && carRadio.station === id && carNear;
+    // (not while the truck's radio gives only a bare carrier: the station is gone from under it, story/truckOnB.ts)
+    const car = carRadio.live && !carRadio.carrying && carRadio.station === id && carNear;
     const diner = dinerRadio.live && dinerRadio.station === id && !world.driving && player.pos.distanceTo(counterAt) < 12;
     if (mode !== 'play' || game.cinematic || !(car || diner)) return;
     if (radio.stations[id].strength(radio.clock, radio.time) < 0.35) return;
@@ -2261,8 +2262,9 @@ async function boot() {
       near: foot && (inside(motelOffice, p) || door < 22 || court), here: foot && (door < 45 || court), pos: p, clock: game.clock };
   }
   /** What the truck on B needs to know (story/truckOnB.ts): the driven truck on the map and its speed,
-   *  on a trip (not a free drive, not chapter six's road), chapters two to five, room 6 over, and
-   *  nothing else of the night's going; on the old road before the line, the miles. */
+   *  on a trip (not a free drive, not chapter six's road) and where it began, chapters two to five,
+   *  room 6 over, and nothing else of the night's going; on the old road before the line, the miles;
+   *  slow fades. */
   function truckBIn(modalOpen = !!ui.modal): TruckOnBIn {
     const tr = world.driving ? truckNow() : null, s4 = ch4.s.stage;
     const old = world.area === 'roswell' && game.ch6.active && game.ch6.stage !== 'end' && tr && world.oldRoad ? world.oldRoad.where(tr.group.position.x, tr.group.position.z).mi : null;
@@ -2274,6 +2276,7 @@ async function boot() {
       open: game.at('ch2') && game.phase !== 'ch6',
       after6: game.at('ch5') || (game.phase === 'ch4' && ch4.active && ch4.s.p12 && (s4 === 'leave' || s4 === 'complete')),
       clock: game.clock, oldMi: old,
+      from: world.tripNow?.from ?? null, metres: world.tripNow?.metres ?? 0, calm: calmFlash,
     };
   }
   const dbg = { hold: false };

@@ -184,7 +184,9 @@ export function areaMap(v: MapView) {
     // a time away: a ring round it
     if (m.kind === 'away') { g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.stroke(); }
     const under = drawn.filter(([dx, dy]) => Math.hypot(dx - x, dy - y) < 12).length;
-    if (m.at) { text(hhmm(m.clock), x - 64, y + 6 + under * 20, 20); drawn.push([x, y]); } else inTown.push(hhmm(m.clock));
+    // (beside the motel's box, the truck's seven pulling out of its lot: the time east of the highway)
+    const ty = y + 6 + under * 20, tx = ty > 246 && ty < 292 && x - 64 < 404 && x - 18 > 338 ? x + 16 : x - 64;
+    if (m.at) { text(hhmm(m.clock), tx, ty, 20); drawn.push([x, y]); } else inTown.push(hhmm(m.clock));
   }
   // the times in town, in a row under its name
   if (inTown.length) text(inTown.join(', '), 226, 734, 20);
