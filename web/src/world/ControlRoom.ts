@@ -621,7 +621,7 @@ export class ControlRoom {
     const kb = box(tx, 0.56, 0.05, 0.16, M.beigeDark, 0, 0.75, -0.26); kb.rotation.x = 0.2;
     plane(tx, 0.5, 0.12, new THREE.MeshStandardMaterial({ map: T.keyboard(), roughness: 0.6 }), 0, 0.78, -0.265, 0, -Math.PI / 2 + 0.2);
     cyl(tx, 0.05, 0.05, 0.3, M.paper, 0, 0.9, 0.12, 12).rotation.z = Math.PI / 2;
-    const roll = plane(tx, 0.24, 0.42, new THREE.MeshStandardMaterial({ map: T.telexPaperTex(), roughness: 0.9, side: THREE.DoubleSide }), 0, 1.08, 0.02, Math.PI);
+    const roll = plane(tx, 0.24, 0.42, new THREE.MeshStandardMaterial({ map: this.telexTex, roughness: 0.9, side: THREE.DoubleSide }), 0, 1.08, 0.02, Math.PI);
     roll.rotation.x = 0.35;
     blob(this.blobs, -4.2, 4.18, 0.95, 0.7);
     mergeStatic(tx);
@@ -767,6 +767,16 @@ export class ControlRoom {
   // 0 closed, 1 open (swung 90 degrees out into the corridor)
   setSouthDoor(open01: number) { this.southDoorHinge.rotation.y = open01 * Math.PI / 2; }
   setDoorLock(unlocked: boolean) { this.doorLight.material = unlocked ? M.ledGreen : M.ledRed; }
+  /** The roll on the teleprinter: last evening's traffic and what has come since (story/nightshift.ts:
+   *  Hondo Valley's, story/saroDark.ts), the newest by the platen. */
+  private readonly telexTex = T.telexPaperTex();
+  private telexMore = '';
+  setTelexRoll(more: string[]) {
+    const key = more.join('\n\n');
+    if (key === this.telexMore) return;
+    this.telexMore = key;
+    T.paintTelexPaper(this.telexTex, more);
+  }
 
   /** The band of windows laid on the slab and the ground north of the room by its tubes
    *  (world/windowLight.ts), once SARO's grounds are there to lay it on (main.ts). */

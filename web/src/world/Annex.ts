@@ -44,6 +44,9 @@ export class RecordsAnnex {
    *  archive boxes (the STATION 01 box among them) and the chair, lit by the annex's tubes. */
   readonly models = new ModelSwap('annex', (m) => this.lit(m));
   private tubeDim = new THREE.MeshBasicMaterial({ color: 0x6d7378 });
+  /** The vending machine's lit front (world/saroPower.ts: dark with the power; the EXIT sign is on
+   *  its battery and stays). */
+  readonly screens: THREE.MeshBasicMaterial[] = [];
 
   constructor() {
     const st = new THREE.Group();
@@ -270,6 +273,7 @@ export class RecordsAnnex {
     box(vm, 0.8, 1.8, 0.72, this.mat({ color: 0x2a3036, roughness: 0.5, metalness: 0.4 }), 0, 0.9, 0);
     const face = plane(vm, 0.74, 1.48, new THREE.MeshBasicMaterial({ map: T.vendingFront(), toneMapped: false, color: 0xd8dde0 }), 0, 1.0, -0.365, Math.PI);
     noMerge(face);
+    this.screens.push(face.material as THREE.MeshBasicMaterial);
     mergeStatic(vm);
     this.interior.add(vm);
     this.objs.vending = vm;
@@ -454,6 +458,13 @@ export class RecordsAnnex {
   setExitDoor(k: number) {
     this.exitOpen = k;
     this.exitHinge.rotation.y = -1.4 * k;
+  }
+
+  /** The tubes with the power (1) or without it (0: world/saroPower.ts), as glass. */
+  private tubeCol = [new THREE.Color(0xeef3ff), new THREE.Color(0x6d7378)];
+  setPower(k: number) {
+    this.tubeOn.color.copy(this.tubeCol[0]).multiplyScalar(0.06 + 0.94 * k);
+    this.tubeDim.color.copy(this.tubeCol[1]).multiplyScalar(0.12 + 0.88 * k);
   }
 
   // A tired tube flickers now and then.

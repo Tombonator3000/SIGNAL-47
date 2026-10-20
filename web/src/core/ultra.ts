@@ -45,6 +45,13 @@ export class Ultra {
     }
   }
 
+  /** A fake lamp's strength as the game wants it, also while it is handed to a real light (which
+   *  holds OFF in its slot meanwhile): world/saroPower.ts reads it before it dims the lamp. */
+  strength(set: FloodSet, i: number) {
+    const p = set.pos[i];
+    return p.w === OFF ? (this.held.find((h) => h && h.set === set && h.i === i)?.want ?? 0) : p.w;
+  }
+
   /** Lights that should cast shadows in this tier (the desk lamp in the control room). */
   addShadowLight(l: THREE.PointLight | THREE.SpotLight, mapSize = 512) {
     l.shadow.mapSize.set(mapSize, mapSize);

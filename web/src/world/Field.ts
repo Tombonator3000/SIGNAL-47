@@ -52,7 +52,10 @@ export class Field {
   gateProxy!: THREE.Object3D;
   gateLeaf: Collider = { minX: GATE.x0 - 0.08, maxX: GATE.x0 + 0.02, minZ: FENCE_Z - (GATE.x1 - GATE.x0) - 0.05, maxZ: FENCE_Z };
   private gateHinge = new THREE.Group();
-  private glow = new GlowPoints();
+  /** The drive cabinets' lamps (world/saroPower.ts: out with SARO's power). */
+  readonly glow = new GlowPoints();
+  /** The gate's chain-link, unlit like the fence's (world/saroPower.ts dims it with the power). */
+  readonly paint: THREE.MeshBasicMaterial[] = [];
   private screen: THREE.Mesh;
   private scr = T.screenCanvas(SCREEN_W, SCREEN_H);
   /** The cabinet whose readout is lit, and what it shows (main.ts asks, story/field.ts draws). */
@@ -198,6 +201,7 @@ export class Field {
     tex.repeat.set(60 * lw / 140, 3 * (top - bottom) / 2.4);
     const mesh = plane(leaf, lw, top - bottom, new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: 0x6d6a62 }), cx, (top + bottom) / 2, 0);
     mesh.name = 'fieldGateLeaf';
+    this.paint.push(mesh.material as THREE.MeshBasicMaterial);
     // the latch and its chain, hanging from the leaf's far side
     box(leaf, 0.06, 0.12, 0.05, M.steel, 0.03 + lw - 0.04, 0.95, 0.03);
     rod(leaf, v(0.03 + lw - 0.04, 0.92), new THREE.Vector3(0.03 + lw - 0.07, 0.55, 0.05), 0.012, M.steel, 4);

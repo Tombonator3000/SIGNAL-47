@@ -56,6 +56,8 @@ import { Glimpses, type GlimpsesIn } from './core/glimpses';
 import { Cutouts, type CutoutsIn } from './core/cutouts';
 import { NightEvents, BULLETIN, type NightIn } from './story/nightEvents';
 import { RoofSteps, type RoofIn } from './story/roofSteps';
+import { SaroDark, type DarkIn, type DarkWhere } from './story/saroDark';
+import { SaroPower } from './world/saroPower';
 import { Abduction, type AbductIn } from './story/abduction';
 import { DishesFollow, nearArray } from './story/dishesFollow';
 import { ArrayBack, type ArrayGate } from './story/arrayBack';
@@ -922,7 +924,9 @@ async function boot() {
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
     pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset();
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
+    saroDark.halt();
     game.start(o.state?.checkpoint ?? o.jump);
+    saroDark.restore(game.ns.hondo !== undefined);   // (after the case is back: the telex had, or not yet)
     if (o.state?.doors) doors.restore(o.state.doors); // the doors as they were left
     abduction!.refile();
     follow.restore();   // after the log is back (game.start): a save made while the dishes were out
@@ -958,6 +962,7 @@ async function boot() {
     if (audio.ctx) { audio.stop('music', 0.5); audio.stopMotors(); audio.setCarrier(0, 0, 0); audio.signalOff(); audio.tvHiss(null); }
     motelTv.silence();
     abduction!.halt();   // (a warning left in the middle: nothing of it runs on)
+    saroDark.halt();
     follow.reset(); arrayBack.reset();
     world.stopDriving();
     roadside.reset(); townEvents.reset(); nightEvents.reset(); roofSteps.reset(); cb.stop(); reelTape.stop(); officePhone.reset(); audio.stopPhoneCalls(); radio.reset(0);
@@ -977,6 +982,8 @@ async function boot() {
     if (abduction?.racing) return 'Not right now. Let the moment finish first.';
     // (the array on the schedule and going back: 47 seconds and the rest of it, story/arrayBack.ts)
     if (arrayBack.busy) return 'Not right now. Let the moment finish first.';
+    // (nor while SARO goes dark: the relay, the 47 seconds, the telex)
+    if (saroDark.busy) return 'Not right now. Let the moment finish first.';
     return game.saveBlock();
   }
   // ---------- the notebook's map and kit (Tom, 16 October) ----------
@@ -1165,6 +1172,41 @@ async function boot() {
       chapter: game.phase === 'ch2',
     };
   }
+  // ---------- 02:29: SARO goes dark, and Hondo writes (story/saroDark.ts; chapter one, once) ----------
+  const saroPower = new SaroPower({ room, yard, annex, ext, fieldGlow: world.field.glow, site: siteFlood, strength: (set, i) => ultra.strength(set, i),
+    paint: [...yard.paint, ...ext.paint, ...world.field.paint], screens: [...yard.screens, ...annex.screens] });
+  const saroDark = new SaroDark({
+    audio, power: saroPower, scene,
+    ground: (x, z) => world.grounds.floorAt(x, z),
+    rack: () => game.rackAt, teleprinter: () => game.telexAt,
+    relay: () => game.relayClack(),
+    log: (text, at) => game.consoleLog(text, at),
+    telex: (filed) => { game.hondoTelex(filed); requestAutosave(false); },
+    powerOut: (out) => game.powerOut(out),
+    hush: (secs, level, tau, back) => audio.night?.hush(secs, level, tau, back),
+    toast: (text, secs) => ui.toast(text, secs),
+    note: (text) => { game.note(text); requestAutosave(false); },
+    calm: () => calmFlash,
+  });
+  ch1.dark = () => saroDark.dark;
+  /** Where the player is for it: the photo lab, out in the yard and the grounds close by, the control room. */
+  function darkWhere(): DarkWhere {
+    const p = player.pos;
+    if (world.area !== 'saro' || world.driving) return 'away';
+    if (inside(yard.zone.lab, p) || inside(yard.zone.labDoor, p)) return 'lab';
+    if (inside(room.bounds, p)) return 'room';
+    if (indoors.some((b) => inside(b, p))) return 'away';   // the annex: not out where the night is
+    return Math.hypot(p.x - 6, p.z + 2) < 34 && !world.crossing.onHighway(p) ? 'yard' : 'away';
+  }
+  function darkIn(ok: boolean, modalOpen: boolean): DarkIn {
+    return {
+      ok: ok && game.phase === 'ch1' && ch1.active && ch1.s.stage !== 'complete' && game.ns.hondo === undefined && !oneAtATime() && !curve.long.has('ch1'),
+      hold: modalOpen || game.cinematic || audio.phonePlaying,
+      where: darkWhere(), clock: game.clock, cam: camera, zoom: zoomK, torch: flashlight.have && flashlight.on,
+      open: (d) => doors.isOpen(d as Parameters<typeof doors.isOpen>[0]),
+      blocks: world.truckAt === 'saro' ? [yard.truckCol] : [],
+    };
+  }
   function nightIn(ok: boolean): NightIn {
     const tr = world.truckHere(), out = world.area === 'saro' ? space === 'yard' : !world.indoors(player.pos);
     const moving = player.pos.distanceTo(lastFoot) > 0.004; lastFoot.copy(player.pos);
@@ -1251,15 +1293,16 @@ async function boot() {
   // the regular's cup, THE EVENT; and the one in the SARO jacket standing where the player was
   // taken (story/abduction.ts, the recordings), the first time the eyes are on it
   const was = { glimpse: null as string | null, calls: 0, cutSeen: 0, road: null as Roadside['last'], stage: 'calm', over: null as string | null,
-    follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false, office: 'idle' as string, array: false };
-  let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null, officeEntry: SeenEntry | null = null, arrayEntry: SeenEntry | null = null;
+    follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false, dark: 'idle', darkFig: false, office: 'idle' as string, array: false };
+  let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null, darkEntry: SeenEntry | null = null, officeEntry: SeenEntry | null = null, arrayEntry: SeenEntry | null = null;
   const recordV = new THREE.Vector3();
   /** Where things stand now, without writing anything down (a night started or put back). */
   function seenSync() {
     Object.assign(was, { glimpse: glimpses.up, calls: calls.count, cutSeen: cutouts.seen, road: roadside.last, stage: abduction!.stage, over: abduction!.overPhase,
       follow: follow.mode, roof: roofSteps.busy, lights: lineLights.state, regular: !!ch5.s.regular, event: game.ch6.stage === 'event',
-      records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)), reel: reelTape.busy, office: officePhone.state, array: arrayBack.busy });
-    warnEntry = overEntry = reelEntry = officeEntry = arrayEntry = null;
+      records: new Set(seenLog.entries.filter((e) => e.kind === 'scare' && e.what.startsWith('record ')).map((e) => e.what)), reel: reelTape.busy,
+      dark: saroDark.phase, darkFig: !!saroDark.figureAt, office: officePhone.state, array: arrayBack.busy });
+    warnEntry = overEntry = reelEntry = darkEntry = officeEntry = arrayEntry = null;
   }
   function seenStep(dt: number) {
     if (seenQuiet) return;
@@ -1338,6 +1381,18 @@ async function boot() {
       else if (reelEntry) { reelEntry.end = townSeen.has('ln:reel') ? 'heard' : 'away'; reelEntry = null; }
       was.reel = reelTape.busy;
     }
+    // 02:29, SARO dark (story/saroDark.ts): heard and felt, written when K3 goes; how it ended (the
+    // figure in the dark looked at, or not); the figure itself as a scare when it stands
+    if (saroDark.phase !== was.dark) {
+      if (was.dark === 'idle' && saroDark.phase === 'relay') darkEntry = saw('event', 'blackout', { at: game.rackAt, line: null, looking: null });
+      if (saroDark.phase === 'done' && darkEntry) { darkEntry.end = saroDark.figure?.looked ? 'figure' : saroDark.figure ? 'figure unseen' : 'dark'; darkEntry = null; }
+      was.dark = saroDark.phase;
+    }
+    const fig = saroDark.figureAt;
+    if (!!fig !== was.darkFig) {
+      if (fig) saw('scare', 'figure, dark', { at: fig, line: null, watch: { pos: () => saroDark.figureAt, secs: 47, deg: 22, range: 90 } });
+      was.darkFig = !!fig;
+    }
     // the crank telephone in the motel office (story/officePhone.ts): written down when it rings, only
     // heard (down the line); how it ended: heard to the end, put down or walked off, or let ring
     if (officePhone.state !== was.office) {
@@ -1375,7 +1430,7 @@ async function boot() {
    *  also waits for the others itself, as before). */
   function oneAtATime() {
     return abduction!.busy || nightEvents.running || roadside.silent || townEvents.now !== 'none' || roofSteps.busy || motelTv.busy
-      || lineLights.state !== 'none' || faceQuiet > 0 || reelTape.busy || officePhone.busy
+      || lineLights.state !== 'none' || faceQuiet > 0 || reelTape.busy || saroDark.busy || officePhone.busy
       // (the array put back on the schedule, until it has gone back: story/arrayBack.ts)
       || arrayBack.busy
       // (the shape at the end of the headlights, until the lights have reached it)
@@ -1392,10 +1447,12 @@ async function boot() {
       held: modalOpen || game.cinematic || audio.phonePlaying || world.area === 'room6' || (game.phase === 'ch5' && inDiner),
       exposed: world.driving || space === 'yard',
       busy: oneAtATime(),
-      peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0 || reelTape.busy || officePhone.state !== 'idle' || arrayBack.busy,
+      peaking: abduction!.busy || roofSteps.busy || roadside.silent || faceQuiet > 0 || reelTape.busy || saroDark.busy || officePhone.state !== 'idle' || arrayBack.busy,
       // a 47 that belongs to a place waits there for the player: the curve hurries for it (as of the
       // last step: they are looked at after the curve)
       waiting: motelTv.waiting || townEvents.waiting,
+      // chapter one's 47 is the story's own until it has come or its time is past (story/saroDark.ts)
+      keep: game.phase === 'ch1' && game.ns.hondo === undefined && saroDark.phase === 'idle' && SaroDark.pending(game.clock),
     });
     if (audio.night) audio.night.thin = curve.thin;
     if (curve.sign) curveSign();
@@ -1551,6 +1608,7 @@ async function boot() {
     motelTv.silence();
     // (a warning left in the middle: its tone and pressure would go on droning under the title)
     abduction!.halt();
+    saroDark.halt();   // (and the power back, before the room is put back as the night began)
     follow.reset(); arrayBack.reset();
     world.stopDriving();
     roadside.reset(); cb.stop(); audio.stopPhoneCalls(); radio.reset(0);
@@ -1623,12 +1681,23 @@ async function boot() {
     begin: () => game.beginChapter1(null),
   });
   // End of chapter one: Ward has the report, and the night goes on in the records room.
-  ch1.onEnd = (method) => chapterBreak({
-    closed: 'LOCAL INCIDENT S-03 / B-12 // FILED',
-    recap: `${method === 'passive' ? 'The shielded lamp did not explain it.' : 'Simple encoder drift did not explain it.'} The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: -39 LY.`,
-    next: 'CHAPTER TWO', title: 'THE AMENDED RECORD',
-    begin: () => game.beginChapter2(null),
-  });
+  // (if SARO is going dark just then, the chapter waits for the light and the telex: story/saroDark.ts)
+  ch1.onEnd = (method) => {
+    const end = () => saroDark.busy && game.phase === 'ch1' ? game.after(0.25, end) : chapterBreak({
+      closed: 'LOCAL INCIDENT S-03 / B-12 // FILED',
+      recap: `${method === 'passive' ? 'The shielded lamp did not explain it.' : 'Simple encoder drift did not explain it.'} The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: -39 LY.`,
+      next: 'CHAPTER TWO', title: 'THE AMENDED RECORD',
+      begin: () => game.beginChapter2(null),
+    });
+    end();
+  };
+  // the yard holds its breath the first time out in chapter one (core/ambience.ts, breath): nothing,
+  // then the crickets one at a time over 47 s. The plain night's (story/curve.ts), not an event.
+  game.onFirstOut = () => {
+    if (saroDark.busy) return;   // (out for the first time into the dark itself: that is quiet enough)
+    audio.night?.breath(47);
+    game.after(2.9, () => { if (game.phase === 'ch1' && !saroDark.busy) ui.toast('Not a sound out here. Not even the crickets.', 3.2); });
+  };
   // End of chapter two: the key holder sends you to the station first.
   // (if the steps on the records room roof are still going, the call to the key holder having come
   // in the middle of them, the chapter waits for them to finish: story/roofSteps.ts)
@@ -1694,8 +1763,9 @@ async function boot() {
       earlDialogue.stop();
       narrator.stop(); npcDialogue.stop(); ui.chapterCard(null);
       if (mode !== 'play') { startGame({ caseId: saves.freeCase() ?? 1, playtime: 0, state: null, jump: p }); return; }
-      follow.reset(); arrayBack.reset();
+      follow.reset(); arrayBack.reset(); saroDark.halt();
       world.placeTruck('saro'); world.enter('saro'); game.start(p);
+      saroDark.restore(game.ns.hondo !== undefined);
     },
     game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
@@ -1744,6 +1814,8 @@ async function boot() {
   // gave, and whether one of the night's things is going
   Object.assign((window as any).S47, { curve, curveSigns, oneAtATime: () => oneAtATime() });
   Object.assign((window as any).S47, { roofSteps, roofIn: () => roofIn(true) });   // the steps on the roof (tools/horror_roof.py)
+  // 02:29, SARO dark (tools/f_relay_hondo.py): the event, the power, where the player counts as being
+  Object.assign((window as any).S47, { saroDark, saroPower, darkIn: () => darkIn(true, !!ui.modal), darkWhere: () => darkWhere() });
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
@@ -1855,6 +1927,9 @@ async function boot() {
         } },
         { label: `Earl's reel: ${reelTape.busy ? 'playing' : townSeen.has('ln:reel') ? 'heard' : townSeen.has('ln:81') ? 'the date is on the board' : 'no date yet'}`, run: () => {
           if (!townSeen.has('ln:81')) ui.toast('Tie 09/22/81 on the board first', 2); } },
+      ] });
+      groups.push({ title: 'SARO dark', note: 'Chapter one, 02:29 to 02:40, from the lab or the yard: K3 in the empty control room, forty seconds, then every light at SARO out for 47 s. Hondo Valley on the telex after.', items: [
+        { label: `SARO goes dark: ${saroDark.phase}`, run: () => { if (game.phase !== 'ch1' || !saroDark.now(darkIn(true, false))) ui.toast('Only at SARO in chapter one, once', 2); } },
       ] });
       groups.push({ title: 'The records room', note: 'Once in chapter two, at a quiet moment in the records room: light steps on the roof, right over you.', items: [
         { label: `Steps on the roof: ${roofSteps.phase}`, run: () => { if (!roofSteps.now(roofIn(true))) ui.toast('Only from the records room, once', 2); } },
@@ -2027,7 +2102,9 @@ async function boot() {
       }
     }
   }
-  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy || reelTape.busy || officePhone.busy || arrayBack.busy; }
+  // (and while the yard holds its breath, and SARO is dark: core/ambience.ts, story/saroDark.ts)
+  function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || faceQuiet > 0 || roofSteps.busy || reelTape.busy
+    || saroDark.busy || officePhone.busy || arrayBack.busy || !!audio.night?.breathing; }
   /** What the crank telephone in the motel office needs to know (story/officePhone.ts): on foot in
    *  the office, on the motel's court or within earshot of the office's open door (22 m, the
    *  shoulder beside it too), chapter four before room 6 is over, nothing else going. Every way to
@@ -2139,6 +2216,14 @@ async function boot() {
         if (!curve.may('scare') && !ri.lastQuiet) ri.ok = false;
         roofSteps.update(dt, ri);
       }
+      // 02:29: SARO goes dark (story/saroDark.ts), on its own clock; one at a time
+      if (mode === 'play') saroDark.update(dt, darkIn(!game.cinematic && sky.uniforms.uDawn.value < 0.3, modalOpen));
+      // a night that never went dark still has Hondo Valley's telex, printed at 02:29 with nobody there
+      if (mode === 'play' && game.ns.hondo === undefined && saroDark.phase === 'idle' && game.at('ch1')) {
+        // (not before its minute: a chapter one done early has chapter two before 02:29)
+        const c = ((game.clock % 86400) + 86400) % 86400;
+        if (c >= SaroDark.FILED && c < 12 * 3600 && (game.phase !== 'ch1' || c >= SaroDark.FILED + 11 * 60)) game.hondoTelex(SaroDark.FILED, SaroDark.FILED + 14);
+      }
       if (mode === 'play') cutouts.update(dt, { ...cutoutIn(!modalOpen && !game.cinematic && game.at('ch1') && !abduction!.busy && !arrayBack.busy),
         // (in the night's builds, and not once the sky greys: FORSLAG.md, 20 October, item 1)
         may: curve.may('cutout') && sky.uniforms.uDawn.value < 0.3, keep: curve.cutoutKeep, pace: curve.pace('cutout'),
@@ -2153,7 +2238,7 @@ async function boot() {
         flashlight.flicker(glimpses.up ? 0.3 : 0, 'glimpse');
         flashlight.flicker(townEvents.now !== 'none' && world.area === 'diner' ? 0.35 : 0, 'town');
       }
-      if (mode === 'play') glimpses.update(dt, { ...glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && !arrayBack.busy),
+      if (mode === 'play') glimpses.update(dt, { ...glimpseIn(!modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !roadside.silent && !abduction!.busy && !saroDark.busy && !arrayBack.busy),
         may: curve.may('glimpse'), pace: curve.pace('glimpse') });
       if (mode === 'play') lineLights.update(dt, {
         ok: !modalOpen && !game.cinematic && game.at('ch1') && game.phase !== 'ch6' && sky.uniforms.uDawn.value < 0.3 && !abduction!.busy && !arrayBack.busy,
@@ -2178,7 +2263,7 @@ async function boot() {
         const ab = abduction!;
         ab.sceneId = world.area === 'saro' ? 'saro' : world.area === 'diner' || world.area === 'road' ? 'road' : world.area;
         ab.update(dt, { ...abductIn(!modalOpen && !game.cinematic && ['ch1', 'ch2', 'ch3', 'ch4'].includes(game.phase) && sky.uniforms.uDawn.value < 0.3
-          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy && !reelTape.busy && !officePhone.busy
+          && !roadside.silent && townEvents.now === 'none' && !motelTv.busy && !roofSteps.busy && !reelTape.busy && !saroDark.busy && !officePhone.busy
           // (not to begin while the array is on the schedule; one that has begun is not cut by it)
           && !(arrayBack.busy && ab.stage === 'calm')), may: curve.may('abduct') });
         // the eyes from where the player stands now (the waking puts them down in the grass this step)
@@ -2187,7 +2272,7 @@ async function boot() {
           clock: game.clock, backAt: ab.backAt, calm: calmFlash, woke: ab.data.last, over: ab.overPhase !== null });
       } else if (mode === 'play') follow.wait();
       // the corner clock in seconds while the warning counts its 47 (story/abduction.ts, warnClock)
-      ui.clockSeconds(mode === 'play' ? abduction!.warnClock : null);
+      ui.clockSeconds(mode === 'play' ? abduction!.warnClock ?? saroDark.clockShow : null);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }
@@ -2239,7 +2324,7 @@ async function boot() {
     room.updateOutside();
     yard.update(t);
     annex.update(t);
-    room.lights.hemi.intensity = hemiBase + sky.uniforms.uFlash.value * 2.4;
+    room.lights.hemi.intensity = hemiBase * saroDark.adapt + sky.uniforms.uFlash.value * 2.4;
     audio.listener(camera);
   }
   const buf = new THREE.Vector2();

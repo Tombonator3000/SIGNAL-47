@@ -13,6 +13,11 @@ import * as THREE from 'three';
 //             the highway, and birds when the sky greys (made here).
 //   mood      how much is going on: it wanders every minute or two, and now and then the
 //             night goes almost quiet for a while.
+//   breath    once, the first time out into the yard in chapter one (02:16; FORSLAG.md, 20
+//             October, small change 1, "the yard holds its breath"): nothing at all, not the
+//             wind, not a cricket; then the crickets come back one at a time and the wind under
+//             them, over 47 s. It is the plain night's (story/curve.ts), not one of the night's
+//             events: nothing waits for it, and the curve's thinning takes over where it ends.
 //
 // Everything goes through one outdoor level and a low-pass: indoors the walls take the top
 // off and most of the level, in the cab the engine covers it. Nothing here answers the player.
@@ -85,6 +90,11 @@ export class Ambience {
   private wind: { gain: GainNode; bp: BiquadFilterNode; level: Drift; colour: Drift };
   private bugRec: { src: AudioBufferSourceNode; gain: GainNode; level: Drift } | null = null;
   private crickets: Cricket[] = [];
+  // the breath (breath()): the wind and the crickets' bed each on a gate of their own, so the
+  // single crickets can come back one by one over the quiet
+  private windIn: GainNode;
+  private bedIn: GainNode;
+  private held: { t: number; len: number; cues: number[]; n: number } | null = null;
   private t = { gust: rnd(15, 40), life: rnd(20, 50), poorwill: rnd(60, 180), coyote: rnd(150, 420), train: rnd(240, 900), truck: rnd(120, 400), birds: rnd(10, 40), mood: rnd(60, 150), bugs: 0 };
   private mood = 0.7;
   private space: Space = 'room';
@@ -98,22 +108,24 @@ export class Ambience {
     this.lp = ctx.createBiquadFilter(); this.lp.type = 'lowpass'; this.lp.frequency.value = 900;
     this.quiet = ctx.createGain(); this.quiet.gain.value = 1;
     this.out.connect(this.quiet); this.quiet.connect(this.lp); this.lp.connect(dest);
+    this.windIn = ctx.createGain(); this.windIn.connect(this.out);
+    this.bedIn = ctx.createGain(); this.bedIn.connect(this.out);
     const now = ctx.currentTime;
     // the wind as recorded
     if (buf.wind) {
       const src = ctx.createBufferSource(); src.buffer = buf.wind; src.loop = true;
-      const gain = ctx.createGain(); src.connect(gain); gain.connect(this.out); src.start(now, rnd(0, buf.wind.duration));
+      const gain = ctx.createGain(); src.connect(gain); gain.connect(this.windIn); src.start(now, rnd(0, buf.wind.duration));
       this.windRec = { src, gain, level: new Drift(gain.gain, 0.14, 0.4, [8, 26], [3, 7]), rate: 1, rateNext: 0 };
     }
     // a wind made of noise under it, its colour wandering
     const n = ctx.createBufferSource(); n.buffer = brown; n.loop = true;
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.7; bp.frequency.value = 420;
-    const wg = ctx.createGain(); n.connect(bp); bp.connect(wg); wg.connect(this.out); n.start(now, rnd(0, 2));
+    const wg = ctx.createGain(); n.connect(bp); bp.connect(wg); wg.connect(this.windIn); n.start(now, rnd(0, 2));
     this.wind = { gain: wg, bp, level: new Drift(wg.gain, 0.02, 0.16, [6, 20], [2.5, 6]), colour: new Drift(bp.frequency, 260, 720, [5, 16], [2, 5]) };
     // the crickets as recorded: faint, under the single ones
     if (buf.crickets) {
       const src = ctx.createBufferSource(); src.buffer = buf.crickets; src.loop = true;
-      const gain = ctx.createGain(); src.connect(gain); gain.connect(this.out); src.start(now, rnd(0, buf.crickets.duration));
+      const gain = ctx.createGain(); src.connect(gain); gain.connect(this.bedIn); src.start(now, rnd(0, buf.crickets.duration));
       this.bugRec = { src, gain, level: new Drift(gain.gain, 0.02, 0.07, [10, 30], [3, 8]) };
     }
   }
@@ -126,6 +138,28 @@ export class Ambience {
     const g = this.quiet.gain, now = this.ctx.currentTime;
     g.cancelScheduledValues(now); g.setTargetAtTime(level, now, tau); g.setTargetAtTime(1, now + secs, back);
   }
+
+  /** The yard holds its breath (the first time out, chapter one): at once nothing at all; then the
+   *  crickets one at a time, the wind coming up under them, and the crickets' bed last, all back by
+   *  `secs`. Then the night as it was, thinned as the curve has it (`thin`). */
+  breath(secs = 47) {
+    const ctx = this.ctx, now = ctx.currentTime;
+    for (const c of this.crickets) if (!c.dying) c.fade(0.4);
+    for (const [g, from, to] of [[this.windIn, 0.3, 1], [this.bedIn, 0.6, 1]] as const) {
+      g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(0, now);
+      g.gain.setValueAtTime(0, now + secs * from); g.gain.linearRampToValueAtTime(to, now + secs);
+    }
+    // when each single cricket starts again: the first after a long beat, the others closer
+    const n = Math.max(2, Math.round(THREE.MathUtils.clamp(1 - this.thin, 0.4, 1) * 4));
+    const cues = Array.from({ length: n }, (_, i) => secs * (0.15 + 0.68 * Math.pow(i / Math.max(1, n - 1), 0.85)) + rnd(-1.2, 1.2));
+    this.held = { t: 0, len: secs, cues, n: 0 };
+    // nothing far off comes in it either
+    for (const k of ['life', 'poorwill', 'coyote', 'truck', 'gust'] as const) this.t[k] = Math.max(this.t[k], secs + rnd(5, 25));
+  }
+  /** The breath is held now (tests): how far into it, and how many crickets are back. */
+  get breathing() { return this.held ? { t: this.held.t, len: this.held.len, back: this.held.n, of: this.held.cues.length } : null; }
+  /** Single crickets chirping now, near the listener (tests). */
+  get cricketsNow() { return this.crickets.filter((c) => !c.dying).length; }
 
   /** Where the listener is: outside, indoors (muffled) or in the cab (under the engine). */
   setSpace(space: Space) {
@@ -167,7 +201,17 @@ export class Ambience {
     const active = THREE.MathUtils.clamp((temp - 6.3) / 5, 0, 1) * (1 - dawn) * (1 - THREE.MathUtils.clamp(this.thin, 0, 1));
     const rate = Math.max(0.2, (temp - 4) / 7.5);
     this.bugRec?.level.step(dt, now, active * (0.5 + 0.5 * m));
-    if ((t.bugs -= dt) <= 0) {
+    const held = this.held;
+    if (held) {
+      // the breath: one cricket at each cue, close by; the night's own count takes over at the end
+      held.t += dt;
+      while (held.n < held.cues.length && held.t >= held.cues[held.n]) {
+        const c = new Cricket(ctx, this.out, at);
+        c.vol.gain.cancelScheduledValues(now); c.vol.gain.setTargetAtTime(0.022 * c.level, now, 0.6);
+        this.crickets.push(c); held.n++;
+      }
+      if (held.t >= held.len) { this.held = null; t.bugs = rnd(6, 12); }
+    } else if ((t.bugs -= dt) <= 0) {
       t.bugs = rnd(4, 12);
       const want = Math.round(active * (1 + 4 * m));
       const live = this.crickets.filter((c) => !c.dying);

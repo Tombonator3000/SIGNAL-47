@@ -660,8 +660,11 @@ export class AudioSys {
 
   // Positional electrical hum (a transformer cabinet, a lamp ballast): mains and two harmonics.
   private hums = new Map<string, GainNode>();
+  private humGain = new Map<string, number>();
+  private humK = 1;
   hum(key: string, at: THREE.Vector3, gain = 0.05, base = 60) {
     const ctx = this.ctx; if (!ctx || this.hums.has(key)) return;
+    this.humGain.set(key, gain);
     const out = ctx.createGain(); out.gain.value = 0;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
     out.connect(lp); lp.connect(this.panner(at, 1.0));
@@ -669,13 +672,95 @@ export class AudioSys {
       const o = ctx.createOscillator(); o.type = type; o.frequency.value = base * mul;
       const og = ctx.createGain(); og.gain.value = g; o.connect(og); og.connect(out); o.start();
     }
-    out.gain.setTargetAtTime(gain, ctx.currentTime, 1.0);
+    out.gain.setTargetAtTime(gain * this.humK, ctx.currentTime, 1.0);
     this.hums.set(key, out);
   }
   stopHums() {
     if (!this.ctx) return;
     for (const g of this.hums.values()) g.gain.setTargetAtTime(0, this.ctx.currentTime, 0.3);
-    this.hums.clear();
+    this.hums.clear(); this.humGain.clear();
+  }
+  /** Every hum at k of its level (story/saroDark.ts: they die with the power and come back). */
+  humLevel(k: number, tau = 0.08) {
+    this.humK = k;
+    const ctx = this.ctx; if (!ctx) return;
+    for (const [key, g] of this.hums) g.gain.setTargetAtTime((this.humGain.get(key) ?? 0.05) * k, ctx.currentTime, tau);
+  }
+  /** Where the hums are held (tests). */
+  get humHeld() { return this.humK; }
+
+  // ---------- SARO without power (story/saroDark.ts) ----------
+  /** Relay K3 tripping on the rack, as the prologue plays it, heard from where the listener is:
+   *  through the wall it is duller and carries further than a click in the room would. */
+  relayClack(at: THREE.Vector3, through: boolean) {
+    const ctx = this.ctx; if (!ctx) return;
+    const dest = this.panner(at, through ? 4 : 1.6);
+    this.play(this.or('rack_switch', 'switch'), { gain: through ? 0.62 : 1.0, rate: 0.62, dest, lp: through ? 1500 : undefined });
+    this.play('thudSoft', { gain: through ? 0.38 : 0.45, rate: 1.4, dest, when: 0.03, lp: through ? 700 : undefined });
+  }
+  /** The building's main contactor dropping out (or pulling in): a heavy knock through the floor. */
+  contactor(at: THREE.Vector3, gain = 1) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime, dest = this.panner(at, 6);
+    this.play('thudSoft', { gain: 0.9 * gain, rate: 0.42, dest, lp: 900 });
+    const o = ctx.createOscillator(); o.frequency.setValueAtTime(58, t); o.frequency.exponentialRampToValueAtTime(31, t + 0.5);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.32 * gain, t + 0.012); g.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t + 0.75);
+  }
+  /** Everything electric running down at once: the transformers' hum sinking away, the fans after. */
+  powerDown(at: THREE.Vector3) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime, dest = this.panner(at, 8);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(700, t); lp.frequency.exponentialRampToValueAtTime(90, t + 2.6);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+    lp.connect(g); g.connect(dest);
+    for (const [f, type, v] of [[120, 'sawtooth', 0.5], [180, 'sine', 0.3], [60, 'sine', 0.6]] as const) {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.28, t + 2.6);
+      const og = ctx.createGain(); og.gain.value = v; o.connect(og); og.connect(lp); o.start(t); o.stop(t + 2.9);
+    }
+  }
+  /** And back: the hum rising out of nothing, and the ballasts' buzz as the tubes strike. */
+  powerUp(at: THREE.Vector3) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime, dest = this.panner(at, 8);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.06, t + 0.5); g.gain.exponentialRampToValueAtTime(0.001, t + 1.6);
+    g.connect(dest);
+    for (const [f, type, v] of [[120, 'sawtooth', 0.35], [60, 'sine', 0.6]] as const) {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f * 0.4, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.6);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500;
+      const og = ctx.createGain(); og.gain.value = v; o.connect(lp); lp.connect(og); og.connect(g); o.start(t); o.stop(t + 1.7);
+    }
+  }
+  /** The teleprinter's motor running while it prints (null: it stops). */
+  private telexRun: { g: GainNode; stop: () => void } | null = null;
+  telexMotor(at: THREE.Vector3 | null) {
+    const ctx = this.ctx; if (!ctx) return;
+    if (!at) { const m = this.telexRun; this.telexRun = null; if (m) { m.g.gain.setTargetAtTime(0, ctx.currentTime, 0.15); setTimeout(() => m.stop(), 900); } return; }
+    if (this.telexRun) return;
+    const dest = this.panner(at, 2.4);
+    const g = ctx.createGain(); g.gain.value = 0; g.connect(dest);
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 50;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
+    const og = ctx.createGain(); og.gain.value = 0.5; o.connect(lp); lp.connect(og); og.connect(g);
+    const n = this.noiseSrc(false); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1300; bp.Q.value = 0.8;
+    const ng = ctx.createGain(); ng.gain.value = 0.05; n.connect(bp); bp.connect(ng); ng.connect(g);
+    o.start(); n.start();
+    g.gain.setTargetAtTime(0.06, ctx.currentTime, 0.12);
+    this.telexRun = { g, stop: () => { try { o.stop(); n.stop(); } catch { /* stopped */ } g.disconnect(); dest.disconnect(); } };
+  }
+  /** One character struck on the teleprinter's platen (KAPITLER.md: made here, rhythmic strikes and
+   *  a motor); `cr` the carriage going back at the end of a line. */
+  typeBar(at: THREE.Vector3, cr = false) {
+    const ctx = this.ctx; if (!ctx) return;
+    const t = ctx.currentTime, dest = this.panner(at, 2.4);
+    const n = this.noiseSrc(false, false); const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = cr ? 900 : 2300 + Math.random() * 500; bp.Q.value = cr ? 1.2 : 2.2;
+    const g = ctx.createGain(); const len = cr ? 0.16 : 0.018;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(cr ? 0.5 : 0.9, t + 0.002); g.gain.exponentialRampToValueAtTime(0.001, t + len);
+    n.connect(bp); bp.connect(g); g.connect(dest); n.start(t); n.stop(t + len + 0.02);
+    const o = ctx.createOscillator(); o.frequency.setValueAtTime(cr ? 180 : 420, t); o.frequency.exponentialRampToValueAtTime(cr ? 90 : 260, t + 0.03);
+    const og = ctx.createGain(); og.gain.setValueAtTime(0, t); og.gain.linearRampToValueAtTime(cr ? 0.12 : 0.07, t + 0.002); og.gain.exponentialRampToValueAtTime(0.001, t + (cr ? 0.12 : 0.04));
+    o.connect(og); og.connect(dest); o.start(t); o.stop(t + 0.14);
+    setTimeout(() => dest.disconnect(), 600);
   }
 
   // The valve receiver in the STATION 01 hut: a weak carrier that fades in and out, with
