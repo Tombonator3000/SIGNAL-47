@@ -143,6 +143,9 @@ export class RoofSteps {
       examine: () => d.outside() && this.corner === c ? (this.frostSeen(), LIP_FROST) : null });
   }
 
+  /** Where they make for and stop: the roof right over the player (SARO's terms; story/seen.ts). */
+  get overhead() { return this.overPt.set(this.target.x, ROOF.y, this.target.y); }
+  private overPt = new THREE.Vector3();
   /** Something of the steps is going on: the beat included (the music and the night's other events wait). */
   get busy() { return this.phase !== 'idle' && this.phase !== 'done'; }
   private humBack = 0;

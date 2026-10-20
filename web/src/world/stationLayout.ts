@@ -23,3 +23,11 @@ export const STATION_GROUND = -0.15;
 export const STATION_PAD = { minX: -27.6, maxX: -12.2, minZ: 26.3, maxZ: 39.8 };
 /** The truck as it stands on the pad (the night it first comes here). */
 export const STATION_TRUCK = { x: -19.25, z: 31.4, heading: 0 };
+/** The 1947 survey as it stands inside the fence (world/Station01.ts builds it; story/lines.ts
+ *  lays the three lines out from it): the transit's pier, the way A's sight line leaves it
+ *  through A's footing, B's comparison vane, and the way C's stakes run from it. Station-local,
+ *  in the terms the station was built in (x "east", z "south"); world/geo.ts turns them onto the map. */
+export const STATION_TRANSIT = { x: 3, z: -4 };
+export const STATION_SIGHT_A = { x: 1, z: -1 };
+export const STATION_VANE_B = { x: -7.4, z: -10.0 };
+export const STATION_STAKES_C = { x: 1, z: 0 };

@@ -19,6 +19,7 @@ export interface GameState {
   town?: string[];        // what the notebook has from Caliche (world/Town.ts, story/caliche.ts; older saves have none)
   album?: import('../core/album').AlbumSave;   // the free frames (core/album.ts; older saves have none)
   motelTv?: { id: string; url: string };   // the witnessed office frame, in the shared photo store
+  seen?: import('./seen').SeenEntry[];   // what the night did and whether it was seen (story/seen.ts; older saves have none)
 }
 
 /** Where the truck was left and how it stands: the place (World.truckAt), its position and its

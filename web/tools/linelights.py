@@ -43,7 +43,11 @@ async def main():
         check(len(pace) > 50 and all(r[1] for r in pace), f'driving south past z 120 they come, and stay a while ({len(pace) / 10:.1f} s)')
         gap = [r[3] - r[4] for r in pace]
         check(max(gap) - min(gap) < 2 and all(r[2] < -200 for r in pace), f'abreast, keeping pace, some 200 m to the west (lead {min(gap):.1f} to {max(gap):.1f} m)')
-        check(len(off) > 20 and off[-1][2] < off[0][2] - 100 and off[-1][3] < off[0][3], 'then off along B, west-north-west, and gone')
+        # B (story/lines.ts) runs from SARO's turn-off south-west to STATION 01, 210 to 270 m west of the highway here
+        dB = lambda r: ev(f"S47.lines.distTo('B', ...S47.lines.toMap('saro', {r[2]}, {r[3]}))")
+        d0, d1 = await dB(off[0]), await dB(off[-1])
+        check(len(off) > 20 and off[-1][2] < off[0][2] - 100 and off[-1][3] > off[0][3] and d1 < d0 * 0.5,
+              f'then off along B, south-west towards STATION 01, and gone (from {d0:.0f} m off B to {d1:.0f})')
         nn = (await ev("S47.game.notes"))[n0:]
         check(len(nn) == 1 and 'Three lights' in nn[0] and await ev("S47.townSeen.has('ev:lights')"), f'in the notebook ({nn[:1]})')
         again = await ev(f"{drive}(100, 400, 15)")

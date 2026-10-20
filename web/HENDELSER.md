@@ -58,10 +58,12 @@ Klokka 05:06, når du er tilbake i byen for kartet i dineren, kommer betjenten u
 Tre siktlinjer fra transitten på STATION 01, slik de står i E09A og på stasjonen:
 
 - **A**, siktlinja gjennom fastmerket A, går nordøst og sørvest gjennom transitten. Forlenget sørvestover går den rett gjennom Caliche og hovedgata. Det er byens linje.
-- **B**, mot sammenligningsfløyen, går vest-nordvest og krysser riksveien mellom SARO og motellet. Det er SAROs linje: gården, antennefeltet, beitet og motellet ligger nær den.
+- **B**, mot sammenligningsfløyen, går fra transitten nordøst til B-12-vingen på SARO-tunet og krysser riksveien ved avkjøringen til SARO, 23 m sør for tomta, i øvre kant av strekket mellom SARO og motellet. Det er SAROs linje: gården, antennefeltet, beitet og motellet ligger nær den. (Fastsatt 20. oktober, `story/lines.ts`. «Vest-nordvest» var stasjonens egne mål; stasjonen er dreid en kvart omdreining på kartet.)
 - **C** går rett øst og krysser den gamle Roswell-veien rett forbi åttemilsstolpen. Den gamle veien er stengt til kapittel 5, så hendelser på C kan ikke røpe kartgåta (P13).
 
 Servicekartet er ikke i målestokk (`drawings.ts`), så byen kan legges slik at A går gjennom den uten at noe annet må flyttes. Alle tre linjene møtes på STATION 01. Det er den største sammenhengen spilleren kan finne selv.
+
+Hvor linjene ligger på bakken, står ett sted: `story/lines.ts`. Bortføringen, lysene langs B, merkene og strekene på kartet spør der.
 
 ## 4. Hendelsesregissøren
 

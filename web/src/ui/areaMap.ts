@@ -1,4 +1,5 @@
 import { SERVICE_MAP, mark } from '../story/drawings';
+import { CROSSINGS } from '../story/lines';
 
 // The map in the notebook (Tom, 16 October: a map of the place). The player's own sketch in
 // pencil on a notebook page, not the service map: SARO and the array east of the highway,
@@ -166,10 +167,11 @@ export function areaMap(v: MapView) {
     g.setLineDash([3, 7]); line([[ax + (bx - ax) * k0, ay + (by - ay) * k0], [ax + (bx - ax) * k1, ay + (by - ay) * k1]], 1.6); g.setLineDash([]);
     text(label, ax + (bx - ax) * k1 - 28, ay + (by - ay) * k1 - 4, 28);
   };
-  // A: from beyond the town, through it, to STATION 01 and a little past; B: from east of the
-  // highway between SARO and the motel, to STATION 01 and past
+  // where the lines are on the ground (story/lines.ts), as this page has the places: A from beyond
+  // the town, through it, to STATION 01 and a little past; B out of the dishes, across the highway
+  // at SARO's turn-off (CROSSINGS.B, 23 m south of the site), on south-west to STATION 01 and past
   if (onLine('A') >= 3) across([DINER[0], DINER[1] + 30], STATION, -0.35, 1.12, 'A');
-  if (onLine('B') >= 3) across([HX + 120, 236], STATION, -0.15, 1.12, 'B');
+  if (onLine('B') >= 3) across([HX, hwyY(CROSSINGS.B.highwayM)], STATION, -0.5, 1.12, 'B');
   const hhmm = (c: number) => { const d = ((c % 86400) + 86400) % 86400; return `${String(Math.floor(d / 3600)).padStart(2, '0')}:${String(Math.floor(d % 3600 / 60)).padStart(2, '0')}`; };
   const inTown: string[] = [];
   let k = 0;
