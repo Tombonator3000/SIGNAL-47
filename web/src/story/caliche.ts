@@ -249,6 +249,8 @@ const witnessPaper = (id: string, title: string, page: string): DocSpec => ({
 
 // said the same way every time, the cough in the same place
 const COLD: Line[] = [A('Cold one tonight. Radio says it\'ll'), aside('He coughs into his fist.'), A('warm up by Wednesday.')];
+/** The deputy is back at his desk from half past four (world/Town.ts). */
+const DEPUTY_IN = 4 * 3600 + 30 * 60;
 const DEPUTY_BACK = 'The deputy, back at his desk after half past four. He says he drove the loop and came straight back. He went out at a quarter to three.';
 
 const PEOPLE: Record<Who, Person> = {
@@ -313,8 +315,12 @@ const PEOPLE: Record<Who, Person> = {
   deputy: {
     title: 'SHERIFF SUBSTATION / THE DEPUTY', status: 'The door open on the chain, then off it.', bye: 'Let him work',
     card: { name: 'The deputy', role: 'Caliche, sheriff\'s substation', note: '"I don\'t believe in little men. I believe in maps."' },
-    open: ({ first, day }) => day >= 4 * 3600 + 30 * 60
+    // back after half past four, from where he went at a quarter to three (his car on the shoulder
+    // with nobody in it, event 12): dried blood under his nose, the trace the time away leaves
+    // (FORSLAG.md, 20 October, item 9 C), and he has not noticed it
+    open: ({ first, day }) => day >= DEPUTY_IN
       ? [aside('He opens before you have finished knocking.'), DP('Quiet night. Drove the loop out to the county line and back.'),
+        aside('There is dried blood under his nose, a thin dark line down to the lip. He has not wiped it. He does not seem to know it is there.'),
         aside('He looks at his watch, and then at the clock on the wall, and does not say anything about either.')]
       : first
         ? [aside('You knock. A chair scrapes. He opens the door on the chain, looks at your jacket, and takes the chain off.'), DP('Help you?'),
@@ -342,6 +348,12 @@ const PEOPLE: Record<Who, Person> = {
         DP('And a kid who called the radio station in September of \'81. Family moved away after.'),
         DP('Don\'t go asking them about it. They don\'t know they\'ve got a pin.'),
       ], note: 'Green pins in Caliche, people who lost time: the gas station attendant, October 19, 1985; the husband of the woman at the laundromat, March 1983; a boy who called the radio, September 1981.' },
+      { id: 'nose', label: 'Tell him there is blood under his nose', notBefore: DEPUTY_IN, lines: [
+        you('You have blood under your nose.'),
+        aside('He touches his lip and looks at his fingers. Nothing comes away. It is dry, and has been for a while.'),
+        DP('I drove the loop. I came straight back.'),
+        aside('He does not wipe it off.'),
+      ], note: 'The deputy, back at his desk after half past four: dried blood under his nose, and he had not noticed. When I told him, he touched it, looked at his fingers, and said he drove the loop and came straight back.' },
       { id: 'car', label: 'Tell him his patrol car was empty', after: 'green', need: 'ev:car', notBefore: 4 * 3600 + 30 * 60, lines: [
         you('Your car was on the shoulder north of town. Engine running, door open. Nobody in it.'),
         DP('I drove the loop. I came straight back.'),

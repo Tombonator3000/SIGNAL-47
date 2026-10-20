@@ -164,6 +164,9 @@ export class Chapter3 {
   private panel: { refresh: () => void } | null = null;
   private images: { transit?: string } = {};
   private callT = -1;
+  /** At the station after the call, everyone goes (story/stationTaken.ts, main.ts): the hut door
+   *  shut by itself and what trying it does, and the truck without its keys. */
+  taken: { shut: () => boolean; tryDoor: () => void; truck: () => string | null } | null = null;
   private radioOn = false;
   /** P06 to P09 on the case board: the station's records and frames, the questions, the rules. */
   readonly book: RuleBook;
@@ -400,7 +403,7 @@ export class Chapter3 {
       add('s1diagram', 'diagram', () => 'Framed diagram', () => this.look('diagram'));
       add('s1lamp', 'lamp', () => this.s.lampCovered ? 'Field lamp (covered)' : 'Field lamp', () => this.openLamp());
       add('s1cable', 'cable', () => this.s.cableInspected ? 'Cable break' : 'Inspect the cable', () => this.useCable(), 2.4);
-      add('s1hutDoor', 'hutDoor', () => 'Field hut', () => this.look('hut'));
+      add('s1hutDoor', 'hutDoor', () => this.taken?.shut() ? 'Hut door' : 'Field hut', () => { if (this.taken?.shut()) this.taken.tryDoor(); else this.look('hut'); });
       add('s1receiver', 'receiver', () => this.s.heard ? 'Receiver' : 'Switch on the receiver', () => this.useReceiver());
       add('s1timing', 'timingLog', () => this.s.readE10 ? 'Lay out the field record' : 'Read the timing log (E10)', () => this.useTimingLog());
       add('s1phone', 'fieldPhone', () => this.ringing ? 'Answer the field telephone' : 'Field telephone', () => this.usePhone());
@@ -410,7 +413,7 @@ export class Chapter3 {
       if (px.truckSpot) inter.add({ id: 's1truck', object: px.truckSpot, range: 3.2,
         label: () => this.d.travel.area() === 'station01' && px.truckSpot.position.y > -100 ? this.d.travel.truckChoice('station01').label : null,
         use: () => this.d.travel.truckChoice('station01').use(),
-        examine: () => this.d.travel.area() === 'station01' && px.truckSpot.position.y > -100 ? 'SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.' : null });
+        examine: () => this.d.travel.area() === 'station01' && px.truckSpot.position.y > -100 ? this.taken?.truck() ?? 'SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.' : null });
     }
     if (this.active) this.applyWorld();
   }
