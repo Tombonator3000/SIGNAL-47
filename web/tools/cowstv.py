@@ -64,8 +64,9 @@ async def main():
             return False
 
         # (the night's one curve, story/curve.ts, stands aside in this test: each thing on its own timer; tools/f_curve.py has them together)
-        # (the herd's own order: the ninth cow is not put down at STATION 01 here; tools/f_ninth_cow.py has her)
-        await ev("S47.ninth.off = true")
+        # (the herd's own order: the ninth cow is not put down at STATION 01 here; tools/f_ninth_cow.py has her;
+        # nor the truck on B, whose four at SARO's turn-off is a mark the herd would wait ten minutes after: tools/f_car_b.py)
+        await ev("S47.ninth.off = true; S47.truckB.off = true")
         await ev("S47.hold = true; S47.curve.free = true; S47.tick(0.3); S47.jump('chapter3'); S47.tick(1.0); S47.setPicture('off')")
         # nothing else on B in the way: the lights along the highway (event 7) and the time away are off
         await ev("S47.lineLights.reset(true); S47.setAbductions(false)")
@@ -284,7 +285,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.ninth.off = true; S47.hold = true; S47.curve.free = true; S47.tick(0.5); S47.setAbductions(false)")
+        await ev("S47.ninth.off = true; S47.truckB.off = true; S47.hold = true; S47.curve.free = true; S47.tick(0.5); S47.setAbductions(false)")
         for _ in range(100):
             if await ev("S47.world.herds.length >= 1"): break
             await pg.wait_for_timeout(200)
