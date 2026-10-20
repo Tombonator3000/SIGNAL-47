@@ -3,16 +3,21 @@ import type { Dish, DishArray } from '../world/Dish';
 import type { AudioSys } from '../core/Audio';
 import { onField, nearestAntenna } from '../world/arrayLayout';
 import { clockText } from './time';
+import { BEAT, WARN } from './abduction';
 
 // The dishes come down and follow you (FORSLAG.md, 20 October, Valg for Tom 2, the full version;
 // Tom: "Spenning og skummelt slår faste regler"). Since 02:15 every dish in the array has stood
 // at az 026, el 32, with no command. Once in the night, when the warning of the time away
 // (story/abduction.ts) comes while the player is out in the antenna field or close to it:
 //
-//   the start    a few seconds into the silence, a contactor and a brake out in the array, then the
-//                drive motor of 02:15, near. The nearest dish lowers out of 026 and turns until it
-//                points at the player; the next two after it, a second or so apart, each on the
-//                player within some eight seconds however far round it has to come.
+//   the start    on the warning's own beats (story/abduction.ts, BEAT; FORSLAG.md, 20 October,
+//                item 2): a breath after the beep at :16, when the player's footsteps have gone,
+//                a contactor and a brake out in the array, then the drive motor of 02:15, near.
+//                The nearest dish lowers out of 026 and turns until it points at the player; the
+//                next two after it, a second or so apart, each on the player within some eight
+//                seconds however far round it has to come (by about :28). The middle distance
+//                after them; the far ones with the pressure at :31. At :40 the flashlight dies and
+//                they go on in the dark, by their red lamps, until the light at :47.
 //   following    they track the player's eyes, the nearest fast enough to keep up. With the
 //                footsteps gone, walking is heard only as their motors; standing still, they stop,
 //                one brake after another, and it is quiet but for the warning's own pressure. The
@@ -163,8 +168,9 @@ export class DishesFollow {
 
   constructor(private d: FollowDeps) { this.sound = new Drives(d.audio); }
 
-  /** Seconds into the warning before the first one starts. */
-  static firstAt(len: number) { return Math.max(2.5, 0.12 * len); }
+  /** Seconds into the warning before the first one starts: a breath after the beep at :16 (the
+   *  footsteps gone), as much earlier in a warning the tests cut short. */
+  static firstAt(len: number) { return (BEAT.steps + 1.5) * Math.min(1, len / WARN); }
   /** The dishes that are part of it now (tests), with how they stand. */
   get state() {
     return [...this.rigs.values()].map((r) => ({ id: r.d.id, tier: r.tier, on: r.on, onAt: r.onAt, locked: r.locked, ever: r.ever, run: r.run, az: r.az, el: r.el,
@@ -207,22 +213,24 @@ export class DishesFollow {
     this.rigs.clear(); this.skip.clear(); this.common = null; this.firstFar = -1; this.chooseT = 1;
     this.said = { start: false, lock: false, move: false }; this.noted = false;
     this.from.copy(s.eye); this.moved = false;
-    this.choose(s.eye);
+    this.choose(s.eye, s.warning?.t ?? 0);
     this.d.store.set({ clock: Math.round(s.clock), ids: [], back: false });
     this.sound.open();
     this.d.save();
   }
-  /** Which dishes take part, and when each starts: by how far each is from the player now. */
-  private choose(eye: THREE.Vector3) {
+  /** Which dishes take part, and when each starts: by how far each is from the player now. w0: how
+   *  far into the warning it is (the far ones start with the pressure at :31, or soon after if
+   *  it began later than that). */
+  private choose(eye: THREE.Vector3, w0: number) {
     const by = this.d.dishes.map((d, i) => ({ d, i, h: Math.hypot(d.x - eye.x, d.z - eye.z) })).sort((a, b) => a.h - b.h);
-    const DELAY = [0, 1.8, 3.2];
+    const DELAY = [0, 1.8, 3.2], k = Math.min(1, this.len / WARN);
     let near = 0, mid = 0;
     by.forEach(({ d, i, h }, rank) => {
       // the nearest is always one of the near ones, even off in a corner of the field
       let tier: 0 | 1 | 2 | -1 = (h < NEAR || (rank === 0 && h < 110)) && near < NEAR_MAX ? 0 : h < MID ? 1 : h < FAR ? 2 : -1;
       if (tier === 2 && Math.random() > 0.45) tier = -1;   // far out, most never do
       if (tier === -1) { this.skip.add(d.id); return; }
-      const at = tier === 0 ? DELAY[near] : tier === 1 ? Math.max(4, 0.22 * this.len) + mid * 0.8 + rnd(0, 1.2) : Math.max(8, 0.42 * this.len) + rnd(0, 0.3 * this.len);
+      const at = tier === 0 ? DELAY[near] : tier === 1 ? (4 + mid * 0.8 + rnd(0, 1.2)) * k : Math.max(8 * k, BEAT.tone * k - w0) + rnd(0, 6 * k);
       if (tier === 0) near++; else if (tier === 1) mid++;
       this.rigs.set(d.id, this.rig(d, i, tier, this.t + at, eye));
     });

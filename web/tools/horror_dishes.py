@@ -1,7 +1,8 @@
 # The dishes come down and follow you (story/dishesFollow.ts; FORSLAG.md, 20 October, Valg for
 # Tom 2, the full version). Once in a night, when the warning of the time away comes while the
-# player is out in the antenna field: a few seconds into the silence the nearest dish lowers out of
-# 026 and turns until it points at the player, then the next two; further out later and slower,
+# player is out in the antenna field: a breath after the warning's beep at :16 (the warning always
+# lasts 47 s, story/abduction.ts, BEAT) the nearest dish lowers out of 026 and turns until it
+# points at the player, then the next two; further out later and slower,
 # far out late or not at all. They track the player's eyes: walking, their motors run; standing,
 # they stop. Got away (indoors): they stay on the place, then go back to az 026 / el 32 exactly,
 # and the console log has every drive that moved with no command and the array back home. Taken:
@@ -113,8 +114,8 @@ async def main():
 
         # ---------- the moment ----------
         await pg.wait_for_timeout(3500)   # the chapter's own lines gone from the screen (real time)
-        check(await warning(30), 'in the field: the warning')
-        first = await ev("S47.follow.constructor.firstAt(30)")
+        check(await warning(47), 'in the field: the warning')
+        first = await ev("S47.follow.constructor.firstAt(47)")
         await tick(first - 0.4)
         check(await mode() == 'idle' and await ev("__home()"), f'the first {first - 0.4:.1f} s: only the silence')
         await tick(0.9)
@@ -131,7 +132,7 @@ async def main():
         await tick(0.5, 4)
         st = {r['id']: r for r in await ev(f"{F}.state")}
         check(st['S-02']['el'] < 30 and st['S-02']['az'] != 26, f"S-02 comes down out of 026 (az {st['S-02']['az']:.1f}, el {st['S-02']['el']:.1f})")
-        await tick(0.5, 20)   # 13 s after it began (S-04 has the furthest to come round: 169 degrees)
+        await tick(0.5, 20)   # 12 s after it began, :30 (S-04 has the furthest to come round: 169 degrees)
         offs = {i: await ev(f"__off('{i}', __eye())") for i in ['S-02', 'S-03', 'S-04']}
         check(all(o[0] < 4 and o[1] < 4 for o in offs.values()), 'thirteen seconds in, all three point at the player\'s eyes (or as low as they go): ' + ', '.join(f'{k} {v[0]:.1f}/{v[1]:.1f} deg at {v[2]:.0f} m' for k, v in offs.items()))
         lims = await ev("S47.ext.dishes.filter((d) => d.rogue).map((d) => d.curEl)")
@@ -255,16 +256,17 @@ async def main():
         # ---------- taken: they turn to where you will wake ----------
         await ev(f"delete {A}.data.dishes; {A}.data.count = 0; S47.game.clock = 3 * 3600 + 40 * 60")
         await ev(f"S47.world.enter('saro'); S47.flashlight.have = true; S47.flashlight.on = true; S47.input.locked = true; S47.player.place({X}, {Z}, {yaw_to(X, Z, -16, -52)}); S47.player.pitch = 0.3; S47.tick(0.3)")
-        check(await warning(24), 'a night where they have not: the warning in the field, standing still')
-        # the notebook open in the middle of it holds it, as it holds the clock: not a way out
-        await tick(0.5, 10)
+        check(await warning(47), 'a night where they have not: the warning in the field, standing still')
+        # the notebook open in the middle of it holds it, as it holds the clock: not a way out (at :20,
+        # the dishes on the player since a breath after :16)
+        await tick(0.5, 40)
         w0, c1 = await ev(f"{A}.warn.t"), await ev("S47.game.clock")
         await ev("S47.game.openNotebook(); S47.tick(0.5); S47.tick(0.5); S47.tick(0.5)")
         held = await ev(f"[!!S47.game.d.ui.modal, {A}.stage, {A}.warn && {A}.warn.t, {F}.mode, S47.game.clock, {F}.voices.length]")
         await ev("S47.game.d.ui.close(); S47.tick(0.05)")
         check(held[0] and held[1] == 'warning' and abs(held[2] - w0) < 0.01 and held[3] == 'follow' and abs(held[4] - c1) < 0.01 and held[5] == 0 and await stage() == 'warning',
               f'the notebook opened in the middle of it: the warning and the dishes wait with the clock, their motors quiet, and go on when it is closed ({held[1:4]}, {held[5]} voices)')
-        check(await until(f"{A}.stage === 'light'", 30, 0.25), 'the warning runs its length: the light')
+        check(await until(f"{A}.stage === 'light'", 30, 0.25), 'the warning runs its length, 47 s: the light')
         await tick(0.3)
         back = await ev(f"{A}.backAt && [{A}.backAt.x, {A}.backAt.z]")
         aims = await ev(f"{F}.state.filter((r) => r.on).map((r) => Math.hypot(r.aim[0] - {A}.backAt.x, r.aim[2] - {A}.backAt.z))")
@@ -307,8 +309,8 @@ async def main():
         await ev(f"S47.world.enter('saro'); S47.flashlight.have = true; S47.flashlight.on = true; S47.player.place({PX}, {PZ}, {yaw_to(PX, PZ, -40, -300)}); S47.player.pitch = 0.32; S47.tick(0.5)")
         check(await ev("S47.player.walkable(S47.player.pos.x, S47.player.pos.z)") and await ev("S47.abductIn().line") == 'B', 'phone: on the gravel far out in the field, on B')
         await pg.wait_for_timeout(3500)
-        check(await warning(40), 'phone: the warning')
-        await tick(0.5, 26)
+        check(await warning(47), 'phone: the warning')
+        await tick(0.5, 62)   # :31, the near ones started a breath after :16
         st = await ev(f"{F}.state")
         near = sorted(r['id'] for r in st if r['tier'] == 0)
         lod = await ev(f"S47.ext.dishes.filter((d) => {json.dumps(near)}.includes(d.id)).map((d) => d.lod)")
@@ -326,10 +328,10 @@ async def main():
         # and by the gate, where the floods light them (the night let go again for the picture)
         await ev(f"delete {A}.data.dishes; S47.player.place({X}, {Z}, {yaw_to(X, Z, -16, -52)}); S47.player.pitch = 0.34; S47.flashlight.on = true; S47.tick(0.3)")
         await pg.wait_for_timeout(3000)
-        ok = await warning(30)
+        ok = await warning(47)
         if not ok: print('  (why not:', await ev(f"(() => {{ const s = S47.abductIn(true), a = {A}; return [a.stage, s.ok, s.line, s.enabled, s.clock, s.nextFixed, a.data.count, a.data.last, S47.game.phase, !!S47.game.d.ui.modal, S47.game.cinematic, S47.roofSteps.busy, S47.follow.mode]; }})()"), ')', flush=True)
         check(ok, 'phone: a warning by the gate')
-        await tick(0.5, 24)
+        await tick(0.5, 54)   # :27
         check(await ev("__off('S-02', __eye())[0] < 4"), 'phone: S-02 on the player')
         await pg.screenshot(path=f'{OUT}/p03_phone_s02.png')
 
