@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import type { AudioSys } from '../core/Audio';
 import { Town } from '../world/Town';
 import { clockText } from './time';
+import { PLACES, lineOfMark } from './lines';
 
 // What happens in Caliche once in a night (HENDELSER.md, section 6; the first of the event
 // director, in the town's terms). Each repeats something that was recorded, on line A, which runs
-// down the main street, and none of it happens because the player is there; the director only
-// waits until the player is near. They are kept in the case with the town (main.ts, `town`), and
-// none comes again, also after loading.
+// down the main street at a slant, through the payphone (story/lines.ts), and none of it happens
+// because the player is there; the director only waits until the player is near. They are kept in
+// the case with the town (main.ts, `town`), and none comes again, also after loading.
 //
 //   1  the payphone   rings at the gas station. On the line, the control room printer, line by
 //                     line, for 47 seconds; a 1947 nickel in the coin return after. After room 6
@@ -49,12 +50,13 @@ export interface TownEventsDeps {
 }
 
 /** The kinds of mark that are on line B, not A (the map, and the line drawn in): the lights along
- *  the highway (lineLights.ts), the herd facing 026 (pasture.ts), the motel's television (motelTv.ts). */
-export const ON_B = new Set(['lights', 'cows', 'tv']);
+ *  the highway (lineLights.ts), the herd facing 026 (pasture.ts), the motel's television (motelTv.ts).
+ *  It is where their places are that says so (story/lines.ts, PLACES). */
+export const ON_B = new Set(Object.keys(PLACES).filter((k) => lineOfMark(k) === 'B'));
 const GAP = 10 * 60;              // seconds of the night between two events
 const RING = 30;                  // how long the payphone rings if nobody answers
 const LINE = 47;                  // seconds of the printer on the line
-const PHONE = new THREE.Vector3(-15.5, 1.4, 2064.6);   // the payphone, road-local (Town.gasStation)
+const PHONE = new THREE.Vector3(PLACES.phone[0], 1.4, PLACES.phone[1]);   // the payphone, road-local (Town.gasStation; on A)
 
 export class TownEvents {
   /** What is going on now, for the developer menu and the tests. */
@@ -112,7 +114,7 @@ export class TownEvents {
     // three marks on A: the line drawn in (the map draws it, ui/areaMap.ts)
     if ((this.lineCheck += dt) > 1 && !this.d.seen.has('lineA')) {
       this.lineCheck = 0;
-      if (townMarks(this.d.seen).filter((m) => !ON_B.has(m.kind)).length >= 3) {
+      if (townMarks(this.d.seen).filter((m) => lineOfMark(m.kind) === 'A').length >= 3) {
         this.d.seen.add('lineA');
         this.d.note(`${clockText(s.clock, false)}. Three on one line. Drawn in on the map: through Caliche, and on to the north-west.`);
         this.d.save();

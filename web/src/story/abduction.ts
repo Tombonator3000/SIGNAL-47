@@ -5,6 +5,7 @@ import type { DocSpec } from '../ui/UI';
 import { clockText } from './time';
 import { artImage, artLoaded, loadArtSome, ABDUCT_ART, type ArtId } from '../core/art';
 import { Silhouette, type Pose } from '../core/roadside';
+import type { LineId } from './lines';
 
 // The time away (HENDELSER.md, section 8; Tom, 16 October: yes to all four questions). On foot,
 // alone, outdoors on one of the lines, at night: the pressure rises, and at the top of it they
@@ -40,7 +41,7 @@ import { Silhouette, type Pose } from '../core/roadside';
 //
 // At least 40 minutes of the night between two, at most three in a night; the director sees to
 // one before chapter five. The setting turns them off (on by default). main.ts decides when it
-// may run (chapters one to four, at night, no panel, no cinematic) and where the lines are.
+// may run (chapters one to four, at night, no panel, no cinematic); story/lines.ts where the lines are.
 //
 // The single frames are ChatGPT's where they have come (ART_BRIEF.md, round 14, abduct/; asked for
 // when the warning starts): the light with your legs in it, the truck standing open, three of them
@@ -48,7 +49,8 @@ import { Silhouette, type Pose } from '../core/roadside';
 // camera over the place you lay (it shows the real place); the painted one from above is there
 // for when that cannot be drawn, in the frames and on the roll.
 
-export type Line = 'A' | 'B' | 'C';
+/** The lines (story/lines.ts says where each crosses the ground). */
+export type Line = LineId;
 export interface AbductIn {
   ok: boolean;
   /** The setting (on by default). */
@@ -324,6 +326,7 @@ export class Abduction {
     p.yaw = this.facing(v);
     p.update(0, 0, 0, false);
     this.over = { v, t: 0, phase: 'stars', pitch: p.pitch, yaw: p.yaw, dirs: [], off: [], heads: [] };
+    this.overLooked = false;
     this.d.hush(60, 0, 0.05);
     document.documentElement.classList.add('abduct-held');
     if (!OVER[v].stars) this.overReveal();
@@ -447,7 +450,9 @@ export class Abduction {
       return;
     }
     const look = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(p.pitch, p.yaw, 0, 'YXZ'));
-    if (o.t >= OVER_T || o.dirs.some((d, i) => look.angleTo(d) < o.off[i] - 0.05)) this.overGone();
+    const looked = o.dirs.some((d, i) => look.angleTo(d) < o.off[i] - 0.05);
+    if (looked) this.overLooked = true;
+    if (o.t >= OVER_T || looked) this.overGone();
   }
   private overGone() {
     this.overDrop();
@@ -472,6 +477,8 @@ export class Abduction {
     p.yaw = THREE.MathUtils.clamp(p.yaw - dx * 0.45, o.yaw - 0.4, o.yaw + 0.4);
     p.pitch = THREE.MathUtils.clamp(p.pitch - dy * 0.45, o.pitch - 0.3, o.pitch + 0.5);
   }
+  /** The last time one of them was over you, it went because the eyes went up to it (story/seen.ts). */
+  overLooked = false;
   /** Where waking is up to with one of them over you, or null (the tests). */
   get overPhase() { return this.over?.phase ?? null; }
   /** The middle of each one's head while they are there (the tests). */

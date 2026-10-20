@@ -152,6 +152,12 @@ export class Roadside {
     this.last = { what: 'car', at: this.t };
   }
   get carState() { return this.car ? { state: this.car.state, z: this.car.z } : null; }
+  /** Where the car's lights are (SARO's terms) while they are there (story/seen.ts), or null. */
+  get carAt() { return this.car && this.car.state !== 'out' ? this.carPt.set(CAR_LANE, MOTEL_AT.y + 0.8, this.car.z) : null; }
+  private carPt = new THREE.Vector3();
+  /** Where the one on the motel's roof stands (its head) while it is there, or null. */
+  get roofAt() { return this.roof === 'up' ? this.roofPt.copy(ROOF).setY(ROOF.y + 0.6) : null; }
+  private roofPt = new THREE.Vector3();
 
   // ---------- the silence ----------
   private silenceStep(dt: number, o: RoadsideIn) {

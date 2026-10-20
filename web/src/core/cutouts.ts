@@ -135,6 +135,9 @@ export class Cutouts {
     old?.dispose();
   }
   get position() { return this.fig.position; }
+  /** Where it stands (its middle) while it is up (story/seen.ts), or null. */
+  get where() { return this.up ? this.mid.copy(this.fig.position).setY(this.fig.position.y + 0.8) : null; }
+  private mid = new THREE.Vector3();
   private hide(wait: number) { this.fig.visible = false; this.up = null; this.wait = wait; }
   /** A new night, the title, a save opened. */
   reset() { this.hide(rnd(40, 120)); this.seen = 0; }

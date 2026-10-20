@@ -208,6 +208,8 @@ export class NightEvents {
     return true;
   }
   private doorAt = new THREE.Vector3();
+  /** Where the steps behind the player were, the last time (story/seen.ts). */
+  get stepsAt() { return this.stepAt; }
   private doorSeen = false;
 
   private stepsBehind(dt: number, s: NightIn) {
