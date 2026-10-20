@@ -6,6 +6,8 @@ import { clockText } from './time';
 import { artImage, artLoaded, loadArtSome, ABDUCT_ART, type ArtId } from '../core/art';
 import { Silhouette, type Pose } from '../core/roadside';
 import type { LineId } from './lines';
+import { Walker, PATH_DT, type Path, type Rec } from './recording';
+import { facing } from './seen';
 
 // The time away (HENDELSER.md, section 8; Tom, 16 October: yes to all four questions). On foot,
 // alone, outdoors on one of the lines, at night: the pressure rises, and at the top of it they
@@ -44,7 +46,13 @@ import type { LineId } from './lines';
 //                above), a line in your own hand you do not remember writing, a nosebleed that
 //                stopped by itself. And afterwards, where you were taken, someone in a SARO
 //                jacket stands quite still, the reflective band catching the light, for the rest
-//                of the night: the recording (R5). Gone if you walk up to it.
+//                of the night: the recording (R5). Gone if you walk up to it. The last 47 seconds
+//                are kept with it (where you went, which way you looked), and once, later, when
+//                you are back within sight of the place, it walks them (story/recording.ts).
+//
+// At STATION 01, after N. Vega's call in chapter three, everyone goes (FORSLAG.md, 20 October,
+// item 9 A; story/stationTaken.ts): a player not yet taken gets the warning on the way from the
+// hut, and there is no getting away from it there (force).
 //
 // At least 40 minutes of the night between two, at most three in a night; the director sees to
 // one before chapter five. The setting turns them off (on by default). main.ts decides when it
@@ -108,14 +116,27 @@ export interface AbductDeps {
   file: (doc: DocSpec) => void;
   keyStall: () => void;
   save: () => void;
+  /** How much a light from near the eye (the flashlight, the headlights) falls on a point, 0 to 1:
+   *  the reflective band on the one standing gives it back (story/recording.ts, Walker.shine). */
+  shine?: (at: THREE.Vector3) => number;
 }
 /** What is kept with the case. dishes: the one night the array came down out of 026 and followed
  *  the player through a warning (story/dishesFollow.ts), when, which, and whether they are back. */
 export interface AbductSave { count: number; last: number; spots: { scene: string; take: [number, number, number]; back: [number, number, number]; clock: number; pic?: string; doc?: DocSpec;
   /** Which time it was that one of them stood over you on waking (1 to 3); absent when none did
    *  (Missing time turned off on the way, the outlines not there, a case from before 20 October). */
-  over?: number }[];
-  dishes?: { clock: number; ids: string[]; back: boolean } }
+  over?: number;
+  /** The last 47 seconds before the light: x, z and the view's yaw every quarter second (story/
+   *  recording.ts, PATH_DT); absent in a case from before 20 October. */
+  path?: Path;
+  /** When the recording walked them (the night's clock): once, never again. */
+  walked?: number;
+  /** STATION 01's, after N. Vega's call (story/stationTaken.ts). */
+  station?: boolean }[];
+  dishes?: { clock: number; ids: string[]; back: boolean };
+  /** STATION 01 after N. Vega's call (story/stationTaken.ts): 'taken' once the warning there has
+   *  begun, 'passed' when Missing time was turned off on the way (then never again tonight). */
+  station?: 'taken' | 'passed' }
 
 type Stage = 'calm' | 'warning' | 'light' | 'taken' | 'black' | 'back';
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -169,7 +190,15 @@ export class Abduction {
   /** The pressure under the warning, from its start to the taking (bought sound, AudioSys.pressure). */
   private bed: ReturnType<AudioSys['pressure']> = null;
   private rings: THREE.Mesh[] = [];
-  private records: { g: THREE.Group; scene: string }[] = [];
+  /** The one standing where each time away was (n is which, 1 to 3): held while it walks (story/
+   *  recording.ts), and hidden after that until its place has been out of the view. */
+  private records: { g: THREE.Group; fig: Walker; scene: string; held: boolean; hide: boolean }[] = [];
+  /** The warning as it is lived (story/recording.ts): the player's way, a quarter second at a time. */
+  private path: number[] = [];
+  private pathT = 0;
+  /** This warning cannot be got away from (story/stationTaken.ts): only Missing time turned off, or
+   *  the night left, ends it. */
+  forced = false;
   private lying: THREE.Group;
   private hadLight = false;
   /** Over you on waking (the outlines are asked for when the warning starts), and where it is up
@@ -249,6 +278,7 @@ export class Abduction {
   begin(s: AbductIn) {
     this.stage = 'warning'; this.st = 0; this.warnLen = WARN; this.silent = false;
     this.beat = 0; this.warnFrom = s.clock;
+    this.path = []; this.pathT = 0; this.sample();
     this.hadLight = this.d.flashlight.on;
     this.take.copy(this.d.player.pos);
     void loadArtSome(ABDUCT_ART);
@@ -256,10 +286,19 @@ export class Abduction {
     this.d.hush(this.warnLen + 12, 0);
     this.bed?.stop(); this.bed = this.d.audio.pressure();
   }
+  /** Start the warning that cannot be got away from (STATION 01 after N. Vega's call). */
+  force(s: AbductIn) { this.begin(s); this.forced = true; }
+  /** The player where they are now, on the way the recording will walk (a quarter second apart). */
+  private sample() {
+    const p = this.d.player;
+    this.path.push(Math.round(p.pos.x * 100) / 100, Math.round(p.pos.z * 100) / 100, Math.round(p.yaw * 100) / 100);
+  }
   private warning(_dt: number, s: AbductIn) {
     const t = this.st, w = this.warnLen, a = this.d.audio;
-    // got away: off the line, inside, among people, before the light
-    if (!s.ok || !s.line || !s.enabled) { this.passOver(); return; }
+    // got away: off the line, inside, among people, before the light (not from the one that is forced:
+    // only Missing time turned off, or the night left, ends that)
+    if (!s.ok || !s.enabled || (!s.line && !this.forced)) { this.passOver(); return; }
+    while (this.pathT + PATH_DT <= Math.min(t, w) + 1e-6) { this.pathT += PATH_DT; this.sample(); }
     // :16, the beep of 02:13 (the same low tone, and a small one over it that a phone's speaker
     // plays), and the footsteps are gone
     if (t >= BEAT.steps && this.beat < 1) {
@@ -284,7 +323,7 @@ export class Abduction {
     if (t >= w) { this.stage = 'light'; this.st = 0; this.take.copy(this.d.player.pos); this.from = s.clock; this.backAt = this.further(this.take, s.along); }
   }
   private passOver() {
-    this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15); this.beat = 0;
+    this.stage = 'calm'; this.st = 0; this.silent = false; this.pressure = 0.35; this.top = rnd(0.85, 1.15); this.beat = 0; this.forced = false; this.path = [];
     this.toneOff(); this.d.flashlight.flicker(0); this.d.hush(0.1, 1);
     this.bed?.stop(1); this.bed = null;   // got away: it ebbs over a few seconds
     if (this.hadLight && this.d.flashlight.have) this.d.flashlight.on = true;
@@ -339,6 +378,9 @@ export class Abduction {
     this.silent = false;
     this.data.count++; this.data.last = t1;
     const spot: AbductSave['spots'][number] = { scene: this.sceneId, take: [this.take.x, this.take.y, this.take.z], back: [back.x, back.y, back.z], clock: this.from };
+    if (this.path.length >= 6) spot.path = this.path;
+    if (this.forced) spot.station = true;
+    this.path = []; this.forced = false;
     this.data.spots.push(spot);
     this.record(this.take, this.sceneId);
     d.keyStall();
@@ -563,17 +605,47 @@ export class Abduction {
     this.d.scene.add(m); this.rings.push(m);
   }
   private record(at: THREE.Vector3, scene: string) {
-    const g = jacketFigure(false); g.name = 'abduct:record';
+    const fig = new Walker('abduct:record'), g = fig.group;
     g.position.copy(at); g.rotation.y = rnd(0, Math.PI * 2);
-    g.visible = false; this.d.scene.add(g); this.records.push({ g, scene });
+    g.visible = false; this.d.scene.add(g); this.records.push({ g, fig, scene, held: false, hide: false });
+    g.userData.home = { x: at.x, y: at.y, z: at.z, yaw: g.rotation.y };
   }
   /** The recordings standing where the player was taken that are shown from here (story/seen.ts):
-   *  which time away each is from (1 to 3), and where it stands (world terms, at the ground). */
-  get recordsShown() { return this.records.flatMap((r, i) => r.g.visible ? [{ n: i + 1, at: r.g.position }] : []); }
+   *  which time away each is from (1 to 3), and where it stands (world terms, at the ground). Not
+   *  the one walking (story/recording.ts writes that down itself). */
+  get recordsShown() { return this.records.flatMap((r, i) => r.g.visible && !r.held ? [{ n: i + 1, at: r.g.position }] : []); }
   /** The recordings stand where they were taken; walk up to one and it was not there. */
   private recordsStep() {
     const c = this.d.player.pos;
-    for (const r of this.records) r.g.visible = r.scene === this.sceneId && Math.hypot(r.g.position.x - c.x, r.g.position.z - c.z) > 45;
+    for (const r of this.records) {
+      if (r.held) continue;
+      const far = r.scene === this.sceneId && Math.hypot(r.g.position.x - c.x, r.g.position.z - c.z) > 45;
+      // (back where it stands after it walked: only once that place has been out of the view)
+      if (r.hide && (!far || !facing(this.d.player.camera, this.recHead.copy(r.g.position).setY(r.g.position.y + 1.2), 1000, 50))) r.hide = false;
+      r.g.visible = far && !r.hide;
+      if (r.g.visible) r.fig.shine(this.d.shine?.(this.recHead.copy(r.g.position).setY(r.g.position.y + 1.2)) ?? 0);
+    }
+  }
+  private recHead = new THREE.Vector3();
+  /** The times away as the recording's walk sees them (story/recording.ts). */
+  recordings(): Rec[] {
+    return this.records.flatMap((r, i) => {
+      const sp = this.data.spots[i];
+      return sp ? [{ n: i + 1, scene: r.scene, take: new THREE.Vector3(...sp.take), path: sp.path, walked: sp.walked, clock: sp.clock, fig: r.fig,
+        markWalked: (c: number) => { sp.walked = c; } }] : [];
+    });
+  }
+  /** The walk has the one standing for time away n (held), or gives it back: to where it stands,
+   *  hidden until that place has been out of the view. */
+  holdRecord(n: number, held: boolean) {
+    const r = this.records[n - 1];
+    if (!r) return;
+    r.held = held;
+    if (!held) {
+      const h = r.g.userData.home as { x: number; y: number; z: number; yaw: number };
+      r.g.position.set(h.x, h.y, h.z); r.g.rotation.set(0, h.yaw, 0); r.fig.stand();
+      r.hide = true; r.g.visible = false;
+    }
   }
   /** Yourself lying in the grass, from above (the frame and the extra exposure). */
   private fromAbove(at: THREE.Vector3, me: boolean) {
@@ -625,7 +697,7 @@ export class Abduction {
   // ---------- the case ----------
   restore(v: AbductSave | null | undefined) {
     this.clear();
-    this.data = v ? { count: v.count, last: v.last, spots: [...v.spots], ...(v.dishes ? { dishes: { ...v.dishes, ids: [...v.dishes.ids] } } : {}) } : { count: 0, last: -1e9, spots: [] };
+    this.data = v ? { count: v.count, last: v.last, spots: [...v.spots], ...(v.dishes ? { dishes: { ...v.dishes, ids: [...v.dishes.ids] } } : {}), ...(v.station ? { station: v.station } : {}) } : { count: 0, last: -1e9, spots: [] };
     for (const sp of this.data.spots) {
       this.ring(new THREE.Vector3(...sp.back));
       this.record(new THREE.Vector3(...sp.take), sp.scene);
@@ -644,6 +716,7 @@ export class Abduction {
   refile() { for (const sp of this.data.spots) if (sp.doc) this.d.file(sp.doc); }
   private clear() {
     this.toneOff(); this.bed?.stop(); this.bed = null; this.silent = false; this.stage = 'calm'; this.st = 0; this.beat = 0; this.pressure = 0; this.top = rnd(0.85, 1.15); this.backAt = null;
+    this.forced = false; this.path = [];
     this.canvas.style.display = 'none'; this.d.overlay.classList.remove('abduct-light');
     this.overDrop();
     for (const m of this.rings) { m.removeFromParent(); m.geometry.dispose(); (m.material as THREE.Material).dispose(); }

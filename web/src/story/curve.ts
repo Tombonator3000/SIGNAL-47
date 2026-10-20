@@ -57,6 +57,12 @@ import type { SeenEntry, SeenLog } from './seen';
 // the schedule from the console (story/arrayBack.ts), the player's own doing, which may come again
 // and again: one in a rest does not start the rest over. Neither are the things found as they were left (the deputy's
 // car, the herd facing 026, the cutout of event 6 on the shoulder north of Caliche).
+//
+// The recording (story/recording.ts) is the curve's: where the player was taken, someone in a SARO
+// jacket walks the player's last 47 seconds, once, as a scare (a build from half way, or a peak;
+// never in a rest). It belongs to a place too, and waits there: where it could walk within sight
+// of the player (CurveIn.waitingScare), the curve hurries for it as for a waiting 47, and keeps the
+// peak for it. It lands the peak once it has been looked at.
 
 export type CurvePhase = 'off' | 'plain' | 'build' | 'peak' | 'rest';
 /** What the night's things ask about: a small sign (the flashlight, the dash, the radio), a call
@@ -88,6 +94,10 @@ export interface CurveIn {
   /** A 47 of the story's may still come in this chapter (story/saroDark.ts, chapter one): the
    *  chapter's one extra 47 is kept for it. */
   keep?: boolean;
+  /** The recording could walk within sight of the player now (story/recording.ts): a scare that
+   *  belongs to a place, waiting there. The curve hurries for it as for a waiting 47 (after one of
+   *  those: the 47 goes first). */
+  waitingScare?: boolean;
 }
 
 const PLAIN = 600;                                  // ten minutes of plain night after the prologue
@@ -110,7 +120,9 @@ const FELT: Record<string, string[]> = { abduction: ['warning'], roof: ['steps']
 /** Peaks the player can make again and again (the array put back on the schedule, story/arrayBack.ts):
  *  each lands the curve, but one that comes in a rest does not start the rest over. */
 const AGAIN = new Set(['event:array']);
-const SEEN: Record<string, (what: string) => boolean> = { glimpse: (w) => w !== 'on film', face: () => true, event: (w) => w === 'lights' };
+const SEEN: Record<string, (what: string) => boolean> = { glimpse: (w) => w !== 'on film', face: () => true, event: (w) => w === 'lights',
+  // (the recording walking where the player was taken, story/recording.ts)
+  scare: (w) => w.startsWith('walk ') };
 /** The 47-second ones (the per-chapter limit). */
 const LONG = new Set(['scare:silence', 'event:bulletin', 'event:phone', 'event:tv', 'event:blackout']);
 
@@ -145,9 +157,11 @@ export class NightCurve {
   /** A 47-second event is waiting where the player is (CurveIn.waiting), and the curve hurries
    *  for it: the build to the peak, and the peak kept for it. */
   pulled = false;
+  /** What the curve is hurrying for: a waiting 47 ('long') or the recording ('scare'). */
+  pullKind: 'long' | 'scare' = 'long';
   /** 0..1 while the curve hurries in the build (the place shows it: the test card slips, the
    *  payphone's bell tinks); 0 otherwise. */
-  get unrest() { return this.pulled && this.phase === 'build' ? this.level : 0; }
+  get unrest() { return this.pulled && this.pullKind === 'long' && this.phase === 'build' ? this.level : 0; }
   /** How long the player has stayed by the waiting 47 (play seconds; LINGER). */
   private pullT = 0;
   /** How many of each started in this cycle (the calls, the cutout, the events). */
@@ -171,7 +185,7 @@ export class NightCurve {
     if (this.held || this.busy) return false;
     if (kind === 'long' && (this.long.has(this.chapter) || this.keep)) return false;
     // the peak this is hurrying to is kept for the 47 that waits here: nothing else takes it
-    if (this.pulled && kind !== 'long' && kind !== 'sign') return false;
+    if (this.pulled && kind !== this.pullKind && kind !== 'sign') return false;
     const s = this.strength;
     if (kind === 'call' && this.took.call >= (s > 0.45 ? 2 : 1)) return false;
     if (kind === 'event' && this.took.event >= (s > 0.5 ? 2 : 1)) return false;
@@ -217,7 +231,9 @@ export class NightCurve {
     this.sign = false;
     // (not for a chapter that has had its extra 47, or keeps it for the story's: then there is
     // nothing here to hurry for)
-    this.pulled = !this.free && !!s.waiting && !this.long.has(s.chapter) && !this.keep;
+    const long = !!s.waiting && !this.long.has(s.chapter) && !this.keep;
+    this.pulled = !this.free && (long || !!s.waitingScare);
+    this.pullKind = long ? 'long' : 'scare';
     if (!CHAPTERS.includes(s.chapter)) { if (this.phase !== 'off') this.stop(); return; }
     if (this.phase === 'off') this.begin();
     this.strength = clamp01((((s.clock % 86400) + 86400) % 86400 - NIGHT0) / (NIGHT1 - NIGHT0));

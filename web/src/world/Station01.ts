@@ -1948,6 +1948,49 @@ export class Station01 {
     this.setGlow(this.gx.winE, 0x6a4018, on ? 1 : 0);
   }
 
+  /** The hut's door (story/stationTaken.ts): 0 open into the room as it has stood for years, 1 shut
+   *  in its frame. Shut, the doorway is closed to walking (a collider in the opening). */
+  setHutDoor(k: number) {
+    const leaf = this.objs.hutDoorLeaf;
+    if (!leaf) return;
+    const e = THREE.MathUtils.clamp(k, 0, 1);
+    // (it swings faster as it goes, the way a door let go of does, and stops in the frame)
+    leaf.rotation.y = -1.75 * (1 - e * e);
+    const shut = e > 0.8;
+    if (shut === !!this.doorCol) return;
+    if (shut) {
+      const { z1, t } = HUT;
+      this.doorCol = { minX: DOOR.x0 + this.o.x, maxX: DOOR.x1 + this.o.x, minZ: z1 - 0.06 + this.o.z, maxZ: z1 + t + 0.08 + this.o.z };
+      this.colliders.push(this.doorCol);
+    } else {
+      const i = this.colliders.indexOf(this.doorCol!);
+      if (i >= 0) this.colliders.splice(i, 1);
+      this.doorCol = null;
+    }
+  }
+  private doorCol: Collider | null = null;
+  /** The lamps outside (story/stationTaken.ts): the yard light on its pole, the bulb over the hut
+   *  door, the caged one on the shed and the field lamp (when its hood is up), all out or all
+   *  back as they were. */
+  outLampsOn = true;
+  setOutLamps(on: boolean) {
+    this.outLampsOn = on;
+    setFlood(this.slot.yard, on ? BASE.yard : 0, fieldFlood);
+    setFlood(this.slot.shed, on ? BASE.shed : 0, fieldFlood);
+    setFlood(this.slot.wall, on ? BASE.wall * this.wallK : 0, fieldFlood);
+    setFlood(this.slot.door, on ? BASE.door * this.wallK : 0, hutFlood);
+    const field = on && !this.lampCovered;
+    setFlood(this.slot.field, field ? BASE.field : 0, fieldFlood);
+    this.m.wallBulb.color.set(on ? 0xfff0d6 : 0x1c1a17);
+    this.m.lampBulb.color.set(on ? 0xffd9a0 : 0x1c1a17);
+    this.m.lens.color.set(on ? 0xffd28a : 0x15140f);
+    this.m.fieldBulb.color.set(field ? 0xfff2d8 : 0x151311);
+    this.setGlow(this.gx.yard, 0xffc07a, on ? 1 : 0);
+    this.setGlow(this.gx.shed, 0xffc888, on ? 1 : 0);
+    this.setGlow(this.gx.wall, 0xffc27a, on ? this.wallK : 0);
+    this.setGlow(this.gx.field, 0xffd29a, field ? 1 : 0);
+  }
+
   /** The drawer under the bench out (with what is in it to be seen) or in. `now`: at once (a save). */
   setDrawer(open: boolean, now = false) {
     this.drawerOpen = open;
@@ -1974,7 +2017,7 @@ export class Station01 {
     // the bulb over the door is loose in its socket: now and then it dips
     const dip = Math.sin(t * 0.83) > 0.93 && Math.sin(t * 31 + Math.sin(t * 5)) > -0.2;
     const k = dip ? 0.3 + 0.25 * Math.abs(Math.sin(t * 47)) : 0.95 + 0.05 * Math.sin(t * 13.7) * Math.sin(t * 4.1);
-    if (Math.abs(k - this.wallK) > 0.01) {
+    if (this.outLampsOn && Math.abs(k - this.wallK) > 0.01) {
       this.wallK = k;
       setFlood(this.slot.wall, BASE.wall * k, fieldFlood);
       setFlood(this.slot.door, BASE.door * k, hutFlood);

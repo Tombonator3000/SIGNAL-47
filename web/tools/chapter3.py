@@ -97,7 +97,9 @@ async def main():
         docs = lambda: ev("S47.game.docs.map(d => d.id)")
 
         # ---------- SARO: the truck ----------
-        await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter3'); S47.tick(1.0)")
+        # (Missing time off: after N. Vega's call everyone goes at the station, story/stationTaken.ts;
+        # that, and the time away, are tools/f_aftermath.py's and tools/abduct.py's)
+        await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter3'); S47.tick(1.0); S47.setAbductions(false)")
         check(await ev("S47.game.phase") == 'ch3' and await s3('stage') == 'to-truck', 'chapter three starts: to the truck')
         check('TAKE THE SARO TRUCK' in await objective(), 'objective names the truck')
         check(await ev("!!S47.world.saroTruck && S47.world.saroTruck.group.visible"), 'the service truck stands on its pad')
@@ -294,7 +296,7 @@ async def main():
         await pg.wait_for_selector('button[data-a=cont]:not([disabled])')
         check('STATION 01' in await ev("document.querySelector('.cont-info').textContent"), 'title screen offers to continue at STATION 01')
         await pg.click('button[data-a=cont]'); await pg.wait_for_function('S47.started()', polling=200)
-        await ev("S47.hold = true; S47.tick(0.5)")
+        await ev("S47.hold = true; S47.setAbductions(false); S47.tick(0.5)")
         check(await ev("S47.world.area") == 'station01' and await s3('stage') == 'return' and await s3('p07') and await ev("S47.world.site.lampCovered === S47.ch3.s.lampCovered"), 'Continue brings back the station, the findings and the lamp as it was left')
         check(await ev("S47.ch3.s.f3.url.length > 50000 && S47.ch3.s.f4.url.length > 50000"), 'Continue brings back both field photographs')
         await shot('e12_continue_station')
