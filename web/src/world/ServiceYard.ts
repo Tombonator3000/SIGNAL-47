@@ -50,6 +50,13 @@ export class ServiceYard {
   private workGlow = -1;
   workLampBase = 7;
   safelight = -1;
+  /** The lit red glass: the safelight over the bench, the one in the ceiling, the DARKROOM lamp by
+   *  the door (world/saroPower.ts darkens them with the power). */
+  readonly redGlass: THREE.MeshBasicMaterial[] = [];
+  /** Unlit paint the yard's lamps light (the stencils on the concrete, the B-12 plate), and the lit
+   *  glass of the S-03 motor bus (world/saroPower.ts: dimmed, and dark, with the power). */
+  readonly paint: THREE.MeshBasicMaterial[] = [];
+  readonly screens: THREE.MeshBasicMaterial[] = [];
   zone: Record<string, Zone> = {};
 
   constructor() {
@@ -76,6 +83,7 @@ export class ServiceYard {
   }
 
   private col(minX: number, maxX: number, minZ: number, maxZ: number) { this.colliders.push({ minX, maxX, minZ, maxZ }); }
+  private red() { const m = new THREE.MeshBasicMaterial({ color: 0xff2a14 }); this.redGlass.push(m); return m; }
   // Invisible box that interaction rays can hit (small or merged objects are hard to aim at).
   private proxy(name: string, w: number, h: number, d: number, x: number, y: number, z: number) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshBasicMaterial({ visible: false }));
@@ -151,6 +159,7 @@ export class ServiceYard {
     apronMark.rotation.z = Math.PI / 2;
     const sight = plane(st, 1.6, 0.8, new THREE.MeshBasicMaterial({ map: T.floorStencil(['B-12', 'SIGHT LINE']), transparent: true, depthWrite: false, color: 0x8f7f55 }), YARD.sightMark.x, 0.006, YARD.sightMark.z, 0, -Math.PI / 2);
     noMerge(sight); this.group.add(sight);
+    this.paint.push(apronMark.material as THREE.MeshBasicMaterial, sight.material as THREE.MeshBasicMaterial);
   }
 
   // ---------- S-03 motor bus cabinet ----------
@@ -166,6 +175,7 @@ export class ServiceYard {
     // display behind the inspection glass (drawn by the chapter code)
     const scr = plane(cab, 0.42, 0.26, new THREE.MeshBasicMaterial({ map: this.bus.tex, toneMapped: false }), 0, 1.055, 0.232);
     noMerge(scr); cab.add(scr);
+    this.screens.push(scr.material as THREE.MeshBasicMaterial);
     // conduit into the ground and the clipboard shelf
     cyl(cab, 0.04, 0.04, 0.5, M.steel, 0.3, 0.25, -0.3, 6);
     box(cab, 0.3, 0.02, 0.16, steel, -0.24, 0.47, 0.31);
@@ -195,6 +205,7 @@ export class ServiceYard {
     box(st, 0.2, 0.12, 0.03, M.darkPlastic, base.x, 1.58, base.z + 0.03);
     const plate = plane(st, 0.16, 0.09, new THREE.MeshBasicMaterial({ map: T.labelCard(['B-12'], { w: 128, h: 72, bg: '#e8e1cb', size: 40 }), color: 0x9a9483 }), base.x, 1.58, base.z + 0.046);
     plate.name = 'b12plate';
+    this.paint.push(plate.material as THREE.MeshBasicMaterial);
     // the movable vane
     this.vane = new THREE.Group();
     this.vane.position.copy(YARD.vane);
@@ -309,12 +320,12 @@ export class ServiceYard {
     for (const [name, x] of trays) plane(lab, 0.18, 0.05, card([name], { w: 96, h: 28, font: 'VT323', size: 24, surface: 'paper' }), x, 0.97, -5.195);
     // safelight
     box(lab, 0.34, 0.16, 0.18, plastic, 15.0, 2.45, -5.65);
-    box(lab, 0.3, 0.12, 0.01, new THREE.MeshBasicMaterial({ color: 0xff2a14 }), 15.0, 2.43, -5.555);
+    box(lab, 0.3, 0.12, 0.01, this.red(), 15.0, 2.43, -5.555);
     this.safelight = addFlood(15.0, 2.2, -5.2, 9, 0xff2616, lf);
     this.glow.add(15.0, 2.43, -5.5, 0.9, 0xff3a1f);
     // a second safelight in the ceiling, so the room reads without white light
     box(lab, 0.26, 0.1, 0.26, plastic, 15.9, 2.7, -2.4);
-    box(lab, 0.22, 0.01, 0.22, new THREE.MeshBasicMaterial({ color: 0xff2a14 }), 15.9, 2.645, -2.4);
+    box(lab, 0.22, 0.01, 0.22, this.red(), 15.9, 2.645, -2.4);
     addFlood(15.9, 2.35, -2.4, 6, 0xff2a18, lf);
     this.glow.add(15.9, 2.62, -2.4, 0.7, 0xff3a1f);
     // the print in the fixer tray (shows the real photograph while it develops)
@@ -460,7 +471,7 @@ export class ServiceYard {
 
     // the darkroom warning lamp beside the lab door (lit: the safelight is on)
     box(st, 0.1, 0.14, 0.14, dark, 12.55, 2.3, -0.42);
-    box(st, 0.01, 0.1, 0.1, new THREE.MeshBasicMaterial({ color: 0xff2a14 }), 12.495, 2.3, -0.42);
+    box(st, 0.01, 0.1, 0.1, this.red(), 12.495, 2.3, -0.42);
     this.glow.add(12.47, 2.3, -0.42, 0.5, 0xff3a1f);
     plane(st, 0.26, 0.1, card(['DARKROOM', 'IN USE'], { w: 128, h: 50, size: 18, bg: '#3b0d0a', fg: '#ff9a84' }), 12.585, 2.1, -0.42, -Math.PI / 2);
 

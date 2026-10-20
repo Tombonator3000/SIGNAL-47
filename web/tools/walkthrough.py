@@ -122,8 +122,21 @@ async def main():
         await setrx(1420.110, 55, 15, 42); await pg.click('[data-a=act]')
         check(await ev("S47.game.rx.stage") == 2, 'interference 1420.110 notched')
         await tick(0.2); await shot('05_console_survey')
-        await pg.click('[data-a=exit]'); await tick(12)
-        await tick(4)
+        await pg.click('[data-a=exit]'); await tick(6.5)
+        # the relay goes first (FORSLAG.md, 20 October, small change 2): K3 trips by itself, the lever
+        # puts it back, and forty seconds after the trip the lights dip; then the skip
+        check(not await ev("S47.game.ns.k3Open") and await ev("S47.game.phase") == 'survey', 'the survey runs; bank 3 on for a few seconds')
+        await tick(1.0)
+        check(await ev("S47.game.ns.k3Open") and await label('rack') == 'Reset RX bank 3', 'then K3 trips by itself, before the skip')
+        await use('rack'); await tick(1)
+        check(not await ev("S47.game.ns.k3Open"), 'the lever puts bank 3 back')
+        await tick(37.5)
+        check(not any(l[1].startswith('LINE POWER  DIP') for l in await ev("S47.game.ns.log")), 'no dip yet 39 s after the trip')
+        await tick(1.5)
+        lines = await ev("S47.game.ns.log")
+        k3 = [l[0] for l in lines if l[1] == 'RX BANK 3  K3 OPEN'][-1]; dip = [l[0] for l in lines if l[1].startswith('LINE POWER  DIP')]
+        check(dip and dip[0] - k3 == 40, 'forty seconds after the trip the lights dip, as the service record says')
+        await tick(9)
         check(await ev("S47.game.phase") == 'residual', 'time skip lands at 02:13 residual')
         await tick(7)
         check(await ev("S47.game.rxc.residualVisible") is True, 'residual appears on the spectrum')

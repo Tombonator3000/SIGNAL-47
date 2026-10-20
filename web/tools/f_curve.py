@@ -148,6 +148,9 @@ async def main():
         # ---------- chapter one: ten minutes of plain night ----------
         await ev("S47.jump('chapter1'); S47.tick(1.0); S47.game.d.ui.close(); S47.tick(0.2)")
         await ev("S47.game.clock = 2 * 3600 + 20 * 60; S47.flashlight.have = true; S47.flashlight.on = true; S47.world.enter('saro')")
+        # (a night in which SARO never went dark, Hondo's telex on the roll anyway: story/saroDark.ts keeps
+        # chapter one's 47 for the dark until it has come or 02:40 is past; tools/f_relay_hondo.py has that)
+        await ev("S47.game.ns.hondo = 2 * 3600 + 29 * 60")
         await ev("S47.player.place(-2, -24, 0); S47.tick(0.3)")
         await look_off()
         cv = await ev(f"({{ phase: {C}.phase, len: {C}.len, level: {C}.level }})")

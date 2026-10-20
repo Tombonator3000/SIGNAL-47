@@ -140,11 +140,35 @@ ALL OTHER SITES NORMAL
 NNNN`,
 ];
 export function telex(messages: string[]): DocSpec {
+  // (last evening's roll keeps its words exactly: the read-aloud voices have them)
+  const hondo = messages.length > TELEX_EVENING.length;
   return {
     id: 'telex', title: 'Telex roll', kind: 'typed', stamp: 'TELEX', page: messages.join('\n\n'),
-    transcript: 'The roll on the teleprinter in the corner, torn off below the last message. A weather advisory at 22:50, and the network status at 23:00.',
+    transcript: hondo
+      ? 'The roll on the teleprinter in the corner. Above the tear, a weather advisory at 22:50 and the network status at 23:00. Below it, printed when the power came back, one more: Hondo Valley.'
+      : 'The roll on the teleprinter in the corner, torn off below the last message. A weather advisory at 22:50, and the network status at 23:00.',
   };
 }
+
+// Hondo Valley's message (KAPITLER.md, The Second Exposure, new 1: "Telexen fra Hondo Valley,
+// 02:29"; the words as written there). Filed at the minute SARO went dark (story/saroDark.ts; 02:29
+// unless something else of the night held it back), printed on the roll when the power came back.
+// Ward has read it by morning ("I read the telex. All of it." / "Hondo called.", Chapter5.ts).
+const hhmm = (clock: number) => clockText(clock, false).replace(':', '');
+export function telexHondo(filed: number) {
+  return `ZCZC HVR${hhmm(filed)}
+SARO OPS
+FM HONDO VALLEY RADIO STN
+${hhmm(filed)} MST 14 APR 86
+RANGE SOLUTION NEGATIVE. REQUEST PROCEDURE.
+NNNN`;
+}
+/** The note the first reading of it leaves. */
+export const HONDO_NOTE = (filed: number) =>
+  `${clockText(filed, false)}. Telex from Hondo Valley Radio Station: RANGE SOLUTION NEGATIVE. REQUEST PROCEDURE. Somebody else got one tonight, and they are asking us what to do.`;
+/** The roll as it hangs out of the machine (ControlRoom.setTelexRoll): its lines, the newest at the
+ *  bottom by the platen. */
+export function telexLines(messages: string[]) { return messages.join('\n\n').split('\n'); }
 
 // ---------- the operations terminal ----------
 

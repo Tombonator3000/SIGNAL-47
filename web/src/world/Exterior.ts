@@ -41,6 +41,9 @@ export class Exterior {
   /** The east wing and the concrete of the control room's roof and the plinths, as built here
    *  (world/blenderModels.ts puts the modelled house in their place when it is shown). */
   house: THREE.Mesh[] = [];
+  /** Unlit surfaces SARO's lamps light (the array fence, the lettering on the wing): dimmed with
+   *  the power (world/saroPower.ts). */
+  readonly paint: THREE.MeshBasicMaterial[] = [];
   private statics = new THREE.Group();
 
   constructor() {
@@ -148,6 +151,7 @@ export class Exterior {
     // lettering on the south face of the wing
     const letters = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.5), new THREE.MeshBasicMaterial({ map: T.saroLettering(), transparent: true, toneMapped: false, color: 0xd9cfb6 }));
     letters.position.set(26.4, 2.0, 5.53);
+    this.paint.push(letters.material);
     noMerge(letters);
     g.add(letters);
     // roof parapet of the control room
@@ -206,6 +210,7 @@ export class Exterior {
       (f.material as THREE.MeshBasicMaterial).map!.repeat.x = tex.repeat.x * (x1 - x0) / 140;
       (f.material as THREE.MeshBasicMaterial).map!.needsUpdate = true;
       noMerge(f);
+      this.paint.push(f.material as THREE.MeshBasicMaterial);
     }
     const gap = (x: number) => (x > -28.6 && x < -19.4) || (x > GATE.x0 - 0.8 && x < GATE.x1 + 0.8);
     for (let x = -80; x <= 60; x += 7) if (!gap(x)) cyl(this.statics, 0.05, 0.05, 2.6, M.pole, x, 0.6, FENCE_Z, 5);
