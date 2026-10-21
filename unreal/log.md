@@ -1,0 +1,12 @@
+# Logg for unreal/
+
+Nyeste nederst. Tid i Europe/Oslo.
+
+## 2026-10-21
+
+- 19:25 Tom setter THE BLACK MAP på pause og spør om en Unreal-versjon av SIGNAL / 47 er mulig. Svar: ja, som nybygging; modellene, lyden og historien kan gjenbrukes, verdenen og logikken må skrives om. Tom ba om en egen undermappe med en prøve og plass til hele konverteringen.
+- 19:30 Opprettet unreal/Signal47 (UE 5.8.4, C++-modul, Vulkan SM6, Lumen). Skrev S47Saro (stasjonen bygget i kode etter nettversjonens mål), S47Walker (førsteperson), S47HUD og SS47Widgets (overlegg og statusterminal), importskriptet for modellene fra Unity-arkivet, og skriptene for bygging, pakking og skjermbilder. Fontkonvertering fra woff2 feilet (ingen fontTools); JetBrains Mono som reserve.
+- 19:40 Editor-målet kompilerte på første forsøk. Importerte 26 modeller fra Unity-arkivet til Content/Models. Refined-settet (pult, terminaler, telefon, skriver, krus, rack, antenne) har ett navnløst materialspor i FBX-filene, så fargene fra Unity-materialene når ikke dem; de får faste farger i S47Saro.cpp. PolyHaven-lampa kom inn med tomme meshes og brukes ikke.
+- 19:50 Første pakkede build og seks kjøringer: fem gikk gjennom. Funn fra bildene: Refined-settet er modellert i ulik skala (terminal 115 cm bred, pult 680 cm), taklyset for sterkt, tåka skjulte stjernene, antenneskåla for stor mot foten, og terminaltesten bommet fordi siktet gikk over skjermen. Rettet skala per modell, lys, tåke, ståplass og skålas størrelse.
+- 20:15 Runde to til fire: pulten lå med langsida mot vinduet (modellen er 6,8 m i X), derfor traff ikke siktet terminalen; snudde pult, terminaler, skriver, telefon, rack og operasjonspult. Tåka ned, lys justert, musa ignoreres det første halve sekundet etter plassering (det første utslaget kan være stort). Alle seks kjøringer gikk gjennom: rommet, vinduet, terminalen med «STATUS TERMINAL · E», terminalen åpen, gården og antennene. Stjernene er fortsatt usynlige: kulas V går motsatt vei, så stjernene havnet under bakken.
+- 20:20 Tom: hele spillet skal konverteres, med Superhive-pakken (Vintage Liminal Props), lydpakken og musikken. De kjøpte filene ligger i den private klonen web/src/assets/licensed (18 glb, 16 lyder) og importeres til Content/Licensed, som er ignorert av Git. All lyd havner i Content/Audio, også ignorert, og bygges av Scripts/import-audio.sh. To hjelpere porterer dokumentene og operasjonsterminalen (S47Docs, S47Ops) og mottakeren med spekteret (S47Rx).

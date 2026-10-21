@@ -1,0 +1,10 @@
+# Unreal: generated folders are never committed.
+Signal47/Binaries/
+Signal47/Intermediate/
+Signal47/Saved/
+Signal47/DerivedDataCache/
+Signal47/.vscode/
+Signal47/*.code-workspace
+# Bought models and sounds, and all audio (big, rebuilt by the import scripts): never in the public repo.
+Signal47/Content/Licensed/
+Signal47/Content/Audio/
