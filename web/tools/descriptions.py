@@ -152,11 +152,15 @@ async def notebook(page, tab):
 
 async def inventory(page, label, report):
     entries = await page.evaluate(INVENTORY)
-    missing = [e for e in entries if not e["available"]]
+    # The herd's ear tags (PR #132, the ninth cow) are new text without a recording; the game
+    # shows them as text with the read-aloud button disabled ("No recording for this text.").
+    unrecorded = [e for e in entries if not e["available"] and e["source"].startswith("examine:look:cow:")]
+    missing = [e for e in entries if not e["available"] and e not in unrecorded]
     check(len(entries) >= 100 and not missing,
           f"{label}: all {len(entries)} sampled authored look/map/kit/people/task/note descriptions resolve" +
+          (f" ({len(unrecorded)} cow tags unrecorded, by design)" if unrecorded else "") +
           (": " + " | ".join(e["source"] + "=" + e["text"] for e in missing[:4]) if missing else ""))
-    report[label] = {"entries": entries, "missing": missing}
+    report[label] = {"entries": entries, "missing": missing, "unrecorded": unrecorded}
 
 
 async def enable(page):
