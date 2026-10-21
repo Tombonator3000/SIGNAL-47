@@ -2317,8 +2317,8 @@ async function boot() {
   Object.assign((window as any).S47, { saroDark, saroPower, darkIn: () => darkIn(true, !!ui.modal), darkWhere: () => darkWhere() });
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   Object.assign((window as any).S47, { ninth, musicHeld: () => musicHeld() });   // the ninth cow at STATION 01 (tools/f_ninth_cow.py)
-  Object.assign((window as any).S47, { starHole, holeIn: () => holeIn(false) });
-  Object.assign((window as any).S47, { sameThread, mapView: () => mapView(), cardRing: () => cardRing, morning, dinerCooler, morningIn: () => morningIn() });   // the morning holds its breath (tools/f_small_grep.py)   // no stars where the dishes point (tools/f_star_hole.py)
+  Object.assign((window as any).S47, { starHole, holeIn: () => holeIn(false) });   // no stars where the dishes point (tools/f_star_hole.py)
+  Object.assign((window as any).S47, { sameThread, mapView: () => mapView(), cardRing: () => cardRing, morning, dinerCooler, morningIn: () => morningIn() });   // small changes 5 to 8 (tools/f_small_grep.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
   Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)

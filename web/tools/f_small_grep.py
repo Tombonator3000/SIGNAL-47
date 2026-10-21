@@ -188,7 +188,7 @@ async def morning(pg, tag, full):
         await ev("T.until(() => S47.ninth.quiet <= 0, 8, 0.2)")
     else:
         await ev(f"S47.game.clock = {T513 + 2}")
-    await ev("T.until(() => S47.morning.phase !== 'idle', 3, 0.05)")
+    await ev("T.until(() => S47.morning.phase !== 'idle', 20, 0.1)")
     before = await ev("T.run(0.01)")   # (the meter running)
     check(await m() == 'held' and await ev("S47.townSeen.has('morning:held')"), f'{tag}: then it holds ({await m()})')
     await ev("T.run(1.2)")
@@ -231,6 +231,26 @@ async def morning(pg, tag, full):
         s = await ev("({ ph: S47.morning.phase, had: S47.morning.had, still: S47.audio.night.isStill, tone: S47.audio.roomToneHeld, radio: S47.dinerRadio.power })")
         for _ in range(6): await ev("S47.tick(0.5)")
         check(s['had'] and s['ph'] == 'done' and await ev("S47.morning.phase") == 'done' and not s['still'] and s['radio'] == 1, f'{tag}: after Continue, had: not again, and the sounds as they are ({s})')
+        # walked in after 05:13: not the moment the door shuts, the room heard first; and a panel opened
+        # in the stillness holds it, her line with it, until it is closed
+        await ev("S47.townSeen.delete('morning:held'); S47.morning.reset(); S47.game.clock = 5 * 3600 + 15 * 60")
+        await ev("S47.world.placeAtDiner('arrive'); S47.tick(0.5); S47.world.placeAtDiner('inside'); S47.tick(0.1)")
+        await ev("T.run(4.0, 0.1)")
+        check(await m() == 'idle', f'{tag}: walked in at 05:15: not the moment the door shuts')
+        await ev("T.until(() => S47.morning.phase !== 'idle', 20, 0.1)")
+        check(await m() == 'held', f'{tag}: but once the room has been heard ({await m()})')
+        n0 = len(await ev(f"T.said('{LINE}')"))
+        await ev("T.run(1.0)")
+        await ev("S47.game.d.inter.get('diner:booth').use(); S47.tick(0.1)")
+        await ev("T.run(14.0)")
+        held = await ev("({ t: S47.morning.t, modal: !!S47.game.d.ui.modal, still: S47.audio.night.isStill, cooler: S47.dinerCooler.running })")
+        check(held['modal'] and held['t'] < 10.6 and held['still'] and not held['cooler'] and len(await ev(f"T.said('{LINE}')")) == n0,
+              f'{tag}: the maps spread on the table in the stillness: it waits under them, her line not said under the panel ({held})')
+        await ev("S47.game.d.ui.close(true); S47.input.locked = true; S47.tick(0.05)")
+        await ev(f"T.until(() => T.said('{LINE}').length > {n0}, 12, 0.05)")
+        check(len(await ev(f"T.said('{LINE}')")) == n0 + 1, f'{tag}: closed, and then she says it')
+        await ev("T.until(() => S47.morning.phase === 'done', 30, 0.2)")
+        check(await m() == 'done' and not await ev("S47.audio.night.isStill") and await ev("S47.dinerCooler.running"), f'{tag}: and the room back')
         # not after 05:20
         await ev("S47.townSeen.delete('morning:held'); S47.morning.reset(); S47.game.clock = 5 * 3600 + 20 * 60 + 5")
         await ev("S47.world.enter('diner'); S47.world.placeAtDiner('inside'); S47.tick(0.2)")

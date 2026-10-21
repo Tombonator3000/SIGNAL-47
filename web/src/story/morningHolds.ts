@@ -4,12 +4,14 @@ import { clockText } from './time';
 
 // The morning holds its breath (FORSLAG.md, 20 October, small change 5; Tom: "Spenning og skummelt
 // slår faste regler"). Chapter five, Mesa Diner, at 05:13 or the first moment after it that the
-// player is inside and nothing else of the night's is going (main.ts, oneAtATime): everything stops
+// player has been inside a while (MORNING_SETTLE: the room heard before it goes) and nothing else of
+// the night's is going (main.ts, oneAtATime): everything stops
 // at once. The cooler behind the counter cuts out, the radio stops in the middle of a word, the
 // birds outside stop, and the room's hum goes with them (and no thunder from the dry storms over
 // the mesa: main.ts). Ten seconds of nothing. Then the
 // waitress, not looking up: "There. Some mornings about now." Then it comes back one thing at a
-// time: the cooler, the radio where the programme has got to, a bird. Once in a night, kept with
+// time: the cooler, the radio where the programme has got to, a bird. A panel opened in the
+// stillness before her line (the maps on the table) holds it, and her line, until it is closed. Once in a night, kept with
 // the case (`morning:held`); not after 05:20, when the chapter's drive is due.
 //
 // "Some mornings", not "every morning": she has watched the lights over the mesa every few years
@@ -30,6 +32,12 @@ export const MORNING_FROM = 5 * 3600 + 13 * 60, MORNING_TO = 5 * 3600 + 20 * 60;
 export const MORNING_LINE = 'There. Some mornings about now.';
 /** What happens when, in seconds from the moment it stops. */
 export const MORNING_CUES = { caption: 2.4, line: 10.6, cooler: 15.2, radio: 20.5, bird: 25.4, end: 29.5 };
+/** Seconds inside the diner before it may begin: the room heard first (walked in after 05:13, it
+ *  does not stop the moment the door shuts). */
+export const MORNING_SETTLE = 14;
+/** A panel opened before her line (a talk, the maps on the table) holds the stillness, and her line
+ *  with it, until it is closed, for so long at most; then it goes on (the line would be under it). */
+export const MORNING_PANEL_MAX = 75;
 
 // ---------- the cooler behind the counter ----------
 /** A compressor running: mains hum and its harmonics with a rattle in it, low and close. */
@@ -46,7 +54,7 @@ export class DinerCooler {
     const a = this.audio, ctx = a.ctx, noise = a.noiseBuffer();
     if (!ctx || !noise) return null;
     const out = ctx.createGain(); out.gain.value = 0;
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1100;
     out.connect(lp); const pan = a.spatial(this.pos, 1.6); if (pan) lp.connect(pan);
     const f0: OscillatorNode[] = [];
     for (const [mul, g, type] of [[1, 0.55, 'sine'], [2, 0.3, 'sine'], [3, 0.08, 'square'], [5, 0.03, 'sawtooth']] as const) {
@@ -60,7 +68,13 @@ export class DinerCooler {
     const lfo = ctx.createOscillator(); lfo.frequency.value = 7.3; const lg = ctx.createGain(); lg.gain.value = 0.12;
     lfo.connect(lg); lg.connect(rg.gain);
     src.connect(bp); bp.connect(rg); rg.connect(out); src.start(); lfo.start();
-    return { out, f0, lp, stop: () => { for (const s of [...f0, src, lfo]) { try { s.stop(); } catch { /* stopped */ } } out.disconnect(); } };
+    // and its fan behind the grille: a soft, steady whirr higher up, the part of it a phone's
+    // speaker gives (the motor's hum is below what one can play), so its stopping is heard there too
+    const fan = ctx.createBufferSource(); fan.buffer = noise; fan.loop = true; fan.playbackRate.value = 0.93;
+    const fb = ctx.createBiquadFilter(); fb.type = 'bandpass'; fb.frequency.value = 640; fb.Q.value = 0.9;
+    const fg = ctx.createGain(); fg.gain.value = 1.0;
+    fan.connect(fb); fb.connect(fg); fg.connect(out); fan.start();
+    return { out, f0, lp, stop: () => { for (const s of [...f0, src, lfo, fan]) { try { s.stop(); } catch { /* stopped */ } } out.disconnect(); } };
   }
 
   /** Every frame: where it stands (null: the diner is not here), and whether the listener is inside. */
@@ -78,7 +92,7 @@ export class DinerCooler {
     const n = this.n, now = ctx.currentTime;
     const want = this.running ? this.level * (inside ? 1 : 0.3) : 0;
     n.out.gain.setTargetAtTime(want, now, this.running ? 0.25 : 0.02);
-    n.lp.frequency.setTargetAtTime(inside ? 420 : 170, now, 0.3);
+    n.lp.frequency.setTargetAtTime(inside ? 1100 : 170, now, 0.3);
   }
   /** The compressor cuts out: a knock in the housing, the motor running down in a fraction of a second. */
   off() {
@@ -132,6 +146,11 @@ export class MorningHolds {
   phase: 'idle' | 'held' | 'done' = 'idle';
   t = 0;
   private cue = 0;
+  /** Inside the diner this long (it begins only once the room has been heard). */
+  private inside = 0;
+  /** Held by a panel this long, before her line. */
+  private panelT = 0;
+  private byPanel = false;
   /** The radio was playing when it stopped (the caption says so). */
   private radioWas = false;
   /** When it began (the night's clock), for the note. */
@@ -147,12 +166,19 @@ export class MorningHolds {
     if (this.phase === 'idle') {
       if (this.had) { this.phase = 'done'; return; }
       const day = ((s.clock % 86400) + 86400) % 86400;
-      if (s.here && s.free && !s.panel && day >= MORNING_FROM && day < MORNING_TO) this.begin(s.clock);
+      this.inside = s.here ? this.inside + dt : 0;
+      if (s.here && s.free && !s.panel && this.inside >= MORNING_SETTLE && day >= MORNING_FROM && day < MORNING_TO) this.begin(s.clock);
       return;
     }
     if (this.phase !== 'held') return;
     // driven off, or gone to another area, in the middle of it: everything as it was, at once
     if (!s.area) { this.letGo(true); return; }
+    // a panel opened in the stillness, before she has said it: the stillness waits with it (her
+    // line and the caption would be lost under the panel), for a while at most
+    const C0 = MORNING_CUES;
+    if (s.panel && this.t < C0.line + 0.5 && this.panelT < MORNING_PANEL_MAX) { this.panelT += dt; this.byPanel = true; return; }
+    // (just closed: a beat before anything is said)
+    if (this.byPanel && !s.panel) { if (this.t > C0.line - 1.6) this.t = this.cue = C0.line - 1.6; this.byPanel = false; }
     this.t += dt;
     const C = MORNING_CUES, d = this.d;
     const step = (at: number, fn: () => void) => { if (this.t >= at && this.cue < at) fn(); };
@@ -179,7 +205,7 @@ export class MorningHolds {
 
   private begin(clock: number) {
     const d = this.d;
-    this.phase = 'held'; this.t = 0; this.cue = 0; this.at = clock;
+    this.phase = 'held'; this.t = 0; this.cue = 0; this.at = clock; this.panelT = 0; this.byPanel = false;
     this.radioWas = d.radioHeard();
     d.seen.add(MORNING_KEY);
     d.cooler.off();
@@ -204,6 +230,6 @@ export class MorningHolds {
   /** A night begun or a case opened: as the case has it, every sound as it should be. */
   reset() {
     if (this.phase === 'held') this.letGo(true);
-    this.phase = this.had ? 'done' : 'idle'; this.t = 0; this.cue = 0; this.at = null;
+    this.phase = this.had ? 'done' : 'idle'; this.t = 0; this.cue = 0; this.at = null; this.inside = 0; this.panelT = 0; this.byPanel = false;
   }
 }

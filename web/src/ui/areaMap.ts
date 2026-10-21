@@ -213,16 +213,16 @@ export function areaMap(v: MapView) {
       }
       return k;
     };
-    g.save(); g.globalAlpha = 0.42;
+    g.save(); g.globalAlpha = 0.5;
     for (const [from, k0, k1] of [[fromA, -0.35, 1.12], [fromB, -0.5, 1.12], [fromC, -0.06, 1.12]] as const) {
       const [ax, ay] = from, [bx, by] = STATION, at = (k: number): [number, number] => [ax + (bx - ax) * k, ay + (by - ay) * k];
-      g.setLineDash([2, 12]);
-      line([at(k1), at(edgeK(from, 1))], 1.3);
-      line([at(k0), at(Math.max(edgeK(from, -1), k0 - 0.6))], 1.3);
+      g.setLineDash([3, 10]);
+      line([at(k1), at(edgeK(from, 1))], 1.7);
+      line([at(k0), at(Math.max(edgeK(from, -1), k0 - 0.6))], 1.7);
       g.setLineDash([]);
     }
     g.restore();
-    g.lineWidth = 1.8; g.strokeStyle = PENCIL;
+    g.lineWidth = 2.2; g.strokeStyle = PENCIL;
     for (let pass = 0; pass < 2; pass++) { g.beginPath(); g.arc(STATION[0] + r() * 1.2, STATION[1] + r() * 1.2, 31, 0, Math.PI * 2); g.stroke(); }
   }
   const hhmm = (c: number) => { const d = ((c % 86400) + 86400) % 86400; return `${String(Math.floor(d / 3600)).padStart(2, '0')}:${String(Math.floor(d % 3600 / 60)).padStart(2, '0')}`; };
