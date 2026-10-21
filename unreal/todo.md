@@ -18,3 +18,12 @@
 - [ ] Lagring ved kontrollpunkter.
 - [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
 - [ ] Glødepunktene blinker som i glow.ts.
+
+## Kapittel 2 (2026-10-22)
+
+- [x] Kapittel 2 portert (S47Chapter2, S47Annex, S47PhoneScripts, S47Drawings2, S47Panels2), selvtest og gjennomkjøring uten verden.
+- [ ] Dørene (Doors.onChange) videre til kapitlenes `DoorChanged`, som Prologue.doorChanged.
+- [ ] Lagringen kobles til `US47Chapter2::OnSave` og `Host->LoadCase`.
+- [ ] Kapittelkortets ring (`bHoldRing`, `RingOut`, `RingAgain`, `RingShown`) når kortet er portert; kapittel 1 sin slutt kaller `US47Chapter2::AfterChapterOne(method)`.
+- [ ] Bryterbordets linjelamper og opptakerens papirstrimmel (archive047.ts) mangler i eksporten.
+- [ ] S47Drawings og S47Drawings2, S47Panels og S47Panels2 slås sammen.

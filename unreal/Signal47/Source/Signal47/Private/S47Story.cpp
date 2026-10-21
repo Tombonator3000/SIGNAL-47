@@ -3,6 +3,7 @@
 #include "S47Audio.h"
 #include "S47HUD.h"
 #include "S47Chapter.h"
+#include "S47Chapter2.h"
 #include "S47Json.h"
 #include "S47Web.h"
 
@@ -143,7 +144,12 @@ FString AS47Story::Label(const FString& Id) const
 	if (Id == TEXT("crtLeft")) return TEXT("Status terminal");
 	if (Id == TEXT("crtRight")) return CurrentPhase == ES47Phase::Locked ? TEXT("Run direction solve") : CurrentPhase == ES47Phase::Solving ? FString() : TEXT("Tracking terminal");
 	if (Id == TEXT("printer")) return CurrentPhase == ES47Phase::Printed ? TEXT("Tear off the printout") : CurrentPhase == ES47Phase::Printing ? FString() : TEXT("Printer");
-	if (Id == TEXT("phone")) return bRinging ? TEXT("Answer the phone") : CurrentPhase == ES47Phase::Call ? FString() : TEXT("Telephone");
+	if (Id == TEXT("phone"))
+	{
+		// phase 'ch2': this.ch2.phoneLabel()
+		if (const US47Chapter2* C2 = ChapterKey == TEXT("ch2") ? Cast<US47Chapter2>(Chapter(TEXT("ch2"))) : nullptr) return C2->PhoneLabel();
+		return bRinging ? TEXT("Answer the phone") : CurrentPhase == ES47Phase::Call ? FString() : TEXT("Telephone");
+	}
 	if (Id == TEXT("clock")) return TEXT("Wall clock");
 	if (Id == TEXT("map")) return TEXT("Map of New Mexico");
 	if (Id == TEXT("excBinder")) return bCinematic ? FString() : TEXT("Exceptions binder");
@@ -221,6 +227,8 @@ void AS47Story::Use(const FString& Id)
 	}
 	if (Id == TEXT("phone"))
 	{
+		// phase 'ch2': this.ch2.usePhone()
+		if (US47Chapter2* C2 = ChapterKey == TEXT("ch2") ? Cast<US47Chapter2>(Chapter(TEXT("ch2"))) : nullptr) { C2->UsePhone(); return; }
 		if (bRinging) { Answer(); return; }
 		if (bAnswered) Toast(TEXT("Dead line. Not even a dial tone."));
 		else Toast(TEXT("Internal line and one outside line. Nobody calls out here after midnight."));
@@ -844,8 +852,9 @@ void AS47Story::Tick(float DeltaSeconds)
 
 	// printer paper feeding out
 	if (CurrentPhase == ES47Phase::Printing) Saro->SetPrinterPaper(FMath::Clamp(float((GameTime - PrintT) / 5.2), 0.001f, 1.f));
-	// phone handset rattle while ringing
-	Saro->SetHandsetRattle(bRinging);
+	// phone handset rattle while ringing (this.ringing || this.ch2.ringing)
+	const US47Chapter2* C2 = Cast<US47Chapter2>(Chapter(TEXT("ch2")));
+	Saro->SetHandsetRattle(bRinging || (C2 && C2->bRinging));
 
 	// receiver tone
 	if (bPowered && !NS.bK3Open && Audio.IsValid())
