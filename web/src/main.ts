@@ -9,7 +9,7 @@ import { serlingBank } from './core/narrationBanks';
 import { Input } from './core/Input';
 import { Interaction } from './core/Interaction';
 import { Player } from './player/Player';
-import { Sky } from './world/Sky';
+import { Sky, STAR_HOLE } from './world/Sky';
 import { Backdrop } from './world/backdrop';
 import { Exterior } from './world/Exterior';
 import { ControlRoom } from './world/ControlRoom';
@@ -70,6 +70,7 @@ import { ArrayBack, type ArrayGate } from './story/arrayBack';
 import { LineLights } from './story/lineLights';
 import { Pasture } from './story/pasture';
 import { NinthCow } from './story/ninthCow';
+import { StarHole, type StarHoleIn } from './story/starHole';
 import { FilmThird } from './story/theThird';
 import { STATION_TRANSIT, STATION_STAKES_C } from './world/stationLayout';
 import { TAG_RANCH, TAGS } from './drive/herd';
@@ -590,6 +591,33 @@ async function boot() {
       if (ninthEar.dest) audio.play('click', { gain: 0.55, rate: 2.0 + Math.random() * 0.5, lp: 4800, dest: ninthEar.dest });
     },
     save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh() });
+  // no stars where the dishes point, from 02:15 (world/Sky.ts STAR_HOLE draws it; story/starHole.ts;
+  // FORSLAG.md, 20 October, Valg for Tom 6): noticed once by looking up at it, kept with the town's
+  // part of the case, a card on the board
+  const starHole = new StarHole({ seen: townSeen, note: (text) => game.note(text), toast: (text, secs) => ui.toast(text, secs),
+    clock: () => game.clock, chapter: () => game.phase,
+    saw: () => seenSafe(() => saw('scare', 'no stars', { looking: true, watch: null })),
+    print: (id) => album.shots.find((x) => x.id === id)?.url ?? null,
+    save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh() });
+  const holeDirW = new THREE.Vector3(), holeEye = new THREE.Vector3(), holeTo = new THREE.Vector3();
+  let holeClearAt = -1, holeClear = false;
+  /** Where the hole is from here and now (the sky turned with the area), and what the player is doing under it. */
+  function holeIn(modalOpen: boolean): StarHoleIn {
+    holeDirW.copy(sky.holeDir).applyAxisAngle(THREE.Object3D.DEFAULT_UP, world.skyYaw);
+    return {
+      ok: mode === 'play' && !modalOpen && !game.cinematic && !world.driving, free: !oneAtATime() && !audio.phonePlaying && !cb.busy,
+      outdoors: space === 'yard' && !world.driving, night: sky.uniforms.uDawn.value < 0.3, hole: sky.hole, dir: holeDirW, cam: camera, zoom: zoomK > 0.6,
+      // (nothing solid in the way up to 1500 m out, looked for at most every 0.4 s: a raycast through the scene)
+      clear: () => {
+        if (t - holeClearAt > 0.4 || t < holeClearAt) {
+          holeClearAt = t;
+          camera.getWorldPosition(holeEye);
+          holeClear = album.inSight(holeEye, holeTo.copy(holeEye).addScaledVector(holeDirW, 1600), 1500);
+        }
+        return holeClear;
+      },
+    };
+  }
   // a frame of her near the transit is a free frame, not a refused case frame (story/Chapter3.ts)
   ch3.freeShot = () => {
     const site = world.site;
@@ -723,7 +751,7 @@ async function boot() {
   });
   ch5.driverMore = { examine: () => lostNights.driverExamine(), open: () => lostNights.driverOpen(),
     choices: (october) => lostNights.driverChoices(october), choose: (id) => lostNights.driverChoose(id) };
-  game.extraBooks = () => [...lostNights.books(), ...fieldBook.books(), ...officePhone.books(), ...archiveBooks(), ...ninth.books()];
+  game.extraBooks = () => [...lostNights.books(), ...fieldBook.books(), ...officePhone.books(), ...archiveBooks(), ...ninth.books(), ...starHole.books()];
   game.openDoc = (doc) => { if (doc.id !== 'fieldbook' || !fieldBook.read) return false; fieldBook.openBook(); return true; };
   if (world.motel.proxies.envelope) inter.add({ id: 'court:envelope', object: world.motel.proxies.envelope, range: 2.2,
     label: () => mode === 'play' && world.area === 'saro' && !world.driving && game.at('ch1') ? fieldBook.envelopeLabel() : null,
@@ -748,8 +776,10 @@ async function boot() {
     },
     small: () => saves.fallback,
     skip: () => [sky.group],
-    done: (_shot, first, left) => {
+    done: (shot, first, left) => {
       audio.shutter(); ui.shutterFlash();
+      // the patch with no stars in it, on the print (story/starHole.ts)
+      if (shot.targets?.starhole) starHole.photographed(shot.id, !oneAtATime() && !audio.phonePlaying && !cb.busy);
       // on the film only (story/seen.ts): the face a foot from the lens (seen when the print is
       // looked at large, come up), someone at the edge of the frame
       seenSafe(() => {
@@ -1113,7 +1143,7 @@ async function boot() {
     recWalk.reset(); stationTaken.reset(); truckTaken.reset();
     world.odoRestore(o.state?.odo);   // (the miles on the odometer tonight; an older case has none)
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
-    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset(); ninth.reset();
+    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset(); ninth.reset(); starHole.reset();
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     saroDark.halt();
     game.start(o.state?.checkpoint ?? o.jump);
@@ -2180,6 +2210,7 @@ async function boot() {
   Object.assign((window as any).S47, { saroDark, saroPower, darkIn: () => darkIn(true, !!ui.modal), darkWhere: () => darkWhere() });
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   Object.assign((window as any).S47, { ninth, musicHeld: () => musicHeld() });   // the ninth cow at STATION 01 (tools/f_ninth_cow.py)
+  Object.assign((window as any).S47, { starHole, holeIn: () => holeIn(false) });   // no stars where the dishes point (tools/f_star_hole.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
   Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)
@@ -2271,9 +2302,16 @@ async function boot() {
         { label: curve.free ? 'Free: on (no curve)' : 'Free: off', run: () => { curve.free = !curve.free; }, on: curve.free },
         { label: townSeen.has('cut:post') ? 'The shape at the end of the headlights: had tonight (again)' : 'The shape at the end of the headlights: in the next build, driving', run: () => { townSeen.delete('cut:post'); postBuild = -1; } },
       ] });
-      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then. The face on the film comes once, on the first free frame out of doors in chapter four.', items: [
+      groups.push({ title: 'Out in the dark', note: 'On foot outside at night with the flashlight on, something sounds now and then. The face on the film comes once, on the first free frame out of doors in chapter four. From 02:15 there are no stars where the dishes point.', items: [
         { label: 'A sound out in the dark', run: () => calls.now() },
         { label: album.forceFace ? 'The face on the film: on the next free frame' : `The face on the film${album.data.face ? ' (taken)' : ''}: put it on the next free frame`, run: () => { album.forceFace = true; }, on: album.forceFace },
+        // (from 02:15: the eyes up along the dishes; noticed, forgotten again so it can be noticed once more)
+        { label: starHole.noticed ? 'No stars at 026: noticed (forget it)' : 'No stars at 026: look up at it', run: () => {
+          if (starHole.noticed) { starHole.forget(); ui.toast('Not noticed tonight', 2); return; }
+          if (sky.hole < 0.9) { ui.toast('Only after 02:15', 2); return; }
+          const d = holeIn(false).dir;
+          player.yaw = Math.atan2(-d.x, -d.z); player.pitch = Math.asin(d.y);
+        } },
       ] });
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
@@ -2697,6 +2735,8 @@ async function boot() {
         ninth.update(dt, { ok: !modalOpen && !game.cinematic, free: !nightGoing() && !audio.phonePlaying && !cb.busy, chapter: game.phase, area: world.area,
           driving: world.driving, inHut: world.area === 'station01' && world.indoors(player.pos), cam: camera, light: flashlight.on });
       }
+      // no stars where the dishes point (story/starHole.ts): noticed once, looked at long enough
+      if (mode === 'play' && !starHole.noticed) starHole.update(modalOpen ? 0 : dt, holeIn(modalOpen));
       if (mode === 'play') officePhone.update(dt, officeIn(modalOpen));
       // the truck on B (story/truckOnB.ts), and the compass on the dash of the truck being driven
       if (mode === 'play') {
@@ -2758,7 +2798,8 @@ async function boot() {
         ui.prompt(it ? it.label() : null, input.touchMode);
         ui.hint(!input.touchMode && !input.locked);
         // a closer look: what the thing under the crosshair is, once the zoom is most of the way in
-        ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? null : null);
+        // (and up where the dishes point, nothing to name: what there is to see in the patch with no stars)
+        ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? starHole.examine(holeIn(false)) : null);
       } else {
         const live = mode === 'play' && !modalOpen && !game.cinematic;
         const key = live && world.driving && world.trouble.wantsKey && !abduction!.holds, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && !truckTaken.warning && world.canGetOut();
@@ -2782,6 +2823,8 @@ async function boot() {
     sky.setCometClock(game.clock);
     // the dawn follows the clock; the night areas are lit for the night, so they show less of it
     sky.setDawnLift(game.ch6.skyLift ?? (world.area === 'roswell' ? 1 : 0.7));
+    // no stars where the dishes point from the moment they have come round to 026 / 32 (world/Sky.ts)
+    sky.holeFrom = !game.at('turning') ? Infinity : ((game.at('ch1') && ch1.s.eventClock) || game.eventClock) + STAR_HOLE.after;
     sky.setClock(mode === 'title' ? 0 : game.clock, mode === 'title' ? null : game.ch6.sunElev);
     // out in the night areas the haze over the far land stays darker than the dawn sky behind the
     // mesas, which take the same haze (horizon.ts); a pale band in front of them otherwise (drivelook D02).

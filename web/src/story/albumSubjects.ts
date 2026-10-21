@@ -10,13 +10,15 @@ import type { Sky } from '../world/Sky';
 import type { Cutouts } from '../core/cutouts';
 import { MOTEL_AT, MOTEL_GLOWS } from '../world/geo';
 import { NINTH_PRINT } from './ninthCow';
+import { HOLE_PRINT } from './starHole';
 
 // What the album can name under a free frame (core/album.ts), where the player is: the known
 // things of each area by where they stand, the people of the night, the sky, and the things the
 // player may not have noticed: the cardboard alien wherever it has been put (core/cutouts.ts),
 // one of them at the edge of the view (core/glimpses.ts), the someone in a SARO jacket standing
 // where the time was lost (story/abduction.ts), and the ring of frost there; and the ninth cow lying
-// at STATION 01 (story/ninthCow.ts).
+// at STATION 01 (story/ninthCow.ts); and from 02:15 the patch of sky where the dishes point with no
+// stars in it (world/Sky.ts, story/starHole.ts), kept on the print as its target 'starhole'.
 
 export interface SubjectDeps {
   world: World; ext: Exterior; room: ControlRoom; yard: ServiceYard; annex: RecordsAnnex; sky: Sky;
@@ -55,6 +57,7 @@ const DINER: Thing[] = [
   ['coffee', 'the coffee', 0.2, 3, 0.8], ['menu', 'the menu', 0.6, 6, 0.8], ['rig', 'the rig on the lot', 6, 200, 1.2],
 ];
 
+const UP = new THREE.Vector3(0, 1, 0);
 const shown = (o: THREE.Object3D) => { for (let x: THREE.Object3D | null = o; x; x = x.parent) if (!x.visible) return false; return true; };
 /** Where a shown object is (world terms), raised by dy; null when it or a parent is hidden. */
 const P = (o: THREE.Object3D | undefined | null, dy = 0) => {
@@ -144,6 +147,9 @@ export function albumSubjects(d: SubjectDeps): Subject[] {
     if (d.sky.comet.visible) add("Halley's comet, low in the south", [P(d.sky.comet)], { ang: 1.4, w: 1.6, max: 1e6, sky: true });
     const f = d.camera.getWorldDirection(new THREE.Vector3());
     if (f.y > 0.45) add('the Milky Way', [cam.clone().addScaledVector(f, 900)], { ang: 18, w: 0.35, max: 1e6, sky: true });
+    // (where the dishes point, turned with the sky of the area: the film has no stars there either)
+    if (d.sky.hole > 0.5) add('no stars at 026', [cam.clone().addScaledVector(d.sky.holeDir.clone().applyAxisAngle(UP, world.skyYaw), 1400)],
+      { ang: 8, max: 1e6, sky: true, odd: HOLE_PRINT, target: 'starhole' });
   }
 
   // what should not be there

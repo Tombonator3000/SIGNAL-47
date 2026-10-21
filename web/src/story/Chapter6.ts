@@ -9,6 +9,7 @@ import { artLoaded, artImage, loadArtFor, FLASH_ART } from '../core/art';
 import { clockText } from './time';
 import { SUN_MESA, horizonDip } from '../world/backdrop';
 import { ThirdFigure } from './theThird';
+import { skyDir } from '../world/Sky';
 
 // Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot across the
 // highway onto the old road at 05:20, east-north-east and then north-east into the dawn, past
@@ -47,6 +48,8 @@ const LEAVE = 5 * 3600 + 20 * 60;        // the truck leaves the diner's lot at 
 // that pace (driven slower, or stopped, it waits) and never more than a minute behind it.
 const PACE = 24.6;
 const EVENT = 47, PULL = 34;
+/** Where the pull-out ends looking (azimuth, elevation): az 026, el 32 is 16 degrees below the middle of it. */
+export const LAST_LOOK = { az: 31, el: 48 } as const;
 /** The morning programme on the AM station, a line at a time as the miles go by (KAPITLER.md). */
 const RADIO: [number, string][] = [
   [0.15, 'The radio, low: "...cattle at the sale barn steady, a dollar higher on calves..."'],
@@ -365,7 +368,11 @@ export class Chapter6 {
     const sunSide = P.clone().addScaledVector(dir(259), 120).addScaledVector(UP, 150);
     const sunward = P.clone().addScaledVector(dir(79), 3000).addScaledVector(UP, 60);
     const top = P.clone().addScaledVector(dir(259), 220).addScaledVector(UP, 650);
-    const stars = P.clone().addScaledVector(dir(79), 400).addScaledVector(UP, 4000);
+    // up to the stars, the north-north-east of them (it was the east, nearly overhead): the last
+    // picture has the patch with no stars in it where the dishes point, under the middle and a little
+    // left of it, on a phone held upright too and at any field of view (world/Sky.ts STAR_HOLE,
+    // story/starHole.ts; the old road's sky is not turned, World.skyYaw)
+    const stars = top.clone().addScaledVector(skyDir(LAST_LOOK.az, LAST_LOOK.el), 4000);
     return { front, atTruck, high, westward, sunSide, sunward, top, stars };
   }
 
