@@ -235,7 +235,8 @@ async def main():
         check(await pg.locator('.endcard').count() == 0, 'no end card between the chapters')
         await pg.wait_for_function("() => { const b = document.querySelector('.chapter-card .cc-b'); return !!b && getComputedStyle(b).opacity === '1'; }", polling=500)
         await shot('c12_chapter_card')
-        await tick(7)
+        # (the card ends on the phone's second ring, about 7.8 s in: main.ts chapterBreak, tools/f_small_grep.py)
+        await tick(9)
         check(await ev("!document.querySelector('.chapter-card:not(.out)')") and await ev("S47.game.phase") == 'ch2' and await ev("S47.ch2.ringing"), 'chapter two begins behind the card: the supervisor line rings')
 
         notes = await ev("S47.game.notes")

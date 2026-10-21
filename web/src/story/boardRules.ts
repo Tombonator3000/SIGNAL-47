@@ -11,7 +11,7 @@ import type { BoardCard, BoardQuestion, BoardNote, BoardThread } from '../ui/Boa
 // nothing, except that it brings the fourth hint closer. After SPILLDESIGN.md, "Bevisbordet".
 
 export type Result = { ok: boolean; text: string };
-export interface BookNote { text: string; q?: string }
+export interface BookNote { text: string; q?: string; /** written on the cork in pencil, in the player's hand (story/sameThread.ts) */ hand?: boolean }
 export interface BookRule {
   a: string; b: string; note?: string; text: string; wrong?: string;
   /** Alternative working hypotheses: only the last thread in this group stays. */
@@ -134,7 +134,7 @@ export class RuleBook {
     for (const k of this.o.links()) {
       const r = this.ruleOf(k);
       if (!r?.note || this.o.notes[r.note]?.q || out.some((n) => n.id === r.note)) continue;
-      out.push({ id: r.note, text: this.o.notes[r.note].text, from: [r.a, r.b] });
+      out.push({ id: r.note, text: this.o.notes[r.note].text, from: [r.a, r.b], hand: this.o.notes[r.note].hand });
     }
     return out;
   }
@@ -183,5 +183,14 @@ export class RuleBook {
   }
 
   cards() { return this.o.cards(); }
+  /** A question still open on the board rests on this pin (a thread to it would read as a hint). */
+  rests(pin: string) {
+    return this.o.rules.some((r) => {
+      if (r.a !== pin && r.b !== pin) return false;
+      const q = r.wrong ?? (r.note ? this.o.notes[r.note]?.q : undefined);
+      const Q = q ? this.question(q) : undefined;
+      return !!Q && Q.open() && !Q.done();
+    });
+  }
   owns(node: string) { return this.o.owns(node); }
 }

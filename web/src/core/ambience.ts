@@ -18,6 +18,10 @@ import * as THREE from 'three';
 //             wind, not a cricket; then the crickets come back one at a time and the wind under
 //             them, over 47 s. It is the plain night's (story/curve.ts), not one of the night's
 //             events: nothing waits for it, and the curve's thinning takes over where it ends.
+//   still     the morning holds its breath (story/morningHolds.ts): everything out here stops at
+//             once, birds and all, and back() lets it come again, a bird first.
+//   window    in the diner at dawn the birds come in through the glass (0..1): above the walls'
+//             low-pass, faint, the rest of the desert as it is indoors.
 //
 // Everything goes through one outdoor level and a low-pass: indoors the walls take the top
 // off and most of the level, in the cab the engine covers it. Nothing here answers the player.
@@ -95,6 +99,15 @@ export class Ambience {
   private windIn: GainNode;
   private bedIn: GainNode;
   private held: { t: number; len: number; cues: number[]; n: number } | null = null;
+  // still() and the window: a gate after everything, and the birds on a bus of their own that also
+  // goes past the walls' low-pass, through the glass
+  private gate: GainNode;
+  private birdBus: GainNode;
+  private win: GainNode;
+  private winK = -1;
+  private stilled = false;
+  /** The birds through the diner's windows, 0..1 (main.ts: in the diner, indoors). */
+  window = 0;
   private t = { gust: rnd(15, 40), life: rnd(20, 50), poorwill: rnd(60, 180), coyote: rnd(150, 420), train: rnd(240, 900), truck: rnd(120, 400), birds: rnd(10, 40), mood: rnd(60, 150), bugs: 0 };
   private mood = 0.7;
   private space: Space = 'room';
@@ -107,7 +120,12 @@ export class Ambience {
     this.out = ctx.createGain(); this.out.gain.value = 0;
     this.lp = ctx.createBiquadFilter(); this.lp.type = 'lowpass'; this.lp.frequency.value = 900;
     this.quiet = ctx.createGain(); this.quiet.gain.value = 1;
-    this.out.connect(this.quiet); this.quiet.connect(this.lp); this.lp.connect(dest);
+    this.gate = ctx.createGain(); this.gate.gain.value = 1;
+    this.out.connect(this.quiet); this.quiet.connect(this.lp); this.lp.connect(this.gate); this.gate.connect(dest);
+    this.birdBus = ctx.createGain(); this.birdBus.connect(this.out);
+    const glass = ctx.createBiquadFilter(); glass.type = 'lowpass'; glass.frequency.value = 3800;
+    this.win = ctx.createGain(); this.win.gain.value = 0;
+    this.birdBus.connect(this.win); this.win.connect(glass); glass.connect(this.gate);
     this.windIn = ctx.createGain(); this.windIn.connect(this.out);
     this.bedIn = ctx.createGain(); this.bedIn.connect(this.out);
     const now = ctx.currentTime;
@@ -156,6 +174,26 @@ export class Ambience {
     // nothing far off comes in it either
     for (const k of ['life', 'poorwill', 'coyote', 'truck', 'gust'] as const) this.t[k] = Math.max(this.t[k], secs + rnd(5, 25));
   }
+  /** The morning holds its breath (story/morningHolds.ts): at once nothing at all out here, no
+   *  bird, no wind, nothing far off, until back(). */
+  still() {
+    const g = this.gate.gain, now = this.ctx.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.setTargetAtTime(0, now, 0.015);
+    this.stilled = true;
+  }
+  /** And it lets go: the desert back over a few seconds, and a bird `bird` seconds from now, the
+   *  first one; the others as before. */
+  back(bird = 0.4) {
+    const g = this.gate.gain, now = this.ctx.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.setTargetAtTime(1, now, 1.4);
+    this.stilled = false;
+    this.t.birds = bird;
+    for (const k of ['life', 'poorwill', 'coyote', 'truck', 'gust'] as const) this.t[k] = Math.max(this.t[k], rnd(20, 50));
+  }
+  /** Held still now (tests). */
+  get isStill() { return this.stilled; }
+  /** How many birds have called so far (tests). */
+  birds = 0;
   /** The breath is held now (tests): how far into it, and how many crickets are back. */
   get breathing() { return this.held ? { t: this.held.t, len: this.held.len, back: this.held.n, of: this.held.cues.length } : null; }
   /** Single crickets chirping now, near the listener (tests). */
@@ -176,6 +214,12 @@ export class Ambience {
   /** Every frame while a night runs. clock: the night's clock in seconds (it may run past 24 h). */
   update(dt: number, at: THREE.Vector3, clock: number) {
     const ctx = this.ctx, now = ctx.currentTime, t = this.t;
+    const wk = this.space === 'room' ? THREE.MathUtils.clamp(this.window, 0, 1) : 0;
+    if (wk !== this.winK) {
+      // (in through the door at dawn: the first of them soon)
+      if (wk > 0 && this.winK <= 0) t.birds = Math.min(t.birds, rnd(2, 6));
+      this.winK = wk; this.win.gain.setTargetAtTime(0.2 * wk, now, 0.6);
+    }
     const hour = (((clock % 86400) + 86400) % 86400) / 3600;
     const sinceDusk = (hour - 21 + 24) % 24;                       // 21:00 is 0
     const temp = 16 - 1.2 * sinceDusk;                              // about 13 °C at midnight, 6 at dawn
@@ -223,7 +267,7 @@ export class Ambience {
     }
     for (const c of this.crickets) c.schedule(rate);
     // ---------- far off ----------
-    if (this.space === 'lab') return;                                // the engine covers it
+    if (this.space === 'lab' || this.stilled) return;                // the engine covers it; held still, nothing
     const busy = (0.3 + m) * (1 - 0.7 * THREE.MathUtils.clamp(this.thin, 0, 1));
     if ((t.life -= dt) <= 0) {
       t.life = rnd(25, 70) / busy;
@@ -244,14 +288,16 @@ export class Ambience {
     if ((t.train -= dt) <= 0) { t.train = rnd(700, 1500); this.train(at); }
     if ((t.truck -= dt) <= 0) { t.truck = rnd(200, 520) / busy; this.truck(); }
     if (dawn > 0 && (t.birds -= dt) <= 0) {
-      t.birds = rnd(12, 40) / (0.3 + dawn);
+      // (through the diner's glass the dawn is more of them: it is all there is to hear of outside)
+      t.birds = rnd(12, 40) / (0.3 + dawn) / (1 + 4 * wk);
+      this.birds++;
       if (Math.random() < 0.55) this.meadowlark(at); else this.lark(at);
     }
   }
 
   // ---------- helpers ----------
   /** A panner some way off in a random direction (or a given bearing), heard at about `gain`. */
-  private distant(at: THREE.Vector3, d: number, gain: number, cut: number, bearing?: number) {
+  private distant(at: THREE.Vector3, d: number, gain: number, cut: number, bearing?: number, dest: AudioNode = this.out) {
     const ctx = this.ctx;
     const a = bearing ?? Math.random() * Math.PI * 2;
     const p = ctx.createPanner();
@@ -260,7 +306,7 @@ export class Ambience {
     if ((p as any).positionX) { p.positionX.value = x; p.positionY.value = y; p.positionZ.value = z; } else (p as any).setPosition(x, y, z);
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cut;
     const g = ctx.createGain(); g.gain.value = gain;
-    g.connect(lp); lp.connect(p); p.connect(this.out);
+    g.connect(lp); lp.connect(p); p.connect(dest);
     setTimeout(() => p.disconnect(), 40000);
     return g;
   }
@@ -395,14 +441,14 @@ export class Ambience {
   }
   /** A meadowlark when the sky greys: a few clear slurred whistles, then a quick jumble. */
   private meadowlark(at: THREE.Vector3) {
-    const g = this.distant(at, rnd(40, 90), 1, 5000);
+    const g = this.distant(at, rnd(40, 90), 1, 5000, undefined, this.birdBus);
     let t = this.ctx.currentTime + 0.1; const f = rnd(0.93, 1.07);
     for (const [len, a, b] of [[0.28, 2650, 2400], [0.22, 2950, 2700], [0.12, 2150, 2350]] as const) { this.note(g, t, len, a * f, b * f, 0.022, 0.2); t += len + 0.04; }
     for (let i = 0, n = 4 + Math.floor(Math.random() * 4); i < n; i++) { const a = rnd(1900, 3300) * f; this.note(g, t, 0.06, a, a * rnd(0.85, 1.15), 0.016, 0.25); t += 0.075; }
   }
   /** Horned larks: high, quick, tinkling notes from the open ground. */
   private lark(at: THREE.Vector3) {
-    const g = this.distant(at, rnd(30, 70), 1, 7000);
+    const g = this.distant(at, rnd(30, 70), 1, 7000, undefined, this.birdBus);
     let t = this.ctx.currentTime + 0.1;
     for (let i = 0, n = 10 + Math.floor(Math.random() * 12); i < n; i++) { const a = rnd(3600, 6000); this.note(g, t, rnd(0.03, 0.05), a, a * rnd(0.9, 1.12), 0.009, 0.05); t += rnd(0.05, 0.13); }
   }

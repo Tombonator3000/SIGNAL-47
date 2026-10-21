@@ -196,7 +196,9 @@ export class Chapter2 {
 
   // ---------- lifecycle ----------
   begin(saved: Ch2State | null) {
+    const hold = this.holdRing;   // (the card's: main.ts, chapterBreak)
     this.reset();
+    this.holdRing = hold;
     this.active = true; this.started = true;
     this.s = saved ? { ...fresh(), ...saved, read: { ...fresh().read, ...saved.read } } : fresh();
     this.applyWorld();
@@ -208,7 +210,7 @@ export class Chapter2 {
 
   reset() {
     const { audio } = this.d;
-    this.active = false; this.started = false; this.ringing = false;
+    this.active = false; this.started = false; this.ringing = false; this.holdRing = false;
     this.ringBack = false; this.backT = -1; this.backRing = 0;
     this.s = fresh();
     if (audio.ctx) audio.stop('ring2');
@@ -269,12 +271,33 @@ export class Chapter2 {
   }
 
   // ---------- Ward ----------
+  /** The card before chapter two holds the ring back (main.ts, chapterBreak; FORSLAG.md, 20 October,
+   *  small change 6): the phone is ringing, but nothing is heard of it until the card's title is up
+   *  and ringOut() lets it go. Then the card ends on the ring, and the ring is this phone. */
+  holdRing = false;
   private ring() {
-    const { audio, room, ui } = this.d;
     this.ringing = true;
-    audio.loop('ring2', 'phoneRing', { gain: 1.0, at: this.pos(room.objs.phone) });
-    this.g.after(1.0, () => ui.toast('The phone again. The supervisor\'s line.', 3));
+    if (this.holdRing) return;
+    this.ringOn();
+    this.g.after(1.0, () => this.ringSaid());
   }
+  private ringOn() {
+    const { audio, room } = this.d;
+    return audio.loop('ring2', 'phoneRing', { gain: 1.0, at: this.pos(room.objs.phone) });
+  }
+  private ringSaid() { if (this.ringing && !this.ringBack) this.d.ui.toast('The phone again. The supervisor\'s line.', 3); }
+  /** The held ring, now: the supervisor's line in the room, ringing (the card's title is up). The
+   *  loop's handle, or null when there is nothing to ring (the chapter is over, or no sound). */
+  ringOut() {
+    if (!this.holdRing) return null;
+    this.holdRing = false;
+    if (!this.active || !this.ringing || this.ringBack) return null;
+    return this.ringOn();
+  }
+  /** The ring again from its start (the card cuts away on it): the loop's new handle, or null. */
+  ringAgain() { return this.active && this.ringing && !this.ringBack && !this.holdRing ? this.ringOn() : null; }
+  /** The card has cut away on the ring: what the player is told of it, a moment after. */
+  ringShown() { this.g.after(1.0, () => this.ringSaid()); }
   phoneLabel() { return this.ringing ? 'Answer the phone' : this.phoneHook?.label() ?? (this.s.called || this.s.answered ? 'Telephone' : null); }
   usePhone() {
     const { audio, ui, room } = this.d;

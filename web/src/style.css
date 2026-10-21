@@ -321,6 +321,7 @@ html.text-large .examine { font-size: 27px; }
 .notebook .findings span { font-family: var(--type); font-size: 15px; color: var(--ink); }
 .notebook .findings em { font-style: normal; font-family: var(--type); font-size: 13px; color: #6d6656; }
 /* the map and the kit (ui/areaMap.ts, main.ts) */
+.notebook .nb-mapnote { font-family: var(--hand); font-size: 26px; line-height: 1.1; color: var(--ink-blue); margin: 8px 0 0 6px; transform: rotate(-.6deg); }
 .notebook .nb-map img { display: block; width: 100%; height: auto; max-height: calc(100vh - 150px); object-fit: contain; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
 .notebook .kit { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px 22px; }
 .notebook .kit li { border-bottom: 1px solid rgba(60,50,40,.25); padding: 6px 0 10px; }
@@ -705,6 +706,9 @@ html.text-large .prompt { font-size: 28px; }
 .chapter-card h2 { font-family: var(--display); font-weight: 500; font-size: clamp(34px, 6vw, 64px); letter-spacing: .06em; margin: 6px 0; }
 .chapter-card .cc-clock { font-family: var(--term); font-size: clamp(22px, 3vw, 30px); color: var(--phosphor); }
 .chapter-card.out { transition: opacity .8s ease; opacity: 0; }
+/* cut on the ring under CHAPTER TWO (main.ts): at once, not faded */
+.chapter-card.out.cut { transition: opacity .1s linear; }
+.fade.quick { transition: opacity .22s ease; }
 @keyframes ccIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes ccOut { from { opacity: 1; } to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .chapter-card .cc-a, .chapter-card .cc-b { animation-duration: .01s !important; } }
@@ -797,6 +801,9 @@ html.text-large .prompt { font-size: 28px; }
 .art-pin-red .bcard > .pin, .art-pin-red .bq > .pin, .art-pin-red .bnote > .pin { margin-left: -11px; top: -9px; }
 .bnote { width: 190px; background: #f1dc7c; font-family: var(--type); font-size: 12.5px; line-height: 1.28; padding: 14px 10px 8px; transform: rotate(-1.2deg); }
 .bnote p { margin: 0; }
+/* a word in pencil on a torn scrap of index card, hung on a thread nobody remembers tying (story/sameThread.ts) */
+.bnote.hand { width: auto; min-width: 0; padding: 3px 12px 1px; background: #ece5d1; font-family: var(--hand); font-size: 34px; line-height: 1; color: #3f3e47;
+  transform: rotate(-5deg); box-shadow: 1px 2px 4px rgba(0,0,0,.35); clip-path: polygon(0 4%, 18% 0, 46% 6%, 72% 1%, 100% 5%, 98% 92%, 70% 100%, 38% 95%, 12% 100%, 1% 94%); }
 .bq { background: #f4efe4; font-family: var(--type); font-size: 14px; padding: 0 0 8px; border-top: 4px solid #8f2a1d; }
 .art-card .bq { background: #f4efe4 var(--board-card) 0 0 / 100% auto no-repeat; border-top: 0; padding-top: 4px; }
 .bq-head { position: relative; }

@@ -441,14 +441,23 @@ export class AudioSys {
   // Thunder far away over the mesa: no crack, only rolls that come in slowly, darker and
   // later the further off it is, after the far-thunder layers in Tom's Loincloth-Legends
   // (thunderSyn with `far`), with a low sine swell under them.
+  /** Thunder that is rolling now falls silent at once (0) or is let back (1): story/morningHolds.ts. */
+  private thunderBus: GainNode | null = null;
+  holdThunder(level: number) {
+    const ctx = this.ctx; if (!ctx || !this.thunderBus) return;
+    const g = this.thunderBus.gain, t = ctx.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.setTargetAtTime(level, t, level ? 0.3 : 0.02);
+  }
   thunder(strength = 0.6) {
     const ctx = this.ctx; if (!ctx) return;
     const t = ctx.currentTime;
+    if (!this.thunderBus) { this.thunderBus = ctx.createGain(); this.thunderBus.connect(this.amb); }
+    const bus = this.thunderBus;
     const roll = (at: number, dur: number, f0: number, f1: number, v: number) => {
       const n = this.noiseSrc(true, false); const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
       lp.frequency.setValueAtTime(f0, t + at); lp.frequency.exponentialRampToValueAtTime(f1, t + at + dur);
       const g = ctx.createGain(); g.gain.setValueAtTime(0, t + at); g.gain.linearRampToValueAtTime(v, t + at + dur * 0.28); g.gain.exponentialRampToValueAtTime(0.001, t + at + dur);
-      n.connect(lp); lp.connect(g); g.connect(this.amb); n.start(t + at); n.stop(t + at + dur + 0.1);
+      n.connect(lp); lp.connect(g); g.connect(bus); n.start(t + at); n.stop(t + at + dur + 0.1);
     };
     const s = strength;
     roll(0, 3.4, 360, 55, 0.5 * s);
@@ -456,7 +465,7 @@ export class AudioSys {
     if (Math.random() < 0.7) roll(2.1 + Math.random() * 1.2, 3.2, 220, 38, 0.3 * s);
     const o = ctx.createOscillator(); o.frequency.setValueAtTime(44, t + 0.3); o.frequency.exponentialRampToValueAtTime(30, t + 2.8);
     const og = ctx.createGain(); og.gain.setValueAtTime(0, t + 0.3); og.gain.linearRampToValueAtTime(0.28 * s, t + 1.0); og.gain.exponentialRampToValueAtTime(0.001, t + 3.0);
-    o.connect(og); og.connect(this.amb); o.start(t + 0.3); o.stop(t + 3.1);
+    o.connect(og); og.connect(bus); o.start(t + 0.3); o.stop(t + 3.1);
   }
 
   gasp(dest?: AudioNode, when = 0) {

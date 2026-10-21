@@ -7,8 +7,13 @@ import { CROSSINGS } from '../story/lines';
 // player knows of it, Mesa Diner at the junction, and the old road to Roswell going off east.
 // Drawn the way the places really lie (Tom's improvements, 16 October: the service map has
 // STATION 01 east of the highway, and its puzzle at the diner needs it so; this page does not),
-// and not to scale. A cross marks where the player is. It shows no survey bolts and no line C:
-// the map at the diner is for that (ui/MapOverlay.ts).
+// and not to scale. A cross marks where the player is. It shows no survey bolts, and no line C
+// until the maps at the diner have found it (ui/MapOverlay.ts, P13 in chapter five).
+//
+// The lines meet (FORSLAG.md, 20 October, small change 7): with A and B drawn in and C found, the
+// three are drawn on past where the player knows them, faint, to the edges of the page. They cross
+// in one point and nowhere else, the transit at STATION 01 (they are its sight lines, HENDELSER.md
+// section 3), and that point has a small circle round it and no word.
 
 export type MapSpot = 'saro' | 'yard' | 'motel' | 'office' | 'highway' | 'diner' | 'track' | 'station01' | 'oldroad';
 export interface MapView {
@@ -21,6 +26,15 @@ export interface MapView {
   /** What happened where (story/townEvents.ts): a small circle with the time by it. Three on
    *  line A and the line is drawn in, through the town and on towards STATION 01. */
   marks?: { kind: string; clock: number; line?: 'A' | 'B' | 'C'; at?: MapView['at'] }[];
+  /** C has been found (P13, at the diner): drawn from just past the bolt on the old road to STATION 01. */
+  lineC?: boolean;
+}
+
+/** A and B are drawn in (three marks on each) and C is found: all three are drawn on past where
+ *  they are known, and where they cross is circled. */
+export function linesMeet(v: MapView) {
+  const marks = v.marks ?? [], n = (l: 'A' | 'B') => marks.filter((m) => (m.line ?? 'A') === l).length;
+  return !!v.lineC && !!v.oldRoad && !!v.station && n('A') >= 3 && n('B') >= 3;
 }
 
 const PAPER = '#f1ead8', PENCIL = '#3b3b3f', RED = '#a8281e';
@@ -169,9 +183,48 @@ export function areaMap(v: MapView) {
   };
   // where the lines are on the ground (story/lines.ts), as this page has the places: A from beyond
   // the town, through it, to STATION 01 and a little past; B out of the dishes, across the highway
-  // at SARO's turn-off (CROSSINGS.B, 23 m south of the site), on south-west to STATION 01 and past
-  if (onLine('A') >= 3) across([DINER[0], DINER[1] + 30], STATION, -0.35, 1.12, 'A');
-  if (onLine('B') >= 3) across([HX, hwyY(CROSSINGS.B.highwayM)], STATION, -0.5, 1.12, 'B');
+  // at SARO's turn-off (CROSSINGS.B, 23 m south of the site), on south-west to STATION 01 and past;
+  // C, once found at the diner, from just past the bolt on the old road back to STATION 01
+  const fromA: [number, number] = [DINER[0], DINER[1] + 30], fromB: [number, number] = [HX, hwyY(CROSSINGS.B.highwayM)];
+  const bolt = SERVICE_MAP.bolts.find((b) => Math.abs(b.mi - CROSSINGS.C.oldRoad) < 0.01)?.at ?? SERVICE_MAP.post(CROSSINGS.C.oldRoad);
+  const fromC = onPage(bolt);
+  if (onLine('A') >= 3) across(fromA, STATION, -0.35, 1.12, 'A');
+  if (onLine('B') >= 3) across(fromB, STATION, -0.5, 1.12, 'B');
+  const cOn = !!v.lineC && v.oldRoad && v.station;
+  if (cOn) {
+    // (its letter at the old road, where it was found: by the station the page has A's and B's)
+    across(fromC, STATION, -0.06, 1.12, '');
+    const [bx, by] = fromC;
+    text('C', bx + 24, by - 12, 28);
+    // the bolt where it crosses, as the maps at the diner have it: a small cross on the road
+    line([[bx - 6, by - 6], [bx + 6, by + 6]], 1.6); line([[bx + 6, by - 6], [bx - 6, by + 6]], 1.6);
+  }
+  // drawn on past what is known, all three: faint, to the edges of the page, and where they cross
+  // a small circle; nothing written by it
+  if (linesMeet(v)) {
+    const page = { x0: 74, x1: W - 8, y0: 64, y1: H - 8 };
+    // how far along from..STATION the line leaves the page, beyond STATION (k > 1) or before `from` (k < 0)
+    const edgeK = (from: [number, number], dir: 1 | -1) => {
+      const dx = STATION[0] - from[0], dy = STATION[1] - from[1];
+      let k = dir > 0 ? 1e9 : -1e9;
+      for (const [d, p, lo, hi] of [[dx, from[0], page.x0, page.x1], [dy, from[1], page.y0, page.y1]] as const) {
+        if (Math.abs(d) < 1e-6) continue;
+        for (const e of [lo, hi]) { const t = (e - p) / d; if (dir > 0 ? t > 1 && t < k : t < 0 && t > k) k = t; }
+      }
+      return k;
+    };
+    g.save(); g.globalAlpha = 0.42;
+    for (const [from, k0, k1] of [[fromA, -0.35, 1.12], [fromB, -0.5, 1.12], [fromC, -0.06, 1.12]] as const) {
+      const [ax, ay] = from, [bx, by] = STATION, at = (k: number): [number, number] => [ax + (bx - ax) * k, ay + (by - ay) * k];
+      g.setLineDash([2, 12]);
+      line([at(k1), at(edgeK(from, 1))], 1.3);
+      line([at(k0), at(Math.max(edgeK(from, -1), k0 - 0.6))], 1.3);
+      g.setLineDash([]);
+    }
+    g.restore();
+    g.lineWidth = 1.8; g.strokeStyle = PENCIL;
+    for (let pass = 0; pass < 2; pass++) { g.beginPath(); g.arc(STATION[0] + r() * 1.2, STATION[1] + r() * 1.2, 31, 0, Math.PI * 2); g.stroke(); }
+  }
   const hhmm = (c: number) => { const d = ((c % 86400) + 86400) % 86400; return `${String(Math.floor(d / 3600)).padStart(2, '0')}:${String(Math.floor(d % 3600 / 60)).padStart(2, '0')}`; };
   const inTown: string[] = [];
   let k = 0;
