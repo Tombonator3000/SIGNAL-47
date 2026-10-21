@@ -28,7 +28,8 @@ import { Score, CUES, TRACKS, type Cue } from './core/score';
 import { Radio, FREQ, DIAL, dialX, SIGN_OFF, SIGN_ON, type StationId, BOY } from './core/radio';
 import { TripRadio } from './story/tripRadio';
 import { NightCalls } from './core/calls';
-import { CB } from './core/cb';
+import { CB, CB_ENGINE, engineOnChannel } from './core/cb';
+import { fourSeven } from './core/walkie';
 import { Roadside } from './core/roadside';
 import { areaMap, areaMapDescription, type MapView } from './ui/areaMap';
 import type { KitItem, PersonCard } from './ui/UI';
@@ -353,6 +354,7 @@ async function boot() {
       settings: () => ({ calmFlash, stillShots }),
       fog: (density) => { (scene.fog as THREE.FogExp2).density = density ?? (world.area === 'roswell' ? 0.00055 : 0.0021); },
       finale: () => { void finale(); },
+      cb,
     },
     doors,
     milestone: () => requestAutosave(true),
@@ -935,6 +937,8 @@ async function boot() {
     if (mode === 'play' && !ui.modal && !game.cinematic && world.driving) {
       // (held at the wheel on waking: nothing, story/abduction.ts)
       if (abduction!.holds) return;
+      // (on the line at 05:29 the key, and only the key: story/Chapter6.ts)
+      if (game.ch6.turnKey()) return;
       // (after :40 in the truck's warning there is nothing left to turn it over with: story/truckTaken.ts)
       if (truckTaken.useKey(abduction!.warn?.t ?? null)) return;
       if (world.trouble.turnKey()) return;
@@ -955,6 +959,8 @@ async function boot() {
    *  Get out button on a phone, while Use turns the key. */
   function runOut() {
     if (mode !== 'play' || ui.modal || game.cinematic || !world.driving || abduction!.holds) return;
+    // (on the line at 05:29: the handle moves, the door does not; story/Chapter6.ts)
+    if (game.ch6.tryDoor()) return;
     if (truckTaken.warning && world.canGetOut(true)) world.getOutHere(true);
   }
   ui.onAlt = runOut;
@@ -1624,7 +1630,7 @@ async function boot() {
   // taken (story/abduction.ts, the recordings), the first time the eyes are on it
   const was = { glimpse: null as string | null, calls: 0, cutSeen: 0, road: null as Roadside['last'], stage: 'calm', over: null as string | null,
     follow: 'idle', roof: false, lights: 'none', regular: false, event: false, records: new Set<string>(), reel: false, dark: 'idle', darkFig: false, office: 'idle' as string, array: false,
-    arc: 'idle' as string, tip: 'idle' as string, r47: false, walk: 'idle' as string, truck: 'idle' as string, third: false };
+    arc: 'idle' as string, tip: 'idle' as string, r47: false, walk: 'idle' as string, truck: 'idle' as string, third: false, lastMile: false };
   let truckEntry: SeenEntry | null = null;
   let walkEntry: SeenEntry | null = null;
   let warnEntry: SeenEntry | null = null, overEntry: SeenEntry | null = null, reelEntry: SeenEntry | null = null, darkEntry: SeenEntry | null = null, officeEntry: SeenEntry | null = null, arrayEntry: SeenEntry | null = null;
@@ -1783,6 +1789,10 @@ async function boot() {
       else if (arrayEntry) { arrayEntry.end = 'back'; arrayEntry = null; }
       was.array = arrayBack.busy;
     }
+    // the CB on the last mile (story/Chapter6.ts): heard, nothing to look at; once a drive out to C
+    const lm = game.ch6.active && game.ch6.lastMile.openAt !== null;
+    if (lm && !was.lastMile) saw('event', 'the last mile', { line: 'C', looking: null });
+    was.lastMile = lm;
     const ev = game.ch6.stage === 'event';
     if (ev && !was.event) saw('event', 'THE EVENT', { line: 'C', looking: null });
     was.event = ev;
@@ -2197,6 +2207,8 @@ async function boot() {
   });
 
   Object.assign((window as any).S47, { pasture, motelTv });   // events 2 and 10 (tools/cowstv.py)
+  // the last mile (story/Chapter6.ts; tools/f_last_mile.py renders its sounds offline)
+  Object.assign((window as any).S47, { lastMileSound: async () => ({ CB_ENGINE, engineOnChannel, fourSeven, ...(await import('./drive/engineSound')) }) });
   // the lines on the ground and what was seen (story/lines.ts, story/seen.ts; tools/f_abc_lines.py):
   // S47.seen is the night's log itself; lineHere says which line the player and the truck are on
   Object.assign((window as any).S47, { lines, seen: seenLog.entries, seenLog,
@@ -2254,6 +2266,12 @@ async function boot() {
         { label: '4 Room 6', run: () => devStart('chapter4') },
         { label: '5 All Night', run: () => devStart('chapter5') },
         { label: '6 Roswell Road', run: () => devStart('chapter6') },
+        // before the seven-mile post, so the CB opens by itself 47 s before C (story/Chapter6.ts, lastMile)
+        { label: '6 The last mile', run: () => devStart('chapter6', () => waitFor(() => world.area === 'roswell' && world.driving && game.ch6.stage === 'drive', () => {
+          const p = world.oldRoad!.poseAt(6.8);
+          world.oldDrive!.place(p.pos, p.heading);
+          game.clock = 5 * 3600 + 27 * 60;
+        })) },
         { label: '6 At the line', run: () => devStart('chapter6', () => waitFor(() => world.area === 'roswell' && world.driving && game.ch6.stage === 'drive', () => {
           const p = world.oldRoad!.poseAt(8.06);
           world.oldDrive!.place(p.pos, p.heading);
@@ -2560,7 +2578,7 @@ async function boot() {
     const tr = world.driving ? truckNow() : null, s4 = ch4.s.stage;
     const old = world.area === 'roswell' && game.ch6.active && game.ch6.stage !== 'end' && tr && world.oldRoad ? world.oldRoad.where(tr.group.position.x, tr.group.position.z).mi : null;
     return {
-      ok: !modalOpen && !game.cinematic && !oneAtATime() && !audio.phonePlaying && !cb.busy,
+      ok: !modalOpen && !game.cinematic && !oneAtATime() && !audio.phonePlaying && !cb.busy && !game.ch6.cbDue,
       trip: world.tripSecs !== null,
       at: tr && world.area !== 'roswell' ? mapOf(tr.group.position) : null,
       speed: world.driving ? world.drivingSpeed : 0,
@@ -2597,6 +2615,7 @@ async function boot() {
   let inCab = false;
   const townAt = new THREE.Vector3();
   let canOut = false;   // stopped in the truck with ground by a door: Use gets out
+  let atLine = false;   // THE EVENT: the prompt sits lower, clear of the third one (story/Chapter6.ts)
   function step(dt: number) {
     t += dt;
     if (mode === 'play') playtime += dt;
@@ -2781,10 +2800,12 @@ async function boot() {
           clock: game.clock, backAt: ab.backAt, calm: calmFlash, woke: ab.data.last, over: ab.overPhase !== null });
       } else if (mode === 'play') follow.wait();
       // the corner clock in seconds while the warning counts its 47 (story/abduction.ts, warnClock)
-      ui.clockSeconds(mode === 'play' ? abduction!.warnClock ?? saroDark.clockShow ?? archive.clockShow : null);
+      // (and from the CB on the last mile to 05:29:47, story/Chapter6.ts)
+      ui.clockSeconds(mode === 'play' ? abduction!.warnClock ?? saroDark.clockShow ?? archive.clockShow ?? game.ch6.clockShow : null);
       // in the cab: no crosshair, and the touch buttons for using things and the camera go away
       if (world.driving !== inCab) { inCab = world.driving; document.documentElement.classList.toggle('driving', inCab); }
       if (!world.driving && canOut) { canOut = false; document.documentElement.classList.remove('can-out'); }
+      if ((mode === 'play' && game.ch6.stage === 'event') !== atLine) { atLine = !atLine; document.documentElement.classList.toggle('at-line', atLine); }
       const sp = world.driving ? 'lab' : world.area === 'station01' || world.area === 'room6' || world.area === 'diner' ? (world.indoors(player.pos) ? 'room' : 'yard') : inside(motelOffice, player.pos) ? 'room' : spaceOf(player.pos);
       if (sp !== space) { space = sp; audio.setSpace(sp); }
       // the extension has no windows: draw its rooms only from inside, or through the open door
@@ -2802,10 +2823,11 @@ async function boot() {
         ui.examine(zoomK > 0.6 ? inter.examine(camera)?.text ?? starHole.examine(holeIn(false)) : null);
       } else {
         const live = mode === 'play' && !modalOpen && !game.cinematic;
-        const key = live && world.driving && world.trouble.wantsKey && !abduction!.holds, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && !truckTaken.warning && world.canGetOut();
+        const key = live && world.driving && (world.trouble.wantsKey || game.ch6.wantsKey) && !abduction!.holds, aimR = live && !key && radioAimed(), out = live && !key && !aimR && !truckB.racing && !truckTaken.warning && world.canGetOut();
         // (in the truck's warning on B, stopped: out of it, as well as the key, the whole time and not
         // only while the key is wanted, so it does not blink away with each turn; story/truckTaken.ts)
-        const run = live && !abduction!.holds && truckTaken.warning && world.canGetOut(true);
+        // (and on the line at 05:29, where it does not open: story/Chapter6.ts)
+        const run = live && !abduction!.holds && ((truckTaken.warning && world.canGetOut(true)) || game.ch6.doorOffered);
         if ((out || key || aimR) !== canOut) { canOut = out || key || aimR; document.documentElement.classList.toggle('can-out', canOut); }
         ui.prompt(key ? 'Turn the key' : aimR ? radioLabel() : out ? 'Get out' : fcam.raised && input.touchMode ? 'Shutter' : null, input.touchMode, run ? 'Get out' : null);
         ui.hint(false);
