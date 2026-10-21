@@ -868,6 +868,12 @@ export class AudioSys {
   }
   /** The cab speaker's input (null when the radio is off): sounds played here come out of it. */
   radioIn(): AudioNode | null { return this.cab?.spk ?? null; }
+  /** The cab radio's level against its own (1), for a while: down under the CB when it opens by itself
+   *  on the old road (story/Chapter6.ts). cabRadio() puts it back. */
+  cabLevel(k: number) {
+    const ctx = this.ctx, r = this.cab; if (!ctx || !r) return;
+    r.out.gain.setTargetAtTime(0.09 * k, ctx.currentTime, 0.35);
+  }
   /** A voice on the cab radio, as noise in a speech band (no recorded actor; it is captioned).
    *  formant: lower for a man (about 520 Hz), higher for a woman (about 820 Hz). */
   cabVoice(secs: number, formant: number) {

@@ -8,6 +8,41 @@
 // Everything is made here and sent through a small speaker: high and low cut, a little
 // clipping. The node graph is built on start and torn down on stop.
 
+/** The relay's rhythm on the radio, four, a gap, seven (seconds from `at`); the key at 05:29 on the line
+ *  clicks the same (story/Chapter6.ts). */
+export const RELAY = { gap: 0.32, pause: 0.9 } as const;
+export function fourSeven(at: number): number[] {
+  const times: number[] = [];
+  for (let i = 0; i < 4; i++) times.push(at + i * RELAY.gap);
+  for (let i = 0; i < 7; i++) times.push(at + 4 * RELAY.gap + RELAY.pause + i * RELAY.gap);
+  return times;
+}
+/** One relay click at `t` into `dest` (any context: the tests render it offline): a dry snap of noise and
+ *  the thump of the armature behind it. k scales it (1: as on the radio). */
+export function relayClick(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, t: number, k = 1) {
+  const n = ctx.createBufferSource(); n.buffer = noise;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 1.4;
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.9 * k, t + 0.002); g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+  n.connect(bp); bp.connect(g); g.connect(dest);
+  n.start(t, Math.random()); n.stop(t + 0.05);
+  // and the thump of the armature behind it
+  const o = ctx.createOscillator(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.04);
+  const og = ctx.createGain(); og.gain.setValueAtTime(0.5 * k, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+  o.connect(og); og.connect(dest); o.start(t); o.stop(t + 0.06);
+}
+/** Somebody breathing close to the microphone, once, from `at` (1.3 s): in, and out. k scales it. */
+export function breath(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, at: number, k = 1) {
+  const n = ctx.createBufferSource(); n.buffer = noise;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.9;
+  bp.frequency.setValueAtTime(650, at); bp.frequency.linearRampToValueAtTime(900, at + 0.8); bp.frequency.linearRampToValueAtTime(560, at + 1.3);
+  const g = ctx.createGain(), v = g.gain;
+  v.setValueAtTime(0, at); v.linearRampToValueAtTime(0.32 * k, at + 0.55);   // in
+  v.linearRampToValueAtTime(0.06 * k, at + 0.75); v.linearRampToValueAtTime(0.26 * k, at + 0.95); // out
+  v.linearRampToValueAtTime(0, at + 1.3);
+  n.connect(bp); bp.connect(g); g.connect(dest);
+  n.start(at, Math.random()); n.stop(at + 1.4);
+}
+
 export class WalkieSound {
   private out: GainNode | null = null;
   private hiss: GainNode | null = null;
@@ -79,34 +114,13 @@ export class WalkieSound {
   }
 
   private clicks(at: number) {
-    const ctx = this.ctx, sp = this.speaker; if (!sp) return;
-    const times: number[] = [];
-    for (let i = 0; i < 4; i++) times.push(at + i * 0.32);
-    for (let i = 0; i < 7; i++) times.push(at + 4 * 0.32 + 0.9 + i * 0.32);
-    for (const t of times) {
-      const n = ctx.createBufferSource(); n.buffer = this.noise;
-      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 1.4;
-      const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.9, t + 0.002); g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
-      n.connect(bp); bp.connect(g); g.connect(sp);
-      n.start(t, Math.random()); n.stop(t + 0.05);
-      // and the thump of the armature behind it
-      const o = ctx.createOscillator(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.04);
-      const og = ctx.createGain(); og.gain.setValueAtTime(0.5, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-      o.connect(og); og.connect(sp); o.start(t); o.stop(t + 0.06);
-    }
+    const sp = this.speaker; if (!sp) return;
+    for (const t of fourSeven(at)) relayClick(this.ctx, sp, this.noise, t);
   }
 
   private breath(at: number) {
-    const ctx = this.ctx, sp = this.speaker; if (!sp) return;
-    const n = ctx.createBufferSource(); n.buffer = this.noise;
-    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.9;
-    bp.frequency.setValueAtTime(650, at); bp.frequency.linearRampToValueAtTime(900, at + 0.8); bp.frequency.linearRampToValueAtTime(560, at + 1.3);
-    const g = ctx.createGain(), v = g.gain;
-    v.setValueAtTime(0, at); v.linearRampToValueAtTime(0.32, at + 0.55);   // in
-    v.linearRampToValueAtTime(0.06, at + 0.75); v.linearRampToValueAtTime(0.26, at + 0.95); // out
-    v.linearRampToValueAtTime(0, at + 1.3);
-    n.connect(bp); bp.connect(g); g.connect(sp);
-    n.start(at, Math.random()); n.stop(at + 1.4);
+    const sp = this.speaker; if (!sp) return;
+    breath(this.ctx, sp, this.noise, at);
   }
 
   /** Press to talk: quiet while sending, then four and seven come back. Returns its length. */

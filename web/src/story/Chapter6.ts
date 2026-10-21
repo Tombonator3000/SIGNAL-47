@@ -9,6 +9,8 @@ import { artLoaded, artImage, loadArtFor, FLASH_ART } from '../core/art';
 import { clockText } from './time';
 import { SUN_MESA, horizonDip } from '../world/backdrop';
 import { ThirdFigure } from './theThird';
+import { CB_ENGINE, type CB } from '../core/cb';
+import { breath, fourSeven } from '../core/walkie';
 
 // Chapter six, "Roswell Road" and THE EVENT (KAPITLER.md). From the diner's lot across the
 // highway onto the old road at 05:20, east-north-east and then north-east into the dawn, past
@@ -18,6 +20,17 @@ import { ThirdFigure } from './theThird';
 // back in pieces, FLASH, silence. At 05:29:47 the camera leaves the cab and does not come
 // back: out through the windshield, up over the desert, the sun on the mesa at 05:30, the
 // stars. Then the title, the credits and the whole photograph from 1947.
+//
+// The last mile (FORSLAG.md, 20 October, punkt 6; Tom: "Spenning og skummelt slår faste regler"):
+// past the seven-mile post, 47 seconds from the line at the speed the truck is going, the CB opens by
+// itself, and on the channel an engine like the truck's own, small and far off, coughs twice and dies
+// while the truck's own runs on (core/cb.ts, CB_ENGINE; the first half of Tomás' field radio, without
+// its clicks). The corner clock goes to seconds in amber, as for every 47 tonight, from 05:28:13; it is
+// bound to the truck and reaches 05:29:00 on the line, and goes on through THE EVENT to 05:29:47. On
+// the line the engine dies as before, and "Turn the key" comes up as it has all night: the solenoid
+// clicks four, a pause, seven, the field radio's relay, and it never catches; then breathing close in
+// the cab, the last thing on that radio, and it is the player's own. After that a single dead click,
+// or nothing. The door: "The handle moves. The door does not."
 //
 // Nothing here is saved. The last save is the diner with the truck ready (chapter five),
 // so the ending can be seen again.
@@ -39,6 +52,8 @@ export interface Chapter6Deps {
   fog: (density: number | null) => void;
   /** The 3D part is over, the screen is black: stop the game, roll the credits. */
   finale: () => void;
+  /** The CB under the dash (core/cb.ts): it opens by itself on the last mile. */
+  cb: CB;
 }
 
 const T = 5 * 3600 + 29 * 60;            // 05:29:00
@@ -69,6 +84,23 @@ const HEADS = [new THREE.Color(0.12, 0.25, 1.0), new THREE.Color(1.0, 0.55, 0.12
  *  over `letGo` s of the first fade instead. The truck brakes to stand where it should: `brake` is
  *  the braking the stop is planned on (m/s/s), after `react` s, and never more than `far` m on. */
 export const THIRD = { until: 32, ahead: 9, letGo: 1.2, flares: [11.0, 12.2, 14.4, 16.6], brake: 3.2, react: 0.8, near: 3, far: 120 } as const;
+/** The last mile. lead: seconds from the line at the speed the truck is going when the CB opens (the
+ *  clock then says 05:28:13 and is the truck's from there: 05:29:00 on the line); least: closer than
+ *  that and it does not open at all (a truck put further on), nor nearer than `room` m, nor before mile
+ *  `fromMi`, nor for a truck that did not come up the road from before mile `before`; tau: how the speed
+ *  is smoothed (s); front: the truck's front over its middle (m: the line is crossed by the front).
+ *  The CB is shut again CB_ENGINE.end s after it opens: 34 s of nothing on it before 05:29.
+ *  key: from `from` s into THE EVENT (the engine has died) until `until` (the FLASH), the key: the first
+ *  turn four and seven (core/walkie.ts, RELAY) and the breath, `again` s between later turns. door: s
+ *  between tries of the handle. */
+export const LAST_MILE = { lead: 47, least: 40, room: 200, fromMi: 7.0, before: 6.95, tau: 1.5, front: 2.3,
+  key: { from: 1.5, until: 31.4, first: 0.15, breath: 0.6, again: 0.8 }, door: 0.6 } as const;
+/** What is said when (seconds from the CB opening; the captions, for those who cannot hear it). */
+const CB_SAYS: [number, string, number][] = [
+  [0.3, 'The CB opens by itself. Nobody calls. On the channel, small and a long way off, an engine idling. It sounds like yours.', 6.4],
+  [8.0, 'It coughs twice and dies. Yours keeps running.', 4.6],
+  [9.8, 'The channel stays open on nothing at all. Then the squelch shuts.', 3.8],
+];
 const HEAD_WHITE = new THREE.Color(1.0, 0.9, 0.72), THIRD_AMB = new THREE.Color(0.035, 0.038, 0.048);
 const _band = new THREE.Color(), _glint = new THREE.Color(), _eye = new THREE.Vector3();
 const _c = new THREE.Color(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
@@ -103,6 +135,14 @@ export class Chapter6 {
   private _head = new THREE.Vector3();
   /** Where the truck's middle comes to stand (along the road, m), planned when the night takes it. */
   private stopS: number | null = null;
+  /** The last mile: the CB (seconds since it opened, null before; skipped: the truck was put on too
+   *  close for it), the count's metres to go when it began and its clock so far, the clock when the CB
+   *  opened and shut (the seen log, the tests), the smoothed speed, and whether the truck came up the
+   *  road from before the seven-mile post. */
+  readonly lastMile = { cb: null as number | null, skipped: false, d0: 0, clock: 0, openAt: null as number | null, closedAt: null as number | null, vs: -1, approach: false, eta: Infinity };
+  /** The key and the door in THE EVENT: how often each was tried, and when each answers again. */
+  readonly tries = { key: 0, door: 0, keyFree: 0, doorFree: 0 };
+  private cues: { at: number; fn: () => void }[] = [];
   /** Where its head is while it stands there (the night's log, main.ts; the tests), else null. */
   get thirdAt(): THREE.Vector3 | null { return this.third?.mesh.visible ? this.third.head(this._head) : null; }
 
@@ -129,6 +169,10 @@ export class Chapter6 {
   reset() {
     this.active = false; this.started = false; this.stage = 'drive';
     this.et = 0; this.pt = 0; this.done.clear(); this.idle = 0; this.backT = 0; this.stopS = null;
+    if (this.lastMile.cb !== null && this.lastMile.closedAt === null) this.d.cb.stop();
+    Object.assign(this.lastMile, { cb: null, skipped: false, d0: 0, clock: 0, openAt: null, closedAt: null, vs: -1, approach: false, eta: Infinity });
+    Object.assign(this.tries, { key: 0, door: 0, keyFree: 0, doorFree: 0 });
+    this.cues = [];
     this.skyLift = null; this.sunElev = null;
     this.ending?.dispose(); this.ending = null;
     if (this.d.world.oldControl) this.d.world.oldControl = null;
@@ -161,9 +205,11 @@ export class Chapter6 {
     // the clock keeps to the pace of the drive (PACE), and never shows 05:29 before the line:
     // it slows to a crawl in the last 20 seconds
     const at = road.where(drv.pos.x, drv.pos.z), pace = T - Math.max(0, -at.s) / PACE;
-    this.g.clock = THREE.MathUtils.clamp(this.g.clock, pace - 60, pace);
-    const left = T - this.g.clock;
-    if (left < 20) this.g.clock -= dt * (1 - Math.max(0.02, left / 20));
+    if (!this.lastMileStep(dt, at, drv.speed)) {
+      this.g.clock = THREE.MathUtils.clamp(this.g.clock, pace - 60, pace);
+      const left = T - this.g.clock;
+      if (left < 20) this.g.clock -= dt * (1 - Math.max(0.02, left / 20));
+    }
     this.g.clock = Math.min(this.g.clock, T - 0.05);
     // fronts of the truck over C: the night begins
     const h = drv.heading, fx = drv.pos.x - Math.sin(h) * 2.3, fz = drv.pos.z - Math.cos(h) * 2.3;
@@ -177,12 +223,118 @@ export class Chapter6 {
     if (this.idle > 40 && at.mi < 0.2 && !this.done.has('across')) { this.done.add('across'); this.d.ui.toast('The old road is across the highway, going off to the east.', 4); }
   }
 
+  // ---------- the last mile ----------
+  /** Every frame of the drive: the CB opening by itself, its captions, and the count. True while the
+   *  count has the clock (from the CB to the line: 05:28:13 to 05:29:00 over the metres that were left,
+   *  never back, so it waits when the truck does). */
+  private lastMileStep(dt: number, at: { s: number; mi: number }, speed: number) {
+    const L = this.lastMile, M = LAST_MILE, rem = Math.max(0, -at.s - M.front), v = Math.max(0, speed);
+    L.vs = L.vs < 0 ? v : L.vs + (v - L.vs) * (1 - Math.exp(-dt / M.tau));
+    if (at.mi < M.before) L.approach = true;
+    L.eta = L.vs > 0.5 ? rem / L.vs : Infinity;
+    if (L.cb === null && !L.skipped && L.approach && at.mi >= M.fromMi && L.vs > 0.5 && rem / L.vs <= M.lead) {
+      if (rem / L.vs < M.least || rem < M.room) L.skipped = true;
+      else this.openCB(rem);
+    }
+    if (L.cb !== null && L.closedAt === null) {
+      const was = L.cb;
+      L.cb += dt;
+      for (const [t, text, secs] of CB_SAYS) if (was < t && L.cb >= t) this.d.ui.toast(text, secs);
+      if (L.cb >= CB_ENGINE.end) this.closeCB();
+    }
+    if (!L.d0) return false;
+    L.clock = Math.max(L.clock, T - M.lead * Math.min(1, rem / L.d0));
+    this.g.clock = L.clock;
+    return true;
+  }
+  private openCB(rem: number) {
+    const L = this.lastMile, a = this.d.audio;
+    L.cb = 0; L.d0 = rem; L.clock = T - LAST_MILE.lead; L.openAt = L.clock;
+    // the game's own sounds, so the radios' level (and the CB's, there is none) does not take it away
+    if (a.ctx) this.d.cb.engine(this.d.world.engineSound?.idleRecording ?? null, a.sfx);
+    a.cabLevel(0.4);
+  }
+  private closeCB() {
+    const L = this.lastMile;
+    L.closedAt = Math.floor(this.g.clock);
+    this.d.cb.stop();
+    this.d.audio.cabLevel(1);
+    // (cut off on the line before the engine on it had died: nothing to write)
+    if (L.cb !== null && L.cb >= CB_ENGINE.dead) this.g.note(`${this.time()}. Past the seven-mile post the CB opened by itself. Nobody on it, only an engine a long way off, like this one. It coughed twice and died. This one kept running.`);
+  }
+  /** The CB is about to open, or open (main.ts: the compass on the dash keeps its caption till after,
+   *  story/truckOnB.ts, so the CB's own has the moment; they come at the same mile at 55 mph). */
+  get cbDue() {
+    const L = this.lastMile;
+    if (this.stage !== 'drive' || L.skipped || L.closedAt !== null) return false;
+    return L.cb !== null || (L.approach && L.eta < LAST_MILE.lead + 8);
+  }
+  /** The corner clock in seconds (main.ts, ui.clockSeconds): from the CB opening to the line and through
+   *  THE EVENT to 05:29:47, in the amber of every 47 tonight; null otherwise. */
+  get clockShow(): { hm: string; ss: string } | null {
+    if (!this.lastMile.d0 || !(this.stage === 'drive' || this.stage === 'event')) return null;
+    const c = Math.floor(this.g.clock + 1e-6);
+    return { hm: clockText(c, false), ss: String(((c % 60) + 60) % 60).padStart(2, '0') };
+  }
+
+  // ---------- the key and the door, in THE EVENT ----------
+  /** "Turn the key" (main.ts: the prompt, and the Use button on a phone, can-out): the engine has died
+   *  and the FLASH has not come, and the last turn has had its answer. */
+  get wantsKey() { const K = LAST_MILE.key; return this.stage === 'event' && this.et >= K.from && this.et < K.until && this.et >= this.tries.keyFree; }
+  /** "Get out" (Q, its own button on a phone) the whole time the key could be: the door that will not open. */
+  get doorOffered() { const K = LAST_MILE.key; return this.stage === 'event' && this.et >= K.from && this.et < K.until; }
+  /** E in THE EVENT (main.ts useCurrent). The first turn: the solenoid four, a pause, seven, the relay on
+   *  Tomás' radio, and nothing turns over; a breath close by after it. Then one dead click, or nothing,
+   *  turn by turn. True whenever THE EVENT has E (nothing else in the cab answers it then). */
+  turnKey(): boolean {
+    if (this.stage !== 'event') return false;
+    if (!this.wantsKey) return true;
+    const K = LAST_MILE.key, a = this.d.audio, ui = this.d.ui, eng = this.d.world.engineSound, n = ++this.tries.key, e = this.et;
+    a.play(a.or('keys'), { gain: 0.32 });
+    if (n === 1) {
+      const clicks = fourSeven(K.first), four = clicks[3], seven = clicks[10];
+      eng?.solenoid(clicks);
+      this.tries.keyFree = e + seven + K.breath + 0.4;
+      this.cue(e + four + 0.05, () => ui.toast('You turn the key. Under the hood the solenoid clicks, four times.', 3.4));
+      this.cue(e + seven + 0.05, () => ui.toast('A pause. Then seven. Nothing turns over.', 3.4));
+      // breathing, close: the last thing on Tomás' radio after the clicks, here in the cab
+      this.cue(e + seven + K.breath, () => {
+        const ctx = a.ctx, noise = a.noiseBuffer();
+        if (ctx && noise) { const t = ctx.currentTime; breath(ctx, a.sfx, noise, t, 0.9); breath(ctx, a.sfx, noise, t + 1.4, 0.8); }
+        ui.toast('Breathing, close, in the cab. Your own.', 3.4);
+      });
+    } else if (n % 2 === 0) {
+      eng?.solenoid([K.first], 0.55);
+      this.tries.keyFree = e + K.again;
+      ui.toast('One click. Nothing turns over.', 2.6);
+    } else {
+      this.tries.keyFree = e + K.again;
+      ui.toast('Nothing. Not even the click.', 2.6);
+    }
+    return true;
+  }
+  /** Q, or the Get out button on a phone, in THE EVENT (main.ts runOut): the handle, and the door that
+   *  does not open. True whenever THE EVENT has it. */
+  tryDoor(): boolean {
+    if (this.stage !== 'event') return false;
+    if (!this.doorOffered || this.et < this.tries.doorFree) return true;
+    this.tries.doorFree = this.et + LAST_MILE.door;
+    const n = ++this.tries.door, a = this.d.audio;
+    a.play(a.or('door_latch', 'switch'), { gain: 0.5, rate: 0.8 });
+    this.d.ui.toast(n === 2 ? 'The handle moves. The door does not. The lock button is up.' : 'The handle moves. The door does not.', 3.2);
+    return true;
+  }
+  private cue(at: number, fn: () => void) { this.cues.push({ at, fn }); }
+
   // ---------- THE EVENT ----------
   private startEvent() {
     const w = this.d.world;
     this.stage = 'event';
     this.et = 0;
     this.g.clock = T;
+    // (a CB still open on the line, driven at it from closer than it should have been: shut now, so the
+    // car radio's carrier is the first sound of THE EVENT)
+    if (this.lastMile.cb !== null && this.lastMile.closedAt === null) this.closeCB();
     this.calm = this.d.settings().calmFlash;
     this.steady = this.calm || this.d.settings().stillShots;
     if (!this.frames) this.frames = flashFrames();
@@ -225,6 +377,8 @@ export class Chapter6 {
     this.et += dt;
     const e = this.et;
     this.g.clock = T + e;
+    // (what the key set going: its captions and the breath)
+    if (this.cues.length) { const due = this.cues.filter((c) => c.at <= e); if (due.length) { this.cues = this.cues.filter((c) => c.at > e); for (const c of due) c.fn(); } }
     // 05:29:00: carrier, the engine coughs and stops, the instruments die, the wind drops
     this.once('cut', () => {
       audio.cabRadio('carrier');

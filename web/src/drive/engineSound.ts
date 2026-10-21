@@ -3,6 +3,7 @@ import idleUrl from '../assets/audio/engine_idle.wav';
 import driveUrl from '../assets/audio/engine_drive.wav';
 import startUrl from '../assets/audio/engine_start.mp3';
 import offUrl from '../assets/audio/engine_off.mp3';
+import { relayClick } from '../core/walkie';
 
 // The truck's V8, heard from the cab. Tom, 18 October: a new and better engine sound. It is
 // now two recordings (THIRD_PARTY_NOTICES.md): a carburetted V8 at idle, and an old car or
@@ -41,11 +42,34 @@ function loadClips(ctx: BaseAudioContext) {
 }
 const smooth = (x: number, a: number, b: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
+/** The key on a dead truck (story/Chapter6.ts, 05:29 on the line): the starter solenoid under the
+ *  hood clicks and the starter does not turn. One click per entry of `at` (AudioContext time), each as
+ *  hard as `k` (0..1): the same click as the relay on Tomás' field radio (core/walkie.ts, relayClick),
+ *  heard from the cab through the firewall instead of through a speaker, with the plunger's thud in the
+ *  engine bay under it. Made with nodes, on any context (the tests render it offline). Returns the
+ *  time of the last click. */
+export function solenoidClicks(ctx: BaseAudioContext, dest: AudioNode, noise: AudioBuffer, at: number[], k = 1) {
+  const fw = ctx.createBiquadFilter(); fw.type = 'lowpass'; fw.frequency.value = 3400; fw.Q.value = 0.6;
+  fw.connect(dest);
+  let last = 0;
+  for (const t of at) {
+    last = Math.max(last, t);
+    relayClick(ctx, fw, noise, t, 0.8 * k);
+    const o = ctx.createOscillator(); o.frequency.setValueAtTime(92, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.07);
+    const og = ctx.createGain(); og.gain.setValueAtTime(0.42 * k, t + 0.004); og.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    o.connect(og); og.connect(fw); o.start(t); o.stop(t + 0.1);
+  }
+  return last;
+}
+
 export class EngineSound {
   private out: GainNode;
   private nodes: AudioScheduledSourceNode[] = [];
   private eng: { bus: GainNode; lp: BiquadFilterNode; osc: OscillatorNode[]; lfo: OscillatorNode; noise: GainNode; band: BiquadFilterNode;
     rec: { idle: AudioBufferSourceNode; drive: AudioBufferSourceNode; gi: GainNode; gd: GainNode } | null; own: AudioScheduledSourceNode[] } | null = null;
+  /** The idle recording, once it is decoded, or null (core/cb.ts: the same engine, small and far off on
+   *  the CB's channel on the last mile, story/Chapter6.ts). */
+  get idleRecording(): AudioBuffer | null { return clips.idle ?? null; }
   /** Whether the recordings are playing (the tests). */
   get recorded() { return !!this.eng?.rec; }
   /** Running or stalled; false when start() would turn the key (the key's own sound). */
@@ -282,6 +306,15 @@ export class EngineSound {
     n.connect(bp); bp.connect(ng); ng.connect(this.out);
     for (const s of [o, lfo]) { s.start(t); s.stop(t + secs + 0.05); }
     n.start(t); n.stop(t + 0.1);
+  }
+
+  /** The key with the engine dead and the battery gone with it: only the solenoid, a click at each of
+   *  `secs` from now (story/Chapter6.ts). Through the truck's own sound, so it goes with it. */
+  solenoid(secs: number[], k = 1) {
+    const t = this.ctx.currentTime;
+    this.out.gain.cancelScheduledValues(t);
+    this.out.gain.setTargetAtTime(this.master, t, 0.02);
+    solenoidClicks(this.ctx, this.out, this.white, secs.map((s) => t + s), k);
   }
 
   /** It catches after a stall: the engine note comes back with a little surge. */
