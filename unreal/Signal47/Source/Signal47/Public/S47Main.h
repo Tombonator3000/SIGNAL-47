@@ -37,6 +37,7 @@ public:
 	UPROPERTY() TObjectPtr<US47Audio> Audio;
 	UPROPERTY() TObjectPtr<US47Inter> Inter;
 	UPROPERTY() TObjectPtr<US47UI> UI;
+	UPROPERTY() TObjectPtr<class US47CaseBoard> CaseBoard;
 
 	// The case board (story/caseBoard.ts): every chapter's rule book, and the hook the chapters
 	// open and refresh it with. Unset Board.Open: no board yet; a chapter then falls back to the

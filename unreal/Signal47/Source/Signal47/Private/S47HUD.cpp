@@ -17,6 +17,7 @@
 #include "S47Web.h"
 #include "S47Story.h"
 #include "S47BoardRules.h"
+#include "S47CaseBoard.h"
 #include "S47Inter.h"
 #include "S47Chapters.h"
 #include "S47Main.h"
@@ -61,6 +62,7 @@ void AS47HUD::Start()
 		bOk &= FS47OpsTerminal::SelfTest(Lines);
 		bOk &= S47RxSelfTest(Lines);
 		bOk &= FS47RuleBook::SelfTest(Lines);
+		bOk &= US47CaseBoard::SelfTest(Lines);
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -81,6 +83,7 @@ void AS47HUD::Start()
 	}
 	M->UI = NewObject<US47UI>(M);
 	M->UI->Init(this);
+	M->CaseBoard = NewObject<US47CaseBoard>(M); M->CaseBoard->Init(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{
@@ -164,6 +167,7 @@ void AS47HUD::OpenView(const FString& View)
 	else if (View == TEXT("console")) { if (Story.IsValid()) { Story->bConsoleOpen = true; } OpenConsole(); }
 	else if (View == TEXT("ops")) OpenOps();
 	else if (View == TEXT("log")) ShowDocument(S47Docs::ShiftLog(), [] {});
+	else if (View == TEXT("board")) { if (US47Main* M = US47Main::Get(this); M && M->CaseBoard) M->CaseBoard->Open(); }
 	UE_LOG(LogS47HUD, Display, TEXT("S47: opened %s"), *View);
 }
 
