@@ -79,6 +79,7 @@ public:
 	// game time (gt) runs while nothing is open and nothing holds it; the clock is the night's
 	void After(double Seconds, TFunction<void()> Fn, const FString& Tag = FString()); // on game time
 	void Cancel(const FString& Tag);
+	void ClearTimers() { Timers.Empty(); } // beginChapterN: this.timers = [] (nothing from before may fire inside the chapter)
 	void Note(const FString& S);           // the notebook, once
 	void AddDoc(const FS47Doc& Doc);       // a paper filed (replaces one with the same id)
 	TArray<FS47Doc>& DocsMutable() { return DocsList; }
