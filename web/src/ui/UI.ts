@@ -5,6 +5,7 @@ import { documentReadingParagraphs, type ReadAloud } from '../core/readAloud';
 import type { EarlDialogue, EarlLine, EarlState } from '../core/earlDialogue';
 import { characterLines, CHARACTER_LABELS, type NPCDialogue, type CharacterVoice } from '../core/npcDialogue';
 import { BOUGHT_SFX } from '../core/Audio';
+import { OPENING_PARAGRAPHS, type OpeningState, type OpeningView } from '../core/Opening';
 
 export interface DocSpec {
   id: string;
@@ -380,6 +381,39 @@ export class UI {
     el.className = 'loading'; el.textContent = msg;
     this.root.appendChild(el);
     return el;
+  }
+
+  openingCard(actions: { begin(): void; back(): void; closed(): void }): OpeningView {
+    const el = document.createElement('div');
+    el.className = 'opening-card'; el.dataset.openingState = 'ready';
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'opening-title');
+    el.innerHTML = `<section class="opening-sheet">
+      <h1 id="opening-title">SIGNAL <span class="slash">/</span> 47</h1>
+      <div class="opening-copy">${OPENING_PARAGRAPHS.map((text) => `<p>${esc(text)}</p>`).join('')}</div>
+      <div class="opening-actions"><button class="opt primary" data-a="begin-night">Begin night</button><button class="opt" data-a="back-title">Back to title</button></div>
+      <p class="opening-status" data-opening-status role="status" aria-live="polite"></p>
+    </section>`;
+    const begin = el.querySelector<HTMLButtonElement>('[data-a=begin-night]')!;
+    begin.addEventListener('click', actions.begin);
+    el.querySelector('[data-a=back-title]')!.addEventListener('click', actions.back);
+    el.addEventListener('keydown', (event) => {
+      if (event.code === 'Space' && event.target instanceof HTMLButtonElement) { event.stopPropagation(); return; }
+      if (event.code !== 'Tab') return;
+      event.preventDefault(); event.stopPropagation();
+      const back = el.querySelector<HTMLButtonElement>('[data-a=back-title]')!;
+      (document.activeElement === begin ? back : begin).focus({ preventScroll: true });
+    });
+    this.open(el, actions.closed);
+    begin.focus({ preventScroll: true });
+    return {
+      close: () => { if (this.modal === el) this.close(true); },
+      state: (value: OpeningState) => {
+        el.dataset.openingState = value;
+        el.querySelector<HTMLElement>('[data-opening-status]')!.textContent = value === 'loading' ? 'Loading narration…'
+          : value === 'playing' ? 'Synthetic Rod Serling parody'
+          : value === 'error' ? 'Narration is unavailable. You can begin the night.' : '';
+      },
+    };
   }
 
   title(opts: { onStart: () => void; cont: string | null; onContinue: () => void; canLoad: boolean; onLoad: () => void; onSettings: () => void;

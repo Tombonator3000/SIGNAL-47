@@ -14,6 +14,7 @@ import tempfile
 from pathlib import Path
 
 from playwright.async_api import async_playwright
+from intro_flow import begin_opening
 
 
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else "shots/readaloud")
@@ -121,6 +122,7 @@ async def start_night(page):
         await page.locator(".savemenu [data-new]").last.click()
         if await page.locator(".savemenu [data-yes]").count():
             await page.locator(".savemenu [data-yes]").click()
+    await begin_opening(page)
     await wait_for_js(page, "S47.started() && !!S47.game.d.ui.readAloud")
     await page.evaluate("S47.hold = true; S47.tick(0.2); S47.game.d.ui.close()")
     # Observe the genuine DocSpec passed by game interactions. This avoids

@@ -24,6 +24,7 @@
 import asyncio, sys, json, os, math, io, base64
 from PIL import Image
 from playwright.async_api import async_playwright
+from intro_flow import begin_opening
 
 OUT = sys.argv[1]
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -103,6 +104,7 @@ async def page(b, w, h, touch, store=None):
 async def start(pg, touch, sel='button[data-a=start]'):
     if touch: await pg.tap(sel)
     else: await pg.click(sel)
+    if sel == 'button[data-a=start]': await begin_opening(pg, touch=touch)
     await pg.wait_for_function("S47.started()", polling=200)
     await pg.evaluate(HELPERS); await pg.evaluate("T.hook()")
     await pg.add_style_tag(content='.lockhint{display:none !important}')

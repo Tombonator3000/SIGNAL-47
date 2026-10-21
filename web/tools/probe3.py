@@ -1,4 +1,5 @@
 import asyncio, time, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 async def tryshot(pg, name):
     t=time.time()
@@ -13,7 +14,7 @@ async def main():
         await pg.wait_for_selector('button[data-a=start]')
         await pg.evaluate("S47.setQuality('low')")
         await tryshot(pg,'title')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(1500)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(1500)
         await tryshot(pg,'play_nohold')
         await pg.evaluate("S47.hold=true; S47.tick(0.1)")
         await tryshot(pg,'hold_tick')

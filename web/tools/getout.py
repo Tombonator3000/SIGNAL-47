@@ -14,6 +14,7 @@
 # Usage: python3 tools/getout.py OUTDIR [WxH]
 # Set S47_URL to test another build (the Pages build served over HTTP, say).
 import asyncio, sys, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -59,7 +60,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
         await pg.evaluate("localStorage.clear()"); await pg.reload()
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_function('S47.started()', polling=200)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_function('S47.started()', polling=200)
         ev = pg.evaluate
         async def tick(s, fps=30): await ev(f"S47.tick({s}, {fps})")
         async def shot(name, light=True):

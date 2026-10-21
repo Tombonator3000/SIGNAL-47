@@ -12,6 +12,7 @@
 # Usage: python3 tools/chapter6.py OUTDIR [WxH]
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -65,7 +66,7 @@ async def main():
         check(await ev("localStorage.getItem('s47.calmFlash')") == 'true' and await ev("document.querySelector('[data-a=fl-calm]').getAttribute('aria-pressed')") == 'true', 'slow fades can be picked there and is kept')
         await pg.click('[data-a=fl-keep]')
         await shot('k00_title_warning')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter6'); S47.tick(0.5)")
 
         # ---------- into the truck on the diner's lot: the old road across the highway ----------
@@ -232,7 +233,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
         check(await ev("document.querySelector('[data-a=fl-calm]').getAttribute('aria-pressed')") == 'true', 'the title screen shows slow fades picked')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter6'); S47.tick(0.5)")
         for _ in range(40):
             await tick(0.25)

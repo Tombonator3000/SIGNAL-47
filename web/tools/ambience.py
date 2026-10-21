@@ -5,6 +5,7 @@
 # sounds on real speakers is UNVERIFIED.
 # Usage: python3 tools/ambience.py
 import asyncio, sys, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -22,7 +23,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL); await pg.evaluate("localStorage.clear()"); await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]')
+        await pg.click('button[data-a=start]'); await begin_opening(pg)
         ev = pg.evaluate
         await pg.wait_for_function("S47.started()")
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1)")

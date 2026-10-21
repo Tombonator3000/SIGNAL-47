@@ -8,6 +8,7 @@
 # picture's targets cannot hold on Ultra.
 # Usage: python3 tools/airlight.py OUTDIR [WxH]
 import asyncio, sys, os, json
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 from PIL import Image, ImageStat
 
@@ -46,7 +47,7 @@ async def main():
         a = await ev(AIR)
         await pg.screenshot(path=f'{OUT}/title_high.png')
         check(a['cones'][0] and a['haze'] and a['n'][0] >= 14, f"behind the title: the cones under SARO's {a['n'][0]} sodium lamps and the haze")
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(400)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(400)
         await ev("S47.hold = true; S47.tick(0.3); S47.setPicture('off')")
         await ev("S47.jump('chapter1'); S47.tick(1.0)")
 

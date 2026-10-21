@@ -11,6 +11,7 @@
 # without the flashlight. Screenshots on the way; draw calls looking north.
 # Usage: python3 tools/field.py OUTDIR [WxH]
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -60,7 +61,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
         await pg.evaluate("localStorage.clear()"); await pg.reload()
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_function('S47.started()', polling=200)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_function('S47.started()', polling=200)
         ev = pg.evaluate
         await ev("S47.hold = true; S47.jump('chapter1')"); await pg.wait_for_timeout(300)
         await ev("S47.hold = true; S47.game.d.ui.close(); S47.tick(1.0); S47.setPicture('off')")

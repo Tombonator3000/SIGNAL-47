@@ -1,6 +1,7 @@
 # Focused regression for the motel television's actual frame, observation and persistence.
 # Run sequentially with the other browser tests: python3 tools/moteltv.py OUTDIR [WxH]
 import asyncio, base64, json, os, sys
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -27,7 +28,7 @@ async def main():
         await pg.evaluate('localStorage.clear()')
         await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]')
+        await pg.click('button[data-a=start]'); await begin_opening(pg)
         ev = pg.evaluate
         if os.environ.get('S47_NO_IDB'):
             check(await ev('S47.saves.ready.then(()=>S47.saves.fallback)'), 'IndexedDB is unavailable and the existing localStorage backend is active')

@@ -1,0 +1,849 @@
+{
+  "status": "PASS",
+  "scope": "CPU-kontroll av eksplisitt New night → introkort → Begin night i eksisterende Python-prøver. Dette bekrefter ikke nettleser- eller spillatferd.",
+  "checked_at_utc": "2026-10-21T10:38:35.170438+00:00",
+  "base_commit": "acfc09e3fdd72a6a7ccf9f9b4fbccad6038b604c",
+  "counts": {
+    "legacy_files": 84,
+    "syntax_checked_files_including_helper": 85,
+    "explicit_new_night_click_branches": 111,
+    "literal_start_click_branches": 110,
+    "generic_selector_start_branch": 1,
+    "ast_only_helper_import_and_await": 81,
+    "separately_reviewed_legacy_files": 3
+  },
+  "syntax": {
+    "status": "PASS",
+    "method": "Python compile(source, path, exec), uten å kjøre modulene eller starte nettleser. Alle 84 endrede legacyfiler samt intro_flow.py."
+  },
+  "ast_comparison": {
+    "status": "PASS",
+    "method": [
+      "Les hver original med git show <base_commit>:web/<path>, og parse original og gjeldende fil med Python ast.parse.",
+      "Fjern bare ImportFrom(module=intro_flow) og uttrykkssetninger med await på et direkte begin_opening(...)-kall fra gjeldende AST.",
+      "Fjern en if-setning bare dersom fjerningen gjør kroppen tom. Dette gjelder den generiske start-selector-grenen i f_third_person.",
+      "Krev eksakt lik ast.dump(..., include_attributes=False) mot originalen for alle 81 vanlige filer. Beregninger, assertions, kallrekkefølge og Continue-/DEV-logikk beholdes.",
+      "For hvert bokstavelige New night-klikk/tap utenfor readaloud.py kreves await begin_opening umiddelbart etter klikket, før den eksisterende wait/tick på samme linje."
+    ],
+    "pure_helper_files": [
+      "tools/abduct.py",
+      "tools/airlight.py",
+      "tools/album.py",
+      "tools/ambience.py",
+      "tools/artcheck.py",
+      "tools/backdrop.py",
+      "tools/blender_ab.py",
+      "tools/board.py",
+      "tools/calls.py",
+      "tools/chapter1.py",
+      "tools/chapter2.py",
+      "tools/chapter3.py",
+      "tools/chapter4.py",
+      "tools/chapter5.py",
+      "tools/chapter6.py",
+      "tools/cookies.py",
+      "tools/cowstv.py",
+      "tools/cutouts.py",
+      "tools/diner.py",
+      "tools/drivelook.py",
+      "tools/drives.py",
+      "tools/engine.py",
+      "tools/env_atmosphere.py",
+      "tools/env_buildings.py",
+      "tools/env_ground.py",
+      "tools/env_interiors.py",
+      "tools/env_roads.py",
+      "tools/events.py",
+      "tools/examine.py",
+      "tools/f_abc_lines.py",
+      "tools/f_aftermath.py",
+      "tools/f_archive.py",
+      "tools/f_array_back.py",
+      "tools/f_car_b.py",
+      "tools/f_car_taken.py",
+      "tools/f_count47.py",
+      "tools/f_curve.py",
+      "tools/f_fieldbook.py",
+      "tools/f_last_mile.py",
+      "tools/f_lost_nights.py",
+      "tools/f_ninth_cow.py",
+      "tools/f_office_phone.py",
+      "tools/f_relay_hondo.py",
+      "tools/f_small_grep.py",
+      "tools/f_star_hole.py",
+      "tools/f_third_person.py",
+      "tools/field.py",
+      "tools/getout.py",
+      "tools/glimpses.py",
+      "tools/grounds.py",
+      "tools/horror_dishes.py",
+      "tools/horror_face.py",
+      "tools/horror_roof.py",
+      "tools/horror_wake.py",
+      "tools/licensed_models.py",
+      "tools/licensed_sfx.py",
+      "tools/linelights.py",
+      "tools/looks.py",
+      "tools/mapkit.py",
+      "tools/motel.py",
+      "tools/moteltv.py",
+      "tools/night.py",
+      "tools/probe.py",
+      "tools/probe2.py",
+      "tools/probe3.py",
+      "tools/radio.py",
+      "tools/radiomix.py",
+      "tools/reachcheck.py",
+      "tools/readaloud.py",
+      "tools/roam.py",
+      "tools/shoot.py",
+      "tools/soundcheck.py",
+      "tools/stale.py",
+      "tools/storyexpansion.py",
+      "tools/town.py",
+      "tools/tripradio.py",
+      "tools/trouble.py",
+      "tools/truckpose.py",
+      "tools/truckshots.py",
+      "tools/ultra.py",
+      "tools/walkthrough.py"
+    ]
+  },
+  "exception_reviews": [
+    {
+      "path": "tools/blender/export.py",
+      "reason": "Det nestede skriptet trenger sys.path.insert(0, str(Path(__file__).resolve().parents[1])) før from intro_flow import begin_opening. Denne mappen er web/tools. Bare importsti, helperimport og awaited Begin-navigasjon er lagt til; eksisterende assertions og beregninger er uendret."
+    },
+    {
+      "path": "tools/csptest.py",
+      "reason": "Den eksisterende licensed-sjekken aksepterte bare 0 eller 15. Den faktiske valgfrie privatbanken inneholder roof_steps og 16 lydfiler. Sjekken sammenligner nå settet av dekodede lic:-navn med de eksakte filstammene for gjeldende mp3/wav/ogg, eller det bevisst tomme bygget uten privatbank. Dette er ikke bare en hevet antallsgrense. Eksisterende sjekker av 47 ordinary/24 phone/11 character/fonter/grafikk er uendret.",
+      "current_licensed_file_stems": [
+        "call_tone",
+        "door_heavy",
+        "door_latch",
+        "door_light",
+        "handset_down",
+        "keys",
+        "line_hush",
+        "pour",
+        "pressure",
+        "rack_switch",
+        "radio_crackle_long",
+        "radio_crackle_short",
+        "radio_static",
+        "roof_steps",
+        "small_switch",
+        "tv_hum"
+      ],
+      "current_licensed_count": 16
+    },
+    {
+      "path": "tools/music.py",
+      "reason": "Rootens faktiske GPU-diagnose viste musicWant=night, musicHeld=true og audio.night.breathing {t:1,len:47}, mens alle andre musikkgater var av. Den eksisterende PR127-atferden ved første tur i gården var ikke tatt hensyn til i den gamle prøven. To nye assertions krever først ns.jacket, len=47, held=true og ingen cue; deretter får ekte Ambience.update gå i halvt sekund store S47.tick-steg, maksimalt 55 spillsekunder, og må slippe både breathing og musicHeld. Ingen tilstand nullstilles for å passere. Alle opprinnelige night-cue-, strømme-, ended-, neste stykke-, inne-, bil- og 17-filkrav er uendret.",
+      "new_assertions": 2,
+      "time_basis": "Spillklokken i eksisterende deterministisk fixture. Dette er ikke en påstand om 47 sekunder menneskelig lytting.",
+      "diagnostic_evidence": "outputs/intro/music-diagnostic-retry.log utenfor repoet",
+      "browser_run_status": "PENDING_ROOT_RUN",
+      "actual_total_checks": null,
+      "expected_total_checks": {
+        "Pages": 14,
+        "single": 7
+      },
+      "limits": "De forventede antallene er statisk tellegrunnlag. Faktisk resultat og antall føres etter rootens kjøring."
+    }
+  ],
+  "journey_guards": [
+    "begin_opening krever synlig .opening-card button[data-a=begin-night] og bruker ekte klikk eller tap. Kallet er obligatorisk og endrer aldri produkttilstand eller stemmevalg.",
+    "readaloud.start_night bekrefter en opptatt sak gjennom eksisterende New case-UI før begin_opening kalles, og venter deretter på S47.started().",
+    "f_third_person kaller begin_opening bare når sel er button[data-a=start]. Continue beholder den opprinnelige direkte innlastingsruten.",
+    "Den dedikerte tools/intro.py importerer eller kaller ikke begin_opening og prøver tale og avbrudd selv."
+  ],
+  "helper": {
+    "path": "tools/intro_flow.py",
+    "sha256": "37f57cc2469986097bd44d81c8dda8e937ec53c97215e2d00e2c1163e922fb9f",
+    "syntax": "PASS"
+  },
+  "files": [
+    {
+      "path": "tools/abduct.py",
+      "sha256": "20ed8e531b02e3af9ac42224008d971337cdefc8e382ca8236dfd19b65cd1791",
+      "base_sha256": "6ee055530bfec1f50b1e6654e9c912f2f89106a43f59feb072f34b100f57044a",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/airlight.py",
+      "sha256": "63c7ab44a0ea8b99969d8dfd0ed452dbc6055f08ff3cdc8f265a33a96d2c776a",
+      "base_sha256": "33a2f57f186320cf6a822a699d9dfc430172e4aaa7b73ec6d8176096f8a0dac0",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/album.py",
+      "sha256": "a7e1a5ca7a4a5781dabc1e845e88aab626978d9ec9b7fbdf333f0d0152203d91",
+      "base_sha256": "3ca88791a92cde088574e6cdd3cf2f351cbd53565b2a7df8210d86119854f8ac",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/ambience.py",
+      "sha256": "13181e79ffc60cdee465c1b7346e47a08d688d36f2f3eb380b88da395abbac9e",
+      "base_sha256": "c96132999ef0b2681ede144c9866db9b5ee3301dbb45ffaf7421aa6a9a75a442",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/artcheck.py",
+      "sha256": "f9a17fff7ccb428b5bec50a43764af50df657c2a7da719b33673d9a62bee5fdc",
+      "base_sha256": "704024c97987034718eb2cf4e76ce748b5c9c79b8bd4f4229b77c048e4631cf2",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/backdrop.py",
+      "sha256": "2907c8f1ec8358c893f94b36b05f7782cf15cb34a50830aec152e6cc31e26c5a",
+      "base_sha256": "6f00e3eaa32631cae7554f666aa98541ce48f20f23097c2627a5644f8c1ee69a",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/blender/export.py",
+      "sha256": "7bf2b54e90dea07242ebd8cfd9f5038c6a455558acd14f1a773ad8fcd4157c0b",
+      "base_sha256": "0d68bb5a4ad5c12a0293b2e00f2ba32ca060ca21141451e8de2f6068f4485f93",
+      "syntax": "PASS",
+      "ast_without_navigation": "SEPARATELY_REVIEWED",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/blender_ab.py",
+      "sha256": "2ae34c68b9c0d03a0b5b6a45b59671d73c469f072b9410b3e61b2fa1de61d089",
+      "base_sha256": "bfc2a4fd658ba11aff0b75aadd244c7a0d12e50f1558bb7e96e340cf6f8a683e",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/board.py",
+      "sha256": "c03971361d1167bdc4d8e71861d6cfd5979449f8be519341382769d79a21aeda",
+      "base_sha256": "88963d04710cbb907df3c422ad80543b9ecef251806932d1d96062146d3e7728",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 5
+    },
+    {
+      "path": "tools/calls.py",
+      "sha256": "c1ead50c9688e6fa7770463f56de2a7c083020642978c7d09491e1a3a7d16a42",
+      "base_sha256": "6e7daaaf17bba3ba62c54e4efab33c726304e683845e70ec337c1a7ad9927912",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/chapter1.py",
+      "sha256": "a75487850c3230995d924721165fdc86f57fa5b6b7e674fe9dc5711db6f87845",
+      "base_sha256": "f60554b262fc8c956a06a539cdb2613649fa84f7bc961841bd37da08f9efc8a9",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/chapter2.py",
+      "sha256": "658c42e57169ec1aa53afe2a9c7cdc6957fbeedb1d55e528cb8e92230c5e99e0",
+      "base_sha256": "16726e08df4c42c444ed721220607facabab620369a3546f837cf82419ea97fe",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/chapter3.py",
+      "sha256": "47735773a8f9e8dd52099a6d700c4fc04f2c4ce3c4bef75c65f633e97319c25c",
+      "base_sha256": "b54db74747cb8c9dd806cc94c58c087fde4d6a99b92c7691f47cdc5bd58186e6",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/chapter4.py",
+      "sha256": "1153ea32e9495a3ba90f2219c8b17d40c8e9e269efbd502c92e04b0d7329d8e0",
+      "base_sha256": "99dc1ae18bdc059a39b411ced3799e163bb52a131e7ba5810066d54b94763b67",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/chapter5.py",
+      "sha256": "417d3731ba5ae9dd1dbb9cee8da84856782b3cd0541bd202a7eb05b7fbf3a18c",
+      "base_sha256": "e4d024a5ab509b0317111c38d35d24efe9e748b6e8cd9964e8352aa039493072",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/chapter6.py",
+      "sha256": "42122e5403b1b5e0db83c809286891bbd27357fefbcde356eef192621d238b4b",
+      "base_sha256": "73a143cd00b175ca397fb086da55af3b4a89f42527e2733b720dac71fb07d0fa",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/cookies.py",
+      "sha256": "0defefd89db9d7c856ed2d57a4080d935a2b7df91e2d1479d72f322b1388e776",
+      "base_sha256": "1ca29df23121540ca2f9ff9cb59d1ed8dc5bc3e95a0303437fd4a4c834394c80",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/cowstv.py",
+      "sha256": "4150d813874f35fcda913f0d23a756ffede54702e7ff0fd7c2bcce60c1419cd9",
+      "base_sha256": "bbff4ecbb0a83d738e3a5a5045bfab1cabd61a14b0e04e65bbc7c827dca98034",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/csptest.py",
+      "sha256": "17924f2065691bb24579d192ce02ffc09cbc0c2dea8ee3535b93eb6f716f72d3",
+      "base_sha256": "8994258bb3069545b1f1a18b525a4f8731bada5ce919e5c2f0e1e298d889b26e",
+      "syntax": "PASS",
+      "ast_without_navigation": "SEPARATELY_REVIEWED",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/cutouts.py",
+      "sha256": "271db350279277e85e8b9e093a4491ff3af6911a175cc758dbf9f3728f8410cf",
+      "base_sha256": "ff05d9d9a1242d6d46cbe3c1725b3181e088a048428821631f068b9047d48875",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/diner.py",
+      "sha256": "d67eda7024259a1f2115d1eae2f4d8b7b4534f223d59efb6e417b39314c864c2",
+      "base_sha256": "aaa603aa21f874e95bbd3e9e4c77e0a9cb9117b2037a637ed9e353af2c7e9a09",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/drivelook.py",
+      "sha256": "a1d3260b9ebec97df134412a7f4f0132030854493f05be3f0454a0fa65f02722",
+      "base_sha256": "5b957e40d1e5b653addd2dd87e9158dc8136c05e7928e8a2907da1b17310506e",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 3
+    },
+    {
+      "path": "tools/drives.py",
+      "sha256": "40e0c026d60bb887e8b01af3660a80fc53825a0db9897dae122542768d58d2c7",
+      "base_sha256": "92c288c9d01d79c562204cc6d591b37811050da2accf093543428d611dab98a9",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/engine.py",
+      "sha256": "d09306bb199414c1a771f534f08306e2096b3b39107b3d61b012649da2b78a13",
+      "base_sha256": "de84ca1a6d16edacdd73560177c1db8e1ce46c5a7d95f7e19a12e96f181cfc8b",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/env_atmosphere.py",
+      "sha256": "76fcfae3dc98533d536a340b60bbe9b6e5d8f4eac059b16e692a7c333a86b59f",
+      "base_sha256": "25001cd3a095de007ef96cb113887ddf91447d8207dc0ac035b36a36082c2661",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/env_buildings.py",
+      "sha256": "12ab2299b2733f0f03c1ac6f2bd2808ab92c71bffcd1b7cb1667dac30012d6df",
+      "base_sha256": "9a0b6e295536ca36a82b305652779dac22c1cc82db3d773115a21b3684715616",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/env_ground.py",
+      "sha256": "6f21a67622bb7ee1182a7d63264238bc63533d9ecf19f92285e6d413dcadbd45",
+      "base_sha256": "858d3e99a1a51f33e9ccd065bd3b8af410d01d527ac99a5e1e3602dacd5768d4",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/env_interiors.py",
+      "sha256": "238f01aaa5b9e84b5334361749d535db5ec352c90855f2dd74e3c878023dfec2",
+      "base_sha256": "01c30fa5793fde7c66302c0c037024fb469aff0984c9a1ff0b8a1998975f3d08",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/env_roads.py",
+      "sha256": "8d895d71811dc9a8f09eb45487c03b6338e8b3dbc8a721629dab811183e7d303",
+      "base_sha256": "e9771a8571a3a49f9515bcd1e00994276d0e31142eacd2d9931601d758b712c5",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/events.py",
+      "sha256": "2bc0245bbe4448be501a02f8256cac8cceb85e85fae301886b8af351f3307086",
+      "base_sha256": "b2e0c3dee2c9d306338372e4f3c7e8dea6e07387c02e8f11ac9f50166f743921",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/examine.py",
+      "sha256": "803bd8c746334395d0f01957687c27e2a97921eae6ce5579756857e60824f266",
+      "base_sha256": "dc6e412862d7f640e0312c41fb97099876c02bead164bbf2856d41c3308d3b29",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/f_abc_lines.py",
+      "sha256": "35dbcdd4ba5ca749ee3b03d4af846a99500ca1b79030b624efe63b538c854c96",
+      "base_sha256": "b484819315d203a3f2d7a18bf0253d4931a70296d6082746b083397fa05b4479",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_aftermath.py",
+      "sha256": "db6898077977f37b7e880ed260d17ef3551cf23242cd607d588a50b1f529349f",
+      "base_sha256": "114e33e786406e114d8bcf5088d80c2bb99d145e437f47af136dcdf15e2dab48",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_archive.py",
+      "sha256": "1b92787b0e4e750d7032bbc300971d37757a24979575d563375acb98f796098a",
+      "base_sha256": "7879a651328fe9fdc36445e152d85ebf8901fcf444b7d0a4c31d6799a9fb5b81",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_array_back.py",
+      "sha256": "bc39f946a83fd40c3aed5255d42e6cf98df6316051ac1e4733fe8e2af9d414f8",
+      "base_sha256": "61248a022ab44ea8d22ab84352f02274b189a05b9ea63601e759ecb4377e085a",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_car_b.py",
+      "sha256": "b3b62c5a304c60a4c797d4b80e1dd640599439c15c8bcc6d08e7e9df8d1c703c",
+      "base_sha256": "38a8e61526e1b2f6e24f5b32737a2f73b6c1fc0c70d31f98063a208699cbebee",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_car_taken.py",
+      "sha256": "e40e485d9dd234f29d5b185393d63307d9800daf42410d6d76b647ec5b0413da",
+      "base_sha256": "abf0a3cb48bbfa4707b311f41fab1f6ca1d9610eb10f080da0263c39c6de9933",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_count47.py",
+      "sha256": "253eb7f26418e90909afb82097dfefd706aa9482f343cbfb86bdbab5154b8723",
+      "base_sha256": "8868cb7fe1963feb7f7e7ba7d10c1bbd26f8dda3543b4a8967cc11d9adc88d48",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_curve.py",
+      "sha256": "fb85b6dbc1a26695fcaecb7cf4a405430cea17d190c0f651108a141792a080fa",
+      "base_sha256": "a8470e5967aef8a58c74beb98f34e6d0a7147eafa46abf6ec9c962e4e0a49983",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_fieldbook.py",
+      "sha256": "47a5fa4d31ead32a66cfda50566d3cb76f18849f6bdc7d1e0b12b3cf9ef1753a",
+      "base_sha256": "5a10837cf45459b4caaa06652a55860b0f3ebbb5b2059aa3283ec0574db082a6",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_last_mile.py",
+      "sha256": "9c6401d1c26e0216228949ac9f558e57d4e96331c967aee54c3685ad845ead53",
+      "base_sha256": "a2f8d4fd8a72f39fd1d803aefb8112c3a2ca8e4de744db21bf60150ce0cea3f3",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_lost_nights.py",
+      "sha256": "ff81bd0db6683dc95b8dea7291503fccb3dd3458bb2214ed0f5c402ccd6dde04",
+      "base_sha256": "40f75fdbf1edda8282cf5516fafb721deaeb1a88ba0a6f01c334b78116c46fb7",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_ninth_cow.py",
+      "sha256": "5b59f7a0e534f60059a905f729f0c1ac5175cd750a62ac03ecd4b0c378cc10fb",
+      "base_sha256": "e6b820ad22727a9c5b42b5ac7208b4fcb767b9a4189a542bfb84087594e41bd0",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_office_phone.py",
+      "sha256": "4d5aeca9080202f72960d2422168fc7f3a0533c1c6695749e7a0f4aa91aaed64",
+      "base_sha256": "a94933943864984c8d44930f574b4255742ed9cece535a5321a182deb441b6e3",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_relay_hondo.py",
+      "sha256": "5df62e27c684e738fa4cc963c5af1cd01adeb09481cc10ebe9e2112750d6c5fc",
+      "base_sha256": "ee009953c9e4e284810685dd7e1ee7113bcdfe01b345b2317145efc7b261a7ee",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_small_grep.py",
+      "sha256": "bf5d899fa8649a7847b6f5faed14ca44db694531bf4cc02289b9556e7b7eb81c",
+      "base_sha256": "eed9fe1552d17f083506ff3f7f1027113f19477f65758dacc008d5301ff29d30",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_star_hole.py",
+      "sha256": "5496af1216ae7e00e6e61f9e0298a7cceaead382afff94e955cabdd0809a0a81",
+      "base_sha256": "077b0ea9f57296a1d1f0b50805470db577b35ceda51bf31e3debb4648ec83a63",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/f_third_person.py",
+      "sha256": "fb4a647ac4956a35d8101a66b045d774d34793d431b0a3e514aa2f3fc33a8d07",
+      "base_sha256": "5bf2a67e13982bae064fd3001e32a6d27c8312b7aa08da9c9052183a1c57c6c6",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 0
+    },
+    {
+      "path": "tools/field.py",
+      "sha256": "0baeab9357ffadba71dbbd735972c25f7af0393fb5499ac7b2940c970eda8eaa",
+      "base_sha256": "bd732a1f99b521c6b58ae8e6d6346710c4fb0135cea1605de5a191fa895d194e",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/getout.py",
+      "sha256": "ea25de754fc6b8f95af231956c9ec4e2f0208c1abf50c8a37005ffadb25c61cb",
+      "base_sha256": "aee312531aabd78fb382b165eb983ad4f1e46c8299c29e38eb6c6c6b68dc9be0",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/glimpses.py",
+      "sha256": "89140a21fb961694e6f47a815f01e853d0f64fb5f35670f8e5cf97fc2e80d2c1",
+      "base_sha256": "a5d94aa5db80c65331f3db78a584a1605dea30c401ebe3fa5191a78bc2c223f4",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/grounds.py",
+      "sha256": "816d65fc7ef8a61c5a6e2083b7404de8e9e41f955b66782b98a51511929a816e",
+      "base_sha256": "67f07508d848372e962aff7b61f52d06d0ef1d61238518920e2fac8a2a9a2b1b",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/horror_dishes.py",
+      "sha256": "246256c562c35d6d968a79b177e32a20ce2e6c95c15633eac2b1d5c02cf6ea97",
+      "base_sha256": "bf8fa7b9edab79ea47b674eb9378e85382062e5da000b3acd748bc2c5832bba0",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/horror_face.py",
+      "sha256": "94e7e0ed58b49a243e71405692964dbef93956dc8e3ffb6b5bd04026b95fc8ba",
+      "base_sha256": "c9eea40e9f26824c24e9f507e086b89c1998be01833145c342767056eb820628",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/horror_roof.py",
+      "sha256": "c77afd98d79c9c4160b786042c5053f6b9f519cd9aabc10119d79d1b783828ea",
+      "base_sha256": "dabcdcc3a040aec5a19cdb2f9383527fdba75e8a4ba1a0450f579a494e667aee",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 2
+    },
+    {
+      "path": "tools/horror_wake.py",
+      "sha256": "05bc9f10cedd15b80afb197e79c16a22b5f6e92ec9c8919b31afa59e801eaec5",
+      "base_sha256": "0c006aa4cb6f5624ecd3ad012a6ec29ad4594bf0ded390b4d78d58bb9cad1918",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/licensed_models.py",
+      "sha256": "7d0489da48fbccc49cdf2640e87cafb2772936d69591f31c52d5731a6f50e921",
+      "base_sha256": "513763bfc2287ec30e45e33fae71c82aba27b0a2ca2ebda0dfdb362e332b1b51",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/licensed_sfx.py",
+      "sha256": "1c11bfb70b50eebeb352bf6dab0a6b20e82839caacd5e73c325c8bc89079ac0b",
+      "base_sha256": "891300dde27bdae9dbbe665c2d27f0f33ea551e6f2457f7b85f1d8003f766e7b",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/linelights.py",
+      "sha256": "fae6cc1318b0c587a2475ce639761fb8c838d0d082c337ee99442d9604ea86af",
+      "base_sha256": "aa13daaf8226f7c85c248791e2c034dca390e51ec960acf3dd8747731344de9c",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/looks.py",
+      "sha256": "9cea01f32aee43e7db960bfced3d98b6f70cfb9e12407d4d6536239a2b0056e5",
+      "base_sha256": "e775d81e4950bff07166ab7dc3487a23e48c7a04b9b3f3c8774d16cc738d80cd",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/mapkit.py",
+      "sha256": "fc28c432cc1fdf6a9ea5282e91e16ae3c29f6c4de9156af4c02f329bc1dc07cf",
+      "base_sha256": "1ccab059be444196a02b64f5f2b131d358527e1e3e2c23f622d9e3e9f5e0230e",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/motel.py",
+      "sha256": "a17d4b14c03eb2c1ad15f1dbe532e353cca3f0b20116894259bc6273568e60e7",
+      "base_sha256": "98654b3d8ee8409ec00d648bca12ad5c5fa3e40b2993a3cfaa4e81713c747897",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/moteltv.py",
+      "sha256": "8d09414a00484b808a9a0fe83b7938251327544c4244708c6faad782743f478d",
+      "base_sha256": "ed0bc5748d4bec5c655aad9b3b8deaa835dba49952320ad8fc26929a65b6041f",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/music.py",
+      "sha256": "f5b7864f3e05666ead0a2df4b0e9d66dc07321cf42a6cc4da2f0a3304111269c",
+      "base_sha256": "8312c4d79e243fe25f618c77e3406f54a5559622ec79f0dc4c02f01565f5f2b4",
+      "syntax": "PASS",
+      "ast_without_navigation": "SEPARATELY_REVIEWED",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/night.py",
+      "sha256": "74dd9527ea840cd874dfe26a0991b6052f79aa2296ed3c7771a2c061dd4437c8",
+      "base_sha256": "14493b1f285f3c14f8b6b89a744066f2f6ea721f0b9701bfac8210b341c0f5e1",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/probe.py",
+      "sha256": "3028fd390618217c7fce0fd913de6b87f195e15fa4d16df2438599c3b4033160",
+      "base_sha256": "21329e116086ed842c9bf84bf5e03a8f070fc00aae5366ecdc0cd4f50996371f",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/probe2.py",
+      "sha256": "1187b54639a1ff3c5968f5e86a24c1951b6a7d31449e754570b636faff0d51e9",
+      "base_sha256": "4915569b1baf85abfe8548ebce7e78781a83f62d3baa0812e8f3c6a8cb2b1103",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/probe3.py",
+      "sha256": "9404d23baad93b63f9d5240777b74d13835db4f9ea1796426ad588689f8f1629",
+      "base_sha256": "5525a1aecdacaf3f7a34f50a27d8b0ff2d8defa1e3b8d6a80be20634de800bcf",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/radio.py",
+      "sha256": "4775091cf4408722ecee9fe04bf9a36d57cd83cba38558e5cb471622f3d54e78",
+      "base_sha256": "c4a5816649c97491cf59f4b2112cf214b30e8fd59b74fb6f2e3cf75c9501892c",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/radiomix.py",
+      "sha256": "51af19603b3b24137909b0247b18c3e197301835856100f93def36365b4f0322",
+      "base_sha256": "66770c1acd698dceed141a1c9691833454c583675ad0a2ed36dcc89d224b603a",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/reachcheck.py",
+      "sha256": "cbcc92492464670efcb8a89ce3a07b29fa34d811e332f618b908496cf55c5f1b",
+      "base_sha256": "bf1fe8e6ff09c0012c0d372b9a5d3a91b852933d9a2370325628113a54c7688f",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/readaloud.py",
+      "sha256": "c2b5412069e44f60e1f48b9b0d8f98174225cacbe819220b689be489e145f40a",
+      "base_sha256": "dc63358682af4be650021123a2e8e71ef33eb81cc4ac216b388e16698ddb7934",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/roam.py",
+      "sha256": "2b2b168e744ed3d4e4e5e61325d8ed3ec9ef9ce125c3d5aae6bf77224d87c453",
+      "base_sha256": "13ad3c78b4541c727e312317668056058fec2e6a56d418154ba834a0137ee968",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/shoot.py",
+      "sha256": "d5e129453bce9376b0d2161a0368b11dc08580236bef7dfc7a17c3fb6001fef2",
+      "base_sha256": "75c3f802d2bf26366f404903034fe5d1a1fb55f42369a1ae45cae8386cf872c6",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/soundcheck.py",
+      "sha256": "d00295cdb6f913aa6b325c5ffede60f36b18531a92ec9042817c0ebf57155711",
+      "base_sha256": "56d73e438e5f70081fce135e2433804bb383ddbc5225578c674b14818a586e62",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/stale.py",
+      "sha256": "aaee194883d838988d7a161f29c105cd554dfbda07d2b8b79db067d4b033c952",
+      "base_sha256": "c4ef753c8b2f8044eb2287ff33676b288fadca46301652fd5e8d5a3e9cd7e45a",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/storyexpansion.py",
+      "sha256": "1e39acf7df657a8733278b87630ca90c4c09ea5fc99f919edd5bf0b28d24a633",
+      "base_sha256": "7baa3352d5a8732efa1d356fc5c1b226acc8377dae65f707afc942bd45d35776",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/town.py",
+      "sha256": "df61463118ca2fec547d277140c2858b8442258bf57030967edd71b37f790498",
+      "base_sha256": "26cab44feeb27c52f00f72916459d3de04ca8bfe16cff41a11290e298e4b0586",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/tripradio.py",
+      "sha256": "a9f74f2f9012cd2fca01a60a0096dd472f751356fba11f5a29c97ea0c15fc242",
+      "base_sha256": "7573660af59140fd446d48001e240666da7bbe433fae1f6b327350e172df84cf",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/trouble.py",
+      "sha256": "231709177671e1fbc11a5ce0de2677721dfdc62ab25f57dee66b0bd62697bf62",
+      "base_sha256": "f6e234549c9bf0cc09abe8f9869585140df95aadcaad8a726aaa6401c6f15104",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/truckpose.py",
+      "sha256": "fc1d14595d021e5e3674e5220d5dad6beef19a8d0d03fcfb75a8bd77434600cd",
+      "base_sha256": "bd8a9143739d025791f22a18a551f31099830ea81532150398045a0e92fe5e0d",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/truckshots.py",
+      "sha256": "8156b68c6c53b04909c1e42f72472a2a617fc1e17556eb8e4b3beb2a5e532346",
+      "base_sha256": "a908c44f7105a55f6356caf810a953436f1e9fedbfc66c04267e113af37ccc98",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/ultra.py",
+      "sha256": "45d6454bcf219e9e543b3de81f327b2ef6928f393876a3f3c661329e36f4fb35",
+      "base_sha256": "f344681e73370d5e049be65a6bce5c869eb2713fcf614076ca8a845b39453b34",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    },
+    {
+      "path": "tools/walkthrough.py",
+      "sha256": "89dc18deb5f73c931ebc28373008ce16bf6369187e510b89dee7ac6db6719cc3",
+      "base_sha256": "3e58ceca4ad39df5bb14fa5f8a6c9bc652807712f0854eaf03712544965f5d5b",
+      "syntax": "PASS",
+      "ast_without_navigation": "PASS",
+      "literal_start_click_branches": 1
+    }
+  ],
+  "intro_feature_harness": {
+    "path": "tools/intro.py",
+    "sha256": "803bcfd80be24135d223d92f6a602e1570b5ebbc22fd7ad1f61ee98fa08c4beb",
+    "relationship": "Separat featureprøve. Nettleserresultatene inngår ikke i denne mekaniske PASS-vurderingen."
+  },
+  "limits": [
+    "Denne CPU-kontrollen startet ingen nettleser, GPU eller bygg, endret ingen runtime og kontrollerte ingen hørbar lyd.",
+    "Faktiske nettleserresultater føres separat av rotagentens serielle QA-kø."
+  ]
+}

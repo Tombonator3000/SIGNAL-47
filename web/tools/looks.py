@@ -1,5 +1,6 @@
 # Quick visual check: title, window view, console. Usage: python3 tools/looks.py OUTDIR WxH quality
 import asyncio, sys, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 OUT=sys.argv[1]; W,H=(int(v) for v in sys.argv[2].split('x')); Q=sys.argv[3]
 async def main():
@@ -12,7 +13,7 @@ async def main():
         await pg.evaluate(f"S47.setQuality('{Q}')"); await pg.wait_for_timeout(2500)
         tag=f'{Q}_{W}x{H}'
         await pg.screenshot(path=f'{OUT}/title_{tag}.png')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(300)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(300)
         await pg.evaluate("S47.hold=true; S47.tick(1.5)")
         await pg.evaluate("S47.player.place(0.05,-2.2,0); S47.player.pitch=0.06; S47.tick(0.1)")
         await pg.screenshot(path=f'{OUT}/window_{tag}.png')

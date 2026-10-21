@@ -13,6 +13,7 @@
 # light model the near ones there. No console errors.
 # Usage: python3 tools/horror_dishes.py OUTDIR   (S47_URL for another build)
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -58,7 +59,7 @@ async def page(b, w, h, touch, errs):
     try: await pg.wait_for_function("window.S47 && Object.keys(S47.game.d.audio.buf || {}).length >= 25", timeout=120000)
     except Exception: pass
     await pg.evaluate("localStorage.clear()"); await pg.reload()
-    await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+    await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
     # (the night's one curve, story/curve.ts, stands aside in this test: each thing on its own timer; tools/f_curve.py has them together)
     await pg.evaluate("S47.hold = true; S47.curve.free = true; S47.jump('chapter3'); S47.tick(1.0)")
     await pg.evaluate("S47.game.d.ui.close(); S47.tick(0.2)")

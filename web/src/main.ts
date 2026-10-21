@@ -6,6 +6,7 @@ import { ReadAloud } from './core/readAloud';
 import { EarlDialogue } from './core/earlDialogue';
 import { NPCDialogue } from './core/npcDialogue';
 import { serlingBank } from './core/narrationBanks';
+import { Opening } from './core/Opening';
 import { Input } from './core/Input';
 import { Interaction } from './core/Interaction';
 import { Player } from './player/Player';
@@ -992,6 +993,7 @@ async function boot() {
   ui.onAlt = runOut;
   input.onKey = (code) => {
     if (code === 'F2' && dev) { dev.toggle(); return; }
+    if (code === 'Escape' && opening.active) { opening.cancel(); return; }
     if (mode !== 'play') return;
     if (code === 'KeyE' || code === 'Enter') {
       if (ui.modal) { if (ui.modal.classList.contains('docview')) ui.close(); return; }
@@ -1069,12 +1071,26 @@ async function boot() {
   ui.onPause = () => { if (mode === 'play' && !ui.modal) openPause(); };
 
   // ---------- flow ----------
+  const opening = new Opening(narrator, {
+    show: (actions) => ui.openingCard(actions),
+    quiet: () => { ui.stopSpeech(); audio.stop('music', 0); audio.silence(true); },
+    begin: (choice) => { void startGame({ caseId: choice.caseId, replaceCase: choice.replace, playtime: 0, state: null }); },
+    back: () => {
+      audio.silence(false); showTitleAgain();
+      titleEl?.querySelector<HTMLButtonElement>('[data-a=start]')?.focus({ preventScroll: true });
+    },
+    dismissed: () => { audio.silence(false); if (mode === 'title') menuMusic(); },
+  });
+  function requestNewNight(caseId: number, replace = false) {
+    if (starting || mode !== 'title' || opening.active) return;
+    opening.open({ caseId, replace });
+  }
   // Music on the title screen ("Signal to Noise", the end's music too). A browser lets sound
   // start only from a click or a key, so it comes in with the first one on the title screen;
   // back from a night, the sound is already allowed and it starts at once.
   function menuMusic() {
-    if (mode !== 'title') return;
-    audio.unlock().then(() => { if (mode === 'title') audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }); }).catch(() => {});
+    if (mode !== 'title' || opening.active) return;
+    audio.unlock().then(() => { if (mode === 'title' && !opening.active) audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }); }).catch(() => {});
   }
   // The first time, the menu waits behind "Tap to begin", so that first tap brings in the
   // music before anything is chosen (Tom, 18 October: music when the main menu comes up).
@@ -1099,12 +1115,12 @@ async function boot() {
       cont: cont ? `${cont.chapter} · ${cont.place} · ${cont.clock} · ${played(cont.playtime)} played` : null,
       onContinue: () => { const m = saves.continueSave(); if (m) openSave(m); },
       onStart: () => {
+        if (starting || opening.active || ui.modal) return;
         const free = saves.freeCase();
-        if (free) { startGame({ caseId: free, playtime: 0, state: null }); return; }
+        if (free) { requestNewNight(free); return; }
         // every case slot is taken: pick one to replace
         saveMenu(ui, { mode: 'new', metas: saves.list(), activeCase: saves.active, onNewCase: (c) => {
-          const unlocking = audio.unlock(); // the click is the gesture that may start sound
-          saves.removeCase(c).then(() => startGame({ caseId: c, playtime: 0, state: null, unlocking }));
+          requestNewNight(c, true);
         } });
       },
       canLoad: saves.list().length > 0,
@@ -1120,6 +1136,7 @@ async function boot() {
   // Open a save: from the title, the pause menu or Continue. Sound is unlocked first,
   // inside the click, then the save is read.
   function openSave(m: SaveMeta) {
+    opening.dismiss();
     const unlocking = audio.unlock();
     if (mode === 'play') leavePlay();
     saves.load(m.id).then((state) => {
@@ -1131,8 +1148,10 @@ async function boot() {
 
   let restoringNow = false;
   let starting = false;   // between Start or Continue and the first playable frame
-  async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void>; dev?: boolean }) {
+  async function startGame(o: { caseId: number; playtime: number; state: GameState | null; jump?: string; unlocking?: Promise<void>; dev?: boolean; replaceCase?: boolean }) {
+    if (starting) return;
     starting = true;
+    opening.dismiss();
     devRun = !!o.dev;
     const unlocking = o.unlocking ?? audio.unlock(); // must start inside the tap/click
     if (input.touchMode) {
@@ -1148,8 +1167,20 @@ async function boot() {
     // Normally the sounds are decoded long before anyone taps Start. If not, say so.
     const slow = setTimeout(() => ui.fade(true, 'TUNING RECEIVERS', true), 350);
     await unlocking;
+    audio.silence(false);
     audio.stop('music', 1.2);   // the title screen's music
     await saves.ready;
+    if (o.replaceCase) {
+      try { await saves.removeCase(o.caseId); }
+      catch {
+        clearTimeout(slow); starting = false;
+        mode = 'title'; input.enabled = false; input.reset();
+        if (input.locked) { releasingLock = true; input.releaseLock(); }
+        ui.fade(false); showTitleAgain();
+        ui.toast('The case could not be replaced. Choose a case or try again.', 5);
+        return;
+      }
+    }
     // a save made at the station or in room 6 needs that area built first
     const savedArea = o.state?.area;
     const area = (savedArea === 'station01' || savedArea === 'room6' || savedArea === 'diner' ? savedArea : 'saro') as AreaId;
@@ -2040,6 +2071,8 @@ async function boot() {
   });
 
   function toTitle() {
+    opening.dismiss();
+    audio.silence(false);
     mode = 'title';
     fcam.raise(false); ui.viewfinder(false);
     input.enabled = false; input.reset();
@@ -2264,7 +2297,7 @@ async function boot() {
       saroDark.restore(game.ns.hondo !== undefined);
       archive.restore();
     },
-    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
+    game, room, ext, camera, player, renderer, scene, flashlight, input, yard, fcam, ch1, annex, ch2, ch3, ch4, ch5, ch6: game.ch6, saves, world, doors, sky, backdrop, audio, earlDialogue, npcDialogue, narrator, opening, radio, carRadio, dinerRadio, radioAimed: () => radioAimed(), calls, mapAt: () => mapAt(), placeName: () => placeName(), surface: () => surfaceAt(), musicWant: () => musicWant(), kitItems: () => kitItems(), peopleItems: () => peopleItems(), portraitCount, roadside, cb, townEvents, townSeen, glimpses, glimpseIn: () => glimpseIn(true), cutouts, cutoutIn: () => cutoutIn(true), nightEvents, nightIn: () => nightIn(true), lineLights, mapMarks: () => mapMarks(), abduction: () => abduction, abductIn: () => abductIn(true), setAbductions: (v: boolean) => { abductOn = v; },
     // write a save now (tests): the frame is drawn first so the save gets its picture
     saveNow: (kind: SaveKind = 'manual', slot: number | 'rotate' = 0) => { draw(); return writeSave(kind, slot); },
     // why the save menu would say no right now (null: it may save)
@@ -3034,7 +3067,7 @@ async function boot() {
   loading.remove();
   showTitle();
   // the saves are read from IndexedDB while the title is up; then Continue knows what to offer
-  saves.ready.then(() => { if (mode === 'title' && titleEl) showTitleAgain(); });
+  saves.ready.then(() => { if (mode === 'title' && titleEl && !opening.active) showTitleAgain(); });
   requestAnimationFrame(frame);
 }
 

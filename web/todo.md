@@ -2,6 +2,11 @@
 
 Prioritert. Flytt ferdige punkter til log.md.
 
+## Fra Tom 21. oktober: intro med Serling
+
+- [x] Original introtekstskjerm før New night starter prologen, fem ferdige Serling-opptak, Begin/Back/Escape, bevarte Continue/Load/DEV og saksspor. Lokale funksjons-, bygge-, lyd- og spillkontroller består. Se `production/intro/qa/validation.json`.
+- [ ] Tom prøvelytter introen og vurderer stemmelikhet/uttale på fysisk PC eller telefon. Velg New night, eller bruk lyttefilen fra leveransen.
+
 ## Historie og hendelser, direkte bestilt 19. oktober
 
 - [x] Flettet til main etter Toms beskjed og publisert på Pages. CI-artefakten er identisk med testet bygg; live historieprøve 56/56.

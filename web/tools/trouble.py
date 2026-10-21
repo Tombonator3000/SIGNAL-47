@@ -4,6 +4,7 @@
 # engine, the warning lamps, the light levels and the needles, and that all is given back.
 # Usage: python3 tools/trouble.py OUTDIR [WxH]
 import asyncio, sys, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -31,7 +32,7 @@ async def main():
         await pg.goto(URL)
         await pg.evaluate("localStorage.clear()"); await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         ev = pg.evaluate
         async def tick(s, fps=30): await ev(f"S47.tick({s}, {fps})")
         async def run(secs, every=0.2):

@@ -1,0 +1,16 @@
+PASS the title screen is quiet before anything is clicked
+PASS the first click brings in the title music
+PASS and it stops when the night starts
+PASS the music starts with the night
+PASS the first time in the yard holds music for the authored 47-second breath ({'jacket': True, 'breath': {'t': 0.49999999999999994, 'len': 47, 'back': 0, 'of': 4}, 'held': True, 'playing': None})
+PASS the real ambience update releases the breath and music within 55 game seconds ({'seconds': 47, 'breath': None, 'held': False})
+PASS out in the yard at night the cue is the night (night)
+PASS it streams from music/ and plays ({'t': 4.01415, 'err': False, 'paused': False})
+PASS the piece ends (phantom)
+PASS and after a few seconds the next for the yard, not the same (ossuary1)
+PASS held by a scene, it fades and stops
+PASS indoors the cue is quieter and stranger (eerie)
+PASS in the truck on the highway it is the drive (drive)
+PASS all 17 pieces answered (17 files, 0 bad)
+no console errors/warnings
+14 of 14 PASS

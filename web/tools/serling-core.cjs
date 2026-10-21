@@ -126,7 +126,7 @@ function uiFixture(){const ui=Object.create(uiModule.UI.prototype);ui.narrator=n
  for(const stage of ['error-b','text-b']){
   const timers=[];let resolveCard,closed=0;
   const ui={chapterStage:'a',close(){},viewfinder(){},fade(){},showHud(){},chapterCard(value){if(!value){++closed;return Promise.resolve();}return new Promise(resolve=>{resolveCard=resolve;});}};
-  const context={ui,mode:'play',fcam:{raise(){}},game:{cinematic:false,clock:0,after(seconds,fn){timers.push({seconds,fn});}},clockText:()=>'',input:{enabled:false,touchMode:false}};
+  const context={ui,mode:'play',audio:{buf:{}},fcam:{raise(){}},game:{cinematic:false,clock:0,gt:0,after(seconds,fn){timers.push({seconds,fn});}},clockText:()=>'',input:{enabled:false,touchMode:false}};
   vm.runInNewContext(base.compile(chapter+'\nglobalThis.run=chapterBreak;'),context);
   context.run({closed:'',recap:'',next:'',title:'',begin(){}});
   timers.shift().fn();timers.shift().fn();

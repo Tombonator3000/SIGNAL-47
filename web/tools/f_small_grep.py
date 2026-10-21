@@ -24,6 +24,7 @@
 # Desktop 1280x720 and a phone 412x892 with touch; no console errors or warnings.
 # Usage: python3 tools/f_small_grep.py OUTDIR
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -88,8 +89,8 @@ async def page(b, w, h, touch, voice=False):
     if not voice: await pg.add_init_script("try{localStorage.setItem('s47.serlingNarrator','false');localStorage.setItem('s47.characterVoices','false');}catch{}")
     await pg.reload()
     await pg.wait_for_selector('button[data-a=start]')
-    if touch: await pg.tap('button[data-a=start]')
-    else: await pg.click('button[data-a=start]')
+    if touch: await pg.tap('button[data-a=start]'); await begin_opening(pg, touch=True)
+    else: await pg.click('button[data-a=start]'); await begin_opening(pg)
     await pg.wait_for_function("S47.started()", polling=200)
     await pg.evaluate(HELPERS)
     await pg.evaluate("T.hook()")

@@ -2,6 +2,7 @@
 Usage: python3 tools/artcheck.py shots/art
 S47_URL can select the ordinary build served under /SIGNAL-47/.
 """
+from intro_flow import begin_opening
 import asyncio, json, os, sys
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -54,7 +55,7 @@ async def main():
         sky = await pg.evaluate("""(()=>{ let t = null; S47.sky.group.traverse(o => { const u = o.material && o.material.uniforms; if (u && u.uPanorama) t = u.uPanorama.value; });
           return t && { name: t.name, w: t.image.width, h: t.image.height }; })()""")
         checks.append(('sky runtime limited to 2K, painted stars taken out', bool(sky) and sky['w'] == 2048 and sky['h'] == 1024 and sky['name'] == 'art/sky (stars removed)'))
-        await pg.click('button[data-a=start]')
+        await pg.click('button[data-a=start]'); await begin_opening(pg)
         await pg.evaluate("S47.hold=true; S47.jump('chapter1'); S47.game.d.ui.close(); S47.tick(1)")
         maps_by_quality = []
         for q in ['high', 'low']:

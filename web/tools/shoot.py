@@ -1,6 +1,7 @@
 # Headless walkthrough of dist-single/index.html. Takes screenshots and prints console errors.
 # Usage: python3 tools/shoot.py [outdir] [WxH]
 import asyncio, sys, json, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'shots'
 W, H = (int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else '960x540').split('x'))
@@ -19,7 +20,7 @@ async def main():
         await pg.wait_for_selector('button[data-a=start]', timeout=60000)
         await pg.wait_for_timeout(1500)
         await pg.screenshot(path=f'{OUT}/00_title.png')
-        await pg.click('button[data-a=start]')
+        await pg.click('button[data-a=start]'); await begin_opening(pg)
         await pg.wait_for_timeout(2500)
         await pg.screenshot(path=f'{OUT}/01_spawn.png')
 

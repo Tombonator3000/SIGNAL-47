@@ -1,0 +1,33 @@
+{
+  "synthetic": true,
+  "label": "Synthetic Rod Serling parody narration",
+  "profile": {
+    "profile_id": "13c0a7b8",
+    "kind": "clone",
+    "profile_metadata_sha256": "a6617cb52479cc3e0a1ba9f4b9066b716e4b850d0abd0ef81fc741278f91e925",
+    "reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+    "source_manifest": "production/ensemble/profiles.json",
+    "source_manifest_sha256": "9ac77c023c93b25b06107168fb90935b5fb4eed6f56d40d4b4bafac3a18e9100",
+    "source_role": "serling"
+  },
+  "settings": {
+    "language": "en",
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast"
+  },
+  "source_provenance_reference": "production/ensemble/profiles.json and production/ensemble/provenance.json; no new source recording or original-source excerpt",
+  "existing_provenance_sha256": "d01e384d2d4db4279559b6e3cf0df3839d6a40f51f2ca4c484c4600da106cf84",
+  "corpus_sha256": "5193edda0fdc745d1e10377eb3d421fb637c0e281ced32b8e56fe588dbba970c",
+  "same_value_pronunciation": "1986 is requested as nineteen eighty-six; original runtime text/hash is unchanged. Any bounded retake remains in request-overrides.json and generation.json.",
+  "postprocessing": "One constant gain seeks -20 dBFS nonsilent RMS, decoded peak at most -2 dBFS; MP3 mono24kHz64kbps. No time stretch/pitch shift.",
+  "rights": "Existing source/model caveats remain; no new consent,endorsement,verified-own-voice or actor-likeness claim.",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "verification_file": "audio-verification.json",
+  "verification_status": "PASS"
+}

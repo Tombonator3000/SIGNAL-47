@@ -19,6 +19,7 @@
 # as before it (the same frames: the life draws nothing then and changes nothing in the night).
 # Usage: python3 tools/env_atmosphere.py OUTDIR [WxH] [--before] [--compare=DIR]
 import asyncio, sys, os, json, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 from PIL import Image, ImageStat, ImageChops
 
@@ -83,7 +84,7 @@ async def main():
         await pg.wait_for_selector('button[data-a=start]')
         ev = pg.evaluate
         await ev("S47.setQuality('high')")
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(400)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(400)
         await ev("S47.hold = true; S47.tick(0.3); S47.setPicture('off')")
         # the pictures without the HUD and the captions: the night itself
         await pg.add_style_tag(content='#ui { visibility: hidden !important; }')

@@ -3,6 +3,7 @@
 # road at dawn, and the dash close up. No checks, only pictures (and console errors).
 # Usage: python3 tools/truckshots.py OUTDIR [WxH]
 import asyncio, sys, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -23,7 +24,7 @@ async def main():
         await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
         ev = pg.evaluate
-        await pg.click('button[data-a=start]')
+        await pg.click('button[data-a=start]'); await begin_opening(pg)
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter3'); S47.tick(1.5)")
         await ev("S47.game.d.ui.close(); document.querySelectorAll('.toast').forEach(t => t.remove())")
         # outside: a camera that stays where it is put (the player is moved far away)

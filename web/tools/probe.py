@@ -1,4 +1,5 @@
 import asyncio, json, time, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 async def main():
     async with async_playwright() as p:
@@ -7,7 +8,7 @@ async def main():
         await pg.goto('file://' + os.path.abspath('dist-single/index.html'))
         await pg.wait_for_selector('button[data-a=start]')
         await pg.evaluate("S47.setQuality('low')")
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(300)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(300)
         await pg.evaluate("S47.hold=true")
         T = lambda js: pg.evaluate(f"(()=>{{const t=performance.now(); {js}; return Math.round(performance.now()-t)}})()")
         print('tick0', await T("S47.tick(0)"), flush=True)

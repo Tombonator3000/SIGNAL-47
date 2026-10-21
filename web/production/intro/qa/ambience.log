@@ -1,0 +1,9 @@
+PASS the night outside starts with the game
+PASS out in the yard the outdoor sounds are up (yard)
+PASS after midnight there are crickets round the listener (4, over time [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4])
+PASS the wind wanders (level 0.018 -> 0.027, colour 525 -> 457 Hz)
+PASS by 05:26 the crickets have gone quiet (0)
+PASS gust, poorwill, coyotes, train, truck, meadowlark, lark, owl and dog all played
+PASS indoors muffled (0.07, 441 Hz), in the cab lower still (0.04), outside 0.98
+no console errors/warnings
+7 of 7 PASS

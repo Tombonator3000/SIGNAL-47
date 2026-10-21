@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "clips": 5,
+  "bytes": 276892,
+  "duration_seconds": 34.2,
+  "audio": [
+    {
+      "id": "323aecd87d70f9fa",
+      "file": "323aecd87d70f9fa.mp3",
+      "sha256": "fdb681047cdef2e588d8c3508fecf4f54b450fbd2cf1ef73d6f23e7349b38e5e",
+      "bytes": 95084,
+      "duration_seconds": 11.8,
+      "peak_dbfs": -5.896065970708223,
+      "rms_dbfs": -20.523119263447043,
+      "nonsilent_rms_dbfs": -20.448879827662193,
+      "nonsilent_seconds": 11.6,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "7858426c36fb3334",
+      "file": "7858426c36fb3334.mp3",
+      "sha256": "9f1218db35e61106ba103ffd633cf07c66e04899da600f242456fbb3243f6715",
+      "bytes": 80300,
+      "duration_seconds": 9.96,
+      "peak_dbfs": -6.722095621040422,
+      "rms_dbfs": -20.53115571105037,
+      "nonsilent_rms_dbfs": -20.443061242259375,
+      "nonsilent_seconds": 9.76,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "4a6ccde3f9b83ee4",
+      "file": "4a6ccde3f9b83ee4.mp3",
+      "sha256": "949c10f846497dc0cf3d6633397b6e1be517786bb5fdcd07bb92fb72747762b0",
+      "bytes": 64364,
+      "duration_seconds": 7.96,
+      "peak_dbfs": -6.952279194678807,
+      "rms_dbfs": -20.56265290876954,
+      "nonsilent_rms_dbfs": -20.44093624727713,
+      "nonsilent_seconds": 7.74,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "72ca924172467658",
+      "file": "72ca924172467658.mp3",
+      "sha256": "e9d118046ca5f4cea66effc73a43b47174d027545650933b80d4497a03f8051a",
+      "bytes": 19820,
+      "duration_seconds": 2.4,
+      "peak_dbfs": -5.987331896727328,
+      "rms_dbfs": -20.800317716524916,
+      "nonsilent_rms_dbfs": -20.382802062980687,
+      "nonsilent_seconds": 2.18,
+      "samples_at_or_above_full_scale": 0
+    },
+    {
+      "id": "812e0a225acaa10e",
+      "file": "812e0a225acaa10e.mp3",
+      "sha256": "e234c1a87d315397231301a186484eb1db9f965b322de1fd3eb82efa4f6787bd",
+      "bytes": 17324,
+      "duration_seconds": 2.08,
+      "peak_dbfs": -5.945544156811321,
+      "rms_dbfs": -20.87912539996686,
+      "nonsilent_rms_dbfs": -20.393662462685867,
+      "nonsilent_seconds": 1.86,
+      "samples_at_or_above_full_scale": 0
+    }
+  ],
+  "asr_clips": 5,
+  "human_listened": false,
+  "human_word_check": "UNVERIFIED",
+  "speaker_similarity": "UNVERIFIED",
+  "acting": "UNVERIFIED",
+  "catalog_sha256": "4561f853c688d36328198e7df1a9008c39b3b0877caf857f2c82cc1b97355011",
+  "corpus_sha256": "5193edda0fdc745d1e10377eb3d421fb637c0e281ced32b8e56fe588dbba970c",
+  "asr_sha256": "0a3f3197957c5e1048c8f355657b2b3d7792ad4ab5d2805841991ef429788b44",
+  "preservation_sha256": "72d15d373617eb2c5d12821bdacc06a9a3554fd1bb58e8c5b9139d4968877e18"
+}

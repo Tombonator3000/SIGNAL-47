@@ -12,6 +12,7 @@ Exit 0 means capture completed without blocking console errors, not a visual/gam
 PASS. URL-confirmed missing favicon HTTP 404s remain in the recorded diagnostics.
 """
 from __future__ import annotations
+from intro_flow import begin_opening
 
 import argparse
 import asyncio
@@ -496,7 +497,7 @@ async def run_kessler_trip(browser, args, report, url, out):
         await page.add_init_script(INIT+f"\nlocalStorage.setItem('s47.quality', JSON.stringify({json.dumps(args.quality)}));")
         await page.goto(url,wait_until='load',timeout=120000)
         await page.wait_for_function('window.S47 && S47.tick && S47.world')
-        await page.click('button[data-a=start]');await page.wait_for_function('S47.started()')
+        await page.click('button[data-a=start]'); await begin_opening(page);await page.wait_for_function('S47.started()')
         await page.evaluate("S47.hold=true;S47.jump('chapter6')")
         for _ in range(240):
             await page.evaluate('S47.hold=true;S47.tick(0.25)')
@@ -992,7 +993,7 @@ async def run_dinerlight_trip(browser, args, report, trip_id, url, out):
         await page.add_init_script(INIT+f"\nlocalStorage.setItem('s47.quality',JSON.stringify({json.dumps(args.quality)}));")
         await page.goto(url,wait_until='load',timeout=120000)
         await page.wait_for_function('window.S47 && S47.tick && S47.world')
-        await page.click('button[data-a=start]'); await page.wait_for_function('S47.started()')
+        await page.click('button[data-a=start]'); await begin_opening(page); await page.wait_for_function('S47.started()')
         chapter = 'chapter5' if arrival else 'chapter6'
         await page.evaluate('chapter=>{S47.hold=true;S47.jump(chapter);}',chapter)
         trip['setup_actions'].append({'api':'S47.jump','chapter':chapter,'semantics':'Chapter setup, not gameplay evidence'})
@@ -1197,7 +1198,7 @@ async def run_trip(browser, args, report, trip_id, url, out):
         await page.add_init_script(INIT)
         await page.goto(url, wait_until='load', timeout=120000)
         await page.wait_for_function('window.S47 && S47.tick && S47.world')
-        await page.click('button[data-a=start]')
+        await page.click('button[data-a=start]'); await begin_opening(page)
         await page.wait_for_function('S47.started()')
         await page.evaluate("S47.hold=true; S47.setQuality('high'); S47.setPicture('off'); S47.tick(0.3)")
         if trip_id == 'saro_diner':

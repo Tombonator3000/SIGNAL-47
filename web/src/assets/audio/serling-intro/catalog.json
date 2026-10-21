@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "voice": "Rod Serling synthetic parody narration",
+  "clips": [
+    {
+      "id": "323aecd87d70f9fa",
+      "text": "New Mexico, 1986. Twenty-seven antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed, and forgotten.",
+      "file": "323aecd87d70f9fa.mp3",
+      "duration": 11.8
+    },
+    {
+      "id": "7858426c36fb3334",
+      "text": "Tonight, the instruments will record something the sky has not sent. A telephone will ring in an empty room. A photograph will remember what no one saw.",
+      "file": "7858426c36fb3334.mp3",
+      "duration": 9.96
+    },
+    {
+      "id": "4a6ccde3f9b83ee4",
+      "text": "Your name is Reyes. Your shift ends at dawn. Between now and then, forty-seven seconds will refuse to belong to any clock.",
+      "file": "4a6ccde3f9b83ee4.mp3",
+      "duration": 7.96
+    },
+    {
+      "id": "72ca924172467658",
+      "text": "The record calls it interference.",
+      "file": "72ca924172467658.mp3",
+      "duration": 2.4
+    },
+    {
+      "id": "812e0a225acaa10e",
+      "text": "The record is incomplete.",
+      "file": "812e0a225acaa10e.mp3",
+      "duration": 2.08
+    }
+  ]
+}

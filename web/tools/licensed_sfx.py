@@ -10,6 +10,7 @@
 # Usage: python3 tools/licensed_sfx.py OUTDIR [with|without]   (S47_URL for the Pages build;
 # without the second argument it says which it found)
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -68,7 +69,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL); await pg.wait_for_function('window.S47')
         await pg.evaluate("localStorage.clear()"); await pg.reload(); await pg.wait_for_function('window.S47')
-        await pg.click('button[data-a=start]'); await pg.wait_for_function('S47.started() && S47.audio.ready', polling=200)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_function('S47.started() && S47.audio.ready', polling=200)
         ev = pg.evaluate
         async def tick(s, n=1):
             for _ in range(n): await ev(f"S47.tick({s})")

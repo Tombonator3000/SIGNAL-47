@@ -38,6 +38,7 @@
 # view before and after (<view>_ba.png, before left).
 # Usage: python3 tools/cookies.py OUTDIR [WxH] [--before] [--compare=DIR] [--only=VIEW,...] [--cost]
 import asyncio, sys, os, json, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 from PIL import Image, ImageStat, ImageChops, ImageFilter, ImageDraw
 
@@ -210,7 +211,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(400)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(400)
         ev = pg.evaluate
         # the pictures without the HUD, the toasts and the captions: the night itself
         await pg.add_style_tag(content='#ui { visibility: hidden !important; }')

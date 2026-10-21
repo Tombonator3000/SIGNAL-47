@@ -3,6 +3,7 @@
 # The payphone section separately exercises an actual chapter-five clock of 05:03.
 # Run sequentially: python3 tools/storyexpansion.py OUTDIR [1280x800|844x390]
 import asyncio, json, os, sys
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -29,7 +30,7 @@ async def main():
         await pg.evaluate('localStorage.clear()')
         await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]')
+        await pg.click('button[data-a=start]'); await begin_opening(pg)
         ev = pg.evaluate
         await ev("S47.hold=true; S47.tick(.3); S47.jump('chapter1'); S47.tick(1); S47.setAbductions(false); S47.setPicture('off'); S47.nightEvents.wait=1e9; window.readyTown=S47.world.prepare('diner')")
         await pg.wait_for_function('!!S47.world.town && !!S47.world.diner')

@@ -703,6 +703,24 @@ html.text-large .prompt { font-size: 28px; }
 .chapter-card .cc-closed { font-family: var(--term); font-size: clamp(18px, 2.4vw, 24px); letter-spacing: .12em; color: var(--phosphor); }
 .chapter-card .cc-recap { font-family: var(--type); font-size: clamp(15px, 1.9vw, 19px); line-height: 1.5; max-width: 52ch; color: #cfc8b5; margin: 10px 0 0; }
 .chapter-card .cc-next { font-family: var(--term); font-size: clamp(18px, 2.4vw, 24px); letter-spacing: .3em; color: var(--amber); }
+.opening-card { position: fixed; inset: 0; z-index: 160; background: #000; color: #d6d3ca; overflow: auto; overscroll-behavior: contain; display: flex; padding: max(18px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left)); }
+.opening-sheet { width: min(100%, 64ch); max-height: 100%; margin: auto; padding: 12px 0; display: flex; flex-direction: column; }
+.opening-sheet h1 { font-family: var(--term); font-size: clamp(27px, 5vw, 42px); font-weight: normal; letter-spacing: .13em; margin: 0 0 24px; color: var(--phosphor); }
+.opening-copy { min-height: 0; overflow: auto; font-family: var(--type); font-size: clamp(15px, 1.55vw, 18px); line-height: 1.6; }
+.opening-copy p { margin: 0 0 16px; }
+.opening-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.opening-actions .opt { min-height: 44px; }
+.opening-sheet h1, .opening-actions, .opening-status { flex-shrink: 0; }
+.opening-status { min-height: 1.4em; font-family: var(--term); font-size: 14px; color: #9b9b8e; margin: 12px 0 0; }
+@media (max-height: 480px) and (min-width: 600px) {
+  .opening-card { padding-top: 12px; padding-bottom: 12px; }
+  .opening-sheet { width: min(100%, 96ch); padding: 0; }
+  .opening-sheet h1 { font-size: 27px; margin-bottom: 12px; }
+  .opening-copy { font-size: 14px; line-height: 1.45; }
+  .opening-copy p { margin-bottom: 9px; }
+  .opening-actions { margin-top: 12px; }
+  .opening-status { margin-top: 6px; }
+}
 .chapter-card h2 { font-family: var(--display); font-weight: 500; font-size: clamp(34px, 6vw, 64px); letter-spacing: .06em; margin: 6px 0; }
 .chapter-card .cc-clock { font-family: var(--term); font-size: clamp(22px, 3vw, 30px); color: var(--phosphor); }
 .chapter-card.out { transition: opacity .8s ease; opacity: 0; }

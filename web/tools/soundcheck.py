@@ -8,6 +8,7 @@
 # speakers); this finds the drop-outs the game makes itself, and runaway work for the sound.
 # Usage: python3 tools/soundcheck.py OUTDIR [seconds per place]
 import asyncio, sys, os, json, statistics
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -70,7 +71,7 @@ async def main():
         await pg.goto(URL)
         await pg.evaluate("localStorage.clear()"); await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(800)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(800)
         ev = pg.evaluate
         print(f"latency: base {await ev('S47.audio.ctx.baseLatency')}, output {await ev('S47.audio.ctx.outputLatency || 0')}", flush=True)
         await ev(LISTEN)

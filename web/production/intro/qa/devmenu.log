@@ -1,0 +1,16 @@
+PASS with ?dev the title screen has the DEV button
+PASS the menu offers the chapters (14 buttons), not the truck before a night runs
+PASS chapter 3 started from the menu, and nothing was saved (0 saves)
+PASS F2 opens the menu in the game
+PASS in the game it offers the truck and the clock
+PASS free drive on the highway: the truck goes (10.0 m/s)
+PASS back on foot where the player stood (saro)
+PASS the chapter has not moved on
+PASS and back from the old road
+PASS the clock goes on half an hour
+PASS 6 at the line: a few seconds to C, then THE EVENT at 05:29:00 (event)
+PASS still nothing saved
+PASS ?dev=0 takes the menu away
+PASS and it stays away
+no console errors/warnings
+14 of 14 PASS

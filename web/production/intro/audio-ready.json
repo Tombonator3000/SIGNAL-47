@@ -1,0 +1,10 @@
+{
+  "gpu_idle": true,
+  "verification": "PASS",
+  "clips": 5,
+  "bytes": 276892,
+  "duration_seconds": 34.2,
+  "catalog_sha256": "4561f853c688d36328198e7df1a9008c39b3b0877caf857f2c82cc1b97355011",
+  "audio_verification_sha256": "261059a962c687acb24e10238a3dda9889420302af8aa5a5ed9de232cab52da0",
+  "audio_provenance_sha256": "d2d60bbb31c989a99cb75e0b7013e0389950eca81bef970b1ae02ef6fe1c187a"
+}

@@ -1,0 +1,99 @@
+PASS desk: chapter two has begun behind the card, its phone ringing but held back
+PASS desk: the card and its summary as they were
+PASS desk: under the summary, no ring (sfx peak 0.0026)
+PASS desk: without the voice, the ring as the summary goes and the title comes (at 3.2 s)
+PASS desk: the phone rings under the card, still on the black
+PASS desk: and is heard (sfx peak 0.033, 0.0026 before it)
+PASS desk: the card cuts away on a ring (7.83 s; rings at [3.23, 7.83], 4.60 s after the one before)
+PASS desk: not before the title has had its time (7.8 s)
+PASS desk: and it goes on ringing in the game: the supervisor's line in front of the player
+PASS desk: "The phone again. The supervisor's line." once, after the cut
+PASS desk: answered, the ringing stops (Ward on the line)
+PASS desk: in Mesa Diner in chapter five, inside
+PASS desk: before it, birds outside, heard in through the glass (7 in 40 s)
+PASS desk: 05:08: nothing yet
+PASS desk: 05:13 out on the lot: nothing
+PASS desk: talking to the waitress: it waits
+PASS desk: another of the night's things going: it waits
+PASS desk: then it holds (held)
+PASS desk: at once the cooler, the radio, the birds and the room's hum stop ({'still': True, 'tone': 0, 'radio': 0, 'cooler': False, 'one': True, 'music': True})
+PASS desk: and it is silent (master 0, peak 0.00000; {'all': 0, 'sfx': 0, 'amb': 0, 'radio': 0, 'music': 0, 'peak': {'all': 4.0796351629044145e-06, 'sfx': 5.09954387677865e-06, 'amb': 0, 'radio': 0, 'music': 0}})
+PASS desk: nothing else may start meanwhile, and the music keeps out
+PASS desk: a caption for it
+PASS desk: 10.7 s of nothing, then the waitress, as text: THE WAITRESS: "There. Some mornings about now."
+PASS desk: never "every morning"
+PASS desk: still nothing under her line (master 0)
+PASS desk: then back one at a time: [('cooler', 15.4), ('radio', 20.6), ('birds', 25.4)]
+PASS desk: and the room as it was (master 0.02154)
+PASS desk: the night's log has it, the notebook once ([['event', 'diner']], 1)
+PASS desk: once: not again
+PASS desk: after Continue, had: not again, and the sounds as they are ({'ph': 'done', 'had': True, 'still': False, 'tone': 1, 'radio': 1})
+PASS desk: walked in at 05:15: not the moment the door shuts
+PASS desk: but once the room has been heard (held)
+PASS desk: the maps spread on the table in the stillness: it waits under them, her line not said under the panel ({'t': 1.400000000000001, 'modal': True, 'still': True, 'cooler': False})
+PASS desk: closed, and then she says it
+PASS desk: and the room back
+PASS desk: a night that had not had it, after 05:20: nothing
+PASS desk: A drawn, B not yet, C not found: no C, no circle ({'ring': 8, 'c': 0, 'note': '', 'meet': False})
+PASS desk: A and B drawn, C not found: still nothing more ({'ring': 12, 'c': 0, 'note': '', 'meet': False})
+PASS desk: with C found at the diner: C drawn, all three on to where they cross, a small circle there ({'ring': 72, 'c': 18, 'note': 'All three cross at the transit. I stood at it tonight.', 'meet': True})
+PASS desk: the first time the map is turned to with it, one note: 05:00. On the map, the three lines drawn on past where I know them. They cross in one point and nowhere else: the transit at STATION 01. I stood at it tonight, reading the plate on its pier.
+PASS desk: turned to again: no second note
+PASS desk: C found but A and B not drawn: C alone, no circle ({'ring': 6, 'c': 20, 'note': '', 'meet': True})
+PASS desk: before any time away, no thread
+PASS desk: and nothing on the board
+PASS desk: after the time away, one thread: from the photograph not taken to a card on the board, no question, nothing open resting on it ([{'n': 1, 'a': 'away1', 'b': 's03log.heading'}])
+PASS desk: kept with the case
+PASS desk: on the board, the thread, "same" in pencil in the player's hand ([['same', '"Reenie Beanie", "Bradley Hand", cursive']], 2 full threads)
+PASS desk: the word hangs on the thread (1 px from it)
+PASS desk: the board opens on it and says it; one note: 03:19. On the case board, a thread I did not tie: from the photograph I did not take to S-03's motor bus, 026. On it, in pencil, in my own hand: "same". I don't remember drawing that.
+PASS desk: the night's log has it
+PASS desk: tying the same two again: "Those two are already connected."
+PASS desk: laid out again: not said again
+PASS desk: after Continue: the thread kept, one, not said again ([{'n': 1, 'a': 'away1', 'b': 's03log.heading'}])
+PASS desk: a second time away, its own thread, to another card ([{'n': 1, 'a': 'away1', 'b': 's03log.heading'}, {'n': 2, 'a': 'away2', 'b': 'rx.dist'}])
+PASS desk: two on the board; the line only the first time
+PASS desktop: no console errors or warnings
+PASS phone: chapter two has begun behind the card, its phone ringing but held back
+PASS phone: the card and its summary as they were
+PASS phone: under the summary, no ring (sfx peak 0.0026)
+PASS phone: with the voice reading the card, the ring waits for it to reach the title (at 14.0 s, stage b)
+PASS phone: the phone rings under the card, still on the black
+PASS phone: and is heard (sfx peak 0.054, 0.0026 before it)
+PASS phone: the card cuts away on a ring (24.60 s; rings at [14.03, 19.98, 24.6], 4.62 s after the one before)
+PASS phone: and it goes on ringing in the game: the supervisor's line in front of the player
+PASS phone: "The phone again. The supervisor's line." once, after the cut
+PASS phone: answered, the ringing stops (Ward on the line)
+PASS phone: in Mesa Diner in chapter five, inside
+PASS phone: before it, birds outside, heard in through the glass (6 in 40 s)
+PASS phone: 05:08: nothing yet
+PASS phone: then it holds (held)
+PASS phone: at once the cooler, the radio, the birds and the room's hum stop ({'still': True, 'tone': 0, 'radio': 0, 'cooler': False, 'one': True, 'music': True})
+PASS phone: and it is silent (master 0, peak 0.00000; {'all': 0, 'sfx': 0, 'amb': 0, 'radio': 0, 'music': 0, 'peak': {'all': 4.065069290378152e-06, 'sfx': 5.081336523719023e-06, 'amb': 0, 'radio': 0, 'music': 0}})
+PASS phone: nothing else may start meanwhile, and the music keeps out
+PASS phone: a caption for it
+PASS phone: 10.7 s of nothing, then the waitress, as text: THE WAITRESS: "There. Some mornings about now."
+PASS phone: never "every morning"
+PASS phone: still nothing under her line (master 0)
+PASS phone: then back one at a time: [('cooler', 15.4), ('radio', 20.6), ('birds', 25.4)]
+PASS phone: and the room as it was (master 0.0222)
+PASS phone: the night's log has it, the notebook once ([['event', 'diner']], 1)
+PASS phone: once: not again
+PASS phone: A drawn, B not yet, C not found: no C, no circle ({'ring': 8, 'c': 0, 'note': '', 'meet': False})
+PASS phone: A and B drawn, C not found: still nothing more ({'ring': 12, 'c': 0, 'note': '', 'meet': False})
+PASS phone: with C found at the diner: C drawn, all three on to where they cross, a small circle there ({'ring': 72, 'c': 18, 'note': 'All three cross at the transit. I stood at it tonight.', 'meet': True})
+PASS phone: the first time the map is turned to with it, one note: 05:00. On the map, the three lines drawn on past where I know them. They cross in one point and nowhere else: the transit at STATION 01. I stood at it tonight, reading the plate on its pier.
+PASS phone: turned to again: no second note
+PASS phone: C found but A and B not drawn: C alone, no circle ({'ring': 6, 'c': 20, 'note': '', 'meet': True})
+PASS phone: before any time away, no thread
+PASS phone: and nothing on the board
+PASS phone: after the time away, one thread: from the photograph not taken to a card on the board, no question, nothing open resting on it ([{'n': 1, 'a': 'away1', 'b': 's03log.heading'}])
+PASS phone: kept with the case
+PASS phone: on the board, the thread, "same" in pencil in the player's hand ([['same', '"Reenie Beanie", "Bradley Hand", cursive']], 2 full threads)
+PASS phone: the word hangs on the thread (0 px from it)
+PASS phone: the board opens on it and says it; one note: 03:35. On the case board, a thread I did not tie: from the photograph I did not take to S-03's motor bus, 026. On it, in pencil, in my own hand: "same". I don't remember drawing that.
+PASS phone: the night's log has it
+PASS phone: tying the same two again: "Those two are already connected."
+PASS phone: laid out again: not said again
+PASS phone: no console errors or warnings
+98 of 98 PASS

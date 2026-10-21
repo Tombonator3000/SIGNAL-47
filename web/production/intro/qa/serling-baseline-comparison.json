@@ -1,0 +1,478 @@
+{
+  "status": "UNCHANGED_BASELINE_GAPS",
+  "checked_utc": "2026-10-21T10:54:00.167259+00:00",
+  "base_commit": "acfc09e3fdd72a6a7ccf9f9b4fbccad6038b604c",
+  "all_regions_equal": true,
+  "new_missing": [],
+  "regions": {
+    "chapter1": {
+      "area": "saro",
+      "exact_missing_set_match": true,
+      "baseline_entries": 248,
+      "candidate_entries": 248,
+      "missing_count": 9,
+      "unchanged_unrecorded_entries": [
+        {
+          "source": "examine:look:cow:saro:0",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:1",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:2",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:3",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:4",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:5",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:6",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:7",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:8",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        }
+      ]
+    },
+    "chapter2": {
+      "area": "saro",
+      "exact_missing_set_match": true,
+      "baseline_entries": 256,
+      "candidate_entries": 256,
+      "missing_count": 11,
+      "unchanged_unrecorded_entries": [
+        {
+          "source": "examine:arc:ksu",
+          "text": "SARO's key service unit: lamps for the outside line and the supervisor line, and a typed card. EXT 201 CONTROL ROOM, EXT 214 RECORDS, EXT 220 OPERATIONS, EXT 230 PHOTO LAB.",
+          "available": false
+        },
+        {
+          "source": "examine:arc:recorder",
+          "text": "The call recorder on its bracket under the switchboard: a strip printer that puts down a line for every call on SARO's lines.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:0",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:1",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:2",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:3",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:4",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:5",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:6",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:7",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:8",
+          "text": "A Hereford cow, red with a white face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        }
+      ]
+    },
+    "chapter3": {
+      "area": "station01",
+      "exact_missing_set_match": true,
+      "baseline_entries": 219,
+      "candidate_entries": 219,
+      "missing_count": 14,
+      "unchanged_unrecorded_entries": [
+        {
+          "source": "examine:look:cow:saro:0",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:1",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:2",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:3",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:4",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:5",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:6",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:7",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:8",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        },
+        {
+          "source": "examine:s1drawer",
+          "text": "A shallow drawer under the bench top, below the lamp. The pull is worn bright.",
+          "available": false
+        },
+        {
+          "source": "examine:s1ninth:body",
+          "text": "A cow, on her side in the frost. She does not move. Nothing near her moves.",
+          "available": false
+        },
+        {
+          "source": "examine:s1ninth:frost",
+          "text": "White frost on the ground, in a ring round something lying there.",
+          "available": false
+        },
+        {
+          "source": "examine:s1ninth:head",
+          "text": "A cow, on her side in the frost. She does not move. Nothing near her moves.",
+          "available": false
+        },
+        {
+          "source": "note",
+          "text": "03:40. STATION 01, inside the fence: a Hereford cow, dead on her side on B, between the transit and the comparison vane, her head to 026, in a ring of frost. The vehicle gate is chained.",
+          "available": false
+        }
+      ]
+    },
+    "chapter4": {
+      "area": "room6",
+      "exact_missing_set_match": true,
+      "baseline_entries": 204,
+      "candidate_entries": 204,
+      "missing_count": 9,
+      "unchanged_unrecorded_entries": [
+        {
+          "source": "examine:look:cow:saro:0",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:1",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:2",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:3",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:4",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:5",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:6",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:7",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:8",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        }
+      ]
+    },
+    "chapter5": {
+      "area": "diner",
+      "exact_missing_set_match": true,
+      "baseline_entries": 237,
+      "candidate_entries": 237,
+      "missing_count": 20,
+      "unchanged_unrecorded_entries": [
+        {
+          "source": "examine:diner:driver",
+          "text": "A driver over two eggs and a thermos, his cap pushed back. His wristwatch says two minutes to twelve.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:0",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:1",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:2",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:3",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:4",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:5",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:6",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:7",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:8",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:0",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:1",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:2",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:3",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:4",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:5",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:6",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:7",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:8",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        },
+        {
+          "source": "note",
+          "text": "05:00. Mesa Diner. The driver at the counter: his wristwatch says two minutes to twelve. It is not running.",
+          "available": false
+        }
+      ]
+    },
+    "chapter6": {
+      "area": "roswell",
+      "exact_missing_set_match": true,
+      "baseline_entries": 227,
+      "candidate_entries": 227,
+      "missing_count": 18,
+      "unchanged_unrecorded_entries": [
+        {
+          "source": "examine:look:cow:road:0",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:1",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:2",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:3",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:4",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:5",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:6",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:7",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:road:8",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:0",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 11.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:1",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 14.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:2",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 18.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:3",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 22.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:4",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 25.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:5",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 29.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:6",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 31.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:7",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 34.",
+          "available": false
+        },
+        {
+          "source": "examine:look:cow:saro:8",
+          "text": "She stands quite still, her head up, facing the way the others face. A yellow tag in her left ear: ALDERETE 38.",
+          "available": false
+        }
+      ]
+    }
+  },
+  "baseline_report": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/intro/baseline-serling.json",
+  "baseline_report_sha256": "4b772c1daaddf2119cb0513cc32eb762d96a7ac46595579c0d7b00be4f219e64",
+  "current_report": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/intro/regression/serling/serling.json",
+  "current_report_sha256": "13c600c1e426e5a105c00b7f72de96a0f7fb767f8d252c5074d5938a7b1c769a",
+  "base_source_manifest_sha256": "66e9e0554cbc95809054c3f0c520643f302718fcf36160f2a9dc64036d15d468",
+  "base_build_manifest_sha256": "9efa488908c1a49ebd3328e8c02bb336a7f2979c1070787e077a6baa8bfef48f",
+  "probe_sha256": "8c372d32d64fbb1eae20689937c378fd5746f4b5c8ed6bb9749c9705b711ee1f",
+  "baseline_has_no_intro": true,
+  "baseline_browser_errors": [],
+  "meaning": "All six broad Serling inventory failures are identical in the actual base build.101otherchecks pass; this intro task does not claim or change the newer unrecorded object descriptions."
+}

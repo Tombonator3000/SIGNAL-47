@@ -3,6 +3,7 @@
 # in a software renderer too. Usage: python3 tools/walkthrough.py OUTDIR WxH quality
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 import asyncio, math, sys, json, time, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 OUT = sys.argv[1]; W, H = (int(v) for v in sys.argv[2].split('x')); Q = sys.argv[3] if len(sys.argv) > 3 else 'high'
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -27,7 +28,7 @@ async def main():
         await pg.evaluate(f"S47.setQuality('{Q}')")
         await pg.wait_for_timeout(2500)
         await pg.screenshot(path=f'{OUT}/00_title.png')
-        await pg.click('button[data-a=start]')            # real click, proves the fade layer no longer blocks
+        await pg.click('button[data-a=start]'); await begin_opening(pg)            # real click, proves the fade layer no longer blocks
         await pg.wait_for_timeout(300)
         await pg.evaluate("S47.hold = true")
         ev = lambda js: pg.evaluate(js)
