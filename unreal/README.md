@@ -21,10 +21,18 @@ WASD går, musa ser, E bruker det du ser på (terminalen, telefonen, dørene). E
 
 ## Det som finnes
 
-- `Source/Signal47`: C++-modulen. `AS47Saro` bygger stasjonen ved oppstart (rommet på 12 x 9 m med vinduet mot nord som i nettversjonen, gården, antennene, himmelen og lysene). `AS47Walker` er førsteperson. `AS47HUD` og `SS47Widgets` er overlegget og terminalen i Slate.
-- `Scripts/import-models.py`: leser FBX-filene fra `Unity/Assets/Signal47/Art` (uten å endre noe der) og fargene fra Unity-materialfilene, og lager `Content/Models` og `Content/Materials`.
+- `Source/Signal47`: C++-modulen.
+  - `AS47Saro` bygger stasjonen ved oppstart: rommet på 12 x 9 m med vinduet mot nord som i nettversjonen, pulten med tre CRT-er, racket med spak og 18 lamper, skriveren, telefonen, kruset, papirene, operasjonspulten, gården, gjerdet, de 27 antennene fra `arrayLayout.ts`, himmelen og lysene. Alt historien rører, har en id (`Use:<id>`) og settere.
+  - `AS47Story` er prologen «Night Shift», portert fra `web/src/story/Prologue.ts`: de samme fasene i samme rekkefølge (intro, shift, survey, skip, residual, locked, solving, printing, printed, ringing, call, countdown, event, turning, end) på spilltid som stopper når noe leses.
+  - `S47Docs`, `S47Ops` og `S47Rx` er dokumentene, operasjonsterminalen og mottakeren med spekteret, portert ord for ord og tall for tall og sjekket mot nettversjonen (`-S47SelfTest`).
+  - `AS47HUD` og `SS47Widgets` er overlegget (sikte, ledetekst, klokke, meldinger, overtoning), papirene, notatboken (Tab), mottakerkonsollen, operasjonsterminalen og sluttkortet i Slate. `SS47Crt` tegner de fire CRT-ene i rommet til render targets.
+  - `US47Audio` spiller lydene ved navn fra `/Game/Licensed/Sfx`, `/Game/Audio/Sfx` og `/Game/Audio/Synth`, og driver bærebølgen, signalet og motorene som løkker.
+  - `AS47Walker` er førsteperson: WASD, mus, E eller klikk bruker det du ser på.
+- `Scripts/import-models.py`: FBX-filene fra `Unity/Assets/Signal47/Art` (uendret der) og fargene fra Unity-materialfilene til `Content/Models` og `Content/Materials`.
+- `Scripts/import-licensed.py`: de kjøpte modellene fra den private klonen i `web/src/assets/licensed/models` til `Content/Licensed` (ignorert av Git).
+- `Scripts/import-audio.sh`: all lyd (frie lyder, kjøpte lyder, musikk, radio) konvertert med ffmpeg og importert til `Content/Audio` og `Content/Licensed` (begge ignorert av Git), pluss tonene fra `Scripts/make-synth.py`.
 - `Content/Fonts`: JetBrains Mono (OFL) som reserve til VT323 er konvertert fra woff2.
-- Alt på kartet av stasjonen er i cm med X mot nord, Y mot øst og Z opp. Nettversjonens (x, y, z) er (Y, Z, -X).
+- Alt i stasjonen er i cm med X mot nord, Y mot øst og Z opp. Nettversjonens (x, y, z) i meter er (Y, Z, -X) / 100.
 
 ## Regler
 
@@ -32,7 +40,9 @@ Se `AGENTS.md` i denne mappa. Kort: Unity-mappa er arkiv og røres ikke, kjøpte
 
 ## Begrensninger
 
-- Prøven er en gråboks med de originale modellene, ikke hele prologen. Ingen historie, lyd, lagring eller feltkamera ennå.
+- Prologen er spillbar fra start til sluttkortet; kapittel 1 til 6 er ikke portert ennå.
+- Ingen lagring ennå, ingen kameraristing ved smellet, og krusets skår tegnes ikke (det forsvinner med lyden).
+- Rommet er en gråboks der de kjøpte modellene og arkivets modeller står på enkle flater.
 - Modellenes retning og skala kommer fra FBX-filene; feilvendte modeller rettes i `S47Saro.cpp`.
 - Museretningen opp og ned er ikke prøvd av et menneske.
 - Bare testet på denne maskinen (RTX 3080, Vulkan, Ubuntu 26.04).

@@ -1,21 +1,29 @@
 #!/bin/bash
-# Runs the packaged build at a few spots in the station and checks the log. The game saves its
-# own screenshots (-S47Shot). Needs a desktop session.
+# Runs the packaged build through the prologue's beats and views and checks the log. The game
+# saves its own screenshots (-S47Shot). Needs a desktop session.
 # Usage: Scripts/screenshots.sh OUTDIR [BUILD]
 set -uo pipefail
 OUT=${1:?usage: screenshots.sh OUTDIR [BUILD]}
 BUILD=${2:-$HOME/scratch-bm/Signal47-build}
 mkdir -p "$OUT"
 fail=0
-shot() { # name spot expected-log-pattern [extra args]
+shot() { # name expected-log-pattern [extra args]
   local log="$OUT/$1.log"
-  timeout 120 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=8 -S47Face="$2" ${4:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
-  if grep -q "smoke test OK" "$log" && grep -q "$3" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
+  timeout 150 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=8 ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
+  if grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
 }
-shot room room "station built"
-shot window window "walker placed at window"
-shot crt crt "walker placed at crt"
-shot terminal crt "terminal opened" "-S47Use"
-shot outside outside "walker placed at outside"
-shot dish dish "walker placed at dish"
+shot selftest "self test OK" "-S47SelfTest -S47Face=room"
+shot room "station built, .* 27 dishes" "-S47Face=room"
+shot log "document log" "-S47Face=log -S47Use"
+shot rack "walker placed at rack" "-S47Face=rack -S47Use"
+shot crt "walker placed at crt" "-S47Face=crt -S47Jump=shift"
+shot console "console opened" "-S47Face=crt -S47Jump=residual -S47Open=console"
+shot notebook "notebook opened" "-S47Face=room -S47Jump=residual -S47Open=notebook"
+shot ops "ops terminal opened" "-S47Face=ops -S47Jump=residual -S47Open=ops"
+shot locked "jumped to locked" "-S47Face=crt -S47Jump=locked"
+shot printed "jumped to printed" "-S47Face=printer -S47Jump=printed"
+shot countdown "jumped to countdown" "-S47Face=crt -S47Jump=countdown"
+shot event "jumped to event" "-S47Face=window -S47Jump=event"
+shot outside "walker placed at outside" "-S47Face=outside"
+shot dish "walker placed at dish" "-S47Face=dish"
 exit $fail

@@ -2,17 +2,29 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "S47Docs.h"
 #include "S47HUD.generated.h"
 
 class SS47Hud;
-class SS47Terminal;
+class SS47Crt;
+class SWidget;
+class AS47Story;
+class AS47Saro;
+class AS47Walker;
+class US47Audio;
+class FWidgetRenderer;
 
-// The night shift at SARO: you walk, you look at things, and the status terminal opens as a
-// full screen when you use it. Esc closes it.
+// The night shift at SARO: you walk, you look at things, the story (AS47Story) says what they
+// are and what happens. Papers, the receiver console, the operations terminal and the notebook
+// open over the game; game time stops while one is open. The four CRTs are drawn here into
+// the station's render targets.
 // Command line for tests:
 //   -S47SmokeTest        log a result line and quit after -S47Seconds (default 3)
-//   -S47Face=<spot>      stand at a spot: room, crt, phone, window, outside, dish
-//   -S47Use              use what is in front of you after 2.5 s (the terminal, a door)
+//   -S47Face=<spot>      stand at a spot: room, crt, phone, window, outside, dish, rack, ops, printer, log
+//   -S47Use              use what is in front of you after 2.5 s
+//   -S47Jump=<beat>      start at a beat: shift, residual, locked, printed, countdown, event
+//   -S47Open=<view>      open a view after 2 s: notebook, console, ops, log
+//   -S47SelfTest         run the ported rules' self tests and log "self test OK" or "FAILED"
 //   -S47Shot=<file.png>  save a screenshot one second before quitting
 UCLASS()
 class SIGNAL47_API AS47HUD : public AHUD
@@ -23,9 +35,20 @@ public:
 	AS47HUD();
 	virtual void Tick(float DeltaSeconds) override;
 
-	// The station clock: the prologue starts at 23:41:00.
-	double ClockSeconds() const { return 23 * 3600 + 41 * 60 + Elapsed; }
-	FString ClockText() const;
+	// What the story asks of the screen.
+	void Toast(const FString& Text, float Secs = 3.2f);
+	void ShowDocument(const FS47Doc& Doc, TFunction<void()> OnClose);
+	void OpenConsole();
+	void OpenOps();
+	void OpenNotebook();
+	void Fade(bool bOn, const FString& Text);
+	void CloseModal();
+	bool HasModal() const { return Modal.IsValid(); }
+	void PlacePlayer(const FVector& Pos, float Yaw);
+	void Checkpoint(const FString& Name);
+	void Shake(float Strength);
+	void EndCard(const TArray<FString>& Lines);
+	void LookTowards(const FVector& Target, float K);
 
 protected:
 	virtual void BeginPlay() override;
@@ -33,17 +56,23 @@ protected:
 
 private:
 	TSharedPtr<SS47Hud> Hud;
-	TSharedPtr<SS47Terminal> Terminal;
-	TWeakObjectPtr<class AS47Saro> Saro;
-	TWeakObjectPtr<class AS47Walker> Walker;
-	FTimerHandle SmokeTimer;
+	TSharedPtr<SWidget> Modal;
+	TFunction<void()> ModalClosed;
 	FText Prompt;
-	double Elapsed = 0;
-	bool bTerminalOpen = false;
+	TWeakObjectPtr<AS47Story> Story;
+	TWeakObjectPtr<AS47Saro> Saro;
+	TWeakObjectPtr<AS47Walker> Walker;
+	UPROPERTY() TObjectPtr<US47Audio> Audio;
+	FWidgetRenderer* Renderer = nullptr;
+	TSharedPtr<SS47Crt> Crts[4];
+	float CrtTimer = 0.f;
+	FTimerHandle SmokeTimer;
+	bool bEnded = false;
 
 	void Start();
 	void Use(const FString& Id);
-	void OpenTerminal();
-	void CloseTerminal();
+	void SetModal(TSharedPtr<SWidget> Widget, TFunction<void()> OnClosed);
+	void DrawCrts(float DeltaSeconds);
 	void FinishSmokeTest();
+	void OpenView(const FString& View);
 };

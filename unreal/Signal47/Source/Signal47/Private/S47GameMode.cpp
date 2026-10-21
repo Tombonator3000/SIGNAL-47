@@ -1,6 +1,7 @@
 #include "S47GameMode.h"
 #include "S47HUD.h"
 #include "S47Saro.h"
+#include "S47Story.h"
 #include "S47Walker.h"
 #include "Engine/World.h"
 
@@ -15,4 +16,5 @@ void AS47GameMode::InitGame(const FString& MapName, const FString& Options, FStr
 	Super::InitGame(MapName, Options, ErrorMessage);
 	// The station is built before the player is spawned, so there is a floor to stand on.
 	GetWorld()->SpawnActor<AS47Saro>();
+	GetWorld()->SpawnActor<AS47Story>();
 }
