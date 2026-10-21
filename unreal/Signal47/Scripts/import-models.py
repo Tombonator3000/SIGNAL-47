@@ -100,6 +100,24 @@ mel.connect_material_property(stars, 'RGB', unreal.MaterialProperty.MP_EMISSIVE_
 mel.recompile_material(sky)
 eal.save_loaded_asset(sky)
 
+# The CRT pictures: unlit, a render target the HUD draws into, times Glow (0 when the screen is off).
+screen = fresh_material('M_S47Screen', '/Game/Materials')
+screen.set_editor_property('shading_model', unreal.MaterialShadingModel.MSM_UNLIT)
+suv = mel.create_material_expression(screen, unreal.MaterialExpressionTextureCoordinate, -900, 0)
+stex = mel.create_material_expression(screen, unreal.MaterialExpressionTextureSampleParameter2D, -600, 0)
+stex.set_editor_property('parameter_name', 'Screen')
+stex.set_editor_property('sampler_type', unreal.MaterialSamplerType.SAMPLERTYPE_COLOR)
+mel.connect_material_expressions(suv, '', stex, 'UVs')
+sglow = mel.create_material_expression(screen, unreal.MaterialExpressionScalarParameter, -600, 200)
+sglow.set_editor_property('parameter_name', 'Glow')
+sglow.set_editor_property('default_value', 1.0)
+smul = mel.create_material_expression(screen, unreal.MaterialExpressionMultiply, -300, 50)
+mel.connect_material_expressions(stex, 'RGB', smul, 'A')
+mel.connect_material_expressions(sglow, '', smul, 'B')
+mel.connect_material_property(smul, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+mel.recompile_material(screen)
+eal.save_loaded_asset(screen)
+
 # Window glass: translucent, nearly clear, with a faint blue tint.
 glass = fresh_material('M_S47Glass', '/Game/Materials')
 glass.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)

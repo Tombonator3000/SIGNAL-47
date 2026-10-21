@@ -2,14 +2,23 @@
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
+#include "Engine/TextureRenderTarget2D.h"
 #include "EngineUtils.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Misc/CommandLine.h"
 #include "RHI.h"
+#include "RenderingThread.h"
+#include "S47Audio.h"
+#include "S47Ops.h"
+#include "S47Rx.h"
 #include "S47Saro.h"
+#include "S47Story.h"
 #include "S47Walker.h"
+#include "SS47Crt.h"
 #include "SS47Widgets.h"
+#include "Slate/WidgetRenderer.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
 
@@ -20,16 +29,9 @@ AS47HUD::AS47HUD()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-FString AS47HUD::ClockText() const
-{
-	const int32 S = int32(ClockSeconds()) % 86400;
-	return FString::Printf(TEXT("%02d:%02d:%02d"), S / 3600, (S / 60) % 60, S % 60);
-}
-
 void AS47HUD::BeginPlay()
 {
 	Super::BeginPlay();
-	// The station is spawned in InitGame; the player and the viewport exist by the first tick.
 	FTimerHandle T;
 	GetWorldTimerManager().SetTimer(T, this, &AS47HUD::Start, 0.1f, false);
 }
@@ -40,8 +42,21 @@ void AS47HUD::Start()
 	APlayerController* PC = GetOwningPlayerController();
 	if (!Viewport || !PC) return;
 	for (TActorIterator<AS47Saro> It(GetWorld()); It; ++It) Saro = *It;
+	for (TActorIterator<AS47Story> It(GetWorld()); It; ++It) Story = *It;
 	Walker = Cast<AS47Walker>(PC->GetPawn());
-	UE_LOG(LogS47HUD, Display, TEXT("S47: station %s, walker %s, RHI %s"), Saro.IsValid() ? TEXT("found") : TEXT("MISSING"), Walker.IsValid() ? TEXT("found") : TEXT("MISSING"), GDynamicRHI ? GDynamicRHI->GetName() : TEXT("none"));
+	Audio = NewObject<US47Audio>(this);
+	Audio->Init(GetWorld());
+	UE_LOG(LogS47HUD, Display, TEXT("S47: station %s, story %s, walker %s, RHI %s"), Saro.IsValid() ? TEXT("found") : TEXT("MISSING"), Story.IsValid() ? TEXT("found") : TEXT("MISSING"), Walker.IsValid() ? TEXT("found") : TEXT("MISSING"), GDynamicRHI ? GDynamicRHI->GetName() : TEXT("none"));
+
+	if (FParse::Param(FCommandLine::Get(), TEXT("S47SelfTest")))
+	{
+		TArray<FString> Lines;
+		bool bOk = S47Docs::SelfTest(Lines);
+		bOk &= FS47OpsTerminal::SelfTest(Lines);
+		bOk &= S47RxSelfTest(Lines);
+		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
+		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
+	}
 
 	FString Face = TEXT("room");
 	FParse::Value(FCommandLine::Get(), TEXT("S47Face="), Face);
@@ -53,12 +68,33 @@ void AS47HUD::Start()
 		Walker->SetActive(true);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: walker placed at %s"), *Face);
 	}
-	Hud = SNew(SS47Hud).Visibility(EVisibility::HitTestInvisible).Prompt_Lambda([this] { return Prompt; }).Clock_Lambda([this] { return FText::FromString(ClockText()); });
+	Hud = SNew(SS47Hud).Visibility(EVisibility::HitTestInvisible)
+		.Prompt_Lambda([this] { return Prompt; })
+		.Clock_Lambda([this] { return FText::FromString(Story.IsValid() ? Story->ClockText(false) : FString()); })
+		.ShowAim_Lambda([this] { return !Modal.IsValid(); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);
 	PC->bShowMouseCursor = false;
 	FInputModeGameOnly Mode;
 	Mode.SetConsumeCaptureMouseDown(false);
 	PC->SetInputMode(Mode);
+
+	if (Story.IsValid())
+	{
+		Story->Bind(Saro.Get(), this, Audio);
+		if (Saro.IsValid())
+		{
+			TWeakObjectPtr<US47Audio> A = Audio;
+			TWeakObjectPtr<AS47HUD> Self = this;
+			Saro->OnMugShatter = [A, Self](const FVector& P) { if (A.IsValid()) A->Play(TEXT("ceramic"), 1.f, P + FVector(0, 0, 20)); };
+		}
+		Audio->StartRoomTone();
+		FString Jump;
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) Story->Jump(Jump);
+		else Story->Start();
+	}
+	Renderer = new FWidgetRenderer(true);
+	const SS47Crt::EKind Kinds[4] = { SS47Crt::EKind::Status, SS47Crt::EKind::Spectrum, SS47Crt::EKind::Tracking, SS47Crt::EKind::Ops };
+	for (int32 i = 0; i < 4; ++i) Crts[i] = SNew(SS47Crt).Kind(Kinds[i]).Story(Story.Get()).Saro(Saro.Get());
 
 	if (FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")))
 	{
@@ -76,80 +112,203 @@ void AS47HUD::Start()
 			FTimerHandle UseTimer;
 			GetWorldTimerManager().SetTimer(UseTimer, [this] { if (Walker.IsValid() && !Walker->FocusedId().IsEmpty()) Use(Walker->FocusedId()); else UE_LOG(LogS47HUD, Warning, TEXT("S47: nothing to use in front of the player")); }, 2.5f, false);
 		}
+		FString View;
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Open="), View))
+		{
+			FTimerHandle OpenTimer;
+			GetWorldTimerManager().SetTimer(OpenTimer, [this, View] { OpenView(View); }, 2.0f, false);
+		}
 	}
+}
+
+void AS47HUD::OpenView(const FString& View)
+{
+	if (View == TEXT("notebook")) OpenNotebook();
+	else if (View == TEXT("console")) { if (Story.IsValid()) { Story->bConsoleOpen = true; } OpenConsole(); }
+	else if (View == TEXT("ops")) OpenOps();
+	else if (View == TEXT("log")) ShowDocument(S47Docs::ShiftLog(), [] {});
+	UE_LOG(LogS47HUD, Display, TEXT("S47: opened %s"), *View);
 }
 
 void AS47HUD::Use(const FString& Id)
 {
+	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (Id == TEXT("crt")) OpenTerminal();
-	else if (Id.StartsWith(TEXT("door")) && Saro.IsValid()) Saro->ToggleDoor(Id);
-	else if (Id == TEXT("phone")) Prompt = FText::FromString(TEXT("THE LINE IS QUIET"));
+	if (Story.IsValid()) Story->Use(Id);
 }
 
-void AS47HUD::OpenTerminal()
+// ---------- the story's requests ----------
+
+void AS47HUD::Toast(const FString& Text, float Secs)
+{
+	if (Hud.IsValid()) Hud->Toast(Text, Secs);
+}
+
+void AS47HUD::SetModal(TSharedPtr<SWidget> Widget, TFunction<void()> OnClosed)
 {
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
 	APlayerController* PC = GetOwningPlayerController();
-	if (bTerminalOpen || !Viewport || !PC) return;
-	TWeakObjectPtr<AS47HUD> Self = this;
-	Terminal = SNew(SS47Terminal).Clock_Lambda([this] { return FText::FromString(ClockText()); }).OnClose([Self] { if (Self.IsValid()) Self->CloseTerminal(); });
-	Viewport->AddViewportWidgetContent(Terminal.ToSharedRef(), 30);
-	if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetAllUserFocus(Terminal, EFocusCause::SetDirectly);
+	if (!Viewport || !PC) return;
+	CloseModal();
+	Modal = Widget;
+	ModalClosed = MoveTemp(OnClosed);
+	Viewport->AddViewportWidgetContent(Widget.ToSharedRef(), 30);
+	if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetAllUserFocus(Widget, EFocusCause::SetDirectly);
+	PC->bShowMouseCursor = true;
 	PC->SetInputMode(FInputModeUIOnly());
 	if (Walker.IsValid()) Walker->SetActive(false);
-	if (Saro.IsValid()) Saro->SetCrtPowered(true);
-	bTerminalOpen = true;
-	Prompt = FText::GetEmpty();
-	UE_LOG(LogS47HUD, Display, TEXT("S47: terminal opened"));
+	if (Story.IsValid()) Story->SetPaused(true);
 }
 
-void AS47HUD::CloseTerminal()
+void AS47HUD::CloseModal()
 {
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
 	APlayerController* PC = GetOwningPlayerController();
-	if (!bTerminalOpen || !Viewport || !PC) return;
-	if (Terminal.IsValid()) Viewport->RemoveViewportWidgetContent(Terminal.ToSharedRef());
-	Terminal.Reset();
+	if (!Modal.IsValid() || !Viewport || !PC) return;
+	Viewport->RemoveViewportWidgetContent(Modal.ToSharedRef());
+	Modal.Reset();
 	FInputModeGameOnly Mode;
 	Mode.SetConsumeCaptureMouseDown(false);
 	PC->SetInputMode(Mode);
 	PC->bShowMouseCursor = false;
-	if (Walker.IsValid()) Walker->SetActive(true);
-	bTerminalOpen = false;
-	UE_LOG(LogS47HUD, Display, TEXT("S47: terminal closed"));
+	if (Walker.IsValid() && !bEnded) Walker->SetActive(true);
+	if (Story.IsValid()) Story->SetPaused(false);
+	TFunction<void()> Fn = MoveTemp(ModalClosed);
+	ModalClosed = nullptr;
+	if (Fn) Fn();
 }
+
+void AS47HUD::ShowDocument(const FS47Doc& Doc, TFunction<void()> OnClose)
+{
+	TWeakObjectPtr<AS47HUD> Self = this;
+	if (Audio) Audio->Play(TEXT("paper0"), 0.5f);
+	SetModal(SNew(SS47Document).Doc(Doc).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), MoveTemp(OnClose));
+	UE_LOG(LogS47HUD, Display, TEXT("S47: document %s"), *Doc.Id);
+}
+
+void AS47HUD::OpenConsole()
+{
+	TWeakObjectPtr<AS47HUD> Self = this;
+	TWeakObjectPtr<US47Audio> A = Audio;
+	TWeakObjectPtr<AS47Story> S = Story;
+	SetModal(SNew(SS47Console).Story(Story.Get()).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }).OnClick([A] { if (A.IsValid()) A->Play(TEXT("click"), 0.5f); }),
+		[S] { if (S.IsValid()) S->ConsoleClosed(); });
+	UE_LOG(LogS47HUD, Display, TEXT("S47: console opened"));
+}
+
+void AS47HUD::OpenOps()
+{
+	TWeakObjectPtr<AS47HUD> Self = this;
+	SetModal(SNew(SS47Ops).Story(Story.Get()).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), nullptr);
+	UE_LOG(LogS47HUD, Display, TEXT("S47: ops terminal opened"));
+}
+
+void AS47HUD::OpenNotebook()
+{
+	TWeakObjectPtr<AS47HUD> Self = this;
+	if (Audio) Audio->Play(TEXT("paper1"), 0.4f);
+	SetModal(SNew(SS47Notebook).Story(Story.Get()).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); })
+		.OnDoc([Self](const FS47Doc& D) { if (Self.IsValid()) { Self->CloseModal(); Self->ShowDocument(D, [] {}); } }), nullptr);
+	UE_LOG(LogS47HUD, Display, TEXT("S47: notebook opened"));
+}
+
+void AS47HUD::Fade(bool bOn, const FString& Text)
+{
+	if (Hud.IsValid()) Hud->Fade(bOn, Text);
+}
+
+void AS47HUD::PlacePlayer(const FVector& Pos, float Yaw)
+{
+	if (Walker.IsValid()) Walker->PlaceAt(FTransform(FRotator(0, Yaw, 0), Pos));
+}
+
+void AS47HUD::Checkpoint(const FString& Name)
+{
+	UE_LOG(LogS47HUD, Display, TEXT("S47: checkpoint %s"), *Name);
+}
+
+void AS47HUD::Shake(float Strength)
+{
+	UE_LOG(LogS47HUD, Display, TEXT("S47: shake %.2f (no camera shake in this version)"), Strength);
+}
+
+void AS47HUD::EndCard(const TArray<FString>& Lines)
+{
+	bEnded = true;
+	TWeakObjectPtr<AS47HUD> Self = this;
+	SetModal(SNew(SS47EndCard).Lines(Lines)
+		.OnAgain([Self] { if (Self.IsValid()) { Self->bEnded = false; Self->CloseModal(); Self->Fade(false, TEXT("")); if (Self->Story.IsValid()) Self->Story->Start(); } })
+		.OnQuit([Self] { if (Self.IsValid()) UKismetSystemLibrary::QuitGame(Self.Get(), Self->GetOwningPlayerController(), EQuitPreference::Quit, false); }), nullptr);
+	UE_LOG(LogS47HUD, Display, TEXT("S47: end card"));
+}
+
+void AS47HUD::LookTowards(const FVector& Target, float K)
+{
+	APlayerController* PC = GetOwningPlayerController();
+	if (!PC || !Walker.IsValid()) return;
+	const FVector Eye = Walker->EyeLocation();
+	const FRotator Want = (Target - Eye).Rotation();
+	FRotator Cur = PC->GetControlRotation();
+	Cur.Yaw += FMath::FindDeltaAngleDegrees(Cur.Yaw, Want.Yaw) * K;
+	Cur.Pitch += FMath::FindDeltaAngleDegrees(Cur.Pitch, Want.Pitch) * K;
+	PC->SetControlRotation(Cur);
+}
+
+// ---------- per frame ----------
 
 void AS47HUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	Elapsed += DeltaSeconds;
-	if (bTerminalOpen || !Walker.IsValid()) return;
-	const FString F = Walker->FocusedId();
-	if (F == TEXT("crt")) Prompt = FText::FromString(TEXT("STATUS TERMINAL  ·  E"));
-	else if (F == TEXT("phone")) Prompt = FText::FromString(TEXT("TELEPHONE  ·  E"));
-	else if (F.StartsWith(TEXT("door"))) Prompt = FText::FromString(Saro.IsValid() && Saro->IsDoorOpen(F) ? TEXT("DOOR  ·  E CLOSE") : TEXT("DOOR  ·  E OPEN"));
-	else if (!Prompt.ToString().StartsWith(TEXT("THE LINE"))) Prompt = FText::GetEmpty();
+	if (Audio) Audio->Tick(DeltaSeconds);
+	APlayerController* PC = GetOwningPlayerController();
+	if (PC && !Modal.IsValid() && PC->WasInputKeyJustPressed(EKeys::Tab) && Story.IsValid() && !Story->IsCinematic()) OpenNotebook();
+	// the prompt for what the player looks at, from the story
+	if (!Modal.IsValid() && Walker.IsValid() && Story.IsValid())
+	{
+		const FString F = Walker->FocusedId();
+		const FString L = F.IsEmpty() ? FString() : Story->Label(F);
+		Prompt = L.IsEmpty() ? FText::GetEmpty() : FText::FromString(L.ToUpper() + TEXT("   [E]"));
+		Walker->SetActive(!Story->IsCinematic() && !bEnded);
+	}
+	DrawCrts(DeltaSeconds);
+}
+
+void AS47HUD::DrawCrts(float DeltaSeconds)
+{
+	CrtTimer += DeltaSeconds;
+	if (CrtTimer < 1.f / 12.f || !Renderer || !Saro.IsValid() || !Story.IsValid()) return;
+	const float Dt = CrtTimer;
+	CrtTimer = 0.f;
+	for (int32 i = 0; i < 4; ++i)
+	{
+		if (!Crts[i].IsValid()) continue;
+		if (i < 3 && !Story->bPowered) continue;
+		if (UTextureRenderTarget2D* RT = Saro->CrtTarget(i)) Renderer->DrawWidget(RT, Crts[i].ToSharedRef(), FVector2D(AS47Saro::CrtW, AS47Saro::CrtH), Dt);
+	}
+	// the ops screen glows as soon as the station has power
+	Saro->SetCrtPowered(3, Story->bPowered);
 }
 
 void AS47HUD::FinishSmokeTest()
 {
 	FVector2D Size(0, 0);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
-	UE_LOG(LogS47HUD, Display, TEXT("S47: smoke test OK, RHI %s, frame %llu, viewport %dx%d, parts %d, terminal %s"),
+	UE_LOG(LogS47HUD, Display, TEXT("S47: smoke test OK, RHI %s, frame %llu, viewport %dx%d, parts %d, phase %d, modal %s"),
 		GDynamicRHI ? GDynamicRHI->GetName() : TEXT("none"), (unsigned long long)GFrameCounter, int32(Size.X), int32(Size.Y),
-		Saro.IsValid() ? Saro->PartCount() : 0, bTerminalOpen ? TEXT("open") : TEXT("closed"));
+		Saro.IsValid() ? Saro->PartCount() : 0, Story.IsValid() ? (int32)Story->Phase() : -1, Modal.IsValid() ? TEXT("open") : TEXT("none"));
 	FPlatformMisc::RequestExit(false, TEXT("S47SmokeTest"));
 }
 
 void AS47HUD::EndPlay(const EEndPlayReason::Type Reason)
 {
+	if (Renderer) { BeginCleanup(Renderer); Renderer = nullptr; }
 	if (GEngine && GEngine->GameViewport)
 	{
 		if (Hud.IsValid()) GEngine->GameViewport->RemoveViewportWidgetContent(Hud.ToSharedRef());
-		if (Terminal.IsValid()) GEngine->GameViewport->RemoveViewportWidgetContent(Terminal.ToSharedRef());
+		if (Modal.IsValid()) GEngine->GameViewport->RemoveViewportWidgetContent(Modal.ToSharedRef());
 	}
 	Hud.Reset();
-	Terminal.Reset();
+	Modal.Reset();
+	for (int32 i = 0; i < 4; ++i) Crts[i].Reset();
 	Super::EndPlay(Reason);
 }
