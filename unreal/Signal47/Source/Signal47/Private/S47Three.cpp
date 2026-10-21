@@ -112,3 +112,15 @@ FLinearColor Hex(uint32 Rgb)
 	return FLinearColor(FColor((Rgb >> 16) & 255, (Rgb >> 8) & 255, Rgb & 255));
 }
 }
+
+FVector S47Three::EulerXYZ(const FQuat& Q)
+{
+	double M[16];
+	Compose(FVector::ZeroVector, Q, FVector::OneVector, M);
+	const double m11 = M[0], m12 = M[4], m13 = M[8], m22 = M[5], m23 = M[9], m32 = M[6], m33 = M[10];
+	const double Y = FMath::Asin(FMath::Clamp(m13, -1.0, 1.0));
+	double X, Z;
+	if (FMath::Abs(m13) < 0.9999999) { X = FMath::Atan2(-m23, m33); Z = FMath::Atan2(-m12, m11); }
+	else { X = FMath::Atan2(m32, m22); Z = 0; }
+	return FVector(X, Y, Z);
+}

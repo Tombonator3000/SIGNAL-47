@@ -55,18 +55,6 @@ namespace
 	{
 		for (int32 k = 0; k < 16; ++k) Out[k] = A.IsValidIndex(k) ? A[k]->AsNumber() : (k % 5 == 0 ? 1.0 : 0.0);
 	}
-	// three's Euler.setFromQuaternion for the XYZ order
-	FVector EulerXYZ(const FQuat& Q)
-	{
-		double M[16];
-		Compose(FVector::ZeroVector, Q, FVector::OneVector, M);
-		const double m11 = M[0], m12 = M[4], m13 = M[8], m22 = M[5], m23 = M[9], m32 = M[6], m33 = M[10];
-		const double Y = FMath::Asin(FMath::Clamp(m13, -1.0, 1.0));
-		double X, Z;
-		if (FMath::Abs(m13) < 0.9999999) { X = FMath::Atan2(-m23, m33); Z = FMath::Atan2(-m12, m11); }
-		else { X = FMath::Atan2(m32, m22); Z = 0; }
-		return FVector(X, Y, Z);
-	}
 }
 
 AS47Web::AS47Web()
@@ -175,6 +163,16 @@ bool AS47Web::Load()
 			if (O->HasField(TEXT("node"))) Handles.Add(FString(KV.Key.ToView()), int32(Num(O, TEXT("node"))));
 			if (O->HasField(TEXT("mat"))) HandleMats.Add(FString(KV.Key.ToView()), int32(Num(O, TEXT("mat"))));
 			if (O->HasField(TEXT("tex"))) HandleTexs.Add(FString(KV.Key.ToView()), int32(Num(O, TEXT("tex"))));
+			if (O->HasField(TEXT("light"))) HandleLights.Add(FString(KV.Key.ToView()), Str(O, TEXT("light")));
+			const TArray<TSharedPtr<FJsonValue>>& Vv = Arr(O, TEXT("vec"));
+			if (Vv.Num() == 3) HandleVecs.Add(FString(KV.Key.ToView()), FVector(Vv[0]->AsNumber(), Vv[1]->AsNumber(), Vv[2]->AsNumber()));
+			const TArray<TSharedPtr<FJsonValue>>& Rv = Arr(O, TEXT("rect"));
+			if (Rv.Num() == 4)
+			{
+				FS47Area R;
+				R.MinX = Rv[0]->AsNumber(); R.MaxX = Rv[1]->AsNumber(); R.MinZ = Rv[2]->AsNumber(); R.MaxZ = Rv[3]->AsNumber(); R.bValid = true;
+				HandleRects.Add(FString(KV.Key.ToView()), R);
+			}
 		}
 	}
 	// areas
@@ -263,52 +261,49 @@ bool AS47Web::Load()
 	if (J->TryGetObjectField(TEXT("skies"), Sk)) for (const auto& KV : (*Sk)->Values) { const FString K(KV.Key.ToView()); SkyTex.Add(K, FString::Printf(TEXT("/Game/Web/Tex/Sky_%s.Sky_%s"), *K, *K)); }
 
 	// the fake floodlights (kit.ts floodlit): each set's pools in a small float texture, row 0
-	// position and reach, row 1 colour; every material lit by a set reads it in its emissive
+	// position and reach, row 1 colour; every material lit by a set reads it in its emissive.
+	// Every slot is there, the unused ones too, so a lamp is switched by its index (setFlood).
 	{
-		TArray<UTexture2D*> SetTex;
-		TArray<float> SetScale;
-		TArray<int32> SetCount;
 		for (const TSharedPtr<FJsonValue>& V : Arr(J, TEXT("floods")))
 		{
 			const TSharedPtr<FJsonObject> F = V->AsObject();
 			const TArray<TSharedPtr<FJsonValue>>& Pools = Arr(F, TEXT("pools"));
-			const int32 PW = FMath::Clamp(Pools.Num(), 1, 32);
-			UTexture2D* T = UTexture2D::CreateTransient(PW, 2, PF_A32B32G32R32F);
+			FFloodSet Set;
+			Set.Key = Str(F, TEXT("key"));
+			Set.Scale = float(Num(F, TEXT("scale"), 0.07));
+			Set.W = FMath::Clamp(Pools.Num(), 1, 32);
+			for (int32 k = 0; k < Set.W; ++k)
+			{
+				const TSharedPtr<FJsonObject> P = Pools.IsValidIndex(k) ? Pools[k]->AsObject() : nullptr;
+				Set.Pos.Add(P ? FLinearColor(Num(P, TEXT("x")), Num(P, TEXT("y")), Num(P, TEXT("z")), Num(P, TEXT("r"))) : FLinearColor(0, -999, 0, 0));
+				Set.Col.Add(P ? Col(Arr(P, TEXT("col"))) : FLinearColor::Black);
+			}
+			UTexture2D* T = UTexture2D::CreateTransient(Set.W, 2, PF_A32B32G32R32F);
 			T->SRGB = false;
 			T->Filter = TF_Nearest;
 			T->AddressX = TA_Clamp; T->AddressY = TA_Clamp;
-			FLinearColor* Px = static_cast<FLinearColor*>(T->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
-			for (int32 k = 0; k < PW; ++k)
-			{
-				Px[k] = FLinearColor::Transparent;
-				Px[PW + k] = FLinearColor::Black;
-				if (!Pools.IsValidIndex(k)) continue;
-				const TSharedPtr<FJsonObject> P = Pools[k]->AsObject();
-				Px[k] = FLinearColor(Num(P, TEXT("x")), Num(P, TEXT("y")), Num(P, TEXT("z")), Num(P, TEXT("r")));
-				Px[PW + k] = Col(Arr(P, TEXT("col")));
-			}
-			T->GetPlatformData()->Mips[0].BulkData.Unlock();
-			T->UpdateResource();
 			FloodTex.Add(T);
-			SetTex.Add(T);
-			SetScale.Add(float(Num(F, TEXT("scale"), 0.07)));
-			SetCount.Add(Pools.Num() > 0 ? PW : 0);
+			FloodSets.Add(Set);
+			UploadFlood(FloodSets.Num() - 1);
 		}
 		int32 Lit = 0;
 		for (const auto& KV : MatFlood)
 		{
-			if (!SetTex.IsValidIndex(KV.Value)) continue;
+			if (!FloodSets.IsValidIndex(KV.Value)) continue;
 			UMaterialInterface* Base = Mat(KV.Key);
 			if (!Base) continue;
+			const FFloodSet& Set = FloodSets[KV.Value];
 			UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Base, this);
-			D->SetTextureParameterValue(TEXT("FloodTex"), SetTex[KV.Value]);
-			D->SetScalarParameterValue(TEXT("FloodCount"), float(SetCount[KV.Value]));
-			D->SetScalarParameterValue(TEXT("FloodScale"), SetScale[KV.Value]);
+			D->SetTextureParameterValue(TEXT("FloodTex"), FloodTex[KV.Value]);
+			D->SetScalarParameterValue(TEXT("FloodCount"), float(Set.W));
+			D->SetScalarParameterValue(TEXT("FloodScale"), Set.Scale);
 			D->SetScalarParameterValue(TEXT("FloodFall"), MatFall.FindRef(KV.Key));
 			MatCache[KV.Key] = D;
+			FloodMids.FindOrAdd(KV.Value).Add(D);
 			++Lit;
 		}
-		UE_LOG(LogS47Web, Display, TEXT("S47: %d flood sets, %d materials lit by them"), SetTex.Num(), Lit);
+		MatFloodSet = MatFlood;
+		UE_LOG(LogS47Web, Display, TEXT("S47: %d flood sets, %d materials lit by them"), FloodSets.Num(), Lit);
 	}
 
 	// ---------- build the components ----------
@@ -390,6 +385,7 @@ bool AS47Web::Load()
 							UMaterialInstanceDynamic* Src = Cast<UMaterialInstanceDynamic>(MI);
 							UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Src ? Src->Parent.Get() : MI, this);
 							if (Src) D->CopyParameterOverrides(Src);
+							if (const int32* Fs = MatFloodSet.Find(N.Mats[k])) FloodMids.FindOrAdd(*Fs).Add(D);
 							D->SetScalarParameterValue(TEXT("UseInstanceColor"), 1.f);
 							I->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), k)), D);
 							KeepMids.Add(D);
@@ -1056,5 +1052,203 @@ void AS47Web::Tick(float Dt)
 			SetVisible(MugNode, false);
 			if (OnMugShatter) OnMugShatter(WorldUE(MugNode) * FVector(1, 1, 0) + FVector(0, 0, 20));
 		}
+	}
+}
+
+// ---------- the scene by path (S47Obj.h) ----------
+
+FS47Obj AS47Web::Obj(const FString& Path)
+{
+	const int32* N = Handles.Find(Path);
+	if (!N)
+	{
+		static TSet<FString> Told;
+		if (!Told.Contains(Path)) { Told.Add(Path); UE_LOG(LogS47Web, Warning, TEXT("S47: no object at %s"), *Path); }
+		return FS47Obj();
+	}
+	return FS47Obj(this, *N);
+}
+
+FS47Light AS47Web::Light(const FString& PathOrUuid)
+{
+	FS47Light L;
+	L.W = this;
+	const FString* U = HandleLights.Find(PathOrUuid);
+	L.Uuid = U ? *U : PathOrUuid;
+	return L;
+}
+
+FS47Mat AS47Web::Material(const FString& Path)
+{
+	FS47Mat M;
+	M.W = this;
+	M.Id = HandleMat(Path);
+	return M;
+}
+
+FVector AS47Web::Vec(const FString& Path, const FVector& Default) const
+{
+	const FVector* V = HandleVecs.Find(Path);
+	if (V) return *V;
+	const int32* N = Handles.Find(Path);
+	return N ? NodeWorldThree(*N).GetLocation() : Default;
+}
+
+FS47Area AS47Web::Rect(const FString& Path) const
+{
+	const FS47Area* R = HandleRects.Find(Path);
+	return R ? *R : FS47Area();
+}
+
+bool AS47Web::HasPath(const FString& Path) const
+{
+	return Handles.Contains(Path) || HandleLights.Contains(Path) || HandleVecs.Contains(Path) || HandleRects.Contains(Path) || HandleMats.Contains(Path) || HandleTexs.Contains(Path);
+}
+
+TArray<FString> AS47Web::PathsUnder(const FString& Prefix) const
+{
+	TArray<FString> Out;
+	for (const auto& KV : Handles) if (KV.Key.StartsWith(Prefix)) Out.Add(KV.Key);
+	Out.Sort();
+	return Out;
+}
+
+FTransform AS47Web::NodeWorldThree(int32 Node) const
+{
+	// three's matrixWorld, composed up the parents in three's own terms
+	FTransform T = FTransform::Identity;
+	for (int32 N = Node; N >= 0 && Nodes.IsValidIndex(N); N = Nodes[N].Parent)
+	{
+		T = T * FTransform(Nodes[N].Q, Nodes[N].P, Nodes[N].S);
+	}
+	return T;
+}
+
+TArray<UMaterialInstanceDynamic*> AS47Web::NodeMids(int32 Node)
+{
+	TArray<UMaterialInstanceDynamic*> Out;
+	if (!Nodes.IsValidIndex(Node)) return Out;
+	UMeshComponent* M = Cast<UMeshComponent>(Nodes[Node].Comp.Get());
+	if (!M) return Out;
+	TArray<TWeakObjectPtr<UMaterialInstanceDynamic>>& Cache = NodeMidCache.FindOrAdd(Node);
+	if (Cache.Num() == M->GetNumMaterials())
+	{
+		for (const auto& D : Cache) if (D.IsValid()) Out.Add(D.Get());
+		if (Out.Num() == Cache.Num()) return Out;
+		Out.Reset();
+	}
+	Cache.Reset();
+	for (int32 k = 0; k < M->GetNumMaterials(); ++k)
+	{
+		UMaterialInterface* Cur = M->GetMaterial(k);
+		if (!Cur) continue;
+		// its own copy, with what the shared one had (flood values, instance colours, a CRT's screen)
+		UMaterialInstanceDynamic* Src = Cast<UMaterialInstanceDynamic>(Cur);
+		UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Src ? Src->Parent.Get() : Cur, this);
+		if (Src) D->CopyParameterOverrides(Src);
+		for (const auto& KV : MatFloodSet)
+		{
+			if (Mat(KV.Key) == Cur) { FloodMids.FindOrAdd(KV.Value).Add(D); break; }
+		}
+		M->SetMaterial(k, D);
+		KeepMids.Add(D);
+		Cache.Add(D);
+		Out.Add(D);
+	}
+	return Out;
+}
+
+UMaterialInstanceDynamic* AS47Web::SharedMid(int32 MatId)
+{
+	if (const TWeakObjectPtr<UMaterialInstanceDynamic>* Have = SharedMidCache.Find(MatId); Have && Have->IsValid()) return Have->Get();
+	UMaterialInterface* Base = Mat(MatId);
+	if (!Base) return nullptr;
+	UMaterialInstanceDynamic* Src = Cast<UMaterialInstanceDynamic>(Base);
+	UMaterialInstanceDynamic* D = Src ? Src : UMaterialInstanceDynamic::Create(Base, this);
+	if (!Src)
+	{
+		KeepMids.Add(D);
+		MatCache[MatId] = D;
+		// every slot drawn with it now draws with the dynamic one
+		for (FS47WebNode& N : Nodes)
+		{
+			UMeshComponent* M = Cast<UMeshComponent>(N.Comp.Get());
+			if (!M) continue;
+			for (int32 k = 0; k < N.Mats.Num(); ++k)
+			{
+				if (N.Mats[k] == MatId && M->GetMaterial(k) == Base) M->SetMaterial(k, D);
+			}
+		}
+	}
+	SharedMidCache.Add(MatId, D);
+	return D;
+}
+
+void AS47Web::MarkUsable(int32 Node, const FString& Id)
+{
+	if (!Nodes.IsValidIndex(Node)) return;
+	Usable.Add(Node, Id);
+	ObjAt(Node).Traverse([](FS47Obj O)
+	{
+		if (UPrimitiveComponent* P = Cast<UPrimitiveComponent>(O.W->Nodes[O.I].Comp.Get()))
+		{
+			if (P->GetCollisionEnabled() == ECollisionEnabled::NoCollision) P->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			P->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+		}
+	});
+}
+
+FString AS47Web::UsableAt(const UPrimitiveComponent* C) const
+{
+	const int32* N = CompNode.Find(C);
+	if (!N) return FString();
+	for (int32 I = *N; I >= 0; I = Nodes[I].Parent)
+	{
+		if (const FString* Id = Usable.Find(I)) return *Id;
+		if (const int32* It = NodeItem.Find(I)) return ItemList[*It].Id;
+	}
+	return FString();
+}
+
+// ---------- the fake floodlights ----------
+
+int32 AS47Web::FloodSet(const FString& Key) const
+{
+	return FloodSets.IndexOfByPredicate([&](const FFloodSet& S) { return S.Key == Key; });
+}
+
+void AS47Web::UploadFlood(int32 Set)
+{
+	if (!FloodSets.IsValidIndex(Set) || !FloodTex.IsValidIndex(Set) || !FloodTex[Set]) return;
+	const FFloodSet& F = FloodSets[Set];
+	UTexture2D* T = FloodTex[Set];
+	FLinearColor* Px = static_cast<FLinearColor*>(T->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+	for (int32 k = 0; k < F.W; ++k) { Px[k] = F.Pos[k]; Px[F.W + k] = F.Col[k]; }
+	T->GetPlatformData()->Mips[0].BulkData.Unlock();
+	T->UpdateResource();
+}
+
+void AS47Web::SetFlood(int32 Set, int32 Index, float Width)
+{
+	if (!FloodSets.IsValidIndex(Set) || !FloodSets[Set].Pos.IsValidIndex(Index)) return;
+	if (FloodSets[Set].Pos[Index].A == Width) return;
+	FloodSets[Set].Pos[Index].A = Width;
+	UploadFlood(Set);
+}
+
+void AS47Web::SetFloodColor(int32 Set, int32 Index, const FLinearColor& C)
+{
+	if (!FloodSets.IsValidIndex(Set) || !FloodSets[Set].Col.IsValidIndex(Index)) return;
+	FloodSets[Set].Col[Index] = C;
+	UploadFlood(Set);
+}
+
+void AS47Web::SetFloodScale(int32 Set, float Scale)
+{
+	if (!FloodSets.IsValidIndex(Set)) return;
+	FloodSets[Set].Scale = Scale;
+	if (TArray<TWeakObjectPtr<UMaterialInstanceDynamic>>* Ms = FloodMids.Find(Set))
+	{
+		for (const auto& D : *Ms) if (D.IsValid()) D->SetScalarParameterValue(TEXT("FloodScale"), Scale);
 	}
 }

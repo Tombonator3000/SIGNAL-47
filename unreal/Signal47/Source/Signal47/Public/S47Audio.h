@@ -7,6 +7,22 @@
 class UAudioComponent;
 class USoundBase;
 
+// audio.play's options (core/Audio.ts), positions in the web version's terms (three.js metres)
+struct FS47Sound
+{
+	float Gain = 1.f;
+	float Rate = 1.f;
+	TOptional<FVector> At;   // three.js world position; unset: not placed (2D)
+	float When = 0.f;        // seconds from now
+	FString Dest;            // 'radio': through the truck's radio speaker (radioIn)
+	bool bLoop = false;
+};
+
+// a line of a telephone call (core/phoneScripts.ts PhoneCue) and the timeline audio.phoneCall gives
+struct FS47PhoneCue { FString Text; FString By; bool bAside = false; TOptional<float> Pause; };
+struct FS47CallCue { float At = 0, Duration = 0; FString Text, By; bool bAside = false; };
+struct FS47CallTimeline { float Duration = 0; TArray<FS47CallCue> Cues; };
+
 // The game's sounds, after web/src/core/Audio.ts: one-shots by name, loops by key, and the
 // receiver's carrier, the anomaly's pulses and the dish motors as looping components whose
 // volume follows the story. Sounds are looked up in /Game/Licensed/Sfx (the bought pack, if
@@ -38,7 +54,53 @@ public:
 	void AmRadio(bool bOn, const FVector& At);
 	void AmRadioJam(bool bOn);
 
+	// ---------- core/Audio.ts by its own names (S47AudioWeb.cpp), positions in three.js terms ----------
+	// A call that is not ported yet does what the web version does when a recording is missing:
+	// nothing (PhoneCall returns unset, so the caller shows its captions).
+	void Sfx(const FString& Name, const FS47Sound& O = FS47Sound());       // play(name, o)
+	FString Or(const FString& Name, const FString& Old = FString()) const;   // the bought recording if there is one
+	void LoopSfx(const FString& Key, const FString& Name, const FS47Sound& O = FS47Sound()); // loop(key, name, o)
+	void Beep(float Freq = 1200.f, float Dur = 0.08f, float Gain = 0.12f, float When = 0.f, const FString& Type = TEXT("square"));
+	void Hum(const FString& Key, const FVector& At, float Gain = 0.05f, float Base = 60.f);
+	void StopHums();
+	void HumLevel(float K, float Tau = 0.08f);
+	void Servo(float Secs, TOptional<FVector> At = {});
+	void Signature(float Gain = 0.5f);
+	void Shutter(const FString& Dest = FString(), float When = 0.f);
+	void PourThree(TOptional<FVector> At = {});
+	void Spatial(const FString& Name, const FVector& At, float Ref = 1.f);
+	TOptional<FS47CallTimeline> PhoneCall(const TArray<FS47PhoneCue>& Lines, float Lead = 0.3f, float Gap = 0.45f);
+	void StopPhoneCalls();
+	bool PhonePlaying() const { return bPhonePlaying; }
+	void CallLine(float Secs);
+	float Dial(const FString& Number);       // seconds the dialling takes
+	float Ringback(int32 Times, float Start = 0.f); // seconds
+	void Radio(TOptional<FVector> At, float Level = 0.06f);
+	void RadioVoice(float Secs, float When = 0.f);
+	void TvHiss(TOptional<FVector> At);
+	void RelayClack(const FVector& At, bool bThrough);
+	void Contactor(const FVector& At, float Gain = 1.f);
+	void PowerDown(const FVector& At);
+	void PowerUp(const FVector& At);
+	void TelexMotor(TOptional<FVector> At);
+	void TypeBar(const FVector& At, bool bCr = false);
+	void CabRadio(const FString& Mode);      // 'talk' | 'carrier' | 'hiss' | '' (off)
+	void CabLevel(float K);
+	void CabVoice(float Secs, float Formant);
+	void CupDown(bool bThroughRadio = false);
+	void Pressure(bool bOn);
+	void Silence(bool bOn);
+	void SetSpace(const FString& Space);     // 'room' | 'yard' | 'lab'
+	void Step(const FString& Surface);       // a footstep on a surface
+	void Gasp(float When = 0.f);
+	void Thunder(float Strength = 0.6f);
+	void HoldThunder(float Level);
+	void DuckAll(float Seconds);
+	bool bKinskiCalls = true, bCharacterVoices = true;
+
 private:
+	bool bPhonePlaying = false;
+	void NotYet(const TCHAR* What) const;
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TMap<FString, TObjectPtr<USoundBase>> Cache;
 	UPROPERTY() TMap<FString, TObjectPtr<UAudioComponent>> Loops;

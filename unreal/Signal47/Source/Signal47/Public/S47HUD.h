@@ -44,6 +44,9 @@ public:
 	void Fade(bool bOn, const FString& Text);
 	void CloseModal();
 	bool HasModal() const { return Modal.IsValid(); }
+	void OpenModal(TSharedRef<SWidget> Widget, TFunction<void()> OnClosed) { SetModal(Widget, MoveTemp(OnClosed)); }
+	SS47Hud* HudWidget() const { return Hud.Get(); }
+	void SetPrompt(const FString& Label, const FString& Alt);
 	void Place(double X, double Z, double Yaw); // three.js terms, as Player.place
 	void Checkpoint(const FString& Name);
 	void Shake(float Strength);
@@ -59,6 +62,7 @@ private:
 	TSharedPtr<SWidget> Modal;
 	TFunction<void()> ModalClosed;
 	FText Prompt;
+	bool bPromptSet = false;
 	TWeakObjectPtr<AS47Story> Story;
 	TWeakObjectPtr<AS47Web> Saro;
 	TWeakObjectPtr<AS47Walker> Walker;

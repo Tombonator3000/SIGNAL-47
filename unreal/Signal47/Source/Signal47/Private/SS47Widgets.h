@@ -18,7 +18,9 @@ namespace S47Style
 {
 	FSlateFontInfo Font(const TCHAR* File, float Px);
 	FSlateFontInfo Mono(float Px);
-	FSlateFontInfo Body(float Px);
+	FSlateFontInfo Body(float Px);    // Special Elite: the web version's --type (body text, toasts, papers)
+	FSlateFontInfo Hand(float Px);    // Reenie Beanie: --hand (handwriting, notebook, pencil)
+	FSlateFontInfo Display(float Px); // Oswald: --display (titles, chapter cards)
 	const FLinearColor Amber(1.0f, 0.68f, 0.22f);
 	const FLinearColor Green(0.55f, 1.0f, 0.64f);
 	const FLinearColor GreenDim(0.35f, 0.7f, 0.42f);
@@ -27,6 +29,9 @@ namespace S47Style
 	const FLinearColor Pencil(0.3f, 0.28f, 0.3f);
 	const FLinearColor Screen(0.008f, 0.06f, 0.025f);
 	const FLinearColor Overlay(0.02f, 0.02f, 0.02f, 0.92f);
+	// style.css
+	const FLinearColor InkBlue = FLinearColor::FromSRGBColor(FColor(0x23, 0x3a, 0x7a));
+	const FLinearColor Phosphor = FLinearColor::FromSRGBColor(FColor(0x8c, 0xff, 0xa4));
 }
 
 // The overlay while walking: a dot, the prompt for what you look at, the station clock, the
@@ -47,6 +52,15 @@ public:
 	void ClearToasts();
 	void Fade(bool bOn, const FString& Text);
 	bool IsFaded() const { return bFadeOn; }
+	// UI.ts: the objective line (top left), a closer look's words (under the crosshair), the
+	// amber seconds clock, the field camera's viewfinder and its shutter
+	void Objective(const FString& Text) { ObjectiveText = Text; }
+	void Examine(const FString& Text) { ExamineText = Text; }
+	void ClockSeconds(const FString& Text) { SecondsText = Text; }
+	struct FViewfinder { bool bOn = false; FSlateRect Rect; FString Frame, Status, Free, Hint; bool bOk = false, bFreeOk = false; };
+	void Viewfinder(const FViewfinder& V) { Vf = V; }
+	void ShutterFlash() { FlashT = 0.28f; }
+	FString LastToast;
 
 private:
 	struct FToast { FString Text; double Until; };
@@ -58,6 +72,9 @@ private:
 	float FadeAlpha = 0.f;
 	FString FadeText;
 	double Now = 0;
+	FString ObjectiveText, ExamineText, SecondsText;
+	FViewfinder Vf;
+	float FlashT = 0.f;
 	void Rebuild();
 };
 

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "S47Obj.h"
 #include "S47Web.generated.h"
 
 class UStaticMeshComponent;
@@ -14,6 +15,8 @@ class UDirectionalLightComponent;
 class USkyLightComponent;
 class UTextureRenderTarget2D;
 class UTexture2D;
+class ULightComponent;
+class UPrimitiveComponent;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
 struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
@@ -55,6 +58,31 @@ public:
 	bool IsLoaded() const { return bLoaded; }
 	int32 PartCount() const { return Nodes.Num(); }
 	FString Summary() const;
+
+	// ---------- the scene by the TypeScript code's paths (S47Obj.h) ----------
+	FS47Obj Obj(const FString& Path);                 // "room.objs.mug"; invalid when unknown
+	FS47Obj ObjAt(int32 Node) { return FS47Obj(this, Node); }
+	FS47Light Light(const FString& PathOrUuid);
+	FS47Mat Material(const FString& Path);            // a material handle ("yard.m.screen")
+	FVector Vec(const FString& Path, const FVector& Default = FVector::ZeroVector) const; // a Vector3 the code holds
+	FS47Area Rect(const FString& Path) const;         // a {minX, maxX, minZ, maxZ} the code holds
+	bool HasPath(const FString& Path) const;
+	TArray<FString> PathsUnder(const FString& Prefix) const;
+	// what FS47Obj and FS47Mat use
+	TArray<class UMaterialInstanceDynamic*> NodeMids(int32 Node);
+	class UMaterialInstanceDynamic* SharedMid(int32 MatId);
+	ULightComponent* LightByUuid(const FString& Uuid) const;
+	FTransform NodeWorldThree(int32 Node) const;        // three.js world matrix of a node, as a transform in metres
+	// A thing the player can use: its node and everything under it answer the use trace.
+	void MarkUsable(int32 Node, const FString& Id);
+	FString UsableAt(const UPrimitiveComponent* C) const; // the id of what a trace hit, or empty
+	int32 NodeOf(const UPrimitiveComponent* C) const { const int32* N = CompNode.Find(C); return N ? *N : -1; }
+
+	// ---------- the fake floodlights (kit.ts floodSet / setFlood) ----------
+	int32 FloodSet(const FString& Key) const;         // 'site', 'annex', ...; -1 when unknown
+	void SetFlood(int32 Set, int32 Index, float Width); // setFlood(i, intensity, set)
+	void SetFloodColor(int32 Set, int32 Index, const FLinearColor& C);
+	void SetFloodScale(int32 Set, float Scale);
 
 	// ---------- nodes ----------
 	int32 Handle(const FString& Key) const; // "room.objs.mug" and the like, -1 when unknown
@@ -138,11 +166,25 @@ public:
 	float FogDensity = 0.0021f;
 
 private:
+	friend struct FS47Obj;
+	friend struct FS47Light;
+	friend struct FS47Mat;
 	static FQuat S47ThreeEuler(double X, double Y, double Z);
 	bool bLoaded = false;
 	TArray<FS47WebNode> Nodes;
 	TArray<FString> GeoPaths;
 	TMap<FString, int32> Handles, HandleMats, HandleTexs;
+	TMap<FString, FString> HandleLights;
+	TMap<FString, FVector> HandleVecs;
+	TMap<FString, FS47Area> HandleRects;
+	TMap<int32, TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>>> NodeMidCache;
+	TMap<int32, TWeakObjectPtr<class UMaterialInstanceDynamic>> SharedMidCache;
+	TMap<int32, FString> Usable;
+	struct FFloodSet { FString Key; TArray<FLinearColor> Pos, Col; float Scale = 0.07f; int32 W = 1; };
+	TArray<FFloodSet> FloodSets;
+	TMap<int32, TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>>> FloodMids;
+	TMap<int32, int32> MatFloodSet; // material id -> flood set
+	void UploadFlood(int32 Set);
 	TMap<FString, TArray<int32>> AreaRoots;
 	TMap<int32, FString> RootArea;
 	TMap<FString, TPair<TArray<FS47Rect>, TArray<FS47Rect>>> Walks;
@@ -160,7 +202,6 @@ private:
 	UPROPERTY() TObjectPtr<class UMaterialParameterCollection> Env;
 	struct FHemi { FLinearColor Sky, Ground; float Intensity; };
 	TMap<FString, FHemi> Hemis;
-	ULightComponent* LightByUuid(const FString& Uuid) const;
 	TArray<TWeakObjectPtr<UPointLightComponent>> CeilingLights, LampLights;
 	TArray<float> CeilingBase, LampBase;
 	TWeakObjectPtr<UPointLightComponent> CrtLight;

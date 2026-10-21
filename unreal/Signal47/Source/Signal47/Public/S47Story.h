@@ -75,6 +75,38 @@ public:
 	float CrtGlitch = 0.f;
 	FString SurveyModeText() const;
 
+	// ---------- the chapters' host (Prologue.ts as ChapterHost) ----------
+	// game time (gt) runs while nothing is open and nothing holds it; the clock is the night's
+	void After(double Seconds, TFunction<void()> Fn, const FString& Tag = FString()); // on game time
+	void Cancel(const FString& Tag);
+	void Note(const FString& S);           // the notebook, once
+	void AddDoc(const FS47Doc& Doc);       // a paper filed (replaces one with the same id)
+	TArray<FS47Doc>& DocsMutable() { return DocsList; }
+	TArray<FString>& NotesMutable() { return NotesList; }
+	void Toast(const FString& S, float Secs = 3.2f);
+	double Gt() const { return GameTime; }
+	void SetClock(double Sec) { ClockSec = Sec; }
+	void SetCinematic(bool bOn) { bCinematic = bOn; }
+	// the chapters, stepped after the prologue's own beat (Prologue.update: ch1.update runs in
+	// every chapter, the others in their own). ChapterKey is 'prologue' until the first begins.
+	UPROPERTY() TArray<TObjectPtr<class US47Chapter>> Chapters;
+	FString ChapterKey = TEXT("prologue");
+	class US47Chapter* Chapter(const FString& Key) const;
+	// the chapter in play from now on (beginChapterN): the others stop leading
+	void BeginChapter(const FString& Key, const TSharedPtr<class FJsonObject>& Saved = nullptr);
+	// main.ts chapterBreak: fade, the next chapter begins behind the black, the card, then back
+	struct FBreak { FString Closed, Recap, Next, Title; TFunction<void()> Begin; };
+	void ChapterBreak(const FBreak& B);
+	TFunction<void(const FBreak&)> OnChapterCard; // the card itself (ui.chapterCard), when the UI has one
+	// Prologue.ts jump('chapterN'): each chapter registers how to start at it (jumpChapterN)
+	TMap<FString, TFunction<void()>> Jumps;
+	// Prologue.ts afterPrologue(saved): the night as the prologue left it (or as saved)
+	void AfterPrologue(const TSharedPtr<class FJsonObject>& Saved);
+	double EventClockSec() const { return EventClock; }
+	// the saved case (story/state.ts SavedCase) the chapters restore from, when there is one
+	TFunction<TSharedPtr<class FJsonObject>()> LoadCase;
+	TFunction<void(const FString&)> OnCheckpoint; // Prologue.onCheckpoint: 'chapter1' ... (autosave)
+
 	static constexpr double StartClock = 23 * 3600 + 41 * 60;
 	static constexpr double SkipClock = 2 * 3600 + 13 * 60 + 41;
 	static constexpr double EventAz = 26, EventEl = 32, ParkAz = 18, SurveyEl = 48;
@@ -98,14 +130,9 @@ private:
 	float Flicker = 0.f, DipT = 0.f, LedT = 0.f, LookAssist = 0.f;
 	bool bMugFalling = false;
 
-	void After(double Seconds, TFunction<void()> Fn, const FString& Tag = FString());
-	void Cancel(const FString& Tag);
 	void SetPhase(ES47Phase P) { CurrentPhase = P; }
-	void Note(const FString& S);
 	void Log(const FString& Text);
 	void FilePaper(const FS47Doc& Doc);
-	void AddDoc(const FS47Doc& Doc);
-	void Toast(const FString& S, float Secs = 3.2f);
 	void SetLeds(bool bOn);
 	void ApplyK3(bool bOpen);
 	void TripK3(bool bSound = true);

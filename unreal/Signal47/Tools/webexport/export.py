@@ -41,6 +41,12 @@ async def main():
             nodes += await pg.evaluate(f"S47X.nodes({k}, {k + 400})")
         # extras() first: it marks which materials use which flood set
         extras = await pg.evaluate("S47X.extras()")
+        if os.environ.get('S47_HANDLES_ONLY'):
+            # a quick look at the named handles, without the geometry and textures
+            with open(os.path.join(OUT, 'handles.json'), 'w') as f: json.dump(extras['handles'], f, indent=0)
+            print('handles', len(extras['handles']), flush=True)
+            await b.close()
+            return
         mats = await pg.evaluate("S47X.materials()")
         texmeta = await pg.evaluate("S47X.textureMeta()")
         ng = await pg.evaluate("S47X.geoCount()")

@@ -2,6 +2,8 @@
 
 #include "S47Audio.h"
 #include "S47HUD.h"
+#include "S47Chapter.h"
+#include "S47Json.h"
 #include "S47Web.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Story, Log, All);
@@ -88,7 +90,13 @@ void AS47Story::SetLeds(bool bOn)
 
 FString AS47Story::ChapterTitle() const
 {
-	return CurrentPhase == ES47Phase::Ch1 ? TEXT("Chapter 1: The Second Exposure") : TEXT("Prologue: Night Shift");
+	// main.ts chapterTitle()
+	static const TMap<FString, FString> Titles = {
+		{ TEXT("ch1"), TEXT("Chapter 1: The Second Exposure") }, { TEXT("ch2"), TEXT("Chapter 2: The Amended Record") },
+		{ TEXT("ch3"), TEXT("Chapter 3: The Survey Station") }, { TEXT("ch4"), TEXT("Chapter 4: Room 6") },
+		{ TEXT("ch5"), TEXT("Chapter 5: All Night") }, { TEXT("ch6"), TEXT("Chapter 6: Roswell Road") } };
+	if (const FString* T = Titles.Find(ChapterKey)) return *T;
+	return TEXT("Prologue: Night Shift");
 }
 
 FString AS47Story::SurveyModeText() const
@@ -103,6 +111,7 @@ FString AS47Story::SurveyModeText() const
 
 TArray<FS47Task> AS47Story::Tasks() const
 {
+	if (const US47Chapter* C = Chapter(ChapterKey); C && C->bActive) return C->Tasks();
 	TArray<FS47Task> T;
 	T.Add({ TEXT("Read Dale's shift log"), bLogRead });
 	if (bLogRead || At(ES47Phase::Residual))
@@ -586,12 +595,120 @@ void AS47Story::Arrived()
 
 void AS47Story::Finish()
 {
-	if (Hud.IsValid()) Hud->Fade(true, TEXT(""));
 	if (Audio.IsValid()) { Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); }
+	// main.ts game.onFinish: the night is not over
+	if (Chapter(TEXT("ch1")))
+	{
+		ChapterBreak({ TEXT("NIGHT SHIFT // EVERY DISH AT AZ 026"),
+			TEXT("The array moved without a command. The phone played the room before it happened. The night is not over."),
+			TEXT("CHAPTER ONE"), TEXT("THE SECOND EXPOSURE"), [this] { BeginChapter(TEXT("ch1")); } });
+		return;
+	}
+	if (Hud.IsValid()) Hud->Fade(true, TEXT(""));
 	After(1.6, [this]
 	{
 		bCinematic = true;
 		if (Hud.IsValid()) Hud->EndCard({ TEXT("PROLOGUE: NIGHT SHIFT"), TEXT(""), TEXT("Chapter 1, The Second Exposure, is not in the Unreal version yet."), TEXT("The web version plays on from here.") });
+	});
+}
+
+// ---------- the chapters ----------
+
+void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
+{
+	// Prologue.afterPrologue
+	bLogRead = true; bAnswered = true;
+	PowerUp(true);
+	Rx.Advance(); Rx.Advance(); Rx.Advance();
+	Rx.bSolved = true;
+	bResidualVisible = true;
+	ClockSec = S47J::Has(Saved, TEXT("clock")) ? S47J::Num(Saved, TEXT("clock")) : EventClock + 70;
+	DocsList = { S47Docs::ShiftLog(), S47Docs::Printout(EventClock - 60) };
+	NotesList.Empty();
+	for (const FString& N : { FString(S47Signal::Profiles()[0].Note), FString(S47Signal::Profiles()[1].Note),
+		FString(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")),
+		FString(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.")),
+		FString(TEXT("Direction solve: RA 05h 17m, Dec -05. Somewhere in Orion.")),
+		FString(TEXT("Source distance on the solve: -39 light years. A negative distance. The solver cannot produce that.")),
+		FString(TEXT("Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing.")),
+		FString(TEXT("Every dish moved to az 026, el 32. Console shows no control command.")),
+		FString(TEXT("All dishes left their scheduled track and aligned together.")) }) Note(N);
+	if (Saro.IsValid())
+	{
+		Saro->SetVisible(Saro->Handle(TEXT("room.mug")), false);
+		Saro->SetPrinterPaper(-1.f);
+		Saro->SnapDishes(EventAz, EventEl);
+	}
+	// Night Shift's papers, relay K3 and the console log: as saved, or as the night left them
+	const S47J::FObj Ns = S47J::Obj(Saved, TEXT("ns"));
+	const double E = S47J::Has(S47J::Obj(Saved, TEXT("s")), TEXT("eventClock")) ? S47J::Num(S47J::Obj(Saved, TEXT("s")), TEXT("eventClock")) : EventClock;
+	NS = FS47NightState();
+	if (Ns.IsValid())
+	{
+		NS.Papers = S47J::Strs(Ns, TEXT("papers"));
+		NS.bK3Open = S47J::Bool(Ns, TEXT("k3Open"));
+		for (const TSharedPtr<FJsonValue>& L : S47J::Arr(Ns, TEXT("log")))
+		{
+			const TArray<TSharedPtr<FJsonValue>>& A = L->AsArray();
+			if (A.Num() >= 2) NS.Log.Add({ A[0]->AsNumber(), A[1]->AsString() });
+		}
+		if (S47J::Has(Ns, TEXT("solveAt"))) NS.SolveAt = S47J::Num(Ns, TEXT("solveAt"));
+		NS.bJacket = S47J::Bool(Ns, TEXT("jacket"));
+	}
+	else
+	{
+		NS.SolveAt = E - 60;
+		NS.Log = { { 23 * 3600 + 44 * 60, TEXT("RX BANK 3  K3 CLOSED") }, { E - 60, TEXT("SOLVE  RANGE NEGATIVE") },
+			{ E - 47, TEXT("STATION CLOCK  WWVB REFERENCE LOST") }, { E - 7, TEXT("RX BANK 3  K3 OPEN") }, { E, TEXT("LINE POWER  DIP 1.2 S") },
+			{ E, TEXT("STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47") }, { E + 3, TEXT("ARRAY  S-01 TO S-27 MOTION  NO COMMAND") }, { E + 70, TEXT("RX BANK 3  K3 CLOSED") } };
+	}
+	// Prologue.paperById
+	for (const FString& Id : NS.Papers)
+	{
+		if (Id == TEXT("binder")) DocsList.Add(S47Docs::Binder());
+		else if (Id == TEXT("service")) DocsList.Add(S47Docs::ServiceRecord());
+		else if (Id == TEXT("rfiCard")) DocsList.Add(S47Docs::InterferenceCard(Rx.Stage >= 3));
+		else if (Id == TEXT("halley")) DocsList.Add(S47Docs::HalleyPoster());
+	}
+	ApplyK3(NS.bK3Open);
+	// (room.setTelexRoll: the telex is not ported yet)
+	if (Saro.IsValid()) Saro->SetJacketVisible(!NS.bJacket);
+	CurrentPhase = ES47Phase::End;
+}
+
+US47Chapter* AS47Story::Chapter(const FString& Key) const
+{
+	for (US47Chapter* C : Chapters) if (C && C->Key() == Key) return C;
+	return nullptr;
+}
+
+void AS47Story::BeginChapter(const FString& Key, const TSharedPtr<FJsonObject>& Saved)
+{
+	US47Chapter* C = Chapter(Key);
+	if (!C) { UE_LOG(LogTemp, Warning, TEXT("S47: no chapter %s"), *Key); return; }
+	for (US47Chapter* O : Chapters) if (O && O != C) O->bActive = false;
+	ChapterKey = Key;
+	C->bActive = true;
+	C->Begin(Saved);
+	UE_LOG(LogTemp, Display, TEXT("S47: chapter %s begins"), *Key);
+}
+
+void AS47Story::ChapterBreak(const FBreak& B)
+{
+	bCinematic = true;
+	if (Hud.IsValid()) { Hud->CloseModal(); Hud->Fade(true, TEXT("")); }
+	After(1.3, [this, B]
+	{
+		if (B.Begin) B.Begin();
+		bCinematic = true;
+		if (OnChapterCard) OnChapterCard(B);
+		else if (Hud.IsValid()) Hud->Fade(true, B.Next + TEXT("\n") + B.Title);
+		// the card stays at least 6.4 s from the break (the narrator may hold it longer)
+		After(6.4, [this]
+		{
+			if (Hud.IsValid()) Hud->Fade(false, TEXT(""));
+			bCinematic = false;
+		});
 	});
 }
 
@@ -643,6 +760,12 @@ void AS47Story::Start()
 void AS47Story::Jump(const FString& Target)
 {
 	ResetAll();
+	if (const TFunction<void()>* J = Jumps.Find(Target))
+	{
+		(*J)();
+		UE_LOG(LogS47Story, Display, TEXT("S47: jumped to %s"), *Target);
+		return;
+	}
 	static const TCHAR* Steps[] = { TEXT("shift"), TEXT("residual"), TEXT("locked"), TEXT("printed"), TEXT("countdown"), TEXT("event") };
 	int32 Idx = -1;
 	for (int32 i = 0; i < 6; ++i) if (Target == Steps[i]) Idx = i;
@@ -708,6 +831,13 @@ void AS47Story::Tick(float DeltaSeconds)
 		}
 		Due.Sort([](const FTimer& A, const FTimer& B) { return A.At < B.At; });
 		for (FTimer& T : Due) T.Fn();
+	}
+	// Prologue.update: the chapters (ch1 runs in every chapter: the viewfinder, the wet print)
+	for (US47Chapter* C : Chapters)
+	{
+		if (!C) continue;
+		const bool bCh1Along = C->Key() == TEXT("ch1") && ChapterKey.StartsWith(TEXT("ch"));
+		if (C->bActive || bCh1Along) C->Update(bPaused ? 0.0 : Dt, GameTime);
 	}
 	if (!Saro.IsValid()) return;
 	Saro->SetClock(ClockSec);

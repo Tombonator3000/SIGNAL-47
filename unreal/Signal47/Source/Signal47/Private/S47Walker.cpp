@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "S47Three.h"
+#include "S47Inter.h"
 #include "S47Web.h"
 
 using namespace S47Three;
@@ -146,20 +147,9 @@ void AS47Walker::Tick(float DeltaSeconds)
 	Camera->SetFieldOfView(HorizontalFov(Fov, float(Size.X / FMath::Max(1.0, Size.Y))));
 	if (Web.IsValid()) Web->SetPlayerEye(ToUE(EyeThree));
 
-	// Interaction.pick: the first interactable on the line of sight, within its range
-	if (!bActive || !Web.IsValid()) return;
-	TArray<FHitResult> Hits;
-	FCollisionQueryParams Q(SCENE_QUERY_STAT(S47Use), true, this);
-	const FVector From = Camera->GetComponentLocation();
-	GetWorld()->LineTraceMultiByChannel(Hits, From, From + Camera->GetForwardVector() * 600.f, ECC_GameTraceChannel1, Q);
-	for (const FHitResult& H : Hits)
-	{
-		const FS47WebItem* It = Web->ItemOf(H.GetComponent());
-		if (!It || It->bLook) continue;
-		if (H.Distance / 100.f > It->Range) break;
-		Focused = It->Id;
-		break;
-	}
+	// Interaction.update: what the line of sight picks, within its range, with something to offer
+	if (!bActive || !Inter.IsValid()) return;
+	Focused = Inter->Update(Camera->GetComponentLocation(), Camera->GetForwardVector());
 	if (!Focused.IsEmpty() && OnUse && PC && (PC->WasInputKeyJustPressed(EKeys::E) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton)))
 	{
 		OnUse(Focused);

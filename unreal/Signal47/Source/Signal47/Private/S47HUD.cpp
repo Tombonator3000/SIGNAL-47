@@ -16,6 +16,11 @@
 #include "S47Three.h"
 #include "S47Web.h"
 #include "S47Story.h"
+#include "S47BoardRules.h"
+#include "S47Inter.h"
+#include "S47Chapters.h"
+#include "S47Main.h"
+#include "S47UI.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
 #include "SS47Widgets.h"
@@ -55,13 +60,32 @@ void AS47HUD::Start()
 		bool bOk = S47Docs::SelfTest(Lines);
 		bOk &= FS47OpsTerminal::SelfTest(Lines);
 		bOk &= S47RxSelfTest(Lines);
+		bOk &= FS47RuleBook::SelfTest(Lines);
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
 
+	// the deps every ported module is handed (main.ts)
+	US47Main* M = US47Main::Get(this);
+	M->Web = Saro.Get();
+	M->Story = Story.Get();
+	M->Hud = this;
+	M->Player = Walker.Get();
+	M->Audio = Audio;
+	M->Inter = NewObject<US47Inter>(M);
+	M->Inter->Init(Saro.Get());
+	{
+		TWeakObjectPtr<AS47Story> St = Story;
+		M->Inter->FallbackLabel = [St](const FString& Id) { return St.IsValid() ? St->Label(Id) : FString(); };
+		M->Inter->FallbackUse = [St](const FString& Id) { if (St.IsValid()) St->Use(Id); };
+	}
+	M->UI = NewObject<US47UI>(M);
+	M->UI->Init(this);
+	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{
 		Walker->Web = Saro;
+		Walker->Inter = M->Inter;
 		TWeakObjectPtr<AS47HUD> Self = this;
 		Walker->OnUse = [Self](const FString& Id) { if (Self.IsValid()) Self->Use(Id); };
 		Walker->SetActive(true);
@@ -147,7 +171,8 @@ void AS47HUD::Use(const FString& Id)
 {
 	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (Story.IsValid()) Story->Use(Id);
+	if (US47Main* M = US47Main::Get(this); M && M->Inter) M->Inter->UseId(Id);
+	else if (Story.IsValid()) Story->Use(Id);
 }
 
 // ---------- the story's requests ----------
@@ -306,14 +331,30 @@ void AS47HUD::Tick(float DeltaSeconds)
 	if (Audio) Audio->Tick(DeltaSeconds);
 	APlayerController* PC = GetOwningPlayerController();
 	if (PC && !Modal.IsValid() && PC->WasInputKeyJustPressed(EKeys::Tab) && Story.IsValid() && !Story->IsCinematic()) OpenNotebook();
-	// the prompt for what the player looks at, from the story
+	// the prompt for what the player looks at (UI.prompt), unless something set its own this frame
+	US47Main* M = US47Main::Get(this);
+	if (M) M->Step(DeltaSeconds);
+	// the keys the ported modules answer (main.ts input.onKey)
+	if (M && PC)
+	{
+		TSet<FKey> Taken;
+		for (const US47Main::FKeyHandler& K : M->Keys)
+		{
+			if (Taken.Contains(K.Key) || (Modal.IsValid() && !K.bEvenModal) || !PC->WasInputKeyJustPressed(K.Key)) continue;
+			if (K.Fn && K.Fn()) Taken.Add(K.Key);
+		}
+	}
 	if (!Modal.IsValid() && Walker.IsValid() && Story.IsValid())
 	{
-		const FString F = Walker->FocusedId();
-		const FString L = F.IsEmpty() ? FString() : Story->Label(F);
-		Prompt = L.IsEmpty() ? FText::GetEmpty() : FText::FromString(L.ToUpper() + TEXT("   [E]"));
+		if (!bPromptSet)
+		{
+			const FString F = Walker->FocusedId();
+			const FString L = F.IsEmpty() || !M || !M->Inter ? FString() : M->Inter->LabelOf(F);
+			Prompt = L.IsEmpty() ? FText::GetEmpty() : FText::FromString(L.ToUpper() + TEXT("   [E]"));
+		}
 		Walker->SetActive(!Story->IsCinematic() && !bEnded);
 	}
+	bPromptSet = false;
 	DrawCrts(DeltaSeconds);
 }
 
@@ -355,4 +396,13 @@ void AS47HUD::EndPlay(const EEndPlayReason::Type Reason)
 	Modal.Reset();
 	for (int32 i = 0; i < 4; ++i) Crts[i].Reset();
 	Super::EndPlay(Reason);
+}
+
+void AS47HUD::SetPrompt(const FString& Label, const FString& Alt)
+{
+	// UI.prompt: "[E] label   [Q] alt"
+	FString P = Label.IsEmpty() ? FString() : Label.ToUpper() + TEXT("   [E]");
+	if (!Alt.IsEmpty()) P += TEXT("      ") + Alt.ToUpper() + TEXT("   [Q]");
+	Prompt = FText::FromString(P);
+	bPromptSet = true;
 }

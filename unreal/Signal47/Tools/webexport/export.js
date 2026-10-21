@@ -343,21 +343,48 @@
   X.extras = () => {
     const idx = (o) => (o && byObj.has(o) ? byObj.get(o) : -1);
     const handles = {};
+    // Every scene object, material, texture and light the game's modules hold, by the path the
+    // code reaches it with ("room.objs.mug", "world.site.hut.door", "game.ch1.yard..."), so the
+    // C++ port can name the same things. Down to five levels; the first path found wins.
+    // (the world before the game: the chapters hold the world's parts too, under longer paths)
     const owners = { room: S.room, ext: S.ext, yard: S.yard, annex: S.annex, sky: S.sky, backdrop: S.backdrop, fcam: S.fcam };
     const w = S.world;
-    for (const k of ['site', 'road', 'diner', 'town', 'room6', 'oldRoad', 'truck', 'saroTruck', 'parked', 'oldTruck', 'motel', 'stationTruck'])
-      if (w && w[k]) owners['world.' + k] = w[k];
+    if (w) for (const [k, v] of Object.entries(w)) if (v && typeof v === 'object' && !(v instanceof Element) && k !== 'd') owners['world.' + k] = v;
+    if (w && w.d) owners['world.d'] = w.d;
+    owners.doors = S.doors; owners.game = S.game;
     const seen = new Set();
+    const skip = (v) => v instanceof Element || v instanceof Node || ArrayBuffer.isView(v) || v instanceof ArrayBuffer || v.isBufferGeometry || v.isBufferAttribute
+      || (typeof AudioNode !== 'undefined' && v instanceof AudioNode) || (typeof AudioContext !== 'undefined' && v instanceof AudioContext) || v instanceof Map || v instanceof Set || v.isCamera && !v.parent;
+    const put = (path, v) => {
+      if (handles[path]) return;
+      if (v.isLight) { const i = idx(v); handles[path] = { light: v.uuid, ...(i >= 0 ? { node: i } : {}) }; }
+      else if (v.isObject3D) { const i = idx(v); if (i >= 0) handles[path] = { node: i }; }
+      else if (v.isTexture) handles[path] = { tex: texIndex.has(v.uuid) ? texIndex.get(v.uuid) : -1 };
+      else if (v.isMaterial) handles[path] = { mat: matIndex.has(v.uuid) ? matIndex.get(v.uuid) : -1 };
+      else if (v.isVector3) handles[path] = { vec: [v.x, v.y, v.z] };
+      else if (isRect(v)) handles[path] = { rect: [v.minX, v.maxX, v.minZ, v.maxZ] };
+    };
+    // a walk zone, a room's bounds: four numbers; an anchor: a Vector3 (zones and anchors the code reads)
+    const isRect = (v) => typeof v.minX === 'number' && typeof v.maxX === 'number' && typeof v.minZ === 'number' && typeof v.maxZ === 'number';
     const scan = (prefix, obj, depth) => {
-      if (!obj || depth > 2 || seen.has(obj)) return;
+      if (!obj || depth > 5 || seen.has(obj)) return;
       seen.add(obj);
-      for (const [k, v] of Object.entries(obj)) {
-        if (!v || typeof v !== 'object') continue;
-        if (v.isObject3D) { const i = idx(v); if (i >= 0) handles[prefix + '.' + k] = { node: i }; }
-        else if (v.isTexture) handles[prefix + '.' + k] = { tex: texIndex.has(v.uuid) ? texIndex.get(v.uuid) : -1 };
-        else if (v.isMaterial) handles[prefix + '.' + k] = { mat: matIndex.has(v.uuid) ? matIndex.get(v.uuid) : -1 };
-        else if (Array.isArray(v)) v.forEach((e, n) => { if (e && e.isObject3D) { const i = idx(e); if (i >= 0) handles[`${prefix}.${k}[${n}]`] = { node: i }; } else if (e && e.isLight) handles[`${prefix}.${k}[${n}]`] = { light: e.uuid }; });
-        else if (!(v instanceof Element) && depth < 2) scan(prefix + '.' + k, v, depth + 1);
+      let entries;
+      try { entries = Object.entries(obj); } catch (e) { return; }
+      for (const [k, v] of entries) {
+        // (a module's d is what it was handed: the other modules, found under their own names)
+        if (!v || typeof v !== 'object' || k === 'parent' || k === 'children' || k === 'd' && prefix !== 'world') continue;
+        if (v.isObject3D || v.isTexture || v.isMaterial || v.isVector3 || isRect(v)) { put(prefix + '.' + k, v); continue; }
+        if (Array.isArray(v)) {
+          v.slice(0, 400).forEach((e, n) => {
+            if (!e || typeof e !== 'object') return;
+            if (e.isObject3D || e.isTexture || e.isMaterial || e.isVector3 || isRect(e)) put(`${prefix}.${k}[${n}]`, e);
+            else if (!skip(e)) scan(`${prefix}.${k}[${n}]`, e, depth + 1);
+          });
+          continue;
+        }
+        if (skip(v)) continue;
+        scan(prefix + '.' + k, v, depth + 1);
       }
     };
     for (const [p, o] of Object.entries(owners)) scan(p, o, 0);
@@ -409,7 +436,9 @@
       if (!P || !Cc) continue;
       if (!setOf.has(P)) {
         setOf.set(P, floods.length);
-        floods.push({ scale: sh.uniforms.uFloodScale ? sh.uniforms.uFloodScale.value : 1, pools: P.map((v, k) => ({ x: v.x, y: v.y, z: v.z, r: v.w, col: lin(Cc[k]) })).filter((q) => q.r > 0) });
+        // every slot, the unused ones too: the code switches a lamp by its index (kit.ts setFlood)
+        const set = (S.floodSets || []).find((f) => f.pos === P);
+        floods.push({ key: set ? set.key : '', scale: sh.uniforms.uFloodScale ? sh.uniforms.uFloodScale.value : 1, pools: P.map((v, k) => ({ x: v.x, y: v.y, z: v.z, r: v.w, col: lin(Cc[k]) })) });
       }
       d.floodSet = setOf.get(P);
       d.floodFall = sh.uniforms.uFloodFall ? sh.uniforms.uFloodFall.value : 0.012;

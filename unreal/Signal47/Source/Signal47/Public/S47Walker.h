@@ -29,6 +29,7 @@ public:
 	TFunction<void(const FString&)> OnUse;
 	TFunction<void()> OnStep;
 	TWeakObjectPtr<AS47Web> Web;
+	TWeakObjectPtr<class US47Inter> Inter; // what the line of sight picks (core/Interaction.ts)
 
 	// three.js terms
 	FVector Pos = FVector::ZeroVector;

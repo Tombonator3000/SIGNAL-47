@@ -24,6 +24,8 @@ namespace S47Three
 	// A quaternion from three's Euler angles in the given order ("XYZ" by default).
 	SIGNAL47_API FQuat Euler(double X, double Y, double Z, const TCHAR* Order = TEXT("XYZ"));
 	SIGNAL47_API void Multiply(const double* A, const double* B, double* Out); // Out = A * B (column-major)
+	// three's Euler.setFromQuaternion in the XYZ order: (x, y, z) in radians.
+	SIGNAL47_API FVector EulerXYZ(const FQuat& Q);
 
 	// The camera's rotation from three's player yaw and pitch (Euler YXZ, looking down -Z).
 	SIGNAL47_API FRotator CameraRotation(double Yaw, double Pitch, double Roll = 0.0);

@@ -3,6 +3,9 @@
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Fonts/CompositeFont.h"
+#include "Fonts/FontMeasure.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Rendering/SlateRenderer.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "Rendering/DrawElements.h"
@@ -41,6 +44,8 @@ namespace S47Style
 	}
 	FSlateFontInfo Mono(float Px) { return Font(TEXT("VT323-Regular.ttf"), Px); }
 	FSlateFontInfo Body(float Px) { return Font(TEXT("SpecialElite-Regular.ttf"), Px); }
+	FSlateFontInfo Hand(float Px) { return Font(TEXT("ReenieBeanie-Regular.ttf"), Px); }
+	FSlateFontInfo Display(float Px) { return Font(TEXT("Oswald-Regular.ttf"), Px); }
 
 	// A button in the game's plain style.
 	TSharedRef<SWidget> Button(const FString& Label, TFunction<void()> OnClick, const FLinearColor& Color = Amber, float Px = 22.f)
@@ -101,13 +106,29 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		[
 			SAssignNew(ToastBox, SVerticalBox)
 		]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, 70)
+		// the prompt, a little under the crosshair (.prompt), and a closer look's words under it (.examine)
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0, 78, 0, 0)
 		[
-			SNew(STextBlock).Text(InArgs._Prompt).Font(S47Style::Mono(26.f)).ColorAndOpacity(S47Style::Paper).Visibility_Lambda(Vis)
+			SNew(STextBlock).Text(InArgs._Prompt).Font(S47Style::Mono(26.f)).ColorAndOpacity(FLinearColor(0.94f, 0.92f, 0.85f)).ShadowOffset(FVector2D(0, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f)).Visibility_Lambda(Vis)
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0, 190, 0, 0)
+		[
+			SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(0.024f, 0.03f, 0.047f, 0.55f)).Padding(FMargin(10, 4))
+			.Visibility_Lambda([this, Vis] { return ExamineText.IsEmpty() ? EVisibility::Collapsed : Vis(); })
+			[
+				SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ExamineText); }).Font(S47Style::Mono(24.f)).ColorAndOpacity(FLinearColor(0.95f, 0.92f, 0.83f)).AutoWrapText(true).WrapTextAt(640.f).Justification(ETextJustify::Center)
+			]
+		]
+		// the objective (top left, amber)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(22, 18, 0, 0)
+		[
+			SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ObjectiveText); }).Font(S47Style::Mono(22.f)).ColorAndOpacity(FLinearColor(1.f, 0.78f, 0.47f, 0.88f)).ShadowOffset(FVector2D(0, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f)).AutoWrapText(true).WrapTextAt(720.f)
+			.Visibility_Lambda([this] { return ObjectiveText.IsEmpty() || Vf.bOn ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, 24, 32, 0)
 		[
-			SNew(STextBlock).Text(InArgs._Clock).Font(S47Style::Mono(30.f)).ColorAndOpacity(FLinearColor(0.93f, 0.9f, 0.84f, 0.55f))
+			SNew(STextBlock).Text_Lambda([this, Clock = InArgs._Clock] { return SecondsText.IsEmpty() ? Clock.Get() : FText::FromString(SecondsText); }).Font(S47Style::Mono(30.f))
+			.ColorAndOpacity_Lambda([this] { return SecondsText.IsEmpty() ? FSlateColor(FLinearColor(0.93f, 0.9f, 0.84f, 0.55f)) : FSlateColor(FLinearColor(1.f, 0.82f, 0.48f)); })
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, 28)
 		[
@@ -118,8 +139,11 @@ void SS47Hud::Construct(const FArguments& InArgs)
 
 void SS47Hud::Toast(const FString& Text, float Secs)
 {
+	// UI.toast: the same line twice in a row is noise; at most two on screen
+	if (Toasts.Num() && Toasts.Last().Text == Text) return;
 	Toasts.Add({ Text, Now + Secs });
-	if (Toasts.Num() > 3) Toasts.RemoveAt(0);
+	LastToast = Text;
+	if (Toasts.Num() > 2) Toasts.RemoveAt(0);
 	Rebuild();
 }
 
@@ -154,6 +178,7 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	const int32 Before = Toasts.Num();
 	Toasts.RemoveAll([this](const FToast& T) { return T.Until <= Now; });
 	if (Toasts.Num() != Before) Rebuild();
+	FlashT = FMath::Max(0.f, FlashT - Dt);
 	const float Target = bFadeOn ? 1.f : 0.f;
 	FadeAlpha += (Target - FadeAlpha) * FMath::Min(1.f, Dt * (bFadeOn ? 2.5f : 1.8f));
 	if (FMath::Abs(Target - FadeAlpha) < 0.01f) FadeAlpha = Target;
@@ -162,6 +187,49 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
 {
 	int32 Top = SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer, Style, bParentEnabled);
+	if (Vf.bOn)
+	{
+		// .viewfinder: the dark round the frame, its corners, the patch in the middle and the words
+		const FVector2f S = FVector2f(G.GetLocalSize());
+		const FSlateRect R = Vf.Rect;
+		const FLinearColor Dark(0, 0, 0, 0.72f), Line(1.f, 0.96f, 0.84f, 0.85f);
+		auto Box = [&](float X0, float Y0, float X1, float Y1, const FLinearColor& C)
+		{
+			if (X1 <= X0 || Y1 <= Y0) return;
+			FSlateDrawElement::MakeBox(Out, Top + 1, G.ToPaintGeometry(FVector2f(X1 - X0, Y1 - Y0), FSlateLayoutTransform(FVector2f(X0, Y0))), WhiteBrush.Get(), ESlateDrawEffect::None, C);
+		};
+		Box(0, 0, S.X, R.Top, Dark); Box(0, R.Bottom, S.X, S.Y, Dark); Box(0, R.Top, R.Left, R.Bottom, Dark); Box(R.Right, R.Top, S.X, R.Bottom, Dark);
+		auto Lines = [&](TArray<FVector2f> P, const FLinearColor& C, float W) { FSlateDrawElement::MakeLines(Out, Top + 2, G.ToPaintGeometry(), P, ESlateDrawEffect::None, C, true, W); };
+		const float K = 26.f, In = 10.f;
+		Lines({ FVector2f(R.Left + In, R.Top + In + K), FVector2f(R.Left + In, R.Top + In), FVector2f(R.Left + In + K, R.Top + In) }, Line, 2.f);
+		Lines({ FVector2f(R.Right - In - K, R.Top + In), FVector2f(R.Right - In, R.Top + In), FVector2f(R.Right - In, R.Top + In + K) }, Line, 2.f);
+		Lines({ FVector2f(R.Left + In, R.Bottom - In - K), FVector2f(R.Left + In, R.Bottom - In), FVector2f(R.Left + In + K, R.Bottom - In) }, Line, 2.f);
+		Lines({ FVector2f(R.Right - In - K, R.Bottom - In), FVector2f(R.Right - In, R.Bottom - In), FVector2f(R.Right - In, R.Bottom - In - K) }, Line, 2.f);
+		const FVector2f C((R.Left + R.Right) / 2, (R.Top + R.Bottom) / 2);
+		Lines({ C + FVector2f(-23, -15), C + FVector2f(23, -15), C + FVector2f(23, 15), C + FVector2f(-23, 15), C + FVector2f(-23, -15) }, FLinearColor(1.f, 0.84f, 0.55f, 0.7f), 1.f);
+		auto Text = [&](const FString& T, float X, float Y, float Px, const FLinearColor& Col, bool bCentre)
+		{
+			if (T.IsEmpty()) return;
+			const FSlateFontInfo F = S47Style::Mono(Px);
+			const float W = bCentre ? FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(T, F).X : 0.f;
+			FSlateDrawElement::MakeText(Out, Top + 3, G.ToPaintGeometry(FVector2f(900.f, Px * 1.4f), FSlateLayoutTransform(FVector2f(X - W / 2, Y))), T, F, ESlateDrawEffect::None, Col);
+		};
+		Text(TEXT("SARO / FIELD CAMERA"), R.Left + 46, R.Top + 14, 16.f * 1.3f, Line, false);
+		Text(Vf.Frame, R.Right - 46 - 60, R.Top + 14, 18.f * 1.3f, S47Style::Amber, false);
+		Text(Vf.Free, R.Right - 46 - 260, R.Top + 40, 16.f * 1.3f, Vf.bFreeOk ? S47Style::Green : FLinearColor(1.f, 0.96f, 0.84f, 0.6f), false);
+		const FLinearColor St = Vf.bOk ? S47Style::Green : FLinearColor(1.f, 0.7f, 0.63f);
+		Text(Vf.Status, C.X, R.Bottom - 40 - 26, 19.f * 1.3f, Vf.bFreeOk ? St * FLinearColor(1, 1, 1, 0.5f) : St, true);
+		Text(Vf.Hint, C.X, R.Bottom - 14 - 22, 15.f * 1.3f, Line * FLinearColor(1, 1, 1, 0.75f), true);
+		Top += 4;
+	}
+	if (FlashT > 0.f)
+	{
+		// the shutter: black, held a third of the way, then gone
+		const float U = 1.f - FlashT / 0.28f;
+		const float A = U < 0.35f ? 1.f : 1.f - (U - 0.35f) / 0.65f;
+		FSlateDrawElement::MakeBox(Out, Top + 1, G.ToPaintGeometry(), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, A));
+		Top += 1;
+	}
 	if (FadeAlpha > 0.f)
 	{
 		FSlateDrawElement::MakeBox(Out, Top + 1, G.ToPaintGeometry(), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, FadeAlpha));
