@@ -31,7 +31,7 @@ import { NightCalls } from './core/calls';
 import { CB, CB_ENGINE, engineOnChannel } from './core/cb';
 import { fourSeven } from './core/walkie';
 import { Roadside } from './core/roadside';
-import { areaMap, areaMapDescription, type MapView } from './ui/areaMap';
+import { areaMap, areaMapDescription, linesMeet, type MapView } from './ui/areaMap';
 import type { KitItem, PersonCard } from './ui/UI';
 import { portrait, portraitCount } from './core/portraits';
 import { glowScale } from './world/glow';
@@ -72,6 +72,8 @@ import { LineLights } from './story/lineLights';
 import { Pasture } from './story/pasture';
 import { NinthCow } from './story/ninthCow';
 import { StarHole, type StarHoleIn } from './story/starHole';
+import { MorningHolds, DinerCooler, type MorningIn } from './story/morningHolds';
+import { SameThread } from './story/sameThread';
 import { FilmThird } from './story/theThird';
 import { STATION_TRANSIT, STATION_STAKES_C } from './world/stationLayout';
 import { TAG_RANCH, TAGS } from './drive/herd';
@@ -601,6 +603,29 @@ async function boot() {
     saw: () => seenSafe(() => saw('scare', 'no stars', { looking: true, watch: null })),
     print: (id) => album.shots.find((x) => x.id === id)?.url ?? null,
     save: () => { if (mode === 'play') requestAutosave(false); }, refresh: () => game.board.refresh() });
+  // the morning holds its breath, 05:13 in the diner in chapter five (story/morningHolds.ts; FORSLAG.md,
+  // 20 October, small change 5), and the cooler behind the diner's counter that stops with it
+  const dinerCooler = new DinerCooler(audio);
+  const morning = new MorningHolds({ audio, cooler: dinerCooler, seen: townSeen,
+    radioHeard: () => dinerRadio.live && !world.driving && player.pos.distanceTo(counterAt) < 12,
+    radio: (k) => { dinerRadio.power = k; },
+    toast: (text, secs) => ui.toast(text, secs), note: (text) => game.note(text),
+    saw: () => seenSafe(() => saw('event', 'the morning holds', { looking: null, watch: null })),
+    save: () => { if (mode === 'play') requestAutosave(false); } });
+  const coolerAt = new THREE.Vector3();
+  // a thread on the case board the player did not tie, after each time away (story/sameThread.ts;
+  // FORSLAG.md, 20 October, small change 8)
+  const sameThread = new SameThread({ seen: townSeen, board: () => game.board, clock: () => game.clock,
+    note: (text) => game.note(text), saw: () => seenSafe(() => saw('scare', 'same thread', { looking: true, watch: null })),
+    save: () => { if (mode === 'play') requestAutosave(false); } });
+  game.board.onOpen = (view) => sameThread.opened(view);
+  function morningIn(modalOpen = !!ui.modal): MorningIn {
+    const area = world.area === 'diner' && !!world.diner;
+    return {
+      here: mode === 'play' && area && game.phase === 'ch5' && game.ch5.active && game.ch5.s.arrived && !world.driving && world.indoors(player.pos),
+      area, free: !oneAtATime() && !audio.phonePlaying && !cb.busy && !game.cinematic, panel: modalOpen, clock: game.clock,
+    };
+  }
   const holeDirW = new THREE.Vector3(), holeEye = new THREE.Vector3(), holeTo = new THREE.Vector3();
   let holeClearAt = -1, holeClear = false;
   /** Where the hole is from here and now (the sky turned with the area), and what the player is doing under it. */
@@ -753,7 +778,7 @@ async function boot() {
   });
   ch5.driverMore = { examine: () => lostNights.driverExamine(), open: () => lostNights.driverOpen(),
     choices: (october) => lostNights.driverChoices(october), choose: (id) => lostNights.driverChoose(id) };
-  game.extraBooks = () => [...lostNights.books(), ...fieldBook.books(), ...officePhone.books(), ...archiveBooks(), ...ninth.books(), ...starHole.books()];
+  game.extraBooks = () => [...lostNights.books(), ...fieldBook.books(), ...officePhone.books(), ...archiveBooks(), ...ninth.books(), ...starHole.books(), sameThread.book];
   game.openDoc = (doc) => { if (doc.id !== 'fieldbook' || !fieldBook.read) return false; fieldBook.openBook(); return true; };
   if (world.motel.proxies.envelope) inter.add({ id: 'court:envelope', object: world.motel.proxies.envelope, range: 2.2,
     label: () => mode === 'play' && world.area === 'saro' && !world.driving && game.at('ch1') ? fieldBook.envelopeLabel() : null,
@@ -831,7 +856,8 @@ async function boot() {
   // (and at the night's peak, which holds its breath: story/curve.ts)
   world.lifeQuiet = () => mode !== 'play' || game.cinematic || roadside.silent || !!glimpses.up || townEvents.now !== 'none' || (curve.phase === 'peak' && !curve.free);
 
-  sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play') audio.thunder(s); }, delay * 1000);
+  // (not while the morning holds its breath in the diner: story/morningHolds.ts)
+  sky.onThunder = (delay, s) => setTimeout(() => { if (mode === 'play' && !morning.busy) audio.thunder(s); }, delay * 1000);
 
   type Mode = 'title' | 'play' | 'end';
   let mode: Mode = 'title';
@@ -1149,7 +1175,7 @@ async function boot() {
     recWalk.reset(); stationTaken.reset(); truckTaken.reset();
     world.odoRestore(o.state?.odo);   // (the miles on the odometer tonight; an older case has none)
     townEvents.reset(); glimpses.reset(); cutouts.reset(); nightEvents.reset(); abduction!.restore(o.state?.abduct); lineLights.reset(townSeen.has('ev:lights'));
-    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset(); ninth.reset(); starHole.reset();
+    pasture.reset(); motelTv.reset(); roofSteps.reset(); officePhone.reset(); truckB.reset(); ninth.reset(); starHole.reset(); morning.reset(); sameThread.reset(abduction!.data.count);
     album.restore(o.state?.album);   // the free frames of the night that was saved, or none
     saroDark.halt();
     game.start(o.state?.checkpoint ?? o.jump);
@@ -1272,9 +1298,25 @@ async function boot() {
     p.push(...townPeople(townSeen));
     return p;
   }
+  // the notebook's map as the night has it: C once the maps at the diner have found it (P13), and
+  // with all three, the three drawn on to where they cross (ui/areaMap.ts; FORSLAG.md, 20 October,
+  // small change 7)
+  function mapView(): MapView {
+    return { at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks(), lineC: (game.ch5.started && game.ch5.s.p13) || game.at('ch6') };
+  }
+  const MEET_NOTE = 'All three cross at the transit. I stood at it tonight.';
+  /** The map turned to with the three drawn on: the first time, a line in the notebook. */
+  function linesMeetSeen() {
+    if (townSeen.has('lines:meet') || !linesMeet(mapView())) return;
+    townSeen.add('lines:meet');
+    game.note(`${clockText(game.clock, false)}. On the map, the three lines drawn on past where I know them. They cross in one point and nowhere else: the transit at STATION 01. I stood at it tonight, reading the plate on its pier.`);
+    requestAutosave(false);
+  }
+  ui.onNotebookTab = (tab) => { if (tab === 'map' && mode === 'play') linesMeetSeen(); };
   game.notebookExtras = () => ({
-    map: areaMap({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks() }),
-    mapDescription: areaMapDescription({ at: mapAt(), station: game.at('ch3'), oldRoad: game.at('ch5'), marks: mapMarks() }),
+    map: areaMap(mapView()),
+    mapDescription: areaMapDescription(mapView()),
+    mapNote: linesMeet(mapView()) ? MEET_NOTE : undefined,
     kit: kitItems(),
     people: peopleItems(),
     touch: input.touchMode,
@@ -1830,7 +1872,9 @@ async function boot() {
       // (taken in the truck, from the pass over B to a few seconds after the waking: story/truckTaken.ts)
       || truckTaken.busy
       // (the recording walking where the player was taken: story/recording.ts)
-      || recWalk.busy;
+      || recWalk.busy
+      // (the morning holding its breath in the diner: story/morningHolds.ts)
+      || morning.busy;
   }
   /** The small signs the curve has given (the tests): which, and at what clock. */
   const curveSigns: { what: string; clock: number }[] = [];
@@ -2046,12 +2090,26 @@ async function boot() {
   // Between chapters the night goes on: a short card on the black with what was just
   // closed and the next chapter's title and clock, then straight back into the game.
   // The next chapter begins behind the black, so the clock and objective are already set.
-  function chapterBreak(o: { closed: string; recap: string; next: string; title: string; begin: () => void }) {
+  // `ring` (CHAPTER TWO; FORSLAG.md, 20 October, small change 6): the chapter opens on a phone that
+  // is ringing, and the card holds it back until its title is up (with the voice reading the card,
+  // when it comes to the title, and under the voice at half its level), lets it ring under the
+  // title, and cuts away on the next ring: the ring the card ends on is the phone ringing in front
+  // of the player. The summaries are not changed
+  // (the read-aloud voices are keyed on them); without the voice the card has its own timing.
+  // (the cut comes on the phone's next ring, or, when that is far off, on a ring started then, at
+  // least RING_GAP after the last: a phone's two seconds on and four off, near enough)
+  type CardRing = { hold: () => void; out: () => { gain: GainNode } | null; again: () => { gain: GainNode } | null; shown: () => void };
+  const RING_GAP = 4.6;
+  /** The last card that ended on a ring (tests): seconds from the card to each ring and to the cut,
+   *  the ring's length, and whether the voice was reading the card. */
+  let cardRing: { start: number | null; rings: number[]; cut: number | null; period: number; voiced: boolean } | null = null;
+  function chapterBreak(o: { closed: string; recap: string; next: string; title: string; begin: () => void; ring?: CardRing }) {
     fcam.raise(false); ui.viewfinder(false);
     ui.close(true);
     game.cinematic = true;
     ui.fade(true, '');
     game.after(1.3, () => {
+      o.ring?.hold();
       o.begin();
       game.cinematic = true;
       ui.fade(true, '');
@@ -2059,14 +2117,50 @@ async function boot() {
       let titleWaiting = false, titleReady = false;
       void ui.chapterCard({ closed: o.closed, recap: o.recap, next: o.next, title: o.title, clock: clockText(game.clock, false) })
         .then(() => { spoken = true; });
+      const ring = o.ring, t0 = game.gt, voiced = ui.chapterStage !== 'idle';
+      const RING = audio.buf.phoneRing?.duration ?? 5.95;
+      let ringAt: number | null = null, cutAt: number | null = null, again = false, ringH: { gain: GainNode } | null = null, ringV = 1;
+      if (ring) cardRing = { start: null, rings: [], cut: null, period: RING, voiced };
+      // the title is up and nothing is reading it any more: the phone, under the card
+      const ringNow = () => {
+        if (!ring || ringAt !== null) return;
+        const now = game.gt; ringAt = now; ringH = ring.out();
+        // (under the voice still reading the title: half as loud, until the cut)
+        if (ringH) { ringV = ringH.gain.gain.value; if (voiced && !spoken) ringH.gain.gain.value = ringV * 0.5; }
+        if (cardRing) { cardRing.start = now - t0; cardRing.rings.push(now - t0); }
+      };
+      const ringWatch = () => {
+        if (!ring || ringAt !== null || mode !== 'play' || !game.cinematic) return;
+        if (voiced ? spoken || ui.chapterStage !== 'a' : game.gt - t0 >= 3.2) ringNow();
+        else game.after(0.1, ringWatch);
+      };
+      if (ring) game.after(0.1, ringWatch);
       const finish = () => {
         if (mode !== 'play' || !game.cinematic) return;
         if ((ui.chapterStage === 'b' || ui.chapterStage === 'text-b' || ui.chapterStage === 'error-b') && !titleWaiting) {
           titleWaiting = true; game.after(3.2, () => { titleReady = true; });
         }
         if (!spoken || titleWaiting && !titleReady) { game.after(0.1, finish); return; }
-        ui.chapterCard(null);
-        ui.fade(false);
+        if (ring) {
+          // on the first ring after it has rung once under the title: the card ends on it
+          const r0: number | null = ringAt;
+          if (r0 === null) { game.after(0.1, finish); return; }
+          if (cutAt === null) {
+            const n = Math.floor((game.gt - r0) / RING + 0.004), last = r0 + n * RING, want = Math.max(game.gt, last + RING_GAP);
+            for (let k = 1; k <= n; k++) cardRing?.rings.push(r0 + k * RING - t0);
+            again = want < last + RING - 0.05;
+            cutAt = again ? want : last + RING;
+          }
+          if (game.gt < cutAt - 0.012) { game.after(Math.min(0.1, cutAt - game.gt), finish); return; }
+          if (again) ringH = ring.again() ?? ringH;
+          else if (ringH && audio.ctx) ringH.gain.gain.setTargetAtTime(ringV, audio.ctx.currentTime, 0.02);
+          if (cardRing) { cardRing.cut = game.gt - t0; if (again || !cardRing.rings.length || game.gt - t0 - cardRing.rings[cardRing.rings.length - 1] > 0.5) cardRing.rings.push(game.gt - t0); }
+          ui.chapterCut();
+          ring.shown();
+        } else {
+          ui.chapterCard(null);
+          ui.fade(false);
+        }
         game.cinematic = false;
         input.enabled = true;
         ui.showHud(true, input.touchMode);
@@ -2089,6 +2183,7 @@ async function boot() {
       recap: `${method === 'passive' ? 'The shielded lamp did not explain it.' : 'Simple encoder drift did not explain it.'} The eye saw one reference; the film kept two. One line on the receiver print is still unexplained: -39 LY.`,
       next: 'CHAPTER TWO', title: 'THE AMENDED RECORD',
       begin: () => game.beginChapter2(null),
+      ring: { hold: () => { ch2.holdRing = true; }, out: () => ch2.ringOut(), again: () => ch2.ringAgain(), shown: () => ch2.ringShown() },
     });
     end();
   };
@@ -2223,6 +2318,7 @@ async function boot() {
   Object.assign((window as any).S47, { fieldBook });   // T. Vega's field book and the envelope (tools/f_fieldbook.py)
   Object.assign((window as any).S47, { ninth, musicHeld: () => musicHeld() });   // the ninth cow at STATION 01 (tools/f_ninth_cow.py)
   Object.assign((window as any).S47, { starHole, holeIn: () => holeIn(false) });   // no stars where the dishes point (tools/f_star_hole.py)
+  Object.assign((window as any).S47, { sameThread, mapView: () => mapView(), cardRing: () => cardRing, morning, dinerCooler, morningIn: () => morningIn() });   // small changes 5 to 8 (tools/f_small_grep.py)
   Object.assign((window as any).S47, { lostNights, reelTape });   // the lost nights, the reel, the watch (tools/f_lost_nights.py)
   Object.assign((window as any).S47, { officePhone, officeIn: () => officeIn() });   // the office telephone (tools/f_office_phone.py)
   Object.assign((window as any).S47, { truckB, truckBIn: () => truckBIn() });   // the truck on B (tools/f_car_b.py)
@@ -2330,6 +2426,9 @@ async function boot() {
           const d = holeIn(false).dir;
           player.yaw = Math.atan2(-d.x, -d.z); player.pitch = Math.asin(d.y);
         } },
+      ] });
+      groups.push({ title: 'Mesa Diner', note: 'Chapter five, from 05:13 to 05:20, inside the diner when nothing else is going: the cooler, the radio and the birds outside stop at once. Ten seconds. "There. Some mornings about now." Then back, one at a time.', items: [
+        { label: `The morning holds its breath: ${morning.phase}`, run: () => { if (!morning.now(morningIn())) ui.toast('Only at the diner, and not while it holds', 2.4); } },
       ] });
       groups.push({ title: 'On B', note: 'The herd south of the motel turns to 026 once you are well away from it; the office television goes to the carrier while you are in the office with the truck on the lot.', items: [
         { label: `The herd: ${pasture.stage}`, run: () => pasture.now() },
@@ -2522,7 +2621,7 @@ async function boot() {
   radio.onLine = (id, text, by, duration) => {
     // (not while the truck's radio gives only a bare carrier: the station is gone from under it, story/truckOnB.ts)
     const car = carRadio.live && !carRadio.carrying && carRadio.station === id && carNear;
-    const diner = dinerRadio.live && dinerRadio.station === id && !world.driving && player.pos.distanceTo(counterAt) < 12;
+    const diner = dinerRadio.live && dinerRadio.power > 0.5 && dinerRadio.station === id && !world.driving && player.pos.distanceTo(counterAt) < 12;
     if (mode !== 'play' || game.cinematic || !(car || diner)) return;
     if (radio.stations[id].strength(radio.clock, radio.time) < 0.35) return;
     ui.toast(by ? `RADIO, ${by}: "${text}"` : `RADIO: "${text}"`, duration === undefined ? Math.min(8, 2.2 + text.length / 22) : Math.max(2.4, duration + 0.2), () => audio.ctx!.currentTime);
@@ -2557,7 +2656,7 @@ async function boot() {
   }
   // (and while the yard holds its breath, and SARO is dark: core/ambience.ts, story/saroDark.ts)
   function musicHeld() { return game.cinematic || HELD.includes(game.phase) || (audio.radioOn && space !== 'yard') || radioHeard || roadside.silent || motelTv.heard || abduction!.busy || recWalk.busy || faceQuiet > 0 || ninth.quiet > 0 || roofSteps.busy || reelTape.busy
-    || saroDark.busy || officePhone.busy || archive.busy || arrayBack.busy || truckB.racing || !!audio.night?.breathing; }
+    || saroDark.busy || officePhone.busy || archive.busy || arrayBack.busy || truckB.racing || !!audio.night?.breathing || morning.busy; }
   /** What the crank telephone in the motel office needs to know (story/officePhone.ts): on foot in
    *  the office, on the motel's court or within earshot of the office's open door (22 m, the
    *  shoulder beside it too), chapter four before room 6 is over, nothing else going. Every way to
@@ -2756,6 +2855,14 @@ async function boot() {
       }
       // no stars where the dishes point (story/starHole.ts): noticed once, looked at long enough
       if (mode === 'play' && !starHole.noticed) starHole.update(modalOpen ? 0 : dt, holeIn(modalOpen));
+      // the diner's cooler, and the birds in through its glass; the morning holding its breath there
+      if (mode === 'play') {
+        const dn = world.area === 'diner' ? world.diner : null;
+        dinerCooler.update(dn ? dn.group.localToWorld(coolerAt.set(-5.6, 0.9, -3.2)) : null, space === 'room');
+        if (audio.night) audio.night.window = dn && space === 'room' ? 1 : 0;
+        morning.update(dt, morningIn(modalOpen));
+        sameThread.update(abduction!.data.count);
+      }
       if (mode === 'play') officePhone.update(dt, officeIn(modalOpen));
       // the truck on B (story/truckOnB.ts), and the compass on the dash of the truck being driven
       if (mode === 'play') {

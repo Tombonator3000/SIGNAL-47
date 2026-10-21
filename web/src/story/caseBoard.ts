@@ -66,6 +66,8 @@ function docCard(d: DocSpec, region: string): BoardCard {
 
 export class CaseBoard {
   view: ReturnType<typeof board> | null = null;
+  /** Called each time the board has been laid out (story/sameThread.ts: the thread one did not tie). */
+  onOpen: ((view: ReturnType<typeof board>) => void) | null = null;
   private seen: Record<string, RegionId> = {};   // where a paper nobody claims first turned up
   private cardPins = new Map<string, string>();  // older whole-card references now landing on a line pin
 
@@ -91,6 +93,18 @@ export class CaseBoard {
     for (const c of out) if (c.have && c.lines?.length) this.cardPins.set(c.id, c.lines[0].id);
     return out;
   }
+  /** The pins on the board now that a thread can be tied to (the cards one has; not the questions),
+   *  each with the card it is on: a card's line pins, or the card itself when it has none. */
+  pins(): { pin: string; card: string }[] {
+    const out: { pin: string; card: string }[] = [];
+    for (const c of this.cards()) {
+      if (!c.have) continue;
+      if (c.lines?.length) for (const l of c.lines) out.push({ pin: l.id, card: c.id }); else out.push({ pin: c.id, card: c.id });
+    }
+    return out;
+  }
+  /** A question still open rests on this pin (any chapter's). */
+  rests(pin: string) { return this.books().some((b) => b.rests(pin)); }
   private cardOf(node: string, cards: BoardCard[]) {
     return cards.find((c) => c.id === node || c.lines?.some((l) => l.id === node))?.id ?? node;
   }
@@ -145,6 +159,7 @@ export class CaseBoard {
       },
       onClose: () => { this.view = null; if (moved) this.h.save(); },
     });
+    this.onOpen?.(this.view);
   }
 
   /** Draws the board again if it is open (a chapter's state changed under it). */

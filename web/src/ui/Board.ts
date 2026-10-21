@@ -41,7 +41,7 @@ export interface BoardQuestion {
   elsewhere?: string;                     // recorded somewhere else: what to do
   region?: string; x: number; y: number; w?: number;
 }
-export interface BoardNote { id: string; text: string; from: [string, string]; region?: string }
+export interface BoardNote { id: string; text: string; from: [string, string]; region?: string; /** in pencil, in the player's hand, on a scrap on the thread (story/sameThread.ts) */ hand?: boolean }
 export interface BoardThread { a: string; b: string; thin?: boolean; auto?: boolean }
 export interface BoardRegion { id: string; label: string; x: number; y: number; w: number; h: number }
 type Result = { ok: boolean; text: string };
@@ -218,7 +218,7 @@ export function board(ui: UI, o: BoardSpec) {
     // nearest place where they cover no card (a note on top of a card would hide its pin)
     for (const n of o.notes()) {
       const saved = placeOf(n.id);
-      bd.insertAdjacentHTML('beforeend', `<div class="bnote" data-note="${n.id}" data-id="${n.id}" style="left:${saved?.x ?? 0}px;top:${saved?.y ?? 0}px${saved ? '' : ';visibility:hidden'}"><i class="pin pin-yellow"></i><p>${esc(n.text)}</p></div>`);
+      bd.insertAdjacentHTML('beforeend', `<div class="bnote${n.hand ? ' hand' : ''}" data-note="${n.id}" data-id="${n.id}" style="left:${saved?.x ?? 0}px;top:${saved?.y ?? 0}px${saved ? '' : ';visibility:hidden'}">${n.hand ? '' : '<i class="pin pin-yellow"></i>'}<p>${esc(n.text)}</p></div>`);
       if (saved) continue;
       const el = bd.querySelector(`[data-note="${n.id}"]`) as HTMLElement;
       const a = centre(n.from[0]), b = centre(n.from[1]);
@@ -229,6 +229,22 @@ export function board(ui: UI, o: BoardSpec) {
       const free = (x: number, y: number) => x >= 4 && y >= 4 && x + w <= W - 4 && y + h <= H - 4
         && !taken.some((t) => x < t.x + t.w + gap && x + w + gap > t.x && y < t.y + t.h + gap && y + h + gap > t.y);
       let at: { x: number; y: number } | null = null;
+      // a word in pencil hangs on the yarn itself (the thread's own curve): where it covers least of
+      // the cards, nearest the middle, and never a pin
+      if (n.hand && a && b) {
+        const q = curve(a, b);
+        const pins = [...bd.querySelectorAll<HTMLElement>('.pin')].map((p) => { const r = p.getBoundingClientRect(); return toBoardXY(r.left + r.width / 2, r.top + r.height / 2); });
+        let best = Infinity;
+        for (let k = 0.1; k <= 0.9001; k += 0.04) {
+          const x = (1 - k) * (1 - k) * q.a.x + 2 * (1 - k) * k * q.c.x + k * k * q.b.x, y = (1 - k) * (1 - k) * q.a.y + 2 * (1 - k) * k * q.c.y + k * k * q.b.y;
+          const bx = Math.round(x - w / 2), by = Math.round(y - h * 0.3);
+          if (bx < 4 || by < 4 || bx + w > W - 4 || by + h > H - 4) continue;
+          if (pins.some((p) => p.x > bx - 12 && p.x < bx + w + 12 && p.y > by - 12 && p.y < by + h + 12)) continue;
+          const cover = taken.reduce((sum, t) => sum + Math.max(0, Math.min(bx + w, t.x + t.w) - Math.max(bx, t.x)) * Math.max(0, Math.min(by + h, t.y + t.h) - Math.max(by, t.y)), 0);
+          const score = cover + Math.abs(k - 0.5) * 40;
+          if (score < best) { best = score; at = { x: bx, y: by }; }
+        }
+      }
       for (let r = 0; !at && r <= 900; r += 24) {
         for (let k = 0, m = Math.max(1, Math.round(r / 12)); k < m; k++) {
           const ang = (k / m) * Math.PI * 2, x = Math.round(want.x + Math.cos(ang) * r), y = Math.round(want.y + Math.sin(ang) * r);
@@ -480,6 +496,23 @@ export function board(ui: UI, o: BoardSpec) {
     /** the view, for the tests: scale and offset */
     view: () => ({ s, tx, ty }),
     look: (id: string) => { const r = regionOf(id); if (r) { look(r); threads(); } },
+    /** pins and boxes in view together, as large as they fit (story/sameThread.ts: the thread one
+     *  did not tie, the first time the board is opened with it); false when one is not on the board */
+    frame: (ids: string[]) => {
+      const pts = ids.map((id) => {
+        const c = centre(id); if (c) return [c];
+        const b = bd.querySelector(`[data-id="${id}"]`) as HTMLElement | null;
+        return b && !b.dataset.free ? [{ x: b.offsetLeft, y: b.offsetTop }, { x: b.offsetLeft + b.offsetWidth, y: b.offsetTop + b.offsetHeight }] : null;
+      });
+      if (pts.some((p) => !p)) return false;
+      const all = pts.flat() as { x: number; y: number }[];
+      const x0 = Math.min(...all.map((p) => p.x)), x1 = Math.max(...all.map((p) => p.x)), y0 = Math.min(...all.map((p) => p.y)), y1 = Math.max(...all.map((p) => p.y));
+      const vw = view.clientWidth, vh = view.clientHeight;
+      s = clamp(Math.min(vw / (x1 - x0 + 160), vh / (y1 - y0 + 200)), Math.max(minScale(), 0.32), 1.0);
+      tx = vw / 2 - (x0 + x1) / 2 * s; ty = vh / 2 - (y0 + y1) / 2 * s;
+      clampView(); threads();
+      return true;
+    },
     moved: () => changed,
     /** brings a pin to the middle of the view (the tests; a hint could use it) */
     show: (id: string) => {

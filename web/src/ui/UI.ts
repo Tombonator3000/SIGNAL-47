@@ -36,7 +36,7 @@ export interface KitItem { name: string; note: string; state?: string; art?: Kit
 /** The notebook's map and kit (main.ts puts them together). */
 /** Someone in the case: the name, who they are, a line about them, and their face (null while there is no picture). */
 export interface PersonCard { name: string; role: string; note: string; portrait: string | null }
-export interface NbExtras { map?: string; mapDescription?: string[]; kit?: KitItem[]; people?: PersonCard[]; album?: AlbumView; /** a phone: its controls first */ touch?: boolean }
+export interface NbExtras { map?: string; mapDescription?: string[]; /** a line in pencil under the map */ mapNote?: string; kit?: KitItem[]; people?: PersonCard[]; album?: AlbumView; /** a phone: its controls first */ touch?: boolean }
 // Every control, for the notebook's Controls tab: the hints about them are said only once on a
 // device (core/hints.ts), so they are all kept here. Keyboard and mouse, and a phone or tablet.
 const CONTROLS: Record<'desk' | 'phone', { title: string; groups: { head: string; rows: [string, string][] }[] }> = {
@@ -426,6 +426,8 @@ export class UI {
   /** Called when a paper is opened (the sound of the page; set by main). */
   onPaper?: () => void;
   onReadingStart?: (reader?: ReadAloud) => void;
+  /** A page of the notebook has been turned to (main.ts: the map, the first time the lines meet on it). */
+  onNotebookTab?: (tab: string) => void;
   onCharacterStart?: () => void;
   onEarlStart?: () => void;
   characterReadingControls(parent: HTMLElement, voice: CharacterVoice, lines: EarlLine[]) {
@@ -641,7 +643,7 @@ export class UI {
           ${papers.length ? `<div class="cards">${papers.map((d) => `<button data-d="${d.id}" class="k-${d.kind}"><b>${esc(d.title)}</b><span>${kind(d)}${d.stamp ? ' / ' + esc(d.stamp) : ''}</span></button>`).join('')}</div>` : '<p class="empty">None collected.</p>'}
         </section>
         <section class="nb-page nb-case nb-album" data-p="photos">${albumPage(photos, extras.album)}</section>
-        ${extras.map ? `<section class="nb-page nb-map" data-p="map"><img alt="A pencil sketch of the area round SARO" src="${extras.map}"></section>` : ''}
+        ${extras.map ? `<section class="nb-page nb-map" data-p="map"><img alt="A pencil sketch of the area round SARO" src="${extras.map}">${extras.mapNote ? `<p class="nb-mapnote">${esc(extras.mapNote)}</p>` : ''}</section>` : ''}
         ${extras.kit ? `<section class="nb-page nb-kit" data-p="kit">
           <h4>What I have on me</h4>
           <ul class="kit">${extras.kit.map((k) => `<li${k.art ? ` class="has-art"` : ''}>${k.art ? `<span class="kit-art kit-${k.art}"><img alt="" src="${KIT_ART[k.art]}">${k.tag ? `<em>${esc(k.tag)}</em>` : ''}</span>` : ''}<b>${esc(k.name)}</b>${k.state ? `<i>${esc(k.state)}</i>` : ''}<span>${esc(k.note)}</span></li>`).join('')}</ul>
@@ -657,6 +659,7 @@ export class UI {
       this.nbTab = t;
       el.querySelectorAll<HTMLElement>('[data-p]').forEach((p) => p.classList.toggle('on', p.dataset.p === t));
       el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === t)));
+      this.onNotebookTab?.(t);
     };
     el.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.addEventListener('click', () => show(b.dataset.t as NbTab)));
     show(el.querySelector(`[data-p="${this.nbTab}"]`) ? this.nbTab : 'tasks');
@@ -817,6 +820,17 @@ export class UI {
       // replacement voice or later phase of speech starts after the failure.
       el.dataset.voicePhase = 'b'; this.chapterStage = 'error-b';
     }
+  }
+
+  /** The card cut away at once, and the black with it (main.ts: CHAPTER TWO ends on the phone's
+   *  ring, FORSLAG.md, 20 October, small change 6), instead of the slow fade. */
+  chapterCut() {
+    const el = this.cardEl;
+    if (el) el.classList.add('cut');
+    void this.chapterCard(null);
+    this.fadeEl.classList.add('quick');
+    this.fade(false);
+    setTimeout(() => this.fadeEl.classList.remove('quick'), 700);
   }
 
   // Black card with the title, a few lines and buttons. Used where the built night ends.
