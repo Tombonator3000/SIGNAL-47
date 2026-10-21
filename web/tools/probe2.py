@@ -1,4 +1,5 @@
 import asyncio, time, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 async def main():
     async with async_playwright() as p:
@@ -7,7 +8,7 @@ async def main():
         await pg.goto('file://' + os.path.abspath('dist-single/index.html'))
         await pg.wait_for_selector('button[data-a=start]')
         await pg.evaluate("S47.setQuality('low')")
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(300)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(300)
         await pg.evaluate("S47.hold=true")
         t=time.time(); await pg.screenshot(path='/tmp/a.png', animations='disabled'); print('shot1', round(time.time()-t,2), flush=True)
         await pg.evaluate("S47.game.d.inter.get('rack').use()")

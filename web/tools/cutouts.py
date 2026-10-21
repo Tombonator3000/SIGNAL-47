@@ -3,6 +3,7 @@
 # later somewhere else. Driving: on the shoulder ahead. Not in the prologue; a note the first time.
 # Usage: python3 tools/cutouts.py OUTDIR [WxH]
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -23,7 +24,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
         await pg.evaluate("localStorage.clear()"); await pg.reload()
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_function('S47.started()', polling=200)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_function('S47.started()', polling=200)
         ev = pg.evaluate
         C = "S47.cutouts"
         up = lambda: ev(f"{C}.up")

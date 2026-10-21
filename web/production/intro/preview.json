@@ -1,0 +1,38 @@
+{
+  "file": "SIGNAL47-intro-serling.mp3",
+  "sha256": "1ff5214ed5d2c354e0855ece2d5ca46a9a3229847742279590f4336c8eaaf9ce",
+  "bytes": 274220,
+  "duration_seconds": 34.2,
+  "peak_dbfs": -6.251759004753971,
+  "rms_dbfs": -21.01985674458883,
+  "nonsilent_rms_dbfs": -20.883126973184865,
+  "nonsilent_seconds": 33.14,
+  "samples_at_or_above_full_scale": 0,
+  "source_clips": [
+    {
+      "id": "323aecd87d70f9fa",
+      "sha256": "fdb681047cdef2e588d8c3508fecf4f54b450fbd2cf1ef73d6f23e7349b38e5e"
+    },
+    {
+      "id": "7858426c36fb3334",
+      "sha256": "9f1218db35e61106ba103ffd633cf07c66e04899da600f242456fbb3243f6715"
+    },
+    {
+      "id": "4a6ccde3f9b83ee4",
+      "sha256": "949c10f846497dc0cf3d6633397b6e1be517786bb5fdcd07bb92fb72747762b0"
+    },
+    {
+      "id": "72ca924172467658",
+      "sha256": "e9d118046ca5f4cea66effc73a43b47174d027545650933b80d4497a03f8051a"
+    },
+    {
+      "id": "812e0a225acaa10e",
+      "sha256": "e234c1a87d315397231301a186484eb1db9f965b322de1fd3eb82efa4f6787bd"
+    }
+  ],
+  "source_bank_unchanged": true,
+  "extra_pause_seconds": 0,
+  "method": "Exact decoded bank order, preserving existing natural pauses. One MP3 encode for listening only; no gain,tempo or pitch changes.",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED"
+}

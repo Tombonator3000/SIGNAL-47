@@ -4,6 +4,7 @@
 # (the single file has no pieces to lose): S47_URL=http://127.0.0.1:8047/SIGNAL-47/
 # Usage: python3 tools/stale.py OUTDIR
 import asyncio, os, sys
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 URL = os.environ.get('S47_URL', 'http://127.0.0.1:8047/SIGNAL-47/')
 OUT = sys.argv[1]; os.makedirs(OUT, exist_ok=True)
@@ -38,7 +39,7 @@ async def main():
         await pg.evaluate("localStorage.clear(); sessionStorage.clear()"); await pg.reload(); await pg.wait_for_function('window.S47')
         check(not await pg.evaluate("document.querySelector('.title-screen').classList.contains('gated')"), 'test browser: no gate')
         await pg.route('**/assets/{Station01,RoadArea,Drive,legs,corridors}-*.js', lambda r: r.fulfill(status=404, body='gone'))
-        await pg.click('button[data-a=start]'); await pg.wait_for_function('S47.started()', polling=200)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_function('S47.started()', polling=200)
         ev = pg.evaluate
         await ev("S47.jump('chapter3')"); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(1.0)")

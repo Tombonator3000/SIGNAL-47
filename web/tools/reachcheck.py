@@ -8,6 +8,7 @@ PASS is the regression guard, not complete interaction coverage: the documented
 unbound diner and inactive chapter objects retain individual UNVERIFIED coverage.
 """
 from __future__ import annotations
+from intro_flow import begin_opening
 
 import argparse
 import asyncio
@@ -898,7 +899,7 @@ async def check(args: argparse.Namespace) -> int:
             elif response:
                 metadata["source_html_sha256"] = sha(await response.body())
             await pg.wait_for_selector("button[data-a=start]")
-            await pg.click("button[data-a=start]")
+            await pg.click("button[data-a=start]"); await begin_opening(pg)
             await pg.wait_for_function("globalThis.S47 && S47.started && S47.started()")
             await pg.evaluate("S47.hold = true")
             for area in args.areas:

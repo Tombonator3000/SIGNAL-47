@@ -23,6 +23,7 @@
 # No console errors.
 # Usage: python3 tools/blender_ab.py OUTDIR [WxH]   (S47_URL for another build)
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -73,7 +74,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(400)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(400)
         ev = pg.evaluate
         await ev("S47.hold = true; S47.jump('chapter1'); S47.tick(1.0); S47.setQuality('high'); S47.setAbductions(false)")
         await pg.add_style_tag(content='#ui { visibility: hidden !important; }')
@@ -398,7 +399,7 @@ async def main():
         pg2.on('pageerror', lambda e: errs.append('(?blender) PAGEERROR: ' + str(e)))
         await pg2.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg2.goto(URL + ('&' if '?' in URL else '?') + 'blender')
-        await pg2.wait_for_selector('button[data-a=start]'); await pg2.click('button[data-a=start]'); await pg2.wait_for_timeout(400)
+        await pg2.wait_for_selector('button[data-a=start]'); await pg2.click('button[data-a=start]'); await begin_opening(pg2); await pg2.wait_for_timeout(400)
         await pg2.evaluate("S47.hold = true; S47.jump('chapter1'); S47.tick(0.5)")
         url_on = await pg2.evaluate("""(async () => { const t = performance.now();
           while ((!S47.blenderHouse.shown || !S47.blenderTruck.shown || !S47.world.saroTruck?.modelled) && !S47.blenderHouse.failed && !S47.blenderTruck.failed

@@ -1,5 +1,9 @@
 # Tredjepartsinnhold i web/
 
+## Original intro med syntetisk Serling, 21. oktober 2026
+
+De fem filene i `src/assets/audio/serling-intro/` leser en ny original introtekst skrevet for SIGNAL / 47. De bruker samme eksisterende Serling-parodiprofil og lokale modell som nedenfor. Ingen ny referansekilde, originalkildelyd, serieintro eller musikk fra The Twilight Zone er lagt til. Eksisterende kilde- og modellmerknader gjelder fortsatt. Manus, profilbinding, generering, filkontroll og automatisk ordkontroll står i `production/intro/`.
+
 ## Seks nye syntetiske stemmer, 20. oktober 2026
 
 `src/assets/audio/ensemble/` inneholder nye fremføringer av spillets eksisterende replikker: Harry Dean Stanton som bensinstasjonsbetjenten, Lauren Bacall som N. Vega, Robert Stack som visesheriffen, David Lynch som suvenirmannen og Vincent Price på den eksisterende T. Vega-opptaksfrasen. `src/assets/audio/serling/` inneholder Rod Serling-parodien for fortellerbeskrivelser og mellomkapitteltekst. Navnene beskriver syntetisk rollebesetning, ikke originale fremføringer av spillets manus eller støtte fra personene.

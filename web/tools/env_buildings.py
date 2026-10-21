@@ -12,6 +12,7 @@
 # Usage: python3 tools/env_buildings.py OUTDIR [WxH] [--shots-only]
 #   S47_URL=file:///.../index.html takes the pictures of another build (--shots-only: the BEFORE).
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -59,7 +60,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(400)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(400)
         ev = pg.evaluate
         await ev("S47.hold = true; S47.jump('chapter1'); S47.tick(1.0)")
         await ev("S47.setQuality('high')")

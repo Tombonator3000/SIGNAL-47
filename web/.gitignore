@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-single/
+dist-fallback/
 tools/__pycache__/
 shots/
 # bought sounds and models: a clone of the private repo SIGNAL-47-assets (never commit them here)

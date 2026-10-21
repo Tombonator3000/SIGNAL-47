@@ -11,6 +11,7 @@
 # Starts from S47.jump('chapter1') through ('chapter4'), with small stand-in photographs.
 # Usage: python3 tools/board.py OUTDIR
 import asyncio, sys, json, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -93,7 +94,7 @@ async def main():
         async def tick(s): await ev(f"S47.tick({s})")
         async def shot(name): await pg.screenshot(path=f'{OUT}/{name}.png')
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
 
         # ---------- chapter one: the same board, and the original story functions ----------
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1.0)")
@@ -178,7 +179,7 @@ async def main():
         ctx, pg, errs2 = await start(b, {'width': 1280, 'height': 800})
         errlists.append(errs2)
         ev = pg.evaluate; B = Board(pg)
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
 
         # ---------- chapter two: the notebook, the board, the archive records ----------
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter2'); S47.tick(1.0)")
@@ -286,7 +287,7 @@ async def main():
         errlists.append(errs3); ev = pg.evaluate; B = Board(pg)
         async def tick(s): await ev(f"S47.tick({s})")
         async def shot(name): await pg.screenshot(path=f'{OUT}/{name}.png')
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter3'); S47.tick(1.0)")
         await ev("const s = S47.ch3.s; s.stage = 'station'; s.arrived = true; s.readE09a = true; S47.ch3.applyWorld()")
         await ev("S47.game.openBoard()"); await tick(0.05)
@@ -326,7 +327,7 @@ async def main():
         errlists.append(errs4); ev = pg.evaluate; B = Board(pg)
         async def tick(s): await ev(f"S47.tick({s})")
         async def shot(name): await pg.screenshot(path=f'{OUT}/{name}.png')
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter4'); S47.tick(1.0)")
         await ev(f"""const s = S47.ch1.s; s.mark1 = [0.5, 0.5]; s.mark2 = [0.5, 0.5];
           s.f1 = {{ id: 'frame01', subject: '', method: 'baseline', clock: 0, url: '{GREY}', targets: {{}} }};
@@ -381,7 +382,7 @@ async def main():
                 for i in range(1, n): await cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': pts(i)})
                 await cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
             await pg.wait_for_selector('button[data-a=start]')
-            await pg.tap('button[data-a=start]'); await pg.wait_for_timeout(500)
+            await pg.tap('button[data-a=start]'); await begin_opening(pg, touch=True); await pg.wait_for_timeout(500)
             await ev(f"""S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1.0);
               const s = S47.ch1.s; s.stage = 'interpret-first'; s.camera = true; s.log = true; s.sheet = true; s.dev1 = 3; s.mark1 = [0.5, 0.5];
               s.f1 = {{ id: 'frame01', subject: '', method: 'baseline', clock: 0, url: '{GREY}', targets: {{}} }};

@@ -4,6 +4,7 @@
 # The software renderer says nothing about frame rate; that is UNVERIFIED until measured on
 # a real PC.
 import asyncio, math, sys, json, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 OUT = sys.argv[1]; W, H = (int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -21,7 +22,7 @@ async def main():
         await pg.goto(URL)
         await pg.wait_for_selector('button[data-a=start]')
         check(await pg.evaluate("S47.ultra.on") is False, 'an automated browser starts on High, not Ultra')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(300)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(300)
         ev = pg.evaluate
         await ev("S47.hold = true")
         async def tick(s): await ev(f"S47.tick({s})")

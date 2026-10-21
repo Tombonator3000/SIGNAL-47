@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "reviewer": "/root/voice_options independent read-only file audit",
+  "checked_utc": "2026-10-21T10:43:07.426286+00:00",
+  "clips": 5,
+  "bytes": 276892,
+  "duration_seconds": 34.2,
+  "old_audio_files_matched": 3271,
+  "new_id_or_url_collisions": 0,
+  "audio_and_asr_hash_bindings": "PASS",
+  "new_source_reference_or_model_files_found": false,
+  "credentials_found": false,
+  "profiles": "Saved before/after evidence for18profiles is consistent with existing manifest; no fresh liveAPIcheck in this audit",
+  "human_listening": "UNVERIFIED",
+  "files_modified_by_reviewer": false
+}

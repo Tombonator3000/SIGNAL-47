@@ -1,0 +1,71 @@
+PASS the separate five-clip intro bank exactly matches the frozen original manuscript and actual MP3 files
+PASS the production first-gesture title gate is retained
+PASS the initial real gesture reveals the menu without starting an intro or a night
+PASS Serling defaults On with the independent Kinski option Off
+PASS actual New night shows all five paragraphs and starts the exact narration while Begin remains available
+PASS intro leaves clock, playtime, progress, cases, autosaves and the playable prologue untouched and silences menu music
+PASS the real narrator resolver covers all five exact intro paragraphs
+PASS Tab moves from Begin night to Back to title
+PASS Shift+Tab moves back to Begin night
+PASS intro-desktop: all five original paragraphs remain readable without horizontal overflow
+PASS intro-desktop: Begin night and Back to title are reachable
+PASS genuine intro PCM reaches master while unrelated title/game audio is stopped
+PASS suspending the real AudioContext freezes the current intro queue without starting the night
+PASS all five genuine MP3 buffers play once in paragraph order at rate 1 directly to master and finish naturally
+PASS natural narration completion keeps the readable card open until the player chooses Begin night
+PASS real Begin night enters the unchanged 23:41 playable prologue exactly once after narration
+PASS Begin preserves a fresh real user gesture for the existing pointer-lock request
+PASS real Continue restores the saved chapter directly with no opening card or intro voice
+PASS real Load case restores the selected save directly without opening narration
+PASS playing begin: the real control cancels the source and late native decode cannot revive it
+PASS playing begin: starts one night only for Begin; cancellation preserves the untouched case
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS playing back: the real control cancels the source and late native decode cannot revive it
+PASS playing back: starts one night only for Begin; cancellation preserves the untouched case
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS playing escape: the real control cancels the source and late native decode cannot revive it
+PASS playing escape: starts one night only for Begin; cancellation preserves the untouched case
+PASS loading begin: the real control cancels the source and late native decode cannot revive it
+PASS loading begin: starts one night only for Begin; cancellation preserves the untouched case
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS loading back: the real control cancels the source and late native decode cannot revive it
+PASS loading back: starts one night only for Begin; cancellation preserves the untouched case
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS loading escape: the real control cancels the source and late native decode cannot revive it
+PASS loading escape: starts one night only for Begin; cancellation preserves the untouched case
+PASS playing intro → real F2: the DEV modal dismisses narration and removes its card
+PASS playing intro → F2 → Close: no late voice, night, case change or autosave is revived
+PASS playing intro → F2 → Close: title music runs and both actual bus gain targets return to 1
+PASS loading intro → real F2: the DEV modal dismisses narration and removes its card
+PASS loading intro → F2 → Close: no late voice, night, case change or autosave is revived
+PASS loading intro → F2 → Close: title music runs and both actual bus gain targets return to 1
+PASS a real double-click on Begin night starts exactly one run
+PASS fail: narration failure leaves every paragraph and Begin available without entering the prologue
+PASS fail: the real Begin works after failure/watchdog and a later decode cannot start stale intro speech
+PASS never: narration failure leaves every paragraph and Begin available without entering the prologue
+PASS never: the real Begin works after failure/watchdog and a later decode cannot start stale intro speech
+PASS the actual title Serling setting can be switched Off
+PASS Serling Off survives reload and shows the full opening without loading or starting any intro recording
+PASS native Space activates the focused Begin night button with Serling Off
+PASS full-case replacement confirmation Cancel preserves all saves and never opens an intro
+PASS confirming an occupied case only opens the card; old save content remains intact before Begin
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS Back from the selected replacement intro preserves every original save
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS Escape from a selected replacement also preserves every original save
+PASS only the final genuine Begin deletes the chosen old case once and preserves the other two cases byte-for-byte as JSON
+PASS the actual DEV chapter button bypasses the opening and keeps its unsaved run contract
+PASS intro-mobile-844x390: all five original paragraphs remain readable without horizontal overflow
+PASS intro-mobile-844x390: Begin night and Back to title are reachable
+PASS intro-mobile-844x390: genuine New night tap starts the same exact narrator queue before gameplay
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS intro-mobile-844x390: actual Back and Begin taps cancel narration and preserve the new-start gesture
+PASS intro-mobile-390x844: all five original paragraphs remain readable without horizontal overflow
+PASS intro-mobile-390x844: Begin night and Back to title are reachable
+PASS intro-mobile-390x844: genuine New night tap starts the same exact narrator queue before gameplay
+PASS Back/Escape returns keyboard focus to the real New night button
+PASS intro-mobile-390x844: actual Back and Begin taps cancel narration and preserve the new-start gesture
+PASS all requested recorded MP3 files load without an HTTP failure
+PASS strict-CSP offline HTML reads embedded MP3 bytes with zero external MP3 requests
+PASS no unexpected browser errors, warnings or CSP violations
+70 of 70 PASS

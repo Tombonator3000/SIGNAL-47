@@ -6,6 +6,7 @@
 # Set S47_URL to test another build, for example the Pages build served over HTTP.
 # S47_NO_IDB=1 hides IndexedDB, to test that the photographs fall back to localStorage.
 import asyncio, sys, json, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -42,7 +43,7 @@ async def main():
         await pg.evaluate("localStorage.clear()")
         await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         ev = pg.evaluate
         async def tick(s): await ev(f"S47.tick({s})")
         async def shot(name): await pg.screenshot(path=f'{OUT}/{name}.png')

@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "reviewer": "root direct inspection of original runtime captures",
+  "checked_utc": "2026-10-21T08:55:45.174258+00:00",
+  "scope": "Both delivered builds; desktop1280x800,landscape844x390,portrait390x844",
+  "criteria": {
+    "all_five_paragraphs_readable": true,
+    "begin_and_back_visible": true,
+    "no_overlap_or_horizontal_clipping": true,
+    "established_black_card_and_typewriter_style": true
+  },
+  "blocking_findings": [],
+  "images": [
+    {
+      "path": "intro-pages/intro-desktop.png",
+      "sha256": "f15928c6b6761d67c407a8230ca1275348cea5e94d7c614d60b467da46dd2b83"
+    },
+    {
+      "path": "intro-pages/intro-mobile-390x844.png",
+      "sha256": "817cf0268244fbc6405635b742a6af89ad649d43bda18f1bd20d1dcebc81e9a3"
+    },
+    {
+      "path": "intro-pages/intro-mobile-844x390.png",
+      "sha256": "85fee9f28627f9dd00f11278a4a9818079f0ba055572417a4051508fb3bdc017"
+    },
+    {
+      "path": "intro-single/intro-desktop.png",
+      "sha256": "f15928c6b6761d67c407a8230ca1275348cea5e94d7c614d60b467da46dd2b83"
+    },
+    {
+      "path": "intro-single/intro-mobile-390x844.png",
+      "sha256": "817cf0268244fbc6405635b742a6af89ad649d43bda18f1bd20d1dcebc81e9a3"
+    },
+    {
+      "path": "intro-single/intro-mobile-844x390.png",
+      "sha256": "85fee9f28627f9dd00f11278a4a9818079f0ba055572417a4051508fb3bdc017"
+    }
+  ],
+  "limits": [
+    "Headless viewport captures are not physical mobile tests",
+    "Voice likeness, human listening and measured device FPS remain UNVERIFIED"
+  ]
+}

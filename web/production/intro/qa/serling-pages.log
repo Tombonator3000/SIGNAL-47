@@ -1,0 +1,108 @@
+PASS the complete Serling catalogue equals the source corpus with exact text hashes and actual MP3 files
+PASS Serling defaults On with Kinski Off and remains independent of the character setting
+PASS every Serling catalogue text resolves completely in the actual runtime without playing the entire bank
+PASS real Zoom exposes a description but does not speak before the stable 650ms delay
+PASS stable Zoom automatically reads the exact raycast description using genuine Serling MP3s
+PASS releasing Zoom cancels automatic Serling narration
+PASS actual V reads the latest genuine wall-clock observation, including its numeric time, with Serling
+PASS actual HUD Stop reading cancels the same narrator
+PASS genuine Serling PCM reaches master with unrelated buses silenced
+PASS description: exact current description has complete Serling coverage
+PASS description: real Read description uses the exact current text and direct master route
+PASS with Kinski Off the actual paper description uses Serling while its paper-text Kinski control stays unavailable
+FAIL chapter1/saro: current object/notebook/people/map descriptions resolve in the actual prepared area
+PASS notebook-description: exact current description has complete Serling coverage
+PASS notebook-description: real Read description uses the exact current text and direct master route
+FAIL chapter2/saro: current object/notebook/people/map descriptions resolve in the actual prepared area
+PASS notebook-description: exact current description has complete Serling coverage
+PASS notebook-description: real Read description uses the exact current text and direct master route
+FAIL chapter3/station01: current object/notebook/people/map descriptions resolve in the actual prepared area
+PASS notebook-description: exact current description has complete Serling coverage
+PASS notebook-description: real Read description uses the exact current text and direct master route
+FAIL chapter4/room6: current object/notebook/people/map descriptions resolve in the actual prepared area
+PASS notebook-description: exact current description has complete Serling coverage
+PASS notebook-description: real Read description uses the exact current text and direct master route
+FAIL chapter5/diner: current object/notebook/people/map descriptions resolve in the actual prepared area
+PASS notebook-description: exact current description has complete Serling coverage
+PASS notebook-description: real Read description uses the exact current text and direct master route
+FAIL chapter6/roswell: current object/notebook/people/map descriptions resolve in the actual prepared area
+PASS notebook-description: exact current description has complete Serling coverage
+PASS notebook-description: real Read description uses the exact current text and direct master route
+PASS active Serling close: cancellation cannot revive narration
+PASS active Serling replacement: cancellation cannot revive narration
+PASS active Serling phone: cancellation cannot revive narration
+PASS active Serling cinematic: cancellation cannot revive narration
+PASS active Serling Off: cancellation cannot revive narration
+PASS active Serling reset: cancellation cannot revive narration
+PASS active Serling jump: cancellation cannot revive narration
+PASS active Serling load: cancellation cannot revive narration
+PASS active Serling title: cancellation cannot revive narration
+PASS pending decoded Serling close: cancellation cannot revive narration
+PASS pending decoded Serling replacement: cancellation cannot revive narration
+PASS pending decoded Serling phone: cancellation cannot revive narration
+PASS pending decoded Serling cinematic: cancellation cannot revive narration
+PASS pending decoded Serling Off: cancellation cannot revive narration
+PASS pending decoded Serling reset: cancellation cannot revive narration
+PASS pending decoded Serling jump: cancellation cannot revive narration
+PASS pending decoded Serling load: cancellation cannot revive narration
+PASS pending decoded Serling title: cancellation cannot revive narration
+PASS unknown narrator words fail explicitly without partial speech
+PASS decoder failure produces no stale Serling source
+PASS Serling Off preserves the real optional Kinski description fallback
+PASS prologue: all five actual card fields, headings and clock resolve
+PASS prologue: the real card remains on black after 6.4 seconds while narration still runs
+PASS prologue: displayed A then B fields are spoken exactly once in order
+PASS prologue: the currently spoken card phase is visible and the other phase stays hidden
+PASS prologue: every real segment finishes naturally before the actual chapter transition closes its card
+PASS chapter1_passive: all five actual card fields, headings and clock resolve
+PASS chapter1_passive: the real card remains on black after 6.4 seconds while narration still runs
+PASS chapter1_passive: displayed A then B fields are spoken exactly once in order
+PASS chapter1_passive: the currently spoken card phase is visible and the other phase stays hidden
+PASS chapter1_passive: every real segment finishes naturally before the actual chapter transition closes its card
+PASS chapter1_active: all five actual card fields, headings and clock resolve
+PASS chapter1_active: the real card remains on black after 6.4 seconds while narration still runs
+PASS chapter1_active: displayed A then B fields are spoken exactly once in order
+PASS chapter1_active: the currently spoken card phase is visible and the other phase stays hidden
+PASS chapter1_active: every real segment finishes naturally before the actual chapter transition closes its card
+PASS chapter2: all five actual card fields, headings and clock resolve
+PASS chapter2: the real card remains on black after 6.4 seconds while narration still runs
+PASS chapter2: displayed A then B fields are spoken exactly once in order
+PASS chapter2: the currently spoken card phase is visible and the other phase stays hidden
+PASS chapter2: every real segment finishes naturally before the actual chapter transition closes its card
+PASS chapter3: all five actual card fields, headings and clock resolve
+PASS chapter3: the real card remains on black after 6.4 seconds while narration still runs
+PASS chapter3: displayed A then B fields are spoken exactly once in order
+PASS chapter3: the currently spoken card phase is visible and the other phase stays hidden
+PASS chapter3: every real segment finishes naturally before the actual chapter transition closes its card
+PASS chapter4: all five actual card fields, headings and clock resolve
+PASS chapter4: the real card remains on black after 6.4 seconds while narration still runs
+PASS chapter4: displayed A then B fields are spoken exactly once in order
+PASS chapter4: the currently spoken card phase is visible and the other phase stays hidden
+PASS chapter4: every real segment finishes naturally before the actual chapter transition closes its card
+PASS a held genuine decode leaves the actual chapter card readable without partial speech
+PASS decode timeout displays readable B without starting later speech
+PASS the product watchdog advances after readable B time while genuine decode remains unresolved
+PASS a watchdog-expired decode cannot revive after the chapter has advanced
+PASS a held genuine unlock leaves the actual chapter card readable without partial speech
+PASS unlock timeout displays readable B without starting later speech
+PASS the product watchdog advances after readable B time while genuine unlock remains unresolved
+PASS a watchdog-expired unlock cannot revive after the chapter has advanced
+PASS card-null: pending narrator cancels immediately
+PASS card-null: cancelled genuine decode cannot cache, restart or begin later B speech
+PASS reset: pending narrator cancels immediately
+PASS reset: cancelled genuine decode cannot cache, restart or begin later B speech
+PASS Off: pending narrator cancels immediately
+PASS same-card Serling Off shows the next title as readable B text without speaking it
+PASS Off: cancelled genuine decode cannot cache, restart or begin later B speech
+PASS Serling Off retains the original chapter-card transition with no speech or hang
+PASS 844x390 genuine touch HUD narration leaves other controls clear
+PASS mobile-prologue: all five actual card fields, headings and clock resolve
+PASS mobile-prologue: the real card remains on black after 6.4 seconds while narration still runs
+PASS mobile-prologue: displayed A then B fields are spoken exactly once in order
+PASS mobile-prologue: the currently spoken card phase is visible and the other phase stays hidden
+PASS mobile-prologue: every real segment finishes naturally before the actual chapter transition closes its card
+PASS touch Serling and character preferences reload independently of Kinski
+PASS Serling and other recorded MP3 requests have no HTTP failures
+PASS only the three specific deliberate decoder-failure/watchdog warnings are observed
+PASS no unexpected browser errors or warnings
+101 of 107 PASS

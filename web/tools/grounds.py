@@ -7,6 +7,7 @@
 # block the way, and that the sky's painted stars are gone and the points are there.
 # Usage: python3 tools/grounds.py OUTDIR [WxH]
 import asyncio, sys, json, os, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 OUT = sys.argv[1]; W, H = (int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else '1280x800').split('x'))
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -23,7 +24,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(300)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(300)
         ev = pg.evaluate
         await ev("S47.hold = true")
         await ev("S47.jump('chapter1')"); await ev("S47.tick(1.5)")

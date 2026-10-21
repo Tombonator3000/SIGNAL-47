@@ -1,0 +1,366 @@
+{
+  "status": "PASS_FOR_INTRO_WITH_EXISTING_COVERAGE_GAPS",
+  "checked_utc": "2026-10-21T10:54:04.091437+00:00",
+  "scope": "Exact local source and three builds; actual publication is recorded separately after the authorized merge",
+  "base_commit": "acfc09e3fdd72a6a7ccf9f9b4fbccad6038b604c",
+  "build_manifest_sha256": "2e45ae77d72e25799b532803b15bbba8761faef7678f38d8f944bf301f967ca8",
+  "source_files": 4244,
+  "pages_files": 3460,
+  "single": {
+    "bytes": 185279469,
+    "sha256": "b42c0bca4d0ac735ec61e9ad927ddb9e429f1e1587141606bb29f374f29cccc4"
+  },
+  "checks": {
+    "build": {
+      "status": "PASS",
+      "runs": 9,
+      "results_sha256": "b58ee0f4dc79f2136f9aeab3dec62ee56a253e92cc4265dcd1606a8f2f989dd3",
+      "results": [
+        {
+          "name": "typecheck",
+          "status": "PASS",
+          "seconds": 3.05,
+          "summaries": [],
+          "log": "typecheck.log",
+          "log_sha256": "c85511db760d8981ef86707e33b1cc7cd01c1fd4fa3a9f7d469100bfa36ba889"
+        },
+        {
+          "name": "saves",
+          "status": "PASS",
+          "seconds": 1.02,
+          "summaries": [
+            "19 of 19 PASS"
+          ],
+          "log": "saves.log",
+          "log_sha256": "428bafddf18afd7d81e121762b9c145b2468075fcc89b5f744d5fe494a0dfc76"
+        },
+        {
+          "name": "steercheck",
+          "status": "PASS",
+          "seconds": 0.14,
+          "summaries": [],
+          "log": "steercheck.log",
+          "log_sha256": "72467f2f27c98fe90d0a50f07160c181158f1d05333c642fad4bc689ff7cdc67"
+        },
+        {
+          "name": "intro-core",
+          "status": "PASS",
+          "seconds": 0.48,
+          "summaries": [],
+          "log": "intro-core.log",
+          "log_sha256": "b7275fad6c971a3b03d2bc6a7b4a50531220da3e92aef84ca39c36a9ed26b92e"
+        },
+        {
+          "name": "readaloud-core",
+          "status": "PASS",
+          "seconds": 0.48,
+          "summaries": [],
+          "log": "readaloud-core.log",
+          "log_sha256": "982fa8a02d6375aea9f95d3cf72082f5c210921409f22edadb2aa1b1ca5c57f0"
+        },
+        {
+          "name": "serling-core",
+          "status": "PASS",
+          "seconds": 0.43,
+          "summaries": [],
+          "log": "serling-core.log",
+          "log_sha256": "c3658e176e2f93b45ab46e350c00082bf76222173e9e683b199f10bfbc50e122"
+        },
+        {
+          "name": "build-pages",
+          "status": "PASS",
+          "seconds": 3.46,
+          "summaries": [],
+          "log": "build-pages.log",
+          "log_sha256": "eb0672c5811ab1a6f406392d5d98e2a1ad2856c9f2daf896fcf8b96b43a5b8ee"
+        },
+        {
+          "name": "build-single",
+          "status": "PASS",
+          "seconds": 15.84,
+          "summaries": [],
+          "log": "build-single.log",
+          "log_sha256": "13f739eadf27d99ad61c8e2e0778890fa5c25864774f26bfb5b27dc21338968e"
+        },
+        {
+          "name": "build-fallback",
+          "status": "PASS",
+          "seconds": 3.52,
+          "summaries": [],
+          "log": "build-fallback.log",
+          "log_sha256": "c45506fdebc901fae7336460be7ca949435fb939d8150984899354068aa13f07"
+        }
+      ]
+    },
+    "feature": {
+      "status": "PASS",
+      "runs": 2,
+      "results_sha256": "5f66c42cbe39676d1e8dbbfd0d57b0f5d68c9830e61d18e817998d0bfddccb93",
+      "results": [
+        {
+          "name": "intro-pages",
+          "status": "PASS",
+          "seconds": 95.11,
+          "summaries": [
+            "70 of 70 PASS"
+          ],
+          "log": "intro-pages.log",
+          "log_sha256": "8a0fefbe5c7516d257662149c73bbddb94c0d6477c97c605abb7710c427430d3"
+        },
+        {
+          "name": "intro-single",
+          "status": "PASS",
+          "seconds": 130.96,
+          "summaries": [
+            "70 of 70 PASS"
+          ],
+          "log": "intro-single.log",
+          "log_sha256": "9371aa9399804782fdfb41a725183b8a9a2d057c50eaadf4440ba8874ac6f547"
+        }
+      ]
+    },
+    "regression": {
+      "status": "PASS",
+      "runs": 13,
+      "results_sha256": "65e80ded31ae5273f48e12f73b32cec1be50ffa56608f7e87ea98a826ce6af61",
+      "results": [
+        {
+          "name": "walkthrough",
+          "status": "PASS",
+          "seconds": 17.93,
+          "summaries": [
+            "62 of 62 PASS"
+          ],
+          "log": "walkthrough.log",
+          "log_sha256": "5e88e81bf79fa7b2d024dc2f73f13b347af5acc1e53c8c8ddf080e3daea6676c"
+        },
+        {
+          "name": "chapter1",
+          "status": "PASS",
+          "seconds": 29.12,
+          "summaries": [
+            "75 of 75 PASS"
+          ],
+          "log": "chapter1.log",
+          "log_sha256": "adfaabfb120d62489d92bb15270b9bc10101f8e3f501b4744171d94b68cded7d"
+        },
+        {
+          "name": "chapter2",
+          "status": "PASS",
+          "seconds": 26.46,
+          "summaries": [
+            "77 of 77 PASS"
+          ],
+          "log": "chapter2.log",
+          "log_sha256": "326da9883722d7c6d3e30933e217a2414e2efc422c2a41f0e5b112edd48b7796"
+        },
+        {
+          "name": "chapter3",
+          "status": "PASS",
+          "seconds": 32.32,
+          "summaries": [
+            "72 of 72 PASS"
+          ],
+          "log": "chapter3.log",
+          "log_sha256": "0ee4238fbb6c3fde3b3f8743a91b46404dfb72de8923bf4f6f708e3098000323"
+        },
+        {
+          "name": "chapter4",
+          "status": "PASS",
+          "seconds": 25.55,
+          "summaries": [
+            "69 of 69 PASS"
+          ],
+          "log": "chapter4.log",
+          "log_sha256": "b9f39b65cace41f911c7c9fca5baec448eee1f0a8e6ae3700398c43efec4f3de"
+        },
+        {
+          "name": "chapter5",
+          "status": "PASS",
+          "seconds": 22.94,
+          "summaries": [
+            "55 of 55 PASS"
+          ],
+          "log": "chapter5.log",
+          "log_sha256": "d46fa8670955d99d1dc8b3aabb17a4260e135ff0267882fc97a44cfe7bb50c18"
+        },
+        {
+          "name": "chapter6",
+          "status": "PASS",
+          "seconds": 59.63,
+          "summaries": [
+            "44 of 44 PASS"
+          ],
+          "log": "chapter6.log",
+          "log_sha256": "616cd4d5ba5a11ebf6cc59fb4cf3bb0992ffc5c93d5d15bb75929b5693adee48"
+        },
+        {
+          "name": "devmenu",
+          "status": "PASS",
+          "seconds": 19.73,
+          "summaries": [
+            "14 of 14 PASS"
+          ],
+          "log": "devmenu.log",
+          "log_sha256": "bf838bcf912eaffa1f154f1f6beaa2abd721f26444550b5904c35136f85c0486"
+        },
+        {
+          "name": "drives",
+          "status": "PASS",
+          "seconds": 59.97,
+          "summaries": [
+            "23 of 23 PASS"
+          ],
+          "log": "drives.log",
+          "log_sha256": "d9d9c199102968f37a2045026b690e386adf182cea735468e0e195dbdc78c1c0"
+        },
+        {
+          "name": "ambience",
+          "status": "PASS",
+          "seconds": 17.03,
+          "summaries": [
+            "7 of 7 PASS"
+          ],
+          "log": "ambience.log",
+          "log_sha256": "d5cbe66eef81346a8b831c75a3b005125e74b2110f5a85048e9203a471856e76"
+        },
+        {
+          "name": "diner",
+          "status": "PASS",
+          "seconds": 16.05,
+          "summaries": [
+            "15 of 15 PASS"
+          ],
+          "log": "diner.log",
+          "log_sha256": "568968ca186c99cdbf7e6b5b1e691276077a9bb614e4751bb2e7792cac5c4131"
+        },
+        {
+          "name": "music-pages",
+          "status": "PASS",
+          "seconds": 34.62,
+          "summaries": [
+            "14 of 14 PASS"
+          ],
+          "log": "music-pages.log",
+          "log_sha256": "380c56ee3318d58241cc862616a0d67e6a839f9ee4399dd2b509f4409d33f0ac"
+        },
+        {
+          "name": "music-single",
+          "status": "PASS",
+          "seconds": 13.55,
+          "summaries": [
+            "7 of 7 PASS"
+          ],
+          "log": "music-single.log",
+          "log_sha256": "e217a4afe801e7ee0efe8792fb84f9268f630188d0bb8fa38ce15563b56aa970"
+        }
+      ]
+    },
+    "compatibility-rest": {
+      "status": "PASS",
+      "runs": 4,
+      "results_sha256": "1f5afef51226494bcb00ebd770a83b979a570ec26d2a59fc8056a6900fc4615c",
+      "results": [
+        {
+          "name": "chapter-card-ring",
+          "status": "PASS",
+          "seconds": 222.5,
+          "summaries": [
+            "98 of 98 PASS"
+          ],
+          "log": "chapter-card-ring.log",
+          "log_sha256": "d342e092b39c8d53d29205dad763aead90ff47664f2df5da4788f9a68e37c46d"
+        },
+        {
+          "name": "licensed-with",
+          "status": "PASS",
+          "seconds": 70.1,
+          "summaries": [
+            "38 of 38 PASS (with)"
+          ],
+          "log": "licensed-with.log",
+          "log_sha256": "73bb0bbf8ab1ce528e3c210b40b0c65ab5b6937cefcf6ec0441e2a8c2d7f9f17"
+        },
+        {
+          "name": "licensed-without",
+          "status": "PASS",
+          "seconds": 22.64,
+          "summaries": [
+            "22 of 22 PASS (without)"
+          ],
+          "log": "licensed-without.log",
+          "log_sha256": "2fc47c6f7f5d0ddd3bdb6d783bfc94e55157d97489d294b5683bcb2406f5d1ad"
+        },
+        {
+          "name": "csp",
+          "status": "PASS",
+          "seconds": 7.44,
+          "summaries": [],
+          "log": "csp.log",
+          "log_sha256": "f62f682a27f99a28edc83b9bd529ce521caf16be45725f55970da56317774cb0"
+        }
+      ]
+    }
+  },
+  "intro_assertions": {
+    "pages": 70,
+    "strict_csp_single": 70
+  },
+  "existing_coverage_limits": {
+    "status": "UNCHANGED_BASELINE_GAPS",
+    "serling_checks_passed": 101,
+    "serling_checks_total": 107,
+    "comparison_sha256": "238c487dacd1d70acab9faee160a977cbca04f03b6ea33072546c256abd08cd0",
+    "current_report_sha256": "13c600c1e426e5a105c00b7f72de96a0f7fb767f8d252c5074d5938a7b1c769a",
+    "failed_checks": [
+      {
+        "pass": false,
+        "message": "chapter1/saro: current object/notebook/people/map descriptions resolve in the actual prepared area"
+      },
+      {
+        "pass": false,
+        "message": "chapter2/saro: current object/notebook/people/map descriptions resolve in the actual prepared area"
+      },
+      {
+        "pass": false,
+        "message": "chapter3/station01: current object/notebook/people/map descriptions resolve in the actual prepared area"
+      },
+      {
+        "pass": false,
+        "message": "chapter4/room6: current object/notebook/people/map descriptions resolve in the actual prepared area"
+      },
+      {
+        "pass": false,
+        "message": "chapter5/diner: current object/notebook/people/map descriptions resolve in the actual prepared area"
+      },
+      {
+        "pass": false,
+        "message": "chapter6/roswell: current object/notebook/people/map descriptions resolve in the actual prepared area"
+      }
+    ],
+    "new_missing": []
+  },
+  "visual_review_sha256": "43ffa426482cdafc7bfad94c239782e3799a51496cb38cf374a04d4e5412b496",
+  "harness_adaptation_sha256": "a2e7f78f0e75305f5a5aa5b5db273c0188b52bbc88e8368b7e4ca938035e6c6c",
+  "audio": {
+    "clips": 5,
+    "duration_seconds": 34.2,
+    "bytes": 276892,
+    "asr_clips": 5,
+    "verification_sha256": "261059a962c687acb24e10238a3dda9889420302af8aa5a5ed9de232cab52da0",
+    "previous_audio_files_preserved": 3271,
+    "profiles_preserved": 18
+  },
+  "corrected_findings": [
+    "Back/Escape from an occupied selected case now returns focus to New night",
+    "External DEV modal dismissal restores title music and both muted sound buses"
+  ],
+  "historical_evidence": "/home/tom/Documents/Codex/2026-10-19-lurer-p-lage-en-voice-clone/outputs/intro/first-pages-focus-failure",
+  "limits": [
+    "Human listening, actor likeness, acting and perceived pronunciation UNVERIFIED",
+    "Real PC/mobile speaker or headphone output and measured real-device FPS UNVERIFIED",
+    "Legacy harness AST/compile audit does not claim all 84 legacy scripts were executed",
+    "ASR accepts same-value number spelling; no lexical word deviation remains in the five checked intro clips",
+    "Six optional broad Serling inventory checks still fail for the same unrecorded newer object texts observed in base acfc09e. The raw101/107 report is retained; no test threshold or old bank was changed to hide it."
+  ]
+}

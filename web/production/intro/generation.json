@@ -1,0 +1,234 @@
+{
+  "clips": {
+    "323aecd87d70f9fa": {
+      "text": "New Mexico, 1986. Twenty-seven antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed, and forgotten.",
+      "spoken_text": "New Mexico, nineteen eighty-six. Twenty-seven antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed, and forgotten.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "13c0a7b8",
+        "text": "New Mexico, nineteen eighty-six. Twenty-seven antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed, and forgotten."
+      },
+      "response": {
+        "type": "done",
+        "id": "bb317bca",
+        "audio_path": "bb317bca.wav",
+        "duration": 11.8,
+        "gen_time": 4.28,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "cache_identity": "e92d8afe2daf72b4ee7e",
+      "uncut_wav_sha256": "7bfe91dd1b90af1416d210993240af94325394e4b5eabc43d0e198e5a1cb2ddf",
+      "reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+      "audio": {
+        "duration_seconds": 11.8,
+        "peak_dbfs": -5.896065970708223,
+        "rms_dbfs": -20.523119263447043,
+        "nonsilent_rms_dbfs": -20.448879827662193,
+        "nonsilent_seconds": 11.6,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.3202859753736966,
+        "bytes": 95084,
+        "sha256": "fdb681047cdef2e588d8c3508fecf4f54b450fbd2cf1ef73d6f23e7349b38e5e",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      }
+    },
+    "7858426c36fb3334": {
+      "text": "Tonight, the instruments will record something the sky has not sent. A telephone will ring in an empty room. A photograph will remember what no one saw.",
+      "spoken_text": "Tonight, the instruments will record something the sky has not sent. A telephone will ring in an empty room. A photograph will remember what no one saw.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "13c0a7b8",
+        "text": "Tonight, the instruments will record something the sky has not sent. A telephone will ring in an empty room. A photograph will remember what no one saw."
+      },
+      "response": {
+        "type": "done",
+        "id": "cc837d8a",
+        "audio_path": "cc837d8a.wav",
+        "duration": 9.96,
+        "gen_time": 2.03,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "cache_identity": "734d02fddaa983a9ea57",
+      "uncut_wav_sha256": "0d4571d61143d4e7ff8a9debc8328f51be19f82a4a5ee27a08b3228f3d4c964a",
+      "reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+      "audio": {
+        "duration_seconds": 9.96,
+        "peak_dbfs": -6.722095621040422,
+        "rms_dbfs": -20.53115571105037,
+        "nonsilent_rms_dbfs": -20.443061242259375,
+        "nonsilent_seconds": 9.76,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.375614086344726,
+        "bytes": 80300,
+        "sha256": "9f1218db35e61106ba103ffd633cf07c66e04899da600f242456fbb3243f6715",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      }
+    },
+    "4a6ccde3f9b83ee4": {
+      "text": "Your name is Reyes. Your shift ends at dawn. Between now and then, forty-seven seconds will refuse to belong to any clock.",
+      "spoken_text": "Your name is Reyes. Your shift ends at dawn. Between now and then, forty-seven seconds will refuse to belong to any clock.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "13c0a7b8",
+        "text": "Your name is Reyes. Your shift ends at dawn. Between now and then, forty-seven seconds will refuse to belong to any clock."
+      },
+      "response": {
+        "type": "done",
+        "id": "97a2d28c",
+        "audio_path": "97a2d28c.wav",
+        "duration": 7.96,
+        "gen_time": 1.69,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "cache_identity": "a150ada6970e59ecb6a9",
+      "uncut_wav_sha256": "022d7492d67ddc838ec2ad32f7d8b46d9f17dda3427b488dcaad8161fd527130",
+      "reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+      "audio": {
+        "duration_seconds": 7.96,
+        "peak_dbfs": -6.952279194678807,
+        "rms_dbfs": -20.56265290876954,
+        "nonsilent_rms_dbfs": -20.44093624727713,
+        "nonsilent_seconds": 7.74,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -4.532695503472418,
+        "bytes": 64364,
+        "sha256": "949c10f846497dc0cf3d6633397b6e1be517786bb5fdcd07bb92fb72747762b0",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      }
+    },
+    "72ca924172467658": {
+      "text": "The record calls it interference.",
+      "spoken_text": "The record calls it interference.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "13c0a7b8",
+        "text": "The record calls it interference."
+      },
+      "response": {
+        "type": "done",
+        "id": "09736beb",
+        "audio_path": "09736beb.wav",
+        "duration": 2.4,
+        "gen_time": 1.05,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "cache_identity": "e850133fa7774efa7d08",
+      "uncut_wav_sha256": "25c240a0865420dbc146f2649486ca21e6e085a5d159bfe8db948002a3159353",
+      "reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+      "audio": {
+        "duration_seconds": 2.4,
+        "peak_dbfs": -5.987331896727328,
+        "rms_dbfs": -20.800317716524916,
+        "nonsilent_rms_dbfs": -20.382802062980687,
+        "nonsilent_seconds": 2.18,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.638420834366528,
+        "bytes": 19820,
+        "sha256": "e9d118046ca5f4cea66effc73a43b47174d027545650933b80d4497a03f8051a",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      }
+    },
+    "812e0a225acaa10e": {
+      "text": "The record is incomplete.",
+      "spoken_text": "The record is incomplete.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "13c0a7b8",
+        "text": "The record is incomplete."
+      },
+      "response": {
+        "type": "done",
+        "id": "ef809166",
+        "audio_path": "ef809166.wav",
+        "duration": 2.08,
+        "gen_time": 0.95,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "cache_identity": "5a6c74de13f443f072a9",
+      "uncut_wav_sha256": "d56bd0a159e5a986730c78d59dda7dda0274e854255af668b50291b86abb7a8a",
+      "reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+      "audio": {
+        "duration_seconds": 2.08,
+        "peak_dbfs": -5.945544156811321,
+        "rms_dbfs": -20.87912539996686,
+        "nonsilent_rms_dbfs": -20.393662462685867,
+        "nonsilent_seconds": 1.86,
+        "samples_at_or_above_full_scale": 0,
+        "constant_gain_db": -3.73075397845205,
+        "bytes": 17324,
+        "sha256": "e234c1a87d315397231301a186484eb1db9f965b322de1fd3eb82efa4f6787bd",
+        "ffprobe": {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1,
+          "bit_rate": "64000"
+        }
+      }
+    }
+  }
+}

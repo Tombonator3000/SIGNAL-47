@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "source": "Five frozen original introduction paragraphs authorized on 2026-10-21",
+  "clips": [
+    {
+      "id": "323aecd87d70f9fa",
+      "text": "New Mexico, 1986. Twenty-seven antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed, and forgotten.",
+      "order": 1
+    },
+    {
+      "id": "7858426c36fb3334",
+      "text": "Tonight, the instruments will record something the sky has not sent. A telephone will ring in an empty room. A photograph will remember what no one saw.",
+      "order": 2
+    },
+    {
+      "id": "4a6ccde3f9b83ee4",
+      "text": "Your name is Reyes. Your shift ends at dawn. Between now and then, forty-seven seconds will refuse to belong to any clock.",
+      "order": 3
+    },
+    {
+      "id": "72ca924172467658",
+      "text": "The record calls it interference.",
+      "order": 4
+    },
+    {
+      "id": "812e0a225acaa10e",
+      "text": "The record is incomplete.",
+      "order": 5
+    }
+  ]
+}

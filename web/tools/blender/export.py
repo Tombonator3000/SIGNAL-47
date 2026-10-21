@@ -14,6 +14,9 @@
 #         (`wheel`, axis X, the rim's face to +X, as the four instances draw it).
 # Usage (from web/, the game's Python with Playwright): python tools/blender/export.py saro|truck OUTDIR
 import asyncio, base64, json, os, subprocess, sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 WHAT, OUT = sys.argv[1], sys.argv[2]
@@ -125,7 +128,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append('PAGEERROR: ' + str(e)))
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL)
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(300)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(300)
         await pg.evaluate("S47.hold = true; S47.jump('chapter1'); S47.tick(0.5)")
         await pg.add_script_tag(content=js)
         if WHAT not in JS: raise SystemExit(f'nothing to export for {WHAT}')

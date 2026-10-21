@@ -16,6 +16,7 @@
 # the TV and its frame, and the map.
 # Usage: python3 tools/cowstv.py OUTDIR [WxH]
 import asyncio, sys, json, os, math, base64
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -48,7 +49,7 @@ async def main():
         try: await pg.wait_for_function("window.S47 && Object.keys(S47.game.d.audio.buf || {}).length >= 25", timeout=120000)
         except Exception: pass
         await pg.evaluate("localStorage.clear()"); await pg.reload()
-        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.wait_for_selector('button[data-a=start]'); await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         ev = pg.evaluate
         async def tick(s, fps=30): await ev(f"S47.tick({s}, {fps})")
         async def shot(name): await pg.screenshot(path=f'{OUT}/{name}.png')

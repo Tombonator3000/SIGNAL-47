@@ -5,6 +5,7 @@
 # without the pose (one from before 18 October 2026) puts it on its place as before.
 # Usage: python3 tools/truckpose.py OUTDIR [WxH]
 import asyncio, sys, os, json, math
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -72,7 +73,7 @@ async def main():
                 and abs(a['p'] - c['p']) < 1e-4 and abs(a['r'] - c['r']) < 1e-4
         def fmt(a): return f"{a['at']} ({a['x']:.2f}, {a['y']:.2f}, {a['z']:.2f}) h {a['h']:.3f}" if a else 'none'
 
-        await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(0.3); S47.setPicture('off')")
         await ev("S47.jump('chapter1'); S47.tick(1.0)")
         pad = await pose()

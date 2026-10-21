@@ -4,6 +4,7 @@
 # Pages does; python's http.server does not, and then a song cannot be started part way in).
 # Usage: S47_URL=http://127.0.0.1:8047/SIGNAL-47/ python3 tools/radiomix.py
 import asyncio, os, sys
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 URL = os.environ.get('S47_URL', 'http://127.0.0.1:8047/SIGNAL-47/')
 res = []
@@ -18,7 +19,7 @@ async def main():
         await pg.add_init_script("HTMLElement.prototype.requestPointerLock = function(){ return Promise.resolve(); };")
         await pg.goto(URL); await pg.wait_for_function('window.S47')
         await pg.evaluate("localStorage.clear()"); await pg.reload(); await pg.wait_for_function('window.S47')
-        await pg.click('button[data-a=start]'); await pg.wait_for_function('S47.started()', polling=200)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_function('S47.started()', polling=200)
         ev = pg.evaluate
         await ev("S47.jump('chapter1')"); await pg.wait_for_timeout(500)
         await ev("S47.hold = true; S47.tick(1.0); S47.game.clock = 1 * 3600 + 30 * 60")

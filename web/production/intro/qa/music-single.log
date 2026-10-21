@@ -1,0 +1,9 @@
+PASS the title screen is quiet before anything is clicked
+PASS the first click brings in the title music
+PASS and it stops when the night starts
+PASS the music starts with the night
+PASS the first time in the yard holds music for the authored 47-second breath ({'jacket': True, 'breath': {'t': 0.49999999999999994, 'len': 47, 'back': 0, 'of': 4}, 'held': True, 'playing': None})
+PASS the real ambience update releases the breath and music within 55 game seconds ({'seconds': 47, 'breath': None, 'held': False})
+PASS the single-file build plays no cues and asks for no files
+no console errors/warnings
+7 of 7 PASS

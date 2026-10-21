@@ -9,6 +9,7 @@
 # every control, the phone's first on a phone.
 # Usage: python3 tools/examine.py OUTDIR [WxH]
 import asyncio, sys, os, json
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -61,7 +62,7 @@ async def main():
         async def tick(s, fps=30): await ev(f"S47.tick({s}, {fps})")
         async def shot(name): await pg.screenshot(path=f'{OUT}/{name}.png')
         async def start():
-            await pg.click('button[data-a=start]'); await pg.wait_for_timeout(500)
+            await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_timeout(500)
             await ev(HELPERS); await ev("S47.hold = true; S47.tick(0.3); S47.setPicture('off'); T.hook()")
         async def look(target, dx, dz, hold=True):
             return await ev(f"T.look({target}, {dx}, {dz}, {'true' if hold else 'false'})")

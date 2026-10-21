@@ -1,0 +1,9 @@
+{
+  "profile_id": "13c0a7b8",
+  "kind": "clone",
+  "profile_metadata_sha256": "a6617cb52479cc3e0a1ba9f4b9066b716e4b850d0abd0ef81fc741278f91e925",
+  "reference_sha256": "ada64647e88782c14a69a2662cd620a53a142a42a791f68d0251631f8902404d",
+  "source_manifest": "production/ensemble/profiles.json",
+  "source_manifest_sha256": "9ac77c023c93b25b06107168fb90935b5fb4eed6f56d40d4b4bafac3a18e9100",
+  "source_role": "serling"
+}

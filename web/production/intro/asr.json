@@ -1,0 +1,138 @@
+{
+  "model": "Systran/faster-whisper-small",
+  "mode": "accurate",
+  "refine": false,
+  "human_listened": false,
+  "clips": {
+    "323aecd87d70f9fa": {
+      "expected": "New Mexico, 1986. Twenty-seven antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed, and forgotten.",
+      "recognized": "New Mexico 1986. 27 antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed and forgotten.",
+      "strict_word_edits": 2,
+      "same_value_word_edits": 0,
+      "status": "REVIEWED_DIFFERENCE",
+      "note": "Same-value number spelling only.",
+      "audio_sha256": "fdb681047cdef2e588d8c3508fecf4f54b450fbd2cf1ef73d6f23e7349b38e5e",
+      "response": {
+        "text": "New Mexico 1986. 27 antennas listen to a sky that has never answered. On the night shift, silence is a measurement. It can be filed, signed and forgotten.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 5.92,
+            "text": "New Mexico 1986. 27 antennas listen to a sky that has never answered."
+          },
+          {
+            "start": 7.18,
+            "end": 11.54,
+            "text": "On the night shift, silence is a measurement. It can be filed, signed and forgotten."
+          }
+        ],
+        "language": "en",
+        "duration_s": 11.54,
+        "transcription_time_s": 1.8,
+        "engine": "faster-whisper"
+      },
+      "human_word_check": "UNVERIFIED"
+    },
+    "7858426c36fb3334": {
+      "expected": "Tonight, the instruments will record something the sky has not sent. A telephone will ring in an empty room. A photograph will remember what no one saw.",
+      "recognized": "Tonight the instruments will record something the sky has not sent a Telephone will ring in an empty room a photograph will remember what no one saw.",
+      "strict_word_edits": 0,
+      "same_value_word_edits": 0,
+      "status": "PASS",
+      "note": "",
+      "audio_sha256": "9f1218db35e61106ba103ffd633cf07c66e04899da600f242456fbb3243f6715",
+      "response": {
+        "text": "Tonight the instruments will record something the sky has not sent a Telephone will ring in an empty room a photograph will remember what no one saw.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 3.62,
+            "text": "Tonight the instruments will record something the sky has not sent a"
+          },
+          {
+            "start": 5.06,
+            "end": 9.72,
+            "text": "Telephone will ring in an empty room a photograph will remember what no one saw"
+          }
+        ],
+        "language": "en",
+        "duration_s": 9.72,
+        "transcription_time_s": 0.82,
+        "engine": "faster-whisper"
+      },
+      "human_word_check": "UNVERIFIED"
+    },
+    "4a6ccde3f9b83ee4": {
+      "expected": "Your name is Reyes. Your shift ends at dawn. Between now and then, forty-seven seconds will refuse to belong to any clock.",
+      "recognized": "Your name is Reyes your shift ends at dawn between now and then 47 seconds will refuse to belong to any clock.",
+      "strict_word_edits": 2,
+      "same_value_word_edits": 0,
+      "status": "REVIEWED_DIFFERENCE",
+      "note": "Same-value number spelling only.",
+      "audio_sha256": "949c10f846497dc0cf3d6633397b6e1be517786bb5fdcd07bb92fb72747762b0",
+      "response": {
+        "text": "Your name is Reyes your shift ends at dawn between now and then 47 seconds will refuse to belong to any clock.",
+        "segments": [
+          {
+            "start": 0.0,
+            "end": 7.74,
+            "text": "Your name is Reyes your shift ends at dawn between now and then 47 seconds will refuse to belong to any clock"
+          }
+        ],
+        "language": "en",
+        "duration_s": 7.74,
+        "transcription_time_s": 0.82,
+        "engine": "faster-whisper"
+      },
+      "human_word_check": "UNVERIFIED"
+    },
+    "72ca924172467658": {
+      "expected": "The record calls it interference.",
+      "recognized": "The record calls it interference.",
+      "strict_word_edits": 0,
+      "same_value_word_edits": 0,
+      "status": "PASS",
+      "note": "",
+      "audio_sha256": "e9d118046ca5f4cea66effc73a43b47174d027545650933b80d4497a03f8051a",
+      "response": {
+        "text": "The record calls it interference.",
+        "segments": [
+          {
+            "start": 0.24,
+            "end": 1.54,
+            "text": "The record calls it interference."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.54,
+        "transcription_time_s": 0.75,
+        "engine": "faster-whisper"
+      },
+      "human_word_check": "UNVERIFIED"
+    },
+    "812e0a225acaa10e": {
+      "expected": "The record is incomplete.",
+      "recognized": "The record is incomplete.",
+      "strict_word_edits": 0,
+      "same_value_word_edits": 0,
+      "status": "PASS",
+      "note": "",
+      "audio_sha256": "e234c1a87d315397231301a186484eb1db9f965b322de1fd3eb82efa4f6787bd",
+      "response": {
+        "text": "The record is incomplete.",
+        "segments": [
+          {
+            "start": 0.5,
+            "end": 1.58,
+            "text": "The record is incomplete."
+          }
+        ],
+        "language": "en",
+        "duration_s": 1.58,
+        "transcription_time_s": 0.64,
+        "engine": "faster-whisper"
+      },
+      "human_word_check": "UNVERIFIED"
+    }
+  }
+}

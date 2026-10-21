@@ -1,0 +1,214 @@
+{
+  "status": "CAUSE_CONFIRMED",
+  "scope": "Instrumented actual browser retry on unchanged frozen runtime; original music test failure preserved separately",
+  "observed_state": {
+    "want": "night",
+    "held": true,
+    "phase": "ch1",
+    "cinematic": false,
+    "gt": 2.0000000000000027,
+    "clock": 8184.0000000000255,
+    "area": "saro",
+    "pos": [
+      12,
+      0,
+      6
+    ],
+    "reader": "idle",
+    "opening": {
+      "active": false,
+      "state": "idle",
+      "choice": null
+    },
+    "modal": null,
+    "score": {
+      "rest": 4,
+      "playing": null,
+      "track": null
+    },
+    "audio": {
+      "breathing": {
+        "t": 0.9999999999999999,
+        "len": 47,
+        "back": 0,
+        "of": 4
+      },
+      "radio": false
+    },
+    "parts": {
+      "ch1": {
+        "busy": null,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "ch2": {
+        "busy": null,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "ch3": {
+        "busy": null,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "world": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "roadside": {
+        "busy": null,
+        "quiet": null,
+        "racing": null,
+        "silent": false,
+        "heard": null
+      },
+      "cb": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "nightEvents": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "motelTv": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": false
+      },
+      "curve": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "roofSteps": {
+        "busy": false,
+        "quiet": 0,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "saroDark": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "ninth": {
+        "busy": null,
+        "quiet": 0,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "morning": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "dinerCooler": {
+        "busy": null,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": false
+      },
+      "reelTape": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "officePhone": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": false
+      },
+      "truckB": {
+        "busy": false,
+        "quiet": null,
+        "racing": false,
+        "silent": null,
+        "heard": null
+      },
+      "truckTaken": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "archive": {
+        "busy": false,
+        "quiet": null,
+        "racing": false,
+        "silent": null,
+        "heard": null
+      },
+      "arrayTip": {
+        "busy": null,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "reel047": {
+        "busy": null,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": []
+      },
+      "arrayBack": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      },
+      "recWalk": {
+        "busy": false,
+        "quiet": null,
+        "racing": null,
+        "silent": null,
+        "heard": null
+      }
+    }
+  },
+  "unchanged_from_acfc09e": {
+    "src/core/Audio.ts": "ab2309c825395e6c4eda29bb130b7961509854765ef78a3d3e950adb5e5b4a3b",
+    "src/core/ambience.ts": "ea05409ee8c47049ad67db5491cb5f4a6a55fe099f0ae4dca8b83ea29b1c90a5",
+    "src/core/score.ts": "afffd67d4cb6042cf71fbd96b4aafbdb51bf4d1e61174e45b242fa77af254d5c",
+    "src/story/Prologue.ts": "ed4ccbb4b3f426895f481b2b50720a00c3ce58f36b17b4735d4a9236673c6044"
+  },
+  "cause": "PR127 first-yard breath holds music for47game seconds. Original music fixture demanded a night cue at1s into that intentional hold.",
+  "planned_test_correction": "Assert actual47s hold and natural game-clock release, then retain all existing strict cue/streaming/ended checks. No product change.",
+  "first_failure": "outputs/intro/first-music-failure",
+  "diagnostic_log": "outputs/intro/music-diagnostic-retry.log",
+  "diagnostic_log_sha256": "d0613a3de2614a5cff0c62a95acf233e85f12d45653f0163789e56f6b416137a",
+  "preview_note": "First diagnostic attempt could not reach old preview after long input pause; new owned preview daemon25339 used for confirmed state."
+}

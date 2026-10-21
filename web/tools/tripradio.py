@@ -14,6 +14,7 @@
 #
 # Usage: python3 tools/tripradio.py OUTDIR
 import asyncio, sys, os, json, math, time
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
@@ -44,7 +45,7 @@ async def main():
         await pg.goto(URL)
         await pg.evaluate("localStorage.clear()"); await pg.reload()
         await pg.wait_for_selector('button[data-a=start]')
-        await pg.click('button[data-a=start]'); await pg.wait_for_function('S47.started()', polling=200)
+        await pg.click('button[data-a=start]'); await begin_opening(pg); await pg.wait_for_function('S47.started()', polling=200)
         ev = pg.evaluate
         async def tick(s, fps=20): await ev(f"S47.tick({s}, {fps})")
         toasts = lambda: ev("window.__toasts.filter((t) => typeof t === 'string')")

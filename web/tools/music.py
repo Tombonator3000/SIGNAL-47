@@ -6,6 +6,7 @@
 # Usage: S47_URL=http://127.0.0.1:PORT/SIGNAL-47/ python3 tools/music.py
 #        python3 tools/music.py            (the single-file build: no music, no requests)
 import asyncio, sys, os
+from intro_flow import begin_opening
 from playwright.async_api import async_playwright
 
 URL = os.environ.get('S47_URL') or 'file://' + os.path.abspath('dist-single/index.html')
@@ -31,12 +32,23 @@ async def main():
         await pg.mouse.click(8, 8)
         await asyncio.sleep(1.5)
         check(await ev("S47.audio['loops'].has('music') && S47.audio.ctx.state === 'running'"), 'the first click brings in the title music')
-        await pg.click('button[data-a=start]')
+        await pg.click('button[data-a=start]'); await begin_opening(pg)
         await pg.wait_for_function("S47.started()")
         check(not await ev("S47.audio['loops'].has('music')"), 'and it stops when the night starts')
         await ev("S47.hold = true; S47.tick(0.3); S47.jump('chapter1'); S47.tick(1)")
         check(await ev("!!S47.score()"), 'the music starts with the night')
         await ev("S47.player.place(12, 6, 0); S47.tick(0.5)")
+        # PR127's first trip into the yard holds the ambience and score for
+        # 47 game seconds. Exercise that real state before testing ordinary
+        # place music; do not clear the breath or force musicHeld to false.
+        breath = await ev("({jacket:!!S47.game.ns.jacket,breath:S47.audio.night.breathing,held:S47.musicHeld(),playing:S47.score().playing})")
+        check(breath['jacket'] and breath['breath'] is not None and breath['breath']['len'] == 47 and breath['held'] and breath['playing'] is None,
+              f"the first time in the yard holds music for the authored 47-second breath ({breath})")
+        waited = await ev("""() => {let elapsed=0;
+          while(S47.audio.night.breathing && elapsed<55){S47.tick(0.5);elapsed+=0.5;}
+          return {seconds:elapsed,breath:S47.audio.night.breathing,held:S47.musicHeld()};}""")
+        check(waited['breath'] is None and not waited['held'],
+              f"the real ambience update releases the breath and music within 55 game seconds ({waited})")
         if SINGLE:
             await ev("S47.score()['rest'] = 0; S47.tick(1)")
             await asyncio.sleep(2)
