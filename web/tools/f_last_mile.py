@@ -73,6 +73,13 @@ HELPERS = """(() => {
         tick();
       });
     },
+    /** THE EVENT on to e s in steps of 1/60 s: when the dash lamps came on (rising edges). */
+    lamps(to) {
+      const c = S47.ch6, tr = S47.world.oldTruck, out = [];
+      let was = (tr.dashLevel ?? 0) > 0.5;
+      while (c['et'] < to - 1e-4) { S47.tick(Math.min(1 / 60, to - c['et'])); const on = (tr.dashLevel ?? 0) > 0.5; if (on && !was) out.push(+c['et'].toFixed(3)); was = on; }
+      return out;
+    },
     said(re) { return T.toasts.filter((x) => new RegExp(re).test(x.t)); },
     st() {
       const c = S47.ch6, d = S47.world.oldDrive, r = S47.world.oldRoad, w = r.where(d.pos.x, d.pos.z), L = c.lastMile, cl = document.querySelector('.clockline');
@@ -301,6 +308,10 @@ async def at_the_line(R):
           f'the key: the solenoid four, a pause, seven, the field radio\'s relay ({gaps})')
     check(not s['key'] and (s['prompt'] is None or 'Turn the key' not in s['prompt']), 'no "Turn the key" while it clicks')
     e0 = s['e']
+    # the dash lamps flash with the clicks, and their own count does not come after (one four and seven)
+    lit = await ev(f"T.lamps({e0 + 5.0})")
+    rel = [round(x - e0, 2) for x in lit]
+    check(len(lit) == 11 and all(abs(a - b) < 0.06 for a, b in zip(rel, secs)), f'turned before the lamps\' count: the dash lamps flash with each click, four and seven, and no count of their own after ({rel})')
     await R.to(e0 + 1.3)
     four = T_said(await ev("T.toasts"), 'four times')
     await R.to(e0 + 4.5)
@@ -378,6 +389,46 @@ async def at_the_line(R):
     notes = await ev("S47.game.notes.filter((n) => /CB opened by itself/.test(n))")
     check(len(notes) == 1 and 'This one kept running' in notes[0], f'the note ({notes[0][:60] if notes else None})')
 
+async def late_key(R):
+    """On the line, the key not turned before the dash lamps count: they count by themselves, the key waits
+    for them, and afterwards the clicks are the solenoid's alone; the key and the door keep their captions
+    off the radio's two voices."""
+    ev = R.ev
+    s = await R.st()
+    check(s['stage'] == 'event', 'on the line again (63 mph)')
+    await R.to(3.0)
+    check((await R.st())['key'], '+3 s: "Turn the key"')
+    lit = await ev("T.lamps(4.9)")
+    s5 = await R.st()
+    await R.key()
+    k5 = (await R.st())['tries']['key']
+    lit += await ev("T.lamps(11.0)")
+    groups, g = [], 1
+    for a, c in zip(lit, lit[1:]):
+        if c - a > 0.9: groups.append(g); g = 1
+        else: g += 1
+    groups.append(g)
+    check(len(lit) == 11 and groups == [4, 7] and abs(lit[0] - 4.0) < 0.05, f'not turned: the dash lamps count four and seven by themselves from +4 s ({groups}, from {lit[:1]})')
+    check(not s5['key'] and k5 == 0 and (s5['prompt'] is None or 'Turn the key' not in s5['prompt']), 'while they count, no "Turn the key", and E waits (never two fours and sevens out of step)')
+    await R.to(11.0)
+    s = await R.st()
+    check(s['key'], '+11 s, the count over: "Turn the key" again')
+    n0 = await ev("T.sol.length")
+    await R.key()
+    lit2 = await ev("T.lamps(17.5)")
+    sol = await ev("T.sol")
+    check(len(sol) == n0 + 1 and len(sol[-1]['secs']) == 11 and not lit2, f'the first turn after the count: four and seven on the solenoid, the lamps dark ({len(sol[-1]["secs"]) if sol else None} clicks, lamps {lit2})')
+    # the radio's voices: the key's and the door's captions keep off them
+    await R.to(23.7)
+    t0 = len(await ev("T.toasts"))
+    await R.to(24.2); await R.key(); await R.to(25.4); await R.key(); await R.to(27.4); await R.door()
+    new = [x['t'] for x in (await ev("T.toasts"))[t0:]]
+    tries = (await R.st())['tries']
+    check(tries['key'] >= 3 and tries['door'] == 1 and not any(('click' in x or 'handle' in x) for x in new) and any('Reference west' in x for x in new) and any('Do not stop' in x for x in new),
+          f'with the radio\'s two voices on, the key and the door make their sounds and no captions over them ({new})')
+    await R.to(30.4); await R.door()
+    check(T_said((await ev("T.toasts"))[t0:], 'handle'), 'after them the door has its caption again')
+
 async def desktop(b):
     ctx, pg, errs = await page(b, 1280, 720, False)
     R = Run(pg, False, 'd')
@@ -417,6 +468,7 @@ async def desktop(b):
     # ---------- 63 mph ----------
     await ev("T.sol.length = 0; T.restarts = 0")
     await timing(R, 28.2, 6.6, '63 mph')
+    await late_key(R)
     # ---------- stopped in the 47: the clock waits ----------
     await R.road(6.9, 24.6)
     await ev("(() => { let t = 0; while (S47.ch6.lastMile.openAt === null && t < 400) { S47.tick(1 / 15); t += 2 / 30; } })()")

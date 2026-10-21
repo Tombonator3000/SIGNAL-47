@@ -94,10 +94,18 @@ export const THIRD = { until: 32, ahead: 9, letGo: 1.2, flares: [11.0, 12.2, 14.
  *  turn four and seven (core/walkie.ts, RELAY) and the breath, `again` s between later turns. door: s
  *  between tries of the handle. */
 export const LAST_MILE = { lead: 47, least: 40, room: 200, fromMi: 7.0, before: 6.95, tau: 1.5, front: 2.3,
-  key: { from: 1.5, until: 31.4, first: 0.15, breath: 0.6, again: 0.8 }, door: 0.6 } as const;
-/** What is said when (seconds from the CB opening; the captions, for those who cannot hear it). */
+  key: { from: 1.5, until: 31.4, first: 0.15, breath: 0.6, again: 0.8, said: 4, lamp: 0.14 }, door: 0.6, doorSaid: 3,
+  words: [23.6, 30.0] } as const;
+/** + 4 s: the dash lamps blink four, a pause, seven, by themselves (THE EVENT). A key turned before
+ *  that has the lamps instead, one flash with each click of the solenoid, and the free count does not
+ *  come; not turned by then, the key waits for the count to be over (one four and seven at a time,
+ *  never two out of step). */
+const DASH = { from: 4, until: 10.8 } as const;
+/** What is said when (seconds from the CB opening; the captions, for those who cannot hear it): the
+ *  squelch first, with nothing on it, and the engine when it is there (CB_ENGINE.up). */
 const CB_SAYS: [number, string, number][] = [
-  [0.3, 'The CB opens by itself. Nobody calls. On the channel, small and a long way off, an engine idling. It sounds like yours.', 6.4],
+  [0.3, 'The CB opens by itself. Nobody calls.', 3.2],
+  [1.7, 'On the channel, small and a long way off, an engine idling. It sounds like yours.', 5.6],
   [8.0, 'It coughs twice and dies. Yours keeps running.', 4.6],
   [9.8, 'The channel stays open on nothing at all. Then the squelch shuts.', 3.8],
 ];
@@ -142,6 +150,9 @@ export class Chapter6 {
   readonly lastMile = { cb: null as number | null, skipped: false, d0: 0, clock: 0, openAt: null as number | null, closedAt: null as number | null, vs: -1, approach: false, eta: Infinity };
   /** The key and the door in THE EVENT: how often each was tried, and when each answers again. */
   readonly tries = { key: 0, door: 0, keyFree: 0, doorFree: 0 };
+  /** The first turn came before the dash lamps' own count: when each click is (THE EVENT's seconds), the
+   *  lamps flash with them. */
+  private keyLamps: number[] | null = null;
   private cues: { at: number; fn: () => void }[] = [];
   /** Where its head is while it stands there (the night's log, main.ts; the tests), else null. */
   get thirdAt(): THREE.Vector3 | null { return this.third?.mesh.visible ? this.third.head(this._head) : null; }
@@ -172,7 +183,7 @@ export class Chapter6 {
     if (this.lastMile.cb !== null && this.lastMile.closedAt === null) this.d.cb.stop();
     Object.assign(this.lastMile, { cb: null, skipped: false, d0: 0, clock: 0, openAt: null, closedAt: null, vs: -1, approach: false, eta: Infinity });
     Object.assign(this.tries, { key: 0, door: 0, keyFree: 0, doorFree: 0 });
-    this.cues = [];
+    this.cues = []; this.keyLamps = null;
     this.skyLift = null; this.sunElev = null;
     this.ending?.dispose(); this.ending = null;
     if (this.d.world.oldControl) this.d.world.oldControl = null;
@@ -280,7 +291,12 @@ export class Chapter6 {
   // ---------- the key and the door, in THE EVENT ----------
   /** "Turn the key" (main.ts: the prompt, and the Use button on a phone, can-out): the engine has died
    *  and the FLASH has not come, and the last turn has had its answer. */
-  get wantsKey() { const K = LAST_MILE.key; return this.stage === 'event' && this.et >= K.from && this.et < K.until && this.et >= this.tries.keyFree; }
+  get wantsKey() {
+    const K = LAST_MILE.key, e = this.et;
+    // (not while the dash lamps count by themselves: DASH)
+    if (this.tries.key === 0 && e >= DASH.from && e < DASH.until) return false;
+    return this.stage === 'event' && e >= K.from && e < K.until && e >= this.tries.keyFree;
+  }
   /** "Get out" (Q, its own button on a phone) the whole time the key could be: the door that will not open. */
   get doorOffered() { const K = LAST_MILE.key; return this.stage === 'event' && this.et >= K.from && this.et < K.until; }
   /** E in THE EVENT (main.ts useCurrent). The first turn: the solenoid four, a pause, seven, the relay on
@@ -289,11 +305,15 @@ export class Chapter6 {
   turnKey(): boolean {
     if (this.stage !== 'event') return false;
     if (!this.wantsKey) return true;
-    const K = LAST_MILE.key, a = this.d.audio, ui = this.d.ui, eng = this.d.world.engineSound, n = ++this.tries.key, e = this.et;
+    const K = LAST_MILE.key, a = this.d.audio, eng = this.d.world.engineSound, n = ++this.tries.key, e = this.et;
+    // (the captions keep off the radio's two voices, and after a few turns the key is only its sound)
+    const ui = { toast: (text: string, secs: number) => { if (!this.onWords && n <= K.said) this.d.ui.toast(text, secs); } };
     a.play(a.or('keys'), { gain: 0.32 });
     if (n === 1) {
       const clicks = fourSeven(K.first), four = clicks[3], seven = clicks[10];
       eng?.solenoid(clicks);
+      // (before the dash lamps' own count: they flash with the clicks instead)
+      if (e < DASH.from) this.keyLamps = clicks.map((c) => e + c);
       this.tries.keyFree = e + seven + K.breath + 0.4;
       this.cue(e + four + 0.05, () => ui.toast('You turn the key. Under the hood the solenoid clicks, four times.', 3.4));
       this.cue(e + seven + 0.05, () => ui.toast('A pause. Then seven. Nothing turns over.', 3.4));
@@ -321,10 +341,13 @@ export class Chapter6 {
     this.tries.doorFree = this.et + LAST_MILE.door;
     const n = ++this.tries.door, a = this.d.audio;
     a.play(a.or('door_latch', 'switch'), { gain: 0.5, rate: 0.8 });
-    this.d.ui.toast(n === 2 ? 'The handle moves. The door does not. The lock button is up.' : 'The handle moves. The door does not.', 3.2);
+    if (!this.onWords && n <= LAST_MILE.doorSaid) this.d.ui.toast(n === 2 ? 'The handle moves. The door does not. The lock button is up.' : 'The handle moves. The door does not.', 3.2);
     return true;
   }
   private cue(at: number, fn: () => void) { this.cues.push({ at, fn }); }
+  /** The radio's two voices are on, with their captions (event(): Tomás at +23.8, Nora at +26.8): the
+   *  key and the door keep their captions off them. */
+  private get onWords() { const [a, b] = LAST_MILE.words; return this.et >= a && this.et < b; }
 
   // ---------- THE EVENT ----------
   private startEvent() {
@@ -389,12 +412,17 @@ export class Chapter6 {
       audio.amb.gain.setTargetAtTime(0.25, audio.ctx?.currentTime ?? 0, 0.8);
       this.g.note('05:29. On the line.');
     });
-    // + 4 s: the dash lamps blink four times, a pause, seven times
-    if (e >= 4 && e < 10.8) {
-      const t = e - 4;
+    // + 4 s: the dash lamps blink four times, a pause, seven times (or with the key's clicks, if it
+    // was turned before: DASH)
+    if (this.keyLamps) {
+      const K = this.keyLamps, last = K[K.length - 1];
+      if (e < last + 0.4) truck.setDashLevel(K.some((c) => e >= c && e < c + LAST_MILE.key.lamp) ? 1 : 0);
+      else this.once('dashOff', () => truck.setDashLevel(0));
+    } else if (e >= DASH.from && e < DASH.until) {
+      const t = e - DASH.from;
       const on = t < 2 ? (t % 0.5) < 0.25 : t >= 3.2 && t < 6.7 ? ((t - 3.2) % 0.5) < 0.25 : false;
       truck.setDashLevel(on ? 1 : 0);
-    } else if (e >= 10.8) this.once('dashOff', () => truck.setDashLevel(0));
+    } else if (e >= DASH.until) this.once('dashOff', () => truck.setDashLevel(0));
     // + 2 s: the pressure the time away has, the same, coming up under it until FLASH
     if (e >= 2) this.once('pressure', () => { this.bed = audio.pressure(); });
     if (this.bed && e < 34) this.bed.gain.gain.value = 0.063 * sm(2, 6, e) + 0.187 * sm(6, 32, e);
