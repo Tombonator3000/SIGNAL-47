@@ -66,6 +66,7 @@ public:
 	FS47Mat Material(const FString& Path);            // a material handle ("yard.m.screen")
 	FVector Vec(const FString& Path, const FVector& Default = FVector::ZeroVector) const; // a Vector3 the code holds
 	FS47Area Rect(const FString& Path) const;         // a {minX, maxX, minZ, maxZ} the code holds
+	FS47Pose Pose(const FString& Path) const;         // an {x, z, yaw} the code holds (an anchor)
 	bool HasPath(const FString& Path) const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
 	// what FS47Obj and FS47Mat use
@@ -77,6 +78,8 @@ public:
 	void MarkUsable(int32 Node, const FString& Id);
 	FString UsableAt(const UPrimitiveComponent* C) const; // the id of what a trace hit, or empty
 	int32 NodeOf(const UPrimitiveComponent* C) const { const int32* N = CompNode.Find(C); return N ? *N : -1; }
+
+	void SetFogDensity(float Density); // the scene's FogExp2 density (World.enter)
 
 	// ---------- the fake floodlights (kit.ts floodSet / setFlood) ----------
 	int32 FloodSet(const FString& Key) const;         // 'site', 'annex', ...; -1 when unknown
@@ -177,6 +180,7 @@ private:
 	TMap<FString, FString> HandleLights;
 	TMap<FString, FVector> HandleVecs;
 	TMap<FString, FS47Area> HandleRects;
+	TMap<FString, FS47Pose> HandlePoses;
 	TMap<int32, TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>>> NodeMidCache;
 	TMap<int32, TWeakObjectPtr<class UMaterialInstanceDynamic>> SharedMidCache;
 	TMap<int32, FString> Usable;

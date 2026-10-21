@@ -173,6 +173,13 @@ bool AS47Web::Load()
 				R.MinX = Rv[0]->AsNumber(); R.MaxX = Rv[1]->AsNumber(); R.MinZ = Rv[2]->AsNumber(); R.MaxZ = Rv[3]->AsNumber(); R.bValid = true;
 				HandleRects.Add(FString(KV.Key.ToView()), R);
 			}
+			const TArray<TSharedPtr<FJsonValue>>& Pv = Arr(O, TEXT("pose"));
+			if (Pv.Num() == 3)
+			{
+				FS47Pose Po;
+				Po.X = Pv[0]->AsNumber(); Po.Z = Pv[1]->AsNumber(); Po.Yaw = Pv[2]->AsNumber(); Po.bValid = true;
+				HandlePoses.Add(FString(KV.Key.ToView()), Po);
+			}
 		}
 	}
 	// areas
@@ -1098,6 +1105,18 @@ FS47Area AS47Web::Rect(const FString& Path) const
 {
 	const FS47Area* R = HandleRects.Find(Path);
 	return R ? *R : FS47Area();
+}
+
+void AS47Web::SetFogDensity(float Density)
+{
+	FogDensity = Density;
+	if (UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr) E->SetScalarParameterValue(TEXT("FogDensity"), Density);
+}
+
+FS47Pose AS47Web::Pose(const FString& Path) const
+{
+	const FS47Pose* P = HandlePoses.Find(Path);
+	return P ? *P : FS47Pose();
 }
 
 bool AS47Web::HasPath(const FString& Path) const

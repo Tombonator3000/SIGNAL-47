@@ -363,7 +363,10 @@
       else if (v.isMaterial) handles[path] = { mat: matIndex.has(v.uuid) ? matIndex.get(v.uuid) : -1 };
       else if (v.isVector3) handles[path] = { vec: [v.x, v.y, v.z] };
       else if (isRect(v)) handles[path] = { rect: [v.minX, v.maxX, v.minZ, v.maxZ] };
+      else if (isPose(v)) handles[path] = { pose: [v.x, v.z, v.yaw] };
     };
+    // a place to stand: {x, z, yaw} (an area's anchors)
+    const isPose = (v) => typeof v.x === 'number' && typeof v.z === 'number' && typeof v.yaw === 'number' && !v.isVector3;
     // a walk zone, a room's bounds: four numbers; an anchor: a Vector3 (zones and anchors the code reads)
     const isRect = (v) => typeof v.minX === 'number' && typeof v.maxX === 'number' && typeof v.minZ === 'number' && typeof v.maxZ === 'number';
     const scan = (prefix, obj, depth) => {
@@ -374,11 +377,11 @@
       for (const [k, v] of entries) {
         // (a module's d is what it was handed: the other modules, found under their own names)
         if (!v || typeof v !== 'object' || k === 'parent' || k === 'children' || k === 'd' && prefix !== 'world') continue;
-        if (v.isObject3D || v.isTexture || v.isMaterial || v.isVector3 || isRect(v)) { put(prefix + '.' + k, v); continue; }
+        if (v.isObject3D || v.isTexture || v.isMaterial || v.isVector3 || isRect(v) || isPose(v)) { put(prefix + '.' + k, v); continue; }
         if (Array.isArray(v)) {
           v.slice(0, 400).forEach((e, n) => {
             if (!e || typeof e !== 'object') return;
-            if (e.isObject3D || e.isTexture || e.isMaterial || e.isVector3 || isRect(e)) put(`${prefix}.${k}[${n}]`, e);
+            if (e.isObject3D || e.isTexture || e.isMaterial || e.isVector3 || isRect(e) || isPose(e)) put(`${prefix}.${k}[${n}]`, e);
             else if (!skip(e)) scan(`${prefix}.${k}[${n}]`, e, depth + 1);
           });
           continue;

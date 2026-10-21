@@ -21,6 +21,7 @@
 #include "S47Chapters.h"
 #include "S47Main.h"
 #include "S47UI.h"
+#include "S47World.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
 #include "SS47Widgets.h"
@@ -81,6 +82,8 @@ void AS47HUD::Start()
 	}
 	M->UI = NewObject<US47UI>(M);
 	M->UI->Init(this);
+	M->World = NewObject<US47World>(M);
+	M->World->Init(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{

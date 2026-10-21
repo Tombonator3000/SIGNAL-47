@@ -112,6 +112,13 @@ struct SIGNAL47_API FS47Mat
 	void SetMap(UTexture* T, bool bFlipY = true) const;
 };
 
+// A place to stand in the web version's terms (an area's anchors: {x, z, yaw})
+struct SIGNAL47_API FS47Pose
+{
+	double X = 0, Z = 0, Yaw = 0;
+	bool bValid = false;
+};
+
 // A rectangle on the ground in the web version's terms (a walk zone, a room's bounds).
 struct SIGNAL47_API FS47Area
 {
