@@ -7,7 +7,7 @@
 #include "S47Rx.h"
 #include "S47Story.generated.h"
 
-class AS47Saro;
+class AS47Web;
 class AS47HUD;
 class US47Audio;
 
@@ -31,7 +31,7 @@ public:
 	AS47Story();
 	virtual void Tick(float DeltaSeconds) override;
 
-	void Bind(AS47Saro* InSaro, AS47HUD* InHud, US47Audio* InAudio);
+	void Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio);
 	void Start();
 	// Jump straight to a beat, as the web version's Continue and tests do: shift, residual,
 	// locked, printed, countdown, event.
@@ -80,7 +80,7 @@ public:
 	static constexpr double EventAz = 26, EventEl = 32, ParkAz = 18, SurveyEl = 48;
 
 private:
-	TWeakObjectPtr<AS47Saro> Saro;
+	TWeakObjectPtr<AS47Web> Saro;
 	TWeakObjectPtr<AS47HUD> Hud;
 	TWeakObjectPtr<US47Audio> Audio;
 	TUniquePtr<FS47OpsTerminal> OpsTerminal;

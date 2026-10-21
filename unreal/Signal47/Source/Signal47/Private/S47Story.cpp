@@ -2,7 +2,7 @@
 
 #include "S47Audio.h"
 #include "S47HUD.h"
-#include "S47Saro.h"
+#include "S47Web.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Story, Log, All);
 
@@ -27,7 +27,7 @@ AS47Story::AS47Story()
 	});
 }
 
-void AS47Story::Bind(AS47Saro* InSaro, AS47HUD* InHud, US47Audio* InAudio)
+void AS47Story::Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio)
 {
 	Saro = InSaro; Hud = InHud; Audio = InAudio;
 }
@@ -145,14 +145,14 @@ FString AS47Story::Label(const FString& Id) const
 	if (Id == TEXT("opsTerminal")) return bCinematic ? FString() : TEXT("Operations terminal");
 	if (Id == TEXT("jacket")) return (bCinematic || NS.bJacket) ? FString() : TEXT("Your jacket");
 	if (Id == TEXT("radio")) return bRadioOn ? TEXT("Turn the radio off") : TEXT("Turn the radio on");
-	if (Id.StartsWith(TEXT("door"))) return (Saro.IsValid() && Saro->IsDoorOpen(Id)) ? TEXT("Close the door") : TEXT("Open the door");
+	if (Saro.IsValid() && Saro->IsDoor(Id)) return Saro->DoorLabel(Id);
 	(void)bDark;
 	return FString();
 }
 
 void AS47Story::Use(const FString& Id)
 {
-	if (bCinematic && !Id.StartsWith(TEXT("door"))) return;
+	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
 	if (Id == TEXT("logbook")) { OpenDoc(S47Docs::ShiftLog(), [this] { LogClosed(); }); return; }
 	if (Id == TEXT("workOrder")) { OpenDoc(S47Docs::WorkOrder(), [this] { WorkOrderClosed(); }); return; }
@@ -161,12 +161,12 @@ void AS47Story::Use(const FString& Id)
 		if (Coffee != ECoffee::None || At(ES47Phase::Event)) { Toast(TEXT("The hot plate ticks. It has been on since the day shift.")); return; }
 		if (Audio.IsValid()) Audio->Pour(Saro.IsValid() ? Saro->PropLocation(TEXT("coffeePot")) : FVector::ZeroVector);
 		Coffee = ECoffee::Poured;
-		After(1.5, [this] { if (Saro.IsValid()) Saro->SetCoffee(true); Toast(TEXT("You fill the SARO mug. Fresh-ish, like he said.")); });
+		After(1.5, [this] { if (Saro.IsValid()) { Saro->SetCoffee(true); Saro->SetCoffeeLevel(0.088); } Toast(TEXT("You fill the SARO mug. Fresh-ish, like he said.")); });
 		return;
 	}
 	if (Id == TEXT("mug"))
 	{
-		if (Coffee == ECoffee::Poured) { Coffee = ECoffee::Drunk; if (Saro.IsValid()) Saro->SetCoffee(false); if (Audio.IsValid()) Audio->Play(TEXT("thud_soft"), 0.25f, Saro.IsValid() ? Saro->PropLocation(TEXT("mug")) : FVector::ZeroVector); Toast(TEXT("Burnt. It helps.")); }
+		if (Coffee == ECoffee::Poured) { Coffee = ECoffee::Drunk; if (Saro.IsValid()) Saro->SetCoffeeLevel(0.05); if (Audio.IsValid()) Audio->Play(TEXT("thud_soft"), 0.25f, Saro.IsValid() ? Saro->PropLocation(TEXT("mug")) : FVector::ZeroVector); Toast(TEXT("Burnt. It helps.")); }
 		else if (Coffee == ECoffee::Drunk) Toast(TEXT("Half a cup left. Still burnt."));
 		else Toast(TEXT("Empty. The coffee machine is in the corner."));
 		return;
@@ -227,7 +227,7 @@ void AS47Story::Use(const FString& Id)
 	if (Id == TEXT("opsTerminal")) { if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); if (Hud.IsValid()) Hud->OpenOps(); return; }
 	if (Id == TEXT("jacket")) { Toast(TEXT("SARO issue, with a reflective band all the way round. Too warm for in here."), 3.2f); return; }
 	if (Id == TEXT("radio")) { ToggleRadio(); return; }
-	if (Id.StartsWith(TEXT("door"))) { if (Saro.IsValid()) Saro->ToggleDoor(Id); if (Audio.IsValid()) Audio->Play(TEXT("door_latch"), 0.6f, Saro.IsValid() ? Saro->PropLocation(Id) : FVector::ZeroVector); return; }
+	if (Saro.IsValid() && Saro->IsDoor(Id)) { Saro->ToggleDoor(Id); return; }
 }
 
 void AS47Story::OpsRan(const FString& Cmd, const FString& Result)
@@ -423,8 +423,7 @@ void AS47Story::TimeSkip()
 		if (Hud.IsValid()) Hud->CloseModal();
 		ClockSec = SkipClock;
 		Coffee = Coffee == ECoffee::None ? ECoffee::None : ECoffee::Drunk;
-		if (Saro.IsValid()) Saro->SetCoffee(false);
-		if (Hud.IsValid()) Hud->PlacePlayer(FVector(220, 5, 92), 0.f);
+		if (Hud.IsValid()) Hud->Place(0.05, -2.2, 0);
 		EnterResidual();
 		if (Hud.IsValid()) Hud->Fade(false, TEXT(""));
 		After(0.9, [this] { bCinematic = false; });
@@ -624,6 +623,10 @@ void AS47Story::ResetAll()
 		Saro->SetHandsetVisible(true);
 		Saro->ResetMug();
 		Saro->SetCoffee(false);
+		Saro->SetCoffeeLevel(0.088);
+		Saro->SetTubes(true);
+		Saro->CloseAllDoors();
+		Saro->SetJacketVisible(true);
 		Saro->SnapDishes(ParkAz, SurveyEl);
 	}
 	if (Audio.IsValid()) { Audio->Stop(TEXT("ring")); Audio->Stop(TEXT("printer")); Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); Audio->StopMotors(); }
@@ -632,6 +635,7 @@ void AS47Story::ResetAll()
 void AS47Story::Start()
 {
 	ResetAll();
+	if (Hud.IsValid() && Saro.IsValid()) { const FVector Sp = Saro->SpawnThree(); Hud->Place(Sp.X, Sp.Z, Sp.Y); }
 	After(1.2, [this] { Toast(TEXT("23:41. Dale left twenty minutes ago."), 3.4f); });
 	After(5.0, [this] { if (!bLogRead) Toast(TEXT("His shift log is on the desk."), 3.4f); });
 }
@@ -652,7 +656,7 @@ void AS47Story::Jump(const FString& Target)
 		Note(S47Signal::Profiles()[0].Note); Note(S47Signal::Profiles()[1].Note);
 		ClockSec = SkipClock;
 		PointDishes(Rx.Azimuth, SurveyEl, 99);
-		if (Hud.IsValid()) Hud->PlacePlayer(FVector(220, 5, 92), 0.f);
+		if (Hud.IsValid()) Hud->Place(0.05, -2.2, 0);
 		EnterResidual();
 		Toast(TEXT("02:13. The survey has been running for hours."), 3.4f);
 	}
@@ -671,14 +675,14 @@ void AS47Story::Jump(const FString& Target)
 		Rx.bSolved = true;
 		if (Saro.IsValid()) Saro->SetPrinterPaper(1.f);
 		CurrentPhase = ES47Phase::Printed;
-		if (Hud.IsValid()) Hud->PlacePlayer(FVector(40, 460, 92), 90.f);
+		if (Hud.IsValid()) Hud->Place(4.6, -0.4, PI / 2);
 	}
 	if (Idx >= 4)
 	{
 		if (Saro.IsValid()) Saro->SetPrinterPaper(-1.f);
 		DocsList.Add(S47Docs::Printout(ClockSec));
 		bAnswered = true;
-		if (Hud.IsValid()) Hud->PlacePlayer(FVector(-160, 240, 92), 180.f);
+		if (Hud.IsValid()) Hud->Place(2.4, 1.6, PI);
 		StartCountdown();
 		// testing shortcut: the full 47 seconds only run in a real playthrough
 		if (Idx == 4) { Timers.RemoveAll([this](const FTimer& T) { return T.At - GameTime >= 40; }); After(4, [this] { Event(); }); }
@@ -741,8 +745,9 @@ void AS47Story::Tick(float DeltaSeconds)
 	{
 		Flicker -= Dt;
 		const bool bOn = Flicker <= 0 || FMath::FRand() > 0.45f;
-		Saro->SetLightsScale(bOn ? 0.6f + FMath::FRand() * 0.5f : 0.1f, 1.f);
-		if (Flicker <= 0) Saro->SetLightsScale(1.f, 1.f);
+		Saro->SetLightsScale(bOn ? 0.6f + FMath::FRand() * 0.5f : 0.2f / 9.f, 1.f);
+		Saro->SetTubes(bOn, bOn ? -1 : 2);
+		if (Flicker <= 0) { Saro->SetLightsScale(1.f, 1.f); Saro->SetTubes(true, 3); }
 	}
 	// the lights dip forty seconds after the relay: the room sags for most of a second
 	if (DipT > 0)
@@ -750,6 +755,7 @@ void AS47Story::Tick(float DeltaSeconds)
 		DipT -= Dt;
 		const bool bOn = DipT <= 0;
 		Saro->SetLightsScale(bOn ? 1.f : 0.24f, bOn ? 1.f : 0.35f);
+		Saro->SetTubes(bOn);
 	}
 	if (CrtGlitch > 0) CrtGlitch -= Dt;
 
@@ -759,6 +765,6 @@ void AS47Story::Tick(float DeltaSeconds)
 	// gentle camera assist so the player sees the array turn
 	if (LookAssist > 0 && (CurrentPhase == ES47Phase::Turning || CurrentPhase == ES47Phase::End) && Hud.IsValid())
 	{
-		Hud->LookTowards(FVector(7000, -600, 900), float(1.0 - FMath::Exp(-Dt * 1.4)));
+		Hud->LookTowards(FVector(-6, 9, -70), float(1.0 - FMath::Exp(-Dt * 1.4)));
 	}
 }

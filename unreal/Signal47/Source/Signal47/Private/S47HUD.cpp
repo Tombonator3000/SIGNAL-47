@@ -13,7 +13,8 @@
 #include "S47Audio.h"
 #include "S47Ops.h"
 #include "S47Rx.h"
-#include "S47Saro.h"
+#include "S47Three.h"
+#include "S47Web.h"
 #include "S47Story.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
@@ -41,7 +42,7 @@ void AS47HUD::Start()
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
 	APlayerController* PC = GetOwningPlayerController();
 	if (!Viewport || !PC) return;
-	for (TActorIterator<AS47Saro> It(GetWorld()); It; ++It) Saro = *It;
+	for (TActorIterator<AS47Web> It(GetWorld()); It; ++It) Saro = *It;
 	for (TActorIterator<AS47Story> It(GetWorld()); It; ++It) Story = *It;
 	Walker = Cast<AS47Walker>(PC->GetPawn());
 	Audio = NewObject<US47Audio>(this);
@@ -58,15 +59,13 @@ void AS47HUD::Start()
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
 
-	FString Face = TEXT("room");
-	FParse::Value(FCommandLine::Get(), TEXT("S47Face="), Face);
 	if (Walker.IsValid() && Saro.IsValid())
 	{
-		Walker->PlaceAt(Saro->StandingSpot(Face));
+		Walker->Web = Saro;
 		TWeakObjectPtr<AS47HUD> Self = this;
 		Walker->OnUse = [Self](const FString& Id) { if (Self.IsValid()) Self->Use(Id); };
 		Walker->SetActive(true);
-		UE_LOG(LogS47HUD, Display, TEXT("S47: walker placed at %s"), *Face);
+		UE_LOG(LogS47HUD, Display, TEXT("S47: web world %s"), *Saro->Summary());
 	}
 	Hud = SNew(SS47Hud).Visibility(EVisibility::HitTestInvisible)
 		.Prompt_Lambda([this] { return Prompt; })
@@ -88,9 +87,23 @@ void AS47HUD::Start()
 			Saro->OnMugShatter = [A, Self](const FVector& P) { if (A.IsValid()) A->Play(TEXT("ceramic"), 1.f, P + FVector(0, 0, 20)); };
 		}
 		Audio->StartRoomTone();
+		if (Saro.IsValid())
+		{
+			TWeakObjectPtr<US47Audio> A = Audio;
+			// Doors.toggle: the latch, a creak, then the leaf meets the frame
+			Saro->OnDoor = [A](const FString& Id, bool bOpen, const FVector& At, bool bHeavy)
+			{
+				if (!A.IsValid()) return;
+				A->Play(TEXT("door_latch"), bHeavy ? 0.55f : 0.45f, At, bOpen ? 1.f : 0.85f);
+				A->Play(FMath::FRand() < 0.5f ? TEXT("door_creak0") : TEXT("door_creak1"), bHeavy ? 0.16f : 0.12f, At, bHeavy ? 0.8f : 1.f);
+				if (!bOpen) A->Play(bHeavy ? TEXT("door_heavy") : TEXT("door_light"), bHeavy ? 0.32f : 0.4f, At);
+			};
+		}
 		FString Jump;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) Story->Jump(Jump);
 		else Story->Start();
+		FString FaceAt;
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
 	}
 	Renderer = new FWidgetRenderer(true);
 	const SS47Crt::EKind Kinds[4] = { SS47Crt::EKind::Status, SS47Crt::EKind::Spectrum, SS47Crt::EKind::Tracking, SS47Crt::EKind::Ops };
@@ -217,9 +230,39 @@ void AS47HUD::Fade(bool bOn, const FString& Text)
 	if (Hud.IsValid()) Hud->Fade(bOn, Text);
 }
 
-void AS47HUD::PlacePlayer(const FVector& Pos, float Yaw)
+void AS47HUD::Place(double X, double Z, double Yaw)
 {
-	if (Walker.IsValid()) Walker->PlaceAt(FTransform(FRotator(0, Yaw, 0), Pos));
+	if (Walker.IsValid()) Walker->Place(X, Z, Yaw);
+}
+
+void AS47HUD::Face(const FString& Spot)
+{
+	if (!Walker.IsValid() || !Saro.IsValid()) return;
+	// fixed spots in the web version's terms, or one metre and a bit in front of an item, facing it
+	if (Spot == TEXT("room")) { const FVector Sp = Saro->SpawnThree(); Walker->Place(Sp.X, Sp.Z, Sp.Y); }
+	else if (Spot == TEXT("window")) Walker->Place(0.0, -3.4, 0.0);
+	else if (Spot == TEXT("outside")) Walker->Place(9.0, -8.0, 0.0);
+	else if (Spot == TEXT("dish")) Walker->Place(9.5, -18.5, 0.0);
+	else if (Spot.StartsWith(TEXT("at:")))
+	{
+		// at:x;z;yaw;pitch in the web version's terms (the command line stops a value at a comma)
+		TArray<FString> V;
+		Spot.Mid(3).ParseIntoArray(V, TEXT(";"));
+		if (V.Num() >= 3) Walker->Place(FCString::Atod(*V[0]), FCString::Atod(*V[1]), FCString::Atod(*V[2]));
+		if (V.Num() >= 4) Walker->Pitch = FCString::Atod(*V[3]);
+	}
+	else if (const FS47WebItem* It = Saro->Item(Spot))
+	{
+		const FVector C = It->bBox ? (It->Min + It->Max) * 0.5 : S47Three::ToThree(Saro->WorldUE(It->Node));
+		FVector2D Away(-C.X, -C.Z);
+		if (Away.Size() < 0.1) Away = FVector2D(0, 1);
+		Away.Normalize();
+		const double D = FMath::Min(1.3, It->Range * 0.6);
+		const double Px = C.X + Away.X * D, Pz = C.Z + Away.Y * D;
+		Walker->Place(Px, Pz, FMath::Atan2(-(C.X - Px), -(C.Z - Pz)));
+		Walker->Pitch = FMath::Atan2(C.Y - 1.62, D);
+	}
+	UE_LOG(LogS47HUD, Display, TEXT("S47: walker placed at %s"), *Spot);
 }
 
 void AS47HUD::Checkpoint(const FString& Name)
@@ -229,7 +272,7 @@ void AS47HUD::Checkpoint(const FString& Name)
 
 void AS47HUD::Shake(float Strength)
 {
-	UE_LOG(LogS47HUD, Display, TEXT("S47: shake %.2f (no camera shake in this version)"), Strength);
+	if (Walker.IsValid()) Walker->Shake = Strength;
 }
 
 void AS47HUD::EndCard(const TArray<FString>& Lines)
@@ -242,16 +285,17 @@ void AS47HUD::EndCard(const TArray<FString>& Lines)
 	UE_LOG(LogS47HUD, Display, TEXT("S47: end card"));
 }
 
-void AS47HUD::LookTowards(const FVector& Target, float K)
+void AS47HUD::LookTowards(const FVector& T, float K)
 {
-	APlayerController* PC = GetOwningPlayerController();
-	if (!PC || !Walker.IsValid()) return;
-	const FVector Eye = Walker->EyeLocation();
-	const FRotator Want = (Target - Eye).Rotation();
-	FRotator Cur = PC->GetControlRotation();
-	Cur.Yaw += FMath::FindDeltaAngleDegrees(Cur.Yaw, Want.Yaw) * K;
-	Cur.Pitch += FMath::FindDeltaAngleDegrees(Cur.Pitch, Want.Pitch) * K;
-	PC->SetControlRotation(Cur);
+	// Prologue.update: the gentle look towards the array
+	if (!Walker.IsValid()) return;
+	AS47Walker* W = Walker.Get();
+	const double Dx = T.X - W->Pos.X, Dz = T.Z - W->Pos.Z;
+	const double Yaw = FMath::Atan2(-Dx, -Dz), Pitch = FMath::Atan2(T.Y - W->Eye, FMath::Sqrt(Dx * Dx + Dz * Dz));
+	double Dy = Yaw - W->Yaw;
+	Dy = FMath::Atan2(FMath::Sin(Dy), FMath::Cos(Dy));
+	W->Yaw += Dy * K;
+	W->Pitch += (Pitch - W->Pitch) * K;
 }
 
 // ---------- per frame ----------
@@ -283,7 +327,7 @@ void AS47HUD::DrawCrts(float DeltaSeconds)
 	{
 		if (!Crts[i].IsValid()) continue;
 		if (i < 3 && !Story->bPowered) continue;
-		if (UTextureRenderTarget2D* RT = Saro->CrtTarget(i)) Renderer->DrawWidget(RT, Crts[i].ToSharedRef(), FVector2D(AS47Saro::CrtW, AS47Saro::CrtH), Dt);
+		if (UTextureRenderTarget2D* RT = Saro->CrtTarget(i)) Renderer->DrawWidget(RT, Crts[i].ToSharedRef(), FVector2D(AS47Web::CrtW, AS47Web::CrtH), Dt);
 	}
 	// the ops screen glows as soon as the station has power
 	Saro->SetCrtPowered(3, Story->bPowered);
