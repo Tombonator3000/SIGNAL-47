@@ -2266,6 +2266,12 @@ async function boot() {
         { label: '4 Room 6', run: () => devStart('chapter4') },
         { label: '5 All Night', run: () => devStart('chapter5') },
         { label: '6 Roswell Road', run: () => devStart('chapter6') },
+        // before the seven-mile post, so the CB opens by itself 47 s before C (story/Chapter6.ts, lastMile)
+        { label: '6 The last mile', run: () => devStart('chapter6', () => waitFor(() => world.area === 'roswell' && world.driving && game.ch6.stage === 'drive', () => {
+          const p = world.oldRoad!.poseAt(6.8);
+          world.oldDrive!.place(p.pos, p.heading);
+          game.clock = 5 * 3600 + 27 * 60;
+        })) },
         { label: '6 At the line', run: () => devStart('chapter6', () => waitFor(() => world.area === 'roswell' && world.driving && game.ch6.stage === 'drive', () => {
           const p = world.oldRoad!.poseAt(8.06);
           world.oldDrive!.place(p.pos, p.heading);

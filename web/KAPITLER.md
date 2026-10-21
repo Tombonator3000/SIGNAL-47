@@ -552,15 +552,17 @@ Som i `HISTORIE.md`, nøyaktig 47 sekunder spilltid fra fronten krysser C:
 
 | Tid | Hva | Hvordan |
 | --- | --- | --- |
+| 05:28:13 (47 s før, bygget 21. oktober, PR #N) | CB-en åpner seg selv: ingen roper, bare en motor som din, liten og langt borte. Den hoster to ganger og dør mens din går videre; kanalen står åpen på ingenting, og squelchen stenger. Hjørneklokka går over til sekunder i amber. | Utløses på avstand: når bilen er 47 s fra C i den farten den holder (etter mil 7,0, minst 40 s og 200 m igjen, bare for en bil som har kjørt fra før mil 6,95). Lastebilens egen tomgang gjennom CB-ens høyttaler, ingen klikk og ingen stemme, stengt etter 12,8 s. Klokka er bundet til avstanden og når 05:29:00 på linja. `story/Chapter6.ts` (`lastMile`), `core/cb.ts` (`CB_ENGINE`). |
 | 05:29:00 | Radioen kutter til bærebølgen. Motoren hoster og stopper. Instrumentlysene dør. Lastebilen ruller ut og står. Stillhet. | Spilleren mister rattet og pedalene; blikket er fritt. `EngineSound.stall()`, `DriveController.engine = false`, lastebilen bremser seg selv ned og holder seg i fila. Dashbordet mørkt, frontlysene svake. Vinden faller. |
-| + 4 s | Dashbordlampene blinker fire ganger, pause, sju ganger. | Bare instrumentlyset, rundt 0,25 s på og 0,25 s av, 1,2 s pause. |
+| + 1,5 til 31,4 s | «Turn the key» og «Get out». Første vri: solenoiden klikker fire, en pause, sju, så pust tett inntil i førerhuset. Senere: ett dødt klikk, eller ingenting. Den starter aldri. Døra: «The handle moves. The door does not.» | `Chapter6.wantsKey`/`turnKey`; venter mens lampene teller selv, og ingen tekst fra +23,6 til +30 s, så radiotekstene får plassen. |
+| + 4 s | Dashbordlampene blinker fire ganger, pause, sju ganger. | Bare instrumentlyset, rundt 0,25 s på og 0,25 s av, 1,2 s pause. Har spilleren vridd nøkkelen før +4 s, blinker lampene med solenoidens klikk i stedet (fire, en pause, sju), og lampenes egen telling kommer ikke: én fire og sju om gangen. |
 | + 10 s | Frontlysene våkner, først dypblått, så rav, grønt og rødt, sakte. | Fargen og styrken på frontlysene og lyktene, rundt 2 s per farge, myke overganger. Lysene på bakken følger fargen. |
 | + 18 s | Radioen kommer tilbake og spiller brokker fra hele natten i feil rekkefølge. | Gjennom en liten høyttaler med sus: skriveren, telefonen som ringer, Tomás (tekst: «Reference west. No. East.»), Nora (tekst: «Do not stop on the line.»), en kaffekopp som settes ned på et fat. |
 | + 32 s | FLASH. | Enkeltbilder i rundt 2 s til sammen, hvert i 70 til 120 ms med svart mellom: et øye. En hånd med for lange fingre mot glasset. Et ansikt som kan minne om en Grey, i rundt tre bilder. Lyset over mesaen fra 1947. Tomás, eller en ung mann som kan være ham. Stjernehimmel. Den grønne terminalen med `RUN860414_0529.DAT` på skjermen. Avisbildet fra 1947. Med «Slow fades» blir det samme rekka som rolige overtoninger på svakt nivå i rundt 8 s, uten blink. |
 | + 34 til 47 s | Total stillhet. | All lyd av, også vinden. Frontlysene pulserer svakt. |
 | 05:29:47 | Kameraet forlater førsteperson. | Se uttrekket under. |
 
-Ingenting av dette forklares. Ingen tekst på skjermen utenom radiotekstene.
+Ingenting av dette forklares. Ingen tekst på skjermen utenom radiotekstene og de korte linjene for nøkkelen og døra.
 
 ### Uttrekket
 
