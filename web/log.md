@@ -1250,7 +1250,7 @@ Nettleserprøven fant 13 reelle manglende nærblikktekster i Caliche, etter at k
 
 ### Claude Code: små grep 5 til 8, 21. oktober
 
-- 2026-10-21 02:25 UTC: små grep 5 til 8 i `FORSLAG.md` (20. oktober), bygget på grenen `f-small-grep` (`edb48d5`, rettelser fra kritikeren `0d970b0`), flettet som PR #N.
+- 2026-10-21 02:25 UTC: små grep 5 til 8 i `FORSLAG.md` (20. oktober), bygget på grenen `f-small-grep` (`edb48d5`, rettelser fra kritikeren `0d970b0`), flettet som PR #138.
   - Morgenen holder pusten (`story/morningHolds.ts`, `core/ambience.ts`, `core/Audio.ts`): i kapittel 5, inne i Mesa Diner fra 05:13 til 05:20, når spilleren har vært inne i 14 s og ingenting annet går (`oneAtATime`), stopper kjøleren bak disken, romsuset, radioen og fuglene ute på en gang, og torden og musikk holdes ute (målt helt stille på masterutgangen). Tekst ved 2,4 s, servitrisen ved 10,6 s («There. Some mornings about now.», bare tekst), så kjøleren ved 15 s, radioen der programmet er kommet til ved 20,5 s og den første fuglen ved 25,4 s. Én gang (`morning:held`), logg og ett notat. Utviklermenyen: «Mesa Diner».
   - Kortet ender på en ring (`main.ts` `chapterBreak`, `story/Chapter2.ts`, `ui/UI.ts` `chapterCut`): CHAPTER TWO er stille under oppsummeringen, telefonen ringer når tittelen kommer, og kortet klippes på neste ring; ringen er Wards linje som ringer videre i spillet. Med opplesing venter ringen på tittelen og går på halv styrke, og klippet venter på stemmen.
   - Linjene møtes (`ui/areaMap.ts`): C tegnes på kartet etter P13; med A og B tegnet inn dras alle tre prikket ut til kantene, med en ring ved transitten og «All three cross at the transit. I stood at it tonight.»
