@@ -237,6 +237,7 @@ export class MotelTv {
     // Projection alone also sees through the office walls. Ignore hit proxies and clear
     // glass, but require a clear sight line to the face of the picture tube.
     const ray = new THREE.Raycaster(eye, towards.clone().normalize(), 0.02, Math.max(0.02, towards.length() - 0.08));
+    ray.camera = cam; // sprites in the scene (the recording's glints) cannot be tested without it
     return !ray.intersectObjects(this.d.scene.children, true).some((hit) => {
       const mesh = hit.object as THREE.Mesh;
       if (!mesh.isMesh || !shown(mesh)) return false;

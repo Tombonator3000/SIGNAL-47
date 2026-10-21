@@ -40,7 +40,12 @@ export const NOBODY = 'Nobody was there when I took it.';
  *  have it recorded, so Read description works on this print too.) */
 export const FACE_LINE = NOBODY;
 
-export interface AlbumShot { id: string; url: string; clock: number; place: string; text: string; odd?: boolean }
+export interface AlbumShot {
+  id: string; url: string; clock: number; place: string; text: string; odd?: boolean;
+  /** Where the things the story looks for are on the print (u, v from the top left), by their
+   *  Subject.target: 'starhole' (story/starHole.ts). */
+  targets?: Record<string, [number, number]>;
+}
 /** The print with the face: which one, whether the game has said it has come up, and whether it
  *  has been looked at closely since. */
 export interface FaceSave { id: string; up?: boolean; seen?: boolean }
@@ -74,6 +79,8 @@ export interface Subject {
   h?: number;
   /** In the sky: the line of sight is checked only so far out. */
   sky?: boolean;
+  /** Kept on the print as one of its targets (AlbumShot.targets) when it is in the photograph. */
+  target?: string;
 }
 
 export interface AlbumDeps {
@@ -192,6 +199,7 @@ export class Album {
     const text = face ? FACE_LINE : [main.charAt(0).toUpperCase() + main.slice(1), ...odd].filter(Boolean).join(' ');
     const shot: AlbumShot = { id: `free${n + 1}@${Math.round(clock)}`, url, clock, place, text };
     if (odd.length || face) shot.odd = true;
+    for (const x of seen) if (x.s.target) { const q = fcam.project(x.p); (shot.targets ??= {})[x.s.target] = [q.u, q.v]; }
     this.data.shots.push(shot);
     if (face) this.data.face = { id: shot.id };
     this.last = { names, odd, mean, ms: performance.now() - t0, lookMs: t1 - t0, ghost: !!ghostAt, face, eye: face ? filmFaceEye(side) : undefined };
@@ -290,6 +298,9 @@ export class Album {
     }
     return out;
   }
+
+  /** Nothing solid and shown between `from` and `to`, looked for only `cap` metres out (the sky). */
+  inSight(from: THREE.Vector3, to: THREE.Vector3, cap = Infinity) { return !this.blocked(from, to, 1, cap); }
 
   /** Is anything solid and shown between `from` and `to`? Stops short of the thing itself. */
   private blocked(from: THREE.Vector3, to: THREE.Vector3, r: number, cap = Infinity) {
