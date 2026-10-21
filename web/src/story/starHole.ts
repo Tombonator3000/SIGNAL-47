@@ -151,7 +151,7 @@ export class StarHole {
     if (CHAPTERS.includes(ch)) seen.add(`${KEY}/${ch}`);
     this.look = 0;
     this.d.toast(viaPrint ? `In the viewfinder, up where the dishes point: no stars.` : HOLE_TOAST, 5);
-    this.d.note(`${t}. There are no stars where the dishes point. Az 026, el 32: a round patch about four degrees across, two fingers at arm's length, with nothing in it. Not a cloud. The sky is the same colour all the way through it. Only the stars are gone, as if something were standing in front of them.`);
+    this.d.note(`${t}. There are no stars where the dishes point. Az 026, el 32: a round patch about eight degrees across, nearly a fist at arm's length, with nothing in it. Not a cloud. The sky is the same colour all the way through it. Only the stars are gone, as if something were standing in front of them.`);
     this.d.saw();
     this.d.refresh();
     this.d.save();
@@ -165,7 +165,7 @@ export class StarHole {
       id: 'hole', stamp: 'AZ 026 EL 32', title: 'NO STARS AT 026', kind: url ? 'photo' : 'thing', have: true, w: url ? 260 : 300,
       image: url ?? undefined,
       text: `${when !== null ? `${clockText(when, false)}, looking` : 'Looking'} up along the dishes: a round patch of sky with no stars in it.`,
-      lines: [{ id: 'hole.sky', text: 'Az 026, el 32. Four degrees across, no stars, the sky the same colour through it.' }],
+      lines: [{ id: 'hole.sky', text: 'Az 026, el 32. Eight degrees across, no stars, the sky the same colour through it.' }],
     }];
   }
   private keepLinks() {

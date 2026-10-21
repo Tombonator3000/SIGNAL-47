@@ -4,7 +4,7 @@
 # there has no stars in it: nothing is drawn over the sky, only what is beyond the air is missing.
 #   - the sky (rendered alone, the sky's own group, through a narrow camera): before 02:15 there are
 #     stars at az 026, el 32; it comes in over a minute or two, not at once; after it there are none
-#     within 1.4 degrees of it and there are 10 degrees away; the sky behind it is the colour of the
+#     within 3 degrees of it and there are 10 degrees away; the sky behind it is the colour of the
 #     sky round it, and the same as without it (no dark disc, no glow); an hour of the night later
 #     it has not moved and not grown, and the stars round it are where they were; at dawn it is still
 #     there; it lines up with the dishes (S-03 points at it); a shooting star sent through it is gone
@@ -91,7 +91,7 @@ HELPERS = """(() => {
       let a = 0, na = 0, b = 0, nb = 0;
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
         const d = s.at(x, y), l = s.lum(y * N + x);
-        if (d < r) { a += l; na++; } else if (d > r + 1.4 && d < r + 2.8) { b += l; nb++; }
+        if (d < r) { a += l; na++; } else if (d > 5.4 && d < 7.4) { b += l; nb++; }
       }
       return { inside: a / na, ring: b / nb };
     },
@@ -99,27 +99,27 @@ HELPERS = """(() => {
     // light of the streak alone inside the hole and before and after it along the way
     meteor() {
       const sky = S47.sky, M = sky['met'], h = sky.holeDir.clone();
-      const t = new V(0, 1, 0).cross(h).normalize(), a0 = 6 * D;
+      const t = new V(0, 1, 0).cross(h).normalize(), a0 = 8 * D;
       M.t = -1; sky.meteorNow();
       M.start.copy(h).multiplyScalar(Math.cos(a0)).addScaledVector(t, -Math.sin(a0)).normalize();
       M.tan.copy(t).multiplyScalar(Math.cos(a0)).addScaledVector(h, Math.sin(a0)).normalize();
-      M.len = 12 * D; M.dur = 3; M.bright = 2.6; M.t = 0;
+      M.len = 16 * D; M.dur = 3; M.bright = 2.6; M.t = 0;
       const out = [], g = sky.group;
       // (where "before" and "after" it are on the picture: the side of the hole along t)
       const tw = t.clone().applyAxisAngle(new V(0, 1, 0), S47.world.skyYaw);
       for (let k = 0; k < 14; k++) {
         sky['meteorStep'](0.25);
         if (!sky.meteor.visible) { out.push(null); continue; }
-        const s = T.render(26, 32, 24, 512, (c) => c === sky.meteor), N = s.N;
-        const cam = new THREE.PerspectiveCamera(24, 1, 1, 10000); cam.position.copy(g.position); cam.lookAt(cam.position.clone().add(T.world(26, 32))); cam.updateMatrixWorld();
+        const s = T.render(26, 32, 30, 512, (c) => c === sky.meteor), N = s.N;
+        const cam = new THREE.PerspectiveCamera(30, 1, 1, 10000); cam.position.copy(g.position); cam.lookAt(cam.position.clone().add(T.world(26, 32))); cam.updateMatrixWorld();
         const side = cam.position.clone().add(T.world(26, 32)).addScaledVector(tw, 0.2).project(cam);
         const sx = side.x, sy = side.y;
         let inside = 0, before = 0, after = 0;
         for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
           const l = s.lum(y * N + x); if (l <= 0.002) continue;
           const d = s.at(x, y);
-          if (d < 1.3) inside += l;
-          else if (d > 2.8) { const u = (x + 0.5) / N * 2 - 1, v = (y + 0.5) / N * 2 - 1; if (u * sx + v * sy > 0) after += l; else before += l; }
+          if (d < 3.1) inside += l;
+          else if (d > 5.2) { const u = (x + 0.5) / N * 2 - 1, v = (y + 0.5) / N * 2 - 1; if (u * sx + v * sy > 0) after += l; else before += l; }
         }
         out.push({ head: (M.len * Math.min(1, M.t / M.dur)) / D, inside, before, after });
       }
@@ -229,7 +229,7 @@ async def main():
         await ev(f"S47.game.clock = {H0 - 300}; S47.tick(0.1)")
         s0 = await ev("T.stars(26, 32, 1.4)")
         check(await ev("S47.sky.hole") == 0 and s0['n'] >= 3, f'02:10: stars at az 026, el 32 ({s0["n"]} star pixels within 1.4 degrees), no hole')
-        air0 = await ev("T.air(26, 32, 1.4)")
+        air0 = await ev("T.air(26, 32, 3.0)")
         fade = []
         for k in range(16):
             await ev(f"S47.game.clock = {H0 - 20 + k * 10}; S47.tick(0.02)")
@@ -241,12 +241,12 @@ async def main():
         half = await ev("T.stars(26, 32, 1.4)")
         check(0 < await ev("S47.sky.hole") < 1 and half['max'] < s0['max'] * 0.9, f'half way: the stars there dimmer, not gone at once (brightest {half["max"]:.2f} against {s0["max"]:.2f})')
         await ev("S47.game.clock = 3 * 3600 + 20 * 60; S47.tick(0.1)")
-        s1 = await ev("T.stars(26, 32, 1.4)")
+        s1 = await ev("T.stars(26, 32, 3.0)")
         a1 = await ev("T.stars(26, 42, 1.4)")
         a2 = await ev("T.stars(38, 32, 1.4)")
-        check(await ev("S47.sky.hole") == 1 and s1['n'] == 0 and s1['max'] < 0.02, f'03:20: no star within 1.4 degrees of az 026, el 32 (brightest pixel {s1["max"]:.3f} over the sky)')
+        check(await ev("S47.sky.hole") == 1 and s1['n'] == 0 and s1['max'] < 0.02, f'03:20: no star within 3 degrees of az 026, el 32 (brightest pixel {s1["max"]:.3f} over the sky)')
         check(a1['n'] >= 2 and a2['n'] >= 2, f'and 10 degrees away there are (el 42: {a1["n"]}, az 038: {a2["n"]} star pixels)')
-        air1 = await ev("T.air(26, 32, 1.4)")
+        air1 = await ev("T.air(26, 32, 3.0)")
         # (what goes from behind it is the faint light the painted sky had there, no more)
         check(abs(air1['inside'] / air1['ring'] - 1) < 0.04 and 0.9 < air1['inside'] / air0['inside'] <= 1.01 and abs(air1['ring'] / air0['ring'] - 1) < 0.02,
               f'nothing drawn over the sky: behind it the sky is the colour of the sky round it ({air1["inside"]:.4f} / {air1["ring"]:.4f}), no lighter than before and hardly darker ({air0["inside"]:.4f} / {air0["ring"]:.4f})')
@@ -271,7 +271,7 @@ async def main():
         met = await ev("T.meteor()")
         seen_m = [m for m in met if m]
         before_side = any(m['before'] > 0.5 for m in seen_m); after_side = any(m['after'] > 0.5 for m in seen_m)
-        through = [m for m in seen_m if 4.5 < m['head'] < 7.5]
+        through = [m for m in seen_m if 6.5 < m['head'] < 9.5]
         check(len(seen_m) >= 8 and max(m['inside'] for m in seen_m) < 0.05 and before_side and after_side and through,
               f'a shooting star sent through it: gone inside it ({max(m["inside"] for m in seen_m):.3f} of light there at most, its head at {[round(m["head"], 1) for m in through]} degrees), there before and after it')
         cm = await ev("(() => { const c = S47.sky.comet.position.clone().normalize(); return c.angleTo(S47.sky.holeDir) * 180 / Math.PI; })()")

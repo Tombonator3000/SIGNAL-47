@@ -20,7 +20,7 @@ export const skyDir = (az: number, el: number, v = new THREE.Vector3()) =>
 // moment, a round patch of the sky has no stars in it. Nothing is drawn: the dome's air (the
 // gradient, the glow off the towns, the dawn) goes on through it as everywhere else; only what is
 // beyond the air is missing, the stars, the Milky Way's light and a shooting star that crosses it
-// (it goes in and comes out the other side). The rim goes soft over most of a degree, so it reads
+// (it goes in and comes out the other side). The rim goes soft over a degree, so it reads
 // as something in front of the stars, not a hole in a picture. It is held to the dishes, not to the
 // stars, and it never grows. Faint by design: it is there for whoever looks up along the dishes.
 //   inner, outer: its radius, degrees (no star at all inside inner; all of them outside outer)
@@ -28,7 +28,10 @@ export const skyDir = (az: number, el: number, v = new THREE.Vector3()) =>
 //                 they start 3 s after it and take about 7; Prologue.turnDishes), so 02:15:22 with
 //                 the night's own impact at 02:15:12 (Sky.holeFrom, set by main.ts from the case)
 //   fade:         the seconds it takes to come in (not a pop)
-export const STAR_HOLE = { az: 26, el: 32, inner: 1.6, outer: 2.4, after: 10, fade: 100 } as const;
+//                 (3.4 and 4.6: about eight degrees across, nearly a fist at arm's length. At two or three
+//                 degrees it took out a handful of the faint stars and could not be told from any other gap
+//                 in them, on a phone least of all; at this size thirty or forty go, and the patch reads)
+export const STAR_HOLE = { az: 26, el: 32, inner: 3.4, outer: 4.6, after: 10, fade: 100 } as const;
 /** How much of the hole there is at a clock (seconds since midnight; the evening has none), when it
  *  begins at `from` (seconds since midnight; Infinity: not tonight yet). */
 export function starHoleAt(clock: number, from: number) {
@@ -150,9 +153,11 @@ export class Sky {
             // sRGB textures are decoded to linear values by WebGL's sampler.
             vec2 skyUV = vec2(atan(d.z, d.x) / 6.2831853 + 0.5, asin(clamp(d.y, -1.0, 1.0)) / 3.1415927 + 0.5);
             vec3 painted = texture2D(uPanorama, skyUV).rgb;
-            // (in the hole the painted sky keeps its own colour, the mean round it, and loses whatever
-            // the band or its glow had there: neither darker nor lighter than the sky round it)
-            painted = mix(painted, uHoleSky, hole);
+            // (in the hole the painted sky loses whatever the band or its glow had there well above the
+            // mean round it, and keeps its grain, so it goes on through: the colour of the sky round it,
+            // within a percent or two, and no smooth disc where the grain would stop; a flat mean read
+            // as one at this size)
+            painted = mix(painted, min(painted, uHoleSky * 1.2), hole);
             col = mix(col, painted * 2.0, 0.72 * smoothstep(-0.03, 0.14, h));
             // distant lightning inside a storm on the horizon
             float fa = max(dot(d, uFlashDir), 0.0);

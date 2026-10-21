@@ -149,7 +149,7 @@ export function albumSubjects(d: SubjectDeps): Subject[] {
     if (f.y > 0.45) add('the Milky Way', [cam.clone().addScaledVector(f, 900)], { ang: 18, w: 0.35, max: 1e6, sky: true });
     // (where the dishes point, turned with the sky of the area: the film has no stars there either)
     if (d.sky.hole > 0.5) add('no stars at 026', [cam.clone().addScaledVector(d.sky.holeDir.clone().applyAxisAngle(UP, world.skyYaw), 1400)],
-      { ang: 4, max: 1e6, sky: true, odd: HOLE_PRINT, target: 'starhole' });
+      { ang: 8, max: 1e6, sky: true, odd: HOLE_PRINT, target: 'starhole' });
   }
 
   // what should not be there
