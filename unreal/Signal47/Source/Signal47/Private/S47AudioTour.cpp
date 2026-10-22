@@ -6,6 +6,7 @@
 #include "HAL/PlatformFileManager.h"
 #include "Misc/FileHelper.h"
 #include "S47Ambience.h"
+#include "S47TvProgramme.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47AudioTour, Log, All);
 
@@ -92,6 +93,22 @@ void US47Audio::Tour(const FString& Path)
 	Part(TEXT("steps on each surface"));
 	for (const TCHAR* S : { TEXT("tile"), TEXT("concrete"), TEXT("dirt"), TEXT("wood"), TEXT("carpet") }) for (int32 I = 0; I < 4; ++I) { A->Step(S); Run(0.5, false); }
 	Part(TEXT("tv hiss")); A->TvHiss(Left); Run(2.0, false); A->TvHiss({}); Run(0.5, false);
+	{
+		// the late broadcast's sound (Scripts/prepare-tv.py, when staged): a set's speaker 2 m away at the
+		// office set's level, then through the wall, then stepping back under a voice (VoicesDuck)
+		FS47TvProgramme Tv;
+		if (Tv.HasSound())
+		{
+			const FVector Set(0.6, 1.2, -1.9);
+			Part(TEXT("tv broadcast at 2 m")); Tv.Time = 30.0; Tv.Update(0, A, Set, 0.32, false);
+			UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: tv broadcast from %.3f s of the programme, %.4f s into the tour"), 30.0, C.CurrentTime());
+			Run(8.0, false);
+			Part(TEXT("tv broadcast through the wall")); Tv.Update(0, A, Set, 0.32, true); Run(4.0, false);
+			Part(TEXT("tv broadcast under a voice")); Tv.Update(0, A, Set, 0.32 * 0.25, false); Run(4.0, false);
+			UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: tv broadcast %s"), *Tv.Describe());
+			Tv.Silence(); Run(0.5, false);
+		}
+	}
 	Part(TEXT("room tone, held down and back")); A->StartRoomTone(); Run(4.0, false); A->HoldRoomTone(0, 0.09f); Run(1.5, false); A->HoldRoomTone(1, 0.35f); Run(2.0, false);
 	Part(TEXT("the night in the yard at 03:00"));
 	A->StartNight(); A->SetSpace(TEXT("yard")); Run(25.0, true);
