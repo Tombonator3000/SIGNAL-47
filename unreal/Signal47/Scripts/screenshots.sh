@@ -45,4 +45,16 @@ shot call "S47: call alien" "-S47Jump=chapter1 -S47Face=outside -S47Call" 10
 shot glimpse "S47: glimpse at S-11" "-S47Jump=chapter1 -S47Face=at:10;-12;-0.45;0.03 -S47Glimpse=S-11" 8
 shot album "S47: free frame free1" "-S47Jump=chapter1 -S47Face=at:10.4;-11.6;0.2;0.31 -S47Album" 8
 shot albumface "S47: album opened" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Light -S47Album=face+open" 9
+# the phones, the archive and the records (S47Phones): the archive's phone lifted in the records room
+# (its line open), the array tipped to the horizon seen from the control room's window, the steps on
+# the records room's roof over the work table, the office's crank telephone answered, T. Vega's field
+# book and the envelope held up to the lamp, a closer look at the shift log, and a time away's thread
+shot archive "S47: archive phase line" "-S47Jump=chapter2 -S47Face=at:-3.5;9.6;1.5708;0 -S47Archive=lift" 10
+shot arraytip "S47: array down" "-S47Jump=chapter2 -S47Face=window -S47Archive=tip" 32
+shot roof "S47: roof steps come" "-S47Jump=chapter2 -S47Face=at:-4.2;9.6;3.1416;0.5 -S47Roof" 10
+shot office "S47: office telephone line" "-S47Jump=chapter1 -S47Face=at:-45.7;674.3;0;0.05 -S47Office=answer" 12
+shot fieldbook "S47: field book opened" "-S47Jump=chapter1 -S47Face=room -S47FieldBook" 8
+shot envelope "S47: envelope held up to the lamp" "-S47Jump=chapter1 -S47Face=room -S47FieldBook=envelope" 10
+shot zoom "S47: closer look: Dale's shift log" "-S47Jump=residual -S47Face=logbook -S47Zoom" 8
+shot same "S47: same thread for time away 1" "-S47Jump=chapter1 -S47Face=room -S47Same" 8
 exit $fail

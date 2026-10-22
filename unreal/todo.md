@@ -30,7 +30,7 @@
 - [ ] Dørene (Doors.onChange) videre til kapitlenes `DoorChanged`, som Prologue.doorChanged.
 - [ ] Lagringen kobles til `US47Chapter2::OnSave` og `Host->LoadCase`.
 - [ ] Kapittelkortets ring (`bHoldRing`, `RingOut`, `RingAgain`, `RingShown`) når kortet er portert; kapittel 1 sin slutt kaller `US47Chapter2::AfterChapterOne(method)`.
-- [ ] Bryterbordets linjelamper og opptakerens papirstrimmel (archive047.ts) mangler i eksporten.
+- [x] Bryterbordets linjelamper og opptakerens papirstrimmel (archive047.ts): i export.js (2026-10-22); kjør eksporten på nytt for å få håndtakene (C++ finner dem uten).
 - [ ] S47Drawings og S47Drawings2, S47Panels og S47Panels2 slås sammen.
 - [x] Lagring ved kontrollpunkter, tittel, pause og notatbok (2026-10-22, `S47Saves`, `S47Flow`).
 - [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
@@ -49,6 +49,15 @@
 
 - [x] Loggen, kurven, nattens hendelser, ropene, glimtene, lommelykta og albumet (`US47Night`), med lagringen.
 - [ ] Krokene i `FS47NightHooks` settes når systemene porteres: bortføringen, veikanten (stillheten), byens hendelser, skrittene på taket, motellets fjernsyn, lysene på B, Earls spole, SARO mørk, kontortelefonen, arkivtelefonen, matrisen tilbake, papfiguren, bilen på B, tatt i bilen, opptaket, morgenen, den niende kua, stjernehullet og bilradioen.
-- [ ] Det nærmere blikket (zoomK) og fotskrittene (`player.onStep`) i main.ts; glimtene og fotskrittene venter på dem.
+- [x] Det nærmere blikket (zoomK, `S47Phones`, 2026-10-22). Fotskrittene (`player.onStep`) gjenstår.
 - [ ] Glimtets og albumfigurens malte omriss (runde 14) og albumets bilder (runde 15) er ikke i eksporten; figuren fra koden brukes.
 - [ ] Lommelyktas mønster (core/cookies.ts) og fall-off: nå Unreals invers kvadrat med intensiteten avstemt 4 m ut.
+
+## Telefonene, arkivet og opptegnelsene (2026-10-22)
+
+- [x] Arkivtelefonen og matrisen den vipper, kontortelefonen, skrittene på taket, feltboka og konvolutten, blikkene og det nærmere blikket, tråden (`US47Phones`).
+- [ ] Krokene fra andre porter i `US47Phones`: `Reel047` (reel047.ts på dekket), `DecoderPlaying`/`DecoderStop` (Decoder.ts), `Dark` (saroDark), `CbBusy`, `AbductionCount`, `DishRogue`/`DishBack` (dishesFollow, arrayBack), `Frames`, `FbGet`/`FbSet` og `StationDrawer` (kapittel 3), `Foretell` (beitet og lysene på B), `StarHoleExamine`.
+- [ ] Kapittel 4: `OfficePhone` på kontortelefonens proxy (`court:officePhone`) spør `M->Phones->OfficePhone` først.
+- [ ] Kapittel 2s slutt venter på skrittene: settes kapittel 3s begynnelse som ny `OnEnd`, går den gjennom `M->Phones->Ch2End`.
+- [ ] Opplesningen av et nærmere blikk etter 650 ms (Serling) når fortelleren er portert.
+- [ ] Dishenes røde lys blinker i takt mens de er vippet (DishArray.beaconPhase) når glødepunktene blinker.

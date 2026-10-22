@@ -3,6 +3,7 @@
 #include "S47Flow.h"
 #include "S47HUD.h"
 #include "S47Night.h"
+#include "S47Phones.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47Audio.h"
@@ -44,6 +45,8 @@ void US47Main::Step(double Dt)
 	if (Flow) Flow->Step(Dt);
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
+	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
+	if (Phones) Phones->LookStep(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
 	if (Night) Night->FlashlightStep(Dt);
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands
@@ -62,4 +65,19 @@ void US47Main::Step(double Dt)
 		Sp = bIn ? TEXT("room") : Web->Rect(TEXT("yard.zone.lab")).Contains(P) ? TEXT("lab") : TEXT("yard");
 	}
 	if (Sp != Space) { Space = Sp; Audio->SetSpace(Sp); }
+	// main.ts: the extension has no windows: draw its rooms only from inside, or through the open door
+	// (the archive's drawer, box and switchboard and the records room's dust are in them; the exit's
+	// leaf open is the door's state here, annex.exitOpen in the web version)
+	if (Web)
+	{
+		bool bIn = false;
+		for (const TCHAR* B : { TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") }) bIn |= Web->Rect(B).Contains(P);
+		bIn |= Web->Rect(TEXT("room.bounds")).Contains(P) && Web->Obj(TEXT("room.southDoorHinge")).Rotation().Y > 0.01;
+		bIn |= Web->DoorStates().FindRef(TEXT("exit")) && Web->Rect(TEXT("world.crossing.zone.stoop")).Contains(P);
+		bIn |= Web->Rect(TEXT("annex.zone.exitDoor")).Contains(P);
+		FS47Obj Interior = Web->Obj(TEXT("annex.interior"));
+		Interior.SetVisible(Mode == EMode::Play && (!World || World->Area == TEXT("saro")) && bIn);
+	}
+	// main.ts: ui.examine, what a closer look says under the crosshair
+	if (Phones) Phones->ExamineStep();
 }

@@ -27,6 +27,7 @@
 #include "S47Flashlight.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Phones.h"
 #include "S47Opening.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -478,8 +479,10 @@ void US47Flow::StartGame(const FStart& O)
 	Carry = O.State.IsValid() ? S47J::Clone(O.State) : S47J::FObj();
 	// the flashlight, the seen log, the curve, townSeen, glimpses, nightEvents and the album (S47Night)
 	if (M->Night) M->Night->Restore(O.State);
+	// roofSteps, officePhone and sameThread reset (S47Phones)
+	if (M->Phones) M->Phones->Restore();
 	// (recWalk, stationTaken, truckTaken, the odometer, townEvents, cutouts, abduction, lineLights, pasture,
-	// motelTv, roofSteps, officePhone, truckB, ninth, starHole, morning, sameThread, saroDark: not ported yet)
+	// motelTv, truckB, ninth, starHole, morning, saroDark: not ported yet)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
 	StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
 	if (LoadBoard && O.State.IsValid()) LoadBoard(S47J::Obj(S47J::Obj(O.State, TEXT("case")), TEXT("board")));
@@ -493,7 +496,9 @@ void US47Flow::StartGame(const FStart& O)
 			M->Web->SetDoorById(FString(*KV.Key), bOpen, true);
 		}
 	}
-	// (abduction.refile, follow, arrayBack, archive, fieldBook, the town's papers, lostNights, motelTv: not ported yet)
+	// (abduction.refile, follow, arrayBack: not ported yet) the archive and the field book (S47Phones)
+	if (M->Phones) M->Phones->Restored();
+	// (the town's papers, lostNights, motelTv: not ported yet)
 	bRestoringNow = false;
 	Restoring.Reset();
 	// (roadside, the CB, the phones, the radio: not ported yet)
@@ -545,9 +550,10 @@ void US47Flow::LeavePlay()
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
 	// nightEvents, the seen log (quiet) and the curve (S47Night)
 	if (M->Night) M->Night->Leave();
-	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, archive, arrayTip,
-	// world.stopDriving, roadside, townEvents, roofSteps, the CB, reelTape, officePhone, truckB,
-	// truckTaken, the radio, the odometer: not ported yet)
+	// archive.halt, arrayTip.reset, roofSteps.reset, officePhone.reset (S47Phones)
+	if (M->Phones) M->Phones->Leave(false);
+	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, world.stopDriving,
+	// roadside, townEvents, the CB, reelTape, truckB, truckTaken, the radio, the odometer: not ported yet)
 	if (M->Story) M->Story->Reset();
 	if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -564,8 +570,10 @@ void US47Flow::ToTitle()
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
 	// the curve (S47Night)
 	if (M->Night) M->Night->Leave(true);
-	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, truckTaken, archive,
-	// arrayTip, world.stopDriving, roadside, the CB, the radio: not ported yet)
+	// archive.halt, arrayTip.reset (S47Phones)
+	if (M->Phones) M->Phones->Leave(true);
+	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, truckTaken,
+	// world.stopDriving, roadside, the CB, the radio: not ported yet)
 	if (M->Story) M->Story->Reset();
 	if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -717,8 +725,10 @@ FString US47Flow::SaveBlock() const
 {
 	if (bDevRun) return TEXT("This is a developer run. Nothing is saved.");
 	if (M->Mode != EMode::Play || !CaseId) return TEXT("There is no night running to save.");
-	// (the time away's 47 seconds, the array put back, SARO going dark, the archive's phone, the truck's
-	// count on B: those races are not in the Unreal version yet)
+	// (the time away's 47 seconds, the array put back, SARO going dark: not in the Unreal version yet)
+	// (nor from the archive's phone ringing until the dishes are down, nor while reel 047 runs)
+	if (M->Phones) { const FString B = M->Phones->SaveBlock(); if (!B.IsEmpty()) return B; }
+	// (the truck's count on B: not in the Unreal version yet)
 	return GameSaveBlock();
 }
 
@@ -960,8 +970,9 @@ void US47Flow::OpenNotebook()
 		TWeakObjectPtr<US47Main> Main = M;
 		OnBoard = [Main] { if (Main.IsValid() && Main->Board.Open) Main->Board.Open(FString(), FString()); };
 	}
-	// (game.openDoc: T. Vega's field book opens in a view of its own, story/fieldBook.ts, not ported yet)
-	M->UI->Notebook(S->Tasks(), S->Notes(), S->Docs(), [UI](const FS47Doc& Doc) { if (UI.IsValid()) UI->Document(Doc, [] {}); },
+	// (game.openDoc: T. Vega's field book opens in a view of its own, story/fieldBook.ts)
+	TWeakObjectPtr<US47Main> Mn = M;
+	M->UI->Notebook(S->Tasks(), S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc) { if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return; if (UI.IsValid()) UI->Document(Doc, [] {}); },
 		H ? *H : FString(TEXT("Tonight")), OnBoard, NotebookExtras());
 }
 

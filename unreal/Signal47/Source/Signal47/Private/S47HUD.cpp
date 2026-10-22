@@ -27,6 +27,7 @@
 #include "S47Chapter1.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Phones.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
 #include "S47UI.h"
@@ -78,6 +79,7 @@ void AS47HUD::Start()
 		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
 		bOk &= US47CaseBoard::SelfTest(Lines);
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
+		bOk &= US47Phones::SelfTest(Lines); // (the archive's phone and its dishes, the roof, the office's telephone, the field book, the looks, the thread)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -162,6 +164,8 @@ void AS47HUD::Start()
 		M->Flow->HaveCamera = [M] { return M->FieldCamera && M->FieldCamera->bHave; };
 		// main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses, the flashlight, the album)
 		M->Night = NewObject<US47Night>(M); M->Night->Init(M);
+		// main.ts: the phones, the archive and the records (the archive's phone, the office's telephone, the roof, the field book, the looks)
+		M->Phones = NewObject<US47Phones>(M); M->Phones->Init(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

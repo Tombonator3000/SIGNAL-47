@@ -136,7 +136,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	}
 	if (PC && bActive)
 	{
-		Look(LookX, LookY);
+		Look(LookX * LookFine, LookY * LookFine);
 		const bool bRun = PC->IsInputKeyDown(EKeys::LeftShift) || PC->IsInputKeyDown(EKeys::RightShift);
 		// Player.update
 		const double Sp = Speed * (bRun ? 1.6 : 1.0);

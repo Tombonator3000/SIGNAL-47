@@ -112,6 +112,21 @@ public:
 	// Prologue.doorChanged: a door opened or closed; every chapter hears it
 	void DoorChanged(const FString& Id, bool bOpen);
 
+	// ---------- for the night's systems (story/archivePhone.ts) ----------
+	// Prologue.consoleLog: a line in the console log from outside the story, at its own time, in order
+	// among the others (the night's order: the evening before midnight comes first)
+	void ConsoleLog(const FString& Text, double At);
+	// Prologue.relayClack: K3 goes (it trips, true), or, open already, the log writes it down anyway (false)
+	bool RelayClack();
+	// Prologue.rackAt: the rack's lever and the bank (three.js terms)
+	FVector RackAt() const;
+	// Prologue.bankIn: bank 3 is in, powered and K3 closed
+	bool BankIn() const { return bPowered && !NS.bK3Open; }
+	// Prologue.printerHook: the printer by the rack has a sheet of the archive's phone's in it. Label
+	// empty: null (the printer's own words).
+	struct FPrinterHook { TFunction<FString()> Label; TFunction<bool()> Use; };
+	FPrinterHook PrinterHook;
+
 	static constexpr double StartClock = 23 * 3600 + 41 * 60;
 	static constexpr double SkipClock = 2 * 3600 + 13 * 60 + 41;
 	static constexpr double EventAz = 26, EventEl = 32, ParkAz = 18, SurveyEl = 48;
