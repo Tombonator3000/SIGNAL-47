@@ -57,6 +57,9 @@ public:
 	// The night's layer (S47Night.h): the seen log, the curve, the night's events, the calls, the
 	// glimpses, the flashlight and the album, with main.ts's saw(), seenStep() and curveStep().
 	UPROPERTY() TObjectPtr<class US47Night> Night;
+	// SARO's own happenings (S47SaroNight.h): SARO dark and Hondo's telex, the array put back, the
+	// dishes that follow, the lights on B, the reels, the recording's walk
+	UPROPERTY() TObjectPtr<class US47SaroNight> SaroNight;
 	// main.ts townSeen: what the night has had, by key; a key added fresh is written in the seen log
 	FS47TownSeen TownSeen;
 	// main.ts oneAtATime(): one of the night's things is going, so nothing else of the night may start

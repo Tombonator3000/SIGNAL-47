@@ -19,8 +19,18 @@ enum class ES47Phase : uint8 { Intro, Shift, Survey, Skip, Residual, Locked, Sol
 
 struct FS47Task { FString Text; bool bDone = false; };
 
-// Tonight's lines in the console log, which papers were read, relay K3 (NightShiftState).
-struct FS47NightState { TArray<FString> Papers; bool bK3Open = false; TArray<FS47LogLine> Log; TOptional<double> SolveAt; bool bJacket = false; };
+// Tonight's lines in the console log, which papers were read, relay K3 (NightShiftState); the
+// array put back on the schedule (array: story/arrayBack.ts ArraySave, kept as its JSON) and when
+// Hondo Valley's telex was filed (hondo: story/saroDark.ts).
+struct FS47NightState
+{
+	TArray<FString> Papers; bool bK3Open = false; TArray<FS47LogLine> Log; TOptional<double> SolveAt; bool bJacket = false;
+	TSharedPtr<class FJsonObject> Array;
+	TOptional<double> Hondo;
+};
+// The array put back on the schedule, as the status screen shows it while a try runs
+// (story/arrayBack.ts status()): its mode, its bottom line (empty: none), and whether they are amber.
+struct FS47ArrayStatus { FString Mode, Line; bool bWarn = false; };
 
 UCLASS()
 class SIGNAL47_API AS47Story : public AActor
@@ -69,6 +79,7 @@ public:
 
 	// For the CRT painters.
 	const FS47NightState& Night() const { return NS; }
+	FS47NightState& NightMutable() { return NS; } // (story/arrayBack.ts keeps its tries in game.ns.array)
 	bool bPowered = false;
 	double GameTime = 0;
 	double BootT = -1, SolveT = -1, PrintT = -1, LineDeadT = -1;
@@ -111,6 +122,34 @@ public:
 	TFunction<void(const FString&)> OnCheckpoint; // Prologue.onCheckpoint: 'chapter1' ... (autosave)
 	// Prologue.doorChanged: a door opened or closed; every chapter hears it
 	void DoorChanged(const FString& Id, bool bOpen);
+
+	// ---------- SARO's own (story/saroDark.ts, story/arrayBack.ts, story/dishesFollow.ts) ----------
+	/** A line in the console log from outside the story, at its own time (unset: now), in the
+	 *  night's order among the others (Prologue.consoleLog). */
+	void ConsoleLog(const FString& Text, TOptional<double> At = {});
+	/** K3 goes first, in chapter one (story/saroDark.ts plays the clack as it is heard from where
+	 *  the player is): it trips (true), or, already open since the impact, it has nothing left to
+	 *  trip and the log writes it down anyway (false). */
+	bool RelayClack();
+	/** The rack's lever and the bank, and the teleprinter, in three's world terms. */
+	FVector RackAt() const;
+	FVector TelexAt() const;
+	/** Bank 3 is in: powered, K3 closed. */
+	bool BankIn() const { return bPowered && !NS.bK3Open; }
+	/** Hondo Valley's telex has printed: on the roll, in the log (at `At`, in the night's order),
+	 *  kept with the case. */
+	void HondoTelex(double Filed, TOptional<double> At = {});
+	/** What is on the telex roll now: last evening's traffic, and Hondo Valley's once it has come. */
+	TArray<FString> TelexRoll() const;
+	/** SARO without power: the radio on the cabinets goes with it, and comes back. */
+	void PowerOut(bool bOut);
+	/** The power is out at SARO (story/saroDark.ts): the screens stay dark. */
+	bool bDark = false;
+	/** main.ts game.arrayStatus and game.arrayText (story/arrayBack.ts), while a try runs; and each
+	 *  dish's own state for the status screen's rows (moving by itself, or rogue or back). */
+	TFunction<TOptional<FS47ArrayStatus>()> ArrayStatus;
+	TFunction<FString()> ArrayText;
+	TFunction<bool(int32)> DishSpinning, DishRogue;
 
 	static constexpr double StartClock = 23 * 3600 + 41 * 60;
 	static constexpr double SkipClock = 2 * 3600 + 13 * 60 + 41;
