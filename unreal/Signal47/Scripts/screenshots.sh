@@ -74,4 +74,18 @@ shot recording "S47: recording walk" "-S47Jump=chapter1 -S47Face=at:-24;120;2.64
 # (the autopilot, about 132 s of driving) to look at the hut from the gate
 shot chapter3 "chapter ch3 begins" "-S47Jump=chapter3 -S47Face=room"
 shot station "ch3 drive: at the hut" "-S47Jump=chapter3 -S47Drive=saro:station01 -S47Auto=13 -S47Ch3Drive=hut" 160
+# the time away and the trucks (S47Away): the warning on the ground west of the yard (cut to 4 s), the
+# light, the single frames (the hand at 13 s), waking in the frost with one of them over you (20 s);
+# the truck on B's four at the turn-off on the way out in chapter two; taken in the truck (its warning
+# cut to 5 s): woken at the wheel 300 m on facing north, one of them on the bonnet; no stars at 026
+# looked at; the lost nights on Night Shift's cork; FLASH's frames; the third one in front of the eye
+shot abduct "S47: the time away: back at" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 24
+shot abductframes "S47: the time away: taken" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 14
+shot abductover "S47: the time away: one of them over you" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 21
+shot truckb "S47: the truck on B: four done" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35" 30
+shot trucktaken "S47: taken in the truck: woken at the wheel" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35 -S47TruckTaken=5 -S47AwayAt=16" 36
+shot starhole "S47: no stars at 026: noticed" "-S47Jump=chapter2 -S47Face=at:-20;30;3.14;0 -S47StarHole" 10
+shot lostnights "S47: the lost nights: the binder and the green pins on the board, 1 book" "-S47Jump=chapter2 -S47Face=room -S47LostNights -S47AwayAt=1.5" 8
+shot flash "S47: FLASH frames shown, 10" "-S47Jump=chapter1 -S47Face=room -S47Flash -S47AwayAt=6.6" 8
+shot third "S47: the third one stands" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Third" 8
 exit $fail

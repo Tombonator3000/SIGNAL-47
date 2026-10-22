@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47BoardRules.h"
 #include "S47Chapter.h"
+#include "S47TheThird.h"
 #include "S47Chapter1.h"
 #include "S47Docs.h"
 #include "S47FieldCamera.h"
@@ -42,15 +43,7 @@ struct SIGNAL47_API FS47Ch3State
 	static FS47Ch3State Load(const S47J::FObj& Saved);
 };
 
-// story/theThird.ts FilmShot: the third one, for one exposure of FRAME 03 (where it stands in the
-// photograph, whether on the C stakes' own line, and its parts of the exposure)
-struct FS47FilmShot
-{
-	double U = 0, V = 0;
-	bool bOnC = false;
-	TFunction<void()> Before, After;
-	TFunction<void(TArray<FColor>& Raw, int32 W, int32 H)> Post;
-};
+// story/theThird.ts FilmShot: the third one, for one exposure of FRAME 03 (S47TheThird.h)
 
 // story/Chapter3.ts, chapter three, "The Survey Station" (K3 in the design bible). Ported from the
 // Unity field pass (Station26): P06, which fixed point moved, with FRAME 03; P07, the local lamp

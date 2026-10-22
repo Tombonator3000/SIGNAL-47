@@ -1015,6 +1015,34 @@ bool US47World::Indoors(const FVector& P) const
 	return M->Web->Rect(TEXT("world.site.hutBounds")).Contains(P);
 }
 
+bool US47World::MoveDriven(double X, double Z, double Heading)
+{
+	// World.moveDriven
+	FLegRec* L = Leg.IsEmpty() ? nullptr : Legs.Find(Leg);
+	if (!bDriving || !L || !Trip) return false;
+	L->Drive->Place(FVector(X, 0, Z), Heading);
+	L->Drive->bEngine = false;
+	if (Engine) Engine->Still();
+	const FS47Truck& G = *L->Truck;
+	for (FHome& H : TrucksHome) if (H.T == L->Truck) { H.X = G.Position.X; H.Y = G.Position.Y; H.Z = G.Position.Z; H.H = G.Rotation.Y; H.P = G.Rotation.X; H.R = G.Rotation.Z; }
+	const FString Place = PlaceOfLeg(Leg);
+	if (!Place.IsEmpty()) Trip->Home = Place;
+	Trip->StartPos = G.Position; Trip->bLeft = true;
+	if (const TOptional<FVector> V = DoorSpot(G, Leg)) this->Place(V->X, V->Z, Heading);
+	return true;
+}
+
+bool US47World::MoveParked(double X, double Z, double Heading, double Y)
+{
+	// World.moveParked
+	FS47Truck* T = SaroTruckP.Get();
+	if (bDriving || !T || (TruckAt != TEXT("saro") && TruckAt != TEXT("motel"))) return false;
+	T->SetPose(FVector(X, Y, Z), FVector(0, Heading, 0));
+	TruckAt = TEXT("saro");
+	ParkAt(TEXT("saro"));
+	return true;
+}
+
 void US47World::AddMiles(double Miles)
 {
 	OdoX += Miles;
@@ -1073,6 +1101,8 @@ bool US47World::CabUse()
 	if (OnCabUse && OnCabUse()) return true;
 	if (Trouble.TurnKey()) return true;
 	if (OnRadio && RadioAimed()) { OnRadio(); return true; }
+	// (not out in the middle of the truck's count on B, nor by Use in its warning on B: main.ts useCurrent)
+	if (CabStay && CabStay()) return true;
 	GetOutHere();
 	return true;
 }
@@ -1153,8 +1183,10 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	// main.ts: in the cab the prompt is the key, the radio or the way out
 	if (bDriving && M->UI && !(M->Story && M->Story->IsCinematic()))
 	{
-		const bool bKey = Trouble.WantsKey(), bRadio = !bKey && OnRadio && RadioAimed(), bOut = !bKey && !bRadio && CanGetOut();
-		M->UI->Prompt(bKey ? TEXT("Turn the key") : bRadio ? (!M->CarRadio || !M->CarRadio->bOn ? TEXT("Turn the radio on") : M->CarRadio->Station == TEXT("far") ? TEXT("Turn the radio off") : FString::Printf(TEXT("AM %d: next station"), S47Radio::Freq(M->CarRadio->Station))) : bOut ? TEXT("Get out") : TEXT(""));
+		// (held at the wheel on waking: no key; in the truck's warning on B, Q gets out: story/abduction.ts, truckTaken.ts)
+		const bool bKey = Trouble.WantsKey() && !(CabHeld && CabHeld()), bRadio = !bKey && OnRadio && RadioAimed(), bOut = !bKey && !bRadio && !(CabStay && CabStay()) && CanGetOut();
+		const bool bRun = CabRunOffered && CabRunOffered();
+		M->UI->Prompt(bKey ? TEXT("Turn the key") : bRadio ? (!M->CarRadio || !M->CarRadio->bOn ? TEXT("Turn the radio on") : M->CarRadio->Station == TEXT("far") ? TEXT("Turn the radio off") : FString::Printf(TEXT("AM %d: next station"), S47Radio::Freq(M->CarRadio->Station))) : bOut ? TEXT("Get out") : TEXT(""), bRun ? TEXT("Get out") : TEXT(""));
 	}
 	return bView;
 }

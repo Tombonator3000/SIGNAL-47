@@ -40,6 +40,11 @@
 #include "S47LineLights.h"
 #include "S47DishArray.h"
 #include "S47ArchiveDishes.h"
+#include "S47Away.h"
+#include "S47Seen.h"
+#include "S47StationTaken.h"
+#include "S47DishesFollow.h"
+#include "S47Abduction.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
 #include "S47UI.h"
@@ -95,6 +100,7 @@ void AS47HUD::Start()
 		bOk &= US47Phones::SelfTest(Lines); // (the archive's phone and its dishes, the roof, the office's telephone, the field book, the looks, the thread)
 		bOk &= US47SaroNight::SelfTest(Lines); // (SARO dark, the array put back, the dishes that follow, the lights on B, the reels, the recording)
 		bOk &= US47Chapter3::SelfTest(Lines); // (with stationTaken's)
+		bOk &= US47Away::SelfTest(Lines); // (the time away, the trucks, the lost nights, the third one, the star hole, FLASH's frames)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -242,6 +248,54 @@ void AS47HUD::Start()
 			Ph->Reel047.Update = [Ws](double Dt) { if (Ws.IsValid() && Ws->Reel047.IsValid()) Ws->Reel047->Update(Dt); };
 			Ph->Reel047.Play = [Ws](TFunction<void(const FString&)> Cue) { if (Ws.IsValid() && Ws->Reel047.IsValid()) Ws->Reel047->Play([Cue](const FS47ReelCue& C) { if (Cue) Cue(C.Kind); }); };
 			Ph->Reel047.Reset = [Ws] { if (Ws.IsValid() && Ws->Reel047.IsValid()) Ws->Reel047->Reset(); };
+		}
+		// main.ts: the time away and the trucks (the abduction, taken in the truck, the truck on B, the lost nights, the third one, the star hole)
+		M->Away = NewObject<US47Away>(M); M->Away->Init(M);
+		{
+			// main.ts: the time away and what hangs on it (SARO's dishes that follow, the station taken in
+			// chapter three, the third one on film, the archive's count)
+			US47Away* Aw = M->Away;
+			TWeakObjectPtr<US47Away> Wa = Aw;
+			if (US47SaroNight* Sn = M->SaroNight)
+			{
+				FS47AbductView& V = Sn->Abduct;
+				V.Stage = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? Wa->Abduction->Stage : FString(TEXT("calm")); };
+				V.Warn = [Wa]() -> TOptional<FS47FollowIn::FWarn>
+				{
+					if (!Wa.IsValid() || !Wa->Abduction.IsValid()) return {};
+					const auto W = Wa->Abduction->Warn();
+					if (!W) return {};
+					FS47FollowIn::FWarn F; F.T = W->T; F.Len = W->Len;
+					return F;
+				};
+				V.BackAt = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? Wa->Abduction->BackAt : TOptional<FVector>(); };
+				V.Last = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? Wa->Abduction->Data.Last : -1e9; };
+				V.Over = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() && !Wa->Abduction->OverPhase().IsEmpty(); };
+				V.GetDishes = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? FS47DishesSave::Copy(Wa->Abduction->Data.Dishes) : TOptional<FS47DishesSave>(); };
+				V.SetDishes = [Wa](const FS47DishesSave& D) { if (Wa.IsValid() && Wa->Abduction.IsValid()) Wa->Abduction->Data.Dishes = D.ToJson(); };
+				// (abduction.recordings for the recording's walk: the two ports keep their own figure types;
+				// the walk keeps its test recording until they share one)
+			}
+			if (M->Phones) M->Phones->AbductionCount = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? Wa->Abduction->Data.Count : 0; };
+			if (US47Chapter3* C3 = Story.IsValid() ? Cast<US47Chapter3>(Story->Chapter(TEXT("ch3"))) : nullptr)
+			{
+				TWeakObjectPtr<US47Chapter3> W3 = C3;
+				Aw->StationIdle = [W3] { return !W3.IsValid() || !W3->StationTaken || W3->StationTaken->State == TEXT("idle"); };
+				Aw->StationBegin = [W3](double Clock) { if (W3.IsValid() && W3->StationTaken) W3->StationTaken->Begin(Clock); };
+				C3->Third = [Wa](US47FieldCamera* Cam) -> TOptional<FS47FilmShot>
+				{
+					if (!Wa.IsValid() || !Cam) return {};
+					// fcam.photoCam in three's terms
+					FS47Cam C;
+					C.Pos = S47Three::ToThree(Cam->PhotoLoc);
+					auto Dir = [](const FVector& U) { return FVector(U.X, U.Z, U.Y); };
+					const FRotationMatrix R(Cam->PhotoRot);
+					C.Forward = Dir(R.GetUnitAxis(EAxis::X)); C.Right = Dir(R.GetUnitAxis(EAxis::Y)); C.Up = Dir(R.GetUnitAxis(EAxis::Z));
+					C.Fov = US47FieldCamera::PHOTO_FOV; C.Aspect = 960.0 / 600.0;
+					return Wa->ThirdShot(C);
+				};
+				C3->OnBand = [Wa] { if (Wa.IsValid()) Wa->ThirdNoticed(); };
+			}
 		}
 		M->Flow->Boot();
 		FString FaceAt;

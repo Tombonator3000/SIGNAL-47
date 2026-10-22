@@ -78,6 +78,10 @@ public:
 	/** The night's own claims on Use in the cab before the trouble's key and getting out (main.ts
 	 *  useCurrent: Chapter6.turnKey, truckTaken.useKey, the abduction's hold): true takes the press. */
 	TFunction<bool()> OnCabUse;
+	/** The night's other holds on the cab (main.ts): no getting out by Use (the truck on B's count,
+	 *  the truck's warning on B: story/truckOnB.ts, truckTaken.ts); the way out offered with Q (in that
+	 *  warning, and chapter six's door); held at the wheel on waking (the key not offered). */
+	TFunction<bool()> CabStay, CabRunOffered, CabHeld;
 	/** Chapter six takes over on the old road: the pedals and wheel (Input), or the camera (the
 	 *  pull-out at the end, while the truck stands). Cleared when the drive stops. */
 	struct FOldControl { TFunction<FS47DriveIn(double)> Input; TFunction<void(double, FS47View&)> Camera; };
@@ -154,6 +158,12 @@ public:
 	FS47DriveController* CabDrive() const;
 	/** Something holds the truck being driven back, m/s² (0: let go). */
 	void HoldTruck(double K) { if (FS47DriveController* D = CabDrive()) D->Held = K; }
+	/** The truck being driven, put down somewhere else on its area's ground, standing, the engine off
+	 *  and quiet (story/truckTaken.ts: where the player wakes in it). The trip goes on from there; it is
+	 *  where the truck stands now, for a save made in it (TruckSave) and for the player's body. */
+	bool MoveDriven(double X, double Z, double Heading);
+	/** The truck standing on SARO's ground, put down somewhere else on it (no one in it). */
+	bool MoveParked(double X, double Z, double Heading, double Y = 0);
 	/** Every sound of the truck gone (the engine, the starter, the tyres), or back. */
 	void HushTruck(bool bOn) { if (Engine) Engine->Hush(bOn); }
 	/** The engine sound, for the chapter that stops it. */

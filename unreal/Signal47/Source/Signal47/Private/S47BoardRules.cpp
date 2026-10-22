@@ -52,7 +52,7 @@ TOptional<FS47Result> FS47RuleBook::Connect(const FString& A, const FString& B, 
 		const TOptional<FS47Result> Reply = O.Wrong ? O.Wrong(R->Wrong, *R) : TOptional<FS47Result>();
 		if (O.Save) O.Save();
 		if (Reply && Reply->bOk) return *Reply;
-		return Miss(A, B, Reply ? *Reply : FS47Result{ false, R->Text });
+		return Miss(A, B, Reply ? *Reply : FS47Result{ false, R->Now() });
 	}
 	FString Q;
 	if (!R->Note.IsEmpty()) { if (const FS47BookNote* N = O.Notes.Find(R->Note)) Q = N->Q; }
@@ -69,11 +69,12 @@ TOptional<FS47Result> FS47RuleBook::Connect(const FString& A, const FString& B, 
 	}
 	Links.Add(K);
 	if (O.Save) O.Save();
-	if (Q.IsEmpty()) return FS47Result{ true, R->Text };
+	const FString RText = R->Now();
+	if (Q.IsEmpty()) return FS47Result{ true, RText };
 	const int32 NFilled = Filled(Q).Num();
 	const FS47BookQuestion* QQ = Question(Q);
 	const int32 Total = QQ ? QQ->Slots : NFilled;
-	return FS47Result{ true, NFilled >= Total ? FString::Printf(TEXT("%s %s has what it needs: RECORD it."), *R->Text, *Q) : FString::Printf(TEXT("%s (%s: %d of %d)"), *R->Text, *Q, NFilled, Total) };
+	return FS47Result{ true, NFilled >= Total ? FString::Printf(TEXT("%s %s has what it needs: RECORD it."), *RText, *Q) : FString::Printf(TEXT("%s (%s: %d of %d)"), *RText, *Q, NFilled, Total) };
 }
 
 TArray<FString> FS47RuleBook::Filled(const FString& Q) const
@@ -87,7 +88,7 @@ TArray<FString> FS47RuleBook::Filled(const FString& Q) const
 		if (N && N->Q == Q && !Ids.Contains(R->Note)) Ids.Add(R->Note);
 	}
 	TArray<FString> Out;
-	for (const FString& Id : Ids) Out.Add(O.Notes[Id].Text);
+	for (const FString& Id : Ids) Out.Add(O.Notes[Id].Now());
 	return Out;
 }
 
@@ -112,7 +113,7 @@ TArray<FS47BoardNote> FS47RuleBook::Notes() const
 		const FS47BookNote* N = O.Notes.Find(R->Note);
 		if (!N || !N->Q.IsEmpty() || Out.ContainsByPredicate([&](const FS47BoardNote& X) { return X.Id == R->Note; })) continue;
 		FS47BoardNote BN;
-		BN.Id = R->Note; BN.Text = N->Text; BN.FromA = R->A; BN.FromB = R->B; BN.bHand = N->bHand;
+		BN.Id = R->Note; BN.Text = N->Now(); BN.FromA = R->A; BN.FromB = R->B; BN.bHand = N->bHand;
 		Out.Add(BN);
 	}
 	return Out;
@@ -126,7 +127,7 @@ TArray<FS47BoardQuestion> FS47RuleBook::Questions() const
 		if (!Q.Open || !Q.Open()) continue;
 		FS47BoardQuestion B;
 		B.Id = Q.Id; B.Stamp = Q.Stamp; B.Text = Q.Text; B.Slots = Q.Slots; B.Filled = Filled(Q.Id);
-		B.Done = Q.Done ? Q.Done() : FString(); B.Elsewhere = Q.Elsewhere; B.X = Q.X; B.Y = Q.Y; B.W = Q.W;
+		B.Done = Q.Done ? Q.Done() : FString(); B.Elsewhere = Q.ElsewhereNow(); B.X = Q.X; B.Y = Q.Y; B.W = Q.W;
 		Out.Add(B);
 	}
 	return Out;
@@ -136,7 +137,7 @@ TOptional<FS47Result> FS47RuleBook::Record(const FString& Id)
 {
 	const FS47BookQuestion* Q = Question(Id);
 	if (!Q) return {};
-	if (!Q->Record) return FS47Result{ false, Q->Elsewhere.IsEmpty() ? FString(TEXT("This one is not recorded on the board.")) : Q->Elsewhere };
+	if (!Q->Record) return FS47Result{ false, Q->ElsewhereNow().IsEmpty() ? FString(TEXT("This one is not recorded on the board.")) : Q->ElsewhereNow() };
 	const int32 Have = Filled(Id).Num();
 	if (Have < Q->Slots) return FS47Result{ false, FString::Printf(TEXT("%s needs %d more on it first."), *Id, Q->Slots - Have) };
 	return Q->Record();

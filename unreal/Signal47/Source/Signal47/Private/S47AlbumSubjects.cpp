@@ -1,6 +1,7 @@
 // story/albumSubjects.ts
 #include "S47AlbumSubjects.h"
 
+#include "S47Away.h"
 #include "S47Geo.h"
 #include "S47Main.h"
 #include "S47Truck.h"
@@ -155,7 +156,11 @@ namespace S47AlbumSubjects
 			}
 			const FVector F = Camera.Forward;
 			if (F.Y > 0.45) Add(TEXT("the Milky Way"), { Cam + F * 900 }, [](FS47Subject& Sj) { Sj.Ang = 18; Sj.W = 0.35; Sj.Max = 1e6; Sj.bSky = true; });
-			// (no stars at 026 where the dishes point: story/starHole.ts, not ported yet)
+			// no stars at 026 where the dishes point (story/starHole.ts: the sky's own, turned with the area's sky)
+			if (const US47Away* Aw = M->Away; Aw && Aw->HoleNow() > 0.5)
+			{
+				Add(TEXT("no stars at 026"), { Cam + Aw->HoleDir() * 1400 }, [](FS47Subject& Sj) { Sj.Ang = 8; Sj.Max = 1e6; Sj.bSky = true; Sj.Odd = FS47StarHole::HOLE_PRINT; Sj.Target = TEXT("starhole"); });
+			}
 		}
 
 		// what should not be there
@@ -169,6 +174,12 @@ namespace S47AlbumSubjects
 			if (!N || N->Parent >= 0 || !N->bVis) continue;
 			if (N->Name == TEXT("abduct:record")) Add(TEXT("someone in a SARO jacket"), { P(FS47Obj(Web, I), 1.1) }, [](FS47Subject& S) { S.R = 0.5; S.Max = 400; S.Odd = JACKET(); S.H = 1.75; });
 			if (N->Name == TEXT("abduct:ring")) Add(TEXT("a ring of flattened grass, white with frost"), { P(FS47Obj(Web, I)) }, [](FS47Subject& S) { S.R = 2.7; S.Max = 50; S.W = 2; });
+		}
+		// (the time away's own are built at run time, not in the export: S47Away has them)
+		if (const US47Away* Aw = M->Away; Aw && Aw->Abduction)
+		{
+			for (const FS47Abduction::FShown& R : Aw->Abduction->RecordsShown()) Add(TEXT("someone in a SARO jacket"), { FVector(R.At.X, R.At.Y + 1.1, R.At.Z) }, [](FS47Subject& S) { S.R = 0.5; S.Max = 400; S.Odd = JACKET(); S.H = 1.75; });
+			for (const FVector& R : Aw->Abduction->RingsShown()) Add(TEXT("a ring of flattened grass, white with frost"), { R }, [](FS47Subject& S) { S.R = 2.7; S.Max = 50; S.W = 2; });
 		}
 		return Out;
 	}
