@@ -14,6 +14,7 @@
 #include "GameFramework/PlayerController.h"
 #include "HAL/FileManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Misc/CommandLine.h"
@@ -26,6 +27,7 @@
 #include "S47FieldCamera.h"
 #include "S47HUD.h"
 #include "S47Image.h"
+#include "S47Keys.h"
 #include "S47Album.h"
 #include "S47Flashlight.h"
 #include "S47Main.h"
@@ -50,6 +52,7 @@
 #include "S47Lines.h"
 #include "S47Opening.h"
 #include "S47Story.h"
+#include "S47Theme.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -205,6 +208,10 @@ void US47Flow::Init(US47Main* InM)
 	if (M->Audio) { M->Audio->SetMusic(MusicLevel); M->Audio->SetRadio(RadioLevel); }
 	if (M->Radio) { M->Radio->SetHostVoice(bArtBell); M->Radio->SetCallerVoice(bRadioCast); }
 	ApplyLook();
+	// the Unreal version's own settings: the brightness, and the keys as the player has bound them
+	Brightness = float(S47J::Num(Store, TEXT("brightness"), 0.5));
+	ApplyBrightness();
+	S47Keys::Load(S47J::Obj(Store, TEXT("keys")));
 
 	// the opening card (core/Opening.ts)
 	FS47OpeningHooks H;
@@ -270,19 +277,18 @@ void US47Flow::Init(US47Main* InM)
 			return true;
 		};
 	};
-	M->OnKey(EKeys::Tab, Notebook(nullptr));
-	M->OnKey(EKeys::N, Notebook(nullptr));
+	// (the keys as bound in Settings > Controls, S47Keys: Tab and N, M, I, H, Escape and P, V unless changed)
+	M->OnAction(TEXT("notebook"), Notebook(nullptr));
 	// the map, the kit and the controls, straight to their tabs in the notebook
-	M->OnKey(EKeys::M, Notebook(TEXT("map")));
-	M->OnKey(EKeys::I, Notebook(TEXT("kit")));
-	M->OnKey(EKeys::H, Notebook(TEXT("controls")));
+	M->OnAction(TEXT("map"), Notebook(TEXT("map")));
+	M->OnAction(TEXT("kit"), Notebook(TEXT("kit")));
+	M->OnAction(TEXT("controls"), Notebook(TEXT("controls")));
 	// Escape or P: the pause menu (with the field camera raised, Escape lowers it: chapter one's own
 	// key, registered before this one)
 	auto Pause = [this] { if (M->Mode != EMode::Play) return false; OpenPause(); return true; };
-	M->OnKey(EKeys::Escape, Pause);
-	M->OnKey(EKeys::P, Pause);
+	M->OnAction(TEXT("pause"), Pause);
 	// V: the last description read again (ui.readLastDescription), not in a cinematic
-	M->OnKey(EKeys::V, [this]
+	M->OnAction(TEXT("describe"), [this]
 	{
 		if (M->Mode != EMode::Play) return false;
 		if (!(M->Story && M->Story->IsCinematic())) M->UI->ReadLastDescription();
@@ -433,7 +439,13 @@ void US47Flow::ShowTitle()
 	FS47TitleOpts O;
 	O.bGate = bGate;
 	O.bTouch = false;
-	O.Cont = Cont ? FString::Printf(TEXT("%s · %s · %s · %s played"), *Cont->Chapter, *Cont->Place, *Cont->Clock, *S47Css::Played(Cont->Playtime)) : FString();
+	// Continue's line: the case, the chapter, the night's clock and the place ("CASE 1 · CHAPTER TWO · 03:12 · CONTROL ROOM")
+	O.Cont = Cont ? FString::Printf(TEXT("CASE %d \u00B7 %s \u00B7 %s \u00B7 %s"), Cont->CaseId, *S47Theme::ChapterLine(Cont->Chapter).Key, *Cont->Clock, *Cont->Place.ToUpper()) : FString();
+	// Quit: the desktop's way out
+	O.OnQuit = [this] { UKismetSystemLibrary::QuitGame(M->Hud, M->Hud ? M->Hud->GetOwningPlayerController() : nullptr, EQuitPreference::Quit, false); };
+	FString Version;
+	if (!GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni)) GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GEngineIni);
+	O.Version = FString::Printf(TEXT("UNREAL %s \u00B7 TAPE B"), Version.IsEmpty() ? TEXT("0.0") : *Version);
 	O.OnContinue = [this] { const TOptional<FS47SaveMeta> C = Saves.ContinueSave(); if (C) OpenSave(*C); };
 	O.OnStart = [this]
 	{
@@ -779,7 +791,7 @@ void US47Flow::OpenPause()
 		if (Self->M->Score) Self->M->Score->Pause(false);
 		UGameplayStatics::SetGamePaused(Self->M->Hud, false);
 	};
-	FS47PauseOpts O = Settings();
+	FS47PauseOpts O = PauseStatus(Settings());
 	O.OnResume = Resume;
 	O.OnTitle = [this, Resume] { Resume(); AutosaveNow(); ToTitle(); };
 	// the case menus sit on top of the pause menu and go back to it
@@ -802,6 +814,31 @@ void US47Flow::OpenPause()
 	};
 	M->UI->Pause(O);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: pause opened"));
+}
+
+FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
+{
+	// the strip's lines: the chapter, the clock and the place, the case and when it was last saved
+	AS47Story* S = M->Story;
+	O.Chapter = S ? S->ChapterTitle() : FString();
+	O.Clock = S ? S->Clock() : -1;
+	O.Place = PlaceName();
+	static const TSet<FString> SaroRooms = { TEXT("Control room"), TEXT("Records room"), TEXT("South corridor"), TEXT("Photo lab"), TEXT("Truck pad"), TEXT("Service yard"), TEXT("Service road") };
+	if ((M->Web ? M->Web->Area() : FString(TEXT("saro"))) == TEXT("saro") && SaroRooms.Contains(O.Place)) O.Place += TEXT(", SARO");
+	if (bDevRun || !CaseId) O.CaseLine = TEXT("DEVELOPER RUN \u00B7 NOTHING IS SAVED");
+	else
+	{
+		const TOptional<FS47SaveMeta> Last = Saves.Latest(CaseId);
+		O.CaseLine = FString::Printf(TEXT("CASE %d \u00B7 %s"), CaseId, Last ? *S47Theme::SavedAgo(Last->SavedAt) : TEXT("NOT SAVED YET"));
+	}
+	// tonight's card: the chapter's objective, the tasks not done, the latest note
+	if (S)
+	{
+		if (const US47Chapter* C = S->Chapter(S->ChapterKey); C && C->bActive) O.Objective = C->Objective();
+		for (const FS47Task& T : S->Tasks()) if (!T.bDone) O.OpenTasks.Add(T.Text);
+		if (S->Notes().Num()) O.LastNote = S->Notes().Last();
+	}
+	return O;
 }
 
 FS47PauseOpts US47Flow::Settings()
@@ -841,6 +878,9 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnStillShots = [this](bool V) { bStillShots = V; StoreSet(TEXT("stillShots"), V); };
 	O.bAbduct = bAbductOn;
 	O.OnAbduct = [this](bool V) { bAbductOn = V; StoreSet(TEXT("abductions"), V); };
+	O.Brightness = Brightness;
+	O.OnBrightness = [this](float V) { Brightness = V; ApplyBrightness(); StoreSet(TEXT("brightness"), double(V)); };
+	O.OnKeys = [this] { StoreSet(TEXT("keys"), MakeShared<FJsonValueObject>(S47Keys::Save())); };
 	return O;
 }
 
@@ -874,6 +914,17 @@ void US47Flow::ApplyLook()
 	M->Player->Sensitivity = Sens;
 	M->Player->bInvertY = bInvertY;
 	M->Player->Fov = BaseFov;
+}
+
+void US47Flow::ApplyBrightness()
+{
+	// the light going into M_WebTone's curve: MPC_Web's ToneK (AS47Web: exposure / 0.6, times -S47Scene=)
+	// times 2^((b - .5) * 1.5), so .5 is the picture as made and the ends are .59 and 1.68 of it
+	UWorld* World = GameWorld();
+	UMaterialParameterCollection* Mpc = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Web/Base/MPC_Web.MPC_Web"));
+	UMaterialParameterCollectionInstance* I = World && Mpc ? World->GetParameterCollectionInstance(Mpc) : nullptr;
+	if (!I || !M->Web) return;
+	I->SetScalarParameterValue(TEXT("ToneK"), float(M->Web->ToneMappingExposure / 0.6) * M->Web->SceneScale * FMath::Pow(2.f, (Brightness - 0.5f) * 1.5f));
 }
 
 void US47Flow::ApplyVolume()
@@ -1020,6 +1071,14 @@ FString US47Flow::CaptureThumb()
 		ThumbCapture->bCaptureOnMovement = false;
 		ThumbCapture->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 		ThumbCapture->TextureTarget = ThumbTarget;
+		// as the field camera's: a view state (without one the world's post-process materials, M_WebTone
+		// and its exposure, are skipped and the picture comes out dark), one frame with no history,
+		// and the eye's near plane
+		ThumbCapture->bAlwaysPersistRenderingState = true;
+		ThumbCapture->PostProcessBlendWeight = 1.f;
+		ThumbCapture->ShowFlags.SetTemporalAA(false);
+		ThumbCapture->bOverride_CustomNearClippingPlane = true;
+		ThumbCapture->CustomNearClippingPlane = 5.f; // 0.05 m
 		ThumbCapture->RegisterComponentWithWorld(World);
 	}
 	if (!ThumbCapture) return FString();
@@ -1316,7 +1375,14 @@ bool US47Flow::OpenTestView(const FString& View)
 	// New night and Begin night on the opening card; the pause menu's Quit to title
 	if (View == TEXT("newnight")) { RequestNewNight(FMath::Max(1, Saves.FreeCase())); Opening->Begin(); return true; }
 	if (View == TEXT("totitle")) { AutosaveNow(); ToTitle(); return true; }
-	if (View == TEXT("settings")) { FS47PauseOpts S = Settings(); S.Title = TEXT("Settings"); S.bSettingsOnly = true; S.OnResume = [] {}; S.OnTitle = [] {}; M->UI->Pause(S); return true; }
+	// the settings, or the settings at a tab (settings:picture)
+	if (View == TEXT("settings") || View.StartsWith(TEXT("settings:")))
+	{
+		FS47PauseOpts S = Settings(); S.Title = TEXT("Settings"); S.bSettingsOnly = true; S.OnResume = [] {}; S.OnTitle = [] {};
+		S.Tab = View.Mid(9);
+		M->UI->Pause(S);
+		return true;
+	}
 	if (View == TEXT("save") || View == TEXT("load"))
 	{
 		FS47SaveMenuOpts S;

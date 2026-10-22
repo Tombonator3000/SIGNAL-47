@@ -14,7 +14,7 @@ class SS47Crt : public SLeafWidget
 {
 public:
 	enum class EKind : uint8 { Status, Spectrum, Tracking, Ops };
-	SLATE_BEGIN_ARGS(SS47Crt) {}
+	SLATE_BEGIN_ARGS(SS47Crt) : _Story(nullptr), _Saro(nullptr) {}
 		SLATE_ARGUMENT(EKind, Kind)
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(AS47Web*, Saro)

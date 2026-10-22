@@ -1,6 +1,7 @@
 // main.ts: the phones, the archive and the records (archivePhone, archiveDishes, officePhone, roofSteps,
 // fieldBook, sameThread, looks, the closer look), in the order main.ts builds and steps them
 #include "S47Phones.h"
+#include "S47Keys.h"
 
 #include "Engine/Texture2D.h"
 #include "GameFramework/PlayerController.h"
@@ -398,7 +399,7 @@ void US47Phones::LookStep(double Dt)
 	const bool bRaised = M->FieldCamera && M->FieldCamera->bRaised;
 	const bool bCanZoom = M->Mode == EMode::Play && !Modal() && !Cinematic() && !bRaised && !Driving();
 	bool bHeld = bForceZoom;
-	if (const APlayerController* PC = M->Player ? Cast<APlayerController>(M->Player->GetController()) : nullptr) bHeld |= M->Player->IsActive() && PC->IsInputKeyDown(EKeys::RightMouseButton);
+	if (const APlayerController* PC = M->Player ? Cast<APlayerController>(M->Player->GetController()) : nullptr) bHeld |= M->Player->IsActive() && S47Keys::Down(PC, TEXT("zoom"));
 	const double Z0 = M->ZoomK;
 	M->ZoomK += ((bHeld && bCanZoom ? 1 : 0) - M->ZoomK) * FMath::Min(1.0, Dt * 9);
 	if (M->ZoomK < 0.002) M->ZoomK = 0;

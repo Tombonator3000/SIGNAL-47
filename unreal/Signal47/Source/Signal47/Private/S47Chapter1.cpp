@@ -1,5 +1,6 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
+#include "S47Keys.h"
 
 #include "Components/PrimitiveComponent.h"
 #include "Engine/Texture2D.h"
@@ -166,36 +167,33 @@ US47Chapter1* US47Chapter1::Register()
 	TWeakObjectPtr<US47Chapter1> W = this;
 	// main.ts input.onKey: C raises and lowers the camera; Space, and Use while it is up, is the
 	// shutter (E, a click); Esc or P while it is up lowers it
-	M->OnKey(EKeys::C, [W]
+	M->OnAction(TEXT("camera"), [W]
 	{
 		if (!W.IsValid() || W->Host->IsCinematic()) return false;
 		W->ToggleCamera();
 		return true;
 	});
-	M->OnKey(EKeys::SpaceBar, [W]
+	M->OnAction(TEXT("shutter"), [W]
 	{
 		if (!W.IsValid() || !W->Fcam() || !W->Fcam()->bRaised) return false;
 		W->Shutter();
 		return true;
 	});
-	for (const FKey& K : { EKeys::E, EKeys::Enter, EKeys::LeftMouseButton })
+	// (Use's keys as bound, S47Keys, and a click; the pause's keys)
+	auto UseShutter = [W]
 	{
-		M->OnKey(K, [W]
-		{
-			if (!W.IsValid() || W->Host->IsCinematic() || !W->Fcam() || !W->Fcam()->bRaised) return false;
-			W->Shutter(); // the camera is up: Use is the shutter
-			return true;
-		});
-	}
-	for (const FKey& K : { EKeys::Escape, EKeys::P })
+		if (!W.IsValid() || W->Host->IsCinematic() || !W->Fcam() || !W->Fcam()->bRaised) return false;
+		W->Shutter(); // the camera is up: Use is the shutter
+		return true;
+	};
+	M->OnAction(TEXT("use"), UseShutter);
+	M->OnKey(EKeys::LeftMouseButton, UseShutter);
+	M->OnAction(TEXT("pause"), [W]
 	{
-		M->OnKey(K, [W]
-		{
-			if (!W.IsValid() || !W->Fcam() || !W->Fcam()->bRaised) return false;
-			W->ToggleCamera();
-			return true;
-		});
-	}
+		if (!W.IsValid() || !W->Fcam() || !W->Fcam()->bRaised) return false;
+		W->ToggleCamera();
+		return true;
+	});
 	// main.ts step: nothing is picked or offered while the camera is up
 	if (M->Inter) M->Inter->Holds.Add([W] { return W.IsValid() && W->Fcam() && W->Fcam()->bRaised; });
 
@@ -548,7 +546,7 @@ void US47Chapter1::Interactables()
 			if (US47UI* U = Ui()) U->CameraButton(Touch());
 			if (US47Audio* A = Au()) A->Sfx(TEXT("click"), Snd(0.6f));
 			NoteIt(TEXT("Collected the field camera. Expose the antenna profile from S-03, then process the film in the photo lab."));
-			Toast(!FirstTime(TEXT("camera")) ? TEXT("Field camera.") : Touch() ? TEXT("Field camera. The Camera button raises it.") : TEXT("Field camera. C to raise, Space to expose."), 3.6f);
+			Toast(!FirstTime(TEXT("camera")) ? TEXT("Field camera.") : Touch() ? TEXT("Field camera. The Camera button raises it.") : FString::Printf(TEXT("Field camera. %s to raise, %s to expose."), *S47Keys::Said(TEXT("camera")), *S47Keys::Said(TEXT("shutter"))), 3.6f);
 			if (S.Stage == TEXT("collect-camera")) StageTo(S.bLog ? TEXT("first-exposure") : TEXT("motor-log")); else Save();
 		};
 		Inter->Add(It);

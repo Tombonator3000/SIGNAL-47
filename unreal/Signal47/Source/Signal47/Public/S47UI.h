@@ -22,6 +22,9 @@ struct FS47TitleOpts
 	TFunction<void(bool)> OnFlashPick;
 	bool bGate = false, bTouch = false;
 	TFunction<void()> OnFirstTouch;       // main.ts firstTouch: the first key or click on the title (the music)
+	TFunction<void()> OnQuit;             // the desktop's Quit; unset: not offered
+	TFunction<void(const FString&)> OnSettingsAt; // the settings at a tab (the note's link; US47UI::Title sets it)
+	FString Version;                      // the corner's "UNREAL 0.0.1 · TAPE B"
 };
 // UI.openingCard: its actions, and the view it gives back (OpeningView)
 struct FS47OpeningActions { TFunction<void()> Begin, Back, Closed; };
@@ -48,6 +51,19 @@ struct FS47PauseOpts
 	bool bCalmFlash = false; TFunction<void(bool)> OnCalmFlash;
 	bool bStillShots = false; TFunction<void(bool)> OnStillShots;
 	bool bAbduct = true; TFunction<void(bool)> OnAbduct; // unset: not offered
+	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
+	// bound in Settings > Controls (S47Keys; the store keeps them)
+	float Brightness = 0.5f; TFunction<void(float)> OnBrightness;
+	TFunction<void()> OnKeys;
+	FString Tab;                          // the settings' tab to open at: game, picture, sound, voices, controls, accessibility
+	// the pause menu's status and tonight's card
+	FString Chapter;                      // "Chapter 2: The Amended Record"
+	FString Place;                        // "Control room, SARO"
+	double Clock = -1;                    // the night's clock (seconds after midnight); -1: none
+	FString CaseLine;                     // "CASE 1 · SAVED 2 MIN AGO"
+	FString Objective;                    // the current objective, "CONTROL ROOM // THE SUPERVISOR LINE IS RINGING"
+	TArray<FString> OpenTasks;            // tonight's tasks not done yet
+	FString LastNote;                     // the latest note in the notebook
 };
 // UI.chapterCard
 struct FS47ChapterCardOpts { FString Closed, Recap, Next, Title, Clock; };
@@ -87,6 +103,22 @@ struct FS47Viewfinder
 	bool bHasFree = false;
 	FString FreeText;
 	bool bFreeOk = false;
+};
+
+// A reading the in-game screens offer as an action (the paper's READ ALOUD, the notebook's): the
+// reader and the texts UI.readingControls takes, without its box. Toggle() starts it (the other
+// readings stop first: onReadingStart) or stops it; bActive and Status() follow its state.
+struct SIGNAL47_API FS47ReadingAction : public TSharedFromThis<FS47ReadingAction>
+{
+	TWeakPtr<class FS47ReadAloud> Reader;
+	TWeakObjectPtr<class US47UI> UI;
+	TArray<FString> Texts;
+	bool bAvailable = false;          // the reader has a recording for every text
+	bool bActive = false;             // loading or playing (aria-pressed)
+	FString State;                    // '' until it has been started; then 'loading' | 'playing' | 'idle' | 'error'
+	void Toggle();
+	void Stop();
+	FString Status() const;           // [data-reading-status]: the reader's name, Loading recording…, or why not
 };
 
 // ui/UI.ts: what the game asks of the screen. The names follow the web version, so a call ports
@@ -133,8 +165,10 @@ public:
 	void RemoveScreen(const TSharedPtr<SWidget>& El);
 	// UI.openingCard: a modal; the view closes it and shows the narration's state
 	FS47OpeningView OpeningCard(const FS47OpeningActions& A);
-	// UI.pause: the pause menu, or the title's settings (bSettingsOnly)
+	// UI.pause: the pause menu, or the title's settings (bSettingsOnly), at O.Tab or SettingsAt's tab
 	void Pause(const FS47PauseOpts& O);
+	void SettingsAt(const FString& Tab) { SettingsTab = Tab; }
+	FString SettingsTab;
 	// UI.chapterCard / chapterCut: the card on the black between two chapters; null takes it away.
 	// With the narrator on, it reads the card (the closed line and its recap, then the next chapter, its
 	// title and the clock: ChapterStage 'a', then 'b'); OnSpoken comes when that reading has settled (at
@@ -178,9 +212,18 @@ public:
 	TSharedRef<SWidget> DescriptionReadings(const TSharedRef<SWidget>& Parent, const FString& Kind = TEXT("panel-description"), TFunction<TArray<FString>()> Extra = nullptr);
 	/** readLastDescription(): a gesture-accessible repeat (V), also after a short toast has disappeared. */
 	void ReadLastDescription();
+	/** A reading as an action of the in-game screens (FS47ReadingAction), for the reader Kind names as
+	 *  ReadingControls does; null when that reader is off or there is nothing to read. */
+	TSharedPtr<FS47ReadingAction> ReadingAction(const TArray<FString>& Texts, const FString& Kind);
+	/** A line written into the notebook (AS47Story::Note): the HUD's NOTED slip (not while a case is
+	 *  being opened, when its old lines come back). */
+	void Noted(const FString& Text);
 
 private:
 	UPROPERTY() TObjectPtr<AS47HUD> Hud;
+	// the pause menu at a line, and the settings over it (back to the pause) or over the title
+	void PauseScreen(const TSharedRef<FS47PauseOpts>& O, int32 Sel);
+	void SettingsScreen(const TSharedRef<FS47PauseOpts>& O, const FString& Tab, TFunction<void()> OnClose);
 	TSharedPtr<class SS47ChapterCard> CardEl;
 	int32 CardGeneration = 0;
 	// examine(): the closer look's words, and its description read once the zoom has held them a moment
