@@ -269,6 +269,10 @@ private:
 	friend struct FS47Mat;
 	static FQuat S47ThreeEuler(double X, double Y, double Z);
 	bool bLoaded = false;
+	void BuildRetroProps();
+	void UpdateRetroProps();
+	struct FRetroTv { TWeakObjectPtr<UMaterialInstanceDynamic> Screen, Pilot; };
+	TArray<FRetroTv> RetroTvs;
 	TArray<FS47WebNode> Nodes;
 	TArray<FString> GeoPaths;
 	TMap<FString, int32> Handles, HandleMats, HandleTexs;

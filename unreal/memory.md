@@ -108,3 +108,14 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 ## Egen alien, 22. oktober 2026
 
 - Ny figur med Blender-kilde, 2K PBR, rigg, idle og importprøvde UE 5.8.4-assets ligger i `/home/tom/Desktop/Alien - Egen modell/`. Se README der for import og rapporter. Gammel `/home/tom/Desktop/Alien/` er urørt referanse. Ny modell er klar som ressurs; integrasjon i pakket spill gjenstår.
+
+## KELVORA-rekvisitter, 22. oktober 2026
+
+- Egen CRT-TV og slitt radio i `/home/tom/Desktop/Retro TV og radio/`, med PBR, FBX/GLB, LOD1/2 og importprøvde Unreal-assets i `Unreal/Content/Kelvora/`. TV-skjerm er materialplass 1 med eksisterende filmteksturparametre. Assetene er ferdige; plassering og pakket film-/radioprøve gjenstår hos integrator.
+
+## KELVORA plassert 22. oktober 2026
+
+- `S47RetroProps.cpp` bygger egne TV-er ved `world.motel.tv.group` og `world.room6.objs.tv`, radio ved `room.objs.radio`. `BuildRetroProps` kjøres etter BuildRoom; nye barn følger områdenes synlighet via AdoptNode og gamle bruk-ID-er. Skjermenes egne MID-er registreres på de eksisterende materialhåndtakene, med startverdier fra gamle MID-er.
+- FBX-screen UV0 er snudd i V av importøren. Eget unlit skjermmateriale inverterer V før EmU/EmV, fordi de eksisterende canvas-tegnerne setter EmV=(0,-1,1). Ikke fjern dette eller innfør ekstra film-vending. CRT-kildens ringpolygoner hadde motsatt retning av senteret; alle er nå vendt ut og testet i alle LOD-er. Unlit unngår at TV-ens eget punktlys dekker filmen med en hvit refleks. Piloten sjekker RGB, ikke alfa.
+- `Content/Kelvora/Office` og `office-patches.json` klipper kun gamle TV-deler fra originalkontoret; g-ID-ene må regenereres ved ny verdenseksport. Kilder og importløype er beskrevet i Tools/kelvora/README.md. Originale Blender-kilder på Desktop/Retro TV og radio er oppdatert.
+- Kandidat `scratch-bm/Signal47-kelvora/build` er installert i Games/Signal47, hashverifisert med 27 save/config-filer bevart. 1218 selvtester, ni scenarioer; siste materialversjon er også prøvd på begge TV-er og med av/på. Fullt 47-sekundersopptak/lagring bestod før siste V-only shaderendring. Ingen menneskelig lytting eller hel gjennomspilling i denne økten.

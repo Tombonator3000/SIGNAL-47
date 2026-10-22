@@ -150,3 +150,5 @@
 
 - [ ] Fortsett codex/unarius-tv fra TV_PROGRAMME.md: bruk siste bygde binærfil med tidsrettelsen, verifiser faktisk bevegelig film på begge TV-er over tid, koble filmlyd om ønsket, prøv fallback og 47-sekundershendelse/opptak/lagring på nytt, integrer og pakk før standardutgaven erstattes.
 - [x] Separat egenprodusert Blender-alien er levert i `Desktop/Alien - Egen modell`, med importprøvde Unreal-assets. `Desktop/Alien` er urørt referanse; den nye figuren er ikke integrert i spillet ennå.
+
+- [x] KELVORA retro-TV og slitt radio plassert i Unreal, 22.10: motellkontoret, rom 6 og SAROs arkivskap. Levende Unarius-film og lyd, av/på, radio og TV-hendelsens lagring verifisert. 1218 selvtester og ni målrettede scenarioer; installasjonen bak skrivebordssnarveien oppdatert med lagringer bevart. Se `Signal47/Tools/kelvora/README.md`.

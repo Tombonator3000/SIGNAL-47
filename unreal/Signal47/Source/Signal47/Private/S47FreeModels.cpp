@@ -102,7 +102,7 @@ void S47FreeModels::Test(US47Main* M)
 			A->GetStaticMeshComponent()->SetStaticMesh(Mesh);
 			++Placed;
 			UE_LOG(LogS47Free, Display, TEXT("S47: free model %s at %.1f %.1f (ground %.2f m), %.0f x %.0f x %.0f cm, %d triangles%s"), *R.Name, At.X, At.Z, Base.Z / 100,
-				R.Size.X, R.Size.Y, R.Size.Z, Mesh->GetNumTriangles(0), Mesh->IsNaniteEnabled() ? TEXT(", Nanite") : TEXT(""));
+				R.Size.X, R.Size.Y, R.Size.Z, Mesh->GetNumTriangles(0), Mesh->HasValidNaniteData() ? TEXT(", Nanite") : TEXT(""));
 		}
 		UE_LOG(LogS47Free, Display, TEXT("S47: free models placed %d of %d, %.1f m ahead"), Placed, Rows.Num(), Ahead);
 	}, 1.5f, false);

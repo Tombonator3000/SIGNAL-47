@@ -384,11 +384,12 @@ float elTop = %(top).4f, elBot = %(bot).4f;
 float el = degrees(asin(clamp(d.y, -1.0, 1.0))) + Dip;
 float az = U * 360.0;
 float2 uv = float2(U, clamp((el - elBot) / (elTop - elBot), 0.0, 1.0));
-float4 n = Night.Sample(NightSampler, uv);
+// Explicit LOD is also legal in the packaged Vulkan ray-hit permutations.
+float4 n = Night.SampleLevel(NightSampler, uv, 0);
 float ds = (az - 182.0 + 540.0) - 360.0 * floor((az - 182.0 + 540.0) / 360.0) - 180.0;
 float sink = 3.50 * smoothstep(10.5, 13.5, abs(ds));
 float2 uvS = float2((279.0 - ds * 1.15) / 360.0, clamp(((el + sink) / 0.62 - elBot) / (elTop - elBot), 0.0, 1.0));
-float4 nS = Night.Sample(NightSampler, uvS);
+float4 nS = Night.SampleLevel(NightSampler, uvS, 0);
 float s = (1.0 - step(13.5, abs(ds))) * step(n.a + 0.002, nS.a);
 float2 uvF = lerp(uv, uvS, s), gx = ddx(uv), gy = ddy(uv);
 n = lerp(n, nS, s);

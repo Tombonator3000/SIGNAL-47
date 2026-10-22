@@ -641,6 +641,7 @@ void AS47Web::BeginPlay()
 	bLoaded = Load();
 	if (!bLoaded) return;
 	BuildRoom();
+	BuildRetroProps();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));
@@ -1216,6 +1217,7 @@ void AS47Web::Tick(float Dt)
 	Super::Tick(Dt);
 	if (!bLoaded) return;
 	UpdateNativeLighting();
+	UpdateRetroProps();
 	SampleLightingPerformance(Dt);
 	// the sky follows the eye
 	if (SkySphere) SkySphere->SetWorldLocation(Eye);

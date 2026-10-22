@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "engine": "Unreal 5.8.4",
+  "selftest_checks": 1218,
+  "scenes": {
+    "selftest": {
+      "pass": true,
+      "log": "upright-checks/selftest.log",
+      "image": "upright-checks/selftest.png"
+    },
+    "radio": {
+      "pass": true,
+      "log": "checks/radio.log",
+      "image": "checks/radio.png"
+    },
+    "radio-use": {
+      "pass": true,
+      "log": "checks-long/radio-use.log",
+      "image": "checks-long/radio-use.png"
+    },
+    "office-film": {
+      "pass": true,
+      "log": "upright-checks/office-film.log",
+      "image": "upright-checks/office-film.png"
+    },
+    "office-film-later": {
+      "pass": true,
+      "log": "checks-long/office-film-later.log",
+      "image": "checks-long/office-film-later.png"
+    },
+    "office-carrier": {
+      "pass": true,
+      "log": "checks-long/office-carrier.log",
+      "image": "checks-long/office-carrier.png"
+    },
+    "office-event": {
+      "pass": true,
+      "log": "final-checks/office-event.log",
+      "image": "final-checks/office-event.png"
+    },
+    "room6-film": {
+      "pass": true,
+      "log": "upright-checks/room6-film.log",
+      "image": "upright-checks/room6-film.png"
+    },
+    "room6-off": {
+      "pass": true,
+      "log": "upright-checks/room6-off.log",
+      "image": "upright-checks/room6-off.png"
+    }
+  },
+  "note": "Nine scenarios passed. After the final material V correction, selftest, both movies and room 6 power were rerun. The full 47-second event/save test passed on identical geometry and code before that material-only V correction.",
+  "movie_frames": {
+    "office-film": [
+      [
+        "6.98",
+        "83",
+        "6.98 s"
+      ],
+      [
+        "12.97",
+        "155",
+        "12.97 s"
+      ]
+    ],
+    "room6-film": [
+      [
+        "143.63",
+        "1723",
+        "143.65 s"
+      ],
+      [
+        "149.67",
+        "1795",
+        "149.71 s"
+      ]
+    ]
+  }
+}
