@@ -1,6 +1,8 @@
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
+#include "S47StationTaken.h"
+#include "S47Chapter3.h"
 #include "S47TownLayer.h"
 #include "S47NinthModel.h"
 #include "S47Town.h"
@@ -748,6 +750,8 @@ void US47Night::Restore(const S47J::FObj& State)
 	// truckTaken.reset, the odometer, abduction.restore, truckB.reset, starHole.reset (S47Away: before the
 	// thread's reset, which counts the times away)
 	if (M->Away) M->Away->Restore(State);
+	// stationTaken.reset (chapter three's)
+	if (US47Chapter3* C3 = M->Story ? Cast<US47Chapter3>(M->Story->Chapter(TEXT("ch3"))) : nullptr) if (C3->StationTaken) C3->StationTaken->Reset();
 	// recWalk.reset, lineLights.reset (townSeen back), saroDark.halt (S47SaroNight)
 	if (M->SaroNight) M->SaroNight->Restore(State);
 	if (M->TownLayer) M->TownLayer->ResetPastureTv();

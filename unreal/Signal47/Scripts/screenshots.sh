@@ -85,12 +85,12 @@ shot station "ch3 drive: at the hut" "-S47Jump=chapter3 -S47Drive=saro:station01
 # looked at; the lost nights on Night Shift's cork; FLASH's frames; the third one in front of the eye
 shot abduct "S47: the time away: back at" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 24
 shot abductframes "S47: the time away: taken" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 14
-shot abductover "S47: the time away: one of them over you" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 21
+shot abductover "S47: the time away: one of them over you" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 32
 shot truckb "S47: the truck on B: four done" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35" 30
-shot trucktaken "S47: taken in the truck: woken at the wheel" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35 -S47TruckTaken=5 -S47AwayAt=16" 36
+shot trucktaken "S47: taken in the truck: woken at the wheel" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35 -S47TruckTaken=5 -S47AwayAt=16" 48
 shot starhole "S47: no stars at 026: noticed" "-S47Jump=chapter2 -S47Face=at:-20;30;3.14;0 -S47StarHole" 10
 shot lostnights "S47: the lost nights: the binder and the green pins on the board, 1 book" "-S47Jump=chapter2 -S47Face=room -S47LostNights -S47AwayAt=1.5" 8
-shot flash "S47: FLASH frames shown, 10" "-S47Jump=chapter1 -S47Face=room -S47Flash -S47AwayAt=6.6" 8
+shot flash "S47: FLASH frames shown, 10" "-S47Jump=chapter1 -S47Face=room -S47Flash -S47AwayAt=6.6" 14
 shot third "S47: the third one stands" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Third" 8
 # chapter four: into room 6 from the motel's front, at her table (and the talk with the evidence on it)
 shot chapter4 "chapter ch4 begins" "-S47Jump=chapter4 -S47Ch4Drive=room" 10
@@ -118,4 +118,19 @@ shot morning "S47: morning test held" "-S47Jump=chapter1 -S47Morning" 9
 shot cutout "S47: cutout test foot placed" "-S47Jump=chapter1 -S47Face=outside -S47Cutout" 9
 shot cutpost "S47: cutout test post placed" "-S47Jump=chapter1 -S47Face=outside -S47Cutout=post" 9
 shot caliche "S47: Caliche conversation attendant, people 1" "-S47Jump=chapter1 -S47Caliche=attendant" 9
+# the world's own life (S47WorldLife): a beacon's blink over the array (the log has its level), the
+# night sky at 02:16 with the star hole over 026 coming in, a shooting star where the camera looks,
+# the dawn at 05:20 behind the mesas, the flora along the road far from SARO on the drive, and the
+# mesas round STATION 01 without the fog (dark against the sky, no rim)
+shot beacon "S47: life clock .* beacon 0\.[5-9]" "-S47Jump=chapter1 -S47Face=outside -S47LifeLog" 8
+shot starhole "S47: life clock 02:1.* hole 0\.[1-9]" "-S47Jump=chapter1 -S47Face=at:10;-12;-0.4538;0.5585 -S47LifeLog" 14
+shot meteor "S47: shooting star now" "-S47Jump=chapter1 -S47Face=at:10;-12;0.6;0.7 -S47Meteor=3 -S47MeteorAim" 4.6
+shot dawn "S47: life clock 05:2.* dawn 0\.[3-6]" "-S47Jump=chapter1 -S47Face=at:10;-12;-1.379;0.08 -S47Clock=05:20 -S47LifeLog" 12
+shot roadflora "S47: life clock .* road:[1-9]" "-S47Drive=saro:station01 -S47Throttle=0.35 -S47LifeLog" 40
+shot mesas "S47: the world's own life" "-S47Jump=chapter3 -S47Drive=saro:station01 -S47Auto=13 -S47Ch3Drive=hut" 30
+# Chapter six: from the diner's lot, then the developer menu's exact line pose with autopilot.
+shot chapter6 "chapter ch6 begins" "-S47Jump=chapter6" 8
+shot chapter6event "S47: ch6 THE EVENT begins, 47 seconds" "-S47Jump=chapter6:line -S47Auto=20" 24
+# Full event and pull-out first; the ending title uses real time once the 3D world has stopped.
+shot chapter6title "S47: ch6 ending title" "-S47Jump=chapter6:line -S47Auto=20" 99
 exit $fail

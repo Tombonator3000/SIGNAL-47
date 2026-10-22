@@ -1185,7 +1185,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	if (bDriving && M->UI && !(M->Story && M->Story->IsCinematic()))
 	{
 		// (held at the wheel on waking: no key; in the truck's warning on B, Q gets out: story/abduction.ts, truckTaken.ts)
-		const bool bKey = Trouble.WantsKey() && !(CabHeld && CabHeld()), bRadio = !bKey && OnRadio && RadioAimed(), bOut = !bKey && !bRadio && !(CabStay && CabStay()) && CanGetOut();
+		const bool bKey = (Trouble.WantsKey() || (CabWantsKey && CabWantsKey())) && !(CabHeld && CabHeld()), bRadio = !bKey && OnRadio && RadioAimed(), bOut = !bKey && !bRadio && !(CabStay && CabStay()) && CanGetOut();
 		const bool bRun = CabRunOffered && CabRunOffered();
 		M->UI->Prompt(bKey ? TEXT("Turn the key") : bRadio ? (!M->CarRadio || !M->CarRadio->bOn ? TEXT("Turn the radio on") : M->CarRadio->Station == TEXT("far") ? TEXT("Turn the radio off") : FString::Printf(TEXT("AM %d: next station"), S47Radio::Freq(M->CarRadio->Station))) : bOut ? TEXT("Get out") : TEXT(""), bRun ? TEXT("Get out") : TEXT(""));
 	}

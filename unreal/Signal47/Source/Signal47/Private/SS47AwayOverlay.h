@@ -25,13 +25,14 @@ public:
 	/** --abduct with .abduct-light on (unset: the class off). */
 	void SetLight(TOptional<double> K) { Light = K; }
 	/** canvas.style.display = 'block' with this drawn on black at alpha (null: black), or 'none'. */
-	void ShowFrame(UTexture2D* T, double Alpha);
+	void ShowFrame(UTexture2D* T, double Alpha, bool bFadeBlack = false);
 	void HideFrame() { bFrame = false; Frame.Reset(); }
 	bool FrameShown() const { return bFrame; }
 
 private:
 	TOptional<double> Light;
 	bool bFrame = false;
+	bool bFrameFadeBlack = false; // Ending.flash group opacity; abduction keeps its opaque black
 	double Alpha = 1;
 	TStrongObjectPtr<UTexture2D> Frame;
 	TStrongObjectPtr<UTexture2D> LightTex;

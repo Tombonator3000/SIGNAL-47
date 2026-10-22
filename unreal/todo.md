@@ -24,7 +24,7 @@
 - [ ] Lagring ved kontrollpunkter.
 - [ ] Kapittel 1 til 6 (web/src/story) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
 - [x] Kjøringen (web/src/drive) og turene i World.ts (2026-10-22). Gjenstår: eksporten kjøres på nytt for `drive` i manifestet, lydene laget med Web Audio (dekk, vind, startmotor, ferist), lyktenes mønster (headSlots) i flomlysmaterialet, lyktene på dineren, byen og motellet (shareLights), radioen.
-- [ ] Glødepunktene blinker som i glow.ts.
+- [x] Glødepunktene blinker som i glow.ts (2026-10-22, `S47Glow`).
 
 ## Kapittel 2 (2026-10-22)
 
@@ -36,7 +36,7 @@
 - [ ] S47Drawings og S47Drawings2, S47Panels og S47Panels2 slås sammen.
 - [x] Lagring ved kontrollpunkter, tittel, pause og notatbok (2026-10-22, `S47Saves`, `S47Flow`).
 - [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
-- [ ] Glødepunktene blinker som i glow.ts.
+- [x] Glødepunktene blinker som i glow.ts (2026-10-22, `S47Glow`).
 
 ## Kapittel 4 (2026-10-22)
 
@@ -92,3 +92,35 @@
 - [ ] Regenerer webeksport og import for byens delte lamper/glødepunkter, fjernbilens lys, townSlots/neonSlots og herdets beamLit. Implementer pointScreen i native billboards.
 - [ ] Koble LostNights til Caliche.Reel og kapittel fem til TownLayer.Diner. Bygg og prøv kapittel tres FreeShot etter integrasjon; kapittel 3/5 finnes ikke i grenens utgangspunkt.
 - [ ] Samlet pakket bygg, hele screenshots.sh, Continue fra disk, ekte input, menneskelig lytting og sammenligning av de regenererte bildene mot nettversjonen. Se TOWN_PORT.md.
+
+## Verdenens eget liv (2026-10-22)
+
+- [x] Glødepunktene, floraen og vinden, den levende himmelen og horisonten, lyset i lufta, vinduslyset, nattelivet, Ultra-lysene og de delte lysene (`US47WorldLife`).
+- [x] Toppunktfargene i importen og de nære mesaene uten tåke (hvite kanter ved STATION 01).
+- [ ] Eksporten og importen kjøres på nytt i hovedkopien (`Tools/webexport/import.sh`).
+- [ ] Krokene i `US47WorldLife::Hooks` settes av kapitlene: `SkyLift` og `SunElev` (kapittel 6, soloppgangen), `SaroDarkAdapt` (SARO mørk), `MorningBusy` (morgenen), `LifeQuiet` (stillheten).
+- [ ] `S47ArchiveDishes` bruker `FS47GlowPoints::SetPhase` og `HoldAt` for de vippede dishenes røde lys (DishArray.beaconPhase).
+- [ ] `US47Night::Dawn` bruker sin egen formel; bør lese `Sky->Dawn`.
+- [ ] Resten av World.update: neonflimmeret på motellet og dineren, byen, beitet og flokkene.
+- [ ] Bildevalget Off: stjernene, båndet og stjerneskuddet tegnes uten tonekurve i nettversjonen (ShaderMaterial uten tonemapping_fragment); her går de gjennom M_WebTone som med VHS.
+- [ ] Floraen: månelyset skaleres ikke med fSky (bare halvkulelyset), og spotlysenes fFace er ikke portert. Low-nivåets kortere tegneavstand for støv og hvilende tumbleweed er tilnærmet.
+
+## Integrasjon etter bølge 4 (2026-10-22)
+
+- [ ] Kapittel 5 (hjelper) og kapittel 6 (Codex, `port-ch6`) flettes inn; kapittel 5 sin slutt inn i `BeginChapter6`, `ch6.clockShow` sist i hjørneklokka, `US47WorldLife::Hooks.SkyLift`/`SunElev` og `US47Away` sine `Ch6*`-kroker.
+- [ ] Opptaksvandringen (`S47Recording`) og bortføringens `FS47JacketWalker`/`Recordings()`: to figurtyper; vandringen bruker sin testopptakelse til de deler én.
+- [ ] `US47Away::AfterAbduction` er ikke satt: stationTaken, «station passed», opptaksvandringen og parabolene steppes hver for seg (kapittel 3 og `US47SaroNight`), ikke i bortføringens blokk.
+- [ ] Arkivets tippede paraboler: `FS47GlowPoints::SetPhase`/`HoldAt` for de røde lampene (verdenens liv).
+- [ ] Byens fjernbil: fast pikselstørrelse (`pointScreen`) for billboards.
+- [ ] Kapittel 4: papirkunst `cardField` og `letterPaper` mangler i WebData/art; WindowLights på gangen, readAloud og Earls stemme.
+- [ ] CRT-gamma (dobbel koding), Serling-fortelleren, jakka «Cold out», kameraet senket på kortet (fra kapittel 1-hjelperen).
+- [ ] `US47Night::Dawn` bør lese `Sky->Dawn` i stedet for egen formel.
+- [ ] Pakket bygg: full `Scripts/screenshots.sh` etter ny eksport og import, og en gjennomspilling med ekte input og lyd.
+
+## Kapittel seks og avslutningen (2026-10-22)
+
+- [x] Chapter6.ts og Ending.ts i C++, med main.ts sin finale og testhoppene chapter6, chapter6:lastmile og chapter6:line.
+- [x] Siste mila, CB-klokka, key/door og kamerastillingene med selvtester; native scenarier ved avreise og på linja, THE EVENT og kamerauttrekket fram til kontrollert tittelbilde.
+- [ ] Integrer kapittel fem sin OnEnd og dinerlagring med BeginChapter6; prøv Fortsett fra denne lagringen etter avslutningen.
+- [ ] Bind daggry-/soloverstyringene til verdensportens dynamiske himmel og kontroller mesa, soloppgang og stjerner visuelt mot nettversjonen.
+- [ ] Pakket bygg, hele screenshots.sh, menneskelig input og lytting; øvrige uferdige motorlydgrafer hører til motorporten.

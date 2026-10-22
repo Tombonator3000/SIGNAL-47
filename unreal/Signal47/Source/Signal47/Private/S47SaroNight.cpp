@@ -264,9 +264,9 @@ bool US47SaroNight::Calm() const { return M->Flow && M->Flow->bCalmFlash; }
 bool US47SaroNight::AbductOn() const { return !M->Flow || M->Flow->bAbductOn; }
 FString US47SaroNight::AbStage() const
 {
-	if (Abduct.Stage) return Abduct.Stage();
-	// (the developer's warning for the dishes, while the time away is not ported)
-	return TestWarn ? FString(TEXT("warning")) : FString(TEXT("calm"));
+	// (the developer's warning for the dishes, -S47Follow, comes before the time away's own)
+	if (TestWarn) return TEXT("warning");
+	return Abduct.Stage ? Abduct.Stage() : FString(TEXT("calm"));
 }
 FString US47SaroNight::SceneId() const
 {
@@ -423,8 +423,8 @@ void US47SaroNight::StepLate(double Dt, bool bModal)
 		// archive's phone has them tipped, the warning's dishes do not begin)
 		FS47FollowIn F;
 		F.Stage = AbStage();
-		if (Abduct.Warn) F.Warning = Abduct.Warn();
-		else if (TestWarn) F.Warning = FS47FollowIn::FWarn{ *TestWarn, S47Follow::WARN };
+		if (TestWarn) F.Warning = FS47FollowIn::FWarn{ *TestWarn, S47Follow::WARN };
+		else if (Abduct.Warn) F.Warning = Abduct.Warn();
 		F.bSaro = Area() == TEXT("saro") && (Follow->Mode != TEXT("idle") || !Is(TipHolds));
 		F.bOnFoot = !Driving();
 		F.Eye = Eye(); F.View = Camera().Forward;

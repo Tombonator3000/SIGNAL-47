@@ -20,6 +20,7 @@
 #include "S47CaseBoard.h"
 #include "S47Chapter4.h"
 #include "S47Chapter5.h"
+#include "S47Chapter6.h"
 #include "S47Inter.h"
 #include "S47Chapter2.h"
 #include "S47Chapter3.h"
@@ -51,6 +52,12 @@
 #include "S47DishesFollow.h"
 #include "S47Abduction.h"
 #include "S47TownLayer.h"
+#include "S47SaroDark.h"
+#include "S47Curve.h"
+#include "S47Glimpses.h"
+#include "S47MorningHolds.h"
+#include "S47TownEvents.h"
+#include "S47Roadside.h"
 #include "S47NpcDialogue.h"
 #include "S47LostNights.h"
 #include "S47Caliche.h"
@@ -59,6 +66,7 @@
 #include "Containers/Ticker.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
 #include "SS47Widgets.h"
@@ -114,6 +122,8 @@ void AS47HUD::Start()
 		bOk &= US47Away::SelfTest(Lines); // (the time away, the trucks, the lost nights, the third one, the star hole, FLASH's frames)
 		bOk &= US47Chapter4::SelfTest(Lines); // (with the walkie's and the CB's)
 		bOk &= US47Chapter5::SelfTest(Lines); // (with the map overlay's)
+		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
+		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -152,7 +162,7 @@ void AS47HUD::Start()
 	Hud = SNew(SS47Hud).Visibility(EVisibility::HitTestInvisible)
 		.Prompt_Lambda([this] { return Prompt; })
 		.Clock_Lambda([this, Playing] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() ? Story->ClockText(false) : FString()); })
-		.ShowAim_Lambda([this, Playing] { return !Modal.IsValid() && Playing(); });
+		.ShowAim_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && !(M->World && M->World->bDriving); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);
 	PC->bShowMouseCursor = false;
 	FInputModeGameOnly Mode;
@@ -269,6 +279,19 @@ void AS47HUD::Start()
 			// chapter three, the third one on film, the archive's count)
 			US47Away* Aw = M->Away;
 			TWeakObjectPtr<US47Away> Wa = Aw;
+			TWeakObjectPtr<US47Chapter6> W6 = Cast<US47Chapter6>(Story->Chapter(TEXT("ch6")));
+			Aw->Ch6TurnKey = [W6] { return W6.IsValid() && W6->TurnKey(); };
+			Aw->Ch6TryDoor = [W6] { return W6.IsValid() && W6->TryDoor(); };
+			Aw->Ch6DoorOffered = [W6] { return W6.IsValid() && W6->DoorOffered(); };
+			Aw->Ch6CbDue = [W6] { return W6.IsValid() && W6->CbDue(); };
+			Aw->Ch6ThirdAt = [W6] { return W6.IsValid() ? W6->ThirdAt() : TOptional<FVector>(); };
+			Aw->Ch6OldMi = [W6, M]() -> TOptional<double>
+			{
+				if (!W6.IsValid() || W6->Stage != TEXT("drive") || !M->World || !M->World->OldRoad() || !M->World->OldDrive()) return {};
+				const FVector P = M->World->OldDrive()->Pos;
+				return M->World->OldRoad()->Where(P.X, P.Z).Mi;
+			};
+			if (M->World) M->World->CabWantsKey = [W6] { return W6.IsValid() && W6->WantsKey(); };
 			if (US47SaroNight* Sn = M->SaroNight)
 			{
 				FS47AbductView& V = Sn->Abduct;
@@ -294,10 +317,10 @@ void AS47HUD::Start()
 					return Wc ? Wc->Hm + TEXT(":") + Wc->Ss : FString();
 				};
 				TWeakObjectPtr<US47Phones> Wp = M->Phones;
-				Sn->ClockAfter = [Wp]
+				Sn->ClockAfter = [Wp, W6]
 				{
-					if (!Wp.IsValid() || !Wp->Archive.IsValid() || !Wp->Archive->ClockShow) return FString();
-					return Wp->Archive->ClockShow->Hm + TEXT(":") + Wp->Archive->ClockShow->Ss;
+					if (Wp.IsValid() && Wp->Archive.IsValid() && Wp->Archive->ClockShow) return Wp->Archive->ClockShow->Hm + TEXT(":") + Wp->Archive->ClockShow->Ss;
+					return W6.IsValid() ? W6->ClockShow() : FString();
 				};
 				// (abduction.recordings for the recording's walk: the two ports keep their own figure types;
 				// the walk keeps its test recording until they share one)
@@ -308,6 +331,19 @@ void AS47HUD::Start()
 				TWeakObjectPtr<US47Chapter3> W3 = C3;
 				Aw->StationIdle = [W3] { return !W3.IsValid() || !W3->StationTaken || W3->StationTaken->State == TEXT("idle"); };
 				Aw->StationBegin = [W3](double Clock) { if (W3.IsValid() && W3->StationTaken) W3->StationTaken->Begin(Clock); };
+				// main.ts, after ab.update: stationTaken.update, and the station passed after all (the recording's
+				// walk and the dishes that follow are stepped by S47SaroNight, later in the frame)
+				Aw->AfterAbduction = [W3, Wa, M](double Dt, bool)
+				{
+					if (!W3.IsValid() || !W3->StationTaken || !Wa.IsValid() || !Wa->Abduction.IsValid()) return;
+					FS47Abduction& Ab = *Wa->Abduction;
+					US47StationTaken::FIn In;
+					In.Stage = Ab.Stage;
+					if (const auto Wn = Ab.Warn()) In.WarnT = Wn->T;
+					In.Clock = M->Story ? M->Story->Clock() : 0;
+					W3->StationTaken->Update(Dt, In);
+					if (W3->StationTaken->Last == TEXT("passed") && Ab.Data.Station == TEXT("taken")) Ab.Data.Station = TEXT("passed");
+				};
 				C3->Third = [Wa](US47FieldCamera* Cam) -> TOptional<FS47FilmShot>
 				{
 					if (!Wa.IsValid() || !Cam) return {};
@@ -369,6 +405,25 @@ void AS47HUD::Start()
 			}
 			if (US47Chapter3* C3 = Story.IsValid() ? Cast<US47Chapter3>(Story->Chapter(TEXT("ch3"))) : nullptr)
 				C3->FreeShot = [Wt] { return Wt.IsValid() && Wt->FreeShot(); };   // ninth.freeShot
+		}
+		// main.ts: the world's own life (the sky, the glows, the ground cover, the air, the night's life, the windows, Ultra's lamps)
+		M->Life = NewObject<US47WorldLife>(M); M->Life->Init(M);
+		{
+			// main.ts: world.lifeQuiet, saroDark.adapt in the room's hemisphere light, morning.busy
+			US47WorldLife::FHooks& H = M->Life->Hooks;
+			H.LifeQuiet = [M]
+			{
+				if (M->Mode != US47Main::EMode::Play || (M->Story && M->Story->IsCinematic())) return true;
+				if (M->TownLayer && M->TownLayer->Roadside.IsValid() && M->TownLayer->Roadside->bSilent) return true;
+				if (M->Night && M->Night->Glimpses.IsValid() && !M->Night->Glimpses->Up.IsEmpty()) return true;
+				if (M->TownLayer && M->TownLayer->TownEvents.IsValid() && M->TownLayer->TownEvents->Now != TEXT("none")) return true;
+				return M->Night && M->Night->Curve.IsValid() && M->Night->Curve->Phase == TEXT("peak") && !M->Night->Curve->bFree;
+			};
+			H.SaroDarkAdapt = [M] { return M->SaroNight && M->SaroNight->Dark.IsValid() ? M->SaroNight->Dark->Adapt : 1.0; };
+			H.MorningBusy = [M] { return M->TownLayer && M->TownLayer->Morning.IsValid() && M->TownLayer->Morning->Busy(); };
+			// game.ch6.skyLift, game.ch6.sunElev (chapter six puts them on the world: AS47Web's overrides)
+			H.SkyLift = [M] { return M->Web ? M->Web->DawnLift() : TOptional<double>(); };
+			H.SunElev = [M] { return M->Web ? M->Web->SunElevation() : TOptional<double>(); };
 		}
 		M->Flow->Boot();
 		FString FaceAt;

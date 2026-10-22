@@ -82,6 +82,7 @@ public:
 	 *  the truck's warning on B: story/truckOnB.ts, truckTaken.ts); the way out offered with Q (in that
 	 *  warning, and chapter six's door); held at the wheel on waking (the key not offered). */
 	TFunction<bool()> CabStay, CabRunOffered, CabHeld;
+	TFunction<bool()> CabWantsKey; // main.ts: ch6.wantsKey, after trouble.wantsKey
 	/** Chapter six takes over on the old road: the pedals and wheel (Input), or the camera (the
 	 *  pull-out at the end, while the truck stands). Cleared when the drive stops. */
 	struct FOldControl { TFunction<FS47DriveIn(double)> Input; TFunction<void(double, FS47View&)> Camera; };

@@ -10,10 +10,10 @@
 #include "S47Away.h"
 #include "S47Chapter3.h"
 #include "S47Chapter4.h"
+#include "S47Chapter6.h"
 #include "S47Diner.h"
 #include "S47Drawings.h"
 #include "S47Flow.h"
-#include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Inter.h"
 #include "S47LostNights.h"
@@ -192,29 +192,13 @@ US47Chapter5* US47Chapter5::Register()
 	ArrayCount = [Mn] { return Mn->SaroNight && Mn->SaroNight->ArrayBack ? Mn->SaroNight->ArrayBack->Count() : 0; };
 	// Prologue.jump('chapter5')
 	Host->Jumps.Add(TEXT("chapter5"), [W] { if (W.IsValid()) W->JumpChapter5(); });
-	// main.ts ch5.onEnd = () => game.beginChapter6(): out of the diner and onto the old road
+	// main.ts ch5.onEnd = () => game.beginChapter6(): out of the diner and onto the old road, no cut
+	// (Prologue.beginChapter6: ch5.active = false, amRadio(null), ch6.begin(); the case was saved in
+	// the diner just before, by finish)
 	OnEnd = [W]
 	{
 		if (!W.IsValid() || !W->Host) return;
-		AS47Story* H = W->Host;
-		if (H->Chapter(TEXT("ch6")))
-		{
-			// Prologue.beginChapter6: ch5.active = false; audio.amRadio(null); the phase, no cinematic,
-			// ch6.begin(). Chapter six is ported beside this one: the integrator puts its own begin here;
-			// until then the host's BeginChapter stands in for it.
-			W->bActive = false;
-			if (W->M && W->M->Audio) W->M->Audio->AmRadioThree({});
-			H->BeginChapter(TEXT("ch6"));
-			return;
-		}
-		// (chapter six is not in this version yet: the night ends on a card that says so)
-		if (W->M && W->M->UI) W->M->UI->Fade(true, FString());
-		H->After(1.6, [W]
-		{
-			if (!W.IsValid() || !W->Host) return;
-			W->Host->SetCinematic(true);
-			if (W->M && W->M->Hud) W->M->Hud->EndCard({ TEXT("CHAPTER 5: ALL NIGHT"), TEXT(""), TEXT("Chapter 6, Roswell Road, is not in the Unreal version yet."), TEXT("The web version plays on from here.") });
-		});
+		if (US47Chapter6* C6 = Cast<US47Chapter6>(W->Host->Chapter(TEXT("ch6")))) C6->BeginChapter6(nullptr);
 	};
 	return this;
 }

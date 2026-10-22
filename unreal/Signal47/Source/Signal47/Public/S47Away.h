@@ -67,6 +67,7 @@ public:
 	 *  miles before the line (truckBIn's oldMi). */
 	TFunction<bool()> Ch6TurnKey, Ch6TryDoor, Ch6DoorOffered, Ch6CbDue;
 	TFunction<TOptional<double>()> Ch6OldMi;
+	TFunction<TOptional<FVector>()> Ch6ThirdAt; // main.ts seenStep: the third one in the headlights
 	/** The other voices stop before the reel (stopNarration, cb.stop: their ports). */
 	TFunction<void()> HushVoices;
 
@@ -96,7 +97,7 @@ public:
 	/** main.ts mapMarks: the times away where they happened, each on the line its place is on. */
 	TArray<FS47MapMark> MapMarks() const;
 	/** The overlay itself: chapter six may show a frame on it (null: black), and hide it. */
-	void ShowFrame(class UTexture2D* T, double Alpha);
+	void ShowFrame(class UTexture2D* T, double Alpha, bool bFadeBlack = false);
 	void HideFrame();
 
 	// ---------- step() ----------
@@ -143,7 +144,7 @@ private:
 	double FlashT = 0;
 	int32 FlashI = -1;
 	// seenStep's was, and the entries it ends
-	struct FWas { FString Stage = TEXT("calm"); FString Over; FString Truck = TEXT("idle"); TSet<FString> Records; } Was;
+	struct FWas { FString Stage = TEXT("calm"); FString Over; FString Truck = TEXT("idle"); TSet<FString> Records; bool bLastMile = false, bEvent = false, bThird = false; } Was;
 	FS47SeenRef WarnEntry, OverEntry, TruckEntry;
 	FString LoggedStage, LoggedTaken, LoggedB;
 	TArray<class FS47RuleBook*> Mine;

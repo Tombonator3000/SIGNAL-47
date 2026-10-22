@@ -80,7 +80,7 @@ public:
 
 private:
 	TWeakObjectPtr<AS47Web> Web;
-	FS47GlowPoints Beacons;
+	FS47GlowView Beacons;
 	TArray<FLinearColor> BeaconCol;
 	/** Each lamp's place in its blink (the points' aBlink phase: the dish's own to begin with). */
 	TArray<double> BeaconPh;
@@ -96,7 +96,7 @@ private:
 	// the field's lamps (Exterior.array: LAMPS, the first five with their floods)
 	struct FFieldLamp { int32 Flood = -1; double W = 0; int32 Glow = -1; FVector At; };
 	TArray<FFieldLamp> FieldLamps;
-	FS47GlowPoints ExtGlow;
+	FS47GlowView ExtGlow;
 	int32 SiteSet = -1;
 	void FindField();
 };

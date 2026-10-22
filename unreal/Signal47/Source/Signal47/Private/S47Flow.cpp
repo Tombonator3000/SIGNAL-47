@@ -20,7 +20,10 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "S47Audio.h"
+#include "S47CB.h"
 #include "S47Chapter.h"
+#include "S47Chapter6.h"
+#include "S47FieldCamera.h"
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Album.h"
@@ -28,6 +31,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Radio.h"
+#include "S47Roadside.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
 #include "S47World.h"
@@ -51,6 +55,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "SS47AreaMap.h"
+#include "SS47Ending.h"
 #include "SS47Notebook.h"
 #include "SS47SaveMenu.h"
 #include "SS47Screens.h"
@@ -609,6 +614,78 @@ void US47Flow::ToTitle()
 	bPendingAuto = false;
 	M->UI->Fade(false);
 	ShowTitle();
+}
+
+void US47Flow::Finale()
+{
+	// main.ts finale(): the 3D game stops on the black. Continue keeps the diner's save.
+	US47Chapter6* Ch6 = M->Story ? Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))) : nullptr;
+	const TSharedPtr<SS47Ending> End = Ch6 ? Ch6->Ending : nullptr;
+	M->Mode = EMode::End;
+	if (M->FieldCamera) M->FieldCamera->Raise(false);
+	M->UI->Viewfinder(false);
+	if (M->Player) M->Player->SetActive(false);
+	APlayerController* PC = M->Hud ? M->Hud->GetOwningPlayerController() : nullptr;
+	if (PC) PC->FlushPressedKeys();
+	M->UI->Close(true);
+	M->UI->ClearToasts();
+	// Slate's gameplay HUD has separate text fields; the clock and aim already follow Mode.
+	M->UI->Objective(FString());
+	M->UI->Examine(FString());
+	M->UI->ClockSeconds(FString());
+	if (PC)
+	{
+		FInputModeUIOnly Mode;
+		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		if (End.IsValid()) Mode.SetWidgetToFocus(End);
+		PC->SetInputMode(Mode);
+		PC->bShowMouseCursor = true;
+	}
+	if (M->World) M->World->StopDriving();
+	if (M->Audio) M->Audio->CabRadio(FString());
+	if (M->TownLayer && M->TownLayer->Roadside) M->TownLayer->Roadside->Reset();
+	if (M->CB) M->CB->Stop();
+	if (M->Audio) M->Audio->StopPhoneCalls();
+	if (M->Radio) M->Radio->Reset(0);
+	if (M->Audio) M->Audio->Silence(false);
+	if (M->Score) M->Score->Stop();
+	if (!End.IsValid()) { ToTitle(); return; }
+	End->Black(true, 0);
+	if (M->Audio)
+	{
+		FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.9f;
+		M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O);
+	}
+	// Ending.ts owns real-time timers: callbacks replace the three awaited promises.
+	TWeakObjectPtr<US47Flow> Self = this;
+	TWeakObjectPtr<US47Chapter6> Chapter = Ch6;
+	TWeakPtr<SS47Ending> WeakEnd = End;
+	UE_LOG(LogS47Flow, Display, TEXT("S47: ch6 ending title"));
+	End->Title([Self, Chapter, WeakEnd]
+	{
+		const TSharedPtr<SS47Ending> Ending = WeakEnd.Pin();
+		if (!Self.IsValid() || !Self->M || Self->M->Mode != EMode::End || !Ending.IsValid() || Ending->Disposed()) return;
+		UE_LOG(LogS47Flow, Display, TEXT("S47: ch6 ending credits"));
+		Ending->Credits([Self, Chapter, WeakEnd]
+		{
+			const TSharedPtr<SS47Ending> CreditsEnd = WeakEnd.Pin();
+			if (!Self.IsValid() || !Self->M || Self->M->Mode != EMode::End || !CreditsEnd.IsValid() || CreditsEnd->Disposed()) return;
+			Self->StopMusic(2.5f);
+			UE_LOG(LogS47Flow, Display, TEXT("S47: ch6 ending photograph"));
+			CreditsEnd->Photo(Chapter.IsValid() ? Chapter->Photo() : nullptr, [Self]
+			{
+				if (Self.IsValid() && Self->M && Self->M->Audio)
+				{
+					FS47Sound O; O.Gain = 0.9f; Self->M->Audio->Sfx(TEXT("paper0"), O);
+				}
+			}, [Self, WeakEnd]
+			{
+				const TSharedPtr<SS47Ending> PhotoEnd = WeakEnd.Pin();
+				if (!Self.IsValid() || !Self->M || Self->M->Mode != EMode::End || !PhotoEnd.IsValid() || PhotoEnd->Disposed()) return;
+				Self->ToTitle();
+			});
+		});
+	});
 }
 
 // ---------- pause and the settings ----------
