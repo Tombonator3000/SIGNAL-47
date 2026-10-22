@@ -70,6 +70,7 @@ public:
 	void StartGame(const FStart& O);
 	void LeavePlay();
 	void ToTitle();
+	void Finale();                             // main.ts finale: the title, credits and 1947 photograph
 	void OpenPause();
 	FS47PauseOpts Settings();
 

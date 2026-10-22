@@ -349,4 +349,19 @@ private:
 	void BuildRoom();
 	void ApplyVisibility(int32 Node, bool bParent);
 	void UpdateCrtMaterials();
+
+	// ---------- Chapter6.ts / main.ts: the pull-out's air and sky overrides ----------
+public:
+	void SetChapter6Fog(TOptional<double> Density); // null: the area's own FogExp2 density
+	void SetDawnLift(TOptional<double> K);
+	void SetSunElevation(TOptional<double> Degrees);
+	TOptional<double> DawnLift() const { return Chapter6DawnLift; }
+	TOptional<double> SunElevation() const { return Chapter6SunElevation; }
+	// M_WebSky currently contains an exported panorama only. The world-life sky renderer
+	// binds these hooks (or reads the getters); its dawn/sun material is a separate dependency.
+	TFunction<void(TOptional<double>)> OnDawnLift;
+	TFunction<void(TOptional<double>)> OnSunElevation;
+
+private:
+	TOptional<double> Chapter6DawnLift, Chapter6SunElevation;
 };

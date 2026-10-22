@@ -124,4 +124,9 @@ shot meteor "S47: shooting star now" "-S47Jump=chapter1 -S47Face=at:10;-12;0.6;0
 shot dawn "S47: life clock 05:2.* dawn 0\.[3-6]" "-S47Jump=chapter1 -S47Face=at:10;-12;-1.379;0.08 -S47Clock=05:20 -S47LifeLog" 12
 shot roadflora "S47: life clock .* road:[1-9]" "-S47Drive=saro:station01 -S47Throttle=0.35 -S47LifeLog" 40
 shot mesas "S47: the world's own life" "-S47Jump=chapter3 -S47Drive=saro:station01 -S47Auto=13 -S47Ch3Drive=hut" 30
+# Chapter six: from the diner's lot, then the developer menu's exact line pose with autopilot.
+shot chapter6 "chapter ch6 begins" "-S47Jump=chapter6" 8
+shot chapter6event "S47: ch6 THE EVENT begins, 47 seconds" "-S47Jump=chapter6:line -S47Auto=20" 24
+# Full event and pull-out first; the ending title uses real time once the 3D world has stopped.
+shot chapter6title "S47: ch6 ending title" "-S47Jump=chapter6:line -S47Auto=20" 99
 exit $fail

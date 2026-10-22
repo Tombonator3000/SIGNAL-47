@@ -1503,3 +1503,25 @@ void AS47Web::SetFloodScale(int32 Set, float Scale)
 		for (const auto& D : *Ms) if (D.IsValid()) D->SetScalarParameterValue(TEXT("FloodScale"), Scale);
 	}
 }
+
+// ---------- Chapter6.ts / main.ts: the pull-out's air and sky overrides ----------
+
+void AS47Web::SetChapter6Fog(TOptional<double> Density)
+{
+	// main.ts roswell.fog: null restores the area's own density, as World.enter does.
+	SetFogDensity(float(Density.Get(CurrentArea == TEXT("roswell") ? 0.00055 : 0.0021)));
+}
+
+void AS47Web::SetDawnLift(TOptional<double> K)
+{
+	// main.ts sky.setDawnLift: the chapter's value, or the area's value supplied by main.
+	Chapter6DawnLift = K;
+	if (OnDawnLift) OnDawnLift(K);
+}
+
+void AS47Web::SetSunElevation(TOptional<double> Degrees)
+{
+	// main.ts sky.setClock(..., ch6.sunElev): null lets the sun follow the clock.
+	Chapter6SunElevation = Degrees;
+	if (OnSunElevation) OnSunElevation(Degrees);
+}

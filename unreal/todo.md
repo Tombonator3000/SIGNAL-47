@@ -117,3 +117,10 @@
 - [ ] `US47Night::Dawn` bør lese `Sky->Dawn` i stedet for egen formel.
 - [ ] Pakket bygg: full `Scripts/screenshots.sh` etter ny eksport og import, og en gjennomspilling med ekte input og lyd.
 
+## Kapittel seks og avslutningen (2026-10-22)
+
+- [x] Chapter6.ts og Ending.ts i C++, med main.ts sin finale og testhoppene chapter6, chapter6:lastmile og chapter6:line.
+- [x] Siste mila, CB-klokka, key/door og kamerastillingene med selvtester; native scenarier ved avreise og på linja, THE EVENT og kamerauttrekket fram til kontrollert tittelbilde.
+- [ ] Integrer kapittel fem sin OnEnd og dinerlagring med BeginChapter6; prøv Fortsett fra denne lagringen etter avslutningen.
+- [ ] Bind daggry-/soloverstyringene til verdensportens dynamiske himmel og kontroller mesa, soloppgang og stjerner visuelt mot nettversjonen.
+- [ ] Pakket bygg, hele screenshots.sh, menneskelig input og lytting; øvrige uferdige motorlydgrafer hører til motorporten.

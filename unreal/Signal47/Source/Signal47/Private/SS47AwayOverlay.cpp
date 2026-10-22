@@ -34,10 +34,10 @@ void SS47AwayOverlay::Construct(const FArguments& InArgs)
 	LightBrush.DrawAs = ESlateBrushDrawType::Image;
 }
 
-void SS47AwayOverlay::ShowFrame(UTexture2D* T, double InAlpha)
+void SS47AwayOverlay::ShowFrame(UTexture2D* T, double InAlpha, bool bFadeBlack)
 {
 	bFrame = true;
-	Alpha = InAlpha;
+	Alpha = InAlpha; bFrameFadeBlack = bFadeBlack;
 	if (T != Frame.Get())
 	{
 		Frame.Reset(T);
@@ -59,7 +59,7 @@ int32 SS47AwayOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, con
 	// the frame canvas (z-index 40): black, and the picture over it, covering the view
 	if (bFrame)
 	{
-		FSlateDrawElement::MakeBox(Out, Layer + 1, Geo.ToPaintGeometry(), Black.Get(), ESlateDrawEffect::None, FLinearColor::Black);
+		FSlateDrawElement::MakeBox(Out, Layer + 1, Geo.ToPaintGeometry(), Black.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, bFrameFadeBlack ? 0.f : 1.f));
 		if (Frame.IsValid() && Alpha > 0)
 		{
 			const float K = FMath::Max(S.X / 640.f, S.Y / 400.f), W = 640.f * K, H = 400.f * K;

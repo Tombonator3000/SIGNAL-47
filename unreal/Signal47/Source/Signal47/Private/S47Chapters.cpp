@@ -5,6 +5,7 @@
 #include "S47Chapter2.h"
 #include "S47Chapter3.h"
 #include "S47Chapter4.h"
+#include "S47Chapter6.h"
 #include "S47Main.h"
 #include "S47Story.h"
 
@@ -30,6 +31,7 @@ void S47RegisterChapters(AS47Story* Host, US47Main* M)
 	US47Chapter2::Register(C2);
 	US47Chapter3::Register(Make<US47Chapter3>(Host, M));
 	US47Chapter4* C4 = Make<US47Chapter4>(Host, M)->Register(); // also Host->Jumps["chapter4"]
+	Make<US47Chapter6>(Host, M)->Register(); // chapter five is integrated separately
 
 	// main.ts: the chapters' save hooks ask for an autosave; chapter one's end is chapter two's card
 	C1->SaveHook = [M] { M->RequestAutosave(false); };

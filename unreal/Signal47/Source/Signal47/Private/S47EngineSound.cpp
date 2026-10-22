@@ -1,6 +1,7 @@
 #include "S47EngineSound.h"
 
 #include "S47Audio.h"
+#include "S47Walkie.h"
 
 namespace
 {
@@ -15,6 +16,24 @@ namespace
 	// the loops' keys in US47Audio
 	const TCHAR* IDLE_KEY = TEXT("truck:idle");
 	const TCHAR* DRIVE_KEY = TEXT("truck:drive");
+}
+
+// engineSound.ts solenoidClicks: the relay behind the firewall and the starter plunger below it.
+double S47EngineSound::SolenoidClicks(const TSharedRef<FS47AudioContext>& Ctx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, const TArray<double>& At, double K)
+{
+	FS47AudioContext::FBatch B(*Ctx);
+	auto Fw = Ctx->CreateBiquadFilter(); Fw->SetType(TEXT("lowpass")); Fw->Frequency.SetValue(3400); Fw->Q.SetValue(0.6);
+	Fw->Connect(Dest);
+	double Last = 0;
+	for (const double T : At)
+	{
+		Last = FMath::Max(Last, T);
+		S47Walkie::RelayClick(Ctx, Fw, Noise, T, 0.8 * K);
+		auto O = Ctx->CreateOscillator(); O->Frequency.SetValueAtTime(92, T); O->Frequency.ExponentialRampToValueAtTime(40, T + 0.07);
+		auto Og = Ctx->CreateGain(); Og->Gain.SetValueAtTime(0.42 * K, T + 0.004); Og->Gain.ExponentialRampToValueAtTime(0.001, T + 0.09);
+		O->Connect(Og); Og->Connect(Fw); O->Start(T); O->Stop(T + 0.1);
+	}
+	return Last;
 }
 
 // ---------- FS47EngineParam: the Web Audio spec's automation ----------
@@ -84,6 +103,8 @@ FS47EngineSound::FS47EngineSound(US47Audio* InAudio) : Audio(InAudio) {}
 
 FS47EngineSound::~FS47EngineSound()
 {
+	// The native node owns its context, so teardown does not reach through a destroyed Audio.
+	if (SolenoidOut.IsValid()) { SolenoidOut->Disconnect(); SolenoidOut.Reset(); }
 	if (Audio && bLoops) { Audio->Stop(IDLE_KEY, 0.1f); Audio->Stop(DRIVE_KEY, 0.1f); }
 }
 
@@ -245,9 +266,18 @@ void FS47EngineSound::Solenoid(const TArray<double>& Secs, double K)
 	const double T = Now();
 	Out.CancelScheduledValues(T);
 	Out.SetTargetAtTime(Master(), T, 0.02);
-	TArray<float> S;
-	for (double V : Secs) S.Add(float(V));
-	if (Audio) Audio->EngineSolenoid(S, float(K));
+	if (!Audio || !Audio->Ctx.IsValid() || !Audio->SfxBus.IsValid() || !Audio->NoiseBuffer().IsValid()) return;
+	FS47AudioContext::FBatch B(*Audio->Ctx);
+	if (!SolenoidOut.IsValid())
+	{
+		SolenoidOut = Audio->Ctx->CreateGain();
+		SolenoidOut->Connect(Audio->SfxBus);
+	}
+	SolenoidOut->Gain.SetValue(Out.Value(T));
+	const double At = Audio->Ctx->CurrentTime();
+	TArray<double> Times;
+	for (const double S : Secs) Times.Add(At + S);
+	S47EngineSound::SolenoidClicks(Audio->Ctx.ToSharedRef(), SolenoidOut, Audio->NoiseBuffer(), Times, K);
 }
 
 void FS47EngineSound::Restart()
@@ -278,6 +308,9 @@ void FS47EngineSound::Tick()
 {
 	const double T = Now();
 	for (FS47EngineParam* P : { &Out, &Bus, &Gi, &Gd, &IdleRate, &DriveRate, &Lp, &Band, &Noise }) P->Prune(T);
+	// solenoidClicks uses the same out as the engine: Master, Hush and Stop still apply when
+	// the recordings have stopped and bLoops is false. The existing port evaluates out per frame.
+	if (SolenoidOut.IsValid()) SolenoidOut->Gain.SetValue(Out.Value(T));
 	if (!bLoops || !Audio) return;
 	if (StopAt >= 0 && T >= StopAt)
 	{
@@ -293,4 +326,85 @@ void FS47EngineSound::Tick()
 	Audio->LoopLevel(DRIVE_KEY, float(O * B * Gd.Value(T)), float(DriveRate.Value(T)), Cut);
 	// the band-passed rumble under the engine, at the bus's level
 	Audio->EngineBus(float(O * B), float(Noise.Value(T)), float(Band.Value(T)));
+}
+
+bool FS47EngineSound::SelfTest(TArray<FString>& Lines)
+{
+	// engineSound.ts solenoidClicks rendered offline, including the eleven clicks of the key at C.
+	// This checks the graph's signal and timing without a truck or loudspeaker.
+	bool bOk = true;
+	auto Check = [&](bool bPass, const FString& What) { Lines.Add(FString(bPass ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("engine solenoid: ") + What); bOk &= bPass; };
+	constexpr int32 Rate = 48000;
+	auto Rms = [](const TArray<float>& Samples, double From, double To)
+	{
+		const int32 A = FMath::Clamp(FMath::FloorToInt(From * Rate), 0, Samples.Num() / 2);
+		const int32 B = FMath::Clamp(FMath::FloorToInt(To * Rate), A, Samples.Num() / 2);
+		double Sum = 0;
+		for (int32 I = A; I < B; ++I) Sum += double(Samples[I * 2]) * Samples[I * 2];
+		return FMath::Sqrt(Sum / FMath::Max(1, B - A));
+	};
+	const TSharedRef<FS47AudioContext> Ctx = FS47AudioContext::Make(float(Rate));
+	const TSharedRef<FS47AudioBuffer> White = Ctx->CreateBuffer(1, Rate * 2, float(Rate));
+	FRandomStream R(47);
+	for (int32 I = 0; I < White->Length(); ++I) White->GetChannelData(0)[I] = R.FRand() * 2 - 1;
+	const TArray<double> At = S47Walkie::FourSeven(.2);
+	const double Last = S47EngineSound::SolenoidClicks(Ctx, Ctx->Destination, White, At);
+	Check(At.Num() == 11 && FMath::IsNearlyEqual(Last, 4.3, 1e-9), TEXT("four and seven schedule eleven clicks, last at 4.3 s"));
+	TArray<float> Samples;
+	Samples.SetNumZeroed(int32(4.6 * Rate) * 2);
+	Ctx->Render(Samples.GetData(), Samples.Num() / 2, 2);
+	Check(Rms(Samples, 0, .199) == 0, TEXT("no signal precedes the first scheduled click"));
+	int32 Audible = 0;
+	for (const double T : At) if (Rms(Samples, T + .001, T + .09) > .005) ++Audible;
+	Check(Audible == 11, FString::Printf(TEXT("all eleven click windows contain sound (%d/11)"), Audible));
+	int32 First = INDEX_NONE;
+	bool bFinite = true;
+	for (int32 I = 0; I < Samples.Num() / 2; ++I)
+	{
+		bFinite &= FMath::IsFinite(Samples[I * 2]) && FMath::IsFinite(Samples[I * 2 + 1]);
+		if (First == INDEX_NONE && FMath::Abs(Samples[I * 2]) > 1e-7f) First = I;
+	}
+	Check(First >= FMath::FloorToInt(.2 * Rate) && First <= FMath::CeilToInt(.203 * Rate), TEXT("first click begins at 0.2 s, within three milliseconds"));
+	double Gap = 0;
+	for (int32 I = 0; I + 1 < At.Num(); ++I) Gap = FMath::Max(Gap, Rms(Samples, At[I] + .15, At[I + 1] - .02));
+	Check(Gap < 1e-6, FString::Printf(TEXT("quiet between clicks (maximum gap RMS %.3g)"), Gap));
+	Check(Rms(Samples, 1.32, 2.3) < 1e-6, TEXT("the gap between four and seven stays quiet"));
+	Check(Rms(Samples, Last + .15, 4.6) < 1e-6 && bFinite, TEXT("the last plunger stops and all rendered samples are finite"));
+	Ctx->Close();
+
+	// A constant noise buffer gives both strength renders the same relay transient regardless of
+	// relayClick's random buffer offset. Measure after the first four milliseconds, as the original
+	// plunger gain's first explicit value is at t + .004.
+	auto Strength = [&](double K)
+	{
+		const TSharedRef<FS47AudioContext> C = FS47AudioContext::Make(float(Rate));
+		const TSharedRef<FS47AudioBuffer> NoiseBuffer = C->CreateBuffer(1, Rate * 2, float(Rate));
+		for (int32 I = 0; I < NoiseBuffer->Length(); ++I) NoiseBuffer->GetChannelData(0)[I] = 1;
+		S47EngineSound::SolenoidClicks(C, C->Destination, NoiseBuffer, { .1 }, K);
+		TArray<float> Signal;
+		Signal.SetNumZeroed(int32(.35 * Rate) * 2);
+		C->Render(Signal.GetData(), Signal.Num() / 2, 2);
+		const double Level = Rms(Signal, .112, .18);
+		C->Close();
+		return Level;
+	};
+	const double Full = Strength(1), Weak = Strength(.55);
+	Check(Full > .001 && Weak > Full * .4 && Weak < Full * .85, FString::Printf(TEXT("later K=.55 click is weaker (RMS %.5f versus %.5f)"), Weak, Full));
+	{
+		const TSharedRef<FS47AudioContext> C = FS47AudioContext::Make(float(Rate));
+		FS47EngineSound E(nullptr);
+		E.SolenoidOut = C->CreateGain();
+		E.SolenoidOut->Connect(C->Destination);
+		E.Out = FS47EngineParam(.23);
+		E.Tick();
+		Check(!E.bLoops && FMath::IsNearlyEqual(E.SolenoidOut->Gain.Value(), .23, 1e-9), TEXT("solenoid out follows truck level after recording loops stop"));
+		E.Hush(true);
+		Check(E.Out.Value(E.Now() + .2) < 1e-6, TEXT("Hush keeps the solenoid under the truck's existing out envelope"));
+		E.Out = FS47EngineParam(0);
+		E.Tick();
+		Check(E.SolenoidOut->Gain.Value() == 0, TEXT("quiet truck out reaches the solenoid even with no recordings"));
+		E.SolenoidOut->Disconnect();
+		C->Close();
+	}
+	return bOk;
 }

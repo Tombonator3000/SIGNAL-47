@@ -2,8 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "S47Drive.h"
+#include "S47WebAudio.h"
 
 class US47Audio;
+
+namespace S47EngineSound
+{
+	/** engineSound.ts solenoidClicks: absolute AudioContext times; returns the last click's time. */
+	SIGNAL47_API double SolenoidClicks(const TSharedRef<FS47AudioContext>& Ctx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, const TArray<double>& At, double K = 1);
+}
 
 // drive/engineSound.ts: the truck's V8, heard from the cab. Two recordings (a carburetted V8 at
 // idle, and an old truck at a steady cruise from inside), each looped, pitched up and down with the
@@ -14,8 +21,9 @@ class US47Audio;
 // name; their gains, rates and the filter follow the web version's Web Audio automation exactly
 // (FS47EngineParam below: setValueAtTime, linear and exponential ramps, setTargetAtTime,
 // cancelScheduledValues), evaluated each frame. The parts made of Web Audio nodes (the band-passed
-// rumble, tyres and wind, the misfire's pop, the starter, the solenoid, the cattle guard, the
-// knock) go to US47Audio's Engine* calls (silent stand-ins until the procedural sound is in).
+// rumble, tyres and wind, the misfire's pop, the starter, the cattle guard, the knock) go to
+// US47Audio's Engine* calls (silent stand-ins until the procedural sound is in). The solenoid
+// builds engineSound.ts's own node graph through the truck's persistent out level.
 // The old oscillator engine the web version plays until the recordings are decoded is not needed:
 // the recordings are imported with the game.
 
@@ -80,12 +88,14 @@ public:
 	void Thump(double Speed);
 	/** Every frame (also after Stop(), while it fades): the levels to the sounds. */
 	void Tick();
+	static bool SelfTest(TArray<FString>& Lines);
 
 private:
 	US47Audio* Audio = nullptr;
 	// the Web Audio graph's params (out, the engine bus, the two recordings' gains and rates, the
 	// engine's low-pass, the rumble's band and gain)
 	FS47EngineParam Out, Bus, Gi, Gd, IdleRate, DriveRate, Lp, Band, Noise;
+	TSharedPtr<FS47GainNode> SolenoidOut; // native counterpart of out for solenoidClicks, also after the engine stops
 	bool bEng = false;        // eng !== null
 	bool bLoops = false;      // the loops are playing (until they are stopped after a Stop's fade)
 	double StopAt = -1;
