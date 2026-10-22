@@ -80,6 +80,10 @@ public:
 	void MarkUsable(int32 Node, const FString& Id);
 	FString UsableAt(const UPrimitiveComponent* C) const; // the id of what a trace hit, or empty
 	int32 NodeOf(const UPrimitiveComponent* C) const { const int32* N = CompNode.Find(C); return N ? *N : -1; }
+	// (Unreal only) A part built here and not in the export (S47ConsoleKit.h: the page under the reel)
+	// taken in as a node under Parent, so the things to use can name it (FS47Obj, MarkUsable). Its
+	// transform stays the component's own: only its visibility follows the node's. Returns its index.
+	int32 AdoptNode(UPrimitiveComponent* C, int32 Parent, const FString& Name);
 
 	void SetFogDensity(float Density); // the scene's FogExp2 density (World.enter)
 

@@ -14,7 +14,9 @@
 #include "S47Audio.h"
 #include "S47Chapter1.h"
 #include "S47Chapter2.h"
+#include "S47ConsoleKit.h"
 #include "S47Curve.h"
+#include "S47DecoderDesk.h"
 #include "S47DishArray.h"
 #include "S47Docs.h"
 #include "S47Figures.h"
@@ -96,8 +98,16 @@ void US47SaroNight::Init(US47Main* InM)
 	// ---------- reel 047 on the deck (story/reel047.ts; the archive's phone plays it) ----------
 	FS47Reel047Deps Rd;
 	Rd.Audio = M->Audio;
-	Rd.Deck = [Self] { if (!Self.IsValid() || !Self->M->Web) return FVector::ZeroVector; return Self->M->Web->Obj(TEXT("room.objs.decoder")).WorldPosition() + FVector(-0.3, 1.1, 0); };
-	if (W) for (const FString& H : W->PathsUnder(TEXT("room.reels["))) Rd.Reels.Add(W->Obj(H));
+	// (Unreal only, Tom's request: the processor is the bought unit on the console desk when the export has
+	// it, S47ConsoleKit.h; the reel plays from there, and no reels turn: the deck on the rack is gone, and
+	// the spare reel beside the unit is part of the desk's clutter, not a thing of its own)
+	Rd.Deck = [Self]
+	{
+		if (!Self.IsValid() || !Self->M->Web) return FVector::ZeroVector;
+		if (Self->M->Story && Self->M->Story->Decoder.IsValid()) return Self->M->Story->Decoder->SoundAt();
+		return Self->M->Web->Obj(TEXT("room.objs.decoder")).WorldPosition() + FVector(-0.3, 1.1, 0);
+	};
+	if (W && FS47ConsoleKit::Find(W) < 0) for (const FString& H : W->PathsUnder(TEXT("room.reels["))) Rd.Reels.Add(W->Obj(H));
 	if (W && FApp::CanEverRender())
 	{
 		// room.dspScreen: the material whose map is its canvas (room.dspScreen.tex)

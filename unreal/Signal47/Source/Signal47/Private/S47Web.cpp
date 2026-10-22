@@ -1403,6 +1403,27 @@ void AS47Web::MarkUsable(int32 Node, const FString& Id)
 	});
 }
 
+int32 AS47Web::AdoptNode(UPrimitiveComponent* C, int32 Parent, const FString& Name)
+{
+	// (Unreal only) a node for a part built at run time: where it is in its parent's terms (for its
+	// world position), its component, and its place among the parent's children (its visibility)
+	if (!C || !Nodes.IsValidIndex(Parent)) return -1;
+	FS47WebNode N;
+	N.Parent = Parent;
+	N.Name = Name;
+	N.P = NodeWorldThree(Parent).InverseTransformPosition(ToThree(C->GetComponentLocation()));
+	Compose(N.P, N.Q, N.S, N.Local);
+	N.Comp = C;
+	N.Root = Nodes[Parent].Root;
+	const int32 I = Nodes.Add(N);
+	Nodes[Parent].Children.Add(I);
+	CompNode.Add(C, I);
+	bool bParent = true;
+	for (int32 P = Parent; P >= 0; P = Nodes[P].Parent) bParent &= Nodes[P].bVis;
+	ApplyVisibility(I, bParent);
+	return I;
+}
+
 FString AS47Web::UsableAt(const UPrimitiveComponent* C) const
 {
 	const int32* N = CompNode.Find(C);
