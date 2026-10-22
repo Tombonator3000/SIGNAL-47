@@ -479,9 +479,23 @@ void AS47HUD::Start()
 		FParse::Value(FCommandLine::Get(), TEXT("S47Seconds="), Seconds);
 		// (on the core ticker, not the world's timers: those stand still while the pause menu holds the game)
 		TWeakObjectPtr<AS47HUD> Self = this;
-		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Self](float) { if (Self.IsValid()) Self->FinishSmokeTest(); return false; }), Seconds);
 		FString Shot;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Shot="), Shot))
+		FParse::Value(FCommandLine::Get(), TEXT("S47Shot="), Shot);
+		// (a long frame, a picture painted on the CPU, can bring the shot and the end into one frame:
+		// the end waits for the shot's file, up to ten seconds more)
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Self, Shot](float)
+		{
+			TSharedRef<int32> Waits = MakeShared<int32>(0);
+			FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Self, Shot, Waits](float)
+			{
+				if (!Self.IsValid()) return false;
+				if (!Shot.IsEmpty() && !IFileManager::Get().FileExists(*Shot) && ++*Waits <= 20) return true;
+				Self->FinishSmokeTest();
+				return false;
+			}), 0.5f);
+			return false;
+		}), FMath::Max(0.f, Seconds - 0.5f));
+		if (!Shot.IsEmpty())
 		{
 			FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Shot](float) { FScreenshotRequest::RequestScreenshot(Shot, true, false); return false; }), FMath::Max(0.5f, Seconds - 1.f));
 		}

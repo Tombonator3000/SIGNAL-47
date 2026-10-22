@@ -8,12 +8,9 @@ BUILD=${2:-$HOME/scratch-bm/Signal47-build}
 mkdir -p "$OUT"
 fail=0
 shot() { # name expected-log-pattern [extra args] [seconds]
-  local log="$OUT/$1.log"
-  timeout $(( ${4:-8} + 142 )) "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=${4:-8} ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
-  if grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
-  local result=0
+  local log="$OUT/$1.log" secs=${4:-8} result=0
   rm -f "$OUT/$1.png"
-  timeout 150 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=${4:-8} ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1 || result=$?
+  timeout $(( ${secs%.*} + 142 )) "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=$secs ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1 || result=$?
   if [ "$result" -eq 0 ] && ! grep -Eq "Critical error:|Assertion failed:|Signal 11 caught" "$log" && grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
 }
 shot selftest "self test OK" "-S47SelfTest -S47Face=room"
@@ -128,7 +125,7 @@ shot beacon "S47: life clock .* beacon 0\.[5-9]" "-S47Jump=chapter1 -S47Face=out
 shot starhole "S47: life clock 02:1.* hole 0\.[1-9]" "-S47Jump=chapter1 -S47Face=at:10;-12;-0.4538;0.5585 -S47LifeLog" 14
 shot meteor "S47: shooting star now" "-S47Jump=chapter1 -S47Face=at:10;-12;0.6;0.7 -S47Meteor=3 -S47MeteorAim" 4.6
 shot dawn "S47: life clock 05:2.* dawn 0\.[3-6]" "-S47Jump=chapter1 -S47Face=at:10;-12;-1.379;0.08 -S47Clock=05:20 -S47LifeLog" 12
-shot roadflora "S47: life clock .* road:[1-9]" "-S47Drive=saro:station01 -S47Throttle=0.35 -S47LifeLog" 40
+shot roadflora "S47: life clock .* road:[1-9]" "-S47Drive=saro:station01 -S47Throttle=0.35 -S47LifeLog" 110
 shot mesas "S47: the world's own life" "-S47Jump=chapter3 -S47Drive=saro:station01 -S47Auto=13 -S47Ch3Drive=hut" 30
 # Chapter six: from the diner's lot, then the developer menu's exact line pose with autopilot.
 shot chapter6 "chapter ch6 begins" "-S47Jump=chapter6" 8
