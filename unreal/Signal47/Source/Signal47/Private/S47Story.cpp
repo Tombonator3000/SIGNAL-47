@@ -1,5 +1,6 @@
 #include "S47Story.h"
 
+#include "S47ArrayShot.h"
 #include "S47Audio.h"
 #include "S47HUD.h"
 #include "S47Chapter.h"
@@ -700,7 +701,11 @@ void AS47Story::TurnDishes()
 	LookAssist = 1.f;
 	if (Audio.IsValid()) Audio->StartMotors();
 	Log(TEXT("ARRAY  S-01 TO S-27 MOTION  NO COMMAND"));
-	PointDishes(EventAz, EventEl, 2.2);
+	// Unreal only, on Tom's request (22 October 2026; S47ArrayShot.h): the dishes turn twice as quick
+	// as the web version's 2.2 degrees a second, and the camera goes to the window to watch them
+	PointDishes(EventAz, EventEl, FS47ArrayShot::TURN_SLEW);
+	if (!Shot.IsValid()) Shot = MakeShared<FS47ArrayShot>(US47Main::Get(this));
+	Shot->Begin();
 	Toast(TEXT("Outside, every dish in the array is turning."), 3.5f);
 	After(4.5, [this] { Toast(TEXT("Nobody sent a command."), 3.f); });
 }
@@ -717,11 +722,14 @@ void AS47Story::Arrived()
 	}
 	Note(TEXT("Every dish moved to az 026, el 32. Console shows no control command."));
 	Note(TEXT("All dishes left their scheduled track and aligned together."));
+	// (Unreal only: the window's view held through the beeps, then given back before the card)
+	After(1.0, [this] { if (Shot.IsValid()) Shot->Release(); });
 	After(3.2, [this] { Finish(); });
 }
 
 void AS47Story::Finish()
 {
+	if (Shot.IsValid()) Shot->Stop();
 	if (Audio.IsValid()) { Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); }
 	// main.ts game.onFinish: the night is not over
 	if (Chapter(TEXT("ch1")))
@@ -902,6 +910,7 @@ void AS47Story::ResetAll()
 	}
 	if (Audio.IsValid()) { Audio->Stop(TEXT("ring")); Audio->Stop(TEXT("printer")); Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); Audio->StopMotors(); }
 	if (Decoder.IsValid()) Decoder->Stop();
+	if (Shot.IsValid()) Shot->Stop();
 }
 
 void AS47Story::Start()
@@ -974,6 +983,7 @@ void AS47Story::Jump(const FString& Target)
 void AS47Story::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (Shot.IsValid()) Shot->Tick();
 	// main.ts step(): game.update runs only in play (not behind the title, not on the end card)
 	if (const US47Main* Main = US47Main::Get(this); Main && Main->Mode != US47Main::EMode::Play) return;
 	const double Dt = DeltaSeconds;

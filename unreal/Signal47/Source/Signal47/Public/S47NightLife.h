@@ -43,6 +43,10 @@ public:
 	bool TumbleNow(bool bAnywhere = false);
 	/** What is drawn now (tests): moths, bats, far lights' car, a tumbleweed rolling, the dust. */
 	FString Stats() const;
+	/** The lamps' strengths as the moths' material reads them (uK): a row of floats, made with them. */
+	static UTexture2D* LampRow(const TArray<float>& K);
+	/** The lamps' row, the hour's activity (-S47SelfTest). */
+	static bool SelfTest(TArray<FString>& Lines);
 
 private:
 	struct FLamp { FVector P, W; FLinearColor Col; bool bBig = false; double H = 0; int32 GlowNode = -1, GlowIndex = -1; double K0 = 1; };

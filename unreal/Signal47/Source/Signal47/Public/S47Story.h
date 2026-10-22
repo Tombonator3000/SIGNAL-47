@@ -160,6 +160,8 @@ public:
 	/** Prologue.decoder: the signal processor holds the tape once the anomaly is locked (02:14 and
 	 *  after; story/Decoder.ts). Made in Bind, once the screen and the things to use are there. */
 	TSharedPtr<class FS47DecoderDesk> Decoder;
+	/** Unreal only (Tom's request, S47ArrayShot.h): the camera at the window while the array turns. */
+	TSharedPtr<class FS47ArrayShot> Shot;
 
 	static constexpr double StartClock = 23 * 3600 + 41 * 60;
 	static constexpr double SkipClock = 2 * 3600 + 13 * 60 + 41;

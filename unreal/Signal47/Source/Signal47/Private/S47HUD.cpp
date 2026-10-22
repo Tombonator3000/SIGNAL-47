@@ -10,7 +10,9 @@
 #include "Misc/CommandLine.h"
 #include "RHI.h"
 #include "RenderingThread.h"
+#include "S47ArrayShot.h"
 #include "S47Audio.h"
+#include "S47NightLife.h"
 #include "S47Ops.h"
 #include "S47Rx.h"
 #include "S47Three.h"
@@ -134,6 +136,7 @@ void AS47HUD::Start()
 		bOk &= FS47DecoderDesk::SelfTest(Lines) & FS47ReadAloud::SelfTest(Lines); // (the signal processor's desk and panel; read-aloud's text matching)
 		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
+		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
