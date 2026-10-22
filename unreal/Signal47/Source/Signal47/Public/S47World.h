@@ -56,8 +56,8 @@ public:
 
 	FString Area = TEXT("saro");
 	bool bDriving = false;
-	/** Where the truck stands when nobody drives it ('saro', 'station01', 'motel', 'diner'); empty
-	 *  while it is out on a trip. */
+	/** Where the truck stands when nobody drives it ('saro', 'station01', 'motel', 'diner', or
+	 *  'roswell': left on the old road); empty while it is out on a trip. */
 	FString TruckAt = TEXT("saro");
 	/** The area being driven in on a trip, or empty. */
 	FString Leg;
@@ -132,9 +132,11 @@ public:
 	bool RoadStopAt(const FVector& P) const; // World.ts roadStopAt: whether it finds a stop
 	/** The speed of the truck being driven (m/s, negative backing up); 0 when nobody drives. */
 	double DrivingSpeed() const;
-	/** Whether the player can get out now (stopped, on a trip, with ground by a door). */
+	/** Whether the player can get out now: stopped, on a trip, wherever it stands (Tom 22 October
+	 *  2026; the web version only with walk zones by a door), not while chapter six has the truck. */
 	bool CanGetOut(bool bDead = false) const;
-	/** Out of the truck where it stands; the trip ends as if it had been left on a lot. */
+	/** Out of the truck where it stands; the trip ends as if it had been left on a lot (on the old
+	 *  road the truck stays there, 'roswell', and is got into again where it stands). */
 	bool GetOutHere(bool bDead = false);
 	/** Stop driving without arriving: a trip given up puts the trucks back where they stood. */
 	void StopDriving();
@@ -214,7 +216,19 @@ private:
 	/** The walk zones and colliders AS47Web keeps per area, and where the trucks' own colliders are
 	 *  in them (World.parkAt moves them). */
 	int32 SaroCol = -1, StationCol = -1, DinerCol = -1;
+	int32 OldCol = -1; // (the old road has no walk of its own in the export: its truck's collider is added here)
 	int32 TownCarObstacle = -1;
+	/** The ground round the truck where it is left with no walk zones by a door (Tom 22 October 2026):
+	 *  the leg it stands in and where; the walker asks OnGround. */
+	FString GroundLeg;
+	FVector GroundAt = FVector::ZeroVector;
+	void SetGround(const FString& Place);
+	bool OnGround(double X, double Z);
+	FString WalkOf(const FString& Place) const;
+	FS47Truck* TruckAtPlace(const FString& Place) const;
+	TOptional<FVector> RoomBy(const FS47Truck& T) const;
+	void DriveOnOldRoad();
+	void TestGetOut(double At);
 	FS47Obj SaroProxy, StationProxy, DinerProxy; // (DinerProxy: World.dinerTruckProxy, the box round the truck on the diner's lot)
 
 	struct FTrip

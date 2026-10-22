@@ -799,17 +799,26 @@ void AS47Web::SetHemiScale(float K)
 	ApplyHemi();
 }
 
+// World.enter: in the diner's area the player walks World.roadWalk (the export's 'road': the diner's
+// zones and walls, Caliche's and the road's own stops by the herd and the deputy's car), not the
+// diner's alone; an export without it has the diner's
+static const FString& WalkKey(const TMap<FString, TPair<TArray<FS47Rect>, TArray<FS47Rect>>>& Walks, const FString& Area)
+{
+	static const FString Road(TEXT("road"));
+	return Area == TEXT("diner") && Walks.Contains(Road) ? Road : Area;
+}
+
 const TArray<FS47Rect>& AS47Web::Zones() const
 {
 	static const TArray<FS47Rect> Empty;
-	const auto* P = Walks.Find(CurrentArea == TEXT("diner") && !Walks.Contains(TEXT("diner")) ? TEXT("road") : CurrentArea);
+	const auto* P = Walks.Find(WalkKey(Walks, CurrentArea));
 	return P ? P->Key : Empty;
 }
 
 const TArray<FS47Rect>& AS47Web::Colliders() const
 {
 	static const TArray<FS47Rect> Empty;
-	const auto* P = Walks.Find(CurrentArea);
+	const auto* P = Walks.Find(WalkKey(Walks, CurrentArea));
 	return P ? P->Value : Empty;
 }
 

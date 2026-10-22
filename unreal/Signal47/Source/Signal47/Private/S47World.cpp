@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Misc/CommandLine.h"
 #include "S47Audio.h"
+#include "S47FieldCamera.h"
 #include "S47Geo.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
@@ -36,8 +37,11 @@ namespace
 	/** The places the truck can be left on (a lot with a park box): SARO's pad, the motel's lot,
 	 *  the gravel outside STATION 01's gate, the diner's lot. */
 	const TCHAR* PLACES[4] = { TEXT("saro"), TEXT("motel"), TEXT("station01"), TEXT("diner") };
-	/** The places with a truck of their own (the motel's is SARO's: the same area). */
-	const TCHAR* TRUCKS[3] = { TEXT("saro"), TEXT("station01"), TEXT("diner") };
+	/** The places with a truck of their own (the motel's is SARO's: the same area), and the old road,
+	 *  where chapter six's truck is left when the player gets out on it (Tom 22 October 2026). */
+	const TCHAR* TRUCKS[4] = { TEXT("saro"), TEXT("station01"), TEXT("diner"), TEXT("roswell") };
+	/** How far from the truck the ground round it is walked, where its area has no walk zones by it. */
+	constexpr double GROUND_R = 30;
 	/** The area a place is in (the motel's lot is SARO's). */
 	FString AreaOf(const FString& L) { return L == TEXT("motel") ? FString(TEXT("saro")) : L; }
 	bool InBox(const TOptional<FS47Box2>& B, const FVector& P) { return B && P.X >= B->MinX && P.X <= B->MaxX && P.Z >= B->MinZ && P.Z <= B->MaxZ; }
@@ -119,9 +123,26 @@ void US47World::Init(US47Main* InM)
 		S.Use = [this] { if (TruckChoice) TruckChoice(TEXT("station01")).Use(); };
 		S.Examine = [this, Spot] { return Area == TEXT("station01") && Spot.Position().Y > -100 ? FString(EXAMINE_TRUCK) : FString(); };
 		M->Inter->Add(S);
+		// the truck left on the old road (out of it anywhere, Tom 22 October 2026: the web version has no
+		// way out there), got into again where it stands; chapter six's drive goes on
+		FS47Interactable O;
+		O.Id = TEXT("oldTruck");
+		O.Object = M->Web->Obj(TEXT("world.oldTruck.group"));
+		O.Range = 3.2;
+		auto Left = [this] { return Area == TEXT("roswell") && TruckAt == TEXT("roswell") && !bDriving && !bBusy; };
+		O.Label = [Left] { return Left() ? FString(TEXT("Drive")) : FString(); };
+		O.Use = [this, Left] { if (Left()) DriveOnOldRoad(); };
+		O.Examine = [Left] { return Left() ? FString(EXAMINE_TRUCK) : FString(); };
+		if (O.Object) M->Inter->Add(O);
 	}
 	// the view from the cab while the truck is driven
 	if (M->Player) M->Player->CameraOverride = [this](double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out) { return Frame(Dt, Move, LookIn, Out); };
+	// a jump on foot (Tom 22 October 2026): not in the truck, not with a panel open or the story holding
+	// the player, not with the field camera raised (Space is its shutter then)
+	if (M->Player) M->Player->CanJump = [this]
+	{
+		return M && !bDriving && !bBusy && !M->ModalOpen() && !(M->Story && M->Story->IsCinematic()) && !(M->FieldCamera && M->FieldCamera->bRaised);
+	};
 
 	// Tests: -S47Drive=<from>:<to> starts a story trip as soon as the game is in play;
 	// -S47Throttle=<0..1> holds the throttle with the autopilot steering (World.testInput, autoInput);
@@ -155,6 +176,154 @@ void US47World::Init(US47Main* InM)
 			else W->Roam(From);
 		}, 1.0f, false);
 	}
+	// -S47GetOut[=<s>]: that many seconds into a trip (12 by default) the truck is braked to a stop
+	// where it is and the player gets out (with -S47OffRoad=<s>, first that long hard right at half
+	// throttle, off the way); the log says where they are put and what they can walk, then they walk
+	// away, come back to the truck and get in again (Tom 22 October 2026)
+	float GetOutAt = 0;
+	if ((FParse::Value(FCommandLine::Get(), TEXT("S47GetOut="), GetOutAt) || FParse::Param(FCommandLine::Get(), TEXT("S47GetOut"))) && M->Web) TestGetOut(GetOutAt > 0 ? GetOutAt : 12);
+	// -S47Hop[=<n>]: the walker jumps n times (3 by default) from 3 s on, 1.6 s apart, the second while
+	// walking and the last by the Jump key; then once more with the field camera raised (refused)
+	int32 Hops = 0;
+	if ((FParse::Value(FCommandLine::Get(), TEXT("S47Hop="), Hops) || FParse::Param(FCommandLine::Get(), TEXT("S47Hop"))) && M->Web && M->Player)
+	{
+		Hops = Hops > 0 ? Hops : 3;
+		TWeakObjectPtr<US47World> Self = this;
+		for (int32 i = 0; i <= Hops; ++i)
+		{
+			FTimerHandle H;
+			M->Web->GetWorldTimerManager().SetTimer(H, [Self, i, Hops]
+			{
+				if (!Self.IsValid() || !Self->M || !Self->M->Player) return;
+				AS47Walker* P = Self->M->Player;
+				P->TestMove.Reset();
+				if (i == Hops)
+				{
+					// with the camera raised Space is the shutter: no jump
+					US47FieldCamera* F = Self->M->FieldCamera;
+					if (F) F->Raise(true);
+					P->Jump();
+					UE_LOG(LogS47World, Display, TEXT("S47: hop with the camera %s: %s"), F && F->bRaised ? TEXT("raised") : TEXT("missing"), P->InAir() ? TEXT("jumped (wrong)") : TEXT("refused"));
+					if (F) F->Raise(false);
+					return;
+				}
+				if (i == 1) P->TestMove = FVector2D(0, -1);
+				if (i == Hops - 1 && i > 0) { S47Keys::TestPresses(TEXT("SpaceBar"), 0.01f); UE_LOG(LogS47World, Display, TEXT("S47: hop %d by the Jump key (%s)"), i + 1, *S47Keys::Label(TEXT("jump"))); }
+				else { P->Jump(); UE_LOG(LogS47World, Display, TEXT("S47: hop %d%s: %s"), i + 1, i == 1 ? TEXT(", walking") : TEXT(""), P->InAir() ? TEXT("up") : TEXT("refused")); }
+			}, 3.0f + 1.6f * i, false);
+		}
+	}
+}
+
+void US47World::TestGetOut(double At)
+{
+	float OffRoad = 0;
+	FParse::Value(FCommandLine::Get(), TEXT("S47OffRoad="), OffRoad);
+	TWeakObjectPtr<US47World> Self = this;
+	struct FTest { int32 Stage = 0; double T = 0, Since = 0, Last = 1e9; bool bOff = false; FString Id; FVector Truck = FVector::ZeroVector; };
+	TSharedRef<FTest> S = MakeShared<FTest>();
+	FTimerHandle H;
+	M->Web->GetWorldTimerManager().SetTimer(H, [Self, S, At, OffRoad]
+	{
+		if (!Self.IsValid() || !Self->M || !Self->M->Player) return;
+		US47World* W = Self.Get();
+		AS47Walker* P = W->M->Player;
+		S->T += 0.25;
+		auto Dist = [&] { return FMath::Sqrt(FMath::Square(P->Pos.X - S->Truck.X) + FMath::Square(P->Pos.Z - S->Truck.Z)); };
+		auto Face = [&](bool bAway)
+		{
+			const double Dx = S->Truck.X - P->Pos.X, Dz = S->Truck.Z - P->Pos.Z;
+			P->Yaw = FMath::Atan2(-Dx, -Dz) + (bAway ? UE_DOUBLE_PI : 0);
+			P->Pitch = bAway ? -0.06 : FMath::Atan2(S->Truck.Y + 0.9 - (P->FloorY + P->Eye), FMath::Max(0.5, FMath::Sqrt(Dx * Dx + Dz * Dz)));
+		};
+		switch (S->Stage)
+		{
+		case 0: // driving: off the way first, then braked to a stop
+		{
+			const TOptional<double> Secs = W->TripSecs();
+			if (!W->bDriving || !Secs) return;
+			if (OffRoad > 0 && *Secs >= At - OffRoad && *Secs < At && !S->bOff)
+			{
+				S->bOff = true; W->Autopilot.Reset();
+				W->TestInput = [] { FS47DriveIn A; A.Steer = 1; A.Throttle = 0.5; return A; };
+				UE_LOG(LogS47World, Display, TEXT("S47: test get out: off the way for %.1f s"), OffRoad);
+			}
+			if (*Secs < At) return;
+			W->Autopilot.Reset();
+			W->TestInput = [W] { FS47DriveIn A; const double V = W->DrivingSpeed(); A.Throttle = V > 0.15 ? -1 : V < -0.15 ? 1 : 0; return A; };
+			UE_LOG(LogS47World, Display, TEXT("S47: test get out: braking at %.1f m/s, leg %s"), W->DrivingSpeed(), *W->Leg);
+			S->Stage = 1; S->Since = S->T;
+			return;
+		}
+		case 1: // stopped: out
+		{
+			if (!W->CanGetOut())
+			{
+				if (S->T - S->Since > 6 && FMath::Abs(W->DrivingSpeed()) < 0.6)
+				{
+					UE_LOG(LogS47World, Warning, TEXT("S47: test get out: FAILED, refused (busy %d, wants the key %d, chapter six's %d, trip %d)"), W->bBusy, W->Trouble.WantsKey(), W->OldControl.IsSet(), W->Trip.IsSet());
+					S->Stage = 9;
+				}
+				return;
+			}
+			const FS47Truck* T = W->CabTruck();
+			if (T) S->Truck = T->Position;
+			const double H = T ? T->Rotation.Y : 0;
+			const FString From = W->Leg;
+			W->TestInput = nullptr;
+			W->GetOutHere();
+			UE_LOG(LogS47World, Display, TEXT("S47: test get out: out of the truck in leg %s, truck at %.2f %.2f %.2f heading %.2f"), *From, S->Truck.X, S->Truck.Y, S->Truck.Z, H);
+			S->Stage = 2; S->Since = S->T;
+			return;
+		}
+		case 2: // put down: where, on what, and what is walked round them
+		{
+			if (S->T - S->Since < 1.0 || W->bBusy || (W->M->Story && W->M->Story->IsCinematic())) return;
+			auto Round = [&](double R) { int32 N = 0; for (int32 k = 0; k < 16; ++k) { const double A = k * UE_DOUBLE_PI / 8; N += P->Walkable(S->Truck.X + FMath::Sin(A) * R, S->Truck.Z + FMath::Cos(A) * R) ? 1 : 0; } return N; };
+			const double Floor = P->Floor ? P->Floor(P->Pos.X, P->Pos.Z) : P->FloorY;
+			UE_LOG(LogS47World, Display, TEXT("S47: test get out: put at %s in %s: player %.2f %.2f, %.2f m from the truck's middle, floor %.3f (ground there %.3f, truck %.3f), walkable %s, ground round the truck %s; walkable round it of 16: %d at 3 m, %d at 10 m, %d at 28 m, %d at 33 m"),
+				*W->TruckAt, *W->Area, P->Pos.X, P->Pos.Z, Dist(), P->FloorY, Floor, S->Truck.Y, P->Walkable(P->Pos.X, P->Pos.Z) ? TEXT("yes") : TEXT("NO"), P->Ground && P->GroundArea == W->Area ? TEXT("yes") : TEXT("no"), Round(3), Round(10), Round(28), Round(33));
+			Face(true);
+			P->TestMove = FVector2D(0, -1);
+			S->Stage = 3; S->Since = S->T;
+			return;
+		}
+		case 3: // away from it
+			if (S->T - S->Since < 3.0) return;
+			P->TestMove.Reset();
+			UE_LOG(LogS47World, Display, TEXT("S47: test get out: walked away to %.2f m from the truck"), Dist());
+			Face(false);
+			P->TestMove = FVector2D(0, -1);
+			S->Stage = 4; S->Since = S->T;
+			return;
+		case 4: // back to it, until the truck itself stops them (or they are by it)
+		{
+			const double D = Dist(), Was = S->Last;
+			S->Last = D;
+			Face(false);
+			if (S->T - S->Since < 6.0 && D > 2.0 && (S->T - S->Since < 0.6 || Was - D > 0.04)) return;
+			P->TestMove.Reset();
+			S->Stage = 5; S->Since = S->T;
+			return;
+		}
+		case 5: // in reach: get in again
+		{
+			if (S->T - S->Since < 0.5) return;
+			S->Id = P->FocusedId();
+			const FString Label = S->Id.IsEmpty() || !W->M->Inter ? FString() : W->M->Inter->LabelOf(S->Id);
+			UE_LOG(LogS47World, Display, TEXT("S47: test get out: back by the truck, %.2f m from its middle, floor %.3f; looking at '%s' (%s)"), Dist(), P->FloorY, *S->Id, *Label);
+			if (S->Id.IsEmpty() || !W->M->Inter) { UE_LOG(LogS47World, Warning, TEXT("S47: test get out: FAILED, the truck is not in reach")); S->Stage = 9; return; }
+			W->M->Inter->UseId(S->Id);
+			S->Stage = 6; S->Since = S->T;
+			return;
+		}
+		case 6:
+			if (W->bDriving) { UE_LOG(LogS47World, Display, TEXT("S47: test get out: back in, driving, leg %s"), *W->Leg); S->Stage = 9; return; }
+			if (S->T - S->Since > 4) { UE_LOG(LogS47World, Warning, TEXT("S47: test get out: FAILED, not back in the truck")); S->Stage = 9; }
+			return;
+		default: return;
+		}
+	}, 0.25f, true);
 }
 
 void US47World::BeginDestroy()
@@ -217,6 +386,9 @@ void US47World::EnsureLegs()
 		SaroProxy = W->Obj(TEXT("yard.objs.truck"));
 		StationProxy = W->Obj(TEXT("world.site.proxies.truckSpot"));
 		DinerProxy = W->Obj(TEXT("world.dinerTruckProxy")); // (an export from before 22 October has none)
+		// (the old road's truck, where the player has got out of it on the old road: out of the way until then)
+		FS47Rect Old; Old.Id = TEXT("oldTruck"); Old.MinX = Old.MaxX = Old.MinZ = Old.MaxZ = 1e9;
+		OldCol = W->CollidersMutable(TEXT("roswell")).Add(Old);
 	}
 	auto Head = [&](IS47DriveArea& A, const TCHAR* Id, const TCHAR* FallbackSet, const TArray<int32>& FallbackSlots)
 	{
@@ -367,6 +539,13 @@ void US47World::Enter(const FString& NewArea)
 		OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
 	}
 	if (OnEnter) OnEnter(NewArea);
+	// on foot on the old road (out of the truck anywhere, Tom 22 October 2026): its ground's height,
+	// as the truck has it (the web version is never on foot there)
+	if (NewArea == TEXT("roswell") && M && M->Player)
+	{
+		TWeakObjectPtr<US47World> Self = this;
+		M->Player->Floor = [Self](double X, double Z) { const FS47OldRoad* R = Self.IsValid() ? Self->OldRoad() : nullptr; return R ? R->Height(X, Z) : 0.0; };
+	}
 }
 
 double US47World::SkyYaw() const { return Area == TEXT("station01") ? S47Geo::STATION_TURN() : 0; }
@@ -527,9 +706,10 @@ void US47World::DriveOldRoad(TFunction<void()> Ready)
 void US47World::ParkAt(FString Id)
 {
 	// The parked truck's collider and its handle for "use" go where the truck stands, or out of
-	// the way while it is gone. (At the motel it is SARO's truck, collider and handle.)
+	// the way while it is gone. (At the motel it is SARO's truck, collider and handle; on the old road
+	// its truck's collider only: the truck itself is what is used there.)
 	if (Id == TEXT("motel")) Id = TEXT("saro");
-	FS47Truck* T = TruckOf(Id);
+	FS47Truck* T = TruckAtPlace(Id);
 	if (!T || !M || !M->Web) return;
 	const bool bHere = TruckAt == Id || (Id == TEXT("saro") && TruckAt == TEXT("motel"));
 	const double H = T->Rotation.Y, C = FMath::Abs(FMath::Cos(H)), Sn = FMath::Abs(FMath::Sin(H));
@@ -542,11 +722,20 @@ void US47World::ParkAt(FString Id)
 		FS47Rect& R = Cols[Index];
 		if (bHere) { R.MinX = G.X - Hx; R.MaxX = G.X + Hx; R.MinZ = G.Z - Hz; R.MaxZ = G.Z + Hz; }
 		else { R.MinX = R.MaxX = R.MinZ = R.MaxZ = 1e9; }
+		R.Id = TEXT("truck"); // (the walker keeps to the truck itself, AS47Walker::TruckBox)
 	};
+	// the walker: the truck as it is turned, in its area (its box above is far bigger at an angle)
+	if (M->Player)
+	{
+		const FString A = AreaOf(Id);
+		if (bHere) { AS47Walker::FTruckBox B; B.Area = A; B.X = G.X; B.Z = G.Z; B.Heading = H; M->Player->TruckBox = B; }
+		else if (M->Player->TruckBox && M->Player->TruckBox->Area == A) M->Player->TruckBox.Reset();
+	}
 	if (Id == TEXT("saro")) Put(TEXT("saro"), SaroCol);
 	else if (Id == TEXT("station01")) Put(TEXT("station01"), StationCol);
 	// (the diner's walls are walked in the diner's area and in the road's, World.roadWalk: the same list there)
 	else if (Id == TEXT("diner")) { Put(TEXT("diner"), DinerCol); Put(TEXT("road"), DinerCol); }
+	else if (Id == TEXT("roswell")) Put(TEXT("roswell"), OldCol);
 	FS47Obj Proxy = Id == TEXT("saro") ? SaroProxy : Id == TEXT("station01") ? StationProxy : Id == TEXT("diner") ? DinerProxy : FS47Obj();
 	if (Proxy.IsValid())
 	{
@@ -587,7 +776,7 @@ void US47World::StartTrip(const FString& From, const FString& To, const FS47Trip
 		Tr.bFree = O.bFree; Tr.StartPos = O.AtPos ? *O.AtPos : G->Position; Tr.N = ++TripNo;
 		Trip = Tr;
 		Leg = Leg0;
-		if (!O.bFree) { TruckAt.Reset(); for (const TCHAR* Id : TRUCKS) ParkAt(Id); }
+		if (!O.bFree) { TruckAt.Reset(); for (const TCHAR* Id : TRUCKS) ParkAt(Id); SetGround(FString()); }
 		if (!O.bFree && From == TEXT("saro")) OdoAtSaro = Odometer();
 		L->Drive->Place(O.AtPos ? *O.AtPos : G->Position, O.AtPos ? O.AtHeading : G->Rotation.Y);
 		LightsOn(*L->Truck);
@@ -686,8 +875,9 @@ void US47World::Transfer(const S47Legs::FExit& Ex)
 void US47World::Park(const FString& Place)
 {
 	FLegRec& L = Legs[Leg];
-	// the trip's place reached; on the highway that is the diner's lot or Caliche's street
-	const bool bArrived = Trip && Trip->To == Place && (Place != TEXT("diner") || AtDiner(L.Drive->Pos));
+	// the trip's place reached; on the highway that is the diner's lot or Caliche's street (the old
+	// road is no place to arrive at: the truck is only left there)
+	const bool bArrived = Trip && Trip->To == Place && Place != TEXT("roswell") && (Place != TEXT("diner") || AtDiner(L.Drive->Pos));
 	TFunction<void()> OnArrive = Trip ? Trip->OnArrive : nullptr;
 	Trouble.Reset(L.Truck, L.Drive.Get());
 	bDriving = false;
@@ -698,8 +888,10 @@ void US47World::Park(const FString& Place)
 	ParkAt(Place);
 	Hold(true);
 	Fade(true);
-	// out by the door at once: from this frame the camera is the player's again
+	// out by the door at once: from this frame the camera is the player's again; where no walk zone
+	// of the area is by a door, onto the ground round the truck
 	Enter(AreaOf(Place));
+	SetGround(Place);
 	GetOut(*L.Truck);
 	UE_LOG(LogS47World, Display, TEXT("S47: parked at %s%s"), *Place, bArrived ? TEXT(", arrived") : TEXT(""));
 	if (M && M->Story) M->Story->After(0.4, [this, bArrived, OnArrive, Place]
@@ -714,13 +906,20 @@ void US47World::Park(const FString& Place)
 void US47World::GetOut(FS47Truck& T)
 {
 	const double H = T.Rotation.Y;
-	const TOptional<FVector> Spot = DoorSpot(T);
+	TOptional<FVector> Spot = DoorSpot(T);
+	// (out anywhere, Tom 22 October 2026: where neither door has room, beside the truck a little
+	// further off, or at an end of it)
+	if (!Spot) Spot = RoomBy(T);
 	const FVector V = Spot ? *Spot : AboutUp(FVector(-1.75, 0, -0.3), H) + T.Position;
+	// (on the ground under them: where the area's floor is read off the world, it is read from the
+	// truck's ground, not from wherever the walker last stood)
+	if (M && M->Player) M->Player->FloorY = T.Position.Y;
 	Place(V.X, V.Z, H);
 }
 
 /** Ground to stand on by one of the truck's doors, in the given walk (the area's walkable zones
- *  and what stands on them; the player's own by default), clear of everything in the way, or unset. */
+ *  and what stands on them; the player's own by default, with the ground round the truck), clear of
+ *  everything in the way, or unset. */
 TOptional<FVector> US47World::DoorSpot(const FS47Truck& T, const FString& WalkArea) const
 {
 	if (!M || !M->Web || !M->Player) return {};
@@ -730,14 +929,112 @@ TOptional<FVector> US47World::DoorSpot(const FS47Truck& T, const FString& WalkAr
 	for (const double Side : { -1.0, 1.0, -1.4, 1.4 })
 	{
 		const FVector V = AboutUp(FVector(Side * 1.75, 0, -0.3), H) + T.Position;
-		bool bWalk = false;
-		for (const FS47Rect& B : Zones) if (B.bEnabled && V.X >= B.MinX + R - E && V.X <= B.MaxX - R + E && V.Z >= B.MinZ + R - E && V.Z <= B.MaxZ - R + E) { bWalk = true; break; }
+		bool bWalk = WalkArea.IsEmpty() && M->Player->Walkable(V.X, V.Z);
+		if (!WalkArea.IsEmpty()) for (const FS47Rect& B : Zones) if (B.bEnabled && V.X >= B.MinX + R - E && V.X <= B.MaxX - R + E && V.Z >= B.MinZ + R - E && V.Z <= B.MaxZ - R + E) { bWalk = true; break; }
 		if (!bWalk) continue;
+		// (the box the walk keeps round the truck is passed over: these spots are outside the truck
+		// itself, and the box is far bigger than the truck when it stands at an angle)
 		bool bHit = false;
-		for (const FS47Rect& C : Cols) if (V.X + R > C.MinX && V.X - R < C.MaxX && V.Z + R > C.MinZ && V.Z - R < C.MaxZ) { bHit = true; break; }
+		for (const FS47Rect& C : Cols) if (C.Id != TEXT("truck") && V.X + R > C.MinX && V.X - R < C.MaxX && V.Z + R > C.MinZ && V.Z - R < C.MaxZ) { bHit = true; break; }
 		if (!bHit) return V;
 	}
 	return {};
+}
+
+/** Room beside the truck where neither door has any (a wall, a fence, a post by it, or the truck
+ *  turned across the box the walk keeps round it): further out from each side, then behind it and
+ *  in front, in the player's own walk. */
+TOptional<FVector> US47World::RoomBy(const FS47Truck& T) const
+{
+	if (!M || !M->Web || !M->Player) return {};
+	const double H = T.Rotation.Y, R = M->Player->Radius;
+	TArray<FVector, TInlineAllocator<16>> Tries;
+	for (const double D : { 2.4, 3.2, 4.0, 4.8 }) { Tries.Add(FVector(-D, 0, -0.3)); Tries.Add(FVector(D, 0, -0.3)); }
+	for (const double D : { 3.6, 4.4 }) { Tries.Add(FVector(0, 0, D)); Tries.Add(FVector(0, 0, -D)); }
+	for (const FVector& L : Tries)
+	{
+		const FVector V = AboutUp(L, H) + T.Position;
+		if (!M->Player->Walkable(V.X, V.Z)) continue;
+		bool bHit = false;
+		for (const FS47Rect& C : M->Web->Colliders()) if (C.Id != TEXT("truck") && V.X + R > C.MinX && V.X - R < C.MaxX && V.Z + R > C.MinZ && V.Z - R < C.MaxZ) { bHit = true; break; }
+		if (!bHit) return V;
+	}
+	return {};
+}
+
+// ---------- the ground round the truck where it is left (Tom 22 October 2026) ----------
+
+FS47Truck* US47World::TruckAtPlace(const FString& Place) const
+{
+	return Place == TEXT("roswell") ? OldTruckP.Get() : TruckOf(Place);
+}
+
+/** The walk a place's area has (AS47Web: the diner's area walks the road's). */
+FString US47World::WalkOf(const FString& Place) const
+{
+	if (Place == TEXT("motel")) return TEXT("saro");
+	if (Place == TEXT("diner")) return M && M->Web && M->Web->ZonesMutable(TEXT("road")).Num() ? FString(TEXT("road")) : Place;
+	return Place;
+}
+
+void US47World::SetGround(const FString& Place)
+{
+	// The web version lets the player out only where the area has walk zones by a door (the lots, the
+	// yard and the field, Caliche, the road's stops by the herd and the deputy's car), as nothing else
+	// is walked. Here the truck can be left anywhere: where a door has a walk zone by it, that is
+	// walked as it is; elsewhere the player walks where the truck itself could stand (its leg's
+	// ground, clear of the leg's posts, rocks, walls and fences), within GROUND_R of it, so they can
+	// walk away from it and back, and get in again.
+	if (!M || !M->Player) return;
+	AS47Walker* P = M->Player;
+	P->Ground = nullptr;
+	P->GroundArea.Reset();
+	GroundLeg.Reset();
+	if (Place.IsEmpty() || bDriving || !bLegsMade) return;
+	const FString LegId = Place == TEXT("roswell") ? Place : S47Legs::LegOf(Place);
+	const FS47Truck* T = TruckAtPlace(Place);
+	if (!T || !Legs.Contains(LegId) || DoorSpot(*T, WalkOf(Place))) return;
+	GroundLeg = LegId;
+	GroundAt = T->Position;
+	P->GroundArea = AreaOf(Place);
+	TWeakObjectPtr<US47World> Self = this;
+	P->Ground = [Self](double X, double Z) { return Self.IsValid() && Self->OnGround(X, Z); };
+	UE_LOG(LogS47World, Display, TEXT("S47: ground round the truck at %s (leg %s, %.1f %.1f)"), *Place, *LegId, GroundAt.X, GroundAt.Z);
+}
+
+bool US47World::OnGround(double X, double Z)
+{
+	FLegRec* L = GroundLeg.IsEmpty() ? nullptr : Legs.Find(GroundLeg);
+	if (!L || !M || !M->Player) return false;
+	if (FMath::Square(X - GroundAt.X) + FMath::Square(Z - GroundAt.Z) > GROUND_R * GROUND_R) return false;
+	IS47DriveArea& A = *L->Area;
+	const double R = M->Player->Radius;
+	// where the truck could stand, the player's whole width (the old road's test also notes that the
+	// highway was run into, for chapter six's word about it: not for a walk)
+	FS47OldRoad* Old = GroundLeg == TEXT("roswell") ? OldRoad() : nullptr;
+	const bool bHitBack = Old && Old->bHitBack;
+	bool bOff = false;
+	for (const FVector2D& D : { FVector2D(0, 0), FVector2D(-R, -R), FVector2D(R, -R), FVector2D(-R, R), FVector2D(R, R) })
+	{
+		if (A.Blocked(X + D.X, Z + D.Y)) { bOff = true; break; }
+	}
+	if (Old) Old->bHitBack = bHitBack;
+	if (bOff) return false;
+	// and clear of what stops the truck there
+	for (const FS47Obstacle& O : A.Obstacles)
+	{
+		if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R) return false;
+	}
+	return true;
+}
+
+void US47World::DriveOnOldRoad()
+{
+	// back in the truck left on the old road: the drive goes on from where it stands (DriveOldRoad's
+	// trip, without its start: the clock and chapter six's road are as they were)
+	FS47TripOpts O;
+	O.Leg = TEXT("roswell");
+	StartTrip(TEXT("roswell"), TEXT("roswell"), O);
 }
 
 FS47Truck* US47World::TruckHere() const
@@ -755,7 +1052,8 @@ FS47Truck* US47World::TruckHere() const
 
 FString US47World::PlaceOfLeg(const FString& Id) const
 {
-	return Id == TEXT("saro") || Id == TEXT("station01") ? Id : Id == TEXT("road") ? FString(TEXT("diner")) : FString();
+	// (the old road: its own truck is left where it stands, Tom 22 October 2026)
+	return Id == TEXT("saro") || Id == TEXT("station01") || Id == TEXT("roswell") ? Id : Id == TEXT("road") ? FString(TEXT("diner")) : FString();
 }
 
 bool US47World::AtDiner(const FVector& Q) const
@@ -786,14 +1084,15 @@ bool US47World::CanGetOut(bool bDead) const
 {
 	const FString& Id = Leg;
 	if (!bDriving || bBusy || Id.IsEmpty() || !Trip || Trip->bFree || (Trouble.WantsKey() && !bDead)) return false;
+	// (chapter six has the truck: its pedals in THE EVENT, its camera after it)
+	if (OldControl) return false;
 	const FLegRec* L = Legs.Find(Id);
 	const FString Place = PlaceOfLeg(Id);
 	if (!L || Place.IsEmpty() || FMath::Abs(L->Drive->Speed) > 0.6) return false;
-	// (by the diner and anywhere in Caliche's street, as since 16 October)
-	if (Id == TEXT("road") && AtDiner(L->Drive->Pos)) return true;
-	// what is walked where a stop in this leg leaves the player (World.walkOf): SARO's ground,
-	// STATION 01's, or on the highway the diner's area with the road's own stops
-	return DoorSpot(*L->Truck, Id).IsSet();
+	// Out wherever it is stopped (Tom 22 October 2026). The web version asks here for walk zones by
+	// a door (World.walkOf: SARO's ground, STATION 01's, the diner's and Caliche's, the road's stops)
+	// and keeps the player in the cab elsewhere; Park gives the ground round the truck there.
+	return true;
 }
 
 bool US47World::GetOutHere(bool bDead)
@@ -801,6 +1100,7 @@ bool US47World::GetOutHere(bool bDead)
 	if (!CanGetOut(bDead)) return false;
 	const FVector Q = Legs[Leg].Drive->Pos;
 	const FString Place = Leg == TEXT("saro") && InBox(ParkBox(TEXT("motel")), Q) ? FString(TEXT("motel")) : PlaceOfLeg(Leg);
+	UE_LOG(LogS47World, Display, TEXT("S47: getting out, leg %s at %.1f %.1f"), *Leg, Q.X, Q.Z);
 	// (the diner's area is always there: no building it first behind the black)
 	Park(Place);
 	return true;
@@ -914,6 +1214,7 @@ void US47World::StopDriving()
 	}
 	Leg.Reset(); Trip.Reset(); Autopilot.Reset();
 	for (const TCHAR* P : TRUCKS) ParkAt(P);
+	SetGround(TruckAt);
 	Free.Reset(); FreeBack.Reset();
 }
 
@@ -982,6 +1283,8 @@ void US47World::PlaceTruck(const FString& At, const S47J::FObj& Pose)
 			FVector(Ok(TEXT("p")) ? S47J::Num(Pose, TEXT("p")) : 0, S47J::Num(Pose, TEXT("h")), Ok(TEXT("r")) ? S47J::Num(Pose, TEXT("r")) : 0));
 	}
 	for (const TCHAR* P : TRUCKS) ParkAt(P);
+	// (a save made on foot by the truck left somewhere with no walk of its own: the ground round it again)
+	SetGround(At);
 }
 
 S47J::FObj US47World::OdoSave() const
@@ -1044,6 +1347,7 @@ bool US47World::MoveParked(double X, double Z, double Heading, double Y)
 	T->SetPose(FVector(X, Y, Z), FVector(0, Heading, 0));
 	TruckAt = TEXT("saro");
 	ParkAt(TEXT("saro"));
+	SetGround(TruckAt);
 	return true;
 }
 
