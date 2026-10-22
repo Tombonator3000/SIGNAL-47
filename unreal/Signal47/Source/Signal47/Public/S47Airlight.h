@@ -5,14 +5,9 @@
 class AS47Web;
 class FJsonObject;
 class UStaticMeshComponent;
-class UMaterialInstanceDynamic;
-class UTexture2D;
 
-// world/airlight.ts: light in the air, faint cones of sodium light under the lamps and a low haze
-// lying on the open ground at night (High and Ultra only). The cones of an area are one mesh, drawn
-// additively; the haze is two big flat layers that follow the camera. Their shaders are ported as
-// M_WebAirCone and M_WebHaze (import_web.py); the meshes and the lamps (each read off its glow
-// point, so a lamp that goes out takes its cone with it) are the export's (export.js lifeOf: air).
+// Legacy airlight metadata remains available to WorldLife. Native volumetric fog now owns
+// scattering; exported additive cone meshes and flat haze sheets stay hidden on every tier.
 
 /** A lamp that tints the haze: world place, how wide its pool, its colour, how lit (World.ts HazeLamp). */
 struct FS47HazeLamp { FVector P = FVector::ZeroVector; double R = 7; FLinearColor Col = FLinearColor::Black; double K = 1; };
@@ -33,9 +28,6 @@ public:
 private:
 	TWeakObjectPtr<AS47Web> Web;
 	TWeakObjectPtr<UStaticMeshComponent> Mesh;
-	TWeakObjectPtr<UMaterialInstanceDynamic> Mid;
-	TWeakObjectPtr<UTexture2D> KTex; // uK: the lamps' strengths, a row
-	TArray<float> K;
 };
 
 /** GroundHaze: two flat layers of haze a little above the open ground round the camera. */
@@ -50,10 +42,5 @@ public:
 	bool Visible() const;
 
 private:
-	TWeakObjectPtr<AS47Web> Web;
-	int32 Node = -1;
 	TWeakObjectPtr<UStaticMeshComponent> Mesh;
-	TWeakObjectPtr<UMaterialInstanceDynamic> Mid;
-	double Base = 0;
-	bool bBase = false; // (base NaN: none yet)
 };

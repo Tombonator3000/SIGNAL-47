@@ -258,7 +258,7 @@ void SS47Settings::BuildRows()
 			TArray<FString> Names = P->bUltraOk ? TArray<FString>{ TEXT("LOW"), TEXT("HIGH"), TEXT("ULTRA") } : TArray<FString>{ TEXT("LOW"), TEXT("HIGH") };
 			AddChoice(TEXT("Quality"), Names, [P, Ids] { return FMath::Max(0, Ids.IndexOfByKey(P->Quality)); },
 				[P, Ids](int32 I) { if (!Ids.IsValidIndex(I) || P->Quality == Ids[I]) return; P->Quality = Ids[I]; if (P->OnQuality) P->OnQuality(P->Quality); }, Ids.Num() - 1,
-				Says(TEXT("Quality")), Says(TEXT("How much of the night is drawn: Ultra has the lamps' shadows and the soft light round bright things, Low the least, for a slower computer.")));
+				Says(TEXT("Quality")), Says(TEXT("Low keeps direct lighting and simpler shadows. High adds reflected light and mist. Ultra draws finer shadows and mist.")));
 		}
 		AddChoice(TEXT("Picture"), { TEXT("VHS TAPE"), TEXT("CLEAN") }, [P] { return P->Picture == TEXT("off") ? 1 : 0; },
 			[P](int32 I)

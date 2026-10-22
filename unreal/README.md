@@ -1,6 +1,6 @@
 # SIGNAL / 47 i Unreal
 
-Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Nettversjonen i `web/` er fortsatt spillet som publiseres; dette er en parallell utgave for desktop. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
+Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Videre spillarbeid gjelder desktoputgaven i Unreal. `web/` og Unity er historiske referanser. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
 
 Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen kom først; 22. oktober ble resten av spillet portert (Tom valgte en ren C++-port framfor å kjøre nettversjonens kode i en innebygd nettleser).
 
@@ -32,7 +32,7 @@ Spillet starter på tittelen (Continue, New night, Load case, Settings); med et 
 
 Verden bygges ikke for hånd. `Tools/webexport/export.py` starter nettversjonen i Chromium, gjør klar alle områdene og henter hele three.js-scenen ut med `export.js`: hver node med matrise og synlighet, all geometri som glb, hvert materiale med farger, kart og UV-matriser, alle teksturer, lysene, de falske flomlysene (`kit.ts floodlit`), glødepunktene, dørene med åpen og lukket stilling, antennene, alt som kan brukes, gangsonene og kolliderne per område, og himmelen per område som et ekvirektangulært bilde (8192 x 4096). `Tools/webexport/import_web.py` gjør det om til Unreal-assets under `/Game/Web` (ignorert av Git) og kopierer `manifest.json` til `Content/WebData`.
 
-Ved oppstart leser `AS47Web` manifestet og bygger scenen node for node på de samme stedene. Bildet regnes som i nettleseren: Lumen er av, lysene har de samme enhetene (candela), halvkule-lyset og flomlysene ligger i materialene med three.js sine formler, og `M_WebTone` erstatter Unreals tonekurve med three.js sin tåke (FogExp2), ACES Filmic med eksponering 1,05, sRGB og VHS-båndet fra `core/vhs.ts`.
+Ved oppstart leser `AS47Web` manifestet og bygger scenen node for node på de samme stedene. Belysningen kommer fra native punktlys, spotter, vinduslys, måne og skylight, med skygger, volumetrisk tåke og Lumen på High/Ultra. Historienes eksisterende lampetilstand driver disse lysene. Materialenes gamle flood- og halvkulebidrag er av; `M_WebTone` beholder ACES-kurven og VHS/Clean med fast eksponering, mens tåka tegnes av Unreal. Se `LIGHTING.md` for importsteg, sammenligninger og faktisk teststatus.
 
 Spillogikken bruker nettversjonens koordinater (meter, y opp); bare tegningen regnes om. three (x, y, z) er Unreal (100x, 100z, 100y).
 

@@ -6,19 +6,11 @@
 class AActor;
 class USpotLightComponent;
 
-// web/src/core/Flashlight.ts. The flashlight (Tom 15 October: a flashlight, no battery). It lies on
-// the truck's passenger seat and is taken the first time the player gets in; F switches it. It is
-// a real spot light from the player's hand: the only light that goes everywhere, so it is not one
-// of an area's fake floods. It stays in the scene with intensity 0 when it is off. On the PC tier
-// (Ultra) it casts a shadow, so it does not shine through walls (main.ts passes the tier). Near the
-// strange events it may flicker (Flicker()).
-//
-// The web version's beam is a cheap flashlight's, drawn by its shaders (core/cookies.ts: a hot core
-// a little off the middle, the filament's dark spot, a ragged rim, a dim corona) over three's spot
-// light with a linear fall-off (decay 1). Unreal's spot light here has the same colour, cone, edge
-// and range; its fall-off is the inverse square, so its intensity is the web version's times 4 (the
-// two meet 4 m out, where the web version was tuned: "about as bright at 4 m"), and the cookie's
-// pattern is not drawn (its gain, FLASH_GAIN, is kept).
+// web/src/core/Flashlight.ts. The flashlight has no battery and is taken from the truck's
+// passenger seat. F switches it; story events may make its electrical contact flicker. Its warm
+// reflector beam is a movable Unreal spot with a finite source, shadows and volumetric scattering
+// on every quality tier. The light is kept at zero intensity when off. The story-facing intensity
+// retains its original range so saves and deterministic behavioural tests remain compatible.
 class SIGNAL47_API FS47Flashlight
 {
 public:
@@ -37,7 +29,7 @@ public:
 	void Flicker(double K, const FString& From = TEXT("event"));
 	/** Every frame: held a little right of and below the eyes, pointing where they look. Off: in the
 	 *  truck, in a cinematic, on the title screen (it goes out, and comes back on after). */
-	void Update(double Dt, double T, const FS47Cam& Cam, bool bOff, bool bShadows = false);
+	void Update(double Dt, double T, const FS47Cam& Cam, bool bOff);
 
 	/** three's intensity now (the tests): 0 when off. */
 	double Intensity() const { return ThreeIntensity; }

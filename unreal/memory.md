@@ -2,6 +2,16 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Native belysning (2026-10-22)
+
+- Videre belysning er bare Unreal. `S47Lighting.cpp` gjør eksportens lampetilstand om til punktlys og spotter. Historienes SetFlood-API er beholdt; materialenes flood, hemisphere, FogExp2, additive lyskjegler og vindusprojeksjoner er av. Ingen Web/Unreal-bryter. Eldre lysnotater nedenfor beskriver porten før denne endringen.
+- Lumen bruker Vulkan hardware ray tracing på RTX 3080 når tilgjengelig. Måne, skylight, levende daggry, native volumetrisk tåke og skygger fra lommelykt/billykter erstatter fylltermene. Førerhusets gamle himmelfyll er fjernet; instrumentgløden er svak. Fast eksponering, ACES og VHS/Clean beholdes.
+- `S47_ONLY=materials` i import_web.py regenererer Base og Mat uten å skrive Tex, Geo, art eller WebData. Kreves for eldre generert Content. NativeLighting har asset-default 0 for delte historiske checkouter, men denne runtime setter alltid 1. Bruk private materialkopier ved parallelle jobber.
+- Low bruker direkte lys, High/Ultra Lumen og volumetri. High/Low bruker 60 % intern oppløsning med TSR; Ultra 100 %. Se `LIGHTING.md` for faktisk ytelse og sammenligningsbilder, ikke trekk fps-konklusjoner fra kvalitetsnavnet.
+- Sluttkandidatens High ved 2560 x 1440: kontrollrom 14,701 ms / 68,0 fps, gård 11,029 ms / 90,7 fps; p95 15,704 og 12,383 ms. Faste utsnitt etter oppvarming, ingen andre tunge prosesser i målevinduet. Ultra i gården 37,2 fps. Pakket bygg og langvarig bevegelse er fortsatt uprøvd.
+- Før tung kjøring må også prosessnavnet `Signal47` sjekkes. Den installerte Linux-binærfila heter dette, ikke nødvendigvis Signal47-Linux-Shipping. En slik prosess gjorde første ytelsespass ugyldig selv om UnrealEditor-kontrollen var tom.
+- Kopiert UBT Intermediate inneholder absolutte stier. Lag ny Intermediate i et worktree, og kontroller kompilatorens response-filer. `Scripts/build-editor.sh -NoUBA` brukes her etter UBA-feil på PCH-rename gjennom symlink. Byggskriptet videresender valgfrie flagg.
+
 ## Oppsett (2026-10-21)
 
 - Prosjektet heter Signal47 og ligger i unreal/Signal47. UE 5.8.4 (binærutgaven for Linux) i ~/.local/opt/UnrealEngine-5.8.4, Vulkan SM6, Lumen i programvare, Nanite av for de importerte modellene.

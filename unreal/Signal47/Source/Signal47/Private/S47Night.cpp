@@ -691,9 +691,7 @@ void US47Night::SeenStep(double Dt)
 
 void US47Night::FlashlightStep(double Dt)
 {
-	// flashlight.update(dt, t, camera, mode !== 'play' || world.driving || game.cinematic, ultra.on)
-	const bool bUltra = M->Flow && M->Flow->Quality == TEXT("ultra");
-	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic(), bUltra);
+	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic());
 }
 
 void US47Night::Step(double Dt)

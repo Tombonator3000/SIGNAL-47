@@ -58,6 +58,11 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	bool IsLoaded() const { return bLoaded; }
+	void SetLightingQuality(const FString& Quality);
+	void SetSkyLighting(float Dawn, const FVector& SunDirection, float Sun, float Flash);
+	void SuppressFloodLight(int32 Set, int32 Index);
+	float LightIntensity(const FString& Uuid) const;
+	void SetLightIntensity(const FString& Uuid, float Value);
 	int32 PartCount() const { return Nodes.Num(); }
 	FString Summary() const;
 
@@ -83,7 +88,7 @@ public:
 
 	void SetFogDensity(float Density); // the scene's FogExp2 density (World.enter)
 
-	// ---------- the fake floodlights (kit.ts floodSet / setFlood) ----------
+	// ---------- story lamp state (kit.ts floodSet / setFlood) ----------
 	int32 FloodSet(const FString& Key) const;         // 'site', 'annex', ...; -1 when unknown
 	void SetFlood(int32 Set, int32 Index, float Width); // setFlood(i, intensity, set)
 	void SetFloodColor(int32 Set, int32 Index, const FLinearColor& C);
@@ -283,6 +288,27 @@ private:
 	TArray<bool> MatLoaded;
 	UMaterialInterface* Mat(int32 Id);
 
+	// Exported lamp state feeds native lights; shared material pools never add light twice.
+	UPROPERTY() TObjectPtr<class APostProcessVolume> LightingPost;
+	UPROPERTY() TObjectPtr<class UExponentialHeightFogComponent> LightingFog;
+	UPROPERTY() TObjectPtr<USkyLightComponent> NightSky;
+	UPROPERTY() TObjectPtr<UDirectionalLightComponent> DawnSun;
+	struct FPoolLight { int32 Set = -1, Slot = -1; float Reach = 0; TWeakObjectPtr<UPointLightComponent> Light; };
+	TArray<FPoolLight> PoolLights;
+	TArray<TArray<int32>> PoolRoots;
+	bool bSkyCaptured = false;
+	bool bLightingProfiled = false;
+	float CapturedDawn = 0;
+	double SkyCaptureTime = 0;
+	TArray<float> PerfFrames, PerfGame, PerfDraw, PerfGpu;
+	TSet<uint64> SuppressedPools;
+	int32 LightingQuality = 1;
+	float SkyDawn = 0, SkySun = 0, SkyFlash = 0;
+	void BuildNativeLighting();
+	void UpdateNativeLighting();
+	void UpdateNativeFog();
+	void SampleLightingPerformance(float Dt);
+	double LightingRunTime = 0, LightingLogTime = 0;
 	// lights, per area
 	struct FLightRef { TWeakObjectPtr<ULightComponent> L; FString Area; float Base = 0; FString Uuid; };
 	TArray<FLightRef> Lights;
