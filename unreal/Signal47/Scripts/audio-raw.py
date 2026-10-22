@@ -22,6 +22,7 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
                                           imported as (/Game/Audio/Voice/<Bank>/v_<file>) and its raw file
                                           (raw: voice/<bank>/<file>.wav), for ReadAloud, RecordedDialogue and
                                           RadioVoice
+  Content/Audio/Raw/tv/                  left as it is: the TVs' programme sound (Scripts/prepare-tv.py)
   Content/Licensed/Raw/<name>.wav, index.json   the bought sounds (lic:<name>), when the private
                                           folder web/src/assets/licensed/sfx is there
 
@@ -114,8 +115,16 @@ if not args.recordings_only:
     channel_texts = set(normalize(t) for t in call_lines(scripts, 'nora') + call_lines(scripts, 'fieldNora')) | set(normalize(t) for t in NORA_CB_TEXTS)
     phone_texts = set(normalize(t) for t in PHONE_TEXTS)
 
+    # (Raw/tv is the TVs' programme sound from prepare-tv.py, not from web/src: it stays)
     for d in (RAW, LICRAW):
-        shutil.rmtree(d, ignore_errors=True)
+        for name in os.listdir(d) if os.path.isdir(d) else []:
+            path = os.path.join(d, name)
+            if d == RAW and name == 'tv':
+                continue
+            if os.path.isdir(path) and not os.path.islink(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
     os.makedirs(RAW, exist_ok=True)
     index = {'sources': {}, 'phone': {}, 'character': {}}
 
