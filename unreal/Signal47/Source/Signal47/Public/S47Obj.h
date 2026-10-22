@@ -73,6 +73,10 @@ struct SIGNAL47_API FS47Obj
 	// A picture on it (material.map), for instance a photo. bFlipY as three's Texture.flipY for an
 	// image the page loaded; false for a render target drawn here.
 	void SetMap(UTexture* T, bool bFlipY = true) const;
+
+	// An InstancedMesh's instance K, as instancedMesh.setMatrixAt(K, compose(P, Q, S)) in its own
+	// terms (the truck's wheels and needles). bFlush: mark it for drawing now (the last of a batch).
+	void SetInstance(int32 K, const FVector& P, const FQuat& Q, const FVector& S, bool bFlush = true) const;
 };
 
 // A light (PointLight, SpotLight, DirectionalLight) by its path or the exported uuid.

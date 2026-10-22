@@ -105,6 +105,11 @@ bool AS47Web::Load()
 		UE_LOG(LogS47Web, Error, TEXT("S47: the web manifest is not valid JSON"));
 		return false;
 	}
+	// the drive's run-time data (export.js extras: drive), kept for US47World
+	{
+		const TSharedPtr<FJsonObject>* D = nullptr;
+		if (J->TryGetObjectField(TEXT("drive"), D)) Drive = *D;
+	}
 	// geometry files: which glb holds which geometry
 	int32 MaxGeo = 0;
 	for (const TSharedPtr<FJsonValue>& V : Arr(J, TEXT("geoFiles"))) MaxGeo = FMath::Max(MaxGeo, int32(Num(V->AsObject(), TEXT("to"))));
@@ -1260,6 +1265,21 @@ void AS47Web::SetFloodColor(int32 Set, int32 Index, const FLinearColor& C)
 	if (!FloodSets.IsValidIndex(Set) || !FloodSets[Set].Col.IsValidIndex(Index)) return;
 	FloodSets[Set].Col[Index] = C;
 	UploadFlood(Set);
+}
+
+void AS47Web::SetFloodPool(int32 Set, int32 Index, const FVector& P, float Width, const FLinearColor& C, bool bUpload)
+{
+	if (!FloodSets.IsValidIndex(Set) || !FloodSets[Set].Pos.IsValidIndex(Index)) return;
+	const FLinearColor Pos(float(P.X), float(P.Y), float(P.Z), Width);
+	if (FloodSets[Set].Pos[Index] == Pos && FloodSets[Set].Col[Index] == C) return;
+	FloodSets[Set].Pos[Index] = Pos;
+	FloodSets[Set].Col[Index] = C;
+	if (bUpload) UploadFlood(Set); else FloodDirty.Add(Set);
+}
+
+void AS47Web::FlushFlood(int32 Set)
+{
+	if (FloodDirty.Remove(Set) > 0) UploadFlood(Set);
 }
 
 void AS47Web::SetFloodScale(int32 Set, float Scale)

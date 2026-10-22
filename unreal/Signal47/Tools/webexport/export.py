@@ -31,6 +31,8 @@ async def main():
         await pg.evaluate("""async () => { const w = S47.world;
           for (const a of ['station01', 'road', 'diner', 'room6']) await w.prepare(a);
           if (w.ensureOldRoad) await w.ensureOldRoad();
+          // SARO's own leg of the drives (its obstacles, and its headlight slots in SARO's floods)
+          if (w.ensureSaroLeg) await w.ensureSaroLeg();
           w.enter('saro'); }""")
         await pg.add_script_tag(path=os.path.join(HERE, 'export.js'))
         info = await pg.evaluate("S47X.collect()")

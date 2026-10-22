@@ -98,6 +98,22 @@ public:
 	void DuckAll(float Seconds);
 	bool bKinskiCalls = true, bCharacterVoices = true;
 
+	// ---------- drive/engineSound.ts (FS47EngineSound) ----------
+	// A loop's level now (the engine's recordings, mixed by rpm each frame): volume, playback rate,
+	// and a low-pass in Hz (0: none).
+	void LoopLevel(const FString& Key, float Gain, float Rate, float LowPass = 0.f);
+	float Duration(const FString& Name);     // a recording's length in seconds (0 when it is missing)
+	// The truck's sounds made with Web Audio nodes in the web version, by EngineSound's own names
+	// (silent stand-ins until the procedural sound is in, S47AudioWeb.cpp):
+	void EngineBus(float Level, float Rumble, float RumbleFreq); // each frame: the truck's level, the band-passed rumble's gain and centre
+	void EngineTyres(const FString& Surface, float Speed);       // each frame: rolling noise, gravel crunch, dirt rumble, wind (tyres)
+	void EngineCough(float K);                                   // a misfire's dull pop in the exhaust (cough)
+	void EngineCrank(float Secs);                                // the starter turning the dead engine over (crank)
+	void EngineSolenoid(const TArray<float>& Secs, float K);     // the key on a dead truck: solenoid clicks (solenoid)
+	void EngineRattle(float Speed);                              // a cattle guard under both axles (rattle)
+	void EngineThump(float Speed);                               // a knock against a post or a fence (thump)
+	void EngineStop(float After);                                // the truck's own layers fade and stop (stop)
+
 private:
 	bool bPhonePlaying = false;
 	void NotYet(const TCHAR* What) const;

@@ -16,5 +16,6 @@
 - [ ] Feltkameraet og fotolaben.
 - [x] Lyd og musikk fra web/public (2026-10-21).
 - [ ] Lagring ved kontrollpunkter.
-- [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
+- [ ] Kapittel 1 til 6 (web/src/story) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
+- [x] Kjøringen (web/src/drive) og turene i World.ts (2026-10-22). Gjenstår: eksporten kjøres på nytt for `drive` i manifestet, lydene laget med Web Audio (dekk, vind, startmotor, ferist), lyktenes mønster (headSlots) i flomlysmaterialet, lyktene på dineren, byen og motellet (shareLights), radioen.
 - [ ] Glødepunktene blinker som i glow.ts.

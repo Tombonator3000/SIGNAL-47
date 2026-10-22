@@ -3,7 +3,9 @@
 // until one is, it logs once and stays silent, as the web version does without a recording.
 #include "S47Audio.h"
 
+#include "Components/AudioComponent.h"
 #include "S47Three.h"
+#include "Sound/SoundBase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47AudioWeb, Log, All);
 
@@ -64,3 +66,29 @@ void US47Audio::Gasp(float) { NotYet(TEXT("gasp")); }
 void US47Audio::Thunder(float) { NotYet(TEXT("thunder")); }
 void US47Audio::HoldThunder(float) {}
 void US47Audio::DuckAll(float) {}
+
+// ---------- drive/engineSound.ts ----------
+void US47Audio::LoopLevel(const FString& Key, float Gain, float Rate, float LowPass)
+{
+	TObjectPtr<UAudioComponent>* C = Loops.Find(Key);
+	if (!C || !C->Get()) return;
+	(*C)->SetVolumeMultiplier(FMath::Max(0.f, Gain));
+	(*C)->SetPitchMultiplier(FMath::Max(0.01f, Rate));
+	(*C)->SetLowPassFilterEnabled(LowPass > 0.f);
+	if (LowPass > 0.f) (*C)->SetLowPassFilterFrequency(LowPass);
+}
+
+float US47Audio::Duration(const FString& Name)
+{
+	USoundBase* S = Find(Name);
+	return S ? S->GetDuration() : 0.f;
+}
+
+void US47Audio::EngineBus(float, float, float) {}
+void US47Audio::EngineTyres(const FString&, float) { NotYet(TEXT("engine tyres")); }
+void US47Audio::EngineCough(float) { NotYet(TEXT("engine cough")); }
+void US47Audio::EngineCrank(float) { NotYet(TEXT("engine crank")); }
+void US47Audio::EngineSolenoid(const TArray<float>&, float) { NotYet(TEXT("engine solenoid")); }
+void US47Audio::EngineRattle(float) { NotYet(TEXT("engine rattle")); }
+void US47Audio::EngineThump(float) { NotYet(TEXT("engine thump")); }
+void US47Audio::EngineStop(float) {}
