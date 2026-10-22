@@ -1,8 +1,16 @@
-# SIGNAL / 47 i Unreal (prøve)
+# SIGNAL / 47 i Unreal
 
-En prøve av prologen «Night Shift» i Unreal Engine 5.8.4, med plass til hele spillet hvis prøven holder. Nettversjonen i `web/` er fortsatt spillet som publiseres; dette er en parallell utgave for desktop, bygget på det samme grunnlaget: Blender-modellene i `Unity/Assets/Signal47/Art`, lyden og historien.
+Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Nettversjonen i `web/` er fortsatt spillet som publiseres; dette er en parallell utgave for desktop. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
 
-Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Første prøve: kontrollrommet og gården om natta, med gang i førsteperson og statusterminalen.
+Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen kom først; 22. oktober ble resten av spillet portert (Tom valgte en ren C++-port framfor å kjøre nettversjonens kode i en innebygd nettleser).
+
+## Spill
+
+```sh
+~/Games/Signal47/Linux/Signal47.sh
+```
+
+Eller «SIGNAL / 47» i programmenyen. Spillet starter på tittelen (Continue, New night, Load case, Settings). WASD går (Shift løper), musa ser, E eller klikk bruker det du ser på, høyre mus ser nærmere. Tab eller N er notatboken (M, I og H åpner kartet, kitet og kontrollene i den), Esc eller P er pausen med innstillinger, lagring og lasting. I bilen: W og S gass og brems (S i stillstand rygger), A og D styrer, R eller klikk på radioen skifter stasjon, E i stillstand går ut (og vrir om nøkkelen når motoren har dødd). V leser beskrivelsen av det du ser på når opplesningen er slått på i innstillingene. Lagringene og innstillingene ligger ved siden av spillet, i `~/Games/Signal47/Linux/Signal47/Saved/SaveGames`.
 
 ## Kom i gang
 
@@ -47,7 +55,7 @@ Se `AGENTS.md` i denne mappa. Kort: Unity-mappa er arkiv og røres ikke, kjøpte
 
 ## Begrensninger
 
-- Prologen er spillbar fra start til sluttkortet og kan lagres fra 02:13; kapittel 1 til 6 og kjøringen er ikke portert ennå. Verdenene deres (stasjon 01, veien, dineren, rom 6, Roswell) er med i eksporten.
+- Hele spillet er portert og kjører i den pakkede utgaven (`Scripts/screenshots.sh`: 86 kjøringer fra prologen til slutttittelen). Det er ikke spilt gjennom av et menneske ennå: lyden er sjekket i tester, ikke med øret, og ekte mus og tastatur er bare prøvd i korte økter. Avvik fra nettversjonen er kommentert i koden og samlet i `todo.md`.
 - Ni shader-materialer fra nettversjonen (vann, enkelte himmeleffekter) er skjult. Himmelen tegnes levende (`S47Sky`: kuppelen, stjernene, stjernehullet, stjerneskudd, kometen og den malte horisonten); bildet fra eksporten brukes bare når livsmaterialene mangler.
 - Museretningen opp og ned er ikke prøvd av et menneske.
 - Bare testet på denne maskinen (RTX 3080, Vulkan, Ubuntu 26.04).
