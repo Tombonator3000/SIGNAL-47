@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "S47Obj.h"
+#include "S47Glow.h"
 #include "S47Web.generated.h"
 
 class UStaticMeshComponent;
@@ -32,6 +33,7 @@ struct FS47WebNode
 	FQuat Q = FQuat::Identity;
 	bool bVis = true;
 	int32 Geo = -1;
+	int32 GeoB = -1; // a pair of flora kinds in one mesh: the second kind's shape (export.js pairGeo)
 	TArray<int32> Mats;
 	TArray<int32> Children;
 	TWeakObjectPtr<USceneComponent> Comp;
@@ -91,12 +93,11 @@ public:
 	// several slots is sent once.
 	void SetFloodPool(int32 Set, int32 Index, const FVector& P, float Width, const FLinearColor& C, bool bUpload = true);
 	void FlushFlood(int32 Set);
-	// A pool as it is now (pos[i]: x, y, z and its width), how many a set has, and the set's scale
+	// A pool as it is now (pos[i]: x, y, z and its width) and its colour
 	// (world/saroPower.ts takes SARO's lamps down from what they are and puts them back).
 	FLinearColor FloodPool(int32 Set, int32 Index) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Pos.IsValidIndex(Index) ? FloodSets[Set].Pos[Index] : FLinearColor(0, -999, 0, 0); }
 	FLinearColor FloodColOf(int32 Set, int32 Index) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Col.IsValidIndex(Index) ? FloodSets[Set].Col[Index] : FLinearColor::Black; }
-	int32 FloodCount(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Pos.Num() : 0; }
-	float FloodScaleOf(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Scale : 0.f; }
+	// (FloodCount and FloodScaleOf: with the world life's below; the count is kit.ts's count in use)
 	// core/cutouts.ts litMat: the wandering card switches to the shown area's flood set.
 	void UseFlood(const FS47Obj& Object, int32 Set, float Fall);
 	bool FloodPool(int32 Set, int32 Index, FVector& P, float& Width, FLinearColor& Color) const;
@@ -106,6 +107,42 @@ public:
 	// each leg's obstacles, lots and headlight slots, each truck's own flood sets. Null when the
 	// manifest is older than that.
 	const TSharedPtr<class FJsonObject>& DriveData() const { return Drive; }
+
+	// ---------- the world's own life (S47WorldLife) ----------
+	// What the world's modules change every frame and keep in private fields (export.js lifeOf): the
+	// sky's parts, the shared lights' slots, the light in the air, the life in the night, the windows'
+	// light. Null when the manifest is older than that.
+	const TSharedPtr<class FJsonObject>& LifeData() const { return Life; }
+	// world/glow.ts: the GlowPoints of a points node (its billboards), or null
+	FS47GlowPoints* Glow(int32 Node);
+	FS47GlowPoints* Glow(const FString& Path) { return Glow(Handle(Path)); }
+	void UpdateGlows(double T); // every GlowPoints.update(t), on main.ts's t
+	// a points node's points as exported (x, y, z, r, g, b, size: seven floats a point), and the
+	// stars' twinkle phases (aPh); null for a node without
+	const TArray<float>* PointsOf(int32 Node) const { return PointsRaw.Find(Node); }
+	const TArray<float>* PointsPhOf(int32 Node) const { return PointsPh.Find(Node); }
+	// the geometry and the material assets, by the export's ids (for the parts the world's life builds)
+	class UStaticMesh* GeoMesh(int32 Geo) const;
+	UMaterialInterface* MatAsset(int32 Id) { return Mat(Id); }
+	// a copy of a node's own material with all it has, lit by the same floods (a pair's second flora kind)
+	class UMaterialInstanceDynamic* CopyMid(class UMaterialInstanceDynamic* Of);
+	// a value of MPC_Web (the wind's, world/wind.ts)
+	void SetEnvScalar(const FName& Name, float V);
+	// the fake floodlights as kit.ts's FloodSet holds them: n slots, count in use, those never handed
+	// to a real light (skip), each pool's place and strength (pos: x, y, z, w) and colour, the scale
+	int32 FloodSetCount() const { return FloodSets.Num(); }
+	FString FloodKey(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Key : FString(); }
+	int32 FloodSlots(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].W : 0; }
+	int32 FloodCount(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Count : 0; }
+	bool FloodSkip(int32 Set, int32 I) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Skip.Contains(I); }
+	FLinearColor FloodPos(int32 Set, int32 I) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Pos.IsValidIndex(I) ? FloodSets[Set].Pos[I] : FLinearColor(0, -999, 0, 0); }
+	FLinearColor FloodCol(int32 Set, int32 I) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Col.IsValidIndex(I) ? FloodSets[Set].Col[I] : FLinearColor::Black; }
+	float FloodScaleOf(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Scale : 0.f; }
+	// main.ts: the scene's fog colour (the sky's haze, every frame), and the area's hemisphere light at
+	// an intensity of its own (room.lights.hemi.intensity: the lightning's flash in it)
+	void SetFogColor(const FLinearColor& C);
+	void SetHemiIntensity(float Intensity);
+	class UStaticMeshComponent* SkySphereComponent() const { return SkySphere; }
 
 	// ---------- nodes ----------
 	int32 Handle(const FString& Key) const; // "room.objs.mug" and the like, -1 when unknown
@@ -225,13 +262,16 @@ private:
 	TMap<int32, TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>>> NodeMidCache;
 	TMap<int32, TWeakObjectPtr<class UMaterialInstanceDynamic>> SharedMidCache;
 	TMap<int32, FString> Usable;
-	struct FFloodSet { FString Key; TArray<FLinearColor> Pos, Col; float Scale = 0.07f; int32 W = 1; };
+	struct FFloodSet { FString Key; TArray<FLinearColor> Pos, Col; float Scale = 0.07f; int32 W = 1; int32 Count = 0; TSet<int32> Skip; };
 	TArray<FFloodSet> FloodSets;
 	TMap<int32, TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>>> FloodMids;
 	TMap<int32, int32> MatFloodSet; // material id -> flood set
 	void UploadFlood(int32 Set);
 	TSet<int32> FloodDirty;
 	TSharedPtr<class FJsonObject> Drive;
+	TSharedPtr<class FJsonObject> Life;
+	TMap<int32, TSharedPtr<FS47GlowPoints>> Glows;
+	TMap<int32, TArray<float>> PointsRaw, PointsPh;
 	TMap<FString, TArray<int32>> AreaRoots;
 	TMap<int32, FString> RootArea;
 	TMap<FString, TPair<TArray<FS47Rect>, TArray<FS47Rect>>> Walks;

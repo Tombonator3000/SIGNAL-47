@@ -24,7 +24,7 @@
 - [ ] Lagring ved kontrollpunkter.
 - [ ] Kapittel 1 til 6 (web/src/story) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
 - [x] Kjøringen (web/src/drive) og turene i World.ts (2026-10-22). Gjenstår: eksporten kjøres på nytt for `drive` i manifestet, lydene laget med Web Audio (dekk, vind, startmotor, ferist), lyktenes mønster (headSlots) i flomlysmaterialet, lyktene på dineren, byen og motellet (shareLights), radioen.
-- [ ] Glødepunktene blinker som i glow.ts.
+- [x] Glødepunktene blinker som i glow.ts (2026-10-22, `S47Glow`).
 
 ## Kapittel 2 (2026-10-22)
 
@@ -36,7 +36,7 @@
 - [ ] S47Drawings og S47Drawings2, S47Panels og S47Panels2 slås sammen.
 - [x] Lagring ved kontrollpunkter, tittel, pause og notatbok (2026-10-22, `S47Saves`, `S47Flow`).
 - [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
-- [ ] Glødepunktene blinker som i glow.ts.
+- [x] Glødepunktene blinker som i glow.ts (2026-10-22, `S47Glow`).
 
 ## Kapittel 4 (2026-10-22)
 
@@ -92,3 +92,15 @@
 - [ ] Regenerer webeksport og import for byens delte lamper/glødepunkter, fjernbilens lys, townSlots/neonSlots og herdets beamLit. Implementer pointScreen i native billboards.
 - [ ] Koble LostNights til Caliche.Reel og kapittel fem til TownLayer.Diner. Bygg og prøv kapittel tres FreeShot etter integrasjon; kapittel 3/5 finnes ikke i grenens utgangspunkt.
 - [ ] Samlet pakket bygg, hele screenshots.sh, Continue fra disk, ekte input, menneskelig lytting og sammenligning av de regenererte bildene mot nettversjonen. Se TOWN_PORT.md.
+
+## Verdenens eget liv (2026-10-22)
+
+- [x] Glødepunktene, floraen og vinden, den levende himmelen og horisonten, lyset i lufta, vinduslyset, nattelivet, Ultra-lysene og de delte lysene (`US47WorldLife`).
+- [x] Toppunktfargene i importen og de nære mesaene uten tåke (hvite kanter ved STATION 01).
+- [ ] Eksporten og importen kjøres på nytt i hovedkopien (`Tools/webexport/import.sh`).
+- [ ] Krokene i `US47WorldLife::Hooks` settes av kapitlene: `SkyLift` og `SunElev` (kapittel 6, soloppgangen), `SaroDarkAdapt` (SARO mørk), `MorningBusy` (morgenen), `LifeQuiet` (stillheten).
+- [ ] `S47ArchiveDishes` bruker `FS47GlowPoints::SetPhase` og `HoldAt` for de vippede dishenes røde lys (DishArray.beaconPhase).
+- [ ] `US47Night::Dawn` bruker sin egen formel; bør lese `Sky->Dawn`.
+- [ ] Resten av World.update: neonflimmeret på motellet og dineren, byen, beitet og flokkene.
+- [ ] Bildevalget Off: stjernene, båndet og stjerneskuddet tegnes uten tonekurve i nettversjonen (ShaderMaterial uten tonemapping_fragment); her går de gjennom M_WebTone som med VHS.
+- [ ] Floraen: månelyset skaleres ikke med fSky (bare halvkulelyset), og spotlysenes fFace er ikke portert. Low-nivåets kortere tegneavstand for støv og hvilende tumbleweed er tilnærmet.

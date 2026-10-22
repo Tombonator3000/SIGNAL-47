@@ -177,7 +177,7 @@ FS47SaroPower::FSnap FS47SaroPower::Take()
 	FSnap S;
 	AS47Web* W = P.Web.Get();
 	if (!W) return S;
-	auto Glow = [&](const FS47GlowPoints& G, bool bBeacons, TFunctionRef<bool(const FVector&)> Keep)
+	auto Glow = [&](const FS47GlowView& G, bool bBeacons, TFunctionRef<bool(const FVector&)> Keep)
 	{
 		FGlowSnap Gs;
 		Gs.G = G; Gs.bBeacons = bBeacons;
@@ -194,12 +194,12 @@ FS47SaroPower::FSnap FS47SaroPower::Take()
 		S.Glows.Add(MoveTemp(Gs));
 	};
 	auto All = [](const FVector&) { return true; };
-	Glow(FS47GlowPoints(W, TEXT("yard.glow.points")), false, All);
-	Glow(FS47GlowPoints(W, TEXT("annex.glow.points")), false, All);
-	Glow(FS47GlowPoints(W, TEXT("world.field.glow.points")), false, All);
-	Glow(FS47GlowPoints(), true, All);
+	Glow(FS47GlowView(W, TEXT("yard.glow.points")), false, All);
+	Glow(FS47GlowView(W, TEXT("annex.glow.points")), false, All);
+	Glow(FS47GlowView(W, TEXT("world.field.glow.points")), false, All);
+	Glow(FS47GlowView(), true, All);
 	// the site's own lamps among the exterior's: not the highway's, the motel's sign or the horizon's
-	Glow(FS47GlowPoints(W, TEXT("ext.glow.points")), false, [](const FVector& At) { return SaroAt(At.X, At.Z); });
+	Glow(FS47GlowView(W, TEXT("ext.glow.points")), false, [](const FVector& At) { return SaroAt(At.X, At.Z); });
 	for (int32 I = 0; I < W->FloodCount(SiteSet); ++I)
 	{
 		if (SiteSkip.Contains(I)) continue;

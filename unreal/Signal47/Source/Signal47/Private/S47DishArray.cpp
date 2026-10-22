@@ -48,7 +48,7 @@ FS47DishArray::FS47DishArray(AS47Web* InWeb) : Web(InWeb)
 		Dishes.Add(D);
 	}
 	// for (const d of dishes) this.beacons.add(0, -999, 0, 3.2 * d.scale, 0xff3c28, 1.6, d.phase)
-	Beacons = FS47GlowPoints(InWeb, TEXT("ext.dishArray.beacons.points"));
+	Beacons = FS47GlowView(InWeb, TEXT("ext.dishArray.beacons.points"));
 	for (int32 I = 0; I < Beacons.Num(); ++I) BeaconCol.Add(S47Three::Hex(0xff3c28));
 	for (const FS47Dish& D : Dishes) BeaconPh.Add(D.Phase);
 	Last.Init(-1e9, Dishes.Num());
@@ -180,7 +180,7 @@ void FS47DishArray::FindField()
 	AS47Web* W = Web.Get();
 	if (!W) return;
 	SiteSet = W->FloodSet(TEXT("site"));
-	ExtGlow = FS47GlowPoints(W, TEXT("ext.glow.points"));
+	ExtGlow = FS47GlowView(W, TEXT("ext.glow.points"));
 	// floods[i]: the site set's pool at each of the five (addFlood(x, 3, z, w))
 	TArray<FFieldLamp> Floods;
 	for (const auto& Fl : FLOODS)

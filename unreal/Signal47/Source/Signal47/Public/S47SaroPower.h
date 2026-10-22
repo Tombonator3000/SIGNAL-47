@@ -72,7 +72,7 @@ private:
 	FS47PowerParts P;
 	struct FGlowSnap
 	{
-		FS47GlowPoints G;
+		FS47GlowView G;
 		bool bBeacons = false;   // the antennas' red lamps (their colour is the dish array's aCol)
 		TArray<FLinearColor> Col, LastC;
 		TArray<int32> Pick;

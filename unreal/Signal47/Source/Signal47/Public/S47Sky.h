@@ -1,0 +1,100 @@
+#pragma once
+
+#include "CoreMinimal.h"
+
+class AS47Web;
+class UStaticMeshComponent;
+class UInstancedStaticMeshComponent;
+class UMaterialInstanceDynamic;
+
+// world/Sky.ts: what the night sky does over the night. The dome, the stars, the comet, the shooting
+// star and the painted horizon (backdrop.ts) are the export's sky group, drawn here with their
+// shaders ported (import_web.py: M_WebSkyDome, M_WebStars, M_WebMeteor, M_WebSkyBand) and their
+// uniforms set each frame: the clock (the dawn, the sun, the star hole after 02:15), the comet's
+// hours, the shooting stars (one every 18 to 40 s at night, and the developer menu's), the
+// lightning in a storm on the horizon with its thunder. The group follows the eye and turns with
+// the area (World.skyYaw); here it is drawn ten times as far off as three has it (SKY_SCALE), past
+// the farthest land, as three draws it at the far plane. Without the new materials (an older
+// import) the export's picture of the sky stays (AS47Web's sky sphere) and only the numbers run.
+
+/** No stars where the antennas point: from 02:15 every dish stands at az 026, el 32 (canon). */
+struct FS47StarHole { double Az, El, Inner, Outer, After, Fade; };
+inline constexpr FS47StarHole STAR_HOLE = { 26, 32, 3.4, 4.6, 10, 100 };
+/** skyDir: a direction in the sky's own terms (azimuth clockwise from north, -Z; east +X; elevation). */
+SIGNAL47_API FVector S47SkyDir(double Az, double El);
+/** starHoleAt: how much of the hole there is at a clock, when it begins at `from` (Infinity: not tonight yet). */
+SIGNAL47_API double S47StarHoleAt(double Clock, double From);
+
+class SIGNAL47_API FS47Sky
+{
+public:
+	static constexpr double SKY_SCALE = 10;
+
+	// ---------- the uniforms (Sky.uniforms) ----------
+	double Time = 0;
+	double Flash = 0;
+	FVector FlashDir = FVector(1, 0.05, -0.3).GetSafeNormal();
+	double Dawn = 0;                      // uDawn: 0 night, 1 sunrise (SetClock)
+	FVector SunDir = FVector(0.98, -0.02, -0.19).GetSafeNormal();
+	double Sun = 0;
+	FVector4 Glow[3] = { FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1) }; // uGlow (backdrop.ts sets them)
+	FVector HoleDir = S47SkyDir(STAR_HOLE.Az, STAR_HOLE.El);
+	FVector2D HoleR;
+	double HoleK = 0;                     // uHole
+	/** When the hole begins tonight (seconds since midnight; main.ts sets it each frame). */
+	double HoleFrom = 2 * 3600 + 15 * 60 + 12 + STAR_HOLE.After;
+	/** The haze at the horizon now: the scene's fog follows it (main.ts). */
+	FLinearColor FogColor = FLinearColor(0.043f, 0.059f, 0.098f);
+	bool bComet = true;
+	int32 Meteors = 0;                    // how many have crossed the sky (tests)
+	/** onThunder(delay, strength): main.ts plays it after the delay. */
+	TFunction<void(double, double)> OnThunder;
+
+	FS47Sky();
+	/** setClock(clock, sunElevDeg): the dawn from the game clock, 0 until 04:40, 1 at 05:30. */
+	void SetClock(double Clock, TOptional<double> SunElevDeg = TOptional<double>());
+	/** setDawnLift(k): how much of the dawn an area shows. */
+	void SetDawnLift(double K) { DawnLift = K; }
+	/** setCometClock: up from the evening until a little after three. */
+	void SetCometClock(double Clock);
+	/** meteorNow(): a shooting star now, unless one is crossing already. */
+	void MeteorNow();
+	/** Tests (-S47Meteor with -S47MeteorAim): the shooting star now starts where Dir points (the sky's terms). */
+	void MeteorFrom(const FVector& Dir);
+	/** update(dt, t, follow): the shooting stars and the lightning (the group's place: Draw). */
+	void Update(double Dt, double T);
+
+	// ---------- Unreal ----------
+	/** The sky group's parts from the export (AS47Web, its life data): false when there is no live sky. */
+	bool Build(AS47Web* W);
+	bool IsLive() const { return bLive; }
+	/** Where the eye is (three's terms) and how the sky is turned (World.skyYaw): the group's place and
+	 *  every part's parameters. */
+	void Draw(const FVector& Eye, double Yaw);
+	/** The shooting star's state (tests): visible, its brightness. */
+	bool MeteorVisible() const { return bMetVisible; }
+	double MeteorI() const { return MetI; }
+
+private:
+	double DawnLift = 1;
+	struct FMet { double T = -1, Dur = 0.6, Len = 0.15, Bright = 1, Next = 10; FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector; };
+	FMet Met;
+	double FlashT = 0, NextFlash = 9;
+	// the streak as meteorStep lays it out (its corners are the material's: M_WebMeteor)
+	bool bMetVisible = false;
+	double MetI = 0, Head = 0, Back = 0;
+	void MeteorStep(double Dt);
+
+	bool bLive = false;
+	TWeakObjectPtr<AS47Web> Web;
+	int32 GroupNode = -1;
+	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp;
+	TWeakObjectPtr<UInstancedStaticMeshComponent> StarsComp;
+	TWeakObjectPtr<UMaterialInstanceDynamic> DomeMid, BandMid, StarsMid, MeteorMid;
+	FLinearColor HoleSky = FLinearColor(0.006f, 0.008f, 0.02f);
+
+public:
+	// what backdrop.ts sets on its own uniforms each frame (FS47Backdrop::Update): the band's MID
+	UMaterialInstanceDynamic* Band() const { return BandMid.Get(); }
+	bool BandVisible = true;
+};

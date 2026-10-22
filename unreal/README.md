@@ -48,7 +48,6 @@ Se `AGENTS.md` i denne mappa. Kort: Unity-mappa er arkiv og røres ikke, kjøpte
 ## Begrensninger
 
 - Prologen er spillbar fra start til sluttkortet og kan lagres fra 02:13; kapittel 1 til 6 og kjøringen er ikke portert ennå. Verdenene deres (stasjon 01, veien, dineren, rom 6, Roswell) er med i eksporten.
-- Ni shader-materialer fra nettversjonen (vann, enkelte himmeleffekter) er skjult; himmelen kommer som bilde.
-- Glødepunktene blinker ikke ennå.
+- Ni shader-materialer fra nettversjonen (vann, enkelte himmeleffekter) er skjult. Himmelen tegnes levende (`S47Sky`: kuppelen, stjernene, stjernehullet, stjerneskudd, kometen og den malte horisonten); bildet fra eksporten brukes bare når livsmaterialene mangler.
 - Museretningen opp og ned er ikke prøvd av et menneske.
 - Bare testet på denne maskinen (RTX 3080, Vulkan, Ubuntu 26.04).

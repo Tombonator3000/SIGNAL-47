@@ -50,6 +50,12 @@
 #include "S47DishesFollow.h"
 #include "S47Abduction.h"
 #include "S47TownLayer.h"
+#include "S47SaroDark.h"
+#include "S47Curve.h"
+#include "S47Glimpses.h"
+#include "S47MorningHolds.h"
+#include "S47TownEvents.h"
+#include "S47Roadside.h"
 #include "S47NpcDialogue.h"
 #include "S47LostNights.h"
 #include "S47Caliche.h"
@@ -58,6 +64,7 @@
 #include "Containers/Ticker.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
 #include "SS47Widgets.h"
@@ -112,6 +119,7 @@ void AS47HUD::Start()
 		bOk &= US47Chapter3::SelfTest(Lines); // (with stationTaken's)
 		bOk &= US47Away::SelfTest(Lines); // (the time away, the trucks, the lost nights, the third one, the star hole, FLASH's frames)
 		bOk &= US47Chapter4::SelfTest(Lines); // (with the walkie's and the CB's)
+		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -367,6 +375,22 @@ void AS47HUD::Start()
 			}
 			if (US47Chapter3* C3 = Story.IsValid() ? Cast<US47Chapter3>(Story->Chapter(TEXT("ch3"))) : nullptr)
 				C3->FreeShot = [Wt] { return Wt.IsValid() && Wt->FreeShot(); };   // ninth.freeShot
+		}
+		// main.ts: the world's own life (the sky, the glows, the ground cover, the air, the night's life, the windows, Ultra's lamps)
+		M->Life = NewObject<US47WorldLife>(M); M->Life->Init(M);
+		{
+			// main.ts: world.lifeQuiet, saroDark.adapt in the room's hemisphere light, morning.busy
+			US47WorldLife::FHooks& H = M->Life->Hooks;
+			H.LifeQuiet = [M]
+			{
+				if (M->Mode != US47Main::EMode::Play || (M->Story && M->Story->IsCinematic())) return true;
+				if (M->TownLayer && M->TownLayer->Roadside.IsValid() && M->TownLayer->Roadside->bSilent) return true;
+				if (M->Night && M->Night->Glimpses.IsValid() && !M->Night->Glimpses->Up.IsEmpty()) return true;
+				if (M->TownLayer && M->TownLayer->TownEvents.IsValid() && M->TownLayer->TownEvents->Now != TEXT("none")) return true;
+				return M->Night && M->Night->Curve.IsValid() && M->Night->Curve->Phase == TEXT("peak") && !M->Night->Curve->bFree;
+			};
+			H.SaroDarkAdapt = [M] { return M->SaroNight && M->SaroNight->Dark.IsValid() ? M->SaroNight->Dark->Adapt : 1.0; };
+			H.MorningBusy = [M] { return M->TownLayer && M->TownLayer->Morning.IsValid() && M->TownLayer->Morning->Busy(); };
 		}
 		M->Flow->Boot();
 		FString FaceAt;

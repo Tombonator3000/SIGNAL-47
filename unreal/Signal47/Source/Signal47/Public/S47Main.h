@@ -74,6 +74,9 @@ public:
 	UPROPERTY() TObjectPtr<class US47TownLayer> TownLayer; // main.ts: the town, roadside, herd, ninth, TV and morning
 	// main.ts zoomK: the closer look, 0 to 1 (right mouse held)
 	double ZoomK = 0;
+	// The world's own life (S47WorldLife.h): the sky over the night, the glows' blink, the ground cover
+	// round the camera, the light in the air, the life in the night, the windows' light, the PC tier's lamps.
+	UPROPERTY() TObjectPtr<class US47WorldLife> Life;
 
 	// main.ts: mode and the flags that hold the game
 	enum class EMode : uint8 { Title, Play, End };
