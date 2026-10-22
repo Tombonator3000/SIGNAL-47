@@ -26,6 +26,7 @@
 #include "S47Lines.h"
 #include "S47Main.h"
 #include "S47OldRoad.h"
+#include "S47Phones.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
@@ -451,7 +452,7 @@ FS47GlimpsesIn US47Night::GlimpseIn(bool bOk) const
 	else G.Ground = [Web](double X, double Z) { return SaroFloorAt(Web, X, Z); };
 	if (Tr && bRoad) G.Truck = FS47GlimpsesIn::FTruck{ Tr->Position, G.Cam.Forward };
 	G.bFlashlight = Flashlight->bOn;
-	G.Zoom = 0; // (the closer look, main.ts zoomK: not in the Unreal version yet)
+	G.Zoom = M->ZoomK; // (the closer look, main.ts zoomK: S47Phones.cpp)
 	return G;
 }
 
@@ -587,6 +588,8 @@ void US47Night::SeenSync()
 	// where things stand now, without writing anything down (a night started or put back)
 	Was.Glimpse = Glimpses->Up;
 	Was.Calls = Calls->Count;
+	// (the roof, the office's telephone, the archive, the array tipped, reel 047: S47Phones.cpp)
+	if (M->Phones) M->Phones->SeenSync();
 }
 
 void US47Night::SeenStep(double Dt)
@@ -621,6 +624,8 @@ void US47Night::SeenStep(double Dt)
 			Saw(TEXT("call"), Calls->Last->Name, O);
 		}
 	}
+	// the steps on the roof, the office's telephone, the archive's phone, the array tipped, reel 047 (S47Phones.cpp)
+	if (M->Phones) M->Phones->SeenStep();
 	SeenLog->Update(Dt, Camera());
 }
 
@@ -667,7 +672,9 @@ void US47Night::Step(double Dt)
 	FS47NightIn In = NightIn(bNightOk);
 	In.May = Curve->May(TEXT("event")); In.MayLong = Curve->May(TEXT("long")); In.Pace = Curve->Pace(TEXT("event"));
 	NightEvents->Update(Dt, In);
-	// (fieldBook, roofSteps, archive, saroDark and Hondo's telex, cutouts: not ported yet)
+	// the field book, the steps on the roof, the archive's phone after them (S47Phones.cpp)
+	if (M->Phones) M->Phones->StepNight(Dt, bNightOk);
+	// (saroDark and Hondo's telex, cutouts: not ported yet)
 	// the flashlight flickers near the strange events: through the silence on the shoulder, while a
 	// figure stands at the edge of the view, while the town's lamps go out or its payphone rings
 	Flashlight->Flicker(bSilent ? 0.4 : 0, TEXT("silence"));
@@ -676,8 +683,10 @@ void US47Night::Step(double Dt)
 	FS47GlimpsesIn G = GlimpseIn(!bModal && !Cinematic() && At(TEXT("ch1")) && Phase() != TEXT("ch6") && Dawn() < 0.3 && !bSilent && !Is(Hooks.AbductionBusy) && !Is(Hooks.SaroDarkBusy) && !Is(Hooks.ArrayBackBusy));
 	G.May = Curve->May(TEXT("glimpse")); G.Pace = Curve->Pace(TEXT("glimpse"));
 	Glimpses->Update(Dt, G);
-	// (lineLights, eventsOnB, ninth, starHole, the diner's morning, officePhone, truckB, truckTaken,
-	// arrayBack, the time away: not ported yet)
+	// (lineLights, eventsOnB, ninth, starHole, the diner's morning: not ported yet)
+	// the thread nobody tied, the office's telephone (S47Phones.cpp)
+	if (M->Phones) M->Phones->StepLate(Dt, bModal);
+	// (truckB, truckTaken, arrayBack, the time away: not ported yet)
 
 	// the log, for the tests and the screenshot runs
 	if (Calls->Count != CallsLogged && Calls->Last)

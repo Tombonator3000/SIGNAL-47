@@ -45,6 +45,7 @@ public:
 	float Fov = 70.f; // three's vertical field of view
 	double Sensitivity = 1.0; // Input.sensitivity (Look speed)
 	bool bInvertY = false;    // Invert look
+	double LookFine = 1.0;    // main.ts: 1 - 0.6 zoomK, a finer aim through the closer look
 
 	// The camera held by something else (US47World while the truck is driven): given the frame's
 	// step, the keys as on foot (move x right, z back: main.ts input.move) and the mouse's look

@@ -391,6 +391,26 @@
       }
     };
     for (const [p, o] of Object.entries(owners)) scan(p, o, 0);
+    // world/archive047.ts keeps the switchboard's two line lamps and the call recorder's strip in its
+    // closure (lamp(), setStrip()), out of the scan's reach: found under annex.arc.group by what they
+    // are. The lamps are the two unlit boxes that are not tone mapped (trk1 the one at the face's left
+    // as seen from the room, the room's -z side), the strip the mesh with the 64 x 512 canvas.
+    const arc = S.annex && S.annex.arc;
+    if (arc && arc.group) {
+      const lamps = [];
+      let strip = null;
+      arc.group.traverse((o) => {
+        if (!o.isMesh) return;
+        const m = o.material;
+        if (m && m.isMeshBasicMaterial && m.toneMapped === false && m.visible !== false) lamps.push(o);
+        if (m && m.map && m.map.image && m.map.image.width === 64 && m.map.image.height === 512) strip = o;
+      });
+      const zOf = (o) => new T.Box3().setFromObject(o).getCenter(new T.Vector3()).z;
+      lamps.sort((a, b) => zOf(a) - zOf(b));
+      if (lamps[0]) put('annex.arc.lamps.trk1', lamps[0]);
+      if (lamps[1]) put('annex.arc.lamps.trk2', lamps[1]);
+      if (strip) { put('annex.arc.strip', strip); put('annex.arc.stripTex', strip.material.map); }
+    }
     // the CRT screens: their canvas textures, by name
     for (const k of ['crtLeft', 'crtCenter', 'crtRight', 'crtOps']) {
       const c = S.room && S.room[k];

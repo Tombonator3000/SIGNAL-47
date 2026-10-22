@@ -58,6 +58,27 @@ void AS47Story::Log(const FString& Text)
 	NS.Log.Add({ FMath::RoundToDouble(ClockSec), Text });
 }
 
+void AS47Story::ConsoleLog(const FString& Text, double At)
+{
+	// in the night's order: the evening before midnight comes first
+	auto Night = [](double V) { const double D = FMath::Fmod(FMath::Fmod(V, 86400.0) + 86400.0, 86400.0); return D >= 12 * 3600 ? D - 86400 : D; };
+	const double C = FMath::FloorToDouble(At + 0.5);
+	const int32 I = NS.Log.IndexOfByPredicate([&](const FS47LogLine& L) { return Night(L.Clock) > Night(C); });
+	NS.Log.Insert({ C, Text }, I < 0 ? NS.Log.Num() : I);
+}
+
+bool AS47Story::RelayClack()
+{
+	if (bPowered && !NS.bK3Open) { TripK3(false); return true; }
+	Log(TEXT("RX BANK 3  K3 OPEN"));
+	return false;
+}
+
+FVector AS47Story::RackAt() const
+{
+	return Saro.IsValid() ? Saro->Obj(TEXT("room.objs.rack")).WorldPosition() : FVector::ZeroVector;
+}
+
 void AS47Story::AddDoc(const FS47Doc& Doc)
 {
 	const int32 I = DocsList.IndexOfByPredicate([&](const FS47Doc& D) { return D.Id == Doc.Id; });
@@ -144,7 +165,14 @@ FString AS47Story::Label(const FString& Id) const
 	if (Id == TEXT("crtCenter")) return bCinematic ? FString() : !bPowered ? TEXT("Receiver console") : bAlarmOn ? TEXT("Check the spectrum") : TEXT("Use receiver console");
 	if (Id == TEXT("crtLeft")) return TEXT("Status terminal");
 	if (Id == TEXT("crtRight")) return CurrentPhase == ES47Phase::Locked ? TEXT("Run direction solve") : CurrentPhase == ES47Phase::Solving ? FString() : TEXT("Tracking terminal");
-	if (Id == TEXT("printer")) return CurrentPhase == ES47Phase::Printed ? TEXT("Tear off the printout") : CurrentPhase == ES47Phase::Printing ? FString() : TEXT("Printer");
+	if (Id == TEXT("printer"))
+	{
+		if (CurrentPhase == ES47Phase::Printed) return TEXT("Tear off the printout");
+		if (CurrentPhase == ES47Phase::Printing) return FString();
+		// this.printerHook?.label() ?? 'Printer'
+		const FString Hooked = PrinterHook.Label ? PrinterHook.Label() : FString();
+		return Hooked.IsEmpty() ? FString(TEXT("Printer")) : Hooked;
+	}
 	if (Id == TEXT("phone"))
 	{
 		// phase 'ch2': this.ch2.phoneLabel()
@@ -223,6 +251,7 @@ void AS47Story::Use(const FString& Id)
 	if (Id == TEXT("printer"))
 	{
 		if (CurrentPhase == ES47Phase::Printed) TearPrintout();
+		else if (PrinterHook.Use && PrinterHook.Use()) return;
 		else Toast(TEXT("Dot matrix printer. A box of fan-fold paper under the table."));
 		return;
 	}

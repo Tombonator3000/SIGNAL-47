@@ -3,6 +3,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "S47Canvas.h"
 #include "S47Image.h"
 #include "S47Main.h"
 #include "S47Three.h"
@@ -31,19 +32,50 @@ void FS47Arc::SetDrawer(double K) const
 
 void FS47Arc::Lamp(const FString& Line, double K) const
 {
-	// m.color.setRGB(0.14 + 0.86 k, 0.08 + 0.5 k, 0.05 + 0.13 k) on the line's own lamp material.
-	// The two lamps are closure locals of buildArchive047, not reachable by a path, so the export
-	// has no handle for them (Tools/webexport finds what the code holds by name).
-	static bool bTold = false;
-	if (!bTold) { bTold = true; UE_LOG(LogS47Annex, Display, TEXT("S47: annex.arc.lamp(%s, %.2f): the switchboard's line lamps are not in the export"), *Line, K); }
+	// lamp(line, k): m.color.setRGB(0.14 + 0.86 k, 0.08 + 0.5 k, 0.05 + 0.13 k) on the line's own
+	// lamp material (MeshBasicMaterial, its colour in the working, linear space)
+	const FS47Obj& L = Line == TEXT("trk1") ? Lamps.Trk1 : Lamps.Trk2;
+	L.SetColor(FLinearColor(float(0.14 + 0.86 * K), float(0.08 + 0.5 * K), float(0.05 + 0.13 * K)));
 }
 
 void FS47Arc::SetStrip(const TArray<FString>& Lines) const
 {
-	// The strip out of the call recorder is drawn on a canvas held by buildArchive047's closure;
-	// neither it nor its mesh is in the export.
-	static bool bTold = false;
-	if (!bTold) { bTold = true; UE_LOG(LogS47Annex, Display, TEXT("S47: annex.arc.setStrip (%d lines): the recorder's strip is not in the export"), Lines.Num()); }
+	// setStrip(lines): the strip out of the recorder, as long as these lines (the newest at the
+	// bottom), drawn with its lines as print on its 64 x 512 canvas
+	if (!Strip) return;
+	const double ROW = 0.024, TOP = 0.05;
+	const int32 N = Lines.Num();
+	const double Len = TOP + N * ROW + 0.02;
+	// the canvas holds the whole strip at 512 px for up to 1 m: as much of it as is out
+	const int32 Px = FMath::Min(512, int32(FMath::RoundHalfFromZero(Len * 512)));
+	FS47Canvas G(64, 512); // (a new canvas is clear, as clearRect leaves it)
+	G.SetFill(0xebe5d3); G.FillRect(0, 0, 64, Px);
+	G.SetFill(0x282830, 0.78);
+	for (int32 i = 0; i < N; ++i)
+	{
+		const FString& L = Lines[i];
+		// the print, too small to read from a step away: a row of marks as long as the line
+		FString Squeezed;
+		bool bSpace = false;
+		for (const TCHAR C : L) { const bool bS = FChar::IsWhitespace(C); if (bS && bSpace) continue; Squeezed.AppendChar(bS ? TEXT(' ') : C); bSpace = bS; }
+		const int32 Y = int32(FMath::RoundHalfFromZero((TOP + i * ROW) * 512)) + 2;
+		const double W = FMath::Min(56.0, 4 + Squeezed.Len() * 1.6);
+		for (int32 X = 4; X < W; X += 3) if (L.Len() > 0 && L[(X * 7) % FMath::Max(1, L.Len())] != TEXT(' ')) G.FillRect(X, Y, 2, 3);
+	}
+	UTexture2D* Tex = S47Image::FromPixels(G.Px, 64, 512);
+	if (!Tex) return;
+	Strip.SetMap(Tex);
+	// stripTex.repeat.set(1, len), offset.set(0, 1 - len): the top len of the canvas down the plane
+	// (the plane's v runs from the top of the canvas at the slot down to its bottom); with the
+	// canvas's top row first, as SetMap's flip has it, v' = len (1 - v)
+	if (AS47Web* W = Strip.W)
+	{
+		for (UMaterialInstanceDynamic* D : W->NodeMids(Strip.I)) D->SetVectorParameterValue(TEXT("MapV"), FLinearColor(0.f, float(-Len), float(Len), 0.f));
+	}
+	FS47Obj S = Strip;
+	FVector Sc = S.Scale(); Sc.Y = Len; S.SetScale(Sc);
+	// strip.rotation.x = -0.06 - min(0.12, len * 0.6), its order YXZ with y -PI/2: the longer, the more it curls off the bracket
+	S.SetQuaternion(S47Three::Euler(-0.06 - FMath::Min(0.12, Len * 0.6), -UE_DOUBLE_PI / 2, 0, TEXT("YXZ")));
 }
 
 // ---------- the annex ----------
@@ -67,6 +99,20 @@ void US47Annex::Init(US47Main* InM)
 	Arc.Hit.Recorder = W->Obj(TEXT("annex.arc.hit.recorder"));
 	Arc.RecorderAt = W->Vec(TEXT("annex.arc.recorderAt"), FVector(-1.12 - 0.06, 1.0 + 0.06, 10.22));
 	Arc.DrawerAt = W->Vec(TEXT("annex.arc.drawerAt"), FVector(DrawerX + 0.1, 1.27, 8.6));
+	// the line lamps and the strip (Tools/webexport/export.js names them; an export made before that
+	// has them by their place in buildArchive047's group: the switchboard third, its fourth and fifth
+	// meshes the lamps (trk1, trk2), the strip last)
+	Arc.Lamps.Trk1 = W->Obj(TEXT("annex.arc.lamps.trk1"));
+	Arc.Lamps.Trk2 = W->Obj(TEXT("annex.arc.lamps.trk2"));
+	Arc.Strip = W->Obj(TEXT("annex.arc.strip"));
+	const TArray<FS47Obj> Parts = Arc.Group.Children();
+	if ((!Arc.Lamps.Trk1 || !Arc.Strip) && Parts.Num() == 7)
+	{
+		const TArray<FS47Obj> Ksu = Parts[2].Children();
+		if (!Arc.Lamps.Trk1 && Ksu.Num() == 5) { Arc.Lamps.Trk1 = Ksu[2]; Arc.Lamps.Trk2 = Ksu[3]; }
+		if (!Arc.Strip && Parts[6].Children().Num() == 0) Arc.Strip = Parts[6];
+	}
+	UE_LOG(LogS47Annex, Display, TEXT("S47: the archive's switchboard lamps %s, the recorder's strip %s"), Arc.Lamps.Trk1 && Arc.Lamps.Trk2 ? TEXT("found") : TEXT("MISSING"), Arc.Strip ? TEXT("found") : TEXT("MISSING"));
 }
 
 FS47Area US47Annex::Zone(const FString& Id) const

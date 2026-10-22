@@ -34,6 +34,11 @@ struct SIGNAL47_API FS47Arc
 	FS47Obj Group, Drawer, Reel, Papers;
 	struct FHit { FS47Obj Drawer, Ksu, Recorder; };
 	FHit Hit;                                        // the hit areas (invisible)
+	// the switchboard's two line lamps and the call recorder's strip: closure locals of
+	// buildArchive047 (lamps, strip), exported by what they are (Tools/webexport/export.js)
+	struct FLamps { FS47Obj Trk1, Trk2; };
+	FLamps Lamps;
+	FS47Obj Strip;
 	double Shut = -5.994, Out = -5.994 + 0.3;      // where the drawer's front is (room x)
 	FVector RecorderAt = FVector::ZeroVector, DrawerAt = FVector::ZeroVector; // sounds, three.js terms
 	void SetDrawer(double K) const;                  // 0 shut, 1 all the way out
