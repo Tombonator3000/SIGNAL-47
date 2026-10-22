@@ -18,7 +18,7 @@ Scripts/screenshots.sh UT      # 14 kjøringer av builden med skjermbilder, sjek
 ~/scratch-bm/Signal47-build/Linux/Signal47.sh   # spill (-S47Picture=off uten VHS-bildet)
 ```
 
-WASD går (Shift løper), musa ser, E eller klikk bruker det du ser på. Tab er notatboken, Esc lukker.
+Spillet starter på tittelen (Continue, New night, Load case, Settings); med et `-S47`-flagg går det rett i spill som før. WASD går (Shift løper), musa ser, E eller klikk bruker det du ser på. Tab eller N er notatboken (M, I og H åpner kartet, kitet og kontrollene i den), Esc eller P er pausen med innstillinger, lagring og lasting. Lagringene og innstillingene ligger i `Saved/SaveGames`.
 
 ## Slik kommer nettversjonen inn
 
@@ -47,7 +47,7 @@ Se `AGENTS.md` i denne mappa. Kort: Unity-mappa er arkiv og røres ikke, kjøpte
 
 ## Begrensninger
 
-- Prologen er spillbar fra start til sluttkortet; kapittel 1 til 6, kjøringen og lagringen er ikke portert ennå. Verdenene deres (stasjon 01, veien, dineren, rom 6, Roswell) er med i eksporten.
+- Prologen er spillbar fra start til sluttkortet og kan lagres fra 02:13; kapittel 1 til 6 og kjøringen er ikke portert ennå. Verdenene deres (stasjon 01, veien, dineren, rom 6, Roswell) er med i eksporten.
 - Ni shader-materialer fra nettversjonen (vann, enkelte himmeleffekter) er skjult; himmelen kommer som bilde.
 - Glødepunktene blinker ikke ennå.
 - Museretningen opp og ned er ikke prøvd av et menneske.

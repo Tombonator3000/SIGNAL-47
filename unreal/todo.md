@@ -31,3 +31,15 @@
 - [ ] Kapittelkortets ring (`bHoldRing`, `RingOut`, `RingAgain`, `RingShown`) når kortet er portert; kapittel 1 sin slutt kaller `US47Chapter2::AfterChapterOne(method)`.
 - [ ] Bryterbordets linjelamper og opptakerens papirstrimmel (archive047.ts) mangler i eksporten.
 - [ ] S47Drawings og S47Drawings2, S47Panels og S47Panels2 slås sammen.
+- [x] Lagring ved kontrollpunkter, tittel, pause og notatbok (2026-10-22, `S47Saves`, `S47Flow`).
+- [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
+- [ ] Glødepunktene blinker som i glow.ts.
+
+## Etter lagring og flyt
+
+- [ ] Kjør screenshots.sh med den pakkede builden (title, pause) og se tittelkameraet over gården og miniatyrbildene i lagringene med verdenen på plass.
+- [ ] Saksbrettets oppsett i lagringen: sett `M->Flow->SaveBoard` og `LoadBoard` til CaseBoard sin Save()/Load().
+- [ ] Feltkameraet og rullen i Kit-fanen: sett `M->Flow->HaveCamera` og `RollText` når kapittel 1 og albumet er portert.
+- [ ] Musikk- og radionivået (Music, Radio) inn i lydmodulen når den har egne busser; volumet virker allerede.
+- [ ] Worn VHS (bildet `heavy`) i M_WebTone; nå bare Clean og VHS.
+- [ ] Fortelleren (Serling) til åpningskortet og kapittelkortet når stemmene er portert.

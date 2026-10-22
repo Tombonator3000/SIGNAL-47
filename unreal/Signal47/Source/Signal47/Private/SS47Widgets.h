@@ -97,23 +97,7 @@ private:
 	TUniquePtr<FSlateBrush> PanelBrush;
 };
 
-// The notebook (Tab): tonight's tasks, the notes, the papers filed so far.
-class SS47Notebook : public SCompoundWidget
-{
-public:
-	SLATE_BEGIN_ARGS(SS47Notebook) {}
-		SLATE_ARGUMENT(AS47Story*, Story)
-		SLATE_ARGUMENT(TFunction<void()>, OnClose)
-		SLATE_ARGUMENT(TFunction<void(const FS47Doc&)>, OnDoc)
-	SLATE_END_ARGS()
-	void Construct(const FArguments& InArgs);
-	virtual bool SupportsKeyboardFocus() const override { return true; }
-	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
-
-private:
-	TFunction<void()> OnClose;
-	TUniquePtr<FSlateBrush> PaperBrush;
-};
+// (the notebook is SS47Notebook.h, ported from ui/UI.ts notebook)
 
 // The receiver console (SARO / RX CONTROL 03): the spectrum, the four controls, the card and
 // the action button. Edits the story's receiver directly.

@@ -20,7 +20,10 @@
 #include "S47Inter.h"
 #include "S47Chapter2.h"
 #include "S47Chapters.h"
+#include "S47Flow.h"
 #include "S47Main.h"
+#include "S47Saves.h"
+#include "Containers/Ticker.h"
 #include "S47UI.h"
 #include "S47World.h"
 #include "S47Walker.h"
@@ -65,6 +68,7 @@ void AS47HUD::Start()
 		bOk &= FS47RuleBook::SelfTest(Lines);
 		bOk &= US47Chapter2::SelfTest(Lines);
 		bOk &= US47Audio::SelfTest(Lines);
+		bOk &= S47Saves::SelfTest(Lines) & US47Flow::SelfTest(Lines);
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -97,10 +101,12 @@ void AS47HUD::Start()
 		Walker->SetActive(true);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: web world %s"), *Saro->Summary());
 	}
+	// (ui.showHud: the HUD is shown in play, not on the title)
+	auto Playing = [this] { const US47Main* Mn = US47Main::Get(this); return !Mn || Mn->Mode == US47Main::EMode::Play; };
 	Hud = SNew(SS47Hud).Visibility(EVisibility::HitTestInvisible)
 		.Prompt_Lambda([this] { return Prompt; })
-		.Clock_Lambda([this] { return FText::FromString(Story.IsValid() ? Story->ClockText(false) : FString()); })
-		.ShowAim_Lambda([this] { return !Modal.IsValid(); });
+		.Clock_Lambda([this, Playing] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() ? Story->ClockText(false) : FString()); })
+		.ShowAim_Lambda([this, Playing] { return !Modal.IsValid() && Playing(); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);
 	PC->bShowMouseCursor = false;
 	FInputModeGameOnly Mode;
@@ -132,9 +138,10 @@ void AS47HUD::Start()
 				if (!bOpen) A->Play(bHeavy ? TEXT("door_heavy") : TEXT("door_light"), bHeavy ? 0.32f : 0.4f, At);
 			};
 		}
-		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) Story->Jump(Jump);
-		else Story->Start();
+		// main.ts boot(): the title, or with a test flag straight into play (-S47Jump= or the night's start)
+		M->Flow = NewObject<US47Flow>(M);
+		M->Flow->Init(M);
+		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
 	}
@@ -146,12 +153,13 @@ void AS47HUD::Start()
 	{
 		float Seconds = 3.f;
 		FParse::Value(FCommandLine::Get(), TEXT("S47Seconds="), Seconds);
-		GetWorldTimerManager().SetTimer(SmokeTimer, this, &AS47HUD::FinishSmokeTest, Seconds, false);
+		// (on the core ticker, not the world's timers: those stand still while the pause menu holds the game)
+		TWeakObjectPtr<AS47HUD> Self = this;
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Self](float) { if (Self.IsValid()) Self->FinishSmokeTest(); return false; }), Seconds);
 		FString Shot;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Shot="), Shot))
 		{
-			FTimerHandle ShotTimer;
-			GetWorldTimerManager().SetTimer(ShotTimer, [Shot] { FScreenshotRequest::RequestScreenshot(Shot, true, false); }, FMath::Max(0.5f, Seconds - 1.f), false);
+			FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Shot](float) { FScreenshotRequest::RequestScreenshot(Shot, true, false); return false; }), FMath::Max(0.5f, Seconds - 1.f));
 		}
 		if (FParse::Param(FCommandLine::Get(), TEXT("S47Use")))
 		{
@@ -173,6 +181,8 @@ void AS47HUD::OpenView(const FString& View)
 	else if (View == TEXT("console")) { if (Story.IsValid()) { Story->bConsoleOpen = true; } OpenConsole(); }
 	else if (View == TEXT("ops")) OpenOps();
 	else if (View == TEXT("log")) ShowDocument(S47Docs::ShiftLog(), [] {});
+	else if (View == TEXT("pause")) { if (US47Main* M = US47Main::Get(this); M && M->Flow) M->Flow->OpenPause(); }
+	else if (US47Main* M = US47Main::Get(this); M && M->Flow) M->Flow->OpenTestView(View);
 	UE_LOG(LogS47HUD, Display, TEXT("S47: opened %s"), *View);
 }
 
@@ -218,7 +228,8 @@ void AS47HUD::CloseModal()
 	Mode.SetConsumeCaptureMouseDown(false);
 	PC->SetInputMode(Mode);
 	PC->bShowMouseCursor = false;
-	if (Walker.IsValid() && !bEnded) Walker->SetActive(true);
+	const US47Main* Mn = US47Main::Get(this);
+	if (Walker.IsValid() && !bEnded && (!Mn || Mn->Mode == US47Main::EMode::Play)) Walker->SetActive(true);
 	if (Story.IsValid()) Story->SetPaused(false);
 	TFunction<void()> Fn = MoveTemp(ModalClosed);
 	ModalClosed = nullptr;
@@ -252,10 +263,8 @@ void AS47HUD::OpenOps()
 
 void AS47HUD::OpenNotebook()
 {
-	TWeakObjectPtr<AS47HUD> Self = this;
-	if (Audio) Audio->Play(TEXT("paper1"), 0.4f);
-	SetModal(SNew(SS47Notebook).Story(Story.Get()).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); })
-		.OnDoc([Self](const FS47Doc& D) { if (Self.IsValid()) { Self->CloseModal(); Self->ShowDocument(D, [] {}); } }), nullptr);
+	// game.openNotebook (S47Flow: ui/UI.ts notebook)
+	if (US47Main* M = US47Main::Get(this); M && M->Flow) M->Flow->OpenNotebook();
 	UE_LOG(LogS47HUD, Display, TEXT("S47: notebook opened"));
 }
 
@@ -312,9 +321,10 @@ void AS47HUD::Shake(float Strength)
 void AS47HUD::EndCard(const TArray<FString>& Lines)
 {
 	bEnded = true;
+	if (US47Main* Mn = US47Main::Get(this)) Mn->Mode = US47Main::EMode::End; // (main.ts showCard: mode 'end')
 	TWeakObjectPtr<AS47HUD> Self = this;
 	SetModal(SNew(SS47EndCard).Lines(Lines)
-		.OnAgain([Self] { if (Self.IsValid()) { Self->bEnded = false; Self->CloseModal(); Self->Fade(false, TEXT("")); if (Self->Story.IsValid()) Self->Story->Start(); } })
+		.OnAgain([Self] { if (Self.IsValid()) { if (US47Main* Mn = US47Main::Get(Self.Get())) Mn->Mode = US47Main::EMode::Play; Self->bEnded = false; Self->CloseModal(); Self->Fade(false, TEXT("")); if (Self->Story.IsValid()) Self->Story->Start(); } })
 		.OnQuit([Self] { if (Self.IsValid()) UKismetSystemLibrary::QuitGame(Self.Get(), Self->GetOwningPlayerController(), EQuitPreference::Quit, false); }), nullptr);
 	UE_LOG(LogS47HUD, Display, TEXT("S47: end card"));
 }
@@ -339,9 +349,10 @@ void AS47HUD::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (Audio) Audio->Tick(DeltaSeconds);
 	APlayerController* PC = GetOwningPlayerController();
-	if (PC && !Modal.IsValid() && PC->WasInputKeyJustPressed(EKeys::Tab) && Story.IsValid() && !Story->IsCinematic()) OpenNotebook();
+	// (Tab and the notebook's other keys are the flow's, registered with M->OnKey)
 	// the prompt for what the player looks at (UI.prompt), unless something set its own this frame
 	US47Main* M = US47Main::Get(this);
+	const bool bPlaying = !M || M->Mode == US47Main::EMode::Play;
 	if (M) M->Step(DeltaSeconds);
 	// the keys the ported modules answer (main.ts input.onKey)
 	if (M && PC)
@@ -358,10 +369,11 @@ void AS47HUD::Tick(float DeltaSeconds)
 		if (!bPromptSet)
 		{
 			const FString F = Walker->FocusedId();
-			const FString L = F.IsEmpty() || !M || !M->Inter ? FString() : M->Inter->LabelOf(F);
+			const FString L = F.IsEmpty() || !M || !M->Inter || !bPlaying ? FString() : M->Inter->LabelOf(F);
 			Prompt = L.IsEmpty() ? FText::GetEmpty() : FText::FromString(L.ToUpper() + TEXT("   [E]"));
 		}
-		Walker->SetActive(!Story->IsCinematic() && !bEnded);
+		// (input.enabled: only in play; the title and the end card hold the player)
+		Walker->SetActive(bPlaying && !Story->IsCinematic() && !bEnded);
 	}
 	bPromptSet = false;
 	DrawCrts(DeltaSeconds);

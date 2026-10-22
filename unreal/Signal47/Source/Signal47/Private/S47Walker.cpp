@@ -111,7 +111,8 @@ void AS47Walker::Tick(float DeltaSeconds)
 		if (Settle > 0.f) { Settle -= DeltaSeconds; DX = DY = 0.f; }
 		// Input.ts: 0.0022 rad per pixel; Unreal's mouse delta is in pixels times its own scale,
 		// and up is positive, where the browser's movementY grows downwards
-		Look(FMath::Clamp(DX, -200.f, 200.f) * 0.0022 * 4.0, -FMath::Clamp(DY, -200.f, 200.f) * 0.0022 * 4.0);
+		// (the settings' look speed and invert, main.ts step: player.look(look.x, invertY ? -look.y : look.y))
+		Look(FMath::Clamp(DX, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity, (bInvertY ? 1.0 : -1.0) * FMath::Clamp(DY, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity);
 		double Mx = 0, Mz = 0;
 		if (PC->IsInputKeyDown(EKeys::W) || PC->IsInputKeyDown(EKeys::Up)) Mz -= 1;
 		if (PC->IsInputKeyDown(EKeys::S) || PC->IsInputKeyDown(EKeys::Down)) Mz += 1;

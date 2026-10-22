@@ -979,6 +979,19 @@ void AS47Web::SetDoor(FDoor& D, bool bOpen, bool bInstant)
 	}
 	if (bInstant) { D.T0 = -1; ApplyDoor(D, bOpen ? 1 : 0); }
 	else if (bChanged) { D.From = D.K; D.T0 = DoorT; }
+	if (bChanged && OnDoorChanged) OnDoorChanged(D.Id, bOpen);
+}
+
+TMap<FString, bool> AS47Web::DoorStates() const
+{
+	TMap<FString, bool> Out;
+	for (const FDoor& D : Doors) Out.Add(D.Id, D.bOpen);
+	return Out;
+}
+
+void AS47Web::SetDoorById(const FString& Id, bool bOpen, bool bInstant)
+{
+	if (FDoor* D = Doors.FindByPredicate([&](const FDoor& X) { return X.Id == Id; })) SetDoor(*D, bOpen, bInstant);
 }
 
 void AS47Web::ToggleDoor(const FString& ItemId)

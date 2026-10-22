@@ -161,6 +161,11 @@ public:
 	bool IsDoorOpen(const FString& ItemId) const;
 	void CloseAllDoors();
 	TFunction<void(const FString&, bool, const FVector&, bool)> OnDoor; // id, open, where (UE), heavy
+	// Doors.states / restore / set by the door's own id ('east', 'south', 'lab', 'exit', 'records'),
+	// and Doors.onChange: whenever a door changes, however it was moved
+	TMap<FString, bool> DoorStates() const;
+	void SetDoorById(const FString& Id, bool bOpen, bool bInstant);
+	TFunction<void(const FString&, bool)> OnDoorChanged;
 
 	// ---------- the sky, lights and floods ----------
 	void SetPlayerEye(const FVector& UE) { Eye = UE; }

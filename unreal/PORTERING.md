@@ -78,6 +78,12 @@ Et panel fra `ui/Panels.ts` bygges av disse bitene i samme rekkefølge som HTML-
 - Opptakene har nettversjonens navn (`phoneRing`, `thudSoft`, `stepConcrete0`, `lic:door_heavy`, `phone:<id>`) og dekodes fra WAV-filene `Scripts/import-audio.sh` skriver til `Content/Audio/Raw` og `Content/Licensed/Raw`. Stemmebankene (Kinski, Serling, Art Bell, ensemblet) importeres som lydassets under `/Game/Audio/Voice/<Bank>/v_<fil>`, med katalogene i `Content/Audio/Raw/voices.json`.
 - Prologens gamle navn (`Play(name, gain, atUE, rate)`, `Loop`, `Stop`, `StartCarrier` ...) virker fortsatt og går gjennom de samme grafene.
 
+**Lagring og flyt, `M->Flow` (`US47Flow`, main.ts sin flyt)**
+- Et kapittel ber om autolagring med `M->RequestAutosave()` (Prologue-deps `saveCase`) og starter en ny generasjon med `Host->OnCheckpoint(TEXT("chapterN"))` (`milestone`); `BeginChapter` gjør det siste selv for kapittel 1 til 5.
+- Kapitlets `SaveState()` havner i saken under `s` (kapittel 1) eller `ch2` til `ch5` når kapitlet er begynt (`Host->Begun`); `Host->LoadCase()` gir saken som åpnes, så hoppet til kapitlet kan gjøre som `jumpChapterN`.
+- `SaveBlock()` i kapittel 3 til 6 sier hvorfor det ikke kan lagres nå (tom streng: det kan lagres).
+- Notatboken (`SS47Notebook`) åpnes med Tab; Board-fanen bruker `M->Board.Open` når saksbrettet finnes.
+
 ## Rekkefølgen
 
 1. Grunnlaget (dette): håndtakene, registeret, grensesnittet, panelbitene, JSON, bilder. Ferdig 22. oktober.

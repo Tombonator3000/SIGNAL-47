@@ -5,6 +5,7 @@
 #include "S47Chapter.h"
 #include "S47Chapter2.h"
 #include "S47Json.h"
+#include "S47Main.h"
 #include "S47Web.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Story, Log, All);
@@ -451,6 +452,7 @@ void AS47Story::EnterResidual()
 {
 	SetPhase(ES47Phase::Residual);
 	if (Hud.IsValid()) Hud->Checkpoint(TEXT("residual"));
+	if (OnCheckpoint) OnCheckpoint(TEXT("residual"));
 	After(6, [this]
 	{
 		bResidualVisible = true;
@@ -701,9 +703,12 @@ void AS47Story::BeginChapter(const FString& Key, const TSharedPtr<FJsonObject>& 
 	if (!C) { UE_LOG(LogTemp, Warning, TEXT("S47: no chapter %s"), *Key); return; }
 	for (US47Chapter* O : Chapters) if (O && O != C) O->bActive = false;
 	ChapterKey = Key;
+	Begun.Add(Key);
 	C->bActive = true;
 	C->Begin(Saved);
 	UE_LOG(LogTemp, Display, TEXT("S47: chapter %s begins"), *Key);
+	// beginChapterN ends on onCheckpoint('chapterN'), a new autosave generation (not chapter six)
+	if (OnCheckpoint && Key != TEXT("ch6")) OnCheckpoint(TEXT("chapter") + Key.Mid(2));
 }
 
 void AS47Story::ChapterBreak(const FBreak& B)
@@ -742,6 +747,10 @@ void AS47Story::ResetAll()
 	Flicker = 0; CrtGlitch = 0; bMugFalling = false; LookAssist = 0; DipT = 0;
 	Rx.Reset();
 	bResidualVisible = false;
+	// Prologue.reset: the chapters too (ch1.reset() ... ch6.reset()); the night is the prologue's again
+	for (US47Chapter* C : Chapters) if (C) { C->Reset(); C->bActive = false; }
+	ChapterKey = TEXT("prologue");
+	Begun.Empty();
 	if (Saro.IsValid())
 	{
 		for (int32 i = 0; i < 3; ++i) Saro->SetCrtPowered(i, false);
@@ -832,6 +841,8 @@ void AS47Story::Jump(const FString& Target)
 void AS47Story::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	// main.ts step(): game.update runs only in play (not behind the title, not on the end card)
+	if (const US47Main* Main = US47Main::Get(this); Main && Main->Mode != US47Main::EMode::Play) return;
 	const double Dt = DeltaSeconds;
 	if (!bPaused)
 	{

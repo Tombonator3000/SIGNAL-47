@@ -1,5 +1,6 @@
 #include "S47Main.h"
 
+#include "S47Flow.h"
 #include "S47HUD.h"
 #include "S47Story.h"
 #include "S47UI.h"
@@ -28,10 +29,16 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
+void US47Main::RequestAutosave(bool bMilestone)
+{
+	if (Flow) Flow->RequestAutosave(bMilestone);
+}
+
 void US47Main::Step(double Dt)
 {
 	T += Dt;
 	if (Mode == EMode::Play) Playtime += Dt;
+	if (Flow) Flow->Step(Dt);
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands
