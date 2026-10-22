@@ -5,49 +5,36 @@
 class AS47Web;
 class FJsonObject;
 class UStaticMeshComponent;
-class UMaterialInstanceDynamic;
-class UTexture2D;
+class URectLightComponent;
 
-// world/windowLight.ts: a lit window's light on the ground in front of it, the panes, the bars, the
-// blinds or the curtain laid out the way the room's lamp throws them through the glass, and a faint
-// glow of the whole glass at the foot of the wall; off with the window, and held back where the
-// area's other lamps already light the ground. One mesh for all the windows of an area (the
-// export's, with its corners' picture coordinates in its UV channels), its shader ported as
-// M_WebWindowLight; each corner's colour (aCol) is worked out here as update() does and written to
-// a small texture the material reads by the corner's index.
+// Native light transmitted through the exported windows. The original ground-projection mesh
+// supplies each facade's span and normal and stays hidden; a soft rect at each pane lights the
+// actual ground and casts shadows. Story flood slots and SetLevel still drive the same windows.
 class SIGNAL47_API FS47WindowLights
 {
 public:
+	~FS47WindowLights();
 	FString Name;
 	bool Build(AS47Web* W, const TSharedPtr<FJsonObject>& J);
-	/** setLevel(id, k): how bright a window without a flood slot of its own is now. */
 	void SetLevel(const FString& Id, double K);
-	/** update(): the windows' lamps now, and the street's light where it changed. */
 	void Update();
 	int32 Windows() const { return Wins.Num(); }
-	/** The windows by id now, 0 (dark) to about 1 (as made) (tests). */
 	TMap<FString, double> Levels() const;
-	/** How much the street's own light holds the windows back, on average (1 none) (tests). */
+	/** Native lighting no longer attenuates one light because another lamp is nearby. */
 	double Darkness() const;
 
 private:
-	struct FWin { FString Id; int32 Slot = -1; double K = 0, W0 = 1, Level = 1; FLinearColor Col; int32 At = 0, N = 0; TArray<double> Fall; };
+	struct FWin
+	{
+		FString Id;
+		int32 Slot = -1;
+		double K = 0, W0 = 1, Level = 1;
+		TWeakObjectPtr<URectLightComponent> Light;
+	};
 	TArray<FWin> Wins;
-	TArray<FVector> Pos;      // the corners, the mesh's terms
-	TArray<FLinearColor> Tints;
-	TArray<double> Dark;
-	TArray<int32> Own;
-	double FallOff = 0.03;
-	FVector Origin = FVector::ZeroVector;
-	int32 Set = -1;
-	FString Lit;
-	TMap<int32, float> LastW;
-	bool bAgain = false;
+	int32 Set = -1, Parent = -1;
+	double BaseScale = 1;
 	TWeakObjectPtr<AS47Web> Web;
 	TWeakObjectPtr<UStaticMeshComponent> Mesh;
-	TWeakObjectPtr<UMaterialInstanceDynamic> Mid;
-	TWeakObjectPtr<UTexture2D> Cols;
-	int32 ColsW = 64, ColsH = 1;
-	void Street();
-	void Upload(const TArray<FLinearColor>& C);
+	FDelegateHandle LightTick;
 };

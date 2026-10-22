@@ -487,8 +487,7 @@ void AS47HUD::Start()
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
 	}
-	// (linear out: the CRTs' targets are sRGB and encode it themselves; with Slate's gamma as well the
-	// screens came out pale)
+// Slate writes linear colour; the sRGB CRT target encodes it once.
 	Renderer = new FWidgetRenderer(false);
 	const SS47Crt::EKind Kinds[4] = { SS47Crt::EKind::Status, SS47Crt::EKind::Spectrum, SS47Crt::EKind::Tracking, SS47Crt::EKind::Ops };
 	for (int32 i = 0; i < 4; ++i) Crts[i] = SNew(SS47Crt).Kind(Kinds[i]).Story(Story.Get()).Saro(Saro.Get());

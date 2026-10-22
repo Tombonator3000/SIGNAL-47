@@ -15,7 +15,7 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 
 | Oppgave | Eier | Gren | Status |
 |---|---|---|---|
-| Unreal-lys og skygger erstatter det gamle systemet (taklys fra armaturene, grønt CRT-lys foran skjermene, opplyste paraboler, ytelse 1440p) | Codex | `port-light` | under arbeid, rettelser sendt 22.10 |
+| Unreal-lys og skygger erstatter det gamle systemet (taklys fra armaturene, grønt CRT-lys foran skjermene, opplyste paraboler, ytelse 1440p) | Codex | `port-light` | rettet 22.10, klar for ny Claude-gjennomgang; flettet til 7d167000, bygg og 1203 selvtester OK, High/1440p 73/96 fps; pakking hos integrator |
 
 ## Neste
 

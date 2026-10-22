@@ -553,6 +553,8 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 			A->ClearInstances();
 			A->SetNumCustomDataFloats(4);
 			A->SetCastShadow(false);
+			A->SetVisibleInRayTracing(false);
+			A->bAffectDistanceFieldLighting = false;
 			A->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			TArray<UMaterialInstanceDynamic*> Mids = W->NodeMids(Ch);
 			UMaterialInstanceDynamic* Da = Mids.Num() ? Mids[0] : nullptr;
@@ -568,6 +570,8 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 				B->SetStaticMesh(W->GeoMesh(N->GeoB));
 				B->NumCustomDataFloats = 4;
 				B->SetCastShadow(false);
+				B->SetVisibleInRayTracing(false);
+				B->bAffectDistanceFieldLighting = false;
 				B->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				UMaterialInstanceDynamic* Db = Da ? W->CopyMid(Da) : nullptr;
 				if (Db) B->SetMaterial(0, Db);

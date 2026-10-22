@@ -164,6 +164,7 @@ void FS47Town::Shine(int32 Src, const TArray<int32>& Slots, double K)
 	if (!M || !M->Web) return;
 	for (int32 J = 0; J < 3; ++J)
 	{
+		M->Web->SuppressFloodLight(Flood, 17 + J);
 		FVector P; float W = 0; FLinearColor C;
 		if (Src < 0 || !Slots.IsValidIndex(J) || Slots[J] < 0 || !M->Web->FloodPool(Src, Slots[J], P, W, C)) { M->Web->SetFlood(Flood, 17 + J, 0); continue; }
 		M->Web->SetFloodPool(Flood, 17 + J, P, W, C * float(K), false);
@@ -187,6 +188,7 @@ void FS47Town::LampsTo(int32 Out, const TArray<int32>& Slots, const FVector& At,
 	for (int32 J = 0; J < Slots.Num(); ++J)
 	{
 		if (Slots[J] < 0) continue;
+		M->Web->SuppressFloodLight(Out, Slots[J]);
 		if (!Near.IsValidIndex(J)) { M->Web->SetFlood(Out, Slots[J], 0); continue; }
 		const FCandidate& A = Near[J]; M->Web->SetFloodPool(Out, Slots[J], A.P, A.W, A.C * float(K), false);
 	}

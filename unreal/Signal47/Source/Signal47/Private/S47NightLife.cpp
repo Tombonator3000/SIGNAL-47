@@ -92,6 +92,7 @@ namespace
 		I->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		I->SetCastShadow(false);
 		I->bAffectDistanceFieldLighting = false;
+		I->SetVisibleInRayTracing(false);
 		I->SetTranslucentSortPriority(3);   // (renderOrder 3: over the lamps' own glows)
 		Mid = D;
 		return I;

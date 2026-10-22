@@ -8,9 +8,10 @@ class AS47Web;
 class SS47Dash;
 class FWidgetRenderer;
 class UTextureRenderTarget2D;
+class USpotLightComponent;
 
 // drive/Truck.ts, its behaviour: SARO 07, the observatory's service truck. Its meshes are in the
-// exported scene (one copy per area, each lit by that area's floods: world.saroTruck on SARO's
+// exported scene (one copy per area: world.saroTruck on SARO's
 // pad, world.legs.road.drive.truck on the road and at the diner, world.legs.station01.drive.truck
 // at STATION 01, world.oldTruck on the old road); this moves them as Truck.ts does. Origin on the
 // ground at the centre of the truck, forward is -Z, the driver sits left (-X).
@@ -98,11 +99,11 @@ struct SIGNAL47_API FS47Truck
 	void SetWarnings(const FWarn& W);
 	/** Power to the electric gauges, 0..1: below 0.5 the fuel and temperature needles fall back. */
 	void SetGaugePower(double K) { GaugePower = K; }
-	/** Use these slots of a flood set as headlight pools on the ground (moved in Update()). */
+	/** Retain the story's moving headlight slots; illumination comes from the native sealed beams. */
 	void HeadlightFloods(int32 Set, const TArray<int32>& Slots);
 	/** How far each wheel hangs below its place on the body (fl, fr, rl, rr), in metres. */
 	void SetWheelDrops(const double D[4]);
-	/** Once per frame while the truck moves: wheels, needles, keys, headlight pools. */
+	/** Once per frame while the truck moves: wheels, needles, keys and native headlights. */
 	void Update(double Dt, double Speed, double WheelAngle = 0);
 	/** Whether a ray (three.js world, from the eye) hits the radio's faceplate within Far metres
 	 *  (main.ts radioAimed: truck.radioHit). */
@@ -122,6 +123,8 @@ private:
 	bool bHeadOn = false, bBrakeOn = false;
 	FLinearColor HeadColor;
 	TOptional<double> DashLevel;
+	TWeakObjectPtr<USpotLightComponent> Headlights[2];
+	FDelegateHandle HeadlightTick;
 	double Spin = 0, WheelAngle = 0;
 	double Drops[4] = { 0, 0, 0, 0 };
 	struct FSwing { double A = 0, V = 0, Last = 0; } Swing;
@@ -151,6 +154,7 @@ private:
 	double Now() const;
 	void ApplyLights();
 	void PlaceFloods();
+	void PlaceHeadlights();
 	void FlushClock();
 	void CompassStep(double Dt);
 };

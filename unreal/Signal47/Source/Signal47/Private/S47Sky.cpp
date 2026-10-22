@@ -30,6 +30,7 @@ namespace
 		C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		C->SetCastShadow(false);
 		C->bAffectDistanceFieldLighting = false;
+		C->SetVisibleInRayTracing(false);
 		C->SetTranslucentSortPriority(SortPriority);
 		C->RegisterComponent();
 		return C;
@@ -205,6 +206,7 @@ bool FS47Sky::Build(AS47Web* W)
 		I->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		I->SetCastShadow(false);
 		I->bAffectDistanceFieldLighting = false;
+		I->SetVisibleInRayTracing(false);
 		I->SetTranslucentSortPriority(-4);
 		const int32 N = Pts->Num() / 7;
 		TArray<FTransform> T;

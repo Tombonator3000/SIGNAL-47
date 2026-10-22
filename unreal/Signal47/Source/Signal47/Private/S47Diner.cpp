@@ -55,6 +55,7 @@ void FS47Diner::Shine(int32 Src, const TArray<int32>& Slots, double K)
 	if (!M || !M->Web) return;
 	for (int32 J = 0; J < 3; ++J)
 	{
+		M->Web->SuppressFloodLight(Flood, 10 + J);
 		FVector P; float W = 0; FLinearColor C;
 		if (Src < 0 || !Slots.IsValidIndex(J) || Slots[J] < 0 || !M->Web->FloodPool(Src, Slots[J], P, W, C)) { M->Web->SetFlood(Flood, 10 + J, 0); continue; }
 		M->Web->SetFloodPool(Flood, 10 + J, P, W, C * float(K), false);
@@ -69,6 +70,7 @@ void FS47Diner::Neon(int32 Out, const TArray<int32>& Slots, double Reach, double
 	for (int32 J = 0; J < 2; ++J)
 	{
 		if (!Slots.IsValidIndex(J) || Slots[J] < 0) continue;
+		M->Web->SuppressFloodLight(Out, Slots[J]);
 		FVector P; float W = 0; FLinearColor C; if (!M->Web->FloodPool(Flood, J, P, W, C)) continue;
 		M->Web->SetFloodPool(Out, Slots[J], P, float(W * Reach), C * float(K), false);
 	}

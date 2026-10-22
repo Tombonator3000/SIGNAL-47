@@ -2,6 +2,21 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Native belysning (2026-10-22)
+
+- Videre belysning er bare Unreal. `S47Lighting.cpp` gjør eksportens lampetilstand om til punktlys og spotter. Historienes SetFlood-API er beholdt; materialenes flood, hemisphere, FogExp2, additive lyskjegler og vindusprojeksjoner er av. Ingen Web/Unreal-bryter. Eldre lysnotater nedenfor beskriver porten før denne endringen.
+- Lumen bruker Vulkan hardware ray tracing på RTX 3080 når tilgjengelig. Måne, skylight, levende daggry, native volumetrisk tåke og skygger fra lommelykt/billykter erstatter fylltermene. Førerhusets gamle himmelfyll er fjernet; instrumentgløden er svak. Fast eksponering, ACES og VHS/Clean beholdes.
+- `S47_ONLY=materials` i import_web.py regenererer Base og Mat uten å skrive Tex, Geo, art eller WebData. Kreves for eldre generert Content. NativeLighting har asset-default 0 for delte historiske checkouter, men denne runtime setter alltid 1. Bruk private materialkopier ved parallelle jobber.
+- Low bruker direkte lys, High/Ultra Lumen og volumetri. High/Low bruker 60 % intern oppløsning med TSR; Ultra 100 %. Se `LIGHTING.md` for faktisk ytelse og sammenligningsbilder, ikke trekk fps-konklusjoner fra kvalitetsnavnet.
+- Rettelsesrundens High/1440p med TSR fra 60 %: rom 13,619 ms / 73,4 fps, gård 10,466 ms / 95,5 fps, p95 15,330/11,527 ms. Ingen andre tunge prosesser i målevinduet. Low/Clean 90,0 fps i rommet, Ultra 39,2 fps i gården. Faste editorutsnitt; pakket bygg og bevegelse gjenstår. Se LIGHTING.md.
+- Før tung kjøring må også prosessnavnet `Signal47` sjekkes. Den installerte Linux-binærfila heter dette, ikke nødvendigvis Signal47-Linux-Shipping. En slik prosess gjorde første ytelsespass ugyldig selv om UnrealEditor-kontrollen var tom.
+- Kopiert UBT Intermediate inneholder absolutte stier. Lag ny Intermediate i et worktree, og kontroller kompilatorens response-filer. `Scripts/build-editor.sh -NoUBA` brukes her etter UBA-feil på PCH-rename gjennom symlink. Byggskriptet videresender valgfrie flagg.
+
+- Taklys i SARO ligger i mesh-diffuserne, med rectlys og PBR-emissive fra samme tilstand. Rommets gamle PointLights er tilstandsdrivere uten bAffectsWorld. Fire CRT-er og øvrige registrerte skjermer har egne grønne rectlys; HUD-ens Ops power-kall overstyrer ikke SARO mørkt, fordi faktisk Brightness også leser stasjonsstrømmen.
+- GLB-bokser kan ha slot0..5 selv når N.Mats har én oppføring. Lysrørets underside er slot3. FixtureLighting binder alle diffuserflater til samme MID og følger NodeMids sine senere kopier; ikke oppdater bare materiale0 og la gamle emissive-flater stå igjen.
+- Annex.flickerTube ligger ved pool3, mens portens FlickerFlood er4. Den fysiske koblingen remapper dette til det faktiske røret. Endre ikke historietidsplanen for å rette lyskilden.
+- Arrayets første fem pools ligger ved Y3, men armaturene ved Y6,5. Native spotter står på armaturene og sikter mot skålene. Seks andre eksisterende feltarmaturer bruker sine eksporterte glødepunkter; de deler arrayets strøm/rødpuls. Ingen nye modeller.
+
 ## Oppsett (2026-10-21)
 
 - Prosjektet heter Signal47 og ligger i unreal/Signal47. UE 5.8.4 (binærutgaven for Linux) i ~/.local/opt/UnrealEngine-5.8.4, Vulkan SM6, Lumen i programvare, Nanite av for de importerte modellene.
