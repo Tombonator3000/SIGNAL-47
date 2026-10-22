@@ -154,6 +154,7 @@ public:
 	void ToggleDoor(const FString& ItemId);
 	bool IsDoorOpen(const FString& ItemId) const;
 	void CloseAllDoors();
+	void SetDoorOpen(const FString& DoorId, bool bOpen, bool bInstant = false); // Doors.set(k, open, instant) by the door's own id ('east', 'lab' ...)
 	TFunction<void(const FString&, bool, const FVector&, bool)> OnDoor; // id, open, where (UE), heavy
 
 	// ---------- the sky, lights and floods ----------

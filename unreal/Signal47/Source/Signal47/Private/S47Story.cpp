@@ -688,6 +688,11 @@ void AS47Story::BeginChapter(const FString& Key, const TSharedPtr<FJsonObject>& 
 	if (!C) { UE_LOG(LogTemp, Warning, TEXT("S47: no chapter %s"), *Key); return; }
 	for (US47Chapter* O : Chapters) if (O && O != C) O->bActive = false;
 	ChapterKey = Key;
+	// Prologue.beginChapterN: the chapter's phase, no cinematic, nothing from before may fire inside it
+	CurrentPhase = ES47Phase::Ch1;
+	bCinematic = false;
+	LookAssist = 0;
+	Timers.Empty();
 	C->bActive = true;
 	C->Begin(Saved);
 	UE_LOG(LogTemp, Display, TEXT("S47: chapter %s begins"), *Key);
@@ -729,6 +734,9 @@ void AS47Story::ResetAll()
 	Flicker = 0; CrtGlitch = 0; bMugFalling = false; LookAssist = 0; DipT = 0;
 	Rx.Reset();
 	bResidualVisible = false;
+	// Prologue.reset: every chapter's reset (ch1.reset() ...), the prologue leading again
+	for (US47Chapter* C : Chapters) if (C) { C->Reset(); C->bActive = false; }
+	ChapterKey = TEXT("prologue");
 	if (Saro.IsValid())
 	{
 		for (int32 i = 0; i < 3; ++i) Saro->SetCrtPowered(i, false);

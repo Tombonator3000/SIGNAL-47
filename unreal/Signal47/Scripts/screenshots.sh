@@ -26,4 +26,8 @@ shot countdown "jumped to countdown" "-S47Face=crtCenter -S47Jump=countdown"
 shot event "jumped to event" "-S47Face=window -S47Jump=event"
 shot outside "walker placed at outside" "-S47Face=outside"
 shot dish "walker placed at dish" "-S47Face=dish"
+# chapter one: from the room after the prologue, and at the S-03 motor bus in the service yard
+shot chapter1 "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=room"
+shot yard "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=at:11.2;-11.0;-1.5708;-0.2"
+shot camera "frame01 exposed" "-S47Jump=chapter1 -S47Ch1Drive=photo"
 exit $fail

@@ -987,6 +987,11 @@ void AS47Web::CloseAllDoors()
 	for (FDoor& D : Doors) SetDoor(D, false, true);
 }
 
+void AS47Web::SetDoorOpen(const FString& DoorId, bool bOpen, bool bInstant)
+{
+	if (FDoor* D = Doors.FindByPredicate([&](const FDoor& X) { return X.Id == DoorId; })) SetDoor(*D, bOpen, bInstant);
+}
+
 // ---------- per frame ----------
 
 void AS47Web::Tick(float Dt)

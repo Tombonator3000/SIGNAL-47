@@ -1,6 +1,7 @@
 #include "S47Chapters.h"
 
 #include "S47Chapter.h"
+#include "S47Chapter1.h"
 #include "S47Main.h"
 #include "S47Story.h"
 
@@ -20,5 +21,5 @@ void S47RegisterChapters(AS47Story* Host, US47Main* M)
 {
 	Host->Chapters.Reset();
 	// (one line per ported chapter, in the order Prologue.ts builds them)
-	(void)M;
+	Make<US47Chapter1>(Host, M)->Register(); // also Host->Jumps["chapter1"]
 }
