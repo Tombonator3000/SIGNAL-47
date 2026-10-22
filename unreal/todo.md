@@ -130,7 +130,7 @@
 - [ ] Kassettspilleren: bytte den egenlagde tape deck-modellen med en bedre modell. NB: opptakeren i «Utstyr lyd UFO» på skrivebordet er pakket ut av «They Are Here»-demoen (UModel); den kan ikke brukes uten å kjøpe originalpakken (Horror Engine). Den kjøpte Vintage Liminal-pakken har kassetter og en Broadcast VCR, ingen kassettspiller.
 - [ ] Tonene: en kombinasjon gir en annen låt og låser opp noe (hemmelighet, hint eller spor). Poenget må bestemmes.
 - [ ] Ut av bilen overalt (feil) og hopp: under arbeid.
-- [ ] Alien-modell: «Alien» på skrivebordet er pakket ut av «They Are Here»-demoen (SK_Alien8_v2, RealisticAlien8); ikke lisensiert for oss. Kjøpe originalen eller lage en egen.
+- [x] Egen alien laget i Blender med nye teksturer, 50-beins rigg og idle: `/home/tom/Desktop/Alien - Egen modell/`. FBX/GLB og UE 5.8.4-import består. Gammel modell er urørt referanse. Integrasjon og prøving i pakket spill gjenstår.
 - [ ] Terminalene i verden: kameraet zoomer inn på den fysiske skjermen, og skjermbildet vises på skjermmodellen (som i Black Map). Under arbeid for mottakerkonsollen og driftsterminalen.
 - [ ] Grafikk: mer detaljerte modeller, bedre lys og skygger (neste store steg).
 
@@ -138,4 +138,4 @@
 ## Unarius, overlevert til Claude 22. oktober
 
 - [ ] Fortsett codex/unarius-tv fra TV_PROGRAMME.md: bruk siste bygde binærfil med tidsrettelsen, verifiser faktisk bevegelig film på begge TV-er over tid, koble filmlyd om ønsket, prøv fallback og 47-sekundershendelse/opptak/lagring på nytt, integrer og pakk før standardutgaven erstattes.
-- [ ] Egenprodusert alien må modelleres separat i Blender. Desktop/Alien er fortsatt eksportmodellen etter rydding av navn og filstier.
+- [x] Separat egenprodusert Blender-alien er levert i `Desktop/Alien - Egen modell`, med importprøvde Unreal-assets. `Desktop/Alien` er urørt referanse; den nye figuren er ikke integrert i spillet ennå.

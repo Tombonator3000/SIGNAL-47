@@ -89,3 +89,7 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
 - Tom har bestemt at videre arbeid kun gjelder Unreal. Web og Unity er referanser.
 - Unarius-MP4-er ligger i `/home/tom/Desktop/Unarius/`. Film skal bevege seg på TV-ene. Lokal kandidat, status og videreføring står i `TV_PROGRAMME.md`.
+
+## Egen alien, 22. oktober 2026
+
+- Ny figur med Blender-kilde, 2K PBR, rigg, idle og importprøvde UE 5.8.4-assets ligger i `/home/tom/Desktop/Alien - Egen modell/`. Se README der for import og rapporter. Gammel `/home/tom/Desktop/Alien/` er urørt referanse. Ny modell er klar som ressurs; integrasjon i pakket spill gjenstår.
