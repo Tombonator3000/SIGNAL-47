@@ -37,6 +37,7 @@
 #include "Containers/Ticker.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
 #include "SS47Widgets.h"
@@ -86,6 +87,7 @@ void AS47HUD::Start()
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
 		bOk &= FS47Radio::SelfTest(Lines) & FS47TripRadio::SelfTest(Lines) & FS47Score::SelfTest(Lines) & FS47MediaSource::SelfTest(Lines) & FS47RadioVoice::SelfTest(Lines);
 		bOk &= US47Phones::SelfTest(Lines); // (the archive's phone and its dishes, the roof, the office's telephone, the field book, the looks, the thread)
+		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -198,6 +200,8 @@ void AS47HUD::Start()
 		}
 		// main.ts: the phones, the archive and the records (the archive's phone, the office's telephone, the roof, the field book, the looks)
 		M->Phones = NewObject<US47Phones>(M); M->Phones->Init(M);
+		// main.ts: the world's own life (the sky, the glows, the ground cover, the air, the night's life, the windows, Ultra's lamps)
+		M->Life = NewObject<US47WorldLife>(M); M->Life->Init(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

@@ -15,6 +15,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 
 namespace
 {
@@ -94,6 +95,9 @@ void US47Main::Step(double Dt)
 	}
 	// main.ts: ui.examine, what a closer look says under the crosshair
 	if (Phones) Phones->ExamineStep();
+	// main.ts: the sky, the lamps, the shared lights, the fog's colour, the painted horizon, the areas'
+	// glows and windows (and World.update's light in the air), the ground cover before the picture
+	if (Life) Life->Step(Dt);
 }
 
 void US47Main::InitRadio()

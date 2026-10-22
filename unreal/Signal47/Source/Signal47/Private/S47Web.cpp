@@ -109,6 +109,9 @@ bool AS47Web::Load()
 	{
 		const TSharedPtr<FJsonObject>* D = nullptr;
 		if (J->TryGetObjectField(TEXT("drive"), D)) Drive = *D;
+		// and the world's own life's (export.js lifeOf), kept for S47WorldLife
+		const TSharedPtr<FJsonObject>* L = nullptr;
+		if (J->TryGetObjectField(TEXT("life"), L)) Life = *L;
 	}
 	// geometry files: which glb holds which geometry
 	int32 MaxGeo = 0;
@@ -127,6 +130,9 @@ bool AS47Web::Load()
 	TSet<int32> ShaderMats, HiddenMats;
 	TMap<int32, int32> MatFlood;
 	TMap<int32, float> MatFall;
+	// what three draws without fog (fog: false), opaque: the custom depth's stencil for M_WebTone,
+	// 1 the near mesas (the dawn's haze only, world/horizon.ts), 2 no fog at all
+	TMap<int32, int32> Unfogged;
 	for (const TSharedPtr<FJsonValue>& V : Arr(J, TEXT("materials")))
 	{
 		const TSharedPtr<FJsonObject> M = V->AsObject();
@@ -135,6 +141,7 @@ bool AS47Web::Load()
 		if (!Bool(M, TEXT("visible"), true)) HiddenMats.Add(Id);
 		const int32 Fs = int32(Num(M, TEXT("floodSet"), -1));
 		if (Fs >= 0) { MatFlood.Add(Id, Fs); MatFall.Add(Id, float(Num(M, TEXT("floodFall"), 0.012))); }
+		if (!Bool(M, TEXT("fog"), true) && !Bool(M, TEXT("transparent")) && !Bool(M, TEXT("shader"))) Unfogged.Add(Id, Bool(M, TEXT("hazed")) ? 1 : 2);
 	}
 	// nodes
 	const TArray<TSharedPtr<FJsonValue>>& JN = Arr(J, TEXT("nodes"));
@@ -152,6 +159,7 @@ bool AS47Web::Load()
 		Decompose(N.Local, N.P, N.Q, N.S);
 		N.bVis = Bool(O, TEXT("vis"), true);
 		N.Geo = int32(Num(O, TEXT("geo"), -1));
+		N.GeoB = int32(Num(O, TEXT("geoB"), -1));
 		for (const TSharedPtr<FJsonValue>& M : Arr(O, TEXT("mats"))) N.Mats.Add(int32(M->AsNumber()));
 		N.bInstanced = O->HasField(TEXT("inst"));
 		N.Root = N.Parent < 0 ? i : Nodes[N.Parent].Root;
@@ -290,6 +298,9 @@ bool AS47Web::Load()
 				Set.Pos.Add(P ? FLinearColor(Num(P, TEXT("x")), Num(P, TEXT("y")), Num(P, TEXT("z")), Num(P, TEXT("r"))) : FLinearColor(0, -999, 0, 0));
 				Set.Col.Add(P ? Col(Arr(P, TEXT("col"))) : FLinearColor::Black);
 			}
+			// (kit.ts FloodSet's count and skip, in a manifest that has them)
+			Set.Count = int32(Num(F, TEXT("count"), Set.W));
+			for (const TSharedPtr<FJsonValue>& S : Arr(F, TEXT("skip"))) Set.Skip.Add(int32(S->AsNumber()));
 			UTexture2D* T = UTexture2D::CreateTransient(Set.W, 2, PF_A32B32G32R32F);
 			T->SRGB = false;
 			T->Filter = TF_Nearest;
@@ -405,6 +416,14 @@ bool AS47Web::Load()
 					}
 				}
 			}
+			for (const int32 Mi : N.Mats)
+			{
+				if (const int32* St = Unfogged.Find(Mi))
+				{
+					M->SetRenderCustomDepth(true);
+					M->SetCustomDepthStencilValue(*St);
+				}
+			}
 			M->RegisterComponent();
 			// shader materials are drawn by other means (sky picture, lights); hidden proxies only collide
 			if (bShader || bHidden) M->SetHiddenInGame(true);
@@ -419,13 +438,32 @@ bool AS47Web::Load()
 			C->SetupAttachment(Parent);
 			C->SetRelativeTransform(MatToUE(N.Local));
 			C->RegisterComponent();
-			// glow points (GlowPoints): a billboard each, of the point's size in metres
+			// glow points (GlowPoints): a billboard each, of the point's size in metres. A GlowPoints of
+			// the web version (its points have aBlink, export.js) is built also when it is hidden at the
+			// export (a lamp that comes on later, the far lights); with it, its blinks (S47Glow.h)
 			const TArray<TSharedPtr<FJsonValue>>& Pts = Arr(O, TEXT("points"));
-			if (Pts.Num() > 0 && Pts.Num() < 2000 && N.bVis && !bSky && GlowBase)
+			const TArray<TSharedPtr<FJsonValue>>& Bl = Arr(O, TEXT("blink"));
+			// every points node's points kept as they are (the sky's stars, S47Sky; the life in the night)
+			if (Pts.Num() > 0)
 			{
+				TArray<float>& Raw7 = PointsRaw.Add(i);
+				Raw7.Reserve(Pts.Num() * 7);
 				for (const TSharedPtr<FJsonValue>& PV : Pts)
 				{
 					const TArray<TSharedPtr<FJsonValue>>& P = PV->AsArray();
+					for (int32 c = 0; c < 7; ++c) Raw7.Add(P.IsValidIndex(c) ? float(P[c]->AsNumber()) : 0.f);
+				}
+				const TArray<TSharedPtr<FJsonValue>>& Ph = Arr(O, TEXT("ph"));
+				if (Ph.Num() > 0) { TArray<float>& Q = PointsPh.Add(i); for (const TSharedPtr<FJsonValue>& V : Ph) Q.Add(float(V->AsNumber())); }
+			}
+			const bool bGlowPoints = Bl.Num() >= Pts.Num() * 2 && Pts.Num() > 0;
+			if (Pts.Num() > 0 && (bGlowPoints || (Pts.Num() < 2000 && N.bVis)) && !bSky && GlowBase)
+			{
+				TSharedPtr<FS47GlowPoints> G = MakeShared<FS47GlowPoints>();
+				G->Node = i;
+				for (int32 k = 0; k < Pts.Num(); ++k)
+				{
+					const TArray<TSharedPtr<FJsonValue>>& P = Pts[k]->AsArray();
 					if (P.Num() < 7) continue;
 					UMaterialBillboardComponent* B = NewObject<UMaterialBillboardComponent>(this);
 					B->SetupAttachment(C);
@@ -437,7 +475,13 @@ bool AS47Web::Load()
 					const float Size = float(P[6]->AsNumber() * 50.0);
 					B->AddElement(D, nullptr, false, Size, Size, nullptr);
 					B->RegisterComponent();
+					G->Bill.Add(B); G->Mid.Add(D);
+					G->Pos.Add(FVector(P[0]->AsNumber(), P[1]->AsNumber(), P[2]->AsNumber()));
+					G->Col.Add(FLinearColor(P[3]->AsNumber(), P[4]->AsNumber(), P[5]->AsNumber()));
+					G->Size.Add(float(P[6]->AsNumber()));
+					G->Blink.Add(bGlowPoints ? FVector2D(Bl[k * 2]->AsNumber(), Bl[k * 2 + 1]->AsNumber()) : FVector2D::ZeroVector);
 				}
+				Glows.Add(i, G);
 			}
 		}
 		N.Comp = C;
@@ -601,12 +645,13 @@ void AS47Web::BeginPlay()
 	bLoaded = Load();
 	if (!bLoaded) return;
 	BuildRoom();
-	// the sky picture on a big sphere round the eye
+	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
+	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));
 	SkySphere->SetupAttachment(GetRootComponent());
 	SkySphere->SetMobility(EComponentMobility::Movable);
 	SkySphere->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere")));
-	SkySphere->SetWorldScale3D(FVector(3000.f)); // 1.5 km radius
+	SkySphere->SetWorldScale3D(FVector(60000.f)); // 30 km radius
 	SkySphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SkySphere->SetCastShadow(false);
 	SkySphere->bAffectDistanceFieldLighting = false;
@@ -943,6 +988,77 @@ void AS47Web::DrawDishes()
 			I->UpdateInstanceTransform(k, MatToUE(Out), false, k == P.DishIdx.Num() - 1, true);
 		}
 	}
+	// DishArray.refresh: the red aircraft lamps on top, BEACON (0, APEX_Y + 0.9, 0) in each dish's el
+	if (FS47GlowPoints* B = Glow(TEXT("ext.dishArray.beacons.points")))
+	{
+		for (int32 i = 0; i < Dishes.Num() && i < B->Num(); ++i)
+		{
+			const FDish& D = Dishes[i];
+			double Root[16], T[16], R[16], Az[16], El[16];
+			Compose(FVector(D.X, 0, D.Z), FQuat::Identity, FVector(D.Scale), Root);
+			Compose(FVector(0, 7.8, 0), FQuat::Identity, FVector::OneVector, T);
+			Compose(FVector::ZeroVector, Euler(0, -D.CurAz * DEG, 0), FVector::OneVector, R);
+			Multiply(Root, T, Az); Multiply(Az, R, Az);
+			Compose(FVector(0, 4.6, 0), FQuat::Identity, FVector::OneVector, T);
+			Compose(FVector::ZeroVector, Euler(-(90 - D.CurEl) * DEG, 0, 0), FVector::OneVector, R);
+			Multiply(Az, T, El); Multiply(El, R, El);
+			const double Y = 1.1 + 7.2 + 0.9; // Dish.ts BEACON: APEX_Y + 0.9, APEX_Y = 1.1 + F
+			B->SetPosition(i, FVector(El[4] * Y + El[12], El[5] * Y + El[13], El[6] * Y + El[14]));
+		}
+	}
+}
+
+// ---------- the world's own life ----------
+
+FS47GlowPoints* AS47Web::Glow(int32 Node)
+{
+	TSharedPtr<FS47GlowPoints>* G = Glows.Find(Node);
+	return G ? G->Get() : nullptr;
+}
+
+void AS47Web::UpdateGlows(double T)
+{
+	for (auto& KV : Glows) if (KV.Value.IsValid()) KV.Value->Update(T);
+}
+
+UMaterialInstanceDynamic* AS47Web::CopyMid(UMaterialInstanceDynamic* Of)
+{
+	if (!Of) return nullptr;
+	UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Of->Parent.Get() ? Of->Parent.Get() : Of, this);
+	D->CopyParameterOverrides(Of);
+	for (auto& KV : FloodMids)
+	{
+		if (KV.Value.Contains(Of)) { KV.Value.Add(D); break; }
+	}
+	KeepMids.Add(D);
+	return D;
+}
+
+void AS47Web::SetEnvScalar(const FName& Name, float V)
+{
+	if (UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr) E->SetScalarParameterValue(Name, V);
+}
+
+UStaticMesh* AS47Web::GeoMesh(int32 Geo) const
+{
+	return GeoPaths.IsValidIndex(Geo) ? LoadObject<UStaticMesh>(nullptr, *GeoPaths[Geo]) : nullptr;
+}
+
+void AS47Web::SetFogColor(const FLinearColor& C)
+{
+	if (C == FogColor) return;
+	FogColor = C;
+	if (UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr) E->SetVectorParameterValue(TEXT("FogColor"), C);
+}
+
+void AS47Web::SetHemiIntensity(float Intensity)
+{
+	const FHemi* H = Hemis.Find(CurrentArea);
+	if (!H) H = Hemis.Find(TEXT("saro"));
+	UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr;
+	if (!H || !E) return;
+	E->SetVectorParameterValue(TEXT("HemiSky"), H->Sky * Intensity);
+	E->SetVectorParameterValue(TEXT("HemiGround"), H->Ground * Intensity);
 }
 
 // ---------- doors ----------

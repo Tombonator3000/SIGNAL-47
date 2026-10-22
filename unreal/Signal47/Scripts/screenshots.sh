@@ -58,4 +58,14 @@ shot fieldbook "S47: field book opened" "-S47Jump=chapter1 -S47Face=room -S47Fie
 shot envelope "S47: envelope held up to the lamp" "-S47Jump=chapter1 -S47Face=room -S47FieldBook=envelope" 10
 shot zoom "S47: closer look: Dale's shift log" "-S47Jump=residual -S47Face=logbook -S47Zoom" 8
 shot same "S47: same thread for time away 1" "-S47Jump=chapter1 -S47Face=room -S47Same" 8
+# the world's own life (S47WorldLife): a beacon's blink over the array (the log has its level), the
+# night sky at 02:16 with the star hole over 026 coming in, a shooting star where the camera looks,
+# the dawn at 05:20 behind the mesas, the flora along the road far from SARO on the drive, and the
+# mesas round STATION 01 without the fog (dark against the sky, no rim)
+shot beacon "S47: life clock .* beacon 0\.[5-9]" "-S47Jump=chapter1 -S47Face=outside -S47LifeLog" 8
+shot starhole "S47: life clock 02:1.* hole 0\.[1-9]" "-S47Jump=chapter1 -S47Face=at:10;-12;-0.4538;0.5585 -S47LifeLog" 14
+shot meteor "S47: shooting star now" "-S47Jump=chapter1 -S47Face=at:10;-12;0.6;0.7 -S47Meteor=3 -S47MeteorAim" 4.6
+shot dawn "S47: life clock 05:2.* dawn 0\.[3-6]" "-S47Jump=chapter1 -S47Face=at:10;-12;-1.379;0.08 -S47Clock=05:20 -S47LifeLog" 12
+shot roadflora "S47: life clock .* road:[1-9]" "-S47Drive=saro:station01 -S47Throttle=0.35 -S47LifeLog" 40
+shot mesas "S47: the world's own life" "-S47Jump=chapter3 -S47Drive=saro:station01 -S47Auto=13 -S47Ch3Drive=hut" 30
 exit $fail
