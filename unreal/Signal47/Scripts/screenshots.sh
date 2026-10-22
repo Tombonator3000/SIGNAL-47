@@ -58,4 +58,16 @@ shot fieldbook "S47: field book opened" "-S47Jump=chapter1 -S47Face=room -S47Fie
 shot envelope "S47: envelope held up to the lamp" "-S47Jump=chapter1 -S47Face=room -S47FieldBook=envelope" 10
 shot zoom "S47: closer look: Dale's shift log" "-S47Jump=residual -S47Face=logbook -S47Zoom" 8
 shot same "S47: same thread for time away 1" "-S47Jump=chapter1 -S47Face=room -S47Same" 8
+# SARO's own happenings (S47SaroNight): SARO going dark from the yard (the relay's forty seconds passed, the
+# eyes turned to the figure on a roof once it stands), the array put back on the schedule from the console,
+# the dishes that follow through a warning of the time away (played here until the abduction is ported),
+# the three lights on B past a truck driven south, reel 047 and Earl's reel at the deck, and the recording
+# walking a time away kept 60 m off (the flashlight on its band)
+shot saroDark "S47: saro dark figure" "-S47Jump=chapter1 -S47Face=at:10;-11;1.82;0.12 -S47Dark=look" 16
+shot arrayBack "S47: array hold" "-S47Jump=chapter1 -S47Face=dish -S47Array" 24
+shot dishesFollow "S47: dishes follow follow" "-S47Jump=chapter1 -S47Face=at:9.5;-18.5;0.1;0.25 -S47Follow" 20
+shot lineLights "S47: line lights pace" "-S47Jump=chapter1 -S47Face=at:-19;30;2.0;0.05 -S47LineLights" 10
+shot reel047 "S47: reel 047 hole" "-S47Jump=chapter1 -S47Face=decoder -S47Reel047" 26
+shot reelTape "S47: reel tape heard to the end" "-S47Jump=chapter1 -S47Face=decoder -S47ReelTape" 16
+shot recording "S47: recording walk" "-S47Jump=chapter1 -S47Face=at:-24;120;2.64;0 -S47RecWalk -S47Light" 12
 exit $fail

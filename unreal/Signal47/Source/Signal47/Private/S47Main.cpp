@@ -9,6 +9,7 @@
 #include "S47HUD.h"
 #include "S47Night.h"
 #include "S47Phones.h"
+#include "S47SaroNight.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47Audio.h"
@@ -67,6 +68,8 @@ void US47Main::Step(double Dt)
 	if (Mode == EMode::Play && Score) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night) Night->Step(Dt);
+	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)
+	if (SaroNight) SaroNight->Frame(Dt);
 	// main.ts: the acoustic space, from where the player stands
 	FString Sp;
 	if (World && World->bDriving) Sp = TEXT("lab");

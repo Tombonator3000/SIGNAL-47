@@ -91,6 +91,12 @@ public:
 	// several slots is sent once.
 	void SetFloodPool(int32 Set, int32 Index, const FVector& P, float Width, const FLinearColor& C, bool bUpload = true);
 	void FlushFlood(int32 Set);
+	// A pool as it is now (pos[i]: x, y, z and its width), how many a set has, and the set's scale
+	// (world/saroPower.ts takes SARO's lamps down from what they are and puts them back).
+	FLinearColor FloodPool(int32 Set, int32 Index) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Pos.IsValidIndex(Index) ? FloodSets[Set].Pos[Index] : FLinearColor(0, -999, 0, 0); }
+	FLinearColor FloodColOf(int32 Set, int32 Index) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Col.IsValidIndex(Index) ? FloodSets[Set].Col[Index] : FLinearColor::Black; }
+	int32 FloodCount(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Pos.Num() : 0; }
+	float FloodScaleOf(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Scale : 0.f; }
 
 	// What the drive needs that only exists while the web game runs (export.js extras: drive):
 	// each leg's obstacles, lots and headlight slots, each truck's own flood sets. Null when the
@@ -150,6 +156,12 @@ public:
 	void SetClock(double Seconds);
 	void SetLightsScale(float Ceiling, float Lamps);
 	void SetTubes(bool bOn, int32 KeepOff = -1);
+	// the tubes one by one (room.tubes[k].material: world/saroPower.ts keeps them as they were)
+	int32 TubeCount() const { return TubeNodes.Num(); }
+	bool TubeLit(int32 K) const;
+	void SetTube(int32 K, bool bLit);
+	// room.lights.hemi.intensity = hemiBase * k (main.ts: the starlight as the eyes open, story/saroDark.ts)
+	void SetHemiScale(float K);
 
 	// ---------- the array (Exterior.ts, Dish.ts) ----------
 	void PointDishes(double Az, double El, double Slew);
@@ -164,6 +176,9 @@ public:
 	double DishX(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].X : 0; }
 	double DishZ(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].Z : 0; }
 	double DishScale(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].Scale : 1; }
+	// one dish (Dish.snap: story/arrayBack.ts and story/dishesFollow.ts turn them one by one); drawn
+	// with the next frame's
+	void SnapDish(int32 I, double Az, double El);
 
 	// ---------- doors (Doors.ts) ----------
 	bool IsDoor(const FString& ItemId) const;
@@ -268,6 +283,9 @@ private:
 	struct FDishPart { int32 Node = -1; int32 Level = 0; TArray<int32> DishIdx; };
 	TArray<FDishPart> DishParts;
 	void DrawDishes();
+	bool bDishesDirty = false;
+	float HemiK = 1.f;
+	void ApplyHemi();
 
 	// doors
 	struct FDoor { FString Id, Inter, Name, Area, Sound; double Range = 2.4; bool bOpen = false; double K = 0, From = 0, T0 = -1; TArray<int32> MovedNodes; TArray<TArray<double>> Shut, Open; TArray<int32> Zones; TOptional<FS47Rect> Leaf; int32 Proxy = -1; };

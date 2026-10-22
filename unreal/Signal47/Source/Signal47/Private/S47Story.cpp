@@ -58,11 +58,11 @@ void AS47Story::Log(const FString& Text)
 	NS.Log.Add({ FMath::RoundToDouble(ClockSec), Text });
 }
 
-void AS47Story::ConsoleLog(const FString& Text, double At)
+void AS47Story::ConsoleLog(const FString& Text, TOptional<double> At)
 {
 	// in the night's order: the evening before midnight comes first
 	auto Night = [](double V) { const double D = FMath::Fmod(FMath::Fmod(V, 86400.0) + 86400.0, 86400.0); return D >= 12 * 3600 ? D - 86400 : D; };
-	const double C = FMath::FloorToDouble(At + 0.5);
+	const double C = FMath::FloorToDouble(At.Get(ClockSec) + 0.5);
 	const int32 I = NS.Log.IndexOfByPredicate([&](const FS47LogLine& L) { return Night(L.Clock) > Night(C); });
 	NS.Log.Insert({ C, Text }, I < 0 ? NS.Log.Num() : I);
 }
@@ -76,7 +76,37 @@ bool AS47Story::RelayClack()
 
 FVector AS47Story::RackAt() const
 {
-	return Saro.IsValid() ? Saro->Obj(TEXT("room.objs.rack")).WorldPosition() : FVector::ZeroVector;
+	return Saro.IsValid() ? Saro.Get()->Obj(TEXT("room.objs.rack")).WorldPosition() : FVector::ZeroVector;
+}
+
+FVector AS47Story::TelexAt() const
+{
+	if (!Saro.IsValid()) return FVector(0, 0.9, 0);
+	const FVector P = Saro.Get()->Obj(TEXT("room.objs.telex")).WorldPosition();
+	return FVector(P.X, 0.9, P.Z);
+}
+
+TArray<FString> AS47Story::TelexRoll() const
+{
+	TArray<FString> R = S47Docs::TelexEvening();
+	if (NS.Hondo) R.Add(S47Docs::TelexHondo(*NS.Hondo));
+	return R;
+}
+
+void AS47Story::HondoTelex(double Filed, TOptional<double> At)
+{
+	if (NS.Hondo) return;
+	NS.Hondo = FMath::FloorToDouble(Filed + 0.5);
+	ConsoleLog(TEXT("TELEX RECEIVED  HONDO VALLEY"), At);
+	// (room.setTelexRoll: the roll's paper on the machine is not drawn in this version)
+	const int32 I = DocsList.IndexOfByPredicate([](const FS47Doc& D) { return D.Id == TEXT("telex"); });
+	if (I >= 0) DocsList[I] = S47Docs::Telex(TelexRoll());
+}
+
+void AS47Story::PowerOut(bool bOut)
+{
+	bDark = bOut;
+	if (bRadioOn && Audio.IsValid()) Audio->AmRadio(!bOut, Saro.IsValid() ? Saro->PropLocation(TEXT("radio")) : FVector::ZeroVector);
 }
 
 void AS47Story::AddDoc(const FS47Doc& Doc)
@@ -156,7 +186,6 @@ TArray<FS47Task> AS47Story::Tasks() const
 
 FString AS47Story::Label(const FString& Id) const
 {
-	const bool bDark = false;
 	if (Id == TEXT("logbook")) return bLogRead ? TEXT("Read the shift log") : TEXT("Read Dale's shift log");
 	if (Id == TEXT("workOrder")) return TEXT("Read the work order");
 	if (Id == TEXT("coffeePot")) return At(ES47Phase::Event) ? TEXT("Coffee machine") : Coffee == ECoffee::None ? TEXT("Fill your mug") : TEXT("Coffee machine");
@@ -190,7 +219,6 @@ FString AS47Story::Label(const FString& Id) const
 	if (Id == TEXT("jacket")) return (bCinematic || NS.bJacket) ? FString() : TEXT("Your jacket");
 	if (Id == TEXT("radio")) return bRadioOn ? TEXT("Turn the radio off") : TEXT("Turn the radio on");
 	if (Saro.IsValid() && Saro->IsDoor(Id)) return Saro->DoorLabel(Id);
-	(void)bDark;
 	return FString();
 }
 
@@ -217,6 +245,7 @@ void AS47Story::Use(const FString& Id)
 	}
 	if (Id == TEXT("rack"))
 	{
+		if (bDark) { Toast(TEXT("The rack is dead. No power anywhere.")); return; }
 		if (NS.bK3Open) { ResetK3(); return; }
 		if (bPowered) { Toast(TEXT("Bank 3 online. Sixteen green, two amber. Amber is normal, according to Dale.")); return; }
 		PowerUp(false);
@@ -224,6 +253,7 @@ void AS47Story::Use(const FString& Id)
 	}
 	if (Id == TEXT("crtCenter"))
 	{
+		if (bDark) { Toast(TEXT("Dead screen. No power.")); return; }
 		if (!bPowered) { Toast(TEXT("Dead screen. RX bank 3 is still off.")); if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); return; }
 		if (NS.bK3Open) { Toast(TEXT("Dead screen. Bank 3 has tripped again. The lever is on the rack.")); if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); return; }
 		bAlarmOn = false;
@@ -234,7 +264,9 @@ void AS47Story::Use(const FString& Id)
 	if (Id == TEXT("crtLeft"))
 	{
 		if (!bPowered) { Toast(TEXT("No power.")); return; }
-		if (At(ES47Phase::Event)) Toast(TEXT("S-01 to S-27: no control command recorded."));
+		const FString ArrayAt = ArrayText ? ArrayText() : FString();
+		if (!ArrayAt.IsEmpty()) Toast(ArrayAt);
+		else if (At(ES47Phase::Event)) Toast(TEXT("S-01 to S-27: no control command recorded."));
 		else if (Rx.Stage >= 2) Toast(FString::Printf(TEXT("Array on survey schedule. Az %s, el %d. Nothing logged since midnight."), *S47Text::Pad(Saro.IsValid() ? Saro->DishAz(0) : ParkAz, 3), (int32)SurveyEl));
 		else Toast(TEXT("Array parked. Receiver needs calibrating before the survey can start."));
 		return;
@@ -268,10 +300,10 @@ void AS47Story::Use(const FString& Id)
 	if (Id == TEXT("map")) { Toast(TEXT("SARO is the red X on the plains. Somebody drew a ring around Roswell and a question mark.")); return; }
 	if (Id == TEXT("excBinder")) { const FS47Doc D = S47Docs::Binder(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("serviceRecord")) { const FS47Doc D = S47Docs::ServiceRecord(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
-	if (Id == TEXT("telex")) { const FS47Doc D = S47Docs::Telex(S47Docs::TelexEvening()); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
+	if (Id == TEXT("telex")) { const FS47Doc D = S47Docs::Telex(TelexRoll()); OpenDoc(D, [this, D] { FilePaper(D); if (NS.Hondo) Note(S47Docs::HondoNote(*NS.Hondo)); }); return; }
 	if (Id == TEXT("rfiCard")) { const FS47Doc D = S47Docs::InterferenceCard(Rx.Stage >= 3); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("halley")) { const FS47Doc D = S47Docs::HalleyPoster(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
-	if (Id == TEXT("opsTerminal")) { if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); if (Hud.IsValid()) Hud->OpenOps(); return; }
+	if (Id == TEXT("opsTerminal")) { if (bDark) { Toast(TEXT("Dead screen. No power.")); return; } if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); if (Hud.IsValid()) Hud->OpenOps(); return; }
 	if (Id == TEXT("jacket")) { Toast(TEXT("SARO issue, with a reflective band all the way round. Too warm for in here."), 3.2f); return; }
 	if (Id == TEXT("radio")) { ToggleRadio(); return; }
 	if (Saro.IsValid() && Saro->IsDoor(Id)) { Saro->ToggleDoor(Id); return; }
@@ -289,6 +321,7 @@ void AS47Story::OpsRan(const FString& Cmd, const FString& Result)
 
 void AS47Story::ToggleRadio()
 {
+	if (bDark) { Toast(TEXT("Nothing. The power is out.")); return; }
 	bRadioOn = !bRadioOn;
 	if (Audio.IsValid())
 	{
@@ -693,6 +726,11 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		}
 		if (S47J::Has(Ns, TEXT("solveAt"))) NS.SolveAt = S47J::Num(Ns, TEXT("solveAt"));
 		NS.bJacket = S47J::Bool(Ns, TEXT("jacket"));
+		// array: copyArraySave(saved.ns.array) (story/arrayBack.ts reads it through its store, which
+		// copies it); hondo: Number.isFinite(saved.ns.hondo) ? saved.ns.hondo : undefined
+		NS.Array = S47J::Obj(Ns, TEXT("array")).IsValid() ? S47J::Clone(S47J::Obj(Ns, TEXT("array"))) : nullptr;
+		double Hondo = 0;
+		if (Ns->TryGetNumberField(TEXT("hondo"), Hondo) && FMath::IsFinite(Hondo)) NS.Hondo = Hondo;
 	}
 	else
 	{
@@ -708,6 +746,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		else if (Id == TEXT("service")) DocsList.Add(S47Docs::ServiceRecord());
 		else if (Id == TEXT("rfiCard")) DocsList.Add(S47Docs::InterferenceCard(Rx.Stage >= 3));
 		else if (Id == TEXT("halley")) DocsList.Add(S47Docs::HalleyPoster());
+		else if (Id == TEXT("telex")) DocsList.Add(S47Docs::Telex(TelexRoll()));
 	}
 	ApplyK3(NS.bK3Open);
 	// (room.setTelexRoll: the telex is not ported yet)
@@ -779,6 +818,7 @@ void AS47Story::ResetAll()
 	bRadioOn = false;
 	bAlarmOn = false; bSkipQueued = false; bRingPending = false; bRinging = false;
 	Flicker = 0; CrtGlitch = 0; bMugFalling = false; LookAssist = 0; DipT = 0;
+	bDark = false;
 	Rx.Reset();
 	bResidualVisible = false;
 	// Prologue.reset: the chapters too (ch1.reset() ... ch6.reset()); the night is the prologue's again

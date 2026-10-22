@@ -65,3 +65,13 @@
 - [ ] Kapittel 2s slutt venter på skrittene: settes kapittel 3s begynnelse som ny `OnEnd`, går den gjennom `M->Phones->Ch2End`.
 - [ ] Opplesningen av et nærmere blikk etter 650 ms (Serling) når fortelleren er portert.
 - [ ] Dishenes røde lys blinker i takt mens de er vippet (DishArray.beaconPhase) når glødepunktene blinker.
+## SARO sine egne hendelser (2026-10-22)
+
+- [x] SARO mørk og telexen fra Hondo Valley, matrisen tilbake, antennene som følger, lysene på B, spole 047, Earls spole og opptaket (`US47SaroNight`), med lagringen.
+- [ ] Bortføringens port setter `US47SaroNight::Abduct` (stage, warn, backAt, data.last, overPhase, recordings, holdRecord, data.dishes) og bruker `FS47Walker` fra S47Recording.h for den som står der spilleren ble tatt; til da spilles varselet for antennene av testflagget.
+- [ ] Radioens port setter `BoyCallTimes`, `CallerVoice` og `BoyVoices` (Earls spole), og musikken holdes av `ReelTapeBusy`, `SaroDarkBusy`, `ArrayBackBusy` og `RecWalkBusy` (musicHeld).
+- [ ] Arkivtelefonens port spiller `Reel047` (update, play, reset) og setter `TipMoving`/`TipHolds` (archiveDishes.ts); feltboka setter `LineLights->bAnyWay`; det nærmere blikket setter `Zoom`.
+- [ ] Hjørneklokka i sekunder: én kjede i main.ts sin rekkefølge (abduction.warnClock, saroDark, archive, ch6) i stedet for hver sin `ClockSeconds`.
+- [ ] Telexrullen på maskinen (ControlRoom.setTelexRoll) tegnes ikke; papiret og loggen har meldingen.
+- [ ] ConvolverNode i S47WebAudio: reverbet i decoder.ts er en kambank som står i for den.
+- [ ] Glødepunktene utenom antennenes røde lamper blinker ikke ennå.

@@ -29,6 +29,7 @@
 #include "S47Phones.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
+#include "S47SaroNight.h"
 #include "S47Story.h"
 #include "S47Truck.h"
 #include "S47UI.h"
@@ -590,6 +591,7 @@ void US47Night::SeenSync()
 	Was.Calls = Calls->Count;
 	// (the roof, the office's telephone, the archive, the array tipped, reel 047: S47Phones.cpp)
 	if (M->Phones) M->Phones->SeenSync();
+	if (M->SaroNight) M->SaroNight->SeenSync();
 }
 
 void US47Night::SeenStep(double Dt)
@@ -626,6 +628,9 @@ void US47Night::SeenStep(double Dt)
 	}
 	// the steps on the roof, the office's telephone, the archive's phone, the array tipped, reel 047 (S47Phones.cpp)
 	if (M->Phones) M->Phones->SeenStep();
+	// (the recording's walk, the dishes that follow, the lights on B, Earl's reel, SARO dark and its
+	// figure, reel 047, the array put back: S47SaroNight.cpp)
+	if (M->SaroNight) M->SaroNight->SeenStep();
 	SeenLog->Update(Dt, Camera());
 }
 
@@ -674,7 +679,9 @@ void US47Night::Step(double Dt)
 	NightEvents->Update(Dt, In);
 	// the field book, the steps on the roof, the archive's phone after them (S47Phones.cpp)
 	if (M->Phones) M->Phones->StepNight(Dt, bNightOk);
-	// (saroDark and Hondo's telex, cutouts: not ported yet)
+	// 02:29: SARO goes dark (story/saroDark.ts), and Hondo's telex where the night never went dark
+	if (M->SaroNight) M->SaroNight->StepDark(Dt, bModal);
+	// (cutouts: not ported yet)
 	// the flashlight flickers near the strange events: through the silence on the shoulder, while a
 	// figure stands at the edge of the view, while the town's lamps go out or its payphone rings
 	Flashlight->Flicker(bSilent ? 0.4 : 0, TEXT("silence"));
@@ -683,10 +690,12 @@ void US47Night::Step(double Dt)
 	FS47GlimpsesIn G = GlimpseIn(!bModal && !Cinematic() && At(TEXT("ch1")) && Phase() != TEXT("ch6") && Dawn() < 0.3 && !bSilent && !Is(Hooks.AbductionBusy) && !Is(Hooks.SaroDarkBusy) && !Is(Hooks.ArrayBackBusy));
 	G.May = Curve->May(TEXT("glimpse")); G.Pace = Curve->Pace(TEXT("glimpse"));
 	Glimpses->Update(Dt, G);
-	// (lineLights, eventsOnB, ninth, starHole, the diner's morning: not ported yet)
+	// the lights on B (story/lineLights.ts)
+	if (M->SaroNight) M->SaroNight->StepLights(Dt, bModal);
+	// (eventsOnB, ninth, starHole, the diner's morning: not ported yet)
 	// the thread nobody tied, the office's telephone (S47Phones.cpp)
 	if (M->Phones) M->Phones->StepLate(Dt, bModal);
-	// (truckB, truckTaken, arrayBack, the time away: not ported yet)
+	// (truckB, truckTaken, the time away: not ported yet)
 
 	// the log, for the tests and the screenshot runs
 	if (Calls->Count != CallsLogged && Calls->Last)
@@ -699,6 +708,9 @@ void US47Night::Step(double Dt)
 		GlimpseLogged = Glimpses->Up;
 		UE_LOG(LogS47Night, Display, TEXT("S47: glimpse %s"), GlimpseLogged.IsEmpty() ? TEXT("gone") : *(TEXT("at ") + GlimpseLogged));
 	}
+	// the array put back on the schedule, the recording's walk and the dishes that follow (the time
+	// away's block), the corner clock in seconds (S47SaroNight.cpp)
+	if (M->SaroNight) M->SaroNight->StepLate(Dt, bModal);
 }
 
 // ---------- the saves (main.ts startGame, leavePlay, toTitle, writeSave) ----------

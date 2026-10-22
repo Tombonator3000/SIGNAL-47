@@ -32,6 +32,8 @@
 #include "S47Score.h"
 #include "S47World.h"
 #include "S47Phones.h"
+#include "S47SaroNight.h"
+#include "S47ArrayBack.h"
 #include "S47Opening.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -243,9 +245,11 @@ void US47Flow::Boot()
 		PlayInput();
 		// (startGame's: a new night for the night's layer, and its log listening once the night has begun)
 		if (M->Night) M->Night->Restore(S47J::FObj());
+		if (M->SaroNight) M->SaroNight->Restore(S47J::FObj());
 		FString Jump;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) M->Story->Jump(Jump);
 		else M->Story->Start();
+		if (M->SaroNight) M->SaroNight->Restored();
 		if (M->Night) M->Night->Restored();
 		M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 		return;
@@ -472,6 +476,8 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Night) M->Night->Restore(O.State);
 	// roofSteps, officePhone and sameThread reset (S47Phones)
 	if (M->Phones) M->Phones->Restore();
+	// recWalk.reset, lineLights.reset (townSeen back), saroDark.halt (S47SaroNight)
+	if (M->SaroNight) M->SaroNight->Restore(O.State);
 	// (recWalk, stationTaken, truckTaken, the odometer, townEvents, cutouts, abduction, lineLights, pasture,
 	// motelTv, truckB, ninth, starHole, morning, saroDark: not ported yet)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
@@ -487,6 +493,9 @@ void US47Flow::StartGame(const FStart& O)
 			M->Web->SetDoorById(FString(*KV.Key), bOpen, true);
 		}
 	}
+	// saroDark.restore, follow.restore, arrayBack.restore, reelTape.stop (S47SaroNight)
+	if (M->SaroNight) M->SaroNight->Restored();
+	// (abduction.refile, archive, fieldBook, the town's papers, lostNights, motelTv: not ported yet)
 	// (abduction.refile, follow, arrayBack: not ported yet) the archive and the field book (S47Phones)
 	if (M->Phones) M->Phones->Restored();
 	// (the town's papers, lostNights, motelTv: not ported yet)
@@ -542,6 +551,8 @@ void US47Flow::LeavePlay()
 	if (M->Score) M->Score->Stop();
 	if (M->Radio) M->Radio->Reset(M->Story ? M->Story->Clock() : 0);
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
+	// saroDark.halt, follow, arrayBack, recWalk, reelTape (S47SaroNight)
+	if (M->SaroNight) M->SaroNight->Leave();
 	// nightEvents, the seen log (quiet) and the curve (S47Night)
 	if (M->Night) M->Night->Leave();
 	// archive.halt, arrayTip.reset, roofSteps.reset, officePhone.reset (S47Phones)
@@ -564,6 +575,8 @@ void US47Flow::ToTitle()
 	if (M->Score) M->Score->Stop();
 	if (M->Radio) M->Radio->Reset(M->Story ? M->Story->Clock() : 0);
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
+	// saroDark.halt, follow, arrayBack, recWalk (S47SaroNight)
+	if (M->SaroNight) M->SaroNight->Leave(true);
 	// the curve (S47Night)
 	if (M->Night) M->Night->Leave(true);
 	// archive.halt, arrayTip.reset (S47Phones)
@@ -729,6 +742,10 @@ FString US47Flow::SaveBlock() const
 	// (nor from the archive's phone ringing until the dishes are down, nor while reel 047 runs)
 	if (M->Phones) { const FString B = M->Phones->SaveBlock(); if (!B.IsEmpty()) return B; }
 	// (the truck's count on B: not in the Unreal version yet)
+	// (the time away's 47 seconds, the archive's phone, the truck's count on B: those races are not in
+	// the Unreal version yet)
+	// (the array on the schedule and going back, and SARO going dark: S47SaroNight)
+	if (M->SaroNight) { const FString B = M->SaroNight->SaveBlock(); if (!B.IsEmpty()) return B; }
 	return GameSaveBlock();
 }
 
@@ -785,6 +802,8 @@ S47J::FObj US47Flow::GameState()
 	}
 	// flashlight, town, seen, curve, album (S47Night)
 	if (M->Night) M->Night->Save(State);
+	// AbductSave.dishes while the time away is not ported (S47SaroNight)
+	if (M->SaroNight) M->SaroNight->Save(State);
 	return State;
 }
 
@@ -926,8 +945,9 @@ S47J::FObj US47Flow::ComposeCase() const
 	Part(TEXT("ch3"), TEXT("ch3"), false);
 	Part(TEXT("ch4"), TEXT("ch4"), false);
 	Part(TEXT("ch5"), TEXT("ch5"), false);
-	// ns: Night Shift's papers, relay K3, the console log and the jacket (NightShiftState); the threads
-	// (ln), the array's runs and Hondo's telex as the opened case had them until they are ported
+	// ns: Night Shift's papers, relay K3, the console log and the jacket (NightShiftState), the array's
+	// tries (story/arrayBack.ts) and Hondo's telex (story/saroDark.ts); the threads (ln) as the opened
+	// case had them until they are ported
 	const S47J::FObj WasNs = S47J::Obj(Was, TEXT("ns"));
 	const S47J::FObj Ns = S47J::New();
 	if (S)
@@ -940,10 +960,11 @@ S47J::FObj US47Flow::ComposeCase() const
 		Ns->SetArrayField(TEXT("log"), Log);
 		if (N.SolveAt) S47J::Set(Ns, TEXT("solveAt"), *N.SolveAt); else S47J::SetNull(Ns, TEXT("solveAt"));
 		S47J::Set(Ns, TEXT("jacket"), N.bJacket);
+		// array: copyArraySave(this.ns.array); hondo: this.ns.hondo
+		if (const TOptional<FS47ArraySave> A = FS47ArraySave::Copy(N.Array)) Ns->SetObjectField(TEXT("array"), A->ToJson());
+		if (N.Hondo) S47J::Set(Ns, TEXT("hondo"), *N.Hondo);
 	}
 	S47J::Set(Ns, TEXT("ln"), S47J::Strs(WasNs, TEXT("ln")));
-	if (S47J::Has(WasNs, TEXT("array"))) Ns->SetField(TEXT("array"), WasNs->TryGetField(TEXT("array")));
-	if (S47J::Has(WasNs, TEXT("hondo"))) S47J::Set(Ns, TEXT("hondo"), S47J::Num(WasNs, TEXT("hondo")));
 	S47J::Set(C, TEXT("ns"), Ns);
 	S47J::Set(C, TEXT("notes"), S ? S->Notes() : TArray<FString>());
 	S47J::Set(C, TEXT("clock"), S ? S->Clock() : 0.0);

@@ -33,6 +33,11 @@
 #include "S47Score.h"
 #include "S47Media.h"
 #include "S47Phones.h"
+#include "S47SaroNight.h"
+#include "S47Reel047.h"
+#include "S47LineLights.h"
+#include "S47DishArray.h"
+#include "S47ArchiveDishes.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
 #include "S47UI.h"
@@ -86,6 +91,7 @@ void AS47HUD::Start()
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
 		bOk &= FS47Radio::SelfTest(Lines) & FS47TripRadio::SelfTest(Lines) & FS47Score::SelfTest(Lines) & FS47MediaSource::SelfTest(Lines) & FS47RadioVoice::SelfTest(Lines);
 		bOk &= US47Phones::SelfTest(Lines); // (the archive's phone and its dishes, the roof, the office's telephone, the field book, the looks, the thread)
+		bOk &= US47SaroNight::SelfTest(Lines); // (SARO dark, the array put back, the dishes that follow, the lights on B, the reels, the recording)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -198,6 +204,28 @@ void AS47HUD::Start()
 		}
 		// main.ts: the phones, the archive and the records (the archive's phone, the office's telephone, the roof, the field book, the looks)
 		M->Phones = NewObject<US47Phones>(M); M->Phones->Init(M);
+		// main.ts: SARO's own happenings (SARO dark, the array, the dishes that follow, the lights on B, the reels, the recording)
+		M->SaroNight = NewObject<US47SaroNight>(M); M->SaroNight->Init(M);
+		if (US47Phones* Ph = M->Phones; Ph && M->SaroNight)
+		{
+			// main.ts: what SARO's own happenings and the archive's phone know of each other
+			US47SaroNight* Sn = M->SaroNight;
+			TWeakObjectPtr<US47SaroNight> Ws = Sn;
+			TWeakObjectPtr<US47Phones> Wp = Ph;
+			Sn->Zoom = [M] { return M->ZoomK; };
+			Sn->TipMoving = [Wp] { return Wp.IsValid() && Wp->ArrayTip.IsValid() && Wp->ArrayTip->Moving(); };
+			Sn->TipHolds = [Wp] { return Wp.IsValid() && Wp->ArrayTip.IsValid() && Wp->ArrayTip->Holds(); };
+			Ph->Dark = [M] { return M->Story && M->Story->bDark; };                       // game.dark
+			Ph->DishRogue = [Ws](int32 I) { return Ws.IsValid() && Ws->Dishes.IsValid() && Ws->Dishes->Dishes.IsValidIndex(I) && Ws->Dishes->Dishes[I].bRogue; };
+			Ph->DishBack = [Ws](int32 I) { return Ws.IsValid() && Ws->Dishes.IsValid() && Ws->Dishes->Dishes.IsValidIndex(I) && Ws->Dishes->Dishes[I].bBack; };
+			Ph->Foretell = [Ws] { if (Ws.IsValid() && Ws->LineLights.IsValid()) Ws->LineLights->bAnyWay = true; }; // (pasture.now when the herd is ported)
+			// reel 047 on the processor's deck (story/reel047.ts as the archive's deck)
+			Ph->Reel047.Playing = [Ws] { return Ws.IsValid() && Ws->Reel047.IsValid() && Ws->Reel047->bPlaying; };
+			Ph->Reel047.Finished = [Ws] { return Ws.IsValid() && Ws->Reel047.IsValid() && Ws->Reel047->bFinished; };
+			Ph->Reel047.Update = [Ws](double Dt) { if (Ws.IsValid() && Ws->Reel047.IsValid()) Ws->Reel047->Update(Dt); };
+			Ph->Reel047.Play = [Ws](TFunction<void(const FString&)> Cue) { if (Ws.IsValid() && Ws->Reel047.IsValid()) Ws->Reel047->Play([Cue](const FS47ReelCue& C) { if (Cue) Cue(C.Kind); }); };
+			Ph->Reel047.Reset = [Ws] { if (Ws.IsValid() && Ws->Reel047.IsValid()) Ws->Reel047->Reset(); };
+		}
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

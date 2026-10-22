@@ -723,20 +723,35 @@ void AS47Web::Enter(const FString& Area)
 		const bool bOn = L.Area == TEXT("global") || Shown(L.Area);
 		L.L->SetVisibility(bOn);
 	}
-	const FHemi* H = Hemis.Find(Area);
-	if (!H) H = Hemis.Find(TEXT("saro"));
-	UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr;
-	if (H && E)
-	{
-		E->SetVectorParameterValue(TEXT("HemiSky"), H->Sky * H->Intensity);
-		E->SetVectorParameterValue(TEXT("HemiGround"), H->Ground * H->Intensity);
-	}
+	ApplyHemi();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
 	if (T && SkyMid)
 	{
 		if (UTexture2D* Tex = LoadObject<UTexture2D>(nullptr, **T)) SkyMid->SetTextureParameterValue(TEXT("Sky"), Tex);
 	}
+}
+
+void AS47Web::ApplyHemi()
+{
+	const FHemi* H = Hemis.Find(CurrentArea);
+	const bool bSaro = !H;
+	if (!H) H = Hemis.Find(TEXT("saro"));
+	UMaterialParameterCollectionInstance* E = Env && GetWorld() ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr;
+	if (H && E)
+	{
+		// (room.lights.hemi is SARO's: the scale is its own, main.ts saroDark.adapt)
+		const float K = bSaro || CurrentArea == TEXT("saro") ? HemiK : 1.f;
+		E->SetVectorParameterValue(TEXT("HemiSky"), H->Sky * H->Intensity * K);
+		E->SetVectorParameterValue(TEXT("HemiGround"), H->Ground * H->Intensity * K);
+	}
+}
+
+void AS47Web::SetHemiScale(float K)
+{
+	if (FMath::IsNearlyEqual(K, HemiK, 1e-4f)) return;
+	HemiK = K;
+	ApplyHemi();
 }
 
 const TArray<FS47Rect>& AS47Web::Zones() const
@@ -887,7 +902,27 @@ void AS47Web::SetTubes(bool bOn, int32 KeepOff)
 	}
 }
 
+bool AS47Web::TubeLit(int32 K) const
+{
+	const UStaticMeshComponent* M = TubeNodes.IsValidIndex(K) ? Cast<UStaticMeshComponent>(Nodes[TubeNodes[K]].Comp.Get()) : nullptr;
+	return M && M->GetMaterial(0) != TubeOffMid.Get();
+}
+
+void AS47Web::SetTube(int32 K, bool bLit)
+{
+	UStaticMeshComponent* M = TubeNodes.IsValidIndex(K) ? Cast<UStaticMeshComponent>(Nodes[TubeNodes[K]].Comp.Get()) : nullptr;
+	if (M) M->SetMaterialByName(TEXT("slot0"), bLit ? Mat(TubeOnMat) : (UMaterialInterface*)TubeOffMid.Get());
+}
+
 // ---------- the dishes ----------
+
+void AS47Web::SnapDish(int32 I, double Az, double El)
+{
+	if (!Dishes.IsValidIndex(I)) return;
+	FDish& D = Dishes[I];
+	D.CurAz = D.TgtAz = Az; D.CurEl = D.TgtEl = El;
+	bDishesDirty = true;
+}
 
 void AS47Web::PointDishes(double Az, double El, double Slew)
 {
@@ -1040,7 +1075,8 @@ void AS47Web::Tick(float Dt)
 		D.CurEl += FMath::Sign(DE) * FMath::Min(FMath::Abs(DE), Step * 0.6);
 		bMoved = true;
 	}
-	if (bMoved) DrawDishes();
+	if (bMoved || bDishesDirty) DrawDishes();
+	bDishesDirty = false;
 	// doors swing (Doors.update)
 	DoorT += Dt;
 	for (FDoor& D : Doors)
