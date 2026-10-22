@@ -9,6 +9,9 @@
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "Rendering/DrawElements.h"
+#include "S47Image.h"
+#include "S47Kit.h"
+#include "Widgets/Layout/SScaleBox.h"
 #include "S47Rx.h"
 #include "S47Story.h"
 #include "Styling/CoreStyle.h"
@@ -266,22 +269,7 @@ void SS47Document::Construct(const FArguments& InArgs)
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().FillWidth(0.55f).Padding(0, 0, 16, 0)
 				[
-					SNew(SBorder).BorderImage(PaperBrush.Get()).Padding(FMargin(40, 36))
-					[
-						SNew(SScrollBox)
-						+ SScrollBox::Slot()
-						[
-							SNew(SVerticalBox)
-							+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
-							[
-								SNew(STextBlock).Text(FText::FromString(D.Stamp.IsEmpty() ? TEXT("") : D.Stamp)).Font(S47Style::Mono(20.f)).ColorAndOpacity(FLinearColor(0.55f, 0.15f, 0.12f))
-							]
-							+ SVerticalBox::Slot().AutoHeight()
-							[
-								S47Style::Page(D.Page, Type, S47Style::Ink)
-							]
-						]
-					]
+					PageWidget(D, Type)
 				]
 				+ SHorizontalBox::Slot().FillWidth(0.45f)
 				[
@@ -309,6 +297,50 @@ void SS47Document::Construct(const FArguments& InArgs)
 			]
 		]
 	];
+}
+
+TSharedRef<SWidget> SS47Document::PageWidget(const FS47Doc& D, const FSlateFontInfo& Type)
+{
+	// UI.document: a photograph or a map is the picture itself; a paper may carry a picture under
+	// its text (a drawing, the transit plan) and may be drawn on its own paper (art: a card, a letter)
+	auto Pic = [](const FString& Name) -> UTexture2D* { return Name.IsEmpty() ? nullptr : Name.StartsWith(TEXT("data:")) ? S47Image::FromDataUrl(Name) : S47Image::Art(Name); };
+	UTexture2D* Image = Pic(D.Image);
+	UTexture2D* PaperArt = Pic(D.Paper);
+	if (Image && (D.Kind == TEXT("photo") || D.Kind == TEXT("map")))
+	{
+		ImageBrush = S47Kit::BrushFor(Image);
+		return SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Center)
+			[
+				SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
+				[
+					SNew(SImage).Image(ImageBrush.Get())
+				]
+			];
+	}
+	TSharedRef<SVerticalBox> Col = SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+		[
+			SNew(STextBlock).Text(FText::FromString(D.Stamp.IsEmpty() ? TEXT("") : D.Stamp)).Font(S47Style::Mono(20.f)).ColorAndOpacity(FLinearColor(0.55f, 0.15f, 0.12f))
+		]
+		+ SVerticalBox::Slot().AutoHeight()
+		[
+			S47Style::Page(D.Page, Type, S47Style::Ink)
+		];
+	if (Image)
+	{
+		ImageBrush = S47Kit::BrushFor(Image);
+		const float W = 560.f, H = W * ImageBrush->ImageSize.Y / FMath::Max(1.0, ImageBrush->ImageSize.X);
+		Col->AddSlot().AutoHeight().Padding(0, 16, 0, 0).HAlign(HAlign_Left)[SNew(SBox).WidthOverride(W).HeightOverride(H)[SNew(SImage).Image(ImageBrush.Get())]];
+	}
+	TSharedRef<SWidget> Text = SNew(SScrollBox) + SScrollBox::Slot()[Col];
+	if (PaperArt)
+	{
+		PaperArtBrush = S47Kit::BrushFor(PaperArt);
+		return SNew(SOverlay)
+			+ SOverlay::Slot()[SNew(SImage).Image(PaperArtBrush.Get())]
+			+ SOverlay::Slot().Padding(FMargin(48, 40))[Text];
+	}
+	return SNew(SBorder).BorderImage(PaperBrush.Get()).Padding(FMargin(40, 36))[Text];
 }
 
 FReply SS47Document::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)

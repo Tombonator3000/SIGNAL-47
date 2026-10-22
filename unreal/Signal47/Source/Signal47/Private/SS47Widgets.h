@@ -95,6 +95,8 @@ private:
 	TFunction<void()> OnClose;
 	TUniquePtr<FSlateBrush> PaperBrush;
 	TUniquePtr<FSlateBrush> PanelBrush;
+	TSharedPtr<FSlateBrush> ImageBrush, PaperArtBrush;
+	TSharedRef<SWidget> PageWidget(const FS47Doc& Doc, const FSlateFontInfo& Type);
 };
 
 // (the notebook is SS47Notebook.h, ported from ui/UI.ts notebook)
