@@ -4,6 +4,7 @@
 #include "S47HUD.h"
 #include "S47Chapter.h"
 #include "S47Chapter2.h"
+#include "S47Chapter5.h"
 #include "S47Json.h"
 #include "S47Main.h"
 #include "S47Web.h"
@@ -26,7 +27,7 @@ AS47Story::AS47Story()
 		V.Clock = ClockSec;
 		V.SolveAt = NS.SolveAt;
 		V.Log = NS.Log;
-		V.bFuture = false;
+		V.bFuture = ChapterKey == TEXT("ch5"); // future: this.phase === 'ch5' (All Night: RUN860414_0529.DAT)
 		return V;
 	});
 }
@@ -317,6 +318,8 @@ void AS47Story::OpsRan(const FString& Cmd, const FString& Result)
 	OpsLines.Append(Lines);
 	if (OpsLines.Num() > 9) OpsLines.RemoveAt(0, OpsLines.Num() - 9);
 	if (Audio.IsValid()) Audio->Play(TEXT("beep_1400_short"), 0.2f);
+	// openOps onCommand: if (this.phase === 'ch5') this.ch5.terminalCommand(c) (the terminal hands it on upper case)
+	if (ChapterKey == TEXT("ch5")) if (US47Chapter5* C5 = Cast<US47Chapter5>(Chapter(TEXT("ch5")))) C5->TerminalCommand(Cmd.ToUpper());
 }
 
 void AS47Story::ToggleRadio()

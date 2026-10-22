@@ -445,7 +445,9 @@
         scan(prefix + '.' + k, v, depth + 1);
       }
     };
-    for (const [p, o] of Object.entries(owners)) scan(p, o, 0);
+    // (an owner that is a scene object itself is a handle too: world.dinerTruckProxy, the box World
+    // puts round the truck on the diner's lot, which chapter five uses)
+    for (const [p, o] of Object.entries(owners)) { if (o && (o.isObject3D || o.isMaterial || o.isTexture)) put(p, o); scan(p, o, 0); }
     // world/archive047.ts keeps the switchboard's two line lamps and the call recorder's strip in its
     // closure (lamp(), setStrip()), out of the scan's reach: found under annex.arc.group by what they
     // are. The lamps are the two unlit boxes that are not tone mapped (trk1 the one at the face's left

@@ -55,9 +55,10 @@ public:
 	void StrokeRect(double X, double Y, double Wd, double Ht);
 	// drawImage(img, x, y) at whole pixels, unscaled
 	void DrawImage(const TArray<FColor>& Src, int32 SW, int32 SH, int32 X, int32 Y);
-	// fillText(text, x, y): on the alphabetic baseline, aligned by TextAlign. False when Slate
-	// could not draw it (no renderer: a commandlet, a server).
-	bool FillText(const FString& Text, double X, double Y);
+	// fillText(text, x, y, maxWidth): on the alphabetic baseline, aligned by TextAlign; a line wider
+	// than MaxWidth (when one is given, > 0) is drawn narrower to fit it, as the canvas does. False
+	// when Slate could not draw it (no renderer: a commandlet, a server).
+	bool FillText(const FString& Text, double X, double Y, double MaxWidth = 0);
 
 	FString ToDataUrl(bool bJpeg, int32 Quality = 92) const;
 

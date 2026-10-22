@@ -214,7 +214,7 @@ private:
 	 *  in them (World.parkAt moves them). */
 	int32 SaroCol = -1, StationCol = -1, DinerCol = -1;
 	int32 TownCarObstacle = -1;
-	FS47Obj SaroProxy, StationProxy;
+	FS47Obj SaroProxy, StationProxy, DinerProxy; // (DinerProxy: World.dinerTruckProxy, the box round the truck on the diner's lot)
 
 	struct FTrip
 	{

@@ -1,7 +1,16 @@
 // story/drawings.ts (the drawings chapter one and the chapters after it use from it)
 #include "S47Drawings.h"
 
+#include "Engine/Texture2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Misc/App.h"
+#include "Rendering/SlateRenderer.h"
 #include "S47Canvas.h"
+#include "S47Image.h"
+#include "Slate/WidgetRenderer.h"
+#include "Styling/SlateBrush.h"
+#include "Widgets/Images/SImage.h"
 
 namespace
 {
@@ -9,6 +18,9 @@ namespace
 	// Content/Fonts, so the 600 is drawn as 400), '19px "Special Elite"'
 	const TCHAR* OSWALD = TEXT("Oswald-Regular.ttf");
 	const TCHAR* ELITE = TEXT("SpecialElite-Regular.ttf");
+	// (chapter five's drawings: the page's Oswald is one variable face, 200 to 700; of the two in
+	// Content/Fonts, Medium is the nearer to the 600 they ask for)
+	const TCHAR* OSWALD_600 = TEXT("Oswald-Medium.ttf");
 }
 
 void S47Drawings::PaperBg(FS47Canvas& G, int32 W, int32 H)
@@ -155,6 +167,243 @@ FString S47Drawings::TransitRecord(const FVector2D& A, const FVector2D& B, const
 	});
 }
 
+// ---------- All Night: SARO 07's service map and the tracing of E09A ----------
+
+namespace
+{
+	const TArray<FVector2D>& ROAD()
+	{
+		static const TArray<FVector2D> R = { { 200, 560 }, { 330, 585 }, { 470, 600 }, { 610, 600 }, { 740, 575 }, { 850, 520 }, { 930, 440 }, { 985, 360 }, { 1030, 270 }, { 1080, 180 }, { 1140, 110 }, { 1190, 70 } };
+		return R;
+	}
+	const FVector2D STATION(470, 360);
+	constexpr double CROSS_MILES = 8.15;
+
+	// distance along the road to a point on it, and the point at a distance along it (along)
+	struct FAlong
+	{
+		TArray<FVector2D> Pts;
+		TArray<double> Cum;
+		double Total = 0;
+		explicit FAlong(const TArray<FVector2D>& P) : Pts(P)
+		{
+			Cum.Add(0);
+			for (int32 i = 1; i < Pts.Num(); ++i) Cum.Add(Cum[i - 1] + FVector2D::Distance(Pts[i], Pts[i - 1]));
+			Total = Cum.Last();
+		}
+		FVector2D At(double D) const
+		{
+			for (int32 i = 1; i < Pts.Num(); ++i)
+			{
+				if (D <= Cum[i])
+				{
+					const double K = (D - Cum[i - 1]) / (Cum[i] - Cum[i - 1]);
+					return Pts[i - 1] + (Pts[i] - Pts[i - 1]) * K;
+				}
+			}
+			return Pts.Last();
+		}
+	};
+
+	// where the line east from STATION 01 meets the road, as a distance along it (crossing)
+	double Crossing()
+	{
+		const TArray<FVector2D>& R = ROAD();
+		const FAlong A(R);
+		for (int32 i = 1; i < R.Num(); ++i)
+		{
+			const double Ax = R[i - 1].X, Ay = R[i - 1].Y, Bx = R[i].X, By = R[i].Y;
+			if ((Ay - STATION.Y) * (By - STATION.Y) <= 0 && Ay != By)
+			{
+				const double K = (STATION.Y - Ay) / (By - Ay), X = Ax + (Bx - Ax) * K;
+				if (X > STATION.X) return A.Cum[i - 1] + FVector2D::Distance(R[i], R[i - 1]) * K;
+			}
+		}
+		return A.Cum.Last();
+	}
+
+	// g.save(); g.translate(X, Y); g.rotate(-Math.PI / 2); g.fillText(text, 0, 0); g.restore(): the
+	// line drawn on a canvas of its own and laid on G turned a quarter round, reading upwards (the
+	// turn is exact on whole pixels: FS47Canvas has no transform of its own)
+	void FillTextTurned(FS47Canvas& G, const TCHAR* Font, double Px, uint32 Rgb, const FString& Text, int32 X, int32 Y)
+	{
+		const int32 Tw = 16 + FMath::CeilToInt(Text.Len() * Px), Th = FMath::CeilToInt(3 * Px), Bx = 8, By = FMath::CeilToInt(2 * Px);
+		FS47Canvas T(Tw, Th);
+		T.SetFont(Font, Px);
+		T.SetFill(Rgb);
+		if (!T.FillText(Text, Bx, By)) return;
+		// local (u, v) goes to (X + v, Y - u): the pixel (tx, ty) to (X + ty - By, Y - 1 - tx + Bx)
+		TArray<FColor> R;
+		R.Init(FColor(0, 0, 0, 0), Tw * Th);
+		for (int32 Ty = 0; Ty < Th; ++Ty) for (int32 Tx = 0; Tx < Tw; ++Tx) R[(Tw - 1 - Tx) * Th + Ty] = T.Px[Ty * Tw + Tx];
+		G.DrawImage(R, Th, Tw, X - By, Y - Tw + Bx);
+	}
+
+	void DrawServiceMap(FS47Canvas& G)
+	{
+		// drawServiceMap
+		const S47Drawings::FServiceMap& Mp = S47Drawings::SERVICE_MAP();
+		G.SetFill(S47Drawings::INK); G.SetStroke(S47Drawings::INK); // lineCap and lineJoin round (FS47Canvas strokes so)
+		G.SetFont(OSWALD_600, 30); G.FillText(TEXT("SARO 07 / SERVICE MAP"), 40, 54);
+		G.SetFont(ELITE, 19); G.FillText(TEXT("Access and old survey roads. Mileposts from the junction at the diner. BM: survey bolt in the shoulder."), 40, 86, 1120);
+		// north arrow
+		G.LineWidth = 3;
+		G.BeginPath(); G.MoveTo(1130, 200); G.LineTo(1130, 140); G.LineTo(1120, 160); G.MoveTo(1130, 140); G.LineTo(1140, 160); G.Stroke();
+		G.SetFont(ELITE, 24); G.FillText(TEXT("N"), 1121, 228);
+		// the highway, north to south
+		G.LineWidth = 9; G.SetStroke(0x3d4a44);
+		G.BeginPath(); G.MoveTo(200, 110); G.LineTo(200, 780); G.Stroke();
+		G.LineWidth = 2; G.SetStroke(S47Drawings::PAPER); G.SetLineDash({ 14, 12 });
+		G.BeginPath(); G.MoveTo(200, 110); G.LineTo(200, 780); G.Stroke();
+		G.SetLineDash({}); G.SetStroke(S47Drawings::INK);
+		G.Save(); G.SetFont(ELITE, 18); FillTextTurned(G, ELITE, 18, S47Drawings::INK, TEXT("HIGHWAY"), 176, 760); G.Restore();
+		// SARO and its array, Sierra Motor Court down the highway
+		G.LineWidth = 2.5;
+		for (int32 i = 0; i < 9; ++i) { G.BeginPath(); G.Arc(300 + (i % 3) * 30, 128 + (i / 3) * 22, 7, 0, PI * 2); G.Stroke(); }
+		G.StrokeRect(286, 200, 52, 32);
+		G.SetFont(OSWALD_600, 22); G.FillText(TEXT("SARO"), 348, 224);
+		G.StrokeRect(96, 296, 66, 24);
+		G.SetFont(ELITE, 17); G.FillText(TEXT("SIERRA MOTOR CT"), 40, 348);
+		// the diner at the junction
+		G.FillRect(150, 548, 34, 22);
+		G.SetFont(OSWALD_600, 20); G.FillText(TEXT("MESA DINER"), 40, 600);
+		// Caliche: its main street is the highway, south from the diner
+		for (int32 i = 0; i < 4; ++i) { G.FillRect(162, 580 + i * 16, 22, 10); if (i) G.FillRect(216, 584 + i * 16, 18, 9); }
+		G.SetFont(ELITE, 17); G.FillText(TEXT("CALICHE"), 40, 628);
+		// the old Roswell road
+		G.LineWidth = 6; G.SetStroke(0x4a5550);
+		G.BeginPath();
+		for (int32 i = 0; i < Mp.Road.Num(); ++i) { if (i) G.LineTo(Mp.Road[i].X, Mp.Road[i].Y); else G.MoveTo(Mp.Road[i].X, Mp.Road[i].Y); }
+		G.Stroke();
+		G.SetStroke(S47Drawings::INK);
+		G.SetFont(ELITE, 18);
+		G.FillText(TEXT("OLD ROAD TO ROSWELL"), 560, 632); // (g.save(); g.translate(560, 632); fillText at 0, 0; g.restore())
+		// mileposts: a tick across the road and the number
+		G.LineWidth = 2;
+		for (int32 Mi = 1; Mi <= FMath::FloorToInt(Mp.Miles); ++Mi)
+		{
+			const FVector2D P = Mp.Post(Mi), P2 = Mp.Post(Mi + 0.02);
+			const double Nx = -(P2.Y - P.Y), Ny = P2.X - P.X;
+			double L = FMath::Sqrt(Nx * Nx + Ny * Ny);
+			if (L == 0) L = 1;
+			G.BeginPath(); G.MoveTo(P.X - Nx / L * 9, P.Y - Ny / L * 9); G.LineTo(P.X + Nx / L * 9, P.Y + Ny / L * 9); G.Stroke();
+			G.SetFont(OSWALD_600, 19);
+			G.FillText(FString::FromInt(Mi), P.X + Nx / L * 16 - 5, P.Y + Ny / L * 16 + 7);
+		}
+		// survey bolts on the shoulder: a small triangle with a dot
+		for (const S47Drawings::FServiceMap::FBolt& B : Mp.Bolts)
+		{
+			const double X = B.At.X, Y = B.At.Y;
+			G.BeginPath(); G.MoveTo(X - 9, Y - 13); G.LineTo(X + 9, Y - 13); G.LineTo(X, Y - 27); G.ClosePath(); G.Stroke();
+			G.BeginPath(); G.Arc(X, Y - 18, 2.2, 0, PI * 2); G.Fill();
+			G.SetFont(ELITE, 16); G.FillText(TEXT("BM"), X - 30, Y - 16);
+		}
+		// STATION 01 north of the road, with its fence
+		const double Sx = Mp.Station.X, Sy = Mp.Station.Y;
+		G.LineWidth = 2; G.SetLineDash({ 5, 5 }); G.StrokeRect(Sx - 30, Sy - 24, 60, 48); G.SetLineDash({});
+		G.LineWidth = 3; S47Drawings::Mark(G, Sx, Sy + 2, 22);
+		G.SetFont(OSWALD_600, 20); G.FillText(TEXT("STATION 01"), Sx - 52, Sy - 34);
+		G.SetFont(ELITE, 16); G.FillText(TEXT("old survey station, 1947"), Sx - 82, Sy + 50);
+		G.SetFont(ELITE, 16);
+		G.FillText(TEXT("SARO 07 / KEEP IN THE DOOR POCKET"), 40, 780);
+	}
+}
+
+FVector2D S47Drawings::FServiceMap::Post(double Mi) const
+{
+	static const FAlong A(ROAD());
+	return A.At(Mi * PerMile);
+}
+
+const S47Drawings::FServiceMap& S47Drawings::SERVICE_MAP()
+{
+	static const FServiceMap M = []
+	{
+		FServiceMap S;
+		const FAlong A(ROAD());
+		const double Cross = Crossing();
+		S.PerMile = Cross / CROSS_MILES;
+		for (double Mi : { 3.3, 6.0, CROSS_MILES, 10.4 }) S.Bolts.Add({ Mi, A.At(Mi * S.PerMile) });
+		S.W = 1200; S.H = 800; S.Station = STATION; S.Road = ROAD(); S.Miles = A.Total / S.PerMile; S.Snap = 18;
+		return S;
+	}();
+	return M;
+}
+
+FString S47Drawings::ServiceMap()
+{
+	// serviceMap: sheet(SERVICE_MAP.w, SERVICE_MAP.h, drawServiceMap)
+	return Sheet(SERVICE_MAP().W, SERVICE_MAP().H, [](FS47Canvas& G) { DrawServiceMap(G); });
+}
+
+void S47Drawings::ServiceMapCanvas(FS47Canvas& G)
+{
+	// serviceMapCanvas: the paper and the map, on the canvas it is given (SERVICE_MAP's size)
+	PaperBg(G, G.W, G.H);
+	DrawServiceMap(G);
+}
+
+void S47Drawings::DrawTracing(FS47Canvas& G, double X, double Y)
+{
+	// drawTracing
+	const double W = 620, H = 300, Left = X - 70, Top = Y - H / 2;
+	G.Save();
+	G.SetFill(0xd6e2e8, 0.38); G.SetStroke(0x28466e, 0.55); G.LineWidth = 1.5; // rgba(214,226,232,.38), rgba(40,70,110,.55)
+	G.FillRect(Left, Top, W, H); G.StrokeRect(Left, Top, W, H);
+	G.SetStroke(0x1d3f7a); G.SetFill(0x1d3f7a); // lineCap 'round' (FS47Canvas strokes so)
+	// the transit
+	G.LineWidth = 2.5;
+	G.BeginPath(); G.Arc(X, Y, 12, 0, PI * 2); G.Stroke();
+	G.BeginPath(); G.MoveTo(X - 18, Y); G.LineTo(X + 18, Y); G.MoveTo(X, Y - 18); G.LineTo(X, Y + 18); G.Stroke();
+	// C, the closing line, east to the edge of the sheet
+	G.LineWidth = 3;
+	G.BeginPath(); G.MoveTo(X + 12, Y); G.LineTo(Left + W - 8, Y); G.Stroke();
+	G.SetFont(ELITE, 24); G.FillText(TEXT("C"), Left + W - 34, Y - 12);
+	// A to the north on the sight line, B to the west
+	G.LineWidth = 2; G.SetLineDash({ 6, 5 });
+	G.BeginPath(); G.MoveTo(X, Y - 12); G.LineTo(X, Y - 60); G.Stroke(); G.SetLineDash({});
+	G.SetFont(ELITE, 19); G.FillText(TEXT("A"), X + 8, Y - 52); G.FillText(TEXT("B"), X - 58, Y + 6);
+	G.BeginPath(); G.MoveTo(X - 12, Y); G.LineTo(X - 44, Y); G.Stroke();
+	// north arrow and the note
+	G.BeginPath(); G.MoveTo(Left + W - 30, Top + 74); G.LineTo(Left + W - 30, Top + 30); G.LineTo(Left + W - 37, Top + 44); G.MoveTo(Left + W - 30, Top + 30); G.LineTo(Left + W - 23, Top + 44); G.Stroke();
+	G.SetFont(ELITE, 15);
+	G.FillText(TEXT("E09A, traced. Transit on the station."), Left + 12, Top + H - 14);
+	G.Restore();
+}
+
+FString S47Drawings::Clipping(UTexture* Tex)
+{
+	// Chapter5.ts docClipping: the canvas the frame shows, as a JPEG. The texture is drawn by Slate
+	// into a render target of its own size and read back; the export keeps a canvas as three uploads
+	// it (flipY: its bottom row first), so the rows are turned back.
+	if (!Tex || !FApp::CanEverRender() || !FSlateApplication::IsInitialized() || !FSlateApplication::Get().GetRenderer()) return FString();
+	const int32 W = FMath::RoundToInt(Tex->GetSurfaceWidth()), H = FMath::RoundToInt(Tex->GetSurfaceHeight());
+	if (W <= 0 || H <= 0) return FString();
+	// every mip in memory first (the frame on the wall may have been streamed at a smaller one)
+	if (UTexture2D* T2 = Cast<UTexture2D>(Tex)) { T2->SetForceMipLevelsToBeResident(30.f); T2->WaitForStreaming(); }
+	UTextureRenderTarget2D* RT = NewObject<UTextureRenderTarget2D>();
+	RT->ClearColor = FLinearColor::Black;
+	RT->InitCustomFormat(W, H, PF_B8G8R8A8, false);
+	RT->UpdateResourceImmediate(true);
+	FSlateBrush Brush;
+	Brush.SetResourceObject(Tex);
+	Brush.ImageSize = FVector2D(W, H);
+	Brush.DrawAs = ESlateBrushDrawType::Image;
+	TSharedRef<SImage> Img = SNew(SImage).Image(&Brush);
+	TArray<FColor> Px;
+	FWidgetRenderer* R = new FWidgetRenderer(true);
+	R->DrawWidget(RT, Img, FVector2D(W, H), 0.f, false);
+	const bool bOk = S47Image::ReadPixels(RT, Px) && Px.Num() == W * H;
+	BeginCleanup(R);
+	RT->MarkAsGarbage();
+	if (!bOk) return FString();
+	TArray<FColor> Up;
+	Up.SetNumUninitialized(W * H);
+	for (int32 y = 0; y < H; ++y) FMemory::Memcpy(&Up[y * W], &Px[(H - 1 - y) * W], W * sizeof(FColor));
+	for (FColor& C : Up) C.A = 255;
+	return S47Image::ToDataUrl(Up, W, H, true, 85);
+}
+
 bool S47Drawings::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -202,6 +451,26 @@ bool S47Drawings::SelfTest(TArray<FString>& Lines)
 		G.SetFill(0x000000); G.FillRect(0, 0, 4, 4);
 		G.SetFill(0xffffff); G.FillRect(1.5, 0, 2, 4);
 		Check(G.Px[1].R == 128 && G.Px[2].R == 255 && G.Px[3].R == 128 && G.Px[0].R == 0, FString::Printf(TEXT("rectangle coverage (%d %d %d %d)"), G.Px[0].R, G.Px[1].R, G.Px[2].R, G.Px[3].R));
+	}
+	// the service map (node: perMile 107.82436653, miles 11.48696417, the bolts at 3.3, 6, 8.15 and
+	// 10.4 miles, the one where C crosses at 985, 360; post(1) at 305.884, 580.362)
+	{
+		const FServiceMap& Mp = SERVICE_MAP();
+		const FVector2D P1 = Mp.Post(1);
+		Check(FMath::Abs(Mp.PerMile - 107.82436653) < 1e-6 && FMath::Abs(Mp.Miles - 11.48696417) < 1e-6 && Mp.Bolts.Num() == 4
+			&& FVector2D::Distance(Mp.Bolts[2].At, FVector2D(985, 360)) < 1e-6 && FVector2D::Distance(Mp.Bolts[1].At, FVector2D(830.67781116, 529.66109442)) < 1e-6
+			&& FVector2D::Distance(P1, FVector2D(305.88422308, 580.36235059)) < 1e-6 && Mp.Station == FVector2D(470, 360) && Mp.Snap == 18,
+			FString::Printf(TEXT("SERVICE_MAP: %.4f a mile, %.3f miles, C crosses at %.1f, %.1f"), Mp.PerMile, Mp.Miles, Mp.Bolts[2].At.X, Mp.Bolts[2].At.Y));
+	}
+	// the tracing: onion-skin over the paper (rgba(214,226,232,.38) over #efe8d6), C in blue along the transit's row
+	{
+		FS47Canvas G(800, 400);
+		G.SetFill(PAPER); G.FillRect(0, 0, 800, 400);
+		DrawTracing(G, 100, 200);
+		const FColor Skin = G.Px[300 * 800 + 300], Line = G.Px[200 * 800 + 300], Off = G.Px[20 * 800 + 20];
+		const auto Over = [](uint8 S, uint8 D) { return FS47Canvas::Clamp8(S * (97 / 255.0) + D * (1 - 97 / 255.0)); };
+		Check(Skin.R == Over(214, 0xef) && Skin.G == Over(226, 0xe8) && Skin.B == Over(232, 0xd6) && Line.R == 0x1d && Line.G == 0x3f && Line.B == 0x7a && Off.R == 0xef,
+			FString::Printf(TEXT("the tracing over the map (%d %d %d), C (%d %d %d)"), Skin.R, Skin.G, Skin.B, Line.R, Line.G, Line.B));
 	}
 	return bOk;
 }

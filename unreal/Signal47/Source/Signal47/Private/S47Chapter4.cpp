@@ -8,6 +8,7 @@
 #include "S47Canvas.h"
 #include "S47Chapter1.h"
 #include "S47Chapter2.h"
+#include "S47Chapter5.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
 #include "S47Main.h"
@@ -248,38 +249,14 @@ US47Chapter4* US47Chapter4::Register()
 	}
 	// Prologue.jump('chapter4')
 	Host->Jumps.Add(TEXT("chapter4"), [W] { if (W.IsValid()) W->JumpChapter4(); });
-	// main.ts ch4.onEnd: she has told you where C goes, and it is five in the morning. Chapter five is
-	// not in this version yet: until it is, the night ends on a card that says so.
+	// main.ts ch4.onEnd: she has told you where C goes, and it is five in the morning.
 	OnEnd = [W]
 	{
 		if (!W.IsValid() || !W->Host) return;
 		AS47Story* H = W->Host;
-		if (H->Chapter(TEXT("ch5")))
-		{
-			// Prologue.beginChapter5(null), the host's part (the integrator may put chapter five's own
-			// BeginChapter5 here)
-			TWeakObjectPtr<US47Chapter4> W2 = W;
-			H->ChapterBreak({ TEXT("ROOM 6 // P10 TO P12 RECORDED"),
-				TEXT("She cut the cable in 1947 with her brother standing on C, and he was not there afterwards. C crosses the old road to Roswell. The truck is on its pad."),
-				TEXT("CHAPTER FIVE"), TEXT("ALL NIGHT"), [W2]
-				{
-					if (!W2.IsValid() || !W2->Host) return;
-					AS47Story* Hs = W2->Host;
-					Hs->SetCinematic(false);
-					Hs->ClearTimers();
-					Hs->SetClock(FMath::Max(Hs->Clock(), 5 * 3600.0));
-					if (W2->M && W2->M->UI) W2->M->UI->Fade(false);
-					Hs->BeginChapter(TEXT("ch5")); // (ch4.active = false: BeginChapter makes the others stop leading)
-				} });
-			return;
-		}
-		if (W->M && W->M->UI) W->M->UI->Fade(true, FString());
-		H->After(1.6, [W]
-		{
-			if (!W.IsValid()) return;
-			W->Host->SetCinematic(true);
-			if (W->M && W->M->Hud) W->M->Hud->EndCard({ TEXT("CHAPTER 4: ROOM 6"), TEXT(""), TEXT("Chapter 5, All Night, is not in the Unreal version yet."), TEXT("The web version plays on from here.") });
-		});
+		H->ChapterBreak({ TEXT("ROOM 6 // P10 TO P12 RECORDED"),
+			TEXT("She cut the cable in 1947 with her brother standing on C, and he was not there afterwards. C crosses the old road to Roswell. The truck is on its pad."),
+			TEXT("CHAPTER FIVE"), TEXT("ALL NIGHT"), [H] { if (US47Chapter5* C5 = Cast<US47Chapter5>(H->Chapter(TEXT("ch5")))) C5->BeginChapter5(nullptr); else H->BeginChapter(TEXT("ch5")); } });
 	};
 	return this;
 }
