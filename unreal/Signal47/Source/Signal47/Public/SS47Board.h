@@ -32,7 +32,7 @@ struct FS47BoardSpec
 class SIGNAL47_API SS47Board : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Board) {}
+	SLATE_BEGIN_ARGS(SS47Board) : _UI(nullptr) {}
 		SLATE_ARGUMENT(US47UI*, UI)
 		SLATE_ARGUMENT(FS47BoardSpec, Spec)
 	SLATE_END_ARGS()

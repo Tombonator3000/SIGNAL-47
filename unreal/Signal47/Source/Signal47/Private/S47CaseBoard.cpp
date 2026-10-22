@@ -1,4 +1,5 @@
 #include "S47CaseBoard.h"
+#include "S47Keys.h"
 
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Application/IInputProcessor.h"
@@ -38,7 +39,7 @@ namespace
 		virtual void Tick(float, FSlateApplication&, TSharedRef<ICursor>) override {}
 		virtual bool HandleKeyDownEvent(FSlateApplication&, const FKeyEvent& E) override
 		{
-			return E.GetKey() == EKeys::B && !E.IsRepeat() && Fn && Fn();
+			return S47Keys::Is(TEXT("board"), E.GetKey()) && !E.IsRepeat() && Fn && Fn();
 		}
 	private:
 		TFunction<bool()> Fn;
@@ -92,7 +93,7 @@ void US47CaseBoard::Init(US47Main* InM)
 		if (!Main->Story || !Main->Story->IsCinematic()) { Self->Open(); return true; }
 		return false;
 	};
-	M->OnKey(EKeys::B, KeyB, true);
+	M->OnAction(TEXT("board"), KeyB, true);
 	if (M->UI && FSlateApplication::IsInitialized())
 	{
 		NotebookKeys = MakeShared<FS47BoardNotebookKeys>([Self, KeyB]
@@ -358,7 +359,7 @@ bool US47CaseBoard::SelfTest(TArray<FString>& Lines)
 	US47Main* Main = NewObject<US47Main>();
 	US47CaseBoard* Board = NewObject<US47CaseBoard>(Main);
 	Board->Init(Main);
-	Check(bool(Main->Board.Open) && bool(Main->Board.Refresh) && Main->Keys.Num() == 1 && Main->Keys[0].Key == EKeys::B, TEXT("main hooks and B registered"));
+	Check(bool(Main->Board.Open) && bool(Main->Board.Refresh) && Main->Keys.Num() == 1 && Main->Keys[0].Action == FName(TEXT("board")), TEXT("main hooks and B registered"));
 	TArray<FString> OldLinks, NewLinks;
 	FString OldDone, NewDone, Now = TEXT("ch1");
 	int32 OldSaves = 0, NewSaves = 0;

@@ -11,6 +11,7 @@
 #include "S47Story.h"
 #include "SS47Notebook.h"
 #include "SS47Screens.h"
+#include "SS47Settings.h"
 #include "SS47Widgets.h"
 
 namespace
@@ -19,11 +20,17 @@ namespace
 	constexpr int32 ZTitle = 25, ZCard = 26;
 }
 
-TSharedPtr<SWidget> US47UI::Title(const FS47TitleOpts& O)
+TSharedPtr<SWidget> US47UI::Title(const FS47TitleOpts& InO)
 {
 	UGameViewportClient* V = GEngine ? GEngine->GameViewport : nullptr;
 	if (!V) return nullptr;
+	FS47TitleOpts O = InO;
+	// the note's link: the settings at their Accessibility tab
+	TWeakObjectPtr<US47UI> Self = this;
+	if (!O.OnSettingsAt && O.OnSettings) O.OnSettingsAt = [Self, Fn = O.OnSettings](const FString& Tab) { if (Self.IsValid()) Self->SettingsAt(Tab); Fn(); };
 	TSharedRef<SS47Title> El = SNew(SS47Title).Opts(O);
+	// (out of sight under a menu opened over it: the settings and the case menus blur what is behind them)
+	El->SetVisibility(TAttribute<EVisibility>::CreateLambda([Self] { return Self.IsValid() && Self->Modal() ? EVisibility::Hidden : EVisibility::Visible; }));
 	V->AddViewportWidgetContent(El, ZTitle);
 	// the title has the keys and the mouse (it is not a modal, so the HUD does not do this)
 	if (APlayerController* PC = Hud ? Hud->GetOwningPlayerController() : nullptr)
@@ -64,8 +71,40 @@ FS47OpeningView US47UI::OpeningCard(const FS47OpeningActions& A)
 
 void US47UI::Pause(const FS47PauseOpts& O)
 {
+	// one copy of the options for the pause menu and the settings opened from it, so the settings
+	// changed there are what the pause menu opens them with next
+	const TSharedRef<FS47PauseOpts> Shared = MakeShared<FS47PauseOpts>(O);
+	if (O.bSettingsOnly)
+	{
+		SettingsScreen(Shared, O.Tab.IsEmpty() ? SettingsTab : O.Tab, O.OnResume);
+		SettingsTab.Reset();
+		return;
+	}
+	PauseScreen(Shared, 0);
+}
+
+void US47UI::PauseScreen(const TSharedRef<FS47PauseOpts>& O, int32 Sel)
+{
 	TWeakObjectPtr<US47UI> Self = this;
-	Open(SNew(SS47Pause).Opts(O).OnClose([Self](bool bSilent) { if (Self.IsValid()) Self->Close(bSilent); }), O.OnResume);
+	// set when the pause menu gives way to a menu of its own: the game stays paused under it
+	const TSharedRef<bool> bSub = MakeShared<bool>(false);
+	TSharedRef<SS47Pause> El = SNew(SS47Pause).Opts(O).Selected(Sel)
+		.OnClose([Self](bool bSilent) { if (Self.IsValid()) Self->Close(bSilent); })
+		.OnSettings([Self, O, bSub](const FString& Tab, int32 From)
+		{
+			if (!Self.IsValid()) return;
+			*bSub = true;
+			Self->SettingsScreen(O, Tab, [Self, O, From] { if (Self.IsValid()) Self->PauseScreen(O, From); });
+		})
+		.OnSub([bSub](TFunction<void()> Fn) { *bSub = true; if (Fn) Fn(); });
+	Open(El, [O, bSub] { if (!*bSub && O->OnResume) O->OnResume(); });
+}
+
+void US47UI::SettingsScreen(const TSharedRef<FS47PauseOpts>& O, const FString& Tab, TFunction<void()> OnClose)
+{
+	TWeakObjectPtr<US47UI> Self = this;
+	Open(SNew(SS47Settings).Opts(O).Tab(Tab).OnBack([Self] { if (Self.IsValid()) Self->Close(); }), MoveTemp(OnClose));
+	UE_LOG(LogTemp, Display, TEXT("S47: settings opened at %s"), Tab.IsEmpty() ? TEXT("game") : *Tab);
 }
 
 void US47UI::ChapterCard(const FS47ChapterCardOpts* O, TFunction<void()> OnSpoken)

@@ -7,6 +7,7 @@
 #include "Widgets/SLeafWidget.h"
 
 struct FSlateBrush;
+struct FS47ReadingAction;
 class AS47Story;
 class SScrollBox;
 class SEditableTextBox;
@@ -34,13 +35,18 @@ namespace S47Style
 	const FLinearColor Phosphor = FLinearColor::FromSRGBColor(FColor(0x8c, 0xff, 0xa4));
 }
 
-// The overlay while walking: a dot, the prompt for what you look at, the station clock, the
-// toasts (lines that appear for a few seconds), and a fade to black with a word on it.
+// The overlay while walking (mock/hud.html): the objective top left under its place and clock, the
+// wristwatch top right, the ring at the centre with the use prompt under it (a keycap, the label,
+// the second thing on a line of its own), the captions at the foot on a dark band (the speaker in
+// amber over the line), the slip that says a line went into the notebook, the key hints, and a fade
+// to black with a word on it. The viewfinder and the shutter are drawn over it.
 class SS47Hud : public SCompoundWidget
 {
 public:
 	SLATE_BEGIN_ARGS(SS47Hud) {}
-		SLATE_ATTRIBUTE(FText, Prompt)
+		SLATE_ATTRIBUTE(FText, Prompt)       // what E does here (UI.prompt's label), empty for nothing
+		SLATE_ATTRIBUTE(FText, PromptAlt)    // the second thing (Q), empty for none
+		SLATE_ATTRIBUTE(bool, ShowPrompt)
 		SLATE_ATTRIBUTE(FText, Clock)
 		SLATE_ATTRIBUTE(bool, ShowAim)
 	SLATE_END_ARGS()
@@ -54,12 +60,14 @@ public:
 	bool IsFaded() const { return bFadeOn; }
 	// UI.ts: the objective line (top left), a closer look's words (under the crosshair), the
 	// amber seconds clock, the field camera's viewfinder and its shutter
-	void Objective(const FString& Text) { ObjectiveText = Text; }
+	void Objective(const FString& Text);
 	void Examine(const FString& Text) { ExamineText = Text; }
 	void ClockSeconds(const FString& Text) { SecondsText = Text; }
 	struct FViewfinder { bool bOn = false; FSlateRect Rect; FString Frame, Status, Free, Hint; bool bOk = false, bFreeOk = false; };
 	void Viewfinder(const FViewfinder& V) { Vf = V; }
 	void ShutterFlash() { FlashT = 0.28f; }
+	/** A line written into the notebook (AS47Story::Note): the NOTED slip, bottom left, in turn. */
+	void Noted(const FString& Text);
 	/** UI.ts lastDescription: the last toast that was not a caption (radio, telephone, the CB). */
 	FString LastToast;
 	/** .description-read (UI.ts descriptionButton): Read description [V] at the top right, while the
@@ -70,43 +78,61 @@ public:
 	bool bAtLine = false;
 
 private:
-	struct FToast { FString Text; double Until; TFunction<double()> Clock; };
-	TArray<FToast> Toasts;
+	struct FToast { FString Text, Who, Line; double Until = 0; TFunction<double()> Clock; float In = 0.f, Out = -1.f; };
+	TArray<TSharedRef<FToast>> Toasts;
 	TSharedPtr<SVerticalBox> ToastBox;
-	TUniquePtr<FSlateBrush> DotBrush;
 	TUniquePtr<FSlateBrush> WhiteBrush;
-	TUniquePtr<FSlateBrush> DescBrush;
+	TAttribute<FText> PromptAttr, AltAttr, ClockAttr;
+	TAttribute<bool> ShowPromptAttr, ShowAimAttr;
 	bool bFadeOn = false;
 	float FadeAlpha = 0.f;
 	FString FadeText;
 	double Now = 0;
-	FString ObjectiveText, ExamineText, SecondsText;
+	FString ObjectiveText, ObjectiveHead, ObjectiveBody, ExamineText, SecondsText;
+	float ObjectiveIn = 1.f;          // the objective coming in after it changed
+	FString Place;                    // where the player is (placeName), for the objective's tag
+	float PlaceT = 0.f;
+	FString HintKey;                  // the key hints shown, to rebuild them when they change
+	TSharedPtr<class SHorizontalBox> HintRow;
 	FViewfinder Vf;
 	float FlashT = 0.f;
+	// the NOTED slips: the one showing (its time on screen) and the ones waiting
+	TArray<FString> Slips;
+	float SlipT = -1.f;
+	TSharedPtr<class SBox> SlipSlot;
 	void Rebuild();
+	void ShowSlip();
+	bool Playing() const;
+	bool ModalOpen() const;
 };
 
-// A paper, full screen: the page on the left as it is written (typed, hand or printout), the
-// transcript on the right. Lines that start with "~ " are pencil. Esc, E or the button closes.
+// A paper (mock/document.html): the sheet large and a little turned over the blurred game, as it is
+// written (typed, hand or printout; a photograph or a map is the picture), with the side panel: what
+// it is, its title, its description (the transcript) and the actions (READ ALOUD with V when a reader
+// has it, PUT IT DOWN with Esc). Lines that start with "~ " are pencil. Esc, E, Tab or the action
+// puts it down; long papers scroll.
 class SS47Document : public SCompoundWidget
 {
 public:
 	SLATE_BEGIN_ARGS(SS47Document) {}
 		SLATE_ARGUMENT(FS47Doc, Doc)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
-		// UI.document's .read-aloud boxes (Read document, Read description), before .controls
-		SLATE_ARGUMENT(TSharedPtr<SWidget>, Reading)
+		SLATE_ARGUMENT(class US47UI*, UI) // the readers (Read document, Read description); none: no reading
 	SLATE_END_ARGS()
 	void Construct(const FArguments& InArgs);
+	virtual ~SS47Document() override;
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
 
 private:
 	TFunction<void()> OnClose;
-	TUniquePtr<FSlateBrush> PaperBrush;
-	TUniquePtr<FSlateBrush> PanelBrush;
-	TSharedPtr<FSlateBrush> ImageBrush, PaperArtBrush;
-	TSharedRef<SWidget> PageWidget(const FS47Doc& Doc, const FSlateFontInfo& Type);
+	struct FAction { FString Label, Key; TFunction<void()> Fn; TFunction<FString()> Live; TSharedPtr<FS47ReadingAction> Reading; };
+	TArray<FAction> Actions;
+	int32 Chosen = 0;
+	TSharedPtr<FS47ReadingAction> ReadDoc, ReadDesc;
+	TSharedPtr<class SScrollBox> PageScroll;
+	TSharedRef<SWidget> PageWidget(const FS47Doc& Doc);
+	void Act(int32 I);
 };
 
 // (the notebook is SS47Notebook.h, ported from ui/UI.ts notebook)
@@ -116,7 +142,7 @@ private:
 class SS47Console : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Console) {}
+	SLATE_BEGIN_ARGS(SS47Console) : _Story(nullptr) {}
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
 		SLATE_ARGUMENT(TFunction<void()>, OnClick)
@@ -136,7 +162,7 @@ private:
 class SS47Spectrum : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Spectrum) {}
+	SLATE_BEGIN_ARGS(SS47Spectrum) : _Story(nullptr) {}
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(FVector2D, Size)
 	SLATE_END_ARGS()
@@ -156,7 +182,7 @@ private:
 class SS47Ops : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Ops) {}
+	SLATE_BEGIN_ARGS(SS47Ops) : _Story(nullptr) {}
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
 	SLATE_END_ARGS()

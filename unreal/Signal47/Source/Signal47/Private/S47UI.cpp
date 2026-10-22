@@ -1,11 +1,14 @@
 #include "S47UI.h"
+#include "S47Keys.h"
 
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Widgets/Input/SButton.h"
 #include "Internationalization/Regex.h"
 #include "S47EarlDialogue.h"
 #include "S47HUD.h"
+#include "S47Flow.h"
 #include "S47Kit.h"
+#include "S47Main.h"
 #include "S47NpcDialogue.h"
 #include "S47ReadAloud.h"
 #include "SS47Widgets.h"
@@ -191,6 +194,61 @@ TSharedRef<SWidget> US47UI::DescriptionReadings(const TSharedRef<SWidget>& Paren
 	return W;
 }
 
+// ---------- a reading as an action (the paper's READ ALOUD, the notebook's) ----------
+
+void FS47ReadingAction::Toggle()
+{
+	// the .read-aloud button's click: stop it while it reads; else the others stop and it starts
+	const TSharedPtr<FS47ReadAloud> R = Reader.Pin();
+	if (!R.IsValid()) return;
+	if (bActive) { R->Stop(); return; }
+	if (!bAvailable) return;
+	if (UI.IsValid() && UI->OnReadingStart) UI->OnReadingStart(R.Get());
+	// (the state comes back through the reader; the action may be gone by then)
+	const TWeakPtr<FS47ReadingAction> Self = AsWeak();
+	R->Play(Texts, [Self](const FString& St)
+	{
+		if (const TSharedPtr<FS47ReadingAction> A = Self.Pin()) { A->State = St; A->bActive = St == TEXT("loading") || St == TEXT("playing"); }
+	});
+}
+
+void FS47ReadingAction::Stop()
+{
+	if (const TSharedPtr<FS47ReadAloud> R = Reader.Pin()) R->Stop();
+	bActive = false;
+}
+
+FString FS47ReadingAction::Status() const
+{
+	// (as the box's status line under its button)
+	const TSharedPtr<FS47ReadAloud> R = Reader.Pin();
+	const FString Name = R.IsValid() ? R->Label() : FString();
+	if (State.IsEmpty()) return bAvailable ? Name : FString(TEXT("No recording for this text."));
+	return State == TEXT("loading") ? FString(TEXT("Loading recording…")) : State == TEXT("error") ? FString(TEXT("Recording could not be played. Try again.")) : Name;
+}
+
+TSharedPtr<FS47ReadingAction> US47UI::ReadingAction(const TArray<FString>& Texts, const FString& Kind)
+{
+	// the reader readingControls would give the box: Kinski for a paper and a conversation, else the
+	// description reader
+	const TSharedPtr<FS47ReadAloud> R = Kind == TEXT("document") || Kind == TEXT("conversation") ? ReadAloud : DescriptionReader();
+	if (!R.IsValid() || !R->Enabled() || !Texts.Num()) return nullptr;
+	const TSharedRef<FS47ReadingAction> A = MakeShared<FS47ReadingAction>();
+	A->Reader = R;
+	A->UI = this;
+	A->Texts = Texts;
+	A->bAvailable = R->Available(Texts);
+	return A;
+}
+
+void US47UI::Noted(const FString& Text)
+{
+	// (not while a case is opened or a night starts: the lines it had come back then)
+	const US47Main* M = US47Main::Get(this);
+	if (M && M->Flow && (M->Flow->bStarting || M->Flow->bRestoringNow)) return;
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Noted(Text);
+}
+
 void US47UI::ClearExamineTimer()
 {
 	if (ExamineTimer.IsValid()) FTSTicker::RemoveTicker(ExamineTimer);
@@ -204,7 +262,8 @@ void US47UI::UpdateDescriptionButton()
 	const TSharedPtr<FS47ReadAloud> R = DescriptionReader();
 	const FString Last = LastDescription();
 	H->DescButton.bShown = R.IsValid() && R->Enabled() && !(ExamineText.IsEmpty() && Last.IsEmpty()) && !Modal() && !(CanDescribe && !CanDescribe());
-	H->DescButton.Text = bDescriptionActive ? TEXT("Stop reading [V]") : !ExamineText.IsEmpty() ? TEXT("Read description [V]") : TEXT("Read last description [V]");
+	const FString V = TEXT(" [") + S47Keys::Label(TEXT("describe")) + TEXT("]"); // (the key as bound, S47Keys)
+	H->DescButton.Text = (bDescriptionActive ? TEXT("Stop reading") : !ExamineText.IsEmpty() ? TEXT("Read description") : TEXT("Read last description")) + V;
 	H->DescButton.bDisabled = !bDescriptionActive && !(R.IsValid() && R->Available({ ExamineText.IsEmpty() ? Last : ExamineText }));
 }
 
@@ -346,7 +405,7 @@ void US47UI::Viewfinder(bool bOn, const FS47Viewfinder& V)
 		F.bOk = V.bOk;
 		F.Free = V.bHasFree ? V.FreeText : FString();
 		F.bFreeOk = V.bHasFree && V.bFreeOk;
-		F.Hint = V.bTouch ? TEXT("CAMERA: LOWER   SHUTTER: EXPOSE") : TEXT("C  LOWER     SPACE  SHUTTER");
+		F.Hint = V.bTouch ? TEXT("CAMERA: LOWER   SHUTTER: EXPOSE") : S47Keys::Label(TEXT("camera")) + TEXT("  LOWER     ") + S47Keys::Label(TEXT("shutter")) + TEXT("  SHUTTER");
 	}
 	H->Viewfinder(F);
 }

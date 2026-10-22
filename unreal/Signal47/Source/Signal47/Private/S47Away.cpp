@@ -1,6 +1,7 @@
 // main.ts: the time away and the trucks (abduction, truckTaken, truckOnB, lostNights, theThird, starHole,
 // flashFrames), in the order main.ts builds and steps them
 #include "S47Away.h"
+#include "S47Keys.h"
 
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/GameViewportClient.h"
@@ -318,7 +319,7 @@ void US47Away::Init(US47Main* InM)
 		Wd->CabHeld = [Self] { return Self.IsValid() && Self->Holds(); };
 	}
 	// Out of the truck in its warning on B, with the engine dead: Q, while Use turns the key
-	M->OnKey(EKeys::Q, [Self]
+	M->OnAction(TEXT("alt"), [Self]
 	{
 		if (!Self.IsValid()) return false;
 		US47Away* Aw = Self.Get();

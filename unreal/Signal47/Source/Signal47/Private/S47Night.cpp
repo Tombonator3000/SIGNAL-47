@@ -1,6 +1,7 @@
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
+#include "S47Keys.h"
 #include "S47StationTaken.h"
 #include "S47Chapter3.h"
 #include "S47TownLayer.h"
@@ -128,7 +129,7 @@ void US47Night::Init(US47Main* InM)
 			if (!Self.IsValid() || Self->Flashlight->bHave) return;
 			Self->Flashlight->bHave = true;
 			// which button switches it, the first time on this device
-			Self->M->UI->Toast(FString(TEXT("You take the flashlight off the passenger seat.")) + (!FirstTime(TEXT("flashlight")) ? TEXT("") : TEXT(" F switches it on.")), 4.5f);
+			Self->M->UI->Toast(FString(TEXT("You take the flashlight off the passenger seat.")) + (!FirstTime(TEXT("flashlight")) ? FString() : FString::Printf(TEXT(" %s switches it on."), *S47Keys::Said(TEXT("light")))), 4.5f);
 		};
 	}
 	// ---------- more that can happen in the night, anywhere (story/nightEvents.ts) ----------
@@ -239,7 +240,7 @@ void US47Night::Init(US47Main* InM)
 	if (M->Flow) M->Flow->RollText = [Self] { return Self.IsValid() ? FS47Album::RollText(Self->Album->Left()) : FString(); };
 
 	// main.ts input.onKey: F switches the flashlight
-	M->OnKey(EKeys::F, [Self] { if (Self.IsValid()) Self->ToggleLight(); return true; });
+	M->OnAction(TEXT("light"), [Self] { if (Self.IsValid()) Self->ToggleLight(); return true; });
 	TestFlags();
 }
 
