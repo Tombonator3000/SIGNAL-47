@@ -756,6 +756,21 @@ void SS47Settings::Take(const FKey& K)
 			: FString::Printf(TEXT("%s: the two keys have changed places."), *A->Label);
 		break;
 	}
+	case S47Keys::EBind::Shared:
+	{
+		// (the shutter and a jump: the camera decides which it is)
+		const S47Keys::FAction* B = S47Keys::Find(Other);
+		Status = B ? FString::Printf(TEXT("%s: %s. It is %s's too; the camera decides which."), *A->Label, *S47Keys::Short(K), *B->Label.ToLower())
+			: FString::Printf(TEXT("%s: %s."), *A->Label, *S47Keys::Short(K));
+		break;
+	}
+	case S47Keys::EBind::Moved:
+	{
+		const S47Keys::FAction* B = S47Keys::Find(Other);
+		Status = B ? FString::Printf(TEXT("%s was %s's. Give %s another key."), *S47Keys::Short(K), *B->Label.ToLower(), *B->Label.ToLower())
+			: FString::Printf(TEXT("%s: %s."), *A->Label, *S47Keys::Short(K));
+		break;
+	}
 	case S47Keys::EBind::Fixed: Status = TEXT("Escape stays the pause's."); break;
 	case S47Keys::EBind::Reserved:
 		Status = K == EKeys::LeftMouseButton ? TEXT("A click always uses. Choose another key.")

@@ -1,4 +1,6 @@
-# SIGNAL / 47 web: arbeidsinstruks
+# SIGNAL / 47 web: arbeidsinstruks (historisk)
+
+Fra 22. oktober 2026 er Unreal-utgaven spillet. Denne fila gjelder bare hvis Tom ber om arbeid i `web/`.
 
 Denne fila gjelder alt under `web/`. For denne mappen erstatter den Unity-reglene i rotens `AGENTS.md`. Unity-prosjektet i `Unity/` er arkiv og referanse. Ikke rediger det fra nettarbeid.
 

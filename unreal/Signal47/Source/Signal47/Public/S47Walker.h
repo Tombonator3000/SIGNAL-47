@@ -56,13 +56,46 @@ public:
 	FVector EyeUE() const;
 	FVector ForwardUE() const;
 	bool Walkable(double X, double Z) const;
-	TFunction<double(double, double)> Floor; // Player.floor: the area supplies its exact height function
+	TFunction<double(double, double)> Floor; // Player.floor: the area supplies its exact height function (NaN: read it off the world there)
+
+	// Ground round the truck where it was left with no walk zones of its area by it (US47World::
+	// SetGround, Tom 22 October 2026: out of the truck anywhere; Player.ts walks only its zones): the
+	// area it is in, and whether a point is on it. Walked as the zones are, in that area only.
+	FString GroundArea;
+	TFunction<bool(double X, double Z)> Ground;
+	// The open land of the area the player is in (US47World::OnLand, Tom 22 October 2026: walk round
+	// freely out there; Player.ts walks only its zones): walked as the zones are, the colliders as ever.
+	TFunction<bool(double X, double Z)> OpenLand;
+	// The ground's height on that open land (NaN off it, or in a zone: the area's Floor as before).
+	TFunction<double(double X, double Z)> LandFloor;
+	// The player's truck standing in an area, as it is turned (US47World::ParkAt). The walk lists keep
+	// the box round it (a collider with the id 'truck', Player.ts's only way), which is far bigger
+	// than the truck when it stands at an angle; the walker keeps to the truck itself instead.
+	struct FTruckBox { FString Area; double X = 0, Z = 0, Heading = 0, HalfW = 1.05, HalfL = 2.75; };
+	TOptional<FTruckBox> TruckBox;
+	bool InTruck(double X, double Z) const; // the player's width at X, Z is in the truck
+
+	// A jump (Tom 22 October 2026; Player.ts has none): the Jump key on foot, when CanJump says it
+	// may (not in the truck, not with a panel open or the camera raised: Space is its shutter then).
+	// About 0.45 m up under 9.8 m/s², down onto the floor the walker uses, a dip of the eye on landing
+	// and a footstep at each end. The walk zones and colliders hold as on the ground.
+	void Jump();
+	TFunction<bool()> CanJump;
+	bool InAir() const { return bAir; }
+	double Lift = 0; // the feet over the floor in a jump, metres
+
+	// tests: walk as if these keys were held (x right, z back: main.ts input.move), or unset; and run
+	TOptional<FVector2D> TestMove;
+	bool bTestRun = false;
 
 private:
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UCameraComponent> Camera;
 	bool bActive = false;
 	FString Focused;
 	float Settle = 0.f;
+	bool bAir = false;
+	double LiftV = 0, AirT = 0, Top = 0, LandT = -1, LandK = 0;
+	void Land(bool bSilent);
 	void Resolve(bool bX, double Old);
 	bool Inside(double MinX, double MaxX, double MinZ, double MaxZ, double X, double Z) const;
 	double FloorAt(double X, double Z) const;

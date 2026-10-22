@@ -52,14 +52,18 @@ public:
 	void Reset();
 	void Refile(const FString& Url = FString());
 	void Now();
+	/** The late broadcast's picture and sound now (the tests' logs). */
+	FString ProgrammeState() const { return Programme.Available() ? Programme.Describe() : FString(TEXT("none")); }
 	static bool SelfTest(TArray<FString>& Lines);
 private:
 	US47Main* M = nullptr;
 	FS47MotelTvDeps D;
 	double T = 0, Dwell = 0, NotBefore = 0, PaintT = 0;
 	TArray<FColor> Card, Shot;
+	// the late broadcast (local footage, when staged): its clock goes on whatever the set shows
 	FS47TvProgramme Programme;
-	double ProgrammeTime = 0;
+	int32 PaintedFrame = -1;
+	double PaintDt = 1.0 / 15;
 	FVector TvAt = FVector::ZeroVector;
 	double FrameClock = 0;
 	bool bCanWitness = false;
@@ -90,6 +94,7 @@ private:
 	bool Shoot();
 	void Paint(double InT);
 	void Sound(double InDist);
+	void Broadcast(double Dt, const FS47MotelTvIn& S, double InDist);
 	void Click();
 	void BindScreen();
 	bool Seen(const FString& Key) const;

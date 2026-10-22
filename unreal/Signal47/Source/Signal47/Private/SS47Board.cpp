@@ -3,6 +3,7 @@
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Engine/Texture2D.h"
+#include "S47Theme.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/UserInterfaceSettings.h"
@@ -278,9 +279,10 @@ public:
 	}
 	virtual FCursorReply OnCursorQuery(const FGeometry& G, const FPointerEvent& E) const override
 	{
-		if (P->Drag.bMoved && P->Drag.Kind != FS47BoardImpl::FDrag::EKind::Thread) return FCursorReply::Cursor(EMouseCursor::GrabHandClosed);
+		// (S47Theme::GrabCursor: the packaged game has no grab hand to show)
+		if (P->Drag.bMoved && P->Drag.Kind != FS47BoardImpl::FDrag::EKind::Thread) return FCursorReply::Cursor(S47Theme::GrabCursor(true));
 		const FS47BoardImpl::FHit H = P->Hit(P->ToBoardXY(G.AbsoluteToLocal(E.GetScreenSpacePosition())));
-		return FCursorReply::Cursor(H.Pull.IsEmpty() ? EMouseCursor::GrabHand : EMouseCursor::Crosshairs);
+		return FCursorReply::Cursor(H.Pull.IsEmpty() ? S47Theme::GrabCursor(false) : EMouseCursor::Crosshairs);
 	}
 	virtual FReply OnMouseButtonDown(const FGeometry& G, const FPointerEvent& E) override
 	{

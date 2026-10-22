@@ -4,11 +4,11 @@
 
 Tom har bestemt at alt videre spillarbeid kun gjelder Unreal-versjonen i `unreal/`. Nettversjonen og Unity er historiske referanser. Følg `unreal/AGENTS.md` for nytt arbeid; ikke videreutvikle eller publiser web-versjonen.
 
-Svar på norsk. Dette er den redigerbare kildekoden til SIGNAL / 47, et Unity-spill om kosmisk etterforskning ved SARO i New Mexico, 1986. Les `Docs/CURRENT_HANDOFF.md` først i dette repoet, deretter relevant design, kode og bevis. Bevar Unity/Blender, spillkonstanter, fungerende interaksjoner, originale assets og lisenskreditering.
+Svar på norsk. Dette er kildekoden til SIGNAL / 47, et spill om kosmisk etterforskning ved SARO i New Mexico, 1986. Bevar Blender-kilder, spillkonstanter, fungerende interaksjoner, originale assets og lisenskreditering.
 
-## Nettversjonen i web/
+## Historiske spor
 
-Fra 3. oktober 2026 bygges spillet videre i three.js i `web/`. For alt arbeid under `web/` gjelder `web/AGENTS.md` i stedet for reglene i denne fila. Les den, `web/memory.md`, `web/todo.md` og de siste oppføringene i `web/log.md` før du starter. `Unity/` er arkiv og referanse og redigeres ikke fra nettarbeid. Resten av denne fila gjelder Unity-sporet.
+`web/` (three.js) og `Unity/` er arkiv og referanse. Reglene i `web/AGENTS.md` og resten av denne fila gjelder bare hvis Tom ber om arbeid der.
 
 ## Finn gjeldende sannhet
 
@@ -16,9 +16,9 @@ Kontroller faktisk Git-/PR-status og repoets synlighet. ChatGPT-prosjektets `sou
 
 ## Fullfør det autoriserte oppdraget
 
-Bruk brainstorming for nødvendige designvalg, game-production for produksjon og Gauntlet for små steg med faktisk kjøring, inspeksjon, korrigering og dokumenterte tester. Bruk eksisterende beslutninger. Skill-valg, designnotat, ny gren eller et ferdig delsteg utløser ikke automatisk krav om ny brukergodkjenning.
+Bruk eksisterende beslutninger. Brainstorming- og Gauntlet-skillene kan brukes når de passer. Skill-valg, designnotat, ny gren eller et ferdig delsteg utløser ikke automatisk krav om ny brukergodkjenning.
 
-Kartlegg hele bestillingen og senere korrigeringer. Arbeid i avgrensede steg, men fortsett neste nødvendige steg mens nyttig autorisert arbeid gjenstår. Fullfør relevant autorisert PR-/leveringsarbeid; ikke stopp ved bare plan, lokal endring eller en vellykket test når bestillingen krever mer. Avslutt valgfri polering når kravene er møtt. En vurdering av et verktøy gir ikke grunn til en ubedt motormigrering eller ny spillfunksjon.
+Kartlegg hele bestillingen og senere korrigeringer, og fullfør det som er bestilt, inkludert PR og levering når det hører med. Avslutt valgfri polering når kravene er møtt. En vurdering av et verktøy gir ikke grunn til en ubedt motormigrering eller ny spillfunksjon.
 
 Brukeren har i SIGNAL / 47-samtalen godkjent vanlig PR og merge uten egen forhåndsgjennomgang. Bruk relevant eksisterende autorisasjon, verifiser riktig head og påkrevde kontroller, og kontroller faktisk resultat. Dette gir ikke rett til å omgå beskyttelser, kjøpe, endre synlighet, kontakte nye mottakere eller publisere spillutgaver utover gitt autorisasjon. Nyere brukerbeskjeder går foran.
 

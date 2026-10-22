@@ -1207,6 +1207,8 @@ S47J::FObj US47Flow::ComposeCase() const
 		// array: copyArraySave(this.ns.array); hondo: this.ns.hondo
 		if (const TOptional<FS47ArraySave> A = FS47ArraySave::Copy(N.Array)) Ns->SetObjectField(TEXT("array"), A->ToJson());
 		if (N.Hondo) S47J::Set(Ns, TEXT("hondo"), *N.Hondo);
+		// (Unreal only, Tom's request: T. Vega's seven keyed on the processor, TAPE A given up; S47DecoderDesk.h)
+		if (N.bTapeA) S47J::Set(Ns, TEXT("tapeA"), true);
 	}
 	S47J::Set(Ns, TEXT("ln"), M->Away ? M->Away->Ln : S47J::Strs(WasNs, TEXT("ln")));
 	S47J::Set(C, TEXT("ns"), Ns);
