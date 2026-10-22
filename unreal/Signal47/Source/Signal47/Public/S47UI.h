@@ -56,6 +56,15 @@ struct FS47MapMark { FString Kind; double Clock = 0; FString Line; TOptional<FS4
 struct FS47MapView { TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; };
 struct FS47KitItem { FString Name, Note, State, Art, Tag; }; // Art: a kit drawing (ui/kitArt.ts), empty for none
 struct FS47PersonCard { FString Name, Role, Note, Portrait; }; // Portrait: a picture's art name, empty while there is none
+// the album as the notebook shows it (core/album.ts AlbumView): the roll, and each free print as far
+// as it has come up (Dev, 0..1); Look is told each time a print is opened big
+struct FS47AlbumView
+{
+	int32 Roll = 36, Left = 0;
+	struct FShot { FString Id, Url, Text, Meta; double Dev = 1; bool bOdd = false; };
+	TArray<FShot> Shots;
+	TFunction<void(const FString&)> Look;
+};
 struct FS47NbExtras
 {
 	TOptional<FS47MapView> Map;          // drawn by the notebook (areaMap)
@@ -64,7 +73,7 @@ struct FS47NbExtras
 	TOptional<TArray<FS47KitItem>> Kit;
 	TOptional<TArray<FS47PersonCard>> People;
 	bool bTouch = false;                 // a phone: its controls first
-	// (album: the free frames, core/album.ts, are not in the Unreal version yet)
+	TOptional<FS47AlbumView> Album;      // the free frames (core/album.ts)
 };
 
 // UI.viewfinder's options

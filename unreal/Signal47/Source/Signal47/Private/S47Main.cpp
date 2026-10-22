@@ -2,6 +2,7 @@
 
 #include "S47Flow.h"
 #include "S47HUD.h"
+#include "S47Night.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47Audio.h"
@@ -29,6 +30,8 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
+bool US47Main::OneAtATime() const { return Night && Night->OneAtATime(); }
+
 void US47Main::RequestAutosave(bool bMilestone)
 {
 	if (Flow) Flow->RequestAutosave(bMilestone);
@@ -41,8 +44,12 @@ void US47Main::Step(double Dt)
 	if (Flow) Flow->Step(Dt);
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
+	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
+	if (Night) Night->FlashlightStep(Dt);
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands
 	if (Mode == EMode::Play) Audio->NightLife(float(ModalOpen() ? 0.0 : Dt), P, Story ? Story->Clock() : 0.0);
+	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
+	if (Night) Night->Step(Dt);
 	// main.ts: the acoustic space, from where the player stands
 	FString Sp;
 	if (World && World->bDriving) Sp = TEXT("lab");

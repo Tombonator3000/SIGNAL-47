@@ -40,7 +40,15 @@
 
 - [ ] Kjør screenshots.sh med den pakkede builden (title, pause) og se tittelkameraet over gården og miniatyrbildene i lagringene med verdenen på plass.
 - [ ] Saksbrettets oppsett i lagringen: sett `M->Flow->SaveBoard` og `LoadBoard` til CaseBoard sin Save()/Load().
-- [ ] Feltkameraet og rullen i Kit-fanen: sett `M->Flow->HaveCamera` og `RollText` når kapittel 1 og albumet er portert.
+- [x] Feltkameraet og rullen i Kit-fanen: `M->Flow->HaveCamera` og `RollText` (2026-10-22).
 - [ ] Musikk- og radionivået (Music, Radio) inn i lydmodulen når den har egne busser; volumet virker allerede.
 - [ ] Worn VHS (bildet `heavy`) i M_WebTone; nå bare Clean og VHS.
 - [ ] Fortelleren (Serling) til åpningskortet og kapittelkortet når stemmene er portert.
+
+## Nattens lag (2026-10-22)
+
+- [x] Loggen, kurven, nattens hendelser, ropene, glimtene, lommelykta og albumet (`US47Night`), med lagringen.
+- [ ] Krokene i `FS47NightHooks` settes når systemene porteres: bortføringen, veikanten (stillheten), byens hendelser, skrittene på taket, motellets fjernsyn, lysene på B, Earls spole, SARO mørk, kontortelefonen, arkivtelefonen, matrisen tilbake, papfiguren, bilen på B, tatt i bilen, opptaket, morgenen, den niende kua, stjernehullet og bilradioen.
+- [ ] Det nærmere blikket (zoomK) og fotskrittene (`player.onStep`) i main.ts; glimtene og fotskrittene venter på dem.
+- [ ] Glimtets og albumfigurens malte omriss (runde 14) og albumets bilder (runde 15) er ikke i eksporten; figuren fra koden brukes.
+- [ ] Lommelyktas mønster (core/cookies.ts) og fall-off: nå Unreals invers kvadrat med intensiteten avstemt 4 m ut.

@@ -11,6 +11,8 @@ namespace S47Image
 {
 	// "data:image/jpeg;base64,..." (or png) to a texture (cached by the URL's hash); null if it is not one
 	SIGNAL47_API UTexture2D* FromDataUrl(const FString& Url);
+	// a data URL's pixels (BGRA, top row first), not cached; false if it is not a picture
+	SIGNAL47_API bool DecodePixels(const FString& Url, TArray<FColor>& Out, int32& W, int32& H);
 	// pixels (BGRA, top row first) to a JPEG (Quality 0..100) or PNG data URL
 	SIGNAL47_API FString ToDataUrl(const TArray<FColor>& Pixels, int32 W, int32 H, bool bJpeg = true, int32 Quality = 86);
 	// a render target's pixels (top row first)

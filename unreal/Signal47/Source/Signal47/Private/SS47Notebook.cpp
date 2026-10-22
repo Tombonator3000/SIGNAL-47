@@ -9,6 +9,8 @@
 #include "SS47Screens.h"
 #include "SS47Widgets.h"
 #include "Styling/CoreStyle.h"
+#include "TextureResource.h"
+#include "UObject/StrongObjectPtr.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
@@ -161,6 +163,70 @@ namespace
 	}
 
 	const float TILT[8] = { -1.4f, 0.9f, -0.5f, 1.3f, -1.f, 0.4f, 1.1f, -0.7f };
+
+	// ui/album.ts developing(k): a print still coming up, pale, flat and cold at first, and soft, the
+	// shapes before the detail: brightness(1 + .9 (1 - k)) contrast(.25 + .75 k) saturate(k), and
+	// while k < .85 blur(var(--w) * .012 (1 - k / .85)^1.5). Worked into the picture's pixels (each
+	// function clamped, as a filter is); the blur three box blurs as wide as the gaussian.
+	UTexture2D* Developing(const FString& Id, const FString& Url, double K)
+	{
+		if (K >= 1) return Picture(Url);
+		static TMap<FString, TPair<int32, TStrongObjectPtr<UTexture2D>>> Cache;
+		const int32 Q = FMath::RoundToInt(K * 100);
+		if (const TPair<int32, TStrongObjectPtr<UTexture2D>>* Have = Cache.Find(Id); Have && Have->Key == Q && Have->Value.IsValid()) return Have->Value.Get();
+		TArray<FColor> Px;
+		int32 W = 0, H = 0;
+		if (!S47Image::DecodePixels(Url, Px, W, H)) return nullptr;
+		const double Br = 1 + 0.9 * (1 - K), Co = 0.25 + 0.75 * K, Sa = K;
+		auto Cl = [](double V) { return FMath::Clamp(V, 0.0, 1.0); };
+		for (FColor& P : Px)
+		{
+			double R = Cl(P.R / 255.0 * Br), G = Cl(P.G / 255.0 * Br), B = Cl(P.B / 255.0 * Br);
+			R = Cl((R - 0.5) * Co + 0.5); G = Cl((G - 0.5) * Co + 0.5); B = Cl((B - 0.5) * Co + 0.5);
+			const double R2 = (0.213 + 0.787 * Sa) * R + (0.715 - 0.715 * Sa) * G + (0.072 - 0.072 * Sa) * B;
+			const double G2 = (0.213 - 0.213 * Sa) * R + (0.715 + 0.285 * Sa) * G + (0.072 - 0.072 * Sa) * B;
+			const double B2 = (0.213 - 0.213 * Sa) * R + (0.715 - 0.715 * Sa) * G + (0.072 + 0.928 * Sa) * B;
+			P.R = uint8(FMath::RoundToInt(Cl(R2) * 255)); P.G = uint8(FMath::RoundToInt(Cl(G2) * 255)); P.B = uint8(FMath::RoundToInt(Cl(B2) * 255)); P.A = 255;
+		}
+		if (K < 0.85)
+		{
+			// (--w is the print's width, 236 px; the picture is .875 of it)
+			const double Sigma = 236 * 0.012 * FMath::Pow(1 - K / 0.85, 1.5) * W / (0.875 * 236);
+			const int32 Rad = FMath::RoundToInt(FMath::Sqrt(Sigma * Sigma + 0.25) - 0.5);
+			if (Rad > 0)
+			{
+				TArray<FColor> Tmp = Px;
+				auto Pass = [&](bool bRows)
+				{
+					const int32 Len = bRows ? W : H, Count = bRows ? H : W;
+					for (int32 N = 0; N < Count; ++N)
+					{
+						auto At = [&](int32 I) -> FColor& { const int32 C = FMath::Clamp(I, 0, Len - 1); return bRows ? Px[N * W + C] : Px[C * W + N]; };
+						int32 S[3] = { 0, 0, 0 };
+						for (int32 I = -Rad; I <= Rad; ++I) { const FColor& C = At(I); S[0] += C.R; S[1] += C.G; S[2] += C.B; }
+						for (int32 I = 0; I < Len; ++I)
+						{
+							FColor& O = bRows ? Tmp[N * W + I] : Tmp[I * W + N];
+							O.R = uint8(S[0] / (2 * Rad + 1)); O.G = uint8(S[1] / (2 * Rad + 1)); O.B = uint8(S[2] / (2 * Rad + 1));
+							const FColor& In = At(I + Rad + 1); const FColor& Out = At(I - Rad);
+							S[0] += In.R - Out.R; S[1] += In.G - Out.G; S[2] += In.B - Out.B;
+						}
+					}
+					Px = Tmp;
+				};
+				for (int32 P = 0; P < 3; ++P) { Pass(true); Pass(false); }
+			}
+		}
+		UTexture2D* T = UTexture2D::CreateTransient(W, H, PF_B8G8R8A8);
+		if (!T) return nullptr;
+		T->SRGB = true;
+		void* Data = T->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+		FMemory::Memcpy(Data, Px.GetData(), W * H * sizeof(FColor));
+		T->GetPlatformData()->Mips[0].BulkData.Unlock();
+		T->UpdateResource();
+		Cache.Add(Id, TPair<int32, TStrongObjectPtr<UTexture2D>>(Q, TStrongObjectPtr<UTexture2D>(T)));
+		return T;
+	}
 
 	// repeat(auto-fill, ...) keeps its empty tracks: a row of fewer things keeps the columns' width
 	void KeepColumns(const TSharedRef<SUniformGridPanel>& Grid, int32 Count, int32 Cols)
@@ -331,8 +397,10 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	}
 	else PapersP->AddSlot().AutoHeight()[Empty(TEXT("None collected."))];
 
-	// the album (ui/album.ts albumPage): the case prints under photo corners on black album paper;
-	// the free frames (core/album.ts) are not in the Unreal version yet
+	// the album (ui/album.ts albumPage): the case prints under photo corners on black album paper, and
+	// the free frames (core/album.ts) as instant prints, in the order they were taken
+	Album = X.Album;
+	const int32 NShots = Album ? Album->Shots.Num() : 0;
 	TSharedRef<SVerticalBox> AlbumIn = SNew(SVerticalBox);
 	if (Photos.Num())
 	{
@@ -357,9 +425,21 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 		}
 		AlbumIn->AddSlot().AutoHeight().Padding(0, 0, 0, 26 * PX)[Thumbs];
 	}
-	else AlbumIn->AddSlot().AutoHeight()[Empty(TEXT("No exposures yet. Once you have the field camera, C raises it anywhere."), C(0xb9b29f))];
+	if (NShots)
+	{
+		AlbumIn->AddSlot().AutoHeight().Padding(0, 8 * PX, 0, 12 * PX)[SNew(STextBlock).Text(FText::FromString(TEXT("Tonight"))).Font(Hand(28)).ColorAndOpacity(C(0xece6d6, 0.88f))];
+		// .al-prints: wrapping, 26 px between rows and 22 between prints
+		TSharedRef<SWrapBox> Prints = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(22 * PX, 26 * PX));
+		for (int32 i = 0; i < NShots; ++i) Prints->AddSlot()[Print(i, 236, false)];
+		AlbumIn->AddSlot().AutoHeight()[Prints];
+	}
+	if (!Photos.Num() && !NShots) AlbumIn->AddSlot().AutoHeight()[Empty(TEXT("No exposures yet. Once you have the field camera, C raises it anywhere."), C(0xb9b29f))];
+	// .al-head: the heading, and the roll's count in red beside it
+	TSharedRef<SHorizontalBox> AlbumHead = SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(TEXT("Album"))).Font(Type(18)).ColorAndOpacity(C(0x5a5446))];
+	if (Album) AlbumHead->AddSlot().AutoWidth().VAlign(VAlign_Bottom).Padding(18 * PX, 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("%d of %d free frames left"), Album->Left, Album->Roll))).Font(Term(18)).ColorAndOpacity(C(0xa33a2c))];
 	TSharedRef<SWidget> AlbumP = SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12 * PX)[SNew(STextBlock).Text(FText::FromString(TEXT("Album"))).Font(Type(18)).ColorAndOpacity(C(0x5a5446))]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12 * PX)[AlbumHead]
 		+ SVerticalBox::Slot().AutoHeight()
 		[
 			SNew(SBorder).BorderImage(Box(C(0x1b1916), FLinearColor::Transparent, 0.f, 3.f)).Padding(FMargin(20 * PX, 16 * PX, 20 * PX, 28 * PX))[AlbumIn]
@@ -469,7 +549,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	Tabs->AddSlot()[TabButton(TEXT("notes"), TEXT("Notes"), Notes.Num())];
 	Tabs->AddSlot()[TabButton(TEXT("findings"), TEXT("Findings"), Findings.Num())];
 	Tabs->AddSlot()[TabButton(TEXT("papers"), TEXT("Papers"), Papers.Num())];
-	Tabs->AddSlot()[TabButton(TEXT("photos"), TEXT("Album"), Photos.Num())];
+	Tabs->AddSlot()[TabButton(TEXT("photos"), TEXT("Album"), Photos.Num() + NShots)];
 	if (MapP.IsValid()) Tabs->AddSlot()[TabButton(TEXT("map"), TEXT("Map"), 0)];
 	if (KitP.IsValid()) Tabs->AddSlot()[TabButton(TEXT("kit"), TEXT("Kit"), 0)];
 	if (PeopleP.IsValid()) Tabs->AddSlot()[TabButton(TEXT("people"), TEXT("People"), X.People->Num())];
@@ -488,6 +568,9 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
+		SNew(SOverlay)
+		+ SOverlay::Slot()
+		[
 		// .overlay: a click on it closes the notebook
 		SNew(SBorder).BorderImage(Box(C(0x020306, 0.72f))).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(12)
 		.OnMouseButtonDown_Lambda([this](const FGeometry&, const FPointerEvent&) { Close(); return FReply::Handled(); })
@@ -517,6 +600,9 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 				]
 			]
 		]
+		]
+		// .al-view: one free print big, inside the notebook's overlay
+		+ SOverlay::Slot()[SAssignNew(BigSlot, SBox).Visibility_Lambda([this] { return Big != INDEX_NONE ? EVisibility::Visible : EVisibility::Collapsed; })]
 	];
 	// show(): the tab used last, if this notebook has it
 	Show(Has.Contains(UI.IsValid() ? UI->NbTab : FString()) ? UI->NbTab : FString(TEXT("tasks")));
@@ -578,7 +664,113 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	// main.ts input.onKey with the notebook open: Tab, N, M, I, H, Escape and P close it; B lays
 	// the case out on the board
 	const FKey K = E.GetKey();
+	// one print open big: these only page through the album and put the print back (ui/album.ts)
+	if (Big != INDEX_NONE)
+	{
+		if (K == EKeys::Left || K == EKeys::A) { ShowBig(Big - 1); return FReply::Handled(); }
+		if (K == EKeys::Right || K == EKeys::D) { ShowBig(Big + 1); return FReply::Handled(); }
+		if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Enter || K == EKeys::SpaceBar) { CloseBig(); return FReply::Handled(); }
+	}
 	if (K == EKeys::Tab || K == EKeys::N || K == EKeys::M || K == EKeys::I || K == EKeys::H || K == EKeys::Escape || K == EKeys::P) { Close(); return FReply::Handled(); }
 	if (K == EKeys::B && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
 	return FReply::Unhandled();
+}
+
+// ---------- the free prints (ui/album.ts) ----------
+
+TSharedRef<SWidget> SS47Notebook::Print(int32 I, float W, bool bBig)
+{
+	// .al-print: the instant print, its picture 16:10 on the paper's frame, the caption in the player's
+	// hand on its wide bottom edge (b: two lines, three on a big one; small: where and when). W is
+	// --w in CSS pixels; the picture is still coming up for 90 s of the night (developing)
+	const FS47AlbumView::FShot& S = Album->Shots[I];
+	UTexture2D* Tex = Developing(S.Id, S.Url, S.Dev);
+	const float Iw = 0.875f * W, Ih = Iw * 10.f / 16.f, Edge = 0.0625f * W, Bottom = 0.234f * W;
+	const float Bf = (bBig ? 0.056f : 0.074f) * W, Sf = (bBig ? 0.04f : 0.058f) * W;
+	TSharedRef<SWidget> Img = Tex ? StaticCastSharedRef<SWidget>(SNew(SImage).Image(S47Kit::BrushFor(Tex).Get())) : StaticCastSharedRef<SWidget>(SNew(SBorder).BorderImage(Box(C(0x0c0c0d))));
+	TSharedRef<SWidget> Paper = SNew(SBorder).BorderImage(Box(C(0xebe5d4))).Padding(FMargin(Edge * PX, Edge * PX, Edge * PX, 0))
+	[
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()[SNew(SBox).WidthOverride(Iw * PX).HeightOverride(Ih * PX)[Img]]
+		+ SVerticalBox::Slot().AutoHeight()
+		[
+			SNew(SBox).WidthOverride(Iw * PX).HeightOverride(Bottom * PX).Padding(FMargin(0, 0.024f * W * PX, 0, 0)).Clipping(EWidgetClipping::ClipToBounds)
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()
+				[
+					SNew(SBox).MaxDesiredHeight(Bf * 0.98f * (bBig ? 3 : 2) * PX * 1.25f).Clipping(EWidgetClipping::ClipToBounds)
+					[SNew(STextBlock).Text(FText::FromString(S.Text)).Font(Hand(Bf)).ColorAndOpacity(C(0x22305a)).AutoWrapText(true).LineHeightPercentage(0.98f)]
+				]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, 2 * PX, 0, 0)[SNew(STextBlock).Text(FText::FromString(S.Meta)).Font(Hand(Sf)).ColorAndOpacity(C(0x4b4a58))]
+			]
+		]
+	];
+	// a dark shadow under it (box-shadow: 0 7px 16px rgba(0,0,0,.6))
+	TSharedRef<SWidget> Shadowed = SNew(SOverlay)
+		+ SOverlay::Slot().Padding(FMargin(2 * PX, 7 * PX, 2 * PX, -7 * PX))[SNew(SBorder).BorderImage(Box(C(0x000000, 0.45f)))]
+		+ SOverlay::Slot()[Paper];
+	Shadowed->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(bBig ? -0.5f : TILT[(I + 3) % 8]))));
+	Shadowed->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+	if (bBig) return Shadowed;
+	// a click or a tap opens it big
+	return SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).OnClicked_Lambda([this, I] { ShowBig(I); return FReply::Handled(); })[Shadowed];
+}
+
+void SS47Notebook::ShowBig(int32 I)
+{
+	if (!Album || !Album->Shots.IsValidIndex(I) || !BigSlot.IsValid()) return;
+	Big = I;
+	// --w: min(100vw - 150px, (100vh - 48px) / .844, 920px)
+	const FVector2D View = FVector2D(GetCachedGeometry().GetLocalSize()) / PX;
+	const float W = float(FMath::Max(200.0, FMath::Min3(View.X - 150, (View.Y - 48) / 0.844, 920.0)));
+	const int32 N = Album->Shots.Num();
+	auto Nav = [this](const TCHAR* Label, int32 To, bool bOn) -> TSharedRef<SWidget>
+	{
+		return SNew(SBox).WidthOverride(50 * PX).HeightOverride(96 * PX)
+		[
+			SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).IsEnabled(bOn).HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+			.OnClicked_Lambda([this, To] { ShowBig(To); return FReply::Handled(); })
+			[
+				SNew(SBorder).BorderImage(Box(C(0xffffff, 0.06f), FLinearColor::Transparent, 0.f, 4.f)).HAlign(HAlign_Center).VAlign(VAlign_Center).ColorAndOpacity(FLinearColor(1, 1, 1, bOn ? 1.f : 0.18f))
+				[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(58)).ColorAndOpacity(C(0xe8e2d2))]
+			]
+		];
+	};
+	BigSlot->SetContent(
+		SNew(SBorder).BorderImage(Box(C(0x030509, 0.93f))).Padding(0)
+		// a tap outside the print puts it back
+		.OnMouseButtonDown_Lambda([this](const FGeometry&, const FPointerEvent&) { CloseBig(); return FReply::Handled(); })
+		[
+			SNew(SOverlay)
+			+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+			[
+				SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("NoBorder")).Padding(0)
+				.OnMouseButtonDown_Lambda([](const FGeometry&, const FPointerEvent&) { return FReply::Handled(); })
+				[Print(I, W, true)]
+			]
+			+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center).Padding(6 * PX, 0, 0, 0)[Nav(TEXT("‹"), I - 1, I > 0)]
+			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Center).Padding(0, 0, 6 * PX, 0)[Nav(TEXT("›"), I + 1, I < N - 1)]
+			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, 8 * PX, 12 * PX, 0)
+			[
+				SNew(SButton).ButtonStyle(Flat()).ContentPadding(FMargin(0, 6 * PX)).OnClicked_Lambda([this] { CloseBig(); return FReply::Handled(); })
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 6 * PX, 0)
+					[
+						SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x8a8473), 1.f, 3.f)).Padding(FMargin(6 * PX, 0))
+						[SNew(STextBlock).Text(FText::FromString(TEXT("E"))).Font(Term(22)).ColorAndOpacity(C(0xffb052))]
+					]
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("Back to the album"))).Font(Term(22)).ColorAndOpacity(C(0xcfc8b5))]
+				]
+			]
+		]);
+	// the album is told which print is being looked at (core/album.ts, the face)
+	if (Album->Look) Album->Look(Album->Shots[I].Id);
+}
+
+void SS47Notebook::CloseBig()
+{
+	Big = INDEX_NONE;
+	if (BigSlot.IsValid()) BigSlot->SetContent(SNullWidget::NullWidget);
 }

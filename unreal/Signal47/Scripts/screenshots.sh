@@ -35,4 +35,14 @@ shot drive "S47: trip 20 s" "-S47Drive=saro:station01 -S47Throttle=0.35" 24
 shot chapter1 "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=room"
 shot yard "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=at:11.2;-11.0;-1.5708;-0.2"
 shot camera "frame01 exposed" "-S47Jump=chapter1 -S47Ch1Drive=photo"
+# the night's layer (S47Night): the night's events as the developer menu starts them (steps behind the
+# player, the control room's phone once), a sound out in the dark with the flashlight on, the figure at
+# the edge of the view behind the array, and a free frame for the album (the face on it, the notebook
+# open on the print coming up)
+shot nightsteps "S47: night event written: .*footsteps behind me" "-S47Jump=chapter1 -S47Face=outside -S47Night=steps" 10
+shot nightphone "S47: night event written: .*phone in the control room rang once" "-S47Jump=chapter1 -S47Face=outside -S47Night=phone" 10
+shot call "S47: call alien" "-S47Jump=chapter1 -S47Face=outside -S47Call" 10
+shot glimpse "S47: glimpse at S-11" "-S47Jump=chapter1 -S47Face=at:10;-12;-0.45;0.03 -S47Glimpse=S-11" 8
+shot album "S47: free frame free1" "-S47Jump=chapter1 -S47Face=at:10.4;-11.6;0.2;0.31 -S47Album" 8
+shot albumface "S47: album opened" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Light -S47Album=face+open" 9
 exit $fail
