@@ -1,5 +1,11 @@
 #include "S47Story.h"
+#include "S47Walker.h"
+#include "S47World.h"
+#include "S47Three.h"
+#include "S47ReadAloud.h"
+#include "S47NpcDialogue.h"
 
+#include "S47ArrayShot.h"
 #include "S47Audio.h"
 #include "S47HUD.h"
 #include "S47Chapter.h"
@@ -700,7 +706,11 @@ void AS47Story::TurnDishes()
 	LookAssist = 1.f;
 	if (Audio.IsValid()) Audio->StartMotors();
 	Log(TEXT("ARRAY  S-01 TO S-27 MOTION  NO COMMAND"));
-	PointDishes(EventAz, EventEl, 2.2);
+	// Unreal only, on Tom's request (22 October 2026; S47ArrayShot.h): the dishes turn twice as quick
+	// as the web version's 2.2 degrees a second, and the camera goes to the window to watch them
+	PointDishes(EventAz, EventEl, FS47ArrayShot::TURN_SLEW);
+	if (!Shot.IsValid()) Shot = MakeShared<FS47ArrayShot>(US47Main::Get(this));
+	Shot->Begin();
 	Toast(TEXT("Outside, every dish in the array is turning."), 3.5f);
 	After(4.5, [this] { Toast(TEXT("Nobody sent a command."), 3.f); });
 }
@@ -717,11 +727,14 @@ void AS47Story::Arrived()
 	}
 	Note(TEXT("Every dish moved to az 026, el 32. Console shows no control command."));
 	Note(TEXT("All dishes left their scheduled track and aligned together."));
+	// (Unreal only: the window's view held through the beeps, then given back before the card)
+	After(1.0, [this] { if (Shot.IsValid()) Shot->Release(); });
 	After(3.2, [this] { Finish(); });
 }
 
 void AS47Story::Finish()
 {
+	if (Shot.IsValid()) Shot->Stop();
 	if (Audio.IsValid()) { Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); }
 	// main.ts game.onFinish: the night is not over
 	if (Chapter(TEXT("ch1")))
@@ -902,6 +915,7 @@ void AS47Story::ResetAll()
 	}
 	if (Audio.IsValid()) { Audio->Stop(TEXT("ring")); Audio->Stop(TEXT("printer")); Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); Audio->StopMotors(); }
 	if (Decoder.IsValid()) Decoder->Stop();
+	if (Shot.IsValid()) Shot->Stop();
 }
 
 void AS47Story::Start()
@@ -974,6 +988,7 @@ void AS47Story::Jump(const FString& Target)
 void AS47Story::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (Shot.IsValid()) Shot->Tick();
 	// main.ts step(): game.update runs only in play (not behind the title, not on the end card)
 	if (const US47Main* Main = US47Main::Get(this); Main && Main->Mode != US47Main::EMode::Play) return;
 	const double Dt = DeltaSeconds;
@@ -996,7 +1011,7 @@ void AS47Story::Tick(float DeltaSeconds)
 		const bool bCh1Along = C->Key() == TEXT("ch1") && ChapterKey.StartsWith(TEXT("ch"));
 		if (C->bActive || bCh1Along) C->Update(bPaused ? 0.0 : Dt, GameTime);
 	}
-	if (Decoder.IsValid()) Decoder->Update(Dt);
+	if (Decoder.IsValid()) { Decoder->Duck(VoicesDuck()); Decoder->Update(Dt); }
 	if (!Saro.IsValid()) return;
 	Saro->SetClock(ClockSec);
 
@@ -1014,7 +1029,10 @@ void AS47Story::Tick(float DeltaSeconds)
 		{
 			const double C = Rx.Stage >= 3 ? 1.0 : Rx.Quality(S47Signal::Profiles()[2]);
 			Audio->SetCarrier(0, 0, 0);
-			Audio->SignalFrame(float(FMath::Max(0.02, C)), bConsoleOpen ? 0.9f : 0.3f);
+			// (Unreal, on Tom's request, departs from the web version: there the locked signal sounds at
+			// 0.3 everywhere all night. Here it comes from the console, so it falls away across the room
+			// and is faint outside, and it steps back under a ringing phone and a voice on the line.)
+			Audio->SignalFrame(float(FMath::Max(0.02, C)), float((bConsoleOpen ? 0.9 : 0.3 * ConsoleNear()) * VoicesDuck()));
 		}
 		else
 		{
@@ -1056,4 +1074,32 @@ void AS47Story::Tick(float DeltaSeconds)
 	{
 		Hud->LookTowards(FVector(-6, 9, -70), float(1.0 - FMath::Exp(-Dt * 1.4)));
 	}
+}
+
+// ---------- the night's tones under the voices (Unreal) ----------
+
+double AS47Story::ConsoleNear() const
+{
+	// 1 at the console, falling to 0.25 across the control room; 0.08 out of the room
+	const US47Main* M = US47Main::Get(this);
+	if (!M || !M->Player || !Saro.IsValid()) return 1.0;
+	const FVector Console = S47Three::ToThree(Saro->PropLocation(TEXT("crtCenter")));
+	const double D = FVector::Dist2D(FVector(Console.X, Console.Z, 0), FVector(M->Player->Pos.X, M->Player->Pos.Z, 0));
+	const bool bRoom = !M->World || (M->World->Area == TEXT("saro") && M->Web && M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos));
+	if (!bRoom) return 0.08;
+	return FMath::Clamp(1.0 - (D - 1.5) / 8.0, 0.25, 1.0);
+}
+
+double AS47Story::VoicesDuck() const
+{
+	// a ringing phone, a call on the line, or a voice reading: the tones step back to a quarter
+	const US47Main* M = US47Main::Get(this);
+	bool bVoice = bRinging || (Audio.IsValid() && Audio->PhonePlaying());
+	if (M && M->UI)
+	{
+		bVoice |= M->UI->NpcDialogue.IsValid() && M->UI->NpcDialogue->Playing();
+		bVoice |= M->UI->ReadAloud.IsValid() && M->UI->ReadAloud->Playing();
+		bVoice |= M->UI->Narrator.IsValid() && M->UI->Narrator->Playing();
+	}
+	return bVoice ? 0.25 : 1.0;
 }

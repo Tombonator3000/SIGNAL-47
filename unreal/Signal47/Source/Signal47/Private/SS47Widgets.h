@@ -137,8 +137,10 @@ private:
 
 // (the notebook is SS47Notebook.h, ported from ui/UI.ts notebook)
 
-// The receiver console (SARO / RX CONTROL 03): the spectrum, the four controls, the card and
-// the action button. Edits the story's receiver directly.
+// The receiver console (SARO / RX CONTROL 03, ui/RxConsole.ts): the spectrum, the four controls,
+// the card and the action button, as the web version's .crt has them, drawn for the CRT's 4:3
+// glass (SS47ScreenView puts it on the centre screen and sends it the mouse and the keys; without
+// the room it stands over the game in a beige bezel). Edits the story's receiver directly.
 class SS47Console : public SCompoundWidget
 {
 public:
@@ -154,31 +156,35 @@ public:
 private:
 	AS47Story* Story = nullptr;
 	TFunction<void()> OnClose, OnClick;
-	TUniquePtr<FSlateBrush> PanelBrush;
 	TSharedRef<SWidget> Control(const TCHAR* Label, TFunction<double()> Get, TFunction<void(double)> Set, double Min, double Max, TFunction<FString(double)> Fmt, bool bFine);
+	bool Usable() const;
 };
 
-// The spectrum trace as a widget: the receiver console's and the centre CRT's picture.
+// The spectrum trace as a widget: the receiver console's and the centre CRT's picture. The trace
+// is worked out on the web version's canvas (Canvas: 900 x 300 on the console, the CRT's 512 x 384)
+// and stretched to the widget, as the browser stretches the canvas to its box.
 class SS47Spectrum : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Spectrum) : _Story(nullptr) {}
+	SLATE_BEGIN_ARGS(SS47Spectrum) : _Story(nullptr), _Canvas(FVector2D::ZeroVector) {}
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(FVector2D, Size)
+		SLATE_ARGUMENT(FVector2D, Canvas)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& InArgs);
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 	virtual FVector2D ComputeDesiredSize(float) const override { return Size; }
-	static void Paint(const AS47Story* Story, const FGeometry& G, FSlateWindowElementList& Out, int32 Layer, const FSlateBrush* White);
+	static void Paint(const AS47Story* Story, const FGeometry& G, FSlateWindowElementList& Out, int32 Layer, const FSlateBrush* White, FVector2D Canvas = FVector2D::ZeroVector);
 
 private:
 	AS47Story* Story = nullptr;
-	FVector2D Size = FVector2D(900, 300);
+	FVector2D Size = FVector2D(900, 300), Canvas = FVector2D::ZeroVector;
 	TUniquePtr<FSlateBrush> WhiteBrush;
 };
 
-// The operations terminal (SARO OPERATIONS SYSTEM V4.2): the output, the command line and the
-// commands as buttons. Esc or LOGOUT closes.
+// The operations terminal (SARO OPERATIONS SYSTEM V4.2, ui/Terminal.ts): the output with the
+// command line under it, the commands as buttons, LOG OUT. Esc or LOGOUT closes. On the west desk's
+// CRT through SS47ScreenView, the line taking the keys.
 class SS47Ops : public SCompoundWidget
 {
 public:
@@ -189,18 +195,44 @@ public:
 	void Construct(const FArguments& InArgs);
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+	virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
+	/** The command line (the screen view gives it the keys). */
+	TSharedPtr<SWidget> Line() const;
 
 private:
 	AS47Story* Story = nullptr;
 	TFunction<void()> OnClose;
 	FString Text;
 	TSharedPtr<SScrollBox> Scroll;
-	TSharedPtr<class STextBlock> Out;
-	TSharedPtr<SEditableTextBox> Input;
+	TSharedPtr<class SEditableText> Input;
 	TSharedPtr<class SWrapBox> Buttons;
-	TUniquePtr<FSlateBrush> PanelBrush;
 	void Exec(const FString& Cmd);
 	void RebuildButtons();
+};
+
+// A CRT's picture for SS47Console and SS47Ops: the phosphor's dark green, the tube darker at its
+// edges with a faint green rim, the scan lines over everything and the glass's round corners.
+// Without the room (bBezel) it also has the web version's beige bezel and its shadow.
+class SS47CrtGlass : public SCompoundWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SS47CrtGlass) : _bBezel(false), _Radius(22.f), _Ring(14.f), _Edge(2.f), _Scan(0.22f) {}
+		SLATE_ARGUMENT(bool, bBezel)
+		SLATE_ARGUMENT(float, Radius)   // the glass's corners, mockup px
+		SLATE_ARGUMENT(float, Ring)     // the bezel: its beige ring and the darker edge round it
+		SLATE_ARGUMENT(float, Edge)
+		SLATE_ARGUMENT(float, Scan)     // the scan lines' darkness
+		SLATE_DEFAULT_SLOT(FArguments, Content)
+	SLATE_END_ARGS()
+	void Construct(const FArguments& InArgs);
+	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
+	// the glass keeps its clicks (over the game, a click beside it closes the screen)
+	virtual FReply OnMouseButtonDown(const FGeometry&, const FPointerEvent&) override { return FReply::Handled(); }
+
+private:
+	bool bBezel = false;
+	float Radius = 22.f, Ring = 14.f, Edge = 2.f, Scan = 0.22f;
+	FSlateRect Glass(const FGeometry& G) const;
 };
 
 // The card at the end of the prologue.

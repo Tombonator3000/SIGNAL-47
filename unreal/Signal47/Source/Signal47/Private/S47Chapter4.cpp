@@ -648,7 +648,7 @@ void US47Chapter4::UseTv()
 	Room->SetTv(!Room->bTvOn);
 	if (US47Audio* A = M ? M->Audio.Get() : nullptr) A->Sfx(A->Or(TEXT("small_switch"), TEXT("switch")), Snd(0.35f, 0.8f));
 	TvSound();
-	if (Room->bTvOn && !bTvSeen) { bTvSeen = true; Toast(TEXT("Snow on every channel. The stations signed off at one."), 3.2f); }
+	if (Room->bTvOn && !bTvSeen) { bTvSeen = true; Toast(Room->HasProgramme() ? TEXT("A strange late-night broadcast. Visitors from the stars, playing to an empty room.") : TEXT("Snow on every channel. The stations signed off at one."), 3.2f); }
 	else if (!Room->bTvOn) NoraToast(TEXT("N. VEGA: \"Leave it. The quiet is worse.\""), 3);
 }
 
@@ -657,7 +657,8 @@ void US47Chapter4::TvSound()
 	US47Audio* A = M ? M->Audio.Get() : nullptr;
 	if (!A) return;
 	const FS47Obj Tv = Room ? Room->Obj(TEXT("tv")) : FS47Obj();
-	A->TvHiss(Room && Tv && Room->bTvOn && InRoom() ? TOptional<FVector>(Tv.WorldPosition()) : TOptional<FVector>());
+	// (with the local broadcast staged, the set plays its sound instead: US47Room6::Broadcast)
+	A->TvHiss(Room && Tv && Room->bTvOn && InRoom() && !Room->HasProgrammeSound() ? TOptional<FVector>(Tv.WorldPosition()) : TOptional<FVector>());
 }
 
 // Called by World when the player comes in through the door.
@@ -1384,7 +1385,7 @@ void US47Chapter4::TestDrive(const FString& Stop)
 	if (!M || !M->Web || !M->Player) return;
 	TWeakObjectPtr<US47Chapter4> W = this;
 	static const TArray<FString> Order = { TEXT("room"), TEXT("talk"), TEXT("table"), TEXT("p10"), TEXT("line"), TEXT("end"), TEXT("leave") };
-	const int32 Upto = Stop == TEXT("walkie") || Stop == TEXT("tv") ? 0 : Order.IndexOfByKey(Stop);
+	const int32 Upto = Stop == TEXT("walkie") || Stop == TEXT("tv") || Stop == TEXT("tvnear") ? 0 : Order.IndexOfByKey(Stop);
 	auto Say = [](const FString& T) { UE_LOG(LogS47Ch4, Display, TEXT("S47: ch4 drive: %s"), *T); };
 	auto Later = [W](float Secs, TFunction<void()> Fn)
 	{
@@ -1402,12 +1403,39 @@ void US47Chapter4::TestDrive(const FString& Stop)
 		W->M->Player->Place(A.X, A.Z, FMath::Atan2(-(Nora.X - A.X), -(Nora.Z - A.Z)));
 		W->M->Player->Pitch = FMath::Atan2(Nora.Y + 0.25 - 1.62, FMath::Sqrt(FMath::Square(Nora.X - A.X) + FMath::Square(Nora.Z - A.Z)));
 		Say(FString::Printf(TEXT("room: area %s, arrived %d, stage %s, tv %d"), *W->Area(), W->S.bArrived, *W->S.Stage, W->Room && W->Room->bTvOn));
-		if (Stop == TEXT("tv"))
+		if (Stop == TEXT("tv") || Stop == TEXT("tvnear"))
 		{
 			// the set on the dresser, snow on every channel
 			const FVector Tv = W->Room ? W->Room->Proxy(TEXT("tv")).WorldPosition() : FVector::ZeroVector;
 			W->M->Player->Yaw = FMath::Atan2(-(Tv.X - A.X), -(Tv.Z - A.Z));
 			W->M->Player->Pitch = FMath::Atan2(Tv.Y - 1.62, FMath::Sqrt(FMath::Square(Tv.X - A.X) + FMath::Square(Tv.Z - A.Z)));
+			// tvnear: straight in front of the screen, a metre off (its picture's shape)
+			US47Room6::FAnchor Stand = A;
+			const FS47Obj Set = W->Room ? W->Room->Obj(TEXT("tv")) : FS47Obj();
+			const FVector Screen = Set ? Set.LocalToWorld(FVector(-0.055, 0.29, 0.279)) : Tv;
+			if (Stop == TEXT("tvnear") && Set)
+			{
+				const FVector Out = Set.WorldDirection();
+				Stand.X = Screen.X + Out.X * 1.0; Stand.Z = Screen.Z + Out.Z * 1.0;
+				W->M->Player->Yaw = FMath::Atan2(Out.X, Out.Z);
+			}
+			// (held there: a stray mouse on the test machine must not turn the view off the set)
+			const double Yaw = W->M->Player->Yaw, Dist = FMath::Sqrt(FMath::Square(Screen.X - Stand.X) + FMath::Square(Screen.Z - Stand.Z));
+			FTimerHandle Hold;
+			W->M->Web->GetWorldTimerManager().SetTimer(Hold, FTimerDelegate::CreateLambda([W, Stand, Yaw, Screen, Dist]
+			{
+				if (!W.IsValid() || !W->M->Player || !W->InRoom()) return;
+				AS47Walker* P = W->M->Player; P->Place(Stand.X, Stand.Z, Yaw); P->Pitch = FMath::Atan2(Screen.Y - P->FloorY - P->Eye, Dist);
+			}), 0.25f, true);
+			// the broadcast, when staged: its picture and sound some seconds apart
+			for (const float At : { 3.f, 9.f })
+			{
+				FTimerHandle H;
+				W->M->Web->GetWorldTimerManager().SetTimer(H, FTimerDelegate::CreateLambda([W, Say]
+				{
+					if (W.IsValid() && W->Room && W->Room->HasProgramme()) Say(TEXT("tv: ") + W->Room->ProgrammeState());
+				}), At, false);
+			}
 			return;
 		}
 		if (Stop == TEXT("walkie"))

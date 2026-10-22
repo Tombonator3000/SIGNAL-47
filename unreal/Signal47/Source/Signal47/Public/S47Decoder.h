@@ -36,6 +36,7 @@ public:
 	~FS47DecoderPlayer();
 
 	bool bPlaying = false;
+	double Ducked = 1;
 	FS47DecoderParams Params;
 	/** Which pulse sounds now: 0 to 3 the 4-group, 4 to 10 the 7-group, -1 between. */
 	int32 Current = -1;
@@ -45,6 +46,8 @@ public:
 	void Stop();
 	/** Every frame: schedule what is due, and say which pulse is sounding (for the displays). */
 	void Update();
+	/** (Unreal) Steps the playback back under a phone or a voice: 1 as set, 0.25 under them. */
+	void Duck(double K);
 
 private:
 	TSharedRef<FS47AudioContext> Ctx;

@@ -370,7 +370,15 @@ void US47TownLayer::TestFlags()
 		}
 		if (bRoad) { M->World->Enter(TEXT("saro")); M->Player->Place(-24, 220, 0); if (Road == TEXT("car")) L->Roadside->CarNow(M->Player->Pos); else if (Road == TEXT("roof")) { M->Player->Place(-24, 600, 2.3); L->Roadside->RoofNow(); } else L->Roadside->SilenceNow(L->RoadsideIn(false)); UE_LOG(LogS47Town, Display, TEXT("S47: roadside test %s"), *Road); }
 		if (bHerd) { M->World->Enter(TEXT("saro")); L->Pasture->Now(); FS47PastureIn S; S.bOk = true; S.Cam = L->Camera(); S.Clock = L->Clock(); L->Pasture->Update(.05, S); M->Player->Place(-55, 856, -PI / 2); if (Herd == TEXT("missing")) L->Pasture->TakeNinth(); UE_LOG(LogS47Town, Display, TEXT("S47: pasture test %s"), *L->Pasture->Stage); }
-		if (bTv) { M->World->PlaceTruck(TEXT("motel")); M->World->Enter(TEXT("saro")); const FS47Obj TvObj = M->Web->Obj(TEXT("world.motel.tv.group")); const FVector P = TvObj.WorldPosition(), Front = TvObj.WorldDirection(); M->Player->Place(P.X + Front.X * 1.8, P.Z + Front.Z * 1.8, FMath::Atan2(Front.X, Front.Z)); M->Player->Pitch = 0.04; M->Story->SetClock(3 * 3600 + 20 * 60); L->MotelTv->Now(); UE_LOG(LogS47Town, Display, TEXT("S47: motel television test %s"), *L->MotelTv->Mode);
+		if (bTv) { M->World->PlaceTruck(TEXT("motel")); M->World->Enter(TEXT("saro")); const FS47Obj TvObj = M->Web->Obj(TEXT("world.motel.tv.group")); const FVector P = TvObj.WorldPosition(), Front = TvObj.WorldDirection(); const bool bProgramme = Tv.StartsWith(TEXT("programme")), bNear = Tv == TEXT("programme-near"); const double Back = bNear ? 1.25 : 1.8;
+			const FVector Stand(P.X + Front.X * Back, 0, P.Z + Front.Z * Back); const FVector Screen = TvObj.LocalToWorld(FVector(-0.045, 0.18, 0.1815));
+			M->Player->Place(Stand.X, Stand.Z, FMath::Atan2(Front.X, Front.Z)); M->Player->Pitch = 0.04;
+			// (the view kept on the middle of the screen through the run, from wherever the walker stands: a
+			// stray mouse on the test machine must not turn it off the set)
+			auto Hold = [Self, Screen] { if (!Self.IsValid() || !Self->M->Player) return; auto* Pl = Self->M->Player.Get(); const double Dx = Screen.X - Pl->Pos.X, Dz = Screen.Z - Pl->Pos.Z; Pl->Yaw = FMath::Atan2(-Dx, -Dz); Pl->Pitch = FMath::Atan2(Screen.Y - Pl->FloorY - Pl->Eye, FMath::Sqrt(Dx * Dx + Dz * Dz)); };
+			Hold(); FTimerHandle HoldTimer; M->Web->GetWorldTimerManager().SetTimer(HoldTimer, Hold, 0.25f, true); M->Story->SetClock(bProgramme ? 5 * 3600 + 10 * 60 : 3 * 3600 + 20 * 60); if (!bProgramme) L->MotelTv->Now(); UE_LOG(LogS47Town, Display, TEXT("S47: motel television test %s"), *L->MotelTv->Mode);
+			// the late broadcast (when staged): before, under and after the event
+			for (const float At : { 4.f, 10.f, 52.f }) { FTimerHandle BroadcastTimer; M->Web->GetWorldTimerManager().SetTimer(BroadcastTimer, [Self] { if (Self.IsValid()) UE_LOG(LogS47Town, Display, TEXT("S47: motel television %s, broadcast %s"), *Self->MotelTv->Mode, *Self->MotelTv->ProgrammeState()); }, At, false); }
 			if (Tv == TEXT("frame"))
 			{
 				FTimerHandle FrameTimer; M->Web->GetWorldTimerManager().SetTimer(FrameTimer, [Self]

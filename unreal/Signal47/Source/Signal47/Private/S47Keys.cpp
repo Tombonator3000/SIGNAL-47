@@ -30,6 +30,9 @@ namespace S47KeysLocal
 			A(TEXT("left"), TEXT("Step left"), Foot, TEXT("Step to the left. In the truck: steer left."), EKeys::A, EKeys::Left),
 			A(TEXT("right"), TEXT("Step right"), Foot, TEXT("Step to the right. In the truck: steer right."), EKeys::D, EKeys::Right),
 			A(TEXT("run"), TEXT("Run"), Foot, TEXT("Hold to run."), EKeys::LeftShift, EKeys::RightShift),
+			// (Tom 22 October 2026: a jump on foot; the web version has none. Space, as the shutter has it:
+			// the two are never wanted at once, S47Keys::MayShare)
+			A(TEXT("jump"), TEXT("Jump"), Foot, TEXT("Jump. With the camera raised the same key is the shutter."), EKeys::SpaceBar),
 			A(TEXT("use"), TEXT("Use"), Foot, TEXT("Use what the crosshair is on. Put a paper back. With the camera raised it is the shutter; in the truck it turns the key, works the radio or gets you out. A left click does the same."), EKeys::E, EKeys::Enter),
 			A(TEXT("alt"), TEXT("Second choice"), Foot, TEXT("The other choice at the prompt, when one is offered: out of the truck while Use turns the key."), EKeys::Q),
 			A(TEXT("zoom"), TEXT("Closer look"), Foot, TEXT("Hold for a closer look at what the crosshair is on."), EKeys::RightMouseButton),
@@ -57,10 +60,11 @@ namespace S47KeysLocal
 
 	TStaticArray<FKey, 2>* Slots(FName Action) { return St().Map.Find(Action); }
 
-	// no key twice: a later duplicate goes (the actions' order), and a fixed first key stays as it is
+	// no key twice: a later duplicate goes (the actions' order), unless every action before it with
+	// that key may share it; a fixed first key stays as it is
 	void Normalize()
 	{
-		TSet<FKey> Seen;
+		TMap<FKey, TArray<FName>> Seen;
 		for (const S47Keys::FAction& A : St().Actions)
 		{
 			TStaticArray<FKey, 2>& K = St().Map.FindChecked(A.Id);
@@ -68,11 +72,20 @@ namespace S47KeysLocal
 			for (int32 S = 0; S < 2; ++S)
 			{
 				if (!K[S].IsValid()) continue;
-				if (Seen.Contains(K[S]) || (!(A.bFixedFirst && S == 0) && !S47Keys::Bindable(K[S]))) K[S] = EKeys::Invalid;
-				else Seen.Add(K[S]);
+				const TArray<FName>* Had = Seen.Find(K[S]);
+				const bool bTaken = Had && Had->ContainsByPredicate([&A](FName B) { return !S47Keys::MayShare(A.Id, B); });
+				if (bTaken || (!(A.bFixedFirst && S == 0) && !S47Keys::Bindable(K[S]))) K[S] = EKeys::Invalid;
+				else Seen.FindOrAdd(K[S]).AddUnique(A.Id);
 			}
 		}
 	}
+}
+
+bool S47Keys::MayShare(FName A, FName B)
+{
+	// the shutter is asked only while the camera is raised, a jump only while it is not
+	static const FName Shutter(TEXT("shutter")), Jump(TEXT("jump"));
+	return (A == Shutter && B == Jump) || (A == Jump && B == Shutter);
 }
 
 const TArray<S47Keys::FAction>& S47Keys::Actions() { return S47KeysLocal::St().Actions; }
@@ -178,22 +191,48 @@ S47Keys::EBind S47Keys::Bind(FName Action, int32 Slot, const FKey& K, FName* Oth
 		if (Other) *Other = Action;
 		return EBind::Swapped;
 	}
+	// the actions that have K now: those that may share it with this one keep it (Shared); from the
+	// others it is taken, the first getting this one's old key in exchange (when no action it cannot
+	// share a key with has that key), the rest none
+	struct FHolder { FName Id; int32 Slot; };
+	TArray<FHolder> Takes;
+	FName Sharer;
 	for (const FAction& B : S47KeysLocal::St().Actions)
 	{
 		if (B.Id == Action) continue;
-		TStaticArray<FKey, 2>& T = S47KeysLocal::St().Map.FindChecked(B.Id);
+		const TStaticArray<FKey, 2>& T = S47KeysLocal::St().Map.FindChecked(B.Id);
 		for (int32 t = 0; t < 2; ++t)
 		{
 			if (T[t] != K) continue;
+			if (MayShare(Action, B.Id)) { if (Sharer.IsNone()) Sharer = B.Id; continue; }
 			if (t == 0 && B.bFixedFirst) return EBind::Fixed;
-			T[t] = Old;
-			(*S)[Slot] = K;
-			if (Other) *Other = B.Id;
-			return EBind::Swapped;
+			Takes.Add({ B.Id, t });
 		}
 	}
 	(*S)[Slot] = K;
-	return EBind::Done;
+	if (Takes.IsEmpty())
+	{
+		if (Other) *Other = Sharer;
+		return Sharer.IsNone() ? EBind::Done : EBind::Shared;
+	}
+	bool bGave = false;
+	for (int32 i = 0; i < Takes.Num(); ++i)
+	{
+		TStaticArray<FKey, 2>& T = S47KeysLocal::St().Map.FindChecked(Takes[i].Id);
+		bool bFree = i == 0 && Old.IsValid();
+		if (bFree)
+		{
+			for (const TPair<FName, TStaticArray<FKey, 2>>& P : S47KeysLocal::St().Map)
+			{
+				if (P.Key == Takes[i].Id || MayShare(P.Key, Takes[i].Id)) continue;
+				if (P.Value[0] == Old || P.Value[1] == Old) { bFree = false; break; }
+			}
+		}
+		T[Takes[i].Slot] = bFree ? Old : FKey(EKeys::Invalid);
+		bGave |= bFree;
+	}
+	if (Other) *Other = Takes[0].Id;
+	return bGave ? EBind::Swapped : EBind::Moved;
 }
 
 void S47Keys::Clear(FName Action, int32 Slot)
@@ -214,10 +253,10 @@ void S47Keys::Reset(FName Action)
 		const FKey D = A->Default[i];
 		if (D.IsValid())
 		{
-			// taken from whichever action has it now
+			// taken from whichever action has it now (not one that may share it)
 			for (TPair<FName, TStaticArray<FKey, 2>>& P : S47KeysLocal::St().Map)
 			{
-				if (P.Key == Action) continue;
+				if (P.Key == Action || MayShare(P.Key, Action)) continue;
 				for (FKey& X : P.Value) if (X == D) X = EKeys::Invalid;
 			}
 		}
@@ -297,6 +336,30 @@ bool S47Keys::SelfTest(TArray<FString>& Out)
 	Check(Key(TEXT("forward"), 0) == EKeys::W && !Key(TEXT("map"), 0).IsValid(), TEXT("a duplicate in the file goes"));
 	Reset(TEXT("map"));
 	Check(Key(TEXT("map"), 0) == EKeys::M && IsDefault(TEXT("map")), TEXT("reset"));
+	// a jump and the shutter share Space: the camera decides which it is
+	ResetAll();
+	Check(Is(TEXT("jump"), EKeys::SpaceBar) && Is(TEXT("shutter"), EKeys::SpaceBar) && Label(TEXT("jump")) == TEXT("SPACE"), TEXT("Space is a jump and the shutter"));
+	Check(Bind(TEXT("jump"), 0, EKeys::J) == EBind::Done && Is(TEXT("shutter"), EKeys::SpaceBar) && !Is(TEXT("jump"), EKeys::SpaceBar), TEXT("a jump elsewhere leaves the shutter"));
+	Other = NAME_None;
+	Check(Bind(TEXT("jump"), 0, EKeys::SpaceBar, &Other) == EBind::Shared && Other == FName(TEXT("shutter")) && Is(TEXT("shutter"), EKeys::SpaceBar), TEXT("back on Space, shared"));
+	// (a third takes it from both: the first in the list gets its old key, the other none)
+	Check(Bind(TEXT("light"), 0, EKeys::SpaceBar, &Other) == EBind::Swapped && Other == FName(TEXT("jump")) && Key(TEXT("jump"), 0) == EKeys::F && !Key(TEXT("shutter"), 0).IsValid() && Is(TEXT("light"), EKeys::SpaceBar), TEXT("taken from both by a third"));
+	Reset(TEXT("jump"));
+	Check(Is(TEXT("jump"), EKeys::SpaceBar) && !Is(TEXT("light"), EKeys::SpaceBar) && !Is(TEXT("jump"), EKeys::F), TEXT("a jump's reset takes Space back"));
+	ResetAll();
+	Bind(TEXT("jump"), 0, EKeys::G);
+	Check(Bind(TEXT("light"), 1, EKeys::G, &Other) == EBind::Moved && Other == FName(TEXT("jump")) && !Key(TEXT("jump"), 0).IsValid() && Key(TEXT("light"), 0) == EKeys::F, TEXT("into an empty slot: the other is left without"));
+	// (the old key goes only where it can: the shutter's Space cannot go to the flashlight while a jump has it)
+	ResetAll();
+	Check(Bind(TEXT("shutter"), 0, EKeys::F, &Other) == EBind::Moved && Other == FName(TEXT("light")) && !Key(TEXT("light"), 0).IsValid() && Is(TEXT("jump"), EKeys::SpaceBar), TEXT("the shutter's old Space stays a jump's"));
+	{
+		TSharedPtr<FJsonObject> Both = MakeShared<FJsonObject>();
+		Both->SetArrayField(TEXT("shutter"), { MakeShared<FJsonValueString>(TEXT("SpaceBar")), MakeShared<FJsonValueString>(TEXT("")) });
+		Both->SetArrayField(TEXT("jump"), { MakeShared<FJsonValueString>(TEXT("SpaceBar")), MakeShared<FJsonValueString>(TEXT("")) });
+		Both->SetArrayField(TEXT("describe"), { MakeShared<FJsonValueString>(TEXT("SpaceBar")), MakeShared<FJsonValueString>(TEXT("")) });
+		Load(Both);
+		Check(Is(TEXT("shutter"), EKeys::SpaceBar) && Is(TEXT("jump"), EKeys::SpaceBar) && !Is(TEXT("describe"), EKeys::SpaceBar), TEXT("a file with both keeps both, and no third"));
+	}
 	Load(Before);
 	return bOk;
 }

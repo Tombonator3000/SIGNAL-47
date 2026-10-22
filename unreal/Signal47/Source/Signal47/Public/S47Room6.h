@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47Obj.h"
 #include "Tickable.h"
+#include "S47TvProgramme.h"
 #include "UObject/Object.h"
 #include "S47Room6.generated.h"
 
@@ -37,8 +38,12 @@ public:
 
 	bool bLampOn = true;
 	void SetLamp(bool bOn);
-	// the television: snow on every channel, lighting the room blue (Tom, 4 October)
+	// the television: snow on every channel, lighting the room blue (Tom, 4 October); with the local
+	// footage staged (S47TvProgramme), the late broadcast instead, its light following its picture
 	bool bTvOn = false;
+	bool HasProgramme() const { return Programme.Available(); }
+	bool HasProgrammeSound() const { return Programme.HasSound(); }
+	FString ProgrammeState() const { return Programme.Describe(); }
 	/** Switch the television on (snow, a flickering blue light on the room) or off. */
 	void SetTv(bool bOn);
 	void Update(double Dt, double T);
@@ -64,5 +69,9 @@ private:
 	int32 Flood = -1, LampSlot = 0, NeonSlot = 2, TvSlot = 4;
 	double TvAcc = 0, TvGlow = 0;
 	TArray<FColor> TvPx;
+	FS47TvProgramme Programme;
+	double ProgrammeT = -1;   // main.ts t when the programme's clock last went on
+	int32 TvFrame = -1;       // the programme's picture on the screen
+	void Broadcast(double T);
 	void UploadSnow();
 };

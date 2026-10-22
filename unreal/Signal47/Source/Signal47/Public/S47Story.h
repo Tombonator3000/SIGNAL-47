@@ -84,6 +84,10 @@ public:
 	double GameTime = 0;
 	double BootT = -1, SolveT = -1, PrintT = -1, LineDeadT = -1;
 	bool bRinging = false, bAnswered = false;
+	/** How near the receiver console the player is (1 at it, less across the room, faint outside), and
+	 *  how far the night's tones step back under a phone or a voice (Unreal: on Tom's request). */
+	double ConsoleNear() const;
+	double VoicesDuck() const;
 	float CrtGlitch = 0.f;
 	FString SurveyModeText() const;
 
@@ -160,6 +164,8 @@ public:
 	/** Prologue.decoder: the signal processor holds the tape once the anomaly is locked (02:14 and
 	 *  after; story/Decoder.ts). Made in Bind, once the screen and the things to use are there. */
 	TSharedPtr<class FS47DecoderDesk> Decoder;
+	/** Unreal only (Tom's request, S47ArrayShot.h): the camera at the window while the array turns. */
+	TSharedPtr<class FS47ArrayShot> Shot;
 
 	static constexpr double StartClock = 23 * 3600 + 41 * 60;
 	static constexpr double SkipClock = 2 * 3600 + 13 * 60 + 41;

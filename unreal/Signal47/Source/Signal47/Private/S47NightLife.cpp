@@ -198,9 +198,7 @@ void FS47NightLife::Build(US47Main* InM)
 				C.Mesh = I;
 				const int32 Nl = FMath::Max(1, C.Lamps.Num());
 				C.K.Init(1.f, Nl);
-				UTexture2D* Kt = UTexture2D::CreateTransient(Nl, 1, PF_R32_FLOAT);
-				Kt->SRGB = false; Kt->Filter = TF_Nearest; Kt->AddressX = TA_Clamp; Kt->AddressY = TA_Clamp;
-				Kt->UpdateResource();
+				UTexture2D* Kt = LampRow(C.K);
 				C.KTex = Kt;
 				if (UMaterialInstanceDynamic* D = C.Mid.Get()) { D->SetTextureParameterValue(TEXT("K"), Kt); D->SetScalarParameterValue(TEXT("Lamps"), float(Nl)); }
 			}
@@ -254,6 +252,41 @@ void FS47NightLife::Build(US47Main* InM)
 		MotesBuild(Head, 3000, 62, FVector(34, 4.6, 34), true);
 	}
 	UE_LOG(LogS47Life2, Display, TEXT("S47: the life in the night: %d areas, moths %s, dust %s"), Areas.Num(), MothBase ? TEXT("yes") : TEXT("no"), MoteBase ? TEXT("yes") : TEXT("no"));
+}
+
+UTexture2D* FS47NightLife::LampRow(const TArray<float>& K)
+{
+	// Made with its values. MothsUpdate writes the row again only when a lamp's changes; a row left as
+	// it was allocated read as lamps gone out (the alpha of every flying moth and lens-hugger is its
+	// lamp's), so round the lamps only the dark ones resting on the walls showed, still (Tom, 22 October)
+	UTexture2D* Kt = UTexture2D::CreateTransient(K.Num(), 1, PF_R32_FLOAT, NAME_None,
+		TConstArrayView64<uint8>(reinterpret_cast<const uint8*>(K.GetData()), int64(K.Num()) * int64(sizeof(float))));
+	if (!Kt) return nullptr;
+	Kt->SRGB = false; Kt->Filter = TF_Nearest; Kt->AddressX = TA_Clamp; Kt->AddressY = TA_Clamp;
+	Kt->UpdateResource();
+	return Kt;
+}
+
+bool FS47NightLife::SelfTest(TArray<FString>& Lines)
+{
+	bool bOk = true;
+	auto Check = [&](bool bCond, const FString& What) { Lines.Add(FString::Printf(TEXT("%s night life: %s"), bCond ? TEXT("PASS") : TEXT("FAIL"), *What)); bOk &= bCond; };
+	// the lamps' row holds what it was made with from the first frame (no lamp read as out)
+	const TArray<float> K = { 1.f, 0.25f, 1.f };
+	UTexture2D* Kt = LampRow(K);
+	bool bSame = Kt && Kt->GetPlatformData() && Kt->GetPlatformData()->Mips.Num() > 0;
+	if (bSame)
+	{
+		const float* Px = static_cast<const float*>(Kt->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_ONLY));
+		for (int32 i = 0; i < K.Num(); ++i) bSame &= Px && Px[i] == K[i];
+		Kt->GetPlatformData()->Mips[0].BulkData.Unlock();
+	}
+	Check(bSame, TEXT("the lamps' row holds each lamp's strength from the start"));
+	// activity(): the moths at the dead of night, fewer as it cools, none by day; the bats early, and back before dawn
+	Check(FMath::IsNearlyEqual(S47LifeActivity(2.25 * 3600, 0).Moth, 1.0) && S47LifeActivity(5 * 3600, 0).Moth < 0.5 && S47LifeActivity(2 * 3600, 1).Moth == 0,
+		TEXT("the moths by the hour and the dawn"));
+	Check(S47LifeActivity(2 * 3600, 0).Bat == 1 && S47LifeActivity(4 * 3600, 0).Bat == 0 && S47LifeActivity(4.85 * 3600, 0).Bat > 0.5, TEXT("the bats by the hour"));
+	return bOk;
 }
 
 bool FS47NightLife::MotesBuild(FMotes& Mo, int32 N, uint32 InSeed, const FVector& Box, bool bBottom)

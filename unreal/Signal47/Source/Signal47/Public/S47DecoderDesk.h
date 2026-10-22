@@ -51,6 +51,8 @@ public:
 	void Stop();
 	/** Per frame (Prologue.update: after the chapters). */
 	void Update(double Dt);
+	/** (Unreal) The playback steps back under a phone or a voice (AS47Story::VoicesDuck). */
+	void Duck(double K) { if (Player.IsValid()) Player->Duck(K); }
 
 	/** The interactable 'decoder' (inter.add in the constructor): its label and its use. */
 	FString Label() const;

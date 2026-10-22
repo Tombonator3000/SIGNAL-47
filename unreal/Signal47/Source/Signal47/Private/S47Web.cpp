@@ -799,17 +799,26 @@ void AS47Web::SetHemiScale(float K)
 	ApplyHemi();
 }
 
+// World.enter: in the diner's area the player walks World.roadWalk (the export's 'road': the diner's
+// zones and walls, Caliche's and the road's own stops by the herd and the deputy's car), not the
+// diner's alone; an export without it has the diner's
+static const FString& WalkKey(const TMap<FString, TPair<TArray<FS47Rect>, TArray<FS47Rect>>>& Walks, const FString& Area)
+{
+	static const FString Road(TEXT("road"));
+	return Area == TEXT("diner") && Walks.Contains(Road) ? Road : Area;
+}
+
 const TArray<FS47Rect>& AS47Web::Zones() const
 {
 	static const TArray<FS47Rect> Empty;
-	const auto* P = Walks.Find(CurrentArea == TEXT("diner") && !Walks.Contains(TEXT("diner")) ? TEXT("road") : CurrentArea);
+	const auto* P = Walks.Find(WalkKey(Walks, CurrentArea));
 	return P ? P->Key : Empty;
 }
 
 const TArray<FS47Rect>& AS47Web::Colliders() const
 {
 	static const TArray<FS47Rect> Empty;
-	const auto* P = Walks.Find(CurrentArea);
+	const auto* P = Walks.Find(WalkKey(Walks, CurrentArea));
 	return P ? P->Value : Empty;
 }
 
@@ -880,6 +889,40 @@ void AS47Web::SetCrtPowered(int32 Screen, bool bOn)
 	if (!CrtOn.IsValidIndex(Screen)) return;
 	CrtOn[Screen] = bOn;
 	if (CrtMids.IsValidIndex(Screen) && CrtMids[Screen]) CrtMids[Screen]->SetVectorParameterValue(TEXT("Color"), bOn ? FLinearColor::White : Hex(0x0d1410));
+}
+
+void AS47Web::SetCrtPicture(int32 Screen, UTexture* Picture)
+{
+	if (!CrtMids.IsValidIndex(Screen) || !CrtMids[Screen]) return;
+	CrtMids[Screen]->SetTextureParameterValue(TEXT("Map"), Picture ? Picture : static_cast<UTexture*>(CrtTarget(Screen)));
+	// (a screen in use is lit; after, it is as its power says)
+	CrtMids[Screen]->SetVectorParameterValue(TEXT("Color"), Picture || IsCrtPowered(Screen) ? FLinearColor::White : Hex(0x0d1410));
+}
+
+bool AS47Web::CrtGlass(int32 Screen, FVector& Centre, FVector& Up, FVector& Across, FVector2D& Size) const
+{
+	if (Screen < 0 || Screen >= 4 || CrtMat[Screen] < 0) return false;
+	// the plane drawn with the screen's material (ControlRoom.ts: plane(g, w, h, crt.mat), fitted to
+	// the model's glass): its mesh's flat box, turned and scaled as the component is
+	for (const FS47WebNode& N : Nodes)
+	{
+		const UStaticMeshComponent* M = Cast<UStaticMeshComponent>(N.Comp.Get());
+		if (!M || !M->GetStaticMesh() || !N.Mats.Contains(CrtMat[Screen])) continue;
+		const FBox B = M->GetStaticMesh()->GetBoundingBox();
+		const FTransform& T = M->GetComponentTransform();
+		const FVector Ext = B.GetExtent();
+		const int32 Thin = Ext.X <= Ext.Y && Ext.X <= Ext.Z ? 0 : Ext.Y <= Ext.Z ? 1 : 2;
+		const int32 A0 = Thin == 0 ? 1 : 0, A1 = Thin == 2 ? 1 : 2;
+		FVector Axis[3] = { FVector::XAxisVector, FVector::YAxisVector, FVector::ZAxisVector };
+		FVector D0 = T.TransformVector(Axis[A0] * Ext[A0] * 2), D1 = T.TransformVector(Axis[A1] * Ext[A1] * 2);
+		if (FMath::Abs(D0.GetSafeNormal().Z) > FMath::Abs(D1.GetSafeNormal().Z)) Swap(D0, D1);
+		Centre = T.TransformPosition(B.GetCenter());
+		Across = D0.GetSafeNormal();
+		Up = D1.GetSafeNormal() * (D1.Z < 0 ? -1.0 : 1.0);
+		Size = FVector2D(D0.Size(), D1.Size());
+		return Size.X > 1.0 && Size.Y > 1.0;
+	}
+	return false;
 }
 
 void AS47Web::SetCrtGlow(float Intensity)

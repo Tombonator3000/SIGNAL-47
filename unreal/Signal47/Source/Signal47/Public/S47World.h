@@ -56,8 +56,8 @@ public:
 
 	FString Area = TEXT("saro");
 	bool bDriving = false;
-	/** Where the truck stands when nobody drives it ('saro', 'station01', 'motel', 'diner'); empty
-	 *  while it is out on a trip. */
+	/** Where the truck stands when nobody drives it ('saro', 'station01', 'motel', 'diner', or
+	 *  'roswell': left on the old road); empty while it is out on a trip. */
 	FString TruckAt = TEXT("saro");
 	/** The area being driven in on a trip, or empty. */
 	FString Leg;
@@ -132,9 +132,11 @@ public:
 	bool RoadStopAt(const FVector& P) const; // World.ts roadStopAt: whether it finds a stop
 	/** The speed of the truck being driven (m/s, negative backing up); 0 when nobody drives. */
 	double DrivingSpeed() const;
-	/** Whether the player can get out now (stopped, on a trip, with ground by a door). */
+	/** Whether the player can get out now: stopped, on a trip, wherever it stands (Tom 22 October
+	 *  2026; the web version only with walk zones by a door), not while chapter six has the truck. */
 	bool CanGetOut(bool bDead = false) const;
-	/** Out of the truck where it stands; the trip ends as if it had been left on a lot. */
+	/** Out of the truck where it stands; the trip ends as if it had been left on a lot (on the old
+	 *  road the truck stays there, 'roswell', and is got into again where it stands). */
 	bool GetOutHere(bool bDead = false);
 	/** Stop driving without arriving: a trip given up puts the trucks back where they stood. */
 	void StopDriving();
@@ -190,6 +192,9 @@ public:
 	void Update(double Dt, double T);
 	void TownCarMoved(const FS47Area& Box); // Town.ts carCol is also the road drive obstacle
 	bool Indoors(const FVector& P) const; // World.indoors: under a roof in the area the player is in
+	/** Whether a point is on the open land of an area (the current one by default), the player's
+	 *  whole width (AS47Walker::OpenLand). */
+	bool OnLand(double X, double Z, const FString& InArea = FString());
 
 private:
 	UPROPERTY() TObjectPtr<US47Main> M;
@@ -214,7 +219,40 @@ private:
 	/** The walk zones and colliders AS47Web keeps per area, and where the trucks' own colliders are
 	 *  in them (World.parkAt moves them). */
 	int32 SaroCol = -1, StationCol = -1, DinerCol = -1;
+	int32 OldCol = -1; // (the old road has no walk of its own in the export: its truck's collider is added here)
 	int32 TownCarObstacle = -1;
+	/** The ground round the truck where it is left with no walk zones by a door (Tom 22 October 2026):
+	 *  the leg it stands in and where; the walker asks OnGround. */
+	FString GroundLeg;
+	FVector GroundAt = FVector::ZeroVector;
+	/** The open land of each outdoor area (Tom 22 October 2026: walk round freely once out there): where
+	 *  the area has ground (In), what is kept out of it (Out: buildings and raised slabs, fenced
+	 *  compounds, fences as lines; their own zones and gates lead in, as before), the story's limits on
+	 *  it now (Closed), the drive leg whose posts, poles, rocks, fences and walls stand on it, and the
+	 *  ground's height there where the area's floor for the zones is not it (Y). */
+	struct FLand
+	{
+		FString Leg;
+		TFunction<bool(double X, double Z)> In, Closed;
+		TArray<FS47Box2> Out;
+		TFunction<double(double X, double Z)> Y;
+	};
+	TMap<FString, FLand> Lands;
+	void MakeLands();
+	/** The void guard: whether the area's ground meshes are under a half-metre cell, as found (by area). */
+	TMap<FString, TMap<FIntPoint, bool>> Under;
+	bool GroundUnder(const FString& InArea, const FLand& L, double X, double Z);
+	/** In one of the walk zones of the area the player is in now. */
+	bool InZone(double X, double Z) const;
+	/** The ground's height on the open land of the area the player is in (NaN in a zone or off it). */
+	double LandY(double X, double Z);
+	void SetGround(const FString& Place);
+	bool OnGround(double X, double Z);
+	FString WalkOf(const FString& Place) const;
+	FS47Truck* TruckAtPlace(const FString& Place) const;
+	TOptional<FVector> RoomBy(const FS47Truck& T) const;
+	void DriveOnOldRoad();
+	void TestGetOut(double At);
 	FS47Obj SaroProxy, StationProxy, DinerProxy; // (DinerProxy: World.dinerTruckProxy, the box round the truck on the diner's lot)
 
 	struct FTrip

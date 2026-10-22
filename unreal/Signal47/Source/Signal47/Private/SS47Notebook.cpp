@@ -145,7 +145,7 @@ namespace
 				{ TEXT("V"), TEXT("Read the current or last description. Press again to stop.") },
 				{ TEXT("F"), TEXT("The flashlight, once you have it.") },
 				{ TEXT("C"), TEXT("Raise or lower the field camera.") },
-				{ TEXT("Space"), TEXT("The shutter, with the camera raised.") },
+				{ TEXT("Space"), TEXT("Jump. With the camera raised: the shutter.") },
 				{ TEXT("Tab, N"), TEXT("The notebook. M: its map. I: the kit. H: these controls.") },
 				{ TEXT("Esc, P"), TEXT("Pause: settings, save and load.") } } },
 			{ TEXT("In the truck"), {

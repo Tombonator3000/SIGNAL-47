@@ -13,7 +13,8 @@ class FJsonObject;
 //
 // Fixed, and not offered for another action: Escape (pause and every menu's way back) and the
 // left mouse button (a click uses, as E does). The walk keys drive the truck too (throttle,
-// brake and steering), as in the web version.
+// brake and steering), as in the web version. No key is two actions' unless they may share it
+// (MayShare: the shutter and a jump, Space for both).
 namespace S47Keys
 {
 	struct FAction
@@ -43,11 +44,17 @@ namespace S47Keys
 	SIGNAL47_API FString Label(FName Action);   // Short of its key, "" when it has none
 	SIGNAL47_API FString Said(FName Action);    // Name of its key, for a hint
 
+	// Two actions that may have the same key, as they are never asked at once (the shutter only with
+	// the camera raised, a jump only with it lowered: Space is both by default).
+	SIGNAL47_API bool MayShare(FName A, FName B);
+
 	// ---------- changing ----------
-	enum class EBind : uint8 { Done, Swapped, Same, Reserved, Fixed };
+	enum class EBind : uint8 { Done, Swapped, Same, Reserved, Fixed, Shared, Moved };
 	// Bind K to Action's Slot. A key another action has moves there in exchange (Swapped: Other is
-	// that action, which now has Action's old key in its place); Escape, the left mouse button and the
-	// gamepad are refused (Reserved), and a fixed slot is not changed (Fixed).
+	// that action, which now has Action's old key in its place; Moved: it has none there now, as the
+	// old key could not go to it); an action that may share the key keeps it (Shared: Other has it
+	// too); Escape, the left mouse button and the gamepad are refused (Reserved), and a fixed slot is
+	// not changed (Fixed).
 	SIGNAL47_API EBind Bind(FName Action, int32 Slot, const FKey& K, FName* Other = nullptr);
 	SIGNAL47_API void Clear(FName Action, int32 Slot);
 	SIGNAL47_API void Reset(FName Action);                               // its defaults (taken from any other action that has them)

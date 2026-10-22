@@ -124,3 +124,18 @@
 - [ ] Integrer kapittel fem sin OnEnd og dinerlagring med BeginChapter6; prøv Fortsett fra denne lagringen etter avslutningen.
 - [ ] Bind daggry-/soloverstyringene til verdensportens dynamiske himmel og kontroller mesa, soloppgang og stjerner visuelt mot nettversjonen.
 - [ ] Pakket bygg, hele screenshots.sh, menneskelig input og lytting; øvrige uferdige motorlydgrafer hører til motorporten.
+
+## Toms ideer (2026-10-22)
+
+- [ ] Kassettspilleren: bytte den egenlagde tape deck-modellen med en bedre modell. NB: opptakeren i «Utstyr lyd UFO» på skrivebordet er pakket ut av «They Are Here»-demoen (UModel); den kan ikke brukes uten å kjøpe originalpakken (Horror Engine). Den kjøpte Vintage Liminal-pakken har kassetter og en Broadcast VCR, ingen kassettspiller.
+- [ ] Tonene: en kombinasjon gir en annen låt og låser opp noe (hemmelighet, hint eller spor). Poenget må bestemmes.
+- [ ] Ut av bilen overalt (feil) og hopp: under arbeid.
+- [ ] Alien-modell: «Alien» på skrivebordet er pakket ut av «They Are Here»-demoen (SK_Alien8_v2, RealisticAlien8); ikke lisensiert for oss. Kjøpe originalen eller lage en egen.
+- [ ] Terminalene i verden: kameraet zoomer inn på den fysiske skjermen, og skjermbildet vises på skjermmodellen (som i Black Map). Under arbeid for mottakerkonsollen og driftsterminalen.
+- [ ] Grafikk: mer detaljerte modeller, bedre lys og skygger (neste store steg).
+
+
+## Unarius, overlevert til Claude 22. oktober
+
+- [ ] Fortsett codex/unarius-tv fra TV_PROGRAMME.md: bruk siste bygde binærfil med tidsrettelsen, verifiser faktisk bevegelig film på begge TV-er over tid, koble filmlyd om ønsket, prøv fallback og 47-sekundershendelse/opptak/lagring på nytt, integrer og pakk før standardutgaven erstattes.
+- [ ] Egenprodusert alien må modelleres separat i Blender. Desktop/Alien er fortsatt eksportmodellen etter rydding av navn og filstier.
