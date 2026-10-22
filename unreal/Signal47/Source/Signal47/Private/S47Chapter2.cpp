@@ -328,8 +328,8 @@ FString US47Chapter2::Objective() const
 	if (S.Stage == TEXT("records"))
 	{
 		if (!S.bEntered) return TEXT("SARO RECORDS // SOUTH CORRIDOR: FIND WHERE THE B-12 REFERENCE CAME FROM");
-		if (!S.bP04) return TEXT("SARO RECORDS // COMPARE THE ORIGINAL AND AMENDED FIELD RECORDS");
-		return TEXT("SARO RECORDS // MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX");
+		if (!S.bP04) return TEXT("SARO RECORDS // COMPARE THE ORIGINAL AND AMENDED FIELD RECORDS ON THE CASE BOARD");
+		return TEXT("SARO RECORDS // ON THE CASE BOARD: MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX");
 	}
 	if (S.Stage == TEXT("call-nora")) return TEXT("STATION 01 // CALL THE KEY HOLDER FROM THE RECORDS ROOM PHONE");
 	if (S.Stage == TEXT("complete")) return TEXT("STATION 01 // FIELD ACCESS PREPARED");
@@ -347,8 +347,8 @@ TArray<FS47Task> US47Chapter2::Tasks() const
 		{ TEXT("Read the amended service copy (E06)"), S.Read.bAmended },
 		{ TEXT("Read the B-12 reference lineage card"), S.Read.bLineage },
 		{ TEXT("Read the archive sleeve index (E08)"), S.Read.bIndex },
-		{ TEXT("Record what changed in 1947 (P04)"), S.bP04 },
-		{ TEXT("Record a supported field destination (P05)"), S.bP05 },
+		{ TEXT("Record what changed in 1947, on the case board (P04)"), S.bP04 },
+		{ TEXT("Record a supported field destination, on the case board (P05)"), S.bP05 },
 	});
 	if (S.bP05) T.Add({ TEXT("Call the key holder for STATION 01"), S.bCalled });
 	if (S.ArrayAsk.Get(false)) T.Add({ TEXT("Put the array back on the schedule (operations terminal)"), ArrayTried ? ArrayTried() : false });
@@ -994,7 +994,7 @@ bool US47Chapter2::SelfTest(TArray<FString>& Lines)
 	const TOptional<FS47Result> Rec4 = B.Record(TEXT("P04"));
 	Check(Rec4 && Rec4->bOk && C->S.bP04 && C->S.Wrong04 == 2 && B.Questions()[0].Done.StartsWith(TEXT("SUPPORTED")), TEXT("P04 recorded: C was omitted"));
 	C->S.Stage = TEXT("records"); C->S.bEntered = true;
-	Check(C->Objective() == TEXT("SARO RECORDS // MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX") && C->Tasks().Num() == 8, TEXT("objective and tasks after P04"));
+	Check(C->Objective() == TEXT("SARO RECORDS // ON THE CASE BOARD: MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX") && C->Tasks().Num() == 8, TEXT("objective and tasks after P04"));
 	R = Thread(TEXT("rx.dist"), TEXT("e08.id"));
 	Check(R.Contains(TEXT("1947 on the record")) && C->S.Wrong05 == 0 && C->S.Links.Contains(TEXT("e08.id|rx.dist")), TEXT("-39 against the 1947 sleeve holds as a thin thread"));
 	R = Thread(TEXT("b12.mark"), TEXT("e08.elev"));

@@ -50,6 +50,12 @@ public:
 	bool Frame(const TArray<FString>& Ids);
 	bool Moved() const;
 	bool Show(const FString& Id);
+	// The hint offered and shown, and a thread held from one pin over another (-S47BoardTest).
+	void OfferHint(const FString& Question);
+	void ShowHint(const FString& Question);
+	void HoldThread(const FString& From, const FString& To);
+	void ShowAll();
+	void HideHow();
 	// ui/Board.ts view(): scale and offset, for the same inspection tools as the web board.
 	FVector View() const;
 	static bool SelfTest(TArray<FString>& Lines);

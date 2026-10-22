@@ -729,7 +729,22 @@ void SS47Notebook::Build()
 		}
 		const FString Line = Findings.Num() ? FString::Printf(TEXT("FINDINGS · %d"), Findings.Num()) : FString(TEXT("FINDINGS"));
 		LeftSlot->SetContent(Lay(Head(TEXT("Findings"), Line), Findings.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("Nothing recorded yet. A finding goes here once the records support it.")), LeftScroll));
-		if (!Findings.Num()) Read.Add(TEXT("Nothing recorded yet. A finding goes here once the records support it."));
+		if (!Findings.Num())
+		{
+			Read.Add(TEXT("Nothing recorded yet. A finding goes here once the records support it."));
+			// Departs from the web version: with nothing recorded, the right page says how a finding
+			// is made (Tom: the clues should be better explained to a new player).
+			const FString Key = S47Keys::Label(TEXT("board")).ToUpper();
+			const TArray<FString> How = {
+				FString::Printf(TEXT("Open the case board (%s). Every paper I pick up is pinned there."), *Key),
+				TEXT("Pull a red thread from a pin to the record it agrees with. A wrong one falls slack."),
+				TEXT("A question card fills its lines when the right threads hold."),
+				TEXT("Every line filled: RECORD. The finding comes here."),
+				TEXT("Stuck: the Hint on the card."),
+			};
+			RightSlot->SetContent(Lay(Head(TEXT("How a finding is made"), TEXT("ON THE CASE BOARD")), Lines(How, 0, How.Num(), false), RightScroll, 146.f, true));
+			Read.Append(How);
+		}
 	}
 	else if (Tab == TEXT("papers"))
 	{

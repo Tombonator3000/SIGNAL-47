@@ -15,6 +15,7 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 
 | Oppgave | Eier | Gren | Status |
 |---|---|---|---|
+| Brettet: synlige røde tråder (kantutjevnet garn med skygge, glans og tvinning, større nåler, slakk feiltråd, tråden i hånden med ring på målet), hjelpestripe, tydeligere spørsmålskort, hint tilbudt etter feil tråd eller 75 s, «Slik lages et funn» i notatbokas funn, oppgavetekster nevner brettet; testflagg `-S47BoardTest` | Claude-hjelper | `worktree-agent-a6671d6d8e7c95ad4` | levert 22.10, venter på integrator |
 | Unreal-lys og skygger erstatter det gamle systemet (taklys fra armaturene, grønt CRT-lys foran skjermene, opplyste paraboler, ytelse 1440p) | Codex | `port-light` | rettet 22.10, klar for ny Claude-gjennomgang; flettet til 7d167000, bygg og 1203 selvtester OK, High/1440p 73/96 fps; pakking hos integrator |
 
 ## Neste

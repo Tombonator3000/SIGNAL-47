@@ -509,13 +509,13 @@ TArray<FS47Task> US47Chapter1::Tasks() const
 		{ TEXT("Expose frame 01 from the S-03 apron"), S.F1.IsSet() },
 		{ TEXT("Develop frame 01 in the photo lab"), S.Dev1 >= 3 },
 		{ TEXT("Mark a detail you can check at the site"), S.Mark1.IsSet() },
-		{ TEXT("Match it on the reference sheet"), S.bRef },
+		{ TEXT("Match it with the reference sheet, on the case board"), S.bRef },
 		{ TEXT("Choose an explanation you can test"), !S.Hyp.IsEmpty() },
 		{ TEXT("Run a control at B-12"), !S.Method.IsEmpty() },
 		{ TEXT("Note what you see at B-12"), S.bObserved },
 		{ TEXT("Expose frame 02 from the sight line"), S.F2.IsSet() },
 		{ TEXT("Develop frame 02"), S.Dev2 >= 3 },
-		{ TEXT("Compare the two exposures"), S.bConcluded },
+		{ TEXT("Compare the two exposures on the case board"), S.bConcluded },
 		{ TEXT("File the local report"), S.bFiled },
 	};
 	const int32 Next = All.IndexOfByPredicate([](const FS47Task& T) { return !T.bDone; });
