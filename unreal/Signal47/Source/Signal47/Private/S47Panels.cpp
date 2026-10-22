@@ -870,7 +870,8 @@ public:
 		{
 			FSlateDrawElement::MakeBox(Out, L, G.ToPaintGeometry(FVector2f(float(Rw) * Sx, float(Rh) * Sy), FSlateLayoutTransform(FVector2f(float(X) * Sx, float(Y) * Sy))), White.Get(), ESlateDrawEffect::None, C);
 		};
-		const int32 Cur = V.bPlaying && V.Current ? V.Current() : -1;
+		// (Unreal: the ANSWER row's key lights its bar while nothing plays; the player says -1 otherwise)
+		const int32 Cur = V.Current ? V.Current() : -1;
 		Rect(0, 0, W, H, S47Kit::Css(0x04110a), Layer);
 		for (int32 I = 0; I < 11; ++I)
 		{
@@ -937,13 +938,35 @@ S47Panels::FPanelHandle S47Panels::DecoderPanel(US47UI* UI, const FDecoderPanel&
 		];
 	const FW PlayRow = S47Kit::Row({ S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([V] { return V().bPlaying ? FString(TEXT("STOP")) : FString(TEXT("PLAY TAPE")); }),
 		[V, OnPlay] { if (OnPlay) OnPlay(!V().bPlaying); }, true) });
+	// (Unreal only, on Tom's request: the ANSWER row, S47DecoderDesk.h) seven keys, the seven of the group
+	// as the harmonized playback sounds them, 1 the first and highest; the last seven pressed beside them
+	const TFunction<void(int32)> OnKey = O.OnKey;
+	TArray<FW> Keys;
+	Keys.Add(SNew(SBox).VAlign(VAlign_Center).Padding(FMargin(0, 0, 6 * PX, 0))
+		[SNew(STextBlock).Text(FText::FromString(TEXT("ANSWER"))).Font(S47Style::Mono(19.f * PX)).ColorAndOpacity(S47Kit::Css(0xffb052))]);
+	for (int32 K = 1; K <= 7; ++K)
+		Keys.Add(S47Kit::Button(FString::FromInt(K), [OnKey, K] { if (OnKey) OnKey(K); }, false, TAttribute<bool>::CreateLambda([V] { return !V().bAnswering; })));
+	Keys.Add(SNew(SBox).VAlign(VAlign_Center).Padding(FMargin(8 * PX, 0, 0, 0))
+		[
+			SNew(STextBlock).Text_Lambda([V]
+			{
+				const FDecoderView Vw = V();
+				if (Vw.bAnswering) return FText::FromString(TEXT("- - -  ANSWERING  - - -"));
+				FString S;
+				for (int32 I = 0; I < 7; ++I) S += (I ? TEXT(" ") : TEXT("")) + (Vw.Keys.IsValidIndex(I) ? FString::FromInt(Vw.Keys[I]) : FString(TEXT("-")));
+				return FText::FromString(S);
+			}).Font(S47Style::Mono(19.f * PX)).ColorAndOpacity(S47Kit::Css(0x8cffa4))
+		]);
+	const FW Answer = S47Kit::Row(Keys);
 	const FW Body = S47Kit::Col({
 		Tape,
 		Scope,
 		Modes,
 		Knobs,
 		PlayRow,
-		S47Kit::Small(TEXT("The deck keeps what the receiver locked on. Slowed down and harmonized, the pulses stop sounding like a machine. The processor keeps playing from the rack while you walk around.")) }, 0.f);
+		Answer,
+		// (Unreal: the processor is the bought unit on the console desk, not the rack, when the export has it)
+		S47Kit::Small(FString::Printf(TEXT("The deck keeps what the receiver locked on. Slowed down and harmonized, the pulses stop sounding like a machine. The processor keeps playing from the %s while you walk around."), O.bOnDesk ? TEXT("desk") : TEXT("rack"))) }, 0.f);
 	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("SIGNAL PROCESSOR / DSP-4"), Body), O.OnClose);
 	// { el, refresh: sync }: the attributes follow the view by themselves
 	return { [] {} };

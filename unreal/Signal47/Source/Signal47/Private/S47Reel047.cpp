@@ -225,8 +225,11 @@ void FS47Reel047::Build()
 	FS47AudioContext::FBatch B(*Ctx);
 	const TSharedRef<FS47BiquadFilterNode> Mon = Ctx->CreateBiquadFilter(); Mon->SetType(TEXT("peaking")); Mon->Frequency.SetValue(1700); Mon->Q.SetValue(0.8); Mon->Gain.SetValue(4); Mon->Connect(Out);
 	const TSharedRef<FS47BiquadFilterNode> Lp = Ctx->CreateBiquadFilter(); Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(5200); Lp->Connect(Mon);
-	const TSharedRef<FS47GainNode> Tp = Ctx->CreateGain(); Tp->Gain.SetValue(0); Tp->Connect(Lp);
-	Tape = Tp; Nodes.Append({ Out, Mon, Lp, Tp });
+	const TSharedRef<FS47GainNode> Tp = Ctx->CreateGain(); Tp->Gain.SetValue(0);
+	// (Unreal: the VU unit's meter between the tape and the monitor; it passes everything on)
+	Meter = MakeShared<FS47LevelMeter>(Ctx);
+	Tp->Connect(Meter); Meter->Connect(Lp);
+	Tape = Tp; Nodes.Append({ Out, Mon, Lp, Tp, Meter });
 	// the hiss on the tape, from the start
 	const TSharedRef<FS47BufferSourceNode> N = Ctx->CreateBufferSource(); N->Buffer = A->NoiseBuffer(); N->bLoop = true;
 	const TSharedRef<FS47BiquadFilterNode> Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(1800);
@@ -367,6 +370,13 @@ void FS47Reel047::Release(bool bNow)
 			for (const TSharedPtr<FS47AudioNode>& X : N) X->Disconnect();
 		});
 	}
+}
+
+double FS47Reel047::Level()
+{
+	// (Unreal) the tape's chain, and the pulse group's own playback beside it
+	const double L = Meter.IsValid() && Tape.IsValid() ? Meter->Take() : 0.0;
+	return FMath::Max(L, Dec.IsValid() ? Dec->TakeLevel() : 0.0);
 }
 
 // ---------- the processor's display ----------
