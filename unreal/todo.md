@@ -104,3 +104,16 @@
 - [ ] Resten av World.update: neonflimmeret på motellet og dineren, byen, beitet og flokkene.
 - [ ] Bildevalget Off: stjernene, båndet og stjerneskuddet tegnes uten tonekurve i nettversjonen (ShaderMaterial uten tonemapping_fragment); her går de gjennom M_WebTone som med VHS.
 - [ ] Floraen: månelyset skaleres ikke med fSky (bare halvkulelyset), og spotlysenes fFace er ikke portert. Low-nivåets kortere tegneavstand for støv og hvilende tumbleweed er tilnærmet.
+
+## Integrasjon etter bølge 4 (2026-10-22)
+
+- [ ] Kapittel 5 (hjelper) og kapittel 6 (Codex, `port-ch6`) flettes inn; kapittel 5 sin slutt inn i `BeginChapter6`, `ch6.clockShow` sist i hjørneklokka, `US47WorldLife::Hooks.SkyLift`/`SunElev` og `US47Away` sine `Ch6*`-kroker.
+- [ ] Opptaksvandringen (`S47Recording`) og bortføringens `FS47JacketWalker`/`Recordings()`: to figurtyper; vandringen bruker sin testopptakelse til de deler én.
+- [ ] `US47Away::AfterAbduction` er ikke satt: stationTaken, «station passed», opptaksvandringen og parabolene steppes hver for seg (kapittel 3 og `US47SaroNight`), ikke i bortføringens blokk.
+- [ ] Arkivets tippede paraboler: `FS47GlowPoints::SetPhase`/`HoldAt` for de røde lampene (verdenens liv).
+- [ ] Byens fjernbil: fast pikselstørrelse (`pointScreen`) for billboards.
+- [ ] Kapittel 4: papirkunst `cardField` og `letterPaper` mangler i WebData/art; WindowLights på gangen, readAloud og Earls stemme.
+- [ ] CRT-gamma (dobbel koding), Serling-fortelleren, jakka «Cold out», kameraet senket på kortet (fra kapittel 1-hjelperen).
+- [ ] `US47Night::Dawn` bør lese `Sky->Dawn` i stedet for egen formel.
+- [ ] Pakket bygg: full `Scripts/screenshots.sh` etter ny eksport og import, og en gjennomspilling med ekte input og lyd.
+
