@@ -184,6 +184,12 @@ public:
 	void SetCrtGlow(float Intensity);
 	UTextureRenderTarget2D* CrtTarget(int32 Screen) const { return CrtTargets.IsValidIndex(Screen) ? CrtTargets[Screen].Get() : nullptr; }
 	static constexpr int32 CrtW = 512, CrtH = 384;
+	// A screen in use (SS47ScreenView): its picture from another texture while it is (null: its own
+	// render target again), and its glass as a rectangle in Unreal's space, the plane the picture is
+	// on: the centre, its two directions (unit; Up runs up the picture, Across along it, either way)
+	// and its size in centimetres. False when the export has no such screen.
+	void SetCrtPicture(int32 Screen, class UTexture* Picture);
+	bool CrtGlass(int32 Screen, FVector& Centre, FVector& Up, FVector& Across, FVector2D& Size) const;
 	void SetPrinterPaper(float Share);
 	void SetHandsetVisible(bool bOn);
 	void SetHandsetRattle(bool bOn) { bRattle = bOn; }

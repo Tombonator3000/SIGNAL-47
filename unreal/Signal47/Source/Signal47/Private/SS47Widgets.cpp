@@ -23,9 +23,11 @@
 #include "Widgets/Layout/SScaleBox.h"
 #include "S47Rx.h"
 #include "S47Story.h"
+#include "S47Theme.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableText.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Input/SSlider.h"
 #include "Widgets/Layout/SBorder.h"
@@ -771,180 +773,567 @@ FReply SS47Document::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InK
 	return FReply::Unhandled();
 }
 
+// ---------- a CRT's pieces (style.css: .crt, .kbtn, its range inputs, .refcard, .termview) ----------
+
+namespace
+{
+	// --crt-bg, --phosphor, --phosphor-dim and the .crt's other greens
+	FLinearColor RxBg(float A = 1.f) { return S47Theme::Css(0x021006, A); }
+	FLinearColor RxPhos(float A = 1.f) { return S47Theme::Css(0x8cffa4, A); }
+	FLinearColor RxDim(float A = 1.f) { return S47Theme::Css(0x2f8a49, A); }
+	FLinearColor RxGlow() { return S47Theme::Css(0x5aff82, 0.55f); }   // text-shadow: 0 0 6px rgba(90,255,130,.55)
+	FLinearColor RxWarn() { return S47Theme::Css(0xffd27a); }           // .status.warn
+	FLinearColor RxWarnGlow() { return S47Theme::Css(0xffbe50, 0.6f); }
+
+	// focus that came from the keys (Tab, the arrows), any user's: on the glass the screen's virtual
+	// user has it, not the keyboard's own (.kbtn:focus-visible)
+	bool RxKeyed(const SWidget& W)
+	{
+		const TOptional<EFocusCause> C = W.HasAnyUserFocus();
+		return C.IsSet() && C.GetValue() == EFocusCause::Navigation;
+	}
+
+	TAttribute<FText> RxStr(TFunction<FString()> F) { return TAttribute<FText>::CreateLambda([F] { return FText::FromString(F()); }); }
+
+	// a rectangle and its rim in plain colour boxes: a rounded box brush comes out as a solid pale
+	// block in a render target's picture, so nothing drawn for the glass uses one
+	void RxRect(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const FVector2f& P, const FVector2f& S, const FLinearColor& Fill, const FLinearColor& Line = FLinearColor::Transparent, float W = 0.f)
+	{
+		if (Fill.A > 0.f) S47Theme::Fill(Out, Layer, G, P, S, Fill);
+		if (Line.A <= 0.f) return;
+		if (W <= 0.f) W = S47Theme::Px(1);
+		S47Theme::Fill(Out, Layer, G, P, FVector2f(S.X, W), Line);
+		S47Theme::Fill(Out, Layer, G, FVector2f(P.X, P.Y + S.Y - W), FVector2f(S.X, W), Line);
+		S47Theme::Fill(Out, Layer, G, FVector2f(P.X, P.Y + W), FVector2f(W, S.Y - 2 * W), Line);
+		S47Theme::Fill(Out, Layer, G, FVector2f(P.X + S.X - W, P.Y + W), FVector2f(W, S.Y - 2 * W), Line);
+	}
+
+	// a thin rim round its slot (the canvas's border: 1px solid rgba(140,255,164,.25))
+	class SRxRim : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SRxRim) {}
+			SLATE_ARGUMENT(FLinearColor, Color)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { Color = A._Color; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D::ZeroVector; }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			RxRect(Out, Layer, G, FVector2f(0, 0), FVector2f(G.GetLocalSize()), FLinearColor::Transparent, Color);
+			return Layer;
+		}
+
+	private:
+		FLinearColor Color;
+	};
+
+	// a line of the screen's text, glowing
+	TSharedRef<SS47GlowText> RxText(TAttribute<FText> Text, float Px, TAttribute<FLinearColor> Color = RxPhos(), TAttribute<FLinearColor> Glow = RxGlow(), float Spacing = 0.f)
+	{
+		return SNew(SS47GlowText).Text(Text).Font(S47Theme::Term(Px, Spacing)).Color(Color).Glow(Glow);
+	}
+
+	// .kbtn: a key on the screen, phosphor on a faint green in a thin rim; :hover lights it, held it
+	// sinks a pixel, opacity .4 when it cannot be used (:disabled); Enter or Space presses it
+	class SRxKey : public SCompoundWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SRxKey) : _Px(22.f), _MinHeight(40.f), _bPrimary(false), _Usable(true) {}
+			SLATE_ATTRIBUTE(FString, Label)
+			SLATE_ARGUMENT(float, Px)
+			SLATE_ARGUMENT(float, MinHeight)
+			SLATE_ARGUMENT(bool, bPrimary)
+			SLATE_ATTRIBUTE(bool, Usable)
+			SLATE_ARGUMENT(TFunction<void()>, OnClick)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A)
+		{
+			Usable = A._Usable;
+			OnClick = A._OnClick;
+			bPrimary = A._bPrimary;
+			const TAttribute<FString> L = A._Label;
+			// .kbtn { padding: 4px 12px; min-height: 40px; min-width: 52px } .primary { padding: 6px 20px }
+			ChildSlot
+			[
+				SNew(SBox).MinDesiredWidth(S47Theme::Px(52)).MinDesiredHeight(S47Theme::Px(A._MinHeight)).HAlign(HAlign_Center).VAlign(VAlign_Center)
+				.Padding(bPrimary ? S47Theme::Pad(20, 6) : S47Theme::Pad(12, 4))
+				.RenderTransform_Lambda([this] { return bDown && IsHovered() ? FSlateRenderTransform(FVector2f(0.f, S47Theme::Px(1))) : TOptional<FSlateRenderTransform>(); })
+				[
+					SNew(SS47GlowText).Text(RxStr([L] { return L.Get(); })).Font(S47Theme::Term(A._Px)).Color(RxPhos()).Glow(RxGlow())
+				]
+			];
+		}
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bEnabled) const override
+		{
+			const bool bOn = Usable.Get(true);
+			const bool bHot = bOn && (IsHovered() || RxKeyed(*this));
+			const bool bIn = bOn && bDown && IsHovered();
+			const float A = bOn ? 1.f : 0.4f;
+			// background: rgba(40,140,70,.08); :hover rgba(80,255,130,.16); border 1px var(--phosphor-dim),
+			// .primary var(--phosphor)
+			// (a little brighter than the page's .16 on hover: the glass is seen from further off)
+			FLinearColor Fill = bIn ? S47Theme::Css(0x50ff82, 0.34f) : bHot ? S47Theme::Css(0x50ff82, 0.2f) : S47Theme::Css(0x288c46, 0.08f);
+			FLinearColor Line = bPrimary || bHot ? RxPhos() : RxDim();
+			Fill.A *= A;
+			Line.A *= A;
+			const FVector2f Sz(G.GetLocalSize());
+			RxRect(Out, Layer, G, FVector2f(0, 0), Sz, Fill, Line);
+			// the keys' choice: a second rim, inside
+			if (bOn && RxKeyed(*this))
+			{
+				const float In = S47Theme::Px(3);
+				RxRect(Out, Layer, G, FVector2f(In, In), Sz - FVector2f(2 * In, 2 * In), FLinearColor::Transparent, RxPhos(0.5f));
+			}
+			FWidgetStyle S = Style;
+			S.BlendColorAndOpacityTint(FLinearColor(1, 1, 1, A));
+			return SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer + 1, S, bEnabled);
+		}
+		virtual FReply OnMouseButtonDown(const FGeometry&, const FPointerEvent& E) override
+		{
+			if (E.GetEffectingButton() != EKeys::LeftMouseButton || !Usable.Get(true)) return FReply::Unhandled();
+			bDown = true;
+			return FReply::Handled().CaptureMouse(SharedThis(this));
+		}
+		virtual FReply OnMouseButtonDoubleClick(const FGeometry& G, const FPointerEvent& E) override { return OnMouseButtonDown(G, E); }
+		virtual FReply OnMouseButtonUp(const FGeometry& G, const FPointerEvent& E) override
+		{
+			if (E.GetEffectingButton() != EKeys::LeftMouseButton || !bDown) return FReply::Unhandled();
+			bDown = false;
+			const bool bClick = Usable.Get(true) && G.IsUnderLocation(E.GetScreenSpacePosition());
+			FReply R = FReply::Handled().ReleaseMouseCapture();
+			if (bClick && OnClick) OnClick();
+			return R;
+		}
+		virtual void OnMouseCaptureLost(const FCaptureLostEvent&) override { bDown = false; }
+		virtual FCursorReply OnCursorQuery(const FGeometry&, const FPointerEvent&) const override { return Usable.Get(true) ? FCursorReply::Cursor(EMouseCursor::Hand) : FCursorReply::Unhandled(); }
+		virtual bool SupportsKeyboardFocus() const override { return Usable.Get(true); }
+		virtual FReply OnKeyDown(const FGeometry&, const FKeyEvent& E) override
+		{
+			const FKey K = E.GetKey();
+			if ((K == EKeys::Enter || K == EKeys::SpaceBar) && Usable.Get(true))
+			{
+				if (OnClick) OnClick();
+				return FReply::Handled();
+			}
+			return FReply::Unhandled();
+		}
+
+	private:
+		TAttribute<bool> Usable;
+		TFunction<void()> OnClick;
+		bool bPrimary = false, bDown = false;
+	};
+
+	// .crt input[type=range]: a 4 px track in the dim phosphor and a 22 x 30 thumb with its glow
+	// (box-shadow: 0 0 8px rgba(90,255,130,.7)); a click or a drag sets it, Left and Right step it
+	// when the keys have it (Up and Down move between the controls)
+	class SRxSlider : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SRxSlider) : _Step(0.01f), _Usable(true) {}
+			SLATE_ATTRIBUTE(float, Value)
+			SLATE_ARGUMENT(float, Step)
+			SLATE_ATTRIBUTE(bool, Usable)
+			SLATE_ARGUMENT(TFunction<void(float)>, OnChanged)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { Value = A._Value; Step = A._Step; Usable = A._Usable; OnChanged = A._OnChanged; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(S47Theme::Px(120), S47Theme::Px(36)); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool) const override
+		{
+			const FVector2f S(G.GetLocalSize());
+			const float Tw = S47Theme::Px(22), Th = S47Theme::Px(30), Tk = S47Theme::Px(4), A = Style.GetColorAndOpacityTint().A;
+			const float X = Tw / 2 + FMath::Clamp(Value.Get(0.f), 0.f, 1.f) * FMath::Max(0.f, S.X - Tw);
+			const bool bHot = Usable.Get(true) && (IsHovered() || HasMouseCapture() || RxKeyed(*this));
+			S47Theme::Fill(Out, Layer, G, FVector2f(0, (S.Y - Tk) / 2), FVector2f(S.X, Tk), RxDim(A));
+			for (int32 i = 3; i >= 1; --i)
+			{
+				const float R = S47Theme::Px(8) * i / 3.f;
+				RxRect(Out, Layer + 1, G, FVector2f(X - Tw / 2 - R, (S.Y - Th) / 2 - R), FVector2f(Tw + 2 * R, Th + 2 * R), S47Theme::Css(0x5aff82, (bHot ? 0.16f : 0.11f) * A));
+			}
+			RxRect(Out, Layer + 2, G, FVector2f(X - Tw / 2, (S.Y - Th) / 2), FVector2f(Tw, Th), bHot ? S47Theme::Css(0xc8ffd2, A) : RxPhos(A));
+			if (RxKeyed(*this))
+			{
+				const float In = S47Theme::Px(4);
+				RxRect(Out, Layer + 2, G, FVector2f(X - Tw / 2 - In, (S.Y - Th) / 2 - In), FVector2f(Tw + 2 * In, Th + 2 * In), FLinearColor::Transparent, RxPhos(0.8f * A));
+			}
+			return Layer + 3;
+		}
+		virtual FReply OnMouseButtonDown(const FGeometry& G, const FPointerEvent& E) override
+		{
+			if (E.GetEffectingButton() != EKeys::LeftMouseButton || !Usable.Get(true)) return FReply::Unhandled();
+			Set(G, E);
+			return FReply::Handled().CaptureMouse(SharedThis(this));
+		}
+		virtual FReply OnMouseMove(const FGeometry& G, const FPointerEvent& E) override
+		{
+			if (!HasMouseCapture()) return FReply::Unhandled();
+			Set(G, E);
+			return FReply::Handled();
+		}
+		virtual FReply OnMouseButtonUp(const FGeometry&, const FPointerEvent&) override { return HasMouseCapture() ? FReply::Handled().ReleaseMouseCapture() : FReply::Unhandled(); }
+		virtual bool SupportsKeyboardFocus() const override { return Usable.Get(true); }
+		virtual FReply OnKeyDown(const FGeometry&, const FKeyEvent& E) override
+		{
+			const int32 D = E.GetKey() == EKeys::Left ? -1 : E.GetKey() == EKeys::Right ? 1 : 0;
+			if (!D || !Usable.Get(true)) return FReply::Unhandled();
+			if (OnChanged) OnChanged(FMath::Clamp(Value.Get(0.f) + D * Step, 0.f, 1.f));
+			return FReply::Handled();
+		}
+
+	private:
+		TAttribute<float> Value;
+		TAttribute<bool> Usable;
+		float Step = 0.01f;
+		TFunction<void(float)> OnChanged;
+		void Set(const FGeometry& G, const FPointerEvent& E)
+		{
+			const float Tw = S47Theme::Px(22), W = FMath::Max(1.f, float(G.GetLocalSize().X) - Tw);
+			if (OnChanged) OnChanged(FMath::Clamp((float(G.AbsoluteToLocal(E.GetScreenSpacePosition()).X) - Tw / 2) / W, 0.f, 1.f));
+		}
+	};
+
+	// .refcard: the taped reference card (Special Elite on paper, turned -.6 degrees, two strips of
+	// tape over its top edge, a shadow) or, .refcard.screen, the same words in the phosphor. The
+	// words are a plain STextBlock the description reader reads.
+	class SRxCard : public SCompoundWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SRxCard) {}
+			SLATE_ATTRIBUTE(FString, Text)
+			SLATE_ATTRIBUTE(bool, Taped)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A)
+		{
+			Text = A._Text;
+			Taped = A._Taped;
+			SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+			SetRenderTransform(TAttribute<TOptional<FSlateRenderTransform>>::CreateSP(this, &SRxCard::Turn));
+			Build();
+		}
+		virtual void Tick(const FGeometry&, const double, const float) override { if (Taped.Get(false) != bTaped) Build(); }
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bEnabled) const override
+		{
+			const FVector2f S(G.GetLocalSize());
+			if (bTaped)
+			{
+				// box-shadow: 0 3px 10px rgba(0,0,0,.5); background: var(--paper)
+				for (int32 i = 3; i >= 1; --i)
+				{
+					const float R = S47Theme::Px(3) * i;
+					RxRect(Out, Layer, G, FVector2f(-R, S47Theme::Px(3) - R), S + FVector2f(2 * R, 2 * R), FLinearColor(0, 0, 0, 0.5f / 4.f));
+				}
+				S47Theme::Fill(Out, Layer + 1, G, FVector2f(0, 0), S, S47Theme::Paper());
+			}
+			int32 L = SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer + 2, Style, bEnabled);
+			if (bTaped)
+			{
+				// ::before, ::after: tape 64 x 18 at top -8px, 18px in from each side, turned -4 and 5 degrees
+				const FVector2f T(S47Theme::Px(64), S47Theme::Px(18));
+				for (int32 i = 0; i < 2; ++i)
+				{
+					const float X = i == 0 ? S47Theme::Px(18) : S.X - S47Theme::Px(18) - T.X;
+					FSlateDrawElement::MakeRotatedBox(Out, L + 1, G.ToPaintGeometry(T, FSlateLayoutTransform(FVector2f(X, -S47Theme::Px(8)))), S47Theme::White(), ESlateDrawEffect::None,
+						FMath::DegreesToRadians(i == 0 ? -4.f : 5.f), TOptional<FVector2f>(), FSlateDrawElement::RelativeToElement, S47Theme::Css(0xe6dcb4, 0.75f));
+				}
+				++L;
+			}
+			return L;
+		}
+
+	private:
+		TAttribute<FString> Text;
+		TAttribute<bool> Taped;
+		bool bTaped = false;
+		TOptional<FSlateRenderTransform> Turn() const { return bTaped ? FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(-0.6f))) : TOptional<FSlateRenderTransform>(); }
+		void Build()
+		{
+			bTaped = Taped.Get(false);
+			const TAttribute<FText> Words = RxStr([T = Text] { return T.Get(); });
+			TSharedRef<SWidget> Body = bTaped
+				? S47Kit::Readable(SNew(STextBlock).Text(Words).Font(S47Theme::Type(15)).ColorAndOpacity(S47Theme::Ink()).AutoWrapText(true).LineHeightPercentage(1.25f))
+				: StaticCastSharedRef<SWidget>(SNew(SOverlay)
+					+ SOverlay::Slot()[SNew(SS47GlowText).Text(Words).Font(S47Theme::Term(20)).Color(RxPhos()).Glow(RxGlow()).AutoWrapText(true).bHaloOnly(true)]
+					+ SOverlay::Slot()[S47Kit::Readable(SNew(STextBlock).Text(Words).Font(S47Theme::Term(20)).ColorAndOpacity(RxPhos()).AutoWrapText(true))]);
+			// (max-width: 640px; padding 10px 14px on paper, 4px 0 on the screen)
+			ChildSlot
+			[
+				SNew(SBox).WidthOverride(S47Theme::Px(640)).Padding(bTaped ? S47Theme::Pad(14, 10) : S47Theme::Pad(0, 4))[Body]
+			];
+		}
+	};
+
+	// a box-shadow's inset blur along a rectangle's four edges: half the colour at the edge, gone at W
+	void RxInset(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const FVector2f& P, const FVector2f& S, float W, const FLinearColor& C)
+	{
+		auto At = [&C](float K) { FLinearColor X = C; X.A *= K; return X; };
+		const TArray<TPair<float, FLinearColor>> In = { { 0.f, At(0.5f) }, { 0.25f, At(0.3f) }, { 0.5f, At(0.14f) }, { 0.75f, At(0.05f) }, { 1.f, At(0.f) } };
+		TArray<TPair<float, FLinearColor>> Back;
+		for (const TPair<float, FLinearColor>& Stop : In) Back.Insert(TPair<float, FLinearColor>(1.f - Stop.Key, Stop.Value), 0);
+		S47Theme::Gradient(Out, Layer, G, P, FVector2f(S.X, W), In, false);
+		S47Theme::Gradient(Out, Layer, G, FVector2f(P.X, P.Y + S.Y - W), FVector2f(S.X, W), Back, false);
+		S47Theme::Gradient(Out, Layer, G, P, FVector2f(W, S.Y), In, true);
+		S47Theme::Gradient(Out, Layer, G, FVector2f(P.X + S.X - W, P.Y), FVector2f(W, S.Y), Back, true);
+	}
+}
+
+void SS47CrtGlass::Construct(const FArguments& InArgs)
+{
+	bBezel = InArgs._bBezel;
+	Radius = InArgs._Radius;
+	Ring = InArgs._Ring;
+	Edge = InArgs._Edge;
+	Scan = InArgs._Scan;
+	ChildSlot.Padding(bBezel ? (Ring + Edge) * S47Theme::U : 0.f)[InArgs._Content.Widget];
+}
+
+FSlateRect SS47CrtGlass::Glass(const FGeometry& G) const
+{
+	const float B = bBezel ? (Ring + Edge) * S47Theme::U : 0.f;
+	const FVector2f S(G.GetLocalSize());
+	return FSlateRect(B, B, S.X - B, S.Y - B);
+}
+
+int32 SS47CrtGlass::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
+{
+	S47_USING_THEME
+	const FVector2f S(G.GetLocalSize());
+	const FSlateRect R = Glass(G);
+	const FVector2f P0(R.Left, R.Top), Sz(R.GetSize());
+	const float Rad = Radius * U;
+	int32 L = Layer;
+	if (bBezel)
+	{
+		// box-shadow: 0 0 0 14px #c9bfa1, 0 0 0 16px #8d8570, 0 20px 60px rgba(0,0,0,.8)
+		Shadow(Out, L, G, FVector2f(0, 0), S, Px(20), Px(40), 0.8f);
+		FSlateDrawElement::MakeBox(Out, L + 1, G.ToPaintGeometry(), Box(Css(0x8d8570), FLinearColor::Transparent, 0.f, Rad + (Ring + Edge) * U), ESlateDrawEffect::None, FLinearColor::White);
+		FSlateDrawElement::MakeBox(Out, L + 2, G.ToPaintGeometry(S - FVector2f(2 * Edge * U, 2 * Edge * U), FSlateLayoutTransform(FVector2f(Edge * U, Edge * U))),
+			Box(Css(0xc9bfa1), FLinearColor::Transparent, 0.f, Rad + Ring * U), ESlateDrawEffect::None, FLinearColor::White);
+		L += 3;
+	}
+	// background: var(--crt-bg); box-shadow: inset 0 0 90px rgba(0,0,0,.85), inset 0 0 18px rgba(60,255,110,.12)
+	// (a plain box, the corners masked below: a render target's picture has to be opaque everywhere)
+	FSlateDrawElement::MakeBox(Out, L, G.ToPaintGeometry(Sz, FSlateLayoutTransform(P0)), White(), ESlateDrawEffect::None, RxBg());
+	RxInset(Out, L + 1, G, P0, Sz, Px(90), FLinearColor(0, 0, 0, 0.85f));
+	RxInset(Out, L + 1, G, P0, Sz, Px(18), Css(0x3cff6e, 0.12f));
+	L = SCompoundWidget::OnPaint(Args, G, Cull, Out, L + 2, Style, bParentEnabled) + 1;
+	// ::after: repeating-linear-gradient(rgba(0,0,0,.22) 0 1px, transparent 1px 3px), in the pixels of
+	// whatever this is drawn into (the screen, or the CRT's render target: there a line in four, a
+	// pixel and a half thick, so the tube's lines survive being drawn smaller on the glass)
+	const float Dev = 1.f / FMath::Max(0.1f, G.Scale);
+	const bool bTarget = !bBezel;
+	const float Pitch = (bTarget ? 4.f : 3.f) * Dev, Line = (bTarget ? 1.5f : 1.f) * Dev;
+	for (float Y = P0.Y; Y < R.Bottom; Y += Pitch)
+	{
+		const float Dy = Y < P0.Y + Rad ? P0.Y + Rad - Y : Y > R.Bottom - Rad ? Y - (R.Bottom - Rad) : 0.f;
+		const float Dx = Dy > 0.f ? Rad - FMath::Sqrt(FMath::Max(0.f, Rad * Rad - Dy * Dy)) : 0.f;
+		Fill(Out, L, G, FVector2f(P0.X + Dx, Y), FVector2f(Sz.X - 2 * Dx, Line), FLinearColor(0, 0, 0, Scan));
+	}
+	// the glass's round corners over what the edges' shading drew square
+	const FLinearColor Corner = bBezel ? Css(0xc9bfa1) : FLinearColor(0.f, 0.f, 0.f, 1.f);
+	const FVector2f Corners[4] = { P0, FVector2f(R.Right, R.Top), FVector2f(R.Right, R.Bottom), FVector2f(R.Left, R.Bottom) };
+	for (int32 c = 0; c < 4; ++c)
+	{
+		const FVector2f In(c == 0 || c == 3 ? Rad : -Rad, c < 2 ? Rad : -Rad);
+		const FVector2f Ctr = Corners[c] + In;
+		const float A0 = FMath::Atan2(-In.Y, -In.X);
+		for (int32 k = 0; k < 8; ++k)
+		{
+			const float Aa = A0 - UE_PI / 4.f + UE_PI / 2.f * k / 8.f, Ab = A0 - UE_PI / 4.f + UE_PI / 2.f * (k + 1) / 8.f;
+			Triangle(Out, L + 1, G, Corners[c], Ctr + FVector2f(FMath::Cos(Aa), FMath::Sin(Aa)) * Rad, Ctr + FVector2f(FMath::Cos(Ab), FMath::Sin(Ab)) * Rad, Corner);
+		}
+	}
+	return L + 2;
+}
+
 // ---------- the spectrum ----------
 
 void SS47Spectrum::Construct(const FArguments& InArgs)
 {
 	Story = InArgs._Story;
 	Size = InArgs._Size;
+	Canvas = InArgs._Canvas;
 	WhiteBrush = MakeUnique<FSlateColorBrush>(FLinearColor::White);
 }
 
-void SS47Spectrum::Paint(const AS47Story* Story, const FGeometry& G, FSlateWindowElementList& Out, int32 Layer, const FSlateBrush* White)
+void SS47Spectrum::Paint(const AS47Story* Story, const FGeometry& G, FSlateWindowElementList& Out, int32 Layer, const FSlateBrush* White, FVector2D Canvas)
 {
+	// Signal.ts drawSpectrum, in its canvas's pixels, the colours as the canvas has them (sRGB)
 	const FVector2f S = FVector2f(G.GetLocalSize());
-	FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(), White, ESlateDrawEffect::None, FLinearColor(0.008f, 0.063f, 0.024f));
+	const FVector2f C = Canvas.X > 0 && Canvas.Y > 0 ? FVector2f(Canvas) : S;
+	const FVector2f K(S.X / C.X, S.Y / C.Y);
+	FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(), White, ESlateDrawEffect::None, S47Theme::Css(0x021006));
 	if (!Story) return;
 	FS47SpectrumGeometry Geo;
 	const double T = FPlatformTime::Seconds();
-	S47Spectrum::Build(Story->Rx, T, Story->bResidualVisible, S.X, S.Y, [] { return double(FMath::FRand()); }, Geo);
-	const FLinearColor Grid(0.24f, 0.7f, 0.37f, 0.22f);
-	for (float X : Geo.GridX) FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(X, 0), FVector2f(X, S.Y) }, ESlateDrawEffect::None, Grid, false, 1.f);
-	for (float Y : Geo.GridY) FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(0, Y), FVector2f(S.X, Y) }, ESlateDrawEffect::None, Grid, false, 1.f);
+	S47Spectrum::Build(Story->Rx, T, Story->bResidualVisible, C.X, C.Y, [] { return double(FMath::FRand()); }, Geo);
+	const FLinearColor Grid = S47Theme::Css(0x3cb45f, 0.22f);
+	for (float X : Geo.GridX) FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(X * K.X, 0), FVector2f(X * K.X, S.Y) }, ESlateDrawEffect::None, Grid, false, 1.f);
+	for (float Y : Geo.GridY) FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(0, Y * K.Y), FVector2f(S.X, Y * K.Y) }, ESlateDrawEffect::None, Grid, false, 1.f);
 	if (!Geo.bPowered) return;
-	FSlateDrawElement::MakeBox(Out, Layer + 2, G.ToPaintGeometry(FVector2f(Geo.BandX1 - Geo.BandX0, S.Y), FSlateLayoutTransform(FVector2f(Geo.BandX0, 0))), White, ESlateDrawEffect::None, FLinearColor(0.27f, 1.f, 0.47f, 0.08f));
+	FSlateDrawElement::MakeBox(Out, Layer + 2, G.ToPaintGeometry(FVector2f((Geo.BandX1 - Geo.BandX0) * K.X, S.Y), FSlateLayoutTransform(FVector2f(Geo.BandX0 * K.X, 0))), White, ESlateDrawEffect::None, S47Theme::Css(0x46ff78, 0.08f));
 	if (Geo.Trace.Num() > 1)
 	{
-		FSlateDrawElement::MakeLines(Out, Layer + 3, G.ToPaintGeometry(), Geo.Trace, ESlateDrawEffect::None, FLinearColor(0.35f, 1.f, 0.5f, 0.35f), true, FMath::Max(3.f, S.X / 170.f));
-		FSlateDrawElement::MakeLines(Out, Layer + 4, G.ToPaintGeometry(), Geo.Trace, ESlateDrawEffect::None, FLinearColor(0.55f, 1.f, 0.64f), true, FMath::Max(1.5f, S.X / 340.f));
+		TArray<FVector2f> Pts;
+		Pts.Reserve(Geo.Trace.Num());
+		for (const FVector2f& P : Geo.Trace) Pts.Add(FVector2f(P.X * K.X, P.Y * K.Y));
+		// lineWidth max(1.5, w / 340), shadowBlur 6 in rgba(90,255,130,.8): the glow as wider, fainter
+		// strokes under the line
+		const float W = FMath::Max(1.5f, C.X / 340.f) * FMath::Sqrt(K.X * K.Y);
+		static const float Halo[3][2] = { { 5.f, 0.07f }, { 3.2f, 0.12f }, { 1.9f, 0.22f } };
+		for (const auto& H : Halo) FSlateDrawElement::MakeLines(Out, Layer + 3, G.ToPaintGeometry(), Pts, ESlateDrawEffect::None, S47Theme::Css(0x5aff82, H[1]), true, W * H[0]);
+		FSlateDrawElement::MakeLines(Out, Layer + 4, G.ToPaintGeometry(), Pts, ESlateDrawEffect::None, S47Theme::Css(0x8cffa4), true, W);
 	}
-	// the tuned frequency as a dashed line
-	for (float Y = 0; Y < S.Y; Y += 6.f)
+	// the tuned frequency: strokeStyle rgba(255,200,90,.85), setLineDash([3, 3])
+	const float Dash = 3.f * K.Y, Tx = Geo.TunedX * K.X;
+	for (float Y = 0; Y < S.Y; Y += 2 * Dash)
 	{
-		FSlateDrawElement::MakeLines(Out, Layer + 5, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Geo.TunedX, Y), FVector2f(Geo.TunedX, FMath::Min(S.Y, Y + 3.f)) }, ESlateDrawEffect::None, FLinearColor(1.f, 0.78f, 0.35f, 0.85f), false, 1.f);
+		FSlateDrawElement::MakeLines(Out, Layer + 5, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Tx, Y), FVector2f(Tx, FMath::Min(S.Y, Y + Dash)) }, ESlateDrawEffect::None, S47Theme::Css(0xffc85a, 0.85f), false, FMath::Max(1.f, K.X));
 	}
 }
 
 int32 SS47Spectrum::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
 {
-	Paint(Story, G, Out, Layer, WhiteBrush.Get());
+	Paint(Story, G, Out, Layer, WhiteBrush.Get(), Canvas);
 	return Layer + 6;
 }
 
 // ---------- the receiver console ----------
 
+bool SS47Console::Usable() const { return Story && Story->Rx.Stage < 3 && !Story->SurveyOnly(); }
+
 TSharedRef<SWidget> SS47Console::Control(const TCHAR* Label, TFunction<double()> Get, TFunction<void(double)> Set, double Min, double Max, TFunction<FString(double)> Fmt, bool bFine)
 {
+	S47_USING_THEME
+	// .ctl: grid-template-columns minmax(170px, 230px) 1fr auto; gap 8px 14px; margin 6px 0
 	TSharedRef<SHorizontalBox> Fine = SNew(SHorizontalBox);
 	if (bFine)
 	{
+		int32 i = 0;
 		for (double Step : { -0.010, -0.001, 0.001, 0.010 })
 		{
 			const FString L = Step < 0 ? (Step < -0.005 ? TEXT("--") : TEXT("-")) : (Step > 0.005 ? TEXT("++") : TEXT("+"));
-			Fine->AddSlot().AutoWidth().Padding(3, 0)
+			// (RxConsole.ts: the fine keys are never disabled, only the ranges)
+			Fine->AddSlot().AutoWidth().Padding(i++ ? Px(6) : 0.f, 0, 0, 0)
 			[
-				S47Style::Button(L, [this, Get, Set, Step, Min, Max] { Set(FMath::Clamp(FMath::RoundToDouble((Get() + Step) * 1000.0) / 1000.0, Min, Max)); if (OnClick) OnClick(); }, S47Style::Green, 20.f)
+				SNew(SRxKey).Label(L).OnClick([this, Get, Set, Step, Min, Max] { Set(FMath::Clamp(FMath::RoundToDouble((Get() + Step) * 1000.0) / 1000.0, Min, Max)); if (OnClick) OnClick(); })
 			];
 		}
 	}
-	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(0, 10, 0, 2)
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, Px(6))
 		[
-			SNew(STextBlock).Text_Lambda([Label, Get, Fmt] { return FText::FromString(FString::Printf(TEXT("%s: %s"), Label, *Fmt(Get()))); }).Font(S47Style::Mono(24.f)).ColorAndOpacity(S47Style::Green)
-		]
-		+ SVerticalBox::Slot().AutoHeight()
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
+			SNew(SBox).WidthOverride(Px(230))
 			[
-				SNew(SSlider).Value_Lambda([Get, Min, Max] { return float((Get() - Min) / (Max - Min)); })
-					.OnValueChanged_Lambda([Set, Min, Max, bFine](float V) { const double R = Min + V * (Max - Min); Set(bFine ? FMath::RoundToDouble(R * 1000.0) / 1000.0 : FMath::RoundToDouble(R)); })
-					.SliderBarColor(FLinearColor(0.24f, 0.5f, 0.3f)).SliderHandleColor(S47Style::Green)
-					.IsEnabled_Lambda([this] { return Story && Story->Rx.Stage < 3 && !Story->SurveyOnly(); })
+				RxText(RxStr([Label, Get, Fmt] { return FString::Printf(TEXT("%s: %s"), Label, *Fmt(Get())); }), 22.f)
 			]
-			+ SHorizontalBox::Slot().AutoWidth().Padding(8, 0, 0, 0) [ Fine ]
-		];
+		]
+		+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(Px(14), 0, 0, 0)
+		[
+			SNew(SRxSlider)
+			.Value_Lambda([Get, Min, Max] { return float((Get() - Min) / (Max - Min)); })
+			.Step(float((bFine ? 0.001 : 1.0) / (Max - Min)))
+			.Usable_Lambda([this] { return Usable(); })
+			.OnChanged([Set, Min, Max, bFine](float V) { const double R = Min + V * (Max - Min); Set(bFine ? FMath::RoundToDouble(R * 1000.0) / 1000.0 : FMath::RoundToDouble(R)); })
+		]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(Px(14), 0, 0, 0)[Fine];
 }
 
 void SS47Console::Construct(const FArguments& InArgs)
 {
+	S47_USING_THEME
 	Story = InArgs._Story;
 	OnClose = InArgs._OnClose;
 	OnClick = InArgs._OnClick;
-	PanelBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor(0.01f, 0.04f, 0.02f), FVector4(6.f, 6.f, 6.f, 6.f), FLinearColor(0.3f, 0.6f, 0.4f, 0.5f), 1.f);
 	FS47Rx* Rx = Story ? &Story->Rx : nullptr;
 	auto Az = [this] { if (Story) Story->ConsoleAzimuth(); };
+	auto Warn = [this] { return Story && (Story->Rx.Status.StartsWith(TEXT("NO LOCK")) || Story->Rx.Status.StartsWith(TEXT("UNLOGGED"))); };
+	const TAttribute<FLinearColor> StatusColor = TAttribute<FLinearColor>::CreateLambda([Warn] { return Warn() ? RxWarn() : S47Theme::Css(0xc8ffd2); });
+	const TAttribute<FLinearColor> StatusGlow = TAttribute<FLinearColor>::CreateLambda([Warn] { return Warn() ? RxWarnGlow() : RxGlow(); });
+	// .axis: the five frequencies, spread out (justify-content: space-between)
+	TSharedRef<SHorizontalBox> Axis = SNew(SHorizontalBox);
+	static const TCHAR* Ticks[] = { TEXT("1419.5"), TEXT("1419.8"), TEXT("1420.1"), TEXT("1420.4"), TEXT("1420.7 MHz") };
+	for (int32 i = 0; i < 5; ++i)
+	{
+		if (i) Axis->AddSlot().FillWidth(1.f)[SNullWidget::NullWidget];
+		Axis->AddSlot().AutoWidth()[RxText(FText::FromString(Ticks[i]), 17.f, RxDim())];
+	}
 	TSharedPtr<SVerticalBox> LeftCol;
 	ChildSlot
+	.Padding(Pad(26, 22, 26, 20))
+	.VAlign(VAlign_Center)
 	[
-		SNew(SOverlay)
-		+ SOverlay::Slot() [ SNew(SImage).ColorAndOpacity(S47Style::Overlay) ]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+		SNew(SVerticalBox)
+		// .lcol
+		+ SVerticalBox::Slot().AutoHeight()
 		[
-			SNew(SBox).WidthOverride(1320.f)
+			SAssignNew(LeftCol, SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()
 			[
-				SNew(SBorder).BorderImage(PanelBrush.Get()).Padding(FMargin(28, 22))
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(1.f)[RxText(FText::FromString(TEXT("SARO / RX CONTROL 03")), 30.f, RxPhos(), RxGlow(), 1.2f)]
+				+ SHorizontalBox::Slot().AutoWidth()
+				[
+					RxText(RxStr([this] { const double Q = !Story ? 0 : Story->Rx.Stage >= 3 ? 1.0 : Story->SurveyOnly() ? 0.0 : Story->Rx.Quality(); return FString::Printf(TEXT("CARRIER %d%%"), FMath::RoundToInt(Q * 100)); }), 22.f)
+				]
+			]
+			// .status: the receiver's line, with the terminal's cursor after it
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(SBox).MinDesiredHeight(Px(26))
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().FillWidth(0.62f).Padding(0, 0, 24, 0)
-					[
-						SAssignNew(LeftCol, SVerticalBox)
-						+ SVerticalBox::Slot().AutoHeight()
-						[
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot().FillWidth(1.f) [ SNew(STextBlock).Text(FText::FromString(TEXT("SARO / RX CONTROL 03"))).Font(S47Style::Mono(30.f)).ColorAndOpacity(S47Style::Green) ]
-							+ SHorizontalBox::Slot().AutoWidth()
-							[
-								SNew(STextBlock).Text_Lambda([this] { const double Q = !Story ? 0 : Story->Rx.Stage >= 3 ? 1.0 : Story->SurveyOnly() ? 0.0 : Story->Rx.Quality(); return FText::FromString(FString::Printf(TEXT("CARRIER %d%%"), FMath::RoundToInt(Q * 100))); }).Font(S47Style::Mono(24.f)).ColorAndOpacity(S47Style::GreenDim)
-							]
-						]
-						+ SVerticalBox::Slot().AutoHeight().Padding(0, 6, 0, 8)
-						[
-							SNew(STextBlock).Text_Lambda([this] { return FText::FromString(Story ? Story->Rx.Status : FString()); }).Font(S47Style::Mono(24.f))
-								.ColorAndOpacity_Lambda([this] { return FSlateColor(Story && (Story->Rx.Status.StartsWith(TEXT("NO LOCK")) || Story->Rx.Status.StartsWith(TEXT("UNLOGGED"))) ? S47Style::Amber : S47Style::Green); })
-						]
-						+ SVerticalBox::Slot().AutoHeight()
-						[
-							SNew(SBox).HeightOverride(280.f) [ SNew(SS47Spectrum).Story(Story).Size(FVector2D(800, 280)) ]
-						]
-						+ SVerticalBox::Slot().AutoHeight().Padding(0, 4, 0, 10)
-						[
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot().FillWidth(1.f) [ SNew(STextBlock).Text(FText::FromString(TEXT("1419.5"))).Font(S47Style::Mono(18.f)).ColorAndOpacity(S47Style::GreenDim) ]
-							+ SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center) [ SNew(STextBlock).Text(FText::FromString(TEXT("1419.8"))).Font(S47Style::Mono(18.f)).ColorAndOpacity(S47Style::GreenDim) ]
-							+ SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center) [ SNew(STextBlock).Text(FText::FromString(TEXT("1420.1"))).Font(S47Style::Mono(18.f)).ColorAndOpacity(S47Style::GreenDim) ]
-							+ SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center) [ SNew(STextBlock).Text(FText::FromString(TEXT("1420.4"))).Font(S47Style::Mono(18.f)).ColorAndOpacity(S47Style::GreenDim) ]
-							+ SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Right) [ SNew(STextBlock).Text(FText::FromString(TEXT("1420.7 MHz"))).Font(S47Style::Mono(18.f)).ColorAndOpacity(S47Style::GreenDim) ]
-						]
-						+ SVerticalBox::Slot().AutoHeight()
-						[
-							SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).Padding(FMargin(14, 10))
-								.BorderBackgroundColor_Lambda([this] { return FSlateColor(Story && Story->Rx.Stage < 3 && !Story->SurveyOnly() && Story->Rx.Profile().bCardIsTaped ? FLinearColor(0.75f, 0.68f, 0.5f) : FLinearColor(0.02f, 0.08f, 0.04f)); })
-							[
-								// (.refcard: read as the receiver's description, UI.open's descriptionReadings)
-								S47Kit::Readable(SNew(STextBlock).AutoWrapText(true).Font(S47Style::Mono(22.f))
-									.Text_Lambda([this]
-									{
-										if (!Story) return FText::GetEmpty();
-										if (Story->Rx.Stage >= 3) return FText::FromString(TEXT("Pattern repeats every 5.2 s: four pulses, a gap, seven pulses. Run a direction solve on the tracking terminal."));
-										if (Story->SurveyOnly()) return FText::FromString(TEXT("Survey runs unattended. Nothing scheduled until 06:00."));
-										return FText::FromString(Story->Rx.Profile().Card);
-									})
-									.ColorAndOpacity_Lambda([this] { return FSlateColor(Story && Story->Rx.Stage < 3 && !Story->SurveyOnly() && Story->Rx.Profile().bCardIsTaped ? S47Style::Ink : S47Style::Green); }))
-							]
-						]
-					]
-					+ SHorizontalBox::Slot().FillWidth(0.38f)
-					[
-						SNew(SVerticalBox)
-						+ SVerticalBox::Slot().AutoHeight() [ Control(TEXT("FREQUENCY MHz"), [Rx] { return Rx ? Rx->Frequency : 0.0; }, [Rx](double V) { if (Rx) Rx->Frequency = V; }, S47Signal::FMin, S47Signal::FMax, [](double V) { return FString::Printf(TEXT("%.3f"), V); }, true) ]
-						+ SVerticalBox::Slot().AutoHeight() [ Control(TEXT("GAIN"), [Rx] { return Rx ? Rx->Gain : 0.0; }, [Rx](double V) { if (Rx) Rx->Gain = V; }, 0, 100, [](double V) { return FString::Printf(TEXT("%.0f"), V); }, false) ]
-						+ SVerticalBox::Slot().AutoHeight() [ Control(TEXT("BANDWIDTH kHz"), [Rx] { return Rx ? Rx->Bandwidth : 0.0; }, [Rx](double V) { if (Rx) Rx->Bandwidth = V; }, 4, 100, [](double V) { return FString::Printf(TEXT("%.0f"), V); }, false) ]
-						+ SVerticalBox::Slot().AutoHeight() [ Control(TEXT("ARRAY AZ"), [Rx] { return Rx ? Rx->Azimuth : 0.0; }, [Rx, Az](double V) { if (Rx) { Rx->Azimuth = V; Az(); } }, 0, 180, [](double V) { return S47Text::Pad(V, 3); }, false) ]
-						+ SVerticalBox::Slot().AutoHeight().Padding(0, 24, 0, 0)
-						[
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot().AutoWidth()
-							[
-								SNew(SBox).IsEnabled_Lambda([this] { return Story && Story->Rx.Stage < 3 && !Story->SurveyOnly(); })
-								[
-									SNew(SButton).ContentPadding(FMargin(16, 8)).OnClicked_Lambda([this] { if (OnClick) OnClick(); if (Story) Story->ConsoleAction(); return FReply::Handled(); })
-									[
-										SNew(STextBlock).Font(S47Style::Mono(24.f)).ColorAndOpacity(S47Style::Ink)
-											.Text_Lambda([this] { return FText::FromString(!Story ? TEXT("") : Story->Rx.Stage >= 3 ? TEXT("LOCKED") : Story->SurveyOnly() ? TEXT("SWEEP RUNNING") : Story->Rx.Profile().Action); })
-									]
-								]
-							]
-							+ SHorizontalBox::Slot().FillWidth(1.f) [ SNew(SSpacer) ]
-							+ SHorizontalBox::Slot().AutoWidth() [ S47Style::Button(TEXT("EXIT"), [this] { if (OnClick) OnClick(); if (OnClose) OnClose(); }, S47Style::Green) ]
-						]
-						+ SVerticalBox::Slot().AutoHeight().Padding(0, 16, 0, 0)
-						[
-							SNew(STextBlock).Font(S47Style::Mono(20.f)).ColorAndOpacity(S47Style::GreenDim).AutoWrapText(true)
-								.Text_Lambda([this] { return FText::FromString(Story && Story->Rx.Stage >= 3 ? TEXT("SOURCE: UNKNOWN   1420.405 MHz\nS/N 4.71   DIRECTION: NOT SOLVED") : TEXT("")); })
-						]
-					]
+					+ SHorizontalBox::Slot().AutoWidth()[RxText(RxStr([this] { return Story ? Story->Rx.Status : FString(); }), 22.f, StatusColor, StatusGlow)]
+					+ SHorizontalBox::Slot().AutoWidth()[RxText(RxStr([] { return FMath::Fmod(FPlatformTime::Seconds(), 1.06) < 0.53 ? FString(TEXT("_")) : FString(TEXT(" ")); }), 22.f, StatusColor, StatusGlow)]
 				]
+			]
+			// the canvas, 900 x 300, shown 210 px high in a thin rim (border: 1px solid rgba(140,255,164,.25))
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, Px(10), 0, Px(6))
+			[
+				SNew(SBox).HeightOverride(Px(210))
+				[
+					SNew(SOverlay)
+					+ SOverlay::Slot()[SNew(SS47Spectrum).Story(Story).Size(FVector2D(Px(900), Px(210))).Canvas(FVector2D(900, 300))]
+					+ SOverlay::Slot()[SNew(SRxRim).Color(RxPhos(0.25f)).Visibility(EVisibility::HitTestInvisible)]
+				]
+			]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, Px(8))[Axis]
+			// (.refcard: read as the receiver's description, UI.open's descriptionReadings)
+			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left).Padding(0, Px(8), 0, Px(12))
+			[
+				SNew(SRxCard)
+				.Text_Lambda([this]
+				{
+					if (!Story) return FString();
+					if (Story->Rx.Stage >= 3) return FString(TEXT("Pattern repeats every 5.2 s: four pulses, a gap, seven pulses. Run a direction solve on the tracking terminal."));
+					if (Story->SurveyOnly()) return FString(TEXT("Survey runs unattended. Nothing scheduled until 06:00."));
+					return Story->Rx.Profile().Card;
+				})
+				.Taped_Lambda([this] { return Usable() && Story->Rx.Profile().bCardIsTaped; })
+			]
+		]
+		// .rcol
+		+ SVerticalBox::Slot().AutoHeight()[Control(TEXT("FREQUENCY MHz"), [Rx] { return Rx ? Rx->Frequency : 0.0; }, [Rx](double V) { if (Rx) Rx->Frequency = V; }, S47Signal::FMin, S47Signal::FMax, [](double V) { return FString::Printf(TEXT("%.3f"), V); }, true)]
+		+ SVerticalBox::Slot().AutoHeight()[Control(TEXT("GAIN"), [Rx] { return Rx ? Rx->Gain : 0.0; }, [Rx](double V) { if (Rx) Rx->Gain = V; }, 0, 100, [](double V) { return FString::Printf(TEXT("%.0f"), V); }, false)]
+		+ SVerticalBox::Slot().AutoHeight()[Control(TEXT("BANDWIDTH kHz"), [Rx] { return Rx ? Rx->Bandwidth : 0.0; }, [Rx](double V) { if (Rx) Rx->Bandwidth = V; }, 4, 100, [](double V) { return FString::Printf(TEXT("%.0f"), V); }, false)]
+		+ SVerticalBox::Slot().AutoHeight()[Control(TEXT("ARRAY AZ"), [Rx] { return Rx ? Rx->Azimuth : 0.0; }, [Rx, Az](double V) { if (Rx) { Rx->Azimuth = V; Az(); } }, 0, 180, [](double V) { return S47Text::Pad(V, 3); }, false)]
+		// .actions: the action, the readout, EXIT
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, Px(14), 0, 0)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+			[
+				SNew(SRxKey).bPrimary(true).Px(26.f)
+				.Label_Lambda([this] { return FString(!Story ? TEXT("") : Story->Rx.Stage >= 3 ? TEXT("LOCKED") : Story->SurveyOnly() ? TEXT("SWEEP RUNNING") : *Story->Rx.Profile().Action); })
+				.Usable_Lambda([this] { return Usable(); })
+				.OnClick([this] { if (OnClick) OnClick(); if (Story) Story->ConsoleAction(); })
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(Px(12), 0)
+			[
+				RxText(RxStr([this] { return FString(Story && Story->Rx.Stage >= 3 ? TEXT("SOURCE: UNKNOWN   1420.405 MHz\nS/N 4.71   DIRECTION: NOT SOLVED") : TEXT("")); }), 19.f, Css(0xb9ffc7))
+			]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+			[
+				SNew(SRxKey).Label(FString(TEXT("EXIT"))).OnClick([this] { if (OnClick) OnClick(); if (OnClose) OnClose(); })
 			]
 		]
 	];
@@ -967,46 +1356,67 @@ FReply SS47Console::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKe
 
 void SS47Ops::Construct(const FArguments& InArgs)
 {
+	S47_USING_THEME
 	Story = InArgs._Story;
 	OnClose = InArgs._OnClose;
-	PanelBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor(0.01f, 0.035f, 0.02f), FVector4(6.f, 6.f, 6.f, 6.f), FLinearColor(0.3f, 0.6f, 0.4f, 0.5f), 1.f);
 	Text = (Story ? Story->Ops().Header() : FString()) + TEXT("\n");
+	// .term: VT323 22px, the phosphor, text-shadow 0 0 6px rgba(140,255,164,.45); the line takes the
+	// keys (caret-color: var(--phosphor))
+	const FLinearColor Glow = Css(0x8cffa4, 0.45f);
+	static const FEditableTextStyle LineStyle = []
+	{
+		FEditableTextStyle S = FCoreStyle::Get().GetWidgetStyle<FEditableTextStyle>(TEXT("NormalEditableText"));
+		S.SetFont(S47Theme::Term(22.f)).SetColorAndOpacity(RxPhos());
+		S.SetCaretImage(FSlateColorBrush(RxPhos())).SetBackgroundImageSelected(FSlateColorBrush(RxPhos(0.3f)));
+		return S;
+	}();
+	static const FScrollBarStyle Bar = []
+	{
+		FScrollBarStyle S = *S47Theme::ScrollStyle();
+		S.SetNormalThumbImage(FSlateColorBrush(RxPhos(0.3f))).SetHoveredThumbImage(FSlateColorBrush(RxPhos(0.6f))).SetDraggedThumbImage(FSlateColorBrush(RxPhos(0.6f)));
+		return S;
+	}();
 	ChildSlot
+	.Padding(Pad(18, 14))
 	[
-		SNew(SOverlay)
-		+ SOverlay::Slot() [ SNew(SImage).ColorAndOpacity(S47Style::Overlay) ]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot().FillHeight(1.f)
 		[
-			SNew(SBox).WidthOverride(1100.f).HeightOverride(760.f)
+			SAssignNew(Scroll, SScrollBox).ScrollBarStyle(&Bar)
+			+ SScrollBox::Slot()
 			[
-				SNew(SBorder).BorderImage(PanelBrush.Get()).Padding(FMargin(24, 18))
+				RxText(RxStr([this] { return Text.EndsWith(TEXT("\n")) ? Text.LeftChop(1) : Text; }), 22.f, RxPhos(), Glow)
+			]
+			// .term-line: "$ " and the command
+			+ SScrollBox::Slot()
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[RxText(FText::FromString(TEXT("$ ")), 22.f, RxPhos(), Glow)]
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
 				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().FillHeight(1.f)
-					[
-						SAssignNew(Scroll, SScrollBox)
-						+ SScrollBox::Slot()
-						[
-							SAssignNew(Out, STextBlock).Text_Lambda([this] { return FText::FromString(Text); }).Font(S47Style::Mono(24.f)).ColorAndOpacity(S47Style::Green)
-						]
-					]
-					+ SVerticalBox::Slot().AutoHeight().Padding(0, 8)
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center) [ SNew(STextBlock).Text(FText::FromString(TEXT("$ "))).Font(S47Style::Mono(24.f)).ColorAndOpacity(S47Style::Green) ]
-						+ SHorizontalBox::Slot().FillWidth(1.f)
-						[
-							SAssignNew(Input, SEditableTextBox).Font(S47Style::Mono(24.f)).ForegroundColor(S47Style::Green).BackgroundColor(FLinearColor(0.01f, 0.05f, 0.02f))
-								.OnTextCommitted_Lambda([this](const FText& T, ETextCommit::Type C) { if (C == ETextCommit::OnEnter) { Exec(T.ToString()); if (Input.IsValid()) Input->SetText(FText::GetEmpty()); } })
-						]
-					]
-					+ SVerticalBox::Slot().AutoHeight() [ SAssignNew(Buttons, SWrapBox).UseAllottedSize(true) ]
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, 10, 0, 0) [ S47Style::Button(TEXT("LOG OUT   [ESC]"), [this] { if (OnClose) OnClose(); }, S47Style::Green) ]
+					SAssignNew(Input, SEditableText).Style(&LineStyle).ClearKeyboardFocusOnCommit(false).SelectAllTextWhenFocused(false)
+					.OnTextCommitted_Lambda([this](const FText& T, ETextCommit::Type C) { if (C == ETextCommit::OnEnter) { Exec(T.ToString()); if (Input.IsValid()) Input->SetText(FText::GetEmpty()); } })
 				]
 			]
 		]
+		// .term-cmds: the commands as keys
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, Px(10), 0, 0)[SAssignNew(Buttons, SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(Px(8), Px(8)))]
+		// .term-foot
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, Px(10), 0, 0)
+		[
+			SNew(SRxKey).Label(FString(TEXT("LOG OUT   [ESC]"))).Px(20.f).MinHeight(44.f).OnClick([this] { if (OnClose) OnClose(); })
+		]
 	];
 	RebuildButtons();
+}
+
+TSharedPtr<SWidget> SS47Ops::Line() const { return Input; }
+
+FReply SS47Ops::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
+{
+	// (Terminal.ts: input.focus() as it opens, where there is a keyboard)
+	if (Input.IsValid()) return FReply::Handled().SetUserFocus(Input.ToSharedRef(), EFocusCause::SetDirectly);
+	return FReply::Unhandled();
 }
 
 void SS47Ops::RebuildButtons()
@@ -1016,9 +1426,9 @@ void SS47Ops::RebuildButtons()
 	for (const FString& B : Story->Ops().Buttons())
 	{
 		const FString Cmd = B;
-		Buttons->AddSlot().Padding(3)
+		Buttons->AddSlot()
 		[
-			S47Style::Button(B, [this, Cmd] { Exec(Cmd); }, S47Style::Green, 20.f)
+			SNew(SRxKey).Label(B).Px(19.f).MinHeight(44.f).OnClick([this, Cmd] { Exec(Cmd); })
 		];
 	}
 }

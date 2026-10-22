@@ -3,8 +3,10 @@
 #include "CoreMinimal.h"
 #include "Fonts/SlateFontInfo.h"
 #include "Layout/Margin.h"
+#include "GenericPlatform/ICursor.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SLeafWidget.h"
+#include "Widgets/Text/STextBlock.h"
 
 class ISlateStyle;
 class STextBlock;
@@ -218,4 +220,37 @@ namespace S47Theme
 	SIGNAL47_API void KeepFocus(const TSharedRef<SWidget>& Menu);
 	// a scroll box's bar: a thin amber thumb, no track
 	SIGNAL47_API const struct FScrollBarStyle* ScrollStyle();
+	// CSS cursor: grab / grabbing. Linux and Windows load Slate's grab hands from the engine's
+	// Editor content, which a packaged game does not have: there the hand turned into no cursor at
+	// all (the case board lost the mouse). Without the file: the pointing hand and the four arrows.
+	SIGNAL47_API EMouseCursor::Type GrabCursor(bool bClosed);
 }
+
+// A line on a CRT (.crt's text-shadow: 0 0 6px rgba(90,255,130,.55)): the words with the phosphor's
+// soft glow round them, drawn as the text a few more times, faint and a little to each side, under
+// it. bHaloOnly paints only the glow, for a plain STextBlock laid over it that the description
+// reader can find (it reads STextBlocks).
+class SIGNAL47_API SS47GlowText : public STextBlock
+{
+public:
+	SLATE_BEGIN_ARGS(SS47GlowText) : _Color(FLinearColor::White), _Glow(FLinearColor::Transparent), _Blur(6.f), _AutoWrapText(false), _bHaloOnly(false),
+		_LineHeight(1.f), _Justification(ETextJustify::Left), _MinDesiredWidth(0.f) {}
+		SLATE_ATTRIBUTE(FText, Text)
+		SLATE_ARGUMENT(FSlateFontInfo, Font)
+		SLATE_ATTRIBUTE(FLinearColor, Color)
+		SLATE_ATTRIBUTE(FLinearColor, Glow)  // the glow's colour and strength (the text-shadow's rgba)
+		SLATE_ARGUMENT(float, Blur)          // its blur in mockup pixels
+		SLATE_ARGUMENT(bool, AutoWrapText)
+		SLATE_ARGUMENT(bool, bHaloOnly)
+		SLATE_ARGUMENT(float, LineHeight)
+		SLATE_ARGUMENT(ETextJustify::Type, Justification)
+		SLATE_ARGUMENT(float, MinDesiredWidth)
+	SLATE_END_ARGS()
+	void Construct(const FArguments& InArgs);
+	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
+
+private:
+	TAttribute<FLinearColor> Color, Glow;
+	float Blur = 6.f;
+	bool bHaloOnly = false;
+};
