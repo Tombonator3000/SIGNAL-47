@@ -57,12 +57,14 @@ void US47UI::Document(const FS47Doc& Doc, TFunction<void()> OnClose)
 
 void US47UI::Open(TSharedRef<SWidget> Widget, TFunction<void()> OnClose)
 {
+	ChapterCard(nullptr); // (open() closes what was open first, and close() takes the chapter card away)
 	if (Hud) Hud->OpenModal(Widget, MoveTemp(OnClose));
 }
 
 void US47UI::Close(bool bSilent)
 {
 	(void)bSilent;
+	ChapterCard(nullptr);
 	if (Hud) Hud->CloseModal();
 }
 

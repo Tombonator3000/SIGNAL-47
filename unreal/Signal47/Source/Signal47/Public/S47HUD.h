@@ -23,7 +23,9 @@ class FWidgetRenderer;
 //   -S47Face=<spot>      stand at a spot: room, window, outside, dish, or in front of an item (crtCenter, rack, logbook...)
 //   -S47Use              use what is in front of you after 2.5 s
 //   -S47Jump=<beat>      start at a beat: shift, residual, locked, printed, countdown, event
-//   -S47Open=<view>      open a view after 2 s: notebook, console, ops, log
+//   -S47Open=<view>      open a view after 2 s: notebook, console, ops, log, pause
+//   -S47Title            start on the title even with other test flags (without any -S47 flag the game starts there)
+//   -S47Case=<n>         a test run that plays (and autosaves into) case n
 //   -S47SelfTest         run the ported rules' self tests and log "self test OK" or "FAILED"
 //   -S47Shot=<file.png>  save a screenshot one second before quitting
 UCLASS()
@@ -44,6 +46,7 @@ public:
 	void Fade(bool bOn, const FString& Text);
 	void CloseModal();
 	bool HasModal() const { return Modal.IsValid(); }
+	TSharedPtr<SWidget> ModalWidget() const { return Modal; }
 	void OpenModal(TSharedRef<SWidget> Widget, TFunction<void()> OnClosed) { SetModal(Widget, MoveTemp(OnClosed)); }
 	SS47Hud* HudWidget() const { return Hud.Get(); }
 	void SetPrompt(const FString& Label, const FString& Alt);

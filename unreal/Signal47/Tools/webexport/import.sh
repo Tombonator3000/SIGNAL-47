@@ -11,3 +11,5 @@ WEB="$(cd "$D/../../web" && pwd)"
 (cd "$WEB" && npm run build:single >/dev/null)
 (cd "$WEB" && S47_GPU=1 "$HOME/.venvs/signal47/bin/python" "$D/Tools/webexport/export.py" "$OUT")
 S47_WEB="$OUT" "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$D/Signal47.uproject" -run=pythonscript -script="$D/Tools/webexport/import_web.py" -unattended -nullrhi -nosplash 2>&1 | grep "S47WEB\|Traceback\|Error:" | sort -u
+# the notebook's kit drawings and portraits (Content/WebData/art)
+python3 "$D/Tools/webexport/notebook_art.py"

@@ -76,6 +76,12 @@ Et panel fra `ui/Panels.ts` bygges av disse bitene i samme rekkefølge som HTML-
 - `Play(name, gain, atUE, rate)`, `Loop`, `Stop`.
 - Navnene er nettversjonens lydnavn. Syntetiske lyder fra `core/Audio.ts` (beep, hum, servo, shutter, ringback og de andre) lages ferdig som filer i importen, så de spilles også ved navn.
 
+**Lagring og flyt, `M->Flow` (`US47Flow`, main.ts sin flyt)**
+- Et kapittel ber om autolagring med `M->RequestAutosave()` (Prologue-deps `saveCase`) og starter en ny generasjon med `Host->OnCheckpoint(TEXT("chapterN"))` (`milestone`); `BeginChapter` gjør det siste selv for kapittel 1 til 5.
+- Kapitlets `SaveState()` havner i saken under `s` (kapittel 1) eller `ch2` til `ch5` når kapitlet er begynt (`Host->Begun`); `Host->LoadCase()` gir saken som åpnes, så hoppet til kapitlet kan gjøre som `jumpChapterN`.
+- `SaveBlock()` i kapittel 3 til 6 sier hvorfor det ikke kan lagres nå (tom streng: det kan lagres).
+- Notatboken (`SS47Notebook`) åpnes med Tab; Board-fanen bruker `M->Board.Open` når saksbrettet finnes.
+
 ## Rekkefølgen
 
 1. Grunnlaget (dette): håndtakene, registeret, grensesnittet, panelbitene, JSON, bilder. Ferdig 22. oktober.

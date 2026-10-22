@@ -1,0 +1,122 @@
+// ui/UI.ts: the screens (title, ungate, openingCard, pause, chapterCard, chapterCut, notebook).
+// The widgets are in SS47Screens and SS47Notebook; this is the UI's side of them.
+#include "S47UI.h"
+
+#include "Containers/Ticker.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
+#include "GameFramework/PlayerController.h"
+#include "S47HUD.h"
+#include "S47Story.h"
+#include "SS47Notebook.h"
+#include "SS47Screens.h"
+#include "SS47Widgets.h"
+
+namespace
+{
+	// over the game and its HUD (20), under the panels (30): the title; the chapter card over the fade
+	constexpr int32 ZTitle = 25, ZCard = 26;
+}
+
+TSharedPtr<SWidget> US47UI::Title(const FS47TitleOpts& O)
+{
+	UGameViewportClient* V = GEngine ? GEngine->GameViewport : nullptr;
+	if (!V) return nullptr;
+	TSharedRef<SS47Title> El = SNew(SS47Title).Opts(O);
+	V->AddViewportWidgetContent(El, ZTitle);
+	// the title has the keys and the mouse (it is not a modal, so the HUD does not do this)
+	if (APlayerController* PC = Hud ? Hud->GetOwningPlayerController() : nullptr)
+	{
+		FInputModeUIOnly Mode;
+		Mode.SetWidgetToFocus(El);
+		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		PC->SetInputMode(Mode);
+		PC->bShowMouseCursor = true;
+	}
+	El->FocusMenu();
+	return El;
+}
+
+void US47UI::Ungate(const TSharedPtr<SWidget>& El)
+{
+	if (El.IsValid() && El->GetType() == TEXT("SS47Title")) StaticCastSharedPtr<SS47Title>(El)->Ungate();
+}
+
+void US47UI::RemoveScreen(const TSharedPtr<SWidget>& El)
+{
+	if (El.IsValid() && GEngine && GEngine->GameViewport) GEngine->GameViewport->RemoveViewportWidgetContent(El.ToSharedRef());
+}
+
+FS47OpeningView US47UI::OpeningCard(const FS47OpeningActions& A)
+{
+	TSharedRef<SS47Opening> El = SNew(SS47Opening).Actions(A);
+	Open(El, A.Closed);
+	El->FocusBegin();
+	TWeakPtr<SS47Opening> W = El;
+	TWeakObjectPtr<US47UI> Self = this;
+	FS47OpeningView View;
+	// close: () => { if (this.modal === el) this.close(true); }
+	View.Close = [W, Self] { if (Self.IsValid() && Self->Hud && W.IsValid() && Self->Hud->ModalWidget() == W.Pin()) Self->Close(true); };
+	View.State = [W](const FString& S) { if (const TSharedPtr<SS47Opening> P = W.Pin()) P->SetState(S); };
+	return View;
+}
+
+void US47UI::Pause(const FS47PauseOpts& O)
+{
+	TWeakObjectPtr<US47UI> Self = this;
+	Open(SNew(SS47Pause).Opts(O).OnClose([Self](bool bSilent) { if (Self.IsValid()) Self->Close(bSilent); }), O.OnResume);
+}
+
+void US47UI::ChapterCard(const FS47ChapterCardOpts* O)
+{
+	++CardGeneration;
+	ChapterStage = TEXT("idle");
+	if (CardEl.IsValid())
+	{
+		// the old card fades out (.8 s) and goes after .9 s
+		const TSharedPtr<SS47ChapterCard> Old = CardEl;
+		CardEl.Reset();
+		Old->Out(false);
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Old](float)
+		{
+			if (GEngine && GEngine->GameViewport) GEngine->GameViewport->RemoveViewportWidgetContent(Old.ToSharedRef());
+			return false;
+		}), 0.9f);
+	}
+	// (this.narrator?.stop(): the narrator is not in the Unreal version yet)
+	if (!O) return;
+	// this.lastDescription = o.recap (V reads it)
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->LastToast = O->Recap;
+	UGameViewportClient* V = GEngine ? GEngine->GameViewport : nullptr;
+	if (!V) return;
+	TSharedRef<SS47ChapterCard> El = SNew(SS47ChapterCard).Opts(*O).Visibility(EVisibility::HitTestInvisible);
+	V->AddViewportWidgetContent(El, ZCard);
+	CardEl = El;
+	// Without the narrator the card has its own timing (.chapter-card's animations): the web
+	// version's stage stays 'idle' then too, and main.ts's chapterBreak ends it at 6.4 s.
+}
+
+void US47UI::ChapterCut()
+{
+	// the card cut away at once, and the black with it (instead of the slow fade)
+	if (CardEl.IsValid()) CardEl->Out(true);
+	const TSharedPtr<SS47ChapterCard> Cut = CardEl;
+	CardEl.Reset();
+	ChapterCard(nullptr);
+	if (Cut.IsValid())
+	{
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Cut](float)
+		{
+			if (GEngine && GEngine->GameViewport) GEngine->GameViewport->RemoveViewportWidgetContent(Cut.ToSharedRef());
+			return false;
+		}), 0.9f);
+	}
+	// (.fade.quick: the HUD's fade has one speed)
+	Fade(false);
+}
+
+void US47UI::Notebook(const TArray<FS47Task>& Tasks, const TArray<FString>& Notes, const TArray<FS47Doc>& Docs, TFunction<void(const FS47Doc&)> OnDoc,
+	const FString& Heading, TFunction<void()> OnBoard, const FS47NbExtras& Extras)
+{
+	Open(SNew(SS47Notebook).UI(this).Tasks(Tasks).Notes(Notes).Docs(Docs).OnDoc(OnDoc).Heading(Heading).OnBoard(OnBoard).Extras(Extras));
+}

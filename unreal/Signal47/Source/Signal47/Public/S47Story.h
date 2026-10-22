@@ -33,6 +33,7 @@ public:
 
 	void Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio);
 	void Start();
+	virtual void Reset() override { ResetAll(); } // Prologue.reset: back to the start of the night, every chapter with it
 	// Jump straight to a beat, as the web version's Continue and tests do: shift, residual,
 	// locked, printed, countdown, event.
 	void Jump(const FString& Target);
@@ -91,6 +92,7 @@ public:
 	// every chapter, the others in their own). ChapterKey is 'prologue' until the first begins.
 	UPROPERTY() TArray<TObjectPtr<class US47Chapter>> Chapters;
 	FString ChapterKey = TEXT("prologue");
+	TSet<FString> Begun; // the chapters begun since the night started (a chapter's `started`: part of the saved case)
 	class US47Chapter* Chapter(const FString& Key) const;
 	// the chapter in play from now on (beginChapterN): the others stop leading
 	void BeginChapter(const FString& Key, const TSharedPtr<class FJsonObject>& Saved = nullptr);

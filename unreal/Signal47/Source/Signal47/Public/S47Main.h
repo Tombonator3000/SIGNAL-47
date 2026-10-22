@@ -37,6 +37,11 @@ public:
 	UPROPERTY() TObjectPtr<US47Audio> Audio;
 	UPROPERTY() TObjectPtr<US47Inter> Inter;
 	UPROPERTY() TObjectPtr<US47UI> UI;
+	// main.ts's flow: the title, the saves, the pause menu, the notebook (S47Flow.h)
+	UPROPERTY() TObjectPtr<class US47Flow> Flow;
+	// main.ts requestAutosave: progress asks for an autosave (milestone: a new generation, as a
+	// chapter or an area begins); it is written after the frame, once the game may be saved
+	void RequestAutosave(bool bMilestone = false);
 
 	// The case board (story/caseBoard.ts): every chapter's rule book, and the hook the chapters
 	// open and refresh it with. Unset Board.Open: no board yet; a chapter then falls back to the

@@ -26,4 +26,6 @@ shot countdown "jumped to countdown" "-S47Face=crtCenter -S47Jump=countdown"
 shot event "jumped to event" "-S47Face=window -S47Jump=event"
 shot outside "walker placed at outside" "-S47Face=outside"
 shot dish "walker placed at dish" "-S47Face=dish"
+shot title "title shown" "-S47Title"
+shot pause "pause opened" "-S47Face=room -S47Jump=residual -S47Open=pause"
 exit $fail
