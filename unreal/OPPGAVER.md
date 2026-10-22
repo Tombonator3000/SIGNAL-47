@@ -21,7 +21,7 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 
 | Oppgave | Eier | Merknad |
 |---|---|---|
-| Grafikkpass med de 70 gratismodellene (`~/Assets/signal47-free`, `MODELLER.md`): pickup, biler, kontor- og radioutstyr, diner og motell, ørken; logoer fjernet; CREDITS i rulleteksten | Claude-hjelpere (plassering), Codex (materialer og lys) | etter at lyset er flettet inn |
+| Grafikkpass med de 70 gratismodellene (`~/Assets/signal47-free`, `MODELLER.md`): pickup, biler, kontor- og radioutstyr, diner og motell, ørken; logoer fjernet; CREDITS i rulleteksten | Claude-hjelpere (plassering), Codex (materialer og lys) | Import ferdig 22.10 (gren `worktree-agent-a82b7e58ccdd2c41b`): `Tools/freemodels/import_free.sh` gir 246 statiske mesher (70 modeller, pakker delt per gjenstand) i `/Game/Free/<kategori>/<modell>` (ignorert, 2,8 GB, teksturer kokes til 2k), ekte størrelse og pivot midt under, Nanite på 12 tunge opake; oversikt i `Content/Free/free_models.json`; testflagg `-S47FreeModels[=navn,...]`. Kreditering i rulleteksten (68 s) og `CREDITS.txt` ved siden av spillet. Gjenstår: plassering etter lyset, `/Game/Free` i `DirectoriesToAlwaysCook` da, logoer (Chevrolet på C10-grillen, IBM, Sony, Cobra) |
 | Matriseskriver og motellseng (finnes ikke gratis) | Claude-hjelper | ferdig 22.10: laget i Blender, `~/Assets/signal47-free/own` (glb, fbx, blend, README); skal plasseres i verden |
 | Lyttetest av lyd og hel gjennomspilling med ekte input | Tom | |
 
