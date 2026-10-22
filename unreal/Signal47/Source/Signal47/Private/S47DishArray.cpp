@@ -16,8 +16,6 @@ namespace
 	const double R = 9, F = 7.2;
 	const double APEX_Y = 1.1 + F;
 	const FVector BEACON(0, APEX_Y + 0.9, 0);
-	/** GlowPoints.add(..., 0xff3c28, 1.6, d.phase): the red lamps' blink rate. */
-	const double BLINK = 1.6;
 	// Exterior.ts: the sodium floods near the closest dishes, and LAMPS (world/arrayLayout.ts)
 	const double FLOODS[5][3] = { { 30, -30, 46 }, { -10, -42, 40 }, { -40, -56, 34 }, { 12, -78, 30 }, { 48, -86, 28 } };
 	const double LAMPS[11][2] = { { 30, -30 }, { -10, -42 }, { -40, -56 }, { 12, -78 }, { 48, -86 }, { -70, -94 }, { -33, -100 }, { 60, -146 }, { -52, -158 }, { -4, -190 }, { 94, -110 } };
@@ -40,15 +38,17 @@ namespace
 FS47DishArray::FS47DishArray(AS47Web* InWeb) : Web(InWeb)
 {
 	if (!InWeb) return;
+	// for (const d of dishes) this.beacons.add(0, -999, 0, 3.2 * d.scale, 0xff3c28, 1.6, d.phase): the
+	// export has the points with their blink, so each dish's phase (Math.random() * 6) is its lamp's
+	Beacons = FS47GlowView(InWeb, TEXT("ext.dishArray.beacons.points"));
+	const FS47GlowPoints* Bg = BeaconGlow();
 	for (int32 I = 0; I < InWeb->DishCount(); ++I)
 	{
 		FS47Dish D;
 		D.Id = InWeb->DishId(I); D.X = InWeb->DishX(I); D.Z = InWeb->DishZ(I); D.Scale = InWeb->DishScale(I);
-		D.Phase = FMath::FRand() * 6;
+		D.Phase = Bg && Bg->Blink.IsValidIndex(I) && Bg->Blink[I].X > 0 ? Bg->Blink[I].Y : FMath::FRand() * 6;
 		Dishes.Add(D);
 	}
-	// for (const d of dishes) this.beacons.add(0, -999, 0, 3.2 * d.scale, 0xff3c28, 1.6, d.phase)
-	Beacons = FS47GlowView(InWeb, TEXT("ext.dishArray.beacons.points"));
 	for (int32 I = 0; I < Beacons.Num(); ++I) BeaconCol.Add(S47Three::Hex(0xff3c28));
 	for (const FS47Dish& D : Dishes) BeaconPh.Add(D.Phase);
 	Last.Init(-1e9, Dishes.Num());
@@ -73,10 +73,16 @@ FVector FS47DishArray::BeaconAt(int32 I) const
 	return Dishes.IsValidIndex(I) ? OnElevation(Dishes[I], CurAz(I), CurEl(I), BEACON) : FVector::ZeroVector;
 }
 
+FS47GlowPoints* FS47DishArray::BeaconGlow() const
+{
+	return Web.IsValid() ? Web->Glow(TEXT("ext.dishArray.beacons.points")) : nullptr;
+}
+
 void FS47DishArray::BeaconPhase(int32 I, double Phase)
 {
 	// beacons.setPhase(i, phase): its rate stays
 	if (BeaconPh.IsValidIndex(I)) BeaconPh[I] = Phase;
+	if (FS47GlowPoints* G = BeaconGlow()) G->SetPhase(I, Phase);
 }
 
 void FS47DishArray::HoldBeacons(TOptional<double> InLevel, double InFlare)
@@ -84,6 +90,7 @@ void FS47DishArray::HoldBeacons(TOptional<double> InLevel, double InFlare)
 	// beacons.hold(level)
 	bHold = InLevel.IsSet();
 	if (InLevel) Level = *InLevel;
+	if (FS47GlowPoints* G = BeaconGlow()) G->HoldAt(InLevel ? TOptional<float>(float(*InLevel)) : TOptional<float>());
 	if (InFlare > 0 && !Flare.IsValid()) MakeFlare();
 	if (Flare.IsValid())
 	{
@@ -152,13 +159,11 @@ void FS47DishArray::Update(double T, const FVector& Eye)
 		if (I < Beacons.Num()) Beacons.SetPos(I, BeaconAt(I));
 	}
 	// beacons.update(t): the blink, 0.55 + 0.45 * max(0, sin(uTime * rate + phase)), mixed to the held
-	// level while they are held
-	for (int32 I = 0; I < Beacons.Num() && I < Dishes.Num(); ++I)
-	{
-		const double B = 0.55 + 0.45 * FMath::Max(0.0, FMath::Sin(T * BLINK + BeaconPh[I]));
-		const double K = bHold ? Level : B;
-		Beacons.SetCol(I, BeaconCol[I] * float(K));
-	}
+	// level while they are held, is the glow points' own (AS47Web's, stepped with the world's glows by
+	// US47WorldLife on main.ts's t; BeaconPhase and HoldBeacons set them): here only the lamps' own
+	// colour (aCol), which world/saroPower.ts takes down with SARO's power
+	(void)T;
+	for (int32 I = 0; I < Beacons.Num() && I < Dishes.Num(); ++I) Beacons.SetCol(I, BeaconCol[I]);
 	// the flare, facing the eye (three draws its points facing the camera)
 	if (bFlareOn && Flare.IsValid())
 	{

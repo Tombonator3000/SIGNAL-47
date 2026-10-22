@@ -20,6 +20,7 @@
 #include "S47Calls.h"
 #include "S47Chapter1.h"
 #include "S47Chapter2.h"
+#include "S47Chapter5.h"
 #include "S47Curve.h"
 #include "S47FieldCamera.h"
 #include "S47FilmFace.h"
@@ -42,6 +43,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 #include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Night, Log, All);
@@ -274,7 +276,10 @@ FString US47Night::PlaceName(const FVector* P) const
 
 double US47Night::Dawn() const
 {
-	// Sky.setClock: 0 until 04:40, sunrise at 05:30, times the dawn lift (main.ts: the old road 1, else 0.7)
+	// sky.uniforms.uDawn: the world's sky (US47WorldLife's, S47Sky.h), set by its Sky.setClock each frame
+	if (M->Life && M->Life->Sky.IsValid()) return M->Life->Dawn();
+	// (without the world's life, the same: Sky.setClock: 0 until 04:40, sunrise at 05:30, times the dawn
+	// lift (main.ts: the old road 1, else 0.7))
 	const double S = FMath::Fmod(FMath::Fmod(Clock(), 86400.0) + 86400.0, 86400.0);
 	const double K = S > 12 * 3600 ? 0 : FMath::Clamp((S - (4 * 3600 + 40 * 60)) / (50 * 60), 0.0, 1.0);
 	return FMath::Pow(K, 1.6) * (Area() == TEXT("roswell") ? 1 : 0.7);
@@ -548,6 +553,19 @@ void US47Night::SawKey(const FString& K)
 	if (What == TEXT("cows") && M->TownSeen.Contains(TEXT("ev:cows"))) return;
 	// (the lights are written down when they come, the silence when it starts: seenStep)
 	if (What.IsEmpty() || What == TEXT("lights") || What == TEXT("silence")) return;
+	const TOptional<FVector> At = EventAt(What);
+	const S47Lines::FMapPt* Place = S47Lines::PLACES().Find(What);
+	FS47SawOpts O;
+	O.At = At;
+	if (!At && Place) O.Map = *Place;
+	if (Place) O.Line = S47Lines::LineOfMark(What);
+	if (!At) { O.bLookingSet = true; O.bNoWatch = true; }
+	else { FS47SeenWatch W; W.Secs = 3; W.Range = EventRange(What, 120); O.Watch = W; }
+	Saw(TEXT("event"), What, O);
+}
+
+TOptional<FVector> US47Night::EventAt(const FString& What) const
+{
 	// eventAt: where an event's thing is in the area shown, to see whether the player looks at it
 	// (what is seen, and where what is heard comes from); unset for what is only heard down a line
 	TOptional<FVector> At;
@@ -576,17 +594,23 @@ void US47Night::SawKey(const FString& K)
 	else if (What == TEXT("roomphone")) At = ObjAt(TEXT("room.objs.phone"));
 	else if (What == TEXT("door")) At = ObjAt(TEXT("room.objs.doorEast"));
 	if (What == TEXT("ninth") && A == TEXT("station01") && M->TownLayer && M->TownLayer->NinthModel->bNinthDown) At = M->TownLayer->NinthModel->NinthAt(TEXT("middle"));
+	return At;
+}
+
+bool US47Night::Regular() const
+{
+	// !!ch5.s.regular
+	const US47Chapter5* C5 = M->Story ? Cast<US47Chapter5>(M->Story->Chapter(TEXT("ch5"))) : nullptr;
+	return C5 && C5->S.bRegular;
+}
+
+double US47Night::EventRange(const FString& What, double Else)
+{
 	/** How far off each event's thing can be looked at (metres). */
 	static const TMap<FString, double> EVENT_RANGE = { { TEXT("ninth"), 30 }, { TEXT("cutout"), 60 }, { TEXT("car"), 60 }, { TEXT("lamps"), 250 }, { TEXT("cows"), 160 }, { TEXT("cows2"), 160 },
 		{ TEXT("tv"), 10 }, { TEXT("regular"), 15 }, { TEXT("steps"), 20 }, { TEXT("radio"), 60 }, { TEXT("roomphone"), 45 }, { TEXT("door"), 40 } };
-	const S47Lines::FMapPt* Place = S47Lines::PLACES().Find(What);
-	FS47SawOpts O;
-	O.At = At;
-	if (!At && Place) O.Map = *Place;
-	if (Place) O.Line = S47Lines::LineOfMark(What);
-	if (!At) { O.bLookingSet = true; O.bNoWatch = true; }
-	else { FS47SeenWatch W; W.Secs = 3; const double* R = EVENT_RANGE.Find(What); W.Range = R ? *R : 120; O.Watch = W; }
-	Saw(TEXT("event"), What, O);
+	const double* R = EVENT_RANGE.Find(What);
+	return R ? *R : Else;
 }
 
 void US47Night::SeenSync()
@@ -594,6 +618,7 @@ void US47Night::SeenSync()
 	// where things stand now, without writing anything down (a night started or put back)
 	Was.Glimpse = Glimpses->Up;
 	Was.Calls = Calls->Count;
+	Was.bRegular = Regular();
 	// (the roof, the office's telephone, the archive, the array tipped, reel 047: S47Phones.cpp)
 	if (M->Phones) M->Phones->SeenSync();
 	if (M->SaroNight) M->SaroNight->SeenSync();
@@ -605,11 +630,11 @@ void US47Night::SeenSync()
 void US47Night::SeenStep(double Dt)
 {
 	// the things that leave no key, written down as they change: the glimpses, the sounds out in the
-	// dark. (The cutout, the records and the walk where the player was taken, the roadside's car and
-	// silence, the time away and the one over you, the dishes following, the steps on the roof, the
-	// lights on B, the regular's cup, Earl's reel, SARO dark and its figure, the office's telephone,
-	// the archive's phone and the array tipped, reel 047, the array put back, the last mile, THE EVENT
-	// and the third one are written here by main.ts as well, with their own modules: not ported yet.)
+	// dark, the regular's cup (chapter five). (The cutout, the records and the walk where the player was
+	// taken, the roadside's car and silence, the time away and the one over you, the dishes following,
+	// the steps on the roof, the lights on B, Earl's reel, SARO dark and its figure, the office's
+	// telephone, the archive's phone and the array tipped, reel 047, the array put back, the last mile,
+	// THE EVENT and the third one are written by the layers that have their modules, below.)
 	if (bSeenQuiet) return;
 	if (Glimpses->Up != Was.Glimpse)
 	{
@@ -633,6 +658,22 @@ void US47Night::SeenStep(double Dt)
 			FS47SeenWatch W; W.Secs = 8; W.Range = 160; O.Watch = W;
 			Saw(TEXT("call"), Calls->Last->Name, O);
 		}
+	}
+	// the regular's cup: coffee poured for an empty stool at the end of the diner's counter (story/Chapter5.ts,
+	// event 11), looked at if the eyes went to the cup
+	if (Regular() != Was.bRegular)
+	{
+		if (Regular())
+		{
+			const TOptional<FVector> At = EventAt(TEXT("regular"));
+			FS47SawOpts O; O.At = At;
+			if (!At) if (const S47Lines::FMapPt* P = S47Lines::PLACES().Find(TEXT("regular"))) O.Map = *P;
+			O.Line = S47Lines::LineOfMark(TEXT("regular"));
+			if (At) { FS47SeenWatch W; W.Secs = 3; W.Range = EventRange(TEXT("regular"), 120); O.Watch = W; }
+			else O.bNoWatch = true;
+			Saw(TEXT("event"), TEXT("regular"), O);
+		}
+		Was.bRegular = Regular();
 	}
 	// the steps on the roof, the office's telephone, the archive's phone, the array tipped, reel 047 (S47Phones.cpp)
 	if (M->TownLayer) M->TownLayer->SeenStep();
@@ -724,8 +765,8 @@ void US47Night::Step(double Dt)
 		GlimpseLogged = Glimpses->Up;
 		UE_LOG(LogS47Night, Display, TEXT("S47: glimpse %s"), GlimpseLogged.IsEmpty() ? TEXT("gone") : *(TEXT("at ") + GlimpseLogged));
 	}
-	// the array put back on the schedule, the recording's walk and the dishes that follow (the time
-	// away's block), the corner clock in seconds (S47SaroNight.cpp)
+	// the recording's walk and the dishes that follow (the time away's block), the corner clock in
+	// seconds (S47SaroNight.cpp; the array put back on the schedule was stepped before the time away)
 	if (M->SaroNight) M->SaroNight->StepLate(Dt, bModal);
 }
 
@@ -747,12 +788,14 @@ void US47Night::Restore(const S47J::FObj& State)
 	Glimpses->Reset();
 	if (M->TownLayer) M->TownLayer->ResetCutouts();
 	NightEvents->Reset();
+	// recWalk.reset(); stationTaken.reset() (chapter three's), as main.ts has them before abduction.restore:
+	// the walk gives back the one standing it has before the time away makes its figures again
+	if (M->SaroNight && M->SaroNight->RecWalk.IsValid()) M->SaroNight->RecWalk->Reset();
+	if (US47Chapter3* C3 = M->Story ? Cast<US47Chapter3>(M->Story->Chapter(TEXT("ch3"))) : nullptr) if (C3->StationTaken) C3->StationTaken->Reset();
 	// truckTaken.reset, the odometer, abduction.restore, truckB.reset, starHole.reset (S47Away: before the
 	// thread's reset, which counts the times away)
 	if (M->Away) M->Away->Restore(State);
-	// stationTaken.reset (chapter three's)
-	if (US47Chapter3* C3 = M->Story ? Cast<US47Chapter3>(M->Story->Chapter(TEXT("ch3"))) : nullptr) if (C3->StationTaken) C3->StationTaken->Reset();
-	// recWalk.reset, lineLights.reset (townSeen back), saroDark.halt (S47SaroNight)
+	// lineLights.reset (townSeen back), saroDark.halt (S47SaroNight; its recWalk.reset finds nothing walking now)
 	if (M->SaroNight) M->SaroNight->Restore(State);
 	if (M->TownLayer) M->TownLayer->ResetPastureTv();
 	if (M->Phones) M->Phones->Restore();

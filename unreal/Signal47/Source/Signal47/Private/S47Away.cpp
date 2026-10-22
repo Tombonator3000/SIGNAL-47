@@ -837,7 +837,8 @@ void US47Away::StepLate(double Dt, bool bModal)
 		Ct->CompassNorth = M->World->SkyYaw();
 		if (TruckB->Pull) Ct->CompassPull = FS47Truck::FPull{ TruckB->Pull->Deg, TruckB->Pull->K }; else Ct->CompassPull.Reset();
 	}
-	// (the array put back on the schedule, story/arrayBack.ts: its own port, before the time away)
+	// the array put back on the schedule (story/arrayBack.ts: S47SaroNight's), before the time away
+	if (BeforeAbduction) BeforeAbduction(Dt, bModal);
 	// the notebook or a paper open holds the warning where it is, as it holds the clock: it is not a way
 	// out (abduction.ts lets the warning pass when ok goes false), and the dishes wait too
 	FS47Abduction& Ab = *Abduction;
@@ -977,7 +978,9 @@ void US47Away::SeenSync()
 	Was.Records.Reset();
 	for (const FS47SeenRef& E : M->Night->SeenLog->Entries) if (E && E->Kind == TEXT("scare") && E->What.StartsWith(TEXT("record "))) Was.Records.Add(E->What);
 	WarnEntry.Reset(); OverEntry.Reset(); TruckEntry.Reset();
-	Was.bLastMile = false; Was.bEvent = false; Was.bThird = false;
+	// (seenSync: event: game.ch6.stage === 'event', as it stands now)
+	const US47Chapter6* C6 = M->Story ? Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))) : nullptr;
+	Was.bLastMile = false; Was.bEvent = C6 && C6->Stage == TEXT("event"); Was.bThird = false;
 }
 
 // ---------- the saves ----------

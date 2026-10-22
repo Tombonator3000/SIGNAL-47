@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 
 class AS47Web;
+class FS47DishArray;
 class US47Audio;
 class FS47GainNode;
 class FS47BiquadFilterNode;
@@ -31,12 +32,15 @@ class FS47OscillatorNode;
 // The dishes are AS47Web's (Exterior.dishes, drawn by the array's instanced parts); this points them
 // all at once, as Dish.point() does for each. Their `rogue` flags while this holds them are Holds();
 // the flags of the dishes that follow (story/dishesFollow.ts, its own port) come in through Deps.Rogue.
-// (The red beacons blinking as one while they are down, DishArray.beaconPhase: AS47Web's glow points
-// do not blink yet, so there is nothing to put in phase.)
+// The red lamps blink as one while they are down (DishArray.beaconPhase: FS47DishArray, which puts
+// the phase on AS47Web's glow points).
 struct FS47ArrayTipDeps
 {
 	TWeakObjectPtr<AS47Web> Web;       // ext.dishes, ext.dishArray
 	TWeakObjectPtr<US47Audio> Audio;
+	/** this.d.array (world/Dish.ts DishArray: FS47DishArray, the dishes' phases and the red lamps'
+	 *  blink); unset or null: the lamps keep their own blink. */
+	TFunction<FS47DishArray*()> Array;
 	/** this.d.dishes.some((x) => x.rogue) for the dishes something else drives (story/dishesFollow.ts,
 	 *  set by its port); unset: none is. */
 	TFunction<bool()> Rogue;
@@ -88,6 +92,8 @@ private:
 	FS47ArrayTipDeps D;
 	struct FBed { TArray<TSharedPtr<FS47OscillatorNode>> Osc; TSharedPtr<FS47BiquadFilterNode> Lp; TSharedPtr<FS47GainNode> G, Whine; };
 	TOptional<FBed> Bed;
+	/** The phase the red lamps blink at together while this has them (the first dish's). */
+	double Common = 0;
 
 	void Release();
 	void Beacons(bool bOn);

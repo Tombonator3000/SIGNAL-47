@@ -11,6 +11,7 @@
 
 class US47Main;
 class FS47ArrayTip;
+class FS47DishArray;
 class FS47FieldBook;
 class FS47SameThread;
 class UTexture;
@@ -58,6 +59,9 @@ public:
 	/** Dish.rogue of the dishes that follow in a warning (story/dishesFollow.ts), and Dish.back
 	 *  (story/arrayBack.ts), by the dish's index. */
 	TFunction<bool(int32)> DishRogue, DishBack;
+	/** ext.dishArray (world/Dish.ts DishArray, S47SaroNight's): the dishes' phases and their red lamps'
+	 *  blink, for the array tipped by the archive's phone (story/archiveDishes.ts). */
+	TFunction<FS47DishArray*()> DishArray;
 	/** ch3.s.f3 and ch3.s.f4: FRAME 03's and FRAME 04's capture clocks (story/Chapter3.ts). */
 	TFunction<TPair<TOptional<double>, TOptional<double>>()> Frames;
 	/** ch3.s.fb: the field book's state in chapter three's (Ch3State.fb). Until chapter three's port

@@ -2,6 +2,7 @@
 #include "S47TownLayer.h"
 #include "S47CB.h"
 #include "S47Audio.h"
+#include "S47Away.h"
 #include "S47Ambience.h"
 #include "S47Caliche.h"
 #include "S47Chapter.h"
@@ -195,7 +196,9 @@ void US47TownLayer::EventsOnB(double Dt, bool bModal)
 	T.bHere = T.bSaro && !Driving() && (M->Web->Rect(TEXT("world.motel.zones[2]")).Contains(Pos) || DistXZ(Pos, Door) < 5); T.bTruckOnLot = M->World->TruckAt == TEXT("motel"); T.Cam = Camera(); T.Clock = Clock(); T.May = M->Night->Curve->May(TEXT("long")); T.Unrest = M->Night->Curve->Unrest(); MotelTv->Update(Dt, T);
 	if ((LineBCheck += Dt) > 1 && !M->TownSeen.Contains(TEXT("lineB")))
 	{
+		// mapMarks().filter((m) => m.line === 'B'): the town's marks and the times away (S47Away's)
 		LineBCheck = 0; int32 N = 0; for (const auto& Mk : S47TownMarks(M->TownSeen)) if (S47Lines::LineOfMark(Mk.Kind) == TEXT("B")) ++N;
+		if (M->Away) for (const FS47MapMark& Mk : M->Away->MapMarks()) if (Mk.Line == TEXT("B")) ++N;
 		if (N >= 3) { M->TownSeen.Add(TEXT("lineB")); M->Story->Note(M->Story->ClockText(false) + TEXT(". Three on one line. Drawn in on the map: out of the dishes, across the highway at the turn-off to SARO, and on to the south-west, through STATION 01.")); M->RequestAutosave(false); }
 	}
 	if (Pasture->Stage != LoggedPasture) { LoggedPasture = Pasture->Stage; UE_LOG(LogS47Town, Display, TEXT("S47: pasture %s"), *LoggedPasture); }

@@ -109,9 +109,10 @@ namespace S47Figures
 
 // story/recording.ts Walker: someone in a SARO jacket with the reflective band across it, jointed at
 // the hips and shoulders so it can walk (the same boxes and colours as the one standing has always
-// had). Built facing -z, the way the player faces at yaw 0, from the feet. (Ported here with the time
-// away, which makes the one standing where the player was taken; the recording's walk, story/
-// recording.ts RecordingWalk, poses it.)
+// had). Built facing -z, the way the player faces at yaw 0, from the feet. (The one port of Walker:
+// the time away makes one for each time away, the one standing where the player was taken
+// (FS47Abduction::Record), and gives it to the recording's walk in its recordings (story/recording.ts
+// RecordingWalk, S47Recording.h), which poses it: G->Root() is walker.group.)
 class SIGNAL47_API FS47JacketWalker
 {
 public:

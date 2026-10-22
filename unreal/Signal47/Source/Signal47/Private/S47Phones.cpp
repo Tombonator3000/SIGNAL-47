@@ -171,6 +171,7 @@ void US47Phones::Init(US47Main* InM)
 		for (int32 I = 0; I < Self->M->Web->DishCount(); ++I) if (Self->DishRogue(I)) return true;
 		return false;
 	};
+	Td.Array = [Self] { return Self.IsValid() && Self->DishArray ? Self->DishArray() : nullptr; };
 	ArrayTip = MakeShared<FS47ArrayTip>(Td);
 	FS47ArcDeps Ad;
 	Ad.Audio = M->Audio; Ad.Annex = US47Annex::Get(); Ad.Inter = M->Inter; Ad.Seen = &M->TownSeen; Ad.Dishes = ArrayTip.Get();

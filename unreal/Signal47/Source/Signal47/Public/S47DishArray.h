@@ -21,7 +21,10 @@ class UMaterialInstanceDynamic;
 // With Exterior.fieldLights (the lamps out among the near dishes: their floods and glows), which
 // story/arrayBack.ts dims and turns red. The lamps are the export's billboards (ext.dishArray.beacons
 // .points), moved and coloured here; the flare is made here (the export has none: it is made the
-// first time it is wanted).
+// first time it is wanted). Their blink is the export's GlowPoints that AS47Web keeps (S47Glow.h,
+// aBlink: 1.6 and the dish's phase as it was exported, which is each Dish's phase here), stepped
+// with the world's glows (US47WorldLife: glow.update(t)); beaconPhase and holdBeacons go to it
+// (setPhase, hold), as Dish.ts does.
 struct SIGNAL47_API FS47Dish
 {
 	FString Id;
@@ -81,6 +84,8 @@ public:
 private:
 	TWeakObjectPtr<AS47Web> Web;
 	FS47GlowView Beacons;
+	/** this.beacons: the GlowPoints AS47Web keeps and blinks (setPhase, hold). */
+	FS47GlowPoints* BeaconGlow() const;
 	TArray<FLinearColor> BeaconCol;
 	/** Each lamp's place in its blink (the points' aBlink phase: the dish's own to begin with). */
 	TArray<double> BeaconPh;

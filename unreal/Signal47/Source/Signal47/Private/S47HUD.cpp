@@ -262,9 +262,14 @@ void AS47HUD::Start()
 			Sn->TipMoving = [Wp] { return Wp.IsValid() && Wp->ArrayTip.IsValid() && Wp->ArrayTip->Moving(); };
 			Sn->TipHolds = [Wp] { return Wp.IsValid() && Wp->ArrayTip.IsValid() && Wp->ArrayTip->Holds(); };
 			Ph->Dark = [M] { return M->Story && M->Story->bDark; };                       // game.dark
+			// cb.busy (core/cb.ts: the CB under the truck's dash, made with chapter four)
+			Ph->CbBusy = [M] { return M->CB.IsValid() && M->CB->bBusy; };
+			Sn->CbBusy = [M] { return M->CB.IsValid() && M->CB->bBusy; };
 			Ph->DishRogue = [Ws](int32 I) { return Ws.IsValid() && Ws->Dishes.IsValid() && Ws->Dishes->Dishes.IsValidIndex(I) && Ws->Dishes->Dishes[I].bRogue; };
 			Ph->DishBack = [Ws](int32 I) { return Ws.IsValid() && Ws->Dishes.IsValid() && Ws->Dishes->Dishes.IsValidIndex(I) && Ws->Dishes->Dishes[I].bBack; };
-			Ph->Foretell = [Ws] { if (Ws.IsValid() && Ws->LineLights.IsValid()) Ws->LineLights->bAnyWay = true; }; // (pasture.now when the herd is ported)
+			// (the array tipped by the archive's phone blinks its red lamps as one: ext.dishArray.beaconPhase)
+			Ph->DishArray = [Ws] { return Ws.IsValid() ? Ws->Dishes.Get() : nullptr; };
+			Ph->Foretell = [Ws] { if (Ws.IsValid() && Ws->LineLights.IsValid()) Ws->LineLights->bAnyWay = true; }; // (pasture.now first: US47TownLayer::Init wraps it)
 			// reel 047 on the processor's deck (story/reel047.ts as the archive's deck)
 			Ph->Reel047.Playing = [Ws] { return Ws.IsValid() && Ws->Reel047.IsValid() && Ws->Reel047->bPlaying; };
 			Ph->Reel047.Finished = [Ws] { return Ws.IsValid() && Ws->Reel047.IsValid() && Ws->Reel047->bFinished; };
@@ -287,7 +292,8 @@ void AS47HUD::Start()
 			Aw->Ch6ThirdAt = [W6] { return W6.IsValid() ? W6->ThirdAt() : TOptional<FVector>(); };
 			Aw->Ch6OldMi = [W6, M]() -> TOptional<double>
 			{
-				if (!W6.IsValid() || W6->Stage != TEXT("drive") || !M->World || !M->World->OldRoad() || !M->World->OldDrive()) return {};
+				// game.ch6.active && game.ch6.stage !== 'end' && tr && world.oldRoad (truckBIn; the area is US47Away's)
+				if (!W6.IsValid() || !W6->bActive || W6->Stage == TEXT("end") || !M->World || !M->World->bDriving || !M->World->OldRoad() || !M->World->OldDrive()) return {};
 				const FVector P = M->World->OldDrive()->Pos;
 				return M->World->OldRoad()->Where(P.X, P.Z).Mi;
 			};
@@ -309,6 +315,7 @@ void AS47HUD::Start()
 				V.Over = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() && !Wa->Abduction->OverPhase().IsEmpty(); };
 				V.GetDishes = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? FS47DishesSave::Copy(Wa->Abduction->Data.Dishes) : TOptional<FS47DishesSave>(); };
 				V.SetDishes = [Wa](const FS47DishesSave& D) { if (Wa.IsValid() && Wa->Abduction.IsValid()) Wa->Abduction->Data.Dishes = D.ToJson(); };
+				V.ClearDishes = [Wa] { if (Wa.IsValid() && Wa->Abduction.IsValid()) Wa->Abduction->Data.Dishes.Reset(); };
 				// the corner clock in seconds: abduction.warnClock ?? saroDark.clockShow ?? archive.clockShow ?? ch6.clockShow
 				Sn->ClockBefore = [Wa]
 				{
@@ -322,8 +329,28 @@ void AS47HUD::Start()
 					if (Wp.IsValid() && Wp->Archive.IsValid() && Wp->Archive->ClockShow) return Wp->Archive->ClockShow->Hm + TEXT(":") + Wp->Archive->ClockShow->Ss;
 					return W6.IsValid() ? W6->ClockShow() : FString();
 				};
-				// (abduction.recordings for the recording's walk: the two ports keep their own figure types;
-				// the walk keeps its test recording until they share one)
+				// the recording's walk (story/recording.ts): recs: () => abduction.recordings(),
+				// hold: (n, h) => abduction.holdRecord(n, h); the figures are the time away's own
+				V.Recordings = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? Wa->Abduction->Recordings() : TArray<TSharedPtr<FS47Rec>>(); };
+				V.HoldRecord = [Wa](int32 N, bool bHeld) { if (Wa.IsValid() && Wa->Abduction.IsValid()) Wa->Abduction->HoldRecord(N, bHeld); };
+				// (recWalk.reset() when Missing time is turned off while it walks)
+				TWeakObjectPtr<US47SaroNight> Ws = Sn;
+				Aw->RecWalkReset = [Ws] { if (Ws.IsValid() && Ws->RecWalk.IsValid()) Ws->RecWalk->Reset(); };
+				// arrayBack.update before ab.update (the time away may not begin while the array is on the schedule)
+				Aw->BeforeAbduction = [Ws](double Dt, bool bModal) { if (Ws.IsValid()) Ws->StepArray(Dt, bModal); };
+				// the lost nights play Earl's reel on SARO's deck (main.ts new LostNights({ tape: reelTape }): core/reelTape.ts)
+				Aw->ReelTape.Busy = [Ws] { return Ws.IsValid() && Ws->ReelTape.IsValid() && Ws->ReelTape->bBusy; };
+				Aw->ReelTape.Play = [Ws](TFunction<void(const FS47LostTape::FCue&)> Cue, TFunction<void(bool)> Done)
+				{
+					if (!Ws.IsValid() || !Ws->ReelTape.IsValid()) { if (Done) Done(false); return; }
+					Ws->ReelTape->Play([Cue](const FS47TapeCue& C)
+					{
+						if (!Cue) return;
+						FS47LostTape::FCue X; X.Kind = C.Kind; X.Text = C.Text; X.I = C.I;
+						Cue(X);
+					}, MoveTemp(Done));
+				};
+				Aw->ReelTape.Stop = [Ws] { if (Ws.IsValid() && Ws->ReelTape.IsValid()) Ws->ReelTape->Stop(); };
 			}
 			if (M->Phones) M->Phones->AbductionCount = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? Wa->Abduction->Data.Count : 0; };
 			if (US47Chapter3* C3 = Story.IsValid() ? Cast<US47Chapter3>(Story->Chapter(TEXT("ch3"))) : nullptr)
@@ -424,6 +451,19 @@ void AS47HUD::Start()
 			// game.ch6.skyLift, game.ch6.sunElev (chapter six puts them on the world: AS47Web's overrides)
 			H.SkyLift = [M] { return M->Web ? M->Web->DawnLift() : TOptional<double>(); };
 			H.SunElev = [M] { return M->Web ? M->Web->SunElevation() : TOptional<double>(); };
+		}
+		// main.ts musicHeld: the music held while the recording walks, the face's quiet, the steps on the
+		// roof, Earl's reel, SARO dark, the office's telephone, the archive's phone and the array put back
+		// (the roadside, the television, the ninth, the morning, the time away and the truck on B are set
+		// by their layers)
+		if (M->Score.IsValid() && M->Night)
+		{
+			FS47Score::FHeldHooks& Hd = M->Score->Held;
+			const FS47NightHooks& H = M->Night->Hooks;
+			Hd.RecWalkBusy = H.RecWalkBusy;
+			Hd.FaceQuiet = [M] { return M->Night ? M->Night->FaceQuiet : 0.0; };
+			Hd.RoofStepsBusy = H.RoofStepsBusy; Hd.ReelTapeBusy = H.ReelTapeBusy; Hd.SaroDarkBusy = H.SaroDarkBusy;
+			Hd.OfficePhoneBusy = H.OfficePhoneBusy; Hd.ArchiveBusy = H.ArchiveBusy; Hd.ArrayBackBusy = H.ArrayBackBusy;
 		}
 		M->Flow->Boot();
 		FString FaceAt;

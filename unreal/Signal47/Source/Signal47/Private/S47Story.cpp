@@ -292,6 +292,14 @@ void AS47Story::Use(const FString& Id)
 	{
 		// phase 'ch2': this.ch2.usePhone()
 		if (US47Chapter2* C2 = ChapterKey == TEXT("ch2") ? Cast<US47Chapter2>(Chapter(TEXT("ch2"))) : nullptr) { C2->UsePhone(); return; }
+		// phases 'ch3' to 'ch5': the supervisor line is quiet, and where to go instead
+		if (ChapterKey == TEXT("ch3") || ChapterKey == TEXT("ch4") || ChapterKey == TEXT("ch5"))
+		{
+			Toast(ChapterKey == TEXT("ch3") ? TEXT("The supervisor line is quiet. Ward wants a field record, not a phone call.")
+				: ChapterKey == TEXT("ch4") ? TEXT("The supervisor line is quiet. N. Vega is waiting across the road.")
+				: TEXT("The supervisor line is quiet. Ward will be up by now; there is a payphone at the diner."));
+			return;
+		}
 		if (bRinging) { Answer(); return; }
 		if (bAnswered) Toast(TEXT("Dead line. Not even a dial tone."));
 		else Toast(TEXT("Internal line and one outside line. Nobody calls out here after midnight."));

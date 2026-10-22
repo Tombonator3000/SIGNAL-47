@@ -105,6 +105,10 @@ public:
 	// ---------- main.ts ----------
 	FS47SeenRef Saw(const FString& Kind, const FString& What, const FS47SawOpts& O = FS47SawOpts());
 	void SawKey(const FString& K);
+	/** eventAt(what): where an event's thing is in the area shown (unset: only heard, or not here), and
+	 *  EVENT_RANGE: how far off it can be looked at (metres; Else when it has none). */
+	TOptional<FVector> EventAt(const FString& What) const;
+	static double EventRange(const FString& What, double Else);
 	void SeenSync();
 	void SeenStep(double Dt);
 	void CurveStep(double Dt, bool bModal);
@@ -115,7 +119,8 @@ public:
 	bool NightGoing() const;
 	/** The ground under the player, for footsteps (main.ts surfaceAt). */
 	FString SurfaceAt() const;
-	/** sky.uniforms.uDawn: 0 until 04:40, 1 at sunrise (Sky.setClock, with main.ts's dawn lift). */
+	/** sky.uniforms.uDawn: 0 until 04:40, 1 at sunrise (the world's sky, US47WorldLife's Sky; Sky.setClock
+	 *  with main.ts's dawn lift). */
 	double Dawn() const;
 	/** world.grounds.floorAt: the ground's height anywhere in SARO's scene (world/Grounds.ts). */
 	static double SaroFloorAt(const class AS47Web* Web, double X, double Z);
@@ -142,7 +147,9 @@ private:
 	UPROPERTY() TObjectPtr<US47Main> M;
 	FVector LastFoot = FVector::ZeroVector;
 	double SignFlick = 0, PostFlick = 0;
-	struct FWas { FString Glimpse; int32 Calls = 0; } Was;
+	struct FWas { FString Glimpse; int32 Calls = 0; bool bRegular = false; } Was;
+	/** ch5.s.regular: the waitress has poured for the regular (story/Chapter5.ts, event 11). */
+	bool Regular() const;
 	int32 CallsLogged = 0;
 	FString GlimpseLogged;
 

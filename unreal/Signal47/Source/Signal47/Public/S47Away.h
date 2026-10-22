@@ -59,6 +59,9 @@ public:
 	/** What main.ts steps after the time away, in its block (stationTaken.update, the station passed,
 	 *  recWalk.update, follow.update: story/stationTaken.ts, recording.ts, dishesFollow.ts); bModal. */
 	TFunction<void(double, bool)> AfterAbduction;
+	/** What main.ts steps after the truck on B and before the time away (arrayBack.update: the time
+	 *  away may not begin while the array is on the schedule); bModal. */
+	TFunction<void(double, bool)> BeforeAbduction;
 	/** recWalk.reset() when Missing time is turned off while it walks (story/recording.ts). */
 	TFunction<void()> RecWalkReset;
 	/** The town: Town.womanIn and Town.smokerIn (world/Town.ts, the town's port): among people. */

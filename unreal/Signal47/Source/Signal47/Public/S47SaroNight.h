@@ -37,6 +37,7 @@ struct FS47AbductView
 	TFunction<void(int32, bool)> HoldRecord;            // abduction.holdRecord(n, held)
 	TFunction<TOptional<FS47DishesSave>()> GetDishes;   // abduction.data.dishes
 	TFunction<void(const FS47DishesSave&)> SetDishes;
+	TFunction<void()> ClearDishes;                      // delete abduction.data.dishes (the developer's)
 };
 
 // main.ts's wiring for SARO's own happenings: SARO going dark at 02:29 and Hondo's telex
@@ -90,8 +91,10 @@ public:
 	void StepDark(double Dt, bool bModal);
 	/** lineLights.update (after the glimpses). */
 	void StepLights(double Dt, bool bModal);
-	/** arrayBack.update, then the time away's part: the recording's walk and the dishes that follow;
-	 *  the corner clock in seconds. */
+	/** arrayBack.update (US47Away steps it before the time away: BeforeAbduction). */
+	void StepArray(double Dt, bool bModal);
+	/** The time away's part: the recording's walk and the dishes that follow; the corner clock in
+	 *  seconds (and arrayBack.update first if nothing stepped it this frame). */
 	void StepLate(double Dt, bool bModal);
 	/** Every frame (main.ts's last lines: the dishes drawn, the sky light, the reel's own timer). */
 	void Frame(double Dt);
@@ -140,6 +143,9 @@ private:
 	TOptional<double> TestWarn;      // a warning of the time away played here for the dishes (no abduction yet)
 	TOptional<FVector> TestTruck;    // a truck driven south past the lights (no drive needed)
 	TSharedPtr<FS47Rec> TestRec;
+	bool bTestWalk = false;          // the walk has the developer's recording (no time away's to hold)
+	bool bArrayStepped = false;      // StepArray has run this frame
+	bool bWalkNear = false;          // -S47RecWalk=near: the nearest time away walks once there is one
 
 	bool Is(const TFunction<bool()>& F) const { return F && F(); }
 	FString Phase() const;

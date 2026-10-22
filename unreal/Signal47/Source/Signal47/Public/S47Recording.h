@@ -3,11 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47Seen.h"
 
-class AS47Web;
-class USceneComponent;
-class UStaticMeshComponent;
-class UMaterialBillboardComponent;
-class UMaterialInstanceDynamic;
+class FS47JacketWalker;
 
 // web/src/story/recording.ts. The recording (FORSLAG.md, 20 October, item 9 B; HENDELSER.md, section 8:
 // "they take a recording of you, and every recording stays"). Where the player was taken, someone in a
@@ -36,9 +32,11 @@ class UMaterialInstanceDynamic;
 // they are back within sight of the place.
 //
 // The one in the jacket is made at run time in the web version (story/abduction.ts records it where the
-// player was taken), so it is built here the same way: the same boxes, sphere and colours from the
-// engine's cube and sphere, jointed at the hips and shoulders, and the three glints as glow billboards.
-// (Walker.baked, the one-draw copy story/theThird.ts uses, belongs to chapter six's port.)
+// player was taken, a recording.ts Walker), so it is built here the same way: recording.ts's Walker is
+// FS47JacketWalker (S47Figures.h, with the other figures the web version builds in code), one port
+// for both: the time away makes one for each time away (FS47Abduction::Record) and gives it to the
+// walk in its recordings, and the walk poses it. (Walker.baked, the one-draw copy story/theThird.ts
+// uses, is chapter six's: S47TheThird.cpp.)
 
 namespace S47Recording
 {
@@ -55,52 +53,6 @@ namespace S47Recording
 	SIGNAL47_API double PathMoved(const TArray<double>& P);
 }
 
-/** Someone in a SARO jacket with the reflective band across it, jointed at the hips and shoulders so it
- *  can walk (the same boxes and colours as the one standing has always had). Built facing -z, the way
- *  the player faces at yaw 0, from the feet. (recording.ts Walker: not the player, AS47Walker.) */
-class SIGNAL47_API FS47Walker
-{
-public:
-	FS47Walker(AS47Web* Web, const FString& Name);
-	~FS47Walker();
-
-	/** group.position, group.rotation.y, group.visible (three's terms). */
-	FVector Position = FVector::ZeroVector;
-	double Yaw = 0;
-	void SetPose(const FVector& P, double InYaw);
-	void SetVisible(bool bOn);
-	bool Visible() const { return bVisible; }
-
-	/** How much light from near the eye is on the band now (0 to 1). */
-	double Shone() const { return Lit; }
-	/** The reflective band in a light from near the eye (the flashlight, the headlights): it gives the
-	 *  light back the way it came, as the tape does, 0 to 1. `Cam`: the eye the light is beside (the
-	 *  glint keeps a few pixels across however far off it is). */
-	void Shine(double K, const FS47Cam* Cam = nullptr);
-	/** Standing still, as it has always stood. */
-	void Stand() { Pose(0, 0, 0, 0, 0); }
-	/** How it is carried: the stride (-1..1 through a step), how wide (0 standing, 1 a full run's),
-	 *  how far it leans forward and to the side (radians), and how high the body is lifted (metres). */
-	void Pose(double Swing, double Wide, double Lean, double Roll, double Lift);
-
-private:
-	TWeakObjectPtr<USceneComponent> Group, Body;
-	TWeakObjectPtr<USceneComponent> Legs[2], Arms[2];
-	TArray<TWeakObjectPtr<UStaticMeshComponent>> Tapes;   // the chest's, then the sleeves'
-	TWeakObjectPtr<UStaticMeshComponent> Head;
-	TArray<TWeakObjectPtr<UMaterialBillboardComponent>> Glints;
-	TWeakObjectPtr<UMaterialInstanceDynamic> Band, Coat, Dark, GlintMat;
-	double Lit = 0;
-	double GlintOpacity = 0;
-	bool bVisible = true;
-	double LegRotX[2] = { 0, 0 }, ArmRotX[2] = { 0, 0 }, ArmRotZ[2] = { 0, 0 };
-	FVector BodyRot = FVector::ZeroVector;
-	double BodyLift = 0;
-	void ApplyGroup();
-	void ApplyBody();
-	FVector TapeWorld(int32 I) const;
-};
-
 /** One of the times away, as the walk sees it (story/abduction.ts, recording). */
 struct FS47Rec
 {
@@ -111,7 +63,8 @@ struct FS47Rec
 	TArray<double> Path;
 	TOptional<double> Walked;
 	double Clock = 0;
-	TSharedPtr<FS47Walker> Fig;
+	/** The one standing for this time away (recording.ts Walker: S47Figures.h), the time away's. */
+	TSharedPtr<FS47JacketWalker> Fig;
 	/** Kept with the case: it has walked (the night's clock then), or not after all (unset). */
 	TFunction<void(TOptional<double>)> MarkWalked;
 };

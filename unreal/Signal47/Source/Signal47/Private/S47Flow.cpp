@@ -506,8 +506,7 @@ void US47Flow::StartGame(const FStart& O)
 	}
 	// saroDark.restore, follow.restore, arrayBack.restore, reelTape.stop (S47SaroNight)
 	if (M->SaroNight) M->SaroNight->Restored();
-	// (abduction.refile, archive, fieldBook, the town's papers, lostNights, motelTv: not ported yet)
-	// (abduction.refile, follow, arrayBack: not ported yet) the archive and the field book (S47Phones)
+	// the archive and the field book (S47Phones)
 	if (M->Phones) M->Phones->Restored();
 	// abduction.refile, lostNights.restore (S47Away)
 	if (M->Away) M->Away->Restored();

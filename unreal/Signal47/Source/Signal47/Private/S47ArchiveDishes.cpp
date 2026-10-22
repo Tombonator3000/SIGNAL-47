@@ -2,6 +2,7 @@
 #include "S47ArchiveDishes.h"
 
 #include "S47Audio.h"
+#include "S47DishArray.h"
 #include "S47Web.h"
 #include "S47WebAudio.h"
 
@@ -10,7 +11,9 @@ bool FS47ArrayTip::Tip()
 	if (Holds() || Taken()) return false;
 	// for (const x of dishes) { x.rogue = true; x.point(TIP.az, TIP.el, SLEW); }
 	if (AS47Web* W = D.Web.Get()) W->PointDishes(TIP_AZ, TIP_EL, SLEW);
-	// (this.common = dishes[0].phase: the beacons' phase, see Beacons)
+	// this.common = this.d.dishes[0]?.phase ?? 0
+	const FS47DishArray* A = D.Array ? D.Array() : nullptr;
+	Common = A && A->Dishes.Num() ? A->Dishes[0].Phase : 0;
 	Mode = TEXT("tipping");
 	Start();
 	return true;
@@ -39,6 +42,8 @@ void FS47ArrayTip::Restore(bool bTipped)
 	if (!bTipped) return;
 	// for (const x of dishes) { x.rogue = true; x.snap(TIP.az, TIP.el); }
 	if (AS47Web* W = D.Web.Get()) W->SnapDishes(TIP_AZ, TIP_EL);
+	const FS47DishArray* A = D.Array ? D.Array() : nullptr;
+	Common = A && A->Dishes.Num() ? A->Dishes[0].Phase : 0;
 	Mode = TEXT("down");
 	Beacons(true);
 }
@@ -82,14 +87,15 @@ void FS47ArrayTip::Release()
 		W->SnapDishes(HOME_AZ, HOME_EL);
 		W->PointDishes(HOME_AZ, HOME_EL, 6); // (x.slew = 6)
 	}
+	if (FS47DishArray* A = D.Array ? D.Array() : nullptr) for (int32 I = 0; I < A->Dishes.Num(); ++I) A->BeaconPhase(I, A->Dishes[I].Phase);
 	Mode = TEXT("idle");
 }
 
 void FS47ArrayTip::Beacons(bool bOn)
 {
-	// The red lamps of the tipped array blink as one (DishArray.beaconPhase). AS47Web's glow points do
-	// not blink yet (S47Annex.cpp: glow.update), so their phases are not kept.
-	(void)bOn;
+	// the red lamps of the tipped array blink as one
+	// this.d.dishes.forEach((x, i) => this.d.array.beaconPhase(i, on ? this.common : x.phase))
+	if (FS47DishArray* A = D.Array ? D.Array() : nullptr) for (int32 I = 0; I < A->Dishes.Num(); ++I) A->BeaconPhase(I, bOn ? Common : A->Dishes[I].Phase);
 }
 
 // ---------- the sound ----------

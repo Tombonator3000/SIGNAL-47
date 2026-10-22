@@ -331,7 +331,8 @@ FS47JacketWalker::FS47JacketWalker(AS47Web* Web, const FString& Name)
 	Head = G->Sphere(Body, 0.13, Skin, FVector(0, 1.6, 0));
 	// the tape gives a beam back as a glint that carries much further than the jacket can be made
 	// out: across the chest, and a small one at each sleeve that swings with the arm
-	if (UMaterialInterface* GlowBase = S47Figures::Base(TEXT("M_WebGlow")))
+	// (only in a world: without one, as in the self test, there is nothing to draw them in)
+	if (UMaterialInterface* GlowBase = Web ? S47Figures::Base(TEXT("M_WebGlow")) : nullptr)
 	{
 		GlintMat = UMaterialInstanceDynamic::Create(GlowBase, Web);
 		GlintMat->SetVectorParameterValue(TEXT("Color"), Hex(0xfff1da));

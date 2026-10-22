@@ -1,12 +1,7 @@
 // story/recording.ts
 #include "S47Recording.h"
 
-#include "Components/MaterialBillboardComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "Engine/StaticMesh.h"
-#include "Materials/MaterialInstanceDynamic.h"
-#include "S47Three.h"
-#include "S47Web.h"
+#include "S47Figures.h"
 
 using namespace S47Recording;
 
@@ -21,22 +16,9 @@ namespace
 	const int32 TRIES = 2;
 	/** Less than this much ground covered in the 47 s, and it would only stand: it does not walk. */
 	const double MOVED = 5;
-	/** Far off, the band's glint keeps about the same few pixels on any screen, as tape in a beam does
-	 *  (this much of its size per metre away and per unit of the view's half height; at the usual view
-	 *  of 70 degrees, its own size at 28 m), and no less than its own size near. Zoomed, it stays the
-	 *  size it was, and the one wearing it comes up round it. */
-	const double GLINT_FAR = 1 / (28 * FMath::Tan(FMath::DegreesToRadians(35.0)));
 
 	double LerpAngle(double A, double B, double K) { return A + FMath::Atan2(FMath::Sin(B - A), FMath::Cos(B - A)) * K; }
 	double Smoothstep(double X, double Min, double Max) { if (X <= Min) return 0; if (X >= Max) return 1; X = (X - Min) / (Max - Min); return X * X * (3 - 2 * X); }
-
-	void Rel(USceneComponent* C, const FVector& P, const FVector& Rot, const FVector& S)
-	{
-		if (!C) return;
-		double M[16];
-		S47Three::Compose(P, S47Three::Euler(Rot.X, Rot.Y, Rot.Z), S, M);
-		C->SetRelativeTransform(S47Three::MatToUE(M));
-	}
 }
 
 // ---------- the path ----------
@@ -68,197 +50,13 @@ double S47Recording::PathMoved(const TArray<double>& P)
 	return Dd;
 }
 
-// ---------- Walker ----------
-
-FS47Walker::FS47Walker(AS47Web* Web, const FString& Name)
-{
-	UStaticMesh* Cube = Web ? LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")) : nullptr;
-	UStaticMesh* Sphere = Web ? LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere")) : nullptr;
-	UMaterialInterface* Base = Web ? LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Unlit_Opaque.M_Web_Unlit_Opaque")) : nullptr;
-	UMaterialInterface* GlowBase = Web ? LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebGlow.M_WebGlow")) : nullptr;
-	if (!Web || !Cube || !Sphere || !Base) return;
-	auto Mid = [&](uint32 Hex)
-	{
-		UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Base, Web);
-		D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(Hex));
-		return D;
-	};
-	// const coat = 0x2a3036, dark = 0x15171a; band = 0xd8dccc, skin = 0x6e5a4c (MeshBasicMaterial)
-	UMaterialInstanceDynamic* CoatM = Mid(0x2a3036); UMaterialInstanceDynamic* DarkM = Mid(0x15171a);
-	UMaterialInstanceDynamic* BandM = Mid(0xd8dccc); UMaterialInstanceDynamic* SkinM = Mid(0x6e5a4c);
-	Coat = CoatM; Dark = DarkM; Band = BandM;
-	auto Node = [&](USceneComponent* Parent, const TCHAR* What)
-	{
-		USceneComponent* C = NewObject<USceneComponent>(Web, *FString::Printf(TEXT("%s_%s"), *Name, What));
-		C->SetMobility(EComponentMobility::Movable);
-		C->SetupAttachment(Parent ? Parent : Web->GetRootComponent());
-		C->RegisterComponent();
-		return C;
-	};
-	auto Mesh = [&](USceneComponent* Parent, UStaticMesh* SM, UMaterialInstanceDynamic* M)
-	{
-		UStaticMeshComponent* B = NewObject<UStaticMeshComponent>(Web);
-		B->SetMobility(EComponentMobility::Movable);
-		B->SetStaticMesh(SM);
-		B->SetMaterial(0, M);
-		B->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		B->SetCastShadow(false);
-		B->SetupAttachment(Parent);
-		B->RegisterComponent();
-		return B;
-	};
-	auto Box = [&](USceneComponent* P, double W, double H, double Dd, UMaterialInstanceDynamic* M, double X, double Y, double Z)
-	{
-		UStaticMeshComponent* B = Mesh(P, Cube, M);
-		Rel(B, FVector(X, Y, Z), FVector::ZeroVector, FVector(W, H, Dd));
-		return B;
-	};
-	USceneComponent* G = Node(nullptr, TEXT("group"));
-	USceneComponent* Bd = Node(G, TEXT("body"));
-	Group = G; Body = Bd;
-	for (int32 K = 0; K < 2; ++K)
-	{
-		const double Sd = K == 0 ? -1 : 1;
-		USceneComponent* Hip = Node(Bd, K ? TEXT("hipR") : TEXT("hipL"));
-		Rel(Hip, FVector(Sd * 0.11, 0.84, 0), FVector::ZeroVector, FVector::OneVector);
-		Box(Hip, 0.2, 0.84, 0.2, DarkM, 0, -0.42, 0);
-		Legs[K] = Hip;
-		USceneComponent* Sh = Node(Bd, K ? TEXT("armR") : TEXT("armL"));
-		Rel(Sh, FVector(Sd * 0.32, 1.42, 0), FVector::ZeroVector, FVector::OneVector);
-		Box(Sh, 0.12, 0.6, 0.14, CoatM, 0, -0.3, 0);
-		// (and round each sleeve, as the field jackets have it: it swings with the arm)
-		Tapes.Add(Box(Sh, 0.13, 0.05, 0.15, BandM, 0, -0.24, 0));
-		Arms[K] = Sh;
-	}
-	Box(Bd, 0.5, 0.62, 0.28, CoatM, 0, 1.14, 0);
-	Tapes.Insert(Box(Bd, 0.52, 0.08, 0.3, BandM, 0, 1.2, 0), 0);
-	// SphereGeometry(0.13): the engine's sphere is a metre across
-	UStaticMeshComponent* Hd = Mesh(Bd, Sphere, SkinM);
-	Rel(Hd, FVector(0, 1.6, 0), FVector::ZeroVector, FVector(0.26));
-	Head = Hd;
-	// the tape gives a beam back as a glint that carries much further than the jacket can be made
-	// out: across the chest, and a small one at each sleeve that swings with the arm
-	if (GlowBase)
-	{
-		UMaterialInstanceDynamic* Gm = UMaterialInstanceDynamic::Create(GlowBase, Web);
-		Gm->SetVectorParameterValue(TEXT("Color"), FLinearColor::Black);
-		GlintMat = Gm;
-		for (int32 I = 0; I < 3; ++I)
-		{
-			UMaterialBillboardComponent* S = NewObject<UMaterialBillboardComponent>(Web);
-			S->SetupAttachment(G);
-			S->AddElement(Gm, nullptr, false, 50, 50, nullptr);
-			S->SetRelativeLocation(S47Three::ToUE(0, I ? 1.18 : 1.2, 0));
-			S->RegisterComponent();
-			S->SetVisibility(false);
-			Glints.Add(S);
-		}
-	}
-	ApplyGroup(); ApplyBody();
-}
-
-FS47Walker::~FS47Walker()
-{
-	if (USceneComponent* G = Group.Get())
-	{
-		TArray<USceneComponent*> All;
-		G->GetChildrenComponents(true, All);
-		for (USceneComponent* C : All) if (C) C->DestroyComponent();
-		G->DestroyComponent();
-	}
-}
-
-void FS47Walker::SetPose(const FVector& P, double InYaw) { Position = P; Yaw = InYaw; ApplyGroup(); }
-
-void FS47Walker::ApplyGroup() { Rel(Group.Get(), Position, FVector(0, Yaw, 0), FVector::OneVector); }
-
-void FS47Walker::SetVisible(bool bOn)
-{
-	bVisible = bOn;
-	if (USceneComponent* G = Group.Get())
-	{
-		G->SetVisibility(bOn, true);
-		// (three keeps each child's own flag under the group's: the glints are only on in a beam)
-		if (bOn) for (const TWeakObjectPtr<UMaterialBillboardComponent>& S : Glints) if (S.IsValid()) S->SetVisibility(Lit > 0.04);
-	}
-}
-
-void FS47Walker::ApplyBody()
-{
-	// body.rotation.set(-lean, 0, roll); body.position.y = lift
-	Rel(Body.Get(), FVector(0, BodyLift, 0), BodyRot, FVector::OneVector);
-	for (int32 K = 0; K < 2; ++K)
-	{
-		const double Sd = K == 0 ? -1 : 1;
-		Rel(Legs[K].Get(), FVector(Sd * 0.11, 0.84, 0), FVector(LegRotX[K], 0, 0), FVector::OneVector);
-		Rel(Arms[K].Get(), FVector(Sd * 0.32, 1.42, 0), FVector(ArmRotX[K], 0, ArmRotZ[K]), FVector::OneVector);
-	}
-}
-
-void FS47Walker::Pose(double Swing, double Wide, double Lean, double Roll, double Lift)
-{
-	const double Leg = Wide * 0.62, Arm = Wide * 0.5;
-	LegRotX[0] = Swing * Leg; LegRotX[1] = -Swing * Leg;
-	ArmRotX[0] = -Swing * Arm; ArmRotX[1] = Swing * Arm;
-	// (a hand out a little from the side when it runs)
-	ArmRotZ[0] = -0.08 * Wide; ArmRotZ[1] = 0.08 * Wide;
-	BodyRot = FVector(-Lean, 0, Roll);
-	BodyLift = Lift;
-	ApplyBody();
-}
-
-FVector FS47Walker::TapeWorld(int32 I) const
-{
-	return Tapes.IsValidIndex(I) && Tapes[I].IsValid() ? S47Three::ToThree(Tapes[I]->GetComponentLocation()) : Position + FVector(0, 1.2, 0);
-}
-
-void FS47Walker::Shine(double K, const FS47Cam* Cam)
-{
-	if (FMath::Abs(K - Lit) >= 0.02 || (K == 0 && Lit != 0))
-	{
-		Lit = K;
-		if (Band.IsValid()) Band->SetVectorParameterValue(TEXT("Color"), FLinearColor(float(0.69 + 2.2 * K), float(0.72 + 2.2 * K), float(0.6 + 1.9 * K)));
-		// (and the jacket and the jeans a little out of the dark in the beam, enough to be someone)
-		if (Coat.IsValid()) Coat->SetVectorParameterValue(TEXT("Color"), FMath::Lerp(S47Three::Hex(0x2a3036), S47Three::Hex(0x737a82), float(K)));
-		if (Dark.IsValid()) Dark->SetVectorParameterValue(TEXT("Color"), FMath::Lerp(S47Three::Hex(0x15171a), S47Three::Hex(0x464a52), float(K)));
-		GlintOpacity = 0.9 * FMath::Pow(FMath::Min(1.0, 1.15 * K), 1.5);
-		// (an additive sprite's opacity is its colour's share)
-		if (GlintMat.IsValid()) GlintMat->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(0xfff1da) * float(GlintOpacity));
-	}
-	const bool bOn = Lit > 0.04;
-	for (const TWeakObjectPtr<UMaterialBillboardComponent>& S : Glints) if (S.IsValid()) S->SetVisibility(bOn && bVisible);
-	if (!bOn) return;
-	const double Half = Cam ? FMath::Tan(FMath::DegreesToRadians(Cam->Fov / 2)) : 0.7;
-	const double S = FMath::Max(1.0, (Cam ? FVector::Dist(Cam->Pos, Position) : 40) * Half * GLINT_FAR);
-	auto Size = [&](int32 I, double W, double H)
-	{
-		if (!Glints.IsValidIndex(I) || !Glints[I].IsValid() || !Glints[I]->Elements.Num()) return;
-		Glints[I]->Elements[0].BaseSizeX = float(W * 50); Glints[I]->Elements[0].BaseSizeY = float(H * 50);
-		Glints[I]->MarkRenderStateDirty();
-	};
-	Size(0, 0.7 * S, 0.16 * S); Size(1, 0.18 * S, 0.18 * S); Size(2, 0.18 * S, 0.18 * S);
-	if (!Cam) return;
-	// (each is put on the side of its tape that faces the eye, so the jacket does not hide it)
-	for (int32 I = 0; I < Tapes.Num() && I < Glints.Num(); ++I)
-	{
-		FVector At = TapeWorld(I);
-		FVector To = Cam->Pos - At; To.Y = 0; To = To.GetSafeNormal();
-		At += To * 0.3;
-		// group.worldToLocal: Ry(-yaw) (at - position)
-		const FVector L = At - Position;
-		const double C = FMath::Cos(-Yaw), Sn = FMath::Sin(-Yaw);
-		const FVector Local(L.X * C + L.Z * Sn, L.Y, -L.X * Sn + L.Z * C);
-		if (Glints[I].IsValid()) Glints[I]->SetRelativeLocation(S47Three::ToUE(Local));
-	}
-}
-
 // ---------- RecordingWalk ----------
 
 FS47RecordingWalk::FS47RecordingWalk(FS47RecordingDeps InD) : D(MoveTemp(InD)) {}
 
 TOptional<FVector> FS47RecordingWalk::At() const
 {
-	return Rec.IsValid() && Rec->Fig.IsValid() && Rec->Fig->Visible() && bClear ? TOptional<FVector>(Head) : TOptional<FVector>();
+	return Rec.IsValid() && Rec->Fig.IsValid() && Rec->Fig->G->Visible() && bClear ? TOptional<FVector>(Head) : TOptional<FVector>();
 }
 
 TSharedPtr<FS47Rec> FS47RecordingWalk::Candidate(const FS47RecordingIn& S) const
@@ -316,11 +114,12 @@ void FS47RecordingWalk::Update(double Dt, const FS47RecordingIn& S)
 		PathAt(R.Path, 0, Prev);
 	}
 	Place(Dt, R);
-	const FVector Gp = R.Fig.IsValid() ? R.Fig->Position : V;
+	const FVector Gp = R.Fig.IsValid() ? R.Fig->G->Root().Position : V;
 	const bool bNear = FMath::Sqrt(FMath::Square(Gp.X - S.Pos.X) + FMath::Square(Gp.Z - S.Pos.Z)) <= NEAR;
 	// walked up to: it was not there
 	if (bNear && Phase != TEXT("gone")) { End(TEXT("near")); return; }
-	if (R.Fig.IsValid()) R.Fig->SetVisible(Phase != TEXT("gone"));
+	// g.visible = this.phase !== 'gone'
+	if (R.Fig.IsValid()) R.Fig->G->SetVisible(Phase != TEXT("gone"));
 	if (Phase != TEXT("gone") && bClear && S47Facing(Cam(), Head, 320, 18)) Looked += Dt;
 }
 
@@ -355,7 +154,9 @@ void FS47RecordingWalk::Place(double Dt, FS47Rec& R)
 	{
 		R.Fig->Pose(Sw, Wide, Lean, Roll, FMath::Abs(FMath::Cos(PhaseStep)) * 0.035 * Wide);
 		if (Phase != TEXT("walk")) R.Fig->Stand();
-		R.Fig->SetPose(FVector(V.X, GroundY, V.Z), YawNow);
+		// g.position.set(v.x, ground, v.z); g.rotation.set(0, yaw, 0)
+		FS47Node& G = R.Fig->G->Root();
+		G.Position = FVector(V.X, GroundY, V.Z); G.Rotation = FVector(0, YawNow, 0); G.Apply();
 	}
 	Head = FVector(V.X, GroundY + 1.45, V.Z);
 	W = FVector(V.X, GroundY + 1.2, V.Z);
@@ -375,7 +176,7 @@ void FS47RecordingWalk::Begin(const TSharedPtr<FS47Rec>& R, double Clock)
 	R->Walked = FMath::FloorToDouble(Clock + 0.5);
 	if (R->MarkWalked) R->MarkWalked(R->Walked);
 	Place(0, *R);
-	if (R->Fig.IsValid()) R->Fig->SetVisible(true);
+	if (R->Fig.IsValid()) R->Fig->G->SetVisible(true);
 	if (D.Save) D.Save();
 }
 
@@ -419,7 +220,7 @@ bool FS47RecordingWalk::SelfTest(TArray<FString>& Lines)
 	// it walks once the player is within sight and not looking that way; walked up to, it was not there
 	const TSharedPtr<FS47Rec> R = MakeShared<FS47Rec>();
 	R->N = 1; R->Scene = TEXT("saro"); R->Take = FVector(100, 0, -10); R->Path = P; R->Clock = 3 * 3600;
-	R->Fig = MakeShared<FS47Walker>(nullptr, TEXT("test"));
+	R->Fig = MakeShared<FS47JacketWalker>(nullptr, TEXT("test"));
 	TOptional<double> Marked; int32 Held = 0;
 	R->MarkWalked = [&Marked](TOptional<double> C) { Marked = C; };
 	FS47RecordingDeps Dp;

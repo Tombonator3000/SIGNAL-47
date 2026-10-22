@@ -17,6 +17,7 @@
 #include "S47Curve.h"
 #include "S47DishArray.h"
 #include "S47Docs.h"
+#include "S47Figures.h"
 #include "S47Flashlight.h"
 #include "S47Flow.h"
 #include "S47Geo.h"
@@ -136,8 +137,10 @@ void US47SaroNight::Init(US47Main* InM)
 
 	// ---------- the recording walks the player's last 47 seconds where they were taken (story/recording.ts) ----------
 	FS47RecordingDeps Wd;
+	// recs: () => abduction.recordings(), hold: (n, h) => abduction.holdRecord(n, h) (S47HUD.cpp gives them;
+	// the developer's walk, -S47RecWalk, has its own figure and no time away's to hold)
 	Wd.Recs = [Self] { return Self.IsValid() && Self->Abduct.Recordings ? Self->Abduct.Recordings() : (Self.IsValid() && Self->TestRec.IsValid() ? TArray<TSharedPtr<FS47Rec>>{ Self->TestRec } : TArray<TSharedPtr<FS47Rec>>()); };
-	Wd.Hold = [Self](int32 N, bool bHeld) { if (Self.IsValid() && Self->Abduct.HoldRecord) Self->Abduct.HoldRecord(N, bHeld); };
+	Wd.Hold = [Self](int32 N, bool bHeld) { if (Self.IsValid() && !Self->bTestWalk && Self->Abduct.HoldRecord) Self->Abduct.HoldRecord(N, bHeld); };
 	Wd.Ground = [Self](double X, double Z) { return Self.IsValid() ? Self->FloorAt(X, Z) : 0.0; };
 	Wd.Camera = [Self] { return Self.IsValid() ? Self->Camera() : FS47Cam(); };
 	Wd.Note = [Self](const FString& Text) { if (Self.IsValid()) Self->Note(FString::Printf(TEXT("%s. %s"), *S47Text::ClockText(Self->Clock(), false), *Text)); };
@@ -382,9 +385,10 @@ void US47SaroNight::StepLights(double Dt, bool bModal)
 	LineLights->Update(Dt, S);
 }
 
-void US47SaroNight::StepLate(double Dt, bool bModal)
+void US47SaroNight::StepArray(double Dt, bool bModal)
 {
 	if (M->Mode != US47Main::EMode::Play) return;
+	bArrayStepped = true;
 	const FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
 	// the array put back on the schedule (story/arrayBack.ts): its time stops while a panel is open,
 	// as the night's does; before the time away, which may not begin while it runs
@@ -399,6 +403,15 @@ void US47SaroNight::StepLate(double Dt, bool bModal)
 		S.bCalm = Calm();
 		ArrayBack->Update(bModal ? 0 : Dt, S);
 	}
+}
+
+void US47SaroNight::StepLate(double Dt, bool bModal)
+{
+	if (M->Mode != US47Main::EMode::Play) return;
+	const FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
+	// (the array: US47Away steps it before the time away, as main.ts does; here only without it)
+	if (!bArrayStepped) StepArray(Dt, bModal);
+	bArrayStepped = false;
 	// the notebook or a paper open holds the warning where it is, as it holds the clock (and the dishes wait too)
 	if (TestWarn && !bModal) { *TestWarn += Dt; if (*TestWarn >= S47Follow::WARN) TestWarn.Reset(); }
 	if (!(bModal && AbStage() == TEXT("warning")))
@@ -415,6 +428,20 @@ void US47SaroNight::StepLate(double Dt, bool bModal)
 			S.Pos = Driving() && M->World->CabTruck() ? M->World->CabTruck()->Position : P;
 			S.bOut = Driving() || M->Space == TEXT("yard");
 			S.Clock = Clock();
+			if (!RecWalk->Busy()) bTestWalk = false;
+			// -S47RecWalk=near: abduction.recordings().filter((x) => x.path && x.scene === sc), the nearest
+			if (bWalkNear && !RecWalk->Busy() && AbStage() == TEXT("calm") && Abduct.Recordings)
+			{
+				TSharedPtr<FS47Rec> Best;
+				for (const TSharedPtr<FS47Rec>& R : Abduct.Recordings())
+					if (R->Path.Num() && R->Scene == S.Scene && (!Best || FVector::DistSquared(R->Take, S.Pos) < FVector::DistSquared(Best->Take, S.Pos))) Best = R;
+				if (Best)
+				{
+					bWalkNear = false; TestRec = Best;
+					RecWalk->Begin(Best, Clock());
+					UE_LOG(LogS47Saro, Display, TEXT("S47: recording walks time away %d at %.0f m"), Best->N, FVector::Dist(Best->Take, S.Pos));
+				}
+			}
 			// (the developer's walk goes whatever the chapter: its own scene and time away)
 			if (TestRec.IsValid() && RecWalk->Busy()) S.bOk = true;
 			RecWalk->Update(Dt, S);
@@ -641,7 +668,7 @@ void US47SaroNight::Restore(const S47J::FObj& State)
 	DishesKept = FS47DishesSave::Copy(S47J::Obj(S47J::Obj(State, TEXT("abduct")), TEXT("dishes")));
 	LineLights->Reset(M->TownSeen.Contains(TEXT("ev:lights")));
 	Dark->Halt();
-	TestWarn.Reset(); TestTruck.Reset(); TestRec.Reset(); bReelTest = false;
+	TestWarn.Reset(); TestTruck.Reset(); TestRec.Reset(); bTestWalk = false; bReelTest = false;
 }
 
 void US47SaroNight::Restored()
@@ -658,7 +685,7 @@ void US47SaroNight::Restored()
 void US47SaroNight::Leave(bool bTitle)
 {
 	Dark->Halt();   // (and the power back, before the room is put back as the night began)
-	Follow->Reset(); ArrayBack->Reset(); RecWalk->Reset();
+	Follow->Reset(); ArrayBack->Reset(); RecWalk->Reset(); bTestWalk = false;
 	if (!bTitle) ReelTape->Stop();
 	// (reel 047 stopped and the processor's display its own: archive.halt does it in the web version,
 	// story/archivePhone.ts, whose port has the deck after this)
@@ -706,13 +733,18 @@ void US47SaroNight::TestFlags()
 	// relay passed); -S47Array: ARRAY RESUME as the developer menu gives it; -S47Follow: a warning of
 	// the time away played here (the abduction is its own port) with the player near the array;
 	// -S47LineLights: a truck driven south past the turn-off; -S47Reel047, -S47ReelTape: the reels;
-	// -S47RecWalk: a time away 90 m off with its 47 s kept, and the recording walks it
+	// -S47RecWalk: a time away 90 m off with its 47 s kept, and the recording walks it; -S47RecWalk=near: the
+	// developer menu's "The recording walks (the nearest time away)", once the time away has one here
 	const TCHAR* Cmd = FCommandLine::Get();
 	FString DarkArg;
 	const bool bDark = FParse::Value(Cmd, TEXT("S47Dark="), DarkArg) || FParse::Param(Cmd, TEXT("S47Dark"));
 	const bool bArray = FParse::Param(Cmd, TEXT("S47Array")), bFollow = FParse::Param(Cmd, TEXT("S47Follow")), bLights = FParse::Param(Cmd, TEXT("S47LineLights"));
-	const bool bR47 = FParse::Param(Cmd, TEXT("S47Reel047")), bTape = FParse::Param(Cmd, TEXT("S47ReelTape")), bWalk = FParse::Param(Cmd, TEXT("S47RecWalk"));
-	if (!(bDark || bArray || bFollow || bLights || bR47 || bTape || bWalk) || !M->Web) return;
+	const bool bR47 = FParse::Param(Cmd, TEXT("S47Reel047")), bTape = FParse::Param(Cmd, TEXT("S47ReelTape"));
+	FString WalkArg;
+	FParse::Value(Cmd, TEXT("S47RecWalk="), WalkArg);
+	bWalkNear = WalkArg == TEXT("near");
+	const bool bWalk = !bWalkNear && FParse::Param(Cmd, TEXT("S47RecWalk"));
+	if (!(bDark || bArray || bFollow || bLights || bR47 || bTape || bWalk || bWalkNear) || !M->Web) return;
 	TWeakObjectPtr<US47SaroNight> Self = this;
 	FTimerHandle H;
 	M->Web->GetWorldTimerManager().SetTimer(H, [Self, bDark, DarkArg, bArray, bFollow, bLights, bR47, bTape, bWalk]
@@ -733,7 +765,8 @@ void US47SaroNight::TestFlags()
 		}
 		if (bFollow)
 		{
-			S->DishesKept.Reset(); S->Follow->Reset();
+			// (follow.reset(); delete abduction.data.dishes: they may come again)
+			S->DishesKept.Reset(); if (S->Abduct.ClearDishes) S->Abduct.ClearDishes(); S->Follow->Reset();
 			S->TestWarn = FS47DishesFollow::FirstAt(S47Follow::WARN);
 			UE_LOG(LogS47Saro, Display, TEXT("S47: a warning for the dishes (near the array: %s)"), FS47DishesFollow::NearArray(S->FieldZones, S->Dishes.Get(), S->Eye().X, S->Eye().Z) ? TEXT("yes") : TEXT("no"));
 		}
@@ -770,8 +803,10 @@ void US47SaroNight::TestFlags()
 				if (I) At += Dir * Speed * S47Recording::PATH_DT;
 				R->Path.Append({ At.X, At.Z, FMath::Atan2(-Dir.X, -Dir.Z) });
 			}
-			R->Fig = MakeShared<FS47Walker>(S->M->Web, TEXT("abduct:record"));
-			S->TestRec = R;
+			R->Fig = MakeShared<FS47JacketWalker>(S->M->Web, TEXT("abduct:record"));
+			R->Fig->G->SetVisible(false); R->Fig->G->AddToScene();
+			if (S->RecWalk->Busy()) S->RecWalk->Reset();
+			S->TestRec = R; S->bTestWalk = true;
 			S->RecWalk->Begin(R, S->Clock());
 			UE_LOG(LogS47Saro, Display, TEXT("S47: recording walks at %.0f m"), FVector::Dist(C.Pos, R->Take));
 		}

@@ -74,6 +74,8 @@ shot lineLights "S47: line lights pace" "-S47Jump=chapter1 -S47Face=at:-19;30;2.
 shot reel047 "S47: reel 047 hole" "-S47Jump=chapter1 -S47Face=decoder -S47Reel047" 26
 shot reelTape "S47: reel tape heard to the end" "-S47Jump=chapter1 -S47Face=decoder -S47ReelTape" 16
 shot recording "S47: recording walk" "-S47Jump=chapter1 -S47Face=at:-24;120;2.64;0 -S47RecWalk -S47Light" 12
+# (and the time away's own: taken west of the yard, then the nearest time away walks, its figure the one standing)
+shot recordingAway "S47: recording walks time away 1" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4 -S47RecWalk=near" 34
 # chapter three: from the room after chapter two, and in the truck all the way out to STATION 01
 # (the autopilot, about 132 s of driving) to look at the hut from the gate
 shot chapter3 "chapter ch3 begins" "-S47Jump=chapter3 -S47Face=room"

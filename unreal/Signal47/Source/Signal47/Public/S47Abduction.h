@@ -4,6 +4,7 @@
 #include "S47Audio.h"
 #include "S47Docs.h"
 #include "S47Json.h"
+#include "S47Recording.h"
 #include "S47Seen.h"
 #include "UObject/StrongObjectPtr.h"
 
@@ -290,18 +291,7 @@ public:
 	/** The rings of frost where the player woke (the album names them). */
 	TArray<FVector> RingsShown() const;
 	/** The times away as the recording's walk sees them (story/recording.ts Rec). */
-	struct FRec
-	{
-		int32 N = 0;
-		FString Scene;
-		FVector Take;
-		TOptional<TArray<double>> Path;
-		TOptional<double> Walked;
-		double Clock = 0;
-		FS47JacketWalker* Fig = nullptr;
-		TFunction<void(TOptional<double>)> MarkWalked;
-	};
-	TArray<FRec> Recordings();
+	TArray<TSharedPtr<FS47Rec>> Recordings();
 	/** The walk has the one standing for time away n (held), or gives it back. */
 	void HoldRecord(int32 N, bool bHeld);
 
@@ -328,7 +318,7 @@ private:
 	TOptional<FTone> Tone;
 	FS47Pressure Bed;
 	TArray<TUniquePtr<FS47Group>> Rings;
-	struct FRecord { TUniquePtr<FS47JacketWalker> Fig; FString Scene; bool bHeld = false, bHide = false, bNone = false; FVector Home; double HomeYaw = 0; };
+	struct FRecord { TSharedPtr<FS47JacketWalker> Fig; FString Scene; bool bHeld = false, bHide = false, bNone = false; FVector Home; double HomeYaw = 0; };
 	TArray<FRecord> Records;
 	TArray<double> PathV;
 	double PathT = 0;

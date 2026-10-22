@@ -869,7 +869,7 @@ void FS47Abduction::Ring(const FVector& At, double Scale)
 void FS47Abduction::Record(const FVector& At, const FString& Scene, bool bNone)
 {
 	FRecord R;
-	R.Fig = MakeUnique<FS47JacketWalker>(D.Web, TEXT("abduct:record"));
+	R.Fig = MakeShared<FS47JacketWalker>(D.Web, TEXT("abduct:record"));
 	FS47Node& G = R.Fig->G->Root();
 	G.Position = At; G.Rotation.Y = Rnd(0, UE_DOUBLE_PI * 2); G.Apply();
 	R.Fig->G->SetVisible(false); R.Fig->G->AddToScene();
@@ -910,17 +910,18 @@ void FS47Abduction::RecordsStep()
 	}
 }
 
-TArray<FS47Abduction::FRec> FS47Abduction::Recordings()
+TArray<TSharedPtr<FS47Rec>> FS47Abduction::Recordings()
 {
-	TArray<FRec> Out;
+	TArray<TSharedPtr<FS47Rec>> Out;
 	for (int32 i = 0; i < Records.Num(); ++i)
 	{
 		if (!Data.Spots.IsValidIndex(i) || Data.Spots[i].bCab) continue;
 		const FS47AbductSpot& Sp = Data.Spots[i];
-		FRec R;
-		R.N = i + 1; R.Scene = Records[i].Scene; R.Take = Sp.Take; R.Path = Sp.Path; R.Walked = Sp.Walked; R.Clock = Sp.Clock; R.Fig = Records[i].Fig.Get();
-		R.MarkWalked = [this, i](TOptional<double> C) { if (Data.Spots.IsValidIndex(i)) Data.Spots[i].Walked = C; };
-		Out.Add(MoveTemp(R));
+		const TSharedPtr<FS47Rec> R = MakeShared<FS47Rec>();
+		// (path: undefined when none was kept; the walk's Rec has it empty)
+		R->N = i + 1; R->Scene = Records[i].Scene; R->Take = Sp.Take; R->Path = Sp.Path ? *Sp.Path : TArray<double>(); R->Walked = Sp.Walked; R->Clock = Sp.Clock; R->Fig = Records[i].Fig;
+		R->MarkWalked = [this, i](TOptional<double> C) { if (Data.Spots.IsValidIndex(i)) Data.Spots[i].Walked = C; };
+		Out.Add(R);
 	}
 	return Out;
 }
@@ -1252,5 +1253,34 @@ bool FS47Abduction::SelfTest(TArray<FString>& Lines)
 	int32 Ring = 0;
 	for (int32 X = 0; X < 256; ++X) Ring += F[128 * 256 + X].A > 0 ? 1 : 0;
 	Check(F[128 * 256 + 128].A == 0 && F[0].A == 0 && Ring > 20, TEXT("the frost lies in a ring"));
+	// the times away as the recording's walk has them (story/recording.ts: one Walker, the time away's own
+	// figure; main.ts recs: abduction.recordings(), hold: abduction.holdRecord)
+	{
+		FS47AbductSave Sv;
+		FS47AbductSpot Cab; Cab.Scene = TEXT("saro"); Cab.Take = FVector(0, 0, 80); Cab.Back = Cab.Take; Cab.Clock = 7000; Cab.bCab = true;
+		FS47AbductSpot Foot; Foot.Scene = TEXT("saro"); Foot.Take = FVector(100, 0, -10); Foot.Back = Foot.Take; Foot.Clock = 8000;
+		TArray<double> P;
+		for (int32 i = 0; i < 189; ++i) P.Append({ 100.0, -10 - i * S47Recording::PATH_DT * 1.9, 0.0 });
+		Foot.Path = P;
+		Sv.Count = 2; Sv.Spots = { Cab, Foot };
+		FS47Abduction B{ FS47AbductDeps() };
+		B.Restore(Sv.ToJson());
+		const TArray<TSharedPtr<FS47Rec>> Recs = B.Recordings();
+		Check(Recs.Num() == 1 && Recs[0]->N == 2 && Recs[0]->Path.Num() == 189 * 3 && Recs[0]->Fig.IsValid() && Recs[0]->Clock == 8000 && !Recs[0]->Walked,
+			TEXT("the walk has the times away on foot, each with the figure standing for it"));
+		FS47RecordingDeps Wd;
+		Wd.Recs = [&B] { return B.Recordings(); };
+		Wd.Hold = [&B](int32 N, bool bHeld) { B.HoldRecord(N, bHeld); };
+		FS47Cam Cam; Cam.Pos = FVector(0, 1.6, 30); Cam.Forward = FVector(0, 0, 1);   // looking south, away from it
+		Wd.Camera = [&Cam] { return Cam; };
+		FS47RecordingWalk Wk(Wd);
+		FS47RecordingIn Wi; Wi.bOk = true; Wi.bOut = true; Wi.bMay = true; Wi.Scene = TEXT("saro"); Wi.Pos = FVector(0, 0, 30); Wi.Clock = 9000;
+		Wk.Update(0.1, Wi);
+		Check(Wk.Busy() && Wk.N == 2 && B.Data.Spots[1].Walked.Get(0) == 9000 && Recs[0]->Fig->G->Visible() && Recs[0]->Fig->G->Root().Position.Z < -9,
+			TEXT("it walks the time away's own figure, kept with the case as walked"));
+		Wk.Reset();
+		Check(!Wk.Busy() && Recs[0]->Fig->G->Root().Position == Foot.Take && !Recs[0]->Fig->G->Visible() && B.Data.Spots[1].Walked.Get(0) == 9000,
+			TEXT("given back: home where it stands, out of the view until that place has been"));
+	}
 	return bOk;
 }
