@@ -48,7 +48,7 @@ public:
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 
-	void Toast(const FString& Text, float Secs);
+	void Toast(const FString& Text, float Secs, TFunction<double()> Clock = {});
 	void ClearToasts();
 	void Fade(bool bOn, const FString& Text);
 	bool IsFaded() const { return bFadeOn; }
@@ -63,7 +63,7 @@ public:
 	FString LastToast;
 
 private:
-	struct FToast { FString Text; double Until; };
+	struct FToast { FString Text; double Until; TFunction<double()> Clock; };
 	TArray<FToast> Toasts;
 	TSharedPtr<SVerticalBox> ToastBox;
 	TUniquePtr<FSlateBrush> DotBrush;

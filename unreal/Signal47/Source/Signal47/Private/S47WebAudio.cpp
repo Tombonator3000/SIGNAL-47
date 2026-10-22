@@ -357,6 +357,15 @@ void FS47AudioNode::Disconnect()
 	OutParams.Reset();
 }
 
+void FS47AudioNode::Disconnect(const TSharedPtr<FS47AudioNode>& To)
+{
+	if (!To.IsValid()) return;
+	FScopeLock L(&Ctx->Lock);
+	const FS47AudioNode* Self = this;
+	To->Inputs.RemoveAll([Self](const TWeakPtr<FS47AudioNode>& W) { return !W.IsValid() || W.HasSameObject(Self); });
+	OutNodes.Remove(To);
+}
+
 const FS47AudioBlock& FS47AudioNode::Pull(int64 Quantum)
 {
 	if (Done != Quantum)
@@ -1107,6 +1116,7 @@ void FS47AudioContext::Close()
 		if (OldDest.IsValid()) OldDest->Inputs.Reset();
 	}
 	Timeouts.Reset();
+	Posted.Reset();
 }
 
 void FS47AudioContext::SetTimeout(double Seconds, TFunction<void()> Fn)
@@ -1114,13 +1124,22 @@ void FS47AudioContext::SetTimeout(double Seconds, TFunction<void()> Fn)
 	Timeouts.Add({ Clock + FMath::Max(0.0, Seconds), MoveTemp(Fn) });
 }
 
+void FS47AudioContext::Post(TFunction<void()> Fn)
+{
+	FScopeLock L(&Lock);
+	if (!bClosed) Posted.Add(MoveTemp(Fn));
+}
+
 void FS47AudioContext::Tick(double DeltaSeconds)
 {
 	TArray<TSharedPtr<FS47ScheduledSourceNode>> Over;
+	TArray<TFunction<void()>> Notifications;
 	{
 		FScopeLock L(&Lock);
 		Swap(Over, Ended);
+		Swap(Notifications, Posted);
 	}
+	for (TFunction<void()>& Fn : Notifications) if (Fn) Fn();
 	for (const TSharedPtr<FS47ScheduledSourceNode>& S : Over)
 	{
 		if (S->OnEnded) { TFunction<void()> Fn = S->OnEnded; Fn(); }
@@ -1292,6 +1311,16 @@ bool S47Wa::SelfTest(TArray<FString>& Out)
 	}
 
 	TSharedRef<FS47AudioContext> Ctx = FS47AudioContext::Make(48000.f);
+	// A station feeds two receivers. Retuning one must leave the other connected.
+	{
+		auto C = FS47AudioContext::Make(); auto Source = C->CreateBufferSource();
+		Source->Buffer = C->CreateBuffer(1, 128, 48000); Source->bLoop = true;
+		for (int32 I = 0; I < 128; ++I) Source->Buffer->GetChannelData(0)[I] = 0.25f;
+		auto A = C->CreateGain(), B = C->CreateGain(); Source->Connect(A); Source->Connect(B); A->Connect(C->Destination); B->Connect(C->Destination); Source->Start();
+		float Samples[256]; C->Render(Samples, 128); Near(Samples[100], 0.5, 1e-6, TEXT("one station feeds both receivers"));
+		Source->Disconnect(A); C->Render(Samples, 128); Near(Samples[100], 0.25, 1e-6, TEXT("disconnect(destination) preserves the other receiver"));
+		Source->Stop(); Source->Disconnect(); A->Disconnect(); B->Disconnect(); C->Close();
+	}
 	// (whole quanta, so the next render starts at the context's current time)
 	auto RenderSeconds = [&Ctx](double Seconds)
 	{

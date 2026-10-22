@@ -7,6 +7,7 @@
 #include "S47Legs.h"
 #include "S47Trouble.h"
 #include "S47Truck.h"
+#include "S47TripRadio.h"
 #include "S47Walker.h"
 #include "UObject/Object.h"
 #include "S47World.generated.h"
@@ -72,8 +73,7 @@ public:
 	TFunction<FChoice(const FString& Place)> TruckChoice;
 	/** Whether random trouble may come now (main.ts: the night, no cinematic). */
 	TFunction<bool()> TroubleOk;
-	/** The truck's radio (main.ts turnRadio: R, or Use while looking at it in the cab). Unset until
-	 *  the radio is ported: R does nothing. */
+	/** The truck's radio (main.ts turnRadio: R, or Use while looking at it in the cab). Set by main.ts when the airwaves are made. */
 	TFunction<void()> OnRadio;
 	/** The night's own claims on Use in the cab before the trouble's key and getting out (main.ts
 	 *  useCurrent: Chapter6.turnKey, truckTaken.useKey, the abduction's hold): true takes the press. */
@@ -122,6 +122,9 @@ public:
 
 	/** Seconds the truck has been driven on this trip (not on a free drive), or unset. */
 	TOptional<double> TripSecs() const;
+	TOptional<FS47TripNow> TripNow() const; // World.ts tripNow, for the radio
+	bool AtMotel(const FVector& P) const; // Crossing.ts atMotel
+	bool RoadStopAt(const FVector& P) const; // World.ts roadStopAt: whether it finds a stop
 	/** The speed of the truck being driven (m/s, negative backing up); 0 when nobody drives. */
 	double DrivingSpeed() const;
 	/** Whether the player can get out now (stopped, on a trip, with ground by a door). */

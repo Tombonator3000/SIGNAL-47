@@ -30,7 +30,10 @@ struct FS47BulletinLine { FString Text, Who, By; };
 SIGNAL47_API const TArray<FS47BulletinLine>& S47Bulletin();
 
 /** radio.ts ArchiveProgress: a recording a station is playing (the bulletin), by its id. */
-struct FS47ArchiveProgress { int32 Id = 0; FString State; double Elapsed = 0, Duration = 0; }; // state: 'loading' | 'playing' | 'complete' | 'cancelled'
+#ifndef S47_ARCHIVE_PROGRESS
+#define S47_ARCHIVE_PROGRESS
+struct FS47ArchiveProgress { int32 Id = 0; FString State; double Elapsed = 0, Duration = 0; }; // state: 'loading' | 'playing' | 'complete' | 'cancelled' (also in S47Radio.h)
+#endif
 
 struct FS47NightIn
 {

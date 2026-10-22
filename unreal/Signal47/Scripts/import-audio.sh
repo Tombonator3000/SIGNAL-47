@@ -3,6 +3,8 @@
 #   Content/Audio/Raw     the recordings core/Audio.ts decodes (the free sounds, Kinski's 24 telephone lines,
 #                         the character lines on the telephone) as WAVE files with index.json, and voices.json
 #                         (every voice bank's catalog), for the game's own Web Audio (Scripts/audio-raw.py)
+#                         plus bounded-stream PCM in Raw/media/{music,radio}, and the four lazy
+#                         RadioVoice banks in Raw/voice (outside index.sources, never all preloaded)
 #   Content/Licensed/Raw  the same for the bought sounds, if the private clone is there
 #   /Game/Audio/Sfx       the free sounds in web/src/assets/audio (CC0 and CC BY, see web/THIRD_PARTY_NOTICES.md)
 #   /Game/Audio/Music     the music in web/public/music (CC BY, credited in the game)
@@ -15,13 +17,29 @@
 # Content/Audio and Content/Licensed are ignored by Git; run this after a fresh clone. The raw step needs
 # only python3 and ffmpeg; the asset import needs the editor target built and no editor of this project open.
 # S47_PROJECT=<dir of Signal47.uproject> imports into another checkout (its web/ is the source).
+# S47_AUDIO_RAW_ONLY=1 refreshes only the runtime recordings, without an Unreal asset import.
 set -euo pipefail
 UE_ROOT=${UE_ROOT:-$HOME/.local/opt/UnrealEngine-5.8.4}
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
 D="$(cd "${S47_PROJECT:-$SCRIPTS/..}" && pwd)"
 ROOT="$(cd "$D/../.." && pwd)"
 STAGE=${S47_AUDIO_STAGE:-$HOME/scratch-bm/Signal47-audio}
+# Check executables, not parent shell command strings mentioning an editor command.
+python3 - <<'PY'
+import os
+import sys
+for pid in os.listdir('/proc'):
+    if not pid.isdigit():
+        continue
+    try:
+        executable = os.path.basename(os.readlink('/proc/%s/exe' % pid))
+    except (FileNotFoundError, PermissionError, ProcessLookupError):
+        continue
+    if executable in ('UnrealEditor', 'UnrealEditor-Cmd'):
+        sys.exit('S47: an Unreal editor is running (PID %s); close it before importing audio.' % pid)
+PY
 python3 "$SCRIPTS/audio-raw.py" --web "$ROOT/web/src" --content "$D/Content"
+[ "${S47_AUDIO_RAW_ONLY:-0}" != 1 ] || exit 0
 rm -rf "${STAGE:?}/wav"
 mkdir -p "$STAGE/wav"
 

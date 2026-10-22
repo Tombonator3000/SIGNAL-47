@@ -120,6 +120,7 @@ public:
 	void Connect(const TSharedPtr<FS47AudioNode>& To);
 	void Connect(FS47AudioParam& To);
 	void Disconnect(); // every outgoing connection
+	void Disconnect(const TSharedPtr<FS47AudioNode>& To); // disconnect(destination): just this receiver
 
 	const TSharedRef<FS47AudioContext> Ctx;
 
@@ -368,6 +369,7 @@ public:
 	// window.setTimeout, and the onended events, run on the game thread by Tick (real seconds)
 	void SetTimeout(double Seconds, TFunction<void()> Fn);
 	void Tick(double DeltaSeconds);
+	void Post(TFunction<void()> Fn); // an audio-thread notification, run on the game thread by Tick
 
 	// the audio thread: interleaved frames (one or two channels)
 	void Render(float* Interleaved, int32 Frames, int32 NumChannels = 2);
@@ -392,6 +394,7 @@ private:
 	int32 QPos = S47Quantum;
 	struct FTimeout { double At; TFunction<void()> Fn; };
 	TArray<FTimeout> Timeouts;
+	TArray<TFunction<void()>> Posted;
 	double Clock = 0.0;
 	void RenderQuantum();
 };

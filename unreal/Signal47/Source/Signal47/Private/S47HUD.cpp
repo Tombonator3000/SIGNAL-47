@@ -27,6 +27,11 @@
 #include "S47Chapter1.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightEvents.h"
+#include "S47Radio.h"
+#include "S47TripRadio.h"
+#include "S47Score.h"
+#include "S47Media.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
 #include "S47UI.h"
@@ -78,6 +83,7 @@ void AS47HUD::Start()
 		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
 		bOk &= US47CaseBoard::SelfTest(Lines);
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
+		bOk &= FS47Radio::SelfTest(Lines) & FS47TripRadio::SelfTest(Lines) & FS47Score::SelfTest(Lines) & FS47MediaSource::SelfTest(Lines) & FS47RadioVoice::SelfTest(Lines);
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -162,6 +168,32 @@ void AS47HUD::Start()
 		M->Flow->HaveCamera = [M] { return M->FieldCamera && M->FieldCamera->bHave; };
 		// main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses, the flashlight, the album)
 		M->Night = NewObject<US47Night>(M); M->Night->Init(M);
+		{
+			// main.ts nightEvents' radio hooks: the truck's radio and the bulletin on 1420
+			FS47NightHooks& H = M->Night->Hooks;
+			H.CarRadioOn = [M] { return M->CarRadio.IsValid() && M->CarRadio->bOn; };
+			H.Radio1420 = [M] { if (!M->CarRadio.IsValid() || !M->Radio.IsValid() || !M->CarRadio->Live() || M->CarRadio->Station != TEXT("caliche")) return false; const TSharedPtr<FS47Station>* St = M->Radio->Stations.Find(TEXT("caliche")); return St && St->IsValid() && (*St)->Free(); };
+			H.CarRadioDrift = [M](double Secs) { return M->CarRadio.IsValid() && M->CarRadio->Live() && M->CarRadio->Drift(Secs); };
+			H.SetCarRadio = [M](const FString& St) { if (M->CarRadio.IsValid()) M->CarRadio->Set(true, St); };
+			H.Bulletin = [M]() -> double
+			{
+				const TSharedPtr<FS47Station>* St = M->Radio.IsValid() ? M->Radio->Stations.Find(TEXT("caliche")) : nullptr;
+				if (!St || !St->IsValid()) return 0;
+				TArray<FS47RadioLine> Lines;
+				for (const FS47BulletinLine& L : S47Bulletin()) { FS47RadioLine R; R.Text = L.Text; R.Who = L.Who; R.By = L.By; Lines.Add(R); }
+				return (*St)->CutIn(Lines, M->Story ? M->Story->Clock() : 0);
+			};
+			H.BulletinProgress = [M]() -> TOptional<FS47ArchiveProgress>
+			{
+				const TSharedPtr<FS47Station>* St = M->Radio.IsValid() ? M->Radio->Stations.Find(TEXT("caliche")) : nullptr;
+				return St && St->IsValid() ? (*St)->ArchiveStatus() : TOptional<FS47ArchiveProgress>();
+			};
+			H.BulletinHeard = [M]
+			{
+				return M->World && M->World->bDriving && M->CarRadio.IsValid() && M->CarRadio->Live() && M->CarRadio->Station == TEXT("caliche") && M->CarRadio->Power > 0.5
+					&& FMath::Fmod(M->Story ? M->Story->Clock() : 0.0, 86400.0) < S47Radio::SIGN_OFF;
+			};
+		}
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

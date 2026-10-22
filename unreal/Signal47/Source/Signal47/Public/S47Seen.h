@@ -127,6 +127,9 @@ struct SIGNAL47_API FS47TownSeen
 	void Remove(const FString& K) { Keys.Remove(K); }
 	void Clear() { Keys.Reset(); }
 	TArray<FString> Array() const { return Keys.Array(); }
+	int32 Num() const { return Keys.Num(); }
+	bool IsEmpty() const { return Keys.IsEmpty(); }
+	void Empty() { Keys.Empty(); }
 };
 
 namespace S47Seen

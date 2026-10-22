@@ -18,7 +18,9 @@
 - [x] `core/Audio.ts`, `signalVoice.ts` og `ambience.ts` portert på en Web Audio i C++, kryssjekket mot Chromium (2026-10-22).
 - [ ] Natta ute i gang som i main.ts: `StartNight()` etter `StartRoomTone()`, `NightLife(dt, spillerens posisjon, klokka)` hver ramme, `SetSpace(room|yard|lab)` ved områdebytte, `Suspend` i pausen, volumene fra innstillingene.
 - [ ] Prologen spiller tonene med `Beep(...)` og nettversjonens tall i stedet for filene fra make-synth.py, og radioen i høyde 1,45 som i Prologue.ts.
-- [ ] ReadAloud, RecordedDialogue og RadioVoice (stemmebankene under /Game/Audio/Voice, katalogene i Content/Audio/Raw/voices.json), musikken (score.ts) og radioen (radio.ts); `decoder.ts` trenger en ConvolverNode, `score.ts` og `radio.ts` en kilde for lange lydfiler.
+- [ ] ReadAloud og RecordedDialogue (stemmebankene under /Game/Audio/Voice, katalogene i Content/Audio/Raw/voices.json); `decoder.ts` trenger en ConvolverNode.
+- [x] RadioVoice, radio.ts, tripRadio.ts og score.ts med kilde for lange opptak, volum, innkobling og selvtester (2026-10-22).
+- [ ] Radio-/musikkporten prøvd i samlet pakket bygg med hele screenshots.sh og menneskelig lytting/input. Koble øvrige nattsystemer til Score.Held og samme Main.TownSeen; se RADIO_PORT.md.
 - [ ] Lagring ved kontrollpunkter.
 - [ ] Kapittel 1 til 6 (web/src/story) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
 - [x] Kjøringen (web/src/drive) og turene i World.ts (2026-10-22). Gjenstår: eksporten kjøres på nytt for `drive` i manifestet, lydene laget med Web Audio (dekk, vind, startmotor, ferist), lyktenes mønster (headSlots) i flomlysmaterialet, lyktene på dineren, byen og motellet (shareLights), radioen.
@@ -42,6 +44,8 @@
 - [ ] Saksbrettets oppsett i lagringen: sett `M->Flow->SaveBoard` og `LoadBoard` til CaseBoard sin Save()/Load().
 - [x] Feltkameraet og rullen i Kit-fanen: `M->Flow->HaveCamera` og `RollText` (2026-10-22).
 - [ ] Musikk- og radionivået (Music, Radio) inn i lydmodulen når den har egne busser; volumet virker allerede.
+- [ ] Feltkameraet og rullen i Kit-fanen: sett `M->Flow->HaveCamera` og `RollText` når kapittel 1 og albumet er portert.
+- [x] Musikk- og radionivået (Music, Radio) inn i lydmodulens busser, inklusive tittellåten (2026-10-22).
 - [ ] Worn VHS (bildet `heavy`) i M_WebTone; nå bare Clean og VHS.
 - [ ] Fortelleren (Serling) til åpningskortet og kapittelkortet når stemmene er portert.
 

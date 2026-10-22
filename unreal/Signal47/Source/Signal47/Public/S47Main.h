@@ -79,6 +79,19 @@ public:
 	// What main.ts's step() does each frame after the player moved (the story is stepped by its
 	// own actor; the systems ported from main.ts go here in main.ts's order).
 	void Step(double Dt);
+	// main.ts: the airwaves, the two receivers, the programme on the way and the place's score.
+	void InitRadio();
+	void RadioStep(double Dt);
+	void TurnRadio();
+	void ResetRadio(double Clock);
+	TSharedPtr<class FS47Radio> Radio;
+	TSharedPtr<class FS47Receiver> CarRadio, DinerRadio;
+	TSharedPtr<class FS47TripRadio> TripRadio;
+	TSharedPtr<class FS47Score> Score;
+	bool bRadioHeard = false, bCarNear = false;
+	FVector RadioAt = FVector::ZeroVector, CounterAt = FVector::ZeroVector;
+	FString RadioTest; // -S47Radio=<station>: an audible receiver beside the test camera
+	bool bRadioTestLogged = false;
 	FString Space; // the acoustic space the sound is in: 'room' | 'yard' | 'lab' (main.ts)
 	bool ModalOpen() const;
 };

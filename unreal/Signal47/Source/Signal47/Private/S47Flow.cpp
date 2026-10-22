@@ -27,6 +27,10 @@
 #include "S47Flashlight.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Radio.h"
+#include "S47TripRadio.h"
+#include "S47Score.h"
+#include "S47World.h"
 #include "S47Opening.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -115,6 +119,7 @@ UWorld* US47Flow::GameWorld() const { return M && M->Hud ? M->Hud->GetWorld() : 
 void US47Flow::Init(US47Main* InM)
 {
 	M = InM;
+	M->InitRadio();
 	LoadStore();
 	Saves.Init();
 	// the settings shared by the pause menu and the title screen; all kept on this device
@@ -144,6 +149,8 @@ void US47Flow::Init(US47Main* InM)
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Cmd)) Picture = Cmd == TEXT("off") ? TEXT("off") : TEXT("vhs");
 	else ApplyPicture(!Chosen.IsEmpty() ? Chosen : Quality != TEXT("low") ? TEXT("vhs") : TEXT("off"), false);
 	ApplyVolume();
+	if (M->Audio) { M->Audio->SetMusic(MusicLevel); M->Audio->SetRadio(RadioLevel); }
+	if (M->Radio) { M->Radio->SetHostVoice(bArtBell); M->Radio->SetCallerVoice(bRadioCast); }
 	ApplyLook();
 
 	// the opening card (core/Opening.ts)
@@ -239,6 +246,7 @@ void US47Flow::Boot()
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) M->Story->Jump(Jump);
 		else M->Story->Start();
 		if (M->Night) M->Night->Restored();
+		M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 		return;
 	}
 	// the first title: nothing of the night is heard yet (the room tone starts with the night), and
@@ -324,30 +332,13 @@ void US47Flow::MenuMusic()
 	if (M->Mode != EMode::Title || (Opening && Opening->Active())) return;
 	// audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }): the one before stops
 	StopMusic(0.05f);
-	USoundBase* S = nullptr;
-	for (const TCHAR* F : { TEXT("/Game/Audio/Sfx"), TEXT("/Game/Audio/Music") })
-	{
-		S = LoadObject<USoundBase>(nullptr, *FString::Printf(TEXT("%s/title_music.title_music"), F));
-		if (S) break;
-	}
-	UWorld* World = GameWorld();
-	if (!S || !World) return;
-	Music = UGameplayStatics::CreateSound2D(World, S, 0.6f * MusicLevel, 1.f, 0.f, nullptr, true, false);
-	if (!Music) return;
-	// (the recording is not marked looping in the import: it starts again when it ends)
-	TWeakObjectPtr<UAudioComponent> W = Music;
-	Music->OnAudioFinishedNative.AddLambda([W](UAudioComponent*) { if (W.IsValid()) W->Play(); });
-	Music->Play();
+	if (M->Audio) { FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.6f; M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O); }
 }
 
 void US47Flow::StopMusic(float Fade)
 {
 	// audio.stop('music', fade): setTargetAtTime(0, t, fade), gone after six of it
-	if (!Music) return;
-	UAudioComponent* C = Music;
-	Music = nullptr;
-	C->OnAudioFinishedNative.Clear();
-	if (Fade > 0.f) C->FadeOut(Fade * 3.f, 0.f); else C->Stop();
+	if (M->Audio) M->Audio->Stop(TEXT("music"), Fade);
 }
 
 void US47Flow::ShowTitle()
@@ -470,8 +461,8 @@ void US47Flow::StartGame(const FStart& O)
 	M->Playtime = O.Playtime;
 	if (CaseId) Saves.SetActive(CaseId);
 	if (M->Audio) M->Audio->StartRoomTone();
-	// (audio.startNight, the Score, space = 'room', world.placeTruck: not in the Unreal version yet)
-	if (M->Web) M->Web->Enter(TEXT("saro"));
+	// (audio.startNight, space = 'room', world.placeTruck: not in the Unreal version yet)
+	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	Restoring = O.State;
 	bRestoringNow = true;
 	// what is saved for the systems not ported yet goes back into the next save as it was
@@ -496,10 +487,11 @@ void US47Flow::StartGame(const FStart& O)
 	// (abduction.refile, follow, arrayBack, archive, fieldBook, the town's papers, lostNights, motelTv: not ported yet)
 	bRestoringNow = false;
 	Restoring.Reset();
-	// (roadside, the CB, the phones, the radio: not ported yet)
+	// (roadside and the CB: not ported yet)
+	M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 	if (M->Audio) M->Audio->StopPhoneCalls();
 	// world.enter(area); (placeAtStation, placeAtRoom6, placeAtDiner: the world's, not ported yet)
-	if (M->Web && Area != TEXT("saro")) M->Web->Enter(Area);
+	if (M->World) M->World->Enter(Area); else if (M->Web && Area != TEXT("saro")) M->Web->Enter(Area);
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
 	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player && M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z"))))
@@ -542,6 +534,8 @@ void US47Flow::LeavePlay()
 	M->UI->Viewfinder(false);
 	M->UI->Close(true);
 	StopMusic(0.5f);
+	if (M->Score) M->Score->Stop();
+	if (M->Radio) M->Radio->Reset(M->Story ? M->Story->Clock() : 0);
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
 	// nightEvents, the seen log (quiet) and the curve (S47Night)
 	if (M->Night) M->Night->Leave();
@@ -549,7 +543,7 @@ void US47Flow::LeavePlay()
 	// world.stopDriving, roadside, townEvents, roofSteps, the CB, reelTape, officePhone, truckB,
 	// truckTaken, the radio, the odometer: not ported yet)
 	if (M->Story) M->Story->Reset();
-	if (M->Web) M->Web->Enter(TEXT("saro"));
+	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
 }
 
@@ -561,13 +555,15 @@ void US47Flow::ToTitle()
 	M->UI->Viewfinder(false);
 	M->UI->Close(true);
 	StopMusic(1.5f);
+	if (M->Score) M->Score->Stop();
+	if (M->Radio) M->Radio->Reset(M->Story ? M->Story->Clock() : 0);
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
 	// the curve (S47Night)
 	if (M->Night) M->Night->Leave(true);
 	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, truckTaken, archive,
 	// arrayTip, world.stopDriving, roadside, the CB, the radio: not ported yet)
 	if (M->Story) M->Story->Reset();
-	if (M->Web) M->Web->Enter(TEXT("saro"));
+	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
 	M->UI->Fade(false);
 	ShowTitle();
@@ -580,6 +576,8 @@ void US47Flow::OpenPause()
 	if (M->bPausedByMenu) return;
 	// (readAloud, earlDialogue, narrator, npcDialogue stop: the voices are not ported yet)
 	M->bPausedByMenu = true;
+	if (M->Audio) M->Audio->Suspend(true);
+	if (M->Score) M->Score->Pause(true);
 	// audio.suspend(true), and the frame does nothing: the world stops, and its sounds with it
 	UGameplayStatics::SetGamePaused(M->Hud, true);
 	TWeakObjectPtr<US47Flow> Self = this;
@@ -587,6 +585,8 @@ void US47Flow::OpenPause()
 	{
 		if (!Self.IsValid()) return;
 		Self->M->bPausedByMenu = false;
+		if (Self->M->Audio) Self->M->Audio->Suspend(false);
+		if (Self->M->Score) Self->M->Score->Pause(false);
 		UGameplayStatics::SetGamePaused(Self->M->Hud, false);
 	};
 	FS47PauseOpts O = Settings();
@@ -624,15 +624,15 @@ FS47PauseOpts US47Flow::Settings()
 	O.bKinski = bKinski;
 	O.OnKinski = [this](bool V) { bKinski = V; if (M->Audio) { M->Audio->bKinskiCalls = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("kinskiReadAloud"), V); };
 	O.bArtBell = bArtBell;
-	O.OnArtBell = [this](bool V) { bArtBell = V; StoreSet(TEXT("artBellRadioHost"), V); }; // (radio.setHostVoice, Earl: not ported yet)
+	O.OnArtBell = [this](bool V) { bArtBell = V; if (M->Radio) M->Radio->SetHostVoice(V); StoreSet(TEXT("artBellRadioHost"), V); }; // Earl dialogue is ported separately.
 	O.bRadioCast = bRadioCast;
-	O.OnRadioCast = [this](bool V) { bRadioCast = V; StoreSet(TEXT("radioCallerVoices"), V); };
+	O.OnRadioCast = [this](bool V) { bRadioCast = V; if (M->Radio) M->Radio->SetCallerVoice(V); StoreSet(TEXT("radioCallerVoices"), V); };
 	O.Volume = Volume; O.Sens = Sens;
 	O.OnVolume = [this](float V) { Volume = V; ApplyVolume(); StoreSet(TEXT("vol"), double(V)); };
 	O.Music = MusicLevel;
-	O.OnMusic = [this](float V) { MusicLevel = V; if (Music) Music->SetVolumeMultiplier(0.6f * V); StoreSet(TEXT("music"), double(V)); };
+	O.OnMusic = [this](float V) { MusicLevel = V; if (M->Audio) M->Audio->SetMusic(V); StoreSet(TEXT("music"), double(V)); };
 	O.Radio = RadioLevel;
-	O.OnRadio = [this](float V) { RadioLevel = V; StoreSet(TEXT("radioVol"), double(V)); }; // (the radios are not ported yet)
+	O.OnRadio = [this](float V) { RadioLevel = V; if (M->Audio) M->Audio->SetRadio(V); StoreSet(TEXT("radioVol"), double(V)); };
 	O.OnSens = [this](float V) { Sens = V; ApplyLook(); StoreSet(TEXT("sens"), double(V)); };
 	O.Quality = Quality;
 	O.OnQuality = [this](const FString& Q) { ApplyQuality(Q); };
@@ -689,7 +689,7 @@ void US47Flow::ApplyLook()
 void US47Flow::ApplyVolume()
 {
 	// audio.setVolume: the master level
-	if (FAudioDevice* D = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr) D->SetTransientPrimaryVolume(Volume);
+	if (M->Audio) M->Audio->SetVolume(Volume);
 }
 
 void US47Flow::Activation(bool bActive)
@@ -753,6 +753,7 @@ S47J::FObj US47Flow::GameState()
 	// (the fields of the systems not in the Unreal version yet, as the opened save had them)
 	const S47J::FObj State = Carry.IsValid() ? S47J::Clone(Carry) : S47J::New();
 	S47J::Set(State, TEXT("v"), 2);
+	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
 	S47J::Set(State, TEXT("area"), M->Web ? M->Web->Area() : FString(TEXT("saro")));
@@ -1015,8 +1016,7 @@ FS47MapAt US47Flow::MapAt() const
 
 TArray<FString> US47Flow::TownSeen() const
 {
-	// main.ts townSeen (US47Main), as the night has it now
-	return M->TownSeen.Array();
+	return M ? M->TownSeen.Array() : S47J::Strs(Carry, TEXT("town"));
 }
 
 TArray<FS47KitItem> US47Flow::KitItems() const
@@ -1153,5 +1153,13 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 	Check(TEXT("outside"), Outside(FVector(-20, 0, 10)) && !Outside(FVector(0, 0, 0)));
 	Check(TEXT("at the motel"), AtMotel(FVector(-40, 0, 680)) && !AtMotel(FVector(-40, 0, 100)));
 	Check(TEXT("highway south"), OnHighway(FVector(-25, 0, 100)) && !OnHighway(FVector(-30, 0, 680)));
+	US47Main* Main = NewObject<US47Main>(); US47Flow* Flow = NewObject<US47Flow>(); Flow->M = Main;
+	Flow->Carry = S47J::New(); S47J::Set(Flow->Carry,TEXT("unported"),TEXT("preserved"));
+	for (const TCHAR* K : {TEXT("ev:boy"),TEXT("mark:boy@9000"),TEXT("tr:out1"),TEXT("ln:reel")}) Main->TownSeen.Add(K);
+	const auto Saved = S47J::Read(S47J::Write(Flow->GameState())); const auto Town = S47J::Strs(Saved,TEXT("town"));
+	Check(TEXT("radio and trip findings survive save JSON"), Town.Num() == 4 && Town.Contains(TEXT("ev:boy")) && Town.Contains(TEXT("tr:out1")) && S47J::Str(Saved,TEXT("unported")) == TEXT("preserved"));
+	Main->Audio = NewObject<US47Audio>(); Main->Radio = MakeShared<FS47Radio>(Main->Audio); Main->ResetRadio(3 * 3600);
+	Check(TEXT("heard boy and old reel prevent a repeat after restore"), Main->Radio->bBoyCalled && !Main->Radio->Receivers.Num());
+	Main->TripRadio.Reset(); Main->Radio.Reset();
 	return bOk;
 }
