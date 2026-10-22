@@ -32,16 +32,24 @@ class FS47ConsoleKit;
 //                    processor (S47ConsoleKit.h): 'decoder' is used there, its small green display
 //                    shows the canvas, its VU meters' needles follow what plays, and the homemade deck
 //                    on the rack is taken away. Reel 047 plays on it too; its reels no longer turn
-//                    (the spare reel beside the unit is part of the desk's one clutter mesh).
+//                    (the spare reel beside the unit is part of the desk's one clutter mesh). The
+//                    panel stays over the game: the unit's display is a strip of 18 x 4 cm (4.5 to
+//                    1), too small and too narrow for it to be drawn there as the receiver console
+//                    is on its CRT (SS47ScreenView).
 //   the answer       the panel has an ANSWER row: seven keys, the seven notes of the 7-group as the
-//                    harmonized playback sounds them (1 the first and highest, 7 the last and lowest).
-//                    The last seven keys pressed are checked against T. Vega's (7 5 3 2 1 4 6), which
-//                    is on a page of his found under the spare reel once the signal is locked. Keyed
-//                    right, the processor gives it back by itself (the four, then the seven, slower,
-//                    the reverb opening), the room answers (the screens glitch, the lights dip, the
-//                    array's red lamps blink as one), and off the end of tape B comes TAPE A, 1947: a
-//                    paper filed with a note, kept with the case (NightShiftState.tapeA). Once a case.
-//                    No objective and no hint names any of it.
+//                    harmonized playback sounds them (1 the first and highest, 7 the last and lowest;
+//                    a key lights its bar on the scope and the display). The last seven keys pressed
+//                    are checked against T. Vega's (7 5 3 2 1 4 6: the four rising, the octave, then
+//                    down), which is on a page of his found under the spare reel once the signal is
+//                    locked. Keyed right, the processor gives it back by itself (the four, then the
+//                    seven, slower, the reverb opening), the room answers (the array's red lamps blink
+//                    as one, at the last note the screens glitch and the lights dip), and it runs on
+//                    past the end of tape B into TAPE A, a wire from 1947: someone whistling the four
+//                    and the seven down the field line, the seven coming back as the processor has
+//                    just played them (the lights stutter with them), the field telephone's crank, T.
+//                    Vega's correction (the line's recording), cutters, and nothing (the night outside
+//                    hushed). Then a paper filed with a note, kept with the case (NightShiftState.tapeA).
+//                    Once a case. No objective and no hint names any of it.
 
 struct FS47DecoderDeskDeps
 {
@@ -55,16 +63,18 @@ struct FS47DecoderDeskDeps
 	TFunction<bool()> Power;
 	// (Unreal only) reel 047's level off the tape (the VU meters while it plays); the case's papers (one
 	// filed, filing one with its note), whether TAPE A has come in this case and marking it, a save; the
-	// room as the answer comes back (the screens' glitch and the lights' dip, in seconds; the array's
-	// red lamps blinking as one, or each in its own phase again); the clock for the notes ('02:31')
+	// room as the answer comes back (the screens' glitch, the lights' dip and their flicker, in seconds;
+	// the array's red lamps blinking as one, or each in its own phase again; the night outside quiet, as
+	// Ambience.hush); the clock for the notes ('02:31')
 	TFunction<double()> ReelLevel;
 	TFunction<bool(const FString&)> HasPaper;
 	TFunction<void(const FS47Doc&, const FString&)> File;
 	TFunction<bool()> Answered;
 	TFunction<void()> SetAnswered;
 	TFunction<void()> Save;
-	TFunction<void(double, double)> React;
+	TFunction<void(double, double, double)> React;
 	TFunction<void(bool)> Lamps;
+	TFunction<void(double, double, double, double)> Hush;
 	TFunction<FString()> Clock;
 };
 

@@ -30,9 +30,11 @@ void FS47LevelMeter::Process(int64 Quantum)
 double FS47LevelMeter::Take()
 {
 	FScopeLock L(&Ctx->Lock);
-	const double R = Frames > 0 ? FMath::Sqrt(Sum / double(Frames)) : 0.0;
+	// (the audio thread renders in blocks, not once a frame: a frame that no block came through keeps
+	// the last block's level, else the meters would read silence between the blocks)
+	if (Frames > 0) Held = FMath::Sqrt(Sum / double(Frames));
 	Sum = 0; Frames = 0;
-	return R;
+	return Held;
 }
 
 FS47DecoderPlayer::FS47DecoderPlayer(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const FVector& At, const TSharedPtr<FS47AudioBuffer>& InNoise)
@@ -102,7 +104,7 @@ void FS47DecoderPlayer::Start(const FS47DecoderSet& P)
 	FS47AudioContext::FBatch B(*Ctx);
 	const double Now = Ctx->CurrentTime();
 	bPlaying = true;
-	bPhrase = false; // (Unreal: the tape over the answer, if it was still playing by itself)
+	bPhrase = false; KeyAt = -1; // (Unreal: the tape over the answer, if it was still playing by itself; a key's light)
 	T0 = Now + 0.15; Next = 0; Cycle = 0; Started = Now; Marks.Reset();
 	Out->Gain.CancelScheduledValues(Now);
 	Ducked = 1;
@@ -233,10 +235,11 @@ void FS47DecoderPlayer::Duck(double K)
 
 // ---------- (Unreal only, on Tom's request) the ANSWER row's keys, and the answer by itself ----------
 
-void FS47DecoderPlayer::Key(double Deg)
+void FS47DecoderPlayer::Key(int32 I)
 {
 	FS47AudioContext::FBatch B(*Ctx);
 	const double Now = Ctx->CurrentTime();
+	I = FMath::Clamp(I, 0, 6);
 	if (!bPlaying && !bPhrase)
 	{
 		// the output is shut while nothing plays: open for the note and its tail in the reverb, shut after
@@ -245,20 +248,21 @@ void FS47DecoderPlayer::Key(double Deg)
 		Out->Gain.SetTargetAtTime(0.9, Now, 0.01);
 		Out->Gain.SetTargetAtTime(0, Now + 0.35 + 0.11 * Params.Stretch * 2.2 + 3.6, 0.5);
 		ApplySpace();
+		// its bar on the displays while it sounds (the playback lights its own when it plays)
+		KeyAt = Now + 0.02; KeyI = 4 + I;
 	}
-	Note(Now + 0.02, Deg, 0.11 * Params.Stretch, false);
+	Note(Now + 0.02, DEG_B[I], 0.11 * Params.Stretch, false);
 }
 
-void FS47DecoderPlayer::Phrase(const TArray<double>& Seven, double K)
+void FS47DecoderPlayer::Phrase(const TArray<double>& Seven, const FS47AnswerTimes& Tm, const TSharedPtr<FS47AudioBuffer>& Voice)
 {
 	// whatever plays stops where it is (the pad and the raw voice let go), and the processor gives the
 	// answer back by itself: the four, the gap, the seven as they were keyed, on a slower clock, with
 	// the bass under the first of each group; the reverb opens up to all of it by the last note
 	StopVoices();
-	bPlaying = false; Current = -1;
+	bPlaying = false; Current = -1; KeyAt = -1;
 	FS47AudioContext::FBatch B(*Ctx);
-	const double Now = Ctx->CurrentTime();
-	FS47AnswerTimes Tm; Tm.K = K;
+	const double Now = Ctx->CurrentTime(), K = Tm.K;
 	bPhrase = true; Marks.Reset(); Ducked = 1;
 	PhraseEnd = Now + Tm.End(); PhraseK = K;
 	Out->Gain.CancelScheduledValues(Now);
@@ -272,17 +276,20 @@ void FS47DecoderPlayer::Phrase(const TArray<double>& Seven, double K)
 	// the room's reverb back as the panel has it once the wire comes (a small sound, close)
 	Wet->Gain.SetValueAtTime(1.6, Now + Tm.Wire()); Wet->Gain.LinearRampToValueAtTime(W0 * 0.5, Now + Tm.Wire() + 0.8);
 	Dry->Gain.SetValueAtTime(0.45, Now + Tm.Wire()); Dry->Gain.LinearRampToValueAtTime(1, Now + Tm.Wire() + 0.8);
-	Wire(Now + Tm.Wire(), Seven);
+	Wire(Now + Tm.Wire(), Seven, Tm, Voice);
 	Out->Gain.SetTargetAtTime(0, Now + Tm.End(), 0.3);
 }
 
-void FS47DecoderPlayer::Wire(double At, const TArray<double>& Seven)
+void FS47DecoderPlayer::Wire(double At, const TArray<double>& Seven, const FS47AnswerTimes& Tm, const TSharedPtr<FS47AudioBuffer>& Voice)
 {
-	// TAPE A: a wire recording from 1947, small and close. Its hiss; someone whistling the four and the
-	// seven, two octaves up, with a little wow in the wire; a field telephone rung by its handle (the crank bell
-	// reel 047 has, S47Reel047.h); cutters, and then nothing at all, not even the hiss
-	const FS47AnswerTimes Tm; // (only the wire's own spacing is used: offsets from its start)
-	const double Whistle0 = Tm.Whistle(0) - Tm.Wire(), WhistleEnd = Tm.Whistle(10) - Tm.Wire() + 0.3, Crank = Tm.Crank() - Tm.Wire(), Cut = Tm.Cut() - Tm.Wire();
+	// TAPE A: a wire recording from 1947, small and close, the field line from C into the hut. Its hiss;
+	// someone out on the line whistling the four and the seven as they were keyed; the seven coming back,
+	// slow, as the processor has just played them, in the hut and close to its microphone (1947 took in
+	// this night: HISTORIE.md); the field telephone rung by its handle
+	// (the crank bell reel 047 has, S47Reel047.h); T. Vega's correction, the line's own recording; the
+	// cutters, and then nothing on the wire at all, not even the hiss
+	auto Off = [&Tm](double T) { return T - Tm.Wire(); };
+	const double Crank = Off(Tm.Crank()), Cut = Off(Tm.Cut());
 	const TSharedRef<FS47GainNode> Wg = Ctx->CreateGain(); Wg->Gain.SetValue(1);
 	const TSharedRef<FS47BiquadFilterNode> Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(320);
 	const TSharedRef<FS47BiquadFilterNode> Lp = Ctx->CreateBiquadFilter(); Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(3400);
@@ -301,7 +308,8 @@ void FS47DecoderPlayer::Wire(double At, const TArray<double>& Seven)
 		const TSharedRef<FS47GainNode> Cg = Ctx->CreateGain(); Cg->Gain.SetValueAtTime(0, At + Cut - 0.04); Cg->Gain.LinearRampToValueAtTime(0.5, At + Cut - 0.035); Cg->Gain.ExponentialRampToValueAtTime(0.001, At + Cut + 0.04);
 		C->Connect(Cb); Cb->Connect(Cg); Cg->Connect(Wg); C->Start(At + Cut - 0.04); C->Stop(At + Cut + 0.06);
 	}
-	// the whistle: a sine with a breath of vibrato, each note pushed in and let go
+	// the whistle: a sine with a breath of vibrato and the wire's wow, each note pushed in and let go
+	const double W0 = Off(Tm.Whistle(0)) - 0.05, W1 = Off(Tm.Whistle(10)) + 0.35;
 	const TSharedRef<FS47OscillatorNode> Wo = Ctx->CreateOscillator(); Wo->SetType(TEXT("sine"));
 	const TSharedRef<FS47OscillatorNode> Vib = Ctx->CreateOscillator(); Vib->Frequency.SetValue(5.3);
 	const TSharedRef<FS47GainNode> Vd = Ctx->CreateGain(); Vd->Gain.SetValue(14); Vib->Connect(Vd); Vd->Connect(Wo->Detune);
@@ -312,19 +320,45 @@ void FS47DecoderPlayer::Wire(double At, const TArray<double>& Seven)
 	for (int32 J = 0; J < 11; ++J)
 	{
 		const double Deg = J < 4 ? DEG_A[J] : Seven.IsValidIndex(J - 4) ? Seven[J - 4] : DEG_B[J - 4];
-		const double T = At + Tm.Whistle(J) - Tm.Wire();
+		const double T = At + Off(Tm.Whistle(J));
 		Wo->Frequency.SetValueAtTime(F0 * 4 * FMath::Pow(2.0, (Deg + Params.Pitch) / 12), T);
 		We->Gain.SetValueAtTime(0, T); We->Gain.LinearRampToValueAtTime(0.05, T + 0.04);
 		We->Gain.SetValueAtTime(0.05, T + 0.22); We->Gain.LinearRampToValueAtTime(0, T + 0.27);
 	}
-	Wo->Start(At + Whistle0 - 0.05); Wo->Stop(At + WhistleEnd);
-	Vib->Start(At + Whistle0 - 0.05); Vib->Stop(At + WhistleEnd);
-	Wow->Start(At + Whistle0 - 0.05); Wow->Stop(At + WhistleEnd);
+	Wo->Start(At + W0); Wo->Stop(At + W1);
+	Vib->Start(At + W0); Vib->Stop(At + W1);
+	Wow->Start(At + W0); // (on through the seven back: stopped after them)
+	// the seven back: the processor's bells as the wire took them down in the hut, an octave up, thin and
+	// louder than the line, with the same wow in them (the wire's speed, not the notes')
+	for (int32 J = 0; J < 7; ++J)
+	{
+		const double Deg = Seven.IsValidIndex(J) ? Seven[J] : DEG_B[J];
+		const double T = At + Off(Tm.Back(J)), F = F0 * 2 * FMath::Pow(2.0, (Deg + Params.Pitch) / 12);
+		const TSharedRef<FS47GainNode> Env = Ctx->CreateGain(); Env->Gain.SetValueAtTime(0, T);
+		Env->Gain.LinearRampToValueAtTime(0.14, T + 0.03); Env->Gain.ExponentialRampToValueAtTime(0.0008, T + 1.6);
+		Env->Connect(Wg);
+		for (const double Mul : { 1.0, 1.5, 2.0 })
+		{
+			const TSharedRef<FS47OscillatorNode> O = Ctx->CreateOscillator(); O->Frequency.SetValue(F * Mul);
+			const TSharedRef<FS47GainNode> G = Ctx->CreateGain(); G->Gain.SetValue(Mul == 1.0 ? 1.0 : 0.3);
+			const TSharedRef<FS47GainNode> Wn = Ctx->CreateGain(); Wn->Gain.SetValue(6); Wow->Connect(Wn); Wn->Connect(O->Detune);
+			O->Connect(G); G->Connect(Env); O->Start(T); O->Stop(T + 1.7);
+		}
+	}
+	Wow->Stop(At + Off(Tm.Back(6)) + 1.8);
 	// the field telephone, rung by its handle a little way off: two turns of the crank bell
 	const TSharedRef<FS47BufferSourceNode> Bell = Ctx->CreateBufferSource(); Bell->Buffer = S47Reel047::CrankBell(*Ctx);
 	const TSharedRef<FS47BiquadFilterNode> Bb = Ctx->CreateBiquadFilter(); Bb->SetType(TEXT("bandpass")); Bb->Frequency.SetValue(1300); Bb->Q.SetValue(0.7);
 	const TSharedRef<FS47GainNode> Bg = Ctx->CreateGain(); Bg->Gain.SetValue(0.22);
 	Bell->Connect(Bb); Bb->Connect(Bg); Bg->Connect(Wg); Bell->Start(At + Crank, 0, 3.0);
+	// his correction, the line's own recording (the receiver in the hut has it; E10: the recorded voice
+	// at 02:17:00, as the carrier ceased), far down the line; the cutters come in on its last word
+	if (Voice.IsValid())
+	{
+		const TSharedRef<FS47BufferSourceNode> V = Ctx->CreateBufferSource(); V->Buffer = Voice;
+		const TSharedRef<FS47GainNode> Vg = Ctx->CreateGain(); Vg->Gain.SetValue(0.55);
+		V->Connect(Vg); Vg->Connect(Wg); V->Start(At + Off(Tm.Voice()));
+	}
 }
 
 void FS47DecoderPlayer::Update()
@@ -340,7 +374,17 @@ void FS47DecoderPlayer::Update()
 		if (Now >= PhraseEnd + 0.6) { bPhrase = false; Current = -1; ApplySpace(); }
 		return;
 	}
-	if (!bPlaying) return;
+	if (!bPlaying)
+	{
+		// (Unreal) a key's note alone: its bar lit while it sounds
+		if (KeyAt >= 0)
+		{
+			const double Now = Ctx->CurrentTime();
+			Current = Now >= KeyAt && Now - KeyAt < 0.22 * Params.Stretch ? KeyI : -1;
+			if (Now - KeyAt >= 0.22 * Params.Stretch) KeyAt = -1;
+		}
+		return;
+	}
 	FS47AudioContext::FBatch B(*Ctx);
 	const double Now = Ctx->CurrentTime(), K = Params.Stretch;
 	if (Raw.IsValid())

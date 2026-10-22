@@ -12,6 +12,7 @@
 #include "S47Chapter2.h"
 #include "S47Chapter5.h"
 #include "S47DecoderDesk.h"
+#include "S47Ambience.h"
 #include "S47ArrayBack.h"
 #include "S47DishArray.h"
 #include "S47Reel047.h"
@@ -67,19 +68,22 @@ void AS47Story::Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio)
 		Dd.Answered = [this] { return NS.bTapeA; };
 		Dd.SetAnswered = [this] { NS.bTapeA = true; };
 		Dd.Save = [Wm] { if (Wm.IsValid()) Wm->RequestAutosave(false); };
-		Dd.React = [this](double Glitch, double Dip)
+		Dd.React = [this](double Glitch, double Dip, double Flick)
 		{
-			// the screens break up and the room sags, as the lights' dip after the relay does (LightsDip)
+			// the screens break up and the room sags, as the lights' dip after the relay does (LightsDip);
+			// or the tubes stutter, as after the boom (Flicker)
 			if (!BankIn()) return;
 			CrtGlitch = FMath::Max(CrtGlitch, float(Glitch));
 			DipT = FMath::Max(DipT, float(Dip));
-			if (Audio.IsValid())
+			Flicker = FMath::Max(Flicker, float(Flick));
+			if (Audio.IsValid() && Dip > 0)
 			{
 				Audio->Play(TEXT("thud_soft"), 0.55f, Saro.IsValid() ? Saro->PropLocation(TEXT("rack")) : FVector::ZeroVector, 0.45f);
 				Audio->HoldRoomTone(0.2f);
 				After(Dip, [this] { if (Audio.IsValid()) Audio->HoldRoomTone(1.f); });
 			}
 		};
+		Dd.Hush = [this](double Secs, double Level, double Tau, double Back) { if (Audio.IsValid() && Audio->Night.IsValid()) Audio->Night->Hush(Secs, Level, Tau, Back); };
 		Dd.Lamps = [Wm](bool bOn)
 		{
 			// the array's red lamps (world/Dish.ts DishArray.beaconPhase) in one phase, or each in its own

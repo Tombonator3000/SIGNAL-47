@@ -870,7 +870,8 @@ public:
 		{
 			FSlateDrawElement::MakeBox(Out, L, G.ToPaintGeometry(FVector2f(float(Rw) * Sx, float(Rh) * Sy), FSlateLayoutTransform(FVector2f(float(X) * Sx, float(Y) * Sy))), White.Get(), ESlateDrawEffect::None, C);
 		};
-		const int32 Cur = V.bPlaying && V.Current ? V.Current() : -1;
+		// (Unreal: the ANSWER row's key lights its bar while nothing plays; the player says -1 otherwise)
+		const int32 Cur = V.Current ? V.Current() : -1;
 		Rect(0, 0, W, H, S47Kit::Css(0x04110a), Layer);
 		for (int32 I = 0; I < 11; ++I)
 		{

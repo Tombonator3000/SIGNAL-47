@@ -76,7 +76,7 @@ public:
 	void ShowPage(bool bOn);
 
 	/** The level that reads 0 VU (RMS at the processor's output). */
-	static constexpr double REF = 0.075;
+	static constexpr double REF = 0.04; // (the harmonized playback at x2 gives about 0.02 to 0.05: -6 to +2 VU)
 
 	static bool SelfTest(TArray<FString>& Lines);
 
