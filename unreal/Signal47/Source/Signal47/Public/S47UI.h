@@ -90,7 +90,7 @@ class SIGNAL47_API US47UI : public UObject
 public:
 	void Init(AS47HUD* InHud) { Hud = InHud; }
 
-	void Toast(const FString& Text, float Secs = 3.2f);
+	void Toast(const FString& Text, float Secs = 3.2f, TFunction<double()> Clock = {});
 	void ClearToasts();
 	FString LastDescription() const;                 // the last toast that was not a caption (V)
 	void Objective(const FString& Text);             // empty hides it

@@ -137,11 +137,13 @@ void SS47Hud::Construct(const FArguments& InArgs)
 	];
 }
 
-void SS47Hud::Toast(const FString& Text, float Secs)
+void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 {
 	// UI.toast: the same line twice in a row is noise; at most two on screen
 	if (Toasts.Num() && Toasts.Last().Text == Text) return;
-	Toasts.Add({ Text, Now + Secs });
+	// UI.ts toast(text, secs, clock): recorded captions share the pausable sound clock.
+	const double At = Clock ? Clock() : Now;
+	Toasts.Add({ Text, At + Secs, MoveTemp(Clock) });
 	LastToast = Text;
 	if (Toasts.Num() > 2) Toasts.RemoveAt(0);
 	Rebuild();
@@ -176,7 +178,7 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	SCompoundWidget::Tick(G, InCurrentTime, Dt);
 	Now += Dt;
 	const int32 Before = Toasts.Num();
-	Toasts.RemoveAll([this](const FToast& T) { return T.Until <= Now; });
+	Toasts.RemoveAll([this](const FToast& T) { return T.Until <= (T.Clock ? T.Clock() : Now); });
 	if (Toasts.Num() != Before) Rebuild();
 	FlashT = FMath::Max(0.f, FlashT - Dt);
 	const float Target = bFadeOn ? 1.f : 0.f;

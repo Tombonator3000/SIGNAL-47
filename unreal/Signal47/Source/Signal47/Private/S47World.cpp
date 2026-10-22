@@ -14,6 +14,7 @@
 #include "S47OldRoad.h"
 #include "S47RoadArea.h"
 #include "S47RoadShape.h"
+#include "S47RoadTerrain.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -1153,7 +1154,31 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	if (bDriving && M->UI && !(M->Story && M->Story->IsCinematic()))
 	{
 		const bool bKey = Trouble.WantsKey(), bRadio = !bKey && OnRadio && RadioAimed(), bOut = !bKey && !bRadio && CanGetOut();
-		M->UI->Prompt(bKey ? TEXT("Turn the key") : bRadio ? TEXT("Radio") : bOut ? TEXT("Get out") : TEXT(""));
+		M->UI->Prompt(bKey ? TEXT("Turn the key") : bRadio ? (!M->CarRadio || !M->CarRadio->bOn ? TEXT("Turn the radio on") : M->CarRadio->Station == TEXT("far") ? TEXT("Turn the radio off") : FString::Printf(TEXT("AM %d: next station"), S47Radio::Freq(M->CarRadio->Station))) : bOut ? TEXT("Get out") : TEXT(""));
 	}
 	return bView;
+}
+
+// World.ts tripNow: only the actual night trip, with the direction inferred on an open drive.
+TOptional<FS47TripNow> US47World::TripNow() const
+{
+	if (!bDriving || !Trip.IsSet() || Trip->bFree || Leg.IsEmpty() || Leg == TEXT("roswell")) return {};
+	const FLegRec* L = Legs.Find(Leg); if (!L || !L->Drive) return {};
+	const FS47DriveController& D = *L->Drive;
+	return FS47TripNow{Trip->N, Trip->From, Trip->To, !Trip->To.IsEmpty() ? Trip->To : S47Legs::BoundOn(Leg, D.Pos.X, D.Pos.Z, D.Heading, D.Reversing()), Trip->Metres};
+}
+bool US47World::AtMotel(const FVector& P) const
+{
+	const auto& R = S47Geo::MOTEL_RECT(); return P.X >= R.MinX && P.X <= R.MaxX + 1 && P.Z >= R.MinZ - 4 && P.Z <= R.MaxZ + 4;
+}
+bool US47World::RoadStopAt(const FVector& P) const
+{
+	if (Area != TEXT("diner") || !Road || Indoors(P)) return false;
+	if (M && M->Web) for (int32 I = 0;; I++)
+	{
+		const FS47Area Zone = M->Web->Rect(FString::Printf(TEXT("world.town.zones[%d]"), I)); if (!Zone.bValid) break; if (Zone.Contains(P)) return false;
+	}
+	const double X = P.X - ROAD_ORIGIN.X, Z = P.Z - ROAD_ORIGIN.Z;
+	for (const auto& R : S47RoadTerrain::ROAD_STOPS()) if (X >= R.MinX && X <= R.MaxX && Z >= R.MinZ && Z <= R.MaxZ) return true;
+	return false;
 }

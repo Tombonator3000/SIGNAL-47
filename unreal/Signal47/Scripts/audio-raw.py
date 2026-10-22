@@ -11,6 +11,8 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
   Content/Audio/Raw/index.json            sources (web name -> file), phone (text -> phone:<id>),
                                           character (voice -> text -> character:<id>); texts normalised
                                           as readAloud.ts normalizeReadingText
+  Content/Audio/Raw/media/{music,radio}/*.wav  the long recordings, seekable PCM16 for S47Media
+  Content/Audio/Raw/voice/<bank>/*.wav    the four RadioVoice banks, decoded lazily by RadioVoice
   Content/Audio/Raw/voices.json           every voice bank's catalog (kinski, serling, serling-intro, artbell,
                                           artbell-town, radiocast, ensemble) with the asset each clip is
                                           imported as (/Game/Audio/Voice/<Bank>/v_<file>), for ReadAloud,
@@ -35,6 +37,7 @@ ROOT = os.path.dirname(os.path.dirname(D))
 ap = argparse.ArgumentParser()
 ap.add_argument('--web', default=os.path.join(ROOT, 'web', 'src'))
 ap.add_argument('--content', default=os.path.join(D, 'Content'))
+ap.add_argument('--recordings-only', action='store_true', help='refresh long media and RadioVoice banks without replacing existing sfx/phone/bought raw files')
 args = ap.parse_args()
 WEB = args.web
 AUDIO = os.path.join(WEB, 'assets', 'audio')
@@ -95,62 +98,65 @@ def call_lines(src, key):
     return out
 
 
-scripts = open(os.path.join(WEB, 'core', 'phoneScripts.ts'), encoding='utf-8').read()
-PHONE_TEXTS = array_strings(scripts, 'PHONE_TEXTS')
-NORA_CB_TEXTS = array_strings(scripts, 'NORA_CB_TEXTS')
-channel_texts = set(normalize(t) for t in call_lines(scripts, 'nora') + call_lines(scripts, 'fieldNora')) | set(normalize(t) for t in NORA_CB_TEXTS)
-phone_texts = set(normalize(t) for t in PHONE_TEXTS)
+if not args.recordings_only:
+    scripts = open(os.path.join(WEB, 'core', 'phoneScripts.ts'), encoding='utf-8').read()
+    PHONE_TEXTS = array_strings(scripts, 'PHONE_TEXTS')
+    NORA_CB_TEXTS = array_strings(scripts, 'NORA_CB_TEXTS')
+    channel_texts = set(normalize(t) for t in call_lines(scripts, 'nora') + call_lines(scripts, 'fieldNora')) | set(normalize(t) for t in NORA_CB_TEXTS)
+    phone_texts = set(normalize(t) for t in PHONE_TEXTS)
 
-for d in (RAW, LICRAW):
-    shutil.rmtree(d, ignore_errors=True)
-os.makedirs(RAW, exist_ok=True)
-index = {'sources': {}, 'phone': {}, 'character': {}}
+    for d in (RAW, LICRAW):
+        shutil.rmtree(d, ignore_errors=True)
+    os.makedirs(RAW, exist_ok=True)
+    index = {'sources': {}, 'phone': {}, 'character': {}}
 
-# the free sounds: everything in assets/audio (Audio.ts's SOURCES and the drive's engine loops)
-n = 0
-for name in sorted(os.listdir(AUDIO)):
-    base, ext = os.path.splitext(name)
-    if ext.lower() not in ('.mp3', '.wav', '.ogg') or not os.path.isfile(os.path.join(AUDIO, name)):
-        continue
-    if wav(os.path.join(AUDIO, name), os.path.join(RAW, 'sfx', base + '.wav')):
-        index['sources'][camel(base)] = 'sfx/%s.wav' % base
-        n += 1
-print('S47: raw sfx: %d' % n)
-
-# Kinski's telephone lines: only the 24 of PHONE_TEXTS (Audio.ts phoneKeys; a later clip with the same text wins)
-catalog = json.load(open(os.path.join(AUDIO, 'kinski', 'catalog.json'), encoding='utf-8'))
-for clip in catalog['clips']:
-    text = normalize(clip['text'])
-    src = os.path.join(AUDIO, 'kinski', clip['file'])
-    if text not in phone_texts or not os.path.isfile(src):
-        continue
-    key = 'phone:%s' % clip['id']
-    if key not in index['sources']:
-        if not wav(src, os.path.join(RAW, 'phone', clip['id'] + '.wav')):
+    # the free sounds: everything in assets/audio (Audio.ts's SOURCES and the drive's engine loops)
+    n = 0
+    for name in sorted(os.listdir(AUDIO)):
+        base, ext = os.path.splitext(name)
+        if ext.lower() not in ('.mp3', '.wav', '.ogg') or not os.path.isfile(os.path.join(AUDIO, name)):
             continue
-        index['sources'][key] = 'phone/%s.wav' % clip['id']
-    index['phone'][text] = key
-missing = sorted(phone_texts - set(index['phone']))
-print('S47: raw phone lines: %d of %d%s' % (len(index['phone']), len(phone_texts), (' (no recording: %s)' % missing) if missing else ''))
+        if wav(os.path.join(AUDIO, name), os.path.join(RAW, 'sfx', base + '.wav')):
+            index['sources'][camel(base)] = 'sfx/%s.wav' % base
+            n += 1
+    print('S47: raw sfx: %d' % n)
 
-# the character voices on the line (Audio.ts characterKeys)
-ensemble = json.load(open(os.path.join(AUDIO, 'ensemble', 'catalog.json'), encoding='utf-8'))
-for clip in ensemble['clips']:
-    text = normalize(clip['text'])
-    if not (clip['voice'] == 'bacall' and text in channel_texts or clip['voice'] == 'price' and text == 'Reference west. No. East. Hold the last reading.'):
-        continue
-    src = os.path.join(AUDIO, 'ensemble', clip['file'])
-    if not os.path.isfile(src) or not wav(src, os.path.join(RAW, 'character', clip['id'] + '.wav')):
-        continue
-    key = 'character:%s' % clip['id']
-    index['sources'][key] = 'character/%s.wav' % clip['id']
-    index['character'].setdefault(clip['voice'], {})[text] = key
-print('S47: raw character lines: %d' % sum(len(v) for v in index['character'].values()))
+    # Kinski's telephone lines: only the 24 of PHONE_TEXTS (Audio.ts phoneKeys; a later clip with the same text wins)
+    catalog = json.load(open(os.path.join(AUDIO, 'kinski', 'catalog.json'), encoding='utf-8'))
+    for clip in catalog['clips']:
+        text = normalize(clip['text'])
+        src = os.path.join(AUDIO, 'kinski', clip['file'])
+        if text not in phone_texts or not os.path.isfile(src):
+            continue
+        key = 'phone:%s' % clip['id']
+        if key not in index['sources']:
+            if not wav(src, os.path.join(RAW, 'phone', clip['id'] + '.wav')):
+                continue
+            index['sources'][key] = 'phone/%s.wav' % clip['id']
+        index['phone'][text] = key
+    missing = sorted(phone_texts - set(index['phone']))
+    print('S47: raw phone lines: %d of %d%s' % (len(index['phone']), len(phone_texts), (' (no recording: %s)' % missing) if missing else ''))
 
-with open(os.path.join(RAW, 'index.json'), 'w', encoding='utf-8') as f:
-    json.dump(index, f, ensure_ascii=False, indent=1, sort_keys=True)
+    # the character voices on the line (Audio.ts characterKeys)
+    ensemble = json.load(open(os.path.join(AUDIO, 'ensemble', 'catalog.json'), encoding='utf-8'))
+    for clip in ensemble['clips']:
+        text = normalize(clip['text'])
+        if not (clip['voice'] == 'bacall' and text in channel_texts or clip['voice'] == 'price' and text == 'Reference west. No. East. Hold the last reading.'):
+            continue
+        src = os.path.join(AUDIO, 'ensemble', clip['file'])
+        if not os.path.isfile(src) or not wav(src, os.path.join(RAW, 'character', clip['id'] + '.wav')):
+            continue
+        key = 'character:%s' % clip['id']
+        index['sources'][key] = 'character/%s.wav' % clip['id']
+        index['character'].setdefault(clip['voice'], {})[text] = key
+    print('S47: raw character lines: %d' % sum(len(v) for v in index['character'].values()))
+
+    with open(os.path.join(RAW, 'index.json'), 'w', encoding='utf-8') as f:
+        json.dump(index, f, ensure_ascii=False, indent=1, sort_keys=True)
+
 
 # every voice bank's catalog, with the asset each clip is imported as
+os.makedirs(RAW, exist_ok=True)
 voices = {}
 for bank, folder in BANKS:
     path = os.path.join(AUDIO, bank, 'catalog.json')
@@ -159,13 +165,45 @@ for bank, folder in BANKS:
     cat = json.load(open(path, encoding='utf-8'))
     for clip in cat.get('clips', []):
         clip['asset'] = 'v_' + os.path.splitext(clip['file'])[0]
+        if bank in ('artbell', 'artbell-town', 'radiocast', 'ensemble'):
+            clip['raw'] = 'voice/%s/%s.wav' % (bank, os.path.splitext(clip['file'])[0])
     voices[bank] = {'folder': '/Game/Audio/Voice/' + folder, 'catalog': cat}
 with open(os.path.join(RAW, 'voices.json'), 'w', encoding='utf-8') as f:
     json.dump(voices, f, ensure_ascii=False, indent=1)
 print('S47: voice banks indexed: %s' % ', '.join('%s %d' % (b, len(v['catalog'].get('clips', []))) for b, v in voices.items()))
 
+# core/radioVoice.ts decodes only the selected clips, so keep the banks outside index.sources.
+# This lets its 24-buffer / 24-MiB LRU work without US47Audio preloading the whole bank.
+for bank in ('artbell', 'artbell-town', 'radiocast', 'ensemble'):
+    cat = voices.get(bank, {}).get('catalog', {})
+    n = 0
+    for clip in cat.get('clips', []):
+        src = os.path.join(AUDIO, bank, clip['file'])
+        if os.path.isfile(src) and wav(src, os.path.join(RAW, clip['raw'])):
+            n += 1
+    print('S47: raw radio voice %s: %d' % (bank, n))
+
+# core/score.ts and core/radio.ts use long HTMLAudioElements. Keep each recording's own
+# sample rate/channels; S47Media reads PCM16 in bounded chunks and resamples in the graph.
+media = {}
+for group in ('music', 'radio'):
+    srcdir = os.path.join(os.path.dirname(WEB), 'public', group)
+    count = 0
+    if os.path.isdir(srcdir):
+        for name in sorted(os.listdir(srcdir)):
+            base, ext = os.path.splitext(name)
+            if ext.lower() not in ('.mp3', '.wav', '.ogg'):
+                continue
+            rel = 'media/%s/%s.wav' % (group, base)
+            if wav(os.path.join(srcdir, name), os.path.join(RAW, rel)):
+                media[group + '/' + name] = rel
+                count += 1
+    print('S47: raw media %s: %d' % (group, count))
+with open(os.path.join(RAW, 'media.json'), 'w', encoding='utf-8') as f:
+    json.dump(media, f, ensure_ascii=False, indent=1, sort_keys=True)
+
 # the bought sounds, when the private clone is there
-if os.path.isdir(LICENSED):
+if not args.recordings_only and os.path.isdir(LICENSED):
     lic = {'sources': {}}
     for name in sorted(os.listdir(LICENSED)):
         base, ext = os.path.splitext(name)
@@ -176,5 +214,5 @@ if os.path.isdir(LICENSED):
     with open(os.path.join(LICRAW, 'index.json'), 'w', encoding='utf-8') as f:
         json.dump(lic, f, ensure_ascii=False, indent=1, sort_keys=True)
     print('S47: raw bought sounds: %d' % len(lic['sources']))
-else:
+elif not args.recordings_only:
     print('S47: no %s: the bought sounds are left out (the game sounds as it does without them)' % LICENSED)

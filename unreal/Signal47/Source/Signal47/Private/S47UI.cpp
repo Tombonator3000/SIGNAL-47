@@ -4,9 +4,9 @@
 #include "S47HUD.h"
 #include "SS47Widgets.h"
 
-void US47UI::Toast(const FString& Text, float Secs)
+void US47UI::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 {
-	if (Hud) Hud->Toast(Text, Secs);
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(Text, Secs, MoveTemp(Clock));
 }
 
 void US47UI::ClearToasts()
