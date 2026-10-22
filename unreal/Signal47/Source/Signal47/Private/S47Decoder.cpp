@@ -73,6 +73,7 @@ void FS47DecoderPlayer::Start(const FS47DecoderSet& P)
 	bPlaying = true;
 	T0 = Now + 0.15; Next = 0; Cycle = 0; Started = Now; Marks.Reset();
 	Out->Gain.CancelScheduledValues(Now);
+	Ducked = 1;
 	Out->Gain.SetTargetAtTime(0.9, Now, 0.2);
 	ApplySpace();
 	if (Params.Mode == TEXT("raw"))
@@ -186,6 +187,13 @@ void FS47DecoderPlayer::Note(double At, double Deg, double Len, bool bFirst)
 		O->Connect(G); G->Connect(Dry); G->Connect(Wet); O->Start(T); O->Stop(T + 1.3 * Params.Stretch);
 	}
 	if (Pad) Pad->Gain->Gain.SetTargetAtTime(bFirst ? 0.05 : 0.035, At, 0.4 * Params.Stretch);
+}
+
+void FS47DecoderPlayer::Duck(double K)
+{
+	if (!bPlaying || FMath::IsNearlyEqual(K, Ducked)) return;
+	Ducked = K;
+	Out->Gain.SetTargetAtTime(0.9 * K, Ctx->CurrentTime(), 0.3);
 }
 
 void FS47DecoderPlayer::Update()

@@ -84,6 +84,10 @@ public:
 	double GameTime = 0;
 	double BootT = -1, SolveT = -1, PrintT = -1, LineDeadT = -1;
 	bool bRinging = false, bAnswered = false;
+	/** How near the receiver console the player is (1 at it, less across the room, faint outside), and
+	 *  how far the night's tones step back under a phone or a voice (Unreal: on Tom's request). */
+	double ConsoleNear() const;
+	double VoicesDuck() const;
 	float CrtGlitch = 0.f;
 	FString SurveyModeText() const;
 
