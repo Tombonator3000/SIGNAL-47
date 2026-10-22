@@ -5,9 +5,11 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/CommandLine.h"
+#include "Misc/Paths.h"
 #include "S47Audio.h"
 #include "S47FieldCamera.h"
 #include "S47Geo.h"
+#include "S47GroundCover.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
 #include "S47Legs.h"
@@ -23,6 +25,9 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "TimerManager.h"
+#include "UnrealClient.h"
+
+#include <limits>
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47World, Log, All);
 
@@ -42,6 +47,9 @@ namespace
 	const TCHAR* TRUCKS[4] = { TEXT("saro"), TEXT("station01"), TEXT("diner"), TEXT("roswell") };
 	/** How far from the truck the ground round it is walked, where its area has no walk zones by it. */
 	constexpr double GROUND_R = 30;
+	/** What the open land keeps from a building, a raised slab or a fence line besides the player's
+	 *  width: more than any step, so the way in is only by the zones and their gates. */
+	constexpr double LAND_KEEP = 0.4;
 	/** The area a place is in (the motel's lot is SARO's). */
 	FString AreaOf(const FString& L) { return L == TEXT("motel") ? FString(TEXT("saro")) : L; }
 	bool InBox(const TOptional<FS47Box2>& B, const FVector& P) { return B && P.X >= B->MinX && P.X <= B->MaxX && P.Z >= B->MinZ && P.Z <= B->MaxZ; }
@@ -137,6 +145,15 @@ void US47World::Init(US47Main* InM)
 	}
 	// the view from the cab while the truck is driven
 	if (M->Player) M->Player->CameraOverride = [this](double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out) { return Frame(Dt, Move, LookIn, Out); };
+	// the open land of the area the player is in (Tom 22 October 2026: walk round freely there)
+	if (M->Player)
+	{
+		TWeakObjectPtr<US47World> Self = this;
+		M->Player->OpenLand = [Self](double X, double Z) { return Self.IsValid() && Self->OnLand(X, Z); };
+		// (its ground as it is drawn there; in the zones the area's floor as before: Grounds.floorAt,
+		// Town.floorAt, or read off the world at STATION 01)
+		M->Player->LandFloor = [Self](double X, double Z) { return Self.IsValid() ? Self->LandY(X, Z) : std::numeric_limits<double>::quiet_NaN(); };
+	}
 	// a jump on foot (Tom 22 October 2026): not in the truck, not with a panel open or the story holding
 	// the player, not with the field camera raised (Space is its shutter then)
 	if (M->Player) M->Player->CanJump = [this]
@@ -182,6 +199,65 @@ void US47World::Init(US47Main* InM)
 	// away, come back to the truck and get in again (Tom 22 October 2026)
 	float GetOutAt = 0;
 	if ((FParse::Value(FCommandLine::Get(), TEXT("S47GetOut="), GetOutAt) || FParse::Param(FCommandLine::Get(), TEXT("S47GetOut"))) && M->Web) TestGetOut(GetOutAt > 0 ? GetOutAt : 12);
+	// -S47Walk=<s>[,<bearing in degrees>]: from 3 s on the player runs that long straight ahead (or on
+	// that bearing, three's yaw), wherever they stand (-S47Face=at:..., or -S47WalkFrom=<area>:<x>;<z>),
+	// and the log says how far they got, the floor and whether the area's ground meshes were under
+	// every step (the open land's edges)
+	FString WalkFrom;
+	const bool bWalkFrom = FParse::Value(FCommandLine::Get(), TEXT("S47WalkFrom="), WalkFrom, false);
+	FString WalkArg;
+	if (FParse::Value(FCommandLine::Get(), TEXT("S47Walk="), WalkArg, false) && M->Web && M->Player)
+	{
+		FString A, B;
+		if (!WalkArg.Split(TEXT(","), &A, &B)) A = WalkArg;
+		const double Secs = FMath::Max(1.0, FCString::Atod(*A));
+		const TOptional<double> Bearing = B.IsEmpty() ? TOptional<double>() : TOptional<double>(FMath::DegreesToRadians(FCString::Atod(*B)));
+		struct FWalkTest { double T = 0, Far = 0, Off = 0; int32 Void = 0, Stuck = 0; FVector Start = FVector::ZeroVector, Last = FVector::ZeroVector; bool bOn = false; };
+		TSharedRef<FWalkTest> Wk = MakeShared<FWalkTest>();
+		TWeakObjectPtr<US47World> Self = this;
+		FTimerHandle H;
+		const FString WalkFromArg = bWalkFrom ? WalkFrom : FString();
+		M->Web->GetWorldTimerManager().SetTimer(H, [Self, Wk, Secs, Bearing, WalkFromArg]
+		{
+			if (!Self.IsValid() || !Self->M || !Self->M->Player || Wk->T > Secs + 1) return;
+			AS47Walker* P = Self->M->Player;
+			if (!Wk->bOn)
+			{
+				FString FromArea, FromAt, Xs, Zs;
+				if (!WalkFromArg.IsEmpty() && WalkFromArg.Split(TEXT(":"), &FromArea, &FromAt) && FromAt.Split(TEXT(";"), &Xs, &Zs))
+				{
+					Self->Enter(FromArea);
+					P->Place(FCString::Atod(*Xs), FCString::Atod(*Zs), P->Yaw);
+				}
+				Wk->bOn = true; Wk->Start = Wk->Last = P->Pos;
+				if (Bearing) P->Yaw = *Bearing;
+				P->Pitch = -0.06; P->TestMove = FVector2D(0, -1); P->bTestRun = true;
+				UE_LOG(LogS47World, Display, TEXT("S47: walk test from %.1f %.1f in %s, yaw %.2f, floor %.3f, %s"), P->Pos.X, P->Pos.Z, *Self->Area, P->Yaw, P->FloorY, P->Walkable(P->Pos.X, P->Pos.Z) ? TEXT("walkable") : TEXT("NOT WALKABLE"));
+				return;
+			}
+			Wk->T += 0.25;
+			FHitResult Hit;
+			const FCollisionQueryParams Q(SCENE_QUERY_STAT(S47WalkTest), true);
+			UWorld* Wd = Self->M->Web->GetWorld();
+			if (!(Wd && Wd->LineTraceSingleByChannel(Hit, S47Three::ToUE(FVector(P->Pos.X, P->FloorY + 2, P->Pos.Z)), S47Three::ToUE(FVector(P->Pos.X, P->FloorY - 6, P->Pos.Z)), ECC_Visibility, Q)))
+				++Wk->Void;
+			else Wk->Off = FMath::Max(Wk->Off, FMath::Abs(Hit.ImpactPoint.Z / 100.0 - P->FloorY));
+			const double D = FVector2D::Distance(FVector2D(P->Pos.X, P->Pos.Z), FVector2D(Wk->Start.X, Wk->Start.Z));
+			Wk->Far = FMath::Max(Wk->Far, D);
+			Wk->Stuck = FVector2D::Distance(FVector2D(P->Pos.X, P->Pos.Z), FVector2D(Wk->Last.X, Wk->Last.Z)) < 0.05 ? Wk->Stuck + 1 : 0;
+			Wk->Last = P->Pos;
+			if (FMath::FloorToInt(Wk->T / 5) != FMath::FloorToInt((Wk->T - 0.25) / 5) || Wk->T >= Secs)
+			{
+				UE_LOG(LogS47World, Display, TEXT("S47: walk test at %.1f s: %.1f %.1f, %.1f m from the start%s, floor %.3f"), Wk->T, P->Pos.X, P->Pos.Z, D, Wk->Stuck >= 4 ? TEXT(" (held)") : TEXT(""), P->FloorY);
+			}
+			if (Wk->T >= Secs)
+			{
+				P->TestMove.Reset(); P->bTestRun = false;
+				UE_LOG(LogS47World, Display, TEXT("S47: walk test done: %.1f m at most from the start, ended at %.1f %.1f%s; ground meshes under every step: %s (worst floor off the meshes %.2f m)"),
+					Wk->Far, P->Pos.X, P->Pos.Z, Wk->Stuck >= 4 ? TEXT(", held there") : TEXT(""), Wk->Void ? TEXT("NO") : TEXT("yes"), Wk->Off);
+			}
+		}, 0.25f, true, 3.0f);
+	}
 	// -S47Hop[=<n>]: the walker jumps n times (3 by default) from 3 s on, 1.6 s apart, the second while
 	// walking and the last by the Jump key; then once more with the field camera raised (refused)
 	int32 Hops = 0;
@@ -220,8 +296,26 @@ void US47World::TestGetOut(double At)
 	float OffRoad = 0;
 	FParse::Value(FCommandLine::Get(), TEXT("S47OffRoad="), OffRoad);
 	TWeakObjectPtr<US47World> Self = this;
-	struct FTest { int32 Stage = 0; double T = 0, Since = 0, Last = 1e9; bool bOff = false; FString Id; FVector Truck = FVector::ZeroVector; };
+	struct FTest
+	{
+		int32 Stage = 0; double T = 0, Since = 0, Last = 1e9; bool bOff = false; FString Id; FVector Truck = FVector::ZeroVector;
+		double Wander = 3, Bearing = TNumericLimits<double>::Max(), Far = 0, Off = 0; int32 Void = 0; FString Shot; TArray<FVector2D> Crumbs;
+	};
 	TSharedRef<FTest> S = MakeShared<FTest>();
+	// -S47Wander=<s>[,<bearing in degrees>]: the walk away from the truck that long, running, on that
+	// bearing (three's yaw; away from the truck by default); the picture at the far end beside -S47Shot's
+	{
+		FString Wander;
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Wander="), Wander, false))
+		{
+			FString A, B;
+			if (!Wander.Split(TEXT(","), &A, &B)) A = Wander;
+			S->Wander = FMath::Max(1.0, FCString::Atod(*A));
+			if (!B.IsEmpty()) S->Bearing = FMath::DegreesToRadians(FCString::Atod(*B));
+			FString Shot;
+			if (FParse::Value(FCommandLine::Get(), TEXT("S47Shot="), Shot)) S->Shot = FPaths::GetBaseFilename(Shot, false) + TEXT("-far.png");
+		}
+	}
 	FTimerHandle H;
 	M->Web->GetWorldTimerManager().SetTimer(H, [Self, S, At, OffRoad]
 	{
@@ -284,18 +378,53 @@ void US47World::TestGetOut(double At)
 			UE_LOG(LogS47World, Display, TEXT("S47: test get out: put at %s in %s: player %.2f %.2f, %.2f m from the truck's middle, floor %.3f (ground there %.3f, truck %.3f), walkable %s, ground round the truck %s; walkable round it of 16: %d at 3 m, %d at 10 m, %d at 28 m, %d at 33 m"),
 				*W->TruckAt, *W->Area, P->Pos.X, P->Pos.Z, Dist(), P->FloorY, Floor, S->Truck.Y, P->Walkable(P->Pos.X, P->Pos.Z) ? TEXT("yes") : TEXT("NO"), P->Ground && P->GroundArea == W->Area ? TEXT("yes") : TEXT("no"), Round(3), Round(10), Round(28), Round(33));
 			Face(true);
+			if (S->Bearing < TNumericLimits<double>::Max()) P->Yaw = S->Bearing;
 			P->TestMove = FVector2D(0, -1);
+			P->bTestRun = S->Wander > 3;
 			S->Stage = 3; S->Since = S->T;
 			return;
 		}
-		case 3: // away from it
-			if (S->T - S->Since < 3.0) return;
-			P->TestMove.Reset();
-			UE_LOG(LogS47World, Display, TEXT("S47: test get out: walked away to %.2f m from the truck"), Dist());
+		case 3: // away from it (-S47Wander: that long, running, on a bearing), the way taken kept to come back by
+		{
+			if (P->TestMove) S->Crumbs.Add(FVector2D(P->Pos.X, P->Pos.Z));
+			// the floor under the feet, and whether the area's ground meshes are under them (never the void)
+			{
+				FHitResult Hit;
+				const FCollisionQueryParams Q(SCENE_QUERY_STAT(S47Wander), true);
+				const bool bGround = W->M->Web && W->M->Web->GetWorld() && W->M->Web->GetWorld()->LineTraceSingleByChannel(Hit, S47Three::ToUE(FVector(P->Pos.X, P->FloorY + 2, P->Pos.Z)), S47Three::ToUE(FVector(P->Pos.X, P->FloorY - 6, P->Pos.Z)), ECC_Visibility, Q);
+				if (!bGround) ++S->Void;
+				else S->Off = FMath::Max(S->Off, FMath::Abs(Hit.ImpactPoint.Z / 100.0 - P->FloorY));
+				S->Far = FMath::Max(S->Far, Dist());
+			}
+			if (FMath::FloorToInt(S->T / 5) != FMath::FloorToInt((S->T - 0.25) / 5))
+			{
+				UE_LOG(LogS47World, Display, TEXT("S47: test get out: wandering, at %.1f %.1f, %.1f m from the truck, floor %.2f, %s"), P->Pos.X, P->Pos.Z, Dist(), P->FloorY, P->Walkable(P->Pos.X, P->Pos.Z) ? TEXT("walkable") : TEXT("NOT WALKABLE"));
+			}
+			if (S->T - S->Since < S->Wander) return;
+			P->TestMove.Reset(); P->bTestRun = false;
+			UE_LOG(LogS47World, Display, TEXT("S47: test get out: walked away to %.2f m from the truck (farthest %.1f m), at %.1f %.1f, floor %.3f; ground meshes under every step: %s (worst floor off the meshes %.2f m)"),
+				Dist(), S->Far, P->Pos.X, P->Pos.Z, P->FloorY, S->Void ? TEXT("NO") : TEXT("yes"), S->Off);
+			if (!S->Shot.IsEmpty()) FScreenshotRequest::RequestScreenshot(S->Shot, true, false);
+			S->Stage = 30; S->Since = S->T;
+			return;
+		}
+		case 30: // back the way they came, to the truck
+		{
+			if (S->T - S->Since < 1.0) return; // (the far picture first)
+			while (S->Crumbs.Num() && FVector2D::Distance(S->Crumbs.Last(), FVector2D(P->Pos.X, P->Pos.Z)) < 0.8) S->Crumbs.Pop();
+			if (S->Crumbs.Num() && Dist() > 3.5 && S->T - S->Since < S->Wander * 2 + 10)
+			{
+				const FVector2D C = S->Crumbs.Last();
+				P->Yaw = FMath::Atan2(-(C.X - P->Pos.X), -(C.Y - P->Pos.Z)); P->Pitch = -0.06;
+				P->TestMove = FVector2D(0, -1); P->bTestRun = S->Wander > 3;
+				return;
+			}
+			P->TestMove.Reset(); P->bTestRun = false;
 			Face(false);
 			P->TestMove = FVector2D(0, -1);
 			S->Stage = 4; S->Since = S->T;
 			return;
+		}
 		case 4: // back to it, until the truck itself stops them (or they are by it)
 		{
 			const double D = Dist(), Was = S->Last;
@@ -993,7 +1122,15 @@ void US47World::SetGround(const FString& Place)
 	if (Place.IsEmpty() || bDriving || !bLegsMade) return;
 	const FString LegId = Place == TEXT("roswell") ? Place : S47Legs::LegOf(Place);
 	const FS47Truck* T = TruckAtPlace(Place);
-	if (!T || !Legs.Contains(LegId) || DoorSpot(*T, WalkOf(Place))) return;
+	if (!T || !Legs.Contains(LegId)) return;
+	// (a walk zone or the open land by a door: the area's own walk will do)
+	const FString A = AreaOf(Place);
+	if (A == Area ? DoorSpot(*T).IsSet() : DoorSpot(*T, WalkOf(Place)).IsSet()) return;
+	if (A != Area) for (const double Side : { -1.0, 1.0 })
+	{
+		const FVector V = AboutUp(FVector(Side * 1.75, 0, -0.3), T->Rotation.Y) + T->Position;
+		if (OnLand(V.X, V.Z, A)) return;
+	}
 	GroundLeg = LegId;
 	GroundAt = T->Position;
 	P->GroundArea = AreaOf(Place);
@@ -1024,6 +1161,187 @@ bool US47World::OnGround(double X, double Z)
 	for (const FS47Obstacle& O : A.Obstacles)
 	{
 		if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R) return false;
+	}
+	return true;
+}
+
+// ---------- the open land (Tom 22 October 2026: once out of the truck, walk round freely there) ----------
+
+void US47World::MakeLands()
+{
+	// Each outdoor area's open land, in world terms, from what the web version's builders draw there
+	// (the sources are named at each). The web version walks only its zones; these are walked as well.
+	Lands.Reset();
+	// ---- SARO, in the site's terms (the control room at the origin, north is -z) ----
+	{
+		FLand L;
+		L.Leg = TEXT("saro");
+		L.In = [](double X, double Z)
+		{
+			// Exterior.ts ground: SARO's own land, a ring 1900 m out (flat to 300 m, rolling beyond, the
+			// array graded flat: arrayLayout.ts ARRAY_FLAT), walked within 600 m. South of the site the
+			// road's piece of ground lies over it (corridors.ts saroCorridorGround, site x -144..83.66,
+			// z 100..900, with the ring sunk under it and a little round it): there only that piece, to
+			// z 860 (the road's area takes the drive over at 784.8)
+			if (X >= -146 && X <= 98 && Z >= 98 && Z <= 902) return X >= -143.5 && X <= 83 && Z >= 100.5 && Z <= 860;
+			return X * X + Z * Z <= 600.0 * 600.0 || (X >= -296 && X <= 276 && Z >= -521 && Z <= 0);
+		};
+		L.Out = {
+			// the control room and the annex on their plinths, the fire exit's stoop (ControlRoom.ts,
+			// Annex.ts, Grounds.ts RAISED), the photo lab and the east wing (ServiceYard.ts, Exterior.ts):
+			// their walls are no colliders, the zones keep the player to the doors
+			{ -6.7, 6.7, -5.9, 5.9 }, { -6.6, 2.6, 5.8, 11.1 }, { -7.75, -6.0, 4.75, 6.65 }, { 12.6, 19.2, -6.0, 1.0 }, { 20.2, 39.0, -5.9, 5.9 },
+			// the slabs at floor level, 0.6 m over the ground, their edges and rails held by the zones
+			// (ServiceYard.ts): the landing, the east walk, the S-03 apron, the lab path, the pad and its ramp
+			{ 6.3, 11.0, -0.6, 3.4 }, { 8.0, 11.0, -19.6, -0.6 }, { 11.0, 12.6, -13.4, -8.6 }, { 11.0, 12.6, -1.9, -0.6 }, { 6.6, 13.0, 3.4, 12.4 }, { 6.6, 13.0, 12.4, 16.6 },
+			// the array's chain-link fence at z -20 (Exterior.ts), its gate shut unless the gate's own zone
+			// is open (Field.ts); the highway's opening through it as it is drawn
+			{ -80, -28.6, -20, -20 }, { -19.4, 60, -20, -20 },
+			// the site's ranch fence (Grounds.ts)
+			{ -18.6, 46.5, 34.5, 34.5 }, { 46.5, 46.5, -19.9, 34.5 },
+			// the highway's right-of-way fences on the road's piece (roadProps.ts fences, road x -21 and 21,
+			// drawn from site z 100), open at the motel and at the cattle guard; the ranch's gate is shut
+			{ -45, -45, 100, 640 }, { -45, -45, 732, 817 }, { -45, -45, 823, 860 }, { -3, -3, 100, 860 },
+			// and the pasture's north fence
+			{ -143.5, -45.3, 740, 740 },
+		};
+		L.Y = [](double X, double Z)
+		{
+			// groundCover.ts saroFlora's ground, in the site's terms: the road's surface on its piece,
+			// SARO's land elsewhere, the verge of the road's stretch south of z 36
+			const double Rx = X + S47Geo::SARO_IN_ROAD.X, Rz = Z + S47Geo::SARO_IN_ROAD.Z;
+			if (Rz >= -200 && S47Geo::InRect(S47Geo::SARO_PATCH, Rx, Rz)) return S47RoadTerrain::SurfaceY(Rx, Rz);
+			double Y = S47GroundCover::SaroLand(X, Z);
+			if (Z > 36 && FMath::Abs(Rx) < S47RoadTerrain::HWY.Flat) Y = FMath::Max(Y, S47RoadShape::HLow(Rx, Rz));
+			return Y;
+		};
+		Lands.Add(TEXT("saro"), MoveTemp(L));
+	}
+	// ---- the road, the diner and Caliche (the diner's area walks it; road terms are world x - 8000) ----
+	{
+		FLand L;
+		L.Leg = TEXT("road");
+		L.In = [](double X, double Z)
+		{
+			// roadTerrain.ts groundGeometry: the desert grid, road x -3000..2300, z -2700..4400, less 50 m.
+			// North of z 450 this area shows SARO's stretch with its motel and site as far views (their own
+			// area has them), and the pasture's west end the far view of STATION 01 (roadPlaces.ts)
+			const double Lx = X - ROAD_ORIGIN.X;
+			if (Lx < -2950 || Lx > 2250 || Z < 450 || Z > 4350) return false;
+			return !(Lx < -560 && Z < 730);
+		};
+		// the barricades across the old road's mouth, until chapter five sends the truck out on it
+		// (roadProps.ts roadClosed: their posts at road x 25.5; the wall behind them at x 30 holds always)
+		L.Closed = [this](double X, double Z) { return Road && Road->RoadClosed() && X - ROAD_ORIGIN.X > 24.5 && Z > 1981.95 && Z < 2017.95; };
+		Lands.Add(TEXT("diner"), MoveTemp(L));
+	}
+	// ---- STATION 01 (station terms are world z - 8000) ----
+	{
+		FLand L;
+		L.Leg = TEXT("station01");
+		L.In = [](double X, double Z)
+		{
+			// Station01.ts terrain: its own land runs 2.8 km out, with the last of the track's ground on it
+			// (corridors.ts stationCorridorGround); walked within 600 m of the station (the highway, 630 m
+			// off, is not drawn here)
+			const double Lz = Z - STATION_ORIGIN.Z;
+			return X * X + Lz * Lz <= 600.0 * 600.0;
+		};
+		// the compound's fence (stationLayout.ts STATION_FENCE: posts and wire, no colliders): its zones
+		// and the walk gap, chained until chapter three, are the only way in
+		L.Out = { { S47Geo::STATION_FENCE.X0, S47Geo::STATION_FENCE.X1, S47Geo::STATION_FENCE.Z0 + STATION_ORIGIN.Z, S47Geo::STATION_FENCE.Z1 + STATION_ORIGIN.Z } };
+		// (legs.ts StationDrive.height: the track's ground on its piece, the station's own land elsewhere)
+		L.Y = [this](double X, double Z) { const FLegRec* G = Legs.Find(TEXT("station01")); return G ? G->Area->Height(X, Z) : 0.0; };
+		Lands.Add(TEXT("station01"), MoveTemp(L));
+	}
+	// ---- the old road at dawn ----
+	{
+		FLand L;
+		L.Leg = TEXT("roswell");
+		L.In = [this](double X, double Z)
+		{
+			// OldRoad.ts blocked: between the old road's fences (17 m out; the truck keeps 14.5 m), and on
+			// the highway by the diner. (Its Blocked notes the highway run into, for chapter six's word to
+			// the driver: not for a walk.)
+			FS47OldRoad* R = OldRoad();
+			if (!R) return false;
+			const bool bHit = R->bHitBack;
+			const bool bOn = !R->Blocked(X, Z);
+			R->bHitBack = bHit;
+			return bOn;
+		};
+		// Caliche at dawn is seen from here, but its buildings hold nothing on this road (OldRoad.ts)
+		L.Out = { { ROAD_ORIGIN.X - 42, ROAD_ORIGIN.X + 48, 2017.95, 2300 } };
+		L.Y = [this](double X, double Z) { const FS47OldRoad* R = OldRoad(); return R ? R->Height(X, Z) : 0.0; };
+		Lands.Add(TEXT("roswell"), MoveTemp(L));
+	}
+}
+
+double US47World::LandY(double X, double Z)
+{
+	const double None = std::numeric_limits<double>::quiet_NaN();
+	if (!bLegsMade || InZone(X, Z)) return None;
+	if (Lands.IsEmpty()) MakeLands();
+	const FLand* L = Lands.Find(Area);
+	return L && L->Y && L->In && L->In(X, Z) ? L->Y(X, Z) : None;
+}
+
+bool US47World::InZone(double X, double Z) const
+{
+	if (!M || !M->Web) return false;
+	for (const FS47Rect& B : M->Web->Zones()) if (B.bEnabled && X >= B.MinX && X <= B.MaxX && Z >= B.MinZ && Z <= B.MaxZ) return true;
+	return false;
+}
+
+bool US47World::OnLand(double X, double Z, const FString& InArea)
+{
+	// On the area's ground, the player's whole width; not into a building, a raised slab, a fenced
+	// compound or across a fence (with a margin wider than a step: their own zones and gates lead in);
+	// within the story's limits now; clear of what stands there (the drive leg's posts, poles, rocks,
+	// fences and walls; the walk's colliders and the truck hold as ever); and with the area's ground
+	// meshes under it (never into the void at an area's edge).
+	const FString& A = InArea.IsEmpty() ? Area : InArea;
+	if (!M || !M->Player || !bLegsMade) return false;
+	if (Lands.IsEmpty()) MakeLands();
+	const FLand* L = Lands.Find(A);
+	if (!L || !L->In) return false;
+	const double R = M->Player->Radius;
+	for (const FVector2D& D : { FVector2D(0, 0), FVector2D(-R, -R), FVector2D(R, -R), FVector2D(-R, R), FVector2D(R, R) })
+	{
+		if (!L->In(X + D.X, Z + D.Y)) return false;
+	}
+	const double K = R + LAND_KEEP;
+	for (const FS47Box2& B : L->Out) if (X > B.MinX - K && X < B.MaxX + K && Z > B.MinZ - K && Z < B.MaxZ + K) return false;
+	if (L->Closed && L->Closed(X, Z)) return false;
+	if (const FLegRec* G = Legs.Find(L->Leg))
+	{
+		for (const FS47Obstacle& O : G->Area->Obstacles)
+		{
+			if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R) return false;
+		}
+	}
+	return GroundUnder(A, *L, X, Z);
+}
+
+bool US47World::GroundUnder(const FString& InArea, const FLand& L, double X, double Z)
+{
+	// a ray down through each corner of the player's width onto the ground's height there, found once
+	// per half-metre cell (the meshes stand still): none, and it is the edge of the world
+	const FLegRec* G = Legs.Find(L.Leg);
+	UWorld* W = M && M->Web ? M->Web->GetWorld() : nullptr;
+	if (!G || !W || !M->Player) return false;
+	TMap<FIntPoint, bool>& Cells = Under.FindOrAdd(InArea);
+	const double R = M->Player->Radius;
+	for (const FVector2D& D : { FVector2D(-R, -R), FVector2D(R, -R), FVector2D(-R, R), FVector2D(R, R) })
+	{
+		const FIntPoint C(FMath::FloorToInt((X + D.X) * 2), FMath::FloorToInt((Z + D.Y) * 2));
+		if (const bool* Have = Cells.Find(C)) { if (!*Have) return false; continue; }
+		const double Cx = (C.X + 0.5) / 2, Cz = (C.Y + 0.5) / 2, H = L.Y ? L.Y(Cx, Cz) : G->Area->Height(Cx, Cz);
+		FHitResult Hit;
+		const FCollisionQueryParams Q(SCENE_QUERY_STAT(S47Land), true);
+		const bool bHit = W->LineTraceSingleByChannel(Hit, S47Three::ToUE(FVector(Cx, H + 3, Cz)), S47Three::ToUE(FVector(Cx, H - 6, Cz)), ECC_Visibility, Q);
+		Cells.Add(C, bHit);
+		if (!bHit) return false;
 	}
 	return true;
 }
