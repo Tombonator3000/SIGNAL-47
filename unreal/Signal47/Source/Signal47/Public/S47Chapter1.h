@@ -144,6 +144,7 @@ private:
 	// in the process, the lab's lamps as they were before the safelight took over
 	int32 DevGen = 0;
 	bool bDarkroom = false;
+	bool bPrintingLight = false;
 	TMap<int32, float> LampBase;
 	TArray<FString> TestNotes; // notes when there is no host (the self test)
 

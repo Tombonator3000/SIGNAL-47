@@ -150,3 +150,9 @@
 
 - [ ] Fortsett codex/unarius-tv fra TV_PROGRAMME.md: bruk siste bygde binærfil med tidsrettelsen, verifiser faktisk bevegelig film på begge TV-er over tid, koble filmlyd om ønsket, prøv fallback og 47-sekundershendelse/opptak/lagring på nytt, integrer og pakk før standardutgaven erstattes.
 - [x] Separat egenprodusert Blender-alien er levert i `Desktop/Alien - Egen modell`, med importprøvde Unreal-assets. `Desktop/Alien` er urørt referanse; den nye figuren er ikke integrert i spillet ennå.
+
+## Etter Toms utelys-/fotolabprøve, 22. oktober 2026
+
+- [x] 30 utvendige armaturspotter ved SARO og motellet, navngitte labdrivere og kopling til innflettet fremkallingsregel; bygg, 1218 selvtester og målrettede bilder. Se `LIGHTING.md`.
+- [ ] Claude gjennomgår `revision3/compare`, pakker i avtalt kø, prøver lukket dør, rød fremkalling, forstørrer, tåket kopi/gjentakelse og normal lysretur med ekte input; SARO-kutt/tilbake og Room 6s lys.
+- [ ] Ny High/1440p `stat unit` med én tung jobb om gangen etter dette utelyspasset. Forrige lysleveranses tall er bevart som historikk, ikke målt på nytt her.
