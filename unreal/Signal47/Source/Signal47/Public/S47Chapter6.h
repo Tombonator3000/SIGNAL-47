@@ -80,7 +80,7 @@ private:
 	TOptional<TArray<double>> KeyLamps;
 	struct FCue { double At; TFunction<void()> Fn; };
 	TArray<FCue> Cues;
-	FS47GlowView ThirdGlow; // (the view on the points AS47Web keeps: S47Glow.h)
+	FS47GlowView ThirdGlow;
 	TArray<int32> ThirdIds;
 	bool bThirdShown = false;
 	FString JumpAt;

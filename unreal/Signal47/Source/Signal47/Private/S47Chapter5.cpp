@@ -1024,16 +1024,27 @@ void US47Chapter5::TestDrive(const FString& Stop)
 			Say(FString::Printf(TEXT("map: label '%s', tracing %.0f %.0f, p13 %d, stage %s %s"), *Label(TEXT("diner:booth")), W->S.Tracing->X, W->S.Tracing->Y, W->S.bP13, *W->S.Stage, *Reply));
 			return;
 		}
-		if (Stop == TEXT("truck"))
+		if (Stop == TEXT("truck") || Stop == TEXT("road"))
 		{
 			W->S.Tracing = S47Drawings::SERVICE_MAP().Station;
 			W->Answer(TEXT("bm8"));
 			const FS47Obj Truck = W->M->Web->Obj(TEXT("world.dinerTruckProxy"));
 			const FVector At = Truck ? Truck.WorldPosition() : W->M->Web->Obj(TEXT("world.legs.road.drive.truck.group")).WorldPosition() + FVector(0, 0.95, 0);
+			// out of the door and straight at it, until it is in reach (2.6 m from its middle)
+			const FVector From = W->M->Player->Pos;
+			FVector2D Back(From.X - At.X, From.Z - At.Z);
+			Back = Back.GetSafeNormal() * 2.6;
+			W->M->Player->Place(At.X + Back.X, At.Z + Back.Y, 0);
 			Face(At);
 			Say(FString::Printf(TEXT("truck: stage %s, '%s'"), *W->S.Stage, *Label(TEXT("dinerTruck"))));
 			return;
 		}
+	});
+	// road: the truck used, out onto the old road (chapter six)
+	if (Stop == TEXT("road")) Later(3.0f, [W, Say]
+	{
+		if (W->M->Inter) W->M->Inter->UseId(TEXT("dinerTruck"));
+		Say(FString::Printf(TEXT("road: used the truck, stage %s"), *W->S.Stage));
 	});
 }
 

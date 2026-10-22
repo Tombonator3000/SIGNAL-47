@@ -116,7 +116,8 @@ public:
 	// The talks, the map's answers, the saved state and the drawings' numbers, without the world.
 	static bool SelfTest(TArray<FString>& Out);
 	// -S47Ch5Drive=<stop>: plays the chapter in the diner by itself up to a stop and holds there for the
-	// screenshot (counter, waitress, clipping, map, aligned, p13, truck), as tools/chapter5.py plays it.
+	// screenshot (counter, waitress, clipping, map, aligned, p13, truck; road: the truck used, onto the
+	// old road), as tools/chapter5.py plays it.
 	void TestDrive(const FString& Stop);
 
 private:

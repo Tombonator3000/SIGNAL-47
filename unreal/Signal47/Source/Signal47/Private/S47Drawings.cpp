@@ -391,7 +391,9 @@ FString S47Drawings::Clipping(UTexture* Tex)
 	Brush.DrawAs = ESlateBrushDrawType::Image;
 	TSharedRef<SImage> Img = SNew(SImage).Image(&Brush);
 	TArray<FColor> Px;
-	FWidgetRenderer* R = new FWidgetRenderer(true);
+	// (no gamma correction: the sRGB target encodes what the sRGB texture decoded, so the canvas's own
+	// values come back; with it, they came back a gamma lighter)
+	FWidgetRenderer* R = new FWidgetRenderer(false);
 	R->DrawWidget(RT, Img, FVector2D(W, H), 0.f, false);
 	const bool bOk = S47Image::ReadPixels(RT, Px) && Px.Num() == W * H;
 	BeginCleanup(R);
