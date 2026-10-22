@@ -6,8 +6,10 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
                                           thudSoft, the steps, the aliens ..., named as Audio.ts names them)
   Content/Audio/Raw/phone/<id>.wav        Kinski's telephone lines: the kinski catalog's clips whose text
                                           is one of PHONE_TEXTS (core/phoneScripts.ts), as Audio.ts picks them
-  Content/Audio/Raw/character/<id>.wav    the character voices on the line: bacall for N. Vega's call
-                                          lines and CB words, price for "Reference west ...", as Audio.ts picks them
+  Content/Audio/Raw/character/<id>.wav    the character voices: bacall for N. Vega's call lines and CB words, as
+                                          Audio.ts picks them, and her lines in room 6 (core/npcDialogue.ts, which
+                                          the web version loads from the ensemble bank as it plays them), price for
+                                          "Reference west ..."
   Content/Audio/Raw/index.json            sources (web name -> file), phone (text -> phone:<id>),
                                           character (voice -> text -> character:<id>); texts normalised
                                           as readAloud.ts normalizeReadingText
@@ -133,11 +135,13 @@ for clip in catalog['clips']:
 missing = sorted(phone_texts - set(index['phone']))
 print('S47: raw phone lines: %d of %d%s' % (len(index['phone']), len(phone_texts), (' (no recording: %s)' % missing) if missing else ''))
 
-# the character voices on the line (Audio.ts characterKeys)
+# the character voices on the line (Audio.ts characterKeys: N. Vega's call lines and CB words, and the
+# line's own voice), and N. Vega's lines in room 6, which the talk plays through core/npcDialogue.ts
+# (the web version loads those from the ensemble bank as it needs them; here they are decoded with the rest)
 ensemble = json.load(open(os.path.join(AUDIO, 'ensemble', 'catalog.json'), encoding='utf-8'))
 for clip in ensemble['clips']:
     text = normalize(clip['text'])
-    if not (clip['voice'] == 'bacall' and text in channel_texts or clip['voice'] == 'price' and text == 'Reference west. No. East. Hold the last reading.'):
+    if clip['voice'] not in ('bacall', 'price'):
         continue
     src = os.path.join(AUDIO, 'ensemble', clip['file'])
     if not os.path.isfile(src) or not wav(src, os.path.join(RAW, 'character', clip['id'] + '.wav')):
@@ -145,7 +149,8 @@ for clip in ensemble['clips']:
     key = 'character:%s' % clip['id']
     index['sources'][key] = 'character/%s.wav' % clip['id']
     index['character'].setdefault(clip['voice'], {})[text] = key
-print('S47: raw character lines: %d' % sum(len(v) for v in index['character'].values()))
+missing = sorted(channel_texts - set(index['character'].get('bacall', {})))
+print('S47: raw character lines: %d%s' % (sum(len(v) for v in index['character'].values()), (' (no recording on the line: %s)' % missing) if missing else ''))
 
 with open(os.path.join(RAW, 'index.json'), 'w', encoding='utf-8') as f:
     json.dump(index, f, ensure_ascii=False, indent=1, sort_keys=True)

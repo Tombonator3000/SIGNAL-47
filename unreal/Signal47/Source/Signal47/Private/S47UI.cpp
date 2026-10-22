@@ -2,6 +2,7 @@
 
 #include "Internationalization/Regex.h"
 #include "S47HUD.h"
+#include "S47NpcDialogue.h"
 #include "SS47Widgets.h"
 
 void US47UI::Toast(const FString& Text, float Secs)
@@ -52,18 +53,21 @@ void US47UI::ClockSeconds(const FString& Text)
 
 void US47UI::Document(const FS47Doc& Doc, TFunction<void()> OnClose)
 {
+	if (NpcDialogue) NpcDialogue->Stop(); // (open() closes first: stopSpeech)
 	if (Hud) Hud->ShowDocument(Doc, MoveTemp(OnClose));
 }
 
 void US47UI::Open(TSharedRef<SWidget> Widget, TFunction<void()> OnClose)
 {
 	ChapterCard(nullptr); // (open() closes what was open first, and close() takes the chapter card away)
+	if (NpcDialogue) NpcDialogue->Stop(); // close(): stopSpeech (the character voices; the other readers are not in this version)
 	if (Hud) Hud->OpenModal(Widget, MoveTemp(OnClose));
 }
 
 void US47UI::Close(bool bSilent)
 {
 	(void)bSilent;
+	if (NpcDialogue) NpcDialogue->Stop(); // stopSpeech (the character voices; the other readers are not in this version)
 	ChapterCard(nullptr);
 	if (Hud) Hud->CloseModal();
 }

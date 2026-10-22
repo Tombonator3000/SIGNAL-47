@@ -136,6 +136,9 @@ public:
 	FString NbTab = TEXT("tasks");
 	TFunction<void(const FString&)> OnNotebookTab; // a page of the notebook has been turned to
 	bool bLargeText = false;                       // html.text-large
+	// ui.npcDialogue: the night's character voices, one queue (core/npcDialogue.ts; set by main.ts's
+	// wiring, null until then). ui.speakNora is its SpeakNora.
+	TSharedPtr<class FS47NpcDialogue> NpcDialogue;
 
 private:
 	UPROPERTY() TObjectPtr<AS47HUD> Hud;

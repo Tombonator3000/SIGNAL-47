@@ -35,4 +35,7 @@ shot drive "S47: trip 20 s" "-S47Drive=saro:station01 -S47Throttle=0.35" 24
 shot chapter1 "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=room"
 shot yard "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=at:11.2;-11.0;-1.5708;-0.2"
 shot camera "frame01 exposed" "-S47Jump=chapter1 -S47Ch1Drive=photo"
+# chapter four: into room 6 from the motel's front, at her table (and the talk with the evidence on it)
+shot chapter4 "chapter ch4 begins" "-S47Jump=chapter4 -S47Ch4Drive=room" 10
+shot room6talk "ch4 drive: table: wrong" "-S47Jump=chapter4 -S47Ch4Drive=table" 10
 exit $fail
