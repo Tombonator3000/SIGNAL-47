@@ -129,7 +129,8 @@ void US47Room6::Update(double Dt, double T)
 	if (TvAcc >= 1.0 / 15)
 	{
 		TvAcc = 0;
-		DrawSnow(TvPx, T, [] { return double(FMath::FRand()); });
+		// Local programme footage replaces snow when present; no codec plugin is needed.
+		if (!Programme.Frame(T + 138.5, TvPx, TV_W, TV_H)) DrawSnow(TvPx, T, [] { return double(FMath::FRand()); });
 		UploadSnow();
 		TvGlow += ((2.6 + FMath::FRand() * 1.8) - TvGlow) * 0.6;
 	}

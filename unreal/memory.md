@@ -84,3 +84,8 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - `AS47Web` har en merket sluttblokk med faktisk tåkeoverstyring og daggry-/solverdier med hooks. Verdensporten må binde hooks eller lese getters. Et statisk `M_WebSky`-panorama kan ikke tegne soloppgangen eller høydeavhengig daggry; ikke kall den visuelle delen ferdig med bare disse setterene.
 - OldRoad-konstruktøren legger figurens sju glødepunkter sist i `world.oldRoad.glow.points`. De gjenbrukes direkte; ingen ny veigeometri eller eksport er nødvendig for kapitlet. `US47Away::ShowFrame` har valgfri gruppeopacity for Ending, mens bortføringen beholder sitt svarte underlag.
 - Integrasjonskontrakter og faktisk testgrunnlag står i `CH6_PORT.md`.
+
+## Retning og lokale TV-klipp (2026-10-22)
+
+- Tom har bestemt at videre arbeid kun gjelder Unreal. Web og Unity er referanser.
+- Unarius-MP4-er ligger i `/home/tom/Desktop/Unarius/`. Film skal bevege seg på TV-ene. Lokal kandidat, status og videreføring står i `TV_PROGRAMME.md`.

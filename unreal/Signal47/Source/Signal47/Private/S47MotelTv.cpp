@@ -89,14 +89,14 @@ FS47MotelTv::FS47MotelTv(US47Main* InM, FS47MotelTvDeps InD) : M(InM), D(MoveTem
 		{
 			const TOptional<FS47Doc> Doc = D.Document ? D.Document() : TOptional<FS47Doc>();
 			if (Mode == TEXT("card") && Doc) { if (D.Open) D.Open(*Doc); return; }
-			if (Mode == TEXT("card") && Seen(TEXT("ev:tv"))) { Toast(TEXT("The test card again. The notebook has the observation, but the picture from that earlier case is unavailable."), 5); return; }
-			Toast(Mode == TEXT("card") ? TEXT("A portable set on the shelf, left on. The station signed off hours ago: the test card, and a thin tone.")
+			if (Mode == TEXT("card") && Seen(TEXT("ev:tv"))) { Toast(Programme.Available() ? TEXT("The broadcast is back. The notebook has the observation, but the picture from that earlier case is unavailable.") : TEXT("The test card again. The notebook has the observation, but the picture from that earlier case is unavailable."), 5); return; }
+			Toast(Mode == TEXT("card") && Programme.Available() ? TEXT("A strange late-night broadcast. Robes, spacecraft and a promise of visitors from the stars.") : Mode == TEXT("card") ? TEXT("A portable set on the shelf, left on. The station signed off hours ago: the test card, and a thin tone.")
 				: Mode == TEXT("carrier") ? TEXT("Nothing on the screen but grey, and the hum.") : TEXT("The lot, from straight above. The truck exactly where you left it."), 4);
 		};
 		It.Examine = [this]
 		{
-			return Mode == TEXT("card") ? D.Document && D.Document() ? FString(TEXT("The test card again. The single picture of the lot is kept in the notebook."))
-				: Seen(TEXT("ev:tv")) ? FString(TEXT("The test card again. The notebook has the observation, but the earlier picture is unavailable.")) : FString(TEXT("Colour bars, and a thin tone. Nobody has turned it off."))
+			return Mode == TEXT("card") && Programme.Available() && !Seen(TEXT("ev:tv")) ? FString(TEXT("A faded broadcast of a cosmic pageant, flickering behind the glass.")) : Mode == TEXT("card") ? D.Document && D.Document() ? FString(Programme.Available() ? TEXT("The broadcast is back. The single picture of the lot is kept in the notebook.") : TEXT("The test card again. The single picture of the lot is kept in the notebook."))
+				: Seen(TEXT("ev:tv")) ? FString(Programme.Available() ? TEXT("The broadcast is back. The notebook has the observation, but the earlier picture is unavailable.") : TEXT("The test card again. The notebook has the observation, but the earlier picture is unavailable.")) : FString(TEXT("Colour bars, and a thin tone. Nobody has turned it off."))
 				: Mode == TEXT("carrier") ? FString(TEXT("A grey field. The hum of a carrier with nothing on it.")) : FString(TEXT("The motel lot, straight down. Your truck, at the same angle you parked it. No camera could stand there."));
 		};
 		M->Inter->Add(It);
@@ -132,6 +132,8 @@ void FS47MotelTv::Update(double Dt, const FS47MotelTvIn& S)
 	TvAt = Tv.WorldPosition();
 	const double InDist = S.bSaro ? FVector::Distance(S.Cam.Pos, TvAt) : TNumericLimits<double>::Max();
 	Dist = InDist;
+	// The broadcast keeps moving even when the story event is outside its time window.
+	if (Mode == TEXT("card")) ProgrammeTime += Dt;
 	Dwell = S.bOk && S.bHere ? Dwell + Dt : 0;
 	const bool bCould = Mode == TEXT("card") && S.bOk && S.bSaro && S.bHere && !Seen(TEXT("ev:tv")) && S.bTruckOnLot && S.Clock >= NotBefore && S.Clock - Last() >= GAP
 		&& Day >= 2 * 3600 + 30 * 60 && Day < 5 * 3600 + 5 * 60;
@@ -142,7 +144,7 @@ void FS47MotelTv::Update(double Dt, const FS47MotelTvIn& S)
 		if (bCould && S.May != TOptional<bool>(false) && Dwell > DWELL)
 		{
 			Carrier();
-			Toast(TEXT("On the television the test card is gone: a blank grey screen, and the hum of a carrier with nothing on it."), 5.5);
+			Toast(TEXT("On the television the picture is gone: a blank grey screen, and the hum of a carrier with nothing on it."), 5.5);
 		}
 	}
 	else if (Mode == TEXT("carrier"))
@@ -345,7 +347,9 @@ void FS47MotelTv::Paint(double InT)
 	}
 	else
 	{
-		const TArray<FColor>& Src = Mode == TEXT("frame") && Shot.Num() == W * H ? Shot : Card;
+		TArray<FColor> Broadcast;
+		const bool bBroadcast = M && Mode == TEXT("card") && Programme.Frame(ProgrammeTime, Broadcast, W, H);
+		const TArray<FColor>& Src = bBroadcast ? Broadcast : Mode == TEXT("frame") && Shot.Num() == W * H ? Shot : Card;
 		const int32 J = FMath::FRand() < 0.08 ? 1 : 0;
 		const double U = Mode == TEXT("card") ? Unrest : 0;
 		if (U > 0.08 && !Roll && FMath::FRand() < 0.012 + 0.09 * U * U) { Roll = FRoll{ 0, Height * (0.5 + 1.6 * U) }; Slips++; }
@@ -440,7 +444,7 @@ void FS47MotelTv::Sound(double InDist)
 	const double Now = Ctx->CurrentTime();
 	auto Set = [Now](const TSharedPtr<FS47GainNode>& G, double V) { G->Gain.SetTargetAtTime(V, Now, 0.04); };
 	const double U = Mode == TEXT("card") ? Unrest : 0, Waver = U > 0 ? 1 - U * (0.35 + 0.65 * FMath::FRand() * FMath::FRand()) : 1;
-	Set(Snd->Tone, Mode == TEXT("card") ? 0.03 * (Roll ? 0.3 : Waver) : 0);
+	Set(Snd->Tone, Mode == TEXT("card") && !Programme.Available() ? 0.03 * (Roll ? 0.3 : Waver) : 0);
 	Set(Snd->Hum, Mode == TEXT("carrier") ? 0.11 * Snd->HumK : 0.05 * U * U * Snd->HumK);
 	Set(Snd->Hiss, Mode == TEXT("carrier") ? 0.014 : Mode == TEXT("card") ? 0.006 : 0);
 	Set(Snd->Whine, Mode == TEXT("frame") ? 0 : 0.0016);
