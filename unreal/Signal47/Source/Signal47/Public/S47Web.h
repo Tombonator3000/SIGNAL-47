@@ -18,6 +18,7 @@ class USkyLightComponent;
 class UTextureRenderTarget2D;
 class UTexture2D;
 class ULightComponent;
+class ULocalLightComponent;
 class UPrimitiveComponent;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
@@ -311,6 +312,29 @@ private:
 	TArray<FArrayLight> ArrayLights;
 	void BuildArrayLighting();
 	void UpdateArrayLighting();
+	struct FExteriorLight
+	{
+		int32 Node = -1, Set = -1, Slot = -1, GlowNode = -1, Glow = -1, Material = -1;
+		FVector At, Target;
+		float Reference = 1, Candela = 0, GlowReference = 1, LastK = -1;
+		bool bWasOn = false;
+		TWeakObjectPtr<USpotLightComponent> Light;
+		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+	};
+	TArray<FExteriorLight> ExteriorLights;
+	void BuildExteriorLighting();
+	void UpdateExteriorLighting();
+	struct FLabLight
+	{
+		int32 Node = -1, Role = -1, Slot = -1;
+		float WidthBase = 1, Lumens = 0;
+		TWeakObjectPtr<ULocalLightComponent> Light;
+		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+	};
+	TArray<FLabLight> LabLights;
+	float LabScaleBase = 0.22f;
+	void BuildLabLighting();
+	void UpdateLabLighting();
 	// Physical sources fitted to exported diffuser/screen meshes. Original room lights carry state only.
 	struct FFixtureLight
 	{
@@ -343,6 +367,9 @@ private:
 	void UpdateNativeLighting();
 	void UpdateNativeFog();
 	void SampleLightingPerformance(float Dt);
+	void ReviewLighting(); // -S47LightingReview=<directory>: fixed cameras, no gameplay input
+	int32 LightingReviewStep = -1, LightingReviewShot = -1;
+	bool bLightingReviewPower = false;
 	double LightingRunTime = 0, LightingLogTime = 0;
 	// lights, per area
 	struct FLightRef { TWeakObjectPtr<ULightComponent> L; FString Area; float Base = 0; FString Uuid; };

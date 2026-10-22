@@ -108,3 +108,9 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 ## Egen alien, 22. oktober 2026
 
 - Ny figur med Blender-kilde, 2K PBR, rigg, idle og importprøvde UE 5.8.4-assets ligger i `/home/tom/Desktop/Alien - Egen modell/`. Se README der for import og rapporter. Gammel `/home/tom/Desktop/Alien/` er urørt referanse. Ny modell er klar som ressurs; integrasjon i pakket spill gjenstår.
+
+## Utelys og fotolab, 22. oktober 2026
+
+- `port-light` er videreført etter at forrige lys ble integrert/pakket. Ny leveranse tar inn `unreal-port-core` til `3b44956e`, med gratismodellimport, Claudes mørkeromsregel og brettrettelser.
+- `S47ExteriorLighting.cpp`: 30 korte, fysiske spotter fra eksisterende armaturer; `S47LabLighting.cpp`: adresserbar `Light("lab.normal"/"lab.safelight"/"lab.enlarger")`, intensitet 0 til 1, og fysisk normal-/rødt-/linse-/varsellys. `US47Chapter1::Darkroom` kopler renderdriverne ved faseskifte; ingen ny film-/dørregel i dette lyspasset.
+- Bygg og 1218 selvtester OK, før/etter fra ni kameraer, labmoduser/halvstrøm/kutt/tilbake og faktisk kontaktkopitilstand prøvd. Rapport/API/bilder: `LIGHTING.md`, bevis i `~/scratch-bm/Signal47-lighting-2026-10-22/revision3`. Ny pakke, full fremkalling med ekte input og nye High/1440p-tider gjenstår hos integrator. Ingen endring av installert spill.

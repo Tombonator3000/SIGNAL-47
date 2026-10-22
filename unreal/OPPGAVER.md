@@ -17,7 +17,7 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 |---|---|---|---|
 | Original retro-TV og slitt radio, fiktivt merke, PBR og egen filmskjerm | Codex | lokale Blender-kilder i Desktop/Retro TV og radio | pågår; standalone assets til Unreal, plassering hos integrator |
 | Brettet: synlige røde tråder (kantutjevnet garn med skygge, glans og tvinning, større nåler, slakk feiltråd, tråden i hånden med ring på målet), hjelpestripe, tydeligere spørsmålskort, hint tilbudt etter feil tråd eller 75 s, «Slik lages et funn» i notatbokas funn, oppgavetekster nevner brettet; testflagg `-S47BoardTest` | Claude-hjelper | `worktree-agent-a6671d6d8e7c95ad4` | levert 22.10, venter på integrator |
-| Unreal-lys og skygger erstatter det gamle systemet (taklys fra armaturene, grønt CRT-lys foran skjermene, opplyste paraboler, ytelse 1440p) | Codex | `port-light` | rettet 22.10, klar for ny Claude-gjennomgang; flettet til 7d167000, bygg og 1203 selvtester OK, High/1440p 73/96 fps; pakking hos integrator |
+| SAROs utelys og fotolab: fysiske lamper ved vegger/dører/stier, navngitte normal-/safelight-/forstørrerlys | Codex | `port-light` | klar 22.10 for Claude-gjennomgang; flettet til 3b44956e; 30 fysiske utelys, navngitt lab-API koblet til dørregelen; bygg og 1218 selvtester OK; bilder i LIGHTING.md; ny 1440p-måling og pakking hos integrator |
 | Toms rapport: mørkerommet krever lukket dør (tåket kopi ved åpen dør, rødt mørkeromslys, lagring), og signalprosessoren gjort varm (bånd synker i tone, lavpass, ingen tynne overtoner, RAW lavere) | Claude-hjelper | `worktree-agent-a0f1f30ea2f5f2b7a` | ferdig 22.10, klar for fletting: bygg OK, selvtest OK (1186), lydtur før/etter i loggen; mørkerommet ikke prøvd i verdenen |
 
 ## Neste

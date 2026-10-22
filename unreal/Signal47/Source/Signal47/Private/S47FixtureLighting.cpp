@@ -130,48 +130,6 @@ void AS47Web::BuildFixtureLighting()
 		}
 		FixtureLights.Add(P);
 	}
-	const int32 Lab = FloodSet(TEXT("lab"));
-	int32 SafeFace = -1;
-	for (int32 Slot = 0; Slot < 2; ++Slot)
-	{
-		const int32 MatId = HandleMat(FString::Printf(TEXT("yard.redGlass[%d]"), Slot));
-		for (int32 I = 0; I < Nodes.Num(); ++I) if (MatId >= 0 && Nodes[I].Mats.Contains(MatId))
-		{
-			FFixtureLight P;
-			P.Node = I; P.Set = Lab; P.Slot = Slot; P.Lumens = Slot == 0 ? 65.f : 48.f;
-			P.Reference = FloodPos(Lab, Slot).A * FloodScaleOf(Lab); P.Color = FloodCol(Lab, Slot);
-			P.Light = SurfaceLight(I, Slot == 0 ? FVector(0, 0, 1) : FVector(0, -1, 0), P.Lumens, 5.f);
-			if (!P.Light.IsValid()) continue;
-			P.Light->SetLightColor(P.Color); SuppressFloodLight(Lab, Slot);
-			if (Slot == 0) SafeFace = I;
-			if (UStaticMeshComponent* M = Cast<UStaticMeshComponent>(Nodes[I].Comp.Get()); M && DiffuserBase)
-			{
-				UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(DiffuserBase, this);
-				D->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.35f, 0.35f, 0.33f));
-				for (int32 K = 0; K < M->GetNumMaterials(); ++K) M->SetMaterial(K, D);
-				KeepMids.Add(D); P.Diffuser = D;
-			}
-			FixtureLights.Add(P);
-		}
-	}
-	if (SafeFace >= 0)
-	{
-		// ServiceYard.ts: this shade was merged into the lab's plastic mesh. Its opening
-		// is a .20 m circle, rotated z=.7; use that source geometry, never the merged room box.
-		FFixtureLight P;
-		P.Node = Nodes[SafeFace].Parent; P.Set = Lab; P.Slot = 2; P.Lumens = 32.f;
-		P.Reference = FloodPos(Lab, 2).A * FloodScaleOf(Lab); P.Color = FloodCol(Lab, 2);
-		P.Light = SurfaceLight(SafeFace, FVector(FMath::Sin(0.7), -FMath::Cos(0.7), 0), P.Lumens, 3.f);
-		if (P.Light.IsValid())
-		{
-			P.Light->SetWorldLocation(S47Three::ToUE(18.6151, 1.25646, -3.76));
-			P.Light->SetSourceWidth(20.f); P.Light->SetSourceHeight(20.f); P.Light->SetLightColor(P.Color);
-			P.Light->SetBarnDoorAngle(55.f); P.Light->SetBarnDoorLength(12.f);
-			FixtureLights.Add(P); SuppressFloodLight(Lab, 2);
-		}
-	}
-	// ServiceYard.ts's records-desk pool has no lamp model. The real task lamp lights it by bounce.
-	SuppressFloodLight(Lab, 3);
 	// Annex.ts's green desk shade is a separate mesh, unlike the merged lab shade.
 	for (int32 I = 0; I < Nodes.Num(); ++I)
 	{
