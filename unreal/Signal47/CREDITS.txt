@@ -1,0 +1,82 @@
+SIGNAL / 47: credits for the 3D models used in the Unreal version
+
+Bought: Vintage Liminal Props Pack (Superhive), Standard License.
+
+Licensed under Creative Commons Attribution 4.0 (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
+Some models were rescaled, re-centred, combined or cut apart, and brand names and logos may be removed.
+
+"Cassette Deck (Yamaha KX-202)" by AleixoAlonso, CC BY 4.0, https://sketchfab.com/3d-models/559b55501e0346eb94c5dff7452af028
+"Tumbleweed 5" by Anatomy by Doctor Jana, CC BY 4.0, https://sketchfab.com/3d-models/310ed28a89844d2893255346184357a6
+"Mojave Motel Sign" by aocrisan, CC BY 4.0, https://sketchfab.com/3d-models/c64f69ab7a6e4674826de6600f1a61d6
+"Jukebox" by ARIA, CC BY 4.0, https://sketchfab.com/3d-models/127cd1a00ca143af9db9cf4e58ddd956
+"Sony TC-D5 Recorder" by Artem P, CC BY 4.0, https://sketchfab.com/3d-models/aa2e82ca23cc415897fe66c9a3f5a3ba
+"Diner Table Set/Props" by AspectStudios, CC BY 4.0, https://sketchfab.com/3d-models/d4b6bd22a09545eaad056ac0770dec08
+"Dynascan Cobra Cam 89 CB Transceiver" by Big Jojo, CC BY 4.0, https://sketchfab.com/3d-models/533853b7ff5e4f6e8646f6907db86960
+"Neon sign "Motel" in 3 types" by Black vizual, CC BY 4.0, https://sketchfab.com/3d-models/794708f56b4e454caec677701781bca0
+"Telephone Poles" by Caboose3d, CC BY 4.0, https://sketchfab.com/3d-models/a76b68b838424a89b7db8a38f4c3d546
+"Cobra 139XLR CBRadio | Low Poly, PBR, Game Ready" by Caelykk, CC BY 4.0, https://sketchfab.com/3d-models/9e4881935f3146159cec5199d3335bf8
+"Pay Phone Game Asset" by Carolynn Vucic, CC BY 4.0, https://sketchfab.com/3d-models/7e8f2d0de5bb4e719d0ecec8ad25d8f5
+"El Alamo '78 - Low Poly model" by Daniel Zhabotinsky, CC BY 4.0, https://sketchfab.com/3d-models/41b3a5c0bc534817b3311c3736c403e6
+"Fairheaven LT '80 - Low poly model" by Daniel Zhabotinsky, CC BY 4.0, https://sketchfab.com/3d-models/e2678da920cc4be68dbc193727919ffb
+"Fairheaven LT '80 Cop Cruiser - Low poly model" by Daniel Zhabotinsky, CC BY 4.0, https://sketchfab.com/3d-models/61766c1e6e1e4b2b803c174f33433a74
+"Fairheaven SW '84 - Low poly model" by Daniel Zhabotinsky, CC BY 4.0, https://sketchfab.com/3d-models/aa0becb6e854422596cac6b21bf79787
+"Negotiator '80 - Low poly model" by Daniel Zhabotinsky, CC BY 4.0, https://sketchfab.com/3d-models/892b2684fb37442299bfad9222cf331c
+"Riverside '88 - Low poly model" by Daniel Zhabotinsky, CC BY 4.0, https://sketchfab.com/3d-models/8509a7f82665442592627940b7a1cfab
+"Office - Assets" by Evan Petrov, CC BY 4.0, https://sketchfab.com/3d-models/16c1a779bb0a4055a26367741d39e059
+"Classic American MOTEL sign" by exiS7-Gs, CC BY 4.0, https://sketchfab.com/3d-models/0fc66903dca54bb8a630911af7e15491
+"CRT Computer Monitor" by fizyman, CC BY 4.0, https://sketchfab.com/3d-models/f2ff0013f86e4cd0a2aee183a23bdfee
+"BrokenUtilityPole" by HippoStance, CC BY 4.0, https://sketchfab.com/3d-models/8347036f1340469f861b8a5e5f9a4eb1
+"Sony TC-510-2 Tape Recorder" by Ilgis (Dolgov) Fatykhov, CC BY 4.0, https://sketchfab.com/3d-models/32acbe50ba0f4abc99af88e0d76f28f9
+"Retro bar stool" by jafar200124, CC BY 4.0, https://sketchfab.com/3d-models/bdf0efe2af1a42dcb08b81634831578c
+"Retro Matrix Printer" by Johan Ström, CC BY 4.0, https://sketchfab.com/3d-models/6c26149c2fef481ba3b9b4028579f5b7
+"Barbed Wire Fence" by John Doe, CC BY 4.0, https://sketchfab.com/3d-models/f1c1c8e8052a41b7aa10e4a60fa0bcb9
+"2K Textured Diner Booth w/ Table" by Kimbell Whatley, CC BY 4.0, https://sketchfab.com/3d-models/59ee2b398dbd49a98b2a136e730a4182
+"1930s style typewriter - w/o branding" by Kuba "Volant" Wójcik, CC BY 4.0, https://sketchfab.com/3d-models/1d6009449fe84fd79454c4081eb743bf
+"Radio Scanner - SVERA DS-2200VLH" by LuddePudde, CC BY 4.0, https://sketchfab.com/3d-models/4ff8cd4c79a44f639094bf1f4f01834c
+"Stranger Things Walkie Talkie" by Mattyew, CC BY 4.0, https://sketchfab.com/3d-models/d85f899a00114042abd0562c25a08438
+"IBM 3178" by maxdragonn, CC BY 4.0, https://sketchfab.com/3d-models/891ae8149d8547a5971381237d13e2e6
+"IBM 3278 terminal" by maxdragonn, CC BY 4.0, https://sketchfab.com/3d-models/b0470478089a4462afb4d5c4dd827b22
+"IBM Selectric II Typewriter" by maxdragonn, CC BY 4.0, https://sketchfab.com/3d-models/bef0f699a5374ca1a8fe8e27fb77788a
+"Office Phone" by maxdragonn, CC BY 4.0, https://sketchfab.com/3d-models/4176a01b6d0b4d13ad165c0df278a6b5
+"payphone" by PersianTiger, CC BY 4.0, https://sketchfab.com/3d-models/7823190220bf43c5a4a9ee28e07b19f1
+"Realistic HD Beaked yucca (22/30)" by PlantCatalog, CC BY 4.0, https://sketchfab.com/3d-models/1a0da8faf2c54e65a1d8eb39151b914e
+"Chevrolet C10 Stepside 1966" by Raphael Baget, CC BY 4.0, https://sketchfab.com/3d-models/0a2ae2eea2cf4073a843ee7a381c74af
+"Destroyed Car 03 / Backrooms Car (Gameready ver)" by Renafox, CC BY 4.0, https://sketchfab.com/3d-models/efc4dfe2c7284a64bc9281eb4f61d402
+"Jukebox" by SamTheCaribbean, CC BY 4.0, https://sketchfab.com/3d-models/f93f606c43f8454fa428b6c365ac789b
+"Muteki Taiga Pickup Rusty [Low Poly]" by Scigh-on, CC BY 4.0, https://sketchfab.com/3d-models/4da5409804e54308b89dd980ac156f16
+"Western Electric 500 Vintage Rotary Telephone" by Skyice, CC BY 4.0, https://sketchfab.com/3d-models/4425a0d9629c420788cf6b0d072f4564
+"Tektronix RM565 Oscilloscope" by Thusko, CC BY 4.0, https://sketchfab.com/3d-models/b5b047d3ffec4fe2b98659d056c0f414
+"Retro Television" by Tom Seddon, CC BY 4.0, https://sketchfab.com/3d-models/e938241a182a4229ad48a1fc589e676e
+"Stereo Cassette Deck" by Tom Seddon, CC BY 4.0, https://sketchfab.com/3d-models/624e0a2e69ed475d85f0492f4341f3ea
+"Pay Phone" by Víctor Hernández, CC BY 4.0, https://sketchfab.com/3d-models/a0339aa975e54bb7ac65982ca3cc5802
+"Desert Cliff 6" by WireframeArt, CC BY 4.0, https://sketchfab.com/3d-models/ed2e9c7e976e4768868481e4a5c63f6f
+"Dried Sagebrush" by yanix, CC BY 4.0, https://sketchfab.com/3d-models/ae45c39f0550467394f4629ce39c45f7
+"Reel-to-Reel Tape Recorder" by YJ_, CC BY 4.0, https://sketchfab.com/3d-models/160ba370260b4f2b87effeaa0765f705
+"Retro Office Props" by YJ_, CC BY 4.0, https://sketchfab.com/3d-models/65e47619f5114df89fd26db1fa7f9d7f
+
+Poly Haven, CC0 (public domain, https://creativecommons.org/publicdomain/zero/1.0/); credited by choice:
+
+"Cassette Player" by Poly Haven, CC0, https://polyhaven.com/a/cassette_player
+"Coffee Cart 01" by Poly Haven, CC0, https://polyhaven.com/a/CoffeeCart_01
+"Metal Stool 01" by Poly Haven, CC0, https://polyhaven.com/a/metal_stool_01
+"Metal Stool 02" by Poly Haven, CC0, https://polyhaven.com/a/metal_stool_02
+"Metal Stool 03" by Poly Haven, CC0, https://polyhaven.com/a/metal_stool_03
+"Modular Electricity Poles" by Poly Haven, CC0, https://polyhaven.com/a/modular_electricity_poles
+"Namaqualand Boulder 02" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_boulder_02
+"Namaqualand Boulder 03" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_boulder_03
+"Namaqualand Boulder 04" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_boulder_04
+"Namaqualand Boulder 05" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_boulder_05
+"Namaqualand Boulder 06" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_boulder_06
+"Namaqualand Boulders 01" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_boulders_01
+"Namaqualand Cliff 01" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_cliff_01
+"Namaqualand Cliff 02" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_cliff_02
+"Namaqualand Rocks 01" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_rocks_01
+"Namaqualand Stones 01" by Poly Haven, CC0, https://polyhaven.com/a/namaqualand_stones_01
+"Old Bed Frame" by Poly Haven, CC0, https://polyhaven.com/a/old_bed_frame
+"Portable Cassette Player" by Poly Haven, CC0, https://polyhaven.com/a/portable_cassette_player
+"Rock Face 01" by Poly Haven, CC0, https://polyhaven.com/a/rock_face_01
+"Television 01" by Poly Haven, CC0, https://polyhaven.com/a/Television_01
+"Television 02" by Poly Haven, CC0, https://polyhaven.com/a/television_02
+"Vintage Radio Transceiver" by Poly Haven, CC0, https://polyhaven.com/a/vintage_radio_transceiver
+
+Music, sound and fonts are credited in the game's end credits.
