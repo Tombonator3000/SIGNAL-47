@@ -12,6 +12,15 @@
 
 using namespace S47Three;
 
+DEFINE_LOG_CATEGORY_STATIC(LogS47Walker, Log, All);
+
+namespace
+{
+	// the jump: a modest one for a grown man in boots (about 0.45 m up), the eye's dip on landing
+	constexpr double GRAVITY = 9.8, JUMP_UP = 0.45, LAND_SECS = 0.28, LAND_DIP = 0.065;
+	const double JUMP_V = FMath::Sqrt(2 * GRAVITY * JUMP_UP);
+}
+
 AS47Walker::AS47Walker()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -29,6 +38,26 @@ void AS47Walker::Place(double X, double Z, double InYaw)
 	Pitch = -0.06;
 	FloorY = FloorAt(X, Z);
 	Settle = 0.5f;
+	// (put down somewhere: on its feet, not in the air)
+	bAir = false; Lift = LiftV = 0; LandT = -1;
+}
+
+void AS47Walker::Jump()
+{
+	if (bAir || (CanJump && !CanJump())) return;
+	bAir = true; LiftV = JUMP_V; AirT = 0; Top = 0; LandT = -1;
+	UE_LOG(LogS47Walker, Display, TEXT("S47: jump at %.2f %.2f, floor %.3f"), Pos.X, Pos.Z, FloorY);
+	if (OnStep) OnStep(); // (the push off: a footstep on what is underfoot)
+}
+
+void AS47Walker::Land(bool bSilent)
+{
+	const double Hit = FMath::Max(0.0, -LiftV);
+	bAir = false; Lift = LiftV = 0;
+	if (bSilent) return;
+	LandT = 0; LandK = FMath::Clamp(Hit / JUMP_V, 0.5, 1.3);
+	UE_LOG(LogS47Walker, Display, TEXT("S47: landed at %.2f %.2f after %.2f s, %.3f m up at the top, floor %.3f"), Pos.X, Pos.Z, AirT, Top, FloorY);
+	if (OnStep) OnStep();
 }
 
 void AS47Walker::Look(double DX, double DY)
@@ -47,7 +76,8 @@ bool AS47Walker::Walkable(double X, double Z) const
 {
 	if (!Web.IsValid()) return true;
 	for (const FS47Rect& B : Web->Zones()) if (B.bEnabled && Inside(B.MinX, B.MaxX, B.MinZ, B.MaxZ, X, Z)) return true;
-	return false;
+	// (and the ground round the truck, in its own area)
+	return Ground && GroundArea == Web->Area() && Ground(X, Z);
 }
 
 void AS47Walker::Resolve(bool bX, double Old)
@@ -69,8 +99,11 @@ void AS47Walker::Resolve(bool bX, double Old)
 		}
 		if (bX) Pos.X = Best; else Pos.Z = Best;
 	}
+	// (the truck here as it is turned, not the box round it)
+	const bool bTruck = TruckBox && TruckBox->Area == Web->Area();
 	for (const FS47Rect& C : Web->Colliders())
 	{
+		if (bTruck && C.Id == TEXT("truck")) continue;
 		if (Pos.X + R <= C.MinX || Pos.X - R >= C.MaxX || Pos.Z + R <= C.MinZ || Pos.Z - R >= C.MaxZ) continue;
 		if (bX)
 		{
@@ -83,6 +116,25 @@ void AS47Walker::Resolve(bool bX, double Old)
 			Pos.Z += Front < Back ? -Front : Back;
 		}
 	}
+	// the truck: this axis's step goes back where it would go into it (not when it was in it already)
+	if (bTruck && InTruck(Pos.X, Pos.Z))
+	{
+		double& V = bX ? Pos.X : Pos.Z;
+		const double Was = V;
+		V = Old;
+		if (InTruck(Pos.X, Pos.Z)) V = Was;
+	}
+}
+
+bool AS47Walker::InTruck(double X, double Z) const
+{
+	if (!TruckBox) return false;
+	// into the truck's terms (World.ts AboutUp turned back), and the distance from its box
+	const FTruckBox& B = *TruckBox;
+	const double C = FMath::Cos(B.Heading), S = FMath::Sin(B.Heading), Dx = X - B.X, Dz = Z - B.Z;
+	const double Lx = Dx * C - Dz * S, Lz = Dx * S + Dz * C;
+	const double Ox = FMath::Max(0.0, FMath::Abs(Lx) - B.HalfW), Oz = FMath::Max(0.0, FMath::Abs(Lz) - B.HalfL);
+	return Ox * Ox + Oz * Oz < Radius * Radius;
 }
 
 double AS47Walker::FloorAt(double X, double Z) const
@@ -123,6 +175,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 		if (S47Keys::Down(PC, TEXT("back"))) Mz += 1;
 		if (S47Keys::Down(PC, TEXT("left"))) Mx -= 1;
 		if (S47Keys::Down(PC, TEXT("right"))) Mx += 1;
+		if (TestMove) { Mx = TestMove->X; Mz = TestMove->Y; }
 		const double L = FMath::Sqrt(Mx * Mx + Mz * Mz);
 		if (L > 1) { Mx /= L; Mz /= L; }
 	}
@@ -130,6 +183,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	FS47View View;
 	if (CameraOverride && CameraOverride(Dt, FVector2D(Mx, Mz), FVector2D(LookX, LookY), View))
 	{
+		if (bAir) Land(true); // (no jump goes on in the truck)
 		SetActorLocationAndRotation(ToUE(View.Eye), CameraRotation(View.Yaw, View.Pitch, View.Roll));
 		FVector2D Size(16, 9);
 		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
@@ -149,19 +203,41 @@ void AS47Walker::Tick(float DeltaSeconds)
 		Pos.X += Vx; Resolve(true, Before.X);
 		Pos.Z += Vz; Resolve(false, Before.Z);
 		const double Moved = FMath::Sqrt(FMath::Square(Pos.X - Before.X) + FMath::Square(Pos.Z - Before.Z));
-		if (Moved > 0.0005)
+		// (no bob and no footsteps in the air)
+		if (Moved > 0.0005 && !bAir)
 		{
 			Bob += Moved * 7.2;
 			StepDist += Moved;
 			if (StepDist > 0.8) { StepDist = 0; if (OnStep) OnStep(); }
 		}
-		else Bob *= 0.9;
+		else if (!bAir) Bob *= 0.9;
+		// the Jump key as bound (Space unless changed); with the camera raised Space is the shutter
+		// and CanJump says no
+		if (S47Keys::Pressed(PC, TEXT("jump"))) Jump();
 	}
 	const double Fy = FloorAt(Pos.X, Pos.Z);
 	FloorY += (Fy - FloorY) * FMath::Min(1.0, Dt * 14.0);
+	// the jump's arc over the floor (the floor under the player as on the ground: a step up or down
+	// in the air is the floor's), and down on it again
+	if (bAir)
+	{
+		AirT += Dt;
+		LiftV -= GRAVITY * Dt;
+		Lift += LiftV * Dt;
+		Top = FMath::Max(Top, Lift);
+		if (Lift <= 0) Land(false);
+	}
+	// the eye gives a little on landing, and comes back up
+	double Dip = 0;
+	if (LandT >= 0)
+	{
+		LandT += Dt;
+		if (LandT >= LAND_SECS) LandT = -1;
+		else Dip = -LAND_DIP * LandK * FMath::Sin(UE_DOUBLE_PI * LandT / LAND_SECS);
+	}
 	Shake = FMath::Max(0.0, Shake - Dt * 1.4);
 	const double Sh = Shake * Shake;
-	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Eye + FMath::Sin(Bob) * 0.018 + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
+	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Dip + Eye + FMath::Sin(Bob) * 0.018 + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
 	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, FMath::Sin(Bob * 0.5) * 0.004));
 	FVector2D Size(16, 9);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
