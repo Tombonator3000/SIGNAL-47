@@ -76,7 +76,8 @@ bool AS47Walker::Walkable(double X, double Z) const
 {
 	if (!Web.IsValid()) return true;
 	for (const FS47Rect& B : Web->Zones()) if (B.bEnabled && Inside(B.MinX, B.MaxX, B.MinZ, B.MaxZ, X, Z)) return true;
-	// (and the ground round the truck, in its own area)
+	// (and the area's open land, and the ground round the truck in its own area)
+	if (OpenLand && OpenLand(X, Z)) return true;
 	return Ground && GroundArea == Web->Area() && Ground(X, Z);
 }
 
@@ -139,7 +140,9 @@ bool AS47Walker::InTruck(double X, double Z) const
 
 double AS47Walker::FloorAt(double X, double Z) const
 {
-	if (Floor) return Floor(X, Z); // Player.floor, supplied by World.enter for SARO and Caliche.
+	// the open land's ground (US47World), then Player.floor, supplied by World.enter for SARO and Caliche
+	if (LandFloor) { const double Y = LandFloor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
+	if (Floor) { const double Y = Floor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	// the highest surface under the player, up to a stair step over the current floor (a desk
 	// or a crate is higher: the web version's floor is a height per area, not the furniture)
 	FHitResult Hit;
@@ -194,7 +197,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	if (PC && bActive)
 	{
 		Look(LookX * LookFine, LookY * LookFine);
-		const bool bRun = S47Keys::Down(PC, TEXT("run"));
+		const bool bRun = S47Keys::Down(PC, TEXT("run")) || (TestMove && bTestRun);
 		// Player.update
 		const double Sp = Speed * (bRun ? 1.6 : 1.0);
 		const double S = FMath::Sin(Yaw), C = FMath::Cos(Yaw);
