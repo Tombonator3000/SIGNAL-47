@@ -4,6 +4,7 @@
 #include "S47Docs.h"
 #include "S47Obj.h"
 #include "S47Seen.h"
+#include "S47TvProgramme.h"
 #include "UObject/StrongObjectPtr.h"
 
 class US47Main;
@@ -57,6 +58,8 @@ private:
 	FS47MotelTvDeps D;
 	double T = 0, Dwell = 0, NotBefore = 0, PaintT = 0;
 	TArray<FColor> Card, Shot;
+	FS47TvProgramme Programme;
+	double ProgrammeTime = 0;
 	FVector TvAt = FVector::ZeroVector;
 	double FrameClock = 0;
 	bool bCanWitness = false;

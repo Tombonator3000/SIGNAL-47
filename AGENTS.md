@@ -1,5 +1,9 @@
 # SIGNAL / 47 — arbeidsinstruks
 
+## Gjeldende retning, 22. oktober 2026
+
+Tom har bestemt at alt videre spillarbeid kun gjelder Unreal-versjonen i `unreal/`. Nettversjonen og Unity er historiske referanser. Følg `unreal/AGENTS.md` for nytt arbeid; ikke videreutvikle eller publiser web-versjonen.
+
 Svar på norsk. Dette er den redigerbare kildekoden til SIGNAL / 47, et Unity-spill om kosmisk etterforskning ved SARO i New Mexico, 1986. Les `Docs/CURRENT_HANDOFF.md` først i dette repoet, deretter relevant design, kode og bevis. Bevar Unity/Blender, spillkonstanter, fungerende interaksjoner, originale assets og lisenskreditering.
 
 ## Nettversjonen i web/

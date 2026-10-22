@@ -134,3 +134,8 @@
 - [ ] Terminalene i verden: kameraet zoomer inn på den fysiske skjermen, og skjermbildet vises på skjermmodellen (som i Black Map). Under arbeid for mottakerkonsollen og driftsterminalen.
 - [ ] Grafikk: mer detaljerte modeller, bedre lys og skygger (neste store steg).
 
+
+## Unarius, overlevert til Claude 22. oktober
+
+- [ ] Fortsett codex/unarius-tv fra TV_PROGRAMME.md: bruk siste bygde binærfil med tidsrettelsen, verifiser faktisk bevegelig film på begge TV-er over tid, koble filmlyd om ønsket, prøv fallback og 47-sekundershendelse/opptak/lagring på nytt, integrer og pakk før standardutgaven erstattes.
+- [ ] Egenprodusert alien må modelleres separat i Blender. Desktop/Alien er fortsatt eksportmodellen etter rydding av navn og filstier.

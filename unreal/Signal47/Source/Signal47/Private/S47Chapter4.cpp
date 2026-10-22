@@ -648,7 +648,7 @@ void US47Chapter4::UseTv()
 	Room->SetTv(!Room->bTvOn);
 	if (US47Audio* A = M ? M->Audio.Get() : nullptr) A->Sfx(A->Or(TEXT("small_switch"), TEXT("switch")), Snd(0.35f, 0.8f));
 	TvSound();
-	if (Room->bTvOn && !bTvSeen) { bTvSeen = true; Toast(TEXT("Snow on every channel. The stations signed off at one."), 3.2f); }
+	if (Room->bTvOn && !bTvSeen) { bTvSeen = true; Toast(Room->HasProgramme() ? TEXT("A strange late-night broadcast. Visitors from the stars, playing to an empty room.") : TEXT("Snow on every channel. The stations signed off at one."), 3.2f); }
 	else if (!Room->bTvOn) NoraToast(TEXT("N. VEGA: \"Leave it. The quiet is worse.\""), 3);
 }
 
