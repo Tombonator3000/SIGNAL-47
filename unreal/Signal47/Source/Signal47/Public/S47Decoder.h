@@ -88,6 +88,9 @@ public:
 	bool bPhrase = false;
 	static double FourDegree(int32 I);
 	static double SevenDegree(int32 I);
+	/** (Unreal only) The web version's sound, unwarmed (S47Decoder.cpp): for the audio tour's before
+	 *  and after; read when a player is made and as it plays. */
+	static bool bWebSound;
 
 	void Start(const FS47DecoderSet& P = FS47DecoderSet());
 	void Set(const FS47DecoderSet& P);
@@ -127,6 +130,8 @@ private:
 	TArray<FMark> Marks;
 
 	void Apply(const FS47DecoderSet& P);
+	double RawLevel() const;
+	double RawRate() const;
 	void StopVoices();
 	void ApplySpace();
 	void StartPad();

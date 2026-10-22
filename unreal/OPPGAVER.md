@@ -17,6 +17,7 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 |---|---|---|---|
 | Original retro-TV og slitt radio, fiktivt merke, PBR og egen filmskjerm | Codex | lokale Blender-kilder i Desktop/Retro TV og radio | pågår; standalone assets til Unreal, plassering hos integrator |
 | Unreal-lys og skygger erstatter det gamle systemet (taklys fra armaturene, grønt CRT-lys foran skjermene, opplyste paraboler, ytelse 1440p) | Codex | `port-light` | rettet 22.10, klar for ny Claude-gjennomgang; flettet til 7d167000, bygg og 1203 selvtester OK, High/1440p 73/96 fps; pakking hos integrator |
+| Toms rapport: mørkerommet krever lukket dør (tåket kopi ved åpen dør, rødt mørkeromslys, lagring), og signalprosessoren gjort varm (bånd synker i tone, lavpass, ingen tynne overtoner, RAW lavere) | Claude-hjelper | `worktree-agent-a0f1f30ea2f5f2b7a` | ferdig 22.10, klar for fletting: bygg OK, selvtest OK (1186), lydtur før/etter i loggen; mørkerommet ikke prøvd i verdenen |
 
 ## Neste
 
