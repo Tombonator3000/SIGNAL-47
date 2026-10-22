@@ -42,6 +42,7 @@
 #include "S47DishArray.h"
 #include "S47ArchiveDishes.h"
 #include "S47Away.h"
+#include "S47ArchivePhone.h"
 #include "S47CB.h"
 #include "S47OfficePhone.h"
 #include "S47Seen.h"
@@ -283,6 +284,19 @@ void AS47HUD::Start()
 				V.Over = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() && !Wa->Abduction->OverPhase().IsEmpty(); };
 				V.GetDishes = [Wa] { return Wa.IsValid() && Wa->Abduction.IsValid() ? FS47DishesSave::Copy(Wa->Abduction->Data.Dishes) : TOptional<FS47DishesSave>(); };
 				V.SetDishes = [Wa](const FS47DishesSave& D) { if (Wa.IsValid() && Wa->Abduction.IsValid()) Wa->Abduction->Data.Dishes = D.ToJson(); };
+				// the corner clock in seconds: abduction.warnClock ?? saroDark.clockShow ?? archive.clockShow ?? ch6.clockShow
+				Sn->ClockBefore = [Wa]
+				{
+					if (!Wa.IsValid() || !Wa->Abduction.IsValid()) return FString();
+					const auto Wc = Wa->Abduction->WarnClock();
+					return Wc ? Wc->Hm + TEXT(":") + Wc->Ss : FString();
+				};
+				TWeakObjectPtr<US47Phones> Wp = M->Phones;
+				Sn->ClockAfter = [Wp]
+				{
+					if (!Wp.IsValid() || !Wp->Archive.IsValid() || !Wp->Archive->ClockShow) return FString();
+					return Wp->Archive->ClockShow->Hm + TEXT(":") + Wp->Archive->ClockShow->Ss;
+				};
 				// (abduction.recordings for the recording's walk: the two ports keep their own figure types;
 				// the walk keeps its test recording until they share one)
 			}

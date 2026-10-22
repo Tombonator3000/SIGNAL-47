@@ -464,10 +464,8 @@ void US47Phones::StepLate(double Dt, bool bModal)
 	SameThread->Update(AbductionCount ? AbductionCount() : 0);
 	OfficePhone->Update(Dt, OfficeIn(bModal));
 	if (OfficePhone->State != LoggedOffice) { LoggedOffice = OfficePhone->State; UE_LOG(LogS47Phones, Display, TEXT("S47: office telephone %s"), *LoggedOffice); }
-	// the corner clock in seconds while the archive's 47 counts (main.ts: ui.clockSeconds(abduction.warnClock
-	// ?? saroDark.clockShow ?? archive.clockShow ?? game.ch6.clockShow); the others are their ports')
-	if (Archive->ClockShow) { M->UI->ClockSeconds(Archive->ClockShow->Hm + TEXT(":") + Archive->ClockShow->Ss); bClockShown = true; }
-	else if (bClockShown) { M->UI->ClockSeconds(FString()); bClockShown = false; }
+	// (the corner clock: one chain, abduction.warnClock ?? saroDark.clockShow ?? archive.clockShow ??
+	// ch6.clockShow, shown by S47SaroNight; the HUD gives it the archive's)
 	SyncBooks();
 }
 

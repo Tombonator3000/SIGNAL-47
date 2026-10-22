@@ -859,14 +859,7 @@ void US47Away::StepLate(double Dt, bool bModal)
 		if (!AbductOn() && Is(H.RecWalkBusy) && RecWalkReset) RecWalkReset();
 		if (AfterAbduction) AfterAbduction(Dt, bModal);
 	}
-	// the corner clock in seconds while the warning counts its 47 (story/abduction.ts, warnClock; the
-	// archive's own clock is S47Phones', set before this)
-	if (const TOptional<FS47Abduction::FWarnClock> Wc = Ab.WarnClock()) { M->UI->ClockSeconds(Wc->Hm + TEXT(":") + Wc->Ss); bClockShown = true; }
-	else if (bClockShown)
-	{
-		bClockShown = false;
-		if (!(M->Phones && M->Phones->Archive && M->Phones->Archive->ClockShow)) M->UI->ClockSeconds(FString());
-	}
+	// (the corner clock: abduction.warnClock heads the one chain S47SaroNight shows; the HUD gives it this)
 	Frame(Dt);
 	SyncBooks();
 	// the log, for the tests and the screenshot runs
