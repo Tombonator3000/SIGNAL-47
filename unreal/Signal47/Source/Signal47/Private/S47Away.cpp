@@ -15,6 +15,7 @@
 #include "S47Ambience.h"
 #include "S47Audio.h"
 #include "S47Chapter1.h"
+#include "S47Chapter6.h"
 #include "S47Curve.h"
 #include "S47FieldCamera.h"
 #include "S47Flashlight.h"
@@ -382,7 +383,7 @@ void US47Away::EnsureOverlay()
 	bOverlayAdded = true;
 }
 
-void US47Away::ShowFrame(UTexture2D* Tx, double Alpha) { EnsureOverlay(); if (Overlay) Overlay->ShowFrame(Tx, Alpha); }
+void US47Away::ShowFrame(UTexture2D* Tx, double Alpha, bool bFadeBlack) { EnsureOverlay(); if (Overlay) Overlay->ShowFrame(Tx, Alpha, bFadeBlack); }
 void US47Away::HideFrame() { if (Overlay) Overlay->HideFrame(); }
 
 // ---------- the deps main.ts reads ----------
@@ -952,6 +953,22 @@ void US47Away::SeenStep()
 	}
 	if (Op.IsEmpty() && !Was.Over.IsEmpty() && OverEntry) { OverEntry->Looking = Ab.bOverLooked; OverEntry.Reset(); }
 	Was.Over = Op;
+	// main.ts seenStep: the last mile, THE EVENT, and the third one once while it stands there.
+	const US47Chapter6* C6 = M->Story ? Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))) : nullptr;
+	const bool bLastMile = C6 && C6->bActive && C6->LastMile.OpenAt.IsSet();
+	if (bLastMile && !Was.bLastMile) { FS47SawOpts O; O.Line = TEXT("C"); O.bLookingSet = true; N->Saw(TEXT("event"), TEXT("the last mile"), O); }
+	Was.bLastMile = bLastMile;
+	const bool bEvent = C6 && C6->Stage == TEXT("event");
+	if (bEvent && !Was.bEvent) { FS47SawOpts O; O.Line = TEXT("C"); O.bLookingSet = true; N->Saw(TEXT("event"), TEXT("THE EVENT"), O); }
+	Was.bEvent = bEvent;
+	const TOptional<FVector> Third = Ch6ThirdAt ? Ch6ThirdAt() : TOptional<FVector>();
+	if (Third && !Was.bThird)
+	{
+		FS47SawOpts O; O.At = Third; O.Line = TEXT("C");
+		FS47SeenWatch W; W.Pos = Ch6ThirdAt; W.Secs = 34; W.Range = 140; W.Deg = 26; O.Watch = W;
+		N->Saw(TEXT("scare"), TEXT("the third"), O); Was.bThird = true;
+	}
+	if (!bEvent) Was.bThird = false;
 }
 
 void US47Away::SeenSync()
@@ -960,6 +977,7 @@ void US47Away::SeenSync()
 	Was.Records.Reset();
 	for (const FS47SeenRef& E : M->Night->SeenLog->Entries) if (E && E->Kind == TEXT("scare") && E->What.StartsWith(TEXT("record "))) Was.Records.Add(E->What);
 	WarnEntry.Reset(); OverEntry.Reset(); TruckEntry.Reset();
+	Was.bLastMile = false; Was.bEvent = false; Was.bThird = false;
 }
 
 // ---------- the saves ----------

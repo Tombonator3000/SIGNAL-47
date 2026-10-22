@@ -114,4 +114,9 @@ shot morning "S47: morning test held" "-S47Jump=chapter1 -S47Morning" 9
 shot cutout "S47: cutout test foot placed" "-S47Jump=chapter1 -S47Face=outside -S47Cutout" 9
 shot cutpost "S47: cutout test post placed" "-S47Jump=chapter1 -S47Face=outside -S47Cutout=post" 9
 shot caliche "S47: Caliche conversation attendant, people 1" "-S47Jump=chapter1 -S47Caliche=attendant" 9
+# Chapter six: from the diner's lot, then the developer menu's exact line pose with autopilot.
+shot chapter6 "chapter ch6 begins" "-S47Jump=chapter6" 8
+shot chapter6event "S47: ch6 THE EVENT begins, 47 seconds" "-S47Jump=chapter6:line -S47Auto=20" 24
+# Full event and pull-out first; the ending title uses real time once the 3D world has stopped.
+shot chapter6title "S47: ch6 ending title" "-S47Jump=chapter6:line -S47Auto=20" 99
 exit $fail

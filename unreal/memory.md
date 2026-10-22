@@ -64,3 +64,11 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - Byens bilkollider må oppdateres både i AS47Web og i kjørekontrollerens verdikopi (`World.TownCarMoved`). Direkte områdehopp trenger Player.floor-funksjonen før Place; ellers kan en lav plassering fra SARO bli liggende under Caliches terreng.
 - Stopp lydgrafer i native destruktorer uten å gå gjennom Main/Audio/Web. Under editorens avslutning kan Webs nodetabell allerede være frigitt. Roadside og TV har derfor egne nodebaserte stopp i destruktorene.
 - Ny eksport/import kreves for `world.town.runtime.*`, `roadside:car`, delte lysplasser og herdets beamLit-materialparametre. Ikke erstatt disse med håndbygd geometri. `pointScreen` er ennå bare eksportmetadata. Se TOWN_PORT.md for nøyaktige grenser og testflagg.
+
+## Kapittel seks og slutten (2026-10-22)
+
+- `US47Chapter6` er Chapter6.ts: uspart kjøring, siste mila med CB og avstandsklokke, THE EVENT på 47 sekunder, nøkkel/dør, figuren og kamerauttrekket. `ClockAfter` har ch6 sist, og Away-krokene ivaretar main.ts sin E/Q-rekkefølge. `World.OldControl.Camera` går gjennom eksisterende `Walker.CameraOverride`; Walker endres ikke.
+- `US47Flow::Finale` stanser 3D-spillet og bruker `SS47Ending` sine sanntids-callbacks til tittel, kreditering, fotografi og `ToTitle`. Ch6 har ingen SaveState eller checkpoint. Siste dinerlagring skal være Fortsett; den virkelige koblingen fra kapittel fem må integreres når dens port finnes.
+- `AS47Web` har en merket sluttblokk med faktisk tåkeoverstyring og daggry-/solverdier med hooks. Verdensporten må binde hooks eller lese getters. Et statisk `M_WebSky`-panorama kan ikke tegne soloppgangen eller høydeavhengig daggry; ikke kall den visuelle delen ferdig med bare disse setterene.
+- OldRoad-konstruktøren legger figurens sju glødepunkter sist i `world.oldRoad.glow.points`. De gjenbrukes direkte; ingen ny veigeometri eller eksport er nødvendig for kapitlet. `US47Away::ShowFrame` har valgfri gruppeopacity for Ending, mens bortføringen beholder sitt svarte underlag.
+- Integrasjonskontrakter og faktisk testgrunnlag står i `CH6_PORT.md`.
