@@ -54,6 +54,8 @@
 #include "S47TownLayer.h"
 #include "S47SaroDark.h"
 #include "S47Curve.h"
+#include "S47DecoderDesk.h"
+#include "S47ReadAloud.h"
 #include "S47Glimpses.h"
 #include "S47MorningHolds.h"
 #include "S47TownEvents.h"
@@ -64,6 +66,7 @@
 #include "S47Town.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
+#include "Internationalization/Regex.h"
 #include "S47UI.h"
 #include "S47World.h"
 #include "S47WorldLife.h"
@@ -124,6 +127,7 @@ void AS47HUD::Start()
 		bOk &= US47Chapter5::SelfTest(Lines); // (with the map overlay's)
 		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
+		bOk &= FS47DecoderDesk::SelfTest(Lines) & FS47ReadAloud::SelfTest(Lines); // (the signal processor's desk and panel; read-aloud's text matching)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -412,7 +416,7 @@ void AS47HUD::Start()
 				TWeakObjectPtr<US47Away> Wa = Aw;
 				Aw->TownWomanIn = [Wt] { return Wt.IsValid() && Wt->Town.IsValid() && Wt->Town->bWomanIn; };
 				Aw->TownSmokerIn = [Wt] { return Wt.IsValid() && Wt->Town.IsValid() && Wt->Town->bSmokerIn; };
-				Aw->HushVoices = [Wt, M] { if (Wt.IsValid() && Wt->Caliche.IsValid()) Wt->Caliche->StopSpeech(); if (M->UI && M->UI->NpcDialogue) M->UI->NpcDialogue->Stop(); if (M->CB) M->CB->Stop(); };
+				Aw->HushVoices = [Wt, M] { if (Wt.IsValid() && Wt->Caliche.IsValid()) Wt->Caliche->StopSpeech(); if (M->UI) M->UI->StopSpeech(); if (M->CB) M->CB->Stop(); };
 				if (Tl->Caliche.IsValid())
 				{
 					FS47Caliche::FReel& R = Tl->Caliche->Reel;
@@ -579,7 +583,28 @@ void AS47HUD::ShowDocument(const FS47Doc& Doc, TFunction<void()> OnClose)
 {
 	TWeakObjectPtr<AS47HUD> Self = this;
 	if (Audio) Audio->Play(TEXT("paper0"), 0.5f);
-	SetModal(SNew(SS47Document).Doc(Doc).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), MoveTemp(OnClose));
+	// UI.document: the page read by Kinski (Read document, without its pencil marks and rules) and the
+	// transcript by the description reader (Read description), each when that reader is on
+	TSharedPtr<SWidget> Reading;
+	if (US47UI* UI = US47Main::Get(this)->UI)
+	{
+		UI->StopSpeech();
+		TArray<FString> Paragraphs;
+		{
+			// text.split(/\n\s*\n/).filter((p) => p.trim())
+			static const FRegexPattern Gap(TEXT("\\n\\s*\\n"));
+			FRegexMatcher Mt(Gap, Doc.Transcript);
+			int32 From = 0;
+			while (Mt.FindNext()) { const FString P = Doc.Transcript.Mid(From, Mt.GetMatchBeginning() - From); if (!P.TrimStartAndEnd().IsEmpty()) Paragraphs.Add(P); From = Mt.GetMatchEnding(); }
+			const FString P = Doc.Transcript.Mid(From);
+			if (!P.TrimStartAndEnd().IsEmpty()) Paragraphs.Add(P);
+		}
+		const TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
+		if (!Doc.Page.TrimStartAndEnd().IsEmpty()) Box->AddSlot().AutoHeight()[UI->ReadingControls(S47Reading::DocumentReadingParagraphs(Doc.Page), TEXT("Read document"), TEXT("document"))];
+		Box->AddSlot().AutoHeight()[UI->ReadingControls(Paragraphs, TEXT("Read description"), TEXT("description"))];
+		Reading = Box;
+	}
+	SetModal(SNew(SS47Document).Doc(Doc).Reading(Reading).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), MoveTemp(OnClose));
 	UE_LOG(LogS47HUD, Display, TEXT("S47: document %s"), *Doc.Id);
 }
 

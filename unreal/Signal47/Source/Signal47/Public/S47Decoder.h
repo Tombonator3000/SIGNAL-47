@@ -12,10 +12,10 @@ class FS47SignalVoice;
 // music without being any. The player sets pitch, time and space. All synthesis. The sound comes
 // from the rack, so it keeps playing as you walk around.
 //
-// (Here for reel 047, story/reel047.ts, which plays the pulse group through it raw; the processor's
-// own panel, story/Decoder.ts, is the prologue's and not in the Unreal version. The reverb is a
-// ConvolverNode over a 3.6 s decaying noise in the web version; S47WebAudio has no convolver, so a
-// feedback comb bank of the same length and darkening stands in for it.)
+// (Played by the processor's desk, story/Decoder.ts (S47DecoderDesk), and by reel 047, story/reel047.ts,
+// which plays the pulse group through it raw. The reverb is a ConvolverNode over a 3.6 s decaying
+// noise in the web version; S47WebAudio has no convolver, so a feedback comb bank of the same length
+// and darkening stands in for it.)
 
 struct FS47DecoderParams
 {

@@ -3,10 +3,11 @@
 #include "CoreMinimal.h"
 #include "S47UI.h"
 
+class FS47ReadAloud;
+
 // core/Opening.ts: the opening card before a new night, a title-screen choice and not a running
-// night. Begin always remains a real gesture. The narration (the Serling narrator reading the five
-// paragraphs, core/readAloud.ts) is not in the Unreal version yet, so the card is read, not heard:
-// the state goes straight to 'ready', as the web version's does with the narrator off.
+// night. Begin always remains a real gesture. The narrator (the Serling bank, core/readAloud.ts) reads
+// the five paragraphs while it is on; off, the state goes straight to 'ready'.
 struct FS47OpeningChoice { int32 CaseId = 0; bool bReplace = false; };
 
 struct FS47OpeningHooks
@@ -24,7 +25,7 @@ public:
 	/** Original opening narration. Buttons and the heading are never in the speech queue. */
 	static const TArray<FString>& Paragraphs();
 
-	explicit FS47Opening(FS47OpeningHooks InHooks) : Hooks(MoveTemp(InHooks)) {}
+	FS47Opening(TSharedPtr<FS47ReadAloud> InReader, FS47OpeningHooks InHooks) : Reader(MoveTemp(InReader)), Hooks(MoveTemp(InHooks)) {}
 
 	bool Active() const { return Choice.IsSet(); }
 	const FString& State() const { return CurrentState; }
@@ -40,6 +41,7 @@ private:
 	TOptional<FS47OpeningChoice> Choice;
 	TOptional<FS47OpeningView> View;
 	FString CurrentState = TEXT("idle");
+	TSharedPtr<FS47ReadAloud> Reader;
 	FS47OpeningHooks Hooks;
 	void Finish(bool bClose);
 };

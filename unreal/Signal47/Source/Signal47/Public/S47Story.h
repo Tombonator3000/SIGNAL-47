@@ -112,6 +112,9 @@ public:
 	struct FBreak { FString Closed, Recap, Next, Title; TFunction<void()> Begin; };
 	void ChapterBreak(const FBreak& B);
 	TFunction<void(const FBreak&)> OnChapterCard; // the card itself (ui.chapterCard), when the UI has one
+	// chapterBreak's finish, from 6.4 s on: false while the card's narration still holds the break (asked
+	// again a tenth of a second later); true once the card may go, and it has taken it away. Unset: it goes.
+	TFunction<bool()> ChapterCardDone;
 	// Prologue.ts jump('chapterN'): each chapter registers how to start at it (jumpChapterN)
 	TMap<FString, TFunction<void()>> Jumps;
 	// Prologue.ts afterPrologue(saved): the night as the prologue left it (or as saved)
@@ -154,6 +157,9 @@ public:
 	// empty: null (the printer's own words).
 	struct FPrinterHook { TFunction<FString()> Label; TFunction<bool()> Use; };
 	FPrinterHook PrinterHook;
+	/** Prologue.decoder: the signal processor holds the tape once the anomaly is locked (02:14 and
+	 *  after; story/Decoder.ts). Made in Bind, once the screen and the things to use are there. */
+	TSharedPtr<class FS47DecoderDesk> Decoder;
 
 	static constexpr double StartClock = 23 * 3600 + 41 * 60;
 	static constexpr double SkipClock = 2 * 3600 + 13 * 60 + 41;

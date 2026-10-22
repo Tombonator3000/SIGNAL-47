@@ -7,10 +7,13 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Rendering/SlateRenderer.h"
 #include "HAL/FileManager.h"
+#include "Internationalization/Regex.h"
 #include "Misc/Paths.h"
 #include "Rendering/DrawElements.h"
 #include "S47Image.h"
 #include "S47Kit.h"
+#include "S47Main.h"
+#include "S47UI.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "S47Rx.h"
 #include "S47Story.h"
@@ -24,6 +27,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SNullWidget.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -93,6 +97,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 {
 	DotBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor::White, FVector4(3.f, 3.f, 3.f, 3.f));
 	WhiteBrush = MakeUnique<FSlateColorBrush>(FLinearColor::White);
+	DescBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor::FromSRGBColor(FColor(6, 8, 12)) * FLinearColor(1, 1, 1, 0.85f), 3.f, FLinearColor::FromSRGBColor(FColor(0x78, 0x6b, 0x51)), 1.f);
 	TAttribute<bool> ShowAim = InArgs._ShowAim;
 	auto Vis = [ShowAim] { return ShowAim.Get(true) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
 	ChildSlot
@@ -109,8 +114,10 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		[
 			SAssignNew(ToastBox, SVerticalBox)
 		]
-		// the prompt, a little under the crosshair (.prompt), and a closer look's words under it (.examine)
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0, 78, 0, 0)
+		// the prompt, a little under the crosshair (.prompt), and a closer look's words under it (.examine);
+		// at the line its top at 64% of the screen (.at-line .prompt), the line 26 px high as the 78 has it
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+		.Padding(TAttribute<FMargin>::CreateLambda([this] { return FMargin(0, bAtLine ? 2 * (0.64f * float(GetCachedGeometry().GetLocalSize().Y) + 13.f) - float(GetCachedGeometry().GetLocalSize().Y) : 78.f, 0, 0); }))
 		[
 			SNew(STextBlock).Text(InArgs._Prompt).Font(S47Style::Mono(26.f)).ColorAndOpacity(FLinearColor(0.94f, 0.92f, 0.85f)).ShadowOffset(FVector2D(0, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f)).Visibility_Lambda(Vis)
 		]
@@ -133,6 +140,20 @@ void SS47Hud::Construct(const FArguments& InArgs)
 			SNew(STextBlock).Text_Lambda([this, Clock = InArgs._Clock] { return SecondsText.IsEmpty() ? Clock.Get() : FText::FromString(SecondsText); }).Font(S47Style::Mono(30.f))
 			.ColorAndOpacity_Lambda([this] { return SecondsText.IsEmpty() ? FSlateColor(FLinearColor(0.93f, 0.9f, 0.84f, 0.55f)) : FSlateColor(FLinearColor(1.f, 0.82f, 0.48f)); })
 		]
+		// .description-read: under the clock at the right, dark with a brown line; dimmed when there is no
+		// recording of the text (V reads it: with the mouse held by the game, a label more than a button)
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, 68, 22, 0)
+		[
+			SNew(SBorder).BorderImage(DescBrush.Get()).Padding(FMargin(10, 6))
+			.Visibility_Lambda([this, Vis] { return DescButton.bShown ? Vis() : EVisibility::Collapsed; })
+			.ColorAndOpacity_Lambda([this] { return FLinearColor(1, 1, 1, DescButton.bDisabled ? 0.5f : 1.f); })
+			[
+				SNew(SBox).MinDesiredHeight(44.f - 12.f).VAlign(VAlign_Center)
+				[
+					SNew(STextBlock).Text_Lambda([this] { return FText::FromString(DescButton.Text); }).Font(S47Style::Mono(20.f)).ColorAndOpacity(FLinearColor::FromSRGBColor(FColor(0xf3, 0xea, 0xd3)))
+				]
+			]
+		]
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, 28)
 		[
 			SNew(STextBlock).Text(FText::FromString(TEXT("W A S D  MOVE   MOUSE  LOOK   E  USE   TAB  NOTEBOOK"))).Font(S47Style::Mono(18.f)).ColorAndOpacity(FLinearColor(0.93f, 0.9f, 0.84f, 0.35f)).Visibility_Lambda(Vis)
@@ -142,17 +163,21 @@ void SS47Hud::Construct(const FArguments& InArgs)
 
 void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 {
+	// Captions already have their own radio/telephone delivery. Do not turn them
+	// into a second narrator or replace the last environmental description.
+	static const FRegexPattern Caption(TEXT("^(?:RADIO(?:,|:)|CB,|WARD:|DR\\. WARD:|NORA:|N\\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)"), ERegexPatternFlags::CaseInsensitive);
+	FRegexMatcher M(Caption, Text);
+	if (!M.FindNext()) LastToast = Text;
 	// UI.toast: the same line twice in a row is noise; at most two on screen
 	if (Toasts.Num() && Toasts.Last().Text == Text) return;
 	// UI.ts toast(text, secs, clock): recorded captions share the pausable sound clock.
 	const double At = Clock ? Clock() : Now;
 	Toasts.Add({ Text, At + Secs, MoveTemp(Clock) });
-	LastToast = Text;
 	if (Toasts.Num() > 2) Toasts.RemoveAt(0);
 	Rebuild();
 }
 
-void SS47Hud::ClearToasts() { Toasts.Empty(); Rebuild(); }
+void SS47Hud::ClearToasts() { Toasts.Empty(); LastToast.Empty(); Rebuild(); }
 
 void SS47Hud::Rebuild()
 {
@@ -289,6 +314,10 @@ void SS47Document::Construct(const FArguments& InArgs)
 							[
 								SNew(STextBlock).Text(FText::FromString(D.Transcript)).AutoWrapText(true).Font(S47Style::Body(19.f)).ColorAndOpacity(FLinearColor(0.85f, 0.83f, 0.78f)).LineHeightPercentage(1.25f)
 							]
+						]
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							InArgs._Reading.IsValid() ? InArgs._Reading.ToSharedRef() : SNullWidget::NullWidget
 						]
 						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, 14, 0, 0)
 						[
@@ -438,6 +467,7 @@ void SS47Console::Construct(const FArguments& InArgs)
 	PanelBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor(0.01f, 0.04f, 0.02f), FVector4(6.f, 6.f, 6.f, 6.f), FLinearColor(0.3f, 0.6f, 0.4f, 0.5f), 1.f);
 	FS47Rx* Rx = Story ? &Story->Rx : nullptr;
 	auto Az = [this] { if (Story) Story->ConsoleAzimuth(); };
+	TSharedPtr<SVerticalBox> LeftCol;
 	ChildSlot
 	[
 		SNew(SOverlay)
@@ -451,7 +481,7 @@ void SS47Console::Construct(const FArguments& InArgs)
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().FillWidth(0.62f).Padding(0, 0, 24, 0)
 					[
-						SNew(SVerticalBox)
+						SAssignNew(LeftCol, SVerticalBox)
 						+ SVerticalBox::Slot().AutoHeight()
 						[
 							SNew(SHorizontalBox)
@@ -484,7 +514,8 @@ void SS47Console::Construct(const FArguments& InArgs)
 							SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).Padding(FMargin(14, 10))
 								.BorderBackgroundColor_Lambda([this] { return FSlateColor(Story && Story->Rx.Stage < 3 && !Story->SurveyOnly() && Story->Rx.Profile().bCardIsTaped ? FLinearColor(0.75f, 0.68f, 0.5f) : FLinearColor(0.02f, 0.08f, 0.04f)); })
 							[
-								SNew(STextBlock).AutoWrapText(true).Font(S47Style::Mono(22.f))
+								// (.refcard: read as the receiver's description, UI.open's descriptionReadings)
+								S47Kit::Readable(SNew(STextBlock).AutoWrapText(true).Font(S47Style::Mono(22.f))
 									.Text_Lambda([this]
 									{
 										if (!Story) return FText::GetEmpty();
@@ -492,7 +523,7 @@ void SS47Console::Construct(const FArguments& InArgs)
 										if (Story->SurveyOnly()) return FText::FromString(TEXT("Survey runs unattended. Nothing scheduled until 06:00."));
 										return FText::FromString(Story->Rx.Profile().Card);
 									})
-									.ColorAndOpacity_Lambda([this] { return FSlateColor(Story && Story->Rx.Stage < 3 && !Story->SurveyOnly() && Story->Rx.Profile().bCardIsTaped ? S47Style::Ink : S47Style::Green); })
+									.ColorAndOpacity_Lambda([this] { return FSlateColor(Story && Story->Rx.Stage < 3 && !Story->SurveyOnly() && Story->Rx.Profile().bCardIsTaped ? S47Style::Ink : S47Style::Green); }))
 							]
 						]
 					]
@@ -530,6 +561,9 @@ void SS47Console::Construct(const FArguments& InArgs)
 			]
 		]
 	];
+	// the receiver's card can be read as its description (receiver-description), the box under it in .lcol
+	if (US47UI* UI = US47Main::Get(nullptr)->UI; UI && LeftCol.IsValid())
+		LeftCol->AddSlot().AutoHeight()[UI->DescriptionReadings(LeftCol.ToSharedRef(), TEXT("receiver-description"))];
 }
 
 FReply SS47Console::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)

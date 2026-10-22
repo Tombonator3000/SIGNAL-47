@@ -11,8 +11,8 @@ class US47Audio;
 // page), so its last page comes by itself. The envelope is held up to the lamp with a button, and its
 // picture changes. What is written on them is drawn in code (AGENTS.md: text that must be right).
 // (The pages' paper is drawn here as the CSS draws it: the ruling, the two red margin lines, the
-// coffee ring and the light on it. ui.readingControls, the read-aloud's buttons, are not in the
-// Unreal version yet: the narrators are not ported.)
+// coffee ring and the light on it. The read-aloud's boxes, ui.readingControls, are on the right: Read
+// document for the book's typed page, Read description for the envelope.)
 namespace S47FieldBookView
 {
 	struct FBookPage { FString Hand, Typed; bool bLast = false; };

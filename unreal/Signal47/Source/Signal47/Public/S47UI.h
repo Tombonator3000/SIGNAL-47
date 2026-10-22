@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Ticker.h"
 #include "S47Docs.h"
 #include "UObject/Object.h"
 #include "S47UI.generated.h"
@@ -134,8 +135,11 @@ public:
 	FS47OpeningView OpeningCard(const FS47OpeningActions& A);
 	// UI.pause: the pause menu, or the title's settings (bSettingsOnly)
 	void Pause(const FS47PauseOpts& O);
-	// UI.chapterCard / chapterCut: the card on the black between two chapters; null takes it away
-	void ChapterCard(const FS47ChapterCardOpts* O);
+	// UI.chapterCard / chapterCut: the card on the black between two chapters; null takes it away.
+	// With the narrator on, it reads the card (the closed line and its recap, then the next chapter, its
+	// title and the clock: ChapterStage 'a', then 'b'); OnSpoken comes when that reading has settled (at
+	// once without the narrator), as the promise chapterCard returns does.
+	void ChapterCard(const FS47ChapterCardOpts* O, TFunction<void()> OnSpoken = nullptr);
 	void ChapterCut();
 	FString ChapterStage = TEXT("idle");        // 'idle' | 'a' | 'b' | 'text-b' | 'error-b' | 'cancelled'
 	// UI.notebook / notebookAt: the journal in its tabs; the last tab used is kept
@@ -149,8 +153,41 @@ public:
 	// wiring, null until then). ui.speakNora is its SpeakNora.
 	TSharedPtr<class FS47NpcDialogue> NpcDialogue;
 
+	// ---------- the readers (core/readAloud.ts) ----------
+	// ui.readAloud: Kinski reading papers and conversations ('kinskiReadAloud'); ui.narrator: the same
+	// player with the Serling bank ('serlingNarrator'); ui.earlDialogue: Earl's voice (Caliche's). Set by
+	// main.ts's wiring (S47Flow, S47Caliche), null until then.
+	TSharedPtr<class FS47ReadAloud> ReadAloud, Narrator;
+	TSharedPtr<class FS47EarlDialogue> EarlDialogue;
+	/** get descriptionReader(): the narrator when it is on, else Kinski when he is on, else none. */
+	TSharedPtr<class FS47ReadAloud> DescriptionReader() const;
+	/** stopSpeech(): every reader and voice. */
+	void StopSpeech();
+	/** onReadingStart(reader): a reading begins (main.ts: the others stop, and the calls and the CB). */
+	TFunction<void(class FS47ReadAloud*)> OnReadingStart;
+	/** canDescribe (main.ts): a description may be read now (unset: undefined, as the web version's). */
+	TFunction<bool()> CanDescribe;
+	/** readingControls(parent, texts, label, kind): explicit playback only, the Read button and its status
+	 *  (.read-aloud) as a widget to put where the box goes; nothing when the reader is off. 'document' and
+	 *  'conversation' are Kinski's, the rest the description reader's. */
+	TSharedRef<SWidget> ReadingControls(const TArray<FString>& Texts, const FString& Label = TEXT("Read aloud"), const FString& Kind = TEXT("conversation"));
+	/** descriptionReadings(parent, selector, kind, extra): read the descriptions currently visible in Parent
+	 *  (the texts S47Kit marks readable: .lp-text, .lp-small, .lp-q, .lp-paper p, .lp-steps span, .lp-card
+	 *  span), following their changes, not frames. The widget is the box's place (nothing while there is
+	 *  nothing to read, or the description reader is off). */
+	TSharedRef<SWidget> DescriptionReadings(const TSharedRef<SWidget>& Parent, const FString& Kind = TEXT("panel-description"), TFunction<TArray<FString>()> Extra = nullptr);
+	/** readLastDescription(): a gesture-accessible repeat (V), also after a short toast has disappeared. */
+	void ReadLastDescription();
+
 private:
 	UPROPERTY() TObjectPtr<AS47HUD> Hud;
 	TSharedPtr<class SS47ChapterCard> CardEl;
 	int32 CardGeneration = 0;
+	// examine(): the closer look's words, and its description read once the zoom has held them a moment
+	FString ExamineText;
+	bool bExamineActive = false, bDescriptionActive = false;
+	FTSTicker::FDelegateHandle ExamineTimer;
+	void ClearExamineTimer();
+	void UpdateDescriptionButton();
+	void PlayDescription(const FString& Text, bool bAutomatic = false);
 };

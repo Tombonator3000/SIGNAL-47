@@ -14,6 +14,7 @@
 #include "S47CaseBoard.h"
 #include "S47Chapter2.h"
 #include "S47Curve.h"
+#include "S47DecoderDesk.h"
 #include "S47FieldBook.h"
 #include "S47FieldBookView.h"
 #include "S47FieldCamera.h"
@@ -239,27 +240,26 @@ void US47Phones::Init(US47Main* InM)
 	// game.printerHook: the printer by the rack has a sheet of the archive's phone's in it
 	M->Story->PrinterHook.Label = [Self] { return Self.IsValid() ? Self->Archive->PrinterLabel() : FString(); };
 	M->Story->PrinterHook.Use = [Self] { return Self.IsValid() && Self->Archive->PrinterUse(); };
-	// game.decoder.reel: (the reel waits while something else of the night's is going: one thing at a
-	// time). story/Decoder.ts, the desk with tape B, is not in the Unreal version yet: the signal
-	// processor here is the reel's deck, and nothing else.
-	if (const FS47WebItem* It = W->Item(TEXT("decoder")))
+	// game.decoder.playing and stop() (story/Decoder.ts: the desk with tape B, the prologue's)
+	DecoderPlaying = [Self] { return Self.IsValid() && Self->M->Story && Self->M->Story->Decoder.IsValid() && Self->M->Story->Decoder->Playing(); };
+	DecoderStop = [Self] { if (Self.IsValid() && Self->M->Story && Self->M->Story->Decoder.IsValid()) Self->M->Story->Decoder->Stop(); };
+	// (the reel waits while something else of the night's is going: one thing at a time)
+	if (FS47DecoderDesk* Desk = M->Story->Decoder.Get())
 	{
-		FS47Interactable I;
-		I.Id = TEXT("decoder"); I.Object = W->ObjAt(It->Node); I.Range = 2.4;
-		I.Label = [Self]
+		Desk->Reel.Label = [Self]
 		{
 			if (!Self.IsValid()) return FString();
 			return Is(Self->Reel047.Playing) || !Self->M->OneAtATime() ? Self->Archive->DeckLabel() : FString();
 		};
-		I.Use = [Self]
+		Desk->Reel.Use = [Self]
 		{
-			if (!Self.IsValid()) return;
+			if (!Self.IsValid()) return false;
 			const bool bPlaying = Is(Self->Reel047.Playing);
-			if (!bPlaying && Self->M->OneAtATime()) return;
-			if (Self->Archive->Reel() == TEXT("kit") && !bPlaying && Is(Self->DecoderPlaying) && Self->DecoderStop) Self->DecoderStop();
-			Self->Archive->DeckUse();
+			if (!bPlaying && Self->M->OneAtATime()) return false;
+			if (Self->Archive->Reel() == TEXT("kit") && !bPlaying && Is(Self->DecoderPlaying)) Self->DecoderStop();
+			return Self->Archive->DeckUse();
 		};
-		M->Inter->Add(I);
+		Desk->Reel.Owns = [Self] { return Self.IsValid() && (Is(Self->Reel047.Playing) || (Is(Self->Reel047.Finished) && !Is(Self->DecoderPlaying))); };
 	}
 
 	// ---------- the night's hooks (S47Night: oneAtATime, the curve) ----------

@@ -115,8 +115,12 @@ public:
 	virtual void Tick(const FGeometry& G, const double InCurrentTime, const float InDeltaTime) override;
 	void Out(bool bCut) { bOut = true; bCutOut = bCut; OutT = 0.f; }
 	bool Gone() const { return bOut && OutT >= (bCutOut ? 0.1f : 0.8f); }
+	/** .voiced[data-voice-phase]: the narrator reads it, so the halves come as the reading reaches them
+	 *  ('a' the closed line and recap, 'b' the next chapter), not on the animations' times. */
+	void Voice(const FString& Phase) { VoicePhase = Phase; }
 
 private:
+	FString VoicePhase;
 	float T = 0.f, OutT = 0.f;
 	bool bOut = false, bCutOut = false;
 	float AlphaA() const;

@@ -1,11 +1,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Types/ISlateMetaData.h"
 #include "Widgets/SWidget.h"
 
 class US47UI;
 class UTexture2D;
 struct FSlateBrush;
+
+// UI.ts descriptionReadings finds a panel's descriptions by their classes (.lp-text, .lp-small, .lp-q,
+// .lp-paper p, .lp-steps span, .lp-card span); here the pieces carry this mark instead. bRead: a text to
+// read; not: nothing under it is read (.read-aloud, [data-character-quote]).
+class FS47ReadingMark : public ISlateMetaData
+{
+public:
+	SLATE_METADATA_TYPE(FS47ReadingMark, ISlateMetaData)
+	explicit FS47ReadingMark(bool bInRead) : bRead(bInRead) {}
+	bool bRead = true;
+};
 
 // The pieces the web version's panels are made of (style.css .labpanel, .lp-*), so a panel in
 // ui/Panels.ts ports to Slate piece for piece. A panel is Shell(title, body) opened with
@@ -47,6 +59,12 @@ namespace S47Kit
 
 	// a labelled slider (.lp-zoom label + input range)
 	SIGNAL47_API FW Slider(const FString& Label, float Min, float Max, float Step, TAttribute<float> Value, TFunction<void(float)> OnChange);
+	// a knob (.dsp-knobs label: the name and its value in amber over the range under it)
+	SIGNAL47_API FW Knob(const FString& Label, TAttribute<FString> Shown, float Min, float Max, float Step, TAttribute<float> Value, TFunction<void(float)> OnChange);
+	// a button whose label follows the state (.lp-btn whose textContent sync() sets)
+	SIGNAL47_API FW ButtonLive(TAttribute<FString> Label, TFunction<void()> OnClick, bool bPrimary = false, TAttribute<bool> Enabled = true);
+	// a choice that stays pressed (.lp-choice[aria-pressed]); bAuto: as wide as its label (.dsp-mode)
+	SIGNAL47_API FW Choice(const FString& Label, TAttribute<bool> Pressed, TFunction<void()> OnClick, bool bAuto = false);
 
 	// a picture at a width (its height from the picture), and the brush it needs kept alive
 	SIGNAL47_API FW Image(UTexture2D* T, float Width);
@@ -54,4 +72,8 @@ namespace S47Kit
 
 	// colours and fonts of the lab panels (style.css)
 	SIGNAL47_API FLinearColor Css(uint32 Rgb, float A = 1.f);
+
+	// the reading marks (FS47ReadingMark): a text the description reader reads, a part it leaves alone
+	SIGNAL47_API FW Readable(FW W);
+	SIGNAL47_API FW Unread(FW W);
 }
