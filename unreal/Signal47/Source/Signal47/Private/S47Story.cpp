@@ -91,7 +91,10 @@ void AS47Story::Cancel(const FString& Tag)
 
 void AS47Story::Note(const FString& S)
 {
-	if (!NotesList.Contains(S)) NotesList.Add(S);
+	if (NotesList.Contains(S)) return;
+	NotesList.Add(S);
+	// (the HUD's NOTED slip)
+	if (US47Main* M = US47Main::Get(this); M && M->UI) M->UI->Noted(S);
 }
 
 void AS47Story::Log(const FString& Text)

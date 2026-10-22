@@ -105,6 +105,22 @@ struct FS47Viewfinder
 	bool bFreeOk = false;
 };
 
+// A reading the in-game screens offer as an action (the paper's READ ALOUD, the notebook's): the
+// reader and the texts UI.readingControls takes, without its box. Toggle() starts it (the other
+// readings stop first: onReadingStart) or stops it; bActive and Status() follow its state.
+struct SIGNAL47_API FS47ReadingAction : public TSharedFromThis<FS47ReadingAction>
+{
+	TWeakPtr<class FS47ReadAloud> Reader;
+	TWeakObjectPtr<class US47UI> UI;
+	TArray<FString> Texts;
+	bool bAvailable = false;          // the reader has a recording for every text
+	bool bActive = false;             // loading or playing (aria-pressed)
+	FString State;                    // '' until it has been started; then 'loading' | 'playing' | 'idle' | 'error'
+	void Toggle();
+	void Stop();
+	FString Status() const;           // [data-reading-status]: the reader's name, Loading recording…, or why not
+};
+
 // ui/UI.ts: what the game asks of the screen. The names follow the web version, so a call ports
 // as it reads there (ui.toast('...', 4) is UI->Toast(TEXT("..."), 4)). One modal at a time:
 // a paper, a panel, the notebook or the board; game time stops while one is open.
@@ -196,6 +212,12 @@ public:
 	TSharedRef<SWidget> DescriptionReadings(const TSharedRef<SWidget>& Parent, const FString& Kind = TEXT("panel-description"), TFunction<TArray<FString>()> Extra = nullptr);
 	/** readLastDescription(): a gesture-accessible repeat (V), also after a short toast has disappeared. */
 	void ReadLastDescription();
+	/** A reading as an action of the in-game screens (FS47ReadingAction), for the reader Kind names as
+	 *  ReadingControls does; null when that reader is off or there is nothing to read. */
+	TSharedPtr<FS47ReadingAction> ReadingAction(const TArray<FString>& Texts, const FString& Kind);
+	/** A line written into the notebook (AS47Story::Note): the HUD's NOTED slip (not while a case is
+	 *  being opened, when its old lines come back). */
+	void Noted(const FString& Text);
 
 private:
 	UPROPERTY() TObjectPtr<AS47HUD> Hud;
