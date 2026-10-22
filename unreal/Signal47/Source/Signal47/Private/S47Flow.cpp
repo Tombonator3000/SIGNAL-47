@@ -1071,6 +1071,14 @@ FString US47Flow::CaptureThumb()
 		ThumbCapture->bCaptureOnMovement = false;
 		ThumbCapture->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 		ThumbCapture->TextureTarget = ThumbTarget;
+		// as the field camera's: a view state (without one the world's post-process materials, M_WebTone
+		// and its exposure, are skipped and the picture comes out dark), one frame with no history,
+		// and the eye's near plane
+		ThumbCapture->bAlwaysPersistRenderingState = true;
+		ThumbCapture->PostProcessBlendWeight = 1.f;
+		ThumbCapture->ShowFlags.SetTemporalAA(false);
+		ThumbCapture->bOverride_CustomNearClippingPlane = true;
+		ThumbCapture->CustomNearClippingPlane = 5.f; // 0.05 m
 		ThumbCapture->RegisterComponentWithWorld(World);
 	}
 	if (!ThumbCapture) return FString();
