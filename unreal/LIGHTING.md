@@ -1,6 +1,86 @@
 # Ekte lys og skygger i SIGNAL / 47
 
-22. oktober 2026, `port-light`. Rendering, lys og materialer er endret. Geometri, modellplassering og historie er bevart. Dette er en kildekandidat for Claudes integrasjon, ikke den installerte spillutgaven.
+22. oktober 2026, `port-light`. Rendering, lys og materialer er endret. Dette lyspasset bevarer geometri og modellplassering; innflettede spillrettelser fra Claude er beholdt. Dette er en kildekandidat for Claudes integrasjon, ikke den installerte spillutgaven.
+
+## Ny runde: utelys og fotolab, 22. oktober
+
+Tom har spilt den pakkede leveransen fra `7c36dd2a`. Denne runden bygger videre på den. `unreal-port-core` er først flettet rent til `c79c6689` (gratismodellenes importløype), så til `3b44956e` (Claudes mørkeromsregel, varmere signalprosessor, brett og notatbok). Den installerte utgaven er urørt.
+
+### Utvendig lys
+
+`S47ExteriorLighting.cpp` erstatter de berørte brede punktlysene med 30 spotter ved de eksisterende armaturenes åpninger. Alle har fysisk kildestørrelse, myke skygger, kortere rekkevidde og volumetrisk spredning. Vegglampene lyser skrått ned langs fasaden; stolpene lyser på gangsti og asfalt. Dette gir lyspøler og rekkverksskygger, med mørke, kalde partier mellom lampene. Måne, himmel, eksponering og den godkjente varme antennerekken er bevart.
+
+| Armaturer | Antall | Styrke og rekkevidde |
+| --- | ---: | --- |
+| Faktiske veistolpehoder, `ext.glow[11..18]` | 8 | 90 cd, 16 m; erstatter tre pool-sentre mellom stolpene |
+| Vestveggen og sørveggen på østfløyen | 4 | 35 cd, 6 m; de to delte poolene driver fire faktiske vegglamper |
+| Gangsti og biloppstillingsplass ved SARO | 4 | 65 cd, 9 m |
+| B-12s arbeidslykt | 1 | 12 cd, 3 m; følger eksisterende nivå/dimming |
+| Labdør, annexets sørvegg og rømningsdørens baldakin | 3 | 30/35/25 cd, 5/6/5 m |
+| Motellets åtte dørarmaturer | 8 | 10 cd, 4 m; kort kast ned på vegg og gang |
+| Motellets to parkeringslamper | 2 | 150 cd, 12 m; kilden sitter under den faktiske diffuseren |
+
+Motellet står nå 650 m sør for SARO, slik hovedgrenens geometri angir. Det er kontrollert med eget kamera. Kontorets gamle «spill»-pool uten armatur er undertrykt; kontorlampe og det eksisterende native vinduslyset står for lyset der. Kopier av de erstattede poolene undertrykkes også, så samme lampe ikke gir dobbelt lys gjennom et annet materialsett. Kjeglene følger eksisterende flood- og strømtilstander; kombinert pool/glow-dimming brukes én gang. Room 6s dørglød følger samme tilstand og kan tennes igjen etter slukking.
+
+De store additive glødskivene rundt disse lampene er krympet til glimt på 22 eller 40 cm og flyttet til de faktiske åpningene. Native lys og tåke gir lyspøl og lysspredning. Gårdens fire pæreflater har egne PBR-materialer på alle GLB-flater; emissive slukker med strømmen. Ingen ny armatur eller bygningsgeometri er lagt til.
+
+### Fotolab og API for Claude
+
+`S47LabLighting.cpp` har fem fysiske lyskilder: eksisterende rødt veggglass, takglass, arbeidslampens skjermåpning, forstørrerens linse og varsellampen ved døra. Takets eksisterende armatur brukes som hvit diffuser i normalmodus og rød i safelight-modus. Normalmodus bruker 4000 K, 45 lm i taket og 18 lm i arbeidslampen. Safelight bruker `#ff2616`, 24 lm ved benken og 12 lm i taket; den hvite arbeidslampen er av. Den 12 cm brede linseåpningen ved `(17, 1.50, -5.45)` har et smalt lys rett under seg, 8 lm og 1,2 m rekkevidde, ned på platen. Varsellampen er 0,5 lm. Dette er nivåer kalibrert for spillets faste eksponering.
+
+`Web->Light(TEXT("lab.normal"))`, `lab.safelight` og `lab.enlarger` er logiske drivere med normalisert intensitet 0 til 1. De avgir ikke lys selv. Faktiske kilder, farge og diffusere følger dem sammen med labens eksisterende strømskala og individuelle lampenivå. Default er normal 1, safelight 0, enlarger 0. For selvstendig styring setter hver modus alle tre:
+
+```cpp
+// Normal room, before handling light-sensitive material.
+Web->Light(TEXT("lab.normal")).SetIntensity(1.f);
+Web->Light(TEXT("lab.safelight")).SetIntensity(0.f);
+Web->Light(TEXT("lab.enlarger")).SetIntensity(0.f);
+// Developing, after checking that the door is shut.
+Web->Light(TEXT("lab.normal")).SetIntensity(0.f);
+Web->Light(TEXT("lab.safelight")).SetIntensity(1.f);
+Web->Light(TEXT("lab.enlarger")).SetIntensity(0.f);
+// Printing: keep the safelight, expose only while the enlarger's lamp is on.
+Web->Light(TEXT("lab.enlarger")).SetIntensity(1.f);
+```
+
+Koblingen til Claudes innflettede regel er ferdig: `US47Chapter1::Darkroom` setter normal/safelight ved faseskifte og forstørreren under det eksisterende kombinerte tank-/kontaktkopisteget (`Busy == "tank"`). Den slukkes når kopien venter på fiksering. Dørkrav, tåket kopi, negativ, tidsplan og lagring er Claudes kode. Det nye feltet `bPrintingLight` husker bare lysets faseskifte. Regelen beholder sin røde lampedimming på 1,5, som gir 36/18 lm i den faktiske fremkallingsfasen. SARO-kutt slukker også disse lysene; gjeninnkobling bevarer valgt modus.
+
+Gamle røde lab-glødskiver er skjult. Glassflatene har PBR-emissive som følger de reelle kildene, også etter materialkopier fra strømendringer. Plastmeshen med skap, tank og lampehus gjøres ikke selvlysende. Labens fire gamle utfyllingslys er undertrykt. Det kreves ingen ny eksport, materialimport eller endring av delt generert innhold i denne runden.
+
+### Nye bilder og kontroller
+
+Bevismappe: `/home/tom/scratch-bm/Signal47-lighting-2026-10-22/revision3/`. `before` er den innflettede kandidaten `c79c6689` med uendret lys, `after` er denne kandidatens siste binærfil med hovedgren til `3b44956e`. Samme faste kameraer, kapittel 1, 1600 × 900, 100 % intern oppløsning og VHS. Hele bildene er beholdt uten retusjering. UI-lapper og møllenes fase kan variere. Den gamle kandidaten hadde ingen labmoduser; dens tre labbilder viser samme permanente røde lys og hvite arbeidslampe.
+
+| Utsnitt | Side ved side, relativt til bevismappa |
+| --- | --- |
+| Gård/servicegård mot bygningene | `compare/yard.png` |
+| Østdøra | `compare/east-door.png` |
+| Labdøra | `compare/lab-door.png` |
+| Parkeringsplass og sti mot antennene | `compare/lot.png` |
+| Fra veien mot vestfasade og rømningsdør | `compare/road.png` |
+| Motellets fasade og gang | `compare/motel.png` |
+| Normal lablys, åpen dør | `compare/lab-normal.png` |
+| Safelight, lukket dør | `compare/lab-safe.png` |
+| Safelight med lys fra forstørreren | `compare/lab-print.png` |
+| De tre nye labmodusene ved siden av hverandre | `compare/lab-modes.png` |
+
+`after/lab-story.png` viser i tillegg rødt lys på karene ved faktisk kontaktkopi/fikseringstilstand, drevet av `-S47Ch1Drive=wet`. `iteration1` beholder den forkastede prøven med for store glødskiver og for svakt rødt benklys.
+
+- PASS: editorbygg med `Scripts/build-editor.sh -NoUBA`, advarsler som feil, etter hovedgrenens siste fletting og kalibreringen. `build-final.log`.
+- PASS: 1218 selvtestsjekker og målrettet kontaktkopiscenario. `after/lab-story.log`.
+- PASS: ni kamerautsnitt i én 33-sekunders prøve; tre labmoduser kontrollerer at hvitt arbeidslys, safelight og forstørrer slukker i riktige moduser. `after/review.log`.
+- PASS: labens halvstrøm, fullstendig strømkutt med null emissive og gjeninnkobling, via eksisterende `SetFloodScale`. Samme logg.
+- PASS: 30 utelyskilder logget med kildeposisjon, mål, effekt og rekkevidde. Vulkan, uten fatalfeil eller materialshaderfeil i de nye kjøringene. `verification.json` knytter kildefiler, binærfil og bildepar sammen.
+
+Det er brukt fire runtime-kjøringer: én førprøve, én forkastet etterprøve, én endelig etterprøve på 33 s hver og én selvtest/kontaktkopiprøve på 14 s. Før oppstart er øvrige Unreal-/Signal47-jobber kontrollert og avventet. Andre agenter startet jobber under førprøven; selvtesten registrerte én ekstra PID i ett oppstartsintervall. Den endelige kameraturen registrerte ingen andre tunge prosesser. Rådata ligger i `meta.json`-filene. Disse kjøringene brukes til bilder og funksjonskontroll, ikke ytelsesmåling.
+
+Ingen ny, ren 1440p-måling er gjort i denne korte runden. Tallene lenger ned gjelder forrige leveranse: High/1440p med TSR 60 % ga kontrollrom 13,619 ms og gård 10,466 ms. De bekrefter ikke ytelsen med de nye utelysene. VSMs eksisterende marking-job-advarsel forekommer fortsatt ved oppvarming og vises i de første bildene; den er ikke skjult. Editorens eksisterende Python-toolset-feil ved oppstart er også registrert som før.
+
+### Det integrator må kontrollere
+
+Ingen pakking eller installasjon er gjort. `Scripts/package-linux.sh` er ikke kjørt. Claude må etter gjennomgang pakke i avtalt kø, prøve dør lukket før fremkalling, rød benk uten hvitt arbeidslys, lys fra forstørreren under prosesssteget, åpnet dør/tåket kopi og normal belysning etter avslutning, samt SARO-kutt og tilbake. Kontroller også motellets Room 6 av/på og stolpe-/rekkverksskygger i bevegelse. Gjenta High/1440p `stat unit` med én tung jobb om gangen før denne utgaven vurderes mot 60 fps-målet. Pakket kjøring og gjennomspilt fremkalling med ekte input er fortsatt UNVERIFIED for denne leveransen. Fullt `screenshots.sh` er ikke kjørt.
+
+Resten av fila bevarer dokumentasjon og målinger fra forrige lysleveranse.
 
 ## Rettelser etter gjennomgangen
 

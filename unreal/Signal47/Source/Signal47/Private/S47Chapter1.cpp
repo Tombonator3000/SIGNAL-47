@@ -799,8 +799,19 @@ void US47Chapter1::Fog()
 
 void US47Chapter1::Darkroom(bool bOn)
 {
-	if (bOn == bDarkroom || !M || !M->Web) return;
+	if (!M || !M->Web) return;
 	AS47Web* W = M->Web;
+	// Rendering only: the existing combined tank/contact-print step lights the enlarger.
+	// Set the named controls on phase edges, keeping independent lamp inspection possible.
+	const bool bPrinting = bOn && Busy == TEXT("tank");
+	if (bPrinting != bPrintingLight)
+	{
+		W->Light(TEXT("lab.enlarger")).SetIntensity(bPrinting ? 1.f : 0.f);
+		bPrintingLight = bPrinting;
+	}
+	if (bOn == bDarkroom) return;
+	W->Light(TEXT("lab.normal")).SetIntensity(bOn ? 0.f : 1.f);
+	W->Light(TEXT("lab.safelight")).SetIntensity(bOn ? 1.f : 0.f);
 	const int32 Set = W->FloodSet(TEXT("lab"));
 	if (Set < 0) return;
 	bDarkroom = bOn;

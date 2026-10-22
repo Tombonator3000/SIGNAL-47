@@ -152,3 +152,8 @@
 - [x] Separat egenprodusert Blender-alien er levert i `Desktop/Alien - Egen modell`, med importprøvde Unreal-assets. `Desktop/Alien` er urørt referanse; den nye figuren er ikke integrert i spillet ennå.
 
 - [x] KELVORA retro-TV og slitt radio plassert i Unreal, 22.10: motellkontoret, rom 6 og SAROs arkivskap. Levende Unarius-film og lyd, av/på, radio og TV-hendelsens lagring verifisert. 1218 selvtester og ni målrettede scenarioer; installasjonen bak skrivebordssnarveien oppdatert med lagringer bevart. Se `Signal47/Tools/kelvora/README.md`.
+## Etter Toms utelys-/fotolabprøve, 22. oktober 2026
+
+- [x] 30 utvendige armaturspotter ved SARO og motellet, navngitte labdrivere og kopling til innflettet fremkallingsregel; bygg, 1218 selvtester og målrettede bilder. Se `LIGHTING.md`.
+- [ ] Claude gjennomgår `revision3/compare`, pakker i avtalt kø, prøver lukket dør, rød fremkalling, forstørrer, tåket kopi/gjentakelse og normal lysretur med ekte input; SARO-kutt/tilbake og Room 6s lys.
+- [ ] Ny High/1440p `stat unit` med én tung jobb om gangen etter dette utelyspasset. Forrige lysleveranses tall er bevart som historikk, ikke målt på nytt her.

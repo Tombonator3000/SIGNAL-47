@@ -159,6 +159,8 @@ void AS47Web::BuildNativeLighting()
 	BuildFixtureLighting();
 	BuildScreenLighting();
 	BuildArrayLighting();
+	BuildExteriorLighting();
+	BuildLabLighting();
 	AExponentialHeightFog* Fog = GetWorld()->SpawnActor<AExponentialHeightFog>();
 	LightingFog = Fog->GetComponent();
 	LightingFog->SetVolumetricFog(true);
@@ -280,6 +282,8 @@ void AS47Web::UpdateNativeLighting()
 	UpdateFixtureLighting();
 	UpdateScreenLighting();
 	UpdateArrayLighting();
+	UpdateExteriorLighting();
+	UpdateLabLighting();
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
@@ -294,6 +298,7 @@ void AS47Web::UpdateNativeLighting()
 void AS47Web::SampleLightingPerformance(float Dt)
 {
 	LightingRunTime += Dt;
+	ReviewLighting();
 	if (!bLightingProfiled && LightingRunTime > 7 && FParse::Param(FCommandLine::Get(), TEXT("S47GpuProfile")))
 	{
 		bLightingProfiled = true;
