@@ -27,6 +27,11 @@ namespace S47Drawings
 	// Small icons for the destination choices: 'triangle-bar' | 'triangle' | 'three-bars'.
 	SIGNAL47_API FString MarkIcon(const FString& Kind);
 
+	// The transit record E09A behind the glass at STATION 01: the 1947 plan around the transit,
+	// laid out from where A's footing, B and C's stakes really are at the built station (metres
+	// from the transit, x east and z south; C is only a direction).
+	SIGNAL47_API FString TransitRecord(const FVector2D& A, const FVector2D& B, const FVector2D& C);
+
 	constexpr uint32 PAPER = 0xefe8d6, INK = 0x22372e;
 
 	// checks of the drawing that need no screen (the paper's random speckle, the strokes)

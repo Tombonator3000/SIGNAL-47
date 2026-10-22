@@ -70,6 +70,7 @@ void FS47Canvas::Blend(int32 X, int32 Y, const FColor& C, double A)
 {
 	// source-over, not premultiplied, in the canvas's own 8-bit sRGB values (as a browser blends)
 	if (X < 0 || Y < 0 || X >= W || Y >= H || A <= 0) return;
+	if (ClipBox && !ClipBox->IsInside(FVector2D(X + 0.5, Y + 0.5))) return;
 	A = FMath::Min(1.0, A);
 	FColor& D = Px[Y * W + X];
 	const double Da = D.A / 255.0;
@@ -122,10 +123,37 @@ void FS47Canvas::Stroke()
 	// round caps and joins: the coverage of a pixel is how far its centre is inside half the
 	// width of the nearest segment (one pass for the whole path, so joins are not drawn twice)
 	TArray<TPair<FVector2D, FVector2D>> Segs;
+	// the dash pattern (an odd list is repeated to make it even), in canvas pixels along each subpath
+	TArray<double> Dash = LineDash;
+	if (Dash.Num() % 2) Dash.Append(LineDash);
+	double DashSum = 0;
+	for (double D : Dash) DashSum += FMath::Max(0.0, D);
+	const bool bDashed = Dash.Num() > 0 && DashSum > 0;
 	for (const FSub& S : Path)
 	{
-		for (int32 i = 1; i < S.P.Num(); ++i) Segs.Add({ S.P[i - 1], S.P[i] });
-		if (S.bClosed && S.P.Num() > 2) Segs.Add({ S.P.Last(), S.P[0] });
+		TArray<TPair<FVector2D, FVector2D>> Sub;
+		for (int32 i = 1; i < S.P.Num(); ++i) Sub.Add({ S.P[i - 1], S.P[i] });
+		if (S.bClosed && S.P.Num() > 2) Sub.Add({ S.P.Last(), S.P[0] });
+		if (!bDashed) { Segs.Append(Sub); continue; }
+		int32 Di = 0;
+		double Left = Dash[0];
+		bool bOn = true;
+		for (const auto& Sg : Sub)
+		{
+			const FVector2D D = Sg.Value - Sg.Key;
+			const double L = D.Size();
+			if (L <= 0) continue;
+			const FVector2D U = D / L;
+			double At = 0;
+			while (At < L)
+			{
+				const double Step = FMath::Min(Left, L - At);
+				if (bOn && Step > 0) Segs.Add({ Sg.Key + U * At, Sg.Key + U * (At + Step) });
+				At += Step;
+				Left -= Step;
+				if (Left <= 1e-9) { Di = (Di + 1) % Dash.Num(); Left = Dash[Di]; bOn = !bOn; }
+			}
+		}
 	}
 	if (Segs.Num() == 0) return;
 	const double Hw = LineWidth * 0.5;
@@ -203,6 +231,48 @@ void FS47Canvas::Fill()
 	}
 }
 
+void FS47Canvas::Rect(double X, double Y, double Wd, double Ht)
+{
+	FSub& S = Path.AddDefaulted_GetRef();
+	S.P = { FVector2D(X, Y), FVector2D(X + Wd, Y), FVector2D(X + Wd, Y + Ht), FVector2D(X, Y + Ht) };
+	S.bClosed = true;
+	// and a new subpath at (x, y), as rect() leaves one
+	Path.AddDefaulted_GetRef().P.Add(FVector2D(X, Y));
+}
+
+void FS47Canvas::Clip()
+{
+	FBox2D B(ForceInit);
+	for (const FSub& S : Path) for (const FVector2D& P : S.P) B += P;
+	if (!B.bIsValid) return;
+	if (ClipBox) B = FBox2D(FVector2D(FMath::Max(B.Min.X, ClipBox->Min.X), FMath::Max(B.Min.Y, ClipBox->Min.Y)), FVector2D(FMath::Min(B.Max.X, ClipBox->Max.X), FMath::Min(B.Max.Y, ClipBox->Max.Y)));
+	ClipBox = B;
+}
+
+void FS47Canvas::Save()
+{
+	Stack.Add({ FillCol, StrokeCol, FillA, StrokeA, LineWidth, GlobalAlpha, TextAlign, FontFile, FontPx, LineDash, ClipBox });
+}
+
+void FS47Canvas::Restore()
+{
+	if (Stack.Num() == 0) return;
+	const FState S = Stack.Pop();
+	FillCol = S.FillCol; StrokeCol = S.StrokeCol; FillA = S.FillA; StrokeA = S.StrokeA; LineWidth = S.LineWidth; GlobalAlpha = S.GlobalAlpha;
+	TextAlign = S.TextAlign; FontFile = S.FontFile; FontPx = S.FontPx; LineDash = S.LineDash; ClipBox = S.ClipBox;
+}
+
+void FS47Canvas::StrokeRect(double X, double Y, double Wd, double Ht)
+{
+	TArray<FSub> Was = MoveTemp(Path);
+	Path.Reset();
+	FSub& S = Path.AddDefaulted_GetRef();
+	S.P = { FVector2D(X, Y), FVector2D(X + Wd, Y), FVector2D(X + Wd, Y + Ht), FVector2D(X, Y + Ht) };
+	S.bClosed = true;
+	Stroke();
+	Path = MoveTemp(Was);
+}
+
 void FS47Canvas::FillRect(double X, double Y, double Wd, double Ht)
 {
 	// each pixel by how much of it the rectangle covers
@@ -231,7 +301,7 @@ void FS47Canvas::DrawImage(const TArray<FColor>& Src, int32 SW, int32 SH, int32 
 		for (int32 i = 0; i < SW; ++i)
 		{
 			const FColor& S = Src[j * SW + i];
-			if (S.A == 255 && GlobalAlpha >= 1.0) { if (X + i >= 0 && Y + j >= 0 && X + i < W && Y + j < H) Px[(Y + j) * W + X + i] = S; }
+			if (S.A == 255 && GlobalAlpha >= 1.0 && !ClipBox) { if (X + i >= 0 && Y + j >= 0 && X + i < W && Y + j < H) Px[(Y + j) * W + X + i] = S; }
 			else Blend(X + i, Y + j, FColor(S.R, S.G, S.B, 255), S.A / 255.0 * GlobalAlpha);
 		}
 	}

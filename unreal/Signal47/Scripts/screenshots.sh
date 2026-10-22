@@ -9,7 +9,7 @@ mkdir -p "$OUT"
 fail=0
 shot() { # name expected-log-pattern [extra args] [seconds]
   local log="$OUT/$1.log"
-  timeout 150 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=${4:-8} ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
+  timeout $(( ${4:-8} + 142 )) "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=${4:-8} ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
   if grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
 }
 shot selftest "self test OK" "-S47SelfTest -S47Face=room"
@@ -35,4 +35,8 @@ shot drive "S47: trip 20 s" "-S47Drive=saro:station01 -S47Throttle=0.35" 24
 shot chapter1 "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=room"
 shot yard "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=at:11.2;-11.0;-1.5708;-0.2"
 shot camera "frame01 exposed" "-S47Jump=chapter1 -S47Ch1Drive=photo"
+# chapter three: from the room after chapter two, and in the truck all the way out to STATION 01
+# (the autopilot, about 132 s of driving) to look at the hut from the gate
+shot chapter3 "chapter ch3 begins" "-S47Jump=chapter3 -S47Face=room"
+shot station "ch3 drive: at the hut" "-S47Jump=chapter3 -S47Drive=saro:station01 -S47Auto=13 -S47Ch3Drive=hut" 160
 exit $fail

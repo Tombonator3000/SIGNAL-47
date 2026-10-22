@@ -20,6 +20,7 @@
 #include "S47CaseBoard.h"
 #include "S47Inter.h"
 #include "S47Chapter2.h"
+#include "S47Chapter3.h"
 #include "S47Chapters.h"
 #include "S47Flow.h"
 #include "S47FieldCamera.h"
@@ -76,6 +77,7 @@ void AS47HUD::Start()
 		bOk &= S47Drive::SelfTest(Lines);
 		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
 		bOk &= US47CaseBoard::SelfTest(Lines);
+		bOk &= US47Chapter3::SelfTest(Lines); // (with stationTaken's)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
