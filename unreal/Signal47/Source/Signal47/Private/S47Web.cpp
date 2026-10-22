@@ -421,7 +421,7 @@ bool AS47Web::Load()
 			C->RegisterComponent();
 			// glow points (GlowPoints): a billboard each, of the point's size in metres
 			const TArray<TSharedPtr<FJsonValue>>& Pts = Arr(O, TEXT("points"));
-			if (Pts.Num() > 0 && Pts.Num() < 2000 && N.bVis && !bSky && GlowBase)
+			if (Pts.Num() > 0 && Pts.Num() < 2000 && !bSky && GlowBase)
 			{
 				for (const TSharedPtr<FJsonValue>& PV : Pts)
 				{
@@ -1211,7 +1211,14 @@ TArray<UMaterialInstanceDynamic*> AS47Web::NodeMids(int32 Node)
 	TArray<UMaterialInstanceDynamic*> Out;
 	if (!Nodes.IsValidIndex(Node)) return Out;
 	UMeshComponent* M = Cast<UMeshComponent>(Nodes[Node].Comp.Get());
-	if (!M) return Out;
+	if (!M)
+	{
+		// Points exported as material billboards: the owning three.js node changes their paint too.
+		if (USceneComponent* C = Nodes[Node].Comp.Get()) for (USceneComponent* Child : C->GetAttachChildren())
+			if (UMaterialBillboardComponent* B = Cast<UMaterialBillboardComponent>(Child))
+				for (const FMaterialSpriteElement& E : B->Elements) if (auto* D = Cast<UMaterialInstanceDynamic>(E.Material)) Out.Add(D);
+		return Out;
+	}
 	TArray<TWeakObjectPtr<UMaterialInstanceDynamic>>& Cache = NodeMidCache.FindOrAdd(Node);
 	if (Cache.Num() == M->GetNumMaterials())
 	{
@@ -1338,6 +1345,37 @@ void AS47Web::SetFloodPool(int32 Set, int32 Index, const FVector& P, float Width
 void AS47Web::FlushFlood(int32 Set)
 {
 	if (FloodDirty.Remove(Set) > 0) UploadFlood(Set);
+}
+
+bool AS47Web::FloodPool(int32 Set, int32 Index, FVector& P, float& Width, FLinearColor& Color) const
+{
+	if (!FloodSets.IsValidIndex(Set) || !FloodSets[Set].Pos.IsValidIndex(Index)) return false;
+	const auto& V = FloodSets[Set].Pos[Index]; P = FVector(V.R, V.G, V.B); Width = V.A; Color = FloodSets[Set].Col[Index]; return true;
+}
+void AS47Web::SetHemi(const FString& Area, const FLinearColor& Sky, const FLinearColor& Ground, float Intensity)
+{
+	Hemis.Add(Area, { Sky, Ground, Intensity });
+	if (CurrentArea == Area && Env) if (auto* E = GetWorld()->GetParameterCollectionInstance(Env))
+	{
+		E->SetVectorParameterValue(TEXT("HemiSky"), Sky * Intensity);
+		E->SetVectorParameterValue(TEXT("HemiGround"), Ground * Intensity);
+	}
+}
+
+void AS47Web::UseFlood(const FS47Obj& Object, int32 Set, float Fall)
+{
+	// core/cutouts.ts litMat: share the area's pools, with the card's original material otherwise.
+	const bool bOn = FloodSets.IsValidIndex(Set) && FloodTex.IsValidIndex(Set);
+	for (UMaterialInstanceDynamic* Mid : NodeMids(Object.I))
+	{
+		for (auto& Pair : FloodMids) Pair.Value.RemoveAll([Mid](const auto& P) { return P.Get() == Mid; });
+		Mid->SetScalarParameterValue(TEXT("FloodScale"), bOn ? FloodSets[Set].Scale : 0);
+		if (!bOn) continue;
+		Mid->SetTextureParameterValue(TEXT("FloodTex"), FloodTex[Set]);
+		Mid->SetScalarParameterValue(TEXT("FloodCount"), FloodSets[Set].Pos.Num());
+		Mid->SetScalarParameterValue(TEXT("FloodFall"), Fall);
+		FloodMids.FindOrAdd(Set).AddUnique(Mid);
+	}
 }
 
 void AS47Web::SetFloodScale(int32 Set, float Scale)

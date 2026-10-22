@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47TownLayer.h"
 
 #include "S47Flow.h"
 #include "S47Radio.h"
@@ -51,11 +52,13 @@ void US47Main::Step(double Dt)
 	if (Flow) Flow->Step(Dt);
 	if (Mode == EMode::End)
 	{
+		if (TownLayer) TownLayer->Leave(true);
 		if (Score && !Score->Playing.IsEmpty()) Score->Stop();
 		if (Radio && ((CarRadio && (CarRadio->bOn || CarRadio->Carrying())) || (DinerRadio && DinerRadio->bOn))) Radio->Reset(0);
 	}
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
+	if (Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
@@ -77,7 +80,7 @@ void US47Main::Step(double Dt)
 	else if (Web)
 	{
 		static const TCHAR* Indoors[] = { TEXT("room.bounds"), TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") };
-		bool bIn = Web->Rect(TEXT("world.motel.zone.office")).Contains(P);
+		bool bIn = Web->Rect(TEXT("world.motel.zones[2]")).Contains(P);
 		for (const TCHAR* B : Indoors) bIn |= Web->Rect(B).Contains(P);
 		Sp = bIn ? TEXT("room") : Web->Rect(TEXT("yard.zone.lab")).Contains(P) ? TEXT("lab") : TEXT("yard");
 	}
@@ -97,6 +100,7 @@ void US47Main::Step(double Dt)
 	}
 	// main.ts: ui.examine, what a closer look says under the crosshair
 	if (Phones) Phones->ExamineStep();
+	if (TownLayer) TownLayer->ShareLights();
 }
 
 void US47Main::InitRadio()

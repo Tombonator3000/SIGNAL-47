@@ -90,6 +90,7 @@ public:
 	void SeenSync();
 	/** startGame, once townSeen is back: roofSteps, officePhone and sameThread reset. */
 	void Restore();
+	void RestoreThread(); // sameThread.reset comes after the ninth and morning in main.ts
 	/** startGame, after game.start: archive.restore(), fieldBook.restore(). */
 	void Restored();
 	/** leavePlay (archive.halt, arrayTip.reset, roofSteps.reset, officePhone.reset) and toTitle (the first two). */

@@ -86,6 +86,7 @@ void AS47Walker::Resolve(bool bX, double Old)
 
 double AS47Walker::FloorAt(double X, double Z) const
 {
+	if (Floor) return Floor(X, Z); // Player.floor, supplied by World.enter for SARO and Caliche.
 	// the highest surface under the player, up to a stair step over the current floor (a desk
 	// or a crate is higher: the web version's floor is a height per area, not the furniture)
 	FHitResult Hit;

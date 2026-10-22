@@ -105,8 +105,9 @@
     } else if (o.isPoints) {
       skipped.points++;
       const p = o.geometry.attributes.position, c = o.geometry.attributes.aCol || o.geometry.attributes.color, s = o.geometry.attributes.aSize;
-      const pts = [];
-      for (let k = 0; k < p.count; k++) pts.push([p.getX(k), p.getY(k), p.getZ(k), c ? c.getX(k) : 1, c ? c.getY(k) : 1, c ? c.getZ(k) : 1, s ? s.getX(k) : (o.material.size || 1)]);
+      const pts = [], tint = lin(o.material.color);
+      for (let k = 0; k < p.count; k++) pts.push([p.getX(k), p.getY(k), p.getZ(k), c ? c.getX(k) : tint[0], c ? c.getY(k) : tint[1], c ? c.getZ(k) : tint[2], s ? s.getX(k) : (o.material.size || 1)]);
+      n.pointScreen = o.material.sizeAttenuation === false;
       n.points = pts;
       n.pointMat = matId(o.material);
     } else if (o.isLine) {
@@ -143,6 +144,60 @@
 
   // ---------- collect ----------
   X.collect = () => {
+    // Town.ts changes individual vertex colours and the studio's UVs in one merged mesh.
+    // Split its original quads and glow points only for the export, keeping every source
+    // attribute and local transform. The C++ port can then address each original part by handle.
+    const town = S.world && S.world.town;
+    if (town && town.qMesh && !town.runtime) {
+      // Ask Town.update itself whether the empty-studio picture exists (its fallback stays
+      // on the occupied picture, dimmed), then put it back at the night's own hour.
+      town.update(0, 4 * 3600);
+      const hasStudioEmpty = town.studioEmpty;
+      town.update(S.runTime ? S.runTime() : 0, S.game.clock);
+      const runtime = town.runtime = { panels: {}, colors: {}, glows: [], hasStudioEmpty: new T.Vector3(hasStudioEmpty ? 1 : 0, 0, 0) };
+      const root = new T.Group(); root.name = 'town:runtime'; town.group.add(root);
+      const source = town.qMesh;
+      for (const [id, panel] of town.panels) {
+        const parts = runtime.panels[id] = {}; runtime.colors[id] = new T.Vector3(panel.c.r, panel.c.g, panel.c.b);
+        for (const at of panel.at) {
+          const g = new T.BufferGeometry();
+          for (const [key, a] of Object.entries(source.geometry.attributes)) {
+            if (key === 'color') continue;
+            const data = new Float32Array(4 * a.itemSize);
+            for (let i = 0; i < 4; i++) for (let j = 0; j < a.itemSize; j++) data[i * a.itemSize + j] = a.array[(at + i) * a.itemSize + j];
+            g.setAttribute(key, new T.BufferAttribute(data, a.itemSize));
+          }
+          g.setIndex([0, 1, 2, 0, 2, 3]); g.computeVertexNormals();
+          const m = source.material.clone(); m.vertexColors = false; m.color.copy(panel.c).multiplyScalar(panel.k);
+          const mesh = new T.Mesh(g, m); mesh.name = `town:panel:${id}:${at}`;
+          mesh.position.copy(source.position); mesh.quaternion.copy(source.quaternion); mesh.scale.copy(source.scale);
+          root.add(mesh); parts[at] = mesh;
+        }
+      }
+      source.visible = false;
+      const points = town.glow && town.glow.points;
+      if (points) {
+        const count = points.geometry.attributes.position.count;
+        for (let i = 0; i < count; i++) {
+          const g = new T.BufferGeometry();
+          for (const [key, a] of Object.entries(points.geometry.attributes)) {
+            const data = new Float32Array(a.itemSize);
+            for (let j = 0; j < a.itemSize; j++) data[j] = a.array[i * a.itemSize + j];
+            g.setAttribute(key, new T.BufferAttribute(data, a.itemSize));
+          }
+          const pt = new T.Points(g, points.material); pt.name = `town:glow:${i}`;
+          pt.position.copy(points.position); pt.quaternion.copy(points.quaternion); pt.scale.copy(points.scale);
+          root.add(pt); runtime.glows.push(pt);
+        }
+        points.visible = false;
+      }
+    }
+    // core/roadside.ts builds these two lights only when the car first comes.
+    // Ask the original builder, keep the source object, and export it hidden.
+    if (S.roadside && !S.roadside.car) {
+      S.roadside.carNow(new T.Vector3());
+      if (S.roadside.car) S.roadside.car.pts.visible = false;
+    }
     S.scene.updateMatrixWorld(true);
     for (const c of S.scene.children) walk(c, -1);
     const lights = [];
@@ -488,7 +543,10 @@
     // terms), its lots, the flood set and slots of its headlight pools; each truck's cab flood set.
     // (World keeps these in private fields; they are plain properties at run time.)
     const setIndex = (s) => (s && s.pos && setOf.has(s.pos) ? setOf.get(s.pos) : -1);
-    const drive = { legs: {}, trucks: {} };
+    const drive = { legs: {}, trucks: {},
+      // World.shareLights: extra source slots for the town's street lamps and diner's neon.
+      townSlots: w && w.townSlots ? Array.from(w.townSlots) : [],
+      neonSlots: w && w.neonSlots ? Object.fromEntries(Object.entries(w.neonSlots).map(([k, a]) => [k, Array.from(a)])) : {} };
     if (w && w.legs) for (const [id, L] of Object.entries(w.legs)) {
       if (!L || !L.area) continue;
       const a = L.area;

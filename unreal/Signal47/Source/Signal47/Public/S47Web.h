@@ -97,6 +97,10 @@ public:
 	FLinearColor FloodColOf(int32 Set, int32 Index) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Col.IsValidIndex(Index) ? FloodSets[Set].Col[Index] : FLinearColor::Black; }
 	int32 FloodCount(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Pos.Num() : 0; }
 	float FloodScaleOf(int32 Set) const { return FloodSets.IsValidIndex(Set) ? FloodSets[Set].Scale : 0.f; }
+	// core/cutouts.ts litMat: the wandering card switches to the shown area's flood set.
+	void UseFlood(const FS47Obj& Object, int32 Set, float Fall);
+	bool FloodPool(int32 Set, int32 Index, FVector& P, float& Width, FLinearColor& Color) const;
+	void SetHemi(const FString& Area, const FLinearColor& Sky, const FLinearColor& Ground, float Intensity);
 
 	// What the drive needs that only exists while the web game runs (export.js extras: drive):
 	// each leg's obstacles, lots and headlight slots, each truck's own flood sets. Null when the

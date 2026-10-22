@@ -409,6 +409,24 @@ def build_master(name, lit, blend, two_sided):
         mel.connect_material_expressions(scalar('FloodFall', 0.012), '', fc, 'Fall')
         fl = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionMultiply, fc, base), scalar('FloodScale', 0))
         emis = op(unreal.MaterialExpressionAdd, emis, fl)
+        # drive/herd.ts beamLit: the cows and frost also see the headlight cone itself. Its
+        # level defaults to zero, so existing lit materials keep their look; S47Herd sets it.
+        bc = custom('''float3 p = float3(WP.x, WP.z, WP.y) * 0.01;
+float3 n = float3(NW.x, NW.z, NW.y);
+float3 bL = BP - p; float bD = length(bL); bL /= max(bD, 1e-3);
+float bCone = smoothstep(0.68, 0.96, dot(-bL, BD));
+float bNdl = lerp(max(dot(normalize(n), bL), 0.0) * 0.8 + 0.2, 1.0, Flat);
+return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
+                    ['WP', 'NW', 'BP', 'BD', 'Level', 'Flat', 'B'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+        mel.connect_material_expressions(node(unreal.MaterialExpressionWorldPosition), '', bc, 'WP')
+        mel.connect_material_expressions(node(unreal.MaterialExpressionVertexNormalWS), '', bc, 'NW')
+        bp = vector('BeamPos', (0, -999, 0, 0))
+        mel.connect_material_expressions(bp, 'RGB', bc, 'BP')
+        mel.connect_material_expressions(bp, 'A', bc, 'Level')
+        mel.connect_material_expressions(vector('BeamDir', (0, 0, -1, 0)), 'RGB', bc, 'BD')
+        mel.connect_material_expressions(scalar('BeamFlat', 0), '', bc, 'Flat')
+        mel.connect_material_expressions(base, '', bc, 'B')
+        emis = op(unreal.MaterialExpressionAdd, emis, bc)
         # HemisphereLight: mix(ground, sky, n.y / 2 + 1/2) * diffuse / pi, as three's indirect diffuse
         hc = custom('float k = saturate(N.z * 0.5 + 0.5); return lerp(G, S, k) * B * (1 - saturate(M)) / 3.14159265;', ['N', 'G', 'S', 'B', 'M'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
         mel.connect_material_expressions(node(unreal.MaterialExpressionVertexNormalWS), '', hc, 'N')

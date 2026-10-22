@@ -48,6 +48,11 @@
 #include "S47StationTaken.h"
 #include "S47DishesFollow.h"
 #include "S47Abduction.h"
+#include "S47TownLayer.h"
+#include "S47NpcDialogue.h"
+#include "S47LostNights.h"
+#include "S47Caliche.h"
+#include "S47Town.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
 #include "S47UI.h"
@@ -100,6 +105,7 @@ void AS47HUD::Start()
 		bOk &= US47CaseBoard::SelfTest(Lines);
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
 		bOk &= FS47Radio::SelfTest(Lines) & FS47TripRadio::SelfTest(Lines) & FS47Score::SelfTest(Lines) & FS47MediaSource::SelfTest(Lines) & FS47RadioVoice::SelfTest(Lines);
+		bOk &= US47TownLayer::SelfTest(Lines);
 		bOk &= US47Phones::SelfTest(Lines); // (the archive's phone and its dishes, the roof, the office's telephone, the field book, the looks, the thread)
 		bOk &= US47SaroNight::SelfTest(Lines); // (SARO dark, the array put back, the dishes that follow, the lights on B, the reels, the recording)
 		bOk &= US47Chapter3::SelfTest(Lines); // (with stationTaken's)
@@ -315,6 +321,38 @@ void AS47HUD::Start()
 				TFunction<bool(const TArray<FS47CBLine>&, TFunction<void()>)> Cb = C4->Cb;
 				C4->Cb = [Wa, Cb](const TArray<FS47CBLine>& L, TFunction<void()> OnEnd) { return !(Wa.IsValid() && Wa->CbBlocked()) && Cb && Cb(L, OnEnd); };
 			}
+		}
+		M->TownLayer = NewObject<US47TownLayer>(M); M->TownLayer->Init(M);
+		if (US47TownLayer* Tl = M->TownLayer)
+		{
+			// main.ts: what the town and the time away know of each other (Earl's reel is the lost nights';
+			// the woman and the smoker are among people; the other voices hush for the reel)
+			TWeakObjectPtr<US47TownLayer> Wt = Tl;
+			if (US47Away* Aw = M->Away)
+			{
+				TWeakObjectPtr<US47Away> Wa = Aw;
+				Aw->TownWomanIn = [Wt] { return Wt.IsValid() && Wt->Town.IsValid() && Wt->Town->bWomanIn; };
+				Aw->TownSmokerIn = [Wt] { return Wt.IsValid() && Wt->Town.IsValid() && Wt->Town->bSmokerIn; };
+				Aw->HushVoices = [Wt, M] { if (Wt.IsValid() && Wt->Caliche.IsValid()) Wt->Caliche->StopSpeech(); if (M->UI && M->UI->NpcDialogue) M->UI->NpcDialogue->Stop(); if (M->CB) M->CB->Stop(); };
+				if (Tl->Caliche.IsValid())
+				{
+					FS47Caliche::FReel& R = Tl->Caliche->Reel;
+					R.Ready = [Wa] { return Wa.IsValid() && Wa->LostNights.IsValid() && Wa->LostNights->ReelReady(); };
+					R.Play = [Wa](TFunction<void(const TArray<FS47TalkLine>&)> Lines, TFunction<void(bool)> Done)
+					{
+						if (!Wa.IsValid() || !Wa->LostNights.IsValid()) { if (Done) Done(false); return; }
+						Wa->LostNights->PlayReel([Lines](const TArray<FS47LostLine>& L)
+						{
+							TArray<FS47TalkLine> Out;
+							for (const FS47LostLine& X : L) Out.Add(FS47TalkLine{ X.Key, X.Value });
+							if (Lines) Lines(Out);
+						}, Done);
+					};
+					R.Stop = [Wa] { if (Wa.IsValid() && Wa->LostNights.IsValid()) Wa->LostNights->StopReel(); };
+				}
+			}
+			if (US47Chapter3* C3 = Story.IsValid() ? Cast<US47Chapter3>(Story->Chapter(TEXT("ch3"))) : nullptr)
+				C3->FreeShot = [Wt] { return Wt.IsValid() && Wt->FreeShot(); };   // ninth.freeShot
 		}
 		M->Flow->Boot();
 		FString FaceAt;

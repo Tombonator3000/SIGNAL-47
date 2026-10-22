@@ -1,6 +1,9 @@
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
+#include "S47TownLayer.h"
+#include "S47NinthModel.h"
+#include "S47Town.h"
 
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
@@ -324,13 +327,12 @@ double US47Night::SaroFloorAt(const AS47Web* Web, double X, double Z)
 
 FString US47Night::SurfaceAt() const
 {
-	// main.ts surfaceAt: footsteps by what is underfoot (the town's own surfaces and the road's stops,
-	// world/Town.ts and World.roadStopAt, are the town's: the road's dirt here)
+	// main.ts surfaceAt: footsteps by what is underfoot, including the town and the road's stops.
 	const FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
 	const FString A = Area();
 	const bool bIn = M->World && M->World->Indoors(P);
 	if (A == TEXT("room6")) return TEXT("carpet");
-	if (A == TEXT("diner")) return bIn ? TEXT("tile") : TEXT("dirt");
+	if (A == TEXT("diner")) return bIn ? TEXT("tile") : M->TownLayer && M->TownLayer->Town->InTown(P.X, P.Z) ? M->TownLayer->Town->SurfaceAt(P.X, P.Z) : M->World && M->World->RoadStopAt(P) && FMath::Abs(P.X - ROAD_ORIGIN().X) <= S47RoadTerrain::HWY.Paved ? TEXT("concrete") : TEXT("dirt");
 	if (A == TEXT("station01")) return bIn ? TEXT("wood") : TEXT("dirt");
 	if (A != TEXT("saro")) return TEXT("dirt");
 	if (M->Web && M->Web->Rect(TEXT("world.motel.zones[2]")).Contains(P)) return TEXT("carpet");
@@ -393,7 +395,7 @@ void US47Night::CurveStep(double Dt, bool bModal)
 	SignFlick = FMath::Max(0.0, SignFlick - Dt); PostFlick = FMath::Max(0.0, PostFlick - Dt);
 	Flashlight->Flicker(SignFlick > 0 ? 0.85 : 0, TEXT("curve"));
 	Flashlight->Flicker(PostFlick > 0 ? 0.95 : 0, TEXT("post"));
-	// (cutouts.placed: the cutout's start, and postStep, the shape at the end of the headlights: core/cutouts.ts, not ported yet)
+	if (M->TownLayer) M->TownLayer->CurveStep(Dt);
 }
 
 void US47Night::CurveSign()
@@ -571,7 +573,7 @@ void US47Night::SawKey(const FString& K)
 	else if (What == TEXT("radio")) { if (const FS47Truck* Tr = M->World ? M->World->TruckHere() : nullptr) At = Tr->Position + FVector(0, 1.4, 0); }
 	else if (What == TEXT("roomphone")) At = ObjAt(TEXT("room.objs.phone"));
 	else if (What == TEXT("door")) At = ObjAt(TEXT("room.objs.doorEast"));
-	// (ninth: world.site.ninthDown, story/ninthCow.ts, not ported yet)
+	if (What == TEXT("ninth") && A == TEXT("station01") && M->TownLayer && M->TownLayer->NinthModel->bNinthDown) At = M->TownLayer->NinthModel->NinthAt(TEXT("middle"));
 	/** How far off each event's thing can be looked at (metres). */
 	static const TMap<FString, double> EVENT_RANGE = { { TEXT("ninth"), 30 }, { TEXT("cutout"), 60 }, { TEXT("car"), 60 }, { TEXT("lamps"), 250 }, { TEXT("cows"), 160 }, { TEXT("cows2"), 160 },
 		{ TEXT("tv"), 10 }, { TEXT("regular"), 15 }, { TEXT("steps"), 20 }, { TEXT("radio"), 60 }, { TEXT("roomphone"), 45 }, { TEXT("door"), 40 } };
@@ -595,6 +597,7 @@ void US47Night::SeenSync()
 	if (M->SaroNight) M->SaroNight->SeenSync();
 	// (the ones standing where the player was taken, the warning, taken in the truck, the one over you: S47Away.cpp)
 	if (M->Away) M->Away->SeenSync();
+	if (M->TownLayer) M->TownLayer->SeenSync();
 }
 
 void US47Night::SeenStep(double Dt)
@@ -630,6 +633,7 @@ void US47Night::SeenStep(double Dt)
 		}
 	}
 	// the steps on the roof, the office's telephone, the archive's phone, the array tipped, reel 047 (S47Phones.cpp)
+	if (M->TownLayer) M->TownLayer->SeenStep();
 	if (M->Phones) M->Phones->SeenStep();
 	// (the recording's walk, the dishes that follow, the lights on B, Earl's reel, SARO dark and its
 	// figure, reel 047, the array put back: S47SaroNight.cpp)
@@ -663,7 +667,7 @@ void US47Night::Step(double Dt)
 	SeenStep(Dt);
 	// the night's one curve, before the night's things ask it (story/curve.ts)
 	CurveStep(Dt, bModal);
-	// (roadside.update: core/roadside.ts, not ported yet)
+	if (M->TownLayer) M->TownLayer->RoadsideStep(Dt, bModal);
 	const bool bSilent = Is(Hooks.RoadsideSilent);
 	FS47CallsWhen W;
 	W.bOk = !bModal && !Cinematic() && !Driving() && Flashlight->bHave && Flashlight->bOn && M->Space == TEXT("yard") && Dawn() < 0.3 && !bSilent && !Is(Hooks.ArrayBackBusy);
@@ -674,7 +678,7 @@ void US47Night::Step(double Dt)
 	W.Hush = [Au](double Secs) { if (Au.IsValid() && Au->Night.IsValid()) Au->Night->Hush(Secs); };
 	W.May = Curve->May(TEXT("call")); W.Pace = Curve->Pace(TEXT("call"));
 	Calls->Update(Dt, W);
-	// (townEvents.update: story/townEvents.ts, not ported yet)
+	if (M->TownLayer) M->TownLayer->TownStep(Dt, bModal);
 	const bool bTownNone = !Hooks.TownEventsNow || Hooks.TownEventsNow() == TEXT("none");
 	// one thing at a time: not while the town has one of its own going
 	const bool bNightOk = !bModal && !Cinematic() && At(TEXT("ch1")) && Phase() != TEXT("ch6") && Dawn() < 0.3 && !bSilent && !Is(Hooks.AbductionBusy) && bTownNone && !Is(Hooks.RoofStepsBusy)
@@ -686,7 +690,8 @@ void US47Night::Step(double Dt)
 	if (M->Phones) M->Phones->StepNight(Dt, bNightOk);
 	// 02:29: SARO goes dark (story/saroDark.ts), and Hondo's telex where the night never went dark
 	if (M->SaroNight) M->SaroNight->StepDark(Dt, bModal);
-	// (cutouts: not ported yet)
+	// the cutouts (S47TownLayer)
+	if (M->TownLayer) M->TownLayer->CutoutsStep(Dt, bModal);
 	// the flashlight flickers near the strange events: through the silence on the shoulder, while a
 	// figure stands at the edge of the view, while the town's lamps go out or its payphone rings
 	Flashlight->Flicker(bSilent ? 0.4 : 0, TEXT("silence"));
@@ -697,7 +702,8 @@ void US47Night::Step(double Dt)
 	Glimpses->Update(Dt, G);
 	// the lights on B (story/lineLights.ts)
 	if (M->SaroNight) M->SaroNight->StepLights(Dt, bModal);
-	// (eventsOnB, ninth, the diner's morning: not ported yet)
+	// eventsOnB, the ninth, the diner's morning (S47TownLayer)
+	if (M->TownLayer) { M->TownLayer->EventsOnB(Dt, bModal); M->TownLayer->NinthStep(Dt, bModal); M->TownLayer->MorningStep(Dt, bModal); }
 	// no stars where the dishes point (S47Away.cpp)
 	if (M->Away) M->Away->StepHole(Dt, bModal);
 	// the thread nobody tied, the office's telephone (S47Phones.cpp)
@@ -735,7 +741,19 @@ void US47Night::Restore(const S47J::FObj& State)
 	Curve->Restore(S47J::Obj(State, TEXT("curve")), S47J::Has(State, TEXT("case")));
 	M->TownSeen.Clear();
 	for (const FString& Id : S47J::Strs(State, TEXT("town"))) M->TownSeen.Add(Id);
-	Glimpses->Reset(); NightEvents->Reset();
+	if (M->TownLayer) M->TownLayer->ResetTown();
+	Glimpses->Reset();
+	if (M->TownLayer) M->TownLayer->ResetCutouts();
+	NightEvents->Reset();
+	// truckTaken.reset, the odometer, abduction.restore, truckB.reset, starHole.reset (S47Away: before the
+	// thread's reset, which counts the times away)
+	if (M->Away) M->Away->Restore(State);
+	// recWalk.reset, lineLights.reset (townSeen back), saroDark.halt (S47SaroNight)
+	if (M->SaroNight) M->SaroNight->Restore(State);
+	if (M->TownLayer) M->TownLayer->ResetPastureTv();
+	if (M->Phones) M->Phones->Restore();
+	if (M->TownLayer) M->TownLayer->ResetNinthMorning();
+	if (M->Phones) M->Phones->RestoreThread();
 	Album->Restore(S47J::Obj(State, TEXT("album")));   // the free frames of the night that was saved, or none
 	FaceQuiet = 0;
 	CurveSigns.Reset();

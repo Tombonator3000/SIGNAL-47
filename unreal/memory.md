@@ -56,3 +56,11 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - `M->TownSeen` inneholder blant annet radioens `ev:boy`, `ln:reel` og `tr:<id>` og lagres i nettversjonens `town`. Øvrige nattsystemer må dele dette settet. `Score->Held` har navngitte funksjoner for deres tilstand inntil de porteres og kobles inn.
 - Radioens tekst bruker lydkontekstens klokke i `UI->Toast`, slik at en pause holder både innspilte ord og tekst. Selektiv `Disconnect(destination)` slipper bare den ene mottakeren.
 - `-S47Radio=caliche|roswell|far` plasserer en testmottaker ved kameraet gjennom den vanlige grafen og logger stasjon, frekvens, segment og lyttere. `screenshots.sh` har fått en radio-kjøring. Se `RADIO_PORT.md` for tester, native avvik og integrasjonsarbeid.
+
+## Caliche, veien og motellets natt (2026-10-22)
+
+- `US47TownLayer` samler main.ts-koblingene til Town/TownEvents, Roadside, Herd/Pasture, NinthModel/NinthCow, MotelTv, MorningHolds/DinerCooler, Cutouts, Caliche og Diner. Modulene deler `Main.TownSeen`; TV-bildet ligger i `GameState.motelTv`. Trinn og restore er delt inn slik at telefonene og SameThread beholder main.ts-rekkefølgen.
+- Caliches stemmer bruker `RecordedDialogue`, `NpcDialogue` og `EarlDialogue` gjennom RadioVoice og den eksisterende Web Audio-konteksten. LostNights må koble `Caliche.Reel`; kapittel fem bruker `TownLayer.Diner`. Kapittel tres `FreeShot` kobles når kapittelheaderen er tilgjengelig.
+- Byens bilkollider må oppdateres både i AS47Web og i kjørekontrollerens verdikopi (`World.TownCarMoved`). Direkte områdehopp trenger Player.floor-funksjonen før Place; ellers kan en lav plassering fra SARO bli liggende under Caliches terreng.
+- Stopp lydgrafer i native destruktorer uten å gå gjennom Main/Audio/Web. Under editorens avslutning kan Webs nodetabell allerede være frigitt. Roadside og TV har derfor egne nodebaserte stopp i destruktorene.
+- Ny eksport/import kreves for `world.town.runtime.*`, `roadside:car`, delte lysplasser og herdets beamLit-materialparametre. Ikke erstatt disse med håndbygd geometri. `pointScreen` er ennå bare eksportmetadata. Se TOWN_PORT.md for nøyaktige grenser og testflagg.

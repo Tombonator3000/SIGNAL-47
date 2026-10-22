@@ -71,6 +71,7 @@ public:
 	// The time away and the trucks (S47Away.h): the abduction, taken in the truck, the truck on B, the lost
 	// nights, the third one, no stars at 026, FLASH's frames.
 	UPROPERTY() TObjectPtr<class US47Away> Away;
+	UPROPERTY() TObjectPtr<class US47TownLayer> TownLayer; // main.ts: the town, roadside, herd, ninth, TV and morning
 	// main.ts zoomK: the closer look, 0 to 1 (right mouse held)
 	double ZoomK = 0;
 

@@ -1214,3 +1214,15 @@ bool US47World::RoadStopAt(const FVector& P) const
 	for (const auto& R : S47RoadTerrain::ROAD_STOPS()) if (X >= R.MinX && X <= R.MaxX && Z >= R.MinZ && Z <= R.MaxZ) return true;
 	return false;
 }
+
+// World.ensureTown: the patrol car's mutable collider also belongs to the road's obstacles.
+void US47World::TownCarMoved(const FS47Area& Box)
+{
+	EnsureLegs(); if (!Road || !M || !M->Web) return;
+	if (TownCarObstacle < 0)
+	{
+		const auto Original = M->Web->Rect(TEXT("world.town.carCol"));
+		TownCarObstacle = Road->Obstacles.IndexOfByPredicate([&](const FS47Obstacle& O) { return !O.bCircle && FMath::Abs(O.MinX - Original.MinX) < .01 && FMath::Abs(O.MinZ - Original.MinZ) < .01; });
+	}
+	if (Road->Obstacles.IsValidIndex(TownCarObstacle)) Road->Obstacles[TownCarObstacle] = FS47Obstacle::Box(Box.MinX, Box.MaxX, Box.MinZ, Box.MaxZ);
+}

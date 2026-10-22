@@ -1,130 +1,45 @@
-// core/npcDialogue.ts and core/recordedDialogue.ts (the queue), ui/UI.ts speakNora
+// core/npcDialogue.ts
 #include "S47NpcDialogue.h"
 
-#include "S47Audio.h"
-
-FS47NpcDialogue::FS47NpcDialogue(US47Audio* InAudio) : Audio(InAudio) {}
-
-FString FS47NpcDialogue::Speaker(const FString& Voice)
+const TMap<FString, FString>& FS47NpcDialogue::CharacterSpeakers()
 {
-	// CHARACTER_SPEAKERS
-	if (Voice == TEXT("stanton")) return TEXT("THE ATTENDANT");
-	if (Voice == TEXT("stack")) return TEXT("THE DEPUTY");
-	if (Voice == TEXT("lynch")) return TEXT("THE SOUVENIR MAN");
-	if (Voice == TEXT("bacall")) return TEXT("N. VEGA");
-	return FString();
+	static const TMap<FString, FString> Speakers = { { TEXT("stanton"), TEXT("THE ATTENDANT") }, { TEXT("stack"), TEXT("THE DEPUTY") }, { TEXT("lynch"), TEXT("THE SOUVENIR MAN") }, { TEXT("bacall"), TEXT("N. VEGA") } };
+	return Speakers;
 }
-
-FString FS47NpcDialogue::Label(const FString& Voice)
+const TMap<FString, FString>& FS47NpcDialogue::CharacterLabels()
 {
-	// CHARACTER_LABELS
-	if (Voice == TEXT("stanton")) return TEXT("Harry Dean Stanton");
-	if (Voice == TEXT("stack")) return TEXT("Robert Stack");
-	if (Voice == TEXT("lynch")) return TEXT("David Lynch");
-	if (Voice == TEXT("bacall")) return TEXT("Lauren Bacall");
-	if (Voice == TEXT("price")) return TEXT("Vincent Price");
-	return FString();
+	static const TMap<FString, FString> Labels = { { TEXT("stanton"), TEXT("Harry Dean Stanton") }, { TEXT("stack"), TEXT("Robert Stack") }, { TEXT("lynch"), TEXT("David Lynch") }, { TEXT("bacall"), TEXT("Lauren Bacall") }, { TEXT("price"), TEXT("Vincent Price") } };
+	return Labels;
 }
-
 TArray<FS47DialogueLine> FS47NpcDialogue::CharacterLines(const FString& Voice, const TArray<FS47DialogueLine>& Lines)
 {
+	const FString Speaker = Voice == TEXT("price") ? TEXT("THE LINE") : CharacterSpeakers().FindRef(Voice);
 	TArray<FS47DialogueLine> Out;
-	for (const FS47DialogueLine& L : Lines)
-	{
-		if (L.Who == (Voice == TEXT("price") ? FString(TEXT("THE LINE")) : Speaker(Voice)) || (Voice == TEXT("bacall") && L.Who == TEXT("THE LINE"))) Out.Add(L);
-	}
+	for (const auto& Line : Lines) if ((!Speaker.IsEmpty() && Line.Who == Speaker) || (Voice == TEXT("bacall") && Line.Who == TEXT("THE LINE"))) Out.Add(Line);
 	return Out;
 }
-
-bool FS47NpcDialogue::Enabled() const { return Audio.IsValid() && Audio->bCharacterVoices; }
-
-TArray<FS47NpcDialogue::FClip> FS47NpcDialogue::Resolve(const FString& Voice, const TArray<FS47DialogueLine>& Lines) const
+FS47NpcDialogue::FS47NpcDialogue(US47Audio* Audio) : FS47RecordedDialogue(Audio, TEXT("ensemble"), [](const FS47DialogueInput& Input, FS47RadioVoice& Bank) -> TOptional<TArray<FS47RadioClip>>
 {
-	// NPCDialogue's resolveInput: every spoken line has its clip, or there is none
-	const TArray<FS47DialogueLine> Speech = CharacterLines(Voice, Lines);
-	if (!Speech.Num() || !Audio.IsValid()) return {};
-	TArray<FClip> Clips;
-	for (const FS47DialogueLine& L : Speech)
+	const auto Speech = CharacterLines(Input.Voice, Input.Lines);
+	if (Speech.IsEmpty()) return {};
+	TArray<FS47RadioClip> Clips;
+	for (const auto& Line : Speech)
 	{
-		const FString V = L.Who == TEXT("THE LINE") ? FString(TEXT("price")) : Voice;
-		const TSharedPtr<FS47AudioBuffer> B = Audio->CharacterBuffer(V, L.Text);
-		if (!B.IsValid()) return {};
-		Clips.Add({ V, L.Text, B });
+		const auto Found = Bank.Resolve(Line.Text, 0, Line.Who == TEXT("THE LINE") ? TEXT("price") : Input.Voice);
+		if (!Found) return {};
+		Clips.Append(*Found);
 	}
 	return Clips;
-}
+}, [](const FS47RadioClip& Clip) { return Clip.Voice == TEXT("price"); }) {}
 
-bool FS47NpcDialogue::Available(const FString& Voice, const TArray<FS47DialogueLine>& Lines) const { return Resolve(Voice, Lines).Num() > 0; }
-
-void FS47NpcDialogue::DisposeNodes()
+ES47DialogueState FS47NpcDialogue::StateOf(const FString& S)
 {
-	for (const TSharedPtr<FS47AudioNode>& N : ExtraNodes) N->Disconnect();
-	ExtraNodes.Reset();
-}
-
-void FS47NpcDialogue::Stop()
-{
-	++Generation;
-	if (Source.IsValid())
-	{
-		Source->OnEnded = nullptr;
-		Source->Stop(); // (already ended: nothing)
-		Source->Disconnect();
-		Source.Reset();
-	}
-	DisposeNodes();
-	StateTo(ES47DialogueState::Idle);
-	Notify = nullptr;
+	return S == TEXT("loading") ? ES47DialogueState::Loading : S == TEXT("playing") ? ES47DialogueState::Playing : S == TEXT("error") ? ES47DialogueState::Error : ES47DialogueState::Idle;
 }
 
 void FS47NpcDialogue::Play(const FString& Voice, const TArray<FS47DialogueLine>& Lines, TFunction<void(ES47DialogueState)> OnState)
 {
-	Stop();
-	Notify = MoveTemp(OnState);
-	if (!Enabled()) { StateTo(ES47DialogueState::Idle); Notify = nullptr; return; }
-	const TArray<FClip> Clips = Resolve(Voice, Lines);
-	if (!Clips.Num()) { StateTo(ES47DialogueState::Error); Notify = nullptr; return; }
-	StateTo(ES47DialogueState::Loading);
-	// (the clips are decoded already: nothing to wait for, and the context runs)
-	US47Audio* A = Audio.Get();
-	if (!A || !A->Ctx.IsValid()) { StateTo(ES47DialogueState::Error); Notify = nullptr; return; }
-	PlayClip(Clips, 0, Generation);
-}
-
-void FS47NpcDialogue::PlayClip(const TArray<FClip>& Clips, int32 I, uint32 Gen)
-{
-	US47Audio* A = Audio.Get();
-	if (Gen != Generation || !A || !A->Ctx.IsValid()) return;
-	const TSharedRef<FS47AudioContext> Ctx = A->Ctx.ToSharedRef();
-	FS47AudioContext::FBatch B(*Ctx);
-	auto S = Ctx->CreateBufferSource(); S->Buffer = Clips[I].Buffer;
-	// A person speaking nearby uses the ordinary volume, without the AM receiver filter or the
-	// radio-volume slider; the line's own voice comes down the telephone.
-	if (Clips[I].Voice == TEXT("price"))
-	{
-		const FS47PhoneLine Line = A->PhoneLine();
-		S->Connect(Line.Input);
-		ExtraNodes.Append(Line.Nodes);
-	}
-	else S->Connect(A->Master);
-	Source = S;
-	const TWeakPtr<FS47NpcDialogue> Self = AsShared();
-	const TWeakPtr<FS47BufferSourceNode> Ws = S;
-	S->OnEnded = [Self, Ws, Clips, I, Gen]
-	{
-		const TSharedPtr<FS47NpcDialogue> P = Self.Pin();
-		const TSharedPtr<FS47BufferSourceNode> Src = Ws.Pin();
-		if (Src.IsValid()) Src->Disconnect();
-		if (!P.IsValid()) return;
-		if (P->Source == Src) P->Source.Reset();
-		if (Gen != P->Generation) return;
-		if (I + 1 < Clips.Num()) { P->PlayClip(Clips, I + 1, Gen); return; }
-		P->DisposeNodes();
-		P->StateTo(ES47DialogueState::Idle);
-		P->Notify = nullptr;
-	};
-	S->Start(Ctx->CurrentTime() + (I ? 0.22 : 0));
-	StateTo(ES47DialogueState::Playing);
+	Play(FS47DialogueInput{ Voice, Lines }, OnState ? FNotify([OnState](const FString& S) { OnState(StateOf(S)); }) : FNotify());
 }
 
 bool FS47NpcDialogue::NoraQuote(const FString& Text, FString& Out)
@@ -142,4 +57,16 @@ void FS47NpcDialogue::SpeakNora(const FString& Text)
 	if (!NoraQuote(Text, Quote)) return;
 	if (OnCharacterStart) OnCharacterStart();
 	Play(TEXT("bacall"), { { TEXT("N. VEGA"), Quote } });
+}
+
+bool FS47NpcDialogue::SelfTest(TArray<FString>& Lines)
+{
+	bool bOk = true;
+	auto Check = [&](bool bCond, const TCHAR* What) { Lines.Add(FString(bCond ? TEXT("ok npcDialogue: ") : TEXT("FAIL npcDialogue: ")) + What); bOk &= bCond; };
+	const TArray<FS47DialogueLine> Speech = { {TEXT("YOU"), TEXT("You.")}, {TEXT("THE ATTENDANT"), TEXT("Cold one tonight.")}, {TEXT("N. VEGA"), TEXT("Nora.")}, {TEXT("THE LINE"), TEXT("The line.")}, {TEXT(""), TEXT("An aside.")} };
+	const auto A = CharacterLines(TEXT("stanton"), Speech), B = CharacterLines(TEXT("bacall"), Speech), P = CharacterLines(TEXT("price"), Speech);
+	Check(A.Num() == 1 && A[0].Who == TEXT("THE ATTENDANT"), TEXT("Stanton speaks only the authored attendant lines"));
+	Check(B.Num() == 2 && B[0].Who == TEXT("N. VEGA") && B[1].Who == TEXT("THE LINE") && P.Num() == 1, TEXT("Bacall includes the line, whose authored voice is Price"));
+	Check(CharacterLines(TEXT("other"), Speech).IsEmpty() && CharacterSpeakers().Num() == 4 && CharacterLabels().FindRef(TEXT("stack")) == TEXT("Robert Stack"), TEXT("roles are explicit, with the original names"));
+	return bOk;
 }

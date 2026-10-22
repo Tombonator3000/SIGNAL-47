@@ -35,6 +35,14 @@
 #include "S47SaroNight.h"
 #include "S47ArrayBack.h"
 #include "S47Away.h"
+#include "S47TownLayer.h"
+#include "S47Caliche.h"
+#include "S47NpcDialogue.h"
+#include "S47EarlDialogue.h"
+#include "S47TownEvents.h"
+#include "S47Town.h"
+#include "S47RoadTerrain.h"
+#include "S47Lines.h"
 #include "S47Opening.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -477,14 +485,7 @@ void US47Flow::StartGame(const FStart& O)
 	Carry = O.State.IsValid() ? S47J::Clone(O.State) : S47J::FObj();
 	// the flashlight, the seen log, the curve, townSeen, glimpses, nightEvents and the album (S47Night)
 	if (M->Night) M->Night->Restore(O.State);
-	// roofSteps, officePhone and sameThread reset (S47Phones)
-	// truckTaken.reset, the odometer, abduction.restore, truckB.reset, starHole.reset (S47Away; before the thread's reset by the times away)
-	if (M->Away) M->Away->Restore(O.State);
-	if (M->Phones) M->Phones->Restore();
-	// recWalk.reset, lineLights.reset (townSeen back), saroDark.halt (S47SaroNight)
-	if (M->SaroNight) M->SaroNight->Restore(O.State);
-	// (recWalk, stationTaken, truckTaken, the odometer, townEvents, cutouts, abduction, lineLights, pasture,
-	// motelTv, truckB, ninth, starHole, morning, saroDark: not ported yet)
+	// (Night::Restore puts the rest back in main.ts's order: the town's, the times away, the phones, the thread)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
 	StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
 	if (LoadBoard && O.State.IsValid()) LoadBoard(S47J::Obj(S47J::Obj(O.State, TEXT("case")), TEXT("board")));
@@ -505,10 +506,11 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Phones) M->Phones->Restored();
 	// abduction.refile, lostNights.restore (S47Away)
 	if (M->Away) M->Away->Restored();
-	// (the town's papers, lostNights, motelTv: not ported yet)
+	// the town's papers, motelTv (S47TownLayer)
+	if (M->TownLayer) M->TownLayer->Refile(O.State);
 	bRestoringNow = false;
 	Restoring.Reset();
-	// (roadside and the CB: not ported yet)
+	// roadside.reset is in TownLayer::Refile; the CB is its own port.
 	M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 	if (M->Audio) M->Audio->StopPhoneCalls();
 	// world.enter(area); (placeAtStation, placeAtDiner: the world's, not ported yet) (through the world,
@@ -574,8 +576,8 @@ void US47Flow::LeavePlay()
 	if (M->Phones) M->Phones->Leave(false);
 	// abduction.halt, truckB.reset, truckTaken.reset, reelTape.stop, the odometer (S47Away)
 	if (M->Away) M->Away->Leave(false);
-	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, world.stopDriving,
-	// roadside, townEvents, the CB, reelTape, truckB, truckTaken, the radio, the odometer: not ported yet)
+	// motelTv, roadside, townEvents (S47TownLayer)
+	if (M->TownLayer) M->TownLayer->Leave(false);
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -600,8 +602,8 @@ void US47Flow::ToTitle()
 	if (M->Phones) M->Phones->Leave(true);
 	// abduction.halt, truckTaken.reset (S47Away)
 	if (M->Away) M->Away->Leave(true);
-	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, truckTaken,
-	// world.stopDriving, roadside, the CB, the radio: not ported yet)
+	// motelTv, roadside (S47TownLayer)
+	if (M->TownLayer) M->TownLayer->Leave(true);
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -658,13 +660,13 @@ FS47PauseOpts US47Flow::Settings()
 {
 	FS47PauseOpts O;
 	O.bCharacters = bCharacters;
-	O.OnCharacters = [this](bool V) { bCharacters = V; if (M->Audio) { M->Audio->bCharacterVoices = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("characterVoices"), V); };
+	O.OnCharacters = [this](bool V) { bCharacters = V; if (M->TownLayer && M->TownLayer->Caliche->NpcDialogue) M->TownLayer->Caliche->NpcDialogue->SetEnabled(V); if (M->Audio) { M->Audio->bCharacterVoices = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("characterVoices"), V); };
 	O.bSerling = bSerling;
 	O.OnSerling = [this](bool V) { bSerling = V; StoreSet(TEXT("serlingNarrator"), V); };
 	O.bKinski = bKinski;
 	O.OnKinski = [this](bool V) { bKinski = V; if (M->Audio) { M->Audio->bKinskiCalls = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("kinskiReadAloud"), V); };
 	O.bArtBell = bArtBell;
-	O.OnArtBell = [this](bool V) { bArtBell = V; if (M->Radio) M->Radio->SetHostVoice(V); StoreSet(TEXT("artBellRadioHost"), V); }; // Earl dialogue is ported separately.
+	O.OnArtBell = [this](bool V) { bArtBell = V; if (M->TownLayer && M->TownLayer->Caliche->EarlDialogue) M->TownLayer->Caliche->EarlDialogue->SetEnabled(V); if (M->Radio) M->Radio->SetHostVoice(V); StoreSet(TEXT("artBellRadioHost"), V); };
 	O.bRadioCast = bRadioCast;
 	O.OnRadioCast = [this](bool V) { bRadioCast = V; if (M->Radio) M->Radio->SetCallerVoice(V); StoreSet(TEXT("radioCallerVoices"), V); };
 	O.Volume = Volume; O.Sens = Sens;
@@ -828,6 +830,8 @@ S47J::FObj US47Flow::GameState()
 	if (M->Away) M->Away->Save(State);
 	// AbductSave.dishes while the time away is not ported (S47SaroNight)
 	if (M->SaroNight) M->SaroNight->Save(State);
+	// townEvents and the rest of the town's (S47TownLayer)
+	if (M->TownLayer) M->TownLayer->Save(State);
 	return State;
 }
 
@@ -898,7 +902,13 @@ FString US47Flow::PlaceName(const FVector& P) const
 	if (Area == TEXT("station01")) return In(TEXT("world.site.hutBounds")) ? TEXT("STATION 01, field hut") : TEXT("STATION 01");
 	if (Area == TEXT("road")) return TEXT("Highway south");
 	if (Area == TEXT("room6")) return TEXT("Sierra Motor Court");
-	if (Area == TEXT("diner")) return TEXT("Mesa Diner, the lot");
+	if (Area == TEXT("diner"))
+	{
+		if (M->World && M->World->Indoors(P)) return TEXT("Mesa Diner");
+		if (M->TownLayer && M->TownLayer->Town->InTown(P.X, P.Z)) return M->TownLayer->Town->PlaceAt(P.X, P.Z);
+		for (const auto& Stop : S47RoadTerrain::ROAD_STOPS()) if (P.X - 8000 >= Stop.MinX && P.X - 8000 <= Stop.MaxX && P.Z >= Stop.MinZ && P.Z <= Stop.MaxZ) return Stop.Name;
+		return TEXT("Mesa Diner, the lot");
+	}
 	if (Area == TEXT("roswell")) return TEXT("The old Roswell road");
 	if (In(MOTEL_OFFICE)) return TEXT("Sierra Motor Court, office");
 	if (OnRoad(P)) return TEXT("Service road");
@@ -1048,7 +1058,14 @@ FS47MapView US47Flow::MapView() const
 	V.At = MapAt();
 	V.bStation = ChapterNo(S) >= 3;
 	V.bOldRoad = ChapterNo(S) >= 5;
-	// (mapMarks: the night's events, story/townEvents.ts, not ported yet) the times away (S47Away), by the clock
+	for (const FS47TownMark& Mk : S47TownMarks(M->TownSeen))
+	{
+		FS47MapMark Mark; Mark.Kind = Mk.Kind; Mark.Clock = Mk.Clock; Mark.Line = S47Lines::LineOfMark(Mk.Kind);
+		if (Mk.Kind == TEXT("tv") || Mk.Kind == TEXT("ninth")) { FS47MapAt A; A.Spot = Mk.Kind == TEXT("tv") ? TEXT("office") : TEXT("station01"); Mark.At = A; }
+		else if (Mk.Kind == TEXT("cutout") || Mk.Kind == TEXT("car") || Mk.Kind == TEXT("lights") || Mk.Kind == TEXT("cows") || Mk.Kind == TEXT("truck4") || Mk.Kind == TEXT("truck7") || Mk.Kind == TEXT("truck7m")) if (const auto* Pt = S47Lines::PLACES().Find(Mk.Kind)) { FS47MapAt A; A.Spot = TEXT("highway"); A.M = S47Lines::MSouth(Pt->Y); A.bM = true; Mark.At = A; }
+		V.Marks.Add(Mark);
+	}
+	// the times away (S47Away), then all by the clock
 	if (M->Away) V.Marks.Append(M->Away->MapMarks());
 	V.Marks.Sort([](const FS47MapMark& A, const FS47MapMark& B) { return A.Clock < B.Clock; });
 	const US47Chapter* Ch5 = S ? S->Chapter(TEXT("ch5")) : nullptr;
@@ -1063,7 +1080,7 @@ FS47MapAt US47Flow::MapAt() const
 	const FString Area = M->Web ? M->Web->Area() : FString(TEXT("saro"));
 	FS47MapAt A;
 	if (Area == TEXT("road")) { A.Spot = TEXT("highway"); A.M = Q.Z - 0 + 300; A.bM = true; return A; } // ROAD_ORIGIN.z 0, SARO_IN_ROAD.z -300
-	if (Area == TEXT("diner")) { A.Spot = TEXT("diner"); return A; } // (world.roadStopAt: not ported yet)
+	if (Area == TEXT("diner")) { if (M->World && M->World->RoadStopAt(P)) { A.Spot = TEXT("highway"); A.M = P.Z + 300; A.bM = true; } else A.Spot = TEXT("diner"); return A; }
 	if (Area == TEXT("room6")) { A.Spot = TEXT("motel"); return A; }
 	if (Area == TEXT("roswell")) { A.Spot = TEXT("oldroad"); A.Mi = 0; A.bMi = true; return A; } // (world.oldRoad.where: not ported yet)
 	if (Area == TEXT("station01")) { A.Spot = TEXT("station01"); return A; }
@@ -1136,7 +1153,7 @@ TArray<FS47PersonCard> US47Flow::PeopleItems() const
 		P.Add({ TEXT("The waitress"), TEXT("Mesa Diner, all night"), TEXT("Has watched the lights over the mesa since she was eleven."), TEXT("portrait_waitress") });
 		P.Add({ TEXT("The driver"), TEXT("Mesa Diner, at the counter"), TEXT("His engine died on the old road last October."), TEXT("portrait_driver") });
 	}
-	// (townPeople(townSeen): the people of Caliche, story/caliche.ts, not ported yet)
+	P.Append(FS47Caliche::TownPeople(M->TownSeen));
 	return P;
 }
 

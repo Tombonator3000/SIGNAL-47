@@ -84,3 +84,11 @@
 - [ ] Telexrullen på maskinen (ControlRoom.setTelexRoll) tegnes ikke; papiret og loggen har meldingen.
 - [ ] ConvolverNode i S47WebAudio: reverbet i decoder.ts er en kambank som står i for den.
 - [ ] Glødepunktene utenom antennenes røde lamper blinker ikke ennå.
+
+## Caliche, veien og motellets natt (2026-10-22)
+
+- [x] C++-port av Town/TownEvents, Roadside, Herd/Pasture, NinthModel/NinthCow, MotelTv, MorningHolds/DinerCooler, Cutouts, Caliche og Diner med main.ts-koblinger, lagringsfelt og testflagg.
+- [x] Caliches RecordedDialogue/NpcDialogue/EarlDialogue, innspilte replikkøer, replay og stopp. Generell ReadAloud/Serling gjenstår hos fortellerporten.
+- [ ] Regenerer webeksport og import for byens delte lamper/glødepunkter, fjernbilens lys, townSlots/neonSlots og herdets beamLit. Implementer pointScreen i native billboards.
+- [ ] Koble LostNights til Caliche.Reel og kapittel fem til TownLayer.Diner. Bygg og prøv kapittel tres FreeShot etter integrasjon; kapittel 3/5 finnes ikke i grenens utgangspunkt.
+- [ ] Samlet pakket bygg, hele screenshots.sh, Continue fra disk, ekte input, menneskelig lytting og sammenligning av de regenererte bildene mot nettversjonen. Se TOWN_PORT.md.

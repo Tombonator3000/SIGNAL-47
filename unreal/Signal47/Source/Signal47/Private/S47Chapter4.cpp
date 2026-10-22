@@ -203,6 +203,7 @@ US47Chapter4* US47Chapter4::Register()
 	if (M->UI && !M->UI->NpcDialogue.IsValid())
 	{
 		M->UI->NpcDialogue = MakeShared<FS47NpcDialogue>(M->Audio);
+		M->UI->NpcDialogue->SetEnabled(M->Audio ? M->Audio->bCharacterVoices : true);
 		// ui.onCharacterStart: (the other voices: not in this version) audio.stopPhoneCalls(); cb.stop()
 		US47Main* Mn = M;
 		M->UI->NpcDialogue->OnCharacterStart = [Mn] { if (Mn->Audio) Mn->Audio->StopPhoneCalls(); if (Mn->CB) Mn->CB->Stop(); };

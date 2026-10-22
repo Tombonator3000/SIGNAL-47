@@ -56,6 +56,7 @@ public:
 	FVector EyeUE() const;
 	FVector ForwardUE() const;
 	bool Walkable(double X, double Z) const;
+	TFunction<double(double, double)> Floor; // Player.floor: the area supplies its exact height function
 
 private:
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UCameraComponent> Camera;
