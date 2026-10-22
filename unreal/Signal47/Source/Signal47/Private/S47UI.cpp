@@ -1,4 +1,5 @@
 #include "S47UI.h"
+#include "S47Keys.h"
 
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Widgets/Input/SButton.h"
@@ -204,7 +205,8 @@ void US47UI::UpdateDescriptionButton()
 	const TSharedPtr<FS47ReadAloud> R = DescriptionReader();
 	const FString Last = LastDescription();
 	H->DescButton.bShown = R.IsValid() && R->Enabled() && !(ExamineText.IsEmpty() && Last.IsEmpty()) && !Modal() && !(CanDescribe && !CanDescribe());
-	H->DescButton.Text = bDescriptionActive ? TEXT("Stop reading [V]") : !ExamineText.IsEmpty() ? TEXT("Read description [V]") : TEXT("Read last description [V]");
+	const FString V = TEXT(" [") + S47Keys::Label(TEXT("describe")) + TEXT("]"); // (the key as bound, S47Keys)
+	H->DescButton.Text = (bDescriptionActive ? TEXT("Stop reading") : !ExamineText.IsEmpty() ? TEXT("Read description") : TEXT("Read last description")) + V;
 	H->DescButton.bDisabled = !bDescriptionActive && !(R.IsValid() && R->Available({ ExamineText.IsEmpty() ? Last : ExamineText }));
 }
 
@@ -346,7 +348,7 @@ void US47UI::Viewfinder(bool bOn, const FS47Viewfinder& V)
 		F.bOk = V.bOk;
 		F.Free = V.bHasFree ? V.FreeText : FString();
 		F.bFreeOk = V.bHasFree && V.bFreeOk;
-		F.Hint = V.bTouch ? TEXT("CAMERA: LOWER   SHUTTER: EXPOSE") : TEXT("C  LOWER     SPACE  SHUTTER");
+		F.Hint = V.bTouch ? TEXT("CAMERA: LOWER   SHUTTER: EXPOSE") : S47Keys::Label(TEXT("camera")) + TEXT("  LOWER     ") + S47Keys::Label(TEXT("shutter")) + TEXT("  SHUTTER");
 	}
 	H->Viewfinder(F);
 }

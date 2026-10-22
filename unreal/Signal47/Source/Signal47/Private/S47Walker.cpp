@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "S47Three.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Web.h"
 
 using namespace S47Three;
@@ -117,10 +118,11 @@ void AS47Walker::Tick(float DeltaSeconds)
 		// (the settings' look speed and invert, main.ts step: player.look(look.x, invertY ? -look.y : look.y))
 		LookX = FMath::Clamp(DX, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
 		LookY = (bInvertY ? 1.0 : -1.0) * FMath::Clamp(DY, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
-		if (PC->IsInputKeyDown(EKeys::W) || PC->IsInputKeyDown(EKeys::Up)) Mz -= 1;
-		if (PC->IsInputKeyDown(EKeys::S) || PC->IsInputKeyDown(EKeys::Down)) Mz += 1;
-		if (PC->IsInputKeyDown(EKeys::A) || PC->IsInputKeyDown(EKeys::Left)) Mx -= 1;
-		if (PC->IsInputKeyDown(EKeys::D) || PC->IsInputKeyDown(EKeys::Right)) Mx += 1;
+		// (the keys as bound in Settings > Controls: S47Keys, W A S D and the arrows unless changed)
+		if (S47Keys::Down(PC, TEXT("forward"))) Mz -= 1;
+		if (S47Keys::Down(PC, TEXT("back"))) Mz += 1;
+		if (S47Keys::Down(PC, TEXT("left"))) Mx -= 1;
+		if (S47Keys::Down(PC, TEXT("right"))) Mx += 1;
 		const double L = FMath::Sqrt(Mx * Mx + Mz * Mz);
 		if (L > 1) { Mx /= L; Mz /= L; }
 	}
@@ -138,7 +140,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	if (PC && bActive)
 	{
 		Look(LookX * LookFine, LookY * LookFine);
-		const bool bRun = PC->IsInputKeyDown(EKeys::LeftShift) || PC->IsInputKeyDown(EKeys::RightShift);
+		const bool bRun = S47Keys::Down(PC, TEXT("run"));
 		// Player.update
 		const double Sp = Speed * (bRun ? 1.6 : 1.0);
 		const double S = FMath::Sin(Yaw), C = FMath::Cos(Yaw);
@@ -169,7 +171,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	// Interaction.update: what the line of sight picks, within its range, with something to offer
 	if (!bActive || !Inter.IsValid()) return;
 	Focused = Inter->Update(Camera->GetComponentLocation(), Camera->GetForwardVector());
-	if (!Focused.IsEmpty() && OnUse && PC && (PC->WasInputKeyJustPressed(EKeys::E) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton)))
+	if (!Focused.IsEmpty() && OnUse && PC && (S47Keys::Pressed(PC, TEXT("use")) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton)))
 	{
 		OnUse(Focused);
 	}

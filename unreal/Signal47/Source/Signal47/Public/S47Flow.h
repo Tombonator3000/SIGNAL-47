@@ -97,6 +97,7 @@ public:
 	bool bInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bAbductOn = true;
 	bool bCharacters = true, bSerling = true, bKinski = false, bArtBell = true, bRadioCast = true;
 	FString Quality = TEXT("high"), Picture = TEXT("vhs");
+	float Brightness = 0.5f;        // the Unreal version's own: the light into the tone curve (0..1, .5 as made)
 
 	// tests (-S47Open=<view>): opening, save, load, settings, card
 	bool OpenTestView(const FString& View);
@@ -126,6 +127,8 @@ private:
 	void ApplyQuality(const FString& Q);
 	void ApplyPicture(const FString& P, bool bChosen = true);
 	void ApplyLook();
+	void ApplyBrightness();
+	FS47PauseOpts PauseStatus(FS47PauseOpts O) const; // the pause menu's status and tonight's card
 	void ApplyVolume();
 	void MenuMusic();
 	void StopMusic(float Fade);

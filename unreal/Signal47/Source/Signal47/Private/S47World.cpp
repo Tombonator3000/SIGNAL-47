@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47Keys.h"
 
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/World.h"
@@ -93,8 +94,10 @@ void US47World::Init(US47Main* InM)
 	}
 	// main.ts input.onKey and useCurrent: in the cab Use turns the key, uses the radio or gets out;
 	// R is the radio
-	for (const FKey& K : { EKeys::E, EKeys::Enter, EKeys::LeftMouseButton }) M->OnKey(K, [this] { return CabUse(); });
-	M->OnKey(EKeys::R, [this] { return CabRadio(); });
+	// (the keys as bound, S47Keys: Use's and a click, the radio's)
+	M->OnAction(TEXT("use"), [this] { return CabUse(); });
+	M->OnKey(EKeys::LeftMouseButton, [this] { return CabUse(); });
+	M->OnAction(TEXT("radio"), [this] { return CabRadio(); });
 	// the truck where it stands: the yard's (Chapter3.bindSaroTruck) and the station's (bindSite);
 	// the chapter adds its own with the same ids when it is ported
 	if (M->Inter && M->Web)
@@ -464,7 +467,7 @@ void US47World::Roam(const FString& From)
 	{
 		// the controls the first time on this device, where the truck can be left the first drive of one's own
 		TArray<FString> Say;
-		if (FirstTime(TEXT("drive"))) Say.Add(TEXT("W, S, A and D: drive. R: radio. Stop and press E to get out."));
+		if (FirstTime(TEXT("drive"))) Say.Add(FString::Printf(TEXT("%s, %s, %s and %s: drive. %s: radio. Stop and press %s to get out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))));
 		if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
 		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), 5.5f);
 	};
@@ -514,7 +517,7 @@ void US47World::DriveOldRoad(TFunction<void()> Ready)
 		if (FS47OldRoad* R = OldRoad()) R->bHitBack = false;
 		OldControl.Reset();
 		if (Ready) Ready();
-		if (FirstTime(TEXT("drive"))) Toast(TEXT("W and S: throttle and brake (S at a stop: reverse). A and D: steer."), 4.5f);
+		if (FirstTime(TEXT("drive"))) Toast(FString::Printf(TEXT("%s and %s: throttle and brake (%s at a stop: reverse). %s and %s: steer."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right"))), 4.5f);
 	};
 	StartTrip(TEXT("diner"), TEXT("roswell"), O);
 }
@@ -598,7 +601,7 @@ void US47World::StartTrip(const FString& From, const FString& To, const FS47Trip
 		if (O.OnStart) O.OnStart();
 		else if (From == To && !O.Hint.IsEmpty()) Toast(O.Hint, 5.f);
 		// how to drive, the first time on this device (the notebook's Controls tab has it after)
-		else if (FirstTime(TEXT("drive"))) Toast(TEXT("W and S: throttle and brake (S at a stop: reverse). A and D: steer. R: radio. Stopped, E gets out."), 5.f);
+		else if (FirstTime(TEXT("drive"))) Toast(FString::Printf(TEXT("%s and %s: throttle and brake (%s at a stop: reverse). %s and %s: steer. %s: radio. Stopped, %s gets out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))), 5.f);
 		bBusy = false; Hold(false); Fade(false);
 		UE_LOG(LogS47World, Display, TEXT("S47: driving, leg %s, truck at %.1f %.1f"), *Leg, L->Drive->Pos.X, L->Drive->Pos.Z);
 	});

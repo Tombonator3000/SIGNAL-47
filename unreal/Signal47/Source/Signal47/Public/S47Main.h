@@ -89,7 +89,9 @@ public:
 	// its keys here (C raises the camera, B opens the board, ...); the first handler that returns
 	// true takes the press. bEvenModal: also while a panel is open (Esc, Tab).
 	void OnKey(const FKey& Key, TFunction<bool()> Fn, bool bEvenModal = false) { Keys.Add({ Key, MoveTemp(Fn), bEvenModal }); }
-	struct FKeyHandler { FKey Key; TFunction<bool()> Fn; bool bEvenModal = false; };
+	// the same for an action the player can rebind (S47Keys: 'camera', 'light', 'pause' ...): its keys as they are bound now
+	void OnAction(FName Action, TFunction<bool()> Fn, bool bEvenModal = false) { Keys.Add({ FKey(), MoveTemp(Fn), bEvenModal, Action }); }
+	struct FKeyHandler { FKey Key; TFunction<bool()> Fn; bool bEvenModal = false; FName Action; };
 	TArray<FKeyHandler> Keys;
 
 	// What main.ts's step() does each frame after the player moved (the story is stepped by its

@@ -23,7 +23,8 @@ class FWidgetRenderer;
 //   -S47Face=<spot>      stand at a spot: room, window, outside, dish, or in front of an item (crtCenter, rack, logbook...)
 //   -S47Use              use what is in front of you after 2.5 s
 //   -S47Jump=<beat>      start at a beat: shift, residual, locked, printed, countdown, event
-//   -S47Open=<view>      open a view after 2 s: notebook, console, ops, log, pause
+//   -S47Open=<view>      open a view after 2 s: notebook, console, ops, log, pause, settings[:tab], save, load ...
+//   -S47Press=<k,k,...>  then press these keys (and Click:x:y) half a second apart (S47Keys::TestPresses)
 //   -S47Title            start on the title even with other test flags (without any -S47 flag the game starts there)
 //   -S47Case=<n>         a test run that plays (and autosaves into) case n
 //   -S47SelfTest         run the ported rules' self tests and log "self test OK" or "FAILED"

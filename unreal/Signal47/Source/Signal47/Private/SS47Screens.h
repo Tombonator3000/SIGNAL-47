@@ -34,9 +34,12 @@ namespace S47Css
 	FString Played(double Sec);                           // SaveMenu.ts played()
 }
 
-// .title-screen: the name, the line under it and the menu, at the foot of the picture with the
-// title camera drifting behind. Gated: only the name and "Click or press any key" until the
-// first key or click (main.ts firstTouch), then the menu comes in.
+// The title (the approved mockup, title.png): over the title camera drifting behind it, the shade
+// on the left, the tape's display (PLAY, SP, the date and the night's clock from 23:41:07), the
+// name with its red and cyan edges, the menu (Continue with where it would take you, New night,
+// Load case, Settings, Quit), the note with the flashing images' warning and the keys. Gated the
+// first time: the menu waits behind "Press any key" until the first key or click (main.ts
+// firstTouch, the music).
 class SS47Title : public SCompoundWidget
 {
 public:
@@ -49,19 +52,23 @@ public:
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& G, const FKeyEvent& E) override;
 	virtual FReply OnMouseButtonDown(const FGeometry& G, const FPointerEvent& E) override;
+	virtual FNavigationReply OnNavigation(const FGeometry& G, const FNavigationEvent& E) override;
 	void Ungate();
 	bool IsGated() const { return bGated; }
 	void FocusMenu();
 	void FocusStart();
 
 private:
+	struct FItem { FString Label; bool bUsable = true; TFunction<void()> Fn; };
 	FS47TitleOpts O;
-	bool bGated = false, bCalm = false;
-	float T = 0.f, InT = 1.f; // the gate's blink, the menu's coming in
+	TArray<FItem> Items;
+	int32 Sel = 0;
+	bool bGated = false;
+	float T = 0.f, InT = 1.f;  // the clock and the gate's blink, the menu's coming in
 	bool bFocusPending = true; // the menu is focused once the title is on the screen
-	FVector2D Size = FVector2D(1920, 1080);
-	TSharedPtr<SButton> ContButton, StartButton;
 	void First();
+	void Move(int32 Dir);
+	void Choose();
 };
 
 // .opening-card: the five paragraphs on the black, Begin night and Back to title (UI.openingCard)
@@ -83,24 +90,36 @@ private:
 	TSharedPtr<SButton> BeginButton, BackButton;
 };
 
-// .panel.settings-panel: the pause menu, or the title's settings (UI.pause)
+// The pause menu (the approved mockup, pause.png): the game blurred behind, the strip on the left
+// with PAUSED, the chapter, the clock and the place, the case and when it was saved, the menu
+// (Resume, Save case, Load case, Settings, Controls, Quit to title), tonight's card with the
+// current objective and the latest note in hand, and the tape's PAUSE with the date. The
+// settings are SS47Settings, opened from here (UI.pause's shared settings).
 class SS47Pause : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Pause) {}
-		SLATE_ARGUMENT(FS47PauseOpts, Opts)
-		SLATE_ARGUMENT(TFunction<void(bool)>, OnClose) // the UI's close (silent or not)
+	SLATE_BEGIN_ARGS(SS47Pause) : _Selected(0) {}
+		SLATE_ARGUMENT(TSharedPtr<FS47PauseOpts>, Opts)
+		SLATE_ARGUMENT(int32, Selected)
+		SLATE_ARGUMENT(TFunction<void(bool)>, OnClose)                      // the UI's close (silent or not)
+		SLATE_ARGUMENT(TFunction<void(const FString&, int32)>, OnSettings)  // the settings at a tab; back to this line
+		SLATE_ARGUMENT(TFunction<void(TFunction<void()>)>, OnSub)          // a case menu over the pause (the game stays paused)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& InArgs);
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& G, const FKeyEvent& E) override;
+	virtual FNavigationReply OnNavigation(const FGeometry& G, const FNavigationEvent& E) override;
+	virtual void Tick(const FGeometry& G, const double InCurrentTime, const float InDeltaTime) override;
 
 private:
-	FS47PauseOpts O;
+	struct FItem { FString Label; TFunction<void()> Fn; bool bQuit = false; };
+	TSharedPtr<FS47PauseOpts> O;
 	TFunction<void(bool)> OnClose;
-	bool bArtBell = true, bRadioCast = true, bCharacters = true, bSerling = true, bKinski = false, bInv = false, bBig = false, bCalm = false, bStill = false, bAb = true;
-	FString Q, Pic;
-	float Vol = 0.8f, Mus = 0.7f, Rad = 1.f, Sens = 1.f, Fov = 70.f;
+	TFunction<void(const FString&, int32)> OnSettings;
+	TFunction<void(TFunction<void()>)> OnSub;
+	TArray<FItem> Items;
+	int32 Sel = 0;
+	void Move(int32 Dir);
 };
 
 // .chapter-card: what was just closed and its line, then the next chapter's title and the clock,

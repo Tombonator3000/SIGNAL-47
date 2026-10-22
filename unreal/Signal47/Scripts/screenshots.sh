@@ -29,8 +29,19 @@ shot outside "walker placed at outside" "-S47Face=outside"
 shot dish "walker placed at dish" "-S47Face=dish"
 shot chapter2 "chapter ch2 begins" "-S47Jump=chapter2 -S47Face=room"
 shot radio "S47: radio caliche live, AM 1420" "-S47Radio=caliche -S47Jump=chapter1 -S47Face=room"
+# the menus (S47Theme, the approved mockups): a night in case 1 autosaved first, so the title has
+# something to continue and the case menus a tape; the title, every settings tab, the pause menu, its
+# Controls (the settings at that tab, -S47Press feeds the menu its keys), saving and loading
+shot menucase "chapter ch2 begins" "-S47Case=1 -S47Jump=chapter2 -S47Face=room" 12
 shot title "title shown" "-S47Title"
+for tab in game picture sound voices controls accessibility; do
+  shot settings-$tab "S47: settings opened at $tab" "-S47Title -S47Open=settings:$tab"
+done
 shot pause "pause opened" "-S47Face=room -S47Jump=residual -S47Open=pause"
+shot pausecase "pause opened" "-S47Case=1 -S47Jump=chapter2 -S47Face=room -S47Open=pause"
+shot pausecontrols "S47: settings opened at controls" "-S47Case=1 -S47Jump=chapter2 -S47Face=room -S47Open=pause -S47Press=Down,Down,Down,Down,Enter"
+shot load "S47: case menu load, [1-9]" "-S47Title -S47Open=load"
+shot save "S47: case menu save" "-S47Case=1 -S47Jump=chapter2 -S47Face=room -S47Open=save"
 # the drive: out of the yard with the throttle held and the autopilot steering, 20 s on, from the cab
 shot drive "S47: trip 20 s" "-S47Drive=saro:station01 -S47Throttle=0.35" 24
 # chapter one: from the room after the prologue, and at the S-03 motor bus in the service yard

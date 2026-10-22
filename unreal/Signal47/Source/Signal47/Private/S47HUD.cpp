@@ -65,6 +65,8 @@
 #include "S47Caliche.h"
 #include "S47Town.h"
 #include "S47Saves.h"
+#include "S47Keys.h"
+#include "S47Theme.h"
 #include "Containers/Ticker.h"
 #include "Internationalization/Regex.h"
 #include "S47UI.h"
@@ -128,6 +130,7 @@ void AS47HUD::Start()
 		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
 		bOk &= FS47DecoderDesk::SelfTest(Lines) & FS47ReadAloud::SelfTest(Lines); // (the signal processor's desk and panel; read-aloud's text matching)
+		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -513,6 +516,9 @@ void AS47HUD::Start()
 		{
 			FTimerHandle OpenTimer;
 			GetWorldTimerManager().SetTimer(OpenTimer, [this, View] { OpenView(View); }, 2.0f, false);
+			// -S47Press=Down,Enter: then the keys, as from the keyboard (S47Keys::TestPresses)
+			FString Press;
+			if (FParse::Value(FCommandLine::Get(), TEXT("S47Press="), Press, false)) FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Press](float) { S47Keys::TestPresses(Press, 0.5f); return false; }), 2.6f);
 		}
 	}
 }
@@ -724,8 +730,15 @@ void AS47HUD::Tick(float DeltaSeconds)
 		TSet<FKey> Taken;
 		for (const US47Main::FKeyHandler& K : M->Keys)
 		{
-			if (Taken.Contains(K.Key) || (Modal.IsValid() && !K.bEvenModal) || !PC->WasInputKeyJustPressed(K.Key)) continue;
-			if (K.Fn && K.Fn()) Taken.Add(K.Key);
+			if (Modal.IsValid() && !K.bEvenModal) continue;
+			// (an action's keys as S47Keys has them bound; the handler answers once a frame)
+			const TArray<FKey, TInlineAllocator<2>> Ks = K.Action.IsNone() ? TArray<FKey, TInlineAllocator<2>>{ K.Key } : S47Keys::KeysOf(K.Action);
+			for (const FKey& Key : Ks)
+			{
+				if (!Key.IsValid() || Taken.Contains(Key) || !PC->WasInputKeyJustPressed(Key)) continue;
+				if (K.Fn && K.Fn()) Taken.Add(Key);
+				break;
+			}
 		}
 	}
 	if (!Modal.IsValid() && Walker.IsValid() && Story.IsValid())
@@ -734,7 +747,7 @@ void AS47HUD::Tick(float DeltaSeconds)
 		{
 			const FString F = Walker->FocusedId();
 			const FString L = F.IsEmpty() || !M || !M->Inter || !bPlaying ? FString() : M->Inter->LabelOf(F);
-			Prompt = L.IsEmpty() ? FText::GetEmpty() : FText::FromString(L.ToUpper() + TEXT("   [E]"));
+			Prompt = L.IsEmpty() ? FText::GetEmpty() : FText::FromString(L.ToUpper() + TEXT("   [") + S47Keys::Label(TEXT("use")) + TEXT("]"));
 		}
 		// (input.enabled: only in play; the title and the end card hold the player)
 		Walker->SetActive(bPlaying && !Story->IsCinematic() && !bEnded);
@@ -786,8 +799,8 @@ void AS47HUD::EndPlay(const EEndPlayReason::Type Reason)
 void AS47HUD::SetPrompt(const FString& Label, const FString& Alt)
 {
 	// UI.prompt: "[E] label   [Q] alt"
-	FString P = Label.IsEmpty() ? FString() : Label.ToUpper() + TEXT("   [E]");
-	if (!Alt.IsEmpty()) P += TEXT("      ") + Alt.ToUpper() + TEXT("   [Q]");
+	FString P = Label.IsEmpty() ? FString() : Label.ToUpper() + TEXT("   [") + S47Keys::Label(TEXT("use")) + TEXT("]");
+	if (!Alt.IsEmpty()) P += TEXT("      ") + Alt.ToUpper() + TEXT("   [") + S47Keys::Label(TEXT("alt")) + TEXT("]");
 	Prompt = FText::FromString(P);
 	bPromptSet = true;
 }
