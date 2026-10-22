@@ -314,6 +314,19 @@ void AS47HUD::Start()
 				TWeakObjectPtr<US47Chapter3> W3 = C3;
 				Aw->StationIdle = [W3] { return !W3.IsValid() || !W3->StationTaken || W3->StationTaken->State == TEXT("idle"); };
 				Aw->StationBegin = [W3](double Clock) { if (W3.IsValid() && W3->StationTaken) W3->StationTaken->Begin(Clock); };
+				// main.ts, after ab.update: stationTaken.update, and the station passed after all (the recording's
+				// walk and the dishes that follow are stepped by S47SaroNight, later in the frame)
+				Aw->AfterAbduction = [W3, Wa, M](double Dt, bool)
+				{
+					if (!W3.IsValid() || !W3->StationTaken || !Wa.IsValid() || !Wa->Abduction.IsValid()) return;
+					FS47Abduction& Ab = *Wa->Abduction;
+					US47StationTaken::FIn In;
+					In.Stage = Ab.Stage;
+					if (const auto Wn = Ab.Warn()) In.WarnT = Wn->T;
+					In.Clock = M->Story ? M->Story->Clock() : 0;
+					W3->StationTaken->Update(Dt, In);
+					if (W3->StationTaken->Last == TEXT("passed") && Ab.Data.Station == TEXT("taken")) Ab.Data.Station = TEXT("passed");
+				};
 				C3->Third = [Wa](US47FieldCamera* Cam) -> TOptional<FS47FilmShot>
 				{
 					if (!Wa.IsValid() || !Cam) return {};
