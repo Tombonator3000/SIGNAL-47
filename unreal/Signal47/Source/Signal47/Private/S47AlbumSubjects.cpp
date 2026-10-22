@@ -6,7 +6,10 @@
 #include "S47NinthModel.h"
 
 #include "S47Away.h"
+#include "S47ConsoleKit.h"
+#include "S47DecoderDesk.h"
 #include "S47Geo.h"
+#include "S47Story.h"
 #include "S47Main.h"
 #include "S47Truck.h"
 #include "S47Walker.h"
@@ -110,6 +113,12 @@ namespace S47AlbumSubjects
 			Add(TEXT("the RX consoles"), { P(Web->Obj(TEXT("room.crtLeft.group")), 0.3), P(Web->Obj(TEXT("room.crtCenter.group")), 0.3), P(Web->Obj(TEXT("room.crtRight.group")), 0.3) },
 				[](FS47Subject& S) { S.R = 0.45; S.Max = 12; S.W = 1.3; });
 			Things(TEXT("room.objs."), ROOM, UE_ARRAY_COUNT(ROOM));
+			// (Unreal only, Tom's request: the signal processor is the bought unit on the console desk, and
+			// room.objs.decoder is taken away; S47ConsoleKit.h)
+			if (const FS47ConsoleKit* Kit = M->Story && M->Story->Decoder.IsValid() ? M->Story->Decoder->Kit() : nullptr)
+			{
+				if (Kit->Obj().Shown()) Add(TEXT("the signal processor"), { TOptional<FVector>(Kit->At()) }, [](FS47Subject& S) { S.R = 0.35; S.Max = 8; S.W = 1; });
+			}
 			Things(TEXT("annex.objs."), ANNEX, UE_ARRAY_COUNT(ANNEX));
 			// Sierra Motor Court down the highway: its sign from all over the site, the rooms nearer
 			const S47Geo::FAt& At = S47Geo::MOTEL_AT();

@@ -6,18 +6,36 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/App.h"
+#include "Misc/CommandLine.h"
 #include "Rendering/DrawElements.h"
 #include "RenderingThread.h"
 #include "S47Audio.h"
+#include "S47ConsoleKit.h"
+#include "S47Flow.h"
 #include "S47Inter.h"
 #include "S47Json.h"
+#include "S47Main.h"
 #include "S47UI.h"
 #include "S47Web.h"
 #include "S47Yard.h"
 #include "Slate/WidgetRenderer.h"
 #include "SS47Widgets.h"
+#include "UnrealClient.h"
 #include "UObject/Package.h"
 #include "Widgets/SLeafWidget.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogS47Desk, Log, All);
+
+// ---------- (Unreal only, on Tom's request) the answer's papers ----------
+
+namespace
+{
+	// T. Vega's page under the spare reel: the seven numbered as they come, and what the line sang back
+	const TCHAR* VEGA_PAGE = TEXT("Jul --. Hut receiver, past two.\n\nFour, a gap, seven. With the lamp off they are not clicks. They are notes. The four go up. The seven come down, a step at a time.\n\nNumbered the seven as they come. 1 the top, 7 the bottom.\n\nWhistled the four back down the line.\n\nIt sang back the seven. Not in that order:\n\n7  5  3  2  1  4  6\n\nTwice. The same both times. N. asleep on the bench. Not telling her until I have it three times.\n\nT.V.");
+	// TAPE A: the wire in the hut at STATION 01, the night of the last observation (E10's 02:17:00 and
+	// 02:17:47, N. Vega's account in room 6, his last field card, plate 4, reel 047's crank, cut and relay)
+	const TCHAR* TAPE_A = TEXT("FIELD WIRE / STATION 01 / TAPE A\nThe hut receiver and the field line from C. July 1947.\n\n02:15:10 / Hiss. The four, a gap, the seven, top to bottom.\nT. VEGA (on the line): Hut, this is C. The lamp is off. It is still there.\nT. VEGA: I am giving it the four. Then the seven, the way it sang them to me.\n02:15:41 / A whistle: four notes up, then seven. 7 5 3 2 1 4 6.\n02:15:58 / The same seven come back. Not his. Louder, and close to the microphone in the hut.\nT. VEGA: It answered. Write the time down.\nN. VEGA (in the hut): Tomás. Come in off the line.\nT. VEGA: There is someone at the transit. A band across his back. It shines, and the lamp is off.\nT. VEGA: There were two of us.\n02:16:52 / A field telephone, rung by its handle. Twice.\nN. VEGA: Now, Tomás.\nT. VEGA: Last reading. Reference west. No. East. Hold the last reading.\n02:17:00 / Cutters. The carrier stops. Then nothing on the wire at all, not even the hiss.\n02:17:47 / A relay, close and loud.\nN. VEGA: Tomás?\nHiss to the end of the wire.");
+}
 
 // ---------- the processor's display (room.dspScreen) ----------
 
@@ -57,18 +75,41 @@ FS47DecoderDesk::FS47DecoderDesk(FS47DecoderDeskDeps InD) : D(MoveTemp(InD))
 {
 	US47Inter* Inter = D.Inter.Get();
 	AS47Web* Room = D.Room.Get();
+	// (Unreal only, on Tom's request) the bought unit on the console desk is the processor when the export
+	// has it; the deck on the rack is taken away (S47ConsoleKit.h)
+	if (Room && FS47ConsoleKit::Find(Room) >= 0) KitPtr = MakeUnique<FS47ConsoleKit>(Room);
 	if (Inter && Room)
 	{
 		const TWeakPtr<bool> Life = Alive;
 		FS47Interactable I;
-		I.Id = TEXT("decoder"); I.Object = Room->Obj(TEXT("room.objs.decoder")); I.Range = 2.4;
+		I.Id = TEXT("decoder"); I.Object = KitPtr ? KitPtr->Obj() : Room->Obj(TEXT("room.objs.decoder")); I.Range = 2.4;
 		I.Label = [this, Life] { return Life.IsValid() ? Label() : FString(); };
 		I.Use = [this, Life] { if (Life.IsValid()) Use(); };
+		// (Unreal: the closer look at the bought unit, not story/looks.ts's deck behind smoked plastic)
+		if (KitPtr) I.Examine = [] { return FString(TEXT("The signal processor: a deck with a small green display, and a meter unit on top of it, two VU meters lit amber. Headphones and a desk microphone in front.")); };
 		Inter->Add(I);
+		// T. Vega's page under the spare reel, from the lock on (the answer)
+		if (KitPtr && KitPtr->Page())
+		{
+			FS47Interactable Pg;
+			Pg.Id = TEXT("vegaPage"); Pg.Object = KitPtr->Page(); Pg.Range = 2.0;
+			Pg.Label = [this, Life] { return Life.IsValid() && PageThere() ? FString(TEXT("A page under the reel")) : FString(); };
+			Pg.Use = [this, Life] { if (Life.IsValid() && PageThere()) ReadPage(); };
+			Pg.Examine = [this, Life] { return Life.IsValid() && PageThere() ? FString(TEXT("A page torn out of a field book, folded twice, pushed half under the spare reel. Pencil, an old hand.")) : FString(); };
+			Inter->Add(Pg);
+		}
 	}
-	if (Room) for (const FString& H : Room->PathsUnder(TEXT("room.reels["))) Reels.Add(Room->Obj(H));
+	// (the bought unit has no reels that turn: the spare reel beside it is part of the desk's clutter)
+	if (Room && !KitPtr) for (const FString& H : Room->PathsUnder(TEXT("room.reels["))) Reels.Add(Room->Obj(H));
 	InitScreen();
 	DrawScreen();
+	// -S47Answer (with -S47Jump=locked or later): the panel opened three seconds in and the answer keyed;
+	// =tape: TAPE A opened once it is filed, =notebook: the notebook's papers then; =page: T. Vega's page
+	// read instead (the developer's, for the screenshots)
+	bTestAnswer = FParse::Param(FCommandLine::Get(), TEXT("S47Answer")) || FParse::Value(FCommandLine::Get(), TEXT("S47Answer="), TestMode);
+	FParse::Value(FCommandLine::Get(), TEXT("S47KitShots="), ShotPrefix);
+	float At = -1.f;
+	if (FParse::Value(FCommandLine::Get(), TEXT("S47KitShotAt="), At)) ShotAt = At;
 }
 
 FS47DecoderDesk::~FS47DecoderDesk()
@@ -99,7 +140,7 @@ void FS47DecoderDesk::InitScreen()
 	Widget = SNew(SS47DeskDsp);
 }
 
-bool FS47DecoderDesk::Playing() const { return Player.IsValid() && Player->bPlaying; }
+bool FS47DecoderDesk::Playing() const { return Player.IsValid() && (Player->bPlaying || Player->bPhrase); }
 
 FString FS47DecoderDesk::Label() const
 {
@@ -122,6 +163,8 @@ S47Panels::FDecoderView FS47DecoderDesk::View() const
 	V.bPlaying = Playing();
 	const TWeakPtr<FS47DecoderPlayer> Pl = Player;
 	V.Current = [Pl] { const TSharedPtr<FS47DecoderPlayer> X = Pl.Pin(); return X.IsValid() ? X->Current : -1; };
+	V.Keys = KeyLog;
+	V.bAnswering = Answering();
 	return V;
 }
 
@@ -140,7 +183,11 @@ FString FS47DecoderDesk::Open()
 	O.OnMode = [this, Life](const FString& M) { if (Life.IsValid()) OnMode(M); };
 	O.OnParam = [this, Life](const FString& K, double V) { if (Life.IsValid()) OnParam(K, V); };
 	O.OnPlay = [this, Life](bool bPlay) { if (Life.IsValid()) OnPlay(bPlay); };
+	O.OnKey = [this, Life](int32 K) { if (Life.IsValid()) OnKey(K); };
+	O.bOnDesk = KitPtr.IsValid();
+	O.OnClose = [this, Life] { if (Life.IsValid()) bPanelOpen = false; };
 	S47Panels::DecoderPanel(UI, O);
+	bPanelOpen = UI != nullptr;
 	return FString();
 }
 
@@ -166,16 +213,27 @@ void FS47DecoderDesk::OnPlay(bool bPlay)
 	if (bPlay) Play(); else Stop();
 }
 
-void FS47DecoderDesk::Play()
+FVector FS47DecoderDesk::SoundAt() const
+{
+	// (Unreal: the bought unit's front; in the web version the deck on the rack, a little up and out)
+	if (KitPtr) return KitPtr->SoundAt();
+	return (D.Room.IsValid() ? D.Room->Obj(TEXT("room.objs.decoder")).WorldPosition() : FVector::ZeroVector) + FVector(-0.3, 1.1, 0);
+}
+
+bool FS47DecoderDesk::EnsurePlayer()
 {
 	US47Audio* A = D.Audio.Get();
 	const TSharedPtr<FS47AudioBuffer> Noise = A ? A->NoiseBuffer() : nullptr;
-	if (!A || !A->Ctx.IsValid() || !Noise.IsValid()) return;
-	if (!Player.IsValid())
-	{
-		const FVector At = (D.Room.IsValid() ? D.Room->Obj(TEXT("room.objs.decoder")).WorldPosition() : FVector::ZeroVector) + FVector(-0.3, 1.1, 0);
-		Player = MakeShared<FS47DecoderPlayer>(A->Ctx.ToSharedRef(), A->SfxBus, At, Noise);
-	}
+	if (!A || !A->Ctx.IsValid() || !Noise.IsValid()) return false;
+	if (!Player.IsValid()) Player = MakeShared<FS47DecoderPlayer>(A->Ctx.ToSharedRef(), A->SfxBus, SoundAt(), Noise);
+	return true;
+}
+
+void FS47DecoderDesk::Play()
+{
+	US47Audio* A = D.Audio.Get();
+	if (!EnsurePlayer()) return;
+	AbortAnswer(); // (Unreal: the tape over the answer, if it was still giving it back)
 	FS47Sound C; C.Gain = 0.5f; A->Sfx(TEXT("click"), C);
 	FS47DecoderSet S; S.Mode = P.Mode; S.Pitch = P.Pitch; S.Stretch = P.Stretch; S.Space = P.Space;
 	Player->Start(S);
@@ -183,6 +241,7 @@ void FS47DecoderDesk::Play()
 
 void FS47DecoderDesk::Stop()
 {
+	AbortAnswer();
 	if (!Playing()) return;
 	if (US47Audio* A = D.Audio.Get()) { FS47Sound C; C.Gain = 0.4f; A->Sfx(TEXT("click"), C); }
 	Player->Stop();
@@ -191,9 +250,43 @@ void FS47DecoderDesk::Stop()
 
 // ---------- per frame ----------
 
+UTexture* FS47DecoderDesk::CanvasMap() const
+{
+	// what room.dspScreen's canvas shows now: the processor's own picture, or reel 047's
+	AS47Web* W = D.Room.Get();
+	UMaterialInstanceDynamic* Mid = W && Mat >= 0 ? W->SharedMid(Mat) : nullptr;
+	return Mid ? Mid->K2_GetTextureParameterValue(TEXT("Map")) : nullptr;
+}
+
 void FS47DecoderDesk::Update(double Dt)
 {
 	if (Player.IsValid()) Player->Update();
+	// (Unreal only) the answer's timeline and the developer's run of it; the bought unit's needles, display
+	// and page, whoever has the deck
+	if (AnswerT >= 0) StepAnswer(Dt);
+	if (bTestAnswer) TestAnswer(Dt);
+	LifeT += Dt;
+	if (!ShotPrefix.IsEmpty() && ShotAt >= 0 && Shots < 2 && LifeT >= ShotAt + Shots)
+	{
+		const FString Path = FString::Printf(TEXT("%s_%c.png"), *ShotPrefix, TCHAR('a' + Shots));
+		FScreenshotRequest::RequestScreenshot(Path, true, false);
+		UE_LOG(LogS47Desk, Display, TEXT("S47: kit shot %s: needles %.3f %.3f, display %s; TAPE A %s, page %s, papers tapeA %s"), *Path, KitPtr ? KitPtr->Needle(0) : -1.0, KitPtr ? KitPtr->Needle(1) : -1.0, *ScreenLine(),
+			D.Answered && D.Answered() ? TEXT("answered") : TEXT("not answered"), PageThere() ? TEXT("there") : TEXT("not there"), D.HasPaper && D.HasPaper(TEXT("tapeA")) ? TEXT("filed") : TEXT("not filed"));
+		++Shots;
+	}
+	if (KitPtr)
+	{
+		const double Mine = Player.IsValid() ? Player->TakeLevel() : 0.0;
+		const double Reel047 = D.ReelLevel ? D.ReelLevel() : 0.0;
+		KitPtr->Update(Dt, FMath::Max(Mine, Reel047), CanvasMap());
+		KitPtr->ShowPage(PageThere());
+		// (the developer's runs: the level and the needles in the log, for the meters' calibration)
+		if ((!ShotPrefix.IsEmpty() || !TestMode.IsEmpty()) && (Mine > 0 || Reel047 > 0) && (LogT -= Dt) <= 0)
+		{
+			LogT = 0.5;
+			UE_LOG(LogS47Desk, Display, TEXT("S47: processor level %.4f (reel %.4f), needles %.3f %.3f"), Mine, Reel047, KitPtr->Needle(0), KitPtr->Needle(1));
+		}
+	}
 	if (Reel.Owns && Reel.Owns()) return;   // (reel 047 is on the deck: it has the display and the reels)
 	if (Playing())
 	{
@@ -207,6 +300,8 @@ void FS47DecoderDesk::Update(double Dt)
 FString FS47DecoderDesk::ScreenLine() const
 {
 	if (!(D.Locked && D.Locked())) return TEXT("NO TAPE");
+	// (Unreal only) the answer as it comes back, then the wire off the end of tape B
+	if (Answering()) return AnswerT < Ans.Wire() ? TEXT("ANSWER") : AnswerT < Ans.Cut() ? TEXT("TAPE A 1947") : TEXT("TAPE A  ----");
 	return FString::Printf(TEXT("%s %s%sST X%.1f"), P.Mode == TEXT("raw") ? TEXT("RAW ") : TEXT("HARM"), P.Pitch >= 0 ? TEXT("+") : TEXT(""), *FString::SanitizeFloat(P.Pitch, 0), P.Stretch);
 }
 
@@ -217,7 +312,7 @@ void FS47DecoderDesk::DrawScreen()
 	FS47DeskPicture Pic;
 	Pic.bLocked = D.Locked && D.Locked();
 	Pic.Line = ScreenLine();
-	Pic.Cur = Playing() ? Player->Current : -1;
+	Pic.Cur = Playing() && !(Answering() && AnswerT >= Ans.Wire()) ? Player->Current : -1;
 	Widget->P = Pic;
 	Renderer->DrawWidget(Target.Get(), Widget.ToSharedRef(), FVector2D(256, 72), 0.f);
 	// (one canvas in the web version, drawn by whichever draws last: here the screen shows this target
@@ -225,6 +320,165 @@ void FS47DecoderDesk::DrawScreen()
 	AS47Web* W = D.Room.Get();
 	UMaterialInstanceDynamic* Mid = W && Mat >= 0 ? W->SharedMid(Mat) : nullptr;
 	if (Mid && Mid->K2_GetTextureParameterValue(TEXT("Map")) != Target.Get()) FS47Mat{ W, Mat }.SetMap(Target.Get(), true);
+}
+
+// ---------- (Unreal only, on Tom's request) T. Vega's page and the answer ----------
+
+const TArray<int32>& FS47DecoderDesk::ANSWER()
+{
+	// what the line sang back to him (his page): not the order the seven come in, nor its reverse
+	static const TArray<int32> A = { 7, 5, 3, 2, 1, 4, 6 };
+	return A;
+}
+
+bool FS47DecoderDesk::IsAnswer(const TArray<int32>& Last)
+{
+	// the last seven keys pressed, whatever came before them
+	const TArray<int32>& A = ANSWER();
+	if (Last.Num() < A.Num()) return false;
+	for (int32 I = 0; I < A.Num(); ++I) if (Last[Last.Num() - A.Num() + I] != A[I]) return false;
+	return true;
+}
+
+FS47Doc FS47DecoderDesk::PageDoc()
+{
+	FS47Doc Doc;
+	Doc.Id = TEXT("vegaPage"); Doc.Title = TEXT("A page from T. Vega's field book, 1947"); Doc.Kind = TEXT("hand"); Doc.Stamp = TEXT("T. VEGA");
+	Doc.Page = VEGA_PAGE;
+	Doc.Transcript = TEXT("Under the spare reel beside the signal processor: a page torn out of a field book and folded twice. Pencil, T. Vega's hand. The seven of the pulse group, numbered as they come, and the order they came back in.");
+	return Doc;
+}
+
+FS47Doc FS47DecoderDesk::TapeDoc()
+{
+	FS47Doc Doc;
+	Doc.Id = TEXT("tapeA"); Doc.Title = TEXT("TAPE A / 1947"); Doc.Kind = TEXT("typed"); Doc.Stamp = TEXT("TAPE A");
+	Doc.Page = TAPE_A;
+	Doc.Transcript = TEXT("What came off the end of tape B after the answer, as it came. Tape B was recorded tonight at 02:14. None of this is on it.");
+	return Doc;
+}
+
+TOptional<FS47Doc> FS47DecoderDesk::PaperById(const FString& Id)
+{
+	if (Id == TEXT("vegaPage")) return PageDoc();
+	if (Id == TEXT("tapeA")) return TapeDoc();
+	return {};
+}
+
+bool FS47DecoderDesk::PageThere() const
+{
+	return KitPtr.IsValid() && D.Locked && D.Locked() && !(D.HasPaper && D.HasPaper(TEXT("vegaPage")));
+}
+
+void FS47DecoderDesk::ReadPage()
+{
+	const FS47Doc Doc = PageDoc();
+	const TWeakPtr<bool> Life = Alive;
+	auto Filed = [this, Life, Doc]
+	{
+		if (!Life.IsValid() || (D.HasPaper && D.HasPaper(Doc.Id))) return;
+		if (D.File) D.File(Doc, FString::Printf(TEXT("%s. Under the spare reel by the processor: a page out of a field book, in pencil. T. Vega, July 1947. He numbered the seven and wrote down what the line sang back to him."), *ClockNow()));
+		if (KitPtr) KitPtr->ShowPage(false);
+		if (D.Save) D.Save();
+	};
+	if (US47UI* UI = D.UI.Get()) UI->Document(Doc, Filed); else Filed();
+}
+
+void FS47DecoderDesk::OnKey(int32 K)
+{
+	// a key: its note through the processor, and the last seven checked against his
+	if (K < 1 || K > 7 || Answering() || (D.Busy && D.Busy())) return;
+	KeyLog.Add(K);
+	if (KeyLog.Num() > 7) KeyLog.RemoveAt(0);
+	if (EnsurePlayer()) Player->Key(FS47DecoderPlayer::SevenDegree(K - 1));
+	if (IsAnswer(KeyLog)) BeginAnswer();
+}
+
+void FS47DecoderDesk::BeginAnswer()
+{
+	KeyLog.Reset();
+	Ans = FS47AnswerTimes();
+	Ans.K = FS47AnswerTimes::KFor(P.Stretch);
+	AnswerT = 0; AnswerStep = 0;
+	bAnswerFirst = !(D.Answered && D.Answered());
+	TArray<double> Seven;
+	for (const int32 K : ANSWER()) Seven.Add(FS47DecoderPlayer::SevenDegree(K - 1));
+	if (EnsurePlayer()) Player->Phrase(Seven, Ans.K);
+	UE_LOG(LogS47Desk, Display, TEXT("S47: decoder: the answer keyed; the processor gives it back (K %.1f, %.1f s)%s"), Ans.K, Ans.End(), bAnswerFirst ? TEXT(", the first time in this case") : TEXT(", given before: the music only"));
+}
+
+void FS47DecoderDesk::StepAnswer(double Dt)
+{
+	AnswerT += Dt;
+	// a beat after the seventh key the panel goes by itself: the processor answers on its own
+	if (AnswerStep == 0 && AnswerT >= Ans.Lead) { AnswerStep = 1; if (bPanelOpen && D.UI.IsValid()) D.UI->Close(); }
+	if (!bAnswerFirst) { if (AnswerT >= Ans.End()) EndAnswer(false); return; }
+	// the seven coming back: the red lamps out on the array blink as one
+	if (AnswerStep == 1 && AnswerT >= Ans.Seven(0)) { AnswerStep = 2; if (D.Lamps) D.Lamps(true); UE_LOG(LogS47Desk, Display, TEXT("S47: decoder: the seven back; the array's lamps as one")); }
+	// the last of them: the screens break up and the lights sag
+	if (AnswerStep == 2 && AnswerT >= Ans.Last()) { AnswerStep = 3; if (D.React) D.React(1.4, 0.9); UE_LOG(LogS47Desk, Display, TEXT("S47: decoder: the last note; the screens glitch, the lights dip")); }
+	// the cut on the wire: the lamps let go
+	if (AnswerStep == 3 && AnswerT >= Ans.Cut()) { AnswerStep = 4; if (D.Lamps) D.Lamps(false); }
+	if (AnswerStep == 4 && AnswerT >= Ans.End()) EndAnswer(true);
+}
+
+void FS47DecoderDesk::EndAnswer(bool bUnlock)
+{
+	AnswerT = -1; AnswerStep = 0;
+	if (bUnlock && !(D.Answered && D.Answered()))
+	{
+		if (D.SetAnswered) D.SetAnswered();
+		if (D.File) D.File(TapeDoc(), FString::Printf(TEXT("%s. I keyed T. Vega's seven into the processor. It played them back by itself, and the red lamps on the dishes blinked as one. Then, off the end of tape B: hiss, someone whistling the same seven, a field telephone, cutters. Nothing after. TAPE A, 1947."), *ClockNow()));
+		if (US47UI* UI = D.UI.Get()) UI->Toast(TEXT("The processor ran on past the end of tape B. TAPE A / 1947 filed with the papers."), 4.6f);
+		if (D.Save) D.Save();
+		UE_LOG(LogS47Desk, Display, TEXT("S47: decoder: TAPE A / 1947 filed"));
+	}
+	DrawScreen();
+}
+
+void FS47DecoderDesk::AbortAnswer()
+{
+	// stopped before it was done (PLAY TAPE, STOP, reel 047, a new night): nothing comes of it
+	if (AnswerT < 0) return;
+	if (bAnswerFirst && AnswerStep >= 2 && AnswerStep < 4 && D.Lamps) D.Lamps(false);
+	AnswerT = -1; AnswerStep = 0;
+	if (Player.IsValid() && Player->bPhrase) Player->Stop();
+}
+
+void FS47DecoderDesk::TestAnswer(double Dt)
+{
+	// -S47Answer: three seconds after the lock (and the power) the panel is opened, and his seven keyed
+	// one by one, seven tenths of a second apart
+	if (!(D.Locked && D.Locked()) || !(D.Power && D.Power())) return;
+	TestT += Dt;
+	if (TestMode == TEXT("page"))
+	{
+		if (TestT >= 3) { bTestAnswer = false; UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer=page: the page %s"), PageThere() ? TEXT("read") : TEXT("not there")); if (PageThere()) ReadPage(); }
+		return;
+	}
+	if (TestK == 0 && TestT >= 3)
+	{
+		const FString Why = Open();
+		UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer: panel %s"), Why.IsEmpty() ? TEXT("open") : *(TEXT("refused: ") + Why));
+		if (!Why.IsEmpty()) { TestT = 1; return; }
+		TestK = 1;
+		TestT = 3;
+	}
+	if (TestK >= 1 && TestK <= 7 && TestT >= 3 + 0.7 * TestK)
+	{
+		const int32 K = ANSWER()[TestK - 1];
+		OnKey(K);
+		UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer: key %d (%d of 7)%s"), K, TestK, Answering() ? TEXT(": the answer") : TEXT(""));
+		++TestK;
+	}
+	// =tape, =notebook: once TAPE A is filed, it is opened, or the notebook at its papers
+	if (TestK > 7 && !Answering())
+	{
+		bTestAnswer = false;
+		if (TestMode == TEXT("tape")) { if (US47UI* UI = D.UI.Get()) UI->Document(TapeDoc()); }
+		else if (TestMode == TEXT("notebook")) { if (US47Main* M = US47Main::Get(D.Room.Get()); M && M->Flow) M->Flow->OpenTestView(TEXT("notebook:papers")); }
+		UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer: done, TAPE A %s"), D.Answered && D.Answered() ? TEXT("filed") : TEXT("not filed"));
+	}
 }
 
 // ---------- tests ----------
@@ -278,5 +532,92 @@ bool FS47DecoderDesk::SelfTest(TArray<FString>& Lines)
 	Check(X == 30 + 5.5 * 47 && FMath::IsNearlyEqual(Hh, 99.0), TEXT("the seven-group's first, harmonized: the octave over"));
 	S47Panels::DecoderScopeBar(10, TEXT("harmonized"), 120, X, Hh);
 	Check(X == 30 + 11.5 * 47 && FMath::IsNearlyEqual(Hh, 45.0), TEXT("the last bar, harmonized"));
+
+	// ---------- (Unreal only) the answer ----------
+	// the seven as the harmonized playback sounds them: key 1 the top (an octave over), key 7 the bottom
+	Check(FS47DecoderPlayer::SevenDegree(0) == 12 && FS47DecoderPlayer::SevenDegree(6) == 0 && FS47DecoderPlayer::FourDegree(3) == 10, TEXT("the keys' notes: 1 an octave up, 7 the root"));
+	// the sequence: the last seven keys, whatever came before; not the seven in order, nor reversed
+	Check(IsAnswer({ 7, 5, 3, 2, 1, 4, 6 }) && IsAnswer({ 1, 1, 4, 7, 5, 3, 2, 1, 4, 6 }), TEXT("his seven, alone or after other keys"));
+	Check(!IsAnswer({ 1, 2, 3, 4, 5, 6, 7 }) && !IsAnswer({ 7, 6, 5, 4, 3, 2, 1 }) && !IsAnswer({ 5, 3, 2, 1, 4, 6 }) && !IsAnswer({ 7, 5, 3, 2, 1, 4, 6, 6 }), TEXT("not in order, not reversed, not six of them, not with one after"));
+	// played on a desk without sound: the timeline runs all the same; the room answers once, TAPE A filed
+	// once with a note, and kept as answered; the keys are dead while it gives it back
+	TArray<FString> Filed, NotesSeen;
+	bool bAnswered = false;
+	int32 Reacts = 0, LampsOn = 0, LampsOff = 0, Saves = 0;
+	FS47DecoderDeskDeps Da = Dd;
+	Da.HasPaper = [&Filed](const FString& Id) { return Filed.Contains(Id); };
+	Da.File = [&Filed, &NotesSeen](const FS47Doc& Doc, const FString& N) { Filed.AddUnique(Doc.Id); NotesSeen.Add(N); };
+	Da.Answered = [&bAnswered] { return bAnswered; };
+	Da.SetAnswered = [&bAnswered] { bAnswered = true; };
+	Da.Save = [&Saves] { ++Saves; };
+	Da.React = [&Reacts](double, double) { ++Reacts; };
+	Da.Lamps = [&LampsOn, &LampsOff](bool bOn) { (bOn ? LampsOn : LampsOff)++; };
+	Da.Clock = [] { return FString(TEXT("02:31")); };
+	FS47DecoderDesk Ad(Da);
+	for (const int32 K : { 4, 4, 7, 5, 3, 2, 1, 4 }) Ad.OnKey(K);
+	Check(!Ad.Answering() && Ad.Keys().Num() == 7 && Ad.Keys()[0] == 4 && Ad.Keys()[6] == 4, TEXT("the register keeps the last seven keys"));
+	Ad.OnKey(5);
+	Check(!Ad.Answering(), TEXT("7 5 3 2 1 4 and a wrong last key: nothing"));
+	for (const int32 K : { 7, 5, 3, 2, 1, 4, 6 }) Ad.OnKey(K);
+	Check(Ad.Answering() && Ad.Keys().Num() == 0 && Ad.ScreenLine() == TEXT("ANSWER"), TEXT("his seven: the processor gives it back, ANSWER on the display"));
+	Ad.OnKey(3);
+	Check(Ad.Keys().Num() == 0, TEXT("the keys are dead while it answers"));
+	FS47AnswerTimes Tm; Tm.K = FS47AnswerTimes::KFor(2); // (the panel's TIME as it starts, x2.0)
+	for (double T = 0; T < Tm.Wire() + 0.5; T += 0.05) Ad.Update(0.05);
+	Check(LampsOn == 1 && Reacts == 1 && LampsOff == 0 && Ad.ScreenLine() == TEXT("TAPE A 1947"), TEXT("the lamps as one with the seven, the room at the last note, then TAPE A on the display"));
+	for (double T = 0; T < 30; T += 0.05) Ad.Update(0.05);
+	Check(!Ad.Answering() && LampsOff == 1 && bAnswered && Filed.Contains(TEXT("tapeA")) && Saves == 1 && NotesSeen.Num() == 1 && NotesSeen[0].StartsWith(TEXT("02:31. I keyed T. Vega's seven")), TEXT("then TAPE A filed with its note, the case marked and saved, the lamps let go"));
+	for (const int32 K : { 7, 5, 3, 2, 1, 4, 6 }) Ad.OnKey(K);
+	for (double T = 0; T < 40; T += 0.05) Ad.Update(0.05);
+	Check(Reacts == 1 && LampsOn == 1 && Filed.Num() == 1 && Saves == 1, TEXT("once a case: given again, it is the music only"));
+	// stopped halfway: nothing comes of it, the lamps let go
+	bAnswered = false; Filed.Reset(); LampsOn = LampsOff = 0;
+	for (const int32 K : { 7, 5, 3, 2, 1, 4, 6 }) Ad.OnKey(K);
+	for (double T = 0; T < Tm.Seven(2); T += 0.05) Ad.Update(0.05);
+	Ad.Stop();
+	for (double T = 0; T < 30; T += 0.05) Ad.Update(0.05);
+	Check(!Ad.Answering() && LampsOn == 1 && LampsOff == 1 && !bAnswered && Filed.Num() == 0, TEXT("stopped halfway: no TAPE A, the lamps back in their own blink"));
+	// the papers by id, as the case puts them back; no page without the bought unit
+	Check(PaperById(TEXT("vegaPage")).IsSet() && PaperById(TEXT("tapeA")).IsSet() && !PaperById(TEXT("binder")).IsSet() && !Ad.PageThere(), TEXT("the two papers by id; no page to find without the bought unit"));
+	const int32 Words = [] { TArray<FString> W; FString(TAPE_A).ParseIntoArrayWS(W); return W.Num(); }();
+	Check(Words >= 120 && Words <= 230 && FString(TAPE_A).Contains(TEXT("Reference west. No. East. Hold the last reading.")) && FString(TAPE_A).Contains(TEXT("02:17:47")), TEXT("TAPE A: its length, T. Vega's correction word for word, the relay at 02:17:47 (E10)"));
+	Check(FString(VEGA_PAGE).Contains(TEXT("7  5  3  2  1  4  6")), TEXT("his page has the seven in the answer's order"));
+	// the answer's sound rendered offline: it stays a sound to the end (nothing in it runs away), and it
+	// is silent once the wire is cut
+	{
+		auto Render = [](TFunctionRef<void(FS47DecoderPlayer&, const TSharedRef<FS47AudioContext>&)> Setup, double Secs, double& OutMax, double& OutLast, FString& OutTrace)
+		{
+			const TSharedRef<FS47AudioContext> Ctx = FS47AudioContext::Make(48000.f);
+			const TSharedRef<FS47AudioBuffer> Noise = Ctx->CreateBuffer(1, 48000 * 2, 48000.f);
+			FRandomStream R(47);
+			for (int32 I = 0; I < Noise->Length(); ++I) Noise->GetChannelData(0)[I] = R.FRand() * 2 - 1;
+			FS47DecoderPlayer Pl(Ctx, Ctx->Destination, FVector::ZeroVector, Noise);
+			Setup(Pl, Ctx);
+			TArray<float> Buf;
+			Buf.SetNumZeroed(12000 * 2);
+			OutMax = 0; OutLast = 0;
+			for (double T = 0; T < Secs; T += 0.25)
+			{
+				Ctx->Render(Buf.GetData(), 12000, 2);
+				Pl.Update();
+				OutLast = Pl.TakeLevel();
+				OutMax = FMath::Max(OutMax, FMath::IsFinite(OutLast) ? OutLast : 1e30);
+				OutTrace += FString::Printf(TEXT("%.3f "), OutLast);
+			}
+		};
+		TArray<double> Seven;
+		for (const int32 K : ANSWER()) Seven.Add(FS47DecoderPlayer::SevenDegree(K - 1));
+		const FS47AnswerTimes At3 = [] { FS47AnswerTimes A; A.K = 3; return A; }();
+		double Max = 0, Last = 0;
+		FString Trace;
+		Render([&Seven](FS47DecoderPlayer& Pl, const TSharedRef<FS47AudioContext>&) { Pl.Phrase(Seven, 3); }, At3.End() + 1, Max, Last, Trace);
+		UE_LOG(LogS47Desk, Display, TEXT("S47: decoder self test: the answer's level every 0.25 s: %s"), *Trace);
+		Check(Max > 0.01 && Max < 1.0, TEXT("the answer offline: heard, and nothing in it runs away"));
+		Trace.Reset();
+		Render([](FS47DecoderPlayer& Pl, const TSharedRef<FS47AudioContext>&) { Pl.Key(12); }, 6, Max, Last, Trace);
+		UE_LOG(LogS47Desk, Display, TEXT("S47: decoder self test: a key's level every 0.25 s: %s"), *Trace);
+		Check(Max > 0.005 && Max < 1.0 && Last < 0.001, TEXT("a key offline: a note, its tail, then quiet"));
+	}
+	bOk &= FS47ConsoleKit::SelfTest(Lines);
 	return bOk;
 }

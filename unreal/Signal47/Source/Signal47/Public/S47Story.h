@@ -27,6 +27,8 @@ struct FS47NightState
 	TArray<FString> Papers; bool bK3Open = false; TArray<FS47LogLine> Log; TOptional<double> SolveAt; bool bJacket = false;
 	TSharedPtr<class FJsonObject> Array;
 	TOptional<double> Hondo;
+	/** (Unreal only, Tom's request) T. Vega's seven keyed on the processor: TAPE A has come (tapeA). */
+	bool bTapeA = false;
 };
 // The array put back on the schedule, as the status screen shows it while a try runs
 // (story/arrayBack.ts status()): its mode, its bottom line (empty: none), and whether they are amber.
