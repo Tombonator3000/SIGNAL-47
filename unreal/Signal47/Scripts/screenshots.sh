@@ -20,6 +20,7 @@ shot rack "walker placed at rack" "-S47Face=rack -S47Use"
 shot crt "walker placed at crtCenter" "-S47Face=crtCenter -S47Jump=shift"
 shot console "console opened" "-S47Face=crtCenter -S47Jump=residual -S47Open=console"
 shot notebook "notebook opened" "-S47Face=room -S47Jump=residual -S47Open=notebook"
+shot board "S47: opened board" "-S47Jump=chapter2 -S47Face=room -S47Open=board -S47BoardTest=look:ch1;hold:observation.stripe>s03log.zero"
 # the notebook on each of its tabs, and a handwritten, a typed and a printed paper (SS47Notebook,
 # SS47Document: the in-game screens as the approved mockups have them)
 for t in tasks notes findings papers photos map kit people controls; do shot "notebook-$t" "S47: opened notebook:$t" "-S47Jump=chapter2 -S47Face=room -S47Open=notebook:$t"; done
