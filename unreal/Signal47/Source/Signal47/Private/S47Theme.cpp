@@ -782,3 +782,67 @@ void S47Theme::KeepFocus(const TSharedRef<SWidget>& Menu)
 	if (!FSlateApplication::IsInitialized() || Menu->HasAnyUserFocusOrFocusedDescendants()) return;
 	FSlateApplication::Get().SetAllUserFocus(Menu, EFocusCause::SetDirectly);
 }
+
+EMouseCursor::Type S47Theme::GrabCursor(bool bClosed)
+{
+	// the files LinuxCursor.cpp and WindowsCursor.cpp read (FPlatformProcess::BaseDir() / EngineContentDir())
+	static const bool bHands = []
+	{
+#if PLATFORM_LINUX || PLATFORM_WINDOWS
+		const FString Dir = FPlatformProcess::BaseDir() / FPaths::EngineContentDir() / TEXT("Editor/Slate/Cursor/");
+		const TCHAR* Ext = PLATFORM_LINUX ? TEXT(".bmp") : TEXT(".cur");
+		return IFileManager::Get().FileExists(*(Dir + TEXT("grabhand") + Ext)) && IFileManager::Get().FileExists(*(Dir + TEXT("grabhand_closed") + Ext));
+#else
+		return true;
+#endif
+	}();
+	if (bHands) return bClosed ? EMouseCursor::GrabHandClosed : EMouseCursor::GrabHand;
+	return bClosed ? EMouseCursor::CardinalCross : EMouseCursor::Hand;
+}
+
+// ---------- the phosphor's glow ----------
+
+void SS47GlowText::Construct(const FArguments& InArgs)
+{
+	Color = InArgs._Color;
+	Glow = InArgs._Glow;
+	Blur = InArgs._Blur;
+	bHaloOnly = InArgs._bHaloOnly;
+	const TAttribute<FLinearColor> C = Color;
+	STextBlock::Construct(STextBlock::FArguments()
+		.Text(InArgs._Text)
+		.Font(InArgs._Font)
+		.ColorAndOpacity_Lambda([C] { return FSlateColor(C.Get(FLinearColor::White)); })
+		.AutoWrapText(InArgs._AutoWrapText)
+		.LineHeightPercentage(InArgs._LineHeight)
+		.Justification(InArgs._Justification)
+		.MinDesiredWidth(InArgs._MinDesiredWidth));
+}
+
+int32 SS47GlowText::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
+{
+	int32 Max = Layer;
+	const FLinearColor Gl = Glow.Get(FLinearColor::Transparent);
+	if (Gl.A > 0.f)
+	{
+		// The copies are the text tinted to the glow's colour: a Gaussian of Blur px as two rings of
+		// eight, a quarter and three fifths of the blur out, the inner ring the stronger.
+		const FLinearColor C = Color.Get(FLinearColor::White);
+		const FLinearColor Tint(Gl.R / FMath::Max(C.R, 0.02f), Gl.G / FMath::Max(C.G, 0.02f), Gl.B / FMath::Max(C.B, 0.02f), 1.f);
+		const float R = Blur * S47Theme::U;
+		static const float Rings[2][2] = { { 0.25f, 0.13f }, { 0.6f, 0.06f } };
+		for (const auto& Ring : Rings)
+		{
+			for (int32 k = 0; k < 8; ++k)
+			{
+				const float A = k * UE_PI / 4.f + Ring[0];
+				FWidgetStyle S = Style;
+				S.BlendColorAndOpacityTint(FLinearColor(Tint.R, Tint.G, Tint.B, Gl.A * Ring[1]));
+				const FVector2f D(FMath::Cos(A) * R * Ring[0], FMath::Sin(A) * R * Ring[0]);
+				Max = FMath::Max(Max, STextBlock::OnPaint(Args, G.MakeChild(FSlateRenderTransform(D)), Cull, Out, Layer, S, bParentEnabled));
+			}
+		}
+	}
+	if (bHaloOnly) return Max;
+	return FMath::Max(Max, STextBlock::OnPaint(Args, G, Cull, Out, Layer + 1, Style, bParentEnabled));
+}

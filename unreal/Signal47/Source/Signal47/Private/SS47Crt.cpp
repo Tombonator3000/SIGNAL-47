@@ -5,13 +5,19 @@
 #include "S47Web.h"
 #include "S47Story.h"
 #include "SS47Widgets.h"
+#include "S47Image.h"
+#include "S47Kit.h"
+#include "S47Theme.h"
 
 namespace
 {
-	const FLinearColor Phosphor(0.55f, 1.f, 0.64f);
-	const FLinearColor Warn(1.f, 0.82f, 0.48f);
-	const FLinearColor Bright(0.78f, 1.f, 0.82f);
-	const FLinearColor Dim(0.55f, 1.f, 0.64f, 0.7f);
+	// the canvas's colours ('#8cffa4', '#ffd27a', '#c8ffd2', 'rgba(140,255,164,.7)'): sRGB, as Slate's
+	// linear colours (they were the sRGB numbers taken as linear, which washed the screens out)
+	FLinearColor CrtCss(uint32 Rgb, float A = 1.f) { return S47Theme::Css(Rgb, A); }
+	const FLinearColor Phosphor = CrtCss(0x8cffa4);
+	const FLinearColor Warn = CrtCss(0xffd27a);
+	const FLinearColor Bright = CrtCss(0xc8ffd2);
+	const FLinearColor Dim = CrtCss(0x8cffa4, 0.7f);
 }
 
 void SS47Crt::Construct(const FArguments& InArgs)
@@ -30,7 +36,7 @@ void SS47Crt::Txt(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer,
 
 void SS47Crt::Clear(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
 {
-	FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0.008f, 0.063f, 0.024f));
+	FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(), WhiteBrush.Get(), ESlateDrawEffect::None, CrtCss(0x021006));
 }
 
 void SS47Crt::Scanlines(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
@@ -39,15 +45,24 @@ void SS47Crt::Scanlines(const FGeometry& G, FSlateWindowElementList& Out, int32 
 	{
 		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(512.f, 1.f), FSlateLayoutTransform(FVector2f(0, Y))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, 0.22f));
 	}
-	// the vignette as four soft bands
-	for (int32 i = 0; i < 4; ++i)
+	// createRadialGradient(256, 192, 120, 256, 192, 330): clear inside 120 px, rgba(0,0,0,.55) at 330
+	static TSharedPtr<FSlateBrush> Vig;
+	if (!Vig.IsValid())
 	{
-		const float A = 0.12f * (4 - i) / 4.f, T = 18.f * (i + 1);
-		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(512.f, T), FSlateLayoutTransform(FVector2f(0, 0))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, A));
-		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(512.f, T), FSlateLayoutTransform(FVector2f(0, 384.f - T))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, A));
-		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(T, 384.f), FSlateLayoutTransform(FVector2f(0, 0))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, A));
-		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(T, 384.f), FSlateLayoutTransform(FVector2f(512.f - T, 0))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0, 0, 0, A));
+		const int32 W = 128, H = 96;
+		TArray<FColor> Px;
+		Px.SetNumUninitialized(W * H);
+		for (int32 y = 0; y < H; ++y)
+		{
+			for (int32 x = 0; x < W; ++x)
+			{
+				const float D = FMath::Sqrt(FMath::Square((x + 0.5f) * 4.f - 256.f) + FMath::Square((y + 0.5f) * 4.f - 192.f));
+				Px[y * W + x] = FColor(0, 0, 0, uint8(FMath::RoundToInt32(0.55f * FMath::Clamp((D - 120.f) / 210.f, 0.f, 1.f) * 255.f)));
+			}
+		}
+		if (UTexture2D* T = S47Image::FromPixels(Px, W, H)) Vig = S47Kit::BrushFor(T);
 	}
+	if (Vig.IsValid()) FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(512.f, 384.f), FSlateLayoutTransform()), Vig.Get(), ESlateDrawEffect::None, FLinearColor::White);
 }
 
 void SS47Crt::Boot(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer, double E) const
@@ -70,7 +85,7 @@ void SS47Crt::Status(const FGeometry& G, FSlateWindowElementList& Out, int32 Lay
 	Txt(G, Out, Layer + 1, TEXT("RX BANK 3   ONLINE"), 18, 68, 22);
 	Txt(G, Out, Layer + 1, TEXT("MODE        ") + (Arr ? Arr->Mode : Story->SurveyModeText()), 18, 92, 22, bEv && (!Arr || Arr->bWarn) ? Warn : Phosphor);
 	Txt(G, Out, Layer + 1, TEXT("SCHEDULE    AZ 042  EL 48  UNTIL 06:00"), 18, 116, 22);
-	FSlateDrawElement::MakeBox(Out, Layer + 1, G.ToPaintGeometry(FVector2f(476.f, 1.f), FSlateLayoutTransform(FVector2f(18, 128))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0.55f, 1.f, 0.64f, 0.35f));
+	FSlateDrawElement::MakeBox(Out, Layer + 1, G.ToPaintGeometry(FVector2f(476.f, 1.f), FSlateLayoutTransform(FVector2f(18, 128))), WhiteBrush.Get(), ESlateDrawEffect::None, CrtCss(0x8cffa4, 0.35f));
 	// all 27, three columns of nine
 	for (int32 i = 0; i < Saro->DishCount(); ++i)
 	{
@@ -92,7 +107,7 @@ void SS47Crt::Spectrum(const FGeometry& G, FSlateWindowElementList& Out, int32 L
 	Txt(G, Out, Layer + 6, TEXT("SPECTRUM  1419.5 - 1420.7 MHz"), 14, 28, 24);
 	Txt(G, Out, Layer + 6, FString::Printf(TEXT("%.3f MHz"), Story->Rx.Frequency), 360, 28, 24, Warn);
 	const bool bWarn = Story->Rx.Status.StartsWith(TEXT("UNLOGGED"));
-	if (!bWarn || int32(T * 2.5) % 2 == 0) Txt(G, Out, Layer + 6, Story->Rx.Status.Left(40), 14, 370, 22, bWarn ? Warn : FLinearColor(0.73f, 1.f, 0.78f));
+	if (!bWarn || int32(T * 2.5) % 2 == 0) Txt(G, Out, Layer + 6, Story->Rx.Status.Left(40), 14, 370, 22, bWarn ? Warn : CrtCss(0xb9ffc7));
 }
 
 void SS47Crt::Tracking(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
@@ -105,9 +120,9 @@ void SS47Crt::Tracking(const FGeometry& G, FSlateWindowElementList& Out, int32 L
 		for (int32 i = 0; i <= 48; ++i) { const float A = i / 48.f * 2 * PI; Pts.Add(FVector2f(Cx + FMath::Cos(A) * Rad, Cy + FMath::Sin(A) * Rad)); }
 		FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), Pts, ESlateDrawEffect::None, C, true, W);
 	};
-	for (float K : { 1.f, 0.66f, 0.33f }) Circle(R * K, FLinearColor(0.55f, 1.f, 0.64f, 0.5f), 1.5f);
-	FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Cx - R, Cy), FVector2f(Cx + R, Cy) }, ESlateDrawEffect::None, FLinearColor(0.55f, 1.f, 0.64f, 0.5f), true, 1.5f);
-	FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Cx, Cy - R), FVector2f(Cx, Cy + R) }, ESlateDrawEffect::None, FLinearColor(0.55f, 1.f, 0.64f, 0.5f), true, 1.5f);
+	for (float K : { 1.f, 0.66f, 0.33f }) Circle(R * K, CrtCss(0x8cffa4, 0.5f), 1.5f);
+	FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Cx - R, Cy), FVector2f(Cx + R, Cy) }, ESlateDrawEffect::None, CrtCss(0x8cffa4, 0.5f), true, 1.5f);
+	FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Cx, Cy - R), FVector2f(Cx, Cy + R) }, ESlateDrawEffect::None, CrtCss(0x8cffa4, 0.5f), true, 1.5f);
 	const double Az = Saro->DishAz(0), El = Saro->DishEl(0);
 	const float A = float(FMath::DegreesToRadians(Az)), Rr = R * float(1.0 - El / 90.0);
 	FSlateDrawElement::MakeLines(Out, Layer + 2, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Cx, Cy), FVector2f(Cx + FMath::Sin(A) * R, Cy - FMath::Cos(A) * R) }, ESlateDrawEffect::None, Phosphor, true, 2.f);
@@ -122,7 +137,7 @@ void SS47Crt::Tracking(const FGeometry& G, FSlateWindowElementList& Out, int32 L
 	{
 		const float P = FMath::Min(1.f, float((Story->GameTime - Story->SolveT) / 4.2));
 		Txt(G, Out, Layer + 2, TEXT("DIRECTION SOLVE"), X, 160, 22);
-		FSlateDrawElement::MakeBox(Out, Layer + 2, G.ToPaintGeometry(FVector2f(190.f, 16.f), FSlateLayoutTransform(FVector2f(X, 172))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0.55f, 1.f, 0.64f, 0.25f));
+		FSlateDrawElement::MakeBox(Out, Layer + 2, G.ToPaintGeometry(FVector2f(190.f, 16.f), FSlateLayoutTransform(FVector2f(X, 172))), WhiteBrush.Get(), ESlateDrawEffect::None, CrtCss(0x8cffa4, 0.25f));
 		FSlateDrawElement::MakeBox(Out, Layer + 2, G.ToPaintGeometry(FVector2f(186.f * P, 12.f), FSlateLayoutTransform(FVector2f(X + 2, 174))), WhiteBrush.Get(), ESlateDrawEffect::None, Phosphor);
 		for (int32 i = 0; i < 5; ++i) Txt(G, Out, Layer + 2, FString::Printf(TEXT("ITER %s  %.3f"), *S47Text::Pad(FMath::FloorToDouble(P * 40) + i, 3), FMath::FRand() * 9.0), X, 216 + i * 24.f, 20, Dim);
 	}
@@ -166,7 +181,7 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 {
 	if (!Story || !Saro)
 	{
-		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0.004f, 0.02f, 0.008f));
+		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(), WhiteBrush.Get(), ESlateDrawEffect::None, CrtCss(0x020a04));
 		return Layer + 1;
 	}
 	if (Kind == EKind::Ops)
@@ -189,7 +204,7 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 		else Tracking(G, Out, Layer);
 		if (Story->At(ES47Phase::End) && int32(FPlatformTime::Seconds() * 2) % 2 == 0)
 		{
-			FSlateDrawElement::MakeBox(Out, Layer + 7, G.ToPaintGeometry(FVector2f(512.f, 84.f), FSlateLayoutTransform(FVector2f(0, 150))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0.008f, 0.063f, 0.024f, 0.88f));
+			FSlateDrawElement::MakeBox(Out, Layer + 7, G.ToPaintGeometry(FVector2f(512.f, 84.f), FSlateLayoutTransform(FVector2f(0, 150))), WhiteBrush.Get(), ESlateDrawEffect::None, CrtCss(0x021006, 0.88f));
 			FSlateDrawElement::MakeLines(Out, Layer + 7, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(14, 158), FVector2f(498, 158), FVector2f(498, 226), FVector2f(14, 226), FVector2f(14, 158) }, ESlateDrawEffect::None, Phosphor, true, 2.f);
 			Txt(G, Out, Layer + 7, TEXT("SIGNAL ACQUIRED"), 92, 208, 52, Bright);
 		}

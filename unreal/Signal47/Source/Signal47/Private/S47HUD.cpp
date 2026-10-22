@@ -78,6 +78,7 @@
 #include "S47WorldLife.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
+#include "SS47ScreenView.h"
 #include "SS47Widgets.h"
 #include "Slate/WidgetRenderer.h"
 #include "TimerManager.h"
@@ -137,6 +138,7 @@ void AS47HUD::Start()
 		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
+		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -485,7 +487,9 @@ void AS47HUD::Start()
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
 	}
-	Renderer = new FWidgetRenderer(true);
+	// (linear out: the CRTs' targets are sRGB and encode it themselves; with Slate's gamma as well the
+	// screens came out pale)
+	Renderer = new FWidgetRenderer(false);
 	const SS47Crt::EKind Kinds[4] = { SS47Crt::EKind::Status, SS47Crt::EKind::Spectrum, SS47Crt::EKind::Tracking, SS47Crt::EKind::Ops };
 	for (int32 i = 0; i < 4; ++i) Crts[i] = SNew(SS47Crt).Kind(Kinds[i]).Story(Story.Get()).Saro(Saro.Get());
 
@@ -618,15 +622,24 @@ void AS47HUD::OpenConsole()
 	TWeakObjectPtr<AS47HUD> Self = this;
 	TWeakObjectPtr<US47Audio> A = Audio;
 	TWeakObjectPtr<AS47Story> S = Story;
-	SetModal(SNew(SS47Console).Story(Story.Get()).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }).OnClick([A] { if (A.IsValid()) A->Play(TEXT("click"), 0.5f); }),
-		[S] { if (S.IsValid()) S->ConsoleClosed(); });
+	// on the centre CRT itself, the camera up to its glass (SS47ScreenView); the modal closes when it is back
+	const TSharedRef<SS47ScreenView> V = SNew(SS47ScreenView).Screen(1).Web(Saro.Get()).Walker(Walker.Get()).OnLeft([Self] { if (Self.IsValid()) Self->CloseModal(); });
+	const TWeakPtr<SS47ScreenView> W = V;
+	const TSharedRef<SS47Console> C = SNew(SS47Console).Story(Story.Get()).OnClose([W] { if (const TSharedPtr<SS47ScreenView> P = W.Pin()) P->Leave(); }).OnClick([A] { if (A.IsValid()) A->Play(TEXT("click"), 0.5f); });
+	V->SetScreen(C, C);
+	SetModal(V, [S] { if (S.IsValid()) S->ConsoleClosed(); });
 	UE_LOG(LogS47HUD, Display, TEXT("S47: console opened"));
 }
 
 void AS47HUD::OpenOps()
 {
 	TWeakObjectPtr<AS47HUD> Self = this;
-	SetModal(SNew(SS47Ops).Story(Story.Get()).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), nullptr);
+	// on the west desk's CRT (screen 3), the command line taking the keys (E is typed there)
+	const TSharedRef<SS47ScreenView> V = SNew(SS47ScreenView).Screen(3).Web(Saro.Get()).Walker(Walker.Get()).bUseLeaves(false).OnLeft([Self] { if (Self.IsValid()) Self->CloseModal(); });
+	const TWeakPtr<SS47ScreenView> W = V;
+	const TSharedRef<SS47Ops> O = SNew(SS47Ops).Story(Story.Get()).OnClose([W] { if (const TSharedPtr<SS47ScreenView> P = W.Pin()) P->Leave(); });
+	V->SetScreen(O, O->Line());
+	SetModal(V, nullptr);
 	UE_LOG(LogS47HUD, Display, TEXT("S47: ops terminal opened"));
 }
 

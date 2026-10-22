@@ -2,6 +2,7 @@
 #include "SS47MapOverlay.h"
 
 #include "Engine/Texture2D.h"
+#include "S47Theme.h"
 #include "Rendering/DrawElements.h"
 #include "S47Canvas.h"
 #include "S47Drawings.h"
@@ -188,7 +189,7 @@ public:
 	// cursor: grab, and grabbing while it is held (.mapov canvas:active)
 	virtual FCursorReply OnCursorQuery(const FGeometry&, const FPointerEvent&) const override
 	{
-		return FCursorReply::Cursor(D->Grab ? EMouseCursor::GrabHandClosed : EMouseCursor::GrabHand);
+		return FCursorReply::Cursor(S47Theme::GrabCursor(bool(D->Grab)));
 	}
 
 private:
