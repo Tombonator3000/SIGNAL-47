@@ -91,4 +91,45 @@ namespace S47Panels
 		TFunction<void(int32 I, double U, double V)> OnLook;
 	};
 	SIGNAL47_API void FieldPrints(US47UI* UI, const FFieldPrints& O);
+	// ---------- chapter four: a conversation in room 6 ----------
+	// N. Vega at the table. The chapter keeps the state and says what is on screen: the last
+	// exchange, the evidence that can be put on the table, a question, and the choices. The panel
+	// only draws it and passes clicks back.
+	struct FTalkLine { FString Who, Text; };
+	struct FTalkChip { FString Id, Label, Image; bool bHave = false, bOn = false; }; // Image: a data URL, or empty
+	struct FTalkTable { FString Prompt; TArray<FTalkChip> Chips; FString Submit; };
+	struct FTalkChoice { FString Id, Label; bool bDisabled = false; };
+	struct FTalkGiven { FString Id, Label; };
+	struct FTalkView
+	{
+		FString Status;
+		TArray<FTalkLine> Lines;
+		TOptional<FTalkTable> Table;
+		FString Question;                 // '' for none
+		TArray<FTalkChoice> Choices;
+		TOptional<FS47Result> Reply;
+		TArray<FTalkGiven> Given;
+		/** What happens after the lines, told under them a moment later, and never voiced or read aloud
+		 *  with them, so the recorded lines keep their voice (story/Chapter4.ts, PHOTO 03 face down). */
+		TOptional<FTalkLine> After;
+	};
+	struct FTalk
+	{
+		FString Title;
+		TFunction<FTalkView()> View;
+		TFunction<void(const FString&)> OnChip;
+		TFunction<void()> OnTable;
+		TFunction<void(const FString&)> OnChoice;
+		TFunction<void(const FString&)> OnRead;
+		TFunction<void(const TArray<FTalkLine>&)> OnLines;
+		/** The studio-door conversation, with its own optional voice (Earl's voice is not in this version). */
+		bool bEarl = false;
+		/** The character voice of the speaker ('bacall' ...; core/npcDialogue.ts CharacterVoice), or ''. */
+		FString Character;
+		TFunction<void()> OnClose;
+	};
+	struct FTalkHandle { TFunction<void()> Refresh; };
+	SIGNAL47_API FTalkHandle Talk(US47UI* UI, const FTalk& O);
+	/** core/portraits.ts portraitOf(who): the art name of whoever speaks under this name, or '' */
+	SIGNAL47_API FString PortraitOf(const FString& Who);
 }

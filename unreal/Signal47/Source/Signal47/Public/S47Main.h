@@ -47,6 +47,7 @@ public:
 	void RequestAutosave(bool bMilestone = false);
 	UPROPERTY() TObjectPtr<US47FieldCamera> FieldCamera; // core/FieldCamera.ts (made with chapter one)
 	UPROPERTY() TObjectPtr<class US47CaseBoard> CaseBoard;
+	TSharedPtr<class FS47CB> CB; // core/cb.ts: the CB under the truck's dash (main.ts const cb; made with chapter four)
 
 	// The case board (story/caseBoard.ts): every chapter's rule book, and the hook the chapters
 	// open and refresh it with. Unset Board.Open: no board yet; a chapter then falls back to the

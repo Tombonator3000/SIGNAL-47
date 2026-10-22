@@ -1,5 +1,6 @@
 // story/Chapter3.ts: chapter three, "The Survey Station"
 #include "S47Chapter3.h"
+#include "S47Chapter4.h"
 
 #include "Misc/Base64.h"
 #include "Misc/CommandLine.h"
@@ -296,7 +297,7 @@ US47Chapter3* US47Chapter3::Register(US47Chapter3* C)
 			// (the integrator puts chapter four's own begin here: Prologue.beginChapter4(null))
 			H->ChapterBreak({ TEXT("THE SURVEY STATION // P06 TO P09 RECORDED"),
 				TEXT("Fixed point A was moved. The cable was cut on purpose. The receiver in the hut still carries T. Vega's correction. N. Vega is waiting in room 6, across the road."),
-				TEXT("CHAPTER FOUR"), TEXT("ROOM 6"), [H] { H->BeginChapter(TEXT("ch4")); } });
+				TEXT("CHAPTER FOUR"), TEXT("ROOM 6"), [H] { if (US47Chapter4* C4 = Cast<US47Chapter4>(H->Chapter(TEXT("ch4")))) C4->BeginChapter4(nullptr); else H->BeginChapter(TEXT("ch4")); } });
 			return;
 		}
 		if (W->Ui()) W->Ui()->Fade(true, FString());

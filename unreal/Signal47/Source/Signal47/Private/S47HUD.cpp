@@ -18,6 +18,7 @@
 #include "S47Story.h"
 #include "S47BoardRules.h"
 #include "S47CaseBoard.h"
+#include "S47Chapter4.h"
 #include "S47Inter.h"
 #include "S47Chapter2.h"
 #include "S47Chapter3.h"
@@ -41,6 +42,8 @@
 #include "S47DishArray.h"
 #include "S47ArchiveDishes.h"
 #include "S47Away.h"
+#include "S47CB.h"
+#include "S47OfficePhone.h"
 #include "S47Seen.h"
 #include "S47StationTaken.h"
 #include "S47DishesFollow.h"
@@ -101,6 +104,7 @@ void AS47HUD::Start()
 		bOk &= US47SaroNight::SelfTest(Lines); // (SARO dark, the array put back, the dishes that follow, the lights on B, the reels, the recording)
 		bOk &= US47Chapter3::SelfTest(Lines); // (with stationTaken's)
 		bOk &= US47Away::SelfTest(Lines); // (the time away, the trucks, the lost nights, the third one, the star hole, FLASH's frames)
+		bOk &= US47Chapter4::SelfTest(Lines); // (with the walkie's and the CB's)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -295,6 +299,21 @@ void AS47HUD::Start()
 					return Wa->ThirdShot(C);
 				};
 				C3->OnBand = [Wa] { if (Wa.IsValid()) Wa->ThirdNoticed(); };
+			}
+			if (US47Chapter4* C4 = Story.IsValid() ? Cast<US47Chapter4>(Story->Chapter(TEXT("ch4"))) : nullptr)
+			{
+				// main.ts: ch4.taken (N. Vega sees the mark), the office's telephone in room 6, and the CB
+				// held back while the time away runs (motel.cb)
+				C4->Taken = [Wa] { return Wa.IsValid() && Wa->Taken(); };
+				if (US47Phones* Ph = M->Phones; Ph && Ph->OfficePhone.IsValid())
+				{
+					TWeakObjectPtr<US47Phones> Wp = Ph;
+					C4->OfficePhone = US47Chapter4::FOfficePhone{
+						[Wp] { return Wp.IsValid() && Wp->OfficePhone.IsValid() ? Wp->OfficePhone->Label() : FString(); },
+						[Wp] { return Wp.IsValid() && Wp->OfficePhone.IsValid() && Wp->OfficePhone->Use(); } };
+				}
+				TFunction<bool(const TArray<FS47CBLine>&, TFunction<void()>)> Cb = C4->Cb;
+				C4->Cb = [Wa, Cb](const TArray<FS47CBLine>& L, TFunction<void()> OnEnd) { return !(Wa.IsValid() && Wa->CbBlocked()) && Cb && Cb(L, OnEnd); };
 			}
 		}
 		M->Flow->Boot();

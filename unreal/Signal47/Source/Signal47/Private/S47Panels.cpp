@@ -2,15 +2,25 @@
 #include "S47Panels.h"
 
 #include "Brushes/SlateColorBrush.h"
+#include "Brushes/SlateRoundedBoxBrush.h"
 #include "Engine/Texture2D.h"
+#include "HAL/PlatformTime.h"
 #include "Rendering/DrawElements.h"
 #include "S47FieldCamera.h"
 #include "S47Image.h"
 #include "S47Kit.h"
+#include "S47NpcDialogue.h"
 #include "S47UI.h"
 #include "SS47Widgets.h"
+#include "Styling/CoreStyle.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SUniformGridPanel.h"
+#include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SCompoundWidget.h"
 #include "Widgets/SLeafWidget.h"
 #include "Widgets/SNullWidget.h"
 #include "Widgets/Text/STextBlock.h"
@@ -428,4 +438,387 @@ void S47Panels::FieldPrints(US47UI* UI, const FFieldPrints& O)
 	// .lp-tip ('Tap' on a touch screen: there is no touch input in this version) and .lp-text
 	const FW Body = S47Kit::Col({ Pair, S47Kit::Small(TEXT("Click a print to look closer.")), S47Kit::Text(O.Text) }, 0.f);
 	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("STATION 01 / FIELD PRINTS"), Body), O.OnClose);
+}
+
+// ---------- chapter four: a conversation in room 6 ----------
+
+FString S47Panels::PortraitOf(const FString& Who)
+{
+	// core/portraits.ts: the names the conversations and calls give the speakers (BY_NAME), and the
+	// picture by the name the brief gives (assets/art/people/portrait_<id>.jpg; Content/WebData/art)
+	static const TMap<FString, FString> BY_NAME = {
+		{ TEXT("N. VEGA"), TEXT("nora") }, { TEXT("NORA"), TEXT("nora") }, { TEXT("THE WAITRESS"), TEXT("waitress") }, { TEXT("THE DRIVER"), TEXT("driver") },
+		{ TEXT("E. WARD"), TEXT("ward") }, { TEXT("WARD"), TEXT("ward") }, { TEXT("DALE"), TEXT("dale") },
+		{ TEXT("THE ATTENDANT"), TEXT("attendant") }, { TEXT("THE DEPUTY"), TEXT("deputy") }, { TEXT("EARL"), TEXT("host") }, { TEXT("THE WOMAN"), TEXT("radio_woman") }, { TEXT("THE SOUVENIR MAN"), TEXT("souvenir_man") },
+	};
+	const FString* Id = BY_NAME.Find(Who.TrimStartAndEnd().ToUpper());
+	return Id ? TEXT("portrait_") + *Id : FString();
+}
+
+namespace
+{
+	const FSlateBrush* TalkBox(const FLinearColor& Fill, const FLinearColor& Line)
+	{
+		static TMap<FString, TSharedPtr<FSlateBrush>> Cache;
+		TSharedPtr<FSlateBrush>& B = Cache.FindOrAdd(Fill.ToString() + Line.ToString());
+		if (!B.IsValid()) B = MakeShared<FSlateRoundedBoxBrush>(Fill, 0.f, Line, Line.A > 0 ? 1.f : 0.f);
+		return B.Get();
+	}
+
+	// button { background: none; border: 0 }: the look is the SBorder inside
+	const FButtonStyle* BareButton()
+	{
+		static FButtonStyle S = []
+		{
+			FButtonStyle B;
+			FSlateBrush None;
+			None.DrawAs = ESlateBrushDrawType::NoDrawType;
+			B.SetNormal(None).SetHovered(None).SetPressed(None).SetDisabled(None);
+			B.SetNormalPadding(FMargin(0)).SetPressedPadding(FMargin(0));
+			return B;
+		}();
+		return &S;
+	}
+
+	// a picture in a box of its own size, cropped to fill it (object-fit: cover)
+	FW Cover(UTexture2D* T, float W, float H)
+	{
+		if (!T) return SNew(SBox).WidthOverride(W).HeightOverride(H);
+		TSharedRef<FSlateBrush> B = MakeShared<FSlateBrush>();
+		B->SetResourceObject(T);
+		B->ImageSize = FVector2D(W, H);
+		B->DrawAs = ESlateBrushDrawType::Image;
+		const double Img = double(T->GetSizeX()) / FMath::Max(1, T->GetSizeY()), Box = W / H;
+		if (Img > Box) { const double R = Box / Img; B->SetUVRegion(FBox2f(FVector2f(float(0.5 - R / 2), 0.f), FVector2f(float(0.5 + R / 2), 1.f))); }
+		else if (Img < Box) { const double R = Img / Box; B->SetUVRegion(FBox2f(FVector2f(0.f, float(0.5 - R / 2)), FVector2f(1.f, float(0.5 + R / 2)))); }
+		return SNew(SBox).WidthOverride(W).HeightOverride(H)[SNew(SImage).Image_Lambda([B] { return &B.Get(); })];
+	}
+
+	// CSS ease-out, cubic-bezier(0, 0, .58, 1), at x in [0, 1]
+	double EaseOut(double X)
+	{
+		X = FMath::Clamp(X, 0.0, 1.0);
+		double Lo = 0, Hi = 1, T = X;
+		for (int32 I = 0; I < 24; ++I)
+		{
+			T = (Lo + Hi) / 2;
+			const double Bx = 3 * (1 - T) * T * T * 0.58 + T * T * T;
+			if (Bx < X) Lo = T; else Hi = T;
+		}
+		return 3 * (1 - T) * T * T + T * T * T;
+	}
+
+	// characterReadingControls's state: the Replay voice button and its status line
+	struct FVoiceBox
+	{
+		bool bActive = false, bDisabled = false;
+		ES47DialogueState State = ES47DialogueState::Idle;
+		FString Parody;
+	};
+}
+
+// The talk panel as one widget: render() draws the body from the chapter's view again (a click
+// changes the state, then the panel is drawn anew), and lines that are new come in one after
+// another (.talk-line.fresh, talk-in .45 s ease-out, .55 s apart).
+class SS47Talk : public SCompoundWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SS47Talk) {}
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments&)
+	{
+		ChildSlot
+		[
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[SAssignNew(StatusText, STextBlock).Font(S47Style::Mono(19.f * PX)).ColorAndOpacity(S47Kit::Css(0xffb052)).AutoWrapText(true).Margin(FMargin(0, 0, 0, 10))]
+			+ SVerticalBox::Slot().AutoHeight()[SAssignNew(Body, SBox)]
+			+ SVerticalBox::Slot().AutoHeight()[SAssignNew(Reading, SBox)]
+		];
+	}
+
+	void Setup(US47UI* InUI, const S47Panels::FTalk& InO) { UI = InUI; O = InO; }
+
+	void Render();
+	// a click: the state changes now, the panel is drawn again on the next frame (not inside the
+	// button's own click)
+	void Later() { bDirty = true; }
+
+	virtual void Tick(const FGeometry& G, const double Now, const float Dt) override
+	{
+		SCompoundWidget::Tick(G, Now, Dt);
+		if (bDirty) { bDirty = false; Render(); }
+	}
+
+	TWeakObjectPtr<US47UI> UI;
+	S47Panels::FTalk O;
+	void StopCharacter() const { if (!O.Character.IsEmpty()) if (const TSharedPtr<FS47NpcDialogue> N = Npc()) N->Stop(); }
+
+private:
+	TSharedPtr<STextBlock> StatusText;
+	TSharedPtr<SBox> Body, Reading;
+	bool bDirty = false;
+	FString Shown, ReadingShown, ShownAfter;
+	TArray<S47Panels::FTalkLine> ShownLines;
+	double FreshT0 = 0;
+
+	TSharedPtr<FS47NpcDialogue> Npc() const { return UI.IsValid() ? UI->NpcDialogue : nullptr; }
+	bool NpcOn() const { const TSharedPtr<FS47NpcDialogue> N = Npc(); return N.IsValid() && N->Enabled(); }
+	static FString Key(const TArray<S47Panels::FTalkLine>& L)
+	{
+		// JSON.stringify(v.lines): the lines as they are, to tell a new exchange from a redraw
+		FString K;
+		for (const S47Panels::FTalkLine& X : L) K += X.Who + TEXT("\x1f") + X.Text + TEXT("\x1e");
+		return K;
+	}
+	FW Line(const S47Panels::FTalkLine& L, bool bFresh, double Delay) const;
+	TFunction<void()> CharacterReadingControls(const TSharedRef<SVerticalBox>& Parent, const FString& Voice, const TArray<FS47DialogueLine>& Lines);
+};
+
+FW SS47Talk::Line(const S47Panels::FTalkLine& L, bool bFresh, double Delay) const
+{
+	// <p class="talk-line[ aside][ fresh]"><span class="who">WHO</span>text</p>
+	FSlateFontInfo Who = S47Style::Mono(19.f * PX);
+	Who.LetterSpacing = 80;
+	TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+	if (!L.Who.IsEmpty())
+	{
+		// .who: inline-block, min-width 6.4em of its own font (VT323 is narrow: about half an em a letter), .6em after it
+		Row->AddSlot().AutoWidth().Padding(0, 0, 0.6f * 19.f * PX, 0)
+		[
+			SNew(SBox).MinDesiredWidth(6.4f * 19.f * PX * 0.5f)[SNew(STextBlock).Text(FText::FromString(L.Who)).Font(Who).ColorAndOpacity(S47Kit::Css(0xffb7a4))]
+		];
+	}
+	Row->AddSlot().FillWidth(1.f)
+	[
+		SNew(STextBlock).Text(FText::FromString(L.Text)).Font(S47Style::Body(16.5f * PX)).AutoWrapText(true).LineHeightPercentage(1.15f)
+		.ColorAndOpacity(L.Who.IsEmpty() ? S47Kit::Css(0xa99f8c) : S47Kit::Css(0xf0e7d0))
+	];
+	if (!bFresh) return Row;
+	// talk-in: from opacity 0 and 4 px down, after its delay ('both': hidden until then)
+	const double T0 = FreshT0 + Delay;
+	return SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("NoBorder")).Padding(0)
+		.ColorAndOpacity_Lambda([T0] { const double K = EaseOut((FPlatformTime::Seconds() - T0) / 0.45); return FLinearColor(1, 1, 1, float(K)); })
+		.RenderTransform_Lambda([T0] { const double K = EaseOut((FPlatformTime::Seconds() - T0) / 0.45); return FSlateRenderTransform(FVector2f(0.f, float(4 * PX * (1 - K)))); })
+		[Row];
+}
+
+TFunction<void()> SS47Talk::CharacterReadingControls(const TSharedRef<SVerticalBox>& Parent, const FString& Voice, const TArray<FS47DialogueLine>& Lines)
+{
+	// ui.characterReadingControls: the Replay voice button, and its status; returns how to play the
+	// lines now, or nothing when there is no recording of them
+	const TSharedPtr<FS47NpcDialogue> Reader = Npc();
+	if (!Reader.IsValid() || !Reader->Enabled()) return nullptr;
+	const TArray<FS47DialogueLine> Speech = FS47NpcDialogue::CharacterLines(Voice, Lines);
+	if (!Speech.Num()) return nullptr;
+	TSharedRef<FVoiceBox> V = MakeShared<FVoiceBox>();
+	V->Parody = Voice == TEXT("bacall") && Speech.ContainsByPredicate([](const FS47DialogueLine& L) { return L.Who == TEXT("THE LINE"); })
+		? FString(TEXT("Synthetic Lauren Bacall / Vincent Price parodies")) : FString::Printf(TEXT("Synthetic %s parody"), *FS47NpcDialogue::Label(Voice));
+	V->bDisabled = !Reader->Available(Voice, Lines);
+	const TWeakPtr<FS47NpcDialogue> R = Reader;
+	TFunction<void(ES47DialogueState)> Update = [V](ES47DialogueState S)
+	{
+		V->State = S;
+		V->bActive = S == ES47DialogueState::Loading || S == ES47DialogueState::Playing;
+	};
+	TFunction<void()> Play = [R, Voice, Lines, Update]
+	{
+		const TSharedPtr<FS47NpcDialogue> P = R.Pin();
+		if (!P.IsValid()) return;
+		if (P->OnCharacterStart) P->OnCharacterStart();
+		P->Play(Voice, Lines, Update);
+	};
+	Update(ES47DialogueState::Idle);
+	FSlateFontInfo Term = S47Style::Mono(20.f * PX);
+	Parent->AddSlot().AutoHeight().Padding(0, 10, 0, 10)
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+		[
+			// .lp-btn: Replay voice, or Stop voice while it plays
+			SNew(SButton).ButtonStyle(BareButton()).IsEnabled_Lambda([V] { return !V->bDisabled; })
+			.OnClicked_Lambda([V, R, Play] { if (V->bActive) { if (const TSharedPtr<FS47NpcDialogue> P = R.Pin()) P->Stop(); } else Play(); return FReply::Handled(); })
+			[
+				SNew(SBorder).BorderImage(TalkBox(S47Kit::Css(0xffc896, 0.05f), S47Kit::Css(0xffd6aa, 0.45f))).Padding(FMargin(14, 6))
+				.ColorAndOpacity_Lambda([V] { return FLinearColor(1, 1, 1, V->bDisabled ? 0.5f : 1.f); })
+				[
+					SNew(SBox).MinDesiredHeight(44.f - 12.f).VAlign(VAlign_Center)
+					[
+						SNew(STextBlock).Font(Term).ColorAndOpacity(S47Kit::Css(0xf1e8d2))
+						.Text_Lambda([V] { return FText::FromString(V->bActive ? TEXT("Stop voice") : TEXT("Replay voice")); })
+					]
+				]
+			]
+		]
+		+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(14, 0, 0, 0)
+		[
+			SNew(STextBlock).Font(S47Style::Body(12.f * PX)).ColorAndOpacity(S47Kit::Css(0xb6ae9b)).AutoWrapText(true)
+			.Text_Lambda([V]
+			{
+				return FText::FromString(V->State == ES47DialogueState::Loading ? FString(TEXT("Loading voice…")) : V->State == ES47DialogueState::Error ? FString(TEXT("Recording could not be played. Try again."))
+					: V->bDisabled ? FString(TEXT("No recording for this reply.")) : V->Parody);
+			})
+		]
+	];
+	// a reply without a recording stays text, and says so (not a failed playback)
+	return V->bDisabled ? TFunction<void()>() : Play;
+}
+
+void SS47Talk::Render()
+{
+	if (!UI.IsValid() || !O.View) return;
+	const S47Panels::FTalkView V = O.View();
+	StatusText->SetText(FText::FromString(V.Status));
+	// new lines come one after another; a redraw of the same lines does not repeat that, and lines
+	// added under the ones already there (a recording as it plays) come in alone
+	const FString K = Key(V.Lines);
+	const bool bFresh = K != Shown;
+	int32 Kept = 0;
+	if (bFresh && ShownLines.Num() && ShownLines.Num() < V.Lines.Num())
+	{
+		bool bSame = true;
+		for (int32 I = 0; I < ShownLines.Num(); ++I) if (ShownLines[I].Who != V.Lines[I].Who || ShownLines[I].Text != V.Lines[I].Text) bSame = false;
+		if (bSame) Kept = ShownLines.Num();
+	}
+	ShownLines = V.Lines;
+	if (bFresh) FreshT0 = FPlatformTime::Seconds();
+	FString Reply;
+	const bool bReply = O.Character == TEXT("bacall") && NpcOn() && V.Reply && FS47NpcDialogue::NoraQuote(V.Reply->Text, Reply);
+	TArray<FS47DialogueLine> Speech;
+	if (bReply) Speech.Add({ TEXT("N. VEGA"), Reply });
+	else for (const S47Panels::FTalkLine& L : V.Lines) Speech.Add({ L.Who, L.Text });
+	const FString ReadingKey = K + TEXT("\x1d") + (bReply ? Reply : FString(TEXT("\x1c")));
+	TFunction<void()> PlayCharacter;
+	if (ReadingKey != ReadingShown)
+	{
+		// (ui.descriptionReader, ui.readAloud and Earl's voice: not in this version)
+		StopCharacter();
+		TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
+		// (the lines nobody voices get Read aloud, ui.readingControls: the read-aloud voice is not in this version)
+		if (!O.Character.IsEmpty() && NpcOn())
+		{
+			const TFunction<void()> Play = CharacterReadingControls(Box, O.Character, Speech);
+			if (bFresh || bReply) PlayCharacter = Play;
+		}
+		Reading->SetContent(Box);
+	}
+	ReadingShown = ReadingKey;
+	Shown = K;
+	// the face of whoever spoke last (core/portraits.ts), once there is a picture of them
+	FString Face;
+	for (int32 I = V.Lines.Num() - 1; I >= 0; --I)
+	{
+		if (!V.Lines[I].Who.IsEmpty() && V.Lines[I].Who != TEXT("YOU")) { Face = S47Panels::PortraitOf(V.Lines[I].Who); break; }
+	}
+	UTexture2D* FaceTex = Face.IsEmpty() ? nullptr : S47Image::Art(Face);
+	const bool bAfterNew = V.After.IsSet() && V.After->Text != ShownAfter;
+	ShownAfter = V.After ? V.After->Text : FString();
+
+	TSharedRef<SVerticalBox> LinesBox = SNew(SVerticalBox);
+	for (int32 I = 0; I < V.Lines.Num(); ++I)
+	{
+		const bool bF = bFresh && I >= Kept;
+		LinesBox->AddSlot().AutoHeight().Padding(0, I ? 8.f : 0.f, 0, 0)[Line(V.Lines[I], bF, bF ? (I - Kept) * 0.55 : 0)];
+	}
+	if (V.After)
+	{
+		// .talk-after: an aside, a moment after the lines
+		const double Delay = bAfterNew ? (bFresh ? (V.Lines.Num() - Kept) * 0.55 : 0) + 0.9 : 0;
+		LinesBox->AddSlot().AutoHeight().Padding(0, V.Lines.Num() ? 8.f : 0.f, 0, 0)[Line({ FString(), V.After->Text }, bAfterNew, Delay)];
+	}
+	// .talk-lines: a rule down the left and a warm tint behind
+	const FW Lines = SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(2.f)[SNew(SBorder).BorderImage(TalkBox(S47Kit::Css(0xffb7a4, 0.5f), FLinearColor::Transparent))]]
+		+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(SBorder).BorderImage(TalkBox(S47Kit::Css(0xffc896, 0.035f), FLinearColor::Transparent)).Padding(FMargin(14, 12))[LinesBox]];
+
+	const TWeakPtr<SS47Talk> Self = StaticCastSharedRef<SS47Talk>(AsShared());
+	TSharedRef<SVerticalBox> B = SNew(SVerticalBox);
+	// the portrait floats left of the lines (132 px, 4:5)
+	if (FaceTex)
+	{
+		B->AddSlot().AutoHeight().Padding(0, 4, 0, 14)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().Padding(0, 2, 16 * PX, 10)[Cover(FaceTex, 132 * PX, 165 * PX)]
+			+ SHorizontalBox::Slot().FillWidth(1.f)[Lines]
+		];
+	}
+	else B->AddSlot().AutoHeight().Padding(0, 4, 0, 14)[Lines];
+	auto Click = [Self](TFunction<void(SS47Talk&)> Fn) -> TFunction<void()> { return [Self, Fn] { if (const TSharedPtr<SS47Talk> P = Self.Pin()) { Fn(*P); P->Later(); } }; };
+	if (V.Table)
+	{
+		B->AddSlot().AutoHeight()[S47Kit::Question(V.Table->Prompt)];
+		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(4));
+		for (int32 I = 0; I < V.Table->Chips.Num(); ++I)
+		{
+			const S47Panels::FTalkChip& C = V.Table->Chips[I];
+			const FString Id = C.Id;
+			TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+			if (!C.Image.IsEmpty()) Row->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 10, 0)[Cover(S47Image::FromDataUrl(C.Image), 54 * PX, 40 * PX)];
+			Row->AddSlot().FillWidth(1.f).VAlign(VAlign_Center)
+			[
+				SNew(STextBlock).Text(FText::FromString(C.Label + (C.bHave ? TEXT("") : TEXT(" / not in the case")))).Font(S47Style::Mono(19.f * PX)).AutoWrapText(true)
+				.ColorAndOpacity(C.bOn ? S47Kit::Css(0x12100e) : S47Kit::Css(0xe9e2cf))
+			];
+			const TFunction<void()> OnChip = Click([Id](SS47Talk& T) { T.StopCharacter(); if (T.O.OnChip) T.O.OnChip(Id); });
+			// .lp-choice.talk-chip, [aria-pressed=true], [disabled] at .45
+			Grid->AddSlot(I % 3, I / 3)
+			[
+				SNew(SButton).ButtonStyle(BareButton()).IsEnabled(C.bHave)
+				.OnClicked_Lambda([OnChip] { OnChip(); return FReply::Handled(); })
+				[
+					SNew(SBorder).ColorAndOpacity(FLinearColor(1, 1, 1, C.bHave ? 1.f : 0.45f))
+					.BorderImage(C.bOn ? TalkBox(S47Kit::Css(0xc9d6c2), S47Kit::Css(0xc9d6c2)) : TalkBox(FLinearColor::Transparent, S47Kit::Css(0xe9e2cf, 0.25f)))
+					.Padding(FMargin(10 * PX, 8 * PX))
+					[
+						SNew(SBox).MinDesiredHeight(48 * PX - 16 * PX).VAlign(VAlign_Center)[Row]
+					]
+				]
+			];
+		}
+		B->AddSlot().AutoHeight().Padding(0, 4, 0, 8)[Grid];
+		B->AddSlot().AutoHeight()[S47Kit::Row({ S47Kit::Button(V.Table->Submit, Click([](SS47Talk& T) { T.StopCharacter(); if (T.O.OnTable) T.O.OnTable(); }), true) })];
+	}
+	if (!V.Question.IsEmpty()) B->AddSlot().AutoHeight()[S47Kit::Question(V.Question)];
+	{
+		TArray<FW> Choices;
+		for (const S47Panels::FTalkChoice& C : V.Choices)
+		{
+			const FString Id = C.Id;
+			Choices.Add(S47Kit::Button(C.Label, Click([Id](SS47Talk& T)
+			{
+				// (Earl's voice, earlDialogue.stop(): not in this version)
+				T.StopCharacter();
+				if (T.O.OnChoice) T.O.OnChoice(Id);
+			}), false, !C.bDisabled));
+		}
+		B->AddSlot().AutoHeight()[S47Kit::Col(Choices, 8.f)];
+	}
+	if (V.Reply) B->AddSlot().AutoHeight()[S47Kit::Text(V.Reply->Text, V.Reply->bOk ? 1 : -1)];
+	if (V.Given.Num())
+	{
+		B->AddSlot().AutoHeight()[S47Kit::Small(TEXT("On the table"))];
+		TArray<FW> Read;
+		for (const S47Panels::FTalkGiven& G : V.Given)
+		{
+			const FString Id = G.Id;
+			Read.Add(S47Kit::Button(G.Label, [Self, Id] { if (const TSharedPtr<SS47Talk> P = Self.Pin(); P.IsValid() && P->O.OnRead) P->O.OnRead(Id); }));
+		}
+		B->AddSlot().AutoHeight()[S47Kit::Row(Read)];
+	}
+	Body->SetContent(B);
+	if (bFresh && O.OnLines) O.OnLines(V.Lines);
+	// (a line added under the others is brought into view: in this version's talks lines are only replaced)
+	if (PlayCharacter && UI.IsValid() && UI->Modal()) PlayCharacter();
+}
+
+S47Panels::FTalkHandle S47Panels::Talk(US47UI* UI, const FTalk& O)
+{
+	TSharedRef<SS47Talk> W = SNew(SS47Talk);
+	W->Setup(UI, O);
+	// shell(ui, o.title, ..., o.onClose): opened first, then drawn (render() draws only while connected)
+	if (UI) UI->Open(S47Kit::Shell(UI, O.Title, W), O.OnClose);
+	W->Render();
+	const TWeakPtr<SS47Talk> Wk = W;
+	return { [Wk] { if (const TSharedPtr<SS47Talk> P = Wk.Pin()) P->Render(); } };
 }

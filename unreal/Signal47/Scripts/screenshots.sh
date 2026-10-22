@@ -88,4 +88,7 @@ shot starhole "S47: no stars at 026: noticed" "-S47Jump=chapter2 -S47Face=at:-20
 shot lostnights "S47: the lost nights: the binder and the green pins on the board, 1 book" "-S47Jump=chapter2 -S47Face=room -S47LostNights -S47AwayAt=1.5" 8
 shot flash "S47: FLASH frames shown, 10" "-S47Jump=chapter1 -S47Face=room -S47Flash -S47AwayAt=6.6" 8
 shot third "S47: the third one stands" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Third" 8
+# chapter four: into room 6 from the motel's front, at her table (and the talk with the evidence on it)
+shot chapter4 "chapter ch4 begins" "-S47Jump=chapter4 -S47Ch4Drive=room" 10
+shot room6talk "ch4 drive: table: wrong" "-S47Jump=chapter4 -S47Ch4Drive=table" 10
 exit $fail

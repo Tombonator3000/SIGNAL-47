@@ -38,6 +38,15 @@
 - [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
 - [ ] Glødepunktene blinker som i glow.ts.
 
+## Kapittel 4 (2026-10-22)
+
+- [x] Kapittel 4 portert (S47Chapter4, S47Room6, S47Motel, S47Walkie, S47CB, S47NpcDialogue, samtalepanelet i S47Panels), selvtest og kjøringer i -game uten pakket build.
+- [ ] Med kapittel 3: P11 og P12 trenger nålene P08, e10.carrier og hut.rx på saksbrettet (kapittel 3 sin regelbok). Kapittel 3 sin slutt kaller `US47Chapter4::BeginChapter4(nullptr)`, og kapittel 3 sin `truckTrip` går foran i `US47World::TruckChoice`.
+- [ ] Kjør `Scripts/audio-raw.py` (eller `import-audio.sh`) på nytt i hovedkopien, så replikkene i rom 6 har stemme (rollestemmene er nå 50).
+- [ ] Hjelperne fra main.ts: `Taken` (abduction.ts), `OfficePhone` (officePhone.ts), og at CB-anropet venter på bortføringen og truckTaken.
+- [ ] Lyset fra vinduene på gangveien (windowLight.ts) og papirbildene (`cardField`, `letterPaper`) i dokumentvisningen.
+- [ ] Continue i rom 6 prøvd med en ekte lagring.
+
 ## Etter lagring og flyt
 
 - [ ] Kjør screenshots.sh med den pakkede builden (title, pause) og se tittelkameraet over gården og miniatyrbildene i lagringene med verdenen på plass.

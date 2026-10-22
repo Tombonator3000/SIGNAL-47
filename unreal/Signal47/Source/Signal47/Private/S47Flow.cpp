@@ -41,6 +41,7 @@
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47World.h"
 #include "SS47AreaMap.h"
 #include "SS47Notebook.h"
 #include "SS47SaveMenu.h"
@@ -510,8 +511,16 @@ void US47Flow::StartGame(const FStart& O)
 	// (roadside and the CB: not ported yet)
 	M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 	if (M->Audio) M->Audio->StopPhoneCalls();
-	// world.enter(area); (placeAtStation, placeAtRoom6, placeAtDiner: the world's, not ported yet)
-	if (M->World) M->World->Enter(Area); else if (M->Web && Area != TEXT("saro")) M->Web->Enter(Area);
+	// world.enter(area); (placeAtStation, placeAtDiner: the world's, not ported yet) (through the world,
+	// so its area is the one the chapters ask for: chapter four in room 6)
+	if (M->World && Area != TEXT("saro")) M->World->Enter(Area);
+	else if (M->Web && Area != TEXT("saro")) M->Web->Enter(Area);
+	// if (world.area === 'room6') world.placeAtRoom6()
+	if (M->World && M->World->Area == TEXT("room6") && M->Web && M->Player)
+	{
+		const FS47Pose A = M->Web->Pose(TEXT("world.room6.anchors.arrive"));
+		if (A.bValid) M->Player->Place(A.X, A.Z, A.Yaw);
+	}
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
 	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player && M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z"))))
