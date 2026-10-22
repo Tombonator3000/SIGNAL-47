@@ -137,7 +137,7 @@ void FS47Obj::SetEmissive(const FLinearColor& C, float Intensity) const
 void FS47Obj::SetOpacity(float A) const
 {
 	if (!IsValid()) return;
-	Traverse([&](FS47Obj O) { for (UMaterialInstanceDynamic* D : O.W->NodeMids(O.I)) D->SetScalarParameterValue(TEXT("Opacity"), A); });
+	Traverse([&](FS47Obj O) { for (UMaterialInstanceDynamic* D : O.W->NodeMids(O.I)) { D->SetScalarParameterValue(TEXT("Opacity"), A); D->SetScalarParameterValue(TEXT("Brightness"), A); } });
 }
 
 void FS47Obj::SetMap(UTexture* T, bool bFlipY) const
@@ -191,7 +191,7 @@ void FS47Light::SetDistance(float D) const
 
 void FS47Mat::SetColor(const FLinearColor& C) const { if (UMaterialInstanceDynamic* D = IsValid() ? W->SharedMid(Id) : nullptr) D->SetVectorParameterValue(TEXT("Color"), C); }
 void FS47Mat::SetEmissive(const FLinearColor& C, float Intensity) const { if (UMaterialInstanceDynamic* D = IsValid() ? W->SharedMid(Id) : nullptr) D->SetVectorParameterValue(TEXT("Emissive"), C * Intensity); }
-void FS47Mat::SetOpacity(float A) const { if (UMaterialInstanceDynamic* D = IsValid() ? W->SharedMid(Id) : nullptr) D->SetScalarParameterValue(TEXT("Opacity"), A); }
+void FS47Mat::SetOpacity(float A) const { if (UMaterialInstanceDynamic* D = IsValid() ? W->SharedMid(Id) : nullptr) { D->SetScalarParameterValue(TEXT("Opacity"), A); D->SetScalarParameterValue(TEXT("Brightness"), A); } }
 void FS47Mat::SetScalar(const FName& Param, float V) const { if (UMaterialInstanceDynamic* D = IsValid() ? W->SharedMid(Id) : nullptr) D->SetScalarParameterValue(Param, V); }
 void FS47Mat::SetMap(UTexture* T, bool bFlipY) const
 {

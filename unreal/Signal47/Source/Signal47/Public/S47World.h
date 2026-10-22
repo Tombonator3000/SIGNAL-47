@@ -177,6 +177,7 @@ public:
 	 *  view is in Out. */
 	bool Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out);
 	void Update(double Dt, double T);
+	void TownCarMoved(const FS47Area& Box); // Town.ts carCol is also the road drive obstacle
 	bool Indoors(const FVector& P) const; // World.indoors: under a roof in the area the player is in
 
 private:
@@ -202,6 +203,7 @@ private:
 	/** The walk zones and colliders AS47Web keeps per area, and where the trucks' own colliders are
 	 *  in them (World.parkAt moves them). */
 	int32 SaroCol = -1, StationCol = -1, DinerCol = -1;
+	int32 TownCarObstacle = -1;
 	FS47Obj SaroProxy, StationProxy;
 
 	struct FTrip

@@ -64,6 +64,7 @@ public:
 	// The phones, the archive and the records (S47Phones.h): the archive's phone and the dishes it tips,
 	// the motel office's telephone, the steps on the roof, the field book, the thread nobody tied, the looks.
 	UPROPERTY() TObjectPtr<class US47Phones> Phones;
+	UPROPERTY() TObjectPtr<class US47TownLayer> TownLayer; // main.ts: the town, roadside, herd, ninth, TV and morning
 	// main.ts zoomK: the closer look, 0 to 1 (right mouse held)
 	double ZoomK = 0;
 

@@ -33,6 +33,7 @@
 #include "S47Score.h"
 #include "S47Media.h"
 #include "S47Phones.h"
+#include "S47TownLayer.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
 #include "S47UI.h"
@@ -85,6 +86,7 @@ void AS47HUD::Start()
 		bOk &= US47CaseBoard::SelfTest(Lines);
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
 		bOk &= FS47Radio::SelfTest(Lines) & FS47TripRadio::SelfTest(Lines) & FS47Score::SelfTest(Lines) & FS47MediaSource::SelfTest(Lines) & FS47RadioVoice::SelfTest(Lines);
+		bOk &= US47TownLayer::SelfTest(Lines);
 		bOk &= US47Phones::SelfTest(Lines); // (the archive's phone and its dishes, the roof, the office's telephone, the field book, the looks, the thread)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
@@ -198,6 +200,7 @@ void AS47HUD::Start()
 		}
 		// main.ts: the phones, the archive and the records (the archive's phone, the office's telephone, the roof, the field book, the looks)
 		M->Phones = NewObject<US47Phones>(M); M->Phones->Init(M);
+		M->TownLayer = NewObject<US47TownLayer>(M); M->TownLayer->Init(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

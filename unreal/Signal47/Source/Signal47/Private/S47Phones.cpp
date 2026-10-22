@@ -565,8 +565,10 @@ void US47Phones::Restore()
 {
 	// (the book's state is chapter three's; until its port keeps it, a night opened starts without it)
 	if (!FbGet) FbOwn.Reset();
-	RoofSteps->Reset(); OfficePhone->Reset(); SameThread->Reset(AbductionCount ? AbductionCount() : 0);
+	RoofSteps->Reset(); OfficePhone->Reset();
 }
+
+void US47Phones::RestoreThread() { SameThread->Reset(AbductionCount ? AbductionCount() : 0); }
 
 void US47Phones::Restored()
 {

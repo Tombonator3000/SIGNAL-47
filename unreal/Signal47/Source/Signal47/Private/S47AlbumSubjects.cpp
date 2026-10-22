@@ -1,5 +1,9 @@
 // story/albumSubjects.ts
 #include "S47AlbumSubjects.h"
+#include "S47TownLayer.h"
+#include "S47Town.h"
+#include "S47Cutouts.h"
+#include "S47NinthModel.h"
 
 #include "S47Geo.h"
 #include "S47Main.h"
@@ -114,7 +118,7 @@ namespace S47AlbumSubjects
 		else if (Area == TEXT("station01"))
 		{
 			Things(TEXT("world.site.proxies."), STATION, UE_ARRAY_COUNT(STATION));
-			// (the ninth cow from the pasture, once she lies there: story/ninthCow.ts, not ported yet)
+			if (D.M->TownLayer && D.M->TownLayer->NinthModel->bNinthDown) Add(TEXT("the dead cow"), { P(Web->Obj(TEXT("world.site.proxies.ninthBody"))), P(Web->Obj(TEXT("world.site.proxies.ninthHead"))) }, [](FS47Subject& S) { S.R = 1.3; S.Max = 45; S.W = 3; S.Odd = NINTH_PRINT(); });
 		}
 		else if (Area == TEXT("room6"))
 		{
@@ -127,9 +131,10 @@ namespace S47AlbumSubjects
 			const double Day = FMath::Fmod(FMath::Fmod(D.Clock ? D.Clock() : 0, 86400.0) + 86400.0, 86400.0);
 			const bool bOnAir = Day < 4 * 3600 || Day > 20 * 3600;
 			// (world/Town.ts's people and the deputy's car as they are now: not ported yet; nobody in)
+			const FS47Town* TownState = D.M->TownLayer ? D.M->TownLayer->Town.Get() : nullptr;
 			const FThing Town[] = {
 				{ TEXT("pumps"), TEXT("the gas station"), 4, 250, 1.2, nullptr }, { TEXT("gasWindow"), TEXT("the attendant behind the night window"), 0.8, 30, 2, nullptr },
-				{ TEXT("sheriffWindow"), TEXT("the sheriff's substation"), 2, 150, 1.1, nullptr },
+				{ TEXT("sheriffWindow"), TownState && TownState->bDeputyIn ? TEXT("the deputy at his desk") : TEXT("the sheriff's substation"), 2, 150, TownState && TownState->bDeputyIn ? 1.8 : 1.1, nullptr },
 				{ TEXT("laundromat"), TEXT("the laundromat"), 3, 150, 1, nullptr }, { TEXT("cinema"), TEXT("The Plaza"), 4, 250, 1.2, TEXT("plaza") }, { TEXT("marquee"), TEXT("the marquee"), 2, 250, 1.1, TEXT("plaza") },
 				{ TEXT("studio"), bOnAir ? TEXT("Earl at the microphone") : TEXT("the studio"), 1.5, 40, bOnAir ? 1.8 : 1.0, TEXT("1420") }, { TEXT("amDoor"), TEXT("1420 AM"), 1.5, 120, 1, TEXT("1420") },
 				{ TEXT("souvenir"), TEXT("the souvenir shop"), 1.5, 120, 1.1, nullptr }, { TEXT("letters"), TEXT("the church sign"), 1.2, 80, 0.9, TEXT("church") }, { TEXT("churchDoor"), TEXT("the church"), 3, 250, 1, TEXT("church") },
@@ -137,6 +142,16 @@ namespace S47AlbumSubjects
 				{ TEXT("tv2"), TEXT("a lit window"), 0.8, 40, 0.6, nullptr }, { TEXT("kitchen"), TEXT("a lit window"), 0.8, 40, 0.5, nullptr },
 			};
 			if (Web->Obj(TEXT("world.town.group"))) Things(TEXT("world.town.proxies."), Town, UE_ARRAY_COUNT(Town));
+			if (TownState)
+			{
+				TArray<FThing> More;
+				if (TownState->bWomanIn) More.Add({ TEXT("woman"), TEXT("the woman with the radio"), .5, 25, 2.2, nullptr });
+				if (TownState->bSmokerIn) More.Add({ TEXT("smoker"), TEXT("the man on the stoop"), .5, 30, 2.2, nullptr });
+				if (TownState->bPaperIn) More.Add({ TEXT("paper"), TEXT("the newspapers"), .3, 8, .9, nullptr });
+				if (TownState->bDeputyIn || TownState->bCarOut) More.Add({ TEXT("patrolCar"), TownState->bCarOut ? TEXT("the deputy's car with its door open") : TEXT("the patrol car"), 2.4, 120, TownState->bCarOut ? 2.4 : 1.1, nullptr });
+				Things(TEXT("world.town.proxies."), More.GetData(), More.Num());
+				if (TownState->bCutoutOut) Add(TEXT("the cardboard alien on the shoulder"), { TownState->Group.LocalToWorld(TownState->CutoutAt) + FVector(0, .6, 0) }, [](FS47Subject& S) { S.R = .6; S.Max = 120; S.W = 2.5; });
+			}
 		}
 
 		// the sky at night: Halley's comet until it sets, and the Milky Way looking up
@@ -162,7 +177,7 @@ namespace S47AlbumSubjects
 		const FS47Obj G = S47SceneObject(Web, TEXT("glimpse"));
 		// (the figures only when they are more than a speck on the print: core/album.ts, Subject.h)
 		if (G && G.Visible()) Add(TEXT("someone"), { P(G, 0.7), P(G, 1.05), P(G, 0.3) }, [](FS47Subject& S) { S.R = 0.3; S.Max = 330; S.Odd = FS47Album::NOBODY; S.H = 1.2; });
-		// (the cardboard alien, core/cutouts.ts: not ported yet)
+		if (D.M->TownLayer && !D.M->TownLayer->Cutouts->Up.IsEmpty()) Add(TEXT("the cardboard alien"), { D.M->TownLayer->Cutouts->Position() + FVector(0, .8, 0) }, [](FS47Subject& S) { S.R = .5; S.Max = 70; S.Odd = CARDBOARD(); S.H = 1.5; });
 		for (int32 I = 0; I < Web->PartCount(); ++I)
 		{
 			const FS47WebNode* N = Web->Node(I);

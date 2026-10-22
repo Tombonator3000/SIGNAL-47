@@ -9,8 +9,10 @@ mkdir -p "$OUT"
 fail=0
 shot() { # name expected-log-pattern [extra args] [seconds]
   local log="$OUT/$1.log"
-  timeout 150 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=${4:-8} ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
-  if grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
+  local result=0
+  rm -f "$OUT/$1.png"
+  timeout 150 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=${4:-8} ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1 || result=$?
+  if [ "$result" -eq 0 ] && ! grep -Eq "Critical error:|Assertion failed:|Signal 11 caught" "$log" && grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
 }
 shot selftest "self test OK" "-S47SelfTest -S47Face=room"
 shot room "web world .* 27 dishes" "-S47Face=room"
@@ -58,4 +60,23 @@ shot fieldbook "S47: field book opened" "-S47Jump=chapter1 -S47Face=room -S47Fie
 shot envelope "S47: envelope held up to the lamp" "-S47Jump=chapter1 -S47Face=room -S47FieldBook=envelope" 10
 shot zoom "S47: closer look: Dale's shift log" "-S47Jump=residual -S47Face=logbook -S47Zoom" 8
 shot same "S47: same thread for time away 1" "-S47Jump=chapter1 -S47Face=room -S47Same" 8
+# the town, road and motel: the developer-menu actions use the normal modules and exported places.
+shot townphone "S47: town test phone, ringing" "-S47Jump=chapter1 -S47Town=phone" 9
+shot townstop "S47: town road stop OK" "-S47Jump=chapter1 -S47Town=stop" 9
+shot townreturn "S47: town test answer2, line" "-S47Jump=chapter1 -S47Town=answer2" 9
+shot townlamps "S47: town test lamps, lamps" "-S47Jump=chapter1 -S47Town=lamps" 9
+shot towncar "S47: town test car" "-S47Jump=chapter1 -S47Town=car" 9
+shot towncutout "S47: town test cutout" "-S47Jump=chapter1 -S47Town=cutout" 9
+shot roadside "S47: roadside test silence" "-S47Jump=chapter1 -S47Roadside=silence" 9
+shot roadcar "S47: roadside test car" "-S47Jump=chapter1 -S47Roadside=car" 9
+shot motelroof "S47: roadside test roof" "-S47Jump=chapter1 -S47Roadside=roof" 9
+shot pasture "S47: pasture test still" "-S47Jump=chapter1 -S47Pasture=still" 9
+shot pasturemissing "S47: pasture test short" "-S47Jump=chapter1 -S47Pasture=missing" 9
+shot ninth "S47: ninth cow test down" "-S47Jump=chapter1 -S47Ninth" 9
+shot moteltv "S47: motel television test carrier" "-S47Jump=chapter1 -S47MotelTv" 12
+shot moteltvframe "S47: motel television save roundtrip OK" "-S47Jump=chapter1 -S47MotelTv=frame" 64
+shot morning "S47: morning test held" "-S47Jump=chapter1 -S47Morning" 9
+shot cutout "S47: cutout test foot placed" "-S47Jump=chapter1 -S47Face=outside -S47Cutout" 9
+shot cutpost "S47: cutout test post placed" "-S47Jump=chapter1 -S47Face=outside -S47Cutout=post" 9
+shot caliche "S47: Caliche conversation attendant, people 1" "-S47Jump=chapter1 -S47Caliche=attendant" 9
 exit $fail

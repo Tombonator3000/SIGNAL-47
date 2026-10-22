@@ -38,5 +38,8 @@ with open(os.path.join(ROOT, 'web', 'src', 'core', 'art.ts')) as fh:
         else:
             shutil.copy(src, os.path.join(OUT, ident + ext))
         n += 1
+# story/motelTv.ts loads this supplied blank card directly, outside core/art.ts.
+shutil.copy(os.path.join(ART, 'motel', 'tv_testcard_blank.jpg'), os.path.join(OUT, 'tv_testcard_blank.jpg'))
+n += 1
 print('notebook art: %d pictures in %s' % (n, os.path.normpath(OUT)))
 sys.exit(0 if n else 1)
