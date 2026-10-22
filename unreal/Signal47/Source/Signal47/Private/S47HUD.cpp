@@ -61,6 +61,7 @@ void AS47HUD::Start()
 		bOk &= FS47OpsTerminal::SelfTest(Lines);
 		bOk &= S47RxSelfTest(Lines);
 		bOk &= FS47RuleBook::SelfTest(Lines);
+		bOk &= US47Audio::SelfTest(Lines);
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}

@@ -36,9 +36,9 @@ Spillogikken bruker nettversjonens koordinater (meter, y opp); bare tegningen re
   - `AS47Story` er prologen «Night Shift», portert fra `web/src/story/Prologue.ts`: de samme fasene i samme rekkefølge på spilltid som stopper når noe leses, og de samme plasseringene.
   - `S47Docs`, `S47Ops` og `S47Rx` er dokumentene, operasjonsterminalen og mottakeren med spekteret, portert ord for ord og tall for tall og sjekket mot nettversjonen (`-S47SelfTest`).
   - `AS47HUD` og `SS47Widgets` er overlegget, papirene, notatboken, mottakerkonsollen, operasjonsterminalen og sluttkortet i Slate. `SS47Crt` tegner de fire CRT-ene til render targets.
-  - `US47Audio` spiller lydene ved navn og driver bærebølgen, signalet og motorene som løkker.
+  - `US47Audio` er `core/Audio.ts`: opptakene ved navn og alle lydene nettversjonen lager med Web Audio (bærebølgen, signalet, telefonlinja, radioene, tordenen, natta ute), portert graf for graf på en liten Web Audio i C++ (`S47WebAudio`, `S47SignalVoice`, `S47Ambience`), sjekket mot Chromiums egen gjengivelse.
   - `AS47Walker` er spilleren fra `player/Player.ts`: gangsonene og kolliderne, øyehøyde, gange, løp og blikk som i nettversjonen.
-- `Scripts/import-audio.sh`: all lyd (frie lyder, kjøpte lyder, musikk, radio) med ffmpeg til `Content/Audio` og `Content/Licensed` (begge ignorert av Git), pluss tonene fra `Scripts/make-synth.py`.
+- `Scripts/import-audio.sh`: all lyd (frie lyder, kjøpte lyder, musikk, radio, stemmebankene) med ffmpeg til `Content/Audio` og `Content/Licensed` (begge ignorert av Git), pluss tonene fra `Scripts/make-synth.py`. Først skriver `Scripts/audio-raw.py` opptakene lydmotoren dekoder selv, med oppslagstabellene, til `Content/Audio/Raw` og `Content/Licensed/Raw` (bare python3 og ffmpeg, ingen editor).
 - `Content/Fonts`: VT323 (OFL) og Special Elite (Apache 2.0) som i nettversjonen, med lisensene, og JetBrains Mono (OFL) som reserve.
 
 ## Regler

@@ -72,9 +72,11 @@ Et panel fra `ui/Panels.ts` bygges av disse bitene i samme rekkefølge som HTML-
 - `US47Chapter` har `Begin(saved)`, `Reset()`, `SaveState()`, `Update(dt, t)`, `Objective()`, `Tasks()`, `SaveBlock()`, `DoorChanged(id, open)` og `Key()`.
 - Verten `AS47Story` har `Clock()`/`SetClock`, `Gt()`, `After(s, fn, tag)`, `Cancel(tag)`, `Note(s)`, `AddDoc(doc)` (erstatter etter id), `Toast`, `IsCinematic`/`SetCinematic` og `Chapters`.
 
-**Lyd, `M->Audio` (`US47Audio`)**
-- `Play(name, gain, atUE, rate)`, `Loop`, `Stop`.
-- Navnene er nettversjonens lydnavn. Syntetiske lyder fra `core/Audio.ts` (beep, hum, servo, shutter, ringback og de andre) lages ferdig som filer i importen, så de spilles også ved navn.
+**Lyd, `M->Audio` (`US47Audio`, som `core/Audio.ts`)**
+- Lyden går gjennom en liten Web Audio i C++ (`S47WebAudio.h`): `FS47AudioContext` med noder og `AudioParam`-automasjon som i nettleseren, spilt av én `USynthComponent` (`S47Synth`). Grafene i en modul porteres linje for linje: `ctx.createGain()` er `Ctx->CreateGain()`, `g.gain.setTargetAtTime(0, t, 0.3)` er `G->Gain.SetTargetAtTime(0, T, 0.3)`, `o.type = 'square'` er `O->SetType(TEXT("square"))`. Hold `FS47AudioContext::FBatch B(*Ctx);` mens en graf bygges (som én JavaScript-oppgave). `setTimeout` er `Ctx->SetTimeout`, `onended` er `Src->OnEnded`; begge kjøres på spilltråden.
+- Funksjonene i `Audio.ts` har sine egne navn med posisjoner i three.js-mål: `Sfx(name, FS47Sound)` er `play()` og gir `{Src, Gain}`, `LoopSfx` er `loop()`, `Beep`, `Hum`, `Servo`, `Shutter`, `PhoneCall`, `Dial`, `Ringback`, `CabRadio`, `RadioIn()`, `Spatial(at, ref)`, `NoiseBuffer()`, `Pressure()`, `Night` (`core/ambience.ts`) og resten. Bussene er `Master`, `SfxBus` (`sfx`), `Music`, `Amb` og `RadioBus`.
+- Opptakene har nettversjonens navn (`phoneRing`, `thudSoft`, `stepConcrete0`, `lic:door_heavy`, `phone:<id>`) og dekodes fra WAV-filene `Scripts/import-audio.sh` skriver til `Content/Audio/Raw` og `Content/Licensed/Raw`. Stemmebankene (Kinski, Serling, Art Bell, ensemblet) importeres som lydassets under `/Game/Audio/Voice/<Bank>/v_<fil>`, med katalogene i `Content/Audio/Raw/voices.json`.
+- Prologens gamle navn (`Play(name, gain, atUE, rate)`, `Loop`, `Stop`, `StartCarrier` ...) virker fortsatt og går gjennom de samme grafene.
 
 ## Rekkefølgen
 
