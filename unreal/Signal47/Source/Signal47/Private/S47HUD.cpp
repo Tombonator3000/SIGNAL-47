@@ -22,6 +22,7 @@
 #include "S47Chapters.h"
 #include "S47Flow.h"
 #include "S47Drive.h"
+#include "S47Chapter1.h"
 #include "S47Main.h"
 #include "S47Saves.h"
 #include "Containers/Ticker.h"
@@ -71,6 +72,7 @@ void AS47HUD::Start()
 		bOk &= US47Audio::SelfTest(Lines);
 		bOk &= S47Saves::SelfTest(Lines) & US47Flow::SelfTest(Lines);
 		bOk &= S47Drive::SelfTest(Lines);
+		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}

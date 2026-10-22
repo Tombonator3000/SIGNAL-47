@@ -50,7 +50,14 @@ public:
 	// Interaction.pick / examine / update, from the eye along the view (Unreal space)
 	FString Pick(const FVector& EyeUE, const FVector& DirUE, double MaxDist = 2.4) const;
 	bool ExamineAt(const FVector& EyeUE, const FVector& DirUE, FString& OutId, FString& OutText) const;
-	FString Update(const FVector& EyeUE, const FVector& DirUE) { Current = Pick(EyeUE, DirUE); return Current; }
+	FString Update(const FVector& EyeUE, const FVector& DirUE)
+	{
+		for (const TFunction<bool()>& H : Holds) if (H && H()) { Current.Reset(); return Current; }
+		Current = Pick(EyeUE, DirUE);
+		return Current;
+	}
+	// main.ts step: nothing is picked or offered while one of these holds (the field camera raised, ...)
+	TArray<TFunction<bool()>> Holds;
 	FString Current;
 
 	FString LabelOf(const FString& Id) const;

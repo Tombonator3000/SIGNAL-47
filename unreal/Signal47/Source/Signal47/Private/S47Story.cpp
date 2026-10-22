@@ -704,6 +704,11 @@ void AS47Story::BeginChapter(const FString& Key, const TSharedPtr<FJsonObject>& 
 	for (US47Chapter* O : Chapters) if (O && O != C) O->bActive = false;
 	ChapterKey = Key;
 	Begun.Add(Key);
+	// Prologue.beginChapterN: the chapter's phase, no cinematic, nothing from before may fire inside it
+	CurrentPhase = ES47Phase::Ch1;
+	bCinematic = false;
+	LookAssist = 0;
+	Timers.Empty();
 	C->bActive = true;
 	C->Begin(Saved);
 	UE_LOG(LogTemp, Display, TEXT("S47: chapter %s begins"), *Key);

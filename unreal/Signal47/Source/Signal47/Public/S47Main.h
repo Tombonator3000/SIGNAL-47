@@ -13,6 +13,7 @@ class AS47Walker;
 class US47Audio;
 class US47Inter;
 class US47UI;
+class US47FieldCamera;
 
 // What the web version's main.ts holds in its boot() closure and hands to every module as its
 // deps: the world, the story host (the prologue, as Prologue.ts is the host of the chapters),
@@ -43,6 +44,7 @@ public:
 	// main.ts requestAutosave: progress asks for an autosave (milestone: a new generation, as a
 	// chapter or an area begins); it is written after the frame, once the game may be saved
 	void RequestAutosave(bool bMilestone = false);
+	UPROPERTY() TObjectPtr<US47FieldCamera> FieldCamera; // core/FieldCamera.ts (made with chapter one)
 
 	// The case board (story/caseBoard.ts): every chapter's rule book, and the hook the chapters
 	// open and refresh it with. Unset Board.Open: no board yet; a chapter then falls back to the

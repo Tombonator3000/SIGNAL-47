@@ -31,4 +31,8 @@ shot title "title shown" "-S47Title"
 shot pause "pause opened" "-S47Face=room -S47Jump=residual -S47Open=pause"
 # the drive: out of the yard with the throttle held and the autopilot steering, 20 s on, from the cab
 shot drive "S47: trip 20 s" "-S47Drive=saro:station01 -S47Throttle=0.35" 24
+# chapter one: from the room after the prologue, and at the S-03 motor bus in the service yard
+shot chapter1 "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=room"
+shot yard "chapter ch1 begins" "-S47Jump=chapter1 -S47Face=at:11.2;-11.0;-1.5708;-0.2"
+shot camera "frame01 exposed" "-S47Jump=chapter1 -S47Ch1Drive=photo"
 exit $fail
