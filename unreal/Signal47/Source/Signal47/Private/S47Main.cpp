@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47Chapter5.h"
 #include "S47TownLayer.h"
 
 #include "S47Flow.h"
@@ -51,6 +52,16 @@ void US47Main::Step(double Dt)
 	T += Dt;
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
+	// main.ts, after game.update: the walk gap to STATION 01 from chapter three, the old road's barricades
+	// open from chapter five's road (World.setStoryPlaces)
+	if (Mode == EMode::Play && World && Story)
+	{
+		const US47Chapter5* C5 = Cast<US47Chapter5>(Story->Chapter(TEXT("ch5")));
+		const bool bRoad = C5 && C5->bActive && (C5->S.Stage == TEXT("road") || C5->S.Stage == TEXT("complete"));
+		// (game.at: the chapter the story is in, by its key)
+		auto At = [this](const TCHAR* Ch) { const FString K = Story->ChapterKey; return K.StartsWith(TEXT("ch")) && FCString::Atoi(*K.Mid(2)) >= FCString::Atoi(Ch + 2); };
+		World->SetStoryPlaces(At(TEXT("ch3")), At(TEXT("ch6")) || bRoad);
+	}
 	if (Mode == EMode::End)
 	{
 		if (TownLayer) TownLayer->Leave(true);
