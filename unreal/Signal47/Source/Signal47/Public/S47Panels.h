@@ -60,4 +60,35 @@ namespace S47Panels
 
 	// ---------- local report ----------
 	SIGNAL47_API void LocalReport(US47UI* UI, const FString& Text, bool bFiled, TFunction<void()> OnFile);
+
+	// What a panel that draws itself again gives back ({ refresh }).
+	struct FPanelHandle { TFunction<void()> Refresh; };
+
+	// ---------- chapter three: the null test at the STATION 01 field lamp ----------
+	// P07 stays in the world (SPILLDESIGN.md): cover the lamp's tin hood, observe, and the result
+	// is pinned on the case board by itself. P06, P08 and P09 are made on the board.
+	struct FNullTestState { bool bCovered = false, bObserved = false, bP07 = false; };
+	struct FNullTest
+	{
+		TFunction<FString()> Status;
+		TFunction<FNullTestState()> State;
+		FString Supported;
+		TFunction<void(bool bCover)> OnLamp;
+		TFunction<FS47Result()> OnObserve;
+		TArray<FString> Hints;
+	};
+	SIGNAL47_API FPanelHandle NullTest(US47UI* UI, const FNullTest& O);
+
+	// Two developed field prints side by side, for a look before they go into the case file. A
+	// print can be looked at closer where it is clicked, and back: OnLook says where, in the
+	// photograph's u and v (story/theThird.ts).
+	struct FFieldPrint { FString Url, Caption; };
+	struct FFieldPrints
+	{
+		TArray<FFieldPrint> Prints;
+		FString Text;
+		TFunction<void()> OnClose;
+		TFunction<void(int32 I, double U, double V)> OnLook;
+	};
+	SIGNAL47_API void FieldPrints(US47UI* UI, const FFieldPrints& O);
 }

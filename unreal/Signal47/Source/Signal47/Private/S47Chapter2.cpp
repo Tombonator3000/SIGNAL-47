@@ -3,6 +3,7 @@
 #include "Internationalization/Regex.h"
 #include "S47Annex.h"
 #include "S47Audio.h"
+#include "S47Chapter3.h"
 #include "S47Drawings2.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
@@ -188,27 +189,14 @@ US47Chapter2* US47Chapter2::Register(US47Chapter2* C)
 	if (C->Host) C->Host->Jumps.Add(TEXT("chapter2"), [W] { if (W.IsValid()) W->JumpChapter2(); });
 	// main.ts ch2.onEnd: the key holder sends you to the station first. (If the steps on the records
 	// room roof are still going, the web version waits for them, story/roofSteps.ts; they are not in
-	// this version.) Chapter three is not ported yet: until it is, the night ends on a card that says
-	// so, as the prologue's does without chapter one.
+	// this version.)
 	C->OnEnd = [W]
 	{
 		if (!W.IsValid() || !W->Host) return;
 		AS47Story* H = W->Host;
-		if (H->Chapter(TEXT("ch3")))
-		{
-			// (the integrator puts chapter three's own begin here: Prologue.beginChapter3)
-			H->ChapterBreak({ TEXT("THE AMENDED RECORD // P04 AND P05 RECORDED"),
-				TEXT("The 1947 record was changed: the service copy leaves out C. B-12 still carries STATION 01, and the key holder wants you at the cut cable before you come to her."),
-				TEXT("CHAPTER THREE"), TEXT("THE SURVEY STATION"), [H] { H->BeginChapter(TEXT("ch3")); } });
-			return;
-		}
-		if (W->M && W->M->UI) W->M->UI->Fade(true, FString());
-		H->After(1.6, [W]
-		{
-			if (!W.IsValid()) return;
-			W->Host->SetCinematic(true);
-			if (W->M && W->M->Hud) W->M->Hud->EndCard({ TEXT("CHAPTER 2: THE AMENDED RECORD"), TEXT(""), TEXT("Chapter 3, The Survey Station, is not in the Unreal version yet."), TEXT("The web version plays on from here.") });
-		});
+		H->ChapterBreak({ TEXT("THE AMENDED RECORD // P04 AND P05 RECORDED"),
+			TEXT("The 1947 record was changed: the service copy leaves out C. B-12 still carries STATION 01, and the key holder wants you at the cut cable before you come to her."),
+			TEXT("CHAPTER THREE"), TEXT("THE SURVEY STATION"), [H] { if (US47Chapter3* C3 = Cast<US47Chapter3>(H->Chapter(TEXT("ch3")))) C3->BeginChapter3(nullptr); } });
 	};
 	return C;
 }

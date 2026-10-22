@@ -39,8 +39,20 @@ public:
 	void Arc(double Cx, double Cy, double R, double A0, double A1);
 	void Stroke();
 	void Fill();
+	// rect(x, y, w, h): a closed rectangle on the path; clip(): drawing from now on only inside the
+	// path (the drawings only ever clip to a rectangle: its bounds are the clip)
+	void Rect(double X, double Y, double Wd, double Ht);
+	void Clip();
+	// setLineDash([on, off, ...]): the strokes after it dashed, the pattern starting again at each
+	// subpath (lineDashOffset 0); empty: solid
+	void SetLineDash(const TArray<double>& Dash) { LineDash = Dash; }
+	// save() / restore(): the drawing state (styles, widths, alpha, font, dash, the clip)
+	void Save();
+	void Restore();
 
 	void FillRect(double X, double Y, double Wd, double Ht);
+	// strokeRect: the rectangle's outline, without touching the path
+	void StrokeRect(double X, double Y, double Wd, double Ht);
 	// drawImage(img, x, y) at whole pixels, unscaled
 	void DrawImage(const TArray<FColor>& Src, int32 SW, int32 SH, int32 X, int32 Y);
 	// fillText(text, x, y): on the alphabetic baseline, aligned by TextAlign. False when Slate
@@ -59,5 +71,13 @@ private:
 	double FontPx = 10.0;
 	struct FSub { TArray<FVector2D> P; bool bClosed = false; };
 	TArray<FSub> Path;
+	TArray<double> LineDash;
+	TOptional<FBox2D> ClipBox;
+	struct FState
+	{
+		FColor FillCol, StrokeCol; double FillA, StrokeA, LineWidth, GlobalAlpha; EAlign TextAlign; FString FontFile; double FontPx;
+		TArray<double> LineDash; TOptional<FBox2D> ClipBox;
+	};
+	TArray<FState> Stack;
 	void Blend(int32 X, int32 Y, const FColor& C, double A);
 };

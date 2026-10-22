@@ -466,8 +466,17 @@ void US47Flow::StartGame(const FStart& O)
 	M->Playtime = O.Playtime;
 	if (CaseId) Saves.SetActive(CaseId);
 	if (M->Audio) M->Audio->StartRoomTone();
-	// (audio.startNight, space = 'room', world.placeTruck: not in the Unreal version yet)
+	// (audio.startNight, space = 'room': the night's sound starts with the HUD)
+	// main.ts: the truck where it was left (the station's or the diner's lot for a save made there),
+	// then SARO entered first
+	if (M->World)
+	{
+		const FString TruckWas = S47J::Str(O.State, TEXT("truck"));
+		M->World->PlaceTruck(SavedArea == TEXT("station01") ? TEXT("station01") : SavedArea == TEXT("diner") ? TEXT("diner") : TruckWas == TEXT("motel") ? TEXT("motel") : TEXT("saro"), S47J::Obj(O.State, TEXT("truckPose")));
+	}
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
+	// the miles on the odometer tonight (an older case has none)
+	if (M->World) M->World->OdoRestore(S47J::Obj(O.State, TEXT("odo")));
 	Restoring = O.State;
 	bRestoringNow = true;
 	// what is saved for the systems not ported yet goes back into the next save as it was
@@ -783,7 +792,16 @@ S47J::FObj US47Flow::GameState()
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
-	S47J::Set(State, TEXT("area"), M->Web ? M->Web->Area() : FString(TEXT("saro")));
+	S47J::Set(State, TEXT("area"), M->World ? M->World->Area : M->Web ? M->Web->Area() : FString(TEXT("saro")));
+	// main.ts writeSave: the truck, where it stands and how, and the odometer
+	if (M->World)
+	{
+		const S47J::FObj Tk = M->World->TruckSave();
+		S47J::Set(State, TEXT("truck"), Tk.IsValid() && S47J::Has(Tk, TEXT("at")) ? S47J::Str(Tk, TEXT("at")) : M->World->TruckAt);
+		const S47J::FObj Pose = S47J::Obj(Tk, TEXT("pose"));
+		if (Pose.IsValid()) S47J::Set(State, TEXT("truckPose"), Pose); else S47J::SetNull(State, TEXT("truckPose"));
+		S47J::Set(State, TEXT("odo"), M->World->OdoSave());
+	}
 	if (M->Web)
 	{
 		const S47J::FObj Doors = S47J::New();

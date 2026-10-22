@@ -329,3 +329,103 @@ void S47Panels::LocalReport(US47UI* UI, const FString& Text, bool bFiled, TFunct
 		bFiled ? S47Kit::Text(TEXT("Filed.")) : SNew(SBox).HAlign(HAlign_Left).Padding(FMargin(0, 14, 0, 0))[S47Kit::Button(TEXT("FILE PRINTS AND CLOSE THE LOCAL CASE"), [U, OnFile] { if (U.IsValid()) U->Close(); if (OnFile) OnFile(); }, true)] }, 0.f);
 	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("LOCAL REPORT"), Body));
 }
+
+// ---------- chapter three: the null test at the STATION 01 field lamp ----------
+
+// nullTest's page: drawn again (render) after the lamp is switched, after a finding, and when the
+// chapter asks (refresh); the reply line starts empty each time, as the page's innerHTML does.
+namespace
+{
+struct FS47NullTestPanel : public TSharedFromThis<FS47NullTestPanel>
+{
+	S47Panels::FNullTest O;
+	TWeakPtr<STextBlock> StatusEl;
+	TWeakPtr<SBox> PageEl;
+	TSharedPtr<FSay> Say;
+	int32 Hint = 0;
+
+	void Render()
+	{
+		const S47Panels::FNullTestState St = O.State ? O.State() : S47Panels::FNullTestState();
+		if (TSharedPtr<STextBlock> E = StatusEl.Pin()) E->SetText(FText::FromString(O.Status ? O.Status() : FString()));
+		TSharedPtr<SBox> Page = PageEl.Pin();
+		if (!Page.IsValid()) return;
+		Say = MakeShared<FSay>();
+		TWeakPtr<FS47NullTestPanel> W = AsShared();
+		TArray<FW> Items = {
+			S47Kit::Paper(TEXT("Screen the practical lamp and observe the ordinary local null condition. This isolates the source. It does not move the physical reference, and it does not finish the cable finding.")),
+			S47Kit::Question(FString::Printf(TEXT("LAMP STATUS / %s"), St.bCovered ? TEXT("COVERED") : TEXT("EXPOSED"))),
+			S47Kit::Row({
+				S47Kit::Button(St.bCovered ? TEXT("UNCOVER LAMP") : TEXT("COVER LAMP"), [W] { if (TSharedPtr<FS47NullTestPanel> P = W.Pin()) P->Cover(); }),
+				S47Kit::Button(St.bObserved ? TEXT("REVIEW NULL TEST") : TEXT("OBSERVE NULL TEST"), [W] { if (TSharedPtr<FS47NullTestPanel> P = W.Pin()) P->Observe(); }, true),
+				S47Kit::Button(TEXT("Hint"), [W] { if (TSharedPtr<FS47NullTestPanel> P = W.Pin()) P->Hinted(); }) }),
+		};
+		if (St.bP07) { Items.Add(S47Kit::Paper(O.Supported)); Items.Add(S47Kit::Small(TEXT("P07 is pinned on the case board."))); }
+		Items.Add(SayLine(Say.ToSharedRef()));
+		Page->SetContent(S47Kit::Col(Items, 0.f));
+	}
+	void Cover()
+	{
+		const bool bCovered = O.State ? O.State().bCovered : false;
+		if (O.OnLamp) O.OnLamp(!bCovered);
+		Render();
+	}
+	void Observe()
+	{
+		if (!O.OnObserve) return;
+		const FS47Result R = O.OnObserve();
+		if (R.bOk) Render();
+		if (Say.IsValid()) Say->Set(R);
+	}
+	void Hinted()
+	{
+		if (O.Hints.Num() && Say.IsValid()) Say->Set(O.Hints[FMath::Min(Hint, O.Hints.Num() - 1)]);
+		++Hint;
+	}
+};
+}
+
+S47Panels::FPanelHandle S47Panels::NullTest(US47UI* UI, const FNullTest& O)
+{
+	TSharedRef<FS47NullTestPanel> P = MakeShared<FS47NullTestPanel>();
+	P->O = O;
+	// .lp-sub[data-status]
+	TSharedRef<STextBlock> Status = SNew(STextBlock).Font(S47Style::Mono(19.f * PX)).ColorAndOpacity(S47Kit::Css(0xffb052)).AutoWrapText(true).Margin(FMargin(0, 0, 0, 10));
+	TSharedRef<SBox> Page = SNew(SBox);
+	P->StatusEl = Status;
+	P->PageEl = Page;
+	P->Render();
+	// (the widgets keep the panel's state alive, and it holds them only weakly: closing the panel lets both go)
+	const FW Body = SNew(SBox).Visibility_Lambda([P] { return EVisibility::Visible; })[S47Kit::Col({ Status, Page }, 0.f)];
+	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("STATION 01 / FIELD LAMP"), Body));
+	TWeakPtr<FS47NullTestPanel> W = P;
+	return { [W] { if (TSharedPtr<FS47NullTestPanel> Pp = W.Pin()) Pp->Render(); } };
+}
+
+// ---------- chapter three: the field prints ----------
+
+void S47Panels::FieldPrints(US47UI* UI, const FFieldPrints& O)
+{
+	TArray<FW> Figs;
+	const TFunction<void(int32, double, double)> OnLook = O.OnLook;
+	for (int32 i = 0; i < O.Prints.Num(); ++i)
+	{
+		TSharedPtr<FS47PrintState> St = MakeShared<FS47PrintState>();
+		auto Click = [St, OnLook, i](double Px, double Py)
+		{
+			// .lp-closer.close: a print looked at closer goes back with a click
+			if (St->Z > 1) { St->Z = 1; St->Cx = 0.5; St->Cy = 0.5; return; }
+			const double X = FMath::Clamp(Px, 0.0, 1.0), Y = FMath::Clamp(Py, 0.0, 1.0);
+			// scale(3) about the point clicked (transform-origin there): the window shown is a third of
+			// the print, with (1 + 4c) / 6 its middle
+			St->Z = 3; St->Cx = (1 + 4 * X) / 6; St->Cy = (1 + 4 * Y) / 6;
+			if (OnLook) OnLook(i, (X * US47FieldCamera::PRINT_W - US47FieldCamera::PRINT_X) / US47FieldCamera::PHOTO_W, (Y * US47FieldCamera::PRINT_H - US47FieldCamera::PRINT_Y) / US47FieldCamera::PHOTO_H);
+		};
+		const FW Img = SNew(SS47Print).Texture(S47Image::FromDataUrl(O.Prints[i].Url)).State(St).Width(610.f).OnClick(Click);
+		Figs.Add(S47Kit::Col({ Img, SNew(STextBlock).Text(FText::FromString(O.Prints[i].Caption)).Font(S47Style::Mono(16.f * PX)).ColorAndOpacity(S47Kit::Css(0xbdb5a3)).AutoWrapText(true) }, 4.f * PX));
+	}
+	const FW Pair = Figs.Num() >= 2 ? S47Kit::Two(Figs[0], Figs[1]) : Figs.Num() == 1 ? Figs[0] : SNullWidget::NullWidget;
+	// .lp-tip ('Tap' on a touch screen: there is no touch input in this version) and .lp-text
+	const FW Body = S47Kit::Col({ Pair, S47Kit::Small(TEXT("Click a print to look closer.")), S47Kit::Text(O.Text) }, 0.f);
+	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("STATION 01 / FIELD PRINTS"), Body), O.OnClose);
+}

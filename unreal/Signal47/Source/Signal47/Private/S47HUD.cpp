@@ -20,6 +20,7 @@
 #include "S47CaseBoard.h"
 #include "S47Inter.h"
 #include "S47Chapter2.h"
+#include "S47Chapter3.h"
 #include "S47Chapters.h"
 #include "S47Flow.h"
 #include "S47FieldCamera.h"
@@ -33,6 +34,7 @@
 #include "S47Score.h"
 #include "S47Media.h"
 #include "S47Phones.h"
+#include "S47Station.h"
 #include "S47SaroNight.h"
 #include "S47Reel047.h"
 #include "S47LineLights.h"
@@ -92,6 +94,7 @@ void AS47HUD::Start()
 		bOk &= FS47Radio::SelfTest(Lines) & FS47TripRadio::SelfTest(Lines) & FS47Score::SelfTest(Lines) & FS47MediaSource::SelfTest(Lines) & FS47RadioVoice::SelfTest(Lines);
 		bOk &= US47Phones::SelfTest(Lines); // (the archive's phone and its dishes, the roof, the office's telephone, the field book, the looks, the thread)
 		bOk &= US47SaroNight::SelfTest(Lines); // (SARO dark, the array put back, the dishes that follow, the lights on B, the reels, the recording)
+		bOk &= US47Chapter3::SelfTest(Lines); // (with stationTaken's)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -204,6 +207,20 @@ void AS47HUD::Start()
 		}
 		// main.ts: the phones, the archive and the records (the archive's phone, the office's telephone, the roof, the field book, the looks)
 		M->Phones = NewObject<US47Phones>(M); M->Phones->Init(M);
+		if (US47Chapter3* C3 = Story.IsValid() ? Cast<US47Chapter3>(Story->Chapter(TEXT("ch3"))) : nullptr)
+		{
+			// main.ts: the field book keeps its state in chapter three's save (ch3.s.fb), knows frames 3
+			// and 4, and the station's drawer is where it is found
+			TWeakObjectPtr<US47Chapter3> W3 = C3;
+			M->Phones->FbGet = [W3] { return W3.IsValid() ? W3->S.Fb : TSharedPtr<FJsonValue>(); };
+			M->Phones->FbSet = [W3](const TSharedPtr<FJsonValue>& V) { if (W3.IsValid()) W3->S.Fb = V; };
+			M->Phones->Frames = [W3]() -> TPair<TOptional<double>, TOptional<double>>
+			{
+				if (!W3.IsValid()) return {};
+				return { W3->S.F3 ? TOptional<double>(W3->S.F3->Clock) : TOptional<double>(), W3->S.F4 ? TOptional<double>(W3->S.F4->Clock) : TOptional<double>() };
+			};
+			M->Phones->StationDrawer = [W3](bool bOpen, bool bNow) { if (W3.IsValid() && W3->Site()) W3->Site()->SetDrawer(bOpen, bNow); };
+		}
 		// main.ts: SARO's own happenings (SARO dark, the array, the dishes that follow, the lights on B, the reels, the recording)
 		M->SaroNight = NewObject<US47SaroNight>(M); M->SaroNight->Init(M);
 		if (US47Phones* Ph = M->Phones; Ph && M->SaroNight)

@@ -100,6 +100,61 @@ FString S47Drawings::MarkIcon(const FString& Kind)
 	});
 }
 
+FString S47Drawings::TransitRecord(const FVector2D& A, const FVector2D& B, const FVector2D& C)
+{
+	// transitRecord({ a, b, c })
+	return Sheet(960, 620, [&A, &B, &C](FS47Canvas& G)
+	{
+		G.SetFont(OSWALD, 26);
+		G.FillText(TEXT("FIELD TRANSIT / STATION 01 / E09A"), 40, 56);
+		G.SetFont(ELITE, 19);
+		G.FillText(TEXT("Plan, 1947. Fixed points set in concrete footings."), 40, 92);
+		G.GlobalAlpha = 0.5; G.LineWidth = 1.5;
+		G.BeginPath(); G.MoveTo(40, 112); G.LineTo(920, 112); G.Stroke();
+		G.GlobalAlpha = 1; G.LineWidth = 3;
+		// fit A and B (C is a direction) into the sheet around the transit
+		const double Reach = FMath::Max3(4.0, A.Size(), B.Size());
+		const double K = 200 / Reach, Cx = 480, Cy = 360;
+		auto P = [&](const FVector2D& V) { return FVector2D(Cx + V.X * K, Cy + V.Y * K); };
+		const FVector2D Pa = P(A), Pb = P(B);
+		const double Ax = Pa.X, Ay = Pa.Y, Bx = Pb.X, By = Pb.Y;
+		// transit: a circle with cross hairs on the pier
+		G.BeginPath(); G.Arc(Cx, Cy, 16, 0, PI * 2); G.Stroke();
+		G.BeginPath(); G.MoveTo(Cx - 24, Cy); G.LineTo(Cx + 24, Cy); G.MoveTo(Cx, Cy - 24); G.LineTo(Cx, Cy + 24); G.Stroke();
+		// the transit sight line through A, dashed past it
+		G.SetLineDash({ 10, 8 }); G.LineWidth = 2;
+		double Dl = FMath::Sqrt(FMath::Square(Ax - Cx) + FMath::Square(Ay - Cy));
+		if (Dl == 0) Dl = 1;
+		G.BeginPath(); G.MoveTo(Cx, Cy); G.LineTo(Cx + (Ax - Cx) / Dl * (Dl + 70), Cy + (Ay - Cy) / Dl * (Dl + 70)); G.Stroke();
+		// C: the closing sight line, off the sheet
+		double Cl = C.Size();
+		if (Cl == 0) Cl = 1;
+		const double Ex = Cx + C.X / Cl * 400, Ey = Cy + C.Y / Cl * 400;
+		G.SetLineDash({}); G.LineWidth = 3;
+		G.Save(); G.BeginPath(); G.Rect(40, 120, 880, 470); G.Clip();
+		G.BeginPath(); G.MoveTo(Cx, Cy); G.LineTo(Ex, Ey); G.Stroke();
+		G.Restore();
+		// B, the comparison marker
+		G.BeginPath(); G.MoveTo(Cx, Cy); G.LineTo(Bx, By); G.Stroke();
+		G.BeginPath(); G.MoveTo(Bx, By - 30); G.LineTo(Bx, By + 30); G.Stroke();
+		// A in its square footing
+		G.LineWidth = 2; G.StrokeRect(Ax - 34, Ay - 34, 68, 68); G.LineWidth = 3;
+		Mark(G, Ax, Ay - 2, 40);
+		G.SetFont(ELITE, 30);
+		G.FillText(TEXT("A"), Ax + 42, Ay + 10); G.FillText(TEXT("B"), Bx - 12, By + 62);
+		const double Lx = FMath::Min(890.0, FMath::Max(60.0, Cx + C.X / Cl * 300)), Ly = FMath::Min(570.0, FMath::Max(150.0, Cy + C.Y / Cl * 300));
+		G.FillText(TEXT("C"), Lx + 6, Ly - 14);
+		G.SetFont(ELITE, 17);
+		G.FillText(TEXT("TRANSIT"), Cx + 26, Cy + 40);
+		G.FillText(TEXT("footing"), Ax - 34, Ay + 56);
+		// north arrow
+		G.BeginPath(); G.MoveTo(880, 210); G.LineTo(880, 150); G.LineTo(870, 170); G.MoveTo(880, 150); G.LineTo(890, 170); G.Stroke();
+		G.SetFont(ELITE, 22); G.FillText(TEXT("N"), 872, 236);
+		G.SetFont(ELITE, 17);
+		G.FillText(TEXT("FIELD COPY / KEEP WITH THE TRANSIT"), 40, 600);
+	});
+}
+
 bool S47Drawings::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -123,6 +178,23 @@ bool S47Drawings::SelfTest(TArray<FString>& Lines)
 		Mark(G, 60, 58, 70, true);
 		const FColor On = G.Px[int32(58 + 70 * 0.62) * 120 + 60], Off = G.Px[5 * 120 + 5];
 		Check(On.R == 0x22 && On.G == 0x37 && On.B == 0x2e && Off.R == 0xef && Off.G == 0xe8 && Off.B == 0xd6, FString::Printf(TEXT("the mark's bar in ink (%d %d %d), the paper clean (%d %d %d)"), On.R, On.G, On.B, Off.R, Off.G, Off.B));
+	}
+	// setLineDash([10, 8]): ink, a gap, ink again along a line; a clip keeps a stroke inside it
+	{
+		FS47Canvas G(40, 8);
+		G.SetFill(0x000000); G.FillRect(0, 0, 40, 8);
+		G.SetStroke(0xffffff); G.LineWidth = 2;
+		G.SetLineDash({ 10, 8 });
+		G.BeginPath(); G.MoveTo(0, 4); G.LineTo(40, 4); G.Stroke();
+		const uint8 On1 = G.Px[3 * 40 + 5].R, Gap = G.Px[3 * 40 + 14].R, On2 = G.Px[3 * 40 + 22].R;
+		G.SetLineDash({});
+		G.Save(); G.BeginPath(); G.Rect(0, 0, 20, 8); G.Clip();
+		G.SetStroke(0xff0000); G.BeginPath(); G.MoveTo(0, 1); G.LineTo(40, 1); G.Stroke();
+		G.Restore();
+		const uint8 In = G.Px[0 * 40 + 10].R, Out = G.Px[0 * 40 + 30].R;
+		G.SetStroke(0x00ff00); G.LineWidth = 1; G.StrokeRect(30.5, 5.5, 6, 2);
+		Check(On1 == 255 && Gap == 0 && On2 == 255 && In == 255 && Out == 0 && G.Px[5 * 40 + 33].G == 255 && G.Px[6 * 40 + 33].G == 0,
+			FString::Printf(TEXT("dashes (%d %d %d), the clip (%d %d) and strokeRect"), On1, Gap, On2, In, Out));
 	}
 	// a half-covered pixel of a rectangle blends half way
 	{
