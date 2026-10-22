@@ -17,10 +17,12 @@
 #include "S47Web.h"
 #include "S47Story.h"
 #include "S47BoardRules.h"
+#include "S47CaseBoard.h"
 #include "S47Inter.h"
 #include "S47Chapter2.h"
 #include "S47Chapters.h"
 #include "S47Flow.h"
+#include "S47FieldCamera.h"
 #include "S47Drive.h"
 #include "S47Chapter1.h"
 #include "S47Main.h"
@@ -73,6 +75,7 @@ void AS47HUD::Start()
 		bOk &= S47Saves::SelfTest(Lines) & US47Flow::SelfTest(Lines);
 		bOk &= S47Drive::SelfTest(Lines);
 		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
+		bOk &= US47CaseBoard::SelfTest(Lines);
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -95,6 +98,7 @@ void AS47HUD::Start()
 	M->UI->Init(this);
 	M->World = NewObject<US47World>(M);
 	M->World->Init(M);
+	M->CaseBoard = NewObject<US47CaseBoard>(M); M->CaseBoard->Init(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{
@@ -145,6 +149,15 @@ void AS47HUD::Start()
 		// main.ts boot(): the title, or with a test flag straight into play (-S47Jump= or the night's start)
 		M->Flow = NewObject<US47Flow>(M);
 		M->Flow->Init(M);
+		// the case board's layout goes with the case (Prologue.boardSave), and its threads save
+		if (US47CaseBoard* CB = M->CaseBoard)
+		{
+			TWeakObjectPtr<US47CaseBoard> Wb = CB;
+			M->Flow->SaveBoard = [Wb] { return Wb.IsValid() ? Wb->Save() : S47J::FObj(); };
+			M->Flow->LoadBoard = [Wb](const S47J::FObj& O) { if (Wb.IsValid()) Wb->Load(O); };
+			CB->OnSave = [M] { M->RequestAutosave(false); };
+		}
+		M->Flow->HaveCamera = [M] { return M->FieldCamera && M->FieldCamera->bHave; };
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
@@ -185,6 +198,7 @@ void AS47HUD::OpenView(const FString& View)
 	else if (View == TEXT("console")) { if (Story.IsValid()) { Story->bConsoleOpen = true; } OpenConsole(); }
 	else if (View == TEXT("ops")) OpenOps();
 	else if (View == TEXT("log")) ShowDocument(S47Docs::ShiftLog(), [] {});
+	else if (View == TEXT("board")) { if (US47Main* M = US47Main::Get(this); M && M->CaseBoard) M->CaseBoard->Open(); }
 	else if (View == TEXT("pause")) { if (US47Main* M = US47Main::Get(this); M && M->Flow) M->Flow->OpenPause(); }
 	else if (US47Main* M = US47Main::Get(this); M && M->Flow) M->Flow->OpenTestView(View);
 	UE_LOG(LogS47HUD, Display, TEXT("S47: opened %s"), *View);

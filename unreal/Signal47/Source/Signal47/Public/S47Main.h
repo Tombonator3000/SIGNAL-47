@@ -45,6 +45,7 @@ public:
 	// chapter or an area begins); it is written after the frame, once the game may be saved
 	void RequestAutosave(bool bMilestone = false);
 	UPROPERTY() TObjectPtr<US47FieldCamera> FieldCamera; // core/FieldCamera.ts (made with chapter one)
+	UPROPERTY() TObjectPtr<class US47CaseBoard> CaseBoard;
 
 	// The case board (story/caseBoard.ts): every chapter's rule book, and the hook the chapters
 	// open and refresh it with. Unset Board.Open: no board yet; a chapter then falls back to the

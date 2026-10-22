@@ -9,6 +9,7 @@
 # with S47_WEB=<export folder> (default ~/scratch-bm/Signal47-web).
 import json
 import os
+import shutil
 import struct
 import zlib
 import unreal
@@ -23,6 +24,34 @@ only = os.environ.get('S47_ONLY', 'tex,geo,mat').split(',')
 
 def log(s):
     unreal.log_warning('S47WEB ' + s)
+
+
+# ---------- ui/Board.ts art: loose pictures loaded by S47Image::Art ----------
+# Keep the web filenames under a board_ prefix so they cannot collide with core/art.ts names.
+# Resolve from this checkout, not the user's main web working copy.
+def copy_board_art():
+    source = os.path.abspath(os.path.join(unreal.Paths.project_dir(), '../../web/src/assets/art/board'))
+    dest = os.path.join(unreal.Paths.project_content_dir(), 'WebData', 'art')
+    os.makedirs(dest, exist_ok=True)
+    count = 0
+    if os.path.isdir(source):
+        for name in sorted(os.listdir(source)):
+            stem, ext = os.path.splitext(name)
+            if ext.lower() not in ('.png', '.jpg', '.webp'):
+                continue
+            src = os.path.join(source, name)
+            dst = os.path.join(dest, 'board_' + stem + ('.png' if ext.lower() == '.webp' else ext.lower()))
+            if ext.lower() == '.webp':
+                from PIL import Image
+                with Image.open(src) as image:
+                    image.save(dst, format='PNG')
+            else:
+                shutil.copyfile(src, dst)
+            count += 1
+    log('board art copied %d' % count)
+
+
+copy_board_art()
 
 
 def task(filename, dest, name=None):
