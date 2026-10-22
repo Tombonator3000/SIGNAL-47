@@ -142,7 +142,7 @@ private:
 class SS47Console : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Console) {}
+	SLATE_BEGIN_ARGS(SS47Console) : _Story(nullptr) {}
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
 		SLATE_ARGUMENT(TFunction<void()>, OnClick)
@@ -162,7 +162,7 @@ private:
 class SS47Spectrum : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Spectrum) {}
+	SLATE_BEGIN_ARGS(SS47Spectrum) : _Story(nullptr) {}
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(FVector2D, Size)
 	SLATE_END_ARGS()
@@ -182,7 +182,7 @@ private:
 class SS47Ops : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Ops) {}
+	SLATE_BEGIN_ARGS(SS47Ops) : _Story(nullptr) {}
 		SLATE_ARGUMENT(AS47Story*, Story)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
 	SLATE_END_ARGS()

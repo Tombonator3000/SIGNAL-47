@@ -41,7 +41,7 @@ namespace S47SaveMenu
 class SS47SaveMenu : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47SaveMenu) {}
+	SLATE_BEGIN_ARGS(SS47SaveMenu) : _UI(nullptr) {}
 		SLATE_ARGUMENT(US47UI*, UI)
 		SLATE_ARGUMENT(FS47SaveMenuOpts, Opts)
 	SLATE_END_ARGS()

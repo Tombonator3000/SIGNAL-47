@@ -520,11 +520,16 @@ void AS47HUD::Start()
 		FString View;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Open="), View))
 		{
-			FTimerHandle OpenTimer;
-			GetWorldTimerManager().SetTimer(OpenTimer, [this, View] { OpenView(View); }, 2.0f, false);
-			// -S47Press=Down,Enter: then the keys, as from the keyboard (S47Keys::TestPresses)
+			// -S47Press=Down,Enter: then the keys, as from the keyboard (S47Keys::TestPresses), from the
+			// moment the view is open (a slow first frame must not send them before it)
 			FString Press;
-			if (FParse::Value(FCommandLine::Get(), TEXT("S47Press="), Press, false)) FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Press](float) { S47Keys::TestPresses(Press, 0.5f); return false; }), 2.6f);
+			FParse::Value(FCommandLine::Get(), TEXT("S47Press="), Press, false);
+			FTimerHandle OpenTimer;
+			GetWorldTimerManager().SetTimer(OpenTimer, [this, View, Press]
+			{
+				OpenView(View);
+				if (!Press.IsEmpty()) FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Press](float) { S47Keys::TestPresses(Press, 0.5f); return false; }), 0.6f);
+			}, 2.0f, false);
 		}
 	}
 }

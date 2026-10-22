@@ -21,7 +21,7 @@ struct FS47ReadingAction;
 class SS47Notebook : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Notebook) {}
+	SLATE_BEGIN_ARGS(SS47Notebook) : _UI(nullptr) {}
 		SLATE_ARGUMENT(US47UI*, UI)
 		SLATE_ARGUMENT(TArray<FS47Task>, Tasks)
 		SLATE_ARGUMENT(TArray<FString>, Notes)
