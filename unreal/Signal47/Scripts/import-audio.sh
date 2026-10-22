@@ -3,8 +3,9 @@
 #   Content/Audio/Raw     the recordings core/Audio.ts decodes (the free sounds, Kinski's 24 telephone lines,
 #                         the character lines on the telephone) as WAVE files with index.json, and voices.json
 #                         (every voice bank's catalog), for the game's own Web Audio (Scripts/audio-raw.py)
-#                         plus bounded-stream PCM in Raw/media/{music,radio}, and the four lazy
-#                         RadioVoice banks in Raw/voice (outside index.sources, never all preloaded)
+#                         plus bounded-stream PCM in Raw/media/{music,radio}, and the lazy voice banks
+#                         in Raw/voice (Kinski's and Serling's for ReadAloud, and the four RadioVoice
+#                         banks; outside index.sources, never all preloaded)
 #   Content/Licensed/Raw  the same for the bought sounds, if the private clone is there
 #   /Game/Audio/Sfx       the free sounds in web/src/assets/audio (CC0 and CC BY, see web/THIRD_PARTY_NOTICES.md)
 #   /Game/Audio/Music     the music in web/public/music (CC BY, credited in the game)

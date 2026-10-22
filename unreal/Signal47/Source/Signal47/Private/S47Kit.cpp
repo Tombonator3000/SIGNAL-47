@@ -16,6 +16,7 @@
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SNullWidget.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -61,6 +62,23 @@ namespace
 
 	FSlateFontInfo Term(float Px) { return S47Style::Mono(Px * PX); }
 	FSlateFontInfo Type(float Px) { return S47Style::Body(Px * PX); }
+
+	// the knobs' range inputs: the core slider with a track thick enough to see on the dark panel
+	const FSliderStyle& KnobStyle()
+	{
+		static FSliderStyle S = []
+		{
+			// (the track a plain bar the bar colour tints, the thumb a round knob the handle colour tints)
+			FSliderStyle X = FCoreStyle::Get().GetWidgetStyle<FSliderStyle>("Slider");
+			const FSlateColorBrush Bar(FLinearColor::White);
+			const FSlateRoundedBoxBrush Thumb(FLinearColor::White, 8.f * PX, FVector2f(16.f * PX, 16.f * PX));
+			X.SetNormalBarImage(Bar).SetHoveredBarImage(Bar).SetDisabledBarImage(Bar);
+			X.SetNormalThumbImage(Thumb).SetHoveredThumbImage(Thumb).SetDisabledThumbImage(Thumb);
+			X.SetBarThickness(4.f * PX);
+			return X;
+		}();
+		return S;
+	}
 }
 
 S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width)
@@ -100,7 +118,8 @@ S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width)
 					]
 					+ SVerticalBox::Slot().FillHeight(1.f)
 					[
-						SNew(SScrollBox) + SScrollBox::Slot()[Body]
+						// (UI.open: a lab panel's descriptions can be read, the box at its end: descriptionReadings)
+						SNew(SScrollBox) + SScrollBox::Slot()[Body] + SScrollBox::Slot()[UI ? UI->DescriptionReadings(Body) : SNullWidget::NullWidget]
 					]
 				]
 			]
@@ -114,11 +133,11 @@ S47Kit::FW S47Kit::Text(const FString& S, int32 Tone)
 
 S47Kit::FW S47Kit::Text(TAttribute<FString> S, TAttribute<int32> Tone)
 {
-	return SNew(STextBlock)
+	return Readable(SNew(STextBlock)
 		.Text_Lambda([S] { return FText::FromString(S.Get()); })
 		.Font(Type(15.5f)).AutoWrapText(true).LineHeightPercentage(1.15f)
 		.ColorAndOpacity_Lambda([Tone] { const int32 T = Tone.Get(); return FSlateColor(T > 0 ? Css(0xb9ffc7) : T < 0 ? Css(0xffb3a0) : Css(0xddd5c2)); })
-		.Margin(FMargin(0, 10, 0, 10));
+		.Margin(FMargin(0, 10, 0, 10)));
 }
 
 S47Kit::FW S47Kit::Sub(const FString& S)
@@ -128,12 +147,12 @@ S47Kit::FW S47Kit::Sub(const FString& S)
 
 S47Kit::FW S47Kit::Small(const FString& S)
 {
-	return SNew(STextBlock).Text(FText::FromString(S)).Font(Type(12.5f)).ColorAndOpacity(Css(0x8e877a)).AutoWrapText(true).Margin(FMargin(0, 12, 0, 0));
+	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Type(12.5f)).ColorAndOpacity(Css(0x8e877a)).AutoWrapText(true).Margin(FMargin(0, 12, 0, 0)));
 }
 
 S47Kit::FW S47Kit::Question(const FString& S)
 {
-	return SNew(STextBlock).Text(FText::FromString(S)).Font(Term(20.f)).ColorAndOpacity(Css(0xf0e7d0)).AutoWrapText(true).Margin(FMargin(0, 8, 0, 6));
+	return Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Term(20.f)).ColorAndOpacity(Css(0xf0e7d0)).AutoWrapText(true).Margin(FMargin(0, 8, 0, 6)));
 }
 
 S47Kit::FW S47Kit::Paper(const FString& S, bool bReport)
@@ -145,7 +164,7 @@ S47Kit::FW S47Kit::Paper(const FString& S, bool bReport)
 	{
 		FSlateFontInfo F = Type(bReport && i == 0 ? 17.f : 14.5f);
 		if (bReport && i == 0) F.LetterSpacing = 40;
-		Ps->AddSlot().AutoHeight().Padding(0, 0, 0, 10)[SNew(STextBlock).Text(FText::FromString(Paras[i])).Font(F).ColorAndOpacity(Css(0x26262a)).AutoWrapText(true)];
+		Ps->AddSlot().AutoHeight().Padding(0, 0, 0, 10)[Readable(SNew(STextBlock).Text(FText::FromString(Paras[i])).Font(F).ColorAndOpacity(Css(0x26262a)).AutoWrapText(true))];
 	}
 	TSharedRef<SWidget> W = SNew(SBorder).BorderImage(Box(Css(0xebe3cf), FLinearColor::Transparent, 0.f)).Padding(FMargin(22, 18))[Ps];
 	W->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(-0.4f))));
@@ -171,7 +190,7 @@ S47Kit::FW S47Kit::Steps(const TArray<TPair<FString, FString>>& Items, int32 Act
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Items[i].Key)).TextStyle(Keep.Last().Get())]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 0)[SNew(STextBlock).Text(FText::FromString(Items[i].Value)).Font(Type(14.f)).ColorAndOpacity(Css(0x9b9483)).AutoWrapText(true)]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, 2, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Items[i].Value)).Font(Type(14.f)).ColorAndOpacity(Css(0x9b9483)).AutoWrapText(true))]
 			]
 		];
 	}
@@ -201,7 +220,7 @@ S47Kit::FW S47Kit::Card(const FString& Title, const FString& Line, TFunction<voi
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Title)).Font(Term(22.f)).ColorAndOpacity(Css(0xffb052))]
-			+ SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 0)[SNew(STextBlock).Text(FText::FromString(Line)).Font(Type(14.5f)).ColorAndOpacity(Css(0xd6cebb)).AutoWrapText(true)]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 0)[Readable(SNew(STextBlock).Text(FText::FromString(Line)).Font(Type(14.5f)).ColorAndOpacity(Css(0xd6cebb)).AutoWrapText(true))]
 		];
 }
 
@@ -247,6 +266,75 @@ S47Kit::FW S47Kit::Slider(const FString& Label, float Min, float Max, float Step
 			.OnValueChanged_Lambda([OnChange](float V) { if (OnChange) OnChange(V); })
 		];
 }
+
+S47Kit::FW S47Kit::Knob(const FString& Label, TAttribute<FString> Shown, float Min, float Max, float Step, TAttribute<float> Value, TFunction<void(float)> OnChange)
+{
+	// .dsp-knobs label { display: grid; gap: 6px }: the name, its value (span, amber), the range (min-height 32px)
+	return SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()
+		[
+			SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(19.f)).ColorAndOpacity(Css(0xf0e7d0))
+		]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 6 * PX, 0, 0)
+		[
+			SNew(STextBlock).Text_Lambda([Shown] { return FText::FromString(Shown.Get()); }).Font(Term(19.f)).ColorAndOpacity(Css(0xffb052))
+		]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 6 * PX, 0, 0)
+		[
+			SNew(SBox).MinDesiredHeight(32 * PX).VAlign(VAlign_Center)
+			[
+				// (a range input's track, as wide as the column, its thumb in accent-color #c9d6c2)
+				SNew(SSlider).Style(&KnobStyle()).MinValue(Min).MaxValue(Max).StepSize(Step).MouseUsesStep(true)
+				.Value(Value).SliderBarColor(Css(0xcfc8b5, 0.55f)).SliderHandleColor(Css(0xc9d6c2))
+				.OnValueChanged_Lambda([OnChange](float V) { if (OnChange) OnChange(V); })
+			]
+		];
+}
+
+S47Kit::FW S47Kit::ButtonLive(TAttribute<FString> Label, TFunction<void()> OnClick, bool bPrimary, TAttribute<bool> Enabled)
+{
+	return SNew(SButton)
+		.ButtonStyle(ButtonStyle(bPrimary ? Css(0xffb052) : Css(0xffd6aa, 0.45f), 0.05f, 0.14f))
+		.ContentPadding(FMargin(14, 6)).IsEnabled(Enabled)
+		.OnClicked_Lambda([OnClick] { if (OnClick) OnClick(); return FReply::Handled(); })
+		[
+			SNew(SBox).MinDesiredHeight(44.f - 12.f).VAlign(VAlign_Center)
+			[
+				SNew(STextBlock).Text_Lambda([Label] { return FText::FromString(Label.Get()); }).Font(Term(bPrimary ? 22.f : 20.f)).ColorAndOpacity(bPrimary ? Css(0xffb052) : Css(0xf1e8d2))
+			]
+		];
+}
+
+S47Kit::FW S47Kit::Choice(const FString& Label, TAttribute<bool> Pressed, TFunction<void()> OnClick, bool bAuto)
+{
+	// .lp-choice: padding 8px 10px, min-height 48px, a faint line; [aria-pressed=true] filled pale green, dark text
+	static FButtonStyle Bare = []
+	{
+		FButtonStyle B;
+		FSlateBrush None;
+		None.DrawAs = ESlateBrushDrawType::NoDrawType;
+		B.SetNormal(None).SetHovered(None).SetPressed(None).SetDisabled(None);
+		B.SetNormalPadding(FMargin(0)).SetPressedPadding(FMargin(0));
+		return B;
+	}();
+	const FW Face = SNew(SBorder)
+		.BorderImage_Lambda([Pressed] { return Pressed.Get() ? Box(Css(0xc9d6c2), Css(0xc9d6c2)) : Box(FLinearColor::Transparent, Css(0xe9e2cf, 0.25f)); })
+		.Padding(FMargin(10 * PX, 8 * PX))
+		[
+			SNew(SBox).MinDesiredHeight(48 * PX - 16 * PX).VAlign(VAlign_Center)
+			[
+				SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(19.f))
+				.ColorAndOpacity_Lambda([Pressed] { return FSlateColor(Pressed.Get() ? Css(0x12100e) : Css(0xe9e2cf)); })
+			]
+		];
+	return SNew(SBox).Padding(FMargin(0, bAuto ? 0.f : 6 * PX, 0, 0)).HAlign(bAuto ? HAlign_Left : HAlign_Fill)
+		[
+			SNew(SButton).ButtonStyle(&Bare).OnClicked_Lambda([OnClick] { if (OnClick) OnClick(); return FReply::Handled(); })[Face]
+		];
+}
+
+S47Kit::FW S47Kit::Readable(FW W) { W->AddMetadata(MakeShared<FS47ReadingMark>(true)); return W; }
+S47Kit::FW S47Kit::Unread(FW W) { W->AddMetadata(MakeShared<FS47ReadingMark>(false)); return W; }
 
 TSharedPtr<FSlateBrush> S47Kit::BrushFor(UTexture2D* T)
 {

@@ -1,5 +1,7 @@
 #include "S47Main.h"
 #include "S47Chapter5.h"
+#include "S47Chapter6.h"
+#include "SS47Widgets.h"
 #include "S47TownLayer.h"
 
 #include "S47Flow.h"
@@ -85,6 +87,12 @@ void US47Main::Step(double Dt)
 	if (Night) Night->Step(Dt);
 	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)
 	if (SaroNight) SaroNight->Frame(Dt);
+	// main.ts: html.at-line during THE EVENT (game.ch6.stage === 'event'): the prompt sits lower
+	{
+		const US47Chapter6* C6 = Story ? Cast<US47Chapter6>(Story->Chapter(TEXT("ch6"))) : nullptr;
+		const bool bLine = Mode == EMode::Play && C6 && C6->Stage == TEXT("event");
+		if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr; H && H->bAtLine != bLine) H->bAtLine = bLine;
+	}
 	// main.ts: the acoustic space, from where the player stands
 	FString Sp;
 	if (World && World->bDriving) Sp = TEXT("lab");

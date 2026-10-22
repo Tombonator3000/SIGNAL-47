@@ -41,6 +41,8 @@ private:
 	TArray<FS47TalkLine> Lines, ShownLines;
 	bool bReeling = false;
 	TSharedPtr<SVerticalBox> Body;
+	// the Read aloud box of the lines nobody voices (P.talk's ui.readingControls), kept while the lines are
+	TSharedPtr<SWidget> Reading;
 	void BindTown();
 	void Refresh();
 	void StartVoice(bool bEarl, const FString& Voice, const TArray<FS47TalkLine>& Speech);

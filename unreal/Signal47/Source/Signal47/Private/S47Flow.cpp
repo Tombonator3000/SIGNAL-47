@@ -31,6 +31,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Radio.h"
+#include "S47ReadAloud.h"
 #include "S47Roadside.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
@@ -148,6 +149,40 @@ void US47Flow::Init(US47Main* InM)
 	bSerling = S47J::Bool(Store, TEXT("serlingNarrator"), true);
 	bCharacters = S47J::Bool(Store, TEXT("characterVoices"), true);
 	if (M->Audio) { M->Audio->bCharacterVoices = bCharacters; M->Audio->bKinskiCalls = bKinski; }
+	// main.ts: the readers (core/readAloud.ts): Kinski's for papers and conversations, opt-in, and the
+	// narrator, Serling's, on unless switched off; ui.readAloud and ui.narrator
+	M->UI->ReadAloud = MakeShared<FS47ReadAloud>(M->Audio);
+	M->UI->ReadAloud->SetEnabled(bKinski);
+	M->UI->Narrator = MakeShared<FS47ReadAloud>(M->Audio, S47Reading::SerlingBank());
+	M->UI->Narrator->SetEnabled(bSerling);
+	// stopNarration(except): every voice but the one about to speak; onReadingStart, and the phone's call
+	// (the character voices' and Earl's starts are wired with them: Chapter4's, TownLayer's)
+	M->UI->OnReadingStart = [this](FS47ReadAloud* Reader)
+	{
+		StopNarration(Reader ? Reader : M->UI->ReadAloud.Get());
+		if (M->Audio) M->Audio->StopPhoneCalls();
+		if (M->CB.IsValid()) M->CB->Stop();
+	};
+	if (M->UI->NpcDialogue.IsValid())
+	{
+		// ui.onCharacterStart: stopNarration(npcDialogue), as well as the calls and the CB it stopped
+		TFunction<void()> Before = M->UI->NpcDialogue->OnCharacterStart;
+		M->UI->NpcDialogue->OnCharacterStart = [this, Before] { StopNarration(M->UI->NpcDialogue.Get()); if (Before) Before(); };
+	}
+	if (M->Audio)
+	{
+		// audio.onPhoneCall: stopNarration() (the readers among them) and cb.stop()
+		TFunction<void()> Before = M->Audio->OnPhoneCall;
+		M->Audio->OnPhoneCall = [this, Before] { StopNarration(nullptr); if (Before) Before(); };
+	}
+	// ui.canDescribe: in play, nothing cinematic, no call, the CB quiet, no character or Earl speaking
+	M->UI->CanDescribe = [this]
+	{
+		if (M->Mode != EMode::Play || (M->Story && M->Story->IsCinematic()) || (M->Audio && M->Audio->PhonePlaying()) || (M->CB.IsValid() && M->CB->bBusy)) return false;
+		const TSharedPtr<FS47NpcDialogue> Npc = M->UI->NpcDialogue;
+		const TSharedPtr<FS47EarlDialogue> Earl = M->UI->EarlDialogue;
+		return !(Npc.IsValid() && (Npc->Playing() || Npc->Loading())) && !(Earl.IsValid() && (Earl->Playing() || Earl->Loading()));
+	};
 	Volume = float(S47J::Num(Store, TEXT("vol"), 0.8));
 	MusicLevel = float(S47J::Num(Store, TEXT("music"), 0.7));
 	RadioLevel = float(S47J::Num(Store, TEXT("radioVol"), 1));
@@ -183,7 +218,7 @@ void US47Flow::Init(US47Main* InM)
 		if (TitleEl.IsValid()) StaticCastSharedPtr<SS47Title>(TitleEl)->FocusStart();
 	};
 	H.Dismissed = [this] { if (M->Audio) M->Audio->Silence(false); if (M->Mode == EMode::Title) MenuMusic(); };
-	Opening = MakeShared<FS47Opening>(MoveTemp(H));
+	Opening = MakeShared<FS47Opening>(M->UI->Narrator, MoveTemp(H));
 
 	// the host's hooks: Prologue deps loadCase, and game.onCheckpoint (a new safe point, 02:13 or a
 	// new chapter, starts a new autosave generation); the chapters' saveCase is M->RequestAutosave()
@@ -192,15 +227,30 @@ void US47Flow::Init(US47Main* InM)
 		Host->LoadCase = [this] { return Restoring.IsValid() ? S47J::Obj(Restoring, TEXT("case")) : S47J::FObj(); };
 		Host->OnCheckpoint = [this](const FString&) { RequestAutosave(true); };
 		// main.ts chapterBreak, once the next chapter has begun behind the black: the card with what was
-		// closed and the night's clock. Without the narrator it ends with the host's 6.4 s, the black with it.
+		// closed and the night's clock. It ends with the host's 6.4 s, the black with it; read by the
+		// narrator, not before the reading has ended and the title has had 3.2 s of its own (finish)
 		Host->OnChapterCard = [this](const AS47Story::FBreak& B)
 		{
 			FS47ChapterCardOpts C;
 			C.Closed = B.Closed; C.Recap = B.Recap; C.Next = B.Next; C.Title = B.Title;
 			C.Clock = S47Text::ClockText(M->Story->Clock(), false);
 			M->UI->Fade(true, FString());
-			M->UI->ChapterCard(&C);
-			M->Story->After(6.4, [this] { M->UI->ChapterCard(nullptr); });
+			struct FCardRun { bool bSpoken = false, bTitleWaiting = false, bTitleReady = false; };
+			const TSharedRef<FCardRun> Run = MakeShared<FCardRun>();
+			M->UI->ChapterCard(&C, [Run] { Run->bSpoken = true; });
+			M->Story->ChapterCardDone = [this, Run]
+			{
+				const FString& Stage = M->UI->ChapterStage;
+				if ((Stage == TEXT("b") || Stage == TEXT("text-b") || Stage == TEXT("error-b")) && !Run->bTitleWaiting)
+				{
+					Run->bTitleWaiting = true;
+					M->Story->After(3.2, [Run] { Run->bTitleReady = true; });
+				}
+				if (!Run->bSpoken || (Run->bTitleWaiting && !Run->bTitleReady)) return false;
+				UE_LOG(LogS47Flow, Display, TEXT("S47: chapter card done (stage %s)"), *Stage);
+				M->UI->ChapterCard(nullptr);
+				return true;
+			};
 		};
 	}
 	// doors.onChange: the chapters that care remember them, and the change is saved
@@ -231,6 +281,13 @@ void US47Flow::Init(US47Main* InM)
 	auto Pause = [this] { if (M->Mode != EMode::Play) return false; OpenPause(); return true; };
 	M->OnKey(EKeys::Escape, Pause);
 	M->OnKey(EKeys::P, Pause);
+	// V: the last description read again (ui.readLastDescription), not in a cinematic
+	M->OnKey(EKeys::V, [this]
+	{
+		if (M->Mode != EMode::Play) return false;
+		if (!(M->Story && M->Story->IsCinematic())) M->UI->ReadLastDescription();
+		return true;
+	});
 
 	// the window put away (main.ts visibilitychange and the lost pointer lock)
 	if (FSlateApplication::IsInitialized()) ActivationHandle = FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &US47Flow::Activation);
@@ -693,10 +750,21 @@ void US47Flow::Finale()
 
 // ---------- pause and the settings ----------
 
+void US47Flow::StopNarration(const void* Except)
+{
+	// main.ts stopNarration: for (const player of [readAloud, narrator, earlDialogue, npcDialogue]) if (player !== except) player.stop()
+	US47UI* UI = M->UI;
+	if (UI->ReadAloud.IsValid() && UI->ReadAloud.Get() != Except) UI->ReadAloud->Stop();
+	if (UI->Narrator.IsValid() && UI->Narrator.Get() != Except) UI->Narrator->Stop();
+	if (UI->EarlDialogue.IsValid() && static_cast<const void*>(UI->EarlDialogue.Get()) != Except) UI->EarlDialogue->Stop();
+	if (UI->NpcDialogue.IsValid() && static_cast<const void*>(UI->NpcDialogue.Get()) != Except) UI->NpcDialogue->Stop();
+}
+
 void US47Flow::OpenPause()
 {
 	if (M->bPausedByMenu) return;
-	// (readAloud, earlDialogue, narrator, npcDialogue stop: the voices are not ported yet)
+	// readAloud, earlDialogue, narrator and npcDialogue stop
+	M->UI->StopSpeech();
 	M->bPausedByMenu = true;
 	if (M->Audio) M->Audio->Suspend(true);
 	if (M->Score) M->Score->Pause(true);
@@ -742,9 +810,9 @@ FS47PauseOpts US47Flow::Settings()
 	O.bCharacters = bCharacters;
 	O.OnCharacters = [this](bool V) { bCharacters = V; if (M->TownLayer && M->TownLayer->Caliche->NpcDialogue) M->TownLayer->Caliche->NpcDialogue->SetEnabled(V); if (M->Audio) { M->Audio->bCharacterVoices = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("characterVoices"), V); };
 	O.bSerling = bSerling;
-	O.OnSerling = [this](bool V) { bSerling = V; StoreSet(TEXT("serlingNarrator"), V); };
+	O.OnSerling = [this](bool V) { bSerling = V; if (M->UI->Narrator.IsValid()) M->UI->Narrator->SetEnabled(V); StoreSet(TEXT("serlingNarrator"), V); };
 	O.bKinski = bKinski;
-	O.OnKinski = [this](bool V) { bKinski = V; if (M->Audio) { M->Audio->bKinskiCalls = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("kinskiReadAloud"), V); };
+	O.OnKinski = [this](bool V) { bKinski = V; if (M->UI->ReadAloud.IsValid()) M->UI->ReadAloud->SetEnabled(V); if (M->Audio) { M->Audio->bKinskiCalls = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("kinskiReadAloud"), V); };
 	O.bArtBell = bArtBell;
 	O.OnArtBell = [this](bool V) { bArtBell = V; if (M->TownLayer && M->TownLayer->Caliche->EarlDialogue) M->TownLayer->Caliche->EarlDialogue->SetEnabled(V); if (M->Radio) M->Radio->SetHostVoice(V); StoreSet(TEXT("artBellRadioHost"), V); };
 	O.bRadioCast = bRadioCast;

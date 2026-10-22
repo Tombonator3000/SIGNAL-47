@@ -10,6 +10,8 @@
 #include "S47Image.h"
 #include "S47Kit.h"
 #include "S47NpcDialogue.h"
+#include "S47EarlDialogue.h"
+#include "S47ReadAloud.h"
 #include "S47UI.h"
 #include "SS47Widgets.h"
 #include "Styling/CoreStyle.h"
@@ -691,10 +693,23 @@ void SS47Talk::Render()
 	TFunction<void()> PlayCharacter;
 	if (ReadingKey != ReadingShown)
 	{
-		// (ui.descriptionReader, ui.readAloud and Earl's voice: not in this version)
+		if (UI.IsValid())
+		{
+			if (const TSharedPtr<FS47ReadAloud> D = UI->DescriptionReader()) D->Stop();
+			if (UI->ReadAloud.IsValid()) UI->ReadAloud->Stop();
+			if (O.bEarl && UI->EarlDialogue.IsValid()) UI->EarlDialogue->Stop();
+		}
 		StopCharacter();
 		TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
-		// (the lines nobody voices get Read aloud, ui.readingControls: the read-aloud voice is not in this version)
+		// the lines nobody voices get Read aloud (ui.readingControls): the character's own are its voice's
+		// (Earl's voice in this panel, ui.earlReadingControls, is Caliche's own panel's in this version, so
+		// o.earl takes no lines from Kinski here)
+		TArray<FS47DialogueLine> All;
+		for (const S47Panels::FTalkLine& L : V.Lines) All.Add({ L.Who, L.Text });
+		const TArray<FS47DialogueLine> Voiced = !O.Character.IsEmpty() && NpcOn() ? FS47NpcDialogue::CharacterLines(O.Character, All) : TArray<FS47DialogueLine>();
+		TArray<FString> Texts;
+		for (const FS47DialogueLine& L : All) if (!Voiced.Contains(L)) Texts.Add(L.Text);
+		if (Texts.Num() && UI.IsValid()) Box->AddSlot().AutoHeight()[UI->ReadingControls(Texts)];
 		if (!O.Character.IsEmpty() && NpcOn())
 		{
 			const TFunction<void()> Play = CharacterReadingControls(Box, O.Character, Speech);
@@ -794,7 +809,8 @@ void SS47Talk::Render()
 		}
 		B->AddSlot().AutoHeight()[S47Kit::Col(Choices, 8.f)];
 	}
-	if (V.Reply) B->AddSlot().AutoHeight()[S47Kit::Text(V.Reply->Text, V.Reply->bOk ? 1 : -1)];
+	// (a voiced quote, [data-character-quote], is the voice's: the description reader leaves it)
+	if (V.Reply) B->AddSlot().AutoHeight()[bReply ? S47Kit::Unread(S47Kit::Text(V.Reply->Text, V.Reply->bOk ? 1 : -1)) : S47Kit::Text(V.Reply->Text, V.Reply->bOk ? 1 : -1)];
 	if (V.Given.Num())
 	{
 		B->AddSlot().AutoHeight()[S47Kit::Small(TEXT("On the table"))];
@@ -821,4 +837,114 @@ S47Panels::FTalkHandle S47Panels::Talk(US47UI* UI, const FTalk& O)
 	W->Render();
 	const TWeakPtr<SS47Talk> Wk = W;
 	return { [Wk] { if (const TSharedPtr<SS47Talk> P = Wk.Pin()) P->Render(); } };
+}
+
+// ---------- the signal processor on the control room rack ----------
+
+void S47Panels::DecoderScopeBar(int32 I, const FString& Mode, double H, double& OutX, double& OutHh)
+{
+	static const double Four[4] = { 0, 3, 7, 10 }, Seven[7] = { 12, 10, 7, 5, 3, 2, 0 };
+	OutX = 30 + (I < 4 ? I : I + 1.5) * 47;
+	OutHh = (I < 4 ? 0.55 : 0.75) * H * (Mode == TEXT("raw") ? 0.8 : 0.5 + 0.05 * (I < 4 ? Four[I] : Seven[I - 4]));
+}
+
+// <canvas class="dsp-scope" width="640" height="120">: the eleven pulses of one group cycle, the
+// sounding one lit, drawn every frame (requestAnimationFrame) while the panel is open. The canvas is
+// stretched to the panel's width at 120 px high (.dsp-scope width 100%, max-height 120px), so it is
+// drawn here in its own 640 x 120 and scaled the same way.
+class SS47DspScope : public SLeafWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SS47DspScope) {}
+		SLATE_ARGUMENT(TFunction<S47Panels::FDecoderView()>, View)
+	SLATE_END_ARGS()
+	void Construct(const FArguments& A) { View = A._View; White = MakeUnique<FSlateColorBrush>(FLinearColor::White); }
+	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(640 * PX, 120 * PX); }
+	virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+	{
+		if (!View) return Layer;
+		const S47Panels::FDecoderView V = View();
+		const double W = 640, H = 120;
+		const float Sx = float(G.GetLocalSize().X / W), Sy = float(G.GetLocalSize().Y / H);
+		auto Rect = [&](double X, double Y, double Rw, double Rh, const FLinearColor& C, int32 L)
+		{
+			FSlateDrawElement::MakeBox(Out, L, G.ToPaintGeometry(FVector2f(float(Rw) * Sx, float(Rh) * Sy), FSlateLayoutTransform(FVector2f(float(X) * Sx, float(Y) * Sy))), White.Get(), ESlateDrawEffect::None, C);
+		};
+		const int32 Cur = V.bPlaying && V.Current ? V.Current() : -1;
+		Rect(0, 0, W, H, S47Kit::Css(0x04110a), Layer);
+		for (int32 I = 0; I < 11; ++I)
+		{
+			double X = 0, Hh = 0;
+			S47Panels::DecoderScopeBar(I, V.Mode, H, X, Hh);
+			Rect(X, H - 10 - Hh, 30, Hh, I == Cur ? S47Kit::Css(0xb9ffc7) : S47Kit::Css(0x6edc96, 0.35f), Layer + 1);
+		}
+		// '18px VT323' at (12, 22) on its baseline: the text's top a little under 8
+		const FString Line = FString::Printf(TEXT("%s  4 / 7  %s"), V.Mode == TEXT("raw") ? TEXT("RAW") : TEXT("HARM"), V.bPlaying ? TEXT("PLAY") : TEXT("STOP"));
+		FSlateDrawElement::MakeText(Out, Layer + 2, G.ToPaintGeometry(FVector2f(600.f * Sx, 24.f * Sy), FSlateLayoutTransform(FVector2f(12.f * Sx, (22.f - 18.f * 0.8f) * Sy))), Line, S47Style::Mono(18.f * Sy), ESlateDrawEffect::None, S47Kit::Css(0x8cffa4, 0.8f));
+		return Layer + 3;
+	}
+
+private:
+	TFunction<S47Panels::FDecoderView()> View;
+	TUniquePtr<FSlateBrush> White;
+};
+
+S47Panels::FPanelHandle S47Panels::DecoderPanel(US47UI* UI, const FDecoderPanel& O)
+{
+	const TFunction<FDecoderView()> View = O.View;
+	const TFunction<void(const FString&)> OnMode = O.OnMode;
+	const TFunction<void(const FString&, double)> OnParam = O.OnParam;
+	const TFunction<void(bool)> OnPlay = O.OnPlay;
+	auto V = [View] { return View ? View() : FDecoderView(); };
+	// sync(): the tape line, which mode is pressed, the knobs' values and the play button follow the view
+	// (Slate's attributes read them as the panel draws)
+	auto Mode = [OnMode](const FString& M) { return [OnMode, M] { if (OnMode) OnMode(M); }; };
+	// (Number(i.value): the range's value on its step, as the input gives it)
+	auto Param = [OnParam](const FString& K, double Step) { return [OnParam, K, Step](float X) { if (OnParam) OnParam(K, FMath::RoundToDouble(double(X) / Step) * Step); }; };
+	const FW Tape = SNew(STextBlock).Text_Lambda([V] { return FText::FromString(V().Tape); })
+		.Font(S47Style::Mono(19.f * PX)).ColorAndOpacity(S47Kit::Css(0xffb052)).AutoWrapText(true).Margin(FMargin(0, 0, 0, 10));
+	// .dsp-scope: margin 4px 0 10px, a faint green line round it
+	static const FSlateRoundedBoxBrush ScopeLine(FLinearColor::Transparent, 0.f, S47Kit::Css(0x8cffa4, 0.25f), 1.f);
+	const FW Scope = SNew(SBox).Padding(FMargin(0, 4 * PX, 0, 10 * PX))
+		[
+			SNew(SBorder).BorderImage(&ScopeLine).Padding(1.f)
+			[
+				SNew(SBox).HeightOverride(120 * PX)[SNew(SS47DspScope).View(View)]
+			]
+		];
+	const FW Modes = S47Kit::Row({
+		S47Kit::Choice(TEXT("RAW TAPE"), TAttribute<bool>::CreateLambda([V] { return V().Mode == TEXT("raw"); }), Mode(TEXT("raw")), true),
+		S47Kit::Choice(TEXT("HARMONIZED"), TAttribute<bool>::CreateLambda([V] { return V().Mode == TEXT("harmonized"); }), Mode(TEXT("harmonized")), true) });
+	// .dsp-knobs: three columns, 14 px apart, 10 px above and below
+	const FW Knobs = SNew(SBox).Padding(FMargin(0, 10 * PX))
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(0, 0, 7 * PX, 0)
+			[
+				S47Kit::Knob(TEXT("PITCH"), TAttribute<FString>::CreateLambda([V] { const double P = V().Pitch; return FString::Printf(TEXT("%s%s st"), P > 0 ? TEXT("+") : TEXT(""), *FString::SanitizeFloat(P, 0)); }),
+					-12.f, 12.f, 1.f, TAttribute<float>::CreateLambda([V] { return float(V().Pitch); }), Param(TEXT("pitch"), 1))
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(7 * PX, 0)
+			[
+				S47Kit::Knob(TEXT("TIME"), TAttribute<FString>::CreateLambda([V] { return FString::Printf(TEXT("x%.1f"), V().Stretch); }),
+					1.f, 6.f, 0.5f, TAttribute<float>::CreateLambda([V] { return float(V().Stretch); }), Param(TEXT("stretch"), 0.5))
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(7 * PX, 0, 0, 0)
+			[
+				S47Kit::Knob(TEXT("SPACE"), TAttribute<FString>::CreateLambda([V] { return FString::Printf(TEXT("%d%%"), int32(FMath::FloorToDouble(V().Space * 100 + 0.5))); }),
+					0.f, 1.f, 0.05f, TAttribute<float>::CreateLambda([V] { return float(V().Space); }), Param(TEXT("space"), 0.05))
+			]
+		];
+	const FW PlayRow = S47Kit::Row({ S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([V] { return V().bPlaying ? FString(TEXT("STOP")) : FString(TEXT("PLAY TAPE")); }),
+		[V, OnPlay] { if (OnPlay) OnPlay(!V().bPlaying); }, true) });
+	const FW Body = S47Kit::Col({
+		Tape,
+		Scope,
+		Modes,
+		Knobs,
+		PlayRow,
+		S47Kit::Small(TEXT("The deck keeps what the receiver locked on. Slowed down and harmonized, the pulses stop sounding like a machine. The processor keeps playing from the rack while you walk around.")) }, 0.f);
+	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("SIGNAL PROCESSOR / DSP-4"), Body), O.OnClose);
+	// { el, refresh: sync }: the attributes follow the view by themselves
+	return { [] {} };
 }

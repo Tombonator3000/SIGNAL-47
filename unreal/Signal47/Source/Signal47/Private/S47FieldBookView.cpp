@@ -3,6 +3,7 @@
 
 #include "Brushes/SlateColorBrush.h"
 #include "Engine/Texture2D.h"
+#include "Internationalization/Regex.h"
 #include "S47Audio.h"
 #include "S47Canvas.h"
 #include "S47Image.h"
@@ -18,6 +19,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SCompoundWidget.h"
+#include "Widgets/SNullWidget.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -527,6 +529,7 @@ public:
 	float TurnT = 0.f;
 	TSharedPtr<FSlateBrush> PageBrush;
 	TSharedPtr<SWidget> PageEl;
+	TSharedPtr<SBox> Reading;   // the page's .read-aloud box
 
 	void Construct(const FArguments&, const FBookOpts& InO, US47UI* InUI, US47Audio* InAudio)
 	{
@@ -617,6 +620,7 @@ public:
 								[
 									SNew(STextBlock).Text_Lambda([this] { return FText::FromString(FString::Printf(TEXT("Page %d of %d"), At + 1, O.Pages.Num())); }).Font(S47Style::Mono(18.f * 1.25f)).ColorAndOpacity(Off)
 								]
+								+ SVerticalBox::Slot().AutoHeight()[SAssignNew(Reading, SBox)]
 								+ SVerticalBox::Slot().AutoHeight().Padding(0, 14, 0, 0)
 								[
 									SNew(SHorizontalBox)
@@ -649,7 +653,8 @@ public:
 		At = N;
 		// the page turned: a new sheet under the hand, and its sound
 		if (!bFirst) { PaperSound(Audio.Get()); TurnT = 0.32f; }
-		// (ui.readingControls(side, [p.typed], 'Read document', 'document'): the narrators are not ported)
+		// the page's own Read document box (side > .read-aloud, before .controls)
+		if (Reading.IsValid()) Reading->SetContent(UI.IsValid() ? UI->ReadingControls({ O.Pages[N].Typed }, TEXT("Read document"), TEXT("document")) : SNullWidget::NullWidget);
 		if (O.OnPage) O.OnPage(N);
 	}
 
@@ -745,6 +750,7 @@ public:
 										.AutoWrapText(true).Font(S47Style::Body(19.f)).ColorAndOpacity(FLinearColor(0.85f, 0.83f, 0.78f)).LineHeightPercentage(1.25f)
 									]
 								]
+								+ SVerticalBox::Slot().AutoHeight()[SAssignNew(Reading, SBox)]
 								+ SVerticalBox::Slot().AutoHeight().Padding(0, 14, 0, 0)
 								[
 									SNew(SHorizontalBox)
@@ -776,9 +782,25 @@ public:
 	{
 		bUp = !bUp;
 		PaperSound(Audio.Get());
-		// (ui.readingControls: the narrators are not ported)
+		Show();
 		if (bUp && O.OnHold) O.OnHold();
 	}
+
+	/** show(up): the side's Read description box for what is in front of the eyes now */
+	void Show()
+	{
+		if (!Reading.IsValid()) return;
+		// (up ? o.litText : o.text).split(/\n\s*\n/).filter((p) => p.trim())
+		const FString& Text = bUp ? O.LitText : O.Text;
+		TArray<FString> Paragraphs;
+		static const FRegexPattern Gap(TEXT("\\n\\s*\\n"));
+		FRegexMatcher Mt(Gap, Text);
+		int32 From = 0;
+		while (Mt.FindNext()) { const FString P = Text.Mid(From, Mt.GetMatchBeginning() - From); if (!P.TrimStartAndEnd().IsEmpty()) Paragraphs.Add(P); From = Mt.GetMatchEnding(); }
+		if (!Text.Mid(From).TrimStartAndEnd().IsEmpty()) Paragraphs.Add(Text.Mid(From));
+		Reading->SetContent(UI.IsValid() ? UI->ReadingControls(Paragraphs, TEXT("Read description"), TEXT("description")) : SNullWidget::NullWidget);
+	}
+	TSharedPtr<SBox> Reading;
 
 	virtual void Tick(const FGeometry& G, const double Now, const float Dt) override
 	{
@@ -801,6 +823,7 @@ FEnvelopeView S47FieldBookView::Envelope(US47UI* UI, US47Audio* Audio, const FEn
 	PaperSound(Audio);
 	TWeakPtr<SS47Envelope> Wk = El;
 	if (UI) UI->Open(El, [Wk] { if (const TSharedPtr<SS47Envelope> P = Wk.Pin()) if (P->O.OnClose) P->O.OnClose(); });
+	El->Show();
 	FEnvelopeView V;
 	V.Hold = [Wk] { if (const TSharedPtr<SS47Envelope> P = Wk.Pin()) if (!P->bUp) P->Toggle(); };
 	return V;

@@ -21,6 +21,7 @@
 #include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SLeafWidget.h"
+#include "Widgets/SNullWidget.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -57,7 +58,8 @@ namespace
 	}
 	TSharedRef<SWidget> Empty(const FString& S, const FLinearColor& Col = C(0x7d7563))
 	{
-		return SNew(STextBlock).Text(FText::FromString(S)).Font(Type(15)).ColorAndOpacity(Col).AutoWrapText(true);
+		// (.empty: read as a description, UI.notebook's descriptionReadings)
+		return S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Type(15)).ColorAndOpacity(Col).AutoWrapText(true));
 	}
 	// a picture by its data URL or its art name (core/art.ts), as an image `Width` wide
 	UTexture2D* Picture(const FString& Src)
@@ -309,7 +311,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 				[
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(Li * PX * 1.1f)[SNew(STextBlock).Text(FText::FromString(T.bDone ? TEXT("x") : TEXT("-"))).Font(Hand(Li)).ColorAndOpacity(T.bDone ? C(0x6d7895) : InkBlue())]]
-					+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(T.Text)).TextStyle(&St).AutoWrapText(true)]
+					+ SHorizontalBox::Slot().FillWidth(1.f)[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(T.Text)).TextStyle(&St).AutoWrapText(true))]
 				]
 			];
 		}
@@ -325,7 +327,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 		const int32 Half = (Notes.Num() + 1) / 2;
 		for (int32 i = 0; i < Notes.Num(); ++i)
 		{
-			(i < Half ? L : R)->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Notes[i])).Font(Hand(Li)).ColorAndOpacity(InkBlue()).AutoWrapText(true).LineHeightPercentage(0.9f)];
+			(i < Half ? L : R)->AddSlot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(Notes[i])).Font(Hand(Li)).ColorAndOpacity(InkBlue()).AutoWrapText(true).LineHeightPercentage(0.9f))];
 		}
 		NotesP->AddSlot().AutoHeight()[S47Kit::Two(L, R)];
 	}
@@ -466,9 +468,9 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 		{
 			const FS47KitItem& K = (*X.Kit)[i];
 			TSharedRef<SVerticalBox> Words = SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(K.Name)).Font(Type(19)).ColorAndOpacity(C(0x2e2a22))];
-			if (!K.State.IsEmpty()) Words->AddSlot().AutoHeight().Padding(0, 2 * PX, 0, 4 * PX)[SNew(STextBlock).Text(FText::FromString(K.State)).Font(Term(17)).ColorAndOpacity(C(0xa33a2c))];
-			Words->AddSlot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(K.Note)).Font(Type(15)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true)];
+				+ SVerticalBox::Slot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(K.Name)).Font(Type(19)).ColorAndOpacity(C(0x2e2a22)))];
+			if (!K.State.IsEmpty()) Words->AddSlot().AutoHeight().Padding(0, 2 * PX, 0, 4 * PX)[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(K.State)).Font(Term(17)).ColorAndOpacity(C(0xa33a2c)))];
+			Words->AddSlot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(K.Note)).Font(Type(15)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true))];
 			TSharedRef<SHorizontalBox> Item = SNew(SHorizontalBox);
 			if (UTexture2D* Art = K.Art.IsEmpty() ? nullptr : S47Image::Art(KitArt(K.Art)))
 			{
@@ -510,9 +512,9 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left)[Frame]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 8 * PX, 0, 0)[SNew(STextBlock).Text(FText::FromString(P.Name)).Font(Type(18)).ColorAndOpacity(C(0x2e2a22))]
-				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(P.Role)).Font(Term(16)).ColorAndOpacity(C(0xa33a2c))]
-				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(P.Note)).Font(Type(14)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true)]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, 8 * PX, 0, 0)[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(P.Name)).Font(Type(18)).ColorAndOpacity(C(0x2e2a22)))]
+				+ SVerticalBox::Slot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(P.Role)).Font(Term(16)).ColorAndOpacity(C(0xa33a2c)))]
+				+ SVerticalBox::Slot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(P.Note)).Font(Type(14)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true))]
 			];
 		}
 		KeepColumns(Grid, X.People->Num(), 4);
@@ -597,6 +599,11 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 					[
 						SNew(SScrollBox) + SScrollBox::Slot()[Pages]
 					]
+					// .notebook > .read-aloud: the descriptions on the open page (and the map's, on the map)
+					+ SVerticalBox::Slot().AutoHeight().Padding(20 * PX, 0)
+					[
+						UI.IsValid() ? UI->DescriptionReadings(Pages, TEXT("notebook-description"), [this, MapDescription = X.MapDescription] { return Tab == TEXT("map") ? MapDescription : TArray<FString>(); }) : SNullWidget::NullWidget
+					]
 				]
 			]
 		]
@@ -646,6 +653,8 @@ TSharedRef<SWidget> SS47Notebook::Page(const FString& T, bool bRuled, TSharedRef
 
 void SS47Notebook::Show(const FString& T)
 {
+	// show(t): a page turned stops what was being read
+	if (UI.IsValid()) UI->StopSpeech();
 	Tab = T;
 	if (UI.IsValid())
 	{
@@ -687,6 +696,8 @@ TSharedRef<SWidget> SS47Notebook::Print(int32 I, float W, bool bBig)
 	UTexture2D* Tex = Developing(S.Id, S.Url, S.Dev);
 	const float Iw = 0.875f * W, Ih = Iw * 10.f / 16.f, Edge = 0.0625f * W, Bottom = 0.234f * W;
 	const float Bf = (bBig ? 0.056f : 0.074f) * W, Sf = (bBig ? 0.04f : 0.058f) * W;
+	// (.al-cap b and small: the big print's caption is read as its description, bindAlbum's show)
+	auto Cap = [bBig](TSharedRef<SWidget> T) { return bBig ? S47Kit::Readable(T) : T; };
 	TSharedRef<SWidget> Img = Tex ? StaticCastSharedRef<SWidget>(SNew(SImage).Image(S47Kit::BrushFor(Tex).Get())) : StaticCastSharedRef<SWidget>(SNew(SBorder).BorderImage(Box(C(0x0c0c0d))));
 	TSharedRef<SWidget> Paper = SNew(SBorder).BorderImage(Box(C(0xebe5d4))).Padding(FMargin(Edge * PX, Edge * PX, Edge * PX, 0))
 	[
@@ -700,9 +711,9 @@ TSharedRef<SWidget> SS47Notebook::Print(int32 I, float W, bool bBig)
 				+ SVerticalBox::Slot().AutoHeight()
 				[
 					SNew(SBox).MaxDesiredHeight(Bf * 0.98f * (bBig ? 3 : 2) * PX * 1.25f).Clipping(EWidgetClipping::ClipToBounds)
-					[SNew(STextBlock).Text(FText::FromString(S.Text)).Font(Hand(Bf)).ColorAndOpacity(C(0x22305a)).AutoWrapText(true).LineHeightPercentage(0.98f)]
+					[Cap(SNew(STextBlock).Text(FText::FromString(S.Text)).Font(Hand(Bf)).ColorAndOpacity(C(0x22305a)).AutoWrapText(true).LineHeightPercentage(0.98f))]
 				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 2 * PX, 0, 0)[SNew(STextBlock).Text(FText::FromString(S.Meta)).Font(Hand(Sf)).ColorAndOpacity(C(0x4b4a58))]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, 2 * PX, 0, 0)[Cap(SNew(STextBlock).Text(FText::FromString(S.Meta)).Font(Hand(Sf)).ColorAndOpacity(C(0x4b4a58)))]
 			]
 		]
 	];
@@ -720,6 +731,8 @@ TSharedRef<SWidget> SS47Notebook::Print(int32 I, float W, bool bBig)
 void SS47Notebook::ShowBig(int32 I)
 {
 	if (!Album || !Album->Shots.IsValidIndex(I) || !BigSlot.IsValid()) return;
+	// (reading.change(): another print, or none, stops what was being read)
+	if (UI.IsValid()) UI->StopSpeech();
 	Big = I;
 	// --w: min(100vw - 150px, (100vh - 48px) / .844, 920px)
 	const FVector2D View = FVector2D(GetCachedGeometry().GetLocalSize()) / PX;
@@ -737,6 +750,8 @@ void SS47Notebook::ShowBig(int32 I)
 			]
 		];
 	};
+	const TSharedRef<SWidget> BigPrint = Print(I, W, true);
+	const TSharedRef<SWidget> Readings = UI.IsValid() ? UI->DescriptionReadings(BigPrint, TEXT("photo-description")) : SNullWidget::NullWidget;
 	BigSlot->SetContent(
 		SNew(SBorder).BorderImage(Box(C(0x030509, 0.93f))).Padding(0)
 		// a tap outside the print puts it back
@@ -747,7 +762,15 @@ void SS47Notebook::ShowBig(int32 I)
 			[
 				SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("NoBorder")).Padding(0)
 				.OnMouseButtonDown_Lambda([](const FGeometry&, const FPointerEvent&) { return FReply::Handled(); })
-				[Print(I, W, true)]
+				[BigPrint]
+			]
+			// .al-view > .read-aloud: under the print, in the middle, on dark (photo-description)
+			+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, 65 * PX)
+			[
+				SNew(SBorder).BorderImage(Box(C(0x111417))).Padding(FMargin(10 * PX, 4 * PX))
+				.Visibility_Lambda([Readings] { return Readings->GetDesiredSize().X > 0 ? EVisibility::Visible : EVisibility::Collapsed; })
+				.OnMouseButtonDown_Lambda([](const FGeometry&, const FPointerEvent&) { return FReply::Handled(); })
+				[Readings]
 			]
 			+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center).Padding(6 * PX, 0, 0, 0)[Nav(TEXT("‹"), I - 1, I > 0)]
 			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Center).Padding(0, 0, 6 * PX, 0)[Nav(TEXT("›"), I + 1, I < N - 1)]
@@ -771,6 +794,8 @@ void SS47Notebook::ShowBig(int32 I)
 
 void SS47Notebook::CloseBig()
 {
+	// (reading.change(); the box goes with the view)
+	if (Big != INDEX_NONE && UI.IsValid()) UI->StopSpeech();
 	Big = INDEX_NONE;
 	if (BigSlot.IsValid()) BigSlot->SetContent(SNullWidget::NullWidget);
 }

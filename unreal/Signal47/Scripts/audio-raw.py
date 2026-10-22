@@ -14,11 +14,14 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
                                           character (voice -> text -> character:<id>); texts normalised
                                           as readAloud.ts normalizeReadingText
   Content/Audio/Raw/media/{music,radio}/*.wav  the long recordings, seekable PCM16 for S47Media
-  Content/Audio/Raw/voice/<bank>/*.wav    the four RadioVoice banks, decoded lazily by RadioVoice
+  Content/Audio/Raw/voice/<bank>/*.wav    the voice banks read a clip at a time: Kinski's and Serling's (with
+                                          the opening's) for ReadAloud (core/readAloud.ts, core/narrationBanks.ts),
+                                          and the four RadioVoice banks, decoded lazily by RadioVoice
   Content/Audio/Raw/voices.json           every voice bank's catalog (kinski, serling, serling-intro, artbell,
                                           artbell-town, radiocast, ensemble) with the asset each clip is
-                                          imported as (/Game/Audio/Voice/<Bank>/v_<file>), for ReadAloud,
-                                          RecordedDialogue and RadioVoice
+                                          imported as (/Game/Audio/Voice/<Bank>/v_<file>) and its raw file
+                                          (raw: voice/<bank>/<file>.wav), for ReadAloud, RecordedDialogue and
+                                          RadioVoice
   Content/Licensed/Raw/<name>.wav, index.json   the bought sounds (lic:<name>), when the private
                                           folder web/src/assets/licensed/sfx is there
 
@@ -32,6 +35,7 @@ import re
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = os.path.dirname(HERE)
@@ -39,7 +43,7 @@ ROOT = os.path.dirname(os.path.dirname(D))
 ap = argparse.ArgumentParser()
 ap.add_argument('--web', default=os.path.join(ROOT, 'web', 'src'))
 ap.add_argument('--content', default=os.path.join(D, 'Content'))
-ap.add_argument('--recordings-only', action='store_true', help='refresh long media and RadioVoice banks without replacing existing sfx/phone/bought raw files')
+ap.add_argument('--recordings-only', action='store_true', help='refresh long media and the voice banks (ReadAloud\'s and RadioVoice\'s) without replacing existing sfx/phone/bought raw files')
 args = ap.parse_args()
 WEB = args.web
 AUDIO = os.path.join(WEB, 'assets', 'audio')
@@ -50,6 +54,9 @@ LICRAW = os.path.join(args.content, 'Licensed', 'Raw')
 # the voice banks and the folders their clips are imported to (import-audio.sh does the same)
 BANKS = [('kinski', 'Kinski'), ('serling', 'Serling'), ('serling-intro', 'SerlingIntro'), ('artbell', 'ArtBell'),
          ('artbell-town', 'ArtBellTown'), ('radiocast', 'Radiocast'), ('ensemble', 'Ensemble')]
+# the banks whose clips are also written as WAVE files, read one clip at a time: ReadAloud's (Kinski, and
+# the narrator's Serling bank with the opening's) and RadioVoice's
+RAW_BANKS = ('kinski', 'serling', 'serling-intro', 'artbell', 'artbell-town', 'radiocast', 'ensemble')
 
 
 def normalize(text):
@@ -169,23 +176,27 @@ for bank, folder in BANKS:
     cat = json.load(open(path, encoding='utf-8'))
     for clip in cat.get('clips', []):
         clip['asset'] = 'v_' + os.path.splitext(clip['file'])[0]
-        if bank in ('artbell', 'artbell-town', 'radiocast', 'ensemble'):
+        if bank in RAW_BANKS:
             clip['raw'] = 'voice/%s/%s.wav' % (bank, os.path.splitext(clip['file'])[0])
     voices[bank] = {'folder': '/Game/Audio/Voice/' + folder, 'catalog': cat}
 with open(os.path.join(RAW, 'voices.json'), 'w', encoding='utf-8') as f:
     json.dump(voices, f, ensure_ascii=False, indent=1)
 print('S47: voice banks indexed: %s' % ', '.join('%s %d' % (b, len(v['catalog'].get('clips', []))) for b, v in voices.items()))
 
-# core/radioVoice.ts decodes only the selected clips, so keep the banks outside index.sources.
-# This lets its 24-buffer / 24-MiB LRU work without US47Audio preloading the whole bank.
-for bank in ('artbell', 'artbell-town', 'radiocast', 'ensemble'):
-    cat = voices.get(bank, {}).get('catalog', {})
-    n = 0
-    for clip in cat.get('clips', []):
-        src = os.path.join(AUDIO, bank, clip['file'])
-        if os.path.isfile(src) and wav(src, os.path.join(RAW, clip['raw'])):
-            n += 1
-    print('S47: raw radio voice %s: %d' % (bank, n))
+# core/radioVoice.ts and core/readAloud.ts decode only the selected clips, so keep the banks outside
+# index.sources. This lets their LRUs (24 buffers / 24 MiB, 4 buffers / 32 MiB) work without US47Audio
+# preloading a whole bank (Kinski's and Serling's are some 1500 clips and an hour and a half each).
+# (some 3000 files: the ffmpeg runs go side by side)
+with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
+    for bank in RAW_BANKS:
+        cat = voices.get(bank, {}).get('catalog', {})
+        jobs = []
+        for clip in cat.get('clips', []):
+            src = os.path.join(AUDIO, bank, clip['file'])
+            if os.path.isfile(src):
+                jobs.append(pool.submit(wav, src, os.path.join(RAW, clip['raw'])))
+        n = sum(1 for j in jobs if j.result())
+        print('S47: raw voice %s: %d' % (bank, n))
 
 # core/score.ts and core/radio.ts use long HTMLAudioElements. Keep each recording's own
 # sample rate/channels; S47Media reads PCM16 in bounded chunks and resamples in the graph.

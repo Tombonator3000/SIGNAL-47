@@ -60,7 +60,14 @@ public:
 	struct FViewfinder { bool bOn = false; FSlateRect Rect; FString Frame, Status, Free, Hint; bool bOk = false, bFreeOk = false; };
 	void Viewfinder(const FViewfinder& V) { Vf = V; }
 	void ShutterFlash() { FlashT = 0.28f; }
+	/** UI.ts lastDescription: the last toast that was not a caption (radio, telephone, the CB). */
 	FString LastToast;
+	/** .description-read (UI.ts descriptionButton): Read description [V] at the top right, while the
+	 *  description reader is on and there is something to read (US47UI sets it). */
+	struct FDescButton { bool bShown = false; FString Text; bool bDisabled = false; };
+	FDescButton DescButton;
+	/** html.at-line (main.ts, during THE EVENT): the prompt sits lower (.at-line .prompt { top: 64% }). */
+	bool bAtLine = false;
 
 private:
 	struct FToast { FString Text; double Until; TFunction<double()> Clock; };
@@ -68,6 +75,7 @@ private:
 	TSharedPtr<SVerticalBox> ToastBox;
 	TUniquePtr<FSlateBrush> DotBrush;
 	TUniquePtr<FSlateBrush> WhiteBrush;
+	TUniquePtr<FSlateBrush> DescBrush;
 	bool bFadeOn = false;
 	float FadeAlpha = 0.f;
 	FString FadeText;
@@ -86,6 +94,8 @@ public:
 	SLATE_BEGIN_ARGS(SS47Document) {}
 		SLATE_ARGUMENT(FS47Doc, Doc)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
+		// UI.document's .read-aloud boxes (Read document, Read description), before .controls
+		SLATE_ARGUMENT(TSharedPtr<SWidget>, Reading)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& InArgs);
 	virtual bool SupportsKeyboardFocus() const override { return true; }

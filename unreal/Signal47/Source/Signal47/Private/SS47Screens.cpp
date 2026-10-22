@@ -596,6 +596,8 @@ void SS47ChapterCard::Tick(const FGeometry& G, const double InCurrentTime, const
 
 float SS47ChapterCard::AlphaA() const
 {
+	// .voiced: no animation; phase a shows the first half, b the second
+	if (!VoicePhase.IsEmpty()) return VoicePhase == TEXT("a") ? 1.f : 0.f;
 	// .cc-a: ccIn .9s ease .3s, ccOut .7s ease 3.2s
 	if (T < 0.3f) return 0.f;
 	if (T < 1.2f) return Ease((T - 0.3f) / 0.9f);
@@ -605,6 +607,7 @@ float SS47ChapterCard::AlphaA() const
 
 float SS47ChapterCard::AlphaB() const
 {
+	if (!VoicePhase.IsEmpty()) return VoicePhase == TEXT("b") ? 1.f : 0.f;
 	// .cc-b: ccIn 1.1s ease 3.8s
 	return T < 3.8f ? 0.f : Ease((T - 3.8f) / 1.1f);
 }

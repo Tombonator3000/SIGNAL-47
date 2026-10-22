@@ -5,9 +5,14 @@
 #include "S47Chapter.h"
 #include "S47Chapter2.h"
 #include "S47Chapter5.h"
+#include "S47DecoderDesk.h"
+#include "S47Inter.h"
 #include "S47Json.h"
+#include "S47UI.h"
 #include "S47Main.h"
 #include "S47Web.h"
+#include "Misc/CommandLine.h"
+#include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Story, Log, All);
 
@@ -35,6 +40,41 @@ AS47Story::AS47Story()
 void AS47Story::Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio)
 {
 	Saro = InSaro; Hud = InHud; Audio = InAudio;
+	// the signal processor holds the tape once the anomaly is locked (02:14 and after)
+	if (US47Main* M = US47Main::Get(this); M && !Decoder.IsValid())
+	{
+		FS47DecoderDeskDeps Dd;
+		Dd.UI = M->UI; Dd.Audio = InAudio; Dd.Room = InSaro; Dd.Inter = M->Inter;
+		Dd.Locked = [this] { return Rx.Stage >= 3; };
+		Dd.Recorded = [] { return FString(TEXT("02:14")); };
+		Dd.Busy = [this] { return bCinematic; };
+		Dd.Power = [this] { return bPowered && !NS.bK3Open; };
+		Decoder = MakeShared<FS47DecoderDesk>(Dd);
+		// -S47Decoder (with -S47Jump=locked or later): the processor's panel opened three seconds in, as
+		// a use of it does; -S47Decoder=play: and PLAY TAPE pressed in it; =walk: played, and the panel
+		// closed a second later (it plays on from the rack: its display and reels)
+		FString Arg;
+		FParse::Value(FCommandLine::Get(), TEXT("S47Decoder="), Arg);
+		const bool bPlay = Arg == TEXT("play") || Arg == TEXT("walk"), bWalk = Arg == TEXT("walk");
+		if (!Arg.IsEmpty() || FParse::Param(FCommandLine::Get(), TEXT("S47Decoder")))
+		{
+			FTimerHandle Th;
+			GetWorldTimerManager().SetTimer(Th, [this, bPlay, bWalk]
+			{
+				if (!Decoder.IsValid()) return;
+				const FString Why = Decoder->Open();
+				if (bPlay && Why.IsEmpty()) Decoder->OnPlay(true);
+				UE_LOG(LogS47Story, Display, TEXT("S47: decoder panel %s%s"), Why.IsEmpty() ? TEXT("open") : *(TEXT("refused: ") + Why), Decoder->Playing() ? TEXT(", the tape playing") : TEXT(""));
+				if (!bWalk) return;
+				FTimerHandle Th2;
+				GetWorldTimerManager().SetTimer(Th2, [this]
+				{
+					if (US47Main* Mn = US47Main::Get(this); Mn && Mn->UI) Mn->UI->Close();
+					UE_LOG(LogS47Story, Display, TEXT("S47: decoder panel closed, %s; display %s"), Decoder.IsValid() && Decoder->Playing() ? TEXT("playing on") : TEXT("stopped"), Decoder.IsValid() ? *Decoder->ScreenLine() : TEXT(""));
+				}, 1.0f, false);
+			}, 3.0f, false);
+		}
+	}
 }
 
 // ---------- helpers ----------
@@ -368,6 +408,7 @@ void AS47Story::TripK3(bool bSound)
 		Audio->Play(TEXT("rack_switch"), 1.0f, At, 0.62f);
 		Audio->Play(TEXT("thud_soft"), 0.45f, At, 1.4f);
 	}
+	if (Decoder.IsValid()) Decoder->Stop();
 	ApplyK3(true);
 }
 
@@ -805,12 +846,15 @@ void AS47Story::ChapterBreak(const FBreak& B)
 		bCinematic = true;
 		if (OnChapterCard) OnChapterCard(B);
 		else if (Hud.IsValid()) Hud->Fade(true, B.Next + TEXT("\n") + B.Title);
-		// the card stays at least 6.4 s from the break (the narrator may hold it longer)
-		After(6.4, [this]
+		// the card stays at least 6.4 s from the break (the narrator may hold it longer: finish)
+		const TSharedRef<TFunction<void()>> Finish = MakeShared<TFunction<void()>>();
+		*Finish = [this, Weak = TWeakPtr<TFunction<void()>>(Finish)]
 		{
+			if (ChapterCardDone && !ChapterCardDone()) { if (const TSharedPtr<TFunction<void()>> F = Weak.Pin()) After(0.1, [F] { (*F)(); }); return; }
 			if (Hud.IsValid()) Hud->Fade(false, TEXT(""));
 			bCinematic = false;
-		});
+		};
+		After(6.4, [Finish] { (*Finish)(); });
 	});
 }
 
@@ -854,6 +898,7 @@ void AS47Story::ResetAll()
 		Saro->SnapDishes(ParkAz, SurveyEl);
 	}
 	if (Audio.IsValid()) { Audio->Stop(TEXT("ring")); Audio->Stop(TEXT("printer")); Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); Audio->StopMotors(); }
+	if (Decoder.IsValid()) Decoder->Stop();
 }
 
 void AS47Story::Start()
@@ -948,6 +993,7 @@ void AS47Story::Tick(float DeltaSeconds)
 		const bool bCh1Along = C->Key() == TEXT("ch1") && ChapterKey.StartsWith(TEXT("ch"));
 		if (C->bActive || bCh1Along) C->Update(bPaused ? 0.0 : Dt, GameTime);
 	}
+	if (Decoder.IsValid()) Decoder->Update(Dt);
 	if (!Saro.IsValid()) return;
 	Saro->SetClock(ClockSec);
 

@@ -73,6 +73,8 @@ public:
 	void Finale();                             // main.ts finale: the title, credits and 1947 photograph
 	void OpenPause();
 	FS47PauseOpts Settings();
+	/** main.ts stopNarration(except): readAloud, the narrator, Earl and the character voices stop, all but Except. */
+	void StopNarration(const void* Except);
 
 	// what the save holds of the night's systems not ported yet (the hooks to give them back once they are)
 	TFunction<S47J::FObj()> SaveBoard;                // story/caseBoard.ts layout: { pos: { id: [x, y] } }

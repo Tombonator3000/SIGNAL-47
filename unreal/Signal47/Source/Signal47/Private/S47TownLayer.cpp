@@ -27,6 +27,7 @@
 #include "S47Pasture.h"
 #include "S47Phones.h"
 #include "S47Radio.h"
+#include "S47ReadAloud.h"
 #include "S47Roadside.h"
 #include "S47RoadTerrain.h"
 #include "S47Score.h"
@@ -66,7 +67,10 @@ void US47TownLayer::Init(US47Main* InM)
 {
 	M = InM;
 	Town = MakeShared<FS47Town>(M); Town->OnCarCollider = [this](const FS47Area& Box) { M->World->TownCarMoved(Box); }; Diner = MakeShared<FS47Diner>(M); Caliche = MakeShared<FS47Caliche>(M, Town.Get());
-	Caliche->OnCharacterStart = Caliche->OnEarlStart = [this] { M->Audio->StopPhoneCalls(); if (M->CB) M->CB->Stop(); };   // (cb.stop)
+	// ui.earlDialogue (main.ts: the one Earl; UI.stopSpeech stops it); ui.onEarlStart and onCharacterStart:
+	// stopNarration (the readers here; Caliche stops the other voice itself), the calls and the CB
+	if (M->UI) M->UI->EarlDialogue = Caliche->EarlDialogue;
+	Caliche->OnCharacterStart = Caliche->OnEarlStart = [this] { if (M->UI && M->UI->ReadAloud) M->UI->ReadAloud->Stop(); if (M->UI && M->UI->Narrator) M->UI->Narrator->Stop(); M->Audio->StopPhoneCalls(); if (M->CB) M->CB->Stop(); };   // (cb.stop)
 	{ auto Before = M->Audio->OnPhoneCall; M->Audio->OnPhoneCall = [this, Before] { Caliche->StopSpeech(); if (Before) Before(); }; }
 	TownEvents = MakeShared<FS47TownEvents>(M); TownEvents->Bind(Town.Get()); Roadside = MakeShared<FS47Roadside>(M);
 	Cutouts = MakeShared<FS47Cutouts>(M, [this](bool bFirst)

@@ -7,6 +7,7 @@
 #include "Engine/GameViewportClient.h"
 #include "GameFramework/PlayerController.h"
 #include "S47HUD.h"
+#include "S47ReadAloud.h"
 #include "S47Story.h"
 #include "SS47Notebook.h"
 #include "SS47Screens.h"
@@ -67,9 +68,9 @@ void US47UI::Pause(const FS47PauseOpts& O)
 	Open(SNew(SS47Pause).Opts(O).OnClose([Self](bool bSilent) { if (Self.IsValid()) Self->Close(bSilent); }), O.OnResume);
 }
 
-void US47UI::ChapterCard(const FS47ChapterCardOpts* O)
+void US47UI::ChapterCard(const FS47ChapterCardOpts* O, TFunction<void()> OnSpoken)
 {
-	++CardGeneration;
+	const int32 Generation = ++CardGeneration;
 	ChapterStage = TEXT("idle");
 	if (CardEl.IsValid())
 	{
@@ -83,17 +84,48 @@ void US47UI::ChapterCard(const FS47ChapterCardOpts* O)
 			return false;
 		}), 0.9f);
 	}
-	// (this.narrator?.stop(): the narrator is not in the Unreal version yet)
-	if (!O) return;
+	if (Narrator.IsValid()) Narrator->Stop();
+	// (the promise settles at once when there is no card, or no voice reading it)
+	if (!O) { if (OnSpoken) OnSpoken(); return; }
 	// this.lastDescription = o.recap (V reads it)
 	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->LastToast = O->Recap;
+	UpdateDescriptionButton();
 	UGameViewportClient* V = GEngine ? GEngine->GameViewport : nullptr;
-	if (!V) return;
+	if (!V) { if (OnSpoken) OnSpoken(); return; }
 	TSharedRef<SS47ChapterCard> El = SNew(SS47ChapterCard).Opts(*O).Visibility(EVisibility::HitTestInvisible);
 	V->AddViewportWidgetContent(El, ZCard);
 	CardEl = El;
-	// Without the narrator the card has its own timing (.chapter-card's animations): the web
-	// version's stage stays 'idle' then too, and main.ts's chapterBreak ends it at 6.4 s.
+	// Without the narrator the card has its own timing (.chapter-card's animations): the stage stays
+	// 'idle', and main.ts's chapterBreak ends it at 6.4 s.
+	const TSharedPtr<FS47ReadAloud> Reader = Narrator;
+	if (!Reader.IsValid() || !Reader->Enabled()) { if (OnSpoken) OnSpoken(); return; }
+	El->Voice(TEXT("a")); ChapterStage = TEXT("a");
+	const TWeakObjectPtr<US47UI> Self = this;
+	const TWeakPtr<SS47ChapterCard> WeakEl = El;
+	const TWeakPtr<FS47ReadAloud> WeakReader = Reader;
+	auto Current = [Self, Generation, WeakEl] { return Self.IsValid() && Generation == Self->CardGeneration && WeakEl.IsValid() && Self->CardEl == WeakEl.Pin(); };
+	if (OnReadingStart) OnReadingStart(Reader.Get());
+	// (const run = reader.runId, read once play() has stopped what was reading: the next run is this one)
+	const int32 Run = Reader->RunId() + 1;
+	Reader->Play({ O->Closed, O->Recap, O->Next, O->Title, O->Clock }, {}, [Self, Current, WeakEl, WeakReader](int32 Index)
+	{
+		const TSharedPtr<FS47ReadAloud> R = WeakReader.Pin();
+		if (Index == 2 && Current() && R.IsValid() && R->Enabled()) { if (const TSharedPtr<SS47ChapterCard> E = WeakEl.Pin()) E->Voice(TEXT("b")); Self->ChapterStage = TEXT("b"); }
+	}, [Self, Current, WeakEl, WeakReader, Run, OnSpoken]
+	{
+		// await narration: then the stage says how the reading ended, and the card's promise settles
+		const TSharedPtr<FS47ReadAloud> R = WeakReader.Pin();
+		if (Current() && R.IsValid())
+		{
+			const TSharedPtr<SS47ChapterCard> E = WeakEl.Pin();
+			if (!R->Enabled()) { if (E.IsValid()) E->Voice(TEXT("b")); Self->ChapterStage = TEXT("text-b"); }
+			else if (R->RunId() != Run) Self->ChapterStage = TEXT("cancelled");
+			// A failed load still gives the next chapter readable screen time. No
+			// replacement voice or later phase of speech starts after the failure.
+			else if (R->State() == TEXT("error")) { if (E.IsValid()) E->Voice(TEXT("b")); Self->ChapterStage = TEXT("error-b"); }
+		}
+		if (OnSpoken) OnSpoken();
+	});
 }
 
 void US47UI::ChapterCut()

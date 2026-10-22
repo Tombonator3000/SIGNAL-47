@@ -132,4 +132,25 @@ namespace S47Panels
 	SIGNAL47_API FTalkHandle Talk(US47UI* UI, const FTalk& O);
 	/** core/portraits.ts portraitOf(who): the art name of whoever speaks under this name, or '' */
 	SIGNAL47_API FString PortraitOf(const FString& Who);
+
+	// ---------- the signal processor on the control room rack ----------
+	struct FDecoderView
+	{
+		FString Tape;
+		FString Mode = TEXT("harmonized"); // 'raw' | 'harmonized'
+		double Pitch = 0, Stretch = 2, Space = 0.6;
+		bool bPlaying = false;
+		TFunction<int32()> Current;        // which pulse sounds (0..10), -1 between
+	};
+	struct FDecoderPanel
+	{
+		TFunction<FDecoderView()> View;
+		TFunction<void(const FString& M)> OnMode;              // 'raw' | 'harmonized'
+		TFunction<void(const FString& K, double V)> OnParam;   // 'pitch' | 'stretch' | 'space'
+		TFunction<void(bool bPlay)> OnPlay;
+		TFunction<void()> OnClose;
+	};
+	SIGNAL47_API FPanelHandle DecoderPanel(US47UI* UI, const FDecoderPanel& O);
+	/** The scope's bars (the eleven pulses of one group cycle): x, height, both in the canvas's 640 x 120 (tests). */
+	SIGNAL47_API void DecoderScopeBar(int32 I, const FString& Mode, double H, double& OutX, double& OutHh);
 }

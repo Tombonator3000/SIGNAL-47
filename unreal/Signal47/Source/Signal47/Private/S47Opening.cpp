@@ -1,5 +1,7 @@
 #include "S47Opening.h"
 
+#include "S47ReadAloud.h"
+
 const TArray<FString>& FS47Opening::Paragraphs()
 {
 	// OPENING_PARAGRAPHS
@@ -16,7 +18,7 @@ const TArray<FString>& FS47Opening::Paragraphs()
 bool FS47Opening::Open(const FS47OpeningChoice& C)
 {
 	if (Active()) return false;
-	++Generation;
+	const int32 Gen = ++Generation;
 	Choice = C;
 	CurrentState = TEXT("ready");
 	if (Hooks.Quiet) Hooks.Quiet();
@@ -25,8 +27,24 @@ bool FS47Opening::Open(const FS47OpeningChoice& C)
 	A.Back = [this] { Cancel(); };
 	A.Closed = [this] { Dismiss(); };
 	if (Hooks.Show) View = Hooks.Show(A);
-	// (this.reader.enabled is false until the narrator is ported: the view is ready at once)
-	if (View && View->State) View->State(TEXT("ready"));
+	auto IsActive = [this, Gen] { return Active() && Generation == Gen; };
+	if (Reader.IsValid() && Reader->Enabled())
+	{
+		auto Update = [this, IsActive](const FString& State)
+		{
+			if (!IsActive()) return;
+			CurrentState = State == TEXT("idle") ? FString(TEXT("ready")) : State;
+			if (View && View->State) View->State(CurrentState);
+		};
+		const TWeakPtr<FS47ReadAloud> R = Reader;
+		Reader->Play(Paragraphs(), Update, {}, [IsActive, Update, R]
+		{
+			// .then(() => { if (active()) update(this.reader.state); })
+			const TSharedPtr<FS47ReadAloud> P = R.Pin();
+			if (IsActive() && P.IsValid()) Update(P->State());
+		});
+	}
+	else if (View && View->State) View->State(TEXT("ready"));
 	return true;
 }
 
@@ -62,6 +80,6 @@ void FS47Opening::Finish(bool bClose)
 	CurrentState = TEXT("idle");
 	TOptional<FS47OpeningView> V = MoveTemp(View);
 	View.Reset();
-	// (this.reader.stop(): no narrator yet)
+	if (Reader.IsValid()) Reader->Stop();
 	if (bClose && V && V->Close) V->Close();
 }

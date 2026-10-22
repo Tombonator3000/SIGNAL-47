@@ -205,7 +205,8 @@ US47Chapter4* US47Chapter4::Register()
 	{
 		M->UI->NpcDialogue = MakeShared<FS47NpcDialogue>(M->Audio);
 		M->UI->NpcDialogue->SetEnabled(M->Audio ? M->Audio->bCharacterVoices : true);
-		// ui.onCharacterStart: (the other voices: not in this version) audio.stopPhoneCalls(); cb.stop()
+		// ui.onCharacterStart: audio.stopPhoneCalls(); cb.stop() (stopNarration(npcDialogue), the readers and
+		// Earl, is added by main.ts's wiring of the readers, S47Flow)
 		US47Main* Mn = M;
 		M->UI->NpcDialogue->OnCharacterStart = [Mn] { if (Mn->Audio) Mn->Audio->StopPhoneCalls(); if (Mn->CB) Mn->CB->Stop(); };
 	}
