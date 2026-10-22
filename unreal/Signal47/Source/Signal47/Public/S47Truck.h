@@ -28,6 +28,7 @@ struct SIGNAL47_API FS47Truck
 	~FS47Truck();
 	FS47Truck(const FS47Truck&) = delete;
 	FS47Truck& operator=(const FS47Truck&) = delete;
+	FS47Truck(FS47Truck&&) = delete;
 
 	/** The truck's exported nodes and materials by its TypeScript path ("world.saroTruck"), its
 	 *  cab's own flood set (an index of AS47Web's sets, -1 when unknown). Outer keeps its dash. */
@@ -74,8 +75,8 @@ struct SIGNAL47_API FS47Truck
 	void SetOdometer(double Tonight);
 	/** The odometer as it reads now (miles, to the tenth). */
 	double Odometer() const { return OdoShown / 10.0; }
-	/** Frost on the windshield, 0..1 (story/truckTaken.ts). The frost decal is made at run time in
-	 *  the web version and is not in the export: the value is kept, nothing is drawn yet. */
+	/** Frost on the windshield, 0..1 (story/truckTaken.ts): made the first time it is wanted (it is made at
+	 *  run time in the web version and is not in the export: built here, S47Figures). */
 	void SetFrost(double K);
 	double Frosted() const { return Frost; }
 	/** A white light from straight over the truck, 0..1 (story/abduction.ts): the cab's sky slot. */
@@ -135,6 +136,9 @@ private:
 	FString RadioShown = TEXT("214:false");
 	int32 OdoShown = 0;
 	double Frost = 0, Above = 0;
+	/** The frost's decal on the windshield, made the first time it is wanted (story/truckTaken.ts). */
+	TSharedPtr<class FS47Group> FrostDecal;
+	class UMaterialInstanceDynamic* FrostMat = nullptr;
 	FWarn WarnOn;
 
 	// the dash canvas (truckTextures.ts dashAtlas): drawn with Slate into a render target

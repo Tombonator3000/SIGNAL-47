@@ -9,6 +9,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Rendering/DrawElements.h"
 #include "RenderingThread.h"
+#include "S47Figures.h"
 #include "S47Main.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -366,8 +367,23 @@ void FS47Truck::SetOdometer(double Tonight)
 
 void FS47Truck::SetFrost(double K)
 {
-	if (K <= 0.001 && Frost <= 0) return;
+	if (K <= 0.001 && !FrostDecal) return;
 	Frost = K > 0.001 ? FMath::Clamp(K, 0.0, 1.0) : 0;
+	if (!FrostDecal && Web && Cab)
+	{
+		// (no light of its own: the night's on it, a pale rime against the dark, not a glow; on the cab's
+		// inside of the windshield: decal(cab, 1.74, 0.7, mat, [0, 0, 1, 1], 0, 1.452, -0.604, 0, 0.552))
+		const FS47WebNode* CabN = Web->Node(Cab.I);
+		FrostDecal = MakeShared<FS47Group>(Web, TEXT("truck:frost"), CabN ? CabN->Comp.Get() : nullptr);
+		FrostMat = FrostDecal->Basic(Hex(0x77808b), TEXT("M_Web_Unlit_Trans_2S"));
+		S47Figures::SetMap(FrostMat, S47Figures::FrostGlass());
+		FrostDecal->Plane(&FrostDecal->Root(), 1.74, 0.7, FrostMat, FVector(0, 1.452, -0.604), FVector(0.552, 0, 0));
+		FrostDecal->RenderOrder(4);
+		FrostDecal->AddToScene();
+	}
+	if (!FrostDecal) return;
+	S47Figures::SetOpacity(FrostMat, Frost);
+	FrostDecal->SetVisible(K > 0.001);
 }
 
 void FS47Truck::LightFromAbove(double K) { Above = FMath::Clamp(K, 0.0, 1.0); PlaceFloods(); }

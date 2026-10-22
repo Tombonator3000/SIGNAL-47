@@ -43,7 +43,13 @@ struct FS47BoardThread { FString A, B; bool bThin = false, bAuto = false; };
 struct FS47BoardRegion { FString Id, Label; double X = 0, Y = 0, W = 0, H = 0; };
 
 // ---------- story/boardRules.ts ----------
-struct FS47BookNote { FString Text; FString Q; bool bHand = false; };
+struct FS47BookNote
+{
+	FString Text; FString Q; bool bHand = false;
+	/** A text that changes with the night (a TypeScript getter, `get text()`): asked each time; unset: Text. */
+	TFunction<FString()> TextFn;
+	FString Now() const { return TextFn ? TextFn() : Text; }
+};
 struct FS47BookRule
 {
 	FString A, B;
@@ -52,6 +58,8 @@ struct FS47BookRule
 	FString Wrong;                // the question it counts against when it contradicts
 	FString Group;                // alternative working hypotheses: only the last thread in a group stays
 	TFunction<bool()> Restore;    // whether it restores a recorded finding from a save without threads
+	TFunction<FString()> TextFn;  // a text that changes with the night (`get text()`); unset: Text
+	FString Now() const { return TextFn ? TextFn() : Text; }
 };
 struct FS47BookQuestion
 {
@@ -65,6 +73,8 @@ struct FS47BookQuestion
 	FString Elsewhere;
 	double X = 0, Y = 0;
 	TOptional<double> W;
+	TFunction<FString()> ElsewhereFn; // `get elsewhere()`: asked each time; unset: Elsewhere
+	FString ElsewhereNow() const { return ElsewhereFn ? ElsewhereFn() : Elsewhere; }
 };
 struct FS47BookSpec
 {

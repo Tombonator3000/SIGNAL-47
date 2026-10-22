@@ -32,6 +32,7 @@
 #include "S47Score.h"
 #include "S47World.h"
 #include "S47Phones.h"
+#include "S47Away.h"
 #include "S47Opening.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -471,6 +472,8 @@ void US47Flow::StartGame(const FStart& O)
 	// the flashlight, the seen log, the curve, townSeen, glimpses, nightEvents and the album (S47Night)
 	if (M->Night) M->Night->Restore(O.State);
 	// roofSteps, officePhone and sameThread reset (S47Phones)
+	// truckTaken.reset, the odometer, abduction.restore, truckB.reset, starHole.reset (S47Away; before the thread's reset by the times away)
+	if (M->Away) M->Away->Restore(O.State);
 	if (M->Phones) M->Phones->Restore();
 	// (recWalk, stationTaken, truckTaken, the odometer, townEvents, cutouts, abduction, lineLights, pasture,
 	// motelTv, truckB, ninth, starHole, morning, saroDark: not ported yet)
@@ -489,6 +492,8 @@ void US47Flow::StartGame(const FStart& O)
 	}
 	// (abduction.refile, follow, arrayBack: not ported yet) the archive and the field book (S47Phones)
 	if (M->Phones) M->Phones->Restored();
+	// abduction.refile, lostNights.restore (S47Away)
+	if (M->Away) M->Away->Restored();
 	// (the town's papers, lostNights, motelTv: not ported yet)
 	bRestoringNow = false;
 	Restoring.Reset();
@@ -546,6 +551,8 @@ void US47Flow::LeavePlay()
 	if (M->Night) M->Night->Leave();
 	// archive.halt, arrayTip.reset, roofSteps.reset, officePhone.reset (S47Phones)
 	if (M->Phones) M->Phones->Leave(false);
+	// abduction.halt, truckB.reset, truckTaken.reset, reelTape.stop, the odometer (S47Away)
+	if (M->Away) M->Away->Leave(false);
 	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, world.stopDriving,
 	// roadside, townEvents, the CB, reelTape, truckB, truckTaken, the radio, the odometer: not ported yet)
 	if (M->Story) M->Story->Reset();
@@ -568,6 +575,8 @@ void US47Flow::ToTitle()
 	if (M->Night) M->Night->Leave(true);
 	// archive.halt, arrayTip.reset (S47Phones)
 	if (M->Phones) M->Phones->Leave(true);
+	// abduction.halt, truckTaken.reset (S47Away)
+	if (M->Away) M->Away->Leave(true);
 	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, truckTaken,
 	// world.stopDriving, roadside, the CB, the radio: not ported yet)
 	if (M->Story) M->Story->Reset();
@@ -728,6 +737,8 @@ FString US47Flow::SaveBlock() const
 	// (the time away's 47 seconds, the array put back, SARO going dark: not in the Unreal version yet)
 	// (nor from the archive's phone ringing until the dishes are down, nor while reel 047 runs)
 	if (M->Phones) { const FString B = M->Phones->SaveBlock(); if (!B.IsEmpty()) return B; }
+	// (the time away's 47 seconds and the taking, the truck's count on B: S47Away)
+	if (M->Away) { const FString B = M->Away->SaveBlock(); if (!B.IsEmpty()) return B; }
 	// (the truck's count on B: not in the Unreal version yet)
 	return GameSaveBlock();
 }
@@ -785,6 +796,8 @@ S47J::FObj US47Flow::GameState()
 	}
 	// flashlight, town, seen, curve, album (S47Night)
 	if (M->Night) M->Night->Save(State);
+	// abduct, odo, the truck and its pose, the pose on your back (S47Away)
+	if (M->Away) M->Away->Save(State);
 	return State;
 }
 
@@ -797,7 +810,10 @@ TOptional<FS47SaveMeta> US47Flow::WriteSave(const FString& Kind, int32 Slot, FSt
 	Card.Place = PlaceName();
 	Card.Clock = bPrologue ? FString(TEXT("02:13")) : S47Text::ClockText(M->Story ? M->Story->Clock() : 0, false);
 	Card.Playtime = M->Playtime;
+	// the picture without what stands over you on waking (story/abduction.ts)
+	const bool bOver = M->Away && M->Away->HideOver(true);
 	Card.Thumb = CaptureThumb();
+	if (bOver) M->Away->HideOver(false);
 	return Saves.Save(CaseId, Kind, Slot, State, Card, OutError);
 }
 
@@ -941,7 +957,7 @@ S47J::FObj US47Flow::ComposeCase() const
 		if (N.SolveAt) S47J::Set(Ns, TEXT("solveAt"), *N.SolveAt); else S47J::SetNull(Ns, TEXT("solveAt"));
 		S47J::Set(Ns, TEXT("jacket"), N.bJacket);
 	}
-	S47J::Set(Ns, TEXT("ln"), S47J::Strs(WasNs, TEXT("ln")));
+	S47J::Set(Ns, TEXT("ln"), M->Away ? M->Away->Ln : S47J::Strs(WasNs, TEXT("ln")));
 	if (S47J::Has(WasNs, TEXT("array"))) Ns->SetField(TEXT("array"), WasNs->TryGetField(TEXT("array")));
 	if (S47J::Has(WasNs, TEXT("hondo"))) S47J::Set(Ns, TEXT("hondo"), S47J::Num(WasNs, TEXT("hondo")));
 	S47J::Set(C, TEXT("ns"), Ns);
@@ -1000,7 +1016,9 @@ FS47MapView US47Flow::MapView() const
 	V.At = MapAt();
 	V.bStation = ChapterNo(S) >= 3;
 	V.bOldRoad = ChapterNo(S) >= 5;
-	// (mapMarks: the night's events and the time away, story/townEvents.ts and abduction.ts, not ported yet)
+	// (mapMarks: the night's events, story/townEvents.ts, not ported yet) the times away (S47Away), by the clock
+	if (M->Away) V.Marks.Append(M->Away->MapMarks());
+	V.Marks.Sort([](const FS47MapMark& A, const FS47MapMark& B) { return A.Clock < B.Clock; });
 	const US47Chapter* Ch5 = S ? S->Chapter(TEXT("ch5")) : nullptr;
 	V.bLineC = (Ch5 && S->Begun.Contains(TEXT("ch5")) && S47J::Bool(Ch5->SaveState(), TEXT("p13"))) || ChapterNo(S) >= 6;
 	return V;

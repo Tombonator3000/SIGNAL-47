@@ -27,6 +27,7 @@
 #include "S47Main.h"
 #include "S47OldRoad.h"
 #include "S47Phones.h"
+#include "S47Away.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
@@ -590,6 +591,8 @@ void US47Night::SeenSync()
 	Was.Calls = Calls->Count;
 	// (the roof, the office's telephone, the archive, the array tipped, reel 047: S47Phones.cpp)
 	if (M->Phones) M->Phones->SeenSync();
+	// (the ones standing where the player was taken, the warning, taken in the truck, the one over you: S47Away.cpp)
+	if (M->Away) M->Away->SeenSync();
 }
 
 void US47Night::SeenStep(double Dt)
@@ -626,6 +629,8 @@ void US47Night::SeenStep(double Dt)
 	}
 	// the steps on the roof, the office's telephone, the archive's phone, the array tipped, reel 047 (S47Phones.cpp)
 	if (M->Phones) M->Phones->SeenStep();
+	// the ones standing where the player was taken, the warning, taken in the truck, the one over you (S47Away.cpp)
+	if (M->Away) M->Away->SeenStep();
 	SeenLog->Update(Dt, Camera());
 }
 
@@ -684,9 +689,13 @@ void US47Night::Step(double Dt)
 	G.May = Curve->May(TEXT("glimpse")); G.Pace = Curve->Pace(TEXT("glimpse"));
 	Glimpses->Update(Dt, G);
 	// (lineLights, eventsOnB, ninth, starHole, the diner's morning: not ported yet)
+	// no stars where the dishes point (S47Away.cpp)
+	if (M->Away) M->Away->StepHole(Dt, bModal);
 	// the thread nobody tied, the office's telephone (S47Phones.cpp)
 	if (M->Phones) M->Phones->StepLate(Dt, bModal);
 	// (truckB, truckTaken, arrayBack, the time away: not ported yet)
+	// the truck on B, taken in the truck, the time away and the corner clock (S47Away.cpp)
+	if (M->Away) M->Away->StepLate(Dt, bModal);
 
 	// the log, for the tests and the screenshot runs
 	if (Calls->Count != CallsLogged && Calls->Last)
