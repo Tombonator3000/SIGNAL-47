@@ -10,7 +10,12 @@
 #include "Internationalization/Regex.h"
 #include "Misc/Paths.h"
 #include "Rendering/DrawElements.h"
+#include "S47Flashlight.h"
+#include "S47Flow.h"
+#include "S47GameStyle.h"
 #include "S47Image.h"
+#include "S47Night.h"
+#include "S47ReadAloud.h"
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47UI.h"
@@ -23,7 +28,9 @@
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Input/SSlider.h"
 #include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SBackgroundBlur.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/SCanvas.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -71,94 +78,227 @@ namespace S47Style
 				SNew(STextBlock).Text(FText::FromString(Label)).Font(Mono(Px)).ColorAndOpacity(Color)
 			];
 	}
-
-	// A page of text: lines that start with "~ " are pencil, the rest in the paper's type.
-	TSharedRef<SWidget> Page(const FString& Text, const FSlateFontInfo& Type, const FLinearColor& Color)
-	{
-		TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
-		TArray<FString> Lines;
-		Text.ParseIntoArray(Lines, TEXT("\n"), false);
-		for (const FString& L : Lines)
-		{
-			const bool bPencil = L.StartsWith(TEXT("~ "));
-			Box->AddSlot().AutoHeight()
-			[
-				SNew(STextBlock).Text(FText::FromString(bPencil ? L.Mid(2) : (L.IsEmpty() ? TEXT(" ") : L))).AutoWrapText(true)
-					.Font(bPencil ? Body(22.f) : Type).ColorAndOpacity(bPencil ? Pencil : Color)
-			];
-		}
-		return Box;
-	}
 }
 
 // ---------- the overlay ----------
 
+namespace
+{
+	US47Main* Main() { return US47Main::Get(nullptr); }
+
+	// a line of the first part of a long text, cut at a word (the NOTED slip's excerpt)
+	FString Cut(const FString& S, int32 Max)
+	{
+		if (S.Len() <= Max) return S;
+		FString C = S.Left(Max);
+		const int32 Sp = C.Find(TEXT(" "), ESearchCase::CaseSensitive, ESearchDir::FromEnd);
+		if (Sp > Max / 2) C = C.Left(Sp);
+		while (C.Len() && (C.EndsWith(TEXT(",")) || C.EndsWith(TEXT(":")) || C.EndsWith(TEXT(";")) || C.EndsWith(TEXT(".")))) C.LeftChopInline(1);
+		return C + TEXT("...");
+	}
+
+	// linear-gradient(90deg, Color, transparent): the chosen action's glow
+	class SFadeBar : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SFadeBar) {}
+			SLATE_ARGUMENT(FLinearColor, Color)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { Color = A._Color; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(8, 8); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool) const override
+		{
+			const FVector2f S = FVector2f(G.GetLocalSize());
+			FLinearColor A = Color, B = Color;
+			A.A *= Style.GetColorAndOpacityTint().A; B.A = 0.f;
+			FSlateDrawElement::MakeGradient(Out, Layer, G.ToPaintGeometry(), { FSlateGradientStop(FVector2D(0, 0), A), FSlateGradientStop(FVector2D(S.X, 0), B) }, Orient_Vertical);
+			return Layer + 1;
+		}
+	private:
+		FLinearColor Color;
+	};
+}
+
+bool SS47Hud::Playing() const { const US47Main* M = Main(); return !M || M->Mode == US47Main::EMode::Play; }
+bool SS47Hud::ModalOpen() const { const US47Main* M = Main(); return M && M->UI && M->UI->Modal(); }
+
 void SS47Hud::Construct(const FArguments& InArgs)
 {
-	DotBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor::White, FVector4(3.f, 3.f, 3.f, 3.f));
+	using namespace S47Game;
 	WhiteBrush = MakeUnique<FSlateColorBrush>(FLinearColor::White);
-	DescBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor::FromSRGBColor(FColor(6, 8, 12)) * FLinearColor(1, 1, 1, 0.85f), 3.f, FLinearColor::FromSRGBColor(FColor(0x78, 0x6b, 0x51)), 1.f);
-	TAttribute<bool> ShowAim = InArgs._ShowAim;
-	auto Vis = [ShowAim] { return ShowAim.Get(true) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
-	ChildSlot
-	[
-		SNew(SOverlay)
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+	PromptAttr = InArgs._Prompt; AltAttr = InArgs._PromptAlt; ClockAttr = InArgs._Clock;
+	ShowPromptAttr = InArgs._ShowPrompt; ShowAimAttr = InArgs._ShowAim;
+	auto Aim = [this] { return ShowAimAttr.Get(true); };
+	auto Vis = [Aim] { return Aim() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
+	auto PromptOn = [this] { return ShowPromptAttr.Get(ShowAimAttr.Get(true)); };
+	// the watch's face: the seconds clock when it is set (chapter six, the warning), else the night's
+	auto WatchText = [this] { return SecondsText.IsEmpty() ? ClockAttr.Get().ToString() : SecondsText; };
+
+	// .obj: the place and the clock in amber over the objective, a soft dark under it
+	const TSharedRef<SWidget> Objective = SNew(SBorder).BorderImage(Box(FLinearColor::Transparent)).Padding(0)
+		.ColorAndOpacity_Lambda([this] { const float K = FMath::SmoothStep(0.f, 1.f, ObjectiveIn); return FLinearColor(1, 1, 1, 0.2f + 0.8f * K); })
+		.Visibility_Lambda([this] { return ObjectiveText.IsEmpty() || Vf.bOn || !Playing() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
 		[
-			SNew(SBox).WidthOverride(5.f).HeightOverride(5.f).Visibility_Lambda(Vis)
+			Shadowed(SNew(SBox).MaxDesiredWidth(P(520))
 			[
-				SNew(SBorder).BorderImage(DotBrush.Get()).BorderBackgroundColor(FLinearColor(1, 1, 1, 0.6f))
-			]
-		]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, 140)
-		[
-			SAssignNew(ToastBox, SVerticalBox)
-		]
-		// the prompt, a little under the crosshair (.prompt), and a closer look's words under it (.examine);
-		// at the line its top at 64% of the screen (.at-line .prompt), the line 26 px high as the 78 has it
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
-		.Padding(TAttribute<FMargin>::CreateLambda([this] { return FMargin(0, bAtLine ? 2 * (0.64f * float(GetCachedGeometry().GetLocalSize().Y) + 13.f) - float(GetCachedGeometry().GetLocalSize().Y) : 78.f, 0, 0); }))
-		[
-			SNew(STextBlock).Text(InArgs._Prompt).Font(S47Style::Mono(26.f)).ColorAndOpacity(FLinearColor(0.94f, 0.92f, 0.85f)).ShadowOffset(FVector2D(0, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f)).Visibility_Lambda(Vis)
-		]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0, 190, 0, 0)
-		[
-			SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(0.024f, 0.03f, 0.047f, 0.55f)).Padding(FMargin(10, 4))
-			.Visibility_Lambda([this, Vis] { return ExamineText.IsEmpty() ? EVisibility::Collapsed : Vis(); })
-			[
-				SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ExamineText); }).Font(S47Style::Mono(24.f)).ColorAndOpacity(FLinearColor(0.95f, 0.92f, 0.83f)).AutoWrapText(true).WrapTextAt(640.f).Justification(ETextJustify::Center)
-			]
-		]
-		// the objective (top left, amber)
-		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(22, 18, 0, 0)
-		[
-			SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ObjectiveText); }).Font(S47Style::Mono(22.f)).ColorAndOpacity(FLinearColor(1.f, 0.78f, 0.47f, 0.88f)).ShadowOffset(FVector2D(0, 1)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f)).AutoWrapText(true).WrapTextAt(720.f)
-			.Visibility_Lambda([this] { return ObjectiveText.IsEmpty() || Vf.bOn ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
-		]
-		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, 24, 32, 0)
-		[
-			SNew(STextBlock).Text_Lambda([this, Clock = InArgs._Clock] { return SecondsText.IsEmpty() ? Clock.Get() : FText::FromString(SecondsText); }).Font(S47Style::Mono(30.f))
-			.ColorAndOpacity_Lambda([this] { return SecondsText.IsEmpty() ? FSlateColor(FLinearColor(0.93f, 0.9f, 0.84f, 0.55f)) : FSlateColor(FLinearColor(1.f, 0.82f, 0.48f)); })
-		]
-		// .description-read: under the clock at the right, dark with a brown line; dimmed when there is no
-		// recording of the text (V reads it: with the mouse held by the game, a label more than a button)
-		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, 68, 22, 0)
-		[
-			SNew(SBorder).BorderImage(DescBrush.Get()).Padding(FMargin(10, 6))
-			.Visibility_Lambda([this, Vis] { return DescButton.bShown ? Vis() : EVisibility::Collapsed; })
-			.ColorAndOpacity_Lambda([this] { return FLinearColor(1, 1, 1, DescButton.bDisabled ? 0.5f : 1.f); })
-			[
-				SNew(SBox).MinDesiredHeight(44.f - 12.f).VAlign(VAlign_Center)
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()
 				[
-					SNew(STextBlock).Text_Lambda([this] { return FText::FromString(DescButton.Text); }).Font(S47Style::Mono(20.f)).ColorAndOpacity(FLinearColor::FromSRGBColor(FColor(0xf3, 0xea, 0xd3)))
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ObjectiveHead.IsEmpty() ? Place : ObjectiveHead); }).Font(Term(22, 3)).ColorAndOpacity(Amber())]
+					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(TEXT(" // "))).Font(Term(22, 3)).ColorAndOpacity(C(0x7d786d)).Visibility_Lambda([this] { return ObjectiveHead.IsEmpty() && Place.IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })]
+					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([] { const US47Main* M = Main(); return FText::FromString(M && M->Story ? M->Story->ClockText(false) : FString()); }).Font(Term(22, 3)).ColorAndOpacity(Amber())]
+				]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, 0)
+				[
+					SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ObjectiveBody); }).Font(Type(20)).ColorAndOpacity(C(0xefe7d3))
+					.Visibility_Lambda([this] { return ObjectiveBody.IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
+					.ShadowOffset(FVector2D(0, P(2))).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.9f)).AutoWrapText(true).LineHeightPercentage(LinePercent(Type(20), 28))
+				]
+			], 36.f, FVector2D(0, 2), 0.3f)
+		];
+
+	// .watch: the LCD and the day under it
+	const TSharedRef<SWidget> Watch = SNew(SVerticalBox)
+		.Visibility_Lambda([WatchText] { return WatchText().IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right)
+		[
+			SNew(SBorder).BorderImage(Box(C(0x0a0804, 0.62f), C(0xffb052, 0.25f), 1.f)).Padding(FMargin(P(12), 0))
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth()
+				[
+					SNew(STextBlock).Font(Term(40, 3)).ColorAndOpacity(C(0xffcf8a)).ShadowOffset(FVector2D::ZeroVector)
+					.Text_Lambda([WatchText] { const FString T = WatchText(); int32 I = INDEX_NONE; T.FindLastChar(TEXT(':'), I); return FText::FromString(T.Len() > 5 && I > 3 ? T.Left(I) : T); })
+				]
+				// (the seconds in the brighter amber the console counted the line drop in, .clockline.secs .ss)
+				+ SHorizontalBox::Slot().AutoWidth()
+				[
+					SNew(STextBlock).Font(Term(40, 3)).ColorAndOpacity(C(0xffd27a))
+					.Text_Lambda([WatchText] { const FString T = WatchText(); int32 I = INDEX_NONE; T.FindLastChar(TEXT(':'), I); return FText::FromString(T.Len() > 5 && I > 3 ? T.Mid(I) : FString()); })
 				]
 			]
 		]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, 28)
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, P(4), 0, 0)
 		[
-			SNew(STextBlock).Text(FText::FromString(TEXT("W A S D  MOVE   MOUSE  LOOK   E  USE   TAB  NOTEBOOK"))).Font(S47Style::Mono(18.f)).ColorAndOpacity(FLinearColor(0.93f, 0.9f, 0.84f, 0.35f)).Visibility_Lambda(Vis)
+			SNew(STextBlock).Font(Term(18, 2)).ColorAndOpacity(C(0x8a857a)).ShadowOffset(FVector2D(0, P(1))).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.85f))
+			.Text_Lambda([] { const US47Main* M = Main(); return FText::FromString(M && M->Story && M->Mode == US47Main::EMode::Play ? DayLine(M->Story->Clock()) : FString()); })
+		];
+
+	// .read: V and what it reads (UI.ts descriptionButton; dimmed when there is no recording of the text)
+	const TSharedRef<SWidget> Read = SNew(SBorder).BorderImage(Box(FLinearColor::Transparent)).Padding(0)
+		.Visibility_Lambda([this, Vis] { return DescButton.bShown ? Vis() : EVisibility::Collapsed; })
+		.ColorAndOpacity_Lambda([this] { return FLinearColor(1, 1, 1, DescButton.bDisabled ? 0.5f : 1.f); })
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[Keycap(TEXT("V"), EKey::Outline, 20)]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+			[
+				SNew(STextBlock).Font(Term(20, 1)).ColorAndOpacity(Hint()).ShadowOffset(FVector2D(0, P(1))).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.85f))
+				.Text_Lambda([this] { FString T = DescButton.Text; T.RemoveFromEnd(TEXT(" [V]")); return FText::FromString(T.ToUpper()); })
+			]
+		];
+
+	// .cross: a small ring; amber and a little larger on something that can be used
+	const TSharedRef<SWidget> Cross = SNew(SBox).Visibility_Lambda(Vis)
+		.WidthOverride_Lambda([this] { return FOptionalSize(PromptAttr.Get().IsEmpty() ? P(12) : P(16)); })
+		.HeightOverride_Lambda([this] { return FOptionalSize(PromptAttr.Get().IsEmpty() ? P(12) : P(16)); })
+		[
+			SNew(SBorder).Padding(0).BorderImage_Lambda([this]
+			{
+				return PromptAttr.Get().IsEmpty() ? Box(FLinearColor::Transparent, C(0xffecc8, 0.85f), 2.f, 6.f) : Box(C(0xffb052, 0.12f), C(0xffb052, 0.95f), 2.f, 8.f);
+			})
+		];
+
+	// .prompt: the keycap and the label on a thin backing with an amber edge; the second thing (Q) on a
+	// line of its own; a closer look's words (.examine) under them
+	auto PromptLine = [](TAttribute<FText> Label, const TCHAR* Key, bool bMain) -> TSharedRef<SWidget>
+	{
+		return SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(P(2))[SNew(SBorder).BorderImage(Box(bMain ? Amber() : C(0xffb052, 0.5f)))]]
+			+ SHorizontalBox::Slot().AutoWidth()
+			[
+				SNew(SBorder).BorderImage(Box(C(0x05070d, 0.6f))).Padding(bMain ? FMargin(P(8), P(6), P(16), P(6)) : FMargin(P(8), P(3), P(14), P(3)))
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(12), 0)[Keycap(Key, bMain ? EKey::Amber : EKey::Outline, bMain ? 24 : 20)]
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+					[
+						SNew(STextBlock).Font(Term(bMain ? 28 : 22, 2)).ColorAndOpacity(bMain ? C(0xf4ecdb) : C(0xcfc8b5))
+						.Text_Lambda([Label] { return FText::FromString(Label.Get().ToString().ToUpper()); })
+					]
+				]
+			];
+	};
+	const TSharedRef<SWidget> Prompt = SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+		[
+			SNew(SBox).Visibility_Lambda([this, PromptOn] { return PromptOn() && !PromptAttr.Get().IsEmpty() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+			[PromptLine(PromptAttr, TEXT("E"), true)]
+		]
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(6), 0, 0)
+		[
+			SNew(SBox).Visibility_Lambda([this, PromptOn] { return PromptOn() && !AltAttr.Get().IsEmpty() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+			[PromptLine(AltAttr, TEXT("Q"), false)]
+		]
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(10), 0, 0)
+		[
+			SNew(SBorder).BorderImage(Box(C(0x06080c, 0.55f), FLinearColor::Transparent, 0.f, 3.f)).Padding(FMargin(P(10), P(4)))
+			.Visibility_Lambda([this, Vis] { return ExamineText.IsEmpty() ? EVisibility::Collapsed : Vis(); })
+			[
+				SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ExamineText); }).Font(Term(22)).ColorAndOpacity(C(0xf3ead3)).AutoWrapText(true).WrapTextAt(P(640)).Justification(ETextJustify::Center)
+			]
+		];
+
+	ChildSlot
+	[
+		SNew(SOverlay)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(P(40), P(34), 0, 0)[Objective]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, P(30), P(40), 0)[Watch]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, P(112), P(40), 0)[Read]
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[Cross]
+		// the prompt 28 px under the ring; at the line its top at 64% of the screen (.at-line .prompt)
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top)
+		.Padding(TAttribute<FMargin>::CreateLambda([this] { const float H = float(GetCachedGeometry().GetLocalSize().Y); return FMargin(0, bAtLine ? 0.64f * H : 0.5f * H + P(28), 0, 0); }))
+		[Prompt]
+		// the captions at the foot (.sub), the newest under
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(96))[SAssignNew(ToastBox, SVerticalBox)]
+		// the NOTED slip (.note), bottom left
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(P(40), 0, 0, P(96))
+		[
+			SNew(SBorder).BorderImage(Box(FLinearColor::Transparent)).Padding(0)
+			.Visibility_Lambda([this] { return SlipT >= 0.f && Playing() && !ModalOpen() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+			.ColorAndOpacity_Lambda([this]
+			{
+				const float A = SlipT < 0.35f ? SlipT / 0.35f : SlipT > 3.9f ? FMath::Max(0.f, 1.f - (SlipT - 3.9f) / 0.5f) : 1.f;
+				return FLinearColor(1, 1, 1, FMath::SmoothStep(0.f, 1.f, A));
+			})
+			.RenderTransform_Lambda([this]
+			{
+				const float In = FMath::SmoothStep(0.f, 1.f, FMath::Min(1.f, SlipT / 0.35f));
+				const float Out = SlipT > 3.9f ? FMath::SmoothStep(0.f, 1.f, (SlipT - 3.9f) / 0.5f) : 0.f;
+				return TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2D(P(-60) * (1.f - In) - P(30) * Out, 0)));
+			})
+			[SAssignNew(SlipSlot, SBox)]
+		]
+		// .hint: the keys, as keycaps
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(26))
+		[
+			SAssignNew(HintRow, SHorizontalBox).Visibility_Lambda([this, Vis] { return Vf.bOn ? EVisibility::Collapsed : Vis(); })
 		]
 	];
+}
+
+void SS47Hud::Objective(const FString& Text)
+{
+	if (Text == ObjectiveText) return;
+	ObjectiveIn = 0.f;
+	ObjectiveText = Text;
+	// "FRAME 01 // INSPECT THE PRINT": the head goes on the tag line, before the clock; without one
+	// the tag is the place
+	FString Head, Body;
+	if (Text.Split(TEXT(" // "), &Head, &Body)) { ObjectiveHead = Head.TrimStartAndEnd(); ObjectiveBody = Body.TrimStartAndEnd(); }
+	else { ObjectiveHead.Reset(); ObjectiveBody = Text.TrimStartAndEnd(); }
 }
 
 void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
@@ -168,12 +308,24 @@ void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 	static const FRegexPattern Caption(TEXT("^(?:RADIO(?:,|:)|CB,|WARD:|DR\\. WARD:|NORA:|N\\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)"), ERegexPatternFlags::CaseInsensitive);
 	FRegexMatcher M(Caption, Text);
 	if (!M.FindNext()) LastToast = Text;
-	// UI.toast: the same line twice in a row is noise; at most two on screen
-	if (Toasts.Num() && Toasts.Last().Text == Text) return;
+	// UI.toast: the same line twice in a row is noise
+	TSharedPtr<FToast> LastLive;
+	for (const TSharedRef<FToast>& T : Toasts) if (T->Out < 0.f) LastLive = T;
+	if (LastLive.IsValid() && LastLive->Text == Text) return;
 	// UI.ts toast(text, secs, clock): recorded captions share the pausable sound clock.
 	const double At = Clock ? Clock() : Now;
-	Toasts.Add({ Text, At + Secs, MoveTemp(Clock) });
-	if (Toasts.Num() > 2) Toasts.RemoveAt(0);
+	const TSharedRef<FToast> T = MakeShared<FToast>();
+	T->Text = Text;
+	T->Until = At + Secs;
+	T->Clock = MoveTemp(Clock);
+	// the speaker over the line; a plain line is stamped with the clock it came at
+	S47Game::SplitCaption(Text, T->Who, T->Line);
+	if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Story->ClockText(false);
+	Toasts.Add(T);
+	// at most two lines on screen; older ones fade out instead of vanishing mid-read
+	int32 Live = 0;
+	for (const TSharedRef<FToast>& X : Toasts) Live += X->Out < 0.f;
+	for (const TSharedRef<FToast>& X : Toasts) if (Live > 2 && X->Out < 0.f) { X->Out = 0.f; --Live; }
 	Rebuild();
 }
 
@@ -181,18 +333,64 @@ void SS47Hud::ClearToasts() { Toasts.Empty(); LastToast.Empty(); Rebuild(); }
 
 void SS47Hud::Rebuild()
 {
+	using namespace S47Game;
 	if (!ToastBox.IsValid()) return;
 	ToastBox->ClearChildren();
-	for (const FToast& T : Toasts)
+	const bool bLarge = Main() && Main()->UI && Main()->UI->bLargeText;
+	const float Px = bLarge ? 26.f : 22.f;
+	for (const TSharedRef<FToast>& T : Toasts)
 	{
-		ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 3)
+		TSharedRef<SVerticalBox> In = SNew(SVerticalBox);
+		if (!T->Who.IsEmpty()) In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(T->Who.ToUpper())).Font(Term(22, 3)).ColorAndOpacity(Amber())];
+		In->AddSlot().AutoHeight().HAlign(HAlign_Center)
 		[
-			SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(0.02f, 0.02f, 0.02f, 0.75f)).Padding(FMargin(16, 6))
-			[
-				SNew(STextBlock).Text(FText::FromString(T.Text)).Font(S47Style::Body(22.f)).ColorAndOpacity(S47Style::Paper).AutoWrapText(true).WrapTextAt(760.f).Justification(ETextJustify::Center)
-			]
+			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(true).WrapTextAt(P(676)).Justification(ETextJustify::Center)
+			.LineHeightPercentage(LinePercent(Type(Px), Px * 1.4f))
+		];
+		const TWeakPtr<FToast> W = T;
+		ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
+		[
+			SNew(SBorder).BorderImage(Box(C(0x05070d, 0.72f))).Padding(FMargin(P(22), P(10), P(22), P(12)))
+			.ColorAndOpacity_Lambda([W]
+			{
+				const TSharedPtr<FToast> X = W.Pin();
+				if (!X.IsValid()) return FLinearColor::Transparent;
+				return FLinearColor(1, 1, 1, X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In));
+			})
+			.RenderTransform_Lambda([W] { const TSharedPtr<FToast> X = W.Pin(); return TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2D(0, X.IsValid() && X->Out < 0.f ? P(6) * (1.f - FMath::SmoothStep(0.f, 1.f, X->In)) : 0.f))); })
+			[In]
 		];
 	}
+}
+
+void SS47Hud::Noted(const FString& Text)
+{
+	// one slip at a time; a burst keeps the newest few
+	if (Slips.Num() > 3) Slips.RemoveAt(1);
+	Slips.Add(Cut(Text, 90));
+	if (SlipT < 0.f) ShowSlip();
+}
+
+void SS47Hud::ShowSlip()
+{
+	using namespace S47Game;
+	if (!SlipSlot.IsValid()) return;
+	if (!Slips.Num()) { SlipT = -1.f; SlipSlot->SetContent(SNullWidget::NullWidget); return; }
+	SlipT = 0.f;
+	// .note: paper, the red NOTED stamp and the line in the player's hand, a degree off true
+	SlipSlot->SetContent(Turned(Shadowed(
+		SNew(SBorder).BorderImage(Box(Paper())).Padding(FMargin(P(12), P(10), P(16), P(10)))
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(12), 0)[Stamp(TEXT("NOTED"), 20.f, -4.f)]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+			[
+				SNew(SBox).MaxDesiredWidth(P(300))
+				[
+					SNew(STextBlock).Text(FText::FromString(Slips[0])).Font(Hand(30)).ColorAndOpacity(InkBlue()).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(30), 30))
+				]
+			]
+		], 24.f, FVector2D(0, 10), 0.5f), -1.f));
 }
 
 void SS47Hud::Fade(bool bOn, const FString& Text)
@@ -203,15 +401,54 @@ void SS47Hud::Fade(bool bOn, const FString& Text)
 
 void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float Dt)
 {
+	using namespace S47Game;
 	SCompoundWidget::Tick(G, InCurrentTime, Dt);
 	Now += Dt;
-	const int32 Before = Toasts.Num();
-	Toasts.RemoveAll([this](const FToast& T) { return T.Until <= (T.Clock ? T.Clock() : Now); });
-	if (Toasts.Num() != Before) Rebuild();
+	// the captions: in, held to their time (on their own clock when they have one), then out
+	bool bGone = false;
+	for (const TSharedRef<FToast>& T : Toasts)
+	{
+		if (T->Out < 0.f)
+		{
+			T->In = FMath::Min(1.f, T->In + Dt / 0.35f);
+			if (T->Until <= (T->Clock ? T->Clock() : Now)) T->Out = 0.f;
+		}
+		else T->Out += Dt;
+		bGone |= T->Out >= 0.6f;
+	}
+	if (bGone) { Toasts.RemoveAll([](const TSharedRef<FToast>& T) { return T->Out >= 0.6f; }); Rebuild(); }
 	FlashT = FMath::Max(0.f, FlashT - Dt);
 	const float Target = bFadeOn ? 1.f : 0.f;
 	FadeAlpha += (Target - FadeAlpha) * FMath::Min(1.f, Dt * (bFadeOn ? 2.5f : 1.8f));
 	if (FMath::Abs(Target - FadeAlpha) < 0.01f) FadeAlpha = Target;
+	ObjectiveIn = FMath::Min(1.f, ObjectiveIn + Dt / 0.6f);
+	// the slip's time runs only while it can be seen
+	if (SlipT >= 0.f && Playing() && !ModalOpen())
+	{
+		SlipT += Dt;
+		if (SlipT > 4.4f) { Slips.RemoveAt(0); ShowSlip(); }
+	}
+	// where the player is (placeName) and which keys there are, a few times a second
+	PlaceT -= Dt;
+	if (PlaceT <= 0.f)
+	{
+		PlaceT = 0.25f;
+		const US47Main* M = Main();
+		Place = M && M->Flow && M->Mode == US47Main::EMode::Play ? M->Flow->PlaceName().ToUpper() : FString();
+		const bool bBoard = M && bool(M->Board.Open);
+		const bool bLight = M && M->Night && M->Night->Flashlight.IsValid() && M->Night->Flashlight->bHave;
+		const FString Key = FString::Printf(TEXT("%d%d"), bBoard, bLight);
+		if (Key != HintKey && HintRow.IsValid())
+		{
+			HintKey = Key;
+			HintRow->ClearChildren();
+			auto Add = [this](const TCHAR* K, const TCHAR* L) { HintRow->AddSlot().AutoWidth().Padding(P(14), 0)[KeyHint(K, L)]; };
+			Add(TEXT("TAB"), TEXT("NOTEBOOK"));
+			if (bBoard) Add(TEXT("B"), TEXT("CASE BOARD"));
+			if (bLight) Add(TEXT("F"), TEXT("FLASHLIGHT"));
+			Add(TEXT("ESC"), TEXT("PAUSE"));
+		}
+	}
 }
 
 int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
@@ -275,54 +512,131 @@ int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 
 // ---------- a paper ----------
 
+namespace
+{
+	// text.split(/\n\s*\n/).filter((p) => p.trim()): the transcript's paragraphs, as Read description reads them
+	TArray<FString> Paragraphs(const FString& Text)
+	{
+		TArray<FString> Out;
+		static const FRegexPattern Gap(TEXT("\\n\\s*\\n"));
+		FRegexMatcher Mt(Gap, Text);
+		int32 From = 0;
+		while (Mt.FindNext()) { const FString P = Text.Mid(From, Mt.GetMatchBeginning() - From); if (!P.TrimStartAndEnd().IsEmpty()) Out.Add(P); From = Mt.GetMatchEnding(); }
+		const FString P = Text.Mid(From);
+		if (!P.TrimStartAndEnd().IsEmpty()) Out.Add(P);
+		return Out;
+	}
+
+	// a picture by its data URL or its art name (core/art.ts)
+	UTexture2D* Pic(const FString& Name) { return Name.IsEmpty() ? nullptr : Name.StartsWith(TEXT("data:")) ? S47Image::FromDataUrl(Name) : S47Image::Art(Name); }
+}
+
 void SS47Document::Construct(const FArguments& InArgs)
 {
+	using namespace S47Game;
 	OnClose = InArgs._OnClose;
 	const FS47Doc& D = InArgs._Doc;
-	const bool bHand = D.Kind == TEXT("hand");
-	const bool bPrint = D.Kind == TEXT("printout");
-	const FLinearColor PaperColor = bPrint ? FLinearColor(0.9f, 0.9f, 0.86f) : bHand ? FLinearColor(0.95f, 0.93f, 0.85f) : FLinearColor(0.92f, 0.9f, 0.82f);
-	PaperBrush = MakeUnique<FSlateRoundedBoxBrush>(PaperColor, FVector4(2.f, 2.f, 2.f, 2.f), FLinearColor(0.6f, 0.55f, 0.45f), 1.f);
-	PanelBrush = MakeUnique<FSlateRoundedBoxBrush>(FLinearColor(0.05f, 0.05f, 0.05f, 0.9f), FVector4(6.f, 6.f, 6.f, 6.f));
-	const FSlateFontInfo Type = bHand ? S47Style::Body(24.f) : bPrint ? S47Style::Mono(26.f) : S47Style::Body(21.f);
+	US47UI* UI = InArgs._UI;
+	// UI.document's readings: Kinski reads the page (Read document, without its pencil marks and rules),
+	// the description reader the transcript (Read description), each when that reader is on
+	if (UI)
+	{
+		if (!D.Page.TrimStartAndEnd().IsEmpty()) ReadDoc = UI->ReadingAction(S47Reading::DocumentReadingParagraphs(D.Page), TEXT("document"));
+		ReadDesc = UI->ReadingAction(Paragraphs(D.Transcript), TEXT("description"));
+	}
+	// the actions: the readings (V the first), then PUT IT DOWN (Esc)
+	auto AddRead = [this](const TSharedPtr<FS47ReadingAction>& R, const TCHAR* Label)
+	{
+		if (!R.IsValid()) return;
+		const FString Key = Actions.Num() ? FString() : FString(TEXT("V"));
+		const FString L = Label;
+		Actions.Add({ L, Key, [R] { R->Toggle(); }, [R, L] { return R->bActive ? FString(TEXT("STOP READING")) : L; }, R });
+	};
+	AddRead(ReadDoc, TEXT("READ ALOUD"));
+	AddRead(ReadDesc, ReadDoc.IsValid() ? TEXT("READ DESCRIPTION") : TEXT("READ ALOUD"));
+	Actions.Add({ TEXT("PUT IT DOWN"), TEXT("ESC"), [this] { if (OnClose) OnClose(); }, nullptr, nullptr });
+
+	const FString KindLine = D.Kind == TEXT("hand") ? TEXT("PAPER · HANDWRITTEN") : D.Kind == TEXT("typed") ? TEXT("PAPER · TYPED") : D.Kind == TEXT("printout") ? TEXT("PRINTOUT")
+		: D.Kind == TEXT("photo") ? TEXT("PHOTOGRAPH") : D.Kind == TEXT("map") ? TEXT("MAP") : TEXT("PAPER");
+
+	TSharedRef<SVerticalBox> Btns = SNew(SVerticalBox);
+	for (int32 I = 0; I < Actions.Num(); ++I)
+	{
+		const FAction& A = Actions[I];
+		const TSharedPtr<FS47ReadingAction> R = A.Reading;
+		const TFunction<FString()> Live = A.Live;
+		const FString Label = A.Label;
+		Btns->AddSlot().AutoHeight().Padding(0, 0, 0, P(10)).HAlign(HAlign_Left)
+		[
+			SNew(SButton).ButtonStyle(&FCoreStyle::Get().GetWidgetStyle<FButtonStyle>("NoBorder")).ContentPadding(0).IsFocusable(false)
+			.OnClicked_Lambda([this, I] { Chosen = I; Act(I); return FReply::Handled(); })
+			.OnHovered_Lambda([this, I] { Chosen = I; })
+			[
+				SNew(SOverlay)
+				// .b.sel: the amber glow fading to the right and the amber edge
+				+ SOverlay::Slot()[SNew(SFadeBar).Color(C(0xffb052, 0.18f)).Visibility_Lambda([this, I] { return Chosen == I ? EVisibility::HitTestInvisible : EVisibility::Hidden; })]
+				+ SOverlay::Slot().HAlign(HAlign_Left)[SNew(SBox).WidthOverride(P(3))[SNew(SBorder).BorderImage(Box(Amber())).Visibility_Lambda([this, I] { return Chosen == I ? EVisibility::HitTestInvisible : EVisibility::Hidden; })]]
+				+ SOverlay::Slot().Padding(FMargin(P(14), P(6), P(60), P(6)))
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+					[
+						SNew(STextBlock).Font(Term(26, 2))
+						.Text_Lambda([Live, Label] { return FText::FromString(Live ? Live() : Label); })
+						.ColorAndOpacity_Lambda([this, I, R] { const FLinearColor Col = Chosen == I ? Amber() : C(0xf4ecdb); return FSlateColor(R.IsValid() && !R->bAvailable && !R->bActive ? Col * FLinearColor(1, 1, 1, 0.45f) : Col); })
+					]
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(P(10), P(2), 0, 0)
+					[
+						SNew(STextBlock).Text(FText::FromString(A.Key)).Font(Term(20, 1)).ColorAndOpacity(Hint())
+					]
+				]
+			]
+		];
+	}
+	// [data-reading-status]: the chosen reading's state (the voice, Loading recording..., or why not)
+	auto ChosenReading = [this]() -> TSharedPtr<FS47ReadingAction> { return Actions.IsValidIndex(Chosen) ? Actions[Chosen].Reading : nullptr; };
+	Btns->AddSlot().AutoHeight().Padding(P(17), P(2), 0, 0)
+	[
+		SNew(STextBlock).Font(Type(14)).ColorAndOpacity(Hint()).AutoWrapText(true)
+		.Text_Lambda([ChosenReading] { const TSharedPtr<FS47ReadingAction> R = ChosenReading(); return FText::FromString(R.IsValid() ? R->Status() : FString()); })
+	];
+
 	ChildSlot
 	[
 		SNew(SOverlay)
-		+ SOverlay::Slot() [ SNew(SImage).ColorAndOpacity(S47Style::Overlay) ]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+		// the game behind, blurred and darkened (.bg { filter: blur(5px) brightness(.32) })
+		+ SOverlay::Slot()[SNew(SBackgroundBlur).BlurStrength(6.f)]
+		+ SOverlay::Slot()[SNew(SBorder).BorderImage(Box(FLinearColor(0, 0, 0, 0.68f)))]
+		+ SOverlay::Slot()
 		[
-			SNew(SBox).WidthOverride(1240.f).HeightOverride(760.f)
+			SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
 			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot().FillWidth(0.55f).Padding(0, 0, 16, 0)
+				SNew(SBox).WidthOverride(P(1600)).HeightOverride(P(900))
 				[
-					PageWidget(D, Type)
-				]
-				+ SHorizontalBox::Slot().FillWidth(0.45f)
-				[
-					SNew(SBorder).BorderImage(PanelBrush.Get()).Padding(FMargin(28, 24))
+					SNew(SCanvas)
+					+ SCanvas::Slot().Position(P2(120, 30)).Size(P2(780, 840))[PageWidget(D)]
+					// .side: what it is, its title, its description and the actions
+					+ SCanvas::Slot().Position(P2(960, 150)).Size(P2(440, 720))
 					[
 						SNew(SVerticalBox)
-						+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 14)
+						+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(KindLine)).Font(Term(22, 2)).ColorAndOpacity(C(0x6f8f78))]
+						+ SVerticalBox::Slot().AutoHeight().Padding(0, P(8), 0, P(14))
 						[
-							SNew(STextBlock).Text(FText::FromString(D.Title)).Font(S47Style::Mono(30.f)).ColorAndOpacity(S47Style::Paper)
-						]
-						+ SVerticalBox::Slot().FillHeight(1.f)
-						[
-							SNew(SScrollBox)
-							+ SScrollBox::Slot()
-							[
-								SNew(STextBlock).Text(FText::FromString(D.Transcript)).AutoWrapText(true).Font(S47Style::Body(19.f)).ColorAndOpacity(FLinearColor(0.85f, 0.83f, 0.78f)).LineHeightPercentage(1.25f)
-							]
+							SNew(STextBlock).Text(FText::FromString(D.Title)).Font(Display(40)).ColorAndOpacity(C(0xf1ecdf)).AutoWrapText(true)
 						]
 						+ SVerticalBox::Slot().AutoHeight()
 						[
-							InArgs._Reading.IsValid() ? InArgs._Reading.ToSharedRef() : SNullWidget::NullWidget
+							SNew(SBox).MaxDesiredHeight(P(300))
+							[
+								SNew(SScrollBox).Style(QuietScroll()).ScrollBarStyle(QuietBar(C(0xcfc8b7, 0.25f))).ScrollBarThickness(FVector2D(P(3), P(3)))
+								+ SScrollBox::Slot().Padding(FMargin(0, 0, P(10), 0))
+								[
+									SNew(STextBlock).Text(FText::FromString(D.Transcript)).Font(Type(18)).ColorAndOpacity(C(0xcfc8b7)).AutoWrapText(true)
+									.LineHeightPercentage(LinePercent(Type(18), 18 * 1.6f))
+								]
+							]
 						]
-						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, 14, 0, 0)
-						[
-							S47Style::Button(TEXT("PUT IT DOWN   [ESC]"), [this] { if (OnClose) OnClose(); })
-						]
+						+ SVerticalBox::Slot().AutoHeight().Padding(0, P(30), 0, 0)[Btns]
 					]
 				]
 			]
@@ -330,55 +644,127 @@ void SS47Document::Construct(const FArguments& InArgs)
 	];
 }
 
-TSharedRef<SWidget> SS47Document::PageWidget(const FS47Doc& D, const FSlateFontInfo& Type)
+SS47Document::~SS47Document()
 {
-	// UI.document: a photograph or a map is the picture itself; a paper may carry a picture under
-	// its text (a drawing, the transit plan) and may be drawn on its own paper (art: a card, a letter)
-	auto Pic = [](const FString& Name) -> UTexture2D* { return Name.IsEmpty() ? nullptr : Name.StartsWith(TEXT("data:")) ? S47Image::FromDataUrl(Name) : S47Image::Art(Name); };
+	// (UI.document's close stops what was being read from it)
+	if (ReadDoc.IsValid() && ReadDoc->bActive) ReadDoc->Stop();
+	if (ReadDesc.IsValid() && ReadDesc->bActive) ReadDesc->Stop();
+}
+
+TSharedRef<SWidget> SS47Document::PageWidget(const FS47Doc& D)
+{
+	using namespace S47Game;
+	// the box the paper is laid in (mock: 600 x 800 at 300, 50, in a box 780 x 840 at 120, 30)
+	const FVector2D Area(780, 840), Centre(480, 420);
+	// UI.document: a photograph or a map is the picture itself, a print with a white edge; a paper may
+	// carry a picture under its text (a drawing, the transit plan) and may be drawn on its own paper
+	// (art: a card, a letter)
 	UTexture2D* Image = Pic(D.Image);
 	UTexture2D* PaperArt = Pic(D.Paper);
+	auto Laid = [&](const TSharedRef<SWidget>& Sheet, FVector2D Size, float Deg) -> TSharedRef<SWidget>
+	{
+		return SNew(SCanvas)
+			+ SCanvas::Slot().Position(P2(Centre.X - Size.X / 2, Centre.Y - Size.Y / 2)).Size(P2(Size.X, Size.Y))
+			[
+				Turned(Shadowed(Sheet, 70.f, FVector2D(0, 30), 0.7f), Deg)
+			];
+	};
 	if (Image && (D.Kind == TEXT("photo") || D.Kind == TEXT("map")))
 	{
-		ImageBrush = S47Kit::BrushFor(Image);
-		return SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Center)
-			[
-				SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
-				[
-					SNew(SImage).Image(ImageBrush.Get())
-				]
-			];
+		const double Ar = double(Image->GetSizeX()) / FMath::Max(1, Image->GetSizeY());
+		const double Edge = D.Kind == TEXT("photo") ? 14 : 0;
+		const double MaxW = 720 - 2 * Edge, MaxH = 760 - 2 * Edge;
+		const double W = FMath::Min(MaxW, MaxH * Ar), H = W / Ar;
+		return Laid(SNew(SBorder).BorderImage(Box(C(0xf4f1e8))).Padding(P(Edge))[SNew(SBox).WidthOverride(P(W)).HeightOverride(P(H))[SNew(SImage).Image(Picture(Image))]],
+			FVector2D(W + 2 * Edge, H + 2 * Edge), -1.2f);
 	}
-	TSharedRef<SVerticalBox> Col = SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+	const bool bHand = D.Kind == TEXT("hand"), bPrint = D.Kind == TEXT("printout");
+	const float Wrap = 480.f;
+	TArray<FString> Lines;
+	D.Page.ParseIntoArray(Lines, TEXT("\n"), false);
+	// the paper's hand: Reenie Beanie in the pen's blue (as large as lets a short note fit the sheet
+	// without scrolling, 37 to 31), the typewriter, or the printer's dots
+	float HandPx = 37.f;
+	if (bHand && FSlateApplication::IsInitialized())
+	{
+		const TSharedRef<FSlateFontMeasure> Measure = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+		const float Room = 800.f - 2 * 56.f - (D.Stamp.IsEmpty() ? 0.f : 34.f);
+		for (; HandPx > 31.f; HandPx -= 1.f)
+		{
+			float H = 0.f;
+			for (const FString& L : Lines)
+			{
+				if (L.StartsWith(TEXT("~ "))) { H += 32.f; continue; }
+				const float W = float(Measure->Measure(L, Hand(HandPx)).X) / U;
+				H += HandPx * 1.08f * FMath::Max(1.f, FMath::CeilToFloat(W / (Wrap * 0.94f)));
+			}
+			if (H <= Room) break;
+		}
+	}
+	const FSlateFontInfo Font = bHand ? Hand(HandPx) : bPrint ? Term(24) : Type(19);
+	const float Pitch = bHand ? HandPx * 1.08f : bPrint ? 26.f : 29.f;
+	const FLinearColor InkCol = bHand ? InkBlue() : bPrint ? C(0x2b2b2b) : Ink();
+	TSharedRef<SVerticalBox> Col = SNew(SVerticalBox);
+	if (!D.Stamp.IsEmpty()) Col->AddSlot().AutoHeight().Padding(0, 0, 0, P(10))[SNew(STextBlock).Text(FText::FromString(D.Stamp)).Font(Term(22, 2)).ColorAndOpacity(StampRed())];
+	for (const FString& L : Lines)
+	{
+		// "~ " pencil in the margin's grey; a line of dashes is where one sheet ends and the next begins
+		const bool bPencil = L.StartsWith(TEXT("~ "));
+		if (L.TrimStart().StartsWith(TEXT("- - -")))
+		{
+			Col->AddSlot().AutoHeight().Padding(0, P(14))[SNew(SBox).HeightOverride(FMath::Max(1.f, P(1)))[SNew(SBorder).BorderImage(Box(C(0x000000, 0.22f)))]];
+			continue;
+		}
+		const FSlateFontInfo F = bPencil ? Hand(30) : Font;
+		Col->AddSlot().AutoHeight()
 		[
-			SNew(STextBlock).Text(FText::FromString(D.Stamp.IsEmpty() ? TEXT("") : D.Stamp)).Font(S47Style::Mono(20.f)).ColorAndOpacity(FLinearColor(0.55f, 0.15f, 0.12f))
-		]
-		+ SVerticalBox::Slot().AutoHeight()
-		[
-			S47Style::Page(D.Page, Type, S47Style::Ink)
+			SNew(STextBlock).Text(FText::FromString(bPencil ? L.Mid(2) : (L.IsEmpty() ? TEXT(" ") : L))).AutoWrapText(true).WrapTextAt(P(Wrap))
+			.Font(F).ColorAndOpacity(bPencil ? C(0x4a4a52) : InkCol).LineHeightPercentage(LinePercent(F, bPencil ? 32.f : Pitch))
 		];
+	}
 	if (Image)
 	{
-		ImageBrush = S47Kit::BrushFor(Image);
-		const float W = 560.f, H = W * ImageBrush->ImageSize.Y / FMath::Max(1.0, ImageBrush->ImageSize.X);
-		Col->AddSlot().AutoHeight().Padding(0, 16, 0, 0).HAlign(HAlign_Left)[SNew(SBox).WidthOverride(W).HeightOverride(H)[SNew(SImage).Image(ImageBrush.Get())]];
+		const float W = 460.f, H = W * Image->GetSizeY() / FMath::Max(1, Image->GetSizeX());
+		Col->AddSlot().AutoHeight().Padding(0, P(16), 0, 0).HAlign(HAlign_Left)[SNew(SBox).WidthOverride(P(W)).HeightOverride(P(H))[SNew(SImage).Image(Picture(Image))]];
 	}
-	TSharedRef<SWidget> Text = SNew(SScrollBox) + SScrollBox::Slot()[Col];
+	const TSharedRef<SWidget> Text = SAssignNew(PageScroll, SScrollBox).Style(QuietScroll()).ScrollBarStyle(QuietBar(C(0x233a7a, 0.2f))).ScrollBarThickness(FVector2D(P(3), P(3)))
+		+ SScrollBox::Slot().Padding(FMargin(0, 0, P(8), 0))[Col];
 	if (PaperArt)
 	{
-		PaperArtBrush = S47Kit::BrushFor(PaperArt);
-		return SNew(SOverlay)
-			+ SOverlay::Slot()[SNew(SImage).Image(PaperArtBrush.Get())]
-			+ SOverlay::Slot().Padding(FMargin(48, 40))[Text];
+		// the paper is a picture of its own (a field card, a letter): its shape from its ratio
+		const double Ar = D.PaperRatio > 0 ? D.PaperRatio : double(PaperArt->GetSizeX()) / FMath::Max(1, PaperArt->GetSizeY());
+		const double W = FMath::Min(740.0, 780.0 * Ar), H = W / Ar;
+		return Laid(SNew(SOverlay)
+			+ SOverlay::Slot()[SNew(SImage).Image(Picture(PaperArt))]
+			+ SOverlay::Slot().Padding(FMargin(P(48), P(40)))[Text], FVector2D(W, H), -1.2f);
 	}
-	return SNew(SBorder).BorderImage(PaperBrush.Get()).Padding(FMargin(40, 36))[Text];
+	const FLinearColor Sheet = bPrint ? C(0xeef0e4) : bHand ? C(0xf1ead8) : C(0xeee7d4);
+	return Laid(SNew(SOverlay)
+		+ SOverlay::Slot()[SNew(SS47GameSheet).Color(Sheet).bTorn(bHand)]
+		+ SOverlay::Slot().Padding(FMargin(P(60), P(56), P(50), P(56)))[Text], FVector2D(600, 800), -1.2f);
+}
+
+void SS47Document::Act(int32 I)
+{
+	if (Actions.IsValidIndex(I) && Actions[I].Fn) Actions[I].Fn();
 }
 
 FReply SS47Document::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
-	if (InKeyEvent.GetKey() == EKeys::Escape || InKeyEvent.GetKey() == EKeys::E || InKeyEvent.GetKey() == EKeys::Tab)
+	const FKey K = InKeyEvent.GetKey();
+	if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Tab)
 	{
 		if (OnClose) OnClose();
+		return FReply::Handled();
+	}
+	// V: the first reading; the arrows choose, Enter acts; the paper scrolls with the page keys and the wheel
+	if (K == EKeys::V) { if (Actions.Num() && Actions[0].Reading.IsValid()) { Chosen = 0; Act(0); } return FReply::Handled(); }
+	if (K == EKeys::Up || K == EKeys::W) { Chosen = (Chosen + Actions.Num() - 1) % FMath::Max(1, Actions.Num()); return FReply::Handled(); }
+	if (K == EKeys::Down || K == EKeys::S) { Chosen = (Chosen + 1) % FMath::Max(1, Actions.Num()); return FReply::Handled(); }
+	if (K == EKeys::Enter || K == EKeys::SpaceBar) { Act(Chosen); return FReply::Handled(); }
+	if (PageScroll.IsValid() && (K == EKeys::PageDown || K == EKeys::PageUp))
+	{
+		PageScroll->SetScrollOffset(FMath::Max(0.f, PageScroll->GetScrollOffset() + (K == EKeys::PageDown ? 1.f : -1.f) * S47Game::P(300)));
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();

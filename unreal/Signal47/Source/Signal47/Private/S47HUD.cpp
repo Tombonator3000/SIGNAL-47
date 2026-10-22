@@ -56,6 +56,8 @@
 #include "S47Curve.h"
 #include "S47DecoderDesk.h"
 #include "S47ReadAloud.h"
+#include "S47GameStyle.h"
+#include "SS47Notebook.h"
 #include "S47Glimpses.h"
 #include "S47MorningHolds.h"
 #include "S47TownEvents.h"
@@ -128,6 +130,7 @@ void AS47HUD::Start()
 		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
 		bOk &= FS47DecoderDesk::SelfTest(Lines) & FS47ReadAloud::SelfTest(Lines); // (the signal processor's desk and panel; read-aloud's text matching)
+		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -164,7 +167,10 @@ void AS47HUD::Start()
 	// (ui.showHud: the HUD is shown in play, not on the title)
 	auto Playing = [this] { const US47Main* Mn = US47Main::Get(this); return !Mn || Mn->Mode == US47Main::EMode::Play; };
 	Hud = SNew(SS47Hud).Visibility(EVisibility::HitTestInvisible)
-		.Prompt_Lambda([this] { return Prompt; })
+		.Prompt_Lambda([this] { return FText::FromString(PromptLabel); })
+		.PromptAlt_Lambda([this] { return FText::FromString(PromptAlt); })
+		// (in the cab only what the drive offers: the walker's last look is not a prompt there)
+		.ShowPrompt_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && (bPromptOwn || !(M->World && M->World->bDriving)); })
 		.Clock_Lambda([this, Playing] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() ? Story->ClockText(false) : FString()); })
 		.ShowAim_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && !(M->World && M->World->bDriving); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);
@@ -523,6 +529,7 @@ void AS47HUD::OpenView(const FString& View)
 	else if (View == TEXT("console")) { if (Story.IsValid()) { Story->bConsoleOpen = true; } OpenConsole(); }
 	else if (View == TEXT("ops")) OpenOps();
 	else if (View == TEXT("log")) ShowDocument(S47Docs::ShiftLog(), [] {});
+	else if (View.StartsWith(TEXT("doc:")) && Story.IsValid()) { for (const FS47Doc& D : Story->Docs()) if (D.Id == View.Mid(4)) { ShowDocument(D, [] {}); break; } } // a paper the story holds, by its id
 	else if (View == TEXT("board")) { if (US47Main* M = US47Main::Get(this); M && M->CaseBoard) M->CaseBoard->Open(); }
 	else if (View == TEXT("pause")) { if (US47Main* M = US47Main::Get(this); M && M->Flow) M->Flow->OpenPause(); }
 	else if (US47Main* M = US47Main::Get(this); M && M->Flow) M->Flow->OpenTestView(View);
@@ -584,27 +591,11 @@ void AS47HUD::ShowDocument(const FS47Doc& Doc, TFunction<void()> OnClose)
 	TWeakObjectPtr<AS47HUD> Self = this;
 	if (Audio) Audio->Play(TEXT("paper0"), 0.5f);
 	// UI.document: the page read by Kinski (Read document, without its pencil marks and rules) and the
-	// transcript by the description reader (Read description), each when that reader is on
-	TSharedPtr<SWidget> Reading;
-	if (US47UI* UI = US47Main::Get(this)->UI)
-	{
-		UI->StopSpeech();
-		TArray<FString> Paragraphs;
-		{
-			// text.split(/\n\s*\n/).filter((p) => p.trim())
-			static const FRegexPattern Gap(TEXT("\\n\\s*\\n"));
-			FRegexMatcher Mt(Gap, Doc.Transcript);
-			int32 From = 0;
-			while (Mt.FindNext()) { const FString P = Doc.Transcript.Mid(From, Mt.GetMatchBeginning() - From); if (!P.TrimStartAndEnd().IsEmpty()) Paragraphs.Add(P); From = Mt.GetMatchEnding(); }
-			const FString P = Doc.Transcript.Mid(From);
-			if (!P.TrimStartAndEnd().IsEmpty()) Paragraphs.Add(P);
-		}
-		const TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
-		if (!Doc.Page.TrimStartAndEnd().IsEmpty()) Box->AddSlot().AutoHeight()[UI->ReadingControls(S47Reading::DocumentReadingParagraphs(Doc.Page), TEXT("Read document"), TEXT("document"))];
-		Box->AddSlot().AutoHeight()[UI->ReadingControls(Paragraphs, TEXT("Read description"), TEXT("description"))];
-		Reading = Box;
-	}
-	SetModal(SNew(SS47Document).Doc(Doc).Reading(Reading).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), MoveTemp(OnClose));
+	// transcript by the description reader (Read description), each when that reader is on: the view's
+	// own actions (SS47Document)
+	US47UI* UI = US47Main::Get(this)->UI;
+	if (UI) UI->StopSpeech();
+	SetModal(SNew(SS47Document).Doc(Doc).UI(UI).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), MoveTemp(OnClose));
 	UE_LOG(LogS47HUD, Display, TEXT("S47: document %s"), *Doc.Id);
 }
 
@@ -734,7 +725,9 @@ void AS47HUD::Tick(float DeltaSeconds)
 		{
 			const FString F = Walker->FocusedId();
 			const FString L = F.IsEmpty() || !M || !M->Inter || !bPlaying ? FString() : M->Inter->LabelOf(F);
-			Prompt = L.IsEmpty() ? FText::GetEmpty() : FText::FromString(L.ToUpper() + TEXT("   [E]"));
+			PromptLabel = L;
+			PromptAlt.Reset();
+			bPromptOwn = false;
 		}
 		// (input.enabled: only in play; the title and the end card hold the player)
 		Walker->SetActive(bPlaying && !Story->IsCinematic() && !bEnded);
@@ -785,9 +778,9 @@ void AS47HUD::EndPlay(const EEndPlayReason::Type Reason)
 
 void AS47HUD::SetPrompt(const FString& Label, const FString& Alt)
 {
-	// UI.prompt: "[E] label   [Q] alt"
-	FString P = Label.IsEmpty() ? FString() : Label.ToUpper() + TEXT("   [E]");
-	if (!Alt.IsEmpty()) P += TEXT("      ") + Alt.ToUpper() + TEXT("   [Q]");
-	Prompt = FText::FromString(P);
+	// UI.prompt: E and the label, Q and the second thing (the HUD draws the keycaps)
+	PromptLabel = Label;
+	PromptAlt = Alt;
+	bPromptOwn = true;
 	bPromptSet = true;
 }

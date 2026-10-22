@@ -1,88 +1,132 @@
 #include "SS47Notebook.h"
 
 #include "Engine/Texture2D.h"
+#include "Fonts/FontMeasure.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Internationalization/Regex.h"
 #include "Rendering/DrawElements.h"
+#include "Rendering/SlateRenderer.h"
+#include "S47GameStyle.h"
 #include "S47Image.h"
 #include "S47Kit.h"
+#include "S47Main.h"
 #include "SS47AreaMap.h"
-#include "SS47Screens.h"
 #include "SS47Widgets.h"
 #include "Styling/CoreStyle.h"
 #include "TextureResource.h"
 #include "UObject/StrongObjectPtr.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Layout/SBackgroundBlur.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSpacer.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SCanvas.h"
 #include "Widgets/SLeafWidget.h"
 #include "Widgets/SNullWidget.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
 
-using namespace S47Css;
-
 namespace
 {
-	const FLinearColor InkBlue() { return C(0x233a7a); }
-	const FLinearColor Ink() { return C(0x1e2430); }
-	const float NbW = 980.f; // .notebook: width min(980px, 100%)
+	using S47Game::P;
+	using S47Game::P2;
+	using S47Game::C;
 
-	// the faint blue rules of a notebook page (repeating-linear-gradient, one every 30 px)
-	class SRuled : public SLeafWidget
+	// the page's own colours (notebook.html)
+	FLinearColor Ph2Red() { return C(0x8a3b2c); }       // .ph2: the line under a heading
+	FLinearColor UseInk() { return C(0x5d4f3a); }       // .use: the actions at a page's foot
+	FLinearColor TypedInk() { return C(0x25211a); }     // .desc
+	const FButtonStyle* Flat() { return &FCoreStyle::Get().GetWidgetStyle<FButtonStyle>("NoBorder"); }
+
+	// a button that is only its content (not focusable: the notebook keeps the keys)
+	TSharedRef<SButton> Click(const TSharedRef<SWidget>& Content, TFunction<void()> Fn)
+	{
+		return SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).IsFocusable(false)
+			.OnClicked_Lambda([Fn] { if (Fn) Fn(); return FReply::Handled(); })[Content];
+	}
+
+	// the spiral down the gutter (.rings: a bar of wire every 46px)
+	class SRings : public SLeafWidget
 	{
 	public:
-		SLATE_BEGIN_ARGS(SRuled) {}
+		SLATE_BEGIN_ARGS(SRings) {}
 		SLATE_END_ARGS()
 		void Construct(const FArguments&) {}
-		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1, 1); }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(8, 8); }
 		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
 		{
 			const FVector2f S = FVector2f(G.GetLocalSize());
-			// (the page starts 48 px under the notebook's top here, where the web version's section
-			// starts at the top under the tabs: the rules stay where they were on the paper)
-			for (float Y = 21 * PX; Y < S.Y; Y += 30 * PX)
-				FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, 1.f * PX), FSlateLayoutTransform(FVector2f(0.f, Y))), FCoreStyle::Get().GetBrush("WhiteBrush"), ESlateDrawEffect::None, C(0x506eaa, 0.22f));
+			const FSlateBrush* White = FCoreStyle::Get().GetBrush("WhiteBrush");
+			for (float Y = P(22); Y + P(10) <= S.Y; Y += P(46))
+			{
+				FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, P(8)), FSlateLayoutTransform(FVector2f(0, Y))), White, ESlateDrawEffect::None, C(0x9aa0a6));
+				FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, P(2)), FSlateLayoutTransform(FVector2f(0, Y + P(8)))), White, ESlateDrawEffect::None, C(0x5f656b));
+			}
 			return Layer + 1;
 		}
 	};
 
-	TSharedRef<SWidget> H4(const FString& S)
+	// the four arrow keys' arrows, drawn (VT323 has none)
+	class SArrows : public SLeafWidget
 	{
-		return SNew(SBox).Padding(FMargin(0, 0, 0, 14 * PX))[SNew(STextBlock).Text(FText::FromString(S)).Font(Type(18)).ColorAndOpacity(C(0x5a5446))];
+	public:
+		SLATE_BEGIN_ARGS(SArrows) {}
+		SLATE_END_ARGS()
+		void Construct(const FArguments&) {}
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(P(4 * 14 + 3 * 8), P(22)); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FLinearColor Col = S47Game::Paper();
+			const float Y = P(11), H = P(5), Wd = FMath::Max(1.f, P(1.4f));
+			auto Arrow = [&](float Cx, FVector2f Dir)
+			{
+				const FVector2f Cn(Cx, Y), Tip = Cn + Dir * P(6), Tail = Cn - Dir * P(6), Side(-Dir.Y, Dir.X);
+				FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ Tail, Tip }, ESlateDrawEffect::None, Col, true, Wd);
+				FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ Tip - Dir * H + Side * H * 0.8f, Tip, Tip - Dir * H - Side * H * 0.8f }, ESlateDrawEffect::None, Col, true, Wd);
+			};
+			Arrow(P(7), FVector2f(-1, 0)); Arrow(P(29), FVector2f(1, 0)); Arrow(P(51), FVector2f(0, -1)); Arrow(P(73), FVector2f(0, 1));
+			return Layer + 1;
+		}
+	};
+
+	// a page's heading in the hand and the line under it (.ph, .ph2)
+	TSharedRef<SWidget> Head(const FString& Title, const FString& Line)
+	{
+		using namespace S47Game;
+		TSharedRef<SVerticalBox> B = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(P(56))[SNew(STextBlock).Text(FText::FromString(Title)).Font(Hand(52)).ColorAndOpacity(InkBlue())]];
+		if (!Line.IsEmpty()) B->AddSlot().AutoHeight().Padding(P(2), 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(Line)).Font(Term(20, 2)).ColorAndOpacity(Ph2Red())];
+		return B;
 	}
-	TSharedRef<SWidget> Empty(const FString& S, const FLinearColor& Col = C(0x7d7563))
+
+	// a text in the hand on the page's lines (34px apart)
+	TSharedRef<STextBlock> Inked(const FString& S, float Px = 30.f, const FLinearColor& Col = S47Game::InkBlue())
+	{
+		using namespace S47Game;
+		return SNew(STextBlock).Text(FText::FromString(S)).Font(Hand(Px)).ColorAndOpacity(Col).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 34));
+	}
+	TSharedRef<STextBlock> Typed(const FString& S, float Px = 19.f, const FLinearColor& Col = TypedInk(), float Pitch = 34.f)
+	{
+		using namespace S47Game;
+		return SNew(STextBlock).Text(FText::FromString(S)).Font(Type(Px)).ColorAndOpacity(Col).AutoWrapText(true).LineHeightPercentage(LinePercent(Type(Px), Pitch));
+	}
+	TSharedRef<SWidget> Empty(const FString& S)
 	{
 		// (.empty: read as a description, UI.notebook's descriptionReadings)
-		return S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(S)).Font(Type(15)).ColorAndOpacity(Col).AutoWrapText(true));
+		return SNew(SBox).Padding(FMargin(0, P(10), 0, 0))[Typed(S, 17.f, C(0x7d7563))];
 	}
-	// a picture by its data URL or its art name (core/art.ts), as an image `Width` wide
+
+	// a picture by its data URL or its art name (core/art.ts)
 	UTexture2D* Picture(const FString& Src)
 	{
 		if (Src.IsEmpty()) return nullptr;
 		return Src.StartsWith(TEXT("data:")) ? S47Image::FromDataUrl(Src) : S47Image::Art(Src);
-	}
-	// a card-like button with a paper fill
-	TSharedRef<SButton> PaperButton(TSharedRef<SWidget> Content, const FLinearColor& Fill, const FLinearColor& Line, TFunction<void()> OnClick, const FMargin& Pad)
-	{
-		static TMap<FString, TSharedPtr<FButtonStyle>> Styles;
-		const FString Key = Fill.ToString() + Line.ToString();
-		TSharedPtr<FButtonStyle>& S = Styles.FindOrAdd(Key);
-		if (!S.IsValid())
-		{
-			S = MakeShared<FButtonStyle>();
-			const FSlateBrush* N = Box(Fill, Line, Line.A > 0.f ? 1.f : 0.f);
-			const FSlateBrush* Hv = Box(Fill * FLinearColor(0.97f, 0.97f, 0.97f, 1.f), Line, Line.A > 0.f ? 1.f : 0.f);
-			S->SetNormal(*N).SetHovered(*Hv).SetPressed(*Hv).SetDisabled(*N);
-			S->SetNormalPadding(FMargin(0)).SetPressedPadding(FMargin(0));
-		}
-		return SNew(SButton).ButtonStyle(S.Get()).ContentPadding(Pad).HAlign(HAlign_Fill)
-			.OnClicked_Lambda([OnClick] { if (OnClick) OnClick(); return FReply::Handled(); })[Content];
 	}
 
 	// CONTROLS: every control, keyboard and mouse, and a phone or tablet (the hints about them are
@@ -126,20 +170,21 @@ namespace
 		return bPhone ? Phone : Desk;
 	}
 
-	TSharedRef<SWidget> ControlsBlock(const FCtlPage& P)
+	TSharedRef<SWidget> ControlsBlock(const FCtlPage& Pg)
 	{
+		using namespace S47Game;
 		TSharedRef<SVerticalBox> B = SNew(SVerticalBox);
-		B->AddSlot().AutoHeight()[H4(P.Title)];
-		for (const FCtlGroup& G : P.Groups)
+		B->AddSlot().AutoHeight()[Head(Pg.Title, FString())];
+		for (const FCtlGroup& G : Pg.Groups)
 		{
-			B->AddSlot().AutoHeight().Padding(0, 12 * PX, 0, 4 * PX)[SNew(STextBlock).Text(FText::FromString(G.Head)).Font(Term(19)).ColorAndOpacity(C(0xa33a2c))];
+			B->AddSlot().AutoHeight().Padding(0, P(14), 0, P(4))[SNew(STextBlock).Text(FText::FromString(FString(G.Head).ToUpper())).Font(Term(20, 2)).ColorAndOpacity(Ph2Red())];
 			for (const TPair<const TCHAR*, const TCHAR*>& R : G.Rows)
 			{
-				B->AddSlot().AutoHeight().Padding(0, 0, 0, 3 * PX)
+				B->AddSlot().AutoHeight().Padding(0, 0, 0, P(4))
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(158 * PX)[SNew(STextBlock).Text(FText::FromString(R.Key)).Font(Term(18)).ColorAndOpacity(C(0x2e2a22))]]
-					+ SHorizontalBox::Slot().FillWidth(1.f).Padding(14 * PX, 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(R.Value)).Font(Type(15)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true)]
+					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(P(170))[SNew(STextBlock).Text(FText::FromString(R.Key)).Font(Term(20)).ColorAndOpacity(C(0x2e2a22))]]
+					+ SHorizontalBox::Slot().FillWidth(1.f).Padding(P(12), P(1), 0, 0)[SNew(STextBlock).Text(FText::FromString(R.Value)).Font(Type(15)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true)]
 				];
 			}
 		}
@@ -151,7 +196,7 @@ namespace
 	{
 		TArray<FString> W;
 		Name.ParseIntoArrayWS(W);
-		W.RemoveAll([](const FString& X) { const FString L = X.ToLower(); return L == TEXT("dr") || L == TEXT("dr.") || L == TEXT("the"); });
+		W.RemoveAll([](const FString& Xw) { const FString L = Xw.ToLower(); return L == TEXT("dr") || L == TEXT("dr.") || L == TEXT("the"); });
 		FString S;
 		if (W.Num()) S += W[0].Left(1);
 		if (W.Num() > 1) S += W.Last().Left(1);
@@ -181,14 +226,14 @@ namespace
 		if (!S47Image::DecodePixels(Url, Px, W, H)) return nullptr;
 		const double Br = 1 + 0.9 * (1 - K), Co = 0.25 + 0.75 * K, Sa = K;
 		auto Cl = [](double V) { return FMath::Clamp(V, 0.0, 1.0); };
-		for (FColor& P : Px)
+		for (FColor& Pc : Px)
 		{
-			double R = Cl(P.R / 255.0 * Br), G = Cl(P.G / 255.0 * Br), B = Cl(P.B / 255.0 * Br);
+			double R = Cl(Pc.R / 255.0 * Br), G = Cl(Pc.G / 255.0 * Br), B = Cl(Pc.B / 255.0 * Br);
 			R = Cl((R - 0.5) * Co + 0.5); G = Cl((G - 0.5) * Co + 0.5); B = Cl((B - 0.5) * Co + 0.5);
 			const double R2 = (0.213 + 0.787 * Sa) * R + (0.715 - 0.715 * Sa) * G + (0.072 - 0.072 * Sa) * B;
 			const double G2 = (0.213 - 0.213 * Sa) * R + (0.715 + 0.285 * Sa) * G + (0.072 - 0.072 * Sa) * B;
 			const double B2 = (0.213 - 0.213 * Sa) * R + (0.715 - 0.715 * Sa) * G + (0.072 + 0.928 * Sa) * B;
-			P.R = uint8(FMath::RoundToInt(Cl(R2) * 255)); P.G = uint8(FMath::RoundToInt(Cl(G2) * 255)); P.B = uint8(FMath::RoundToInt(Cl(B2) * 255)); P.A = 255;
+			Pc.R = uint8(FMath::RoundToInt(Cl(R2) * 255)); Pc.G = uint8(FMath::RoundToInt(Cl(G2) * 255)); Pc.B = uint8(FMath::RoundToInt(Cl(B2) * 255)); Pc.A = 255;
 		}
 		if (K < 0.85)
 		{
@@ -203,9 +248,9 @@ namespace
 					const int32 Len = bRows ? W : H, Count = bRows ? H : W;
 					for (int32 N = 0; N < Count; ++N)
 					{
-						auto At = [&](int32 I) -> FColor& { const int32 C = FMath::Clamp(I, 0, Len - 1); return bRows ? Px[N * W + C] : Px[C * W + N]; };
+						auto At = [&](int32 I) -> FColor& { const int32 Ci = FMath::Clamp(I, 0, Len - 1); return bRows ? Px[N * W + Ci] : Px[Ci * W + N]; };
 						int32 S[3] = { 0, 0, 0 };
-						for (int32 I = -Rad; I <= Rad; ++I) { const FColor& C = At(I); S[0] += C.R; S[1] += C.G; S[2] += C.B; }
+						for (int32 I = -Rad; I <= Rad; ++I) { const FColor& Cc = At(I); S[0] += Cc.R; S[1] += Cc.G; S[2] += Cc.B; }
 						for (int32 I = 0; I < Len; ++I)
 						{
 							FColor& O = bRows ? Tmp[N * W + I] : Tmp[I * W + N];
@@ -216,7 +261,7 @@ namespace
 					}
 					Px = Tmp;
 				};
-				for (int32 P = 0; P < 3; ++P) { Pass(true); Pass(false); }
+				for (int32 Pi = 0; Pi < 3; ++Pi) { Pass(true); Pass(false); }
 			}
 		}
 		UTexture2D* T = UTexture2D::CreateTransient(W, H, PF_B8G8R8A8);
@@ -230,11 +275,6 @@ namespace
 		return T;
 	}
 
-	// repeat(auto-fill, ...) keeps its empty tracks: a row of fewer things keeps the columns' width
-	void KeepColumns(const TSharedRef<SUniformGridPanel>& Grid, int32 Count, int32 Cols)
-	{
-		for (int32 i = Count; i < Cols; ++i) Grid->AddSlot(i, 0)[SNew(SSpacer)];
-	}
 }
 
 FString SS47Notebook::Excerpt(const FS47Doc& D)
@@ -267,388 +307,699 @@ FString SS47Notebook::Excerpt(const FS47Doc& D)
 
 void SS47Notebook::Construct(const FArguments& InArgs)
 {
+	using namespace S47Game;
 	UI = InArgs._UI;
 	OnBoard = InArgs._OnBoard;
-	const TArray<FS47Task>& Tasks = InArgs._Tasks;
-	const TArray<FString>& Notes = InArgs._Notes;
-	const TArray<FS47Doc>& Docs = InArgs._Docs;
-	const FS47NbExtras& X = InArgs._Extras;
-	TFunction<void(const FS47Doc&)> OnDoc = InArgs._OnDoc;
+	OnDoc = InArgs._OnDoc;
+	Heading = InArgs._Heading.IsEmpty() ? FString(TEXT("Tonight")) : InArgs._Heading;
+	Tasks = InArgs._Tasks;
+	Notes = InArgs._Notes;
+	X = InArgs._Extras;
+	Album = X.Album;
 	static const FRegexPattern Pnn(TEXT("^p\\d\\d$"));
 	auto IsFinding = [](const FS47Doc& D) { FRegexMatcher M(Pnn, D.Id); return M.FindNext() || D.Id == TEXT("finding"); };
-	TArray<FS47Doc> Photos, Findings, Papers;
-	for (const FS47Doc& D : Docs) if (D.Kind == TEXT("photo") && !D.Image.IsEmpty()) Photos.Add(D);
-	for (const FS47Doc& D : Docs) if (IsFinding(D)) Findings.Add(D);
-	for (const FS47Doc& D : Docs) if (!(D.Kind == TEXT("photo") && !D.Image.IsEmpty()) && !IsFinding(D)) Papers.Add(D);
-	auto KindName = [](const FS47Doc& D) { return D.Kind == TEXT("hand") ? TEXT("Handwritten") : D.Kind == TEXT("printout") ? TEXT("Printout") : D.Kind == TEXT("typed") ? TEXT("Typed") : D.Kind == TEXT("map") ? TEXT("Map") : TEXT("Print"); };
-	auto Label = [](const FS47Doc& D)
+	for (const FS47Doc& D : InArgs._Docs) if (D.Kind == TEXT("photo") && !D.Image.IsEmpty()) Photos.Add(D);
+	for (const FS47Doc& D : InArgs._Docs) if (IsFinding(D)) Findings.Add(D);
+	for (const FS47Doc& D : InArgs._Docs) if (!(D.Kind == TEXT("photo") && !D.Image.IsEmpty()) && !IsFinding(D)) Papers.Add(D);
+
+	Order = { TEXT("tasks"), TEXT("notes"), TEXT("findings"), TEXT("papers"), TEXT("photos") };
+	if (X.Map) Order.Add(TEXT("map"));
+	if (X.Kit) Order.Add(TEXT("kit"));
+	if (X.People) Order.Add(TEXT("people"));
+	Order.Add(TEXT("controls"));
+
+	// the foot of the screen: the keys, the board, and the camcorder's date and time
+	auto Bar = [this](const TSharedRef<SWidget>& Cap, const TCHAR* Word, TFunction<void()> Fn) -> TSharedRef<SWidget>
 	{
-		if (!D.Stamp.IsEmpty() && D.Stamp.Len() <= 6) return D.Stamp;
-		TArray<FString> Parts = S47Text::Split(D.Title, TEXT(" / "));
-		return Parts.Num() ? Parts[0] : D.Title;
+		const TSharedRef<SWidget> W = SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[Cap]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Word)).Font(Term(22, 1)).ColorAndOpacity(Hint())];
+		return Fn ? StaticCastSharedRef<SWidget>(Click(W, Fn)) : W;
 	};
-	auto Open = [OnDoc](const FS47Doc& D) { return [OnDoc, D] { if (OnDoc) OnDoc(D); }; };
+	const TSharedRef<SWidget> Arrows = SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x5d584e), 1.f, 2.f)).Padding(FMargin(P(6), P(1)))
+		[SNew(SArrows)];
+	TSharedRef<SHorizontalBox> Keys = SNew(SHorizontalBox);
+	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(TEXT("Q E")), TEXT("TAB"), nullptr)];
+	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Arrows, TEXT("CHOOSE"), nullptr)];
+	if (OnBoard) Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(TEXT("B")), TEXT("CASE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })];
+	Keys->AddSlot().AutoWidth()[Bar(Keycap(TEXT("TAB")), TEXT("CLOSE"), [this] { Close(); })];
 
-	// ---------- the pages ----------
-	TSharedRef<SVerticalBox> TasksP = SNew(SVerticalBox);
-	TasksP->AddSlot().AutoHeight()[H4(InArgs._Heading.IsEmpty() ? TEXT("Tonight") : InArgs._Heading)];
-	const float Li = UI.IsValid() && UI->bLargeText ? 30.f : 26.f, LiH = UI.IsValid() && UI->bLargeText ? 34.f : 30.f;
-	if (Tasks.Num())
-	{
-		for (const FS47Task& T : Tasks)
-		{
-			// li.done: line-through (the text block keeps its own copy of the style)
-			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(Li)).SetColorAndOpacity(T.bDone ? C(0x6d7895) : InkBlue());
-			if (T.bDone)
-			{
-				FSlateBrush Strike = *FCoreStyle::Get().GetBrush("WhiteBrush");
-				Strike.TintColor = C(0x6d7895);
-				St.SetStrikeBrush(Strike);
-			}
-			TasksP->AddSlot().AutoHeight()
-			[
-				SNew(SBox).MinDesiredHeight(LiH * PX).VAlign(VAlign_Center)
-				[
-					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(Li * PX * 1.1f)[SNew(STextBlock).Text(FText::FromString(T.bDone ? TEXT("x") : TEXT("-"))).Font(Hand(Li)).ColorAndOpacity(T.bDone ? C(0x6d7895) : InkBlue())]]
-					+ SHorizontalBox::Slot().FillWidth(1.f)[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(T.Text)).TextStyle(&St).AutoWrapText(true))]
-				]
-			];
-		}
-	}
-	else TasksP->AddSlot().AutoHeight()[Empty(TEXT("Nothing yet. Dale left the shift log on the desk."))];
-
-	TSharedRef<SVerticalBox> NotesP = SNew(SVerticalBox);
-	NotesP->AddSlot().AutoHeight()[H4(TEXT("Observations"))];
-	if (Notes.Num())
-	{
-		// .nb-cols: two columns, the first filled first
-		TSharedRef<SVerticalBox> L = SNew(SVerticalBox), R = SNew(SVerticalBox);
-		const int32 Half = (Notes.Num() + 1) / 2;
-		for (int32 i = 0; i < Notes.Num(); ++i)
-		{
-			(i < Half ? L : R)->AddSlot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(Notes[i])).Font(Hand(Li)).ColorAndOpacity(InkBlue()).AutoWrapText(true).LineHeightPercentage(0.9f))];
-		}
-		NotesP->AddSlot().AutoHeight()[S47Kit::Two(L, R)];
-	}
-	else NotesP->AddSlot().AutoHeight()[Empty(TEXT("Nothing worth writing down. Yet."))];
-
-	TSharedRef<SVerticalBox> FindP = SNew(SVerticalBox);
-	FindP->AddSlot().AutoHeight()[H4(TEXT("Findings"))];
-	if (OnBoard)
-	{
-		FindP->AddSlot().AutoHeight().HAlign(HAlign_Left).Padding(0, 0, 0, 14 * PX)
-		[
-			BoxButton(TEXT("Lay it all out on the case board"), Term(20), C(0xa33a2c), C(0xa33a2c, 0.06f), C(0xa33a2c, 0.5f), [this] { Close(); if (OnBoard) OnBoard(); }, FMargin(12 * PX, 4 * PX))
-		];
-	}
-	if (Findings.Num())
-	{
-		for (const FS47Doc& D : Findings)
-		{
-			TArray<FString> Parts = S47Text::Split(D.Title, TEXT(" / "));
-			FString Rest = Parts.Num() > 1 ? FString::Join(TArray<FString>(Parts.GetData() + 1, Parts.Num() - 1), TEXT(" / ")) : FString();
-			if (Rest.IsEmpty()) Rest = D.Title;
-			FindP->AddSlot().AutoHeight().Padding(0, 0, 0, 10 * PX)
-			[
-				PaperButton(
-					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)
-					[
-						SNew(SBox).WidthOverride(56 * PX)[SNew(STextBlock).Text(FText::FromString(Label(D))).Font(Term(24)).ColorAndOpacity(C(0x2f6a3c))]
-					]
-					+ SHorizontalBox::Slot().FillWidth(1.f).Padding(12 * PX, 0, 0, 0)
-					[
-						SNew(SVerticalBox)
-						+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Rest)).Font(Type(15)).ColorAndOpacity(Ink()).AutoWrapText(true)]
-						+ SVerticalBox::Slot().AutoHeight().Padding(0, 2 * PX, 0, 0)[SNew(STextBlock).Text(FText::FromString(Excerpt(D))).Font(Type(13)).ColorAndOpacity(C(0x6d6656)).AutoWrapText(true)]
-					],
-					FLinearColor(1, 1, 1, 0.35f), FLinearColor::Transparent, Open(D), FMargin(10 * PX, 8 * PX))
-			];
-		}
-	}
-	else FindP->AddSlot().AutoHeight()[Empty(TEXT("Nothing recorded yet. A finding goes here once the records support it."))];
-
-	TSharedRef<SVerticalBox> PapersP = SNew(SVerticalBox);
-	PapersP->AddSlot().AutoHeight()[H4(TEXT("Papers"))];
-	if (Papers.Num())
-	{
-		// .cards: repeat(auto-fill, minmax(190px, 1fr)), four on the notebook's width
-		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(5 * PX));
-		for (int32 i = 0; i < Papers.Num(); ++i)
-		{
-			const FS47Doc& D = Papers[i];
-			const bool bHand = D.Kind == TEXT("hand");
-			Grid->AddSlot(i % 4, i / 4)
-			[
-				PaperButton(
-					SNew(SBox).MinDesiredHeight(64 * PX - 20 * PX).VAlign(VAlign_Top)
-					[
-						SNew(SVerticalBox)
-						+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(bHand ? Hand(22) : Type(15)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
-						+ SVerticalBox::Slot().AutoHeight().Padding(0, 4 * PX, 0, 0)
-						[
-							SNew(STextBlock).Text(FText::FromString(FString(KindName(D)) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(16)).ColorAndOpacity(C(0x8a8270))
-						]
-					],
-					D.Kind == TEXT("printout") ? C(0xeef2e6) : C(0xf4efe1), FLinearColor(0, 0, 0, 0.12f), Open(D), FMargin(12 * PX, 10 * PX))
-			];
-		}
-		KeepColumns(Grid, Papers.Num(), 4);
-		PapersP->AddSlot().AutoHeight()[Grid];
-	}
-	else PapersP->AddSlot().AutoHeight()[Empty(TEXT("None collected."))];
-
-	// the album (ui/album.ts albumPage): the case prints under photo corners on black album paper, and
-	// the free frames (core/album.ts) as instant prints, in the order they were taken
-	Album = X.Album;
-	const int32 NShots = Album ? Album->Shots.Num() : 0;
-	TSharedRef<SVerticalBox> AlbumIn = SNew(SVerticalBox);
-	if (Photos.Num())
-	{
-		AlbumIn->AddSlot().AutoHeight().Padding(0, 8 * PX, 0, 12 * PX)[SNew(STextBlock).Text(FText::FromString(TEXT("The case"))).Font(Hand(28)).ColorAndOpacity(C(0xece6d6, 0.88f))];
-		TSharedRef<SWrapBox> Thumbs = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(24 * PX, 26 * PX));
-		for (int32 i = 0; i < Photos.Num(); ++i)
-		{
-			const FS47Doc& D = Photos[i];
-			UTexture2D* Tex = Picture(D.Image);
-			TSharedRef<SWidget> Print = SNew(SBox).WidthOverride(220 * PX)
-			[
-				SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).OnClicked_Lambda([F = Open(D)] { F(); return FReply::Handled(); })
-				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().AutoHeight()[Tex ? S47Kit::Image(Tex, 220 * PX) : StaticCastSharedRef<SWidget>(SNew(SBox).HeightOverride(150 * PX))]
-					+ SVerticalBox::Slot().AutoHeight().Padding(0, 10 * PX, 0, 0)[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(Hand(21)).ColorAndOpacity(C(0xe7e1d1)).AutoWrapText(true)]
-				]
-			];
-			Print->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(TILT[i % 8]))));
-			Print->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-			Thumbs->AddSlot()[Print];
-		}
-		AlbumIn->AddSlot().AutoHeight().Padding(0, 0, 0, 26 * PX)[Thumbs];
-	}
-	if (NShots)
-	{
-		AlbumIn->AddSlot().AutoHeight().Padding(0, 8 * PX, 0, 12 * PX)[SNew(STextBlock).Text(FText::FromString(TEXT("Tonight"))).Font(Hand(28)).ColorAndOpacity(C(0xece6d6, 0.88f))];
-		// .al-prints: wrapping, 26 px between rows and 22 between prints
-		TSharedRef<SWrapBox> Prints = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(22 * PX, 26 * PX));
-		for (int32 i = 0; i < NShots; ++i) Prints->AddSlot()[Print(i, 236, false)];
-		AlbumIn->AddSlot().AutoHeight()[Prints];
-	}
-	if (!Photos.Num() && !NShots) AlbumIn->AddSlot().AutoHeight()[Empty(TEXT("No exposures yet. Once you have the field camera, C raises it anywhere."), C(0xb9b29f))];
-	// .al-head: the heading, and the roll's count in red beside it
-	TSharedRef<SHorizontalBox> AlbumHead = SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(TEXT("Album"))).Font(Type(18)).ColorAndOpacity(C(0x5a5446))];
-	if (Album) AlbumHead->AddSlot().AutoWidth().VAlign(VAlign_Bottom).Padding(18 * PX, 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("%d of %d free frames left"), Album->Left, Album->Roll))).Font(Term(18)).ColorAndOpacity(C(0xa33a2c))];
-	TSharedRef<SWidget> AlbumP = SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12 * PX)[AlbumHead]
-		+ SVerticalBox::Slot().AutoHeight()
-		[
-			SNew(SBorder).BorderImage(Box(C(0x1b1916), FLinearColor::Transparent, 0.f, 3.f)).Padding(FMargin(20 * PX, 16 * PX, 20 * PX, 28 * PX))[AlbumIn]
-		];
-
-	// the map, the kit and the people (main.ts notebookExtras)
-	TSharedPtr<SWidget> MapP, KitP, PeopleP;
-	if (X.Map)
-	{
-		TSharedRef<SVerticalBox> M = SNew(SVerticalBox);
-		M->AddSlot().AutoHeight()[SNew(SS47AreaMap).View(*X.Map).Width((NbW - 64) * PX)];
-		if (!X.MapNote.IsEmpty())
-		{
-			TSharedRef<SWidget> Note = SNew(STextBlock).Text(FText::FromString(X.MapNote)).Font(Hand(26)).ColorAndOpacity(InkBlue()).AutoWrapText(true);
-			Note->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(-0.6f))));
-			M->AddSlot().AutoHeight().Padding(6 * PX, 8 * PX, 0, 0)[Note];
-		}
-		MapP = M;
-	}
-	if (X.Kit)
-	{
-		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(11 * PX, 6 * PX));
-		for (int32 i = 0; i < X.Kit->Num(); ++i)
-		{
-			const FS47KitItem& K = (*X.Kit)[i];
-			TSharedRef<SVerticalBox> Words = SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(K.Name)).Font(Type(19)).ColorAndOpacity(C(0x2e2a22)))];
-			if (!K.State.IsEmpty()) Words->AddSlot().AutoHeight().Padding(0, 2 * PX, 0, 4 * PX)[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(K.State)).Font(Term(17)).ColorAndOpacity(C(0xa33a2c)))];
-			Words->AddSlot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(K.Note)).Font(Type(15)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true))];
-			TSharedRef<SHorizontalBox> Item = SNew(SHorizontalBox);
-			if (UTexture2D* Art = K.Art.IsEmpty() ? nullptr : S47Image::Art(KitArt(K.Art)))
-			{
-				TSharedRef<SOverlay> Pic = SNew(SOverlay) + SOverlay::Slot()[S47Kit::Image(Art, 104 * PX)];
-				if (!K.Tag.IsEmpty())
-				{
-					// the keys' leather tag is blank in the drawing; the tab writes SARO 07 on it
-					TSharedRef<SWidget> TagW = SNew(STextBlock).Text(FText::FromString(K.Tag)).Font(Type(104 * 0.095f)).ColorAndOpacity(FLinearColor::FromSRGBColor(FColor(52, 26, 10)) * FLinearColor(1, 1, 1, 0.78f));
-					TagW->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(58.f))));
-					TagW->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-					Pic->AddSlot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(0.8f * 104 * PX - 20 * PX, 0.62f * 104 * PX - 6 * PX, 0, 0)[TagW];
-				}
-				Item->AddSlot().AutoWidth().Padding(0, 0, 14 * PX, 0)[SNew(SBox).WidthOverride(104 * PX).HeightOverride(104 * PX)[Pic]];
-			}
-			Item->AddSlot().FillWidth(1.f)[Words];
-			Grid->AddSlot(i % 3, i / 3)
-			[
-				SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("NoBorder")).Padding(FMargin(0, 6 * PX, 0, 10 * PX))[Item]
-			];
-		}
-		KeepColumns(Grid, X.Kit->Num(), 3);
-		KitP = SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()[H4(TEXT("What I have on me"))] + SVerticalBox::Slot().AutoHeight()[Grid];
-	}
-	if (X.People)
-	{
-		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(11 * PX, 9 * PX));
-		for (int32 i = 0; i < X.People->Num(); ++i)
-		{
-			const FS47PersonCard& P = (*X.People)[i];
-			UTexture2D* Face = P.Portrait.IsEmpty() ? nullptr : S47Image::Art(P.Portrait);
-			const float Fw = 190 * PX;
-			TSharedRef<SWidget> Frame = Face ? StaticCastSharedRef<SWidget>(SNew(SBox).WidthOverride(Fw).HeightOverride(Fw * 5 / 4)[SNew(SImage).Image(S47Kit::BrushFor(Face).Get())])
-				: StaticCastSharedRef<SWidget>(SNew(SBox).WidthOverride(Fw).HeightOverride(Fw * 5 / 4)
-					[
-						SNew(SBorder).BorderImage(Box(C(0xe9e2cf), C(0x3c3228, 0.25f), 1.f)).HAlign(HAlign_Center).VAlign(VAlign_Center)
-						[SNew(STextBlock).Text(FText::FromString(Initials(P.Name))).Font(Type(40)).ColorAndOpacity(C(0x6d6656))]
-					]);
-			Grid->AddSlot(i % 4, i / 4)
-			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left)[Frame]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 8 * PX, 0, 0)[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(P.Name)).Font(Type(18)).ColorAndOpacity(C(0x2e2a22)))]
-				+ SVerticalBox::Slot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(P.Role)).Font(Term(16)).ColorAndOpacity(C(0xa33a2c)))]
-				+ SVerticalBox::Slot().AutoHeight()[S47Kit::Readable(SNew(STextBlock).Text(FText::FromString(P.Note)).Font(Type(14)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true))]
-			];
-		}
-		KeepColumns(Grid, X.People->Num(), 4);
-		PeopleP = SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()[H4(TEXT("People in the case"))] + SVerticalBox::Slot().AutoHeight()[Grid];
-	}
-	// Controls: a phone's first on a phone
-	TSharedRef<SWidget> CtlP = S47Kit::Two(ControlsBlock(Controls(X.bTouch)), ControlsBlock(Controls(!X.bTouch)));
-
-	// ---------- the tabs ----------
-	TSharedRef<SWrapBox> Tabs = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(6 * PX, 0));
-	if (OnBoard)
-	{
-		// .nb-boardtab: a brown tab with a red pin
-		Tabs->AddSlot()
-		[
-			SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).OnClicked_Lambda([this] { Close(); if (OnBoard) OnBoard(); return FReply::Handled(); })
-			[
-				SNew(SBorder).BorderImage(Box(C(0x8a5f3a), C(0x5a3c22), 1.f)).Padding(FMargin(9 * PX, 0, 12 * PX, 0))
-				[
-					SNew(SBox).MinDesiredHeight(40 * PX).VAlign(VAlign_Center)
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 7 * PX, 0)
-						[
-							SNew(SBox).WidthOverride(10 * PX).HeightOverride(10 * PX)[SNew(SBorder).BorderImage(Box(C(0xc4241c), FLinearColor::Transparent, 0.f, 5 * PX))]
-						]
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("Board"))).Font(Term(21)).ColorAndOpacity(C(0xf3e6cf))]
-					]
-				]
-			]
-		];
-	}
-	Tabs->AddSlot()[TabButton(TEXT("tasks"), TEXT("Tasks"), 0)];
-	Tabs->AddSlot()[TabButton(TEXT("notes"), TEXT("Notes"), Notes.Num())];
-	Tabs->AddSlot()[TabButton(TEXT("findings"), TEXT("Findings"), Findings.Num())];
-	Tabs->AddSlot()[TabButton(TEXT("papers"), TEXT("Papers"), Papers.Num())];
-	Tabs->AddSlot()[TabButton(TEXT("photos"), TEXT("Album"), Photos.Num() + NShots)];
-	if (MapP.IsValid()) Tabs->AddSlot()[TabButton(TEXT("map"), TEXT("Map"), 0)];
-	if (KitP.IsValid()) Tabs->AddSlot()[TabButton(TEXT("kit"), TEXT("Kit"), 0)];
-	if (PeopleP.IsValid()) Tabs->AddSlot()[TabButton(TEXT("people"), TEXT("People"), X.People->Num())];
-	Tabs->AddSlot()[TabButton(TEXT("controls"), TEXT("Controls"), 0)];
-
-	TSharedRef<SOverlay> Pages = SNew(SOverlay);
-	Pages->AddSlot()[Page(TEXT("tasks"), true, TasksP)];
-	Pages->AddSlot()[Page(TEXT("notes"), true, NotesP)];
-	Pages->AddSlot()[Page(TEXT("findings"), true, FindP)];
-	Pages->AddSlot()[Page(TEXT("papers"), false, PapersP)];
-	Pages->AddSlot()[Page(TEXT("photos"), false, AlbumP)];
-	if (MapP.IsValid()) Pages->AddSlot()[Page(TEXT("map"), true, MapP.ToSharedRef())];
-	if (KitP.IsValid()) Pages->AddSlot()[Page(TEXT("kit"), true, KitP.ToSharedRef())];
-	if (PeopleP.IsValid()) Pages->AddSlot()[Page(TEXT("people"), true, PeopleP.ToSharedRef())];
-	Pages->AddSlot()[Page(TEXT("controls"), false, CtlP)];
-
+	const FVector2D Book(150, 70);
+	const FVector2D LeftAt = Book + FVector2D(22, 18), RightAt = Book + FVector2D(658, 18);
+	auto Pass = [](const TSharedRef<SWidget>& W) { W->SetVisibility(EVisibility::SelfHitTestInvisible); return W; };
 	ChildSlot
 	[
 		SNew(SOverlay)
+		// the game behind, blurred and darkened (.bg { filter: blur(5px) brightness(.38) }); a click on it closes
+		+ SOverlay::Slot()[SNew(SBackgroundBlur).BlurStrength(6.f)]
 		+ SOverlay::Slot()
 		[
-		// .overlay: a click on it closes the notebook
-		SNew(SBorder).BorderImage(Box(C(0x020306, 0.72f))).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(12)
-		.OnMouseButtonDown_Lambda([this](const FGeometry&, const FPointerEvent&) { Close(); return FReply::Handled(); })
+			SNew(SBorder).BorderImage(Box(FLinearColor(0, 0, 0, 0.6f)))
+			.OnMouseButtonDown_Lambda([this](const FGeometry&, const FPointerEvent&) { Close(); return FReply::Handled(); })
+		]
+		+ SOverlay::Slot()
 		[
-			SNew(SBox).WidthOverride(NbW * PX).MaxDesiredHeight_Lambda([this] { return FOptionalSize(FMath::Max(300.f, float(GetCachedGeometry().GetLocalSize().Y) - 24.f)); })
+			Pass(SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
 			[
-				SNew(SBorder).BorderImage(Box(C(0xebe3cf), FLinearColor(0, 0, 0, 0.5f), 1.f, 4.f)).Padding(0)
-				.OnMouseButtonDown_Lambda([](const FGeometry&, const FPointerEvent&) { return FReply::Handled(); })
+				Pass(SNew(SBox).WidthOverride(P(1600)).HeightOverride(P(900))
 				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().AutoHeight().Padding(22 * PX, 8 * PX, 14 * PX, 0)
+					Pass(SNew(SCanvas)
+					// .book: the leather, its shadow under it
+					+ SCanvas::Slot().Position(P2(Book.X, Book.Y)).Size(P2(1300, 770))
 					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().FillWidth(1.f).Padding(0, 0, 20 * PX, 0)[Tabs]
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)
+						Shadowed(SNew(SBorder).BorderImage(Box(Leather(), C(0x2a190f), 3.f, 14.f))
+							.OnMouseButtonDown_Lambda([](const FGeometry&, const FPointerEvent&) { return FReply::Handled(); }), 80.f, FVector2D(0, 30), 0.75f)
+					]
+					+ SCanvas::Slot().Position(P2(LeftAt.X, LeftAt.Y)).Size(P2(620, 734))
+					[
+						SNew(SOverlay)
+						+ SOverlay::Slot()[SNew(SS47GamePage).bLeft(true)]
+						+ SOverlay::Slot()[SAssignNew(LeftSlot, SBox)]
+					]
+					+ SCanvas::Slot().Position(P2(RightAt.X, RightAt.Y)).Size(P2(620, 734))
+					[
+						SNew(SOverlay)
+						+ SOverlay::Slot()[SNew(SS47GamePage).bLeft(false).Margin(0)]
+						+ SOverlay::Slot()[SAssignNew(RightSlot, SBox)]
+					]
+					+ SCanvas::Slot().Position(P2(Book.X + 638, Book.Y + 40)).Size(P2(24, 690))[SNew(SRings)]
+					// a sheet across the spread (the map)
+					+ SCanvas::Slot().Position(P2(LeftAt.X, LeftAt.Y)).Size(P2(1256, 734))[Pass(SAssignNew(SpreadSlot, SBox))]
+					// .use: the actions at the foot of the right page
+					+ SCanvas::Slot().Position(P2(RightAt.X + 60, RightAt.Y + 734 - 40 - 34)).Size(P2(540, 34))[Pass(SAssignNew(UseSlot, SBox).VAlign(VAlign_Center))]
+					// .tabs: down the right page's edge
+					+ SCanvas::Slot().Position(P2(RightAt.X + 578, RightAt.Y + 40)).Size(P2(88, 716))[TabStack()]
+					// .close
+					+ SCanvas::Slot().Position(P2(1300, 26)).Size(P2(264, 34))
+					[
+						SNew(SBox).HAlign(HAlign_Right).VAlign(VAlign_Center)
 						[
-							SNew(SBox).MinDesiredHeight(40 * PX)
-							[
-								TextButton(TEXT("Close  [Tab]"), Term(22), C(0x5a5446), C(0x3f3a30), [this] { Close(); }, true, C(0x5a5446), false, FMargin(0))
-							]
+							Click(SNew(SHorizontalBox)
+								+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[SNew(STextBlock).Text(FText::FromString(TEXT("CLOSE"))).Font(Term(22, 2)).ColorAndOpacity(PaperDim())]
+								+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Keycap(TEXT("TAB"))], [this] { Close(); })
 						]
 					]
-					+ SVerticalBox::Slot().FillHeight(1.f)
+					+ SCanvas::Slot().Position(P2(150, 846)).Size(P2(900, 32))[Keys]
+					+ SCanvas::Slot().Position(P2(1100, 842)).Size(P2(444, 36))
 					[
-						SNew(SScrollBox) + SScrollBox::Slot()[Pages]
-					]
-					// .notebook > .read-aloud: the descriptions on the open page (and the map's, on the map)
-					+ SVerticalBox::Slot().AutoHeight().Padding(20 * PX, 0)
-					[
-						UI.IsValid() ? UI->DescriptionReadings(Pages, TEXT("notebook-description"), [this, MapDescription = X.MapDescription] { return Tab == TEXT("map") ? MapDescription : TArray<FString>(); }) : SNullWidget::NullWidget
-					]
-				]
-			]
+						SNew(SBox).HAlign(HAlign_Right)[Osd(TAttribute<FText>::CreateLambda([] { const US47Main* M = US47Main::Get(nullptr); return FText::FromString(M && M->Story ? OsdLine(M->Story->Clock()) : FString()); }), 26.f)]
+					])
+				])
+			])
 		]
-		]
-		// .al-view: one free print big, inside the notebook's overlay
+		// .al-view: one free print big, over the notebook
 		+ SOverlay::Slot()[SAssignNew(BigSlot, SBox).Visibility_Lambda([this] { return Big != INDEX_NONE ? EVisibility::Visible : EVisibility::Collapsed; })]
 	];
 	// show(): the tab used last, if this notebook has it
-	Show(Has.Contains(UI.IsValid() ? UI->NbTab : FString()) ? UI->NbTab : FString(TEXT("tasks")));
+	Show(UI.IsValid() && Order.Contains(UI->NbTab) ? UI->NbTab : FString(TEXT("tasks")));
 }
 
-TSharedRef<SWidget> SS47Notebook::TabButton(const FString& T, const FString& LabelText, int32 Count)
+SS47Notebook::~SS47Notebook()
 {
-	Has.Add(T);
-	TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+	if (Reading.IsValid() && Reading->bActive) Reading->Stop();
+}
+
+TSharedRef<SWidget> SS47Notebook::TabStack()
+{
+	using namespace S47Game;
+	// .tb: the coloured paper tabs, their word up the edge; the open one stands out further and darker
+	static const TMap<FString, TPair<const TCHAR*, uint32>> Look = {
+		{ TEXT("tasks"), { TEXT("TASKS"), 0xd7c7a0 } }, { TEXT("notes"), { TEXT("NOTES"), 0xc9b48a } }, { TEXT("findings"), { TEXT("FINDINGS"), 0xbfc7a6 } },
+		{ TEXT("papers"), { TEXT("PAPERS"), 0xd3b3a0 } }, { TEXT("photos"), { TEXT("ALBUM"), 0xc3c9cf } }, { TEXT("map"), { TEXT("MAP"), 0xe0c27a } },
+		{ TEXT("kit"), { TEXT("KIT"), 0xcfbfa9 } }, { TEXT("people"), { TEXT("PEOPLE"), 0xb9c2b0 } }, { TEXT("controls"), { TEXT("CONTROLS"), 0xd9d0bf } } };
+	const float Gap = 6.f;
+	TSharedRef<SVerticalBox> Col = SNew(SVerticalBox);
+	// (a tab is as long as its word needs, FINDINGS and CONTROLS longer than the rest)
+	auto Long = [](const FString& S)
+	{
+		if (!FSlateApplication::IsInitialized()) return 58.f;
+		return FMath::Max(58.f, float(FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(S, Term(19, 1)).X) / U + 10.f);
+	};
+	auto Word = [](const FString& S, const FLinearColor& Ink, bool bBold) -> TSharedRef<SWidget>
+	{
+		const FSlateFontInfo F = Term(19, 1);
+		const TSharedRef<SWidget> T = SNew(STextBlock).Text(FText::FromString(S)).Font(F).ColorAndOpacity(Ink)
+			.ShadowOffset(FVector2D(bBold ? P(0.6f) : 0.f, 0)).ShadowColorAndOpacity(Ink);
+		return Turned(T, -90.f);
+	};
+	for (const FString& T : Order)
+	{
+		const TPair<const TCHAR*, uint32>* L = Look.Find(T);
+		if (!L) continue;
+		const FString Label = L->Key;
+		const uint32 Rgb = L->Value;
+		const float H = Long(Label);
+		Col->AddSlot().AutoHeight().Padding(0, 0, 0, P(Gap))
 		[
-			SNew(STextBlock).Text(FText::FromString(LabelText)).Font(Term(21))
-			.ColorAndOpacity_Lambda([this, T] { return FSlateColor(Tab == T ? C(0x3f3a30) : C(0x7d7563)); })
-		];
-	// .n: the count in red
-	if (Count) Row->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(5 * PX, 0, 0, 0)[SNew(STextBlock).Text(FText::AsNumber(Count)).Font(Term(16)).ColorAndOpacity(C(0xa33a2c))];
-	return SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).OnClicked_Lambda([this, T] { Show(T); return FReply::Handled(); })
-		[
-			// border-bottom: 2px, red under the open one
-			SNew(SBorder).Padding(FMargin(10 * PX, 0, 10 * PX, 0))
-			.BorderImage_Lambda([this, T] { return Tab == T ? Box(FLinearColor::Transparent, C(0xa33a2c), 0.f) : Box(FLinearColor::Transparent); })
+			SNew(SBox).HeightOverride(P(H)).WidthOverride(P(88)).HAlign(HAlign_Right)
 			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()[SNew(SBox).MinDesiredHeight(38 * PX).VAlign(VAlign_Center)[Row]]
-				+ SVerticalBox::Slot().AutoHeight()
-				[
-					SNew(SBox).HeightOverride(2 * PX)[SNew(SBorder).BorderImage_Lambda([this, T] { return Tab == T ? Box(C(0xa33a2c)) : Box(FLinearColor::Transparent); })]
-				]
+				Click(SNew(SBox).HeightOverride(P(H)).WidthOverride_Lambda([this, T] { return FOptionalSize(P(Tab == T ? 76.f : 64.f)); })
+					[
+						Shadowed(SNew(SBorder).BorderImage(Box4(C(Rgb), FVector4(8, 0, 0, 8))).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
+							[
+								SNew(SBox).Padding(FMargin(P(0), 0, P(0), 0))
+								[
+									SNew(SOverlay)
+									+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(SBox).Visibility_Lambda([this, T] { return Tab == T ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })[Word(Label, C(0x2c2418), false)]]
+									+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(SBox).Visibility_Lambda([this, T] { return Tab == T ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })[Word(Label, C(0x120c05), true)]]
+								]
+							], 4.f, FVector2D(-2, 2), 0.35f)
+					], [this, T] { Show(T); })
 			]
 		];
+	}
+	if (OnBoard)
+	{
+		// the case board: its own screen (B); a darker tab with the red pin (.nb-boardtab)
+		const float H = 72.f;
+		Col->AddSlot().AutoHeight().Padding(0, P(10), 0, 0)
+		[
+			SNew(SBox).HeightOverride(P(H)).WidthOverride(P(88)).HAlign(HAlign_Right)
+			[
+				Click(SNew(SBox).HeightOverride(P(H)).WidthOverride(P(64))
+					[
+						Shadowed(SNew(SBorder).BorderImage(Box4(C(0x8a5f3a), FVector4(8, 0, 0, 8))).Padding(0)
+							[
+								SNew(SOverlay)
+								+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0, 0, 0, P(10))[Word(TEXT("BOARD"), C(0xf3e6cf), false)]
+								+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(6))
+								[
+									SNew(SBox).WidthOverride(P(10)).HeightOverride(P(10))[SNew(SBorder).BorderImage(Box(C(0xc4241c), FLinearColor::Transparent, 0.f, 5.f))]
+								]
+							], 4.f, FVector2D(-2, 2), 0.35f)
+					], [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })
+			]
+		];
+	}
+	return Col;
 }
 
-TSharedRef<SWidget> SS47Notebook::Page(const FString& T, bool bRuled, TSharedRef<SWidget> Body)
+TSharedRef<SWidget> SS47Notebook::Entry(int32 I, const TSharedRef<SWidget>& Content, bool bCard)
 {
-	Has.Add(T);
-	TSharedRef<SOverlay> O = SNew(SOverlay);
-	if (bRuled) O->AddSlot()[SNew(SRuled)];
-	O->AddSlot().Padding(FMargin(34 * PX, 10 * PX, 30 * PX, 24 * PX))[SNew(SBox).MinDesiredHeight(340 * PX - 58 * PX)[Body]];
-	return SNew(SBox).Visibility_Lambda([this, T] { return Tab == T ? EVisibility::Visible : EVisibility::Collapsed; })[O];
+	using namespace S47Game;
+	// an entry to choose: a click chooses it, a second click opens it; the chosen one is outlined in red
+	// on a faint amber (.it.sel)
+	const TSharedRef<SWidget> W = Click(
+		SNew(SOverlay)
+		+ SOverlay::Slot()[SNew(SBorder).BorderImage(Box(C(0xffb052, bCard ? 0.22f : 0.16f))).Visibility_Lambda([this, I] { return Chosen() == I ? EVisibility::HitTestInvisible : EVisibility::Hidden; })]
+		+ SOverlay::Slot()[Content]
+		+ SOverlay::Slot()[SNew(SS47GameDash).Color(C(0x8a3b2c, 0.55f)).Inset(bCard ? 2.f : 4.f).Visibility_Lambda([this, I] { return Chosen() == I ? EVisibility::HitTestInvisible : EVisibility::Hidden; })],
+		[this, I] { if (Chosen() == I) Activate(); else Choose(I); });
+	Entries.Add(W);
+	return W;
+}
+
+TSharedRef<SWidget> SS47Notebook::UseRow(const TArray<TTuple<FString, FString, TFunction<void()>>>& Acts)
+{
+	using namespace S47Game;
+	// .use: a keycap in the page's brown and the word; V reads aloud when the reader has it, its state beside
+	TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+	for (const TTuple<FString, FString, TFunction<void()>>& A : Acts)
+	{
+		Row->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(16), 0)
+		[
+			Click(KeyHint(A.Get<0>(), A.Get<1>(), 22.f, UseInk(), EKey::Ink), A.Get<2>())
+		];
+	}
+	if (Reading.IsValid())
+	{
+		const TSharedPtr<FS47ReadingAction> R = Reading;
+		Row->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(12), 0)
+		[
+			SNew(SBorder).BorderImage(Box(FLinearColor::Transparent)).Padding(0)
+			.ColorAndOpacity_Lambda([R] { return FLinearColor(1, 1, 1, R->bAvailable || R->bActive ? 1.f : 0.45f); })
+			[
+				Click(SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[Keycap(TEXT("V"), EKey::Ink)]
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+					[
+						SNew(STextBlock).Font(Term(22, 1)).ColorAndOpacity(UseInk()).Text_Lambda([R] { return FText::FromString(R->bActive ? TEXT("STOP READING") : TEXT("READ ALOUD")); })
+					], [R] { R->Toggle(); })
+			]
+		];
+		Row->AddSlot().FillWidth(1.f).VAlign(VAlign_Center)
+		[
+			SNew(STextBlock).Font(Type(13)).ColorAndOpacity(C(0x7d7563)).AutoWrapText(true).Text_Lambda([R] { return FText::FromString(R->Status()); })
+		];
+	}
+	return Row;
+}
+
+int32 SS47Notebook::Count() const
+{
+	if (Tab == TEXT("findings")) return Findings.Num();
+	if (Tab == TEXT("papers")) return Papers.Num();
+	if (Tab == TEXT("photos")) return Photos.Num() + (Album ? Album->Shots.Num() : 0);
+	if (Tab == TEXT("kit")) return X.Kit ? X.Kit->Num() : 0;
+	if (Tab == TEXT("people")) return X.People ? X.People->Num() : 0;
+	return 0;
+}
+
+int32 SS47Notebook::Columns() const
+{
+	if (Tab == TEXT("kit") || Tab == TEXT("people")) return 3;
+	if (Tab == TEXT("papers") || Tab == TEXT("photos")) return 2;
+	return 1;
+}
+
+void SS47Notebook::Build()
+{
+	using namespace S47Game;
+	if (Reading.IsValid() && Reading->bActive) Reading->Stop();
+	Reading.Reset();
+	Entries.Reset();
+	LeftScroll.Reset(); RightScroll.Reset();
+	bRightIsEntries = false;
+	if (!LeftSlot.IsValid()) return;
+	SpreadSlot->SetContent(SNullWidget::NullWidget);
+	RightSlot->SetContent(SNullWidget::NullWidget);
+	UseSlot->SetContent(SNullWidget::NullWidget);
+	Sel.FindOrAdd(Tab) = FMath::Clamp(Chosen(), 0, FMath::Max(0, Count() - 1));
+	const bool bLarge = UI.IsValid() && UI->bLargeText;
+	const float Li = bLarge ? 34.f : 30.f;
+	TArray<FString> Read;   // what V reads on this spread (UI.notebook's descriptionReadings)
+
+	// a page: the heading at 84, 40, then what it holds from 146 down, scrolling when it is long
+	// (the right page keeps its foot for the actions, .use)
+	auto Lay = [](const TSharedRef<SWidget>& Top, const TSharedRef<SWidget>& Body, TSharedPtr<SScrollBox>& Scroll, float From = 146.f, bool bRight = false) -> TSharedRef<SWidget>
+	{
+		return SNew(SCanvas)
+			+ SCanvas::Slot().Position(P2(bRight ? 60 : 84, 40)).Size(P2(506, 100))[Top]
+			+ SCanvas::Slot().Position(P2(bRight ? 46 : 70, From)).Size(P2(536, 734 - From - (bRight ? 92 : 30)))
+			[
+				SAssignNew(Scroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3)))
+				+ SScrollBox::Slot().Padding(FMargin(P(14), 0, P(16), P(10)))[Body]
+			];
+	};
+	auto Lines = [&](const TArray<FString>& Items, int32 From, int32 To, bool bTasks) -> TSharedRef<SWidget>
+	{
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		for (int32 I = From; I < To; ++I)
+		{
+			const bool bDone = bTasks && Tasks.IsValidIndex(I) && Tasks[I].bDone;
+			// li.done: struck through, the ink paler
+			const FLinearColor Ink = bDone ? C(0x6d7895) : InkBlue();
+			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(Li)).SetColorAndOpacity(Ink);
+			if (bDone)
+			{
+				FSlateBrush Strike = *FCoreStyle::Get().GetBrush("WhiteBrush");
+				Strike.TintColor = Ink;
+				St.SetStrikeBrush(Strike);
+			}
+			TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+			if (bTasks) Row->AddSlot().AutoWidth()[SNew(SBox).WidthOverride(P(28))[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : TEXT("-"))).Font(Hand(Li)).ColorAndOpacity(Ink)]];
+			Row->AddSlot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(Items[I])).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Li), 34))];
+			L->AddSlot().AutoHeight()[Row];
+		}
+		return L;
+	};
+
+	if (Tab == TEXT("tasks") || Tab == TEXT("notes"))
+	{
+		TArray<FString> TaskText;
+		int32 Open = 0;
+		for (const FS47Task& T : Tasks) { TaskText.Add(T.Text); Open += !T.bDone; }
+		const FString NoteLine = Notes.Num() ? FString::Printf(TEXT("NOTES · %d"), Notes.Num()) : FString(TEXT("NOTES"));
+		if (Tab == TEXT("tasks"))
+		{
+			// tonight's tasks on the left, the observations so far on the right
+			const FString Line = !Tasks.Num() ? FString(TEXT("TASKS")) : Open ? FString::Printf(TEXT("TASKS · %d OPEN"), Open) : FString(TEXT("TASKS · ALL DONE"));
+			LeftSlot->SetContent(Lay(Head(Heading, Line), Tasks.Num() ? Lines(TaskText, 0, TaskText.Num(), true) : Empty(TEXT("Nothing yet. Dale left the shift log on the desk.")), LeftScroll));
+			RightSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Notes.Num(), false) : Empty(TEXT("Nothing worth writing down. Yet.")), RightScroll, 146.f, true));
+			if (Tasks.Num()) Read = TaskText; else Read.Add(TEXT("Nothing yet. Dale left the shift log on the desk."));
+		}
+		else
+		{
+			// the observations across the spread: the first half on the left, the rest on the right
+			const int32 Half = (Notes.Num() + 1) / 2;
+			LeftSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Half, false) : Empty(TEXT("Nothing worth writing down. Yet.")), LeftScroll));
+			if (Notes.Num() > Half) RightSlot->SetContent(Lay(SNullWidget::NullWidget, Lines(Notes, Half, Notes.Num(), false), RightScroll, 146.f, true));
+			if (Notes.Num()) Read = Notes; else Read.Add(TEXT("Nothing worth writing down. Yet."));
+		}
+	}
+	else if (Tab == TEXT("findings"))
+	{
+		// index cards on the left (P01 in green, the title and its line), the chosen one on the right
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		for (int32 I = 0; I < Findings.Num(); ++I)
+		{
+			const FS47Doc& D = Findings[I];
+			TArray<FString> Parts = S47Text::Split(D.Title, TEXT(" / "));
+			FString Rest = Parts.Num() > 1 ? FString::Join(TArray<FString>(Parts.GetData() + 1, Parts.Num() - 1), TEXT(" / ")) : FString();
+			if (Rest.IsEmpty()) Rest = D.Title;
+			const FString Label = !D.Stamp.IsEmpty() && D.Stamp.Len() <= 6 ? D.Stamp : Parts.Num() ? Parts[0] : D.Title;
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(10))
+			[
+				Entry(I, Shadowed(SNew(SBorder).BorderImage(Box(C(0xf6f1e3))).Padding(FMargin(P(12), P(8)))
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(P(62))[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(26)).ColorAndOpacity(C(0x2f6a3c))]]
+						+ SHorizontalBox::Slot().FillWidth(1.f).Padding(P(10), 0, 0, 0)
+						[
+							SNew(SVerticalBox)
+							+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Rest)).Font(Type(16)).ColorAndOpacity(Ink()).AutoWrapText(true)]
+							+ SVerticalBox::Slot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(Excerpt(D))).Font(Type(13)).ColorAndOpacity(C(0x6d6656)).AutoWrapText(true)]
+						]
+					], 6.f, FVector2D(0, 2), 0.18f), true)
+			];
+		}
+		const FString Line = Findings.Num() ? FString::Printf(TEXT("FINDINGS · %d"), Findings.Num()) : FString(TEXT("FINDINGS"));
+		LeftSlot->SetContent(Lay(Head(TEXT("Findings"), Line), Findings.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("Nothing recorded yet. A finding goes here once the records support it.")), LeftScroll));
+		if (!Findings.Num()) Read.Add(TEXT("Nothing recorded yet. A finding goes here once the records support it."));
+	}
+	else if (Tab == TEXT("papers"))
+	{
+		// the papers as index cards, two to a row
+		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(P(5), P(6)));
+		auto KindName = [](const FS47Doc& D) { return D.Kind == TEXT("hand") ? TEXT("Handwritten") : D.Kind == TEXT("printout") ? TEXT("Printout") : D.Kind == TEXT("typed") ? TEXT("Typed") : D.Kind == TEXT("map") ? TEXT("Map") : TEXT("Print"); };
+		for (int32 I = 0; I < Papers.Num(); ++I)
+		{
+			const FS47Doc& D = Papers[I];
+			const bool bHand = D.Kind == TEXT("hand");
+			Grid->AddSlot(I % 2, I / 2)
+			[
+				Entry(I, Shadowed(SNew(SBorder).BorderImage(Box(D.Kind == TEXT("printout") ? C(0xeef2e6) : C(0xf6f1e3))).Padding(FMargin(P(12), P(9)))
+					[
+						SNew(SBox).MinDesiredHeight(P(58)).VAlign(VAlign_Top)
+						[
+							SNew(SVerticalBox)
+							+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(bHand ? Hand(25) : Type(15)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
+							+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, 0)
+							[
+								SNew(STextBlock).Text(FText::FromString(FString(KindName(D)) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(17)).ColorAndOpacity(C(0x8a8270))
+							]
+						]
+					], 6.f, FVector2D(0, 2), 0.18f), true)
+			];
+		}
+		if (Papers.Num() == 1) Grid->AddSlot(1, 0)[SNew(SSpacer)];
+		const FString Line = Papers.Num() ? FString::Printf(TEXT("PAPERS · %d"), Papers.Num()) : FString(TEXT("PAPERS"));
+		LeftSlot->SetContent(Lay(Head(TEXT("Papers"), Line), Papers.Num() ? StaticCastSharedRef<SWidget>(Grid) : Empty(TEXT("None collected.")), LeftScroll));
+		if (!Papers.Num()) Read.Add(TEXT("None collected."));
+	}
+	else if (Tab == TEXT("photos"))
+	{
+		// the album (ui/album.ts albumPage) on the pages: the case prints on the left, the free frames
+		// (core/album.ts) on the right as instant prints, in the order they were taken
+		const int32 NShots = Album ? Album->Shots.Num() : 0;
+		const FString Roll = Album ? FString::Printf(TEXT("%d of %d free frames left"), Album->Left, Album->Roll).ToUpper() : FString(TEXT("THE CASE"));
+		TSharedRef<SWrapBox> Thumbs = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(P(26), P(24)));
+		for (int32 I = 0; I < Photos.Num(); ++I)
+		{
+			const FS47Doc& D = Photos[I];
+			UTexture2D* Tex = Picture(D.Image);
+			const float W = 210.f, Hh = Tex ? W * Tex->GetSizeY() / FMath::Max(1, Tex->GetSizeX()) : 140.f;
+			Thumbs->AddSlot()
+			[
+				Entry(I, SNew(SBox).WidthOverride(P(W + 20)).Padding(P(10))
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							Turned(Shadowed(SNew(SBorder).BorderImage(Box(C(0xf4f1e8))).Padding(P(7))
+								[SNew(SBox).WidthOverride(P(W - 14)).HeightOverride(P(Hh - 14))[SNew(SImage).Image(Picture(Tex))]], 10.f, FVector2D(0, 5), 0.4f), TILT[I % 8])
+						]
+						+ SVerticalBox::Slot().AutoHeight().Padding(0, P(10), 0, 0)[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(Hand(23)).ColorAndOpacity(InkBlue()).AutoWrapText(true)]
+					])
+			];
+		}
+		LeftSlot->SetContent(Lay(Head(TEXT("Album"), Roll), Photos.Num() ? StaticCastSharedRef<SWidget>(Thumbs)
+			: NShots ? SNullWidget::NullWidget : Empty(TEXT("No exposures yet. Once you have the field camera, C raises it anywhere.")), LeftScroll));
+		if (!Photos.Num() && !NShots) Read.Add(TEXT("No exposures yet. Once you have the field camera, C raises it anywhere."));
+		TSharedRef<SWrapBox> Prints = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(P(22), P(24)));
+		for (int32 I = 0; I < NShots; ++I) Prints->AddSlot()[Entry(Photos.Num() + I, SNew(SBox).Padding(P(8))[Print(I, 214.f, false)])];
+		bRightIsEntries = NShots > 0;
+		if (NShots) RightSlot->SetContent(Lay(Head(TEXT("Tonight"), FString::Printf(TEXT("FREE FRAMES · %d"), NShots)), Prints, RightScroll, 146.f, true));
+	}
+	else if (Tab == TEXT("map") && X.Map)
+	{
+		// the pencil map across the spread, taped down at its corners, the pencilled line under it
+		const TSharedRef<SWidget> Sheet = Shadowed(SNew(SS47AreaMap).View(*X.Map).Width(P(960)), 16.f, FVector2D(0, 8), 0.4f);
+		TSharedRef<SCanvas> Spread = SNew(SCanvas)
+			+ SCanvas::Slot().Position(P2(148, 16)).Size(P2(960, 640))[Turned(Sheet, -0.4f)]
+			+ SCanvas::Slot().Position(P2(118, 6)).Size(P2(74, 26))[Tape(70, 20, -32)]
+			+ SCanvas::Slot().Position(P2(1066, 6)).Size(P2(74, 26))[Tape(70, 20, 34)]
+			+ SCanvas::Slot().Position(P2(118, 632)).Size(P2(74, 26))[Tape(70, 20, 30)]
+			+ SCanvas::Slot().Position(P2(1066, 632)).Size(P2(74, 26))[Tape(70, 20, -28)];
+		if (!X.MapNote.IsEmpty()) Spread->AddSlot().Position(P2(170, 668)).Size(P2(920, 44))[Turned(Inked(X.MapNote, 30.f), -0.6f)];
+		SpreadSlot->SetContent(Spread);
+		Read = X.MapDescription;
+	}
+	else if (Tab == TEXT("kit") && X.Kit)
+	{
+		// the drawings taped to the page, three to a row, the name in the hand under each (.grid .it)
+		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(P(8), P(9))).MinDesiredSlotHeight(P(150));
+		for (int32 I = 0; I < X.Kit->Num(); ++I)
+		{
+			const FS47KitItem& K = (*X.Kit)[I];
+			UTexture2D* Art = K.Art.IsEmpty() ? nullptr : S47Image::Art(KitArt(K.Art));
+			Grid->AddSlot(I % 3, I / 3)
+			[
+				Entry(I, SNew(SBox).HeightOverride(P(150))
+					[
+						SNew(SOverlay)
+						+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top).Padding(0, P(2), 0, 0)[Tape()]
+						+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(6))
+						[
+							SNew(SVerticalBox)
+							+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+							[
+								Art ? Drawing(Art, 120, 100, 5.f) : StaticCastSharedRef<SWidget>(SNew(SBox).WidthOverride(P(100)).HeightOverride(P(96)).HAlign(HAlign_Center).VAlign(VAlign_Center)
+									[SNew(STextBlock).Text(FText::FromString(Initials(K.Name))).Font(Type(34)).ColorAndOpacity(C(0x6d6656, 0.7f))])
+							]
+							+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(4), 0, 0)
+							[
+								SNew(STextBlock).Text(FText::FromString(K.Name)).Font(Hand(27)).ColorAndOpacity(InkBlue()).Justification(ETextJustify::Center)
+							]
+						]
+					])
+			];
+		}
+		for (int32 I = X.Kit->Num(); I < 3; ++I) Grid->AddSlot(I, 0)[SNew(SSpacer)];
+		LeftSlot->SetContent(Lay(Head(TEXT("What I have on me"), FString::Printf(TEXT("KIT · %d %s"), X.Kit->Num(), X.Kit->Num() == 1 ? TEXT("THING") : TEXT("THINGS"))), Grid, LeftScroll));
+	}
+	else if (Tab == TEXT("people") && X.People)
+	{
+		// the faces as photographs clipped to the page, the name under each
+		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(P(8), P(10)));
+		for (int32 I = 0; I < X.People->Num(); ++I)
+		{
+			const FS47PersonCard& Pc = (*X.People)[I];
+			UTexture2D* Face = Pc.Portrait.IsEmpty() ? nullptr : S47Image::Art(Pc.Portrait);
+			const float Fw = 124.f;
+			const TSharedRef<SWidget> Frame = Face ? StaticCastSharedRef<SWidget>(SNew(SBox).WidthOverride(P(Fw)).HeightOverride(P(Fw * 5 / 4))[SNew(SImage).Image(Picture(Face))])
+				: StaticCastSharedRef<SWidget>(SNew(SBox).WidthOverride(P(Fw)).HeightOverride(P(Fw * 5 / 4))
+					[SNew(SBorder).BorderImage(Box(C(0xe9e2cf), C(0x3c3228, 0.25f), 1.f)).HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Initials(Pc.Name))).Font(Type(34)).ColorAndOpacity(C(0x6d6656))]]);
+			Grid->AddSlot(I % 3, I / 3)
+			[
+				Entry(I, SNew(SBox).Padding(FMargin(P(8), P(8), P(8), P(6)))
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+						[
+							SNew(SOverlay)
+							+ SOverlay::Slot()[Turned(Shadowed(SNew(SBorder).BorderImage(Box(C(0xf4f1e8))).Padding(P(6))[Frame], 8.f, FVector2D(0, 4), 0.35f), TILT[(I + 2) % 8])]
+							+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top).Padding(0, P(-8), 0, 0)[Tape(46, 14, TILT[I % 8] * 3)]
+						]
+						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(8), 0, 0)
+						[
+							SNew(STextBlock).Text(FText::FromString(Pc.Name)).Font(Hand(25)).ColorAndOpacity(InkBlue()).Justification(ETextJustify::Center).AutoWrapText(true)
+						]
+					])
+			];
+		}
+		for (int32 I = X.People->Num(); I < 3; ++I) Grid->AddSlot(I, 0)[SNew(SSpacer)];
+		LeftSlot->SetContent(Lay(Head(TEXT("People in the case"), FString::Printf(TEXT("PEOPLE · %d"), X.People->Num())), Grid, LeftScroll));
+	}
+	else if (Tab == TEXT("controls"))
+	{
+		// every control: the keyboard and mouse on the left, a phone's on the right (a phone's first on a phone)
+		auto Page = [](const FCtlPage& Pg, TSharedPtr<SScrollBox>& Scroll)
+		{
+			return SNew(SBox).Padding(FMargin(P(84), P(40), P(30), P(30)))[SAssignNew(Scroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3))) + SScrollBox::Slot()[ControlsBlock(Pg)]];
+		};
+		LeftSlot->SetContent(Page(Controls(X.bTouch), LeftScroll));
+		RightSlot->SetContent(Page(Controls(!X.bTouch), RightScroll));
+	}
+	if (!Read.IsEmpty() && UI.IsValid()) Reading = UI->ReadingAction(Read, TEXT("notebook-description"));
+	BuildRight();
+}
+
+void SS47Notebook::BuildRight()
+{
+	using namespace S47Game;
+	const int32 I = Chosen();
+	TArray<TTuple<FString, FString, TFunction<void()>>> Acts;
+	auto Readings = [this](const TArray<FString>& Texts)
+	{
+		if (Reading.IsValid() && Reading->bActive) Reading->Stop();
+		Reading.Reset();
+		TArray<FString> T = Texts;
+		T.RemoveAll([](const FString& S) { return S.TrimStartAndEnd().IsEmpty(); });
+		if (T.Num() && UI.IsValid()) Reading = UI->ReadingAction(T, TEXT("notebook-description"));
+	};
+	if (Tab == TEXT("kit") && X.Kit && X.Kit->IsValidIndex(I))
+	{
+		// .big, .rt, .desc: the drawing large, its name, its state, the first of its note in the hand and the
+		// rest typed on the lines; what can be done with it at the foot
+		const FS47KitItem& K = (*X.Kit)[I];
+		UTexture2D* Art = K.Art.IsEmpty() ? nullptr : S47Image::Art(KitArt(K.Art));
+		FString Lead, Rest;
+		SplitNote(K.Note, Lead, Rest);
+		TSharedRef<SOverlay> Large = SNew(SOverlay) + SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[Drawing(Art, 240, 230, 10.f, 0.38f)];
+		if (!K.Tag.IsEmpty() && Art)
+		{
+			// the keys' leather tag is blank in the drawing; the page writes SARO 07 on it
+			Large->AddSlot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(P(0.8f * 240 - 36), P(0.62f * 240 - 14), 0, 0)
+			[
+				Turned(SNew(STextBlock).Text(FText::FromString(K.Tag)).Font(Type(240 * 0.095f)).ColorAndOpacity(FLinearColor::FromSRGBColor(FColor(52, 26, 10)) * FLinearColor(1, 1, 1, 0.78f)), 58.f)
+			];
+		}
+		const float Tx = Art ? 330.f : 60.f;
+		TSharedRef<SVerticalBox> Rt = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(K.Name)).Font(Type(30)).ColorAndOpacity(Ink()).AutoWrapText(true).ShadowOffset(FVector2D(P(0.8f), 0)).ShadowColorAndOpacity(Ink())];
+		if (!K.State.IsEmpty()) Rt->AddSlot().AutoHeight().Padding(0, P(6), 0, 0)[SNew(STextBlock).Text(FText::FromString(K.State.ToUpper())).Font(Term(22, 2)).ColorAndOpacity(StampRed()).AutoWrapText(true)];
+		Rt->AddSlot().AutoHeight().Padding(0, P(10), 0, 0)[SNew(STextBlock).Text(FText::FromString(Lead)).Font(Hand(30)).ColorAndOpacity(InkBlue()).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(30), 31))];
+		TSharedRef<SCanvas> Pg = SNew(SCanvas)
+			+ SCanvas::Slot().Position(P2(Tx, 58)).Size(P2(580 - Tx, 270))[Rt]
+			+ SCanvas::Slot().Position(P2(60, 318)).Size(P2(516, 300))[Typed(Rest)];
+		if (Art) Pg->AddSlot().Position(P2(50, 40)).Size(P2(260, 250))[Large];
+		RightSlot->SetContent(Pg);
+		Readings({ K.Name, K.State, K.Note });
+		// (the kit's own keys, as they work in play: the notebook closes and the key is pressed)
+		if (K.Art == TEXT("camera")) Acts.Add({ TEXT("C"), TEXT("RAISE"), [this] { Press(EKeys::C); } });
+		if (K.Art == TEXT("flashlight")) Acts.Add({ TEXT("F"), K.State == TEXT("On") ? TEXT("SWITCH OFF") : TEXT("SWITCH ON"), [this] { Press(EKeys::F); } });
+		if (K.Art == TEXT("papers")) Acts.Add({ TEXT("ENTER"), TEXT("PAPERS"), [this] { Show(TEXT("papers")); } });
+	}
+	else if (Tab == TEXT("people") && X.People && X.People->IsValidIndex(I))
+	{
+		// the face large, clipped to the page; the name, the role, and the note in the hand on the lines
+		const FS47PersonCard& Pc = (*X.People)[I];
+		UTexture2D* Face = Pc.Portrait.IsEmpty() ? nullptr : S47Image::Art(Pc.Portrait);
+		const float Fw = 200.f;
+		const TSharedRef<SWidget> Frame = Face ? StaticCastSharedRef<SWidget>(SNew(SBox).WidthOverride(P(Fw)).HeightOverride(P(Fw * 5 / 4))[SNew(SImage).Image(Picture(Face))])
+			: StaticCastSharedRef<SWidget>(SNew(SBox).WidthOverride(P(Fw)).HeightOverride(P(Fw * 5 / 4))
+				[SNew(SBorder).BorderImage(Box(C(0xe9e2cf), C(0x3c3228, 0.25f), 1.f)).HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Initials(Pc.Name))).Font(Type(54)).ColorAndOpacity(C(0x6d6656))]]);
+		RightSlot->SetContent(SNew(SCanvas)
+			+ SCanvas::Slot().Position(P2(60, 44)).Size(P2(Fw + 20, Fw * 5 / 4 + 20))
+			[
+				SNew(SOverlay)
+				+ SOverlay::Slot()[Turned(Shadowed(SNew(SBorder).BorderImage(Box(C(0xf4f1e8))).Padding(P(10))[Frame], 14.f, FVector2D(0, 8), 0.4f), 1.6f)]
+				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top).Padding(0, P(-10), 0, 0)[Tape(70, 20, -4)]
+			]
+			+ SCanvas::Slot().Position(P2(310, 58)).Size(P2(270, 260))
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Pc.Name)).Font(Type(30)).ColorAndOpacity(Ink()).AutoWrapText(true).ShadowOffset(FVector2D(P(0.8f), 0)).ShadowColorAndOpacity(Ink())]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(6), 0, 0)[SNew(STextBlock).Text(FText::FromString(Pc.Role.ToUpper())).Font(Term(22, 2)).ColorAndOpacity(StampRed()).AutoWrapText(true)]
+			]
+			+ SCanvas::Slot().Position(P2(60, 364)).Size(P2(516, 300))[Inked(Pc.Note, 32.f)]);
+		Readings({ Pc.Name, Pc.Role, Pc.Note });
+	}
+	else if ((Tab == TEXT("findings") && Findings.IsValidIndex(I)) || (Tab == TEXT("papers") && Papers.IsValidIndex(I)))
+	{
+		// the chosen paper: what it is, its title, and the paper itself, as far as the page shows it
+		const bool bFinding = Tab == TEXT("findings");
+		const FS47Doc& D = bFinding ? Findings[I] : Papers[I];
+		const bool bHand = D.Kind == TEXT("hand"), bPrint = D.Kind == TEXT("printout");
+		const FString Kind = D.Kind == TEXT("hand") ? TEXT("HANDWRITTEN") : bPrint ? TEXT("PRINTOUT") : D.Kind == TEXT("typed") ? TEXT("TYPED") : D.Kind == TEXT("map") ? TEXT("MAP") : TEXT("PRINT");
+		const FString Line = (bFinding ? FString(TEXT("FINDING · ")) : FString()) + Kind + (D.Stamp.IsEmpty() ? FString() : TEXT(" · ") + D.Stamp);
+		UTexture2D* Image = Picture(D.Image);
+		TSharedRef<SVerticalBox> Lines = SNew(SVerticalBox);
+		TArray<FString> PageLines;
+		D.Page.ParseIntoArray(PageLines, TEXT("\n"), false);
+		const FSlateFontInfo Font = bHand ? Hand(26) : bPrint ? Term(18) : Type(14);
+		for (const FString& L : PageLines)
+		{
+			const bool bPencil = L.StartsWith(TEXT("~ "));
+			Lines->AddSlot().AutoHeight()
+			[
+				SNew(STextBlock).Text(FText::FromString(bPencil ? L.Mid(2) : (L.IsEmpty() ? TEXT(" ") : L))).Font(bPencil ? Hand(22) : Font)
+				.ColorAndOpacity(bPencil ? C(0x4a4a52) : bHand ? InkBlue() : Ink()).AutoWrapText(true)
+			];
+		}
+		if (Image && D.Kind == TEXT("map")) { Lines->ClearChildren(); Lines->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(P(300))[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SImage).Image(Picture(Image))]]]; }
+		const TSharedRef<SWidget> Sheet = SNew(SOverlay)
+			+ SOverlay::Slot()[SNew(SS47GameSheet).Color(bPrint ? C(0xeef0e4) : C(0xf3ecdb)).bTorn(bHand)]
+			+ SOverlay::Slot().Padding(FMargin(P(26), P(24), P(22), P(14)))[SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[Lines]];
+		RightSlot->SetContent(SNew(SCanvas)
+			+ SCanvas::Slot().Position(P2(60, 50)).Size(P2(520, 140))
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Line)).Font(Term(20, 2)).ColorAndOpacity(StampRed())]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(6), 0, 0)[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(bHand ? Hand(40) : Type(26)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
+			]
+			+ SCanvas::Slot().Position(P2(70, 196)).Size(P2(470, 440))[Turned(Shadowed(Sheet, 18.f, FVector2D(0, 10), 0.35f), bFinding ? 0.8f : -1.f)]);
+		Acts.Add({ TEXT("ENTER"), TEXT("READ IT"), [this] { Activate(); } });
+		if (bFinding && OnBoard) Acts.Add({ TEXT("B"), TEXT("LAY IT ALL OUT ON THE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); } });
+	}
+	else if (Tab == TEXT("photos") && Count()) Acts.Add({ TEXT("ENTER"), TEXT("LOOK CLOSER"), [this] { Activate(); } });
+	else if (Tab == TEXT("findings") && OnBoard) Acts.Add({ TEXT("B"), TEXT("LAY IT ALL OUT ON THE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); } });
+	UseSlot->SetContent(UseRow(Acts));
+}
+
+void SS47Notebook::Choose(int32 I)
+{
+	const int32 N = Count();
+	if (!N) return;
+	I = FMath::Clamp(I, 0, N - 1);
+	if (I == Chosen()) return;
+	// (another entry: what was being read of the last one stops)
+	if (UI.IsValid()) UI->StopSpeech();
+	Sel.FindOrAdd(Tab) = I;
+	if (Entries.IsValidIndex(I) && Entries[I].IsValid())
+	{
+		const bool bRight = bRightIsEntries && I >= Photos.Num();
+		const TSharedPtr<SScrollBox> S = bRight ? RightScroll : LeftScroll;
+		if (S.IsValid()) S->ScrollDescendantIntoView(Entries[I], true, EDescendantScrollDestination::IntoView);
+	}
+	BuildRight();
+}
+
+void SS47Notebook::Activate()
+{
+	const int32 I = Chosen();
+	if ((Tab == TEXT("findings") && Findings.IsValidIndex(I)) || (Tab == TEXT("papers") && Papers.IsValidIndex(I)))
+	{
+		// (as a click on it did: the paper opens over the game, game.openDoc)
+		const FS47Doc D = Tab == TEXT("findings") ? Findings[I] : Papers[I];
+		if (OnDoc) OnDoc(D);
+		return;
+	}
+	if (Tab == TEXT("photos"))
+	{
+		if (Photos.IsValidIndex(I)) { const FS47Doc D = Photos[I]; if (OnDoc) OnDoc(D); }
+		else if (Album && Album->Shots.IsValidIndex(I - Photos.Num())) ShowBig(I - Photos.Num());
+		return;
+	}
+	if (Tab == TEXT("kit") && X.Kit && X.Kit->IsValidIndex(I))
+	{
+		const FString Art = (*X.Kit)[I].Art;
+		if (Art == TEXT("papers")) Show(TEXT("papers"));
+		else if (Art == TEXT("camera")) Press(EKeys::C);
+		else if (Art == TEXT("flashlight")) Press(EKeys::F);
+	}
+}
+
+void SS47Notebook::Turn(int32 Dir)
+{
+	const int32 At = FMath::Max(0, Order.IndexOfByKey(Tab));
+	Show(Order[(At + Dir + Order.Num()) % Order.Num()]);
+}
+
+void SS47Notebook::Press(const FKey& Key)
+{
+	// the notebook closes, then the key does what it does in play (main.ts input.onKey's handlers)
+	Close();
+	if (US47Main* M = US47Main::Get(nullptr))
+		for (const US47Main::FKeyHandler& K : TArray<US47Main::FKeyHandler>(M->Keys))
+			if (K.Key == Key && K.Fn && K.Fn()) break;
+}
+
+void SS47Notebook::Scroll(float By)
+{
+	for (const TSharedPtr<SScrollBox>& S : { LeftScroll, RightScroll })
+		if (S.IsValid()) S->SetScrollOffset(FMath::Clamp(S->GetScrollOffset() + By, 0.f, S->GetScrollOffsetOfEnd()));
 }
 
 void SS47Notebook::Show(const FString& T)
@@ -661,6 +1012,7 @@ void SS47Notebook::Show(const FString& T)
 		UI->NbTab = T;
 		if (UI->OnNotebookTab) UI->OnNotebookTab(T);
 	}
+	Build();
 }
 
 void SS47Notebook::Close()
@@ -671,7 +1023,7 @@ void SS47Notebook::Close()
 FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 {
 	// main.ts input.onKey with the notebook open: Tab, N, M, I, H, Escape and P close it; B lays
-	// the case out on the board
+	// the case out on the board (the board's own key processor takes B first)
 	const FKey K = E.GetKey();
 	// one print open big: these only page through the album and put the print back (ui/album.ts)
 	if (Big != INDEX_NONE)
@@ -682,6 +1034,25 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	}
 	if (K == EKeys::Tab || K == EKeys::N || K == EKeys::M || K == EKeys::I || K == EKeys::H || K == EKeys::Escape || K == EKeys::P) { Close(); return FReply::Handled(); }
 	if (K == EKeys::B && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
+	// Q and E turn the tabs; the arrows (or W A S D) choose on a page of entries, else scroll it
+	if (K == EKeys::Q) { Turn(-1); return FReply::Handled(); }
+	if (K == EKeys::E) { Turn(1); return FReply::Handled(); }
+	const bool bUp = K == EKeys::Up || K == EKeys::W, bDown = K == EKeys::Down || K == EKeys::S, bLeft = K == EKeys::Left || K == EKeys::A, bRight = K == EKeys::Right || K == EKeys::D;
+	if (bUp || bDown || bLeft || bRight)
+	{
+		if (Count()) Choose(Chosen() + (bUp ? -Columns() : bDown ? Columns() : bLeft ? -1 : 1));
+		else if (bUp || bDown) Scroll(S47Game::P(bUp ? -102.f : 102.f));
+		return FReply::Handled();
+	}
+	if (K == EKeys::PageUp || K == EKeys::PageDown) { Scroll(S47Game::P(K == EKeys::PageUp ? -400.f : 400.f)); return FReply::Handled(); }
+	if (K == EKeys::Enter || K == EKeys::SpaceBar) { Activate(); return FReply::Handled(); }
+	if (K == EKeys::V) { if (Reading.IsValid()) Reading->Toggle(); return FReply::Handled(); }
+	// the kit's own keys on its page (C raises the camera, F the light)
+	if ((K == EKeys::C || K == EKeys::F) && Tab == TEXT("kit") && X.Kit)
+	{
+		const FString Want = K == EKeys::C ? TEXT("camera") : TEXT("flashlight");
+		if (X.Kit->ContainsByPredicate([&](const FS47KitItem& It) { return It.Art == Want; })) { Press(K); return FReply::Handled(); }
+	}
 	return FReply::Unhandled();
 }
 
@@ -689,6 +1060,7 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 
 TSharedRef<SWidget> SS47Notebook::Print(int32 I, float W, bool bBig)
 {
+	using namespace S47Game;
 	// .al-print: the instant print, its picture 16:10 on the paper's frame, the caption in the player's
 	// hand on its wide bottom edge (b: two lines, three on a big one; small: where and when). W is
 	// --w in CSS pixels; the picture is still coming up for 90 s of the night (developing)
@@ -698,51 +1070,48 @@ TSharedRef<SWidget> SS47Notebook::Print(int32 I, float W, bool bBig)
 	const float Bf = (bBig ? 0.056f : 0.074f) * W, Sf = (bBig ? 0.04f : 0.058f) * W;
 	// (.al-cap b and small: the big print's caption is read as its description, bindAlbum's show)
 	auto Cap = [bBig](TSharedRef<SWidget> T) { return bBig ? S47Kit::Readable(T) : T; };
-	TSharedRef<SWidget> Img = Tex ? StaticCastSharedRef<SWidget>(SNew(SImage).Image(S47Kit::BrushFor(Tex).Get())) : StaticCastSharedRef<SWidget>(SNew(SBorder).BorderImage(Box(C(0x0c0c0d))));
-	TSharedRef<SWidget> Paper = SNew(SBorder).BorderImage(Box(C(0xebe5d4))).Padding(FMargin(Edge * PX, Edge * PX, Edge * PX, 0))
+	TSharedRef<SWidget> Img = Tex ? StaticCastSharedRef<SWidget>(SNew(SImage).Image(Picture(Tex))) : StaticCastSharedRef<SWidget>(SNew(SBorder).BorderImage(Box(C(0x0c0c0d))));
+	TSharedRef<SWidget> Paper = SNew(SBorder).BorderImage(Box(C(0xebe5d4))).Padding(FMargin(P(Edge), P(Edge), P(Edge), 0))
 	[
 		SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight()[SNew(SBox).WidthOverride(Iw * PX).HeightOverride(Ih * PX)[Img]]
+		+ SVerticalBox::Slot().AutoHeight()[SNew(SBox).WidthOverride(P(Iw)).HeightOverride(P(Ih))[Img]]
 		+ SVerticalBox::Slot().AutoHeight()
 		[
-			SNew(SBox).WidthOverride(Iw * PX).HeightOverride(Bottom * PX).Padding(FMargin(0, 0.024f * W * PX, 0, 0)).Clipping(EWidgetClipping::ClipToBounds)
+			SNew(SBox).WidthOverride(P(Iw)).HeightOverride(P(Bottom)).Padding(FMargin(0, P(0.024f * W), 0, 0)).Clipping(EWidgetClipping::ClipToBounds)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()
 				[
-					SNew(SBox).MaxDesiredHeight(Bf * 0.98f * (bBig ? 3 : 2) * PX * 1.25f).Clipping(EWidgetClipping::ClipToBounds)
+					SNew(SBox).MaxDesiredHeight(P(Bf * 0.98f * (bBig ? 3 : 2) * 1.25f)).Clipping(EWidgetClipping::ClipToBounds)
 					[Cap(SNew(STextBlock).Text(FText::FromString(S.Text)).Font(Hand(Bf)).ColorAndOpacity(C(0x22305a)).AutoWrapText(true).LineHeightPercentage(0.98f))]
 				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 2 * PX, 0, 0)[Cap(SNew(STextBlock).Text(FText::FromString(S.Meta)).Font(Hand(Sf)).ColorAndOpacity(C(0x4b4a58)))]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(2), 0, 0)[Cap(SNew(STextBlock).Text(FText::FromString(S.Meta)).Font(Hand(Sf)).ColorAndOpacity(C(0x4b4a58)))]
 			]
 		]
 	];
 	// a dark shadow under it (box-shadow: 0 7px 16px rgba(0,0,0,.6))
-	TSharedRef<SWidget> Shadowed = SNew(SOverlay)
-		+ SOverlay::Slot().Padding(FMargin(2 * PX, 7 * PX, 2 * PX, -7 * PX))[SNew(SBorder).BorderImage(Box(C(0x000000, 0.45f)))]
-		+ SOverlay::Slot()[Paper];
-	Shadowed->SetRenderTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(bBig ? -0.5f : TILT[(I + 3) % 8]))));
-	Shadowed->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-	if (bBig) return Shadowed;
-	// a click or a tap opens it big
-	return SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).OnClicked_Lambda([this, I] { ShowBig(I); return FReply::Handled(); })[Shadowed];
+	const TSharedRef<SWidget> Shadow = Turned(Shadowed(Paper, 16.f, FVector2D(0, 7), 0.6f), bBig ? -0.5f : TILT[(I + 3) % 8]);
+	// (a click or a tap opens it big: the entry round it, SS47Notebook::Entry)
+	return Shadow;
 }
 
 void SS47Notebook::ShowBig(int32 I)
 {
+	using namespace S47Game;
 	if (!Album || !Album->Shots.IsValidIndex(I) || !BigSlot.IsValid()) return;
 	// (reading.change(): another print, or none, stops what was being read)
 	if (UI.IsValid()) UI->StopSpeech();
 	Big = I;
-	// --w: min(100vw - 150px, (100vh - 48px) / .844, 920px)
-	const FVector2D View = FVector2D(GetCachedGeometry().GetLocalSize()) / PX;
+	Sel.FindOrAdd(TEXT("photos")) = Photos.Num() + I;
+	// --w: min(100vw - 150px, (100vh - 48px) / .844, 920px), in the mockup's pixels
+	const FVector2D View = FVector2D(GetCachedGeometry().GetLocalSize()) / U;
 	const float W = float(FMath::Max(200.0, FMath::Min3(View.X - 150, (View.Y - 48) / 0.844, 920.0)));
 	const int32 N = Album->Shots.Num();
 	auto Nav = [this](const TCHAR* Label, int32 To, bool bOn) -> TSharedRef<SWidget>
 	{
-		return SNew(SBox).WidthOverride(50 * PX).HeightOverride(96 * PX)
+		return SNew(SBox).WidthOverride(P(50)).HeightOverride(P(96))
 		[
-			SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).IsEnabled(bOn).HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+			SNew(SButton).ButtonStyle(Flat()).ContentPadding(0).IsEnabled(bOn).IsFocusable(false).HAlign(HAlign_Fill).VAlign(VAlign_Fill)
 			.OnClicked_Lambda([this, To] { ShowBig(To); return FReply::Handled(); })
 			[
 				SNew(SBorder).BorderImage(Box(C(0xffffff, 0.06f), FLinearColor::Transparent, 0.f, 4.f)).HAlign(HAlign_Center).VAlign(VAlign_Center).ColorAndOpacity(FLinearColor(1, 1, 1, bOn ? 1.f : 0.18f))
@@ -765,26 +1134,20 @@ void SS47Notebook::ShowBig(int32 I)
 				[BigPrint]
 			]
 			// .al-view > .read-aloud: under the print, in the middle, on dark (photo-description)
-			+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, 65 * PX)
+			+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(65))
 			[
-				SNew(SBorder).BorderImage(Box(C(0x111417))).Padding(FMargin(10 * PX, 4 * PX))
+				SNew(SBorder).BorderImage(Box(C(0x111417))).Padding(FMargin(P(10), P(4)))
 				.Visibility_Lambda([Readings] { return Readings->GetDesiredSize().X > 0 ? EVisibility::Visible : EVisibility::Collapsed; })
 				.OnMouseButtonDown_Lambda([](const FGeometry&, const FPointerEvent&) { return FReply::Handled(); })
 				[Readings]
 			]
-			+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center).Padding(6 * PX, 0, 0, 0)[Nav(TEXT("‹"), I - 1, I > 0)]
-			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Center).Padding(0, 0, 6 * PX, 0)[Nav(TEXT("›"), I + 1, I < N - 1)]
-			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, 8 * PX, 12 * PX, 0)
+			+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center).Padding(P(6), 0, 0, 0)[Nav(TEXT("‹"), I - 1, I > 0)]
+			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[Nav(TEXT("›"), I + 1, I < N - 1)]
+			+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, P(8), P(12), 0)
 			[
-				SNew(SButton).ButtonStyle(Flat()).ContentPadding(FMargin(0, 6 * PX)).OnClicked_Lambda([this] { CloseBig(); return FReply::Handled(); })
+				SNew(SButton).ButtonStyle(Flat()).ContentPadding(FMargin(0, P(6))).IsFocusable(false).OnClicked_Lambda([this] { CloseBig(); return FReply::Handled(); })
 				[
-					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 6 * PX, 0)
-					[
-						SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x8a8473), 1.f, 3.f)).Padding(FMargin(6 * PX, 0))
-						[SNew(STextBlock).Text(FText::FromString(TEXT("E"))).Font(Term(22)).ColorAndOpacity(C(0xffb052))]
-					]
-					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("Back to the album"))).Font(Term(22)).ColorAndOpacity(C(0xcfc8b5))]
+					KeyHint(TEXT("E"), TEXT("Back to the album"), 22.f, C(0xcfc8b5))
 				]
 			]
 		]);
@@ -798,4 +1161,49 @@ void SS47Notebook::CloseBig()
 	if (Big != INDEX_NONE && UI.IsValid()) UI->StopSpeech();
 	Big = INDEX_NONE;
 	if (BigSlot.IsValid()) BigSlot->SetContent(SNullWidget::NullWidget);
+}
+
+// ---------- self test ----------
+
+bool SS47Notebook::SelfTest(TArray<FString>& Lines)
+{
+	bool bOk = true;
+	auto Check = [&](const TCHAR* Name, bool bPass, const FString& Got = FString())
+	{
+		Lines.Add(bPass ? FString::Printf(TEXT("ok  notebook: %s"), Name) : FString::Printf(TEXT("FAIL notebook: %s %s"), Name, *Got));
+		bOk &= bPass;
+	};
+	if (!FSlateApplication::IsInitialized()) { Check(TEXT("slate"), false); return bOk; }
+	FS47Doc Log; Log.Id = TEXT("log"); Log.Title = TEXT("Dale's shift log"); Log.Kind = TEXT("hand"); Log.Page = TEXT("Kid,");
+	FS47Doc Typed; Typed.Id = TEXT("s03log"); Typed.Title = TEXT("S-03 / No command recorded"); Typed.Kind = TEXT("typed"); Typed.Page = TEXT("SARO ARRAY");
+	FS47Doc Find; Find.Id = TEXT("p01"); Find.Title = TEXT("P01 / One"); Find.Kind = TEXT("typed"); Find.Page = TEXT("P01  SUPPORTED / one");
+	FS47NbExtras Ex;
+	Ex.Map = FS47MapView();
+	Ex.Kit = TArray<FS47KitItem>{ { TEXT("Notebook"), TEXT("Tab opens it."), FString(), TEXT("notebook"), FString() }, { TEXT("SARO jacket"), TEXT("From the hook."), TEXT("On"), TEXT("jacket"), FString() },
+		{ TEXT("Truck keys"), TEXT("SARO 07."), TEXT("On the pad"), TEXT("keys"), TEXT("SARO 07") }, { TEXT("Papers"), TEXT("Folded."), TEXT("2"), TEXT("papers"), FString() } };
+	Ex.People = TArray<FS47PersonCard>{ { TEXT("Dale"), TEXT("SARO"), TEXT("Left."), FString() } };
+	TArray<FS47Task> T; T.Add({ TEXT("Read the log"), true }); T.Add({ TEXT("Answer the line"), false });
+	FString Opened;
+	const TSharedRef<SS47Notebook> Nb = SNew(SS47Notebook).Tasks(T).Notes({ TEXT("One."), TEXT("Two.") }).Docs({ Log, Typed, Find })
+		.OnDoc([&Opened](const FS47Doc& D) { Opened = D.Id; }).Extras(Ex);
+	auto Key = [&](const FKey& K) { Nb->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
+	Check(TEXT("tabs in order"), FString::Join(Nb->Order, TEXT(" ")) == TEXT("tasks notes findings papers photos map kit people controls"), FString::Join(Nb->Order, TEXT(" ")));
+	Check(TEXT("opens on tasks"), Nb->Tab == TEXT("tasks"), Nb->Tab);
+	Key(EKeys::E);
+	Check(TEXT("E turns on"), Nb->Tab == TEXT("notes"), Nb->Tab);
+	Key(EKeys::Q); Key(EKeys::Q);
+	Check(TEXT("Q turns back, round to the last"), Nb->Tab == TEXT("controls"), Nb->Tab);
+	Nb->Show(TEXT("kit"));
+	Key(EKeys::Right);
+	Check(TEXT("right chooses the next"), Nb->Chosen() == 1, FString::FromInt(Nb->Chosen()));
+	Key(EKeys::Down);
+	Check(TEXT("down goes a row, to the last"), Nb->Chosen() == 3, FString::FromInt(Nb->Chosen()));
+	Key(EKeys::Enter);
+	Check(TEXT("Enter on the papers turns to them"), Nb->Tab == TEXT("papers"), Nb->Tab);
+	Check(TEXT("papers and findings apart"), Nb->Papers.Num() == 2 && Nb->Findings.Num() == 1);
+	Key(EKeys::Right); Key(EKeys::Enter);
+	Check(TEXT("Enter opens the chosen paper"), Opened == TEXT("s03log"), Opened);
+	Nb->Show(TEXT("kit"));
+	Check(TEXT("each tab keeps its choice"), Nb->Chosen() == 3, FString::FromInt(Nb->Chosen()));
+	return bOk;
 }
