@@ -61,6 +61,9 @@ namespace S47Keys
 	SIGNAL47_API void ResetAll();
 	SIGNAL47_API bool IsDefault(FName Action);
 	SIGNAL47_API bool Bindable(const FKey& K);                          // a key that can be bound at all
+	// counts up whenever a key changes (a bind, a clear, a reset, the settings loaded): a view that
+	// shows the keys (the notebook's CONTROLS) builds itself again when it moves
+	SIGNAL47_API uint32 Changes();
 
 	// ---------- kept with the settings ----------
 	SIGNAL47_API TSharedPtr<FJsonObject> Save();                        // { action: ["W", "Up"] } (FKey names, "" for none)

@@ -22,7 +22,7 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 | Oppgave | Eier | Merknad |
 |---|---|---|
 | Grafikkpass med de 70 gratismodellene (`~/Assets/signal47-free`, `MODELLER.md`): pickup, biler, kontor- og radioutstyr, diner og motell, ørken; logoer fjernet; CREDITS i rulleteksten | Claude-hjelpere (plassering), Codex (materialer og lys) | etter at lyset er flettet inn |
-| Matriseskriver og motellseng (finnes ikke gratis) | åpen | lages i Blender eller hentes fra Fab |
+| Matriseskriver og motellseng (finnes ikke gratis) | Claude-hjelper | ferdig 22.10: laget i Blender, `~/Assets/signal47-free/own` (glb, fbx, blend, README); skal plasseres i verden |
 | Lyttetest av lyd og hel gjennomspilling med ekte input | Tom | |
 
 ## Ferdig 22.10

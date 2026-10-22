@@ -54,6 +54,7 @@ namespace S47KeysLocal
 	{
 		TArray<S47Keys::FAction> Actions = MakeActions();
 		TMap<FName, TStaticArray<FKey, 2>> Map;
+		uint32 Changes = 0;     // counted up whenever a key changes (S47Keys::Changes)
 		FState() { for (const S47Keys::FAction& A : Actions) { TStaticArray<FKey, 2> K; K[0] = A.Default[0]; K[1] = A.Default[1]; Map.Add(A.Id, K); } }
 	};
 	FState& St() { static FState S; return S; }
@@ -188,6 +189,7 @@ S47Keys::EBind S47Keys::Bind(FName Action, int32 Slot, const FKey& K, FName* Oth
 	{
 		if (1 - Slot == 0 && A->bFixedFirst) return EBind::Fixed;
 		(*S)[1 - Slot] = Old; (*S)[Slot] = K;
+		++S47KeysLocal::St().Changes;
 		if (Other) *Other = Action;
 		return EBind::Swapped;
 	}
@@ -210,6 +212,7 @@ S47Keys::EBind S47Keys::Bind(FName Action, int32 Slot, const FKey& K, FName* Oth
 		}
 	}
 	(*S)[Slot] = K;
+	++S47KeysLocal::St().Changes;
 	if (Takes.IsEmpty())
 	{
 		if (Other) *Other = Sharer;
@@ -241,6 +244,7 @@ void S47Keys::Clear(FName Action, int32 Slot)
 	TStaticArray<FKey, 2>* S = S47KeysLocal::Slots(Action);
 	if (!A || !S || Slot < 0 || Slot > 1 || (Slot == 0 && A->bFixedFirst)) return;
 	(*S)[Slot] = EKeys::Invalid;
+	++S47KeysLocal::St().Changes;
 }
 
 void S47Keys::Reset(FName Action)
@@ -262,11 +266,13 @@ void S47Keys::Reset(FName Action)
 		}
 		(*S)[i] = D;
 	}
+	++S47KeysLocal::St().Changes;
 }
 
 void S47Keys::ResetAll()
 {
 	for (const FAction& A : S47KeysLocal::St().Actions) { TStaticArray<FKey, 2>& K = S47KeysLocal::St().Map.FindChecked(A.Id); K[0] = A.Default[0]; K[1] = A.Default[1]; }
+	++S47KeysLocal::St().Changes;
 }
 
 bool S47Keys::IsDefault(FName Action)
@@ -308,7 +314,10 @@ void S47Keys::Load(const TSharedPtr<FJsonObject>& O)
 		}
 	}
 	S47KeysLocal::Normalize();
+	++S47KeysLocal::St().Changes;
 }
+
+uint32 S47Keys::Changes() { return S47KeysLocal::St().Changes; }
 
 bool S47Keys::SelfTest(TArray<FString>& Out)
 {
