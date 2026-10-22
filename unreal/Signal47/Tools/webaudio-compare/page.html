@@ -1,0 +1,123 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>xcheck</title></head>
+<body><pre id="out">running</pre>
+<script>
+// The same graphs as US47Audio::Compare (S47AudioTour.cpp), rendered by the browser's Web Audio.
+const SR = 48000;
+function lcgNoise(ctx, seconds, seed) {
+  const b = ctx.createBuffer(1, Math.floor(SR * seconds), SR), d = b.getChannelData(0);
+  let x = seed >>> 0;
+  for (let i = 0; i < d.length; i++) { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; d[i] = x / 4294967296 * 2 - 1; }
+  return b;
+}
+function drive(k) { const n = 1024, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; c[i] = Math.tanh(k * x) / Math.tanh(k); } return c; }
+const CASES = {
+  envelope(ctx) {
+    const o = ctx.createOscillator(); o.frequency.value = 440;
+    const g = ctx.createGain(); g.gain.value = 0;
+    g.gain.setValueAtTime(0, 0.1); g.gain.linearRampToValueAtTime(0.8, 0.3); g.gain.exponentialRampToValueAtTime(0.01, 1.0); g.gain.setTargetAtTime(0.5, 1.2, 0.1);
+    g.gain.setValueAtTime(0.5, 1.6); g.gain.linearRampToValueAtTime(0, 1.9);
+    o.connect(g); g.connect(ctx.destination); o.start(0.05); o.stop(1.95);
+  },
+  beep(ctx) {
+    const t = 0.1, dur = 0.5, gain = 0.3;
+    const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = 1200;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.005); g.gain.setValueAtTime(gain, t + dur); g.gain.linearRampToValueAtTime(0, t + dur + 0.02);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3000;
+    o.connect(lp); lp.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + 0.05);
+  },
+  sweep(ctx) {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 110;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 6; lp.frequency.setValueAtTime(4000, 0); lp.frequency.exponentialRampToValueAtTime(200, 1.9);
+    const g = ctx.createGain(); g.gain.value = 0.3;
+    o.connect(lp); lp.connect(g); g.connect(ctx.destination); o.start(0);
+  },
+  panner(ctx) {
+    const o = ctx.createOscillator(); o.frequency.value = 500;
+    const p = ctx.createPanner(); p.panningModel = 'equalpower'; p.distanceModel = 'inverse'; p.refDistance = 1.2; p.rolloffFactor = 1.2; p.maxDistance = 60;
+    p.positionX.value = 2; p.positionY.value = 0; p.positionZ.value = -1;
+    o.connect(p); p.connect(ctx.destination); o.start(0);
+  },
+  compressor(ctx) {
+    const o = ctx.createOscillator(); o.frequency.value = 200;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.1, 0); g.gain.setValueAtTime(1.0, 0.5); g.gain.setValueAtTime(0.3, 1.0); g.gain.setValueAtTime(0.02, 1.5);
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 5; comp.attack.value = 0.003; comp.release.value = 0.2;
+    o.connect(g); g.connect(comp); comp.connect(ctx.destination); o.start(0);
+  },
+  shaper(ctx) {
+    const o = ctx.createOscillator(); o.frequency.value = 300;
+    const g = ctx.createGain(); g.gain.value = 0.8;
+    const s = ctx.createWaveShaper(); s.curve = drive(2.6); s.oversample = 'none';
+    o.connect(g); g.connect(s); s.connect(ctx.destination); o.start(0);
+  },
+  shaper2x(ctx) {
+    const o = ctx.createOscillator(); o.frequency.value = 300;
+    const g = ctx.createGain(); g.gain.value = 0.8;
+    const s = ctx.createWaveShaper(); s.curve = drive(2.6); s.oversample = '2x';
+    o.connect(g); g.connect(s); s.connect(ctx.destination); o.start(0);
+  },
+  comb(ctx) {
+    const b = ctx.createBuffer(1, 8, SR); b.getChannelData(0)[0] = 1;
+    const src = ctx.createBufferSource(); src.buffer = b;
+    const d = ctx.createDelay(0.05); d.delayTime.value = 0.0027;
+    const fb = ctx.createGain(); fb.gain.value = 0.86;
+    src.connect(d); d.connect(fb); fb.connect(d); d.connect(ctx.destination); src.start(0.01);
+  },
+  horn(ctx) {
+    const horn = ctx.createOscillator(); horn.type = 'sawtooth'; horn.frequency.value = 124;
+    const p1 = ctx.createOscillator(); p1.frequency.value = 0.73;
+    const p1g = ctx.createGain(); p1g.gain.value = 16; p1.connect(p1g); p1g.connect(horn.frequency);
+    const mute = ctx.createBiquadFilter(); mute.type = 'lowpass'; mute.frequency.value = 800; mute.Q.value = 6.5;
+    const syl = ctx.createOscillator(); syl.type = 'triangle'; syl.frequency.value = 4.3;
+    const sw = ctx.createGain(); sw.gain.value = 520; syl.connect(sw); sw.connect(mute.frequency);
+    const sg = ctx.createGain(); sg.gain.value = 0.5; syl.connect(sg);
+    const chop = ctx.createGain(); chop.gain.value = 0.5; sg.connect(chop.gain);
+    horn.connect(mute); mute.connect(chop); chop.connect(ctx.destination);
+    for (const x of [horn, p1, syl]) x.start(0);
+  },
+  noisebands(ctx) {
+    const n = ctx.createBufferSource(); n.buffer = lcgNoise(ctx, 2, 47);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 0.6;
+    const pk = ctx.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 1352; pk.gain.value = 8;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 320;
+    n.connect(bp); bp.connect(pk); pk.connect(hp); hp.connect(ctx.destination); n.start(0);
+  },
+  playback(ctx) {
+    const b = ctx.createBuffer(1, 24000, 24000); const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.sin(2 * Math.PI * 300 * i / 24000) * (i / d.length);
+    const s = ctx.createBufferSource(); s.buffer = b; s.playbackRate.value = 0.62; s.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500;
+    s.connect(lp); lp.connect(ctx.destination); s.start(0.02, 0.1);
+  },
+  stereopan(ctx) {
+    const o = ctx.createOscillator(); o.frequency.value = 330;
+    const p = ctx.createStereoPanner(); p.pan.setValueAtTime(-0.9, 0); p.pan.linearRampToValueAtTime(0.9, 1.9);
+    o.connect(p); p.connect(ctx.destination); o.start(0);
+  },
+  square_raw(ctx) { const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = 100; o.connect(ctx.destination); o.start(0); },
+  saw_raw(ctx) { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 100; o.connect(ctx.destination); o.start(0); },
+  tri_raw(ctx) { const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 100; o.connect(ctx.destination); o.start(0); },
+  square_hi(ctx) { const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = 4000; o.connect(ctx.destination); o.start(0); },
+  cancel(ctx) {
+    const o = ctx.createOscillator(); o.frequency.value = 220;
+    const g = ctx.createGain(); g.gain.value = 0;
+    g.gain.setValueAtTime(0, 0); g.gain.linearRampToValueAtTime(1, 1.0); g.gain.cancelAndHoldAtTime(0.6); g.gain.setTargetAtTime(0.1, 0.6, 0.2);
+    o.connect(g); g.connect(ctx.destination); o.start(0);
+  },
+};
+function b64(f32) {
+  const u8 = new Uint8Array(f32.buffer); let s = '';
+  for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+(async () => {
+  const out = {};
+  for (const [name, build] of Object.entries(CASES)) {
+    const ctx = new OfflineAudioContext(2, SR * 2, SR);
+    build(ctx);
+    const buf = await ctx.startRendering();
+    out[name] = [b64(buf.getChannelData(0)), b64(buf.getChannelData(1))];
+  }
+  document.getElementById('out').textContent = 'RESULT' + JSON.stringify(out) + 'END';
+})().catch((e) => { document.getElementById('out').textContent = 'ERROR ' + e; });
+</script></body></html>

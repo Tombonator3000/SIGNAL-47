@@ -204,6 +204,22 @@ void US47World::OdoRestore(const S47J::FObj& O)
 	OdoX = S47J::Num(O, TEXT("x"));
 }
 
+bool US47World::Indoors(const FVector& P) const
+{
+	if (!M || !M->Web) return false;
+	if (Area == TEXT("room6")) return P.Z < -8000.0 + 3.0;  // ROOM6_ORIGIN.z + 3: in the room, not on the walk outside
+	if (Area == TEXT("diner"))
+	{
+		for (const FS47Rect& Z : M->Web->Zones())
+		{
+			if ((Z.Id == TEXT("inside") || Z.Id == TEXT("phone")) && P.X >= Z.MinX && P.X <= Z.MaxX && P.Z >= Z.MinZ && P.Z <= Z.MaxZ) return true;
+		}
+		return false;
+	}
+	if (Area != TEXT("station01")) return false;
+	return M->Web->Rect(TEXT("world.site.hutBounds")).Contains(P);
+}
+
 void US47World::Update(double Dt, double T)
 {
 	(void)Dt; (void)T;

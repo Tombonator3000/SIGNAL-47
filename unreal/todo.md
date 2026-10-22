@@ -15,6 +15,10 @@
 - [ ] Historien som JSON felles for web og Unreal, slik at tekst og valg ikke må skrives to steder.
 - [ ] Feltkameraet og fotolaben.
 - [x] Lyd og musikk fra web/public (2026-10-21).
+- [x] `core/Audio.ts`, `signalVoice.ts` og `ambience.ts` portert på en Web Audio i C++, kryssjekket mot Chromium (2026-10-22).
+- [ ] Natta ute i gang som i main.ts: `StartNight()` etter `StartRoomTone()`, `NightLife(dt, spillerens posisjon, klokka)` hver ramme, `SetSpace(room|yard|lab)` ved områdebytte, `Suspend` i pausen, volumene fra innstillingene.
+- [ ] Prologen spiller tonene med `Beep(...)` og nettversjonens tall i stedet for filene fra make-synth.py, og radioen i høyde 1,45 som i Prologue.ts.
+- [ ] ReadAloud, RecordedDialogue og RadioVoice (stemmebankene under /Game/Audio/Voice, katalogene i Content/Audio/Raw/voices.json), musikken (score.ts) og radioen (radio.ts); `decoder.ts` trenger en ConvolverNode, `score.ts` og `radio.ts` en kilde for lange lydfiler.
 - [ ] Lagring ved kontrollpunkter.
 - [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
 - [ ] Glødepunktene blinker som i glow.ts.

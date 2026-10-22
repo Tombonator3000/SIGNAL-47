@@ -64,6 +64,7 @@ void AS47HUD::Start()
 		bOk &= S47RxSelfTest(Lines);
 		bOk &= FS47RuleBook::SelfTest(Lines);
 		bOk &= US47Chapter2::SelfTest(Lines);
+		bOk &= US47Audio::SelfTest(Lines);
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
@@ -116,6 +117,7 @@ void AS47HUD::Start()
 			Saro->OnMugShatter = [A, Self](const FVector& P) { if (A.IsValid()) A->Play(TEXT("ceramic"), 1.f, P + FVector(0, 0, 20)); };
 		}
 		Audio->StartRoomTone();
+		Audio->StartNight(); // main.ts: the night outside (core/ambience.ts)
 		if (Saro.IsValid())
 		{
 			TWeakObjectPtr<US47Audio> A = Audio;

@@ -62,5 +62,6 @@ public:
 	// What main.ts's step() does each frame after the player moved (the story is stepped by its
 	// own actor; the systems ported from main.ts go here in main.ts's order).
 	void Step(double Dt);
+	FString Space; // the acoustic space the sound is in: 'room' | 'yard' | 'lab' (main.ts)
 	bool ModalOpen() const;
 };

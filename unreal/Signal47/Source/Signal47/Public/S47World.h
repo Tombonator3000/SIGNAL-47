@@ -62,6 +62,7 @@ public:
 	void AddMiles(double Miles) { OdoX += Miles; }
 
 	void Update(double Dt, double T);
+	bool Indoors(const FVector& P) const; // World.indoors: under a roof in the area the player is in
 
 private:
 	UPROPERTY() TObjectPtr<US47Main> M;
