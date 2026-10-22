@@ -259,12 +259,16 @@ void US47Flow::Boot()
 		bSoundUnlocked = true;
 		PlayInput();
 		// (startGame's: a new night for the night's layer, and its log listening once the night has begun)
+		// (Night::Restore puts SARO's, the times away, the town's and the phones' back too, in main.ts's order)
 		if (M->Night) M->Night->Restore(S47J::FObj());
-		if (M->SaroNight) M->SaroNight->Restore(S47J::FObj());
 		FString Jump;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) M->Story->Jump(Jump);
 		else M->Story->Start();
+		// then what is refiled after the story has begun, as the start from the title does
 		if (M->SaroNight) M->SaroNight->Restored();
+		if (M->Phones) M->Phones->Restored();
+		if (M->Away) M->Away->Restored();
+		if (M->TownLayer) M->TownLayer->Refile(S47J::FObj());
 		if (M->Night) M->Night->Restored();
 		M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 		return;
