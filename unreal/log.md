@@ -51,4 +51,7 @@ Nyeste nederst. Tid i Europe/Oslo.
 - 08:40 Ny eksport og import (1863 noder, 799 materialer, 285 teksturer, byens og himmelens nye deler). Importøren krasjer fortsatt ved avslutning etter «done»; alt er lagret.
 - 08:50 Kapittel 6 (Codex) flettet inn: siste mila, THE EVENT, nøkkelen og døra, uttrekket, tittelen, rulleteksten og 1947-fotografiet, tilbake til tittelen. Himmelen tar daggryløftet og solhøyden fra kapittelet.
 - 09:30 Kapittel 5 flettet inn, allerede koblet til kapittel 6: dineren, servitrisen, sjåføren, den faste gjesten, Ward-samtalen, kartet med P13-sporingen, utklippet og terminalkommandoen. Alle seks kapitler er nå portert. Sperringene på den gamle veien åpnes hver ramme som i main.ts.
+- 10:00 De siste koblingene mellom portene: opptaksvandringen bruker de ekte opptakene fra tiden borte (én Walker-type), fyrlysene på parabolene blinket dobbelt (rettet), musikken holdes under nattens hendelser, Earls spole virker, stasjonen som tas steppes etter bortføringen, og en testkjøring starter natta slik tittelen gjør.
+- 10:20 Testskriptet hadde fått begge versjonene av `shot` ved en fletting, så hver kjøring gikk to ganger og den andre med fast tidsgrense. Rettet; røyktesten venter også på at skjermbildet er skrevet.
+- 10:40 Ny eksport og import (lastebilen ved dineren), stemmene dekodet, pakket. Hele `Scripts/screenshots.sh`: 86 av 86 kjøringer består (to av dem ved omkjøring: et løst input i testvinduet og en ringelyd som nå er den kjøpte). Alle seks kapitler, natta og slutten kjører i den pakkede utgaven.
 
