@@ -104,6 +104,8 @@ void AS47Walker::Tick(float DeltaSeconds)
 	const double Dt = DeltaSeconds;
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	Focused.Reset();
+	// the keys and the look, as Input.ts gives them
+	double LookX = 0, LookY = 0, Mx = 0, Mz = 0;
 	if (PC && bActive)
 	{
 		float DX = 0, DY = 0;
@@ -112,14 +114,29 @@ void AS47Walker::Tick(float DeltaSeconds)
 		// Input.ts: 0.0022 rad per pixel; Unreal's mouse delta is in pixels times its own scale,
 		// and up is positive, where the browser's movementY grows downwards
 		// (the settings' look speed and invert, main.ts step: player.look(look.x, invertY ? -look.y : look.y))
-		Look(FMath::Clamp(DX, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity, (bInvertY ? 1.0 : -1.0) * FMath::Clamp(DY, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity);
-		double Mx = 0, Mz = 0;
+		LookX = FMath::Clamp(DX, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
+		LookY = (bInvertY ? 1.0 : -1.0) * FMath::Clamp(DY, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
 		if (PC->IsInputKeyDown(EKeys::W) || PC->IsInputKeyDown(EKeys::Up)) Mz -= 1;
 		if (PC->IsInputKeyDown(EKeys::S) || PC->IsInputKeyDown(EKeys::Down)) Mz += 1;
 		if (PC->IsInputKeyDown(EKeys::A) || PC->IsInputKeyDown(EKeys::Left)) Mx -= 1;
 		if (PC->IsInputKeyDown(EKeys::D) || PC->IsInputKeyDown(EKeys::Right)) Mx += 1;
 		const double L = FMath::Sqrt(Mx * Mx + Mz * Mz);
 		if (L > 1) { Mx /= L; Mz /= L; }
+	}
+	// the camera held by something else (the truck's cab): its eye, no walking and no picking
+	FS47View View;
+	if (CameraOverride && CameraOverride(Dt, FVector2D(Mx, Mz), FVector2D(LookX, LookY), View))
+	{
+		SetActorLocationAndRotation(ToUE(View.Eye), CameraRotation(View.Yaw, View.Pitch, View.Roll));
+		FVector2D Size(16, 9);
+		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
+		Camera->SetFieldOfView(HorizontalFov(Fov, float(Size.X / FMath::Max(1.0, Size.Y))));
+		if (Web.IsValid()) Web->SetPlayerEye(ToUE(View.Eye));
+		return;
+	}
+	if (PC && bActive)
+	{
+		Look(LookX, LookY);
 		const bool bRun = PC->IsInputKeyDown(EKeys::LeftShift) || PC->IsInputKeyDown(EKeys::RightShift);
 		// Player.update
 		const double Sp = Speed * (bRun ? 1.6 : 1.0);

@@ -462,14 +462,35 @@
       for (const [a, wk] of Object.entries(walks)) { const z = sp.zones.map((q) => wk.zones.indexOf(q)).filter((k) => k >= 0); if (z.length) { area = a; zones = z; } }
       doors.push({ id, inter: sp.inter, name: sp.name, range: sp.range ?? 2.4, sound: sp.sound || 'heavy', open: door.open, proxy: idx(sp.proxy), moved, area, zones, leaf: sp.leaf || null });
     }
+    // the drives (drive/legs.ts, World.ts trips): what the C++ drive needs that only exists while
+    // the game runs. Each leg's obstacles as the builders made them (posts, poles, rocks: circles
+    // [x, z, r]; fences, walls, the diner's and the town's: boxes [minX, maxX, minZ, maxZ]; world
+    // terms), its lots, the flood set and slots of its headlight pools; each truck's cab flood set.
+    // (World keeps these in private fields; they are plain properties at run time.)
+    const setIndex = (s) => (s && s.pos && setOf.has(s.pos) ? setOf.get(s.pos) : -1);
+    const drive = { legs: {}, trucks: {} };
+    if (w && w.legs) for (const [id, L] of Object.entries(w.legs)) {
+      if (!L || !L.area) continue;
+      const a = L.area;
+      drive.legs[id] = {
+        obstacles: (a.obstacles || []).map((o) => (o.kind === 'circle' ? [o.x, o.z, o.r] : [o.minX, o.maxX, o.minZ, o.maxZ])),
+        lots: (a.lots || []).map((l) => ({ box: [l.box.minX, l.box.maxX, l.box.minZ, l.box.maxZ], y: l.y })),
+        head: a.headlights ? { set: setIndex(a.headlights.set), slots: Array.from(a.headlights.slots) } : null,
+        truck: idx(L.truck && L.truck.group),
+      };
+    }
+    for (const k of ['saroTruck', 'truck', 'parked', 'oldTruck']) {
+      const t = w && w[k];
+      if (t) drive.trucks[k] = { group: idx(t.group), cab: setIndex(t.cabFlood), flood: setIndex(t.floods) };
+    }
     // the player and the camera where the night starts
-    const player = { x: S.player.pos.x, y: S.player.pos.y, z: S.player.pos.z, yaw: S.player.yaw, pitch: S.player.pitch, eye: S.player.eye, radius: S.player.radius, speed: S.player.speed };
+    const player ={ x: S.player.pos.x, y: S.player.pos.y, z: S.player.pos.z, yaw: S.player.yaw, pitch: S.player.pitch, eye: S.player.eye, radius: S.player.radius, speed: S.player.speed };
     const cam = { fov: S.camera.fov, near: S.camera.near, far: S.camera.far };
     const fog = S.scene.fog ? { color: lin(S.scene.fog.color), density: S.scene.fog.density } : null;
     const bg = S.scene.background && S.scene.background.isColor ? lin(S.scene.background) : null;
     const L = S.room && S.room.lights;
     const roomLights = L ? { ceiling: L.ceiling.map((l) => l.uuid), lamps: L.lamps.map((l) => l.uuid), crt: L.crt.uuid, hemi: L.hemi.uuid, moon: L.moon.uuid } : null;
     const spawn = S.room && S.room.spawn ? { x: S.room.spawn.x, z: S.room.spawn.z, yaw: S.room.spawn.yaw } : null;
-    return { roomLights, spawn, doors, handles, dishes, dishParts, items, walks, areas, floods, player, cam, fog, bg, toneMappingExposure: S.renderer.toneMappingExposure };
+    return { roomLights, spawn, doors, handles, dishes, dishParts, items, walks, areas, floods, drive, player, cam, fog, bg, toneMappingExposure: S.renderer.toneMappingExposure };
   };
 })();

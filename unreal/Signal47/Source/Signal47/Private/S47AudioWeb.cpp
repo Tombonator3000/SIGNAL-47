@@ -3,6 +3,8 @@
 // holds the context's lock while it builds its graph, as one JavaScript task would.
 #include "S47Audio.h"
 
+#include "Sound/SoundBase.h"
+
 #include "S47Ambience.h"
 #include "S47SignalVoice.h"
 
@@ -1074,3 +1076,39 @@ void US47Audio::Signature(float Gain)
 }
 
 void US47Audio::Suspend(bool bOn) { if (Ctx.IsValid()) Ctx->Suspend(bOn); }
+
+// ---------- drive/engineSound.ts ----------
+
+void US47Audio::LoopLevel(const FString& Key, float Gain, float Rate, float LowPass)
+{
+	// the engine's recordings, mixed by rpm each frame (EngineSound): their gain and playback rate
+	FS47Play* P = Loops.Find(Key);
+	if (!P || !*P || !Ctx.IsValid()) return;
+	FBatch Batch(*Ctx);
+	if (P->Gain.IsValid()) P->Gain->Gain.SetValue(FMath::Max(0.f, Gain));
+	P->Src->PlaybackRate.SetValue(FMath::Max(0.01f, Rate));
+	(void)LowPass; // (the cab's low-pass is EngineBus's, on the engine's own bus once that is in)
+}
+
+float US47Audio::Duration(const FString& Name)
+{
+	if (const TSharedPtr<FS47AudioBuffer>* B = Buf.Find(Name); B && B->IsValid()) return float((*B)->Duration());
+	USoundBase* S = Find(Name);
+	return S ? S->GetDuration() : 0.f;
+}
+
+// The truck's sounds made with Web Audio nodes in the web version (engineSound.ts): silent until
+// they are built on the context here, as the other graphs in this file are.
+static void NotYet(const TCHAR* What)
+{
+	static TSet<FString> Told;
+	if (!Told.Contains(What)) { Told.Add(What); UE_LOG(LogTemp, Display, TEXT("S47: audio %s is not ported yet"), What); }
+}
+void US47Audio::EngineBus(float, float, float) {}
+void US47Audio::EngineTyres(const FString&, float) { NotYet(TEXT("engine tyres")); }
+void US47Audio::EngineCough(float) { NotYet(TEXT("engine cough")); }
+void US47Audio::EngineCrank(float) { NotYet(TEXT("engine crank")); }
+void US47Audio::EngineSolenoid(const TArray<float>&, float) { NotYet(TEXT("engine solenoid")); }
+void US47Audio::EngineRattle(float) { NotYet(TEXT("engine rattle")); }
+void US47Audio::EngineThump(float) { NotYet(TEXT("engine thump")); }
+void US47Audio::EngineStop(float) {}

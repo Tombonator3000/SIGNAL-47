@@ -20,7 +20,8 @@
 - [ ] Prologen spiller tonene med `Beep(...)` og nettversjonens tall i stedet for filene fra make-synth.py, og radioen i høyde 1,45 som i Prologue.ts.
 - [ ] ReadAloud, RecordedDialogue og RadioVoice (stemmebankene under /Game/Audio/Voice, katalogene i Content/Audio/Raw/voices.json), musikken (score.ts) og radioen (radio.ts); `decoder.ts` trenger en ConvolverNode, `score.ts` og `radio.ts` en kilde for lange lydfiler.
 - [ ] Lagring ved kontrollpunkter.
-- [ ] Kapittel 1 til 6 (web/src/story), kjøringen (web/src/drive) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
+- [ ] Kapittel 1 til 6 (web/src/story) og områdene. Verdenene er med i eksporten (AS47Web::Enter).
+- [x] Kjøringen (web/src/drive) og turene i World.ts (2026-10-22). Gjenstår: eksporten kjøres på nytt for `drive` i manifestet, lydene laget med Web Audio (dekk, vind, startmotor, ferist), lyktenes mønster (headSlots) i flomlysmaterialet, lyktene på dineren, byen og motellet (shareLights), radioen.
 - [ ] Glødepunktene blinker som i glow.ts.
 
 ## Kapittel 2 (2026-10-22)

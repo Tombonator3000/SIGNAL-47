@@ -70,9 +70,14 @@ struct SIGNAL47_API FS47Obj
 	void SetColor(const FLinearColor& C) const;
 	void SetEmissive(const FLinearColor& C, float Intensity = 1.f) const;
 	void SetOpacity(float A) const;
-	// A picture on it (material.map), for instance a photo. bFlipY as three's Texture.flipY for an
-	// image the page loaded; false for a render target drawn here.
+	// A picture on it (material.map), for instance a photo. bFlipY (the default) for a texture whose
+	// row 0 is its top (a render target drawn here, a picture decoded with S47Image), as the mesh's
+	// UVs expect three's flipped upload; false for a picture already stored the other way up.
 	void SetMap(UTexture* T, bool bFlipY = true) const;
+
+	// An InstancedMesh's instance K, as instancedMesh.setMatrixAt(K, compose(P, Q, S)) in its own
+	// terms (the truck's wheels and needles). bFlush: mark it for drawing now (the last of a batch).
+	void SetInstance(int32 K, const FVector& P, const FQuat& Q, const FVector& S, bool bFlush = true) const;
 };
 
 // A light (PointLight, SpotLight, DirectionalLight) by its path or the exported uuid.

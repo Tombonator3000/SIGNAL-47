@@ -1,5 +1,6 @@
 #include "S47Obj.h"
 
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/LightComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/PrimitiveComponent.h"
@@ -152,6 +153,16 @@ void FS47Obj::SetMap(UTexture* T, bool bFlipY) const
 			SetMapRows(D, bFlipY);
 		}
 	});
+}
+
+void FS47Obj::SetInstance(int32 K, const FVector& P, const FQuat& Q, const FVector& S, bool bFlush) const
+{
+	if (!IsValid()) return;
+	UInstancedStaticMeshComponent* C = Cast<UInstancedStaticMeshComponent>(W->Nodes[I].Comp.Get());
+	if (!C || K < 0 || K >= C->GetInstanceCount()) return;
+	double E[16];
+	Compose(P, Q, S, E);
+	C->UpdateInstanceTransform(K, MatToUE(E), false, bFlush, true);
 }
 
 // ---------- FS47Light ----------

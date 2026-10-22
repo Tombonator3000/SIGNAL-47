@@ -86,6 +86,16 @@ public:
 	void SetFlood(int32 Set, int32 Index, float Width); // setFlood(i, intensity, set)
 	void SetFloodColor(int32 Set, int32 Index, const FLinearColor& C);
 	void SetFloodScale(int32 Set, float Scale);
+	// A pool moved, as kit.ts sets pos[i] (x, y, z, reach) and col[i] (the truck's headlights and
+	// its cab, Truck.ts placeFloods): bUpload false leaves it for FlushFlood, so a set changed in
+	// several slots is sent once.
+	void SetFloodPool(int32 Set, int32 Index, const FVector& P, float Width, const FLinearColor& C, bool bUpload = true);
+	void FlushFlood(int32 Set);
+
+	// What the drive needs that only exists while the web game runs (export.js extras: drive):
+	// each leg's obstacles, lots and headlight slots, each truck's own flood sets. Null when the
+	// manifest is older than that.
+	const TSharedPtr<class FJsonObject>& DriveData() const { return Drive; }
 
 	// ---------- nodes ----------
 	int32 Handle(const FString& Key) const; // "room.objs.mug" and the like, -1 when unknown
@@ -197,6 +207,8 @@ private:
 	TMap<int32, TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>>> FloodMids;
 	TMap<int32, int32> MatFloodSet; // material id -> flood set
 	void UploadFlood(int32 Set);
+	TSet<int32> FloodDirty;
+	TSharedPtr<class FJsonObject> Drive;
 	TMap<FString, TArray<int32>> AreaRoots;
 	TMap<int32, FString> RootArea;
 	TMap<FString, TPair<TArray<FS47Rect>, TArray<FS47Rect>>> Walks;

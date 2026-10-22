@@ -7,9 +7,9 @@ OUT=${1:?usage: screenshots.sh OUTDIR [BUILD]}
 BUILD=${2:-$HOME/scratch-bm/Signal47-build}
 mkdir -p "$OUT"
 fail=0
-shot() { # name expected-log-pattern [extra args]
+shot() { # name expected-log-pattern [extra args] [seconds]
   local log="$OUT/$1.log"
-  timeout 150 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=8 ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
+  timeout 150 "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=${4:-8} ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1
   if grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
 }
 shot selftest "self test OK" "-S47SelfTest -S47Face=room"
@@ -29,4 +29,6 @@ shot dish "walker placed at dish" "-S47Face=dish"
 shot chapter2 "chapter ch2 begins" "-S47Jump=chapter2 -S47Face=room"
 shot title "title shown" "-S47Title"
 shot pause "pause opened" "-S47Face=room -S47Jump=residual -S47Open=pause"
+# the drive: out of the yard with the throttle held and the autopilot steering, 20 s on, from the cab
+shot drive "S47: trip 20 s" "-S47Drive=saro:station01 -S47Throttle=0.35" 24
 exit $fail

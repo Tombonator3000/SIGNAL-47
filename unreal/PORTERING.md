@@ -39,7 +39,9 @@ Hver portert modul har `US47Main* M` (det `main.ts` gir som `deps`) og kapitlene
 - `M->Web->Light(path)` gir et `FS47Light` (`SetIntensity`, `SetColor`, `SetVisible`, `SetPosition`).
 - `M->Web->Material(path)` gir et `FS47Mat`, et delt materiale som endres overalt.
 - `M->Web->Vec(path)` gir en `Vector3` koden holder. `M->Web->Rect(path)` gir en sone `{minX, maxX, minZ, maxZ}` som `FS47Area`.
-- Flomlysene: `FloodSet(key)`, `SetFlood(set, index, width)`, `SetFloodColor`, `SetFloodScale` (som `kit.ts` `setFlood`).
+- Flomlysene: `FloodSet(key)`, `SetFlood(set, index, width)`, `SetFloodColor`, `SetFloodScale` (som `kit.ts` `setFlood`). En lampe som flytter seg (lyktene på bilen): `SetFloodPool(set, index, pos, width, colour, false)` for hver plass og `FlushFlood(set)` til slutt.
+- En instans i et `InstancedMesh` (hjulene, viserne): `FS47Obj::SetInstance(k, pos, quat, scale)`, som `setMatrixAt`.
+- Bilen og kjøringen: `M->World` (`US47World`, som World.ts) med `DriveOut`, `DriveBack`, `DriveToMotel`, `DriveToDiner`, `Roam`, `DriveOldRoad`, `CabTruck()`, `CabDrive()`, `Trouble` og `EngineSound()`. Det eksporten vet om kjøringen (hindringene, lyktenes flomlysplasser) står i `M->Web->DriveData()`.
 - Dørene, antennene, kontrollrommet: setterne i `S47Web.h` (`ToggleDoor`, `PointDishes`, `SetLever` ...).
 
 **Ting man kan bruke, `M->Inter` (`US47Inter`, som `core/Interaction.ts`)**
