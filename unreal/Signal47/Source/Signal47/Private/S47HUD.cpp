@@ -119,9 +119,11 @@ void AS47HUD::Start()
 		if (Saro.IsValid())
 		{
 			TWeakObjectPtr<US47Audio> A = Audio;
-			// Doors.toggle: the latch, a creak, then the leaf meets the frame
-			Saro->OnDoor = [A](const FString& Id, bool bOpen, const FVector& At, bool bHeavy)
+			TWeakObjectPtr<AS47Story> St = Story;
+			// Doors.toggle: the latch, a creak, then the leaf meets the frame; the story hears it
+			Saro->OnDoor = [A, St](const FString& Id, bool bOpen, const FVector& At, bool bHeavy)
 			{
+				if (St.IsValid()) St->DoorChanged(Id, bOpen);
 				if (!A.IsValid()) return;
 				A->Play(TEXT("door_latch"), bHeavy ? 0.55f : 0.45f, At, bOpen ? 1.f : 0.85f);
 				A->Play(FMath::FRand() < 0.5f ? TEXT("door_creak0") : TEXT("door_creak1"), bHeavy ? 0.16f : 0.12f, At, bHeavy ? 0.8f : 1.f);

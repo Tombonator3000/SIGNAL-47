@@ -684,6 +684,11 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 	CurrentPhase = ES47Phase::End;
 }
 
+void AS47Story::DoorChanged(const FString& Id, bool bOpen)
+{
+	for (US47Chapter* C : Chapters) if (C) C->DoorChanged(Id, bOpen);
+}
+
 US47Chapter* AS47Story::Chapter(const FString& Key) const
 {
 	for (US47Chapter* C : Chapters) if (C && C->Key() == Key) return C;

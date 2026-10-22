@@ -293,7 +293,7 @@ void US47Chapter2::ApplyWorld()
 {
 	// a case from before the doors were free: doors.set('south', true, true). (AS47Web opens a door
 	// by toggling it, which swings it and sounds as the player opening it would.)
-	if (S.bDoor && M && M->Web && !M->Web->IsDoorOpen(TEXT("doorSouth"))) M->Web->ToggleDoor(TEXT("doorSouth"));
+	if (S.bDoor && M && M->Web) M->Web->SetDoorOpen(TEXT("doorSouth"), true, true);
 	if (S.Read.bOriginal) File(DocOriginal());
 	if (S.Read.bIndex) File(DocIndex());
 	if (S.Read.bAmended) File(DocAmended());

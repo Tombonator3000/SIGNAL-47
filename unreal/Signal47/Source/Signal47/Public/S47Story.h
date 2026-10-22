@@ -107,6 +107,8 @@ public:
 	// the saved case (story/state.ts SavedCase) the chapters restore from, when there is one
 	TFunction<TSharedPtr<class FJsonObject>()> LoadCase;
 	TFunction<void(const FString&)> OnCheckpoint; // Prologue.onCheckpoint: 'chapter1' ... (autosave)
+	// Prologue.doorChanged: a door opened or closed; every chapter hears it
+	void DoorChanged(const FString& Id, bool bOpen);
 
 	static constexpr double StartClock = 23 * 3600 + 41 * 60;
 	static constexpr double SkipClock = 2 * 3600 + 13 * 60 + 41;

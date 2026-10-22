@@ -989,6 +989,15 @@ void AS47Web::ToggleDoor(const FString& ItemId)
 	if (OnDoor) OnDoor(D->Id, D->bOpen, D->Proxy >= 0 ? WorldUE(D->Proxy) : PropLocation(ItemId), D->Sound != TEXT("light"));
 }
 
+void AS47Web::SetDoorOpen(const FString& DoorOrItemId, bool bOpen, bool bInstant)
+{
+	FDoor* D = Doors.FindByPredicate([&](const FDoor& X) { return X.Id == DoorOrItemId || X.Inter == DoorOrItemId; });
+	if (!D) return;
+	const bool bChanged = D->bOpen != bOpen;
+	SetDoor(*D, bOpen, bInstant);
+	if (bChanged && !bInstant && OnDoor) OnDoor(D->Id, D->bOpen, D->Proxy >= 0 ? WorldUE(D->Proxy) : PropLocation(D->Inter), D->Sound != TEXT("light"));
+}
+
 void AS47Web::CloseAllDoors()
 {
 	for (FDoor& D : Doors) SetDoor(D, false, true);
