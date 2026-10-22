@@ -1,34 +1,65 @@
-# Native lys og skygger i SIGNAL / 47
+# Ekte lys og skygger i SIGNAL / 47
 
-Arbeidsdato: 22. oktober 2026. Gren: `port-light`. Bare Unreal er endret. Geometri, plasseringer, spilltekst og historie er bevart. Dette er en kildekandidat, ikke en oppdatering av den installerte spillutgaven.
+22. oktober 2026, `port-light`. Rendering, lys og materialer er endret. Geometri, modellplassering og historie er bevart. Dette er en kildekandidat for Claudes integrasjon, ikke den installerte spillutgaven.
 
-## Lysbanen
+## Rettelser etter gjennomgangen
 
-`S47Lighting.cpp` bygger ekte lamper fra eksportens eksisterende pools. Høye utelamper bruker brede, nedovervendte spotter; innelamper og andre praktiske kilder bruker punktlys. Enhetene er candela, med lyskildestørrelse i centimeter og invers kvadratisk demping. Eksportens rekkevidde bestemmer attenueringen. `SetFlood`, `SetFloodPool`, `SetFloodColor` og `SetFloodScale` beholder historienes tilstand og styrer nå native lys. Materialkopier av den samme lampen og lyktene deles uten å legge til ekstra lys.
+`unreal-port-core` er lest og flettet inn: først til `a3550f21` i `5f139abd`, deretter til `7d167000` i `9992ab7c` (notatbokas faktiske tastebindinger og oppgavelista). Flettingen beholder de nye terminalene på skjermene, Unarius med lyd, den kjøpte signalprosessoren, fri ferdsel og de øvrige spillrettelsene. En konflikt i `S47HUD.cpp` gjaldt bare kommentaren ved den felles CRT-gammarettingen.
 
-Kontrollrommets eksisterende lys er oppgradert med skygger. `FS47Light` beholder historienes opprinnelige intensitetsverdier utad, mens den fysiske lysstyrken skaleres i Unreal. SAROs strømbrudd, rør, skjermglød og dimming bruker de samme setterene. Lommelykta bruker 420 cd, to billykter bruker 4200 cd hver; alle har skygger og volumetrisk spredning. HDR-fargen i kapittel 6 normaliseres før den sendes til lyset, og styrken flyttes til intensiteten så den ikke klippes. Førerhusets gamle pool for «sky through glass» er fjernet; native himmel og utelamper lyser gjennom rutene. Bare den svake instrumentgløden får et eget lys.
+### Lyset kommer fra armaturene
 
-Gamle Ultra-proxylys, additive kjegler, bakkehaze og vindusprojeksjoner er pensjonert. Vinduer har i stedet native rectlys ved de eksporterte rutene; disse følger nivå, farge og slukking. Himmel, stjerner, ikke-skyggekastende flora og kameravendte støvpartikler er ekskludert fra strålesporingen. De er fortsatt synlige i bildet.
+`S47FixtureLighting.cpp` bruker de faktiske meshenes transform og bounds. De gamle `roomLights.ceiling`, `lamps` og `crt` er bare tilstandsdrivere, med `bAffectsWorld=false`; de avgir ikke lenger lys mellom armaturene. Historienes eksisterende intensitets- og synlighets-API er bevart.
 
-Månen er svak og kald. Skylight fanger den levende himmelen ved områdebytte og vesentlige daggryendringer. Et eget retningslys følger spillets eksisterende solretning og daggry. `ExponentialHeightFog` med volumetrisk tåke erstatter materialtåka. Skjermer, TV-er og skilt beholder sine emissive materialer og deltar i Lumen; små kilder støttes av de eksisterende lampetilstandene.
+| Kilde i eksporten | Fysisk lyskilde |
+| --- | --- |
+| `room.tubes[0..3]`, noder 177, 178, 181, 182 | Fire rectlys, 120 × 26 cm, 1 cm under diffuseren, rett ned, kjølig `#eef3ff` |
+| Annex/korridor, noder 484, 485, 490, 491, materiale `annex.tubeOn` | Fire tilsvarende rectlys under de faktiske rørene |
+| De to skrivebordslampene, separate pærer 246 og 167 | Rectlys i skjermenes åpninger, 20 × 20 cm, langs skjermenes helning, varm farge fra den opprinnelige lampen |
+| Labens røde glass, `yard.redGlass[0..1]`, noder 428 og 429 | 30 × 12 cm vegglys og 22 × 22 cm taklys fra glassflatene |
+| Labens arbeidslampe | 20 cm kilde utenfor den skrå skjermåpningen, posisjon fra den isolerte armaturgeometrien |
+| Arkivets grønne skrivebordslampe, node 555 | 30 × 10 cm kilde rett under skjermen |
 
-Eksponeringen er fast. `M_WebTone` beholder ACES-kurven og VHS/Clean, men legger ikke på FogExp2. Ingen lysbryter mellom Web og Unreal finnes i innstillinger eller kommandolinje. Kontrollrommets CRT-render targets bruker `FWidgetRenderer(false)`, slik at grønnfargen ikke sRGB-kodes to ganger.
+De to permanent slukkede lysrørene i kontrollrommet, noder 179 og 180, forblir slukket. På High og Ultra kaster alle disse kildene skygger. Rørenes diffusere og pærene bruker PBR-materialer med emissive som følger samme dimming som rectlyset; av betyr null emissive og en passiv grå flate. Kalibrerte nivåer ved full strøm er 36 lm per romarmatur, 32 lm i annexet og 18/14 lm i rommets skrivebordslamper. Dette er kunstnerisk kalibrering for spillets faste eksponering, ikke et krav om at rommet skal holde vanlig kontorbelysning.
 
-## Kvalitet
+Lysrørenes GLB-er har seks materialflater selv om manifestet angir ett materiale. Undersiden er `slot3`; den gamle bindingen traff bare kortenden i `slot0`. Alle flater får nå samme levende diffuser-materiale. Det følger også materialkopier som historien oppretter ved flimmer, så ingen gammel emissive-kopi blir hengende igjen.
 
-| Innstilling | Lumen | Skygger | Volumetrisk tåke | Intern oppløsning |
+Annex-porten hadde en feilkopling: det flimrende røret er ved `(-4.6, 2.735, 8)`, men `FlickerFlood=4` lå ved det andre arkivarmaturet. Den fysiske lyskoblingen legger nå denne tilstanden på det faktisk flimrende røret. Ingen historie eller tidsplan er endret. Labens gamle records-desk-pool uten noen lampemodell er undertrykt; den virkelige arbeidslampen og Lumen gir lyset der.
+
+### Grønt lys foran skjermene
+
+`S47ScreenLighting.cpp` fitter rectlys til skjermflatene, med grønt `#8cffa4`, myke skygger og kort rekkevidde. De fire CRT-glassene er faktisk 35,49 × 28,35 cm. De tre ved vinduet vender sørover i rommet; driftsterminalen vender østover. Hvert bruker 20 lm og 1,8 m rekkevidde. Dermed får tastatur, bord og nærliggende flater sin egen lokale grønnfarge.
+
+Lysene følger skjermens egen strøm, faktisk synlighet, materialfarge og lysstyrke. Status/spektrum/tracking følger dessuten RX-bankens glød. `SS47Crt` sender samme svarte glitchramme til lyset som til skjermbildet. Ops beholder sin egen strøm. SARO mørkt slukker begge. Skjermene ved S-03 og i annexet har egne flatelys; annexets gamle punktpool er erstattet. Begge signalprosessorvariantene støttes, og den nye modellens eksisterende display adopteres først når det er opprettet. Den gamle rackskjermen lyser ikke gjennom den skjulte modellen. Signalprosessorens display og emissive følger SARO-strøm og dip.
+
+Eksporten har ikke egne CRT-er i arkivet eller STATION 01. Annexets registrerte `screens`-flate er automatens belyste front; denne er tatt med. STATION 01s mottaker har analog skala og beholder sitt eksisterende varme lys. Amber VU-metre gjøres ikke grønne. Den kjøpte oscilloskopmodellen har ingen aktiv skjermflate eller strømsetter i denne eksporten.
+
+Raske skjerm- og rørlys har volumetrisk spredning 0 for å unngå etterslep ved flimmer. Lommelykt, frontlykter og faste utelamper gir fortsatt lysstråler i den ekte volumetriske tåka.
+
+### Den varme antennerekken
+
+De fem opprinnelige array-poolene beskrev sentre ved Y=3 m. De fysiske armaturene står ved Y=6,5 m. De var dessuten feilaktig rettet ned i første native-kandidat. Nå står spottene på armaturene og lyser skrått opp/inn på S-03, S-02, S-01, S-04 og S-05. Målpunktene beregnes fra parabolenes eksporterte plassering, skala og gjeldende retning.
+
+Seks ytterligere eksisterende feltarmaturer, eksportens `ext.glow.points[5..10]`, lyser mot S-07, S-06, S-09, S-10, S-11 og S-12. Ingen ny lampemodell er lagt til. Alle elleve har varm natriumfarge, fysisk kildestørrelse og skygger. De deler arrayets eksisterende av/på- og rødpulstilstand. De røde flylysene er bevart. Første prøve ble for lys på skålene; styrken ble senket til 1800/540/500/500/500 cd for de fem fremste og 480 cd for de seks andre.
+
+## Felles renderoppsett
+
+Ingen Web/Unreal-bryter finnes. Materialenes flood- og hemisphere-bidrag, gamle Ultra-proxyer, additive lyskjegler og vindusprojeksjoner er av. `SetFlood`, `SetFloodPool`, `SetFloodColor`, `SetFloodScale` og delte lampetilstander driver native lys. Lommelykta bruker 420 cd og to frontlykter 4200 cd hver, med skygger og volumetrisk spredning. Vinduer bruker native rectlys ved de eksporterte rutene.
+
+Lumen bruker Vulkan hardware ray tracing på RTX 3080 når tilgjengelig. Måne og skylight er svake og kalde; sol og himmel følger daggryet. `ExponentialHeightFog` med volumetri erstatter materialtåka. Eksponeringen er fast. `M_WebTone` beholder ACES-kurven og VHS/Clean, uten FogExp2. CRT-render targets bruker `FWidgetRenderer(false)` for én sRGB-koding.
+
+| Kvalitet | Lumen | Skygger | Volumetri | Intern oppløsning |
 | --- | --- | --- | --- | --- |
-| Low | Av | Enklere, relevante lokale lys beholder skygger | Av | 60 %, TSR til valgt utgang |
-| High, standard | På, scene/final gather 0,5 | VSM, local bias 1, fire SMRT-stråler med to prøver | 16 pikslers rutenett, 64 dybdelag | 60 %, TSR |
-| Ultra | På, scene/final gather 1 | VSM, local bias 0 | 8 pikslers rutenett, 96 dybdelag | 100 % |
+| Low | Av | Enklere lokale skygger | Av | 60 %, TSR |
+| High, standard | Scene/final gather 0,5 | VSM, local bias 1, fire SMRT-stråler × to prøver | 16 piksler, 64 dybdelag | 60 %, TSR |
+| Ultra | Scene/final gather 1 | VSM, local bias 0, flere prøver | 8 piksler, 96 dybdelag | 100 % |
 
-I 2560 x 1440 tegner High omtrent 1536 x 864 internt. Dette må oppgis sammen med fps-tallene. High bruker 100 % TSR-historikk; Ultra bruker motorens dyrere Epic-historikk. Low/High bruker VSMs fire mip-nivåer for bedre ytelse med eksportens ikke-Nanite-mesher. Grove skyggekart og volumetrisk skyggelegging beholdes. VHS/Clean velges uavhengig av Quality. Lysstyrkeinnstillingen er bevart; eksponeringen er fortsatt fast.
+High i 2560 × 1440 tegner omtrent 1536 × 864 internt. Low/High bruker 100 % TSR-historikk. Ultra prioriterer full oppløsning. VHS/Clean og lysstyrke er uavhengige av Quality.
 
-## Generert innhold
+## Generert innhold før integrasjon
 
-Materialsteget må kjøres før denne kandidaten brukes med gammelt generert innhold. Full eksport eller geometriimport er ikke nødvendig. Ny `NativeLighting` i `MPC_Web` har default 0 for kompatibilitet med hovedkopiens eldre runtime; kandidatens runtime setter alltid 1. Alle materialbidrag for flood, hemisphere og gamle frontlykter blir da null.
+Materialsteget fra første leveranse kreves med eldre generert innhold. Full eksport eller geometriimport er ikke nødvendig. `NativeLighting` i `MPC_Web` har default 0 for kompatibilitet med andre checkouter; denne runtime setter alltid 1. Denne rettelsesrunden bruker eksisterende materialparametre og trenger ikke et nytt importsteg utover dette.
 
-Under arbeidet brukes lokale kopier av `Content/Web/Base` og `Mat`, kontrollert å være separate filer fra hovedkopien. Materialsteget `S47_ONLY=materials` skriver bare Base og Mat. Det skriver ikke manifest, art, Geo eller Tex. Audio, Licensed og WebData lånes med midlertidige symlinker, som fjernes før commit.
+Arbeidet bruker private kopier av `Content/Web`, ikke hovedkopiens delte Base/Mat. `S47_ONLY=materials` skriver bare Base og Mat, ikke Geo, Tex, art eller WebData. Importen har et kjent avslutningskrasj etter `S47WEB done`; lagrede assets må valideres i runtime. Audio, Licensed og WebData lånes med midlertidige lenker, som fjernes før commit.
 
 ```sh
 cd unreal/Signal47
@@ -39,70 +70,70 @@ S47_ONLY=materials S47_WEB="$HOME/scratch-bm/Signal47-web" \
   -ddc=InstalledNoZenLocalFallback -unattended -nullrhi
 ```
 
-## Bevis og kontroll
+## Bilder og målinger
 
-Bevismappe: `/home/tom/scratch-bm/Signal47-lighting-2026-10-22/`. Den inneholder originale PNG-er, kjørelogger, testkommandoer og sammenstillinger. Bildene er ekte Vulkan-runtime, ikke konseptbilder eller render fra Blender. Førbildene kommer fra `~/SIGNAL-47`, etterbildene fra dette worktreet. Begge sider bruker 1600 x 900 og 100 % intern oppløsning, samme fase og kameraflagg, normalt åtte sekunder. For nattveien holdes bilen stille med `-S47Throttle=0` for et sammenlignbart kamera.
+Bevismappe: `/home/tom/scratch-bm/Signal47-lighting-2026-10-22/`. Første levering er bevart i `before`, `after`, `compare` og `perf-final`. Rettelsene ligger under `revision2`. PNG-ene er ekte Vulkan-runtime. `iteration1` beholder den forkastede, overbelyste prøven. De endelige sammenstillingene bruker 1600 × 900 og 100 % intern oppløsning. De nye utsnittene bruker normalt 20 sekunder; de bevarte førbildene fra første levering bruker åtte. Kamera og kapittelhopp er like; notatlapper og annen tidsstyrt UI kan være forskjellige. Den nye signalprosessoren i rommet kommer fra hovedgrenens fletting, ikke et modellbytte i lysarbeidet. Varsler er ikke slått av; de siste fangstene venter på oppvarming av skyggekartene.
 
-| Utsnitt | Side ved side, under bevismappa | Hva som kontrolleres |
-| --- | --- | --- |
-| Kontrollrom | `compare/room.png` | Grønne CRT-er, bordlys, skygger fra inventar |
-| Gården | `compare/outside.png` | Kalde antenner, varme lamper, rekkverk og skilt |
-| Annex/arkiv | `compare/annex.png` | Skap, vegghjørne, kaldt innelys |
-| Lommelykt | `compare/flashlight.png` | Avgrenset kjegle, lys på rekkverk og gangbane |
-| SARO mørkt | `compare/dark.png` | Reléet slukker rommets lys og CRT-er |
-| STATION 01 | `compare/station.png` | Porten, utebelysning og lys ved hytta |
-| Motelgård | `compare/court.png` | Søyle-, vindus- og møbelskygger under svalgangen |
-| Rom 6 | `compare/room6.png` | Kald TV-glød og varm sengelampe |
-| Diner | `compare/diner.png` | Disk, kaffekanne og lesbart innelys |
-| Nattvei | `compare/road.png` | Ekte frontlykter og mørkt førerhus |
-| Gammel vei ved daggry | `compare/dawn.png` | Lys fra daggryhimmelen og frontlyktene |
+### Siste sammenligninger
 
-Hovedkopien er nyere enn grenens utgangspunkt: førbildene inneholder enkelte senere UI-/TV-rettelser. TV-programmet i førbildet fra rom 6 er film, mens denne grenen viser sin eksisterende snø. Ingen TV-historie eller programinnhold er endret her. Den forskjellen er ikke et lysbevis. Sammenlign møblene, veggene og skyggene.
+Alle stier nedenfor er relative til bevismappa. `revision2/compare` er den nye leveransen; de gamle `compare`-bildene i rotmappa dokumenterer første kandidat.
 
-Områdebildene er tatt gjennom kalibreringspasset. Kontrollrom, gård, lommelykt og begge veiprøvene er tatt på nytt etter siste skygge-/toneoptimalisering. Sammenstillingene bruker alltid 100 % intern oppløsning ved 1600 x 900; High-profilens 60 % gjelder de separate 1440p-målingene.
+| Utsnitt | Side ved side |
+| --- | --- |
+| Kontrollrom | `revision2/compare/room.png` |
+| Arrayet fra gården | `revision2/compare/outside.png` |
+| Arrayet gjennom vinduet | `revision2/compare/window.png` |
+| Takarmaturer, kamera vendt opp | `revision2/compare/ceilings.png` |
+| Annex/arkiv | `revision2/compare/annex.png` |
+| Korridor | `revision2/compare/corridor.png` |
+| CRT-er og grønn glød på tastatur/bord | `revision2/compare/crt.png` |
+| Ops og skrivebordslampe | `revision2/compare/ops.png` |
+| Labens safelights og arbeidslampe | `revision2/compare/lab.png` |
+| SARO mørkt | `revision2/compare/dark.png` |
+| Lommelykt og rekkverkskygger | `revision2/compare/flashlight.png` |
 
-Det første native-passet ble for lyst inne. Punktlysene i kontrollrommet ble kalibrert ned fra faktor 12 til 1,5; innendørs pools fikk lavere styrke og kortere rekkevidde. Det ga mørke hjørner og lesbare flater uten å vaske ut CRT-ene. VSMs grense for lokale lys per piksel ble økt til 32 etter en faktisk overflow-advarsel. Bildene i sammenstillingene bruker den korrigerte kandidaten.
+`revision2/compare/candidate-outside.png` viser den rettede gården ved siden av første native-kandidats svarte paraboler. `revision2/compare/ops-power.png` viser samme Ops-kamera med og uten stasjonsstrøm. Sammenstillingene beholder hele bildet; de er ikke retusjert.
 
-GPU-profilen viste at VSM-projeksjon var den største enkeltkostnaden. High fikk derfor færre SMRT-prøver og normal TSR-historikk. Tonepassets avslåtte materialtåke hopper også over dybde-/stencillesningene i hver VHS-prøve; ACES og selve VHS-effekten er beholdt.
+### RTX 3080, Vulkan, 2560 × 1440
 
-Fra førersetet gir det første VSM-passet fortsatt `Non-Nanite Marking Job Queue overflow`. Motorens shader behandler de resterende sidene sekvensielt ved denne grensen, og det er ikke observert manglende skygger. Dette er en gjenværende kostnad ved oppvarming av skyggekartene, ikke en reparert advarsel. Nattveiens etterbilde tas etter 20 sekunder, med bilen stille og skyggekartene varme. Advarselen står i `after/road.log`.
+25 sekunders kjøringer med `stat unit`, VSync og bildegrense av. `S47LightPerf` sampler etter fem sekunders oppvarming. Selvtesten kjøres separat fra ytelsesprøvene; den nye hovedgrenens ekstra lyd-/UI-kontroller skal ikke inngå i en rammetidsmåling. Skjermfangsten er med i de siste akkumulerte tallene.
 
-### Teststatus
-
-- PASS: editorbygget med `Scripts/build-editor.sh -NoUBA`, advarsler som feil. Siste logg: `build-final.log` i bevismappa.
-- PASS: `-S47SelfTest`, 1142 kontroller i denne grenen. Hovedkopiens høyere antall kommer fra senere arbeid og er ikke grenens testantall.
-- PASS: elleve målrettede native bilder med `smoke test OK`, uten kritisk feil, inkludert strømbrudd, lommelykt og alle etterspurte hovedområder.
-- PASS: Vulkan logger at ray tracing og ray tracing-shadere er aktivert. Lumen hardware ray tracing er valgt. Software-fallback er konfigurert gjennom motorens vanlige støttevalg, men er ikke separat målt.
-- PASS: isolert materialgenerering lagret mastere og instanser, deretter validert i native runtime. Importprosessen har fortsatt det kjente avslutningskrasjet etter `S47WEB done`; prosessens exitstatus er derfor ikke PASS.
-- PASS: 60 fps-målet i de to avtalte High-utsnittene, både gjennomsnitt og p95 under 16,7 ms. Dette er 1440p-utgang med TSR fra 60 % intern oppløsning, ikke nativ 1440p.
-
-### RTX 3080, Vulkan, 2560 x 1440
-
-Siste prøver, 20 sekunder hver, fem sekunders oppvarming før sampling. `stat unit` er synlig i `perf-final/*.png`; de akkumulerte tallene kommer fra `S47LightPerf` i de tilsvarende loggene. Skjermfangsten er med i siste rammetidssnitt.
-
-| Utsnitt og kvalitet | Ramme, ms | p95, ms | Game, ms | Draw, ms | GPU, ms | FPS i snitt | Rammer |
+| Utsnitt | Ramme, ms | p95, ms | Game, ms | Draw, ms | GPU, ms | FPS | Rammer |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Kontrollrom, High/VHS | 14,701 | 15,704 | 3,457 | 6,479 | 13,682 | 68,0 | 891 |
-| Gården, High/VHS | 11,029 | 12,383 | 3,206 | 5,786 | 10,183 | 90,7 | 1275 |
-| Kontrollrom, Low/Clean | 12,310 | 13,130 | 3,039 | 5,006 | 11,458 | 81,2 | 1144 |
-| Gården, Ultra/VHS | 26,856 | 29,609 | 3,145 | 6,177 | 25,136 | 37,2 | 503 |
+| Kontrollrom, High/VHS | 13,619 | 15,330 | 3,881 | 6,777 | 12,718 | 73,4 | 1407 |
+| Gård, High/VHS | 10,466 | 11,527 | 3,183 | 5,606 | 9,702 | 95,5 | 1824 |
+| Kontrollrom, Low/Clean | 11,113 | 12,168 | 2,930 | 4,794 | 10,366 | 90,0 | 1721 |
+| Gård, Ultra/VHS | 25,503 | 28,216 | 3,060 | 5,866 | 23,999 | 39,2 | 725 |
 
-Ultra prioriterer full intern oppløsning og dyrere skygger; det når ikke 60 fps på denne maskinen. High er 60 fps-profilen. Trådtidene går parallelt og skal ikke summeres.
+High når 60 fps-målet i begge avtalte faste utsnitt, også etter p95. Dette er TSR fra 60 % intern oppløsning til 1440p, ikke nativ 1440p. Ultra når ikke 60 fps. Trådtidene overlapper og summeres ikke.
 
-Kontrollrom og Low registrerte hver én annen PID i ett halvt sekund ved prosessens t=6,05 s, før native-verdenen og målevinduet. For kontrollrommet var dette rundt 17:24:27 UTC; sampling begynte 17:24:42. Ingen andre tunge prosesser ble registrert under sampling i noen av de fire sluttprøvene. Råregistreringene ligger i `perf-final/*-contention.json`. Dette skiller de korte oppstartsregistreringene fra de forkastede prøvene med faktisk samtidig spilling.
+Ingen annen tung PID er registrert i noen av de fire målevinduene. Kontrollrommets monitor så én ekstra PID i ett halvt sekund ved prosessens t=6,05 s under initialisering, rundt 18:18:49,84 UTC. Sampling begynte først 18:19:03,63 UTC. Råregistreringer, eksakte kommandoer og samplingstider ligger i `revision2/perf/*-contention.json`, `*-meta.json` og `revision2/results.json`. Kontroll før oppstart krever åtte sammenhengende ledige sekunder og omfatter også prosessnavnet `Signal47`.
 
-### Målemetode og begrensninger
+Målingene bruker den endelige renderkoden. Den etterfølgende flettingen av notatbokas tastetabell endrer ingen lys- eller renderkode; den er bygget og selvtestet på nytt. Dette er editorens `-game`, ikke en måling av pakket shipping eller en hel kjøretur.
 
-Ytelse måles med `stat unit`, `-S47LightPerf`, 2560 x 1440, VSync og bildegrense av. Loggen oppgir gjennomsnittlig rammetid, p95, game, draw og GPU etter oppvarming. `S47GpuProfile` kan i tillegg ta én GPU-profil etter sju sekunder. Dette er korte editorprøver av faste utsnitt, ikke en måling av hele reisen eller en pakket shipping-build.
+### Teststatus og grenser
 
-Første målesett er forkastet. En samtidig installert spillprosess het `Signal47` og ble ikke fanget av kontrollen som bare så etter UnrealEditor/Signal47-Linux. Neste forsøk traff andre agenters nye tester mellom kontroll og oppstart. Kontroll og målelogg omfatter nå også `Signal47`, og krever åtte sammenhengende ledige sekunder før oppstart. Andre tunge prosesser under selve målevinduet gjør prøven uegnet som bevis for 60 fps; oppstartsregistreringer vurderes separat og oppgis ovenfor.
+- PASS: siste flettede editorbygg, `Scripts/build-editor.sh -NoUBA`, advarsler som feil. `revision2/build-merged-final.log`.
+- PASS: 1203 selvtestsjekker etter siste fletting. `revision2/after/room.log`.
+- PASS: tolv målrettede Vulkan-utsnitt med `smoke test OK`, uten kritiske feil. Elleve før/etter-par og to supplerende sammenstillinger.
+- PASS: armaturenes faktiske posisjoner, størrelser og normaler logget i runtime. Annex-flimmeret driver node490 mellom 32 og 10,47 lm; de andre rørene holdes stabile. Sluttbildene viser hele den aktive diffuseren lysende.
+- PASS: SARO mørkt slukker rør, skrivebordslamper, CRT-flatelys og CRT-emissive; Ops-prøven er også tatt med eget kamera. En materialkopi fra flimmer kan ikke beholde gammel glød på boksens underside.
+- PASS: Vulkan logger aktiv ray tracing og ray tracing-shadere. Lumen hardware ray tracing er valgt; separat software-fallback er ikke målt.
 
-Pakket bygg, faktisk input gjennom hele natta, tidsstøy/ghosting under langvarig bevegelse og subjektiv vurdering på Toms skjerm gjenstår. Det fulle screenshots.sh er bevisst ikke kjørt, i tråd med bestillingen. Den installerte utgaven og standardstarteren er ikke endret.
+`[VSM] Non-Nanite Marking Job Queue overflow` forekommer fortsatt under oppvarming, nå også i SARO-utsnittene med flere reelle kilder. Motorens shader behandler overskytende arbeid sekvensielt. Ingen manglende skygger er sett i de inspiserte bildene; advarselen og oppstartskostnaden er ikke reparert eller skjult. Sluttfangstene venter på at kartene blir varme. Dette må også kontrolleres ved bevegelse i den pakkede utgaven. Motorens eksisterende Python-toolset-feil ved editorstart og Vulkan-allokeringsvarsler ved avslutning forekommer også i førkjøringene; de er ikke kompilator- eller materialshaderfeil i kandidaten.
 
-Kompilatorens response-filer og den ferdige binærfilens native-banner er kontrollert mot dette worktreet.
+### Integratorens pakkekontroll
 
-Første førbildeforsøk feilet fordi disken var full og Zen-cachet var utilgjengelig. Omkjøringen bruker `-ddc=InstalledNoZenLocalFallback`. Det kopierte byggcachet beholdt først absolutte stier til hovedkopien; disse forsøkene bygget hovedkopiens eksisterende kode og gir ingen testdekning for kandidaten. Worktreets kopierte Intermediate ble deretter fjernet og bygget fra bunnen. UBA feilet på PCH-rename gjennom symlink; `Scripts/build-editor.sh` tar derfor nå valgfrie flagg, og `-NoUBA` løste byggingen. Første etterbilder fra feil binærfil er forkastet. Ingen andre agenters data er slettet. Tunge jobber sjekkes før oppstart; andre agenter kan starte arbeid mens en prøve allerede går.
+`Scripts/package-linux.sh` er ikke kjørt: den skriver til den delte `~/scratch-bm/Signal47-build`, slik Tom uttrykkelig ba oss unngå. En eldre pakke kan ikke verifisere denne nye C++-kandidaten. Claude må etter fletting:
+
+1. Regenerere materialene ovenfor i avtalt innholdskopi før cook, og kontrollere at `NativeLighting` følger med.
+2. Bygge/pakke og kjøre `-S47SelfTest` i den ferske pakken.
+3. Kontrollere rom, vindu, gård, korridor, annex og lab; taklyset må sitte i diffuseren, skjermlyset foran glasset og parabolene være varmt lesbare.
+4. Kontrollere SARO mørkt og tilbake, relédip/CRT-glitch, annex-flimmer, arrayets slukking/rødpuls, lommelykt og frontlykter.
+5. Gjenta High/1440p med `stat unit`, én tung jobb om gangen. Se etter savnede shaderpermutasjoner, lyslekkasjer og VSM-advarsler under bevegelse.
+
+Pakket kjøring, menneskelig vurdering på Toms skjerm og langvarig bevegelse er fortsatt UNVERIFIED. Fullt `screenshots.sh` er ikke kjørt, i tråd med bestillingen. Den installerte utgaven og starteren er uendret.
 
 ## Kilder
 
-Prosjektbibliotekets søk fant [Scenario Labs, Unreal lighting/rendering](https://github.com/scenario-labs/skills/blob/f0adb5b5ebc1fc8f7e333554d2aeb767c5558d6b/skills/game-engines/unreal/scenario-unreal-lighting-rendering/SKILL.md), UE 5.8 og MIT. Referansen er brukt for enheter, eksponering og støtte ved små emittere. Dens helpers er merket ikke kjørt i Unreal og er ikke gjenbrukt. Motorens lokale C++-API og [Epics Lumen-dokumentasjon](https://dev.epicgames.com/documentation/en-us/unreal-engine/lumen-technical-details-in-unreal-engine) er kontrollert. Runtime-prøvene her avgjør prosjektets teststatus.
+Prosjektbibliotekets søk fant [Scenario Labs, UE 5.8 lighting/rendering](https://github.com/scenario-labs/skills/blob/f0adb5b5ebc1fc8f7e333554d2aeb767c5558d6b/skills/game-engines/unreal/scenario-unreal-lighting-rendering/SKILL.md), MIT. Referansen er brukt for fysiske enheter og små emittere; dens helpers er merket uprøvd i Unreal og er ikke gjenbrukt. Motorens lokale C++-API, eksportens GLB-bounds og prosjektets faktiske runtime-prøver er grunnlaget for implementasjonen. [Epics Lumen-dokumentasjon](https://dev.epicgames.com/documentation/en-us/unreal-engine/lumen-technical-details-in-unreal-engine) ble kontrollert i første runde.

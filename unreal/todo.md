@@ -5,7 +5,9 @@
 - [x] Erstatt materialenes flood/hemi og gamle projeksjoner med ekte lamper; behold historienes tilstand og delte lyskilder.
 - [x] Lommelykt og billykter med skygger, volumetrisk tåke, Lumen, svak måne/skylight og levende daggry. Fast eksponering og VHS/Clean, uten lysbryter mellom Web og Unreal.
 - [x] Lokalt editorbygg og målrettede native scenarier fra SARO til den gamle veien. Side-ved-side-bilder og detaljer i LIGHTING.md.
-- [x] 60 fps i faste utsnitt av kontrollrom og gård ved 1440p på High med TSR fra 60 % intern oppløsning: 68,0 og 90,7 fps; p95 15,704 og 12,383 ms. Ingen andre tunge prosesser under målevinduet. Dette erstatter de forkastede målingene med samtidig spilling.
+- [x] Taklys fra faktiske armaturer i rom/korridor/annex/lab, synkron emissive, skrivebordslamper fra skjermåpningene og egen grønn glød foran hver registrerte skjerm.
+- [x] Varme, skyggekastende array-spotter fra de elleve eksisterende feltarmaturene. Grå diffuserflater og Ops-ghost under strømbrudd rettet.
+- [x] High/1440p med TSR fra 60 %: rom 73,4 fps, gård 95,5 fps, p95 15,330/11,527 ms uten andre tunge prosesser i målevinduet. Low/Clean 90,0 fps i rommet, Ultra 39,2 fps i gården. Detaljer i LIGHTING.md.
 - [ ] Pakket bygg og menneskelig gjennomspilling med de nye lysene. Standardutgaven er ikke oppdatert av dette arbeidet.
 - [ ] Kjør det isolerte materialsteget ved integrasjon med eldre generert Content, før kandidat eller pakket utgave brukes.
 

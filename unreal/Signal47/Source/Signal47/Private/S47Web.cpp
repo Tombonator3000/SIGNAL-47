@@ -609,17 +609,7 @@ void AS47Web::BuildRoom()
 	CoffeeNode = Handle(TEXT("room.coffee"));
 	JacketNode = Handle(TEXT("room.objs.jacket"));
 	HandH = Handle(TEXT("room.clockHands.h")); HandM = Handle(TEXT("room.clockHands.m")); HandS = Handle(TEXT("room.clockHands.s"));
-	for (int32 k = 0; k < 8; ++k) { const int32 T = Handle(FString::Printf(TEXT("room.tubes[%d]"), k)); if (T >= 0) TubeNodes.Add(T); }
-	if (TubeNodes.Num() > 0 && Nodes[TubeNodes[0]].Mats.Num() > 0)
-	{
-		TubeOnMat = Nodes[TubeNodes[0]].Mats[0];
-		if (UMaterialInterface* On = Mat(TubeOnMat))
-		{
-			TubeOffMid = UMaterialInstanceDynamic::Create(On, this);
-			TubeOffMid->SetVectorParameterValue(TEXT("Emissive"), FLinearColor::Black);
-			TubeOffMid->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.35f, 0.35f, 0.33f));
-		}
-	}
+	for (int32 k = 0; k < 8; ++k) { const int32 T = Handle(FString::Printf(TEXT("room.tubes[%d]"), k)); if (T >= 0) { TubeNodes.Add(T); TubePowered.Add(true); } }
 	if (MugNode >= 0) MugHome = Nodes[MugNode].P;
 	if (CoffeeNode >= 0) CoffeeY = Nodes[CoffeeNode].P.Y;
 	// the room's lights by role (ControlRoom.ts this.lights)
@@ -992,25 +982,17 @@ void AS47Web::SetLightsScale(float Ceiling, float Lamps)
 
 void AS47Web::SetTubes(bool bOn, int32 KeepOff)
 {
-	for (int32 k = 0; k < TubeNodes.Num(); ++k)
-	{
-		UStaticMeshComponent* M = Cast<UStaticMeshComponent>(Nodes[TubeNodes[k]].Comp.Get());
-		if (!M) continue;
-		const bool bLit = bOn && k != KeepOff;
-		M->SetMaterialByName(TEXT("slot0"), bLit ? Mat(TubeOnMat) : (UMaterialInterface*)TubeOffMid.Get());
-	}
+	for (int32 K = 0; K < TubeNodes.Num(); ++K) SetTube(K, bOn && K != KeepOff);
 }
 
 bool AS47Web::TubeLit(int32 K) const
 {
-	const UStaticMeshComponent* M = TubeNodes.IsValidIndex(K) ? Cast<UStaticMeshComponent>(Nodes[TubeNodes[K]].Comp.Get()) : nullptr;
-	return M && M->GetMaterial(0) != TubeOffMid.Get();
+	return TubePowered.IsValidIndex(K) && TubePowered[K];
 }
 
 void AS47Web::SetTube(int32 K, bool bLit)
 {
-	UStaticMeshComponent* M = TubeNodes.IsValidIndex(K) ? Cast<UStaticMeshComponent>(Nodes[TubeNodes[K]].Comp.Get()) : nullptr;
-	if (M) M->SetMaterialByName(TEXT("slot0"), bLit ? Mat(TubeOnMat) : (UMaterialInterface*)TubeOffMid.Get());
+	if (TubePowered.IsValidIndex(K)) TubePowered[K] = bLit;
 }
 
 // ---------- the dishes ----------

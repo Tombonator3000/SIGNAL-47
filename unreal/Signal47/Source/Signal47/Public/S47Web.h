@@ -12,6 +12,7 @@ class UMaterialInterface;
 class UMaterialInstanceDynamic;
 class UPointLightComponent;
 class USpotLightComponent;
+class URectLightComponent;
 class UDirectionalLightComponent;
 class USkyLightComponent;
 class UTextureRenderTarget2D;
@@ -191,6 +192,7 @@ public:
 	void SetCrtPowered(int32 Screen, bool bOn); // 0 left, 1 centre, 2 right, 3 ops
 	bool IsCrtPowered(int32 Screen) const { return CrtOn.IsValidIndex(Screen) && CrtOn[Screen]; }
 	void SetCrtGlow(float Intensity);
+	void SetCrtFlicker(int32 Screen, float K) { if (Screen >= 0 && Screen < 4) CrtFlicker[Screen] = K; }
 	UTextureRenderTarget2D* CrtTarget(int32 Screen) const { return CrtTargets.IsValidIndex(Screen) ? CrtTargets[Screen].Get() : nullptr; }
 	static constexpr int32 CrtW = 512, CrtH = 384;
 	// A screen in use (SS47ScreenView): its picture from another texture while it is (null: its own
@@ -305,6 +307,29 @@ private:
 	UPROPERTY() TObjectPtr<UDirectionalLightComponent> DawnSun;
 	struct FPoolLight { int32 Set = -1, Slot = -1; float Reach = 0; TWeakObjectPtr<UPointLightComponent> Light; };
 	TArray<FPoolLight> PoolLights;
+	struct FArrayLight { int32 Dish = -1, Glow = -1; FVector At; TWeakObjectPtr<USpotLightComponent> Light; };
+	TArray<FArrayLight> ArrayLights;
+	void BuildArrayLighting();
+	void UpdateArrayLighting();
+	// Physical sources fitted to exported diffuser/screen meshes. Original room lights carry state only.
+	struct FFixtureLight
+	{
+		int32 Node = -1, Set = -1, Slot = -1, Tube = -1, Driver = -1;
+		float Reference = 1, Lumens = 0, LastK = -1;
+		bool bDesk = false;
+		FLinearColor Color = FLinearColor::White;
+		TWeakObjectPtr<URectLightComponent> Light;
+		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+	};
+	TArray<FFixtureLight> FixtureLights;
+	struct FScreenLight { int32 Node = -1, Screen = -1; float Base = 0, Reference = 1; TWeakObjectPtr<URectLightComponent> Light; };
+	TArray<FScreenLight> ScreenLights;
+	float CrtFlicker[4] = { 1, 1, 1, 1 };
+	void BuildFixtureLighting();
+	void UpdateFixtureLighting();
+	void BuildScreenLighting();
+	void UpdateScreenLighting();
+	URectLightComponent* SurfaceLight(int32 Node, const FVector& FacingThree, float Lumens, float Reach);
 	TArray<TArray<int32>> PoolRoots;
 	bool bSkyCaptured = false;
 	bool bLightingProfiled = false;
@@ -346,8 +371,7 @@ private:
 	int32 LeverNode = -1, LedNode = -1, PaperNode = -1, HandsetNode = -1, MugNode = -1, CoffeeNode = -1, JacketNode = -1;
 	int32 HandH = -1, HandM = -1, HandS = -1;
 	TArray<int32> TubeNodes;
-	int32 TubeOnMat = -1;
-	UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> TubeOffMid;
+	TArray<bool> TubePowered;
 	FVector MugHome = FVector::ZeroVector;
 	int32 CoffeeState = 0;
 	double CoffeeY = 0.088;

@@ -18,6 +18,22 @@
 namespace
 {
 	uint64 PoolId(int32 Set, int32 Index) { return (uint64(uint32(Set)) << 32) | uint32(Index); }
+	// Exterior.ts's five sodium floods share their posts with ext.glow points 0..4.
+	// The old y=3 coordinates describe material pools, not the 6.5 m fixture heads.
+	constexpr int32 ArrayDishes[5] = { 2, 1, 0, 3, 4 }; // S-03, S-02, S-01, S-04, S-05
+	constexpr float ArrayWidths[5] = { 46.f, 40.f, 34.f, 30.f, 28.f };
+	constexpr float ArrayCandelas[5] = { 1800.f, 540.f, 500.f, 500.f, 500.f };
+	constexpr float ArrayCones[5] = { 30.f, 44.f, 42.f, 44.f, 46.f };
+	constexpr float ArrayRadii[5] = { 44.f, 32.f, 32.f, 32.f, 32.f };
+	FVector DishBowlTarget(const AS47Web& W, int32 I)
+	{
+		const double Az = FMath::DegreesToRadians(W.DishAz(I)), El = FMath::DegreesToRadians(W.DishEl(I)), Scale = W.DishScale(I);
+		// Dish.ts: elevation pivot at 7.8+4.6; the 9 m reflector's circular rim lies at
+		// local y=1.1+9^2/(4*7.2). Transform its centre through the actual pointing pose.
+		const FVector Normal(FMath::Cos(El) * FMath::Sin(Az), FMath::Sin(El), -FMath::Cos(El) * FMath::Cos(Az));
+		return FVector(W.DishX(I), 12.4 * Scale, W.DishZ(I)) + Normal * ((1.1 + 81.0 / 28.8) * Scale);
+	}
+	FVector ArrayBowlTarget(const AS47Web& W, int32 Slot) { return DishBowlTarget(W, ArrayDishes[Slot]); }
 	void Cvar(const TCHAR* Name, int32 Value)
 	{
 		if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(Name)) V->Set(Value, ECVF_SetByGameSetting);
@@ -40,6 +56,74 @@ void AS47Web::SuppressFloodLight(int32 Set, int32 Index)
 	SuppressedPools.Add(PoolId(Set, Index));
 }
 
+void AS47Web::BuildArrayLighting()
+{
+	for (FArrayLight& P : ArrayLights) if (P.Light.IsValid()) P.Light->DestroyComponent();
+	ArrayLights.Reset();
+	FS47GlowPoints* G = Glow(TEXT("ext.glow.points"));
+	if (!G) return;
+	// Exterior.ts's remaining six field posts have real heads but no material-flood slots.
+	// Their exported glows supply source positions; each beam covers its nearest reflector.
+	constexpr int32 Targets[6] = { 6, 5, 8, 9, 10, 11 }; // S-07, S-06, S-09, S-10, S-11, S-12
+	constexpr float Cones[6] = { 38.f, 35.f, 42.f, 43.f, 43.f, 42.f };
+	const FTransform Transform = NodeWorldThree(G->Node);
+	for (int32 I = 0; I < UE_ARRAY_COUNT(Targets); ++I)
+	{
+		const int32 Point = I + 5, Dish = Targets[I];
+		if (!G->Pos.IsValidIndex(Point) || Dish >= DishCount()) continue;
+		const FVector At = Transform.TransformPosition(G->Pos[Point]);
+		if (At.Y < -900) continue;
+		USpotLightComponent* L = NewObject<USpotLightComponent>(this);
+		L->SetupAttachment(GetRootComponent());
+		L->SetMobility(EComponentMobility::Movable);
+		L->SetIntensityUnits(ELightUnits::Candelas);
+		L->SetIntensity(0);
+		L->SetLightColor(S47Three::Hex(0xff9a45));
+		L->SetWorldLocationAndRotation(S47Three::ToUE(At), S47Three::DirToUE(DishBowlTarget(*this, Dish) - At).Rotation());
+		L->SetInnerConeAngle(Cones[I] * 0.68f); L->SetOuterConeAngle(Cones[I]);
+		L->SetAttenuationRadius(3200.f);
+		L->SetSourceRadius(18.f); L->SetSoftSourceRadius(12.f);
+		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
+		L->SetVolumetricScatteringIntensity(0.6f);
+		L->SetIndirectLightingIntensity(1.f);
+		L->SetVisibility(false);
+		L->RegisterComponent();
+		ArrayLights.Add({ Dish, Point, At, L });
+	}
+	UE_LOG(LogTemp, Display, TEXT("S47: array lighting %d sources fitted to the exported field lamp heads"), ArrayLights.Num());
+}
+
+void AS47Web::UpdateArrayLighting()
+{
+	FS47GlowPoints* G = Glow(TEXT("ext.glow.points"));
+	const int32 Site = FloodSet(TEXT("site"));
+	if (!G || Site < 0) return;
+	const FVector Camera = S47Three::ToThree(Eye);
+	const FTransform Transform = NodeWorldThree(G->Node);
+	const bool bArea = ObjAt(G->Node).Shown();
+	const FLinearColor C = FloodCol(Site, 0);
+	const float ColorGain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
+	const float K = FMath::Max(0.f, FloodPos(Site, 0).A / 46.f) * FMath::Max(0.f, FloodScaleOf(Site) / 0.07f);
+	// ArrayBack hides the post glows even during its red flashes. The shared red pool state
+	// overrides that ordinary off switch, while the cached source stays on the actual post.
+	const bool bRed = C.R > C.G * 4.f && C.R > C.B * 8.f;
+	for (FArrayLight& P : ArrayLights)
+	{
+		USpotLightComponent* L = P.Light.Get();
+		if (!L || !G->Pos.IsValidIndex(P.Glow) || !G->Col.IsValidIndex(P.Glow)) continue;
+		const float Dist = FVector::Distance(Camera, P.At);
+		const FLinearColor GlowColor = G->Col[P.Glow];
+		const bool bGlow = Transform.TransformPosition(G->Pos[P.Glow]).Y > -900 && FMath::Max3(GlowColor.R, GlowColor.G, GlowColor.B) > 0.0001f;
+		const bool bOn = bArea && Dist < 200.f && K > 0.001f && (bGlow || bRed);
+		if (L->IsVisible() != bOn) L->SetVisibility(bOn);
+		if (!bOn) continue;
+		L->SetWorldRotation(S47Three::DirToUE(DishBowlTarget(*this, P.Dish) - P.At).Rotation());
+		L->SetLightColor(C / ColorGain);
+		L->SetIntensity(480.f * K * ColorGain * (bRed ? 1.f : FMath::Max3(GlowColor.R, GlowColor.G, GlowColor.B)));
+		L->SetCastShadows(LightingQuality > 0 || Dist < 37.f);
+	}
+}
+
 void AS47Web::BuildNativeLighting()
 {
 	PoolRoots.SetNum(FloodSets.Num());
@@ -50,19 +134,20 @@ void AS47Web::BuildNativeLighting()
 		const FFloodSet& F = FloodSets[S];
 		for (int32 I = 0; I < F.W; ++I)
 		{
+			const bool bArray = F.Key == TEXT("site") && I < UE_ARRAY_COUNT(ArrayDishes) && DishCount() > ArrayDishes[I];
 			const bool bDown = (F.Key == TEXT("site") && I < 8) || (F.Key == TEXT("field") && I == 2) || (F.Key == TEXT("court") && I >= 10 && I <= 11) || (F.Key == TEXT("town") && I >= 1 && I <= 7);
 			UPointLightComponent* L = bDown ? NewObject<USpotLightComponent>(this) : NewObject<UPointLightComponent>(this);
 			if (USpotLightComponent* Spot = Cast<USpotLightComponent>(L))
 			{
-				Spot->SetInnerConeAngle(42.f); Spot->SetOuterConeAngle(78.f);
+				Spot->SetInnerConeAngle(bArray ? ArrayCones[I] * 0.68f : 42.f); Spot->SetOuterConeAngle(bArray ? ArrayCones[I] : 78.f);
 				Spot->SetWorldRotation(FRotator(-90, 0, 0));
 			}
 			L->SetupAttachment(GetRootComponent());
 			L->SetMobility(EComponentMobility::Movable);
 			L->SetIntensityUnits(ELightUnits::Candelas);
 			L->SetIntensity(0);
-			L->SetSourceRadius(F.Key == TEXT("annex") || F.Key == TEXT("diner") ? 12.f : 7.f);
-			L->SetSoftSourceRadius(4.f);
+			L->SetSourceRadius(bArray ? 18.f : F.Key == TEXT("annex") || F.Key == TEXT("diner") ? 12.f : 7.f);
+			L->SetSoftSourceRadius(bArray ? 12.f : 4.f);
 			L->SetCastShadows(true);
 			L->SetCastVolumetricShadow(true);
 			L->SetVolumetricScatteringIntensity(0.6f);
@@ -71,6 +156,9 @@ void AS47Web::BuildNativeLighting()
 			PoolLights.Add({ S, I, FMath::Max(F.Pos[I].A, 1.f), L });
 		}
 	}
+	BuildFixtureLighting();
+	BuildScreenLighting();
+	BuildArrayLighting();
 	AExponentialHeightFog* Fog = GetWorld()->SpawnActor<AExponentialHeightFog>();
 	LightingFog = Fog->GetComponent();
 	LightingFog->SetVolumetricFog(true);
@@ -161,7 +249,9 @@ void AS47Web::UpdateNativeLighting()
 		if (!L) continue;
 		const FFloodSet& F = FloodSets[P.Set];
 		const FLinearColor V = F.Pos[P.Slot], C = F.Col[P.Slot];
-		const FVector Pos(V.R, V.G, V.B);
+		const bool bArray = F.Key == TEXT("site") && P.Slot < UE_ARRAY_COUNT(ArrayDishes) && DishCount() > ArrayDishes[P.Slot];
+		FVector Pos(V.R, V.G, V.B);
+		if (bArray && Pos.Y > -900) Pos.Y = 6.5;
 		const float Dist = FVector::Distance(Pos, Camera);
 		bool bArea = PoolRoots[P.Set].IsEmpty();
 		for (const int32 Root : PoolRoots[P.Set]) if (Nodes.IsValidIndex(Root) && Nodes[Root].bVis) bArea = true;
@@ -173,17 +263,23 @@ void AS47Web::UpdateNativeLighting()
 		if (!bOn) continue;
 		P.Reach = FMath::Max(P.Reach, V.A);
 		L->SetWorldLocation(S47Three::ToUE(Pos));
+		if (bArray) L->SetWorldRotation(S47Three::DirToUE(ArrayBowlTarget(*this, P.Slot) - Pos).Rotation());
 		const float ColorGain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
 		L->SetLightColor(C / ColorGain);
 		const bool bInside = F.Key == TEXT("annex") || F.Key == TEXT("lab") || F.Key == TEXT("hut") || F.Key == TEXT("cab") || F.Key == TEXT("motel");
 		const float Gain = F.Key == TEXT("cab") ? 0.3f : bInside ? 12.f : F.Key == TEXT("diner") ? 18.f : 50.f;
-		L->SetIntensity(V.A * F.Scale * Gain * ColorGain);
+		// Keep the exact story dimming and red pulse state, but calibrate the real field floods
+		// for their 12-25 m throw onto the reflector backs rather than a pool beneath the post.
+		L->SetIntensity(bArray ? ArrayCandelas[P.Slot] * (V.A / ArrayWidths[P.Slot]) * (F.Scale / 0.07f) * ColorGain : V.A * F.Scale * Gain * ColorGain);
 		const float Limit = F.Key == TEXT("cab") ? 2.f : F.Key == TEXT("hut") ? 5.f : bInside ? 7.f : F.Key == TEXT("diner") ? 8.f : 70.f;
-		L->SetAttenuationRadius(FMath::Min(Limit, P.Reach * 1.6f + 8.f) * 100.f);
+		L->SetAttenuationRadius((bArray ? ArrayRadii[P.Slot] : FMath::Min(Limit, P.Reach * 1.6f + 8.f)) * 100.f);
 		// A light that reaches the eye retains its occlusion, including walls behind the camera.
 		const float Reach = L->AttenuationRadius * 0.01f;
 		L->SetCastShadows(LightingQuality > 0 || Dist < Reach + 5.f);
 	}
+	UpdateFixtureLighting();
+	UpdateScreenLighting();
+	UpdateArrayLighting();
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
