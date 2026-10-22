@@ -24,6 +24,10 @@ struct SIGNAL47_API FS47CaseState
 	bool bCamera = false, bDoor = false, bLabDoor = false, bLog = false, bReturned = false;
 	TOptional<FS47Photo> F1, F2;
 	int32 Dev1 = 0, Dev2 = 0;          // 0 sealed, 2 print in fixer, 3 collected
+	// (Unreal only, on Tom's request: the darkroom wants its door shut) prints of frame 01 and frame 02
+	// fogged by light through the lab door; the negative is kept, so the next print comes from it.
+	// Saved as fog1/fog2 when there were any.
+	int32 Fog1 = 0, Fog2 = 0;
 	TOptional<FVector2D> Mark1;
 	bool bRef = false;
 	FString Hyp;                       // 'light' | 'drift' | '' (null)
@@ -136,6 +140,11 @@ private:
 	FS47ShotCheck Status;
 	double BusT = 0;
 	bool bEastOpen = false, bLabOpen = false; // the doors as last seen (Doors.onChange)
+	// (Unreal only) the darkroom: a step's generation (a fogged print stops its timers), which frame is
+	// in the process, the lab's lamps as they were before the safelight took over
+	int32 DevGen = 0;
+	bool bDarkroom = false;
+	TMap<int32, float> LampBase;
 	TArray<FString> TestNotes; // notes when there is no host (the self test)
 
 	// deps
@@ -160,6 +169,14 @@ private:
 	struct FDevFrame { int32 Which = 1; FS47Photo Photo; };
 	TOptional<FDevFrame> DevFrame() const;
 	void UseWetBench();
+	FString BenchLabel() const;
+	// (Unreal only) a print is in the process, from the tank until it is fixed: light ruins it
+	bool Developing() const;
+	// (Unreal only) the lab door opened on a print in the process: the print fogs, the negative stays
+	void Fog();
+	// (Unreal only) the lab's white lamps out and the safelights up while a print is in the process
+	void Darkroom(bool bOn);
+	UTexture2D* FoggedTex(const FS47Photo& Photo);
 	void SetDev(int32 Which, int32 V);
 	void Collect(int32 Which, const FS47Photo& Photo);
 	UTexture2D* TexOf(const FS47Photo& Photo);

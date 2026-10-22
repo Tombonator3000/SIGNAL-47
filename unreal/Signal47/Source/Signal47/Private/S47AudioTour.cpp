@@ -6,6 +6,7 @@
 #include "HAL/PlatformFileManager.h"
 #include "Misc/FileHelper.h"
 #include "S47Ambience.h"
+#include "S47Decoder.h"
 #include "S47TvProgramme.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47AudioTour, Log, All);
@@ -21,6 +22,7 @@ void US47Audio::Tour(const FString& Path)
 	struct FPart { FString Name; int32 From = 0; };
 	TArray<FPart> Parts;
 	double Clock = 3 * 3600; // the night's clock for the desert
+	TSharedPtr<FS47DecoderPlayer> Dec; // (the processor's parts: updated as the game does, every frame)
 	// render Seconds of sound, ticking the game side (timeouts, onended, the night) at 60 Hz
 	auto Run = [&](double Seconds, bool bNight)
 	{
@@ -31,96 +33,181 @@ void US47Audio::Tour(const FString& Path)
 			Wav.AddZeroed(Step * 2);
 			C.Render(Wav.GetData() + At, Step, 2);
 			C.Tick(1.0 / 60);
+			if (Dec.IsValid()) Dec->Update();
 			if (bNight) { A->NightLife(1.f / 60, FVector(0, 0, 0), Clock); Clock += 1.0 / 60; }
 		}
 	};
 	auto Part = [&](const TCHAR* Name) { Parts.Add({ Name, Wav.Num() / 2 }); };
 	const FVector Right(2, 1.6, 0), Left(-3, 1.2, -1), Ahead(0, 1.2, -4);
 
-	Part(TEXT("beep square 1200 / sine 52 drone")); A->Beep(); A->Beep(1760, 0.18f, 0.08f, 0.3f); A->Beep(52, 2.8f, 0.09f, 0.6f, TEXT("sine")); Run(3.6, false);
-	Part(TEXT("shutter")); A->Shutter(); Run(0.8, false);
-	Part(TEXT("servo 1.8 s, right")); A->Servo(1.8f, Right); Run(2.6, false);
-	Part(TEXT("signature 4/7 clicks")); A->Signature(0.45f); Run(3.2, false);
-	Part(TEXT("dial and ringback")); { const float D = A->Dial(TEXT("555-0147")); A->Ringback(2, D); } Run(8.5, false);
-	Part(TEXT("call line 3 s")); A->CallLine(3); Run(3.5, false);
-	Part(TEXT("phone call (Nora, recorded)"));
+	const bool bAll = !FParse::Param(FCommandLine::Get(), TEXT("S47AudioTourDecoder"));
+	if (bAll)
 	{
-		TArray<FS47PhoneCue> Lines;
-		Lines.Add({ TEXT("Sierra Motor Court."), TEXT("N. VEGA") });
-		FS47PhoneCue Aside; Aside.Text = TEXT("You give your name and SARO, and read her the survey number from the sleeve."); Aside.bAside = true; Aside.Pause = 1.0f;
-		Lines.Add(Aside);
-		Lines.Add({ TEXT("Station One. Nobody has asked me for that key in a long time."), TEXT("N. VEGA") });
-		const TOptional<FS47CallTimeline> TL = A->PhoneCall(Lines);
-		UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: phone call %s"), TL ? *FString::Printf(TEXT("%.2f s, %d cues"), TL->Duration, TL->Cues.Num()) : TEXT("unset (no recordings: captions)"));
-		Run(TL ? TL->Duration + 0.5 : 1.0, false);
-	}
-	Part(TEXT("phone call (Ward, Kinski)"));
-	{
-		TArray<FS47PhoneCue> Lines;
-		Lines.Add({ TEXT("That is enough to hold the morning series. It is not enough to tell us why it happened."), TEXT("WARD") });
-		const TOptional<FS47CallTimeline> TL = A->PhoneCall(Lines);
-		Run(TL ? TL->Duration + 0.5 : 1.0, false);
-	}
-	Part(TEXT("the call from the future")); Run(A->FutureCall() + 0.6, false);
-	Part(TEXT("boom 1.25")); A->Boom(1.25f); Run(3.2, false);
-	Part(TEXT("thunder")); A->Thunder(0.8f); Run(6.0, false);
-	Part(TEXT("relay clack in the room, through the wall")); A->RelayClack(Right, false); Run(0.8, false); A->RelayClack(Left, true); Run(0.8, false);
-	Part(TEXT("contactor, power down, power up")); A->Contactor(Ahead); Run(1.0, false); A->PowerDown(Ahead); Run(3.0, false); A->PowerUp(Ahead); Run(2.0, false);
-	Part(TEXT("telex motor and type bars"));
-	A->TelexMotor(Left);
-	for (int32 I = 0; I < 24; ++I) { A->TypeBar(Left, I == 23); Run(0.11, false); }
-	A->TelexMotor({}); Run(1.2, false);
-	Part(TEXT("station radio with a voice")); A->Radio(Ahead); Run(1.5, false); A->RadioVoice(2.5f); Run(3.5, false); A->Radio({}); Run(1.4, false);
-	Part(TEXT("AM radio, jammed, back")); A->AmRadioThree(Right); Run(5.0, false); A->AmRadioJam(true); Run(3.0, false); A->AmRadioJam(false); Run(3.0, false); A->AmRadioThree({}); Run(1.0, false);
-	Part(TEXT("cab radio: talk, voices, cup, carrier, hiss"));
-	A->CabRadio(TEXT("talk")); Run(4.0, false); A->CabVoice(2.4f, 520); Run(3.0, false); A->CabVoice(2.0f, 820); Run(2.6, false);
-	A->CupDown(A->RadioIn()); Run(0.6, false);
-	{ FS47Sound O; O.Gain = 1.2f; O.Dest = TEXT("radio"); const FS47Play H = A->Sfx(TEXT("phoneRing"), O); if (H) H.Src->Stop(C.CurrentTime() + 2.6); } Run(3.0, false);
-	A->CabRadio(TEXT("carrier")); Run(2.0, false); A->CabRadio(TEXT("hiss")); Run(2.0, false); A->CabLevel(0.3f); Run(1.0, false); A->CabRadio(TEXT("")); Run(1.0, false);
-	Part(TEXT("receiver carrier"));
-	A->StartCarrier();
-	for (int32 I = 0; I <= 120; ++I) { const float Q = I / 120.f; A->SetCarrier(0.06f * Q * Q, (Q - 1) * 0.03f, 0.03f * (1 - Q) + 0.008f); Run(1.0 / 30, false); }
-	A->SetCarrier(0, 0, 0); Run(0.5, false);
-	Part(TEXT("the anomaly: static to the locked signal"));
-	{
-		double T = 0;
-		for (int32 I = 0; I < 60 * 14; ++I) { A->SignalFrame(FMath::Min(1.0, 0.02 + I / (60.0 * 9)), 0.9f, T); T += 1.0 / 60; Run(1.0 / 60, false); }
-		A->SignalOff(); Run(1.2, false);
-	}
-	Part(TEXT("motors")); A->StartMotors(); Run(4.0, false); A->StopMotors(); Run(3.0, false);
-	Part(TEXT("hums")); A->Hum(TEXT("s03"), Right, 0.07f, 60); A->Hum(TEXT("safelight"), Left, 0.025f, 120); Run(4.0, false); A->HumLevel(0); Run(1.0, false); A->HumLevel(1); Run(1.5, false); A->StopHums(); Run(1.5, false);
-	Part(TEXT("pour (bought or made), gasp, cup")); A->PourThree(Ahead); Run(2.2, false); A->Gasp(); Run(0.8, false); A->CupDown(); Run(0.6, false);
-	Part(TEXT("steps on each surface"));
-	for (const TCHAR* S : { TEXT("tile"), TEXT("concrete"), TEXT("dirt"), TEXT("wood"), TEXT("carpet") }) for (int32 I = 0; I < 4; ++I) { A->Step(S); Run(0.5, false); }
-	Part(TEXT("tv hiss")); A->TvHiss(Left); Run(2.0, false); A->TvHiss({}); Run(0.5, false);
-	{
-		// the late broadcast's sound (Scripts/prepare-tv.py, when staged): a set's speaker 2 m away at the
-		// office set's level, then through the wall, then stepping back under a voice (VoicesDuck)
-		FS47TvProgramme Tv;
-		if (Tv.HasSound())
+		Part(TEXT("beep square 1200 / sine 52 drone")); A->Beep(); A->Beep(1760, 0.18f, 0.08f, 0.3f); A->Beep(52, 2.8f, 0.09f, 0.6f, TEXT("sine")); Run(3.6, false);
+		Part(TEXT("shutter")); A->Shutter(); Run(0.8, false);
+		Part(TEXT("servo 1.8 s, right")); A->Servo(1.8f, Right); Run(2.6, false);
+		Part(TEXT("signature 4/7 clicks")); A->Signature(0.45f); Run(3.2, false);
+		Part(TEXT("dial and ringback")); { const float D = A->Dial(TEXT("555-0147")); A->Ringback(2, D); } Run(8.5, false);
+		Part(TEXT("call line 3 s")); A->CallLine(3); Run(3.5, false);
+		Part(TEXT("phone call (Nora, recorded)"));
 		{
-			const FVector Set(0.6, 1.2, -1.9);
-			Part(TEXT("tv broadcast at 2 m")); Tv.Time = 30.0; Tv.Update(0, A, Set, 0.32, false);
-			UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: tv broadcast from %.3f s of the programme, %.4f s into the tour"), 30.0, C.CurrentTime());
-			Run(8.0, false);
-			Part(TEXT("tv broadcast through the wall")); Tv.Update(0, A, Set, 0.32, true); Run(4.0, false);
-			Part(TEXT("tv broadcast under a voice")); Tv.Update(0, A, Set, 0.32 * 0.25, false); Run(4.0, false);
-			UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: tv broadcast %s"), *Tv.Describe());
-			Tv.Silence(); Run(0.5, false);
+			TArray<FS47PhoneCue> Lines;
+			Lines.Add({ TEXT("Sierra Motor Court."), TEXT("N. VEGA") });
+			FS47PhoneCue Aside; Aside.Text = TEXT("You give your name and SARO, and read her the survey number from the sleeve."); Aside.bAside = true; Aside.Pause = 1.0f;
+			Lines.Add(Aside);
+			Lines.Add({ TEXT("Station One. Nobody has asked me for that key in a long time."), TEXT("N. VEGA") });
+			const TOptional<FS47CallTimeline> TL = A->PhoneCall(Lines);
+			UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: phone call %s"), TL ? *FString::Printf(TEXT("%.2f s, %d cues"), TL->Duration, TL->Cues.Num()) : TEXT("unset (no recordings: captions)"));
+			Run(TL ? TL->Duration + 0.5 : 1.0, false);
 		}
+		Part(TEXT("phone call (Ward, Kinski)"));
+		{
+			TArray<FS47PhoneCue> Lines;
+			Lines.Add({ TEXT("That is enough to hold the morning series. It is not enough to tell us why it happened."), TEXT("WARD") });
+			const TOptional<FS47CallTimeline> TL = A->PhoneCall(Lines);
+			Run(TL ? TL->Duration + 0.5 : 1.0, false);
+		}
+		Part(TEXT("the call from the future")); Run(A->FutureCall() + 0.6, false);
+		Part(TEXT("boom 1.25")); A->Boom(1.25f); Run(3.2, false);
+		Part(TEXT("thunder")); A->Thunder(0.8f); Run(6.0, false);
+		Part(TEXT("relay clack in the room, through the wall")); A->RelayClack(Right, false); Run(0.8, false); A->RelayClack(Left, true); Run(0.8, false);
+		Part(TEXT("contactor, power down, power up")); A->Contactor(Ahead); Run(1.0, false); A->PowerDown(Ahead); Run(3.0, false); A->PowerUp(Ahead); Run(2.0, false);
+		Part(TEXT("telex motor and type bars"));
+		A->TelexMotor(Left);
+		for (int32 I = 0; I < 24; ++I) { A->TypeBar(Left, I == 23); Run(0.11, false); }
+		A->TelexMotor({}); Run(1.2, false);
+		Part(TEXT("station radio with a voice")); A->Radio(Ahead); Run(1.5, false); A->RadioVoice(2.5f); Run(3.5, false); A->Radio({}); Run(1.4, false);
+		Part(TEXT("AM radio, jammed, back")); A->AmRadioThree(Right); Run(5.0, false); A->AmRadioJam(true); Run(3.0, false); A->AmRadioJam(false); Run(3.0, false); A->AmRadioThree({}); Run(1.0, false);
+		Part(TEXT("cab radio: talk, voices, cup, carrier, hiss"));
+		A->CabRadio(TEXT("talk")); Run(4.0, false); A->CabVoice(2.4f, 520); Run(3.0, false); A->CabVoice(2.0f, 820); Run(2.6, false);
+		A->CupDown(A->RadioIn()); Run(0.6, false);
+		{ FS47Sound O; O.Gain = 1.2f; O.Dest = TEXT("radio"); const FS47Play H = A->Sfx(TEXT("phoneRing"), O); if (H) H.Src->Stop(C.CurrentTime() + 2.6); } Run(3.0, false);
+		A->CabRadio(TEXT("carrier")); Run(2.0, false); A->CabRadio(TEXT("hiss")); Run(2.0, false); A->CabLevel(0.3f); Run(1.0, false); A->CabRadio(TEXT("")); Run(1.0, false);
+		Part(TEXT("receiver carrier"));
+		A->StartCarrier();
+		for (int32 I = 0; I <= 120; ++I) { const float Q = I / 120.f; A->SetCarrier(0.06f * Q * Q, (Q - 1) * 0.03f, 0.03f * (1 - Q) + 0.008f); Run(1.0 / 30, false); }
+		A->SetCarrier(0, 0, 0); Run(0.5, false);
+		Part(TEXT("the anomaly: static to the locked signal"));
+		{
+			double T = 0;
+			for (int32 I = 0; I < 60 * 14; ++I) { A->SignalFrame(FMath::Min(1.0, 0.02 + I / (60.0 * 9)), 0.9f, T); T += 1.0 / 60; Run(1.0 / 60, false); }
+			A->SignalOff(); Run(1.2, false);
+		}
+		Part(TEXT("motors")); A->StartMotors(); Run(4.0, false); A->StopMotors(); Run(3.0, false);
+		Part(TEXT("hums")); A->Hum(TEXT("s03"), Right, 0.07f, 60); A->Hum(TEXT("safelight"), Left, 0.025f, 120); Run(4.0, false); A->HumLevel(0); Run(1.0, false); A->HumLevel(1); Run(1.5, false); A->StopHums(); Run(1.5, false);
+		Part(TEXT("pour (bought or made), gasp, cup")); A->PourThree(Ahead); Run(2.2, false); A->Gasp(); Run(0.8, false); A->CupDown(); Run(0.6, false);
+		Part(TEXT("steps on each surface"));
+		for (const TCHAR* S : { TEXT("tile"), TEXT("concrete"), TEXT("dirt"), TEXT("wood"), TEXT("carpet") }) for (int32 I = 0; I < 4; ++I) { A->Step(S); Run(0.5, false); }
+		Part(TEXT("tv hiss")); A->TvHiss(Left); Run(2.0, false); A->TvHiss({}); Run(0.5, false);
+		{
+			// the late broadcast's sound (Scripts/prepare-tv.py, when staged): a set's speaker 2 m away at the
+			// office set's level, then through the wall, then stepping back under a voice (VoicesDuck)
+			FS47TvProgramme Tv;
+			if (Tv.HasSound())
+			{
+				const FVector Set(0.6, 1.2, -1.9);
+				Part(TEXT("tv broadcast at 2 m")); Tv.Time = 30.0; Tv.Update(0, A, Set, 0.32, false);
+				UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: tv broadcast from %.3f s of the programme, %.4f s into the tour"), 30.0, C.CurrentTime());
+				Run(8.0, false);
+				Part(TEXT("tv broadcast through the wall")); Tv.Update(0, A, Set, 0.32, true); Run(4.0, false);
+				Part(TEXT("tv broadcast under a voice")); Tv.Update(0, A, Set, 0.32 * 0.25, false); Run(4.0, false);
+				UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: tv broadcast %s"), *Tv.Describe());
+				Tv.Silence(); Run(0.5, false);
+			}
+		}
+		Part(TEXT("room tone, held down and back")); A->StartRoomTone(); Run(4.0, false); A->HoldRoomTone(0, 0.09f); Run(1.5, false); A->HoldRoomTone(1, 0.35f); Run(2.0, false);
+		Part(TEXT("the night in the yard at 03:00"));
+		A->StartNight(); A->SetSpace(TEXT("yard")); Run(25.0, true);
+		A->Far(TEXT("owl"), FVector::ZeroVector, 0.26f); A->Far(TEXT("dog0"), FVector::ZeroVector, 0.18f); Run(4.0, true);
+		A->Night->Hush(3, 0.08); Run(6.0, true);
+		Part(TEXT("the yard holds its breath (47 s, shortened to 12)")); A->Night->Breath(12); Run(14.0, true);
+		Part(TEXT("indoors, the desert through the wall")); A->SetSpace(TEXT("room")); Run(6.0, true);
+		Part(TEXT("dawn, birds")); Clock = 5.6 * 3600; A->SetSpace(TEXT("yard")); Run(20.0, true);
+		Part(TEXT("silence, back; duck all")); A->Silence(true); Run(1.5, true); A->Silence(false); Run(2.0, true); A->DuckAll(1.5f); Run(4.0, true);
+		{ FS47Pressure P = A->Pressure(); if (P) { Part(TEXT("pressure bed (bought)")); P.Gain->Gain.SetTargetAtTime(1.0, C.CurrentTime(), 1.0); Run(5.0, false); P.Stop(0.5f); Run(3.0, false); } }
 	}
-	Part(TEXT("room tone, held down and back")); A->StartRoomTone(); Run(4.0, false); A->HoldRoomTone(0, 0.09f); Run(1.5, false); A->HoldRoomTone(1, 0.35f); Run(2.0, false);
-	Part(TEXT("the night in the yard at 03:00"));
-	A->StartNight(); A->SetSpace(TEXT("yard")); Run(25.0, true);
-	A->Far(TEXT("owl"), FVector::ZeroVector, 0.26f); A->Far(TEXT("dog0"), FVector::ZeroVector, 0.18f); Run(4.0, true);
-	A->Night->Hush(3, 0.08); Run(6.0, true);
-	Part(TEXT("the yard holds its breath (47 s, shortened to 12)")); A->Night->Breath(12); Run(14.0, true);
-	Part(TEXT("indoors, the desert through the wall")); A->SetSpace(TEXT("room")); Run(6.0, true);
-	Part(TEXT("dawn, birds")); Clock = 5.6 * 3600; A->SetSpace(TEXT("yard")); Run(20.0, true);
-	Part(TEXT("silence, back; duck all")); A->Silence(true); Run(1.5, true); A->Silence(false); Run(2.0, true); A->DuckAll(1.5f); Run(4.0, true);
-	{ FS47Pressure P = A->Pressure(); if (P) { Part(TEXT("pressure bed (bought)")); P.Gain->Gain.SetTargetAtTime(1.0, C.CurrentTime(), 1.0); Run(5.0, false); P.Stop(0.5f); Run(3.0, false); } }
+	// the signal processor (core/decoder.ts, S47Decoder.h) at the panel's settings: RAW and HARMONIZED
+	// at the default TIME (2) and at 1 and 4, then the answer with TAPE A; its bands logged below.
+	// -S47AudioTourDecoder renders only these.
+	// Each twice: as the web version sounds (FS47DecoderPlayer::bWebSound), then as this one does.
+	auto Processor = [&](const FString& Name, const TCHAR* Mode, double Stretch, double Secs)
+	{
+		Part(*Name);
+		Dec = MakeShared<FS47DecoderPlayer>(A->Ctx.ToSharedRef(), A->SfxBus, FVector(0, 1.2, -1.6), A->NoiseBuffer());
+		FS47DecoderSet P; P.Mode = FString(Mode); P.Stretch = Stretch;
+		Dec->Start(P);
+		Run(Secs, false);
+		Dec->Stop(); Run(1.5, false);
+		Dec.Reset();
+	};
+	for (const bool bWeb : { true, false })
+	{
+		FS47DecoderPlayer::bWebSound = bWeb;
+		const FString Was = bWeb ? TEXT(" [web]") : TEXT("");
+		Processor(TEXT("processor RAW, time 2 (default)") + Was, TEXT("raw"), 2, 12);
+		Processor(TEXT("processor RAW, time 1") + Was, TEXT("raw"), 1, 12);
+		Processor(TEXT("processor RAW, time 4") + Was, TEXT("raw"), 4, 12);
+		Processor(TEXT("processor HARMONIZED, time 2 (default)") + Was, TEXT("harmonized"), 2, 12);
+		Processor(TEXT("processor HARMONIZED, time 1") + Was, TEXT("harmonized"), 1, 12);
+		Processor(TEXT("processor HARMONIZED, time 4") + Was, TEXT("harmonized"), 4, 12);
+		Part(*(TEXT("processor the answer and TAPE A") + Was));
+		Dec = MakeShared<FS47DecoderPlayer>(A->Ctx.ToSharedRef(), A->SfxBus, FVector(0, 1.2, -1.6), A->NoiseBuffer());
+		TArray<double> Seven;
+		for (const int32 K : { 7, 5, 3, 2, 1, 4, 6 }) Seven.Add(FS47DecoderPlayer::SevenDegree(K - 1));
+		FS47AnswerTimes Tm; Tm.K = 3;
+		Dec->Phrase(Seven, Tm);
+		Run(Tm.End() + 1.0, false);
+		Dec.Reset();
+	}
+	FS47DecoderPlayer::bWebSound = false;
 	Parts.Add({ TEXT("end"), Wav.Num() / 2 });
 
+	// where a part's energy sits: the share of it in each band (a Hann-windowed FFT over 4096 frames
+	// of the mono sum), the spectral centroid, and the share above 3 kHz
+	auto Bands = [&Wav, &C](int32 F0, int32 F1) -> FString
+	{
+		const int32 N = 4096;
+		const double Edges[] = { 0, 150, 300, 600, 1200, 2400, 3000, 4800, 9600, 24000 };
+		constexpr int32 NB = UE_ARRAY_COUNT(Edges) - 1;
+		double E[NB] = {}, Total = 0, Moment = 0, Above3k = 0;
+		TArray<double> Re, Im;
+		for (int32 W0 = F0; W0 + N <= F1; W0 += N)
+		{
+			Re.Init(0.0, N); Im.Init(0.0, N);
+			for (int32 J = 0; J < N; ++J) Re[J] = 0.5 * (Wav[(W0 + J) * 2] + Wav[(W0 + J) * 2 + 1]) * (0.5 - 0.5 * FMath::Cos(2 * PI * J / N));
+			// in place, radix 2
+			for (int32 J = 1, K = 0; J < N; ++J)
+			{
+				int32 Bit = N >> 1;
+				for (; K & Bit; Bit >>= 1) K ^= Bit;
+				K ^= Bit;
+				if (J < K) { Swap(Re[J], Re[K]); Swap(Im[J], Im[K]); }
+			}
+			for (int32 Len = 2; Len <= N; Len <<= 1)
+			{
+				const double Ang = -2 * PI / Len;
+				for (int32 J = 0; J < N; J += Len) for (int32 K = 0; K < Len / 2; ++K)
+				{
+					const double Wr = FMath::Cos(Ang * K), Wi = FMath::Sin(Ang * K);
+					const double Ur = Re[J + K], Ui = Im[J + K];
+					const double Vr = Re[J + K + Len / 2] * Wr - Im[J + K + Len / 2] * Wi, Vi = Re[J + K + Len / 2] * Wi + Im[J + K + Len / 2] * Wr;
+					Re[J + K] = Ur + Vr; Im[J + K] = Ui + Vi; Re[J + K + Len / 2] = Ur - Vr; Im[J + K + Len / 2] = Ui - Vi;
+				}
+			}
+			for (int32 K = 1; K < N / 2; ++K)
+			{
+				const double F = K * C.SampleRate / N, P = Re[K] * Re[K] + Im[K] * Im[K];
+				Total += P; Moment += P * F;
+				if (F >= 3000) Above3k += P;
+				for (int32 B = 0; B < NB; ++B) if (F >= Edges[B] && F < Edges[B + 1]) { E[B] += P; break; }
+			}
+		}
+		FString Out = TEXT("bands");
+		for (int32 B = 0; B < NB; ++B) Out += FString::Printf(TEXT(" %g-%gk %4.1f%%"), Edges[B] / 1000, Edges[B + 1] / 1000, Total > 0 ? 100 * E[B] / Total : 0.0);
+		Out += FString::Printf(TEXT("  centroid %.0f Hz, above 3 kHz %.2f%% (%.1f dB under the whole)"), Total > 0 ? Moment / Total : 0.0, Total > 0 ? 100 * Above3k / Total : 0.0,
+			Total > 0 && Above3k > 0 ? -10 * FMath::LogX(10.0, Above3k / Total) : 0.0);
+		return Out;
+	};
 	// the parts' levels
 	bool bFinite = true;
 	for (const float X : Wav) if (!FMath::IsFinite(X)) { bFinite = false; break; }
@@ -131,6 +218,7 @@ void US47Audio::Tour(const FString& Path)
 		for (int32 F = F0; F < F1; ++F) for (int32 Ch = 0; Ch < 2; ++Ch) { const double X = Wav[F * 2 + Ch]; Peak = FMath::Max(Peak, FMath::Abs(X)); Sum += X * X; }
 		const double Rms = F1 > F0 ? FMath::Sqrt(Sum / (2.0 * (F1 - F0))) : 0;
 		UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour %5.1f s  peak %6.3f  rms %6.4f  %s"), F0 / double(C.SampleRate), Peak, Rms, *Parts[I].Name);
+		if (Parts[I].Name.StartsWith(TEXT("processor"))) UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour        %s"), *Bands(F0, F1));
 	}
 	// a 16-bit stereo WAVE file
 	TArray<uint8> Out;

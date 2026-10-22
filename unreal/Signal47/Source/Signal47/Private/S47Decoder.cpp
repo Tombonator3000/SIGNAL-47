@@ -10,7 +10,22 @@ namespace
 	const double DEG_A[4] = { 0, 3, 7, 10 };
 	const double DEG_B[7] = { 12, 10, 7, 5, 3, 2, 0 };
 	const double F0 = 220;
+
+	// (Unreal only, on Tom's request, 22.10: "vannvittig high-pitched piping" when the processor plays
+	// the signal. The playback departs from the web version here to be warm and listenable: RAW plays
+	// the tape at 1/TIME speed, so a slowed tape drops in pitch as a real deck's does, and at about
+	// 0.35 rather than 0.9, to sit with the room; a tape tone, two gentle low-passes at 3.4 kHz, on the
+	// processor's output; the bells lose their thin partial at 3.004 times the note, and the whistle on
+	// TAPE A is an octave lower. FS47DecoderPlayer::bWebSound gives the web version's sound back, for
+	// the audio tour's before and after.)
+	const double RAW_LEVEL = 0.35, WEB_RAW_LEVEL = 0.9;
+	const double TONE_HZ = 3400;
 }
+
+bool FS47DecoderPlayer::bWebSound = false;
+
+double FS47DecoderPlayer::RawLevel() const { return bWebSound ? WEB_RAW_LEVEL : RAW_LEVEL; }
+double FS47DecoderPlayer::RawRate() const { return bWebSound ? 1.0 : 1.0 / FMath::Max(0.25, Params.Stretch); }
 
 double FS47DecoderPlayer::FourDegree(int32 I) { return DEG_A[FMath::Clamp(I, 0, 3)]; }
 double FS47DecoderPlayer::SevenDegree(int32 I) { return DEG_B[FMath::Clamp(I, 0, 6)]; }
@@ -48,7 +63,16 @@ FS47DecoderPlayer::FS47DecoderPlayer(const TSharedRef<FS47AudioContext>& InCtx, 
 	// (Unreal: the meter between the output and the panner, for the VU unit; it passes everything on)
 	Meter = MakeShared<FS47LevelMeter>(Ctx);
 	Meter->Connect(Pan);
-	Out = Ctx->CreateGain(); Out->Gain.SetValue(0); Out->Connect(Meter);
+	Out = Ctx->CreateGain(); Out->Gain.SetValue(0);
+	// (Unreal only: the tape tone, see above; open wide for the web version's sound)
+	TSharedPtr<FS47AudioNode> Last = Out;
+	for (int32 I = 0; I < 2; ++I)
+	{
+		const TSharedRef<FS47BiquadFilterNode> Tone = Ctx->CreateBiquadFilter(); Tone->SetType(TEXT("lowpass"));
+		Tone->Frequency.SetValue(bWebSound ? 22000 : TONE_HZ); Tone->Q.SetValue(-3);
+		Last->Connect(Tone); Last = Tone;
+	}
+	Last->Connect(Meter);
 	Dry = Ctx->CreateGain(); Dry->Connect(Out);
 	Wet = Ctx->CreateGain(); Verb = MakeVerb(3.6);
 	Verb->Connect(Out);
@@ -112,8 +136,8 @@ void FS47DecoderPlayer::Start(const FS47DecoderSet& P)
 	ApplySpace();
 	if (Params.Mode == TEXT("raw"))
 	{
-		Raw = MakeShared<FS47SignalVoice>(Ctx, Dry, Noise);
-		Raw->Frame(1, 0.9, 0);
+		Raw = MakeShared<FS47SignalVoice>(Ctx, Dry, Noise, RawRate());
+		Raw->Frame(1, RawLevel(), 0);
 	}
 	else StartPad();
 }
@@ -121,11 +145,19 @@ void FS47DecoderPlayer::Start(const FS47DecoderSet& P)
 void FS47DecoderPlayer::Set(const FS47DecoderSet& P)
 {
 	const FString Mode = Params.Mode;
+	const double K0 = Params.Stretch;
 	Apply(P);
 	if (!bPlaying) return;
 	if (P.Mode && *P.Mode != Mode) { Start(); return; }
 	ApplySpace();
 	if (Pad) TunePad();
+	if (Raw.IsValid() && !FMath::IsNearlyEqual(K0, Params.Stretch))
+	{
+		// (Unreal only) the tape changes speed where it is, and its pitch with it
+		const double Now = Ctx->CurrentTime();
+		Started = Now - (Now - Started) * Params.Stretch / K0;
+		Raw->SetRate(RawRate());
+	}
 }
 
 void FS47DecoderPlayer::Stop()
@@ -207,6 +239,7 @@ void FS47DecoderPlayer::Note(double At, double Deg, double Len, bool bFirst, dou
 		const struct { double Mul, G; const TCHAR* Type; } Parts[3] = { { 1, 1, TEXT("sine") }, { 2, 0.28, TEXT("triangle") }, { 3.004, 0.07, TEXT("sine") } };
 		for (const auto& Pt : Parts)
 		{
+			if (Pt.Mul > 3 && !bWebSound) continue; // (Unreal: no thin partial, see above)
 			const TSharedRef<FS47OscillatorNode> O = Ctx->CreateOscillator(); O->SetType(Pt.Type); O->Frequency.SetValue(Freq * Pt.Mul);
 			const TSharedRef<FS47GainNode> Og = Ctx->CreateGain(); Og->Gain.SetValue(Pt.G); O->Connect(Og); Og->Connect(Env);
 			O->Start(T); O->Stop(T + Dur + 0.05);
@@ -321,7 +354,7 @@ void FS47DecoderPlayer::Wire(double At, const TArray<double>& Seven, const FS47A
 	{
 		const double Deg = J < 4 ? DEG_A[J] : Seven.IsValidIndex(J - 4) ? Seven[J - 4] : DEG_B[J - 4];
 		const double T = At + Off(Tm.Whistle(J));
-		Wo->Frequency.SetValueAtTime(F0 * 4 * FMath::Pow(2.0, (Deg + Params.Pitch) / 12), T);
+		Wo->Frequency.SetValueAtTime(F0 * (bWebSound ? 4 : 2) * FMath::Pow(2.0, (Deg + Params.Pitch) / 12), T); // (Unreal: an octave down, see above)
 		We->Gain.SetValueAtTime(0, T); We->Gain.LinearRampToValueAtTime(0.05, T + 0.04);
 		We->Gain.SetValueAtTime(0.05, T + 0.22); We->Gain.LinearRampToValueAtTime(0, T + 0.27);
 	}
@@ -390,7 +423,7 @@ void FS47DecoderPlayer::Update()
 	if (Raw.IsValid())
 	{
 		// the tape, slowed down: the same signal on a slower clock
-		Raw->Frame(1, 0.9, (Now - Started) / K);
+		Raw->Frame(1, RawLevel(), (Now - Started) / K);
 		const S47SignalVoice::FPulse P = S47SignalVoice::PulseAt((Now - Started) / K);
 		Current = P.bGroup ? 0 : -1;
 		return;
