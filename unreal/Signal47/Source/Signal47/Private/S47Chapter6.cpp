@@ -162,7 +162,7 @@ void US47Chapter6::ThirdGlints(const TArray<FVector>* Pts, const FLinearColor& C
 	// OldRoad.thirdGlints: its constructor appends these seven points last, before glow.build().
 	if (!ThirdGlow.IsValid() && M && M->Web)
 	{
-		ThirdGlow = FS47GlowPoints(M->Web, TEXT("world.oldRoad.glow.points"));
+		ThirdGlow = FS47GlowView(M->Web, TEXT("world.oldRoad.glow.points"));
 		if (ThirdGlow.Num() >= 7) for (int32 I = ThirdGlow.Num() - 7; I < ThirdGlow.Num(); ++I) ThirdIds.Add(I);
 	}
 	for (int32 I = 0; I < ThirdIds.Num(); ++I)
