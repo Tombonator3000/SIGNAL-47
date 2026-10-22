@@ -18,7 +18,9 @@ namespace S47Style
 {
 	FSlateFontInfo Font(const TCHAR* File, float Px);
 	FSlateFontInfo Mono(float Px);
-	FSlateFontInfo Body(float Px);
+	FSlateFontInfo Body(float Px);    // Special Elite: the web version's --type (body text, toasts, papers)
+	FSlateFontInfo Hand(float Px);    // Reenie Beanie: --hand (handwriting, notebook, pencil)
+	FSlateFontInfo Display(float Px); // Oswald: --display (titles, chapter cards)
 	const FLinearColor Amber(1.0f, 0.68f, 0.22f);
 	const FLinearColor Green(0.55f, 1.0f, 0.64f);
 	const FLinearColor GreenDim(0.35f, 0.7f, 0.42f);
@@ -27,6 +29,9 @@ namespace S47Style
 	const FLinearColor Pencil(0.3f, 0.28f, 0.3f);
 	const FLinearColor Screen(0.008f, 0.06f, 0.025f);
 	const FLinearColor Overlay(0.02f, 0.02f, 0.02f, 0.92f);
+	// style.css
+	const FLinearColor InkBlue = FLinearColor::FromSRGBColor(FColor(0x23, 0x3a, 0x7a));
+	const FLinearColor Phosphor = FLinearColor::FromSRGBColor(FColor(0x8c, 0xff, 0xa4));
 }
 
 // The overlay while walking: a dot, the prompt for what you look at, the station clock, the
@@ -43,21 +48,41 @@ public:
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 
-	void Toast(const FString& Text, float Secs);
+	void Toast(const FString& Text, float Secs, TFunction<double()> Clock = {});
 	void ClearToasts();
 	void Fade(bool bOn, const FString& Text);
 	bool IsFaded() const { return bFadeOn; }
+	// UI.ts: the objective line (top left), a closer look's words (under the crosshair), the
+	// amber seconds clock, the field camera's viewfinder and its shutter
+	void Objective(const FString& Text) { ObjectiveText = Text; }
+	void Examine(const FString& Text) { ExamineText = Text; }
+	void ClockSeconds(const FString& Text) { SecondsText = Text; }
+	struct FViewfinder { bool bOn = false; FSlateRect Rect; FString Frame, Status, Free, Hint; bool bOk = false, bFreeOk = false; };
+	void Viewfinder(const FViewfinder& V) { Vf = V; }
+	void ShutterFlash() { FlashT = 0.28f; }
+	/** UI.ts lastDescription: the last toast that was not a caption (radio, telephone, the CB). */
+	FString LastToast;
+	/** .description-read (UI.ts descriptionButton): Read description [V] at the top right, while the
+	 *  description reader is on and there is something to read (US47UI sets it). */
+	struct FDescButton { bool bShown = false; FString Text; bool bDisabled = false; };
+	FDescButton DescButton;
+	/** html.at-line (main.ts, during THE EVENT): the prompt sits lower (.at-line .prompt { top: 64% }). */
+	bool bAtLine = false;
 
 private:
-	struct FToast { FString Text; double Until; };
+	struct FToast { FString Text; double Until; TFunction<double()> Clock; };
 	TArray<FToast> Toasts;
 	TSharedPtr<SVerticalBox> ToastBox;
 	TUniquePtr<FSlateBrush> DotBrush;
 	TUniquePtr<FSlateBrush> WhiteBrush;
+	TUniquePtr<FSlateBrush> DescBrush;
 	bool bFadeOn = false;
 	float FadeAlpha = 0.f;
 	FString FadeText;
 	double Now = 0;
+	FString ObjectiveText, ExamineText, SecondsText;
+	FViewfinder Vf;
+	float FlashT = 0.f;
 	void Rebuild();
 };
 
@@ -69,6 +94,8 @@ public:
 	SLATE_BEGIN_ARGS(SS47Document) {}
 		SLATE_ARGUMENT(FS47Doc, Doc)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
+		// UI.document's .read-aloud boxes (Read document, Read description), before .controls
+		SLATE_ARGUMENT(TSharedPtr<SWidget>, Reading)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& InArgs);
 	virtual bool SupportsKeyboardFocus() const override { return true; }
@@ -78,25 +105,11 @@ private:
 	TFunction<void()> OnClose;
 	TUniquePtr<FSlateBrush> PaperBrush;
 	TUniquePtr<FSlateBrush> PanelBrush;
+	TSharedPtr<FSlateBrush> ImageBrush, PaperArtBrush;
+	TSharedRef<SWidget> PageWidget(const FS47Doc& Doc, const FSlateFontInfo& Type);
 };
 
-// The notebook (Tab): tonight's tasks, the notes, the papers filed so far.
-class SS47Notebook : public SCompoundWidget
-{
-public:
-	SLATE_BEGIN_ARGS(SS47Notebook) {}
-		SLATE_ARGUMENT(AS47Story*, Story)
-		SLATE_ARGUMENT(TFunction<void()>, OnClose)
-		SLATE_ARGUMENT(TFunction<void(const FS47Doc&)>, OnDoc)
-	SLATE_END_ARGS()
-	void Construct(const FArguments& InArgs);
-	virtual bool SupportsKeyboardFocus() const override { return true; }
-	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
-
-private:
-	TFunction<void()> OnClose;
-	TUniquePtr<FSlateBrush> PaperBrush;
-};
+// (the notebook is SS47Notebook.h, ported from ui/UI.ts notebook)
 
 // The receiver console (SARO / RX CONTROL 03): the spectrum, the four controls, the card and
 // the action button. Edits the story's receiver directly.

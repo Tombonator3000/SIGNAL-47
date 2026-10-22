@@ -6,15 +6,25 @@
 
 #include "CoreMinimal.h"
 
-/** One readable document: what UI.document shows in the web version (DocSpec without pictures). */
+/** One page of a paper that has several (DocSpec.sheets). */
+struct FS47DocSheet
+{
+	FString Page, Paper, Strip, Term;
+};
+
+/** One readable document: what UI.document shows in the web version (ui/UI.ts DocSpec). */
 struct FS47Doc
 {
 	FString Id;
 	FString Title;
-	FString Kind;        // 'hand', 'typed' or 'printout'
+	FString Kind;        // 'hand', 'typed', 'printout', 'photo' or 'map'
 	FString Stamp;       // the stamp in the corner; empty for none
 	FString Page;        // the paper's text, exactly
 	FString Transcript;  // what the player reads aloud
+	FString Image;       // a picture on it: a data URL (a photo, a drawing) or an art name (core/art.ts)
+	FString Paper;       // an art name for the paper itself (a hand page on a card, a letter)
+	double PaperRatio = 0; // its width over height when it has one
+	TArray<FS47DocSheet> Sheets;
 };
 
 namespace S47Text

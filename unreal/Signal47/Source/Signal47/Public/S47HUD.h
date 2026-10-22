@@ -9,7 +9,7 @@ class SS47Hud;
 class SS47Crt;
 class SWidget;
 class AS47Story;
-class AS47Saro;
+class AS47Web;
 class AS47Walker;
 class US47Audio;
 class FWidgetRenderer;
@@ -20,10 +20,12 @@ class FWidgetRenderer;
 // the station's render targets.
 // Command line for tests:
 //   -S47SmokeTest        log a result line and quit after -S47Seconds (default 3)
-//   -S47Face=<spot>      stand at a spot: room, crt, phone, window, outside, dish, rack, ops, printer, log
+//   -S47Face=<spot>      stand at a spot: room, window, outside, dish, or in front of an item (crtCenter, rack, logbook...)
 //   -S47Use              use what is in front of you after 2.5 s
 //   -S47Jump=<beat>      start at a beat: shift, residual, locked, printed, countdown, event
-//   -S47Open=<view>      open a view after 2 s: notebook, console, ops, log
+//   -S47Open=<view>      open a view after 2 s: notebook, console, ops, log, pause
+//   -S47Title            start on the title even with other test flags (without any -S47 flag the game starts there)
+//   -S47Case=<n>         a test run that plays (and autosaves into) case n
 //   -S47SelfTest         run the ported rules' self tests and log "self test OK" or "FAILED"
 //   -S47Shot=<file.png>  save a screenshot one second before quitting
 UCLASS()
@@ -44,11 +46,15 @@ public:
 	void Fade(bool bOn, const FString& Text);
 	void CloseModal();
 	bool HasModal() const { return Modal.IsValid(); }
-	void PlacePlayer(const FVector& Pos, float Yaw);
+	TSharedPtr<SWidget> ModalWidget() const { return Modal; }
+	void OpenModal(TSharedRef<SWidget> Widget, TFunction<void()> OnClosed) { SetModal(Widget, MoveTemp(OnClosed)); }
+	SS47Hud* HudWidget() const { return Hud.Get(); }
+	void SetPrompt(const FString& Label, const FString& Alt);
+	void Place(double X, double Z, double Yaw); // three.js terms, as Player.place
 	void Checkpoint(const FString& Name);
 	void Shake(float Strength);
 	void EndCard(const TArray<FString>& Lines);
-	void LookTowards(const FVector& Target, float K);
+	void LookTowards(const FVector& TargetThree, float K);
 
 protected:
 	virtual void BeginPlay() override;
@@ -59,8 +65,9 @@ private:
 	TSharedPtr<SWidget> Modal;
 	TFunction<void()> ModalClosed;
 	FText Prompt;
+	bool bPromptSet = false;
 	TWeakObjectPtr<AS47Story> Story;
-	TWeakObjectPtr<AS47Saro> Saro;
+	TWeakObjectPtr<AS47Web> Saro;
 	TWeakObjectPtr<AS47Walker> Walker;
 	UPROPERTY() TObjectPtr<US47Audio> Audio;
 	FWidgetRenderer* Renderer = nullptr;
@@ -75,4 +82,5 @@ private:
 	void DrawCrts(float DeltaSeconds);
 	void FinishSmokeTest();
 	void OpenView(const FString& View);
+	void Face(const FString& Spot);
 };

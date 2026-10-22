@@ -2,7 +2,7 @@
 
 #include "Brushes/SlateColorBrush.h"
 #include "Rendering/DrawElements.h"
-#include "S47Saro.h"
+#include "S47Web.h"
 #include "S47Story.h"
 #include "SS47Widgets.h"
 
@@ -63,20 +63,26 @@ void SS47Crt::Status(const FGeometry& G, FSlateWindowElementList& Out, int32 Lay
 {
 	Clear(G, Out, Layer);
 	const bool bEv = Story->At(ES47Phase::Event);
+	// (the array put back on the schedule, story/arrayBack.ts: its mode and its line while it runs)
+	const TOptional<FS47ArrayStatus> Arr = bEv && Story->ArrayStatus ? Story->ArrayStatus() : TOptional<FS47ArrayStatus>();
 	Txt(G, Out, Layer + 1, TEXT("SARO  ARRAY STATUS"), 18, 34, 28);
 	Txt(G, Out, Layer + 1, Story->ClockText(), 384, 34, 26);
 	Txt(G, Out, Layer + 1, TEXT("RX BANK 3   ONLINE"), 18, 68, 22);
-	Txt(G, Out, Layer + 1, TEXT("MODE        ") + Story->SurveyModeText(), 18, 92, 22, bEv ? Warn : Phosphor);
+	Txt(G, Out, Layer + 1, TEXT("MODE        ") + (Arr ? Arr->Mode : Story->SurveyModeText()), 18, 92, 22, bEv && (!Arr || Arr->bWarn) ? Warn : Phosphor);
 	Txt(G, Out, Layer + 1, TEXT("SCHEDULE    AZ 042  EL 48  UNTIL 06:00"), 18, 116, 22);
 	FSlateDrawElement::MakeBox(Out, Layer + 1, G.ToPaintGeometry(FVector2f(476.f, 1.f), FSlateLayoutTransform(FVector2f(18, 128))), WhiteBrush.Get(), ESlateDrawEffect::None, FLinearColor(0.55f, 1.f, 0.64f, 0.35f));
 	// all 27, three columns of nine
 	for (int32 i = 0; i < Saro->DishCount(); ++i)
 	{
 		const int32 Col = i / 9, Row = i % 9;
-		const bool bMv = Saro->DishMoving(i);
-		Txt(G, Out, Layer + 1, FString::Printf(TEXT("%s %s %s%s"), *Saro->DishId(i), *S47Text::AngleText(Saro->DishAz(i), 3), *S47Text::AngleText(Saro->DishEl(i)), bMv ? TEXT(">") : TEXT(" ")), 18 + Col * 164.f, 152 + Row * 23.f, 20, (bMv && bEv) ? Warn : Phosphor);
+		// (d.moving: turning by itself, or slewing; amber while it is rogue or going back by itself)
+		const bool bMv = Saro->DishMoving(i) || (Story->DishSpinning && Story->DishSpinning(i));
+		const bool bOdd = Story->DishRogue && Story->DishRogue(i);
+		Txt(G, Out, Layer + 1, FString::Printf(TEXT("%s %s %s%s"), *Saro->DishId(i), *S47Text::AngleText(Saro->DishAz(i), 3), *S47Text::AngleText(Saro->DishEl(i)), bMv ? TEXT(">") : TEXT(" ")), 18 + Col * 164.f, 152 + Row * 23.f, 20, (bOdd || (bMv && !Arr)) && bEv ? Warn : Phosphor);
 	}
-	if (bEv && int32(Story->GameTime * 2) % 2 == 0) Txt(G, Out, Layer + 1, TEXT("NO CONTROL COMMAND RECORDED"), 18, 372, 24, Warn);
+	// (the array on the schedule: its count, steady; going back with no command, blinking)
+	if (Arr && !Arr->Line.IsEmpty() && (!Arr->bWarn || int32(Story->GameTime * 2) % 2 == 0)) Txt(G, Out, Layer + 1, Arr->Line, 18, 372, 24, Arr->bWarn ? Warn : Bright);
+	else if (!Arr && bEv && int32(Story->GameTime * 2) % 2 == 0) Txt(G, Out, Layer + 1, TEXT("NO CONTROL COMMAND RECORDED"), 18, 372, 24, Warn);
 }
 
 void SS47Crt::Spectrum(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
