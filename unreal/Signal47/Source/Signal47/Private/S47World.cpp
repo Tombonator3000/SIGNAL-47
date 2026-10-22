@@ -213,6 +213,7 @@ void US47World::EnsureLegs()
 		for (int32 i = 0; i < Di.Num() && DinerCol < 0; ++i) if (Di[i].MinX > 1e8 || (FMath::Abs(Di[i].MinX - (O.X + 7.85)) < 0.01 && FMath::Abs(Di[i].MinZ - (O.Z + 3.2)) < 0.01)) DinerCol = i;
 		SaroProxy = W->Obj(TEXT("yard.objs.truck"));
 		StationProxy = W->Obj(TEXT("world.site.proxies.truckSpot"));
+		DinerProxy = W->Obj(TEXT("world.dinerTruckProxy")); // (an export from before 22 October has none)
 	}
 	auto Head = [&](IS47DriveArea& A, const TCHAR* Id, const TCHAR* FallbackSet, const TArray<int32>& FallbackSlots)
 	{
@@ -543,7 +544,7 @@ void US47World::ParkAt(FString Id)
 	else if (Id == TEXT("station01")) Put(TEXT("station01"), StationCol);
 	// (the diner's walls are walked in the diner's area and in the road's, World.roadWalk: the same list there)
 	else if (Id == TEXT("diner")) { Put(TEXT("diner"), DinerCol); Put(TEXT("road"), DinerCol); }
-	FS47Obj Proxy = Id == TEXT("saro") ? SaroProxy : Id == TEXT("station01") ? StationProxy : FS47Obj();
+	FS47Obj Proxy = Id == TEXT("saro") ? SaroProxy : Id == TEXT("station01") ? StationProxy : Id == TEXT("diner") ? DinerProxy : FS47Obj();
 	if (Proxy.IsValid())
 	{
 		const FS47Obj Up = Proxy.Parent();

@@ -95,6 +95,10 @@ shot third "S47: the third one stands" "-S47Jump=chapter1 -S47Face=at:-20;30;3.1
 # chapter four: into room 6 from the motel's front, at her table (and the talk with the evidence on it)
 shot chapter4 "chapter ch4 begins" "-S47Jump=chapter4 -S47Ch4Drive=room" 10
 shot room6talk "ch4 drive: table: wrong" "-S47Jump=chapter4 -S47Ch4Drive=table" 10
+# chapter five: five o'clock, by the truck on its pad at SARO; and in Mesa Diner on a stool, looking at
+# the counter (the truck left on the lot, World.goDiner)
+shot chapter5 "chapter ch5 begins" "-S47Jump=chapter5 -S47Face=at:10.6;8.6;1.5708;-0.1"
+shot diner "ch5 drive: at the counter" "-S47Jump=chapter5 -S47Ch5Drive=counter" 10
 # the town, road and motel: the developer-menu actions use the normal modules and exported places.
 shot townphone "S47: town test phone, ringing" "-S47Jump=chapter1 -S47Town=phone" 9
 shot townstop "S47: town road stop OK" "-S47Jump=chapter1 -S47Town=stop" 9

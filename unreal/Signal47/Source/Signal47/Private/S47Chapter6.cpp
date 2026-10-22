@@ -9,6 +9,7 @@
 #include "S47Away.h"
 #include "S47CB.h"
 #include "S47Chapter4.h"
+#include "S47Chapter5.h"
 #include "S47Flow.h"
 #include "S47HUD.h"
 #include "S47Image.h"
@@ -571,7 +572,7 @@ void US47Chapter6::BeginChapter6(const S47J::FObj& SavedCase)
 {
 	if (!Host) return;
 	if (SavedCase) BeganCase = SavedCase;
-	// Integrator: chapter five's OnEnd calls this; it is being ported separately.
+	// (chapter five's OnEnd calls this: main.ts ch5.onEnd = beginChapter6)
 	if (US47Chapter* C5 = Host->Chapter(TEXT("ch5"))) C5->bActive = false;
 	if (M && M->Audio) M->Audio->AmRadioThree({});
 	Host->SetCinematic(false);
@@ -581,37 +582,15 @@ void US47Chapter6::BeginChapter6(const S47J::FObj& SavedCase)
 void US47Chapter6::JumpChapter6(const FString& At)
 {
 	if (!Host) return;
-	const S47J::FObj Saved = Host->LoadCase ? Host->LoadCase() : S47J::FObj();
-	// Prologue.jumpChapter5 first calls jumpChapter4, which supplies the exact done states of 1-3.
-	US47Chapter4* C4 = Cast<US47Chapter4>(Host->Chapter(TEXT("ch4")));
-	if (C4) C4->JumpChapter4();
-	else Host->AfterPrologue(Saved);
-	if (!(Saved && S47J::Has(Saved, TEXT("ch5"))) && C4 && C4->S.Stage != TEXT("complete"))
+	// Prologue.jumpChapter6: chapter five done in the diner (P13 found), straight out onto the old road.
+	// jumpChapter5 first (chapter four's done state on jumpChapter4's, then beginChapter5 from the save
+	// or fresh), then this.ch5.s = { ...this.ch5.s, stage: 'road', arrived: true, p13: true, confirmed: true }
+	if (US47Chapter5* C5 = Cast<US47Chapter5>(Host->Chapter(TEXT("ch5"))))
 	{
-		FS47Ch4State Ch4;
-		Ch4.Stage = TEXT("complete"); Ch4.bExitOpen = true; Ch4.bArrived = true; Ch4.bGreeted = true;
-		Ch4.Placed = { TEXT("frame01"), TEXT("frame02"), TEXT("e07") }; Ch4.bShown = true; Ch4.bP10 = true;
-		Ch4.Topics = { true, true, true }; Ch4.Tone = TEXT("mild"); Ch4.bP11 = true;
-		Ch4.bLine = true; Ch4.bP12 = true; Ch4.bTold = true; Ch4.Read = { true, true, true };
-		S47J::FObj DoneCase = M && M->Flow ? M->Flow->ComposeCase() : S47J::Clone(C4->BeganCase);
-		if (!DoneCase) DoneCase = S47J::New();
-		S47J::Set(DoneCase, TEXT("ch4"), Ch4.Save()); S47J::Set(DoneCase, TEXT("clock"), 4 * 3600.0 + 58 * 60);
-		C4->BeginChapter4(DoneCase); Host->SetClock(4 * 3600.0 + 58 * 60);
+		C5->JumpChapter5();
+		C5->S.Stage = TEXT("road"); C5->S.bArrived = true; C5->S.bP13 = true; C5->S.bConfirmed = true;
 	}
-	S47J::FObj Ch5 = S47J::Clone(S47J::Obj(Saved, TEXT("ch5")));
-	if (!Ch5)
-	{
-		// Chapter5.ts fresh(), then jumpChapter6's four changed fields below. No chapter-five class is
-		// assumed: the parallel port's integrator replaces this stand-in with BeginChapter5(saved).
-		Ch5 = S47J::New(); S47J::Set(Ch5, TEXT("v"), 1); S47J::Set(Ch5, TEXT("stage"), TEXT("to-truck"));
-		for (const TCHAR* K : { TEXT("bell"), TEXT("file"), TEXT("arrived"), TEXT("coffee"), TEXT("lights"), TEXT("clipped"), TEXT("aunt"), TEXT("radio"), TEXT("road"), TEXT("october"), TEXT("confirmed"), TEXT("ward"), TEXT("regular"), TEXT("p13") }) S47J::Set(Ch5, K, false);
-		S47J::SetNull(Ch5, TEXT("tracing")); S47J::Set(Ch5, TEXT("wrong13"), 0);
-	}
-	if (Saved && S47J::Has(Saved, TEXT("ch5"))) { Host->NotesMutable() = S47J::Strs(Saved, TEXT("notes")); Host->SetClock(S47J::Num(Saved, TEXT("clock"), Host->Clock())); }
-	else Host->SetClock(FMath::Max(Host->Clock(), 5 * 3600.0));
-	S47J::Set(Ch5, TEXT("stage"), TEXT("road")); S47J::Set(Ch5, TEXT("arrived"), true); S47J::Set(Ch5, TEXT("p13"), true); S47J::Set(Ch5, TEXT("confirmed"), true);
-	if (Host->Chapter(TEXT("ch5"))) Host->BeginChapter(TEXT("ch5"), Ch5); // integrator's null-checked stand-in
-	BeganCase = M && M->Flow ? M->Flow->ComposeCase() : S47J::New(); S47J::Set(BeganCase, TEXT("ch5"), Ch5);
+	BeganCase = M && M->Flow ? M->Flow->ComposeCase() : S47J::New();
 	BeginChapter6(BeganCase);
 	JumpAt = At;
 }

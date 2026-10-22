@@ -19,6 +19,7 @@
 #include "S47BoardRules.h"
 #include "S47CaseBoard.h"
 #include "S47Chapter4.h"
+#include "S47Chapter5.h"
 #include "S47Chapter6.h"
 #include "S47Inter.h"
 #include "S47Chapter2.h"
@@ -120,6 +121,7 @@ void AS47HUD::Start()
 		bOk &= US47Chapter3::SelfTest(Lines); // (with stationTaken's)
 		bOk &= US47Away::SelfTest(Lines); // (the time away, the trucks, the lost nights, the third one, the star hole, FLASH's frames)
 		bOk &= US47Chapter4::SelfTest(Lines); // (with the walkie's and the CB's)
+		bOk &= US47Chapter5::SelfTest(Lines); // (with the map overlay's)
 		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);

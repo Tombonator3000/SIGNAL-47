@@ -307,7 +307,7 @@ void FS47Canvas::DrawImage(const TArray<FColor>& Src, int32 SW, int32 SH, int32 
 	}
 }
 
-bool FS47Canvas::FillText(const FString& Text, double X, double Y)
+bool FS47Canvas::FillText(const FString& Text, double X, double Y, double MaxWidth)
 {
 	// Slate draws the line in white into a render target of its own size; what it covers is laid
 	// on the pixels in the fill colour. The baseline is where the canvas puts it: Slate's line
@@ -318,7 +318,10 @@ bool FS47Canvas::FillText(const FString& Text, double X, double Y)
 	const FVector2D Size = Measure->Measure(Text, Font);
 	const double MaxH = Measure->GetMaxCharacterHeight(Font);
 	const double Ascent = MaxH + Measure->GetBaseline(Font);
-	const double Left = TextAlign == EAlign::Right ? X - Size.X : TextAlign == EAlign::Center ? X - Size.X * 0.5 : X;
+	// maxWidth: the line squeezed sideways to fit (K < 1), drawn at its own width and laid narrower
+	const double K = MaxWidth > 0 && Size.X > MaxWidth ? MaxWidth / Size.X : 1.0;
+	const double Wd = Size.X * K;
+	const double Left = TextAlign == EAlign::Right ? X - Wd : TextAlign == EAlign::Center ? X - Wd * 0.5 : X;
 	const double Top = Y - Ascent;
 	// room round the advance box: a hand font reaches well past it
 	const int32 Pad = FMath::Max(6, FMath::CeilToInt(FontPx * 0.5));
@@ -334,11 +337,31 @@ bool FS47Canvas::FillText(const FString& Text, double X, double Y)
 	TSharedRef<SS47TextInk> Ink = SNew(SS47TextInk);
 	Ink->Text = Text;
 	Ink->Font = Font;
-	Ink->At = FVector2f(float(Left - Ox), float(Top - Oy));
+	// (squeezed, the line starts Pad in from the target's left, and is laid narrower below)
+	Ink->At = FVector2f(float(K < 1.0 ? Pad : Left - Ox), float(Top - Oy));
 	Ink->Size = FVector2D(Rw, Rh);
 	Renderer->DrawWidget(RT.Get(), Ink, FVector2D(Rw, Rh), 0.f);
 	TArray<FColor> Cov;
 	if (!S47Image::ReadPixels(RT.Get(), Cov) || Cov.Num() < Rw * Rh) return false;
+	if (K < 1.0)
+	{
+		// each pixel's column takes what the line covers over 1 / K of its own columns
+		const int32 X0 = FMath::FloorToInt(Left - Pad * K) - 1, X1 = FMath::CeilToInt(Left + (Rw - Pad) * K) + 1;
+		for (int32 Tx = X0; Tx <= X1; ++Tx)
+		{
+			const double S0 = Pad + (Tx - Left) / K, S1 = Pad + (Tx + 1 - Left) / K;
+			const int32 I0 = FMath::Max(0, FMath::FloorToInt(S0)), I1 = FMath::Min(Rw - 1, FMath::CeilToInt(S1) - 1);
+			if (I1 < I0) continue;
+			for (int32 j = 0; j < Rh; ++j)
+			{
+				double Sum = 0;
+				for (int32 i = I0; i <= I1; ++i) Sum += (FMath::Min(S1, i + 1.0) - FMath::Max(S0, double(i))) * Cov[j * Rw + i].R;
+				const double C = Sum / (S1 - S0);
+				if (C > 0) Blend(Tx, Oy + j, FillCol, C / 255.0 * FillA * GlobalAlpha);
+			}
+		}
+		return true;
+	}
 	for (int32 j = 0; j < Rh; ++j)
 	{
 		for (int32 i = 0; i < Rw; ++i)
