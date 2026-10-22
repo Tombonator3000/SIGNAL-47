@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "S47BoardRules.h"
+#include "S47Seen.h"
 #include "UObject/Object.h"
 #include "S47Main.generated.h"
 
@@ -52,6 +53,14 @@ public:
 	// panels it had before the board (ui/Panels.ts referenceFile, the conclusion buttons).
 	TArray<class FS47RuleBook*> Books;
 	FS47BoardHook Board;
+
+	// The night's layer (S47Night.h): the seen log, the curve, the night's events, the calls, the
+	// glimpses, the flashlight and the album, with main.ts's saw(), seenStep() and curveStep().
+	UPROPERTY() TObjectPtr<class US47Night> Night;
+	// main.ts townSeen: what the night has had, by key; a key added fresh is written in the seen log
+	FS47TownSeen TownSeen;
+	// main.ts oneAtATime(): one of the night's things is going, so nothing else of the night may start
+	bool OneAtATime() const;
 
 	// main.ts: mode and the flags that hold the game
 	enum class EMode : uint8 { Title, Play, End };

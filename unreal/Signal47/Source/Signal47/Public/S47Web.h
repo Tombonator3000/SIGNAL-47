@@ -160,6 +160,10 @@ public:
 	double DishEl(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].CurEl : 0; }
 	bool DishMoving(int32 I) const;
 	FString DishId(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].Id : FString(); }
+	// where a dish stands and its size (ext.dishes: x, z, scale)
+	double DishX(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].X : 0; }
+	double DishZ(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].Z : 0; }
+	double DishScale(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].Scale : 1; }
 
 	// ---------- doors (Doors.ts) ----------
 	bool IsDoor(const FString& ItemId) const;

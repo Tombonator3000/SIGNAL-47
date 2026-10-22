@@ -41,4 +41,13 @@ private:
 	void Close();
 	TSharedRef<SWidget> TabButton(const FString& T, const FString& Label, int32 Count);
 	TSharedRef<SWidget> Page(const FString& T, bool bRuled, TSharedRef<SWidget> Body);
+
+	// ui/album.ts: the free prints, and one of them opened big over the notebook (big()), with the
+	// previous and the next beside it; putting it back leaves the album open
+	TOptional<FS47AlbumView> Album;
+	int32 Big = INDEX_NONE;
+	TSharedPtr<class SBox> BigSlot;
+	TSharedRef<SWidget> Print(int32 I, float W, bool bBig);
+	void ShowBig(int32 I);
+	void CloseBig();
 };

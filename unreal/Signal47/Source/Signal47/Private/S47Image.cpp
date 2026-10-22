@@ -59,6 +59,23 @@ UTexture2D* S47Image::FromDataUrl(const FString& Url)
 	return T;
 }
 
+bool S47Image::DecodePixels(const FString& Url, TArray<FColor>& Out, int32& W, int32& H)
+{
+	const int32 Comma = Url.Find(TEXT(","));
+	TArray<uint8> Bytes;
+	if (!Url.StartsWith(TEXT("data:image/")) || Comma < 0 || !FBase64::Decode(Url.Mid(Comma + 1), Bytes)) return false;
+	IImageWrapperModule& M = FModuleManager::LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));
+	const EImageFormat F = M.DetectImageFormat(Bytes.GetData(), Bytes.Num());
+	if (F == EImageFormat::Invalid) return false;
+	TSharedPtr<IImageWrapper> Wr = M.CreateImageWrapper(F);
+	TArray<uint8> Raw;
+	if (!Wr.IsValid() || !Wr->SetCompressed(Bytes.GetData(), Bytes.Num()) || !Wr->GetRaw(ERGBFormat::BGRA, 8, Raw)) return false;
+	W = Wr->GetWidth(); H = Wr->GetHeight();
+	Out.SetNumUninitialized(W * H);
+	FMemory::Memcpy(Out.GetData(), Raw.GetData(), Out.Num() * sizeof(FColor));
+	return true;
+}
+
 FString S47Image::ToDataUrl(const TArray<FColor>& Pixels, int32 W, int32 H, bool bJpeg, int32 Quality)
 {
 	IImageWrapperModule& M = FModuleManager::LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));

@@ -23,7 +23,10 @@
 #include "S47Chapter.h"
 #include "S47HUD.h"
 #include "S47Image.h"
+#include "S47Album.h"
+#include "S47Flashlight.h"
 #include "S47Main.h"
+#include "S47Night.h"
 #include "S47Opening.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -230,9 +233,12 @@ void US47Flow::Boot()
 		M->Playtime = 0;
 		bSoundUnlocked = true;
 		PlayInput();
+		// (startGame's: a new night for the night's layer, and its log listening once the night has begun)
+		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) M->Story->Jump(Jump);
 		else M->Story->Start();
+		if (M->Night) M->Night->Restored();
 		return;
 	}
 	// the first title: nothing of the night is heard yet (the room tone starts with the night), and
@@ -470,9 +476,10 @@ void US47Flow::StartGame(const FStart& O)
 	bRestoringNow = true;
 	// what is saved for the systems not ported yet goes back into the next save as it was
 	Carry = O.State.IsValid() ? S47J::Clone(O.State) : S47J::FObj();
-	// (flashlight, seenLog, curve, townSeen, recWalk, stationTaken, truckTaken, the odometer, townEvents,
-	// glimpses, cutouts, nightEvents, abduction, lineLights, pasture, motelTv, roofSteps, officePhone,
-	// truckB, ninth, starHole, morning, sameThread, album, saroDark: the night's systems, not ported yet)
+	// the flashlight, the seen log, the curve, townSeen, glimpses, nightEvents and the album (S47Night)
+	if (M->Night) M->Night->Restore(O.State);
+	// (recWalk, stationTaken, truckTaken, the odometer, townEvents, cutouts, abduction, lineLights, pasture,
+	// motelTv, roofSteps, officePhone, truckB, ninth, starHole, morning, sameThread, saroDark: not ported yet)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
 	StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
 	if (LoadBoard && O.State.IsValid()) LoadBoard(S47J::Obj(S47J::Obj(O.State, TEXT("case")), TEXT("board")));
@@ -501,6 +508,8 @@ void US47Flow::StartGame(const FStart& O)
 		M->Player->Pitch = S47J::Num(Pose, TEXT("pitch"));
 	}
 	bStarting = false;
+	// seenSync(); seenQuiet = false: the night's log listens again
+	if (M->Night) M->Night->Restored();
 	FadeInSoon(0.25f);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: night started, case %d, %s"), CaseId, Checkpoint.IsEmpty() ? TEXT("new") : *Checkpoint);
 }
@@ -534,9 +543,11 @@ void US47Flow::LeavePlay()
 	M->UI->Close(true);
 	StopMusic(0.5f);
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
+	// nightEvents, the seen log (quiet) and the curve (S47Night)
+	if (M->Night) M->Night->Leave();
 	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, archive, arrayTip,
-	// world.stopDriving, roadside, townEvents, nightEvents, roofSteps, the CB, reelTape, officePhone,
-	// truckB, truckTaken, the radio, the odometer, the seen log, the curve: not ported yet)
+	// world.stopDriving, roadside, townEvents, roofSteps, the CB, reelTape, officePhone, truckB,
+	// truckTaken, the radio, the odometer: not ported yet)
 	if (M->Story) M->Story->Reset();
 	if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -551,8 +562,10 @@ void US47Flow::ToTitle()
 	M->UI->Close(true);
 	StopMusic(1.5f);
 	if (M->Audio) { M->Audio->StopMotors(); M->Audio->SetCarrier(0, 0, 0); M->Audio->SignalOff(); M->Audio->StopPhoneCalls(); }
+	// the curve (S47Night)
+	if (M->Night) M->Night->Leave(true);
 	// (motelTv, abduction, saroDark, follow, arrayBack, recWalk, stationTaken, truckTaken, archive,
-	// arrayTip, world.stopDriving, roadside, the CB, the radio, the curve: not ported yet)
+	// arrayTip, world.stopDriving, roadside, the CB, the radio: not ported yet)
 	if (M->Story) M->Story->Reset();
 	if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -759,6 +772,8 @@ S47J::FObj US47Flow::GameState()
 		S47J::Set(Pose, TEXT("pitch"), M->Player->Pitch);
 		S47J::Set(State, TEXT("pose"), Pose);
 	}
+	// flashlight, town, seen, curve, album (S47Night)
+	if (M->Night) M->Night->Save(State);
 	return State;
 }
 
@@ -813,8 +828,12 @@ FString US47Flow::CaptureThumb()
 
 FString US47Flow::PlaceName() const
 {
+	return PlaceName(M->Player ? M->Player->Pos : FVector::ZeroVector);
+}
+
+FString US47Flow::PlaceName(const FVector& P) const
+{
 	// main.ts placeName: the place on a save's card
-	const FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
 	const FString Area = M->Web ? M->Web->Area() : FString(TEXT("saro"));
 	auto In = [&](const TCHAR* Path) { return M->Web && M->Web->Rect(Path).Contains(P.X, P.Z); };
 	// (world.indoors, the town and the road's stops are the world's, not ported yet: the inside of the
@@ -957,6 +976,8 @@ FS47NbExtras US47Flow::NotebookExtras() const
 	X.Kit = KitItems();
 	X.People = PeopleItems();
 	X.bTouch = false;
+	// album.view(game.clock): the free frames, as far as each has come up
+	if (M->Night && M->Night->Album && M->Story) X.Album = M->Night->Album->View(M->Story->Clock());
 	return X;
 }
 
@@ -994,7 +1015,8 @@ FS47MapAt US47Flow::MapAt() const
 
 TArray<FString> US47Flow::TownSeen() const
 {
-	return S47J::Strs(Carry, TEXT("town"));
+	// main.ts townSeen (US47Main), as the night has it now
+	return M->TownSeen.Array();
 }
 
 TArray<FS47KitItem> US47Flow::KitItems() const
@@ -1021,7 +1043,10 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 		Kit.Add({ TEXT("Field camera"), TEXT("The SARO field camera. C raises it, Space takes the picture: the case frames on sheet film, anything else out of the instant back, into the album."),
 			FString::Printf(TEXT("%d case frames%s"), Frames, RollText ? *(TEXT(", ") + RollText()) : TEXT("")), TEXT("camera"), FString() });
 	}
-	// (the flashlight, core/Flashlight.ts: not ported yet)
+	if (M->Night && M->Night->Flashlight && M->Night->Flashlight->bHave)
+	{
+		Kit.Add({ TEXT("Flashlight"), TEXT("From the passenger seat of the truck. F switches it."), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
+	}
 	if (bCh1) Kit.Add({ TEXT("Truck keys"), TEXT("SARO 07, the service truck. The keys stay in it."), TruckAt, TEXT("keys"), TEXT("SARO 07") });
 	if (Papers) Kit.Add({ TEXT("Papers"), TEXT("Folded into the notebook. Papers and Findings have them."), FString::FromInt(Papers), TEXT("papers"), FString() });
 	if (Town.Contains(TEXT("nickel"))) Kit.Add({ TEXT("A nickel"), TEXT("From the coin return of the payphone in Caliche. Bright as the day it was struck."), TEXT("1947"), TEXT("nickel"), FString() });

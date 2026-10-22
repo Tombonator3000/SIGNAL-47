@@ -26,9 +26,10 @@ class FS47Opening;
 // (AS47Story) from outside; the host keeps its LoadCase and OnCheckpoint hooks, which this sets.
 //
 // What main.ts saves for the night's systems that are not in the Unreal version yet (the truck,
-// the flashlight, the time away, the album, the seen log, the curve, Caliche, the odometer, and
-// in the case the threads, the array and Hondo's telex) is kept from the save that was opened
-// and written back unchanged, so a save from the web version keeps its fields.
+// the time away, the odometer, and in the case the threads, the array and Hondo's telex) is kept
+// from the save that was opened and written back unchanged, so a save from the web version keeps
+// its fields. The night's layer (S47Night: the flashlight, townSeen, the seen log, the curve, the
+// album) writes its own and is put back in startGame's order.
 UCLASS()
 class SIGNAL47_API US47Flow : public UObject
 {
@@ -49,6 +50,7 @@ public:
 	TOptional<FS47SaveMeta> WriteSave(const FString& Kind, int32 Slot, FString& OutError);
 	FString SaveBlock() const;                 // why the game cannot be saved now; empty when it can
 	FString PlaceName() const;                 // the place on a save's card
+	FString PlaceName(const FVector& P) const; // placeName(p): the place of a point (the truck's, in the cab)
 	FString CaptureThumb();                    // 192 x 108 JPEG of the player's view
 	S47J::FObj GameState();                    // the GameState a save holds (writeSave)
 
