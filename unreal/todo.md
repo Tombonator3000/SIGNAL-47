@@ -1,5 +1,13 @@
 # Todo for unreal/
 
+## Takeaway og samlet åpning, codex/evening-runtime, 24. oktober 2026
+
+- [x] Én pose/kaffe kan settes ned og plukkes opp på seks faste steder; plassering, kjøp og ventende svar lagres uten duplikat. Bilplassene følger bilen.
+- [x] Valgfri kveldsmat etter D01 ved skrivebord/annex, fra hånd eller bord. Firesekunders overgang, tolv minutter fremover innen tidsbudsjettet, papir/tom kopp etterpå. Lasting under overgangen gjentar ingenting.
+- [x] Holdt mat skjules ved kamera/lykt/notatbok og har ingen kollisjon. Gamle arkivbordhandlingen beholdes med korrekt query-høyde; bare én diner-servering tegnes.
+- [x] Sluttkilde f83f3dc9/core92dc7a47: bygg/pakking, 1298 selvtester, 33 vanlige bruksforløp, 21 ferske matlastinger, bilbilder, 48 inngangspasseringer, hel burgerrute og tre gamle regresjoner PASS. Bilder gjennomgått, seks pakkehasher uendret. Se EVENING_TAKEAWAY.md. Content-lenker/OpenOrder ryddet; lokale committer, ingen push/PR/installasjon.
+- [ ] Menneskelig input og lytting etter Claudes integrasjon med nyere core6614cd90. Denne pakken fryser core92dc7a47; ingen sammenhengende fullnatt eller ny ytelsesmåling påstås.
+
 ## Åpningens biler og inngang, codex/evening-runtime, 23. oktober 2026
 
 - [x] Privat wagon med eget karosseri, førermiljø og åpen dør; alle SARO-riggdeler skjult og gjenopprettet på riktig bil. Komplett delt standardmodell bevart.

@@ -2,6 +2,16 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Takeaway etter innkjøringen, Codex 24. oktober 2026
+
+- Samlet verifisert pakkekilde `f83f3dc9` med core `92dc7a47`: 1298 selvtester, 33 vanlige bruksforløp/21 ferske matlastinger, begge biler, 48 inngangspasseringer, burgerrute og 3/3 korte regresjoner PASS. Seks pakkehasher uendret, bilder gjennomgått og midlertidig Content/OpenOrder ryddet. Nyere core `6614cd90` er ikke i pakken; Claude integrerer. Ingen push/PR/installasjon.
+- `FS47Takeaway`, eid av `FS47Evening`, holder én porsjon pose/kaffe. Faste steder: `diner`, `desk`, `annex`, `hood`, `passenger`, `bench` (dinerens hagebenk, ikke kjemilabbens wetBench). Bilplasser følger bilens kanoniske pose. Ingen fri fysikk eller nye gangkollidere.
+- Save får additivt `evening.takeaway` versjon 1 med `mode` og `spotId`. Pakken er sannhetskilde for kjøpt/utlevert/spist, også mellom UI-callback og neste Tick/autosave. Gammel utlevert mat blir båret; ukjent plass gir den tilbake til hånden. Spist mat kommer ikke tilbake.
+- `EatTakeaway()` setter konsumering atomisk uten å endre dialogpeker, ventende svar eller dokumenter. Spisevalget finnes etter D01 ved skrivebord/annex, med plass til hele 720 sekunder før historiens neste reserverte grense. Tid går bare fremover. Sted, konsumering og tid committes før save; firesekunders fade er transient og gjentas ikke etter load. Ingen måltid under telefon, kritisk hendelse eller finale.
+- Inaktiv matproxy må ha NoCollision, ikke bare tom Label: Inter.Pick stanser ellers ved første usynlige mål. AdoptNode normaliserer også meshskala, så målvolumets skala settes etter adopsjon. Holdt mat er uten kollisjon og skjules under kamera, lykt, modal/notatbok og kjøring.
+- Den gamle workTable-queryen omsluttet matmålene ved 0,78 m. Den følger nå bordplaten som et 1 cm plan ved 0,775 m, med opprinnelig fotavtrykk/ID/arkivhandling og uendret gangkollider. Vanlig ray/fokus/bruk må fortsatt åpne arkivet. Dinerens gamle disktallerken skjules mens samme porsjon holdes; ingen dobbel servering.
+- `-S47EveningTakeaway` og `-S47TakeawayEatPlaced` tester vanlig interaksjonskjede og ferske disk-/verdenslastinger. Modalskjermbilder må bruke sanntidsticker: Story.After står stille mens paneler pauser spillklokken. Rapport og faktisk sluttstatus: `EVENING_TAKEAWAY.md`; egen kandidat/evidens i `~/scratch-bm/Signal47-takeaway`. Menneskelig input, lytting og fullnatt merkes fortsatt UNVERIFIED.
+
 ## Åpningens biler og SARO-inngang, Codex 23. oktober 2026
 
 - Pakket kilde `66d2b5a6`, core `04517414`, retter Toms tre åpningsfeil fra `ed061aca`. Rapport og reproduksjon: `EVENING_VEHICLE_FIXES.md`; kandidat/bevis: `~/scratch-bm/Signal47-opening-vehicles`. Nyere core-endringer er ikke en del av denne testpakken.
