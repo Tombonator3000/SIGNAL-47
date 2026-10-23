@@ -25,7 +25,7 @@ void FS47Evening::ControlTest(double Dt)
 	{
 		bRouteFailed = true; bRouteDone = true;
 		if (M && M->Player) M->Player->TestMove.Reset();
-		UE_LOG(LogTemp, Error, TEXT("S47: evening route %s FAIL stage %d: %s"), *RouteName, RouteStage, *Why);
+		UE_LOG(LogTemp, Error, TEXT("S47: evening route %s FAIL stage %d at %.2f %.2f: %s"), *RouteName, RouteStage, M->Player->Pos.X, M->Player->Pos.Z, *Why);
 		FPlatformMisc::RequestExit(false);
 	};
 	if (!bRouteInitialized)
@@ -126,7 +126,7 @@ void FS47Evening::ControlTest(double Dt)
 	if (RouteStage == 2 || RouteStage == 6)
 	{
 		if (M->World->bDriving || M->World->bBusy || M->Story->IsCinematic()) return;
-		if (bRouteArrived) { Stage(10); return; }
+		if (bRouteArrived) { Stage(9,2); return; }
 		if (RouteName == TEXT("direct") || M->World->TruckAt != TEXT("diner") || !M->World->TruckOnLot()) { Fail(TEXT("drive stopped outside the expected diner/SARO parking zone")); return; }
 		if (Pack.Flag(TEXT("handover_done")) || M->Story->Begun.Contains(TEXT("ch5"))) { Fail(TEXT("early diner started later story")); return; }
 		DinerWalk(false);
@@ -204,12 +204,13 @@ void FS47Evening::ControlTest(double Dt)
 		double Auto = 24; FParse::Value(FCommandLine::Get(), TEXT("S47Auto="), Auto); M->World->Autopilot = Auto;
 		Stage(6); return;
 	}
+	if (RouteStage == 9) {Stage(10);return;}
 	if (RouteStage == 10)
 	{
 		if (RouteArrivalCount != 1 || RouteDistance < 100 || !Opening() || Commute() || M->World->bDriving || !Pack.Documents().IsEmpty()) { Fail(TEXT("parking checkpoint state/travel/documents invalid")); return; }
 		const double Before = M->Story->Clock(); Parked(TEXT("saro"));
 		if (M->Story->Clock() != Before || Pack.CanStart(TEXT("I11_SARO_ARRIVAL"))) { Fail(TEXT("repeated parking reset the clock or arrival")); return; }
-		Shot(TEXT("parking")); RouteWalk = {FVector(8.5,0,2.2), FVector(7.5,0,1.6)}; RouteWalkIndex = 0;
+		Shot(TEXT("parking")); RouteWalk = {FVector(M->Player->Pos.X,0,2.2), FVector(7.5,0,1.6)}; RouteWalkIndex = 0;
 		Stage(11, 2); return;
 	}
 	if (RouteStage == 11)
