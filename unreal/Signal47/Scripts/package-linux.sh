@@ -14,7 +14,7 @@ BUILD_LOG=$(mktemp "$(dirname "$P")/Saved/Logs/package-linux.XXXXXXXX.log")
   '-UbtArgs=-MaxParallelActions=4 -NoUBA' '-AdditionalCookerOptions=-SkipZenStore' 2>&1 | tee "$BUILD_LOG"
 # UAT can return success while replacing broken cooked materials with the default.
 # Such a package is unusable for either visual comparison or PSO recording.
-if rg -n 'Failed to compile Material|Default Material will be used in game' "$BUILD_LOG"; then
+if grep -nE 'Failed to compile Material|Default Material will be used in game' "$BUILD_LOG"; then
   echo "Cooked material compilation failed; package rejected. Log: $BUILD_LOG" >&2
   exit 1
 fi
