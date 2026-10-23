@@ -3,13 +3,17 @@
 
 ## Grafikkpass på port-gfx, 23. oktober 2026
 
-- [x] Gjenoppta WIP, flette `unreal-port-core` ved `93ab1568`, rette startupens tidlige retur og styrke minne-/prosessvern og måleverktøy.
-- [x] Offline-kontroll av overflateprofiler, detaljtekstur, kontrollrommets CRT-materialkontrakt, Python-/shellsyntaks og lokale UE-API-er.
-- [ ] Når Toms installerte spill er avsluttet: bygg editor/spill og regenerer private materialer. Kjør pakket selvtest og korte meny-/visningsscenarioer.
-- [ ] Lag gyldig baseline og nye før/etter-bilder for alle 20 kameraer ved natt og daggry. Vurder lys, skygger, glassrefleks, lesbarhet, støy og lekkasjer i faktisk runtime.
-- [ ] Ta opp korte Vulkan-PSO-turer i Low/Clean og High/Ultra/VHS ved begge klokker. Utvid samme cooks stabile nøkler, pakk `.spc`, og kontroller faktisk cacheåpning i pakket spill.
-- [ ] Mål første ti sekunder fra verdensstart og første ti synlige sekunder kald/varm før/etter; mål tyngste 1440p High-utsnitt samt Low/Ultra. Ingen nye fps-resultater finnes ennå.
-- [ ] Oppdater `LIGHTING.md` og oppgaveraden med faktisk runtime-resultat før endelig grafikklevering til Claude. `S47Props` og `Config/Props` tilhører Claude-hjelperen.
+- [x] Viderefør WIP og flett siste core/Props/dokumentasjon uten egne Props-endringer.
+- [x] Materialcook uten fallback, 118 profiler/CRT-glass og integrasjonskommando for generert innhold. V5-selvtest (1220) og native fem emitting-slots av/på; V9 terminalfront visuelt PASS.
+- [x] Korrigerte 20 + 20 referanser og 40 gjennomgåtte før/etter-par med originalhash/galleri. Props-forskjeller er oppgitt.
+- [x] Full 38 × 6 samme-cook PSO-opptak, 4215 stabile PSO-er, sluttcook 599 og runtime-GUID/222 bundled graphics: cachebevis 9/9 PASS.
+- [x] Kald/varm sluttpakke, komplette første 10 verdens-/synlige sekunder. READY 11,337/5,594 s, synlige maks 31,585/31,888 ms og ingen rammer over 33,333 ms.
+- [x] Sluttpakkens sju tilfeller, 1220-selvtest og 36 fasebilder visuelt kontrollert, samt korrigerte seks grafikkstrømtilstander. Gamle matrix-dark-bilder brukes ikke som av-bevis.
+- [x] PreviousNight-kjøring og to identisk-geometri fyllpar visuelt PASS, compare/contrast-control.png og contrast-yard.png, med proveniens i contrast-manifest.json.
+- [x] Åtte lengre High/1440p-prøver ved natt/daggry PASS 93,81–106,73 fps, maks p95 18,142 ms. Korte matriseprøver og Low/Ultra er dokumentert, ikke bruk dem som stabilt 60 fps-bevis.
+- [x] Sluttregresjon PASS 151,3 s: tittel, pause, notatbok, kjøring, THE EVENT og valgt 30 fps, 285 synlige cap-intervaller med 33,333457 ms i snitt.
+- [x] Sluttall og integrasjonskommando i LIGHTING/egen OPP-rad/minne/logg. Content/Audio/Licensed/Free-lenker fjernet med mål bevart, OpenOrder gjenopprettet og syntaks/diffkontroll PASS.
+- [x] Kilde og bundlet SPC levert i vanlig commit på port-gfx, med alle grafikkprøver og bildepar dokumentert. Ingen installasjon, push eller PR bestilt.
 
 ## Anomaly spotting og byens funksjon (2026-10-23)
 

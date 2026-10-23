@@ -339,9 +339,17 @@ def graphics_cache_proof(recorded, expanded, cook, binary, runtime):
     counts = [dict(total=int(n), graphics=int(g), compute=int(c), raytracing=int(r), path=p.strip())
               for n, g, c, r, kb, p in written if Path(p.strip()).name == Path(binary['path']).name]
     final = counts[-1] if counts else {}
+    binary_name = Path(binary['path']).name
+    bundle_key = binary_name.split('_SF_', 1)[0]
+    physical = re.findall(r'Opened FPipelineCacheFile: (.+?) \(GUID: ([0-9A-Fa-f-]+)\) with (\d+) entries\.', runtime)
+    matching_physical = [dict(filename=f, guid=guid.replace('-', '').upper(), entries=int(n))
+                         for f, guid, n in physical
+                         if Path(f).name == binary_name and guid.replace('-', '').upper() == binary['guid']
+                         and int(n) == final.get('total')]
     opens = re.findall(r'FPipelineCacheFile\[([^\]]+)\] opened [^\n]*?filename (.*?), guid ([0-9A-Fa-f-]+)\.', runtime)
     matching = [dict(key=k, filename=f, guid=guid.replace('-', '').upper()) for k, f, guid in opens
-                if guid.replace('-', '').upper() == binary['guid'] and Path(f).name == Path(binary['path']).name]
+                if k == bundle_key and guid.replace('-', '').upper() == binary['guid']
+                and (Path(f).name == binary_name or (f == bundle_key and matching_physical))]
     keys = {item['key'] for item in matching}
     active, graphics_processed, queues = None, 0, []
     for line in runtime.splitlines():
@@ -363,7 +371,8 @@ def graphics_cache_proof(recorded, expanded, cook, binary, runtime):
               'runtime_processed_bundled_graphics': graphics_processed > 0}
     return {'status': 'PASS' if all(checks.values()) else 'UNVERIFIED', 'valid_cache_proof': all(checks.values()),
             'checks': checks, 'cook_spc_inputs': consumed, 'cook_final_counts': final, 'binary_cache': binary,
-            'runtime_matching_opens': matching, 'runtime_queues': queues, 'runtime_graphics_processed': graphics_processed,
+            'runtime_matching_opens': matching, 'runtime_physical_opens': matching_physical,
+            'runtime_queues': queues, 'runtime_graphics_processed': graphics_processed,
             'performance_status': 'UNVERIFIED; cache-content proof is not FPS evidence',
             'problems': [name for name, passed in checks.items() if not passed]}
 

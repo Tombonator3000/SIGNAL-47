@@ -143,6 +143,12 @@ void Tick(AS47Web* W, float)
  M->Player->Eye = TerminalFront ? 1.0 : S.InitialEye;
  const bool InCab = FString(V.Name) == TEXT("cab") || V.State == EState::HeadlightsOff || V.State == EState::HeadlightsOn;
  if (Next != S.Step) {
+  auto SaroPowerState = [](EState State) { return State == EState::RackOnline || State == EState::RackDark || State == EState::IndicatorsOnline || State == EState::IndicatorsDark; };
+  if (S.Step >= 0 && SaroPowerState(Cameras[S.Step].State) && !SaroPowerState(V.State)) {
+   M->Story->bPowered = true; M->Story->Rx.bPowered = true; M->Story->Rx.Stage = 3; M->Story->PowerOut(false);
+   W->SetLightsScale(1.f, 1.f); W->SetTubes(true); W->SetLever(true); W->SetLeds(true);
+   for (int32 I = 0; I < 4; ++I) W->SetCrtPowered(I, true);
+  }
   S.Step = Next; S.CameraAt = Now; S.Shot = false; S.CabReady = false;
   S.Frames.Reset(); S.Game.Reset(); S.Draw.Reset(); S.Gpu.Reset();
   S.FirstFrame = S.LastFrame = 0;
@@ -159,6 +165,10 @@ void Tick(AS47Web* W, float)
   if (V.State == EState::RackOnline || V.State == EState::RackDark || V.State == EState::IndicatorsOnline || V.State == EState::IndicatorsDark) {
    const bool Online = V.State == EState::RackOnline || V.State == EState::IndicatorsOnline;
    M->Story->bPowered = Online; M->Story->Rx.bPowered = Online; M->Story->Rx.Stage = Online ? 3 : 0; M->Story->PowerOut(!Online);
+   // Story is paused during a tour, so drive its real lamp inputs here as well.
+   // These uniform power changes preserve the recorded shader/PSO permutations.
+   W->SetLightsScale(Online ? 1.f : 0.f, Online ? 1.f : 0.f);
+   W->SetTubes(Online);
    W->SetLever(Online); W->SetLeds(Online);
    for (int32 I = 0; I < 4; ++I) W->SetCrtPowered(I, Online);
   }

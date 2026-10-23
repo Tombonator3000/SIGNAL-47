@@ -1,74 +1,124 @@
 # Ekte lys og skygger i SIGNAL / 47
 
-## Grafikkleveranse 23. oktober 2026, foreløpig resultat
+## Grafikkleveranse 23. oktober 2026, cache og oppstart verifisert
 
-`port-gfx` viderefører WIP `64d943e7` med bedre lampeskygger, overflater, CRT-glass, mørkere natt, RX-indikatorer og en egen lastefase. `unreal-port-core` er flettet til `ae95b09a` via `a0eeed37`, etter prosessorgrensesnittet i `575311ca`. Claudes nye Props er dermed med i sluttkandidaten; modul og plasseringsfiler beholdes byte for byte fra core. Egne renderendringer endrer ikke geometri eller modellplassering. Versjonsparene fra før-kilden viser også Claudes innflettede modeller; en separat `-S47PreviousNight`-prøve sammenligner fylllyset med identisk ny geometri. Kandidaten bygges i `~/scratch-bm/Signal47-build`; standardinstallasjonen er ikke erstattet.
+`port-gfx` viderefører WIP `64d943e7`, `be7c89e5` og `30d407be`. Core `ae95b09a` med Claudes Props er innflettet via `a0eeed37`; nyeste core `9d7571e2`, dokumentasjon om videre gameplay, via `88353b0c`. S47Props og Config/Props beholdes uendret fra core. Egne renderendringer flytter ingen geometri. Kandidaten ligger i `~/scratch-bm/Signal47-build`; installert spill og standardstarter er ikke erstattet.
 
-**Bygg, før-serie, pakket selvtest og to kandidatutsnitt er verifisert. Endelig PSO-bundle, oppstartssammenligning og full etter-serie gjenstår.** PASS nedenfor gjelder den navngitte prøven og pakken, ikke hele spillet eller en senere pakke.
+**Bundlet graphics-PSO-cache, kald/varm oppstart og 40 før/etter-par er PASS.** Første ti synlige sekunder på sluttpakken har ingen rammer over 33,333 ms: kald 1111 rammer / 111,1 fps, varm 1095 / 109,5 fps. Sluttpakkens sju indikatorprøver og korrigerte strømtilstandsbilder er også PASS. Alle åtte lengre High-prøver og seks sluttregresjoner er PASS. De to identisk-geometri fyllparene er også visuelt PASS. PASS gjelder navngitte bevis, ikke hel gjennomspilling med menneskelig input.
 
-Bevisroten er `/home/tom/scratch-bm/Signal47-gfx-2026-10-23/`. Maskinen har 31 GiB RAM, NVIDIA RTX 3080 med 10 240 MiB VRAM og driver 595.99.02, på Linux/Vulkan SM6. Toms installerte spill, PID 7609, ble observert avsluttet klokken 07:52 Europe/Oslo og ble aldri stoppet av agenten. Egne tunge jobber er kjørt sekvensielt etter prosess- og minnekontroll. Bare målinger med tom contention-liste brukes til fps; separate eller overlappende jobber gir ikke ytelsesbevis. `static/installed-game-grace.watch.jsonl`, `static/gpu.txt` og hver kjørings `meta.json`/`.job.json` bevarer grunnlaget.
+Bevisrot: `/home/tom/scratch-bm/Signal47-gfx-2026-10-23/`. Linux/Vulkan SM6 på RTX 3080, 10 240 MiB VRAM, driver 595.99.02 og 31 GiB RAM. Egne tunge jobber kjøres sekvensielt etter free/pgrep og minst 10 GiB tilgjengelig. Tom avsluttet selv gammel PID 7609 før 07:52:33, startet installert spill som PID 171598 kl. 11:00:59 og avsluttet før 11:06; opptaket ventet. Ingen installert prosess er stoppet. Konkurrerende, avbrutte eller feiloppløste kjøringer brukes ikke som fps-bevis.
 
-### Lys, overflater og indikatorer
+### Nattkontrast, skygger og overflater
 
-Nattens skylight er senket fra 0,18 til 0,055, månen fra 0,16 til 0,055 lux med kaldere farge, og lampenes indirekte bidrag fra 1 til 0,52. Verdiene glir mot den tidligere daggryresponsen. Direkte lampestyrke, lommelykt, billykter og fast eksponering beholdes, slik at lyspølene skiller seg tydeligere fra de ubelyste flatene. VHS-sortløftet er redusert fra `(0.026, 0.031, 0.033)` til `(0.014, 0.018, 0.022)`, med svak vignett og eksisterende korn. `-S47PreviousNight` er en isolert sammenligning av gammelt fyllnivå på de nye materialene; den erstatter ikke den separate før-pakken.
+Skylight om natta er 0,055 mot tidligere 0,18, månen 0,055 mot 0,16 lux med kaldere farge, og lampenes indirekte nattbidrag 0,52 mot 1. Tidligere daggryendepunkt beholdes. Direkte lamper, lommelykt, billykter og fast eksponering har samme styrke. VHS-sortløftet er redusert fra `(0.026, 0.031, 0.033)` til `(0.014, 0.018, 0.022)`, med svak vignett og eksisterende korn. Ubelyste hjørner og mark er mørkere, mens varme lampefelt og leselige gangflater skiller seg tydeligere ut.
 
-Kontaktspor og kildestørrelser følger rør, pærer, skjermflater og instrumentstripe. STATION 01, hytta, dineren og Caliche har kortere, fysiske lyskilder ved de eksisterende armaturene. High/Ultra beholder Lumen, med surface-cache-refleksjon på High og hit lighting på Ultra; Low bruker enklere direkte lys og AO. Low/High beholder 60 prosent intern oppløsning med TSR, Ultra 100 prosent.
+Kontaktspor og kildestørrelser følger rør, pærer, skjermflater og instrumentstripe. STATION 01, hytta, dineren og Caliche har kortere fysiske lyskilder ved eksisterende armaturer. High/Ultra har Lumen, med surface-cache-refleksjon på High og hit lighting på Ultra; Low enklere direkte lys og AO. Low/High bruker TSR fra 60 % intern oppløsning, Ultra 100 %.
 
-118 eksisterende flate materialer får normaldetalj, ruhetsvariasjon og bred fargevariasjon i fysisk skala, med én deterministisk RGBA-detaljtekstur og verteksfargens smussbidrag. De fordeler seg på maling 23, vinyl 22, metall 18, betong 14, tre 12, jord 11, puss 7, gulv 5, vei 4 og asfalt 2. Papir, mennesker, flora, opprinnelige PBR-kart og emissive/gjennomsiktige flater er utelukket. Seks lit glassmaterialer beholder dielektrisk respons. De fire SARO-CRT-ene får en separat lit glassmaster med ruhet 0,22 og specular 0,5; `Map/Color/Brightness/Untonemapped` fortsetter å drive det opprinnelige bildet. Avslått fosfor har null emissive. KELVORA-filmflatene beholder sin unlit-kontrakt. Profilvalg, kartvern og determinisme er kontrollert i `static/materials-review.json`.
+118 flate materialer har normaldetalj, ruhetsvariasjon og bred fargevariasjon i fysisk skala, med deterministisk RGBA-detaljtekstur og verteksfargens smussbidrag. Fordeling: maling 23, vinyl 22, metall 18, betong 14, tre 12, jord 11, puss 7, gulv 5, vei 4 og asfalt 2. Papir, mennesker, flora og opprinnelige PBR-kart er bevart. Seks glassmaterialer beholder dielektrisk respons. Fire SARO-CRT-er bruker separat lit glassmaster med ruhet 0,22/specular 0,5 og opprinnelig bilde-/strømkontrakt. Avslått fosfor har null emisjon. KELVORA-filmflatene beholder unlit. `static/materials-review.json` og faktisk pakket runtime dokumenterer materialene.
 
-RX-rackets 18 indikatorinstanser brukte ett kildemateriale på seks GLB-spor, mens den gamle bindingen bare traff slot0. Alle seks spor får nå samme levende materiale og riktig instansefarge. `SetLed`/`FlickerLed`, mottakerens strøm og SARO-kutt driver lampene; kopier ved flimmer og utskrift beholder strømvernet. Konsollens emisjonskart, skriverlampen og prosessorens display/VU-flater får tilsvarende vern. CPU-kontrollen av den faktiske gatefunksjonen er PASS i `static/indicator-gates-review.json`.
+### RX-bank og små emissive flater
 
-V3-indikatorbildenes «off» isolerte ikke avslått tilstand: levende historieflimmer kunne tenne banklampene igjen. De bildene brukes derfor ikke som bevis for korrekt av/på. Testharnessen er rettet til å styre faktisk receiver-/K3-tilstand gjennom overgangene. V4 er visuelt kontrollert i `audit/indicators-v4-audit.json`: rack, konsoll og skriver fra v4-suiten, og en separat gyldig prosessor-retest etter kapasitetsavbrudd. Etter innflettingen får den nye DP-80-lampen, CB-basens tre flater og 3278-displayet fem egne strømstyrte native emissive-slots. EmissiveFactor skaleres, mens opprinnelig styrke, kart, kropp og glass beholdes. V5-prøven av disse modellene er PENDING.
+Rackets 18 LED-instanser brukte ett kildemateriale på seks GLB-spor; gammel binding traff bare slot0. Alle seks har nå samme levende materiale og riktig grønn/amber instansefarge. SetLed/FlickerLed, faktisk receiver/K3-strøm og SARO-kutt driver dem. Konsollens emisjonskart og prosessorens bilde-/glass-/VU-flater får tilsvarende strømvern, også etter materialkopier under dimming.
 
-### Materialcook og pakket kandidat
+Etter Props-bygging oppdages fem native glTF-emitterspor: DP-80s to grønne dioder i én materialslot, CB-basens to målere og lampe, samt 3278-displayet. Bare EmissiveFactor skaleres med stasjonsstrøm. Opprinnelig EmissiveStrength, emisjonskart, PBR-kropp og glass beholdes. Oppdagelsen caches på adopterte noder uten å endre Props.
 
-Første materialcook returnerte UAT exit0, men 179 materialinstanser falt tilbake til standardmaterialet. Denne pakken er merket FAIL og er ikke visuelt bevis: `build-logs/candidate-package-initial.validation.json`. Feilen var tilkoblingen til `StaticSwitchParameter`: Unreal Python forventer inngangene `True`/`False`. Importøren bruker nå disse navnene og avbryter ved mislykket tilkobling. `S47_ONLY=masters` reparerte eksisterende masterobjekter uten å bytte materialinstansenes foreldre eller regenerere geometri/teksturer. Kildekontroll og faktisk kjøring ligger i `static/material-switch-review.json` og `build-logs/candidate-master-repair.log`.
+V5 består 1220 selvtestsjekker og fem apparatvinkler med 30 fasebilder, `tests/indicators-v5`. Rack-off/dark er visuelt slukket; online/flimmer/restore lyser tydelig. DP-80, CB og prosessor er strømprøvd med bevarte kart/styrker og MID-kloning i dark. V9 viser faktisk 3278-display fra frontsiden, `audit/terminal-v9-audit.json`. Receiver-off betyr ikke at separate stasjonsapparater er av; dark tester SARO-kutt.
 
-`package-linux.sh` avviser nå både «Failed to compile Material» og «Default Material will be used in game», selv om UAT melder suksess. Den reparerte materialpakken og den ferske pipeline-kandidaten består denne kontrollen. Sistnevnte bygget og pakket på 76,9 s uten overlapp, med stabile Vulkan-nøkler og uten de 179 shaderfeilene: `build-logs/pipeline-candidate-package.log` og `.job.json`.
+PSO-matrisens dark-bilder er ikke selvstendig strømbevis: den pausede grafikkharnessen slo ikke av alle virkelige lampedrivere. Dette er rettet diagnostisk med uniform-strømverdier og gjenoppretting ved neste kamera; ingen shaderpermutasjon er endret. Sluttpakkens komplette seksfasetest og `after/final-state-correction` er nå PASS og gir korrekt strømbevis for alle seks valgte grafikktilstander. De sju sluttprøvene, inklusive selvtest (1220), tok 228,8 s; 36 fasebilder er kontrollert med samme slutt-ELF og fem containere i `audit/final-indicators-audit.json`. Ikke bruk gamle matrise-dark-bilder som PASS. V3s tidligere feilaktige off-bilde og ugyldige terminalkameraer er bevart som forkastet historikk.
 
-Den lokale UE 5.8.4-stagingen kunne henge i Zen-opploggen etter ny cook, også med begrenset .NET-parallellitet. Pakking bruker derfor `-AdditionalCookerOptions=-SkipZenStore`, med IoStore beholdt. En fersk før-cook med denne løsningen besto på 36,9 s. Dette endrer lagringsløypa for cook, ikke baseline- eller kandidatbelysningen; motorfiler er ikke redigert. Tunge kompilatorjobber og shaderarbeidere er begrenset for maskinens minnebudsjett.
+### 40 ekte før/etter-par
 
-### Oppstart og PSO
+`compare/index.html` viser 20 nattpar og 20 daggrypar med begge uretusjerte original-PNG-er. `compare/night-manifest.json`, `dawn-manifest.json` og `audit/areas-v3-audit.json` knytter 80 originale bildehash, 40 par og 202 lokale gallerilenker til metadata/pakkehash. Alle 20 natt- og 20 daggryetterbilder er visuelt kontrollert, `audit/areas-v3-visual-audit.md`.
 
-`S47Startup` viser en terminal i S47Theme-stilen under synkron lasting og renderoppvarming. Hele verdenen bygges før ventefasen; WIP-feilen som returnerte fra `BeginPlay` før rom, himmel og native lys er fjernet. Verdenen tegnes bak skjermen mens spilltid, input, lyd og testhandlinger venter. Klar-signalet krever tom filcache-, RHI-, komponent- og shaderkø, minst tre sekunder etter klargjøring og en rolig periode med minst 45 frames. Ingen absolutt fps-grense kan holde et 30 fps-valg i endeløs lasting. Fokus, pause og overgangsframen er beskyttet; faktisk inputprøve gjenstår.
+Kameraene dekker kontrollrom/CRT, annex/archive/korridor, normal/safelight/printlab, gård/servicegård/parkering, motell/rom6, STATION 01/hytte, vei/diner inne/ute, Caliche, gammel vei og cab. Natta har mørkere ubelyste flater med lokale varme lyspøler. Daggry har lysere terreng, avgrensede vindusskygger og fortsatt mørke lukkede rom. De mørkeste veiene er synlige som svak kald vei/horisont; stillbilder alene beviser ikke tilgjengelighet under fri ferdsel.
 
-Den brede automatiske precachingen ga rundt 4 800 forespørsler og 73,4 s til READY i en tidligere kald kandidatprøve. Steady-state-fps skjulte dermed en uakseptabel ventetid. Nå er `r.PSOPrecache.Components=0` og `r.PSOPrecache.GlobalShaders=0`; Vulkan-precaching og filcache er fortsatt aktive. `ExcludePrecachePSO=0`, `IncludeAllPrecachedPSOs=0`, `PSOPrecacheIncludeMode=0` og `IncludeComputePSODuringCook=0` skal la bundlen dekke faktisk brukte graphics-/compute-PSO-er uten å legge til alle generiske varianter. Den ferske pipeline-pakken har disse verdiene.
+Før-kilden er 93ab1568 med spillkode lik c124920b, diagnostikk og private gamle Base/Mat-assets, ingen nye Props eller lasteskjerm. Referansen bruker korrigerte kameraer i rom6 og på veien; gamle under-gulv-/feilviewport-/svarte cab-opptak er forkastet. Etterbildene er fra opptaks-ELF 8611c1938b815f1cb786ebb5ae004c64234567177995417aa3f9da17be64ba95 med nyere Props. Disse versjonsparene isolerer derfor ikke modelltillegg fra lys/materialendringer. `after/previous-night` er PASS for gammelt fyll på identisk ny geometri/materialer, kontrollrom og gård. `compare/contrast-control.png` og `compare/contrast-yard.png` er visuelt PASS, med hash/proveniens i `compare/contrast-manifest.json`. Identiske 9243 cooked render-/asset-/shaderfiler isolerer her fyllforskjellen: mørkere ubelyste hjørner/mark, mens lampenes lokale pøler beholder styrken.
 
-Kildebanene er kontrollert i lokal UE 5.8.4: eksplisitt `PrecachePSOs()` respekterer component-cvaren; `.rec` lagres med `BoundPSOsOnly`; `IncludeMode=0` lar filcachen ta med registrerte entries uansett tidligere auto-resultat. `HasPipelineFileCache`/`GetTotalPSOCount` logges før verdensbygging, men et positivt antall alene beviser ikke full dekning. `static/pso-recording-source-audit.txt` dokumenterer dette. Nye Props-, material- eller renderendringer krever ny vurdering og nye opptak.
+Lommelykt og frontlys er også tegnet i ekte av/på-tilstander, `audit/night-light-states-v3.png`. Frontlysenes effekt på bakken er tydelig. Lommelykta svært nær S-03 gir en utbrent flekk; bildet viser virkning, men er ikke bevis for leselig panel ved normal gåavstand. Dette er oppgitt uten å endre originalbildet.
 
-Den endelige bundlen skal bygges fra samme cook som de frosne `.shk`-nøklene og kontrolleres i cook, ferdig pakke og runtime. **Opptak, utvidelse, pakket cache, runtime-antall og kald/varm sluttmåling er PENDING.** En `.spc` i kilden eller en bestått pakking alene er ikke bevis for levert cache.
+### Levert Vulkan-PSO-cache
 
-### Faktiske førmålinger og korte kandidatprøver
+`pso-final-v3/recordings.json` er komplett og ukonkurrerende: 38 tilstander × Low/Clean, High/VHS, Ultra/VHS × 02:15/05:40, 228 tilstander i 60 korte prosesser. Warmup 4 s / hold 4 s gir cirka 1,7 s rå rammetider per tilstand. De 20 verdenskameraene suppleres av 18 tilstander for strøm, receiver, portable lys, menyer og terminalfront. Frosne .shk, forespørsel, ELF-/containerhash og faktiske PNG/CSV/logger følger opptaket. Resume gjenbruker bare identiske, hashkontrollerte PASS-blader; avvist materiale bevares utenfor aktivt tre.
 
-Før-kilden er `93ab1568`, med spillkode lik `c124920b`, bare trace-/kamerainstrumentering og private gamle Base/Mat-assets. `baseline-source/baseline-manifest.json` knytter kilde og innhold til hashene; pakken ligger separat i `baseline-package`. Den har ingen ny lasteskjerm, kandidatlys/-materialer eller ny PSO-konfigurasjon.
+Kildens `Signal47/Build/Linux/PipelineCaches/S47_Signal47_SF_VULKAN_SM6.spc` er 92 902 byte, SHA256 `adc3bfa7a80f891caa687416fe064dd0206ea1c4d8963e6160cf117b7037babd`, med 4215 stabile PSO-er og 37 480 stabile nøkkelreferanser. Ekspansjonen består på 7,6 s, `pso-final-v3/expanded.json`. Cooken løser dem til 602 unike PSO-er, 0 avvist og 3613 sammenslått. Tre TSR-computevarianter filtreres av motorens kontroll for mulige ustøttede RHI-funksjoner. Sluttfilen har 599 binære PSO-er: 222 graphics, 310 compute og 67 RT.
 
-Hele før-serien har 20 kameraer ved natt 02:15 og 20 ved daggry 05:40 i 2560 × 1440 High/VHS. Nattens gyldige serie er batch1–4 fra `before-night-1440-v2` pluss `before-night-tail`; den gamle siste v2-batchen ble forkastet etter Vulkan device loss ved den store teleporteringen fra gammel vei til førerhuset. Førerhuset har nå en egen prosessgrense. De opprinnelige batch03/04 ved begge klokker er også forkastet fordi rom 6 og veien hadde arvet feil gulvhøyde. De erstattes av `before-camera-fix-night` og `before-camera-fix-dawn`, åtte utsnitt hver; øvrig daggrygrunnlag er `before-dawn-1440`. Feil kamera-kommaliste, feil viewport og et svart cab-bilde ble fanget av kontrollene; cab-opptaket venter nå på den virkelige kjøreovergangen før prøvetiden starter. Bare de validerte bildene og måleradene inngår.
+`pso-bundle-proof.json` har alle ni kontroller PASS. Cooken laster vår .spc; cachebytes er identiske i cookutdata/Metadata. Pakket runtime åpner samme fil/GUID `01A16826498D7808B71EA771B4891BF2`, køer 599 oppgaver og behandler 222 bundled graphics-PSO-er (type 1). Fysisk Open-linje og prosjektaliaset Signal47 matches på GUID og antall, uten å godta usercache. Binær cache er 156 709 byte, SHA256 `f3c1e45b3cf329c20bbfd37fd41138a21cf38a1944b392d095b77d2950466293`. Et compute-only antall eller bare en vellykket pakking ville ikke gitt dette beviset.
 
-`startup/before-cold-1440` og `startup/before-warm-1440` har komplette ti-sekundersvinduer og tom contention-liste. Begge skiller konstruksjonstiden fra synlig runtime. Synlig nullpunkt i før-pakken er første HUD-tick, en renderproxy, ikke en måling av fysisk skjermlatens. Rå intervaller som krysser ti-sekundersgrensen beholdes i hitch-statistikken.
+Alle 9243 registrerte cooked material-/mesh-/tekstur-/shaderfiler, inkludert shaderarkivene, er byteidentiske mellom opptak og sluttcook. Global.shk er også byteidentisk. Signal47.shk er 460 092 mot 470 335 byte med forskjellig serialiseringsrekkefølge, men eksakt samme 21 184 logiske nøkkel-/pipeline-/outputhash-tupler, 3308 hashposter og 2217 navn, ingen shader-outputendring. Frosne opptaksnøkler er urørt. `static/final-cook-equivalence.json` og `stable-keys-logical-comparison.json` skiller logisk likhet fra ulik filhash; de lokale UE 5.8-kildebanene viser at TSet/navn/hashindekser lagres i møteorden. Sluttpakke/ELF er ikke samme fil som opptaket: C++-diagnostikkens uniform-/restore-rettelse og bundlen er lagt til etter opptaket, uten endring i renderpayload eller shadernøkkelinnhold.
 
-| Før, første ti synlige sekunder | Frames | Frames per sekund, sekund 1 til 10 | Største frame |
-| --- | ---: | --- | ---: |
-| Kald, 2560 × 1440 High/VHS | 455, 45,5 fps | 0, 4, 38, 58, 56, 57, 61, 60, 61, 60 | 1296,9 ms |
-| Varm, samme profil/drivercache | 1141, 114,1 fps | 9, 121, 122, 127, 128, 126, 128, 127, 127, 126 | 688,7 ms |
+Den tidligere brede auto-precachingen ga rundt 4800 forespørsler og 73,4 s kald READY. Nå er Components/GlobalShaders-auto av, Vulkan-precaching og filcache på, og faktisk bundne PSO-er inkludert. Ingen generell compute-mengde legges automatisk til. Sluttpakken bygget/cooket på 83,7 s uten materialfallback. V2s to shutdown-SIG11-kjøringer er forkastet; etter opprydding av diagnostikkens statiske Slate-tittel består hele v3, også den tidligere feilsekvensen med logPSO. ELF SHA256 er `c69b1e0ab2f481a4eeb23c1d25e1c4a527fd141389f40ab0b6086a826a91eef5`; alle containerhash ligger i sluttmålingenes meta.json.
 
-Dette er før-resultater. Endelig etter-måling må tas på pakken som faktisk inneholder den verifiserte PSO-bundlen.
+### Lasteskjerm og de første ti sekundene
 
-`after/visual-check` er en gyldig kort kandidatprøve med to stillestående nattutsnitt, cirka 3,2 s sampling per utsnitt. Den viser kontrollrom 8,255 ms / 121,1 fps, p95 9,127 ms, og gård 7,169 ms / 139,5 fps, p95 7,831 ms. Begge ligger over 60 fps i denne prøven. De erstatter ikke gjennomgangen av de tyngste utsnittene, Low/Ultra eller hele 216-visningsmatrisen. Pakket `-S47SelfTest` består 1218 sjekker; siste bekreftede enkeltkjøring ligger i `tests/indicators-v4/selftest`, mens resten av V4-indikatorsuiten ennå ikke er komplett.
+S47Startup viser S47Theme-terminalen under verdenslasting og renderoppvarming. Verdenen tegnes bak skjermen mens spill-/testtid, input og lyd venter. READY krever tomme relevante compilekøer, minst tre sekunder klargjøring og minst 45 rolige frames, uten absolutt fps-krav. Den målrettede mellomkandidaten før bundle hadde 9,184 s kald READY; sluttpakkens faktiske tall er:
 
-### Status før sluttføring
+| Oppstart, 1440p High/VHS | READY fra verdensstart | Rammer første 10 verdenssekunder | Rammer første 10 synlige sekunder | Synlig p95 / maks |
+| --- | ---: | ---: | ---: | ---: |
+| Før kald, uten lasteskjerm | ingen port | 24 / 2,4 fps | 455 / 45,5 fps | 22,905 / 1296,925 ms |
+| Før varm | ingen port | 663 / 66,3 fps | 1141 / 114,1 fps | 8,623 / 688,740 ms |
+| Etter kald, pakket cache | 11,337 s | 120 / 12,0 fps | 1111 / 111,1 fps | 16,678 / 31,585 ms |
+| Etter varm, samme drivercache | 5,594 s | 788 / 78,8 fps | 1095 / 109,5 fps | 18,596 / 31,888 ms |
 
-| Leveranse | Status og faktisk grunnlag |
-| --- | --- |
-| Kildeintegrasjon, materialreparasjon og streng pakkevalidering | PASS, siste pipeline-pakke 76,9 s; ingen materialfallback i cook |
-| Før natt/daggry, 20 + 20 kameraer i 1440p | PASS, sammensatt nattserie og full daggryserie som angitt over |
-| Før kald/varm oppstart og pakket selvtest | PASS, komplette trace-vinduer og 1218 selvtestsjekker |
-| Kandidatens kontrollrom og gård, natt High/1440p | PASS for disse to korte utsnittene, 121,1/139,5 fps |
-| Indikatorer av/på/flimmer/halvstrøm/SARO-kutt/tilbake | PENDING, full V4-serie og visuell kontroll; V3-off er ikke gyldig av-bevis |
-| Endelig PSO-opptak, utvidelse, cook, pakket fil og runtime-antall | PENDING, må knyttes til samme cook og innhold |
-| Endelig kald/varm oppstart, lastebilde, input og 30 fps-valg | PENDING, må kjøres på endelig cachepakke |
-| 40 før/etter-bildepar og komplett etter-matrise, 36 tilstander × 2 klokker × 3 kvaliteter | PENDING, 216 målinger og vurdering av tyngste utsnitt |
+Etter kald synlig sekund 1 til 10: 108, 110, 108, 113, 112, 110, 112, 113, 113, 112 rammer. Etter varm: 107, 110, 109, 108, 110, 110, 111, 110, 110, 110. Begge har null synlige intervaller over 33,333 ms og 50 ms. Før kald hadde henholdsvis 9 og 7; før varm 8 og 3. Dette dokumenterer at de store oppstartshakkene nå ligger bak skjermen; det er ikke en påstand om at hvert synlig bilde holder 16,667 ms.
 
-De 20 verdenskameraene dekker kontrollrom/CRT, annex/korridor, tre labmoduser, gård/servicegård/parkering, motellet/rom 6, STATION 01/hytte, vei/diner/Caliche, gammel vei og førerhus. De 16 ekstra tilstandene dekker strøm, indikatorer, mottaker, lommelykt, frontlykter og menyer. Alle nye ytelses- og bildekonklusjoner skal vise til gyldig `meta.json`, faktisk pakkehash og fullført opptak. Den historiske dokumentasjonen under skiller fortsatt mellom tidligere kilde-, editor- og pakkebevis.
+`startup/before-cold-1440`, `before-warm-1440`, `after-cold-1440` og `after-warm-1440` har komplette rå spor, gyldig 2560 × 1440 og ingen konkurrerende tung prosess. Verdensvinduet starter før AS47Web bygges; synlig-vinduet bruker første HUD/READY som proxy, uten fysisk presentasjons- eller OS-prosessstartmåling. Hele rå frameintervaller som overlapper vinduet tas med i hitch-statistikken. Lastebildet er faktisk runtime, `startup/after-cold-1440/loading.png`.
+
+### 1440p, korte kameramålinger og sluttprøver
+
+`final-measurements.json` og `.md` oppsummerer de 40 normale verdensutsnittene fra opptaket. Alle High-gjennomsnitt er over 60 fps. Nattens svakeste er 96,1 fps, største kamera-p95 17,281 ms; daggry 90,1 fps og 21,772 ms. Dette er omtrent 1,7 s prøve per kamera, med enkeltintervaller over 16,667 ms, ikke endelig steady-state-bevis.
+
+| Fire tyngste korte High-utsnitt | Natt fps / p95 ms | Daggry fps / p95 ms |
+| --- | ---: | ---: |
+| motel | 96,1 / 11,924 | 90,1 / 13,186 |
+| cab | 100,8 / 16,923 | 90,9 / 20,423 |
+| control | 104,6 / 17,281 | 95,1 / 21,772 |
+| annex | 106,2 / 16,884 | 100,6 / 18,580 |
+
+| Kvalitet, 40 verdensutsnitt | Intern TSR | Kamera-fps, min–maks | Vektet fps |
+| --- | ---: | ---: | ---: |
+| Low/Clean | 60 % | 115,1–318,7 | 171,7 |
+| High/VHS | 60 % | 90,1–198,7 | 122,6 |
+| Ultra/VHS | 100 % | 41,6–92,9 | 60,2 |
+
+Vektet fps er sum rå rammetelling delt på sum rå intervalltid, ikke snitt av kameraenes fps. Ultra prioriterer full oppløsning og har flere utsnitt under 60 fps; målet gjelder High. `after/heaviest-night` og `after/heaviest-dawn` er begge PASS på ferdig cachepakke, hold 15 s og cirka 7,2 s rå rammetider per kamera. De fire tyngste utsnittene fra den korte matrisen er prøvd ved begge klokker:
+
+| Lengre High/1440p | Natt fps / p95 ms | Daggry fps / p95 ms |
+| --- | ---: | ---: |
+| cab | 99,45 / 18,142 | 100,92 / 13,934 |
+| motel | 97,84 / 13,893 | 93,81 / 13,002 |
+| control | 105,02 / 16,875 | 98,73 / 17,910 |
+| annex | 106,73 / 17,080 | 103,58 / 16,143 |
+
+Alle åtte gjennomsnitt er 93,81–106,73 fps. Største p95 er 18,142 ms, så dette er ikke låst 60 fps for hvert intervall. `heaviest-summary.json` bevarer alle rå tellinger, måle-/pakkehash og vektet sammenfatning. Ingen konkurrerende tung prosess inngår.
+
+Sluttpakkens indikatorserie `tests/final-indicators` er komplett PASS: selvtest (1220) og seks apparatvinkler, rack, console, printer, processor, auxiliary og terminal, hver med seks kontrollerte strømfaser. `audit/final-indicators-audit.json` knytter 36 fasebilder til slutt-ELF/containerhash. Korrigerte `after/final-state-correction` viser også faktisk av/på for rack, native apparater og terminal. `tests/final-regression` er komplett PASS på 151,3 s: tittel, pause, notatbok, kjøring, THE EVENT og valgt 30 fps. Den synlige cap30-tracen har 285 intervaller etter 0,5 s, gjennomsnitt 33,333457 ms, som bekrefter 30 fps-valget etter READY. Fokus-/pauseovergangen prøves gjennom disse diagnostiske menytilstandene; menneskelig input er ikke utført av denne suiten. Disse diagnostiske scenarioene erstatter ikke menneskelig helgjennomspilling og lytting.
+
+### Reproduksjon av genererte materialer før integrasjon
+
+Content/Web/Base og Content/Web/Mat følger ikke kildecommiten. En integrator med eksisterende Geo/Tex/WebData fra eksporten, øvrige spillassets og manifestet i `~/scratch-bm/Signal47-web` må kjøre hele materialsteget. Bruk private Base/Mat hvis flere checkouter deler generert innhold. Ingen annen tung Unreal-jobb må kjøre, og minst 10 GiB skal være tilgjengelig:
+
+```sh
+cd unreal/Signal47
+bash Scripts/build-editor.sh
+python3 Scripts/unreal_guard.py require-idle
+S47_ONLY=materials S47_WEB="$HOME/scratch-bm/Signal47-web" \
+  "$HOME/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd" \
+  "$PWD/Signal47.uproject" -run=pythonscript \
+  -script="$PWD/Tools/webexport/import_web.py" \
+  -ddc=InstalledNoZenLocalFallback -unattended -nullrhi -nosplash
+bash Scripts/package-linux.sh
+```
+
+Materials bygger mastere og alle 799 MI-er med 118 overflateprofiler, seks glassvalg og fire CRT-valg uten å skrive Geo/Tex/art/WebData. `S47_ONLY=masters` er bare grafreparasjon; den hopper over MI-løkken og aktiverer derfor ikke nye profiler i eldre instanser. Kontroller importens antall/profiloppsummering og S47WEB done. Et kjent avslutningskrasj etter lagring er ikke alene PASS; cook og runtime må fortsatt valideres.
+
+Package-linux cooker kildens leverte .spc til binær .upipelinecache og avviser Failed to compile Material / Default Material will be used in game selv ved UAT exit0. IoStore beholdes; SkipZenStore unngår lokal Zen-opploggheng. Første materialcook med 179 fallback-MI-er er forkastet; StaticSwitchParameter bruker nå korrekte True/False-pinner med feilsjekk. Nye materialer, Props eller shaderbaner krever ny cachevurdering/opptak fra én cook med frosne nøkler. Ikke gjenbruk eldre .rec-filer ukritisk eller godta en foreldet cache i Saved/Cooked. Generert Web/Audio/Licensed/Free-assets committes ikke. Midlertidige Content/Audio, Content/Licensed og Content/Free-lenker er fjernet; bare lenkene ble fjernet, kildemappene er bevart (`static/content-link-cleanup.json`). Genererte OpenOrder-logger er gjenopprettet. Props/config er byteidentisk core; Python-/shellsyntaks og diffkontroll består. Kilde og bundlet SPC leveres i samme vanlige sluttcommit på port-gfx.
+
+### Leveringsstatus
+
+Rendering, cache, oppstart, 40 bildepar, indikatorfaser, lengre ytelsesprøver og kort regresjon er verifisert. Leveransen er klar for Claude-gjennomgang, med alle bestilte grafikkprøver og bildepar dokumentert. Kilden er ryddet og leveres sammen med den stabile cachen i port-gfx. De eldre feilede/avbrutte prøvene beholdes som historikk, uten å telle som PASS.
+
+Dokumentasjonen nedenfor gjelder tidligere navngitte bygg.
+
 
 22. oktober 2026, `port-light`. Rendering, lys og materialer er endret. Dette lyspasset bevarer geometri og modellplassering; innflettede spillrettelser fra Claude er beholdt. Dette er en kildekandidat for Claudes integrasjon, ikke den installerte spillutgaven.
 
