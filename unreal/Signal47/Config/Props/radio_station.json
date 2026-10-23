@@ -1,0 +1,398 @@
+{
+  "_doc": "Original 1420 AM station, exported from Tools/radioarray/station. Public lobby and its door are separate from the closed broadcast studio. Existing studio photo is recessed behind the real console and chair; ON AIR, 1420 AM sign, mast, buzzer dialogue and anomaly proxies retain their state. Shell trimming composes the existing gas-station cut in S47RadioStation.cpp after Props. Coordinate mapping verified by Unreal FBX probe on 2026-10-23: Blender X -> Unreal X, Blender Y -> Unreal -Y; Props yaw=-90. Rectangles follow that same mapping. No optional authored mast is placed. Entrance zone overlaps the lobby by 0.85m so the radius-0.27 walker can fit inside either individual rectangle across the threshold.",
+  "area": "diner",
+  "parent": "world.town.group",
+  "walk": "road",
+  "leg": "",
+  "grounds": [
+    "diner",
+    "road"
+  ],
+  "props": [
+    {
+      "parent": "world.town.group",
+      "at": [
+        8025,
+        4.442166614532471,
+        2036
+      ],
+      "yaw": -90,
+      "ground": false,
+      "trace": false,
+      "walk": "road",
+      "leg": "",
+      "id": "radioStationShell",
+      "model": "/Game/RadioArray/Station/SM_1420_Shell.SM_1420_Shell",
+      "unblock": [
+        [
+          8020,
+          8030,
+          2030,
+          2042
+        ],
+        [
+          8019.1,
+          8020,
+          2030.7,
+          2032.1
+        ]
+      ],
+      "zones": [
+        [
+          -5.71,
+          -3.06,
+          -2.32,
+          4.95
+        ],
+        [
+          -5.2,
+          -4,
+          4.1,
+          6.2
+        ]
+      ],
+      "blocks": [
+        [
+          -6,
+          -5.15,
+          4.72,
+          5.12
+        ],
+        [
+          -4.05,
+          6.12,
+          4.72,
+          5.12
+        ],
+        [
+          -6,
+          6.12,
+          -5.12,
+          -4.72
+        ],
+        [
+          -6.1,
+          -5.72,
+          -5.12,
+          5
+        ],
+        [
+          5.72,
+          6.12,
+          -5.12,
+          5
+        ],
+        [
+          -3.06,
+          -2.88,
+          -2.75,
+          4.8
+        ],
+        [
+          -5.75,
+          -2.88,
+          -2.52,
+          -2.34
+        ],
+        [
+          -5.55,
+          -4.05,
+          -1.15,
+          -0.45
+        ],
+        [
+          3.4,
+          5.5,
+          5.2,
+          5.94
+        ]
+      ],
+      "floors": [
+        [
+          -5.2,
+          -4,
+          5.5,
+          6.2,
+          -0.34,
+          0.015,
+          "x"
+        ],
+        [
+          -5.375,
+          -3.825,
+          4.7,
+          5.5,
+          0.015,
+          0.015,
+          "x"
+        ],
+        [
+          -5.71,
+          -3.06,
+          -2.32,
+          4.7,
+          0.055,
+          0.055,
+          "x"
+        ]
+      ]
+    },
+    {
+      "parent": "world.town.group",
+      "at": [
+        8025,
+        4.442166614532471,
+        2036
+      ],
+      "yaw": -90,
+      "ground": false,
+      "trace": false,
+      "walk": "road",
+      "leg": "",
+      "id": "radioStationInterior",
+      "model": "/Game/RadioArray/Station/SM_1420_Interior.SM_1420_Interior",
+      "lit": {
+        "flood": "town",
+        "slot": 12,
+        "lights": [
+          {
+            "at": [
+              -4.6,
+              2.95,
+              1.85
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.65,
+              0.14
+            ],
+            "lumens": 150,
+            "reach": 4.5,
+            "color": [
+              1,
+              0.78,
+              0.52
+            ],
+            "shadow": true,
+            "haze": 0.1
+          },
+          {
+            "at": [
+              -4.6,
+              2.95,
+              -1.4
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.65,
+              0.14
+            ],
+            "lumens": 100,
+            "reach": 4.5,
+            "color": [
+              1,
+              0.78,
+              0.52
+            ],
+            "shadow": true,
+            "haze": 0.1
+          },
+          {
+            "at": [
+              -1.2,
+              2.9,
+              5.57
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.65,
+              0.14
+            ],
+            "lumens": 65,
+            "reach": 4.5,
+            "color": [
+              1,
+              0.78,
+              0.52
+            ],
+            "shadow": false,
+            "haze": 0.1
+          },
+          {
+            "at": [
+              1.3,
+              2.9,
+              5.57
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.65,
+              0.14
+            ],
+            "lumens": 65,
+            "reach": 4.5,
+            "color": [
+              1,
+              0.78,
+              0.52
+            ],
+            "shadow": false,
+            "haze": 0.1
+          },
+          {
+            "at": [
+              3.8,
+              2.9,
+              5.57
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.65,
+              0.14
+            ],
+            "lumens": 65,
+            "reach": 4.5,
+            "color": [
+              1,
+              0.78,
+              0.52
+            ],
+            "shadow": false,
+            "haze": 0.1
+          },
+          {
+            "at": [
+              1.2,
+              2.92,
+              2.85
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              1.2,
+              0.6
+            ],
+            "lumens": 240,
+            "reach": 4.5,
+            "color": [
+              1,
+              0.8,
+              0.58
+            ],
+            "shadow": true,
+            "haze": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "parent": "world.town.group",
+      "at": [
+        8025,
+        4.442166614532471,
+        2036
+      ],
+      "yaw": -90,
+      "ground": false,
+      "trace": false,
+      "walk": "road",
+      "leg": "",
+      "id": "radioStationGlass",
+      "model": "/Game/RadioArray/Station/SM_1420_Glass.SM_1420_Glass"
+    },
+    {
+      "parent": "world.town.group",
+      "at": [
+        8020.09,
+        4.467166614532472,
+        2030.93
+      ],
+      "yaw": -90,
+      "ground": false,
+      "trace": false,
+      "walk": "road",
+      "leg": "",
+      "id": "radioStationDoor",
+      "model": "/Game/RadioArray/Station/SM_1420_Door.SM_1420_Door",
+      "door": {
+        "use": "radioLobbyDoor",
+        "hinge": [
+          0,
+          0
+        ],
+        "deg": -95,
+        "block": [
+          0.0,
+          0.94,
+          -0.0425,
+          0.0425
+        ]
+      }
+    }
+  ],
+  "views": [
+    {
+      "name": "radio-station-front-night",
+      "at": [
+        8014.8,
+        2035.5,
+        -1.5707963267948966,
+        0.0
+      ],
+      "clock": 7200
+    },
+    {
+      "name": "radio-station-front-dawn",
+      "at": [
+        8014.8,
+        2035.5,
+        -1.5707963267948966,
+        0.0
+      ],
+      "clock": 19500
+    },
+    {
+      "name": "radio-station-lobby-night",
+      "at": [
+        8021.1,
+        2031.4,
+        -1.5707963267948966,
+        -0.05
+      ],
+      "clock": 7200
+    },
+    {
+      "name": "radio-station-lobby-back",
+      "at": [
+        8026.7,
+        2032.5,
+        1.5707963267948966,
+        -0.05
+      ],
+      "clock": 7200
+    }
+  ]
+}

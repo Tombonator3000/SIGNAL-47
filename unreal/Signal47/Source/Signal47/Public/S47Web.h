@@ -271,6 +271,8 @@ private:
 	static FQuat S47ThreeEuler(double X, double Y, double Z);
 	bool bLoaded = false;
 	void BuildRetroProps();
+	void BuildRadioStation();
+	void BuildAuthoredArray();
 	void UpdateRetroProps();
 	struct FRetroTv { TWeakObjectPtr<UMaterialInstanceDynamic> Screen, Pilot; };
 	TArray<FRetroTv> RetroTvs;

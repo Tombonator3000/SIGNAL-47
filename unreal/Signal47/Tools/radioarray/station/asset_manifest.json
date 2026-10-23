@@ -1,0 +1,141 @@
+{
+  "authoring": "Original SIGNAL / 47 procedural geometry, authored 2026-10-23",
+  "files": {
+    "1420_AM_station.blend": {
+      "bytes": 2037540,
+      "sha256": "ab425ceef866f509d09fccea3c2bc8cd103c9f804957123fb9a0a041e98ccae7"
+    },
+    "1420_AM_station.glb": {
+      "bytes": 4195944,
+      "sha256": "3ab54ba606c4a451f78abfca05201cb6b6e501d4176a8a2466c22ac1e8014736"
+    },
+    "README.md": {
+      "bytes": 5379,
+      "sha256": "7c38d91e69912f23aacba6b0e9d750e1012b7b05af519a452a892342d5a86757"
+    },
+    "build_station.py": {
+      "bytes": 26412,
+      "sha256": "41a880da9863f210be8895adb9b545bb11cb66fd87373e403b3fe422fb5b6ac8"
+    },
+    "clean_existing_exports.py": {
+      "bytes": 2129,
+      "sha256": "03f6d30bf1eddc0fcdc099c1b5082e47e1725e50f205ecfc7444fd3c57de8ce3"
+    },
+    "exports/SM_1420_Door.fbx": {
+      "bytes": 72108,
+      "sha256": "cba6a7b37d4f525e904c67b5374bd26dae2160cd4cbc3c3a115734ee3dddc7fc"
+    },
+    "exports/SM_1420_Glass.fbx": {
+      "bytes": 15612,
+      "sha256": "ced4385ac84edc8fd0521f5cd019f5fdfde0dad9f6dabbd0d7c7251daa5a6681"
+    },
+    "exports/SM_1420_Interior.fbx": {
+      "bytes": 1067132,
+      "sha256": "ab025e7c62c88a84ded6b3492d0438aa3e5ad317936efb0107d70297d759a365"
+    },
+    "exports/SM_1420_Mast.fbx": {
+      "bytes": 52092,
+      "sha256": "7f27ce6012de577ccd99184107ad0d62d8f858f3a1297a11cc89a96349c7fde9"
+    },
+    "exports/SM_1420_Shell.fbx": {
+      "bytes": 165932,
+      "sha256": "c91a54004936b247692df63857cd43b9e2c82467000856c4c581985402529849"
+    },
+    "exports/axis_probe.fbx": {
+      "bytes": 11868,
+      "sha256": "025c548ac03d66e17d33ddd7dbf853188471e35a0db393abcece20bd042376ad"
+    },
+    "exterior.png": {
+      "bytes": 1511295,
+      "sha256": "2b4833194fe8319becaf6bdbc05f0c16dcc34f2c2fdaf3119fe83376222b400d"
+    },
+    "finalize_preview.py": {
+      "bytes": 1318,
+      "sha256": "365a70c43ea6c2c0f8e8de1eae1bb93abda6ff87c0929027d20d567d5710f569"
+    },
+    "interior.png": {
+      "bytes": 1851245,
+      "sha256": "c4470ec8ff1ec337d6309424641063141b38e80d6e022381947ba473ef1b5b7a"
+    },
+    "make_textures.py": {
+      "bytes": 1957,
+      "sha256": "8fe61f646977d9ce01b7badfbb8fb920a2fd96f85f4de3a3e58816d1a079e5bd"
+    },
+    "materials.json": {
+      "bytes": 6947,
+      "sha256": "7517a1e63555103958ad4c769fb8b88e5916723bd717a06d6886ed0af64517d6"
+    },
+    "mesh_cleanup.json": {
+      "bytes": 3020,
+      "sha256": "977f96bcef42abdea7f2da27b08309c6a0a2dc5433ced1573160e2a396fcfafd"
+    },
+    "model_contract.json": {
+      "bytes": 4805,
+      "sha256": "428d1e45d87b44287a2fac175fb59ab7e01947d2fd6f4d1341d6f2e04a93e058"
+    },
+    "source_integrity.json": {
+      "bytes": 543,
+      "sha256": "a1b116835d04d1921d4c4ce5f980c4f5b2ba78572d7c41c8a3e486a024c442d4"
+    },
+    "station_mesh_cleanup.py": {
+      "bytes": 3317,
+      "sha256": "32c8dc4d71c110e5f2f6234bfc56a9564e8e32105141e59411a9c2785fc0519c"
+    },
+    "textures/concrete_color.png": {
+      "bytes": 48816,
+      "sha256": "e6f717de6bc7547354f3f84114d5b02bd14cc68bfeced4c528ed32b475071d9d"
+    },
+    "textures/concrete_normal.png": {
+      "bytes": 133846,
+      "sha256": "db76bfa605bb552d330fd5098f06c23bbcb609eaa50c31d8ea8b6b2de31a6cda"
+    },
+    "textures/concrete_roughness.png": {
+      "bytes": 38199,
+      "sha256": "cb1b71c6c26320b55227e74ada86af27f9426d5bbcadbfd84e8df484424ae903"
+    },
+    "textures/desk_walnut_color.png": {
+      "bytes": 40058,
+      "sha256": "0607f794bbe5bd3cd74b227904cb760039ac64d2696d1cc150fc4a1555e88e75"
+    },
+    "textures/desk_walnut_normal.png": {
+      "bytes": 85930,
+      "sha256": "85dfa4dc57d552a9dc556f0f52f55786821d0fee9d0917661572dd10756354cf"
+    },
+    "textures/desk_walnut_roughness.png": {
+      "bytes": 22974,
+      "sha256": "efb392a2e9817fea966aa5aca9d18ead355c4098ff1c29f8ba8294739ef54e9d"
+    },
+    "textures/stucco_color.png": {
+      "bytes": 50769,
+      "sha256": "0d9859226094e1218e5bcbb79f88d2c062d8c97f8fbf9681fb5150ab2cd52792"
+    },
+    "textures/stucco_normal.png": {
+      "bytes": 133846,
+      "sha256": "db76bfa605bb552d330fd5098f06c23bbcb609eaa50c31d8ea8b6b2de31a6cda"
+    },
+    "textures/stucco_roughness.png": {
+      "bytes": 38217,
+      "sha256": "f1d063510d4cb98cb76fdd984a91358858f2f0f2087861b04c5413e6ddc5d44a"
+    },
+    "textures/walnut_color.png": {
+      "bytes": 33592,
+      "sha256": "8efa839175bced6eaced77437582104e24fb5aeaa8967a433b99a1c6c66cf43b"
+    },
+    "textures/walnut_normal.png": {
+      "bytes": 85930,
+      "sha256": "85dfa4dc57d552a9dc556f0f52f55786821d0fee9d0917661572dd10756354cf"
+    },
+    "textures/walnut_roughness.png": {
+      "bytes": 22941,
+      "sha256": "ea3aa5f91fc0b286de2211a9d74b165b48ba78c35ca29ff4c4ccbfc00526ba1f"
+    },
+    "verification.json": {
+      "bytes": 7849,
+      "sha256": "2599fe0b51dae9d9203e8b5f0523543f8a20c96df4feaf5a1a4e73b0f545eaa5"
+    },
+    "verify_station.py": {
+      "bytes": 4500,
+      "sha256": "25a10236037a413b4a73cff85d4777084f78caab7c0ac12423a7e278b682d824"
+    }
+  }
+}
