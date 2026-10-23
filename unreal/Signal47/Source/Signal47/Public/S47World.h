@@ -56,6 +56,10 @@ public:
 
 	FString Area = TEXT("saro");
 	bool bDriving = false;
+	// Personal arrival vehicle borrows the drive/cab, never the service odometer or body.
+	bool bCommuteVehicle = false;
+	void BeginCommute(const S47J::FObj& SavedCar = nullptr);
+	void FinishCommute();
 	/** Where the truck stands when nobody drives it ('saro', 'station01', 'motel', 'diner', or
 	 *  'roswell': left on the old road); empty while it is out on a trip. */
 	FString TruckAt = TEXT("saro");

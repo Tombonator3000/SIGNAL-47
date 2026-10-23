@@ -36,7 +36,7 @@ FString FS47RadioVoice::Clean(const FString& Text)
 
 FS47RadioVoice::FS47RadioVoice(const FString& InKind) : Kind(InKind)
 {
-	const FString Bank = Kind == TEXT("ensemble") ? TEXT("ensemble") : Kind == TEXT("earl") ? TEXT("artbell-town") : Kind == TEXT("caller") ? TEXT("radiocast") : TEXT("artbell");
+	const FString Bank = Kind == TEXT("evening") ? TEXT("evening") : Kind == TEXT("ensemble") ? TEXT("ensemble") : Kind == TEXT("earl") ? TEXT("artbell-town") : Kind == TEXT("caller") ? TEXT("radiocast") : TEXT("artbell");
 	Root = FPaths::ProjectContentDir() / TEXT("Audio/Raw/voice") / Bank;
 	FString Text; TSharedPtr<FJsonObject> Voices;
 	if (!FFileHelper::LoadFileToString(Text, *(FPaths::ProjectContentDir() / TEXT("Audio/Raw/voices.json"))) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Voices) || !Voices) return;
@@ -49,7 +49,7 @@ FS47RadioVoice::FS47RadioVoice(const FString& InKind) : Kind(InKind)
 	{
 		const TSharedPtr<FJsonObject> O = V->AsObject(); if (!O) continue;
 		FS47RadioClip C; C.Id = Str(O, TEXT("id")); C.Text = Str(O, TEXT("text")); C.File = Str(O, TEXT("file")); C.Voice = Str(O, TEXT("voice")); O->TryGetNumberField(TEXT("duration"), C.Duration);
-		ById.Add(C.Id, Clips.Num()); ByText.Add(Kind == TEXT("caller") || Kind == TEXT("ensemble") ? Key(C.Voice, Clean(C.Text)) : Clean(C.Text), Clips.Num()); Clips.Add(MoveTemp(C));
+		ById.Add(C.Id, Clips.Num()); ByText.Add(Kind == TEXT("caller") || Kind == TEXT("ensemble") || Kind == TEXT("evening") ? Key(C.Voice, Clean(C.Text)) : Clean(C.Text), Clips.Num()); Clips.Add(MoveTemp(C));
 	}
 	for (const auto& V : Arr(Cat, TEXT("templates")))
 	{
@@ -69,7 +69,7 @@ FS47RadioVoice::FS47RadioVoice(const FString& InKind) : Kind(InKind)
 
 TOptional<TArray<FS47RadioClip>> FS47RadioVoice::Resolve(const FString& Text, double Clock, const FString& Voice) const
 {
-	if (Kind == TEXT("ensemble") || Kind == TEXT("earl") || Kind == TEXT("caller"))
+	if (Kind == TEXT("ensemble") || Kind == TEXT("earl") || Kind == TEXT("caller") || Kind == TEXT("evening"))
 	{
 		const bool bRole = Kind != TEXT("earl");
 		const int32* I = bRole && Voice.IsEmpty() ? nullptr : ByText.Find(bRole ? Key(Voice, Clean(Text)) : Clean(Text));

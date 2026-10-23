@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47Evening.h"
 #include "S47Props.h"
 
 #include "Engine/Engine.h"
@@ -141,6 +142,7 @@ void AS47HUD::Start()
 		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
+		bOk &= FS47Evening::SelfTest(Lines);
 		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
@@ -183,7 +185,7 @@ void AS47HUD::Start()
 		.PromptAlt_Lambda([this] { return FText::FromString(PromptAlt); })
 		// (in the cab only what the drive offers: the walker's last look is not a prompt there)
 		.ShowPrompt_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && (bPromptOwn || !(M->World && M->World->bDriving)); })
-		.Clock_Lambda([this, Playing] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() ? Story->ClockText(false) : FString()); })
+		.Clock_Lambda([this, Playing, M] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() && !(M->Evening && M->Evening->Commute()) ? Story->ClockText(false) : FString()); })
 		.ShowAim_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && !(M->World && M->World->bDriving); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);
 	PC->bShowMouseCursor = false;
@@ -487,6 +489,7 @@ void AS47HUD::Start()
 			Hd.RoofStepsBusy = H.RoofStepsBusy; Hd.ReelTapeBusy = H.ReelTapeBusy; Hd.SaroDarkBusy = H.SaroDarkBusy;
 			Hd.OfficePhoneBusy = H.OfficePhoneBusy; Hd.ArchiveBusy = H.ArchiveBusy; Hd.ArrayBackBusy = H.ArrayBackBusy;
 		}
+		M->Evening = MakeShared<FS47Evening>(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
@@ -569,7 +572,7 @@ void AS47HUD::Use(const FString& Id)
 {
 	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (US47Main* M = US47Main::Get(this); M && M->Inter) M->Inter->UseId(Id);
+	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
 	else if (Story.IsValid()) Story->Use(Id);
 }
 

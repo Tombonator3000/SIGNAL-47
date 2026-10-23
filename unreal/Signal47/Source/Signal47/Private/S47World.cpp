@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47Timeline.h"
 #include "S47Keys.h"
 
 #include "Engine/TextureRenderTarget2D.h"
@@ -689,7 +690,7 @@ void US47World::SetStoryPlaces(bool bStationOpen, bool bOldRoadOpen)
 	// (the walk gap at STATION 01 is the station's: Station01.setWalkGate, with the station's port)
 	(void)bStationOpen;
 	EnsureLegs();
-	if (Road) Road->SetRoadClosed(!bOldRoadOpen);
+	if (Road) Road->SetRoadClosed(!bOldRoadOpen && !bCommuteVehicle);
 }
 
 void US47World::Place(double X, double Z, double Yaw)
@@ -954,7 +955,7 @@ void US47World::TripStep(double Dt)
 	}
 	T.Secs += Dt;
 	T.Metres += FMath::Abs(D.Speed) * Dt;
-	if (T.PerMetre && M && M->Story) M->Story->SetClock(M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre);
+	if (T.PerMetre && M && M->Story) M->Story->SetClock(M->Story->bEveningTimeline ? FMath::Min(S47Timeline::Departure, M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre) : M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre);
 	const bool bHere = !T.To.IsEmpty() && S47Legs::LegOf(T.To) == Id;
 	const TOptional<FS47Box2> P = !T.To.IsEmpty() ? ParkBox(T.To) : TOptional<FS47Box2>();
 	// where to leave the truck, said once it is in sight
@@ -1789,15 +1790,15 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	if (!N) N = L;
 	FS47DriveController& D = *N->Drive;
 	// trouble with the truck, on the story's trips and the player's own (not chapter six's road)
-	if (bDriving && Trip && Id != TEXT("roswell")) Trouble.Step(Dt, D, *N->Truck, Engine.Get(), TroubleOk ? TroubleOk() : false);
+	if (bDriving && Trip && Id != TEXT("roswell")) Trouble.Step(Dt, D, *N->Truck, Engine.Get(), !bCommuteVehicle && TroubleOk ? TroubleOk() : false);
 	if (Engine) { Engine->Set(D.Rpm, D.Load); Engine->Tyres(D.Surface.Kind, FMath::Abs(D.Speed)); }
 	// the odometer turns with the miles driven (not on a free drive)
-	if (bDriving && !(Trip && Trip->bFree) && Free.IsEmpty()) OdoM += FMath::Abs(D.Speed) * Dt;
+	if (bDriving && !bCommuteVehicle && !(Trip && Trip->bFree) && Free.IsEmpty()) OdoM += FMath::Abs(D.Speed) * Dt;
 	DashT -= Dt;
 	if (DashT <= 0)
 	{
 		DashT = 0.1;
-		N->Truck->SetDash(D.Mph, D.Rpm, M->Story ? M->Story->ClockText(false) : FString(), Id == TEXT("roswell") ? 0.55 : 0.62);
+		N->Truck->SetDash(D.Mph, D.Rpm, M->Story && !bCommuteVehicle ? M->Story->ClockText(false) : FString(), Id == TEXT("roswell") ? 0.55 : 0.62);
 		N->Truck->SetOdometer(Odometer());
 	}
 	// main.ts: the compass on the dash of the truck being driven reads the sky's north here
@@ -1809,6 +1810,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	}
 	// a camera that has left the cab sees the whole truck in this very frame
 	N->Truck->ViewFrom(Out.Eye);
+	if (bCommuteVehicle) { N->Truck->Body.SetVisible(false); N->Truck->Shell.SetVisible(false); }
 	const bool bView = bDriving || bCamera;
 	if (bView) { LastView = Out; bHaveView = true; }
 	// main.ts: in the cab the prompt is the key, the radio or the way out
@@ -1856,4 +1858,31 @@ void US47World::TownCarMoved(const FS47Area& Box)
 		TownCarObstacle = Road->Obstacles.IndexOfByPredicate([&](const FS47Obstacle& O) { return !O.bCircle && FMath::Abs(O.MinX - Original.MinX) < .01 && FMath::Abs(O.MinZ - Original.MinZ) < .01; });
 	}
 	if (Road->Obstacles.IsValidIndex(TownCarObstacle)) Road->Obstacles[TownCarObstacle] = FS47Obstacle::Box(Box.MinX, Box.MaxX, Box.MinZ, Box.MaxZ);
+}
+
+// Evening opening: drive the existing continuous highway north through Caliche.
+void US47World::BeginCommute(const S47J::FObj& SavedCar)
+{
+ EnsureLegs(); StopDriving(); bCommuteVehicle = true;
+ FS47TripOpts O;
+ const bool Saved = SavedCar.IsValid();
+ const FString A = Saved ? S47J::Str(SavedCar, TEXT("leg"), TEXT("road")) : FString(TEXT("road"));
+ const FString Leg0 = A == TEXT("saro") ? FString(TEXT("saro")) : FString(TEXT("road"));
+ O.Leg = Leg0;
+ O.AtPos = Saved ? FVector(S47J::Num(SavedCar,TEXT("x")), S47J::Num(SavedCar,TEXT("y")), S47J::Num(SavedCar,TEXT("z"))) : FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);
+ O.AtHeading = Saved ? S47J::Num(SavedCar,TEXT("h")) : 0;
+ O.Hint = TEXT("SARO: take the marked turn, drive up the ramp and park. Mesa Diner is open if you want supper first.");
+ O.OnStart = [this] { Toast(TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
+ TruckAt = TEXT("saro");
+ StartTrip(Leg0, TEXT("saro"), O);
+}
+
+void US47World::FinishCommute()
+{
+ StopDriving(); bCommuteVehicle = false;
+ // SARO 07 has stayed at work. The player's car is retained separately by Evening.
+ PlaceTruck(TEXT("saro"));
+ if (SaroTruckP) { SaroTruckP->Body.SetVisible(true); SaroTruckP->Shell.SetVisible(true); }
+ if (TruckP) { TruckP->Body.SetVisible(true); TruckP->Shell.SetVisible(true); }
+ Enter(TEXT("saro"));
 }

@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47Evening.h"
 #include "S47Chapter5.h"
 #include "S47Chapter6.h"
 #include "SS47Widgets.h"
@@ -54,6 +55,8 @@ void US47Main::Step(double Dt)
 	T += Dt;
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
+	if (Evening) Evening->Step(Dt);
+	const bool bOpening = Evening && Evening->Opening();
 	// main.ts, after game.update: the walk gap to STATION 01 from chapter three, the old road's barricades
 	// open from chapter five's road (World.setStoryPlaces)
 	if (Mode == EMode::Play && World && Story)
@@ -72,21 +75,21 @@ void US47Main::Step(double Dt)
 	}
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
-	if (Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
+	if (Mode == EMode::Play && TownLayer && !bOpening) TownLayer->WorldStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
 	if (Night) Night->FlashlightStep(Dt);
 	// main.ts radioStep: the car's and the diner's receivers, the radio, the trip's radio
-	if (Mode == EMode::Play) RadioStep(Dt);
+	if (Mode == EMode::Play && !bOpening) RadioStep(Dt);
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands
 	if (Mode == EMode::Play) Audio->NightLife(float(ModalOpen() ? 0.0 : Dt), P, Story ? Story->Clock() : 0.0);
 	// main.ts: the music by cue (core/score.ts)
-	if (Mode == EMode::Play && Score) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
+	if (Mode == EMode::Play && Score && !bOpening) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
-	if (Night) Night->Step(Dt);
+	if (Night && !bOpening) Night->Step(Dt);
 	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)
-	if (SaroNight) SaroNight->Frame(Dt);
+	if (SaroNight && !bOpening) SaroNight->Frame(Dt);
 	// main.ts: html.at-line during THE EVENT (game.ch6.stage === 'event'): the prompt sits lower
 	{
 		const US47Chapter6* C6 = Story ? Cast<US47Chapter6>(Story->Chapter(TEXT("ch6"))) : nullptr;
@@ -153,6 +156,7 @@ void US47Main::InitRadio()
 }
 void US47Main::TurnRadio()
 {
+	if (Evening && Evening->Commute()) { Evening->Use(TEXT("evening:radio")); return; }
 	if (Mode != EMode::Play || ModalOpen() || !World || !World->bDriving || (Story && Story->IsCinematic())) return;
 	if (!World->TruckHere()) { if (UI) UI->Toast(TEXT("The radio stays on the Roswell station."), 2.5f); return; }
 	if (!CarRadio) return;
@@ -162,6 +166,7 @@ void US47Main::TurnRadio()
 void US47Main::ResetRadio(double Clock)
 {
 	if (!Radio) return;
+	Radio->bEveningTimeline = Story && Story->bEveningTimeline;
 	Radio->bBoyCalled = TownSeen.Contains(TEXT("ev:boy")) || TownSeen.Contains(TEXT("ln:reel")); Radio->Reset(Clock); bRadioHeard = false;
 	// TripRadio's trip/last refer to the previous night's stations, not to the new case.
 	TripRadio = MakeShared<FS47TripRadio>(*Radio, TownSeen);

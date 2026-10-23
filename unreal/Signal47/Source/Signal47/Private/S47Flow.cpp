@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47Evening.h"
 
 #include "AudioDevice.h"
 #include "Camera/CameraActor.h"
@@ -327,7 +328,12 @@ void US47Flow::Boot()
 		// (Night::Restore puts SARO's, the times away, the town's and the phones' back too, in main.ts's order)
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) M->Story->Jump(Jump);
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); }
+		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump))
+		{
+		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
+		 M->Evening->BootstrapTest(Jump.IsEmpty()?TEXT("commute"):Jump);
+		}
 		else M->Story->Start();
 		// then what is refiled after the story has begun, as the start from the title does
 		if (M->SaroNight) M->SaroNight->Restored();
@@ -341,6 +347,7 @@ void US47Flow::Boot()
 	// the first title: nothing of the night is heard yet (the room tone starts with the night), and
 	// the station behind it is as the night begins (the Prologue's constructor resets it)
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
+	if (M->Evening) M->Evening->Stop();
 	if (M->Story) M->Story->Reset();
 	M->Mode = EMode::Title;
 	ShowTitle();
@@ -524,6 +531,11 @@ void US47Flow::StartGame(const FStart& O)
 {
 	if (bStarting) return;
 	bStarting = true;
+	if (M->Evening) M->Evening->Stop();
+	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
+	const auto EveningSaved = S47J::Obj(O.State,TEXT("evening"));
+	const bool bOpening = bEveningTimeline && (!O.State.IsValid() || S47J::Str(O.State,TEXT("checkpoint"))==TEXT("evening"));
+	M->Story->bEveningTimeline=bEveningTimeline; M->Story->bOpeningHeld=false;
 	Opening->Dismiss();
 	bDevRun = O.bDev;
 	bSoundUnlocked = true;
@@ -567,7 +579,8 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Night) M->Night->Restore(O.State);
 	// (Night::Restore puts the rest back in main.ts's order: the town's, the times away, the phones, the thread)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
-	StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
+	if (bOpening) { M->Story->Reset(); M->Story->bOpeningHeld=true; }
+	else StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
 	if (LoadBoard && O.State.IsValid()) LoadBoard(S47J::Obj(S47J::Obj(O.State, TEXT("case")), TEXT("board")));
 	// the doors as they were left
 	if (const S47J::FObj Doors = S47J::Obj(O.State, TEXT("doors")); Doors.IsValid() && M->Web)
@@ -612,6 +625,8 @@ void US47Flow::StartGame(const FStart& O)
 	bStarting = false;
 	// seenSync(); seenQuiet = false: the night's log listens again
 	if (M->Night) M->Night->Restored();
+	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved);
+	else if (O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: the original 02:13 record, photographs and paper stamps are unchanged."));
 	FadeInSoon(0.25f);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: night started, case %d, %s"), CaseId, Checkpoint.IsEmpty() ? TEXT("new") : *Checkpoint);
 }
@@ -657,6 +672,7 @@ void US47Flow::LeavePlay()
 	if (M->Away) M->Away->Leave(false);
 	// motelTv, roadside, townEvents (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(false);
+	if (M->Evening) M->Evening->Stop();
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -683,6 +699,7 @@ void US47Flow::ToTitle()
 	if (M->Away) M->Away->Leave(true);
 	// motelTv, roadside (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(true);
+	if (M->Evening) M->Evening->Stop();
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -1001,7 +1018,9 @@ S47J::FObj US47Flow::GameState()
 	const bool bPrologue = Checkpoint == TEXT("residual");
 	// (the fields of the systems not in the Unreal version yet, as the opened save had them)
 	const S47J::FObj State = Carry.IsValid() ? S47J::Clone(Carry) : S47J::New();
-	S47J::Set(State, TEXT("v"), 2);
+	S47J::Set(State, TEXT("v"), 3);
+	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);
+	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
@@ -1041,7 +1060,7 @@ TOptional<FS47SaveMeta> US47Flow::WriteSave(const FString& Kind, int32 Slot, FSt
 	FS47SaveCard Card;
 	Card.Chapter = M->Story ? M->Story->ChapterTitle() : FString();
 	Card.Place = PlaceName();
-	Card.Clock = bPrologue ? FString(TEXT("02:13")) : S47Text::ClockText(M->Story ? M->Story->Clock() : 0, false);
+	Card.Clock = M->Evening && M->Evening->Commute() ? FString(TEXT("Late afternoon")) : bPrologue ? FString(M->Story && M->Story->bEveningTimeline ? TEXT("00:13") : TEXT("02:13")) : S47Text::ClockText(M->Story ? M->Story->Clock() : 0, false);
 	Card.Playtime = M->Playtime;
 	// the picture without what stands over you on waking (story/abduction.ts)
 	const bool bOver = M->Away && M->Away->HideOver(true);
@@ -1139,6 +1158,7 @@ FString US47Flow::CheckpointName() const
 	// Where a save resumes. The prologue only has safe points at the start of the night and at
 	// 02:13; inside a chapter the chapter's own state is the resume point.
 	const AS47Story* S = M->Story;
+	if (M->Evening && M->Evening->Opening()) return TEXT("evening");
 	if (!S) return TEXT("start");
 	const FString& K = S->ChapterKey;
 	if (K == TEXT("ch5") || K == TEXT("ch6")) return TEXT("chapter5");
@@ -1154,7 +1174,8 @@ FString US47Flow::GameSaveBlock() const
 	// Prologue.saveBlock: why the game cannot be saved right now, or empty when it can
 	const AS47Story* S = M->Story;
 	if (!S) return TEXT("There is no night running to save.");
-	if (!S->At(ES47Phase::Residual)) return TEXT("The night can be saved from 02:13, once the survey has been running for a while.");
+	if (M->Evening && M->Evening->Opening()) return M->World && M->World->bBusy ? TEXT("Let the car finish parking first.") : FString();
+	if (!S->At(ES47Phase::Residual)) return S->bEveningTimeline ? TEXT("The survey saves when the routine interval finishes at 00:13. The opening can be saved before the handover.") : TEXT("The night can be saved from 02:13, once the survey has been running for a while.");
 	if (S->IsCinematic()) return TEXT("Not right now. Let the moment finish first.");
 	if (S->At(ES47Phase::Ringing) && ChapterNo(S) == 0) return TEXT("Not during the call and what follows it. The game saves again when the night moves on.");
 	for (const TCHAR* K : { TEXT("ch3"), TEXT("ch4"), TEXT("ch5"), TEXT("ch6") })

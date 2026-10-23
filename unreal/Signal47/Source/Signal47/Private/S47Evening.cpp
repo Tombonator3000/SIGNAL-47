@@ -1,0 +1,365 @@
+#include "S47Evening.h"
+#include "S47EveningVisual.h"
+#include "S47Main.h"
+#include "S47Story.h"
+#include "S47World.h"
+#include "S47Walker.h"
+#include "S47Web.h"
+#include "S47Audio.h"
+#include "S47Flow.h"
+#include "S47Kit.h"
+#include "S47Inter.h"
+#include "S47UI.h"
+#include "S47Media.h"
+#include "S47Radio.h"
+#include "S47Score.h"
+#include "S47RecordedDialogue.h"
+#include "S47Chapter.h"
+#include "Misc/CommandLine.h"
+
+FS47Evening::FS47Evening(US47Main* InM) : M(InM)
+{
+ FString Error;
+ if (!Pack.Initialize(Error) || !RadioPack.Initialize(Error)) UE_LOG(LogTemp, Error, TEXT("S47: evening pack: %s"), *Error);
+ Visual = MakeUnique<FS47EveningVisual>(M);
+ Voice = MakeShared<FS47RecordedDialogue>(M->Audio, TEXT("evening"), [](const FS47DialogueInput& I, FS47RadioVoice& Bank) -> TOptional<TArray<FS47RadioClip>>
+ {
+  if (I.Lines.Num() != 1) return {};
+  return Bank.Resolve(I.Lines[0].Text, 0, I.Voice);
+ }, [this](const FS47RadioClip&) { const auto S = Pack.CurrentScene(); return S && (S->Channel == TEXT("phone") || S->Channel == TEXT("walkie") || S->Channel == TEXT("radio")); });
+ // Physical triggers are explicit: a choice-only scene can never become a global use target.
+ const auto Previous = M->World->OnParked;
+ M->World->OnParked = [this, Previous](const FString& Place) { if (Previous && !Opening()) Previous(Place); Parked(Place); };
+}
+FS47Evening::~FS47Evening() { Stop(); }
+
+void FS47Evening::StopRing()
+{
+ if (bRing && M->Audio) M->Audio->Stop(TEXT("evening:ring"),0.05f);
+ bRing = false;
+ if (M->Web) M->Web->SetHandsetRattle(false);
+}
+void FS47Evening::Stop()
+{
+ StopRing(); if (Voice) Voice->Stop();
+ if (Music) { Music->Stop(); Music->Disconnect(); Music.Reset(); }
+ if (MusicGain) { MusicGain->Disconnect(); MusicGain.Reset(); }
+ bEnabled = false; bDialogueOpen = false; SpokenLine.Empty(); RadioSpokenLine.Empty();
+ if (M && M->Story) M->Story->bOpeningHeld = false;
+ if (M && M->World) M->World->bCommuteVehicle = false;
+ if (Visual) Visual->SetParked(false);
+}
+void FS47Evening::Begin(const S47J::FObj& Saved)
+{
+ Stop(); Pack.Reset(); RadioPack.Reset(); bEnabled = true;
+ bWorkStarted = false; bRadioOn = true; RadioHold = RadioRest = MusicPosition = 0;
+ FString Error;
+ if (Saved)
+ {
+  if (!Pack.Load(S47J::Obj(Saved,TEXT("pack")),Error)) { bEnabled=false; M->Story->bOpeningHeld=false; M->UI->Toast(TEXT("The evening state could not be restored: ")+Error,12); UE_LOG(LogTemp, Error,TEXT("S47: evening restore: %s"),*Error); return; }
+  if (S47J::Has(Saved,TEXT("radioPack"))) RadioPack.Load(S47J::Obj(Saved,TEXT("radioPack")),Error);
+  bRadioOn = S47J::Bool(Saved,TEXT("radioOn"),true);
+  RadioHold = S47J::Num(Saved,TEXT("radioHold")); RadioRest = S47J::Num(Saved,TEXT("radioRest"));
+  MusicPosition = S47J::Num(Saved,TEXT("musicPosition"));
+ }
+ M->Story->bEveningTimeline = true;
+ M->Story->bOpeningHeld = Opening();
+ if (Commute())
+ {
+  M->Story->SetClock(-6*3600-40*60); // late afternoon; shift time has not begun
+  const S47J::FObj Car = S47J::Obj(Saved,TEXT("car"));
+  if (!Saved || S47J::Bool(Car,TEXT("driving"))) M->World->BeginCommute(Car);
+  else
+  {
+   M->World->bCommuteVehicle = true;
+   const FString At = S47J::Str(Car,TEXT("at"),TEXT("diner"));
+   const auto P = S47J::New();
+   for (const TCHAR* K : {TEXT("x"),TEXT("y"),TEXT("z"),TEXT("h")}) S47J::Set(P,K,S47J::Num(Car,K));
+   S47J::Set(P,TEXT("at"),At);
+   M->World->PlaceTruck(At,P);
+   M->World->Enter(S47J::Str(Saved,TEXT("area"),TEXT("diner")));
+  }
+ }
+ else
+ {
+  Visual->SetParked(true);
+  if (Opening()) { M->Story->SetClock(S47J::Num(Saved,TEXT("clock"),-21600)); RingAt = M->T; }
+  bWorkStarted = Pack.Flag(TEXT("handover_done"));
+ }
+ Context(); Refile();
+ if (Opening()) M->UI->Objective(Commute() ? TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. MESA DINER IS OPEN FOR SUPPER.") : TEXT("SARO // ANSWER DALE'S CALL IN THE CONTROL ROOM"));
+ if (Pack.CurrentScene()) Resume();
+ UE_LOG(LogTemp,Display,TEXT("S47: evening %s, phase %s, scene %s"),Saved ? TEXT("restored") : TEXT("new"),*Pack.GetPhase(),Pack.CurrentScene()?*Pack.CurrentScene()->Id:TEXT("none"));
+}
+
+void FS47Evening::Context()
+{
+ if (!bEnabled || !M->Story) return;
+ const FString K = M->Story->ChapterKey;
+ auto State = [&](const TCHAR* Ch) { const US47Chapter* C = M->Story->Chapter(Ch); return C && M->Story->Begun.Contains(Ch) ? C->SaveState() : S47J::FObj(); };
+ Pack.SetExternal(TEXT("ctx_signal_present"),M->Story->bResidualVisible && M->Story->bEveningTimeline);
+ Pack.SetExternal(TEXT("ctx_archive_open"),M->Story->Begun.Contains(TEXT("ch2")));
+ Pack.SetExternal(TEXT("ctx_nora_contacted"),S47J::Bool(State(TEXT("ch4")),TEXT("talked")));
+ Pack.SetExternal(TEXT("ctx_all_night_active"),K == TEXT("ch5"));
+ Pack.SetExternal(TEXT("ctx_power_available"),M->Story->bPowered && !M->Story->bDark);
+ Pack.SetExternal(TEXT("ctx_room_quiet"),!M->ModalOpen() && !M->Story->IsCinematic());
+ Pack.SetExternal(TEXT("ctx_map_solved"),S47J::Bool(State(TEXT("ch5")),TEXT("p13")));
+ // Transformer ctx_* remain false until its actual world controller supplies the results.
+ if (!Opening() && !Pack.CurrentScene())
+ {
+  Pack.SetPhase(K==TEXT("ch5")||K==TEXT("ch6")?TEXT("all_night"):K==TEXT("ch3")||K==TEXT("ch4")?TEXT("field"):K==TEXT("ch2")?TEXT("archive"):M->Story->bResidualVisible?TEXT("signal"):TEXT("early_shift"));
+ }
+}
+void FS47Evening::Refile()
+{
+ if (!M->Story) return;
+ for (const FString& Id : Pack.Documents()) if (const auto* D = Pack.FindDocument(Id))
+ {
+  // Never replace an already saved paper/photo or its stamp when resuming a case.
+  if (M->Story->Docs().ContainsByPredicate([&](const FS47Doc& Doc){return Doc.Id==Id;})) continue;
+  FS47Doc Doc; Doc.Id=D->Id; Doc.Title=D->Title; Doc.Kind=D->Kind; Doc.Stamp=D->Stamp;
+  Doc.Page=FString::Join(D->Body,TEXT("\n\n")); Doc.Transcript=Doc.Page; M->Story->AddDoc(Doc);
+ }
+}
+void FS47Evening::Changed() { Context(); Refile(); M->RequestAutosave(); }
+
+bool FS47Evening::Trigger(const FString& Scene)
+{
+ if (!bEnabled) return false;
+ Context(); if (!Pack.Start(Scene)) return false;
+ Changed(); ShowDialogue(); return true;
+}
+void FS47Evening::Resume() { bDialogueOpen = false; bResumeRequested=true; SpokenLine.Empty(); }
+void FS47Evening::ShowDialogue()
+{
+ const auto* S = Pack.CurrentScene(); if (!S || !M->UI) { AfterDialogue(); return; }
+ if (!Pack.CurrentLine() && S->Choices.IsEmpty()) { Pack.Advance(); Changed(); AfterDialogue(); return; }
+ bDialogueOpen = true;
+ TArray<S47Kit::FW> Rows;
+ const auto* L=Pack.CurrentLine();
+ FString Title=S->Channel==TEXT("phone")?TEXT("TELEPHONE / DALE"):S->Channel==TEXT("walkie")?TEXT("WALKIE-TALKIE"):TEXT("MESA DINER");
+ if (L)
+ {
+  Rows.Add(S47Kit::Unread(S47Kit::Sub(L->Speaker)));
+  Rows.Add(S47Kit::Unread(S47Kit::Text(L->Text)));
+  FS47DialogueInput Input; Input.Voice=L->VoiceProfile; Input.Lines.Add({L->Speaker,L->Text});
+  const bool Available = L->bRecord && Voice->Available(Input);
+  Voice->SetEnabled(M->Audio->bCharacterVoices);
+  if (L->bRecord) Rows.Add(S47Kit::Small(!Available ? TEXT("Voice recording pending / subtitles only") : !M->Audio->bCharacterVoices ? TEXT("Character voices off") : TEXT("Recorded character dialogue")));
+  if (SpokenLine!=L->Id) { SpokenLine=L->Id; if (Available) Voice->Play(Input); }
+  Rows.Add(S47Kit::Button(TEXT("Continue"),[this]{Voice->Stop(); M->UI->Close(true); bDialogueOpen=false; Pack.Advance(); Changed(); ShowDialogue();},true));
+ }
+ else
+ {
+  Rows.Add(S47Kit::Sub(TEXT("Your reply")));
+  for (const auto* Choice : Pack.Choices())
+  {
+   const FString Id=Choice->Id;
+   Rows.Add(S47Kit::Button(Choice->Label,[this,Id]
+   {
+    if (!Pack.Select(Id)) return;
+    // Choice and pending reply already committed in Pack before requesting disk save.
+    M->UI->Close(true); bDialogueOpen=false; Changed(); ShowDialogue();
+   },Rows.Num()==1));
+  }
+ }
+ const FString Current=S->Id;
+ if (Pack.Flag(TEXT("food_bought")) && !Pack.Flag(TEXT("intro_arrived"))) Rows.Add(S47Kit::Small(Pack.Flag(TEXT("arrival_order_burger"))?TEXT("Burger, fries and coffee / one paid order"):TEXT("Sandwich, chips and coffee / one paid order")));
+ M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Col(Rows),820),[this,Current]{bDialogueOpen=false; SpokenLine.Empty(); Voice->Stop(); Changed();});
+}
+void FS47Evening::AfterDialogue()
+{
+ bDialogueOpen=false; SpokenLine.Empty(); if (Voice) Voice->Stop();
+ if (Pack.Flag(TEXT("handover_done")) && !bWorkStarted)
+ {
+  bWorkStarted=true; StopRing(); M->Web->SetHandsetVisible(true);
+  M->Audio->Play(TEXT("handset_down"),0.5f,M->Web->PropLocation(TEXT("phone")));
+  M->Story->BeginEveningShift(); Refile(); Context();
+  M->UI->Objective(TEXT("CONTROL ROOM // POWER THE RACK AND START THE ROUTINE SURVEY")); Changed();
+ }
+ else if (Commute()) M->UI->Objective(TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));
+}
+void FS47Evening::Answer()
+{
+ if (!Opening() || Commute()) return;
+ StopRing(); M->Audio->Play(TEXT("handset_up"),0.5f,M->Web->PropLocation(TEXT("phone")));
+ M->Web->SetHandsetVisible(false);
+ if (Pack.CurrentScene()) ShowDialogue(); else Trigger(TEXT("D01_HANDOVER"));
+}
+bool FS47Evening::Use(const FString& Id)
+{
+ if (!bEnabled) return false;
+ if (Id==TEXT("evening:radio") && Commute()) {bRadioOn=!bRadioOn;M->UI->Toast(bRadioOn?TEXT("Local evening radio on"):TEXT("Radio off"),2); Changed();return true;}
+ if (Opening())
+ {
+  if (!Commute() && Id==TEXT("phone")) { Answer(); return true; }
+  if (Commute() && (Id.Contains(TEXT("waitress")) || Id.Contains(TEXT("counter")) || Id.Contains(TEXT("menu"))))
+  {
+   if (Pack.CurrentScene()) ShowDialogue();
+   else if (!Trigger(TEXT("I02_DINER_HELLO"))) M->UI->Toast(TEXT("Your order is settled. Have a good shift."),3);
+   return true;
+  }
+  if (Commute() && (Id.Contains(TEXT("truck"),ESearchCase::IgnoreCase)))
+  {
+   if (Pack.CurrentScene()) ShowDialogue();
+   else M->World->DriveBack();
+   return true;
+  }
+  if (Id.Contains(TEXT("Door"),ESearchCase::IgnoreCase) || Id==TEXT("east") || Id==TEXT("south") || Id==TEXT("exit")) return false;
+  M->UI->Toast(Commute()?TEXT("Drive north to SARO when you are ready. You can order supper at the diner counter."):TEXT("Dale is calling the control-room phone."),4);
+  return true;
+ }
+ return false;
+}
+void FS47Evening::Parked(const FString& Place)
+{
+ if (!Commute()) return;
+ if (Place==TEXT("saro") && M->World->TruckOnLot())
+ {
+  Pack.SetPhase(TEXT("handover")); if (!Pack.Start(TEXT("I11_SARO_ARRIVAL"))) return;
+  Pack.Advance(); // empty world-triggered node commits arrival once
+  M->Story->SetClock(-21600); M->World->FinishCommute(); Visual->SetParked(true);
+  M->UI->Toast(Pack.String(TEXT("ARRIVAL_SHIFT_CARD")),5);
+  M->UI->Objective(TEXT("SARO // ANSWER THE CONTROL-ROOM PHONE")); RingAt=M->T;
+  Changed();
+ }
+ else Changed();
+}
+
+void FS47Evening::RadioStep(double Dt)
+{
+ const bool Audible=Commute() && M->World->bDriving && bRadioOn && !M->ModalOpen();
+ const auto* S=RadioPack.CurrentScene();
+ if (Audible && !S && RadioRest<=0)
+ {
+  RadioPack.Start(RadioPack.Flag(TEXT("arrival_radio_heard"))?TEXT("I10_BACK_ON_ROAD"):TEXT("I01_DRIVE"));
+  S=RadioPack.CurrentScene();
+ }
+ if (Audible)
+ {
+  if (S)
+  {
+   if (const auto* L=RadioPack.CurrentLine())
+   {
+    if (RadioSpokenLine!=L->Id)
+    {
+     RadioSpokenLine=L->Id;
+     // Readability duration for a silent placeholder, never a claimed recording duration.
+     if (RadioHold<=0) RadioHold=FMath::Clamp(2.5+L->Text.Len()/20.0,4.0,11.0);
+     M->UI->Toast(TEXT("RADIO HOST [voice recording pending]: ")+L->Text,float(RadioHold));
+    }
+    RadioHold-=Dt;
+    if (RadioHold<=0) { RadioPack.Advance(); RadioSpokenLine.Empty(); if (!RadioPack.CurrentScene()) RadioRest=45; Changed(); }
+   }
+   else { RadioPack.Advance(); RadioRest=45; Changed(); }
+  }
+  else RadioRest=FMath::Max(0.0,RadioRest-Dt);
+ }
+ // The same licensed track the existing radio uses for its cheerful two-step.
+ if (!Music && Commute() && M->Audio->Ctx)
+ {
+  Music=FS47MediaSource::Open(M->Audio->Ctx.ToSharedRef(),TEXT("radio/bama_country.mp3"));
+  if (Music)
+  {
+   MusicGain=M->Audio->Ctx->CreateGain(); MusicGain->Gain.SetValue(0.23);
+   Music->Connect(MusicGain); MusicGain->Connect(M->Audio->RadioBus);
+   Music->Seek(MusicPosition); Music->Play();
+  }
+ }
+ if (Music)
+ {
+  const bool Quiet=!Audible || RadioPack.CurrentScene();
+  Music->Pause(Quiet);
+  if (!Quiet && Music->CurrentTime()>=Music->Duration()-0.2) Music->Seek(0);
+  MusicPosition=Music->CurrentTime();
+ }
+ if (!Commute() && Music) { Music->Stop(); Music->Disconnect(); Music.Reset(); MusicGain->Disconnect(); MusicGain.Reset(); }
+}
+void FS47Evening::Step(double Dt)
+{
+ if (!bEnabled || M->Mode!=US47Main::EMode::Play) return;
+ if (!bBindings && M->Inter->Get(TEXT("diner:waitress")))
+ {
+  bBindings=true;
+  for (const FString& Id : {FString(TEXT("diner:waitress")),FString(TEXT("diner:counter")),FString(TEXT("diner:menu")),FString(TEXT("dinerTruck"))})
+  {
+   if (auto* I=M->Inter->Get(Id))
+   {
+    auto Label=I->Label; auto Examine=I->Examine;
+    I->Label=[this,Id,Label]{return Commute()?FString(Id==TEXT("dinerTruck")?TEXT("Drive your car to SARO"):TEXT("Order supper / talk to the waitress")):Label?Label():FString();};
+    I->Examine=[this,Id,Examine]{return Commute()?FString(Id==TEXT("dinerTruck")?TEXT("Your car. SARO 07 is waiting at work."):TEXT("Supper is being served. Coffee is fresh.")):Examine?Examine():FString();};
+   }
+  }
+ }
+ if (bResumeRequested && !M->ModalOpen() && !M->World->bBusy) { bResumeRequested=false; ShowDialogue(); }
+
+ Context();
+ if (Opening() && !Commute() && !M->ModalOpen() && !M->bPausedByMenu) M->Story->SetClock(M->Story->Clock()+Dt);
+ if (Opening() && !Commute() && !bRing && !Pack.CurrentScene() && M->T>=RingAt)
+ {
+  bRing=true; M->Audio->Loop(TEXT("evening:ring"),TEXT("phone_ring"),0.8f,M->Web->PropLocation(TEXT("phone")));
+  M->Web->SetHandsetRattle(true);
+ }
+ if (bRing) M->Web->SetHandsetRattle(true);
+ RadioStep(Dt);
+ FS47Truck* Carrier=M->World->CabTruck(); if (!Carrier) Carrier=M->World->TruckHere();
+ Visual->Tick(Commute(),M->World->bDriving,Carrier,Pack.Flag(TEXT("intro_arrived")),Pack.Flag(TEXT("food_bought")),Pack.Flag(TEXT("food_taken")),Pack.Flag(TEXT("food_eaten")),Pack.CurrentScene() && Pack.CurrentScene()->Id==TEXT("I08_WATER"),Pack.Flag(TEXT("arrival_order_burger")));
+ if (!TestMode.IsEmpty() && !M->World->bBusy) { const FString Mode=TestMode; TestMode.Empty(); BootstrapTest(Mode); }
+ if (bDialogueOpen && !M->ModalOpen()) bDialogueOpen=false;
+}
+S47J::FObj FS47Evening::Save() const
+{
+ auto O=S47J::New(); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
+ S47J::Set(O,TEXT("clock"),M->Story->Clock()); S47J::Set(O,TEXT("area"),M->World->Area);
+ S47J::Set(O,TEXT("radioOn"),bRadioOn); S47J::Set(O,TEXT("radioHold"),RadioHold); S47J::Set(O,TEXT("radioRest"),RadioRest);
+ S47J::Set(O,TEXT("musicPosition"),Music?Music->CurrentTime():MusicPosition);
+ const auto* T=M->World->CabTruck(); if (!T) T=M->World->TruckHere();
+ if (Commute() && T)
+ {
+  auto C=S47J::New(); S47J::Set(C,TEXT("driving"),M->World->bDriving);
+  S47J::Set(C,TEXT("leg"),M->World->bDriving?M->World->Leg:M->World->Area);
+  S47J::Set(C,TEXT("at"),M->World->TruckAt);
+  S47J::Set(C,TEXT("x"),T->Position.X); S47J::Set(C,TEXT("y"),T->Position.Y); S47J::Set(C,TEXT("z"),T->Position.Z); S47J::Set(C,TEXT("h"),T->Rotation.Y);
+  S47J::Set(O,TEXT("car"),C);
+ }
+ return O;
+}
+
+void FS47Evening::BootstrapTest(const FString& Mode)
+{
+ // Deterministic control-scenario setup uses the same state transactions as the visible UI.
+ // Drive tests still use real World controller/parking; shortcut cameras are labelled setups.
+ if (M->World->bBusy) {TestMode=Mode;return;}
+ if (Mode==TEXT("commute")) return;
+ auto Lines=[this]{while(Pack.CurrentLine()) Pack.Advance();};
+ if (Mode==TEXT("diner") || Mode==TEXT("order") || Mode==TEXT("paid") || Mode==TEXT("burger") || Mode==TEXT("sandwich") || Mode==TEXT("water"))
+ {
+  M->World->StopDriving(); M->World->bCommuteVehicle=true; M->World->PlaceTruck(TEXT("diner"));
+  M->World->Enter(TEXT("diner")); M->World->PlaceAtDiner(TEXT("stool"));
+  Pack.Start(TEXT("I02_DINER_HELLO"));
+  if (Mode!=TEXT("diner"))
+  {
+   Lines(); Pack.Select(Mode==TEXT("water")?TEXT("I02_WATER"):TEXT("I02_MENU"));
+   if (Mode!=TEXT("water"))
+   {
+    Lines(); Pack.Select(Mode==TEXT("sandwich")?TEXT("I03_SANDWICH"):TEXT("I03_BURGER"));
+    if (Mode==TEXT("burger") || Mode==TEXT("sandwich")) {Lines();Pack.Select(Mode==TEXT("sandwich")?TEXT("I05_EAT"):TEXT("I04_TAKE"));}
+   }
+  }
+  Changed(); ShowDialogue(); return;
+ }
+ if (Mode==TEXT("parking") || Mode==TEXT("phone") || Mode==TEXT("dusk"))
+ {
+  M->World->StopDriving(); M->World->PlaceTruck(TEXT("saro")); M->World->Enter(TEXT("saro"));
+  Parked(TEXT("saro"));
+  const FVector Spawn=M->Web->SpawnThree(); M->Player->Place(Spawn.X,Spawn.Z,Spawn.Y);
+  if (Mode==TEXT("phone")) Answer();
+  if (Mode==TEXT("dusk")) {M->Story->SetClock(-5*3600-25*60);M->Player->Place(2,20,0);}
+ }
+}
+bool FS47Evening::SelfTest(TArray<FString>& Lines)
+{
+ FString Error; const bool Ok=FS47EveningPack::SelfTest(Error);
+ Lines.Add((Ok?FString(TEXT("PASS")):FString(TEXT("FAIL")))+TEXT(" EveningShift pack runtime control scenarios: ")+Error);
+ return Ok;
+}
