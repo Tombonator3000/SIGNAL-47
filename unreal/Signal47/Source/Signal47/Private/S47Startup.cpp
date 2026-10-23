@@ -14,6 +14,7 @@
 #include "Misc/Paths.h"
 #include "MoviePlayer.h"
 #include "PipelineStateCache.h"
+#include "PipelineFileCache.h"
 #include "S47Audio.h"
 #include "S47Main.h"
 #include "S47Theme.h"
@@ -22,7 +23,7 @@
 #include "Serialization/Archive.h"
 #include "ShaderCompiler.h"
 #include "ShaderPipelineCache.h"
-#include "UObject/CoreUObjectDelegates.h"
+#include "UObject/UObjectGlobals.h"
 #include "UObject/UObjectIterator.h"
 #include "UnrealClient.h"
 #include "Widgets/Layout/SBorder.h"
@@ -244,8 +245,10 @@ void S47Startup::Begin(UWorld* World)
 		if (FShaderPipelineCache::IsBatchingPaused()) FShaderPipelineCache::ResumeBatching();
 		ShowScreen();
 	}
-	UE_LOG(LogS47Startup, Display, TEXT("S47: startup BEGIN; precache=%d filecache=%d bypass=%d"),
-		int32(GRHISupportsPSOPrecaching), int32(GRHISupportsPipelineFileCache), GStartup.bBypass);
+	UE_LOG(LogS47Startup, Display, TEXT("S47: startup BEGIN; precache=%d filecache=%d bypass=%d bundle_open=%d bundle_psos=%d"),
+		int32(GRHISupportsPSOPrecaching), int32(GRHISupportsPipelineFileCache), GStartup.bBypass,
+		int32(FPipelineFileCacheManager::HasPipelineFileCache(FApp::GetProjectName())),
+		FPipelineFileCacheManager::GetTotalPSOCount(FApp::GetProjectName()));
 }
 
 void S47Startup::Prepare(APlayerController* PC, US47Main* Main, TFunction<void()> OnReady)

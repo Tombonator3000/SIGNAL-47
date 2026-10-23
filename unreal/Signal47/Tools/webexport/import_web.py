@@ -8,6 +8,7 @@
 # Run: UnrealEditor-Cmd Signal47.uproject -run=pythonscript -script=Tools/webexport/import_web.py -unattended -nullrhi
 # with S47_WEB=<export folder> (default ~/scratch-bm/Signal47-web).
 # S47_ONLY=materials rebuilds Base and Mat only, without touching shared Tex or WebData.
+# S47_ONLY=masters updates Base graphs in place, retaining all material instances and parents.
 import json
 import os
 import sys
@@ -25,7 +26,8 @@ tools = unreal.AssetToolsHelpers.get_asset_tools()
 SRC = os.environ.get('S47_WEB', os.path.expanduser('~/scratch-bm/Signal47-web'))
 man = json.load(open(os.path.join(SRC, 'manifest.json')))
 only = os.environ.get('S47_ONLY', 'tex,geo,mat').split(',')
-materials_only = only == ['materials']
+masters_only = only == ['masters']
+materials_only = masters_only or only == ['materials']
 if materials_only:
     only = ['mat']
 
@@ -186,6 +188,13 @@ UVX = 'return float2(dot(R0, float3(UV, 1.0)), dot(R1, float3(UV, 1.0)));'
 
 def fresh(path):
     if eal.does_asset_exist(path):
+        if masters_only:
+            # Preserve the UMaterial object: deleting it would sever existing MI parents.
+            material = eal.load_asset(path)
+            if not isinstance(material, unreal.Material):
+                raise RuntimeError('S47WEB expected material at ' + path)
+            mel.delete_all_material_expressions(material)
+            return material
         eal.delete_asset(path)
     folder, name = path.rsplit('/', 1)
     return tools.create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())
@@ -264,7 +273,8 @@ return normalize(N);
 
 # three.js ACESFilmicToneMapping undone: a colour three draws without tone mapping comes out
 # of AS47Web's tone mapping (M_WebTone, the same curve) as it is. K is exposure / 0.6.
-UNTONE = """float3 y = saturate(C);
+UNTONE = """if (all(C <= 0.0)) return float3(0, 0, 0);
+float3 y = saturate(C);
 float3 x = max(float3(dot(float3(0.6430382, 0.3111868, 0.0457755), y), dot(float3(0.0592687, 0.9314365, 0.0092949), y), dot(float3(0.0059619, 0.063929, 0.9301184), y)), 0);
 float3 A = 1.0 - 0.983729 * x, B = 0.0245786 - 0.432951 * x, Q = -(0.000090537 + 0.238081 * x);
 float3 v = max((-B + sqrt(max(B * B - 4 * A * Q, 0))) / (2 * A), 0);
@@ -340,7 +350,7 @@ float l = dot(col, float3(0.299, 0.587, 0.114));
 col = lerp(l.xxx, col, 0.88);
 col = lerp(col, col * float3(0.86, 1.02, 1.04), smoothstep(0.45, 0.0, l));
 col = lerp(col, col * float3(1.06, 1.0, 0.9), smoothstep(0.5, 1.0, l));
-col = col * 0.95 + float3(0.026, 0.031, 0.033);
+col = col * 0.95 + float3(0.014, 0.018, 0.022);
 col *= 1.0 - 0.02 * (0.5 + 0.5 * cos(uv.y * size.y * 3.14159));
 float n = w.hash(floor(uv * size) + float2(floor(t * 24.0) * 17.0, floor(t * 24.0) * 31.0));
 col += (n - 0.5) * 0.06 * 0.5;
@@ -856,8 +866,12 @@ def build_master(name, lit, blend, two_sided, flora=None, control_crt=False):
         e = node(unreal.MaterialExpressionStaticSwitchParameter, -250)
         e.set_editor_property('parameter_name', n)
         e.set_editor_property('default_value', False)
-        mel.connect_material_expressions(yes, yes_pin, e, 'A')
-        mel.connect_material_expressions(no, no_pin, e, 'B')
+        # UMaterialExpressionStaticSwitchParameter::GetInputName exposes True/False,
+        # although its stored FExpressionInputs and compiler errors call them A/B.
+        for source, output, pin in ((yes, yes_pin, 'True'), (no, no_pin, 'False')):
+            if not mel.connect_material_expressions(source, output, e, pin):
+                raise RuntimeError('S47WEB failed switch %s.%s (output=%r; inputs=%r)' %
+                                   (n, pin, output, list(mel.get_material_expression_input_names(e))))
         return e
 
     def world_to_tangent(source):
@@ -963,6 +977,9 @@ return clamp(r + (D * 2.0 - 1.0) * Variation + (M * 2.0 - 1.0) * MacroVariation 
         euv = xuv('Em')
         emap_c = texp('EmissiveMap', unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, white, euv)
         emis = op(unreal.MaterialExpressionMultiply, vector('Emissive', (0, 0, 0, 1)), lerp(one, emap_c, scalar('UseEmissiveMap', 0), '', 'RGB'))
+        # Native indicator/power gating keeps authored emissive maps intact. Brightness
+        # belongs to the unlit picture path and cannot dim a lit console-panel material.
+        emis = op(unreal.MaterialExpressionMultiply, emis, scalar('EmissivePower', 1))
         sway = None
         if flora:
             # the shape's sway and which of two plants a corner is (UV channel 1: export.js), the
@@ -1161,7 +1178,7 @@ if 'mat' in only:
         return unreal.LinearColor(uvr[0], uvr[1], uvr[2], 0), unreal.LinearColor(uvr[3], uvr[4], uvr[5], 0)
 
     made = 0
-    for d in man['materials']:
+    for d in (() if masters_only else man['materials']):
         lit = bool(d.get('lit'))
         labels = mat_labels.get(d['id'], set())
         uses_alpha = 'alphaMap' in d or d.get('opacity', 1) < 0.999
@@ -1282,6 +1299,8 @@ if 'mat' in only:
         made += 1
     log('material instances %d' % made)
     log('surface detail profiles %s; dielectric glass %d; control CRT glass %d' % (json.dumps(detail_counts, sort_keys=True), glass_count, crt_count))
+    if masters_only:
+        log('masters only: existing material instances and parent bindings preserved')
 class Graph:
     """A material made here node by node: parameters, the MPC's values, Unreal's built-in inputs and
     custom HLSL, laid out down the left."""

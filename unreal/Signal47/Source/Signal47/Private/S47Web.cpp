@@ -618,6 +618,7 @@ void AS47Web::BuildRoom()
 	// the room's lights by role (ControlRoom.ts this.lights)
 	FString Path = FPaths::ProjectContentDir() / TEXT("WebData/manifest.json");
 	(void)Path;
+	BuildIndicatorLighting();
 }
 
 void AS47Web::UpdateCrtMaterials()
@@ -631,7 +632,11 @@ void AS47Web::UpdateCrtMaterials()
 		{
 			for (int32 s = 0; s < 4; ++s)
 			{
-				if (CrtMat[s] >= 0 && N.Mats[k] == CrtMat[s] && CrtMids.IsValidIndex(s)) M->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), k)), CrtMids[s]);
+				if (CrtMat[s] >= 0 && N.Mats[k] == CrtMat[s] && CrtMids.IsValidIndex(s))
+				{
+					if (N.Mats.Num() == 1) for (int32 Slot = 0; Slot < M->GetNumMaterials(); ++Slot) M->SetMaterial(Slot, CrtMids[s]);
+					else M->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), k)), CrtMids[s]);
+				}
 			}
 		}
 	}
@@ -870,14 +875,11 @@ void AS47Web::SetLever(bool bOn)
 
 void AS47Web::SetLed(int32 Index, bool bOn)
 {
-	if (LedNode < 0) return;
-	UInstancedStaticMeshComponent* I = Cast<UInstancedStaticMeshComponent>(Nodes[LedNode].Comp.Get());
-	if (!I || Index < 0 || Index >= I->GetInstanceCount()) return;
-	// LED_COL in ControlRoom.ts; ledState: 7 and 15 amber, the rest green
-	const FLinearColor C = !bOn ? Hex(0x141619) : (Index == 7 || Index == 15) ? Hex(0xffb040) : Hex(0x45ff7a);
-	I->SetCustomDataValue(Index, 0, C.R, false);
-	I->SetCustomDataValue(Index, 1, C.G, false);
-	I->SetCustomDataValue(Index, 2, C.B, true);
+	if (!RackLedOn.IsValidIndex(Index)) return;
+	RackLedOn[Index] = bOn;
+	DrawRackIndicator(Index);
+	// A late boot/flicker callback during SARO's cut may change state, never relight the bank.
+	UpdateIndicatorLighting(SaroLightingPower());
 }
 
 void AS47Web::SetLeds(bool bOn)
@@ -1234,6 +1236,7 @@ void AS47Web::Tick(float Dt)
 		return;
 	}
 	UpdateNativeLighting();
+	ReviewIndicators();
 	UpdateRetroProps();
 	SampleLightingPerformance(Dt);
 	S47GraphicsReview::Tick(this, Dt);

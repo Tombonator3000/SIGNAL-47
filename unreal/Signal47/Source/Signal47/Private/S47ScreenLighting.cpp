@@ -128,15 +128,8 @@ void AS47Web::UpdateScreenLighting()
 	}
 	// Station power is independent of RX bank 3. Read the original ceiling drivers, never a
 	// brightness value already multiplied on the previous frame.
-	float Power = 0.f;
-	bool bPowerDriver = false;
-	for (int32 I = 0; I < CeilingLights.Num() && I < CeilingBase.Num(); ++I)
-		if (CeilingLights[I].IsValid() && CeilingBase[I] > 0.001f)
-		{
-			Power = FMath::Max(Power, CeilingLights[I]->Intensity / CeilingBase[I]);
-			bPowerDriver = true;
-		}
-	if (!bPowerDriver) Power = 1.f;
+	const float Power = SaroLightingPower();
+	UpdateIndicatorLighting(Power);
 	for (FScreenLight& S : ScreenLights)
 	{
 		URectLightComponent* L = S.Light.Get();
@@ -150,18 +143,19 @@ void AS47Web::UpdateScreenLighting()
 			UMaterialInstanceDynamic* Mid = Cast<UMaterialInstanceDynamic>(M->GetMaterial(0));
 			// Preserve the fallback display's shared map binding instead of making a private copy.
 			if (!Mid && Nodes[S.Node].Mats.Num() > 0) Mid = SharedMid(Nodes[S.Node].Mats[0]);
-			if (Mid) Mid->SetScalarParameterValue(TEXT("Brightness"), Brightness);
+			if (Mid) GateIndicatorMesh(M, Brightness);
 			if (S.Screen == -2)
 			{
-				// The new processor picture and its dark glass are separate planes 1.2 mm apart.
-				// Darken both; the amber meter faces elsewhere under the group keep their own hue.
+				// The processor picture/glass and its two amber VU faces share station power.
+				// Keep each face's canvas/colour and authored brightness; no green tint on the meters.
 				USceneComponent* Holder = M->GetAttachParent();
 				USceneComponent* Group = Holder ? Holder->GetAttachParent() : nullptr;
 				TArray<USceneComponent*> Parts;
 				if (Group) Group->GetChildrenComponents(true, Parts);
 				for (USceneComponent* C : Parts) if (UStaticMeshComponent* Pane = Cast<UStaticMeshComponent>(C))
-					if (Pane->GetComponentLocation().Equals(M->GetComponentLocation(), 0.25f))
-						if (UMaterialInstanceDynamic* Glass = Cast<UMaterialInstanceDynamic>(Pane->GetMaterial(0))) Glass->SetScalarParameterValue(TEXT("Brightness"), Power);
+					if (UMaterialInstanceDynamic* Face = Cast<UMaterialInstanceDynamic>(Pane->GetMaterial(0)))
+						if (Face->K2_GetScalarParameterValue(TEXT("UseMap")) > 0.5f || Pane->GetComponentLocation().Equals(M->GetComponentLocation(), 0.25f))
+							GateIndicatorMesh(Pane, Power);
 			}
 		}
 		float K = ScreenLevel(M) / FMath::Max(0.001f, S.Reference);

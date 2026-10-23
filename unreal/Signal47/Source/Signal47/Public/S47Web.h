@@ -357,6 +357,32 @@ private:
 	void UpdateFixtureLighting();
 	void BuildScreenLighting();
 	void UpdateScreenLighting();
+	// Indicator state stays separate from station dimming and from the generated material slots.
+	struct FIndicatorBrightness { float Authored = 1, Applied = 1, EmissiveAuthored = 1, EmissiveApplied = 1; };
+	struct FIndicatorSurface
+	{
+		int32 Node = -1, Screen = -1;
+		bool bFixed = false, bMapped = false;
+		TWeakObjectPtr<UStaticMeshComponent> Mesh;
+		TArray<FIndicatorBrightness> Slots;
+	};
+	TArray<FIndicatorSurface> IndicatorSurfaces;
+	// Native glTF props are adopted after BuildRoom; only their authored emitting slots are gated.
+	struct FNativeIndicatorSurface
+	{
+		int32 Node = -1, Slot = -1;
+		FLinearColor Emissive = FLinearColor::Black;
+		TWeakObjectPtr<UStaticMeshComponent> Mesh;
+	};
+	TArray<FNativeIndicatorSurface> NativeIndicatorSurfaces;
+	int32 NativeIndicatorNodeCount = -1;
+	TArray<bool> RackLedOn;
+	void BuildIndicatorLighting();
+	void DrawRackIndicator(int32 Index);
+	void UpdateIndicatorLighting(float Power);
+	void GateIndicatorMesh(UStaticMeshComponent* Mesh, float Power);
+	float SaroLightingPower() const;
+	void ReviewIndicators(); // -S47IndicatorTest=<directory>, one short camera run at a time
 	URectLightComponent* SurfaceLight(int32 Node, const FVector& FacingThree, float Lumens, float Reach);
 	TArray<TArray<int32>> PoolRoots;
 	bool bSkyCaptured = false;

@@ -3,6 +3,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Engine/ExponentialHeightFog.h"
@@ -38,6 +39,9 @@ namespace
 	{
 		if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(Name)) V->Set(Value, ECVF_SetByGameSetting);
 	}
+	// Diagnostic A/B uses the previous night fill with identical geometry and materials.
+	bool PreviousNight() { return FParse::Param(FCommandLine::Get(), TEXT("S47PreviousNight")); }
+	float NightSkyIntensity(float Dawn) { return FMath::Lerp(PreviousNight() ? 0.18f : 0.055f, 1.98f, FMath::Clamp(Dawn, 0.f, 1.f)); }
 }
 
 float AS47Web::LightIntensity(const FString& Uuid) const
@@ -181,7 +185,7 @@ void AS47Web::BuildNativeLighting()
 	NightSky->SetMobility(EComponentMobility::Movable);
 	NightSky->CubemapResolution = 64;
 	NightSky->SkyDistanceThreshold = 1500000.f;
-	NightSky->SetIntensity(0.18f);
+	NightSky->SetIntensity(NightSkyIntensity(0.f));
 	NightSky->SetLightColor(FLinearColor(0.42f, 0.57f, 1.f));
 	NightSky->RegisterComponent();
 	DawnSun = NewObject<UDirectionalLightComponent>(this);
@@ -198,6 +202,7 @@ void AS47Web::BuildNativeLighting()
 	SetLightingQuality(TEXT("high"));
 	UpdateNativeFog();
 	UE_LOG(LogTemp, Display, TEXT("S47: native lighting, %d lamp slots, Lumen (hardware when available), fixed exposure, no material floods or hemisphere"), PoolLights.Num());
+	UE_LOG(LogTemp, Display, TEXT("S47: night contrast previous=%d sky=%.3f moon=%.3f indirect=%.2f; direct lamp pools unchanged"), PreviousNight(), NightSkyIntensity(0.f), PreviousNight() ? 0.16f : 0.055f, PreviousNight() ? 1.f : 0.52f);
 }
 
 void AS47Web::SetLightingQuality(const FString& Quality)
@@ -259,7 +264,7 @@ void AS47Web::SetSkyLighting(float Dawn, const FVector& SunDirection, float Sun,
 	}
 	if (NightSky)
 	{
-		NightSky->SetIntensity(0.18f + Dawn * 1.8f);
+		NightSky->SetIntensity(NightSkyIntensity(Dawn));
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		NightSky->SetLightColor(FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Dawn, 0.f, 1.f)));
@@ -318,10 +323,26 @@ void AS47Web::UpdateNativeLighting()
 	UpdateArrayLighting();
 	UpdateExteriorLighting();
 	UpdateLabLighting();
+	// Lumen's direct-light surface-cache pass applies each light's IndirectLightingScale.
+	// PostProcess.IndirectLightingIntensity only scales precomputed GI in this UE version.
+	// Lower bounce at night without dimming the actual lamp, screen or flashlight pools;
+	// return to the existing daylight response along the world's dawn curve.
+	const float Indirect = PreviousNight() ? 1.f : FMath::Lerp(0.52f, 1.f, FMath::Clamp(SkyDawn, 0.f, 1.f));
+	auto Bounce = [Indirect](ULightComponent* Light) { if (Light) Light->SetIndirectLightingIntensity(Indirect); };
+	for (FPoolLight& P : PoolLights) Bounce(P.Light.Get());
+	for (FFixtureLight& P : FixtureLights) Bounce(P.Light.Get());
+	for (FScreenLight& P : ScreenLights) Bounce(P.Light.Get());
+	for (FArrayLight& P : ArrayLights) Bounce(P.Light.Get());
+	for (FExteriorLight& P : ExteriorLights) Bounce(P.Light.Get());
+	for (FLabLight& P : LabLights) Bounce(P.Light.Get());
+	if (NightSky) NightSky->SetIndirectLightingIntensity(Indirect);
+	Bounce(DawnSun);
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
-		Moon->SetIntensity(R.Base > 0 ? 0.16f * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
+		Moon->SetIntensity(R.Base > 0 ? (PreviousNight() ? 0.16f : 0.055f) * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
+		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
+		Bounce(Moon);
 		Moon->SetLightSourceAngle(0.52f);
 		Moon->SetLightSourceSoftAngle(0.08f);
 	}
