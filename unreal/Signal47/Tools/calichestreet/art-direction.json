@@ -49,5 +49,6 @@
       "use": "reviewed as workflow reference; no code or asset reused"
     }
   ],
-  "status": "IN_PROGRESS; no runtime or visual PASS until captured"
+  "status": "PASS",
+  "acceptance_record": "acceptance.json"
 }

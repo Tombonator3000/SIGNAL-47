@@ -73,7 +73,7 @@
 - [ ] Trinn 0: mål dagens reise med ekte input, klokke, transport, triggere og passiv venting; behold baseline. Prøv også lang All Night og avreise etter 05:20: dagens ch6 setter avreisen til 05:20, så mulig tilbakesprang må dokumenteres og løses før ny fullnatt godkjennes.
 - [x] Trinn 0: tidsreferanseoversikt for 1986-hendelsen og kapittelporter, datoakse gjennom midnatt, kveldsradio/NPC-er og eldre lagringer. 1947-tider og 05:29-finalen beholdt; se EVENING_TIMELINE.md.
 - [x] Trinn 1: kveldsstart, tidlig kit/truck og N01/N02/A02/P01 med normalreferanser, aktiv sammenligning, fysisk oppfølging og lagring. Pilot og nøyaktig testgrunnlag i ANOMALY_RUNTIME.md.
-- [ ] Første bedre bygningsskall: bensinstasjon, suvenirbutikk og studio i én sammenhengende gatebit. Pilotens små fysiske referanseendringer erstatter ikke bygningsløftet.
+- [x] Første Caliche-gatebit med bensinstasjon, suvenirbutikk/interiør, studio og lokal bakke. Installert; 24 spillerhøydebilder og funksjons-/fotoregresjoner PASS. Se Signal47/Tools/calichestreet/acceptance.json. Menneskelig gjennomspilling gjenstår.
 - [x] Trinn 1: I01/D01 med innkjøringsbil, radio, valgfri matbestilling, egne tidlige diner-tilstander, lagret ankomst og Dales telefonoverlevering 18:00. Rollen er KUN telefon/radio/walkie; ingen fysisk Dale. Egen opptaksbank er koblet til uavhengig av generell opplesning; nye takes er nå importert og koblet til kanalene, se EVENING_AUDIO.md.
 - [ ] Trinn 1: prøv begge delstrekninger, migrering, sen ankomst og fem observerbare Gauntlet-mål. Merk testkuttet; ikke kall prøven hel gjennomspilling.
 - [ ] Trinn 2: ny trafostasjon i ørkenen med avstikker, T01/T02, kontrollresultat, lys/lyd og lagring. Skill vanlig feil fra senere avvik; bevar STATION 01 og K3s rolle.

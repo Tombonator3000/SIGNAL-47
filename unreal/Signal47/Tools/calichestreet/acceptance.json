@@ -1,0 +1,109 @@
+{
+  "status": "PASS",
+  "scope": "One Caliche street: gas station, souvenir shop, 1420 AM and local ground",
+  "compiled_cpp_config_commit": "61120335",
+  "asset_commit": "c20beabe",
+  "package_sha256": "485f3b19832a5e919e9b8d9883beb062aa86b6c4e5550055389e9965c50a3e32",
+  "source_checks": {
+    "souvenir": 26,
+    "ground_parts": 4,
+    "import": 212,
+    "native": 84
+  },
+  "runtime": {
+    "selftest_checks": 1305,
+    "package_bound_cases": [
+      {
+        "case": "selftest",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/selftest-1792799075834707318/report.json"
+      },
+      {
+        "case": "array-motion",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/array-motion/report.json"
+      },
+      {
+        "case": "door-closed",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/door-closed/report.json"
+      },
+      {
+        "case": "door-use-walk",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/door-use-walk/report.json"
+      },
+      {
+        "case": "buzzer",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/buzzer/report.json"
+      },
+      {
+        "case": "story-room",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/story-room/report.json"
+      },
+      {
+        "case": "story-dawn",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/story-dawn/report.json"
+      },
+      {
+        "case": "story-camera",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/story-camera/report.json"
+      },
+      {
+        "case": "story-cutout",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/story-cutout/report.json"
+      },
+      {
+        "case": "story-radio",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-street/runtime/story-radio/report.json"
+      }
+    ],
+    "anomaly_pilot": "PASS",
+    "street_images": 24,
+    "player_eye_metres": 1.62,
+    "clocks": [
+      "12:00",
+      "18:30",
+      "02:15"
+    ],
+    "timelines": [
+      "legacy",
+      "evening"
+    ],
+    "visual_review": "PASS"
+  },
+  "new_geometry": {
+    "souvenir_triangles": 88180,
+    "ground_triangles": 43164,
+    "total_triangles": 131344
+  },
+  "preserved": [
+    "27 antennas",
+    "original walk floors and road markings",
+    "A02 physical figure and photo IDs",
+    "gas and radio interactions",
+    "night/dawn/finale timing",
+    "existing licensed assets and credits"
+  ],
+  "installed": {
+    "status": "PASS",
+    "package_sha256": "485f3b19832a5e919e9b8d9883beb062aa86b6c4e5550055389e9965c50a3e32",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-caliche-street/installed-backup-1792799774134625695",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 51
+  },
+  "editable_delivery": "/home/tom/Desktop/Signal47 Caliche gatebit",
+  "evidence": "/home/tom/scratch-bm/Signal47-caliche-street",
+  "review": "Independent read-only integration and visual review: no blocking findings",
+  "limits": [
+    "Static automated camera review, not human play",
+    "Full night and human listening UNVERIFIED",
+    "Five existing screenshots.sh scenario regressions; full screenshots.sh not run for this local core asset merge",
+    "Existing stylized world retained; distant terrain and rest of town outside this delivery"
+  ],
+  "next_model_priority": [
+    "Mesa Diner: counter, kitchen and seating",
+    "Sheriff office: reception, office and records",
+    "Laundromat: machines, service room and back entrance",
+    "Desert substation: yard and control hut",
+    "Motel: exterior and reception, preserving room 6",
+    "Cinema, feed store and church"
+  ]
+}
