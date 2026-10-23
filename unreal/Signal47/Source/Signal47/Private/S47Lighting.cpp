@@ -188,11 +188,17 @@ void AS47Web::BuildNativeLighting()
 	NightSky->SetIntensity(NightSkyIntensity(0.f));
 	NightSky->SetLightColor(FLinearColor(0.42f, 0.57f, 1.f));
 	NightSky->RegisterComponent();
+	// Several area moons can be visible together (road/diner). Give them stable distinct
+	// priorities; hidden areas remain excluded by Enter(). The active sun takes precedence.
+	int32 MoonPriority = 0;
+	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
+		Moon->SetForwardShadingPriority(++MoonPriority);
 	DawnSun = NewObject<UDirectionalLightComponent>(this);
 	DawnSun->SetupAttachment(GetRootComponent());
 	DawnSun->SetMobility(EComponentMobility::Movable);
 	DawnSun->SetLightColor(FLinearColor(1.f, 0.55f, 0.28f));
 	DawnSun->SetIntensity(0);
+	DawnSun->SetForwardShadingPriority(0);
 	DawnSun->SetCastShadows(true);
 	DawnSun->LightSourceAngle = 0.545f;
 	DawnSun->LightSourceSoftAngle = 0.08f;
@@ -260,6 +266,9 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 	if (DawnSun)
 	{
 		DawnSun->SetWorldRotation(S47Three::DirToUE(-SunDirection).Rotation());
+		// Forward translucency/water/fog get the live sun, or the area's moon at night.
+		// Leaving the zero-intensity sun at highest priority would suppress moonlit fog.
+		DawnSun->SetForwardShadingPriority(Sun > 0.f ? Lights.Num() + 1 : 0);
 		// The existing fixed exposure is intentionally retained. These are calibrated game
 		// light values, not a physical 120,000 lux daylight rig; avoid overexposing the cabin.
 		DawnSun->SetIntensity(Sun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)));
