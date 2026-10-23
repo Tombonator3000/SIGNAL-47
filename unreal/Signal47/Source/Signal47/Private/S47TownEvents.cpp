@@ -142,7 +142,7 @@ void FS47TownEvents::Answer()
 	if (Call == 1)
 	{
 		if (A) { FS47Sound O; O.At = At; O.Gain = 0.35f; A->LoopSfx(TEXT("town-line"), TEXT("printer"), O); }
-		Toast(TEXT("No dial tone. On the line, a printer: the control room printer, line by line, the way it printed at 02:13."), 6);
+		Toast(M && M->Story ? M->Story->TimelineText(TEXT("No dial tone. On the line, a printer: the control room printer, line by line, the way it printed at 02:13.")) : FString(TEXT("No dial tone. On the line, a printer: the control room printer, line by line, the way it printed at 02:13.")), 6);
 	}
 	else
 	{
