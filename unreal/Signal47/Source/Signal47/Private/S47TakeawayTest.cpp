@@ -16,6 +16,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "Containers/Ticker.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "Misc/CommandLine.h"
@@ -75,7 +76,9 @@ void FS47Evening::ControlTakeawayTest(double Dt)
   const FString Path = T.Shots / (TEXT("takeaway-") + Name + TEXT(".png")); T.Captures.AddUnique(Path);
   // Fast API dialogue/load fixtures stack transient toasts; clear those only for the
   // evidence capture, retaining the real HUD, prompt, meal state and complete log.
-  M->Story->After(0.1, [this, Path] { M->UI->ClearToasts(); FScreenshotRequest::RequestScreenshot(Path, true, false); });
+  // Modal panels pause Story::After; the capture must use the realtime ticker.
+  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this, Path](float)
+  { M->UI->ClearToasts(); FScreenshotRequest::RequestScreenshot(Path, true, false); return false; }), 0.1f);
  };
  const auto Roundtrip = [this, &T, &Fail](const FString& Name)
  {
@@ -368,7 +371,11 @@ void FS47Evening::ControlTakeawayTest(double Dt)
   UE_LOG(LogTemp, Display, TEXT("S47: takeaway PASS original archive work-table physical pick/focus/use still opens its panel after food consumption; single aftermath trace retained"));
   Stage(41, 0.5); return;
  case 41:
-  for (const FString& Path : T.Captures) if (IFileManager::Get().FileSize(*Path) < 1000) { Fail(TEXT("screenshot missing/empty: ") + Path); return; }
+  for (const FString& Path : T.Captures) if (IFileManager::Get().FileSize(*Path) < 1000)
+  {
+   if (T.Elapsed - T.Since < 3) return; // let the renderer finish the requested PNG
+   Fail(TEXT("screenshot missing/empty: ") + Path); return;
+  }
   if (T.Restores != 10 + int32(T.bEatPlaced) || T.Uses != 16 + int32(T.bEatPlaced) || T.bMealReloaded != T.bEatPlaced) { Fail(FString::Printf(TEXT("control count mismatch: restores %d/%d physical uses %d/%d mid-fade restore %d/%d"), T.Restores, 10 + int32(T.bEatPlaced), T.Uses, 16 + int32(T.bEatPlaced), T.bMealReloaded, T.bEatPlaced)); return; }
   T.bDone = true;
   UE_LOG(LogTemp, Display, TEXT("S47: takeaway PASS COMPLETE: physical diner/desk/annex/hood/passenger/bench set-down and pickup, ordinary phone/document/original archive work-table use unobstructed, %s meal optional with exactly one twelve-minute skip, %d disk/fresh-store/full-world restores including paid reply/held/all physical surface positions/eaten, camera/light/notebook suppression and no duplicate portion; human input UNVERIFIED"), T.bEatPlaced ? TEXT("placed with committed mid-fade restore") : TEXT("held with uninterrupted fade"), T.Restores);
