@@ -630,7 +630,7 @@ void US47Flow::StartGame(const FStart& O)
 	bStarting = false;
 	// seenSync(); seenQuiet = false: the night's log listens again
 	if (M->Night) M->Night->Restored();
-	if (!bEveningTimeline && O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: the original 02:13 record, photographs and paper stamps are unchanged."));
+	if (!bEveningTimeline && O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: original 02:13 references and photographs are unchanged. Any unstored printout acquisition time is marked unavailable."));
 	FadeInSoon(0.25f);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: night started, case %d, %s"), CaseId, Checkpoint.IsEmpty() ? TEXT("new") : *Checkpoint);
 }

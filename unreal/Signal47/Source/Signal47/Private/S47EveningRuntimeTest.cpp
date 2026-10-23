@@ -210,7 +210,9 @@ void FS47Evening::ControlTest(double Dt)
 		if (RouteArrivalCount != 1 || RouteDistance < 100 || !Opening() || Commute() || M->World->bDriving || !Pack.Documents().IsEmpty()) { Fail(TEXT("parking checkpoint state/travel/documents invalid")); return; }
 		const double Before = M->Story->Clock(); Parked(TEXT("saro"));
 		if (M->Story->Clock() != Before || Pack.CanStart(TEXT("I11_SARO_ARRIVAL"))) { Fail(TEXT("repeated parking reset the clock or arrival")); return; }
-		Shot(TEXT("parking")); RouteWalk = {FVector(M->Player->Pos.X,0,2.2), FVector(7.5,0,1.6)}; RouteWalkIndex = 0;
+		// The service pad has a rail across its north edge. Walk behind the truck,
+		// then through the real opening on its east side instead of through the rail.
+		Shot(TEXT("parking")); RouteWalk = {FVector(7.4,0,12.0), FVector(10.5,0,12.0), FVector(10.5,0,2.0), FVector(7.5,0,1.6)}; RouteWalkIndex = 0;
 		Stage(11, 2); return;
 	}
 	if (RouteStage == 11)
