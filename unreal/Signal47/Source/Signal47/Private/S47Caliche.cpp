@@ -215,7 +215,7 @@ namespace
 	{
 		if (Asked(S, W, T.Id) || (!T.After.IsEmpty() && !Asked(S, W, T.After)) || (T.bReel && !bReelReady) || (!T.Unless.IsEmpty() && S.Contains(T.Unless))) return false;
 		for (const FString& K : T.Need) if (!S.Contains(K)) return false;
-		return !T.NotBefore || Day >= *T.NotBefore;
+		return !T.NotBefore || S47Timeline::Night(Day) >= S47Timeline::Night(*T.NotBefore);
 	}
 }
 
@@ -420,6 +420,7 @@ bool FS47Caliche::SelfTest(TArray<FString>& Out)
 	S.Add(TEXT("ask:attendant:old")); S.Add(TEXT("ev:phone1")); S.Add(TEXT("nickel")); Check(AvailableTopic(S, TEXT("attendant"), Phone, 0, false), TEXT("the bright nickel opens the attendant's follow-up"));
 	S.Add(TEXT("ask:attendant:phone")); auto D = TownWitnessDocs(S); Check(D.Num() == 1 && D[0].Id == TEXT("witness-phone") && D[0].Page.Contains(TEXT("That phone takes dimes.")), TEXT("witness copies refile from the saved keys"));
 	S.Add(TEXT("ask:deputy:green")); S.Add(TEXT("ev:car")); const FTopic& Car = Person(TEXT("deputy"))->Topics.Last(); Check(!AvailableTopic(S, TEXT("deputy"), Car, DEPUTY_IN - 1, false) && AvailableTopic(S, TEXT("deputy"), Car, DEPUTY_IN, false), TEXT("the deputy returns at 04:30"));
+	Check(!AvailableTopic(S, TEXT("deputy"), Car, 18 * 3600, false), TEXT("evening deputy cannot recount his future patrol"));
 	bOk &= FS47RecordedDialogue::SelfTest(Out);
 	bOk &= FS47NpcDialogue::SelfTest(Out);
 	Check(S47Timeline::ShiftStart < 0 && S47Timeline::Night(18 * 3600) == S47Timeline::ShiftStart && S47Timeline::Night(23 * 3600 + 59 * 60) < 0, TEXT("evening timeline: signed clock crosses midnight forwards"));
