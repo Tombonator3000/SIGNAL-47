@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Filmfiltre, Codex 23. oktober 2026
+
+- Tom bestilte alle filmuttrykkene med særlig vekt på Carpenter: Carpenter 35 mm, Desert 16 mm, Super 8, forbedret VHS og Clean. Implementasjon og faktisk teststatus føres i FILM_LOOKS.md. Nye High/Ultra-profiler får Carpenter; eksisterende eksplisitte valg beholdes.
+- MPC_Web `Vhs` må forbli blend 0..1. Den brukes også i untonemapped-materialer, himmel og verdensliv, og SceneCapture setter den midlertidig til0. Nye enum `PictureMode` er separat. Styrke0 setter Vhs0 og tonepasset respekterer capture-gaten. Ikke legg mode2..4 i det gamle feltet.
+- Generer bare filteret med S47_ONLY=picture etter editorbygg; film_tone.hlsl og MPC-tillegg må inn i cook. Bruk private Web-filer. Tilgjengelighet fryser korn og stopper flimring/registreringsuro/båndjitter. Ingen fps-lås er del av effektene.
+
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
 ## Anomaly-pilot, Codex 23. oktober 2026

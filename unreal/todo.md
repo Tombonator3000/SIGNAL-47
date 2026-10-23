@@ -1,5 +1,11 @@
 # Todo for unreal/
 
+## Filmfiltre, codex/film-looks, 23. oktober 2026
+
+- [x] Carpenter 35 mm, Desert 16 mm, Super 8, forbedret VHS og Clean; styrke, lagring og tilgjengelighetskobling.
+- [x] Separat PictureMode med bevart Vhs-blend og capture-kontrakt; privat materialregenerering.
+- [ ] Bygg, pakket kandidat, selvtest, meny-/lagringsprøve, stillbilder og målt kostnad før levering. Se FILM_LOOKS.md.
+
 ## Anomaly-pilot, codex/anomaly-pilot, 23. oktober 2026
 
 - [x] N01 med faktisk utskrift mot kveldens service-/sendeplan, korrigert feilvalg og fysisk forespørsel.
@@ -128,7 +134,7 @@
 - [ ] Musikk- og radionivået (Music, Radio) inn i lydmodulen når den har egne busser; volumet virker allerede.
 - [ ] Feltkameraet og rullen i Kit-fanen: sett `M->Flow->HaveCamera` og `RollText` når kapittel 1 og albumet er portert.
 - [x] Musikk- og radionivået (Music, Radio) inn i lydmodulens busser, inklusive tittellåten (2026-10-22).
-- [ ] Worn VHS (bildet `heavy`) i M_WebTone; nå bare Clean og VHS.
+- [x] Bildevalg erstattet av filmprofilene i FILM_LOOKS.md; gamle `heavy`-valg normaliseres til forbedret VHS.
 - [ ] Fortelleren (Serling) til åpningskortet og kapittelkortet når stemmene er portert.
 
 ## Nattens lag (2026-10-22)

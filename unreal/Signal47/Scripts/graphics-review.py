@@ -377,7 +377,7 @@ def main():
     ap.add_argument('--mode', choices=['tour', 'startup'], default='tour')
     ap.add_argument('--clock', default='night', help='night, dawn or HH:MM')
     ap.add_argument('--quality', choices=['low', 'high', 'ultra'], default='high')
-    ap.add_argument('--picture', choices=['off', 'vhs'], help='default: Low clean; High/Ultra VHS')
+    ap.add_argument('--picture', choices=['off', 'vhs', 'carpenter', '16mm', 'super8'], help='default: Low clean; High/Ultra VHS')
     ap.add_argument('--suite', choices=['world', 'states', 'all'], default='world',
                     help='world: original20 baseline cameras; states: power, portable lights and menus')
     selection = ap.add_mutually_exclusive_group()

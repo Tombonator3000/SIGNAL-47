@@ -6,6 +6,7 @@
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "S47Keys.h"
+#include "S47Picture.h"
 #include "S47Theme.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -260,22 +261,19 @@ void SS47Settings::BuildRows()
 				[P, Ids](int32 I) { if (!Ids.IsValidIndex(I) || P->Quality == Ids[I]) return; P->Quality = Ids[I]; if (P->OnQuality) P->OnQuality(P->Quality); }, Ids.Num() - 1,
 				Says(TEXT("Quality")), Says(TEXT("Low keeps direct lighting and simpler shadows. High adds reflected light and mist. Ultra draws finer shadows and mist.")));
 		}
-		AddChoice(TEXT("Picture"), { TEXT("VHS TAPE"), TEXT("CLEAN") }, [P] { return P->Picture == TEXT("off") ? 1 : 0; },
+		AddChoice(TEXT("Picture"), S47Picture::Labels(), [P] { return S47Picture::Ids().IndexOfByKey(S47Picture::Normalize(P->Picture)); },
 			[P](int32 I)
 			{
-				// off and vhs here (the worn tape, 'heavy', is not in M_WebTone yet)
-				const FString V = I == 1 ? TEXT("off") : TEXT("vhs");
+				if (!S47Picture::Ids().IsValidIndex(I)) return;
+				const FString V = S47Picture::Ids()[I];
 				if (P->Picture == V) return;
 				P->Picture = V;
 				if (P->OnPicture) P->OnPicture(V);
 			}, 0,
-			[P] { return FString(P->Picture == TEXT("off") ? TEXT("Clean") : TEXT("VHS tape")); },
-			[P]
-			{
-				return FString(P->Picture == TEXT("off")
-					? TEXT("The same night without the tape: the scene as it is drawn, with the game's own grade and nothing over it.")
-					: TEXT("The night as it was taped in 1986: the soft band, the colour bleeding at the edges, the faint lines of the tape. Clean shows the same scene without it, with the game's own grade."));
-			});
+			[P] { return S47Picture::Label(P->Picture); },
+			[P] { return S47Picture::Description(P->Picture); });
+		AddSlider(TEXT("Picture strength"), &FS47PauseOpts::PictureStrength, &FS47PauseOpts::OnPictureStrength, 0.f, 1.f, 0.05f, 1.f, [](float V) { return S47SettingsLocal::Percent(V); },
+			TEXT("How much of the selected film or tape look is blended into the picture. 100% is the full look; 0% gives the base picture and keeps your look selected. Clean stays unchanged."));
 		AddSlider(TEXT("Brightness"), &FS47PauseOpts::Brightness, &FS47PauseOpts::OnBrightness, 0.f, 1.f, 0.05f, 0.5f, [](float V) { return S47SettingsLocal::Percent(V); },
 			TEXT("How bright the night is, before the picture's curve. At 50% it is as it was made; raise it if the dark hides too much on your screen, but the night should stay dark."));
 		AddSlider(TEXT("Field of view"), &FS47PauseOpts::Fov, &FS47PauseOpts::OnFov, 60.f, 90.f, 1.f, 70.f, [](float V) { return FString::Printf(TEXT("%d°"), FMath::RoundToInt32(V)); },
@@ -333,11 +331,11 @@ void SS47Settings::BuildRows()
 		AddChoice(TEXT("Flashing images"), { TEXT("FLASHES"), TEXT("SLOW FADES") }, [P] { return P->bCalmFlash ? 1 : 0; },
 			[P](int32 I) { const bool V = I == 1; if (P->bCalmFlash == V) return; P->bCalmFlash = V; if (P->OnCalmFlash) P->OnCalmFlash(V); }, 0,
 			[P] { return FString(P->bCalmFlash ? TEXT("Slow fades") : TEXT("Flashes")); },
-			Says(TEXT("Near the end of the night there is a short sequence of flashing images. Slow fades shows the same pictures fading in and out instead.")));
+			Says(TEXT("Near the end of the night there is a short sequence of flashing images. Slow fades shows the same pictures fading in and out instead. It also stops film flicker, frame weave and moving tape disturbances.")));
 		AddToggle(TEXT("Large text"), &FS47PauseOpts::bLargeText, &FS47PauseOpts::OnLargeText, false,
 			TEXT("Larger words in the notebook and at the end of the night."));
 		AddToggle(TEXT("Still shots at the end"), &FS47PauseOpts::bStillShots, &FS47PauseOpts::OnStillShots, false,
-			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. The same setting as on the Game tab."));
+			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances. The same setting as on the Game tab."));
 		break;
 	default: break;
 	}
