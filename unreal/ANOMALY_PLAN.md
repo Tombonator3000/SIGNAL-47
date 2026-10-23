@@ -1,10 +1,16 @@
 # Plan for anomaly spotting og UFO-horror i SIGNAL / 47
 
-Dato: 23. oktober 2026. Gjelder bare Unreal-versjonen.
+Dato: 23. oktober 2026. Oppdatert med innkjøring før skiftet, Dale med Kinski-stemme, hemmelig kontor, trafostasjon og bedre bybygninger. Gjelder bare Unreal-versjonen.
 
 Tom har sluttet seg til retningen med aktiv etterprøving, en nyttigere by og gradvis fremmed tilstedeværelse. Detaljene nedenfor er anbefalt design og rekkefølge for gjennomføring. De er ikke implementert. Spillet skal gi spilleren stadig bedre forståelse av hvordan et avvik kan undersøkes, samtidig som det blir vanskeligere å føle seg trygg på hva som observerer dem.
 
-Første produksjonsmål er to bybesøk med aktive sammenligninger og bevis som følger samme sak. Begge delstrekninger prøves med ekte input før samme opplegg utvides gjennom resten av natten. Hele nattens transport- og tidskontinuitet må deretter prøves uten testhopp.
+Tom har valgt at skiftet starter 18:00 søndag 13. april ved ankomst til SARO. Før dette får spilleren en rolig, spillbar kjøretur gjennom byen med lystig radiomusikk og valgfritt matstopp i dineren. Dale er kollegaen som overleverer skiftet på telefon og senere kan nås på telefon eller tjenesteradio/walkie, med prosjektets Kinski-stemme. Han vises aldri fysisk. Nøkkelen til kontoret hans og hans private UFO-undersøkelser blir en del av etterforskningen.
+
+Den første store signalhendelsen anbefales fortsatt flyttet fra 02:13 til 00:13 natt til mandag. En ny trafostasjon gir en vanlig arbeidsoppgave og en senere kontroll av det uforklarlige. Alle bybygningene får en utvendig oppgradering; de viktigste spillestedene får også gjennomarbeidede, synlige eller tilgjengelige rom.
+
+Manuspakken ligger i [Narrative/EveningShift](Narrative/EveningShift/README.md), med engelsk dialog, dokumenter, filmmanus og maskinlesbare betingelser. Den er forfatterinnhold, ikke en aktiv runtimeimplementering.
+
+Dette erstatter tidsplanen fra første planutgave. Første produksjonsmål er en fungerende kveld og to bybesøk med aktive sammenligninger og bevis som følger samme sak. Trafostasjonens to forskjellige besøk prøves som neste sekvens. Hele kveldens og nattens transport- og tidskontinuitet må deretter prøves uten testhopp.
 
 ## 1. Spillerens rolle og historiens rammer
 
@@ -20,7 +26,7 @@ Fem prinsipper styrer endringene:
 
 Følgende rammer beholdes:
 
-- Én natt i New Mexico, natt til 14. april 1986, og én slutt.
+- Én sammenhengende kveld og natt i New Mexico, fra 13. til 14. april 1986, og én slutt. Skiftstart 18:00 og innkjøringen før dette er valgt av Tom; de er ikke implementert. Flytting av signalhendelsen er fortsatt anbefalt design.
 - THE EVENT begynner 05:29:00 og varer til 05:29:47. Gryet og soloppgangen beholder sin eksisterende plass.
 - 1947, Nora, Tomás, den kuttede kabelen, de negative avstandene og C er historiens ryggrad.
 - Et avtrykk gjentar et registrert forløp og kan ikke svare på nye spørsmål. Levende vitner kan reagere på det spilleren viser dem.
@@ -30,7 +36,7 @@ Følgende rammer beholdes:
 - Betydningen av 47 sekunder konsentreres om de viktige hendelsene. Nye små avvik får andre varigheter.
 - Spilltekst er engelsk. Plan og arbeidslogg er norsk.
 
-Kanonens grunnlag er `../web/HISTORIE.md` med oppdateringene i oktober, kontrollert mot den nåværende Unreal-koden. Web- og Unity-versjonene videreutvikles ikke.
+Kanonens grunnlag er `../web/HISTORIE.md` med oppdateringene i oktober, kontrollert mot den nåværende Unreal-koden. Tidsendringene og trafostasjonen nedenfor er uttrykkelige utvidelser av denne historien. Web- og Unity-versjonene videreutvikles ikke; den nye fortellerplanen vedlikeholdes i Unreal-prosjektet.
 
 ## 2. Undersøkelsen som går igjen gjennom spillet
 
@@ -40,7 +46,7 @@ Den gjennomgående handlingen er:
 
 Et eksempel er å fotografere et merke, ta en kontroll med annen belysning og oppdage at det samme merket fortsatt finnes på filmen. En annen undersøkelse kan bruke en bergingskvittering og en sjåfør som uavhengige kilder.
 
-Første læringssituasjon bruker dagens B-12- og fotolabarbeid. Deretter gir byen spilleren anledning til å anvende det samme prinsippet på andre ting. Kamera, album, dokumenter, saksbrett og samtaler får tydelige roller gjennom hele natten.
+Kvelden begynner med en enkel kamerareferanse og en forståelig teknisk kontroll. Dagens B-12- og fotolabarbeid blir den første grundige etterprøvingen av et uforklarlig avvik etter midnatt. Kamera, album, dokumenter, saksbrett og samtaler får tydelige roller gjennom hele natten. Tidlig kameratilgang skal ikke fullføre B-12 eller aktivere sene fotohendelser.
 
 ### Registrering og tilbakemelding
 
@@ -59,7 +65,7 @@ Et funn kan ende som:
 
 Spilleren får ingen usynlig poengsum for å gjette. En feilrapport ødelegger ikke saken og koster ikke liv. Samme rapport kan korrigeres uten å samle alt på nytt. Tilbakemeldingen sier hva kontrollen viste, og lar årsaken være åpen når den faktisk er ukjent.
 
-Målteksten skal uttrykke undersøkelsens hensikt. Forslag til engelsk spilltekst er «Check whether Caliche lost power before the SARO printout», «Compare the shop window with your earlier photograph» og «Use the records to locate where C crosses the road». En oppgave er ferdig når spilleren har en begrunnet vurdering eller har fastslått hva som fortsatt mangler. En ny dokumentknapp alene er ikke en ny gameplayhandling.
+Målteksten skal uttrykke undersøkelsens hensikt. Forslag til engelsk spilltekst er «Bring back the local service log and a transmission schedule», «Check whether Caliche lost power before the SARO printout», «Compare the shop window with your earlier photograph» og «Use the records to locate where C crosses the road». Den første oppgaven gjøres før hendelsen; sammenligningen med utskriften blir aktuell etterpå. En oppgave er ferdig når spilleren har en begrunnet vurdering eller har fastslått hva som fortsatt mangler. En ny dokumentknapp alene er ikke en ny gameplayhandling.
 
 ### Tre typer avvik
 
@@ -71,42 +77,70 @@ Målteksten skal uttrykke undersøkelsens hensikt. Forslag til engelsk spillteks
 
 Fotografier må kunne brukes som støtte til hukommelsen. Hele spillet skal ikke kreve at spilleren husker små endringer uten å ha fått en rimelig sjanse til å registrere normalen.
 
-## 3. Revidert reise gjennom natten
+## 3. Revidert reise gjennom kvelden og natten
 
-Det første bybesøket flyttes frem i forhold til det første muntlige forslaget. Det legges i The Second Exposure eller tidlig The Amended Record, med ønsket ankomst omtrent 02:40–02:55. Dette er et mål for fortellingen, ikke en nedtelling spilleren må rekke.
+Skiftet starter **18:00 søndag 13. april 1986 ved ankomst til SARO**, etter Toms valg. Den spillbare innledningen begynner før dette, på vei til jobben. Spilleren får lære Caliche som et vanlig sted med folk og radiomusikk. Tidligere start skal også spre undersøkelsene utover natten. En lang innledning foran den gamle, tettpakkede avslutningen vil ikke løse tidsproblemet.
 
-Trucken kan allerede brukes gjennom fri kjøring fra ch1 etter prologen. Det trengs likevel ny oppdrags- og returhåndtering. Å kjøre til Caliche skal ikke aktivere All Night, fullføre gjeldende kapittel eller gi tilgang til den gamle veiens avslutning.
+Som lysreferanse gir USNO ved Roswell, 33,39 N / 104,52 V og MST, solnedgang omtrent 18:27 og slutt på borgerlig skumring 18:53 den 13. april. Det gjør en start 18:00 egnet for en synlig overgang til natt. Den fiktive SARO-horisonten og lysforløpet må kalibreres i spillet. Dette brukes ikke til å flytte finalens klokkeslett. [USNO-beregning](https://aa.usno.navy.mil/api/rstt/oneday?date=1986-04-13&coords=33.39%2C-104.52&tz=-7&dst=false).
 
-| Del | Spillerens viktigste handling | Ny oppbygging | Overlevering til neste del |
+Den første store residualen anbefales flyttet fra 02:13:47 til **00:13:47 mandag 14. april**. Datoen for nattens hovedregistrering beholdes, mens nesten to timer frigjøres mellom etterforskningens deler. Telefonens forløp i forkant og de øvrige relative sammenhengene følger hendelsen. Finalen beholdes 05:29:00 til 05:29:47.
+
+Dette er en foreslått revisjon av historien, ikke dagens implementerte tider. Klokkeslettene nedenfor angir fortellingens kveld og natt, ikke antall timer faktisk spilletid. Reisetid, meningsfull spilltid og fortellerklokke skal måles hver for seg før vinduene låses.
+
+| Del | Foreslått tid | Hva spilleren gjør | Oppbygging |
 |---|---|---|---|
-| Night Shift, 23:41–02:16 | Lære normal drift, håndtere feil og følge registreringene. | Én forståelig feil gir trygghet i prosedyren; tidsrekkefølgen begynner å svikte. | Et konkret registreringsproblem fører til feltkontroll. |
-| The Second Exposure, 02:16–02:55 | Gjennomføre kontrollene i gården og fotolaben. Første korte bytur legges etter at kameraet er lært. | Filmen beholder en referanse. I Caliche møter spilleren en lokal normalitet og henter en uavhengig kontroll. | En tids-/driftsopplysning tas tilbake til samme SARO-undersøkelse. |
-| The Amended Record, 02:55–03:35 | Sammenligne rapportversjonene og opplysninger fra byen. | Instrumentforklaringen blir svakere. Noen har fjernet C med vilje. | STATION 01 blir et begrunnet mål. Ved lang første bytur kan returen inngå her. |
-| The Survey Station, 03:40–04:30 | Kjøre, undersøke kabelen og knytte stemmen til feltdokumentene. | En fjern form eller lysgeometri får et fysisk sammenlignbart spor. Tomás' avtrykk følger sin låste sekvens. | Dokumentasjon og Nora fører til Room 6. En eventuell byavstikker er valgfri. |
-| Room 6, 04:35–05:00 | Legge frem bevis og forstå Noras handling. | Den kosmiske hendelsen får menneskelig kostnad. Etter samtalen kan en fremmed skikkelse observeres på avstand. | Spilleren forstår hvorfor C og den gamle veien må undersøkes. |
-| All Night, 05:00–05:20 | Gjenbesøke byen, etterprøve et funn og samle kart/vitner i dineren. | De kjente stedene har endret seg. Et større himmelfenomen og personlige gjentakelser øker nærheten. | P13 og sjåførens bekreftelse peker på riktig kryss. Spilleren velger selv å sette i gang siste kjøretur. |
-| Roswell Road, 05:20–05:29 | Kjøre mot det utledede punktet. | Tidligere lydfragmenter faller sammen med det som nå skjer rundt trucken. | Den eksisterende hendelsen utløses ved C. |
-| THE EVENT, 05:29:00–05:29:47 | Observere fra trucken slik den eksisterende finalen er skrevet. | Spillerens rolle som observatør snus. | Én slutt og fotografiets eksisterende etterspill. |
+| På vei til skiftet | Før 18:00 | Kjøre gjennom Caliche med lystig radio; kunne parkere ved dineren, kjøpe mat og kjøre videre til SARO. | Normal kveld, mennesker og kjørerute. Ingen påtvunget anomalihendelse. |
+| Overlevering og første rutine | 18:00–19:00 | Få telefonoverlevering fra Dale, tilgang og instruks til vanlig drift, lære kameraet og sjekke stasjonen. | En troverdig kollega og et arbeidssted å bli kjent med. Dales eget kontor holdes låst. |
+| Night Shift, første del | 19:00–20:00 | Starte målinger og samle N01s ordinære driftsjournal/sendeskjema. | Et forståelig strømproblem viser seg. |
+| Trafostasjonen, første besøk | 20:00–21:00 | Følge serviceveien, undersøke lokal driftslogg og løse en avgrenset, vanlig feil. | Ørkenen og arbeidslydene blir kjent mens spilleren fortsatt har kontroll. |
+| Rutine og små tegn | 21:00–00:13 | Fortsette SARO-arbeidet, kontrollere at rettingen virker og eventuelt undersøke et begrunnet sidespor. | Uro kommer i små doser. En merket overgang til neste observasjon kan hoppe over uinteressant rutinetid. |
+| Den store signalhendelsen | 00:13–00:30 | Håndtere residualen og telefon-/registreringsforløpet. | Hendelsesrekkefølgen lar seg ikke lenger forklare med den vanlige strømfeilen. |
+| The Second Exposure | 00:30–01:30 | Feltkamera, B-12, kontrollprøver og fotolab. Bruke kveldens materiale til sammenligning. | Filmen beholder en referanse øyet ikke ser. |
+| The Amended Record | 01:30–02:20 | Sammenligne rapportene, finne Dales kontornøkkel og undersøke hans private filer og opptak. | Noen fjernet C med vilje. Den hjelpsomme kollegaen har undersøkt mer enn han fortalte. |
+| The Survey Station | 02:20–03:20 | Kabelen og Tomás på STATION 01. En relevant oppfølging ved trafostasjonen kan inngå på feltetappen. | Strømforklaringen prøves på nytt; en fjern form får fysisk betydning. |
+| Room 6 | 03:20–04:10 | Legge frem bevis for Nora og forstå kabelkuttet. | Menneskelig kostnad. En sen skikkelse kan observeres etter samtalen. |
+| All Night | 04:10–05:10 | Gjenbesøk i Caliche, etterprøving, avis og kartarbeid i dineren. | Kjente steder avviker. Vitner, lys og et større himmelfenomen peker mot samme natt. |
+| Samle og velge avreise | 05:10–05:20 | Avslutte en kontroll, orientere seg og gjøre klar siste kjøretur. | Tidsrommet er en buffer for lesing og ettertanke, ikke en ventekø. |
+| Roswell Road | 05:20–05:29 | Kjøre til det utledede krysset med C. | Opptakene faller sammen med det som skjer rundt trucken. |
+| THE EVENT | 05:29:00–05:29:47 | Den eksisterende finalen. | Observatøren blir selv en referanse. |
 
-### Første bybesøk
+### Innkjøring, radio og matstopp
 
-SARO trenger en uavhengig kontroll av hva som skjedde rundt registreringen 02:13. Et nytt, kort oppdrag ber spilleren sammenligne tidspunktet med nattlukas driftsjournal og en bevart opplysning fra Night Line. Dette gjelder hendelsesrekkefølge og klokkeslett; det påstår ingen frekvenslikhet mellom AM-radioen og SAROs mottaker.
+Innledningen begynner i bilen på veien mot Caliche, i sen ettermiddag. Spilleren kjører selv, lærer radioen og ser bygningene før de senere skal undersøkes i mørket. Radioen spiller lystig, tidsriktig musikk og en ordinær lokal sending. Bruk eksisterende egnet musikk eller et eget produsert spor; en bestemt kommersiell låt er ikke et krav for scenen.
 
-Spilleren gjør to meningsfulle handlinger: undersøker journalen ved bensinstasjonen og får en tidsfestet sending/avskrift hos Earl. På veien registreres tre referanser: suvenirutstillingen, gatetelefonen og studioets normale drift. Bruk kameraet og notatboken spilleren nettopp har lært.
+Dineren er et valgfritt stopp. Spilleren kan parkere, gå inn, møte servitrisen og velge en enkel matbestilling, for eksempel matpakke eller burger med kaffe. Bestillingen må ha en synlig respons og kunne tas med eller spises. Et enkelt kjøp er nok; dette innfører ingen sultmåler eller generell økonomisimulering. Det er like gyldig å kjøre forbi.
 
-Journalen og den nye korte Earl-utvekslingen må skrives og produseres. De finnes ikke som dette oppdraget i dagens spill. Ikke legg den nye kontrollen på en gammel, valgfri reellånsregel uten å kontrollere forutsetningene.
+Tidlig dinerbruk har egne samtaler og tilstander. Den aktiverer ikke ch5, Ward-samtalen, avisfunnet som hovedoppgave, P13 eller avreise til gammel vei. Den varme, vanlige opplevelsen gir senere gjenkjennelse. Ingen skjult hovedhistoriegjenstand kan bare fås ved å kjøpe mat.
 
-Baselinen beskyttes mens referanseoppgaven pågår: pappfiguren står i utstillingen, og gateautomaten spiller ikke sin store anomalihendelse før normalbruken er etablert. Andre gamle triggere må omfattes av samme scenehensyn. Etterpå kan den første eksisterende telefonhendelsen bli tilgjengelig som valgfritt tillegg; ingen må stå og vente på den.
+Innkjøringen har en egen innledningsfase uten løpende skiftklokke. Den vises som sen ettermiddag og «before the shift», uten et minuttsatt HUD som først kan passere 18 og deretter stilles tilbake. Når spilleren ankommer SARO, avsluttes innkjøringen, saken får et ankomstsjekkpunkt og skiftet starter 18:00. Spilleren får ingen bot eller mistet historie fordi matstoppet tok tid. Denne fasegrensen må være tydelig og lagres, ikke skjules som et vanlig tidshopp.
 
-Ved retur er samme SARO-oppgave fortsatt aktiv. Spilleren sammenligner materialet og får en kort, nøktern konklusjon om hva kontrollen utelukker. Ved lang tidsbruk går neste kapittel aldri bakover i klokketid.
+Innkjøringen kan bruke en av prosjektets eksisterende 1980-tallsbilmodeller og den fungerende kjørekontrolleren. Reisekjøretøyet parkeres ved ankomst, mens servicepickupen står tilgjengelig på SARO til skiftets oppgaver. De to kjøretøyenes tilstand må holdes adskilt, slik at innledningen ikke flytter eller fullfører en senere servicetur.
+
+### Overlevering og vanlige referanser
+
+Dale har allerede avsluttet dagvakten når spilleren kommer til SARO. Overleveringen skjer på telefon. Vi beholder hans eksisterende navn og rolle og bruker Kinski-stemmen i en rolig, tørr og menneskelig tone. Han kan spørre om matstoppet og reagere på det spilleren forteller, vise til skiftloggen og forklare vanlig utstyr. Etter Toms korreksjon finnes rollen bare på telefon, radio eller walkie-talkie: ingen fysisk Dale, ingen møtefigur og ingen Kinski-forteller på VHS.
+
+Etter overleveringen får spilleren lære kameraet uten at B-12 eller senere fotohendelser fullføres. N01 er fortsatt ordinært arbeid før signalhendelsen: dagens driftsjournal og sendeskjema/tidsgrunnlag kontrolleres under den tidlige driften. Grunnmaterialet finnes i overleveringsmappen på SARO, med en datert byreferanse som kan støtte senere bildesammenligning. En ekstra bytur er en begrunnet, valgfri oppfølging. Innkjøringen blir ikke gjort om til en obligatorisk papirjakt.
+
+Gjennomkjøringen og matstoppet gjør byen kjent, men teller ikke automatisk som fotografisk dokumentasjon. En senere oppgave som krever referansefoto må sørge for at bildet faktisk er tatt, eller gi en tilgjengelig, datert referanse. Spilleren kan registrere suvenirutstillingen, gatetelefonen og studioet i denne vanlige fasen.
+
+N01 undersøker ikke en fremtidig 00:13-hendelse. Materialet samles som rutine på kvelden og får en ny funksjon når utskriften kommer etter midnatt. Det kreves ikke en ekstra obligatorisk bytur bare for å hente samme papir igjen.
+
+Earl har Night Line fra midnatt til fire. Kveldsbesøket bruker en vanlig kveldssending og et fysisk utleveringspunkt eller en kort vanlig ekspeditørutveksling. Earl blir ikke flyttet til klokken 18. En senere, valgfri oppfølging med ham kan skje etter midnatt dersom spilleren har en konkret grunn til å komme tilbake.
+
+Den tidlige byen trenger egne åpningstider og bemanning. Nåværende nattbetingelser gir ikke automatisk en fungerende kveldsby. La noen virksomheter være i drift, andre stenge og folk gå hjem gradvis. Radiostudioets synlige ON AIR, stemmen i radioen, dørtilgangen og sendeskjemaet må være enige.
+
+Baselinen beskyttes mens referanseoppgaven pågår: pappfiguren er i utstillingen, og store telefon-/bortføringshendelser holdes tilbake. Det kan finnes én ufarlig, kontrollerbar feil. Ingen må vente på en tilfeldig hendelse for å avslutte ærendet.
+
+Trucken kan i dag brukes gjennom fri kjøring fra ch1 etter prologen. Kveldens nye tilgang må derfor bygges uttrykkelig, med eget oppdrag og retur. En tidlig ankomst til Caliche skal ikke aktivere ch5, Nora, P13 eller den gamle veiens avslutning.
 
 ### Gjenbesøket i All Night
 
-Bybesøket starter mens spilleren fortsatt er til fots før den avsluttende kart-/veibeslutningen. Spilleren velger ett av flere kjente spor å etterprøve. Den nye hovedreisen presenterer én pålitelig tilgjengelig sammenligning før P13. «Insufficient evidence» er et gyldig avslutningsresultat. Ingen bestemt anomalirapport eller valgfri telefon blir et ekstra krav for å kjøre videre; øvrige observasjoner gir mer kontekst og kan følges opp frivillig.
+Gjenbesøket starter tidligere, rundt 04:10, med god tid til både byen og dineren. Spilleren velger et kjent spor å etterprøve. Den nye hovedreisen presenterer én pålitelig tilgjengelig sammenligning før P13. «Insufficient evidence» er et gyldig avslutningsresultat; ingen tilfeldig anomalikvote sperrer veien videre.
 
-Dineren forblir samlingsstedet for kartgåten, avisen og vitnene. Dersom spilleren vil gå videre, skal det være tydelig hva som allerede er tilstrekkelig for P13, og hvilke spor som fortsatt er valgfrie. Ingen skjult kvote på to eller tre tilfeldige anomalier sperrer den gamle veien.
+Ekspeditøren og sheriffen gir ulike oppfølginger. Kvinnen kan fortsatt være der frem til 04:50. Earl er gått klokken fire, og suvenirmannen kan allerede ha gått. Tidlige samtaler eller bevarte opplysninger må bære deres spor etter stengetid.
 
-Undersøkelsene påvirker hvilke sammenhenger spilleren forstår, hva som ligger i saken og hvilke vitner som kan følges opp. Slutten beholdes. Oppdragsteksten skal gi en troverdig grunn til å kontrollere C fra veien; den skal ikke love at grundig dokumentasjon lar spilleren velge en annen slutt.
+Avisbildet og kartgåten får ro i dineren. Ved sen ankomst kan en sammenligning med medbrakt materiale brukes uten en lang henteomvei. Undersøkelsene endrer hva spilleren forstår og tar med seg, mens én slutt beholdes. Oppdragsteksten skal ikke love at grundig dokumentasjon lar spilleren velge en annen slutt.
 
 ### Tre historier som gradvis blir én
 
@@ -118,21 +152,93 @@ Det personlige sporet begynner med at spilleren samler referanser og slutter med
 
 Disse sporene kobles gjennom handling: journalen fører tilbake til utskriften, kvitteringen fører til sjåføren, kartene fører til C, og den kjente motorlyden fører frem mot finalen. Et nytt dokument må tilføre en slik forbindelse eller et menneskelig perspektiv. Forklaringer på alt det ukjente holdes tilbake.
 
-De levende personene får ulike roller. Earl hjelper med hva som faktisk ble sendt; sheriffen hjelper med hvor hendelser ble rapportert; ekspeditøren gir hverdagslig trygghet og en tvetydig gjentakelse. Nora gir den menneskelige kostnaden og en konkret erfaring med kabelen. Servitrisen og sjåføren gir et siste jordnært holdepunkt. Ingen av dem trenger en monolog om utenomjordiske skapninger.
+De levende personene får ulike roller. Dale er kollegaen som kjenner den daglige driften og skjuler sin egen etterforskning. Ward beholder rollen som vakthavende med krav om korrekt rapport. Earl hjelper med hva som faktisk ble sendt; sheriffen hjelper med hvor hendelser ble rapportert; ekspeditøren gir hverdagslig trygghet og en tvetydig gjentakelse. Nora gir den menneskelige kostnaden og en konkret erfaring med kabelen. Servitrisen og sjåføren gir et siste jordnært holdepunkt. Ingen av dem trenger en monolog om utenomjordiske skapninger.
+
+### Dale, telefonene og det låste kontoret
+
+Dale bruker prosjektets eksisterende Kinski-stemmeprofil bare via telefon, radio eller walkie-talkie, også ved overleveringen 18:00. Eventuelle faste Dale-fragmenter bruker de samme kanalene. VHS har miljølyd og skriftlige merknader uten Kinski-forteller. Ward, Nora, Tomás og Earl beholder sine identiteter. Innstillingen for generell dokumentopplesning skal ikke avgjøre om Dale kan snakke: rollebasert dialog knyttes til karakterstemmene med egne Dale-klipp, talernavn og undertekster. At en Kinski-bank allerede finnes, betyr ikke at de nye replikkene er spilt inn.
+
+Hans utvikling gjennom natten anbefales slik:
+
+| Trinn | Spillerens møte med Dale | Hva det tilfører |
+|---|---|---|
+| Overlevering 18:00 | Praktiske råd og tørr humor på telefon fra kollegaen som allerede har gått hjem. | Et kjent menneske å stole på; ingen forhåndsadvarsel om romvesener. |
+| Første strømproblem | En kort, levende telefonsamtale om den vanlige rutinen ved trafostasjonen. | Han hjelper spilleren til å mestre en reell arbeidsoppgave. |
+| Etter residualen | Når spilleren nevner en bestemt detalj, stopper han litt opp og ber dem beholde utskriften. | Det merkes at noe er kjent for ham, men han forklarer ikke alt. |
+| Arkiv og nøkkelfunn | Spillerens sammenligning av serviceopplysninger fører til en merket reservenøkkel i arkivets serviceskuff. | En pålitelig oppdagelse som åpner et tidligere sett, låst sted. |
+| Det private kontoret | Spillerens funn viser at Dale har samlet hendelser og gjort egne kontroller lenge før denne natten. | Den tidligere hjelperen får en skjult side. Materialet gir en konkret oppfølging ute. |
+| Eventuell senere samtale | Spilleren kan legge frem ett bestemt funn. Dale kan svare unnvikende eller erkjenne at han undersøkte det. | En menneskelig reaksjon som skiller en levende samtale fra et fast avtrykk. |
+
+Kontoret er den eksisterende Operations office-døren i arkivfløyen, som i dag bare sier at Dale tok nøkkelen hjem. Dette er en konkret utvidelse av den døren og rommet bak. Tidlig informasjon kan si at han tok hovednøkkelen; den senere reservenøkkelen får en fysisk, navngitt plass og registreres i saken. Den dukker ikke opp etter en tilfeldig hendelse. Den holdes adskilt fra Noras nøkkel til STATION 01.
+
+Inngangen til kontoret er del av den reviderte arkivreisen. Spilleren trenger ett relevant dokument eller kontaktark for den videre kontrollen; hele samlingen og alle videoene er ikke en obligatorisk lese-/seerkvote. Rommet åpner seg i tre lag:
+
+1. **Vanlig arbeidskontor:** servicepermer, kaffekopp, skiftmateriale og en avslått TV/VHS-spiller. Dette er et rom en kollega faktisk bruker.
+2. **Privat samling:** avisutklipp fra tidligere hendelsesår, kommenterte servicekopier, fotografier og mapper/disketter som viser egne UFO-/alienundersøkelser. De kan sammenlignes med datoene spilleren allerede har. Den bredere 1947-avsløringen fra dineren og P13 beholdes til sin plass.
+3. **Egne feltopptak:** et kort VHS-opptak av en gjenkjennelig kraftlinje eller trafostasjon og et uavklart lys-/formavvik. Et kontaktark eller notat viser et ståsted spilleren kan prøve selv. Det gir en grunn til T02 og senere observasjon ute, uten å bevise hele forbindelsen til C.
+
+TV/VHS skal vise faktisk bevegelig film med lyd, med enkle kontroller for avspilling, stopp og spoling. Et filmklipp må ha en observerbar forandring, for eksempel at noe passerer bak en stolpe, slik at det ikke oppleves som et stillfoto på TV-en. Første opptak sikter mot omtrent ett minutt med mulighet til å stoppe. Et bevart stillbilde kan brukes som eget bevis etterpå. Undertekster og et bevart kontaktark støtter spillere som ikke får med seg lyden eller hele klippet.
+
+Eksisterende Unarius-film kan inngå i Dales samling av offentlig UFO-/romtro-materiale og fortsatt spilles som film. Egne, daterte feltopptak får en annen bevisrolle. En offentlig film blir ikke behandlet som et faktisk SARO-feltopptak bare fordi den står i samme rom.
+
+Det nye rommet krever egne bygningsflater, kollisjon, lys, mapper, nøkkeltilstand, TV/VHS-binding og lagring. Nøkkel funnet, dør åpnet, dokument tatt og avspillingsposisjon bevares. Strømbrudd, pause og lasting skal følge samme mediekontrakt som de øvrige TV-ene.
+
+Dale er ikke allvitende og får ikke forfatterfasiten om slutten. Han kan ha sett et mønster og vært redd for å rapportere det uten å forstå fenomenet. Han gjøres heller ikke automatisk til hovedskurk eller avtrykk. Dersom stemmen hans senere dukker opp som et fast lydfragment, kan det fragmentet bare gjenta sitt registrerte forløp.
 
 ## 4. Byens funksjoner og tilgjengelighet
 
 | Sted | Første besøk | Senere bruk | Forutsetning og alternativ |
 |---|---|---|---|
-| Bensinstasjonen | Undersøke ny driftsjournal og møte ekspeditøren. | Sammenligne bergingskvitteringen, den gamle veien og eventuelt gjentakelsen. | Ekspeditørens identiske replikk krever minst to timer siden første møte i dagens kode. Det er et valgfritt spor. |
-| 1420 AM | Earl tidsfester en bevart sending/avskrift. Normal studioaktivitet er synlig. | Spilleren bruker materialet som allerede ble tatt med, og kan undersøke studioet uten vert. | Earl er tilgjengelig før 04:00. Et sent førstebesøk får en fysisk, datert avskrift ved et nytt utleveringspunkt; ingen NPC blir værende kunstig. |
+| Bensinstasjonen | Hente dagens driftsjournal og møte ekspeditøren i ordinær drift. | Sammenligne bergingskvitteringen, den gamle veien og eventuelt gjentakelsen. | Ekspeditørens identiske replikk krever minst to timer siden første møte; beregningen må tåle midnatt. Det er et valgfritt spor. |
+| 1420 AM | En vanlig kveldssending, studioaktivitet og et datert sendeskjema gir referansen. | Materialet brukes etter residualen; Earl kan følges opp under Night Line. Senere kan det tomme studioet undersøkes. | Earl har Night Line 00:00–04:00. Kveldsbemanning og synlig ON AIR må defineres separat; sent førstebesøk bruker en fysisk avskrift. |
 | Gatetelefonen | Vanlig ringetone og myntbruk blir kjent. | Printerlyden, 1947-mynten og senere motorfragment kan etterprøves. | Første hendelse slutter å være tilgjengelig 04:45. Den senere krever tidligere hendelse og er tilgjengelig til 05:19. Ingen av dem er eneste vei gjennom hovedhistorien. |
 | Sheriffkontoret | Kartet kan observeres uten å love en samtale. | Etter 04:30 kan sheriffen kommentere relevante faktiske observasjoner. Egne markeringer sammenlignes med kartet. | Sheriffen er ute 02:45–04:30. Kartet og etterlatte opplysninger må kunne brukes når døren er låst. |
 | Suvenirbutikken | Spilleren tar eller undersøker et referansebilde av utstillingen. | Figurens plassering, prismerke og fysiske spor sammenlignes. | Førstegangsreferansen må være registrert før en hukommelsesoppgave. Gamle direkte-spawn må tilpasses. |
 | Vaskeriet | En fungerende maskin og lysrøret gir en vanlig rytme. | Valgfri lyd-/rytmekontroll og et sted for fysisk etterspill. | Kvinnen går 04:50. Sen hovedfremdrift kan ikke kreve henne. |
-| Mesa Diner | Utsiden kan kjennes igjen på første tur; kapittel 5-historien holdes tilbake. | Avis, sjåfør, servitrise og P13 samler trådene. Dinertelefonen har Ward. | Tidlig besøk må ikke sette ch5-flagg. Beskytt kartarbeidet mot konkurrerende skremmehendelser. |
+| Mesa Diner | Valgfritt matstopp på innkjøringen: parkere, bestille og ta med/spise mat, møte servitrisen og se en vanlig diner. | Avis, sjåfør, servitrise og P13 samler trådene. Dinertelefonen har Ward. | Tidlig besøk må ikke sette ch5-flagg eller kreves for et senere historiespor. Beskytt kartarbeidet mot konkurrerende skremmehendelser. |
 
-Suvenirmannen går 04:10. Valgfrie tidlige vitnesamtaler gir senere kontekst, men skal ikke gjenoppstå som nødvendige møter etter fem. Kino, kirke og fôrbutikk beholdes som stedsankre i første produksjonsrunde. Nye fullverdige interiører prioriteres først når de gir en nødvendig handling.
+Suvenirmannen går 04:10. Valgfrie tidlige vitnesamtaler gir senere kontekst, men skal ikke gjenoppstå som nødvendige møter etter stengetid. Kino, kirke og fôrbutikk får også bedre utvendige bygninger; fullverdige nye interiører prioriteres etter de viktigste undersøkelsesstedene. Kveldstilstandene skal ikke arve alle de gamle nattfigurene og åpningstidene ukritisk.
+
+### Trafostasjonen i ørkenen
+
+Arbeidsnavn: **Caliche Junction Substation**. Dette er et nytt, avgrenset serviceområde på en kort grusavstikker fra den eksisterende kjøreruten. Nøyaktig plassering velges etter kart-/rutemåling. Stasjonen får egen identitet og kan ikke forveksles med STATION 01, som beholder transiten, kabelen, Tomás og forbindelsen til C.
+
+Det synlige anlegget består av grusdekke, nettinggjerde, port, transformatorer med kjøleribber og isolatorer, kabel-/stolpeføring, en liten betjeningsbod og få fysiske arbeidslys. Byens og SAROs forsyning fremstilles med tydelig adskilte utgående kurser. SAROs K3 er fortsatt en intern mottaker-/surveykrets og blir ikke bryteren for hele byen.
+
+**Første besøk, rundt 20:00:** En vanlig lokal feil må undersøkes. Spilleren leser en kort driftsjournal, bruker en avgrenset kontroll på betjeningsfronten og kontrollerer en synlig virkning på den aktuelle kursen. Oppgaven gir en forståelig forklaring og en målbar normaltilstand. Det skal føles som at spilleren lærer arbeidet. Ingen tydelig UFO eller nærfigur belønner enhver reparasjon.
+
+**Senere oppfølging på feltetappen:** Et nytt funn gir en konkret grunn til å kontrollere samme sted igjen. En kjent lampe eller registrering oppfører seg nå annerledes enn ved den vanlige feilen. Spilleren sammenligner journal, foto og kontrollresultat. En mulig nødforsyning eller vanlig indikatorfeil må kunne utelukkes før et avvik regnes som etterprøvd. Første forslag er at én dokumentert lyskilde fortsetter å følge sitt gamle forløp selv om den relevante servicekontrollen viser frakoblet kurs. Detaljen er fiksjonell spillatferd som må vises entydig i scenen.
+
+Andre besøk kan gi et fjernt lys mellom stolpene eller en form som dekker himmelen, etter at undersøkelsen er gjort. Forløpet følger spillerens handling og riktig opptrappingsnivå; det utløses ikke hver gang noen åpner porten.
+
+Den første oppgaven er ordinært arbeid i hovedreisen. Den andre er en konkret oppfølging av et feltfunn med en alternativ bevart referanse for sen ankomst eller eldre saker. Ingen tilfeldig spawn kreves. Reparasjon fjerner ikke det kosmiske fenomenet. Første versjon bruker serviceområdet og betjeningsfronten, uten en egen detaljert høyspenningssimulator eller et stort ekstra bygg å utforske.
+
+Nytt område krever kjørbar avstikker, parkering, gangflater, kollisjon, siktlinjer, kamerasubjekter, lyd/lys, oppdragsretur og lagring. Visuell modell alene er ikke ferdig spillested. Kartmarkøren sier trafostasjon, og stedet gis ikke automatisk A- eller C-tilhørighet bare fordi en kraftlinje går forbi.
+
+### Bedre bygninger i Caliche
+
+Målet er en troverdig liten by som har vokst over tid og fortsatt brukes i 1986. Konseptbildene av Caliche og Mesa Diner brukes som eksisterende visuell retning. De er konseptkunst, ikke bevis på dagens runtime-grafikk. Behold den nåværende byens orientering og sentrale siktlinjer mens det visuelle bygningsskallet bygges bedre.
+
+En felles oppgradering omfatter volum og proporsjoner, veggtykkelse, dør-/vindusnisjer, sålebenker, karmer, takkanter, avløp, ventilasjon, lokale materialer og troverdig overgang til fortau/grus. Store flater får variasjon i materiale og overflate, mens rust og skitt plasseres der vær og bruk gir mening. Noen bygninger er vedlikeholdte, andre slitte. Hele byen skal ikke fremstå som en forlatt ruin før noe har skjedd.
+
+| Bygning | Konkret visuell forbedring | Spillfunksjon som må bevares |
+|---|---|---|
+| Bensinstasjon | Eget tak over pumpene med synlig konstruksjon, inntrukket nattluke, glass med synlig butikkdybde, disk, driftslapper, ulik slitasje på sokkel og tak. | Nattluke, journal, ekspeditør, mynt og telefon i lesbar avstand. |
+| 1420 AM | Tydelig studiovindu, et faktisk lite rom med mikrofon/spoler/telefon, egen inngang, takantenne og ON AIR fra samme tilstand som sendingen. | Kveldssending, Night Line, senere tomt studio og lydetterspill. |
+| Mesa Diner | Egen 3D-fasade med brystning, dype vinduer, ekte inngang og neonskilt. Innvendig: båsrekker, disk, kjøkkenåpning, gulv og materialer med målestokk. | Avis, saksbord, sjåfør, servitrise, Ward-telefon og fri vei til trucken. |
+| Sheriffkontor | Pusset eller murt fasade med dørnisje, diskret skilt, vinduer med innvendig dybde, skrivebord og faktisk synlig kart. | Kartnåler og bemanning kan leses gjennom vinduet. Patruljebilen har plass begge steder. |
+| Suvenirbutikk | Håndmalt skilt, en dyp utstillingsnisje, hyller, butikkdisk og egne fremviste småting. | Pappfigur, prismerke og referansefotografi har samme gjenkjennelige plass. |
+| Vaskeri | Troverdig glassfront, et enkelt rom bak, maskiner med faktisk dybde, benk og egne lysrør. | Normal rytme, kvinnens plass og relevante lyd-/synskontroller. |
+| Kino, fôrbutikk og kirke | Felles kvalitetsløft på hele bygningsvolumet: innganger, tak, sokler, vinduer og egne skilt/materialer. Kinoen får en lesbar gammel marquee; fôrbutikken lasterampe og varer; kirken en enkel inngang og vindusdybde. | Landemerker, gangrute og viktige siktlinjer beholdes. Stengte dører krever ikke fullstendige interiører. |
+| Øvrige byhus | Samme målestokk og materialfamilie, med individuelle tak-/vindusvariasjoner og noen enkle, synlige rom. | De skal gi en sammenhengende gate, uten å gjøre alle dører til oppdragsmål. |
+
+Første visuelle leveranse er en sammenhengende gatebit ved bensinstasjonen, suvenirbutikken og radiostudioet, med alle tre fra spillerhøyde både på kvelden og om natten. Deretter ferdigstilles dineren, sheriffkontoret og vaskeriet; resten av byens utvendige skall følger samme kvalitetsnivå. Ingen av disse erstattes av et rent lys-/filterpass.
+
+Nye egne bygninger modelleres med bevarte Blender-kilder, UV-er, PBR-kart og egnede kollisjonsmesher. Bruk delbare materialer, trimteksturer og instanser der det passer. Unike detaljer prioriteres ved innganger og steder spilleren undersøker. Felles råteksturer skal ikke dupliseres som en stor ny pakke for hver vegg.
+
+Unreal er det redigerbare målet. Nye native assets og eksisterende `S47Props`-/materialmønster kan brukes til visuell utskifting, med eksplisitt binding til de bevarte ankerpunktene. Gamle synlige skall fjernes først når erstatningen har korrekt kollisjon og interaksjon. Ikke skjul en logikkrot slik at dens nye barn, hendelsesdrivere eller trefflater også forsvinner. Web-geometrien videreutvikles ikke for å gjennomføre dette passet.
+
+Kontrollbildene må vise samme kamerasted før/etter, en normal og en avvikende tilstand og riktig kveld/natt/gry. Glass, skilt og lys skal ikke skjule selve forskjellen spilleren skal finne. Nye materialer og renderbaner krever ny vurdering av den leverte shader-/PSO-oppvarmingen og ytelsen.
 
 ## 5. Foreslåtte undersøkelser og hendelser
 
@@ -140,7 +246,7 @@ ID-ene nedenfor er planreferanser, ikke eksisterende runtime-ID-er. «Utvidelse�
 
 | ID | Innhold og spillerens handling | Kontroll og tilbakemelding | Rolle |
 |---|---|---|---|
-| N01 | Første bytur: sammenligne driftsjournal, sending og SARO-utskrift. | Vis rekkefølgen uten å forklare fenomenet. Registrer byens normalreferanser. | Ny kort hovedsekvens. |
+| N01 | Første rutine på SARO: kontrollere driftsjournal, sendeskjema og referanser fra overleveringsmappen. Etter midnatt sammenlignes materialet med utskriften. | Først en vanlig oppgave, deretter bevismateriale som utelukker en forklaring. Et valgfritt byærend kan utdype kontrollen. | Ny hovedsekvens i to deler; innkjøring og matstopp brukes ikke som obligatorisk papirjakt. |
 | N02 | En svak lampe eller refleks ser ut som en skikkelse. Spilleren endrer ståsted og tar en kontroll. | Formen følger den vanlige lyskilden og kan forklares. | Nytt, kort kontrolltilfelle; viser at alt merkelig ikke er et avvik. |
 | A01 | B-12-merket fotograferes under de eksisterende kontrollene. | Nullprøve og fremkalling beholder betydningen. | Eksisterende hovedsekvens; mal for resten. |
 | A02 | Spilleren sammenligner suvenirfigurens prismerke og skader med referansefotoet etter at plasseringen endrer seg. | Samme gjenstand, annet sted; hvem som flyttet den er fortsatt uavklart. | Utvidelse av pappalien-sporet. |
@@ -153,6 +259,11 @@ ID-ene nedenfor er planreferanser, ikke eksisterende runtime-ID-er. «Utvidelse�
 | A09 | En større mørk form over mesaen kan ses fra en opparbeidet siktlinje i All Night. | Kjente hustak og stolper gir størrelse; et bevart bilde gir spor hvis observasjonen ble kort. | Ny sen UFO-observasjon; ingen loreforklaring. |
 | A10 | Dinerens bredere avisbilde sammenlignes med saksmappens utsnitt. | Den eksisterende tredje personen og himmelen får gradvis betydning. | Eksisterende sentralt spor; bevar sluttreferansen. |
 | P01 | Etter bildesammenligningen høres en kort, kjent printerrytme fra det stengte studioet. Spilleren kan gå nærmere og undersøke den normale fasaden. | Det gir et spørsmål om lydens kilde, uten å bekrefte at et nytt vesen finnes i rommet eller starte en samtale. | Nytt, avgrenset etterspill i første prototype. |
+| T01 | Første tur til trafostasjonen: en vanlig feil kontrolleres og rettes med et synlig resultat. | Journal, servicekontroll og berørt lyskilde blir en normalreferanse. | Ny ordinær hovedoppgave før den store signalhendelsen. |
+| T02 | Senere tur: samme kontroll og referanse prøves mot et uforklarlig forløp. | Vanlig strømfeil, nødforsyning og misvisende indikator må skilles fra det som blir igjen. | Ny oppfølging som knytter strømforklaringen til mysteriet uten å erstatte STATION 01. |
+| I01 | Innkjøring gjennom Caliche med radio og valgfritt matstopp før skiftet. | Begge valg fører videre til SARO og tydelig skiftstart 18:00; matkjøpet har en synlig respons. | Ny normal innledning med egen fase og lagring. |
+| D01 | Snakke med Dale på telefon om drift, deretter om den merkelige registreringen. | Samme Kinski-karakterstemme og navn, med konkrete svar på levende samtaler. | Ny rollebasert dialog som bygger tillit og senere tvil. |
+| D02 | Finne reservenøkkelen og undersøke kontorets filer, avisutklipp og bevegelige VHS-opptak. | Ta med et konkret referansebilde/notat og etterprøve ståsted eller kontroll i felt. | Ny del av arkivreisen, knyttet til T02 og byens tidligere hendelser. |
 
 Kontrolltilfeller skal være meningsfulle. Studioets normale avslutning 04:00, vanlig morgenlys og at noen går hjem er ikke automatisk anomalier. Ett eller to slike tilfeller tidlig gir spilleren grunn til å teste en mistanke. De skal ikke fylle byen med vilkårlige lureoppgaver.
 
@@ -162,7 +273,7 @@ Spilleren kjenner suvenirutstillingen. På returen er figurens plassering endret
 
 I første prototype følger P01, printerrytmen fra det stengte studioet, etter undersøkelsen. Den begynner først når panelet er lukket og ingen annen viktig hendelse eller samtale pågår. Den er kort og bruker eksisterende lyd; ingen ny figur eller jakt kreves.
 
-I trinn 2 kan lys-/lydbølgen knyttes til en senere undersøkelse og gi en siktlinje mot et fjernt objekt. Da må kapittelbetingelsen, dagens grense 04:55 og daggryslukking endres samlet. Hvis bølgen allerede er opplevd eller lysene har slukket, beholdes den historikken og et undersøkbart etterspill brukes. Hendelsen skal ikke gjentas bare for å fylle sekvensen.
+Med All Night fra 04:10 kan lys-/lydbølgen nå passe før dagens grense 04:55. I trinn 2 kontrolleres kapittelbetingelse, faktisk ankomst og daggryslukking samlet. En sen spiller får et undersøkbart etterspill. Hvis bølgen allerede er opplevd, beholdes den historikken; hendelsen gjentas ikke bare for å fylle sekvensen. Første pilot krever fortsatt ikke denne bølgen.
 
 Spilleren går inn i dineren med et konkret spørsmål og et dokumentert funn. Der får de ro til å sammenholde byen, avisen og kartene før P13. Et svakt kjent lydfragment ved trucken kan avslutte pausen og føre tilbake til siste kjøretur.
 
@@ -212,7 +323,8 @@ RANGER-radioen kan gi en kjent lyttestasjon og referanselyd. Den blir ikke autom
 
 | System | Anbefalt endring | Grense |
 |---|---|---|
-| `S47Chapter1` / `S47Chapter2` | Introdusere første kontrolltur, ta imot materialet og gjenoppta samme SARO-steg. | Ikke starte ch5 ved tidlig ankomst til byen. |
+| `S47Story` og kapittelportene | Egen innkjøringsfase, ankomstsjekkpunkt og overlevering 18:00; tidlig utstyr og felles tidsplan. | Valgfritt matstopp gir ingen skjult tidsstraff. Nye kveldsoppgaver gir ikke fullført senere kapittel. Historiske 1947-tider flyttes ikke. |
+| `S47Chapter1` / `S47Chapter2` | Bruke kveldens materiale etter residualen og bevare B-12-/arkivoppgavene. | Ikke gjøre N01 til en kontroll av et fremtidig utskriftstidspunkt. |
 | `S47World` | Egen oppdragsankomst og retur med kontrollert tidsregning og eksisterende kjøring. | Ikke gjenbruke `ArrivedDiner()` som generell ankomst eller resette kapittelklokka. |
 | `S47TownLayer` / `S47TownEvents` | Besøksstadier, referanser, fysiske varianter og etterspill. | Ett fysisk objekt og én eier per tilstand; ingen doble triggere. |
 | `S47Caliche` | Nye korte journal-/tidsreferanser og målrettet fremleggelse av bevis. | Respektere arbeidstid, eksisterende vitnespor og skillet mellom levende vitne og avtrykk. |
@@ -221,6 +333,10 @@ RANGER-radioen kan gi en kjent lyttestasjon og referanselyd. Den blir ikke autom
 | Kamera, album, notebook og board | Knytte et lite antall bevis til konkrete sammenligninger. | Gjenbruke grensesnittet; ikke kreve generell friobjektgjenkjenning. |
 | `S47Chapter5` | Koble byens funn inn før kart-/veivalget. | P13 beholder sin funksjon. En byrapport kaller aldri `Finish()` eller setter `road`. |
 | `S47Flow` / `S47Saves` | Lagre referanser, variant, undersøkelsesstatus og rekkefølge. | Gamle saker skal kunne lastes uten tvungen omstart. |
+| Ny trafostasjon og `S47World` | Ny avstikker, serviceområde, forsyningstilstand, T01/T02 og retur til eksisterende oppdrag. | Egen rolle og ID; ikke erstatte STATION 01 eller utvide K3 til byens strømnett. |
+| Nye bygningsassets, `S47Props` og material-/lysbindinger | Eget bygningsskall med bevarte ankre og tilstandsstyrte vinduer, skilt og rom. | Kollisjon, referansefoto, NPC-plass og eksisterende trefflater verifiseres per bygg. |
+| Ny innkjøring, `S47World` og diner | Reisekjøretøy, normal radiosending, matbestilling, parkering og overlevering til SARO. | Dinerens ch5-logikk og servicepickupens turtilstand holdes adskilt fra innledningen. |
+| Dale-dialog, stemmebank og kontor | Egne Dale-klipp med Kinski-profil, levende samtaler, reservenøkkel, mapper, kontaktark og TV/VHS. | `bKinskiCalls`/generell opplesning er ikke ferdig karakterruting. Nøkkelen er ikke Noras nøkkel, og VHS er faktisk film. |
 
 ### Tilstander og data
 
@@ -242,6 +358,21 @@ Ved lasting må objektets plassering, lys, samtaletilgang og fotografiets innhol
 
 ### Klokke og migrering
 
+Ny kveld trenger én tidsakse som skiller søndag 13. april fra mandag 14. april. Ordning, varigheter og totimerskravet beregnes fra sammenhengende natte-/datotid. Lokal HH:MM og dato vises ved behov. Eksisterende nattomregning i `S47Story` gjenbrukes der den passer, men beviser ikke at alle modulo- og klokkesammenligninger tåler starten 18:00.
+
+Før retiming lages en avgrenset tidsreferanseoversikt:
+
+| Referanse | Dagens verdi | Foreslått regel |
+|---|---|---|
+| Spillstart og overlevering | 23:41, med blant annet K3-logg 23:44 og tekst om at Dale allerede har gått. | Ny innkjøringsfase før skiftklokka. Ankomst og Dales telefonoverlevering starter 18:00; notater følger den nye sekvensen, og han har allerede forlatt SARO. |
+| Residual og tilhørende 1986-registrering | 02:13:47. | 00:13:47 den 14. april. Oppdater utskrifter, konsolltekst, telefon/printerreferanser, decoderens etterfølgende klokkeslett, stemmenotater og gjenopprettede logger. |
+| Oppbyggingens start og nattstyrke | Blant annet `NIGHT0=02:16`. | Knyttes til ny fase og faktisk eksponering; ikke la 18:00 bli tolket som slutten av natten eller gi toppintensitet. |
+| Kapittel 3, 4 og 5 | Minst 03:40, 04:35 og 05:00. | Nye mål 02:20, 03:20 og 04:10; alle minimumsporter, måltekster og underhendelser kontrolleres. |
+| Forsøket i 1947 | 02:17:00–02:17:47. | Behold historisk tid inntil en eksplisitt historieendring eventuelt krever noe annet. Den flyttes ikke sammen med 1986-residualen. |
+| Roswell Road og THE EVENT | Avreise 05:20, hendelse 05:29. | Behold siste kjøreturs tid og 47 sekunders finale. |
+
+Nye relevante tider samles i ett avgrenset tidsplanoppsett med adaptere til eksisterende systemer. Det er ingen grunn til å skrive om hele historiemotoren. Men kvelden krever at radiosending, synlig studio, NPC-er, butikker, lampetilstand og tekster om «today/yesterday» bruker samme dato og plan. Dagens `Caliche`/`Town` har ulike kveldsvilkår for ON AIR og må bringes i samsvar.
+
 Transport i `DriveToDiner` legger i dag til 0,19 sekunder per kjørt meter i tillegg til ordinær tid. En tidlig kontrolltur trenger en uttrykkelig valgt tidsregel. Første implementasjon bruker fri kjøring med vanlig klokketid og en egen oppdragsankomst, eller et avgrenset turvalg med samme regel. Ikke bland de to tidsmodellene utilsiktet.
 
 Det er ingen tidsstraff for å lese eller sammenligne mens spillets eksisterende panelpause er aktiv. Nye byoppdrag og overganger før Roswell Road skal ikke flytte klokka bakover eller forlenge vitnenes åpningstider.
@@ -249,6 +380,8 @@ Det er ingen tidsstraff for å lese eller sammenligne mens spillets eksisterende
 Dagens kapittel 6 har en egen, regissert tidsmodell: avreisen setter 05:20, og kjøreturen tilpasses 05:29. Dette kan allerede gi et tilbakesprang ved et langt All Night-besøk og er ikke løst av denne planen. Pilotarbeidet endrer ikke denne tidsmodellen. THE EVENT beholdes 05:29:00–05:29:47.
 
 Trinn 0 må registrere klokka ved start og slutt på de nye byoppdragene, ved P13 og ved avreise, både med rask rute og lang frivillig utforskning. Prøv særlig avreise etter 05:20 og dokumenter faktisk tidsdiskontinuitet. Hvis den utvidede normalruten overskrider tidsbudsjettet, må innhold forkortes eller flyttes, eller en avgrenset regel for overgangen til finalen avklares før fullnatten godkjennes. Dette skal ikke bortforklares som en ny anomalihendelse.
+
+Nye saker får en eksplisitt fortellertidslinje i lagringen. Anbefalt kompatibilitet er at eksisterende saker fortsetter med sine gamle historiske klokkeslett gjennom samme tidsplanoppsett, mens nye saker bruker kvelden. En migrering må være bevisst og testet; ikke endre gamle bildestempler, lydreferanser og rapporter fra 02:13 til 00:13 i stillhet.
 
 For eldre lagringer uten normalreferanse brukes tilgjengelig, datert dokumentasjon som støtte til sammenligning. En manglende tidlig oppgave sperrer ikke et allerede påbegynt senere kapittel. Hvis den gamle saken allerede har opplevd pappfiguren eller bølgen, beholdes den historikken og et passende annet spor velges. Ikke skriv om gamle `TownSeen`-funn til nye, fullførte undersøkelser uten grunnlag.
 
@@ -269,21 +402,23 @@ For eldre lagringer uten normalreferanse brukes tilgjengelig, datert dokumentasj
 
 ## 10. Produksjonsrekkefølge og avgrensninger
 
-Hvert trinn omfatter sammenhengende handling, tilbakemelding, lagring og kontroll. Grafikkarbeidet som allerede pågår beholdes som separat produksjon; denne planen starter ingen nye tunge jobber.
+Hvert trinn omfatter sammenhengende handling, tilbakemelding, lagring og kontroll. Det leverte material-/lyspasset er et grunnlag, mens de nye bygningsskallene og trafostasjonen er egne kommende leveranser. Denne planoppdateringen starter ingen tunge jobber og endrer ikke det installerte spillet.
 
 | Trinn | Leveranse | Avhengighet | Når trinnet er godt nok |
 |---|---|---|---|
-| 0. Baseline | Måle dagens rute, klokke, triggere og passive venting med ekte input. Bevare relevante opptak og lagringer. | Nåværende fungerende pakket utgave. | Rute og begrensninger er dokumentert uten å bruke testhopp som bevis på vanlig spillflyt. |
-| 1. Første og andre Caliche-besøk | N01, N02 og A02: tidlig kontrolltur, tre normalreferanser, ett forklarlig kontrolltilfelle og én aktiv bildesammenligning. P01 gir et kort etterspill. Retur til riktig historie og bevis gjennom lagring. | Trinn 0 og avgrensede endringer i tur/kapittel/evidens. | Begge delstrekninger og beviskontinuiteten kan fullføres, lagres og forstås av nye spillere. |
-| 2. Hele byens etterprøving | Knytte kvittering, sheriffkart, telefon og relevante vitner til funnene. Vurdere en ny, besøksstyrt betingelse for lysbølgen med riktig lampetilstand. P13 samler sporene uten å bli overflødig. | Trinn 1 har lesbar kjernehandling. | Hvert valgt sted endrer spillerens kunnskap eller neste handling; stedslisten er ikke bare samleobjekter. |
-| 3. Felt og fremmed tilstedeværelse | Fjern himmelform, én sen aliensekvens og ett større UFO-øyeblikk. Rebalansere gamle glimt/bortføringer. | Referanser, siktlinjer og riktig hendelsesrekkefølge. | Opptrappingen oppleves som økende nærhet gjennom natten; modellen fungerer i pakket gameplay. |
+| 0. Baseline og tidskontrakt | Måle dagens rute og venting, kartlegge referanser til hendelsen og prøve datoaksen gjennom midnatt. Vurdere trafostasjonens avstikker og velge den første gatebitens bevarte ankre. | Nåværende fungerende pakket utgave og eksisterende konseptbilder. | Rute, gammelt/nytt tidsgrunnlag og visuelle kontrollsteder er dokumentert uten testhopp som bevis på vanlig spillflyt. |
+| 1. Innkjøring, overlevering og Caliche | I01 og D01: normal radio, valgfritt matstopp og Dale med Kinski-stemme ved skiftstart 18:00. N01/N02/A02/P01 og faktiske referanser. Første bedre gatebit og en diner som fungerer ved tidlig besøk, med lagring og adskilte kapitteltilstander. | Trinn 0 og eksplisitte innlednings-/datoporter. | Både direkte kjøring og matstopp fører riktig til SARO. Dales fjernsamtaler og de nye byhandlingene kan oppleves med ekte input; bevis følger saken. |
+| 2. Trafostasjon, Dales kontor og byens etterprøving | T01/T02, D02 med nøkkel, private filer og faktisk bevegelig VHS. Kvittering, sheriffkart, telefon og P13. Ferdigstill diner, sheriffkontor og vaskeri. | Trinn 1 har lesbar kjernehandling og tidsgrunnlag. | Vanlig strømfeil kan skilles fra senere avvik; kontorfunn gir en konkret feltkontroll uten å overta Noras eller P13s funksjon. Nye steder og bevis lagres. |
+| 3. Felt, resten av byen og fremmed tilstedeværelse | Fjern himmelform, sen aliensekvens og større UFO-øyeblikk. Rebalansere gamle glimt/bortføringer. Utbedre øvrige utvendige bygg med samme kvalitetsnivå. | Referanser, siktlinjer og riktig hendelsesrekkefølge. | Hele gaten har bedre bygninger, opptrappingen oppleves som økende nærhet, og de nye modellene fungerer i pakket gameplay. |
 | 4. Hele natten | Kontrollere alle overganger, pauser, etterspill og koblingen til finalen. | Trinn 2–3. | Sammenhengende menneskelig gjennomspilling, regresjon og målinger av påvirkede scener. |
 
-Første Gauntlet-prøve sikter mot 20–30 minutter samlet i to avgrensede delstrekninger. Første del starter før den tidlige kontrollturen og spilles tilbake til SARO. Andre del starter ved All Night fra en testfixture som viderefører den første delens faktiske referanser, bilder og undersøkelsesstatus gjennom vanlig lagring. Tidskuttet merkes tydelig for testspilleren. En slik fixture er testdata og ingen snarvei i den leverte hovedhistorien.
+Første Gauntlet-prøve sikter mot 20–30 minutter avgrenset byinnhold fordelt på kveldens besøk og All Night. Kveldsoverlevering, ny trafostasjon og de mellomliggende kapitlene kommer i tillegg; total aktiv spilletid må måles. Den sene delprøven bruker en testfixture som viderefører kveldens faktiske referanser, bilder og undersøkelsesstatus gjennom vanlig lagring. Tidskuttet merkes tydelig. En slik fixture er testdata og ingen snarvei i den leverte hovedhistorien.
+
+Mellom de to bydelene prøves også N01s korte SARO-kontroll etter 00:13:47 med samme lagrede journal og sendeskjema. Den kan inngå i første testøkt etter et merket tidskutt. Piloten består ikke før materialet faktisk har fått den lovede funksjonen mot utskriften; det er utilstrekkelig å bare ta med papirene fra kveld til All Night.
 
 Dette prøver handlingene og beviskontinuiteten, mens trinn 4 må godkjenne hele kapittel-, transport- og tidsforløpet uten testhopp. I full natt ligger andre besøk etter de mellomliggende kapitlene; faktisk total varighet må måles. 20–30 minutter er en målsetting for prøven, ikke et løfte om hele spillets lengde eller en ferdig måling.
 
-Pilotens omfang er fast: N01, N02, A02 og P01. Telefon 1 kan eksistere som et valgfritt sidespor, men kreves ikke. A04–A09, flytting av lysbølgen, en ny lydopptaker og nye UFO-/alienanimasjoner inngår ikke i trinn 1. Dagens lysbølge og grensen 04:55 beholdes i dette trinnet.
+Første gameplaypilot bruker I01 og D01 sammen med N01, N02, A02 og P01, med faktiske referanser og riktig datogrunnlag. Direkte innkjøring og matstopp skal begge prøves. Telefon 1 er valgfri. D02, T01/T02 og resten av bygningsløftet er påkrevde senere leveranser i trinn 2–3, ikke valgfri polering. A04–A09, en ny lydopptaker og nye UFO-/alienanimasjoner inngår ikke i trinn 1. Dagens lysbølgegrense 04:55 beholdes inntil ny rute er prøvd; All Night fra 04:10 kan nå gi plass før grensen.
 
 Etter denne prøven vurderes om ett sted må kuttes, om sammenligningen er for tung, eller om et mellomliggende spor bør flyttes. Først deretter utvides katalogen. Ingen ny økonomi, sult-/søvnsimulering, stor inventory, kamp eller åpen verdensstruktur inngår i grunnplanen.
 
@@ -294,13 +429,20 @@ Fem mål brukes med fem nye spillere. Tallene er foreslåtte akseptgrenser for f
 1. Minst 4 av 5 kan forklare handlingen «oppdag, dokumenter, sammenlign, følg opp» uten muntlig instruksjon fra testleder.
 2. Minst 4 av 5 oppdager ett avvik og kan etterpå beskrive hva som var annerledes enn normalreferansen.
 3. Minst 3 av 5 bruker minst to steder i byen av en forstått praktisk grunn. Ingen trenger tilfeldig spawn eller et utilgjengelig vitne for å fortsette.
-4. Begge pilotdelstrekninger og bevisoverføringen kan fullføres med ekte input og lagring/lasting uten feil kapittel, tapte bevis eller endrede fotografier. Ingen obligatorisk ren venting overstiger to minutter. Full natt uten testkutt er et eget krav i trinn 4.
+4. Begge bydelstrekninger, SARO-kontrollen etter residualen og bevisoverføringen kan fullføres med ekte input og lagring/lasting uten feil kapittel, tapte bevis eller endrede fotografier. Ingen obligatorisk ren venting overstiger to minutter. Full natt uten testkutt er et eget krav i trinn 4.
 5. Testen viser økende forventningsuro før toppen og en merkbar avlastning i dineren. Registrer ubehag 0–10 ved fire definerte punkter; sikt mot minst 3 av 5 som beskriver denne utviklingen. Bruk forklaringene deres sammen med tallene.
 
 Logg start på normalreferanse, første mistanke, dokumentasjon, kontroll, konklusjon, neste selvvalgte handling og tid uten forstått mål. Frivillig utforskning skal skilles fra å være fast. Spør om ubehag ved naturlige pauser eller etter gjennomspillingen, slik at målingen ikke stadig avbryter opplevelsen.
 
 Teknisk kontroll ved implementering:
 
+- Innkjøring: kjør direkte til SARO og via diner, kjøp mat én gang, spis/ta med og last saken på nytt før og etter ankomst. Begge ruter gir en tydelig overlevering 18:00 uten å aktivere ch5 eller flytte servicepickupen.
+- Dale: overlevering og telefon bruker samme karakteridentitet; prøv med generell dokumentopplesning av og karakterstemmer på. Nye klipp, talernavn og undertekster må stemme med handlingene.
+- Privat kontor: finn riktig nøkkel, åpne den eksisterende døren, ta dokumentet og spill VHS med faktisk bevegelse/lyd. Prøv pause, strømbrudd og lasting; bevar Noras nøkkel, avisen i dineren og P13s senere funksjon.
+- Kvelden og midnatt: faktisk 18:00-start, vanlig kamerabruk og kjøring, riktige datoer, radio/ON AIR, NPC-er og lampetilstander. Ingen tidlig kapittellås eller full horrorintensitet klokken 18.
+- Tidsreferansene: ny 00:13:47 i alle relevante 1986-tekster/opptak/dokumenter, bevart historisk 1947-tid og korrekt videreføring av eldre saker. Ingen blind søk-og-erstatt av klokkeslett.
+- Trafostasjonen: kjør begge turer med parkering, ut/inn av truck, T01/T02, synlig kontrollresultat og lagring. Vanlig feil og senere avvik må kunne skilles av spilleren.
+- Bygningene: før/etter fra identiske steder, hele den valgte gaten og nærbilder av innganger/vinduer, på kveld/natt/gry. Prøv alle gamle interaksjoner og anomalireferanser mot de nye bygningsskallene. Hele byens utvendige oppgradering må kunne spores i leveransen.
 - Tilstander og migrering: ny sak, gammel sak, sent førstebesøk, manglende første telefon og allerede opplevd byhendelse.
 - Lagring før og etter dokumentasjon, kontroll og etterspill. Gjenåpne fra disk, ikke bare fra minnet.
 - Kapittelregresjon gjennom SARO, STATION 01, Room 6, P13, veivalg, THE EVENT og Continue.
@@ -331,6 +473,9 @@ Viktige lokale kilder:
 - `Signal47/Source/Signal47/Private/S47Caliche.cpp`, `S47Town.cpp`, `S47TownEvents.cpp` og `S47TownLayer.cpp`: vitner, arbeidstid, telefoner, lysbølge og byspor.
 - `Signal47/Source/Signal47/Private/S47Chapter3.cpp`, `S47Chapter4.cpp` og `S47Chapter5.cpp`: turvalg, Room 6, P13 og avreise til gammel vei.
 - `Signal47/Source/Signal47/Public/S47Seen.h`: eksisterende skille mellom hendelse og faktisk blikk/eksponering.
+- `Signal47/Source/Signal47/Public/S47Story.h` og `Private/S47Story.cpp`: dagens 23:41-start, tidshopp, 02:13-tekster og nattomregning. `Signal47/Config/Props/town.json` og `LIGHTING.md` viser fungerende native props-/materialmønster som nye bygg må integreres med.
+
+Eksisterende visuelle referanser er `/home/tom/Desktop/Signal47 konseptbilder/Caliche-byen.png` og `/home/tom/Desktop/Signal47 konseptbilder/Mesa-Diner.png`. Retningen er brukt til bygningsplanen, ikke som påstand om ferdig gameplay. USNO-data for 13. april 1986 ved Roswell er kontrollert for kveldens lysreferanse; [API-beskrivelsen](https://aa.usno.navy.mil/data/api.html) forklarer dato, posisjon og MST-parameter. Den nøyaktige SARO-posisjonen og horisonten må styre endelig lyskalibrering.
 
 Eksterne referanser undersøkt i forrige vurdering:
 
@@ -343,4 +488,4 @@ Eksterne referanser undersøkt i forrige vurdering:
 
 Prosjektbiblioteket ble søkt med behov og teknologi, deretter ett bredere søk. Ingen relevant løsning ble gjenbrukt. Brainstorming og gauntlet-loop er brukt fra `../Automation/Skills/`. `game-design` var ikke tilgjengelig som egen skill.
 
-Neste produksjonsarbeid starter med trinn 0 og hele trinn 1: mål baseline, bygg den tidlige kontrollturen og gjenbesøket med aktive sammenligninger, og kontroller reisen før resten av katalogen produseres. Planen endrer ingen kildekode, assets, lagringer, pakket utgave eller standardstarter.
+Neste produksjonsarbeid starter med trinn 0 og hele trinn 1: mål baseline og lag tidsreferanseoversikten, bygg kvelden og den første sammenhengende gatebiten med aktive sammenligninger og gjenbesøk. Deretter følger trafostasjonen, de øvrige bybygningene og den fremmede tilstedeværelsen etter trinnene over. Planen endrer ingen kildekode, assets, lagringer, pakket utgave eller standardstarter.

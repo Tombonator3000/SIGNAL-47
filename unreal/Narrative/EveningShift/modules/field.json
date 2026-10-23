@@ -1,0 +1,869 @@
+{
+  "module_id": "field",
+  "flags": {
+    "field_reflection_checked": {
+      "default": false,
+      "purpose_nb": "Den vanlige refleksen er kontrollert."
+    },
+    "field_service_read": {
+      "default": false,
+      "purpose_nb": "Det fysiske servicekortet er lest."
+    },
+    "field_reference_matched": {
+      "default": false,
+      "purpose_nb": "Spilleren har matchet det bevarte ståstedet i T02."
+    },
+    "field_followup_unresolved": {
+      "default": false,
+      "purpose_nb": "T02 er foreløpig uavklart; kan gjenåpnes."
+    },
+    "field_cutout_compared": {
+      "default": false,
+      "purpose_nb": "Spilleren har aktivt sammenlignet pappfiguren."
+    },
+    "field_studio_after_heard": {
+      "default": false,
+      "purpose_nb": "Det korte lydetterspillet er faktisk hørt."
+    }
+  },
+  "scenes": [
+    {
+      "id": "N01_ROUTINE",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Første rutinekontroll i mappen på SARO etter telefonoverlevering.",
+      "requires": {
+        "all": [
+          "handover_done"
+        ],
+        "none": [
+          "routine_checked"
+        ]
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "N01_ROUTINE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The service copy records an open inspection complaint. The radio sheet is a programme schedule, not a recording of the broadcast.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "N01_ROUTINE_002",
+          "speaker": "DESCRIPTION",
+          "text": "Both copies are dated. Neither tells you what will happen later tonight.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "routine_checked": true
+        },
+        "give_documents": [
+          "EV_SERVICE_LOG",
+          "EV_RADIO_SCHEDULE"
+        ]
+      }
+    },
+    {
+      "id": "N01_COMPARE",
+      "phase": "signal",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren legger egne dokumenter ved siden av den faktiske utskriften. Ikke automatisk ved å nærme seg bordet.",
+      "requires": {
+        "all": [
+          "routine_checked",
+          "ctx_signal_present"
+        ],
+        "none": [
+          "record_compared"
+        ]
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "N01_COMPARE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The residual is on the new printout. The service copy predates it.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "N01_COMPARE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The old complaint and this printout belong on the same timeline. That does not make them the same event.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [
+        {
+          "id": "N01_CH_COMPARE_EARLIER",
+          "label": "The earlier complaint does not establish the cause of this printout.",
+          "next": "N01_COMPARE_CAUTION",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "N01_CH_COMPARE_CAUSE",
+          "label": "The earlier complaint proves the supply caused the residual.",
+          "next": "N01_COMPARE_WRONG",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "N01_CH_COMPARE_UNCERTAIN",
+          "label": "There is not enough evidence to connect them.",
+          "next": "N01_COMPARE_CAUTION",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "N01_COMPARE_WRONG",
+      "phase": "signal",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Konkret tilbakemelding uten straff. Behold dokumenter og tillat ny vurdering.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "N01_COMPARE_WRONG_001",
+          "speaker": "DESCRIPTION",
+          "text": "The copy records a complaint and an inspection request. It does not record the supply at the moment of the residual.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "N01_COMPARE_WRONG_002",
+          "speaker": "DESCRIPTION",
+          "text": "Use the actual inspection result and the later observation. The dates alone cannot settle the cause.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [
+        {
+          "id": "N01_CH_REVISE",
+          "label": "Record the comparison as unresolved.",
+          "next": "N01_COMPARE_CAUTION",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "N01_COMPARE_CAUTION",
+      "phase": "signal",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Gyldig avslutning av N01, også ved uavklart resultat.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "N01_COMPARE_CAUTION_001",
+          "speaker": "DESCRIPTION",
+          "text": "Comparison filed: earlier service complaint; later residual. A shared cause is not established.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "N01_COMPARE_CAUTION_002",
+          "speaker": "DESCRIPTION",
+          "text": "Keep the actual inspection result with the printout.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "record_compared": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "N02_REFLECTION",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun etter at spilleren faktisk har flyttet ståsted og tatt den vanlige kontrollen.",
+      "requires": {
+        "all": [
+          "ctx_room_quiet"
+        ],
+        "none": [
+          "field_reflection_checked"
+        ]
+      },
+      "direction_nb": "En forklarlig kontroll, ikke en skjult skikkelse. Tilby ståstedshjelp fremfor å kreve perfekt sikting.",
+      "lines": [
+        {
+          "id": "N02_REFLECTION_001",
+          "speaker": "DESCRIPTION",
+          "text": "From the first position, the bright edge resembles a person behind the glass.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "N02_REFLECTION_002",
+          "speaker": "DESCRIPTION",
+          "text": "From the side, it follows the room lamp. The photograph shows the same reflection.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "field_reflection_checked": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "T01_SERVICE_LOG",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Les fysisk servicekort ved trafostasjonens betjeningsfront.",
+      "requires": {
+        "all": [
+          "handover_done"
+        ],
+        "none": [
+          "field_service_read"
+        ]
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "T01_SERVICE_LOG_001",
+          "speaker": "DESCRIPTION",
+          "text": "Inspection circuit. The open complaint describes a weak exterior lamp, not a failure of the observatory receiver.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T01_SERVICE_LOG_002",
+          "speaker": "DESCRIPTION",
+          "text": "The label on the service card matches the marked inspection front.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "field_service_read": true
+        },
+        "give_documents": [
+          "EV_TRAFO_CARD"
+        ]
+      }
+    },
+    {
+      "id": "T01_REQUEST_CHECK",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Velg den fiktive servicekontrollen etter å ha lest kortet.",
+      "requires": {
+        "all": [
+          "field_service_read"
+        ],
+        "none": [
+          "trafo_normal_checked"
+        ]
+      },
+      "direction_nb": "Start en avgrenset verdenstest via adapteren. Scenen setter ikke suksess. Den lokale modellen må faktisk gi forventet kontrollrespons. Ingen inngrep i eksponerte høyspentdeler.",
+      "lines": [
+        {
+          "id": "T01_REQUEST_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The service check compares the panel result with the actual inspection light.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T01_REQUEST_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Watch the marked light after the test. Do not file a result from the indicator alone.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "T01_NORMAL_RESULT",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Vis bare når den faktiske T01-testen er ferdig med forventet lys-/panelresultat.",
+      "requires": {
+        "all": [
+          "field_service_read",
+          "ctx_trafo_service_ok"
+        ],
+        "none": [
+          "trafo_normal_checked"
+        ]
+      },
+      "direction_nb": "Adapteren legger til faktisk dato/klokkeslett i inspeksjonskortet. Ikke bruk et manusfast tidspunkt som målte data.",
+      "lines": [
+        {
+          "id": "T01_NORMAL_RESULT_001",
+          "speaker": "DESCRIPTION",
+          "text": "The completed service check and the inspection light now agree.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T01_NORMAL_RESULT_002",
+          "speaker": "DESCRIPTION",
+          "text": "The ordinary lamp complaint is resolved under this control. Keep the actual completion time on the inspection card.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "trafo_normal_checked": true
+        },
+        "give_documents": [
+          "EV_TRAFO_CHECK"
+        ]
+      }
+    },
+    {
+      "id": "T01_INCOMPLETE",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Forsøk på å avslutte T01 før faktisk verifisert kontroll, uten hard straff.",
+      "requires": {
+        "all": [
+          "field_service_read"
+        ],
+        "none": [
+          "ctx_trafo_service_ok"
+        ]
+      },
+      "direction_nb": "Behold tidligere valg og la spilleren kontrollere på nytt. Ikke gi trafo_normal_checked.",
+      "lines": [
+        {
+          "id": "T01_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The check is not complete. There is no result to file yet.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T01_INCOMPLETE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The service card and the marked light are still available. Return when you can compare them.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "T02_REFERENCE",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Legg EV_DALE_NOTE eller kontaktarket ved kjent ståsted; hovedsporet krever ikke at hele VHS er sett.",
+      "requires": {
+        "all": [
+          "office_evidence_taken",
+          "trafo_normal_checked"
+        ],
+        "none": [
+          "field_reference_matched"
+        ]
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "T02_REFERENCE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The culvert, the two white bands and the nearest pole match the reference sheet.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T02_REFERENCE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The old photograph gives you a place to stand. It does not tell you which supply is carrying the light now.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "field_reference_matched": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "T02_CHECKS",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Etter at ståstedet er identifisert tilbyr panelet de separate fiktive kontrollene.",
+      "requires": {
+        "all": [
+          "field_reference_matched"
+        ],
+        "none": [
+          "trafo_anomaly_checked"
+        ]
+      },
+      "direction_nb": "Vis ikke korrektvalget før faktiske eksterne verdenstilstander er oppfylt. Spilleren får ikke selverklære testene gjennomført ved å velge en tekst.",
+      "lines": [
+        {
+          "id": "T02_CHECKS_001",
+          "speaker": "DESCRIPTION",
+          "text": "The service indication, the local control and the light must be compared as separate observations.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T02_CHECKS_002",
+          "speaker": "DESCRIPTION",
+          "text": "A backup supply or a faulty indicator would be an ordinary explanation. Check those before drawing a conclusion.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [
+        {
+          "id": "T02_CH_VERIFIED",
+          "label": "File the observed disagreement after all checks.",
+          "next": "T02_VERIFIED",
+          "requires": {
+            "all": [
+              "ctx_trafo_isolation_verified",
+              "ctx_trafo_backup_excluded",
+              "ctx_trafo_indicator_checked",
+              "ctx_trafo_lamp_persists"
+            ],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "T02_CH_UNRESOLVED",
+          "label": "Keep this unresolved.",
+          "next": "T02_UNRESOLVED",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "T02_VERIFIED",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Kort konklusjon etter virkelig gjennomførte kontroller, med faktisk lysforløp synlig.",
+      "requires": {
+        "all": [
+          "ctx_trafo_isolation_verified",
+          "ctx_trafo_backup_excluded",
+          "ctx_trafo_indicator_checked",
+          "ctx_trafo_lamp_persists"
+        ],
+        "none": []
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "T02_VERIFIED_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local isolation result is recorded. The checked backup does not account for the light. The indicator has been compared with the independent service check.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T02_VERIFIED_002",
+          "speaker": "DESCRIPTION",
+          "text": "The marked light continues its visible sequence.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T02_VERIFIED_003",
+          "speaker": "DESCRIPTION",
+          "text": "Observation filed: under these controls, the light and the service result disagree. Cause unknown.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "trafo_anomaly_checked": true
+        },
+        "give_documents": [
+          "EV_TRAFO_FOLLOWUP"
+        ]
+      }
+    },
+    {
+      "id": "T02_UNRESOLVED",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Avslutt panelet uten å fabrikere et bekreftet avvik. Hovedhistoriens STATION 01-/Nora-rute er fortsatt tilgjengelig.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "T02_UNRESOLVED_001",
+          "speaker": "DESCRIPTION",
+          "text": "Unresolved. The reference is useful, but the current supply and the visible light have not yet been accounted for together.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T02_UNRESOLVED_002",
+          "speaker": "DESCRIPTION",
+          "text": "Keep the reference and your checks. An unanswered observation is not a failed case.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "field_followup_unresolved": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "A02_COMPARE",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Aktiv sammenligning av den virkelige nåvarianten med tidligere foto eller datert overleveringsreferanse.",
+      "requires": {
+        "all": [
+          "ctx_all_night_active",
+          "handover_done"
+        ],
+        "none": [
+          "field_cutout_compared"
+        ]
+      },
+      "direction_nb": "Først når to faktiske bilder/referanser er tilgjengelige. Ingen automatisk konklusjon fra nærheten til figuren.",
+      "lines": [
+        {
+          "id": "A02_COMPARE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The price sticker and the torn lower corner match the earlier reference.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "A02_COMPARE_002",
+          "speaker": "DESCRIPTION",
+          "text": "It is the same cardboard figure. Its position has changed.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [
+        {
+          "id": "A02_CH_MOVED",
+          "label": "Same object, different position. Who moved it is unconfirmed.",
+          "next": "A02_FILED",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "A02_CH_LIVING",
+          "label": "This proves the figure is alive.",
+          "next": "A02_CAUTION",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "A02_CAUTION",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Spilleren får en presis korreksjon, uten tapte bevis.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "A02_CAUTION_001",
+          "speaker": "DESCRIPTION",
+          "text": "The comparison establishes position and identity. It does not show what moved the figure.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [
+        {
+          "id": "A02_CH_REVISE",
+          "label": "File only what the comparison shows.",
+          "next": "A02_FILED",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "A02_FILED",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Registrer spillerens sammenligning, ikke bare et automatisk nærhetsfunn.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.",
+      "lines": [
+        {
+          "id": "A02_FILED_001",
+          "speaker": "DESCRIPTION",
+          "text": "Filed: same figure, changed position. The cause remains unconfirmed.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "field_cutout_compared": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "P01_STUDIO_AFTER",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kort lydetterspill etter lukket sammenligningspanel, bare når lydsystemet faktisk har spilt lyden.",
+      "requires": {
+        "all": [
+          "field_cutout_compared",
+          "ctx_room_quiet"
+        ],
+        "none": [
+          "field_studio_after_heard"
+        ]
+      },
+      "direction_nb": "Bruk romlig printerlyd og avvent opptatt-tilstander. Ingen Dale eller svarende spøkelse i studioet. Engelsk tekst er lydtekst, ikke fasit om lydens opprinnelse.",
+      "lines": [
+        {
+          "id": "P01_STUDIO_AFTER_001",
+          "speaker": "DESCRIPTION",
+          "text": "From inside the closed studio: the short rhythm of a printer. Then the ordinary carrier again.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "field_studio_after_heard": true
+        },
+        "give_documents": []
+      }
+    }
+  ],
+  "documents": [
+    {
+      "id": "EV_TRAFO_CARD",
+      "title": "Inspection circuit / service card",
+      "kind": "typed",
+      "stamp": "CALICHE JUNCTION / INSPECTION FRONT",
+      "body": [
+        "Local inspection circuit. Compare the identifier on this card with the marked service front before requesting a check.",
+        "Open complaint: weak exterior inspection light. The observatory receiver is a separate system. This card is not an instruction to change receiver calibration.",
+        "The permitted service check has a visible response at the marked inspection light. Compare the completed panel result with that response. File an uncertain result as uncertain."
+      ],
+      "production_nb": "Fiktivt servicekort ved trygg betjeningsfront utenfor avsperrede høyspentdeler. Ikke tegn dette som en virkelig elektrisk koblingsinstruks."
+    },
+    {
+      "id": "EV_TRAFO_CHECK",
+      "title": "Inspection card / completed local check",
+      "kind": "hand",
+      "stamp": "OPERATOR RECORD / CURRENT SHIFT",
+      "body": [
+        "Completed local service check: panel result and inspection light agreed after the ordinary complaint was handled.",
+        "Completion date and time: recorded from the actual check. Observed response retained with the service result.",
+        "This establishes the result of that check at that time. It is not a continuous record of every circuit throughout the night."
+      ],
+      "production_nb": "Bare gis etter ctx_trafo_service_ok. Adapteren påfører faktisk lokal dato og klokkeslett; feltet er ikke en fast 20:xx-gjetning."
+    },
+    {
+      "id": "EV_TRAFO_FOLLOWUP",
+      "title": "Inspection card / later disagreement",
+      "kind": "hand",
+      "stamp": "FIELD FOLLOW-UP / CURRENT SHIFT",
+      "body": [
+        "Reference position matched against the retained field sheet. Local isolation checked; backup explanation excluded under the permitted control; panel indication compared against the independent service result.",
+        "The marked light continued its visible sequence. The result and the observation did not agree under these controls.",
+        "Cause unknown. Keep this with the normal inspection card and the reference sheet. Do not write a source or a distance that was not measured."
+      ],
+      "production_nb": "Bare etter alle fire faktiske T02-verdensbetingelser. Tilføy faktisk dato/klokkeslett og eget referansebilde ved lagring; aldri automatisk ved avspilling av VHS."
+    }
+  ],
+  "media": [],
+  "strings": [
+    {
+      "id": "FIELD_UI_SERVICE",
+      "text": "Read the service card",
+      "context_nb": "Ved fysisk betjeningsfront."
+    },
+    {
+      "id": "FIELD_UI_TEST",
+      "text": "Run the service check",
+      "context_nb": "Fiktiv kontroll; avvent virkelig resultat."
+    },
+    {
+      "id": "FIELD_UI_WATCH",
+      "text": "Compare the result with the inspection light",
+      "context_nb": "Etter at testen er ferdig."
+    },
+    {
+      "id": "FIELD_UI_LOG",
+      "text": "Keep the inspection card",
+      "context_nb": "Når en datert kontroll finnes."
+    },
+    {
+      "id": "FIELD_UI_REFERENCE",
+      "text": "Compare the reference position",
+      "context_nb": "Krever kontaktark eller hovednotat."
+    },
+    {
+      "id": "FIELD_UI_BACKUP",
+      "text": "Check the local backup indication",
+      "context_nb": "En selvstendig kontroll i fiksjonen."
+    },
+    {
+      "id": "FIELD_UI_INDICATOR",
+      "text": "Compare the independent service result",
+      "context_nb": "Kan ikke gjøres riktig bare ved å trykke konklusjon."
+    },
+    {
+      "id": "FIELD_UI_LEAVE",
+      "text": "Leave this unresolved",
+      "context_nb": "Gyldig avslutning uten hovedhistorielås."
+    },
+    {
+      "id": "FIELD_UI_WAIT",
+      "text": "The check is still running.",
+      "context_nb": "Ingen automatisk suksess mens testen pågår."
+    },
+    {
+      "id": "FIELD_UI_N01",
+      "text": "Compare the local records with the printout",
+      "context_nb": "Etter faktisk residual og med dokumenter tilgjengelige."
+    },
+    {
+      "id": "FIELD_UI_NO_REFERENCE",
+      "text": "Keep a reference before deciding what changed.",
+      "context_nb": "Tilby datert referanse uten å kreve et gammelt valgfritt matstopp."
+    }
+  ]
+}
