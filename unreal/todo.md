@@ -4,7 +4,8 @@
 
 - [x] Carpenter 35 mm, Desert 16 mm, Super 8, forbedret VHS og Clean; styrke, lagring og tilgjengelighetskobling.
 - [x] Separat PictureMode med bevart Vhs-blend og capture-kontrakt; privat materialregenerering.
-- [ ] Bygg, pakket kandidat, selvtest, meny-/lagringsprøve, stillbilder og målt kostnad før levering. Se FILM_LOOKS.md.
+- [x] Sluttpakke 8ba39556 med core 04517414, 1298 selvtester, ni funksjons-/UI-/diskprøver, 36 kamerabilder og varm High/1440p-kostnad. Claude-gjennomgang, cache-remapping og hasher PASS. Se FILM_LOOKS.md.
+- [ ] Menneskelig vurdering av levende korn/flimring og komfort; HDR og SteamOS/Deck. Ny full PSO-matrise for hele den endrede verdenen gjenstår før en slik dekningspåstand.
 
 ## Anomaly-pilot, codex/anomaly-pilot, 23. oktober 2026
 

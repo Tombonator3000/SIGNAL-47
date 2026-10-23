@@ -5,6 +5,8 @@
 - Tom bestilte alle filmuttrykkene med særlig vekt på Carpenter: Carpenter 35 mm, Desert 16 mm, Super 8, forbedret VHS og Clean. Implementasjon og faktisk teststatus føres i FILM_LOOKS.md. Nye High/Ultra-profiler får Carpenter; eksisterende eksplisitte valg beholdes.
 - MPC_Web `Vhs` må forbli blend 0..1. Den brukes også i untonemapped-materialer, himmel og verdensliv, og SceneCapture setter den midlertidig til0. Nye enum `PictureMode` er separat. Styrke0 setter Vhs0 og tonepasset respekterer capture-gaten. Ikke legg mode2..4 i det gamle feltet.
 - Generer bare filteret med S47_ONLY=picture etter editorbygg; film_tone.hlsl og MPC-tillegg må inn i cook. Bruk private Web-filer. Tilgjengelighet fryser korn og stopper flimring/registreringsuro/båndjitter. Ingen fps-lås er del av effektene.
+- Sluttkode 8ba39556 inkluderer fellesgren 04517414 (nye antenner/radio). Sluttpakke i ~/scratch-bm/Signal47-film-looks/candidate-core: 1298 selvtester, ni funksjonsprøver, ti kamerakjøringer/36 bilder, MPC-readback, ekte settings-diskomstart og cache-GUID/213 graphics PASS. Samme binær og fem containere hashkontrollert mot alle kjøringer. Carpenter kostet +0,384 til +0,487 ms i korte High/1440p-vinduer; kontrollrom p95 var over 16,667 ms også i Clean. Claude har gjennomgått kode/bilder. Play.sh bruker egen player-profile; ingen installasjon eller publisering. FILM_LOOKS.md har UNVERIFIED for menneskelig temporal komfort, HDR/Deck og ny full-world-PSO-matrise.
+
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
