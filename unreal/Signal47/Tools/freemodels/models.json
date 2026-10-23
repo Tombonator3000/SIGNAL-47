@@ -22,6 +22,7 @@
  "fairheaven_sw84": {
   "category": "Vehicles",
   "size": 5.3,
+  "keep_complete": true,
   "cuts": {
    "door_driver": {
     "box": [[-0.19, 0.31, -0.95], [0.89, 1.30, -0.54]],
