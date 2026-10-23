@@ -34,6 +34,8 @@ class SS47TornPage;
 //                meter's ballistics
 //   the page     T. Vega's page under the spare reel beside the unit (S47DecoderDesk: the answer):
 //                a folded field-book page in pencil, built here, taken in as a node so it can be used
+//                (its near corner curled up off the desk so it catches the lamp, and the reel and the page
+//                together one place to look at)
 //
 // Without the bought unit in the export the homemade deck stays, as in the web version.
 
@@ -83,6 +85,7 @@ public:
 private:
 	TWeakObjectPtr<AS47Web> Web;
 	int32 Node = -1, PageNode = -1;
+	TArray<int32> PageParts;   // under the page: its curled corner, and the area round the reel that takes the trace
 	TUniquePtr<FS47Group> G, PageG;
 	bool bShown = true;
 	// the display: the dark glass and the picture over it, showing the canvas's map
