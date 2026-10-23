@@ -1,6 +1,6 @@
 # Forfatterformat for kveldspakken
 
-Dette er manus- og integrasjonsdata, ikke en aktiv Unreal-loader. Spilltekst er engelsk, produksjonsmerknader norsk. JSON-modulene er sannhetskilden; lesemanus og stemmeliste genereres fra dem.
+Dette er manus- og integrasjonsdata. Unreal leser den deterministiske C++-eksporten gjennom `FS47EveningPack`; `FS47Evening` kobler innkjøring og overlevering til verdenen. Spilltekst er engelsk, produksjonsmerknader norsk. JSON-modulene er sannhetskilden; lesemanus og stemmeliste genereres fra dem.
 
 ## Modul
 

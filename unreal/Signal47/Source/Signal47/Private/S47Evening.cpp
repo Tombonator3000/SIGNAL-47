@@ -47,9 +47,9 @@ void FS47Evening::Stop()
  bEnabled = false; bDialogueOpen = false; SpokenLine.Empty(); RadioSpokenLine.Empty();
  if (M && M->Story) M->Story->bOpeningHeld = false;
  if (M && M->World) M->World->bCommuteVehicle = false;
- if (Visual) Visual->SetParked(false);
+ if (Visual) {Visual->SetParked(false);Visual->Hide();}
 }
-void FS47Evening::Begin(const S47J::FObj& Saved)
+void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
 {
  Stop(); Pack.Reset(); RadioPack.Reset(); bEnabled = true;
  bWorkStarted = false; bRadioOn = true; RadioHold = RadioRest = MusicPosition = 0;
@@ -61,6 +61,12 @@ void FS47Evening::Begin(const S47J::FObj& Saved)
   bRadioOn = S47J::Bool(Saved,TEXT("radioOn"),true);
   RadioHold = S47J::Num(Saved,TEXT("radioHold")); RadioRest = S47J::Num(Saved,TEXT("radioRest"));
   MusicPosition = S47J::Num(Saved,TEXT("musicPosition"));
+ }
+ if (!Saved && bPastOpening)
+ {
+  auto State=Pack.Save(); auto Flags=S47J::Obj(State,TEXT("flags"));
+  for (const TCHAR* K : {TEXT("intro_arrived"),TEXT("intro_completed"),TEXT("handover_done")}) S47J::Set(Flags,K,true);
+  S47J::Set(State,TEXT("phase"),TEXT("early_shift")); Pack.Load(State,Error);
  }
  M->Story->bEveningTimeline = true;
  M->Story->bOpeningHeld = Opening();
@@ -82,6 +88,8 @@ void FS47Evening::Begin(const S47J::FObj& Saved)
  }
  else
  {
+  const auto Visitor=S47J::Obj(Saved,TEXT("personalPark"));
+  if (Visitor) Visual->ParkPersonal(FVector(S47J::Num(Visitor,TEXT("x")),S47J::Num(Visitor,TEXT("y")),S47J::Num(Visitor,TEXT("z"))),S47J::Num(Visitor,TEXT("h")));
   Visual->SetParked(true);
   if (Opening()) { M->Story->SetClock(S47J::Num(Saved,TEXT("clock"),-21600)); RingAt = M->T; }
   bWorkStarted = Pack.Flag(TEXT("handover_done"));
@@ -99,7 +107,7 @@ void FS47Evening::Context()
  auto State = [&](const TCHAR* Ch) { const US47Chapter* C = M->Story->Chapter(Ch); return C && M->Story->Begun.Contains(Ch) ? C->SaveState() : S47J::FObj(); };
  Pack.SetExternal(TEXT("ctx_signal_present"),M->Story->bResidualVisible && M->Story->bEveningTimeline);
  Pack.SetExternal(TEXT("ctx_archive_open"),M->Story->Begun.Contains(TEXT("ch2")));
- Pack.SetExternal(TEXT("ctx_nora_contacted"),S47J::Bool(State(TEXT("ch4")),TEXT("talked")));
+ Pack.SetExternal(TEXT("ctx_nora_contacted"),S47J::Bool(State(TEXT("ch4")),TEXT("greeted")));
  Pack.SetExternal(TEXT("ctx_all_night_active"),K == TEXT("ch5"));
  Pack.SetExternal(TEXT("ctx_power_available"),M->Story->bPowered && !M->Story->bDark);
  Pack.SetExternal(TEXT("ctx_room_quiet"),!M->ModalOpen() && !M->Story->IsCinematic());
@@ -137,10 +145,10 @@ void FS47Evening::ShowDialogue()
  bDialogueOpen = true;
  TArray<S47Kit::FW> Rows;
  const auto* L=Pack.CurrentLine();
- FString Title=S->Channel==TEXT("phone")?TEXT("TELEPHONE / DALE"):S->Channel==TEXT("walkie")?TEXT("WALKIE-TALKIE"):TEXT("MESA DINER");
+ FString Title=S->Channel==TEXT("phone")?TEXT("TELEPHONE"):S->Channel==TEXT("walkie")?TEXT("WALKIE-TALKIE"):S->Channel==TEXT("radio")?TEXT("RADIO"):TEXT("MESA DINER");
  if (L)
  {
-  Rows.Add(S47Kit::Unread(S47Kit::Sub(L->Speaker)));
+  if (L->bRecord) Rows.Add(S47Kit::Unread(S47Kit::Sub(L->Speaker)));
   Rows.Add(S47Kit::Unread(S47Kit::Text(L->Text)));
   FS47DialogueInput Input; Input.Voice=L->VoiceProfile; Input.Lines.Add({L->Speaker,L->Text});
   const bool Available = L->bRecord && Voice->Available(Input);
@@ -218,7 +226,9 @@ void FS47Evening::Parked(const FString& Place)
  {
   Pack.SetPhase(TEXT("handover")); if (!Pack.Start(TEXT("I11_SARO_ARRIVAL"))) return;
   Pack.Advance(); // empty world-triggered node commits arrival once
-  M->Story->SetClock(-21600); M->World->FinishCommute(); Visual->SetParked(true);
+  M->Story->SetClock(-21600);
+  if (const auto* T=M->World->TruckHere()) Visual->ParkPersonal(T->Position,T->Rotation.Y);
+  M->World->FinishCommute(); Visual->SetParked(true);
   M->UI->Toast(Pack.String(TEXT("ARRIVAL_SHIFT_CARD")),5);
   M->UI->Objective(TEXT("SARO // ANSWER THE CONTROL-ROOM PHONE")); RingAt=M->T;
   Changed();
@@ -228,6 +238,7 @@ void FS47Evening::Parked(const FString& Place)
 
 void FS47Evening::RadioStep(double Dt)
 {
+ if (Commute()) { if (auto* T=M->World->CabTruck()) T->SetRadio(S47Radio::DialX(1420),bRadioOn); }
  const bool Audible=Commute() && M->World->bDriving && bRadioOn && !M->ModalOpen();
  const auto* S=RadioPack.CurrentScene();
  if (Audible && !S && RadioRest<=0)
@@ -246,7 +257,7 @@ void FS47Evening::RadioStep(double Dt)
      RadioSpokenLine=L->Id;
      // Readability duration for a silent placeholder, never a claimed recording duration.
      if (RadioHold<=0) RadioHold=FMath::Clamp(2.5+L->Text.Len()/20.0,4.0,11.0);
-     M->UI->Toast(TEXT("RADIO HOST [voice recording pending]: ")+L->Text,float(RadioHold));
+     M->UI->Toast(TEXT("RADIO: LOCAL EVENING HOST [voice recording pending] / ")+L->Text,float(RadioHold));
     }
     RadioHold-=Dt;
     if (RadioHold<=0) { RadioPack.Advance(); RadioSpokenLine.Empty(); if (!RadioPack.CurrentScene()) RadioRest=45; Changed(); }
@@ -306,6 +317,7 @@ void FS47Evening::Step(double Dt)
  Visual->Tick(Commute(),M->World->bDriving,Carrier,Pack.Flag(TEXT("intro_arrived")),Pack.Flag(TEXT("food_bought")),Pack.Flag(TEXT("food_taken")),Pack.Flag(TEXT("food_eaten")),Pack.CurrentScene() && Pack.CurrentScene()->Id==TEXT("I08_WATER"),Pack.Flag(TEXT("arrival_order_burger")));
  if (!TestMode.IsEmpty() && !M->World->bBusy) { const FString Mode=TestMode; TestMode.Empty(); BootstrapTest(Mode); }
  if (bDialogueOpen && !M->ModalOpen()) bDialogueOpen=false;
+ ControlTest(Dt);
 }
 S47J::FObj FS47Evening::Save() const
 {
@@ -313,6 +325,7 @@ S47J::FObj FS47Evening::Save() const
  S47J::Set(O,TEXT("clock"),M->Story->Clock()); S47J::Set(O,TEXT("area"),M->World->Area);
  S47J::Set(O,TEXT("radioOn"),bRadioOn); S47J::Set(O,TEXT("radioHold"),RadioHold); S47J::Set(O,TEXT("radioRest"),RadioRest);
  S47J::Set(O,TEXT("musicPosition"),Music?Music->CurrentTime():MusicPosition);
+ if (Pack.Flag(TEXT("intro_arrived"))) {auto P=S47J::New(); const FVector V=Visual->ParkedPosition(); S47J::Set(P,TEXT("x"),V.X);S47J::Set(P,TEXT("y"),V.Y);S47J::Set(P,TEXT("z"),V.Z);S47J::Set(P,TEXT("h"),Visual->ParkedHeading());S47J::Set(O,TEXT("personalPark"),P);}
  const auto* T=M->World->CabTruck(); if (!T) T=M->World->TruckHere();
  if (Commute() && T)
  {

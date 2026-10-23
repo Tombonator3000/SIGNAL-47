@@ -1,6 +1,6 @@
 # Integrasjon av kveldens manus i Unreal
 
-Dette er en arbeidskontrakt for den kommende implementeringen. Scene-ID-ene er forfatter-ID-er; de er ikke navn på funksjoner som allerede finnes i motoren. Gjenbruk prosjektets kjøring, samtaler, dokumenter, TV-avspilling og lagring. Spilltekst kommer fra modulenes engelske strenger.
+Dette er arbeidskontrakten for runtime. Innkjøring, overlevering og tidslinje er koblet inn i `S47Evening`, `S47EveningPack` og `S47Timeline`; senere scener har datadrevne fase- og resultatporter. Se `../../EVENING_RUNTIME.md` for status og bevis. Scene-ID-ene er forfatter-ID-er; de er ikke navn på funksjoner som allerede finnes i motoren. Gjenbruk prosjektets kjøring, samtaler, dokumenter, TV-avspilling og lagring. Spilltekst kommer fra modulenes engelske strenger.
 
 ## Rekkefølge og fasegrenser
 

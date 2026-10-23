@@ -1,5 +1,7 @@
 # Manuspakke for innkjøring, Dale og det hemmelige kontoret
 
+Runtime for trinn 1 og 2 ligger nå i `S47Evening`/`S47EveningPack`. Se [runtime-rapport og tester](../../EVENING_RUNTIME.md). De senere kontor-, film- og feltfasene har porter; deres verdensinnhold og de 109 opptakene er fortsatt videre arbeid.
+
 Ferdig skrevet engelsk spilltekst for den nye Unreal-fortellingen: vanlig innkjøring gjennom Caliche, valgfritt matstopp, telefonoverlevering 18:00, Dales senere samtaler, kontornøkkel, private dokumenter og et bevegelig VHS-feltopptak. Trafostasjonens to besøk og aktive sammenligninger er også skrevet.
 
 **Kinski/Dale finnes bare på telefon, radio eller walkie-talkie.** Ingen fysisk Dale-figur og ingen Kinski-forteller på TV/VHS. Den siste bruker miljølyd og skriftlige merknader. Ward, Nora og Earl beholder sine roller.

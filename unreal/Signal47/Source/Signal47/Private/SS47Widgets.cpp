@@ -1,4 +1,5 @@
 #include "SS47Widgets.h"
+#include "S47Evening.h"
 #include "S47Keys.h"
 
 #include "Brushes/SlateColorBrush.h"
@@ -150,7 +151,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ObjectiveHead.IsEmpty() ? Place : ObjectiveHead); }).Font(Term(22, 3)).ColorAndOpacity(Amber())]
 					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(TEXT(" // "))).Font(Term(22, 3)).ColorAndOpacity(C(0x7d786d)).Visibility_Lambda([this] { return ObjectiveHead.IsEmpty() && Place.IsEmpty() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })]
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([] { const US47Main* M = Main(); return FText::FromString(M && M->Story ? M->Story->ClockText(false) : FString()); }).Font(Term(22, 3)).ColorAndOpacity(Amber())]
+					+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([] { const US47Main* M = Main(); return FText::FromString(M && M->Evening && M->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : M && M->Story ? M->Story->ClockText(false) : FString()); }).Font(Term(22, 3)).ColorAndOpacity(Amber())]
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, 0)
 				[
@@ -323,7 +324,7 @@ void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 	T->Clock = MoveTemp(Clock);
 	// the speaker over the line; a plain line is stamped with the clock it came at
 	S47Game::SplitCaption(Text, T->Who, T->Line);
-	if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Story->ClockText(false);
+	if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
 	Toasts.Add(T);
 	// at most two lines on screen; older ones fade out instead of vanishing mid-read
 	int32 Live = 0;

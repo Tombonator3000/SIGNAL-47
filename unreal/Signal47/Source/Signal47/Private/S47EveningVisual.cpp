@@ -212,3 +212,10 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	Visible(HeldCup, !bFoodTaken);
 	HeldFood->Refresh();
 }
+
+void FS47EveningVisual::Hide()
+{
+ if (Personal.IsValid()) Personal->SetVisibility(false);
+ if (Service.IsValid()) Service->SetVisibility(false);
+ for (FS47Group* G : {Hood.Get(), CounterFood.Get(), HeldFood.Get()}) if (G) G->SetVisible(false);
+}

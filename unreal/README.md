@@ -4,7 +4,7 @@ Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til
 
 Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen kom først; 22. oktober ble resten av spillet portert (Tom valgte en ren C++-port framfor å kjøre nettversjonens kode i en innebygd nettleser).
 
-Ny fortellerretning og manus: [ANOMALY_PLAN.md](ANOMALY_PLAN.md) og [kveldspakken](Narrative/EveningShift/README.md). Pakken inneholder innkjøring/diner, Dales telefon-/radiodialog, kontorfunn, dokumenter og VHS-manus. Dette er forfatterinnhold for kommende implementering, ikke endringer i det installerte spillet.
+Ny fortellerretning og manus: [ANOMALY_PLAN.md](ANOMALY_PLAN.md) og [kveldspakken](Narrative/EveningShift/README.md). Pakken inneholder innkjøring/diner, Dales telefon-/radiodialog, kontorfunn, dokumenter og VHS-manus. Innkjøring, telefonoverlevering og ny tidslinje har runtime i kandidaten på `codex/evening-runtime`; se [runtime-rapporten](EVENING_RUNTIME.md). Senere kontor-/felt-/filminnhold er fortsatt forfattergrunnlag. Det installerte spillet er ikke oppdatert av denne leveransen.
 
 ## Spill
 

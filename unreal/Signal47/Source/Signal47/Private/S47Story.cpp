@@ -1,4 +1,5 @@
 #include "S47Story.h"
+#include "S47Evening.h"
 #include "S47Walker.h"
 #include "S47World.h"
 #include "S47Three.h"
@@ -235,6 +236,7 @@ void AS47Story::SetLeds(bool bOn)
 
 FString AS47Story::ChapterTitle() const
 {
+	if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->Opening()) return TEXT("Evening Shift");
 	// main.ts chapterTitle()
 	static const TMap<FString, FString> Titles = {
 		{ TEXT("ch1"), TEXT("Chapter 1: The Second Exposure") }, { TEXT("ch2"), TEXT("Chapter 2: The Amended Record") },
@@ -256,6 +258,14 @@ FString AS47Story::SurveyModeText() const
 
 TArray<FS47Task> AS47Story::Tasks() const
 {
+ if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->Opening())
+ {
+  const auto& P=M->Evening->Pack;
+  return {{TEXT("Drive north through Caliche and park at SARO"),P.Flag(TEXT("intro_arrived"))},
+   {TEXT("Stop for supper at Mesa Diner (optional)"),P.Flag(TEXT("arrival_diner_finished"))},
+   {TEXT("Answer Dale on the control-room phone"),P.Flag(TEXT("handover_done"))}};
+ }
+
 	if (const US47Chapter* C = Chapter(ChapterKey); C && C->bActive) return C->Tasks();
 	TArray<FS47Task> T;
 	T.Add({ TEXT("Read Dale's shift log"), bLogRead });

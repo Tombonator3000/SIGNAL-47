@@ -318,6 +318,9 @@ void US47Flow::Boot()
 		int32 Case = 0;
 		FParse::Value(FCommandLine::Get(), TEXT("S47Case="), Case);
 		CaseId = FMath::Clamp(Case, 0, S47Saves::CASES);
+		FString RouteGuard;
+		if (FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),RouteGuard)) CaseId=0; // route controls never mutate a real case
+
 		bDevRun = CaseId == 0;
 		if (CaseId) Saves.SetActive(CaseId);
 		M->Mode = EMode::Play;
@@ -329,10 +332,11 @@ void US47Flow::Boot()
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); }
-		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump))
+		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump) || FParse::Value(FCommandLine::Get(), TEXT("S47EveningRoute="), Jump))
 		{
 		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
-		 M->Evening->BootstrapTest(Jump.IsEmpty()?TEXT("commute"):Jump);
+		 FString Route;
+		 if (!FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),Route)) M->Evening->BootstrapTest(Jump.IsEmpty()?TEXT("commute"):Jump);
 		}
 		else M->Story->Start();
 		// then what is refiled after the story has begun, as the start from the title does
@@ -615,6 +619,7 @@ void US47Flow::StartGame(const FStart& O)
 		const FS47Pose A = M->Web->Pose(TEXT("world.room6.anchors.arrive"));
 		if (A.bValid) M->Player->Place(A.X, A.Z, A.Yaw);
 	}
+	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
 	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player && M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z"))))
@@ -625,8 +630,7 @@ void US47Flow::StartGame(const FStart& O)
 	bStarting = false;
 	// seenSync(); seenQuiet = false: the night's log listens again
 	if (M->Night) M->Night->Restored();
-	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved);
-	else if (O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: the original 02:13 record, photographs and paper stamps are unchanged."));
+	if (!bEveningTimeline && O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: the original 02:13 record, photographs and paper stamps are unchanged."));
 	FadeInSoon(0.25f);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: night started, case %d, %s"), CaseId, Checkpoint.IsEmpty() ? TEXT("new") : *Checkpoint);
 }
@@ -840,7 +844,8 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 	// the strip's lines: the chapter, the clock and the place, the case and when it was last saved
 	AS47Story* S = M->Story;
 	O.Chapter = S ? S->ChapterTitle() : FString();
-	O.Clock = S ? S->Clock() : -1;
+	O.Clock = S ? FMath::Fmod(S->Clock()+86400.,86400.) : -1;
+	if (M->Evening && M->Evening->Commute()) O.Clock=-1;
 	O.Place = PlaceName();
 	static const TSet<FString> SaroRooms = { TEXT("Control room"), TEXT("Records room"), TEXT("South corridor"), TEXT("Photo lab"), TEXT("Truck pad"), TEXT("Service yard"), TEXT("Service road") };
 	if ((M->Web ? M->Web->Area() : FString(TEXT("saro"))) == TEXT("saro") && SaroRooms.Contains(O.Place)) O.Place += TEXT(", SARO");

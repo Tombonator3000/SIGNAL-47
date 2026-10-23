@@ -1810,7 +1810,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	}
 	// a camera that has left the cab sees the whole truck in this very frame
 	N->Truck->ViewFrom(Out.Eye);
-	if (bCommuteVehicle) { N->Truck->Body.SetVisible(false); N->Truck->Shell.SetVisible(false); }
+	if (bCommuteVehicle) { N->Truck->Body.SetVisible(false); N->Truck->Shell.SetVisible(false); N->Truck->SetHeadlights(false); }
 	const bool bView = bDriving || bCamera;
 	if (bView) { LastView = Out; bHaveView = true; }
 	// main.ts: in the cab the prompt is the key, the radio or the way out
@@ -1874,7 +1874,10 @@ void US47World::BeginCommute(const S47J::FObj& SavedCar)
  O.Hint = TEXT("SARO: take the marked turn, drive up the ramp and park. Mesa Diner is open if you want supper first.");
  O.OnStart = [this] { Toast(TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
  TruckAt = TEXT("saro");
- StartTrip(Leg0, TEXT("saro"), O);
+ FString Route;
+ const bool bTest=FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),Route);
+ if (bTest) {float Speed=24;FParse::Value(FCommandLine::Get(),TEXT("S47Auto="),Speed); Autopilot=Speed;}
+ StartTrip(Leg0,bTest && Route!=TEXT("direct")?TEXT("diner"):TEXT("saro"),O);
 }
 
 void US47World::FinishCommute()

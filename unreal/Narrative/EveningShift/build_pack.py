@@ -96,7 +96,7 @@ def validate():
     for key in ("pack_id", "language", "engine_target"):
         string(pack[key], f"pack.{key}")
     enum(pack["language"], ["en-US"], "pack.language")
-    enum(pack["status"], ["authored_not_integrated"], "pack.status")
+    enum(pack["status"], ["authored_not_integrated", "opening_runtime_integrated"], "pack.status")
     if pack["phases"] != PHASES or pack["channels"] != CHANNELS:
         fail("pack", "phase/channel declarations must match FORMAT.md")
     actors = mapping(pack["actors"], "pack.actors")
@@ -171,7 +171,7 @@ def validate():
     production = obj(pack["production"], "production", ["audio_status", "video_status", "runtime_status", "voice_target", "note_nb"])
     for key in ("audio_status", "video_status"):
         enum(production[key], ["pending"], f"production.{key}")
-    enum(production["runtime_status"], ["not_integrated"], "production.runtime_status")
+    enum(production["runtime_status"], ["not_integrated", "commute_handover_integrated_later_phases_gated"], "production.runtime_status")
     target = obj(production["voice_target"], "voice_target", ["sample_rate_hz", "sample_format", "channels"])
     if (type(target["sample_rate_hz"]) is not int or type(target["channels"]) is not int
             or target != {"sample_rate_hz": 48000, "sample_format": "PCM16", "channels": 1}):
@@ -360,7 +360,7 @@ def render(pack, modules):
             subtitle_media.append({"media_id": media["id"], "title": media["title"], "timing_status": "planned_not_produced", "duration_seconds": media["duration_seconds"], "beats": beats})
         for item in module["strings"]:
             script += [f"**{item['id']}**: {item['text']}", "", f"*{item['context_nb']}*", ""]
-    manifest = {"pack_id": pack["pack_id"], "status": "pending", "runtime_status": "not_integrated",
+    manifest = {"pack_id": pack["pack_id"], "status": "pending", "runtime_status": pack["production"]["runtime_status"],
                 "note_nb": "Kun opptaksplan. Ingen lydfiler er generert, målt eller importert.",
                 "planned_format": pack["production"]["voice_target"],
                 "cue_count": len(recordings),

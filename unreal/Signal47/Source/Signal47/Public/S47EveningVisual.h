@@ -20,6 +20,7 @@ public:
 	void ParkPersonal(const FVector& Position, double Heading);
 	/** Restore from intro_arrived. Default visitor bay is (2,0,8), separate from SARO 07. */
 	void SetParked(bool bOn);
+	void Hide();
 	FVector ParkedPosition() const { return PersonalPark; }
 	double ParkedHeading() const { return PersonalHeading; }
 

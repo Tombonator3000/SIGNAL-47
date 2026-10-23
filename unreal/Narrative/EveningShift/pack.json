@@ -2,7 +2,7 @@
   "schema_version": 1,
   "pack_id": "signal47_evening_shift",
   "language": "en-US",
-  "status": "authored_not_integrated",
+  "status": "opening_runtime_integrated",
   "engine_target": "Signal47 Unreal 5.8.4",
   "phases": [
     "commute",
@@ -203,13 +203,13 @@
   "production": {
     "audio_status": "pending",
     "video_status": "pending",
-    "runtime_status": "not_integrated",
+    "runtime_status": "commute_handover_integrated_later_phases_gated",
     "voice_target": {
       "sample_rate_hz": 48000,
       "sample_format": "PCM16",
       "channels": 1
     },
-    "note_nb": "Manus og produksjonsmål. Ingen nye lyd-/videoassets eller import er utført."
+    "note_nb": "Kveldstart og tidslinje har runtime i S47Evening/S47EveningPack. Senere felt-, kontor- og filmoppgaver er porter for videre produksjon. Nye lyd-/videoassets er fortsatt pending."
   },
   "recording_aliases": {
     "D61_FIXED_FRAGMENT_001": "D01_HANDOVER_001"

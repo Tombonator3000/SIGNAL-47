@@ -34,3 +34,16 @@ JSON-validering og eksport kan vise sammenheng i manusdata. Scenariene nedenfor 
 - Genererte filer må være byteidentiske etter `build_pack.py --check`.
 
 Runtime-gater: funksjonell reise, hørbar lyd, faktisk filmbevegelse, bilder, lagring og ytelse er UNVERIFIED i denne forfatterleveransen. Ingen Unreal-bygg er nødvendig for å lese eller kontrollere manuspakken.
+
+
+## Runtimekontroller for trinn 1 og 2
+
+`-S47SelfTest` kjører `FS47EveningPack::SelfTest` med 60 interne sjekker for alle de seksten manus-/tilstandsgrenene over, også avvisning av for tidlige kontor-/VHS-/traforesultater. Det beviser ikke at senere verdensinnhold eller medier er produsert.
+
+`-S47Evening=commute|diner|order|paid|burger|sandwich|water|parking|phone|dusk` er målrettede oppsett med de samme transaksjonene. Diner-/parkeringsoppsettene flytter kamera/tilstand og må merkes som scenariooppsett.
+
+`-S47EveningRoute=direct|burger|sandwich|water -S47EveningShots=/absolutt/testmappe` kjører faktiske kjøre- og gåkontroller gjennom åpningen, med API-valg i dialogen. Ingen menneskelig input påstås. Ruten kontrollerer at tidlig diner ikke starter ch5, at betaling og ventende svar tåler lagring, at faktisk SARO-parkering starter 18:00 én gang, og at D01 gir tre dokumenter én gang. Skumringsbildet bruker et uttrykkelig fremoverhopp til 18:35 etter overleveringen. Testen avslutter selv; bruk isolert `-UserDir` og ikke brukerens aktive sak.
+
+`-S47EveningTimeline -S47Jump=<eksisterende hopp>` prøver den nye tidsplanen ved de gamle regresjonspunktene. Uten `-S47EveningTimeline` beholder de eksisterende hoppene sin legacy-tidslinje.
+
+Aktuelle runtimebevis og gjenstående menneskelige tester står i [runtime-rapporten](../../EVENING_RUNTIME.md).

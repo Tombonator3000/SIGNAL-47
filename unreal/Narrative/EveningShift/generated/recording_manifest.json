@@ -1,7 +1,7 @@
 {
   "pack_id": "signal47_evening_shift",
   "status": "pending",
-  "runtime_status": "not_integrated",
+  "runtime_status": "commute_handover_integrated_later_phases_gated",
   "note_nb": "Kun opptaksplan. Ingen lydfiler er generert, målt eller importert.",
   "planned_format": {
     "sample_rate_hz": 48000,

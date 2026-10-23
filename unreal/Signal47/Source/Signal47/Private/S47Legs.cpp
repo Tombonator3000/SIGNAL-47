@@ -202,6 +202,19 @@ TOptional<FExit> ExitFrom(const FString& Leg, double X, double Z, double Heading
 // survey track out, the track and the northbound lane back.
 const TArray<FVector>& RoadRoute(const FString& Next, double Lz)
 {
+	// Evening commute starts south of town, beyond the old diner's exit route.
+	// Stay in the northbound lane through Caliche instead of aiming diagonally across its buildings.
+	const double DinerZ = S47RoadShape::DINER().Z;
+	if (Lz > DinerZ + 20 && (Next == TEXT("saro") || Next == TEXT("diner")))
+	{
+		const FString TownKey = Next + TEXT(":north-through-town");
+		if (const auto* Hit = RoadWays().Find(TownKey)) return *Hit;
+		FPts TownPoints;
+		const double End = Next == TEXT("saro") ? -160 : DinerZ + 25;
+		for (double Z = S47RoadShape::TOWN().Z1 + 80; Z >= End; Z -= 10) TownPoints.Add({1.8,Z});
+		if (Next == TEXT("diner")) TownPoints.Append({{1.8,DinerZ+23},{1.1,DinerZ+17},{-0.8,DinerZ+11},{-3.5,DinerZ+7},{-6,DinerZ+6},{-9,DinerZ+6}});
+		return RoadWays().Add(TownKey,ToWorld(TownPoints,ORIGINS(TEXT("road"))));
+	}
 	// from the south (the diner, the truck any time): off the lot, into the northbound lane, north
 	const bool bSouth = Lz > 540 && (Next == TEXT("station01") || Next == TEXT("saro"));
 	const FString Key = bSouth ? Next + TEXT("S") : Next;
