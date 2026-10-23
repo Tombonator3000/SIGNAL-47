@@ -1,0 +1,364 @@
+{
+  "M_1420_Acoustic_fabric": {
+    "base_color": [
+      0.25,
+      0.20000000298023224,
+      0.11999999731779099,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.949999988079071,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Black_enamel": {
+    "base_color": [
+      0.017999999225139618,
+      0.023000000044703484,
+      0.019999999552965164,
+      1.0
+    ],
+    "metallic": 0.25,
+    "roughness": 0.44999998807907104,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Brick_red": {
+    "base_color": [
+      0.4300000071525574,
+      0.03500000014901161,
+      0.017000000923871994,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Brushed_aluminium": {
+    "base_color": [
+      0.5,
+      0.5299999713897705,
+      0.5,
+      1.0
+    ],
+    "metallic": 0.7799999713897705,
+    "roughness": 0.3199999928474426,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Clear_glass": {
+    "base_color": [
+      0.18000000715255737,
+      0.23999999463558197,
+      0.2199999988079071,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.11999999731779099,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 0.14,
+    "transmission": 0.949999988079071
+  },
+  "M_1420_Concrete": {
+    "base_color": [
+      0.30000001192092896,
+      0.2800000011920929,
+      0.23999999463558197,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.949999988079071,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0,
+    "textures": {
+      "base_color": "textures/concrete_color.png",
+      "normal": "textures/concrete_normal.png",
+      "roughness": "textures/concrete_roughness.png"
+    }
+  },
+  "M_1420_Desk_walnut": {
+    "base_color": [
+      0.2800000011920929,
+      0.12999999523162842,
+      0.04500000178813934,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.4699999988079071,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0,
+    "textures": {
+      "base_color": "textures/desk_walnut_color.png",
+      "normal": "textures/desk_walnut_normal.png",
+      "roughness": "textures/desk_walnut_roughness.png"
+    }
+  },
+  "M_1420_Galvanized_metal": {
+    "base_color": [
+      0.3199999928474426,
+      0.3499999940395355,
+      0.3199999928474426,
+      1.0
+    ],
+    "metallic": 0.7200000286102295,
+    "roughness": 0.4000000059604645,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Ink": {
+    "base_color": [
+      0.019999999552965164,
+      0.02500000037252903,
+      0.020999999716877937,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.800000011920929,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Ivory_plastic": {
+    "base_color": [
+      0.6800000071525574,
+      0.5899999737739563,
+      0.4099999964237213,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.4300000071525574,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Lamp_glow": {
+    "base_color": [
+      1.0,
+      0.6600000262260437,
+      0.25,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.30000001192092896,
+    "emission": [
+      1.0,
+      0.6600000262260437,
+      0.25,
+      1.0
+    ],
+    "emission_strength": 4.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_On_air": {
+    "base_color": [
+      1.0,
+      0.02500000037252903,
+      0.00800000037997961,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.4000000059604645,
+    "emission": [
+      1.0,
+      0.02500000037252903,
+      0.00800000037997961,
+      1.0
+    ],
+    "emission_strength": 2.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Painted_olive": {
+    "base_color": [
+      0.14000000059604645,
+      0.17000000178813934,
+      0.11999999731779099,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.6000000238418579,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Paper": {
+    "base_color": [
+      0.6600000262260437,
+      0.6000000238418579,
+      0.4300000071525574,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8999999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Stucco_cream": {
+    "base_color": [
+      0.6700000166893005,
+      0.5899999737739563,
+      0.44999998807907104,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8999999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0,
+    "textures": {
+      "base_color": "textures/stucco_color.png",
+      "normal": "textures/stucco_normal.png",
+      "roughness": "textures/stucco_roughness.png"
+    }
+  },
+  "M_1420_Vinyl_green": {
+    "base_color": [
+      0.02800000086426735,
+      0.07000000029802322,
+      0.04500000178813934,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_VU_backlight": {
+    "base_color": [
+      0.949999988079071,
+      0.47999998927116394,
+      0.09000000357627869,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "emission": [
+      0.949999988079071,
+      0.47999998927116394,
+      0.09000000357627869,
+      1.0
+    ],
+    "emission_strength": 0.8999999761581421,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
+  "M_1420_Walnut": {
+    "base_color": [
+      0.1599999964237213,
+      0.06499999761581421,
+      0.023000000044703484,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.6000000238418579,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0,
+    "textures": {
+      "base_color": "textures/walnut_color.png",
+      "normal": "textures/walnut_normal.png",
+      "roughness": "textures/walnut_roughness.png"
+    }
+  }
+}

@@ -1,0 +1,162 @@
+[
+  {
+    "name": "M_Array_Enamel",
+    "base_color_linear": [
+      0.58,
+      0.61,
+      0.59,
+      1
+    ],
+    "metallic": 0.18,
+    "roughness": 0.58,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  },
+  {
+    "name": "M_Array_Reflector",
+    "base_color_linear": [
+      0.77,
+      0.79,
+      0.74,
+      1
+    ],
+    "metallic": 0.3,
+    "roughness": 0.39,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  },
+  {
+    "name": "M_Array_Steel",
+    "base_color_linear": [
+      0.29,
+      0.34,
+      0.33,
+      1
+    ],
+    "metallic": 0.75,
+    "roughness": 0.43,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  },
+  {
+    "name": "M_Array_Dark",
+    "base_color_linear": [
+      0.055,
+      0.075,
+      0.071,
+      1
+    ],
+    "metallic": 0.55,
+    "roughness": 0.5,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  },
+  {
+    "name": "M_Array_Concrete",
+    "base_color_linear": [
+      0.3,
+      0.28,
+      0.23,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.94,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  },
+  {
+    "name": "M_Array_Oxide",
+    "base_color_linear": [
+      0.3,
+      0.13,
+      0.055,
+      1
+    ],
+    "metallic": 0.4,
+    "roughness": 0.85,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  },
+  {
+    "name": "M_Array_Safety",
+    "base_color_linear": [
+      0.65,
+      0.39,
+      0.07,
+      1
+    ],
+    "metallic": 0.2,
+    "roughness": 0.64,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  },
+  {
+    "name": "M_Array_Red",
+    "base_color_linear": [
+      0.4,
+      0.017,
+      0.012,
+      1
+    ],
+    "metallic": 0.1,
+    "roughness": 0.3,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {}
+  }
+]
