@@ -43,7 +43,6 @@ void AS47Walker::Place(double X, double Z, double InYaw)
 {
 	// Player.place: the eye level drops onto the floor at once
 	Pos = FVector(X, 0, Z);
-	if (Web.IsValid() && !Walkable(X, Z)) Web->RestoreDoorwayAt(Pos, Radius);
 	Yaw = InYaw;
 	Pitch = -0.06;
 	FloorY = FloorAt(X, Z);

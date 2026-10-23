@@ -634,10 +634,17 @@ void US47Flow::StartGame(const FStart& O)
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
-	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player && M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z"))))
+	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player)
 	{
-		M->Player->Place(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z")), S47J::Num(Pose, TEXT("yaw")));
-		M->Player->Pitch = S47J::Num(Pose, TEXT("pitch"));
+		const double X = S47J::Num(Pose, TEXT("x")), Z = S47J::Num(Pose, TEXT("z"));
+		// Old saves can have a closed door disabling the threshold under their pose.
+		// Recover that one doorway before applying the normal saved-pose walkability gate.
+		if (!M->Player->Walkable(X, Z) && M->Web) M->Web->RestoreDoorwayAt(FVector(X, 0, Z), M->Player->Radius);
+		if (M->Player->Walkable(X, Z))
+		{
+			M->Player->Place(X, Z, S47J::Num(Pose, TEXT("yaw")));
+			M->Player->Pitch = S47J::Num(Pose, TEXT("pitch"));
+		}
 	}
 	bStarting = false;
 	// seenSync(); seenQuiet = false: the night's log listens again

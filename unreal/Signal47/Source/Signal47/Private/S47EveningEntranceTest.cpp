@@ -190,7 +190,12 @@ void FS47Evening::ControlEntranceTest(double Dt)
    if (!T.Shots.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(Saved, true), *(T.Shots / FString::Printf(TEXT("entrance-%d.disk-save.json"), T.Condition)));
    US47Flow::FStart Restore; Restore.State = Saved; Restore.CaseId = 0; Restore.bDev = true; Restore.Playtime = M->Playtime;
    M->Flow->StartGame(Restore);
-   if (!M->Player->Pos.Equals(Before, 0.015) || M->Story->Clock() != Clock || Pack.Flag(TEXT("handover_done")) != (T.Condition >= 4) || !M->Web->IsDoorOpen(TEXT("doorEast"))) { Fail(TEXT("disk/world restore changed pose, clock, handover or open door")); return; }
+   if (!M->Player->Pos.Equals(Before, 0.015) || M->Story->Clock() != Clock || Pack.Flag(TEXT("handover_done")) != (T.Condition >= 4) || !M->Web->IsDoorOpen(TEXT("doorEast")))
+   {
+    UE_LOG(LogTemp, Error, TEXT("S47: entrance normal restore diagnostics condition %d: expected pose %.9f %.9f %.9f, actual %.9f %.9f %.9f; expected clock %.9f, actual %.9f; expected handover %d, actual %d; east open %d, actual-pose walkable %d"), T.Condition,
+     Before.X, Before.Y, Before.Z, M->Player->Pos.X, M->Player->Pos.Y, M->Player->Pos.Z, Clock, M->Story->Clock(), T.Condition >= 4, Pack.Flag(TEXT("handover_done")), M->Web->IsDoorOpen(TEXT("doorEast")), M->Player->Walkable(M->Player->Pos.X, M->Player->Pos.Z));
+    Fail(TEXT("disk/world restore changed pose, clock, handover or open door")); return;
+   }
    UE_LOG(LogTemp, Display, TEXT("S47: evening entrance PASS fresh FS47SaveStore disk load and full Flow.StartGame restore, condition %d"), T.Condition);
   }
   Stage(2, 1); return;
@@ -245,7 +250,12 @@ void FS47Evening::ControlEntranceTest(double Dt)
      US47Flow::FStart Restore; Restore.State = Saved; Restore.CaseId = 0; Restore.bDev = true; Restore.Playtime = M->Playtime;
      M->Flow->StartGame(Restore);
      if (!M->Player->Pos.Equals(Before, 0.015) || M->Story->Clock() != Clock || !M->Web->IsDoorOpen(TEXT("doorEast")) || !M->Player->Walkable(Before.X, Before.Z) || Pack.Flag(TEXT("handover_done")))
-     { Fail(TEXT("legacy closed-threshold restore must reopen only the occupied door and preserve pose, clock and pre-phone state")); return; }
+     {
+      UE_LOG(LogTemp, Error, TEXT("S47: entrance legacy restore diagnostics: expected pose %.9f %.9f %.9f, actual %.9f %.9f %.9f; expected clock %.9f, actual %.9f; east open %d, expected-pose walkable %d, actual-pose walkable %d, handover %d, opening %d, area %s, enabled %d"),
+       Before.X, Before.Y, Before.Z, M->Player->Pos.X, M->Player->Pos.Y, M->Player->Pos.Z,
+       Clock, M->Story->Clock(), M->Web->IsDoorOpen(TEXT("doorEast")), M->Player->Walkable(Before.X, Before.Z), M->Player->Walkable(M->Player->Pos.X, M->Player->Pos.Z), Pack.Flag(TEXT("handover_done")), Opening(), *M->World->Area, Enabled());
+      Fail(TEXT("legacy closed-threshold restore must reopen only the occupied door and preserve pose, clock and pre-phone state")); return;
+     }
      const auto DoorsAfter = M->Web->DoorStates();
      for (const auto& Pair : DoorsBefore)
       if (Pair.Key != TEXT("east") && (!DoorsAfter.Contains(Pair.Key) || DoorsAfter.FindRef(Pair.Key) != Pair.Value))
