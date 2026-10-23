@@ -33,6 +33,7 @@ double FS47Anomaly::Clock() const { return M && M->Story ? M->Story->Clock() : 0
 void FS47Anomaly::Begin(const S47J::FObj& Saved)
 {
  Data = FS47AnomalyData(); Feedback.Empty();
+ ArchiveUrl = S47J::Str(S47J::Obj(Saved,TEXT("archive")),TEXT("url"));
 #define LOAD_BOOL(Name) Data.Name = S47J::Bool(Saved, TEXT(#Name));
  LOAD_BOOL(bEarlyCamera) LOAD_BOOL(bLegacyCutout) LOAD_BOOL(bRoutineTimeKnown) LOAD_BOOL(N01Routine) LOAD_BOOL(N01Compared) LOAD_BOOL(N01Followed)
  LOAD_BOOL(N02Observed) LOAD_BOOL(N02Control) LOAD_BOOL(N02Compared)
@@ -90,6 +91,14 @@ S47J::FObj FS47Anomaly::Save() const
  SAVE_TIME(N02Clock) SAVE_TIME(N02PhotoClock) SAVE_TIME(ControlClock) SAVE_TIME(P01Clock)
 #undef SAVE_TIME
  if (bScriptReady) S47J::Set(O, TEXT("script"), Script.Save());
+ if (!ArchiveUrl.IsEmpty())
+ {
+  auto Archive=S47J::New();
+  S47J::Set(Archive,TEXT("id"),TEXT("anomaly-archive-display-1710"));
+  S47J::Set(Archive,TEXT("url"),ArchiveUrl);
+  S47J::Set(Archive,TEXT("clock"),-24600.);
+  S47J::Set(O,TEXT("archive"),Archive);
+ }
  return O;
 }
 
@@ -148,6 +157,40 @@ void FS47Anomaly::Step(double Dt)
    }
   }
  }
+ if (M && M->Evening && M->Evening->Enabled() && M->Story)
+ {
+  auto& P=M->Evening->Pack;
+  const bool Quiet=!M->ModalOpen() && !M->Story->IsCinematic() && !M->OneAtATime();
+  const bool AllNight=M->Story->ChapterKey==TEXT("ch5");
+  P.SetExternal(TEXT("ctx_room_quiet"),Quiet);
+  P.SetExternal(TEXT("ctx_all_night_active"),AllNight);
+  bool Mirrored=false;
+  // Bare etterprøvde lokale kontroller speiles som funn. En gyldig uavklart
+  // avslutning gir fremdrift i piloten, men utgir seg aldri for et bekreftet avvik.
+  if (!P.CurrentScene() && Quiet && Data.N02Compared && Data.N02Control &&
+      Data.N02Assessment==TEXT("ordinary lamp silhouette") && !P.Flag(TEXT("field_reflection_checked")))
+  {
+   if (P.SetPhase(TEXT("early_shift")) && P.Start(TEXT("N02_REFLECTION")))
+   { CompleteScene(P); Mirrored=true; }
+  }
+  if (!P.CurrentScene() && AllNight && Data.A02Compared && !Data.bLegacyCutout &&
+      Data.A02Assessment==TEXT("same object, changed position; cause unconfirmed") &&
+      !P.Flag(TEXT("field_cutout_compared")))
+  {
+   if (P.SetPhase(TEXT("all_night")) && P.Start(TEXT("A02_COMPARE")))
+   {
+    CompleteScene(P);
+    if (P.Select(TEXT("A02_CH_MOVED"))) { CompleteScene(P); Mirrored=true; }
+   }
+  }
+  if (!P.CurrentScene() && AllNight && Quiet && Data.P01Heard && !Data.bLegacyCutout &&
+      P.Flag(TEXT("field_cutout_compared")) && !P.Flag(TEXT("field_studio_after_heard")))
+  {
+   if (P.SetPhase(TEXT("all_night")) && P.Start(TEXT("P01_STUDIO_AFTER")))
+   { CompleteScene(P); Mirrored=true; }
+  }
+  if (Mirrored) M->RequestAutosave();
+ }
  if (M && M->Story && !Data.bDatedReference)
  {
   Data.bDatedReference = M->Story->Docs().ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("EV_TOWN_REFERENCE");});
@@ -164,7 +207,8 @@ FS47Doc FS47Anomaly::ReferenceDoc() const
  D.Transcript = D.Page;
  // Arkivkopien er et faktisk runtime-opptak levert med piloten. Den må kunne dekodes.
  // Bevar lagret bildereferanse når kildens nåværende versjon senere byttes ut.
- if (M && M->Story) for (const auto& Old : M->Story->Docs())
+ D.Image=ArchiveUrl;
+ if (D.Image.IsEmpty() && M && M->Story) for (const auto& Old : M->Story->Docs())
   if (Old.Id == D.Id && !Old.Image.IsEmpty()) { D.Image = Old.Image; break; }
  if (D.Image.IsEmpty())
  {
@@ -174,6 +218,7 @@ FS47Doc FS47Anomaly::ReferenceDoc() const
  }
  if (!D.Image.IsEmpty())
  {
+  ArchiveUrl=D.Image;
   D.Title = TEXT("Caliche display / archived reference print");
   D.Stamp = TEXT("DAY OPERATOR / 13 APR 1986 / 17:10");
   D.Page = TEXT("ARCHIVED DISPLAY PRINT / 13 APRIL 1986, 17:10\n\nThe day operator's reference print, filed with the Sunday handover. This is not a photograph taken by the night operator. The cardboard figure is in the souvenir-shop window. Compare the yellow $3.50 sticker, the split lower left edge and the window position.\n\nThe print records identity and position. It does not establish who later moved the figure."); D.Transcript=D.Page;
@@ -330,7 +375,7 @@ bool FS47Anomaly::Assess(const FString& InId, const FString& Choice)
   if (Choice==TEXT("moved") && ReadyShot(Data.ChangedPhoto) && (ReadyShot(Data.ReferencePhoto) || (Data.bDatedReference && S47Image::FromDataUrl(ReferenceDoc().Image))))
   { Data.A02Compared=true; Data.A02Assessment=TEXT("same object, changed position; cause unconfirmed"); Feedback=SceneText(TEXT("A02_FILED")); }
   else if (Choice==TEXT("insufficient"))
-  { Data.A02Compared=true; Data.A02Assessment=TEXT("insufficient evidence"); Feedback=TEXT("Filed as unresolved. No quota or verdict is required to continue to the diner. You can return with the missing frame and revise this comparison."); }
+  { Data.A02Compared=true; Data.A02Assessment=TEXT("insufficient evidence"); Feedback=TEXT("Filed as unresolved. Keep any missing frame with this entry if you obtain it later. The diner records are still worth checking."); }
   else { Feedback=TEXT("Attach a developed later photograph and either your developed earlier frame or the archived display print. Each instant print needs 90 seconds outside the paused panel. A note about a silhouette does not establish identity."); return false; }
   Data.P01Pending = !Data.P01Heard && !Data.bLegacyCutout;
  }
@@ -547,6 +592,12 @@ bool FS47Anomaly::SelfTest(TArray<FString>& Lines)
  Check(TEXT("save v3 extension survives a JSON roundtrip"),B.Data.bEarlyCamera && B.Data.A02Moved && B.Data.P01Heard && B.Data.N02Control);
  Check(TEXT("reference IDs and actual clocks are unchanged"),B.Data.ReferencePhoto==TEXT("real-18") && B.Data.ReferenceClock==-19000.75 && B.Data.ChangedClock==15000.25);
  Check(TEXT("control and aftermath persisted"),B.Data.N02Photo==TEXT("lamp-first") && B.Data.ControlPhoto==TEXT("lamp-side") && B.Data.P01Clock==15123.4);
+ // Syntetisk streng prøver serialisering, ikke avbildning eller bildekvalitet.
+ A.ArchiveUrl=TEXT("synthetic-archive-photo-persistence-standin");
+ auto ArchiveSaved=S47J::Read(S47J::Write(A.Save()));
+ FS47Anomaly ArchiveRestored(nullptr); ArchiveRestored.Begin(ArchiveSaved);
+ const auto Archive=S47J::Obj(ArchiveRestored.Save(),TEXT("archive"));
+ Check(TEXT("archive identity, exact content and original clock survive JSON"),S47J::Str(Archive,TEXT("id"))==TEXT("anomaly-archive-display-1710") && S47J::Str(Archive,TEXT("url"))==A.ArchiveUrl && S47J::Num(Archive,TEXT("clock"))==-24600.);
  Check(TEXT("observation never silently becomes conclusion"),!B.Data.A02Compared && !B.Data.N02Compared);
  Check(TEXT("living claim cannot be filed as verified"),!B.Assess(TEXT("a02"),TEXT("living")) && !B.Data.A02Compared);
  Check(TEXT("insufficient evidence is a valid revisable result"),B.Assess(TEXT("a02"),TEXT("insufficient")) && B.Data.A02Compared && B.Data.A02Assessment==TEXT("insufficient evidence"));

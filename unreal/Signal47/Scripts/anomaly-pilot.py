@@ -17,7 +17,7 @@ HERE = Path(__file__).resolve().parent
 SPEC = importlib.util.spec_from_file_location('s47_unreal_guard', HERE / 'unreal_guard.py')
 GUARD = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(GUARD)
-SCENARIOS = ('pilot', 'late', 'legacy', 'already-seen', 'missing-phone')
+SCENARIOS = ('pilot', 'late', 'legacy', 'already-seen', 'missing-phone', 'archive')
 # Explicit legacy fixtures, not a claim of a continuous playthrough. Continue alone
 # reuses P13's real on-disk case in the same isolated profile, via the title action.
 REGRESSION = (
@@ -63,8 +63,39 @@ GUARD.require_idle = heavy_guard
 os.environ.pop(GUARD.GRACE_ENV, None)
 
 
+def png_review(path):
+    """Reject blank/startup evidence; these metrics do not replace visual QA."""
+    from PIL import Image
+    review = {'path': str(path), 'status': 'FAIL',
+              'rule': 'PNG >=640x360, >5% pixels luma>8, luminance range>24'}
+    if not path.is_file() or path.stat().st_size <= 1000:
+        review['reason'] = 'screenshot absent or <=1000 bytes'
+        return review
+    if path.read_bytes()[:8] != b'\x89PNG\r\n\x1a\n':
+        review['reason'] = 'file is not PNG'
+        return review
+    try:
+        with Image.open(path) as image:
+            width, height = image.size
+            histogram = image.convert('L').histogram()
+        total = width * height
+        low = next(index for index, count in enumerate(histogram) if count)
+        high = max(index for index, count in enumerate(histogram) if count)
+        lit_fraction = sum(histogram[9:]) / total
+        review.update(width=width, height=height, luma_min=low, luma_max=high,
+                      luma_range=high-low, pixels_luma_above_8=lit_fraction,
+                      mean_luma=sum(index*count for index, count in enumerate(histogram))/total)
+        if width >= 640 and height >= 360 and lit_fraction > .05 and high-low > 24:
+            review['status'] = 'PASS'
+        else:
+            review['reason'] = 'blank/dark/startup-sized image fails evidence readability gate'
+    except (OSError, ValueError, StopIteration) as error:
+        review['reason'] = 'PNG decode failed: ' + str(error)
+    return review
+
+
 def png_ok(path):
-    return path.is_file() and path.stat().st_size > 1000 and path.read_bytes()[:8] == b'\x89PNG\r\n\x1a\n'
+    return png_review(path)['status'] == 'PASS'
 
 
 def write_report(out, results):
@@ -143,12 +174,14 @@ def main():
             results.append({'scenario': scenario, 'status': 'UNVERIFIED', 'command': command,
                             'profile': str(profile), 'wall_seconds': 0})
             continue
-        run = GUARD.run_owned(command, evidence / 'runtime.log', timeout=args.timeout, env=os.environ.copy())
+        run = GUARD.run_owned(command, evidence / 'runtime.log', timeout=min(args.timeout, 120) if scenario == 'archive' else args.timeout, env=os.environ.copy())
         log = (evidence / 'runtime.log').read_text(errors='replace')
         failures = [text for text in ('Critical error:', 'Assertion failed:', 'Signal 11 caught',
                                       f'S47: anomaly route {scenario} FAIL') if text in log]
-        shots = ['regression'] if regression_profile else (['reference', 'anomaly', 'comparison', 'notebook'] if scenario in ('pilot', 'missing-phone') else [])
-        missing = [name for name in shots if not png_ok(evidence / (name + '.png'))]
+        shots = ['regression'] if regression_profile else (['archive'] if scenario == 'archive' else ['reference', 'anomaly', 'comparison', 'notebook'] if scenario in ('pilot', 'missing-phone') else [])
+        image_reviews = {name: png_review(evidence / (name + '.png')) for name in shots}
+        (evidence / 'png-review.json').write_text(json.dumps(image_reviews, indent=2) + '\n')
+        missing = [name for name, review in image_reviews.items() if review['status'] != 'PASS']
         absent = [pattern for pattern in expected_patterns if not re.search(pattern, log)]
         if scenario in ('regression-p13', 'regression-continue'):
             records = []
@@ -163,7 +196,7 @@ def main():
             (evidence / 'disk-p13-records.json').write_text(json.dumps(records, indent=2) + '\n')
         ok = run['returncode'] == 0 and not run['stop_reason'] and not run['contention'] and not absent and not failures and not missing
         results.append(dict(run, scenario=scenario, status='PASS' if ok else 'FAIL', profile=str(profile),
-                            failures=failures, missing_screenshots=missing, absent_log_assertions=absent,
+                            failures=failures, missing_or_invalid_screenshots=missing, image_reviews=image_reviews, absent_log_assertions=absent,
                             command=command, evidence=str(evidence),
                             recorded_at=datetime.now(timezone.utc).isoformat()))
         write_report(out, results)

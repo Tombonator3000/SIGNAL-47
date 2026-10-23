@@ -49,6 +49,7 @@ private:
  FS47EveningPack Script;
  bool bScriptReady = false;
  FString Feedback;
+ mutable FString ArchiveUrl;
  double Clock() const;
  bool HasPrintout() const;
  const FS47AlbumShot* Shot(const FString& Id) const;

@@ -16,7 +16,7 @@ public:
 private:
  US47Main* M = nullptr;
  bool bInitialized = false, bDone = false;
- FString Route, Shots, Profile;
+ FString Route, Shots, Profile, InspectState;
  int32 Stage = 0;
  double Elapsed = 0, StageElapsed = 0, Hold = 0;
  TArray<S47J::FObj> Events;

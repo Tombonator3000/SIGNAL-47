@@ -28,7 +28,7 @@ private:
 	US47Main* M = nullptr;
 	FS47Town* Town = nullptr;
 	FS47Obj Lamp, LampShade;
-	bool bBuilt = false;
+	bool bBuilt = false, bDisabled = false;
 	double SoundLeft = 0, SoundRetry = 0;
 	FVector World(const FVector& Local) const;
 	bool Here() const;

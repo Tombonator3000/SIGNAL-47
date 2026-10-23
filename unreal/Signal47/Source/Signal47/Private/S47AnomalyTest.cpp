@@ -1,12 +1,17 @@
 #include "S47AnomalyTest.h"
 
 #include "S47Album.h"
+#include "Containers/Ticker.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 #include "S47Chapter1.h"
 #include "S47Evening.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
+#include "S47Image.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Story.h"
@@ -49,7 +54,14 @@ void FS47AnomalyTest::Fail(const FString& Why)
  if (M && M->Player) M->Player->TestMove.Reset();
  Event(TEXT("FAIL: ")+Why);
  UE_LOG(LogTemp,Error,TEXT("S47: anomaly route %s FAIL stage %d after %.1fs: %s"),*Route,Stage,Elapsed,*Why);
- FPlatformMisc::RequestExitWithStatus(false,1);
+ if (M && M->Web && M->Web->GetWorld())
+ {
+  // Leave at least one rendered frame for the requested failure HUD evidence.
+  Shot(TEXT("failure"));
+  FTimerHandle ExitTimer;
+  M->Web->GetWorldTimerManager().SetTimer(ExitTimer,[] {FPlatformMisc::RequestExitWithStatus(false,1);},1.5f,false);
+ }
+ else FPlatformMisc::RequestExitWithStatus(false,1);
 }
 
 void FS47AnomalyTest::Event(const FString& Action)
@@ -72,14 +84,26 @@ void FS47AnomalyTest::Event(const FString& Action)
 void FS47AnomalyTest::Next(int32 To,const FString& Action,double Wait)
 {
  Stage=To; StageElapsed=0; Hold=Wait; Event(Action);
+ const TMap<FString,int32> Stops={{TEXT("routine"),2},{TEXT("n02"),6},{TEXT("reference"),8},{TEXT("records"),9},{TEXT("anomaly"),13},{TEXT("comparison"),15},{TEXT("p01"),18},{TEXT("notebook"),19}};
+ if (!InspectState.IsEmpty() && Stops.FindRef(InspectState)==To)
+ {
+  bDone=true; Shot(InspectState);
+  UE_LOG(LogTemp,Display,TEXT("S47: anomaly state %s READY; isolated control fixture held for inspection, no human-input claim"),*InspectState);
+ }
 }
 
 void FS47AnomalyTest::Shot(const FString& Name)
 {
  if (Shots.IsEmpty()) return;
  Requested.AddUnique(Name);
- FScreenshotRequest::RequestScreenshot(FPaths::Combine(Shots,Name+TEXT(".png")),true,false);
- Event(TEXT("Rendered HUD screenshot requested: ")+Name);
+ const FString Path=FPaths::Combine(Shots,Name+TEXT(".png"));
+ // ShutterFlash paints black/white in this frame. Capture the settled HUD after
+ // it clears, while the scenario's two-second hold keeps its viewpoint/panel.
+ FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Path](float)
+ {
+  FScreenshotRequest::RequestScreenshot(Path,true,false); return false;
+ }),.6f);
+ Event(TEXT("Rendered HUD screenshot queued after shutter/fade settles: ")+Name);
 }
 
 void FS47AnomalyTest::Pose(const FVector& Feet,const FVector& LookAt)
@@ -103,15 +127,54 @@ bool FS47AnomalyTest::Photograph(const FString& ExpectedTarget)
  C1->Shutter();
  if (M->Night->Album->Shots().Num()!=N+1) {Fail(TEXT("Chapter1.Shutter did not render exactly one album exposure"));return false;}
  const auto& P=M->Night->Album->Shots().Last();
+ // Preserve the actual failed frame before checking its evidence tag. A failure
+ // must remain inspectable; dumping a frame never changes the verdict.
+ if (!Shots.IsEmpty())
+ {
+  const FString Stem=P.Id.Replace(TEXT("@"),TEXT("-"));
+  int32 Comma=INDEX_NONE; TArray<uint8> Bytes;
+  if (P.Url.FindChar(TCHAR(','),Comma) && FBase64::Decode(P.Url.Mid(Comma+1),Bytes))
+  {
+   FFileHelper::SaveArrayToFile(Bytes,*FPaths::Combine(Shots,Stem+TEXT(".jpg")));
+   if (ExpectedTarget==TEXT("anomaly:reference"))
+    FFileHelper::SaveArrayToFile(Bytes,*FPaths::Combine(Shots,TEXT("reference-photo.jpg")));
+  }
+  const auto Info=S47J::New();
+  S47J::Set(Info,TEXT("id"),P.Id); S47J::Set(Info,TEXT("expected_target"),ExpectedTarget);
+  S47J::Set(Info,TEXT("clock"),P.Clock); S47J::Set(Info,TEXT("place"),P.Place); S47J::Set(Info,TEXT("caption"),P.Text);
+  S47J::Set(Info,TEXT("url_length"),P.Url.Len());
+  const auto Player=S47J::New();
+  S47J::Set(Player,TEXT("pos"),TArray<double>{M->Player->Pos.X,M->Player->Pos.Y,M->Player->Pos.Z});
+  S47J::Set(Player,TEXT("floor_y"),M->Player->FloorY); S47J::Set(Player,TEXT("eye"),M->Player->Eye);
+  S47J::Set(Player,TEXT("yaw"),M->Player->Yaw); S47J::Set(Player,TEXT("pitch"),M->Player->Pitch);
+  S47J::Set(Player,TEXT("area"),M->World->Area); S47J::Set(Info,TEXT("player"),Player);
+  S47J::Set(Info,TEXT("photo_loc_ue"),TArray<double>{M->FieldCamera->PhotoLoc.X,M->FieldCamera->PhotoLoc.Y,M->FieldCamera->PhotoLoc.Z});
+  S47J::Set(Info,TEXT("photo_rot_ue"),TArray<double>{M->FieldCamera->PhotoRot.Pitch,M->FieldCamera->PhotoRot.Yaw,M->FieldCamera->PhotoRot.Roll});
+  const auto Targets=S47J::New();
+  for (const auto& T:P.Targets) S47J::Set(Targets,*T.Key,TArray<double>{T.Value.X,T.Value.Y});
+  S47J::Set(Info,TEXT("targets"),Targets);
+  const auto Projected=S47J::New();
+  for (const auto& T:TArray<TPair<FString,FVector>>{{TEXT("lamp"),M->AnomalyWorld->LampAt()},{TEXT("reference"),M->AnomalyWorld->ReferenceAt()},{TEXT("changed"),M->AnomalyWorld->ChangedAt()}})
+  {
+   const auto Q=M->FieldCamera->Project(T.Value); const auto V=S47J::New();
+   S47J::Set(V,TEXT("world"),TArray<double>{T.Value.X,T.Value.Y,T.Value.Z});
+   S47J::Set(V,TEXT("uv"),TArray<double>{Q.U,Q.V}); S47J::Set(V,TEXT("front"),Q.bFront);
+   S47J::Set(Projected,*T.Key,V);
+  }
+  S47J::Set(Info,TEXT("world_projections"),Projected);
+  int32 Width=0,Height=0; TArray<FColor> Pixels;
+  const bool Decoded=S47Image::DecodePixels(P.Url,Pixels,Width,Height);
+  S47J::Set(Info,TEXT("decoded"),Decoded); S47J::Set(Info,TEXT("width"),Width); S47J::Set(Info,TEXT("height"),Height);
+  if (const auto& Last=M->Night->Album->Last;Last)
+  {
+   S47J::Set(Info,TEXT("render_mean"),Last->Mean); S47J::Set(Info,TEXT("render_ms"),Last->Ms);
+   S47J::Set(Info,TEXT("named"),Last->Names); S47J::Set(Info,TEXT("odd"),Last->Odd);
+  }
+  FFileHelper::SaveStringToFile(S47J::Write(Info,true),*FPaths::Combine(Shots,Stem+TEXT(".photo.json")));
+ }
  if (P.Url.Len()<1000 || !P.Url.StartsWith(TEXT("data:image/")) || P.Clock!=Clock || !P.Targets.ContainsByPredicate([&ExpectedTarget](const TPair<FString,FVector2D>& T){return T.Key==ExpectedTarget && T.Value.X>=0 && T.Value.X<=1 && T.Value.Y>=0 && T.Value.Y<=1;}))
  {Fail(TEXT("actual exposure lacks content, original clock or framed target ")+ExpectedTarget);return false;}
  if (M->FieldCamera->bRaised) C1->ToggleCamera();
- if (!Shots.IsEmpty())
- {
-  int32 Comma=INDEX_NONE; TArray<uint8> Bytes;
-  if (P.Url.FindChar(TCHAR(','),Comma) && FBase64::Decode(P.Url.Mid(Comma+1),Bytes))
-   FFileHelper::SaveArrayToFile(Bytes,*FPaths::Combine(Shots,ExpectedTarget.Contains(TEXT("reference")) && !ExpectedTarget.Contains(TEXT("n02"))?TEXT("reference-photo.jpg"):P.Id.Replace(TEXT("@"),TEXT("-"))+TEXT(".jpg")));
- }
  Event(TEXT("Real Chapter1 camera exposure: ")+P.Id+TEXT(" target ")+ExpectedTarget);
  return true;
 }
@@ -167,8 +230,10 @@ void FS47AnomalyTest::Step(double Dt)
  if (!bInitialized)
  {
   bInitialized=true;
-  if (!FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyRoute="),Route)) {bDone=true;return;}
-  if (!TArray<FString>{TEXT("pilot"),TEXT("late"),TEXT("legacy"),TEXT("already-seen"),TEXT("missing-phone")}.Contains(Route)) {Fail(TEXT("unknown anomaly route"));return;}
+  FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyState="),InspectState);
+  if (!FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyRoute="),Route)) {if(InspectState.IsEmpty()) {bDone=true;return;} Route=TEXT("pilot");}
+  if (!InspectState.IsEmpty() && !TArray<FString>{TEXT("routine"),TEXT("n02"),TEXT("reference"),TEXT("records"),TEXT("anomaly"),TEXT("comparison"),TEXT("p01"),TEXT("notebook")}.Contains(InspectState)) {Fail(TEXT("unknown anomaly inspection state"));return;}
+  if (!TArray<FString>{TEXT("pilot"),TEXT("late"),TEXT("legacy"),TEXT("already-seen"),TEXT("missing-phone"),TEXT("archive")}.Contains(Route)) {Fail(TEXT("unknown anomaly route"));return;}
   FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyShots="),Shots);
   if (!Shots.IsEmpty()) IFileManager::Get().MakeDirectory(*Shots,true);
   if (!FParse::Value(FCommandLine::Get(),TEXT("UserDir="),Profile)) {Fail(TEXT("explicit isolated -UserDir required"));return;}
@@ -189,7 +254,15 @@ void FS47AnomalyTest::Step(double Dt)
  {
   M->World->StopDriving(); M->World->Enter(TEXT("saro"));
   M->Story->bEveningTimeline=true; M->Story->Reset(); M->Story->SetClock(S47Timeline::ShiftStart); M->Story->BeginEveningShift(); M->Evening->Begin(nullptr,true);
-  M->Anomaly->Begin(); M->AnomalyWorld->Begin();
+  M->Anomaly->Begin(); M->AnomalyWorld->Begin(); M->UI->Fade(false);
+  if (Route==TEXT("archive"))
+  {
+   // Authored source capture, not the night player's earlier visit or photograph.
+   M->Story->SetClock(-24600); D.bEarlyCamera=true;
+   if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
+   M->World->Enter(TEXT("diner")); Pose(FVector(8017.6,0,2062.3),M->AnomalyWorld->ReferenceAt());
+   Next(92,TEXT("DAY OPERATOR ARCHIVE CAPTURE FIXTURE / 13 APR 1986 17:10; authored source, no player-route claim"),2); return;
+  }
   if (!Full)
   {
    Cut(TEXT("chapter5"));
@@ -269,7 +342,10 @@ void FS47AnomalyTest::Step(double Dt)
  }
  if (Stage==9)
  {
-  if (!M->Anomaly->Assess(TEXT("n01"),TEXT("earlier")) || !D.N01Compared) {Fail(TEXT("N01 material never obtained promised function against actual printout"));return;}
+  if (M->Anomaly->Assess(TEXT("n01"),TEXT("cause")) || D.N01Compared || !D.N01Assessment.StartsWith(TEXT("correction needed"))) {Fail(TEXT("N01 unjustified causal claim was accepted"));return;}
+  if (!RoundTrip(TEXT("n01-correction-pending"))) return;
+  if (D.N01Compared || !D.N01Assessment.StartsWith(TEXT("correction needed"))) {Fail(TEXT("N01 correction choice lost across disk/world reload"));return;}
+  if (!M->Anomaly->Assess(TEXT("n01"),TEXT("revise")) || !D.N01Compared) {Fail(TEXT("N01 material never obtained promised function against actual printout after revision"));return;}
   const FVector Folder=S47Three::ToThree(M->Web->PropLocation(TEXT("logbook")));
   Pose(Folder+FVector(0,0,1.3),Folder);
   M->Anomaly->Use(TEXT("anomaly:n01follow")); M->UI->Close(true);
@@ -337,7 +413,10 @@ void FS47AnomalyTest::Step(double Dt)
   if (Route==TEXT("missing-phone") && M->TownSeen.Contains(TEXT("ev:phone"))) {Fail(TEXT("optional telephone 1 fabricated or started by pilot"));return;}
   if (!RoundTrip(TEXT("p01-followed"))) return;
   M->Flow->OpenTestView(TEXT("notebook:findings"));
-  Shot(TEXT("notebook"));
+  // Exercise the notebook's ordinary selection keys; the new P01 entry is last.
+  TArray<FString> Down; for(int32 I=0;I<32;++I) Down.Add(TEXT("Down"));
+  S47Keys::TestPresses(FString::Join(Down,TEXT(",")),.02f);
+  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this](float){Shot(TEXT("notebook"));return false;}),.8f);
   Next(19,TEXT("Notebook findings after reload; no anomaly quota required for P13"),2);return;
  }
  if (Stage==19)
@@ -356,4 +435,16 @@ void FS47AnomalyTest::Step(double Dt)
   Next(91,TEXT("PASS late/migration/previous-event fallback: insufficient evidence accepted, Earl not summoned, old history retained"),1);return;
  }
  if (Stage==91) Finish();
+ if (Stage==92)
+ {
+  M->Story->SetClock(-24600); // The authored exposure's real clock, not a rewritten caption.
+  if (!Photograph(TEXT("anomaly:reference"))) return;
+  if (D.ReferenceClock!=-24600 || M->Night->Album->Shots().Num()!=1) {Fail(TEXT("archive capture did not retain its actual 17:10 exposure"));return;}
+  Shot(TEXT("archive")); Next(93,TEXT("Actual day-operator 17:10 source rendered and reference-photo.jpg flushed"),2);return;
+ }
+ if (Stage==93)
+ {
+  if (Shots.IsEmpty() || IFileManager::Get().FileSize(*FPaths::Combine(Shots,TEXT("reference-photo.jpg")))<1000) {Fail(TEXT("archive JPEG absent or empty"));return;}
+  Finish();
+ }
 }

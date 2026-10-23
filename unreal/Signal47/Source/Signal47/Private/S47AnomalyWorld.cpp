@@ -6,6 +6,7 @@
 #include "S47Image.h"
 #include "S47Inter.h"
 #include "S47Main.h"
+#include "S47RoadTerrain.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47Timeline.h"
@@ -20,6 +21,8 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 namespace
 {
@@ -49,14 +52,21 @@ namespace
 FVector FS47AnomalyWorld::World(const FVector& P) const { return Town ? Town->Group.LocalToWorld(P) : P; }
 FVector FS47AnomalyWorld::ReferenceAt() const { return World(Town ? Town->PilotCutoutAt(false) + FVector(0, .62, 0) : FVector(20.31, .62, 2062.3)); }
 FVector FS47AnomalyWorld::ChangedAt() const { return World(Town ? Town->PilotCutoutAt(true) + FVector(0, .62, 0) : FVector(17.8, .62, 2044)); }
-FVector FS47AnomalyWorld::LampAt() const { return Lamp ? Lamp.WorldPosition() : World(FVector(-16.2, 1.65, 2133.1)); }
-FVector FS47AnomalyWorld::StudioAt() const { return World(FVector(19.7, 1.4, 2036)); }
+FVector FS47AnomalyWorld::LampAt() const { return Lamp ? Lamp.WorldPosition() : World(FVector(-14.1, 1.65, 2133.1)); }
+FVector FS47AnomalyWorld::StudioAt() const
+{
+	const FS47Obj Studio = Town ? Town->Proxy(TEXT("studio")) : FS47Obj();
+	return Studio ? Studio.WorldPosition() : World(FVector(19.7, 1.4, 2036));
+}
 bool FS47AnomalyWorld::Here() const { return M && M->World && (M->World->Area == TEXT("diner") || M->World->Area == TEXT("road")) && !M->World->bDriving; }
 bool FS47AnomalyWorld::Free() const { return M && M->UI && !M->UI->Modal() && !M->OneAtATime() && !(M->Audio && M->Audio->PhonePlaying()) && M->Story && !M->Story->IsCinematic(); }
 void FS47AnomalyWorld::Toast(const FString& Text) const { if (M && M->UI) M->UI->Toast(Text, 5.5); }
 
 void FS47AnomalyWorld::Begin()
 {
+	// Same-candidate graphics control only; normal play always builds the pilot.
+	bDisabled = FParse::Param(FCommandLine::Get(), TEXT("S47AnomalyWorldOff"));
+	if (bDisabled) return;
 	if (!M || !M->TownLayer || !M->TownLayer->Town || !M->Anomaly || !M->Web || !M->Inter) return;
 	Town = M->TownLayer->Town.Get();
 	// Loading another case must not retain this case's short source or timer.
@@ -74,25 +84,25 @@ void FS47AnomalyWorld::InstallGeometry()
 	TArray<FColor> Back; Back.Init(FColor(39, 29, 21), 4);
 	for (const FString& P : W->PathsUnder(TEXT("world.town.runtime.panels.display."))) W->Obj(P).SetMap(S47Image::FromPixels(Back, 2, 2));
 	const FS47Obj Figure = Town->CutoutObject();
-	Part(W, Figure, TEXT("AnomalyPriceTag"), FVector(-.16, .37, -.028), FVector(.22, .13, .018), 0xdab84e, false, .12f);
-	Part(W, Figure, TEXT("AnomalySplitEdge"), FVector(.265, .17, -.029), FVector(.024, .22, .018), 0x2a1b10);
-	Part(W, Figure, TEXT("AnomalySplitEdgeNick"), FVector(.243, .26, -.03), FVector(.055, .025, .02), 0xa88b60);
+	Part(W, Figure, TEXT("AnomalyPriceTag"), FVector(-.16, .37, -.028), FVector(.22, .13, .018), 0xa57b22, false, 0);
+	Part(W, Figure, TEXT("AnomalySplitEdge"), FVector(.115, .17, -.029), FVector(.012, .15, .012), 0x24190d);
+	Part(W, Figure, TEXT("AnomalySplitEdgeNick"), FVector(.12, .235, -.03), FVector(.04, .018, .014), 0xa88b60);
 	if (const FS47WebNode* N = W->Node(Figure.I); N && N->Comp.IsValid())
 	{
 		UTextRenderComponent* Price = NewObject<UTextRenderComponent>(W, TEXT("AnomalyPriceInk"));
 		Price->SetupAttachment(N->Comp.Get()); Price->SetMobility(EComponentMobility::Movable);
 		Price->SetRelativeLocation(S47Three::ToUE(FVector(-.16, .35, -.041))); Price->SetRelativeRotation(FRotator(0, -90, 0));
-		Price->SetHorizontalAlignment(EHTA_Center); Price->SetWorldSize(5.3f);
-		Price->SetTextRenderColor(FColor(34, 27, 18)); Price->SetText(FText::FromString(TEXT("$3.50"))); Price->RegisterComponent();
+		Price->SetHorizontalAlignment(EHTA_Center); Price->SetWorldSize(6.f);
+		Price->SetTextRenderColor(FColor::Black); Price->SetText(FText::FromString(TEXT("$3.50"))); Price->RegisterComponent();
 	}
 	// A weak opal work lamp over a narrow pale board: head and shoulders from the
 	// pavement, ordinary lamp/bracket/board when the player steps sideways. No live figure.
-	const double Ground = Town->FloorAt(World(FVector(-16.2, 0, 2133.1)).X, World(FVector(-16.2, 0, 2133.1)).Z) - Town->Group.WorldPosition().Y;
-	Lamp = Part(W, Town->Group, TEXT("AnomalyOpalLamp"), FVector(-16.2, Ground + 1.65, 2133.1), FVector(.27, .3, .27), 0xe1cf9b, true, .45f);
-	LampShade = Part(W, Town->Group, TEXT("AnomalyPaleBoard"), FVector(-16.9, Ground + .94, 2133.1), FVector(.10, 1.05, .53), 0xaaa080, false, .08f);
-	Part(W, Town->Group, TEXT("AnomalyLampBracket"), FVector(-16.6, Ground + 1.65, 2133.1), FVector(.78, .045, .045), 0x393832);
-	Part(W, Town->Group, TEXT("AnomalyLampWire"), FVector(-16.95, Ground + 1.92, 2133.1), FVector(.025, .6, .025), 0x292a25);
-	Part(W, Town->Group, TEXT("AnomalyReferenceMark"), FVector(17.6, Town->PilotCutoutAt(false).Y - .2, 2062.3), FVector(.45, .025, .65), 0xb8a67b);
+	const double Ground = Town->FloorAt(World(FVector(-14.1, 0, 2133.1)).X, World(FVector(-14.1, 0, 2133.1)).Z) - Town->Group.WorldPosition().Y;
+	Lamp = Part(W, Town->Group, TEXT("AnomalyOpalLamp"), FVector(-14.1, Ground + 1.65, 2133.1), FVector(.27, .3, .27), 0xe1cf9b, true, .45f);
+	LampShade = Part(W, Town->Group, TEXT("AnomalyPaleBoard"), FVector(-14.8, Ground + .94, 2133.1), FVector(.10, 1.05, .53), 0xaaa080, false, .08f);
+	Part(W, Town->Group, TEXT("AnomalyLampBracket"), FVector(-14.5, Ground + 1.65, 2133.1), FVector(.78, .045, .045), 0x393832);
+	Part(W, Town->Group, TEXT("AnomalyLampWire"), FVector(-14.85, Ground + 1.92, 2133.1), FVector(.025, .6, .025), 0x292a25);
+	Part(W, Town->Group, TEXT("AnomalyReferenceMark"), FVector(17.6, S47RoadTerrain::SurfaceY(17.6, 2062.3) + .025, 2062.3), FVector(.45, .025, .65), 0xb8a67b);
 	M->Inter->Add({ TEXT("anomaly:figure"), Figure, [this] { return M->Anomaly->Data.A02Moved ? TEXT("Inspect the cardboard figure") : TEXT("Record the souvenir display"); }, [this] { InspectFigure(); }, 4.5,
 		[this] { return FString(TEXT("A cardboard souvenir. Yellow $3.50 tag on its lower right; a split in the lower left edge. The same marks can be checked on a photograph.")); }, 9 });
 	M->Inter->Add({ TEXT("anomaly:lamp"), Lamp, [] { return FString(TEXT("Check the pale shape from the side")); }, [this] { InspectLamp(); }, 8,
@@ -135,6 +145,7 @@ bool FS47AnomalyWorld::MayPlay(bool bPending, bool bHeard, bool bPanel, bool bFr
 }
 void FS47AnomalyWorld::Step(double Dt)
 {
+	if (bDisabled) return;
 	if (!Town) Begin();
 	if (!Town || !M->Anomaly || !M->Story || !M->Player) return;
 	auto& D = M->Anomaly->Data; const double Clock = M->Story->Clock();
@@ -206,25 +217,56 @@ void FS47AnomalyWorld::InspectStudio()
 }
 void FS47AnomalyWorld::TagPhoto(FS47AlbumShot& Shot) const
 {
-	if (!Here() || !M->FieldCamera || !M->Anomaly || !M->Player || Shot.Url.IsEmpty()) return;
+	if (bDisabled || !Town || !Here() || !M->FieldCamera || !M->Anomaly || !M->Player || Shot.Url.IsEmpty()) return;
 	const auto& D = M->Anomaly->Data;
+	FString Route;
+	const bool bDiag = FParse::Value(FCommandLine::Get(), TEXT("S47AnomalyRoute="), Route);
+	if (bDiag) UE_LOG(LogTemp, Display, TEXT("S47: anomaly target context shot=%s eye=%s local=%s lamp=%s studio=%s control=%d"), *Shot.Id,
+		*FS47Cam::Of(M->Player, 5000).Pos.ToString(), *Town->Group.WorldToLocal(M->Player->Pos).ToString(), *LampAt().ToString(), *StudioAt().ToString(), D.N02Control ? 1 : 0);
 	auto Tag = [&](const FString& Id, const FVector& P, double Range)
 	{
-		if (DistanceXZ(M->Player->Pos, P) > Range || !M->FieldCamera->InFrame(P, .12, .88, .12, .88)) return;
+		const double Distance = DistanceXZ(M->Player->Pos, P);
+		const bool bInFrame = M->FieldCamera->InFrame(P, .12, .88, .12, .88);
+		if (bDiag) UE_LOG(LogTemp, Display, TEXT("S47: anomaly target %s point=%s distance=%.3f range=%.3f inFrame=%d"), *Id, *P.ToString(), Distance, Range, bInFrame ? 1 : 0);
+		if (Distance > Range || !bInFrame) return;
 		// A centered point behind a wall is not a documented feature. Test the actual
 		// exposure line; hits on the figure itself are the intended surface.
-		FHitResult Hit;
 		FCollisionQueryParams Query(SCENE_QUERY_STAT(S47AnomalyEvidence), true);
-		const FVector Eye = S47Three::ToUE(FS47Cam::Of(M->Player, 5000).Pos);
-		if (M->Web->GetWorld()->LineTraceSingleByChannel(Hit, Eye, S47Three::ToUE(P), ECC_Visibility, Query))
+		FVector Eye = S47Three::ToUE(FS47Cam::Of(M->Player, 5000).Pos);
+		const FVector End = S47Three::ToUE(P);
+		const FS47Obj Target = Id.StartsWith(TEXT("anomaly:n02")) ? Lamp : Town->CutoutObject();
+		const FS47WebNode* Node = M->Web->Node(Target.I);
+		bool bClear = false;
+		// Same rendered-surface contract as FS47Album::Blocked: invisible interaction
+		// boxes and sufficiently transparent materials do not occlude an exposure.
+		for (int32 Tries = 0; Tries < 24; ++Tries)
 		{
-			const FS47Obj Target = Id.StartsWith(TEXT("anomaly:n02")) ? Lamp : Town->CutoutObject();
-			const FS47WebNode* Node = M->Web->Node(Target.I);
-			const USceneComponent* Comp = Hit.GetComponent();
+			FHitResult Hit;
+			if (!M->Web->GetWorld()->LineTraceSingleByChannel(Hit, Eye, End, ECC_Visibility, Query)) { bClear = true; break; }
+			UPrimitiveComponent* Comp = Hit.GetComponent();
 			const bool bTarget = Node && Node->Comp.IsValid() && Comp && (Comp == Node->Comp.Get() || Comp->IsAttachedTo(Node->Comp.Get()));
-			if (!bTarget && Hit.Time < .985f) return;
+			bool bSolid = Comp && Comp->IsVisible();
+			if (bSolid)
+			{
+				if (const UMaterialInterface* Mat = Comp->GetMaterial(FMath::Max<int32>(0, Hit.ElementIndex)))
+				{
+					const EBlendMode Blend = Mat->GetBlendMode();
+					float Opacity = 1.f;
+					Mat->GetScalarParameterValue(FName(TEXT("Opacity")), Opacity);
+					if (Blend == BLEND_Additive || (Blend == BLEND_Translucent && Opacity < .5f)) bSolid = false;
+				}
+			}
+			if (bDiag) UE_LOG(LogTemp, Display, TEXT("S47: anomaly target %s ray hit=%s node=%d at=%s time=%.6f targetNode=%d target=%d solid=%d"), *Id,
+				*GetNameSafe(Comp), M->Web->NodeOf(Comp), *S47Three::ToThree(Hit.ImpactPoint).ToString(), Hit.Time, Target.I, bTarget ? 1 : 0, bSolid ? 1 : 0);
+			if (bTarget) { bClear = true; break; }
+			if (bSolid) return;
+			if (Comp) Query.AddIgnoredComponent(Comp);
+			Eye = Hit.ImpactPoint;
 		}
-		const auto UV = M->FieldCamera->Project(P); if (UV.bFront) Shot.Targets.Add({ Id, FVector2D(UV.U, UV.V) });
+		if (!bClear) return;
+		const auto UV = M->FieldCamera->Project(P);
+		if (bDiag) UE_LOG(LogTemp, Display, TEXT("S47: anomaly target %s clear ray front=%d uv=%.4f,%.4f"), *Id, UV.bFront ? 1 : 0, UV.U, UV.V);
+		if (UV.bFront) Shot.Targets.Add({ Id, FVector2D(UV.U, UV.V) });
 	};
 	// The detailed tag must be legible; a distant glimpse is observation, not evidence.
 	const FVector FigureAt = D.A02Moved ? ChangedAt() : ReferenceAt();

@@ -1,0 +1,32 @@
+{
+  "source": "Actual Chapter1.Shutter -> Album.Expose in isolated day-operator archive fixture",
+  "exposureClock": -24600,
+  "storyDate": "1986-04-13 17:10:00",
+  "sha256": "bf3879b5376af79e845da5d140fda5f4229367db2c15dab09757b3c88260f259",
+  "width": 640,
+  "height": 400,
+  "viewpoint": {
+    "pos": [
+      8017.6,
+      0,
+      2062.3
+    ],
+    "floor_y": 4.438798549175287,
+    "eye": 1.62,
+    "yaw": -1.5707963267948966,
+    "pitch": 0.12626524388684493,
+    "area": "diner"
+  },
+  "targetUV": {
+    "anomaly:reference": [
+      0.5,
+      0.4999999988075749
+    ]
+  },
+  "evidence": "/home/tom/scratch-bm/Signal47-anomaly-pilot/archive-4/archive",
+  "notes_nb": "Ekte runtime-eksponering, ingen generert illustrasjon. Ikke nattoperat\u00f8rens eget foto. Originalfilen er byteidentisk med eksponeringsdumpen. Figuren st\u00e5r i det faktiske vinduet; pris og skade f\u00f8lger samme objekt.",
+  "geometrySourceFiles": {
+    "unreal/Signal47/Source/Signal47/Private/S47Town.cpp": "930bcafd3c1efc7e7e61b967bf91ad23be7be9064da0cbbecb5f1e6361c6dbaa",
+    "unreal/Signal47/Source/Signal47/Private/S47AnomalyWorld.cpp": "f28025650cebe36b97919db764829e2f83cb10ab3f184dff5b92cbedee35a28f"
+  }
+}

@@ -1245,6 +1245,7 @@ TSharedPtr<FJsonObject> AS47Story::SaveRoutine() const
 {
  using namespace S47J;
  auto O=New(); Set(O,TEXT("clock"),ClockSec); Set(O,TEXT("notes"),NotesList);
+ Set(O,TEXT("coffee"),int32(Coffee)); Set(O,TEXT("radioOn"),bRadioOn); Set(O,TEXT("radioHeard"),bRadioHeard); Set(O,TEXT("opsLines"),OpsLines);
  Set(O,TEXT("powered"),bPowered); Set(O,TEXT("k3"),NS.bK3Open); Set(O,TEXT("papers"),NS.Papers); Set(O,TEXT("jacket"),NS.bJacket);
  Set(O,TEXT("rxStage"),Rx.Stage); Set(O,TEXT("f"),Rx.Frequency); Set(O,TEXT("g"),Rx.Gain); Set(O,TEXT("bw"),Rx.Bandwidth); Set(O,TEXT("az"),Rx.Azimuth); Set(O,TEXT("status"),Rx.Status);
  TArray<TSharedPtr<FJsonValue>> Log, Docs;
@@ -1264,6 +1265,9 @@ void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
  ClearTimers(); CurrentPhase=ES47Phase::Shift; bOpeningHeld=false; bCinematic=false; bLogRead=true;
  ClockSec=Num(Saved,TEXT("clock"),S47Timeline::ShiftStart); NotesList=Strs(Saved,TEXT("notes"));
  NS.Papers=Strs(Saved,TEXT("papers")); NS.bJacket=Bool(Saved,TEXT("jacket")); NS.Log.Reset();
+ Coffee=ECoffee(FMath::Clamp(Int(Saved,TEXT("coffee")),0,2)); bRadioOn=Bool(Saved,TEXT("radioOn")); bRadioHeard=Bool(Saved,TEXT("radioHeard")); OpsLines=Strs(Saved,TEXT("opsLines"));
+ if (Saro.IsValid()) { Saro->SetJacketVisible(!NS.bJacket); Saro->SetCoffee(Coffee!=ECoffee::None); Saro->SetCoffeeLevel(Coffee==ECoffee::Drunk?.05:.088); }
+ if (Audio.IsValid() && bRadioOn) Audio->AmRadio(true,Saro.IsValid()?Saro->PropLocation(TEXT("radio")):FVector::ZeroVector);
  for (const auto& V:Arr(Saved,TEXT("log"))) { const auto O=V->AsObject(); if(O) NS.Log.Add({Num(O,TEXT("clock")),Str(O,TEXT("text"))}); }
  DocsList.Reset(); for (const auto& V:Arr(Saved,TEXT("docs")))
  {

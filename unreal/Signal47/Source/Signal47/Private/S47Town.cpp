@@ -90,7 +90,14 @@ FVector FS47Town::PilotCutoutAt(bool bMoved) const
 {
 	// Near the shuttered studio on the return visit, within the same walkable street segment.
 	const double X = bMoved ? 17.8 : 20.31, Z = bMoved ? 2044.0 : 2062.3;
-	return FVector(X, S47RoadTerrain::SurfaceY(X, Z) + (bMoved ? 0 : .22), Z);
+	double Y = S47RoadTerrain::SurfaceY(X, Z);
+	if (!bMoved)
+	{
+		// The building floor is level while the pavement slopes: use the actual window anchor.
+		const FS47Obj Window = Proxy(TEXT("souvenir"));
+		Y = Window ? Group.WorldToLocal(Window.WorldPosition()).Y - .62 : Y + 1.22;
+	}
+	return FVector(X, Y, Z);
 }
 void FS47Town::SetPilotCutout(bool bMoved)
 {
