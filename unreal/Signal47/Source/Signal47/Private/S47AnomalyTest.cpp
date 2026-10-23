@@ -37,7 +37,7 @@ namespace
   for (int32 I=0; I<A.Shots.Num(); ++I)
   {
    const auto& X=A.Shots[I]; const auto& Y=B.Shots[I];
-   if (X.Id!=Y.Id || X.Url!=Y.Url || X.Clock!=Y.Clock || X.Place!=Y.Place || X.Text!=Y.Text || X.bOdd!=Y.bOdd || X.Targets.Num()!=Y.Targets.Num()) return false;
+   if (X.Id!=Y.Id || X.Url!=Y.Url || X.Clock!=Y.Clock || X.Place!=Y.Place || X.Text!=Y.Text || X.bOdd!=Y.bOdd || X.bUnavailable!=Y.bUnavailable || X.Targets.Num()!=Y.Targets.Num()) return false;
    for (const auto& T:X.Targets)
    {
     const auto* Other=Y.Targets.FindByPredicate([&T](const TPair<FString,FVector2D>& P){return P.Key==T.Key;});
@@ -420,7 +420,7 @@ void FS47AnomalyTest::Step(double Dt)
    US47Flow::FStart Start; Start.State=Loaded; Start.CaseId=0; Start.bDev=true; Start.Playtime=M->Playtime;
    M->Flow->StartGame(Start);
    auto* ExpectedChanged=ExpectedAlbum.Shots.FindByPredicate([&OriginalPhoto](const FS47AlbumShot& P){return P.Id==OriginalPhoto.Id;});
-   ExpectedChanged->Url=S47J::Str(Missing,TEXT("url"));
+   ExpectedChanged->Url=S47J::Str(Missing,TEXT("url")); ExpectedChanged->bUnavailable=true;
    bool CarryUnavailable=false;
    for (const auto& V:S47J::Arr(S47J::Obj(M->Flow->Carry,TEXT("album")),TEXT("shots")))
    {
@@ -432,10 +432,32 @@ void FS47AnomalyTest::Step(double Dt)
    {Fail(TEXT("missing-photo restore changed id/clock/targets/other photographs/archive or lost unavailable marker"));return;}
    if (M->Anomaly->Assess(TEXT("a02"),TEXT("moved")) || D.A02Compared)
    {Fail(TEXT("replacement card accepted as proof of moved figure"));return;}
+   // A normal snapshot after loading must keep the missing-image marker in the
+   // album itself. Reopening Carry alone would miss snapshot/transition loss.
+   const auto Snapshot=M->Flow->GameState();
+   auto MissingIn=[&OriginalPhoto](const S47J::FObj& State)
+   {
+    for (const auto& V:S47J::Arr(S47J::Obj(State,TEXT("album")),TEXT("shots")))
+    {
+     const S47J::FObj* O=nullptr;
+     if (V && V->TryGetObject(O) && O && S47J::Str(*O,TEXT("id"))==OriginalPhoto.Id)
+      return S47J::Bool(*O,TEXT("unavailable"));
+    }
+    return false;
+   };
+   if (!MissingIn(Snapshot)) {Fail(TEXT("normal GameState album snapshot discarded unavailable marker"));return;}
+   if (!Shots.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(Snapshot,true),*FPaths::Combine(Shots,TEXT("missing-photo.snapshot.json")));
+   US47Flow::FStart Again; Again.State=Snapshot; Again.CaseId=0; Again.bDev=true; Again.Playtime=M->Playtime;
+   M->Flow->StartGame(Again);
+   const auto ArchiveAgain=S47J::Obj(M->Anomaly->Save(),TEXT("archive"));
+   if (!M->Flow->bDevRun || M->Flow->CaseId!=0 || !MissingIn(M->Flow->Carry) || !MissingIn(M->Flow->GameState()) || !SameAlbum(ExpectedAlbum,M->Night->Album->Data) || ArchiveBefore!=S47J::Str(ArchiveAgain,TEXT("url")) || S47J::Bool(ArchiveAgain,TEXT("unavailable")))
+   {Fail(TEXT("second full snapshot restore lost marker, metadata or independent archive image"));return;}
+   if (M->Anomaly->Assess(TEXT("a02"),TEXT("moved")) || D.A02Compared)
+   {Fail(TEXT("snapshot/transition converted missing-photo replacement into valid evidence"));return;}
    if (!M->Anomaly->Assess(TEXT("a02"),TEXT("insufficient")) || !D.A02Compared || D.A02Assessment!=TEXT("insufficient evidence"))
    {Fail(TEXT("unavailable image prevents honest insufficient-evidence assessment"));return;}
    M->Anomaly->Open(TEXT("a02")); Shot(TEXT("missing-photo"));
-   Next(95,TEXT("PASS missing film: only fixture changed-photo file removed; fresh store/full restore retain id/clock/targets and unavailable=true, archive intact, placeholder rejected as evidence, insufficient accepted"),2);return;
+   Next(95,TEXT("PASS missing film: only fixture changed-photo file removed; fresh disk store + full restore + normal GameState snapshot + second full restore retain id/clock/targets and unavailable=true, archive intact, placeholder rejected before/after transition, insufficient accepted; no foreign-store original-ref preservation claim"),2);return;
   }
   if (!M->Anomaly->Assess(TEXT("a02"),TEXT("moved")) || !D.A02Compared || !D.P01Pending || D.P01Heard) {Fail(TEXT("A02 assessment or deferred P01 after modal invalid"));return;}
   if (!RoundTrip(TEXT("a02-compared"))) return;

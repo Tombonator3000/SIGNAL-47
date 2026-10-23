@@ -112,6 +112,7 @@ const FS47AlbumShot* FS47Anomaly::Shot(const FString& Id) const
 }
 bool FS47Anomaly::ShotUnavailable(const FString& Id) const
 {
+ if (const auto* P=Shot(Id); P && P->bUnavailable) return true;
  if (!M || !M->Flow || Id.IsEmpty()) return false;
  for (const auto& V : S47J::Arr(S47J::Obj(M->Flow->Carry,TEXT("album")),TEXT("shots")))
  {
@@ -124,7 +125,7 @@ bool FS47Anomaly::ShotUnavailable(const FString& Id) const
 const FS47AlbumShot* FS47Anomaly::ReadyShot(const FString& Id) const
 {
  const auto* P = Shot(Id);
- if (!P || ShotUnavailable(Id) || S47Timeline::Night(Clock()) - S47Timeline::Night(P->Clock) < 90) return nullptr;
+ if (!P || P->bUnavailable || ShotUnavailable(Id) || S47Timeline::Night(Clock()) - S47Timeline::Night(P->Clock) < 90) return nullptr;
  TArray<FColor> Pixels; int32 W=0,H=0;
  return S47Image::DecodePixels(P->Url,Pixels,W,H) && W>0 && H>0 ? P : nullptr;
 }

@@ -63,6 +63,8 @@ struct FS47AlbumShot
 	double Clock = 0;
 	FString Place, Text;
 	bool bOdd = false;
+	// En lesbar erstatnings-JPEG er ikke det opprinnelige fotografiet.
+	bool bUnavailable = false;
 	/** Where the things the story looks for are on the print (u, v from the top left), by target. */
 	TArray<TPair<FString, FVector2D>> Targets;
 };
