@@ -197,7 +197,7 @@ namespace
 			// as the operations terminal shows it (story/nightshift.ts, DIR SURVEY.RAW)
 			auto Row = [](const FString& N, int32 B, const FString& Dt) { return S47Text::PadEnd(N, 20) + S47Text::PadStart(FString::FromInt(B), 6) + TEXT("   ") + Dt; };
 			const TArray<FString> Lines = { TEXT("$ DIR SURVEY.RAW"), TEXT(""), TEXT("Directory DUA1:[SURVEY.RAW]"), TEXT(""), Row(TEXT("RUN860412_2338.DAT"), 2214, TEXT("12-APR-1986 23:38")),
-				Row(bEveningTimeline ? TEXT("RUN860413_1800.DAT") : TEXT("RUN860413_2341.DAT"), bEveningTimeline ? 4402 : 2271, bEveningTimeline ? TEXT("13-APR-1986 18:00") : TEXT("13-APR-1986 23:41")), Row(TEXT("RUN860414_0529.DAT"), 0, TEXT("14-APR-1986 05:29")), TEXT(""), TEXT("$ _") };
+				Row(bEveningTimeline ? TEXT("RUN860413_1800.DAT") : TEXT("RUN860413_2341.DAT"), bEveningTimeline ? 4306 : 2271, bEveningTimeline ? TEXT("13-APR-1986 18:00") : TEXT("13-APR-1986 23:41")), Row(TEXT("RUN860414_0529.DAT"), 0, TEXT("14-APR-1986 05:29")), TEXT(""), TEXT("$ _") };
 			for (int32 i = 0; i < Lines.Num(); ++i) G.Text(Lines[i], 64, 74 + i * 30, TEXT("VT323-Regular.ttf"), 22);
 			FS47Pix::FPaint Glow = FS47Pix::Radial(W / 2.0, H / 2.0, 40, W / 2.0, H / 2.0, 320);
 			Glow.Stop(0, 0x3cff78, 0.08).Stop(1, 0x000000, 0);
