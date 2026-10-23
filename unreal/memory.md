@@ -2,6 +2,15 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Kveldstart og tidslinje, Codex 23. oktober 2026
+
+- `codex/evening-runtime` implementerer Toms trinn 1 og 2 i Unreal. Generert manusadapter, egen personbil med delt kjørerigg, valgfri diner/mat, engangsankomst 18:00 og D01 kun i telefon. Tre overleveringspapirer gis én gang; den eksisterende rack-/survey-rutinen fortsetter. Senere kontor/VHS/trafo/anomaly-innhold er datadrevne porter, ikke implementert verdensinnhold.
+- Nye saker har `v=3`, `timelineVersion=2`, residual 00:13:47 og kapittelminimum 02:20/03:20/04:10. Midnatt krysses på en sammenhengende akse. Gamle saker beholder eksplisitt legacy-versjon og 02:13-referanser. 1947-opptaket og finalen 05:29:00 til 05:29:47 er urørt. Hele gammel/ny-tabellen og komprimeringsreglene står i `EVENING_TIMELINE.md`.
+- `printoutAt` er nå faktisk hentetid, separat fra solve/event. Gamle saves lagret aldri den tiden: en gjenopprettet utskrift merkes derfor TIME NOT RECORDED / reconstructed legacy copy. Fotografier omskrives ikke. Ikke oppgi en rekonstruert hentetid som original.
+- Kveldsradioen har egen vert og separat mottakerkø. De 109 nye takes mangler fortsatt; taus tekst er tydelig merket pending. Eksisterende countrymusikk har musikkrom mellom innslagene. Stemmeimporthjelpen produserer ingen stemmer. Nye rolleopptak virker uavhengig av generell Kinski-opplesning.
+- Kveldshimmel og native sol bruker `Daylight()`; historiens `Dawn()` er fortsatt bare morgen. Stjernene holdes borte gjennom tidlig skumring. Destructor skal bare frigjøre egen lyd: `Evening::Stop()` berører levende verdensnoder og skal ikke kalles under sen UObject-purge.
+- Faktiske testresultater, bilder og kandidatplassering oppdateres i `EVENING_RUNTIME.md`. Ingen push/PR/installasjon er bestilt. Claude integrerer; standardstarteren skal ikke byttes av denne grenen.
+
 
 ## Grafikkpass levert, 23. oktober 2026
 
@@ -17,11 +26,11 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 ## Gameplayretning (2026-10-23)
 
 - Tom sluttet seg til aktiv anomaly spotting, mer praktisk bruk av Caliche og gradvis UFO-/alienopptrapping, og ba om en utdypet plan. Se `ANOMALY_PLAN.md`. Detaljene er anbefalt design; ny gameplay er ikke implementert.
-- Tom ba senere om tidligere start, ny trafostasjon i ørkenen og bedre bybygninger. Planen er revidert med anbefalt 18:00-start 13. april og residual 00:13:47 den 14. april, i stedet for 02:13:47. Dette er foreslått ny tidslinje; spillet er ikke retimet. Finalen 05:29 beholdes, og historiske 1947-klokkeslett skal ikke masseflyttes.
+- Tom ba senere om tidligere start, ny trafostasjon i ørkenen og bedre bybygninger. Planen fikk 18:00-start 13. april og residual 00:13:47 den 14. april, i stedet for 02:13:47. Tidslinjen er nå implementert på `codex/evening-runtime`; se den nyere statusen ovenfor. Finalen 05:29 beholdes, og historiske 1947-klokkeslett skal ikke masseflyttes.
 - Tom valgte deretter spillbar innkjøring før skiftet: lystig radio gjennom Caliche, valgfritt matstopp i dineren, videre til SARO der skiftet begynner 18:00. Innledningen har egen fase uten løpende skiftklokke, slik at matstopp ikke gir tidstilbakesprang. Tidlig dinerbesøk aktiverer ikke ch5/P13/Ward. Reisekjøretøy og servicepickup holdes adskilt.
 - N01s grunnmateriale finnes nå i overleveringsmappen på SARO; innkjøring blir ikke en obligatorisk papirjakt. Materialet brukes mot utskriften etter midnatt. Dokumentert byreferanse må finnes også når matstopp hoppes over. Earl har Night Line 00:00–04:00, ikke kveldsvakt; ny datoakse, radiosending, butikker, NPC-er og totimerskravet må tåle midnatt.
 - Tom presiserte at Kinski/Dale KUN er på telefon, radio eller walkie-talkie. Overleveringen 18:00 er en telefon etter at Dale har dratt; ingen fysisk Dale-figur eller Kinski-forteller på VHS. Egen rollebasert Dale-dialog må skilles fra generell opplesning. Ward beholder rollen som vakthavende.
-- Manuspakken i `Narrative/EveningShift` har 61 scener, 45 valg, 10 dokumenter, 39 UI-tekster og et 72 sekunders VHS-manus. 110 talecues bruker 109 unike takes fordi et fast Dale-fragment gjenbruker første overleveringslinje. Engelske JSON-moduler er sannhetskilde, med generert lesemanus, stemme-CSV, opptaksmanifest og undertekstgrunnlag. Lyd/video står pending og runtime er ikke integrert.
+- Manuspakken i `Narrative/EveningShift` har 61 scener, 45 valg, 10 dokumenter, 39 UI-tekster og et 72 sekunders VHS-manus. 110 talecues bruker 109 unike takes fordi et fast Dale-fragment gjenbruker første overleveringslinje. Engelske JSON-moduler er sannhetskilde, med generert lesemanus, stemme-CSV, opptaksmanifest og undertekstgrunnlag. Åpningens runtime er integrert på `codex/evening-runtime`; senere faser er porter. Lyd/video står pending.
 - `build_pack.py --check` validerer referanser, flagg, kanaler, medietidsdekning og opptaksalias. 14 offline forfatterruter/porter er prøvd, inklusive matvalg, kontor uten VHS og faktiske kontrollkrav. Dette er ikke ekte kjøring eller menneskelig spilltest. Ingen ny stemmetjeneste er installert.
 - Ny D02 bruker eksisterende låste Operations office-dør: en fysisk, merket reservenøkkel finnes under arkivundersøkelsen. Kontoret viser Dales hemmelige UFO-/alienresearch gjennom utklipp, filer/kontaktark og faktisk bevegelig VHS/TV med lyd. Ett feltopptak gir konkret kontroll ved trafostasjonen. Bevar Noras nøkkel, den brede 1947-avisen og P13. Dale er ikke automatisk skurk, allvitende eller et svarende avtrykk.
 - Gatetelefonens to hendelser og dinertelefonens Ward-samtale har forskjellige krav. A gjennom byen er ikke C ved finalen. Nye byankomster må ikke starte ch5 eller den gamle veien.

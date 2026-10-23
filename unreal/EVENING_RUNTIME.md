@@ -10,31 +10,35 @@ Faktisk parkering på SAROs pad setter `intro_arrived` og starter skiftklokka 18
 
 `FS47EveningPack` kompilerer den deterministiske JSON-eksporten direkte. Det finnes ikke en håndskrevet kopi av manusdialogen. Bare navngitte trigger-scener kan startes; choice-scener krever et gyldig valg. Betalingen og den ventende serveringsscenen ligger i samme serialiserte tilstand. Dokument-ID-er tildeles én gang. Eksterne resultatflagg settes fra faktisk runtime, og kan ikke skrives av manusets effekter. Senere faser er datadrevne porter, ikke ferdig kontor-/trafostasjon-/VHS-spill.
 
-Lokalverten i innkjøringen har egne undertekster og taus taleplassholder merket «voice recording pending». Ingen Earl- eller Kinski-opptak erstatter verten. Den eksisterende klarerte countrymusikken får et 45 sekunders mellomrom mellom innslagene. Radioens linje, lesetid, av/på og musikkposisjon lagres separat fra den fysiske samtalen. Utstigning og samtaler pauser mottakeren. Nye takes og VHS er fortsatt egen senere produksjon. Den strenge kataloghjelperen i `Scripts/evening-voice-catalog.py` måler faktiske godkjente WAV-filer; den produserer ingen stemme.
+Lokalverten i innkjøringen har egne undertekster og taus taleplassholder merket «voice recording pending». Ingen Earl- eller Kinski-opptak erstatter verten. Den eksisterende klarerte countrymusikken får et 45 sekunders mellomrom mellom innslagene. Radioens linje, lesetid, av/på og musikkposisjon lagres separat fra den fysiske samtalen. Utstigning og samtaler pauser mottakeren; samme undertekst vises ved retur. En separat mottakerfiltrert opptakskø bruker faktiske evening-takes når de senere importeres, med målt klippvarighet og rolle/eksakt tekst. Et avbrutt opptak starter gjeldende linje fra begynnelsen. Nye takes og VHS er fortsatt egen senere produksjon. Den strenge kataloghjelperen i `Scripts/evening-voice-catalog.py` måler faktiske godkjente WAV-filer; den produserer ingen stemme.
 
 ## Tid, lys og gamle saker
 
 Se hele tabellen med gamle og nye hendelsestider i [EVENING_TIMELINE.md](EVENING_TIMELINE.md). Ny tidslinje har residual 00:13:47, kapittelporter 02:20/03:20/04:10 og uendret finale 05:29:00 til 05:29:47. 1947-opptaket har sin egen uendrede tid.
 
-Vanlig aktivitet leder til tidskomprimering i den eksisterende survey-faden; spilleren må ikke vente seks virkelige timer. Senere kapitteloverganger går bare fremover. Ny natt holder fortellertid ved 05:20 ved svært lang frivillig utforskning, og siste kjøretur bruker avstand, slik at ingen avreise eller rygging ruller klokka tilbake. Denne komprimeringen er ikke en måling av total spilletid.
+Vanlig aktivitet leder til tidskomprimering i den eksisterende survey-faden; spilleren må ikke vente seks virkelige timer. Ved svært lang aktivitet før signalet holdes fortellertiden ved 00:13:41 frem til survey-utløsningen. Senere kapitteloverganger går bare fremover. Ny natt holder fortellertid ved 05:20 ved svært lang frivillig utforskning, og siste kjøretur bruker avstand, slik at ingen avreise eller rygging ruller klokka tilbake. Disse fristene er komprimeringsregler. Total spilletid er ikke målt.
 
-Lagringsdata har `v=3`, med eksplisitt `timelineVersion=2` for nye saker. Saker uten tidslinjeversjon blir uttrykkelig merket `timelineVersion=1` ved ny lagring og beholder den gamle 02:13-historien. Ingen gammel bildedato, utskrift eller dokumenttekst omskrives. En legacy-merknad legges i notatboken. Åpningen kan lagres før, under og etter bestillingen og under overleveringen. Kort transport/parkering fullføres før disk-snapshot. Den gamle prologens survey har fortsatt kontrollpunkt ved residualen.
+Lagringsdata har `v=3`, med eksplisitt `timelineVersion=2` for nye saker. Saker uten tidslinjeversjon blir uttrykkelig merket `timelineVersion=1` ved ny lagring og beholder den gamle 02:13-historien. Fotografier og lagrede dokumenttekster omskrives ikke. En eldre feil laget utskriftens hentetid på nytt ved lasting; nye saker lagrer nå faktisk `printoutAt`. Gamle saves hadde aldri lagret dette tidspunktet og får derfor en uttrykkelig «TIME NOT RECORDED / reconstructed legacy copy», fremfor en oppdiktet originaltid. En legacy-merknad forklarer dette i notatboken. Åpningen kan lagres før, under og etter bestillingen og under overleveringen. Kort transport/parkering fullføres før disk-snapshot. Den gamle prologens survey har fortsatt kontrollpunkt ved residualen.
 
 Ettermiddag, vestsol, skumring og blåtime bruker den levende himmelen og native sol/skylight. Morgenkurven `Dawn()` beholder sin tidligere betydning for historien. Felles visuelle dagslysporter bruker `Daylight()`. Detaljer og kurver i [EVENING_SKY.md](EVENING_SKY.md).
 
 ## Kontrollgrunnlag
 
-- Editorbygg: PASS etter retting av UE 5.8 JSON-nøkler og kompilatorfeil. Endelig kildebygg oppdateres etter runtimeprøvene.
-- Første `-S47SelfTest`: PASS, 1245 ytre sjekker; pakktesten inneholder dessuten 60 interne kontrollpunkter. Dette er API-/tilstandstester, ikke menneskelig gjennomspilling.
+- Editorbygg: PASS etter retting av UE 5.8 JSON-nøkler og kompilatorfeil. Siste bygg 11 inkluderer tids-/lagrings-/radio-/avslutnings- og skumringsrettelsene, uten UBA.
+- Linux Development-pakke: PASS, BuildCookRun 183,70 sekunder, ingen materialfallback ved cook. Kandidaten ble bygget fra `d3000904`; senere endringer er dokumentasjon. Binær-/pakkefilene og krediteringen er hashet i `candidate-manifest.json`.
+- Siste pakkede `-S47SelfTest`: PASS, 1254 ytre sjekker; pakktesten inneholder dessuten 60 interne kontrollpunkter. Dette er API-/tilstandstester, ikke menneskelig gjennomspilling.
 - Pakkeeksport `build_pack.py --check` og stemmekatalogens 12 isolerte kontroller: PASS. Katalogtestene brukte midlertidige syntetiske PCM-filer, ikke produksjonsstemmer.
-- Bildet av innkjøringen ble faktisk rendret i Unreal. Det avdekket klokkeslett i to andre HUD-felt; disse er rettet og skal tas på nytt.
-- Sammenhengende kjøring, diner, telefon, disk-last og pakket regresjon: under arbeid. Resultat og bildehenvisninger oppdateres før levering.
+- Innkjøring og faktisk SARO-parkering: nye bilder er visuelt gjennomgått, med «LATE AFTERNOON» uten minutt-HUD og varmt 18:00-lys uten stjerner. Første direkte gåtest krysset rekkverket og ble rettet til den faktiske åpningen. Se også lysrapportens avgrensning.
+- Burgerens betaling, ventende svar og spillerposisjon: PASS gjennom faktisk disk-snapshot, ny `FS47SaveStore` og full `Flow.StartGame`-lasting. Ett kjøp, ingen duplisering, ingen ch5. Bestillingsbildet viser dialog og 3D-mat i hånden.
+- Pakket direkte rute: PASS COMPLETE og normal exit, 183,1 sekunder aktiv kontrollrute og 2647,4 kjørte meter. Fysisk kjøring/gåing, engangsankomst, telefonens disk-/verdenslasting, tre dokumenter én gang og frigitt gammel rutine er kontrollert. Dette er utviklerkontrollere og API-dialog, ikke menneskelige tastetrykk.
+- Første komplette editor-burgerrute bestod selve reisen, men feilet ved avslutning fordi `Stop()` traff allerede fjernede verdensnoder. `fc8d839b` retter livsløpet; den pakkede direkte ruten avslutter rent. Første 18:35-bilde viste for mange stjerner; `9e7a921a` retter dempingen, og pakket retak er visuelt PASS.
+- Pakkede matgrener og kapittelregresjon: under arbeid. Resultat og bildehenvisninger oppdateres før levering.
 - Menneskelig gjennomspilling, lytting og målt total spilletid: UNVERIFIED. Faktisk film/trafo/kontor/anomaly spotting hører til senere trinn.
 
-Evidens ligger i `/home/tom/scratch-bm/Signal47-evening-runtime/`. Kilde, editor-kandidat, pakket kandidat og installert standard holdes atskilt. Alle tester bruker isolert `UserDir`.
+Evidens ligger i `/home/tom/scratch-bm/Signal47-evening-runtime/`. Kandidaten er `candidate/Linux/Signal47.sh` i den mappen. Kilde, editor-kandidat, pakket kandidat og installert standard holdes atskilt. Alle tester bruker isolert `UserDir`. Kandidaten er ingen installert spillutgave eller fullnattgodkjenning.
 
 ## Integrasjon og kilder
 
-`unreal-port-core` er flettet inn igjen i `f0fe3293`, inklusive Claudes bensinstasjon. Bensinstasjonens modell, `Config/Props/town.json` og `S47Props` har bare innkommende mergeendringer, ingen ny implementering fra denne oppgaven.
+`unreal-port-core` er flettet inn igjen i `f0fe3293` og `704b0d21`, sist med `ac72d336` og Claudes oppdaterte bensinstasjonslys. Bensinstasjonens modell, `Config/Props/town.json` og `S47Props` har bare innkommende mergeendringer, ingen ny implementering fra denne oppgaven.
 
 Prosjektbiblioteket ble søkt først og én gang bredere. EngineWire-profilen ble lest; den er en UNVERIFIED editorverktøyreferanse og gir ingen kompatibel runtimeadapter å gjenbruke. Implementeringen bruker prosjektets egne systemer. GitHub-kontroll 23. oktober viste `PRIVATE`, standardgren `main`, og ingen åpne PR-er mot `unreal-port-core`. Ingen synlighet er endret.

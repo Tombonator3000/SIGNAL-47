@@ -33,7 +33,7 @@ JSON-validering og eksport kan vise sammenheng i manusdata. Scenariene nedenfor 
 - Ny og gammel tidslinje prøves separat. Ingen masseflytting av 1947-tid eller finalens 05:29.
 - Genererte filer må være byteidentiske etter `build_pack.py --check`.
 
-Runtime-gater: funksjonell reise, hørbar lyd, faktisk filmbevegelse, bilder, lagring og ytelse er UNVERIFIED i denne forfatterleveransen. Ingen Unreal-bygg er nødvendig for å lese eller kontrollere manuspakken.
+Forfatterkontrollene ovenfor beviser ikke runtime. Faktiske reise-, bilde- og lagringsresultater for trinn 1 og 2 føres i [runtime-rapporten](../../EVENING_RUNTIME.md). Hørbar ny stemme, senere filmbevegelse og målt total spilletid må prøves separat. Ingen Unreal-bygg er nødvendig for å lese eller kontrollere manuspakken.
 
 
 ## Runtimekontroller for trinn 1 og 2
@@ -42,7 +42,7 @@ Runtime-gater: funksjonell reise, hørbar lyd, faktisk filmbevegelse, bilder, la
 
 `-S47Evening=commute|diner|order|paid|burger|sandwich|water|parking|phone|dusk` er målrettede oppsett med de samme transaksjonene. Diner-/parkeringsoppsettene flytter kamera/tilstand og må merkes som scenariooppsett.
 
-`-S47EveningRoute=direct|burger|sandwich|water -S47EveningShots=/absolutt/testmappe` kjører faktiske kjøre- og gåkontroller gjennom åpningen, med API-valg i dialogen. Ingen menneskelig input påstås. Ruten kontrollerer at tidlig diner ikke starter ch5, at betaling og ventende svar tåler lagring, at faktisk SARO-parkering starter 18:00 én gang, og at D01 gir tre dokumenter én gang. Skumringsbildet bruker et uttrykkelig fremoverhopp til 18:35 etter overleveringen. Testen avslutter selv; bruk isolert `-UserDir` og ikke brukerens aktive sak.
+`-S47EveningRoute=direct|burger|sandwich|water -S47EveningShots=/absolutt/testmappe` kjører faktiske kjøre- og gåkontroller gjennom åpningen, med API-valg i dialogen. Ingen menneskelig input påstås. Ruten kontrollerer at tidlig diner ikke starter ch5, at betaling og ventende svar tåler disk-lagring og full verdenslasting, at faktisk SARO-parkering starter 18:00 én gang, og at D01 gir tre dokumenter én gang. Alle rutene laster også en pågående D01 fra disk uten å gjenta ankomsten. Skumringsbildet bruker et uttrykkelig fremoverhopp til 18:35 etter overleveringen. Testen avslutter selv; bruk isolert `-UserDir` og ikke brukerens aktive sak. Godkjenning krever PASS COMPLETE, normal exit og ingen fatal-/assert-feil i loggen; prosessens returkode alene er ikke tilstrekkelig.
 
 `-S47EveningTimeline -S47Jump=<eksisterende hopp>` prøver den nye tidsplanen ved de gamle regresjonspunktene. Uten `-S47EveningTimeline` beholder de eksisterende hoppene sin legacy-tidslinje.
 

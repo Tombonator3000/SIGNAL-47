@@ -1,5 +1,14 @@
 # Todo for unreal/
 
+## Toms trinn 1 og 2, codex/evening-runtime, 23. oktober 2026
+
+- [x] Manusadapter og datadrevne porter for senere faser, knyttet til eksisterende dialog, telefon, radio, notatbok, mål og lagring.
+- [x] Spillbar personbil fra sør gjennom Caliche, valgfri diner med mat i hånden, én betalt ordre og atomisk lagret svar, SARO 18:00 én gang og D01 bare på telefon. Den gamle rutinen fortsetter etter overleveringen.
+- [x] Kveld/natt/gry på sammenhengende akse, radio-/NPC-tider og kapitler, uttrykkelig legacy-lagring, faktisk utskriftsstempel og bevarte foto-/1947-referanser. Tidskomprimering og gammel/ny-tabell i EVENING_TIMELINE.md.
+- [x] Kveldssol, native lys og skumringskurver; ingen minutt-HUD under innkjøringen. Stillbilder gjennomgås i EVENING_SKY.md.
+- [ ] Sluttfør pakket kandidat og målrettet regresjon. Faktisk status, feilrettinger og bildebevis står i EVENING_RUNTIME.md.
+- [ ] Menneskelig gjennomspilling med ekte input, lytting og målt total spilletid. Dette arbeidet produserer ikke de 109 takes, VHS eller verdensinnholdet i senere trinn.
+
 
 ## Grafikkpass på port-gfx, 23. oktober 2026
 
@@ -18,14 +27,14 @@
 ## Anomaly spotting og byens funksjon (2026-10-23)
 
 - [x] Utdypet design- og gjennomføringsplan etter Toms tilslutning til retningen: `ANOMALY_PLAN.md`. Bare planarbeid, ingen ny gameplay eller installasjon.
-- [x] Revidert planen med tidligere kveld, romsligere kapitteltider, trafostasjon og bedre bybygninger etter Toms oppfølging. Anbefalt start 18:00 og residual 00:13:47; ingen implementert retiming.
+- [x] Revidert planen med tidligere kveld, romsligere kapitteltider, trafostasjon og bedre bybygninger etter Toms oppfølging. Start 18:00 og residual 00:13:47 er senere implementert på codex/evening-runtime; se nyere leveransestatus ovenfor.
 - [x] Innarbeidet Toms innkjøring med lystig radio, valgfritt matstopp og skiftstart ved SARO 18:00, samt Dale med Kinski-stemme og hemmelig kontor. Bare plan, ingen nye opptak eller modeller.
 - [x] Skrevet og strukturert hele manuspakken i `Narrative/EveningShift`: innkjøring/diner, fjernoverlevering og samtaler, kontornøkkel/filer/VHS, trafo og sammenligninger. JSON-/eksportkontroll, opptaksalias og 14 offline forfatterruter er kontrollert.
 - [ ] Produser 109 unike stemmetakes og det 72 sekunders bevegelige VHS-opptaket fra pakken; importer og tidssett undertekstene mot faktisk lyd. Alle nye mediefiler er foreløpig pending.
 - [ ] Trinn 0: mål dagens reise med ekte input, klokke, transport, triggere og passiv venting; behold baseline. Prøv også lang All Night og avreise etter 05:20: dagens ch6 setter avreisen til 05:20, så mulig tilbakesprang må dokumenteres og løses før ny fullnatt godkjennes.
-- [ ] Trinn 0: tidsreferanseoversikt for 1986-hendelsen og kapittelporter, datoakse gjennom midnatt, kveldsradio/NPC-er og eldre lagringer. Bevar 1947-tider og 05:29-finalen.
+- [x] Trinn 0: tidsreferanseoversikt for 1986-hendelsen og kapittelporter, datoakse gjennom midnatt, kveldsradio/NPC-er og eldre lagringer. 1947-tider og 05:29-finalen beholdt; se EVENING_TIMELINE.md.
 - [ ] Trinn 1: bygg kveldsstart, tidlig kit/truck og N01/N02/A02/P01 med normalreferanser før hendelsen, etterfølgende sammenligning og lagring. Første bedre bygningsskall er bensinstasjon, suvenirbutikk og studio i én sammenhengende gatebit.
-- [ ] Trinn 1: I01/D01 med innkjøringsbil, radio, valgfri matbestilling, egne tidlige diner-tilstander, lagret ankomst og Dales telefonoverlevering 18:00. Rollen er KUN telefon/radio/walkie; ingen fysisk Dale. Nye karakterklipp må virke uavhengig av generell opplesning.
+- [x] Trinn 1: I01/D01 med innkjøringsbil, radio, valgfri matbestilling, egne tidlige diner-tilstander, lagret ankomst og Dales telefonoverlevering 18:00. Rollen er KUN telefon/radio/walkie; ingen fysisk Dale. Egen opptaksbank er koblet til uavhengig av generell opplesning; nye takes er fortsatt pending.
 - [ ] Trinn 1: prøv begge delstrekninger, migrering, sen ankomst og fem observerbare Gauntlet-mål. Merk testkuttet; ikke kall prøven hel gjennomspilling.
 - [ ] Trinn 2: ny trafostasjon i ørkenen med avstikker, T01/T02, kontrollresultat, lys/lyd og lagring. Skill vanlig feil fra senere avvik; bevar STATION 01 og K3s rolle.
 - [ ] Trinn 2: D02, fysisk reservenøkkel til Dales eksisterende kontordør, private utklipp/filer og faktisk bevegelig VHS/TV med lyd, pause/strøm/lagring. Ett funn gir etterprøvbar feltoppgave; ikke erstatte Nora, avisavsløringen eller P13.
