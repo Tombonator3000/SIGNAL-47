@@ -50,10 +50,12 @@ private:
  bool bScriptReady = false;
  FString Feedback;
  mutable FString ArchiveUrl;
+ bool bArchiveUnavailable = false;
  double Clock() const;
  bool HasPrintout() const;
  const FS47AlbumShot* Shot(const FString& Id) const;
  const FS47AlbumShot* ReadyShot(const FString& Id) const;
+ bool ShotUnavailable(const FString& Id) const;
  void Refile();
  void File(const FString& Id, const FString& Title, const FString& Page);
  FS47Doc ReferenceDoc() const;

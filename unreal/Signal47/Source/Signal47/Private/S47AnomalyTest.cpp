@@ -233,7 +233,7 @@ void FS47AnomalyTest::Step(double Dt)
   FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyState="),InspectState);
   if (!FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyRoute="),Route)) {if(InspectState.IsEmpty()) {bDone=true;return;} Route=TEXT("pilot");}
   if (!InspectState.IsEmpty() && !TArray<FString>{TEXT("routine"),TEXT("n02"),TEXT("reference"),TEXT("records"),TEXT("anomaly"),TEXT("comparison"),TEXT("p01"),TEXT("notebook")}.Contains(InspectState)) {Fail(TEXT("unknown anomaly inspection state"));return;}
-  if (!TArray<FString>{TEXT("pilot"),TEXT("late"),TEXT("legacy"),TEXT("already-seen"),TEXT("missing-phone"),TEXT("archive")}.Contains(Route)) {Fail(TEXT("unknown anomaly route"));return;}
+  if (!TArray<FString>{TEXT("pilot"),TEXT("late"),TEXT("legacy"),TEXT("already-seen"),TEXT("missing-phone"),TEXT("archive"),TEXT("missing-photo")}.Contains(Route)) {Fail(TEXT("unknown anomaly route"));return;}
   FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyShots="),Shots);
   if (!Shots.IsEmpty()) IFileManager::Get().MakeDirectory(*Shots,true);
   if (!FParse::Value(FCommandLine::Get(),TEXT("UserDir="),Profile)) {Fail(TEXT("explicit isolated -UserDir required"));return;}
@@ -249,7 +249,7 @@ void FS47AnomalyTest::Step(double Dt)
  if (Elapsed>560 || StageElapsed>120) {Fail(TEXT("timeout waiting for state or physical control"));return;}
  if (Hold>0) {Hold-=Dt;return;}
  auto& D=M->Anomaly->Data;
- const bool Full=Route==TEXT("pilot") || Route==TEXT("missing-phone");
+ const bool Full=Route==TEXT("pilot") || Route==TEXT("missing-phone") || Route==TEXT("missing-photo");
  if (Stage==1)
  {
   M->World->StopDriving(); M->World->Enter(TEXT("saro"));
@@ -387,6 +387,56 @@ void FS47AnomalyTest::Step(double Dt)
  }
  if (Stage==15)
  {
+  if (Route==TEXT("missing-photo"))
+  {
+   const auto Before=M->Flow->GameState();
+   auto ExpectedAlbum=M->Night->Album->Data;
+   const auto* Original=ExpectedAlbum.Shots.FindByPredicate([&D](const FS47AlbumShot& P){return P.Id==D.ChangedPhoto;});
+   if (!Original || Original->Url.Len()<1000) {Fail(TEXT("missing-photo fixture lacks actual changed exposure"));return;}
+   const FS47AlbumShot OriginalPhoto=*Original;
+   const FString ArchiveBefore=S47J::Str(S47J::Obj(S47J::Obj(Before,TEXT("anomaly")),TEXT("archive")),TEXT("url"));
+   const FString StoreDir=FPaths::Combine(Profile,TEXT("AnomalyControls"),TEXT("missing-photo"),TEXT("corrupt-fixture"));
+   FS47SaveStore Writer(StoreDir); Writer.Init();
+   FS47SaveCard Card; Card.Chapter=TEXT("Missing-photo negative control"); Card.Place=M->World->Area; Card.Clock=M->Story->ClockText();
+   FString Error; const auto Meta=Writer.Save(1,TEXT("manual"),0,Before,Card,Error);
+   if (!Meta) {Fail(TEXT("missing-photo isolated save failed: ")+Error);return;}
+   const FString Key=S47Saves::PhotoKey(OriginalPhoto.Url);
+   const FString PhotoPath=FPaths::Combine(StoreDir,TEXT("photos"),Key+TEXT(".txt"));
+   // The only deletion is one photograph in the store this fixture just created.
+   // Never use the active game's store or delete the preserved archive/reference.
+   if (!Meta->Photos.Contains(Key) || IFileManager::Get().FileSize(*PhotoPath)<1000 || !IFileManager::Get().Delete(*PhotoPath,false,true,true))
+   {Fail(TEXT("could not remove exactly the newly-created changed-photo file"));return;}
+   FS47SaveStore Reader(StoreDir); Reader.Init(); const auto Loaded=Reader.Load(Meta->Id);
+   if (!Loaded) {Fail(TEXT("fresh store could not load deliberately incomplete photo transaction"));return;}
+   S47J::FObj Missing;
+   for (const auto& V:S47J::Arr(S47J::Obj(Loaded,TEXT("album")),TEXT("shots")))
+   {
+    const S47J::FObj* O=nullptr;
+    if (V && V->TryGetObject(O) && O && S47J::Str(*O,TEXT("id"))==OriginalPhoto.Id) Missing=*O;
+   }
+   if (!Missing || !S47J::Bool(Missing,TEXT("unavailable")) || S47J::Str(Missing,TEXT("url"))==OriginalPhoto.Url)
+   {Fail(TEXT("missing original was not explicitly marked unavailable with replacement URL"));return;}
+   if (!Shots.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(Loaded,true),*FPaths::Combine(Shots,TEXT("missing-photo.disk-save.json")));
+   US47Flow::FStart Start; Start.State=Loaded; Start.CaseId=0; Start.bDev=true; Start.Playtime=M->Playtime;
+   M->Flow->StartGame(Start);
+   auto* ExpectedChanged=ExpectedAlbum.Shots.FindByPredicate([&OriginalPhoto](const FS47AlbumShot& P){return P.Id==OriginalPhoto.Id;});
+   ExpectedChanged->Url=S47J::Str(Missing,TEXT("url"));
+   bool CarryUnavailable=false;
+   for (const auto& V:S47J::Arr(S47J::Obj(M->Flow->Carry,TEXT("album")),TEXT("shots")))
+   {
+    const S47J::FObj* O=nullptr;
+    if (V && V->TryGetObject(O) && O && S47J::Str(*O,TEXT("id"))==OriginalPhoto.Id) CarryUnavailable=S47J::Bool(*O,TEXT("unavailable"));
+   }
+   const auto ArchiveAfter=S47J::Obj(M->Anomaly->Save(),TEXT("archive"));
+   if (!M->Flow->bDevRun || M->Flow->CaseId!=0 || !SameAlbum(ExpectedAlbum,M->Night->Album->Data) || !CarryUnavailable || ArchiveBefore!=S47J::Str(ArchiveAfter,TEXT("url")) || S47J::Bool(ArchiveAfter,TEXT("unavailable")))
+   {Fail(TEXT("missing-photo restore changed id/clock/targets/other photographs/archive or lost unavailable marker"));return;}
+   if (M->Anomaly->Assess(TEXT("a02"),TEXT("moved")) || D.A02Compared)
+   {Fail(TEXT("replacement card accepted as proof of moved figure"));return;}
+   if (!M->Anomaly->Assess(TEXT("a02"),TEXT("insufficient")) || !D.A02Compared || D.A02Assessment!=TEXT("insufficient evidence"))
+   {Fail(TEXT("unavailable image prevents honest insufficient-evidence assessment"));return;}
+   M->Anomaly->Open(TEXT("a02")); Shot(TEXT("missing-photo"));
+   Next(95,TEXT("PASS missing film: only fixture changed-photo file removed; fresh store/full restore retain id/clock/targets and unavailable=true, archive intact, placeholder rejected as evidence, insufficient accepted"),2);return;
+  }
   if (!M->Anomaly->Assess(TEXT("a02"),TEXT("moved")) || !D.A02Compared || !D.P01Pending || D.P01Heard) {Fail(TEXT("A02 assessment or deferred P01 after modal invalid"));return;}
   if (!RoundTrip(TEXT("a02-compared"))) return;
   M->Anomaly->Open(TEXT("a02"));
@@ -434,7 +484,7 @@ void FS47AnomalyTest::Step(double Dt)
   if (!RoundTrip(TEXT("late-insufficient"))) return;
   Next(91,TEXT("PASS late/migration/previous-event fallback: insufficient evidence accepted, Earl not summoned, old history retained"),1);return;
  }
- if (Stage==91) Finish();
+ if (Stage==91 || Stage==95) Finish();
  if (Stage==92)
  {
   M->Story->SetClock(-24600); // The authored exposure's real clock, not a rewritten caption.

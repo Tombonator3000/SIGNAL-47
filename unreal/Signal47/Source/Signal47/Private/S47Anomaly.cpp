@@ -1,5 +1,6 @@
 #include "S47Anomaly.h"
 #include "S47Main.h"
+#include "S47Flow.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47Kit.h"
@@ -34,6 +35,7 @@ void FS47Anomaly::Begin(const S47J::FObj& Saved)
 {
  Data = FS47AnomalyData(); Feedback.Empty();
  ArchiveUrl = S47J::Str(S47J::Obj(Saved,TEXT("archive")),TEXT("url"));
+ bArchiveUnavailable = S47J::Bool(S47J::Obj(Saved,TEXT("archive")),TEXT("unavailable"));
 #define LOAD_BOOL(Name) Data.Name = S47J::Bool(Saved, TEXT(#Name));
  LOAD_BOOL(bEarlyCamera) LOAD_BOOL(bLegacyCutout) LOAD_BOOL(bRoutineTimeKnown) LOAD_BOOL(N01Routine) LOAD_BOOL(N01Compared) LOAD_BOOL(N01Followed)
  LOAD_BOOL(N02Observed) LOAD_BOOL(N02Control) LOAD_BOOL(N02Compared)
@@ -97,6 +99,7 @@ S47J::FObj FS47Anomaly::Save() const
   S47J::Set(Archive,TEXT("id"),TEXT("anomaly-archive-display-1710"));
   S47J::Set(Archive,TEXT("url"),ArchiveUrl);
   S47J::Set(Archive,TEXT("clock"),-24600.);
+  if (bArchiveUnavailable) S47J::Set(Archive,TEXT("unavailable"),true);
   S47J::Set(O,TEXT("archive"),Archive);
  }
  return O;
@@ -107,10 +110,23 @@ const FS47AlbumShot* FS47Anomaly::Shot(const FString& Id) const
  if (Id.IsEmpty() || !M || !M->Night || !M->Night->Album) return nullptr;
  return M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){ return P.Id == Id; });
 }
+bool FS47Anomaly::ShotUnavailable(const FString& Id) const
+{
+ if (!M || !M->Flow || Id.IsEmpty()) return false;
+ for (const auto& V : S47J::Arr(S47J::Obj(M->Flow->Carry,TEXT("album")),TEXT("shots")))
+ {
+  if (!V.IsValid() || V->Type!=EJson::Object) continue;
+  const auto O=V->AsObject();
+  if (S47J::Str(O,TEXT("id"))==Id) return S47J::Bool(O,TEXT("unavailable"));
+ }
+ return false;
+}
 const FS47AlbumShot* FS47Anomaly::ReadyShot(const FString& Id) const
 {
  const auto* P = Shot(Id);
- return P && S47Timeline::Night(Clock()) - S47Timeline::Night(P->Clock) >= 90 ? P : nullptr;
+ if (!P || ShotUnavailable(Id) || S47Timeline::Night(Clock()) - S47Timeline::Night(P->Clock) < 90) return nullptr;
+ TArray<FColor> Pixels; int32 W=0,H=0;
+ return S47Image::DecodePixels(P->Url,Pixels,W,H) && W>0 && H>0 ? P : nullptr;
 }
 bool FS47Anomaly::HasPrintout() const
 {
@@ -203,7 +219,7 @@ FS47Doc FS47Anomaly::ReferenceDoc() const
  FS47Doc D;
  D.Id = TEXT("anomaly:reference"); D.Title = TEXT("Caliche display / dated reference"); D.Kind = TEXT("typed");
  D.Stamp = TEXT("SARO HANDOVER COPY / SUNDAY 13 APRIL 1986");
- D.Page = TEXT("CALICHE SOUVENIR DISPLAY / DAY OPERATOR'S INVENTORY\n\nCardboard figure in the souvenir-shop window. Yellow price sticker: $3.50, at the lower right. Split at the lower left edge. Record position against the shop window and pavement.\n\nFiled by the day operator with Sunday's local service copies. This is a dated written reference, not a photograph taken by the night operator. It supports identity and the earlier display position; it cannot show who later handled the figure.\n\nFor a stronger control, photograph the actual display from the marked pavement position while it remains in the window.");
+ D.Page = TEXT("CALICHE SOUVENIR DISPLAY / DAY OPERATOR'S INVENTORY\n\nCardboard figure in the souvenir-shop window. Yellow price sticker: $3.50, at the lower right. Split at the lower left edge. Record position against the shop window and pavement.\n\nFiled by the day operator with Sunday's local service copies. This is a dated written reference, not a photograph taken by the night operator. It records the display identity and position. It is not a record of the night operator's visit.\n\nFor a stronger control, photograph the actual display from the marked pavement position while it remains in the window.");
  D.Transcript = D.Page;
  // Arkivkopien er et faktisk runtime-opptak levert med piloten. Den må kunne dekodes.
  // Bevar lagret bildereferanse når kildens nåværende versjon senere byttes ut.
@@ -221,7 +237,11 @@ FS47Doc FS47Anomaly::ReferenceDoc() const
   ArchiveUrl=D.Image;
   D.Title = TEXT("Caliche display / archived reference print");
   D.Stamp = TEXT("DAY OPERATOR / 13 APR 1986 / 17:10");
-  D.Page = TEXT("ARCHIVED DISPLAY PRINT / 13 APRIL 1986, 17:10\n\nThe day operator's reference print, filed with the Sunday handover. This is not a photograph taken by the night operator. The cardboard figure is in the souvenir-shop window. Compare the yellow $3.50 sticker, the split lower left edge and the window position.\n\nThe print records identity and position. It does not establish who later moved the figure."); D.Transcript=D.Page;
+  D.Page = TEXT("ARCHIVED DISPLAY PRINT / 13 APRIL 1986, 17:10\n\nThe day operator's reference print, filed with the Sunday handover. This is not a photograph taken by the night operator. The cardboard figure is in the souvenir-shop window. Compare the yellow $3.50 sticker, the split lower left edge and the window position.\n\nThe print records the ordinary display identity and position for the shift file."); D.Transcript=D.Page;
+  if (bArchiveUnavailable)
+  {
+   D.Page+=TEXT("\n\nPRINT UNAVAILABLE / the saved original could not be read. Its replacement card is not photographic identity evidence. Use insufficient evidence or another actual reference."); D.Transcript=D.Page;
+  }
  }
  return D;
 }
@@ -249,7 +269,7 @@ void FS47Anomaly::Refile()
   if (Data.N01Compared) P += TEXT("\n\nASSESSMENT / ") + Data.N01Assessment + TEXT(". Earlier complaint; later residual. A shared cause is not established.");
   if (Data.N01Followed) P += TEXT("\n\nFOLLOW-UP / inspection result requested for the shift file. A request is not an inspection result.");
   else if (Data.N01Compared) P += TEXT("\n\nNEXT / leave a request for the actual inspection result with the handover folder.");
-  File(TEXT("anomaly:n01"), TEXT("N01 / Service records and residual"), P);
+  File(TEXT("anomaly:n01"), HasPrintout()?TEXT("N01 / Service records and residual"):TEXT("N01 / Service references"), P);
  }
  if (Data.N02Observed || !Data.N02Photo.IsEmpty())
  {
@@ -258,14 +278,19 @@ void FS47Anomaly::Refile()
   P += Data.N02Assessment==TEXT("ordinary lamp silhouette") ? TEXT(" The outline follows the ordinary worklamp when viewed from the side. No independent person established.") : TEXT("\n\nNEXT / photograph the bright outline, move to the side and inspect the lamp. Photograph that control, then compare position.");
   File(TEXT("anomaly:n02"), TEXT("N02 / Lamp and outline"), P);
  }
- if (Data.bDatedReference || !Data.ReferencePhoto.IsEmpty() || Data.A02Observed)
+ if (Data.bDatedReference || !Data.ReferencePhoto.IsEmpty() || Data.A02Observed || !Data.ChangedPhoto.IsEmpty())
  {
+  const bool Encountered=Data.A02Observed || !Data.ChangedPhoto.IsEmpty();
   FString P = Data.ReferencePhoto.IsEmpty() ? TEXT("REFERENCE / dated Sunday archive reference, filed by the day operator. No personal reference photograph.") : TEXT("REFERENCE / photograph ") + Data.ReferencePhoto + TEXT(" / ") + Stamp(Data.ReferenceClock) + TEXT(".");
   if (Data.bLegacyCutout) P += TEXT("\n\nRESTORED HISTORY / a cutout event was already recorded in the original case. It will not be replayed or converted into a newly verified comparison. Use the service records or lamp control as another investigation.");
-  P += TEXT("\n\nLATER EVIDENCE / ") + (Data.ChangedPhoto.IsEmpty()?TEXT("no photograph attached"):Data.ChangedPhoto + TEXT(" / ") + Stamp(Data.ChangedClock)) + TEXT(".");
-  if (Data.A02Compared) P += TEXT("\n\nASSESSMENT / ") + Data.A02Assessment + TEXT(".");
-  if (!Data.bLegacyCutout) P += Data.A02Followed ? TEXT("\n\nFOLLOW-UP / price sticker and split edge inspected in place. Same cardboard construction; no observation of who moved it.") : TEXT("\n\nNEXT / compare the price sticker, torn corner and position. Then inspect those details on the figure.");
-  File(TEXT("anomaly:a02"), TEXT("A02 / Same figure, changed position"), P);
+  if (Encountered)
+  {
+   P += TEXT("\n\nLATER EVIDENCE / ") + (Data.ChangedPhoto.IsEmpty()?TEXT("no photograph attached"):Data.ChangedPhoto + TEXT(" / ") + Stamp(Data.ChangedClock)) + TEXT(".");
+   if (Data.A02Compared) P += TEXT("\n\nASSESSMENT / ") + Data.A02Assessment + TEXT(".");
+   if (!Data.bLegacyCutout) P += Data.A02Followed ? TEXT("\n\nFOLLOW-UP / price sticker and split edge inspected in place. Same cardboard construction; no observation of who moved it.") : TEXT("\n\nNEXT / compare the price sticker, torn corner and position. Then inspect those details on the figure.");
+  }
+  else P+=TEXT("\n\nROUTINE REFERENCE / keep the souvenir display in the shift file. Include the yellow price sticker, split edge and window position in a photograph.");
+  File(TEXT("anomaly:a02"), Encountered?TEXT("A02 / Same figure, changed position"):TEXT("Display reference"), P);
  }
  if (Data.P01Heard)
  {
@@ -372,7 +397,7 @@ bool FS47Anomaly::Assess(const FString& InId, const FString& Choice)
  else if (Id == TEXT("a02"))
  {
   if (Choice==TEXT("living")) { Feedback=SceneText(TEXT("A02_CAUTION")); return false; }
-  if (Choice==TEXT("moved") && ReadyShot(Data.ChangedPhoto) && (ReadyShot(Data.ReferencePhoto) || (Data.bDatedReference && S47Image::FromDataUrl(ReferenceDoc().Image))))
+  if (Choice==TEXT("moved") && ReadyShot(Data.ChangedPhoto) && (ReadyShot(Data.ReferencePhoto) || (Data.bDatedReference && !bArchiveUnavailable && S47Image::FromDataUrl(ReferenceDoc().Image))))
   { Data.A02Compared=true; Data.A02Assessment=TEXT("same object, changed position; cause unconfirmed"); Feedback=SceneText(TEXT("A02_FILED")); }
   else if (Choice==TEXT("insufficient"))
   { Data.A02Compared=true; Data.A02Assessment=TEXT("insufficient evidence"); Feedback=TEXT("Filed as unresolved. Keep any missing frame with this entry if you obtain it later. The diner records are still worth checking."); }
@@ -448,9 +473,10 @@ TArray<FS47Task> FS47Anomaly::Tasks() const
  if (HasPrintout()) T.Add({TEXT("N01 / Compare the earlier service records with the actual residual printout."),Data.N01Compared});
  if (Data.N01Compared) T.Add({TEXT("N01 / Leave an inspection-result request with the SARO shift folder."),Data.N01Followed});
  if (Data.N02Observed) T.Add({TEXT("N02 / Photograph the pale outline, move to the side and document the worklamp control. Compare both views."),Data.N02Compared});
- if (!Data.ReferencePhoto.IsEmpty() || Data.bDatedReference || Data.A02Observed)
+ if (Data.A02Observed || !Data.ChangedPhoto.IsEmpty())
   T.Add({TEXT("A02 / Compare the display reference with a later photograph. Check price sticker, torn edge and position."),Data.A02Compared});
- if (Data.A02Compared && !Data.bLegacyCutout) T.Add({TEXT("A02 / Inspect the figure's sticker and split edge in place."),Data.A02Followed});
+ else T.Add({TEXT("Keep a photograph of the souvenir display as a routine reference."),!Data.ReferencePhoto.IsEmpty()});
+ if (Data.A02Compared && (Data.A02Observed || !Data.ChangedPhoto.IsEmpty()) && !Data.bLegacyCutout) T.Add({TEXT("A02 / Inspect the figure's sticker and split edge in place."),Data.A02Followed});
  if (Data.P01Heard) T.Add({TEXT("P01 / Inspect the closed studio facade. A sound alone does not identify its source."),Data.P01Followed});
  return T;
 }
@@ -458,7 +484,11 @@ TArray<FS47Task> FS47Anomaly::Tasks() const
 void FS47Anomaly::Open(const FString& InId)
 {
  if (!M || !M->UI || !M->Story) return;
- const FString Id=InId.Replace(TEXT("anomaly:"),TEXT(""));
+ FString Id=InId.Replace(TEXT("anomaly:"),TEXT(""));
+ const bool FigureEncountered=Data.A02Observed || !Data.ChangedPhoto.IsEmpty();
+ if (Id==TEXT("a02") && !FigureEncountered && !Data.bLegacyCutout) { Id=TEXT("reference"); Feedback.Empty(); }
+ if ((Id==TEXT("n02") && !Data.N02Observed && Data.N02Photo.IsEmpty()) || (Id==TEXT("p01") && !Data.P01Heard))
+ { Feedback.Empty(); Open(); return; }
  TArray<S47Kit::FW> R;
  if (Id==TEXT("n01") && Feedback.IsEmpty() && Data.N01Assessment.StartsWith(TEXT("correction needed")))
   Feedback=SceneText(TEXT("N01_COMPARE_WRONG"));
@@ -475,8 +505,9 @@ void FS47Anomaly::Open(const FString& InId)
   if (S)
   {
    P.Add(S47Kit::Small(S->Id + TEXT(" / ") + Stamp(S->Clock) + TEXT(" / ") + S->Place));
-   if (!ReadyShot(PhotoId)) P.Add(S47Kit::Paper(TEXT("PRINT DEVELOPING / allow 90 seconds after exposure. Time is paused in this panel; close it while the chemistry works.")));
-   else if (auto* T=S47Image::FromDataUrl(S->Url)) P.Add(S47Kit::Image(T,410));
+   if (ShotUnavailable(PhotoId)) P.Add(S47Kit::Paper(TEXT("PRINT UNAVAILABLE / the original saved image could not be read. Its metadata is retained; the replacement card cannot support an identity check. Use insufficient evidence.")));
+   else if (S47Timeline::Night(Clock())-S47Timeline::Night(S->Clock)<90) P.Add(S47Kit::Paper(TEXT("PRINT DEVELOPING / allow 90 seconds after exposure. Time is paused in this panel; close it while the chemistry works.")));
+   else if (ReadyShot(PhotoId)) P.Add(S47Kit::Image(S47Image::FromDataUrl(S->Url),410));
    else P.Add(S47Kit::Paper(TEXT("IMAGE UNAVAILABLE / the saved frame cannot be decoded. Its metadata is retained. Use insufficient evidence.")));
    P.Add(S47Kit::Small(S->Text));
   }
@@ -487,14 +518,14 @@ void FS47Anomaly::Open(const FString& InId)
  {
   Feedback.Empty();
   R.Add(S47Kit::Text(TEXT("Discover. Photograph or note what you actually observed. Put relevant sources side by side, choose a control, then follow up. Every assessment can be revised.")));
-  R.Add(S47Kit::Card(TEXT("N01 / Service records"),TEXT("Earlier service complaint, actual later printout. Compare their dates and the limits of each record."),[this]{Feedback.Empty();Open(TEXT("n01"));}));
-  R.Add(S47Kit::Card(TEXT("N02 / Pale outline"),TEXT("Two positions and a worklamp control. What changes when you move?"),[this]{Feedback.Empty();Open(TEXT("n02"));}));
-  R.Add(S47Kit::Card(TEXT("A02 / Display figure"),TEXT("Price sticker, torn edge and position. Compare the same object across two records."),[this]{Feedback.Empty();Open(TEXT("a02"));}));
-  R.Add(S47Kit::Card(TEXT("P01 / Closed studio"),TEXT("A familiar printer rhythm. Inspect its apparent source without inventing a person."),[this]{Feedback.Empty();Open(TEXT("p01"));}));
+  R.Add(S47Kit::Card(TEXT("N01 / Service records"),HasPrintout()?TEXT("Earlier service complaint, actual later printout. Compare their dates and the limits of each record."):TEXT("Dated service copy and transmission schedule. Check the ordinary operating records."),[this]{Feedback.Empty();Open(TEXT("n01"));}));
+  if (Data.N02Observed || !Data.N02Photo.IsEmpty()) R.Add(S47Kit::Card(TEXT("N02 / Pale outline"),TEXT("Two positions and a worklamp control. What changes when you move?"),[this]{Feedback.Empty();Open(TEXT("n02"));}));
+  R.Add(S47Kit::Card(FigureEncountered?TEXT("A02 / Display figure"):TEXT("Display reference"),FigureEncountered?TEXT("Price sticker, torn edge and position. Compare the same object across two records."):TEXT("Keep the ordinary souvenir display, its price sticker and position in the shift file."),[this]{Feedback.Empty();Open(TEXT("a02"));}));
+  if (Data.P01Heard) R.Add(S47Kit::Card(TEXT("P01 / Closed studio"),TEXT("A familiar printer rhythm. Inspect its apparent source without inventing a person."),[this]{Feedback.Empty();Open(TEXT("p01"));}));
  }
  else if (Id==TEXT("n01"))
  {
-  Title=TEXT("N01 / COMPARE THE RECORDS");
+  Title=HasPrintout()?TEXT("N01 / COMPARE THE RECORDS"):TEXT("SARO / SHIFT FOLDER");
   R.Add(S47Kit::Button(TEXT("READ DALE'S ORIGINAL SHIFT LOG"),[this]{M->Story->Use(TEXT("anomaly:shiftlog"));}));
   if (!Data.N01Routine)
   {
@@ -508,8 +539,8 @@ void FS47Anomaly::Open(const FString& InId)
    const auto* Print=M->Story->Docs().FindByPredicate([](const FS47Doc& D){return D.Id==TEXT("printout");});
    FString Earlier=Service?Service->Stamp+TEXT("\n\n")+Service->Page:TEXT("SERVICE COPY MISSING");
    Earlier+=TEXT("\n\n")+(Schedule?Schedule->Stamp+TEXT("\n\n")+Schedule->Page:TEXT("SCHEDULE MISSING"));
-   R.Add(S47Kit::Two(PaperPane(TEXT("EARLIER / PRESERVED SUNDAY RECORDS"),Earlier),PaperPane(TEXT("LATER / ACTUAL RESIDUAL PRINTOUT"),Print?Print->Stamp+TEXT("\n\n")+Print->Page:TEXT("NO PRINTOUT FILED\n\nComplete the survey and keep the actual paper. These records cannot describe a future residual."))));
-   R.Add(S47Kit::Question(TEXT("Compare the dates and what was actually measured. Do these sources establish a common cause?")));
+   R.Add(S47Kit::Two(PaperPane(TEXT("EARLIER / PRESERVED SUNDAY RECORDS"),Earlier),PaperPane(Print?TEXT("LATER / ACTUAL RESIDUAL PRINTOUT"):TEXT("CURRENT SHIFT / ROUTINE CONTROL"),Print?Print->Stamp+TEXT("\n\n")+Print->Page:TEXT("DATED COPIES FILED\n\nCheck the service complaint, inspection status and scheduled programmes. Retain the original copies with the shift records."))));
+   if (Print) R.Add(S47Kit::Question(TEXT("Compare the dates and what was actually measured. Do these sources establish a common cause?")));
    if (Print)
    {
     Button(TEXT("The earlier complaint does not establish the cause of this printout."),TEXT("earlier"));
@@ -529,7 +560,7 @@ void FS47Anomaly::Open(const FString& InId)
   if (auto* T=S47Image::FromDataUrl(D.Image))
    R.Add(S47Kit::Two(S47Kit::Col({S47Kit::Sub(D.Stamp),S47Kit::Image(T,410)}),S47Kit::Paper(D.Page)));
   else R.Add(S47Kit::Paper(D.Page+TEXT("\n\nARCHIVED PRINT UNAVAILABLE / the written inventory remains available, but cannot substitute for a photographic identity check.")));
-  R.Add(S47Kit::Button(TEXT("KEEP THIS DATED ARCHIVE REFERENCE"),[this]{Data.bDatedReference=true;Changed();Feedback=TEXT("Dated archive reference attached. No personal photograph or earlier visit has been invented.");Open(TEXT("a02"));},true));
+  R.Add(S47Kit::Button(TEXT("KEEP THIS DATED ARCHIVE REFERENCE"),[this]{Data.bDatedReference=true;Changed();Feedback=TEXT("Dated archive reference attached. No personal photograph or earlier visit has been invented.");Open(TEXT("reference"));},true));
  }
  else if (Id==TEXT("n02"))
  {
@@ -550,6 +581,7 @@ void FS47Anomaly::Open(const FString& InId)
   {
    const auto D=ReferenceDoc(); TArray<S47Kit::FW> A={S47Kit::Sub(TEXT("EARLIER / ARCHIVE PRINT, NOT YOUR EXPOSURE")),S47Kit::Small(D.Stamp)};
    if (auto* T=S47Image::FromDataUrl(D.Image)) A.Add(S47Kit::Image(T,410)); else A.Add(S47Kit::Paper(TEXT("ARCHIVE IMAGE UNAVAILABLE / use insufficient evidence until a real reference can be checked.")));
+   if (bArchiveUnavailable) A.Add(S47Kit::Paper(TEXT("ARCHIVE PRINT UNAVAILABLE / this replacement card cannot establish identity. Use insufficient evidence.")));
    A.Add(S47Kit::Small(D.Page)); Earlier=S47Kit::Col(A);
   }
   R.Add(S47Kit::Two(Earlier,Picture(Data.ChangedPhoto,TEXT("LATER / YOUR PHOTOGRAPH OF THE FIGURE"))));
@@ -598,6 +630,8 @@ bool FS47Anomaly::SelfTest(TArray<FString>& Lines)
  FS47Anomaly ArchiveRestored(nullptr); ArchiveRestored.Begin(ArchiveSaved);
  const auto Archive=S47J::Obj(ArchiveRestored.Save(),TEXT("archive"));
  Check(TEXT("archive identity, exact content and original clock survive JSON"),S47J::Str(Archive,TEXT("id"))==TEXT("anomaly-archive-display-1710") && S47J::Str(Archive,TEXT("url"))==A.ArchiveUrl && S47J::Num(Archive,TEXT("clock"))==-24600.);
+ A.bArchiveUnavailable=true; FS47Anomaly MissingArchive(nullptr); MissingArchive.Begin(S47J::Read(S47J::Write(A.Save())));
+ Check(TEXT("missing archive marker survives and blocks photographic claims"),MissingArchive.bArchiveUnavailable && S47J::Bool(S47J::Obj(MissingArchive.Save(),TEXT("archive")),TEXT("unavailable")) && !MissingArchive.Assess(TEXT("a02"),TEXT("moved")));
  Check(TEXT("observation never silently becomes conclusion"),!B.Data.A02Compared && !B.Data.N02Compared);
  Check(TEXT("living claim cannot be filed as verified"),!B.Assess(TEXT("a02"),TEXT("living")) && !B.Data.A02Compared);
  Check(TEXT("insufficient evidence is a valid revisable result"),B.Assess(TEXT("a02"),TEXT("insufficient")) && B.Data.A02Compared && B.Data.A02Assessment==TEXT("insufficient evidence"));

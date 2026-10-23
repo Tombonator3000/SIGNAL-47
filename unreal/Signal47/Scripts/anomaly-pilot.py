@@ -17,7 +17,7 @@ HERE = Path(__file__).resolve().parent
 SPEC = importlib.util.spec_from_file_location('s47_unreal_guard', HERE / 'unreal_guard.py')
 GUARD = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(GUARD)
-SCENARIOS = ('pilot', 'late', 'legacy', 'already-seen', 'missing-phone', 'archive')
+SCENARIOS = ('pilot', 'late', 'legacy', 'already-seen', 'missing-phone', 'archive', 'missing-photo')
 # Explicit legacy fixtures, not a claim of a continuous playthrough. Continue alone
 # reuses P13's real on-disk case in the same isolated profile, via the title action.
 REGRESSION = (
@@ -178,7 +178,7 @@ def main():
         log = (evidence / 'runtime.log').read_text(errors='replace')
         failures = [text for text in ('Critical error:', 'Assertion failed:', 'Signal 11 caught',
                                       f'S47: anomaly route {scenario} FAIL') if text in log]
-        shots = ['regression'] if regression_profile else (['archive'] if scenario == 'archive' else ['reference', 'anomaly', 'comparison', 'notebook'] if scenario in ('pilot', 'missing-phone') else [])
+        shots = ['regression'] if regression_profile else (['missing-photo'] if scenario == 'missing-photo' else ['archive'] if scenario == 'archive' else ['reference', 'anomaly', 'comparison', 'notebook'] if scenario in ('pilot', 'missing-phone') else [])
         image_reviews = {name: png_review(evidence / (name + '.png')) for name in shots}
         (evidence / 'png-review.json').write_text(json.dumps(image_reviews, indent=2) + '\n')
         missing = [name for name, review in image_reviews.items() if review['status'] != 'PASS']
