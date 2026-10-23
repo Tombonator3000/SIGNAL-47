@@ -6,7 +6,7 @@
 - [x] Spillbar personbil fra sør gjennom Caliche, valgfri diner med mat i hånden, én betalt ordre og atomisk lagret svar, SARO 18:00 én gang og D01 bare på telefon. Den gamle rutinen fortsetter etter overleveringen.
 - [x] Kveld/natt/gry på sammenhengende akse, radio-/NPC-tider og kapitler, uttrykkelig legacy-lagring, faktisk utskriftsstempel og bevarte foto-/1947-referanser. Tidskomprimering og gammel/ny-tabell i EVENING_TIMELINE.md.
 - [x] Kveldssol, native lys og skumringskurver; ingen minutt-HUD under innkjøringen. Stillbilder gjennomgås i EVENING_SKY.md.
-- [ ] Sluttfør pakket kandidat og målrettet regresjon. Faktisk status, feilrettinger og bildebevis står i EVENING_RUNTIME.md.
+- [x] Pakket kandidat og målrettet regresjon: 1254 selvtester, fire åpningsruter, legacy-migrering, gamle/nye hopp, native telefonbruk og fem siste bilder PASS. Sluttkilde 3d321da1; kildeoverlevering til Claude, ingen installasjon. Se EVENING_RUNTIME.md.
 - [ ] Menneskelig gjennomspilling med ekte input, lytting og målt total spilletid. Dette arbeidet produserer ikke de 109 takes, VHS eller verdensinnholdet i senere trinn.
 
 

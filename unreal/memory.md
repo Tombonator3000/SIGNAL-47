@@ -9,7 +9,7 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - `printoutAt` er nå faktisk hentetid, separat fra solve/event. Gamle saves lagret aldri den tiden: en gjenopprettet utskrift merkes derfor TIME NOT RECORDED / reconstructed legacy copy. Fotografier omskrives ikke. Ikke oppgi en rekonstruert hentetid som original.
 - Kveldsradioen har egen vert og separat mottakerkø. De 109 nye takes mangler fortsatt; taus tekst er tydelig merket pending. Eksisterende countrymusikk har musikkrom mellom innslagene. Stemmeimporthjelpen produserer ingen stemmer. Nye rolleopptak virker uavhengig av generell Kinski-opplesning.
 - Kveldshimmel og native sol bruker `Daylight()`; historiens `Dawn()` er fortsatt bare morgen. Stjernene holdes borte gjennom tidlig skumring. Destructor skal bare frigjøre egen lyd: `Evening::Stop()` berører levende verdensnoder og skal ikke kalles under sen UObject-purge.
-- Faktiske testresultater, bilder og kandidatplassering oppdateres i `EVENING_RUNTIME.md`. Ingen push/PR/installasjon er bestilt. Claude integrerer; standardstarteren skal ikke byttes av denne grenen.
+- Bygg/sluttpakke og 1254 selvtester PASS. Fire pakkede åpningsruter, disk-/verdenslasting, native telefonbruk, gamle/nye kapittelhopp og legacy-migrering med bevart bildestempel/bytes er prøvd. Siste kode 3d321da1 inkluderer besøksparkering fri av annexet og ingen gammel 17:20-returtekst ved 18:00. Fem siste bilder og hel burgerrute er PASS. Resultater/proveniens/kandidat i `EVENING_RUNTIME.md`; menneskelig fullnatt/lytting/ytelse er UNVERIFIED. Ingen push/PR/installasjon. Claude integrerer; standardstarteren er bevart.
 
 
 ## Grafikkpass levert, 23. oktober 2026

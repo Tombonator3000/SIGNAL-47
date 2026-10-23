@@ -30,7 +30,7 @@ Eldre saker har en konkret begrensning: de lagret solve-tid og array-hendelse, m
 | Nattkurvens tidsgrunnlag | 02:16 til 05:29 | 00:16 til 05:29; prolog/innkjøring har fortsatt kurven av |
 | Guttens radiosamtale, første mulighet | 02:26 | 00:26 |
 | SARO mørk / Hondo, tilgjengelig vindu | 02:29 til 02:40 | 00:29 til 00:40 |
-| Kapittel 2 | Etter kamerarapporten | Etter kamerarapporten; ingen ny venting |
+| Kapittel 2 | Etter kamerarapporten, minst 40 minutter etter array-hendelsen; standard fixture 02:55:12 | Samme aktivitetsport, minst 40 minutter etter ny array-hendelse; standard fixture 00:55:12. Ingen passiv venting |
 | Kapittel 3, minimum ved overgang | 03:40 | 02:20 |
 | Kapittel 4, minimum ved overgang | 04:35 | 03:20 |
 | Kapittel 5, minimum ved overgang | 05:00 | 04:10 |

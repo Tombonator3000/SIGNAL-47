@@ -22,6 +22,7 @@ Se hele tabellen med gamle og nye hendelsestider i [EVENING_TIMELINE.md](EVENING
 | Dale / overlevering | Skiftpapir datert 23:20 | Telefon etter faktisk SARO-parkering 18:00 |
 | Survey-fadens slutt | 02:13:41 | 00:13:41 |
 | Residual | 02:13:47 | 00:13:47 |
+| Kapittel 2, standard fixture | 02:55:12 | 00:55:12; minst 40 minutter etter array-hendelsen |
 | Kapittel 3, tidligste overgang | 03:40 | 02:20 |
 | Kapittel 4, tidligste overgang | 04:35 | 03:20 |
 | All Night, tidligste overgang | 05:00 | 04:10 |
@@ -38,19 +39,22 @@ Ettermiddag, vestsol, skumring og blåtime bruker den levende himmelen og native
 
 ## Kontrollgrunnlag
 
-- Editorbygg: PASS etter retting av UE 5.8 JSON-nøkler og kompilatorfeil. Siste bygg 11 inkluderer tids-/lagrings-/radio-/avslutnings- og skumringsrettelsene, uten UBA.
-- Linux Development-pakke: PASS, BuildCookRun 183,70 sekunder, ingen materialfallback ved cook. Kandidaten ble bygget fra `d3000904`; senere endringer er dokumentasjon. Binær-/pakkefilene og krediteringen er hashet i `candidate-manifest.json`.
+- Editorbygg: PASS etter retting av UE 5.8 JSON-nøkler og kompilatorfeil. Siste bygg 13 inkluderer alle rettelsene, uten UBA.
+- Linux Development-pakke: PASS, siste BuildCookRun 107,52 sekunder, ingen materialfallback ved cook. Sluttkandidaten er bygget fra `3d321da1`. Binær-/pakkefilene og krediteringen er hashet i `candidate-verified-manifest.json`. Den første frosne kandidaten fra `d3000904` er beholdt med egen manifest for regresjonsgrunnlaget.
 - Siste pakkede `-S47SelfTest`: PASS, 1254 ytre sjekker; pakktesten inneholder dessuten 60 interne kontrollpunkter. Dette er API-/tilstandstester, ikke menneskelig gjennomspilling.
 - Pakkeeksport `build_pack.py --check` og stemmekatalogens 12 isolerte kontroller: PASS. Katalogtestene brukte midlertidige syntetiske PCM-filer, ikke produksjonsstemmer.
 - Innkjøring og faktisk SARO-parkering: nye bilder er visuelt gjennomgått, med «LATE AFTERNOON» uten minutt-HUD og varmt 18:00-lys uten stjerner. Første direkte gåtest krysset rekkverket og ble rettet til den faktiske åpningen. Se også lysrapportens avgrensning.
 - Burgerens betaling, ventende svar og spillerposisjon: PASS gjennom faktisk disk-snapshot, ny `FS47SaveStore` og full `Flow.StartGame`-lasting. Ett kjøp, ingen duplisering, ingen ch5. Bestillingsbildet viser dialog og 3D-mat i hånden.
 - Pakket direkte rute: PASS COMPLETE og normal exit, 183,1 sekunder aktiv kontrollrute og 2647,4 kjørte meter. Fysisk kjøring/gåing, engangsankomst, telefonens disk-/verdenslasting, tre dokumenter én gang og frigitt gammel rutine er kontrollert. Dette er utviklerkontrollere og API-dialog, ikke menneskelige tastetrykk.
 - Første komplette editor-burgerrute bestod selve reisen, men feilet ved avslutning fordi `Stop()` traff allerede fjernede verdensnoder. `fc8d839b` retter livsløpet; den pakkede direkte ruten avslutter rent. Første 18:35-bilde viste for mange stjerner; `9e7a921a` retter dempingen, og pakket retak er visuelt PASS.
-- Alle fire pakkede åpningsruter: PASS COMPLETE, normal exit og ingen fatal-/assert-feil. Burger og sandwich inkluderer disk-/verdenslasting etter betaling, og alle fire inkluderer lasting under D01. SARO-pickupens lagrede `odo.m` og `odo.x` er fortsatt null etter innkjøringen. Se `route-results.json` i evidensmappen.
-- Pakket kapittelregresjon: under arbeid. Resultat oppdateres før levering.
+- Alle fire pakkede åpningsruter på `d3000904`: PASS COMPLETE, normal exit og ingen fatal-/assert-feil. Burger og sandwich inkluderer disk-/verdenslasting etter betaling, og alle fire inkluderer lasting under D01. SARO-pickupens lagrede `odo.m` og `odo.x` er fortsatt null etter innkjøringen. Se `route-results.json` i evidensmappen.
+- Pakket regresjon fra `d3000904`: PASS for legacy/ny residual, faktisk signalutløsning på begge tidslinjer, gammel utskrift, nye kapittel 3/4/5, THE EVENT på begge tidslinjer og vanlig New night. Telefonens sikte-/brukspunkt er også PASS fra lagret ankomst. Første sikteoppsett var ugyldig fordi parkeringsoppsettet flyttet kameraet etter `S47Face`; retaket bruker en uttrykkelig lagringsfixture og samme native trace/Use som spilleren.
+- Legacy-migrering gjennom faktisk meny og disk: PASS, ni auditpunkter. En isolert v2-fixture uten `timelineVersion` lastes og lagres som state v3 / timeline 1. Klokke, bildets 02:13:47-stempel, ID/tekst/sted og bildefilens bytes beholdes; legacy-merknad legges til, ukjent utskriftstid forblir ukjent. Bildet i denne syntetiske testfilen er en eksisterende runtime-PNG, ikke en påstått kameraeksponering. Se `legacy-migration-audit.json`.
+- Siste bilde av besøksbilen avdekket at den første standardposisjonen `(2,0,8)` lå inne i annexets sokkel. `1f8befc3` flytter den til grusen `(4.5,-0.62,14)` og retter samme presentasjonspose ved lasting. Retak viser begge biler atskilt og besøksbilen fri av sokkelen. Klokke, papirer, bilder og servicepickup endres ikke.
+- Sluttkandidat `3d321da1`: PASS, 1254 selvtester og hele burgerruten igjen, 223,7 sekunder kontrolltid, inkludert betaling/disk/verdenslasting, engangsankomst, telefonlasting, dokumenter og normal exit. Den gamle service-returmeldingen med 17:20 er undertrykt under innkjøringen; parkeringsretaket viser bare 18:00. Alle fem siste bilder er åpnet og visuelt gjennomgått. Ingen utestående FAIL i leveransens funksjonskontroller; det ugyldige sikteoppsettet og de rettede visuelle feilene er beholdt som historisk evidens.
 - Menneskelig gjennomspilling, lytting og målt total spilletid: UNVERIFIED. Faktisk film/trafo/kontor/anomaly spotting hører til senere trinn.
 
-Evidens ligger i `/home/tom/scratch-bm/Signal47-evening-runtime/`. Kandidaten er `candidate/Linux/Signal47.sh` i den mappen. Kilde, editor-kandidat, pakket kandidat og installert standard holdes atskilt. Alle tester bruker isolert `UserDir`. Kandidaten er ingen installert spillutgave eller fullnattgodkjenning.
+Evidens ligger i `/home/tom/scratch-bm/Signal47-evening-runtime/`. Sluttkandidaten er `candidate-verified/Linux/Signal47.sh` i den mappen. `candidate` og `candidate-final` er tidligere frosne testpakker. Kilde, editor-kandidat, pakket kandidat og installert standard holdes atskilt. Alle tester bruker isolert `UserDir`. Kandidaten er ingen installert spillutgave eller fullnattgodkjenning. De midlertidige Content-lenkene er fjernet med målassetene bevart, og genererte OpenOrder-endringer er gjenopprettet.
 
 | Pakket rute | Kontrolltid | Kjørte meter | Resultat |
 |---|---:|---:|---|
@@ -59,17 +63,17 @@ Evidens ligger i `/home/tom/scratch-bm/Signal47-evening-runtime/`. Kandidaten er
 | Sandwich i dineren | 223,7 s | 2651,5 | PASS, kjøpt/spist, ikke tatt |
 | Bare vann | 221,1 s | 2651,5 | PASS, ingen matkjøp |
 
-Kontrolltid gjelder den automatiserte ruten med korte API-dialogpauser, ikke menneskelig lesetid eller målt spilletid. Oppstart og nedstenging er utenfor disse tidene.
+Tabellen gjelder den frosne `d3000904`-kandidaten. Kontrolltid gjelder den automatiserte ruten med korte API-dialogpauser, ikke menneskelig lesetid eller målt spilletid. Oppstart og nedstenging er utenfor disse tidene; kjørelengdene er kontrollens posisjonsanslag.
 
-Alle fem påkrevde bilder er faktiske 1600 × 900-opptak fra samme pakkede kandidat, åpnet og visuelt gjennomgått. `required-images.json` inneholder hasher og proveniens.
+Alle fem påkrevde bilder er faktiske 1600 × 900-opptak fra samme sluttkandidat (`3d321da1`), åpnet og visuelt gjennomgått. `required-images.json` inneholder hasher og proveniens.
 
 | Utsnitt | Bilde |
 |---|---|
-| Innkjøring, uten minutt-HUD | [commute](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-commute.png) |
-| Diner, betalt bestilling og mat i hånden | [diner-order](/home/tom/scratch-bm/Signal47-evening-runtime/packed/burger/burger-diner-order.png) |
-| Faktisk parkering og engangsstart 18:00 | [parking](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-parking.png) |
-| D01 på telefon ved 18:00 | [phone](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-18-phone.png) |
-| SARO i skumring, fremoveroppsett 18:35 etter D01 | [dusk](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-dusk.png) |
+| Innkjøring, uten minutt-HUD | [commute](/home/tom/scratch-bm/Signal47-evening-runtime/verified/burger/burger-commute.png) |
+| Diner, betalt bestilling og mat i hånden | [diner-order](/home/tom/scratch-bm/Signal47-evening-runtime/verified/burger/burger-diner-order.png) |
+| Faktisk parkering og engangsstart 18:00 | [parking](/home/tom/scratch-bm/Signal47-evening-runtime/verified/burger/burger-parking.png) |
+| D01 på telefon ved 18:00 | [phone](/home/tom/scratch-bm/Signal47-evening-runtime/verified/burger/burger-18-phone.png) |
+| SARO i skumring, fremoveroppsett 18:35 etter D01 | [dusk](/home/tom/scratch-bm/Signal47-evening-runtime/verified/burger/burger-dusk.png) |
 
 ## Integrasjon og kilder
 
