@@ -102,8 +102,8 @@ void FS47Evening::ControlTakeawayTest(double Dt)
  const auto Prepare = [this, &T, &Fail](const FString& Id)
  {
   FS47Obj Obj;
-  if (const auto* I = M->Inter->Get(Id)) Obj = I->Object;
-  else if (const auto* I = M->Web->Item(Id)) Obj = M->Web->ObjAt(I->Node);
+  if (const auto* Entry = M->Inter->Get(Id)) Obj = Entry->Object;
+  else if (const auto* Item = M->Web->Item(Id)) Obj = M->Web->ObjAt(Item->Node);
   if (!Obj.IsValid() || M->Inter->LabelOf(Id).IsEmpty()) { Fail(TEXT("target has no active physical interaction: ") + Id); return false; }
   const FBox Bounds = Obj.WorldBox(); const FVector Target = Bounds.IsValid ? Bounds.GetCenter() : Obj.WorldPosition();
   // Camera fixtures stand on normal walkable, collider-clear ground around the actual
