@@ -240,6 +240,9 @@ void FS47Evening::RadioStep(double Dt)
 {
  if (Commute()) { if (auto* T=M->World->CabTruck()) T->SetRadio(S47Radio::DialX(1420),bRadioOn); }
  const bool Audible=Commute() && M->World->bDriving && bRadioOn && !M->ModalOpen();
+ // The toast can expire while the receiver is paused. Republish the same line
+ // on return, retaining its unread duration and cursor rather than skipping it.
+ if (!Audible) RadioSpokenLine.Empty();
  const auto* S=RadioPack.CurrentScene();
  if (Audible && !S && RadioRest<=0)
  {
