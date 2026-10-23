@@ -1,5 +1,5 @@
 {
-  "_doc": "Original 1420 AM station, exported from Tools/radioarray/station. Public lobby and its door are separate from the closed broadcast studio. Existing studio photo is recessed behind the real console and chair; ON AIR, 1420 AM sign, mast, buzzer dialogue and anomaly proxies retain their state. Shell trimming composes the existing gas-station cut in S47RadioStation.cpp after Props. Coordinate mapping verified by Unreal FBX probe on 2026-10-23: Blender X -> Unreal X, Blender Y -> Unreal -Y; Props yaw=-90. Rectangles follow that same mapping. No optional authored mast is placed.",
+  "_doc": "Original 1420 AM station, exported from Tools/radioarray/station. Public lobby and its door are separate from the closed broadcast studio. Existing studio photo is recessed behind the real console and chair; ON AIR, 1420 AM sign, mast, buzzer dialogue and anomaly proxies retain their state. Shell trimming composes the existing gas-station cut in S47RadioStation.cpp after Props. Coordinate mapping verified by Unreal FBX probe on 2026-10-23: Blender X -> Unreal X, Blender Y -> Unreal -Y; Props yaw=-90. Rectangles follow that same mapping. No optional authored mast is placed. Entrance zone overlaps the lobby by 0.85m so the radius-0.27 walker can fit inside either individual rectangle across the threshold.",
   "area": "diner",
   "parent": "world.town.group",
   "walk": "road",
@@ -47,7 +47,7 @@
         [
           -5.2,
           -4,
-          4.7,
+          4.1,
           6.2
         ]
       ],
