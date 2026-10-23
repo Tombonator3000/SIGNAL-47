@@ -187,8 +187,8 @@ void FS47EveningVisual::ParkPersonal(const FVector& Position, double Heading)
 
 void FS47EveningVisual::SetParked(bool bOn)
 {
-	bParked = bOn;
-	if (!bOn) { PersonalPark = FVector(2, 0, 8); PersonalHeading = UE_DOUBLE_PI; }
+	if (bOn) ParkPersonal(PersonalPark, PersonalHeading);
+	else { bParked = false; PersonalPark = FVector(4.5, -0.62, 14); PersonalHeading = UE_DOUBLE_PI; }
 }
 
 void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, bool bArrived,

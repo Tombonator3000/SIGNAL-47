@@ -473,6 +473,7 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
  auto Check=[&](bool Good,const TCHAR* What){Valid&=Good;Lines.Add(FString(Good?TEXT("PASS evening vehicles: "):TEXT("FAIL evening vehicles: "))+What);};
  FS47EveningVisual V(nullptr);
  const FVector Bay(4.5,-0.62,14), Moved(-12,-0.62,14);
+ V.SetParked(false);V.SetParked(true);Check(V.ParkedPosition().Equals(Bay),TEXT("missing old visitor pose restores the clear visitor bay"));
  V.ParkPersonal(Bay,UE_DOUBLE_PI);Check(V.ParkedPosition().Equals(Bay),TEXT("visitor bay is outside entrance, annex and service pad"));
  V.ParkPersonal(Moved,UE_DOUBLE_PI);Check(V.ParkedPosition().Equals(Moved),TEXT("moving the car to clear ground preserves its pose"));
  for (const FVector& P : {FVector(2,0,8),FVector(8.9,0,8),FVector(8,0,1),FVector(4,0,4)})
