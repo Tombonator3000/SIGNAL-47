@@ -78,7 +78,7 @@ def material(row, dest, src):
         scale = float(row.get('uv_scale', 1))
         if scale != 1:
             uv = expression(mat, unreal.MaterialExpressionTextureCoordinate, u_tiling=scale, v_tiling=scale)
-            check(name+' UV scale connection', M.connect_material_expressions(uv, '', sample, 'Coordinates'))
+            check(name+' UV scale connection', M.connect_material_expressions(uv, '', sample, 'UVs'))
         prop = {'base_color': unreal.MaterialProperty.MP_BASE_COLOR, 'normal': unreal.MaterialProperty.MP_NORMAL,
                 'roughness': unreal.MaterialProperty.MP_ROUGHNESS}[role]
         if role == 'normal':
