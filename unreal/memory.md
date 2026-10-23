@@ -2,6 +2,16 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Anomaly-pilot, Codex 23. oktober 2026
+
+- `codex/anomaly-pilot` implementerer N01/N02/A02/P01 på den flettede kveldstarten. Bruk `ANOMALY_RUNTIME.md` som gjeldende leveranse- og testrapport. Senere kontor/trafo/VHS, bygningsløft og fullnatt er fortsatt egne leveranser.
+- Gjenbruk kamera/instantalbum, docs/notatbok og authored N01-manus. Undersøkelser har separate referanser, eksponeringer, reviderbare vurderinger og fysisk oppfølging; `TownSeen` blir aldri automatisk et bevist funn. Tidlige paneler røper ikke P01 eller senere figurplassering.
+- Save v3 får `anomaly` versjon1 og rutinekontrollpunkt før survey. Arkivets faktiske 17:10-JPEG lagres med saken som egen ID/url/clock, så senere programversjoner ikke bytter gamle referansebilder. Albumets `unavailable` følger en manglende original gjennom disk og verdenslasting; erstatningskort er aldri fotografisk bevis.
+- Ett eksisterende pappobjekt har vindus-/studioposisjon med samme prisetikett og splitt. Vinduets høyde kommer fra faktisk byggproxy, ikke skrånende terreng. Siktkontroll følger albumets regler for synlige opake flater; usynlige hitboxer sperrer ikke foto. Ikke hardkod meshnumre.
+- Tidlig kamera fullfører ikke B-12/mørkerom; rutinekjøring utløser ikke ch5. 04:55, Earl 04:00, P13 uten anomalikvote, historisk 1947 og 47 sekunders finale er bevart. Ingen designregel er bøyd for mer skrekk.
+- Sluttspillkode 1d3baeb0 og separat testverktøy c6b4f023; core 609a9c6d innflettet. Pakke4, 1278 selvtester, hel pilot i High/VHS og Low/Clean, feilfilm, migrering, 7/7 kortregresjoner, direkte/burger med stemmer og eksisterende TV-opptak PASS. Fire sluttbilder visuelt kontrollert. Statisk Caliche 1440p p95 7,921 → 7,967 ms (+0,58 %), avgrenset av/på-kontroll. Bevis/proveniens i ~/scratch-bm/Signal47-anomaly-pilot og ANOMALY_RUNTIME.md.
+- Én tung UE-prosess, 10 GiB og ingen installed-game-grace. Kilde, pakket kandidat og installert standard holdes adskilt. Ingen push/PR/installasjon, Claude integrerer. Menneskelig input, lytting, uro og fullnatt må merkes UNVERIFIED inntil faktisk prøvd.
+
 ## Kveldspakkens 109 stemmer, Codex 23. oktober 2026
 
 - Produksjon a4626053 er koblet til runtime i b7faff35/6ade7a94/3345f01f/9d638a0b. Streng import må kjøres med original-WAV-er; den sjekker hash, målte tider, roller og alias før skriving. 109 originaler gir 110 cues, D61 deler første D01-fil. Generert Audio/SoundWave skal aldri committes.
@@ -12,7 +22,7 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
 ## Kveldstart og tidslinje, Codex 23. oktober 2026
 
-- `codex/evening-runtime` implementerer Toms trinn 1 og 2 i Unreal. Generert manusadapter, egen personbil med delt kjørerigg, valgfri diner/mat, engangsankomst 18:00 og D01 kun i telefon. Tre overleveringspapirer gis én gang; den eksisterende rack-/survey-rutinen fortsetter. Senere kontor/VHS/trafo/anomaly-innhold er datadrevne porter, ikke implementert verdensinnhold.
+- `codex/evening-runtime` implementerer Toms trinn 1 og 2 i Unreal. Generert manusadapter, egen personbil med delt kjørerigg, valgfri diner/mat, engangsankomst 18:00 og D01 kun i telefon. Tre overleveringspapirer gis én gang; den eksisterende rack-/survey-rutinen fortsetter. Senere kontor/VHS/trafo er datadrevne porter. N01/N02/A02/P01 er siden implementert som egen anomaly-pilot, se statusen ovenfor.
 - Nye saker har `v=3`, `timelineVersion=2`, residual 00:13:47 og kapittelminimum 02:20/03:20/04:10. Midnatt krysses på en sammenhengende akse. Gamle saker beholder eksplisitt legacy-versjon og 02:13-referanser. 1947-opptaket og finalen 05:29:00 til 05:29:47 er urørt. Hele gammel/ny-tabellen og komprimeringsreglene står i `EVENING_TIMELINE.md`.
 - `printoutAt` er nå faktisk hentetid, separat fra solve/event. Gamle saves lagret aldri den tiden: en gjenopprettet utskrift merkes derfor TIME NOT RECORDED / reconstructed legacy copy. Fotografier omskrives ikke. Ikke oppgi en rekonstruert hentetid som original.
 - Kveldsradioen har egen vert og separat mottakerkø. De 109 takesene finnes nå og importeres strengt med hash-/timingskontroll; se `EVENING_AUDIO.md`. Dale går gjennom receiverfilter, host gjennom RadioBus, servitrisen er posisjonell. Eksisterende countrymusikk har musikkrom mellom innslagene. Stemmeimporthjelpen produserer ingen stemmer. Nye rolleopptak virker uavhengig av generell Kinski-opplesning.
@@ -33,7 +43,7 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
 ## Gameplayretning (2026-10-23)
 
-- Tom sluttet seg til aktiv anomaly spotting, mer praktisk bruk av Caliche og gradvis UFO-/alienopptrapping, og ba om en utdypet plan. Se `ANOMALY_PLAN.md`. Detaljene er anbefalt design; ny gameplay er ikke implementert.
+- Tom sluttet seg til aktiv anomaly spotting, mer praktisk bruk av Caliche og gradvis UFO-/alienopptrapping, og ba om en utdypet plan. Se `ANOMALY_PLAN.md`. Detaljene er anbefalt design; N01/N02/A02/P01 er siden implementert på `codex/anomaly-pilot`, se ANOMALY_RUNTIME.md.
 - Tom ba senere om tidligere start, ny trafostasjon i ørkenen og bedre bybygninger. Planen fikk 18:00-start 13. april og residual 00:13:47 den 14. april, i stedet for 02:13:47. Tidslinjen er nå implementert på `codex/evening-runtime`; se den nyere statusen ovenfor. Finalen 05:29 beholdes, og historiske 1947-klokkeslett skal ikke masseflyttes.
 - Tom valgte deretter spillbar innkjøring før skiftet: lystig radio gjennom Caliche, valgfritt matstopp i dineren, videre til SARO der skiftet begynner 18:00. Innledningen har egen fase uten løpende skiftklokke, slik at matstopp ikke gir tidstilbakesprang. Tidlig dinerbesøk aktiverer ikke ch5/P13/Ward. Reisekjøretøy og servicepickup holdes adskilt.
 - N01s grunnmateriale finnes nå i overleveringsmappen på SARO; innkjøring blir ikke en obligatorisk papirjakt. Materialet brukes mot utskriften etter midnatt. Dokumentert byreferanse må finnes også når matstopp hoppes over. Earl har Night Line 00:00–04:00, ikke kveldsvakt; ny datoakse, radiosending, butikker, NPC-er og totimerskravet må tåle midnatt.
@@ -45,7 +55,7 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - Første pilot bruker N01/N02/A02/P01 med kveldens referanser. All Night anbefales fra 04:10, slik at det er mer tid i byen og mulighet for lysbølgen før 04:55. Gamle kapittelminimum og underhendelser må retimes samlet.
 - Ny trafostasjon, Caliche Junction Substation, skal ha en vanlig feil/kontroll på første tur (T01) og en annerledes oppfølging senere (T02). Den er ikke STATION 01, og SAROs K3 blir ikke byens strømnettbryter.
 - Alle bybygningers utvendige skall skal forbedres, med første sammenhengende gatebit ved bensinstasjon/suvenir/studio. Diner, sheriff og vaskeri følger med nødvendige rom; øvrige bygg får samme utvendige kvalitet. Bevar egne Blender-kilder, ankre og interaksjoner. Bruk eksisterende konseptbilder som visuell retning; material-/lyspasset alene oppfyller ikke bygningsbestillingen.
-- Pilotens 20–30 minutter gjelder avgrenset byinnhold med bevis gjennom lagring og tydelig testkutt. Kveldsoverlevering, trafo og mellomkapitler kommer i tillegg og må måles. Runtime, menneskelig opplevelse og ny ytelse er UNVERIFIED.
+- Pilotens 20–30 minutter gjelder avgrenset byinnhold med bevis gjennom lagring og tydelig testkutt. Kveldsoverlevering, trafo og mellomkapitler kommer i tillegg og må måles. Se ANOMALY_RUNTIME.md for pilotens senere runtimekontroll. Menneskelig opplevelse og full spilletid er fortsatt UNVERIFIED.
 
 
 ## Native belysning (2026-10-22)

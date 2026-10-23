@@ -2,13 +2,13 @@
 
 Dato: 23. oktober 2026. Oppdatert med innkjøring før skiftet, Dale med Kinski-stemme, hemmelig kontor, trafostasjon og bedre bybygninger. Gjelder bare Unreal-versjonen.
 
-Tom har sluttet seg til retningen med aktiv etterprøving, en nyttigere by og gradvis fremmed tilstedeværelse. Detaljene nedenfor er anbefalt design og rekkefølge for gjennomføring. De er ikke implementert. Spillet skal gi spilleren stadig bedre forståelse av hvordan et avvik kan undersøkes, samtidig som det blir vanskeligere å føle seg trygg på hva som observerer dem.
+Tom har sluttet seg til retningen med aktiv etterprøving, en nyttigere by og gradvis fremmed tilstedeværelse. Detaljene nedenfor er anbefalt design og rekkefølge for gjennomføring. Åpningen/tidslinjen og første N01/N02/A02/P01-pilot er siden implementert; [ANOMALY_RUNTIME.md](ANOMALY_RUNTIME.md) gir gjeldende kilde-, pakke- og teststatus. Senere plansteg gjenstår. Spillet skal gi spilleren stadig bedre forståelse av hvordan et avvik kan undersøkes, samtidig som det blir vanskeligere å føle seg trygg på hva som observerer dem.
 
 Tom har valgt at skiftet starter 18:00 søndag 13. april ved ankomst til SARO. Før dette får spilleren en rolig, spillbar kjøretur gjennom byen med lystig radiomusikk og valgfritt matstopp i dineren. Dale er kollegaen som overleverer skiftet på telefon og senere kan nås på telefon eller tjenesteradio/walkie, med prosjektets Kinski-stemme. Han vises aldri fysisk. Nøkkelen til kontoret hans og hans private UFO-undersøkelser blir en del av etterforskningen.
 
 Den første store signalhendelsen anbefales fortsatt flyttet fra 02:13 til 00:13 natt til mandag. En ny trafostasjon gir en vanlig arbeidsoppgave og en senere kontroll av det uforklarlige. Alle bybygningene får en utvendig oppgradering; de viktigste spillestedene får også gjennomarbeidede, synlige eller tilgjengelige rom.
 
-Manuspakken ligger i [Narrative/EveningShift](Narrative/EveningShift/README.md), med engelsk dialog, dokumenter, filmmanus og maskinlesbare betingelser. Den er forfatterinnhold, ikke en aktiv runtimeimplementering.
+Manuspakken ligger i [Narrative/EveningShift](Narrative/EveningShift/README.md), med engelsk dialog, dokumenter, filmmanus og maskinlesbare betingelser. Innkjøring, telefonoverlevering og N01 er koblet til runtime. Senere kontor-/trafo-/VHS-scener er fortsatt forfatterinnhold.
 
 Dette erstatter tidsplanen fra første planutgave. Første produksjonsmål er en fungerende kveld og to bybesøk med aktive sammenligninger og bevis som følger samme sak. Trafostasjonens to forskjellige besøk prøves som neste sekvens. Hele kveldens og nattens transport- og tidskontinuitet må deretter prøves uten testhopp.
 

@@ -6,6 +6,8 @@ Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen ko
 
 Ny fortellerretning og manus: [ANOMALY_PLAN.md](ANOMALY_PLAN.md) og [kveldspakken](Narrative/EveningShift/README.md). Pakken inneholder innkjøring/diner, Dales telefon-/radiodialog, kontorfunn, dokumenter og VHS-manus. Innkjøring, telefonoverlevering og ny tidslinje har runtime i kandidaten på `codex/evening-runtime`; se [runtime-rapporten](EVENING_RUNTIME.md). Senere kontor-/felt-/filminnhold er fortsatt forfattergrunnlag. Claude har siden integrert og installert runtimeåpningen. De 109 nye takesene er koblet til lydløypa på samme gren; se [lydrapporten](EVENING_AUDIO.md). Codex oppdaterer ikke installasjonen.
 
+Første anomaly-pilot på `codex/anomaly-pilot` gir N01/N02/A02/P01 med kamera, aktive sammenligninger, fysisk oppfølging og lagring. [ANOMALY_RUNTIME.md](ANOMALY_RUNTIME.md) skiller kilde, pakket kandidat, testbevis og gjenstående menneskelig prøve. Ingen installasjon eller publisering inngår i denne leveransen.
+
 ## Spill
 
 ```sh
