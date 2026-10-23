@@ -1,0 +1,120 @@
+{
+  "synthetic": true,
+  "voice_label": "Evening Shift synthetic cast (Dale = Kinski synthetic parody; fictional CC0-based waitress and evening host)",
+  "language": "en",
+  "generator": "VoiceStudio 0.5.6 / OmniVoice",
+  "scope": "109 unique clean takes for unreal/Narrative/EveningShift: 56 DALE, 43 WAITRESS, 10 RADIO_HOST. D61_FIXED_FRAGMENT_001 reuses D01_HANDOVER_001 (recording_aliases); no new take. The pack has no WARD or ATTENDANT cues.",
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "request_settings": {
+    "engine": "omnivoice",
+    "language": "en",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast (documented VoiceStudio default, same as the Kinski corpus: 80 Hz highpass, compressor, mild shelf EQ, limiter; a studio mastering chain, not a phone/radio channel filter)",
+    "seed_policy": "42 for every take; a broken take may be regenerated with the next seed, logged in retakes.json"
+  },
+  "roles": {
+    "DALE": {
+      "voice_profile": "kinski",
+      "profile_id": "3cf0d3a5",
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
+      "voice_profile_origin": "Original Klaus Kinski argument with Walter Saxer on the Fitzcarraldo set, reproduced in Werner Herzog's documentary Mein liebster Feind (1999). A locally selected 6.25-second excerpt conditions the synthetic parody voice; the original recording is not bundled.",
+      "reference_source_url": "https://www.dailymotion.com/video/x2siao8",
+      "reference_source_interval_seconds": [
+        156.42,
+        162.67
+      ],
+      "basis": "Tom's explicit instruction: same profile and settings as the existing Kinski corpus (web/production/kinski/provenance.json)."
+    },
+    "WAITRESS": {
+      "voice_profile": "waitress",
+      "profile_id": "84bc5b84",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4",
+      "source_recording": {
+        "role": "woman",
+        "repository": "https://huggingface.co/kyutai/tts-voices",
+        "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+        "file": "voice-donations/Selfie.wav",
+        "source_url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/Selfie.wav",
+        "original_bytes": 480044,
+        "license": "CC0-1.0 as explicitly stated for voice-donations in the pinned repository README",
+        "license_evidence": "https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations",
+        "readme_sha256": "47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b",
+        "original_sha256": "076968c3122520f3412eb7090e8c1c3f75fe57be1e24a2f96465583d84c71e16",
+        "duration": 10.0,
+        "autocorrelation_f0_median_hz": 192.7710843373494,
+        "voiced_frames": 68,
+        "method": "40ms autocorrelation, RMS gate .015, lag40-230 at16k, normalized correlation >.5. Register estimate only; octave errors possible. Not age/gender verification.",
+        "selected_interval_seconds": [
+          4.5,
+          9.98
+        ],
+        "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4",
+        "conditioning_text": "It says it's the last 10 seconds, and if that's the case, and I'd shut up previously, there would just be 10 seconds."
+      },
+      "basis": "No existing waitress profile. Unnamed CC0 'woman caller' profile from the radiocast bank; see casting.json."
+    },
+    "RADIO_HOST": {
+      "voice_profile": "evening_host",
+      "profile_id": "d65b2bb6",
+      "reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6",
+      "source_recording": {
+        "role": "old",
+        "repository": "https://huggingface.co/kyutai/tts-voices",
+        "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+        "file": "voice-donations/oldNerd.wav",
+        "source_url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/oldNerd.wav",
+        "original_bytes": 480044,
+        "license": "CC0-1.0 as explicitly stated for voice-donations in the pinned repository README",
+        "license_evidence": "https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations",
+        "readme_sha256": "47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b",
+        "original_sha256": "094f2a17864a9715a17c89d68189fc1ab1e20b1537f66decb6105c7493a78800",
+        "duration": 10.0,
+        "autocorrelation_f0_median_hz": 101.91082802547771,
+        "voiced_frames": 172,
+        "method": "40ms autocorrelation, RMS gate .015, lag40-230 at16k, normalized correlation >.5. Register estimate only; octave errors possible. Not age/gender verification.",
+        "selected_interval_seconds": [
+          0,
+          9.8
+        ],
+        "reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6",
+        "conditioning_text": "It's about 15 degrees, it's raining, very cozy, a great day to hack, and I can't wait to hear my voice cloned."
+      },
+      "basis": "No existing evening-host profile. Unnamed CC0 'old caller' profile; not Earl (494881fc) and not Kinski; see casting.json."
+    }
+  },
+  "licence_notes": [
+    "VoiceStudio is AGPL-3.0-only.",
+    "OmniVoice code is Apache-2.0; the downloaded model card states CC-BY-NC for the pre-trained weights because of training-data constraints (e.g. Emilia). CC0 source audio does not lift that restriction.",
+    "Kinski reference: a short excerpt from a copyrighted documentary; synthetic parody, no licence, consent or endorsement claimed. Original not bundled.",
+    "Kyutai voice-donations (Selfie.wav, oldNerd.wav) are CC0-1.0 as stated in the pinned repository README; donor gender, age and accent are not verified.",
+    "Source recordings, reference WAVs, model weights, profile paths and the local API are build-time only and are not committed or shipped."
+  ],
+  "postprocessing": "Raw 24 kHz model output trimmed to detected speech (-45 dBFS, 10 ms blocks) plus 80 ms lead / up to 200 ms tail, resampled to 48 kHz with soxr, one constant gain toward -20 dBFS active RMS (-50 dBFS 20 ms gate, the Kinski corpus target) capped at -2 dBFS sample peak, 10 ms fade-in / 30 ms fade-out inside the pads, PCM16 mono WAV without metadata. No compression, pitch shift, time stretch or channel filter in post.",
+  "runtime_assets": "Clean WAV takes only, outside Git (see README). The game applies the phone/walkie/radio filter at playback.",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED"
+}

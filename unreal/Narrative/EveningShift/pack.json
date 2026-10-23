@@ -201,7 +201,7 @@
     "azimuth_deg": 26
   },
   "production": {
-    "audio_status": "pending",
+    "audio_status": "voice_takes_recorded",
     "video_status": "pending",
     "runtime_status": "not_integrated",
     "voice_target": {
@@ -209,7 +209,7 @@
       "sample_format": "PCM16",
       "channels": 1
     },
-    "note_nb": "Manus og produksjonsmål. Ingen nye lyd-/videoassets eller import er utført."
+    "note_nb": "Manus og produksjonsmål. De 109 rene stemmetakene er produsert (voice/README.md); kanalmiks, musikk, video og Unreal-import er ikke utført."
   },
   "recording_aliases": {
     "D61_FIXED_FRAGMENT_001": "D01_HANDOVER_001"

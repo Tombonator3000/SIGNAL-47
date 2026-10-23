@@ -1,0 +1,774 @@
+{
+  "version": 1,
+  "note_nb": "Avledet fra de ferdige WAV-filene av verify.py. Tider er sekunder i hvert klipp (tale start/slutt).",
+  "format": {
+    "sample_rate_hz": 48000,
+    "sample_format": "PCM16",
+    "channels": 1
+  },
+  "takes": {
+    "I01_DRIVE_001": {
+      "file": "EveningShift/I01_DRIVE_001.wav",
+      "sha256": "6a020bb6bff1d22b0af9f63b642c39e82208df8be72cca4aab0cd39fea58a079",
+      "duration_seconds": 5.2,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 5.07
+    },
+    "I01_DRIVE_002": {
+      "file": "EveningShift/I01_DRIVE_002.wav",
+      "sha256": "7c4b5f863595fa91cc68aa1b5dacf60e669bf100db5a43ffcab8ae68b88b5b04",
+      "duration_seconds": 4.96,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.84
+    },
+    "I01_DRIVE_003": {
+      "file": "EveningShift/I01_DRIVE_003.wav",
+      "sha256": "2fd5bf63831d038fe35954b39debd512828416cc684f26bc6d7f4f5755a58fbd",
+      "duration_seconds": 7.27,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 7.12
+    },
+    "I01_DRIVE_004": {
+      "file": "EveningShift/I01_DRIVE_004.wav",
+      "sha256": "e6170c09ddd45da3d803a469da7ba6a4fdb1deb274ba541456b4030ff5ee70c5",
+      "duration_seconds": 4.77,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.63
+    },
+    "I01_DRIVE_005": {
+      "file": "EveningShift/I01_DRIVE_005.wav",
+      "sha256": "d6db9e31d9bf74292d1c4d9436e8092f560437038286b8f3a1d1e08f1f4bebb8",
+      "duration_seconds": 5.67,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 5.54
+    },
+    "I01_DRIVE_006": {
+      "file": "EveningShift/I01_DRIVE_006.wav",
+      "sha256": "d0649c0c7cc69c1d33d46c49fa98ead3f4a74ac8146db2e5bda329ebe015f202",
+      "duration_seconds": 1.51,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 1.37
+    },
+    "I02_DINER_HELLO_001": {
+      "file": "EveningShift/I02_DINER_HELLO_001.wav",
+      "sha256": "8ca57c777ccb5be5ff0c4ddfbbed46a0ed07262e25cc6678e5ea0e812cf16512",
+      "duration_seconds": 1.84,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.69
+    },
+    "I02_DINER_HELLO_002": {
+      "file": "EveningShift/I02_DINER_HELLO_002.wav",
+      "sha256": "49d8e7c77a53e5704889c973074c0cb45cdbcec4d467d87966da53c449b161bb",
+      "duration_seconds": 3.13,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.93
+    },
+    "I02_DINER_HELLO_003": {
+      "file": "EveningShift/I02_DINER_HELLO_003.wav",
+      "sha256": "93e176cd333f2766dcd7458f16118a3a5fb1f199a6d9765ff9c5c9e27bde4489",
+      "duration_seconds": 2.6,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.45
+    },
+    "I03_MENU_001": {
+      "file": "EveningShift/I03_MENU_001.wav",
+      "sha256": "56428b6a71ff8459745a37b36903be0366afc5537e031078e09c36bc965de337",
+      "duration_seconds": 2.16,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.03
+    },
+    "I03_MENU_002": {
+      "file": "EveningShift/I03_MENU_002.wav",
+      "sha256": "8c03ff382606c49e7a2a2892077ff0fc1cd047dce873e91857d22570368c8460",
+      "duration_seconds": 2.86,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.66
+    },
+    "I03_MENU_003": {
+      "file": "EveningShift/I03_MENU_003.wav",
+      "sha256": "33d38bb8deae24b8f49ef693132ee0ab00c1c52e5e943ee15fdfdf5b556cf5af",
+      "duration_seconds": 0.85,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 0.64
+    },
+    "I04_BURGER_001": {
+      "file": "EveningShift/I04_BURGER_001.wav",
+      "sha256": "c30e09db412338bd010897f15c3e4978b4353cc3acaa1612689a4085dc3b09a6",
+      "duration_seconds": 1.83,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.67
+    },
+    "I04_BURGER_002": {
+      "file": "EveningShift/I04_BURGER_002.wav",
+      "sha256": "4cb3af4a7cea032d04445e4dfce8dceba32a3ebfa540f457f91ae15ff3ac43fe",
+      "duration_seconds": 1.93,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.73
+    },
+    "I04_BURGER_003": {
+      "file": "EveningShift/I04_BURGER_003.wav",
+      "sha256": "0c0b48c4a63c936065c549b233f65e0f4c78a52f6c6d5ec9eccce2139a6590af",
+      "duration_seconds": 1.59,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.38
+    },
+    "I05_SANDWICH_001": {
+      "file": "EveningShift/I05_SANDWICH_001.wav",
+      "sha256": "7db65c271c71f23d473a35270cade2796e29a8a7f78c4e836d47d3eae134a413",
+      "duration_seconds": 1.95,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.75
+    },
+    "I05_SANDWICH_002": {
+      "file": "EveningShift/I05_SANDWICH_002.wav",
+      "sha256": "b7e625489d162b3fcf26c94bc1f69b3192bb629d7c12e13074dda08a7e4e0a46",
+      "duration_seconds": 1.98,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 1.78
+    },
+    "I05_SANDWICH_003": {
+      "file": "EveningShift/I05_SANDWICH_003.wav",
+      "sha256": "0a9d4878407ac99550e4831c51f939ccb2abe12cb66006ba7408c28faa3ae2ce",
+      "duration_seconds": 2.03,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.87
+    },
+    "I06_EAT_001": {
+      "file": "EveningShift/I06_EAT_001.wav",
+      "sha256": "bd92a49405d0d49b8033c1a023ed66f221fbd8c586b625e91df0f706c6ec3ee1",
+      "duration_seconds": 1.62,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.42
+    },
+    "I06_EAT_002": {
+      "file": "EveningShift/I06_EAT_002.wav",
+      "sha256": "486aac7f6244a07514968ba5b41f2e0de162269f87b29359d02a9125368ddd80",
+      "duration_seconds": 1.74,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 1.54
+    },
+    "I06_EAT_003": {
+      "file": "EveningShift/I06_EAT_003.wav",
+      "sha256": "aae48a2b2fe4c806ccdc2bc935dca6b6e05b2f40eaaee54006aeb0bc6fca3474",
+      "duration_seconds": 1.65,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.45
+    },
+    "I06_EAT_004": {
+      "file": "EveningShift/I06_EAT_004.wav",
+      "sha256": "7866b8e40d9a4a8343a10e7ebeae54f9b5c0a0396a1974b81961789e9c72c530",
+      "duration_seconds": 2.03,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.86
+    },
+    "I07_TAKE_001": {
+      "file": "EveningShift/I07_TAKE_001.wav",
+      "sha256": "0f795018b0c2a1c9bd2d128c1f45cf99cfbed745952ba7ae6b8a3900b2f0e877",
+      "duration_seconds": 1.8,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.62
+    },
+    "I07_TAKE_002": {
+      "file": "EveningShift/I07_TAKE_002.wav",
+      "sha256": "2ef84eadff65c8194090b6d097f659edfe03abd5bc8b709c0473cf3ca499cb48",
+      "duration_seconds": 2.08,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.88
+    },
+    "I07_TAKE_003": {
+      "file": "EveningShift/I07_TAKE_003.wav",
+      "sha256": "c5a209fdefc89af3a3c908e44d580932ca59ed6c7bbafe4c2ef8f8bfa30b19cc",
+      "duration_seconds": 2.84,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.64
+    },
+    "I07_TAKE_004": {
+      "file": "EveningShift/I07_TAKE_004.wav",
+      "sha256": "03bf85a81b577a56d0e510dc07d9cb2f746862b6775f34b851278d5f0f18dc6d",
+      "duration_seconds": 1.36,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.16
+    },
+    "I08_WATER_001": {
+      "file": "EveningShift/I08_WATER_001.wav",
+      "sha256": "707b3e79fec67bb58dda10eb5cbf815ed33e57ef41f825c9b8c96d9d1d809ec9",
+      "duration_seconds": 1.49,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.29
+    },
+    "I08_WATER_002": {
+      "file": "EveningShift/I08_WATER_002.wav",
+      "sha256": "6760a0653012294de585ebec27a72e13e89d9b6ecd6cec61d019e20195b4bb95",
+      "duration_seconds": 2.69,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.54
+    },
+    "I08_WATER_003": {
+      "file": "EveningShift/I08_WATER_003.wav",
+      "sha256": "d36094bd3b7a3eeb72501b2e846a726fbd2980584330a8d8b9d8b4ed1e282c77",
+      "duration_seconds": 2.6,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.4
+    },
+    "I08_WATER_004": {
+      "file": "EveningShift/I08_WATER_004.wav",
+      "sha256": "b46c2aba7e32c20f1d6d0eac42070005a9492f8b69f19160d3f268b4c9c0b116",
+      "duration_seconds": 2.04,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 1.84
+    },
+    "I09_LEAVE_001": {
+      "file": "EveningShift/I09_LEAVE_001.wav",
+      "sha256": "a7db5cceaad8a9bdcead5587381518cee42cb8c0d1dd5d275e78d09a5b5d739b",
+      "duration_seconds": 1.4,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.21
+    },
+    "I09_LEAVE_002": {
+      "file": "EveningShift/I09_LEAVE_002.wav",
+      "sha256": "99a7cac39ec00239d75a49294010961061abb6179096d690fb591f64325d1048",
+      "duration_seconds": 1.96,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.8
+    },
+    "I09_LEAVE_003": {
+      "file": "EveningShift/I09_LEAVE_003.wav",
+      "sha256": "6ae054065c6480a17417e19a1d7ba24af9c231bed9df8d18b2aa30913a394009",
+      "duration_seconds": 1.02,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 0.81
+    },
+    "I10_BACK_ON_ROAD_001": {
+      "file": "EveningShift/I10_BACK_ON_ROAD_001.wav",
+      "sha256": "9168275de7ee45d69a4cd40bff48e3ca36424a75272c88507bcd701f234d1e1a",
+      "duration_seconds": 4.09,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.97
+    },
+    "I10_BACK_ON_ROAD_002": {
+      "file": "EveningShift/I10_BACK_ON_ROAD_002.wav",
+      "sha256": "7b87c36047c46d1c7d8dd7c3045b0dfebd5ff021b678b803785751cfa7badd99",
+      "duration_seconds": 9.0,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 8.85
+    },
+    "I10_BACK_ON_ROAD_003": {
+      "file": "EveningShift/I10_BACK_ON_ROAD_003.wav",
+      "sha256": "623c958a4ff9538b1947ec39d8fb599076a3a4c12a3b979fb00752509afa8d7d",
+      "duration_seconds": 2.58,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 2.4
+    },
+    "I10_BACK_ON_ROAD_004": {
+      "file": "EveningShift/I10_BACK_ON_ROAD_004.wav",
+      "sha256": "4c1f13c8efe0eb7c18c2ddf7ba8771a5ab2f3b6c99639517957f9b3a37de48e8",
+      "duration_seconds": 5.0,
+      "speech_start_seconds": 1.05,
+      "speech_end_seconds": 4.88
+    },
+    "I12_ALL_NIGHT_BOUGHT_001": {
+      "file": "EveningShift/I12_ALL_NIGHT_BOUGHT_001.wav",
+      "sha256": "b0d9ce0201e4307b647e4b64d8dfed50531a9cc23f50c0171df5c0eb3eee45d0",
+      "duration_seconds": 1.71,
+      "speech_start_seconds": 0.1,
+      "speech_end_seconds": 1.51
+    },
+    "I12_ALL_NIGHT_BOUGHT_002": {
+      "file": "EveningShift/I12_ALL_NIGHT_BOUGHT_002.wav",
+      "sha256": "c9ff18451452152a55d0a16a07ee8a6e7561d38c055bdbf335aba1040449ee97",
+      "duration_seconds": 1.81,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.62
+    },
+    "I12_ALL_NIGHT_BOUGHT_003": {
+      "file": "EveningShift/I12_ALL_NIGHT_BOUGHT_003.wav",
+      "sha256": "3feb5ed279d3f026ac9be5206a643f979629a66b6d7a0e52d5efe56aa59739e0",
+      "duration_seconds": 4.37,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 4.17
+    },
+    "I12_ALL_NIGHT_BOUGHT_004": {
+      "file": "EveningShift/I12_ALL_NIGHT_BOUGHT_004.wav",
+      "sha256": "91f6557b1d120c1512203c42d4a58f1451ebe9b4cb91ac710d0288c95f24d285",
+      "duration_seconds": 2.25,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.05
+    },
+    "I13_ALL_NIGHT_NO_FOOD_001": {
+      "file": "EveningShift/I13_ALL_NIGHT_NO_FOOD_001.wav",
+      "sha256": "f194b37b1c20c608ff0e62a2a24e65cb69486dc1b90bd7cee8dd201c31fbb5f2",
+      "duration_seconds": 1.56,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.39
+    },
+    "I13_ALL_NIGHT_NO_FOOD_002": {
+      "file": "EveningShift/I13_ALL_NIGHT_NO_FOOD_002.wav",
+      "sha256": "1a974c7cd669549006fbd96395ac93dc38dfc7740e532993e3592674a967cf45",
+      "duration_seconds": 1.96,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.8
+    },
+    "I13_ALL_NIGHT_NO_FOOD_003": {
+      "file": "EveningShift/I13_ALL_NIGHT_NO_FOOD_003.wav",
+      "sha256": "2da0c1a2f053da58f9a094ca22bc452e069c651e81bf9a5b879f1d33077b7eca",
+      "duration_seconds": 3.47,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 3.27
+    },
+    "I13_ALL_NIGHT_NO_FOOD_004": {
+      "file": "EveningShift/I13_ALL_NIGHT_NO_FOOD_004.wav",
+      "sha256": "c8a5703120ef71c1157ae5f5fb3d9acc50f730536bb363a527055967d40e2b5a",
+      "duration_seconds": 2.13,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.93
+    },
+    "I14_ROAD_001": {
+      "file": "EveningShift/I14_ROAD_001.wav",
+      "sha256": "bd2e912fadecd9fe820951b3856ec02e0dfcd6f0a882c12093f04cbdf5636ff1",
+      "duration_seconds": 2.72,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.56
+    },
+    "I14_ROAD_002": {
+      "file": "EveningShift/I14_ROAD_002.wav",
+      "sha256": "500f193d7ebd77fcc9a98e761d9ec22fb5ad9c16635defdec894db02cd50ca8c",
+      "duration_seconds": 2.52,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.33
+    },
+    "I14_ROAD_003": {
+      "file": "EveningShift/I14_ROAD_003.wav",
+      "sha256": "5122e9b35e396cf15017b04d343bfea430b45d671cf6a95f8f925301bfd47f9a",
+      "duration_seconds": 2.15,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.95
+    },
+    "I14_ROAD_004": {
+      "file": "EveningShift/I14_ROAD_004.wav",
+      "sha256": "c4c24cc10d7141e78a8bc73662a176a3facbb44ecfb968d1ba96f01f8b79ed6f",
+      "duration_seconds": 1.32,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.11
+    },
+    "I15_RECOMMEND_001": {
+      "file": "EveningShift/I15_RECOMMEND_001.wav",
+      "sha256": "6e12fc918265c8098db44ef270a50eca75b84b6070af2b9edfd846d4570aa7ca",
+      "duration_seconds": 1.7,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.5
+    },
+    "I15_RECOMMEND_002": {
+      "file": "EveningShift/I15_RECOMMEND_002.wav",
+      "sha256": "0a5123dc8ea1ca53d60e64caccbd070a33a8561f02b67a9d5cd14b73d32c073a",
+      "duration_seconds": 2.09,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.89
+    },
+    "I15_RECOMMEND_003": {
+      "file": "EveningShift/I15_RECOMMEND_003.wav",
+      "sha256": "e2441e3164192abd9272ee8c3c52d8d42f113bd6b4a24172ee7cbd9e4307d0a1",
+      "duration_seconds": 1.96,
+      "speech_start_seconds": 0.28,
+      "speech_end_seconds": 1.76
+    },
+    "I15_RECOMMEND_004": {
+      "file": "EveningShift/I15_RECOMMEND_004.wav",
+      "sha256": "cd8ff47e901ced2612ba64404c96a8193f46c7a84fe6a2880e5777bd8186a6f1",
+      "duration_seconds": 0.75,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 0.54
+    },
+    "D01_HANDOVER_001": {
+      "file": "EveningShift/D01_HANDOVER_001.wav",
+      "sha256": "26a5ce068588a5c87a2efc445faab35e338c61ce970a8af223da74ab62fd474d",
+      "duration_seconds": 2.62,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.41
+    },
+    "D01_HANDOVER_002": {
+      "file": "EveningShift/D01_HANDOVER_002.wav",
+      "sha256": "3c2a7f572f84670b837bd6d4bd6fd82aba87313675bebd20d73019cd04996628",
+      "duration_seconds": 3.71,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.51
+    },
+    "D01_HANDOVER_003": {
+      "file": "EveningShift/D01_HANDOVER_003.wav",
+      "sha256": "30ca8e0c5c6c22abc39d0fb6411ba7a64634668db08cf88eff43e888240318a5",
+      "duration_seconds": 3.48,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.3
+    },
+    "D01_HANDOVER_004": {
+      "file": "EveningShift/D01_HANDOVER_004.wav",
+      "sha256": "a602997b0415217ff424239d5266204a8d3713ab47cf0dbf23af1c59d16775a8",
+      "duration_seconds": 1.37,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.17
+    },
+    "D01_FOOD_001": {
+      "file": "EveningShift/D01_FOOD_001.wav",
+      "sha256": "fb6af7fe4693fbc38a529577a9dc3ebb8989189e6f33e6f9286bc3d5143e7fa1",
+      "duration_seconds": 2.48,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.28
+    },
+    "D01_FOOD_002": {
+      "file": "EveningShift/D01_FOOD_002.wav",
+      "sha256": "9161800f50a94735b9b2bbc82f3e69cd372a1de20c21dc02d38cbd17b2fbc23e",
+      "duration_seconds": 2.09,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 1.89
+    },
+    "D01_NOFOOD_001": {
+      "file": "EveningShift/D01_NOFOOD_001.wav",
+      "sha256": "9369d1aea37e09a4d5e7ab7d628a05b084b9408ffedbaee5763248d9d0d764be",
+      "duration_seconds": 3.06,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.86
+    },
+    "D01_NOFOOD_002": {
+      "file": "EveningShift/D01_NOFOOD_002.wav",
+      "sha256": "27fdedbf97f5089a1c744090cda883624e1f99a03b9aab072d98d61b192633b4",
+      "duration_seconds": 2.78,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.6
+    },
+    "D01_BRIEF_001": {
+      "file": "EveningShift/D01_BRIEF_001.wav",
+      "sha256": "a755cf2c35e91751b64c51e9eb438c2c2ad4fa865bfec9871c8836ac1202da6a",
+      "duration_seconds": 3.09,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.89
+    },
+    "D01_BRIEF_002": {
+      "file": "EveningShift/D01_BRIEF_002.wav",
+      "sha256": "23ab75b9e35affaf241fbd1778b832612c30d3602ee636a9279e1559a0024b95",
+      "duration_seconds": 4.06,
+      "speech_start_seconds": 0.12,
+      "speech_end_seconds": 3.86
+    },
+    "D01_BRIEF_003": {
+      "file": "EveningShift/D01_BRIEF_003.wav",
+      "sha256": "a14f301ea12e304c7ecd945ec0003159cda68e57f0445803fe8d492aac2c2fe2",
+      "duration_seconds": 6.41,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 6.21
+    },
+    "D01_BRIEF_004": {
+      "file": "EveningShift/D01_BRIEF_004.wav",
+      "sha256": "cbd32a60fb82ee772aeb8cbf9aca4c9bd03341fe879e0b3b469a8171ca17f032",
+      "duration_seconds": 3.81,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.65
+    },
+    "D01_BRIEF_005": {
+      "file": "EveningShift/D01_BRIEF_005.wav",
+      "sha256": "cc046d5fa55afe3eb583f12a98e1cd80b20266b9b98b5993220518d1a0b34778",
+      "duration_seconds": 4.32,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.12
+    },
+    "D01_BRIEF_006": {
+      "file": "EveningShift/D01_BRIEF_006.wav",
+      "sha256": "a5d85e60011c6092ba4ca9373f7e2559d8e62619ea71cb3e97d9c33e7b7727cf",
+      "duration_seconds": 5.17,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.97
+    },
+    "D01_BRIEF_007": {
+      "file": "EveningShift/D01_BRIEF_007.wav",
+      "sha256": "3011460ef2fde497f4adfa802a123941c14fc63ab962042832e2500e29a2f55b",
+      "duration_seconds": 1.68,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.4
+    },
+    "D11_POWER_PHONE_001": {
+      "file": "EveningShift/D11_POWER_PHONE_001.wav",
+      "sha256": "8ff7bd91197a3482c67a73d8b7e11b4dea34a66017508546ca0e6a40109a4827",
+      "duration_seconds": 1.92,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.72
+    },
+    "D11_POWER_PHONE_002": {
+      "file": "EveningShift/D11_POWER_PHONE_002.wav",
+      "sha256": "016529f348a52b5b26376be4ad79def973cf1df2346d2f6610998a701cc33d0c",
+      "duration_seconds": 5.47,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 5.27
+    },
+    "D11_POWER_PHONE_003": {
+      "file": "EveningShift/D11_POWER_PHONE_003.wav",
+      "sha256": "28c8bd1adc4e80f2e59dc23d5fecc6d0376b00079b44e7663b2fe99c539b6dc5",
+      "duration_seconds": 4.54,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 4.34
+    },
+    "D11_POWER_PHONE_004": {
+      "file": "EveningShift/D11_POWER_PHONE_004.wav",
+      "sha256": "07247be00ef63364eb201249b817142acaa2c6160b6f08d4ce94ebea44fa217c",
+      "duration_seconds": 5.08,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.88
+    },
+    "D11_POWER_PHONE_005": {
+      "file": "EveningShift/D11_POWER_PHONE_005.wav",
+      "sha256": "d69d5ed0f8b03e7cb5a72df87c032039ff4ebdafb5179c5f55f9424f9624653f",
+      "duration_seconds": 4.49,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.29
+    },
+    "D12_POWER_WALKIE_001": {
+      "file": "EveningShift/D12_POWER_WALKIE_001.wav",
+      "sha256": "c1cb347b172ca92dc53f3f3fa3acd246555e7c2f9e8b58c8339e1491212c04ea",
+      "duration_seconds": 3.06,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.87
+    },
+    "D12_POWER_WALKIE_002": {
+      "file": "EveningShift/D12_POWER_WALKIE_002.wav",
+      "sha256": "3898d77a5f4e578ab6e52c757a9b1c6a09b3b97fdefb344b28acee1c7075eb02",
+      "duration_seconds": 3.06,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.85
+    },
+    "D12_POWER_WALKIE_003": {
+      "file": "EveningShift/D12_POWER_WALKIE_003.wav",
+      "sha256": "b4a1dc73d5f660f764402797ec4d0a694b10d5be08f70a65a2d8456cfe75aed8",
+      "duration_seconds": 3.18,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 2.98
+    },
+    "D21_SIGNAL_PHONE_001": {
+      "file": "EveningShift/D21_SIGNAL_PHONE_001.wav",
+      "sha256": "8de74cd2370c09a3b746de3511222d4d63b5740843b5b822cf7a29411789d43f",
+      "duration_seconds": 1.9,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 1.7
+    },
+    "D21_SIGNAL_PHONE_002": {
+      "file": "EveningShift/D21_SIGNAL_PHONE_002.wav",
+      "sha256": "bc7c2a832f812e4604dd6b7d3183defd4857514c6ede6c57ce33e17c36d7db52",
+      "duration_seconds": 1.94,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.78
+    },
+    "D21_SIGNAL_PHONE_003": {
+      "file": "EveningShift/D21_SIGNAL_PHONE_003.wav",
+      "sha256": "8aa2efee9622d8e9d243e856308689ec1f1fef2643d6adb3a948298a785ec890",
+      "duration_seconds": 3.73,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 3.53
+    },
+    "D21_SIGNAL_PHONE_004": {
+      "file": "EveningShift/D21_SIGNAL_PHONE_004.wav",
+      "sha256": "d6b31a67333bce3d36dec36f06fab7a0064c5d0dcbfa0a7da1f21bb6e5ed3226",
+      "duration_seconds": 2.67,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.51
+    },
+    "D21_BEFORE_001": {
+      "file": "EveningShift/D21_BEFORE_001.wav",
+      "sha256": "f12f20ecb47a1e385ac9c5a7d8dc708f1af5426bbeeb9ba49a372de288346be5",
+      "duration_seconds": 3.11,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.91
+    },
+    "D21_BEFORE_002": {
+      "file": "EveningShift/D21_BEFORE_002.wav",
+      "sha256": "c126213ab58d15f7c0dd36676a62f3611f62a141adc63ecff85df73d289eb0e7",
+      "duration_seconds": 2.17,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.97
+    },
+    "D21_BEFORE_003": {
+      "file": "EveningShift/D21_BEFORE_003.wav",
+      "sha256": "caeda7144e39b24556f49cb00d44f33207ceeb591f599214223d8621ad8cbc97",
+      "duration_seconds": 2.68,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.47
+    },
+    "D21_POWER_001": {
+      "file": "EveningShift/D21_POWER_001.wav",
+      "sha256": "9fab9911af05c4f207b4951df46c4e61e72755094db89959f8c2f61f0968b22c",
+      "duration_seconds": 3.37,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.23
+    },
+    "D21_POWER_002": {
+      "file": "EveningShift/D21_POWER_002.wav",
+      "sha256": "d945ecc31cc8d7844a082c52ae2da4b2932195ebc914e7461fb89e0cc024fc24",
+      "duration_seconds": 3.09,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.88
+    },
+    "D21_END_001": {
+      "file": "EveningShift/D21_END_001.wav",
+      "sha256": "8b8b024431b0fd7ed5c8c8fba130c9122100fde44286bf4c2b95145cacf75fea",
+      "duration_seconds": 2.11,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.94
+    },
+    "D21_END_002": {
+      "file": "EveningShift/D21_END_002.wav",
+      "sha256": "d6c059a4fea486a9caea6180c2f36d02f8a3f04f30dbb4b5d1e8d2757b239d49",
+      "duration_seconds": 2.95,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 2.76
+    },
+    "D31_OFFICE_PHONE_001": {
+      "file": "EveningShift/D31_OFFICE_PHONE_001.wav",
+      "sha256": "9c116f1c68460d393a978970e25486ddbfdd82d869c981d41c13edc65ea9cfb0",
+      "duration_seconds": 1.6,
+      "speech_start_seconds": 0.29,
+      "speech_end_seconds": 1.4
+    },
+    "D31_OFFICE_PHONE_002": {
+      "file": "EveningShift/D31_OFFICE_PHONE_002.wav",
+      "sha256": "0610aecf0d17134cec54bd296a5f12cc8a9ff59f49bf93687285bde83af4fc87",
+      "duration_seconds": 2.89,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.69
+    },
+    "D31_OFFICE_PHONE_003": {
+      "file": "EveningShift/D31_OFFICE_PHONE_003.wav",
+      "sha256": "d1bc328b60f243b93829313a5fe324a5360836fff9ce237298abd0445356420e",
+      "duration_seconds": 1.03,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 0.86
+    },
+    "D31_WARD_001": {
+      "file": "EveningShift/D31_WARD_001.wav",
+      "sha256": "2cdd3cae446a6c6e27db72d7ed3585667bde3f87d6dd5109d182b2107e5dae6d",
+      "duration_seconds": 3.04,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 2.89
+    },
+    "D31_WARD_002": {
+      "file": "EveningShift/D31_WARD_002.wav",
+      "sha256": "c69294be022625f19793484c53dc7e72ecaaa78ef5ad9b1f623e7c2f5522c9e2",
+      "duration_seconds": 3.22,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.02
+    },
+    "D31_WARD_003": {
+      "file": "EveningShift/D31_WARD_003.wav",
+      "sha256": "e31ee45d63f5e7403bd30b00336f07ea15a86a38274e6c317b72fbd2b3d6f3cc",
+      "duration_seconds": 3.32,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.13
+    },
+    "D31_TAPE_001": {
+      "file": "EveningShift/D31_TAPE_001.wav",
+      "sha256": "34e034727d8fbd67cd2abdae0935c1a01154a120b2099affd6b470783f73d6bf",
+      "duration_seconds": 1.79,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.64
+    },
+    "D31_TAPE_002": {
+      "file": "EveningShift/D31_TAPE_002.wav",
+      "sha256": "df71b0f5c920a1cbe273d15b865744d2b4e9ed4c92f2bcbb3378e672f755e1e8",
+      "duration_seconds": 3.63,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.4
+    },
+    "D31_TAPE_003": {
+      "file": "EveningShift/D31_TAPE_003.wav",
+      "sha256": "7c6ac5a2a5afed817d48c869709bca933f8118f8a97be61576412bdda880907b",
+      "duration_seconds": 2.45,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.29
+    },
+    "D31_RECORD_001": {
+      "file": "EveningShift/D31_RECORD_001.wav",
+      "sha256": "a1fdec282926b0d7bf6a9a779f04914475f6ec900d4d40b59991a2186b2e8b03",
+      "duration_seconds": 2.18,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.0
+    },
+    "D31_RECORD_002": {
+      "file": "EveningShift/D31_RECORD_002.wav",
+      "sha256": "f14ba2590b88670fb378c27121107fcbd3c31001a0230141c9a85c1fbbd6329a",
+      "duration_seconds": 3.18,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.98
+    },
+    "D31_RECORD_003": {
+      "file": "EveningShift/D31_RECORD_003.wav",
+      "sha256": "bae5d4d46804b8fc7b4d4d4d95d0ee06d33da95894e156da42057c5728e1b8f7",
+      "duration_seconds": 3.26,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.06
+    },
+    "D31_END_001": {
+      "file": "EveningShift/D31_END_001.wav",
+      "sha256": "3ceab3dd795477a89d2d71307887b3ef1727382c274841606d3e9884df6c8b1c",
+      "duration_seconds": 3.68,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 3.52
+    },
+    "D31_END_002": {
+      "file": "EveningShift/D31_END_002.wav",
+      "sha256": "4f94d8c9c7badd9ae48cd2d0ee18cc2a54d7575944f1ba3c36481e13fad0525d",
+      "duration_seconds": 3.15,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.94
+    },
+    "D41_FIELD_WALKIE_001": {
+      "file": "EveningShift/D41_FIELD_WALKIE_001.wav",
+      "sha256": "0ce46e874a1f4692bd6a3d17c6792e85a75e15b806e55752dc2c791b18e5ba07",
+      "duration_seconds": 2.85,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.65
+    },
+    "D41_FIELD_WALKIE_002": {
+      "file": "EveningShift/D41_FIELD_WALKIE_002.wav",
+      "sha256": "b50b3a65e796f9181c458a413a8b1803d047d74fa648404bacb83467c2898112",
+      "duration_seconds": 2.85,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.65
+    },
+    "D41_FIELD_WALKIE_003": {
+      "file": "EveningShift/D41_FIELD_WALKIE_003.wav",
+      "sha256": "dde3b6c610166e24a418818603ba67b6b624f182f841fceec17cbc0cce9c997c",
+      "duration_seconds": 4.3,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.1
+    },
+    "D41_FIELD_WALKIE_004": {
+      "file": "EveningShift/D41_FIELD_WALKIE_004.wav",
+      "sha256": "ebe7fcf1e69e9c4f554aec0ad12b98cdba22a61009bd12de5d6829973242d257",
+      "duration_seconds": 2.78,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 2.59
+    },
+    "D51_LAST_PHONE_001": {
+      "file": "EveningShift/D51_LAST_PHONE_001.wav",
+      "sha256": "355d2cff2092a35a5ca501b901110c8b938ecd578927b2286bc270951bf84118",
+      "duration_seconds": 1.58,
+      "speech_start_seconds": 0.09,
+      "speech_end_seconds": 1.38
+    },
+    "D51_LAST_PHONE_002": {
+      "file": "EveningShift/D51_LAST_PHONE_002.wav",
+      "sha256": "fc515f345f2ffc622f549c5db9ebab4554e8ec5f8a1dd758170ce2fbaae1b987",
+      "duration_seconds": 3.63,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.51
+    },
+    "D51_LAST_PHONE_003": {
+      "file": "EveningShift/D51_LAST_PHONE_003.wav",
+      "sha256": "f48493ea10aa6fc79682a60f1322c0b778f98e0fc87bfdbefe06103eaed37030",
+      "duration_seconds": 3.58,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.38
+    },
+    "D51_LAST_PHONE_004": {
+      "file": "EveningShift/D51_LAST_PHONE_004.wav",
+      "sha256": "25556a25493d074e5f16ea893b00b8f7bb3af055ba2c9818cf74e3d135e04a68",
+      "duration_seconds": 1.27,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 1.06
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "note_nb": "Vurderte ASR-avvik for konkrete lydfiler (sha256). Ny lyd for en cue ugyldiggjør vurderingen. Automatisk transkripsjon er ikke menneskelig lytting.",
+  "cues": {
+    "I01_DRIVE_001": {"sha256": "6a020bb6bff1d22b0af9f63b642c39e82208df8be72cca4aab0cd39fea58a079", "verdict": "accepted: place name Caliche transcribed as 'Kalish'; all other words exact. Seeds 43-47 gave Kalish/Kelly/Colleague; I10_BACK_ON_ROAD_001 seed 44 was heard as 'Caliche'."},
+    "I12_ALL_NIGHT_BOUGHT_001": {"sha256": "b0d9ce0201e4307b647e4b64d8dfed50531a9cc23f50c0171df5c0eb3eee45d0", "verdict": "accepted: station name SARO transcribed as 'Sorrow' (spoken as a word, not spelled)."},
+    "D41_FIELD_WALKIE_004": {"sha256": "ebe7fcf1e69e9c4f554aec0ad12b98cdba22a61009bd12de5d6829973242d257", "verdict": "accepted: SARO transcribed as 'sorrow', as in I12."},
+    "I13_ALL_NIGHT_NO_FOOD_004": {"sha256": "c8a5703120ef71c1157ae5f5fb3d9acc50f730536bb363a527055967d40e2b5a", "verdict": "accepted: homophone Paper's / Papers."},
+    "I15_RECOMMEND_002": {"sha256": "0a5123dc8ea1ca53d60e64caccbd070a33a8561f02b67a9d5cd14b73d32c073a", "verdict": "accepted: homophone 'sandwich is' / 'sandwiches' (contracted speech)."},
+    "D31_WARD_001": {"sha256": "2cdd3cae446a6c6e27db72d7ed3585667bde3f87d6dd5109d182b2107e5dae6d", "verdict": "accepted: homophone 'right to' / 'right too'; same words otherwise (ASR sentence split only)."},
+    "D31_TAPE_002": {"sha256": "df71b0f5c920a1cbe273d15b865744d2b4e9ed4c92f2bcbb3378e672f755e1e8", "verdict": "accepted: homophone pole / poll."},
+    "D01_BRIEF_005": {"sha256": "cc046d5fa55afe3eb583f12a98e1cd80b20266b9b98b5993220518d1a0b34778", "verdict": "unresolved: 'observations she' heard as 'observation she' (s/sh merge or dropped plural). Seeds 42-48 all have it or mishear Ward; also in context. Needs listening."},
+    "D01_FOOD_002": {"sha256": "9161800f50a94735b9b2bbc82f3e69cd372a1de20c21dc02d38cbd17b2fbc23e", "verdict": "unresolved: 'I tried that once' heard as 'Try that once' in seeds 42-48, 14 probe variants and in context after D01_FOOD_001. The opening 'I' is probably fused or swallowed. Needs listening; re-record or rewrite the line if it is audibly missing."}
+  }
+}
