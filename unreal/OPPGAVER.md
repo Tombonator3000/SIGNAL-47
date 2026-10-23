@@ -11,6 +11,19 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 - Filansvar: rør bare filene oppgaven gjelder. Delte filer (`S47HUD.cpp`, `S47Main.*`, `S47Story.*`, `S47Web.*`, `S47World.*`) endres minimalt. Ta inn `unreal-port-core` i grenen din før du leverer.
 - Tester: det som er endret og `-S47SelfTest`. Ett Unreal-program om gangen per tung jobb: sjekk `pgrep -fa "UnrealEditor|UnrealBuildTool|Signal47"` før start.
 
+## Veikart (Tom 23.10, i denne rekkefølgen)
+
+1. Spillbar åpning: innkjøring med lystig radio, valgfritt dinerbesøk og matkjøp, parkering ved SARO, telefonoverlevering kl. 18. (Codex, `codex/evening-runtime`, pågår)
+2. Ny tidslinje: kapitler, radiosendinger, NPC-er og lagring tilpasset kveld, natt og daggry, uten lange dødtider og uten klokkeslett som går bakover. (Codex, sammen med 1)
+3. Anomaly spotting: normale referanser først, så avvik spilleren undersøker, fotograferer og sammenligner; ubehaget øker gradvis (`ANOMALY_PLAN.md`).
+4. Dales kontor: nøkkelfunn, dokumenter, hemmelig research og TV/VHS med et konkret spor videre. Dale/Kinski bare på telefon, radio og walkie-talkie.
+5. Trafostasjonen i ørkenen: én vanlig serviceoppgave og et senere uforklarlig avvik.
+6. Byen og UFO-opptrappingen: bedre bygninger, flere oppgaver og spor, gradvis tydeligere alien-/UFO-hendelser. (Bensinstasjonen med interiør pågår, Claude-hjelper.)
+7. Lyd og film: 109 stemmeopptak, kveldsmusikk, det 72 sekunder lange VHS-feltopptaket.
+8. Gjennomspilling og levering: hele natten, valgfrie ruter, lagring, lyd og ytelse, deretter installasjon.
+
+Codex hjelper med koding også utenfor rendering når Tom ber om det; eieren står i raden.
+
 ## Pågår
 
 | Oppgave | Eier | Gren | Status |
