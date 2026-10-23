@@ -208,7 +208,7 @@ void SS47Settings::BuildRows()
 		AddChoice(TEXT("Still shots at the end"), { TEXT("MOVING"), TEXT("STILL SHOTS") }, [P] { return P->bStillShots ? 1 : 0; },
 			[P](int32 I) { const bool V = I == 1; if (P->bStillShots == V) return; P->bStillShots = V; if (P->OnStillShots) P->OnStillShots(V); }, 0,
 			[P] { return FString(P->bStillShots ? TEXT("Still shots") : TEXT("Moving camera")); },
-			Says(TEXT("The camera in the last minutes of the night: it moves as the scene does, or it holds still shots one after another, for anyone the movement makes unwell.")));
+			Says(TEXT("The camera in the last minutes of the night: it moves as the scene does, or it holds still shots one after another, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances.")));
 		break;
 	}
 	case 1: // PICTURE
