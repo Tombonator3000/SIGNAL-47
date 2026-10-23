@@ -176,6 +176,9 @@ void FS47Evening::Resume()
 }
 void FS47Evening::ShowDialogue()
 {
+ // Repeated use/capture of the current conversation must not replace its panel:
+ // UI::Open closes the previous panel and its close callback stops the voice.
+ if (bDialogueOpen && M->ModalOpen()) return;
  const auto* S = Pack.CurrentScene(); if (!S || !M->UI) { AfterDialogue(); return; }
  if (!Pack.CurrentLine() && S->Choices.IsEmpty()) { Pack.Advance(); Changed(); AfterDialogue(); return; }
  bDialogueOpen = true;
