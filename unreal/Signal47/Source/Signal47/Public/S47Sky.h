@@ -36,10 +36,11 @@ public:
 	FVector FlashDir = FVector(1, 0.05, -0.3).GetSafeNormal();
 	double Dawn = 0;                      // Morning-only curve; story gates keep their old meaning.
 	double Evening = 0;                   // Late afternoon -> sunset -> blue hour, independent of Dawn.
+	double Midday = 0;                    // Rendering only: full daylight 06:00-17:00; never a story Dawn gate.
 	/** The shared day/night response of the existing dome, stars, horizon and native lights. */
-	double Daylight() const { return FMath::Max(Dawn, Evening); }
+	double Daylight() const { const double Base = FMath::Max(Dawn, Evening); return Base + (1.0 - Base) * Midday; }
 	/** Stars stay absent until civil twilight; the old morning star fade remains unchanged. */
-	double StarDimming() const { return Evening > 0 ? FMath::Min(1.0, Evening / 0.05) : Dawn; }
+	double StarDimming() const { const double Base = Evening > 0 ? FMath::Min(1.0, Evening / 0.05) : Dawn; return Base + (1.0 - Base) * Midday; }
 	FVector SunDir = FVector(0.98, -0.02, -0.19).GetSafeNormal();
 	double Sun = 0;
 	FVector4 Glow[3] = { FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1) }; // uGlow (backdrop.ts sets them)
@@ -56,7 +57,8 @@ public:
 	TFunction<void(double, double)> OnThunder;
 
 	FS47Sky();
-	/** Dawn remains 04:40-05:30; evening sets westward sun, sunset 18:27 and blue hour to 19:07.
+	/** Dawn remains 04:40-05:30, unchanged through 05:40. Midday blends 05:40-06:00 and 17:00-18:00.
+	 *  Evening retains westward sun, sunset 18:27 and blue hour to 19:07.
 	 *  The optional elevation remains the finale's override; it never changes the evening clock. */
 	void SetClock(double Clock, TOptional<double> SunElevDeg = TOptional<double>());
 	/** setDawnLift(k): how much of the dawn an area shows. */

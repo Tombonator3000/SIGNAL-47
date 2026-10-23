@@ -1,0 +1,73 @@
+{
+  "geometry_hash_before": "14ab48e50829187e2b40daa3f093b200396b2f474a57f02668485108028b52ee",
+  "geometry_hash_after": "14ab48e50829187e2b40daa3f093b200396b2f474a57f02668485108028b52ee",
+  "geometry_unchanged": true,
+  "settings": {
+    "stucco": {
+      "uv_scale": 3.0,
+      "normal_strength": 0.18,
+      "resolution": 512
+    },
+    "concrete": {
+      "uv_scale": 3.0,
+      "normal_strength": 0.18,
+      "resolution": 512
+    }
+  },
+  "scope": "shader-only and GLB material packaging; no geometry or FBX regenerated",
+  "glb_geometry_hash_before": "b2dad647a42a5f8613184a92519cf43c21c1f310e837b4df90aeec21e87899ef",
+  "glb_geometry_hash_after": "b2dad647a42a5f8613184a92519cf43c21c1f310e837b4df90aeec21e87899ef",
+  "glb_geometry_unchanged": true,
+  "wood_textures_byte_identical": true,
+  "fbx_byte_identical": true,
+  "glb_stone_materials": {
+    "M_1420_Concrete": {
+      "normal_scale": 0.18000000715255737,
+      "uv_transform": {
+        "KHR_texture_transform": {
+          "offset": [
+            0,
+            -2
+          ],
+          "scale": [
+            3,
+            3
+          ]
+        }
+      }
+    },
+    "M_1420_Stucco_cream": {
+      "normal_scale": 0.18000000715255737,
+      "uv_transform": {
+        "KHR_texture_transform": {
+          "offset": [
+            0,
+            -2
+          ],
+          "scale": [
+            3,
+            3
+          ]
+        }
+      }
+    }
+  },
+  "png_checks": {
+    "stucco": {
+      "dimensions": [
+        512,
+        512
+      ],
+      "GL_DX_green_complement": true,
+      "noise": "deterministic periodic value noise and aggregate grain; no sine bands"
+    },
+    "concrete": {
+      "dimensions": [
+        512,
+        512
+      ],
+      "GL_DX_green_complement": true,
+      "noise": "deterministic periodic value noise and aggregate grain; no sine bands"
+    }
+  }
+}

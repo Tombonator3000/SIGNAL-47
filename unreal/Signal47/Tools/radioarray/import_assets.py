@@ -75,9 +75,25 @@ def material(row, dest, src):
                             sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL if role == 'normal' else
                             unreal.MaterialSamplerType.SAMPLERTYPE_COLOR if role == 'base_color' else
                             unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+        scale = float(row.get('uv_scale', 1))
+        if scale != 1:
+            uv = expression(mat, unreal.MaterialExpressionTextureCoordinate, u_tiling=scale, v_tiling=scale)
+            check(name+' UV scale connection', M.connect_material_expressions(uv, '', sample, 'Coordinates'))
         prop = {'base_color': unreal.MaterialProperty.MP_BASE_COLOR, 'normal': unreal.MaterialProperty.MP_NORMAL,
                 'roughness': unreal.MaterialProperty.MP_ROUGHNESS}[role]
-        M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
+        if role == 'normal':
+            # Decode first, then blend towards the neutral tangent normal; avoid embossed stucco.
+            neutral = expression(mat, unreal.MaterialExpressionConstant3Vector, constant=unreal.LinearColor(0,0,1))
+            strength = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name='NormalStrength', default_value=float(row.get('normal_strength', 1)))
+            blend = expression(mat, unreal.MaterialExpressionLinearInterpolate)
+            check(name+' normal A connection', M.connect_material_expressions(neutral, '', blend, 'A'))
+            check(name+' normal B connection', M.connect_material_expressions(sample, 'RGB', blend, 'B'))
+            check(name+' normal Alpha connection', M.connect_material_expressions(strength, '', blend, 'Alpha'))
+            normalized = expression(mat, unreal.MaterialExpressionNormalize)
+            check(name+' normal VectorInput connection', M.connect_material_expressions(blend, '', normalized, 'VectorInput'))
+            M.connect_material_property(normalized, '', prop)
+        else:
+            M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
     if float(row.get('alpha', 1)) < 1:
         mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
         mat.set_editor_property('two_sided', True)

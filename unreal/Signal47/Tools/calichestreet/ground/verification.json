@@ -9,21 +9,21 @@
       "material_slots": 8
     },
     "SM_Caliche_RoadWear": {
-      "triangles": 11600,
+      "triangles": 11636,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
       "material_slots": 8
     },
     "SM_Caliche_Rocks": {
-      "triangles": 4158,
+      "triangles": 4752,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
       "material_slots": 8
     },
     "SM_Caliche_DryPlants": {
-      "triangles": 1800,
+      "triangles": 2430,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
@@ -34,12 +34,12 @@
     {
       "name": "rocks_and_plants_clear_main_walk_and_protected_approaches",
       "pass": true,
-      "count": 166
+      "count": 198
     },
     {
       "name": "all_overlay_vertices_max_14mm_above_unchanged_source_surface",
       "pass": true,
-      "count": 71892,
+      "count": 71976,
       "maximum_m": 0.013
     },
     {

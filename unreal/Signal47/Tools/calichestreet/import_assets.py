@@ -1,4 +1,4 @@
-"""UE Python: original Blender sources to /Game/CalicheStreet. No licensed or shared asset is modified.
+"""UE Python: original Blender sources to /Game/CalicheStreet. Two original 1420 AM stone finishes are refreshed; third-party assets are untouched.
 
 Run with legacy FBX importer enabled, unattended/nullrhi. S47_STREET_ONLY=souvenir,ground
 selects a completed source set. Sidecars retain the Blender material values without FBX shading loss.
@@ -80,9 +80,25 @@ def material(row, dest, src):
                             sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL if role == 'normal' else
                             unreal.MaterialSamplerType.SAMPLERTYPE_COLOR if role == 'base_color' else
                             unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+        scale = float(row.get('uv_scale', 1))
+        if scale != 1:
+            uv = expression(mat, unreal.MaterialExpressionTextureCoordinate, u_tiling=scale, v_tiling=scale)
+            check(name+' UV scale connection', M.connect_material_expressions(uv, '', sample, 'Coordinates'))
         prop = {'base_color': unreal.MaterialProperty.MP_BASE_COLOR, 'normal': unreal.MaterialProperty.MP_NORMAL,
                 'roughness': unreal.MaterialProperty.MP_ROUGHNESS}[role]
-        M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
+        if role == 'normal':
+            # Decode first, then blend towards the neutral tangent normal; avoid embossed stucco.
+            neutral = expression(mat, unreal.MaterialExpressionConstant3Vector, constant=unreal.LinearColor(0,0,1))
+            strength = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name='NormalStrength', default_value=float(row.get('normal_strength', .2)))
+            blend = expression(mat, unreal.MaterialExpressionLinearInterpolate)
+            check(name+' normal A connection', M.connect_material_expressions(neutral, '', blend, 'A'))
+            check(name+' normal B connection', M.connect_material_expressions(sample, 'RGB', blend, 'B'))
+            check(name+' normal Alpha connection', M.connect_material_expressions(strength, '', blend, 'Alpha'))
+            normalized = expression(mat, unreal.MaterialExpressionNormalize)
+            check(name+' normal VectorInput connection', M.connect_material_expressions(blend, '', normalized, 'VectorInput'))
+            M.connect_material_property(normalized, '', prop)
+        else:
+            M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
     if float(row.get('alpha', 1)) < 1:
         mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
         mat.set_editor_property('two_sided', True)
@@ -202,9 +218,14 @@ try:
     b = probe.get_bounds()
     check('FBX coordinate probe', max(abs(a-b) for a,b in zip(
           [b.origin.x,b.origin.y,b.origin.z], [200,-400,600])) < .1)
-    labels = os.environ.get('S47_STREET_ONLY', 'souvenir,ground').split(',')
+    labels = os.environ.get('S47_STREET_ONLY', 'souvenir,ground,radio-materials').split(',')
     for label in labels:
         if label in ('souvenir','ground'): import_set(label)
+        if label == 'radio-materials':
+            src = ROOT.parent / 'radioarray/station'
+            for name,row in json.loads((src/'materials.json').read_text()).items():
+                if name in ('M_1420_Stucco_cream','M_1420_Concrete'):
+                    material(dict(row,name=name), '/Game/RadioArray/Station/Materials', src)
     if 'trim' in labels or 'souvenir' in labels: import_trim()
     report['status'] = 'PASS'
     REPORT.write_text(json.dumps(report,indent=2))

@@ -2,20 +2,20 @@
   "authoring": "Original SIGNAL / 47 procedural geometry, authored 2026-10-23",
   "files": {
     "1420_AM_station.blend": {
-      "bytes": 2037540,
-      "sha256": "ab425ceef866f509d09fccea3c2bc8cd103c9f804957123fb9a0a041e98ccae7"
+      "bytes": 2038812,
+      "sha256": "d98646ad9923adde124c26df4a859042c1055ee63193aa2f42edf88f2c22d174"
     },
     "1420_AM_station.glb": {
-      "bytes": 4195944,
-      "sha256": "3ab54ba606c4a451f78abfca05201cb6b6e501d4176a8a2466c22ac1e8014736"
+      "bytes": 4843308,
+      "sha256": "abdc435f2cff1ae93513822af663435f47bef441b274f565fdf6277f662b4d2b"
     },
     "README.md": {
       "bytes": 5379,
       "sha256": "7c38d91e69912f23aacba6b0e9d750e1012b7b05af519a452a892342d5a86757"
     },
     "build_station.py": {
-      "bytes": 26412,
-      "sha256": "41a880da9863f210be8895adb9b545bb11cb66fd87373e403b3fe422fb5b6ac8"
+      "bytes": 30109,
+      "sha256": "7ccac3618062616e6a65525d77689ae45771870566148e418d2e467ba7671dd0"
     },
     "clean_existing_exports.py": {
       "bytes": 2129,
@@ -58,12 +58,16 @@
       "sha256": "c4470ec8ff1ec337d6309424641063141b38e80d6e022381947ba473ef1b5b7a"
     },
     "make_textures.py": {
-      "bytes": 1957,
-      "sha256": "8fe61f646977d9ce01b7badfbb8fb920a2fd96f85f4de3a3e58816d1a079e5bd"
+      "bytes": 4429,
+      "sha256": "45c2675d1fa74969221e85de306ece79a944f9f79b2f2c70e5969e963d5af5ab"
+    },
+    "material_refresh.json": {
+      "bytes": 1852,
+      "sha256": "1b76a9213bfbb425fe864cfeb10080427dceaad8b3f62ec62aaf70430e9f1dce"
     },
     "materials.json": {
-      "bytes": 6947,
-      "sha256": "7517a1e63555103958ad4c769fb8b88e5916723bd717a06d6886ed0af64517d6"
+      "bytes": 7257,
+      "sha256": "4aad529b54c67902fe503334ed7c21595a14fa7d41b7a430222b6e39f0c2329f"
     },
     "mesh_cleanup.json": {
       "bytes": 3020,
@@ -82,16 +86,24 @@
       "sha256": "32c8dc4d71c110e5f2f6234bfc56a9564e8e32105141e59411a9c2785fc0519c"
     },
     "textures/concrete_color.png": {
-      "bytes": 48816,
-      "sha256": "e6f717de6bc7547354f3f84114d5b02bd14cc68bfeced4c528ed32b475071d9d"
+      "bytes": 61870,
+      "sha256": "6368e882e6619f33a0808c32aed30edabf63e048c1ddeeb3356a0057b3679b7a"
     },
     "textures/concrete_normal.png": {
-      "bytes": 133846,
-      "sha256": "db76bfa605bb552d330fd5098f06c23bbcb609eaa50c31d8ea8b6b2de31a6cda"
+      "bytes": 356229,
+      "sha256": "0fca55631ab8006d02fb4827d85342f7ce0b5c98d44b81b44be6837aeede9323"
+    },
+    "textures/concrete_normal_dx.png": {
+      "bytes": 356231,
+      "sha256": "0eeca2910743e98a0ed9322293b9576fcf3902fee70adeb165e8bf7e694dc294"
+    },
+    "textures/concrete_normal_gl.png": {
+      "bytes": 356229,
+      "sha256": "0fca55631ab8006d02fb4827d85342f7ce0b5c98d44b81b44be6837aeede9323"
     },
     "textures/concrete_roughness.png": {
-      "bytes": 38199,
-      "sha256": "cb1b71c6c26320b55227e74ada86af27f9426d5bbcadbfd84e8df484424ae903"
+      "bytes": 86950,
+      "sha256": "9a80a098b28b90bca7784a541f99c69f85eb642f4d93d111bd335c3f36af61ea"
     },
     "textures/desk_walnut_color.png": {
       "bytes": 40058,
@@ -106,16 +118,24 @@
       "sha256": "efb392a2e9817fea966aa5aca9d18ead355c4098ff1c29f8ba8294739ef54e9d"
     },
     "textures/stucco_color.png": {
-      "bytes": 50769,
-      "sha256": "0d9859226094e1218e5bcbb79f88d2c062d8c97f8fbf9681fb5150ab2cd52792"
+      "bytes": 61887,
+      "sha256": "77ede2b90e166fc49789681579397d60fe23bc162199bdfac9edbc457e904cdd"
     },
     "textures/stucco_normal.png": {
-      "bytes": 133846,
-      "sha256": "db76bfa605bb552d330fd5098f06c23bbcb609eaa50c31d8ea8b6b2de31a6cda"
+      "bytes": 356031,
+      "sha256": "67c2179fc4ed0fe04a1ed90560841492349974ba55eb37ef8893cb8b825f4c67"
+    },
+    "textures/stucco_normal_dx.png": {
+      "bytes": 356032,
+      "sha256": "99452b78ad6eff3325210bb088d157b5389d52506688db4b611ab23aca3788d2"
+    },
+    "textures/stucco_normal_gl.png": {
+      "bytes": 356031,
+      "sha256": "67c2179fc4ed0fe04a1ed90560841492349974ba55eb37ef8893cb8b825f4c67"
     },
     "textures/stucco_roughness.png": {
-      "bytes": 38217,
-      "sha256": "f1d063510d4cb98cb76fdd984a91358858f2f0f2087861b04c5413e6ddc5d44a"
+      "bytes": 86881,
+      "sha256": "f2ea32f0a1d850db5559ee6b3112c1c6aebefc6c236575de2c7e4536bf9d2958"
     },
     "textures/walnut_color.png": {
       "bytes": 33592,
@@ -137,5 +157,6 @@
       "bytes": 4500,
       "sha256": "25a10236037a413b4a73cff85d4777084f78caab7c0ac12423a7e278b682d824"
     }
-  }
+  },
+  "material_refresh": "512px value/grain stone; see material_refresh.json. Blender and GLB geometry, FBX and wood image bytes preserved."
 }

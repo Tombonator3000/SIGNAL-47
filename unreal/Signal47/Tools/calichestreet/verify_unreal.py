@@ -39,6 +39,19 @@ for name,row in patches['meshes'].items():
     mesh=E.load_asset(row['asset'])
     check(name+' composed trim triangles',isinstance(mesh,unreal.StaticMesh) and mesh.get_num_triangles(0)==row['resultTris'])
 check('souvenir geometry removed',sum(v['souvenirRemoved'] for v in patches['meshes'].values())>30)
+M=unreal.MaterialEditingLibrary
+for label in ('souvenir','ground'):
+    rows=json.loads((ROOT/label/'materials.json').read_text())
+    if isinstance(rows,dict):rows=[dict(row,name=name) for name,row in rows.items()]
+    for row in rows:
+        mat=E.load_asset('/Game/CalicheStreet/'+label.title()+'/Materials/'+row['name'])
+        if row.get('textures',{}).get('normal'):
+            value=M.get_material_default_scalar_parameter_value(mat,'NormalStrength')
+            check(row['name']+' controlled normal strength',abs(value-float(row.get('normal_strength',.2)))<.00001,value)
+        check(row['name']+' sidedness',mat.get_editor_property('two_sided')==bool(row.get('two_sided',False)))
+for name in ('M_1420_Stucco_cream','M_1420_Concrete'):
+    mat=E.load_asset('/Game/RadioArray/Station/Materials/'+name)
+    check(name+' corrected original finish',isinstance(mat,unreal.Material) and abs(M.get_material_default_scalar_parameter_value(mat,'NormalStrength')-.18)<.00001)
 result={'status':'PASS' if all(c['pass'] for c in checks) else 'FAIL','checks':checks,
         'engine':unreal.SystemLibrary.get_engine_version()}
 OUT.write_text(json.dumps(result,indent=2))

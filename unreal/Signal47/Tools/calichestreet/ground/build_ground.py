@@ -40,6 +40,7 @@ for row in spec:
             m.node_tree.links.new(inv.outputs[0],combine.inputs['Green'])
             m.node_tree.links.new(sep.outputs['Blue'],combine.inputs['Blue'])
             norm=m.node_tree.nodes.new('ShaderNodeNormalMap')
+            norm.inputs['Strength'].default_value=row.get('normal_strength',.2)
             m.node_tree.links.new(combine.outputs[0],norm.inputs['Color'])
             m.node_tree.links.new(norm.outputs['Normal'],bs.inputs['Normal'])
         else:m.node_tree.links.new(tex.outputs['Color'],bs.inputs['Base Color' if role=='base_color' else 'Roughness'])
@@ -101,6 +102,19 @@ class Mesh:
             vs=[self.overlay(x,z,lift) for x,z in xzs]
             if Vector(vs[1])-Vector(vs[0])==Vector((0,0,0)):continue
             self.face(vs,mat)
+    def blob(self,x,z,rx,rz,mat,lift=.012,seed=0,mask=clear_surface):
+        # Radial, ragged perimeter: no long straight sides or rectangular
+        # ribbon joins when viewed from a shallow player-camera angle.
+        rr=random.Random(470000+seed);ring=[];count=19
+        angle=rr.random()*math.tau
+        for i in range(count):
+            a=angle+math.tau*i/count;r=.78+rr.random()*.26
+            ring.append((x+math.cos(a)*rx*r,z+math.sin(a)*rz*r))
+        if not all(-30<=a<=40 and 2020<=b<=2090 and mask(a,b) for a,b in ring):return
+        center=self.overlay(x,z,lift)
+        for i,(a,b) in enumerate(ring):
+            c,d=ring[(i+1)%count]
+            self.face([center,self.overlay(c,d,lift),self.overlay(a,b,lift)],mat)
     def object(self,name):
         me=bpy.data.meshes.new(name);me.from_pydata(self.v,[],self.f);me.update()
         for m in MATS:me.materials.append(m)
@@ -137,10 +151,9 @@ for side in [-1,1]:
         return inner<abs(x)<outer and 2020.5<z<2089.5
     bb=sorted([1.08*side,4.48*side])+[2020.25,2089.75]
     road.grid(bb,2,step=.28,lift=.008,mask=roadmask)
-    for k in range(12):
-        z=2022+k*5.35+rng.random();x=side*(1.8+rng.random()*1.6)
-        centers=[(x+math.sin(t*.6+k)*.15,z+t*.43) for t in range(5)]
-        road.ribbon(centers,.16+rng.random()*.38,6,lift=.012,mask=lambda x,z:1.1<abs(x)<4.43)
+    for k,z in enumerate([2028.2,2041.6,2049.5,2060.4,2073.7,2086.0]):
+        z+=rng.uniform(-1.3,1.3);x=side*(2.05+rng.random()*.95)
+        road.blob(x,z,.30+rng.random()*.17,.45+rng.random()*.35,6,lift=.012,seed=k+int(side)*50,mask=lambda x,z:1.1<abs(x)<4.43)
     # Thin dust fingers cross onto the outside blacktop edge, under 12 mm high.
     for k in range(15):
         z=2021+k*4.7;road.ribbon([(side*4.30,z),(side*4.72,z+.3),(side*5.15,z+.4)],.06+rng.random()*.09,1,lift=.013,mask=lambda x,z:abs(x)>4.1 and not pavement(x,z))
@@ -185,6 +198,21 @@ for cx,cz in clusters:
         x=cx+rng.uniform(-1.5,1.5);z=cz+rng.uniform(-1.5,1.5);s=rng.uniform(.22,.55)
         if -29.5<x<39.5 and 2020.5<z<2089.5 and clear_dressing(x,z,s) and math.hypot(x-38,z-2036)>2:
             bush(x,z,s);dressing.append({'kind':'dryplant','xz':[x,z],'radius_m':s})
+
+# Three deliberately placed, compact clusters visible through the gap between
+# radio and souvenir. They remain well outside the full main walk rectangle
+# and the A02/studio/door protected boxes, rather than hiding behind façades.
+for hero,(cx,cz) in enumerate([(23.8,2049.0),(26.3,2051.5),(28.3,2048.6)]):
+    hero_rng=random.Random(47900+hero)
+    for k in range(7):
+        a=hero_rng.random()*math.tau;r=hero_rng.uniform(.15,.85)
+        x=cx+math.cos(a)*r;z=cz+math.sin(a)*r;s=hero_rng.uniform(.22,.45)
+        if clear_dressing(x,z,s):
+            rock(x,z,s);dressing.append({'kind':'rock','xz':[x,z],'radius_m':s,'hero_cluster':hero})
+    for k in range(5):
+        x=cx+hero_rng.uniform(-.65,.65);z=cz+hero_rng.uniform(-.65,.65);s=hero_rng.uniform(.48,.78)
+        if clear_dressing(x,z,s):
+            bush(x,z,s);dressing.append({'kind':'dryplant','xz':[x,z],'radius_m':s,'hero_cluster':hero})
 
 manifest={'anchor_world_three_m':ANCHOR,'coordinate_mapping':'worldThree=(8000+bx,bz,2060-by)','import_policy':{'force_front_x_axis':True,'coordinate_system_policy':'MATCH_UP_FORWARD_AXES','import_rotation_yaw':90,'runtime_yaw':0},'collision':'NoCollision for every part','parts':{},'dressing':dressing}
 for name,mesh in [('SM_Caliche_Surface',surfaces),('SM_Caliche_RoadWear',road),('SM_Caliche_Rocks',rocks),('SM_Caliche_DryPlants',plants)]:

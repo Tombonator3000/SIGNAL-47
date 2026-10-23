@@ -97,7 +97,9 @@
       "normal": "textures/concrete_normal_dx.png",
       "roughness": "textures/concrete_roughness.png"
     },
-    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement",
+    "uv_scale": 1.0,
+    "normal_strength": 0.18
   },
   "M_Souvenir_CounterWalnut": {
     "base_color_linear": [
@@ -164,7 +166,9 @@
       "normal": "textures/stucco_normal_dx.png",
       "roughness": "textures/stucco_roughness.png"
     },
-    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement",
+    "uv_scale": 1.0,
+    "normal_strength": 0.18
   },
   "M_Souvenir_FadedRed": {
     "base_color_linear": [

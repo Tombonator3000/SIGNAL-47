@@ -1,5 +1,5 @@
 {
-  "_doc": "Original Caliche street slice. Runtime BuildCalicheStreet composes the gas/radio/souvenir trims atomically. Ground and glass have no collision; the old movement floors, door proxies, NPCs and A02 figure remain authoritative. Souvenir front glass is in front of the existing figure. Street lights gate the modest shop lamps; no story schedules are changed. Ground anchor maps Blender (x,y,z) to three (8000+x,z,2060-y).",
+  "_doc": "Original Caliche street slice. Runtime BuildCalicheStreet composes the gas/radio/souvenir trims atomically. Ground and glass have no collision; the old movement floors, door proxies, NPCs and A02 figure remain authoritative. Souvenir front glass is in front of the existing figure. Two modest interior practicals remain lit; street lights gate only the porch lamps; no story schedules are changed. Ground anchor maps Blender (x,y,z) to three (8000+x,z,2060-y).",
   "area": "diner",
   "parent": "world.town.group",
   "walk": "road",
@@ -19,7 +19,61 @@
       ],
       "yaw": -90,
       "ground": false,
-      "trace": false
+      "trace": false,
+      "lit": {
+        "flood": "town",
+        "slot": 1,
+        "lights": [
+          {
+            "at": [
+              -1.7,
+              2.485,
+              4.88
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.19,
+              0.19
+            ],
+            "lumens": 40,
+            "reach": 3.5,
+            "color": [
+              1,
+              0.77,
+              0.5
+            ],
+            "shadow": true
+          },
+          {
+            "at": [
+              2.8,
+              2.485,
+              4.88
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.19,
+              0.19
+            ],
+            "lumens": 35,
+            "reach": 3.5,
+            "color": [
+              1,
+              0.77,
+              0.5
+            ],
+            "shadow": false
+          }
+        ]
+      }
     },
     {
       "id": "souvenirInterior",
@@ -33,8 +87,7 @@
       "ground": false,
       "trace": false,
       "lit": {
-        "flood": "town",
-        "slot": 1,
+        "constant": true,
         "lights": [
           {
             "at": [
@@ -77,54 +130,6 @@
             ],
             "lumens": 110,
             "reach": 6,
-            "color": [
-              1,
-              0.77,
-              0.5
-            ],
-            "shadow": false
-          },
-          {
-            "at": [
-              -1.7,
-              2.485,
-              4.88
-            ],
-            "face": [
-              0,
-              -1,
-              0
-            ],
-            "size": [
-              0.19,
-              0.19
-            ],
-            "lumens": 65,
-            "reach": 3.5,
-            "color": [
-              1,
-              0.77,
-              0.5
-            ],
-            "shadow": true
-          },
-          {
-            "at": [
-              2.8,
-              2.485,
-              4.88
-            ],
-            "face": [
-              0,
-              -1,
-              0
-            ],
-            "size": [
-              0.19,
-              0.19
-            ],
-            "lumens": 50,
-            "reach": 3.5,
             "color": [
               1,
               0.77,

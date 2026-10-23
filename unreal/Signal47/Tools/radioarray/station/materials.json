@@ -114,9 +114,12 @@
     "transmission": 0.0,
     "textures": {
       "base_color": "textures/concrete_color.png",
-      "normal": "textures/concrete_normal.png",
+      "normal": "textures/concrete_normal_dx.png",
       "roughness": "textures/concrete_roughness.png"
-    }
+    },
+    "uv_scale": 3.0,
+    "normal_strength": 0.18,
+    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement"
   },
   "M_1420_Desk_walnut": {
     "base_color": [
@@ -295,9 +298,12 @@
     "transmission": 0.0,
     "textures": {
       "base_color": "textures/stucco_color.png",
-      "normal": "textures/stucco_normal.png",
+      "normal": "textures/stucco_normal_dx.png",
       "roughness": "textures/stucco_roughness.png"
-    }
+    },
+    "uv_scale": 3.0,
+    "normal_strength": 0.18,
+    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement"
   },
   "M_1420_Vinyl_green": {
     "base_color": [

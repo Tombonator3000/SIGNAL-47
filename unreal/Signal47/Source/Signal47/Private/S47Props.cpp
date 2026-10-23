@@ -700,8 +700,11 @@ void AS47Props::AddLit(UStaticMeshComponent* C, int32 Node, const TSharedPtr<FJs
 	FLit L;
 	L.Comp = C;
 	L.Node = Node;
-	L.Set = W->FloodSet(Str(J, TEXT("flood")));
-	L.Slot = int32(Num(J, TEXT("slot"), -1));
+	// Some small shop/display practicals remain lit in daylight. Explicitly opt in;
+	// every existing flood-controlled fixture keeps its original schedule.
+	const bool bConstant = Bool(J, TEXT("constant"), false);
+	L.Set = bConstant ? -1 : W->FloodSet(Str(J, TEXT("flood")));
+	L.Slot = bConstant ? -1 : int32(Num(J, TEXT("slot"), -1));
 	L.Gain = float(Num(J, TEXT("gain"), 1.0));
 	if (Bool(J, TEXT("suppress"), false) && L.Set >= 0 && L.Slot >= 0) W->SuppressFloodLight(L.Set, L.Slot);
 	// the emissive materials (glTF's EmissiveFactor, as Interchange made them), each its own instance
@@ -1107,14 +1110,14 @@ bool AS47Props::SelfTest(TArray<FString>& Lines)
 			if (P->TryGetObjectField(TEXT("lit"), LitO))
 			{
 				const TArray<TSharedPtr<FJsonValue>>* Ls = nullptr;
-				bool bLit = !Str(*LitO, TEXT("flood")).IsEmpty() && Num(*LitO, TEXT("slot"), -1) >= 0;
+				bool bLit = Bool(*LitO, TEXT("constant"), false) || (!Str(*LitO, TEXT("flood")).IsEmpty() && Num(*LitO, TEXT("slot"), -1) >= 0);
 				if ((*LitO)->TryGetArrayField(TEXT("lights"), Ls)) for (const TSharedPtr<FJsonValue>& LV : *Ls)
 				{
 					const TArray<TSharedPtr<FJsonValue>>* AtL = nullptr;
 					const double Lm = Num(LV->AsObject(), TEXT("lumens"), 0);
 					bLit &= LV->AsObject()->TryGetArrayField(TEXT("at"), AtL) && AtL->Num() == 3 && Lm > 0 && Lm < 20000;
 				}
-				if (!bLit) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: lit needs a flood, a slot and lights with a place and lumens"), *F, *Id)); bOk = false; }
+				if (!bLit) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: lit needs explicit constant or flood/slot, and lights with a place and lumens"), *F, *Id)); bOk = false; }
 			}
 			const TArray<TSharedPtr<FJsonValue>>* Bl = nullptr;
 			if (P->TryGetArrayField(TEXT("blocks"), Bl)) for (const TSharedPtr<FJsonValue>& BV : *Bl)

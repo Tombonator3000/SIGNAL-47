@@ -1,0 +1,142 @@
+{
+  "authoring": "Original SIGNAL / 47 Caliche souvenir shop",
+  "material_refresh": "512px value/grain stone; see material_refresh.json. Blender and GLB geometry, FBX and wood image bytes preserved.",
+  "files": {
+    "README.md": {
+      "bytes": 3626,
+      "sha256": "4b3930af8623f35131a4899d27e8ff10c45a95686d7e23ec737cbe5b5178482e"
+    },
+    "Saucer_Crash_1947.blend": {
+      "bytes": 2415064,
+      "sha256": "2f431d550fa1ca9ea09fed2f916b47589522f85320d2ee4e7b4baa12eedae988"
+    },
+    "Saucer_Crash_1947.glb": {
+      "bytes": 7351268,
+      "sha256": "b1ebb728a76c683e3e45b4ab3f0948ccb2080ae23a54e841c97d6c7543b32b3c"
+    },
+    "build_souvenir.py": {
+      "bytes": 28189,
+      "sha256": "3b062f093158a968bc22c7a18bf0b904fa1fd8a7bcb61d1a61a8fea6b9bb91f8"
+    },
+    "exports/SM_Souvenir_Glass.fbx": {
+      "bytes": 15484,
+      "sha256": "ed25974a9665515e27d61dd1faa71bafe8441a5f4ae50109f65840fcfcc58443"
+    },
+    "exports/SM_Souvenir_Interior.fbx": {
+      "bytes": 1785420,
+      "sha256": "f5032e0f8f3783d7661dcbb1eee88547a9bf8989789748dbe3c53ced75a40c7a"
+    },
+    "exports/SM_Souvenir_Shell.fbx": {
+      "bytes": 360524,
+      "sha256": "43aa496c23ad5e11bbb005dc76cd01f80489f93add29ab44bf84f39eb1bcaa0e"
+    },
+    "make_textures.py": {
+      "bytes": 4575,
+      "sha256": "28ea31719c9ce0e148220754481b429cd35c1b7f11a9529aa0ea35584c5b3d76"
+    },
+    "material_refresh.json": {
+      "bytes": 1501,
+      "sha256": "b623c7eca688a555b84d5765b140e8f21f3d3dda74a84bab4dd79f236c145680"
+    },
+    "materials.json": {
+      "bytes": 7125,
+      "sha256": "10e23042784449921273f538bc131972dff6b028177f0f29c676a15bf264f7c8"
+    },
+    "mesh_cleanup.json": {
+      "bytes": 1866,
+      "sha256": "97c71c85a813a6c2e15d3f98b7e0059fcb63cd11899a5ae1432a696c1fc434d5"
+    },
+    "mesh_cleanup.py": {
+      "bytes": 3317,
+      "sha256": "32c8dc4d71c110e5f2f6234bfc56a9564e8e32105141e59411a9c2785fc0519c"
+    },
+    "model_contract.json": {
+      "bytes": 4739,
+      "sha256": "d0e83cc2a2872b47de5feb5b9b128929d37283895304225e27b2cf5849dead01"
+    },
+    "render_previews.py": {
+      "bytes": 1330,
+      "sha256": "e630d7dad2f12b6eade8fddd80948e3f7773b4cbb67c63c78d90937668d1a220"
+    },
+    "textures/concrete_color.png": {
+      "bytes": 61870,
+      "sha256": "6368e882e6619f33a0808c32aed30edabf63e048c1ddeeb3356a0057b3679b7a"
+    },
+    "textures/concrete_normal.png": {
+      "bytes": 356229,
+      "sha256": "0fca55631ab8006d02fb4827d85342f7ce0b5c98d44b81b44be6837aeede9323"
+    },
+    "textures/concrete_normal_dx.png": {
+      "bytes": 356231,
+      "sha256": "0eeca2910743e98a0ed9322293b9576fcf3902fee70adeb165e8bf7e694dc294"
+    },
+    "textures/concrete_normal_gl.png": {
+      "bytes": 356229,
+      "sha256": "0fca55631ab8006d02fb4827d85342f7ce0b5c98d44b81b44be6837aeede9323"
+    },
+    "textures/concrete_roughness.png": {
+      "bytes": 86950,
+      "sha256": "9a80a098b28b90bca7784a541f99c69f85eb642f4d93d111bd335c3f36af61ea"
+    },
+    "textures/desk_walnut_color.png": {
+      "bytes": 40058,
+      "sha256": "0607f794bbe5bd3cd74b227904cb760039ac64d2696d1cc150fc4a1555e88e75"
+    },
+    "textures/desk_walnut_normal_dx.png": {
+      "bytes": 85930,
+      "sha256": "9aed839b5fb53ae31403c60b9b6f9b4ae7c3e7d65f74309efd080b05cb285b16"
+    },
+    "textures/desk_walnut_normal_gl.png": {
+      "bytes": 85930,
+      "sha256": "85dfa4dc57d552a9dc556f0f52f55786821d0fee9d0917661572dd10756354cf"
+    },
+    "textures/desk_walnut_roughness.png": {
+      "bytes": 22974,
+      "sha256": "efb392a2e9817fea966aa5aca9d18ead355c4098ff1c29f8ba8294739ef54e9d"
+    },
+    "textures/stucco_color.png": {
+      "bytes": 54460,
+      "sha256": "4c2ab6a9fa6faaee83d9a3fbd4aaf577e52d06259210e3374f0478205ca8704e"
+    },
+    "textures/stucco_normal.png": {
+      "bytes": 356031,
+      "sha256": "67c2179fc4ed0fe04a1ed90560841492349974ba55eb37ef8893cb8b825f4c67"
+    },
+    "textures/stucco_normal_dx.png": {
+      "bytes": 356032,
+      "sha256": "99452b78ad6eff3325210bb088d157b5389d52506688db4b611ab23aca3788d2"
+    },
+    "textures/stucco_normal_gl.png": {
+      "bytes": 356031,
+      "sha256": "67c2179fc4ed0fe04a1ed90560841492349974ba55eb37ef8893cb8b825f4c67"
+    },
+    "textures/stucco_roughness.png": {
+      "bytes": 86881,
+      "sha256": "f2ea32f0a1d850db5559ee6b3112c1c6aebefc6c236575de2c7e4536bf9d2958"
+    },
+    "textures/walnut_color.png": {
+      "bytes": 33592,
+      "sha256": "8efa839175bced6eaced77437582104e24fb5aeaa8967a433b99a1c6c66cf43b"
+    },
+    "textures/walnut_normal_dx.png": {
+      "bytes": 85930,
+      "sha256": "9aed839b5fb53ae31403c60b9b6f9b4ae7c3e7d65f74309efd080b05cb285b16"
+    },
+    "textures/walnut_normal_gl.png": {
+      "bytes": 85930,
+      "sha256": "85dfa4dc57d552a9dc556f0f52f55786821d0fee9d0917661572dd10756354cf"
+    },
+    "textures/walnut_roughness.png": {
+      "bytes": 22941,
+      "sha256": "ea3aa5f91fc0b286de2211a9d74b165b48ba78c35ca29ff4c4ccbfc00526ba1f"
+    },
+    "verification.json": {
+      "bytes": 5155,
+      "sha256": "933fa4566949d242deb2bbeab25727d5e97868b3604d06ac6028dfce63a38a50"
+    },
+    "verify_souvenir.py": {
+      "bytes": 4416,
+      "sha256": "f32ff57ebff8fed1b0980fe17fa734a14d646df70e1737c1a267c54cb474e55c"
+    }
+  }
+}

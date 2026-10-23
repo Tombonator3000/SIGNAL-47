@@ -17,6 +17,7 @@ namespace
 	// (measured as the chord between two directions: Sky.ts chord)
 	double Chord(double Deg) { return 2 * FMath::Sin(Deg * DEG / 2); }
 	double Clamp01(double V) { return FMath::Clamp(V, 0.0, 1.0); }
+	double Smooth01(double V) { const double K = Clamp01(V); return K * K * (3 - 2 * K); }
 	double Rand() { return FMath::FRand(); }
 	FLinearColor V4(const FVector& V) { return FLinearColor(float(V.X), float(V.Y), float(V.Z), 0.f); }
 
@@ -115,6 +116,10 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 	const double K = S > 12 * 3600 ? 0 : Clamp01((S - (4 * 3600 + 40 * 60)) / (50 * 60));
 	const double D = FMath::Pow(K, 1.6) * DawnLift;
 	Dawn = D;
+	// Rendering-only daytime plateau. Never raise Dawn: chapters and anomaly gates retain
+	// the original 04:40-05:40 curve and per-area lift. Both joins have zero slope.
+	Midday = Smooth01((S - (5 * 3600 + 40 * 60)) / (20 * 60)) *
+		(1 - Smooth01((S - 17 * 3600) / 3600));
 	// EveningShift extends the existing dawn palette backwards. Keep this separate from Dawn:
 	// anomaly/story gates query the morning curve, while drawing and native light use Daylight().
 	// Art-directed MST reference: sunset 18:27, civil twilight 18:53, last blue hour 19:07.
@@ -141,6 +146,27 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 		const FLinearColor Haze(0.34f, 0.26f, 0.24f);
 		FogColor = A + (Haze - A) * float(Evening * 0.8);
 	}
+	if (Midday > 0)
+	{
+		// A modest April/New Mexico solar approximation: north maps to -Z in three,
+		// with solar noon at 12:00. Unlike the sunrise extrapolation, it crosses the
+		// southern sky and cannot turn underground after noon. This is art calibration,
+		// not a replacement for the authored 18:27 sunset or the finale's elevation.
+		if (!SunElevDeg.IsSet())
+		{
+			const double Latitude = 33.4 * DEG, Declination = 9.1 * DEG;
+			const double HourAngle = (S - 12 * 3600) * UE_DOUBLE_PI / (12 * 3600);
+			const double East = -FMath::Cos(Declination) * FMath::Sin(HourAngle);
+			const double Up = FMath::Sin(Latitude) * FMath::Sin(Declination) + FMath::Cos(Latitude) * FMath::Cos(Declination) * FMath::Cos(HourAngle);
+			const double North = FMath::Cos(Latitude) * FMath::Sin(Declination) - FMath::Sin(Latitude) * FMath::Cos(Declination) * FMath::Cos(HourAngle);
+			const FVector DaySun(East, Up, -North);
+			SunDir = (SunDir * (1 - Midday) + DaySun * Midday).GetSafeNormal();
+			Sun = Sun + (1 - Sun) * Midday;
+		}
+		// The dome daylight and horizon band's Day texture receive Daylight()==1. Cool the shared
+		// haze too; this blend is zero throughout the documented dawn and evening fades.
+		FogColor = FogColor + (FLinearColor(0.30f, 0.40f, 0.55f) - FogColor) * float(Midday);
+	}
 }
 
 void FS47Sky::SetCometClock(double Clock)
@@ -153,8 +179,8 @@ void FS47Sky::Update(double Dt, double T)
 {
 	Time = T;
 	MeteorStep(Dt);
-	// The friendly arrival has no forced horizon storm or thunder. Night retains its old cycle.
-	if (Evening > 0)
+	// Sunlit daytime and the friendly arrival have no forced night storm or thunder.
+	if (Evening > 0 || Midday > 0)
 	{
 		Flash = 0; FlashT = 0;
 		return;

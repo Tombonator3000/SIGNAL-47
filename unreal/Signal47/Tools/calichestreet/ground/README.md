@@ -31,6 +31,8 @@ Vegens sentrum med midtstripe og en buffer på minst 1,05 m på hver side er ur�
 
 Åtte originale materialer har hver farge, DirectX-normal og ruhet: 24 PNG-filer på 512 × 512. Store flater bruker sammenhengende UV i meter med repetisjon per 4 m. Steiner og tørre blader har ekte UV. Ingen rendereravhengige Blender-prosedyrenoder er nødvendige i spillet. `materials.json` gir eksakte materialnavn og relative teksturstier. DryPlant skal være tosidig. Ruhet er enkanals L-PNG: bruk TC_GRAYSCALE/LinearGrayscale, eller TC_DEFAULT/LinearColor med R-kanal. Normalene har DirectX-grønnkanal; Blender-visningen inverterer grønnkanalen bare i visningsnoden.
 
+Første ekte motorkontroll fant for regelmessige bølger og rette tjærefelt. Teksturkilden bruker derfor innpakket flerskala verdistøy og få uregelmessige sprekkforløp. Tolv avgrensede tjæreklatter har ujevn radial omkrets og dempet fargekontrast. `normal_strength` er asfalt/tjære/betong 0,10, jord/silt 0,12, grus 0,16, stein 0,22 og planter 0,14. `uv_scale` er 1. Tre kompakte kalkstein-/grasgrupper er bevisst plassert i åpningen mellom radio og suvenir, omtrent world X 8023–8029 og Z 2048–2053, utenfor protected-sonene. Endringen krever ny teksturforberedelse, geometri-/blend-eksport og FBX-kontroll; bilder av den forrige pakken dokumenterer funnet, ikke den reviderte pakkens resultat.
+
 ## Generering og kontroll
 
 Ikke kjør Blender eller Unreal samtidig med en annen tung jobb på maskinen. Etter at maskinen er frigitt:

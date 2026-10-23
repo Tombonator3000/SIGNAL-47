@@ -10,7 +10,58 @@ OUT=Path(__file__).resolve().parent
 EXPORTS=OUT/'exports'; EXPORTS.mkdir(exist_ok=True)
 import sys
 sys.path.insert(0,str(OUT))
-from make_textures import generate
+from make_textures import generate, STONE_SETTINGS
+
+def configure_stone_material(m,prefix):
+ """Shader-only refresh: keep the mesh's original UVs and material slots intact."""
+ n=m.node_tree.nodes; links=m.node_tree.links; p=n.get('Principled BSDF')
+ for node in list(n):
+  if node.type in {'TEX_IMAGE','NORMAL_MAP','TEX_COORD','VECT_MATH','MAPPING'}: n.remove(node)
+ coord=n.new('ShaderNodeTexCoord')
+ scale=n.new('ShaderNodeMapping'); scale.vector_type='POINT'; scale.label='StoneUVScale'
+ k=STONE_SETTINGS[prefix]['uv_scale']; scale.inputs['Scale'].default_value=(k,k,k)
+ links.new(coord.outputs['UV'],scale.inputs['Vector'])
+ for suffix,socket in [('color','Base Color'),('roughness','Roughness'),('normal','Normal')]:
+  tex=n.new('ShaderNodeTexImage'); path=str(OUT/'textures'/(prefix+'_'+suffix+'.png'))
+  tex.image=bpy.data.images.load(path,check_existing=True); tex.image.reload()
+  if suffix!='color': tex.image.colorspace_settings.name='Non-Color'
+  links.new(scale.outputs['Vector'],tex.inputs['Vector'])
+  if suffix=='normal':
+   norm=n.new('ShaderNodeNormalMap'); norm.inputs['Strength'].default_value=STONE_SETTINGS[prefix]['normal_strength']
+   links.new(tex.outputs['Color'],norm.inputs['Color']); links.new(norm.outputs['Normal'],p.inputs[socket])
+  else: links.new(tex.outputs['Color'],p.inputs[socket])
+
+if '--materials-only' in sys.argv:
+ # No geometry regeneration, FBX import or render; original mesh/UV/transform hash must hold.
+ import hashlib
+ bpy.ops.wm.open_mainfile(filepath=str(OUT/'1420_AM_station.blend'))
+ def geometry_hash():
+  rows=[]
+  for o in sorted(bpy.data.objects,key=lambda ob:ob.name):
+   if o.type!='MESH': continue
+   m=o.data
+   rows.append((o.name,[list(row) for row in o.matrix_world],[tuple(v.co) for v in m.vertices],
+                [(tuple(p.vertices),p.material_index,p.use_smooth) for p in m.polygons],
+                [(layer.name,[tuple(d.uv) for d in layer.data]) for layer in m.uv_layers],
+                [slot.name for slot in m.materials]))
+  return hashlib.sha256(json.dumps(rows,separators=(',',':')).encode()).hexdigest()
+ before=geometry_hash()
+ for name,prefix in [('M_1420_Stucco_cream','stucco'),('M_1420_Concrete','concrete')]: configure_stone_material(bpy.data.materials[name],prefix)
+ parts=[o for o in bpy.context.scene.objects if o.type=='MESH' and o.name.startswith('SM_')]
+ saved_locations={o.name:o.location.copy() for o in parts}
+ bpy.ops.object.select_all(action='DESELECT')
+ for o in parts: o.select_set(True); o.location-=Vector((0,5,0))
+ bpy.ops.export_scene.gltf(filepath=str(OUT/'1420_AM_station.glb'),export_format='GLB',use_selection=True,export_materials='EXPORT',export_extras=True)
+ for o in parts: o.location=saved_locations[o.name]
+ bpy.context.view_layer.update()
+ after=geometry_hash(); assert before==after, 'Material refresh changed authored mesh data'
+ for img in bpy.data.images:
+  if img.source=='FILE': img.filepath=bpy.path.relpath(img.filepath,start=str(OUT))
+ bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'1420_AM_station.blend'))
+ proof={'geometry_hash_before':before,'geometry_hash_after':after,'geometry_unchanged':before==after,'settings':STONE_SETTINGS,'scope':'shader-only and GLB material packaging; no geometry or FBX regenerated'}
+ (OUT/'material_refresh.json').write_text(json.dumps(proof,indent=2))
+ print('STONE_MATERIAL_REFRESH',json.dumps(proof))
+ raise SystemExit(0)
 generate(OUT/'textures')
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
 for d in list(bpy.data.materials): bpy.data.materials.remove(d)
@@ -50,6 +101,8 @@ def detail_material(m,scale,strength):
  l.new(tex.outputs['Fac'],bump.inputs['Height']); l.new(bump.outputs['Normal'],p.inputs['Normal'])
 TEXTURE_MATS={stucco:'stucco',wood:'walnut',woodlight:'desk_walnut',concrete:'concrete'}
 for m,prefix in TEXTURE_MATS.items():
+ if prefix in STONE_SETTINGS:
+  configure_stone_material(m,prefix); continue
  n=m.node_tree.nodes; l=m.node_tree.links; p=n.get('Principled BSDF')
  for suffix,socket in [('color','Base Color'),('roughness','Roughness'),('normal','Normal')]:
   tex=n.new('ShaderNodeTexImage'); tex.image=bpy.data.images.load(str(OUT/'textures'/(prefix+'_'+suffix+'.png')))
@@ -343,6 +396,10 @@ for m in bpy.data.materials:
  p=m.node_tree.nodes.get('Principled BSDF') if m.use_nodes else None
  if p: material_data[m.name]={'base_color':list(p.inputs['Base Color'].default_value),'metallic':p.inputs['Metallic'].default_value,'roughness':p.inputs['Roughness'].default_value,'emission':list(p.inputs['Emission Color'].default_value),'emission_strength':p.inputs['Emission Strength'].default_value,'alpha':p.inputs['Alpha'].default_value,'transmission':p.inputs['Transmission Weight'].default_value}
 for m,prefix in TEXTURE_MATS.items(): material_data[m.name]['textures']={'base_color':'textures/'+prefix+'_color.png','normal':'textures/'+prefix+'_normal.png','roughness':'textures/'+prefix+'_roughness.png'}
+for m,prefix in TEXTURE_MATS.items():
+ if prefix in STONE_SETTINGS:
+  material_data[m.name].update(STONE_SETTINGS[prefix]); material_data[m.name]['normal_convention']='DirectX tangent space'
+  material_data[m.name]['textures']['normal']='textures/'+prefix+'_normal_dx.png'
 material_data['M_1420_Clear_glass']['alpha']=.14
 (OUT/'materials.json').write_text(json.dumps(material_data,indent=2))
 # Basis probe is excluded from final scene and exports.
