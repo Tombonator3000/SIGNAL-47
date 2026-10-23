@@ -1,5 +1,5 @@
 {
- "_doc": "Per model: category (folder under /Game/Free); size = what the real thing measures along its largest side in metres (the file is rescaled only when it is off by more than a quarter, a unit mistake); scale = a fixed factor instead (packs, where no one size fits); split = a pack of separate props (one asset per prop); keep / drop = mesh node names to keep or leave out (the C10 comes on a diorama with a road, poles and cacti); nanite = force Nanite on or off (default: on from 50k triangles when no material is translucent). Poly Haven models are scanned at their real size and keep it.",
+ "_doc": "Per model: category (folder under /Game/Free); size = what the real thing measures along its largest side in metres (the file is rescaled only when it is off by more than a quarter, a unit mistake); scale = a fixed factor instead (packs, where no one size fits); split = a pack of separate props (one asset per prop); keep / drop = mesh node names to keep or leave out (the C10 comes on a diorama with a road, poles and cacti); nanite = force Nanite on or off (default: on from 50k triangles when no material is translucent). Poly Haven models are scanned at their real size and keep it. own = a .glb of Tom's own in ~/Assets/signal47-free/own (no credit); pivot model = a split model's props keep the whole model's pivot (the printer's paper stays in place). repaint = a function in repaint.py run on the model's textures (the sheriff's livery; brand logos painted out); cuts = the triangles of the named meshes inside a box (metres in the prepared model: x forward, y up, pivot at the middle of the base) made an asset of their own, <model>_<cut>, with the model's pivot (the patrol car's driver's door, which opens).",
  "pickup_c10_1966": {
   "category": "Vehicles",
   "keep": [
@@ -25,7 +25,14 @@
  },
  "fairheaven_lt80_cop": {
   "category": "Vehicles",
-  "size": 5.3
+  "size": 5.3,
+  "repaint": "cop_sheriff",
+  "cuts": {
+   "door_driver": {
+    "box": [[-0.235, 0.25, -0.95], [0.875, 1.3, -0.7]],
+    "meshes": ["body001", "Glass_Driver", "Interior001", "Interior_Trim001"]
+   }
+  }
  },
  "fairheaven_lt80": {
   "category": "Vehicles",
@@ -60,7 +67,8 @@
  },
  "typewriter_selectric": {
   "category": "Office",
-  "size": 0.55
+  "size": 0.55,
+  "repaint": "ibm_selectric"
  },
  "typewriter_old": {
   "category": "Office",
@@ -68,11 +76,13 @@
  },
  "terminal_3178": {
   "category": "Office",
-  "size": 0.45
+  "size": 0.45,
+  "repaint": "ibm_3178"
  },
  "terminal_3278": {
   "category": "Office",
-  "size": 0.5
+  "size": 0.5,
+  "repaint": "ibm_3278"
  },
  "crt_monitor": {
   "category": "Office",
@@ -83,7 +93,8 @@
   "size": 0.55
  },
  "payphone_blue": {
-  "category": "Office"
+  "category": "Office",
+  "repaint": "payphone_plain"
  },
  "payphone_worn": {
   "category": "Office",
@@ -99,7 +110,8 @@
  },
  "cassette_tcd5": {
   "category": "Radio",
-  "size": 0.24
+  "size": 0.24,
+  "repaint": "sony_tcd5"
  },
  "cassette_kx202": {
   "category": "Radio",
@@ -111,15 +123,18 @@
  },
  "reel_tc510": {
   "category": "Radio",
-  "size": 0.4
+  "size": 0.4,
+  "repaint": "sony_tc510"
  },
  "cb_cobra_139": {
   "category": "Radio",
-  "size": 0.25
+  "size": 0.25,
+  "repaint": "cobra_139"
  },
  "cb_base": {
   "category": "Radio",
-  "size": 0.45
+  "size": 0.45,
+  "repaint": "cobra_base"
  },
  "walkie": {
   "category": "Radio",
@@ -263,5 +278,17 @@
  },
  "barbed_fence": {
   "category": "Roadside"
+ },
+ "dotmatrix_printer": {
+  "category": "Office",
+  "own": "s47_dotmatrix_printer.glb",
+  "title": "DP-80 dot matrix printer",
+  "split": true,
+  "pivot": "model"
+ },
+ "motel_bed": {
+  "category": "Motel",
+  "own": "s47_motel_bed.glb",
+  "title": "Motel bed"
  }
 }

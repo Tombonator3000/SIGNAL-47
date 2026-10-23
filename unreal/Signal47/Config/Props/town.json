@@ -1,0 +1,41 @@
+{
+ "_doc": "Caliche (world/Town.ts, the diner's area). The deputy's car: the Fairheaven LT '80 Cop Cruiser in the sheriff's livery (Tools/freemodels/repaint.py) in place of the exported boxes, in the car's own terms so it stands where S47Town puts it (at the office while he is in, on the highway's shoulder north of town for event 12). Its driver's door opens when the story shows the exported open door; its roof lights flash while it stands out there.",
+ "area": "diner",
+ "parent": "world.town.group",
+ "leg": "road,roswell",
+ "grounds": ["diner", "road"],
+ "props": [
+  { "id": "patrolCar", "model": "fairheaven_lt80_cop", "replaces": ["world.town.car"], "local": true, "at": [0, 0, 0], "yaw": 90,
+    "beacon": { "on": "world.town.carDoor", "bar": [-0.342, -0.181, 1.385, 1.495, -0.531, 0.532] } },
+  { "id": "patrolCarDoor", "model": "fairheaven_lt80_cop_door_driver", "parent": "world.town.car", "local": true, "at": [0, 0, 0], "yaw": 90,
+    "swing": { "open": "world.town.carDoor", "hinge": [0.86, -0.8], "deg": 58 } },
+  { "id": "dinerCar1", "model": "negotiator_80", "parent": "world.diner.group", "at": [7986.2, 4.6, 1990.4], "yaw": 180, "collide": true },
+  { "id": "dinerCar2", "model": "fairheaven_lt80", "parent": "world.diner.group", "at": [7986.2, 4.6, 1993.4], "yaw": 180, "collide": true },
+  { "id": "gasPickup", "model": "el_alamo_78", "at": [8013, 6.9, 2063], "lift": 1.5, "yaw": 0, "collide": true },
+  { "id": "gasPhone", "model": "payphone_blue", "at": [8004.8, 6.9, 2067.5], "lift": 1.5, "yaw": -90, "collide": true },
+  { "id": "laundryPickup", "model": "muteki_taiga", "at": [7991.6, 6.9, 2158], "lift": 1.5, "yaw": 0, "collide": true },
+  { "id": "streetWagon", "model": "fairheaven_sw84", "at": [8006.6, 6.9, 2122], "lift": 1.5, "yaw": 90, "collide": true }
+ ],
+ "views": [
+  { "name": "town-car-out", "at": [8004, 1700, -0.282, -0.04], "car": "out", "clock": 12000 },
+  { "name": "town-car-out-far", "at": [7999, 1716, -0.45, 0.0], "car": "out", "clock": 12000 },
+  { "name": "town-car-out-door", "at": [8003.2, 1693.5, -1.2, -0.1], "car": "out", "clock": 12000 },
+  { "name": "town-office", "at": [7994, 2100, 2.37, -0.05], "car": "in", "clock": 3600 },
+  { "name": "town-street", "at": [7998, 2050, 3.1416, 0.0] },
+  { "name": "diner-inside", "at": [7978.5, 2006.5, 0, -0.1] },
+  { "name": "diner-inside2", "at": [7979, 1993, 3.1416, -0.1] },
+  { "name": "town-gas", "at": [8003, 2060, -1.5708, 0.0] },
+  { "name": "town-gas3", "at": [8005, 2070, -0.85, -0.05] },
+  { "name": "town-laundry2", "at": [7999, 2150, 2.39, -0.05] },
+  { "name": "diner-lot3", "at": [7993, 2000, 0.72, -0.05] },
+  { "name": "town-gas2", "at": [8001, 2045, -2.4, 0.0] },
+  { "name": "town-laundry", "at": [7999, 2166, 0.75, 0.0] },
+  { "name": "town-wagon", "at": [8002, 2112, -2.6, 0.0] },
+  { "name": "diner-lot2", "at": [7993, 2002, 2.0, -0.05] },
+  { "name": "town-north", "at": [8000, 1995, 3.1416, 0.0] },
+  { "name": "town-south", "at": [8000, 2270, 0, 0.0] },
+  { "name": "town-west", "at": [8000, 2150, 1.5708, 0.0] },
+  { "name": "town-east", "at": [8000, 2150, -1.5708, 0.0] },
+  { "name": "diner-lot", "at": [7990, 2012, 0.69, -0.02] }
+ ]
+}

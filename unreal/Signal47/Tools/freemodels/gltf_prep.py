@@ -118,13 +118,33 @@ def read_credits():
 		name, link, lic, author = f[-1], f[-2], f[-3], f[-4]
 		title = ' | '.join(f[:-4])
 		out[name] = {'title': title, 'author': author, 'licence': 'CC BY 4.0' if 'Attribution' in lic else lic, 'link': link, 'source': 'sketchfab'}
+	# Tom's own Blender models (own/README.md): no licence, nothing to credit; models.json names the .glb
+	for name, cfg in MODELS.items():
+		if isinstance(cfg, dict) and cfg.get('own'):
+			out[name] = {'title': cfg.get('title', name), 'author': 'SIGNAL / 47', 'licence': 'own', 'link': '', 'source': 'own'}
 	return out
+
+
+def unpack_glb(glb, d, name):
+	"""A .glb as a .gltf with its binary chunk beside it (images stay in buffer views)."""
+	import struct
+	b = open(glb, 'rb').read()
+	n = struct.unpack('<I', b[12:16])[0]
+	g = json.loads(b[20:20 + n])
+	off = 20 + n
+	bn = struct.unpack('<I', b[off:off + 4])[0]
+	open(os.path.join(d, name + '.bin'), 'wb').write(b[off + 8:off + 8 + bn])
+	g['buffers'][0]['uri'] = name + '.bin'
+	json.dump(g, open(os.path.join(d, name + '.gltf'), 'w'))
 
 
 def source_gltf(name, credit, work):
 	"""Unpacks or links the model into work/src/<name>; returns its .gltf path."""
 	d = os.path.join(work, 'src', name)
-	if credit['source'] == 'sketchfab':
+	if credit['source'] == 'own':
+		os.makedirs(d, exist_ok=True)
+		unpack_glb(os.path.join(SRC, 'own', MODELS[name]['own']), d, name)
+	elif credit['source'] == 'sketchfab':
 		z = os.path.join(SRC, 'sketchfab', name + '.zip')
 		stamp = os.path.join(d, '.from')
 		key = '%d %d' % (os.path.getsize(z), int(os.path.getmtime(z)))
@@ -250,6 +270,117 @@ def write_part(g, path, part_roots, above, scale, lo, hi, out_name):
 	return out
 
 
+def read_accessor(g, folder, i, cache):
+	import struct
+	a = g['accessors'][i]
+	bv = g['bufferViews'][a['bufferView']]
+	if bv['buffer'] not in cache:
+		cache[bv['buffer']] = open(os.path.join(folder, g['buffers'][bv['buffer']]['uri']), 'rb').read()
+	b = cache[bv['buffer']]
+	n = {'SCALAR': 1, 'VEC2': 2, 'VEC3': 3, 'VEC4': 4}[a['type']]
+	fmt = {5126: 'f', 5125: 'I', 5123: 'H', 5121: 'B'}[a['componentType']]
+	size = struct.calcsize(fmt)
+	stride = bv.get('byteStride', size * n)
+	off = bv.get('byteOffset', 0) + a.get('byteOffset', 0)
+	return [struct.unpack_from('<' + fmt * n, b, off + k * stride) for k in range(a['count'])]
+
+
+def apply_cuts(g, cfg, path, lo, hi, scale):
+	"""models.json "cuts": {part: {"box": [[x, y, z], [x, y, z]], "meshes": [name substrings]}}: the
+	triangles of those meshes whose middle lies in the box (metres, in the prepared model: x forward,
+	y up, pivot at the middle of the base) leave them for mesh nodes of their own, <part>_<k>, imported
+	as a separate asset with the model's pivot (the cop car's driver's door, which opens). The new
+	index data goes in S47_cut_<part>.bin beside the glTF. Returns {part: the new nodes' names}."""
+	import struct
+	folder = os.path.dirname(path)
+	cache = {}
+	made = {}
+	nodes = g['nodes']
+	cx, cz = (lo[0] + hi[0]) / 2, (lo[2] + hi[2]) / 2
+	parents = {c: i for i, n in enumerate(nodes) for c in n.get('children', [])}
+	for part, cut in cfg.get('cuts', {}).items():
+		bmin, bmax = cut['box']
+		data = bytearray()
+		new_prims = {}  # node -> primitives of the cut mesh
+
+		def walk(i, m):
+			w = mmul(m, node_matrix(nodes[i]))
+			n = nodes[i]
+			if 'mesh' in n and any(s in n.get('name', '') for s in cut['meshes']):
+				mesh = g['meshes'][n['mesh']]
+				keep_prims, cut_prims = [], []
+				for p in mesh['primitives']:
+					if 'indices' not in p or p.get('mode', 4) != 4:
+						keep_prims.append(p)
+						continue
+					pos = read_accessor(g, folder, p['attributes']['POSITION'], cache)
+					idx = [t[0] for t in read_accessor(g, folder, p['indices'], cache)]
+					inside, outside = [], []
+					for t in range(0, len(idx) - 2, 3):
+						tri = idx[t:t + 3]
+						c = [sum(w[k][0] * pos[v][0] + w[k][1] * pos[v][1] + w[k][2] * pos[v][2] + w[k][3] for v in tri) / 3 for k in range(3)]
+						q = [(c[0] - cx) * scale, (c[1] - lo[1]) * scale, (c[2] - cz) * scale]
+						(inside if all(bmin[k] <= q[k] <= bmax[k] for k in range(3)) else outside).extend(tri)
+					if not inside:
+						keep_prims.append(p)
+						continue
+					for which, lst in (('keep', outside), ('cut', inside)):
+						if not lst:
+							continue
+						off = len(data)
+						data.extend(struct.pack('<%dI' % len(lst), *lst))
+						g['bufferViews'].append({'buffer': len(g['buffers']), 'byteOffset': off, 'byteLength': 4 * len(lst), 'target': 34963})
+						g['accessors'].append({'bufferView': len(g['bufferViews']) - 1, 'componentType': 5125, 'count': len(lst), 'type': 'SCALAR'})
+						q = dict(p, indices=len(g['accessors']) - 1)
+						(keep_prims if which == 'keep' else cut_prims).append(q)
+				if cut_prims:
+					g['meshes'].append({'name': part + '_' + mesh.get('name', ''), 'primitives': cut_prims})
+					g['meshes'][n['mesh']] = dict(mesh, primitives=keep_prims)
+					new_prims[i] = len(g['meshes']) - 1
+			for ch in n.get('children', []):
+				walk(ch, w)
+
+		for r in g['scenes'][g.get('scene', 0)]['nodes']:
+			walk(r, IDENT)
+		if not new_prims:
+			print('S47FREE cut %s: no triangles in the box' % part)
+			continue
+		bin_name = 'S47_cut_%s.bin' % part
+		open(os.path.join(folder, bin_name), 'wb').write(bytes(data))
+		g['buffers'].append({'uri': bin_name, 'byteLength': len(data)})
+		for i, mi in new_prims.items():
+			# a sibling with the same matrix, under the same parent
+			n = {k: v for k, v in nodes[i].items() if k not in ('children', 'mesh')}
+			n['name'] = '%s_%d' % (part, len(made.get(part, [])))
+			n['mesh'] = mi
+			nodes.append(n)
+			p = parents.get(i)
+			if p is None:
+				g['scenes'][g.get('scene', 0)]['nodes'].append(len(nodes) - 1)
+			else:
+				nodes[p]['children'] = nodes[p].get('children', []) + [len(nodes) - 1]
+			made.setdefault(part, []).append(n['name'])
+	return made
+
+
+def apply_repaint(g, cfg, path, out):
+	"""models.json "repaint": a function in repaint.py; the prepared glTF out points at its textures."""
+	if not cfg.get('repaint'):
+		return
+	if HERE not in sys.path:
+		sys.path.insert(0, HERE)  # (-I leaves the script's folder out)
+	import repaint
+	folder = os.path.dirname(path)
+	done = repaint.apply(cfg['repaint'], folder, os.path.join(folder, 'S47_repaint'))
+	h = json.load(open(out))
+	for im in h.get('images', []):
+		base = os.path.basename(im.get('uri', ''))
+		if base in done:
+			im['uri'] = 'S47_repaint/' + done[base]
+			im['mimeType'] = 'image/png'
+	json.dump(h, open(out, 'w'))
+
+
 def prepare(work, report=False):
 	credits = read_credits()
 	plan = []
@@ -281,7 +412,14 @@ def prepare(work, report=False):
 			scale = want / big
 		alpha = sorted(set(m.get('alphaMode', 'OPAQUE') for m in g.get('materials', [])))
 		parts = []
-		if cfg.get('split'):
+		cuts = apply_cuts(g, cfg, path, lo, hi, scale) if cfg.get('cuts') else {}
+		if cuts:
+			# the model without the cut pieces, and each piece, all with the model's pivot
+			above, roots = branch(g)
+			parts.append({'name': name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris, 'drop': [n for ns in cuts.values() for n in ns]})
+			for cn, ns in cuts.items():
+				parts.append({'name': cn, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': 0, 'keep': ns})
+		elif cfg.get('split'):
 			for r in roots:
 				plo, phi, ptris, _ = measure(g, [r])
 				if ptris == 0:
@@ -295,14 +433,22 @@ def prepare(work, report=False):
 				while any(p['name'] == pname for p in parts):
 					pname = '%s_%d' % (base, k)
 					k += 1
+				# pivot 'model': every prop keeps the whole model's pivot, so the parts stay fitted together
+				if cfg.get('pivot') == 'model':
+					wlo, whi = lo, hi
 				parts.append({'name': pname, 'roots': [r], 'lo': wlo, 'hi': whi, 'tris': ptris})
 		else:
 			parts.append({'name': name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris})
 		entry = dict(c, name=name, category=cfg['category'], scale=scale, alpha=alpha, meshes=meshes, masked=alpha_fix,
 			raw_size_m=[round(hi[k] - lo[k], 4) for k in range(3)], parts=[])
 		for p in parts:
-			out_name = p['name'] if not cfg.get('split') else '%s_%s' % (name, p['name'])
-			f = write_part(g, path, p['roots'], above, scale, p['lo'], p['hi'], safe(out_name))
+			out_name = p['name'] if not (cfg.get('split') or p.get('keep')) else '%s_%s' % (name, p['name'])
+			gp = g
+			if p.get('keep') or p.get('drop'):
+				gp = dict(g, nodes=[dict(n) for n in g['nodes']])
+				filter_nodes(gp, {'keep': p.get('keep'), 'drop': p.get('drop', [])})
+			f = write_part(gp, path, p['roots'], above, scale, p['lo'], p['hi'], safe(out_name))
+			apply_repaint(gp, cfg, path, f)
 			size = [(p['hi'][k] - p['lo'][k]) * scale for k in range(3)]
 			# in glTF's own axes (x, depth z, height y); free_models.json has the bounds in Unreal's
 			nanite = cfg.get('nanite', p['tris'] >= NANITE_TRIS and 'BLEND' not in alpha)
