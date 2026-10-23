@@ -62,7 +62,7 @@ FVector FS47AnomalyWorld::ChangedAt() const
  if(M && M->Anomaly && M->Anomaly->Data.A02Stage>=2) {P.X=16.1;P.Y=S47RoadTerrain::SurfaceY(P.X,P.Z);}
  return World(P+FVector(0,.62,0));
 }
-FVector FS47AnomalyWorld::N02TraceAt() const { return World(FVector(-14.84,Lamp?Town->Group.WorldToLocal(LampAt()).Y-.42:1.2,2128.9)); }
+FVector FS47AnomalyWorld::N02TraceAt() const { return World(FVector(-14.84,Lamp?Town->Group.WorldToLocal(LampAt()).Y-.42:1.2,2128.2)); }
 FVector FS47AnomalyWorld::PrintShadowAt() const
 {
  const double Yaw=M&&M->Anomaly&&M->Anomaly->Data.A02FacingSet?M->Anomaly->Data.A02Yaw:PI/2;
@@ -126,8 +126,8 @@ void FS47AnomalyWorld::InstallGeometry()
  // These are real, hidden meshes rendered only during an actual camera exposure.
  auto FilmFigure=[&](TArray<FS47Obj>& Parts,const FString& Prefix)
  {
-  Parts.Add(Part(W,Town->Group,Prefix+TEXT("Body"),FVector::ZeroVector,FVector(.10,.65,.27),0x08090b,false,.012f));
-  Parts.Add(Part(W,Town->Group,Prefix+TEXT("Head"),FVector::ZeroVector,FVector(.19,.23,.19),0x090a0b,true,.008f));
+  Parts.Add(Part(W,Town->Group,Prefix+TEXT("Body"),FVector::ZeroVector,FVector(.10,.75,.36),0x020304,true,0));
+  Parts.Add(Part(W,Town->Group,Prefix+TEXT("Head"),FVector::ZeroVector,FVector(.21,.25,.21),0x020304,true,0));
   for(auto& P:Parts) P.SetVisible(false);
  };
  FilmFigure(N02Film,TEXT("AnomalyLaundryFilm")); FilmFigure(A02Film,TEXT("AnomalyStudioFilm"));
