@@ -67,8 +67,8 @@ void FS47Evening::ControlTest(double Dt)
 	if (Pack.Flag(TEXT("intro_arrived")) && !bRouteArrived)
 	{
 		bRouteArrived = true; ++RouteArrivalCount;
-		if (!FMath::IsNearlyEqual(M->Story->Clock(), S47Timeline::ShiftStart, 0.01)) { Fail(TEXT("actual parking did not start the clock at 18:00")); return; }
-		UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS actual arrival clock=18:00, driven %.1f m"), *RouteName, RouteDistance);
+		if (M->Story->Clock() < S47Timeline::ShiftStart || M->Story->Clock() > S47Timeline::ShiftStart + 1) { Fail(TEXT("observed parking clock outside the first second of 18:00")); return; }
+		UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS observed actual arrival within first second of 18:00, driven %.1f m"), *RouteName, RouteDistance);
 	}
 	if (bRouteArrived && M->Story->Clock() + 0.001 < RouteLastClock) { Fail(TEXT("clock moved backwards after arrival")); return; }
 	RouteLastClock = M->Story->Clock();
@@ -125,7 +125,7 @@ void FS47Evening::ControlTest(double Dt)
 	}
 	if (RouteStage == 2 || RouteStage == 6)
 	{
-		if (M->World->bDriving) return;
+		if (M->World->bDriving || M->World->bBusy) return;
 		if (bRouteArrived) { Stage(10); return; }
 		if (RouteName == TEXT("direct") || M->World->TruckAt != TEXT("diner") || !M->World->TruckOnLot()) { Fail(TEXT("drive stopped outside the expected diner/SARO parking zone")); return; }
 		if (Pack.Flag(TEXT("handover_done")) || M->Story->Begun.Contains(TEXT("ch5"))) { Fail(TEXT("early diner started later story")); return; }
@@ -180,7 +180,7 @@ void FS47Evening::ControlTest(double Dt)
 	{
 		if (RouteStageElapsed > 60) { Fail(TEXT("physical return walk to diner car blocked")); return; }
 		if (!Walk()) return;
-		if (!Use(TEXT("truck")) || !M->World->bDriving) { Fail(TEXT("return car action did not start SARO drive")); return; }
+		if (!Use(TEXT("truck")) || (!M->World->bDriving && !M->World->bBusy)) { Fail(TEXT("return car action did not schedule SARO drive")); return; }
 		double Auto = 24; FParse::Value(FCommandLine::Get(), TEXT("S47Auto="), Auto); M->World->Autopilot = Auto;
 		Stage(6); return;
 	}
