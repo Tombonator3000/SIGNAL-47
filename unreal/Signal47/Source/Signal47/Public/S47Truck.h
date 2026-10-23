@@ -46,6 +46,7 @@ struct SIGNAL47_API FS47Truck
 	FVector Position = FVector::ZeroVector;
 	FVector Rotation = FVector::ZeroVector;
 	void SetPose(const FVector& P, const FVector& R);
+	void SetParkPose(const FVector& P, double Heading);
 	FQuat Quat() const;
 	FVector LocalToWorld(const FVector& L) const;
 	FVector WorldToLocal(const FVector& W) const;
@@ -64,6 +65,9 @@ struct SIGNAL47_API FS47Truck
 
 	/** Interior on, view-blocking shell off. The controller calls this while it drives. */
 	void SetDriving(bool bOn);
+	// The evening car uses this controller, but none of SARO 07's exported geometry.
+	void SetPersonalVehicle(bool bOn);
+	bool IsPersonalVehicle() const { return bPersonalVehicle; }
 	/** The camera has left the driver's seat (a cut): the whole truck again. */
 	void ViewFrom(const FVector& CamThree);
 	/** Take over another copy's needles and swinging keys (the truck goes on in another area). */
@@ -121,6 +125,8 @@ private:
 	TArray<int32> GiHead, GiPark, GiTail;
 	double LightLevel = 1;
 	bool bHeadOn = false, bBrakeOn = false;
+	bool bPersonalVehicle = false;
+	FVector ServiceDriverEye;
 	FLinearColor HeadColor;
 	TOptional<double> DashLevel;
 	TWeakObjectPtr<USpotLightComponent> Headlights[2];

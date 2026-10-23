@@ -7,6 +7,14 @@
 - [ ] Sluttpakke: hel skumlere rute, før/etter-hint og hvert nytt øyeblikk, migrering og kort gammel historieregresjon. Se ANOMALY_SCARIER.md.
 - [ ] Tom prøver lydmiksen, figurens direkte nærvær, fotosporets lesbarhet og frykt med ekte input. Automatikk avgjør ikke dette.
 
+## Åpningens biler og inngang, codex/evening-runtime, 23. oktober 2026
+
+- [x] Privat wagon med eget karosseri, førermiljø og åpen dør; alle SARO-riggdeler skjult og gjenopprettet på riktig bil. Komplett delt standardmodell bevart.
+- [x] Plan SARO 07 på originalpad, samsvarende kollisjon og klar besøksplass; gamle utrygge åpningstilstander normaliseres.
+- [x] Reprodusert terskellåsing ved lukking under spilleren, sperret lukking og reparert gammel save før lasterens Walkable-port. Samme posisjon og klokke beholdes.
+- [x] Flettet bygg/pakking, 1286 selvtester, 48 vanlige gangpasseringer, fire ferske lastinger pluss gammel terskelsave, hel burgerrute, seks regresjonshopp og alle påkrevde bil-/inngangsbilder PASS. Rapport EVENING_VEHICLE_FIXES.md, pakkekilde 66d2b5a6/core04517414; hasher uendret, lenker/OpenOrder ryddet. Ingen push/PR/installasjon, Claude integrerer.
+- [ ] Menneskelig gjentakelse etter Claudes integrasjon. Denne leveransen beviser automatiske bevegelses-/lastescenarioer, ikke Toms neste fullnatt med ekte input.
+
 ## Anomaly-pilot, codex/anomaly-pilot, 23. oktober 2026
 
 - [x] N01 med faktisk utskrift mot kveldens service-/sendeplan, korrigert feilvalg og fysisk forespørsel.
@@ -226,3 +234,8 @@
 - [x] 30 utvendige armaturspotter ved SARO og motellet, navngitte labdrivere og kopling til innflettet fremkallingsregel; bygg, 1218 selvtester og målrettede bilder. Se `LIGHTING.md`.
 - [ ] Claude gjennomgår `revision3/compare`, pakker i avtalt kø, prøver lukket dør, rød fremkalling, forstørrer, tåket kopi/gjentakelse og normal lysretur med ekte input; SARO-kutt/tilbake og Room 6s lys.
 - [ ] Ny High/1440p `stat unit` med én tung jobb om gangen etter dette utelyspasset. Forrige lysleveranses tall er bevart som historikk, ikke målt på nytt her.
+
+
+## Radiostasjon og array, 2026-10-23 kl. 23:53
+
+- [x] Blender-kilder, realistisk antenne på alle 27 plasser og radiostasjon med interiør integrert, verifisert og installert. Se RADIO_ARRAY.md for bevis og kildekontrakt.

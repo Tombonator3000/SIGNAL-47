@@ -242,7 +242,8 @@ public:
 	// ---------- doors (Doors.ts) ----------
 	bool IsDoor(const FString& ItemId) const;
 	FString DoorLabel(const FString& ItemId) const;
-	void ToggleDoor(const FString& ItemId);
+	bool ToggleDoor(const FString& ItemId);
+	bool RestoreDoorwayAt(const FVector& PlayerThree, double Radius);
 	// Doors.set(id, open, instant): by the door's id ('south') or its thing's id ('doorSouth');
 	// instant: no swing and no sound (restoring a save)
 	void SetDoorOpen(const FString& DoorOrItemId, bool bOpen, bool bInstant = true);

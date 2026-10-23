@@ -10,6 +10,15 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - `AS47Web::AdoptNode` bevarer bare posisjon; bruk `FS47Obj::SetScale` for native deler som senere flyttes/roteres, ellers blir de enhetsstore. Nye cue-kilder og ambience-gate må eie egne lydnoder og resettes ved modal, stor scene, telefon, områdebytte, last og tittel. Ikke endre opprinnelige bussnivåer eller stemmer.
 - Sluttester og pakket retak pågår. Evidens i `~/scratch-bm/Signal47-anomaly-scarier`. Én tung jobb, ingen stopp av Tom og ingen installed-game-grace. Ingen push/PR/installasjon; Claude integrerer.
 
+## Åpningens biler og SARO-inngang, Codex 23. oktober 2026
+
+- Pakket kilde `66d2b5a6`, core `04517414`, retter Toms tre åpningsfeil fra `ed061aca`. Rapport og reproduksjon: `EVENING_VEHICLE_FIXES.md`; kandidat/bevis: `~/scratch-bm/Signal47-opening-vehicles`. Nyere core-endringer er ikke en del av denne testpakken.
+- Skjul HELE SARO-kjøreriggens Group under personbilbruk; selvstendige cab-/dørbarn blir ellers stående igjen. Wagonen bruker eget førerøye, komplett interiør og egen hengslet dør. Gjenopprett rigg og serviceførerøye ved ankomst.
+- `fairheaven_sw84` er delt med props. Importens opt-in `keep_complete` bevarer standardmodellens 19 461 trekanter; den interaktive bilen bruker `_body` (18 244) og `_door_driver` (1 217). Regenerer/importer alle tre før cook; genererte Free-assets skal ikke committes.
+- Kanonisk `SetParkPose` nuller pitch/roll og hjuldropp. Bare nøyaktig gammel originalpad repareres på load; andre serviceposer bevares. Utrygg/manglende personbilparkering bruker besøksplassen `(4.5,-0.62,14)`. Walkerens orienterte bilboks følger samme pose, slås av når skjult og slås opp på ID fordi dørbladene endrer indeksene.
+- En lukket østdør kunne fjerne eneste gangsone under spilleren. Avvis manuell terskellukking mens spillerens fotavtrykk overlapper. Gammel ugyldig save må repareres FØR Flow-lasterens Walkable-port, ellers når den aldri reparasjonen. Åpne kun berørt terskel og bevar posisjon/klokke.
+- `-S47EveningVehicles` og `-S47EveningEntrance` gir 1286 selvtester og 48 walkerpasseringer før/etter D01, parkert/flyttet, fire ferske disk-/verdenslastinger og gammel ugyldig terskelsave. Hel burgerrute og seks gamle historiehopp PASS på samme pakke. Bilder visuelt kontrollert, seks pakkehasher uendret. Dette er API-styrt normal bevegelse, ikke menneskelig tastaturtest. Content-lenker/OpenOrder ryddet; ingen installasjon, push eller PR.
+
 ## Anomaly-pilot, Codex 23. oktober 2026
 
 - `codex/anomaly-pilot` implementerer N01/N02/A02/P01 på den flettede kveldstarten. Førsteleveransen er dokumentert i `ANOMALY_RUNTIME.md`; den senere skumlere runden står i `ANOMALY_SCARIER.md`. Senere kontor/trafo/VHS, bygningsløft og fullnatt er fortsatt egne leveranser.
@@ -188,3 +197,12 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - `port-light` er videreført etter at forrige lys ble integrert/pakket. Ny leveranse tar inn `unreal-port-core` til `3b44956e`, med gratismodellimport, Claudes mørkeromsregel og brettrettelser.
 - `S47ExteriorLighting.cpp`: 30 korte, fysiske spotter fra eksisterende armaturer; `S47LabLighting.cpp`: adresserbar `Light("lab.normal"/"lab.safelight"/"lab.enlarger")`, intensitet 0 til 1, og fysisk normal-/rødt-/linse-/varsellys. `US47Chapter1::Darkroom` kopler renderdriverne ved faseskifte; ingen ny film-/dørregel i dette lyspasset.
 - Bygg og 1218 selvtester OK, før/etter fra ni kameraer, labmoduser/halvstrøm/kutt/tilbake og faktisk kontaktkopitilstand prøvd. Rapport/API/bilder: `LIGHTING.md`, bevis i `~/scratch-bm/Signal47-lighting-2026-10-22/revision3`. Ny pakke, full fremkalling med ekte input og nye High/1440p-tider gjenstår hos integrator. Ingen endring av installert spill.
+
+
+## Radiostasjon og array, 2026-10-23 kl. 23:53
+
+Original Blender-radiostasjon 1420 AM med analogt studio og separat lobby følger konseptarket. VLA-lignende antenne har fagverk, feedarmer, serviceplattform og tre bevegelige deler med tre LOD-er. Alle 27 antenner er erstattet. Kildene og native UE-assets er lokalt flettet inn i unreal-port-core fra codex/radio-array-assets. Se RADIO_ARRAY.md og Signal47/Tools/radioarray/README.md.
+
+Ni antenne-FBX-roundtrips, stasjonens 32 eksportkontroller og UE-importens 68 kontroller PASS. Integrasjonspakken fra `66f41e22` bestod 1278 selvtester, antennebevegelse, lukket dør, åpne/gå 6,1 m inn og buzzer. Gangsonens terskelgap ble rettet. Visuell gjennomgang fant gammelt studiobilde som frittstående flate; sluttkode `3aa41334` plasserer det 2 cm foran bakveggen. Kun denne offseten og forklaringen ble endret. Sluttkoden består editor/Linux-pakking, 1278 selvtester, fire High/VHS/1440p-modellvinkler og N01/N02/A02/P01-pilot. Sluttbildene er visuelt kontrollert. Automatiske API-scenarioer er ikke menneskelig gjennomspilling eller lydlytting.
+
+Installert i ~/Games/Signal47/Linux med 40 kontrollerte payloadhash og 51 Saved-filer uendret. Sikkerhetskopi: /home/tom/scratch-bm/Signal47-radioarray/installed-backup-1792792300737671855. Redigerbare leveranser: ~/Desktop/Signal47 radiostasjon og array. Evidens: ~/scratch-bm/Signal47-radioarray. Content-lenker og genererte OpenOrder-endringer er ryddet. Ingen push eller PR.

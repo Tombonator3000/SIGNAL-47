@@ -427,7 +427,7 @@ void AS47Story::Use(const FString& Id)
 	if (Id == TEXT("opsTerminal")) { if (bDark) { Toast(TEXT("Dead screen. No power.")); return; } if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); if (Hud.IsValid()) Hud->OpenOps(); return; }
 	if (Id == TEXT("jacket")) { Toast(TEXT("SARO issue, with a reflective band all the way round. Too warm for in here."), 3.2f); return; }
 	if (Id == TEXT("radio")) { ToggleRadio(); return; }
-	if (Saro.IsValid() && Saro->IsDoor(Id)) { Saro->ToggleDoor(Id); return; }
+	if (Saro.IsValid() && Saro->IsDoor(Id)) { if (!Saro->ToggleDoor(Id)) Toast(TEXT("Step clear of the doorway before closing it.")); return; }
 }
 
 void AS47Story::OpsRan(const FString& Cmd, const FString& Result)

@@ -1,4 +1,5 @@
 #include "S47Truck.h"
+#include "S47EveningVisual.h"
 
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
@@ -222,6 +223,7 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 	MHead = Mt(TEXT("head")); MPark = Mt(TEXT("park")); MTail = Mt(TEXT("tail"));
 	MGauge = Mt(TEXT("gauge")); MNeedle = Mt(TEXT("needle")); MCompass = Mt(TEXT("compass"));
 	DriverEye = Web->Vec(Path + TEXT(".driverEye"), DriverEye);
+	ServiceDriverEye = DriverEye;
 	// the group's pose as the export has it, its rotation read back in the YXZ order
 	Position = Group.Position();
 	Rotation = EulerYXZ(Group.Quaternion());
@@ -303,6 +305,15 @@ void FS47Truck::SetPose(const FVector& P, const FVector& R)
 	PlaceHeadlights();
 }
 
+void FS47Truck::SetParkPose(const FVector& P, double Heading)
+{
+	const double Level[4] = {};
+	SetWheelDrops(Level);
+	SetPose(P, FVector(0, Heading, 0));
+	SetDriving(false);
+	Update(0, 0);
+}
+
 FQuat FS47Truck::Quat() const { return Euler(Rotation.X, Rotation.Y, Rotation.Z, TEXT("YXZ")); }
 FVector FS47Truck::LocalToWorld(const FVector& L) const { return Quat().RotateVector(L) + Position; }
 FVector FS47Truck::WorldToLocal(const FVector& W) const { return Quat().UnrotateVector(W - Position); }
@@ -345,6 +356,16 @@ void FS47Truck::SetDriving(bool bOn)
 	Shell.SetVisible(!bOn);
 	// from the driver's seat the lamps face away: their glows only poked over the hood
 	GlowPoints.SetVisible(!bOn);
+	if (bPersonalVehicle) Group.SetVisible(false);
+}
+
+void FS47Truck::SetPersonalVehicle(bool bOn)
+{
+	if (bPersonalVehicle == bOn) { if (bOn) Group.SetVisible(false); return; }
+	bPersonalVehicle = bOn;
+	DriverEye = bOn ? FS47EveningVisual::PersonalDriverEye() : ServiceDriverEye;
+	SetDriving(bDriving);
+	if (bOn) { Group.SetVisible(false); SetHeadlights(false); }
 }
 
 void FS47Truck::ViewFrom(const FVector& CamThree)
