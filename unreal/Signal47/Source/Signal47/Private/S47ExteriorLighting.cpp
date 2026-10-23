@@ -13,7 +13,7 @@ void AS47Web::BuildExteriorLighting()
 	const int32 Site = FloodSet(TEXT("site")), Court = FloodSet(TEXT("court"));
 	const bool bLog = FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"));
 	auto Add = [&](const TCHAR* Name, const TCHAR* OwnerPath, int32 Set, int32 Slot, const TCHAR* GlowPath, int32 GlowIndex,
-		const FVector& At, const FVector& Target, float Candela, float Reach, float Cone)
+		const FVector& At, const FVector& Target, float Candela, float Reach, float Cone, float Source = 8.f, float SoftSource = 6.f)
 	{
 		const FS47Obj Owner = Obj(OwnerPath);
 		if (!Owner || Set < 0 || Slot < 0 || Slot >= FloodSlots(Set)) return;
@@ -37,8 +37,10 @@ void AS47Web::BuildExteriorLighting()
 		L->SetWorldLocationAndRotation(S47Three::ToUE(At), S47Three::DirToUE(Target - At).Rotation());
 		L->SetInnerConeAngle(Cone * 0.65f); L->SetOuterConeAngle(Cone);
 		L->SetAttenuationRadius(Reach * 100.f);
-		L->SetSourceRadius(8.f); L->SetSoftSourceRadius(6.f);
+		L->SetSourceRadius(Source); L->SetSoftSourceRadius(SoftSource);
 		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
+		L->ContactShadowLengthInWS = true; L->ContactShadowLength = 20.f;
+		L->ContactShadowCastingIntensity = 0.75f;
 		L->SetVolumetricScatteringIntensity(0.35f); L->SetIndirectLightingIntensity(1.f);
 		L->SetVisibility(false); L->RegisterComponent();
 		P.Light = L;
@@ -128,6 +130,46 @@ void AS47Web::BuildExteriorLighting()
 			if (FloodSets[S].Key == TEXT("site") && I < 5) continue;
 			const FLinearColor F = FloodSets[S].Pos[I];
 			if (FVector(F.R, F.G, F.B).Equals(OldAt, 0.12)) SuppressFloodLight(S, I);
+		}
+	}
+	// STATION 01: the yard head, gooseneck over the hut, shed cage and survey lamp are
+	// actual fittings. Their old broad pools, including the doorway spill, are retired.
+	const FS47Obj Station = Obj(TEXT("world.site.group"));
+	const int32 Field = FloodSet(TEXT("field"));
+	if (Station)
+	{
+		auto At = [&](double X, double Y, double Z) { return Station.LocalToWorld(FVector(X, Y, Z)); };
+		// US47Station locates its glow billboards by their original coordinates on Init.
+		// Keep those positions intact; only the native emitter moves outside its opaque bulb.
+		Add(TEXT("StationYard"), TEXT("world.site.group"), Field, 2, TEXT(""), -1,
+			At(-7.65, 6.01, 6.7), At(-10.5, -0.15, 5.2), 65.f, 15.f, 60.f, 10.f, 7.f);
+		Add(TEXT("StationDoor"), TEXT("world.site.group"), Field, 3, TEXT(""), -1,
+			At(-9.95, 2.375, 5), At(-9.95, 0, 5.4), 30.f, 6.f, 66.f, 3.5f, 2.f);
+		Add(TEXT("StationShed"), TEXT("world.site.group"), Field, 5, TEXT(""), -1,
+			At(-14.97, 1.735, -0.4), At(-13.6, -0.15, -0.4), 10.f, 4.5f, 72.f, 4.f, 2.f);
+		Add(TEXT("StationSurvey"), TEXT("world.site.group"), Field, 6, TEXT(""), -1,
+			At(1.682, 1.830, -2.682), At(3, 1.35, -4), 38.f, 7.f, 38.f, 12.5f, 7.f);
+		SuppressFloodLight(Field, 4);
+		if (FS47GlowPoints* G = Glow(TEXT("world.site.glow.points")))
+			for (const int32 I : { 3, 6, 10, 11 }) if (G->Pos.IsValidIndex(I)) G->SetSize(I, I == 3 ? 0.4f : 0.22f);
+	}
+	// Caliche's seven cobra heads previously carried seventy-metre point-pool radii.
+	// Their real lenses are 36 x 15 cm, 27.5 cm above the old centres. Short cones leave
+	// dark gaps between blocks; the original photocell/wave slots still own every on/off.
+	const int32 Town = FloodSet(TEXT("town"));
+	for (int32 I = 1; I <= 7 && I < FloodSlots(Town); ++I)
+	{
+		const FLinearColor Pool = FloodPos(Town, I);
+		const FVector At(Pool.R, Pool.G + 0.255, Pool.B);
+		const FString Name = FString::Printf(TEXT("Caliche%02d"), I);
+		Add(*Name, TEXT("world.town.group"), Town, I, TEXT(""), -1,
+			At, At + FVector(2.3, -7.5, 0), 65.f, 16.f, 61.f, 12.f, 8.f);
+		if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
+		{
+			// The second sprite was a thirteen-metre additive substitute for ground light.
+			// Keep only the lens glint; native fog and the shadowed cone make the halo/pool.
+			if (G->Pos.IsValidIndex(I * 2)) G->SetSize(I * 2, 0.45f);
+			if (G->Pos.IsValidIndex(I * 2 + 1)) G->SetSize(I * 2 + 1, 0.f);
 		}
 	}
 	// Only the four exported lamp-bulb faces use this material in the yard. Resolve their

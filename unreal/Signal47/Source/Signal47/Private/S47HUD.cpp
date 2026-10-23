@@ -71,6 +71,7 @@
 #include "S47Saves.h"
 #include "S47Keys.h"
 #include "S47Theme.h"
+#include "S47Startup.h"
 #include "Containers/Ticker.h"
 #include "Internationalization/Regex.h"
 #include "S47UI.h"
@@ -89,6 +90,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47HUD, Log, All);
 AS47HUD::AS47HUD()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bTickEvenWhenPaused = true;
 }
 
 void AS47HUD::BeginPlay()
@@ -491,7 +493,15 @@ void AS47HUD::Start()
 	Renderer = new FWidgetRenderer(false);
 	const SS47Crt::EKind Kinds[4] = { SS47Crt::EKind::Status, SS47Crt::EKind::Spectrum, SS47Crt::EKind::Tracking, SS47Crt::EKind::Ops };
 	for (int32 i = 0; i < 4; ++i) Crts[i] = SNew(SS47Crt).Kind(Kinds[i]).Story(Story.Get()).Saro(Saro.Get());
+	// Create the runtime-only sky/materials and actually render the CRT targets before waiting.
+	M->Step(0);
+	DrawCrts(0.1f);
+	TWeakObjectPtr<AS47HUD> StartupSelf = this;
+	S47Startup::Prepare(PC, M, [StartupSelf] { if (StartupSelf.IsValid()) StartupSelf->StartTests(); });
+}
 
+void AS47HUD::StartTests()
+{
 	if (FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")))
 	{
 		float Seconds = 3.f;
@@ -728,6 +738,8 @@ void AS47HUD::LookTowards(const FVector& T, float K)
 void AS47HUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	S47Startup::Tick();
+	if (S47Startup::Blocking()) { DrawCrts(0.1f); return; }
 	if (Audio) Audio->Tick(DeltaSeconds);
 	APlayerController* PC = GetOwningPlayerController();
 	// (Tab and the notebook's other keys are the flow's, registered with M->OnKey)

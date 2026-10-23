@@ -21,6 +21,7 @@
 #include "S47Json.h"
 #include "S47UI.h"
 #include "S47Main.h"
+#include "S47Startup.h"
 #include "S47Web.h"
 #include "Misc/CommandLine.h"
 #include "TimerManager.h"
@@ -1030,6 +1031,7 @@ void AS47Story::Jump(const FString& Target)
 void AS47Story::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (S47Startup::Blocking()) return;
 	if (Shot.IsValid()) Shot->Tick();
 	// main.ts step(): game.update runs only in play (not behind the title, not on the end card)
 	if (const US47Main* Main = US47Main::Get(this); Main && Main->Mode != US47Main::EMode::Play) return;

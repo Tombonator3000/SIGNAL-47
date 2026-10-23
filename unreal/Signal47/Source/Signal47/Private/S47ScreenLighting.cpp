@@ -45,6 +45,10 @@ void AS47Web::BuildScreenLighting()
 		if (URectLightComponent* L = SurfaceLight(Node, ScreenFacing(M), Lumens, Reach))
 		{
 			L->SetLightColor(S47Three::Hex(0x8cffa4));
+			// A CRT's glass gives a broad, local sheen while switches and keys cast crisp
+			// contacts. Short barn doors keep green off the monitor's back and the wall.
+			L->SetBarnDoorAngle(62.f); L->SetBarnDoorLength(6.f);
+			L->ContactShadowLength = 7.f;
 			L->SetVisibility(false);
 			ScreenLights.Add({ Node, Screen, Lumens, Screen >= 0 ? 1.f : FMath::Max(0.001f, ScreenLevel(M)), L });
 			return true;
@@ -113,6 +117,8 @@ void AS47Web::UpdateScreenLighting()
 				if (URectLightComponent* L = SurfaceLight(Node, FVector(0, 0, 1), 3.f, 1.f))
 				{
 					L->SetLightColor(S47Three::Hex(0x8cffa4));
+					L->SetBarnDoorAngle(62.f); L->SetBarnDoorLength(6.f);
+					L->ContactShadowLength = 7.f;
 					L->SetVisibility(false);
 					ScreenLights.Add({ Node, -2, 3.f, 1.f, L });
 				}

@@ -10,10 +10,14 @@
 # S47_ONLY=materials rebuilds Base and Mat only, without touching shared Tex or WebData.
 import json
 import os
+import sys
 import shutil
 import struct
 import zlib
 import unreal
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from surface_profiles import PROFILES, material_labels, texture_labels, profile_for, glass_parameters, write_detail_tile
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -95,6 +99,16 @@ flat.set_editor_property('srgb', False)
 flat.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
 eal.save_loaded_asset(flat)
 
+# One authored, tileable data texture.  The opt-in static switch removes both
+# samples on paper, people, flora, emissive and already mapped PBR surfaces.
+write_detail_tile(os.path.join(base_dir, 'T_SurfaceDetail.png'))
+tools.import_asset_tasks([task(os.path.join(base_dir, 'T_SurfaceDetail.png'), '/Game/Web/Base')])
+surface_detail = eal.load_asset('/Game/Web/Base/T_SurfaceDetail')
+surface_detail.set_editor_property('srgb', False)
+surface_detail.set_editor_property('address_x', unreal.TextureAddress.TA_WRAP)
+surface_detail.set_editor_property('address_y', unreal.TextureAddress.TA_WRAP)
+eal.save_loaded_asset(surface_detail)
+
 # which textures are used how (colour, data, normal)
 use = {}
 for m in man['materials']:
@@ -130,7 +144,7 @@ if 'tex' in only:
             a.set_editor_property('srgb', False)
             a.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
         else:
-            a.set_editor_property('srgb', bool(t['srgb']))
+            a.set_editor_property('srgb', bool(t['srgb']) and not ('data' in u and 'color' not in u))
         a.set_editor_property('address_x', addr[t['wrapS']])
         a.set_editor_property('address_y', addr[t['wrapT']])
         if t.get('nearest'):
@@ -221,6 +235,32 @@ return (WP - IO) * (fade - 1.0) + wind;"""
 FLAT = """float3 n = normalize(cross(ddy(WP), ddx(WP)));
 return dot(n, V) < 0 ? -n : n;"""
 
+# World-plane projection keeps the grain's physical size on stretched export UVs.
+# Finite slopes are baked in RG; no derivatives, texture loops or procedural noise
+# are needed in the pixel/ray-hit shader.  Only the opted-in static permutation
+# evaluates the two samples (micro-surface and broad independent macro variation).
+SURFACE_UV = """float3 a = abs(N);
+float2 p = a.z >= max(a.x, a.y) ? WP.xy : (a.x >= a.y ? WP.yz : WP.xz);
+return p / max(Size, 1.0);"""
+SURFACE_NORMAL = """float3 n = normalize(N);
+float2 slope = (RG.xy - 0.5) * 2.0 * Strength;
+float3 a = abs(n);
+float3 gradient = a.z >= max(a.x, a.y) ? float3(slope, 0.0) :
+  (a.x >= a.y ? float3(0.0, slope) : float3(slope.x, 0.0, slope.y));
+gradient -= n * dot(n, gradient);
+return normalize(n - gradient);"""
+BUMP_NORMAL = """// Bump maps are height, unlike normal maps.  WP and height are centimetres.
+#if PIXELSHADER
+float3 n = normalize(N), dx = ddx(WP), dy = ddy(WP);
+float3 rx = cross(dy, n), ry = cross(n, dx);
+float determinant = dot(dx, rx);
+float3 gradient = sign(determinant) * (ddx(H) * rx + ddy(H) * ry) * Scale;
+return normalize(max(abs(determinant), 1e-10) * n - gradient);
+#else
+return normalize(N);
+#endif
+"""
+
 
 # three.js ACESFilmicToneMapping undone: a colour three draws without tone mapping comes out
 # of AS47Web's tone mapping (M_WebTone, the same curve) as it is. K is exposure / 0.6.
@@ -304,6 +344,8 @@ col = col * 0.95 + float3(0.026, 0.031, 0.033);
 col *= 1.0 - 0.02 * (0.5 + 0.5 * cos(uv.y * size.y * 3.14159));
 float n = w.hash(floor(uv * size) + float2(floor(t * 24.0) * 17.0, floor(t * 24.0) * 31.0));
 col += (n - 0.5) * 0.06 * 0.5;
+// Faint lens falloff, after the tape grain; Clean returns above this branch.
+col *= 1.0 - 0.08 * smoothstep(0.10, 0.50, dot(r, r));
 return saturate(col);"""
 
 # ---------- the world's own life: the sky, the light in the air, the windows' light (S47WorldLife) ----------
@@ -810,6 +852,21 @@ def build_master(name, lit, blend, two_sided, flora=None):
         mel.connect_material_expressions(alpha, alin, e, 'Alpha')
         return e
 
+    def switched(n, yes, no, yes_pin='', no_pin=''):
+        e = node(unreal.MaterialExpressionStaticSwitchParameter, -250)
+        e.set_editor_property('parameter_name', n)
+        e.set_editor_property('default_value', False)
+        mel.connect_material_expressions(yes, yes_pin, e, 'A')
+        mel.connect_material_expressions(no, no_pin, e, 'B')
+        return e
+
+    def world_to_tangent(source):
+        e = node(unreal.MaterialExpressionTransform, -400)
+        e.set_editor_property('transform_source_type', unreal.MaterialVectorCoordTransformSource.TRANSFORMSOURCE_WORLD)
+        e.set_editor_property('transform_type', unreal.MaterialVectorCoordTransform.TRANSFORM_TANGENT)
+        mel.connect_material_expressions(source, '', e, '')
+        return e
+
     uv = node(unreal.MaterialExpressionTextureCoordinate)
 
     def xuv(prefix):
@@ -853,9 +910,54 @@ def build_master(name, lit, blend, two_sided, flora=None):
     vam = lerp(one, vca, scalar('UseVertexColor', 0))
     alpha = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionMultiply, scalar('Opacity', 1), tex_a), am), vam)
     if lit:
-        mel.connect_material_property(base, '', unreal.MaterialProperty.MP_BASE_COLOR)
+        detail_normal = None
         rough = op(unreal.MaterialExpressionMultiply, scalar('Roughness', 1), lerp(one, texp('RoughnessMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('Rough')), scalar('UseRoughnessMap', 0), '', 'G'))
+        if not flora:
+            world_pos = node(unreal.MaterialExpressionWorldPosition)
+            world_normal = node(unreal.MaterialExpressionVertexNormalWS)
+            duv = custom(SURFACE_UV, ['WP', 'N', 'Size'])
+            mel.connect_material_expressions(world_pos, '', duv, 'WP')
+            mel.connect_material_expressions(world_normal, '', duv, 'N')
+            mel.connect_material_expressions(scalar('DetailWorldSize', 50), '', duv, 'Size')
+            detail = texp('SurfaceDetailTex', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, surface_detail, duv)
+            macro_uv = custom('return WP.xy / max(Size, 1.0) + float2(0.173, 0.619);', ['WP', 'Size'])
+            mel.connect_material_expressions(world_pos, '', macro_uv, 'WP')
+            mel.connect_material_expressions(scalar('MacroWorldSize', 2400), '', macro_uv, 'Size')
+            macro = texp('SurfaceMacroTex', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, surface_detail, macro_uv)
+            var_base = custom('return B * max(0.0, 1.0 + (M * 2.0 - 1.0) * Amount);', ['B', 'M', 'Amount'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(base, '', var_base, 'B')
+            mel.connect_material_expressions(macro, 'A', var_base, 'M')
+            mel.connect_material_expressions(scalar('MacroColorVariation', 0), '', var_base, 'Amount')
+            base = switched('SurfaceDetail', var_base, base)
+            var_rough = custom('''float dirt = 1.0 - saturate(dot(VC, float3(0.2126, 0.7152, 0.0722)));
+// Native specular replaces roadSurface.ts's emissive wet streak.  Pale road
+// paint and gravel retain the roughness; broad dark tar catches a faint sheen.
+float darkTar = 1.0 - smoothstep(0.025, 0.18, dot(Albedo, float3(0.2126, 0.7152, 0.0722)));
+float damp = saturate(darkTar * Sheen * smoothstep(0.25, 0.72, M));
+float r = lerp(R, min(R, 0.22), damp);
+return clamp(r + (D * 2.0 - 1.0) * Variation + (M * 2.0 - 1.0) * MacroVariation + dirt * Dirt, 0.04, 1.0);''',
+                               ['R', 'D', 'M', 'Variation', 'MacroVariation', 'VC', 'Dirt', 'Albedo', 'Sheen'], unreal.CustomMaterialOutputType.CMOT_FLOAT1)
+            for pin, source, output in (('R', rough, ''), ('D', detail, 'B'), ('M', macro, 'A'), ('VC', vcm, '')):
+                mel.connect_material_expressions(source, output, var_rough, pin)
+            for pin, name in (('Variation', 'RoughnessVariation'), ('MacroVariation', 'MacroRoughnessVariation'), ('Dirt', 'VertexDirtRoughness')):
+                mel.connect_material_expressions(scalar(name, 0), '', var_rough, pin)
+            mel.connect_material_expressions(tex_rgb, '', var_rough, 'Albedo')
+            mel.connect_material_expressions(scalar('DampSheen', 0), '', var_rough, 'Sheen')
+            rough = switched('SurfaceDetail', var_rough, rough)
+            detail_normal = custom(SURFACE_NORMAL, ['N', 'RG', 'Strength'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(world_normal, '', detail_normal, 'N')
+            # A float3 input is safe: only the packed red/green slopes are read.
+            mel.connect_material_expressions(detail, 'RGB', detail_normal, 'RG')
+            mel.connect_material_expressions(scalar('DetailNormalStrength', 0), '', detail_normal, 'Strength')
+            detail_normal = world_to_tangent(detail_normal)
+        mel.connect_material_property(base, '', unreal.MaterialProperty.MP_BASE_COLOR)
         mel.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS)
+        mel.connect_material_property(scalar('Specular', .5), '', unreal.MaterialProperty.MP_SPECULAR)
+        if not flora:
+            aomap = texp('AOMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('AO'))
+            ao = lerp(one, aomap, scalar('AOIntensity', 1), '', 'R')
+            ao = switched('HasAOMap', ao, one)
+            mel.connect_material_property(ao, '', unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
         metal = op(unreal.MaterialExpressionMultiply, scalar('Metallic', 0), lerp(one, texp('MetalnessMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('Metal')), scalar('UseMetalnessMap', 0), '', 'B'))
         mel.connect_material_property(metal, '', unreal.MaterialProperty.MP_METALLIC)
         euv = xuv('Em')
@@ -974,7 +1076,20 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
             mel.connect_material_property(tsn, '', unreal.MaterialProperty.MP_NORMAL)
         else:
             nmap = texp('NormalMap', unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, flat, xuv('Normal'))
-            mel.connect_material_property(nmap, 'RGB', unreal.MaterialProperty.MP_NORMAL)
+            normal = custom('float2 xy = N.xy * Scale.xy; return normalize(float3(xy, N.z));', ['N', 'Scale'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(nmap, 'RGB', normal, 'N')
+            mel.connect_material_expressions(vector('NormalScale', (1, 1, 0, 0)), 'RGB', normal, 'Scale')
+            bump = texp('BumpMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('Bump'))
+            bumped = custom(BUMP_NORMAL, ['WP', 'N', 'H', 'Scale'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(node(unreal.MaterialExpressionWorldPosition), '', bumped, 'WP')
+            mel.connect_material_expressions(node(unreal.MaterialExpressionVertexNormalWS), '', bumped, 'N')
+            mel.connect_material_expressions(bump, 'R', bumped, 'H')
+            # three's bumpScale is in metres, the imported world is centimetres.
+            mel.connect_material_expressions(scalar('BumpScale', 100), '', bumped, 'Scale')
+            normal = switched('HasBumpMap', world_to_tangent(bumped), normal)
+            if detail_normal:
+                normal = switched('SurfaceDetail', detail_normal, normal)
+            mel.connect_material_property(normal, '', unreal.MaterialProperty.MP_NORMAL)
     else:
         boost = op(unreal.MaterialExpressionMultiply, base, scalar('Brightness', 1))
         # toneMapped: false in three: undo the tone mapping that follows
@@ -1018,6 +1133,10 @@ if 'mat' in only:
 
     # ---------- one instance per web material ----------
     tex_srgb = {t['id']: t['srgb'] for t in man['textures']}
+    tex_names = texture_labels(man)
+    mat_labels = material_labels(man)
+    detail_counts = {}
+    glass_count = 0
 
     def T(i):
         return eal.load_asset('/Game/Web/Tex/T%d' % i) if i is not None and i >= 0 else None
@@ -1088,6 +1207,32 @@ if 'mat' in only:
             if 'normalMap' in d and T(d['normalMap']):
                 tv(mi, 'NormalMap', T(d['normalMap']))
                 r0, r1 = rows(d['normalMapUV']); vv(mi, 'NormalU', r0); vv(mi, 'NormalV', r1)
+                scale = d.get('normalScale', [1, 1])
+                vv(mi, 'NormalScale', unreal.LinearColor(float(scale[0]), float(scale[1]), 0, 0))
+            # Source normal maps take precedence over bump maps, as in three.
+            if not fk and 'normalMap' not in d and 'bumpMap' in d and T(d['bumpMap']):
+                tv(mi, 'BumpMap', T(d['bumpMap']))
+                r0, r1 = rows(d['bumpMapUV']); vv(mi, 'BumpU', r0); vv(mi, 'BumpV', r1)
+                sv(mi, 'BumpScale', float(d.get('bumpScale', 1)) * 100.)
+                mel.set_material_instance_static_switch_parameter_value(mi, 'HasBumpMap', True, unreal.MaterialParameterAssociation.GLOBAL_PARAMETER, False)
+            if not fk and 'aoMap' in d and T(d['aoMap']):
+                tv(mi, 'AOMap', T(d['aoMap']))
+                r0, r1 = rows(d['aoMapUV']); vv(mi, 'AOU', r0); vv(mi, 'AOV', r1)
+                sv(mi, 'AOIntensity', float(d.get('aoMapIntensity', 1)))
+                mel.set_material_instance_static_switch_parameter_value(mi, 'HasAOMap', True, unreal.MaterialParameterAssociation.GLOBAL_PARAMETER, False)
+            labels = mat_labels.get(d['id'], set())
+            profile = profile_for(d, tex_names, labels)
+            if profile:
+                for parameter, value in PROFILES[profile].items():
+                    sv(mi, parameter, value)
+                mel.set_material_instance_static_switch_parameter_value(mi, 'SurfaceDetail', True, unreal.MaterialParameterAssociation.GLOBAL_PARAMETER, False)
+                detail_counts[profile] = detail_counts.get(profile, 0) + 1
+                log('surface detail MI_W%d %s %s' % (d['id'], profile, ','.join(sorted(labels))))
+            glass = glass_parameters(d, labels)
+            if glass:
+                for parameter, value in glass.items():
+                    sv(mi, parameter, value)
+                glass_count += 1
         if not lit and d.get('toneMapped') is False:
             sv(mi, 'Untonemapped', 1.0)
         if bk == 'Masked':
@@ -1117,6 +1262,7 @@ if 'mat' in only:
         eal.save_loaded_asset(mi)
         made += 1
     log('material instances %d' % made)
+    log('surface detail profiles %s; dielectric glass %d' % (json.dumps(detail_counts, sort_keys=True), glass_count))
 class Graph:
     """A material made here node by node: parameters, the MPC's values, Unreal's built-in inputs and
     custom HLSL, laid out down the left."""

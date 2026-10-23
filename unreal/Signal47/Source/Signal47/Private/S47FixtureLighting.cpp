@@ -38,6 +38,10 @@ URectLightComponent* AS47Web::SurfaceLight(int32 NodeId, const FVector& FacingTh
 	L->SetAttenuationRadius(Reach * 100.f);
 	L->SetBarnDoorAngle(70.f); L->SetBarnDoorLength(8.f);
 	L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
+	// Centimetre-scale props need a short contact trace rather than a metre-wide dark halo.
+	L->ContactShadowLengthInWS = true; L->ContactShadowLength = 12.f;
+	L->ContactShadowCastingIntensity = 0.8f;
+	L->SetShadowBias(0.35f); L->SetShadowSlopeBias(0.4f);
 	// Fast screen/tube flicker must not leave a temporal ghost in the fog volume.
 	L->SetVolumetricScatteringIntensity(0.f);
 	L->SetIndirectLightingIntensity(1.f);
@@ -142,6 +146,63 @@ void AS47Web::BuildFixtureLighting()
 		if (!P.Light.IsValid()) continue;
 		P.Light->SetLightColor(P.Color); P.Light->SetBarnDoorAngle(60.f);
 		FixtureLights.Add(P); SuppressFloodLight(Annex, 5);
+	}
+	// Unlike SARO's separate glass meshes, these fittings are merged into room geometry.
+	// Fit their native emitter to the original opening, never to the merged room's bounds.
+	auto Fixed = [&](const TCHAR* Name, const TCHAR* OwnerPath, int32 Set, int32 Slot,
+		const FVector& At, const FVector& Facing, const FVector& Across, float Width, float Height, float Lumens, float Reach)
+	{
+		const FS47Obj Owner = Obj(OwnerPath);
+		if (!Owner || Set < 0 || Slot < 0 || Slot >= FloodSlots(Set)) return;
+		FFixtureLight P;
+		P.Node = Owner.I; P.Set = Set; P.Slot = Slot; P.Lumens = Lumens;
+		P.Reference = FMath::Max(0.001f, FloodPos(Set, Slot).A * FloodScaleOf(Set));
+		P.Color = FloodCol(Set, Slot);
+		URectLightComponent* L = NewObject<URectLightComponent>(this, FName(*FString::Printf(TEXT("S47Fixture_%s"), Name)));
+		L->SetupAttachment(GetRootComponent()); L->SetMobility(EComponentMobility::Movable);
+		L->SetWorldLocation(S47Three::ToUE(At));
+		L->SetWorldRotation(FRotationMatrix::MakeFromXY(S47Three::DirToUE(Facing), S47Three::DirToUE(Across)).Rotator());
+		L->SetSourceWidth(Width); L->SetSourceHeight(Height);
+		L->SetIntensityUnits(ELightUnits::Lumens); L->SetIntensity(0.f);
+		L->SetLightColor(P.Color); L->SetAttenuationRadius(Reach * 100.f);
+		L->SetBarnDoorAngle(68.f); L->SetBarnDoorLength(10.f);
+		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
+		L->ContactShadowLengthInWS = true; L->ContactShadowLength = 12.f;
+		L->ContactShadowCastingIntensity = 0.8f;
+		L->SetShadowBias(0.35f); L->SetShadowSlopeBias(0.4f);
+		L->SetVolumetricScatteringIntensity(0.f); L->SetIndirectLightingIntensity(1.f);
+		L->SetVisibility(false); L->RegisterComponent();
+		P.Light = L; FixtureLights.Add(P); SuppressFloodLight(Set, Slot);
+		UE_LOG(LogTemp, Display, TEXT("S47: fixed fixture %s source=%s size=%.1fx%.1fcm lm=%.1f reach=%.1fm"), Name, *At.ToString(), Width, Height, Lumens, Reach);
+	};
+	const int32 Hut = FloodSet(TEXT("hut")), Diner = FloodSet(TEXT("diner"));
+	const FS47Obj Station = Obj(TEXT("world.site.group"));
+	if (Station)
+	{
+		// Station01.ts: green bench shade and the 32 cm tin ceiling shade, both aimed down.
+		Fixed(TEXT("HutDesk"), TEXT("world.site.group"), Hut, 1, Station.LocalToWorld(FVector(-10.60, 1.075, 1.89)),
+			FVector(FMath::Sin(0.5), -FMath::Cos(0.5), 0), FVector(0, 0, 1), 12.f, 12.f, 16.f, 2.7f);
+		Fixed(TEXT("HutCeiling"), TEXT("world.site.group"), Hut, 2, Station.LocalToWorld(FVector(-11, 2.105, 3)),
+			FVector(0, -1, 0), FVector(1, 0, 0), 22.f, 22.f, 28.f, 4.5f);
+		// The exterior bulb now reaches through the actual door. Its old interior spill is
+		// not another lamp and must not illuminate a shut door from inside the hut.
+		SuppressFloodLight(Hut, 3);
+	}
+	const FS47Obj DinerGroup = Obj(TEXT("world.diner.group"));
+	if (DinerGroup)
+	{
+		for (int32 I = 0; I < 3; ++I)
+		{
+			const FString Name = FString::Printf(TEXT("DinerTube%02d"), I + 1);
+			Fixed(*Name, TEXT("world.diner.group"), Diner, 2 + I, DinerGroup.LocalToWorld(FVector(-2, 3.015, -5 + I * 5)),
+				FVector(0, -1, 0), FVector(0, 0, 1), 250.f, 38.f, 40.f, 5.5f);
+		}
+		// The pass's narrow amber strip faces the counter. It gives the chrome a long
+		// reflection and throws the cups' shadows onto the worktop instead of filling the kitchen.
+		Fixed(TEXT("DinerHatch"), TEXT("world.diner.group"), Diner, 5, DinerGroup.LocalToWorld(FVector(-5.395, 2.205, -2.4)),
+			FVector(0.65, -0.76, 0), FVector(0, 0, 1), 180.f, 4.5f, 22.f, 3.5f);
+		// Slot 8 was an imaginary point lamp representing dawn. The real sky/sun own dawn.
+		SuppressFloodLight(Diner, 8);
 	}
 	UpdateFixtureLighting();
 	UE_LOG(LogTemp, Display, TEXT("S47: fixture lighting %d sources fitted to exported diffusers/shades"), FixtureLights.Num());

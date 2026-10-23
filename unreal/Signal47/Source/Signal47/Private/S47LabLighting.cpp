@@ -118,6 +118,9 @@ void AS47Web::BuildLabLighting()
 			L->SetInnerConeAngle(15.f); L->SetOuterConeAngle(22.f);
 			L->SetSourceRadius(2.5f); L->SetSoftSourceRadius(1.f);
 			L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
+			L->ContactShadowLengthInWS = true; L->ContactShadowLength = 6.f;
+			L->ContactShadowCastingIntensity = 0.8f;
+			L->SetShadowBias(0.3f); L->SetShadowSlopeBias(0.35f);
 			L->SetVolumetricScatteringIntensity(0.f);
 			L->SetIndirectLightingIntensity(1.f);
 			L->RegisterComponent();

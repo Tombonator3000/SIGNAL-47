@@ -84,6 +84,8 @@ void AS47Web::BuildArrayLighting()
 		L->SetAttenuationRadius(3200.f);
 		L->SetSourceRadius(18.f); L->SetSoftSourceRadius(12.f);
 		L->SetCastShadows(true); L->SetCastVolumetricShadow(true);
+		L->ContactShadowLengthInWS = true; L->ContactShadowLength = 20.f;
+		L->ContactShadowCastingIntensity = 0.65f;
 		L->SetVolumetricScatteringIntensity(0.6f);
 		L->SetIndirectLightingIntensity(1.f);
 		L->SetVisibility(false);
@@ -146,11 +148,16 @@ void AS47Web::BuildNativeLighting()
 			L->SetMobility(EComponentMobility::Movable);
 			L->SetIntensityUnits(ELightUnits::Candelas);
 			L->SetIntensity(0);
-			L->SetSourceRadius(bArray ? 18.f : F.Key == TEXT("annex") || F.Key == TEXT("diner") ? 12.f : 7.f);
-			L->SetSoftSourceRadius(bArray ? 12.f : 4.f);
+			const bool bCab = F.Key == TEXT("cab"), bDial = F.Key == TEXT("hut") && I == 0;
+			L->SetSourceRadius(bArray ? 18.f : bCab || bDial ? 1.5f : F.Key == TEXT("annex") || F.Key == TEXT("diner") ? 12.f : 7.f);
+			L->SetSoftSourceRadius(bArray ? 12.f : bCab || bDial ? 1.f : 4.f);
+			// The dashboard and valve receiver emit over narrow instrument faces, not a bulb.
+			if (bCab || bDial) L->SetSourceLength(bCab ? 24.f : 16.f);
 			L->SetCastShadows(true);
 			L->SetCastVolumetricShadow(true);
-			L->SetVolumetricScatteringIntensity(0.6f);
+			L->ContactShadowLengthInWS = true; L->ContactShadowLength = bCab || bDial ? 6.f : 16.f;
+			L->ContactShadowCastingIntensity = 0.75f;
+			L->SetVolumetricScatteringIntensity(bCab || bDial ? 0.f : 0.6f);
 			L->SetIndirectLightingIntensity(1.f);
 			L->RegisterComponent();
 			PoolLights.Add({ S, I, FMath::Max(F.Pos[I].A, 1.f), L });
@@ -183,7 +190,10 @@ void AS47Web::BuildNativeLighting()
 	DawnSun->SetLightColor(FLinearColor(1.f, 0.55f, 0.28f));
 	DawnSun->SetIntensity(0);
 	DawnSun->SetCastShadows(true);
-	DawnSun->LightSourceAngle = 1.0f;
+	DawnSun->LightSourceAngle = 0.545f;
+	DawnSun->LightSourceSoftAngle = 0.08f;
+	DawnSun->ContactShadowLengthInWS = true; DawnSun->ContactShadowLength = 20.f;
+	DawnSun->ContactShadowCastingIntensity = 0.65f;
 	DawnSun->RegisterComponent();
 	SetLightingQuality(TEXT("high"));
 	UpdateNativeFog();
@@ -206,6 +216,8 @@ void AS47Web::SetLightingQuality(const FString& Quality)
 	Cvar(TEXT("r.Shadow.Virtual.SMRT.SamplesPerRayDirectional"), LightingQuality == 2 ? 4 : 2);
 	Cvar(TEXT("sg.GlobalIlluminationQuality"), LightingQuality == 0 ? 1 : LightingQuality == 1 ? 2 : 3);
 	Cvar(TEXT("sg.ReflectionQuality"), LightingQuality == 0 ? 1 : 2);
+	Cvar(TEXT("r.ContactShadows"), LightingQuality > 0);
+	Cvar(TEXT("r.Lumen.ScreenProbeGather.ShortRangeAO"), LightingQuality > 0);
 	Cvar(TEXT("r.VolumetricFog"), LightingQuality > 0);
 	Cvar(TEXT("r.VolumetricFog.GridPixelSize"), LightingQuality == 2 ? 8 : 16);
 	Cvar(TEXT("r.VolumetricFog.GridSizeZ"), LightingQuality == 2 ? 96 : 64);
@@ -217,6 +229,22 @@ void AS47Web::SetLightingQuality(const FString& Quality)
 		P.DynamicGlobalIlluminationMethod = LightingQuality == 0 ? EDynamicGlobalIlluminationMethod::None : EDynamicGlobalIlluminationMethod::Lumen;
 		P.bOverride_LumenSceneLightingQuality = true; P.LumenSceneLightingQuality = LightingQuality == 2 ? 1.f : 0.5f;
 		P.bOverride_LumenFinalGatherQuality = true; P.LumenFinalGatherQuality = LightingQuality == 2 ? 1.f : 0.5f;
+		// Lumen owns local occlusion on High/Ultra. Low retains a small, inexpensive SSAO
+		// radius so paper, cables and furniture keep their contact with the surface below.
+		P.bOverride_LumenAmbientOcclusionIntensity = true; P.LumenAmbientOcclusionIntensity = 0.7f;
+		P.bOverride_LumenSkylightLeaking = true; P.LumenSkylightLeaking = 0.f;
+		P.bOverride_AmbientOcclusionIntensity = true; P.AmbientOcclusionIntensity = LightingQuality == 0 ? 0.55f : 0.f;
+		P.bOverride_AmbientOcclusionRadius = true; P.AmbientOcclusionRadius = 35.f;
+		P.bOverride_AmbientOcclusionRadiusInWS = true; P.AmbientOcclusionRadiusInWS = true;
+		P.bOverride_AmbientOcclusionPower = true; P.AmbientOcclusionPower = 1.1f;
+		P.bOverride_AmbientOcclusionQuality = true; P.AmbientOcclusionQuality = 40.f;
+		P.bOverride_ReflectionMethod = true; P.ReflectionMethod = LightingQuality == 0 ? EReflectionMethod::ScreenSpace : EReflectionMethod::Lumen;
+		P.bOverride_LumenReflectionQuality = true; P.LumenReflectionQuality = LightingQuality == 2 ? 1.f : 0.5f;
+		P.bOverride_LumenReflectionsScreenTraces = true; P.LumenReflectionsScreenTraces = true;
+		P.bOverride_LumenMaxReflectionBounces = true; P.LumenMaxReflectionBounces = 1;
+		P.bOverride_LumenMaxRoughnessToTraceReflections = true; P.LumenMaxRoughnessToTraceReflections = 0.35f;
+		// Surface cache reflections fit the 60 fps profile; hit lighting remains an Ultra option.
+		P.bOverride_LumenRayLightingMode = true; P.LumenRayLightingMode = LightingQuality == 2 ? ELumenRayLightingModeOverride::HitLightingForReflections : ELumenRayLightingModeOverride::SurfaceCache;
 	}
 	UE_LOG(LogTemp, Display, TEXT("S47: lighting quality %s, Lumen %s, volumetrics %s"), *Quality, LightingQuality ? TEXT("on") : TEXT("off"), LightingQuality ? TEXT("on") : TEXT("off"));
 }
@@ -229,7 +257,13 @@ void AS47Web::SetSkyLighting(float Dawn, const FVector& SunDirection, float Sun,
 		DawnSun->SetWorldRotation(S47Three::DirToUE(-SunDirection).Rotation());
 		DawnSun->SetIntensity(Sun * 8.f);
 	}
-	if (NightSky) NightSky->SetIntensity(0.18f + Dawn * 1.8f);
+	if (NightSky)
+	{
+		NightSky->SetIntensity(0.18f + Dawn * 1.8f);
+		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
+		// only with the existing dawn curve, preserving the cold low-level night fill.
+		NightSky->SetLightColor(FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Dawn, 0.f, 1.f)));
+	}
 }
 
 void AS47Web::UpdateNativeFog()
@@ -288,6 +322,8 @@ void AS47Web::UpdateNativeLighting()
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
 		Moon->SetIntensity(R.Base > 0 ? 0.16f * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
+		Moon->SetLightSourceAngle(0.52f);
+		Moon->SetLightSourceSoftAngle(0.08f);
 	}
 	if (NightSky && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f))
 	{

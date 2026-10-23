@@ -1,4 +1,6 @@
 #include "S47Web.h"
+#include "S47GraphicsReview.h"
+#include "S47Startup.h"
 
 #include "Components/BillboardComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -640,6 +642,17 @@ void AS47Web::BeginPlay()
 	FParse::Value(FCommandLine::Get(), TEXT("S47Exposure="), ExposureOffset);
 	bLoaded = Load();
 	if (!bLoaded) return;
+	if (S47Startup::Blocking())
+	{
+		// Let native lights, CRT/glass materials and the first skylight capture render while the
+		// terminal covers them. No dishes, doors, gameplay or review clocks advance during warmup.
+		const double Before = LightingRunTime;
+		LightingRunTime = S47Startup::Elapsed();
+		UpdateNativeLighting();
+		UpdateRetroProps();
+		LightingRunTime = Before;
+		return;
+	}
 	BuildRoom();
 	BuildRetroProps();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
@@ -1219,6 +1232,7 @@ void AS47Web::Tick(float Dt)
 	UpdateNativeLighting();
 	UpdateRetroProps();
 	SampleLightingPerformance(Dt);
+	S47GraphicsReview::Tick(this, Dt);
 	// the sky follows the eye
 	if (SkySphere) SkySphere->SetWorldLocation(Eye);
 	// dishes slew (Dish.update)

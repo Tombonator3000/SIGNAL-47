@@ -85,6 +85,8 @@ bool FS47WindowLights::Build(AS47Web* W, const TSharedPtr<FJsonObject>& J)
 			L->SetBarnDoorLength(20);
 			L->SetCastShadows(true);
 			L->SetCastVolumetricShadow(true);
+			L->ContactShadowLengthInWS = true; L->ContactShadowLength = 18.f;
+			L->ContactShadowCastingIntensity = 0.65f;
 			L->SetVolumetricScatteringIntensity(0.35f);
 			L->SetVisibility(false);
 			L->RegisterComponent();
