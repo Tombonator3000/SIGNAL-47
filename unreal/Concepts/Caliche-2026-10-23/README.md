@@ -6,6 +6,8 @@ Laget med innebygd image_gen, med mer naturtro materialer og kveldens varme prak
 
 Komplette prompter, kildefiler og SHA-256 ligger i prompts-and-manifest.json. Ingen spillkode eller eksisterende bygningsassets er endret.
 
+Bruk arkene som inspirasjon til egne Blender-modeller: bygningsvolum, materialer, vindusdybde, skilt, innredning og lokale lyskilder. Mål, plantegning, tekst på småskilt og nøyaktig antall rekvisitter må fastsettes i modelleringen. Bevar spillets eksisterende innganger, interaksjoner, siktlinjer og anomalireferanser. Fullverdige interiører i stengte bygg må avtales som egen spillfunksjon.
+
 ## Mesa Diner
 
 ![Mesa Diner, eksteriør og interiør](01-mesa-diner.png)
