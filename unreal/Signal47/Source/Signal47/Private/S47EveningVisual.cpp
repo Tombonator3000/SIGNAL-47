@@ -216,7 +216,9 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(bPersonalShown);
 	M->World->SetPersonalPark(PersonalPark, PersonalHeading, bPersonalShown && !bCommute);
 	if (Service.IsValid()) Service->SetVisibility(bCommute && bSaro && Carrier && FVector::Distance(Carrier->Position, SERVICE_PARK) > 4.5);
-	// Keep a real order/empty plate at the counter; stable purchase flags reconstruct it after load.
+	// A paid serving has one presentation: in the diner's handoff it is held, then
+	// takeaway owns it. Only dine-in leftovers/water remain on the counter after eating.
+	const bool bHeld = !bDriving && !bFoodEaten && !bFoodTaken && bDiner && bFoodBought;
 	const bool bOrder = bFoodBought || bWater;
 	if (bDiner && bOrder)
 	{
@@ -224,13 +226,13 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 		FVector At = Counter.IsValid() ? Counter.WorldPosition() + FVector(0, 0.15, 0.6) : FVector(7975.45, 5.329, 2000.55);
 		GroupPose(*CounterFood, At, FVector::ZeroVector);
 	}
-	CounterFood->SetVisible(bDiner && bOrder && !bFoodTaken);
+	CounterFood->SetVisible(bDiner && bOrder && !bFoodTaken && !bHeld);
 	Visible(CounterBurger, bFoodBought && bBurger && !bFoodTaken && !bFoodEaten);
 	Visible(CounterSandwich, bFoodBought && !bBurger && !bFoodTaken && !bFoodEaten);
 	Visible(CounterCup, bFoodBought);
 	Visible(CounterWater, bWater);
 	CounterFood->Refresh();
-	const bool bHeld = !bDriving && !bFoodEaten && (bFoodTaken || (bDiner && bFoodBought));
+	// Takeaway has its own saved hand/surface state; this group only presents dine-in food.
 	if (bHeld)
 	{
 		const FS47Cam Cam = FS47Cam::Of(M->Player);

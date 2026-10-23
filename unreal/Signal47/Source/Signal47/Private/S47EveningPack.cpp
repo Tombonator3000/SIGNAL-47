@@ -197,6 +197,13 @@ bool FS47EveningPack::SetExternal(const FString& Id, bool bValue)
 	return true;
 }
 
+bool FS47EveningPack::EatTakeaway()
+{
+	if (!Flag(TEXT("food_bought")) || !Flag(TEXT("food_taken")) || Flag(TEXT("food_eaten"))) return false;
+	Flags.Add(TEXT("food_eaten"), true);
+	return true;
+}
+
 bool FS47EveningPack::Flag(const FString& Id) const
 {
 	const bool* Value = External.Find(Id);

@@ -16,6 +16,11 @@ Første anomaly-pilot på `codex/anomaly-pilot` gir N01/N02/A02/P01 med kamera, 
 
 Eller «SIGNAL / 47» i programmenyen. Spillet starter på tittelen (Continue, New night, Load case, Settings). WASD går (Shift løper), musa ser, E eller klikk bruker det du ser på, høyre mus ser nærmere. Tab eller N er notatboken (M, I og H åpner kartet, kitet og kontrollene i den), Esc eller P er pausen med innstillinger, lagring og lasting. I bilen: W og S gass og brems (S i stillstand rygger), A og D styrer, R eller klikk på radioen skifter stasjon, E i stillstand går ut (og vrir om nøkkelen når motoren har dødd). V leser beskrivelsen av det du ser på når opplesningen er slått på i innstillingene. Lagringene og innstillingene ligger ved siden av spillet, i `~/Games/Signal47/Linux/Signal47/Saved/SaveGames`.
 
+På `codex/evening-runtime` kan takeaway settes ned og plukkes opp med E på merkede plasser i dineren, ved bilen og på SARO. Etter telefonoverleveringen tilbyr skrivebordet og annexbordet **Eat supper (12 minutes)**. Posen skjules ved verktøybruk, og plassering/måltid lagres. Se [takeaway- og bilkontrollene](EVENING_TAKEAWAY.md) for testet kandidat; installasjonen endres av Claude.
+## Last ned på en annen Linux-maskin
+
+[Linux-testutgave 23. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-23). Repoet og utgivelsen er private; logg inn med en GitHub-konto som har tilgang. Last ned begge ZIP-filene under Assets, pakk dem ut i samme målmappe og start `Signal47-Linux/Play.sh`. `Play-Low.sh` gir 1280 x 720, Low og Clean. Utfyllende instruksjoner og kontrollsummer følger utgivelsen. Steam Deck/SteamOS og gamepad er ikke testet. Pakken inneholder ingen personlige lagringer, logger eller innstillinger.
+
 ## Kom i gang
 
 Unreal Engine 5.8.4 for Linux må ligge i `~/.local/opt/UnrealEngine-5.8.4` (eller `UE_ROOT`). Samme oppsett som THE BLACK MAP. Den private klonen av assets må ligge i `web/src/assets/licensed` (som for nettversjonen), og venv-en `~/.venvs/signal47` med Playwright må finnes.

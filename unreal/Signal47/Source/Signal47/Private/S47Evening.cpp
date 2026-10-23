@@ -1,5 +1,6 @@
 #include "S47Evening.h"
 #include "S47EveningVisual.h"
+#include "S47Takeaway.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47World.h"
@@ -23,6 +24,7 @@ FS47Evening::FS47Evening(US47Main* InM) : M(InM)
  FString Error;
  if (!Pack.Initialize(Error) || !RadioPack.Initialize(Error)) UE_LOG(LogTemp, Error, TEXT("S47: evening pack: %s"), *Error);
  Visual = MakeUnique<FS47EveningVisual>(M);
+ Takeaway = MakeUnique<FS47Takeaway>(M, Pack);
  Voice = MakeShared<FS47RecordedDialogue>(M->Audio, TEXT("evening"), [](const FS47DialogueInput& I, FS47RadioVoice& Bank) -> TOptional<TArray<FS47RadioClip>>
  {
   if (I.Lines.Num() != 1) return {};
@@ -61,6 +63,10 @@ FS47Evening::~FS47Evening()
  if (MusicGain) MusicGain->Disconnect();
 }
 
+bool FS47Evening::MealBusy() const { return bEnabled && Takeaway && Takeaway->MealBusy(); }
+FVector FS47Evening::PersonalCarPosition() const { return Visual->ParkedPosition(); }
+double FS47Evening::PersonalCarHeading() const { return Visual->ParkedHeading(); }
+
 void FS47Evening::StopRing()
 {
  if (bRing && M->Audio) M->Audio->Stop(TEXT("evening:ring"),0.05f);
@@ -79,6 +85,7 @@ void FS47Evening::Stop()
  if (M && M->Web) M->Web->SetHandsetVisible(true);
  if (M && M->Story) M->Story->bOpeningHeld = false;
  if (M && M->World) M->World->bCommuteVehicle = false;
+ if (Takeaway) Takeaway->Stop();
  if (Visual) {Visual->SetParked(false);Visual->Hide();}
 }
 void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
@@ -126,6 +133,7 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
   if (Opening()) { M->Story->SetClock(S47J::Num(Saved,TEXT("clock"),-21600)); RingAt = M->T; }
   bWorkStarted = Pack.Flag(TEXT("handover_done"));
  }
+ Takeaway->Begin(S47J::Obj(Saved,TEXT("takeaway")));
  Context(); Refile();
  if (Opening()) M->UI->Objective(Commute() ? TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. MESA DINER IS OPEN FOR SUPPER.") : TEXT("SARO // ANSWER DALE'S CALL IN THE CONTROL ROOM"));
  if (Pack.CurrentScene()) Resume();
@@ -244,6 +252,8 @@ void FS47Evening::Answer()
 bool FS47Evening::Use(const FString& Id)
 {
  if (!bEnabled) return false;
+ if (MealBusy()) return true;
+ if (Takeaway->Use(Id)) return true;
  if (Id==TEXT("evening:radio") && Commute()) {bRadioOn=!bRadioOn;M->UI->Toast(bRadioOn?TEXT("Local evening radio on"):TEXT("Radio off"),2); Changed();return true;}
  if (Opening())
  {
@@ -412,11 +422,13 @@ void FS47Evening::Step(double Dt)
  if (!TestMode.IsEmpty() && !M->World->bBusy) { const FString Mode=TestMode; TestMode.Empty(); BootstrapTest(Mode); }
  if (bDialogueOpen && !M->ModalOpen()) bDialogueOpen=false;
  ControlTest(Dt);
+ Takeaway->Step(Dt);
  ControlEntranceTest(Dt);
+ ControlTakeawayTest(Dt);
 }
 S47J::FObj FS47Evening::Save() const
 {
- auto O=S47J::New(); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
+ auto O=S47J::New(); S47J::Set(O,TEXT("takeaway"),Takeaway->Save()); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
  S47J::Set(O,TEXT("clock"),M->Story->Clock()); S47J::Set(O,TEXT("area"),M->World->Area);
  S47J::Set(O,TEXT("radioOn"),bRadioOn); S47J::Set(O,TEXT("radioHold"),RadioHold); S47J::Set(O,TEXT("radioRest"),RadioRest);
  S47J::Set(O,TEXT("musicPosition"),Music?Music->CurrentTime():MusicPosition);
@@ -482,5 +494,16 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
  }
  FS47Truck T;T.SetPose(FVector(9,0.2,15),FVector(0.25,0.7,-0.18));T.SetParkPose(FVector(8.9,0,8),UE_DOUBLE_PI);
  Check(T.Position.Equals(FVector(8.9,0,8)) && T.Rotation.Equals(FVector(0,UE_DOUBLE_PI,0)),TEXT("canonical service parking drops inherited ramp pitch and roll"));
- return Valid;
+ FS47EveningPack Supper;
+ FString SupperError;
+ const auto MealCheck=[&](bool Good,const TCHAR* What){Valid&=Good;Lines.Add(FString(Good?TEXT("PASS takeaway transaction: "):TEXT("FAIL takeaway transaction: "))+What);};
+ MealCheck(Supper.Initialize(SupperError) && !Supper.EatTakeaway(),TEXT("no unpaid meal can be consumed"));
+ Supper.Start(TEXT("I02_DINER_HELLO")); while(Supper.CurrentLine()) Supper.Advance(); Supper.Select(TEXT("I02_MENU"));
+ while(Supper.CurrentLine()) Supper.Advance(); Supper.Select(TEXT("I03_BURGER"));
+ MealCheck(Supper.Flag(TEXT("food_bought")) && !Supper.EatTakeaway() && Supper.GetPendingChoice()==TEXT("I03_BURGER"),TEXT("paid pending order cannot be consumed before handover"));
+ while(Supper.CurrentLine()) Supper.Advance(); Supper.Select(TEXT("I04_TAKE")); while(Supper.CurrentLine()) Supper.Advance();
+ MealCheck(Supper.Flag(TEXT("food_taken")) && Supper.EatTakeaway() && Supper.Flag(TEXT("food_eaten")) && !Supper.EatTakeaway(),TEXT("the one takeaway portion is consumed exactly once"));
+ const auto SupperSaved=Supper.Save(); FS47EveningPack SupperRestored; SupperRestored.Initialize(SupperError);
+ MealCheck(SupperRestored.Load(SupperSaved,SupperError) && SupperRestored.Flag(TEXT("food_taken")) && SupperRestored.Flag(TEXT("food_eaten")) && !SupperRestored.EatTakeaway(),TEXT("save restore cannot create a second serving"));
+ return FS47Takeaway::SelfTest(Lines) && Valid;
 }

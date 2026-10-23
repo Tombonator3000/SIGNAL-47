@@ -6,6 +6,16 @@ Arbeidet er gjort på `codex/evening-runtime` fra `ed061aca`. Pakket kilde er
 `66d2b5a6`, med `unreal-port-core 04517414` innflettet.
 Kortregresjon: **PASS, 6/6**. Ingen push, PR eller installasjon; Claude integrerer.
 
+## Samlet oppfølging 24. oktober
+
+Takeaway er lagt til på samme gren. Ny testet pakkekilde `f83f3dc9` med core
+`92dc7a47` består bilkontrollen og hele inngangsmatrisen på nytt, sammen med
+1298 selvtester, to mat-/lastevarianter, burgerrute og tre korte regresjoner.
+Se [samlet rapport med nye bilder](EVENING_TAKEAWAY.md). Resultatene nedenfor
+beholdes som historisk bevis på `66d2b5a6`; seks gamle hopp og finalen er ikke
+kjørt på nytt som seks tester i matpakken. Nyere core `6614cd90` inngår ikke i
+denne frosne pakken. Claude integrerer, ingen installasjon her.
+
 ## Årsak og rettelse
 
 1. Bare SARO-riggens Body og Shell ble skjult på privatbilen. Selvstendige

@@ -50,3 +50,24 @@ Aktuelle runtimebevis og gjenstående menneskelige tester står i [runtime-rappo
 
 
 `-S47EveningAudio -S47EveningRoute=burger` utvider ruten med hele faktiske takes, målte PCM-varigheter, kanal-/filter- og nivåkontroll, radio av/på, 0,5 s frosset lydkontekst og disk-/verdenslasting under aktiv D01. Bruk for eksempel `-S47Seconds=920`; kontrollen avslutter selv. Vanlige rutekontroller beholder rask dialog. `-S47VoiceLevels` logger faktisk trukne source-/kanalsamples, RMS, peak og bussgain. Dette beviser avspilling i grafen, ikke menneskelig lytting. Se [lydrapporten](../../EVENING_AUDIO.md).
+
+
+## Takeaway etter åpningen
+
+`-S47Evening=burger -S47EveningTakeaway -S47SelfTest -S47EveningShots=/absolutt/testmappe`
+prøver kjøpt/ventende svar, båret og avsatt mat på alle seks stedene, opptak igjen,
+telefon/dokumenter og kamera/lykt/notatbok. Plassering og opptak bruker faktisk
+blikkstråle/fokus og vanlig OnUse/HUD-kjede. Oppsett og dialogvalg bruker API.
+Ti ferske disk-/verdenslastinger sammenligner også faktisk overflateposisjon,
+klokke, flagg, dialogpeker og dokumenter. Måltid fra hånden ved annexbordet
+fullføres én gang med 720 sekunders fremovertid og fire sekunders overgang.
+
+Legg til `-S47TakeawayEatPlaced` for måltid fra bordet og en ekstra lasting
+under overgangen: maten forblir spist, innpakningen vises og tiden økes ikke
+på nytt. Begge variantene kontrollerer til slutt med et uttrykkelig records-oppsett
+at original arkivhandling på arbeidsbordet fortsatt åpner panelet.
+Krev `takeaway PASS COMPLETE`, normal exit og ingen FAIL/fatal/assert, ikke bare
+selvtestlinjen. Bruk isolert UserDir og maskinvakten som for rutene ovenfor.
+
+Sluttpakke, biler/inngang, bilder og avgrensninger føres i
+[takeaway-rapporten](../../EVENING_TAKEAWAY.md). Ingen menneskelig input påstås.

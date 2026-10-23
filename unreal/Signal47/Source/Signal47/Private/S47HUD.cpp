@@ -619,7 +619,7 @@ void AS47HUD::CloseModal()
 	PC->SetInputMode(Mode);
 	PC->bShowMouseCursor = false;
 	const US47Main* Mn = US47Main::Get(this);
-	if (Walker.IsValid() && !bEnded && (!Mn || Mn->Mode == US47Main::EMode::Play)) Walker->SetActive(true);
+	if (Walker.IsValid() && !bEnded && (!Mn || (Mn->Mode == US47Main::EMode::Play && !(Mn->Evening && Mn->Evening->MealBusy())))) Walker->SetActive(true);
 	if (Story.IsValid()) Story->SetPaused(false);
 	TFunction<void()> Fn = MoveTemp(ModalClosed);
 	ModalClosed = nullptr;
@@ -791,7 +791,7 @@ void AS47HUD::Tick(float DeltaSeconds)
 			bPromptOwn = false;
 		}
 		// (input.enabled: only in play; the title and the end card hold the player)
-		Walker->SetActive(bPlaying && !Story->IsCinematic() && !bEnded);
+		Walker->SetActive(bPlaying && !Story->IsCinematic() && !(M && M->Evening && M->Evening->MealBusy()) && !bEnded);
 	}
 	bPromptSet = false;
 	DrawCrts(DeltaSeconds);
