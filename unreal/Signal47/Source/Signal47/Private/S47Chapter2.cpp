@@ -627,7 +627,7 @@ TArray<FS47BoardCard> US47Chapter2::BoardCards()
 	if (Im.Amended.IsEmpty()) Im.Amended = S47Drawings2::Arrangement(false);
 	if (Im.Index.IsEmpty()) Im.Index = S47Drawings2::SleeveMark();
 	if (Im.Icons.Num() == 0) for (const TCHAR* K : { TEXT("triangle-bar"), TEXT("triangle"), TEXT("three-bars") }) Im.Icons.Add(K, S47Drawings2::MarkIcon(K));
-	auto Card = [](const TCHAR* Id, const TCHAR* Doc, const TCHAR* Stamp, const TCHAR* Title, bool bHave, const FString& Where, const FString& Image, const FString& Full, double X, double Y, double W, TArray<FS47BoardLine> Lines)
+	auto Card = [](const TCHAR* Id, const TCHAR* Doc, const TCHAR* Stamp, const FString& Title, bool bHave, const FString& Where, const FString& Image, const FString& Full, double X, double Y, double W, TArray<FS47BoardLine> Lines)
 	{
 		FS47BoardCard C;
 		C.Id = Id; C.Doc = Doc; C.Stamp = Stamp; C.Title = Title; C.bHave = bHave; C.Where = Where; C.Image = Image; C.Full = Full;
