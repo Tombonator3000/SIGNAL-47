@@ -80,6 +80,9 @@ TArray<TPair<FString, FString>> SS47Ending::CreditsRows(bool bBoughtSfx)
 	};
 	// Not asked for by their licence; named because the others are.
 	if (bBoughtSfx) Rows.Emplace(TEXT("Sound effects"), TEXT("Ultimate SFX for Games, Function Loops"));
+	// Departs from the web version: the Unreal world also uses the bought Vintage Liminal models and the
+	// free ones (CC BY 4.0 asks for title, author, licence and link: the links are in CREDITS.txt).
+#include "S47FreeCredits.inl"
 	Rows.Emplace(TEXT("Fonts"), TEXT("VT323, Reenie Beanie and Oswald (SIL Open Font License 1.1). Special Elite (Apache License 2.0)."));
 	Rows.Emplace(TEXT("Built with"), TEXT("three.js (MIT)"));
 	Rows.Emplace(TEXT(""), TEXT("Everything in this story is invented. The comet was real."));
@@ -144,10 +147,10 @@ void SS47Ending::Title(TFunction<void()> Done)
 
 void SS47Ending::Credits(TFunction<void()> Done)
 {
-	// Ending.credits: the roll begins after 60 ms, takes 46 s, and may be skipped after 4 s.
+	// Ending.credits: the roll begins after 60 ms, takes 46 s (here CreditsSeconds), and may be skipped after 4 s.
 	if (bGone) return;
 	BeginCard(ECard::Credits, MoveTemp(Done));
-	CreditsOut = .06 + 46;
+	CreditsOut = .06 + CreditsSeconds;
 }
 
 void SS47Ending::Photo(UTexture2D* Src, TFunction<void()> Paper, TFunction<void()> Done)
@@ -282,7 +285,10 @@ void SS47Ending::LayoutCredits(const FVector2D& Size) const
 			AddText(Row.Key.ToUpper(), KeyFont, S47Css::C(0x8f8a7c), float(Measure->Measure(TEXT("X"), KeyFont).Y));
 			Y += .4f * 18 * S47Css::PX;
 		}
-		AddText(Row.Value, ValueFont, S47Css::C(0xd9d2c0), (bLargeText ? 22.f : 18.f) * S47Css::PX * 1.55f);
+		// a value may be a list, one entry a line (the models' credits)
+		TArray<FString> Paragraphs;
+		Row.Value.ParseIntoArray(Paragraphs, TEXT("\n"), false);
+		for (const FString& Paragraph : Paragraphs) AddText(Paragraph, ValueFont, S47Css::C(0xd9d2c0), (bLargeText ? 22.f : 18.f) * S47Css::PX * 1.55f);
 		Y += float(Size.Y) * .055f;
 	}
 	CreditsHeight = Y;
@@ -334,8 +340,8 @@ int32 SS47Ending::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSla
 	{
 		BlackBox(Layer + 3, Alpha);
 		LayoutCredits(FVector2D(Size));
-		// roll has 100vh top padding, then translateY(calc(-100% - 60vh)) over 46 seconds.
-		const float K = float(FMath::Clamp((T - .06) / 46, 0.0, 1.0));
+		// roll has 100vh top padding, then translateY(calc(-100% - 60vh)) over 46 seconds (CreditsSeconds).
+		const float K = float(FMath::Clamp((T - .06) / CreditsSeconds, 0.0, 1.0));
 		const float Y = Size.Y - K * (Size.Y * 1.6f + CreditsHeight);
 		Heading(FMath::Clamp(Size.X * .08f, 40 * S47Css::PX, 84 * S47Css::PX), Y);
 		for (const FCreditLine& Line : CreditLines)
@@ -381,10 +387,10 @@ bool SS47Ending::SelfTest(TArray<FString>& Lines)
 	E->Advance(.002);
 	Check(Done == 2, TEXT("Skip finishes the credits once"));
 	E->Credits([&] { ++Done; });
-	E->Advance(46.059);
-	Check(Done == 2 && E->SkipOffered(), TEXT("unskipped credits roll for 46 seconds"));
+	E->Advance(CreditsSeconds + .059);
+	Check(Done == 2 && E->SkipOffered(), TEXT("unskipped credits roll for CreditsSeconds"));
 	E->Advance(.002);
-	Check(Done == 2 && !E->SkipOffered(), TEXT("credits begin fading after 46.06 seconds"));
+	Check(Done == 2 && !E->SkipOffered(), TEXT("credits begin fading after the roll and the 60 ms lead"));
 	E->Advance(1.2);
 	Check(Done == 3, TEXT("unskipped credits complete after the fade"));
 	E->Photo(nullptr, [&] { ++Paper; }, [&] { ++Done; });
@@ -416,7 +422,11 @@ bool SS47Ending::SelfTest(TArray<FString>& Lines)
 	E->Advance(100);
 	Check(E->Disposed() && Done == 4 && !E->Skip(), TEXT("dispose cancels pending callbacks and the overlay"));
 	const TArray<TPair<FString, FString>> Free = CreditsRows(false), Bought = CreditsRows(true);
-	Check(Free.Num() == 14 && Bought.Num() == 15 && Bought[11].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and in the original order"));
+	Check(Free.Num() == 18 && Bought.Num() == 19 && Bought[11].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and in the original order"));
+	const TPair<FString, FString>* Models = Free.FindByPredicate([](const TPair<FString, FString>& R) { return R.Key.StartsWith(TEXT("3D models, CC BY")); });
+	TArray<FString> ModelLines;
+	if (Models) Models->Value.ParseIntoArray(ModelLines, TEXT("\n"));
+	Check(ModelLines.Num() == 48 && Free.ContainsByPredicate([](const TPair<FString, FString>& R) { return R.Value.Contains(TEXT("Vintage Liminal")); }), TEXT("the 48 CC BY models and the bought Vintage Liminal pack are credited"));
 	Check(Free[0].Value == TEXT("A night in New Mexico, 14 April 1986") && Free.Last().Value == TEXT("Everything in this story is invented. The comet was real."), TEXT("credits retain their original opening and closing text"));
 	return bOk;
 }

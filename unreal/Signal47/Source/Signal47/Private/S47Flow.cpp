@@ -145,8 +145,9 @@ void US47Flow::Init(US47Main* InM)
 	LoadStore();
 	Saves.Init();
 	// the settings shared by the pause menu and the title screen; all kept on this device
-	// (Ultra on a computer; an automated run starts on High, so the budgets stay testable)
-	Quality = S47J::Str(Store, TEXT("quality"), SmokeTest() ? TEXT("high") : TEXT("ultra"));
+	// High targets desktop 60 fps; Ultra spends more on shadows and mist.
+	Quality = S47J::Str(Store, TEXT("quality"), TEXT("high"));
+	FParse::Value(FCommandLine::Get(), TEXT("S47Quality="), Quality);
 	bKinski = S47J::Bool(Store, TEXT("kinskiReadAloud"), false);
 	bArtBell = S47J::Bool(Store, TEXT("artBellRadioHost"), true);
 	bSerling = S47J::Bool(Store, TEXT("serlingNarrator"), true);
@@ -204,6 +205,7 @@ void US47Flow::Init(US47Main* InM)
 	FString Cmd;
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Cmd)) Picture = Cmd == TEXT("off") ? TEXT("off") : TEXT("vhs");
 	else ApplyPicture(!Chosen.IsEmpty() ? Chosen : Quality != TEXT("low") ? TEXT("vhs") : TEXT("off"), false);
+	ApplyQuality(Quality);
 	ApplyVolume();
 	if (M->Audio) { M->Audio->SetMusic(MusicLevel); M->Audio->SetRadio(RadioLevel); }
 	if (M->Radio) { M->Radio->SetHostVoice(bArtBell); M->Radio->SetCallerVoice(bRadioCast); }
@@ -887,11 +889,9 @@ FS47PauseOpts US47Flow::Settings()
 void US47Flow::ApplyQuality(const FString& Q)
 {
 	Quality = Q;
-	StoreSet(TEXT("quality"), Q);
-	// until a picture is chosen in Settings, the picture follows the graphics level
-	if (!S47J::Has(Store, TEXT("picture"))) ApplyPicture(Q != TEXT("low") ? TEXT("vhs") : TEXT("off"), false);
-	// (the tape's samples, setQuality, the bought models' pictures, Ultra's lamps and shadows and the
-	// pixel ratio are the web renderer's; the Unreal version draws the same on every level for now)
+	if (!SmokeTest()) StoreSet(TEXT("quality"), Q);
+	// The tape look is independent of the lighting budget.
+	if (M->Web) M->Web->SetLightingQuality(Q);
 }
 
 void US47Flow::ApplyPicture(const FString& P, bool bChosen)
@@ -1207,6 +1207,8 @@ S47J::FObj US47Flow::ComposeCase() const
 		// array: copyArraySave(this.ns.array); hondo: this.ns.hondo
 		if (const TOptional<FS47ArraySave> A = FS47ArraySave::Copy(N.Array)) Ns->SetObjectField(TEXT("array"), A->ToJson());
 		if (N.Hondo) S47J::Set(Ns, TEXT("hondo"), *N.Hondo);
+		// (Unreal only, Tom's request: T. Vega's seven keyed on the processor, TAPE A given up; S47DecoderDesk.h)
+		if (N.bTapeA) S47J::Set(Ns, TEXT("tapeA"), true);
 	}
 	S47J::Set(Ns, TEXT("ln"), M->Away ? M->Away->Ln : S47J::Strs(WasNs, TEXT("ln")));
 	S47J::Set(C, TEXT("ns"), Ns);

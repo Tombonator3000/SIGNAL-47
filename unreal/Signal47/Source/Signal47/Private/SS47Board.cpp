@@ -105,6 +105,17 @@ namespace
 		return A.X < B.X + Other.X + Gap && A.X + Size.X + Gap > B.X && A.Y < B.Y + Other.Y + Gap && A.Y + Size.Y + Gap > B.Y;
 	}
 
+	// The width of the yarn on screen (departs from the web version, whose 2.6 px SVG stroke and
+	// 1.5 px yarn picture Tom found nearly invisible): a board width scaled by the zoom, never
+	// thinner than a line that still reads at 900 lines, never a rope when zoomed right in.
+	double YarnWidth(double BoardWidth, double Px, double Min = 2.5)
+	{
+		return FMath::Clamp(BoardWidth * Px, Min, 12.0);
+	}
+
+	// The help strip under the board's heading stays hidden for the session once dismissed.
+	bool GHowHidden = false;
+
 	// Slate's scroll box owns the long TEXT area. Ctrl+wheel must still reach the board zoom.
 	class SS47BoardPaper : public SLeafWidget
 	{
@@ -169,6 +180,16 @@ struct FS47BoardImpl
 	TSharedPtr<SCanvas> Canvas;
 	TSharedPtr<SS47BoardSurface> Surface;
 	TSharedPtr<STextBlock> StatusEl, SayEl, HowEl;
+	// Departs from the web version: a dismissable strip that says how the board works, a hint
+	// offered after a thread that does not hold or a while without progress, and the hint itself
+	// in a readable box rather than the reply line.
+	TSharedPtr<SWidget> HowStrip, HintBox, OfferEl;
+	TSharedPtr<STextBlock> HintText, HintHead, OfferText;
+	FString Offer, Hinted;
+	double LastProgress = 0;
+	int32 Misses = 0;
+	TMap<FString, TArray<FString>> RegionHave, RegionMissing;   // record stamps by board region, for the question cards
+	FString TestFrom, TestTo;                                    // -S47BoardTest drag: a thread held over a pin
 	TSet<FString> Open;
 	TMap<FString, int32> Zs;
 	TMap<FString, float> TextScrolls;
@@ -235,6 +256,10 @@ struct FS47BoardImpl
 	void Render();
 	FS47Result Link(const FString& A, const FString& B);
 	void TapNode(const FString& N);
+	FString OpenQuestionIn(const FString& Region) const;
+	void OfferHint(const FString& Q);
+	void ShowHint(const FString& Q);
+	void ShowHow(bool bShow);
 	FVector2D ToBoardXY(const FVector2D& P) const { return (P - FVector2D(Tx, Ty)) / S; }
 	double MinScale() const { return FMath::Min(0.5, FMath::Max(0.12, FMath::Min(ViewSize.X / O.Size.X, ViewSize.Y / O.Size.Y) * 0.95)); }
 	void ClampView();
@@ -511,16 +536,27 @@ TSharedRef<SWidget> FS47BoardImpl::QuestionHtml(const FS47BoardQuestion& Q, cons
 	{
 		if (Q.Slots)
 		{
+			// Departs from the web version: the card says what it wants and what there is to work
+			// with (the records of its patch on the board, and those still to find), not which.
+			const FString Wants = Ready ? TEXT("Every line is filled. RECORD it.")
+				: FString::Printf(TEXT("Wants %d thread%s that hold%s, tied between the records. Each fills a line below."), Q.Slots, Q.Slots == 1 ? TEXT("") : TEXT("s"), Q.Slots == 1 ? TEXT("s") : TEXT(""));
+			Body->AddSlot().AutoHeight().Padding(10, 0, 10, 4)[Text(Wants, 12, Ready ? 0x2f6a3c : 0x7a3a22, false, Width - 20, 1.2f)];
 			for (int32 I = 0; I < Q.Slots; ++I)
 			{
 				const bool On = Q.Filled.IsValidIndex(I) && !Q.Filled[I].IsEmpty();
-				Body->AddSlot().AutoHeight().Padding(10, I == 0 ? 4 : 0, 10, 4)
+				Body->AddSlot().AutoHeight().Padding(10, I == 0 ? 2 : 0, 10, 4)
 				[SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(20)[Text(FString::Printf(TEXT("%d."), I + 1), 12.5f, 0x555555)]]
 				+ SHorizontalBox::Slot().FillWidth(1)[SNew(SBox).MinDesiredHeight(18)
-				[SNew(SBorder).BorderImage(Box(0xf1dc7c, 0x1e2430, On ? 0.55f : 0, 0.25f)).Padding(On ? FMargin(3, 1) : FMargin(0))
-				[Text(On ? Q.Filled[I] : TEXT(" "), 12.5f, On ? 0x1e2430 : 0x555555, false, Width - 46)]]]];
+				[SNew(SBorder).BorderImage(Box(0xf1dc7c, 0x1e2430, On ? 0.55f : 0, 0.25f)).Padding(FMargin(3, 1))
+				[Text(On ? Q.Filled[I] : TEXT("(empty: tie a thread)"), On ? 12.5f : 11.5f, On ? 0x1e2430 : 0x9a9182, false, Width - 46)]]]];
 			}
+			const TArray<FString>* Have = RegionHave.Find(Q.Region);
+			const TArray<FString>* Missing = RegionMissing.Find(Q.Region);
+			FString Pieces;
+			if (Have && Have->Num()) Pieces = TEXT("On the board here: ") + FString::Join(*Have, TEXT(", ")) + TEXT(".");
+			if (Missing && Missing->Num()) Pieces += (Pieces.IsEmpty() ? FString() : FString(TEXT(" "))) + TEXT("Still to find: ") + FString::Join(*Missing, TEXT(", ")) + TEXT(".");
+			if (!Pieces.IsEmpty() && !Ready) Body->AddSlot().AutoHeight().Padding(10, 2, 10, 6)[Text(Pieces, 11.5f, 0x6b6458, false, Width - 20, 1.2f)];
 		}
 		else
 		{
@@ -539,7 +575,7 @@ TSharedRef<SWidget> FS47BoardImpl::QuestionHtml(const FS47BoardQuestion& Q, cons
 		TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
 		if (Ready) Row->AddSlot().AutoWidth().Padding(0, 0, 8, 0)
 			[Button(TEXT("RECORD"), [this, Id = Q.Id] { const FS47Result R = O.Record ? O.Record(Id) : FS47Result(); Say(R.Text, R.bOk ? 1 : -1); if (R.bOk) Render(); }, 19, 0xfff3e2, 44, 36, true)];
-		Row->AddSlot().AutoWidth()[Button(TEXT("Hint"), [this, Id = Q.Id] { Say(O.Hint ? O.Hint(Id) : FString()); }, 16, 0x233a7a, 44, 36)];
+		Row->AddSlot().AutoWidth()[Button(TEXT("Hint"), [this, Id = Q.Id] { ShowHint(Id); }, 16, 0x233a7a, 44, 36)];
 		Body->AddSlot().AutoHeight().Padding(10, 0)[Row];
 	}
 	TSharedPtr<FSlateBrush> Card = ArtBrushes.FindRef(TEXT("card_index_blank"));
@@ -590,13 +626,21 @@ void FS47BoardImpl::Render()
 		: TEXT("Drag the cards about. Pull a red thread from a pin to another piece of evidence, or click one and then the other.")));
 	Canvas->ClearChildren();
 	Boxes.Empty();
+	const TArray<FS47BoardCard> CardList = O.Cards ? O.Cards() : TArray<FS47BoardCard>();
+	RegionHave.Reset(); RegionMissing.Reset();
+	for (const FS47BoardCard& C : CardList)
+	{
+		if (C.Stamp.IsEmpty() || C.Kind == TEXT("finding")) continue;
+		TArray<FString>& List = (C.bHave ? RegionHave : RegionMissing).FindOrAdd(C.Region);
+		if (List.Num() < 7) List.AddUnique(C.Stamp);
+	}
 	for (const FS47BoardQuestion& Q : O.Questions ? O.Questions() : TArray<FS47BoardQuestion>())
 	{
 		TSharedPtr<FBox> B = MakeShared<FBox>(); B->Id = Q.Id;
 		B->Widget = QuestionHtml(Q, B);
 		AddBox(B, Q.Region, Q.X, Q.Y, Q.W.Get(260));
 	}
-	for (const FS47BoardCard& C : O.Cards ? O.Cards() : TArray<FS47BoardCard>())
+	for (const FS47BoardCard& C : CardList)
 	{
 		TSharedPtr<FBox> B = MakeShared<FBox>(); B->Id = C.Id;
 		B->Widget = CardHtml(C, B);
@@ -692,11 +736,21 @@ FS47Result FS47BoardImpl::Link(const FString& A, const FString& B)
 	Selected.Empty();
 	const FS47Result R = O.Connect ? O.Connect(A, B) : FS47Result();
 	Say(R.Text, R.bOk ? 1 : -1);
-	if (R.bOk) Render();
+	if (R.bOk)
+	{
+		Render();
+		LastProgress = FPlatformTime::Seconds(); Misses = 0;
+		OfferHint(FString());
+	}
 	else
 	{
 		const TOptional<FVector2D> Pa = Centre(A), Pb = Centre(B);
 		if (Pa && Pb) Slack.Add({ Curve(*Pa, *Pb, 0.4, 140), FPlatformTime::Seconds() });
+		// A thread that does not hold: offer the hint of the open question in that patch.
+		++Misses;
+		FString Region;
+		for (const TSharedPtr<FBox>& Bx : Boxes) if (Bx->Pins.ContainsByPredicate([&](const FPin& Pin) { return Pin.Id == A; })) { Region = Bx->Region; break; }
+		OfferHint(OpenQuestionIn(Region));
 	}
 	return R;
 }
@@ -706,6 +760,44 @@ void FS47BoardImpl::TapNode(const FString& N)
 	if (!Selected.IsEmpty() && Selected != N) { Link(Selected, N); return; }
 	Selected = Selected == N ? FString() : N;
 	if (!Selected.IsEmpty()) Say(TEXT("Now the piece of evidence it goes with."));
+}
+
+// The open question to offer a hint for: one with lines still to fill in the given patch, else
+// in the patch the board opened on, else any.
+FString FS47BoardImpl::OpenQuestionIn(const FString& Region) const
+{
+	const TArray<FS47BoardQuestion> Qs = O.Questions ? O.Questions() : TArray<FS47BoardQuestion>();
+	auto Unfilled = [](const FS47BoardQuestion& Q) { return Q.Done.IsEmpty() && Q.Slots > 0 && Q.Filled.Num() < Q.Slots; };
+	for (const FString& Rg : { Region, O.Focus })
+		for (const FS47BoardQuestion& Q : Qs) if (Unfilled(Q) && !Rg.IsEmpty() && Q.Region == Rg) return Q.Id;
+	for (const FS47BoardQuestion& Q : Qs) if (Unfilled(Q)) return Q.Id;
+	return FString();
+}
+
+void FS47BoardImpl::OfferHint(const FString& Q)
+{
+	Offer = O.Hint ? Q : FString();
+	if (OfferText) OfferText->SetText(FText::FromString(Offer.IsEmpty() ? FString() : FString::Printf(TEXT("STUCK ON %s? HINT"), *Offer)));
+	if (OfferEl) OfferEl->SetVisibility(Offer.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible);
+}
+
+void FS47BoardImpl::ShowHint(const FString& Q)
+{
+	const FString Text = O.Hint ? O.Hint(Q) : FString();
+	OfferHint(FString());
+	if (Text.IsEmpty()) { Say(TEXT("No hint for that one.")); return; }
+	Hinted = Q;
+	if (!HintBox) { Say(Text); return; }
+	HintHead->SetText(FText::FromString(FString::Printf(TEXT("HINT  /  %s"), *Q)));
+	HintText->SetText(FText::FromString(Text));
+	HintBox->SetVisibility(EVisibility::Visible);
+	LastProgress = FPlatformTime::Seconds();
+}
+
+void FS47BoardImpl::ShowHow(bool bShow)
+{
+	GHowHidden = !bShow;
+	if (HowStrip) HowStrip->SetVisibility(bShow ? EVisibility::Visible : EVisibility::Collapsed);
 }
 
 void FS47BoardImpl::ClampView()
@@ -925,9 +1017,29 @@ void FS47BoardImpl::Tick(const FVector2D& InSize)
 	if (!PendingFrame.IsEmpty()) { const TArray<FString> Ids = MoveTemp(PendingFrame); PendingFrame.Empty(); Frame(Ids); }
 	if (!PendingShow.IsEmpty()) { const FString Id = MoveTemp(PendingShow); PendingShow.Empty(); Show(Id); }
 	const bool bSmall = Small();
-	HowEl->SetVisibility(bSmall ? EVisibility::Collapsed : EVisibility::HitTestInvisible);
+	HowEl->SetVisibility(bSmall || (HowStrip && !GHowHidden) ? EVisibility::Collapsed : EVisibility::HitTestInvisible);
+	if (HowStrip && bSmall) HowStrip->SetVisibility(EVisibility::Collapsed);
+	else if (HowStrip) HowStrip->SetVisibility(GHowHidden ? EVisibility::Collapsed : EVisibility::Visible);
 	SayEl->SetFont(S47Style::Body(bSmall ? 14 : 15.5f));
-	Slack.RemoveAll([](const FSlack& T) { return FPlatformTime::Seconds() - T.Born >= 1.4; });
+	Slack.RemoveAll([](const FSlack& T) { return FPlatformTime::Seconds() - T.Born >= 2.0; });
+	// A while on the board without a thread that holds: offer the hint once.
+	const double Now = FPlatformTime::Seconds();
+	if (LastProgress <= 0) LastProgress = Now;
+	if (Offer.IsEmpty() && Now - LastProgress > 75 && Drag.Kind == FDrag::EKind::None && !(HintBox && HintBox->GetVisibility() == EVisibility::Visible))
+	{
+		OfferHint(OpenQuestionIn(O.Focus));
+		LastProgress = Now;
+	}
+	if (!TestFrom.IsEmpty() && ViewSize.X > 0)
+	{
+		// -S47BoardTest drag: the thread held from one pin over another (the screenshots)
+		const TOptional<FVector2D> A = Centre(TestFrom), B = Centre(TestTo);
+		if (A && B)
+		{
+			Drag = {}; Drag.Kind = FDrag::EKind::Thread; Drag.From = TestFrom; Drag.bMoved = true;
+			Drag.Start = *A * S + FVector2D(Tx, Ty); Drag.Now = *B * S + FVector2D(Tx, Ty) + FVector2D(3, 2);
+		}
+	}
 	// requestAnimationFrame(edge) becomes the Slate viewport tick, once per presented frame.
 	Edge();
 	if (Surface) Surface->Invalidate(EInvalidateWidgetReason::Paint);
@@ -1022,45 +1134,109 @@ int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int
 		return Layer + 1;
 	}
 	// ui/Board.ts threads(): draw over the cards, as the SVG's z-index:30000 does.
-	const TSharedPtr<FSlateBrush> Yarn = ArtBrushes.FindRef(TEXT("thread_red"));
-	auto DrawCurve = [&](const FCurve& Q, const FLinearColor& Colour, double Width, double Dash, double Gap, bool bYarn) {
+	// Departs from the web version (Tom: the threads were nearly invisible and badly drawn): the
+	// yarn is Slate's anti-aliased lines in passes, its width in screen pixels from the zoom (the
+	// line builder takes screen pixels): a soft shadow on the cork that falls further where the
+	// yarn sags off it, a dark edge, the red core, a highlight on its upper side and the twist of
+	// the ply. The pins go on last, so the yarn runs under their heads.
+	const float Px = FMath::Max(0.01f, Board.GetAccumulatedRenderTransform().TransformVector(FVector2f(1, 0)).Size());
+	const int32 LShadow = Layer + 1, LEdge = Layer + 2, LCore = Layer + 3, LLight = Layer + 4, LPins = Layer + 5;
+	auto Lines = [&](const TArray<FVector2D>& Points, const FLinearColor& Colour, double ScreenWidth, int32 L) {
+		FSlateDrawElement::MakeLines(Out, L, Board.ToPaintGeometry(), Points, ESlateDrawEffect::None, Colour, true, float(FMath::Max(1.0, ScreenWidth)));
+	};
+	auto Sample = [](const FCurve& Q) {
 		TArray<FVector2D> Points;
-		FVector2D Previous = Q.At(0);
-		double Along = 0;
-		for (int32 I = 0; I <= 96; ++I)
+		const int32 N = FMath::Clamp(int32((Q.B - Q.A).Size() / 14), 12, 64);
+		for (int32 I = 0; I <= N; ++I) Points.Add(Q.At(double(I) / N));
+		return Points;
+	};
+	// Lift: how far (screen px) the middle of the yarn stands off the cork.
+	auto Shadow = [&](const TArray<FVector2D>& Points, double W, double Lift, float Alpha) {
+		TArray<FVector2D> Under;
+		for (int32 I = 0; I < Points.Num(); ++I)
 		{
-			const FVector2D P = Q.At(double(I) / 96);
-			if (I) Along += (P - Previous).Size();
-			if (!Dash || FMath::Fmod(Along, Dash + Gap) < Dash) Points.Add(P);
-			else { if (Points.Num() > 1) Line(Points, Colour, Width); Points.Empty(); }
-			Previous = P;
+			const double T = double(I) / FMath::Max(1, Points.Num() - 1);
+			Under.Add(Points[I] + FVector2D(0.55, 1) * ((0.3 + FMath::Sin(T * PI)) * Lift / Px));
 		}
-		if (Points.Num() > 1) Line(Points, Colour, Width);
-		if (bYarn && Yarn)
+		Lines(Under, Css(0x1a0c04, Alpha * 0.35f), W * 2.4, LShadow);
+		Lines(Under, Css(0x1a0c04, Alpha * 0.55f), W * 1.2, LShadow);
+	};
+	struct FLook { uint32 Core, Edge, Light; float Alpha = 1; bool bTwist = true, bLight = true; };
+	auto Yarn = [&](const TArray<FVector2D>& Points, double W, const FLook& K, double Dash = 0, double Gap = 0) {
+		// a dashed thread (one the story drew itself) is the same yarn in pieces
+		TArray<TArray<FVector2D>> Runs;
+		if (!Dash) Runs.Add(Points);
+		else
 		{
-			++Layer;
-			FVector2D P = Q.At(0);
-			const double Height = Width < 2 ? 3 : 6;
-			for (int32 I = 1; I <= 12; ++I)
+			double Along = 0; TArray<FVector2D> Run;
+			for (int32 I = 0; I < Points.Num(); ++I)
 			{
-				const FVector2D N = Q.At(double(I) / 12), Delta = N - P;
-				Rotated(P + FVector2D(0, -Height / 2), FVector2D(Delta.Size() + 1, Height), Yarn.Get(), FMath::Atan2(Delta.Y, Delta.X), FLinearColor::White, true);
-				P = N;
+				if (I) Along += (Points[I] - Points[I - 1]).Size() * Px;
+				if (FMath::Fmod(Along, Dash + Gap) < Dash) Run.Add(Points[I]);
+				else { if (Run.Num() > 1) Runs.Add(Run); Run.Reset(); }
+			}
+			if (Run.Num() > 1) Runs.Add(Run);
+		}
+		for (const TArray<FVector2D>& Run : Runs)
+		{
+			Lines(Run, Css(K.Edge, K.Alpha), W + 1.6, LEdge);
+			Lines(Run, Css(K.Core, K.Alpha), W, LCore);
+			if (K.bLight && W >= 2.4)
+			{
+				// the light from above the board catches the upper side of the yarn
+				TArray<FVector2D> Top;
+				for (int32 I = 0; I < Run.Num(); ++I)
+				{
+					const FVector2D D = (Run[FMath::Min(I + 1, Run.Num() - 1)] - Run[FMath::Max(I - 1, 0)]).GetSafeNormal();
+					FVector2D N(-D.Y, D.X); if (N.Y > 0) N = -N;
+					Top.Add(Run[I] + N * (W * 0.24 / Px));
+				}
+				Lines(Top, Css(K.Light, K.Alpha * 0.6f), FMath::Max(1.0, W * 0.3), LLight);
+			}
+			if (K.bTwist && W >= 3)
+			{
+				// the twist of the ply: short dark strokes across the yarn at a slant
+				const double Step = W * 1.35 / Px;
+				double Next = Step * 0.5, Along = 0;
+				for (int32 I = 1; I < Run.Num(); ++I)
+				{
+					const FVector2D D = Run[I] - Run[I - 1];
+					const double Len = D.Size();
+					if (Len <= 0) continue;
+					const FVector2D T = D / Len, N(-T.Y, T.X);
+					while (Next <= Along + Len)
+					{
+						const FVector2D P = Run[I - 1] + T * (Next - Along);
+						const FVector2D Half = (N * 0.4 - T * 0.32) * (W / Px);
+						Lines({ P + Half, P - Half }, Css(K.Edge, K.Alpha * 0.5f), FMath::Max(1.0, W * 0.2), LLight);
+						Next += Step;
+					}
+					Along += Len;
+				}
 			}
 		}
 	};
-	auto Pin = [&](const FVector2D& At, const FString& Colour, bool bTack = false) {
+	auto Circle = [&](const FVector2D& At, double Radius, const FLinearColor& Colour, double ScreenWidth, int32 L) {
+		TArray<FVector2D> Points;
+		for (int32 I = 0; I <= 48; ++I) Points.Add(At + FVector2D(FMath::Cos(I * PI / 24), FMath::Sin(I * PI / 24)) * Radius);
+		Lines(Points, Colour, ScreenWidth, L);
+	};
+	// the pin art (a round map pin with its shine), larger than the web's 22 px and never
+	// smaller than 22 screen pixels; without the art, a drawn head with a rim and a shine
+	const double PinSize = FMath::Max(38.0, 22.0 / Px);
+	auto Pin = [&](const FVector2D& At, const FString& Colour) {
 		const TSharedPtr<FSlateBrush> B = ArtBrushes.FindRef(TEXT("pin_") + Colour);
-		if (B && !bTack) PaintBox(At - FVector2D(11), FVector2D(22), B.Get());
-		else
+		if (B)
 		{
-			const double Radius = bTack ? 4.5 : 7;
-			const FLinearColor C = Css(bTack ? 0xe8c25a : Colour == TEXT("blue") ? 0x2f55b8 : Colour == TEXT("yellow") ? 0xd9b53a : 0xc4241c);
-			// The CSS fallback is a shaded round tack; concentric circles keep its highlight.
-			Ring(At + FVector2D(1, 2), Radius - 1, Css(0, 0.4f), 3);
-			Ring(At, Radius / 2, C, Radius);
-			if (!bTack) Ring(At + FVector2D(-2, -2), 1.5, Css(Colour == TEXT("blue") ? 0xa8c4ff : Colour == TEXT("yellow") ? 0xfff1a8 : 0xff8a78), 2);
+			FSlateDrawElement::MakeBox(Out, LPins, Board.ToPaintGeometry(FVector2D(PinSize), FSlateLayoutTransform(At - FVector2D(PinSize / 2))), B.Get(), ESlateDrawEffect::None, B->GetTint(FWidgetStyle()));
+			return;
 		}
+		const double R = PinSize * 0.22;
+		const uint32 C = Colour == TEXT("blue") ? 0x2f55b8 : Colour == TEXT("yellow") ? 0xd9b53a : 0xc4241c;
+		Circle(At + FVector2D(1.5, 2.5) / Px * 1.5, R * 0.5, Css(0, 0.35f), R * Px, LPins);
+		Circle(At, R * 0.5, Css(C), R * Px, LPins);
+		Circle(At, R, Css(0, 0.35f), 1.2, LPins);
+		Circle(At - FVector2D(R * 0.35), R * 0.18, Css(0xffffff, 0.8f), R * 0.36 * Px, LPins);
 	};
 	// Pin art and tape occupy the same positions as their CSS absolute elements.
 	for (const TSharedPtr<FBox>& B : Boxes)
@@ -1068,8 +1244,6 @@ int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int
 		RefreshPins(B);
 		if (B->bQuestion && !ArtBrushes.FindRef(TEXT("card_index_blank")))
 			PaintBox(B->At, FVector2D(B->Size.X, 4), Box(B->bDone ? 0x2f6a3c : 0x8f2a1d));
-		for (const FPin& P : B->Pins) Pin(Centre(P.Id).Get(B->At + P.Offset), B->bQuestion ? TEXT("blue") : TEXT("red"));
-		if (B->bNote && !B->bHand) Pin(B->At + FVector2D(B->Size.X / 2, 2), TEXT("yellow"));
 		if (B->bFinding) PaintBox(B->At, FVector2D(B->Size.X, 4), Box(0x2f6a3c));
 		if (B->bPhoto)
 		{
@@ -1077,29 +1251,60 @@ int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int
 			Rotated(B->At + FVector2D(B->Size.X / 2 - 45, Tape ? -14 : -9), FVector2D(90, Tape ? 34 : 22), Tape ? Tape.Get() : Box(0xece4c4, 0, 0.72f, 0), FMath::DegreesToRadians(-3.0));
 		}
 	}
-	++Layer;
+	// tied threads: red yarn pulled taut between two pins, a little sag; a thread with no note is
+	// thinner, one the story drew itself is dashed
+	const FLook Tied{ 0xc8261c, 0x5a0b07, 0xff9a84 }, Loose{ 0xb3231b, 0x4e0a07, 0xf58a76, 0.92f };
 	for (const FS47BoardThread& T : O.Threads ? O.Threads() : TArray<FS47BoardThread>())
 	{
 		const TOptional<FVector2D> A = Centre(T.A), B = Centre(T.B);
 		if (!A || !B) continue;
-		const FCurve Q = Curve(*A, *B);
-		FCurve Shadow = Q; Shadow.A += FVector2D(1, 2); Shadow.C += FVector2D(1, 2); Shadow.B += FVector2D(1, 2);
-		DrawCurve(Shadow, Css(0, 0.45f), T.bThin ? 1.2 : 2.6, T.bAuto ? 2 : 0, T.bAuto ? 3 : 0, false);
-		DrawCurve(Q, Css(0xc4241c, T.bThin ? 0.7f : 1.f), T.bThin ? 1.2 : 2.6, T.bAuto ? 2 : 0, T.bAuto ? 3 : 0, true);
-		Pin(*A, TEXT("yellow"), true); Pin(*B, TEXT("yellow"), true);
+		const TArray<FVector2D> Points = Sample(Curve(*A, *B));
+		const double W = YarnWidth(T.bAuto ? 2.4 : T.bThin ? 2.8 : 3.8, Px, T.bAuto || T.bThin ? 2.0 : 2.8);
+		Shadow(Points, W, 5, T.bAuto ? 0.6f : 1.f);
+		Yarn(Points, W, T.bThin || T.bAuto ? Loose : Tied, T.bAuto ? W * 3 : 0, T.bAuto ? W * 2 : 0);
 	}
+	// a thread that does not hold: grey and slack, it falls away from the pins and fades
 	for (const FSlack& T : Slack)
 	{
-		const double Age = FMath::Clamp((FPlatformTime::Seconds() - T.Born) / 1.4, 0.0, 1.0);
-		FCurve Q = T.Q; Q.A.Y += Age * 14; Q.C.Y += Age * 14; Q.B.Y += Age * 14;
-		DrawCurve(Q, Css(0xa69c8c, 1 - Age), 2.6, 3, 4, false);
+		const double Age = FMath::Clamp((FPlatformTime::Seconds() - T.Born) / 2.0, 0.0, 1.0);
+		const double Fall = FMath::Square(Age) * 40;
+		FCurve Q = T.Q; Q.A.Y += Fall * 0.4; Q.C.Y += Fall; Q.B.Y += Fall * 0.4;
+		const float Alpha = float(1 - FMath::Square(Age));
+		const TArray<FVector2D> Points = Sample(Q);
+		const double W = YarnWidth(2.6, Px, 2.2);
+		Shadow(Points, W, 3, Alpha * 0.6f);
+		Yarn(Points, W, FLook{ 0x8f8577, 0x3b332b, 0xd8cfc0, Alpha, false, false }, W * 2.6, W * 1.6);
 	}
+	// the thread in the hand: bright, held up off the cork, a ring on the pin it would go to
 	if (Drag.Kind == FDrag::EKind::Thread && Drag.bMoved)
 	{
 		const TOptional<FVector2D> A = Centre(Drag.From);
-		if (A) DrawCurve(Curve(*A, ToBoardXY(Drag.Now)), Css(0xc4241c, 0.9f), 2.6, 6, 5, false);
+		const FVector2D End = ToBoardXY(Drag.Now);
+		if (A)
+		{
+			const TArray<FVector2D> Points = Sample(Curve(*A, End, 0.06, 30));
+			const double W = YarnWidth(3.6, Px, 3.0);
+			Shadow(Points, W, 12, 0.8f);
+			Yarn(Points, W, FLook{ 0xe3311f, 0x6a0d08, 0xffb3a2 });
+			const double Pulse = 0.5 + 0.5 * FMath::Sin(FPlatformTime::Seconds() * 6);
+			Circle(*A, PinSize * 0.62, Css(0xffd25a, 0.85f), 2.5, LLight);
+			const FHit H = Hit(End);
+			if (!H.Node.IsEmpty() && H.Node != Drag.From)
+			{
+				const FVector2D To = Centre(H.Node).Get(End);
+				Circle(To, PinSize * (0.7 + 0.12 * Pulse), Css(0xffd25a, 0.95f), 3.5, LLight);
+				Circle(To, PinSize * (0.7 + 0.12 * Pulse) + 3 / Px, Css(0x1a0c04, 0.5f), 1.5, LLight);
+			}
+			// the loose end of the yarn, a pin in the fingers
+			Pin(End, TEXT("red"));
+		}
 	}
-	return Layer + 1;
+	for (const TSharedPtr<FBox>& B : Boxes)
+	{
+		for (const FPin& P : B->Pins) Pin(Centre(P.Id).Get(B->At + P.Offset), B->bQuestion ? TEXT("blue") : TEXT("red"));
+		if (B->bNote && !B->bHand) Pin(B->At + FVector2D(B->Size.X / 2, 2), TEXT("yellow"));
+	}
+	return LPins + 1;
 }
 
 void SS47Board::Construct(const FArguments& InArgs)
@@ -1119,6 +1324,8 @@ void SS47Board::Construct(const FArguments& InArgs)
 		.ColorAndOpacity(Css(0xffb09a)).OverflowPolicy(ETextOverflowPolicy::Ellipsis)]]
 		+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(0, 0, 14, 0)
 		[SAssignNew(P->StatusEl, STextBlock).Visibility_Lambda([this] { return P->ScreenSize().X <= 520 ? EVisibility::Hidden : EVisibility::HitTestInvisible; }).Font_Lambda([this] { return S47Style::Mono(P->Small() ? 15 : 18); }).ColorAndOpacity(Css(0xffb052)).OverflowPolicy(ETextOverflowPolicy::Ellipsis)]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 10, 0)
+		[Button(TEXT("HOW"), [this] { P->ShowHow(GHowHidden); }, 18, 0xe9e2cf, 60)]
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 4, 0)
 		[Button(TEXT("-"), [this] { P->ZoomAt(P->S * 0.8, P->ViewSize / 2); }, 22, 0xe9e2cf)]
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 4, 0)
@@ -1127,6 +1334,35 @@ void SS47Board::Construct(const FArguments& InArgs)
 		[Button(TEXT("+"), [this] { P->ZoomAt(P->S * 1.25, P->ViewSize / 2); }, 22, 0xe9e2cf)]
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 		[Button(TEXT("Close"), [this] { if (P->UI.IsValid()) P->UI->Close(); }, 22, 0xcfc8b5, 44, 40, false, true)];
+	// Departs from the web version: how the board works, in three steps, until it is dismissed.
+	auto Step = [this](const TCHAR* N, const TCHAR* Head, TFunction<FString()> Body) -> FW
+	{
+		return SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, 0, 8, 0)
+			[SNew(SBorder).BorderImage(Box(0xc4241c, 0, 0.9f)).Padding(FMargin(7, 0, 7, 0))[Text(N, 17, 0xfff3e2, true)]]
+			+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
+			[SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[Text(Head, 15, 0xffd6aa, true)]
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([Body] { return FText::FromString(Body()); }).Font(S47Style::Body(14.5f)).ColorAndOpacity(Css(0xd8cfbd)).AutoWrapText(true).LineHeightPercentage(1.2f)]];
+	};
+	P->HowStrip = SNew(SBorder).BorderImage(Box(0x2a1d14, 0xffbe8c, 0.95f, 0.28f)).Padding(FMargin(12, 8)).Visibility(GHowHidden ? EVisibility::Collapsed : EVisibility::Visible)
+		[SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 16, 0)[Step(TEXT("1"), TEXT("TIE A THREAD"), [this] { return P->bCoarse
+			? FString(TEXT("Tap a pin, then the record it goes with. A red thread ties them if they agree."))
+			: FString(TEXT("Drag from a pin to the record it goes with, or click one and then the other. Each line that matters has its own pin.")); })]
+		+ SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 16, 0)[Step(TEXT("2"), TEXT("FILL THE QUESTION"), [] { return FString(TEXT("A question card's numbered lines fill by themselves when the right threads hold. A wrong one falls slack.")); })]
+		+ SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 16, 0)[Step(TEXT("3"), TEXT("RECORD"), [] { return FString(TEXT("When every line is filled, press RECORD on the card. Stuck: Hint, on the card.")); })]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Button(TEXT("GOT IT"), [this] { P->ShowHow(false); }, 17, 0xffd6aa, 80, 36)]];
+	P->OfferEl = SNew(SBox).Visibility(EVisibility::Collapsed)
+		[SNew(SButton).ButtonStyle(ButtonStyle()).ContentPadding(FMargin(12, 4))
+		.OnClicked_Lambda([this] { if (!P->Offer.IsEmpty()) P->ShowHint(P->Offer); return FReply::Handled(); })
+		[SAssignNew(P->OfferText, STextBlock).Font(S47Style::Mono(17)).ColorAndOpacity(Css(0xffd25a))]];
+	P->HintBox = SNew(SBorder).BorderImage(Box(0xf1e6c8, 0xd9a441, 1, 1, 2)).Padding(FMargin(14, 8)).Visibility(EVisibility::Collapsed)
+		[SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, 0, 14, 0)[SAssignNew(P->HintHead, STextBlock).Font(S47Style::Mono(17)).ColorAndOpacity(Css(0x8f2a1d))]
+		+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[SAssignNew(P->HintText, STextBlock).Font(S47Style::Body(17)).ColorAndOpacity(Css(0x1e2430)).AutoWrapText(true).LineHeightPercentage(1.25f)]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(10, 0, 0, 0)
+		[Button(TEXT("x"), [this] { P->HintBox->SetVisibility(EVisibility::Collapsed); }, 17, 0x6b6458, 32, 28, false, true)]];
 	ChildSlot
 	// The web board uses viewport pixels, not Unreal's 1080p-scaled game UI coordinates.
 	[SNew(SDPIScaler).DPIScale_Lambda([this] { return float(1 / FMath::Max(0.01, P->ParentScale)); })
@@ -1139,9 +1375,14 @@ void SS47Board::Construct(const FArguments& InArgs)
 			.Text_Lambda([this] { return P->StatusEl->GetText(); }).Font(S47Style::Mono(15)).ColorAndOpacity(Css(0xffb052)).OverflowPolicy(ETextOverflowPolicy::Ellipsis)]
 			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 6)
 			[SAssignNew(P->HowEl, STextBlock).Font(S47Style::Body(14)).ColorAndOpacity(Css(0xb8b0a0)).AutoWrapText(true)]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 6)[P->HowStrip.ToSharedRef()]
 			+ SVerticalBox::Slot().FillHeight(1).Padding(0, 0, 0, 6)[SAssignNew(P->Surface, SS47BoardSurface).Board(P.Get())]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 4)[P->HintBox.ToSharedRef()]
 			+ SVerticalBox::Slot().AutoHeight()
-			[SNew(SBox).MinDesiredHeight(43.4f)[SAssignNew(P->SayEl, STextBlock).Font(S47Style::Body(15.5f)).LineHeightPercentage(1.4f).ColorAndOpacity(Css(0xddd5c2)).AutoWrapText(true)]]]]]];
+			[SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
+			[SNew(SBox).MinDesiredHeight(43.4f)[SAssignNew(P->SayEl, STextBlock).Font(S47Style::Body(15.5f)).LineHeightPercentage(1.4f).ColorAndOpacity(Css(0xddd5c2)).AutoWrapText(true)]]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(12, 0, 0, 0)[P->OfferEl.ToSharedRef()]]]]]];
 	Render();
 }
 
@@ -1164,6 +1405,11 @@ bool SS47Board::Frame(const TArray<FString>& Ids) { return P->Frame(Ids); }
 bool SS47Board::Moved() const { return P->bChanged; }
 bool SS47Board::Show(const FString& Id) { return P->Show(Id); }
 FVector SS47Board::View() const { return FVector(P->S, P->Tx, P->Ty); }
+void SS47Board::OfferHint(const FString& Q) { P->OfferHint(Q.IsEmpty() ? P->OpenQuestionIn(P->O.Focus) : Q); }
+void SS47Board::ShowHint(const FString& Q) { P->ShowHint(Q.IsEmpty() ? P->OpenQuestionIn(P->O.Focus) : Q); }
+void SS47Board::HoldThread(const FString& From, const FString& To) { P->TestFrom = From; P->TestTo = To; }
+void SS47Board::HideHow() { P->ShowHow(false); }
+void SS47Board::ShowAll() { P->S = P->MinScale(); P->ClampView(); }
 
 FReply SS47Board::OnKeyDown(const FGeometry&, const FKeyEvent& E)
 {
@@ -1209,8 +1455,8 @@ bool SS47Board::SelfTest(TArray<FString>& Lines)
 	Check(ConnectCalls == 1 && P.Selected.IsEmpty() && P.SayEl->GetText().ToString() == TEXT("A test reply."), TEXT("two pin taps dispatch one connection and show the reply"));
 	P.Link(TEXT("a"), TEXT("free"));
 	Check(P.Slack.Num() == 1 && P.Slack[0].Q.C.Y > (P.Slack[0].Q.A.Y + P.Slack[0].Q.B.Y) / 2, TEXT("a rejected connection leaves a slack curve"));
-	P.Slack[0].Born -= 1.5; P.Tick(P.ViewSize);
-	Check(P.Slack.IsEmpty(), TEXT("slack thread expires after 1.4 seconds"));
+	P.Slack[0].Born -= 2.1; P.Tick(P.ViewSize);
+	Check(P.Slack.IsEmpty(), TEXT("slack thread expires after 2 seconds"));
 	P.S = 1; P.Tx = P.Ty = 0;
 	const TSharedPtr<FS47BoardImpl::FBox> Card = P.Boxes[0];
 	const FVector2D Start = Card->At + FVector2D(30, 25);
@@ -1244,5 +1490,17 @@ bool SS47Board::SelfTest(TArray<FString>& Lines)
 	TSharedPtr<FSlateBrush> IndexCard = MakeShared<FSlateBrush>(); IndexCard->ImageSize = FVector2D(768, 512);
 	P.ArtBrushes.Add(TEXT("card_index_blank"), IndexCard); P.Render();
 	Check(FMath::IsNearlyEqual(P.Boxes[0]->Size.Y, WithoutArt) && P.Boxes[0]->Size.Y < 512, TEXT("index-card background art does not enlarge question layout"));
+	// the yarn, the help and the hints (departures from the web version)
+	Check(FMath::IsNearlyEqual(YarnWidth(3.4, 1.2), 3.4 * 1.2) && YarnWidth(3.4, 0.3) >= 2.5 && YarnWidth(3.4, 9) <= 12, TEXT("the yarn's width follows the zoom, within a readable range"));
+	Check(P.OpenQuestionIn(TEXT("test")) == TEXT("question") && P.OpenQuestionIn(TEXT("elsewhere")) == TEXT("question"), TEXT("the hint goes to the open question of the patch"));
+	FString Hinted;
+	P.O.Hint = [&](const FString& Q) { Hinted = Q; return FString(TEXT("Look at the dates.")); };
+	const int32 MissesBefore = P.Misses;
+	P.Link(TEXT("x"), TEXT("y"));
+	Check(P.Offer == TEXT("question") && P.Misses == MissesBefore + 1, TEXT("a thread that does not hold offers a hint"));
+	P.ShowHint(P.Offer);
+	Check(Hinted == TEXT("question") && P.Offer.IsEmpty() && P.SayEl->GetText().ToString() == TEXT("Look at the dates."), TEXT("the offered hint is the question's own"));
+	P.O.Questions = [] { FS47BoardQuestion Q; Q.Id = TEXT("question"); Q.Stamp = TEXT("WHY"); Q.Text = TEXT("What do these show?"); Q.Slots = 2; Q.Filled = { TEXT("one"), TEXT("two") }; Q.Region = TEXT("test"); return TArray<FS47BoardQuestion>{ Q }; };
+	Check(P.OpenQuestionIn(TEXT("test")).IsEmpty(), TEXT("no hint is offered for a question whose lines are filled"));
 	return Ok;
 }

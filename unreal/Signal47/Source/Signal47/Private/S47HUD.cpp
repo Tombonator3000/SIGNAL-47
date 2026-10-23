@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47Props.h"
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -71,6 +72,7 @@
 #include "S47Saves.h"
 #include "S47Keys.h"
 #include "S47Theme.h"
+#include "S47Startup.h"
 #include "Containers/Ticker.h"
 #include "Internationalization/Regex.h"
 #include "S47UI.h"
@@ -89,6 +91,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47HUD, Log, All);
 AS47HUD::AS47HUD()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bTickEvenWhenPaused = true;
 }
 
 void AS47HUD::BeginPlay()
@@ -138,6 +141,7 @@ void AS47HUD::Start()
 		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
+		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
@@ -487,12 +491,19 @@ void AS47HUD::Start()
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
 	}
-	// (linear out: the CRTs' targets are sRGB and encode it themselves; with Slate's gamma as well the
-	// screens came out pale)
+// Slate writes linear colour; the sRGB CRT target encodes it once.
 	Renderer = new FWidgetRenderer(false);
 	const SS47Crt::EKind Kinds[4] = { SS47Crt::EKind::Status, SS47Crt::EKind::Spectrum, SS47Crt::EKind::Tracking, SS47Crt::EKind::Ops };
 	for (int32 i = 0; i < 4; ++i) Crts[i] = SNew(SS47Crt).Kind(Kinds[i]).Story(Story.Get()).Saro(Saro.Get());
+	// Create the runtime-only sky/materials and actually render the CRT targets before waiting.
+	M->Step(0);
+	DrawCrts(0.1f);
+	TWeakObjectPtr<AS47HUD> StartupSelf = this;
+	S47Startup::Prepare(PC, M, [StartupSelf] { if (StartupSelf.IsValid()) StartupSelf->StartTests(); });
+}
 
+void AS47HUD::StartTests()
+{
 	if (FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")))
 	{
 		float Seconds = 3.f;
@@ -729,6 +740,11 @@ void AS47HUD::LookTowards(const FVector& T, float K)
 void AS47HUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	const bool bWasStarting = S47Startup::Blocking();
+	S47Startup::Tick();
+	// The frame which releases the loading screen still belongs to warmup. Do not charge its
+	// delta to the story, audio or the newly scheduled smoke-test actions.
+	if (bWasStarting) { DrawCrts(DeltaSeconds); return; }
 	if (Audio) Audio->Tick(DeltaSeconds);
 	APlayerController* PC = GetOwningPlayerController();
 	// (Tab and the notebook's other keys are the flow's, registered with M->OnKey)

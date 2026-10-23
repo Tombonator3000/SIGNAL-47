@@ -1,0 +1,294 @@
+{
+ "_doc": "Per model: category (folder under /Game/Free); size = what the real thing measures along its largest side in metres (the file is rescaled only when it is off by more than a quarter, a unit mistake); scale = a fixed factor instead (packs, where no one size fits); split = a pack of separate props (one asset per prop); keep / drop = mesh node names to keep or leave out (the C10 comes on a diorama with a road, poles and cacti); nanite = force Nanite on or off (default: on from 50k triangles when no material is translucent). Poly Haven models are scanned at their real size and keep it. own = a .glb of Tom's own in ~/Assets/signal47-free/own (no credit); pivot model = a split model's props keep the whole model's pivot (the printer's paper stays in place). repaint = a function in repaint.py run on the model's textures (the sheriff's livery; brand logos painted out); cuts = the triangles of the named meshes inside a box (metres in the prepared model: x forward, y up, pivot at the middle of the base) made an asset of their own, <model>_<cut>, with the model's pivot (the patrol car's driver's door, which opens).",
+ "pickup_c10_1966": {
+  "category": "Vehicles",
+  "keep": [
+   "Object_2",
+   "Object_4",
+   "Object_5",
+   "Object_14",
+   "Object_15"
+  ],
+  "size": 4.9
+ },
+ "el_alamo_78": {
+  "category": "Vehicles",
+  "size": 5.0
+ },
+ "muteki_taiga": {
+  "category": "Vehicles",
+  "size": 4.6
+ },
+ "fairheaven_sw84": {
+  "category": "Vehicles",
+  "size": 5.3
+ },
+ "fairheaven_lt80_cop": {
+  "category": "Vehicles",
+  "size": 5.3,
+  "repaint": "cop_sheriff",
+  "cuts": {
+   "door_driver": {
+    "box": [[-0.235, 0.25, -0.95], [0.875, 1.3, -0.7]],
+    "meshes": ["body001", "Glass_Driver", "Interior001", "Interior_Trim001"]
+   }
+  }
+ },
+ "fairheaven_lt80": {
+  "category": "Vehicles",
+  "size": 5.3
+ },
+ "negotiator_80": {
+  "category": "Vehicles",
+  "size": 5.4
+ },
+ "riverside": {
+  "category": "Vehicles",
+  "size": 4.8
+ },
+ "destroyed_car_03": {
+  "category": "Vehicles"
+ },
+ "office_phone": {
+  "category": "Office",
+  "size": 0.25
+ },
+ "rotary_phone_we500": {
+  "category": "Office",
+  "size": 0.23
+ },
+ "retro_office_props": {
+  "category": "Office",
+  "split": true
+ },
+ "office_assets_radio": {
+  "category": "Office",
+  "split": true
+ },
+ "typewriter_selectric": {
+  "category": "Office",
+  "size": 0.55,
+  "repaint": "ibm_selectric"
+ },
+ "typewriter_old": {
+  "category": "Office",
+  "size": 0.4
+ },
+ "terminal_3178": {
+  "category": "Office",
+  "size": 0.45,
+  "repaint": "ibm_3178"
+ },
+ "terminal_3278": {
+  "category": "Office",
+  "size": 0.5,
+  "repaint": "ibm_3278"
+ },
+ "crt_monitor": {
+  "category": "Office",
+  "size": 0.4
+ },
+ "matrix_printer": {
+  "category": "Office",
+  "size": 0.55
+ },
+ "payphone_blue": {
+  "category": "Office",
+  "repaint": "payphone_plain"
+ },
+ "payphone_worn": {
+  "category": "Office",
+  "size": 0.55
+ },
+ "payphone_wall": {
+  "category": "Office",
+  "size": 0.5
+ },
+ "cassette_deck": {
+  "category": "Radio",
+  "size": 0.43
+ },
+ "cassette_tcd5": {
+  "category": "Radio",
+  "size": 0.24,
+  "repaint": "sony_tcd5"
+ },
+ "cassette_kx202": {
+  "category": "Radio",
+  "size": 0.43
+ },
+ "reel_tascam": {
+  "category": "Radio",
+  "size": 0.48
+ },
+ "reel_tc510": {
+  "category": "Radio",
+  "size": 0.4,
+  "repaint": "sony_tc510"
+ },
+ "cb_cobra_139": {
+  "category": "Radio",
+  "size": 0.25,
+  "repaint": "cobra_139"
+ },
+ "cb_base": {
+  "category": "Radio",
+  "size": 0.45,
+  "repaint": "cobra_base"
+ },
+ "walkie": {
+  "category": "Radio",
+  "size": 0.3
+ },
+ "oscilloscope_rm565": {
+  "category": "Radio",
+  "size": 0.6
+ },
+ "scanner_80s": {
+  "category": "Radio",
+  "size": 0.3
+ },
+ "cassette_player": {
+  "category": "Radio"
+ },
+ "portable_cassette_player": {
+  "category": "Radio"
+ },
+ "vintage_radio_transceiver": {
+  "category": "Radio"
+ },
+ "diner_booth": {
+  "category": "Diner",
+  "size": 2.0
+ },
+ "diner_table_set": {
+  "category": "Diner",
+  "split": true
+ },
+ "bar_stool": {
+  "category": "Diner",
+  "size": 0.8
+ },
+ "jukebox": {
+  "category": "Diner",
+  "size": 1.6
+ },
+ "jukebox_wood": {
+  "category": "Diner",
+  "size": 1.6
+ },
+ "tv_retro": {
+  "category": "Diner",
+  "size": 0.6
+ },
+ "metal_stool_01": {
+  "category": "Diner"
+ },
+ "metal_stool_02": {
+  "category": "Diner"
+ },
+ "metal_stool_03": {
+  "category": "Diner"
+ },
+ "CoffeeCart_01": {
+  "category": "Diner"
+ },
+ "Television_01": {
+  "category": "Diner"
+ },
+ "television_02": {
+  "category": "Diner"
+ },
+ "motel_sign_mojave": {
+  "category": "Motel",
+  "size": 9.0
+ },
+ "motel_sign_classic": {
+  "category": "Motel",
+  "size": 9.0
+ },
+ "motel_neon": {
+  "category": "Motel",
+  "split": true
+ },
+ "old_bed_frame": {
+  "category": "Motel"
+ },
+ "desert_cliff_6": {
+  "category": "Desert",
+  "size": 30
+ },
+ "yucca": {
+  "category": "Desert",
+  "size": 1.6
+ },
+ "sagebrush": {
+  "category": "Desert",
+  "size": 1.0
+ },
+ "tumbleweed": {
+  "category": "Desert",
+  "size": 0.8
+ },
+ "namaqualand_boulder_02": {
+  "category": "Desert"
+ },
+ "namaqualand_boulder_03": {
+  "category": "Desert"
+ },
+ "namaqualand_boulder_04": {
+  "category": "Desert"
+ },
+ "namaqualand_boulder_05": {
+  "category": "Desert"
+ },
+ "namaqualand_boulder_06": {
+  "category": "Desert"
+ },
+ "namaqualand_boulders_01": {
+  "category": "Desert"
+ },
+ "namaqualand_cliff_01": {
+  "category": "Desert"
+ },
+ "namaqualand_cliff_02": {
+  "category": "Desert"
+ },
+ "namaqualand_rocks_01": {
+  "category": "Desert"
+ },
+ "namaqualand_stones_01": {
+  "category": "Desert"
+ },
+ "rock_face_01": {
+  "category": "Desert"
+ },
+ "telephone_poles": {
+  "category": "Roadside",
+  "split": true,
+  "scale": 0.35
+ },
+ "broken_pole": {
+  "category": "Roadside",
+  "size": 9.0
+ },
+ "modular_electricity_poles": {
+  "category": "Roadside",
+  "split": true
+ },
+ "barbed_fence": {
+  "category": "Roadside"
+ },
+ "dotmatrix_printer": {
+  "category": "Office",
+  "own": "s47_dotmatrix_printer.glb",
+  "title": "DP-80 dot matrix printer",
+  "split": true,
+  "pivot": "model"
+ },
+ "motel_bed": {
+  "category": "Motel",
+  "own": "s47_motel_bed.glb",
+  "title": "Motel bed"
+ }
+}

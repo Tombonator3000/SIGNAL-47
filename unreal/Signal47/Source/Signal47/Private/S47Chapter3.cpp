@@ -555,13 +555,13 @@ TArray<FS47Task> US47Chapter3::Tasks() const
 	if (S.bArrived) T.Append({
 		{ TEXT("Read the transit record (E09A)"), S.bReadE09a },
 		{ TEXT("Expose FRAME 03: the empty footing and the marked post"), S.F3.IsSet() },
-		{ TEXT("Record which fixed marker moved (P06)"), S.bP06 },
+		{ TEXT("Record which fixed marker moved, on the case board (P06)"), S.bP06 },
 		{ TEXT("Cover the field lamp and observe the null test (P07)"), S.bP07 },
 		{ TEXT("Inspect the cable cut and expose FRAME 04"), S.bCableInspected && S.F4.IsSet() },
-		{ TEXT("Record what the cable break shows (P08)"), S.bP08 },
+		{ TEXT("Record what the cable break shows, on the case board (P08)"), S.bP08 },
 		{ TEXT("Listen to the receiver in the hut"), S.bHeard },
 		{ TEXT("Read the 1947 timing log (E10)"), S.bReadE10 },
-		{ TEXT("Match the two timing records (P09)"), S.bP09 },
+		{ TEXT("Match the two timing records, on the case board (P09)"), S.bP09 },
 	});
 	// once the player has been in at the bench: the drawer under it, which nothing asks for
 	if (S.bHeard || S.bReadE10) T.Add({ TEXT("The drawer under the hut bench (optional)"), S.Fb.IsValid() });

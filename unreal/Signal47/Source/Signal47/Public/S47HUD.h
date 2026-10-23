@@ -81,6 +81,7 @@ private:
 	bool bEnded = false;
 
 	void Start();
+	void StartTests();
 	void Use(const FString& Id);
 	void SetModal(TSharedPtr<SWidget> Widget, TFunction<void()> OnClosed);
 	void DrawCrts(float DeltaSeconds);

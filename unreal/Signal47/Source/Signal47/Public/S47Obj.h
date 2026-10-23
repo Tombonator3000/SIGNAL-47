@@ -89,7 +89,7 @@ struct SIGNAL47_API FS47Light
 	bool IsValid() const;
 	explicit operator bool() const { return IsValid(); }
 	ULightComponent* Component() const;
-	float Intensity() const;           // three's intensity (candela for point and spot lights)
+	float Intensity() const;           // three's intensity; named lab.* controls use a 0..1 level
 	void SetIntensity(float V) const;
 	FLinearColor Color() const;
 	void SetColor(const FLinearColor& C) const;

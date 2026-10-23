@@ -2,6 +2,50 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+
+## Grafikkpass levert, 23. oktober 2026
+
+- Grafikkens WIP 30d407be fortsetter 64d943e7/be7c89e5; core ae95b09a med Props og nyeste dokument-core 9d7571e2 er innflettet. Props-modul/config og installert spill er urørt. Se LIGHTING.md for siste faktisk målte kandidat og historiske avgrensninger.
+- Bundlen er levert som S47_Signal47_SF_VULKAN_SM6.spc, 92 902 byte, 4215 stabile PSO-er. Full 38 × 6-matrise med én cook/frosne nøkler er komplett. Sluttcook gir 599 PSO-er: 222 graphics, 310 compute, 67 RT. Pakket runtime åpner samme GUID og behandler 222 bundled graphics; ni cachebeviskontroller PASS. Nye render-/material-/Props-baner krever ny cachevurdering/opptak.
+- Alle 9243 cooked render-/asset-/shaderfiler er byteidentiske mot opptaket. Global.shk er byteidentisk; Signal47.shk har ulik serialiseringsrekkefølge/filhash men nøyaktig samme 21 184 logiske tupler/outputhasher. Ikke kall metadatafilene byteidentiske. Frosne nøkler og recordings er urørt; se static/final-cook-equivalence.json.
+- S47Theme-lastefasen dekker kompilering/oppvarming, med spill-/testklokker ved READY. Sluttpakke kald READY 11,337 s, varm 5,594 s; sluttregresjon bekrefter tittel/pause/notatbok/kjøring/THE EVENT og cap30 med 285 intervaller på 33,333457 ms i snitt. Første 10 synlige sekunder 1111/1095 rammer, maks 31,585/31,888 ms, ingen over 33,333 ms. Før kald 455 rammer/maks 1296,925 ms. Nullpunkter er verdensstart og HUD/READY-proxy, ikke OS-start/fysisk presentasjon.
+- 118 materialprofiler, seks glass og fire CRT-valg må regenereres med S47_ONLY=materials før integrasjon av eldre generert Content. Masters-only reparerer grafene og hopper over MI-parametrene. StaticSwitchParameter krever True/False; streng cookkontroll avviser standardmaterialfallback selv ved UAT exit0. Web/Audio/Licensed/Free-assets committes ikke.
+- Seks GLB-spor med én kildematerialoppføring må bindes på rack/diffusere. Native DP-80/CB/3278 bruker EmissiveFactor/Strength, Web-materialer Brightness/EmissivePower. Gate emisjon og bevar PBR/maps. V5/V9 er supplert av sluttpakkens komplette sju indikatorprøver og 36 fasebilder, inklusive selvtest (1220) og faktisk terminalfront av/på. Matrisens gamle dark-bilder er ikke strømbevis; after/final-state-correction og sluttfasetesten er korrekt retest.
+- Alle 20 natt + 20 daggrybilder er visuelt kontrollert; 40 par og originalhash/galleri ligger i compare/index.html. Etterbilder har innflettede Props; de er ikke isolert lysforskjell. PreviousNight-kjøring og alle åtte lengre High-prøver er PASS; siste seks regresjoner og begge identisk-geometri fyllpar er også PASS. Korte High-prøver viser 90,1 fps eller mer i gjennomsnitt, men p95 opptil 21,772 ms; lengre natt/daggry viser 93,81–106,73 fps og maks p95 18,142 ms, så det er ikke låst 60 fps for hvert intervall.
+- Statisk diagnostisk tittel må ryddes før shutdown. V2s to SIG11 er forkastet; v3s tidligere feilsekvens består også med logPSO. Én tung Unreal-jobb, minst 10 GiB og ingen stopp av installert spill. Tom avsluttet selv før 11:06, deretter kjørte matrisen. Midlertidige Content/Audio, Content/Licensed og Content/Free-lenker er fjernet med kildemappene bevart; OpenOrder-logger er gjenopprettet. Kilde og bundle er levert i 684bc142 på port-gfx.
+
+## Gameplayretning (2026-10-23)
+
+- Tom sluttet seg til aktiv anomaly spotting, mer praktisk bruk av Caliche og gradvis UFO-/alienopptrapping, og ba om en utdypet plan. Se `ANOMALY_PLAN.md`. Detaljene er anbefalt design; ny gameplay er ikke implementert.
+- Tom ba senere om tidligere start, ny trafostasjon i ørkenen og bedre bybygninger. Planen er revidert med anbefalt 18:00-start 13. april og residual 00:13:47 den 14. april, i stedet for 02:13:47. Dette er foreslått ny tidslinje; spillet er ikke retimet. Finalen 05:29 beholdes, og historiske 1947-klokkeslett skal ikke masseflyttes.
+- Tom valgte deretter spillbar innkjøring før skiftet: lystig radio gjennom Caliche, valgfritt matstopp i dineren, videre til SARO der skiftet begynner 18:00. Innledningen har egen fase uten løpende skiftklokke, slik at matstopp ikke gir tidstilbakesprang. Tidlig dinerbesøk aktiverer ikke ch5/P13/Ward. Reisekjøretøy og servicepickup holdes adskilt.
+- N01s grunnmateriale finnes nå i overleveringsmappen på SARO; innkjøring blir ikke en obligatorisk papirjakt. Materialet brukes mot utskriften etter midnatt. Dokumentert byreferanse må finnes også når matstopp hoppes over. Earl har Night Line 00:00–04:00, ikke kveldsvakt; ny datoakse, radiosending, butikker, NPC-er og totimerskravet må tåle midnatt.
+- Tom presiserte at Kinski/Dale KUN er på telefon, radio eller walkie-talkie. Overleveringen 18:00 er en telefon etter at Dale har dratt; ingen fysisk Dale-figur eller Kinski-forteller på VHS. Egen rollebasert Dale-dialog må skilles fra generell opplesning. Ward beholder rollen som vakthavende.
+- Manuspakken i `Narrative/EveningShift` har 61 scener, 45 valg, 10 dokumenter, 39 UI-tekster og et 72 sekunders VHS-manus. 110 talecues bruker 109 unike takes fordi et fast Dale-fragment gjenbruker første overleveringslinje. Engelske JSON-moduler er sannhetskilde, med generert lesemanus, stemme-CSV, opptaksmanifest og undertekstgrunnlag. Lyd/video står pending og runtime er ikke integrert.
+- `build_pack.py --check` validerer referanser, flagg, kanaler, medietidsdekning og opptaksalias. 14 offline forfatterruter/porter er prøvd, inklusive matvalg, kontor uten VHS og faktiske kontrollkrav. Dette er ikke ekte kjøring eller menneskelig spilltest. Ingen ny stemmetjeneste er installert.
+- Ny D02 bruker eksisterende låste Operations office-dør: en fysisk, merket reservenøkkel finnes under arkivundersøkelsen. Kontoret viser Dales hemmelige UFO-/alienresearch gjennom utklipp, filer/kontaktark og faktisk bevegelig VHS/TV med lyd. Ett feltopptak gir konkret kontroll ved trafostasjonen. Bevar Noras nøkkel, den brede 1947-avisen og P13. Dale er ikke automatisk skurk, allvitende eller et svarende avtrykk.
+- Gatetelefonens to hendelser og dinertelefonens Ward-samtale har forskjellige krav. A gjennom byen er ikke C ved finalen. Nye byankomster må ikke starte ch5 eller den gamle veien.
+- Første pilot bruker N01/N02/A02/P01 med kveldens referanser. All Night anbefales fra 04:10, slik at det er mer tid i byen og mulighet for lysbølgen før 04:55. Gamle kapittelminimum og underhendelser må retimes samlet.
+- Ny trafostasjon, Caliche Junction Substation, skal ha en vanlig feil/kontroll på første tur (T01) og en annerledes oppfølging senere (T02). Den er ikke STATION 01, og SAROs K3 blir ikke byens strømnettbryter.
+- Alle bybygningers utvendige skall skal forbedres, med første sammenhengende gatebit ved bensinstasjon/suvenir/studio. Diner, sheriff og vaskeri følger med nødvendige rom; øvrige bygg får samme utvendige kvalitet. Bevar egne Blender-kilder, ankre og interaksjoner. Bruk eksisterende konseptbilder som visuell retning; material-/lyspasset alene oppfyller ikke bygningsbestillingen.
+- Pilotens 20–30 minutter gjelder avgrenset byinnhold med bevis gjennom lagring og tydelig testkutt. Kveldsoverlevering, trafo og mellomkapitler kommer i tillegg og må måles. Runtime, menneskelig opplevelse og ny ytelse er UNVERIFIED.
+
+
+## Native belysning (2026-10-22)
+
+- Videre belysning er bare Unreal. `S47Lighting.cpp` gjør eksportens lampetilstand om til punktlys og spotter. Historienes SetFlood-API er beholdt; materialenes flood, hemisphere, FogExp2, additive lyskjegler og vindusprojeksjoner er av. Ingen Web/Unreal-bryter. Eldre lysnotater nedenfor beskriver porten før denne endringen.
+- Lumen bruker Vulkan hardware ray tracing på RTX 3080 når tilgjengelig. Måne, skylight, levende daggry, native volumetrisk tåke og skygger fra lommelykt/billykter erstatter fylltermene. Førerhusets gamle himmelfyll er fjernet; instrumentgløden er svak. Fast eksponering, ACES og VHS/Clean beholdes.
+- `S47_ONLY=materials` i import_web.py regenererer Base og Mat uten å skrive Tex, Geo, art eller WebData. Kreves for eldre generert Content. NativeLighting har asset-default 0 for delte historiske checkouter, men denne runtime setter alltid 1. Bruk private materialkopier ved parallelle jobber.
+- Low bruker direkte lys, High/Ultra Lumen og volumetri. High/Low bruker 60 % intern oppløsning med TSR; Ultra 100 %. Se `LIGHTING.md` for faktisk ytelse og sammenligningsbilder, ikke trekk fps-konklusjoner fra kvalitetsnavnet.
+- Rettelsesrundens High/1440p med TSR fra 60 %: rom 13,619 ms / 73,4 fps, gård 10,466 ms / 95,5 fps, p95 15,330/11,527 ms. Ingen andre tunge prosesser i målevinduet. Low/Clean 90,0 fps i rommet, Ultra 39,2 fps i gården. Faste editorutsnitt; pakket bygg og bevegelse gjenstår. Se LIGHTING.md.
+- Før tung kjøring må også prosessnavnet `Signal47` sjekkes. Den installerte Linux-binærfila heter dette, ikke nødvendigvis Signal47-Linux-Shipping. En slik prosess gjorde første ytelsespass ugyldig selv om UnrealEditor-kontrollen var tom.
+- Kopiert UBT Intermediate inneholder absolutte stier. Lag ny Intermediate i et worktree, og kontroller kompilatorens response-filer. `Scripts/build-editor.sh -NoUBA` brukes her etter UBA-feil på PCH-rename gjennom symlink. Byggskriptet videresender valgfrie flagg.
+
+- Taklys i SARO ligger i mesh-diffuserne, med rectlys og PBR-emissive fra samme tilstand. Rommets gamle PointLights er tilstandsdrivere uten bAffectsWorld. Fire CRT-er og øvrige registrerte skjermer har egne grønne rectlys; HUD-ens Ops power-kall overstyrer ikke SARO mørkt, fordi faktisk Brightness også leser stasjonsstrømmen.
+- GLB-bokser kan ha slot0..5 selv når N.Mats har én oppføring. Lysrørets underside er slot3. FixtureLighting binder alle diffuserflater til samme MID og følger NodeMids sine senere kopier; ikke oppdater bare materiale0 og la gamle emissive-flater stå igjen.
+- Annex.flickerTube ligger ved pool3, mens portens FlickerFlood er4. Den fysiske koblingen remapper dette til det faktiske røret. Endre ikke historietidsplanen for å rette lyskilden.
+- Arrayets første fem pools ligger ved Y3, men armaturene ved Y6,5. Native spotter står på armaturene og sikter mot skålene. Seks andre eksisterende feltarmaturer bruker sine eksporterte glødepunkter; de deler arrayets strøm/rødpuls. Ingen nye modeller.
+
 ## Oppsett (2026-10-21)
 
 - Prosjektet heter Signal47 og ligger i unreal/Signal47. UE 5.8.4 (binærutgaven for Linux) i ~/.local/opt/UnrealEngine-5.8.4, Vulkan SM6, Lumen i programvare, Nanite av for de importerte modellene.
@@ -89,3 +133,23 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
 - Tom har bestemt at videre arbeid kun gjelder Unreal. Web og Unity er referanser.
 - Unarius-MP4-er ligger i `/home/tom/Desktop/Unarius/`. Film skal bevege seg på TV-ene. Lokal kandidat, status og videreføring står i `TV_PROGRAMME.md`.
+
+## Egen alien, 22. oktober 2026
+
+- Ny figur med Blender-kilde, 2K PBR, rigg, idle og importprøvde UE 5.8.4-assets ligger i `/home/tom/Desktop/Alien - Egen modell/`. Se README der for import og rapporter. Gammel `/home/tom/Desktop/Alien/` er urørt referanse. Ny modell er klar som ressurs; integrasjon i pakket spill gjenstår.
+
+## KELVORA-rekvisitter, 22. oktober 2026
+
+- Egen CRT-TV og slitt radio i `/home/tom/Desktop/Retro TV og radio/`, med PBR, FBX/GLB, LOD1/2 og importprøvde Unreal-assets i `Unreal/Content/Kelvora/`. TV-skjerm er materialplass 1 med eksisterende filmteksturparametre. Assetene er ferdige; plassering og pakket film-/radioprøve gjenstår hos integrator.
+
+## KELVORA plassert 22. oktober 2026
+
+- `S47RetroProps.cpp` bygger egne TV-er ved `world.motel.tv.group` og `world.room6.objs.tv`, radio ved `room.objs.radio`. `BuildRetroProps` kjøres etter BuildRoom; nye barn følger områdenes synlighet via AdoptNode og gamle bruk-ID-er. Skjermenes egne MID-er registreres på de eksisterende materialhåndtakene, med startverdier fra gamle MID-er.
+- FBX-screen UV0 er snudd i V av importøren. Eget unlit skjermmateriale inverterer V før EmU/EmV, fordi de eksisterende canvas-tegnerne setter EmV=(0,-1,1). Ikke fjern dette eller innfør ekstra film-vending. CRT-kildens ringpolygoner hadde motsatt retning av senteret; alle er nå vendt ut og testet i alle LOD-er. Unlit unngår at TV-ens eget punktlys dekker filmen med en hvit refleks. Piloten sjekker RGB, ikke alfa.
+- `Content/Kelvora/Office` og `office-patches.json` klipper kun gamle TV-deler fra originalkontoret; g-ID-ene må regenereres ved ny verdenseksport. Kilder og importløype er beskrevet i Tools/kelvora/README.md. Originale Blender-kilder på Desktop/Retro TV og radio er oppdatert.
+- Kandidat `scratch-bm/Signal47-kelvora/build` er installert i Games/Signal47, hashverifisert med 27 save/config-filer bevart. 1218 selvtester, ni scenarioer; siste materialversjon er også prøvd på begge TV-er og med av/på. Fullt 47-sekundersopptak/lagring bestod før siste V-only shaderendring. Ingen menneskelig lytting eller hel gjennomspilling i denne økten.
+## Utelys og fotolab, 22. oktober 2026
+
+- `port-light` er videreført etter at forrige lys ble integrert/pakket. Ny leveranse tar inn `unreal-port-core` til `3b44956e`, med gratismodellimport, Claudes mørkeromsregel og brettrettelser.
+- `S47ExteriorLighting.cpp`: 30 korte, fysiske spotter fra eksisterende armaturer; `S47LabLighting.cpp`: adresserbar `Light("lab.normal"/"lab.safelight"/"lab.enlarger")`, intensitet 0 til 1, og fysisk normal-/rødt-/linse-/varsellys. `US47Chapter1::Darkroom` kopler renderdriverne ved faseskifte; ingen ny film-/dørregel i dette lyspasset.
+- Bygg og 1218 selvtester OK, før/etter fra ni kameraer, labmoduser/halvstrøm/kutt/tilbake og faktisk kontaktkopitilstand prøvd. Rapport/API/bilder: `LIGHTING.md`, bevis i `~/scratch-bm/Signal47-lighting-2026-10-22/revision3`. Ny pakke, full fremkalling med ekte input og nye High/1440p-tider gjenstår hos integrator. Ingen endring av installert spill.

@@ -9,8 +9,8 @@ namespace
 {
 	// core/cookies.ts: the cone (the spot light's angle) and how much the light is raised with its cookie
 	const double FLASH_ANGLE = 0.4, FLASH_GAIN = 1.6;
-	/** Unreal's inverse-square fall-off against three's linear one (decay 1), met 4 m out. */
-	const double FALLOFF_MATCH = 4;
+	// A reflector torch: 420 cd gives about 26 lux at four metres before surface response.
+	constexpr double PEAK_CANDELAS = 420;
 }
 
 FS47Flashlight::FS47Flashlight(AActor* Owner)
@@ -26,8 +26,14 @@ FS47Flashlight::FS47Flashlight(AActor* Owner)
 	L->SetAttenuationRadius(30.f * 100.f);
 	L->SetOuterConeAngle(float(FMath::RadiansToDegrees(FLASH_ANGLE)));
 	L->SetInnerConeAngle(float(FMath::RadiansToDegrees(FLASH_ANGLE * (1 - 0.12)))); // penumbra 0.12
-	L->SetSourceRadius(2.f);
-	L->SetCastShadows(false);
+	L->SetSourceRadius(1.4f);
+	L->SetSoftSourceRadius(2.5f);
+	L->SetCastShadows(true);
+	L->SetCastVolumetricShadow(true);
+	// Small foreground cables and handles need a short trace beside the shadow map.
+	L->ContactShadowLengthInWS = true; L->ContactShadowLength = 8.f;
+	L->ContactShadowCastingIntensity = 0.75f;
+	L->SetVolumetricScatteringIntensity(0.8f);
 	L->RegisterComponent();
 	Spot = L;
 }
@@ -47,7 +53,7 @@ void FS47Flashlight::Flicker(double K, const FString& From)
 	Flick = M;
 }
 
-void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, bool bShadows)
+void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff)
 {
 	const double Want = bHave && bOn && !bOff ? 1 : 0;
 	Level += (Want - Level) * FMath::Min(1.0, Dt * 14);
@@ -62,15 +68,13 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, 
 	ThreeIntensity = Level < 0.01 ? 0 : 40 * FLASH_GAIN * Level * K;
 	USpotLightComponent* L = Spot.Get();
 	if (!L) return;
-	L->SetIntensity(float(ThreeIntensity * FALLOFF_MATCH));
+	L->SetIntensity(ThreeIntensity > 0 ? float(PEAK_CANDELAS * Level * K) : 0.f);
 	// (three keeps the light at intensity 0 so no shader is rebuilt; Unreal's is simply not drawn while off)
 	if (L->IsVisible() != (ThreeIntensity > 0)) L->SetVisibility(ThreeIntensity > 0);
 	// held a little right of and below the eyes, pointing 10 m out where they look
 	FVector P = Cam.Pos + Cam.Right * 0.22; P.Y -= 0.18;
 	const FVector Target = Cam.Pos + Cam.Forward * 10;
 	L->SetWorldLocationAndRotation(S47Three::ToUE(P), (S47Three::ToUE(Target) - S47Three::ToUE(P)).Rotation());
-	// the PC tier: a shadow (it moves with the hand)
-	if (L->CastShadows != bShadows) L->SetCastShadows(bShadows);
 }
 
 bool FS47Flashlight::SelfTest(TArray<FString>& Lines)

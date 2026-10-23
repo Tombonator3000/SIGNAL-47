@@ -1,4 +1,7 @@
 #include "S47Web.h"
+#include "S47GraphicsReview.h"
+#include "S47Startup.h"
+#include "S47Props.h"
 
 #include "Components/BillboardComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -127,7 +130,7 @@ bool AS47Web::Load()
 		}
 	}
 	// materials that must not be drawn as they are (shaders we cannot rebuild, hidden proxies)
-	TSet<int32> ShaderMats, HiddenMats;
+	TSet<int32> ShaderMats, HiddenMats, EmissiveMats;
 	TMap<int32, int32> MatFlood;
 	TMap<int32, float> MatFall;
 	// what three draws without fog (fog: false), opaque: the custom depth's stencil for M_WebTone,
@@ -138,6 +141,8 @@ bool AS47Web::Load()
 		const TSharedPtr<FJsonObject> M = V->AsObject();
 		const int32 Id = int32(Num(M, TEXT("id")));
 		if (Bool(M, TEXT("shader"))) ShaderMats.Add(Id);
+		const auto& Emission = Arr(M, TEXT("emissive"));
+		if ((Emission.Num() >= 3 && FMath::Max3(Col(Emission).R, Col(Emission).G, Col(Emission).B) > 0.001f) || Str(M, TEXT("type")) == TEXT("MeshBasicMaterial")) EmissiveMats.Add(Id);
 		if (!Bool(M, TEXT("visible"), true)) HiddenMats.Add(Id);
 		const int32 Fs = int32(Num(M, TEXT("floodSet"), -1));
 		if (Fs >= 0) { MatFlood.Add(Id, Fs); MatFall.Add(Id, float(Num(M, TEXT("floodFall"), 0.012))); }
@@ -319,7 +324,7 @@ bool AS47Web::Load()
 			UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Base, this);
 			D->SetTextureParameterValue(TEXT("FloodTex"), FloodTex[KV.Value]);
 			D->SetScalarParameterValue(TEXT("FloodCount"), float(Set.W));
-			D->SetScalarParameterValue(TEXT("FloodScale"), Set.Scale);
+			D->SetScalarParameterValue(TEXT("FloodScale"), 0.f);
 			D->SetScalarParameterValue(TEXT("FloodFall"), MatFall.FindRef(KV.Key));
 			MatCache[KV.Key] = D;
 			FloodMids.FindOrAdd(KV.Value).Add(D);
@@ -373,6 +378,7 @@ bool AS47Web::Load()
 			}
 			const bool bWire = Bool(O, TEXT("wire"));
 			M->SetCastShadow(!bWire && !bShader);
+			M->SetEmissiveLightSource(N.Mats.ContainsByPredicate([&](int32 Id) { return EmissiveMats.Contains(Id); }));
 			M->SetCollisionEnabled(bWire ? ECollisionEnabled::NoCollision : ECollisionEnabled::QueryOnly);
 			M->SetCollisionResponseToAllChannels(ECR_Ignore);
 			M->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -534,12 +540,14 @@ void AS47Web::BuildLights(const TArray<TSharedPtr<FJsonValue>>& JL)
 			L->SetWorldLocation(ToUE(Pos));
 			L->SetMobility(EComponentMobility::Movable);
 			L->SetIntensityUnits(ELightUnits::Candelas);
-			L->SetIntensity(I);
+			L->SetIntensity(I * 1.5f);
 			L->SetLightColor(C);
 			const double D = Num(O, TEXT("distance"), 0);
 			L->SetAttenuationRadius(float(D > 0 ? D * 100.0 : 3000.0));
 			L->SetSourceRadius(8.f);
-			L->SetCastShadows(Bool(O, TEXT("castShadow")));
+			L->SetCastShadows(true);
+			L->SetCastVolumetricShadow(true);
+			L->SetVolumetricScatteringIntensity(0.35f);
 			L->SetVisibility(Bool(O, TEXT("vis"), true));
 			L->RegisterComponent();
 			Lights.Add({ L, Area, I, Uuid });
@@ -554,7 +562,8 @@ void AS47Web::BuildLights(const TArray<TSharedPtr<FJsonValue>>& JL)
 			L->SetMobility(EComponentMobility::Movable);
 			L->SetIntensity(I);
 			L->SetLightColor(C);
-			L->SetCastShadows(Bool(O, TEXT("castShadow")));
+			L->SetCastShadows(true);
+			L->LightSourceAngle = 1.2f;
 			L->SetAtmosphereSunLight(false);
 			L->RegisterComponent();
 			Lights.Add({ L, Area, I, Uuid });
@@ -603,22 +612,13 @@ void AS47Web::BuildRoom()
 	CoffeeNode = Handle(TEXT("room.coffee"));
 	JacketNode = Handle(TEXT("room.objs.jacket"));
 	HandH = Handle(TEXT("room.clockHands.h")); HandM = Handle(TEXT("room.clockHands.m")); HandS = Handle(TEXT("room.clockHands.s"));
-	for (int32 k = 0; k < 8; ++k) { const int32 T = Handle(FString::Printf(TEXT("room.tubes[%d]"), k)); if (T >= 0) TubeNodes.Add(T); }
-	if (TubeNodes.Num() > 0 && Nodes[TubeNodes[0]].Mats.Num() > 0)
-	{
-		TubeOnMat = Nodes[TubeNodes[0]].Mats[0];
-		if (UMaterialInterface* On = Mat(TubeOnMat))
-		{
-			TubeOffMid = UMaterialInstanceDynamic::Create(On, this);
-			TubeOffMid->SetVectorParameterValue(TEXT("Emissive"), FLinearColor::Black);
-			TubeOffMid->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.35f, 0.35f, 0.33f));
-		}
-	}
+	for (int32 k = 0; k < 8; ++k) { const int32 T = Handle(FString::Printf(TEXT("room.tubes[%d]"), k)); if (T >= 0) { TubeNodes.Add(T); TubePowered.Add(true); } }
 	if (MugNode >= 0) MugHome = Nodes[MugNode].P;
 	if (CoffeeNode >= 0) CoffeeY = Nodes[CoffeeNode].P.Y;
 	// the room's lights by role (ControlRoom.ts this.lights)
 	FString Path = FPaths::ProjectContentDir() / TEXT("WebData/manifest.json");
 	(void)Path;
+	BuildIndicatorLighting();
 }
 
 void AS47Web::UpdateCrtMaterials()
@@ -632,7 +632,11 @@ void AS47Web::UpdateCrtMaterials()
 		{
 			for (int32 s = 0; s < 4; ++s)
 			{
-				if (CrtMat[s] >= 0 && N.Mats[k] == CrtMat[s] && CrtMids.IsValidIndex(s)) M->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), k)), CrtMids[s]);
+				if (CrtMat[s] >= 0 && N.Mats[k] == CrtMat[s] && CrtMids.IsValidIndex(s))
+				{
+					if (N.Mats.Num() == 1) for (int32 Slot = 0; Slot < M->GetNumMaterials(); ++Slot) M->SetMaterial(Slot, CrtMids[s]);
+					else M->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), k)), CrtMids[s]);
+				}
 			}
 		}
 	}
@@ -645,6 +649,9 @@ void AS47Web::BeginPlay()
 	bLoaded = Load();
 	if (!bLoaded) return;
 	BuildRoom();
+	BuildRetroProps();
+	// (Unreal only) the free models in the world, Config/Props (S47Props.h)
+	if (AS47Props* Props = GetWorld()->SpawnActor<AS47Props>()) Props->Build(this);
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));
@@ -655,6 +662,7 @@ void AS47Web::BeginPlay()
 	SkySphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SkySphere->SetCastShadow(false);
 	SkySphere->bAffectDistanceFieldLighting = false;
+	SkySphere->SetVisibleInRayTracing(false);
 	SkySphere->RegisterComponent();
 	if (UMaterialInterface* SkyBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebSky.M_WebSky")))
 	{
@@ -667,6 +675,7 @@ void AS47Web::BeginPlay()
 	Env = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Web/Base/MPC_Web.MPC_Web"));
 	APostProcessVolume* V = GetWorld()->SpawnActor<APostProcessVolume>();
 	V->bUnbound = true;
+	LightingPost = V;
 	FPostProcessSettings& S = V->Settings;
 	S.bOverride_AutoExposureMethod = true; S.AutoExposureMethod = AEM_Manual;
 	S.bOverride_AutoExposureApplyPhysicalCameraExposure = true; S.AutoExposureApplyPhysicalCameraExposure = false;
@@ -684,13 +693,15 @@ void AS47Web::BeginPlay()
 	if (UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr)
 	{
 		E->SetScalarParameterValue(TEXT("ToneK"), float(ToneMappingExposure / 0.6) * SceneScale);
-		E->SetScalarParameterValue(TEXT("FogDensity"), FogDensity);
+		E->SetScalarParameterValue(TEXT("FogDensity"), 0.f);
+		E->SetScalarParameterValue(TEXT("NativeLighting"), 1.f);
 		E->SetVectorParameterValue(TEXT("FogColor"), FogColor);
 		// the picture: the tape look by default, as the web version on every tier but Low
 		FString Picture = TEXT("vhs");
 		FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Picture);
 		E->SetScalarParameterValue(TEXT("Vhs"), Picture == TEXT("off") ? 0.f : 1.f);
 	}
+	BuildNativeLighting();
 	Enter(TEXT("saro"));
 	CloseAllDoors();
 	// for finding things in the picture: -S47Hide=870,874 hides those nodes
@@ -752,6 +763,7 @@ FVector AS47Web::WorldUE(int32 I) const
 
 void AS47Web::Enter(const FString& Area)
 {
+	if (CurrentArea != Area) bSkyCaptured = false;
 	CurrentArea = Area;
 	// the motel's lot is SARO's area, the diner stands in the road's (World.enter)
 	auto Shown = [&](const FString& A)
@@ -780,15 +792,15 @@ void AS47Web::Enter(const FString& Area)
 void AS47Web::ApplyHemi()
 {
 	const FHemi* H = Hemis.Find(CurrentArea);
-	const bool bSaro = !H;
+
 	if (!H) H = Hemis.Find(TEXT("saro"));
 	UMaterialParameterCollectionInstance* E = Env && GetWorld() ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr;
 	if (H && E)
 	{
 		// (room.lights.hemi is SARO's: the scale is its own, main.ts saroDark.adapt)
-		const float K = bSaro || CurrentArea == TEXT("saro") ? HemiK : 1.f;
-		E->SetVectorParameterValue(TEXT("HemiSky"), H->Sky * H->Intensity * K);
-		E->SetVectorParameterValue(TEXT("HemiGround"), H->Ground * H->Intensity * K);
+
+		E->SetVectorParameterValue(TEXT("HemiSky"), FLinearColor::Black);
+		E->SetVectorParameterValue(TEXT("HemiGround"), FLinearColor::Black);
 	}
 }
 
@@ -863,14 +875,11 @@ void AS47Web::SetLever(bool bOn)
 
 void AS47Web::SetLed(int32 Index, bool bOn)
 {
-	if (LedNode < 0) return;
-	UInstancedStaticMeshComponent* I = Cast<UInstancedStaticMeshComponent>(Nodes[LedNode].Comp.Get());
-	if (!I || Index < 0 || Index >= I->GetInstanceCount()) return;
-	// LED_COL in ControlRoom.ts; ledState: 7 and 15 amber, the rest green
-	const FLinearColor C = !bOn ? Hex(0x141619) : (Index == 7 || Index == 15) ? Hex(0xffb040) : Hex(0x45ff7a);
-	I->SetCustomDataValue(Index, 0, C.R, false);
-	I->SetCustomDataValue(Index, 1, C.G, false);
-	I->SetCustomDataValue(Index, 2, C.B, true);
+	if (!RackLedOn.IsValidIndex(Index)) return;
+	RackLedOn[Index] = bOn;
+	DrawRackIndicator(Index);
+	// A late boot/flicker callback during SARO's cut may change state, never relight the bank.
+	UpdateIndicatorLighting(SaroLightingPower());
 }
 
 void AS47Web::SetLeds(bool bOn)
@@ -927,7 +936,7 @@ bool AS47Web::CrtGlass(int32 Screen, FVector& Centre, FVector& Up, FVector& Acro
 
 void AS47Web::SetCrtGlow(float Intensity)
 {
-	if (CrtLight.IsValid()) CrtLight->SetIntensity(Intensity);
+	if (CrtLight.IsValid()) CrtLight->SetIntensity(Intensity * 1.5f);
 }
 
 void AS47Web::SetPrinterPaper(float Share)
@@ -981,25 +990,17 @@ void AS47Web::SetLightsScale(float Ceiling, float Lamps)
 
 void AS47Web::SetTubes(bool bOn, int32 KeepOff)
 {
-	for (int32 k = 0; k < TubeNodes.Num(); ++k)
-	{
-		UStaticMeshComponent* M = Cast<UStaticMeshComponent>(Nodes[TubeNodes[k]].Comp.Get());
-		if (!M) continue;
-		const bool bLit = bOn && k != KeepOff;
-		M->SetMaterialByName(TEXT("slot0"), bLit ? Mat(TubeOnMat) : (UMaterialInterface*)TubeOffMid.Get());
-	}
+	for (int32 K = 0; K < TubeNodes.Num(); ++K) SetTube(K, bOn && K != KeepOff);
 }
 
 bool AS47Web::TubeLit(int32 K) const
 {
-	const UStaticMeshComponent* M = TubeNodes.IsValidIndex(K) ? Cast<UStaticMeshComponent>(Nodes[TubeNodes[K]].Comp.Get()) : nullptr;
-	return M && M->GetMaterial(0) != TubeOffMid.Get();
+	return TubePowered.IsValidIndex(K) && TubePowered[K];
 }
 
 void AS47Web::SetTube(int32 K, bool bLit)
 {
-	UStaticMeshComponent* M = TubeNodes.IsValidIndex(K) ? Cast<UStaticMeshComponent>(Nodes[TubeNodes[K]].Comp.Get()) : nullptr;
-	if (M) M->SetMaterialByName(TEXT("slot0"), bLit ? Mat(TubeOnMat) : (UMaterialInterface*)TubeOffMid.Get());
+	if (TubePowered.IsValidIndex(K)) TubePowered[K] = bLit;
 }
 
 // ---------- the dishes ----------
@@ -1127,6 +1128,7 @@ void AS47Web::SetFogColor(const FLinearColor& C)
 	if (C == FogColor) return;
 	FogColor = C;
 	if (UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr) E->SetVectorParameterValue(TEXT("FogColor"), C);
+	UpdateNativeFog();
 }
 
 void AS47Web::SetHemiIntensity(float Intensity)
@@ -1135,8 +1137,8 @@ void AS47Web::SetHemiIntensity(float Intensity)
 	if (!H) H = Hemis.Find(TEXT("saro"));
 	UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr;
 	if (!H || !E) return;
-	E->SetVectorParameterValue(TEXT("HemiSky"), H->Sky * Intensity);
-	E->SetVectorParameterValue(TEXT("HemiGround"), H->Ground * Intensity);
+	E->SetVectorParameterValue(TEXT("HemiSky"), FLinearColor::Black);
+	E->SetVectorParameterValue(TEXT("HemiGround"), FLinearColor::Black);
 }
 
 // ---------- doors ----------
@@ -1221,6 +1223,23 @@ void AS47Web::Tick(float Dt)
 {
 	Super::Tick(Dt);
 	if (!bLoaded) return;
+	if (S47Startup::Blocking())
+	{
+		// The complete world must exist before warmup. Keep its rendering and sky capture alive,
+		// while dishes, doors, gameplay and review clocks wait behind the loading terminal.
+		const double Before = LightingRunTime;
+		LightingRunTime = S47Startup::Elapsed();
+		UpdateNativeLighting();
+		UpdateRetroProps();
+		LightingRunTime = Before;
+		if (SkySphere) SkySphere->SetWorldLocation(Eye);
+		return;
+	}
+	UpdateNativeLighting();
+	ReviewIndicators();
+	UpdateRetroProps();
+	SampleLightingPerformance(Dt);
+	S47GraphicsReview::Tick(this, Dt);
 	// the sky follows the eye
 	if (SkySphere) SkySphere->SetWorldLocation(Eye);
 	// dishes slew (Dish.update)
@@ -1332,7 +1351,8 @@ FS47Area AS47Web::Rect(const FString& Path) const
 void AS47Web::SetFogDensity(float Density)
 {
 	FogDensity = Density;
-	if (UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr) E->SetScalarParameterValue(TEXT("FogDensity"), Density);
+	if (UMaterialParameterCollectionInstance* E = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr) E->SetScalarParameterValue(TEXT("FogDensity"), 0.f);
+	UpdateNativeFog();
 }
 
 FS47Pose AS47Web::Pose(const FString& Path) const
@@ -1446,6 +1466,27 @@ void AS47Web::MarkUsable(int32 Node, const FString& Id)
 	});
 }
 
+int32 AS47Web::AdoptNode(UPrimitiveComponent* C, int32 Parent, const FString& Name)
+{
+	// (Unreal only) a node for a part built at run time: where it is in its parent's terms (for its
+	// world position), its component, and its place among the parent's children (its visibility)
+	if (!C || !Nodes.IsValidIndex(Parent)) return -1;
+	FS47WebNode N;
+	N.Parent = Parent;
+	N.Name = Name;
+	N.P = NodeWorldThree(Parent).InverseTransformPosition(ToThree(C->GetComponentLocation()));
+	Compose(N.P, N.Q, N.S, N.Local);
+	N.Comp = C;
+	N.Root = Nodes[Parent].Root;
+	const int32 I = Nodes.Add(N);
+	Nodes[Parent].Children.Add(I);
+	CompNode.Add(C, I);
+	bool bParent = true;
+	for (int32 P = Parent; P >= 0; P = Nodes[P].Parent) bParent &= Nodes[P].bVis;
+	ApplyVisibility(I, bParent);
+	return I;
+}
+
 FString AS47Web::UsableAt(const UPrimitiveComponent* C) const
 {
 	const int32* N = CompNode.Find(C);
@@ -1467,13 +1508,8 @@ int32 AS47Web::FloodSet(const FString& Key) const
 
 void AS47Web::UploadFlood(int32 Set)
 {
-	if (!FloodSets.IsValidIndex(Set) || !FloodTex.IsValidIndex(Set) || !FloodTex[Set]) return;
-	const FFloodSet& F = FloodSets[Set];
-	UTexture2D* T = FloodTex[Set];
-	FLinearColor* Px = static_cast<FLinearColor*>(T->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
-	for (int32 k = 0; k < F.W; ++k) { Px[k] = F.Pos[k]; Px[F.W + k] = F.Col[k]; }
-	T->GetPlatformData()->Mips[0].BulkData.Unlock();
-	T->UpdateResource();
+	// Only the lamp state is consumed now; native lights read it on the next frame.
+	(void)Set;
 }
 
 void AS47Web::SetFlood(int32 Set, int32 Index, float Width)
@@ -1516,8 +1552,8 @@ void AS47Web::SetHemi(const FString& Area, const FLinearColor& Sky, const FLinea
 	Hemis.Add(Area, { Sky, Ground, Intensity });
 	if (CurrentArea == Area && Env) if (auto* E = GetWorld()->GetParameterCollectionInstance(Env))
 	{
-		E->SetVectorParameterValue(TEXT("HemiSky"), Sky * Intensity);
-		E->SetVectorParameterValue(TEXT("HemiGround"), Ground * Intensity);
+		E->SetVectorParameterValue(TEXT("HemiSky"), FLinearColor::Black);
+		E->SetVectorParameterValue(TEXT("HemiGround"), FLinearColor::Black);
 	}
 }
 
@@ -1528,7 +1564,7 @@ void AS47Web::UseFlood(const FS47Obj& Object, int32 Set, float Fall)
 	for (UMaterialInstanceDynamic* Mid : NodeMids(Object.I))
 	{
 		for (auto& Pair : FloodMids) Pair.Value.RemoveAll([Mid](const auto& P) { return P.Get() == Mid; });
-		Mid->SetScalarParameterValue(TEXT("FloodScale"), bOn ? FloodSets[Set].Scale : 0);
+		Mid->SetScalarParameterValue(TEXT("FloodScale"), 0.f);
 		if (!bOn) continue;
 		Mid->SetTextureParameterValue(TEXT("FloodTex"), FloodTex[Set]);
 		Mid->SetScalarParameterValue(TEXT("FloodCount"), FloodSets[Set].Pos.Num());
@@ -1543,7 +1579,7 @@ void AS47Web::SetFloodScale(int32 Set, float Scale)
 	FloodSets[Set].Scale = Scale;
 	if (TArray<TWeakObjectPtr<UMaterialInstanceDynamic>>* Ms = FloodMids.Find(Set))
 	{
-		for (const auto& D : *Ms) if (D.IsValid()) D->SetScalarParameterValue(TEXT("FloodScale"), Scale);
+		for (const auto& D : *Ms) if (D.IsValid()) D->SetScalarParameterValue(TEXT("FloodScale"), 0.f);
 	}
 }
 

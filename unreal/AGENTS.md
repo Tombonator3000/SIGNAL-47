@@ -9,4 +9,5 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 - Bygg ikke editor-målet mens editoren er åpen.
 - Etter en endring: bygg, kjør det som er endret og et kort utvalg av `Scripts/screenshots.sh` i den pakkede builden. Hele `screenshots.sh` kjøres før fletting til main eller når Tom ber om det.
 - Kanon fra `web/memory.md` gjelder: 1420.405 MHz, 47 sekunder, 27 antenner, az 026. Spilltekst på engelsk (New Mexico, 1986). Dokumenter og logg på norsk, uten emoji og uten tankestrek.
+- Felles oppgaveliste og arbeidsdeling med Codex: `OPPGAVER.md`.
 - Logg alt i `log.md` med dato og klokkeslett (Europe/Oslo). Hold `memory.md` og `todo.md` oppdatert.

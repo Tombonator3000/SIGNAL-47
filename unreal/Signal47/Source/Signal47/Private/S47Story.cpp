@@ -12,10 +12,16 @@
 #include "S47Chapter2.h"
 #include "S47Chapter5.h"
 #include "S47DecoderDesk.h"
+#include "S47Ambience.h"
+#include "S47ArrayBack.h"
+#include "S47DishArray.h"
+#include "S47Reel047.h"
+#include "S47SaroNight.h"
 #include "S47Inter.h"
 #include "S47Json.h"
 #include "S47UI.h"
 #include "S47Main.h"
+#include "S47Startup.h"
 #include "S47Web.h"
 #include "Misc/CommandLine.h"
 #include "TimerManager.h"
@@ -55,6 +61,40 @@ void AS47Story::Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio)
 		Dd.Recorded = [] { return FString(TEXT("02:14")); };
 		Dd.Busy = [this] { return bCinematic; };
 		Dd.Power = [this] { return bPowered && !NS.bK3Open; };
+		// (Unreal only, Tom's request: the bought unit's meters and the tones' answer, S47DecoderDesk.h)
+		const TWeakObjectPtr<US47Main> Wm = M;
+		Dd.ReelLevel = [Wm] { return Wm.IsValid() && Wm->SaroNight && Wm->SaroNight->Reel047.IsValid() ? Wm->SaroNight->Reel047->Level() : 0.0; };
+		Dd.HasPaper = [this](const FString& Id) { return NS.Papers.Contains(Id); };
+		Dd.File = [this](const FS47Doc& Doc, const FString& N) { FilePaper(Doc); if (!N.IsEmpty()) Note(N); };
+		Dd.Answered = [this] { return NS.bTapeA; };
+		Dd.SetAnswered = [this] { NS.bTapeA = true; };
+		Dd.Save = [Wm] { if (Wm.IsValid()) Wm->RequestAutosave(false); };
+		Dd.React = [this](double Glitch, double Dip, double Flick)
+		{
+			// the screens break up and the room sags, as the lights' dip after the relay does (LightsDip);
+			// or the tubes stutter, as after the boom (Flicker)
+			if (!BankIn()) return;
+			CrtGlitch = FMath::Max(CrtGlitch, float(Glitch));
+			DipT = FMath::Max(DipT, float(Dip));
+			Flicker = FMath::Max(Flicker, float(Flick));
+			if (Audio.IsValid() && Dip > 0)
+			{
+				Audio->Play(TEXT("thud_soft"), 0.55f, Saro.IsValid() ? Saro->PropLocation(TEXT("rack")) : FVector::ZeroVector, 0.45f);
+				Audio->HoldRoomTone(0.2f);
+				After(Dip, [this] { if (Audio.IsValid()) Audio->HoldRoomTone(1.f); });
+			}
+		};
+		Dd.Hush = [this](double Secs, double Level, double Tau, double Back) { if (Audio.IsValid() && Audio->Night.IsValid()) Audio->Night->Hush(Secs, Level, Tau, Back); };
+		Dd.Lamps = [Wm](bool bOn)
+		{
+			// the array's red lamps (world/Dish.ts DishArray.beaconPhase) in one phase, or each in its own
+			// again; not while the archive's phone holds the dishes down or the array is being put back,
+			// and not the dishes that follow the player (they have their own)
+			FS47DishArray* A = Wm.IsValid() && Wm->SaroNight ? Wm->SaroNight->Dishes.Get() : nullptr;
+			if (!A || A->BeaconsHeld() || (Wm->SaroNight->TipHolds && Wm->SaroNight->TipHolds()) || (Wm->SaroNight->ArrayBack.IsValid() && Wm->SaroNight->ArrayBack->Busy())) return;
+			for (int32 I = 0; I < A->Dishes.Num(); ++I) if (!A->Dishes[I].bRogue) A->BeaconPhase(I, bOn ? 0.0 : A->Dishes[I].Phase);
+		};
+		Dd.Clock = [this] { return ClockText(false); };
 		Decoder = MakeShared<FS47DecoderDesk>(Dd);
 		// -S47Decoder (with -S47Jump=locked or later): the processor's panel opened three seconds in, as
 		// a use of it does; -S47Decoder=play: and PLAY TAPE pressed in it; =walk: played, and the panel
@@ -799,6 +839,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		NS.Array = S47J::Obj(Ns, TEXT("array")).IsValid() ? S47J::Clone(S47J::Obj(Ns, TEXT("array"))) : nullptr;
 		double Hondo = 0;
 		if (Ns->TryGetNumberField(TEXT("hondo"), Hondo) && FMath::IsFinite(Hondo)) NS.Hondo = Hondo;
+		NS.bTapeA = S47J::Bool(Ns, TEXT("tapeA")); // (Unreal only: the tones' answer, S47DecoderDesk.h)
 	}
 	else
 	{
@@ -815,6 +856,8 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		else if (Id == TEXT("rfiCard")) DocsList.Add(S47Docs::InterferenceCard(Rx.Stage >= 3));
 		else if (Id == TEXT("halley")) DocsList.Add(S47Docs::HalleyPoster());
 		else if (Id == TEXT("telex")) DocsList.Add(S47Docs::Telex(TelexRoll()));
+		// (Unreal only: T. Vega's page and TAPE A, S47DecoderDesk.h)
+		else if (const TOptional<FS47Doc> Pd = FS47DecoderDesk::PaperById(Id)) DocsList.Add(*Pd);
 	}
 	ApplyK3(NS.bK3Open);
 	// (room.setTelexRoll: the telex is not ported yet)
@@ -988,6 +1031,7 @@ void AS47Story::Jump(const FString& Target)
 void AS47Story::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (S47Startup::Blocking()) return;
 	if (Shot.IsValid()) Shot->Tick();
 	// main.ts step(): game.update runs only in play (not behind the title, not on the end card)
 	if (const US47Main* Main = US47Main::Get(this); Main && Main->Mode != US47Main::EMode::Play) return;

@@ -8,6 +8,8 @@
 #include "Misc/Paths.h"
 #include "S47Audio.h"
 #include "S47FieldCamera.h"
+#include "S47FreeModels.h"
+#include "S47Props.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
 #include "S47HUD.h"
@@ -289,6 +291,9 @@ void US47World::Init(US47Main* InM)
 			}, 3.0f + 1.6f * i, false);
 		}
 	}
+	// -S47FreeModels[=name,...]: the free models in a row in front of the player (Unreal only)
+	S47FreeModels::Test(M);
+	AS47Props::TestPlace(M); // -S47PropsAt=<area>:x;z;yaw;pitch (Unreal only)
 }
 
 void US47World::TestGetOut(double At)

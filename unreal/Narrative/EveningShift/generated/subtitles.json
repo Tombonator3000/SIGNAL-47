@@ -1,0 +1,1867 @@
+{
+  "pack_id": "signal47_evening_shift",
+  "language": "en-US",
+  "status": "authored_not_integrated",
+  "note_nb": "Dialogtider venter på lyd. Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
+  "scenes": [
+    {
+      "scene_id": "I01_DRIVE",
+      "channel": "radio",
+      "lines": [
+        {
+          "line_id": "I01_DRIVE_001",
+          "speaker": "RADIO_HOST",
+          "text": "Good afternoon, Caliche. Hope your Sunday has been an easy one.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I01_DRIVE_002",
+          "speaker": "RADIO_HOST",
+          "text": "We've still got a little sunshine left. Good time to get the washing off the line.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I01_DRIVE_003",
+          "speaker": "RADIO_HOST",
+          "text": "A reminder from the feed store: tomorrow's delivery comes in after ten. Let them have their coffee first.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I01_DRIVE_004",
+          "speaker": "RADIO_HOST",
+          "text": "And if you're heading out to work, the diner has the griddle on.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I01_DRIVE_005",
+          "speaker": "RADIO_HOST",
+          "text": "Take it easy through town. There's no prize for getting to the next red light first.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I01_DRIVE_006",
+          "speaker": "RADIO_HOST",
+          "text": "Here's another record for the road.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I02_DINER_HELLO",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I02_DINER_HELLO_001",
+          "speaker": "WAITRESS",
+          "text": "Hi there. Sit wherever you like.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I02_DINER_HELLO_002",
+          "speaker": "WAITRESS",
+          "text": "Kitchen's still going. Coffee's fresh enough that I can say it with a straight face.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I02_DINER_HELLO_003",
+          "speaker": "WAITRESS",
+          "text": "You want to see the menu, or are you just stretching your legs?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I03_MENU",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I03_MENU_001",
+          "speaker": "WAITRESS",
+          "text": "Burger comes with fries. Sandwich comes with chips.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I03_MENU_002",
+          "speaker": "WAITRESS",
+          "text": "Coffee with either one. I can wrap the food if you're taking it to work.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I03_MENU_003",
+          "speaker": "WAITRESS",
+          "text": "What sounds good?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I04_BURGER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I04_BURGER_001",
+          "speaker": "WAITRESS",
+          "text": "One burger, fries and coffee. Coming right up.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I04_BURGER_002",
+          "speaker": "WAITRESS",
+          "text": "There you go. Careful with the plate.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I04_BURGER_003",
+          "speaker": "WAITRESS",
+          "text": "Eating here, or shall I wrap it?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I05_SANDWICH",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I05_SANDWICH_001",
+          "speaker": "WAITRESS",
+          "text": "Sandwich, chips and coffee. You got it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I05_SANDWICH_002",
+          "speaker": "WAITRESS",
+          "text": "Here we are. Napkins are right beside you.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I05_SANDWICH_003",
+          "speaker": "WAITRESS",
+          "text": "Staying for a minute, or taking that along?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I06_EAT",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I06_EAT_001",
+          "speaker": "WAITRESS",
+          "text": "Sure. Take your time.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I06_EAT_002",
+          "speaker": "WAITRESS",
+          "text": "Mind if I top that coffee up?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I06_EAT_003",
+          "speaker": "WAITRESS",
+          "text": "There. That should keep you going.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I06_EAT_004",
+          "speaker": "WAITRESS",
+          "text": "Thanks for stopping in. Have a good shift.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I07_TAKE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I07_TAKE_001",
+          "speaker": "WAITRESS",
+          "text": "No trouble. I'll put it in a bag.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I07_TAKE_002",
+          "speaker": "WAITRESS",
+          "text": "Fork and napkins are in there. Coffee's got a lid.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I07_TAKE_003",
+          "speaker": "WAITRESS",
+          "text": "Keep the bag upright. The bottom's got more confidence than strength.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I07_TAKE_004",
+          "speaker": "WAITRESS",
+          "text": "Have a good evening out there.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I08_WATER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I08_WATER_001",
+          "speaker": "WAITRESS",
+          "text": "Of course. Here you are.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I08_WATER_002",
+          "speaker": "WAITRESS",
+          "text": "You've caught us between the supper crowd and the coffee crowd.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I08_WATER_003",
+          "speaker": "WAITRESS",
+          "text": "Nice having a minute to wipe a table before somebody needs it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I08_WATER_004",
+          "speaker": "WAITRESS",
+          "text": "Let me know if you change your mind about food.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I09_LEAVE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I09_LEAVE_001",
+          "speaker": "WAITRESS",
+          "text": "All right. Thanks for coming in.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I09_LEAVE_002",
+          "speaker": "WAITRESS",
+          "text": "We're here if you need something later.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I09_LEAVE_003",
+          "speaker": "WAITRESS",
+          "text": "Drive safely.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I10_BACK_ON_ROAD",
+      "channel": "radio",
+      "lines": [
+        {
+          "line_id": "I10_BACK_ON_ROAD_001",
+          "speaker": "RADIO_HOST",
+          "text": "You're listening to local radio here in Caliche.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I10_BACK_ON_ROAD_002",
+          "speaker": "RADIO_HOST",
+          "text": "Church supper volunteers, your pans are clean and waiting in the kitchen. Please take yours home before somebody makes another casserole in it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I10_BACK_ON_ROAD_003",
+          "speaker": "RADIO_HOST",
+          "text": "We'll leave you with some music now.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I10_BACK_ON_ROAD_004",
+          "speaker": "RADIO_HOST",
+          "text": "Good evening to everybody starting work, and everybody heading home.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I11_SARO_ARRIVAL",
+      "channel": "ui",
+      "lines": []
+    },
+    {
+      "scene_id": "I12_ALL_NIGHT_BOUGHT",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I12_ALL_NIGHT_BOUGHT_001",
+          "speaker": "WAITRESS",
+          "text": "Hi again. Back from SARO?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I12_ALL_NIGHT_BOUGHT_002",
+          "speaker": "WAITRESS",
+          "text": "Coffee's on. You can sit down a minute.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I12_ALL_NIGHT_BOUGHT_003",
+          "speaker": "WAITRESS",
+          "text": "That driver came in a little while ago. He's over there if you're looking for somebody who's been on the road.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I12_ALL_NIGHT_BOUGHT_004",
+          "speaker": "WAITRESS",
+          "text": "There's a paper on the counter, too. Nobody's claimed it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I13_ALL_NIGHT_NO_FOOD",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I13_ALL_NIGHT_NO_FOOD_001",
+          "speaker": "WAITRESS",
+          "text": "Evening. Coming in from work?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I13_ALL_NIGHT_NO_FOOD_002",
+          "speaker": "WAITRESS",
+          "text": "Take a seat if you need one. Coffee's on.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I13_ALL_NIGHT_NO_FOOD_003",
+          "speaker": "WAITRESS",
+          "text": "That fellow over there just came off the road. He's been sitting with his cup for a while.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I13_ALL_NIGHT_NO_FOOD_004",
+          "speaker": "WAITRESS",
+          "text": "Paper's on the counter if you want something to read.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I14_ROAD",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I14_ROAD_001",
+          "speaker": "WAITRESS",
+          "text": "Keep on through town, then take the marked turn out to the array.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I14_ROAD_002",
+          "speaker": "WAITRESS",
+          "text": "Big sign. Hard to miss unless you're arguing with the radio.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I14_ROAD_003",
+          "speaker": "WAITRESS",
+          "text": "You'll want to eat before you get settled in out there.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I14_ROAD_004",
+          "speaker": "WAITRESS",
+          "text": "Want the menu before you go?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "I15_RECOMMEND",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "I15_RECOMMEND_001",
+          "speaker": "WAITRESS",
+          "text": "If you're hungry, the burger.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I15_RECOMMEND_002",
+          "speaker": "WAITRESS",
+          "text": "If you're driving, the sandwich is less of a project.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I15_RECOMMEND_003",
+          "speaker": "WAITRESS",
+          "text": "Either way, I'm putting napkins in the bag.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "I15_RECOMMEND_004",
+          "speaker": "WAITRESS",
+          "text": "Your call.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D01_HANDOVER",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D01_HANDOVER_001",
+          "speaker": "DALE",
+          "text": "Reyes? Dale. The logbook should be in front of you.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_HANDOVER_002",
+          "speaker": "DALE",
+          "text": "I headed out early. The service folder is on the desk, under the work order.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_HANDOVER_003",
+          "speaker": "DALE",
+          "text": "The first survey is routine. Check calibration before you let it run.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_HANDOVER_004",
+          "speaker": "DALE",
+          "text": "Did you get something to eat?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D01_FOOD",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D01_FOOD_001",
+          "speaker": "DALE",
+          "text": "Good. Better than trying to live on the coffee here.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_FOOD_002",
+          "speaker": "DALE",
+          "text": "I tried that once. Wouldn't recommend it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D01_NOFOOD",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D01_NOFOOD_001",
+          "speaker": "DALE",
+          "text": "There are crackers in the bottom drawer. Still in the wrapper.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_NOFOOD_002",
+          "speaker": "DALE",
+          "text": "No promises about the coffee. It was here when I came in.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D01_BRIEF",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D01_BRIEF_001",
+          "speaker": "DALE",
+          "text": "Start with the log. I've marked what's done and what's left for you.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_BRIEF_002",
+          "speaker": "DALE",
+          "text": "Bank Three has two amber indicators. Amber is normal. Write it down if that changes.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_BRIEF_003",
+          "speaker": "DALE",
+          "text": "Your folder lists the local service records and the radio schedule. Get the dated copies. We need something to check our clocks against.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_BRIEF_004",
+          "speaker": "DALE",
+          "text": "Operations office is locked. The papers for tonight are already on your desk.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_BRIEF_005",
+          "speaker": "DALE",
+          "text": "Ward is on call for the morning run. She wants observations she can sign, not our best guess.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_BRIEF_006",
+          "speaker": "DALE",
+          "text": "You can reach me on the service line. If something doesn't fit the log, call before you throw anything away.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D01_BRIEF_007",
+          "speaker": "DALE",
+          "text": "All right. Have a good shift.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D11_POWER_PHONE",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D11_POWER_PHONE_001",
+          "speaker": "DALE",
+          "text": "Dale. You have the service sheet?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D11_POWER_PHONE_002",
+          "speaker": "DALE",
+          "text": "Then start with the feeder marked on that sheet. A receiver warning and a supply fault are two different things.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D11_POWER_PHONE_003",
+          "speaker": "DALE",
+          "text": "The junction station is down the short gravel turnoff. Leave the truck outside the service gate.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D11_POWER_PHONE_004",
+          "speaker": "DALE",
+          "text": "Use the service check on the cabinet. Note what the affected light does, not just what the indicator says.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D11_POWER_PHONE_005",
+          "speaker": "DALE",
+          "text": "There should be one clear result. If the result is not clear, leave it unresolved and call me.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D12_POWER_WALKIE",
+      "channel": "walkie",
+      "lines": [
+        {
+          "line_id": "D12_POWER_WALKIE_001",
+          "speaker": "DALE",
+          "text": "I hear you. Check the cabinet label against the service sheet.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D12_POWER_WALKIE_002",
+          "speaker": "DALE",
+          "text": "If they match, run the check and watch the light at the far end.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D12_POWER_WALKIE_003",
+          "speaker": "DALE",
+          "text": "Write down the result and the time. Keep that for the next check.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D21_SIGNAL_PHONE",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D21_SIGNAL_PHONE_001",
+          "speaker": "DALE",
+          "text": "Dale. What did it actually print?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D21_SIGNAL_PHONE_002",
+          "speaker": "DALE",
+          "text": "Minus thirty-nine. On the paper?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D21_SIGNAL_PHONE_003",
+          "speaker": "DALE",
+          "text": "Keep the original. Put the clock reading beside it before you do anything else.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D21_SIGNAL_PHONE_004",
+          "speaker": "DALE",
+          "text": "Do not correct the number just because it looks wrong.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D21_BEFORE",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D21_BEFORE_001",
+          "speaker": "DALE",
+          "text": "I've seen numbers that shouldn't have come out of that solver.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D21_BEFORE_002",
+          "speaker": "DALE",
+          "text": "I haven't worked out why. I kept the records.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D21_BEFORE_003",
+          "speaker": "DALE",
+          "text": "Keep yours too. We can argue about the explanation later.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D21_POWER",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D21_POWER_001",
+          "speaker": "DALE",
+          "text": "Check your inspection card. Put the test time beside the new printout.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D21_POWER_002",
+          "speaker": "DALE",
+          "text": "If you've cleared the supply fault, compare that time with this one.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D21_END",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D21_END_001",
+          "speaker": "DALE",
+          "text": "All right. Put the paper somewhere safe.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D21_END_002",
+          "speaker": "DALE",
+          "text": "Call me if the next observation disagrees with the first one.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D31_OFFICE_PHONE",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D31_OFFICE_PHONE_001",
+          "speaker": "DALE",
+          "text": "You found a spare.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_OFFICE_PHONE_002",
+          "speaker": "DALE",
+          "text": "I should have told you there was more than a service folder.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_OFFICE_PHONE_003",
+          "speaker": "DALE",
+          "text": "What are you looking at?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D31_WARD",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D31_WARD_001",
+          "speaker": "DALE",
+          "text": "Ward wants a result somebody else can repeat. She's right to.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_WARD_002",
+          "speaker": "DALE",
+          "text": "I had clippings, bad frames and people who remembered different nights.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_WARD_003",
+          "speaker": "DALE",
+          "text": "I kept the lot until I could put two observations on the same page.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D31_TAPE",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D31_TAPE_001",
+          "speaker": "DALE",
+          "text": "Watch the pole, not the patch.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_TAPE_002",
+          "speaker": "DALE",
+          "text": "The patch could be a recording fault. The pole gives you a fixed reference.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_TAPE_003",
+          "speaker": "DALE",
+          "text": "Use the field sheet. I marked the camera position.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D31_RECORD",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D31_RECORD_001",
+          "speaker": "DALE",
+          "text": "I haven't worked through those survey files.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_RECORD_002",
+          "speaker": "DALE",
+          "text": "The folder in my office is my own. I haven't changed an old report.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_RECORD_003",
+          "speaker": "DALE",
+          "text": "Keep the originals together. Check whose name is on the signed copy.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D31_END",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D31_END_001",
+          "speaker": "DALE",
+          "text": "Start with one thing you can check. Take a photograph from the same place.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D31_END_002",
+          "speaker": "DALE",
+          "text": "And don't take my word for something just because I wrote it down.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D41_FIELD_WALKIE",
+      "channel": "walkie",
+      "lines": [
+        {
+          "line_id": "D41_FIELD_WALKIE_001",
+          "speaker": "DALE",
+          "text": "Say that again. The service result and the light disagree?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D41_FIELD_WALKIE_002",
+          "speaker": "DALE",
+          "text": "You checked the ordinary supply, the backup and the indicator?",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D41_FIELD_WALKIE_003",
+          "speaker": "DALE",
+          "text": "Good. Write down every check you made. Keep that separate from what you think caused it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D41_FIELD_WALKIE_004",
+          "speaker": "DALE",
+          "text": "Bring the record back to SARO. Ward will need to read it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D51_LAST_PHONE",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "D51_LAST_PHONE_001",
+          "speaker": "DALE",
+          "text": "Reyes? I'm here.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D51_LAST_PHONE_002",
+          "speaker": "DALE",
+          "text": "If you've got witness statements, keep their exact words with the record.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D51_LAST_PHONE_003",
+          "speaker": "DALE",
+          "text": "Give Ward what you've actually checked. Leave the rest marked uncertain.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "D51_LAST_PHONE_004",
+          "speaker": "DALE",
+          "text": "Call me when you get back in.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D61_FIXED_FRAGMENT",
+      "channel": "radio",
+      "lines": [
+        {
+          "line_id": "D61_FIXED_FRAGMENT_001",
+          "speaker": "DALE",
+          "text": "Reyes? Dale. The logbook should be in front of you.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_LOCKED_OFFICE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_LOCKED_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_LOCKED_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "A coffee ring has spread across the word SPARE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_SERVICE_DRAWER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_SERVICE_DRAWER_001",
+          "speaker": "DESCRIPTION",
+          "text": "Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_SERVICE_DRAWER_002",
+          "speaker": "DESCRIPTION",
+          "text": "The tag reads OPERATIONS / SPARE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_OPEN_OFFICE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_OPEN_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The spare turns once. The latch catches on the frame until you lift the handle.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_OPEN_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_DESK_FIRST_LOOK",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_DESK_FIRST_LOOK_001",
+          "speaker": "DESCRIPTION",
+          "text": "A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_DESK_FIRST_LOOK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_READ_FIELD_INDEX",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_READ_FIELD_INDEX_001",
+          "speaker": "DESCRIPTION",
+          "text": "The first page lists what each item can establish. Most entries end with a question or a correction.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_READ_CLIPPINGS",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_READ_CLIPPINGS_001",
+          "speaker": "DESCRIPTION",
+          "text": "Two local cuttings, neither about a crash. A third rectangle on the page is empty.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_READ_CLIPPINGS_002",
+          "speaker": "DESCRIPTION",
+          "text": "In the margin: GET THE ORIGINAL BEFORE USING THE DATE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_READ_DALE_NOTE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_READ_DALE_NOTE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The note starts as a list of things to check. Halfway down, the handwriting gets smaller.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_SAVE_CONTACT",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_SAVE_CONTACT_001",
+          "speaker": "DESCRIPTION",
+          "text": "A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_START_FIELD_TAPE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_START_FIELD_TAPE_001",
+          "speaker": "DESCRIPTION",
+          "text": "A handwritten sleeve: SERVICE ROAD / FIELD 01. The tape counter has been copied onto the label.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_START_FIELD_TAPE_002",
+          "speaker": "DESCRIPTION",
+          "text": "There is no narration listed. The note on the sleeve says: WATCH THE POST, THEN THE LINE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_TAPE_COMPLETE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_TAPE_COMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The tape runs on past the movement. Wind, the fence, the same stretch of wire. Then the counter stops.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_FIELD_TAPE_COMPLETE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The final card gives a place to stand: the low culvert outside the service gate, beside the post with two white bands.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_TAKE_FIELD_FOLDER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_TAKE_FIELD_FOLDER_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_TAKE_FIELD_FOLDER_002",
+          "speaker": "DESCRIPTION",
+          "text": "It asks for a comparison from the same position, with the nearest pole and both conductors in frame. The tape may help explain what to look for.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "N01_ROUTINE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "N01_ROUTINE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The service copy records an open inspection complaint. The radio sheet is a programme schedule, not a recording of the broadcast.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "N01_ROUTINE_002",
+          "speaker": "DESCRIPTION",
+          "text": "Both copies are dated. Neither tells you what will happen later tonight.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "N01_COMPARE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "N01_COMPARE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The residual is on the new printout. The service copy predates it.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "N01_COMPARE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The old complaint and this printout belong on the same timeline. That does not make them the same event.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "N01_COMPARE_WRONG",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "N01_COMPARE_WRONG_001",
+          "speaker": "DESCRIPTION",
+          "text": "The copy records a complaint and an inspection request. It does not record the supply at the moment of the residual.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "N01_COMPARE_WRONG_002",
+          "speaker": "DESCRIPTION",
+          "text": "Use the actual inspection result and the later observation. The dates alone cannot settle the cause.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "N01_COMPARE_CAUTION",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "N01_COMPARE_CAUTION_001",
+          "speaker": "DESCRIPTION",
+          "text": "Comparison filed: earlier service complaint; later residual. A shared cause is not established.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "N01_COMPARE_CAUTION_002",
+          "speaker": "DESCRIPTION",
+          "text": "Keep the actual inspection result with the printout.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "N02_REFLECTION",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "N02_REFLECTION_001",
+          "speaker": "DESCRIPTION",
+          "text": "From the first position, the bright edge resembles a person behind the glass.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "N02_REFLECTION_002",
+          "speaker": "DESCRIPTION",
+          "text": "From the side, it follows the room lamp. The photograph shows the same reflection.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T01_SERVICE_LOG",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T01_SERVICE_LOG_001",
+          "speaker": "DESCRIPTION",
+          "text": "Inspection circuit. The open complaint describes a weak exterior lamp, not a failure of the observatory receiver.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T01_SERVICE_LOG_002",
+          "speaker": "DESCRIPTION",
+          "text": "The label on the service card matches the marked inspection front.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T01_REQUEST_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T01_REQUEST_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The service check compares the panel result with the actual inspection light.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T01_REQUEST_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Watch the marked light after the test. Do not file a result from the indicator alone.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T01_NORMAL_RESULT",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T01_NORMAL_RESULT_001",
+          "speaker": "DESCRIPTION",
+          "text": "The completed service check and the inspection light now agree.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T01_NORMAL_RESULT_002",
+          "speaker": "DESCRIPTION",
+          "text": "The ordinary lamp complaint is resolved under this control. Keep the actual completion time on the inspection card.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T01_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T01_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The check is not complete. There is no result to file yet.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T01_INCOMPLETE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The service card and the marked light are still available. Return when you can compare them.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T02_REFERENCE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T02_REFERENCE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The culvert, the two white bands and the nearest pole match the reference sheet.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T02_REFERENCE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The old photograph gives you a place to stand. It does not tell you which supply is carrying the light now.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T02_CHECKS",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T02_CHECKS_001",
+          "speaker": "DESCRIPTION",
+          "text": "The service indication, the local control and the light must be compared as separate observations.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T02_CHECKS_002",
+          "speaker": "DESCRIPTION",
+          "text": "A backup supply or a faulty indicator would be an ordinary explanation. Check those before drawing a conclusion.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T02_VERIFIED",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T02_VERIFIED_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local isolation result is recorded. The checked backup does not account for the light. The indicator has been compared with the independent service check.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T02_VERIFIED_002",
+          "speaker": "DESCRIPTION",
+          "text": "The marked light continues its visible sequence.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T02_VERIFIED_003",
+          "speaker": "DESCRIPTION",
+          "text": "Observation filed: under these controls, the light and the service result disagree. Cause unknown.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "T02_UNRESOLVED",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T02_UNRESOLVED_001",
+          "speaker": "DESCRIPTION",
+          "text": "Unresolved. The reference is useful, but the current supply and the visible light have not yet been accounted for together.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T02_UNRESOLVED_002",
+          "speaker": "DESCRIPTION",
+          "text": "Keep the reference and your checks. An unanswered observation is not a failed case.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "A02_COMPARE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "A02_COMPARE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The price sticker and the torn lower corner match the earlier reference.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "A02_COMPARE_002",
+          "speaker": "DESCRIPTION",
+          "text": "It is the same cardboard figure. Its position has changed.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "A02_CAUTION",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "A02_CAUTION_001",
+          "speaker": "DESCRIPTION",
+          "text": "The comparison establishes position and identity. It does not show what moved the figure.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "A02_FILED",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "A02_FILED_001",
+          "speaker": "DESCRIPTION",
+          "text": "Filed: same figure, changed position. The cause remains unconfirmed.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "P01_STUDIO_AFTER",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "P01_STUDIO_AFTER_001",
+          "speaker": "DESCRIPTION",
+          "text": "From inside the closed studio: the short rhythm of a printer. Then the ordinary carrier again.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "media_id": "VHS_DALE_FIELD_01",
+      "title": "Service Road / Field 01",
+      "timing_status": "planned_not_produced",
+      "duration_seconds": 72,
+      "beats": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 7,
+          "text": "SERVICE ROAD / FIELD 01\nCamera date incorrect. Use position, not timestamp."
+        },
+        {
+          "start_seconds": 7,
+          "end_seconds": 17,
+          "text": "Road side of the two-band post.\nCulvert beside the service gate."
+        },
+        {
+          "start_seconds": 17,
+          "end_seconds": 27,
+          "text": "Nearest pole and both wires in frame.\nThe lamp alone proves nothing about its supply."
+        },
+        {
+          "start_seconds": 27,
+          "end_seconds": 39,
+          "text": ""
+        },
+        {
+          "start_seconds": 39,
+          "end_seconds": 49,
+          "text": ""
+        },
+        {
+          "start_seconds": 49,
+          "end_seconds": 61,
+          "text": "Did the patch move with the camera?\nCompare the pole, not the tracking line."
+        },
+        {
+          "start_seconds": 61,
+          "end_seconds": 72,
+          "text": "Return to this position.\nCheck the ordinary supply first. Then make a fresh observation.\n— D."
+        }
+      ]
+    }
+  ]
+}

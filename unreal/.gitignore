@@ -8,6 +8,8 @@ Signal47/*.code-workspace
 # Bought models and sounds, and all audio (big, rebuilt by the import scripts): never in the public repo.
 Signal47/Content/Licensed/
 Signal47/Content/Audio/
+# The free models (CC BY and CC0, ~/Assets/signal47-free), rebuilt by Tools/freemodels/import_free.sh.
+Signal47/Content/Free/
 # The web game's scene, rebuilt by Tools/webexport (export.py then import_web.py); holds the bought models too.
 Signal47/Content/Web/
 Signal47/Content/WebData/

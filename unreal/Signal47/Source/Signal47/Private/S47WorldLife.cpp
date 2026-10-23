@@ -291,6 +291,7 @@ void US47WorldLife::Step(double Dt)
 	else Sky->HoleFrom = TNumericLimits<double>::Max(); // (Infinity: not tonight yet)
 	const TOptional<double> SunElev = !bTitle && Hooks.SunElev ? Hooks.SunElev() : TOptional<double>();
 	Sky->SetClock(bTitle ? 0 : Clock, SunElev);
+	W->SetSkyLighting(float(Sky->Dawn), Sky->SunDir, float(Sky->Sun), float(Sky->Flash));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Dawn, 0, 0.35);
 	const double FogK = Area != TEXT("roswell") ? NIGHT_FOG + (DAWN_FOG - NIGHT_FOG) * DawnK : NIGHT_FOG + (1 - NIGHT_FOG) * DawnK;
@@ -433,7 +434,8 @@ void US47WorldLife::ShareLights()
 	const TSharedPtr<FJsonObject> Share = Obj(W->LifeData(), TEXT("share"));
 	if (!Share || !M->World) return;
 	const FString Area = M->World->Area, Leg = M->World->Leg;
-	// a set's head slots taking another set's lamps, their colour k times (MotelFront/Diner/Town.shine)
+	// Retain shared story slots for queries, but never create another native light for them:
+	// the source light already reaches every surface (MotelFront/Diner/Town.shine).
 	auto Shine = [W](const TSharedPtr<FJsonObject>& Own, int32 Src, const TArray<int32>& Slots, double K)
 	{
 		if (!Own) return;
@@ -442,6 +444,7 @@ void US47WorldLife::ShareLights()
 		for (int32 j = 0; j < Head.Num(); ++j)
 		{
 			const int32 H = Head[j], I = Slots.IsValidIndex(j) ? Slots[j] : -1;
+			W->SuppressFloodLight(Set, H);
 			if (Src < 0 || I < 0) { W->SetFlood(Set, H, 0); continue; }
 			const FLinearColor P = W->FloodPos(Src, I);
 			W->SetFloodPool(Set, H, FVector(P.R, P.G, P.B), P.A, W->FloodCol(Src, I) * float(K), false);
@@ -482,6 +485,7 @@ void US47WorldLife::ShareLights()
 		{
 			const int32 O = Out[j];
 			if (O < 0) continue;
+			W->SuppressFloodLight(RoadSet, O);
 			if (!Near.IsValidIndex(j)) { W->SetFlood(RoadSet, O, 0); continue; }
 			const FLinearColor P = W->FloodPos(TSet, Near[j]);
 			W->SetFloodPool(RoadSet, O, FVector(P.R, P.G, P.B), P.A, W->FloodCol(TSet, Near[j]) * float(TOWN_ON_ROAD), false);
@@ -499,7 +503,9 @@ void US47WorldLife::ShareLights()
 		for (int32 j = 0; j < 2 && j < Out.Num(); ++j)
 		{
 			const int32 O = Out[j];
-			if (O < 0 || Signs[j] < 0) continue;
+			if (O < 0) continue;
+			W->SuppressFloodLight(Dst.Value, O);
+			if (Signs[j] < 0) continue;
 			const FLinearColor P = W->FloodPos(DSet, Signs[j]);
 			W->SetFloodPool(Dst.Value, O, FVector(P.R, P.G, P.B), P.A * float(NEON_REACH), W->FloodCol(DSet, Signs[j]) * float(NEON_ON_ROAD), false);
 		}

@@ -9,6 +9,7 @@
 #include "S47Inter.h"
 #include "S47Keys.h"
 #include "S47Web.h"
+#include "S47Startup.h"
 
 using namespace S47Three;
 
@@ -160,10 +161,11 @@ void AS47Walker::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	const double Dt = DeltaSeconds;
 	APlayerController* PC = Cast<APlayerController>(GetController());
+	const bool bInput = bActive && !S47Startup::Blocking();
 	Focused.Reset();
 	// the keys and the look, as Input.ts gives them
 	double LookX = 0, LookY = 0, Mx = 0, Mz = 0;
-	if (PC && bActive)
+	if (PC && bInput)
 	{
 		float DX = 0, DY = 0;
 		PC->GetInputMouseDelta(DX, DY);
@@ -194,7 +196,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 		if (Web.IsValid()) Web->SetPlayerEye(ToUE(View.Eye));
 		return;
 	}
-	if (PC && bActive)
+	if (PC && bInput)
 	{
 		Look(LookX * LookFine, LookY * LookFine);
 		const bool bRun = S47Keys::Down(PC, TEXT("run")) || (TestMove && bTestRun);
@@ -248,7 +250,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	if (Web.IsValid()) Web->SetPlayerEye(ToUE(EyeThree));
 
 	// Interaction.update: what the line of sight picks, within its range, with something to offer
-	if (!bActive || !Inter.IsValid()) return;
+	if (!bInput || !Inter.IsValid()) return;
 	Focused = Inter->Update(Camera->GetComponentLocation(), Camera->GetForwardVector());
 	if (!Focused.IsEmpty() && OnUse && PC && (S47Keys::Pressed(PC, TEXT("use")) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton)))
 	{

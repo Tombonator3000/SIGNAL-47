@@ -22,8 +22,8 @@ TArray<float> S47SignalVoice::Drive(double K)
 	return Curve;
 }
 
-FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise)
-	: Ctx(InCtx)
+FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, double InRate)
+	: Ctx(InCtx), Rate(FMath::Clamp(InRate, 0.1, 4.0))
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
 	FS47AudioContext& C = *Ctx;
@@ -40,6 +40,7 @@ FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, cons
 	Stat = C.CreateGain(); Stat->Gain.SetValue(0);
 	N->Connect(Bp); Bp->Connect(StatGate); StatGate->Connect(Stat); Stat->Connect(Comp);
 	auto Trem = C.CreateOscillator(); Trem->Frequency.SetValue(4.55);
+	Rates(N, N->PlaybackRate, 1); Rates(Bp, Bp->Frequency, 1700); Rates(Trem, Trem->Frequency, 4.55);
 	TremDepth = C.CreateGain(); TremDepth->Gain.SetValue(0); Trem->Connect(TremDepth); TremDepth->Connect(StatGate->Gain);
 
 	// the whine: two detuned buzzing oscillators and a comb-filtered noise, through a
@@ -55,6 +56,8 @@ FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, cons
 	Pitch->Connect(Pd); Pd->Connect(O1->Frequency); Pd->Connect(O2->Frequency);
 	auto Sweep = C.CreateOscillator(); Sweep->Frequency.SetValue(0.13); auto Sd = C.CreateGain(); Sd->Gain.SetValue(650);
 	Sweep->Connect(Sd); Sd->Connect(WhineBand->Frequency);
+	Rates(WhineBand.ToSharedRef(), WhineBand->Frequency, 1900); Rates(RingOsc, RingOsc->Frequency, 37); Rates(O1, O1->Frequency, 1460); Rates(O2, O2->Frequency, 1473);
+	Rates(Pitch, Pitch->Frequency, 0.21); Rates(Pd, Pd->Gain, 260); Rates(Sweep, Sweep->Frequency, 0.13); Rates(Sd, Sd->Gain, 650);
 	// metal scraped slowly: noise in a short comb whose length drifts
 	auto Sn = C.CreateBufferSource(); Sn->Buffer = Noise; Sn->bLoop = true; Sn->PlaybackRate.SetValue(0.37);
 	auto CombDelay = C.CreateDelay(0.05); CombDelay->DelayTime.SetValue(0.0027);
@@ -62,6 +65,7 @@ FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, cons
 	auto Cd = C.CreateOscillator(); Cd->Frequency.SetValue(0.09); auto Cdd = C.CreateGain(); Cdd->Gain.SetValue(0.0009); Cd->Connect(Cdd); Cdd->Connect(CombDelay->DelayTime);
 	auto Sg = C.CreateGain(); Sg->Gain.SetValue(0.22);
 	Sn->Connect(CombDelay); CombDelay->Connect(Fb); Fb->Connect(CombDelay); CombDelay->Connect(Sg);
+	Rates(Sn, Sn->PlaybackRate, 0.37); Rates(CombDelay, CombDelay->DelayTime, 0.0027, true); Rates(Cd, Cd->Frequency, 0.09); Rates(Cdd, Cdd->Gain, 0.0009, true);
 	Og->Connect(WhineBand); Sg->Connect(WhineBand);
 	WhineBand->Connect(Ring); Ring->Connect(Whine); Whine->Connect(Comp);
 	Comb = Fb;
@@ -71,6 +75,22 @@ FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, cons
 	ThumpBus->Connect(Shaper); Shaper->Connect(Comp);
 
 	for (const TSharedPtr<FS47ScheduledSourceNode>& S : TArray<TSharedPtr<FS47ScheduledSourceNode>>{ N, Trem, RingOsc, O1, O2, Pitch, Sweep, Sn, Cd }) { S->Start(); Nodes.Add(S); }
+}
+
+void FS47SignalVoice::Rates(const TSharedRef<FS47AudioNode>& Node, FS47AudioParam& P, double Base, bool bTime)
+{
+	Rated.Add({ &P, Node, Base, bTime });
+	P.SetValue(bTime ? Base / Rate : Base * Rate);
+}
+
+void FS47SignalVoice::SetRate(double InRate)
+{
+	InRate = FMath::Clamp(InRate, 0.1, 4.0);
+	if (FMath::IsNearlyEqual(InRate, Rate)) return;
+	Rate = InRate;
+	FS47AudioContext::FBatch Batch(*Ctx);
+	const double Now = Ctx->CurrentTime();
+	for (const FRated& R : Rated) R.P->SetTargetAtTime(R.bTime ? R.Base / Rate : R.Base * Rate, Now, 0.25);
 }
 
 void FS47SignalVoice::Frame(double InClarity, double InLevel, double T)
@@ -95,21 +115,23 @@ void FS47SignalVoice::Thump(double Strength)
 {
 	FS47AudioContext& C = *Ctx;
 	const double T = C.CurrentTime() + 0.005;
+	// (Unreal: R, the tape's speed; 1 as the web version has it, slower and lower below 1)
+	const double R = Rate;
 	auto Env = C.CreateGain(); Env->Gain.SetValueAtTime(0, T);
-	Env->Gain.LinearRampToValueAtTime(Strength, T + 0.006); Env->Gain.ExponentialRampToValueAtTime(0.001, T + 0.34);
+	Env->Gain.LinearRampToValueAtTime(Strength, T + 0.006 / R); Env->Gain.ExponentialRampToValueAtTime(0.001, T + 0.34 / R);
 	Env->Connect(ThumpBus);
 	const double Parts[2][3] = { { 118, 41, 1 }, { 236, 82, 0.35 } };
 	for (const auto& Part : Parts)
 	{
-		auto O = C.CreateOscillator(); O->Frequency.SetValueAtTime(Part[0], T); O->Frequency.ExponentialRampToValueAtTime(Part[1], T + 0.16);
+		auto O = C.CreateOscillator(); O->Frequency.SetValueAtTime(Part[0] * R, T); O->Frequency.ExponentialRampToValueAtTime(Part[1] * R, T + 0.16 / R);
 		auto Og = C.CreateGain(); Og->Gain.SetValue(Part[2]); O->Connect(Og); Og->Connect(Env);
-		O->Start(T); O->Stop(T + 0.36);
+		O->Start(T); O->Stop(T + 0.36 / R);
 	}
-	auto N = C.CreateBufferSource(); N->Buffer = NoiseBuf();
-	auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Frequency.SetValue(310); Bp->Q.SetValue(2.2);
-	auto Ng = C.CreateGain(); Ng->Gain.SetValueAtTime(0.5 * Strength, T); Ng->Gain.ExponentialRampToValueAtTime(0.001, T + 0.09);
+	auto N = C.CreateBufferSource(); N->Buffer = NoiseBuf(); N->PlaybackRate.SetValue(R);
+	auto Bp = C.CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Frequency.SetValue(310 * R); Bp->Q.SetValue(2.2);
+	auto Ng = C.CreateGain(); Ng->Gain.SetValueAtTime(0.5 * Strength, T); Ng->Gain.ExponentialRampToValueAtTime(0.001, T + 0.09 / R);
 	N->Connect(Bp); Bp->Connect(Ng); Ng->Connect(ThumpBus);
-	N->Start(T); N->Stop(T + 0.1);
+	N->Start(T); N->Stop(T + 0.1 / R);
 }
 
 TSharedPtr<FS47AudioBuffer> FS47SignalVoice::NoiseBuf()

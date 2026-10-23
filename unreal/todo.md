@@ -1,5 +1,50 @@
 # Todo for unreal/
 
+
+## Grafikkpass på port-gfx, 23. oktober 2026
+
+- [x] Viderefør WIP og flett siste core/Props/dokumentasjon uten egne Props-endringer.
+- [x] Materialcook uten fallback, 118 profiler/CRT-glass og integrasjonskommando for generert innhold. V5-selvtest (1220) og native fem emitting-slots av/på; V9 terminalfront visuelt PASS.
+- [x] Korrigerte 20 + 20 referanser og 40 gjennomgåtte før/etter-par med originalhash/galleri. Props-forskjeller er oppgitt.
+- [x] Full 38 × 6 samme-cook PSO-opptak, 4215 stabile PSO-er, sluttcook 599 og runtime-GUID/222 bundled graphics: cachebevis 9/9 PASS.
+- [x] Kald/varm sluttpakke, komplette første 10 verdens-/synlige sekunder. READY 11,337/5,594 s, synlige maks 31,585/31,888 ms og ingen rammer over 33,333 ms.
+- [x] Sluttpakkens sju tilfeller, 1220-selvtest og 36 fasebilder visuelt kontrollert, samt korrigerte seks grafikkstrømtilstander. Gamle matrix-dark-bilder brukes ikke som av-bevis.
+- [x] PreviousNight-kjøring og to identisk-geometri fyllpar visuelt PASS, compare/contrast-control.png og contrast-yard.png, med proveniens i contrast-manifest.json.
+- [x] Åtte lengre High/1440p-prøver ved natt/daggry PASS 93,81–106,73 fps, maks p95 18,142 ms. Korte matriseprøver og Low/Ultra er dokumentert, ikke bruk dem som stabilt 60 fps-bevis.
+- [x] Sluttregresjon PASS 151,3 s: tittel, pause, notatbok, kjøring, THE EVENT og valgt 30 fps, 285 synlige cap-intervaller med 33,333457 ms i snitt.
+- [x] Sluttall og integrasjonskommando i LIGHTING/egen OPP-rad/minne/logg. Content/Audio/Licensed/Free-lenker fjernet med mål bevart, OpenOrder gjenopprettet og syntaks/diffkontroll PASS.
+- [x] Kilde og bundlet SPC levert i vanlig commit på port-gfx, med alle grafikkprøver og bildepar dokumentert. Ingen installasjon, push eller PR bestilt.
+
+## Anomaly spotting og byens funksjon (2026-10-23)
+
+- [x] Utdypet design- og gjennomføringsplan etter Toms tilslutning til retningen: `ANOMALY_PLAN.md`. Bare planarbeid, ingen ny gameplay eller installasjon.
+- [x] Revidert planen med tidligere kveld, romsligere kapitteltider, trafostasjon og bedre bybygninger etter Toms oppfølging. Anbefalt start 18:00 og residual 00:13:47; ingen implementert retiming.
+- [x] Innarbeidet Toms innkjøring med lystig radio, valgfritt matstopp og skiftstart ved SARO 18:00, samt Dale med Kinski-stemme og hemmelig kontor. Bare plan, ingen nye opptak eller modeller.
+- [x] Skrevet og strukturert hele manuspakken i `Narrative/EveningShift`: innkjøring/diner, fjernoverlevering og samtaler, kontornøkkel/filer/VHS, trafo og sammenligninger. JSON-/eksportkontroll, opptaksalias og 14 offline forfatterruter er kontrollert.
+- [ ] Produser 109 unike stemmetakes og det 72 sekunders bevegelige VHS-opptaket fra pakken; importer og tidssett undertekstene mot faktisk lyd. Alle nye mediefiler er foreløpig pending.
+- [ ] Trinn 0: mål dagens reise med ekte input, klokke, transport, triggere og passiv venting; behold baseline. Prøv også lang All Night og avreise etter 05:20: dagens ch6 setter avreisen til 05:20, så mulig tilbakesprang må dokumenteres og løses før ny fullnatt godkjennes.
+- [ ] Trinn 0: tidsreferanseoversikt for 1986-hendelsen og kapittelporter, datoakse gjennom midnatt, kveldsradio/NPC-er og eldre lagringer. Bevar 1947-tider og 05:29-finalen.
+- [ ] Trinn 1: bygg kveldsstart, tidlig kit/truck og N01/N02/A02/P01 med normalreferanser før hendelsen, etterfølgende sammenligning og lagring. Første bedre bygningsskall er bensinstasjon, suvenirbutikk og studio i én sammenhengende gatebit.
+- [ ] Trinn 1: I01/D01 med innkjøringsbil, radio, valgfri matbestilling, egne tidlige diner-tilstander, lagret ankomst og Dales telefonoverlevering 18:00. Rollen er KUN telefon/radio/walkie; ingen fysisk Dale. Nye karakterklipp må virke uavhengig av generell opplesning.
+- [ ] Trinn 1: prøv begge delstrekninger, migrering, sen ankomst og fem observerbare Gauntlet-mål. Merk testkuttet; ikke kall prøven hel gjennomspilling.
+- [ ] Trinn 2: ny trafostasjon i ørkenen med avstikker, T01/T02, kontrollresultat, lys/lyd og lagring. Skill vanlig feil fra senere avvik; bevar STATION 01 og K3s rolle.
+- [ ] Trinn 2: D02, fysisk reservenøkkel til Dales eksisterende kontordør, private utklipp/filer og faktisk bevegelig VHS/TV med lyd, pause/strøm/lagring. Ett funn gir etterprøvbar feltoppgave; ikke erstatte Nora, avisavsløringen eller P13.
+- [ ] Trinn 2: gjør kvittering, kart, telefon og vitner til etterprøving; prøv All Night fra 04:10 og lysbølgen før 04:55. Ferdigstill bedre diner, sheriffkontor og vaskeri med nødvendige rom.
+- [ ] Trinn 3: fjern himmelform, sen egen alien og større UFO-observasjon; samordne eksisterende glimt/bortføringer. Resten av byens utvendige bygg får samme kvalitetsløft, med bevart funksjon og nye kveld/natt/gry-bilder.
+- [ ] Trinn 4: hele natten med ekte input, riktig klokke og kapittelflyt, lagring, nødvendig regresjon og målt ytelse. Fullnatt og opplevelsesmål er foreløpig UNVERIFIED.
+
+
+## Native lys og skygger (2026-10-22)
+
+- [x] Erstatt materialenes flood/hemi og gamle projeksjoner med ekte lamper; behold historienes tilstand og delte lyskilder.
+- [x] Lommelykt og billykter med skygger, volumetrisk tåke, Lumen, svak måne/skylight og levende daggry. Fast eksponering og VHS/Clean, uten lysbryter mellom Web og Unreal.
+- [x] Lokalt editorbygg og målrettede native scenarier fra SARO til den gamle veien. Side-ved-side-bilder og detaljer i LIGHTING.md.
+- [x] Taklys fra faktiske armaturer i rom/korridor/annex/lab, synkron emissive, skrivebordslamper fra skjermåpningene og egen grønn glød foran hver registrerte skjerm.
+- [x] Varme, skyggekastende array-spotter fra de elleve eksisterende feltarmaturene. Grå diffuserflater og Ops-ghost under strømbrudd rettet.
+- [x] High/1440p med TSR fra 60 %: rom 73,4 fps, gård 95,5 fps, p95 15,330/11,527 ms uten andre tunge prosesser i målevinduet. Low/Clean 90,0 fps i rommet, Ultra 39,2 fps i gården. Detaljer i LIGHTING.md.
+- [ ] Pakket bygg og menneskelig gjennomspilling med de nye lysene. Standardutgaven er ikke oppdatert av dette arbeidet.
+- [ ] Kjør det isolerte materialsteget ved integrasjon med eldre generert Content, før kandidat eller pakket utgave brukes.
+
 ## Prøven av prologen
 
 - [x] Prosjektet bygger, modellene er importert, og den pakkede builden starter med kontrollrommet, gården og himmelen (2026-10-21).
@@ -130,7 +175,7 @@
 - [ ] Kassettspilleren: bytte den egenlagde tape deck-modellen med en bedre modell. NB: opptakeren i «Utstyr lyd UFO» på skrivebordet er pakket ut av «They Are Here»-demoen (UModel); den kan ikke brukes uten å kjøpe originalpakken (Horror Engine). Den kjøpte Vintage Liminal-pakken har kassetter og en Broadcast VCR, ingen kassettspiller.
 - [ ] Tonene: en kombinasjon gir en annen låt og låser opp noe (hemmelighet, hint eller spor). Poenget må bestemmes.
 - [ ] Ut av bilen overalt (feil) og hopp: under arbeid.
-- [ ] Alien-modell: «Alien» på skrivebordet er pakket ut av «They Are Here»-demoen (SK_Alien8_v2, RealisticAlien8); ikke lisensiert for oss. Kjøpe originalen eller lage en egen.
+- [x] Egen alien laget i Blender med nye teksturer, 50-beins rigg og idle: `/home/tom/Desktop/Alien - Egen modell/`. FBX/GLB og UE 5.8.4-import består. Gammel modell er urørt referanse. Integrasjon og prøving i pakket spill gjenstår.
 - [ ] Terminalene i verden: kameraet zoomer inn på den fysiske skjermen, og skjermbildet vises på skjermmodellen (som i Black Map). Under arbeid for mottakerkonsollen og driftsterminalen.
 - [ ] Grafikk: mer detaljerte modeller, bedre lys og skygger (neste store steg).
 
@@ -138,4 +183,11 @@
 ## Unarius, overlevert til Claude 22. oktober
 
 - [ ] Fortsett codex/unarius-tv fra TV_PROGRAMME.md: bruk siste bygde binærfil med tidsrettelsen, verifiser faktisk bevegelig film på begge TV-er over tid, koble filmlyd om ønsket, prøv fallback og 47-sekundershendelse/opptak/lagring på nytt, integrer og pakk før standardutgaven erstattes.
-- [ ] Egenprodusert alien må modelleres separat i Blender. Desktop/Alien er fortsatt eksportmodellen etter rydding av navn og filstier.
+- [x] Separat egenprodusert Blender-alien er levert i `Desktop/Alien - Egen modell`, med importprøvde Unreal-assets. `Desktop/Alien` er urørt referanse; den nye figuren er ikke integrert i spillet ennå.
+
+- [x] KELVORA retro-TV og slitt radio plassert i Unreal, 22.10: motellkontoret, rom 6 og SAROs arkivskap. Levende Unarius-film og lyd, av/på, radio og TV-hendelsens lagring verifisert. 1218 selvtester og ni målrettede scenarioer; installasjonen bak skrivebordssnarveien oppdatert med lagringer bevart. Se `Signal47/Tools/kelvora/README.md`.
+## Etter Toms utelys-/fotolabprøve, 22. oktober 2026
+
+- [x] 30 utvendige armaturspotter ved SARO og motellet, navngitte labdrivere og kopling til innflettet fremkallingsregel; bygg, 1218 selvtester og målrettede bilder. Se `LIGHTING.md`.
+- [ ] Claude gjennomgår `revision3/compare`, pakker i avtalt kø, prøver lukket dør, rød fremkalling, forstørrer, tåket kopi/gjentakelse og normal lysretur med ekte input; SARO-kutt/tilbake og Room 6s lys.
+- [ ] Ny High/1440p `stat unit` med én tung jobb om gangen etter dette utelyspasset. Forrige lysleveranses tall er bevart som historikk, ikke målt på nytt her.

@@ -1,6 +1,7 @@
 #include "S47CaseBoard.h"
 #include "S47Keys.h"
 
+#include "Containers/Ticker.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Application/IInputProcessor.h"
 #include "Internationalization/Regex.h"
@@ -309,6 +310,42 @@ void US47CaseBoard::Open(const FString& Place, const FString& Region)
 	View = SNew(SS47Board).UI(M->UI).Spec(O);
 	M->UI->Open(View.ToSharedRef(), O.OnClose);
 	if (OnOpen) OnOpen(View.ToSharedRef());
+	FString Test;
+	if (FParse::Value(FCommandLine::Get(), TEXT("S47BoardTest="), Test, false)) RunTest(Test);
+}
+
+// -S47BoardTest=look:ch1;tie:a|b;miss:a|b;hold:a>b;offer;hint:P04;all;wait:1.5;nohow — steps on
+// the open board for the screenshots, one every 0.4 s (wait adds to the next): look at a patch, tie
+// a thread as the player would, one that does not hold, hold a thread over a pin, offer or show
+// the hint (of a question, or the open one in view), the whole board, the help strip dismissed.
+void US47CaseBoard::RunTest(const FString& Steps)
+{
+	TArray<FString> List;
+	Steps.ParseIntoArray(List, TEXT(";"));
+	double At = 1.0;
+	TWeakObjectPtr<US47CaseBoard> Self = this;
+	for (const FString& Step : List)
+	{
+		FString Verb = Step, Arg;
+		Step.Split(TEXT(":"), &Verb, &Arg);
+		if (Verb == TEXT("wait")) { At += FCString::Atod(*Arg); continue; }
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Self, Verb, Arg](float)
+		{
+			if (!Self.IsValid() || !Self->View.IsValid()) return false;
+			SS47Board& V = *Self->View;
+			FString A, B;
+			if (Verb == TEXT("look")) V.Look(Arg);
+			else if (Verb == TEXT("all")) V.ShowAll();
+			else if ((Verb == TEXT("tie") || Verb == TEXT("miss")) && Arg.Split(TEXT("|"), &A, &B)) V.Link(A, B);
+			else if (Verb == TEXT("hold") && Arg.Split(TEXT(">"), &A, &B)) V.HoldThread(A, B);
+			else if (Verb == TEXT("offer")) V.OfferHint(Arg);
+			else if (Verb == TEXT("hint")) V.ShowHint(Arg);
+			else if (Verb == TEXT("nohow")) V.HideHow();
+			UE_LOG(LogTemp, Display, TEXT("S47: board test %s %s"), *Verb, *Arg);
+			return false;
+		}), At);
+		At += 0.4;
+	}
 }
 
 void US47CaseBoard::Refresh() { if (View.IsValid() && M && M->UI && M->UI->Modal()) View->Render(); }
