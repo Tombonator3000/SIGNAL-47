@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "synthetic": true,
+  "human_listened": false,
+  "note_nb": "Stemmeprofil per pack.json-identitet. Profil-ID og referansehash er festet; generate.py avviser en endret referanse i stedet for å bruke en annen stemme.",
+  "profiles": {
+    "kinski": {
+      "actors": ["DALE"],
+      "profile_id": "3cf0d3a5",
+      "profile_name": "Klaus Kinski – sint parodi (Fitzcarraldo)",
+      "kind": "clone",
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
+      "source_provenance": "web/production/kinski/provenance.json",
+      "basis_nb": "Toms uttrykkelige valg: eksisterende godkjent Kinski-profil med samme innstillinger som Kinski-korpuset. Dale er bare fjernstemme (telefon, walkie, radio)."
+    },
+    "waitress": {
+      "actors": ["WAITRESS"],
+      "profile_id": "84bc5b84",
+      "profile_name": "SIGNAL 47 fictional woman caller (synthetic CC0 cast)",
+      "kind": "clone",
+      "reference_sha256": "822d78c5181ea0bd72da74815e8d8ff59e4cc9a1063638c38c478f6388a731f4",
+      "source_provenance": "web/production/radiocast/provenance.json (role woman: Kyutai voice-donations/Selfie.wav, CC0-1.0)",
+      "basis_nb": "Ingen eksisterende servitriseprofil finnes. Den eneste kvinnestemmen som ikke er en navngitt karakter (Bacall er Nora). Profilen brukes ellers av en anonym innringer i Earls sending (8 korte klipp); ikke en navngitt rolle. Registeret (målt median F0 ca. 193 Hz) passer en voksen kvinnestemme, men alder, kjønn og rolleprestasjon er ikke lyttekontrollert.",
+      "rejected_alternatives_nb": "c5964307 (Bacall) er Nora. demo0001 er VoiceStudios medfølgende demostemme uten dokumentert kildegrunnlag i prosjektet."
+    },
+    "evening_host": {
+      "actors": ["RADIO_HOST"],
+      "profile_id": "d65b2bb6",
+      "profile_name": "SIGNAL 47 fictional old caller (synthetic CC0 cast)",
+      "kind": "clone",
+      "reference_sha256": "e3a941093326680aef4ec886d8bfddeca682efe55623493ac4be3a55306e38f6",
+      "source_provenance": "web/production/radiocast/provenance.json (role old: Kyutai voice-donations/oldNerd.wav, CC0-1.0)",
+      "basis_nb": "Ingen eksisterende profil for vanlig lokal kveldsvert. Ikke Earl (494881fc, Art Bell) og ikke Kinski. Valgt fordi referansen er en lett, munter hverdagsprat ('very cozy, a great day to hack') og profilen bare brukes av én anonym innringer i tre klipp hos Earl. Mannlig register (målt median F0 ca. 102 Hz) er ikke verifisert kjønn/alder.",
+      "rejected_alternatives_nb": "494881fc er Earl/Art Bell. 1e28f816 er 1947-nyhetsoppleseren i hendelsen; samme stemme som 1986-vert kunne leses som et hint. 1a160d70 brukes i flere innringerklipp (8) og har et svært dypt register (ca. 85 Hz). Ensemblestemmene (Stanton, Stack, Lynch, Price, Serling) er navngitte roller. demo0001 mangler dokumentert kildegrunnlag."
+    }
+  },
+  "not_covered": {
+    "WARD": "Ingen Ward-replikker i manifestet. Ward får aldri Dale-/Kinski-stemme.",
+    "ATTENDANT": "Ingen ekspeditørreplikker i manifestet.",
+    "NORA": "Ikke en aktør i denne pakken."
+  }
+}

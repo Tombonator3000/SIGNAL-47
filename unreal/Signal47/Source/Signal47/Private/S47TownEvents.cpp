@@ -52,6 +52,8 @@ FVector FS47TownEvents::Pos(const FVector& Local) const { return Town ? Town->Gr
 void FS47TownEvents::Update(double Dt, const FS47TownEventsIn& S)
 {
 	T = S.T; if (!Town || !M) return;
+	// The normal evening reference is not interrupted by legacy phone/car/lamp set pieces.
+	if (Town->bAnomalyBaseline) { if (Now != TEXT("none")) StopAll(); return; }
 	const double Day = FMath::Fmod(FMath::Fmod(S.Clock, 86400.0) + 86400, 86400.0);
 	const FVector Cam = S.Cam.Pos, Local = Town->Group.WorldToLocal(Cam);
 	FS47TownSeen& Seen = M->TownSeen; US47Audio* A = M->Audio;
@@ -61,7 +63,7 @@ void FS47TownEvents::Update(double Dt, const FS47TownEventsIn& S)
 		LineCheck = 0; int32 N = 0; for (const auto& Mark0 : S47TownMarks(Seen)) if (S47Lines::LineOfMark(Mark0.Kind) == TEXT("A")) ++N;
 		if (N >= 3) { Seen.Add(TEXT("lineA")); Note(S47Text::ClockText(S.Clock, false) + TEXT(". Three on one line. Drawn in on the map: through Caliche, and on to the north-west.")); Save(); }
 	}
-	if (Town->bCutoutOut)
+	if (!Town->bAnomalyCutoutOwned && Town->bCutoutOut)
 	{
 		const FVector P = Town->CutoutAt; const double Dist = FMath::Sqrt(FMath::Square(Local.X - P.X) + FMath::Square(Local.Z - P.Z));
 		if (!bCutoutSeen && S.bOk && Dist < 45)

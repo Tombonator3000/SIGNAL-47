@@ -1,0 +1,275 @@
+{
+  "version": 1,
+  "cues": {
+    "D01_HANDOVER_001": {
+      "seed": 46,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.285997+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Ray Yeisdale, the logbook should be in front of you.'",
+          "utc": "2026-10-23T17:09:57.723866+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Rayeyes? Dale, the logbook should be in front of you.'",
+          "utc": "2026-10-23T17:10:00.018355+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Ray Ice? Dale! The logbook should be in front of you!'",
+          "utc": "2026-10-23T17:10:02.132473+00:00"
+        }
+      ]
+    },
+    "D01_FOOD_002": {
+      "seed": 48,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286012+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: \"Right, that once wouldn't recommend it.\"",
+          "utc": "2026-10-23T17:10:15.559926+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: \"Try it that once. Wouldn't recommend it.\"",
+          "utc": "2026-10-23T17:10:17.532239+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: \"Try it that once. Wouldn't recommend it.\"",
+          "utc": "2026-10-23T17:10:19.519586+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: \"Try it that once. Wouldn't recommend it!\"",
+          "utc": "2026-10-23T17:10:21.488287+00:00"
+        },
+        {
+          "previous_seed": 47,
+          "reason": "ASR mismatch: \"Right that once. Wouldn't recommend it.\"",
+          "utc": "2026-10-23T17:10:23.448678+00:00"
+        }
+      ]
+    },
+    "D11_POWER_PHONE_002": {
+      "seed": 45,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286015+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Then start with the feet I marked on that sheet. A receiver warning and a supply fold are two different things.'",
+          "utc": "2026-10-23T17:10:09.631029+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'And start with the feeder marked on that sheet. A receiver warning and a supply fault are two different things.'",
+          "utc": "2026-10-23T17:10:12.274290+00:00"
+        }
+      ]
+    },
+    "D12_POWER_WALKIE_001": {
+      "seed": 44,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286016+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Hear you! Check the cabinet label against the service sheet!'",
+          "utc": "2026-10-23T17:10:43.860748+00:00"
+        }
+      ]
+    },
+    "D21_BEFORE_001": {
+      "seed": 44,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286017+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: \"The numbers that shouldn't have come out of that solver!\"",
+          "utc": "2026-10-23T17:10:46.508048+00:00"
+        }
+      ]
+    },
+    "D21_BEFORE_002": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286018+00:00"
+        }
+      ]
+    },
+    "D31_OFFICE_PHONE_001": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286019+00:00"
+        }
+      ]
+    },
+    "D41_FIELD_WALKIE_001": {
+      "seed": 43,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286020+00:00"
+        }
+      ]
+    },
+    "D51_LAST_PHONE_001": {
+      "seed": 45,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286020+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: \"Ray Ice! I'm here!\"",
+          "utc": "2026-10-23T17:10:04.914125+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: \"Ray Ice? I'm here.\"",
+          "utc": "2026-10-23T17:10:06.915871+00:00"
+        }
+      ]
+    },
+    "D01_BRIEF_005": {
+      "seed": 42,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286021+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'What is on call for the morning run? She wants observations she can sign, not our best guess!'",
+          "utc": "2026-10-23T17:10:25.994724+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Ward is on call for the morning run. She wants observation she can sign, not our best guess.'",
+          "utc": "2026-10-23T17:10:28.269752+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'World is on call for the morning run. She wants observations she can sign, not our best guess.'",
+          "utc": "2026-10-23T17:10:33.006985+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'What is on call for the morning run? She wants observations she can sign, not our best guess.'",
+          "utc": "2026-10-23T17:10:35.741973+00:00"
+        },
+        {
+          "previous_seed": 47,
+          "reason": "ASR mismatch: \"Warden's on call for the morning run. She wants observation she can sign, not our best guess.\"",
+          "utc": "2026-10-23T17:10:40.415448+00:00"
+        },
+        {
+          "previous_seed": 48,
+          "reason": "Reverted to seed 42: seeds 43-48 either misheard Ward (What/World/Warden) or had the same observations/she s-sh merge as seed 42.",
+          "utc": "2026-10-23T17:12:52.973874+00:00"
+        }
+      ]
+    },
+    "D31_WARD_003": {
+      "seed": 45,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286022+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'I kept a lot until I could put two observations on the same page!'",
+          "utc": "2026-10-23T17:10:49.742420+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'I kept a lot until I could put two observations on the same page.'",
+          "utc": "2026-10-23T17:10:54.649976+00:00"
+        }
+      ]
+    },
+    "I10_BACK_ON_ROAD_001": {
+      "seed": 44,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR round 1 (seed 42): missing, substituted or mispronounced words",
+          "utc": "2026-10-23T17:06:45.286023+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: \"You're listening to local radio here in Kalishi.\"",
+          "utc": "2026-10-23T17:11:01.108340+00:00"
+        }
+      ]
+    },
+    "I01_DRIVE_001": {
+      "seed": 42,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "ASR mismatch: 'Good afternoon, Kalish. Hope your Sunday has been an easy one.'",
+          "utc": "2026-10-23T17:11:08.356674+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Good afternoon, Kalish. Hope your Sunday has been an easy one.'",
+          "utc": "2026-10-23T17:11:12.135431+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Good afternoon, Kalish. Hope your Sunday has been an easy one.'",
+          "utc": "2026-10-23T17:11:19.877605+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Good afternoon, Kelly. Hope your Sunday has been an easy one.'",
+          "utc": "2026-10-23T17:11:22.855380+00:00"
+        },
+        {
+          "previous_seed": 46,
+          "reason": "ASR mismatch: 'Good afternoon, Kalish. Hope your Sunday has been an easy one.'",
+          "utc": "2026-10-23T17:11:25.471110+00:00"
+        },
+        {
+          "previous_seed": 47,
+          "reason": "Reverted to seed 42: seeds 43-47 gave no better ASR for the place name Caliche (Kalish/Kelly/Colleague); seed 42 keeps every other word and the closest name rendering.",
+          "utc": "2026-10-23T17:12:52.973874+00:00"
+        }
+      ]
+    }
+  }
+}

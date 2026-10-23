@@ -381,7 +381,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	X = InArgs._Extras;
 	Album = X.Album;
 	static const FRegexPattern Pnn(TEXT("^p\\d\\d$"));
-	auto IsFinding = [](const FS47Doc& D) { FRegexMatcher M(Pnn, D.Id); return M.FindNext() || D.Id == TEXT("finding"); };
+	auto IsFinding = [](const FS47Doc& D) { FRegexMatcher M(Pnn, D.Id); return M.FindNext() || D.Id == TEXT("finding") || (D.Id == TEXT("anomaly:n01") || D.Id == TEXT("anomaly:n02") || D.Id == TEXT("anomaly:a02") || D.Id == TEXT("anomaly:p01")); };
 	for (const FS47Doc& D : InArgs._Docs) if (D.Kind == TEXT("photo") && !D.Image.IsEmpty()) Photos.Add(D);
 	for (const FS47Doc& D : InArgs._Docs) if (IsFinding(D)) Findings.Add(D);
 	for (const FS47Doc& D : InArgs._Docs) if (!(D.Kind == TEXT("photo") && !D.Image.IsEmpty()) && !IsFinding(D)) Papers.Add(D);

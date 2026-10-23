@@ -18,6 +18,12 @@ public:
 	TFunction<void(const FS47Area&)> OnCarCollider;
 	FVector CutoutAt = FVector(-6.4, 0, 1450), CarShoulder = FVector(6.9, 0, 1690);
 	void SetCutout(bool bOn);
+	// Pilot owns one physical figure; the old town event keeps its historical flags only.
+	bool bAnomalyCutoutOwned = false, bAnomalyBaseline = false;
+	FS47Obj CutoutObject() const { return Cutout; }
+	void SetPilotCutout(bool bMoved);
+	void ReleasePilotCutout();
+	FVector PilotCutoutAt(bool bMoved) const;
 	void LampWave(double T) { WaveT0 = T; }
 	TArray<FVector> WaveOrder() const;
 	static constexpr double WAVE_STEP = 1.3, WAVE_HOLD = 24;

@@ -47,7 +47,7 @@ struct FS47SnapOptions
 	int32 W = 640;
 	TFunction<void(TArray<FColor>& Raw, int32 W, int32 H)> Post;
 };
-struct FS47Snap { TArray<FColor> Px; int32 W = 0, H = 0; double Mean = 0; };
+struct FS47Snap { TArray<FColor> Px; int32 W = 0, H = 0; double Mean = 0; bool bRendered = false; };
 
 // core/FieldCamera.ts: the SARO field camera. Raising it narrows the view to a 16:10 frame; what
 // is inside the frame is exactly what the photograph records. An exposure renders the scene from

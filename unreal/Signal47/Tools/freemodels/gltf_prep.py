@@ -418,7 +418,12 @@ def prepare(work, report=False):
 		if cuts:
 			# the model without the cut pieces, and each piece, all with the model's pivot
 			above, roots = branch(g)
-			parts.append({'name': name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris, 'drop': [n for ns in cuts.values() for n in ns]})
+			# An interactive variant can share a model with ordinary static world props.
+			# Opt in to preserve their complete default asset and give the cut body its own name.
+			if cfg.get('keep_complete'):
+				parts.append({'name': name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris})
+			body_name = name + '_body' if cfg.get('keep_complete') else name
+			parts.append({'name': body_name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris, 'drop': [n for ns in cuts.values() for n in ns]})
 			for cn, ns in cuts.items():
 				parts.append({'name': cn, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': 0, 'keep': ns})
 		elif cfg.get('split'):
@@ -457,12 +462,13 @@ def prepare(work, report=False):
 			if p.get('keep') or p.get('drop'):
 				gp = dict(g, nodes=[dict(n) for n in g['nodes']])
 				filter_nodes(gp, {'keep': p.get('keep'), 'drop': p.get('drop', [])})
+			part_tris = measure(gp, gp['scenes'][gp.get('scene', 0)]['nodes'])[2] if cfg.get('keep_complete') else p['tris']
 			f = write_part(gp, path, p['roots'], above, scale, p['lo'], p['hi'], safe(out_name))
 			apply_repaint(gp, cfg, path, f)
 			size = [(p['hi'][k] - p['lo'][k]) * scale for k in range(3)]
 			# in glTF's own axes (x, depth z, height y); free_models.json has the bounds in Unreal's
-			nanite = cfg.get('nanite', p['tris'] >= NANITE_TRIS and 'BLEND' not in alpha)
-			entry['parts'].append({'asset': safe(out_name), 'gltf': f, 'tris': p['tris'], 'nanite': bool(nanite),
+			nanite = cfg.get('nanite', part_tris >= NANITE_TRIS and 'BLEND' not in alpha)
+			entry['parts'].append({'asset': safe(out_name), 'gltf': f, 'tris': part_tris, 'nanite': bool(nanite),
 				'size_cm': {'x': round(size[0] * 100, 1), 'depth': round(size[2] * 100, 1), 'height': round(size[1] * 100, 1)}})
 		plan.append(entry)
 		if report:

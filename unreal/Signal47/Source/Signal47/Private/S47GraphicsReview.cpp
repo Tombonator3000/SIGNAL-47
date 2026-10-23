@@ -70,7 +70,14 @@ static const FCamera Cameras[] = {
  { TEXT("menu-load"), TEXT("saro"), 2.8, 3.5, 0.22, -0.10, -1, EState::MenuLoad },
  { TEXT("menu-notebook"), TEXT("saro"), 2.8, 3.5, 0.22, -0.10, -1, EState::MenuNotebook },
  { TEXT("terminal-online"), TEXT("saro"), -0.05, 3.4, 2.5, -0.1, -1, EState::IndicatorsOnline },
- { TEXT("terminal-dark"), TEXT("saro"), -0.05, 3.4, 2.5, -0.1, -1, EState::IndicatorsDark }
+ { TEXT("terminal-dark"), TEXT("saro"), -0.05, 3.4, 2.5, -0.1, -1, EState::IndicatorsDark },
+ // Original Blender asset review cameras; opt-in so historical review routes retain their views.
+ { TEXT("array-front"), TEXT("saro"), 22, -68, 2.72, 0.38 },
+ { TEXT("array-rear"), TEXT("saro"), -2, -20, -0.48, 0.42 },
+ { TEXT("array-field"), TEXT("saro"), 38, 8, 0.14, 0.12 },
+ { TEXT("radio-exterior"), TEXT("diner"), 8011.5, 2040, -1.20, 0.06 },
+ { TEXT("radio-lobby"), TEXT("diner"), 8021.5, 2031.4, -1.57, -0.05 },
+ { TEXT("radio-studio"), TEXT("diner"), 8026.6, 2040, 0.95, -0.15 }
 };
 void Tick(AS47Web* W, float)
 {

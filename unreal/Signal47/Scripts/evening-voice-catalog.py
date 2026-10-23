@@ -9,13 +9,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
+import shutil
 import sys
+import tempfile
 import wave
 
 PROJECT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = PROJECT.parent / "Narrative/EveningShift/generated/recording_manifest.json"
+DEFAULT_TAKES = PROJECT.parent / "Narrative/EveningShift/voice/takes.json"
 
 
 class CatalogError(ValueError):
@@ -61,7 +65,7 @@ def wav_info(path):
     return {"duration": frames / 48000, "frames": frames, "sha256": digest.hexdigest()}
 
 
-def catalog(manifest, subtitles, wav_dir):
+def catalog(manifest, subtitles, wav_dir, takes=None):
     require(isinstance(manifest, dict) and manifest.get("pack_id") == "signal47_evening_shift",
             "expected EveningShift recording_manifest.json")
     require(manifest.get("planned_format") == {"sample_rate_hz": 48000,
@@ -111,6 +115,9 @@ def catalog(manifest, subtitles, wav_dir):
     require(actual == expected, "WAV set mismatch; missing: " + ", ".join(sorted(expected - actual))
             + "; unexpected: " + ", ".join(sorted(actual - expected)))
     measured = {cue: wav_info(wav_dir / (cue + ".wav")) for cue in sorted(required)}
+    if takes is not None:
+        require(takes.get("format") == manifest["planned_format"], "takes PCM target differs from manifest")
+        require(set(takes.get("takes", {})) == required, "takes metadata does not match required recordings")
     clips, lookup = [], {}
     for cue, item in by_id.items():
         source = item.get("reuse_of") or cue
@@ -121,13 +128,30 @@ def catalog(manifest, subtitles, wav_dir):
                 f"{cue}: different takes collide in S47RadioVoice's role/text lookup")
         lookup[key] = source
         declared_file = item.get("audio_file")
-        require(declared_file is None or declared_file == source + ".wav", f"{cue}: supplied filename differs from manifest")
+        require(declared_file is None or declared_file in (source + ".wav", "EveningShift/" + source + ".wav"),
+                f"{cue}: supplied filename differs from manifest")
         declared_duration = item.get("duration_seconds")
         require(declared_duration is None or (type(declared_duration) in (int, float)
                 and abs(declared_duration - info["duration"]) <= 1 / 48000), f"{cue}: stale declared duration")
+        timing = {}
+        if takes is not None:
+            take = takes["takes"][source]
+            require(take.get("file") == "EveningShift/" + source + ".wav", f"{cue}: takes filename mismatch")
+            require(take.get("sha256") == info["sha256"], f"{cue}: WAV SHA-256 differs from approved take")
+            require(type(take.get("duration_seconds")) in (int, float)
+                    and abs(take["duration_seconds"] - info["duration"]) <= 1 / 48000,
+                    f"{cue}: stale measured take duration")
+            start, end = take.get("speech_start_seconds"), take.get("speech_end_seconds")
+            require(all(type(t) in (int, float) and math.isfinite(t) for t in (start, end))
+                    and 0 <= start < end <= info["duration"], f"{cue}: invalid speech timing")
+            require(lines[cue].get("timing_status") == "from_audio_clip_relative"
+                    and lines[cue].get("start_seconds") == start and lines[cue].get("end_seconds") == end,
+                    f"{cue}: subtitle timing differs from measured take")
+            timing = {"speech_start_seconds": start, "speech_end_seconds": end}
         clips.append({"id": cue, "text": text, "voice": item["voice_profile"], "file": source + ".wav",
+                      "asset": "v_" + source,
                       "raw": "voice/evening/" + source + ".wav", "duration": info["duration"],
-                      "frames": info["frames"], "sha256": info["sha256"], "reuse_of": item.get("reuse_of")})
+                      "frames": info["frames"], "sha256": info["sha256"], "reuse_of": item.get("reuse_of"), **timing})
     return {"evening": {"folder": "/Game/Audio/Voice/Evening", "catalog": {"clips": clips},
             "validation": {"pack_id": manifest["pack_id"], "cue_count": len(clips),
                            "unique_recording_count": len(measured), "sample_rate_hz": 48000,
@@ -135,10 +159,35 @@ def catalog(manifest, subtitles, wav_dir):
                            "scope": "File identity, PCM format, frame duration and aliases only; listening review required."}}}
 
 
+def import_bank(entry, wav_dir, raw_dir, voices=None):
+    """Copy validated PCM unchanged and publish its bank last; leave other banks intact."""
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    index = raw_dir / "voices.json"
+    if voices is None:
+        voices = read_json(index) if index.exists() else {}
+    require(isinstance(voices, dict), "voices.json must contain an object")
+    for clip in entry["evening"]["catalog"]["clips"]:
+        if clip["reuse_of"]:
+            continue
+        destination = raw_dir / clip["raw"]
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(wav_dir / clip["file"], destination)
+    voices.update(entry)
+    payload = json.dumps(voices, ensure_ascii=False, indent=1, allow_nan=False) + "\n"
+    # Readers see either the old complete index or the new complete index.
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=raw_dir,
+                                     prefix=".voices-", suffix=".json", delete=False) as stream:
+        temporary = Path(stream.name)
+        stream.write(payload)
+    temporary.replace(index)
+    return voices
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--subtitles", type=Path, help="defaults to subtitles.json beside the manifest")
+    parser.add_argument("--takes", type=Path, default=DEFAULT_TAKES, help="approved take hashes and measured speech timings")
     parser.add_argument("--wav-dir", type=Path, required=True, help="109 approved original cue-ID WAV files, without the alias")
     parser.add_argument("--output", type=Path, required=True, help="isolated JSON entry for later merge into voices.json")
     parser.add_argument("--check", action="store_true", help="compare existing output; never write")
@@ -151,7 +200,8 @@ def main():
                 "output must be separate from supplied WAVs and current Content assets")
         require(not args.output.is_symlink(), "output must not be a symlink")
         entry = catalog(read_json(args.manifest),
-                        read_json(args.subtitles or args.manifest.with_name("subtitles.json")), wav_dir)
+                        read_json(args.subtitles or args.manifest.with_name("subtitles.json")), wav_dir,
+                        read_json(args.takes))
         payload = (json.dumps(entry, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode("utf-8")
         if args.check:
             require(output.is_file() and output.read_bytes() == payload, "catalog missing or stale; regenerate the isolated entry")

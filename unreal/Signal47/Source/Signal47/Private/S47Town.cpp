@@ -85,7 +85,31 @@ void FS47Town::GlowColor(int32 I, uint32 C)
 	}
 }
 
-void FS47Town::SetCutout(bool bOn) { bCutoutOut = bOn; Cutout.SetVisible(bOn); }
+void FS47Town::SetCutout(bool bOn) { if (bAnomalyCutoutOwned) return; bCutoutOut = bOn; Cutout.SetVisible(bOn); }
+FVector FS47Town::PilotCutoutAt(bool bMoved) const
+{
+	// Near the shuttered studio on the return visit, within the same walkable street segment.
+	const double X = bMoved ? 17.8 : 20.31, Z = bMoved ? 2044.0 : 2062.3;
+	double Y = S47RoadTerrain::SurfaceY(X, Z);
+	if (!bMoved)
+	{
+		// The building floor is level while the pavement slopes: use the actual window anchor.
+		const FS47Obj Window = Proxy(TEXT("souvenir"));
+		Y = Window ? Group.WorldToLocal(Window.WorldPosition()).Y - .62 : Y + 1.22;
+	}
+	return FVector(X, Y, Z);
+}
+void FS47Town::SetPilotCutout(bool bMoved)
+{
+	bAnomalyCutoutOwned = true; bCutoutOut = bMoved;
+	Cutout.SetPosition(PilotCutoutAt(bMoved)); Cutout.SetRotY(PI / 2); Cutout.SetVisible(true);
+}
+void FS47Town::ReleasePilotCutout()
+{
+	bAnomalyCutoutOwned = false; bCutoutOut = false;
+	Cutout.SetPosition(FVector(CutoutAt.X, S47RoadTerrain::SurfaceY(CutoutAt.X, CutoutAt.Z), CutoutAt.Z));
+	Cutout.SetRotY(0); Cutout.SetVisible(false);
+}
 TArray<FVector> FS47Town::WaveOrder() const
 {
 	TArray<FVector> Out; for (int32 I = Lamps.Num() - 1; I >= 0; --I) Out.Add(FVector(-3.9 + Origin.X, Origin.Y, Lamps[I].Z + Origin.Z)); return Out;

@@ -27,12 +27,25 @@ FS47Evening::FS47Evening(US47Main* InM) : M(InM)
  {
   if (I.Lines.Num() != 1) return {};
   return Bank.Resolve(I.Lines[0].Text, 0, I.Voice);
- }, [this](const FS47RadioClip&) { const auto S = Pack.CurrentScene(); return S && (S->Channel == TEXT("phone") || S->Channel == TEXT("walkie") || S->Channel == TEXT("radio")); });
+ }, [this](const FS47RadioClip&) { const auto S = Pack.CurrentScene(); return S && (S->Channel == TEXT("phone") || S->Channel == TEXT("walkie") || S->Channel == TEXT("radio")); }, [this](const FS47RadioClip&)
+ {
+  FS47RecordedDialogue::FOutput Out;
+  if (const auto* S=Pack.CurrentScene())
+  {
+   Out.Channel=S->Channel; Out.bRadioBus=S->Channel==TEXT("radio");
+   if (S->Channel==TEXT("physical"))
+    if (const auto* I=M->Inter->Get(TEXT("diner:waitress"))) Out.At=I->Object.WorldPosition();
+  }
+  return Out;
+ });
  RadioVoice = MakeShared<FS47RecordedDialogue>(M->Audio, TEXT("evening"), [](const FS47DialogueInput& I, FS47RadioVoice& Bank) -> TOptional<TArray<FS47RadioClip>>
  {
   if (I.Lines.Num() != 1) return {};
   return Bank.Resolve(I.Lines[0].Text, 0, I.Voice);
- }, [](const FS47RadioClip&) { return true; }); // Receiver bandwidth, using the existing remote-line filter.
+ }, [](const FS47RadioClip&) { return true; }, [](const FS47RadioClip&)
+ {
+  FS47RecordedDialogue::FOutput Out; Out.bRadioBus=true; Out.Channel=TEXT("car-radio"); return Out;
+ }); // Receiver bandwidth followed by the player's radio volume bus.
  // Physical triggers are explicit: a choice-only scene can never become a global use target.
  const auto Previous = M->World->OnParked;
  M->World->OnParked = [this, Previous](const FString& Place) { if (Previous && !Opening()) Previous(Place); Parked(Place); };
@@ -41,6 +54,7 @@ FS47Evening::~FS47Evening()
 {
  // UObject purge order can destroy AS47Web's node arrays before US47Main.
  // Stop() is for a live night/title transition; destruction only releases owned audio.
+ if (RadioCaptionAlive) *RadioCaptionAlive=false;
  if (Voice) Voice->Stop();
  if (RadioVoice) RadioVoice->Stop();
  if (Music) { Music->Stop(); Music->Disconnect(); }
@@ -55,6 +69,8 @@ void FS47Evening::StopRing()
 }
 void FS47Evening::Stop()
 {
+ if (RadioCaptionAlive) *RadioCaptionAlive=false;
+ RadioCaptionAlive.Reset(); bRadioCaptionShown=false;
  StopRing(); if (Voice) Voice->Stop();
  if (RadioVoice) RadioVoice->Stop();
  if (Music) { Music->Stop(); Music->Disconnect(); Music.Reset(); }
@@ -160,6 +176,9 @@ void FS47Evening::Resume()
 }
 void FS47Evening::ShowDialogue()
 {
+ // Repeated use/capture of the current conversation must not replace its panel:
+ // UI::Open closes the previous panel and its close callback stops the voice.
+ if (bDialogueOpen && M->ModalOpen()) return;
  const auto* S = Pack.CurrentScene(); if (!S || !M->UI) { AfterDialogue(); return; }
  if (!Pack.CurrentLine() && S->Choices.IsEmpty()) { Pack.Advance(); Changed(); AfterDialogue(); return; }
  bDialogueOpen = true;
@@ -169,12 +188,18 @@ void FS47Evening::ShowDialogue()
  if (L)
  {
   if (L->bRecord) Rows.Add(S47Kit::Unread(S47Kit::Sub(L->Speaker)));
-  Rows.Add(S47Kit::Unread(S47Kit::Text(L->Text)));
   FS47DialogueInput Input; Input.Voice=L->VoiceProfile; Input.Lines.Add({L->Speaker,L->Text});
   const bool Available = L->bRecord && Voice->Available(Input);
   Voice->SetEnabled(M->Audio->bCharacterVoices);
-  if (L->bRecord) Rows.Add(S47Kit::Small(!Available ? TEXT("Voice recording pending / subtitles only") : !M->Audio->bCharacterVoices ? TEXT("Character voices off") : TEXT("Recorded character dialogue")));
-  if (SpokenLine!=L->Id) { SpokenLine=L->Id; if (Available) Voice->Play(Input); }
+  if (L->bRecord && (!Available || !M->Audio->bCharacterVoices)) Rows.Add(S47Kit::Small(!Available ? TEXT("Recording unavailable / subtitles only") : TEXT("Character voices off")));
+  if (SpokenLine!=L->Id) { SpokenLine=L->Id; if (Available) { Voice->Play(Input); VoiceStartedAt=Voice->StartedAt(); } }
+  // In a manual conversation the caption begins at measured speech onset, then
+  // stays as a readable transcript until Continue. The audio clock freezes in pause.
+  const auto Ctx=M->Audio->Ctx;
+  const double CaptionAt=VoiceStartedAt+L->SpeechStart;
+  const FString Text=L->Text;
+  const bool bTimed=Available && M->Audio->bCharacterVoices && Voice->Playing() && L->Duration>0;
+  Rows.Add(S47Kit::Unread(S47Kit::Text(TAttribute<FString>::CreateLambda([Ctx,CaptionAt,Text,bTimed]{return bTimed && Ctx && Ctx->CurrentTime()<CaptionAt ? FString() : Text;}),TAttribute<int32>(0))));
   Rows.Add(S47Kit::Button(TEXT("Continue"),[this]{Voice->Stop(); M->UI->Close(true); bDialogueOpen=false; Pack.Advance(); Changed(); ShowDialogue();},true));
  }
  else
@@ -193,7 +218,9 @@ void FS47Evening::ShowDialogue()
  }
  const FString Current=S->Id;
  if (Pack.Flag(TEXT("food_bought")) && !Pack.Flag(TEXT("intro_arrived"))) Rows.Add(S47Kit::Small(Pack.Flag(TEXT("arrival_order_burger"))?TEXT("Burger, fries and coffee / one paid order"):TEXT("Sandwich, chips and coffee / one paid order")));
- M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Col(Rows),820),[this,Current]{bDialogueOpen=false; SpokenLine.Empty(); Voice->Stop(); Changed();});
+ // This panel owns its character queue. The generic description reader must
+ // neither offer a second Kinski narration nor label paid-order UI as unrecorded.
+ M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Unread(S47Kit::Col(Rows)),820),[this,Current]{bDialogueOpen=false; SpokenLine.Empty(); Voice->Stop(); Changed();});
 }
 void FS47Evening::AfterDialogue()
 {
@@ -268,8 +295,9 @@ void FS47Evening::RadioStep(double Dt)
  // on return, retaining its unread duration and cursor rather than skipping it.
  if (!Audible)
  {
+  if (RadioCaptionAlive) *RadioCaptionAlive=false;
   if (RadioVoice->Playing() || RadioVoice->Loading()) RadioVoice->Stop();
-  RadioSpokenLine.Empty(); bRadioRecorded=false;
+  RadioSpokenLine.Empty(); bRadioRecorded=false; bRadioCaptionShown=false;
  }
  const auto* S=RadioPack.CurrentScene();
  if (Audible && !S && RadioRest<=0)
@@ -285,6 +313,8 @@ void FS47Evening::RadioStep(double Dt)
    {
     if (RadioSpokenLine!=L->Id)
     {
+     if (RadioCaptionAlive) *RadioCaptionAlive=false;
+     RadioCaptionAlive=MakeShared<bool>(true); bRadioCaptionShown=false;
      RadioSpokenLine=L->Id;
      FS47DialogueInput Input; Input.Voice=L->VoiceProfile; Input.Lines.Add({L->Speaker,L->Text});
      const auto Found=L->bRecord?RadioVoice->Bank->Resolve(L->Text,0,L->VoiceProfile):TOptional<TArray<FS47RadioClip>>();
@@ -294,6 +324,7 @@ void FS47Evening::RadioStep(double Dt)
      {
       // Restart the current recorded line after an interruption; never skip its cursor.
       RadioVoice->Play(Input);
+      RadioStartedAt=RadioVoice->StartedAt();
       const FS47DialogueStatus ClipStatus=RadioVoice->Status();
       if (ClipStatus.Clips.Num()==1 && ClipStatus.Clips[0].Duration>0 && RadioVoice->Playing())
       {
@@ -307,8 +338,19 @@ void FS47Evening::RadioStep(double Dt)
       if (Available && !M->Audio->bCharacterVoices) RadioHold=(*Found)[0].Duration;
       else if (RadioHold<=0) RadioHold=FMath::Clamp(2.5+L->Text.Len()/20.0,4.0,11.0);
      }
-     const FString CaptionState=bRadioRecorded?TEXT("recorded evening host"):Available?(M->Audio->bCharacterVoices?TEXT("recording unavailable / subtitles only"):TEXT("character voices off")):TEXT("voice recording pending");
-     M->UI->Toast(TEXT("RADIO: LOCAL EVENING HOST [")+CaptionState+TEXT("] / ")+L->Text,float(RadioHold));
+     if (!bRadioRecorded)
+     {
+      const FString CaptionState=Available?(M->Audio->bCharacterVoices?TEXT("recording unavailable / subtitles only"):TEXT("character voices off")):TEXT("recording unavailable / subtitles only");
+      M->UI->Toast(TEXT("RADIO: LOCAL EVENING HOST [")+CaptionState+TEXT("] / ")+L->Text,float(RadioHold));
+      bRadioCaptionShown=true;
+     }
+    }
+    if (bRadioRecorded && !bRadioCaptionShown && M->Audio->Ctx->CurrentTime()>=RadioStartedAt+L->SpeechStart)
+    {
+     const auto Ctx=M->Audio->Ctx; const auto Alive=RadioCaptionAlive;
+     const double End=RadioStartedAt+(L->SpeechEnd>0?L->SpeechEnd:L->Duration);
+     M->UI->Toast(TEXT("RADIO: LOCAL EVENING HOST / ")+L->Text,float(FMath::Max(0.01,End-Ctx->CurrentTime())),[Ctx,Alive]{return *Alive?Ctx->CurrentTime():1e20;});
+     bRadioCaptionShown=true;
     }
     RadioHold-=Dt;
     const bool Finished=bRadioRecorded?(!RadioVoice->Playing() && !RadioVoice->Loading()):RadioHold<=0;
@@ -370,6 +412,7 @@ void FS47Evening::Step(double Dt)
  if (!TestMode.IsEmpty() && !M->World->bBusy) { const FString Mode=TestMode; TestMode.Empty(); BootstrapTest(Mode); }
  if (bDialogueOpen && !M->ModalOpen()) bDialogueOpen=false;
  ControlTest(Dt);
+ ControlEntranceTest(Dt);
 }
 S47J::FObj FS47Evening::Save() const
 {
@@ -426,5 +469,18 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
 {
  FString Error; const bool Ok=FS47EveningPack::SelfTest(Error);
  Lines.Add((Ok?FString(TEXT("PASS")):FString(TEXT("FAIL")))+TEXT(" EveningShift pack runtime control scenarios: ")+Error);
- return Ok;
+ bool Valid=Ok;
+ auto Check=[&](bool Good,const TCHAR* What){Valid&=Good;Lines.Add(FString(Good?TEXT("PASS evening vehicles: "):TEXT("FAIL evening vehicles: "))+What);};
+ FS47EveningVisual V(nullptr);
+ const FVector Bay(4.5,-0.62,14), Moved(-12,-0.62,14);
+ V.SetParked(false);V.SetParked(true);Check(V.ParkedPosition().Equals(Bay),TEXT("missing old visitor pose restores the clear visitor bay"));
+ V.ParkPersonal(Bay,UE_DOUBLE_PI);Check(V.ParkedPosition().Equals(Bay),TEXT("visitor bay is outside entrance, annex and service pad"));
+ V.ParkPersonal(Moved,UE_DOUBLE_PI);Check(V.ParkedPosition().Equals(Moved),TEXT("moving the car to clear ground preserves its pose"));
+ for (const FVector& P : {FVector(2,0,8),FVector(8.9,0,8),FVector(8,0,1),FVector(4,0,4)})
+ {
+  V.ParkPersonal(P,0.7);Check(V.ParkedPosition().Equals(Bay) && FMath::IsNearlyEqual(V.ParkedHeading(),UE_DOUBLE_PI),TEXT("unsafe old parking pose restores the clear visitor bay"));
+ }
+ FS47Truck T;T.SetPose(FVector(9,0.2,15),FVector(0.25,0.7,-0.18));T.SetParkPose(FVector(8.9,0,8),UE_DOUBLE_PI);
+ Check(T.Position.Equals(FVector(8.9,0,8)) && T.Rotation.Equals(FVector(0,UE_DOUBLE_PI,0)),TEXT("canonical service parking drops inherited ramp pitch and roll"));
+ return Valid;
 }

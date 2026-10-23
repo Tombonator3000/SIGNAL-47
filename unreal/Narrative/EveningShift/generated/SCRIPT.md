@@ -1,6 +1,6 @@
 # SIGNAL / 47: Evening Shift
 
-Forfatterpakke. Ikke runtime-integrert. Ingen lyd eller video er produsert.
+Forfatterpakke. Ikke runtime-integrert. Stemmeopptak: 109 rene takes finnes (voice/). Ingen video er produsert.
 
 Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakstider.
 

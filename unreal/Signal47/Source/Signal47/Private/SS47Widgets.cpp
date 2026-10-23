@@ -348,7 +348,7 @@ void SS47Hud::Rebuild()
 		if (!T->Who.IsEmpty()) In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(T->Who.ToUpper())).Font(Term(22, 3)).ColorAndOpacity(Amber())];
 		In->AddSlot().AutoHeight().HAlign(HAlign_Center)
 		[
-			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(true).WrapTextAt(P(676)).Justification(ETextJustify::Center)
+			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(T->Line.Len() > 42).WrapTextAt(P(676)).Justification(ETextJustify::Center)
 			.LineHeightPercentage(LinePercent(Type(Px), Px * 1.4f))
 		];
 		const TWeakPtr<FToast> W = T;

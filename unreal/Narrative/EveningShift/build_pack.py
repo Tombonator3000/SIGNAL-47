@@ -3,6 +3,8 @@
 
 JSON modules are the source. Run normally to export, or --check to require
 byte-identical generated files without writing. Python standard library only.
+Finished voice takes are read from voice/takes.json (written by voice/verify.py from
+the real WAV files); their durations and speech timings fill the manifest/subtitles.
 """
 from __future__ import annotations
 
@@ -169,8 +171,8 @@ def validate():
         if type(value) is not type(expected[key]) or value != expected[key]:
             fail(f"canon.{key}", f"expected {expected[key]!r}")
     production = obj(pack["production"], "production", ["audio_status", "video_status", "runtime_status", "voice_target", "note_nb"])
-    for key in ("audio_status", "video_status"):
-        enum(production[key], ["pending"], f"production.{key}")
+    enum(production["audio_status"], ["pending", "voice_takes_recorded"], "production.audio_status")
+    enum(production["video_status"], ["pending"], "production.video_status")
     enum(production["runtime_status"], ["not_integrated", "commute_handover_integrated_later_phases_gated"], "production.runtime_status")
     target = obj(production["voice_target"], "voice_target", ["sample_rate_hz", "sample_format", "channels"])
     if (type(target["sample_rate_hz"]) is not int or type(target["channels"]) is not int
@@ -307,7 +309,34 @@ def validate():
                 or alias_actor["voice_profile"] != source_actor["voice_profile"]
                 or alias_line["text"] != source_line["text"]):
             fail("recording_aliases", f"{alias} -> {source}: actor, voice profile and exact text must match")
+    pack["_takes"] = validate_takes(pack, line_records, actors, aliases)
     return pack, modules
+
+
+def validate_takes(pack, line_records, actors, aliases):
+    """voice/takes.json: audio-derived facts per recorded cue. Absent file = nothing recorded."""
+    path = ROOT / "voice" / "takes.json"
+    required = [lid for lid, line in line_records.items() if actors[line["speaker"]]["record"] and lid not in aliases]
+    takes = {}
+    if path.exists():
+        data = obj(read_json(path), "takes.json", ["version", "note_nb", "format", "takes"])
+        if data["format"] != pack["production"]["voice_target"]:
+            fail("takes.json", "format must match production.voice_target")
+        for lid, take in mapping(data["takes"], "takes.json.takes").items():
+            where = f"takes.json:{lid}"
+            if lid not in line_records or lid not in required:
+                fail(where, "not a recorded cue that needs its own take (aliases reuse their source)")
+            obj(take, where, ["file", "sha256", "duration_seconds", "speech_start_seconds", "speech_end_seconds"])
+            string(take["file"], where)
+            string(take["sha256"], where)
+            duration, start, end = (number(take[k], where) for k in ("duration_seconds", "speech_start_seconds", "speech_end_seconds"))
+            if not 0 <= start < end <= duration:
+                fail(where, "need 0 <= speech start < speech end <= duration")
+            takes[lid] = take
+    complete = bool(required) and all(lid in takes for lid in required)
+    if (pack["production"]["audio_status"] == "voice_takes_recorded") != complete:
+        fail("production.audio_status", "voice_takes_recorded exactly when voice/takes.json covers every required cue")
+    return takes
 
 
 def json_bytes(value):
@@ -315,7 +344,12 @@ def json_bytes(value):
 
 
 def render(pack, modules):
-    script = ["# SIGNAL / 47: Evening Shift", "", "Forfatterpakke. Ikke runtime-integrert. Ingen lyd eller video er produsert.", "",
+    takes = pack["_takes"]
+    aliases = pack["recording_aliases"]
+    recorded = len(takes)
+    audio_note = (f"Stemmeopptak: {recorded} rene takes finnes (voice/). Ingen video er produsert." if recorded
+                  else "Ingen lyd eller video er produsert.")
+    script = ["# SIGNAL / 47: Evening Shift", "", f"Forfatterpakke. Ikke runtime-integrert. {audio_note}", "",
               "Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakstider.", ""]
     voice = io.StringIO(newline="")
     writer = csv.writer(voice, lineterminator="\n")
@@ -331,16 +365,21 @@ def render(pack, modules):
             for line in scene["lines"]:
                 actor = pack["actors"][line["speaker"]]
                 script += [f"**{line['speaker']} [{line['id']}]**: {line['text']}", "", f"*{line['delivery_nb']}*", ""]
+                take = takes.get(aliases.get(line["id"], line["id"])) if actor["record"] else None
+                status = ("reuses_recording" if line["id"] in aliases else "recorded") if take else "pending"
                 if actor["record"]:
-                    writer.writerow([line["id"], scene["id"], line["speaker"], scene["channel"], actor["voice_profile"], line["text"], line["delivery_nb"], "pending", pack["recording_aliases"].get(line["id"], "")])
+                    writer.writerow([line["id"], scene["id"], line["speaker"], scene["channel"], actor["voice_profile"], line["text"], line["delivery_nb"], status, aliases.get(line["id"], "")])
                     recordings.append({"line_id": line["id"], "scene_id": scene["id"], "actor": line["speaker"],
                                        "channel": scene["channel"], "voice_profile": actor["voice_profile"],
-                                       "status": "pending", "reuse_of": pack["recording_aliases"].get(line["id"]),
-                                       "recording_required": line["id"] not in pack["recording_aliases"],
-                                       "audio_file": None, "duration_seconds": None})
+                                       "status": status, "reuse_of": aliases.get(line["id"]),
+                                       "recording_required": line["id"] not in aliases,
+                                       "audio_file": take["file"] if take else None,
+                                       "duration_seconds": take["duration_seconds"] if take else None})
                 subs.append({"line_id": line["id"], "speaker": line["speaker"], "text": line["text"],
-                             "voiced": actor["record"], "start_seconds": None, "end_seconds": None,
-                             "timing_status": "pending_audio" if actor["record"] else "interaction_controlled"})
+                             "voiced": actor["record"],
+                             "start_seconds": take["speech_start_seconds"] if take else None,
+                             "end_seconds": take["speech_end_seconds"] if take else None,
+                             "timing_status": ("from_audio_clip_relative" if take else "pending_audio") if actor["record"] else "interaction_controlled"})
             for choice in scene["choices"]:
                 script += [f"- **{choice['id']}**: {choice['label']} → `{choice['next']}`",
                            f"  Krav: `{json.dumps(choice['requires'], ensure_ascii=False)}`; ved valg: `{json.dumps(choice['on_select'], ensure_ascii=False)}`"]
@@ -360,14 +399,22 @@ def render(pack, modules):
             subtitle_media.append({"media_id": media["id"], "title": media["title"], "timing_status": "planned_not_produced", "duration_seconds": media["duration_seconds"], "beats": beats})
         for item in module["strings"]:
             script += [f"**{item['id']}**: {item['text']}", "", f"*{item['context_nb']}*", ""]
-    manifest = {"pack_id": pack["pack_id"], "status": "pending", "runtime_status": pack["production"]["runtime_status"],
-                "note_nb": "Kun opptaksplan. Ingen lydfiler er generert, målt eller importert.",
+    required = [item for item in recordings if item["recording_required"]]
+    done = sum(item["status"] == "recorded" for item in required)
+    manifest_status = "recorded" if required and done == len(required) else ("partial" if done else "pending")
+    manifest_note = ("Rene takes (48 kHz PCM16 mono, uten kanalfilter). audio_file er relativt til lydroten "
+                     "(se voice/README.md); varighet er målt fra filen. Ikke importert i Unreal." if done
+                     else "Kun opptaksplan. Ingen lydfiler er generert, målt eller importert.")
+    manifest = {"pack_id": pack["pack_id"], "status": manifest_status, "runtime_status": pack["production"]["runtime_status"],
+                "note_nb": manifest_note,
                 "planned_format": pack["production"]["voice_target"],
                 "cue_count": len(recordings),
-                "required_recording_count": sum(item["recording_required"] for item in recordings),
+                "required_recording_count": len(required),
+                "recorded_count": done,
                 "recordings": recordings}
     subtitles = {"pack_id": pack["pack_id"], "language": pack["language"], "status": "authored_not_integrated",
-                 "note_nb": "Dialogtider venter på lyd. Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
+                 "note_nb": ("Dialogtider er målt fra de ferdige opptakene: start/slutt for tale, i sekunder fra starten av hvert klipp. " if done
+                             else "Dialogtider venter på lyd. ") + "Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
                  "scenes": subtitle_scenes, "media": subtitle_media}
     # Compiled into FS47EveningPack so packaged builds need no loose Narrative files.
     # Chunking keeps each literal below compiler limits; no dialogue/audio timing is invented.
@@ -411,7 +458,7 @@ def main():
         if stale:
             fail("generated", "missing or stale: " + ", ".join(stale) + "; run build_pack.py")
         scene_count = sum(len(module["scenes"]) for module in modules)
-        print(f"PASS: {len(modules)} modules, {scene_count} scenes; {len(outputs)} exports {'byte-identical' if args.check else 'written'}; audio/video pending.")
+        print(f"PASS: {len(modules)} modules, {scene_count} scenes; {len(outputs)} exports {'byte-identical' if args.check else 'written'}; voice takes {len(pack['_takes'])}, video pending.")
         return 0
     except (PackError, OSError, TypeError) as exc:
         print(f"FAIL: {exc}", file=sys.stderr)

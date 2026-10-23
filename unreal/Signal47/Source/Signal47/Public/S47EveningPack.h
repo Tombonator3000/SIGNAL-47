@@ -8,6 +8,8 @@ struct FS47EveningLine
 {
 	FString Id, Speaker, Text, VoiceProfile, RecordingId;
 	bool bRecord = false;
+	// Measured take-relative seconds. Zero duration means no supplied recording.
+	double Duration = 0, SpeechStart = 0, SpeechEnd = 0;
 };
 
 struct FS47EveningRequirements

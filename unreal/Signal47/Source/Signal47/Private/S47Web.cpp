@@ -650,8 +650,10 @@ void AS47Web::BeginPlay()
 	if (!bLoaded) return;
 	BuildRoom();
 	BuildRetroProps();
+	BuildAuthoredArray();
 	// (Unreal only) the free models in the world, Config/Props (S47Props.h)
 	if (AS47Props* Props = GetWorld()->SpawnActor<AS47Props>()) Props->Build(this);
+	BuildRadioStation();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));
@@ -1195,12 +1197,51 @@ void AS47Web::SetDoorById(const FString& Id, bool bOpen, bool bInstant)
 	if (FDoor* D = Doors.FindByPredicate([&](const FDoor& X) { return X.Id == Id; })) SetDoor(*D, bOpen, bInstant);
 }
 
-void AS47Web::ToggleDoor(const FString& ItemId)
+bool AS47Web::ToggleDoor(const FString& ItemId)
 {
 	FDoor* D = DoorByItem(ItemId);
-	if (!D) return;
+	if (!D) return false;
+	if (D->bOpen && D->Area == Area())
+	{
+		// Closing while standing in the threshold disabled the only walk zone
+		// under the player. Resolve then had no old zone to slide back into.
+		const FVector P = S47Three::ToThree(Eye);
+		const auto& W = Walks.FindOrAdd(D->Area);
+		constexpr double Radius = 0.27;
+		for (int32 Z : D->Zones) if (W.Key.IsValidIndex(Z))
+		{
+			const FS47Rect& R = W.Key[Z];
+			if (P.X + Radius > R.MinX && P.X - Radius < R.MaxX && P.Z + Radius > R.MinZ && P.Z - Radius < R.MaxZ)
+			{
+				UE_LOG(LogTemp, Display, TEXT("S47: door %s close held: player occupies threshold %.3f %.3f"), *D->Id, P.X, P.Z);
+				return false;
+			}
+		}
+	}
 	SetDoor(*D, !D->bOpen, false);
 	if (OnDoor) OnDoor(D->Id, D->bOpen, D->Proxy >= 0 ? WorldUE(D->Proxy) : PropLocation(ItemId), D->Sound != TEXT("light"));
+	return true;
+}
+
+bool AS47Web::RestoreDoorwayAt(const FVector& P, double Radius)
+{
+	// An older save can contain the former closed-door softlock. Keep its player
+	// pose and clock; reopen only the closed threshold which contains that pose.
+	auto& W = Walks.FindOrAdd(CurrentArea);
+	for (FDoor& D : Doors) if (!D.bOpen && D.Area == CurrentArea)
+	{
+		for (int32 Z : D.Zones) if (W.Key.IsValidIndex(Z))
+		{
+			const FS47Rect& R = W.Key[Z];
+			if (P.X >= R.MinX + Radius && P.X <= R.MaxX - Radius && P.Z >= R.MinZ + Radius && P.Z <= R.MaxZ - Radius)
+			{
+				SetDoor(D, true, true);
+				UE_LOG(LogTemp, Warning, TEXT("S47: restored blocked doorway %s at %.3f %.3f; player pose retained"), *D.Id, P.X, P.Z);
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void AS47Web::SetDoorOpen(const FString& DoorOrItemId, bool bOpen, bool bInstant)

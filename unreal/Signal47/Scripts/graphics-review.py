@@ -30,7 +30,8 @@ STATE_VIEWS = ('rack-online', 'rack-dark', 'indicators-online', 'indicators-dark
                'headlights-off', 'headlights-on', 'menu-title', 'menu-pause',
                'menu-settings', 'menu-save', 'menu-load', 'menu-notebook',
                'terminal-online', 'terminal-dark')
-ALL_VIEWS = VIEWS + STATE_VIEWS
+ASSET_VIEWS = ('array-front', 'array-rear', 'array-field', 'radio-exterior', 'radio-lobby', 'radio-studio')
+ALL_VIEWS = VIEWS + STATE_VIEWS + ASSET_VIEWS
 CLOCKS = {'night': '02:15', 'dawn': '05:40'}
 
 

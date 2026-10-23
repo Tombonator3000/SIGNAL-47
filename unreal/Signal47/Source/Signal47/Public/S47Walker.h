@@ -73,6 +73,7 @@ public:
 	// than the truck when it stands at an angle; the walker keeps to the truck itself instead.
 	struct FTruckBox { FString Area; double X = 0, Z = 0, Heading = 0, HalfW = 1.05, HalfL = 2.75; };
 	TOptional<FTruckBox> TruckBox;
+	TOptional<FTruckBox> PersonalCarBox;
 	bool InTruck(double X, double Z) const; // the player's width at X, Z is in the truck
 
 	// A jump (Tom 22 October 2026; Player.ts has none): the Jump key on foot, when CanJump says it

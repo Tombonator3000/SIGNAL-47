@@ -1,5 +1,37 @@
 # Todo for unreal/
 
+## Skumlere pilotrunde, codex/anomaly-pilot, 23. oktober 2026
+
+- [x] Sparsomme verdenshint, plausible uavklarte A02-valg, nattefilm ved vaskeriet, rettet/andre flyttet pappfigur og P01 som kommer nærmere ved gange med ett ON AIR-blink.
+- [x] Save v3-migrering, ekte bevart film og tekniske selvtester; egne avbruddsrutiner for lys/lyd. Ingen Evening-/voice-endringer eller endring av harde storygrenser.
+- [x] Sluttpakke 01d92bd4 med core206afd9b: 1293 selvtester, åtte pilotscenarioer, High/VHS og Low, ekte gammel migrering, 7/7 historieregresjoner og to kameramotiv. Bilder/før/etter visuelt kontrollert. Se ANOMALY_SCARIER.md for bevis og UNVERIFIED-punkter. Content-lenker/OpenOrder ryddet; ingen push/PR/installasjon.
+- [ ] Tom prøver lydmiksen, figurens direkte nærvær, fotosporets lesbarhet og frykt med ekte input. Automatikk avgjør ikke dette.
+
+## Åpningens biler og inngang, codex/evening-runtime, 23. oktober 2026
+
+- [x] Privat wagon med eget karosseri, førermiljø og åpen dør; alle SARO-riggdeler skjult og gjenopprettet på riktig bil. Komplett delt standardmodell bevart.
+- [x] Plan SARO 07 på originalpad, samsvarende kollisjon og klar besøksplass; gamle utrygge åpningstilstander normaliseres.
+- [x] Reprodusert terskellåsing ved lukking under spilleren, sperret lukking og reparert gammel save før lasterens Walkable-port. Samme posisjon og klokke beholdes.
+- [x] Flettet bygg/pakking, 1286 selvtester, 48 vanlige gangpasseringer, fire ferske lastinger pluss gammel terskelsave, hel burgerrute, seks regresjonshopp og alle påkrevde bil-/inngangsbilder PASS. Rapport EVENING_VEHICLE_FIXES.md, pakkekilde 66d2b5a6/core04517414; hasher uendret, lenker/OpenOrder ryddet. Ingen push/PR/installasjon, Claude integrerer.
+- [ ] Menneskelig gjentakelse etter Claudes integrasjon. Denne leveransen beviser automatiske bevegelses-/lastescenarioer, ikke Toms neste fullnatt med ekte input.
+
+## Anomaly-pilot, codex/anomaly-pilot, 23. oktober 2026
+
+- [x] N01 med faktisk utskrift mot kveldens service-/sendeplan, korrigert feilvalg og fysisk forespørsel.
+- [x] N02 med to faktiske kameravinkler, lampens kontroll og reviderbart resultat.
+- [x] A02 med én figur, ekte bevart normalfilm/arkiv, flyttet posisjon og aktiv bildesammenligning; P01 med kort printeretterspill og fysisk fasadekontroll.
+- [x] Tidlig kamera/rutinekjøring og save v3-rutinekontrollpunkt; ingen senere kapitteloppgaver løses. Migrering uten oppdiktede eksponeringer; manglende film er eksplisitt utilgjengelig også etter verdenslasting.
+- [x] Sluttpakke/1278 selvtester, High/VHS og Low/Clean, feilfilm/migrering, 7/7 kortregresjoner, begge åpningsruter og TV-opptak. Statisk Caliche p95 +0,58 %, ingen konkurrerende tung jobb; fire sluttbilder visuelt kontrollert. Se ANOMALY_RUNTIME.md for avgrensninger. Content-lenker/OpenOrder er ryddet; Claude integrerer, ingen installasjon/push/PR.
+- [ ] Menneskelig pilot/Gauntlet: ekte input, lydlytting, forstått kontroll og stigende uro. Ikke erstatt dette med automatiske API-scenarioer. Fullnatt uten testkutt og faktisk spilletid gjenstår.
+- [ ] Senere plansteg: Dales kontor/VHS, trafostasjon, bygningsløft og større UFO-/aliensekvenser. Ingen ny anomalikvote for P13.
+
+## Kveldspakkens lyd, codex/evening-runtime, 23. oktober 2026
+
+- [x] 109 takes importert strengt som byteidentisk PCM og SoundWave, med 110 cues og eksakt D61-alias. Andre banker bevart.
+- [x] Receiverfilter/radiobuss for host og Dale; posisjonell servitrise, målte captions og uavhengig karakterlyd. Rettet gjentatt panelåpning som stoppet ny stemme, og fjernet misvisende generell opplesningsboks.
+- [x] Sluttpakke 9d638a0b: 1258 selvtester, hel burgerrute med 36 fullførte klipp og faktiske nivåer, pause/avbrudd og disk-/verdenslasting ved kjøp/D01, fem bilder pluss telefontranskripsjon, kortregresjon 6/6 PASS. Rapport EVENING_AUDIO.md; Content-lenker/OpenOrder ryddet, ingen generert lyd i Git eller installasjon.
+- [ ] Tom lytter på D01_FOOD_002 og D01_BRIEF_005, deretter stemmelikhet/innlevelse og miks i spillet. Fullnatt og VHS er fortsatt ikke levert her.
+
 ## Toms trinn 1 og 2, codex/evening-runtime, 23. oktober 2026
 
 - [x] Manusadapter og datadrevne porter for senere faser, knyttet til eksisterende dialog, telefon, radio, notatbok, mål og lagring.
@@ -7,7 +39,7 @@
 - [x] Kveld/natt/gry på sammenhengende akse, radio-/NPC-tider og kapitler, uttrykkelig legacy-lagring, faktisk utskriftsstempel og bevarte foto-/1947-referanser. Tidskomprimering og gammel/ny-tabell i EVENING_TIMELINE.md.
 - [x] Kveldssol, native lys og skumringskurver; ingen minutt-HUD under innkjøringen. Stillbilder gjennomgås i EVENING_SKY.md.
 - [x] Pakket kandidat og målrettet regresjon: 1254 selvtester, fire åpningsruter, legacy-migrering, gamle/nye hopp, native telefonbruk og fem siste bilder PASS. Sluttkilde 3d321da1; kildeoverlevering til Claude, ingen installasjon. Se EVENING_RUNTIME.md.
-- [ ] Menneskelig gjennomspilling med ekte input, lytting og målt total spilletid. Dette arbeidet produserer ikke de 109 takes, VHS eller verdensinnholdet i senere trinn.
+- [ ] Menneskelig gjennomspilling med ekte input, lytting og målt total spilletid. De 109 takesene er senere produsert av Claude-hjelper og integrert av Codex; VHS og verdensinnholdet i senere trinn gjenstår.
 
 
 ## Grafikkpass på port-gfx, 23. oktober 2026
@@ -30,11 +62,13 @@
 - [x] Revidert planen med tidligere kveld, romsligere kapitteltider, trafostasjon og bedre bybygninger etter Toms oppfølging. Start 18:00 og residual 00:13:47 er senere implementert på codex/evening-runtime; se nyere leveransestatus ovenfor.
 - [x] Innarbeidet Toms innkjøring med lystig radio, valgfritt matstopp og skiftstart ved SARO 18:00, samt Dale med Kinski-stemme og hemmelig kontor. Bare plan, ingen nye opptak eller modeller.
 - [x] Skrevet og strukturert hele manuspakken i `Narrative/EveningShift`: innkjøring/diner, fjernoverlevering og samtaler, kontornøkkel/filer/VHS, trafo og sammenligninger. JSON-/eksportkontroll, opptaksalias og 14 offline forfatterruter er kontrollert.
-- [ ] Produser 109 unike stemmetakes og det 72 sekunders bevegelige VHS-opptaket fra pakken; importer og tidssett undertekstene mot faktisk lyd. Alle nye mediefiler er foreløpig pending.
+- [x] Produser 109 unike stemmetakes, importer gjennom streng katalog og koble målt lyd/undertekst til telefon, bilradio og posisjonell servitrise. Produksjon `a4626053`, runtime og testgrunnlag i EVENING_AUDIO.md.
+- [ ] Produser det 72 sekunders bevegelige VHS-opptaket fra pakken. Lytt på alle takes, særlig D01_FOOD_002 og D01_BRIEF_005.
 - [ ] Trinn 0: mål dagens reise med ekte input, klokke, transport, triggere og passiv venting; behold baseline. Prøv også lang All Night og avreise etter 05:20: dagens ch6 setter avreisen til 05:20, så mulig tilbakesprang må dokumenteres og løses før ny fullnatt godkjennes.
 - [x] Trinn 0: tidsreferanseoversikt for 1986-hendelsen og kapittelporter, datoakse gjennom midnatt, kveldsradio/NPC-er og eldre lagringer. 1947-tider og 05:29-finalen beholdt; se EVENING_TIMELINE.md.
-- [ ] Trinn 1: bygg kveldsstart, tidlig kit/truck og N01/N02/A02/P01 med normalreferanser før hendelsen, etterfølgende sammenligning og lagring. Første bedre bygningsskall er bensinstasjon, suvenirbutikk og studio i én sammenhengende gatebit.
-- [x] Trinn 1: I01/D01 med innkjøringsbil, radio, valgfri matbestilling, egne tidlige diner-tilstander, lagret ankomst og Dales telefonoverlevering 18:00. Rollen er KUN telefon/radio/walkie; ingen fysisk Dale. Egen opptaksbank er koblet til uavhengig av generell opplesning; nye takes er fortsatt pending.
+- [x] Trinn 1: kveldsstart, tidlig kit/truck og N01/N02/A02/P01 med normalreferanser, aktiv sammenligning, fysisk oppfølging og lagring. Pilot og nøyaktig testgrunnlag i ANOMALY_RUNTIME.md.
+- [ ] Første bedre bygningsskall: bensinstasjon, suvenirbutikk og studio i én sammenhengende gatebit. Pilotens små fysiske referanseendringer erstatter ikke bygningsløftet.
+- [x] Trinn 1: I01/D01 med innkjøringsbil, radio, valgfri matbestilling, egne tidlige diner-tilstander, lagret ankomst og Dales telefonoverlevering 18:00. Rollen er KUN telefon/radio/walkie; ingen fysisk Dale. Egen opptaksbank er koblet til uavhengig av generell opplesning; nye takes er nå importert og koblet til kanalene, se EVENING_AUDIO.md.
 - [ ] Trinn 1: prøv begge delstrekninger, migrering, sen ankomst og fem observerbare Gauntlet-mål. Merk testkuttet; ikke kall prøven hel gjennomspilling.
 - [ ] Trinn 2: ny trafostasjon i ørkenen med avstikker, T01/T02, kontrollresultat, lys/lyd og lagring. Skill vanlig feil fra senere avvik; bevar STATION 01 og K3s rolle.
 - [ ] Trinn 2: D02, fysisk reservenøkkel til Dales eksisterende kontordør, private utklipp/filer og faktisk bevegelig VHS/TV med lyd, pause/strøm/lagring. Ett funn gir etterprøvbar feltoppgave; ikke erstatte Nora, avisavsløringen eller P13.
@@ -200,3 +234,8 @@
 - [x] 30 utvendige armaturspotter ved SARO og motellet, navngitte labdrivere og kopling til innflettet fremkallingsregel; bygg, 1218 selvtester og målrettede bilder. Se `LIGHTING.md`.
 - [ ] Claude gjennomgår `revision3/compare`, pakker i avtalt kø, prøver lukket dør, rød fremkalling, forstørrer, tåket kopi/gjentakelse og normal lysretur med ekte input; SARO-kutt/tilbake og Room 6s lys.
 - [ ] Ny High/1440p `stat unit` med én tung jobb om gangen etter dette utelyspasset. Forrige lysleveranses tall er bevart som historikk, ikke målt på nytt her.
+
+
+## Radiostasjon og array, 2026-10-23 kl. 23:53
+
+- [x] Blender-kilder, realistisk antenne på alle 27 plasser og radiostasjon med interiør integrert, verifisert og installert. Se RADIO_ARRAY.md for bevis og kildekontrakt.

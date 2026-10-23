@@ -1,5 +1,8 @@
 #include "S47HUD.h"
 #include "S47Evening.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
+#include "S47AnomalyTest.h"
 #include "S47Props.h"
 
 #include "Engine/Engine.h"
@@ -143,6 +146,8 @@ void AS47HUD::Start()
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= FS47Evening::SelfTest(Lines);
+		bOk &= FS47Anomaly::SelfTest(Lines);
+		bOk &= FS47AnomalyWorld::SelfTest(Lines);
 		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
@@ -490,6 +495,9 @@ void AS47HUD::Start()
 			Hd.OfficePhoneBusy = H.OfficePhoneBusy; Hd.ArchiveBusy = H.ArchiveBusy; Hd.ArrayBackBusy = H.ArrayBackBusy;
 		}
 		M->Evening = MakeShared<FS47Evening>(M);
+		M->Anomaly = MakeShared<FS47Anomaly>(M);
+		M->AnomalyWorld = MakeShared<FS47AnomalyWorld>(M);
+		M->AnomalyTest = MakeShared<FS47AnomalyTest>(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

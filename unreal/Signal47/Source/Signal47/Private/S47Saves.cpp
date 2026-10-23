@@ -124,6 +124,7 @@ double S47Saves::NowMs()
 FString S47State::CheckpointTitle(const FString& Checkpoint)
 {
 	// state.ts CHAPTERS
+	if (Checkpoint == TEXT("routine")) return TEXT("Evening Shift: Reference Round");
 	if (Checkpoint == TEXT("residual")) return TEXT("Prologue: Night Shift");
 	if (Checkpoint == TEXT("chapter1")) return TEXT("Chapter 1: The Second Exposure");
 	if (Checkpoint == TEXT("chapter2")) return TEXT("Chapter 2: The Amended Record");
@@ -293,6 +294,7 @@ S47J::FObj FS47SaveStore::Load(const FString& Id)
 		{
 			if (bLocal == bFallback) Stored.Add(Key);
 			P->SetStringField(TEXT("url"), *Got);
+			P->RemoveField(TEXT("unavailable"));
 			Unread.Remove(PhotoId);
 		}
 		else
@@ -300,6 +302,8 @@ S47J::FObj FS47SaveStore::Load(const FString& Id)
 			const FString Shown = MissingPrint ? MissingPrint() : FString();
 			Unread.Add(PhotoId, { Shown, Url });
 			P->SetStringField(TEXT("url"), Shown);
+			// A visible stand-in is not photographic evidence for a new investigation.
+			P->SetBoolField(TEXT("unavailable"), true);
 		}
 	}
 	SetActive(S47J::Int(R, TEXT("caseId")));
@@ -517,12 +521,15 @@ bool S47Saves::SelfTest(TArray<FString>& Out)
 		Again->FailReads = 2;
 		const S47J::FObj State = Again->Load(IdOf(M));
 		Check(TEXT("the stand-in is shown"), F1Url(State) == STAND_IN);
+		Check(TEXT("missing print is explicitly unavailable as new evidence"), S47J::Bool(S47J::Obj(S47J::Obj(S47J::Obj(State,TEXT("case")),TEXT("s")),TEXT("f1")),TEXT("unavailable")));
 		Again->Save(1, TEXT("manual"), 0, State, Card, Err);
 		FString Text;
 		FFileHelper::LoadFileToString(Text, *(D / TEXT("save-1-manual-0.json")));
 		Check(TEXT("the save still points at the original"), F1Url(S47J::Obj(S47J::Read(Text), TEXT("state"))) == TEXT("idb:") + PhotoKey(ORIGINAL));
 		Check(TEXT("the stand-in is never stored"), CountPhotos(D) == 1);
-		Check(TEXT("the original comes back"), F1Url(Open(D)->Load(TEXT("1:manual:0"))) == ORIGINAL);
+		const auto Recovered = Open(D)->Load(TEXT("1:manual:0"));
+		Check(TEXT("the original comes back"), F1Url(Recovered) == ORIGINAL);
+		Check(TEXT("a recovered original becomes available again"), !S47J::Bool(S47J::Obj(S47J::Obj(S47J::Obj(Recovered,TEXT("case")),TEXT("s")),TEXT("f1")),TEXT("unavailable")));
 		// a new photograph under the same id replaces the one that could not be read
 		TSharedRef<FS47SaveStore> Third = Open(D);
 		Third->FailReads = 2;

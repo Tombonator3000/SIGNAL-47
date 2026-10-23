@@ -63,6 +63,8 @@ struct FS47AlbumShot
 	double Clock = 0;
 	FString Place, Text;
 	bool bOdd = false;
+	// En lesbar erstatnings-JPEG er ikke det opprinnelige fotografiet.
+	bool bUnavailable = false;
 	/** Where the things the story looks for are on the print (u, v from the top left), by target. */
 	TArray<TPair<FString, FVector2D>> Targets;
 };
@@ -84,12 +86,16 @@ struct FS47AlbumDeps
 	TFunction<int32()> Extra;
 	/** Before the render (the web version culls the antennas for the photo camera). */
 	TFunction<void()> Before;
+	/** Restore transient film-only subjects immediately after the scene capture. */
+	TFunction<void()> After;
 	/** The ground's height where the film may keep someone, or unset (not here, not now). */
 	TFunction<TFunction<double(double, double)>()> GhostGround;
 	/** The saves have no room for big pictures: smaller ones. */
 	TFunction<bool()> Small;
 	/** The shutter's sound and flash, a word on the roll, the save. */
 	TFunction<void(const FS47AlbumShot&, bool, int32)> Done;
+	/** Attach only features actually framed at exposure time, before persistent storage. */
+	TFunction<void(FS47AlbumShot&)> Tag;
 	/** A free frame taken here and now may keep the face (main.ts: chapter four, out of doors, on foot). */
 	TFunction<bool()> Face;
 	/** The print with the face has been looked at closely for the first time, come up. */

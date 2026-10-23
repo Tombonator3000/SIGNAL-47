@@ -30,6 +30,7 @@ Content/Audio and Content/Licensed are ignored by Git. The WAVE files keep each 
 sample rate and channels (the context resamples, as decodeAudioData does). Needs ffmpeg.
 Usage: audio-raw.py [--web WEB_SRC] [--content CONTENT_DIR]"""
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -37,6 +38,7 @@ import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = os.path.dirname(HERE)
@@ -45,12 +47,34 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--web', default=os.path.join(ROOT, 'web', 'src'))
 ap.add_argument('--content', default=os.path.join(D, 'Content'))
 ap.add_argument('--recordings-only', action='store_true', help='refresh long media and the voice banks (ReadAloud\'s and RadioVoice\'s) without replacing existing sfx/phone/bought raw files')
+ap.add_argument('--evening-only', action='store_true', help='validate and import only the EveningShift bank, preserving every other bank and raw file')
+ap.add_argument('--evening-wav-dir', type=Path, help='approved original EveningShift WAVs; defaults to Content/Audio/EveningShift')
 args = ap.parse_args()
 WEB = args.web
 AUDIO = os.path.join(WEB, 'assets', 'audio')
 LICENSED = os.path.join(WEB, 'assets', 'licensed', 'sfx')
 RAW = os.path.join(args.content, 'Audio', 'Raw')
 LICRAW = os.path.join(args.content, 'Licensed', 'Raw')
+
+# EveningShift is native narrative data, independent of the archived web banks.
+# Preflight before any destructive refresh, and reuse the strict standalone catalog.
+spec = importlib.util.spec_from_file_location('s47_evening_catalog', os.path.join(HERE, 'evening-voice-catalog.py'))
+evening_catalog = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(evening_catalog)
+evening_dir = args.evening_wav_dir or Path(args.content) / 'Audio/EveningShift'
+evening_entry = None
+if evening_dir.is_dir() or args.evening_only or args.evening_wav_dir:
+    try:
+        manifest_path = evening_catalog.DEFAULT_MANIFEST
+        evening_entry = evening_catalog.catalog(evening_catalog.read_json(manifest_path),
+            evening_catalog.read_json(manifest_path.with_name('subtitles.json')), evening_dir,
+            evening_catalog.read_json(evening_catalog.DEFAULT_TAKES))
+    except (ValueError, OSError, KeyError, TypeError, evening_catalog.wave.Error) as exc:
+        sys.exit('S47: EveningShift validation failed: %s' % exc)
+if args.evening_only:
+    evening_catalog.import_bank(evening_entry, evening_dir, Path(RAW))
+    print('S47: raw voice evening: 109 supplied PCM WAVs, 110 cues; other banks preserved')
+    raise SystemExit(0)
 
 # the voice banks and the folders their clips are imported to (import-audio.sh does the same)
 BANKS = [('kinski', 'Kinski'), ('serling', 'Serling'), ('serling-intro', 'SerlingIntro'), ('artbell', 'ArtBell'),
@@ -177,7 +201,8 @@ if not args.recordings_only:
 
 # every voice bank's catalog, with the asset each clip is imported as
 os.makedirs(RAW, exist_ok=True)
-voices = {}
+voices_path = os.path.join(RAW, 'voices.json')
+voices = json.load(open(voices_path, encoding='utf-8')) if args.recordings_only and os.path.isfile(voices_path) else {}
 for bank, folder in BANKS:
     path = os.path.join(AUDIO, bank, 'catalog.json')
     if not os.path.isfile(path):
@@ -191,6 +216,10 @@ for bank, folder in BANKS:
 with open(os.path.join(RAW, 'voices.json'), 'w', encoding='utf-8') as f:
     json.dump(voices, f, ensure_ascii=False, indent=1)
 print('S47: voice banks indexed: %s' % ', '.join('%s %d' % (b, len(v['catalog'].get('clips', []))) for b, v in voices.items()))
+
+if evening_entry is not None:
+    evening_catalog.import_bank(evening_entry, evening_dir, Path(RAW), voices)
+    print('S47: raw voice evening: 109 supplied PCM WAVs, 110 cues; measured hashes/timings verified')
 
 # core/radioVoice.ts and core/readAloud.ts decode only the selected clips, so keep the banks outside
 # index.sources. This lets their LRUs (24 buffers / 24 MiB, 4 buffers / 32 MiB) work without US47Audio

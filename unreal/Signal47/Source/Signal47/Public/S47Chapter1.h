@@ -110,6 +110,8 @@ public:
 	// ---------- the camera (main.ts input: C, Space, E) ----------
 	void ToggleCamera();
 	void Shutter();
+	void RestoreEarlyCamera();
+	bool EarlyCamera() const;
 
 	// For chapter three's field roll: the same tray, the same fade-in, the same drying line.
 	void FixPrint(const FS47Photo& Photo);
