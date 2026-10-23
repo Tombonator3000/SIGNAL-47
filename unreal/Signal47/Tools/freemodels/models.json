@@ -21,7 +21,13 @@
  },
  "fairheaven_sw84": {
   "category": "Vehicles",
-  "size": 5.3
+  "size": 5.3,
+  "cuts": {
+   "door_driver": {
+    "box": [[-0.19, 0.31, -0.95], [0.89, 1.30, -0.54]],
+    "meshes": ["SW80_body", "Glass_Driver", "SW80_Interior", "Interior_Trim", "SW84_Trim"]
+   }
+  }
  },
  "fairheaven_lt80_cop": {
   "category": "Vehicles",

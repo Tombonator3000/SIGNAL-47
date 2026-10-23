@@ -23,11 +23,20 @@ public:
 	void Hide();
 	FVector ParkedPosition() const { return PersonalPark; }
 	double ParkedHeading() const { return PersonalHeading; }
+	/** Presentation diagnostics: the personal car owns its body, interior and opening leaf. */
+	bool PersonalVisible() const;
+	bool PersonalDoorVisible() const;
+	double PersonalDoorAngle() const { return DoorAngle; }
+	FVector PersonalPosition() const { return PresentedPosition; }
+	static FVector PersonalDriverEye() { return FVector(-0.35, 1.08, -0.05); }
+	/** Credited model bounds after preparation; pivot is exactly at the footprint centre. */
+	static double PersonalHalfWidth() { return 0.9280036428; }
+	static double PersonalHalfLength() { return 2.5138963728; }
 
 private:
 	US47Main* M = nullptr;
-	TWeakObjectPtr<UStaticMeshComponent> Personal, Service;
-	TUniquePtr<FS47Group> Hood, CounterFood, HeldFood;
+	TWeakObjectPtr<UStaticMeshComponent> Personal, PersonalDoor, Service;
+	TUniquePtr<FS47Group> CounterFood, HeldFood;
 	FS47Node* CounterBurger = nullptr;
 	FS47Node* CounterSandwich = nullptr;
 	FS47Node* CounterCup = nullptr;
@@ -40,5 +49,7 @@ private:
 	bool bBuilt = false, bParked = false;
 	FVector PersonalPark = FVector(4.5, -0.62, 14);
 	double PersonalHeading = UE_DOUBLE_PI;
+	double DoorAngle = 0;
+	FVector PresentedPosition = FVector::ZeroVector;
 	void Build();
 };

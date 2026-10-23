@@ -26,11 +26,14 @@ public:
  void ShowDialogue();
  void BootstrapTest(const FString& Mode);
  void ControlTest(double Dt);
+ void ControlEntranceTest(double Dt);
  S47J::FObj Save() const;
  FS47EveningPack Pack;
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M = nullptr;
+ struct FEntranceTest;
+ TSharedPtr<FEntranceTest> EntranceTest;
  FS47EveningPack RadioPack;
  TUniquePtr<FS47EveningVisual> Visual;
  TSharedPtr<FS47RecordedDialogue> Voice;

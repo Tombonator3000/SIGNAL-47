@@ -21,6 +21,13 @@ namespace
 	// the jump: a modest one for a grown man in boots (about 0.45 m up), the eye's dip on landing
 	constexpr double GRAVITY = 9.8, JUMP_UP = 0.45, LAND_SECS = 0.28, LAND_DIP = 0.065;
 	const double JUMP_V = FMath::Sqrt(2 * GRAVITY * JUMP_UP);
+	bool InVehicle(const AS47Walker::FTruckBox& B, double X, double Z, double Radius)
+	{
+		const double C=FMath::Cos(B.Heading), S=FMath::Sin(B.Heading), Dx=X-B.X, Dz=Z-B.Z;
+		const double Lx=Dx*C-Dz*S, Lz=Dx*S+Dz*C;
+		const double Ox=FMath::Max(0.0,FMath::Abs(Lx)-B.HalfW), Oz=FMath::Max(0.0,FMath::Abs(Lz)-B.HalfL);
+		return Ox*Ox+Oz*Oz < Radius*Radius;
+	}
 }
 
 AS47Walker::AS47Walker()
@@ -36,6 +43,7 @@ void AS47Walker::Place(double X, double Z, double InYaw)
 {
 	// Player.place: the eye level drops onto the floor at once
 	Pos = FVector(X, 0, Z);
+	if (Web.IsValid() && !Walkable(X, Z)) Web->RestoreDoorwayAt(Pos, Radius);
 	Yaw = InYaw;
 	Pitch = -0.06;
 	FloorY = FloorAt(X, Z);
@@ -104,9 +112,11 @@ void AS47Walker::Resolve(bool bX, double Old)
 	}
 	// (the truck here as it is turned, not the box round it)
 	const bool bTruck = TruckBox && TruckBox->Area == Web->Area();
+	const bool bPersonal = PersonalCarBox && PersonalCarBox->Area == Web->Area();
 	for (const FS47Rect& C : Web->Colliders())
 	{
 		if (bTruck && C.Id == TEXT("truck")) continue;
+		if (bPersonal && C.Id == TEXT("personalCar")) continue;
 		if (!C.bEnabled) continue; // (S47Props unblock: a building walked into now)
 		if (Pos.X + R <= C.MinX || Pos.X - R >= C.MaxX || Pos.Z + R <= C.MinZ || Pos.Z - R >= C.MaxZ) continue;
 		if (bX)
@@ -128,17 +138,22 @@ void AS47Walker::Resolve(bool bX, double Old)
 		V = Old;
 		if (InTruck(Pos.X, Pos.Z)) V = Was;
 	}
+	if (bPersonal)
+	{
+		if (InVehicle(*PersonalCarBox, Pos.X, Pos.Z, Radius))
+		{
+			double& V = bX ? Pos.X : Pos.Z;
+			const double Was = V; V = Old;
+			if (InVehicle(*PersonalCarBox, Pos.X, Pos.Z, Radius)) V = Was;
+		}
+	}
 }
 
 bool AS47Walker::InTruck(double X, double Z) const
 {
 	if (!TruckBox) return false;
 	// into the truck's terms (World.ts AboutUp turned back), and the distance from its box
-	const FTruckBox& B = *TruckBox;
-	const double C = FMath::Cos(B.Heading), S = FMath::Sin(B.Heading), Dx = X - B.X, Dz = Z - B.Z;
-	const double Lx = Dx * C - Dz * S, Lz = Dx * S + Dz * C;
-	const double Ox = FMath::Max(0.0, FMath::Abs(Lx) - B.HalfW), Oz = FMath::Max(0.0, FMath::Abs(Lz) - B.HalfL);
-	return Ox * Ox + Oz * Oz < Radius * Radius;
+	return InVehicle(*TruckBox, X, Z, Radius);
 }
 
 double AS47Walker::FloorAt(double X, double Z) const

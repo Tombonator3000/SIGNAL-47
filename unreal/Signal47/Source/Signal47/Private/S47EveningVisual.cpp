@@ -16,6 +16,7 @@ namespace
 {
 	const FVector SERVICE_PARK(8.9, 0, 8);
 	const TCHAR* WAGON = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84.fairheaven_sw84");
+	const TCHAR* WAGON_DOOR = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_door_driver.fairheaven_sw84_door_driver");
 	const TCHAR* PICKUP = TEXT("/Game/Free/Vehicles/pickup_c10_1966/StaticMeshes/pickup_c10_1966.pickup_c10_1966");
 
 	UMaterialInstanceDynamic* Paint(FS47Group& G, uint32 Color, float Roughness = 0.7f)
@@ -53,20 +54,45 @@ namespace
 		C->RegisterComponent();
 		return C;
 	}
-	void Pose(UStaticMeshComponent* C, const FVector& P, double Heading)
+	void Pose(UStaticMeshComponent* C, const FVector& P, const FQuat& Rotation)
 	{
 		if (!C) return;
 		double E[16];
-		S47Three::Compose(P, S47Three::Euler(0, Heading, 0), FVector::OneVector, E);
+		S47Three::Compose(P, Rotation, FVector::OneVector, E);
 		C->SetWorldTransform(S47Three::MatToUE(E));
 		// Credited Free vehicles are centimetres, length along X; the driving frame faces -Z.
 		C->AddLocalRotation(FRotator(0, -90, 0));
+	}
+	void Pose(UStaticMeshComponent* C, const FVector& P, double Heading)
+	{
+		Pose(C, P, S47Three::Euler(0, Heading, 0));
+	}
+	void WagonDoorPose(UStaticMeshComponent* C, const FVector& P, const FQuat& Car, double Angle)
+	{
+		// The cut leaf keeps the author's whole-car pivot. Rotate it about its actual front hinge.
+		const FVector Hinge(-0.73, 0.72, -0.86);
+		const FQuat Leaf = S47Three::Euler(0, -Angle, 0);
+		Pose(C, P + Car.RotateVector(Hinge - Leaf.RotateVector(Hinge)), Car * Leaf);
 	}
 	void GroupPose(FS47Group& G, const FVector& P, const FVector& Rotation)
 	{
 		G.Root().Position = P; G.Root().Rotation = Rotation; G.Root().Apply();
 	}
 	void Visible(FS47Node* N, bool bOn) { if (N) N->bVisible = bOn; }
+	bool WagonOverlaps(const FVector& P, double Heading, double MinX, double MaxX, double MinZ, double MaxZ)
+	{
+		// Separating-axis test for the actual rotated footprint against a protected rectangle.
+		// A small margin keeps the car's visible edges off the passage and stair railing.
+		const double W = FS47EveningVisual::PersonalHalfWidth() + 0.15;
+		const double L = FS47EveningVisual::PersonalHalfLength() + 0.15;
+		const double C = FMath::Cos(Heading), S = FMath::Sin(Heading);
+		const double DX = P.X - (MinX + MaxX) * 0.5, DZ = P.Z - (MinZ + MaxZ) * 0.5;
+		const double RX = (MaxX - MinX) * 0.5, RZ = (MaxZ - MinZ) * 0.5;
+		return FMath::Abs(DX) <= RX + W * FMath::Abs(C) + L * FMath::Abs(S)
+			&& FMath::Abs(DZ) <= RZ + W * FMath::Abs(S) + L * FMath::Abs(C)
+			&& FMath::Abs(DX * C - DZ * S) <= W + RX * FMath::Abs(C) + RZ * FMath::Abs(S)
+			&& FMath::Abs(DX * S + DZ * C) <= L + RX * FMath::Abs(S) + RZ * FMath::Abs(C);
+	}
 
 	void Food(FS47Group& G, FS47Node*& Burger, FS47Node*& Sandwich, FS47Node*& Cup, FS47Node** PlateOut = nullptr)
 	{
@@ -106,6 +132,7 @@ FS47EveningVisual::FS47EveningVisual(US47Main* InMain) : M(InMain) {}
 FS47EveningVisual::~FS47EveningVisual()
 {
 	if (Personal.IsValid()) Personal->DestroyComponent();
+	if (PersonalDoor.IsValid()) PersonalDoor->DestroyComponent();
 	if (Service.IsValid()) Service->DestroyComponent();
 }
 
@@ -115,16 +142,9 @@ void FS47EveningVisual::Build()
 	if (bBuilt || !W || !W->IsLoaded()) return;
 	bBuilt = true;
 	Personal = Vehicle(W, WAGON, TEXT("personal station wagon"));
+	PersonalDoor = Vehicle(W, WAGON_DOOR, TEXT("personal station wagon driver door"));
 	Service = Vehicle(W, PICKUP, TEXT("parked service pickup"));
 	Pose(Service.Get(), SERVICE_PARK, UE_DOUBLE_PI);
-	Hood = MakeUnique<FS47Group>(W, TEXT("EveningPersonalHood"));
-	// The driving controller and dashboard are shared. This hood replaces SARO's identifiable body.
-	auto* Metal = Paint(*Hood, 0x77816d, 0.4f);
-	auto* Chrome = Paint(*Hood, 0xaaa798, 0.25f);
-	Hood->Box(nullptr, 1.70, 0.08, 1.45, Metal, FVector(0, 0.96, -1.65), FVector(-0.035, 0, 0));
-	Hood->Box(nullptr, 1.77, 0.08, 0.06, Chrome, FVector(0, 0.94, -2.40));
-	Hood->Box(nullptr, 0.025, 0.018, 1.3, Chrome, FVector(0, 1.012, -1.63));
-	Shadows(*Hood); Hood->AddToScene(); Hood->SetVisible(false);
 	CounterFood = MakeUnique<FS47Group>(W, TEXT("EveningDinerOrder"));
 	Food(*CounterFood, CounterBurger, CounterSandwich, CounterCup);
 	CounterWater = CounterFood->Group(nullptr, FVector(0.27, 0, -0.18));
@@ -153,11 +173,15 @@ void FS47EveningVisual::ParkPersonal(const FVector& Position, double Heading)
 {
 	PersonalPark = Position;
 	PersonalHeading = Heading;
-	// Parking on the old trigger pad must not leave both cars occupying SARO 07's service bay.
-	// The first candidate's (2,0,8) bay intersected the raised annex. Repair that
-	// presentation pose on load as well; no clock, evidence or service-truck state changes.
-	if (FVector2D(PersonalPark.X - SERVICE_PARK.X, PersonalPark.Z - SERVICE_PARK.Z).Size() < 4.5 || PersonalPark.Equals(FVector(2, 0, 8), 0.01))
+	// Repair unsafe arrival and restored poses without changing story/evidence state. The whole
+	// rotated body must clear SARO 07's pad, both entrance landings and the annex plinth.
+	if (WagonOverlaps(PersonalPark, Heading, 6.6, 13, 2.7, 12.4)
+		|| WagonOverlaps(PersonalPark, Heading, 5, 13, -0.6, 4.5)
+		|| WagonOverlaps(PersonalPark, Heading, -6, 6.6, 4.8, 10.8))
+	{
 		PersonalPark = FVector(4.5, -0.62, 14);
+		PersonalHeading = UE_DOUBLE_PI;
+	}
 	bParked = true;
 }
 
@@ -178,12 +202,19 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	if (bArrived && !bParked) SetParked(true);
 	if (bCommute && Carrier)
 	{
-		Pose(Personal.Get(), Carrier->Position, Carrier->Rotation.Y);
-		GroupPose(*Hood, Carrier->Position, Carrier->Rotation);
+		PresentedPosition = Carrier->Position;
+		Pose(Personal.Get(), PresentedPosition, Carrier->Quat());
 	}
-	else if (bParked) Pose(Personal.Get(), PersonalPark, PersonalHeading);
-	if (Personal.IsValid()) Personal->SetVisibility((bCommute && !bDriving && Carrier) || (!bCommute && bParked && bSaro));
-	Hood->SetVisible(bCommute && bDriving && Carrier);
+	else if (bParked) { PresentedPosition = PersonalPark; Pose(Personal.Get(), PresentedPosition, PersonalHeading); }
+	const bool bPersonalShown = (bCommute && Carrier) || (!bCommute && bParked && bSaro);
+	// A private wagon has one coherent cabin, including the driver's own door and dashboard.
+	// The hidden service-truck controller supplies driving only; none of its meshes are reused.
+	DoorAngle = bPersonalShown && !bDriving ? 1.02 : 0;
+	const FQuat Rotation = bCommute && Carrier ? Carrier->Quat() : S47Three::Euler(0, PersonalHeading, 0);
+	WagonDoorPose(PersonalDoor.Get(), PresentedPosition, Rotation, DoorAngle);
+	if (Personal.IsValid()) Personal->SetVisibility(bPersonalShown);
+	if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(bPersonalShown);
+	M->World->SetPersonalPark(PersonalPark, PersonalHeading, bPersonalShown && !bCommute);
 	if (Service.IsValid()) Service->SetVisibility(bCommute && bSaro && Carrier && FVector::Distance(Carrier->Position, SERVICE_PARK) > 4.5);
 	// Keep a real order/empty plate at the counter; stable purchase flags reconstruct it after load.
 	const bool bOrder = bFoodBought || bWater;
@@ -218,6 +249,11 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 void FS47EveningVisual::Hide()
 {
  if (Personal.IsValid()) Personal->SetVisibility(false);
+ if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(false);
  if (Service.IsValid()) Service->SetVisibility(false);
- for (FS47Group* G : {Hood.Get(), CounterFood.Get(), HeldFood.Get()}) if (G) G->SetVisible(false);
+ for (FS47Group* G : {CounterFood.Get(), HeldFood.Get()}) if (G) G->SetVisible(false);
+ if (M && M->World) M->World->SetPersonalPark(PersonalPark, PersonalHeading, false);
 }
+
+bool FS47EveningVisual::PersonalVisible() const { return Personal.IsValid() && Personal->IsVisible(); }
+bool FS47EveningVisual::PersonalDoorVisible() const { return PersonalDoor.IsValid() && PersonalDoor->IsVisible(); }
