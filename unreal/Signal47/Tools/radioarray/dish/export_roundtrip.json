@@ -1,0 +1,122 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "mesh": "SM_Array_Base",
+      "triangles": 2304,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 2.384185791015625e-07,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Base_LOD1",
+      "triangles": 1224,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 2.384185791015625e-07,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Base_LOD2",
+      "triangles": 524,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 2.384185791015625e-07,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Azimuth",
+      "triangles": 1414,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 2.384185791015625e-07,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Azimuth_LOD1",
+      "triangles": 1238,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 2.384185791015625e-07,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Azimuth_LOD2",
+      "triangles": 598,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 2.384185791015625e-07,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Elevation",
+      "triangles": 22492,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 0.0,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Elevation_LOD1",
+      "triangles": 15788,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 0.0,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    },
+    {
+      "mesh": "SM_Array_Elevation_LOD2",
+      "triangles": 5388,
+      "zero_area_triangles": 0,
+      "bounds_max_error_m": 0.0,
+      "pivot_error_m": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "material_slots": 8
+    }
+  ]
+}

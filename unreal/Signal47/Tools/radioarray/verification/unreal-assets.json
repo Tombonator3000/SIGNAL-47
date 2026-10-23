@@ -1,0 +1,622 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_Array_Base exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Base source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          0.0,
+          0.0,
+          390.0
+        ],
+        "size_cm": [
+          615.0,
+          615.0,
+          780.0
+        ],
+        "expected_center_cm": [
+          0.0,
+          -0.0,
+          390.00000953674316
+        ]
+      }
+    },
+    {
+      "name": "SM_Array_Base collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Base Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Base original materials",
+      "pass": true,
+      "detail": [
+        "M_Array_Enamel",
+        "M_Array_Steel",
+        "M_Array_Dark",
+        "M_Array_Concrete"
+      ]
+    },
+    {
+      "name": "SM_Array_Base LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Base LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 2304,
+        "imported": 2304
+      }
+    },
+    {
+      "name": "SM_Array_Base LOD1 triangles",
+      "pass": true,
+      "detail": {
+        "source": 1224,
+        "imported": 1224
+      }
+    },
+    {
+      "name": "SM_Array_Base LOD2 triangles",
+      "pass": true,
+      "detail": {
+        "source": 524,
+        "imported": 524
+      }
+    },
+    {
+      "name": "SM_Array_Azimuth exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Azimuth source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          1.52587890625e-05,
+          48.25001525878906,
+          256.0
+        ],
+        "size_cm": [
+          560.0000305175781,
+          372.5000305175781,
+          512.0
+        ],
+        "expected_center_cm": [
+          0.0,
+          48.250001668930054,
+          255.9999942779541
+        ]
+      }
+    },
+    {
+      "name": "SM_Array_Azimuth collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Azimuth Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Azimuth original materials",
+      "pass": true,
+      "detail": [
+        "M_Array_Enamel",
+        "M_Array_Steel",
+        "M_Array_Dark"
+      ]
+    },
+    {
+      "name": "SM_Array_Azimuth LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Azimuth LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 1414,
+        "imported": 1414
+      }
+    },
+    {
+      "name": "SM_Array_Azimuth LOD1 triangles",
+      "pass": true,
+      "detail": {
+        "source": 1238,
+        "imported": 1238
+      }
+    },
+    {
+      "name": "SM_Array_Azimuth LOD2 triangles",
+      "pass": true,
+      "detail": {
+        "source": 598,
+        "imported": 598
+      }
+    },
+    {
+      "name": "SM_Array_Elevation exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Elevation source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          0.0,
+          0.0,
+          446.0
+        ],
+        "size_cm": [
+          1818.98974609375,
+          1818.98974609375,
+          948.0
+        ],
+        "expected_center_cm": [
+          0.0,
+          -0.0,
+          445.9999904036522
+        ]
+      }
+    },
+    {
+      "name": "SM_Array_Elevation collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Elevation Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Elevation original materials",
+      "pass": true,
+      "detail": [
+        "M_Array_Enamel",
+        "M_Array_Reflector",
+        "M_Array_Steel",
+        "M_Array_Red"
+      ]
+    },
+    {
+      "name": "SM_Array_Elevation LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Array_Elevation LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 22492,
+        "imported": 22492
+      }
+    },
+    {
+      "name": "SM_Array_Elevation LOD1 triangles",
+      "pass": true,
+      "detail": {
+        "source": 15788,
+        "imported": 15788
+      }
+    },
+    {
+      "name": "SM_Array_Elevation LOD2 triangles",
+      "pass": true,
+      "detail": {
+        "source": 5388,
+        "imported": 5388
+      }
+    },
+    {
+      "name": "SM_1420_Shell exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Shell source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          0.0,
+          53.749969482421875,
+          255.0
+        ],
+        "size_cm": [
+          1225.0001220703125,
+          1132.5000610351562,
+          590.0
+        ],
+        "expected_center_cm": [
+          0.0,
+          53.749990463256836,
+          254.99999970197678
+        ]
+      }
+    },
+    {
+      "name": "SM_1420_Shell collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Shell Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Shell original materials",
+      "pass": true,
+      "detail": [
+        "M_1420_Concrete",
+        "M_1420_Walnut",
+        "M_1420_Stucco_cream",
+        "M_1420_Galvanized_metal",
+        "M_1420_Black_enamel",
+        "M_1420_Brick_red",
+        "M_1420_Lamp_glow"
+      ]
+    },
+    {
+      "name": "SM_1420_Shell LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Shell LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 4952,
+        "imported": 4952
+      }
+    },
+    {
+      "name": "SM_1420_Interior exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Interior source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          -5.375,
+          4.9999847412109375,
+          159.5
+        ],
+        "size_cm": [
+          1154.25,
+          960.0000915527344,
+          319.0
+        ],
+        "expected_center_cm": [
+          -5.375003814697266,
+          4.999995231628418,
+          159.50000286102295
+        ]
+      }
+    },
+    {
+      "name": "SM_1420_Interior collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Interior Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Interior original materials",
+      "pass": true,
+      "detail": [
+        "M_1420_Walnut",
+        "M_1420_Desk_walnut",
+        "M_1420_Acoustic_fabric",
+        "M_1420_Black_enamel",
+        "M_1420_Galvanized_metal",
+        "M_1420_Brushed_aluminium",
+        "M_1420_VU_backlight",
+        "M_1420_Ink",
+        "M_1420_Ivory_plastic",
+        "M_1420_Brick_red",
+        "M_1420_Painted_olive",
+        "M_1420_Paper",
+        "M_1420_Vinyl_green",
+        "M_1420_Lamp_glow"
+      ]
+    },
+    {
+      "name": "SM_1420_Interior LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Interior LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 43268,
+        "imported": 43268
+      }
+    },
+    {
+      "name": "SM_1420_Door exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Door source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          47.000028593339266,
+          4.274991750717163,
+          107.50000476837158
+        ],
+        "size_cm": [
+          94.00000384847772,
+          17.049999713897705,
+          209.99999046325684
+        ],
+        "expected_center_cm": [
+          47.00002819299698,
+          4.274999536573887,
+          107.50000476837158
+        ]
+      }
+    },
+    {
+      "name": "SM_1420_Door collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Door Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Door original materials",
+      "pass": true,
+      "detail": [
+        "M_1420_Painted_olive",
+        "M_1420_Black_enamel",
+        "M_1420_Clear_glass",
+        "M_1420_Ivory_plastic",
+        "M_1420_Galvanized_metal",
+        "M_1420_Paper"
+      ]
+    },
+    {
+      "name": "SM_1420_Door LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Door LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 1852,
+        "imported": 1852
+      }
+    },
+    {
+      "name": "SM_1420_Glass exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Glass source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          120.00003814697266,
+          496.5,
+          154.99999618530273
+        ],
+        "size_cm": [
+          367.99998474121094,
+          1.79998779296875,
+          163.00000762939453
+        ],
+        "expected_center_cm": [
+          119.9999988079071,
+          496.50001525878906,
+          154.99999821186066
+        ]
+      }
+    },
+    {
+      "name": "SM_1420_Glass collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Glass Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Glass original materials",
+      "pass": true,
+      "detail": [
+        "M_1420_Clear_glass"
+      ]
+    },
+    {
+      "name": "SM_1420_Glass LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Glass LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 12,
+        "imported": 12
+      }
+    },
+    {
+      "name": "SM_1420_Mast exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Mast source scale, orientation and pivot",
+      "pass": true,
+      "detail": {
+        "center_cm": [
+          1200.0,
+          -100.00010299682617,
+          910.1727294921875
+        ],
+        "size_cm": [
+          120.0,
+          120.00000762939453,
+          1820.345458984375
+        ],
+        "expected_center_cm": [
+          1200.0,
+          -100.0,
+          910.1727485656738
+        ]
+      }
+    },
+    {
+      "name": "SM_1420_Mast collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Mast Nanite disabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Mast original materials",
+      "pass": true,
+      "detail": [
+        "M_1420_Concrete",
+        "M_1420_Galvanized_metal",
+        "M_1420_On_air"
+      ]
+    },
+    {
+      "name": "SM_1420_Mast LOD count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_1420_Mast LOD0 triangles",
+      "pass": true,
+      "detail": {
+        "source": 1264,
+        "imported": 1264
+      }
+    },
+    {
+      "name": "g999 exact composed trim asset",
+      "pass": true,
+      "detail": {
+        "tris": 1916,
+        "gasRemoved": 128,
+        "stationRemoved": 52,
+        "resultTris": 1736,
+        "hidden": false,
+        "node": 1448,
+        "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g999.g999",
+        "importedTris": 1736
+      }
+    },
+    {
+      "name": "g1000 exact composed trim asset",
+      "pass": true,
+      "detail": {
+        "tris": 512,
+        "gasRemoved": 44,
+        "stationRemoved": 50,
+        "resultTris": 418,
+        "hidden": false,
+        "node": 1449,
+        "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1000.g1000",
+        "importedTris": 418
+      }
+    },
+    {
+      "name": "g1003 exact composed trim asset",
+      "pass": true,
+      "detail": {
+        "tris": 180,
+        "gasRemoved": 24,
+        "stationRemoved": 12,
+        "resultTris": 144,
+        "hidden": false,
+        "node": 1452,
+        "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1003.g1003",
+        "importedTris": 144
+      }
+    },
+    {
+      "name": "g1006 exact composed trim asset",
+      "pass": true,
+      "detail": {
+        "tris": 360,
+        "gasRemoved": 50,
+        "stationRemoved": 24,
+        "resultTris": 286,
+        "hidden": false,
+        "node": 1455,
+        "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1006.g1006",
+        "importedTris": 286
+      }
+    },
+    {
+      "name": "g1010 exact composed trim asset",
+      "pass": true,
+      "detail": {
+        "tris": 356,
+        "gasRemoved": 48,
+        "stationRemoved": 2,
+        "resultTris": 306,
+        "hidden": false,
+        "node": 1459,
+        "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1010.g1010",
+        "importedTris": 306
+      }
+    },
+    {
+      "name": "g1014 exact composed trim asset",
+      "pass": true,
+      "detail": {
+        "tris": 120,
+        "gasRemoved": 0,
+        "stationRemoved": 60,
+        "resultTris": 60,
+        "hidden": false,
+        "node": 1463,
+        "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1014.g1014",
+        "importedTris": 60
+      }
+    }
+  ],
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "passed": 68,
+  "total": 68
+}

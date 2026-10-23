@@ -1,0 +1,356 @@
+{
+  "tool": "Blender 5.2.2 LTS",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_1420_Shell separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Shell scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -6.125,
+          -6.199999809265137,
+          -0.4000000059604645
+        ],
+        [
+          6.125,
+          5.125,
+          5.5
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Shell material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Concrete",
+        "M_1420_Walnut",
+        "M_1420_Stucco_cream",
+        "M_1420_Galvanized_metal",
+        "M_1420_Black_enamel",
+        "M_1420_Brick_red",
+        "M_1420_Lamp_glow"
+      ]
+    },
+    {
+      "name": "SM_1420_Shell exact triangle contract",
+      "result": "PASS",
+      "triangles": 4952,
+      "expected_triangles": 4952,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Shell finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 4952
+    },
+    {
+      "name": "Door and studio window are actual shell openings",
+      "result": "PASS",
+      "door_empty": true,
+      "window_empty": true,
+      "solid_pier_hit": true
+    },
+    {
+      "name": "Roof and window lintel normals face outward",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_1420_Interior separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Interior scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -5.824999809265137,
+          -4.849999904632568,
+          0.0
+        ],
+        [
+          5.717499732971191,
+          4.75,
+          3.190000057220459
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Interior material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Walnut",
+        "M_1420_Desk_walnut",
+        "M_1420_Acoustic_fabric",
+        "M_1420_Black_enamel",
+        "M_1420_Galvanized_metal",
+        "M_1420_Brushed_aluminium",
+        "M_1420_VU_backlight",
+        "M_1420_Ink",
+        "M_1420_Ivory_plastic",
+        "M_1420_Brick_red",
+        "M_1420_Painted_olive",
+        "M_1420_Paper",
+        "M_1420_Vinyl_green",
+        "M_1420_Lamp_glow"
+      ]
+    },
+    {
+      "name": "SM_1420_Interior exact triangle contract",
+      "result": "PASS",
+      "triangles": 43268,
+      "expected_triangles": 43268,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Interior finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 43268
+    },
+    {
+      "name": "SM_1420_Door separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Door scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          2.682209014892578e-07,
+          -0.12799999117851257,
+          0.02500009536743164
+        ],
+        [
+          0.9400002956390381,
+          0.042500000447034836,
+          2.125
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Door material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Painted_olive",
+        "M_1420_Black_enamel",
+        "M_1420_Clear_glass",
+        "M_1420_Ivory_plastic",
+        "M_1420_Galvanized_metal",
+        "M_1420_Paper"
+      ]
+    },
+    {
+      "name": "SM_1420_Door exact triangle contract",
+      "result": "PASS",
+      "triangles": 1852,
+      "expected_triangles": 1852,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Door finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 1852
+    },
+    {
+      "name": "SM_1420_Glass separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Glass scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.6399999856948853,
+          -4.973999977111816,
+          0.73499995470047
+        ],
+        [
+          3.0399999618530273,
+          -4.956000328063965,
+          2.365000009536743
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Glass material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Clear_glass"
+      ]
+    },
+    {
+      "name": "SM_1420_Glass exact triangle contract",
+      "result": "PASS",
+      "triangles": 12,
+      "expected_triangles": 12,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Glass finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 12
+    },
+    {
+      "name": "SM_1420_Mast separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Mast scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          11.399999618530273,
+          0.3999999761581421,
+          0.0
+        ],
+        [
+          12.600000381469727,
+          1.600000023841858,
+          18.203454971313477
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Mast material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Concrete",
+        "M_1420_Galvanized_metal",
+        "M_1420_On_air"
+      ]
+    },
+    {
+      "name": "SM_1420_Mast exact triangle contract",
+      "result": "PASS",
+      "triangles": 1264,
+      "expected_triangles": 1264,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Mast finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 1264
+    },
+    {
+      "name": "PBR texture dependencies exist",
+      "result": "PASS",
+      "count": 12,
+      "relative_paths": [
+        "textures/concrete_color.png",
+        "textures/concrete_normal.png",
+        "textures/concrete_roughness.png",
+        "textures/desk_walnut_color.png",
+        "textures/desk_walnut_normal.png",
+        "textures/desk_walnut_roughness.png",
+        "textures/stucco_color.png",
+        "textures/stucco_normal.png",
+        "textures/stucco_roughness.png",
+        "textures/walnut_color.png",
+        "textures/walnut_normal.png",
+        "textures/walnut_roughness.png"
+      ]
+    },
+    {
+      "name": "Source and GLB preserved",
+      "result": "PASS"
+    },
+    {
+      "name": "GLB exact triangle counts",
+      "result": "PASS",
+      "triangles": {
+        "SM_1420_Door": 1852,
+        "SM_1420_Glass": 12,
+        "SM_1420_Interior": 43268,
+        "SM_1420_Mast": 1264,
+        "SM_1420_Shell": 4952
+      }
+    },
+    {
+      "name": "Visible surface unchanged by zero-area cleanup",
+      "result": "PASS",
+      "proof_file": "mesh_cleanup.json",
+      "removed": {
+        "SM_1420_Shell": 0,
+        "SM_1420_Door": 0,
+        "SM_1420_Glass": 0,
+        "SM_1420_Interior": 144,
+        "SM_1420_Mast": 0
+      }
+    },
+    {
+      "name": "Story proxy anchor preserved",
+      "result": "PASS"
+    }
+  ],
+  "passed": 32,
+  "total": 32,
+  "runtime_note": "This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests."
+}
