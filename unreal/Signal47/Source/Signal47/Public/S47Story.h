@@ -52,6 +52,9 @@ public:
  bool bEveningTimeline = false;
  bool bOpeningHeld = false;
  void BeginEveningShift();
+ // Stable early-shift checkpoint: before the timed survey starts.
+ TSharedPtr<class FJsonObject> SaveRoutine() const;
+ void RestoreRoutine(const TSharedPtr<class FJsonObject>& Saved);
  static FS47Doc RestorePrintout(const TSharedPtr<class FJsonObject>& SavedNs, double FallbackClock, bool bSavedCase);
  static bool TimelineSelfTest(TArray<FString>& Out);
  double TimelineTime(double Legacy) const;

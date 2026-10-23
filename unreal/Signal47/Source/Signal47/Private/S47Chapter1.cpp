@@ -1,6 +1,8 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
 #include "S47Keys.h"
+#include "S47Anomaly.h"
+#include "S47Evening.h"
 
 #include "Components/PrimitiveComponent.h"
 #include "Engine/Texture2D.h"
@@ -370,6 +372,11 @@ void US47Chapter1::BeginCase(const S47J::FObj& Saved, double InEventClock)
 	Reset();
 	Active = true;
 	S = Saved.IsValid() ? FS47CaseState::FromJson(Saved, InEventClock) : FS47CaseState::Fresh(InEventClock);
+	if (M && M->Anomaly && M->Anomaly->Data.bEarlyCamera)
+	{
+		S.bCamera = true;
+		if (S.Stage == TEXT("collect-camera")) S.Stage = S.bLog ? TEXT("first-exposure") : TEXT("motor-log");
+	}
 	bool bSheet = false;
 	S.Sheet = Saved.IsValid() && Saved->TryGetBoolField(TEXT("sheet"), bSheet) ? bSheet : S.bRef;
 	if (M && BookPtr) M->Books.AddUnique(BookPtr.Get()); // the board reads the books of the chapters that have started
@@ -545,9 +552,17 @@ void US47Chapter1::Interactables()
 	{
 		FS47Interactable It;
 		It.Id = TEXT("fieldCamera"); It.Object = Web->Obj(TEXT("room.objs.fieldCamera")); It.Range = 2.6;
-		It.Label = [this] { return !Active || S.bCamera ? FString() : FString(TEXT("Collect field camera")); };
+		It.Label = [this] { const bool Early = Host && Host->bEveningTimeline && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")); return ((!Active && !Early) || S.bCamera || EarlyCamera()) ? FString() : FString(TEXT("Collect field camera")); };
 		It.Use = [this]
 		{
+			if (!Active)
+			{
+				if (!M->Anomaly || !M->Evening || !M->Evening->Pack.Flag(TEXT("handover_done"))) return;
+				M->Anomaly->Data.bEarlyCamera = true; RestoreEarlyCamera();
+				NoteIt(TEXT("Field camera collected for routine references. C raises it; the instant back keeps the place and exposure time. B-12 sheet film remains sealed."));
+				Toast(TEXT("Field camera. C to raise, Space to expose. Reference prints go in the notebook."),4.5f);
+				M->RequestAutosave(); return;
+			}
 			S.bCamera = true;
 			ShowCamera(false);
 			if (US47FieldCamera* F = Fcam()) F->bHave = true;
@@ -1190,7 +1205,7 @@ void US47Chapter1::ToggleCamera()
 {
 	US47FieldCamera* F = Fcam();
 	US47UI* U = Ui();
-	if (!Active || !F || !F->bHave) return;
+	if ((!Active && !EarlyCamera()) || !F || !F->bHave) return;
 	if (U && U->Modal()) return;
 	F->Raise(!F->bRaised);
 	if (US47Audio* A = Au()) A->Sfx(TEXT("click"), Snd(0.35f, F->bRaised ? 1.2f : 0.9f));
@@ -1243,6 +1258,7 @@ FS47ShotCheck US47Chapter1::Check() const
 {
 	// Why the shutter would (not) fire right now. Mirrors the Unity rules. bNear marks where the
 	// case frame keeps the shutter: the S-03 apron until frame 01, and the B-12 sight line mark.
+	if (!Active) return { TEXT("ROUTINE REFERENCE // INSTANT BACK"), false, false };
 	if (Field) return Field->Check();
 	const US47FieldCamera* F = Fcam();
 	const FVector P = M && M->Player ? M->Player->Pos : FVector::ZeroVector;
@@ -1457,8 +1473,15 @@ void US47Chapter1::Update(double Dt, double T)
 {
 	// `lead` is false while a later chapter runs: the yard and the lab stay as they were, but
 	// that chapter owns the objective line.
-	if (!Active) return;
+	if (!Active && !EarlyCamera()) return;
 	const bool bLead = Host && Host->ChapterKey == TEXT("ch1");
+	if (!Active)
+	{
+		auto* F=Fcam(); auto* U=Ui();
+		if (F && F->bRaised && U && U->Modal()) { F->Raise(false); U->Viewfinder(false); }
+		if (F && F->bRaised && U && !U->Modal()) { F->Sync(); Status=Check(); const auto R=F->FrameRect(); FS47Viewfinder V; V.X=R.X; V.Y=R.Y; V.W=R.W; V.H=R.H; V.Frame=TEXT("REFERENCE"); V.Status=Status.Text; FreeLine(V); U->Viewfinder(true,V); }
+		return;
+	}
 	const double G = Gt();
 	if (AnimVane)
 	{
@@ -1508,7 +1531,7 @@ void US47Chapter1::Update(double Dt, double T)
 			const FS47FrameRect R = F->FrameRect();
 			FS47Viewfinder V;
 			V.X = float(R.X); V.Y = float(R.Y); V.W = float(R.W); V.H = float(R.H);
-			V.Frame = FrameNo(); V.Status = Status.Text; V.bOk = Status.bOk; V.bTouch = Touch();
+			V.Frame = Active ? FrameNo() : FString(TEXT("REFERENCE")); V.Status = Status.Text; V.bOk = Status.bOk; V.bTouch = Touch();
 			FreeLine(V);
 			U->Viewfinder(true, V);
 		}
@@ -1770,4 +1793,16 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 		Expect(C->S.Links && C->S.Links->Num() == 4 && C->S.Links->Contains(bLight ? TEXT("hyp.light|refsheet.lamp") : TEXT("hyp.drift|refsheet.drive")), TEXT("backfill restores the chosen hypothesis's thread"));
 	}
 	return bOk;
+}
+
+bool US47Chapter1::EarlyCamera() const
+{
+ return M && M->Anomaly && M->Anomaly->Data.bEarlyCamera;
+}
+void US47Chapter1::RestoreEarlyCamera()
+{
+ if (!EarlyCamera()) return;
+ if (auto* F=Fcam()) F->bHave=true;
+ ShowCamera(false);
+ if (Active) { S.bCamera=true; if(S.Stage==TEXT("collect-camera")) S.Stage=S.bLog?TEXT("first-exposure"):TEXT("motor-log"); }
 }

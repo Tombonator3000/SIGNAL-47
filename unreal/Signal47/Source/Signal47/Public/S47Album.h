@@ -90,6 +90,8 @@ struct FS47AlbumDeps
 	TFunction<bool()> Small;
 	/** The shutter's sound and flash, a word on the roll, the save. */
 	TFunction<void(const FS47AlbumShot&, bool, int32)> Done;
+	/** Attach only features actually framed at exposure time, before persistent storage. */
+	TFunction<void(FS47AlbumShot&)> Tag;
 	/** A free frame taken here and now may keep the face (main.ts: chapter four, out of doors, on foot). */
 	TFunction<bool()> Face;
 	/** The print with the face has been looked at closely for the first time, come up. */

@@ -1,5 +1,6 @@
 #include "S47Story.h"
 #include "S47Evening.h"
+#include "S47Anomaly.h"
 #include "S47Walker.h"
 #include "S47World.h"
 #include "S47Three.h"
@@ -288,6 +289,7 @@ TArray<FS47Task> AS47Story::Tasks() const
 
 FString AS47Story::Label(const FString& Id) const
 {
+	if (Id == TEXT("logbook")) if (const auto* M=US47Main::Get(this); M && M->Anomaly && M->Evening && M->Evening->Enabled() && M->Evening->Pack.Flag(TEXT("handover_done"))) return TEXT("Shift folder / compare local records");
 	if (Id == TEXT("logbook")) return bLogRead ? TEXT("Read the shift log") : TEXT("Read Dale's shift log");
 	if (Id == TEXT("workOrder")) return TEXT("Read the work order");
 	if (Id == TEXT("coffeePot")) return At(ES47Phase::Event) ? TEXT("Coffee machine") : Coffee == ECoffee::None ? TEXT("Fill your mug") : TEXT("Coffee machine");
@@ -328,7 +330,16 @@ void AS47Story::Use(const FString& Id)
 {
 	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
-	if (Id == TEXT("logbook")) { OpenDoc(S47Docs::ShiftLog(bEveningTimeline), [this] { LogClosed(); }); return; }
+	if (Id == TEXT("anomaly:shiftlog"))
+	{
+		const auto* Existing = DocsList.FindByPredicate([](const FS47Doc& D){return D.Id == TEXT("log");});
+		OpenDoc(Existing ? *Existing : S47Docs::ShiftLog(bEveningTimeline), [this] { LogClosed(); }); return;
+	}
+	if (Id == TEXT("logbook"))
+	{
+		if (auto* M=US47Main::Get(this); M && M->Anomaly && M->Evening && M->Evening->Enabled() && M->Evening->Pack.Flag(TEXT("handover_done"))) { M->Anomaly->Open(TEXT("n01")); return; }
+		OpenDoc(S47Docs::ShiftLog(bEveningTimeline), [this] { LogClosed(); }); return;
+	}
 	if (Id == TEXT("workOrder")) { OpenDoc(S47Docs::WorkOrder(), [this] { WorkOrderClosed(); }); return; }
 	if (Id == TEXT("coffeePot"))
 	{
@@ -1133,7 +1144,7 @@ void AS47Story::Tick(float DeltaSeconds)
 	for (US47Chapter* C : Chapters)
 	{
 		if (!C) continue;
-		const bool bCh1Along = C->Key() == TEXT("ch1") && ChapterKey.StartsWith(TEXT("ch"));
+		const bool bCh1Along = C->Key() == TEXT("ch1") && (ChapterKey.StartsWith(TEXT("ch")) || bEveningTimeline);
 		if (C->bActive || bCh1Along) C->Update(bPaused ? 0.0 : Dt, GameTime);
 	}
 	if (Decoder.IsValid()) { Decoder->Duck(VoicesDuck()); Decoder->Update(Dt); }
@@ -1227,4 +1238,41 @@ double AS47Story::VoicesDuck() const
 		bVoice |= M->UI->Narrator.IsValid() && M->UI->Narrator->Playing();
 	}
 	return bVoice ? 0.25 : 1.0;
+}
+
+// Unlike a residual jump, this checkpoint keeps the actual early observations and dials.
+TSharedPtr<FJsonObject> AS47Story::SaveRoutine() const
+{
+ using namespace S47J;
+ auto O=New(); Set(O,TEXT("clock"),ClockSec); Set(O,TEXT("notes"),NotesList);
+ Set(O,TEXT("powered"),bPowered); Set(O,TEXT("k3"),NS.bK3Open); Set(O,TEXT("papers"),NS.Papers); Set(O,TEXT("jacket"),NS.bJacket);
+ Set(O,TEXT("rxStage"),Rx.Stage); Set(O,TEXT("f"),Rx.Frequency); Set(O,TEXT("g"),Rx.Gain); Set(O,TEXT("bw"),Rx.Bandwidth); Set(O,TEXT("az"),Rx.Azimuth); Set(O,TEXT("status"),Rx.Status);
+ TArray<TSharedPtr<FJsonValue>> Log, Docs;
+ for (const auto& L:NS.Log) { auto V=New(); Set(V,TEXT("clock"),L.Clock); Set(V,TEXT("text"),L.Text); Log.Add(MakeShared<FJsonValueObject>(V)); }
+ for (const auto& D:DocsList)
+ {
+  auto V=New(); Set(V,TEXT("id"),D.Id); Set(V,TEXT("title"),D.Title); Set(V,TEXT("kind"),D.Kind); Set(V,TEXT("stamp"),D.Stamp); Set(V,TEXT("page"),D.Page); Set(V,TEXT("transcript"),D.Transcript); Set(V,TEXT("image"),D.Image); Set(V,TEXT("paper"),D.Paper); Set(V,TEXT("ratio"),D.PaperRatio);
+  TArray<TSharedPtr<FJsonValue>> Sheets; for (const auto& Sheet:D.Sheets) { auto Q=New(); Set(Q,TEXT("page"),Sheet.Page); Set(Q,TEXT("paper"),Sheet.Paper); Set(Q,TEXT("strip"),Sheet.Strip); Set(Q,TEXT("term"),Sheet.Term); Sheets.Add(MakeShared<FJsonValueObject>(Q)); } V->SetArrayField(TEXT("sheets"),Sheets);
+  Docs.Add(MakeShared<FJsonValueObject>(V));
+ }
+ O->SetArrayField(TEXT("log"),Log); O->SetArrayField(TEXT("docs"),Docs); return O;
+}
+void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
+{
+ if (!Saved) return;
+ using namespace S47J;
+ ClearTimers(); CurrentPhase=ES47Phase::Shift; bOpeningHeld=false; bCinematic=false; bLogRead=true;
+ ClockSec=Num(Saved,TEXT("clock"),S47Timeline::ShiftStart); NotesList=Strs(Saved,TEXT("notes"));
+ NS.Papers=Strs(Saved,TEXT("papers")); NS.bJacket=Bool(Saved,TEXT("jacket")); NS.Log.Reset();
+ for (const auto& V:Arr(Saved,TEXT("log"))) { const auto O=V->AsObject(); if(O) NS.Log.Add({Num(O,TEXT("clock")),Str(O,TEXT("text"))}); }
+ DocsList.Reset(); for (const auto& V:Arr(Saved,TEXT("docs")))
+ {
+  const auto O=V->AsObject(); if(!O) continue; FS47Doc D; D.Id=Str(O,TEXT("id")); D.Title=Str(O,TEXT("title")); D.Kind=Str(O,TEXT("kind")); D.Stamp=Str(O,TEXT("stamp")); D.Page=Str(O,TEXT("page")); D.Transcript=Str(O,TEXT("transcript")); D.Image=Str(O,TEXT("image")); D.Paper=Str(O,TEXT("paper")); D.PaperRatio=Num(O,TEXT("ratio"));
+  for (const auto& Q:Arr(O,TEXT("sheets"))) { const auto A=Q->AsObject(); if(A) D.Sheets.Add({Str(A,TEXT("page")),Str(A,TEXT("paper")),Str(A,TEXT("strip")),Str(A,TEXT("term"))}); }
+  DocsList.Add(D);
+ }
+ if (Bool(Saved,TEXT("powered"))) PowerUp(true);
+ NS.bK3Open=Bool(Saved,TEXT("k3")); if(bPowered) ApplyK3(NS.bK3Open);
+ Rx.Stage=FMath::Clamp(Int(Saved,TEXT("rxStage")),0,1); Rx.Frequency=Num(Saved,TEXT("f"),Rx.Frequency); Rx.Gain=Num(Saved,TEXT("g"),Rx.Gain); Rx.Bandwidth=Num(Saved,TEXT("bw"),Rx.Bandwidth); Rx.Azimuth=Num(Saved,TEXT("az"),Rx.Azimuth); Rx.Status=Str(Saved,TEXT("status"),Rx.Status);
+ PointDishes(Rx.Azimuth,SurveyEl,99);
 }

@@ -20,6 +20,8 @@
 #include "S47Audio.h"
 #include "S47Calls.h"
 #include "S47Chapter1.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
 #include "S47Chapter2.h"
 #include "S47Chapter5.h"
 #include "S47Curve.h"
@@ -183,11 +185,13 @@ void US47Night::Init(US47Main* InM)
 		// (Caliche's own ground by the diner's lot, world/Town.ts floorAt, is the town's: the road's ground here)
 		return G.Ground;
 	};
+	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); };
 	A.Small = [Self] { return Self.IsValid() && Self->M->Flow && Self->M->Flow->Saves.bFallback; };
 	A.Done = [Self](const FS47AlbumShot& Shot, bool bFirst, int32 Left)
 	{
 		if (!Self.IsValid()) return;
 		US47Main* Mn = Self->M;
+		if (Mn->Anomaly) Mn->Anomaly->Photo(Shot);
 		if (Mn->Audio) Mn->Audio->Shutter();
 		Mn->UI->ShutterFlash();
 		// the patch with no stars in it, on the print (story/starHole.ts)
@@ -353,6 +357,7 @@ FString US47Night::SurfaceAt() const
 
 bool US47Night::OneAtATime() const
 {
+	if (M && M->AnomalyWorld && M->AnomalyWorld->Busy()) return true;
 	// one of the night's things is going: nothing else starts (the one-at-a-time rule; each of them
 	// also waits for the others itself, as before)
 	return NightGoing() || Is(Hooks.NinthQuiet);

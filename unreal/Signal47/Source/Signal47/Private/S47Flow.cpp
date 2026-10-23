@@ -1,5 +1,7 @@
 #include "S47Flow.h"
 #include "S47Evening.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
 
 #include "AudioDevice.h"
 #include "Camera/CameraActor.h"
@@ -24,6 +26,7 @@
 #include "S47Audio.h"
 #include "S47CB.h"
 #include "S47Chapter.h"
+#include "S47Chapter1.h"
 #include "S47Chapter6.h"
 #include "S47FieldCamera.h"
 #include "S47HUD.h"
@@ -329,6 +332,7 @@ void US47Flow::Boot()
 		PlayInput();
 		// (startGame's: a new night for the night's layer, and its log listening once the night has begun)
 		// (Night::Restore puts SARO's, the times away, the town's and the phones' back too, in main.ts's order)
+		if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); }
@@ -345,6 +349,9 @@ void US47Flow::Boot()
 		if (M->Away) M->Away->Restored();
 		if (M->TownLayer) M->TownLayer->Refile(S47J::FObj());
 		if (M->Night) M->Night->Restored();
+		if (M->Anomaly) M->Anomaly->Begin(nullptr);
+		if (M->AnomalyWorld) M->AnomalyWorld->Begin();
+		if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
 		M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 		return;
 	}
@@ -580,6 +587,7 @@ void US47Flow::StartGame(const FStart& O)
 	// what is saved for the systems not ported yet goes back into the next save as it was
 	Carry = O.State.IsValid() ? S47J::Clone(O.State) : S47J::FObj();
 	// the flashlight, the seen log, the curve, townSeen, glimpses, nightEvents and the album (S47Night)
+	if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 	if (M->Night) M->Night->Restore(O.State);
 	// (Night::Restore puts the rest back in main.ts's order: the town's, the times away, the phones, the thread)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
@@ -620,6 +628,10 @@ void US47Flow::StartGame(const FStart& O)
 		if (A.bValid) M->Player->Place(A.X, A.Z, A.Yaw);
 	}
 	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
+	if (Checkpoint == TEXT("routine")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
+	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
+	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
+	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
 	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player && M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z"))))
@@ -640,7 +652,7 @@ void US47Flow::StartStory(const FString& Checkpoint)
 	// Prologue.start(checkpoint): back to the start of the night, the player at the spawn, then the
 	// checkpoint's beat, or the night from 23:41
 	if (!M->Story) return;
-	if (Checkpoint.IsEmpty()) { M->Story->Start(); return; }
+	if (Checkpoint.IsEmpty() || Checkpoint == TEXT("routine")) { M->Story->Start(); return; }
 	if (M->Web && M->Player) { const FVector Sp = M->Web->SpawnThree(); M->Player->Place(Sp.X, Sp.Z, Sp.Y); }
 	M->Story->Jump(Checkpoint);
 }
@@ -1026,6 +1038,8 @@ S47J::FObj US47Flow::GameState()
 	S47J::Set(State, TEXT("v"), 3);
 	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);
 	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());
+	if (M->Anomaly) S47J::Set(State,TEXT("anomaly"),M->Anomaly->Save());
+	if (Checkpoint == TEXT("routine")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
@@ -1165,6 +1179,7 @@ FString US47Flow::CheckpointName() const
 	const AS47Story* S = M->Story;
 	if (M->Evening && M->Evening->Opening()) return TEXT("evening");
 	if (!S) return TEXT("start");
+	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift) return TEXT("routine");
 	const FString& K = S->ChapterKey;
 	if (K == TEXT("ch5") || K == TEXT("ch6")) return TEXT("chapter5");
 	if (K == TEXT("ch4")) return TEXT("chapter4");
@@ -1179,7 +1194,9 @@ FString US47Flow::GameSaveBlock() const
 	// Prologue.saveBlock: why the game cannot be saved right now, or empty when it can
 	const AS47Story* S = M->Story;
 	if (!S) return TEXT("There is no night running to save.");
+	if (M->AnomalyWorld && M->AnomalyWorld->Busy()) return TEXT("Let the short studio sound finish before saving.");
 	if (M->Evening && M->Evening->Opening()) return M->World && M->World->bBusy ? TEXT("Let the car finish parking first.") : FString();
+	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift && !S->IsCinematic() && (S->BootT < 0 || S->Gt()-S->BootT > 2)) return FString();
 	if (!S->At(ES47Phase::Residual)) return S->bEveningTimeline ? TEXT("The survey saves when the routine interval finishes at 00:13. The opening can be saved before the handover.") : TEXT("The night can be saved from 02:13, once the survey has been running for a while.");
 	if (S->IsCinematic()) return TEXT("Not right now. Let the moment finish first.");
 	if (S->At(ES47Phase::Ringing) && ChapterNo(S) == 0) return TEXT("Not during the call and what follows it. The game saves again when the night moves on.");
@@ -1267,7 +1284,9 @@ void US47Flow::OpenNotebook()
 	}
 	// (game.openDoc: T. Vega's field book opens in a view of its own, story/fieldBook.ts)
 	TWeakObjectPtr<US47Main> Mn = M;
-	M->UI->Notebook(S->Tasks(), S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc) { if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return; if (UI.IsValid()) UI->Document(Doc, [] {}); },
+	TArray<FS47Task> NotebookTasks = S->Tasks();
+	if (M->Anomaly) NotebookTasks.Append(M->Anomaly->Tasks());
+	M->UI->Notebook(NotebookTasks, S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc) { if (Mn.IsValid() && Mn->Anomaly && Mn->Anomaly->OpenDoc(Doc)) return; if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return; if (UI.IsValid()) UI->Document(Doc, [] {}); },
 		H ? *H : FString(TEXT("Tonight")), OnBoard, NotebookExtras());
 }
 

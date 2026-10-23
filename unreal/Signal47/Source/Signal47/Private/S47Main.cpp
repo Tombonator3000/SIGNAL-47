@@ -1,5 +1,8 @@
 #include "S47Main.h"
 #include "S47Evening.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
+#include "S47AnomalyTest.h"
 #include "S47Chapter5.h"
 #include "S47Chapter6.h"
 #include "SS47Widgets.h"
@@ -43,7 +46,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { return Night && Night->OneAtATime(); }
+bool US47Main::OneAtATime() const { return (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -56,6 +59,8 @@ void US47Main::Step(double Dt)
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
 	if (Evening) Evening->Step(Dt);
+	if (Mode == EMode::Play && Anomaly) Anomaly->Step(Dt);
+	if (Mode == EMode::Play && AnomalyWorld) AnomalyWorld->Step(Dt);
 	const bool bOpening = Evening && Evening->Opening();
 	// main.ts, after game.update: the walk gap to STATION 01 from chapter three, the old road's barricades
 	// open from chapter five's road (World.setStoryPlaces)
@@ -126,6 +131,7 @@ void US47Main::Step(double Dt)
 	// main.ts: the sky, the lamps, the shared lights, the fog's colour, the painted horizon, the areas'
 	// glows and windows (and World.update's light in the air), the ground cover before the picture
 	if (Life) Life->Step(Dt);
+	if (AnomalyTest) AnomalyTest->Step(Dt);
 }
 
 void US47Main::InitRadio()

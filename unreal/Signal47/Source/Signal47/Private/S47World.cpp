@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47Evening.h"
 #include "S47Timeline.h"
 #include "S47Keys.h"
 
@@ -100,11 +101,12 @@ void US47World::Init(US47Main* InM)
 	{
 		TruckChoice = [this](const FString& Place) -> FChoice
 		{
-			if (M && M->Story && !M->Story->At(ES47Phase::Ch1))
+			const bool EarlyReferenceTrip = M && M->Story && M->Story->bEveningTimeline && M->Story->Phase() == ES47Phase::Shift && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done"));
+			if (M && M->Story && !M->Story->At(ES47Phase::Ch1) && !EarlyReferenceTrip)
 			{
 				return { TEXT("Service truck"), [this] { Toast(TEXT("SARO 07, the service truck. Not now: someone has to sit the console tonight."), 3.4f); } };
 			}
-			return { TEXT("Drive"), [this, Place] { Roam(Place); } };
+			return { EarlyReferenceTrip ? TEXT("Drive / optional Caliche reference round") : TEXT("Drive"), [this, Place] { Roam(Place); } };
 		};
 	}
 	// main.ts input.onKey and useCurrent: in the cab Use turns the key, uses the radio or gets out;

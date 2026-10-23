@@ -157,6 +157,7 @@ FS47AlbumShot FS47Album::Expose()
 		Shot.Targets.RemoveAll([&X](const TPair<FString, FVector2D>& T) { return T.Key == X.S->Target; });
 		Shot.Targets.Add(TPair<FString, FVector2D>(X.S->Target, FVector2D(Q.U, Q.V)));
 	}
+	if (D.Tag) D.Tag(Shot);
 	Data.Shots.Add(Shot);
 	if (bFace) Data.Face = FS47FaceSave{ Shot.Id };
 	FLast L;
