@@ -64,12 +64,17 @@ void FS47Evening::ControlEntranceTest(double Dt)
  if (M->World->bBusy) return;
  if (T.Hold > 0) { T.Hold -= Dt; return; }
  const auto Stage = [&T](int32 Next, double Hold = 0) { T.Stage = Next; T.Since = T.Elapsed; T.Hold = Hold; };
- const auto Shot = [&T](const FString& Name)
+ const auto Shot = [this, &T](const FString& Name)
  {
   if (T.Shots.IsEmpty()) return;
   const FString Path = T.Shots / (TEXT("entrance-") + Name + TEXT(".png"));
-  FScreenshotRequest::RequestScreenshot(Path, true, false);
-  UE_LOG(LogTemp, Display, TEXT("S47: entrance screenshot requested with HUD: %s"), *Path);
+  // The walker's camera consumes Yaw on its next tick. Stage holds keep the same
+  // physical pose and heading until this delayed capture sees that camera update.
+  M->Story->After(0.1, [Path]
+  {
+   FScreenshotRequest::RequestScreenshot(Path, true, false);
+   UE_LOG(LogTemp, Display, TEXT("S47: entrance screenshot requested with HUD: %s"), *Path);
+  });
  };
  const auto Walk = [this, &T]()
  {
