@@ -23,7 +23,7 @@ namespace
 	{
 		FS47EveningEffects Result;
 		for (const auto& Pair : Json->GetObjectField(TEXT("set_flags"))->Values)
-			Result.Flags.Add(Pair.Key, Pair.Value->AsBool());
+			Result.Flags.Add(FString(*Pair.Key), Pair.Value->AsBool());
 		Result.Documents = ReadStrings(Json->GetArrayField(TEXT("give_documents")));
 		return Result;
 	}
@@ -49,14 +49,14 @@ bool FS47EveningPack::Initialize(FString& Error)
 	Phases = ReadStrings(Pack->GetArrayField(TEXT("phases")));
 	const auto Actors = Pack->GetObjectField(TEXT("actors"));
 	for (const auto& Pair : Pack->GetObjectField(TEXT("flags"))->Values)
-		Defaults.Add(Pair.Key, Pair.Value->AsObject()->GetBoolField(TEXT("default")));
-	for (const auto& Pair : Pack->GetObjectField(TEXT("external_flags"))->Values) External.Add(Pair.Key, false);
-	for (const auto& Pair : Pack->GetObjectField(TEXT("recording_aliases"))->Values) Aliases.Add(Pair.Key, Pair.Value->AsString());
+		Defaults.Add(FString(*Pair.Key), Pair.Value->AsObject()->GetBoolField(TEXT("default")));
+	for (const auto& Pair : Pack->GetObjectField(TEXT("external_flags"))->Values) External.Add(FString(*Pair.Key), false);
+	for (const auto& Pair : Pack->GetObjectField(TEXT("recording_aliases"))->Values) Aliases.Add(FString(*Pair.Key), Pair.Value->AsString());
 	for (const auto& Value : Root->GetArrayField(TEXT("modules")))
 	{
 		const auto Module = Value->AsObject();
 		for (const auto& Pair : Module->GetObjectField(TEXT("flags"))->Values)
-			Defaults.Add(Pair.Key, Pair.Value->AsObject()->GetBoolField(TEXT("default")));
+			Defaults.Add(FString(*Pair.Key), Pair.Value->AsObject()->GetBoolField(TEXT("default")));
 		for (const auto& SceneValue : Module->GetArrayField(TEXT("scenes")))
 		{
 			const auto Json = SceneValue->AsObject();
@@ -345,8 +345,9 @@ bool FS47EveningPack::Load(const TSharedPtr<FJsonObject>& Json, FString& Error)
 	for (const auto& Pair : (*SavedFlags)->Values)
 	{
 		bool bValue = false;
-		if (!Defaults.Contains(Pair.Key) || External.Contains(Pair.Key) || Pair.Value->Type != EJson::Boolean || !Pair.Value->TryGetBool(bValue)) return false;
-		NewFlags.Add(Pair.Key, bValue);
+		const FString Id(*Pair.Key);
+		if (!Defaults.Contains(Id) || External.Contains(Id) || Pair.Value->Type != EJson::Boolean || !Pair.Value->TryGetBool(bValue)) return false;
+		NewFlags.Add(Id, bValue);
 	}
 	if (Scene)
 	{
