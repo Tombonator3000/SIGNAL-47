@@ -10,6 +10,12 @@ namespace S47Timeline
  inline double Day(double C) { return FMath::Fmod(FMath::Fmod(C, 86400.) + 86400., 86400.); }
  inline double Night(double C) { const double D = Day(C); return D >= 12 * 3600 ? D - 86400 : D; }
  inline double Residual(bool E) { return (E ? 0 : 2 * 3600) + 13 * 60 + 47; }
+ // Reserve scheduled story beats during arbitrarily long free activity, without rewinding a loaded clock.
+ inline double AdvanceStoryClock(double Current, double Dt, bool bBeforeResidual)
+ {
+  const double Limit = bBeforeResidual ? Residual(true) - 6 : Departure;
+  return FMath::Max(Current, FMath::Min(Current + Dt, Limit));
+ }
  inline double Chapter3(bool E) { return E ? 2 * 3600 + 20 * 60 : 3 * 3600 + 40 * 60; }
  inline double Chapter4(bool E) { return E ? 3 * 3600 + 20 * 60 : 4 * 3600 + 35 * 60; }
  inline double Chapter5(bool E) { return E ? 4 * 3600 + 10 * 60 : 5 * 3600; }

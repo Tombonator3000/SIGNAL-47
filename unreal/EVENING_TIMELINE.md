@@ -8,6 +8,9 @@ Ny sak bruker `timelineVersion=2`. Søndag 13. april 18:00 er `-21600`, midnatt 
 
 Sak uten versjonen tilhører gammel tidslinje (`timelineVersion=1`). Flytens lagringsmigrering merker dette uttrykkelig. Den spiller videre fra gammel klokke og beholder 02:13-referansene. Ingen lagrede tekster, papirer, fotografier eller eksponeringstider kjøres gjennom tekstomskriving. `TimelineText` brukes bare ved utvalgte steder som lager en ny 1986-referanse. TAPE A og E10 fra 1947 beholder egne klokkeslett. Begge tidslinjer deler finalen.
 
+Eldre saker har en konkret begrensning: de lagret solve-tid og array-hendelse, men ikke klokkeslettet da spilleren rev av den første utskriften. Det opprinnelige arket kan derfor ikke gjenskapes med et bevist originalstempel. Lasting markerer denne kopien «RECONSTRUCTED LEGACY COPY» og «TIME NOT RECORDED», med forklaring i transkripsjonen. Dette flytter ingen gammel hendelse til den nye tidslinjen. Nye saves lagrer `ns.printoutAt` ved riving, slik at papirets faktiske stempel overlever lasting nøyaktig. Fotografier beholder sine lagrede eksponeringstider og bildepiksler.
+
+
 ## Tidligere og nye tider
 
 | Hendelse | Tidligere sak | Ny kveldssak |
@@ -48,7 +51,7 @@ Sak uten versjonen tilhører gammel tidslinje (`timelineVersion=1`). Flytens lag
 
 ## Valgt komprimering og venting
 
-Rutinekalibreringen og den kjente relé-/spenningssekvensen spilles. Deretter komprimerer eksisterende fade den hendelsesløse survey-tjenesten frem til 00:13. Faden sier uttrykkelig «Routine survey completed / 14 APRIL 1986 00:13». Det er ingen virkelig seks timers venting og ingen klokke som går bakover. Senere kapitteloverganger løfter klokka til de nye minimumstidene når aktiviteten er ferdig. Hvis spilleren allerede har brukt mer tid, beholdes den senere tiden.
+Rutinekalibreringen og den kjente relé-/spenningssekvensen spilles. Deretter komprimerer eksisterende fade den hendelsesløse survey-tjenesten frem til 00:13. Faden sier uttrykkelig «Routine survey completed / 14 APRIL 1986 00:13». Det er ingen virkelig seks timers venting og ingen klokke som går bakover. Ved svært lang kalibrering holdes fortellertiden senest 00:13:41 frem til den ferdige rutinen utløser residualens sekssekundersforløp, slik at faktisk start og 00:13:47-registreringen fortsatt stemmer. Senere kapitteloverganger løfter klokka til de nye minimumstidene når aktiviteten er ferdig. Hvis spilleren allerede har brukt mer tid, beholdes den senere tiden.
 
 Ny tidslinje bruker en uttrykkelig sluttfrist for fortellertid: klokka holdes på 05:20 hvis frivillig utforskning varer ut over budsjettet før siste kjøretur. Spilltid, dialog og oppgaver fortsetter; dette er en komprimeringsregel, ikke en påstått anomalihendelse. Roswell Road bruker avstand og fremdrift frem mot 05:29, holder klokketiden ved stopp og går aldri bakover ved rygging. Finalens 47 sekunder følger deretter sin egen hendelsesklokke. Dette bevarer både fri utforskning og uendret finale; varigheten av en hel natt er ennå ikke målt.
 

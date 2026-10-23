@@ -1009,6 +1009,8 @@ bool AS47Story::TimelineSelfTest(TArray<FString>& Out)
   const FS47Doc Original = S47Docs::Printout(Acquired), Restored = RestorePrintout(Roundtrip, Acquired - 600, true);
   Check(Original.Page == Restored.Page && Original.Transcript == Restored.Transcript && Original.Stamp == Restored.Stamp, TEXT("exact acquisition stamp survives JSON roundtrip independently of solve and event"));
  }
+ Check(S47Timeline::AdvanceStoryClock(-21600, 8 * 3600, true) == S47Timeline::Residual(true) - 6, TEXT("long calibration holds before the fixed residual instead of missing its timestamp"));
+ Check(S47Timeline::AdvanceStoryClock(S47Timeline::Departure - 1, 600, false) == S47Timeline::Departure && S47Timeline::AdvanceStoryClock(S47Timeline::Departure + 1, 1, false) == S47Timeline::Departure + 1, TEXT("departure deadline holds activity and never rewinds an already later loaded clock"));
  const auto Old = S47J::New(); S47J::Set(Old, TEXT("solveAt"), 2 * 3600 + 14 * 60);
  const FS47Doc Missing = RestorePrintout(Old, 2 * 3600 + 14 * 60, true);
  Check(Missing.Page.Contains(TEXT("TIME NOT RECORDED")) && Missing.Transcript.Contains(TEXT("original clock stamp is unavailable")), TEXT("legacy case with no acquisition stamp is explicitly reconstructed"));
@@ -1117,7 +1119,7 @@ void AS47Story::Tick(float DeltaSeconds)
         // Chapter six owns a distance-based clock, so waiting/reversing there cannot move it backwards.
         const US47Chapter* C6 = Chapter(TEXT("ch6"));
         if (!bOpeningHeld && !(bEveningTimeline && C6 && C6->bActive))
-            ClockSec = bEveningTimeline ? FMath::Min(ClockSec + Dt, S47Timeline::Departure) : ClockSec + Dt;
+            ClockSec = bEveningTimeline ? S47Timeline::AdvanceStoryClock(ClockSec, Dt, int32(CurrentPhase) < int32(ES47Phase::Residual)) : ClockSec + Dt;
 		TArray<FTimer> Due;
 		for (int32 i = Timers.Num() - 1; i >= 0; --i)
 		{
