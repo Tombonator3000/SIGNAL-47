@@ -201,7 +201,7 @@
     "azimuth_deg": 26
   },
   "production": {
-    "audio_status": "pending",
+    "audio_status": "voice_takes_recorded",
     "video_status": "pending",
     "runtime_status": "commute_handover_integrated_later_phases_gated",
     "voice_target": {
@@ -209,7 +209,7 @@
       "sample_format": "PCM16",
       "channels": 1
     },
-    "note_nb": "Kveldstart og tidslinje har runtime i S47Evening/S47EveningPack. Senere felt-, kontor- og filmoppgaver er porter for videre produksjon. Nye lyd-/videoassets er fortsatt pending."
+    "note_nb": "Kveldstart og tidslinje har runtime i S47Evening/S47EveningPack. De 109 rene stemmetakene er produsert (voice/README.md); Unreal-import av takene, kanalmiks i spillet, musikk og video gjenstår. Senere felt-, kontor- og filmoppgaver er porter for videre produksjon."
   },
   "recording_aliases": {
     "D61_FIXED_FRAGMENT_001": "D01_HANDOVER_001"

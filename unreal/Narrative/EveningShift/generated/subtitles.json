@@ -2,7 +2,7 @@
   "pack_id": "signal47_evening_shift",
   "language": "en-US",
   "status": "authored_not_integrated",
-  "note_nb": "Dialogtider venter på lyd. Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
+  "note_nb": "Dialogtider er målt fra de ferdige opptakene: start/slutt for tale, i sekunder fra starten av hvert klipp. Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
   "scenes": [
     {
       "scene_id": "I01_DRIVE",
@@ -13,54 +13,54 @@
           "speaker": "RADIO_HOST",
           "text": "Good afternoon, Caliche. Hope your Sunday has been an easy one.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 5.07,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I01_DRIVE_002",
           "speaker": "RADIO_HOST",
           "text": "We've still got a little sunshine left. Good time to get the washing off the line.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.84,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I01_DRIVE_003",
           "speaker": "RADIO_HOST",
           "text": "A reminder from the feed store: tomorrow's delivery comes in after ten. Let them have their coffee first.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 7.12,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I01_DRIVE_004",
           "speaker": "RADIO_HOST",
           "text": "And if you're heading out to work, the diner has the griddle on.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.63,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I01_DRIVE_005",
           "speaker": "RADIO_HOST",
           "text": "Take it easy through town. There's no prize for getting to the next red light first.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 5.54,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I01_DRIVE_006",
           "speaker": "RADIO_HOST",
           "text": "Here's another record for the road.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 1.37,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -73,27 +73,27 @@
           "speaker": "WAITRESS",
           "text": "Hi there. Sit wherever you like.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.69,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I02_DINER_HELLO_002",
           "speaker": "WAITRESS",
           "text": "Kitchen's still going. Coffee's fresh enough that I can say it with a straight face.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.93,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I02_DINER_HELLO_003",
           "speaker": "WAITRESS",
           "text": "You want to see the menu, or are you just stretching your legs?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.45,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -106,27 +106,27 @@
           "speaker": "WAITRESS",
           "text": "Burger comes with fries. Sandwich comes with chips.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.03,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I03_MENU_002",
           "speaker": "WAITRESS",
           "text": "Coffee with either one. I can wrap the food if you're taking it to work.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.66,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I03_MENU_003",
           "speaker": "WAITRESS",
           "text": "What sounds good?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 0.64,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -139,27 +139,27 @@
           "speaker": "WAITRESS",
           "text": "One burger, fries and coffee. Coming right up.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.67,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I04_BURGER_002",
           "speaker": "WAITRESS",
           "text": "There you go. Careful with the plate.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.73,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I04_BURGER_003",
           "speaker": "WAITRESS",
           "text": "Eating here, or shall I wrap it?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.38,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -172,27 +172,27 @@
           "speaker": "WAITRESS",
           "text": "Sandwich, chips and coffee. You got it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.75,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I05_SANDWICH_002",
           "speaker": "WAITRESS",
           "text": "Here we are. Napkins are right beside you.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 1.78,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I05_SANDWICH_003",
           "speaker": "WAITRESS",
           "text": "Staying for a minute, or taking that along?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.87,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -205,36 +205,36 @@
           "speaker": "WAITRESS",
           "text": "Sure. Take your time.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.42,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I06_EAT_002",
           "speaker": "WAITRESS",
           "text": "Mind if I top that coffee up?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 1.54,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I06_EAT_003",
           "speaker": "WAITRESS",
           "text": "There. That should keep you going.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.45,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I06_EAT_004",
           "speaker": "WAITRESS",
           "text": "Thanks for stopping in. Have a good shift.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.86,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -247,36 +247,36 @@
           "speaker": "WAITRESS",
           "text": "No trouble. I'll put it in a bag.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.62,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I07_TAKE_002",
           "speaker": "WAITRESS",
           "text": "Fork and napkins are in there. Coffee's got a lid.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.88,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I07_TAKE_003",
           "speaker": "WAITRESS",
           "text": "Keep the bag upright. The bottom's got more confidence than strength.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.64,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I07_TAKE_004",
           "speaker": "WAITRESS",
           "text": "Have a good evening out there.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.16,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -289,36 +289,36 @@
           "speaker": "WAITRESS",
           "text": "Of course. Here you are.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.29,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I08_WATER_002",
           "speaker": "WAITRESS",
           "text": "You've caught us between the supper crowd and the coffee crowd.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.54,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I08_WATER_003",
           "speaker": "WAITRESS",
           "text": "Nice having a minute to wipe a table before somebody needs it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.4,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I08_WATER_004",
           "speaker": "WAITRESS",
           "text": "Let me know if you change your mind about food.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 1.84,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -331,27 +331,27 @@
           "speaker": "WAITRESS",
           "text": "All right. Thanks for coming in.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.21,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I09_LEAVE_002",
           "speaker": "WAITRESS",
           "text": "We're here if you need something later.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.8,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I09_LEAVE_003",
           "speaker": "WAITRESS",
           "text": "Drive safely.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 0.81,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -364,36 +364,36 @@
           "speaker": "RADIO_HOST",
           "text": "You're listening to local radio here in Caliche.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.97,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I10_BACK_ON_ROAD_002",
           "speaker": "RADIO_HOST",
           "text": "Church supper volunteers, your pans are clean and waiting in the kitchen. Please take yours home before somebody makes another casserole in it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 8.85,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I10_BACK_ON_ROAD_003",
           "speaker": "RADIO_HOST",
           "text": "We'll leave you with some music now.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 2.4,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I10_BACK_ON_ROAD_004",
           "speaker": "RADIO_HOST",
           "text": "Good evening to everybody starting work, and everybody heading home.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 1.05,
+          "end_seconds": 4.88,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -411,36 +411,36 @@
           "speaker": "WAITRESS",
           "text": "Hi again. Back from SARO?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.1,
+          "end_seconds": 1.51,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I12_ALL_NIGHT_BOUGHT_002",
           "speaker": "WAITRESS",
           "text": "Coffee's on. You can sit down a minute.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.62,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I12_ALL_NIGHT_BOUGHT_003",
           "speaker": "WAITRESS",
           "text": "That driver came in a little while ago. He's over there if you're looking for somebody who's been on the road.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 4.17,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I12_ALL_NIGHT_BOUGHT_004",
           "speaker": "WAITRESS",
           "text": "There's a paper on the counter, too. Nobody's claimed it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.05,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -453,36 +453,36 @@
           "speaker": "WAITRESS",
           "text": "Evening. Coming in from work?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.39,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I13_ALL_NIGHT_NO_FOOD_002",
           "speaker": "WAITRESS",
           "text": "Take a seat if you need one. Coffee's on.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.8,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I13_ALL_NIGHT_NO_FOOD_003",
           "speaker": "WAITRESS",
           "text": "That fellow over there just came off the road. He's been sitting with his cup for a while.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 3.27,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I13_ALL_NIGHT_NO_FOOD_004",
           "speaker": "WAITRESS",
           "text": "Paper's on the counter if you want something to read.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.93,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -495,36 +495,36 @@
           "speaker": "WAITRESS",
           "text": "Keep on through town, then take the marked turn out to the array.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.56,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I14_ROAD_002",
           "speaker": "WAITRESS",
           "text": "Big sign. Hard to miss unless you're arguing with the radio.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.33,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I14_ROAD_003",
           "speaker": "WAITRESS",
           "text": "You'll want to eat before you get settled in out there.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.95,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I14_ROAD_004",
           "speaker": "WAITRESS",
           "text": "Want the menu before you go?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.11,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -537,36 +537,36 @@
           "speaker": "WAITRESS",
           "text": "If you're hungry, the burger.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.5,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I15_RECOMMEND_002",
           "speaker": "WAITRESS",
           "text": "If you're driving, the sandwich is less of a project.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.89,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I15_RECOMMEND_003",
           "speaker": "WAITRESS",
           "text": "Either way, I'm putting napkins in the bag.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.28,
+          "end_seconds": 1.76,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "I15_RECOMMEND_004",
           "speaker": "WAITRESS",
           "text": "Your call.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 0.54,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -579,36 +579,36 @@
           "speaker": "DALE",
           "text": "Reyes? Dale. The logbook should be in front of you.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.41,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_HANDOVER_002",
           "speaker": "DALE",
           "text": "I headed out early. The service folder is on the desk, under the work order.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.51,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_HANDOVER_003",
           "speaker": "DALE",
           "text": "The first survey is routine. Check calibration before you let it run.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.3,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_HANDOVER_004",
           "speaker": "DALE",
           "text": "Did you get something to eat?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.17,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -621,18 +621,18 @@
           "speaker": "DALE",
           "text": "Good. Better than trying to live on the coffee here.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.28,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_FOOD_002",
           "speaker": "DALE",
           "text": "I tried that once. Wouldn't recommend it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 1.89,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -645,18 +645,18 @@
           "speaker": "DALE",
           "text": "There are crackers in the bottom drawer. Still in the wrapper.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.86,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_NOFOOD_002",
           "speaker": "DALE",
           "text": "No promises about the coffee. It was here when I came in.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.6,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -669,63 +669,63 @@
           "speaker": "DALE",
           "text": "Start with the log. I've marked what's done and what's left for you.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.89,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_BRIEF_002",
           "speaker": "DALE",
           "text": "Bank Three has two amber indicators. Amber is normal. Write it down if that changes.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.12,
+          "end_seconds": 3.86,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_BRIEF_003",
           "speaker": "DALE",
           "text": "Your folder lists the local service records and the radio schedule. Get the dated copies. We need something to check our clocks against.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 6.21,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_BRIEF_004",
           "speaker": "DALE",
           "text": "Operations office is locked. The papers for tonight are already on your desk.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.65,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_BRIEF_005",
           "speaker": "DALE",
           "text": "Ward is on call for the morning run. She wants observations she can sign, not our best guess.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.12,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_BRIEF_006",
           "speaker": "DALE",
           "text": "You can reach me on the service line. If something doesn't fit the log, call before you throw anything away.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.97,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D01_BRIEF_007",
           "speaker": "DALE",
           "text": "All right. Have a good shift.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.4,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -738,45 +738,45 @@
           "speaker": "DALE",
           "text": "Dale. You have the service sheet?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.72,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D11_POWER_PHONE_002",
           "speaker": "DALE",
           "text": "Then start with the feeder marked on that sheet. A receiver warning and a supply fault are two different things.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 5.27,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D11_POWER_PHONE_003",
           "speaker": "DALE",
           "text": "The junction station is down the short gravel turnoff. Leave the truck outside the service gate.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 4.34,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D11_POWER_PHONE_004",
           "speaker": "DALE",
           "text": "Use the service check on the cabinet. Note what the affected light does, not just what the indicator says.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.88,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D11_POWER_PHONE_005",
           "speaker": "DALE",
           "text": "There should be one clear result. If the result is not clear, leave it unresolved and call me.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.29,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -789,27 +789,27 @@
           "speaker": "DALE",
           "text": "I hear you. Check the cabinet label against the service sheet.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.87,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D12_POWER_WALKIE_002",
           "speaker": "DALE",
           "text": "If they match, run the check and watch the light at the far end.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.85,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D12_POWER_WALKIE_003",
           "speaker": "DALE",
           "text": "Write down the result and the time. Keep that for the next check.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 2.98,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -822,36 +822,36 @@
           "speaker": "DALE",
           "text": "Dale. What did it actually print?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 1.7,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D21_SIGNAL_PHONE_002",
           "speaker": "DALE",
           "text": "Minus thirty-nine. On the paper?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.78,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D21_SIGNAL_PHONE_003",
           "speaker": "DALE",
           "text": "Keep the original. Put the clock reading beside it before you do anything else.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 3.53,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D21_SIGNAL_PHONE_004",
           "speaker": "DALE",
           "text": "Do not correct the number just because it looks wrong.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.51,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -864,27 +864,27 @@
           "speaker": "DALE",
           "text": "I've seen numbers that shouldn't have come out of that solver.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.91,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D21_BEFORE_002",
           "speaker": "DALE",
           "text": "I haven't worked out why. I kept the records.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.97,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D21_BEFORE_003",
           "speaker": "DALE",
           "text": "Keep yours too. We can argue about the explanation later.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.47,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -897,18 +897,18 @@
           "speaker": "DALE",
           "text": "Check your inspection card. Put the test time beside the new printout.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.23,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D21_POWER_002",
           "speaker": "DALE",
           "text": "If you've cleared the supply fault, compare that time with this one.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.88,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -921,18 +921,18 @@
           "speaker": "DALE",
           "text": "All right. Put the paper somewhere safe.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.94,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D21_END_002",
           "speaker": "DALE",
           "text": "Call me if the next observation disagrees with the first one.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 2.76,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -945,27 +945,27 @@
           "speaker": "DALE",
           "text": "You found a spare.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.29,
+          "end_seconds": 1.4,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_OFFICE_PHONE_002",
           "speaker": "DALE",
           "text": "I should have told you there was more than a service folder.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.69,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_OFFICE_PHONE_003",
           "speaker": "DALE",
           "text": "What are you looking at?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 0.86,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -978,27 +978,27 @@
           "speaker": "DALE",
           "text": "Ward wants a result somebody else can repeat. She's right to.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 2.89,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_WARD_002",
           "speaker": "DALE",
           "text": "I had clippings, bad frames and people who remembered different nights.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.02,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_WARD_003",
           "speaker": "DALE",
           "text": "I kept the lot until I could put two observations on the same page.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.13,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1011,27 +1011,27 @@
           "speaker": "DALE",
           "text": "Watch the pole, not the patch.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.64,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_TAPE_002",
           "speaker": "DALE",
           "text": "The patch could be a recording fault. The pole gives you a fixed reference.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.4,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_TAPE_003",
           "speaker": "DALE",
           "text": "Use the field sheet. I marked the camera position.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.29,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1044,27 +1044,27 @@
           "speaker": "DALE",
           "text": "I haven't worked through those survey files.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.0,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_RECORD_002",
           "speaker": "DALE",
           "text": "The folder in my office is my own. I haven't changed an old report.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.98,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_RECORD_003",
           "speaker": "DALE",
           "text": "Keep the originals together. Check whose name is on the signed copy.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.06,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1077,18 +1077,18 @@
           "speaker": "DALE",
           "text": "Start with one thing you can check. Take a photograph from the same place.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 3.52,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D31_END_002",
           "speaker": "DALE",
           "text": "And don't take my word for something just because I wrote it down.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.94,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1101,36 +1101,36 @@
           "speaker": "DALE",
           "text": "Say that again. The service result and the light disagree?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.65,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D41_FIELD_WALKIE_002",
           "speaker": "DALE",
           "text": "You checked the ordinary supply, the backup and the indicator?",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.65,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D41_FIELD_WALKIE_003",
           "speaker": "DALE",
           "text": "Good. Write down every check you made. Keep that separate from what you think caused it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.1,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D41_FIELD_WALKIE_004",
           "speaker": "DALE",
           "text": "Bring the record back to SARO. Ward will need to read it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.59,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1143,36 +1143,36 @@
           "speaker": "DALE",
           "text": "Reyes? I'm here.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.09,
+          "end_seconds": 1.38,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D51_LAST_PHONE_002",
           "speaker": "DALE",
           "text": "If you've got witness statements, keep their exact words with the record.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.51,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D51_LAST_PHONE_003",
           "speaker": "DALE",
           "text": "Give Ward what you've actually checked. Leave the rest marked uncertain.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.38,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "D51_LAST_PHONE_004",
           "speaker": "DALE",
           "text": "Call me when you get back in.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 1.06,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1185,9 +1185,9 @@
           "speaker": "DALE",
           "text": "Reyes? Dale. The logbook should be in front of you.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.41,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },

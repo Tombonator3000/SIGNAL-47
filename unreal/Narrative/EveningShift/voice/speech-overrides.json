@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note_nb": "Uttalestaving kun i syntese-forespørselen. Samme ord; pakkens tekst, manifest og undertekster er uendret.",
+  "cues": {
+    "D01_HANDOVER_001": {
+      "spoken": "Ray-yes? ... Dale. The logbook should be in front of you.",
+      "reason": "Seed 42, 43 and 44 with the exact text dropped the opening name Reyes (ASR and duration). A phonetic spelling plus a written pause kept the name in a probe."
+    },
+    "D51_LAST_PHONE_001": {
+      "spoken": "Ray-yes? I'm here.",
+      "reason": "Seeds 42-45 and punctuation variants dropped the name Reyes (0.6-0.8 s takes, ASR 'I'm here.'). Phonetic spelling kept it."
+    },
+    "D11_POWER_PHONE_002": {
+      "spoken": "Then, start with the feeder marked on that sheet. A receiver warning and a supply fault are two different things.",
+      "reason": "Seeds 42-44 were heard as 'And start'/'feet are'. A comma after the opening word kept 'Then' in a probe."
+    }
+  }
+}
