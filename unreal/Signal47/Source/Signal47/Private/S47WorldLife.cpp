@@ -341,7 +341,9 @@ void US47WorldLife::AirStep(double Dt, double T)
 	// lot and the town, and STATION 01
 	const FString Quality = M->Flow ? M->Flow->Quality : FString(TEXT("high"));
 	const bool bOn = !bAirOff && Quality != TEXT("low");
-	const double Night = 1 - Smoothstep(Dawn(), 0.12, 0.5);
+	// Visual night activity follows evening too; Dawn() remains morning-only for story gates.
+	const double Light = Sky.IsValid() ? Sky->Daylight() : Dawn();
+	const double Night = 1 - Smoothstep(Light, 0.12, 0.5);
 	for (const TSharedPtr<FS47LightCones>& C : Cones) if (C) C->Update(bOn, AIR_CONES * Night);
 	const FS47Cam Cam = FS47Cam::Of(M->Player);
 	const FVector Cp = Cam.Pos;
@@ -368,7 +370,7 @@ void US47WorldLife::AirStep(double Dt, double T)
 	static const TArray<FS47HazeLamp> None;
 	if (Haze) Haze->Update(Dt, T, Cp, Ground, AIR_HAZE * Night, M->Web->FogColor, Lamps ? *Lamps : None);
 	// and the life in it (World.lifeStep)
-	if (Life) Life->Update(Dt, T, Cam, Dawn(), Hooks.LifeQuiet ? Hooks.LifeQuiet() : M->Mode != US47Main::EMode::Play || (M->Story && M->Story->IsCinematic()));
+	if (Life) Life->Update(Dt, T, Cam, Light, Hooks.LifeQuiet ? Hooks.LifeQuiet() : M->Mode != US47Main::EMode::Play || (M->Story && M->Story->IsCinematic()));
 }
 
 TArray<FS47SkyPlace> US47WorldLife::SkyPlaces() const
