@@ -33,7 +33,8 @@ struct FS47Evening::FTakeawayTest
  int32 Stage = 0, TraceAttempts = 0, Uses = 0, Restores = 0, ExtraSpot = 0;
  double Elapsed = 0, Since = 0, Hold = 2, LastClock = 0, MealClock = 0;
  FString Shots, TargetId;
- FVector TargetPoint = FVector::ZeroVector;
+ FVector TargetPoint = FVector::ZeroVector, AnnexView = FVector::ZeroVector;
+ double AnnexYaw = 0, AnnexPitch = 0;
  TArray<FString> Captures;
 };
 
@@ -262,7 +263,9 @@ void FS47Evening::ControlTakeawayTest(double Dt)
  case 24: if (UsePicked()) Stage(25); return;
  case 25:
   if (Takeaway->PlacedSpot() != TEXT("annex") || Takeaway->Carried() || !Takeaway->PlacedVisible()) { Fail(TEXT("SARO annex placement failed")); return; }
-  if (!Roundtrip(TEXT("placed-annex"))) return; Shot(TEXT("annex-set-down"));
+  if (!Roundtrip(TEXT("placed-annex"))) return;
+  T.AnnexView = M->Player->Pos; T.AnnexYaw = M->Player->Yaw; T.AnnexPitch = M->Player->Pitch;
+  Shot(TEXT("annex-set-down"));
   Stage(26, 0.5); return;
  case 26: if (Prepare(TEXT("takeaway:pickup:annex"))) Stage(27); return;
  case 27: if (UsePicked()) Stage(28); return;
@@ -352,6 +355,8 @@ void FS47Evening::ControlTakeawayTest(double Dt)
    if (Count != 1) { Fail(TEXT("optional food duplicated or lost handover paper: ") + Id); return; }
   }
   if (!Pack.Flag(TEXT("handover_done")) || Opening() || M->Story->bOpeningHeld) { Fail(TEXT("optional meal changed the completed handover/story gate")); return; }
+  // Reuse the already validated, clear set-down view; the meal napkin can be behind the tall lamp.
+  M->Player->Place(T.AnnexView.X, T.AnnexView.Z, T.AnnexYaw); M->Player->Pitch = T.AnnexPitch;
   Shot(TEXT("eaten-annex-trace")); Stage(38, 0.5); return;
  case 38:
   {
