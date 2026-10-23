@@ -3,7 +3,7 @@
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
 
-## Grafikkpass under arbeid, 23. oktober 2026
+## Grafikkpass levert, 23. oktober 2026
 
 - Grafikkens WIP 30d407be fortsetter 64d943e7/be7c89e5; core ae95b09a med Props og nyeste dokument-core 9d7571e2 er innflettet. Props-modul/config og installert spill er urørt. Se LIGHTING.md for siste faktisk målte kandidat og historiske avgrensninger.
 - Bundlen er levert som S47_Signal47_SF_VULKAN_SM6.spc, 92 902 byte, 4215 stabile PSO-er. Full 38 × 6-matrise med én cook/frosne nøkler er komplett. Sluttcook gir 599 PSO-er: 222 graphics, 310 compute, 67 RT. Pakket runtime åpner samme GUID og behandler 222 bundled graphics; ni cachebeviskontroller PASS. Nye render-/material-/Props-baner krever ny cachevurdering/opptak.
@@ -12,7 +12,7 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - 118 materialprofiler, seks glass og fire CRT-valg må regenereres med S47_ONLY=materials før integrasjon av eldre generert Content. Masters-only reparerer grafene og hopper over MI-parametrene. StaticSwitchParameter krever True/False; streng cookkontroll avviser standardmaterialfallback selv ved UAT exit0. Web/Audio/Licensed/Free-assets committes ikke.
 - Seks GLB-spor med én kildematerialoppføring må bindes på rack/diffusere. Native DP-80/CB/3278 bruker EmissiveFactor/Strength, Web-materialer Brightness/EmissivePower. Gate emisjon og bevar PBR/maps. V5/V9 er supplert av sluttpakkens komplette sju indikatorprøver og 36 fasebilder, inklusive selvtest (1220) og faktisk terminalfront av/på. Matrisens gamle dark-bilder er ikke strømbevis; after/final-state-correction og sluttfasetesten er korrekt retest.
 - Alle 20 natt + 20 daggrybilder er visuelt kontrollert; 40 par og originalhash/galleri ligger i compare/index.html. Etterbilder har innflettede Props; de er ikke isolert lysforskjell. PreviousNight-kjøring og alle åtte lengre High-prøver er PASS; siste seks regresjoner og begge identisk-geometri fyllpar er også PASS. Korte High-prøver viser 90,1 fps eller mer i gjennomsnitt, men p95 opptil 21,772 ms; lengre natt/daggry viser 93,81–106,73 fps og maks p95 18,142 ms, så det er ikke låst 60 fps for hvert intervall.
-- Statisk diagnostisk tittel må ryddes før shutdown. V2s to SIG11 er forkastet; v3s tidligere feilsekvens består også med logPSO. Én tung Unreal-jobb, minst 10 GiB og ingen stopp av installert spill. Tom avsluttet selv før 11:06, deretter kjørte matrisen. Midlertidige Content/Audio, Content/Licensed og Content/Free-lenker er fjernet med kildemappene bevart; OpenOrder-logger er gjenopprettet. Sluttcommit gjenstår.
+- Statisk diagnostisk tittel må ryddes før shutdown. V2s to SIG11 er forkastet; v3s tidligere feilsekvens består også med logPSO. Én tung Unreal-jobb, minst 10 GiB og ingen stopp av installert spill. Tom avsluttet selv før 11:06, deretter kjørte matrisen. Midlertidige Content/Audio, Content/Licensed og Content/Free-lenker er fjernet med kildemappene bevart; OpenOrder-logger er gjenopprettet. Kilde og bundle er levert i 684bc142 på port-gfx.
 
 ## Gameplayretning (2026-10-23)
 
