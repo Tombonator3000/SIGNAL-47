@@ -1,32 +1,36 @@
 # Radiostasjon og array
 
-Arbeidsgren `codex/radio-array-assets`, basert på `ed061aca`.
-Toms bestilling 23. oktober 2026: Blender-radiostasjon med interiør etter konseptark,
-og en mer realistisk radioantenne som erstatter spillets arraymodell.
+Ferdig 2026-10-23 kl. 23:53. Sluttkode `3aa41334`, fra arbeidsgren codex/radio-array-assets, lokalt flettet til unreal-port-core. Ingen push/PR eller publisering.
 
-Kildekandidat `66f41e22`: originale modeller, native UE-assets og integrasjon, inkludert inngangssonens radiusklaring.
-Blender-kildekontroll og eksportkontroll holdes adskilt fra Unreal-import og pakket spillprøve.
-Den installerte utgaven kjørte ved første kontroll kl. 21:39; Tom lukket den etter forespørselen.
-Ingen brukerprosess er stoppet. Andre oppgavers Unreal-jobber avvikles før våre tunge jobber starter.
+## Leveranse
 
-Detaljer, kilder, gjenskaping og importkontrakt: `Signal47/Tools/radioarray/README.md`.
+1420 AM følger konseptarket: lys pusset fasade, lobby, analogt studio med mikser/VU-metere, spolebånd, mikrofonarm, telefon, platespiller, stol og vinylhyller. Blender-kilden beholder 1136 redigerbare objekter. Ny VLA-lignende parabol har paneler, fagverk, fire feedarmer, elevasjonslager, dreiesokkel og serviceplattform. Alle 27 antenner bruker samme modell i tre instansgrupper. Eksisterende plassering, azimut/elevasjon og beacons er bevart. Tre LOD-er: 26 210 / 18 250 / 6 510 trekanter. Stasjonens eksporterte interiør: 43 268 trekanter.
 
-## Verifisert
+Kilder/eksporter/gjenskaping: Signal47/Tools/radioarray/README.md. Kopier med teksturer og eksport på ~/Desktop/Signal47 radiostasjon og array. Prosjektbibliotekets ahujasid--mcp-for-blender-profil ble lest som historisk verktøyreferanse; ingen bibliotekskode/modell gjenbrukt. Ingen referansefotopiksler er brukt som tekstur.
 
-- Blender 5.2.2: ni antenne-FBX tilbakeimportert med riktige bounds/pivoter/materialer og null nullarealtriangler. Antennens tre nivåer har 26 210 / 18 250 / 6 510 trekanter.
-- Stasjon: 32/32 eksportkontroller. 43 268 interiørtrekanter. Rensingen fjerner kun nullareal; før/etter-hash av synlige koordinater, UV og materialer er identisk. Alle 1136 redigerbare kildeobjekter er bevart.
-- UE 5.8.4: asymmetrisk akseprøve `(2,4,6)` meter gir `(200,-400,600)` cm. Legacy FBX trenger eksplisitt policy og +90 graders importrotasjon. Stasjonens Props-yaw er -90 grader.
-- Frisk UE-prosess: 68/68 assetkontroller, med eksakte trekanttall også for alle seks uniontrim-meshene. Se `Tools/radioarray/verification/unreal-assets.json`.
-- Editorbygg: PASS, 156,48 s. Linux-pakking: PASS, først 222,91 s og sluttpakke 92,69 s, ingen materialkompileringsfeil.
-- Pakket selvtest: PASS, 1278. Runtime logger 27 antenner i tre instansgrupper og seks riktig utskiftede bymesh.
-- Pakket arraybevegelse: PASS, eksisterende hold-sekvens kjører på de nye delene.
-- Pakket lukket lobbydør: PASS, stopper spilleren ved X8019,8 etter 0,9 m; gulvavvik maksimalt 0,04 m.
+## Kontroll
 
-Kandidat og detaljbevis: `~/scratch-bm/Signal47-radioarray/candidate` og `~/scratch-bm/Signal47-radioarray/runtime`.
-En åpen-dør-prøve ble avbrutt av maskinporten før første ramme da en annen oppgave startet et bygg samtidig.
-Den regnes som ugyldig bevis og tas på nytt; ingen fremmed prosess ble stoppet.
+- Blender 5.2.2: ni antenne-FBX-roundtrips og 32/32 stasjonseksportkontroller PASS. Null nullarealtriangler. Rensingen endret ingen synlige koordinater, UV eller materialer.
+- Unreal 5.8.4: 68/68 strenge assetkontroller, målt koordinatprøve, pivoter, materialer, LOD-er, kollisjon og seks uniontrim-mesh. Bensinstasjonen bevares. Rapport: Signal47/Tools/radioarray/verification/unreal-assets.json.
+- Slutteditorbygg PASS på 11,05 s; endelig Linux-pakking PASS på 133,01 s. Ingen materialkompileringsfeil. Loggene ligger i evidensmappen.
+- Integrasjonspakken fra `66f41e22`: 1278 selvtester, arraybevegelse, lukket dør, vanlig brukssporing/åpne/gå 6,1 m inn og buzzer-dialog PASS. Terskelgap mellom radius-eroderte gangsoner ble funnet og rettet før denne pakken.
+- Første bildeprøve avdekket gammel bildeplate midt i studioet. Native capture-PASS ble visuelt avvist. Avvist bilde og egen FAIL-vurdering er bevart i graphics-dawn-before-backdrop-fix; opprinnelig testpakke i candidate-before-backdrop-fix.
+- Sluttkode `3aa41334` endrer bare bildeplatens offset til world X 8029,66, 2 cm foran bakveggens trepanel. Atlas/tilstander, fotoankre, proxyer, dør og kollisjon er uendret. Editor/Linux-pakke, 1278 selvtester, fire nye modellvinkler og pilotregresjon er tatt på nytt på sluttpakken. Uendrede dør-/arrayfunksjoner er dokumentert med integrasjonspakken over.
+- Sluttbilder: High/VHS, 2560x1440, antenne forfra/bakfra, fasade og studio ved daggry. Native capture/rammetider PASS uten konkurrerende tung prosess. Bildene er visuelt kontrollert. Korte kameraintervaller er ingen fullrute-ytelsesgaranti. Nattbilder fra gang- og pilotprøvene.
+- N01/N02/A02/P01-pilot PASS på sluttpakken. API-rute og faktiske renderbilder; menneskelig input, lytting, forståelse og fullnatt er ikke prøvd her.
 
-Åpen-dør-prøven fant et gap mellom radius-eroderte gangsoner. Approach-sonen er utvidet 0,6 m; statisk kontroll med faktisk Inside-logikk reproduserer gammel stopp og bekrefter 0,31 m overlapp i den nye. Sluttpakken tas gjennom nye runtimeprøver.
+## Runtimebevis
 
-Gjenstår før installasjon: åpne døren via vanlig brukssporing og gå inn, buzzer-dialog,
-visuell gjennomgang av fasade/interiør/array, pilotregresjon og kontrollert installasjon med lagringene bevart.
+Evidensrot: ~/scratch-bm/Signal47-radioarray.
+
+- sluttpakke, `selftest`: PASS. `/home/tom/scratch-bm/Signal47-radioarray/runtime/selftest-1792791590907226487/report.json`
+- før bakveggretting, `array-motion`: PASS. `/home/tom/scratch-bm/Signal47-radioarray/runtime/array-motion-1792788983624423429/report.json`
+- før bakveggretting, `door-closed`: PASS. `/home/tom/scratch-bm/Signal47-radioarray/runtime/door-closed-1792789169219982207/report.json`
+- før bakveggretting, `door-use-walk`: PASS. `/home/tom/scratch-bm/Signal47-radioarray/runtime/door-use-walk-1792789281494793797/report.json`
+- før bakveggretting, `buzzer`: PASS. `/home/tom/scratch-bm/Signal47-radioarray/runtime/buzzer-1792789667676400620/report.json`
+
+Bilder/rammer/pakkehash: graphics-dawn/meta.json. Pilot: pilot-final/results.json. Import: unreal-verification-final.json. Installasjon: install-result.json.
+
+## Installert
+
+~/Games/Signal47/Linux er kontrollert mot kandidatens 40 payloadfiler. 51 Saved-filer er byteidentiske før/etter, også innstillinger og lagringer. Tidligere installasjon er bevart i `/home/tom/scratch-bm/Signal47-radioarray/installed-backup-1792792300737671855`. Ingen brukerprosess ble stoppet. Maskinporten avbrøt bare egne kjøringer ved samtidige jobber; avbrutte forsøk er ikke godkjent bevis. Midlertidige Content-lenker og egne genererte OpenOrder-endringer er ryddet. Andre lokale dokumentendringer er bevart.
