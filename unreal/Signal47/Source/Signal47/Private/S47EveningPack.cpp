@@ -48,6 +48,8 @@ bool FS47EveningPack::Initialize(FString& Error)
 	const auto Pack = Root->GetObjectField(TEXT("pack"));
 	Phases = ReadStrings(Pack->GetArrayField(TEXT("phases")));
 	const auto Actors = Pack->GetObjectField(TEXT("actors"));
+	const TSharedPtr<FJsonObject>* Takes = nullptr;
+	Pack->TryGetObjectField(TEXT("_takes"), Takes);
 	for (const auto& Pair : Pack->GetObjectField(TEXT("flags"))->Values)
 		Defaults.Add(FString(*Pair.Key), Pair.Value->AsObject()->GetBoolField(TEXT("default")));
 	for (const auto& Pair : Pack->GetObjectField(TEXT("external_flags"))->Values) External.Add(FString(*Pair.Key), false);
@@ -89,6 +91,16 @@ bool FS47EveningPack::Initialize(FString& Error)
 					return false;
 				}
 				Line.RecordingId = RecordingId(Line.Id);
+				const TSharedPtr<FJsonObject>* Take = nullptr;
+				if (Line.bRecord && Takes && (*Takes)->TryGetObjectField(Line.RecordingId, Take))
+				{
+					(*Take)->TryGetNumberField(TEXT("duration_seconds"), Line.Duration);
+					(*Take)->TryGetNumberField(TEXT("speech_start_seconds"), Line.SpeechStart);
+					(*Take)->TryGetNumberField(TEXT("speech_end_seconds"), Line.SpeechEnd);
+					if (!FMath::IsFinite(Line.Duration) || !FMath::IsFinite(Line.SpeechStart) || !FMath::IsFinite(Line.SpeechEnd) ||
+						Line.Duration <= 0 || Line.SpeechStart < 0 || Line.SpeechEnd <= Line.SpeechStart || Line.SpeechEnd > Line.Duration)
+					{ Error = TEXT("Invalid measured evening timing: ") + Line.Id; return false; }
+				}
 				Scene.Lines.Add(MoveTemp(Line));
 			}
 			for (const auto& ChoiceValue : Json->GetArrayField(TEXT("choices")))

@@ -38,7 +38,7 @@ Forfatterkontrollene ovenfor beviser ikke runtime. Faktiske reise-, bilde- og la
 
 ## Runtimekontroller for trinn 1 og 2
 
-`-S47SelfTest` kjører `FS47EveningPack::SelfTest` med 60 interne sjekker for alle de seksten manus-/tilstandsgrenene over, også avvisning av for tidlige kontor-/VHS-/traforesultater. Det beviser ikke at senere verdensinnhold eller medier er produsert.
+`-S47SelfTest` kjører `FS47EveningPack::SelfTest` med sjekker for alle de seksten manus-/tilstandsgrenene over og målte taletider for alle 110 cues, også avvisning av for tidlige kontor-/VHS-/traforesultater. Det beviser ikke at senere verdensinnhold eller medier er produsert.
 
 `-S47Evening=commute|diner|order|paid|burger|sandwich|water|parking|phone|dusk` er målrettede oppsett med de samme transaksjonene. Diner-/parkeringsoppsettene flytter kamera/tilstand og må merkes som scenariooppsett.
 
@@ -47,3 +47,6 @@ Forfatterkontrollene ovenfor beviser ikke runtime. Faktiske reise-, bilde- og la
 `-S47EveningTimeline -S47Jump=<eksisterende hopp>` prøver den nye tidsplanen ved de gamle regresjonspunktene. Uten `-S47EveningTimeline` beholder de eksisterende hoppene sin legacy-tidslinje.
 
 Aktuelle runtimebevis og gjenstående menneskelige tester står i [runtime-rapporten](../../EVENING_RUNTIME.md).
+
+
+`-S47EveningAudio -S47EveningRoute=burger` utvider ruten med hele faktiske takes, målte PCM-varigheter, kanal-/filter- og nivåkontroll, radio av/på, 0,5 s frosset lydkontekst og disk-/verdenslasting under aktiv D01. Bruk for eksempel `-S47Seconds=920`; kontrollen avslutter selv. Vanlige rutekontroller beholder rask dialog. `-S47VoiceLevels` logger faktisk trukne source-/kanalsamples, RMS, peak og bussgain. Dette beviser avspilling i grafen, ikke menneskelig lytting. Se [lydrapporten](../../EVENING_AUDIO.md).

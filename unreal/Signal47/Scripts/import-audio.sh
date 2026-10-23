@@ -19,6 +19,8 @@
 # only python3 and ffmpeg; the asset import needs the editor target built and no editor of this project open.
 # S47_PROJECT=<dir of Signal47.uproject> imports into another checkout (its web/ is the source).
 # S47_AUDIO_RAW_ONLY=1 refreshes only the runtime recordings, without an Unreal asset import.
+# S47_AUDIO_EVENING_ONLY=1 imports only the supplied EveningShift bank and preserves all other audio.
+# S47_EVENING_WAV_DIR overrides Content/Audio/EveningShift (109 approved originals).
 set -euo pipefail
 UE_ROOT=${UE_ROOT:-$HOME/.local/opt/UnrealEngine-5.8.4}
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
@@ -39,7 +41,15 @@ for pid in os.listdir('/proc'):
     if executable in ('UnrealEditor', 'UnrealEditor-Cmd'):
         sys.exit('S47: an Unreal editor is running (PID %s); close it before importing audio.' % pid)
 PY
-python3 "$SCRIPTS/audio-raw.py" --web "$ROOT/web/src" --content "$D/Content"
+evening_dir=${S47_EVENING_WAV_DIR:-$D/Content/Audio/EveningShift}
+raw_options=()
+if [ "${S47_AUDIO_EVENING_ONLY:-0}" = 1 ]; then
+  raw_options+=(--evening-only)
+fi
+if [ -d "$evening_dir" ] || [ "${S47_AUDIO_EVENING_ONLY:-0}" = 1 ]; then
+  raw_options+=(--evening-wav-dir "$evening_dir")
+fi
+python3 "$SCRIPTS/audio-raw.py" --web "$ROOT/web/src" --content "$D/Content" "${raw_options[@]}"
 [ "${S47_AUDIO_RAW_ONLY:-0}" != 1 ] || exit 0
 rm -rf "${STAGE:?}/wav"
 mkdir -p "$STAGE/wav"
@@ -59,15 +69,25 @@ conv() { # group srcdir [rate [prefix]]: rate '' keeps each file's own
   done
   echo "$group: $(ls "$STAGE/wav/$group" | wc -l) files"
 }
-conv Sfx "$ROOT/web/src/assets/audio"
-conv Music "$ROOT/web/public/music"
-conv Radio "$ROOT/web/public/radio"
-conv Licensed "$ROOT/web/src/assets/licensed/sfx"
-if [ "${S47_AUDIO_VOICES:-1}" != 0 ]; then
-  for bank in kinski:Kinski serling:Serling serling-intro:SerlingIntro artbell:ArtBell artbell-town:ArtBellTown radiocast:Radiocast ensemble:Ensemble; do
-    conv "Voice/${bank#*:}" "$ROOT/web/src/assets/audio/${bank%%:*}" '' v_
-  done
+if [ "${S47_AUDIO_EVENING_ONLY:-0}" != 1 ]; then
+  conv Sfx "$ROOT/web/src/assets/audio"
+  conv Music "$ROOT/web/public/music"
+  conv Radio "$ROOT/web/public/radio"
+  conv Licensed "$ROOT/web/src/assets/licensed/sfx"
+  if [ "${S47_AUDIO_VOICES:-1}" != 0 ]; then
+    for bank in kinski:Kinski serling:Serling serling-intro:SerlingIntro artbell:ArtBell artbell-town:ArtBellTown radiocast:Radiocast ensemble:Ensemble; do
+      conv "Voice/${bank#*:}" "$ROOT/web/src/assets/audio/${bank%%:*}" '' v_
+    done
+  fi
+  python3 "$SCRIPTS/make-synth.py" "$STAGE/wav/Synth"
+  echo "Synth: $(ls "$STAGE/wav/Synth" | wc -l) files"
 fi
-python3 "$SCRIPTS/make-synth.py" "$STAGE/wav/Synth"
-echo "Synth: $(ls "$STAGE/wav/Synth" | wc -l) files"
+if [ -d "$evening_dir" ] && [ "${S47_AUDIO_VOICES:-1}" != 0 ]; then
+  mkdir -p "$STAGE/wav/Voice/Evening"
+  for f in "$evening_dir"/*.wav; do
+    cp -- "$f" "$STAGE/wav/Voice/Evening/v_$(basename "$f")"
+  done
+  echo 'Voice/Evening: 109 original PCM files staged without conversion'
+fi
+PYTHONPATH="$SCRIPTS${PYTHONPATH:+:$PYTHONPATH}" python3 -c 'from unreal_guard import require_idle; require_idle()'
 S47_AUDIO_STAGE="$STAGE/wav" "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$D/Signal47.uproject" -run=pythonscript -script="$SCRIPTS/import-audio.py" -unattended -nullrhi -nosplash 2>&1 | grep -E "S47:|Error:|Traceback" | grep -v "LogPython: Display: Python" | grep -v "Toolset\|toolset\|ToolsetDefinition" | tail -40
