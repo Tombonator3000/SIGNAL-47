@@ -357,7 +357,7 @@ void FS47Evening::Step(double Dt)
  if (bResumeRequested && !M->ModalOpen() && !M->World->bBusy) { bResumeRequested=false; ShowDialogue(); }
 
  Context();
- if (Opening() && !Commute() && !M->ModalOpen() && !M->bPausedByMenu) M->Story->SetClock(FMath::Min(M->Story->Clock()+Dt,S47Timeline::Residual(true)-6));
+ if (Opening() && !Commute() && !M->ModalOpen() && !M->bPausedByMenu) M->Story->SetClock(S47Timeline::AdvanceStoryClock(M->Story->Clock(),Dt,true));
  if (Opening() && !Commute() && !bRing && !Pack.CurrentScene() && M->T>=RingAt)
  {
   bRing=true; M->Audio->Loop(TEXT("evening:ring"),TEXT("phone_ring"),0.8f,M->Web->PropLocation(TEXT("phone")));
