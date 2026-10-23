@@ -2,17 +2,21 @@
 #include "S47Props.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Math/RandomStream.h"
 #include "Engine/StaticMesh.h"
+#include "StaticMeshResources.h"
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "S47Audio.h"
+#include "S47Glow.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Town.h"
@@ -27,6 +31,9 @@
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Props, Log, All);
+
+TWeakObjectPtr<AS47Props> AS47Props::Instance;
+TArray<AS47Props::FFloor> AS47Props::Floors;
 
 namespace
 {
@@ -98,6 +105,8 @@ void AS47Props::LoadManifests()
 			Assets.Add(FPaths::GetBaseFilename(Asset), Asset);
 			if (!Assets.Contains(O->GetStringField(TEXT("name")))) Assets.Add(O->GetStringField(TEXT("name")), Asset);
 		}
+		const TSharedPtr<FJsonObject>* Tr = nullptr;
+		if (Free->TryGetObjectField(TEXT("trims"), Tr)) Trims = *Tr;
 	}
 	// the manifest's areas (export.js: the nodes each area shows), read without the rest of it
 	FString Text;
@@ -173,6 +182,8 @@ void AS47Props::HideMeshes(int32 Node, TArray<UPrimitiveComponent*>& Hidden)
 		P->SetCastShadow(false);
 		Hidden.Add(P);
 	}
+	// a glow (world/glow.ts points): its discs shrunk to nothing, the points kept for the story
+	if (FS47GlowPoints* G = Web->Glow(Node)) for (int32 I = 0; I < G->Num(); ++I) G->SetSize(I, 0.f);
 	for (int32 Ch : N->Children)
 	{
 		// (not a prop placed under it)
@@ -184,6 +195,8 @@ void AS47Props::HideMeshes(int32 Node, TArray<UPrimitiveComponent*>& Hidden)
 void AS47Props::Build(AS47Web* InWeb)
 {
 	Web = InWeb;
+	Instance = this;
+	Floors.Reset();
 	if (!InWeb || !InWeb->IsLoaded()) return;
 	LoadManifests();
 	if (Assets.IsEmpty()) UE_LOG(LogS47Props, Warning, TEXT("S47: props: no Content/Free/free_models.json (Tools/freemodels/import_free.sh): nothing placed, nothing hidden"));
@@ -206,6 +219,9 @@ void AS47Props::Build(AS47Web* InWeb)
 	}
 	if (!TourDir.IsEmpty()) UE_LOG(LogS47Props, Display, TEXT("S47: props tour of %d views into %s%s"), Views.Num(), *TourDir, bOff ? TEXT(" without the props") : TEXT(""));
 	UE_LOG(LogS47Props, Display, TEXT("S47: props placed %d"), Placed.Num());
+	// -S47PropsDoor=<use id>: that door open from the start (the walk in, the pictures inside)
+	FString OpenDoor;
+	if (FParse::Value(FCommandLine::Get(), TEXT("S47PropsDoor="), OpenDoor)) UseDoor(OpenDoor);
 }
 
 void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Name)
@@ -262,7 +278,8 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 		C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		C->SetCollisionResponseToAllChannels(ECR_Ignore);
 		C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-		if (!Hidden.IsEmpty()) C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+		// (trace false: the exported things to use behind it answer the use trace as before)
+		if (!Hidden.IsEmpty() && Bool(P, TEXT("trace"), true)) C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 		C->SetCastShadow(true);
 		C->RegisterComponent();
 		if (bLocal)
@@ -289,9 +306,78 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 		const TSharedPtr<FJsonObject>* Sub = nullptr;
 		if (P->TryGetObjectField(TEXT("swing"), Sub)) AddSwing(C, *Sub);
 		if (P->TryGetObjectField(TEXT("beacon"), Sub)) AddBeacon(C, *Sub);
+		if (P->TryGetObjectField(TEXT("lit"), Sub)) AddLit(C, Pl.Node, *Sub);
+		if (P->TryGetObjectField(TEXT("door"), Sub)) AddDoor(C, *Sub, Str(P, TEXT("walk"), Walk), T);
+		if (P->HasField(TEXT("trim"))) ApplyTrim(Str(P, TEXT("trim")));
+		// unblock: the exported colliders of what it opens up (a building one walks into now), moved away
+		const FString UWalk = Str(P, TEXT("walk"), Walk);
+		const TArray<TSharedPtr<FJsonValue>>* Un = nullptr;
+		if (P->TryGetArrayField(TEXT("unblock"), Un)) for (const TSharedPtr<FJsonValue>& UV : *Un)
+		{
+			const TArray<TSharedPtr<FJsonValue>>& Q = UV->AsArray();
+			if (Q.Num() != 4) continue;
+			int32 Moved = 0;
+			for (FS47Rect& CR : W->CollidersMutable(UWalk))
+			{
+				if (FMath::Abs(CR.MinX - Q[0]->AsNumber()) < 0.06 && FMath::Abs(CR.MaxX - Q[1]->AsNumber()) < 0.06 && FMath::Abs(CR.MinZ - Q[2]->AsNumber()) < 0.06 && FMath::Abs(CR.MaxZ - Q[3]->AsNumber()) < 0.06)
+				{
+					// (still there for what grows round the town's walls, S47WorldLife: only the walk steps over it)
+					CR.bEnabled = false;
+					++Moved;
+				}
+			}
+			if (!Moved) UE_LOG(LogS47Props, Warning, TEXT("S47: props: %s unblock %.2f %.2f %.2f %.2f: no such collider in %s"), *Id, Q[0]->AsNumber(), Q[1]->AsNumber(), Q[2]->AsNumber(), Q[3]->AsNumber(), *UWalk);
+		}
+		// zones: walkable ground of its own (its inside), floors: the heights there (a ramp along x or z)
+		auto ToWorld = [&T](double X, double Z) { const FVector U = T.TransformPosition(S47Three::ToUE(X, 0.0, Z)); return FVector2D(U.X / 100.0, U.Y / 100.0); };
+		const TArray<TSharedPtr<FJsonValue>>* Zs = nullptr;
+		if (!bLocal && P->TryGetArrayField(TEXT("zones"), Zs)) for (const TSharedPtr<FJsonValue>& ZV : *Zs)
+		{
+			const TArray<TSharedPtr<FJsonValue>>& Q = ZV->AsArray();
+			if (Q.Num() != 4) continue;
+			const FVector2D A = ToWorld(Q[0]->AsNumber(), Q[2]->AsNumber()), B = ToWorld(Q[1]->AsNumber(), Q[3]->AsNumber());
+			FS47Rect Z;
+			Z.MinX = FMath::Min(A.X, B.X); Z.MaxX = FMath::Max(A.X, B.X); Z.MinZ = FMath::Min(A.Y, B.Y); Z.MaxZ = FMath::Max(A.Y, B.Y);
+			Z.Id = TEXT("prop:") + Id;
+			W->ZonesMutable(UWalk).Add(Z);
+		}
+		const TArray<TSharedPtr<FJsonValue>>* Fs = nullptr;
+		if (!bLocal && P->TryGetArrayField(TEXT("floors"), Fs)) for (const TSharedPtr<FJsonValue>& FV : *Fs)
+		{
+			const TArray<TSharedPtr<FJsonValue>>& Q = FV->AsArray();
+			if (Q.Num() < 5) continue;
+			const FVector2D A = ToWorld(Q[0]->AsNumber(), Q[2]->AsNumber()), B = ToWorld(Q[1]->AsNumber(), Q[3]->AsNumber());
+			FFloor Fl;
+			Fl.MinX = FMath::Min(A.X, B.X); Fl.MaxX = FMath::Max(A.X, B.X); Fl.MinZ = FMath::Min(A.Y, B.Y); Fl.MaxZ = FMath::Max(A.Y, B.Y);
+			const double Base = T.GetLocation().Z / 100.0;
+			Fl.Y0 = Base + Q[4]->AsNumber();
+			Fl.Y1 = Base + (Q.Num() > 5 ? Q[5]->AsNumber() : Q[4]->AsNumber());
+			Fl.Axis = Q.Num() > 6 ? Q[6]->AsString() : FString(TEXT("x"));
+			Floors.Add(Fl);
+		}
+		// blocks: its own footprints in the walk and the drive (a building's island, steps and drums);
+		// walk: a walk of its own (Caliche's street is the road's walk, the diner's lot the diner's)
+		const FString PWalk = Str(P, TEXT("walk"), Walk);
+		// (leg: the drive legs its blocks stand in, if not the file's; "" for the walk only)
+		const FString PLeg = P->HasField(TEXT("leg")) ? Str(P, TEXT("leg")) : Leg;
+		const TArray<TSharedPtr<FJsonValue>>* Rects = nullptr;
+		if (!bLocal && P->TryGetArrayField(TEXT("blocks"), Rects))
+		{
+			int32 K = 0;
+			for (const TSharedPtr<FJsonValue>& RV : *Rects)
+			{
+				const TArray<TSharedPtr<FJsonValue>>& Q = RV->AsArray();
+				if (Q.Num() != 4) continue;
+				FBox Box(ForceInit);
+				for (const double X : { Q[0]->AsNumber(), Q[1]->AsNumber() }) for (const double Z : { Q[2]->AsNumber(), Q[3]->AsNumber() })
+					Box += T.TransformPosition(S47Three::ToUE(X, 0.0, Z));
+				Box.Max.Z += 100.0;
+				Blocks += AddCollider(PWalk, PLeg, Box, 0.0, FString::Printf(TEXT("prop:%s:%d"), *Id, K++));
+			}
+		}
 		// in the way: the walk's collider (and the drive's), the model's footprint turned as it stands
 		// (a local prop moves: what it stands for keeps its own collider, the patrol car's carCol)
-		if (Bool(P, TEXT("collide"), false) && !bLocal) Blocks += AddCollider(Walk, Leg, Mesh->GetBoundingBox().TransformBy(T), Num(P, TEXT("pad"), 0.05), TEXT("prop:") + Id);
+		if (Bool(P, TEXT("collide"), false) && !bLocal) Blocks += AddCollider(PWalk, Leg, Mesh->GetBoundingBox().TransformBy(T), Num(P, TEXT("pad"), 0.05), TEXT("prop:") + Id);
 	}
 	Blocks += BuildRows(File, Name, Walk, Leg, Areas, FileParent, Count);
 	Blocks += BuildScatter(File, Name, Walk, Leg, Areas, FileParent, Count);
@@ -607,6 +693,208 @@ void AS47Props::AddSwing(UStaticMeshComponent* C, const TSharedPtr<FJsonObject>&
 	Swings.Add(S);
 }
 
+void AS47Props::AddLit(UStaticMeshComponent* C, int32 Node, const TSharedPtr<FJsonObject>& J)
+{
+	AS47Web* W = Web.Get();
+	if (!W || !C) return;
+	FLit L;
+	L.Comp = C;
+	L.Node = Node;
+	L.Set = W->FloodSet(Str(J, TEXT("flood")));
+	L.Slot = int32(Num(J, TEXT("slot"), -1));
+	L.Gain = float(Num(J, TEXT("gain"), 1.0));
+	if (Bool(J, TEXT("suppress"), false) && L.Set >= 0 && L.Slot >= 0) W->SuppressFloodLight(L.Set, L.Slot);
+	// the emissive materials (glTF's EmissiveFactor, as Interchange made them), each its own instance
+	const FString Flicker = Str(J, TEXT("flicker"));
+	for (int32 I = 0; I < C->GetNumMaterials(); ++I)
+	{
+		UMaterialInterface* M = C->GetMaterial(I);
+		FLinearColor F;
+		if (!M || !M->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("EmissiveFactor")), F) || F.R + F.G + F.B < 0.001f) continue;
+		FLit::FGlow G;
+		G.Mid = C->CreateDynamicMaterialInstance(I, M);
+		G.Factor = F;
+		G.bFlicker = !Flicker.IsEmpty() && M->GetName().Contains(Flicker);
+		L.Glows.Add(G);
+	}
+	// the lights: rect sources in the model's own terms, attached to it
+	const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+	if (J->TryGetArrayField(TEXT("lights"), A)) for (const TSharedPtr<FJsonValue>& V : *A)
+	{
+		const TSharedPtr<FJsonObject> O = V->AsObject();
+		auto Vec = [&O](const TCHAR* K, const FVector& D) { const TArray<TSharedPtr<FJsonValue>>* X = nullptr; return O->TryGetArrayField(K, X) && X->Num() == 3 ? FVector((*X)[0]->AsNumber(), (*X)[1]->AsNumber(), (*X)[2]->AsNumber()) : D; };
+		const FVector At = Vec(TEXT("at"), FVector::ZeroVector), Face = Vec(TEXT("face"), FVector(0, -1, 0)), Col = Vec(TEXT("color"), FVector(1, 1, 1));
+		const TArray<TSharedPtr<FJsonValue>>* Sz = nullptr;
+		const bool bSize = O->TryGetArrayField(TEXT("size"), Sz) && Sz->Num() == 2;
+		const double Wd = bSize ? (*Sz)[0]->AsNumber() : 1.0, Ht = bSize ? (*Sz)[1]->AsNumber() : 1.0;
+		URectLightComponent* R = NewObject<URectLightComponent>(C, *FString::Printf(TEXT("PropLit%d_%d"), Lits.Num(), L.Lamps.Num()));
+		R->SetupAttachment(C);
+		R->SetMobility(EComponentMobility::Movable);
+		R->SetRelativeLocation(S47Three::ToUE(At));
+		R->SetRelativeRotation(S47Three::DirToUE(Face).GetSafeNormal().Rotation());
+		R->SetSourceWidth(float(Wd * 100.0));
+		R->SetSourceHeight(float(Ht * 100.0));
+		R->SetBarnDoorAngle(float(Num(O, TEXT("barn"), 88.0)));
+		R->SetBarnDoorLength(float(Num(O, TEXT("barnLength"), 10.0)));
+		R->SetIntensityUnits(ELightUnits::Lumens);
+		R->SetIntensity(0.f);
+		R->SetLightColor(FLinearColor(float(Col.X), float(Col.Y), float(Col.Z)));
+		R->SetAttenuationRadius(float(Num(O, TEXT("reach"), 12.0) * 100.0));
+		R->SetCastShadows(Bool(O, TEXT("shadow"), false));
+		// (a broad source low over long flat walls: no acne where its light grazes them)
+		R->SetShadowBias(float(Num(O, TEXT("bias"), 0.6)));
+		R->SetShadowSlopeBias(float(Num(O, TEXT("slopeBias"), 0.8)));
+		R->SetVolumetricScatteringIntensity(float(Num(O, TEXT("haze"), 0.4)));
+		R->SetIndirectLightingIntensity(1.f);
+		R->SetVisibility(false);
+		R->RegisterComponent();
+		FLit::FLamp Lamp;
+		Lamp.Light = R;
+		Lamp.Lumens = float(Num(O, TEXT("lumens"), 500.0));
+		Lamp.Flicker = float(Num(O, TEXT("flicker"), 0.0));
+		L.Lamps.Add(Lamp);
+	}
+	UE_LOG(LogS47Props, Display, TEXT("S47: props: %s lit by flood %d slot %d: %d glowing materials, %d lights"), *C->GetName(), L.Set, L.Slot, L.Glows.Num(), L.Lamps.Num());
+	Lits.Add(L);
+}
+
+void AS47Props::AddDoor(UStaticMeshComponent* C, const TSharedPtr<FJsonObject>& J, const FString& Walk, const FTransform& T)
+{
+	AS47Web* W = Web.Get();
+	if (!W || !C) return;
+	FDoor D;
+	D.Comp = C;
+	D.Use = Str(J, TEXT("use"));
+	D.Walk = Walk;
+	const TArray<TSharedPtr<FJsonValue>>* H = nullptr;
+	if (J->TryGetArrayField(TEXT("hinge"), H) && H->Num() == 2) D.Hinge = S47Three::ToUE((*H)[0]->AsNumber(), 0, (*H)[1]->AsNumber());
+	D.Deg = float(Num(J, TEXT("deg"), 95));
+	D.Rest = C->GetRelativeTransform();
+	// the closed leaf's collider in the walk (and the drive: a car does not drive through a door either)
+	const TArray<TSharedPtr<FJsonValue>>* Q = nullptr;
+	if (J->TryGetArrayField(TEXT("block"), Q) && Q->Num() == 4)
+	{
+		FBox Box(ForceInit);
+		for (const double X : { (*Q)[0]->AsNumber(), (*Q)[1]->AsNumber() }) for (const double Z : { (*Q)[2]->AsNumber(), (*Q)[3]->AsNumber() })
+			Box += T.TransformPosition(S47Three::ToUE(X, 0.0, Z));
+		D.Closed.MinX = Box.Min.X / 100.0; D.Closed.MaxX = Box.Max.X / 100.0; D.Closed.MinZ = Box.Min.Y / 100.0; D.Closed.MaxZ = Box.Max.Y / 100.0;
+		D.Closed.Id = TEXT("door:") + D.Use;
+		W->CollidersMutable(Walk).Add(D.Closed);
+	}
+	Doors.Add(D);
+}
+
+bool AS47Props::UseDoor(const FString& Use)
+{
+	// a door of a prop's (S47Caliche: the gas station's front door): opened or shut, its collider with it
+	AS47Props* P = Instance.Get();
+	if (!P) return false;
+	for (FDoor& D : P->Doors)
+	{
+		if (D.Use != Use || !D.Comp.IsValid()) continue;
+		D.bOpen = !D.bOpen;
+		if (P->Web.IsValid())
+		{
+			for (FS47Rect& R : P->Web->CollidersMutable(D.Walk))
+			{
+				if (R.Id != D.Closed.Id) continue;
+				if (D.bOpen) R.MinX = R.MaxX = R.MinZ = R.MaxZ = 1e9;
+				else R = D.Closed;
+			}
+		}
+		if (US47Main* M = US47Main::Get(P))
+		{
+			if (M->Audio) M->Audio->Sfx(M->Audio->Or(TEXT("door_latch"), TEXT("switch")), FS47Sound());
+		}
+		UE_LOG(LogS47Props, Display, TEXT("S47: props: door %s %s"), *Use, D.bOpen ? TEXT("opened") : TEXT("shut"));
+		return true;
+	}
+	return false;
+}
+
+bool AS47Props::IsDoorOpen(const FString& Use)
+{
+	if (const AS47Props* P = Instance.Get()) for (const FDoor& D : P->Doors) if (D.Use == Use) return D.bOpen;
+	return false;
+}
+
+void AS47Props::ApplyTrim(const FString& Model)
+{
+	// trim_web.py's meshes in place of the exported ones of the same name under the group, where the
+	// exported mesh is still the one it was cut from (as many triangles): their materials stay
+	AS47Web* W = Web.Get();
+	const TSharedPtr<FJsonObject>* M = nullptr;
+	if (!W || !Trims.IsValid() || !Trims->TryGetObjectField(Model, M)) { UE_LOG(LogS47Props, Warning, TEXT("S47: props: no trim of %s in free_models.json"), *Model); return; }
+	const int32 Group = W->Handle(Str(*M, TEXT("group")));
+	const TSharedPtr<FJsonObject>* Meshes = nullptr;
+	if (Group < 0 || !(*M)->TryGetObjectField(TEXT("meshes"), Meshes)) return;
+	int32 Swapped = 0, Hidden = 0, Stale = 0;
+	for (int32 I = 0; I < W->PartCount(); ++I)
+	{
+		const FS47WebNode* N = W->Node(I);
+		if (!N || N->Parent != Group || N->Geo < 0) continue;
+		const TSharedPtr<FJsonObject>* G = nullptr;
+		if (!(*Meshes)->TryGetObjectField(FString::Printf(TEXT("g%d"), N->Geo), G)) continue;
+		UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N->Comp.Get());
+		UStaticMesh* Old = C ? C->GetStaticMesh() : nullptr;
+		const int32 Tris = Old && Old->GetRenderData() && Old->GetRenderData()->LODResources.Num() ? Old->GetRenderData()->LODResources[0].GetNumTriangles() : -1;
+		if (!C || Tris != int32(Num(*G, TEXT("tris"), -2))) { ++Stale; continue; }
+		if (Bool(*G, TEXT("hidden"), false)) { C->SetHiddenInGame(true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); ++Hidden; continue; }
+		if (UStaticMesh* Cut = LoadObject<UStaticMesh>(nullptr, *Str(*G, TEXT("asset")))) { C->SetStaticMesh(Cut); ++Swapped; }
+		else ++Stale;
+	}
+	UE_LOG(LogS47Props, Display, TEXT("S47: props: %s cut out of the export: %d meshes trimmed, %d hidden%s"), *Model, Swapped, Hidden, Stale ? *FString::Printf(TEXT(", %d STALE (a new export needs Tools/freemodels/import_free.sh again)"), Stale) : TEXT(""));
+}
+
+double AS47Props::FloorAt(double X, double Z)
+{
+	for (const FFloor& F : Floors)
+	{
+		if (X < F.MinX || X > F.MaxX || Z < F.MinZ || Z > F.MaxZ) continue;
+		const double K = F.Axis == TEXT("z") ? (Z - F.MinZ) / FMath::Max(F.MaxZ - F.MinZ, 1e-6) : (X - F.MinX) / FMath::Max(F.MaxX - F.MinX, 1e-6);
+		return F.Y0 + (F.Y1 - F.Y0) * K;
+	}
+	return std::numeric_limits<double>::quiet_NaN();
+}
+
+float AS47Props::TubeAt(double T)
+{
+	// a starter giving up: every eleven seconds 0.65 s of dark and lit by turns (14 a second, the
+	// same each night), otherwise the 120 Hz hum seen as the faintest unsteadiness
+	const double P = FMath::Fmod(T, 11.0);
+	if (P < 0.65)
+	{
+		const double N = FMath::Frac(FMath::Sin(FMath::FloorToDouble(T * 14.0) * 12.9898) * 43758.5453);
+		return N > 0.45 ? 0.9f : 0.06f;
+	}
+	return float(0.985 + 0.015 * FMath::Sin(T * 60.0));
+}
+
+void AS47Props::UpdateLit(FLit& L, float Dt)
+{
+	AS47Web* W = Web.Get();
+	UStaticMeshComponent* C = L.Comp.Get();
+	if (!W || !C) return;
+	const bool bShown = L.Node >= 0 ? Shown(L.Node) : C->IsVisible();
+	const float K = bShown && (L.Set < 0 || L.Slot < 0 || W->FloodPool(L.Set, L.Slot).A > 0.001f) ? 1.f : 0.f;
+	L.T += Dt;
+	const float Tube = K > 0 ? TubeAt(L.T) : 1.f;
+	const bool bChange = K != L.K;
+	L.K = K;
+	for (FLit::FGlow& G : L.Glows)
+	{
+		if (!G.Mid.IsValid() || (!bChange && !(G.bFlicker && K > 0))) continue;
+		G.Mid->SetVectorParameterValue(TEXT("EmissiveFactor"), G.Factor * (K * L.Gain * (G.bFlicker ? Tube : 1.f)));
+	}
+	for (FLit::FLamp& P : L.Lamps)
+	{
+		URectLightComponent* R = P.Light.Get();
+		if (!R) continue;
+		if (bChange) R->SetVisibility(K > 0);
+		if (K > 0 && (bChange || P.Flicker > 0)) R->SetIntensity(P.Lumens * (1.f - P.Flicker * (1.f - Tube)));
+	}
+}
+
 void AS47Props::AddBeacon(UStaticMeshComponent* Car, const TSharedPtr<FJsonObject>& J)
 {
 	// the bar's glass as two lenses (cubes a little proud of it), red to the driver's side
@@ -730,6 +1018,19 @@ void AS47Props::Tick(float DeltaSeconds)
 		C->SetRelativeTransform(Turn * S.Rest);
 	}
 	for (FBeacon& B : Beacons) UpdateBeacon(B, DeltaSeconds);
+	for (FLit& L : Lits) UpdateLit(L, DeltaSeconds);
+	for (FDoor& D : Doors)
+	{
+		UStaticMeshComponent* C = D.Comp.Get();
+		if (!C) continue;
+		const float Want = D.bOpen ? 1.f : 0.f;
+		if (D.K == Want) continue;
+		// about 0.7 s each way, eased
+		D.K = FMath::FInterpConstantTo(D.K, Want, DeltaSeconds, 1.4f);
+		const float E = D.K * D.K * (3 - 2 * D.K);
+		const FTransform Turn = FTransform(-D.Hinge) * FTransform(FRotator(0, D.Deg * E, 0)) * FTransform(D.Hinge);
+		C->SetRelativeTransform(Turn * D.Rest);
+	}
 	Tour(DeltaSeconds);
 	for (FPlaced& P : Placed)
 	{
@@ -802,6 +1103,25 @@ bool AS47Props::SelfTest(TArray<FString>& Lines)
 			const FString Id = Str(P, TEXT("id"), Str(P, TEXT("model")));
 			CheckModel(Id, Str(P, TEXT("model")));
 			if (!At(P, At3)) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: no place"), *F, *Id)); bOk = false; }
+			const TSharedPtr<FJsonObject>* LitO = nullptr;
+			if (P->TryGetObjectField(TEXT("lit"), LitO))
+			{
+				const TArray<TSharedPtr<FJsonValue>>* Ls = nullptr;
+				bool bLit = !Str(*LitO, TEXT("flood")).IsEmpty() && Num(*LitO, TEXT("slot"), -1) >= 0;
+				if ((*LitO)->TryGetArrayField(TEXT("lights"), Ls)) for (const TSharedPtr<FJsonValue>& LV : *Ls)
+				{
+					const TArray<TSharedPtr<FJsonValue>>* AtL = nullptr;
+					const double Lm = Num(LV->AsObject(), TEXT("lumens"), 0);
+					bLit &= LV->AsObject()->TryGetArrayField(TEXT("at"), AtL) && AtL->Num() == 3 && Lm > 0 && Lm < 20000;
+				}
+				if (!bLit) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: lit needs a flood, a slot and lights with a place and lumens"), *F, *Id)); bOk = false; }
+			}
+			const TArray<TSharedPtr<FJsonValue>>* Bl = nullptr;
+			if (P->TryGetArrayField(TEXT("blocks"), Bl)) for (const TSharedPtr<FJsonValue>& BV : *Bl)
+			{
+				const TArray<TSharedPtr<FJsonValue>>& Q = BV->AsArray();
+				if (Q.Num() != 4 || Q[1]->AsNumber() <= Q[0]->AsNumber() || Q[3]->AsNumber() <= Q[2]->AsNumber()) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: a block is [x0, x1, z0, z1]"), *F, *Id)); bOk = false; }
+			}
 			const double S = Num(P, TEXT("scale"), 1);
 			if (S <= 0.05 || S > 20) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: scale %.2f"), *F, *Id, S)); bOk = false; }
 			CheckId(Id);
@@ -838,6 +1158,15 @@ bool AS47Props::SelfTest(TArray<FString>& Lines)
 			&& FMath::IsNearlyEqual(FMath::Fmod(T0[1] - T0[0] + 360.f, 360.f), 180.f, 0.01f) && FMath::IsNearlyEqual(Tp[0], T0[0], 0.01f) && Lp[0] == 1.f;
 		Lines.Add(FString::Printf(TEXT("props: beacon red, blue, double flash and turn %s"), bBeacon ? TEXT("OK") : TEXT("FAIL")));
 		bOk &= bBeacon;
+	}
+	// the failing tube: lit almost steadily, dark for a moment in each stutter, never brighter than lit
+	{
+		float Lo = 1.f, Hi = 0.f, Calm = 1.f;
+		for (int32 I = 0; I < 1100; ++I) { const float V = TubeAt(I * 0.01); Lo = FMath::Min(Lo, V); Hi = FMath::Max(Hi, V); }
+		for (int32 I = 70; I < 1100; ++I) Calm = FMath::Min(Calm, TubeAt(I * 0.01));
+		const bool bTube = Lo < 0.1f && Hi <= 1.f && Calm > 0.96f;
+		Lines.Add(FString::Printf(TEXT("props: failing tube stutters and hums %s"), bTube ? TEXT("OK") : TEXT("FAIL")));
+		bOk &= bTube;
 	}
 	return bOk;
 }

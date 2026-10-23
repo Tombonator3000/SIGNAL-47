@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "S47Web.h"
 #include "S47Props.generated.h"
 
 class AS47Web;
@@ -29,7 +30,24 @@ class FJsonObject;
 // local (true: 'at' and 'yaw' in the parent's own terms, no trace: the prop moves with a node the
 // story moves, the deputy's car), swing { open (a node path: open while it is shown), hinge [x, z]
 // (metres in the model: x forward, z to its right), deg }, beacon { on (a node path: lit while it
-// is shown), bar [x0, x1, y0, y1, z0, z1] (the light bar's glass in the model, metres) } } ].
+// is shown), bar [x0, x1, y0, y1, z0, z1] (the light bar's glass in the model, metres) },
+// trace (false: the use trace passes through it to the exported things to use, as before it stood
+// there), walk (its colliders' walk, if not the file's), trim (a model's name: the exported meshes it
+// replaces swapped for the ones trim_web.py cut it out of), unblock [[minX, maxX, minZ, maxZ], ...]
+// (exported colliders, world terms, taken away: the building is walked into now), zones [[x0, x1,
+// z0, z1]] and floors [[x0, x1, z0, z1, y0, y1, axis]] (its inside walkable, at these heights over
+// its pivot, a ramp along x or z from y0 to y1), door { use (the exported thing to use that opens
+// it), hinge [x, z], deg, block [x0, x1, z0, z1] (its collider while shut) }, blocks [[x0, x1, z0, z1], ...] (colliders for the walk and the drive, metres in the
+// model's own terms, turned and placed with it), lit { flood, slot (the flood set and slot whose
+// width says whether it is lit: the town's canopy), suppress (that slot's own point light off: the
+// prop's lights replace it), gain (its emissive materials' glow), flicker (the name a material's
+// must hold to stutter like a failing tube), lights [ { at [x, y, z], face [x, y, z] (metres and the
+// way it shines, in the model's terms), size [w, h], lumens, reach, color [r, g, b], shadow,
+// flicker (its share of the stutter, 0..1) } ] } } ].
+//
+// Lit props (Tom, 23.10: the gas station in Caliche, its canopy's tubes and its sign lit at night):
+// every emissive material of the prop dimmed with the flood slot, and a few rect lights of its own
+// (the cold fluorescent pool under the canopy, the sign's faces), no more than the slot's lamp cost.
 //
 // The beacon (Tom, 23.10: the patrol car on the shoulder, its roof lights on and flashing): the bar's
 // two halves as lenses of their own, red and blue, and one small spot light on each that turns as an
@@ -59,6 +77,19 @@ public:
 	/** The beacon at time T (seconds): each half's lens (0..1: its glow, 1 in the double flash) and
 	 *  its light's turn (degrees about the bar's up axis). Half 0 is red, half 1 blue. */
 	static void BeaconAt(double T, float Lens[2], float Turn[2]);
+
+	/** A failing fluorescent tube at time T (seconds): about 1 with a faint hum, and every eleven
+	 *  seconds a stutter of a little over half a second, dark and lit by turns. */
+	static float TubeAt(double T);
+
+	/** A prop's door used (its "door" use id, S47Caliche's gasDoor): opened or shut. False when no
+	 *  prop has that door (the exported thing answers as before). */
+	static bool UseDoor(const FString& Use);
+	static bool IsDoorOpen(const FString& Use);
+
+	/** The floor a prop lays down there (its "floors": a building one walks into, its steps), NaN
+	 *  where it has none (AS47Walker::FloorAt asks first). Three's world terms. */
+	static double FloorAt(double X, double Z);
 
 private:
 	struct FPlaced
@@ -91,6 +122,35 @@ private:
 		double T = 0;
 	};
 	TArray<FBeacon> Beacons;
+	struct FLit
+	{
+		TWeakObjectPtr<UStaticMeshComponent> Comp;
+		int32 Node = -1, Set = -1, Slot = -1;
+		float Gain = 1.f, K = -1.f;
+		double T = 0;
+		struct FGlow { TWeakObjectPtr<class UMaterialInstanceDynamic> Mid; FLinearColor Factor = FLinearColor::Black; bool bFlicker = false; };
+		TArray<FGlow> Glows;
+		struct FLamp { TWeakObjectPtr<class URectLightComponent> Light; float Lumens = 0.f, Flicker = 0.f; };
+		TArray<FLamp> Lamps;
+	};
+	TArray<FLit> Lits;
+	struct FDoor
+	{
+		TWeakObjectPtr<UStaticMeshComponent> Comp;
+		FString Use, Walk;
+		FVector Hinge = FVector::ZeroVector;
+		float Deg = 95.f, K = 0.f;
+		bool bOpen = false;
+		FTransform Rest;
+		FS47Rect Closed;
+	};
+	TArray<FDoor> Doors;
+	struct FFloor { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0, Y0 = 0, Y1 = 0; FString Axis; };
+	static TArray<FFloor> Floors;
+	static TWeakObjectPtr<AS47Props> Instance;
+	TSharedPtr<FJsonObject> Trims;
+	void AddDoor(UStaticMeshComponent* C, const TSharedPtr<FJsonObject>& Door, const FString& Walk, const FTransform& T);
+	void ApplyTrim(const FString& Model);
 	// -S47PropsTour=<dir>[@name,name]: every file's views (or those named), one picture each, then the
 	// game ends; with -S47PropsOff the same views without the props (the before pictures)
 	struct FView { FString Name, Area, Car; double X = 0, Z = 0, Yaw = 0, Pitch = 0, Clock = -1; };
@@ -110,6 +170,8 @@ private:
 	void AddSwing(UStaticMeshComponent* C, const TSharedPtr<FJsonObject>& Swing);
 	void AddBeacon(UStaticMeshComponent* Car, const TSharedPtr<FJsonObject>& Beacon);
 	void UpdateBeacon(FBeacon& B, float Dt);
+	void AddLit(UStaticMeshComponent* C, int32 Node, const TSharedPtr<FJsonObject>& Lit);
+	void UpdateLit(FLit& L, float Dt);
 	bool Shown(int32 Node) const;
 	TWeakObjectPtr<AS47Web> Web;
 	TMap<FString, FString> Assets; // model name and asset name -> asset path (Content/Free/free_models.json)

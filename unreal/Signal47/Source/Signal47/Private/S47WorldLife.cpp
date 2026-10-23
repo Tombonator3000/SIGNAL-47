@@ -186,8 +186,9 @@ void US47WorldLife::BuildFlora(bool bBind)
 	// own stops on the road), moved into a patch's terms
 	auto CoverOf = [W](const FVector& O, TArray<FS47FloraRect>& Blocks, TArray<FS47FloraRect>& Walks)
 	{
-		for (const FS47Rect& C : W->CollidersMutable(TEXT("road"))) Blocks.Add(FR(C, O.X, O.Z));
-		for (const FS47Rect& Z : W->ZonesMutable(TEXT("road"))) if (!Z.Id.StartsWith(TEXT("rs"))) Walks.Add(FR(Z, O.X, O.Z));
+		// (not S47Props' own colliders and zones: the cover grows as the web version's does)
+		for (const FS47Rect& C : W->CollidersMutable(TEXT("road"))) if (!C.Id.StartsWith(TEXT("prop:")) && !C.Id.StartsWith(TEXT("door:"))) Blocks.Add(FR(C, O.X, O.Z));
+		for (const FS47Rect& Z : W->ZonesMutable(TEXT("road"))) if (!Z.Id.StartsWith(TEXT("rs")) && !Z.Id.StartsWith(TEXT("prop:"))) Walks.Add(FR(Z, O.X, O.Z));
 	};
 	const TPair<const TCHAR*, int32> Groups[] = { { TEXT("world.flora.patches[0].group"), 0 }, { TEXT("world.flora.patches[1].group"), 1 }, { TEXT("world.flora.patches[2].group"), 2 }, { TEXT("world.oldRoad.flora.group"), 3 } };
 	for (const auto& G : Groups)

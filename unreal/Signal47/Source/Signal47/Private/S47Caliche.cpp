@@ -1,5 +1,6 @@
 // story/caliche.ts: Caliche's street, its people and the copies in Reyes's notebook.
 #include "S47Caliche.h"
+#include "S47Props.h"
 
 #include "S47ReadAloud.h"
 #include "Widgets/SNullWidget.h"
@@ -250,7 +251,9 @@ void FS47Caliche::BindTown()
 	};
 	auto Say = [this](const FString& T, double S = 3.6) -> TFunction<void()> { return [this, T, S] { M->UI->Toast(T, S); }; };
 	auto Flyer = [this] { Once(TEXT("flyer"), TEXT("Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four.")); };
-	Add(TEXT("gasDoor"), [] { return TEXT("Gas station door"); }, [this, Flyer] { M->UI->Toast(TEXT("Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE."), 5.4); Flyer(); }, [Flyer] { Flyer(); return TEXT("SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again."); });
+	// Unreal only (Tom, 23.10): the station is walked into now, its door (S47Props) opens; where the
+	// model is not there the door is locked as in the web version
+	Add(TEXT("gasDoor"), [] { return AS47Props::IsDoorOpen(TEXT("gasDoor")) ? TEXT("Close the door") : TEXT("Gas station door"); }, [this, Flyer] { if (AS47Props::UseDoor(TEXT("gasDoor"))) { Flyer(); return; } M->UI->Toast(TEXT("Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE."), 5.4); Flyer(); }, [Flyer] { Flyer(); return TEXT("SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again."); });
 	Add(TEXT("gasWindow"), [] { return TEXT("Night window"); }, [this] { Talk(TEXT("attendant")); }, [] { return TEXT("Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once."); });
 	Add(TEXT("pumps"), [] { return TEXT("Pumps"); }, Say(TEXT("Regular, 89.9. It has come down all spring. The nozzles are padlocked for the night."), 3.8), [] { return TEXT("Two pumps on a concrete island. The counters stand at zero."); });
 	Add(TEXT("payphone"), [this] { return Town->bRinging ? TEXT("Answer the payphone") : TEXT("Payphone"); }, [this] { if (Town->bRinging) { if (Town->OnAnswer) Town->OnAnswer(); return; } M->UI->Toast(M->TownSeen.Contains(TEXT("nickel")) ? TEXT("A dial tone. The coin return is empty now.") : TEXT("A dial tone, and under it something like wind. Nobody to call at this hour."), 3.6); }, [] { return TEXT("A payphone on a post, a phone book on a chain with half its pages gone."); });
