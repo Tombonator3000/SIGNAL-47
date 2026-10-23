@@ -230,7 +230,27 @@ void FS47Evening::ControlTest(double Dt)
 		const FVector Delta = Phone - M->Player->Pos;
 		M->Player->Yaw = FMath::Atan2(-Delta.X, -Delta.Z);
 		if (!bRing || !Use(TEXT("phone")) || !Pack.CurrentScene() || Pack.CurrentScene()->Id != TEXT("D01_HANDOVER") || Pack.CurrentScene()->Channel != TEXT("phone")) { Fail(TEXT("18:00 ringing phone did not begin D01")); return; }
-		Shot(TEXT("18-phone")); Stage(13, 2); return;
+		Shot(TEXT("18-phone")); Stage(17, 2); return;
+	}
+	if (RouteStage == 17)
+	{
+		const FString SceneBefore=Pack.CurrentScene()?Pack.CurrentScene()->Id:FString();
+		const int32 CursorBefore=Pack.NextLine(); const double ClockBefore=M->Story->Clock();
+		const FVector PoseBefore=M->Player->Pos;
+		const FString StoreDir=FPaths::ProjectSavedDir()/TEXT("EveningRuntimeControls")/RouteName;
+		FS47SaveStore Writer(StoreDir); Writer.Init();
+		FS47SaveCard Card; Card.Chapter=TEXT("Evening opening / phone in progress"); Card.Place=TEXT("SARO"); Card.Clock=TEXT("18:00");
+		FString Error; const auto Meta=Writer.Save(1,TEXT("manual"),1,M->Flow->GameState(),Card,Error);
+		if (!Meta) { Fail(TEXT("phone disk save failed: ")+Error); return; }
+		FS47SaveStore Reader(StoreDir); Reader.Init(); const auto Saved=Reader.Load(Meta->Id);
+		if (!Saved) {Fail(TEXT("phone disk load failed"));return;}
+		if (!RouteShots.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(Saved,true),*FPaths::Combine(RouteShots,RouteName+TEXT("-phone.disk-save.json")));
+		US47Flow::FStart Restore; Restore.State=Saved; Restore.CaseId=0; Restore.bDev=true; Restore.Playtime=M->Playtime;
+		M->Flow->StartGame(Restore);
+		if (!Pack.Flag(TEXT("intro_arrived")) || Commute() || !Pack.CurrentScene() || Pack.CurrentScene()->Id!=SceneBefore || Pack.NextLine()!=CursorBefore || M->Story->Clock()!=ClockBefore || !M->Player->Pos.Equals(PoseBefore,0.015) || !Pack.Documents().IsEmpty() || Pack.CanStart(TEXT("I11_SARO_ARRIVAL")))
+		{Fail(TEXT("phone restore changed arrival, clock, pose, scene, cursor or papers"));return;}
+		UE_LOG(LogTemp,Display,TEXT("S47: evening route %s PASS phone disk/full-world restore: arrival, clock, pose and D01 cursor retained"),*RouteName);
+		Stage(13,1); return;
 	}
 	if (RouteStage == 13)
 	{
