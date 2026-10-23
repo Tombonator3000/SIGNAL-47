@@ -615,9 +615,15 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	EveningSky.SetClock(18 * 3600 + 27 * 60);
 	Check(EveningSky.Daylight() > 0.5 && EveningSky.Daylight() < 0.6 && EveningSky.StarDimming() == 1,
 		TEXT("evening sky: sunset retains warm twilight while stars are still absent"));
+	EveningSky.SetClock(18 * 3600 + 35 * 60);
+	Check(EveningSky.Daylight() > 0.3 && EveningSky.StarDimming() == 1 && EveningSky.Sun == 0,
+		TEXT("evening sky: 18:35 dusk has no rendered stars despite the old HDR star palette"));
 	EveningSky.SetClock(18 * 3600 + 53 * 60);
-	Check(EveningSky.Daylight() > 0 && EveningSky.Daylight() < 0.1 && EveningSky.StarDimming() < 0.1 && EveningSky.Sun == 0 && EveningSky.SunDir.Y < 0,
-		TEXT("evening sky: civil twilight is blue hour with sun below western horizon"));
+	Check(EveningSky.Daylight() > 0 && EveningSky.Daylight() < 0.1 && EveningSky.StarDimming() > 0.9 && EveningSky.StarDimming() < 1 && EveningSky.Sun == 0 && EveningSky.SunDir.Y < 0,
+		TEXT("evening sky: civil twilight keeps stars nearly fully dimmed with sun below western horizon"));
+	EveningSky.SetClock(19 * 3600);
+	Check(EveningSky.StarDimming() > 0 && EveningSky.StarDimming() < 0.3,
+		TEXT("evening sky: stars fade in after civil twilight before full night at 19:07"));
 	EveningSky.SetClock(24 * 3600);
 	const FVector MidnightSun = EveningSky.SunDir;
 	EveningSky.SetClock(0);
