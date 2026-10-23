@@ -1,0 +1,12 @@
+{
+ "_doc": "Room 6 at the Sierra Motor Court (Room6.ts). Tom's own motel bed (~/Assets/signal47-free/own) in place of the exported one: the same footprint, its headboard against the back wall, the story's bed (its proxy) where it was.",
+ "area": "room6",
+ "parent": "world.room6.group",
+ "props": [
+  { "id": "bed", "model": "motel_bed", "replaces": ["world.room6.objs.bed"], "at": [1.12, 0, -8001.76], "yaw": 0, "scale": 0.92, "ground": false }
+ ],
+ "views": [
+  { "name": "room6-bed", "at": [-1.8, -7997.3, -0.576, -0.4] },
+  { "name": "room6-bed2", "at": [2.0, -7998.2, 0.23, -0.4] }
+ ]
+}

@@ -16,18 +16,17 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 | Oppgave | Eier | Gren | Status |
 |---|---|---|---|
 | Grafikkpass: lys, skygger, materialer, oppstartshakking (PSO-cache, innlastingsskjerm) | Codex | `port-gfx` (WIP 64d943e7, worktree ~/scratch-bm/wt/gfx) | stoppet 23.10 (lite minne); fortsettes fra WIP |
-| Grafikkpass: plassering av gratismodellene (S47Props, Config/Props/*.json), logoer bort | Claude-hjelper | `worktree-agent-a47b93e55757a027a` (WIP 36a06dc6) | stoppet 23.10; fortsettes etter Codex |
+| Grafikkpass: plassering av gratismodellene (S47Props, Config/Props/<område>.json), logoer bort; først Toms politibil | Claude-hjelper | `worktree-agent-a6660375fa9508a18` (fra WIP 36a06dc6) | klar 23.10 for gjennomgang: sheriffbilen (LT '80 Cop Cruiser, brun/hvit med stjerne, førerdøra åpner seg, rød/blå blinkende lysbjelke med to små spotlys uten skygger), DP-80 med animert utskrift, radiobord (CB-base, 3278, spolebåndopptaker), kassettopptaker, skrivemaskin og telefon i arkivet, motellseng i rom 6, kraftlinje med ledninger og avgrening til SARO, piggtrådgjerde, steiner, busker, yucca, tumbleweed, klipper, vrak og knekt stolpe, MOTEL-skilt, biler og telefonkiosk ved motellet, biler i Caliche og ved dineren; logoer malt bort i repaint.py; selvtest 1220 OK; C10 som SARO 07 ikke gjort (se rapporten) |
 | Brettet: synlige røde tråder (kantutjevnet garn med skygge, glans og tvinning, større nåler, slakk feiltråd, tråden i hånden med ring på målet), hjelpestripe, tydeligere spørsmålskort, hint tilbudt etter feil tråd eller 75 s, «Slik lages et funn» i notatbokas funn, oppgavetekster nevner brettet; testflagg `-S47BoardTest` | Claude-hjelper | `worktree-agent-a6671d6d8e7c95ad4` | levert 22.10, venter på integrator |
 | SAROs utelys og fotolab: fysiske lamper ved vegger/dører/stier, navngitte normal-/safelight-/forstørrerlys | Codex | `port-light` | klar 22.10 for Claude-gjennomgang; flettet til 3b44956e; 30 fysiske utelys, navngitt lab-API koblet til dørregelen; bygg og 1218 selvtester OK; bilder i LIGHTING.md; ny 1440p-måling og pakking hos integrator |
 | Toms rapport: mørkerommet krever lukket dør (tåket kopi ved åpen dør, rødt mørkeromslys, lagring), og signalprosessoren gjort varm (bånd synker i tone, lavpass, ingen tynne overtoner, RAW lavere) | Claude-hjelper | `worktree-agent-a0f1f30ea2f5f2b7a` | ferdig 22.10, klar for fletting: bygg OK, selvtest OK (1186), lydtur før/etter i loggen; mørkerommet ikke prøvd i verdenen |
-| Grafikkpass, plassering: gratismodellene og Toms egne (matriseskriver, motellseng) i SARO, ute, motellet, dineren og Caliche via `S47Props` og `Config/Props/<område>.json` | Claude-hjelper | `worktree-agent-a47b93e55757a027a` | pågår 22.10 |
 
 ## Neste
 
 | Oppgave | Eier | Merknad |
 |---|---|---|
 | Grafikkpass med de 70 gratismodellene (`~/Assets/signal47-free`, `MODELLER.md`): pickup, biler, kontor- og radioutstyr, diner og motell, ørken; logoer fjernet; CREDITS i rulleteksten | Claude-hjelpere (plassering), Codex (materialer og lys) | Import ferdig 22.10 (gren `worktree-agent-a82b7e58ccdd2c41b`): `Tools/freemodels/import_free.sh` gir 246 statiske mesher (70 modeller, pakker delt per gjenstand) i `/Game/Free/<kategori>/<modell>` (ignorert, 2,8 GB, teksturer kokes til 2k), ekte størrelse og pivot midt under, Nanite på 12 tunge opake; oversikt i `Content/Free/free_models.json`; testflagg `-S47FreeModels[=navn,...]`. Kreditering i rulleteksten (68 s) og `CREDITS.txt` ved siden av spillet. Gjenstår: plassering etter lyset, `/Game/Free` i `DirectoriesToAlwaysCook` da, logoer (Chevrolet på C10-grillen, IBM, Sony, Cobra) |
-| Matriseskriver og motellseng (finnes ikke gratis) | Claude-hjelper | ferdig 22.10: laget i Blender, `~/Assets/signal47-free/own` (glb, fbx, blend, README); skal plasseres i verden |
+| Matriseskriver og motellseng (finnes ikke gratis) | Claude-hjelper | ferdig 22.10: laget i Blender, `~/Assets/signal47-free/own` (glb, fbx, blend, README); plassert 23.10 (S47Props: skriveren i kontrollrommet, senga i rom 6) |
 | Lyttetest av lyd og hel gjennomspilling med ekte input | Tom | |
 
 ## Ferdig 22.10

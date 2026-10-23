@@ -1,0 +1,27 @@
+{
+ "_doc": "SARO: the control room (ControlRoom.ts) and the annex (Annex.ts). The DP-80 stands where the homemade printer stood and takes its place in the story: the printout comes out of it as room.printerPaper does. A radio table against the south wall between the corridor door and the notice board holds the station's CB base set with its microphone, a 3278 terminal and the reel-to-reel; a portable cassette recorder on the console desk's free end; the records room's work table gets a typewriter and an office phone. The bought signal processor (console_kit), the KELVORA televisions and the RANGER radio stay as they are.",
+ "area": "saro",
+ "parent": "room.group",
+ "props": [
+  { "id": "printer", "model": "dotmatrix_printer_Printer", "replaces": ["room.objs.printer"], "at": [5.62, 0.74, -0.4], "yaw": -90, "ground": false },
+  { "id": "printerStack", "model": "dotmatrix_printer_PaperStack", "parent": "room.objs.printer", "at": [5.62, 0.74, -0.4], "yaw": -90, "ground": false },
+  { "id": "printerPaper", "model": "dotmatrix_printer_PaperOut", "parent": "room.objs.printer", "at": [5.62, 0.74, -0.4], "yaw": -90, "ground": false, "paper": true },
+  { "id": "radioTable", "model": "office_assets_radio_Table_Rough_32", "at": [-0.45, 0, 4.03], "yaw": 90, "ground": false, "collide": true, "pad": 0.02 },
+  { "id": "cbBase", "model": "cb_base", "at": [-1.05, 0.737, 4.12], "yaw": 180, "ground": false },
+  { "id": "cbMic", "model": "office_assets_radio_Microphone_34", "at": [-0.62, 0.737, 3.9], "yaw": 200, "ground": false },
+  { "id": "terminal", "model": "terminal_3278", "at": [-0.05, 0.737, 4.15], "yaw": 0, "ground": false },
+  { "id": "reelDeck", "model": "reel_tc510", "at": [0.42, 0.737, 4.12], "yaw": 180, "ground": false },
+  { "id": "cassette", "model": "cassette_tcd5", "at": [-3.12, 0.78, -3.82], "yaw": 10, "ground": false },
+  { "id": "typewriter", "model": "typewriter_selectric", "parent": "annex.group", "at": [-4.12, 0.77, 8.72], "yaw": 180, "ground": false },
+  { "id": "recordsPhone", "model": "office_phone", "parent": "annex.group", "at": [-2.98, 0.77, 8.86], "yaw": 160, "ground": false }
+ ],
+ "views": [
+  { "name": "saro-printer", "at": [4.2, -0.6, -1.5708, -0.3] },
+  { "name": "saro-console", "at": [0.3, -1.6, 0, -0.25] },
+  { "name": "saro-west", "at": [-3.0, 1.0, 1.5708, -0.2] },
+  { "name": "saro-desk", "at": [2.6, 0.9, 3.1416, -0.3] },
+  { "name": "saro-radio", "at": [-0.4, 2.2, 3.1416, -0.35] },
+  { "name": "annex-records", "at": [-3.8, 7.2, 3.1416, -0.2] },
+  { "name": "annex-corridor", "at": [-5.0, 5.7, -1.5708, -0.05] }
+ ]
+}
