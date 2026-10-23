@@ -177,7 +177,7 @@ void FS47Evening::ControlEntranceTest(double Dt)
   const bool Moved = (T.Condition % 2) != 0;
   Visual->ParkPersonal(Moved ? FVector(-12, -0.62, 14) : T.Park, T.Heading);
   M->Web->SetDoorOpen(TEXT("doorEast"), true);
-  if (T.Condition == 2 || T.Condition == 6)
+  if (T.Condition % 4 >= 2)
   {
    const FString StoreDir = FPaths::ProjectSavedDir() / TEXT("EveningEntranceControls") / FString::FromInt(T.Condition);
    FS47SaveStore Writer(StoreDir); Writer.Init(); FS47SaveCard Card;
