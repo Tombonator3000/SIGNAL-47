@@ -118,8 +118,10 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 	// EveningShift extends the existing dawn palette backwards. Keep this separate from Dawn:
 	// anomaly/story gates query the morning curve, while drawing and native light use Daylight().
 	// Art-directed MST reference: sunset 18:27, civil twilight 18:53, last blue hour 19:07.
-	const double EveningK = S > 12 * 3600 ? Clamp01(((19 * 3600 + 7 * 60) - S) / (107 * 60)) : 0;
-	Evening = EveningK * EveningK * (3 - 2 * EveningK);
+	// Keep the sunlit palette through shift arrival. The old full-night-to-dawn shader
+	// otherwise reads 18:00 as dark twilight despite the sun still being 4.53 degrees up.
+	const double EveningK = S > 12 * 3600 ? Clamp01(((19 * 3600 + 7 * 60) - S) / (67 * 60)) : 0;
+	Evening = FMath::Pow(EveningK * EveningK * (3 - 2 * EveningK), 1.4);
 	// from 02:15, where the dishes point (it fades with the stars at dawn, by itself)
 	HoleK = S47StarHoleAt(Clock, HoleFrom);
 	const FLinearColor A(0.043f, 0.059f, 0.098f), B(0.19f, 0.2f, 0.25f);
@@ -310,6 +312,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("FlashDir"), V4(FlashDir));
 	}
 	Common(StarsMid.Get());
+	if (UMaterialInstanceDynamic* D = StarsMid.Get()) D->SetScalarParameterValue(TEXT("Dawn"), float(StarDimming()));
 	if (CometComp.IsValid() && CometComp->IsVisible() != bComet) CometComp->SetVisibility(bComet);
 	if (MeteorComp.IsValid() && MeteorComp->IsVisible() != bMetVisible) MeteorComp->SetVisibility(bMetVisible);
 	if (UMaterialInstanceDynamic* D = MeteorMid.Get(); D && bMetVisible)

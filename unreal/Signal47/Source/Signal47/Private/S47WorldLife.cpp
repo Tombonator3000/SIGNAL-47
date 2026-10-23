@@ -599,21 +599,24 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	{
 		EveningSky.SetClock(Minute * 60);
 		const double Light = EveningSky.Daylight();
-		bEveningContinuous &= Light <= PreviousLight && PreviousLight - Light < 0.015 && EveningSky.Dawn == 0;
+		bEveningContinuous &= Light <= PreviousLight && PreviousLight - Light < 0.03 && EveningSky.Dawn == 0;
 		PreviousLight = Light;
 	}
 	Check(bEveningContinuous && EveningSky.Daylight() == 0 && EveningSky.Sun == 0,
 		TEXT("evening sky: sunset and blue hour fade monotonically to night without per-minute jumps"));
 	EveningSky.SetClock(18 * 3600);
-	Check(EveningSky.Daylight() > 0.6 && EveningSky.SunDir.Y > 0 && EveningSky.Sun > 0,
-		TEXT("evening sky: 18:00 handover still has sunset light and real sun shadows"));
+	Check(EveningSky.Daylight() == 1 && EveningSky.StarDimming() == 1 && EveningSky.SunDir.Y > 0 && EveningSky.Sun > 0,
+		TEXT("evening sky: 18:00 handover keeps the sunlit palette, no stars, and real sun shadows"));
 	int32 EveningThunder = 0;
 	EveningSky.OnThunder = [&](double, double) { ++EveningThunder; };
 	EveningSky.Update(60, 60);
 	Check(EveningThunder == 0 && EveningSky.Flash == 0 && !EveningSky.MeteorVisible(),
 		TEXT("evening sky: cheerful arrival has no forced thunder, flash or daytime meteor"));
+	EveningSky.SetClock(18 * 3600 + 27 * 60);
+	Check(EveningSky.Daylight() > 0.5 && EveningSky.Daylight() < 0.6 && EveningSky.StarDimming() == 1,
+		TEXT("evening sky: sunset retains warm twilight while stars are still absent"));
 	EveningSky.SetClock(18 * 3600 + 53 * 60);
-	Check(EveningSky.Daylight() > 0 && EveningSky.Daylight() < 0.1 && EveningSky.Sun == 0 && EveningSky.SunDir.Y < 0,
+	Check(EveningSky.Daylight() > 0 && EveningSky.Daylight() < 0.1 && EveningSky.StarDimming() < 0.1 && EveningSky.Sun == 0 && EveningSky.SunDir.Y < 0,
 		TEXT("evening sky: civil twilight is blue hour with sun below western horizon"));
 	EveningSky.SetClock(24 * 3600);
 	const FVector MidnightSun = EveningSky.SunDir;

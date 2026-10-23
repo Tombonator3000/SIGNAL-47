@@ -38,6 +38,8 @@ public:
 	double Evening = 0;                   // Late afternoon -> sunset -> blue hour, independent of Dawn.
 	/** The shared day/night response of the existing dome, stars, horizon and native lights. */
 	double Daylight() const { return FMath::Max(Dawn, Evening); }
+	/** Stars stay absent until sunset; the old morning star fade remains unchanged. */
+	double StarDimming() const { return Evening > 0 ? FMath::Min(1.0, Evening * 2) : Dawn; }
 	FVector SunDir = FVector(0.98, -0.02, -0.19).GetSafeNormal();
 	double Sun = 0;
 	FVector4 Glow[3] = { FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1) }; // uGlow (backdrop.ts sets them)
