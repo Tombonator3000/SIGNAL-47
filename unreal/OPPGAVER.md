@@ -45,6 +45,10 @@ Codex hjelper med koding også utenfor rendering når Tom ber om det; eieren st�
 | Matriseskriver og motellseng (finnes ikke gratis) | Claude-hjelper | ferdig 22.10: laget i Blender, `~/Assets/signal47-free/own` (glb, fbx, blend, README); plassert 23.10 (S47Props: skriveren i kontrollrommet, senga i rom 6) |
 | Lyttetest av lyd og hel gjennomspilling med ekte input | Tom | |
 
+## Konseptreferanser levert 23.10
+
+Codex: åtte nye ark med eksteriør og interiør for Mesa Diner, sheriffkontor, 1420 AM, suvenirbutikk, vaskeri, Plaza-kino, fôrbutikk og kirke. Bensinstasjonen er utelatt etter Toms bestilling. Galleri og komplette prompter: [Concepts/Caliche-2026-10-23/README.md](Concepts/Caliche-2026-10-23/README.md). Samme originalbilder ligger i `~/Desktop/Signal47 konseptbilder/Caliche-eksterior-interior-2026-10-23`. Dette er visuelle modelleringsreferanser, ikke ferdige bygg eller nye runtimeinteriører. Eksisterende bensinstasjonsjobb og kodeeierskap er uendret.
+
 ## Ferdig 22.10
 
 Menyer, grensesnitt i spillet, pipetonen, møll, 02:15-kameraet, terminalene på skjermene, musepeker på brettet, ut av bilen overalt, hopp, fri ferdsel, Unarius-filmene, den kjøpte signalprosessoren, tonegåten (TAPE A / 1947).
