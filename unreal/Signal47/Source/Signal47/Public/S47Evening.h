@@ -14,7 +14,7 @@ class FS47Evening
 public:
  explicit FS47Evening(US47Main* InM);
  ~FS47Evening();
- void Begin(const S47J::FObj& Saved = nullptr);
+ void Begin(const S47J::FObj& Saved = nullptr, bool bPastOpening = false);
  void Stop();
  void Step(double Dt);
  bool Opening() const { return bEnabled && !Pack.Flag(TEXT("handover_done")); }
@@ -25,6 +25,7 @@ public:
  void Parked(const FString& Place);
  void ShowDialogue();
  void BootstrapTest(const FString& Mode);
+ void ControlTest(double Dt);
  S47J::FObj Save() const;
  FS47EveningPack Pack;
  static bool SelfTest(TArray<FString>& Lines);
@@ -39,6 +40,12 @@ private:
  bool bEnabled = false, bRing = false, bDialogueOpen = false, bRadioOn = true, bWorkStarted = false;
  double RadioHold = 0, RadioRest = 0, MusicPosition = 0, RingAt = 0;
  FString SpokenLine, RadioSpokenLine, TestMode;
+ bool bRouteInitialized = false, bRouteFailed = false, bRouteDone = false, bRouteArrived = false, bRoutePaidRestored = false, bRouteOrderShot = false;
+ int32 RouteStage = 0, RouteWalkIndex = 0, RouteArrivalCount = 0;
+ double RouteElapsed = 0, RouteHold = 0, RouteStageElapsed = 0, RouteDistance = 0, RouteLastClock = 0;
+ FVector RouteLastPos = FVector::ZeroVector;
+ FString RouteName, RouteShots, RouteLastLeg;
+ TArray<FVector> RouteWalk;
  void Context();
  void Refile();
  void Changed();
