@@ -813,7 +813,9 @@ void US47World::DriveBack()
 	{
 		if (OnArriveSaro) OnArriveSaro();
 		// (left on SARO's ground somewhere else, out among the masts say, it is back at SARO but not on its pad)
-		if (InBox(ParkBox(TEXT("saro")), SaroTruckP->Position) && M && M->Story) Toast(FString::Printf(TEXT("%s. The truck is back on its pad."), *M->Story->ClockText(false)), 3.f);
+		// Evening's OnParked starts 18:00 after this callback. Its own arrival card
+		// replaces the service return message, which would otherwise quote 17:20.
+		if (!bCommuteVehicle && InBox(ParkBox(TEXT("saro")), SaroTruckP->Position) && M && M->Story) Toast(FString::Printf(TEXT("%s. The truck is back on its pad."), *M->Story->ClockText(false)), 3.f);
 	};
 	StartTrip(TruckAt.IsEmpty() ? FString(TEXT("station01")) : TruckAt, TEXT("saro"), O);
 }
