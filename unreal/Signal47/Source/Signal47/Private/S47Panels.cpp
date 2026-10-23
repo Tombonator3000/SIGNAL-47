@@ -957,7 +957,14 @@ S47Panels::FPanelHandle S47Panels::DecoderPanel(US47UI* UI, const FDecoderPanel&
 				return FText::FromString(S);
 			}).Font(S47Style::Mono(19.f * PX)).ColorAndOpacity(S47Kit::Css(0x8cffa4))
 		]);
-	const FW Answer = S47Kit::Row(Keys);
+	// (Unreal only) once his page has been read, a faint header over the keys: what the page and the
+	// keys have to do with each other, not the order itself
+	const FW Answer = S47Kit::Col({
+		SNew(SBox).Padding(FMargin(2 * PX, 6 * PX, 0, 0)).Visibility_Lambda([V] { return V().bPageRead ? EVisibility::Visible : EVisibility::Collapsed; })
+		[
+			SNew(STextBlock).Text(FText::FromString(TEXT("the order it sang back"))).Font(S47Style::Mono(16.f * PX)).ColorAndOpacity(S47Kit::Css(0xffb052, 0.42f))
+		],
+		S47Kit::Row(Keys) }, 2.f * PX);
 	const FW Body = S47Kit::Col({
 		Tape,
 		Scope,
@@ -966,7 +973,12 @@ S47Panels::FPanelHandle S47Panels::DecoderPanel(US47UI* UI, const FDecoderPanel&
 		PlayRow,
 		Answer,
 		// (Unreal: the processor is the bought unit on the console desk, not the rack, when the export has it)
-		S47Kit::Small(FString::Printf(TEXT("The deck keeps what the receiver locked on. Slowed down and harmonized, the pulses stop sounding like a machine. The processor keeps playing from the %s while you walk around."), O.bOnDesk ? TEXT("desk") : TEXT("rack"))) }, 0.f);
+		S47Kit::Small(FString::Printf(TEXT("The deck keeps what the receiver locked on. Slowed down and harmonized, the pulses stop sounding like a machine. The processor keeps playing from the %s while you walk around."), O.bOnDesk ? TEXT("desk") : TEXT("rack"))),
+		// (Unreal only) a nudge toward T. Vega's page while it is still under the spare reel
+		SNew(SBox).Visibility_Lambda([V] { return V().bPageThere ? EVisibility::Visible : EVisibility::Collapsed; })
+		[
+			S47Kit::Small(TEXT("Someone keeps leaving papers under the spare reel."))
+		] }, 0.f);
 	if (UI) UI->Open(S47Kit::Shell(UI, TEXT("SIGNAL PROCESSOR / DSP-4"), Body), O.OnClose);
 	// { el, refresh: sync }: the attributes follow the view by themselves
 	return { [] {} };

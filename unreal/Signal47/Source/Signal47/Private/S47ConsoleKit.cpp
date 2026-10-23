@@ -305,10 +305,42 @@ void FS47ConsoleKit::Build()
 		Pm->SetScalarParameterValue(TEXT("Roughness"), 0.92f);
 	}
 	FS47Node* Holder = PageG->Plane(nullptr, 0.10, 0.14, Pm, REEL + FVector(0.108, 0.0012, 0.072), FVector(-UE_DOUBLE_HALF_PI, 0, -0.55));
+	// (Unreal only, on Tom's request: the page was too well hidden) its near corner, the one pointing
+	// into the room, curls up off the desk: the back of the paper, paler than the pencilled side, with a
+	// little sheen and a shadow under it, so it catches the desk lamp. In the page's own terms (x along
+	// it, y to its top, z up off the desk): a hinge across the corner, 4 cm along each edge, and the
+	// corner lifted about it; the diamond's other half goes down under the page and is not seen.
+	UMaterialInstanceDynamic* Back = PageG->Basic(Css(0xf3ecda), TEXT("M_Web_Lit_Opaque"));
+	if (Back)
+	{
+		Back->SetScalarParameterValue(TEXT("Roughness"), 0.55f);
+		Back->SetVectorParameterValue(TEXT("Emissive"), FLinearColor(0.05f, 0.044f, 0.032f));
+	}
+	FS47Node* Hinge = PageG->Group(Holder, FVector(0.05 - 0.02, -0.07 + 0.02, 0.0004), FVector(0, 0, UE_DOUBLE_PI / 4));
+	FS47Node* Lift = PageG->Group(Hinge, FVector::ZeroVector, FVector(-0.6, 0, 0));
+	FS47Node* Corner = PageG->Plane(Lift, 0.04, 0.04, Back, FVector::ZeroVector, FVector(0, 0, UE_DOUBLE_PI / 4));
+	// the place to look at: the reel and the page together, a flat box over both that is never drawn
+	// (the prompt comes up wherever on the reel or the page the player looks, not only on the strip of
+	// paper that shows)
+	FS47Node* Area = PageG->Box(nullptr, 0.33, 0.035, 0.31, Back, FVector(REEL.X + 0.05, REEL.Y + 0.0175, REEL.Z + 0.035));
 	PageG->AddToScene();
-	USceneComponent* Hc = Holder ? Holder->C.Get() : nullptr;
-	UPrimitiveComponent* Mesh = Hc && Hc->GetNumChildrenComponents() > 0 ? Cast<UPrimitiveComponent>(Hc->GetChildComponent(0)) : nullptr;
+	auto MeshOf = [](FS47Node* H) { USceneComponent* C = H ? H->C.Get() : nullptr; return C && C->GetNumChildrenComponents() > 0 ? Cast<UPrimitiveComponent>(C->GetChildComponent(0)) : nullptr; };
+	UPrimitiveComponent* Mesh = MeshOf(Holder);
 	if (Mesh) PageNode = W->AdoptNode(Mesh, Node, TEXT("s47:vegaPage"));
+	if (PageNode >= 0)
+	{
+		if (UPrimitiveComponent* C = MeshOf(Corner))
+		{
+			C->SetCastShadow(true);
+			PageParts.Add(W->AdoptNode(C, PageNode, TEXT("s47:vegaPage.corner")));
+		}
+		if (UPrimitiveComponent* C = MeshOf(Area))
+		{
+			C->SetHiddenInGame(true);
+			C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			PageParts.Add(W->AdoptNode(C, PageNode, TEXT("s47:vegaPage.area")));
+		}
+	}
 	ShowPage(false);
 	DrawFaces(true);
 }
@@ -318,13 +350,16 @@ void FS47ConsoleKit::ShowPage(bool bOn)
 	FS47Obj P = Page();
 	if (!P) return;
 	if (P.Visible() != bOn) P.SetVisible(bOn);
-	const FS47WebNode* N = Web.IsValid() ? Web->Node(PageNode) : nullptr;
-	if (UPrimitiveComponent* C = N ? Cast<UPrimitiveComponent>(N->Comp.Get()) : nullptr)
+	// (not in the way of the use trace while it is not there: the page, its corner and the area round it)
+	const ECollisionResponse R = bOn ? ECR_Block : ECR_Ignore;
+	auto Trace = [this, R](int32 I)
 	{
-		// (not in the way of the use trace while it is not there)
-		const ECollisionResponse R = bOn ? ECR_Block : ECR_Ignore;
-		if (C->GetCollisionResponseToChannel(ECC_GameTraceChannel1) != R) C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, R);
-	}
+		const FS47WebNode* N = Web.IsValid() ? Web->Node(I) : nullptr;
+		UPrimitiveComponent* C = N ? Cast<UPrimitiveComponent>(N->Comp.Get()) : nullptr;
+		if (C && C->GetCollisionResponseToChannel(ECC_GameTraceChannel1) != R) C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, R);
+	};
+	Trace(PageNode);
+	for (const int32 I : PageParts) Trace(I);
 }
 
 void FS47ConsoleKit::Update(double Dt, double Level, UTexture* Display)

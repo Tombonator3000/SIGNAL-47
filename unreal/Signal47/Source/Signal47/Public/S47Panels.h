@@ -145,6 +145,9 @@ namespace S47Panels
 		// giving the answer back (the keys are dead meanwhile)
 		TArray<int32> Keys;
 		bool bAnswering = false;
+		// (Unreal only) T. Vega's page: still under the spare reel (the small text says someone leaves
+		// papers there), or read (the ANSWER row's faint header ties his page to the keys)
+		bool bPageThere = false, bPageRead = false;
 	};
 	struct FDecoderPanel
 	{

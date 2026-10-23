@@ -97,7 +97,7 @@ FS47DecoderDesk::FS47DecoderDesk(FS47DecoderDeskDeps InD) : D(MoveTemp(InD))
 		{
 			FS47Interactable Pg;
 			Pg.Id = TEXT("vegaPage"); Pg.Object = KitPtr->Page(); Pg.Range = 2.0;
-			Pg.Label = [this, Life] { return Life.IsValid() && PageThere() ? FString(TEXT("A page under the reel")) : FString(); };
+			Pg.Label = [this, Life] { return Life.IsValid() && PageThere() ? FString(TEXT("A folded page under the spare reel")) : FString(); };
 			Pg.Use = [this, Life] { if (Life.IsValid() && PageThere()) ReadPage(); };
 			Pg.Examine = [this, Life] { return Life.IsValid() && PageThere() ? FString(TEXT("A page torn out of a field book, folded twice, pushed half under the spare reel. The paper has gone yellow at the folds. Pencil.")) : FString(); };
 			Inter->Add(Pg);
@@ -109,7 +109,7 @@ FS47DecoderDesk::FS47DecoderDesk(FS47DecoderDeskDeps InD) : D(MoveTemp(InD))
 	DrawScreen();
 	// -S47Answer (with -S47Jump=locked or later): the panel opened three seconds in and the answer keyed;
 	// =tape: TAPE A opened once it is filed, =notebook: the notebook's papers then; =page: T. Vega's page
-	// read instead (the developer's, for the screenshots)
+	// read instead; =pagepanel: the page filed and the panel opened (the developer's, for the screenshots)
 	bTestAnswer = FParse::Param(FCommandLine::Get(), TEXT("S47Answer")) || FParse::Value(FCommandLine::Get(), TEXT("S47Answer="), TestMode);
 	FParse::Value(FCommandLine::Get(), TEXT("S47KitShots="), ShotPrefix);
 	float At = -1.f;
@@ -169,6 +169,8 @@ S47Panels::FDecoderView FS47DecoderDesk::View() const
 	V.Current = [Pl] { const TSharedPtr<FS47DecoderPlayer> X = Pl.Pin(); return X.IsValid() ? X->Current : -1; };
 	V.Keys = KeyLog;
 	V.bAnswering = Answering();
+	V.bPageThere = PageThere();
+	V.bPageRead = D.HasPaper && D.HasPaper(TEXT("vegaPage"));
 	return V;
 }
 
@@ -464,6 +466,19 @@ void FS47DecoderDesk::TestAnswer(double Dt)
 	// one by one, seven tenths of a second apart
 	if (!(D.Locked && D.Locked()) || !(D.Power && D.Power())) return;
 	TestT += Dt;
+	// =pagepanel: the page filed as reading it files it, and the panel opened (its ANSWER row's header)
+	if (TestMode == TEXT("pagepanel"))
+	{
+		if (TestT >= 3)
+		{
+			bTestAnswer = false;
+			const bool bThere = PageThere();
+			if (bThere && D.File) { D.File(PageDoc(), TEXT("(test) T. Vega's page.")); if (KitPtr) KitPtr->ShowPage(false); }
+			const FString Why = Open();
+			UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer=pagepanel: the page %s, panel %s"), bThere ? TEXT("filed") : TEXT("not there"), Why.IsEmpty() ? TEXT("open") : *Why);
+		}
+		return;
+	}
 	if (TestMode == TEXT("page"))
 	{
 		if (TestT >= 3) { bTestAnswer = false; UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer=page: the page %s"), PageThere() ? TEXT("read") : TEXT("not there")); if (PageThere()) ReadPage(); }
