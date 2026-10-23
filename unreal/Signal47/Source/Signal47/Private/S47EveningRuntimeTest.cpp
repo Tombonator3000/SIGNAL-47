@@ -49,7 +49,7 @@ void FS47Evening::ControlTest(double Dt)
 		FParse::Value(FCommandLine::Get(), TEXT("S47EveningShots="), RouteShots);
 		if (!RouteShots.IsEmpty()) IFileManager::Get().MakeDirectory(*RouteShots, true);
 		RouteStage = 1; RouteHold = 3; RouteLastClock = M->Story->Clock();
-		UE_LOG(LogTemp, Display, TEXT("S47: evening route %s START: physical controllers, API dialogue, isolated in-memory save test; no human-input claim"), *RouteName);
+		UE_LOG(LogTemp, Display, TEXT("S47: evening route %s START: physical controllers, API dialogue, isolated disk save/full-world restore; no human-input claim"), *RouteName);
 	}
 	if (RouteName.IsEmpty() || bRouteDone) return;
 	if (!M || !M->World || !M->Player || !M->Story || !M->Flow || !M->UI) { Fail(TEXT("runtime dependency missing")); return; }
@@ -125,7 +125,7 @@ void FS47Evening::ControlTest(double Dt)
 	}
 	if (RouteStage == 2 || RouteStage == 6)
 	{
-		if (M->World->bDriving || M->World->bBusy) return;
+		if (M->World->bDriving || M->World->bBusy || M->Story->IsCinematic()) return;
 		if (bRouteArrived) { Stage(10); return; }
 		if (RouteName == TEXT("direct") || M->World->TruckAt != TEXT("diner") || !M->World->TruckOnLot()) { Fail(TEXT("drive stopped outside the expected diner/SARO parking zone")); return; }
 		if (Pack.Flag(TEXT("handover_done")) || M->Story->Begun.Contains(TEXT("ch5"))) { Fail(TEXT("early diner started later story")); return; }
@@ -155,16 +155,36 @@ void FS47Evening::ControlTest(double Dt)
 		if (PaidResponse && !bRoutePaidRestored)
 		{
 			const FVector PlayerBefore = M->Player->Pos;
-			const auto State = S47J::Read(S47J::Write(M->Flow->GameState()));
-			const auto SavedPack = S47J::Obj(S47J::Obj(State, TEXT("evening")), TEXT("pack"));
 			const FString Pending = Pack.GetPendingChoice(), Response = Scene->Id;
+			const int32 DocumentsBefore = Pack.Documents().Num();
+			const bool BurgerBefore = Pack.Flag(TEXT("arrival_order_burger"));
+			const bool SandwichBefore = Pack.Flag(TEXT("arrival_order_sandwich"));
+			if (Pending.IsEmpty() || Pack.NextLine() != 0 || !Pack.Flag(TEXT("food_bought"))) { Fail(TEXT("purchase did not atomically establish its pending response")); return; }
+			const FString StoreDir = FPaths::ProjectSavedDir() / TEXT("EveningRuntimeControls") / RouteName;
+			FS47SaveStore Writer(StoreDir); Writer.Init();
+			FS47SaveCard Card;
+			Card.Chapter = TEXT("Evening opening / paid pending response");
+			Card.Place = TEXT("Mesa Diner"); Card.Clock = TEXT("Late afternoon"); Card.Playtime = M->Playtime;
 			FString Error;
-			if (Pending.IsEmpty() || Pack.NextLine() != 0 || !Pack.Load(SavedPack, Error) || !Pack.Flag(TEXT("food_bought")) || Pack.GetPendingChoice() != Pending || !Pack.CurrentScene() || Pack.CurrentScene()->Id != Response || Pack.NextLine() != 0 || M->Player->Pos != PlayerBefore) { Fail(TEXT("GameState payment/pending-response serialized restore failed: ") + Error); return; }
-			Context(); Refile(); bRoutePaidRestored = true;
-			if (!RouteShots.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(State, true), *FPaths::Combine(RouteShots, RouteName + TEXT("-paid-pending.api-save.json")));
-			UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS GameState JSON purchase+pending response restored atomically without restarting/moving world; API save test"), *RouteName);
-			ShowDialogue(); Shot(TEXT("diner-order")); bRouteOrderShot = true; RouteHold = 2; return;
+			const auto Meta = Writer.Save(1, TEXT("manual"), 0, M->Flow->GameState(), Card, Error);
+			if (!Meta.IsSet()) { Fail(TEXT("isolated disk save failed: ") + Error); return; }
+			// A fresh store must rediscover and read the actual transaction from disk.
+			FS47SaveStore Reader(StoreDir); Reader.Init();
+			const auto Loaded = Reader.Load(Meta->Id);
+			const auto SavedPack = S47J::Obj(S47J::Obj(Loaded, TEXT("evening")), TEXT("pack"));
+			if (!Loaded || !SavedPack || S47J::Str(SavedPack, TEXT("pending_choice")) != Pending || S47J::Str(SavedPack, TEXT("active_scene")) != Response || S47J::Int(SavedPack, TEXT("next_line"), -1) != 0 || !S47J::Bool(S47J::Obj(SavedPack, TEXT("flags")), TEXT("food_bought"))) { Fail(TEXT("fresh disk store did not recover purchase and pending response together")); return; }
+			if (!RouteShots.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(Loaded, true), *FPaths::Combine(RouteShots, RouteName + TEXT("-paid-pending.disk-save.json")));
+			// Preserve the control harness through Stop/Begin, then use normal full restore.
+			// Case zero + dev mode prevents Flow from changing any real active case/store.
+			bRoutePaidRestored = true;
+			US47Flow::FStart Restore;
+			Restore.State = Loaded; Restore.CaseId = 0; Restore.bDev = true; Restore.Playtime = M->Playtime;
+			M->Flow->StartGame(Restore);
+			if (!bEnabled || !M->Flow->bDevRun || M->Flow->CaseId != 0 || M->World->Area != TEXT("diner") || M->World->bDriving || !M->Player->Pos.Equals(PlayerBefore, 0.015) || !Pack.Flag(TEXT("food_bought")) || Pack.GetPendingChoice() != Pending || !Pack.CurrentScene() || Pack.CurrentScene()->Id != Response || Pack.NextLine() != 0 || Pack.Flag(TEXT("arrival_order_burger")) != BurgerBefore || Pack.Flag(TEXT("arrival_order_sandwich")) != SandwichBefore || Pack.Documents().Num() != DocumentsBefore || Pack.Select(Pending)) { Fail(TEXT("full disk/world restore changed player, order, pending response or dev isolation")); return; }
+			UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS isolated FS47SaveStore disk transaction + fresh store Load + full Flow.StartGame restore: purchase/pending cursor0 and diner pose retained, no duplicate purchase; store %s"), *RouteName, *StoreDir);
+			RouteHold = 0.8; return; // allow StartGame's fade-in before the HUD capture
 		}
+		if (PaidResponse && !bRouteOrderShot) { ShowDialogue(); Shot(TEXT("diner-order")); bRouteOrderShot = true; RouteHold = 2; return; }
 		if (!bRouteOrderShot && RouteName == TEXT("water") && Scene->Id == TEXT("I08_WATER")) { Shot(TEXT("diner-order")); bRouteOrderShot = true; RouteHold = 2; return; }
 		if (Pack.CurrentLine()) { ReadLine(); return; }
 		FString Id;
@@ -257,7 +277,7 @@ void FS47Evening::ControlTest(double Dt)
 			}
 		}
 		bRouteDone = true;
-		UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS COMPLETE: %.1f s, %.1f driven m, physical walk/drive, API dialogue/save controls, 18:00 arrival once, UI screenshots written; human input/audio listening UNVERIFIED"), *RouteName, RouteElapsed, RouteDistance);
+		UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS COMPLETE: %.1f s, %.1f driven m, physical walk/drive, API dialogue, isolated disk/world save controls for paid routes, 18:00 arrival once, requested UI screenshots verified; human input/audio listening UNVERIFIED"), *RouteName, RouteElapsed, RouteDistance);
 		FPlatformMisc::RequestExit(false);
 	}
 }
