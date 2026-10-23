@@ -227,3 +227,8 @@
 - [x] 30 utvendige armaturspotter ved SARO og motellet, navngitte labdrivere og kopling til innflettet fremkallingsregel; bygg, 1218 selvtester og målrettede bilder. Se `LIGHTING.md`.
 - [ ] Claude gjennomgår `revision3/compare`, pakker i avtalt kø, prøver lukket dør, rød fremkalling, forstørrer, tåket kopi/gjentakelse og normal lysretur med ekte input; SARO-kutt/tilbake og Room 6s lys.
 - [ ] Ny High/1440p `stat unit` med én tung jobb om gangen etter dette utelyspasset. Forrige lysleveranses tall er bevart som historikk, ikke målt på nytt her.
+
+
+## Radiostasjon og array, 2026-10-23 kl. 23:53
+
+- [x] Blender-kilder, realistisk antenne på alle 27 plasser og radiostasjon med interiør integrert, verifisert og installert. Se RADIO_ARRAY.md for bevis og kildekontrakt.

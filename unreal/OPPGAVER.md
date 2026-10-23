@@ -59,3 +59,12 @@ Menyer, grensesnitt i spillet, pipetonen, møll, 02:15-kameraet, terminalene på
 
 
 KELVORA ferdig av Codex etter Toms «Plasser i spillet», 22.10 kl. 23:06: egne TV-er på motellkontoret og i rom 6, RANGER 640 på SAROs arkivskap. `/Game/Kelvora` har 18 egne assets, tre LOD-er og kollisjon. Filmene er levende med lyd; eget unlit skjermmateriale med korrigert FBX-V, bevart film-/strømkontrakt og pilot som følger strømmen. Gamle visuelle deler er skjult, kontorets sammenslåtte TV-geometri er klippet uten å ta hylla. 38 Blender-eksportkontroller, import, editor/Linux-bygg, 1218 selvtestsjekker og ni scenarioer består. Etter siste materialrettelse er selvtest, begge filmer og rom 6 av/på prøvd på nytt. Full 47-sekunders opptaks-/lagringsprøve består på samme geometri og kode før den siste V-korrigeringen. Installert i `~/Games/Signal47`, binærfil og tre pakkefiler hashkontrollert mot kandidaten, 27 save/config-filer uendret. Bevis i `~/scratch-bm/Signal47-kelvora`, arbeidsbeskrivelse og oppsummering i `Signal47/Tools/kelvora/`. Ikke push eller PR.
+
+
+## Radiostasjon og array, 2026-10-23 kl. 23:53
+
+Original Blender-radiostasjon 1420 AM med analogt studio og separat lobby følger konseptarket. VLA-lignende antenne har fagverk, feedarmer, serviceplattform og tre bevegelige deler med tre LOD-er. Alle 27 antenner er erstattet. Kildene og native UE-assets er lokalt flettet inn i unreal-port-core fra codex/radio-array-assets. Se RADIO_ARRAY.md og Signal47/Tools/radioarray/README.md.
+
+Ni antenne-FBX-roundtrips, stasjonens 32 eksportkontroller og UE-importens 68 kontroller PASS. Integrasjonspakken fra `66f41e22` bestod 1278 selvtester, antennebevegelse, lukket dør, åpne/gå 6,1 m inn og buzzer. Gangsonens terskelgap ble rettet. Visuell gjennomgang fant gammelt studiobilde som frittstående flate; sluttkode `3aa41334` plasserer det 2 cm foran bakveggen. Kun denne offseten og forklaringen ble endret. Sluttkoden består editor/Linux-pakking, 1278 selvtester, fire High/VHS/1440p-modellvinkler og N01/N02/A02/P01-pilot. Sluttbildene er visuelt kontrollert. Automatiske API-scenarioer er ikke menneskelig gjennomspilling eller lydlytting.
+
+Installert i ~/Games/Signal47/Linux med 40 kontrollerte payloadhash og 51 Saved-filer uendret. Sikkerhetskopi: /home/tom/scratch-bm/Signal47-radioarray/installed-backup-1792792300737671855. Redigerbare leveranser: ~/Desktop/Signal47 radiostasjon og array. Evidens: ~/scratch-bm/Signal47-radioarray. Content-lenker og genererte OpenOrder-endringer er ryddet. Ingen push eller PR.

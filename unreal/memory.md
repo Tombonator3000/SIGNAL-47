@@ -189,3 +189,12 @@ Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 - `port-light` er videreført etter at forrige lys ble integrert/pakket. Ny leveranse tar inn `unreal-port-core` til `3b44956e`, med gratismodellimport, Claudes mørkeromsregel og brettrettelser.
 - `S47ExteriorLighting.cpp`: 30 korte, fysiske spotter fra eksisterende armaturer; `S47LabLighting.cpp`: adresserbar `Light("lab.normal"/"lab.safelight"/"lab.enlarger")`, intensitet 0 til 1, og fysisk normal-/rødt-/linse-/varsellys. `US47Chapter1::Darkroom` kopler renderdriverne ved faseskifte; ingen ny film-/dørregel i dette lyspasset.
 - Bygg og 1218 selvtester OK, før/etter fra ni kameraer, labmoduser/halvstrøm/kutt/tilbake og faktisk kontaktkopitilstand prøvd. Rapport/API/bilder: `LIGHTING.md`, bevis i `~/scratch-bm/Signal47-lighting-2026-10-22/revision3`. Ny pakke, full fremkalling med ekte input og nye High/1440p-tider gjenstår hos integrator. Ingen endring av installert spill.
+
+
+## Radiostasjon og array, 2026-10-23 kl. 23:53
+
+Original Blender-radiostasjon 1420 AM med analogt studio og separat lobby følger konseptarket. VLA-lignende antenne har fagverk, feedarmer, serviceplattform og tre bevegelige deler med tre LOD-er. Alle 27 antenner er erstattet. Kildene og native UE-assets er lokalt flettet inn i unreal-port-core fra codex/radio-array-assets. Se RADIO_ARRAY.md og Signal47/Tools/radioarray/README.md.
+
+Ni antenne-FBX-roundtrips, stasjonens 32 eksportkontroller og UE-importens 68 kontroller PASS. Integrasjonspakken fra `66f41e22` bestod 1278 selvtester, antennebevegelse, lukket dør, åpne/gå 6,1 m inn og buzzer. Gangsonens terskelgap ble rettet. Visuell gjennomgang fant gammelt studiobilde som frittstående flate; sluttkode `3aa41334` plasserer det 2 cm foran bakveggen. Kun denne offseten og forklaringen ble endret. Sluttkoden består editor/Linux-pakking, 1278 selvtester, fire High/VHS/1440p-modellvinkler og N01/N02/A02/P01-pilot. Sluttbildene er visuelt kontrollert. Automatiske API-scenarioer er ikke menneskelig gjennomspilling eller lydlytting.
+
+Installert i ~/Games/Signal47/Linux med 40 kontrollerte payloadhash og 51 Saved-filer uendret. Sikkerhetskopi: /home/tom/scratch-bm/Signal47-radioarray/installed-backup-1792792300737671855. Redigerbare leveranser: ~/Desktop/Signal47 radiostasjon og array. Evidens: ~/scratch-bm/Signal47-radioarray. Content-lenker og genererte OpenOrder-endringer er ryddet. Ingen push eller PR.
