@@ -1229,6 +1229,7 @@ S47J::FObj US47Flow::ComposeCase() const
 		for (const FS47LogLine& L : N.Log) Log.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{ MakeShared<FJsonValueNumber>(L.Clock), MakeShared<FJsonValueString>(L.Text) }));
 		Ns->SetArrayField(TEXT("log"), Log);
 		if (N.SolveAt) S47J::Set(Ns, TEXT("solveAt"), *N.SolveAt); else S47J::SetNull(Ns, TEXT("solveAt"));
+		if (N.PrintoutAt) S47J::Set(Ns, TEXT("printoutAt"), *N.PrintoutAt); else S47J::SetNull(Ns, TEXT("printoutAt"));
 		S47J::Set(Ns, TEXT("jacket"), N.bJacket);
 		// array: copyArraySave(this.ns.array); hondo: this.ns.hondo
 		if (const TOptional<FS47ArraySave> A = FS47ArraySave::Copy(N.Array)) Ns->SetObjectField(TEXT("array"), A->ToJson());
