@@ -28,6 +28,11 @@
 namespace
 {
 	double DistanceXZ(const FVector& A, const FVector& B) { return FVector2D(A.X - B.X, A.Z - B.Z).Size(); }
+ bool Approaching(double Moved, double Dt, double Distance)
+ {
+  // Metres per second, not per rendered frame: the beat must work above 160 fps.
+  return Dt>0 && Moved/Dt>.15 && Moved<2 && Distance<24;
+ }
 	FS47Obj Part(AS47Web* W, const FS47Obj& Parent, const FString& Name, const FVector& At, const FVector& Size, uint32 Color, bool bSphere = false, float Glow = 0)
 	{
 		const FS47WebNode* N = W ? W->Node(Parent.I) : nullptr;
@@ -251,7 +256,7 @@ void FS47AnomalyWorld::Step(double Dt)
  {
   ApproachTime=FMath::Max(ApproachTime+Dt,S47Timeline::Night(Clock)-S47Timeline::Night(D.P01Clock));
   if(ApproachTime>=8) {StopPrinter();SoundLeft=0;D.P01Ended=true;M->Anomaly->Changed();return;}
-  const bool Moving=Moved>.012&&Moved<2&&DistanceXZ(Position,StudioAt())<24;
+  const bool Moving=Approaching(Moved,Dt,DistanceXZ(Position,StudioAt()));
   StillTime=Moving?0:StillTime+Dt;
   if(Moving)
   {
@@ -395,5 +400,8 @@ bool FS47AnomalyWorld::SelfTest(TArray<FString>& Lines)
 	Ok &= MayPlay(true, false, false, true, true, 4 * 3600 + 10 * 60) && !MayPlay(true, false, false, true, true, 3 * 3600 + 59 * 60);
 	Ok &= !MayPlay(true, false, true, true, true, 5 * 3600) && !MayPlay(true, false, false, false, true, 5 * 3600) && !MayPlay(true, true, false, true, true, 5 * 3600);
 	Lines.Add(FString::Printf(TEXT("%s AnomalyWorld: persistent reference/move gates; closed-studio sound waits for active comparison, free scene and closed panel"), Ok ? TEXT("PASS") : TEXT("FAIL")));
-	return FS47AnomalyDread::SelfTest(Lines) && Ok;
+	const bool Motion=Approaching(1.9/30.,1./30.,12)&&Approaching(1.9/120.,1./120.,12)&&Approaching(1.9/240.,1./240.,12)
+  && !Approaching(0,1./60.,12)&&!Approaching(4,1./60.,12)&&!Approaching(.03,1./60.,30)&&!Approaching(.03,0,12);
+ Lines.Add(FString::Printf(TEXT("%s AnomalyWorld: approach speed works at 30/120/240 fps; standstill, teleport, distance and zero dt rejected"),Motion?TEXT("PASS"):TEXT("FAIL")));
+ return FS47AnomalyDread::SelfTest(Lines) && Ok && Motion;
 }
