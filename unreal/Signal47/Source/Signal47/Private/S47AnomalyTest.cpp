@@ -651,18 +651,41 @@ void FS47AnomalyTest::Step(double Dt)
  if (Stage==133)
  {
   if (!D.P01Ended || D.P01Clock!=DreadSoundClock || M->AnomalyWorld->Busy()) {Fail(TEXT("terminal P01 replayed after disk restore"));return;}
-  M->Inter->UseId(TEXT("anomaly:studio")); M->UI->Close(true);
-  if (!D.P01Followed) {Fail(TEXT("closed facade inspection missing after printer stopped"));return;}
-  M->Anomaly->Open(TEXT("p01")); Shot(TEXT("dread-p01-hint"));
-  Next(134,TEXT("Physical facade remains ordinary after the movement-linked sound; investigation records the unanswered source without inventing a figure"),2);return;
+  if (D.P01Followed) {Fail(TEXT("P01 facade follow-up was already set before real studio picking"));return;}
+  // A realistic standing point outside the glass, distinct from the lobby door
+  // and buzzer. Let the actor camera settle before using its actual eye ray.
+  Pose(M->AnomalyWorld->StudioAt()+FVector(-1.6,0,0),M->AnomalyWorld->StudioAt());
+  Next(136,TEXT("Stand at the actual studio glass for normal interaction picking; no empty-object alias used"),.8);return;
+ }
+ if (Stage==136 || Stage==137)
+ {
+  if (M->UI->Modal() || !M->Player->OnUse) {Fail(TEXT("ordinary player Use path unavailable at studio window"));return;}
+  const FString Picked=M->Inter->Update(M->Player->EyeUE(),M->Player->ForwardUE());
+  if (Picked!=TEXT("town:studio"))
+  {Fail(FString::Printf(TEXT("real studio eye ray picked '%s' instead of town:studio at %s; lobby/buzzer/native geometry must not swallow the window"),*Picked,*M->Player->Pos.ToString()));return;}
+  // This is the same callback the walker invokes for the player's Use key:
+  // AS47HUD::Use -> evening override -> ordinary Inter.UseId(picked object).
+  M->Player->OnUse(Picked);
+  if (!D.P01Followed || !D.P01Ended || D.P01Clock!=DreadSoundClock)
+  {Fail(TEXT("normal picked studio Use did not preserve/record the physical facade follow-up"));return;}
+  Event(Stage==136?TEXT("PASS actual Pick/Update=town:studio -> normal walker OnUse/HUD route: P01 facade follow-up recorded"):
+   TEXT("PASS after full disk/world reload: actual Pick/Update=town:studio -> normal walker OnUse/HUD route, retained facade follow-up and no sound replay"));
+  if (Stage==136)
+  {
+   M->Anomaly->Open(TEXT("p01")); Shot(TEXT("dread-p01-hint"));
+   Next(134,TEXT("Physical facade remains ordinary after the movement-linked sound; real studio proxy inspection records the unanswered source"),2);return;
+  }
+  M->Flow->OpenTestView(TEXT("notebook:findings"));
+  Next(96,TEXT("New night findings and actual native-window interaction carried through disk reload to notebook"),.8);return;
  }
  if (Stage==134)
  {
   if (!RoundTrip(TEXT("dread-complete"))) return;
   if (!D.N02Trace || !D.A02Trace || D.A02Stage!=2 || !D.A02ScrapeHeard || !D.P01Approach || !D.P01Flickered || !D.P01Ended)
   {Fail(TEXT("completed dread chain missing persistent night beats"));return;}
-  M->Flow->OpenTestView(TEXT("notebook:findings"));
-  Next(96,TEXT("New night findings carried to actual notebook after disk reload; select and assert final follow-up body"),.8);return;
+  // Restore has its own camera/fade ordering. Pick again after a real frame,
+  // proving the retained window remains reachable with the native facade loaded.
+  Next(137,TEXT("Full disk/world reload of completed dread chain; let restored player camera settle before picking the studio again"),.8);return;
  }
  if (Stage==96)
  {
