@@ -1,5 +1,15 @@
 # Todo for unreal/
 
+## Grafikkpass på port-gfx, 23. oktober 2026
+
+- [x] Gjenoppta WIP, flette `unreal-port-core` ved `93ab1568`, rette startupens tidlige retur og styrke minne-/prosessvern og måleverktøy.
+- [x] Offline-kontroll av overflateprofiler, detaljtekstur, kontrollrommets CRT-materialkontrakt, Python-/shellsyntaks og lokale UE-API-er.
+- [ ] Når Toms installerte spill er avsluttet: bygg editor/spill og regenerer private materialer. Kjør pakket selvtest og korte meny-/visningsscenarioer.
+- [ ] Lag gyldig baseline og nye før/etter-bilder for alle 20 kameraer ved natt og daggry. Vurder lys, skygger, glassrefleks, lesbarhet, støy og lekkasjer i faktisk runtime.
+- [ ] Ta opp korte Vulkan-PSO-turer i Low/Clean og High/Ultra/VHS ved begge klokker. Utvid samme cooks stabile nøkler, pakk `.spc`, og kontroller faktisk cacheåpning i pakket spill.
+- [ ] Mål første ti sekunder fra verdensstart og første ti synlige sekunder kald/varm før/etter; mål tyngste 1440p High-utsnitt samt Low/Ultra. Ingen nye fps-resultater finnes ennå.
+- [ ] Oppdater `LIGHTING.md` og oppgaveraden med faktisk runtime-resultat før endelig grafikklevering til Claude. `S47Props` og `Config/Props` tilhører Claude-hjelperen.
+
 ## Native lys og skygger (2026-10-22)
 
 - [x] Erstatt materialenes flood/hemi og gamle projeksjoner med ekte lamper; behold historienes tilstand og delte lyskilder.

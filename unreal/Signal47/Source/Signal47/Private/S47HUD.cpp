@@ -738,8 +738,11 @@ void AS47HUD::LookTowards(const FVector& T, float K)
 void AS47HUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	const bool bWasStarting = S47Startup::Blocking();
 	S47Startup::Tick();
-	if (S47Startup::Blocking()) { DrawCrts(0.1f); return; }
+	// The frame which releases the loading screen still belongs to warmup. Do not charge its
+	// delta to the story, audio or the newly scheduled smoke-test actions.
+	if (bWasStarting) { DrawCrts(DeltaSeconds); return; }
 	if (Audio) Audio->Tick(DeltaSeconds);
 	APlayerController* PC = GetOwningPlayerController();
 	// (Tab and the notebook's other keys are the flow's, registered with M->OnKey)

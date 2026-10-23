@@ -17,7 +17,7 @@ import zlib
 import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from surface_profiles import PROFILES, material_labels, texture_labels, profile_for, glass_parameters, write_detail_tile
+from surface_profiles import PROFILES, material_labels, texture_labels, profile_for, glass_parameters, is_control_crt, write_detail_tile
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -781,7 +781,7 @@ if any(step in only for step in ('mat', 'life', 'sky')):
     eal.save_loaded_asset(mpc)
 
 
-def build_master(name, lit, blend, two_sided, flora=None):
+def build_master(name, lit, blend, two_sided, flora=None, control_crt=False):
     # flora: None, or which of world/flora.ts's meshes it draws ('card': the grass, the sage, the
     # creosote, the stalks; 'succulent'; 'stones'; 'stain'), with its vertex shader as a world
     # position offset (FLORA_WPO), the sky less inside a plant, the backlight through the cards'
@@ -791,7 +791,7 @@ def build_master(name, lit, blend, two_sided, flora=None):
     m.set_editor_property('blend_mode', blend)
     if flora == 'stones':
         m.set_editor_property('tangent_space_normal', False)
-    m.set_editor_property('shading_model', unreal.MaterialShadingModel.MSM_DEFAULT_LIT if lit else unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property('shading_model', unreal.MaterialShadingModel.MSM_DEFAULT_LIT if lit or control_crt else unreal.MaterialShadingModel.MSM_UNLIT)
     if blend == unreal.BlendMode.BLEND_TRANSLUCENT:
         m.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING if lit else unreal.TranslucencyLightingMode.TLM_VOLUMETRIC_NON_DIRECTIONAL)
     m.set_editor_property('used_with_instanced_static_meshes', True)
@@ -1101,6 +1101,20 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
         mel.connect_material_expressions(scalar('Untonemapped', 0), '', unk, 'U')
         mel.connect_material_expressions(coll('Vhs'), '', unk, 'V')
         boost = lerp(boost, un, unk)
+        if control_crt:
+            # Unlike the web's MeshBasicMaterial, a CRT's front glass reflects the
+            # room. Its image remains exactly the existing emissive path above:
+            # Brightness=0 removes phosphor, while the dark glass stays passive.
+            mel.connect_material_property(vector('GlassColor', (.012, .014, .013, 1)), 'RGB', unreal.MaterialProperty.MP_BASE_COLOR)
+            mel.connect_material_property(scalar('Roughness', .22), '', unreal.MaterialProperty.MP_ROUGHNESS)
+            mel.connect_material_property(scalar('Specular', .5), '', unreal.MaterialProperty.MP_SPECULAR)
+            mel.connect_material_property(scalar('Metallic', 0), '', unreal.MaterialProperty.MP_METALLIC)
+            # Inverse ACES maps black to its toe cutoff, a small positive value.
+            # A powered-off CRT must not send that value into Lumen in Clean mode.
+            off = custom('return Level <= 0.0 ? float3(0, 0, 0) : C;', ['Level', 'C'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(scalar('Brightness', 1), '', off, 'Level')
+            mel.connect_material_expressions(boost, '', off, 'C')
+            boost = off
         mel.connect_material_property(boost, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     if blend == unreal.BlendMode.BLEND_MASKED:
         mel.connect_material_property(alpha, '', unreal.MaterialProperty.MP_OPACITY_MASK)
@@ -1121,6 +1135,7 @@ if 'mat' in only:
             for two in (False, True):
                 nm = 'M_Web_%s_%s%s' % ('Lit' if lit else 'Unlit', bk, '_2S' if two else '')
                 masters[(lit, bk, two)] = build_master(nm, lit, bv, two)
+    crt_master = build_master('M_WebCRT', False, BLENDS['Opaque'], False, control_crt=True)
     # world/flora.ts: the ground cover's own (export.js marks its materials with the mesh they are on)
     flora_masters = {
         'card': build_master('M_WebFlora_Card', True, BLENDS['Masked'], True, 'card'),
@@ -1137,6 +1152,7 @@ if 'mat' in only:
     mat_labels = material_labels(man)
     detail_counts = {}
     glass_count = 0
+    crt_count = 0
 
     def T(i):
         return eal.load_asset('/Game/Web/Tex/T%d' % i) if i is not None and i >= 0 else None
@@ -1147,6 +1163,7 @@ if 'mat' in only:
     made = 0
     for d in man['materials']:
         lit = bool(d.get('lit'))
+        labels = mat_labels.get(d['id'], set())
         uses_alpha = 'alphaMap' in d or d.get('opacity', 1) < 0.999
         if d.get('additive'):
             bk, lit = 'Add', False
@@ -1158,6 +1175,9 @@ if 'mat' in only:
             bk = 'Opaque'
         two = d.get('side') != 'front'
         parent = masters[(lit, bk, two)]
+        if is_control_crt(d, labels):
+            parent = crt_master
+            crt_count += 1
         fk = FLORA_KIND.get(d.get('flora', ''))
         if fk:
             parent = flora_masters[fk]
@@ -1220,7 +1240,6 @@ if 'mat' in only:
                 r0, r1 = rows(d['aoMapUV']); vv(mi, 'AOU', r0); vv(mi, 'AOV', r1)
                 sv(mi, 'AOIntensity', float(d.get('aoMapIntensity', 1)))
                 mel.set_material_instance_static_switch_parameter_value(mi, 'HasAOMap', True, unreal.MaterialParameterAssociation.GLOBAL_PARAMETER, False)
-            labels = mat_labels.get(d['id'], set())
             profile = profile_for(d, tex_names, labels)
             if profile:
                 for parameter, value in PROFILES[profile].items():
@@ -1262,7 +1281,7 @@ if 'mat' in only:
         eal.save_loaded_asset(mi)
         made += 1
     log('material instances %d' % made)
-    log('surface detail profiles %s; dielectric glass %d' % (json.dumps(detail_counts, sort_keys=True), glass_count))
+    log('surface detail profiles %s; dielectric glass %d; control CRT glass %d' % (json.dumps(detail_counts, sort_keys=True), glass_count, crt_count))
 class Graph:
     """A material made here node by node: parameters, the MPC's values, Unreal's built-in inputs and
     custom HLSL, laid out down the left."""

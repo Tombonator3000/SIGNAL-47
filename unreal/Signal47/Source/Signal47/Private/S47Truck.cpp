@@ -242,6 +242,8 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 			L->SetSoftSourceRadius(8);
 			L->SetCastShadows(true);
 			L->SetCastVolumetricShadow(true);
+			L->ContactShadowLengthInWS = true; L->ContactShadowLength = 18.f;
+			L->ContactShadowCastingIntensity = 0.7f;
 			L->SetVolumetricScatteringIntensity(0.8f);
 			L->SetVisibility(false);
 			L->RegisterComponent();

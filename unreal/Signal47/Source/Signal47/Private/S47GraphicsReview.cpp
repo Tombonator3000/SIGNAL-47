@@ -40,7 +40,7 @@ static const FCamera Cameras[] = {
  { TEXT("old-road"), TEXT("roswell"), 19080.25, -4575.53, 0.1, -0.02 },
  { TEXT("cab"), TEXT("saro"), 0, 0, 0, 0 }
 };
-void Tick(AS47Web* W, float Dt)
+void Tick(AS47Web* W, float)
 {
  FString Directory;
  if (!FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsReview="), Directory) || UGameplayStatics::IsGamePaused(W)) return;
@@ -48,33 +48,63 @@ void Tick(AS47Web* W, float Dt)
  if (!M || !M->World || !M->Player || !M->Story) return;
  struct FState {
   TWeakObjectPtr<AS47Web> World;
-  double Time = 0, CameraTime = 0; int32 Step = -1; bool Shot = false, Done = false;
+  double BeginAt = 0, CameraAt = 0, LastAt = 0, FirstSampleAt = 0, LastSampleAt = 0;
+  uint64 FirstFrame = 0, LastFrame = 0;
+  int32 Step = -1, Slot = 0;
+  bool Shot = false, Done = false;
+  TArray<int32> Selection;
   TArray<float> Frames, Game, Draw, Gpu;
  };
  static FState S;
- if (S.World != W) { S = FState(); S.World = W; }
+ const double Now = FPlatformTime::Seconds();
+ if (S.World != W) {
+  S = FState(); S.World = W; S.BeginAt = S.LastAt = Now;
+  IFileManager::Get().MakeDirectory(*Directory, true);
+  FString Selected;
+  if (!FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsViews="), Selected))
+   FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsView="), Selected);
+  if (Selected.IsEmpty()) {
+   for (int32 I = 0; I < int32(UE_ARRAY_COUNT(Cameras)); ++I) S.Selection.Add(I);
+  } else {
+   TArray<FString> Names; Selected.ParseIntoArray(Names, TEXT(","));
+   for (const FString& Name : Names) {
+    int32 Found = INDEX_NONE;
+    for (int32 I = 0; I < int32(UE_ARRAY_COUNT(Cameras)); ++I) if (Name == Cameras[I].Name) { Found = I; break; }
+    if (Found == INDEX_NONE || S.Selection.Contains(Found)) {
+     UE_LOG(LogTemp, Error, TEXT("S47: invalid/duplicate graphics camera %s"), *Name);
+     S.Done = true; return;
+    }
+    S.Selection.Add(Found);
+   }
+  }
+  const FString Header = TEXT("view,clock,samples,sample_seconds,first_frame,last_frame,frame_sum_ms,mean_ms,p95_ms,game_ms,draw_ms,gpu_ms\n");
+  if (!FFileHelper::SaveStringToFile(Header, *(Directory / TEXT("frames.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM)) {
+   UE_LOG(LogTemp, Error, TEXT("S47: could not write graphics frames.csv")); S.Done = true; return;
+  }
+ }
  if (S.Done) return;
- S.Time += Dt;
- float Warmup = 20.f, Hold = 7.f;
+ const double FrameMs = (Now - S.LastAt) * 1000;
+ S.LastAt = Now;
+ float Warmup = 8.f, Hold = 7.f;
  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsWarmup="), Warmup);
  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsHold="), Hold);
  Hold = FMath::Max(4.f, Hold);
- if (S.Time < Warmup) return;
- FString Single;
- FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsView="), Single);
- int32 Next = FMath::Max(0, int32((S.Time - Warmup) / Hold));
- if (!Single.IsEmpty()) {
-  if (Next > 0) Next = UE_ARRAY_COUNT(Cameras);
-  else { Next = UE_ARRAY_COUNT(Cameras); for (int32 I = 0; I < int32(UE_ARRAY_COUNT(Cameras)); ++I) if (Single == Cameras[I].Name) Next = I; }
- }
- if (Next >= int32(UE_ARRAY_COUNT(Cameras))) { S.Done = true; UE_LOG(LogTemp, Display, TEXT("S47: graphics review complete")); return; }
- const FCamera& V = Cameras[Next];
  M->Story->SetPaused(true);
  FString Clock = TEXT("02:15"); FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsClock="), Clock);
  TArray<FString> Parts; Clock.ParseIntoArray(Parts, TEXT(":"));
  if (Parts.Num() >= 2) M->Story->SetClock(FCString::Atod(*Parts[0]) * 3600 + FCString::Atod(*Parts[1]) * 60);
+ if (Now - S.BeginAt < Warmup) return;
+ if (S.Slot >= S.Selection.Num()) {
+  S.Done = true;
+  UE_LOG(LogTemp, Display, TEXT("S47: graphics review complete; captured=%d clock=%s"), S.Selection.Num(), *Clock);
+  return;
+ }
+ const int32 Next = S.Selection[S.Slot];
+ const FCamera& V = Cameras[Next];
  if (Next != S.Step) {
-  S.Step = Next; S.CameraTime = S.Time; S.Shot = false; S.Frames.Reset(); S.Game.Reset(); S.Draw.Reset(); S.Gpu.Reset();
+  S.Step = Next; S.CameraAt = Now; S.Shot = false;
+  S.Frames.Reset(); S.Game.Reset(); S.Draw.Reset(); S.Gpu.Reset();
+  S.FirstFrame = S.LastFrame = 0;
   M->World->Enter(V.Area);
   if (FString(V.Name) == TEXT("cab")) { M->World->PlaceTruck(TEXT("saro")); M->World->Roam(TEXT("saro")); M->World->HoldTruck(1); }
   if (V.Lab >= 0) {
@@ -86,20 +116,38 @@ void Tick(AS47Web* W, float Dt)
   UE_LOG(LogTemp, Display, TEXT("S47: graphics camera %s area=%s x=%.5f z=%.5f yaw=%.7f pitch=%.5f clock=%s"), V.Name, V.Area, V.X, V.Z, V.Yaw, V.Pitch, *Clock);
  }
  if (FString(V.Name) != TEXT("cab")) { M->Player->Place(V.X, V.Z, V.Yaw); M->Player->Pitch = V.Pitch; }
- const double Since = S.Time - S.CameraTime;
- if (Since > Hold * 0.5 && !S.Shot) {
-  S.Frames.Add(Dt * 1000); S.Game.Add(FPlatformTime::ToMilliseconds(GGameThreadTime));
+ const double Since = Now - S.CameraAt;
+ const FString ShotPath = Directory / (FString(V.Name) + TEXT(".png"));
+ if (S.Shot) {
+  // A request alone is not a completed capture. Keep this camera until the file exists;
+  // the Python proof validates its PNG chunks, resolution and matching CSV sample.
+  if (IFileManager::Get().FileSize(*ShotPath) > 32 && Since >= Hold) {
+   UE_LOG(LogTemp, Display, TEXT("S47: graphics captured %s"), V.Name);
+   ++S.Slot;
+  }
+  return;
+ }
+ if (Since >= Hold * 0.5 && Since < Hold - 0.3) {
+  if (S.Frames.IsEmpty()) { S.FirstFrame = GFrameCounter; S.FirstSampleAt = Now - FrameMs / 1000; }
+  S.LastFrame = GFrameCounter; S.LastSampleAt = Now;
+  // Raw wall time includes hitches; world DeltaTime may be clamped by the engine.
+  S.Frames.Add(float(FrameMs)); S.Game.Add(FPlatformTime::ToMilliseconds(GGameThreadTime));
   S.Draw.Add(FPlatformTime::ToMilliseconds(GRenderThreadTime)); S.Gpu.Add(FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()));
  }
- if (Since < Hold - 0.3 || S.Shot || S.Frames.IsEmpty()) return;
+ if (Since < Hold - 0.3 || S.Frames.IsEmpty()) return;
  S.Shot = true;
  auto Mean = [](const TArray<float>& A) { double N = 0; for (float X : A) N += X; return N / A.Num(); };
  TArray<float> Ordered = S.Frames; Ordered.Sort();
- const float P95 = Ordered[FMath::Min(Ordered.Num() - 1, int32(Ordered.Num() * .95))];
- const FString Row = FString::Printf(TEXT("%s,%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f\n"), V.Name, *Clock, S.Frames.Num(), Mean(S.Frames), P95, Mean(S.Game), Mean(S.Draw), Mean(S.Gpu));
- IFileManager::Get().MakeDirectory(*Directory, true);
- FFileHelper::SaveStringToFile(Row, *(Directory / TEXT("frames.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append);
- FScreenshotRequest::RequestScreenshot(Directory / (FString(V.Name) + TEXT(".png")), true, false);
+ const float P95 = Ordered[FMath::Clamp(FMath::CeilToInt(Ordered.Num() * .95) - 1, 0, Ordered.Num() - 1)];
+ const double Average = Mean(S.Frames);
+ const FString Row = FString::Printf(TEXT("%s,%s,%d,%.6f,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n"),
+  V.Name, *Clock, S.Frames.Num(), S.LastSampleAt - S.FirstSampleAt,
+  static_cast<unsigned long long>(S.FirstFrame), static_cast<unsigned long long>(S.LastFrame),
+  Average * S.Frames.Num(), Average, P95, Mean(S.Game), Mean(S.Draw), Mean(S.Gpu));
+ if (!FFileHelper::SaveStringToFile(Row, *(Directory / TEXT("frames.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append)) {
+  UE_LOG(LogTemp, Error, TEXT("S47: could not append graphics sample")); S.Done = true; return;
+ }
+ FScreenshotRequest::RequestScreenshot(ShotPath, true, false);
  UE_LOG(LogTemp, Display, TEXT("S47: graphics sample %s"), *Row.TrimEnd());
 }
 }

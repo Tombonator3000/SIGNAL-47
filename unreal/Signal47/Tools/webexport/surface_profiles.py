@@ -70,6 +70,9 @@ TRUCK_PROFILES = {
     'paint': 'paint', 'dash': 'vinyl', 'vinyl': 'vinyl', 'doorCard': 'vinyl',
     'liner': 'vinyl', 'mat': 'vinyl', 'cabTrim': 'paint', 'cabChrome': 'metal',
 }
+CONTROL_CRT_HANDLES = frozenset('room.%s.%s' % (screen, kind)
+                              for screen in ('crtLeft', 'crtCenter', 'crtRight', 'crtOps')
+                              for kind in ('mat', 'tex'))
 
 
 def material_labels(manifest):
@@ -96,7 +99,7 @@ def texture_labels(manifest):
 
 def profile_for(material, texture_names, labels):
     if (not material.get('lit') or material.get('flora') or material.get('shader')
-            or material.get('transparent') or material.get('alphaTest', 0) > 0
+            or material.get('additive') or material.get('transparent') or material.get('alphaTest', 0) > 0
             or 'emissiveMap' in material or max(material.get('emissive', [0, 0, 0])) > 0
             or any(key in material for key in ('normalMap', 'bumpMap', 'roughnessMap', 'metalnessMap', 'aoMap'))):
         return None
@@ -115,6 +118,18 @@ def profile_for(material, texture_names, labels):
             if key:
                 return key
     return ART_PROFILES.get(texture_names.get(material.get('map'), ''))
+
+
+def is_control_crt(material, labels):
+    """The four existing SARO picture planes, identified by exported handles.
+
+    These keep their unlit image path as phosphor emission, but gain a separate
+    dark dielectric surface.  Do not adopt other screens or Kelvora TV panes:
+    their film shading and power contracts are owned by those systems.
+    """
+    return (not material.get('lit') and not material.get('shader')
+            and not material.get('transparent') and not material.get('additive')
+            and material.get('alphaTest', 0) <= 0 and bool(CONTROL_CRT_HANDLES.intersection(labels)))
 
 
 def glass_parameters(material, labels):

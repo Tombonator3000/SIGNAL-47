@@ -2,6 +2,13 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Grafikkpass under arbeid, 23. oktober 2026
+
+- `port-gfx` fortsetter WIP `64d943e7`, med `unreal-port-core` ved `93ab1568` innflettet. Se øverste del av `LIGHTING.md` for gjeldende kildekandidat og nøyaktig teststatus. Ingen ny pakke eller installasjon er laget i denne fortsettelsen.
+- WIP-ens startup-vernet lå feil i Web::BeginPlay og hoppet over verdensbyggingen. Det ligger nå i Tick. PSO-readiness må telle filcache, RHI, komponenter og shaderjobber; testklokker starter ved READY. Rå veggklokke og synlige sekunder er forskjellige målevinduer.
+- `Scripts/unreal_guard.py require-idle` viser `free -g` og `pgrep`, krever minst 10 GiB MemAvailable og ingen tung Unreal-prosess. Bygg/pakking/skjermbildeskript bruker vernet. Toms installerte spill stoppes aldri. Grafikkverktøyene avbryter bare egne prosesser dersom noen starter en annen tung jobb under måling.
+- Nye materialer finnes foreløpig bare som importkode. 118 opt-in overflater, seks lit glass og fire kontrollroms-CRT er kontrollert offline. Kelvora-filmflatenes verifiserte unlit-kontrakt beholdes. Regenerering, cook, bilder, kald/varm PSO-cache og 1440p-ytelse gjenstår.
+
 ## Native belysning (2026-10-22)
 
 - Videre belysning er bare Unreal. `S47Lighting.cpp` gjør eksportens lampetilstand om til punktlys og spotter. Historienes SetFlood-API er beholdt; materialenes flood, hemisphere, FogExp2, additive lyskjegler og vindusprojeksjoner er av. Ingen Web/Unreal-bryter. Eldre lysnotater nedenfor beskriver porten før denne endringen.

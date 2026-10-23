@@ -30,6 +30,9 @@ FS47Flashlight::FS47Flashlight(AActor* Owner)
 	L->SetSoftSourceRadius(2.5f);
 	L->SetCastShadows(true);
 	L->SetCastVolumetricShadow(true);
+	// Small foreground cables and handles need a short trace beside the shadow map.
+	L->ContactShadowLengthInWS = true; L->ContactShadowLength = 8.f;
+	L->ContactShadowCastingIntensity = 0.75f;
 	L->SetVolumetricScatteringIntensity(0.8f);
 	L->RegisterComponent();
 	Spot = L;

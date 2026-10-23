@@ -642,17 +642,6 @@ void AS47Web::BeginPlay()
 	FParse::Value(FCommandLine::Get(), TEXT("S47Exposure="), ExposureOffset);
 	bLoaded = Load();
 	if (!bLoaded) return;
-	if (S47Startup::Blocking())
-	{
-		// Let native lights, CRT/glass materials and the first skylight capture render while the
-		// terminal covers them. No dishes, doors, gameplay or review clocks advance during warmup.
-		const double Before = LightingRunTime;
-		LightingRunTime = S47Startup::Elapsed();
-		UpdateNativeLighting();
-		UpdateRetroProps();
-		LightingRunTime = Before;
-		return;
-	}
 	BuildRoom();
 	BuildRetroProps();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
@@ -1229,6 +1218,18 @@ void AS47Web::Tick(float Dt)
 {
 	Super::Tick(Dt);
 	if (!bLoaded) return;
+	if (S47Startup::Blocking())
+	{
+		// The complete world must exist before warmup. Keep its rendering and sky capture alive,
+		// while dishes, doors, gameplay and review clocks wait behind the loading terminal.
+		const double Before = LightingRunTime;
+		LightingRunTime = S47Startup::Elapsed();
+		UpdateNativeLighting();
+		UpdateRetroProps();
+		LightingRunTime = Before;
+		if (SkySphere) SkySphere->SetWorldLocation(Eye);
+		return;
+	}
 	UpdateNativeLighting();
 	UpdateRetroProps();
 	SampleLightingPerformance(Dt);

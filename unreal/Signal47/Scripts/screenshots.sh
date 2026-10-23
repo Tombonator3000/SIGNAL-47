@@ -6,11 +6,16 @@ set -uo pipefail
 OUT=${1:?usage: screenshots.sh OUTDIR [BUILD]}
 BUILD=${2:-$HOME/scratch-bm/Signal47-build}
 mkdir -p "$OUT"
+PROFILE="$(realpath "$OUT")/profile"
 fail=0
 shot() { # name expected-log-pattern [extra args] [seconds]
   local log="$OUT/$1.log" secs=${4:-8} result=0
+  if ! python3 "$(dirname "$0")/unreal_guard.py" require-idle; then
+    echo "$1 BLOCKED: another Unreal job or less than 10 GiB available"
+    exit 2
+  fi
   rm -f "$OUT/$1.png"
-  timeout $(( ${secs%.*} + 142 )) "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=$secs ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1 || result=$?
+  timeout $(( ${secs%.*} + 142 )) "$BUILD/Linux/Signal47.sh" -UserDir="$PROFILE" -S47SmokeTest -S47Seconds=$secs ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1 || result=$?
   if [ "$result" -eq 0 ] && ! grep -Eq "Critical error:|Assertion failed:|Signal 11 caught" "$log" && grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
 }
 shot selftest "self test OK" "-S47SelfTest -S47Face=room"
