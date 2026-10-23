@@ -18,7 +18,7 @@ public:
 		bool bFoodBought, bool bFoodTaken, bool bFoodEaten, bool bWater, bool bBurger);
 	/** Position and heading use the game's metres/Y-up/radians. Separates a stop on the service pad. */
 	void ParkPersonal(const FVector& Position, double Heading);
-	/** Restore from intro_arrived. Default visitor bay is (2,0,8), separate from SARO 07. */
+	/** Restore from intro_arrived. Visitor gravel is clear of the annex plinth and SARO 07. */
 	void SetParked(bool bOn);
 	void Hide();
 	FVector ParkedPosition() const { return PersonalPark; }
@@ -38,7 +38,7 @@ private:
 	FS47Node* HeldPlate = nullptr;
 	FS47Node* HeldCup = nullptr;
 	bool bBuilt = false, bParked = false;
-	FVector PersonalPark = FVector(2, 0, 8);
+	FVector PersonalPark = FVector(4.5, -0.62, 14);
 	double PersonalHeading = UE_DOUBLE_PI;
 	void Build();
 };

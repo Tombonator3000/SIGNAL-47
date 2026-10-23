@@ -154,8 +154,10 @@ void FS47EveningVisual::ParkPersonal(const FVector& Position, double Heading)
 	PersonalPark = Position;
 	PersonalHeading = Heading;
 	// Parking on the old trigger pad must not leave both cars occupying SARO 07's service bay.
-	if (FVector2D(PersonalPark.X - SERVICE_PARK.X, PersonalPark.Z - SERVICE_PARK.Z).Size() < 4.5)
-		PersonalPark = FVector(2, 0, 8);
+	// The first candidate's (2,0,8) bay intersected the raised annex. Repair that
+	// presentation pose on load as well; no clock, evidence or service-truck state changes.
+	if (FVector2D(PersonalPark.X - SERVICE_PARK.X, PersonalPark.Z - SERVICE_PARK.Z).Size() < 4.5 || PersonalPark.Equals(FVector(2, 0, 8), 0.01))
+		PersonalPark = FVector(4.5, -0.62, 14);
 	bParked = true;
 }
 
