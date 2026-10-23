@@ -266,7 +266,18 @@ void FS47AnomalyWorld::TagPhoto(FS47AlbumShot& Shot) const
 		if (!bClear) return;
 		const auto UV = M->FieldCamera->Project(P);
 		if (bDiag) UE_LOG(LogTemp, Display, TEXT("S47: anomaly target %s clear ray front=%d uv=%.4f,%.4f"), *Id, UV.bFront ? 1 : 0, UV.U, UV.V);
-		if (UV.bFront) Shot.Targets.Add({ Id, FVector2D(UV.U, UV.V) });
+		if (UV.bFront)
+		{
+			Shot.Targets.Add({ Id, FVector2D(UV.U, UV.V) });
+			FString Caption;
+			if (Id == TEXT("anomaly:reference")) Caption = TEXT("The souvenir shop display, with the cardboard figure in its window.");
+			else if (Id == TEXT("anomaly:changed")) Caption = TEXT("The cardboard figure beside the radio studio.");
+			else if (Id == TEXT("anomaly:n02reference")) Caption = TEXT("The bright upright outline at the laundromat.");
+			else if (Id == TEXT("anomaly:n02control")) Caption = TEXT("Side view: the laundromat worklamp and upright board.");
+			// Only annotate this new exposure. Retain the album's actual oddities and
+			// photograph bytes; documenting the figure makes no claim about its cause.
+			if (!Caption.IsEmpty() && !Shot.Text.Contains(Caption)) Shot.Text = Caption + (Shot.Text.IsEmpty() ? FString() : TEXT(" ") + Shot.Text);
+		}
 	};
 	// The detailed tag must be legible; a distant glimpse is observation, not evidence.
 	const FVector FigureAt = D.A02Moved ? ChangedAt() : ReferenceAt();

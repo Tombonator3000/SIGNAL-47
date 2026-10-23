@@ -7,6 +7,11 @@
 #include "S47Chapter1.h"
 #include "S47Evening.h"
 #include "S47Flow.h"
+#include "S47HUD.h"
+#include "SS47Notebook.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Input/Events.h"
+#include "Widgets/Text/STextBlock.h"
 #include "S47Inter.h"
 #include "S47Keys.h"
 #include "S47Image.h"
@@ -485,11 +490,55 @@ void FS47AnomalyTest::Step(double Dt)
   if (Route==TEXT("missing-phone") && M->TownSeen.Contains(TEXT("ev:phone"))) {Fail(TEXT("optional telephone 1 fabricated or started by pilot"));return;}
   if (!RoundTrip(TEXT("p01-followed"))) return;
   M->Flow->OpenTestView(TEXT("notebook:findings"));
-  // Exercise the notebook's ordinary selection keys; the new P01 entry is last.
-  TArray<FString> Down; for(int32 I=0;I<32;++I) Down.Add(TEXT("Down"));
-  S47Keys::TestPresses(FString::Join(Down,TEXT(",")),.02f);
-  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this](float){Shot(TEXT("notebook"));return false;}),.8f);
-  Next(19,TEXT("Notebook findings after reload; no anomaly quota required for P13"),2);return;
+  Next(96,TEXT("Notebook opened after reload; let modal layout and restored fade settle before keyboard navigation"),.8);return;
+ }
+ if (Stage==96)
+ {
+  TArray<const FS47Doc*> Findings;
+  for (const auto& Doc:M->Story->Docs())
+  {
+   const bool Pnn=Doc.Id.Len()==3 && Doc.Id[0]==TEXT('p') && FChar::IsDigit(Doc.Id[1]) && FChar::IsDigit(Doc.Id[2]);
+   if (Pnn || Doc.Id==TEXT("finding") || Doc.Id==TEXT("anomaly:n01") || Doc.Id==TEXT("anomaly:n02") || Doc.Id==TEXT("anomaly:a02") || Doc.Id==TEXT("anomaly:p01")) Findings.Add(&Doc);
+  }
+  if (Findings.IsEmpty() || Findings.Last()->Id!=TEXT("anomaly:p01") || !FSlateApplication::IsInitialized() || !M->Hud)
+  {Fail(TEXT("P01 is not the final notebook finding or Slate/HUD unavailable"));return;}
+  const auto Widget=M->Hud->ModalWidget();
+  if (!Widget || Widget->GetType()!=FName(TEXT("SS47Notebook"))) {Fail(TEXT("findings modal is not the actual notebook widget"));return;}
+  // FInputModeUIOnly can move focus after SetModal. Target the actual mounted
+  // notebook, then dispatch its normal arrow keys synchronously through Slate.
+  auto& App=FSlateApplication::Get(); App.SetAllUserFocus(Widget,EFocusCause::SetDirectly);
+  if (App.GetKeyboardFocusedWidget()!=Widget) {Fail(TEXT("could not focus actual notebook for normal selection keys"));return;}
+  const int32 Presses=Findings.Num()-1;
+  for (int32 I=0;I<Presses;++I)
+  {
+   const FKeyEvent Key(EKeys::Down,App.GetModifierKeys(),0,false,0,0);
+   App.ProcessKeyDownEvent(Key); App.ProcessKeyUpEvent(Key);
+  }
+  TArray<FString> Visible;
+  TFunction<void(const TSharedRef<SWidget>&)> Collect;
+  Collect=[&](const TSharedRef<SWidget>& W)
+  {
+   if (!W->GetVisibility().IsVisible()) return;
+   if (W->GetType()==FName(TEXT("STextBlock"))) Visible.Add(StaticCastSharedRef<STextBlock>(W)->GetText().ToString());
+   if (FChildren* Children=W->GetChildren()) for(int32 I=0;I<Children->Num();++I) Collect(Children->GetChildAt(I));
+  };
+  Collect(Widget.ToSharedRef());
+  const auto& P01=*Findings.Last(); TArray<FString> Lines; P01.Page.ParseIntoArrayLines(Lines,true);
+  const FString Follow=Lines.IsEmpty()?FString():Lines.Last();
+  const int32 TitleCount=Visible.FilterByPredicate([&](const FString& Text){return Text==P01.Title;}).Num();
+  // The left-page excerpt cannot contain this late follow-up paragraph. Its
+  // presence proves that P01's actual body is selected on the right page.
+  const bool BodySelected=!Follow.IsEmpty() && Follow.StartsWith(TEXT("FOLLOW-UP /")) && Visible.Contains(Follow);
+  if (TitleCount<1 || !BodySelected) {Fail(TEXT("normal notebook keys did not select P01 title and actual follow-up body"));return;}
+  if (!Shots.IsEmpty())
+  {
+   const auto Proof=S47J::New(); S47J::Set(Proof,TEXT("selected_id"),P01.Id); S47J::Set(Proof,TEXT("finding_count"),Findings.Num());
+   S47J::Set(Proof,TEXT("down_presses"),Presses); S47J::Set(Proof,TEXT("title_occurrences"),TitleCount);
+   S47J::Set(Proof,TEXT("selected_followup"),Follow); S47J::Set(Proof,TEXT("visible_text"),Visible);
+   FFileHelper::SaveStringToFile(S47J::Write(Proof,true),*FPaths::Combine(Shots,TEXT("notebook-selection.json")));
+  }
+  Shot(TEXT("notebook"));
+  Next(19,TEXT("PASS actual notebook focus + Findings count-1 normal Down keys: P01 title and full physical follow-up body selected; no anomaly quota required for P13"),2);return;
  }
  if (Stage==19)
  {
