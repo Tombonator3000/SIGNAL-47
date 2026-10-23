@@ -63,7 +63,7 @@ GUARD.require_idle = heavy_guard
 os.environ.pop(GUARD.GRACE_ENV, None)
 
 
-def png_review(path):
+def png_review(path, ending_title=False):
     """Reject blank/startup evidence; these metrics do not replace visual QA."""
     from PIL import Image
     review = {'path': str(path), 'status': 'FAIL',
@@ -85,7 +85,23 @@ def png_review(path):
         review.update(width=width, height=height, luma_min=low, luma_max=high,
                       luma_range=high-low, pixels_luma_above_8=lit_fraction,
                       mean_luma=sum(index*count for index, count in enumerate(histogram))/total)
-        if width >= 640 and height >= 360 and lit_fraction > .05 and high-low > 24:
+        if ending_title:
+            # The authored ending is sparse white/red lettering on black, not a
+            # gameplay frame. Require its two colours and central placement as
+            # well as the separately asserted THE EVENT/pullout/ending logs.
+            with Image.open(path) as source:
+                rgb = source.convert('RGB')
+                red = sum(r > 150 and g < 150 and b < 130 for r,g,b in rgb.getdata())
+                outside = rgb.copy()
+                outside.paste((0,0,0), (int(width*.2),int(height*.3),int(width*.8),int(height*.72)))
+                outside_lit = sum(outside.convert('L').histogram()[9:]) / total
+            review.update(rule='ending card: 2..12% lit, range>200, red slash>0.1%, outside central title<0.2%',
+                          red_fraction=red/total, outside_title_lit_fraction=outside_lit)
+            if width >= 640 and height >= 360 and .02 < lit_fraction < .12 and high-low > 200 and red/total > .001 and outside_lit < .002:
+                review['status'] = 'PASS'
+            else:
+                review['reason'] = 'sparse ending card fails title-specific image gate'
+        elif width >= 640 and height >= 360 and lit_fraction > .05 and high-low > 24:
             review['status'] = 'PASS'
         else:
             review['reason'] = 'blank/dark/startup-sized image fails evidence readability gate'
@@ -125,7 +141,7 @@ def main():
     binary.add_argument('--build', type=Path, help='packaged build root containing Linux/Signal47.sh')
     binary.add_argument('--editor', type=Path, help='UnrealEditor executable; uses this checkout project with -game')
     parser.add_argument('--out', type=Path, required=True, help='new evidence directory')
-    parser.add_argument('--scenario', choices=SCENARIOS + ('all', 'regression'), default='pilot')
+    parser.add_argument('--scenario', choices=SCENARIOS + ('all', 'regression', 'ending'), default='pilot')
     parser.add_argument('--timeout', type=float, default=600)
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--picture', choices=('vhs', 'off'), default='vhs')
@@ -142,9 +158,9 @@ def main():
         if build == (Path.home() / 'Games/Signal47').resolve() or (Path.home() / 'Games/Signal47').resolve() in build.parents:
             parser.error('Installed game cannot be the test candidate')
         base = [str(build / 'Linux/Signal47.sh')]
-    if args.scenario == 'regression':
+    if args.scenario in ('regression', 'ending'):
         jobs = [('regression-' + name, seconds, flags, expected)
-                for name, seconds, flags, expected in REGRESSION]
+                for name, seconds, flags, expected in (REGRESSION if args.scenario == 'regression' else REGRESSION[-1:])]
         regression_profile = Path(tempfile.mkdtemp(prefix='s47-anomaly-regression-'))
     else:
         selected = list(SCENARIOS) if args.scenario == 'all' else [args.scenario]
@@ -179,7 +195,7 @@ def main():
         failures = [text for text in ('Critical error:', 'Assertion failed:', 'Signal 11 caught',
                                       f'S47: anomaly route {scenario} FAIL') if text in log]
         shots = ['regression'] if regression_profile else (['missing-photo'] if scenario == 'missing-photo' else ['archive'] if scenario == 'archive' else ['reference', 'anomaly', 'comparison', 'notebook'] if scenario in ('pilot', 'missing-phone') else [])
-        image_reviews = {name: png_review(evidence / (name + '.png')) for name in shots}
+        image_reviews = {name: png_review(evidence / (name + '.png'), ending_title=scenario == 'regression-event') for name in shots}
         (evidence / 'png-review.json').write_text(json.dumps(image_reviews, indent=2) + '\n')
         missing = [name for name, review in image_reviews.items() if review['status'] != 'PASS']
         absent = [pattern for pattern in expected_patterns if not re.search(pattern, log)]
