@@ -2,6 +2,7 @@
 #include "S47Web.h"
 #include "S47Main.h"
 #include "S47Story.h"
+#include "S47Timeline.h"
 #include "S47Walker.h"
 #include "S47World.h"
 #include "S47Legs.h"
@@ -77,7 +78,12 @@ static const FCamera Cameras[] = {
  { TEXT("array-field"), TEXT("saro"), 38, 8, 0.14, 0.12 },
  { TEXT("radio-exterior"), TEXT("diner"), 8011.5, 2040, -1.20, 0.06 },
  { TEXT("radio-lobby"), TEXT("diner"), 8021.5, 2031.4, -1.57, -0.05 },
- { TEXT("radio-studio"), TEXT("diner"), 8026.6, 2040, 0.95, -0.15 }
+ { TEXT("radio-studio"), TEXT("diner"), 8026.6, 2040, 0.95, -0.15 },
+ // Continuous Caliche street: ordinary eye height and actual walk floor; no shop-entry teleport.
+ { TEXT("street-west-front"), TEXT("diner"), 7997, 2062, 1.55, -0.08 },
+ { TEXT("street-east-front"), TEXT("diner"), 8000, 2052, -UE_DOUBLE_HALF_PI, -0.06 },
+ { TEXT("street-north-route"), TEXT("diner"), 8007, 2080, 0.12, -0.10 },
+ { TEXT("street-souvenir-window"), TEXT("diner"), 8018.6, 2062.3, -UE_DOUBLE_HALF_PI, -0.06 }
 };
 void Tick(AS47Web* W, float)
 {
@@ -90,7 +96,9 @@ void Tick(AS47Web* W, float)
   double BeginAt = 0, CameraAt = 0, LastAt = 0, FirstSampleAt = 0, LastSampleAt = 0, InitialEye = 1.62;
   uint64 FirstFrame = 0, LastFrame = 0;
   int32 Step = -1, Slot = 0;
-  bool Shot = false, Done = false, CabReady = false;
+  bool Shot = false, Done = false, CabReady = false, StaticWorld = false;
+  FString Clock, Timeline;
+  double ReviewClock = 0;
   TArray<int32> Selection;
   TSharedPtr<SWidget> Title;
   TArray<float> Frames, Game, Draw, Gpu;
@@ -99,6 +107,28 @@ void Tick(AS47Web* W, float)
  const double Now = FPlatformTime::Seconds();
  if (S.World != W) {
   S = FState(); S.World = W; S.BeginAt = S.LastAt = Now; S.InitialEye = M->Player->Eye;
+  S.Clock = TEXT("02:15"); FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsClock="), S.Clock);
+  TArray<FString> ClockParts; S.Clock.ParseIntoArray(ClockParts, TEXT(":"));
+  if (ClockParts.Num() != 2 || ClockParts[0].Len() != 2 || ClockParts[1].Len() != 2 ||
+      !ClockParts[0].IsNumeric() || !ClockParts[1].IsNumeric() ||
+      FCString::Atoi(*ClockParts[0]) < 0 || FCString::Atoi(*ClockParts[0]) >= 24 ||
+      FCString::Atoi(*ClockParts[1]) < 0 || FCString::Atoi(*ClockParts[1]) >= 60) {
+   UE_LOG(LogTemp, Error, TEXT("S47: graphics clock must be HH:MM")); S.Done = true; return;
+  }
+  const double DayClock = FCString::Atoi(*ClockParts[0]) * 3600 + FCString::Atoi(*ClockParts[1]) * 60;
+  S.Timeline = M->Story->bEveningTimeline ? TEXT("evening") : TEXT("legacy");
+  FString RequestedTimeline = S.Timeline;
+  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsTimeline="), RequestedTimeline);
+  if ((RequestedTimeline != TEXT("evening") && RequestedTimeline != TEXT("legacy")) || RequestedTimeline != S.Timeline) {
+   UE_LOG(LogTemp, Error, TEXT("S47: graphics timeline %s does not match bootstrapped story %s"), *RequestedTimeline, *S.Timeline);
+   S.Done = true; return;
+  }
+  // The evening axis represents the preceding afternoon/evening as negative seconds. Only
+  // this diagnostic setter converts the requested wall clock; runtime SetClock stays untouched.
+  S.ReviewClock = S.Timeline == TEXT("evening") ? S47Timeline::Night(DayClock) : DayClock;
+  S.StaticWorld = FParse::Param(FCommandLine::Get(), TEXT("S47GraphicsStatic"));
+  UE_LOG(LogTemp, Display, TEXT("S47: graphics clock request=%s timeline=%s seconds=%.0f static=%d"),
+   *S.Clock, *S.Timeline, S.ReviewClock, S.StaticWorld ? 1 : 0);
   IFileManager::Get().MakeDirectory(*Directory, true);
   FString Selected;
   if (!FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsViews="), Selected, false))
@@ -130,12 +160,15 @@ void Tick(AS47Web* W, float)
  FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsHold="), Hold);
  Hold = FMath::Max(4.f, Hold);
  M->Story->SetPaused(true);
- FString Clock = TEXT("02:15"); FParse::Value(FCommandLine::Get(), TEXT("S47GraphicsClock="), Clock);
- TArray<FString> Parts; Clock.ParseIntoArray(Parts, TEXT(":"));
- if (Parts.Num() >= 2) M->Story->SetClock(FCString::Atod(*Parts[0]) * 3600 + FCString::Atod(*Parts[1]) * 60);
+ const FString& Clock = S.Clock;
+ M->Story->SetClock(S.ReviewClock);
+ // Story pause freezes its timers; the cinematic guard additionally holds autonomous town/
+ // cutout/anomaly events. Normal clock-driven windows, lamps and scheduled presence still draw.
+ if (S.StaticWorld) M->Story->SetCinematic(true);
  if (Now - S.BeginAt < Warmup) return;
  if (S.Slot >= S.Selection.Num()) {
   M->Player->Eye = S.InitialEye;
+  // Static review keeps the narrative guard through the final smoke capture and process exit.
   // The review's static state must not retain Slate resources past renderer shutdown.
   // Normally the next camera releases the title; a title-last batch has no next camera.
   if (M->UI) { M->UI->Close(true); if (S.Title) M->UI->RemoveScreen(S.Title); }
@@ -254,6 +287,15 @@ void Tick(AS47Web* W, float)
  const FVector ActualEye = S47Three::ToThree(M->Player->EyeUE());
  UE_LOG(LogTemp, Display, TEXT("S47: graphics actual pose %s area=%s floor=%.5f eyeThree=(%.5f,%.5f,%.5f)"),
   V.Name, V.Area, M->Player->FloorY, ActualEye.X, ActualEye.Y, ActualEye.Z);
+ if (FString(V.Name).StartsWith(TEXT("street-"))) {
+  const bool bWalkable = M->Player->Walkable(V.X, V.Z);
+  const double EyeHeight = ActualEye.Y - M->Player->FloorY;
+  UE_LOG(LogTemp, Display, TEXT("S47: graphics street pose %s walkable=%d eyeHeight=%.5f clockSeconds=%.0f timeline=%s cinematic=%d"),
+   V.Name, bWalkable ? 1 : 0, EyeHeight, M->Story->Clock(), *S.Timeline, M->Story->IsCinematic() ? 1 : 0);
+  if (!bWalkable || FMath::Abs(EyeHeight - S.InitialEye) > .08 || FMath::Abs(M->Story->Clock() - S.ReviewClock) > .01) {
+   UE_LOG(LogTemp, Error, TEXT("S47: graphics street camera is not at the requested player floor/clock")); S.Done = true; return;
+  }
+ }
  if (FString(V.Area) == TEXT("room6") && FMath::Abs(M->Player->FloorY) > 0.3) {
   UE_LOG(LogTemp, Error, TEXT("S47: graphics room6 camera is outside authored floor height")); S.Done = true; return;
  }

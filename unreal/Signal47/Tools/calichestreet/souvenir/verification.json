@@ -1,0 +1,220 @@
+{
+  "tool": "Blender 5.2.2 LTS",
+  "status": "PASS",
+  "passed": 26,
+  "total": 26,
+  "checks": [
+    {
+      "name": "SM_Souvenir_Shell separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_Souvenir_Shell meter scale and common pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -6.25,
+          -6.641568660736084,
+          -0.46000000834465027
+        ],
+        [
+          6.25,
+          4.579999923706055,
+          4.25
+        ]
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Souvenir_Shell exact triangle contract",
+      "result": "PASS",
+      "triangles": 11592,
+      "expected": 11592,
+      "zero_area": 0
+    },
+    {
+      "name": "SM_Souvenir_Shell material order",
+      "result": "PASS",
+      "slots": [
+        "M_Souvenir_Concrete",
+        "M_Souvenir_Walnut",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_CreamStucco",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_WornBrass",
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_CeramicTeal",
+        "M_Souvenir_WarmLamp"
+      ]
+    },
+    {
+      "name": "SM_Souvenir_Shell UV coverage",
+      "result": "PASS",
+      "layers": [
+        "UVMap"
+      ],
+      "loops": 34776
+    },
+    {
+      "name": "SM_Souvenir_Shell finite normals",
+      "result": "PASS"
+    },
+    {
+      "name": "Original display is a real opening",
+      "result": "PASS",
+      "window_clear": true,
+      "adjacent_pier_solid": true
+    },
+    {
+      "name": "Existing shop door stays closed",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_Souvenir_Interior separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_Souvenir_Interior meter scale and common pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -5.75,
+          -4.475000381469727,
+          -0.021744608879089355
+        ],
+        [
+          6.074999809265137,
+          0.8149999976158142,
+          3.549999952316284
+        ]
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Souvenir_Interior exact triangle contract",
+      "result": "PASS",
+      "triangles": 76576,
+      "expected": 76576,
+      "zero_area": 0
+    },
+    {
+      "name": "SM_Souvenir_Interior material order",
+      "result": "PASS",
+      "slots": [
+        "M_Souvenir_Walnut",
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_WornBrass",
+        "M_Souvenir_CeramicIvory",
+        "M_Souvenir_CeramicTeal",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_SkyPrint",
+        "M_Souvenir_MesaPrint",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_WarmLamp"
+      ]
+    },
+    {
+      "name": "SM_Souvenir_Interior UV coverage",
+      "result": "PASS",
+      "layers": [
+        "UVMap"
+      ],
+      "loops": 229728
+    },
+    {
+      "name": "SM_Souvenir_Interior finite normals",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_Souvenir_Glass separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_Souvenir_Glass meter scale and common pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -2.7899999618530273,
+          -4.766000270843506,
+          0.6100000739097595
+        ],
+        [
+          -0.6100000143051147,
+          -4.754000186920166,
+          2.2899999618530273
+        ]
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Souvenir_Glass exact triangle contract",
+      "result": "PASS",
+      "triangles": 12,
+      "expected": 12,
+      "zero_area": 0
+    },
+    {
+      "name": "SM_Souvenir_Glass material order",
+      "result": "PASS",
+      "slots": [
+        "M_Souvenir_ClearGlass"
+      ]
+    },
+    {
+      "name": "SM_Souvenir_Glass UV coverage",
+      "result": "PASS",
+      "layers": [
+        "UVMap"
+      ],
+      "loops": 36
+    },
+    {
+      "name": "SM_Souvenir_Glass finite normals",
+      "result": "PASS"
+    },
+    {
+      "name": "Glass lies streetward of unique A02",
+      "result": "PASS",
+      "glass_world_three_x": 8020.239999771118,
+      "figure_world_three_x": 8020.31
+    },
+    {
+      "name": "PBR files and linear material colors",
+      "result": "PASS",
+      "texture_dependencies": 12
+    },
+    {
+      "name": "Runtime glass is translucent",
+      "result": "PASS"
+    },
+    {
+      "name": "GLB exact piece and triangle counts",
+      "result": "PASS",
+      "counts": {
+        "SM_Souvenir_Glass": 12,
+        "SM_Souvenir_Interior": 76576,
+        "SM_Souvenir_Shell": 11592
+      }
+    },
+    {
+      "name": "Original facade and proxy anchors",
+      "result": "PASS"
+    },
+    {
+      "name": "Nondegenerate explicit triangulation preserves authored surfaces",
+      "result": "PASS"
+    }
+  ],
+  "runtime_note": "Source and FBX/GLB checks only. Parent owns Unreal import, A02/photo regression, closed door, terrain and day/dusk/night review."
+}

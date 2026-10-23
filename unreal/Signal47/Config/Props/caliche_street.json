@@ -1,0 +1,199 @@
+{
+  "_doc": "Original Caliche street slice. Runtime BuildCalicheStreet composes the gas/radio/souvenir trims atomically. Ground and glass have no collision; the old movement floors, door proxies, NPCs and A02 figure remain authoritative. Souvenir front glass is in front of the existing figure. Street lights gate the modest shop lamps; no story schedules are changed. Ground anchor maps Blender (x,y,z) to three (8000+x,z,2060-y).",
+  "area": "diner",
+  "parent": "world.town.group",
+  "walk": "road",
+  "leg": "",
+  "grounds": [
+    "diner",
+    "road"
+  ],
+  "props": [
+    {
+      "id": "souvenirShell",
+      "model": "/Game/CalicheStreet/Souvenir/SM_Souvenir_Shell.SM_Souvenir_Shell",
+      "at": [
+        8025,
+        4.952807474136353,
+        2064
+      ],
+      "yaw": -90,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "souvenirInterior",
+      "model": "/Game/CalicheStreet/Souvenir/SM_Souvenir_Interior.SM_Souvenir_Interior",
+      "at": [
+        8025,
+        4.952807474136353,
+        2064
+      ],
+      "yaw": -90,
+      "ground": false,
+      "trace": false,
+      "lit": {
+        "flood": "town",
+        "slot": 1,
+        "lights": [
+          {
+            "at": [
+              -1.7,
+              3.22,
+              1.7
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.35,
+              0.35
+            ],
+            "lumens": 160,
+            "reach": 6,
+            "color": [
+              1,
+              0.77,
+              0.5
+            ],
+            "shadow": true
+          },
+          {
+            "at": [
+              2.0,
+              3.22,
+              1.7
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.35,
+              0.35
+            ],
+            "lumens": 110,
+            "reach": 6,
+            "color": [
+              1,
+              0.77,
+              0.5
+            ],
+            "shadow": false
+          },
+          {
+            "at": [
+              -1.7,
+              2.485,
+              4.88
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.19,
+              0.19
+            ],
+            "lumens": 65,
+            "reach": 3.5,
+            "color": [
+              1,
+              0.77,
+              0.5
+            ],
+            "shadow": true
+          },
+          {
+            "at": [
+              2.8,
+              2.485,
+              4.88
+            ],
+            "face": [
+              0,
+              -1,
+              0
+            ],
+            "size": [
+              0.19,
+              0.19
+            ],
+            "lumens": 50,
+            "reach": 3.5,
+            "color": [
+              1,
+              0.77,
+              0.5
+            ],
+            "shadow": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "souvenirGlass",
+      "model": "/Game/CalicheStreet/Souvenir/SM_Souvenir_Glass.SM_Souvenir_Glass",
+      "at": [
+        8025,
+        4.952807474136353,
+        2064
+      ],
+      "yaw": -90,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundSurface",
+      "model": "/Game/CalicheStreet/Ground/SM_Caliche_Surface.SM_Caliche_Surface",
+      "at": [
+        8000,
+        0,
+        2060
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundRocks",
+      "model": "/Game/CalicheStreet/Ground/SM_Caliche_Rocks.SM_Caliche_Rocks",
+      "at": [
+        8000,
+        0,
+        2060
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundDryPlants",
+      "model": "/Game/CalicheStreet/Ground/SM_Caliche_DryPlants.SM_Caliche_DryPlants",
+      "at": [
+        8000,
+        0,
+        2060
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundRoadWear",
+      "model": "/Game/CalicheStreet/Ground/SM_Caliche_RoadWear.SM_Caliche_RoadWear",
+      "at": [
+        8000,
+        0,
+        2060
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    }
+  ]
+}

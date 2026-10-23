@@ -1,0 +1,345 @@
+{
+  "M_Souvenir_BlackIron": {
+    "base_color_linear": [
+      0.017999999225139618,
+      0.023000000044703484,
+      0.019999999552965164,
+      1.0
+    ],
+    "metallic": 0.3499999940395355,
+    "roughness": 0.47999998927116394,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_CeramicIvory": {
+    "base_color_linear": [
+      0.6800000071525574,
+      0.5899999737739563,
+      0.4099999964237213,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.30000001192092896,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_CeramicTeal": {
+    "base_color_linear": [
+      0.054999999701976776,
+      0.18000000715255737,
+      0.1899999976158142,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.3199999928474426,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_ClearGlass": {
+    "base_color_linear": [
+      0.2199999988079071,
+      0.25999999046325684,
+      0.23000000417232513,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.10000000149011612,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 0.1,
+    "textures": {}
+  },
+  "M_Souvenir_Concrete": {
+    "base_color_linear": [
+      0.30000001192092896,
+      0.2800000011920929,
+      0.23999999463558197,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.9200000166893005,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/concrete_color.png",
+      "normal": "textures/concrete_normal_dx.png",
+      "roughness": "textures/concrete_roughness.png"
+    },
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+  },
+  "M_Souvenir_CounterWalnut": {
+    "base_color_linear": [
+      0.2800000011920929,
+      0.12999999523162842,
+      0.04500000178813934,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/desk_walnut_color.png",
+      "normal": "textures/desk_walnut_normal_dx.png",
+      "roughness": "textures/desk_walnut_roughness.png"
+    },
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+  },
+  "M_Souvenir_CreamPaper": {
+    "base_color_linear": [
+      0.6600000262260437,
+      0.6000000238418579,
+      0.4300000071525574,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8799999952316284,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_CreamStucco": {
+    "base_color_linear": [
+      0.6000000238418579,
+      0.5299999713897705,
+      0.4099999964237213,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8999999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/stucco_color.png",
+      "normal": "textures/stucco_normal_dx.png",
+      "roughness": "textures/stucco_roughness.png"
+    },
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+  },
+  "M_Souvenir_FadedRed": {
+    "base_color_linear": [
+      0.3700000047683716,
+      0.06499999761581421,
+      0.03500000014901161,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.6499999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_Galvanized": {
+    "base_color_linear": [
+      0.3199999928474426,
+      0.3499999940395355,
+      0.3199999928474426,
+      1.0
+    ],
+    "metallic": 0.75,
+    "roughness": 0.44999998807907104,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_MesaPrint": {
+    "base_color_linear": [
+      0.4000000059604645,
+      0.1899999976158142,
+      0.07500000298023224,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8999999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_OlivePaint": {
+    "base_color_linear": [
+      0.14000000059604645,
+      0.17000000178813934,
+      0.11999999731779099,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.6700000166893005,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_PrintInk": {
+    "base_color_linear": [
+      0.02500000037252903,
+      0.03200000151991844,
+      0.027000000700354576,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.800000011920929,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_SkyPrint": {
+    "base_color_linear": [
+      0.14000000059604645,
+      0.2800000011920929,
+      0.3400000035762787,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8999999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_Walnut": {
+    "base_color_linear": [
+      0.1599999964237213,
+      0.06499999761581421,
+      0.023000000044703484,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.6000000238418579,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/walnut_color.png",
+      "normal": "textures/walnut_normal_dx.png",
+      "roughness": "textures/walnut_roughness.png"
+    },
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+  },
+  "M_Souvenir_WarmLamp": {
+    "base_color_linear": [
+      1.0,
+      0.6200000047683716,
+      0.23999999463558197,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.30000001192092896,
+    "emission": [
+      1.0,
+      0.6200000047683716,
+      0.23999999463558197,
+      1.0
+    ],
+    "emission_strength": 1.7999999523162842,
+    "alpha": 1.0,
+    "textures": {}
+  },
+  "M_Souvenir_WornBrass": {
+    "base_color_linear": [
+      0.3799999952316284,
+      0.23999999463558197,
+      0.07500000298023224,
+      1.0
+    ],
+    "metallic": 0.7200000286102295,
+    "roughness": 0.4000000059604645,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {}
+  }
+}

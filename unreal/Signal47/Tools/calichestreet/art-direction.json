@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "project": "SIGNAL / 47",
+  "scope": "Caliche street: gas, souvenir, 1420 AM and immediate ground",
+  "engine": "Unreal Engine 5.8.4",
+  "platform": "Linux Vulkan",
+  "source_dcc": "Blender 5.2.2 LTS",
+  "units": "metres in Blender, centimetres in Unreal",
+  "visual_references": [
+    "unreal/Concepts/Caliche-2026-10-23/04-suvenirbutikk.png",
+    "~/Desktop/Signal47 konseptbilder/Caliche-byen.png"
+  ],
+  "visual_system": {
+    "shape": "modest low stucco volumes, recessed openings, small bevels, timber awnings",
+    "palette": "sun-worn cream plaster, muted olive trim, walnut, pale dusty gravel, restrained amber practical lights",
+    "detail": "concentrate on pedestrian windows, signs, thresholds and material contact; preserve quiet empty areas",
+    "weathering": "sun-faded paint, lower-wall dust, localized wear; maintained 1986 rural town",
+    "light": "same native sky/exposure as current game, day12:00 dusk18:30 night02:15"
+  },
+  "locks": [
+    "gas and radio source models reused",
+    "walk floors and road centre markings preserved",
+    "souvenir door remains closed",
+    "A02 physical figure/price/split/film IDs and sightline preserved",
+    "NPC and interaction anchors unchanged",
+    "no licensed or purchased geometry copied"
+  ],
+  "acceptance": [
+    "editable Blender sources and mesh/PBR manifests",
+    "native FBX axis/scale/bounds/triangle verification",
+    "same pedestrian views across day/dusk/night",
+    "selftest, native door/use and photo/anomaly regression",
+    "uncontended packaged visual review"
+  ],
+  "references_used": [
+    {
+      "url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills/blob/main/skills/disciplines/create-game-assets/SKILL.md",
+      "blob_sha": "44fed75da429247eff03a33f0f4987c020aa4be6",
+      "use": "cohesive art direction, deterministic export, technical and in-context visual gates; no global installation"
+    },
+    {
+      "url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills/blob/main/skills/disciplines/create-game-assets/references/three-d-pipeline.md",
+      "blob_sha": "378ac41c499a099c8173dc62636e7e91ed2a8d4c",
+      "use": "scale, normals, UV, collision and native import checklist"
+    },
+    {
+      "library": "ressurser/x-2097343467026289039.md",
+      "status": "UNVERIFIED",
+      "use": "reviewed as workflow reference; no code or asset reused"
+    }
+  ],
+  "status": "IN_PROGRESS; no runtime or visual PASS until captured"
+}

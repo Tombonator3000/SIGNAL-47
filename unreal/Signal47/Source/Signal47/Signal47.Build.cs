@@ -11,5 +11,6 @@ public class Signal47 : ModuleRules
 		RuntimeDependencies.Add("$(ProjectDir)/Config/Props/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/Free/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/RadioArray/Station/*.json", StagedFileType.UFS);
+		RuntimeDependencies.Add("$(ProjectDir)/Content/CalicheStreet/*.json", StagedFileType.UFS);
 	}
 }

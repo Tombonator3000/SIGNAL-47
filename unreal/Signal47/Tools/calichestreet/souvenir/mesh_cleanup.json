@@ -1,0 +1,47 @@
+{
+  "SM_Souvenir_Shell": {
+    "before_triangles": 11592,
+    "removed_exact_zero_area": 0,
+    "removed_by_material": {},
+    "after_triangles": 11592,
+    "visible_surface_hash_before": "59a7c751a9b87ea87a020a2f42666d6d4c48d46e070982f909a4799a7ebc5e4c",
+    "visible_surface_hash_after": "59a7c751a9b87ea87a020a2f42666d6d4c48d46e070982f909a4799a7ebc5e4c",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 0.0003666877746582031,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  },
+  "SM_Souvenir_Interior": {
+    "before_triangles": 77836,
+    "removed_exact_zero_area": 1260,
+    "removed_by_material": {
+      "M_Souvenir_CeramicTeal": 600,
+      "M_Souvenir_CeramicIvory": 660
+    },
+    "after_triangles": 76576,
+    "visible_surface_hash_before": "cbbb3fef13c339fe26692a14896e69ad0de7374f596f1c459a71633f7d0c998b",
+    "visible_surface_hash_after": "cbbb3fef13c339fe26692a14896e69ad0de7374f596f1c459a71633f7d0c998b",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 0.0005187690258026123,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  },
+  "SM_Souvenir_Glass": {
+    "before_triangles": 12,
+    "removed_exact_zero_area": 0,
+    "removed_by_material": {},
+    "after_triangles": 12,
+    "visible_surface_hash_before": "6230ca2047342279bf41179096cb41416ec9cbc657bbc0d4de019fdce6bba0b2",
+    "visible_surface_hash_after": "6230ca2047342279bf41179096cb41416ec9cbc657bbc0d4de019fdce6bba0b2",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 5.960464477539063e-08,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  }
+}

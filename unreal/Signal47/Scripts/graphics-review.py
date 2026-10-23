@@ -31,8 +31,45 @@ STATE_VIEWS = ('rack-online', 'rack-dark', 'indicators-online', 'indicators-dark
                'menu-settings', 'menu-save', 'menu-load', 'menu-notebook',
                'terminal-online', 'terminal-dark')
 ASSET_VIEWS = ('array-front', 'array-rear', 'array-field', 'radio-exterior', 'radio-lobby', 'radio-studio')
-ALL_VIEWS = VIEWS + STATE_VIEWS + ASSET_VIEWS
-CLOCKS = {'night': '02:15', 'dawn': '05:40'}
+STREET_VIEWS = ('street-west-front', 'street-east-front', 'street-north-route', 'street-souvenir-window')
+ALL_VIEWS = VIEWS + STATE_VIEWS + ASSET_VIEWS + STREET_VIEWS
+CLOCKS = {'night': '02:15', 'dawn': '05:40', 'day': '12:00', 'dusk': '18:30'}
+
+
+def review_clock(args):
+    wall = CLOCKS.get(args.clock, args.clock)
+    hours, minutes = (int(part) for part in wall.split(':'))
+    seconds = hours * 3600 + minutes * 60
+    timeline = getattr(args, 'timeline', 'legacy')
+    if timeline == 'evening' and seconds >= 12 * 3600:
+        seconds -= 86400
+    return {'wall': wall, 'timeline': timeline, 'seconds': seconds}
+
+
+def static_world(args, views):
+    return bool(getattr(args, 'static_world', False) or getattr(args, 'suite', '') == 'street' or
+                any(view in STREET_VIEWS for view in views))
+
+
+def clock_evidence(log, args, views):
+    expected = review_clock(args)
+    expected['static'] = static_world(args, views)
+    records = re.findall(r'S47: graphics clock request=(\d{2}:\d{2}) timeline=(legacy|evening) seconds=(-?\d+) static=([01])', log)
+    actual = [{'wall': wall, 'timeline': timeline, 'seconds': int(seconds), 'static': held == '1'}
+              for wall, timeline, seconds, held in records]
+    problems = []
+    if actual != [expected]:
+        problems.append('runtime clock/timeline/static contract differs: ' + repr(actual))
+    poses = [list(pose) for pose in re.findall(r'S47: graphics street pose (\S+) walkable=([01]) eyeHeight=([-\d.]+) clockSeconds=(-?\d+) timeline=(legacy|evening) cinematic=([01])', log)]
+    wanted = [view for view in views if view in STREET_VIEWS]
+    if [pose[0] for pose in poses] != wanted:
+        problems.append('missing or duplicate street player-floor camera proof')
+    for view, walkable, eye, seconds, timeline, cinematic in poses:
+        if (walkable != '1' or not abs(float(eye) - 1.62) <= .08 or int(seconds) != expected['seconds'] or
+                timeline != expected['timeline'] or (expected['static'] and cinematic != '1')):
+            problems.append('invalid street player-floor/clock/static proof: ' + view)
+    return {'complete': not problems, 'expected': expected, 'actual': actual,
+            'street_poses': poses, 'problems': problems}
 
 
 def partition_views(views, batch_size):
@@ -167,6 +204,8 @@ def resolution_evidence(out, log, width, height):
 
 def request_spec(args, views):
     return {'mode': args.mode, 'views': list(views), 'clock': CLOCKS.get(args.clock, args.clock),
+            'timeline': review_clock(args)['timeline'], 'clock_seconds': review_clock(args)['seconds'],
+            'static_world': static_world(args, views),
             'quality': args.quality, 'picture': args.picture or ('off' if args.quality == 'low' else 'vhs'),
             'width': args.width, 'height': args.height, 'warmup': args.warmup, 'hold': args.hold,
             'seconds': args.seconds, 'cold': args.cold, 'extra': list(args.extra),
@@ -188,6 +227,8 @@ def reusable_leaf(args, out, views, build_id):
         if not resolution['complete'] or resolution != meta.get('resolution'):
             return None
         if args.mode == 'tour':
+            if clock_evidence(log_path.read_text(errors='replace'), args, views) != meta.get('clock_evidence'):
+                return None
             capture = tour_evidence(out, views, CLOCKS.get(args.clock, args.clock), args.width, args.height, args.hold)
             capture['frame_file'] = fingerprint(out / 'frames.csv')
             if not capture['complete'] or capture != meta.get('capture'):
@@ -245,7 +286,12 @@ def one_run(args, out, views, build_id):
     if args.mode == 'tour':
         command += ['-S47GraphicsReview=' + str(out), '-S47GraphicsClock=' + clock,
                     '-S47GraphicsWarmup=' + str(args.warmup), '-S47GraphicsHold=' + str(args.hold),
-                    '-S47GraphicsViews=' + ','.join(views)]
+                    '-S47GraphicsViews=' + ','.join(views),
+                    '-S47GraphicsTimeline=' + review_clock(args)['timeline']]
+        if review_clock(args)['timeline'] == 'evening':
+            command += ['-S47EveningTimeline']
+        if static_world(args, views):
+            command += ['-S47GraphicsStatic']
     else:
         # CSV profiler is auxiliary only. It has no world/visible origin on old builds.
         command += ['-csvCaptureFrames=2400', '-S47StartupTrace=' + str(out / 'startup.csv')]
@@ -280,6 +326,8 @@ def one_run(args, out, views, build_id):
     meta['resolution'] = resolution_evidence(out, log, args.width, args.height)
     ok = ok and meta['resolution']['complete']
     if args.mode == 'tour':
+        meta['clock_evidence'] = clock_evidence(log, args, views)
+        ok = ok and meta['clock_evidence']['complete']
         evidence = tour_evidence(out, views, clock, args.width, args.height, args.hold)
         meta['capture'] = evidence
         if (out / 'frames.csv').is_file():
@@ -334,7 +382,7 @@ def run(args):
     binary = build / 'Linux/Signal47/Binaries/Linux/Signal47'
     if not binary.is_file():
         raise RuntimeError('Packaged executable missing: ' + str(binary))
-    suite = ALL_VIEWS if args.suite == 'all' else (STATE_VIEWS if args.suite == 'states' else VIEWS)
+    suite = {'all': ALL_VIEWS, 'states': STATE_VIEWS, 'street': STREET_VIEWS, 'world': VIEWS}[args.suite]
     views = args.views or ([args.view] if args.view else list(suite))
     if len(set(views)) != len(views):
         raise RuntimeError('Duplicate camera selection')
@@ -376,11 +424,15 @@ def main():
     ap.add_argument('--build', type=Path, required=True)
     ap.add_argument('--out', type=Path, required=True)
     ap.add_argument('--mode', choices=['tour', 'startup'], default='tour')
-    ap.add_argument('--clock', default='night', help='night, dawn or HH:MM')
+    ap.add_argument('--clock', default='night', help='night (02:15), dawn (05:40), day (12:00), dusk (18:30) or HH:MM')
+    ap.add_argument('--timeline', choices=['legacy', 'evening'], default='legacy',
+                    help='explicit diagnostic clock axis; evening bootstraps the signed evening timeline')
+    ap.add_argument('--static-world', action='store_true',
+                    help='hold autonomous narrative events with the cinematic guard; automatic for street cameras')
     ap.add_argument('--quality', choices=['low', 'high', 'ultra'], default='high')
     ap.add_argument('--picture', choices=['off', 'vhs'], help='default: Low clean; High/Ultra VHS')
-    ap.add_argument('--suite', choices=['world', 'states', 'all'], default='world',
-                    help='world: original20 baseline cameras; states: power, portable lights and menus')
+    ap.add_argument('--suite', choices=['world', 'states', 'street', 'all'], default='world',
+                    help='world: original20; states: power/lights/menus; street: four public Caliche player-height views')
     selection = ap.add_mutually_exclusive_group()
     selection.add_argument('--view', choices=ALL_VIEWS)
     selection.add_argument('--views', nargs='+', choices=ALL_VIEWS)
@@ -402,7 +454,13 @@ def main():
     clock = CLOCKS.get(args.clock, args.clock)
     parts = clock.split(':')
     if len(parts) != 2 or not all(x.isdigit() for x in parts) or not (0 <= int(parts[0]) < 24 and 0 <= int(parts[1]) < 60):
-        ap.error('--clock must be night, dawn or HH:MM')
+        ap.error('--clock must be night, dawn, day, dusk or HH:MM')
+    args.clock = f'{int(parts[0]):02d}:{int(parts[1]):02d}'
+    if any(value.lower().split('=')[0] in ('-s47graphicstimeline', '-s47graphicsclock', '-s47graphicsstatic',
+                '-s47eveningtimeline', '-s47evening', '-s47jump') for value in args.extra):
+        ap.error('use --clock/--timeline/--static-world; extra may not override the review bootstrap')
+    if args.mode != 'tour' and (args.timeline != 'legacy' or args.static_world):
+        ap.error('--timeline/--static-world are tour diagnostics, not startup overrides')
     if args.hold < 4 or args.hold > 15 or args.warmup < 0 or args.warmup > 30 or not 10 <= args.startup_timeout <= 180:
         ap.error('use hold 4..15s, warmup 0..30s and startup timeout 10..180s')
     if args.seconds is not None and not 12 <= args.seconds <= 120:
