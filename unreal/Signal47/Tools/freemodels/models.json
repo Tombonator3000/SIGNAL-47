@@ -1,5 +1,5 @@
 {
- "_doc": "Per model: category (folder under /Game/Free); size = what the real thing measures along its largest side in metres (the file is rescaled only when it is off by more than a quarter, a unit mistake); scale = a fixed factor instead (packs, where no one size fits); split = a pack of separate props (one asset per prop); keep / drop = mesh node names to keep or leave out (the C10 comes on a diorama with a road, poles and cacti); nanite = force Nanite on or off (default: on from 50k triangles when no material is translucent). Poly Haven models are scanned at their real size and keep it. own = a .glb of Tom's own in ~/Assets/signal47-free/own (no credit); pivot model = a split model's props keep the whole model's pivot (the printer's paper stays in place). repaint = a function in repaint.py run on the model's textures (the sheriff's livery; brand logos painted out); cuts = the triangles of the named meshes inside a box (metres in the prepared model: x forward, y up, pivot at the middle of the base) made an asset of their own, <model>_<cut>, with the model's pivot (the patrol car's driver's door, which opens).",
+ "_doc": "Per model: category (folder under /Game/Free); size = what the real thing measures along its largest side in metres (the file is rescaled only when it is off by more than a quarter, a unit mistake); scale = a fixed factor instead (packs, where no one size fits); split = a pack of separate props (one asset per prop); keep / drop = mesh node names to keep or leave out (the C10 comes on a diorama with a road, poles and cacti); nanite = force Nanite on or off (default: on from 50k triangles when no material is translucent). Poly Haven models are scanned at their real size and keep it. own = a .glb of Tom's own in ~/Assets/signal47-free/own (no credit); pivot model = a split model's props keep the whole model's pivot (the printer's paper stays in place). repaint = a function in repaint.py run on the model's textures (the sheriff's livery; brand logos painted out); full_uv = UVs kept at full precision (a building's tiling textures in metres); trim = the exported building it replaces cut out of the town's merged meshes (trim_web.py: the group, the materials to keep, boxes in the group's metres x0 x1 y0 y1 z0 z1); cuts = the triangles of the named meshes inside a box (metres in the prepared model: x forward, y up, pivot at the middle of the base) made an asset of their own, <model>_<cut>, with the model's pivot (the patrol car's driver's door, which opens).",
  "pickup_c10_1966": {
   "category": "Vehicles",
   "keep": [
@@ -290,5 +290,16 @@
   "category": "Motel",
   "own": "s47_motel_bed.glb",
   "title": "Motel bed"
+ },
+ "gas_station": {
+  "category": "Town",
+  "own": "gas_station/s47_gas_station.glb",
+  "title": "Caliche gas station",
+  "split": true,
+  "pivot": "model",
+  "nanite": false,
+  "full_uv": true,
+  "trim": {"group": "world.town.st", "keep": ["world.town.m.pave"],
+   "boxes": [[-27.1, -16.3, 3.9, 11.0, 2065.9, 2088.1], [-14.2, -6.3, 4.25, 9.35, 2045.7, 2064.3], [-16.9, -13.5, 4.1, 11.7, 2041.8, 2042.2]]}
  }
 }

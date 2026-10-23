@@ -9,6 +9,7 @@
 #include "S47Inter.h"
 #include "S47Keys.h"
 #include "S47Web.h"
+#include "S47Props.h"
 #include "S47Startup.h"
 
 using namespace S47Three;
@@ -106,6 +107,7 @@ void AS47Walker::Resolve(bool bX, double Old)
 	for (const FS47Rect& C : Web->Colliders())
 	{
 		if (bTruck && C.Id == TEXT("truck")) continue;
+		if (!C.bEnabled) continue; // (S47Props unblock: a building walked into now)
 		if (Pos.X + R <= C.MinX || Pos.X - R >= C.MaxX || Pos.Z + R <= C.MinZ || Pos.Z - R >= C.MaxZ) continue;
 		if (bX)
 		{
@@ -141,7 +143,9 @@ bool AS47Walker::InTruck(double X, double Z) const
 
 double AS47Walker::FloorAt(double X, double Z) const
 {
-	// the open land's ground (US47World), then Player.floor, supplied by World.enter for SARO and Caliche
+	// a prop's own floor first (Unreal only: the gas station one walks into, S47Props), then the open
+	// land's ground (US47World), then Player.floor, supplied by World.enter for SARO and Caliche
+	{ const double Y = AS47Props::FloorAt(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	if (LandFloor) { const double Y = LandFloor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	if (Floor) { const double Y = Floor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	// the highest surface under the player, up to a stair step over the current floor (a desk
