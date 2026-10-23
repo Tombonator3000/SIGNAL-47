@@ -4,6 +4,15 @@
 #include "S47RadioVoice.h"
 
 class US47Audio;
+class FS47DialogueLevelNode;
+
+struct FS47DialogueAudioLevels
+{
+	FString ClipId, Channel;
+	bool bReceiverFilter = false;
+	int64 SourceSamples = 0, RoutedSamples = 0;
+	double PcmPeak = 0, PcmRms = 0, SourcePeak = 0, SourceRms = 0, RoutedPeak = 0, RoutedRms = 0, BusGain = 1;
+};
 
 struct FS47DialogueLine
 {
@@ -29,7 +38,11 @@ public:
 	using FResolve = TFunction<TOptional<TArray<FS47RadioClip>>(const FS47DialogueInput&, FS47RadioVoice&)>;
 	using FTelephone = TFunction<bool(const FS47RadioClip&)>;
 	using FNotify = TFunction<void(const FString&)>;
-	FS47RecordedDialogue(US47Audio* InAudio, const FString& BankKind, FResolve InResolve, FTelephone InTelephone = {});
+	// Native evening voices can share the receiver filter and still use the car radio's bus,
+	// or speak at an actor's three.js position (metres, y up).
+	struct FOutput { TOptional<FVector> At; bool bRadioBus = false; FString Channel; };
+	using FOutputRoute = TFunction<FOutput(const FS47RadioClip&)>;
+	FS47RecordedDialogue(US47Audio* InAudio, const FString& BankKind, FResolve InResolve, FTelephone InTelephone = {}, FOutputRoute InOutput = {});
 	virtual ~FS47RecordedDialogue();
 	TSharedPtr<FS47RadioVoice> Bank;
 	bool Enabled() const { return bOn; }
@@ -41,6 +54,8 @@ public:
 	bool Available(const FS47DialogueInput& Input) const;
 	void Stop();
 	void Play(const FS47DialogueInput& Input, FNotify OnState = {});
+	void SetLevelDiagnostics(bool bValue) { bLevelDiagnostics = bValue; }
+	FS47DialogueAudioLevels AudioLevels() const;
 	static bool SelfTest(TArray<FString>& Lines);
 private:
 	bool bOn = false;
@@ -55,6 +70,11 @@ private:
 	TWeakObjectPtr<US47Audio> Audio;
 	FResolve ResolveInput;
 	FTelephone Telephone;
+	FOutputRoute OutputRoute;
+	bool bLevelDiagnostics = false;
+	TSharedPtr<FS47DialogueLevelNode> SourceMeter, RoutedMeter;
+	TSharedPtr<FS47GainNode> OutputBus;
+	FS47DialogueAudioLevels ClipLevels, LastLevels;
 	TArray<FS47RadioClip> Plan;
 	TMap<FString, TSharedPtr<FS47AudioBuffer>> Buffers;
 	struct FLife { FS47RecordedDialogue* Owner = nullptr; };
@@ -63,4 +83,5 @@ private:
 	void DisposeNodes();
 	void PlayNext(int32 Gen, int32 I);
 	void Failed(int32 Gen);
+	void ReportLevels(const TCHAR* Reason);
 };

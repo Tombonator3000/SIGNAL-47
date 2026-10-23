@@ -2,11 +2,36 @@
 #include "S47RecordedDialogue.h"
 
 #include "S47Audio.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
-FS47RecordedDialogue::FS47RecordedDialogue(US47Audio* InAudio, const FString& BankKind, FResolve InResolve, FTelephone InTelephone)
-	: Bank(MakeShared<FS47RadioVoice>(BankKind)), Audio(InAudio), ResolveInput(MoveTemp(InResolve)), Telephone(MoveTemp(InTelephone)), Life(MakeShared<FLife>())
+DEFINE_LOG_CATEGORY_STATIC(LogS47DialogueAudio, Log, All);
+
+// Transparent, opt-in taps measure samples actually pulled by the live destination.
+// They run under the context lock, like the rest of S47WebAudio's graph.
+class FS47DialogueLevelNode : public FS47AudioNode
+{
+public:
+	explicit FS47DialogueLevelNode(const TSharedRef<FS47AudioContext>& C) : FS47AudioNode(C) {}
+	int64 Samples = 0;
+	double Peak = 0, SumSquares = 0;
+	double Rms() const { return Samples ? FMath::Sqrt(SumSquares / Samples) : 0; }
+protected:
+	virtual void Process(int64 Quantum) override
+	{
+		PullInputs(Quantum, Out);
+		for (int32 C = 0; C < Out.Channels; ++C) for (const float V : Out.D[C])
+		{
+			++Samples; Peak = FMath::Max(Peak, FMath::Abs(double(V))); SumSquares += double(V) * V;
+		}
+	}
+};
+
+FS47RecordedDialogue::FS47RecordedDialogue(US47Audio* InAudio, const FString& BankKind, FResolve InResolve, FTelephone InTelephone, FOutputRoute InOutput)
+	: Bank(MakeShared<FS47RadioVoice>(BankKind)), Audio(InAudio), ResolveInput(MoveTemp(InResolve)), Telephone(MoveTemp(InTelephone)), OutputRoute(MoveTemp(InOutput)), Life(MakeShared<FLife>())
 {
 	Life->Owner = this;
+	bLevelDiagnostics = FParse::Param(FCommandLine::Get(), TEXT("S47VoiceLevels"));
 }
 FS47RecordedDialogue::~FS47RecordedDialogue() { Notify = {}; Stop(); Life->Owner = nullptr; Life.Reset(); }
 
@@ -19,6 +44,7 @@ void FS47RecordedDialogue::Stop()
 {
 	++Generation;
 	bPending = false; // The native bank loads synchronously, so the generation replaces AbortController.
+	ReportLevels(TEXT("stopped"));
 	if (Source)
 	{
 		Source->OnEnded = nullptr;
@@ -29,7 +55,31 @@ void FS47RecordedDialogue::Stop()
 	StateTo(TEXT("idle")); Notify = {};
 }
 
-void FS47RecordedDialogue::DisposeNodes() { for (const auto& Node : ExtraNodes) Node->Disconnect(); ExtraNodes.Reset(); }
+void FS47RecordedDialogue::DisposeNodes()
+{
+	for (const auto& Node : ExtraNodes) Node->Disconnect(); ExtraNodes.Reset();
+	SourceMeter.Reset(); RoutedMeter.Reset(); OutputBus.Reset(); ClipLevels = {};
+}
+
+FS47DialogueAudioLevels FS47RecordedDialogue::AudioLevels() const
+{
+	if (!SourceMeter || !RoutedMeter) return LastLevels;
+	FS47AudioContext::FBatch Batch(*SourceMeter->Ctx);
+	FS47DialogueAudioLevels Levels = ClipLevels;
+	Levels.SourceSamples = SourceMeter->Samples; Levels.SourcePeak = SourceMeter->Peak; Levels.SourceRms = SourceMeter->Rms();
+	Levels.RoutedSamples = RoutedMeter->Samples; Levels.RoutedPeak = RoutedMeter->Peak; Levels.RoutedRms = RoutedMeter->Rms();
+	Levels.BusGain = OutputBus ? OutputBus->Gain.Value() : 1;
+	return Levels;
+}
+
+void FS47RecordedDialogue::ReportLevels(const TCHAR* Reason)
+{
+	if (!SourceMeter || !RoutedMeter) return;
+	LastLevels = AudioLevels();
+	UE_LOG(LogS47DialogueAudio, Display, TEXT("S47: dialogue audio clip=%s route=%s receiverFilter=%d reason=%s pcmPeak=%.6f pcmRms=%.6f sourceSamples=%lld sourcePeak=%.6f sourceRms=%.6f routedSamples=%lld routedPeak=%.6f routedRms=%.6f busGain=%.3f"),
+		*LastLevels.ClipId, *LastLevels.Channel, LastLevels.bReceiverFilter, Reason, LastLevels.PcmPeak, LastLevels.PcmRms, LastLevels.SourceSamples, LastLevels.SourcePeak, LastLevels.SourceRms,
+		LastLevels.RoutedSamples, LastLevels.RoutedPeak, LastLevels.RoutedRms, LastLevels.BusGain);
+}
 
 void FS47RecordedDialogue::Play(const FS47DialogueInput& Input, FNotify OnState)
 {
@@ -77,11 +127,38 @@ void FS47RecordedDialogue::PlayNext(int32 Gen, int32 I)
 	FS47AudioContext::FBatch Batch(*Ctx);
 	const auto Src = Ctx->CreateBufferSource(); Src->Buffer = Buffers.FindRef(Plan[I].Id);
 	if (!Src->Buffer) { Failed(Gen); return; }
-	if (Telephone && Telephone(Plan[I]))
+	const bool bTelephone = Telephone && Telephone(Plan[I]);
+	const FOutput Output = OutputRoute ? OutputRoute(Plan[I]) : FOutput();
+	OutputBus = Output.bRadioBus ? A->RadioBus : (bTelephone || Output.At.IsSet()) ? A->SfxBus : A->Master;
+	TSharedPtr<FS47AudioNode> Tail = Src;
+	if (bLevelDiagnostics)
 	{
-		const FS47PhoneLine Line = A->PhoneLine(); Src->Connect(Line.Input); ExtraNodes.Append(Line.Nodes);
+		SourceMeter = MakeShared<FS47DialogueLevelNode>(Ctx.ToSharedRef()); RoutedMeter = MakeShared<FS47DialogueLevelNode>(Ctx.ToSharedRef());
+		Src->Connect(SourceMeter); Tail = SourceMeter;
+		ExtraNodes.Add(SourceMeter); ExtraNodes.Add(RoutedMeter);
+		ClipLevels.ClipId = Plan[I].Id;
+		ClipLevels.bReceiverFilter = bTelephone;
+		ClipLevels.Channel = !Output.Channel.IsEmpty() ? Output.Channel : Output.bRadioBus ? TEXT("radio") : Output.At.IsSet() ? TEXT("positional") : bTelephone ? TEXT("phone") : TEXT("master");
+		double Sum = 0; int64 Samples = 0;
+		for (int32 C = 0; C < Src->Buffer->NumberOfChannels(); ++C) for (int32 F = 0; F < Src->Buffer->Length(); ++F)
+		{
+			const double V = Src->Buffer->GetChannelData(C)[F]; ++Samples; Sum += V * V; ClipLevels.PcmPeak = FMath::Max(ClipLevels.PcmPeak, FMath::Abs(V));
+		}
+		ClipLevels.PcmRms = Samples ? FMath::Sqrt(Sum / Samples) : 0;
 	}
-	else Src->Connect(A->Master);
+	if (bTelephone)
+	{
+		const FS47PhoneLine Line = A->PhoneLine(); Tail->Connect(Line.Input); ExtraNodes.Append(Line.Nodes);
+		Line.Gain->Disconnect(); Tail = Line.Gain;
+	}
+	if (Output.At)
+	{
+		const FVector At = *Output.At;
+		const auto Panner = Ctx->CreatePanner(); Panner->RefDistance = 1.8; Panner->RolloffFactor = 1.2; Panner->MaxDistance = 60;
+		Panner->SetPosition(At.X, At.Y, At.Z); Tail->Connect(Panner); Tail = Panner; ExtraNodes.Add(Panner);
+	}
+	if (RoutedMeter) { Tail->Connect(RoutedMeter); Tail = RoutedMeter; }
+	Tail->Connect(OutputBus);
 	Source = Src; Text = Plan[I].Text;
 	const TWeakPtr<FLife> WeakLife = Life;
 	const TWeakPtr<FS47BufferSourceNode> WeakSource = Src;
@@ -92,6 +169,7 @@ void FS47RecordedDialogue::PlayNext(int32 Gen, int32 I)
 		if (!L || !L->Owner || L->Owner->Generation != Gen) return;
 		FS47RecordedDialogue* Self = L->Owner;
 		if (Self->Source == Ended) Self->Source.Reset();
+		Self->ReportLevels(TEXT("ended")); Self->DisposeNodes();
 		Self->PlayNext(Gen, I + 1);
 	};
 	Src->Start(Ctx->CurrentTime() + (I ? 0.22 : 0));
@@ -102,6 +180,7 @@ void FS47RecordedDialogue::Failed(int32 Gen)
 {
 	if (Gen != Generation || !bPending) return;
 	bPending = false;
+	ReportLevels(TEXT("error"));
 	if (Source) { Source->OnEnded = nullptr; Source->Stop(); Source->Disconnect(); Source.Reset(); }
 	Text.Reset(); Plan.Reset(); Buffers.Reset(); DisposeNodes();
 	StateTo(TEXT("error")); Notify = {};
@@ -129,5 +208,40 @@ bool FS47RecordedDialogue::SelfTest(TArray<FString>& Lines)
 	Check(R.Playing(), TEXT("the next source waits the authored 0.22 seconds"));
 	R.Stop(); Pcm.SetNumZeroed(16000 * 2); A->Ctx->Render(Pcm.GetData(), 16000); A->Ctx->Tick(0.34);
 	Check(R.State() == TEXT("idle") && !R.Status().Text && R.Status().Clips.IsEmpty(), TEXT("stop invalidates the pending generation and clears its queue"));
+	// Render the real routing graph, not just decoded buffers or source state.
+	struct FRendered { FS47DialogueAudioLevels Levels; double Rms = 0; };
+	auto RenderRoute = [](bool bPhone, bool bRadio, TOptional<FVector> At, double RadioGain, double SfxGain) -> FRendered
+	{
+		US47Audio* A2 = NewObject<US47Audio>(); A2->Ctx = FS47AudioContext::Make();
+		A2->Master = A2->Ctx->CreateGain(); A2->Master->Connect(A2->Ctx->Destination);
+		A2->SfxBus = A2->Ctx->CreateGain(); A2->SfxBus->Gain.SetValue(SfxGain); A2->SfxBus->Connect(A2->Master);
+		A2->RadioBus = A2->Ctx->CreateGain(); A2->RadioBus->Gain.SetValue(RadioGain); A2->RadioBus->Connect(A2->Master);
+		FS47RecordedDialogue D(A2, TEXT("ensemble"), {}, [bPhone](const FS47RadioClip&) { return bPhone; },
+			[bRadio, At](const FS47RadioClip&) { FOutput Out; Out.At = At; Out.bRadioBus = bRadio; return Out; });
+		D.SetLevelDiagnostics(true);
+		FS47RadioClip Clip; Clip.Id = TEXT("selftest-route"); Clip.Text = TEXT("Synthetic routing test.");
+		const auto B = A2->Ctx->CreateBuffer(1, 9600, 48000);
+		for (int32 F = 0; F < B->Length(); ++F) B->GetChannelData(0)[F] = 0.25f * FMath::Sin(2.0 * PI * 1000 * F / 48000);
+		D.Plan = { Clip }; D.Buffers.Add(Clip.Id, B); D.bPending = true; D.PlayNext(D.Generation, 0);
+		TArray<float> Rendered; Rendered.SetNumZeroed(2048 * 2); A2->Ctx->Render(Rendered.GetData(), 2048);
+		FRendered Result; Result.Levels = D.AudioLevels();
+		double Sum = 0; for (const float V : Rendered) Sum += V * V;
+		Result.Rms = FMath::Sqrt(Sum / Rendered.Num());
+		const int64 BeforePause = Result.Levels.SourceSamples;
+		A2->Ctx->Suspend(true); A2->Ctx->Render(Rendered.GetData(), 2048);
+		const bool bPaused = D.AudioLevels().SourceSamples == BeforePause;
+		A2->Ctx->Suspend(false); A2->Ctx->Render(Rendered.GetData(), 2048);
+		if (!bPaused || D.AudioLevels().SourceSamples <= BeforePause) Result.Rms = -1;
+		D.Stop(); return Result;
+	};
+	const auto Direct = RenderRoute(false, false, {}, 1, 1);
+	Check(Direct.Levels.SourceSamples > 0 && Direct.Levels.SourceRms > 0.15 && Direct.Rms > 0.15, TEXT("diagnostics measure PCM pulled by the live destination; pause holds and resume advances it"));
+	const auto Receiver = RenderRoute(true, true, {}, 1, 0);
+	Check(Receiver.Levels.Channel == TEXT("radio") && Receiver.Levels.bReceiverFilter && Receiver.Levels.RoutedRms > 0.05 && Receiver.Rms > 0.05, TEXT("a filtered receiver reaches RadioBus even while SfxBus is muted"));
+	const auto MutedRadio = RenderRoute(true, true, {}, 0, 1);
+	Check(MutedRadio.Levels.SourceRms > 0.15 && MutedRadio.Levels.RoutedRms > 0.05 && MutedRadio.Levels.BusGain == 0 && MutedRadio.Rms == 0, TEXT("the radio volume bus controls a filtered recording without losing its source metrics"));
+	const auto Near = RenderRoute(false, false, FVector(0, 0, -1), 1, 1);
+	const auto Far = RenderRoute(false, false, FVector(0, 0, -20), 1, 1);
+	Check(Near.Levels.Channel == TEXT("positional") && Near.Rms > 0.1 && Far.Rms > 0 && Far.Rms < Near.Rms * 0.2, TEXT("an in-room recording pans and attenuates at its authored three.js position"));
 	return bOk;
 }
