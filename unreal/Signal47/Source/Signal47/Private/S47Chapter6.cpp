@@ -188,7 +188,7 @@ void US47Chapter6::Drive(double Dt)
 	const double Pace = T - FMath::Max(0.0, -At.S) / PACE;
 	if (!LastMileStep(Dt, At, Drv->Speed))
 	{
-		SetClock(Host && Host->bEveningTimeline ? FMath::Max(Clock(), FMath::Min(Pace, T - 0.05)) : FMath::Clamp(Clock(), Pace - 60, Pace));
+		SetClock(Host && Host->bEveningTimeline ? S47Timeline::ApproachClock(Clock(), Pace, LastMile.bSkipped) : FMath::Clamp(Clock(), Pace - 60, Pace));
 		const double Left = T - Clock();
 		if (Left < 20 && !(Host && Host->bEveningTimeline)) SetClock(Clock() - Dt * (1 - FMath::Max(0.02, Left / 20)));
 	}

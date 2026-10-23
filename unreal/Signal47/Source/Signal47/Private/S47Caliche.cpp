@@ -427,6 +427,7 @@ bool FS47Caliche::SelfTest(TArray<FString>& Out)
  Check(S47Timeline::Chapter3(true) < S47Timeline::Chapter4(true) && S47Timeline::Chapter4(true) < S47Timeline::Chapter5(true) && S47Timeline::Chapter5(true) < S47Timeline::Departure && S47Timeline::Finale - S47Timeline::Departure == 9 * 60, TEXT("evening timeline: chapter order and fixed finale"));
  Check(S47Timeline::LocalOnAir(-6 * 3600) && !S47Timeline::EarlOnDuty(-6 * 3600) && S47Timeline::EarlOnDuty(0) && !S47Timeline::LocalOnAir(4 * 3600), TEXT("evening timeline: local presenter until midnight; Earl leaves at four"));
  Check(S47Timeline::DeputyOnDuty(-6 * 3600) && !S47Timeline::DeputyOnDuty(3 * 3600) && S47Timeline::DeputyOnDuty(DEPUTY_IN), TEXT("evening timeline: deputy working in evening, patrol 02:45 to 04:30"));
+ Check(S47Timeline::ApproachClock(S47Timeline::Finale - 80, S47Timeline::Finale - 18, false) == S47Timeline::Finale - 47 && S47Timeline::ApproachClock(S47Timeline::Finale - 47, S47Timeline::Finale - 90, false) == S47Timeline::Finale - 47, TEXT("evening timeline: slow approach reserves exact CB time and reversing never rewinds"));
  Check(S47Timeline::ResidualText(TEXT("02:13:47 / 02:14"), true) == TEXT("00:13:47 / 00:14") && S47Timeline::ResidualText(TEXT("02:17:00 / 02:17:47"), true) == TEXT("02:17:00 / 02:17:47"), TEXT("evening timeline: no change to 1947 timing record"));
  bOk &= FS47EarlDialogue::SelfTest(Out);
 	return bOk;
