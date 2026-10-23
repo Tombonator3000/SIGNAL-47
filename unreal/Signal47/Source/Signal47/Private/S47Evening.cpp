@@ -37,7 +37,15 @@ FS47Evening::FS47Evening(US47Main* InM) : M(InM)
  const auto Previous = M->World->OnParked;
  M->World->OnParked = [this, Previous](const FString& Place) { if (Previous && !Opening()) Previous(Place); Parked(Place); };
 }
-FS47Evening::~FS47Evening() { Stop(); }
+FS47Evening::~FS47Evening()
+{
+ // UObject purge order can destroy AS47Web's node arrays before US47Main.
+ // Stop() is for a live night/title transition; destruction only releases owned audio.
+ if (Voice) Voice->Stop();
+ if (RadioVoice) RadioVoice->Stop();
+ if (Music) { Music->Stop(); Music->Disconnect(); }
+ if (MusicGain) MusicGain->Disconnect();
+}
 
 void FS47Evening::StopRing()
 {
