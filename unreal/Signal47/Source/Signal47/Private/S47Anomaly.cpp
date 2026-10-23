@@ -470,7 +470,7 @@ void FS47Anomaly::Photo(const FS47AlbumShot& P)
  if (Added)
  {
   Changed(); Log(TEXT("photograph linked"));
-  if (M && M->UI) M->UI->Toast(TEXT("Print filed."),2.2f);
+  // The shutter and retained print are the receipt; do not stack a second HUD hint.
  }
 }
 
