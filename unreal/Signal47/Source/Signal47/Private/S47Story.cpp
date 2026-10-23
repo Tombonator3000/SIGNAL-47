@@ -680,6 +680,7 @@ void AS47Story::TearPrintout()
 {
 	if (Audio.IsValid()) Audio->Play(TEXT("thud_soft"), 0.35f, Saro.IsValid() ? Saro->PropLocation(TEXT("printer")) : FVector::ZeroVector, 1.6f);
 	if (Saro.IsValid()) Saro->SetPrinterPaper(-1.f);
+	NS.PrintoutAt = ClockSec;
 	const FS47Doc Doc = S47Docs::Printout(ClockSec);
 	DocsList.Add(Doc);
 	SetPhase(ES47Phase::Ringing);
@@ -809,13 +810,16 @@ void AS47Story::Finish()
 void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 {
 	// Prologue.afterPrologue
+ // Restore the actual event before building any fixture fallback. Existing photos keep their own saved clocks.
+ const auto SavedNs = S47J::Obj(Saved, TEXT("ns"));
+ EventClock = S47J::Num(S47J::Obj(Saved, TEXT("s")), TEXT("eventClock"), EventClock);
 	bLogRead = true; bAnswered = true;
 	PowerUp(true);
 	Rx.Advance(); Rx.Advance(); Rx.Advance();
 	Rx.bSolved = true;
 	bResidualVisible = true;
 	ClockSec = S47J::Has(Saved, TEXT("clock")) ? S47J::Num(Saved, TEXT("clock")) : EventClock + 70;
-	DocsList = { S47Docs::ShiftLog(bEveningTimeline), S47Docs::Printout(EventClock - 60) };
+	DocsList = { S47Docs::ShiftLog(bEveningTimeline), RestorePrintout(SavedNs, EventClock - 60, Saved.IsValid()) };
 	NotesList.Empty();
 	for (const FString& N : { FString(S47Signal::Profiles()[0].Note), FString(S47Signal::Profiles()[1].Note),
 		FString(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")),
@@ -846,6 +850,8 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		}
 		if (S47J::Has(Ns, TEXT("solveAt"))) NS.SolveAt = S47J::Num(Ns, TEXT("solveAt"));
 		NS.bJacket = S47J::Bool(Ns, TEXT("jacket"));
+		double PrintoutAt = 0;
+		if (Ns->TryGetNumberField(TEXT("printoutAt"), PrintoutAt) && FMath::IsFinite(PrintoutAt)) NS.PrintoutAt = PrintoutAt;
 		// array: copyArraySave(saved.ns.array) (story/arrayBack.ts reads it through its store, which
 		// copies it); hondo: Number.isFinite(saved.ns.hondo) ? saved.ns.hondo : undefined
 		NS.Array = S47J::Obj(Ns, TEXT("array")).IsValid() ? S47J::Clone(S47J::Obj(Ns, TEXT("array"))) : nullptr;
@@ -973,6 +979,41 @@ void AS47Story::ResetAll()
 	if (Audio.IsValid()) { Audio->Stop(TEXT("ring")); Audio->Stop(TEXT("printer")); Audio->SetCarrier(0, 0, 0); Audio->SignalOff(); Audio->StopMotors(); }
 	if (Decoder.IsValid()) Decoder->Stop();
 	if (Shot.IsValid()) Shot->Stop();
+}
+
+FS47Doc AS47Story::RestorePrintout(const TSharedPtr<FJsonObject>& SavedNs, double FallbackClock, bool bSavedCase)
+{
+ double Stamp = 0;
+ if (SavedNs && SavedNs->TryGetNumberField(TEXT("printoutAt"), Stamp) && FMath::IsFinite(Stamp)) return S47Docs::Printout(Stamp);
+ FS47Doc Doc = S47Docs::Printout(FallbackClock);
+ if (bSavedCase)
+ {
+  // Old cases never stored the time the player tore off the paper. Do not invent an authentic stamp.
+  const FString Original = FString::Printf(TEXT("DATE    04/14/86   %s"), *S47Text::ClockText(FallbackClock));
+  Doc.Page.ReplaceInline(*Original, TEXT("DATE    04/14/86   TIME NOT RECORDED"));
+  Doc.Stamp = TEXT("RECONSTRUCTED LEGACY COPY");
+  Doc.Transcript += TEXT("\n\nReconstructed from an earlier save. The original paper's acquisition time was not stored. Its original clock stamp is unavailable; the case's historical timeline is unchanged.");
+ }
+ return Doc;
+}
+
+bool AS47Story::TimelineSelfTest(TArray<FString>& Out)
+{
+ bool Ok = true;
+ auto Check = [&](bool Pass, const TCHAR* What) { Out.Add(FString::Printf(TEXT("%s timeline save: %s"), Pass ? TEXT("ok") : TEXT("FAIL"), What)); Ok &= Pass; };
+ // Acquisition may be much later than solve/event: the exact paper must survive either timeline.
+ for (const double Acquired : { 30 * 60 + 17.625, 2 * 3600 + 30 * 60 + 17.625 })
+ {
+  const auto Ns = S47J::New(); S47J::Set(Ns, TEXT("printoutAt"), Acquired); S47J::Set(Ns, TEXT("solveAt"), Acquired - 120);
+  const auto Roundtrip = S47J::Read(S47J::Write(Ns));
+  const FS47Doc Original = S47Docs::Printout(Acquired), Restored = RestorePrintout(Roundtrip, Acquired - 600, true);
+  Check(Original.Page == Restored.Page && Original.Transcript == Restored.Transcript && Original.Stamp == Restored.Stamp, TEXT("exact acquisition stamp survives JSON roundtrip independently of solve and event"));
+ }
+ const auto Old = S47J::New(); S47J::Set(Old, TEXT("solveAt"), 2 * 3600 + 14 * 60);
+ const FS47Doc Missing = RestorePrintout(Old, 2 * 3600 + 14 * 60, true);
+ Check(Missing.Page.Contains(TEXT("TIME NOT RECORDED")) && Missing.Transcript.Contains(TEXT("original clock stamp is unavailable")), TEXT("legacy case with no acquisition stamp is explicitly reconstructed"));
+ Check(RestorePrintout(nullptr, 2 * 3600 + 14 * 60, false).Page == S47Docs::Printout(2 * 3600 + 14 * 60).Page, TEXT("unsaved regression fixture retains authored legacy time"));
+ return Ok;
 }
 
 double AS47Story::TimelineTime(double Legacy) const

@@ -433,6 +433,7 @@ bool FS47Caliche::SelfTest(TArray<FString>& Out)
  Check(S47Timeline::DeputyOnDuty(-6 * 3600) && !S47Timeline::DeputyOnDuty(3 * 3600) && S47Timeline::DeputyOnDuty(DEPUTY_IN), TEXT("evening timeline: deputy working in evening, patrol 02:45 to 04:30"));
  Check(S47Timeline::ApproachClock(S47Timeline::Finale - 80, S47Timeline::Finale - 18, false) == S47Timeline::Finale - 47 && S47Timeline::ApproachClock(S47Timeline::Finale - 47, S47Timeline::Finale - 90, false) == S47Timeline::Finale - 47, TEXT("evening timeline: slow approach reserves exact CB time and reversing never rewinds"));
  Check(S47Timeline::ResidualText(TEXT("02:13:47 / 02:14"), true) == TEXT("00:13:47 / 00:14") && S47Timeline::ResidualText(TEXT("02:17:00 / 02:17:47"), true) == TEXT("02:17:00 / 02:17:47"), TEXT("evening timeline: no change to 1947 timing record"));
+ bOk &= AS47Story::TimelineSelfTest(Out);
  bOk &= FS47EarlDialogue::SelfTest(Out);
 	return bOk;
 }

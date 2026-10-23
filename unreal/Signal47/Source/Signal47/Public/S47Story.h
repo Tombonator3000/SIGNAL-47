@@ -28,6 +28,8 @@ struct FS47NightState
 	TArray<FString> Papers; bool bK3Open = false; TArray<FS47LogLine> Log; TOptional<double> SolveAt; bool bJacket = false;
 	TSharedPtr<class FJsonObject> Array;
 	TOptional<double> Hondo;
+	// Acquisition stamp of the actual paper, distinct from solve time and the later array event.
+	TOptional<double> PrintoutAt;
 	/** (Unreal only, Tom's request) T. Vega's seven keyed on the processor: TAPE A has come (tapeA). */
 	bool bTapeA = false;
 };
@@ -50,6 +52,8 @@ public:
  bool bEveningTimeline = false;
  bool bOpeningHeld = false;
  void BeginEveningShift();
+ static FS47Doc RestorePrintout(const TSharedPtr<class FJsonObject>& SavedNs, double FallbackClock, bool bSavedCase);
+ static bool TimelineSelfTest(TArray<FString>& Out);
  double TimelineTime(double Legacy) const;
  FString TimelineText(const FString& Text) const { return S47Timeline::ResidualText(Text, bEveningTimeline); }
 	virtual void Reset() override { ResetAll(); } // Prologue.reset: back to the start of the night, every chapter with it
