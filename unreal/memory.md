@@ -2,13 +2,21 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Skumlere anomaly-pilot, Codex 23. oktober 2026
+
+- Tom ba om sterkere uro etter integrert `ed061aca`. Gjeldende pass står i `ANOMALY_SCARIER.md`; førsteleveransens rapport er historikk. Korte observasjoner i verdensbildet, ingen ekstra fotokvittering, ingen «pappen lever»-stråmann. Bevis og plausible uavklarte valg ligger i film/notatbok.
+- N02 forklarer kveldslampen, men ny nattfilm har et uavklart vindusomriss. A02 lagrer ankomstretning og en andre usett plassering nærmere veien; ny film har en ekstra form. P01 følger faktisk gange med nærmere printer, tier ved stans og blinker ON AIR i tomt studio. Disse tre designreglene bøyes bevisst for Toms «spenning foran regler»; harde klokker/kanon beholdes.
+- `anomaly.DreadVersion=2` i save v3 bevarer film-ID/klokker, fase/retning og P01-slutt. Tidligere hørt P01 avsluttes ved migrering, uten reprise. Nye former er faktiske skjulte eksponeringsmesher med fri sikt og vellykket render, ikke bare metadatamerker. Tekst røper dem først etter fremkalling. Gamle foto beholdes.
+- `AS47Web::AdoptNode` bevarer bare posisjon; bruk `FS47Obj::SetScale` for native deler som senere flyttes/roteres, ellers blir de enhetsstore. Nye cue-kilder og ambience-gate må eie egne lydnoder og resettes ved modal, stor scene, telefon, områdebytte, last og tittel. Ikke endre opprinnelige bussnivåer eller stemmer.
+- Sluttester og pakket retak pågår. Evidens i `~/scratch-bm/Signal47-anomaly-scarier`. Én tung jobb, ingen stopp av Tom og ingen installed-game-grace. Ingen push/PR/installasjon; Claude integrerer.
+
 ## Anomaly-pilot, Codex 23. oktober 2026
 
-- `codex/anomaly-pilot` implementerer N01/N02/A02/P01 på den flettede kveldstarten. Bruk `ANOMALY_RUNTIME.md` som gjeldende leveranse- og testrapport. Senere kontor/trafo/VHS, bygningsløft og fullnatt er fortsatt egne leveranser.
+- `codex/anomaly-pilot` implementerer N01/N02/A02/P01 på den flettede kveldstarten. Førsteleveransen er dokumentert i `ANOMALY_RUNTIME.md`; den senere skumlere runden står i `ANOMALY_SCARIER.md`. Senere kontor/trafo/VHS, bygningsløft og fullnatt er fortsatt egne leveranser.
 - Gjenbruk kamera/instantalbum, docs/notatbok og authored N01-manus. Undersøkelser har separate referanser, eksponeringer, reviderbare vurderinger og fysisk oppfølging; `TownSeen` blir aldri automatisk et bevist funn. Tidlige paneler røper ikke P01 eller senere figurplassering.
 - Save v3 får `anomaly` versjon1 og rutinekontrollpunkt før survey. Arkivets faktiske 17:10-JPEG lagres med saken som egen ID/url/clock, så senere programversjoner ikke bytter gamle referansebilder. Albumets `unavailable` følger en manglende original gjennom disk og verdenslasting; erstatningskort er aldri fotografisk bevis.
 - Ett eksisterende pappobjekt har vindus-/studioposisjon med samme prisetikett og splitt. Vinduets høyde kommer fra faktisk byggproxy, ikke skrånende terreng. Siktkontroll følger albumets regler for synlige opake flater; usynlige hitboxer sperrer ikke foto. Ikke hardkod meshnumre.
-- Tidlig kamera fullfører ikke B-12/mørkerom; rutinekjøring utløser ikke ch5. 04:55, Earl 04:00, P13 uten anomalikvote, historisk 1947 og 47 sekunders finale er bevart. Ingen designregel er bøyd for mer skrekk.
+- Tidlig kamera fullfører ikke B-12/mørkerom; rutinekjøring utløser ikke ch5. 04:55, Earl 04:00, P13 uten anomalikvote, historisk 1947 og 47 sekunders finale er bevart. Den første leveransen bøyde ingen designregel; den skumlere runden over gjør det uttrykkelig.
 - Sluttspillkode 1d3baeb0 og separat testverktøy c6b4f023; core 609a9c6d innflettet. Pakke4, 1278 selvtester, hel pilot i High/VHS og Low/Clean, feilfilm, migrering, 7/7 kortregresjoner, direkte/burger med stemmer og eksisterende TV-opptak PASS. Fire sluttbilder visuelt kontrollert. Statisk Caliche 1440p p95 7,921 → 7,967 ms (+0,58 %), avgrenset av/på-kontroll. Bevis/proveniens i ~/scratch-bm/Signal47-anomaly-pilot og ANOMALY_RUNTIME.md.
 - Én tung UE-prosess, 10 GiB og ingen installed-game-grace. Kilde, pakket kandidat og installert standard holdes adskilt. Ingen push/PR/installasjon, Claude integrerer. Menneskelig input, lytting, uro og fullnatt må merkes UNVERIFIED inntil faktisk prøvd.
 

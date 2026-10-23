@@ -1,5 +1,12 @@
 # Todo for unreal/
 
+## Skumlere pilotrunde, codex/anomaly-pilot, 23. oktober 2026
+
+- [x] Sparsomme verdenshint, plausible uavklarte A02-valg, nattefilm ved vaskeriet, rettet/andre flyttet pappfigur og P01 som kommer nærmere ved gange med ett ON AIR-blink.
+- [x] Save v3-migrering, ekte bevart film og tekniske selvtester; egne avbruddsrutiner for lys/lyd. Ingen Evening-/voice-endringer eller endring av harde storygrenser.
+- [ ] Sluttpakke: hel skumlere rute, før/etter-hint og hvert nytt øyeblikk, migrering og kort gammel historieregresjon. Se ANOMALY_SCARIER.md.
+- [ ] Tom prøver lydmiksen, figurens direkte nærvær, fotosporets lesbarhet og frykt med ekte input. Automatikk avgjør ikke dette.
+
 ## Anomaly-pilot, codex/anomaly-pilot, 23. oktober 2026
 
 - [x] N01 med faktisk utskrift mot kveldens service-/sendeplan, korrigert feilvalg og fysisk forespørsel.
