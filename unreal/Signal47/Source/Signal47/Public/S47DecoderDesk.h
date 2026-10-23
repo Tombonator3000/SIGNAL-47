@@ -130,7 +130,7 @@ public:
 	/** His page under the reel ('vegaPage') and TAPE A ('tapeA'); by id, as the case's papers are put
 	 *  back (Prologue.paperById). */
 	static FS47Doc PageDoc();
-	static FS47Doc TapeDoc();
+	static FS47Doc TapeDoc(const FString& Recorded = TEXT("02:14"));
 	static TOptional<FS47Doc> PaperById(const FString& Id);
 	/** The page is there to find: the bought unit, the signal locked, the page not taken. */
 	bool PageThere() const;

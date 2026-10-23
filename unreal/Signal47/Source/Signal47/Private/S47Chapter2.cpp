@@ -647,7 +647,7 @@ TArray<FS47BoardCard> US47Chapter2::BoardCards()
 			Line(TEXT("e06.omit"), TEXT("The incomplete closing sight line has been omitted from the service copy.")),
 			Line(TEXT("e06.repeat"), TEXT("No repeat observation is required.")),
 			Line(TEXT("e06.sig"), TEXT("N. VEGA / FIELD TECHNICIAN")) }),
-		Card(TEXT("rx"), TEXT("printout"), TEXT("RX"), TEXT("PRINTOUT, 02:14"), true, FString(), FString(), FString(), 898, 640, 266, {
+		Card(TEXT("rx"), TEXT("printout"), TEXT("RX"), Host ? Host->TimelineText(TEXT("PRINTOUT, 02:14")) : FString(TEXT("PRINTOUT, 02:14")), true, FString(), FString(), FString(), 898, 640, 266, {
 			Line(TEXT("rx.dist"), TEXT("SOURCE DISTANCE:  -39 LY")) }),
 		Card(TEXT("b12"), TEXT("b12lineage"), TEXT("B-12"), TEXT("LINEAGE CARD"), S.Read.bLineage, WHERE_LINEAGE, FString(), LINEAGE, 600, 14, 278, {
 			Line(TEXT("b12.id"), TEXT("The B-12 vane retains the fixed-point survey identified as STATION 01.")),

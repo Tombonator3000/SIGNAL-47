@@ -5,6 +5,7 @@
 #include "S47Docs.h"
 #include "S47Ops.h"
 #include "S47Rx.h"
+#include "S47Timeline.h"
 #include "S47Story.generated.h"
 
 class AS47Web;
@@ -45,6 +46,12 @@ public:
 
 	void Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio);
 	void Start();
+ // Set before reset/load. Absent timelineVersion in a saved case means legacy.
+ bool bEveningTimeline = false;
+ bool bOpeningHeld = false;
+ void BeginEveningShift();
+ double TimelineTime(double Legacy) const;
+ FString TimelineText(const FString& Text) const { return S47Timeline::ResidualText(Text, bEveningTimeline); }
 	virtual void Reset() override { ResetAll(); } // Prologue.reset: back to the start of the night, every chapter with it
 	// Jump straight to a beat, as the web version's Continue and tests do: shift, residual,
 	// locked, printed, countdown, event.

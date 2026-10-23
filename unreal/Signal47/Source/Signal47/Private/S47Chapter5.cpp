@@ -893,7 +893,7 @@ void US47Chapter5::Update(double Dt, double T)
 	FS47Diner* Dn = Diner();
 	if (Dn && InDiner() && Host)
 	{
-		Dn->SetDawn(FMath::Clamp((FMath::Fmod(Host->Clock(), 86400.0) - DAWN) / (25 * 60), 0.15, 0.85));
+		Dn->SetDawn(FMath::Clamp((FMath::Fmod(Host->Clock(), 86400.0) - (Host->bEveningTimeline ? 4 * 3600 + 40 * 60 : DAWN)) / (Host->bEveningTimeline ? 50 * 60 : 25 * 60), Host->bEveningTimeline ? 0.0 : 0.15, 0.85));
 	}
 	if (M->UI) M->UI->Objective(Objective());
 }
@@ -914,7 +914,7 @@ void US47Chapter5::BeginChapter5(const S47J::FObj& SavedCase)
 		Host->NotesMutable() = S47J::Strs(SavedCase, TEXT("notes"));
 		Host->SetClock(S47J::Num(SavedCase, TEXT("clock"), Host->Clock()));
 	}
-	else Host->SetClock(FMath::Max(Host->Clock(), 5 * 3600.0));
+	else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter5(Host->bEveningTimeline)));
 	if (M && M->UI) M->UI->Fade(false);
 	Host->BeginChapter(TEXT("ch5"), Ch5); // (ch5.begin, then onCheckpoint('chapter5'))
 }
@@ -939,9 +939,9 @@ void US47Chapter5::JumpChapter5()
 		S47J::FObj Case = M && M->Flow ? M->Flow->ComposeCase() : S47J::FObj();
 		if (!Case.IsValid()) { Case = S47J::New(); S47J::Set(Case, TEXT("notes"), Host->Notes()); }
 		S47J::Set(Case, TEXT("ch4"), J4);
-		S47J::Set(Case, TEXT("clock"), 4 * 3600.0 + 58 * 60);
+		S47J::Set(Case, TEXT("clock"), (Host->bEveningTimeline ? 4 * 3600.0 + 8 * 60 : 4 * 3600.0 + 58 * 60));
 		C4->BeginChapter4(Case);
-		Host->SetClock(4 * 3600.0 + 58 * 60);
+		Host->SetClock((Host->bEveningTimeline ? 4 * 3600.0 + 8 * 60 : 4 * 3600.0 + 58 * 60));
 	}
 	BeginChapter5(nullptr);
 }

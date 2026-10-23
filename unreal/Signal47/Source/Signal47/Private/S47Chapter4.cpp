@@ -1304,7 +1304,7 @@ void US47Chapter4::BeginChapter4(const S47J::FObj& SavedCase)
 		Host->NotesMutable() = S47J::Strs(SavedCase, TEXT("notes"));
 		Host->SetClock(S47J::Num(SavedCase, TEXT("clock"), Host->Clock()));
 	}
-	else Host->SetClock(FMath::Max(Host->Clock(), 4 * 3600.0 + 35 * 60));
+	else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter4(Host->bEveningTimeline)));
 	if (M && M->UI) M->UI->Fade(false);
 	Host->BeginChapter(TEXT("ch4"), Ch4); // (ch4.begin, then onCheckpoint('chapter4'))
 }
@@ -1366,7 +1366,7 @@ void US47Chapter4::JumpChapter4()
 			Host->NotesMutable() = S47J::Strs(Done, TEXT("notes"));
 			Host->SetClock(S47J::Num(Done, TEXT("clock"), Host->Clock()));
 		}
-		else Host->SetClock(FMath::Max(Host->Clock(), 3 * 3600.0 + 40 * 60));
+		else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter3(Host->bEveningTimeline)));
 		if (M && M->UI) M->UI->Fade(false);
 		// Prologue.beginChapter3 (its own: the clock to 03:40, the station bound)
 		if (US47Chapter3* C3 = Cast<US47Chapter3>(Host->Chapter(TEXT("ch3")))) C3->BeginChapter3(Done);

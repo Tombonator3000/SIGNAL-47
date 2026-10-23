@@ -157,8 +157,9 @@ public:
 	/** Where the figure's head is while it stands (story/seen.ts), or unset. */
 	TOptional<FVector> FigureAt() const { return bFigVisible ? TOptional<FVector>(Head) : TOptional<FVector>(); }
 	/** Its time: 02:29 to 02:40 (main.ts keeps the chapter's 47 for it until then). */
-	static bool Window(double Clock);
-	static bool Pending(double Clock);
+	static bool Window(double Clock, bool bEvening = false);
+	static bool Pending(double Clock, bool bEvening = false);
+	bool bEveningTimeline = false;
 	/** The telex's own minute (KAPITLER.md): where the night never went dark, it printed then. */
 	static const double FILED;
 

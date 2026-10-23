@@ -50,7 +50,7 @@ namespace S47Text
 namespace S47Docs
 {
 	// Prologue
-	FS47Doc ShiftLog();                 // Dale's shift log
+	FS47Doc ShiftLog(bool bEvening = false);                 // Dale's shift log
 	FS47Doc WorkOrder();                // the night work order
 	FS47Doc Printout(double Clock);     // the direction solve printout, stamped with the clock
 
@@ -61,8 +61,8 @@ namespace S47Docs
 	FS47Doc HalleyPoster();
 
 	// The telex roll
-	TArray<FString> TelexEvening();                       // last evening's two messages
-	FS47Doc Telex(const TArray<FString>& Messages);
+	TArray<FString> TelexEvening(bool bEveningTimeline = false);                       // last evening's two messages
+	FS47Doc Telex(const TArray<FString>& Messages, bool bEveningTimeline = false);
 	FString TelexHondo(double Filed);                     // Hondo Valley's message, filed at that clock
 	FString HondoNote(double Filed);                      // the note the first reading of it leaves
 	TArray<FString> TelexLines(const TArray<FString>& Messages);

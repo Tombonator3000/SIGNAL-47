@@ -251,9 +251,11 @@ static FString Join(const TArray<FString>& Parts, const TCHAR* Sep)
 
 namespace S47Docs
 {
-	FS47Doc ShiftLog()
-	{
-		return { TEXT("log"), TEXT("Dale's shift log"), TEXT("hand"), TEXT("NIGHT SHIFT"), LOG_PAGE, LOG_TRANSCRIPT };
+	FS47Doc ShiftLog(bool bEvening)
+ {
+  FS47Doc Doc { TEXT("log"), TEXT("Dale's shift log"), TEXT("hand"), TEXT("NIGHT SHIFT"), LOG_PAGE, LOG_TRANSCRIPT };
+  if (bEvening) Doc.Page.ReplaceInline(TEXT("23:20  handover"), TEXT("13 APR 1986  18:00  phone handover"));
+  return Doc;
 	}
 
 	FS47Doc WorkOrder()
@@ -305,17 +307,20 @@ namespace S47Docs
 		return { TEXT("halley"), TEXT("Halley's comet poster"), TEXT("typed"), TEXT("1986"), HALLEY_PAGE, HALLEY_TRANSCRIPT };
 	}
 
-	TArray<FString> TelexEvening()
-	{
-		return { TELEX_WX, TELEX_NET };
+	TArray<FString> TelexEvening(bool bEveningTimeline)
+ {
+  FString Wx = TELEX_WX, Net = TELEX_NET;
+  if (bEveningTimeline) { Wx.ReplaceInline(TEXT("2250"), TEXT("1709")); Net.ReplaceInline(TEXT("2300"), TEXT("1719")); }
+  return { Wx, Net };
 	}
 
-	FS47Doc Telex(const TArray<FString>& Messages)
+	FS47Doc Telex(const TArray<FString>& Messages, bool bEveningTimeline)
 	{
 		// (last evening's roll keeps its words exactly: the read-aloud voices have them)
 		const bool bHondo = Messages.Num() > TelexEvening().Num();
-		return { TEXT("telex"), TEXT("Telex roll"), TEXT("typed"), TEXT("TELEX"), Join(Messages, TEXT("\n\n")),
-			bHondo ? TELEX_TRANSCRIPT_HONDO : TELEX_TRANSCRIPT_EVENING };
+		FString Transcript = bHondo ? TELEX_TRANSCRIPT_HONDO : TELEX_TRANSCRIPT_EVENING;
+  if (bEveningTimeline) { Transcript.ReplaceInline(TEXT("22:50"), TEXT("17:09")); Transcript.ReplaceInline(TEXT("23:00"), TEXT("17:19")); }
+  return { TEXT("telex"), TEXT("Telex roll"), TEXT("typed"), TEXT("TELEX"), Join(Messages, TEXT("\n\n")), Transcript };
 	}
 
 	// Hondo Valley's message, filed at the minute SARO went dark, printed on the roll when the
@@ -368,7 +373,10 @@ namespace S47Docs
 		Check(Out, bOk, TEXT("padEnd(name, 20)"), PadEnd(TEXT("RUN860411_2340.DAT"), 20), TEXT("RUN860411_2340.DAT  "));
 
 		// Prologue
-		const FS47Doc Log = ShiftLog();
+		const FS47Doc NewLog = ShiftLog(true);
+  Check(Out, bOk, TEXT("evening handover clock"), Split(NewLog.Page, TEXT("\n"))[0], TEXT("13 APR 1986  18:00  phone handover"));
+  Check(Out, bOk, TEXT("evening telex before shift"), TelexEvening(true)[0].Contains(TEXT("1709 MST 13 APR 86")) ? TEXT("yes") : TEXT("no"), TEXT("yes"));
+  const FS47Doc Log = ShiftLog();
 		Check(Out, bOk, TEXT("LOG first line"), Split(Log.Page, TEXT("\n"))[0], TEXT("23:20  handover"));
 		Check(Out, bOk, TEXT("LOG last line"), Split(Log.Page, TEXT("\n")).Last(), TEXT("        D."));
 		Check(Out, bOk, TEXT("LOG title"), Log.Title, TEXT("Dale's shift log"));

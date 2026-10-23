@@ -1275,7 +1275,7 @@ void US47Chapter3::BeginChapter3(const S47J::FObj& SavedCase)
 		Host->NotesMutable() = S47J::Strs(SavedCase, TEXT("notes"));
 		Host->SetClock(S47J::Num(SavedCase, TEXT("clock"), Host->Clock()));
 	}
-	else Host->SetClock(FMath::Max(Host->Clock(), 3 * 3600 + 40 * 60.0));
+	else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter3(Host->bEveningTimeline)));
 	if (US47UI* U = Ui()) U->Fade(false);
 	Host->BeginChapter(TEXT("ch3"), Ch3);
 }

@@ -2,6 +2,7 @@
 
 #include "S47Ops.h"
 #include "S47Docs.h"
+#include "S47Timeline.h"
 
 using namespace S47Text;
 
@@ -155,7 +156,7 @@ TArray<FS47OpsTerminal::FFile> FS47OpsTerminal::Files(const FS47OpsView& V) cons
 	TArray<FFile> F = {
 		{ TEXT("RUN860411_2340.DAT"), 2210, TEXT("11-APR-1986 23:40") },
 		{ TEXT("RUN860412_2338.DAT"), 2214, TEXT("12-APR-1986 23:38") },
-		{ TEXT("RUN860413_2341.DAT"), RunBlocks(V.Clock), TEXT("13-APR-1986 23:41") },
+		{ V.bEveningTimeline ? TEXT("RUN860413_1800.DAT") : TEXT("RUN860413_2341.DAT"), V.bEveningTimeline ? FMath::Max(1, int32((V.Clock - S47Timeline::ShiftStart) / 9.6)) : RunBlocks(V.Clock), V.bEveningTimeline ? TEXT("13-APR-1986 18:00") : TEXT("13-APR-1986 23:41") },
 	};
 	if (V.bFuture) F.Add({ TEXT("RUN860414_0529.DAT"), 0, TEXT("14-APR-1986 05:29") });
 	return F;
@@ -181,7 +182,7 @@ FString FS47OpsTerminal::Type(const FS47OpsView& V, const FString& Name) const
 	const FFile* F = All.FindByPredicate([&](const FFile& File) { return File.Name == Name || File.Name == Name + TEXT(".DAT"); });
 	if (!F) return FString::Printf(TEXT("%%TYPE-E-OPENIN, error opening %s\n-RMS-E-FNF, file not found"), *Name);
 	const FString Id = F->Name.Replace(TEXT(".DAT"), TEXT(""));
-	const bool bOpen = F->Name == TEXT("RUN860413_2341.DAT");
+	const bool bOpen = F->Name == TEXT("RUN860413_2341.DAT") || F->Name == TEXT("RUN860413_1800.DAT");
 	if (F->Name == TEXT("RUN860414_0529.DAT"))
 		return FString::Printf(TEXT("SARO SURVEY RUN  %s\nOPENED    %s:00\nOPERATOR  REYES\nRECORDS   0\n\nFILE INCOMPLETE. RECORD NOT CLOSED."), *Id, *F->Made);
 	return FString::Printf(TEXT("SARO SURVEY RUN  %s\nOPENED    %s:00\nOPERATOR  %s\nRECORDS   %d\nSTATUS    %s"),
@@ -221,7 +222,13 @@ FString FS47OpsTerminal::Log(const FS47OpsView& V) const
 {
 	TArray<FString> Rows;
 	int32 I = 0;
-	for (const FS47LogLine& Line : SEEDS) { Rows.Add(PadEnd(Stamp(Line.Clock, I >= NUM_SEEDS), 17) + Line.Text); I++; }
+	for (const FS47LogLine& Line : SEEDS)
+ {
+  const double At = V.bEveningTimeline ? S47Timeline::ShiftStart + Line.Clock - START : Line.Clock;
+  FString Text = Line.Text;
+  if (V.bEveningTimeline) Text.ReplaceInline(TEXT("RUN860413_2341"), TEXT("RUN860413_1800"));
+  Rows.Add(PadEnd(Stamp(At, I >= NUM_SEEDS), 17) + Text); I++;
+ }
 	for (const FS47LogLine& Line : V.Log) { Rows.Add(PadEnd(Stamp(Line.Clock, I >= NUM_SEEDS), 17) + Line.Text); I++; }
 	return FString::Join(Rows, TEXT("\n"));
 }

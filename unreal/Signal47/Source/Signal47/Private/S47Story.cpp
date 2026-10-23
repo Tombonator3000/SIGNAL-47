@@ -22,6 +22,7 @@
 #include "S47UI.h"
 #include "S47Main.h"
 #include "S47Startup.h"
+#include "S47Radio.h"
 #include "S47Web.h"
 #include "Misc/CommandLine.h"
 #include "TimerManager.h"
@@ -42,6 +43,7 @@ AS47Story::AS47Story()
 	{
 		FS47OpsView V;
 		V.Clock = ClockSec;
+		V.bEveningTimeline = bEveningTimeline;
 		V.SolveAt = NS.SolveAt;
 		V.Log = NS.Log;
 		V.bFuture = ChapterKey == TEXT("ch5"); // future: this.phase === 'ch5' (All Night: RUN860414_0529.DAT)
@@ -58,7 +60,7 @@ void AS47Story::Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio)
 		FS47DecoderDeskDeps Dd;
 		Dd.UI = M->UI; Dd.Audio = InAudio; Dd.Room = InSaro; Dd.Inter = M->Inter;
 		Dd.Locked = [this] { return Rx.Stage >= 3; };
-		Dd.Recorded = [] { return FString(TEXT("02:14")); };
+		Dd.Recorded = [this] { return TimelineText(TEXT("02:14")); };
 		Dd.Busy = [this] { return bCinematic; };
 		Dd.Power = [this] { return bPowered && !NS.bK3Open; };
 		// (Unreal only, Tom's request: the bought unit's meters and the tones' answer, S47DecoderDesk.h)
@@ -178,7 +180,7 @@ FVector AS47Story::TelexAt() const
 
 TArray<FString> AS47Story::TelexRoll() const
 {
-	TArray<FString> R = S47Docs::TelexEvening();
+	TArray<FString> R = S47Docs::TelexEvening(bEveningTimeline);
 	if (NS.Hondo) R.Add(S47Docs::TelexHondo(*NS.Hondo));
 	return R;
 }
@@ -190,7 +192,7 @@ void AS47Story::HondoTelex(double Filed, TOptional<double> At)
 	ConsoleLog(TEXT("TELEX RECEIVED  HONDO VALLEY"), At);
 	// (room.setTelexRoll: the roll's paper on the machine is not drawn in this version)
 	const int32 I = DocsList.IndexOfByPredicate([](const FS47Doc& D) { return D.Id == TEXT("telex"); });
-	if (I >= 0) DocsList[I] = S47Docs::Telex(TelexRoll());
+	if (I >= 0) DocsList[I] = S47Docs::Telex(TelexRoll(), bEveningTimeline);
 }
 
 void AS47Story::PowerOut(bool bOut)
@@ -316,7 +318,7 @@ void AS47Story::Use(const FString& Id)
 {
 	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
-	if (Id == TEXT("logbook")) { OpenDoc(S47Docs::ShiftLog(), [this] { LogClosed(); }); return; }
+	if (Id == TEXT("logbook")) { OpenDoc(S47Docs::ShiftLog(bEveningTimeline), [this] { LogClosed(); }); return; }
 	if (Id == TEXT("workOrder")) { OpenDoc(S47Docs::WorkOrder(), [this] { WorkOrderClosed(); }); return; }
 	if (Id == TEXT("coffeePot"))
 	{
@@ -398,7 +400,7 @@ void AS47Story::Use(const FString& Id)
 	if (Id == TEXT("map")) { Toast(TEXT("SARO is the red X on the plains. Somebody drew a ring around Roswell and a question mark.")); return; }
 	if (Id == TEXT("excBinder")) { const FS47Doc D = S47Docs::Binder(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("serviceRecord")) { const FS47Doc D = S47Docs::ServiceRecord(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
-	if (Id == TEXT("telex")) { const FS47Doc D = S47Docs::Telex(TelexRoll()); OpenDoc(D, [this, D] { FilePaper(D); if (NS.Hondo) Note(S47Docs::HondoNote(*NS.Hondo)); }); return; }
+	if (Id == TEXT("telex")) { const FS47Doc D = S47Docs::Telex(TelexRoll(), bEveningTimeline); OpenDoc(D, [this, D] { FilePaper(D); if (NS.Hondo) Note(S47Docs::HondoNote(*NS.Hondo)); }); return; }
 	if (Id == TEXT("rfiCard")) { const FS47Doc D = S47Docs::InterferenceCard(Rx.Stage >= 3); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("halley")) { const FS47Doc D = S47Docs::HalleyPoster(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("opsTerminal")) { if (bDark) { Toast(TEXT("Dead screen. No power.")); return; } if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); if (Hud.IsValid()) Hud->OpenOps(); return; }
@@ -527,7 +529,7 @@ void AS47Story::StagePassed()
 	else if (S == 2)
 	{
 		SetPhase(ES47Phase::Locked);
-		Note(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule."));
+		Note(TimelineText(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.")));
 		Toast(TEXT("Four pulses. A gap. Seven pulses. Again."), 4.f);
 		After(4.5, [this] { if (CurrentPhase == ES47Phase::Locked) Toast(TEXT("The tracking terminal can run a direction solve.")); });
 	}
@@ -557,7 +559,7 @@ void AS47Story::LogClosed()
 {
 	if (bLogRead) return;
 	bLogRead = true;
-	DocsList.Add(S47Docs::ShiftLog());
+	DocsList.Add(S47Docs::ShiftLog(bEveningTimeline));
 	if (CurrentPhase == ES47Phase::Intro) SetPhase(ES47Phase::Shift);
 	After(0.6, [this] { Toast(bPowered ? TEXT("Bank 3 is already up. Calibration next.") : TEXT("First the rack. Bank 3 is on the east wall, by the printer.")); });
 }
@@ -598,11 +600,11 @@ void AS47Story::TimeSkip()
 	}
 	SetPhase(ES47Phase::Skip);
 	bCinematic = true;
-	if (Hud.IsValid()) Hud->Fade(true, TEXT("02:13"));
+	if (Hud.IsValid()) Hud->Fade(true, bEveningTimeline ? TEXT("Routine survey completed\n14 APRIL 1986  00:13") : TEXT("02:13"));
 	After(3.6, [this]
 	{
 		if (Hud.IsValid()) Hud->CloseModal();
-		ClockSec = SkipClock;
+		ClockSec = bEveningTimeline ? FMath::Max(ClockSec, TimelineTime(SkipClock)) : SkipClock;
 		Coffee = Coffee == ECoffee::None ? ECoffee::None : ECoffee::Drunk;
 		if (Hud.IsValid()) Hud->Place(0.05, -2.2, 0);
 		EnterResidual();
@@ -621,8 +623,8 @@ void AS47Story::EnterResidual()
 		bResidualVisible = true;
 		Rx.Status = TEXT("UNLOGGED RESIDUAL  /  1420.4 MHz");
 		bAlarmOn = true;
-		Note(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there."));
-		Toast(TEXT("02:13:47. The console is beeping."), 3.5f);
+		Note(TimelineText(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")));
+		Toast(TimelineText(TEXT("02:13:47. The console is beeping.")), 3.5f);
 		Alarm();
 	});
 }
@@ -803,7 +805,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 	Rx.bSolved = true;
 	bResidualVisible = true;
 	ClockSec = S47J::Has(Saved, TEXT("clock")) ? S47J::Num(Saved, TEXT("clock")) : EventClock + 70;
-	DocsList = { S47Docs::ShiftLog(), S47Docs::Printout(EventClock - 60) };
+	DocsList = { S47Docs::ShiftLog(bEveningTimeline), S47Docs::Printout(EventClock - 60) };
 	NotesList.Empty();
 	for (const FString& N : { FString(S47Signal::Profiles()[0].Note), FString(S47Signal::Profiles()[1].Note),
 		FString(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")),
@@ -812,7 +814,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		FString(TEXT("Source distance on the solve: -39 light years. A negative distance. The solver cannot produce that.")),
 		FString(TEXT("Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing.")),
 		FString(TEXT("Every dish moved to az 026, el 32. Console shows no control command.")),
-		FString(TEXT("All dishes left their scheduled track and aligned together.")) }) Note(N);
+		FString(TEXT("All dishes left their scheduled track and aligned together.")) }) Note(TimelineText(N));
 	if (Saro.IsValid())
 	{
 		Saro->SetVisible(Saro->Handle(TEXT("room.mug")), false);
@@ -844,7 +846,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 	else
 	{
 		NS.SolveAt = E - 60;
-		NS.Log = { { 23 * 3600 + 44 * 60, TEXT("RX BANK 3  K3 CLOSED") }, { E - 60, TEXT("SOLVE  RANGE NEGATIVE") },
+		NS.Log = { { TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") }, { E - 60, TEXT("SOLVE  RANGE NEGATIVE") },
 			{ E - 47, TEXT("STATION CLOCK  WWVB REFERENCE LOST") }, { E - 7, TEXT("RX BANK 3  K3 OPEN") }, { E, TEXT("LINE POWER  DIP 1.2 S") },
 			{ E, TEXT("STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47") }, { E + 3, TEXT("ARRAY  S-01 TO S-27 MOTION  NO COMMAND") }, { E + 70, TEXT("RX BANK 3  K3 CLOSED") } };
 	}
@@ -855,9 +857,9 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		else if (Id == TEXT("service")) DocsList.Add(S47Docs::ServiceRecord());
 		else if (Id == TEXT("rfiCard")) DocsList.Add(S47Docs::InterferenceCard(Rx.Stage >= 3));
 		else if (Id == TEXT("halley")) DocsList.Add(S47Docs::HalleyPoster());
-		else if (Id == TEXT("telex")) DocsList.Add(S47Docs::Telex(TelexRoll()));
+		else if (Id == TEXT("telex")) DocsList.Add(S47Docs::Telex(TelexRoll(), bEveningTimeline));
 		// (Unreal only: T. Vega's page and TAPE A, S47DecoderDesk.h)
-		else if (const TOptional<FS47Doc> Pd = FS47DecoderDesk::PaperById(Id)) DocsList.Add(*Pd);
+		else if (const TOptional<FS47Doc> Pd = FS47DecoderDesk::PaperById(Id)) DocsList.Add(Id == TEXT("tapeA") ? FS47DecoderDesk::TapeDoc(TimelineText(TEXT("02:14"))) : *Pd);
 	}
 	ApplyK3(NS.bK3Open);
 	// (room.setTelexRoll: the telex is not ported yet)
@@ -922,7 +924,9 @@ void AS47Story::ChapterBreak(const FBreak& B)
 void AS47Story::ResetAll()
 {
 	Timers.Empty();
-	GameTime = 0; ClockSec = StartClock;
+	GameTime = 0; ClockSec = bEveningTimeline ? S47Timeline::ShiftStart : StartClock;
+	EventClock = bEveningTimeline ? 15 * 60 + 12 : 2 * 3600 + 15 * 60 + 12;
+	if (US47Main* Main = US47Main::Get(this); Main && Main->Radio) Main->Radio->bEveningTimeline = bEveningTimeline;
 	CurrentPhase = ES47Phase::Intro; bCinematic = false;
 	bLogRead = false; Coffee = ECoffee::None; bPowered = false; bAnswered = false;
 	NotesList.Empty(); DocsList.Empty();
@@ -961,10 +965,29 @@ void AS47Story::ResetAll()
 	if (Shot.IsValid()) Shot->Stop();
 }
 
+double AS47Story::TimelineTime(double Legacy) const
+{
+ if (!bEveningTimeline) return Legacy;
+ if (Legacy >= 18 * 3600) return S47Timeline::ShiftStart + (Legacy - StartClock);
+ return Legacy - 2 * 3600;
+}
+
+void AS47Story::BeginEveningShift()
+{
+ // Opening's phone completion calls this once; keep its documents and optional meal state.
+ bOpeningHeld = false;
+ CurrentPhase = ES47Phase::Shift;
+ bLogRead = true;
+ AddDoc(S47Docs::ShiftLog(true));
+ Toast(TEXT("18:00 shift handover complete. Restore RX bank 3, then calibrate the receiver."), 5);
+ Note(TEXT("13 April, 18:00. Dale handed the shift over by phone. The handover folder is on file."));
+}
+
 void AS47Story::Start()
 {
 	ResetAll();
 	if (Hud.IsValid() && Saro.IsValid()) { const FVector Sp = Saro->SpawnThree(); Hud->Place(Sp.X, Sp.Z, Sp.Y); }
+	if (bEveningTimeline) { BeginEveningShift(); return; }
 	After(1.2, [this] { Toast(TEXT("23:41. Dale left twenty minutes ago."), 3.4f); });
 	After(5.0, [this] { if (!bLogRead) Toast(TEXT("His shift log is on the desk."), 3.4f); });
 }
@@ -982,18 +1005,18 @@ void AS47Story::Jump(const FString& Target)
 	int32 Idx = -1;
 	for (int32 i = 0; i < 6; ++i) if (Target == Steps[i]) Idx = i;
 	if (Idx < 0) return;
-	bLogRead = true; DocsList = { S47Docs::ShiftLog() }; CurrentPhase = ES47Phase::Shift;
+	bLogRead = true; DocsList = { S47Docs::ShiftLog(bEveningTimeline) }; CurrentPhase = ES47Phase::Shift;
 	if (Idx >= 1)
 	{
 		PowerUp(true);
-		NS.Log.Add({ 23 * 3600 + 44 * 60, TEXT("RX BANK 3  K3 CLOSED") });
+		NS.Log.Add({ TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") });
 		Rx.Advance(); Rx.Advance();
 		Note(S47Signal::Profiles()[0].Note); Note(S47Signal::Profiles()[1].Note);
-		ClockSec = SkipClock;
+		ClockSec = bEveningTimeline ? FMath::Max(ClockSec, TimelineTime(SkipClock)) : SkipClock;
 		PointDishes(Rx.Azimuth, SurveyEl, 99);
 		if (Hud.IsValid()) Hud->Place(0.05, -2.2, 0);
 		EnterResidual();
-		Toast(TEXT("02:13. The survey has been running for hours."), 3.4f);
+		Toast(TimelineText(TEXT("02:13. The survey has been running for hours.")), 3.4f);
 	}
 	if (Idx >= 2)
 	{
@@ -1002,7 +1025,7 @@ void AS47Story::Jump(const FString& Target)
 		bResidualVisible = true;
 		Rx.Advance();
 		PointDishes(Rx.Azimuth, SurveyEl, 99);
-		ClockSec = SkipClock + 40;
+		ClockSec = TimelineTime(SkipClock) + 40;
 		CurrentPhase = ES47Phase::Locked;
 	}
 	if (Idx >= 3)
@@ -1039,7 +1062,11 @@ void AS47Story::Tick(float DeltaSeconds)
 	if (!bPaused)
 	{
 		GameTime += Dt;
-		ClockSec += Dt;
+		// Activity drives ordinary time; finishing the diner case holds the deadline rather than rewinding it.
+        // Chapter six owns a distance-based clock, so waiting/reversing there cannot move it backwards.
+        const US47Chapter* C6 = Chapter(TEXT("ch6"));
+        if (!bOpeningHeld && !(bEveningTimeline && C6 && C6->bActive))
+            ClockSec = bEveningTimeline ? FMath::Min(ClockSec + Dt, S47Timeline::Departure) : ClockSec + Dt;
 		TArray<FTimer> Due;
 		for (int32 i = Timers.Num() - 1; i >= 0; --i)
 		{
@@ -1048,6 +1075,7 @@ void AS47Story::Tick(float DeltaSeconds)
 		Due.Sort([](const FTimer& A, const FTimer& B) { return A.At < B.At; });
 		for (FTimer& T : Due) T.Fn();
 	}
+	if (bOpeningHeld) return; // travel transitions still use the game-time timers above
 	// Prologue.update: the chapters (ch1 runs in every chapter: the viewfinder, the wet print)
 	for (US47Chapter* C : Chapters)
 	{

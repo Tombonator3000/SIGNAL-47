@@ -1,5 +1,6 @@
 // story/curve.ts
 #include "S47Curve.h"
+#include "S47Timeline.h"
 
 namespace
 {
@@ -122,7 +123,9 @@ void FS47NightCurve::Update(double Dt, const FS47CurveIn& S)
 	PullKind = bLong ? TEXT("long") : TEXT("scare");
 	if (!IsChapter(S.Chapter)) { if (Phase != TEXT("off")) Stop(); return; }
 	if (Phase == TEXT("off")) Begin();
-	Strength = Clamp01((FMath::Fmod(FMath::Fmod(S.Clock, 86400.0) + 86400.0, 86400.0) - NIGHT0) / (NIGHT1 - NIGHT0));
+	const double Start = S.bEveningTimeline ? 16 * 60 : NIGHT0;
+	const double Now = S.bEveningTimeline ? S47Timeline::Night(S.Clock) : S47Timeline::Day(S.Clock);
+	Strength = Clamp01((Now - Start) / (NIGHT1 - Start));
 	ReadLog(S.Clock);
 	if (S.bHeld) return;
 	Step(Dt, S.bExposed, S.bBusy, S.bPeaking);

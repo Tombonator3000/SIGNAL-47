@@ -383,7 +383,7 @@ void US47Night::CurveStep(double Dt, bool bModal)
 	const FString Ph = Phase();
 	const bool bInDiner = Area() == TEXT("diner") && M->World && M->Player && M->World->Indoors(M->Player->Pos);
 	FS47CurveIn In;
-	In.Chapter = Ph; In.Clock = Clock();
+	In.Chapter = Ph; In.Clock = Clock(); In.bEveningTimeline = M->Story && M->Story->bEveningTimeline;
 	// nothing during a cinematic, a panel, a call, Nora's room, or the diner and its map in chapter five
 	In.bHeld = bModal || Cinematic() || (M->Audio && M->Audio->PhonePlaying()) || Area() == TEXT("room6") || (Ph == TEXT("ch5") && bInDiner);
 	In.bExposed = Driving() || M->Space == TEXT("yard");

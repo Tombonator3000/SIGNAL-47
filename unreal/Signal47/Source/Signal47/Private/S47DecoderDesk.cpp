@@ -356,12 +356,12 @@ FS47Doc FS47DecoderDesk::PageDoc()
 	return Doc;
 }
 
-FS47Doc FS47DecoderDesk::TapeDoc()
+FS47Doc FS47DecoderDesk::TapeDoc(const FString& Recorded)
 {
 	FS47Doc Doc;
 	Doc.Id = TEXT("tapeA"); Doc.Title = TEXT("TAPE A / 1947"); Doc.Kind = TEXT("typed"); Doc.Stamp = TEXT("TAPE A");
 	Doc.Page = TAPE_A;
-	Doc.Transcript = TEXT("The processor ran on past the end of tape B after the answer and played this, a wire recording, typed out as it came. Tape B was recorded tonight at 02:14. It ends where the pulse group ends.");
+	Doc.Transcript = TEXT("The processor ran on past the end of tape B after the answer and played this, a wire recording, typed out as it came. Tape B was recorded tonight at ") + Recorded + TEXT(". It ends where the pulse group ends.");
 	return Doc;
 }
 
@@ -443,7 +443,7 @@ void FS47DecoderDesk::EndAnswer(bool bUnlock)
 	if (bUnlock && !(D.Answered && D.Answered()))
 	{
 		if (D.SetAnswered) D.SetAnswered();
-		if (D.File) D.File(TapeDoc(), FString::Printf(TEXT("%s. I keyed T. Vega's seven into the processor. It played them back by itself, slower, and the red lamps on the dishes blinked as one. Then it ran on past the end of tape B: a wire from 1947. Someone whistling the four and the seven down a field line, and the seven coming back. A field telephone, his correction, cutters. Nothing after. TAPE A."), *ClockNow()));
+		if (D.File) D.File(TapeDoc(D.Recorded ? D.Recorded() : FString(TEXT("02:14"))), FString::Printf(TEXT("%s. I keyed T. Vega's seven into the processor. It played them back by itself, slower, and the red lamps on the dishes blinked as one. Then it ran on past the end of tape B: a wire from 1947. Someone whistling the four and the seven down a field line, and the seven coming back. A field telephone, his correction, cutters. Nothing after. TAPE A."), *ClockNow()));
 		if (US47UI* UI = D.UI.Get()) UI->Toast(TEXT("The processor ran on past the end of tape B. TAPE A / 1947 filed with the papers."), 4.6f);
 		if (D.Save) D.Save();
 		UE_LOG(LogS47Desk, Display, TEXT("S47: decoder: TAPE A / 1947 filed"));

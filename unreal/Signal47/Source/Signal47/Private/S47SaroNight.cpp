@@ -247,7 +247,7 @@ void US47SaroNight::Init(US47Main* InM)
 		H.ReelTapeBusy = [Self] { return Self.IsValid() && Self->ReelTape->bBusy; };
 		H.SaroDarkBusy = [Self] { return Self.IsValid() && Self->Dark->Busy(); };
 		// chapter one's 47 is the story's own until it has come or its time is past (story/saroDark.ts)
-		H.SaroDarkKeep = [Self] { return Self.IsValid() && Self->M->Story && !Self->M->Story->Night().Hondo && Self->Dark->Phase == TEXT("idle") && FS47SaroDark::Pending(Self->Clock()); };
+		H.SaroDarkKeep = [Self] { return Self.IsValid() && Self->M->Story && !Self->M->Story->Night().Hondo && Self->Dark->Phase == TEXT("idle") && FS47SaroDark::Pending(Self->Clock(), Self->M->Story->bEveningTimeline); };
 		H.ArrayBackBusy = [Self] { return Self.IsValid() && Self->ArrayBack->Busy(); };
 		H.RecWalkBusy = [Self] { return Self.IsValid() && Self->RecWalk->Busy(); };
 		H.RecWalkWaiting = [Self] { return Self.IsValid() && Self->RecWalk->bWaiting; };
@@ -365,15 +365,17 @@ void US47SaroNight::StepDark(double Dt, bool bModal)
 {
 	if (M->Mode != US47Main::EMode::Play) return;
 	// 02:29: SARO goes dark (story/saroDark.ts), on its own clock; one at a time
+	Dark->bEveningTimeline = M->Story && M->Story->bEveningTimeline;
 	Dark->Update(Dt, DarkIn(!Cinematic() && Dawn() < 0.3, bModal));
 	// a night that never went dark still has Hondo Valley's telex, printed at 02:29 with nobody there
 	if (M->Story && !M->Story->Night().Hondo && Dark->Phase == TEXT("idle") && AtCh(1))
 	{
 		// (not before its minute: a chapter one done early has chapter two before 02:29)
 		const double C = FMath::Fmod(FMath::Fmod(Clock(), 86400.0) + 86400.0, 86400.0);
-		if (C >= FS47SaroDark::FILED && C < 12 * 3600 && (Phase() != TEXT("ch1") || C >= FS47SaroDark::FILED + 11 * 60))
+		const double Filed = FS47SaroDark::FILED - (M->Story->bEveningTimeline ? 2 * 3600 : 0);
+		if (C >= Filed && C < 12 * 3600 && (Phase() != TEXT("ch1") || C >= Filed + 11 * 60))
 		{
-			M->Story->HondoTelex(FS47SaroDark::FILED, FS47SaroDark::FILED + 14);
+			M->Story->HondoTelex(Filed, Filed + 14);
 			UE_LOG(LogS47Saro, Display, TEXT("S47: saro dark never came: Hondo Valley's telex printed at 02:29 with nobody there"));
 		}
 	}
