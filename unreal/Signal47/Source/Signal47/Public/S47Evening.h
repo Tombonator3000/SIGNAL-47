@@ -34,10 +34,12 @@ private:
  FS47EveningPack RadioPack;
  TUniquePtr<FS47EveningVisual> Visual;
  TSharedPtr<FS47RecordedDialogue> Voice;
+ TSharedPtr<FS47RecordedDialogue> RadioVoice;
  TSharedPtr<FS47MediaSource> Music;
  TSharedPtr<FS47GainNode> MusicGain;
  bool bResumeRequested = false, bBindings = false;
  bool bEnabled = false, bRing = false, bDialogueOpen = false, bRadioOn = true, bWorkStarted = false;
+ bool bRadioRecorded = false;
  double RadioHold = 0, RadioRest = 0, MusicPosition = 0, RingAt = 0;
  FString SpokenLine, RadioSpokenLine, TestMode;
  bool bRouteInitialized = false, bRouteFailed = false, bRouteDone = false, bRouteArrived = false, bRoutePaidRestored = false, bRouteOrderShot = false;

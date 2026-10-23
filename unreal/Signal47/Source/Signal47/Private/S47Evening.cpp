@@ -15,6 +15,7 @@
 #include "S47Score.h"
 #include "S47RecordedDialogue.h"
 #include "S47Chapter.h"
+#include "S47Timeline.h"
 #include "Misc/CommandLine.h"
 
 FS47Evening::FS47Evening(US47Main* InM) : M(InM)
@@ -27,6 +28,11 @@ FS47Evening::FS47Evening(US47Main* InM) : M(InM)
   if (I.Lines.Num() != 1) return {};
   return Bank.Resolve(I.Lines[0].Text, 0, I.Voice);
  }, [this](const FS47RadioClip&) { const auto S = Pack.CurrentScene(); return S && (S->Channel == TEXT("phone") || S->Channel == TEXT("walkie") || S->Channel == TEXT("radio")); });
+ RadioVoice = MakeShared<FS47RecordedDialogue>(M->Audio, TEXT("evening"), [](const FS47DialogueInput& I, FS47RadioVoice& Bank) -> TOptional<TArray<FS47RadioClip>>
+ {
+  if (I.Lines.Num() != 1) return {};
+  return Bank.Resolve(I.Lines[0].Text, 0, I.Voice);
+ }, [](const FS47RadioClip&) { return true; }); // Receiver bandwidth, using the existing remote-line filter.
  // Physical triggers are explicit: a choice-only scene can never become a global use target.
  const auto Previous = M->World->OnParked;
  M->World->OnParked = [this, Previous](const FString& Place) { if (Previous && !Opening()) Previous(Place); Parked(Place); };
@@ -42,9 +48,11 @@ void FS47Evening::StopRing()
 void FS47Evening::Stop()
 {
  StopRing(); if (Voice) Voice->Stop();
+ if (RadioVoice) RadioVoice->Stop();
  if (Music) { Music->Stop(); Music->Disconnect(); Music.Reset(); }
  if (MusicGain) { MusicGain->Disconnect(); MusicGain.Reset(); }
- bEnabled = false; bDialogueOpen = false; SpokenLine.Empty(); RadioSpokenLine.Empty();
+ bEnabled = false; bDialogueOpen = false; bRadioRecorded = false; SpokenLine.Empty(); RadioSpokenLine.Empty();
+ if (M && M->Web) M->Web->SetHandsetVisible(true);
  if (M && M->Story) M->Story->bOpeningHeld = false;
  if (M && M->World) M->World->bCommuteVehicle = false;
  if (Visual) {Visual->SetParked(false);Visual->Hide();}
@@ -137,7 +145,11 @@ bool FS47Evening::Trigger(const FString& Scene)
  Context(); if (!Pack.Start(Scene)) return false;
  Changed(); ShowDialogue(); return true;
 }
-void FS47Evening::Resume() { bDialogueOpen = false; bResumeRequested=true; SpokenLine.Empty(); }
+void FS47Evening::Resume()
+{
+ bDialogueOpen = false; bResumeRequested=true; SpokenLine.Empty();
+ if (const auto* S=Pack.CurrentScene(); S && S->Channel==TEXT("phone")) {StopRing();M->Web->SetHandsetVisible(false);}
+}
 void FS47Evening::ShowDialogue()
 {
  const auto* S = Pack.CurrentScene(); if (!S || !M->UI) { AfterDialogue(); return; }
@@ -240,9 +252,17 @@ void FS47Evening::RadioStep(double Dt)
 {
  if (Commute()) { if (auto* T=M->World->CabTruck()) T->SetRadio(S47Radio::DialX(1420),bRadioOn); }
  const bool Audible=Commute() && M->World->bDriving && bRadioOn && !M->ModalOpen();
+ if (RadioVoice->Enabled()!=M->Audio->bCharacterVoices)
+ {
+  RadioVoice->SetEnabled(M->Audio->bCharacterVoices); RadioSpokenLine.Empty(); bRadioRecorded=false;
+ }
  // The toast can expire while the receiver is paused. Republish the same line
  // on return, retaining its unread duration and cursor rather than skipping it.
- if (!Audible) RadioSpokenLine.Empty();
+ if (!Audible)
+ {
+  if (RadioVoice->Playing() || RadioVoice->Loading()) RadioVoice->Stop();
+  RadioSpokenLine.Empty(); bRadioRecorded=false;
+ }
  const auto* S=RadioPack.CurrentScene();
  if (Audible && !S && RadioRest<=0)
  {
@@ -258,12 +278,33 @@ void FS47Evening::RadioStep(double Dt)
     if (RadioSpokenLine!=L->Id)
     {
      RadioSpokenLine=L->Id;
-     // Readability duration for a silent placeholder, never a claimed recording duration.
-     if (RadioHold<=0) RadioHold=FMath::Clamp(2.5+L->Text.Len()/20.0,4.0,11.0);
-     M->UI->Toast(TEXT("RADIO: LOCAL EVENING HOST [voice recording pending] / ")+L->Text,float(RadioHold));
+     FS47DialogueInput Input; Input.Voice=L->VoiceProfile; Input.Lines.Add({L->Speaker,L->Text});
+     const auto Found=L->bRecord?RadioVoice->Bank->Resolve(L->Text,0,L->VoiceProfile):TOptional<TArray<FS47RadioClip>>();
+     const bool Available=Found.IsSet();
+     bRadioRecorded=false;
+     if (Available && M->Audio->bCharacterVoices)
+     {
+      // Restart the current recorded line after an interruption; never skip its cursor.
+      RadioVoice->Play(Input);
+      const FS47DialogueStatus ClipStatus=RadioVoice->Status();
+      if (ClipStatus.Clips.Num()==1 && ClipStatus.Clips[0].Duration>0 && RadioVoice->Playing())
+      {
+       RadioHold=ClipStatus.Clips[0].Duration; bRadioRecorded=true; // actual decoded PCM duration
+      }
+     }
+     if (!bRadioRecorded)
+     {
+      // A muted existing take uses its measured catalog duration. The pending silent
+      // placeholder uses a readability hold, which is never reported as take timing.
+      if (Available && !M->Audio->bCharacterVoices) RadioHold=(*Found)[0].Duration;
+      else if (RadioHold<=0) RadioHold=FMath::Clamp(2.5+L->Text.Len()/20.0,4.0,11.0);
+     }
+     const FString CaptionState=bRadioRecorded?TEXT("recorded evening host"):Available?(M->Audio->bCharacterVoices?TEXT("recording unavailable / subtitles only"):TEXT("character voices off")):TEXT("voice recording pending");
+     M->UI->Toast(TEXT("RADIO: LOCAL EVENING HOST [")+CaptionState+TEXT("] / ")+L->Text,float(RadioHold));
     }
     RadioHold-=Dt;
-    if (RadioHold<=0) { RadioPack.Advance(); RadioSpokenLine.Empty(); if (!RadioPack.CurrentScene()) RadioRest=45; Changed(); }
+    const bool Finished=bRadioRecorded?(!RadioVoice->Playing() && !RadioVoice->Loading()):RadioHold<=0;
+    if (Finished) { RadioVoice->Stop(); bRadioRecorded=false; RadioPack.Advance(); RadioSpokenLine.Empty(); if (!RadioPack.CurrentScene()) RadioRest=45; Changed(); }
    }
    else { RadioPack.Advance(); RadioRest=45; Changed(); }
   }
@@ -308,7 +349,7 @@ void FS47Evening::Step(double Dt)
  if (bResumeRequested && !M->ModalOpen() && !M->World->bBusy) { bResumeRequested=false; ShowDialogue(); }
 
  Context();
- if (Opening() && !Commute() && !M->ModalOpen() && !M->bPausedByMenu) M->Story->SetClock(M->Story->Clock()+Dt);
+ if (Opening() && !Commute() && !M->ModalOpen() && !M->bPausedByMenu) M->Story->SetClock(FMath::Min(M->Story->Clock()+Dt,S47Timeline::Residual(true)-6));
  if (Opening() && !Commute() && !bRing && !Pack.CurrentScene() && M->T>=RingAt)
  {
   bRing=true; M->Audio->Loop(TEXT("evening:ring"),TEXT("phone_ring"),0.8f,M->Web->PropLocation(TEXT("phone")));
