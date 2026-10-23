@@ -2,6 +2,15 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Åpningens biler og SARO-inngang, Codex 23. oktober 2026
+
+- Pakket kilde `66d2b5a6`, core `04517414`, retter Toms tre åpningsfeil fra `ed061aca`. Rapport og reproduksjon: `EVENING_VEHICLE_FIXES.md`; kandidat/bevis: `~/scratch-bm/Signal47-opening-vehicles`. Nyere core-endringer er ikke en del av denne testpakken.
+- Skjul HELE SARO-kjøreriggens Group under personbilbruk; selvstendige cab-/dørbarn blir ellers stående igjen. Wagonen bruker eget førerøye, komplett interiør og egen hengslet dør. Gjenopprett rigg og serviceførerøye ved ankomst.
+- `fairheaven_sw84` er delt med props. Importens opt-in `keep_complete` bevarer standardmodellens 19 461 trekanter; den interaktive bilen bruker `_body` (18 244) og `_door_driver` (1 217). Regenerer/importer alle tre før cook; genererte Free-assets skal ikke committes.
+- Kanonisk `SetParkPose` nuller pitch/roll og hjuldropp. Bare nøyaktig gammel originalpad repareres på load; andre serviceposer bevares. Utrygg/manglende personbilparkering bruker besøksplassen `(4.5,-0.62,14)`. Walkerens orienterte bilboks følger samme pose, slås av når skjult og slås opp på ID fordi dørbladene endrer indeksene.
+- En lukket østdør kunne fjerne eneste gangsone under spilleren. Avvis manuell terskellukking mens spillerens fotavtrykk overlapper. Gammel ugyldig save må repareres FØR Flow-lasterens Walkable-port, ellers når den aldri reparasjonen. Åpne kun berørt terskel og bevar posisjon/klokke.
+- `-S47EveningVehicles` og `-S47EveningEntrance` gir 1286 selvtester og 48 walkerpasseringer før/etter D01, parkert/flyttet, fire ferske disk-/verdenslastinger og gammel ugyldig terskelsave. Hel burgerrute og seks gamle historiehopp PASS på samme pakke. Bilder visuelt kontrollert, seks pakkehasher uendret. Dette er API-styrt normal bevegelse, ikke menneskelig tastaturtest. Content-lenker/OpenOrder ryddet; ingen installasjon, push eller PR.
+
 ## Anomaly-pilot, Codex 23. oktober 2026
 
 - `codex/anomaly-pilot` implementerer N01/N02/A02/P01 på den flettede kveldstarten. Bruk `ANOMALY_RUNTIME.md` som gjeldende leveranse- og testrapport. Senere kontor/trafo/VHS, bygningsløft og fullnatt er fortsatt egne leveranser.
