@@ -121,6 +121,14 @@ void FS47AnomalyTest::Pose(const FVector& Feet,const FVector& LookAt)
  M->Player->Pitch=FMath::Atan2(Delta.Y,FMath::Sqrt(Delta.X*Delta.X+Delta.Z*Delta.Z));
 }
 
+void FS47AnomalyTest::FigurePhotoPose()
+{
+ const auto& D=M->Anomaly->Data;
+ const FVector At=M->AnomalyWorld->ChangedAt();
+ const FVector Front=D.A02FacingSet?FVector(-FMath::Sin(D.A02Yaw),0,-FMath::Cos(D.A02Yaw)):FVector(-1,0,0);
+ Pose(At+Front*3.8,(At+M->AnomalyWorld->PrintShadowAt())*.5);
+}
+
 bool FS47AnomalyTest::Photograph(const FString& ExpectedTarget)
 {
  auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));
@@ -158,8 +166,10 @@ bool FS47AnomalyTest::Photograph(const FString& ExpectedTarget)
   const auto Targets=S47J::New();
   for (const auto& T:P.Targets) S47J::Set(Targets,*T.Key,TArray<double>{T.Value.X,T.Value.Y});
   S47J::Set(Info,TEXT("targets"),Targets);
+  auto Investigation=M->Anomaly->Save(); Investigation->RemoveField(TEXT("archive")); Investigation->RemoveField(TEXT("script"));
+  S47J::Set(Info,TEXT("investigation_state"),Investigation);
   const auto Projected=S47J::New();
-  for (const auto& T:TArray<TPair<FString,FVector>>{{TEXT("lamp"),M->AnomalyWorld->LampAt()},{TEXT("reference"),M->AnomalyWorld->ReferenceAt()},{TEXT("changed"),M->AnomalyWorld->ChangedAt()}})
+  for (const auto& T:TArray<TPair<FString,FVector>>{{TEXT("lamp"),M->AnomalyWorld->LampAt()},{TEXT("reference"),M->AnomalyWorld->ReferenceAt()},{TEXT("changed"),M->AnomalyWorld->ChangedAt()},{TEXT("n02_trace"),M->AnomalyWorld->N02TraceAt()},{TEXT("print_shadow"),M->AnomalyWorld->PrintShadowAt()}})
   {
    const auto Q=M->FieldCamera->Project(T.Value); const auto V=S47J::New();
    S47J::Set(V,TEXT("world"),TArray<double>{T.Value.X,T.Value.Y,T.Value.Z});
@@ -238,7 +248,7 @@ void FS47AnomalyTest::Step(double Dt)
   FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyState="),InspectState);
   if (!FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyRoute="),Route)) {if(InspectState.IsEmpty()) {bDone=true;return;} Route=TEXT("pilot");}
   if (!InspectState.IsEmpty() && !TArray<FString>{TEXT("routine"),TEXT("n02"),TEXT("reference"),TEXT("records"),TEXT("anomaly"),TEXT("comparison"),TEXT("p01"),TEXT("notebook")}.Contains(InspectState)) {Fail(TEXT("unknown anomaly inspection state"));return;}
-  if (!TArray<FString>{TEXT("pilot"),TEXT("late"),TEXT("legacy"),TEXT("already-seen"),TEXT("missing-phone"),TEXT("archive"),TEXT("missing-photo")}.Contains(Route)) {Fail(TEXT("unknown anomaly route"));return;}
+  if (!TArray<FString>{TEXT("pilot"),TEXT("late"),TEXT("legacy"),TEXT("already-seen"),TEXT("missing-phone"),TEXT("archive"),TEXT("missing-photo"),TEXT("dread")}.Contains(Route)) {Fail(TEXT("unknown anomaly route"));return;}
   FParse::Value(FCommandLine::Get(),TEXT("S47AnomalyShots="),Shots);
   if (!Shots.IsEmpty()) IFileManager::Get().MakeDirectory(*Shots,true);
   if (!FParse::Value(FCommandLine::Get(),TEXT("UserDir="),Profile)) {Fail(TEXT("explicit isolated -UserDir required"));return;}
@@ -254,7 +264,7 @@ void FS47AnomalyTest::Step(double Dt)
  if (Elapsed>560 || StageElapsed>120) {Fail(TEXT("timeout waiting for state or physical control"));return;}
  if (Hold>0) {Hold-=Dt;return;}
  auto& D=M->Anomaly->Data;
- const bool Full=Route==TEXT("pilot") || Route==TEXT("missing-phone") || Route==TEXT("missing-photo");
+ const bool Full=Route==TEXT("pilot") || Route==TEXT("missing-phone") || Route==TEXT("missing-photo") || Route==TEXT("dread");
  if (Stage==1)
  {
   M->World->StopDriving(); M->World->Enter(TEXT("saro"));
@@ -365,9 +375,18 @@ void FS47AnomalyTest::Step(double Dt)
  }
  if (Stage==11)
  {
+  if (Route==TEXT("dread"))
+  {
+   if (D.DreadVersion!=2 || D.N02Trace || D.A02Trace || D.A02FacingSet || D.P01Heard || D.P01Ended)
+   {Fail(TEXT("fresh dread route has future film/facing/sound states before its night revisit"));return;}
+   if (!RoundTrip(TEXT("dread-before-facing"))) return;
+   M->World->Enter(TEXT("diner"));
+   Pose(M->AnomalyWorld->LampAt()+FVector(1.1,0,6.1),M->AnomalyWorld->LampAt());
+   Next(120,TEXT("MARKED dread revisit: unchanged early photos carried into 04:10; actual night lamp control, facing not yet asserted"),2);return;
+  }
   if (!D.A02Moved || D.A02Compared || D.A02Followed) {Fail(TEXT("A02 physical variant did not move away from view after midnight, or silently completed"));return;}
   M->World->Enter(TEXT("diner"));
-  Pose(FVector(8014,0,2044),M->AnomalyWorld->ChangedAt());
+  FigurePhotoPose();
   Next(12,TEXT("Return to relocated cardboard figure; independent scene variant"),2);return;
  }
  if (Stage==12)
@@ -491,6 +510,159 @@ void FS47AnomalyTest::Step(double Dt)
   if (!RoundTrip(TEXT("p01-followed"))) return;
   M->Flow->OpenTestView(TEXT("notebook:findings"));
   Next(96,TEXT("Notebook opened after reload; let modal layout and restored fade settle before keyboard navigation"),.8);return;
+ }
+ if (Stage==120)
+ {
+  if (!D.A02FacingSet || D.A02Stage!=1 || !FMath::IsFinite(D.A02Yaw)) {Fail(TEXT("first night arrival did not persist a finite stage-one facing"));return;}
+  DreadFirstYaw=D.A02Yaw;
+  if (!RoundTrip(TEXT("dread-facing-before-trace"))) return;
+  if (D.A02Yaw!=DreadFirstYaw) {Fail(TEXT("first arrival-facing yaw changed in disk restore"));return;}
+  DreadFirstAt=M->AnomalyWorld->ChangedAt();
+  Shot(TEXT("dread-n02-scene"));
+  Next(121,TEXT("Stage-one figure facing saved through disk/full restore; naked-eye lamp scene before second film trace"),2);return;
+ }
+ if (Stage==121)
+ {
+  const FString OriginalControl=D.ControlPhoto, OriginalFirst=D.N02Photo;
+  if (!Photograph(TEXT("anomaly:n02trace"))) return;
+  if (!D.N02Trace || D.N02TracePhoto.IsEmpty() || D.N02TraceClock<0 || D.ControlPhoto!=OriginalControl || D.N02Photo!=OriginalFirst || D.N02TracePhoto==OriginalControl)
+  {Fail(TEXT("night trace did not attach a distinct actual photo while preserving ordinary evening controls"));return;}
+  if (!RoundTrip(TEXT("dread-n02-film"))) return;
+  M->Story->SetClock(M->Story->Clock()+91); M->Anomaly->Open(TEXT("n02"));
+  if (!M->Anomaly->Assess(TEXT("n02"),TEXT("trace"))) {Fail(TEXT("developed night trace cannot be actively compared against the real ordinary reference"));return;}
+  M->Anomaly->Open(TEXT("n02")); Shot(TEXT("dread-n02-film"));
+  Next(122,TEXT("MARKED development +91s: real second shape remains on film; ordinary lamp explanation is retained as a control, trace cause unresolved"),2);return;
+ }
+ if (Stage==122)
+ {
+  if (!RoundTrip(TEXT("dread-n02-assessed"))) return;
+  M->UI->Close(true);
+  FigurePhotoPose();
+  Next(123,TEXT("Controlled approach to stage-one figure; its saved arrival-facing is kept"),2);return;
+ }
+ if (Stage==123)
+ {
+  if (D.A02Stage!=1 || !D.A02FacingSet || D.A02ScrapeHeard || D.A02Yaw!=DreadFirstYaw) {Fail(TEXT("figure advanced or rasp replayed before documenting its first placement"));return;}
+  if (!RoundTrip(TEXT("dread-stage1-facing"))) return;
+  Shot(TEXT("dread-a02-facing"));
+  // The actual exposure will frame both the physical figure and film-only trace.
+  FigurePhotoPose();
+  Next(124,TEXT("First placement and arrival-facing survive reload; camera aimed at physical object plus its film trace"),2);return;
+ }
+ if (Stage==124)
+ {
+  if (!Photograph(TEXT("anomaly:changed"))) return;
+  const auto& P=M->Night->Album->Shots().Last();
+  if (!P.Targets.ContainsByPredicate([](const TPair<FString,FVector2D>& T){return T.Key==TEXT("anomaly:printshadow");}) || !D.A02Trace || D.A02TracePhoto!=P.Id || D.ChangedPhoto!=P.Id || D.A02TraceClock<0)
+  {Fail(TEXT("actual figure exposure did not record its distinct film-only shape target"));return;}
+  if (!RoundTrip(TEXT("dread-stage1-film"))) return;
+  M->Story->SetClock(M->Story->Clock()+91); M->Anomaly->Open(TEXT("a02")); Shot(TEXT("dread-a02-film"));
+  Next(125,TEXT("MARKED development +91s: actual normal/changed prints show the same tag and damage with a second film form; no living-figure conclusion"),2);return;
+ }
+ if (Stage==125)
+ {
+  if (D.A02Stage!=1 || !M->UI->Modal()) {Fail(TEXT("stage-one comparison not held before modal move control"));return;}
+  const FVector Away=M->AnomalyWorld->ChangedAt()+FVector(0,0,28);
+  M->Player->Place(Away.X,Away.Z,UE_DOUBLE_PI); M->Player->Pitch=0;
+  Next(126,TEXT("Negative control: distant/out-of-view test pose while active comparison panel remains open; figure must wait"),2);return;
+ }
+ if (Stage==126)
+ {
+  if (D.A02Stage!=1 || D.A02ScrapeHeard || D.A02Yaw!=DreadFirstYaw || !M->UI->Modal()) {Fail(TEXT("second placement or rasp occurred over the active comparison"));return;}
+  if (!RoundTrip(TEXT("dread-before-stage2"))) return;
+  M->UI->Close(true);
+  const FVector Away=M->AnomalyWorld->ChangedAt()+FVector(0,0,28);
+  Pose(Away,Away+FVector(0,0,8));
+  Next(127,TEXT("Close panel and look away from outside the near view; allow actual persistent second placement and one paper rasp"),2);return;
+ }
+ if (Stage==127)
+ {
+  if (D.A02Stage!=2 || !D.A02ScrapeHeard || !D.A02FacingSet || !FMath::IsFinite(D.A02Yaw) || FVector::Dist(DreadFirstAt,M->AnomalyWorld->ChangedAt())<1)
+  {Fail(TEXT("out-of-view second placement, persistent facing or one-time paper rasp missing"));return;}
+  const double Stage2Yaw=D.A02Yaw;
+  if (!RoundTrip(TEXT("dread-stage2-rasp"))) return;
+  if (D.A02Yaw!=Stage2Yaw || D.A02Stage!=2) {Fail(TEXT("second-placement facing/stage changed in disk restore"));return;}
+  FigurePhotoPose();
+  Next(128,TEXT("Second physical placement is closer to the street and survives disk reload; return for another actual camera exposure"),2);return;
+ }
+ if (Stage==128)
+ {
+  if (!Photograph(TEXT("anomaly:changed"))) return;
+  Shot(TEXT("dread-a02-stage2"));
+  Next(129,TEXT("Physical second placement documented in another real exposure; hold its actual street view for capture"),2);return;
+ }
+ if (Stage==129)
+ {
+  M->Story->SetClock(M->Story->Clock()+91); M->Anomaly->Open(TEXT("a02"));
+  if (M->Anomaly->Assess(TEXT("a02"),TEXT("living"))) {Fail(TEXT("film-only trace incorrectly established a living figure"));return;}
+  if (!M->Anomaly->Assess(TEXT("a02"),TEXT("uneasy")) || !D.A02Compared || !D.P01Pending || D.P01Heard)
+  {Fail(TEXT("real film trace could not support its limited active comparison and deferred follow-up"));return;}
+  M->Anomaly->Open(TEXT("a02")); Shot(TEXT("dread-a02-hint"));
+  Next(135,TEXT("MARKED development +91s: film trace compared actively, identity/position supported and cause remains unresolved; hold actual hint and comparison"),2);return;
+ }
+ if (Stage==135)
+ {
+  if (!RoundTrip(TEXT("dread-stage2-compared"))) return;
+  M->Anomaly->Open(TEXT("a02"));
+  Next(130,TEXT("P01 pending preserved with second placement, yaw, rasp and real film; studio sound must wait for panel close"),2);return;
+ }
+ if (Stage==130)
+ {
+  if (D.P01Heard || !D.P01Pending || !M->UI->Modal()) {Fail(TEXT("P01 started over active film comparison"));return;}
+  M->UI->Close(true); M->Inter->UseId(TEXT("anomaly:figure")); M->UI->Close(true);
+  if (!D.A02Followed) {Fail(TEXT("new film assessment skipped the physical cardboard follow-up"));return;}
+  Pose(M->AnomalyWorld->StudioAt()+FVector(-6,0,0),M->AnomalyWorld->StudioAt());
+  DreadLastPos=M->Player->Pos; DreadDistance=0;
+  M->Player->TestMove=FVector2D(0,-1);
+  Next(131,TEXT("Physical controller approach from six metres west of closed studio; P01 should follow real movement and ON AIR should briefly flicker"),0);return;
+ }
+ if (Stage==131)
+ {
+  if (D.P01Flickered && !Requested.Contains(TEXT("dread-p01-onair")))
+  {
+   // The authored ON AIR pulse lasts only .26s. This request belongs to the
+   // first live flicker frame; the ordinary delayed Shot helper would miss it.
+   if (!Shots.IsEmpty())
+   {
+    Requested.Add(TEXT("dread-p01-onair"));
+    FScreenshotRequest::RequestScreenshot(FPaths::Combine(Shots,TEXT("dread-p01-onair.png")),true,false);
+    Event(TEXT("Immediate actual ON AIR pulse screenshot requested on first P01Flickered frame"));
+   }
+  }
+  const double Moved=FVector::Dist(M->Player->Pos,DreadLastPos); if (Moved<1) DreadDistance+=Moved; DreadLastPos=M->Player->Pos;
+  if (StageElapsed>1 && !Requested.Contains(TEXT("dread-p01-approach"))) Shot(TEXT("dread-p01-approach"));
+  if (StageElapsed<2.5) return;
+  M->Player->TestMove.Reset();
+  if (!D.P01Heard || !D.P01Flickered || !D.P01Approach || D.P01Ended || DreadDistance<.8)
+  {Fail(TEXT("real studio approach did not move sufficiently or trigger spatial sound/flicker/approach state"));return;}
+  DreadSoundClock=D.P01Clock;
+  if (!RoundTrip(TEXT("dread-p01-moving"))) return;
+  M->Player->TestMove.Reset();
+  Next(132,TEXT("Active approach preserved through disk/full restore; real controller released and player now stands still"),1.2);return;
+ }
+ if (Stage==132)
+ {
+  if (!D.P01Ended && StageElapsed<4) return;
+  if (!D.P01Ended || D.P01Clock!=DreadSoundClock || M->AnomalyWorld->Busy()) {Fail(TEXT("movement-linked printer did not end after standing still or replayed its onset"));return;}
+  if (!RoundTrip(TEXT("dread-p01-ended"))) return;
+  Shot(TEXT("dread-p01-ended"));
+  Next(133,TEXT("Printer ended after real approach/standstill; terminal state saved, sound source and apparent presence still unresolved"),2);return;
+ }
+ if (Stage==133)
+ {
+  if (!D.P01Ended || D.P01Clock!=DreadSoundClock || M->AnomalyWorld->Busy()) {Fail(TEXT("terminal P01 replayed after disk restore"));return;}
+  M->Inter->UseId(TEXT("anomaly:studio")); M->UI->Close(true);
+  if (!D.P01Followed) {Fail(TEXT("closed facade inspection missing after printer stopped"));return;}
+  M->Anomaly->Open(TEXT("p01")); Shot(TEXT("dread-p01-hint"));
+  Next(134,TEXT("Physical facade remains ordinary after the movement-linked sound; investigation records the unanswered source without inventing a figure"),2);return;
+ }
+ if (Stage==134)
+ {
+  if (!RoundTrip(TEXT("dread-complete"))) return;
+  if (!D.N02Trace || !D.A02Trace || D.A02Stage!=2 || !D.A02ScrapeHeard || !D.P01Approach || !D.P01Flickered || !D.P01Ended)
+  {Fail(TEXT("completed dread chain missing persistent night beats"));return;}
+  M->Flow->OpenTestView(TEXT("notebook:findings"));
+  Next(96,TEXT("New night findings carried to actual notebook after disk reload; select and assert final follow-up body"),.8);return;
  }
  if (Stage==96)
  {

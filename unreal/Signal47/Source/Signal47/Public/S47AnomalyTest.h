@@ -22,6 +22,8 @@ private:
  TArray<S47J::FObj> Events;
  TArray<FString> Requested;
  S47J::FObj EarlyState;
+ FVector DreadFirstAt=FVector::ZeroVector, DreadLastPos=FVector::ZeroVector;
+ double DreadDistance=0, DreadSoundClock=0, DreadFirstYaw=0;
  void Fail(const FString& Why);
  void Next(int32 To, const FString& Action, double Wait = .7);
  void Event(const FString& Action);
@@ -31,4 +33,5 @@ private:
  bool Photograph(const FString& ExpectedTarget);
  void Pose(const FVector& Feet, const FVector& LookAt);
  void Cut(const FString& Chapter);
+ void FigurePhotoPose();
 };
