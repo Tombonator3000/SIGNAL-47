@@ -13,6 +13,6 @@ namespace S47FlashFrames
 {
 	struct FFrame { FString Id; FS47Pix Canvas; double Ms = 0; };
 	/** The frames in the order they are shown, with how long each stays (milliseconds). */
-	SIGNAL47_API TArray<FFrame> FlashFrames();
+	SIGNAL47_API TArray<FFrame> FlashFrames(bool bEveningTimeline = false);
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

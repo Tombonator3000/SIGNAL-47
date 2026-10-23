@@ -888,7 +888,7 @@ void US47Away::Frame(double Dt)
 void US47Away::PlayFlash()
 {
 	Flash.Reset();
-	for (const S47FlashFrames::FFrame& F : S47FlashFrames::FlashFrames()) Flash.Add({ TStrongObjectPtr<UTexture2D>(S47Image::FromPixels(F.Canvas.Colors(), F.Canvas.W, F.Canvas.H)), F.Ms });
+	for (const S47FlashFrames::FFrame& F : S47FlashFrames::FlashFrames(M && M->Story && M->Story->bEveningTimeline)) Flash.Add({ TStrongObjectPtr<UTexture2D>(S47Image::FromPixels(F.Canvas.Colors(), F.Canvas.W, F.Canvas.H)), F.Ms });
 	FlashI = 0; FlashT = 0;
 	if (Flash.Num()) ShowFrame(Flash[0].Key.Get(), 1);
 }

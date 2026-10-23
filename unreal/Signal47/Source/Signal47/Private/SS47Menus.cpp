@@ -71,7 +71,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 	}
 
 	// .note: the night in a line, and the flashing images' warning with the way to the setting
-	const FString Note = TEXT("The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. ")
+	const FString Note = TEXT("An evening drive, a shift at SARO, and the old Roswell road at dawn. Headphones help. ")
 		TEXT("<Em>Near the end there is a short sequence of flashing images:</> <a id=\"settings\" style=\"Link\">Settings › Accessibility.</>");
 	TFunction<void(const FString&)> At = O.OnSettingsAt;
 	TFunction<void()> Plain = O.OnSettings;

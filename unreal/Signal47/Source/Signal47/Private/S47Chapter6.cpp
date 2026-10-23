@@ -127,7 +127,7 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 
 void US47Chapter6::DrawFrames()
 {
-	Frames = S47FlashFrames::FlashFrames(); FrameTextures.Reset();
+	Frames = S47FlashFrames::FlashFrames(Host && Host->bEveningTimeline); FrameTextures.Reset();
 	for (const S47FlashFrames::FFrame& F : *Frames) FrameTextures.Add(S47Image::FromPixels(F.Canvas.Colors(), F.Canvas.W, F.Canvas.H));
 }
 
