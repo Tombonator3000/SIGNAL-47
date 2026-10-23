@@ -90,14 +90,17 @@ void AS47Web::BuildRadioStation()
 		}
 	}
 	// Town.ts baked its old room photograph into a quad directly over the front window. Keep
-	// that dynamic atlas (presenter on duty / empty after sign-off) as a background behind the
-	// real console, microphone and chair, rather than covering the new interior with a flat image.
-	// Exported panel vertices already contain town coordinates; only their node offset changes.
+	// that dynamic atlas (presenter on duty / empty after sign-off) flush against the studio's
+	// rear wall, so it cannot cut through the room or show its reverse to an interior camera.
+	// build_station.py: back lining centre Blender Y=9.7, thickness .04; its inner face is
+	// world X=8029.68. Put the quad .02 m in front of that face, at world X=8029.66.
+	// Exported quad X=19.965 is baked into its vertices; the runtime parent is identity and
+	// Caliche translates by +8000 X. Thus its node needs offset 29.66-19.965=9.695, once.
 	for (const FString& Path : PathsUnder(TEXT("world.town.runtime.panels.studio.")))
 	{
 		FS47Obj Backdrop = Obj(Path);
 		FVector At = Backdrop.Position();
-		At.X = 4.4; // World x 8024.365; the authored chair ends before x 8023.2.
+		At.X = 9.695; // World x 8029.66000015, two centimetres before the walnut lining.
 		Backdrop.SetPosition(At);
 	}
 	// The public lobby has its own door. The existing studio buzzer keeps its dialogue and moves
