@@ -1,0 +1,1058 @@
+{
+  "module_id": "arrival",
+  "flags": {
+    "arrival_radio_heard": {
+      "default": false,
+      "purpose_nb": "Den første vanlige radiosnutten er hørt."
+    },
+    "arrival_departure_radio_heard": {
+      "default": false,
+      "purpose_nb": "Radiovertens avslutning på vei ut av byen er hørt."
+    },
+    "arrival_diner_finished": {
+      "default": false,
+      "purpose_nb": "Det valgfrie ettermiddagsbesøket er avsluttet, med eller uten mat."
+    },
+    "arrival_order_burger": {
+      "default": false,
+      "purpose_nb": "Spilleren har kjøpt burgeralternativet. Gjensidig utelukkende med sandwich."
+    },
+    "arrival_order_sandwich": {
+      "default": false,
+      "purpose_nb": "Spilleren har kjøpt sandwichalternativet. Gjensidig utelukkende med burger."
+    },
+    "arrival_late_greeted": {
+      "default": false,
+      "purpose_nb": "Én av de gjensidig utelukkende velkomstene ved All Night er avspilt."
+    }
+  },
+  "scenes": [
+    {
+      "id": "I01_DRIVE",
+      "phase": "commute",
+      "channel": "radio",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Åpning på innkjøringen til Caliche, før SARO-skiftet. Avspilling stopper ved utstigning og kan fortsette i bilen.",
+      "requires": {
+        "all": [],
+        "none": [
+          "arrival_radio_heard",
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "Sen ettermiddag 13. april. Kjørbar innledning, ingen nedtelling. Egen vanlig radiovert, ikke Earl eller Dale. Lystig original eller klarert instrumental går før og mellom replikkene. Åpne hus, noen folk og vanlig trafikk gjør byen lesbar.",
+      "lines": [
+        {
+          "id": "I01_DRIVE_001",
+          "speaker": "RADIO_HOST",
+          "text": "Good afternoon, Caliche. Hope your Sunday has been an easy one.",
+          "delivery_nb": "Lett og munter lokalradio."
+        },
+        {
+          "id": "I01_DRIVE_002",
+          "speaker": "RADIO_HOST",
+          "text": "We've still got a little sunshine left. Good time to get the washing off the line.",
+          "delivery_nb": "Småprat, uten ladet pause."
+        },
+        {
+          "id": "I01_DRIVE_003",
+          "speaker": "RADIO_HOST",
+          "text": "A reminder from the feed store: tomorrow's delivery comes in after ten. Let them have their coffee first.",
+          "delivery_nb": "Smil i stemmen."
+        },
+        {
+          "id": "I01_DRIVE_004",
+          "speaker": "RADIO_HOST",
+          "text": "And if you're heading out to work, the diner has the griddle on.",
+          "delivery_nb": "Som en vanlig lokal opplysning."
+        },
+        {
+          "id": "I01_DRIVE_005",
+          "speaker": "RADIO_HOST",
+          "text": "Take it easy through town. There's no prize for getting to the next red light first.",
+          "delivery_nb": "Lunt."
+        },
+        {
+          "id": "I01_DRIVE_006",
+          "speaker": "RADIO_HOST",
+          "text": "Here's another record for the road.",
+          "delivery_nb": "Kort, gi plass til musikken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "arrival_radio_heard": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I02_DINER_HELLO",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Første aktive henvendelse ved dinerdisken før intro_arrived. Stoppet er valgfritt.",
+      "requires": {
+        "all": [],
+        "none": [
+          "arrival_diner_finished",
+          "food_bought",
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "Servitrisen tørker disken og legger frem meny. Vanlig lys, kjøkkenlyd og uanstrengt stemning. Ingen skjult horrorreplikk. Spilleren er taus.",
+      "lines": [
+        {
+          "id": "I02_DINER_HELLO_001",
+          "speaker": "WAITRESS",
+          "text": "Hi there. Sit wherever you like.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I02_DINER_HELLO_002",
+          "speaker": "WAITRESS",
+          "text": "Kitchen's still going. Coffee's fresh enough that I can say it with a straight face.",
+          "delivery_nb": "Lett humor."
+        },
+        {
+          "id": "I02_DINER_HELLO_003",
+          "speaker": "WAITRESS",
+          "text": "You want to see the menu, or are you just stretching your legs?",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [
+        {
+          "id": "I02_MENU",
+          "label": "Let me see the menu.",
+          "next": "I03_MENU",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I02_WATER",
+          "label": "Just a glass of water, please.",
+          "next": "I08_WATER",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I02_ROAD",
+          "label": "How is the road out to SARO?",
+          "next": "I14_ROAD",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I02_LEAVE",
+          "label": "I should keep moving.",
+          "next": "I09_LEAVE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I03_MENU",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Åpnes fra velkomst eller kort småprat. Menyvalg er kjøpsøyeblikket og utføres én gang.",
+      "requires": {
+        "all": [],
+        "none": [
+          "food_bought",
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "En enkel papirmeny med to synlige matvalg. Integrasjon må fullføre valgt svarnode også hvis samtalen avbrytes etter kjøp; samme bestilling skal ikke belastes eller gis to ganger.",
+      "lines": [
+        {
+          "id": "I03_MENU_001",
+          "speaker": "WAITRESS",
+          "text": "Burger comes with fries. Sandwich comes with chips.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I03_MENU_002",
+          "speaker": "WAITRESS",
+          "text": "Coffee with either one. I can wrap the food if you're taking it to work.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I03_MENU_003",
+          "speaker": "WAITRESS",
+          "text": "What sounds good?",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [
+        {
+          "id": "I03_BURGER",
+          "label": "Buy a burger, fries and coffee.",
+          "next": "I04_BURGER",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {
+              "food_bought": true,
+              "arrival_order_burger": true
+            },
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I03_SANDWICH",
+          "label": "Buy a sandwich, chips and coffee.",
+          "next": "I05_SANDWICH",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {
+              "food_bought": true,
+              "arrival_order_sandwich": true
+            },
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I03_COOK",
+          "label": "What would you have?",
+          "next": "I15_RECOMMEND",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I03_DECLINE",
+          "label": "Nothing today, thanks.",
+          "next": "I09_LEAVE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I04_BURGER",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar på burgerkjøpet. Kjøpsflagget er allerede satt.",
+      "requires": {
+        "all": [
+          "food_bought",
+          "arrival_order_burger"
+        ],
+        "none": [
+          "arrival_diner_finished"
+        ]
+      },
+      "direction_nb": "Vis burger, pommes frites og kaffekopp på et brett foran spilleren. Gjenstanden og reaksjonen må være synlig; et skjult flagg alene oppfyller ikke handlingen.",
+      "lines": [
+        {
+          "id": "I04_BURGER_001",
+          "speaker": "WAITRESS",
+          "text": "One burger, fries and coffee. Coming right up.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I04_BURGER_002",
+          "speaker": "WAITRESS",
+          "text": "There you go. Careful with the plate.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I04_BURGER_003",
+          "speaker": "WAITRESS",
+          "text": "Eating here, or shall I wrap it?",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [
+        {
+          "id": "I04_EAT",
+          "label": "Eat here.",
+          "next": "I06_EAT",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I04_TAKE",
+          "label": "Take it with me.",
+          "next": "I07_TAKE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I05_SANDWICH",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar på sandwichkjøpet. Kjøpsflagget er allerede satt.",
+      "requires": {
+        "all": [
+          "food_bought",
+          "arrival_order_sandwich"
+        ],
+        "none": [
+          "arrival_diner_finished"
+        ]
+      },
+      "direction_nb": "Vis sandwich, chips og kaffekopp på et brett foran spilleren. Ingen andre ordre skal opprettes ved gjenåpning.",
+      "lines": [
+        {
+          "id": "I05_SANDWICH_001",
+          "speaker": "WAITRESS",
+          "text": "Sandwich, chips and coffee. You got it.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I05_SANDWICH_002",
+          "speaker": "WAITRESS",
+          "text": "Here we are. Napkins are right beside you.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I05_SANDWICH_003",
+          "speaker": "WAITRESS",
+          "text": "Staying for a minute, or taking that along?",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [
+        {
+          "id": "I05_EAT",
+          "label": "Eat here.",
+          "next": "I06_EAT",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I05_TAKE",
+          "label": "Take it with me.",
+          "next": "I07_TAKE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I06_EAT",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Spilleren velger å spise. Kort rolig bordsekvens, deretter fri kontroll og retur til bilen.",
+      "requires": {
+        "all": [
+          "food_bought"
+        ],
+        "none": [
+          "arrival_diner_finished",
+          "food_taken"
+        ]
+      },
+      "direction_nb": "Vis at mat faktisk spises: tallerken/brett endres fra fullt til spist, kaffe reduseres, servitrisen samler inn. Ingen sultsystem eller klokkestraff. Rester skal ikke samtidig gis som ny takeaway.",
+      "lines": [
+        {
+          "id": "I06_EAT_001",
+          "speaker": "WAITRESS",
+          "text": "Sure. Take your time.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I06_EAT_002",
+          "speaker": "WAITRESS",
+          "text": "Mind if I top that coffee up?",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I06_EAT_003",
+          "speaker": "WAITRESS",
+          "text": "There. That should keep you going.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I06_EAT_004",
+          "speaker": "WAITRESS",
+          "text": "Thanks for stopping in. Have a good shift.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "food_eaten": true,
+          "arrival_diner_finished": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I07_TAKE",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Spilleren velger å ta med. Etter utlevering går kontrollen tilbake til disken, så bilen.",
+      "requires": {
+        "all": [
+          "food_bought"
+        ],
+        "none": [
+          "arrival_diner_finished",
+          "food_eaten"
+        ]
+      },
+      "direction_nb": "Vis at samme kjøpte mat pakkes i papirpose og kaffe får lokk. Gi én synlig pose i inventar/transportplass og én reaksjonstekst. Ved ankomst kan posen settes på SAROs personalbord; et senere spisevalg må bruke samme porsjon.",
+      "lines": [
+        {
+          "id": "I07_TAKE_001",
+          "speaker": "WAITRESS",
+          "text": "No trouble. I'll put it in a bag.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I07_TAKE_002",
+          "speaker": "WAITRESS",
+          "text": "Fork and napkins are in there. Coffee's got a lid.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I07_TAKE_003",
+          "speaker": "WAITRESS",
+          "text": "Keep the bag upright. The bottom's got more confidence than strength.",
+          "delivery_nb": "Smilende, vanlig spøk."
+        },
+        {
+          "id": "I07_TAKE_004",
+          "speaker": "WAITRESS",
+          "text": "Have a good evening out there.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "food_taken": true,
+          "arrival_diner_finished": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I08_WATER",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Gratis vann etter velkomst. Valget avslutter ikke automatisk besøket.",
+      "requires": {
+        "all": [],
+        "none": [
+          "food_bought",
+          "arrival_diner_finished",
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "Et glass vann settes synlig på disken; ingen mat eller kjøpsflagg. Ingen skjult betaling.",
+      "lines": [
+        {
+          "id": "I08_WATER_001",
+          "speaker": "WAITRESS",
+          "text": "Of course. Here you are.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I08_WATER_002",
+          "speaker": "WAITRESS",
+          "text": "You've caught us between the supper crowd and the coffee crowd.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I08_WATER_003",
+          "speaker": "WAITRESS",
+          "text": "Nice having a minute to wipe a table before somebody needs it.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I08_WATER_004",
+          "speaker": "WAITRESS",
+          "text": "Let me know if you change your mind about food.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [
+        {
+          "id": "I08_MENU",
+          "label": "Actually, I will look at the menu.",
+          "next": "I03_MENU",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I08_ROAD",
+          "label": "Which turn takes me to SARO?",
+          "next": "I14_ROAD",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I08_LEAVE",
+          "label": "Thanks. I should get going.",
+          "next": "I09_LEAVE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I09_LEAVE",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Spilleren avslår mat eller avslutter småprat. Fri kontroll ved utgang, deretter kjøring.",
+      "requires": {
+        "all": [],
+        "none": [
+          "food_bought",
+          "arrival_diner_finished"
+        ]
+      },
+      "direction_nb": "Rydd meny/vann ved behov. Ingen kjøp, ingen sultstraff og ingen hindring for å nå SARO.",
+      "lines": [
+        {
+          "id": "I09_LEAVE_001",
+          "speaker": "WAITRESS",
+          "text": "All right. Thanks for coming in.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I09_LEAVE_002",
+          "speaker": "WAITRESS",
+          "text": "We're here if you need something later.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I09_LEAVE_003",
+          "speaker": "WAITRESS",
+          "text": "Drive safely.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "arrival_diner_finished": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I10_BACK_ON_ROAD",
+      "phase": "commute",
+      "channel": "radio",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren forlater Caliche mot SARO, enten direkte eller etter diner. Radiosekvensen krever ikke matkjøp.",
+      "requires": {
+        "all": [],
+        "none": [
+          "arrival_departure_radio_heard",
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "Gatens lyder viker for dekkstøy og musikk. Ingen skurring, avbrutt nødanrop eller fremmed skikkelse i denne sekvensen.",
+      "lines": [
+        {
+          "id": "I10_BACK_ON_ROAD_001",
+          "speaker": "RADIO_HOST",
+          "text": "You're listening to local radio here in Caliche.",
+          "delivery_nb": "Avslappet."
+        },
+        {
+          "id": "I10_BACK_ON_ROAD_002",
+          "speaker": "RADIO_HOST",
+          "text": "Church supper volunteers, your pans are clean and waiting in the kitchen. Please take yours home before somebody makes another casserole in it.",
+          "delivery_nb": "Hverdagslig opplesning."
+        },
+        {
+          "id": "I10_BACK_ON_ROAD_003",
+          "speaker": "RADIO_HOST",
+          "text": "We'll leave you with some music now.",
+          "delivery_nb": "Lyst."
+        },
+        {
+          "id": "I10_BACK_ON_ROAD_004",
+          "speaker": "RADIO_HOST",
+          "text": "Good evening to everybody starting work, and everybody heading home.",
+          "delivery_nb": "Vanlig avslutning."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "arrival_departure_radio_heard": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I11_SARO_ARRIVAL",
+      "phase": "handover",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Når bilen er parkert ved SARO og spilleren går inn på skiftet. Kan nås selv om dineren aldri ble besøkt.",
+      "requires": {
+        "all": [],
+        "none": [
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "Vis datolinje og skiftstart 18:00. Innkjøringen har ingen nedtelling; klokken begynner på skiftets tidspunkt ved dette punktet. Behold kjøpt mat. Dales overlevering eies av egen modul og kommer bare over telefon eller radio. Ingen fysisk kollega venter.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "intro_arrived": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I12_ALL_NIGHT_BOUGHT",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kort velkomst ved første diskhenvendelse i eksisterende All Night, bare etter tidligere matkjøp.",
+      "requires": {
+        "all": [
+          "ctx_all_night_active",
+          "food_bought"
+        ],
+        "none": [
+          "arrival_late_greeted"
+        ]
+      },
+      "direction_nb": "Gi plass til kapittelets eksisterende dialog. Ingen ny bestilling, automatisk bevisutlevering eller løsning av kart/P13. On_complete gir kontroll tilbake til eksisterende dinerflyt.",
+      "lines": [
+        {
+          "id": "I12_ALL_NIGHT_BOUGHT_001",
+          "speaker": "WAITRESS",
+          "text": "Hi again. Back from SARO?",
+          "delivery_nb": "Gjenkjennende, litt trøtt."
+        },
+        {
+          "id": "I12_ALL_NIGHT_BOUGHT_002",
+          "speaker": "WAITRESS",
+          "text": "Coffee's on. You can sit down a minute.",
+          "delivery_nb": "Rolig omsorg, ingen trussel."
+        },
+        {
+          "id": "I12_ALL_NIGHT_BOUGHT_003",
+          "speaker": "WAITRESS",
+          "text": "That driver came in a little while ago. He's over there if you're looking for somebody who's been on the road.",
+          "delivery_nb": "Pek diskret mot eksisterende sjåfør."
+        },
+        {
+          "id": "I12_ALL_NIGHT_BOUGHT_004",
+          "speaker": "WAITRESS",
+          "text": "There's a paper on the counter, too. Nobody's claimed it.",
+          "delivery_nb": "Nevner den eksisterende avisen uten å forklare dens funn."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "arrival_late_greeted": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I13_ALL_NIGHT_NO_FOOD",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Alternativ velkomst ved første diskhenvendelse i All Night hvis ingen mat ble kjøpt. Fungerer også når hele første stopp ble hoppet over.",
+      "requires": {
+        "all": [
+          "ctx_all_night_active"
+        ],
+        "none": [
+          "food_bought",
+          "arrival_late_greeted"
+        ]
+      },
+      "direction_nb": "Ordlyden forutsetter ikke tidligere møte. Samme retur til eksisterende dinerflyt som I12. Ikke sett food_bought; senere originaldialog kan håndtere øvrig servering.",
+      "lines": [
+        {
+          "id": "I13_ALL_NIGHT_NO_FOOD_001",
+          "speaker": "WAITRESS",
+          "text": "Evening. Coming in from work?",
+          "delivery_nb": "Varmt, trøtt."
+        },
+        {
+          "id": "I13_ALL_NIGHT_NO_FOOD_002",
+          "speaker": "WAITRESS",
+          "text": "Take a seat if you need one. Coffee's on.",
+          "delivery_nb": "Avslappet."
+        },
+        {
+          "id": "I13_ALL_NIGHT_NO_FOOD_003",
+          "speaker": "WAITRESS",
+          "text": "That fellow over there just came off the road. He's been sitting with his cup for a while.",
+          "delivery_nb": "Vis eksisterende sjåfør."
+        },
+        {
+          "id": "I13_ALL_NIGHT_NO_FOOD_004",
+          "speaker": "WAITRESS",
+          "text": "Paper's on the counter if you want something to read.",
+          "delivery_nb": "Ingen trykk på avisen eller den relevante artikkelen."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "arrival_late_greeted": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I14_ROAD",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Valgfritt vanlig spørsmål om veien, fra velkomst eller vannglass.",
+      "requires": {
+        "all": [],
+        "none": [
+          "food_bought",
+          "arrival_diner_finished",
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "Samtalen orienterer mot SARO. Ingen profeti, advarsel om sær oppførsel eller referanse til senere hendelser.",
+      "lines": [
+        {
+          "id": "I14_ROAD_001",
+          "speaker": "WAITRESS",
+          "text": "Keep on through town, then take the marked turn out to the array.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I14_ROAD_002",
+          "speaker": "WAITRESS",
+          "text": "Big sign. Hard to miss unless you're arguing with the radio.",
+          "delivery_nb": "Lett spøk."
+        },
+        {
+          "id": "I14_ROAD_003",
+          "speaker": "WAITRESS",
+          "text": "You'll want to eat before you get settled in out there.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I14_ROAD_004",
+          "speaker": "WAITRESS",
+          "text": "Want the menu before you go?",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [
+        {
+          "id": "I14_MENU",
+          "label": "Yes, please.",
+          "next": "I03_MENU",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I14_LEAVE",
+          "label": "I will get going, thanks.",
+          "next": "I09_LEAVE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "I15_RECOMMEND",
+      "phase": "commute",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Kort valggren fra menyen. Spørsmålet har et endelig svar og ingen obligatorisk løkke.",
+      "requires": {
+        "all": [],
+        "none": [
+          "food_bought",
+          "arrival_diner_finished",
+          "intro_arrived"
+        ]
+      },
+      "direction_nb": "Menyen blir liggende. Ingen ny vare eller kjøpsflag før det konkrete kjøpevalget.",
+      "lines": [
+        {
+          "id": "I15_RECOMMEND_001",
+          "speaker": "WAITRESS",
+          "text": "If you're hungry, the burger.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I15_RECOMMEND_002",
+          "speaker": "WAITRESS",
+          "text": "If you're driving, the sandwich is less of a project.",
+          "delivery_nb": "Tørt og vennlig."
+        },
+        {
+          "id": "I15_RECOMMEND_003",
+          "speaker": "WAITRESS",
+          "text": "Either way, I'm putting napkins in the bag.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        },
+        {
+          "id": "I15_RECOMMEND_004",
+          "speaker": "WAITRESS",
+          "text": "Your call.",
+          "delivery_nb": "Hverdagslig og varm. Ingen antydning til fare."
+        }
+      ],
+      "choices": [
+        {
+          "id": "I15_BURGER",
+          "label": "Buy a burger, fries and coffee.",
+          "next": "I04_BURGER",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {
+              "food_bought": true,
+              "arrival_order_burger": true
+            },
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I15_SANDWICH",
+          "label": "Buy a sandwich, chips and coffee.",
+          "next": "I05_SANDWICH",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {
+              "food_bought": true,
+              "arrival_order_sandwich": true
+            },
+            "give_documents": []
+          }
+        },
+        {
+          "id": "I15_LEAVE",
+          "label": "Thanks. Maybe another time.",
+          "next": "I09_LEAVE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    }
+  ],
+  "documents": [],
+  "media": [],
+  "strings": [
+    {
+      "id": "ARRIVAL_SHIFT_CARD",
+      "text": "SARO\nAPRIL 13, 1986\n18:00",
+      "context_nb": "Skiftkort ved faktisk ankomst. Ikke bruk klokkeslett som nedtelling i innkjøringen."
+    },
+    {
+      "id": "ARRIVAL_FOOD_BURGER",
+      "text": "Burger, fries and coffee",
+      "context_nb": "Matens synlige navn på brett og i pose når arrival_order_burger er satt."
+    },
+    {
+      "id": "ARRIVAL_FOOD_SANDWICH",
+      "text": "Sandwich, chips and coffee",
+      "context_nb": "Matens synlige navn når arrival_order_sandwich er satt."
+    },
+    {
+      "id": "ARRIVAL_FOOD_PACKED",
+      "text": "Your food is packed. Coffee lid is on.",
+      "context_nb": "Vis sammen med synlig pose ved I07, ikke som erstatning for gjenstanden."
+    },
+    {
+      "id": "ARRIVAL_FOOD_EATEN",
+      "text": "An empty plate and a last sip of coffee.",
+      "context_nb": "Kort synlig respons på ferdig måltid I06. Brettet skal også endres."
+    },
+    {
+      "id": "ARRIVAL_FOOD_AT_SARO",
+      "text": "Set your dinner on the break-room table.",
+      "context_nb": "Valgfritt fysisk prompt bare hvis food_taken og ikke food_eaten. Bruk samme matporsjon, ingen ny gratis bestilling."
+    },
+    {
+      "id": "ARRIVAL_RETURN_TO_CAR",
+      "text": "Return to the truck when you are ready.",
+      "context_nb": "Valgfri, nøktern retning etter diner. Spillerens innkjøring er uten nedtelling."
+    }
+  ]
+}

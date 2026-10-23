@@ -18,11 +18,19 @@
 ## Anomaly spotting og byens funksjon (2026-10-23)
 
 - [x] Utdypet design- og gjennomføringsplan etter Toms tilslutning til retningen: `ANOMALY_PLAN.md`. Bare planarbeid, ingen ny gameplay eller installasjon.
+- [x] Revidert planen med tidligere kveld, romsligere kapitteltider, trafostasjon og bedre bybygninger etter Toms oppfølging. Anbefalt start 18:00 og residual 00:13:47; ingen implementert retiming.
+- [x] Innarbeidet Toms innkjøring med lystig radio, valgfritt matstopp og skiftstart ved SARO 18:00, samt Dale med Kinski-stemme og hemmelig kontor. Bare plan, ingen nye opptak eller modeller.
+- [x] Skrevet og strukturert hele manuspakken i `Narrative/EveningShift`: innkjøring/diner, fjernoverlevering og samtaler, kontornøkkel/filer/VHS, trafo og sammenligninger. JSON-/eksportkontroll, opptaksalias og 14 offline forfatterruter er kontrollert.
+- [ ] Produser 109 unike stemmetakes og det 72 sekunders bevegelige VHS-opptaket fra pakken; importer og tidssett undertekstene mot faktisk lyd. Alle nye mediefiler er foreløpig pending.
 - [ ] Trinn 0: mål dagens reise med ekte input, klokke, transport, triggere og passiv venting; behold baseline. Prøv også lang All Night og avreise etter 05:20: dagens ch6 setter avreisen til 05:20, så mulig tilbakesprang må dokumenteres og løses før ny fullnatt godkjennes.
-- [ ] Trinn 1: bygg N01/N02/A02/P01 med tidlig Caliche-kontrolltur, normalreferanser, aktiv sammenligning, kort etterspill og bevis gjennom lagring. Behold lysbølgens nåværende tidsgrense i piloten.
+- [ ] Trinn 0: tidsreferanseoversikt for 1986-hendelsen og kapittelporter, datoakse gjennom midnatt, kveldsradio/NPC-er og eldre lagringer. Bevar 1947-tider og 05:29-finalen.
+- [ ] Trinn 1: bygg kveldsstart, tidlig kit/truck og N01/N02/A02/P01 med normalreferanser før hendelsen, etterfølgende sammenligning og lagring. Første bedre bygningsskall er bensinstasjon, suvenirbutikk og studio i én sammenhengende gatebit.
+- [ ] Trinn 1: I01/D01 med innkjøringsbil, radio, valgfri matbestilling, egne tidlige diner-tilstander, lagret ankomst og Dales telefonoverlevering 18:00. Rollen er KUN telefon/radio/walkie; ingen fysisk Dale. Nye karakterklipp må virke uavhengig av generell opplesning.
 - [ ] Trinn 1: prøv begge delstrekninger, migrering, sen ankomst og fem observerbare Gauntlet-mål. Merk testkuttet; ikke kall prøven hel gjennomspilling.
-- [ ] Trinn 2: gjør byens kvittering, kart, telefon og tilgjengelige vitner til etterprøving; vurder lysbølgen sammen med daggry og kapittelbetingelse.
-- [ ] Trinn 3: fjern himmelform, sen sekvens med egen alien og større UFO-observasjon; samordne eksisterende glimt/bortføringer.
+- [ ] Trinn 2: ny trafostasjon i ørkenen med avstikker, T01/T02, kontrollresultat, lys/lyd og lagring. Skill vanlig feil fra senere avvik; bevar STATION 01 og K3s rolle.
+- [ ] Trinn 2: D02, fysisk reservenøkkel til Dales eksisterende kontordør, private utklipp/filer og faktisk bevegelig VHS/TV med lyd, pause/strøm/lagring. Ett funn gir etterprøvbar feltoppgave; ikke erstatte Nora, avisavsløringen eller P13.
+- [ ] Trinn 2: gjør kvittering, kart, telefon og vitner til etterprøving; prøv All Night fra 04:10 og lysbølgen før 04:55. Ferdigstill bedre diner, sheriffkontor og vaskeri med nødvendige rom.
+- [ ] Trinn 3: fjern himmelform, sen egen alien og større UFO-observasjon; samordne eksisterende glimt/bortføringer. Resten av byens utvendige bygg får samme kvalitetsløft, med bevart funksjon og nye kveld/natt/gry-bilder.
 - [ ] Trinn 4: hele natten med ekte input, riktig klokke og kapittelflyt, lagring, nødvendig regresjon og målt ytelse. Fullnatt og opplevelsesmål er foreløpig UNVERIFIED.
 
 

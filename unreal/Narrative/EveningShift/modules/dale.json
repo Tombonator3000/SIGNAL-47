@@ -1,0 +1,1040 @@
+{
+  "module_id": "dale",
+  "flags": {
+    "dale_power_call_done": {
+      "default": false,
+      "purpose_nb": "Den første praktiske telefonsamtalen er avsluttet."
+    },
+    "dale_walkie_help_done": {
+      "default": false,
+      "purpose_nb": "Walkiehjelpen ved T01 er hørt."
+    },
+    "dale_signal_call_done": {
+      "default": false,
+      "purpose_nb": "Residualen er rapportert til den levende Dale."
+    },
+    "dale_office_call_done": {
+      "default": false,
+      "purpose_nb": "Den valgfrie kontorsamtalen er avsluttet."
+    },
+    "dale_field_call_done": {
+      "default": false,
+      "purpose_nb": "Feltresultatet er rapportert."
+    },
+    "dale_last_call_done": {
+      "default": false,
+      "purpose_nb": "Den sene valgfrie Dale-samtalen er avsluttet."
+    },
+    "dale_fragment_heard": {
+      "default": false,
+      "purpose_nb": "Det faste radioavtrykket er hørt. Det kan ikke svare."
+    }
+  },
+  "scenes": [
+    {
+      "id": "D01_HANDOVER",
+      "phase": "handover",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Første telefon ved SARO etter parkering. Egen skiftstart 18:00; ringingen venter ved åpne paneler.",
+      "requires": {
+        "all": [
+          "intro_arrived"
+        ],
+        "none": [
+          "handover_done"
+        ]
+      },
+      "direction_nb": "Dale er hjemme eller på en annen vanlig landlinje. Ingen fysisk Dale vises. Valget om mat må være støttet av den faktiske innledningen.",
+      "lines": [
+        {
+          "id": "D01_HANDOVER_001",
+          "speaker": "DALE",
+          "text": "Reyes? Dale. The logbook should be in front of you.",
+          "delivery_nb": "Vanlig telefonstemme, rolig og litt tørr. Ingen truende pause."
+        },
+        {
+          "id": "D01_HANDOVER_002",
+          "speaker": "DALE",
+          "text": "I headed out early. The service folder is on the desk, under the work order.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_HANDOVER_003",
+          "speaker": "DALE",
+          "text": "The first survey is routine. Check calibration before you let it run.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_HANDOVER_004",
+          "speaker": "DALE",
+          "text": "Did you get something to eat?",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D01_CH_FOOD",
+          "label": "I picked something up at Mesa Diner.",
+          "next": "D01_FOOD",
+          "requires": {
+            "all": [
+              "food_bought"
+            ],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "D01_CH_NOFOOD",
+          "label": "No, I haven't eaten yet.",
+          "next": "D01_NOFOOD",
+          "requires": {
+            "all": [],
+            "none": [
+              "food_bought"
+            ]
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D01_FOOD",
+      "phase": "handover",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar når spilleren selv har fortalt om maten.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Vennlig svar om mat, gyldig både hvis maten er spist og hvis den er tatt med. Dale ser ikke maten og hører ingen innspilt spillerlatter.",
+      "lines": [
+        {
+          "id": "D01_FOOD_001",
+          "speaker": "DALE",
+          "text": "Good. Better than trying to live on the coffee here.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_FOOD_002",
+          "speaker": "DALE",
+          "text": "I tried that once. Wouldn't recommend it.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D01_CH_FOOD_BRIEF",
+          "label": "What do I need to check?",
+          "next": "D01_BRIEF",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D01_NOFOOD",
+      "phase": "handover",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar når spilleren oppgir at de ikke har spist. Et tidligere dinerbesøk uten matkjøp er mulig.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Vanlig kollegialt råd om pausemat. Ingen antakelse om hvilken vei spilleren kjørte.",
+      "lines": [
+        {
+          "id": "D01_NOFOOD_001",
+          "speaker": "DALE",
+          "text": "There are crackers in the bottom drawer. Still in the wrapper.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_NOFOOD_002",
+          "speaker": "DALE",
+          "text": "No promises about the coffee. It was here when I came in.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D01_CH_NOFOOD_BRIEF",
+          "label": "What do I need to check?",
+          "next": "D01_BRIEF",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D01_BRIEF",
+      "phase": "handover",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Avslutning på telefonoverleveringen. Dokumentene registreres fra den fysiske mappen på spillerens arbeidsplass; ingen synlig Dale gir dem fra seg.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Sett fullføringsflagg først når siste replikk eller undertekst er ferdig. En avbrutt samtale kan fortsette. Ikke hopp til et senere kapittel.",
+      "lines": [
+        {
+          "id": "D01_BRIEF_001",
+          "speaker": "DALE",
+          "text": "Start with the log. I've marked what's done and what's left for you.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_BRIEF_002",
+          "speaker": "DALE",
+          "text": "Bank Three has two amber indicators. Amber is normal. Write it down if that changes.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_BRIEF_003",
+          "speaker": "DALE",
+          "text": "Your folder lists the local service records and the radio schedule. Get the dated copies. We need something to check our clocks against.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_BRIEF_004",
+          "speaker": "DALE",
+          "text": "Operations office is locked. The papers for tonight are already on your desk.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_BRIEF_005",
+          "speaker": "DALE",
+          "text": "Ward is on call for the morning run. She wants observations she can sign, not our best guess.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_BRIEF_006",
+          "speaker": "DALE",
+          "text": "You can reach me on the service line. If something doesn't fit the log, call before you throw anything away.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D01_BRIEF_007",
+          "speaker": "DALE",
+          "text": "All right. Have a good shift.",
+          "delivery_nb": "Vennlig avslutning med naturlig engelsk prosodi, uten uhyggelig undertone."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "handover_done": true,
+          "intro_completed": true
+        },
+        "give_documents": [
+          "EV_HANDOVER",
+          "EV_SERVICE_LOG",
+          "EV_RADIO_SCHEDULE"
+        ]
+      }
+    },
+    {
+      "id": "D11_POWER_PHONE",
+      "phase": "early_shift",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri praktisk hjelp etter at den vanlige strømfeilen er observert, før T01. Spilleren oppgir feilen ved oppringingen.",
+      "requires": {
+        "all": [
+          "handover_done"
+        ],
+        "none": [
+          "dale_power_call_done",
+          "trafo_normal_checked"
+        ]
+      },
+      "direction_nb": "Hjelpsom kollega. Bruk spillets fiktive betjeningsfront; ingen detaljerte elektrikerinstrukser.",
+      "lines": [
+        {
+          "id": "D11_POWER_PHONE_001",
+          "speaker": "DALE",
+          "text": "Dale. You have the service sheet?",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D11_POWER_PHONE_002",
+          "speaker": "DALE",
+          "text": "Then start with the feeder marked on that sheet. A receiver warning and a supply fault are two different things.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D11_POWER_PHONE_003",
+          "speaker": "DALE",
+          "text": "The junction station is down the short gravel turnoff. Leave the truck outside the service gate.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D11_POWER_PHONE_004",
+          "speaker": "DALE",
+          "text": "Use the service check on the cabinet. Note what the affected light does, not just what the indicator says.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D11_POWER_PHONE_005",
+          "speaker": "DALE",
+          "text": "There should be one clear result. If the result is not clear, leave it unresolved and call me.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "dale_power_call_done": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D12_POWER_WALKIE",
+      "phase": "early_shift",
+      "channel": "walkie",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren kaller frivillig fra T01 etter å ha lest servicekortet, og oppgir sted og skilttekst.",
+      "requires": {
+        "all": [
+          "field_service_read"
+        ],
+        "none": [
+          "dale_walkie_help_done",
+          "trafo_normal_checked"
+        ]
+      },
+      "direction_nb": "Kort radiobånd med lett filtrering. Dale er på avstand og svarer bare på det spilleren har rapportert.",
+      "lines": [
+        {
+          "id": "D12_POWER_WALKIE_001",
+          "speaker": "DALE",
+          "text": "I hear you. Check the cabinet label against the service sheet.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D12_POWER_WALKIE_002",
+          "speaker": "DALE",
+          "text": "If they match, run the check and watch the light at the far end.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D12_POWER_WALKIE_003",
+          "speaker": "DALE",
+          "text": "Write down the result and the time. Keep that for the next check.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "dale_walkie_help_done": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D21_SIGNAL_PHONE",
+      "phase": "signal",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Tilgjengelig når spilleren velger å rapportere den faktiske residualen og utskriften etter 00:13:47.",
+      "requires": {
+        "all": [
+          "ctx_signal_present",
+          "handover_done"
+        ],
+        "none": [
+          "dale_signal_call_done"
+        ]
+      },
+      "direction_nb": "Den tause spillerens rapportvalg oppgir minus trettini på papirutskriften. Dale kan ikke se skjermen hjemmefra.",
+      "lines": [
+        {
+          "id": "D21_SIGNAL_PHONE_001",
+          "speaker": "DALE",
+          "text": "Dale. What did it actually print?",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D21_SIGNAL_PHONE_002",
+          "speaker": "DALE",
+          "text": "Minus thirty-nine. On the paper?",
+          "delivery_nb": "Kort naturlig tenkepause, uten dramatisk gisp."
+        },
+        {
+          "id": "D21_SIGNAL_PHONE_003",
+          "speaker": "DALE",
+          "text": "Keep the original. Put the clock reading beside it before you do anything else.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D21_SIGNAL_PHONE_004",
+          "speaker": "DALE",
+          "text": "Do not correct the number just because it looks wrong.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D21_CH_BEFORE",
+          "label": "Have you seen a negative range before?",
+          "next": "D21_BEFORE",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "D21_CH_POWER",
+          "label": "Could this be the supply fault?",
+          "next": "D21_POWER",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "D21_CH_KEEP",
+          "label": "I will keep the printout.",
+          "next": "D21_END",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D21_BEFORE",
+      "phase": "signal",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar om tidligere feil, basert på spørsmålet spilleren nettopp valgte.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Litt mer nølende enn under overleveringen. Dale har sett uforklarlige resultater, men gir ingen fasit.",
+      "lines": [
+        {
+          "id": "D21_BEFORE_001",
+          "speaker": "DALE",
+          "text": "I've seen numbers that shouldn't have come out of that solver.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D21_BEFORE_002",
+          "speaker": "DALE",
+          "text": "I haven't worked out why. I kept the records.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D21_BEFORE_003",
+          "speaker": "DALE",
+          "text": "Keep yours too. We can argue about the explanation later.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D21_CH_BEFORE_END",
+          "label": "I will compare the records.",
+          "next": "D21_END",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D21_POWER",
+      "phase": "signal",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar som viser til den lokale kontrollprøven uten å løse sammenligningen automatisk.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Pek mot en kontroll spilleren kan gjøre selv. Ikke forutsett at den vanlige strømfeilen allerede er rettet.",
+      "lines": [
+        {
+          "id": "D21_POWER_001",
+          "speaker": "DALE",
+          "text": "Check your inspection card. Put the test time beside the new printout.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D21_POWER_002",
+          "speaker": "DALE",
+          "text": "If you've cleared the supply fault, compare that time with this one.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D21_CH_POWER_END",
+          "label": "I will check the times.",
+          "next": "D21_END",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D21_END",
+      "phase": "signal",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Avslutning med retur til den aktive SARO-oppgaven.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Kort praktisk avslutning. Gi kontroll tilbake til undersøkelsen uten ny hendelse eller automatisk løsning.",
+      "lines": [
+        {
+          "id": "D21_END_001",
+          "speaker": "DALE",
+          "text": "All right. Put the paper somewhere safe.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D21_END_002",
+          "speaker": "DALE",
+          "text": "Call me if the next observation disagrees with the first one.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "dale_signal_call_done": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D31_OFFICE_PHONE",
+      "phase": "archive",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri oppringing fra arkivtelefonen etter at kontoret er åpnet. Spillerens kontaktvalg forteller Dale at reservenøkkelen og feltmappen er funnet.",
+      "requires": {
+        "all": [
+          "office_open",
+          "office_evidence_taken"
+        ],
+        "none": [
+          "dale_office_call_done"
+        ]
+      },
+      "direction_nb": "Ingen fysisk Dale i døråpning, speil eller monitor. Han kjenner kontorbesøket fordi spilleren oppgir det ved oppringingen.",
+      "lines": [
+        {
+          "id": "D31_OFFICE_PHONE_001",
+          "speaker": "DALE",
+          "text": "You found a spare.",
+          "delivery_nb": "Tilbakeholden, men menneskelig. Han vet dette fordi spilleren nettopp har fortalt at kontoret er åpnet."
+        },
+        {
+          "id": "D31_OFFICE_PHONE_002",
+          "speaker": "DALE",
+          "text": "I should have told you there was more than a service folder.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_OFFICE_PHONE_003",
+          "speaker": "DALE",
+          "text": "What are you looking at?",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D31_CH_WARD",
+          "label": "Why did you keep this from Ward?",
+          "next": "D31_WARD",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "D31_CH_TAPE",
+          "label": "The field tape. What should I look at?",
+          "next": "D31_TAPE",
+          "requires": {
+            "all": [
+              "vhs_seen"
+            ],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "D31_CH_RECORD",
+          "label": "Did you change the old report?",
+          "next": "D31_RECORD",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        },
+        {
+          "id": "D31_CH_LEAVE",
+          "label": "I will take the reference sheet.",
+          "next": "D31_END",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D31_WARD",
+      "phase": "archive",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar om hemmeligholdelsen uten å utpeke Ward som skurk.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Dale er forsiktig og litt beskjemmet. Han forklarer hvorfor han holdt usikre spor for seg selv.",
+      "lines": [
+        {
+          "id": "D31_WARD_001",
+          "speaker": "DALE",
+          "text": "Ward wants a result somebody else can repeat. She's right to.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_WARD_002",
+          "speaker": "DALE",
+          "text": "I had clippings, bad frames and people who remembered different nights.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_WARD_003",
+          "speaker": "DALE",
+          "text": "I kept the lot until I could put two observations on the same page.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D31_CH_WARD_END",
+          "label": "What can I actually check?",
+          "next": "D31_END",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D31_TAPE",
+      "phase": "archive",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Telefonisk hjelp til vurdering av feltopptaket, enten filmen er sett eller bare omtalt i feltoversikten. Ingen Dale-stemme legges til selve VHS-filmen.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Bruk stolpen som stabil referanse og feltoversikten som veiviser. Ikke forutsett fullført VHS-avspilling eller et annet dokument.",
+      "lines": [
+        {
+          "id": "D31_TAPE_001",
+          "speaker": "DALE",
+          "text": "Watch the pole, not the patch.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_TAPE_002",
+          "speaker": "DALE",
+          "text": "The patch could be a recording fault. The pole gives you a fixed reference.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_TAPE_003",
+          "speaker": "DALE",
+          "text": "Use the field sheet. I marked the camera position.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D31_CH_TAPE_END",
+          "label": "I will compare it on site.",
+          "next": "D31_END",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D31_RECORD",
+      "phase": "archive",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Svar på mistanken om den gamle rapporten. Dale avgrenser egen kunnskap; Nora og arkivundersøkelsen beholder sine roller.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Dale svarer bare for egne notater. Han vet ikke hvem som endret den gamle rapporten eller hva Nora vil fortelle.",
+      "lines": [
+        {
+          "id": "D31_RECORD_001",
+          "speaker": "DALE",
+          "text": "I haven't worked through those survey files.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_RECORD_002",
+          "speaker": "DALE",
+          "text": "The folder in my office is my own. I haven't changed an old report.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_RECORD_003",
+          "speaker": "DALE",
+          "text": "Keep the originals together. Check whose name is on the signed copy.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [
+        {
+          "id": "D31_CH_RECORD_END",
+          "label": "I'll check the signatures.",
+          "next": "D31_END",
+          "requires": {
+            "all": [],
+            "none": []
+          },
+          "on_select": {
+            "set_flags": {},
+            "give_documents": []
+          }
+        }
+      ],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D31_END",
+      "phase": "archive",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "choice",
+      "trigger_nb": "Retur til kontor, arkiv eller feltoppgave uten å starte neste kapittel direkte.",
+      "requires": {
+        "all": [],
+        "none": []
+      },
+      "direction_nb": "Gi ett gjennomførbart neste steg. Vis ingen ny markør som avslører fenomenets årsak.",
+      "lines": [
+        {
+          "id": "D31_END_001",
+          "speaker": "DALE",
+          "text": "Start with one thing you can check. Take a photograph from the same place.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D31_END_002",
+          "speaker": "DALE",
+          "text": "And don't take my word for something just because I wrote it down.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "dale_office_call_done": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D41_FIELD_WALKIE",
+      "phase": "field",
+      "channel": "walkie",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri tilbakemelding etter den faktisk gjennomførte T02-kontrollen. Spillerens kontaktvalg rapporterer kontrollresultatet før Dale svarer.",
+      "requires": {
+        "all": [
+          "trafo_anomaly_checked"
+        ],
+        "none": [
+          "dale_field_call_done"
+        ]
+      },
+      "direction_nb": "Kinski-profilen brukes bare i walkien. Dale bekrefter spillerens rapport språklig; han ser ikke stedet direkte.",
+      "lines": [
+        {
+          "id": "D41_FIELD_WALKIE_001",
+          "speaker": "DALE",
+          "text": "Say that again. The service result and the light disagree?",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D41_FIELD_WALKIE_002",
+          "speaker": "DALE",
+          "text": "You checked the ordinary supply, the backup and the indicator?",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D41_FIELD_WALKIE_003",
+          "speaker": "DALE",
+          "text": "Good. Write down every check you made. Keep that separate from what you think caused it.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D41_FIELD_WALKIE_004",
+          "speaker": "DALE",
+          "text": "Bring the record back to SARO. Ward will need to read it.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "dale_field_call_done": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D51_LAST_PHONE",
+      "phase": "all_night",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri kort samtale før avreise. Bruk en ledig telefonhandling uten å overta Wards obligatoriske dinertelefon.",
+      "requires": {
+        "all": [
+          "ctx_all_night_active",
+          "handover_done"
+        ],
+        "none": [
+          "dale_last_call_done"
+        ]
+      },
+      "direction_nb": "Samtalen er valgfri. Den kreves ikke for P13 og skal ikke sende spilleren tilbake gjennom hele byen.",
+      "lines": [
+        {
+          "id": "D51_LAST_PHONE_001",
+          "speaker": "DALE",
+          "text": "Reyes? I'm here.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D51_LAST_PHONE_002",
+          "speaker": "DALE",
+          "text": "If you've got witness statements, keep their exact words with the record.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D51_LAST_PHONE_003",
+          "speaker": "DALE",
+          "text": "Give Ward what you've actually checked. Leave the rest marked uncertain.",
+          "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+        },
+        {
+          "id": "D51_LAST_PHONE_004",
+          "speaker": "DALE",
+          "text": "Call me when you get back in.",
+          "delivery_nb": "Helt vanlig avslutning, uten kunnskap om den kommende slutten."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "dale_last_call_done": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D61_FIXED_FRAGMENT",
+      "phase": "field",
+      "channel": "radio",
+      "mode": "fixed",
+      "entry": "trigger",
+      "trigger_nb": "Valgfritt sent radioavtrykk i den lokale mottakeren etter T02, bare når det er ro og riktig rekkefølge er oppfylt.",
+      "requires": {
+        "all": [
+          "trafo_anomaly_checked",
+          "handover_done",
+          "ctx_room_quiet"
+        ],
+        "none": [
+          "dale_fragment_heard"
+        ]
+      },
+      "direction_nb": "Gjenbruk nøyaktig første overleveringsopptak gjennom radio. Ingen svarvalg, samtale eller bekreftelse på at den levende Dale er på linjen.",
+      "lines": [
+        {
+          "id": "D61_FIXED_FRAGMENT_001",
+          "speaker": "DALE",
+          "text": "Reyes? Dale. The logbook should be in front of you.",
+          "delivery_nb": "Nøyaktig samme opptak som første overleveringsreplikk. Ingen nye ord eller improvisasjon."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "dale_fragment_heard": true
+        },
+        "give_documents": []
+      }
+    }
+  ],
+  "documents": [],
+  "media": [],
+  "strings": [
+    {
+      "id": "DALE_UI_PHONE",
+      "text": "Call Dale",
+      "context_nb": "Valg ved egnet landlinje; ikke erstatning for Nora eller Ward."
+    },
+    {
+      "id": "DALE_UI_WALKIE",
+      "text": "Contact Dale",
+      "context_nb": "Walkie, bare i tilgjengelig sendefase."
+    },
+    {
+      "id": "DALE_UI_NO_ANSWER",
+      "text": "No answer. The record is still yours to check.",
+      "context_nb": "Ingen tilfeldig samtale blokkerer etterforskningen."
+    }
+  ]
+}
