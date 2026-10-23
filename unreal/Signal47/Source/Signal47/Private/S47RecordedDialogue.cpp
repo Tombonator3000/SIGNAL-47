@@ -172,7 +172,8 @@ void FS47RecordedDialogue::PlayNext(int32 Gen, int32 I)
 		Self->ReportLevels(TEXT("ended")); Self->DisposeNodes();
 		Self->PlayNext(Gen, I + 1);
 	};
-	Src->Start(Ctx->CurrentTime() + (I ? 0.22 : 0));
+	SourceStartedAt = Ctx->CurrentTime() + (I ? 0.22 : 0);
+	Src->Start(SourceStartedAt);
 	StateTo(TEXT("playing"));
 }
 

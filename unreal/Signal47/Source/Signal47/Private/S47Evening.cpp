@@ -189,7 +189,7 @@ void FS47Evening::ShowDialogue()
   const bool Available = L->bRecord && Voice->Available(Input);
   Voice->SetEnabled(M->Audio->bCharacterVoices);
   if (L->bRecord && (!Available || !M->Audio->bCharacterVoices)) Rows.Add(S47Kit::Small(!Available ? TEXT("Recording unavailable / subtitles only") : TEXT("Character voices off")));
-  if (SpokenLine!=L->Id) { SpokenLine=L->Id; VoiceStartedAt=M->Audio->Ctx?M->Audio->Ctx->CurrentTime():0; if (Available) Voice->Play(Input); }
+  if (SpokenLine!=L->Id) { SpokenLine=L->Id; if (Available) { Voice->Play(Input); VoiceStartedAt=Voice->StartedAt(); } }
   // In a manual conversation the caption begins at measured speech onset, then
   // stays as a readable transcript until Continue. The audio clock freezes in pause.
   const auto Ctx=M->Audio->Ctx;
@@ -318,8 +318,8 @@ void FS47Evening::RadioStep(double Dt)
      if (Available && M->Audio->bCharacterVoices)
      {
       // Restart the current recorded line after an interruption; never skip its cursor.
-      RadioStartedAt=M->Audio->Ctx->CurrentTime();
       RadioVoice->Play(Input);
+      RadioStartedAt=RadioVoice->StartedAt();
       const FS47DialogueStatus ClipStatus=RadioVoice->Status();
       if (ClipStatus.Clips.Num()==1 && ClipStatus.Clips[0].Duration>0 && RadioVoice->Playing())
       {

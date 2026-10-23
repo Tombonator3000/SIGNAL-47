@@ -50,6 +50,7 @@ public:
 	FString State() const { return CurrentState; }
 	bool Playing() const { return CurrentState == TEXT("playing"); }
 	bool Loading() const { return CurrentState == TEXT("loading"); }
+	double StartedAt() const { return SourceStartedAt; }
 	FS47DialogueStatus Status() const;
 	bool Available(const FS47DialogueInput& Input) const;
 	void Stop();
@@ -59,6 +60,7 @@ public:
 	static bool SelfTest(TArray<FString>& Lines);
 private:
 	bool bOn = false;
+	double SourceStartedAt = 0;
 	FString CurrentState = TEXT("idle");
 	int32 Generation = 0;
 	bool bPending = false;
