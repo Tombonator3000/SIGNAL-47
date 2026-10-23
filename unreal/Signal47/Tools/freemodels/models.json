@@ -1,5 +1,5 @@
 {
- "_doc": "Per model: category (folder under /Game/Free); size = what the real thing measures along its largest side in metres (the file is rescaled only when it is off by more than a quarter, a unit mistake); scale = a fixed factor instead (packs, where no one size fits); split = a pack of separate props (one asset per prop); keep / drop = mesh node names to keep or leave out (the C10 comes on a diorama with a road, poles and cacti); nanite = force Nanite on or off (default: on from 50k triangles when no material is translucent). Poly Haven models are scanned at their real size and keep it.",
+ "_doc": "Per model: category (folder under /Game/Free); size = what the real thing measures along its largest side in metres (the file is rescaled only when it is off by more than a quarter, a unit mistake); scale = a fixed factor instead (packs, where no one size fits); split = a pack of separate props (one asset per prop); keep / drop = mesh node names to keep or leave out (the C10 comes on a diorama with a road, poles and cacti); nanite = force Nanite on or off (default: on from 50k triangles when no material is translucent). Poly Haven models are scanned at their real size and keep it. own = a .glb of Tom's own in ~/Assets/signal47-free/own (no credit); pivot model = a split model's props keep the whole model's pivot (the printer's paper stays in place).",
  "pickup_c10_1966": {
   "category": "Vehicles",
   "keep": [
@@ -263,5 +263,17 @@
  },
  "barbed_fence": {
   "category": "Roadside"
+ },
+ "dotmatrix_printer": {
+  "category": "Office",
+  "own": "s47_dotmatrix_printer.glb",
+  "title": "DP-80 dot matrix printer",
+  "split": true,
+  "pivot": "model"
+ },
+ "motel_bed": {
+  "category": "Motel",
+  "own": "s47_motel_bed.glb",
+  "title": "Motel bed"
  }
 }

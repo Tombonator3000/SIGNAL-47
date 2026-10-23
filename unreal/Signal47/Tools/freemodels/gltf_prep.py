@@ -118,13 +118,33 @@ def read_credits():
 		name, link, lic, author = f[-1], f[-2], f[-3], f[-4]
 		title = ' | '.join(f[:-4])
 		out[name] = {'title': title, 'author': author, 'licence': 'CC BY 4.0' if 'Attribution' in lic else lic, 'link': link, 'source': 'sketchfab'}
+	# Tom's own Blender models (own/README.md): no licence, nothing to credit; models.json names the .glb
+	for name, cfg in MODELS.items():
+		if isinstance(cfg, dict) and cfg.get('own'):
+			out[name] = {'title': cfg.get('title', name), 'author': 'SIGNAL / 47', 'licence': 'own', 'link': '', 'source': 'own'}
 	return out
+
+
+def unpack_glb(glb, d, name):
+	"""A .glb as a .gltf with its binary chunk beside it (images stay in buffer views)."""
+	import struct
+	b = open(glb, 'rb').read()
+	n = struct.unpack('<I', b[12:16])[0]
+	g = json.loads(b[20:20 + n])
+	off = 20 + n
+	bn = struct.unpack('<I', b[off:off + 4])[0]
+	open(os.path.join(d, name + '.bin'), 'wb').write(b[off + 8:off + 8 + bn])
+	g['buffers'][0]['uri'] = name + '.bin'
+	json.dump(g, open(os.path.join(d, name + '.gltf'), 'w'))
 
 
 def source_gltf(name, credit, work):
 	"""Unpacks or links the model into work/src/<name>; returns its .gltf path."""
 	d = os.path.join(work, 'src', name)
-	if credit['source'] == 'sketchfab':
+	if credit['source'] == 'own':
+		os.makedirs(d, exist_ok=True)
+		unpack_glb(os.path.join(SRC, 'own', MODELS[name]['own']), d, name)
+	elif credit['source'] == 'sketchfab':
 		z = os.path.join(SRC, 'sketchfab', name + '.zip')
 		stamp = os.path.join(d, '.from')
 		key = '%d %d' % (os.path.getsize(z), int(os.path.getmtime(z)))
@@ -295,6 +315,9 @@ def prepare(work, report=False):
 				while any(p['name'] == pname for p in parts):
 					pname = '%s_%d' % (base, k)
 					k += 1
+				# pivot 'model': every prop keeps the whole model's pivot, so the parts stay fitted together
+				if cfg.get('pivot') == 'model':
+					wlo, whi = lo, hi
 				parts.append({'name': pname, 'roots': [r], 'lo': wlo, 'hi': whi, 'tris': ptris})
 		else:
 			parts.append({'name': name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris})

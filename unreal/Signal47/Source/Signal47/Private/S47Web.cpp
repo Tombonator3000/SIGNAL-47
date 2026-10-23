@@ -1,4 +1,5 @@
 #include "S47Web.h"
+#include "S47Props.h"
 
 #include "Components/BillboardComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -642,6 +643,8 @@ void AS47Web::BeginPlay()
 	if (!bLoaded) return;
 	BuildRoom();
 	BuildRetroProps();
+	// (Unreal only) the free models in the world, Config/Props (S47Props.h)
+	if (AS47Props* Props = GetWorld()->SpawnActor<AS47Props>()) Props->Build(this);
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));
