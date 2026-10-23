@@ -268,7 +268,12 @@ void FS47Evening::ControlEntranceTest(double Dt)
    {
     ++T.Passes;
     UE_LOG(LogTemp, Display, TEXT("S47: evening entrance PASS crossing %d condition %d %s at %.3f %.3f"), T.Passes, T.Condition, Previous % 7 == 3 ? TEXT("in") : TEXT("out"), M->Player->Pos.X, M->Player->Pos.Z);
-    if (Previous == 3 || Previous == 6) { Shot(FString::Printf(TEXT("%d-%s"), T.Condition, Previous == 3 ? TEXT("inside") : TEXT("outside"))); T.Hold = 0.3; }
+    if (Previous == 3 || Previous == 6)
+    {
+     // Keep the actual walked position and face the passage for both evidence views.
+     M->Player->Yaw = FMath::Atan2(M->Player->Pos.X - 6.1, 0.0); M->Player->Pitch = -0.06;
+     Shot(FString::Printf(TEXT("%d-%s"), T.Condition, Previous == 3 ? TEXT("inside") : TEXT("outside"))); T.Hold = 0.3;
+    }
    }
    return;
   }
