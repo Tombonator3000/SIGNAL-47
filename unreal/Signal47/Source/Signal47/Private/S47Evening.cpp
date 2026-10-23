@@ -218,7 +218,9 @@ void FS47Evening::ShowDialogue()
  }
  const FString Current=S->Id;
  if (Pack.Flag(TEXT("food_bought")) && !Pack.Flag(TEXT("intro_arrived"))) Rows.Add(S47Kit::Small(Pack.Flag(TEXT("arrival_order_burger"))?TEXT("Burger, fries and coffee / one paid order"):TEXT("Sandwich, chips and coffee / one paid order")));
- M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Col(Rows),820),[this,Current]{bDialogueOpen=false; SpokenLine.Empty(); Voice->Stop(); Changed();});
+ // This panel owns its character queue. The generic description reader must
+ // neither offer a second Kinski narration nor label paid-order UI as unrecorded.
+ M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Unread(S47Kit::Col(Rows)),820),[this,Current]{bDialogueOpen=false; SpokenLine.Empty(); Voice->Stop(); Changed();});
 }
 void FS47Evening::AfterDialogue()
 {
