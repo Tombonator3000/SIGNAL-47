@@ -16,6 +16,20 @@ Lokalverten i innkjøringen har egne undertekster og taus taleplassholder merket
 
 Se hele tabellen med gamle og nye hendelsestider i [EVENING_TIMELINE.md](EVENING_TIMELINE.md). Ny tidslinje har residual 00:13:47, kapittelporter 02:20/03:20/04:10 og uendret finale 05:29:00 til 05:29:47. 1947-opptaket har sin egen uendrede tid.
 
+| Hendelse | Gammel sak | Ny kveldssak |
+|---|---|---|
+| Spillstart | 23:41 i kontrollrommet | Sen ettermiddag på veien; ingen minutt-HUD |
+| Dale / overlevering | Skiftpapir datert 23:20 | Telefon etter faktisk SARO-parkering 18:00 |
+| Survey-fadens slutt | 02:13:41 | 00:13:41 |
+| Residual | 02:13:47 | 00:13:47 |
+| Kapittel 3, tidligste overgang | 03:40 | 02:20 |
+| Kapittel 4, tidligste overgang | 04:35 | 03:20 |
+| All Night, tidligste overgang | 05:00 | 04:10 |
+| Earl / Night Line | 00:00 til 04:00 | Uendret; egen kveldslokalvert før midnatt |
+| Avreise / siste CB | 05:20 / 05:28:13 | Samme tider, med fremoverrettet tidsbudsjett |
+| Finale | 05:29:00 til 05:29:47 | Uendret |
+| Historisk 1947-opptak | 02:15:10 til 02:17:47 | Uendret, egen historisk klokke |
+
 Vanlig aktivitet leder til tidskomprimering i den eksisterende survey-faden; spilleren må ikke vente seks virkelige timer. Ved svært lang aktivitet før signalet holdes fortellertiden ved 00:13:41 frem til survey-utløsningen. Senere kapitteloverganger går bare fremover. Ny natt holder fortellertid ved 05:20 ved svært lang frivillig utforskning, og siste kjøretur bruker avstand, slik at ingen avreise eller rygging ruller klokka tilbake. Disse fristene er komprimeringsregler. Total spilletid er ikke målt.
 
 Lagringsdata har `v=3`, med eksplisitt `timelineVersion=2` for nye saker. Saker uten tidslinjeversjon blir uttrykkelig merket `timelineVersion=1` ved ny lagring og beholder den gamle 02:13-historien. Fotografier og lagrede dokumenttekster omskrives ikke. En eldre feil laget utskriftens hentetid på nytt ved lasting; nye saker lagrer nå faktisk `printoutAt`. Gamle saves hadde aldri lagret dette tidspunktet og får derfor en uttrykkelig «TIME NOT RECORDED / reconstructed legacy copy», fremfor en oppdiktet originaltid. En legacy-merknad forklarer dette i notatboken. Åpningen kan lagres før, under og etter bestillingen og under overleveringen. Kort transport/parkering fullføres før disk-snapshot. Den gamle prologens survey har fortsatt kontrollpunkt ved residualen.
@@ -32,13 +46,33 @@ Ettermiddag, vestsol, skumring og blåtime bruker den levende himmelen og native
 - Burgerens betaling, ventende svar og spillerposisjon: PASS gjennom faktisk disk-snapshot, ny `FS47SaveStore` og full `Flow.StartGame`-lasting. Ett kjøp, ingen duplisering, ingen ch5. Bestillingsbildet viser dialog og 3D-mat i hånden.
 - Pakket direkte rute: PASS COMPLETE og normal exit, 183,1 sekunder aktiv kontrollrute og 2647,4 kjørte meter. Fysisk kjøring/gåing, engangsankomst, telefonens disk-/verdenslasting, tre dokumenter én gang og frigitt gammel rutine er kontrollert. Dette er utviklerkontrollere og API-dialog, ikke menneskelige tastetrykk.
 - Første komplette editor-burgerrute bestod selve reisen, men feilet ved avslutning fordi `Stop()` traff allerede fjernede verdensnoder. `fc8d839b` retter livsløpet; den pakkede direkte ruten avslutter rent. Første 18:35-bilde viste for mange stjerner; `9e7a921a` retter dempingen, og pakket retak er visuelt PASS.
-- Pakkede matgrener og kapittelregresjon: under arbeid. Resultat og bildehenvisninger oppdateres før levering.
+- Alle fire pakkede åpningsruter: PASS COMPLETE, normal exit og ingen fatal-/assert-feil. Burger og sandwich inkluderer disk-/verdenslasting etter betaling, og alle fire inkluderer lasting under D01. SARO-pickupens lagrede `odo.m` og `odo.x` er fortsatt null etter innkjøringen. Se `route-results.json` i evidensmappen.
+- Pakket kapittelregresjon: under arbeid. Resultat oppdateres før levering.
 - Menneskelig gjennomspilling, lytting og målt total spilletid: UNVERIFIED. Faktisk film/trafo/kontor/anomaly spotting hører til senere trinn.
 
 Evidens ligger i `/home/tom/scratch-bm/Signal47-evening-runtime/`. Kandidaten er `candidate/Linux/Signal47.sh` i den mappen. Kilde, editor-kandidat, pakket kandidat og installert standard holdes atskilt. Alle tester bruker isolert `UserDir`. Kandidaten er ingen installert spillutgave eller fullnattgodkjenning.
+
+| Pakket rute | Kontrolltid | Kjørte meter | Resultat |
+|---|---:|---:|---|
+| Direkte | 183,1 s | 2647,4 | PASS, uten mat |
+| Burger med hjem | 223,6 s | 2651,5 | PASS, kjøpt/tatt, ikke spist |
+| Sandwich i dineren | 223,7 s | 2651,5 | PASS, kjøpt/spist, ikke tatt |
+| Bare vann | 221,1 s | 2651,5 | PASS, ingen matkjøp |
+
+Kontrolltid gjelder den automatiserte ruten med korte API-dialogpauser, ikke menneskelig lesetid eller målt spilletid. Oppstart og nedstenging er utenfor disse tidene.
+
+Alle fem påkrevde bilder er faktiske 1600 × 900-opptak fra samme pakkede kandidat, åpnet og visuelt gjennomgått. `required-images.json` inneholder hasher og proveniens.
+
+| Utsnitt | Bilde |
+|---|---|
+| Innkjøring, uten minutt-HUD | [commute](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-commute.png) |
+| Diner, betalt bestilling og mat i hånden | [diner-order](/home/tom/scratch-bm/Signal47-evening-runtime/packed/burger/burger-diner-order.png) |
+| Faktisk parkering og engangsstart 18:00 | [parking](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-parking.png) |
+| D01 på telefon ved 18:00 | [phone](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-18-phone.png) |
+| SARO i skumring, fremoveroppsett 18:35 etter D01 | [dusk](/home/tom/scratch-bm/Signal47-evening-runtime/packed/direct/direct-dusk.png) |
 
 ## Integrasjon og kilder
 
 `unreal-port-core` er flettet inn igjen i `f0fe3293` og `704b0d21`, sist med `ac72d336` og Claudes oppdaterte bensinstasjonslys. Bensinstasjonens modell, `Config/Props/town.json` og `S47Props` har bare innkommende mergeendringer, ingen ny implementering fra denne oppgaven.
 
-Prosjektbiblioteket ble søkt først og én gang bredere. EngineWire-profilen ble lest; den er en UNVERIFIED editorverktøyreferanse og gir ingen kompatibel runtimeadapter å gjenbruke. Implementeringen bruker prosjektets egne systemer. GitHub-kontroll 23. oktober viste `PRIVATE`, standardgren `main`, og ingen åpne PR-er mot `unreal-port-core`. Ingen synlighet er endret.
+Prosjektbiblioteket ble søkt først og én gang bredere. EngineWire-profilen, Quodsolers UE-skillsprofil og Scenario Labs sin lys-/renderprofil ble lest av de respektive arbeidsdelene. De gir generelle prinsipper og er UNVERIFIED som gjenbruk her; ingen adapter eller uprøvd hjelpeskript er hentet inn. Implementeringen bruker prosjektets egne systemer. GitHub-kontroll 23. oktober viste `PRIVATE`, standardgren `main`, og ingen åpne PR-er mot `unreal-port-core`. Ingen synlighet er endret.
