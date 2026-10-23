@@ -61,7 +61,7 @@ public:
 
 	bool IsLoaded() const { return bLoaded; }
 	void SetLightingQuality(const FString& Quality);
-	void SetSkyLighting(float Dawn, const FVector& SunDirection, float Sun, float Flash);
+	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
 	void SuppressFloodLight(int32 Set, int32 Index);
 	float LightIntensity(const FString& Uuid) const;
 	void SetLightIntensity(const FString& Uuid, float Value);

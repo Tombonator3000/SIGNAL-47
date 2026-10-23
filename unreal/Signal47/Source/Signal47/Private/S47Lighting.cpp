@@ -254,20 +254,25 @@ void AS47Web::SetLightingQuality(const FString& Quality)
 	UE_LOG(LogTemp, Display, TEXT("S47: lighting quality %s, Lumen %s, volumetrics %s"), *Quality, LightingQuality ? TEXT("on") : TEXT("off"), LightingQuality ? TEXT("on") : TEXT("off"));
 }
 
-void AS47Web::SetSkyLighting(float Dawn, const FVector& SunDirection, float Sun, float Flash)
+void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
 {
-	SkyDawn = Dawn; SkySun = Sun; SkyFlash = Flash;
+	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash;
 	if (DawnSun)
 	{
 		DawnSun->SetWorldRotation(S47Three::DirToUE(-SunDirection).Rotation());
-		DawnSun->SetIntensity(Sun * 8.f);
+		// The existing fixed exposure is intentionally retained. These are calibrated game
+		// light values, not a physical 120,000 lux daylight rig; avoid overexposing the cabin.
+		DawnSun->SetIntensity(Sun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)));
+		DawnSun->SetLightColor(Evening > 0.f
+			? FMath::Lerp(FLinearColor(1.f, 0.36f, 0.14f), FLinearColor(1.f, 0.76f, 0.52f), FMath::Clamp(Evening, 0.f, 1.f))
+			: FLinearColor(1.f, 0.55f, 0.28f));
 	}
 	if (NightSky)
 	{
-		NightSky->SetIntensity(NightSkyIntensity(Dawn));
+		NightSky->SetIntensity(NightSkyIntensity(Daylight));
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
-		NightSky->SetLightColor(FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Dawn, 0.f, 1.f)));
+		NightSky->SetLightColor(FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Daylight, 0.f, 1.f)));
 	}
 }
 

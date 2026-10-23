@@ -34,7 +34,10 @@ public:
 	double Time = 0;
 	double Flash = 0;
 	FVector FlashDir = FVector(1, 0.05, -0.3).GetSafeNormal();
-	double Dawn = 0;                      // uDawn: 0 night, 1 sunrise (SetClock)
+	double Dawn = 0;                      // Morning-only curve; story gates keep their old meaning.
+	double Evening = 0;                   // Late afternoon -> sunset -> blue hour, independent of Dawn.
+	/** The shared day/night response of the existing dome, stars, horizon and native lights. */
+	double Daylight() const { return FMath::Max(Dawn, Evening); }
 	FVector SunDir = FVector(0.98, -0.02, -0.19).GetSafeNormal();
 	double Sun = 0;
 	FVector4 Glow[3] = { FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1) }; // uGlow (backdrop.ts sets them)
@@ -51,7 +54,8 @@ public:
 	TFunction<void(double, double)> OnThunder;
 
 	FS47Sky();
-	/** setClock(clock, sunElevDeg): the dawn from the game clock, 0 until 04:40, 1 at 05:30. */
+	/** Dawn remains 04:40-05:30; evening sets westward sun, sunset 18:27 and blue hour to 19:07.
+	 *  The optional elevation remains the finale's override; it never changes the evening clock. */
 	void SetClock(double Clock, TOptional<double> SunElevDeg = TOptional<double>());
 	/** setDawnLift(k): how much of the dawn an area shows. */
 	void SetDawnLift(double K) { DawnLift = K; }

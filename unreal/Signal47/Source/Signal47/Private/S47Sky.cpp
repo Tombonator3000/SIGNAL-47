@@ -94,7 +94,7 @@ void FS47Sky::MeteorStep(double Dt)
 	FMet& M = Met;
 	M.Next -= Dt;
 	// only while it is night: none in the dawn
-	if (M.Next <= 0) { M.Next = 18 + Rand() * 22; if (Dawn < 0.3) MeteorNow(); }
+	if (M.Next <= 0) { M.Next = 18 + Rand() * 22; if (Daylight() < 0.3) MeteorNow(); }
 	if (M.T < 0) { bMetVisible = false; return; }
 	M.T += Dt;
 	const double TAIL = 0.2;                                   // the trail lingers a moment after the head is gone
@@ -103,7 +103,7 @@ void FS47Sky::MeteorStep(double Dt)
 	Head = M.Len * P;
 	Back = FMath::Max(0.0, Head - M.Len * 0.65) + M.Len * 0.65 * FMath::Max(0.0, M.T - M.Dur) / TAIL;
 	const double Fade = FMath::Min(1.0, M.T / 0.08) * (M.T > M.Dur ? 0.6 * (1 - (M.T - M.Dur) / TAIL) : 1 - 0.4 * P);
-	MetI = M.Bright * Fade * (1 - Dawn);
+	MetI = M.Bright * Fade * (1 - Daylight());
 	// (the strip's corners along the great circle from the start, and the way across it, are laid out
 	// from these by its material, M_WebMeteor: the loop over MET_N is its vertex shader)
 	bMetVisible = true;
@@ -115,6 +115,11 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 	const double K = S > 12 * 3600 ? 0 : Clamp01((S - (4 * 3600 + 40 * 60)) / (50 * 60));
 	const double D = FMath::Pow(K, 1.6) * DawnLift;
 	Dawn = D;
+	// EveningShift extends the existing dawn palette backwards. Keep this separate from Dawn:
+	// anomaly/story gates query the morning curve, while drawing and native light use Daylight().
+	// Art-directed MST reference: sunset 18:27, civil twilight 18:53, last blue hour 19:07.
+	const double EveningK = S > 12 * 3600 ? Clamp01(((19 * 3600 + 7 * 60) - S) / (107 * 60)) : 0;
+	Evening = EveningK * EveningK * (3 - 2 * EveningK);
 	// from 02:15, where the dishes point (it fades with the stars at dawn, by itself)
 	HoleK = S47StarHoleAt(Clock, HoleFrom);
 	const FLinearColor A(0.043f, 0.059f, 0.098f), B(0.19f, 0.2f, 0.25f);
@@ -124,6 +129,16 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 	const double El = (SunElevDeg.IsSet() ? *SunElevDeg : 0.33 + (S - (5 * 3600 + 30 * 60)) / 60 * 0.18) * UE_DOUBLE_PI / 180, Az = 79 * UE_DOUBLE_PI / 180;
 	SunDir = FVector(FMath::Sin(Az) * FMath::Cos(El), FMath::Sin(El), -FMath::Cos(Az) * FMath::Cos(El));
 	Sun = S > 12 * 3600 ? 0 : SunElevDeg.IsSet() ? 1 : Clamp01((S - (5 * 3600 + 26 * 60)) / 240) * DawnLift;
+	if (Evening > 0)
+	{
+		const double Sunset = 18 * 3600 + 27 * 60;
+		const double EveningEl = -0.33 + (Sunset - S) / 60 * 0.18;
+		// Western sun: never mirror the old eastern sunrise or drag it round after dusk.
+		SunDir = S47SkyDir(281, EveningEl);
+		Sun = Clamp01((EveningEl + 0.55) / 1.5);
+		const FLinearColor Haze(0.34f, 0.26f, 0.24f);
+		FogColor = A + (Haze - A) * float(Evening * 0.8);
+	}
 }
 
 void FS47Sky::SetCometClock(double Clock)
@@ -136,6 +151,12 @@ void FS47Sky::Update(double Dt, double T)
 {
 	Time = T;
 	MeteorStep(Dt);
+	// The friendly arrival has no forced horizon storm or thunder. Night retains its old cycle.
+	if (Evening > 0)
+	{
+		Flash = 0; FlashT = 0;
+		return;
+	}
 	NextFlash -= Dt;
 	if (NextFlash <= 0)
 	{
@@ -268,7 +289,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	auto Common = [&](UMaterialInstanceDynamic* D)
 	{
 		if (!D) return;
-		D->SetScalarParameterValue(TEXT("Dawn"), float(Dawn));
+		D->SetScalarParameterValue(TEXT("Dawn"), float(Daylight()));
 		D->SetVectorParameterValue(TEXT("HoleDir"), Holes);
 		D->SetVectorParameterValue(TEXT("HoleR"), HoleRad);
 		D->SetScalarParameterValue(TEXT("Hole"), float(HoleK));
@@ -277,7 +298,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	{
 		if (!D) return;
 		D->SetScalarParameterValue(TEXT("Yaw"), float(Yaw));
-		D->SetScalarParameterValue(TEXT("Dawn"), float(Dawn));
+		D->SetScalarParameterValue(TEXT("Dawn"), float(Daylight()));
 		D->SetScalarParameterValue(TEXT("Sun"), float(Sun));
 		D->SetVectorParameterValue(TEXT("SunDir"), V4(SunDir));
 		for (int32 k = 0; k < 3; ++k) D->SetVectorParameterValue(*FString::Printf(TEXT("Glow%d"), k), FLinearColor(float(Glow[k].X), float(Glow[k].Y), float(Glow[k].Z), float(Glow[k].W)));

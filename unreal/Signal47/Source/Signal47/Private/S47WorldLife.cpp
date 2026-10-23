@@ -291,15 +291,15 @@ void US47WorldLife::Step(double Dt)
 	else Sky->HoleFrom = TNumericLimits<double>::Max(); // (Infinity: not tonight yet)
 	const TOptional<double> SunElev = !bTitle && Hooks.SunElev ? Hooks.SunElev() : TOptional<double>();
 	Sky->SetClock(bTitle ? 0 : Clock, SunElev);
-	W->SetSkyLighting(float(Sky->Dawn), Sky->SunDir, float(Sky->Sun), float(Sky->Flash));
+	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
-	const double DawnK = Smoothstep(Sky->Dawn, 0, 0.35);
+	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
 	const double FogK = Area != TEXT("roswell") ? NIGHT_FOG + (DAWN_FOG - NIGHT_FOG) * DawnK : NIGHT_FOG + (1 - NIGHT_FOG) * DawnK;
 	const FLinearColor FogC = Sky->FogColor * float(FogK);
 	W->SetFogColor(FogC);
 	// World.update: the dawn's haze on the near mesas (world/horizon.ts), as on the land in front of
 	// them, none at night; its colour and density are the fog's (M_WebTone)
-	if (Area != TEXT("roswell")) W->SetEnvScalar(TEXT("HorizonHazeK"), float(FMath::Min(0.3, Sky->Dawn)));
+	if (Area != TEXT("roswell")) W->SetEnvScalar(TEXT("HorizonHazeK"), float(FMath::Min(0.3, Sky->Daylight())));
 	// the painted horizon: the area's air, the land where it ends, the lit places' glow where they are from here
 	Backdrop->Update(*Sky, FogC, W->FogDensity, Area == TEXT("roswell"), Cam.Pos.Y - GroundUnder(Cam.Pos), SkyPlaces(), Cam.Pos, Yaw);
 	Sky->Draw(Cam.Pos, Yaw);
@@ -559,8 +559,8 @@ void US47WorldLife::TestFlags(double Dt)
 		const double Bk = B && B->Num() ? FS47GlowPoints::Factor(B->Time, B->Blink[0], B->Hold, B->Level) : -1;
 		int32 ConesOn = 0;
 		for (const TSharedPtr<FS47LightCones>& C : Cones) ConesOn += C && C->Visible() ? 1 : 0;
-		UE_LOG(LogS47Life, Display, TEXT("S47: life clock %s dawn %.3f sun %.3f hole %.3f flash %.2f meteor %s | beacon %.3f | flora%s | cones %d haze %s | ultra %d"),
-			M->Story ? *M->Story->ClockText(false) : TEXT("-"), Sky->Dawn, Sky->Sun, Sky->HoleK, Sky->Flash, Sky->MeteorVisible() ? TEXT("on") : TEXT("off"), Bk, *Fl,
+		UE_LOG(LogS47Life, Display, TEXT("S47: life clock %s dawn %.3f evening %.3f sun %.3f hole %.3f flash %.2f meteor %s | beacon %.3f | flora%s | cones %d haze %s | ultra %d"),
+			M->Story ? *M->Story->ClockText(false) : TEXT("-"), Sky->Dawn, Sky->Evening, Sky->Sun, Sky->HoleK, Sky->Flash, Sky->MeteorVisible() ? TEXT("on") : TEXT("off"), Bk, *Fl,
 			ConesOn, Haze.IsValid() && Haze->Visible() ? TEXT("on") : TEXT("off"), Ultra->Held().Num());
 	}
 }
@@ -585,6 +585,45 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	// world/backdrop.ts horizonDip; Sky.ts starHoleAt
 	Check(FMath::IsNearlyEqual(S47Backdrop::HorizonDip(100), FMath::Atan(100.0 / 20000) * 180 / UE_DOUBLE_PI, 1e-12) && S47Backdrop::HorizonDip(-5) == 0, TEXT("backdrop: the horizon's dip"));
 	Check(S47StarHoleAt(2 * 3600, 8122) == 0 && S47StarHoleAt(8122 + 100, 8122) == 1 && FMath::IsNearlyEqual(S47StarHoleAt(8122 + 50, 8122), 0.5, 1e-12) && S47StarHoleAt(23 * 3600, 8122) == 0, TEXT("sky: the star hole comes in over 100 s, none in the evening"));
+	// EveningShift's sky is continuous across sunset and midnight without changing morning story gates.
+	FS47Sky EveningSky;
+	EveningSky.SetClock(17 * 3600 + 20 * 60);
+	Check(EveningSky.Dawn == 0 && EveningSky.Daylight() == 1 && EveningSky.Sun > 0.99 && EveningSky.SunDir.X < -0.8 && EveningSky.SunDir.Y > 0,
+		TEXT("evening sky: commute has a western afternoon sun, no morning dawn"));
+	double PreviousLight = EveningSky.Daylight();
+	bool bEveningContinuous = true;
+	for (int32 Minute = 17 * 60 + 21; Minute <= 19 * 60 + 7; ++Minute)
+	{
+		EveningSky.SetClock(Minute * 60);
+		const double Light = EveningSky.Daylight();
+		bEveningContinuous &= Light <= PreviousLight && PreviousLight - Light < 0.015 && EveningSky.Dawn == 0;
+		PreviousLight = Light;
+	}
+	Check(bEveningContinuous && EveningSky.Daylight() == 0 && EveningSky.Sun == 0,
+		TEXT("evening sky: sunset and blue hour fade monotonically to night without per-minute jumps"));
+	EveningSky.SetClock(18 * 3600);
+	Check(EveningSky.Daylight() > 0.6 && EveningSky.SunDir.Y > 0 && EveningSky.Sun > 0,
+		TEXT("evening sky: 18:00 handover still has sunset light and real sun shadows"));
+	int32 EveningThunder = 0;
+	EveningSky.OnThunder = [&](double, double) { ++EveningThunder; };
+	EveningSky.Update(60, 60);
+	Check(EveningThunder == 0 && EveningSky.Flash == 0 && !EveningSky.MeteorVisible(),
+		TEXT("evening sky: cheerful arrival has no forced thunder, flash or daytime meteor"));
+	EveningSky.SetClock(18 * 3600 + 53 * 60);
+	Check(EveningSky.Daylight() > 0 && EveningSky.Daylight() < 0.1 && EveningSky.Sun == 0 && EveningSky.SunDir.Y < 0,
+		TEXT("evening sky: civil twilight is blue hour with sun below western horizon"));
+	EveningSky.SetClock(24 * 3600);
+	const FVector MidnightSun = EveningSky.SunDir;
+	EveningSky.SetClock(0);
+	Check(EveningSky.Evening == 0 && EveningSky.Dawn == 0 && EveningSky.Sun == 0 && EveningSky.SunDir.Equals(MidnightSun, 1e-12),
+		TEXT("evening sky: midnight wrap retains the same night state"));
+	EveningSky.SetDawnLift(0.7);
+	EveningSky.SetClock(5 * 3600 + 30 * 60);
+	Check(EveningSky.Evening == 0 && EveningSky.Dawn == 0.7 && EveningSky.Daylight() == 0.7 && EveningSky.Sun == 0.7,
+		TEXT("evening sky: existing 05:30 sunrise and per-area dawn lift retained"));
+	EveningSky.SetClock(5 * 3600 + 29 * 60, 2.0);
+	Check(EveningSky.Evening == 0 && EveningSky.Sun == 1 && FMath::IsNearlyEqual(EveningSky.SunDir.Y, FMath::Sin(FMath::DegreesToRadians(2.0)), 1e-12),
+		TEXT("evening sky: finale sun elevation override retained"));
 	// the web version's own numbers (export.js lifeOf: tests), when the world is there
 	AS47Web* W = nullptr;
 	for (TObjectIterator<AS47Web> It; It; ++It) if (It->IsLoaded()) { W = *It; break; }

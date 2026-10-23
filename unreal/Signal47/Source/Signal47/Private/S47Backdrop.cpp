@@ -30,7 +30,7 @@ FEdge& HorizonEdge()
 void FS47Backdrop::Update(FS47Sky& Sky, const FLinearColor& InFog, double Density, bool bOldRoad, double H, const TArray<FS47SkyPlace>& Places, const FVector& Cam, double Yaw)
 {
 	Sky.BandVisible = !bHold;
-	const double Dawn = Sky.Dawn, Day = Smoothstep(Dawn, 0.05, 0.6);
+	const double Dawn = Sky.Daylight(), Day = Smoothstep(Dawn, 0.05, 0.6);
 	Fog = InFog;
 	Rim = bOldRoad ? 1 : 0;
 	Dip = S47Backdrop::HorizonDip(H);
