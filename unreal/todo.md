@@ -1,5 +1,15 @@
 # Todo for unreal/
 
+## Anomaly spotting og byens funksjon (2026-10-23)
+
+- [x] Utdypet design- og gjennomføringsplan etter Toms tilslutning til retningen: `ANOMALY_PLAN.md`. Bare planarbeid, ingen ny gameplay eller installasjon.
+- [ ] Trinn 0: mål dagens reise med ekte input, klokke, transport, triggere og passiv venting; behold baseline. Prøv også lang All Night og avreise etter 05:20: dagens ch6 setter avreisen til 05:20, så mulig tilbakesprang må dokumenteres og løses før ny fullnatt godkjennes.
+- [ ] Trinn 1: bygg N01/N02/A02/P01 med tidlig Caliche-kontrolltur, normalreferanser, aktiv sammenligning, kort etterspill og bevis gjennom lagring. Behold lysbølgens nåværende tidsgrense i piloten.
+- [ ] Trinn 1: prøv begge delstrekninger, migrering, sen ankomst og fem observerbare Gauntlet-mål. Merk testkuttet; ikke kall prøven hel gjennomspilling.
+- [ ] Trinn 2: gjør byens kvittering, kart, telefon og tilgjengelige vitner til etterprøving; vurder lysbølgen sammen med daggry og kapittelbetingelse.
+- [ ] Trinn 3: fjern himmelform, sen sekvens med egen alien og større UFO-observasjon; samordne eksisterende glimt/bortføringer.
+- [ ] Trinn 4: hele natten med ekte input, riktig klokke og kapittelflyt, lagring, nødvendig regresjon og målt ytelse. Fullnatt og opplevelsesmål er foreløpig UNVERIFIED.
+
 ## Native lys og skygger (2026-10-22)
 
 - [x] Erstatt materialenes flood/hemi og gamle projeksjoner med ekte lamper; behold historienes tilstand og delte lyskilder.

@@ -2,6 +2,14 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Gameplayretning (2026-10-23)
+
+- Tom sluttet seg til aktiv anomaly spotting, mer praktisk bruk av Caliche og gradvis UFO-/alienopptrapping, og ba om en utdypet plan. Se `ANOMALY_PLAN.md`. Detaljene er anbefalt design; ny gameplay er ikke implementert.
+- Første normalbesøk anbefales i ch1/tidlig ch2 rundt 02:40–02:55, ikke først i Survey Station. Trucken kan brukes etter prologen. Earl går 04:00; ekspeditørens gjentakelse krever minst to timer. Sene oppgaver kan ikke kreve Earl, kvinnen eller suvenirmannen.
+- Gatetelefonens to hendelser og dinertelefonens Ward-samtale har forskjellige krav. A gjennom byen er ikke C ved finalen. Nye byankomster må ikke starte ch5 eller den gamle veien.
+- Første pilot er N01/N02/A02/P01 i planen: kontrolltur, normalreferanser, et forklarlig kontrolltilfelle, aktiv bildesammenligning og et kort lydetterspill. Dagens lysbølge og 04:55-grense beholdes i denne piloten. Full natt, nye UFO-er og aliensekvens kommer i senere trinn.
+- Pilotens 20–30 minutter er to avgrensede testdelstrekninger med bevis gjennom lagring og tydelig tidskutt. Det beviser ikke hele nattens tids-/kapittelkontinuitet. Runtime, menneskelig opplevelse og ny ytelse er UNVERIFIED.
+
 ## Native belysning (2026-10-22)
 
 - Videre belysning er bare Unreal. `S47Lighting.cpp` gjør eksportens lampetilstand om til punktlys og spotter. Historienes SetFlood-API er beholdt; materialenes flood, hemisphere, FogExp2, additive lyskjegler og vindusprojeksjoner er av. Ingen Web/Unreal-bryter. Eldre lysnotater nedenfor beskriver porten før denne endringen.
