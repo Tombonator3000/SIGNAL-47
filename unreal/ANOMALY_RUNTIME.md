@@ -1,5 +1,7 @@
 # Første spillbare anomaly-pilot
 
+Den integrerte førsteversjonen er beskrevet her. Toms senere bestilling om en skumlere runde har egen gjeldende rapport i [ANOMALY_SCARIER.md](ANOMALY_SCARIER.md), inklusive bevis og bevisste regelbøyninger.
+
 Arbeid på `codex/anomaly-pilot`, fra `a4626053`. Kveld og tidslinje 2 er grunnlaget. Claude integrerer; ingen push, PR eller installasjon inngår i oppdraget. Kilde, editorbygg, pakket kandidat og installert spill er forskjellige leveranser.
 
 ## Spillerreisen

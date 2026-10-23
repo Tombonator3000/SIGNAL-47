@@ -33,23 +33,34 @@ namespace
 double FS47Anomaly::Clock() const { return M && M->Story ? M->Story->Clock() : 0; }
 void FS47Anomaly::Begin(const S47J::FObj& Saved)
 {
- Data = FS47AnomalyData(); Feedback.Empty();
+ Data = FS47AnomalyData(); Feedback.Empty(); bN02TraceFiled=false; bA02TraceFiled=false;
  ArchiveUrl = S47J::Str(S47J::Obj(Saved,TEXT("archive")),TEXT("url"));
  bArchiveUnavailable = S47J::Bool(S47J::Obj(Saved,TEXT("archive")),TEXT("unavailable"));
 #define LOAD_BOOL(Name) Data.Name = S47J::Bool(Saved, TEXT(#Name));
+ LOAD_BOOL(A02FacingSet) LOAD_BOOL(A02ScrapeHeard) LOAD_BOOL(N02Trace) LOAD_BOOL(A02Trace)
+ LOAD_BOOL(P01Flickered) LOAD_BOOL(P01Approach) LOAD_BOOL(P01Ended)
  LOAD_BOOL(bEarlyCamera) LOAD_BOOL(bLegacyCutout) LOAD_BOOL(bRoutineTimeKnown) LOAD_BOOL(N01Routine) LOAD_BOOL(N01Compared) LOAD_BOOL(N01Followed)
  LOAD_BOOL(N02Observed) LOAD_BOOL(N02Control) LOAD_BOOL(N02Compared)
  LOAD_BOOL(A02Moved) LOAD_BOOL(A02Observed) LOAD_BOOL(A02Compared) LOAD_BOOL(A02Followed)
  LOAD_BOOL(P01Pending) LOAD_BOOL(P01Heard) LOAD_BOOL(P01Followed) LOAD_BOOL(bDatedReference)
 #undef LOAD_BOOL
 #define LOAD_STRING(Name) Data.Name = S47J::Str(Saved, TEXT(#Name));
- LOAD_STRING(ReferencePhoto) LOAD_STRING(ChangedPhoto) LOAD_STRING(N02Photo) LOAD_STRING(ControlPhoto)
+ LOAD_STRING(N02TracePhoto) LOAD_STRING(A02TracePhoto) LOAD_STRING(ReferencePhoto) LOAD_STRING(ChangedPhoto) LOAD_STRING(N02Photo) LOAD_STRING(ControlPhoto)
  LOAD_STRING(N01Assessment) LOAD_STRING(N01Choice) LOAD_STRING(N02Assessment) LOAD_STRING(A02Assessment)
 #undef LOAD_STRING
 #define LOAD_TIME(Name) Data.Name = S47J::Num(Saved, TEXT(#Name));
- LOAD_TIME(RoutineClock) LOAD_TIME(ReferenceClock) LOAD_TIME(ChangedClock)
+ LOAD_TIME(N02TraceClock) LOAD_TIME(A02TraceClock) LOAD_TIME(A02Yaw) LOAD_TIME(RoutineClock) LOAD_TIME(ReferenceClock) LOAD_TIME(ChangedClock)
  LOAD_TIME(N02Clock) LOAD_TIME(N02PhotoClock) LOAD_TIME(ControlClock) LOAD_TIME(P01Clock)
 #undef LOAD_TIME
+ Data.DreadVersion=S47J::Int(Saved,TEXT("DreadVersion"),2);
+ Data.A02Stage=FMath::Clamp(S47J::Int(Saved,TEXT("A02Stage")),0,2);
+ if (!S47J::Has(Saved,TEXT("DreadVersion")))
+ {
+  // Bevar pilotens tidligere hendelser. Ingen ny film eller ubedt lydreprise.
+  Data.DreadVersion=2;
+  Data.A02Stage=Data.A02Moved?1:0;
+  if (Data.P01Heard) Data.P01Ended=true;
+ }
  FString Error; bScriptReady = Script.Initialize(Error);
  if (bScriptReady)
  {
@@ -78,18 +89,21 @@ void FS47Anomaly::Begin(const S47J::FObj& Saved)
 S47J::FObj FS47Anomaly::Save() const
 {
  auto O = S47J::New(); S47J::Set(O, TEXT("version"), 1);
+ S47J::Set(O,TEXT("DreadVersion"),Data.DreadVersion); S47J::Set(O,TEXT("A02Stage"),Data.A02Stage);
 #define SAVE_BOOL(Name) S47J::Set(O, TEXT(#Name), Data.Name);
+ SAVE_BOOL(A02FacingSet) SAVE_BOOL(A02ScrapeHeard) SAVE_BOOL(N02Trace) SAVE_BOOL(A02Trace)
+ SAVE_BOOL(P01Flickered) SAVE_BOOL(P01Approach) SAVE_BOOL(P01Ended)
  SAVE_BOOL(bEarlyCamera) SAVE_BOOL(bLegacyCutout) SAVE_BOOL(bRoutineTimeKnown) SAVE_BOOL(N01Routine) SAVE_BOOL(N01Compared) SAVE_BOOL(N01Followed)
  SAVE_BOOL(N02Observed) SAVE_BOOL(N02Control) SAVE_BOOL(N02Compared)
  SAVE_BOOL(A02Moved) SAVE_BOOL(A02Observed) SAVE_BOOL(A02Compared) SAVE_BOOL(A02Followed)
  SAVE_BOOL(P01Pending) SAVE_BOOL(P01Heard) SAVE_BOOL(P01Followed) SAVE_BOOL(bDatedReference)
 #undef SAVE_BOOL
 #define SAVE_STRING(Name) S47J::Set(O, TEXT(#Name), Data.Name);
- SAVE_STRING(ReferencePhoto) SAVE_STRING(ChangedPhoto) SAVE_STRING(N02Photo) SAVE_STRING(ControlPhoto)
+ SAVE_STRING(N02TracePhoto) SAVE_STRING(A02TracePhoto) SAVE_STRING(ReferencePhoto) SAVE_STRING(ChangedPhoto) SAVE_STRING(N02Photo) SAVE_STRING(ControlPhoto)
  SAVE_STRING(N01Assessment) SAVE_STRING(N01Choice) SAVE_STRING(N02Assessment) SAVE_STRING(A02Assessment)
 #undef SAVE_STRING
 #define SAVE_TIME(Name) S47J::Set(O, TEXT(#Name), Data.Name);
- SAVE_TIME(RoutineClock) SAVE_TIME(ReferenceClock) SAVE_TIME(ChangedClock)
+ SAVE_TIME(N02TraceClock) SAVE_TIME(A02TraceClock) SAVE_TIME(A02Yaw) SAVE_TIME(RoutineClock) SAVE_TIME(ReferenceClock) SAVE_TIME(ChangedClock)
  SAVE_TIME(N02Clock) SAVE_TIME(N02PhotoClock) SAVE_TIME(ControlClock) SAVE_TIME(P01Clock)
 #undef SAVE_TIME
  if (bScriptReady) S47J::Set(O, TEXT("script"), Script.Save());
@@ -212,7 +226,12 @@ void FS47Anomaly::Step(double Dt)
  {
   Data.bDatedReference = M->Story->Docs().ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("EV_TOWN_REFERENCE");});
  }
- Sync(); if (Before != Data.N01Routine || Compared != Data.N01Compared || Dated != Data.bDatedReference) { Refile(); if (M) M->RequestAutosave(); }
+ const bool NewTrace=(!bN02TraceFiled && ReadyShot(Data.N02TracePhoto)) || (!bA02TraceFiled && ReadyShot(Data.A02TracePhoto));
+ if (NewTrace)
+ {
+  bN02TraceFiled=ReadyShot(Data.N02TracePhoto)!=nullptr; bA02TraceFiled=ReadyShot(Data.A02TracePhoto)!=nullptr;
+ }
+ Sync(); if (Before != Data.N01Routine || Compared != Data.N01Compared || Dated != Data.bDatedReference || NewTrace) { Refile(); if (M) M->RequestAutosave(); }
 }
 
 FS47Doc FS47Anomaly::ReferenceDoc() const
@@ -277,6 +296,11 @@ void FS47Anomaly::Refile()
   FString P = TEXT("OBSERVATION / pale outline at the Caliche laundromat. First noted at ") + Stamp(Data.N02Clock) + TEXT(".\n\nEVIDENCE / first frame: ") + (Data.N02Photo.IsEmpty()?TEXT("not taken"):Data.N02Photo) + TEXT("; side control: ") + (Data.ControlPhoto.IsEmpty()?TEXT("not taken"):Data.ControlPhoto) + TEXT(".");
   if (Data.N02Compared) P += TEXT("\n\nASSESSMENT / ") + Data.N02Assessment + TEXT(".");
   P += Data.N02Assessment==TEXT("ordinary lamp silhouette") ? TEXT(" The outline follows the ordinary worklamp when viewed from the side. No independent person established.") : TEXT("\n\nNEXT / photograph the bright outline, move to the side and inspect the lamp. Photograph that control, then compare position.");
+  if (!Data.N02TracePhoto.IsEmpty())
+  {
+   P+=TEXT("\n\nLATER FILM / ")+Data.N02TracePhoto+TEXT(" / ")+Stamp(Data.N02TraceClock)+TEXT(".");
+   P+=ReadyShot(Data.N02TracePhoto)?TEXT(" A small dark upright form sits deeper in the window, behind the lamp. Nothing stood there in the direct view. The ordinary lamp control does not account for that shape. Unresolved."):TEXT(" The print is still developing or unavailable. No further assessment filed.");
+  }
   File(TEXT("anomaly:n02"), TEXT("N02 / Lamp and outline"), P);
  }
  if (Data.bDatedReference || !Data.ReferencePhoto.IsEmpty() || Data.A02Observed || !Data.ChangedPhoto.IsEmpty())
@@ -291,11 +315,22 @@ void FS47Anomaly::Refile()
    if (!Data.bLegacyCutout) P += Data.A02Followed ? TEXT("\n\nFOLLOW-UP / price sticker and split edge inspected in place. Same cardboard construction; no observation of who moved it.") : TEXT("\n\nNEXT / compare the price sticker, torn corner and position. Then inspect those details on the figure.");
   }
   else P+=TEXT("\n\nROUTINE REFERENCE / keep the souvenir display in the shift file. Include the yellow price sticker, split edge and window position in a photograph.");
+  if (!Data.A02TracePhoto.IsEmpty())
+  {
+   P+=TEXT("\n\nLATER FILM / ")+Data.A02TracePhoto+TEXT(" / ")+Stamp(Data.A02TraceClock)+TEXT(".");
+   P+=ReadyShot(Data.A02TracePhoto)?TEXT(" A second dark upright form is behind the cardboard figure, by the studio wall. Only the cutout was visible directly. The sticker and split edge still match. The other form is unresolved."):TEXT(" The print is still developing or unavailable. No further assessment filed.");
+  }
+  if (Data.A02ScrapeHeard) P+=TEXT("\n\nHEARD / a short scrape at the display. No movement was observed during the sound.");
   File(TEXT("anomaly:a02"), Encountered?TEXT("A02 / Same figure, changed position"):TEXT("Display reference"), P);
  }
  if (Data.P01Heard)
  {
-  File(TEXT("anomaly:p01"), TEXT("P01 / Printer rhythm at the studio"), TEXT("OBSERVATION / ") + Stamp(Data.P01Clock) + TEXT(". A short printer rhythm from the direction of the closed studio. No conversation and no figure observed.\n\nCONTROL / the transmission schedule ends Earl's Night Line at 04:00. An empty studio after four is normal. A schedule cannot identify the source of this sound.") + (Data.P01Followed?TEXT("\n\nFOLLOW-UP / facade inspected. No printer or person visible. The source remains unresolved."):TEXT("\n\nNEXT / approach the studio window and inspect the ordinary facade. The sound alone does not establish a presence.")));
+  FString P=TEXT("OBSERVATION / ")+Stamp(Data.P01Clock)+TEXT(". The printer rhythm came from the closed studio. Night Line ended at four.");
+  if (Data.P01Flickered) P+=TEXT("\n\nON AIR lit once. The booth stayed empty.");
+  if (Data.P01Approach) P+=TEXT(" The sound drew nearer as I walked.");
+  if (Data.P01Ended) P+=TEXT(" Nothing answered afterwards.");
+  P+=Data.P01Followed?TEXT("\n\nFOLLOW-UP / facade inspected. No printer visible. Source unresolved."):TEXT("\n\nNEXT / check the studio window.");
+  File(TEXT("anomaly:p01"),TEXT("P01 / Printer rhythm at the studio"),P);
  }
 }
 
@@ -389,7 +424,13 @@ bool FS47Anomaly::Assess(const FString& InId, const FString& Choice)
  }
  else if (Id == TEXT("n02"))
  {
-  if (Choice==TEXT("reflection") && Data.N02Control && ReadyShot(Data.N02Photo) && ReadyShot(Data.ControlPhoto))
+  if (Choice==TEXT("trace"))
+  {
+   if (!ReadyShot(Data.N02Photo) || !ReadyShot(Data.N02TracePhoto)) {Feedback=TEXT("Keep both prints. The later one is not ready."); return false;}
+   Data.N02Compared=true; Data.N02Assessment=TEXT("unresolved second form on film");
+   Feedback=TEXT("The lamp explains the first outline. It does not put that second shape behind the window. Leave the cause open.");
+  }
+  else if (Choice==TEXT("reflection") && Data.N02Control && ReadyShot(Data.N02Photo) && ReadyShot(Data.ControlPhoto))
   { Data.N02Compared=true; Data.N02Assessment=TEXT("ordinary lamp silhouette"); Feedback=TEXT("The two views expose the upright board and ordinary worklamp. The silhouette changes with the viewing position; no independent person established."); }
   else if (Choice==TEXT("insufficient"))
   { Data.N02Compared=true; Data.N02Assessment=TEXT("insufficient evidence"); Feedback=TEXT("Filed as unresolved. Keep the first frame, change position and photograph the lamp control. You can revise this entry."); }
@@ -397,13 +438,20 @@ bool FS47Anomaly::Assess(const FString& InId, const FString& Choice)
  }
  else if (Id == TEXT("a02"))
  {
-  if (Choice==TEXT("living")) { Feedback=SceneText(TEXT("A02_CAUTION")); return false; }
-  if (Choice==TEXT("moved") && ReadyShot(Data.ChangedPhoto) && (ReadyShot(Data.ReferencePhoto) || (Data.bDatedReference && !bArchiveUnavailable && S47Image::FromDataUrl(ReferenceDoc().Image))))
+  if (Choice==TEXT("living")) { Feedback=TEXT("The movement between the frames is missing. Neither print records what moved it."); return false; }
+  if (Choice==TEXT("uneasy"))
+  {
+   if (!ReadyShot(Data.A02TracePhoto) || !(ReadyShot(Data.ReferencePhoto) || (Data.bDatedReference && !bArchiveUnavailable && S47Image::FromDataUrl(ReferenceDoc().Image))))
+   { Feedback=TEXT("Keep the reference beside the later print. Something is still missing."); return false; }
+   Data.A02Compared=true; Data.A02Assessment=TEXT("same object, changed position; cause unconfirmed");
+   Feedback=TEXT("The sticker and torn corner match. There are two upright shapes on the later film. You saw one. The gap between those facts stays open.");
+  }
+  else if (Choice==TEXT("moved") && ReadyShot(Data.ChangedPhoto) && (ReadyShot(Data.ReferencePhoto) || (Data.bDatedReference && !bArchiveUnavailable && S47Image::FromDataUrl(ReferenceDoc().Image))))
   { Data.A02Compared=true; Data.A02Assessment=TEXT("same object, changed position; cause unconfirmed"); Feedback=SceneText(TEXT("A02_FILED")); }
   else if (Choice==TEXT("insufficient"))
   { Data.A02Compared=true; Data.A02Assessment=TEXT("insufficient evidence"); Feedback=TEXT("Filed as unresolved. Keep any missing frame with this entry if you obtain it later. The diner records are still worth checking."); }
   else { Feedback=TEXT("Attach a developed later photograph and either your developed earlier frame or the archived display print. Each instant print needs 90 seconds outside the paused panel. A note about a silhouette does not establish identity."); return false; }
-  Data.P01Pending = !Data.P01Heard && !Data.bLegacyCutout;
+  Data.P01Pending = !Data.P01Heard && !Data.P01Ended && !Data.bLegacyCutout;
  }
  else return false;
  Changed(); Log(Id + TEXT(" assessed")); return true;
@@ -417,10 +465,12 @@ void FS47Anomaly::Photo(const FS47AlbumShot& P)
  if (Target(TEXT("anomaly:changed")) && Data.ChangedPhoto.IsEmpty()) { Data.ChangedPhoto=P.Id; Data.ChangedClock=P.Clock; Data.A02Observed=true; Added=true; }
  if (Target(TEXT("anomaly:n02reference")) && Data.N02Photo.IsEmpty()) { Data.N02Photo=P.Id; Data.N02PhotoClock=P.Clock; if (!Data.N02Observed) Data.N02Clock=P.Clock; Data.N02Observed=true; Added=true; }
  if (Target(TEXT("anomaly:n02control")) && Data.ControlPhoto.IsEmpty()) { Data.ControlPhoto=P.Id; Data.ControlClock=P.Clock; Added=true; }
+ if (Target(TEXT("anomaly:n02trace")) && S47Timeline::Night(P.Clock)>=0 && Data.N02TracePhoto.IsEmpty()) {Data.N02Trace=true; Data.N02TracePhoto=P.Id; Data.N02TraceClock=P.Clock; Added=true;}
+ if (Target(TEXT("anomaly:printshadow")) && S47Timeline::Night(P.Clock)>=0 && Data.A02TracePhoto.IsEmpty()) {Data.A02Trace=true; Data.A02TracePhoto=P.Id; Data.A02TraceClock=P.Clock; Added=true;}
  if (Added)
  {
   Changed(); Log(TEXT("photograph linked"));
-  if (M && M->UI) M->UI->Toast(TEXT("Frame attached to the field check. Compare it in the notebook; the exposure alone is not a conclusion."),5);
+  if (M && M->UI) M->UI->Toast(TEXT("Print filed."),2.2f);
  }
 }
 
@@ -437,11 +487,11 @@ bool FS47Anomaly::Use(const FString& Id)
   {
    if (!M || !M->Web || !M->Player || FVector::Dist(M->Player->Pos,S47Three::ToThree(M->Web->PropLocation(TEXT("logbook")))) > 3.5)
    {
-    if (M && M->UI) M->UI->Toast(TEXT("Leave the request with the physical shift folder on the SARO control-room desk."),5);
+    if (M && M->UI) M->UI->Toast(TEXT("The request belongs in the shift folder."),5);
     return true;
    }
    Data.N01Followed=true; Changed(); Log(TEXT("N01 follow-up request"));
-   if (M && M->UI) M->UI->Toast(TEXT("Inspection-result request left in the shift folder. The supply explanation remains untested."),5);
+   if (M && M->UI) M->UI->Toast(TEXT("Request left in the shift folder."),5);
   }
   return true;
  }
@@ -510,7 +560,7 @@ void FS47Anomaly::Open(const FString& InId)
    else if (S47Timeline::Night(Clock())-S47Timeline::Night(S->Clock)<90) P.Add(S47Kit::Paper(TEXT("PRINT DEVELOPING / allow 90 seconds after exposure. Time is paused in this panel; close it while the chemistry works.")));
    else if (ReadyShot(PhotoId)) P.Add(S47Kit::Image(S47Image::FromDataUrl(S->Url),410));
    else P.Add(S47Kit::Paper(TEXT("IMAGE UNAVAILABLE / the saved frame cannot be decoded. Its metadata is retained. Use insufficient evidence.")));
-   P.Add(S47Kit::Small(S->Text));
+   if (ReadyShot(PhotoId)) P.Add(S47Kit::Small(S->Text));
   }
   else P.Add(S47Kit::Paper(TEXT("NO PHOTOGRAPH ATTACHED / take this view with the field camera. An observation note is not an exposure.")));
   return S47Kit::Col(P);
@@ -522,7 +572,7 @@ void FS47Anomaly::Open(const FString& InId)
   R.Add(S47Kit::Card(TEXT("N01 / Service records"),HasPrintout()?TEXT("Earlier service complaint, actual later printout. Compare their dates and the limits of each record."):TEXT("Dated service copy and transmission schedule. Check the ordinary operating records."),[this]{Feedback.Empty();Open(TEXT("n01"));}));
   if (Data.N02Observed || !Data.N02Photo.IsEmpty()) R.Add(S47Kit::Card(TEXT("N02 / Pale outline"),TEXT("Two positions and a worklamp control. What changes when you move?"),[this]{Feedback.Empty();Open(TEXT("n02"));}));
   R.Add(S47Kit::Card(FigureEncountered?TEXT("A02 / Display figure"):TEXT("Display reference"),FigureEncountered?TEXT("Price sticker, torn edge and position. Compare the same object across two records."):TEXT("Keep the ordinary souvenir display, its price sticker and position in the shift file."),[this]{Feedback.Empty();Open(TEXT("a02"));}));
-  if (Data.P01Heard) R.Add(S47Kit::Card(TEXT("P01 / Closed studio"),TEXT("A familiar printer rhythm. Inspect its apparent source without inventing a person."),[this]{Feedback.Empty();Open(TEXT("p01"));}));
+  if (Data.P01Heard) R.Add(S47Kit::Card(TEXT("P01 / Closed studio"),TEXT("Paper feeding behind locked glass."),[this]{Feedback.Empty();Open(TEXT("p01"));}));
  }
  else if (Id==TEXT("n01"))
  {
@@ -566,11 +616,12 @@ void FS47Anomaly::Open(const FString& InId)
  else if (Id==TEXT("n02"))
  {
   Title=TEXT("N02 / COMPARE POSITION");
-  R.Add(S47Kit::Two(Picture(Data.N02Photo,TEXT("FIRST POSITION / PALE OUTLINE")),Picture(Data.ControlPhoto,TEXT("SIDE POSITION / LAMP CONTROL"))));
-  R.Add(S47Kit::Text(TEXT("Photograph the pale outline at the laundromat. Move to the marked side position and inspect the worklamp before taking the second view. Compare the bright edge with the lamp and the object behind it.")));
-  Button(TEXT("The outline is the upright board and ordinary lamp. No independent person established."),TEXT("reflection"));
-  Button(TEXT("This proves someone was standing beside the worklamp."),TEXT("person"));
-  Button(TEXT("Insufficient evidence. Keep the two views for another control."),TEXT("insufficient"));
+  if (Data.N02TracePhoto.IsEmpty()) R.Add(S47Kit::Two(Picture(Data.N02Photo,TEXT("FIRST POSITION / PALE OUTLINE")),Picture(Data.ControlPhoto,TEXT("SIDE POSITION / LAMP CONTROL"))));
+  else R.Add(S47Kit::Two(Picture(Data.N02Photo,TEXT("EARLIER / LAMP REFERENCE")),Picture(Data.N02TracePhoto,TEXT("LATER / WINDOW ON FILM"))));
+  R.Add(S47Kit::Text(TEXT("Keep the lamp and window edge together. Check them from the side.")));
+  Button(TEXT("The first outline is the board and lamp."),TEXT("reflection"));
+  if (ReadyShot(Data.N02TracePhoto)) Button(TEXT("The later print has a shape the lamp does not explain."),TEXT("trace"));
+  Button(TEXT("Keep this open. I need another view."),TEXT("insufficient"));
   if (Data.N02Compared) R.Add(S47Kit::Small(TEXT("Current assessment: ")+Data.N02Assessment+TEXT(". You can revise it without retaking the attached frames.")));
  }
  else if (Id==TEXT("a02"))
@@ -587,9 +638,13 @@ void FS47Anomaly::Open(const FString& InId)
   }
   R.Add(S47Kit::Two(Earlier,Picture(Data.ChangedPhoto,TEXT("LATER / YOUR PHOTOGRAPH OF THE FIGURE"))));
   R.Add(S47Kit::Question(TEXT("Compare the yellow $3.50 sticker, the split lower left edge and the position against the shop window. What do the records support?")));
-  Button(TEXT("Same object, different position. Who moved it is unconfirmed."),TEXT("moved"));
-  Button(TEXT("This proves the cardboard figure is alive."),TEXT("living"));
-  Button(TEXT("Insufficient evidence. File only what these sources establish."),TEXT("insufficient"));
+  Button(TEXT("The sticker and torn corner match. It is not where it was."),TEXT("moved"));
+  if (!Data.A02TracePhoto.IsEmpty())
+  {
+   R.Add(S47Kit::Two(Picture(Data.ChangedPhoto,TEXT("FIRST LATER EXPOSURE")),Picture(Data.A02TracePhoto,TEXT("LATER EXPOSURE"))));
+   if (ReadyShot(Data.A02TracePhoto)) Button(Data.A02FacingSet && Data.A02Stage>=2?TEXT("The cutout faces my approach. The film has two shapes; I saw one."):TEXT("Two upright shapes on film. Only one was there to see."),TEXT("uneasy"));
+  }
+  Button(TEXT("I cannot tell what moved. Keep it open."),TEXT("insufficient"));
   if (Data.ReferencePhoto.IsEmpty()) R.Add(S47Kit::Button(TEXT("OPEN THE DATED HANDOVER REFERENCE"),[this]{Feedback.Empty();Open(TEXT("reference"));}));
   if (Data.A02Compared && !Data.bLegacyCutout) R.Add(S47Kit::Small(TEXT("Current assessment: ")+Data.A02Assessment+TEXT(". Next: inspect the actual sticker and split edge on the figure. A later sound is a separate observation.")));
  }
@@ -601,7 +656,11 @@ void FS47Anomaly::Open(const FString& InId)
   {
    R.Add(S47Kit::Paper(TEXT("OBSERVED / ")+Stamp(Data.P01Clock)+TEXT("\n\nA short, familiar printer rhythm from the direction of the closed studio. Then the ordinary carrier. No new conversation.")));
    if (const auto* D=Script.FindDocument(TEXT("EV_RADIO_SCHEDULE"))) R.Add(S47Kit::Paper(FString::Join(D->Body,TEXT("\n\n"))));
-   R.Add(S47Kit::Text(Data.P01Followed?TEXT("Facade inspected. No printer or person visible. The source remains unresolved."):TEXT("Approach the studio window and inspect the facade. Earl's shift ended at 04:00; his absence is ordinary. The rhythm does not establish who or what made it.")));
+   FString P=Data.P01Followed?TEXT("No printer visible from the window. Source unresolved."):TEXT("Check the studio window.");
+   if (Data.P01Flickered) P+=TEXT(" ON AIR lit once. The booth stayed empty.");
+   if (Data.P01Approach) P+=TEXT(" The sound drew nearer as I walked.");
+   if (Data.P01Ended) P+=TEXT(" Nothing answered afterwards.");
+   R.Add(S47Kit::Text(P));
   }
  }
  else { Feedback.Empty(); Open(); return; }
@@ -642,5 +701,17 @@ bool FS47Anomaly::SelfTest(TArray<FString>& Lines)
  FS47Anomaly Legacy(nullptr); Legacy.Begin(S47J::New());
  Check(TEXT("migration never promotes TownSeen or fabricates photos"),!Legacy.Data.A02Compared && !Legacy.Data.P01Heard && Legacy.Data.ReferencePhoto.IsEmpty());
  Check(TEXT("authored routine and comparison sources available"),A.Script.FindScene(TEXT("N01_ROUTINE")) && A.Script.FindScene(TEXT("N01_COMPARE")) && A.Script.FindDocument(TEXT("EV_SERVICE_LOG")) && A.Script.FindDocument(TEXT("EV_RADIO_SCHEDULE")));
+ auto OldPilot=S47J::Clone(Saved); OldPilot->RemoveField(TEXT("DreadVersion"));
+ FS47Anomaly Migrated(nullptr); Migrated.Begin(OldPilot);
+ Check(TEXT("first pilot migration keeps old exposure clocks and judgments"),Migrated.Data.ReferencePhoto==A.Data.ReferencePhoto && Migrated.Data.ReferenceClock==A.Data.ReferenceClock && Migrated.Data.ChangedPhoto==A.Data.ChangedPhoto && Migrated.Data.ChangedClock==A.Data.ChangedClock && Migrated.Data.N01Assessment==TEXT("unresolved"));
+ Check(TEXT("first pilot migration retains first move and prevents unsolicited studio replay"),Migrated.Data.DreadVersion==2 && Migrated.Data.A02Stage==1 && Migrated.Data.P01Ended && Migrated.Data.N02TracePhoto.IsEmpty() && Migrated.Data.A02TracePhoto.IsEmpty());
+ A.Data.A02Stage=2; A.Data.A02Yaw=1.73; A.Data.A02FacingSet=true; A.Data.A02ScrapeHeard=true;
+ A.Data.N02Trace=true; A.Data.A02Trace=true; A.Data.P01Flickered=true; A.Data.P01Approach=true; A.Data.P01Ended=true;
+ A.Data.N02TracePhoto=TEXT("synthetic-trace-id-only"); A.Data.N02TraceClock=14301.125;
+ A.Data.A02TracePhoto=TEXT("synthetic-print-id-only"); A.Data.A02TraceClock=14823.75;
+ FS47Anomaly DreadRestored(nullptr); DreadRestored.Begin(S47J::Read(S47J::Write(A.Save())));
+ Check(TEXT("dread world variant and physical facing survive JSON"),DreadRestored.Data.A02Stage==2 && DreadRestored.Data.A02Yaw==1.73 && DreadRestored.Data.A02FacingSet && DreadRestored.Data.A02ScrapeHeard);
+ Check(TEXT("dread traces retain exact exposure IDs and clocks"),DreadRestored.Data.N02Trace && DreadRestored.Data.A02Trace && DreadRestored.Data.N02TracePhoto==A.Data.N02TracePhoto && DreadRestored.Data.A02TracePhoto==A.Data.A02TracePhoto && DreadRestored.Data.N02TraceClock==14301.125 && DreadRestored.Data.A02TraceClock==14823.75);
+ Check(TEXT("studio approach ending survives and phantom IDs cannot establish an image"),DreadRestored.Data.P01Flickered && DreadRestored.Data.P01Approach && DreadRestored.Data.P01Ended && !DreadRestored.Assess(TEXT("n02"),TEXT("trace")) && !DreadRestored.Assess(TEXT("a02"),TEXT("uneasy")));
  return Ok;
 }

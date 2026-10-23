@@ -175,7 +175,8 @@ void US47Night::Init(US47Main* InM)
 	A.Clock = [Self] { return Self.IsValid() ? Self->Clock() : 0.0; };
 	A.Extra = [Self] { return Self.IsValid() && Self->Hooks.AbductionExtra ? Self->Hooks.AbductionExtra() : 0; };
 	// (ext.dishArray.cull(photoCam): Unreal culls the instances per view by itself)
-	A.Before = [] {};
+	A.Before = [Self] { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->BeforePhoto(); };
+	A.After = [Self] { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->AfterPhoto(); };
 	// someone on the film only: out in the night where the glimpses are (SARO, the highway, Caliche)
 	A.GhostGround = [Self]() -> TFunction<double(double, double)>
 	{

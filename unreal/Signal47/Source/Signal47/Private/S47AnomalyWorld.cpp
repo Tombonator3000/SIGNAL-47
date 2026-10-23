@@ -1,4 +1,5 @@
 #include "S47AnomalyWorld.h"
+#include "S47AnomalyDread.h"
 #include "S47Album.h"
 #include "S47Anomaly.h"
 #include "S47Audio.h"
@@ -51,7 +52,18 @@ namespace
 
 FVector FS47AnomalyWorld::World(const FVector& P) const { return Town ? Town->Group.LocalToWorld(P) : P; }
 FVector FS47AnomalyWorld::ReferenceAt() const { return World(Town ? Town->PilotCutoutAt(false) + FVector(0, .62, 0) : FVector(20.31, .62, 2062.3)); }
-FVector FS47AnomalyWorld::ChangedAt() const { return World(Town ? Town->PilotCutoutAt(true) + FVector(0, .62, 0) : FVector(17.8, .62, 2044)); }
+FVector FS47AnomalyWorld::ChangedAt() const
+{
+ FVector P=Town?Town->PilotCutoutAt(true):FVector(17.8,0,2044);
+ if(M && M->Anomaly && M->Anomaly->Data.A02Stage>=2) {P.X=16.1;P.Y=S47RoadTerrain::SurfaceY(P.X,P.Z);}
+ return World(P+FVector(0,.62,0));
+}
+FVector FS47AnomalyWorld::N02TraceAt() const { return World(FVector(-14.84,Lamp?Town->Group.WorldToLocal(LampAt()).Y-.42:1.2,2128.9)); }
+FVector FS47AnomalyWorld::PrintShadowAt() const
+{
+ const double Yaw=M&&M->Anomaly&&M->Anomaly->Data.A02FacingSet?M->Anomaly->Data.A02Yaw:PI/2;
+ return ChangedAt()+FVector(FMath::Sin(Yaw),0,FMath::Cos(Yaw))*1.25+FVector(FMath::Cos(Yaw),0,-FMath::Sin(Yaw))*.65+FVector(0,.25,0);
+}
 FVector FS47AnomalyWorld::LampAt() const { return Lamp ? Lamp.WorldPosition() : World(FVector(-14.1, 1.65, 2130.4)); }
 FVector FS47AnomalyWorld::StudioAt() const
 {
@@ -60,7 +72,7 @@ FVector FS47AnomalyWorld::StudioAt() const
 }
 bool FS47AnomalyWorld::Here() const { return M && M->World && (M->World->Area == TEXT("diner") || M->World->Area == TEXT("road")) && !M->World->bDriving; }
 bool FS47AnomalyWorld::Free() const { return M && M->UI && !M->UI->Modal() && !M->OneAtATime() && !(M->Audio && M->Audio->PhonePlaying()) && M->Story && !M->Story->IsCinematic(); }
-void FS47AnomalyWorld::Toast(const FString& Text) const { if (M && M->UI) M->UI->Toast(Text, 5.5); }
+void FS47AnomalyWorld::Toast(const FString& Text) const { if (M && M->UI) M->UI->Toast(Text, 2.6); }
 
 void FS47AnomalyWorld::Begin()
 {
@@ -70,9 +82,13 @@ void FS47AnomalyWorld::Begin()
 	if (!M || !M->TownLayer || !M->TownLayer->Town || !M->Anomaly || !M->Web || !M->Inter) return;
 	Town = M->TownLayer->Town.Get();
 	// Loading another case must not retain this case's short source or timer.
-	if (M->Audio) M->Audio->Stop(TEXT("anomaly-printer"), .04f);
-	SoundLeft = SoundRetry = 0;
+	StopPrinter();
+	SoundLeft = SoundRetry = ApproachTime = StillTime = 0; if(PrinterPan)PrinterPan->Disconnect();PrinterPan.Reset();Printer={};
+	LastPlayer=M->Player?M->Player->Pos:FVector::ZeroVector;
+	if(!Dread) Dread=MakeShared<FS47AnomalyDread>(M); else Dread->Reset();
 	if (!bBuilt) { InstallGeometry(); bBuilt = true; }
+	if(M->Anomaly->Data.P01Heard&&!M->Anomaly->Data.P01Ended) {ApproachTime=FMath::Clamp(S47Timeline::Night(M->Story->Clock())-S47Timeline::Night(M->Anomaly->Data.P01Clock),0.,8.);SoundLeft=FMath::Max(.01,8.-ApproachTime);}
+	AfterPhoto();
 	PlaceFigure();
 }
 
@@ -103,11 +119,19 @@ void FS47AnomalyWorld::InstallGeometry()
 	LampShade = Part(W, Town->Group, TEXT("AnomalyPaleBoard"), FVector(-14.8, Ground + .94, 2130.4), FVector(.10, 1.05, .53), 0xaaa080, false, .08f);
 	Part(W, Town->Group, TEXT("AnomalyLampBracket"), FVector(-14.5, Ground + 1.65, 2130.4), FVector(.78, .045, .045), 0x393832);
 	Part(W, Town->Group, TEXT("AnomalyLampWire"), FVector(-14.85, Ground + 1.92, 2130.4), FVector(.025, .6, .025), 0x292a25);
+ // These are real, hidden meshes rendered only during an actual camera exposure.
+ auto FilmFigure=[&](TArray<FS47Obj>& Parts,const FString& Prefix)
+ {
+  Parts.Add(Part(W,Town->Group,Prefix+TEXT("Body"),FVector::ZeroVector,FVector(.10,.65,.27),0x08090b,false,.012f));
+  Parts.Add(Part(W,Town->Group,Prefix+TEXT("Head"),FVector::ZeroVector,FVector(.19,.23,.19),0x090a0b,true,.008f));
+  for(auto& P:Parts) P.SetVisible(false);
+ };
+ FilmFigure(N02Film,TEXT("AnomalyLaundryFilm")); FilmFigure(A02Film,TEXT("AnomalyStudioFilm"));
 	Part(W, Town->Group, TEXT("AnomalyReferenceMark"), FVector(17.6, S47RoadTerrain::SurfaceY(17.6, 2062.3) + .025, 2062.3), FVector(.45, .025, .65), 0xb8a67b);
 	M->Inter->Add({ TEXT("anomaly:figure"), Figure, [this] { return M->Anomaly->Data.A02Moved ? TEXT("Inspect the cardboard figure") : TEXT("Record the souvenir display"); }, [this] { InspectFigure(); }, 4.5,
-		[this] { return FString(TEXT("A cardboard souvenir. Yellow $3.50 tag on its lower right; a split in the lower left edge. The same marks can be checked on a photograph.")); }, 9 });
+		[this] { return FString(TEXT("A cardboard souvenir. A faded price; a split near its foot.")); }, 9 });
 	M->Inter->Add({ TEXT("anomaly:lamp"), Lamp, [] { return FString(TEXT("Check the pale shape from the side")); }, [this] { InspectLamp(); }, 8,
-		[] { return FString(TEXT("A weak light over a pale upright shape. A side view should separate the parts. Take a photograph first, then step along the pavement and check it.")); }, 14 });
+		[] { return FString(TEXT("A pale outline under the laundromat light.")); }, 14 });
 	// Extend the existing window action without stealing its proxy before the sound.
 	// Earl's buzzer remains the separate, unchanged amDoor interaction.
 	if (FS47Interactable* I = M->Inter->Get(TEXT("town:studio")))
@@ -123,18 +147,60 @@ void FS47AnomalyWorld::InstallGeometry()
 
 void FS47AnomalyWorld::PlaceFigure()
 {
-	if (!Town || !M || !M->Anomaly) return;
-	// A witnessed legacy shoulder event stays historical. It is not turned into a
-	// completed investigation or replayed beside the studio to fill the new pilot.
-	if (M->Anomaly->Data.bLegacyCutout) Town->ReleasePilotCutout();
-	else Town->SetPilotCutout(M->Anomaly->Data.A02Moved);
+ if(!Town||!M||!M->Anomaly)return;
+ const auto& D=M->Anomaly->Data;
+ if(D.bLegacyCutout) Town->ReleasePilotCutout();
+ else
+ {
+  Town->SetPilotCutout(D.A02Moved);
+  if(D.A02Moved) {Town->CutoutObject().SetPosition(Town->Group.WorldToLocal(ChangedAt())-FVector(0,.62,0)); if(D.A02FacingSet) Town->CutoutObject().SetRotY(D.A02Yaw);}
+ }
 }
 void FS47AnomalyWorld::Reset()
 {
-	if (M && M->Audio) M->Audio->Stop(TEXT("anomaly-printer"), .04f);
-	SoundLeft = SoundRetry = 0; PlaceFigure();
-	if (Town && M && M->Story) Town->bAnomalyBaseline = S47Timeline::Night(M->Story->Clock()) < 0;
+ StopPrinter();
+ if(Dread)Dread->Reset();
+ SoundLeft=SoundRetry=ApproachTime=StillTime=0; if(PrinterPan)PrinterPan->Disconnect();PrinterPan.Reset();Printer={};AfterPhoto();PlaceFigure();
+ if(Town&&M&&M->Story)Town->bAnomalyBaseline=S47Timeline::Night(M->Story->Clock())<0;
 }
+void FS47AnomalyWorld::StopPrinter()
+{
+ if(M&&M->Audio)M->Audio->Stop(TEXT("anomaly-printer"),.04f);
+ if(InitialPrinter.Src)InitialPrinter.Src->Stop();
+ if(InitialPrinter.Gain)InitialPrinter.Gain->Disconnect();InitialPrinter={};
+ if(PrinterPan)PrinterPan->Disconnect();PrinterPan.Reset();Printer={};
+}
+bool FS47AnomalyWorld::Busy() const { return SoundLeft>0 || (Dread&&Dread->Busy()); }
+void FS47AnomalyWorld::DreadStep(double Dt) { if(Dread)Dread->Step(Dt); }
+bool FS47AnomalyWorld::FilmLineClear(const FVector& To) const
+{
+ if(!M||!M->Web||!M->Web->GetWorld()||!M->Player)return false;
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47FilmTrace),true);
+ FVector From=S47Three::ToUE(FS47Cam::Of(M->Player,5000).Pos),End=S47Three::ToUE(To);
+ for(int32 I=0;I<24;++I)
+ {
+  FHitResult Hit;if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,From,End,ECC_Visibility,Q))return true;
+  auto* C=Hit.GetComponent();bool Solid=C&&C->IsVisible();
+  if(Solid)if(const auto* Mat=C->GetMaterial(FMath::Max<int32>(0,Hit.ElementIndex)))
+  {const auto Blend=Mat->GetBlendMode();float Opacity=1;Mat->GetScalarParameterValue(FName(TEXT("Opacity")),Opacity);if(Blend==BLEND_Additive||(Blend==BLEND_Translucent&&Opacity<.5f))Solid=false;}
+  if(Solid)return false;if(C)Q.AddIgnoredComponent(C);From=Hit.ImpactPoint;
+ }
+ return false;
+}
+void FS47AnomalyWorld::BeforePhoto()
+{
+ bFilmN02=bFilmA02=false;
+ if(bDisabled||!Here()||!M||!M->Anomaly||!M->Story||!M->FieldCamera||S47Timeline::Night(M->Story->Clock())<0||S47Timeline::Night(M->Story->Clock())>6*3600) return;
+ const auto& D=M->Anomaly->Data;
+ bFilmN02=D.N02Control&&ControlStand()&&M->FieldCamera->InFrame(LampAt(),.12,.88,.12,.88)&&M->FieldCamera->InFrame(N02TraceAt(),.03,.97,.03,.97)&&FilmLineClear(N02TraceAt()+FVector(0,.47,0));
+ bFilmA02=D.A02Moved&&!D.bLegacyCutout&&DistanceXZ(M->Player->Pos,ChangedAt())<9&&M->FieldCamera->InFrame(ChangedAt(),.1,.9,.1,.9)&&M->FieldCamera->InFrame(PrintShadowAt(),.03,.97,.03,.97)&&FilmLineClear(PrintShadowAt()+FVector(0,.47,0));
+ auto Show=[this](TArray<FS47Obj>& Parts,const FVector& At,bool On)
+ {
+  for(int32 I=0;I<Parts.Num();++I) {Parts[I].SetPosition(Town->Group.WorldToLocal(At)+FVector(0,I==1?.47:0,0));Parts[I].SetVisible(On);const FVector V=M->Player->Pos-At;Parts[I].SetRotY(FMath::Atan2(-V.X,-V.Z)-PI/2);}
+ };
+ Show(N02Film,N02TraceAt(),bFilmN02);Show(A02Film,PrintShadowAt(),bFilmA02);
+}
+void FS47AnomalyWorld::AfterPhoto() {for(auto& P:N02Film)P.SetVisible(false);for(auto& P:A02Film)P.SetVisible(false);}
 bool FS47AnomalyWorld::MayMove(bool bReference, bool bMoved, double Clock, double Distance)
 {
 	return bReference && !bMoved && S47Timeline::Night(Clock) >= 0 && Distance > 45;
@@ -146,41 +212,64 @@ bool FS47AnomalyWorld::MayPlay(bool bPending, bool bHeard, bool bPanel, bool bFr
 }
 void FS47AnomalyWorld::Step(double Dt)
 {
-	if (bDisabled) return;
-	if (!Town) Begin();
-	if (!Town || !M->Anomaly || !M->Story || !M->Player) return;
-	auto& D = M->Anomaly->Data; const double Clock = M->Story->Clock();
-	SoundRetry = FMath::Max(0., SoundRetry - Dt);
-	// The audio source keeps real time while a notebook panel is open.
-	SoundLeft = FMath::Max(0., SoundLeft - Dt);
-	Town->bAnomalyBaseline = S47Timeline::Night(Clock) < 0 || SoundLeft > 0;
-	if (!D.bLegacyCutout && Free() && MayMove(!D.ReferencePhoto.IsEmpty() || D.bDatedReference, D.A02Moved, Clock, Here() ? DistanceXZ(M->Player->Pos, ReferenceAt()) : 10000))
-	{
-		D.A02Moved = true; PlaceFigure(); M->Anomaly->Changed();
-	}
-	if (SoundLeft <= 0 && M->Audio) M->Audio->Stop(TEXT("anomaly-printer"), .03f);
-	if (!Here() || !Free()) return;
-	const FS47Cam Cam = FS47Cam::Of(M->Player, 5000);
-	auto Looking = [&](const FVector& At, double Range) { return FVector::Distance(Cam.Pos, At) < Range && FVector::DotProduct(Cam.Forward, (At - Cam.Pos).GetSafeNormal()) > .94; };
-	const FVector Standing = Town->Group.WorldToLocal(M->Player->Pos);
-	if (!D.N02Observed && Standing.X > -15 && Standing.Z > 2130 && Standing.Z < 2135.5 && Looking(LampAt(), 15))
-	{
-		D.N02Observed = true; D.N02Clock = Clock; M->Anomaly->Changed();
-		Toast(TEXT("For a moment, a person by the laundromat. Photograph the shape, then change your standing position before deciding."));
-	}
-	if (!D.bLegacyCutout && D.A02Moved && !D.A02Observed && Looking(ChangedAt(), 18))
-	{
-		D.A02Observed = true; M->Anomaly->Changed();
-		Toast(TEXT("The cardboard figure is outside the display. Photograph it, then compare the yellow price tag and the split edge in the notebook."));
-	}
-	if (SoundRetry <= 0 && MayPlay(D.P01Pending, D.P01Heard, M->UI && M->UI->Modal(), Free(), DistanceXZ(Cam.Pos, StudioAt()) < 50, Clock))
-	{
-		if (!M->Audio) return;
-		FS47Sound O; O.At = StudioAt(); O.Gain = .58f; O.Dur = 4.6f; O.Lp = 2400;
-		if (!M->Audio->LoopSfx(TEXT("anomaly-printer"), TEXT("printer"), O)) { SoundRetry = 8; Toast(TEXT("The studio sound could not play. This observation remains pending.")); return; }
-		SoundLeft = 4.6; D.P01Heard = true; D.P01Pending = false; D.P01Clock = Clock; M->Anomaly->Changed();
-		Toast(TEXT("[From the closed 1420 AM studio: a printer feeds, strikes twice, feeds again, then stops.] The SARO rhythm. Check the facade."));
-	}
+ if(bDisabled)return;
+ if(!Town)Begin();
+ if(!Town||!M->Anomaly||!M->Story||!M->Player||!M->Audio||!M->UI)return;
+ auto& D=M->Anomaly->Data;const double Clock=M->Story->Clock();
+ SoundRetry=FMath::Max(0.,SoundRetry-Dt);
+ const FVector Position=M->Player->Pos;
+ const double Moved=FVector::Distance(Position,LastPlayer);LastPlayer=Position;
+ const bool Night=S47Timeline::Night(Clock)>=0;
+ Town->bAnomalyBaseline=!Night||SoundLeft>0;
+ auto Face=[&]{const FVector V=Position-ChangedAt();D.A02Yaw=FMath::Atan2(-V.X,-V.Z);D.A02FacingSet=true;PlaceFigure();};
+ if(!D.bLegacyCutout&&Free()&&MayMove(!D.ReferencePhoto.IsEmpty()||D.bDatedReference,D.A02Moved,Clock,Here()?DistanceXZ(Position,ReferenceAt()):10000))
+ {D.A02Moved=true;D.A02Stage=1;PlaceFigure();M->Anomaly->Changed();}
+ if(D.A02Moved&&!D.A02FacingSet&&Here()&&Free()&&DistanceXZ(Position,ChangedAt())>9) {Face();M->Anomaly->Changed();}
+ if(!Here()||M->UI->Modal()||M->Story->IsCinematic()||M->Audio->PhonePlaying()||(Dread&&Dread->ProtectedScene()))
+ {StopPrinter();SoundLeft=0;return;}
+ const FS47Cam Cam=FS47Cam::Of(M->Player,5000);
+ auto Looking=[&](const FVector& At,double Range){return FVector::Distance(Cam.Pos,At)<Range&&FVector::DotProduct(Cam.Forward,(At-Cam.Pos).GetSafeNormal())>.94;};
+ // A second displacement happens only after the first record, outside nearby view.
+ const double Dist=DistanceXZ(Position,ChangedAt());
+ if(!D.bLegacyCutout&&D.A02Observed&&!D.ChangedPhoto.IsEmpty()&&D.A02Stage<2&&Dist>8&&(FVector::DotProduct(Cam.Forward,(ChangedAt()-Cam.Pos).GetSafeNormal())<.2)&&Free())
+ {
+  D.A02Stage=2;Face();
+  if(!D.A02ScrapeHeard&&Dread)D.A02ScrapeHeard=Dread->Pulse(ChangedAt(),2);
+  M->Anomaly->Changed();
+ }
+ // The ordinary lamp remains an ordinary lamp in the evening. Only night acquires a second trace.
+ const FVector Standing=Town->Group.WorldToLocal(Position);
+ if(!D.N02Observed&&Standing.X>-15&&Standing.Z>2130&&Standing.Z<2135.5&&Looking(LampAt(),15)&&Free())
+ {D.N02Observed=true;D.N02Clock=Clock;M->Anomaly->Changed();Toast(TEXT("Someone by the washers."));}
+ if(!D.bLegacyCutout&&D.A02Moved&&!D.A02Observed&&Looking(ChangedAt(),18)&&Free())
+ {D.A02Observed=true;if(Dread)Dread->Pulse(ChangedAt(),1);M->Anomaly->Changed();Toast(TEXT("It was in the window."));}
+ if(Night&&!D.P01Ended&&D.P01Heard)
+ {
+  ApproachTime=FMath::Max(ApproachTime+Dt,S47Timeline::Night(Clock)-S47Timeline::Night(D.P01Clock));
+  if(ApproachTime>=8) {StopPrinter();SoundLeft=0;D.P01Ended=true;M->Anomaly->Changed();return;}
+  const bool Moving=Moved>.012&&Moved<2&&DistanceXZ(Position,StudioAt())<24;
+  StillTime=Moving?0:StillTime+Dt;
+  if(Moving)
+  {
+   const FVector V=StudioAt()-Cam.Pos;const FVector Source=Cam.Pos+V.GetSafeNormal()*FMath::Max(1.0,V.Size()*.28);
+   if(!Printer) {PrinterPan=StaticCastSharedPtr<FS47PannerNode>(M->Audio->Spatial(Source,1.5f,M->Audio->SfxBus));FS47Sound O;O.DestNode=PrinterPan;O.Gain=.62f;O.Lp=2600;Printer=M->Audio->LoopSfx(TEXT("anomaly-printer"),TEXT("printer"),O);if(Printer)D.P01Approach=true;}
+   if(PrinterPan)PrinterPan->SetPosition(Source.X,Source.Y,Source.Z);
+  }
+  else if(Printer) {StopPrinter();}
+  SoundLeft=FMath::Max(.01,8.-ApproachTime);
+  if((D.P01Approach&&ApproachTime>2&&StillTime>.75)||ApproachTime>8||DistanceXZ(Position,StudioAt())>35)
+  {StopPrinter();SoundLeft=0;D.P01Ended=true;M->Anomaly->Changed();Toast(TEXT("[The feeding stops.]"));}
+  return;
+ }
+ if(Night&&SoundRetry<=0&&MayPlay(D.P01Pending,D.P01Heard,M->UI->Modal(),Free(),DistanceXZ(Cam.Pos,StudioAt())<30,Clock))
+ {
+  if(!M->Audio)return;
+  if(Dread&&!D.P01Flickered)D.P01Flickered=Dread->Pulse(StudioAt(),3);
+  FS47Sound O;O.At=StudioAt();O.Gain=.4f;O.Dur=1.0f;O.Lp=2100;
+  InitialPrinter=M->Audio->Sfx(TEXT("printer"),O);
+  if(!InitialPrinter) {SoundRetry=8;return;}
+  SoundLeft=8;ApproachTime=StillTime=0;D.P01Heard=true;D.P01Pending=false;D.P01Clock=Clock;M->Anomaly->Changed();Toast(TEXT("[Paper feeding. Inside the glass.]"));
+ }
 }
 
 bool FS47AnomalyWorld::ControlStand() const
@@ -193,10 +282,10 @@ void FS47AnomalyWorld::InspectLamp()
 {
 	if (!M || !M->Anomaly || !Here()) return;
 	auto& D = M->Anomaly->Data;
-	if (D.N02Photo.IsEmpty()) { Toast(TEXT("Record the head-on shape with the camera before checking from another position.")); return; }
-	if (!ControlStand()) { Toast(TEXT("Move a few steps along the laundromat pavement toward the next window. Look back at the lamp from its side.")); return; }
+	if (D.N02Photo.IsEmpty()) { Toast(TEXT("The light masks its outline.")); return; }
+	if (!ControlStand()) { Toast(TEXT("The bracket disappears from here.")); return; }
 	D.N02Control = true; M->Anomaly->Changed();
-	Toast(TEXT("An opal lamp on a bracket, in front of a pale board. From here the two parts separate. Take a control photograph; compare both in the notebook."));
+	Toast(TEXT("Just a lamp and a board."));
 }
 void FS47AnomalyWorld::InspectFigure()
 {
@@ -206,7 +295,7 @@ void FS47AnomalyWorld::InspectFigure()
 	if (!D.bLegacyCutout && D.A02Moved && D.A02Compared)
 	{
 		D.A02Followed = true; M->Anomaly->Changed();
-		Toast(TEXT("The $3.50 tag and the split lower-left edge are real, not a second image in the glass. Same cardboard figure, another place. No sign of who moved it."));
+		Toast(TEXT("Still cardboard."));
 	}
 	else M->Anomaly->Open(D.A02Moved ? TEXT("a02") : TEXT("reference"));
 }
@@ -214,7 +303,7 @@ void FS47AnomalyWorld::InspectStudio()
 {
 	if (!M || !M->Anomaly || !M->Anomaly->Data.P01Heard || !Here() || !M->Player || DistanceXZ(M->Player->Pos, StudioAt()) > 7) return;
 	M->Anomaly->Data.P01Followed = true; M->Anomaly->Changed();
-	Toast(TEXT("The door is shut. ON AIR is dark; the room behind the glass is empty. No printer is visible. The sound's source is still unresolved."));
+	Toast(TEXT("The glass is cold. Nobody inside."));
 }
 void FS47AnomalyWorld::TagPhoto(FS47AlbumShot& Shot) const
 {
@@ -286,8 +375,11 @@ void FS47AnomalyWorld::TagPhoto(FS47AlbumShot& Shot) const
 	if (!D.bLegacyCutout && Local.X < (D.A02Moved ? 17.8 : 20.0) && M->FieldCamera->InFrame(FigureAt + FVector(0, .48, 0), .08, .92, .08, .92)
 		&& M->FieldCamera->InFrame(FigureAt - FVector(0, .48, 0), .08, .92, .08, .92))
 		Tag(D.A02Moved ? TEXT("anomaly:changed") : TEXT("anomaly:reference"), FigureAt, 9);
-	const FVector P = Town->Group.WorldToLocal(M->Player->Pos);
-	if (D.N02Control && ControlStand()) Tag(TEXT("anomaly:n02control"), LampAt(), 11);
+ if(bFilmN02) {if(!D.N02Trace&&Dread)Dread->Pulse(LampAt(),1);const auto UV=M->FieldCamera->Project(N02TraceAt());if(UV.bFront){Shot.Targets.Add({TEXT("anomaly:n02trace"),FVector2D(UV.U,UV.V)});Shot.Text+=TEXT(" A second outline, farther back.");}}
+ if(bFilmA02) {const auto UV=M->FieldCamera->Project(PrintShadowAt());if(UV.bFront){Shot.Targets.Add({TEXT("anomaly:printshadow"),FVector2D(UV.U,UV.V)});Shot.Text+=TEXT(" Another upright shape behind it.");}}
+ bFilmN02=bFilmA02=false;
+ const FVector P = Town->Group.WorldToLocal(M->Player->Pos);
+ if (D.N02Control && ControlStand()) Tag(TEXT("anomaly:n02control"), LampAt(), 11);
 	else if (P.X > -15 && P.Z > 2130 && P.Z < 2135.5) Tag(TEXT("anomaly:n02reference"), LampAt(), 13);
 }
 
@@ -297,5 +389,5 @@ bool FS47AnomalyWorld::SelfTest(TArray<FString>& Lines)
 	Ok &= MayPlay(true, false, false, true, true, 4 * 3600 + 10 * 60) && !MayPlay(true, false, false, true, true, 3 * 3600 + 59 * 60);
 	Ok &= !MayPlay(true, false, true, true, true, 5 * 3600) && !MayPlay(true, false, false, false, true, 5 * 3600) && !MayPlay(true, true, false, true, true, 5 * 3600);
 	Lines.Add(FString::Printf(TEXT("%s AnomalyWorld: persistent reference/move gates; closed-studio sound waits for active comparison, free scene and closed panel"), Ok ? TEXT("PASS") : TEXT("FAIL")));
-	return Ok;
+	return FS47AnomalyDread::SelfTest(Lines) && Ok;
 }

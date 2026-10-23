@@ -241,7 +241,7 @@ FS47Snap US47FieldCamera::Snap(const FS47SnapOptions& O)
 	S.W = O.W;
 	S.H = FMath::RoundToInt(O.W * double(PHOTO_H) / PHOTO_W);
 	if (O.Before) O.Before();
-	const bool bOk = Render(S.W, S.H, S.Px);
+	const bool bOk = Render(S.W, S.H, S.Px); S.bRendered=bOk;
 	if (O.After) O.After();
 	if (O.Restore) O.Restore();
 	if (!bOk) S.Px.Init(FColor(0, 0, 0, 255), S.W * S.H);

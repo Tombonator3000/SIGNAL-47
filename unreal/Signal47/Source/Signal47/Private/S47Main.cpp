@@ -81,6 +81,7 @@ void US47Main::Step(double Dt)
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
 	if (Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
+	if (AnomalyWorld) AnomalyWorld->DreadStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)

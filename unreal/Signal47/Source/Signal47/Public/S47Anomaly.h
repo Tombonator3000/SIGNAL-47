@@ -12,6 +12,12 @@ struct FS47Task;
 // Eksponering, vurdering og fysisk variant er forskjellige, vedvarende fakta.
 struct FS47AnomalyData
 {
+ int32 DreadVersion = 2, A02Stage = 0;
+ double A02Yaw = 0;
+ bool A02FacingSet = false, A02ScrapeHeard = false, N02Trace = false, A02Trace = false;
+ bool P01Flickered = false, P01Approach = false, P01Ended = false;
+ FString N02TracePhoto, A02TracePhoto;
+ double N02TraceClock = 0, A02TraceClock = 0;
  bool bEarlyCamera = false, bLegacyCutout = false, bRoutineTimeKnown = false;
  bool N01Routine = false, N01Compared = false, N01Followed = false;
  bool N02Observed = false, N02Control = false, N02Compared = false;
@@ -51,6 +57,7 @@ private:
  FString Feedback;
  mutable FString ArchiveUrl;
  bool bArchiveUnavailable = false;
+ bool bN02TraceFiled = false, bA02TraceFiled = false;
  double Clock() const;
  bool HasPrintout() const;
  const FS47AlbumShot* Shot(const FString& Id) const;

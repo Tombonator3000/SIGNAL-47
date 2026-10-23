@@ -126,7 +126,7 @@ FS47AlbumShot FS47Album::Expose()
 	const int32 Side = (US47FieldCamera::ToUint32(Seed) >> 4) & 1 ? 1 : -1;
 	FS47SnapOptions O;
 	O.Before = [this] { if (D.Before) D.Before(); ShowFilmOnly(true); };
-	O.After = [this] { ShowFilmOnly(false); };
+	O.After = [this] { ShowFilmOnly(false); if (D.After) D.After(); };
 	O.Seed = Seed;
 	O.W = bSmall ? 320 : 640;
 	if (bFace) O.Post = [Seed, Side](TArray<FColor>& Raw, int32 W, int32 H) { S47FilmFace::FilmFace(Raw, W, H, Seed, Side); };
@@ -157,7 +157,7 @@ FS47AlbumShot FS47Album::Expose()
 		Shot.Targets.RemoveAll([&X](const TPair<FString, FVector2D>& T) { return T.Key == X.S->Target; });
 		Shot.Targets.Add(TPair<FString, FVector2D>(X.S->Target, FVector2D(Q.U, Q.V)));
 	}
-	if (D.Tag) D.Tag(Shot);
+	if (D.Tag && Snap.bRendered) D.Tag(Shot);
 	Data.Shots.Add(Shot);
 	if (bFace) Data.Face = FS47FaceSave{ Shot.Id };
 	FLast L;
@@ -273,7 +273,7 @@ FS47AlbumView FS47Album::View(double Clock)
 	for (const FS47AlbumShot& S : Data.Shots)
 	{
 		const double Dv = Dev(S, Clock);
-		V.Shots.Add({ S.Id, S.Url, S.Id == Face && Dv < 1 ? FString() : S.Text, FString::Printf(TEXT("%s, %s"), *S.Place, *S47Text::ClockText(S.Clock, false)), Dv, S.bOdd });
+		V.Shots.Add({ S.Id, S.Url, Dv < 1 && (S.Id == Face || S.Targets.ContainsByPredicate([](const auto& T){return T.Key==TEXT("anomaly:n02trace")||T.Key==TEXT("anomaly:printshadow");})) ? FString() : S.Text, FString::Printf(TEXT("%s, %s"), *S.Place, *S47Text::ClockText(S.Clock, false)), Dv, S.bOdd });
 	}
 	V.Look = [this](const FString& Id) { Looked(Id); };
 	return V;

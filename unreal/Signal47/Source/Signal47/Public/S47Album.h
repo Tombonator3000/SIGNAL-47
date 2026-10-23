@@ -86,6 +86,8 @@ struct FS47AlbumDeps
 	TFunction<int32()> Extra;
 	/** Before the render (the web version culls the antennas for the photo camera). */
 	TFunction<void()> Before;
+	/** Restore transient film-only subjects immediately after the scene capture. */
+	TFunction<void()> After;
 	/** The ground's height where the film may keep someone, or unset (not here, not now). */
 	TFunction<TFunction<double(double, double)>()> GhostGround;
 	/** The saves have no room for big pictures: smaller ones. */

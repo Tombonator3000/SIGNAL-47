@@ -359,6 +359,7 @@ void US47Flow::Boot()
 	// the station behind it is as the night begins (the Prologue's constructor resets it)
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
 	if (M->Evening) M->Evening->Stop();
+	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
 	M->Mode = EMode::Title;
 	ShowTitle();
@@ -689,6 +690,7 @@ void US47Flow::LeavePlay()
 	// motelTv, roadside, townEvents (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(false);
 	if (M->Evening) M->Evening->Stop();
+	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -716,6 +718,7 @@ void US47Flow::ToTitle()
 	// motelTv, roadside (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(true);
 	if (M->Evening) M->Evening->Stop();
+	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
