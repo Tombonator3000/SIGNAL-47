@@ -18,6 +18,8 @@ import sys
 import zipfile
 
 SRC = os.environ.get('S47_FREE', os.path.expanduser('~/Assets/signal47-free'))
+# the web export Content/Web was imported from (Tools/webexport/import.sh), for models.json "trim"
+WEB_EXPORT = os.environ.get('S47_WEB_EXPORT', os.path.expanduser('~/scratch-bm/Signal47-web'))
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # name: (category, real size in metres of its largest side or None to trust the file, split into props)
@@ -440,7 +442,15 @@ def prepare(work, report=False):
 		else:
 			parts.append({'name': name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris})
 		entry = dict(c, name=name, category=cfg['category'], scale=scale, alpha=alpha, meshes=meshes, masked=alpha_fix,
-			raw_size_m=[round(hi[k] - lo[k], 4) for k in range(3)], parts=[])
+			raw_size_m=[round(hi[k] - lo[k], 4) for k in range(3)], full_uv=bool(cfg.get('full_uv')), parts=[])
+		# trim: the old building cut out of the exported town (trim_web.py), imported with the model
+		if cfg.get('trim'):
+			sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+			import trim_web
+			files, rep = trim_web.trim(cfg['trim'], WEB_EXPORT, os.path.join(work, 'trim', name))
+			entry['trim'] = {'group': cfg['trim']['group'], 'files': files or [], 'report': rep}
+			if report:
+				print('S47FREE trim %s: %d meshes cut, %d triangles out' % (name, len(rep), sum(r['removed'] for r in rep.values())))
 		for p in parts:
 			out_name = p['name'] if not (cfg.get('split') or p.get('keep')) else '%s_%s' % (name, p['name'])
 			gp = g

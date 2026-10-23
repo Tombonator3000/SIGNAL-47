@@ -75,11 +75,18 @@ def folder_bytes(path):
 	return n
 
 
-def finish_mesh(sm, nanite):
+def finish_mesh(sm, nanite, full_uv=False):
 	ns = sm.get_editor_property('nanite_settings')
 	if ns.get_editor_property('enabled') != nanite:
 		ns.set_editor_property('enabled', nanite)
 		sm.set_editor_property('nanite_settings', ns)
+	if full_uv:
+		# UVs in metres over a whole building (tiling textures): 32-bit, not the halves that smear them
+		# (the editor subsystem is not there in a commandlet: the scripting library is)
+		lib = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.EditorStaticMeshLibrary
+		bs = lib.get_lod_build_settings(sm, 0)
+		bs.set_editor_property('use_full_precision_u_vs', True)
+		lib.set_lod_build_settings(sm, 0, bs)
 	eal.save_loaded_asset(sm)
 
 
@@ -96,6 +103,9 @@ old = {}
 if ONLY and os.path.isfile(manifest_path):
 	old = {m['asset']: m for m in json.load(open(manifest_path))['models']}
 rows = [m for m in old.values() if m['name'] not in ONLY]
+trims = {}
+if ONLY and os.path.isfile(manifest_path):
+	trims = {k: v for k, v in json.load(open(manifest_path)).get('trims', {}).items() if k not in ONLY}
 failed = []
 for entry in plan:
 	name = entry['name']
@@ -131,7 +141,7 @@ for entry in plan:
 		if len(meshes) > 1:
 			log('WARN %s: %d meshes, not combined' % (part['asset'], len(meshes)))
 		for sm in meshes:
-			finish_mesh(sm, part['nanite'])
+			finish_mesh(sm, part['nanite'], entry.get('full_uv', False))
 		sm = meshes[0]
 		box = sm.get_bounding_box()
 		lo, hi = box.min, box.max
@@ -144,6 +154,40 @@ for entry in plan:
 			'materials': len(sm.get_editor_property('static_materials')),
 		})
 		log('OK %s %s tris %d size %s cm%s' % (entry['category'], sm.get_path_name(), rows[-1]['tris'], rows[-1]['bounds_cm']['size'], ' NANITE' if part['nanite'] else ''))
+	# the exported meshes it replaces, cut (trim_web.py): the default glTF import, as the web's own
+	# geometry came in, one static mesh per g<id>; S47Props swaps them in, keeping their materials
+	if entry.get('trim'):
+		tdir = folder + '/Trim'
+		got = {}
+		mesh = ASSETS_PIPE.get_editor_property('mesh_pipeline')
+		mesh.set_editor_property('combine_static_meshes_behavior', unreal.InterchangeCombineStaticMeshesBehavior.DO_NOT_COMBINE)
+		ASSETS_PIPE.set_editor_property('asset_name', '')
+		for f in entry['trim']['files']:
+			stack = unreal.InterchangePipelineStackOverride()
+			stack.add_pipeline(ASSETS_PIPE)
+			stack.add_pipeline(GLTF_PIPE)
+			t = unreal.AssetImportTask()
+			t.set_editor_property('filename', f)
+			t.set_editor_property('destination_path', tdir)
+			t.set_editor_property('replace_existing', True)
+			t.set_editor_property('automated', True)
+			t.set_editor_property('save', True)
+			t.set_editor_property('options', stack)
+			tools.import_asset_tasks([t])
+		mesh.set_editor_property('combine_static_meshes_behavior', unreal.InterchangeCombineStaticMeshesBehavior.ALL)
+		for path in eal.list_assets(tdir, recursive=True):
+			m = eal.load_asset(path)
+			if isinstance(m, unreal.StaticMesh) and m.get_name() in entry['trim']['report']:
+				for k in range(len(m.get_editor_property('static_materials'))):
+					m.set_material(k, eal.load_asset('/Engine/EngineMaterials/DefaultMaterial'))
+				ns = m.get_editor_property('nanite_settings')
+				ns.set_editor_property('enabled', False)
+				m.set_editor_property('nanite_settings', ns)
+				m.get_editor_property('body_setup').set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
+				eal.save_loaded_asset(m)
+				got[m.get_name()] = m.get_path_name()
+		trims[name] = {'group': entry['trim']['group'], 'meshes': {g: dict(r, asset=got.get(g, '')) for g, r in entry['trim']['report'].items()}}
+		log('TRIM %s: %d meshes (%d hidden), %d imported' % (name, len(entry['trim']['report']), sum(1 for r in entry['trim']['report'].values() if r.get('hidden')), len(got)))
 	disk = folder_bytes(os.path.join(CONTENT, 'Free', entry['category'], name))
 	for r in rows:
 		if r['name'] == name:
@@ -153,5 +197,5 @@ for entry in plan:
 rows.sort(key=lambda r: (r['category'], r['asset']))
 os.makedirs(os.path.dirname(manifest_path), exist_ok=True)
 json.dump({'_doc': 'Made by Tools/freemodels/import_free.py. Bounds in Unreal centimetres, pivot at the middle of the base (min z 0). CC BY 4.0 models must stay credited (Source/Signal47/Private/S47FreeCredits.inl, CREDITS.txt).',
-	'models': rows}, open(manifest_path, 'w'), indent=1)
+	'models': rows, 'trims': trims}, open(manifest_path, 'w'), indent=1)
 log('done: %d assets, %d failed %s, %.0f MB in Content/Free' % (len(rows), len(failed), failed, folder_bytes(os.path.join(CONTENT, 'Free')) / 1e6))
