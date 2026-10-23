@@ -48,7 +48,7 @@ for label in ('souvenir','ground'):
         if row.get('textures',{}).get('normal'):
             value=M.get_material_default_scalar_parameter_value(mat,'NormalStrength')
             check(row['name']+' controlled normal strength',abs(value-float(row.get('normal_strength',.2)))<.00001,value)
-        check(row['name']+' sidedness',mat.get_editor_property('two_sided')==bool(row.get('two_sided',False)))
+        check(row['name']+' sidedness',mat.get_editor_property('two_sided')==(bool(row.get('two_sided',False)) or float(row.get('alpha',1))<1))
 for name in ('M_1420_Stucco_cream','M_1420_Concrete'):
     mat=E.load_asset('/Game/RadioArray/Station/Materials/'+name)
     check(name+' corrected original finish',isinstance(mat,unreal.Material) and abs(M.get_material_default_scalar_parameter_value(mat,'NormalStrength')-.18)<.00001)
