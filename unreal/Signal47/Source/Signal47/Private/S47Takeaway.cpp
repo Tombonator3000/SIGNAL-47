@@ -134,6 +134,16 @@ void FS47Takeaway::Build()
 	const FS47Obj Saro = W->Obj(TEXT("room.group"));
 	const FS47Obj Counter = W->Obj(TEXT("world.diner.proxies.counter"));
 	const FS47Obj Diner = Counter.Parent();
+	// The archive table's old use box reached 27 cm above the actual tabletop,
+	// enclosing a bag/napkin placed there. Interaction::Pick stops at that box
+	// even while its chapter label is empty. Keep the original footprint, ID,
+	// label and records action, but align its query surface with the authored top.
+	FS47Obj WorkTable = W->Obj(TEXT("annex.objs.workTable"));
+	if (WorkTable)
+	{
+		FVector Scale = WorkTable.Scale(); Scale.Y *= .01 / .3;
+		WorkTable.SetScale(Scale); WorkTable.SetY(.775);
+	}
 	auto Target = [&](const FS47Obj& Parent, const FString& Name, const FVector& Size, uint32 Color)
 	{
 		const auto* N = W->Node(Parent.I); if (!N || !N->Comp.IsValid()) return FS47Obj();

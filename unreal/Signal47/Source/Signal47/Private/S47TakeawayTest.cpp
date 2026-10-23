@@ -1,6 +1,7 @@
 #include "S47Evening.h"
 
 #include "S47EveningVisual.h"
+#include "S47Chapter2.h"
 #include "S47FieldCamera.h"
 #include "S47Flashlight.h"
 #include "S47Flow.h"
@@ -72,11 +73,15 @@ void FS47Evening::ControlTakeawayTest(double Dt)
  {
   if (T.Shots.IsEmpty()) return;
   const FString Path = T.Shots / (TEXT("takeaway-") + Name + TEXT(".png")); T.Captures.AddUnique(Path);
-  M->Story->After(0.1, [Path] { FScreenshotRequest::RequestScreenshot(Path, true, false); });
+  // Fast API dialogue/load fixtures stack transient toasts; clear those only for the
+  // evidence capture, retaining the real HUD, prompt, meal state and complete log.
+  M->Story->After(0.1, [this, Path] { M->UI->ClearToasts(); FScreenshotRequest::RequestScreenshot(Path, true, false); });
  };
  const auto Roundtrip = [this, &T, &Fail](const FString& Name)
  {
   const bool Held = Takeaway->Carried(), Eaten = Takeaway->Eaten(); const FString Spot = Takeaway->PlacedSpot();
+  const FString Surface = S47J::Str(Takeaway->Save(), TEXT("spotId"));
+  const FVector SurfaceBefore = Surface.IsEmpty() ? FVector::ZeroVector : Takeaway->SpotPosition(Surface);
   const FString Pending = Pack.GetPendingChoice(), Scene = Pack.CurrentScene() ? Pack.CurrentScene()->Id : FString();
   const int32 Cursor = Pack.NextLine(), Docs = Pack.Documents().Num(); const FVector Before = M->Player->Pos;
   const double Clock = M->Story->Clock(); const bool Bought = Pack.Flag(TEXT("food_bought")), Taken = Pack.Flag(TEXT("food_taken")), FoodEaten = Pack.Flag(TEXT("food_eaten"));
@@ -94,6 +99,15 @@ void FS47Evening::ControlTakeawayTest(double Dt)
   if (Takeaway->Carried() != Held || Takeaway->Eaten() != Eaten || Takeaway->PlacedSpot() != Spot || !M->Player->Pos.Equals(Before, 0.015) || M->Story->Clock() != Clock || Pack.GetPendingChoice() != Pending || RestoredScene != Scene || Pack.NextLine() != Cursor || Pack.Documents().Num() != Docs || Pack.Flag(TEXT("food_bought")) != Bought || Pack.Flag(TEXT("food_taken")) != Taken || Pack.Flag(TEXT("food_eaten")) != FoodEaten)
   {
    Fail(FString::Printf(TEXT("disk/full-world restore changed %s: held %d/%d eaten %d/%d spot '%s'/'%s' pose %.3f,%.3f/%.3f,%.3f clock %.9f/%.9f pending '%s'/'%s' scene '%s'/'%s' cursor %d/%d"), *Name, Held, Takeaway->Carried(), Eaten, Takeaway->Eaten(), *Spot, *Takeaway->PlacedSpot(), Before.X, Before.Z, M->Player->Pos.X, M->Player->Pos.Z, Clock, M->Story->Clock(), *Pending, *Pack.GetPendingChoice(), *Scene, *RestoredScene, Cursor, Pack.NextLine())); return false;
+  }
+  if (!Surface.IsEmpty())
+  {
+   const FString SurfaceAfter = S47J::Str(Takeaway->Save(), TEXT("spotId")); const FVector PositionAfter = Takeaway->SpotPosition(Surface);
+   if (SurfaceAfter != Surface || !PositionAfter.Equals(SurfaceBefore, 0.01))
+   {
+    Fail(FString::Printf(TEXT("disk/full-world restore moved physical surface for %s: id '%s'/'%s', expected %.6f %.6f %.6f, actual %.6f %.6f %.6f"), *Name, *Surface, *SurfaceAfter, SurfaceBefore.X, SurfaceBefore.Y, SurfaceBefore.Z, PositionAfter.X, PositionAfter.Y, PositionAfter.Z)); return false;
+   }
+   UE_LOG(LogTemp, Display, TEXT("S47: takeaway PASS restored actual surface position %s: %.3f %.3f %.3f"), *Surface, PositionAfter.X, PositionAfter.Y, PositionAfter.Z);
   }
   ++T.Restores;
   UE_LOG(LogTemp, Display, TEXT("S47: takeaway PASS disk/fresh-store/full-world restore %s: one portion, exact location, flags, pending reply, cursor, documents, pose and clock retained"), *Name);
@@ -240,6 +254,7 @@ void FS47Evening::ControlTakeawayTest(double Dt)
  case 22: if (UsePicked()) Stage(23); return;
  case 23:
   M->Web->SetDoorOpen(TEXT("doorSouth"), true);
+  M->Web->SetDoorOpen(TEXT("recordsDoor"), true);
   if (Prepare(TEXT("takeaway:place:annex"))) Stage(24); return;
  case 24: if (UsePicked()) Stage(25); return;
  case 25:
@@ -336,10 +351,27 @@ void FS47Evening::ControlTakeawayTest(double Dt)
   if (!Pack.Flag(TEXT("handover_done")) || Opening() || M->Story->bOpeningHeld) { Fail(TEXT("optional meal changed the completed handover/story gate")); return; }
   Shot(TEXT("eaten-annex-trace")); Stage(38, 0.5); return;
  case 38:
+  {
+   auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2")));
+   if (!C2) { Fail(TEXT("original archive interaction regression fixture unavailable")); return; }
+   // This narrow chapter fixture activates its original work-table interaction only.
+   // It does not jump/reset the story, meal, clock or persisted portion.
+   FS47Ch2State Fixture; Fixture.Stage = TEXT("records"); Fixture.Read.bOriginal = true;
+   C2->Begin(Fixture.Save());
+   UE_LOG(LogTemp, Display, TEXT("S47: takeaway original archive regression uses explicit ch2 records fixture after all meal/handover/idempotence assertions; no story jump or meal reset"));
+   if (Prepare(TEXT("workTable"))) Stage(39); return;
+  }
+ case 39: if (UsePicked()) Stage(40); return;
+ case 40:
+  if (!M->ModalOpen() || !Takeaway->Eaten() || !Takeaway->TraceVisible() || Takeaway->Carried() || Takeaway->HeldVisible() || Takeaway->PlacedVisible()) { Fail(TEXT("original archive work-table panel or consumed-food state failed after physical table use")); return; }
+  Shot(TEXT("original-work-table-panel"));
+  UE_LOG(LogTemp, Display, TEXT("S47: takeaway PASS original archive work-table physical pick/focus/use still opens its panel after food consumption; single aftermath trace retained"));
+  Stage(41, 0.5); return;
+ case 41:
   for (const FString& Path : T.Captures) if (IFileManager::Get().FileSize(*Path) < 1000) { Fail(TEXT("screenshot missing/empty: ") + Path); return; }
-  if (T.Restores != 10 + int32(T.bEatPlaced) || T.Uses != 15 + int32(T.bEatPlaced) || T.bMealReloaded != T.bEatPlaced) { Fail(FString::Printf(TEXT("control count mismatch: restores %d/%d physical uses %d/%d mid-fade restore %d/%d"), T.Restores, 10 + int32(T.bEatPlaced), T.Uses, 15 + int32(T.bEatPlaced), T.bMealReloaded, T.bEatPlaced)); return; }
+  if (T.Restores != 10 + int32(T.bEatPlaced) || T.Uses != 16 + int32(T.bEatPlaced) || T.bMealReloaded != T.bEatPlaced) { Fail(FString::Printf(TEXT("control count mismatch: restores %d/%d physical uses %d/%d mid-fade restore %d/%d"), T.Restores, 10 + int32(T.bEatPlaced), T.Uses, 16 + int32(T.bEatPlaced), T.bMealReloaded, T.bEatPlaced)); return; }
   T.bDone = true;
-  UE_LOG(LogTemp, Display, TEXT("S47: takeaway PASS COMPLETE: physical diner/desk/annex/hood/passenger/bench set-down and pickup, ordinary phone and document use unobstructed, %s meal optional with exactly one twelve-minute skip, %d disk/fresh-store/full-world restores including paid reply/held/all placements/eaten, camera/light/notebook suppression and no duplicate portion; human input UNVERIFIED"), T.bEatPlaced ? TEXT("placed with committed mid-fade restore") : TEXT("held with uninterrupted fade"), T.Restores);
+  UE_LOG(LogTemp, Display, TEXT("S47: takeaway PASS COMPLETE: physical diner/desk/annex/hood/passenger/bench set-down and pickup, ordinary phone/document/original archive work-table use unobstructed, %s meal optional with exactly one twelve-minute skip, %d disk/fresh-store/full-world restores including paid reply/held/all physical surface positions/eaten, camera/light/notebook suppression and no duplicate portion; human input UNVERIFIED"), T.bEatPlaced ? TEXT("placed with committed mid-fade restore") : TEXT("held with uninterrupted fade"), T.Restores);
   FPlatformMisc::RequestExit(false); return;
  default: Fail(TEXT("unknown takeaway control stage")); return;
  }
