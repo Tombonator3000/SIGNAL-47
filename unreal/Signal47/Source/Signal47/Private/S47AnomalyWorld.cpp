@@ -52,7 +52,7 @@ namespace
 FVector FS47AnomalyWorld::World(const FVector& P) const { return Town ? Town->Group.LocalToWorld(P) : P; }
 FVector FS47AnomalyWorld::ReferenceAt() const { return World(Town ? Town->PilotCutoutAt(false) + FVector(0, .62, 0) : FVector(20.31, .62, 2062.3)); }
 FVector FS47AnomalyWorld::ChangedAt() const { return World(Town ? Town->PilotCutoutAt(true) + FVector(0, .62, 0) : FVector(17.8, .62, 2044)); }
-FVector FS47AnomalyWorld::LampAt() const { return Lamp ? Lamp.WorldPosition() : World(FVector(-14.1, 1.65, 2133.1)); }
+FVector FS47AnomalyWorld::LampAt() const { return Lamp ? Lamp.WorldPosition() : World(FVector(-14.1, 1.65, 2130.4)); }
 FVector FS47AnomalyWorld::StudioAt() const
 {
 	const FS47Obj Studio = Town ? Town->Proxy(TEXT("studio")) : FS47Obj();
@@ -97,11 +97,12 @@ void FS47AnomalyWorld::InstallGeometry()
 	}
 	// A weak opal work lamp over a narrow pale board: head and shoulders from the
 	// pavement, ordinary lamp/bracket/board when the player steps sideways. No live figure.
-	const double Ground = Town->FloorAt(World(FVector(-14.1, 0, 2133.1)).X, World(FVector(-14.1, 0, 2133.1)).Z) - Town->Group.WorldPosition().Y;
-	Lamp = Part(W, Town->Group, TEXT("AnomalyOpalLamp"), FVector(-14.1, Ground + 1.65, 2133.1), FVector(.27, .3, .27), 0xe1cf9b, true, .45f);
-	LampShade = Part(W, Town->Group, TEXT("AnomalyPaleBoard"), FVector(-14.8, Ground + .94, 2133.1), FVector(.10, 1.05, .53), 0xaaa080, false, .08f);
-	Part(W, Town->Group, TEXT("AnomalyLampBracket"), FVector(-14.5, Ground + 1.65, 2133.1), FVector(.78, .045, .045), 0x393832);
-	Part(W, Town->Group, TEXT("AnomalyLampWire"), FVector(-14.85, Ground + 1.92, 2133.1), FVector(.025, .6, .025), 0x292a25);
+	// Keep the ordinary lamp separate from the existing woman on the bench.
+	const double Ground = Town->FloorAt(World(FVector(-14.1, 0, 2130.4)).X, World(FVector(-14.1, 0, 2130.4)).Z) - Town->Group.WorldPosition().Y;
+	Lamp = Part(W, Town->Group, TEXT("AnomalyOpalLamp"), FVector(-14.1, Ground + 1.65, 2130.4), FVector(.27, .3, .27), 0xe1cf9b, true, .45f);
+	LampShade = Part(W, Town->Group, TEXT("AnomalyPaleBoard"), FVector(-14.8, Ground + .94, 2130.4), FVector(.10, 1.05, .53), 0xaaa080, false, .08f);
+	Part(W, Town->Group, TEXT("AnomalyLampBracket"), FVector(-14.5, Ground + 1.65, 2130.4), FVector(.78, .045, .045), 0x393832);
+	Part(W, Town->Group, TEXT("AnomalyLampWire"), FVector(-14.85, Ground + 1.92, 2130.4), FVector(.025, .6, .025), 0x292a25);
 	Part(W, Town->Group, TEXT("AnomalyReferenceMark"), FVector(17.6, S47RoadTerrain::SurfaceY(17.6, 2062.3) + .025, 2062.3), FVector(.45, .025, .65), 0xb8a67b);
 	M->Inter->Add({ TEXT("anomaly:figure"), Figure, [this] { return M->Anomaly->Data.A02Moved ? TEXT("Inspect the cardboard figure") : TEXT("Record the souvenir display"); }, [this] { InspectFigure(); }, 4.5,
 		[this] { return FString(TEXT("A cardboard souvenir. Yellow $3.50 tag on its lower right; a split in the lower left edge. The same marks can be checked on a photograph.")); }, 9 });

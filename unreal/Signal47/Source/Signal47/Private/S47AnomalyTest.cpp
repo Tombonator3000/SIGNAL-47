@@ -295,13 +295,13 @@ void FS47AnomalyTest::Step(double Dt)
   if (!D.N01Routine || D.RoutineClock>=0 || M->Story->Begun.Contains(TEXT("ch5"))) {Fail(TEXT("routine disk checkpoint lost early state or enabled ch5"));return;}
   M->Story->SetClock(-5*3600-30*60);
   M->World->Enter(TEXT("diner"));
-  Pose(FVector(7990,0,2133.1),M->AnomalyWorld->LampAt());
+  Pose(FVector(7990,0,2130.4),M->AnomalyWorld->LampAt());
   Next(3,TEXT("MARKED TEST TRANSFER to Caliche at 18:30, first N02 viewpoint; travel unmeasured"),2); return;
  }
  if (Stage==3)
  {
   if (!Photograph(TEXT("anomaly:n02reference"))) return;
-  Pose(FVector(7987,0,2138),M->AnomalyWorld->LampAt());
+  Pose(FVector(7987,0,2136.5),M->AnomalyWorld->LampAt());
   Next(4,TEXT("N02 changed standing position for a controlled second view"),2); return;
  }
  if (Stage==4)
