@@ -40,6 +40,9 @@ private:
  bool bResumeRequested = false, bBindings = false;
  bool bEnabled = false, bRing = false, bDialogueOpen = false, bRadioOn = true, bWorkStarted = false;
  bool bRadioRecorded = false;
+ bool bRadioCaptionShown = false;
+ TSharedPtr<bool> RadioCaptionAlive;
+ double VoiceStartedAt = 0, RadioStartedAt = 0;
  double RadioHold = 0, RadioRest = 0, MusicPosition = 0, RingAt = 0;
  FString SpokenLine, RadioSpokenLine, TestMode;
  bool bRouteInitialized = false, bRouteFailed = false, bRouteDone = false, bRouteArrived = false, bRoutePaidRestored = false, bRouteOrderShot = false;
@@ -48,6 +51,10 @@ private:
  FVector RouteLastPos = FVector::ZeroVector;
  FString RouteName, RouteShots, RouteLastLeg;
  TArray<FVector> RouteWalk;
+ bool bRouteAudio = false, bRouteAudioPauseChecked = false, bRouteAudioRadioInterrupted = false, bRouteAudioRadioLevels = false;
+ FString RouteAudioObservedLine;
+ TSet<FString> RouteAudioPlayedLines;
+ double RouteAudioLineStart = 0, RouteAudioPauseAt = -1, RouteAudioPauseClock = 0;
  void Context();
  void Refile();
  void Changed();

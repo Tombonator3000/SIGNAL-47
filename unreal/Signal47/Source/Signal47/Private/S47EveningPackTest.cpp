@@ -34,6 +34,16 @@ bool FS47EveningPack::SelfTest(FString& Error)
 		return FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Serialized), Snapshot) && P.Load(Snapshot, Error);
 	};
 	EVENING_CHECK(P.Scenes.Num() == 61 && P.DocumentData.Num() == 10, "Evening source scene/document count");
+	int32 MeasuredCues = 0;
+	for (const auto& Scene : P.Scenes) for (const auto& Line : Scene.Value.Lines) if (Line.bRecord)
+	{
+		EVENING_CHECK(Line.Duration > 0 && Line.SpeechStart >= 0 && Line.SpeechEnd > Line.SpeechStart && Line.SpeechEnd <= Line.Duration, "Every voiced cue carries measured speech timing");
+		++MeasuredCues;
+	}
+	EVENING_CHECK(MeasuredCues == 110, "109 measured recordings cover 110 voiced cues");
+	const auto& Original = P.FindScene(TEXT("D01_HANDOVER"))->Lines[0];
+	const auto& Fragment = P.FindScene(TEXT("D61_FIXED_FRAGMENT"))->Lines[0];
+	EVENING_CHECK(Original.Duration == Fragment.Duration && Original.SpeechStart == Fragment.SpeechStart && Original.SpeechEnd == Fragment.SpeechEnd, "Fixed fragment inherits exact original speech window");
 	EVENING_CHECK(!P.CanStart(TEXT("D01_HANDOVER")) && !P.CanStart(TEXT("I03_MENU")), "Phase and choice scenes are gated");
 	EVENING_CHECK(!P.SetExternal(TEXT("food_bought"), true) && !P.SetExternal(TEXT("ctx_fake"), true), "Only declared world flags are externally writable");
 

@@ -1,6 +1,6 @@
 # Spillbar kveldstart og kveld/natt/gry
 
-Arbeid på `codex/evening-runtime`, fra `96383c9f`. Codex eier trinn 1 og 2, også spillogikken. Claude integrerer. Ingen push, PR eller oppdatering av `~/Games/Signal47` er bestilt eller utført.
+Arbeid på `codex/evening-runtime`, fra `96383c9f`. Codex eier trinn 1 og 2, også spillogikken. Claude integrerer. Den tidligere runtimeleveransen er siden flettet og installert av Claude. Codex har ikke oppdatert `~/Games/Signal47`, pushet eller laget PR i denne leveransen.
 
 ## Runtime
 
@@ -10,7 +10,7 @@ Faktisk parkering på SAROs pad setter `intro_arrived` og starter skiftklokka 18
 
 `FS47EveningPack` kompilerer den deterministiske JSON-eksporten direkte. Det finnes ikke en håndskrevet kopi av manusdialogen. Bare navngitte trigger-scener kan startes; choice-scener krever et gyldig valg. Betalingen og den ventende serveringsscenen ligger i samme serialiserte tilstand. Dokument-ID-er tildeles én gang. Eksterne resultatflagg settes fra faktisk runtime, og kan ikke skrives av manusets effekter. Senere faser er datadrevne porter, ikke ferdig kontor-/trafostasjon-/VHS-spill.
 
-Lokalverten i innkjøringen har egne undertekster og taus taleplassholder merket «voice recording pending». Ingen Earl- eller Kinski-opptak erstatter verten. Den eksisterende klarerte countrymusikken får et 45 sekunders mellomrom mellom innslagene. Radioens linje, lesetid, av/på og musikkposisjon lagres separat fra den fysiske samtalen. Utstigning og samtaler pauser mottakeren; samme undertekst vises ved retur. En separat mottakerfiltrert opptakskø bruker faktiske evening-takes når de senere importeres, med målt klippvarighet og rolle/eksakt tekst. Et avbrutt opptak starter gjeldende linje fra begynnelsen. Nye takes og VHS er fortsatt egen senere produksjon. Den strenge kataloghjelperen i `Scripts/evening-voice-catalog.py` måler faktiske godkjente WAV-filer; den produserer ingen stemme.
+Lokalverten i innkjøringen har egen separat mottakerkø, rolle/eksakt tekst og 45 sekunders musikkrom mellom innslagene. De 109 takesene er nå produsert av Claude-hjelper og koblet til runtime av Codex; kanalruting, målt underteksttiming, import og nye lydtester står i [EVENING_AUDIO.md](EVENING_AUDIO.md). Et avbrutt opptak starter gjeldende linje fra begynnelsen, mens manuspeker og kjøp beholdes. Ingen Earl-opptak erstatter verten. VHS gjenstår som egen produksjon. Resten av testresultatene nedenfor beskriver den tidligere runtimeleveransen før take-integrasjonen.
 
 ## Tid, lys og gamle saker
 
