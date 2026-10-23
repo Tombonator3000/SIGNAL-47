@@ -4,6 +4,7 @@
 #include "S47Json.h"
 class US47Main;
 class FS47EveningVisual;
+class FS47Takeaway;
 class FS47MediaSource;
 class FS47GainNode;
 class FS47RecordedDialogue;
@@ -20,6 +21,9 @@ public:
  bool Opening() const { return bEnabled && !Pack.Flag(TEXT("handover_done")); }
  bool Commute() const { return Opening() && !Pack.Flag(TEXT("intro_arrived")); }
  bool Enabled() const { return bEnabled; }
+ bool MealBusy() const;
+ FVector PersonalCarPosition() const;
+ double PersonalCarHeading() const;
  bool Use(const FString& Id);
  bool Trigger(const FString& Scene);
  void Parked(const FString& Place);
@@ -27,6 +31,7 @@ public:
  void BootstrapTest(const FString& Mode);
  void ControlTest(double Dt);
  void ControlEntranceTest(double Dt);
+ void ControlTakeawayTest(double Dt);
  S47J::FObj Save() const;
  FS47EveningPack Pack;
  static bool SelfTest(TArray<FString>& Lines);
@@ -34,8 +39,11 @@ private:
  US47Main* M = nullptr;
  struct FEntranceTest;
  TSharedPtr<FEntranceTest> EntranceTest;
+ struct FTakeawayTest;
+ TSharedPtr<FTakeawayTest> TakeawayTest;
  FS47EveningPack RadioPack;
  TUniquePtr<FS47EveningVisual> Visual;
+ TUniquePtr<FS47Takeaway> Takeaway;
  TSharedPtr<FS47RecordedDialogue> Voice;
  TSharedPtr<FS47RecordedDialogue> RadioVoice;
  TSharedPtr<FS47MediaSource> Music;

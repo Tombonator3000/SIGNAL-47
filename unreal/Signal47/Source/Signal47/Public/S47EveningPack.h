@@ -55,6 +55,8 @@ public:
 	const FString& GetPhase() const { return Phase; }
 	bool SetExternal(const FString& Id, bool bValue);
 	bool Flag(const FString& Id) const;
+	// Host-only physical meal transaction; preserves the active dialogue and pending reply.
+	bool EatTakeaway();
 	bool CanStart(const FString& Id) const;
 	bool Start(const FString& Id);
 	const FS47EveningScene* CurrentScene() const;

@@ -230,7 +230,8 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	Visible(CounterCup, bFoodBought);
 	Visible(CounterWater, bWater);
 	CounterFood->Refresh();
-	const bool bHeld = !bDriving && !bFoodEaten && (bFoodTaken || (bDiner && bFoodBought));
+	// Takeaway has its own saved hand/surface state; this group only presents dine-in food.
+	const bool bHeld = !bDriving && !bFoodEaten && !bFoodTaken && bDiner && bFoodBought;
 	if (bHeld)
 	{
 		const FS47Cam Cam = FS47Cam::Of(M->Player);

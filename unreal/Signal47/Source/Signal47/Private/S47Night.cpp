@@ -1,6 +1,7 @@
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
+#include "S47Evening.h"
 #include "S47Keys.h"
 #include "S47StationTaken.h"
 #include "S47Chapter3.h"
@@ -357,6 +358,7 @@ FString US47Night::SurfaceAt() const
 
 bool US47Night::OneAtATime() const
 {
+	if (M && M->Evening && M->Evening->MealBusy()) return true;
 	if (M && M->AnomalyWorld && M->AnomalyWorld->Busy()) return true;
 	// one of the night's things is going: nothing else starts (the one-at-a-time rule; each of them
 	// also waits for the others itself, as before)
