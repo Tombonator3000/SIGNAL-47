@@ -1,0 +1,207 @@
+{
+  "asset": "1420 AM Caliche radio station",
+  "authoring": "Original geometry and materials; concept reference is visual direction only",
+  "world_three_pivot_m": [
+    8025,
+    4.442166614532471,
+    2036
+  ],
+  "mapping": "worldThree=(8025+localY,4.442166614532471+localZ,2036+localX)",
+  "building_dimensions_m": [
+    12,
+    10,
+    3.65
+  ],
+  "front": "local -Y, facade at Y=-5m",
+  "door_hinge_local_m": [
+    -5.07,
+    -4.91,
+    0.025
+  ],
+  "window_center_local_m": [
+    1.2,
+    -5,
+    1.55
+  ],
+  "window_opening_m": [
+    3.7,
+    1.65
+  ],
+  "door_center_local_m": [
+    -4.6,
+    -5,
+    1.1
+  ],
+  "parts": {
+    "SM_1420_Shell": {
+      "vertices": 2656,
+      "triangles": 4952,
+      "materials": [
+        "M_1420_Concrete",
+        "M_1420_Walnut",
+        "M_1420_Stucco_cream",
+        "M_1420_Galvanized_metal",
+        "M_1420_Black_enamel",
+        "M_1420_Brick_red",
+        "M_1420_Lamp_glow"
+      ],
+      "bounds_local_m": [
+        [
+          -6.125,
+          -6.199999809265137,
+          -0.4000000059604645
+        ],
+        [
+          6.125,
+          5.125,
+          5.5
+        ]
+      ],
+      "origin": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "zero_area_triangles": 0,
+      "triangulated": true
+    },
+    "SM_1420_Interior": {
+      "vertices": 30472,
+      "triangles": 43268,
+      "materials": [
+        "M_1420_Walnut",
+        "M_1420_Desk_walnut",
+        "M_1420_Acoustic_fabric",
+        "M_1420_Black_enamel",
+        "M_1420_Galvanized_metal",
+        "M_1420_Brushed_aluminium",
+        "M_1420_VU_backlight",
+        "M_1420_Ink",
+        "M_1420_Ivory_plastic",
+        "M_1420_Brick_red",
+        "M_1420_Painted_olive",
+        "M_1420_Paper",
+        "M_1420_Vinyl_green",
+        "M_1420_Lamp_glow"
+      ],
+      "bounds_local_m": [
+        [
+          -5.824999809265137,
+          -4.849999904632568,
+          0.0
+        ],
+        [
+          5.717499732971191,
+          4.75,
+          3.190000057220459
+        ]
+      ],
+      "origin": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "zero_area_triangles": 0,
+      "triangulated": true
+    },
+    "SM_1420_Door": {
+      "vertices": 1760,
+      "triangles": 1852,
+      "materials": [
+        "M_1420_Painted_olive",
+        "M_1420_Black_enamel",
+        "M_1420_Clear_glass",
+        "M_1420_Ivory_plastic",
+        "M_1420_Galvanized_metal",
+        "M_1420_Paper"
+      ],
+      "bounds_local_m": [
+        [
+          2.682209014892578e-07,
+          -0.12799999117851257,
+          0.02500009536743164
+        ],
+        [
+          0.9400002956390381,
+          0.042500000447034836,
+          2.125
+        ]
+      ],
+      "origin": [
+        -5.070000171661377,
+        0.09000000357627869,
+        0.02499997615814209
+      ],
+      "zero_area_triangles": 0,
+      "triangulated": true
+    },
+    "SM_1420_Glass": {
+      "vertices": 8,
+      "triangles": 12,
+      "materials": [
+        "M_1420_Clear_glass"
+      ],
+      "bounds_local_m": [
+        [
+          -0.6399999856948853,
+          -4.973999977111816,
+          0.73499995470047
+        ],
+        [
+          3.0399999618530273,
+          -4.956000328063965,
+          2.365000009536743
+        ]
+      ],
+      "origin": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "zero_area_triangles": 0,
+      "triangulated": true
+    },
+    "SM_1420_Mast": {
+      "vertices": 752,
+      "triangles": 1264,
+      "materials": [
+        "M_1420_Concrete",
+        "M_1420_Galvanized_metal",
+        "M_1420_On_air"
+      ],
+      "bounds_local_m": [
+        [
+          11.399999618530273,
+          0.3999999761581421,
+          0.0
+        ],
+        [
+          12.600000381469727,
+          1.600000023841858,
+          18.203454971313477
+        ]
+      ],
+      "origin": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "zero_area_triangles": 0,
+      "triangulated": true
+    }
+  },
+  "notes": [
+    "Glass is separate; preserve story photo/anomaly panels in front of local Y=-5.",
+    "Mast is separate and optional: legacy 36m mast, guy wires and aviation lights can remain.",
+    "All static parts other than the door share pivot at Blender scene (0,5,0), world building centre. Exported FBX vertices are pivot-local with neutral object translation. Door hinge offset is door_hinge_local_m.",
+    "FBX PBR uses named material slots; original tiling color, normal and roughness PNG maps are referenced by materials.json.",
+    "No gameplay or collision changes; shell uses actual openings and interior corridor."
+  ],
+  "lobby_walk_world_three_xz_m": [
+    8020.32,
+    8026.5,
+    2030.4,
+    2032.8
+  ],
+  "export_triangulation": "Explicit Blender loop triangulation, exact area=0 triangles omitted; visible triangle coordinates/UVs/materials unchanged."
+}
