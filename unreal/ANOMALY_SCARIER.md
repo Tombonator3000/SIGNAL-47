@@ -10,6 +10,20 @@ Pappfiguren står ved studioet vendt mot retningen spilleren kommer fra. Etter a
 
 Etter fire mater en skriver bak studioets glass. Når spilleren går nærmere, trekkes lydkilden ubehagelig nær lytteren; når spilleren står stille stanser den. ON AIR blinker én gang i det tomme studioet. Det endrer ingen samtale eller bemanning. Et kort fall i byens ambience og en lav, svevende tone markerer de avgrensede nattøyeblikkene. Eksisterende gatelamper kan duppe to ganger. Verdenshint er korte observasjoner; bevis og begrunnelser ligger i filmene og notatboka.
 
+## Kort prøverute
+
+Anslag for en fri prøve, ikke målt spilletid. Hovedhistorien og normal reise kommer i tillegg; den automatiske kontrollen bruker uttrykkelig merkede tidskutt.
+
+| Prøveminutt | Handling | Det som blir annerledes |
+|---|---|---|
+| 0 til 4 | Hent kamera og servicepapirer ved SARO. | Vanlig arbeid, ingen nattcue. |
+| 5 til 8 | Fotografer vaskerilampen fra to ståsteder og suvenirvinduet. | Lampen lar seg forklare; pris og skadet kant blir referanse. |
+| 9 til 12 | Etter signalet: sammenlign servicepapirer og faktisk utskrift, legg inspeksjonsforespørsel ved mappen. | N01 beholder uavklart årsak og fysisk oppfølging. |
+| 13 til 16 | Etter midnatt: ta en ny kontrollfilm ved vaskeriet. La den fremkalles mens du undersøker. | En liten form blir igjen på filmen. Første forklaring er fortsatt sann. |
+| 17 til 20 | Finn figuren ved studioet, fotografer den og sammenlign med kvelden. Gå unna og vend deg bort. | Den vender mot ankomsten din. Et skrap, så en ny plassering nærmere veien. |
+| 21 til 23 | Fotografer på nytt, sammenlign filmene og undersøk pappen fysisk. | To former på film, én i direkte syn. Årsaken kan stå åpen. |
+| 24 til 26 | Etter fire: gå mot studioets glass, stans, kontroller fasaden og les notatboka. Lagre. | Skriveren kommer nærmere og tier. ON AIR blinker én gang; ingen er der. |
+
 ## Regler som bøyes
 
 | Regel i planen / første pilot | Skumlere variant | Grense som beholdes |

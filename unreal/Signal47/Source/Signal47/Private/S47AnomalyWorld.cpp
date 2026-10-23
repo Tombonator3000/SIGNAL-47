@@ -46,7 +46,11 @@ namespace
 		Mat->SetVectorParameterValue(TEXT("Emissive"), S47Three::Hex(Color));
 		Mat->SetScalarParameterValue(TEXT("EmissivePower"), Glow);
 		C->SetMaterial(0, Mat); C->RegisterComponent();
-		return W->ObjAt(W->AdoptNode(C, Parent.I, Name));
+		FS47Obj Result=W->ObjAt(W->AdoptNode(C, Parent.I, Name));
+		// AdoptNode preserves position only. Keep authored mesh dimensions in the
+		// node transform so later exposure placement/rotation cannot inflate them.
+		Result.SetScale(Size);
+		return Result;
 	}
 }
 
@@ -372,7 +376,9 @@ void FS47AnomalyWorld::TagPhoto(FS47AlbumShot& Shot) const
 	// The detailed tag must be legible; a distant glimpse is observation, not evidence.
 	const FVector FigureAt = D.A02Moved ? ChangedAt() : ReferenceAt();
 	const FVector Local = Town->Group.WorldToLocal(M->Player->Pos);
-	if (!D.bLegacyCutout && Local.X < (D.A02Moved ? 17.8 : 20.0) && M->FieldCamera->InFrame(FigureAt + FVector(0, .48, 0), .08, .92, .08, .92)
+	const FVector Front=D.A02FacingSet?FVector(-FMath::Sin(D.A02Yaw),0,-FMath::Cos(D.A02Yaw)):FVector(-1,0,0);
+	const bool FrontView=D.A02Moved?FVector::DotProduct(Front,(M->Player->Pos-FigureAt).GetSafeNormal())>.2:Local.X<20.0;
+	if (!D.bLegacyCutout && FrontView && M->FieldCamera->InFrame(FigureAt + FVector(0, .48, 0), .08, .92, .08, .92)
 		&& M->FieldCamera->InFrame(FigureAt - FVector(0, .48, 0), .08, .92, .08, .92))
 		Tag(D.A02Moved ? TEXT("anomaly:changed") : TEXT("anomaly:reference"), FigureAt, 9);
  if(bFilmN02) {if(!D.N02Trace&&Dread)Dread->Pulse(LampAt(),1);const auto UV=M->FieldCamera->Project(N02TraceAt());if(UV.bFront){Shot.Targets.Add({TEXT("anomaly:n02trace"),FVector2D(UV.U,UV.V)});Shot.Text+=TEXT(" A second outline, farther back.");}}

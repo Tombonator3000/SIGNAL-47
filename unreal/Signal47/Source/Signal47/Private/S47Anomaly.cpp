@@ -466,7 +466,7 @@ void FS47Anomaly::Photo(const FS47AlbumShot& P)
  if (Target(TEXT("anomaly:n02reference")) && Data.N02Photo.IsEmpty()) { Data.N02Photo=P.Id; Data.N02PhotoClock=P.Clock; if (!Data.N02Observed) Data.N02Clock=P.Clock; Data.N02Observed=true; Added=true; }
  if (Target(TEXT("anomaly:n02control")) && Data.ControlPhoto.IsEmpty()) { Data.ControlPhoto=P.Id; Data.ControlClock=P.Clock; Added=true; }
  if (Target(TEXT("anomaly:n02trace")) && S47Timeline::Night(P.Clock)>=0 && Data.N02TracePhoto.IsEmpty()) {Data.N02Trace=true; Data.N02TracePhoto=P.Id; Data.N02TraceClock=P.Clock; Added=true;}
- if (Target(TEXT("anomaly:printshadow")) && S47Timeline::Night(P.Clock)>=0 && Data.A02TracePhoto.IsEmpty()) {Data.A02Trace=true; Data.A02TracePhoto=P.Id; Data.A02TraceClock=P.Clock; Added=true;}
+ if (Target(TEXT("anomaly:printshadow")) && S47Timeline::Night(P.Clock)>=0 && Data.A02TracePhoto!=P.Id) {Data.A02Trace=true; Data.A02TracePhoto=P.Id; Data.A02TraceClock=P.Clock; bA02TraceFiled=false; Added=true;}
  if (Added)
  {
   Changed(); Log(TEXT("photograph linked"));
@@ -641,7 +641,7 @@ void FS47Anomaly::Open(const FString& InId)
   Button(TEXT("The sticker and torn corner match. It is not where it was."),TEXT("moved"));
   if (!Data.A02TracePhoto.IsEmpty())
   {
-   R.Add(S47Kit::Two(Picture(Data.ChangedPhoto,TEXT("FIRST LATER EXPOSURE")),Picture(Data.A02TracePhoto,TEXT("LATER EXPOSURE"))));
+   if (Data.ChangedPhoto!=Data.A02TracePhoto) R.Add(S47Kit::Two(Picture(Data.ChangedPhoto,TEXT("FIRST LATER EXPOSURE")),Picture(Data.A02TracePhoto,TEXT("LATER EXPOSURE"))));
    if (ReadyShot(Data.A02TracePhoto)) Button(Data.A02FacingSet && Data.A02Stage>=2?TEXT("The cutout faces my approach. The film has two shapes; I saw one."):TEXT("Two upright shapes on film. Only one was there to see."),TEXT("uneasy"));
   }
   Button(TEXT("I cannot tell what moved. Keep it open."),TEXT("insufficient"));
