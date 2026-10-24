@@ -6,6 +6,7 @@
     "triangles": true,
     "uv_map": true,
     "material_slots": true,
+    "used_materials": true,
     "nondegenerate": true,
     "world_origin": true,
     "scale_one": true

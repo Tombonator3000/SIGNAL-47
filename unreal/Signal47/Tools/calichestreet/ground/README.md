@@ -54,3 +54,9 @@ Generatoren lagrer redigerbar `Caliche_Ground.blend`, FBX/GLB per del, samlet GL
 Kildebilder og Blender-kontroll er ikke runtimebevis. Endelig aksept krever samme kameravinkler ved spillerhøyde i dag, skumring og natt, med synlig forbedret asfalt/grus foran fasadene. Import, runtimeplassering, kollisjonskontroll og sluttprøver utføres av parent.
 
 Native R3 verifiserer i tillegg at FBX faktisk bevarer `Color` og alpha-intervall, at alle åpne kanter har alpha 0, at dupliserte posisjoner har identisk alpha, og at de faktiske veimerkingssonene er udekket. Tidligere native bilder og rapporter er beholdt i arbeidsbevisene før regenerering. Fire tydeligere, avgrensede tue-/sagegrupper ved bygningshjørner og små grasrøtter ved radiobenkens nordende er lagt til utenfor de beskyttede sonene.
+
+## GLB-alpha og eksportbegrensning
+
+Blender 5.2 sin glTF-eksportør støtter ikke vertexalpha brukt uten vertex-RGB i shaderen. `gltf_export.py` legger derfor midlertidig inn teksturRGB × hvit vertexRGB under GLB-eksport, slik at eksportørens støttede RGBA-vei brukes. RGB er 1 i kilden, så fargen endres ikke. Koblingene gjenopprettes etterpå; FBX, redigerbar blend og sidecar berøres ikke av GLB-refresh. glTF bruker vanlig alpha-blending som portabel erstatning for motorens temporale dithering.
+
+`verify_glb.py` leser faktiske binære COLOR_0-verdier for hver materialprimitive. Soil/asfalt må ha alpha 0, 1 og mellomverdier; øvrige vertexfarger må ha alpha 1. `verify_ground.py` kaller denne kontrollen. `refresh_glb.py` sammenligner dessuten hvert GLB-punkts alpha med Blender-kilden og dokumenterer SHA256 for uendret FBX/blend/kontrakter i `glb_refresh.json`. `glb_verification.json` inneholder de målte intervallene og avvikene.

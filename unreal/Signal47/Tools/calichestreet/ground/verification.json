@@ -99,8 +99,10 @@
       "evidence": "r4_material_refresh.json"
     },
     {
-      "name": "all_GLB_primitives_have_COLOR_0",
-      "pass": true
+      "name": "GLB_RGBA_binary_alpha_ranges_and_source_vertex_values",
+      "pass": true,
+      "evidence": "glb_verification.json",
+      "files": 5
     }
   ]
 }

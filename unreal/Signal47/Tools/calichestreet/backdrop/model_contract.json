@@ -21,6 +21,12 @@
         "M_Caliche_Mesa_3",
         "M_Caliche_Mesa_4",
         "M_Caliche_Mesa_5"
+      ],
+      "used_materials": [
+        "M_Caliche_Mesa_1",
+        "M_Caliche_Mesa_2",
+        "M_Caliche_Mesa_3",
+        "M_Caliche_Mesa_4"
       ]
     }
   }

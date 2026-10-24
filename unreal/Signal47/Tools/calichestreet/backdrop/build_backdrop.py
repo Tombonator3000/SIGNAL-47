@@ -120,7 +120,7 @@ mod=ob.modifiers.new('Triangles','TRIANGULATE');bpy.ops.object.modifier_apply(mo
 ob['anchor_world_three_m']=[8000,0,2060];ob['collision']='disabled_visual_context';ob['original']='Authored procedural mesa geology, no third-party data'
 coords=[tuple(p.co) for p in ob.data.vertices]
 contract={'parts':{ob.name:{'bounds_local_m':[[min(p[i] for p in coords) for i in range(3)],[max(p[i] for p in coords) for i in range(3)]],
- 'triangles':len(ob.data.polygons),'materials':[m.name for m in mats]}}}
+ 'triangles':len(ob.data.polygons),'materials':[m.name for m in mats],'used_materials':sorted({ob.data.materials[p.material_index].name for p in ob.data.polygons})}}}
 (ROOT/'model_contract.json').write_text(json.dumps(contract,indent=2));(ROOT/'materials.json').write_text(json.dumps(rows,indent=2))
 bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'Caliche_Mesas.blend'))
 bpy.ops.export_scene.fbx(filepath=str(OUT/'SM_Caliche_Mesas.fbx'),use_selection=True,apply_unit_scale=True,axis_forward='-Z',axis_up='Y',use_mesh_modifiers=True,mesh_smooth_type='FACE',add_leaf_bones=False,bake_anim=False)

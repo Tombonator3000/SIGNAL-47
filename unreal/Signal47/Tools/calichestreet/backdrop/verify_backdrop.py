@@ -13,6 +13,7 @@ error=max(abs(a-b) for aa,bb in zip(bounds,d['bounds_local_m']) for a,b in zip(a
 o.data.calc_loop_triangles()
 checks={'single_mesh':len(obs)==1,'bounds_m':error<.0003,'triangles':len(o.data.loop_triangles)==d['triangles'],
         'uv_map':len(o.data.uv_layers)>0,'material_slots':len(o.data.materials)==6,
+        'used_materials':sorted({o.data.materials[p.material_index].name for p in o.data.polygons})==d['used_materials'],
         'nondegenerate':all(p.area>1e-7 for p in o.data.polygons),'world_origin':o.location.length<1e-5,
         'scale_one':max(abs(s-1) for s in o.scale)<1e-5}
 r={'status':'PASS' if all(checks.values()) else 'FAIL','checks':checks,'bounds_error_m':error,'triangles':len(o.data.loop_triangles)}
