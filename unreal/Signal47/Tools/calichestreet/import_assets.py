@@ -137,7 +137,9 @@ def material(row, dest, src):
             check(name+' atlas fade', M.connect_material_expressions(texture_alpha, 'A', alpha, 'A'))
             check(name+' perimeter fade', M.connect_material_expressions(vertex, 'A', alpha, 'B'))
             output = ''
-        function = E.load_asset('/Engine/Functions/Engine_MaterialFunctions02/Utility/DitherTemporalAA.DitherTemporalAA')
+        # Engine function packages need not have been scanned by the unattended
+        # Asset Registry. Resolve the installed package directly, as the editor does.
+        function = unreal.load_object(None, '/Engine/Functions/Engine_MaterialFunctions02/Utility/DitherTemporalAA.DitherTemporalAA')
         check(name+' temporal fade function', function is not None)
         dither = expression(mat, unreal.MaterialExpressionMaterialFunctionCall, material_function=function)
         check(name+' temporal alpha', M.connect_material_expressions(alpha, output, dither, 'Alpha Threshold'))
