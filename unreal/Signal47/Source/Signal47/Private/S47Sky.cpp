@@ -48,7 +48,7 @@ FVector S47SkyDir(double Az, double El)
 
 double S47CalicheVisualWeight(const FVector& EyeThree)
 {
-	static const bool bLegacy = FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheConcept")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff"));
+	static const bool bLegacy = FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheConcept")) || FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheStreet")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff"));
 	if (bLegacy) return 0;
 	const double D = FVector2D(EyeThree.X - 8000, EyeThree.Z - 2050).Size();
 	return 1 - Smooth01((D - 120) / 480);
@@ -240,6 +240,10 @@ bool FS47Sky::Build(AS47Web* W)
 	GroupNode = int32(Num(TEXT("group"), -1));
 	const FS47WebNode* G = W->Node(GroupNode);
 	if (!G || !G->Comp.IsValid()) return false;
+	ConceptBackdropNode = -1;
+	for (int32 I = 0; I < W->PartCount(); ++I)
+		if (const FS47WebNode* N = W->Node(I); N && N->Name == TEXT("prop:streetGroundMesas"))
+			if (UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N->Comp.Get()); C && C->GetStaticMesh()) ConceptBackdropNode = I;
 	const TArray<TSharedPtr<FJsonValue>>* HS = nullptr;
 	if (S->TryGetArrayField(TEXT("holeSky"), HS) && HS->Num() >= 3) HoleSky = FLinearColor((*HS)[0]->AsNumber(), (*HS)[1]->AsNumber(), (*HS)[2]->AsNumber());
 	auto Under = [W](int32 Node) -> USceneComponent* { const FS47WebNode* N = W->Node(Node); return N ? N->Comp.Get() : nullptr; };
@@ -370,6 +374,13 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("Way"), V4(Met.Tan));
 		D->SetScalarParameterValue(TEXT("I"), float(MetI));
 	}
-	Sunny(BandMid.Get());
+	if (UMaterialInstanceDynamic* D = BandMid.Get())
+	{
+		Sunny(D);
+		// A partial import must keep the painted horizon, even with the new sky material present.
+		const FS47WebNode* N = W->Node(ConceptBackdropNode);
+		const UStaticMeshComponent* C = N ? Cast<UStaticMeshComponent>(N->Comp.Get()) : nullptr;
+		D->SetScalarParameterValue(TEXT("BackdropReady"), C && C->GetStaticMesh() && W->ObjAt(ConceptBackdropNode).Shown() ? 1.f : 0.f);
+	}
 	if (BandComp.IsValid() && BandComp->IsVisible() != BandVisible) BandComp->SetVisibility(BandVisible);
 }

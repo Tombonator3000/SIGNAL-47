@@ -98,6 +98,7 @@ private:
 	bool bLive = false;
 	TWeakObjectPtr<AS47Web> Web;
 	int32 GroupNode = -1;
+	int32 ConceptBackdropNode = -1;
 	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp;
 	TWeakObjectPtr<UInstancedStaticMeshComponent> StarsComp;
 	TWeakObjectPtr<UMaterialInstanceDynamic> DomeMid, BandMid, StarsMid, MeteorMid;

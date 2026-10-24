@@ -283,10 +283,16 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 	}
 	if (NightSky)
 	{
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), FMath::Lerp(0.16f, 1.98f, FMath::Clamp(Daylight, 0.f, 1.f)), Caliche));
+		const float D = FMath::Clamp(Daylight, 0.f, 1.f);
+		// The concept's blue hour still has broad sky illumination after the disk sets.
+		// Compensate the fixed-exposure cubemap at twilight; noon and full night keep
+		// their endpoint values and all story clocks retain their original curves.
+		const float LocalSky = FMath::Lerp(.72f, 1.98f, D) + 2.f * 4.f * D * (1.f - D);
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche));
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
-		NightSky->SetLightColor(FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Daylight, 0.f, 1.f)));
+		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);
+		NightSky->SetLightColor(FMath::Lerp(NightTint, FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Daylight, 0.f, 1.f)));
 	}
 }
 
@@ -295,12 +301,18 @@ void AS47Web::UpdateNativeFog()
 	if (!LightingFog) return;
 	// FogExp2 is not a physical extinction coefficient. Match its thin night air near eye level,
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
-	LightingFog->SetFogDensity(FMath::Clamp(FogDensity * 2.f, 0.0003f, 0.012f));
-	LightingFog->SetFogInscatteringColor(FogColor * 0.12f);
+	const float Caliche = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
+	LightingFog->SetFogDensity(FMath::Clamp(FogDensity * 2.f + Caliche * .0012f, 0.0003f, 0.012f));
+	LightingFog->SetFogInscatteringColor(FogColor * FMath::Lerp(.12f, .32f, Caliche));
+	LightingFog->SetStartDistance(7000.f * Caliche);
+	LightingFog->SetVolumetricFogDistance(FMath::Lerp(14000.f, 120000.f, Caliche));
 }
 
 void AS47Web::UpdateNativeLighting()
 {
+	// The clock can keep an identical fog colour for hours. Position-dependent aerial
+	// perspective must still follow a drive into/out of Caliche during that interval.
+	UpdateNativeFog();
 	const FVector Camera = S47Three::ToThree(Eye);
 	TArray<FVector> Occupied;
 	for (FPoolLight& P : PoolLights)
@@ -359,7 +371,7 @@ void AS47Web::UpdateNativeLighting()
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
-		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.15f, float(S47CalicheVisualWeight(S47Three::ToThree(Eye))));
+		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.24f, float(S47CalicheVisualWeight(S47Three::ToThree(Eye))));
 		Moon->SetIntensity(R.Base > 0 ? LocalMoon * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
 		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
 		Bounce(Moon);
@@ -367,9 +379,11 @@ void AS47Web::UpdateNativeLighting()
 		Moon->SetLightSourceSoftAngle(0.08f);
 	}
 	const float CalicheSky = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
-	if (NightSky && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f || FMath::Abs(CapturedCaliche - CalicheSky) > 0.08f))
+	const bool bCalicheBoundary = (CalicheSky == 0.f && CapturedCaliche > 0.f) || (CalicheSky == 1.f && CapturedCaliche < 1.f);
+	if (NightSky && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f || FMath::Abs(CapturedCaliche - CalicheSky) > 0.08f || bCalicheBoundary))
 	{
 		NightSky->RecaptureSky(); bSkyCaptured = true; CapturedDawn = SkyDawn; CapturedCaliche = CalicheSky; SkyCaptureTime = LightingRunTime;
+		if (FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"))) UE_LOG(LogTemp, Display, TEXT("S47: sky capture daylight=%.4f caliche=%.4f"), SkyDawn, CalicheSky);
 	}
 }
 

@@ -77,10 +77,10 @@ def sun(g):
  return [('Dawn',g.scalar('Dawn',0)),('Sun',g.scalar('Sun',0)),('SunDir',g.vector('SunDir',(.98,-.02,-.19,0))),
          ('ConceptBlend',g.scalar('ConceptBlend',0))]+[('Glow'+str(i),g.vector4('Glow'+str(i),(1,0,0,1))) for i in range(3)]
 g=Graph(dest+'/M_Caliche_Horizon',B.BLEND_ALPHA_COMPOSITE)
-code=values['SKY_BAND'].replace('return float4(col * a, a);','return float4(col * a, a) * (1.0 - saturate(ConceptBlend));')
+code=values['SKY_BAND'].replace('return float4(col * a, a);','return float4(col * a, a) * (1.0 - saturate(ConceptBlend) * saturate(BackdropReady));')
 col=g.custom(code,[('V',g.builtin(unreal.MaterialExpressionCameraVectorWS)),('Yaw',g.scalar('Yaw',0)),('U',g.mask(g.uv(0),'r')),
  ('Night',g.tex('Night')),('Day',g.tex('Day')),('Gain',g.scalar('Gain',1)),('Rim',g.scalar('Rim',0)),
- ('BodyK',g.scalar('BodyK',.2)),('Dip',g.scalar('Dip',0)),('Texel',g.scalar('Texel',1/128)),
+ ('BodyK',g.scalar('BodyK',.2)),('Dip',g.scalar('Dip',0)),('Texel',g.scalar('Texel',1/128)),('BackdropReady',g.scalar('BackdropReady',0)),
  ('Fog',g.vector('Fog',(.0155,.0212,.0353,0))),('Mesa',g.vector('Mesa',(.0045,.0055,.0085,0))),
  ('Land',g.vector('Land',(.009,.009,.012,0))),('EdgeFog',g.scalar('EdgeFog',1))]+sun(g),4)
 g.out(g.mask(col,'rgb'),MP.MP_EMISSIVE_COLOR);g.out(g.mask(col,'a'),MP.MP_OPACITY);g.save()

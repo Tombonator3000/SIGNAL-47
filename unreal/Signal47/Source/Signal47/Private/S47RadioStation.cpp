@@ -103,6 +103,15 @@ void AS47Web::BuildRadioStation()
 		At.X = 9.695; // World x 8029.66000015, two centimetres before the walnut lining.
 		Backdrop.SetPosition(At);
 	}
+	// These two giant archival sprites stood in for a lit window and rooftop board.
+	// Real room/facade fixtures now supply their light; a sprite would float in the glass.
+	if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
+		for (int32 I = 0; I < G->Pos.Num(); ++I)
+		{
+			const FVector P = G->Pos[I];
+			if ((FMath::Abs(P.X - 19.6) < .02 && FMath::Abs(P.Z - 2037.2) < .02) ||
+				(FMath::Abs(P.X - 19.7) < .02 && FMath::Abs(P.Z - 2036.1) < .02)) G->SetSize(I, 0.f);
+		}
 	// The public lobby has its own door. The existing studio buzzer keeps its dialogue and moves
 	// to the jamb so that its old broad invisible proxy cannot swallow the new door's use trace.
 	int32 DoorNode = -1;

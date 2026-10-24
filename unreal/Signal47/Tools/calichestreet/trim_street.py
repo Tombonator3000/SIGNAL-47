@@ -17,7 +17,7 @@ _spec = importlib.util.spec_from_file_location('s47_trim_web', ROOT / 'Tools/fre
 _helpers = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_helpers)
 
-RADIO_BOX = [19.04, 30.08, 0.0, 8.142166614532471, 2029.90, 2042.10]
+RADIO_BOX = [19.04, 30.08, 0.0, 10.0, 2029.90, 2042.10]
 SOUVENIR_BOX = [18.20, 29.60, 0.0, 10.0, 2057.70, 2070.30]
 
 

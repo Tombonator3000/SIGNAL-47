@@ -35,7 +35,7 @@ maps={}
 for role,values,srgb in [('base_color',base,True),('normal',norm*.5+.5,False),('roughness',.83+fine*.12,False)]:
  path,im=image('MesaRock_'+role,values,srgb);maps[role]=(path,im)
 mats=[];rows=[]
-for k,gain in enumerate([.86,1.,.93,1.09,1.02,.90]):
+for k,gain in enumerate([.94,1.,.97,1.025,1.01,.96]):
  name='M_Caliche_Mesa_'+str(k);m=bpy.data.materials.new(name);m.use_nodes=True
  bs=m.node_tree.nodes.get('Principled BSDF');bs.inputs['Base Color'].default_value=(.31*gain,.25*gain,.20*gain,1)
  bs.inputs['Roughness'].default_value=.9
@@ -53,50 +53,67 @@ for k,gain in enumerate([.86,1.,.93,1.09,1.02,.90]):
  mats.append(m);rows.append({'name':name,'base_color_linear':[.31*gain,.25*gain,.20*gain,1],
   'metallic':0,'roughness':.9,'normal_strength':.35,'uv_scale':1,'texture_tint_linear':[gain,gain*.99,gain*.97],
   'textures':{r:p[0] for r,p in maps.items()}})
-v=[];faces=[];indices=[];uv=[]
-def face(points,mi,coords):
- start=len(v);v.extend(reversed(points));faces.append(tuple(range(start,start+len(points))));indices.append(mi);uv.extend(reversed(coords))
-mesas=[(460,115,155,125,106,47),(-410,45,165,145,122,48),
-       (510,-515,215,155,138,49),(-460,-460,235,165,145,50),
-       (-195,-770,135,150,116,51),(240,560,145,130,130,52),(-250,630,170,145,146,53)]
-profiles=[(0,1.22),(.08,1.12),(.18,.97),(.26,.89),(.33,.85),(.36,.81),(.41,.77),(.44,.79),(.51,.70),(.64,.64),(.68,.67),(.74,.63),(.88,.59),(.93,.60),(1,.57)]
+# Shared ring vertices retain continuous normals across strata, unlike the old
+# independently duplicated flat quads. A broad cap and a near-vertical cliff
+# above the talus distinguish a mesa from a stepped cone.
+v=[];faces=[];indices=[];corner_uv=[]
+mesas=[(760,210,240,190,91,47),(-760,100,310,235,100,48),
+       (940,-850,320,260,116,49),(-890,-860,360,275,122,50),
+       (-200,-1370,290,250,105,51),(390,1060,330,240,108,52),(-530,1200,350,260,116,53)]
+# Small bedding ledges interrupt an otherwise upright sandstone escarpment.
+profiles=[(0,1.10),(.07,1.05),(.16,.96),(.24,.89),(.30,.85),
+          (.38,.84),(.46,.83),(.48,.845),(.50,.82),(.61,.815),
+          (.70,.80),(.72,.812),(.74,.79),(.85,.785),(.96,.78),(1,.765)]
+count=288
 for cx,cz,rx,rz,H,seed in mesas:
- rr=random.Random(seed);count=112
- macro=[rr.uniform(-.11,.11) for _ in range(15)]
- vertical=[rr.uniform(-.045,.045) for _ in range(count)]
- def radial(i):
-  u=i/count*len(macro);a=int(u)%len(macro);f=u-int(u)
-  return macro[a]*(1-f)+macro[(a+1)%len(macro)]*f+vertical[i%count]
+ rr=random.Random(seed)
+ phase=[rr.random()*math.tau for _ in range(7)]
+ def radial(a,h):
+  # Multi-scale buttresses and gullies stay correlated up the cliff face.
+  outline=.06*math.sin(3*a+phase[0])+.035*math.sin(7*a+phase[1])+.02*math.sin(13*a+phase[2])
+  flute=.013*math.sin(37*a+phase[3])+.009*math.sin(63*a+phase[4])
+  gullies=-.028*max(0,math.sin(19*a+phase[5]))**5
+  return outline+flute*(.4+.6*h)+gullies*math.sin(math.pi*h)
  rings=[]
  for j,(h,r) in enumerate(profiles):
   ring=[]
   for i in range(count):
-   a=math.tau*i/count;f=radial(i);ledge=rr.uniform(-.012,.012)
-   radius=r+f*(.65+.35*h)+ledge
-   rockh=H*h+(rr.uniform(-.75,.75) if j<len(profiles)-1 else vertical[i]*9)
-   ring.append((cx+math.cos(a)*rx*radius,-(cz+math.sin(a)*rz*radius),rockh))
+   a=math.tau*i/count
+   radius=r+radial(a,h)
+   # Correlated, low-amplitude beds prevent a corrugated cardboard silhouette.
+   wave=.22*math.sin(5*a+phase[1])+.18*math.sin(11*a+phase[4])
+   topwave=(.55*math.sin(3*a+phase[2])+.24*math.sin(17*a+phase[6]))*h
+   z=H*h+wave+topwave
+   ring.append(len(v));v.append((cx+math.cos(a)*rx*radius,-(cz+math.sin(a)*rz*radius),z))
   rings.append(ring)
  for j in range(len(rings)-1):
-  mi=[1,0,2,1,4,0,3,1,2,5,1,3,2,4][j]
+  mi=[1,1,2,1,4,1,3,2,1,4,3,2,1,4,2][j]
   for i in range(count):
    ni=(i+1)%count
-   pts=[rings[j][i],rings[j][ni],rings[j+1][ni],rings[j+1][i]]
-   # Winding is corrected below; local Y points toward negative world road Z.
-   face(pts,mi,[(i/count*rx*.27,profiles[j][0]*H/13),((i+1)/count*rx*.27,profiles[j][0]*H/13),
-                ((i+1)/count*rx*.27,profiles[j+1][0]*H/13),(i/count*rx*.27,profiles[j+1][0]*H/13)])
- center=(cx,-cz,H-.4)
+   face=[rings[j][i],rings[j][ni],rings[j+1][ni],rings[j+1][i]]
+   faces.append(tuple(reversed(face)));indices.append(mi)
+   coords=[(i/count*rx*.27,profiles[j][0]*H/13),((i+1)/count*rx*.27,profiles[j][0]*H/13),
+           ((i+1)/count*rx*.27,profiles[j+1][0]*H/13),(i/count*rx*.27,profiles[j+1][0]*H/13)]
+   corner_uv.append(list(reversed(coords)))
+ # Flat cap with inset ring; the narrow rim receives the cliff normal, the cap
+ # has its own normal through a real hard geological edge.
+ cap=[]
+ for k in rings[-1]:cap.append(len(v));v.append(v[k])
+ center=len(v);v.append((cx,-cz,H+.05))
  for i in range(count):
-  pts=[center,rings[-1][i],rings[-1][(i+1)%count]]
-  face(pts,2,[(p[0]/18,p[1]/18) for p in pts])
+  ids=(center,cap[(i+1)%count],cap[i])
+  faces.append(ids);indices.append(2)
+  corner_uv.append([(v[k][0]/18,v[k][1]/18) for k in ids])
 mesh=bpy.data.meshes.new('SM_Caliche_Mesas');mesh.from_pydata(v,[],faces);mesh.update()
 for m in mats:mesh.materials.append(m)
-for p,idx in zip(mesh.polygons,indices):p.material_index=idx
+for p,idx in zip(mesh.polygons,indices):
+ p.material_index=idx;p.use_smooth=len(p.vertices)==4
 layer=mesh.uv_layers.new(name='UVMap')
-for loop in mesh.loops:layer.data[loop.index].uv=uv[loop.vertex_index]
+for p,coords in zip(mesh.polygons,corner_uv):
+ for li,uv in zip(p.loop_indices,coords):layer.data[li].uv=uv
 ob=bpy.data.objects.new('SM_Caliche_Mesas',mesh);bpy.context.collection.objects.link(ob)
 bpy.context.view_layer.objects.active=ob;ob.select_set(True)
 mod=ob.modifiers.new('Triangles','TRIANGULATE');bpy.ops.object.modifier_apply(modifier=mod.name)
-for p in mesh.polygons:p.use_smooth=False
 ob['anchor_world_three_m']=[8000,0,2060];ob['collision']='disabled_visual_context';ob['original']='Authored procedural mesa geology, no third-party data'
 coords=[tuple(p.co) for p in ob.data.vertices]
 contract={'parts':{ob.name:{'bounds_local_m':[[min(p[i] for p in coords) for i in range(3)],[max(p[i] for p in coords) for i in range(3)]],

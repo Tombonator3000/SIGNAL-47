@@ -32,6 +32,9 @@ for label in ('souvenir','ground','backdrop'):
               {'expected':row['triangles'],'actual':mesh.get_num_triangles(0)})
         check(name+' material slots',all(x.material_interface and x.material_interface.get_path_name().startswith('/Game/CalicheStreet/') for x in mesh.get_editor_property('static_materials')))
         check(name+' Nanite disabled',not mesh.get_editor_property('nanite_settings').enabled)
+        if label=='ground':
+            data=mesh.get_editor_property('asset_import_data')
+            check(name+' authored vertex colors imported',data.get_editor_property('vertex_color_import_option')==unreal.VertexColorImportOption.REPLACE)
 
 patches=json.loads((Path(unreal.Paths.project_content_dir())/'CalicheStreet/street-patches.json').read_text())
 for name,row in patches['meshes'].items():
@@ -49,6 +52,12 @@ for label in ('souvenir','ground','backdrop'):
             value=M.get_material_default_scalar_parameter_value(mat,'NormalStrength')
             check(row['name']+' controlled normal strength',abs(value-float(row.get('normal_strength',.2)))<.00001,value)
         check(row['name']+' sidedness',mat.get_editor_property('two_sided')==(bool(row.get('two_sided',False)) or float(row.get('alpha',1))<1))
+        if row.get('vertex_alpha_opacity'):
+            expressions=M.get_material_expressions(mat)
+            mask=M.get_material_property_input_node(mat,unreal.MaterialProperty.MP_OPACITY_MASK)
+            check(row['name']+' masked perimeter',mat.get_editor_property('blend_mode')==unreal.BlendMode.BLEND_MASKED)
+            check(row['name']+' vertex opacity node',any(isinstance(n,unreal.MaterialExpressionVertexColor) for n in expressions))
+            check(row['name']+' temporal perimeter mask',isinstance(mask,unreal.MaterialExpressionMaterialFunctionCall) and 'DitherTemporalAA' in str(mask.get_editor_property('material_function')))
 radio_rows=json.loads((ROOT.parent/'radioarray/station/materials.json').read_text())
 for name,row in radio_rows.items():
     if not row.get('textures',{}).get('normal'):continue
@@ -58,6 +67,8 @@ for name in ('M_Caliche_Sky','M_Caliche_Horizon','M_Caliche_Stars'):
     mat=E.load_asset('/Game/CalicheStreet/Atmosphere/'+name)
     check(name+' own sky asset',isinstance(mat,unreal.Material))
     check(name+' original sky outside Caliche',isinstance(mat,unreal.Material) and M.get_material_default_scalar_parameter_value(mat,'ConceptBlend')==0)
+    if name=='M_Caliche_Horizon':
+        check(name+' retain old horizon unless backdrop is ready',M.get_material_default_scalar_parameter_value(mat,'BackdropReady')==0)
 result={'status':'PASS' if all(c['pass'] for c in checks) else 'FAIL','checks':checks,
         'engine':unreal.SystemLibrary.get_engine_version()}
 OUT.write_text(json.dumps(result,indent=2))

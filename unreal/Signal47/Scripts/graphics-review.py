@@ -437,7 +437,7 @@ def main():
     selection = ap.add_mutually_exclusive_group()
     selection.add_argument('--view', choices=ALL_VIEWS)
     selection.add_argument('--views', nargs='+', choices=ALL_VIEWS)
-    ap.add_argument('--batch-size', type=int, default=4, choices=range(1, 5))
+    ap.add_argument('--batch-size', type=int, default=4, choices=range(1, 7))
     ap.add_argument('--seconds', type=int, help='per process, excludes the loading gate; default is computed')
     ap.add_argument('--warmup', type=float, default=8)
     ap.add_argument('--hold', type=float, default=7)

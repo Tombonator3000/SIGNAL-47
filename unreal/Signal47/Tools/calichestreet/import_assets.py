@@ -46,7 +46,7 @@ def material(row, dest, src):
     col = row.get('base_color_linear', row.get('base_color', [.5, .5, .5, 1]))
     color = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='Color', default_value=unreal.LinearColor(*col[:3], 1))
     M.connect_material_property(color, 'RGB', unreal.MaterialProperty.MP_BASE_COLOR)
-    for key, prop in [('metallic', unreal.MaterialProperty.MP_METALLIC), ('roughness', unreal.MaterialProperty.MP_ROUGHNESS)]:
+    for key, prop in [('metallic', unreal.MaterialProperty.MP_METALLIC), ('roughness', unreal.MaterialProperty.MP_ROUGHNESS), ('specular', unreal.MaterialProperty.MP_SPECULAR)]:
         n = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name=key.title(), default_value=float(row.get(key, .5)))
         M.connect_material_property(n, '', prop)
     strength = float(row.get('emission_strength', 0))
@@ -54,6 +54,7 @@ def material(row, dest, src):
     # Props::AddLit/ApplyLit uses this existing glTF-compatible parameter to gate studio power.
     n = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='EmissiveFactor', default_value=unreal.LinearColor(*[float(v) * strength for v in em[:3]], 1))
     M.connect_material_property(n, 'RGB', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    texture_alpha = None
     for role, filename in row.get('textures', {}).items():
         if role not in ('base_color', 'normal', 'roughness'):
             continue
@@ -115,6 +116,9 @@ def material(row, dest, src):
             else:
                 M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
         if role == 'base_color' and row.get('opacity_from_base_color'):
+            texture_alpha = sample
+            if row.get('vertex_alpha_opacity'):
+                continue  # The perimeter fade multiplies the atlas alpha below.
             masked = row.get('alpha_mode', 'masked') == 'masked'
             mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED if masked else unreal.BlendMode.BLEND_TRANSLUCENT)
             if masked:
@@ -122,6 +126,22 @@ def material(row, dest, src):
             else:
                 mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
             check(name+' texture alpha connection', M.connect_material_property(sample, 'A', unreal.MaterialProperty.MP_OPACITY_MASK if masked else unreal.MaterialProperty.MP_OPACITY))
+    if row.get('vertex_alpha_opacity'):
+        check(name+' vertex fade contract', row.get('alpha_mode')=='dithered_masked')
+        mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED)
+        mat.set_editor_property('opacity_mask_clip_value', .333)
+        vertex = expression(mat, unreal.MaterialExpressionVertexColor)
+        alpha, output = vertex, 'A'
+        if texture_alpha:
+            alpha = expression(mat, unreal.MaterialExpressionMultiply)
+            check(name+' atlas fade', M.connect_material_expressions(texture_alpha, 'A', alpha, 'A'))
+            check(name+' perimeter fade', M.connect_material_expressions(vertex, 'A', alpha, 'B'))
+            output = ''
+        function = E.load_asset('/Engine/Functions/Engine_MaterialFunctions02/Utility/DitherTemporalAA.DitherTemporalAA')
+        check(name+' temporal fade function', function is not None)
+        dither = expression(mat, unreal.MaterialExpressionMaterialFunctionCall, material_function=function)
+        check(name+' temporal alpha', M.connect_material_expressions(alpha, output, dither, 'Alpha Threshold'))
+        check(name+' dithered mask', M.connect_material_property(dither, '', unreal.MaterialProperty.MP_OPACITY_MASK))
     if float(row.get('alpha', 1)) < 1:
         mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
         mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
@@ -153,6 +173,7 @@ def import_mesh(path, dest):
     # The asymmetric probe measured FBX (x,y,z) -> UE (-y,-x,z); bake +90 degrees to (x,-y,z).
     data.import_rotation = unreal.Rotator(pitch=0, yaw=90, roll=0)
     data.normal_import_method = unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS_AND_TANGENTS
+    data.vertex_color_import_option = unreal.VertexColorImportOption.REPLACE
     task = unreal.AssetImportTask()
     task.filename = str(path)
     task.destination_path = dest
