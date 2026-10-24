@@ -1,0 +1,1805 @@
+{
+  "source_revision": "CN3-masked-small-leaf-needle-sprays",
+  "tool": "Blender 5.2.2 LTS",
+  "status": "PASS",
+  "passed": 270,
+  "total": 270,
+  "checks": [
+    {
+      "name": "SM_CN_Sage_A three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.502923846244812,
+          -0.5032541751861572,
+          0.0
+        ],
+        [
+          0.497076153755188,
+          0.43339455127716064,
+          0.44999998807907104
+        ]
+      ],
+      "max_error_m": 1.3357487893550513e-08
+    },
+    {
+      "name": "SM_CN_Sage_A exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 6128,
+      "minimum_triangle_area_m2": 1.574292411987699e-07
+    },
+    {
+      "name": "SM_CN_Sage_A expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_A finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 6128
+    },
+    {
+      "name": "SM_CN_Sage_A GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.492144376039505,
+          -0.4984827935695648,
+          0.0
+        ],
+        [
+          0.4590722322463989,
+          0.5015171766281128,
+          0.44999998807907104
+        ]
+      ],
+      "max_error_m": 2.749560101822368e-08
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 1800,
+      "minimum_triangle_area_m2": 1.2202548305140226e-07
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 1800
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.5274366140365601,
+          -0.43439844250679016,
+          0.0
+        ],
+        [
+          0.4407656490802765,
+          0.5656015872955322,
+          0.44999998807907104
+        ]
+      ],
+      "max_error_m": 1.7245707639723662e-08
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 504,
+      "minimum_triangle_area_m2": 9.317510318851419e-08
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 504
+    },
+    {
+      "name": "SM_CN_Sage_A_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.6153832674026489,
+          -0.5676051378250122,
+          0.0
+        ],
+        [
+          0.6346167325973511,
+          0.6070875525474548,
+          0.6200000047683716
+        ]
+      ],
+      "max_error_m": 1.626573686852595e-08
+    },
+    {
+      "name": "SM_CN_Sage_B exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 6128,
+      "minimum_triangle_area_m2": 1.8656044176168507e-07
+    },
+    {
+      "name": "SM_CN_Sage_B expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_B finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 6128
+    },
+    {
+      "name": "SM_CN_Sage_B GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.6016016602516174,
+          -0.4912154972553253,
+          0.0
+        ],
+        [
+          0.6483983397483826,
+          0.4392687976360321,
+          0.6200000047683716
+        ]
+      ],
+      "max_error_m": 9.418597846089227e-09
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 1800,
+      "minimum_triangle_area_m2": 1.1151909262707704e-07
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 1800
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.6553828120231628,
+          -0.5483590960502625,
+          0.0
+        ],
+        [
+          0.5429884195327759,
+          0.7016409039497375,
+          0.6200000047683716
+        ]
+      ],
+      "max_error_m": 1.1426928292479488e-08
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 504,
+      "minimum_triangle_area_m2": 9.309930959489066e-08
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 504
+    },
+    {
+      "name": "SM_CN_Sage_B_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.4532565772533417,
+          -0.39417076110839844,
+          0.0
+        ],
+        [
+          0.386743426322937,
+          0.426469087600708,
+          0.3400000035762787
+        ]
+      ],
+      "max_error_m": 1.4277017290620364e-08
+    },
+    {
+      "name": "SM_CN_Sage_C exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 6128,
+      "minimum_triangle_area_m2": 1.3707963830711378e-07
+    },
+    {
+      "name": "SM_CN_Sage_C expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_C finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 6128
+    },
+    {
+      "name": "SM_CN_Sage_C GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.39774972200393677,
+          -0.4275176227092743,
+          0.0
+        ],
+        [
+          0.4402434527873993,
+          0.4124823808670044,
+          0.3400000035762787
+        ]
+      ],
+      "max_error_m": 1.305903829518229e-08
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 1800,
+      "minimum_triangle_area_m2": 1.1918106679331686e-07
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 1800
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.40847355127334595,
+          -0.4271816313266754,
+          0.0
+        ],
+        [
+          0.43152645230293274,
+          0.3865329325199127,
+          0.3400000035762787
+        ]
+      ],
+      "max_error_m": 9.696222547095346e-09
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 504,
+      "minimum_triangle_area_m2": 7.083030340027108e-08
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 504
+    },
+    {
+      "name": "SM_CN_Sage_C_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.2888861894607544,
+          -0.3145730495452881,
+          0.0
+        ],
+        [
+          0.26837825775146484,
+          0.3054269254207611,
+          0.4300000071525574
+        ]
+      ],
+      "max_error_m": 1.4194826924995851e-08
+    },
+    {
+      "name": "SM_CN_Grass_A exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 2100,
+      "minimum_triangle_area_m2": 2.7725603146677713e-08
+    },
+    {
+      "name": "SM_CN_Grass_A expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Grass_A finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 2100
+    },
+    {
+      "name": "SM_CN_Grass_A GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.30049124360084534,
+          -0.2986971437931061,
+          0.0
+        ],
+        [
+          0.31950876116752625,
+          0.3206658363342285,
+          0.4300000071525574
+        ]
+      ],
+      "max_error_m": 1.3301266144072343e-08
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 460,
+      "minimum_triangle_area_m2": 2.534170744183939e-05
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 460
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.28854677081108093,
+          -0.33106595277786255,
+          0.0
+        ],
+        [
+          0.26917651295661926,
+          0.28893405199050903,
+          0.4300000071525574
+        ]
+      ],
+      "max_error_m": 1.3243264040951885e-08
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 144,
+      "minimum_triangle_area_m2": 0.0001119560984079726
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 144
+    },
+    {
+      "name": "SM_CN_Grass_A_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.456591933965683,
+          -0.4438055157661438,
+          0.0
+        ],
+        [
+          0.42340806126594543,
+          0.382572203874588,
+          0.6399999856948853
+        ]
+      ],
+      "max_error_m": 1.4305114759416426e-08
+    },
+    {
+      "name": "SM_CN_Grass_B exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 2100,
+      "minimum_triangle_area_m2": 2.974217316875638e-08
+    },
+    {
+      "name": "SM_CN_Grass_B expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Grass_B finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 2100
+    },
+    {
+      "name": "SM_CN_Grass_B GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.39893192052841187,
+          -0.4531237781047821,
+          0.0
+        ],
+        [
+          0.36496132612228394,
+          0.4268762171268463,
+          0.6399999856948853
+        ]
+      ],
+      "max_error_m": 1.4305114759416426e-08
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 460,
+      "minimum_triangle_area_m2": 6.344003486447036e-05
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 460
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.496740460395813,
+          -0.40985986590385437,
+          0.0
+        ],
+        [
+          0.34048253297805786,
+          0.47014012932777405,
+          0.6399999856948853
+        ]
+      ],
+      "max_error_m": 1.4305114870438729e-08
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 144,
+      "minimum_triangle_area_m2": 0.0002317141043022275
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 144
+    },
+    {
+      "name": "SM_CN_Grass_B_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.7136638760566711,
+          -0.6511269807815552,
+          0.0
+        ],
+        [
+          0.6063361167907715,
+          0.6633341908454895,
+          0.7799999713897705
+        ]
+      ],
+      "max_error_m": 2.8610229518832853e-08
+    },
+    {
+      "name": "SM_CN_Yucca_A exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 1046,
+      "minimum_triangle_area_m2": 9.532128751743585e-05
+    },
+    {
+      "name": "SM_CN_Yucca_A expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Yucca_A finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 1046
+    },
+    {
+      "name": "SM_CN_Yucca_A GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.7166207432746887,
+          -0.6811427474021912,
+          0.0
+        ],
+        [
+          0.6033793091773987,
+          0.6365019083023071,
+          0.7799999713897705
+        ]
+      ],
+      "max_error_m": 2.8610229518832853e-08
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 346,
+      "minimum_triangle_area_m2": 0.00022172188619151711
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 346
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.4206196963787079,
+          -0.651847779750824,
+          0.0
+        ],
+        [
+          0.7489147186279297,
+          0.6681522130966187,
+          0.7799999713897705
+        ]
+      ],
+      "max_error_m": 2.8610229518832853e-08
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 88,
+      "minimum_triangle_area_m2": 0.0002945138548966497
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 88
+    },
+    {
+      "name": "SM_CN_Yucca_A_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.7808472514152527,
+          -0.7852187752723694,
+          0.0
+        ],
+        [
+          0.8133438229560852,
+          0.8547812104225159,
+          1.0499999523162842
+        ]
+      ],
+      "max_error_m": 4.768371586472142e-08
+    },
+    {
+      "name": "SM_CN_Yucca_B exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 1046,
+      "minimum_triangle_area_m2": 0.00013496354222297668
+    },
+    {
+      "name": "SM_CN_Yucca_B expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Yucca_B finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 1046
+    },
+    {
+      "name": "SM_CN_Yucca_B GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.7238814830780029,
+          -0.9130561351776123,
+          0.0
+        ],
+        [
+          0.7582531571388245,
+          0.726943850517273,
+          1.0499999523162842
+        ]
+      ],
+      "max_error_m": 4.768371586472142e-08
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 346,
+      "minimum_triangle_area_m2": 0.0002281323540955782
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 346
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.5048016905784607,
+          -0.8475478291511536,
+          0.0
+        ],
+        [
+          0.7900009155273438,
+          0.7924521565437317,
+          1.0499999523162842
+        ]
+      ],
+      "max_error_m": 4.768371586472142e-08
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 88,
+      "minimum_triangle_area_m2": 0.0002528961922507733
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 88
+    },
+    {
+      "name": "SM_CN_Yucca_B_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -1.1434470415115356,
+          -1.2868179082870483,
+          0.0
+        ],
+        [
+          1.0421028137207031,
+          1.0631821155548096,
+          1.649999976158142
+        ]
+      ],
+      "max_error_m": 5.29070498522799e-08
+    },
+    {
+      "name": "SM_CN_Juniper_A exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 11388,
+      "minimum_triangle_area_m2": 6.200199322847766e-07
+    },
+    {
+      "name": "SM_CN_Juniper_A expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Juniper_A finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 11388
+    },
+    {
+      "name": "SM_CN_Juniper_A GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -1.0716359615325928,
+          -1.1890455484390259,
+          0.0
+        ],
+        [
+          0.928594708442688,
+          1.160954475402832,
+          1.649999976158142
+        ]
+      ],
+      "max_error_m": 5.3502817953798854e-08
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 3172,
+      "minimum_triangle_area_m2": 4.821647507924354e-07
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 3172
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -1.1760809421539307,
+          -1.2455532550811768,
+          0.0
+        ],
+        [
+          1.1739189624786377,
+          1.0415533781051636,
+          1.649999976158142
+        ]
+      ],
+      "max_error_m": 5.891328958007591e-08
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 1104,
+      "minimum_triangle_area_m2": 4.123491521568212e-07
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 1104
+    },
+    {
+      "name": "SM_CN_Juniper_A_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -1.6840234994888306,
+          -1.8611528873443604,
+          0.0
+        ],
+        [
+          1.6160951852798462,
+          1.6388471126556396,
+          2.6500000953674316
+        ]
+      ],
+      "max_error_m": 9.536743172944284e-08
+    },
+    {
+      "name": "SM_CN_Juniper_B exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 11388,
+      "minimum_triangle_area_m2": 6.075990768295014e-07
+    },
+    {
+      "name": "SM_CN_Juniper_B expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Juniper_B finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 11388
+    },
+    {
+      "name": "SM_CN_Juniper_B GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -1.9073338508605957,
+          -1.7362558841705322,
+          0.0
+        ],
+        [
+          1.404504656791687,
+          1.7637441158294678,
+          2.6500000953674316
+        ]
+      ],
+      "max_error_m": 9.536743172944284e-08
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 3172,
+      "minimum_triangle_area_m2": 5.156205702405714e-07
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 3172
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -2.0279009342193604,
+          -1.625924825668335,
+          0.0
+        ],
+        [
+          1.4720990657806396,
+          1.7433924674987793,
+          2.6500000953674316
+        ]
+      ],
+      "max_error_m": 9.536743172944284e-08
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 1104,
+      "minimum_triangle_area_m2": 4.4051006398149184e-07
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Bark",
+        "M_CN_Foliage"
+      ]
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 1104
+    },
+    {
+      "name": "SM_CN_Juniper_B_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.3244411051273346,
+          -0.2611018717288971,
+          0.0
+        ],
+        [
+          0.31555888056755066,
+          0.2430437207221985,
+          0.1899999976158142
+        ]
+      ],
+      "max_error_m": 1.392483089945884e-08
+    },
+    {
+      "name": "SM_CN_Caliche_A exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 88,
+      "minimum_triangle_area_m2": 0.0027846326120197773
+    },
+    {
+      "name": "SM_CN_Caliche_A expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Caliche_A finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 88
+    },
+    {
+      "name": "SM_CN_Caliche_A GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.33406078815460205,
+          -0.21592144668102264,
+          0.0
+        ],
+        [
+          0.3059392273426056,
+          0.22517777979373932,
+          0.1899999976158142
+        ]
+      ],
+      "max_error_m": 1.3938858345330374e-08
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 64,
+      "minimum_triangle_area_m2": 0.0032944323029369116
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 64
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.3257191777229309,
+          -0.23499050736427307,
+          0.0
+        ],
+        [
+          0.31428080797195435,
+          0.25873276591300964,
+          0.1899999976158142
+        ]
+      ],
+      "max_error_m": 1.2341225874568096e-08
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 40,
+      "minimum_triangle_area_m2": 0.006434905342757702
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 40
+    },
+    {
+      "name": "SM_CN_Caliche_A_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.42366957664489746,
+          -0.2859880328178406,
+          0.0
+        ],
+        [
+          0.45633044838905334,
+          0.27929896116256714,
+          0.3700000047683716
+        ]
+      ],
+      "max_error_m": 1.4889039612331345e-08
+    },
+    {
+      "name": "SM_CN_Caliche_B exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 88,
+      "minimum_triangle_area_m2": 0.0056010885164141655
+    },
+    {
+      "name": "SM_CN_Caliche_B expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Caliche_B finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 88
+    },
+    {
+      "name": "SM_CN_Caliche_B GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.4383731484413147,
+          -0.3161548972129822,
+          0.0
+        ],
+        [
+          0.4416268467903137,
+          0.31782206892967224,
+          0.3700000047683716
+        ]
+      ],
+      "max_error_m": 1.215762179818114e-08
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 64,
+      "minimum_triangle_area_m2": 0.005817730911076069
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 64
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.43428418040275574,
+          -0.277622789144516,
+          0.0
+        ],
+        [
+          0.4457158148288727,
+          0.30909451842308044,
+          0.3700000047683716
+        ]
+      ],
+      "max_error_m": 1.1970749280720838e-08
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 40,
+      "minimum_triangle_area_m2": 0.009479987435042858
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 40
+    },
+    {
+      "name": "SM_CN_Caliche_B_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A three monotonically reduced authored levels",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.6299685835838318,
+          -0.49153050780296326,
+          0.0
+        ],
+        [
+          0.5700314044952393,
+          0.43679937720298767,
+          0.5199999809265137
+        ]
+      ],
+      "max_error_m": 1.9416848795472674e-08
+    },
+    {
+      "name": "SM_CN_Sandstone_A exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 88,
+      "minimum_triangle_area_m2": 0.011690013110637665
+    },
+    {
+      "name": "SM_CN_Sandstone_A expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Sandstone_A finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 88
+    },
+    {
+      "name": "SM_CN_Sandstone_A GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD1 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD1 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.5747984647750854,
+          -0.4828350245952606,
+          0.0
+        ],
+        [
+          0.6252015233039856,
+          0.4679878056049347,
+          0.5199999809265137
+        ]
+      ],
+      "max_error_m": 2.862862713559622e-08
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD1 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 64,
+      "minimum_triangle_area_m2": 0.008317270316183567
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD1 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD1 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD1 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 64
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD1 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD2 one imported mesh",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD2 neutral metre pivot and physical bounds",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.5116904377937317,
+          -0.41248828172683716,
+          0.0
+        ],
+        [
+          0.6883096098899841,
+          0.4441608190536499,
+          0.5199999809265137
+        ]
+      ],
+      "max_error_m": 2.8515929173522636e-08
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD2 exact triangle count and UE area survival",
+      "result": "PASS",
+      "triangles": 40,
+      "minimum_triangle_area_m2": 0.02173934131860733
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD2 expected material order max two",
+      "result": "PASS",
+      "materials": [
+        "M_CN_Stone"
+      ]
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD2 finite normals and nonempty UVs",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD2 portable GLB exact triangle count",
+      "result": "PASS",
+      "triangles": 40
+    },
+    {
+      "name": "SM_CN_Sandstone_A_LOD2 GLB uses masked microfoliage or opaque stone",
+      "result": "PASS"
+    },
+    {
+      "name": "Three shared materials with binary foliage mask and no translucent plant",
+      "result": "PASS"
+    },
+    {
+      "name": "Actual source and embedded RGBA retain perforations and opaque solid tiles",
+      "result": "PASS",
+      "proof": "alpha_texture_verification.json"
+    },
+    {
+      "name": "Portable PBR texture files exist",
+      "result": "PASS",
+      "files": [
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/calichenature/vegetation/textures/bark_color.png",
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/calichenature/vegetation/textures/bark_normal_dx.png",
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/calichenature/vegetation/textures/bark_roughness.png",
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/calichenature/vegetation/textures/botanical_color.png",
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/calichenature/vegetation/textures/botanical_normal_dx.png",
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/calichenature/vegetation/textures/botanical_roughness.png"
+      ]
+    },
+    {
+      "name": "Editable original source components preserved",
+      "result": "PASS",
+      "count": 3186
+    },
+    {
+      "name": "Saved source uses glTF-compatible binary cutoff shader",
+      "result": "PASS"
+    },
+    {
+      "name": "All 36 named source levels preserved",
+      "result": "PASS"
+    }
+  ],
+  "scope": "Actual source and FBX/GLB roundtrip. Native instancing, screen-size LOD transitions and botanical visual quality require actual game review."
+}

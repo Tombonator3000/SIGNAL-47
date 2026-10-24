@@ -8,6 +8,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/Paths.h"
 #include "S47Three.h"
 #include "S47Web.h"
 
@@ -51,7 +52,11 @@ double S47CalicheVisualWeight(const FVector& EyeThree)
 	static const bool bLegacy = FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheConcept")) || FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheStreet")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff"));
 	if (bLegacy) return 0;
 	const double D = FVector2D(EyeThree.X - 8000, EyeThree.Z - 2050).Size();
-	return 1 - Smooth01((D - 120) / 480);
+	// Nature extends through the town outskirts. Keep its authored escarpments
+	// fully active there, so the old mesa ring cannot reappear through them.
+	static const bool bNature = !FParse::Param(FCommandLine::Get(), TEXT("S47CalicheNatureOff")) &&
+		FPaths::FileExists(FPaths::ProjectContentDir() / TEXT("CalicheStreet/Nature/nature-placement.json"));
+	return bNature ? 1 - Smooth01((D - 420) / 480) : 1 - Smooth01((D - 120) / 480);
 }
 
 double S47StarHoleAt(double Clock, double From)

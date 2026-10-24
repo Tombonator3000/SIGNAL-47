@@ -1,0 +1,92 @@
+{
+  "M_CN_Foliage": {
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.84,
+    "specular": 0.22,
+    "normal_strength": 0.2,
+    "uv_scale": 1,
+    "alpha": 1,
+    "alpha_mode": "masked",
+    "two_sided": true,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/botanical_color.png",
+      "roughness": "textures/botanical_roughness.png",
+      "normal": "textures/botanical_normal_dx.png"
+    },
+    "normal_convention": "DirectX for native, explicit OpenGL map in Blender/GLB",
+    "opacity_from_base_color": true,
+    "alpha_cutoff": 0.333,
+    "mip_alpha_coverage": true
+  },
+  "M_CN_Bark": {
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.84,
+    "specular": 0.22,
+    "normal_strength": 0.2,
+    "uv_scale": 1,
+    "alpha": 1,
+    "alpha_mode": "opaque",
+    "two_sided": false,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/bark_color.png",
+      "roughness": "textures/bark_roughness.png",
+      "normal": "textures/bark_normal_dx.png"
+    },
+    "normal_convention": "DirectX for native, explicit OpenGL map in Blender/GLB"
+  },
+  "M_CN_Stone": {
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.84,
+    "specular": 0.22,
+    "normal_strength": 0.2,
+    "uv_scale": 1,
+    "alpha": 1,
+    "alpha_mode": "opaque",
+    "two_sided": false,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/botanical_color.png",
+      "roughness": "textures/botanical_roughness.png",
+      "normal": "textures/botanical_normal_dx.png"
+    },
+    "normal_convention": "DirectX for native, explicit OpenGL map in Blender/GLB"
+  }
+}

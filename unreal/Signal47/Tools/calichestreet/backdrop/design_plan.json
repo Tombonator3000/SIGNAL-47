@@ -1,0 +1,33 @@
+{
+  "revision": "Caliche Nature 1",
+  "status": "SOURCE_PREPARED_NOT_GENERATED",
+  "reference": "New user street/desert concept 1000053641.jpg",
+  "mesh": "SM_Caliche_Mesas",
+  "anchor_world_three_m": [
+    8000,
+    0,
+    2060
+  ],
+  "mapping": "worldThree=(8000+bx,bz,2060-by)",
+  "collision": "NoCollision",
+  "materials": "Six unchanged M_Caliche_Mesa_0..5 slots; distinct talus, bedrock, resistant cap, dark bed and far ridge PBR roles",
+  "protection": {
+    "main_road_buffer_m": 180,
+    "old_road_buffer_m": 180,
+    "town_box_local_xz": [
+      -180,
+      180,
+      -500,
+      450
+    ],
+    "maximum_triangle_budget": 125000
+  },
+  "design": "Three long stratified escarpment belts with low branching talus/foothills, two wider distant ridge belts. Main cliffs start beyond700m; low toes may approach260m. Real ENE OldRoad corridor is reproduced from source midpoint integration, not a due-east guess.",
+  "heavy_jobs": "No Blender, Unreal or texture generation until explicit root slot.",
+  "triangle_upper_bound_before_protected_filter": 99124,
+  "main_belt_sampling_m": 8,
+  "far_belt_sampling_m": [
+    27,
+    28
+  ]
+}

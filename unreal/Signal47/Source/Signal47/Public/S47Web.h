@@ -279,6 +279,7 @@ private:
 	void BuildRetroProps();
 	void BuildRadioStation();
 	void BuildCalicheStreet();
+	void BuildCalicheNature();
 	void BuildAuthoredArray();
 	void UpdateRetroProps();
 	struct FRetroTv { TWeakObjectPtr<UMaterialInstanceDynamic> Screen, Pilot; };

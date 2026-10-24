@@ -1,0 +1,227 @@
+{
+  "status": "PASS",
+  "updated_utc": "2026-10-24T08:17:12.840730+00:00",
+  "current_source_revision": "CN3_UV4_PROFILE_AND_UV_FIXED",
+  "current_generated_revision": "CN3_SOURCE_VERIFIED",
+  "verification_status": "PASS",
+  "native_visual_status": "UNVERIFIED",
+  "native_visual_note": "Current CN3 requires actual native camera comparison; source PASS is not visual acceptance. CN2 was visually rejected.",
+  "mesh": "SM_Caliche_Mesas",
+  "anchor_world_three_m": [
+    8000,
+    0,
+    2060
+  ],
+  "mapping": "worldThree=(8000+bx,bz,2060-by)",
+  "collision": "NoCollision",
+  "triangles": 98730,
+  "bounds_local_m": [
+    [
+      -3055.107666015625,
+      -1850.0,
+      -4.0
+    ],
+    [
+      2250.0,
+      3737.95166015625,
+      235.25479125976562
+    ]
+  ],
+  "materials": [
+    "M_Caliche_Mesa_0",
+    "M_Caliche_Mesa_1",
+    "M_Caliche_Mesa_2",
+    "M_Caliche_Mesa_3",
+    "M_Caliche_Mesa_4",
+    "M_Caliche_Mesa_5"
+  ],
+  "used_materials": [
+    "M_Caliche_Mesa_0",
+    "M_Caliche_Mesa_1",
+    "M_Caliche_Mesa_2",
+    "M_Caliche_Mesa_3",
+    "M_Caliche_Mesa_4",
+    "M_Caliche_Mesa_5"
+  ],
+  "protected": {
+    "old_road_m": 180.0,
+    "main_road_m": 180.0,
+    "town_box_local_xz": [
+      -180,
+      180,
+      -500,
+      450
+    ],
+    "whole_triangle_oldroad_clearance_lower_bound_m": 225.36319454364462,
+    "whole_triangle_mainroad_clearance_lower_bound_m": 237.70844090871162,
+    "raised_triangles": 82250,
+    "filtered_near_protected_quads": 0,
+    "old_road_path_source": "roadShape.ts/oldRoadLayout.ts reproduced4m midpoint/backward integration"
+  },
+  "independent_verification": {
+    "status": "PASS",
+    "checks": {
+      "single_editable_mesh": true,
+      "FBX_pivots_scale_bounds_triangles": true,
+      "six_stable_slots_all_used": true,
+      "UV_finite": true,
+      "UV_all_triangles_noncollapsed": true,
+      "outward_nondegenerate_faces": true,
+      "whole_triangle_protected_road_clearance": true,
+      "binary_GLB_bounds_triangles_materials": true,
+      "saved_Blend_current_packed_maps": true
+    },
+    "triangles": 98730,
+    "bounds_local_m": [
+      [
+        -3055.107666015625,
+        -1850.0,
+        -4.000608921051025
+      ],
+      [
+        2250.0,
+        3737.95166015625,
+        235.2544708251953
+      ]
+    ],
+    "FBX_bounds_error_m": 0.0006089210510253906,
+    "FBX_bounds_tolerance_m": 0.001,
+    "GLB_bounds_error_m": 0.0,
+    "minimum_UV_triangle_area": 0.008777431769105615,
+    "raised_triangles": 82250,
+    "oldroad_clearance_lower_bound_m": 225.36319454364462,
+    "mainroad_clearance_lower_bound_m": 237.70844090871162,
+    "packed_textures": [
+      {
+        "name": "MesaCap_base_color.png",
+        "width": 2048,
+        "height": 2048,
+        "sha256": "40aa509c61e079af89ae306bead6f6815d047879a796c1f27c65dd123e16da93"
+      },
+      {
+        "name": "MesaCap_normal.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "8decc02699068609fe2c762714323ad2d9156f3e5994f687e07e5c48729ab3c9"
+      },
+      {
+        "name": "MesaCap_roughness.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "0b40644ff1ad5798364dd376e59ff250a84e5c0c591292432dc9343912d7d3ec"
+      },
+      {
+        "name": "MesaRock_base_color.png",
+        "width": 2048,
+        "height": 2048,
+        "sha256": "71ca375ebbade7e2e1841d7d6cce5f175501fd6ac3f27dcd736c16978bff16db"
+      },
+      {
+        "name": "MesaRock_normal.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "98031c7f5225d00e6b1a401d8b444c925508560df0644a6046254ff1b4fab8e9"
+      },
+      {
+        "name": "MesaRock_roughness.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "c49d3dac80a4c2e556569f6fe91ea7f27aeb888038fce9a4b99459ee7f8014da"
+      },
+      {
+        "name": "MesaTalus_base_color.png",
+        "width": 2048,
+        "height": 2048,
+        "sha256": "2f34e2f7169c8a7b5911ecfaaabbbfc055a4e9f7407d88704cd1504f7c76e890"
+      },
+      {
+        "name": "MesaTalus_normal.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "fc07a63585190dca4b312573bf50a9ad66a0f4c452506f7051476a6fc49139b7"
+      },
+      {
+        "name": "MesaTalus_roughness.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "223319b71bc56744e35f0822c818debc467bac9538c610730917ebdd7cb9f5b0"
+      }
+    ]
+  },
+  "actual_successful_owned_runs": [
+    {
+      "step": "geology-build",
+      "attempt": 2,
+      "returncode": 0,
+      "wall_seconds": 3.5379860079992795,
+      "performance_status": "UNCONTENDED",
+      "contention": []
+    },
+    {
+      "step": "geology-verify",
+      "attempt": 1,
+      "returncode": 0,
+      "wall_seconds": 2.0224816049885703,
+      "performance_status": "UNCONTENDED",
+      "contention": []
+    }
+  ],
+  "owned_run_report": "/home/tom/scratch-bm/Signal47-caliche-nature/CN3-geology-uv4-results.json",
+  "current_artifacts_sha256": {
+    "Caliche_Mesas.blend": "75b5187d096eaad08908ec1f0a0d2b552adff3bdca0932abf2b8c6f56c274a56",
+    "exports/SM_Caliche_Mesas.fbx": "f902403bf422c2a12fdbfc6bfee9b80437f86fd73344027771a4e250abfaedb2",
+    "exports/SM_Caliche_Mesas.glb": "d9844eab7d0e3c3ee67e0c5170a7ae76b5cdb874bde670de4d24ec2315f37c5e",
+    "materials.json": "626472686916bd3adc88fd589c0561ab34cb6aa706476bff7be4625ff2560826",
+    "model_contract.json": "851a128c8e8d8911031433cc9a6ccae1310460f45c490d753a51859e09d857d7",
+    "geology_descriptor.json": "831e897179d4ed8a3d2f6f7504cd4878506a6870d1d0e50517bbedf53554e04e",
+    "verification.json": "9adcb60646e3530a9daba29a81d73401cb166bccebd6159ae99c762647cad3da",
+    "textures/MesaCap_base_color.png": "40aa509c61e079af89ae306bead6f6815d047879a796c1f27c65dd123e16da93",
+    "textures/MesaCap_normal.png": "8decc02699068609fe2c762714323ad2d9156f3e5994f687e07e5c48729ab3c9",
+    "textures/MesaCap_roughness.png": "0b40644ff1ad5798364dd376e59ff250a84e5c0c591292432dc9343912d7d3ec",
+    "textures/MesaRock_base_color.png": "71ca375ebbade7e2e1841d7d6cce5f175501fd6ac3f27dcd736c16978bff16db",
+    "textures/MesaRock_normal.png": "98031c7f5225d00e6b1a401d8b444c925508560df0644a6046254ff1b4fab8e9",
+    "textures/MesaRock_roughness.png": "c49d3dac80a4c2e556569f6fe91ea7f27aeb888038fce9a4b99459ee7f8014da",
+    "textures/MesaTalus_base_color.png": "2f34e2f7169c8a7b5911ecfaaabbbfc055a4e9f7407d88704cd1504f7c76e890",
+    "textures/MesaTalus_normal.png": "fc07a63585190dca4b312573bf50a9ad66a0f4c452506f7051476a6fc49139b7",
+    "textures/MesaTalus_roughness.png": "223319b71bc56744e35f0822c818debc467bac9538c610730917ebdd7cb9f5b0"
+  },
+  "source_sha256": {
+    "geology.py": "78c62ef17a4bffcd7c0687ceb4d2896f27391ca9fd1c54ef953c4eea5a97ea04",
+    "texture_geology.py": "eb7ca694c90d4183fc694b5e5f45b347a4ecd0aa3e0824c6d396beae7f411e46",
+    "build_backdrop.py": "e8ebc0c911e376ad581a0104ff9510148544f50caf20cdba5b6e595bf04c1ab4",
+    "verify_backdrop.py": "20b200c200aea12b41e2c41f4f34fb7873fd0aeb0847c70aaf053bf00eafc453",
+    "run_source.py": "fac9f7862c5ce246f3a4319a40cfe777855540b98308982c6036efe5d646b326",
+    "audit_profile_folds.py": "c947e345cf940662ed2259a879ef1db1b95e8b4515e5df22c054daf8deb29724"
+  },
+  "source_proof": {
+    "profile_fold_audit": "profile_fold_fix.json",
+    "profile_fold_audit_sha256": "3e489712ecad3eb52d7490070df625374e57c0b61ae5c928ee8b0b7d3ca554c7",
+    "analytic_design": "cn3_source_plan.json",
+    "analytic_design_note": "Historical pre-generation design; current actual bounds and gates are authoritative in model_contract.json and verification.json."
+  },
+  "history": [
+    {
+      "revision": "previous seven mesas",
+      "evidence": "evidence/previous-mesas"
+    },
+    {
+      "revision": "CN2",
+      "result": "Source PASS, native visually rejected pale broad ramps/weak strata/similar rims",
+      "evidence": "evidence/cn2-native-rejected-pale-ramps"
+    },
+    {
+      "revision": "CN3 first export",
+      "result": "Rejected by unchanged noncollapsed-UV gate",
+      "evidence": "evidence/cn3-rejected-collapsed-uv"
+    },
+    {
+      "revision": "CN3 UV2",
+      "result": "UV gate passed; rejected by unchanged upward-face gate. Source audit reproduced779 folded intervals; corrected audit0, minwidth2.116925m",
+      "evidence": "evidence/cn3-uv2-rejected-folds"
+    },
+    {
+      "revision": "CN3 UV4",
+      "result": "Fresh independent FBX/GLB/saved Blend PASS; actual minimum UV triangle area0.008777431769; native visual UNVERIFIED"
+    }
+  ]
+}
