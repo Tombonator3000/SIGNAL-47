@@ -5,8 +5,10 @@
 - [x] Bygg original Blender-transformator og serviceanlegg, plasser tilgjengelig langs eksisterende rute og koble undersøkelser til faktisk scene.
 - [x] Kort målrettet modell-/plassering-/interaksjonskontroll og commit/push. Seks sluttkontroller, ingen full verdensrunde.
 - [x] PR150 flettet og samme testede kandidat S2 installert, 40 payloadhash og 48 uendrede Saved-filer.
-- [ ] Finjuster nattens nærlys/eksponering: eksisterende lommelykt vasker ut skapet på nært hold.
-- [ ] Neste modellprioritet rundt anlegget: avgangsstolper og luftlinje, lite vedlikeholdsskur med kabeltromler, deretter veigrøft/kulvert og eroderte grusoverganger. Pågår på codex/substation-site. Kulverten ved avkjøringen beholdes; ingen ny pipe i flat bakke.
+- [x] Rett nattens utvaskede nærlys på skapet: native nærkompensasjon, uendret ordinær rekkevidde, kontrollert på kandidatP1.
+- [x] Originale avgangsstolper/ledere, vedlikeholdsskur med kabeltromler/verktøykasse og kontaktstein. Kulverten ved avkjøringen beholdes; ingen ny pipe i flat bakke.
+- [ ] Flett og installer testet kandidatP1 med spillerlagring bevart.
+- [ ] Senere terrengpolering: mer naturlige eroderte grusoverganger rundt eksisterende fundament. Ingen terrengendring er gjort i dette modellpasset.
 
 
 ## Xbox-kontroller, 24. oktober 2026

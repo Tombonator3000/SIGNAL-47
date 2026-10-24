@@ -20,7 +20,7 @@ Originale Blender-kilder og 10 separate deler med tre FBX-LOD-er er bevart. Inge
 
 Blender-forhåndsvisning og seks faktiske spillerbilder er vurdert. Gjerde, fysisk skilt, kjøleribber, tre faseisolatorer, busstativ, kontrollskap og rampe finnes i scenen med egne materialer. Det synlige håndtaket ligger nå innenfor bruksmålet. Dag og skumring er tatt ved samme spillerhøye frontposisjon; natt viser kontrollfronten, og fullført lampetilstand er fanget separat etter lagring/lasting.
 
-Nattkontrasten er høy, og eksisterende lommelykt kan overeksponere skapet på nært hold. Videre lys-/eksponeringsbalanse er ført i todo; denne leveransen hevder ikke ferdig fotorealistisk landskap eller full visuell nattpolering.
+Råbildene fra dette første passet hadde høy nattkontrast og utvasket nærlys på skapet. Nærlyset er siden rettet og kontrollert på kandidatP1 i SUBSTATION_SITE.md; de opprinnelige bildene beholdes som historisk bevis. Miljøet hevdes fortsatt ikke ferdig fotorealistisk eller ferdig nattpolert.
 
 Råforsøk er beholdt: første kildeverifikasjon krevde feilaktig glatte endekapper; korreksjonen krever faktisk glatte porselenskropper og nøyaktige flate kapper. Første runtimekontroll brukte Walkable som kollisjonstest, men API-et tester gangsoner. Sluttprøven bruker faktisk bevegelse. Et senere gammelt områdeforsøk brukte ugyldig STATION 01-posisjon `(0,0)` og fikk Vulkan device-lost; årsaken til grafikkfeilen er ikke fastslått. Eksporten har stasjonsorigin z8000. Nytt forsøk ved reell ankomst `(-22,8032)` bestod. Ingen av de avviste forsøkene telles som PASS.
 
