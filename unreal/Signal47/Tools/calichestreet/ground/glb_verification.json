@@ -1,0 +1,251 @@
+{
+  "status": "PASS",
+  "files": [
+    {
+      "file": "Caliche_Ground_Assembly.glb",
+      "status": "PASS",
+      "primitives": [
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_DryPlant",
+          "vertices": 6912,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_GrassAtlas",
+          "vertices": 1968,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_SageAtlas",
+          "vertices": 864,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_Yucca",
+          "vertices": 1452,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_RoadWear",
+          "material": "M_CS_OldAsphalt",
+          "vertices": 80400,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 6816,
+          "source_alpha_max_error": 6.833696398089728e-06
+        },
+        {
+          "mesh": "SM_Caliche_RoadWear",
+          "material": "M_CS_DustFeather",
+          "vertices": 76,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Rocks",
+          "material": "M_CS_Limestone",
+          "vertices": 17136,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_CalicheSoil",
+          "vertices": 33042,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 9384,
+          "source_alpha_max_error": 7.565177768453779e-06
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_PeaGravel",
+          "vertices": 112,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_DrySilt",
+          "vertices": 760,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_ShoulderBlend",
+          "vertices": 164,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_DustFeather",
+          "vertices": 140,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        }
+      ]
+    },
+    {
+      "file": "SM_Caliche_DryPlants.glb",
+      "status": "PASS",
+      "primitives": [
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_DryPlant",
+          "vertices": 6912,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_GrassAtlas",
+          "vertices": 1968,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_SageAtlas",
+          "vertices": 864,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_DryPlants",
+          "material": "M_CS_Yucca",
+          "vertices": 1452,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        }
+      ]
+    },
+    {
+      "file": "SM_Caliche_RoadWear.glb",
+      "status": "PASS",
+      "primitives": [
+        {
+          "mesh": "SM_Caliche_RoadWear",
+          "material": "M_CS_OldAsphalt",
+          "vertices": 80400,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 6816,
+          "source_alpha_max_error": 6.833696398089728e-06
+        },
+        {
+          "mesh": "SM_Caliche_RoadWear",
+          "material": "M_CS_DustFeather",
+          "vertices": 76,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        }
+      ]
+    },
+    {
+      "file": "SM_Caliche_Rocks.glb",
+      "status": "PASS",
+      "primitives": [
+        {
+          "mesh": "SM_Caliche_Rocks",
+          "material": "M_CS_Limestone",
+          "vertices": 17136,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        }
+      ]
+    },
+    {
+      "file": "SM_Caliche_Surface.glb",
+      "status": "PASS",
+      "primitives": [
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_CalicheSoil",
+          "vertices": 33042,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 9384,
+          "source_alpha_max_error": 7.565177768453779e-06
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_PeaGravel",
+          "vertices": 112,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_DrySilt",
+          "vertices": 760,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_ShoulderBlend",
+          "vertices": 164,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_DustFeather",
+          "vertices": 140,
+          "alpha_min": 1.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 0,
+          "source_alpha_max_error": 0.0
+        }
+      ]
+    }
+  ]
+}

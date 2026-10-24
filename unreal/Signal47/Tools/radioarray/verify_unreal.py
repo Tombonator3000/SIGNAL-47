@@ -42,6 +42,9 @@ for label, filename, key in [('dish', 'verification.json', 'meshes'), ('station'
         check(name + ' original materials', bool(slots) and all(slot.material_interface and
               slot.material_interface.get_name().startswith('M_Array_' if label == 'dish' else 'M_1420_') for slot in slots),
               [slot.material_interface.get_name() if slot.material_interface else None for slot in slots])
+        if label=='station':
+            actual_materials=[mesh.get_material(S.get_lod_material_slot(mesh,0,i)).get_name() for i in range(mesh.get_num_sections(0))]
+            check(name+' source materials used by real sections',set(actual_materials)==set(source['materials']),{'expected':source['materials'],'actual':actual_materials})
         check(name + ' LOD count', S.get_lod_count(mesh) == (3 if label == 'dish' else 1))
         for lod in range(S.get_lod_count(mesh)):
             source_name = name + ('_LOD' + str(lod) if lod else '')

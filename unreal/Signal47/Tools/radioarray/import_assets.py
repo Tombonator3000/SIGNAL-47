@@ -114,6 +114,12 @@ def material(row, dest, src):
 
 
 def import_mesh(path, dest):
+    if dest.startswith('/Game/RadioArray/Station'):
+        # Generated meshes use stable soft paths; rebuilding avoids legacy FBX
+        # retaining obsolete material slots when the authored room gains materials.
+        asset_path=dest+'/'+path.stem
+        if E.does_asset_exist(asset_path):
+            check(path.stem+' replace generated station mesh',E.delete_asset(asset_path))
     options = unreal.FbxImportUI()
     options.automated_import_should_detect_type = False
     options.import_as_skeletal = False
@@ -155,6 +161,7 @@ def import_set(label):
     if isinstance(rows, dict):
         rows = [dict(row, name=name) for name, row in rows.items()]
     mats = {row['name']: material(row, dest + '/Materials', src) for row in rows}
+    contract = json.loads((src/'model_contract.json').read_text())['parts'] if label=='station' else None
     paths = sorted((src / 'exports').glob('SM_*.fbx'))
     paths = [p for p in paths if '_LOD' not in p.stem]
     check(label + ' sources', bool(paths))
@@ -165,6 +172,10 @@ def import_set(label):
             name = str(slot.get_editor_property('material_slot_name'))
             check(path.stem + ' material ' + name, name in mats, list(mats))
             mesh.set_material(i, mats[name])
+        if label=='station':
+            expected=contract[path.stem]['materials']
+            actual=[slot.material_interface.get_name() for slot in mesh.get_editor_property('static_materials')]
+            check(path.stem+' current source material bindings',set(actual)==set(expected),{'expected':expected,'actual':actual})
         for lod in (1, 2):
             lodfile = path.with_stem(path.stem + '_LOD' + str(lod))
             if lodfile.exists():

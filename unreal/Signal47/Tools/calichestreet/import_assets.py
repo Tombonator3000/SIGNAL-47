@@ -158,14 +158,15 @@ def material(row, dest, src):
 
 
 def import_mesh(path, dest):
-    existing = E.load_asset(dest + '/' + path.stem) if E.does_asset_exist(dest + '/' + path.stem) else None
-    if isinstance(existing, unreal.StaticMesh):
-        # Legacy FBX delegates replacement to its reimport factory, which reads
-        # the saved import data rather than the new task's ImportUI for colours.
-        previous = existing.get_editor_property('asset_import_data')
-        if isinstance(previous, unreal.FbxStaticMeshImportData):
-            previous.set_editor_property('vertex_color_import_option', unreal.VertexColorImportOption.REPLACE)
-            E.save_loaded_asset(existing, False)
+    # These are generated, owned mesh assets referenced by stable soft paths in Props.
+    # Legacy FBX reimport can silently keep obsolete material slots/section remaps:
+    # an alpha gravel patch then receives the former opaque concrete material.
+    # A fresh owned mesh rebuilds section bindings from the current FBX, as well as
+    # applying the requested vertex-colour/axis settings. Original world assets stay intact.
+    asset_path = dest + '/' + path.stem
+    check(path.stem+' owned import namespace',dest.startswith('/Game/CalicheStreet/'))
+    if E.does_asset_exist(asset_path):
+        check(path.stem+' replace generated mesh',E.delete_asset(asset_path))
     options = unreal.FbxImportUI()
     options.automated_import_should_detect_type = False
     options.import_as_skeletal = False
@@ -210,6 +211,7 @@ def import_set(label):
     if isinstance(rows, dict):
         rows = [dict(row, name=name) for name, row in rows.items()]
     mats = {row['name']: material(row, dest + '/Materials', src) for row in rows}
+    contract = json.loads((src/'model_contract.json').read_text())['parts']
     paths = sorted((src / 'exports').glob('SM_*.fbx'))
     check(label + ' sources', bool(paths))
     for path in paths:
@@ -218,6 +220,11 @@ def import_set(label):
             name = str(slot.get_editor_property('material_slot_name'))
             check(path.stem + ' material ' + name, name in mats)
             mesh.set_material(i, mats[name])
+        expected = contract[path.stem].get('used_materials',contract[path.stem].get('materials'))
+        if expected is None:
+            expected = contract[path.stem]['material_slots']
+        actual = [slot.material_interface.get_name() for slot in mesh.get_editor_property('static_materials')]
+        check(path.stem+' current source material bindings',set(actual)==set(expected),{'expected':expected,'actual':actual})
         settings = mesh.get_editor_property('nanite_settings')
         settings.enabled = False
         mesh.set_editor_property('nanite_settings', settings)

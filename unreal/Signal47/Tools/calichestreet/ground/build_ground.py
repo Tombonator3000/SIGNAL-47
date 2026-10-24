@@ -13,6 +13,7 @@ from mathutils import Vector
 
 ROOT=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT))
+from gltf_export import export_glb
 from terrain import ANCHOR, REGION, floor_y, clear_surface, clear_dressing, pavement, in_box, BUILDINGS
 
 OUT=ROOT/'exports';OUT.mkdir(exist_ok=True)
@@ -375,14 +376,14 @@ for name,mesh in [('SM_Caliche_Surface',surfaces),('SM_Caliche_RoadWear',road),(
     manifest['parts'][name]={'bounds_local_m':bounds,'triangles':len(ob.data.loop_triangles),'origin_m':list(ob.location),'material_slots':[m.name for m in ob.data.materials],'used_materials':sorted(set(MATS[i].name for i in mesh.mat)),'uv_layers':len(ob.data.uv_layers),'vertex_color_attribute':'Color','vertex_alpha_min':min(mesh.alpha),'vertex_alpha_max':max(mesh.alpha),'edge_fade':mesh.fade_stats,'max_above_source_m':max((r['above_source_m'] for r in mesh.clearance),default=None),'max_above_floor_m':max((r['above_floor_m'] for r in mesh.clearance),default=None)}
     bpy.ops.object.select_all(action='DESELECT');ob.select_set(True);bpy.context.view_layer.objects.active=ob
     bpy.ops.export_scene.fbx(filepath=str(OUT/(name+'.fbx')),use_selection=True,object_types={'MESH'},axis_forward='-Y',axis_up='Z',global_scale=1,apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',use_triangles=True,mesh_smooth_type='FACE',bake_space_transform=False,add_leaf_bones=False,path_mode='AUTO',colors_type='LINEAR',prioritize_active_color=True)
-    bpy.ops.export_scene.gltf(filepath=str(OUT/(name+'.glb')),use_selection=True,export_format='GLB',export_vertex_color='ACTIVE',export_all_vertex_colors=False)
+    export_glb(OUT/(name+'.glb'))
 (ROOT/'model_contract.json').write_text(json.dumps(manifest,indent=2)+'\n')
 (ROOT/'surface_samples.json').write_text(json.dumps(surfaces.clearance+road.clearance,separators=(',',':'))+'\n')
 # Portable Blender file contains the original texture images as packed data.
 for image in bpy.data.images:
     if image.source=='FILE':image.pack()
 bpy.ops.object.select_all(action='SELECT')
-bpy.ops.export_scene.gltf(filepath=str(OUT/'Caliche_Ground_Assembly.glb'),use_selection=True,export_format='GLB',export_vertex_color='ACTIVE',export_all_vertex_colors=False)
+export_glb(OUT/'Caliche_Ground_Assembly.glb')
 bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'Caliche_Ground.blend'),compress=True)
 print('CALICHE_GROUND_GENERATED',json.dumps({k:v['triangles'] for k,v in manifest['parts'].items()}))
 

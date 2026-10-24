@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "unchanged_sha256": {
+    "exports/SM_Caliche_Surface.fbx": "a2b593e9bcafbec7627d04b5f0f800279493ca2b92c474afc9a1b10425408d36",
+    "exports/SM_Caliche_RoadWear.fbx": "b16df2b2a2911785ce05544fec4f4b36eb6624235b1b8f9f8dfa85fcbb967b44",
+    "exports/SM_Caliche_Rocks.fbx": "b4adfc8f0aa7d9a41ca3cf713b0bc38810344d116332cb84e3ec62e3baa8b037",
+    "exports/SM_Caliche_DryPlants.fbx": "7614a5d16ad1d7d47aa3b50d1e13187eb3971640b51eedb7dff88efd3d1168f0",
+    "Caliche_Ground.blend": "a4fc840437ac24e176abacc05c241c674faef69358dc93322ccd4a4c26b83247",
+    "model_contract.json": "a67a43855abe6721d9349995eedac259061b95408b35857b7f105dfefdd00bd6",
+    "materials.json": "ae9389ec7db7f039329bcb50f8edcbd78087238dfce06a79cd6fd119599b58cc"
+  },
+  "GLB_only": true
+}

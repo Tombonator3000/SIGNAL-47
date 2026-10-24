@@ -66,5 +66,9 @@ report['checks'].append({'name':'all_material_texture_files_present','pass':True
 road=contract['parts']['SM_Caliche_RoadWear']
 assert 'M_CS_TarRepair' not in road['used_materials']
 report['checks'].append({'name':'no_large_opaque_tar_repair_polygons','pass':True})
+from verify_glb import verify as verify_glb_rgba
+glb=verify_glb_rgba(ROOT)
+(ROOT/'glb_verification.json').write_text(json.dumps(glb,indent=2)+'\n')
+report['checks'].append({'name':'GLB_RGBA_binary_alpha_ranges_and_intermediate_values','pass':True,'files':len(glb['files'])})
 (ROOT/'verification.json').write_text(json.dumps(report,indent=2)+'\n')
 print('CALICHE_GROUND_VERIFIED',json.dumps(report['parts']))

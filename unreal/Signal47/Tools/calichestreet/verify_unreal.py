@@ -32,6 +32,9 @@ for label in ('souvenir','ground','backdrop'):
         check(name+' triangle count',mesh.get_num_triangles(0)==row['triangles'],
               {'expected':row['triangles'],'actual':mesh.get_num_triangles(0)})
         check(name+' material slots',all(x.material_interface and x.material_interface.get_path_name().startswith('/Game/CalicheStreet/') for x in mesh.get_editor_property('static_materials')))
+        expected_materials=row.get('used_materials',row.get('materials',row.get('material_slots')))
+        actual_materials=[mesh.get_material(S.get_lod_material_slot(mesh,0,i)).get_name() for i in range(mesh.get_num_sections(0))]
+        check(name+' source materials used by real sections',set(actual_materials)==set(expected_materials),{'expected':expected_materials,'actual':actual_materials})
         check(name+' Nanite disabled',not mesh.get_editor_property('nanite_settings').enabled)
         if label=='ground':
             data=mesh.get_editor_property('asset_import_data')
