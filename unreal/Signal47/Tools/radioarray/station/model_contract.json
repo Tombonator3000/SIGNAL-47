@@ -71,8 +71,8 @@
       ]
     },
     "SM_1420_Interior": {
-      "vertices": 56124,
-      "triangles": 80882,
+      "vertices": 54000,
+      "triangles": 78758,
       "triangulated": true,
       "zero_area_triangles": 0,
       "materials": [
@@ -248,6 +248,8 @@
     ],
     "practical_emitter": "Recessed under shade at source (4,1.25,1.505), diameter0.141m. No free sphere in source. Native orb requires runtime light/glass isolation."
   },
+  "source_patch": "R3.1-cue-typography-stable-triangulation",
+  "ue_import_min_area_m2": 5e-09,
   "r3_preserved": "Footprint, door/window opening, pivots, console/body anchors and story proxy IDs unchanged.",
   "r2_texture_authoring": {
     "facade_1420_weathered": [

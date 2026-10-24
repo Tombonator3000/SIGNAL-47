@@ -60,6 +60,13 @@
       "zero_area_triangles": 0
     },
     {
+      "name": "SM_1420_Shell survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 1.199158532472211e-07
+    },
+    {
       "name": "SM_1420_Shell finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
@@ -134,15 +141,22 @@
     {
       "name": "SM_1420_Interior exact triangle contract",
       "result": "PASS",
-      "triangles": 80882,
-      "expected_triangles": 80882,
+      "triangles": 78758,
+      "expected_triangles": 78758,
       "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Interior survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 6.198803248480544e-08
     },
     {
       "name": "SM_1420_Interior finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
-      "faces": 80882
+      "faces": 78758
     },
     {
       "name": "SM_1420_Door separate mesh",
@@ -195,6 +209,13 @@
       "zero_area_triangles": 0
     },
     {
+      "name": "SM_1420_Door survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 1.2999799992030603e-07
+    },
+    {
       "name": "SM_1420_Door finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
@@ -245,6 +266,13 @@
       "triangles": 12,
       "expected_triangles": 12,
       "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Glass survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 0.01466971542686224
     },
     {
       "name": "SM_1420_Glass finite face normals",
@@ -301,6 +329,13 @@
       "zero_area_triangles": 0
     },
     {
+      "name": "SM_1420_Mast survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 3.506706343614496e-05
+    },
+    {
       "name": "SM_1420_Mast finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
@@ -347,7 +382,7 @@
       "triangles": {
         "SM_1420_Door": 1852,
         "SM_1420_Glass": 12,
-        "SM_1420_Interior": 80882,
+        "SM_1420_Interior": 78758,
         "SM_1420_Mast": 1264,
         "SM_1420_Shell": 10340
       }
@@ -454,7 +489,7 @@
       "overlaps": []
     }
   ],
-  "passed": 38,
-  "total": 38,
+  "passed": 43,
+  "total": 43,
   "runtime_note": "This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests."
 }

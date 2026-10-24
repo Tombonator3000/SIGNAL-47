@@ -2,11 +2,11 @@
 import argparse,importlib.util,json,os
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent
-ap=argparse.ArgumentParser();ap.add_argument('action',choices=['build','verify','render','refine']);ap.add_argument('--reuse-textures',action='store_true');args=ap.parse_args()
+ap=argparse.ArgumentParser();ap.add_argument('action',choices=['build','verify','render','refine','diagnose']);ap.add_argument('--reuse-textures',action='store_true');args=ap.parse_args()
 os.environ.pop('S47_INSTALLED_GAME_GRACE',None)
 spec=importlib.util.spec_from_file_location('s47_guard',ROOT.parents[2]/'Scripts'/'unreal_guard.py')
 guard=importlib.util.module_from_spec(spec);spec.loader.exec_module(guard)
-command=['blender','-b','-t','2','--factory-startup','--python-exit-code','1','--python',str(ROOT/({'build':'build_station.py','verify':'verify_station.py','render':'render_revision_two.py','refine':'refine_revision_two.py'}[args.action]))]
+command=['blender','-b','-t','2','--factory-startup','--python-exit-code','1','--python',str(ROOT/({'build':'build_station.py','verify':'verify_station.py','render':'render_revision_two.py','refine':'refine_revision_two.py','diagnose':'diagnose_r3.py'}[args.action]))]
 if args.reuse_textures:command+=['--','--reuse-textures']
 evidence=ROOT/'verification';evidence.mkdir(exist_ok=True)
 result=guard.run_owned(command,evidence/('r3-'+args.action+'.log'),timeout=900,cwd=str(ROOT))

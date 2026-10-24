@@ -125,6 +125,8 @@ def cyl(name,a,b,r,m,vertices=12):
  o=bpy.context.object; o.rotation_euler=d.to_track_quat('Z','Y').to_euler(); return add(o,name,m)
 def text(name,body,loc,size,m,rot=(math.pi/2,0,0),align='CENTER'):
  bpy.ops.object.text_add(location=loc,rotation=rot); o=bpy.context.object; o.data.body=body; o.data.size=size; o.data.align_x=align; o.data.extrude=.001
+ # Three-centimetre cue text needs a practical outline, not microscopic curved cap slivers.
+ if name=='CueCardVisible': o.data.resolution_u=3
  bpy.ops.object.convert(target='MESH'); return add(bpy.context.object,name,m)
 def torus(name,loc,major,minor,m,rot=(0,0,0)):
  bpy.ops.mesh.primitive_torus_add(major_radius=major,minor_radius=minor,major_segments=24,minor_segments=6,location=loc,rotation=rot)
@@ -421,6 +423,8 @@ bpy.ops.export_scene.fbx(filepath=str(EXPORTS/'axis_probe.fbx'),use_selection=Tr
 bpy.data.objects.remove(probe,do_unlink=True)
 contract['source_revision']='R3-street-visible-studio-2026-10-24'
 contract['r3_changes']=r3_evidence
+contract['source_patch']='R3.1-cue-typography-stable-triangulation'
+contract['ue_import_min_area_m2']=5e-9
 contract['r3_preserved']='Footprint, door/window opening, pivots, console/body anchors and story proxy IDs unchanged.'
 contract['r2_texture_authoring']={'facade_1420_weathered':[2048,1024],'tiling_families':[1024,1024],'paint_losses':'Sparse sub-centimetre chips; fine random field 720x360, threshold250/255','source':'make_revision_textures.py','normal_convention':'DirectX in materials.json, OpenGL in Blender/GLB'}
 contract['facade_identity']='1420 AM painted in opaque facade PBR; hide legacy roof sign in native integration'

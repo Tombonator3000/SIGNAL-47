@@ -4,8 +4,8 @@
     "removed_exact_zero_area": 0,
     "removed_by_material": {},
     "after_triangles": 10340,
-    "visible_surface_hash_before": "4ce073bd03d8844e08c0d7af778d02ea89aa69dcf93f27e8be85547aec58982b",
-    "visible_surface_hash_after": "4ce073bd03d8844e08c0d7af778d02ea89aa69dcf93f27e8be85547aec58982b",
+    "visible_surface_hash_before": "c47aed7911d542d9009795ea744286b0a744db852d9c424f54129af0c45efcfa",
+    "visible_surface_hash_after": "c47aed7911d542d9009795ea744286b0a744db852d9c424f54129af0c45efcfa",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,
@@ -14,7 +14,7 @@
     "remaining_zero_area": 0
   },
   "SM_1420_Interior": {
-    "before_triangles": 81522,
+    "before_triangles": 79398,
     "removed_exact_zero_area": 640,
     "removed_by_material": {
       "M_1420_VU_backlight": 120,
@@ -22,9 +22,9 @@
       "M_1420_Brushed_aluminium": 24,
       "M_1420_Vinyl_green": 112
     },
-    "after_triangles": 80882,
-    "visible_surface_hash_before": "ce5adae2b4a992a20e56889bf0d619a17673c4e2912756bec003d67433e9dfbf",
-    "visible_surface_hash_after": "ce5adae2b4a992a20e56889bf0d619a17673c4e2912756bec003d67433e9dfbf",
+    "after_triangles": 78758,
+    "visible_surface_hash_before": "c45afd0785c1f66a7ea07f73c4fcd997ef6a71df3709f49b190e4c4eacb3b10b",
+    "visible_surface_hash_after": "c45afd0785c1f66a7ea07f73c4fcd997ef6a71df3709f49b190e4c4eacb3b10b",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,
@@ -37,8 +37,8 @@
     "removed_exact_zero_area": 0,
     "removed_by_material": {},
     "after_triangles": 1852,
-    "visible_surface_hash_before": "05d3b2e8f6dccaaba06173e7b94dd5920e9bcb21319872b03c173e4a77b3d977",
-    "visible_surface_hash_after": "05d3b2e8f6dccaaba06173e7b94dd5920e9bcb21319872b03c173e4a77b3d977",
+    "visible_surface_hash_before": "92006c3fba5935a7c7d4e4767abb7c209c0107b2d50cde34ab28909064353842",
+    "visible_surface_hash_after": "92006c3fba5935a7c7d4e4767abb7c209c0107b2d50cde34ab28909064353842",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,

@@ -72,3 +72,11 @@ Den eneste innvendige emitteren er en flat disk under bordlampens skjerm ved sou
 R3 tilbakeimport og kildekontroll: **38/38 PASS**. Shell 10 340 trekanter, Interior 80 882, Door 1 852, Glass 12 og Mast 1 264. Interiøret får to nye materialplasser, `M_1420_ProgramPanelPrint` og `M_1420_LeatherStitch`; øvrige materialnavn og alle fem delers eksakte grenser og pivoter beholdes. Interiørets eksisterende Vinyl_green flyttes fra slot12 til14, Lamp_glow fra13 til12 og OliveWornTimber fra14 til13; import må bruke den nye kontraktens rekkefølge. `revision3-contract-diff.json` gir forskjellen mot R2. Ingen native-aksept er påstått før den nye runtimekandidaten er vurdert.
 
 Første R3-byggeforsøk stoppet før eksport på feil navn på en Blender-API-egenskap i stolens bevel-modifikator. Feilen er rettet til `use_clamp_overlap`. Det vellykkede forsøket gjenbrukte de allerede genererte identiske kartene med `--reuse-textures`. `verification/r3-build-attempt1-failed*` bevarer feilen; `r3-build*` og `r3-verify*` er de vellykkede kjøringene.
+
+## R3.1, stabil triangulering av cue-korttekst
+
+Native-importen av første R3 fjernet 32 trekanter fra `SRC_CueCardVisible`, ikke fra stol eller mikrofon. Det er kappeflater på liten tekst med areal 3,87 til 4,01 × 10⁻⁹ m². Den lokale UE 5.8-FBX-importøren forkaster normaler når det kvadrerte kryssproduktet i centimeter er mindre enn SMALL_NUMBER, som tilsvarer en trekantflate mindre enn 5 × 10⁻⁹ m². Kildediagnosen forutsa nøyaktig de 32 native-tapene. `r3_cuefix_cause.json` dokumenterer årsak og eksportindekser.
+
+Cue-tekstens fontkurver bruker nå resolution_u3 fremfor12 før meshkonvertering. Innhold, størrelse, plassering og materialnavn er beholdt. Eksportkontrollen krever fortsatt eksakte trekanttall og avviser nå også hver trekant under UE sin FBX-arealgrense i alle fem deler. Ingen toleranse eller importerinnstilling er svekket.
+
+R3.1 gir Interior **78 758 trekanter**, øvrige deler beholder sine eksakte tall. Ny kilde-/FBX-kontroll består **43/43**, inkludert null flater under UE-arealgrensen i alle deler. Native-reimport av den rettede pakken gjenstår hos runtime-eieren.

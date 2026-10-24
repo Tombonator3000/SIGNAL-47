@@ -3,48 +3,52 @@
   "source_revision": "R3-street-visible-studio-2026-10-24",
   "files": {
     "1420_AM_station.blend": {
-      "bytes": 3350681,
-      "sha256": "63bb94cc5e0905ea93a5d109bb411e3093a7acb48522098b8bd38a5f900fb7eb"
+      "bytes": 3277029,
+      "sha256": "bd810de3142f81d1ef7aee4ecde83972de22ca8d347522a9630fa5d2799687f1"
     },
     "1420_AM_station.glb": {
-      "bytes": 19930232,
-      "sha256": "93096cc45b5d3d51ebf7721ed1af082cc5283cee99882256ea7f2fea9af6c2fb"
+      "bytes": 19822256,
+      "sha256": "153c5a9552d09240603ce7ea2e59200d5ed6e4f480312b2a33ec453ac5510e80"
     },
     "README.md": {
-      "bytes": 9956,
-      "sha256": "4a60526eb52c545aa73cc23985ce0151fcac82b19d5ac65543533af52b6e3b6a"
+      "bytes": 11076,
+      "sha256": "8877edc2b515dd17445f7030f0c0b8aa11d32d794563ece0fc34788a33c38e44"
     },
     "build_station.py": {
-      "bytes": 31707,
-      "sha256": "3ec4e72127bdf07ee391fb83c49414cc0f04c79ec3cb372fed73af871a8b9195"
+      "bytes": 31956,
+      "sha256": "e133176df3546744ea3a51d84227c05afa4a00de7352693bcf02bfd83b2e12be"
     },
     "clean_existing_exports.py": {
       "bytes": 2129,
       "sha256": "03f6d30bf1eddc0fcdc099c1b5082e47e1725e50f205ecfc7444fd3c57de8ce3"
     },
+    "diagnose_r3.py": {
+      "bytes": 1575,
+      "sha256": "13e580886f1b6602e09f586907c82cccddf15b48ca33cf82d23282753b52a42a"
+    },
     "exports/SM_1420_Door.fbx": {
       "bytes": 77996,
-      "sha256": "42f4ef59d2d28a282ef3178d1f182f879b59d316a86703ffbb239a0c989799a7"
+      "sha256": "70558cf265079e8207c90ae29787a9d6a485f2b83749b1febfb4dd7cf8c21e92"
     },
     "exports/SM_1420_Glass.fbx": {
       "bytes": 15468,
-      "sha256": "5ee123504fc2255491f567d37c2efc7529067c58b027a88ccc042980a225972c"
+      "sha256": "8a60ad2aa75bb4e0ed717a1040d6ca9630a3e0335143bb76f03504ed8c7bbfc9"
     },
     "exports/SM_1420_Interior.fbx": {
-      "bytes": 2055340,
-      "sha256": "f563af28d3730521cba9612444952d9fc7e820f73c968ebd29e6f5e6a9f2028b"
+      "bytes": 2002188,
+      "sha256": "bd7e72fac3c8dc7bd0999934b5f287fd8d6b002c9880b4d7b803828962a459de"
     },
     "exports/SM_1420_Mast.fbx": {
       "bytes": 52204,
-      "sha256": "4b4281c7706cef4a4008884ac3e5cd82c178d17194df489fe8687d02fad4fa53"
+      "sha256": "2c63f82fad4360e7d9da03c52e9fd9069fbee27e547d30255cde33f343579558"
     },
     "exports/SM_1420_Shell.fbx": {
-      "bytes": 349180,
-      "sha256": "4c7cdfc0500f573c5ed2c64101a445656e445434f392c55d76eb6c8eb3a4af00"
+      "bytes": 349164,
+      "sha256": "a6c7e26c638608de05cfd2d2e372b6606da97c019385ae939c6a361d75302dc6"
     },
     "exports/axis_probe.fbx": {
       "bytes": 11868,
-      "sha256": "a0d93d841872bd9bc7a73b10131e9a230c3d15cfce7c7157e4e5a633b51bc260"
+      "sha256": "77f243e6c00e635eee66a068f4092efef585e4ff879873dede36a15787e2297c"
     },
     "exterior.png": {
       "bytes": 1511295,
@@ -80,27 +84,23 @@
     },
     "mesh_cleanup.json": {
       "bytes": 3094,
-      "sha256": "b5814198c0d688392d3cfa4e9d010ef792432c73d8e5fb18487cf4433b97b343"
+      "sha256": "dafaafa47eaa57efbb240b8d5a4be6af78eeb140e43b7c2eef5286c5898f9c93"
     },
     "model_contract.json": {
-      "bytes": 6993,
-      "sha256": "90c54183cbcb3177334dd8692f4a619720448dde533c2c1f60bdfab1793ffb5a"
-    },
-    "r2-exterior.png": {
-      "bytes": 1230610,
-      "sha256": "b277b6a033932ace2fad280b7ed6abbdc72dda550af6dee8f7ecef66f322db33"
-    },
-    "r2-interior.png": {
-      "bytes": 1482642,
-      "sha256": "0066dd4e007b67b647d851ec0b4c3b2335d6f2ae5e812bf907518711b0332025"
-    },
-    "r2-street-window.png": {
-      "bytes": 1410118,
-      "sha256": "dcbad6ce3923e0539113d198a44c0642cdfe0ea9fc033ddbd0c7a4db652c1ad7"
+      "bytes": 7089,
+      "sha256": "6277f442c127bbe9fe7959867a8a79ba00b9e4e4653f6a5231b8d03b765b00bc"
     },
     "r2_material_refinement.json": {
       "bytes": 397,
       "sha256": "aa6ff2ac5fa08ece088f541708febce310216ac4fa7e123d4139807183880beb"
+    },
+    "r3_cuefix_cause.json": {
+      "bytes": 1292,
+      "sha256": "d5432a546ac9a23da7bb3630604490bd23d38a7d113e2e4573aeda5081210350"
+    },
+    "r3_degenerate_diagnosis.json": {
+      "bytes": 593947,
+      "sha256": "fa7c904851cc73b7edecd208829f34062d72afacf1875e7981e886991b7aa635"
     },
     "refine_revision_two.py": {
       "bytes": 1946,
@@ -119,8 +119,8 @@
       "sha256": "7178fca657d08870e86e5ed184222f2b04acbfe3dfc4890ef953b10cfe45ae10"
     },
     "run_guarded.py": {
-      "bytes": 1626,
-      "sha256": "ee6a5180160de8944b3307e28ed1763d6e28588a02a8c486c6bae3fa40c440ea"
+      "bytes": 1665,
+      "sha256": "b40ab449064fcbbd84a9e41f10b8660aed440a1bf2fd36a74febc99e1a3c0e00"
     },
     "source_integrity.json": {
       "bytes": 723,
@@ -354,36 +354,58 @@
       "bytes": 2645,
       "sha256": "df7317d72a722be204ae1da719dad1150411d156489ae435daa75afa9f6a9c4f"
     },
-    "verification/r3-build-guard.json": {
+    "verification/r3-build-before-cuefix-guard.json": {
       "bytes": 954,
       "sha256": "aea66a91a084c5e60aff02472ec6a57a5f2321851af8fd2f36baee77adbed10b"
     },
-    "verification/r3-build.log": {
+    "verification/r3-build-before-cuefix.log": {
       "bytes": 3235,
       "sha256": "ae33ddadd440189d7e1e3d864969ec4ab0986fa0479832b61b3e6988b8188d80"
     },
+    "verification/r3-build-guard.json": {
+      "bytes": 954,
+      "sha256": "8d179f1f17264edc3c0d37f15d92030a0bb6c2c5dfa9d49afd14e03b6b6eec72"
+    },
+    "verification/r3-build.log": {
+      "bytes": 3234,
+      "sha256": "4c2a40152c8de9be1415db91757430e846ad17efede2d80f7a86a8bc28e5ad1e"
+    },
+    "verification/r3-diagnose-guard.json": {
+      "bytes": 954,
+      "sha256": "f02e7fd944d5406c045a923d6e15881825071d1eb26c9e3300aa9e2e821fb885"
+    },
+    "verification/r3-diagnose.log": {
+      "bytes": 5385,
+      "sha256": "11e53fffc817cf596a154036a517a4e480d7115d934dc7744dfe4030b6707082"
+    },
     "verification/r3-verify-guard.json": {
       "bytes": 954,
-      "sha256": "00a47d9676e639359285d5a22cd6d0245e5dd06223c1d80ba24152da8544aaf3"
+      "sha256": "40c665e49cf2b6acfcfcc7bfec3d15cf9f7349be6796c688f7ce28bf85e97c15"
     },
     "verification/r3-verify.log": {
-      "bytes": 8008,
-      "sha256": "f302cad648cf378fba756e54fb03315a2cc9df58c444851e80dda91271a50999"
+      "bytes": 8898,
+      "sha256": "f9d5cbc03046e3d951cb6637d85e9645314b36a144060f62d9f88e5ce6afea81"
     },
-    "verification.json": {
+    "verification-before-cuefix.json": {
       "bytes": 10841,
       "sha256": "d82180d4e247ca2e9c52a00da40ac952ba5ba612429b2df7a4a39c113e20d41b"
     },
+    "verification.json": {
+      "bytes": 11931,
+      "sha256": "1d3b606484793653c28bc5fa8065b6623027700b2e95efe9a81de329341262fe"
+    },
     "verify_station.py": {
-      "bytes": 6376,
-      "sha256": "d47370fbcb1404d88ea6b5641388e726d010668c121486c1f1d6dea786c29311"
+      "bytes": 6606,
+      "sha256": "a605014f553da6e00671b06946031ab0457f5cb53e9102a698355515935b8748"
     }
   },
   "verification": {
     "status": "PASS",
-    "passed": 38,
-    "total": 38,
-    "actual_fbx_roundtrip": true
+    "passed": 43,
+    "total": 43,
+    "actual_fbx_roundtrip": true,
+    "ue_fbx_min_area_verified_m2": 5e-09
   },
-  "native_handoff": "Hide old roof sign. Preserve ON AIR/photo IDs/door proxies/mast. Use sidecar UV+normal conventions. R3 native appearance pending."
+  "native_handoff": "Hide old roof sign. Preserve ON AIR/photo IDs/door proxies/mast. Use sidecar UV+normal conventions. R3 native appearance pending.",
+  "source_patch": "R3.1-cue-typography-stable-triangulation"
 }

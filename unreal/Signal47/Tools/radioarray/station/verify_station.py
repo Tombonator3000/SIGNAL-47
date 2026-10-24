@@ -25,6 +25,8 @@ for name,expected in contract['parts'].items():
  zero=sum(t.area==0 for t in mesh.loop_triangles)
  check(name+' exact triangle contract',len(mesh.loop_triangles)==expected['triangles'] and zero==0 and all(len(p.vertices)==3 for p in mesh.polygons),triangles=len(mesh.loop_triangles),expected_triangles=expected['triangles'],zero_area_triangles=zero)
  badnormal=sum(1 for p in mesh.polygons if not all(math.isfinite(v) for v in p.normal) or p.normal.length<.99)
+ ue_small=sum(t.area<5e-9 for t in mesh.loop_triangles)
+ check(name+' survives UE FBX minimum triangle area',ue_small==0,below_ue_area_threshold=ue_small,threshold_m2=5e-9,minimum_area_m2=min(t.area for t in mesh.loop_triangles))
  check(name+' finite face normals',badnormal==0,invalid_face_normals=badnormal,faces=len(mesh.polygons))
  if name=='SM_1420_Shell':
   def hit(x,z): return o.ray_cast(Vector((x,-6.4,z)),Vector((0,1,0)),distance=1.6)[0]
