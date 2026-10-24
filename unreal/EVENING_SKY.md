@@ -32,3 +32,5 @@ Den vennlige innkjøringen får ingen automatiske lyn eller torden mens kveldsly
 Eksisterende `-S47Clock=17:20`, `-S47Clock=18:00`, `-S47Clock=18:27`, `-S47Clock=18:53`, `-S47Clock=19:07` og `-S47LifeLog` kan brukes for målrettede bildeprøver. `-S47LifeLog` viser nå både dawn og evening. Innkjøringen bruker sin egen lagrede klokketilstand; et rent lysflagg er ikke bevis på reise eller klokkeovergang.
 
 Prosjektbiblioteket ble søkt først. Scenario Labs sin UE 5.8 lighting/rendering-kilde ved `f0adb5b5` ble lest som prinsippgrunnlag for fast eksponering og skille mellom praktiske lyskilder, emisjon og dokumenterte kunstneriske verdier. Hjelpeskriptet der er uttrykkelig uprøvd i Unreal og er ikke gjenbrukt. Ingen nye renderinnstillinger, eksponeringsmodus eller ekstra lysrigg er innført.
+
+SKY.md (24.10, `sky-pass`) legger volumetriske skyer, cirrus, skumringsbånd, tåke og sanntids skylight oppå denne kurven. Kurvene og historieverdiene her er uendret.

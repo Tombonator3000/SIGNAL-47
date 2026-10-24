@@ -337,3 +337,5 @@ Pakket kjøring, menneskelig vurdering på Toms skjerm og langvarig bevegelse er
 ## Kilder
 
 Prosjektbibliotekets søk fant [Scenario Labs, UE 5.8 lighting/rendering](https://github.com/scenario-labs/skills/blob/f0adb5b5ebc1fc8f7e333554d2aeb767c5558d6b/skills/game-engines/unreal/scenario-unreal-lighting-rendering/SKILL.md), MIT. Referansen er brukt for fysiske enheter og små emittere; dens helpers er merket uprøvd i Unreal og er ikke gjenbrukt. Motorens lokale C++-API, eksportens GLB-bounds og prosjektets faktiske runtime-prøver er grunnlaget for implementasjonen. [Epics Lumen-dokumentasjon](https://dev.epicgames.com/documentation/en-us/unreal-engine/lumen-technical-details-in-unreal-engine) ble kontrollert i første runde.
+
+Volumetriske skyer og skumringslys fra 24.10: se SKY.md.
