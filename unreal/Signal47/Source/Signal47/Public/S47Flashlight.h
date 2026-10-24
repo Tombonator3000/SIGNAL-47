@@ -11,6 +11,7 @@ class USpotLightComponent;
 // reflector beam is a movable Unreal spot with a finite source, shadows and volumetric scattering
 // on every quality tier. The light is kept at zero intensity when off. The story-facing intensity
 // retains its original range so saves and deterministic behavioural tests remain compatible.
+// The native spot alone compensates close surfaces for the fixed-exposure picture.
 class SIGNAL47_API FS47Flashlight
 {
 public:
@@ -43,5 +44,7 @@ private:
 	double Flick = 0;
 	double Dark = 0;
 	double ThreeIntensity = 0;
+	double NativeNearGain = 1, NextNearLog = 0;
+	bool bNativeNearReady = false, bLogNear = false;
 	TMap<FString, double> Flicks;
 };

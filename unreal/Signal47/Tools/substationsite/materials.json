@@ -1,0 +1,277 @@
+[
+  {
+    "name": "M_SubstationSite_GalvanizedSteel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.86,
+    "roughness": 0.54,
+    "specular": 0.3,
+    "normal_strength": 0.25,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../substation/textures/Galvanized_base_color.png",
+      "normal": "../substation/textures/Galvanized_normal.png",
+      "roughness": "../substation/textures/Galvanized_roughness.png"
+    }
+  },
+  {
+    "name": "M_SubstationSite_DarkSteel",
+    "base_color_linear": [
+      0.055,
+      0.061,
+      0.052,
+      1
+    ],
+    "metallic": 0.72,
+    "roughness": 0.68,
+    "specular": 0.3,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_SubstationSite_PorcelainBrown",
+    "base_color_linear": [
+      0.16,
+      0.075,
+      0.036,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.25,
+    "specular": 0.3,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_SubstationSite_Concrete",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.94,
+    "specular": 0.3,
+    "normal_strength": 0.33,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../substation/textures/Concrete_base_color.png",
+      "normal": "../substation/textures/Concrete_normal.png",
+      "roughness": "../substation/textures/Concrete_roughness.png"
+    }
+  },
+  {
+    "name": "M_SubstationSite_Gravel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.98,
+    "specular": 0.3,
+    "normal_strength": 0.48,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../substation/textures/Gravel_base_color.png",
+      "normal": "../substation/textures/Gravel_normal.png",
+      "roughness": "../substation/textures/Gravel_roughness.png"
+    }
+  },
+  {
+    "name": "M_SubstationSite_Wood",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.88,
+    "specular": 0.28,
+    "normal_strength": 0.36,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/WeatheredWood_base_color.png",
+      "normal": "textures/WeatheredWood_normal.png",
+      "roughness": "textures/WeatheredWood_roughness.png"
+    },
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_SubstationSite_CorrugatedSteel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.62,
+    "roughness": 0.82,
+    "specular": 0.28,
+    "normal_strength": 0.16,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "two_sided": true,
+    "textures": {
+      "base_color": "textures/CorrugatedSteel_base_color.png",
+      "normal": "textures/CorrugatedSteel_normal.png",
+      "roughness": "textures/CorrugatedSteel_roughness.png"
+    },
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_SubstationSite_RoofRust",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.51,
+    "roughness": 0.89,
+    "specular": 0.28,
+    "normal_strength": 0.18,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "two_sided": true,
+    "textures": {
+      "base_color": "textures/RoofRust_base_color.png",
+      "normal": "textures/RoofRust_normal.png",
+      "roughness": "textures/RoofRust_roughness.png"
+    },
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_SubstationSite_PrintAtlas",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.1,
+    "roughness": 0.83,
+    "specular": 0.28,
+    "normal_strength": 0.03,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/PrintAtlas_base_color.png",
+      "normal": "textures/PrintAtlas_normal.png",
+      "roughness": "textures/PrintAtlas_roughness.png"
+    },
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_SubstationSite_CableBlack",
+    "base_color_linear": [
+      0.016,
+      0.021,
+      0.018,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.91,
+    "specular": 0.25,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_SubstationSite_SafetyOchre",
+    "base_color_linear": [
+      0.37,
+      0.24,
+      0.045,
+      1
+    ],
+    "metallic": 0.1,
+    "roughness": 0.8,
+    "specular": 0.25,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  }
+]
