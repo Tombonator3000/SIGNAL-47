@@ -43,6 +43,7 @@
 #include "S47Score.h"
 #include "S47World.h"
 #include "S47Phones.h"
+#include "S47Picture.h"
 #include "S47SaroNight.h"
 #include "S47ArrayBack.h"
 #include "S47Away.h"
@@ -203,12 +204,13 @@ void US47Flow::Init(US47Main* InM)
 	if (M->UI) M->UI->bLargeText = bLargeText;
 	bCalmFlash = S47J::Bool(Store, TEXT("calmFlash"), false);
 	bStillShots = S47J::Bool(Store, TEXT("stillShots"), false);
-	// the picture: as chosen, or until one is chosen as the graphics level has it; -S47Picture= on
-	// the command line (AS47Web) has the last word
+	// An explicit saved look survives quality changes. CLI overrides affect this run only.
 	const FString Chosen = S47J::Str(Store, TEXT("picture"));
+	PictureStrength = S47Picture::Strength(float(S47J::Num(Store, TEXT("pictureStrength"), 1)));
+	FParse::Value(FCommandLine::Get(), TEXT("S47PictureStrength="), PictureStrength);
+	PictureStrength = S47Picture::Strength(PictureStrength);
 	FString Cmd;
-	if (FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Cmd)) Picture = Cmd == TEXT("off") ? TEXT("off") : TEXT("vhs");
-	else ApplyPicture(!Chosen.IsEmpty() ? Chosen : Quality != TEXT("low") ? TEXT("vhs") : TEXT("off"), false);
+	ApplyPicture(FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Cmd) ? Cmd : !Chosen.IsEmpty() ? Chosen : S47Picture::DefaultForQuality(Quality), false);
 	ApplyQuality(Quality);
 	ApplyVolume();
 	if (M->Audio) { M->Audio->SetMusic(MusicLevel); M->Audio->SetRadio(RadioLevel); }
@@ -497,7 +499,7 @@ void US47Flow::ShowTitle()
 	};
 	// the warning before the night: flashing images near the end, or slow fades instead
 	O.bCalm = bCalmFlash;
-	O.OnFlashPick = [this](bool bCalm) { bCalmFlash = bCalm; StoreSet(TEXT("calmFlash"), bCalm); };
+	O.OnFlashPick = [this](bool bCalm) { bCalmFlash = bCalm; ApplyPicture(Picture, false); StoreSet(TEXT("calmFlash"), bCalm); };
 	O.OnFirstTouch = [this] { bSoundUnlocked = true; MenuMusic(); };
 	M->UI->RemoveScreen(TitleEl);
 	TitleEl = M->UI->Title(O);
@@ -912,6 +914,8 @@ FS47PauseOpts US47Flow::Settings()
 	O.bUltraOk = true; // a computer
 	O.Picture = Picture;
 	O.OnPicture = [this](const FString& P) { ApplyPicture(P); };
+	O.PictureStrength = PictureStrength;
+	O.OnPictureStrength = [this](float V) { PictureStrength = S47Picture::Strength(V); ApplyPicture(Picture, false); StoreSet(TEXT("pictureStrength"), double(PictureStrength)); };
 	O.bInvertY = bInvertY;
 	O.OnInvertY = [this](bool V) { bInvertY = V; ApplyLook(); StoreSet(TEXT("invertY"), V); };
 	O.Fov = BaseFov;
@@ -919,9 +923,9 @@ FS47PauseOpts US47Flow::Settings()
 	O.bLargeText = bLargeText;
 	O.OnLargeText = [this](bool V) { bLargeText = V; M->UI->bLargeText = V; StoreSet(TEXT("largeText"), V); };
 	O.bCalmFlash = bCalmFlash;
-	O.OnCalmFlash = [this](bool V) { bCalmFlash = V; StoreSet(TEXT("calmFlash"), V); };
+	O.OnCalmFlash = [this](bool V) { bCalmFlash = V; ApplyPicture(Picture, false); StoreSet(TEXT("calmFlash"), V); };
 	O.bStillShots = bStillShots;
-	O.OnStillShots = [this](bool V) { bStillShots = V; StoreSet(TEXT("stillShots"), V); };
+	O.OnStillShots = [this](bool V) { bStillShots = V; ApplyPicture(Picture, false); StoreSet(TEXT("stillShots"), V); };
 	O.bAbduct = bAbductOn;
 	O.OnAbduct = [this](bool V) { bAbductOn = V; StoreSet(TEXT("abductions"), V); };
 	O.Brightness = Brightness;
@@ -934,20 +938,40 @@ void US47Flow::ApplyQuality(const FString& Q)
 {
 	Quality = Q;
 	if (!SmokeTest()) StoreSet(TEXT("quality"), Q);
-	// The tape look is independent of the lighting budget.
+	// Film and tape looks are independent of the lighting budget.
 	if (M->Web) M->Web->SetLightingQuality(Q);
 }
 
 void US47Flow::ApplyPicture(const FString& P, bool bChosen)
 {
-	Picture = P;
-	if (bChosen) StoreSet(TEXT("picture"), P);
-	// the tape look (core/vhs.ts) is M_WebTone's Vhs in MPC_Web (AS47Web::BeginPlay)
+	Picture = S47Picture::Normalize(P);
+	if (bChosen) StoreSet(TEXT("picture"), Picture);
+	// Preserve the legacy Vhs blend for scene materials. The tone pass has a separate mode enum.
 	UWorld* World = GameWorld();
 	UMaterialParameterCollection* Mpc = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Web/Base/MPC_Web.MPC_Web"));
 	if (UMaterialParameterCollectionInstance* I = World && Mpc ? World->GetParameterCollectionInstance(Mpc) : nullptr)
 	{
-		I->SetScalarParameterValue(TEXT("Vhs"), P == TEXT("off") ? 0.f : 1.f);
+		float Calm = bCalmFlash || bStillShots ? 1.f : 0.f;
+		FParse::Value(FCommandLine::Get(), TEXT("S47PictureCalm="), Calm);
+		const int32 Mode = S47Picture::Mode(Picture);
+		const float Strength = S47Picture::Strength(PictureStrength);
+		I->SetScalarParameterValue(TEXT("PictureMode"), float(Mode));
+		I->SetScalarParameterValue(TEXT("Vhs"), Mode == 0 ? 0.f : Strength);
+		I->SetScalarParameterValue(TEXT("PictureStrength"), Strength);
+		I->SetScalarParameterValue(TEXT("PictureCalm"), S47Picture::Strength(Calm));
+		float ActualMode = -1.f, ActualVhs = -1.f, ActualStrength = -1.f, ActualCalm = -1.f;
+		const bool bMode = I->GetScalarParameterValue(TEXT("PictureMode"), ActualMode);
+		const bool bVhs = I->GetScalarParameterValue(TEXT("Vhs"), ActualVhs);
+		const bool bStrength = I->GetScalarParameterValue(TEXT("PictureStrength"), ActualStrength);
+		const bool bCalm = I->GetScalarParameterValue(TEXT("PictureCalm"), ActualCalm);
+		if (bMode && bVhs && bStrength && bCalm)
+		{
+			UE_LOG(LogS47Flow, Display, TEXT("S47: picture %s MPC mode=%.0f vhs=%.3f strength=%.3f calm=%.3f"), *Picture, ActualMode, ActualVhs, ActualStrength, ActualCalm);
+		}
+		else
+		{
+			UE_LOG(LogS47Flow, Warning, TEXT("S47: picture MPC parameter missing (PictureMode=%d Vhs=%d PictureStrength=%d PictureCalm=%d)"), bMode, bVhs, bStrength, bCalm);
+		}
 	}
 }
 
@@ -1466,7 +1490,7 @@ bool US47Flow::OpenTestView(const FString& View)
 
 bool US47Flow::SelfTest(TArray<FString>& Out)
 {
-	bool bOk = true;
+	bool bOk = S47Picture::SelfTest(Out);
 	auto Check = [&](const TCHAR* Name, bool bPass, const FString& Got = FString())
 	{
 		Out.Add(bPass ? FString::Printf(TEXT("ok  flow: %s"), Name) : FString::Printf(TEXT("FAIL flow: %s %s"), Name, *Got));
@@ -1504,6 +1528,24 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 	Check(TEXT("at the motel"), AtMotel(FVector(-40, 0, 680)) && !AtMotel(FVector(-40, 0, 100)));
 	Check(TEXT("highway south"), OnHighway(FVector(-25, 0, 100)) && !OnHighway(FVector(-30, 0, 680)));
 	US47Main* Main = NewObject<US47Main>(); US47Flow* Flow = NewObject<US47Flow>(); Flow->M = Main;
+	// Test the real apply path without a world or any writes to the user's settings file.
+	Flow->Store = S47J::New();
+	S47J::Set(Flow->Store, TEXT("picture"), TEXT("off"));
+	const FString SettingsBefore = S47J::Write(Flow->Store);
+	Flow->ApplyPicture(TEXT("  CARPENTER  "), false);
+	Check(TEXT("runtime override applies normalized look without saving"), Flow->Picture == TEXT("carpenter") && S47J::Write(Flow->Store) == SettingsBefore);
+	Flow->PictureStrength = 0.f;
+	Flow->ApplyPicture(Flow->Picture, false);
+	Check(TEXT("zero strength retains selected look and saved preference"), Flow->Picture == TEXT("carpenter") && Flow->PictureStrength == 0.f && S47J::Write(Flow->Store) == SettingsBefore);
+	for (const FString& Id : S47Picture::Ids())
+	{
+		const auto Settings = S47J::New();
+		S47J::Set(Settings, TEXT("picture"), Id); S47J::Set(Settings, TEXT("pictureStrength"), 0.35);
+		const auto Loaded = S47J::Read(S47J::Write(Settings));
+		Flow->PictureStrength = S47Picture::Strength(float(S47J::Num(Loaded, TEXT("pictureStrength"), 1)));
+		Flow->ApplyPicture(S47J::Str(Loaded, TEXT("picture")), false);
+		Check(*FString::Printf(TEXT("%s look and strength survive settings JSON"), *Id), Flow->Picture == Id && FMath::IsNearlyEqual(Flow->PictureStrength, 0.35f));
+	}
 	Flow->Carry = S47J::New(); S47J::Set(Flow->Carry,TEXT("unported"),TEXT("preserved"));
 	for (const TCHAR* K : {TEXT("ev:boy"),TEXT("mark:boy@9000"),TEXT("tr:out1"),TEXT("ln:reel")}) Main->TownSeen.Add(K);
 	const auto Saved = S47J::Read(S47J::Write(Flow->GameState())); const auto Town = S47J::Strs(Saved,TEXT("town"));

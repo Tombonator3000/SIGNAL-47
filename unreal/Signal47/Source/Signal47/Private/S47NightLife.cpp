@@ -17,6 +17,7 @@
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47Picture.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
@@ -72,13 +73,13 @@ namespace
 		return FQuat(A.X * B.W + A.W * B.X + A.Y * B.Z - A.Z * B.Y, A.Y * B.W + A.W * B.Y + A.Z * B.X - A.X * B.Z,
 			A.Z * B.W + A.W * B.Z + A.X * B.Y - A.Y * B.X, A.W * B.W - A.X * B.X - A.Y * B.Y - A.Z * B.Z);
 	}
-	/** The picture's lines (core/vhs.ts lines): 720 under the tape, 480 under the worn one, the screen's without. */
+	/** Tape keeps its 480-line footprint. Film and Clean use the viewport's full resolution. */
 	double LinesNow(const US47Main* M)
 	{
-		const FString Pic = M && M->Flow ? M->Flow->Picture : FString(TEXT("vhs"));
+		const bool bTape = M && M->Flow && S47Picture::Mode(M->Flow->Picture) == 1 && M->Flow->PictureStrength > 0.f;
 		FVector2D Size(1600, 900);
 		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
-		return Pic == TEXT("off") ? FMath::Max(1.0, Size.Y) : FMath::Min(FMath::Max(1.0, Size.Y), Pic == TEXT("heavy") ? 480.0 : 720.0);
+		return bTape ? FMath::Min(FMath::Max(1.0, Size.Y), 480.0) : FMath::Max(1.0, Size.Y);
 	}
 	UInstancedStaticMeshComponent* MakeCloud(AS47Web* W, USceneComponent* Under, UMaterialInterface* Base, int32 Floats, TWeakObjectPtr<UMaterialInstanceDynamic>& Mid)
 	{

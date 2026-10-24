@@ -431,9 +431,9 @@ def main():
     ap.add_argument('--static-world', action='store_true',
                     help='hold autonomous narrative events with the cinematic guard; automatic for street cameras')
     ap.add_argument('--quality', choices=['low', 'high', 'ultra'], default='high')
-    ap.add_argument('--picture', choices=['off', 'vhs'], help='default: Low clean; High/Ultra VHS')
+    ap.add_argument('--picture', choices=['off', 'vhs', 'carpenter', '16mm', 'super8'], help='historical baseline default: Low clean; High/Ultra VHS. Use --picture carpenter for the new game default.')
     ap.add_argument('--suite', choices=['world', 'states', 'street', 'all'], default='world',
-                    help='world: original20; states: power/lights/menus; street: four public Caliche player-height views')
+                    help='world: original20 baseline cameras; states: power, portable lights and menus; street: four public Caliche player-height views')
     selection = ap.add_mutually_exclusive_group()
     selection.add_argument('--view', choices=ALL_VIEWS)
     selection.add_argument('--views', nargs='+', choices=ALL_VIEWS)

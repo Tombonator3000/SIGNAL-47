@@ -1,5 +1,6 @@
 #include "S47Web.h"
 #include "S47GraphicsReview.h"
+#include "S47Picture.h"
 #include "S47Startup.h"
 #include "S47Props.h"
 
@@ -699,10 +700,18 @@ void AS47Web::BeginPlay()
 		E->SetScalarParameterValue(TEXT("FogDensity"), 0.f);
 		E->SetScalarParameterValue(TEXT("NativeLighting"), 1.f);
 		E->SetVectorParameterValue(TEXT("FogColor"), FogColor);
-		// the picture: the tape look by default, as the web version on every tier but Low
-		FString Picture = TEXT("vhs");
+		// Unreal-only film profiles share the scene curve. Flow restores explicit preferences.
+		FString Quality = TEXT("high");
+		FParse::Value(FCommandLine::Get(), TEXT("S47Quality="), Quality);
+		FString Picture = S47Picture::DefaultForQuality(Quality);
 		FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Picture);
-		E->SetScalarParameterValue(TEXT("Vhs"), Picture == TEXT("off") ? 0.f : 1.f);
+		float Strength = 1.f, Calm = 0.f;
+		FParse::Value(FCommandLine::Get(), TEXT("S47PictureStrength="), Strength);
+		FParse::Value(FCommandLine::Get(), TEXT("S47PictureCalm="), Calm);
+		E->SetScalarParameterValue(TEXT("PictureMode"), S47Picture::Mode(Picture));
+		E->SetScalarParameterValue(TEXT("Vhs"), S47Picture::Mode(Picture) == 0 ? 0.f : S47Picture::Strength(Strength));
+		E->SetScalarParameterValue(TEXT("PictureStrength"), S47Picture::Strength(Strength));
+		E->SetScalarParameterValue(TEXT("PictureCalm"), S47Picture::Strength(Calm));
 	}
 	BuildNativeLighting();
 	Enter(TEXT("saro"));
