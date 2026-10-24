@@ -1,5 +1,12 @@
 # Todo for unreal/
 
+## SARO-ankomst, 24. oktober 2026
+
+- [x] Flytt skiltet utenfor kjørekorridoren, lag ryddig besøksparkering og gangsti, forbedre skilt/vinduer og behold egen personbil atskilt fra stabil servicepickup.
+- [x] B/Q-matmeny med D-pad/A, nedsetting, bortstuing, fremtaking og kasting, med varig lagring og original måltidsflyt bevart.
+- [x] A3: editor/pakking, 1400 selvtester, fem fokuserte pakkede scenarioer og19 faktisk vurderte bilder. Merge/installasjon dokumenteres i SARO_ARRIVAL.md.
+- [ ] Menneskelig prøve av SARO-parkering og B-matmeny med fysisk Xbox-kontroller. Syntetisk Slate-ruting og vanlig native kjøre-/gangkontroller er prøvd.
+
 ## Highway og åpningstur, 24. oktober 2026
 
 - [ ] Senere RT-minnepolering: eksisterende rød AlwaysResident-advarsel 83.107 MiB / 400 MiB ved 20%-terskelen finnes allerede i D2 og er uendret i H3. Optimaliser relevante mesh-LOD-er etter måling; ikke skjul varslingen eller endre budsjettet for å få rene testbilder.

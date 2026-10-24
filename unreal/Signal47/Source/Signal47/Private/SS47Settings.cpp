@@ -321,7 +321,7 @@ void SS47Settings::BuildRows()
 		AddPad(TEXT("Look"), TEXT("RS"), TEXT("Move the right stick to look around."));
 		AddPad(TEXT("Run"), TEXT("L3"), TEXT("Press the left stick while moving to run."));
 		AddPad(TEXT("Use / talk"), TEXT("A"), TEXT("Use what you are looking at, talk, or choose the main offered action."));
-		AddPad(TEXT("Second choice"), TEXT("B"), TEXT("Choose the secondary offered action. In menus, B goes back or closes the screen."));
+		AddPad(TEXT("Second choice / takeaway"), TEXT("B"), TEXT("On foot, manage takeaway: set down, stow, take out or discard. Otherwise choose the secondary offered action. In menus, B goes back or closes the screen."));
 		AddPad(TEXT("Raise / lower camera"), TEXT("X"), TEXT("Raise the field camera, or put it away."));
 		AddPad(TEXT("Jump"), TEXT("Y"), TEXT("Jump while on foot."));
 		AddPad(TEXT("Look closer / zoom"), TEXT("LT"), TEXT("Hold the left trigger for a closer look or camera zoom while on foot."));

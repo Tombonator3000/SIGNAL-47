@@ -20,6 +20,7 @@ class UTexture2D;
 class ULightComponent;
 class ULocalLightComponent;
 class UPrimitiveComponent;
+class FS47SaroArrival;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
 struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
@@ -86,6 +87,7 @@ public:
 	bool HighwayLandscapeReady() const { return HighwayLandscapeRoot.IsValid(); }
 	FVector HighwayMapEye(const FVector& ThreeEye) const;
 	bool AuditHighwayLandscape(TArray<FString>& Lines) const;
+	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
 	// what FS47Obj and FS47Mat use
 	TArray<class UMaterialInstanceDynamic*> NodeMids(int32 Node);
@@ -289,6 +291,8 @@ private:
 	void BuildHighwayPower();
 	void BuildHighwayLandscape();
 	void BeginHighwayAudit();
+	void BeginSaroArrivalViews();
+	TSharedPtr<FS47SaroArrival> SaroArrival;
 	void UpdateHighwayLandscape();
 	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
 	TMap<int32, FTransform> HighwayVisuals;

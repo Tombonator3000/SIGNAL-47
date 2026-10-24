@@ -10,6 +10,10 @@ Codex, `codex/caliche-concept`: ni visuelle iterasjoner av gatebiten ved bensins
 
 Codex med avgrensede lyd-/sperre-, strøm- og visuelle hjelpere, `codex/highway-continuity`: H3 fra 464078be, Roswell-sperre, motorlyd, Motor Court-natur og én detaljert hovedstrømlinje ferdige. Editor/pakke, 1392 selvtester og 7 korte pakkede scenarioer PASS; 8 før-/etter-bilder vurdert. Eksisterende RT-advarsel og mørk nattbakke dokumentert i HIGHWAY_FIXES.md. PR 153 flettet i acaa99d7; H3 installert med 40 verifiserte payloadfiler, 46 uendrede Saved-filer og backup. Ingen full verdens-/PSO-runde.
 
+## SARO-ankomst startet 24.10.2026 kl. 22:16
+
+Codex, `codex/saro-arrival` fra a2c33e3d: Tom ber om skilt utenfor innkjøringen, plan parkering foran SARO-skiltet, varig personlig bil uten bytte til servicepickup, bedre skilt/vinduer og tilgjengelig nedsetting/bortstuing/kasting av mat. Modell-/plassering, bil-/lagringslogikk og mat-/inputflyt har hver sin avgrensede hjelper. Root eier integrasjon, kort pakket kontroll og levering. Bibliotekets generelle Unreal-MCP er UNVERIFIED og gjenbrukes ikke. Ingen full testmatrise eller ny PSO-kø.
+
 ## Arbeidsdeling
 
 - Codex: rendering, lys, skygger, materialer, post-prosess, importløypa for materialer.
@@ -105,3 +109,6 @@ Oppfølgingskontroll: inngangsprosessen var ikke lenger aktiv mens status ble sk
 ## Tilgjengelighet for felles byggeøkt, 24.10.2026
 
 Radiostasjon/array: leveransen er ferdig. Ingen gjenstående bygg eller tester, og ingen egne aktive eller kølagte Unreal-jobber. Resttid: 0 minutter. Denne leveransen trenger ingen ny økt og kan holde neste avtalte sammenhengende 30-minuttersvindu ledig. Dette registrerer bare tilgjengelighet; eier og start/slutt for en felles reservasjon må fortsatt bekreftes av de berørte chattene.
+
+
+- 2026-10-24 kl. 23:12 SARO A3 fra5ae3a3fc består editorbygg/Linux-pakking,1400 selvtestsjekker og fem korte pakkede kontroller: faktisk kjøring/parkering/gange/diskreload, matens syntetiske Slate-knapper og to nye reloads,12 lys-/vindusbilder, original takeaway med ti diskreloads og service/diner. Totalt19 faktiske bilder vurdert. A1 stoppet ved gammel SARO_WAY; A2-testen sjekket før normal0.4s OnParked og bildene viste perforert asfalt/gress. Rettet med begrenset kjøreflate, normal overgangsventing, tett RGB-asfalt +24mm visuelt over uendret querygulv og floraeksklusjoner. Første editorforsøk fant privat Wheels-tilgang, rettet til eksportert objekthåndtak. Råforsøk beholdt. Ingen full110/PSO eller fysisk Xbox-/lydprøve; tidligere RT-varsel består. Merge/installasjon gjenstår.

@@ -25,6 +25,9 @@ public:
 	bool Carried() const;
 	FString PlacedSpot() const;
 	bool Eaten() const;
+	bool Stowed() const;
+	bool Discarded() const;
+	TArray<FString> FoodMenuOptions() const { return MenuOptions; }
 	bool MealBusy() const { return MealLeft > 0; }
 	bool HeldVisible() const;
 	bool PlacedVisible() const;
@@ -38,7 +41,7 @@ public:
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
-	enum class EMode : uint8 { None, Held, Placed, Eaten };
+	enum class EMode : uint8 { None, Held, Placed, Eaten, Stowed, Discarded };
 	struct FSpot
 	{
 		FString Id, Area;
@@ -55,6 +58,8 @@ private:
 	TUniquePtr<FS47Group> Held, Placed, Trace;
 	double MealLeft = 0;
 	bool bEnabled = false, bBuilt = false, bOwnFade = false;
+	TSharedPtr<uint8> Lifetime = MakeShared<uint8>(0);
+	TArray<FString> MenuOptions;
 	void Build();
 	void SyncPack();
 	void UpdateSpots();
@@ -66,4 +71,7 @@ private:
 	FSpot* Find(const FString& Id);
 	const FSpot* Find(const FString& Id) const;
 	void Changed();
+	bool OpenFoodMenu();
+	bool Manage(const FString& Action);
+	FString NearbySurface() const;
 };

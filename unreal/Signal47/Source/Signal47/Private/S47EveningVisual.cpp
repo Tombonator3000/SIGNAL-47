@@ -1,4 +1,5 @@
 #include "S47EveningVisual.h"
+#include "Components/InstancedStaticMeshComponent.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -17,7 +18,6 @@ namespace
 	const FVector SERVICE_PARK(8.9, 0, 8);
 	const TCHAR* WAGON = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_body.fairheaven_sw84_body");
 	const TCHAR* WAGON_DOOR = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_door_driver.fairheaven_sw84_door_driver");
-	const TCHAR* PICKUP = TEXT("/Game/Free/Vehicles/pickup_c10_1966/StaticMeshes/pickup_c10_1966.pickup_c10_1966");
 
 	UMaterialInstanceDynamic* Paint(FS47Group& G, uint32 Color, float Roughness = 0.7f)
 	{
@@ -133,7 +133,7 @@ FS47EveningVisual::~FS47EveningVisual()
 {
 	if (Personal.IsValid()) Personal->DestroyComponent();
 	if (PersonalDoor.IsValid()) PersonalDoor->DestroyComponent();
-	if (Service.IsValid()) Service->DestroyComponent();
+	for (auto& Part:ServiceParts) if (Part.IsValid()) Part->DestroyComponent();
 }
 
 void FS47EveningVisual::Build()
@@ -143,8 +143,65 @@ void FS47EveningVisual::Build()
 	bBuilt = true;
 	Personal = Vehicle(W, WAGON, TEXT("personal station wagon"));
 	PersonalDoor = Vehicle(W, WAGON_DOOR, TEXT("personal station wagon driver door"));
-	Service = Vehicle(W, PICKUP, TEXT("parked service pickup"));
-	Pose(Service.Get(), SERVICE_PARK, UE_DOUBLE_PI);
+	// Snapshot the ACTUAL service body, not a different C10 model that changes at handover.
+	// The hidden arrival carrier can move independently; identical originals take over at work.
+	if (FS47Truck* Truck=M->World->SaroTruck())
+	{
+	 const FS47WebNode* Root=W->Node(Truck->Group.I);TSet<int32> Copied;
+	 TMap<UMaterialInterface*,UMaterialInterface*> FrozenMaterials;
+	 if (Root && Root->Comp.IsValid())
+	 {
+	  double E[16];S47Three::Compose(SERVICE_PARK,S47Three::Euler(0,UE_DOUBLE_PI,0),FVector::OneVector,E);
+	  const FTransform Park=S47Three::MatToUE(E),Source=Root->Comp->GetComponentTransform();
+	  const auto Copy=[&](FS47Obj O)
+	  {
+	   if(Copied.Contains(O.I))return;Copied.Add(O.I);
+	   const FS47WebNode* N=W->Node(O.I);auto* Original=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+	   if(!Original||!Original->GetStaticMesh())return;
+	   // Ignore only the outer carrier gate. Preserve hidden alternatives/LOD descendants.
+	   for(int32 A=O.I;A>=0&&A!=Truck->Group.I;)
+	   {
+	    const FS47WebNode* Ancestor=W->Node(A);
+	    if(!Ancestor||!Ancestor->bVis)return;
+	    A=Ancestor->Parent;
+	   }
+	   UStaticMeshComponent* Part=nullptr;
+	   if(auto* Instances=Cast<UInstancedStaticMeshComponent>(Original))
+	   {
+	    auto* I=NewObject<UInstancedStaticMeshComponent>(W);I->SetStaticMesh(Original->GetStaticMesh());
+	    I->NumCustomDataFloats=Instances->NumCustomDataFloats;
+	    I->InstancingRandomSeed=Instances->InstancingRandomSeed;I->AdditionalRandomSeeds=Instances->AdditionalRandomSeeds;
+	    for(int32 K=0;K<Instances->GetInstanceCount();++K){FTransform T;Instances->GetInstanceTransform(K,T,false);I->AddInstance(T,false);}
+	    I->PerInstanceSMCustomData=Instances->PerInstanceSMCustomData;Part=I;
+	   }
+	   else {Part=NewObject<UStaticMeshComponent>(W);Part->SetStaticMesh(Original->GetStaticMesh());}
+	   Part->SetupAttachment(W->GetRootComponent());Part->SetMobility(EComponentMobility::Movable);
+	   Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);Part->SetCastShadow(Original->CastShadow);
+	   for(int32 K=0;K<Original->GetNumMaterials();++K)
+	   {
+	    UMaterialInterface* Material=Original->GetMaterial(K);
+	    if(auto* Dynamic=Cast<UMaterialInstanceDynamic>(Material))
+	    {
+	     UMaterialInterface** Existing=FrozenMaterials.Find(Material);
+	     if(Existing)Material=*Existing;
+	     else
+	     {
+	      // Retain the static parent hierarchy, but never inherit the driven truck's MID.
+	      UMaterialInterface* Parent=Dynamic->Parent;
+	      while(auto* DynamicParent=Cast<UMaterialInstanceDynamic>(Parent))Parent=DynamicParent->Parent;
+	      auto* Frozen=UMaterialInstanceDynamic::Create(Parent,W);
+	      Frozen->CopyMaterialUniformParameters(Dynamic); // Exported UE API; includes hierarchy values/textures.
+	      FrozenMaterials.Add(Material,Frozen);Material=Frozen;
+	     }
+	    }
+	    Part->SetMaterial(K,Material);
+	   }
+	   Part->SetVisibility(false);Part->RegisterComponent();
+	   Part->SetWorldTransform(Original->GetComponentTransform().GetRelativeTransform(Source)*Park);ServiceParts.Add(Part);
+	  };
+	  Truck->Body.Traverse(Copy);Truck->Shell.Traverse(Copy);W->Obj(Truck->Path+TEXT(".wheels")).Traverse(Copy);
+	 }
+	}
 	CounterFood = MakeUnique<FS47Group>(W, TEXT("EveningDinerOrder"));
 	Food(*CounterFood, CounterBurger, CounterSandwich, CounterCup);
 	CounterWater = CounterFood->Group(nullptr, FVector(0.27, 0, -0.18));
@@ -166,7 +223,7 @@ void FS47EveningVisual::Build()
 	HeldFood->Box(nullptr, 0.09, 0.065, 0.22, Paint(*HeldFood, 0x424c45), FVector(0.025, -0.065, 0.10));
 	HeldFood->Sphere(nullptr, 0.055, Paint(*HeldFood, 0xaf8566), FVector(0, -0.024, 0.006), FVector(1.2, 0.55, 1));
 	Shadows(*HeldFood); HeldFood->AddToScene(); HeldFood->SetVisible(false);
-	UE_LOG(LogTemp, Display, TEXT("S47: evening visual built: personal wagon %s, separate SARO pickup %s, lit order/hand props"), Personal.IsValid() ? TEXT("ready") : TEXT("MISSING"), Service.IsValid() ? TEXT("ready") : TEXT("MISSING"));
+	UE_LOG(LogTemp, Display, TEXT("S47: evening visual built: personal wagon %s, separate SARO pickup %s, lit order/hand props"), Personal.IsValid() ? TEXT("ready") : TEXT("MISSING"), !ServiceParts.IsEmpty() ? TEXT("ready") : TEXT("MISSING"));
 }
 
 void FS47EveningVisual::ParkPersonal(const FVector& Position, double Heading)
@@ -175,20 +232,39 @@ void FS47EveningVisual::ParkPersonal(const FVector& Position, double Heading)
 	PersonalHeading = Heading;
 	// Repair unsafe arrival and restored poses without changing story/evidence state. The whole
 	// rotated body must clear SARO 07's pad, both entrance landings and the annex plinth.
-	if (WagonOverlaps(PersonalPark, Heading, 6.6, 13, 2.7, 12.4)
+	if (!FMath::IsFinite(Position.X)||!FMath::IsFinite(Position.Y)||!FMath::IsFinite(Position.Z)||!FMath::IsFinite(Heading)
+        || WagonOverlaps(PersonalPark, Heading, 6.6, 13, 2.7, 12.4)
 		|| WagonOverlaps(PersonalPark, Heading, 5, 13, -0.6, 4.5)
 		|| WagonOverlaps(PersonalPark, Heading, -6, 6.6, 4.8, 10.8))
 	{
-		PersonalPark = FVector(4.5, -0.62, 14);
-		PersonalHeading = UE_DOUBLE_PI;
+		PersonalPark = ArrivalPark();
+		PersonalHeading = 0;
 	}
 	bParked = true;
+}
+
+bool FS47EveningVisual::FitsArrivalBay(const FVector& P,double H)
+{
+ if(!FMath::IsFinite(P.X)||!FMath::IsFinite(P.Z)||!FMath::IsFinite(H))return false;
+ const double C=FMath::Abs(FMath::Cos(H)),S=FMath::Abs(FMath::Sin(H));
+ const double X=PersonalHalfWidth()*C+PersonalHalfLength()*S,Z=PersonalHalfWidth()*S+PersonalHalfLength()*C;
+ const double Heading=FMath::Abs(FMath::Atan2(FMath::Sin(H),FMath::Cos(H)));
+ return Heading<.32 && P.X-X>=-14.45 && P.X+X<=-11.15 && P.Z-Z>=11.40 && P.Z+Z<=17.20;
+}
+void FS47EveningVisual::RestorePersonal(const FVector& P,double H,int32 Version)
+{
+ const bool OldFallback=FVector2D(P.X-4.5,P.Z-14).Size()<.15;
+ if(Version<2&&OldFallback)ParkPersonal(ArrivalPark(),0);else ParkPersonal(P,H);
+}
+bool FS47EveningVisual::ServiceWaitingVisible() const
+{
+ return !ServiceParts.IsEmpty()&&ServiceParts[0].IsValid()&&ServiceParts[0]->IsVisible();
 }
 
 void FS47EveningVisual::SetParked(bool bOn)
 {
 	if (bOn) ParkPersonal(PersonalPark, PersonalHeading);
-	else { bParked = false; PersonalPark = FVector(4.5, -0.62, 14); PersonalHeading = UE_DOUBLE_PI; }
+	else { bParked = false; PersonalPark = ArrivalPark(); PersonalHeading = 0; }
 }
 
 void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, bool bArrived,
@@ -215,7 +291,9 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	if (Personal.IsValid()) Personal->SetVisibility(bPersonalShown);
 	if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(bPersonalShown);
 	M->World->SetPersonalPark(PersonalPark, PersonalHeading, bPersonalShown && !bCommute);
-	if (Service.IsValid()) Service->SetVisibility(bCommute && bSaro && Carrier && FVector::Distance(Carrier->Position, SERVICE_PARK) > 4.5);
+	const bool ServiceShown=bCommute && bSaro && !ServiceParts.IsEmpty();
+	for (auto& Part:ServiceParts)if(Part.IsValid())Part->SetVisibility(ServiceShown);
+	M->World->SetArrivalServiceWaiting(ServiceShown);
 	// A paid serving has one presentation: in the diner's handoff it is held, then
 	// takeaway owns it. Only dine-in leftovers/water remain on the counter after eating.
 	const bool bHeld = !bDriving && !bFoodEaten && !bFoodTaken && bDiner && bFoodBought;
@@ -252,7 +330,8 @@ void FS47EveningVisual::Hide()
 {
  if (Personal.IsValid()) Personal->SetVisibility(false);
  if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(false);
- if (Service.IsValid()) Service->SetVisibility(false);
+ for (auto& Part:ServiceParts)if(Part.IsValid())Part->SetVisibility(false);
+ if(M&&M->World)M->World->SetArrivalServiceWaiting(false);
  for (FS47Group* G : {CounterFood.Get(), HeldFood.Get()}) if (G) G->SetVisible(false);
  if (M && M->World) M->World->SetPersonalPark(PersonalPark, PersonalHeading, false);
 }
