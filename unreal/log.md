@@ -252,3 +252,5 @@ Originalt11-delt Blenderkit med interiør, perioderiktig tractor/reefer, parkeri
 ## 2026-10-24 kl. 21:21, highway-retting startet
 
 Tom godkjenner planen: Roswell-sperre beholdes frem til historiens åpning, riktige motorlydnøkler, sammenhengende natur gjennom Motor Court og én detaljert strømlinje med nødvendige avgreninger. Biblioteksøk ga ingen relevant bekreftet løsning, eksisterende prosjektkode gjenbrukes. Spill kjører ennå; kodearbeid fortsetter mens lukking er forespurt. Én tung jobb og korte berørte prøver.
+
+- 22:07 Highway H3 fra 464078be består editor/pakking, 1392 selvtester og 7 korte native pakkede scenarioer. Sperre/gangport lukket/åpen, dag/natt to faktiske overleveringer hver, motorens ekte dekodede loop-PCM, stopp/ny innstigning, diner, takeaway/diskreload, arkiv og kontrollrom. 8 bilder vurdert av root/uavhengig hjelper. H1 RT-proxyfeil og H2 fixturetiming er avvist med rålogger bevart. Eksisterende D2/H3 RT-minneadvarsel 83.107 MiB / 400 MiB, mørk nattbakke og motellets byggproxy er dokumenterte begrensninger. Ingen full verdens-/PSO-runde. Merge/installasjon ikke ennå bekreftet.

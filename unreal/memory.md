@@ -1,5 +1,13 @@
 # Minne for unreal/
 
+## Highway-kontinuitet, 24. oktober 2026
+
+- H3 fra 464078be: Roswell følger eksisterende historieport også i pendlerbilen; lydregisterets camelCase-motornavn brukes med reell lavpassfiltrering og trygg stopp/ny innstigning.
+- Natur og én detaljert hovedstrømlinje deler kanonisk road-ramme; SARO-offset (8024, 0, -300), 200 m overlapp, 86 delte komponenter/4816 instanser. RoadFloras fem tomt eksporterte drawbarn måtte aktiveres etter runtimefylling. Ikke aktiver alle skjulte eksportnoder.
+- Gamle wiremeshes deler gjerder og kraftledning. Tools/highwaypower/prepare_cpu.py må gjøre g684/g918 CPU-lesbare før cook; runtime fjerner bare høye ledningstriangler. 6 mm gjerdetrådkloner rasteriseres uten egen hardwareRT; nye stolper/kraftledninger beholder RT.
+- 1392 selvtester, 7 fokuserte pakkede forløp, fire reelle områdeskifter og 8 vurderte bilder PASS. Natt bekrefter silhuetter, ikke fine bakkedetaljer. Eksisterende D2/H3 RT-varsel 83.107 MiB / 400 MiB ved 20% er urettet. HIGHWAY_FIXES.md/acceptance.json skiller testet kilde, råbevis og levering. Ingen full 110/PSO-runde, menneskelig lytting/input eller helruteytelse.
+- Auditfixture må vente på World->bBusy før BeginCommute; ellers beholder åpningsturens ventende StartTrip sin opprinnelige posisjon.
+
 ## Mesa Diner, 24. oktober 2026
 
 - Originalt ellevedelt Blenderkit i Tools/mesadiner: fasade/interiør, maskert støvparkering, neonskilt ved fasaden og tractor/reefer. Faktisk root/yaw/floor og originale handlinger/dynamiske objekter beholdes. Dør fysisk åpen; ny fysisk leaf/signfoot, atomisk komplett-kit-fallback.

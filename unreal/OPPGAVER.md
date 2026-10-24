@@ -6,9 +6,9 @@ Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgav
 
 Codex, `codex/caliche-concept`: ni visuelle iterasjoner av gatebiten ved bensinstasjonen, suvenirbutikken og 1420 AM er ferdige, lokalt flettet og installert. 42 faktiske spillerhøye sluttbilder, hele 110/110 screenshots.sh, elleve runtimeprøver, A02-pilot, tre horisontprøver, 249 native kontroller og fire portable Blender-kilder PASS. 40 payloadhash og 51 uendrede Saved-filer. Originaler, bildevelger og prioriteringsliste ligger i `~/Desktop/Signal47 Caliche konseptpass`; detaljstatus i [CALICHE_CONCEPT_PASS.md](CALICHE_CONCEPT_PASS.md). Videre bygningsprioritet starter med Mesa Diner og sheriffkontoret. Menneskelig input/lytting/fullnatt og helruteytelse er ikke målt her. Ingen ny ekstern publisering eller push/PR.
 
-## Highway-kontinuitet startet 24.10.2026 kl. 21:21
+## Highway-kontinuitet, 24.10.2026
 
-Codex, `codex/highway-continuity`: godkjent retting av Roswell-sperre, motorlyd, landskapssøm ved Motor Court og én detaljert hovedstrømlinje. Avgrensede hjelpere eier lyd/sperre og strøm; root eier visuelt landskapslag og levering. Korte målrettede prøver, ingen full verdens-/PSO-runde.
+Codex med avgrensede lyd-/sperre-, strøm- og visuelle hjelpere, `codex/highway-continuity`: H3 fra 464078be, Roswell-sperre, motorlyd, Motor Court-natur og én detaljert hovedstrømlinje ferdige. Editor/pakke, 1392 selvtester og 7 korte pakkede scenarioer PASS; 8 før-/etter-bilder vurdert. Eksisterende RT-advarsel og mørk nattbakke dokumentert i HIGHWAY_FIXES.md. Fletting/installasjon gjenstår; ingen full verdens-/PSO-runde.
 
 ## Arbeidsdeling
 

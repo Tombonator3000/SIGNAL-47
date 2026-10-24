@@ -17,6 +17,14 @@
 
 `-S47HighwayAudit=barrier|seam` er avgrenset til isolert developerprofil. Valgfri `-S47HighwayShots=<mappe>` tar overgangsbilder. Audit bruker faktisk kjørekontroller, native komponenttilstand og reelle dekodede motoropptak. Isolert PCM-render fra faktiske loopparametre er en numerisk lydkontroll, ikke menneskelig lytting eller måling av hele lydmiksen.
 
-## Kontrollstatus
+## Kontrollstatus 24. oktober 2026 kl. 22:07
 
-Implementering ferdigstilles. Native bygg, pakket kontroll, visuell vurdering og levering er foreløpig ikke bekreftet. Ingen full verdensrunde eller PSO-kø inngår. Menneskelig gjennomspilling, lytting og helruteytelse er ikke dokumentert her.
+Kandidat H3 fra `464078bef26b45f1c1237b8778957d4dd8bca342` består editorbygg, pakking, 1392 selvtester og syv korte pakkede scenarioer. Sperretesten kjører faktisk bilkontroller og gangport både lukket og åpen, med opprinnelig tilstand gjenopprettet. Dag og natt kjører to reelle områdeoverleveringer hver, motor på tomgang/under kjøring og vanlig utstigning/stopp/ny innstigning. Største samplede kanoniske øyesteg er 2.4055 m dag og 3.7938 m natt; ingen koordinatrammehopp. Diner, takeaway med ferske disk-/verdenslastinger, arkiv og kontrollrom består på samme pakke.
+
+Åtte faktiske før-/etter-bilder er vurdert av root og uavhengig hjelper. Fjellprofiler og én strømlinje består i begge retninger. Dag bruker faktisk Evening-førerhus; natt er en isolert chapter1-fixture og dokumenterer silhuetter, mens bakken er for mørk til å vurdere fine plantedetaljer. Motellets eksisterende bygnings-/lysproxyer skifter fortsatt med området; denne rettelsen gjelder naturen. Geologien har fortsatt eksisterende stiliserte former/materialer.
+
+De to gjerdetrådklonene beholder rastergeometri og materialer, men utelates fra hardware RT-refleksjoner/GI: de er 6 mm brede og kaster allerede ikke skygge. Nye stolper og kraftledninger beholder RT. Originalassets og globalt minnebudsjett urøres. Den røde utvikleradvarselen om 83.107 MiB always-resident av 400 MiB ved 20%-terskelen finnes også i forrige D2-pakkes takeaway-bilder med nøyaktig samme tall. Dette er et eksisterende, urettet punkt, ikke en ny H3-regresjon.
+
+H1 avvises på manglende RT-proxy ved transient mesh. H2 avvises på testfixturens timing mot åpningsturens forsinkede start; bilen kjørte fra byens vanlige startsted i stedet for testpunktet. Begge råforløp er bevart. H3 venter på ferdig StartTrip før fixtureplassering og har korrekt mesh-policy. Ingen skjult konsoll-/grafikkoverstyring for å få rene bilder.
+
+`Signal47/Tools/highwaypower/acceptance.json` binder testkilde, seks pakkehasher, logger og bilder. Råbevis: `~/scratch-bm/Signal47-highway-continuity`. Ingen full 110-scenariorunde eller PSO-kø inngår. Menneskelig lytting/input, full natt og helruteytelse er ikke målt. Merge/installasjon oppdateres etter faktisk levering.
