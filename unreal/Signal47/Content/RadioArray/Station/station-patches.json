@@ -5,7 +5,7 @@
     19.04,
     30.08,
     0.0,
-    8.14216661453247,
+    10.0,
     2029.9,
     2042.1
   ],
@@ -14,8 +14,8 @@
     "g999": {
       "tris": 1916,
       "gasRemoved": 128,
-      "stationRemoved": 52,
-      "resultTris": 1736,
+      "stationRemoved": 72,
+      "resultTris": 1716,
       "hidden": false,
       "node": 1448,
       "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g999.g999"
@@ -23,8 +23,8 @@
     "g1000": {
       "tris": 512,
       "gasRemoved": 44,
-      "stationRemoved": 50,
-      "resultTris": 418,
+      "stationRemoved": 60,
+      "resultTris": 408,
       "hidden": false,
       "node": 1449,
       "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1000.g1000"

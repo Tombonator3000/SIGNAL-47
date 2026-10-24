@@ -13,7 +13,7 @@
     19.04,
     30.08,
     0.0,
-    8.14216661453247,
+    10.0,
     2029.9,
     2042.1
   ],
@@ -22,9 +22,9 @@
     "g999": {
       "tris": 1916,
       "gasRemoved": 128,
-      "radioRemoved": 52,
+      "radioRemoved": 72,
       "souvenirRemoved": 0,
-      "resultTris": 1736,
+      "resultTris": 1716,
       "hidden": false,
       "node": 1448,
       "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g999.g999"
@@ -32,9 +32,9 @@
     "g1000": {
       "tris": 512,
       "gasRemoved": 44,
-      "radioRemoved": 50,
+      "radioRemoved": 60,
       "souvenirRemoved": 0,
-      "resultTris": 418,
+      "resultTris": 408,
       "hidden": false,
       "node": 1449,
       "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1000.g1000"
