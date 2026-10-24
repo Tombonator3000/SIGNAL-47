@@ -1,0 +1,1245 @@
+{
+  "status": "SOURCE_MANIFEST_REPLACEMENT_AUDIT_NATIVE_UNVERIFIED",
+  "manifest_path": "/home/tom/SIGNAL-47/unreal/Signal47/Content/WebData/manifest.json",
+  "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "whole_hide_nodes": [
+    {
+      "node": 680,
+      "parent": 663,
+      "geo": 465,
+      "source_material_ids": [
+        329
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced"
+    },
+    {
+      "node": 681,
+      "parent": 663,
+      "geo": 466,
+      "source_material_ids": [
+        330
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced"
+    },
+    {
+      "node": 684,
+      "parent": 663,
+      "geo": 469,
+      "source_material_ids": [
+        333
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced"
+    },
+    {
+      "node": 686,
+      "parent": 663,
+      "geo": 471,
+      "source_material_ids": [
+        335
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced"
+    },
+    {
+      "node": 687,
+      "parent": 663,
+      "geo": 472,
+      "source_material_ids": [
+        336
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced"
+    },
+    {
+      "node": 703,
+      "parent": 702,
+      "geo": 477,
+      "source_material_ids": [
+        324
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 704,
+      "parent": 702,
+      "geo": 478,
+      "source_material_ids": [
+        339
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 705,
+      "parent": 702,
+      "geo": 479,
+      "source_material_ids": [
+        323
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 707,
+      "parent": 706,
+      "geo": 480,
+      "source_material_ids": [
+        323
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 708,
+      "parent": 706,
+      "geo": 481,
+      "source_material_ids": [
+        324
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 710,
+      "parent": 690,
+      "geo": 482,
+      "source_material_ids": [
+        323
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 711,
+      "parent": 690,
+      "geo": 483,
+      "source_material_ids": [
+        321
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 712,
+      "parent": 690,
+      "geo": 484,
+      "source_material_ids": [
+        324
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 713,
+      "parent": 690,
+      "geo": 485,
+      "source_material_ids": [
+        332
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 714,
+      "parent": 690,
+      "geo": 486,
+      "source_material_ids": [
+        327
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 715,
+      "parent": 690,
+      "geo": 487,
+      "source_material_ids": [
+        339
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 717,
+      "parent": 690,
+      "geo": 489,
+      "source_material_ids": [
+        325
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 718,
+      "parent": 690,
+      "geo": 490,
+      "source_material_ids": [
+        326
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 719,
+      "parent": 690,
+      "geo": 491,
+      "source_material_ids": [
+        338
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 720,
+      "parent": 690,
+      "geo": 492,
+      "source_material_ids": [
+        340
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 735,
+      "parent": 689,
+      "geo": 501,
+      "source_material_ids": [
+        343
+      ],
+      "name": "lic:bookcase",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 736,
+      "parent": 689,
+      "geo": 502,
+      "source_material_ids": [
+        344
+      ],
+      "name": "lic:dining_chair",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children"
+    },
+    {
+      "node": 1644,
+      "parent": 1643,
+      "geo": 1109,
+      "source_material_ids": [
+        706
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1645,
+      "parent": 1643,
+      "geo": 1110,
+      "source_material_ids": [
+        707
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1646,
+      "parent": 1643,
+      "geo": 1111,
+      "source_material_ids": [
+        708
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1655,
+      "parent": 1653,
+      "geo": 1115,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1656,
+      "parent": 1653,
+      "geo": 1116,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1659,
+      "parent": 1657,
+      "geo": 1117,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1660,
+      "parent": 1657,
+      "geo": 1118,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1661,
+      "parent": 1648,
+      "geo": 1119,
+      "source_material_ids": [
+        712
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1662,
+      "parent": 1648,
+      "geo": 1120,
+      "source_material_ids": [
+        713
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1663,
+      "parent": 1648,
+      "geo": 1121,
+      "source_material_ids": [
+        707
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1665,
+      "parent": 1648,
+      "geo": 1123,
+      "source_material_ids": [
+        715
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1666,
+      "parent": 1648,
+      "geo": 1124,
+      "source_material_ids": [
+        716
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1679,
+      "parent": 1678,
+      "geo": 1133,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1680,
+      "parent": 1678,
+      "geo": 1134,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1681,
+      "parent": 1678,
+      "geo": 1135,
+      "source_material_ids": [
+        710
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1686,
+      "parent": 1677,
+      "geo": 1139,
+      "source_material_ids": [
+        719
+      ],
+      "name": "lic:nightstand",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1695,
+      "parent": 1694,
+      "geo": 1144,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1696,
+      "parent": 1694,
+      "geo": 1145,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1697,
+      "parent": 1694,
+      "geo": 1146,
+      "source_material_ids": [
+        710
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1698,
+      "parent": 1693,
+      "geo": 1147,
+      "source_material_ids": [
+        722
+      ],
+      "name": "lic:dresser",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1710,
+      "parent": 1709,
+      "geo": 1155,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1711,
+      "parent": 1709,
+      "geo": 1156,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1712,
+      "parent": 1708,
+      "geo": 1157,
+      "source_material_ids": [
+        725
+      ],
+      "name": "lic:dining_table",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1747,
+      "parent": 1647,
+      "geo": 502,
+      "source_material_ids": [
+        739
+      ],
+      "name": "lic:dining_chair",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    },
+    {
+      "node": 1748,
+      "parent": 1647,
+      "geo": 502,
+      "source_material_ids": [
+        739
+      ],
+      "name": "lic:dining_chair",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media"
+    }
+  ],
+  "partial_mesh_cuts": [
+    {
+      "node": 672,
+      "parent": 663,
+      "geo": 457,
+      "source_material_ids": [
+        321
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 674,
+      "parent": 663,
+      "geo": 459,
+      "source_material_ids": [
+        323
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 675,
+      "parent": 663,
+      "geo": 460,
+      "source_material_ids": [
+        324
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 676,
+      "parent": 663,
+      "geo": 461,
+      "source_material_ids": [
+        325
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 678,
+      "parent": 663,
+      "geo": 463,
+      "source_material_ids": [
+        327
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 679,
+      "parent": 663,
+      "geo": 464,
+      "source_material_ids": [
+        328
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 682,
+      "parent": 663,
+      "geo": 467,
+      "source_material_ids": [
+        331
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 683,
+      "parent": 663,
+      "geo": 468,
+      "source_material_ids": [
+        332
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 685,
+      "parent": 663,
+      "geo": 470,
+      "source_material_ids": [
+        334
+      ],
+      "name": "",
+      "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+      "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+      "remove_whole_triangles_inside": [
+        [
+          -50.25,
+          -38.0,
+          -0.3,
+          3.25,
+          21.5,
+          70.9
+        ]
+      ],
+      "preserve_whole_triangles_inside": [
+        [
+          -41.03,
+          -40.15,
+          -0.01,
+          1.44,
+          27.65,
+          28.55
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          21.810000000000002,
+          22.39
+        ],
+        [
+          -40.54,
+          -39.96,
+          -0.01,
+          1.02,
+          56.06,
+          56.64
+        ],
+        [
+          -40.49,
+          -39.910000000000004,
+          -0.01,
+          1.02,
+          68.21,
+          68.79
+        ]
+      ],
+      "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+    },
+    {
+      "node": 716,
+      "parent": 690,
+      "geo": 488,
+      "source_material_ids": [
+        328
+      ],
+      "name": "",
+      "reason": "Retain original registration-card printing; replace other key-board and reception atlas labels",
+      "source_coordinate_space": "geometry local Three metres",
+      "keep_only_whole_triangles_inside": [
+        [
+          -44.11,
+          -43.69,
+          1.025,
+          1.028,
+          23.895,
+          24.205
+        ]
+      ],
+      "policy": "If dedicated partial trim unavailable retain this small original atlas mesh rather than losing registration surface."
+    },
+    {
+      "node": 1667,
+      "parent": 1648,
+      "geo": 1125,
+      "source_material_ids": [
+        717
+      ],
+      "name": "",
+      "reason": "AC dark grille replaced, table ashtray dark center must stay",
+      "source_coordinate_space": "Room6 local Three metres, not Blender",
+      "remove_whole_triangles_inside": [
+        [
+          0.2,
+          1.31,
+          0.1,
+          0.61,
+          2.7,
+          2.96
+        ]
+      ],
+      "policy": "Retain all triangles outside AC prism, especially table ashtray at(.59,.844,1.59)"
+    }
+  ],
+  "retain_subtrees": [
+    {
+      "handle": "world.motel.tv.group",
+      "node": 709
+    },
+    {
+      "handle": "world.motel.objs.envelope",
+      "node": 721
+    },
+    {
+      "handle": "world.motel.objs.message",
+      "node": 725
+    },
+    {
+      "handle": "world.motel.objs.key6Hook",
+      "node": 727
+    },
+    {
+      "handle": "world.motel.objs.officePhoneHandset",
+      "node": 729
+    },
+    {
+      "handle": "world.motel.objs.room6DoorLeaf",
+      "node": 752
+    },
+    {
+      "handle": "world.motel.models.models[2]",
+      "node": 737
+    },
+    {
+      "handle": "world.room6.objs.door",
+      "node": 1669
+    },
+    {
+      "handle": "world.room6.objs.bed",
+      "node": 1672
+    },
+    {
+      "handle": "world.room6.objs.phone",
+      "node": 1690
+    },
+    {
+      "handle": "world.room6.objs.tv",
+      "node": 1699
+    },
+    {
+      "handle": "world.room6.objs.photo",
+      "node": 1705
+    },
+    {
+      "handle": "world.room6.objs.lamp",
+      "node": 1713
+    },
+    {
+      "handle": "world.room6.objs.fieldCard",
+      "node": 1721
+    },
+    {
+      "handle": "world.room6.objs.letter",
+      "node": 1724
+    },
+    {
+      "handle": "world.room6.objs.correction",
+      "node": 1727
+    },
+    {
+      "handle": "world.room6.objs.shoebox",
+      "node": 1730
+    },
+    {
+      "handle": "world.room6.objs.walkie",
+      "node": 1733
+    },
+    {
+      "handle": "world.room6.objs.nora",
+      "node": 1737
+    },
+    {
+      "handle": "world.room6.models.models[5]",
+      "node": 1687
+    },
+    {
+      "handle": "world.room6.models.models[6]",
+      "node": 1718
+    },
+    {
+      "handle": "world.room6.models.models[7]",
+      "node": 1749
+    }
+  ],
+  "retain_extra_nodes": [
+    {
+      "node": 1664,
+      "parent": 1648,
+      "geo": 1122,
+      "source_material_ids": [
+        714
+      ],
+      "name": "",
+      "reason": "Original Room6 night-view canvas retained; new shell does not duplicate this static outside view"
+    },
+    {
+      "node": 1668,
+      "parent": 1648,
+      "geo": 1126,
+      "source_material_ids": [
+        710
+      ],
+      "name": "",
+      "reason": "Original table ashtray metal cup"
+    },
+    {
+      "node": 733,
+      "parent": 732,
+      "geo": 499,
+      "source_material_ids": [
+        341
+      ],
+      "name": "clutter:office",
+      "reason": "Unique reception clutter including mug/papers/calendar/fan, not authored twice"
+    },
+    {
+      "node": 734,
+      "parent": 732,
+      "geo": 500,
+      "source_material_ids": [
+        342
+      ],
+      "name": "clutter:office:dirt",
+      "reason": "Reception weathering/dirt retained unless visually redundant later"
+    },
+    {
+      "node": 1745,
+      "parent": 1647,
+      "geo": 1178,
+      "source_material_ids": [
+        737
+      ],
+      "name": "clutter:room6",
+      "reason": "Nora suitcase/mug/pills/clothes and story-room clutter, not authored twice"
+    },
+    {
+      "node": 1746,
+      "parent": 1647,
+      "geo": 1179,
+      "source_material_ids": [
+        738
+      ],
+      "name": "clutter:room6:dirt",
+      "reason": "Room6 wear/dirt retained"
+    },
+    {
+      "node": 673,
+      "parent": 663,
+      "geo": 458,
+      "source_material_ids": [
+        322
+      ],
+      "name": "",
+      "reason": "Original parking paint and car/pool pieces outside new court"
+    },
+    {
+      "node": 677,
+      "parent": 663,
+      "geo": 462,
+      "source_material_ids": [
+        326
+      ],
+      "name": "",
+      "reason": "Original potted plant leaves"
+    },
+    {
+      "node": 688,
+      "parent": 663,
+      "geo": 473,
+      "source_material_ids": [
+        337
+      ],
+      "name": "",
+      "reason": "Original pool water"
+    },
+    {
+      "node": 770,
+      "parent": 767,
+      "geo": 530,
+      "source_material_ids": [
+        351
+      ],
+      "name": "",
+      "reason": "Original court ice/telephone decorative props near proxy"
+    }
+  ],
+  "retained_native_names": [
+    "prop:bed",
+    "Kelvora_OfficeTV",
+    "Kelvora_Room6TV"
+  ],
+  "never_hide_parents": [
+    662,
+    663,
+    689,
+    690,
+    1642,
+    1643,
+    1647,
+    1648,
+    1677,
+    1693,
+    1708
+  ],
+  "all_gameplay_proxies_retained": true,
+  "collision_policy": "Preserve existing walk/drive rectangles and floor callbacks. Retired original components can lose visibility queries only after matching authored floor/shell is ready. Original closed bathroom door/proxy and NPC remain; no new admission.",
+  "known_geometry_limits": [
+    "Motel mixed static surfaces must be index-trimmed; whole parent hide would remove car/lot/pool/lights and is prohibited.",
+    "T3 exact court walk slabs replace original at Y0; keep original parking at Y0 edge-to-edge.",
+    "Source Room6 bathroom is modelled behind original closed bathroom door; preserve closed gameplay behavior.",
+    "Own original bed remains existing Props. No new bed/TV/phone/live lamp/Nora duplicate is exported."
+  ]
+}

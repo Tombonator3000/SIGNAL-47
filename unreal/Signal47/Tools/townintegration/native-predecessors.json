@@ -1,0 +1,482 @@
+{
+  "status": "PASS",
+  "scope": "Saved original native mesh readback, exact assembly predecessors, no geometry changes",
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "rows": [
+    {
+      "node": 680,
+      "geo": 465,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g465",
+      "source_triangles": 348,
+      "saved_native_triangles": 348,
+      "acceptedPreviousTris": [
+        348
+      ]
+    },
+    {
+      "node": 681,
+      "geo": 466,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g466",
+      "source_triangles": 2,
+      "saved_native_triangles": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 684,
+      "geo": 469,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g469",
+      "source_triangles": 14,
+      "saved_native_triangles": 14,
+      "acceptedPreviousTris": [
+        14
+      ]
+    },
+    {
+      "node": 686,
+      "geo": 471,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g471",
+      "source_triangles": 2,
+      "saved_native_triangles": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 687,
+      "geo": 472,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g472",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 703,
+      "geo": 477,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g477",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 704,
+      "geo": 478,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g478",
+      "source_triangles": 72,
+      "saved_native_triangles": 72,
+      "acceptedPreviousTris": [
+        72
+      ]
+    },
+    {
+      "node": 705,
+      "geo": 479,
+      "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g479",
+      "source_triangles": 72,
+      "saved_native_triangles": 72,
+      "acceptedPreviousTris": [
+        72
+      ]
+    },
+    {
+      "node": 707,
+      "geo": 480,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g480",
+      "source_triangles": 24,
+      "saved_native_triangles": 24,
+      "acceptedPreviousTris": [
+        24
+      ]
+    },
+    {
+      "node": 708,
+      "geo": 481,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g481",
+      "source_triangles": 48,
+      "saved_native_triangles": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 710,
+      "geo": 482,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g482",
+      "source_triangles": 196,
+      "saved_native_triangles": 196,
+      "acceptedPreviousTris": [
+        132,
+        196
+      ]
+    },
+    {
+      "node": 711,
+      "geo": 483,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g483",
+      "source_triangles": 2,
+      "saved_native_triangles": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 712,
+      "geo": 484,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g484",
+      "source_triangles": 116,
+      "saved_native_triangles": 116,
+      "acceptedPreviousTris": [
+        116
+      ]
+    },
+    {
+      "node": 713,
+      "geo": 485,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g485",
+      "source_triangles": 760,
+      "saved_native_triangles": 760,
+      "acceptedPreviousTris": [
+        760
+      ]
+    },
+    {
+      "node": 714,
+      "geo": 486,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g486",
+      "source_triangles": 64,
+      "saved_native_triangles": 64,
+      "acceptedPreviousTris": [
+        20,
+        64
+      ]
+    },
+    {
+      "node": 715,
+      "geo": 487,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g487",
+      "source_triangles": 80,
+      "saved_native_triangles": 80,
+      "acceptedPreviousTris": [
+        80
+      ]
+    },
+    {
+      "node": 717,
+      "geo": 489,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g489",
+      "source_triangles": 280,
+      "saved_native_triangles": 280,
+      "acceptedPreviousTris": [
+        224,
+        280
+      ]
+    },
+    {
+      "node": 718,
+      "geo": 490,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g490",
+      "source_triangles": 112,
+      "saved_native_triangles": 112,
+      "acceptedPreviousTris": [
+        112
+      ]
+    },
+    {
+      "node": 719,
+      "geo": 491,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g491",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 720,
+      "geo": 492,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g492",
+      "source_triangles": 2,
+      "saved_native_triangles": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 735,
+      "geo": 501,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g501",
+      "source_triangles": 614,
+      "saved_native_triangles": 614,
+      "acceptedPreviousTris": [
+        614
+      ]
+    },
+    {
+      "node": 736,
+      "geo": 502,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g502",
+      "source_triangles": 3000,
+      "saved_native_triangles": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ]
+    },
+    {
+      "node": 1644,
+      "geo": 1109,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1109",
+      "source_triangles": 132,
+      "saved_native_triangles": 132,
+      "acceptedPreviousTris": [
+        132
+      ]
+    },
+    {
+      "node": 1645,
+      "geo": 1110,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1110",
+      "source_triangles": 72,
+      "saved_native_triangles": 72,
+      "acceptedPreviousTris": [
+        72
+      ]
+    },
+    {
+      "node": 1646,
+      "geo": 1111,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1111",
+      "source_triangles": 2,
+      "saved_native_triangles": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 1655,
+      "geo": 1115,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1115",
+      "source_triangles": 48,
+      "saved_native_triangles": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1656,
+      "geo": 1116,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1116",
+      "source_triangles": 48,
+      "saved_native_triangles": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1659,
+      "geo": 1117,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1117",
+      "source_triangles": 48,
+      "saved_native_triangles": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1660,
+      "geo": 1118,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1118",
+      "source_triangles": 48,
+      "saved_native_triangles": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1661,
+      "geo": 1119,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1119",
+      "source_triangles": 20,
+      "saved_native_triangles": 20,
+      "acceptedPreviousTris": [
+        20
+      ]
+    },
+    {
+      "node": 1662,
+      "geo": 1120,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1120",
+      "source_triangles": 2,
+      "saved_native_triangles": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 1663,
+      "geo": 1121,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1121",
+      "source_triangles": 108,
+      "saved_native_triangles": 108,
+      "acceptedPreviousTris": [
+        108
+      ]
+    },
+    {
+      "node": 1665,
+      "geo": 1123,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1123",
+      "source_triangles": 96,
+      "saved_native_triangles": 96,
+      "acceptedPreviousTris": [
+        96
+      ]
+    },
+    {
+      "node": 1666,
+      "geo": 1124,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1124",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1679,
+      "geo": 1133,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1133",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1680,
+      "geo": 1134,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1134",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1681,
+      "geo": 1135,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1135",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1686,
+      "geo": 1139,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1139",
+      "source_triangles": 2144,
+      "saved_native_triangles": 2132,
+      "acceptedPreviousTris": [
+        2132,
+        2144
+      ]
+    },
+    {
+      "node": 1695,
+      "geo": 1144,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1144",
+      "source_triangles": 48,
+      "saved_native_triangles": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1696,
+      "geo": 1145,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1145",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1697,
+      "geo": 1146,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1146",
+      "source_triangles": 36,
+      "saved_native_triangles": 36,
+      "acceptedPreviousTris": [
+        36
+      ]
+    },
+    {
+      "node": 1698,
+      "geo": 1147,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1147",
+      "source_triangles": 5500,
+      "saved_native_triangles": 5342,
+      "acceptedPreviousTris": [
+        5342,
+        5500
+      ]
+    },
+    {
+      "node": 1710,
+      "geo": 1155,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1155",
+      "source_triangles": 12,
+      "saved_native_triangles": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1711,
+      "geo": 1156,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1156",
+      "source_triangles": 48,
+      "saved_native_triangles": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1712,
+      "geo": 1157,
+      "asset": "/Game/Web/Geo/geo_009/StaticMeshes/g1157",
+      "source_triangles": 780,
+      "saved_native_triangles": 780,
+      "acceptedPreviousTris": [
+        780
+      ]
+    },
+    {
+      "node": 1747,
+      "geo": 502,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g502",
+      "source_triangles": 3000,
+      "saved_native_triangles": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ]
+    },
+    {
+      "node": 1748,
+      "geo": 502,
+      "asset": "/Game/Web/Geo/geo_004/StaticMeshes/g502",
+      "source_triangles": 3000,
+      "saved_native_triangles": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ]
+    }
+  ]
+}

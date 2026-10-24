@@ -1,0 +1,1543 @@
+{
+  "version": 2,
+  "status": "SOURCE_ROOM_TRIM_PREPARED_NATIVE_UNVERIFIED",
+  "group": "world.motel.st",
+  "groups": [
+    "world.motel.st",
+    "world.motel.inSt",
+    "world.room6.fixed"
+  ],
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "replacementRecipeSha256": "da47ab8cb34dbd24e606a8e440ea7355a55b6dfe47c7749cd0feec7fc68f619b",
+  "sourceGeometrySha256": {
+    "geo_003.glb": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9",
+    "geo_004.glb": "149631bbb121e9966b91231ccd8620e35dac14cfae1db0a470d8380f262d3919",
+    "geo_009.glb": "6fa5fb6b6d5ab7e5dbc098643944c863c8763273946b35524a8465452996a18a"
+  },
+  "meshes": {
+    "g457": {
+      "node": 672,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 457,
+      "tris": 456,
+      "acceptedPreviousTris": [
+        456
+      ],
+      "resultTris": 112,
+      "removed": 344,
+      "removedBy": {
+        "MotelRoomReplacement": 344
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g457.g457",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        321
+      ],
+      "originalIndexSha256": "1d68a908a001bca2509535425d965a98a77afbbec1f44c81118311d93d061e8c",
+      "retainedIndexSha256": "cb982a842cb5d37284730cfa16855f1d96f82476022e74ea52982674545e8daf",
+      "recipe": {
+        "node": 672,
+        "parent": 663,
+        "geo": 457,
+        "source_material_ids": [
+          321
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 12,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g459": {
+      "node": 674,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 459,
+      "tris": 384,
+      "acceptedPreviousTris": [
+        384
+      ],
+      "resultTris": 12,
+      "removed": 372,
+      "removedBy": {
+        "MotelRoomReplacement": 372
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g459.g459",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        323
+      ],
+      "originalIndexSha256": "df759338d409cd9b31d48c2e01171030087eb878b86a8c25a0a46638641ed44b",
+      "retainedIndexSha256": "cf01e9d1453f6b456ee0928cf3f75780b94eae43d599dceb192c8d3533157248",
+      "recipe": {
+        "node": 674,
+        "parent": 663,
+        "geo": 459,
+        "source_material_ids": [
+          323
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 12,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g460": {
+      "node": 675,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 460,
+      "tris": 180,
+      "acceptedPreviousTris": [
+        180
+      ],
+      "resultTris": 96,
+      "removed": 84,
+      "removedBy": {
+        "MotelRoomReplacement": 84
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g460.g460",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        324
+      ],
+      "originalIndexSha256": "11deda148d8fd05aaf9d7bdc704d3aa9f04d72908652cdfd3fa0cd4f64dd6cc1",
+      "retainedIndexSha256": "22c0a50e2d481ffe5f6b9af3c9cb8c67c8d1591adebe3f37a9ce553f25daba9d",
+      "recipe": {
+        "node": 675,
+        "parent": 663,
+        "geo": 460,
+        "source_material_ids": [
+          324
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 96,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g461": {
+      "node": 676,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 461,
+      "tris": 784,
+      "acceptedPreviousTris": [
+        784
+      ],
+      "resultTris": 304,
+      "removed": 480,
+      "removedBy": {
+        "MotelRoomReplacement": 480
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g461.g461",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        325
+      ],
+      "originalIndexSha256": "c3e8baf63d6bff8a9638db3101cc70b3d2bfecff25ae48ea927b749fcc265534",
+      "retainedIndexSha256": "7416b4a0344e0953e150c08cc9d8652904c050f16829fa35eb935823e284a60e",
+      "recipe": {
+        "node": 676,
+        "parent": 663,
+        "geo": 461,
+        "source_material_ids": [
+          325
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 96,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g463": {
+      "node": 678,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 463,
+      "tris": 2004,
+      "acceptedPreviousTris": [
+        2004
+      ],
+      "resultTris": 1908,
+      "removed": 96,
+      "removedBy": {
+        "MotelRoomReplacement": 96
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g463.g463",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        327
+      ],
+      "originalIndexSha256": "fd1c17cd9c8a514cb74a35e23fc9c6e293b3b61e82c81c5a549cfce4f5ac56e5",
+      "retainedIndexSha256": "95bd579584b6d38645b5640790a34a9324c52012ece6af3fc63b8a25628f53fb",
+      "recipe": {
+        "node": 678,
+        "parent": 663,
+        "geo": 463,
+        "source_material_ids": [
+          327
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 12,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g464": {
+      "node": 679,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 464,
+      "tris": 24,
+      "acceptedPreviousTris": [
+        24
+      ],
+      "resultTris": 4,
+      "removed": 20,
+      "removedBy": {
+        "MotelRoomReplacement": 20
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g464.g464",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        328
+      ],
+      "originalIndexSha256": "981fa2eba4abdfe7921bd783f033a7083a7264093b0da94ec775da1a168bf088",
+      "retainedIndexSha256": "e38871dee53082760283f1c5d876386d8479e17958e65270e68b52bde6d6d9c4",
+      "recipe": {
+        "node": 679,
+        "parent": 663,
+        "geo": 464,
+        "source_material_ids": [
+          328
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 2,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g467": {
+      "node": 682,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 467,
+      "tris": 38,
+      "acceptedPreviousTris": [
+        38
+      ],
+      "resultTris": 24,
+      "removed": 14,
+      "removedBy": {
+        "MotelRoomReplacement": 14
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g467.g467",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        331
+      ],
+      "originalIndexSha256": "21d05c759eb44cd8bc60ba23af3f8046a2011da2d2ff7b71cc8682225c32b5c7",
+      "retainedIndexSha256": "74961066f150d32c6afa32ef76db4d39e485e6b8edf362d1b12409775fc3531b",
+      "recipe": {
+        "node": 682,
+        "parent": 663,
+        "geo": 467,
+        "source_material_ids": [
+          331
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 0,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g468": {
+      "node": 683,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 468,
+      "tris": 308,
+      "acceptedPreviousTris": [
+        308
+      ],
+      "resultTris": 0,
+      "removed": 308,
+      "removedBy": {
+        "MotelRoomReplacement": 308
+      },
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        332
+      ],
+      "originalIndexSha256": "6b957c4e5220040d26364759f91457d9b9528317fab8980765d079681ea06c89",
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 683,
+        "parent": 663,
+        "geo": 468,
+        "source_material_ids": [
+          332
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 0,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g470": {
+      "node": 685,
+      "parent": 663,
+      "group": "world.motel.st",
+      "geo": 470,
+      "tris": 108,
+      "acceptedPreviousTris": [
+        108
+      ],
+      "resultTris": 24,
+      "removed": 84,
+      "removedBy": {
+        "MotelRoomReplacement": 84
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g470.g470",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        334
+      ],
+      "originalIndexSha256": "ad2031b406f9fff2b1c5dbc7f7a063878c84cb3da49c2d4838af61f1ca9e7f61",
+      "retainedIndexSha256": "720329b4d1c9465f617f7635feb406e805e4a970c4dabd8992c029da21ceec89",
+      "recipe": {
+        "node": 685,
+        "parent": 663,
+        "geo": 470,
+        "source_material_ids": [
+          334
+        ],
+        "name": "",
+        "reason": "Motel structural facade/roof/walk/door/AC portions only; this merged material also includes original lot/car/pool/lamp pieces",
+        "source_coordinate_space": "geometry local Three metres before MotelFront root translation",
+        "remove_whole_triangles_inside": [
+          [
+            -50.25,
+            -38.0,
+            -0.3,
+            3.25,
+            21.5,
+            70.9
+          ]
+        ],
+        "preserve_whole_triangles_inside": [
+          [
+            -41.03,
+            -40.15,
+            -0.01,
+            1.44,
+            27.65,
+            28.55
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            21.810000000000002,
+            22.39
+          ],
+          [
+            -40.54,
+            -39.96,
+            -0.01,
+            1.02,
+            56.06,
+            56.64
+          ],
+          [
+            -40.49,
+            -39.910000000000004,
+            -0.01,
+            1.02,
+            68.21,
+            68.79
+          ]
+        ],
+        "policy": "Keep triangles outside remove box and all protected ice-cabinet/plant boxes. Whole triangles only; immutable vertex/normal/UV/color buffers retained."
+      },
+      "protectedTrianglesRetained": 0,
+      "keepOnlyTrianglesRetained": 0
+    },
+    "g488": {
+      "node": 716,
+      "parent": 690,
+      "group": "world.motel.inSt",
+      "geo": 488,
+      "tris": 18,
+      "acceptedPreviousTris": [
+        18
+      ],
+      "resultTris": 2,
+      "removed": 16,
+      "removedBy": {
+        "MotelRoomReplacement": 16
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g488.g488",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        328
+      ],
+      "originalIndexSha256": "a91b95533f37c0a9e8d9a99bd83f109185536cefdb86d70db96d5ebdc3ecb54f",
+      "retainedIndexSha256": "cd9a54ed1f18bf97db08914e280ea7349e11ca2c4885a4d8052552ceba84208d",
+      "recipe": {
+        "node": 716,
+        "parent": 690,
+        "geo": 488,
+        "source_material_ids": [
+          328
+        ],
+        "name": "",
+        "reason": "Retain original registration-card printing; replace other key-board and reception atlas labels",
+        "source_coordinate_space": "geometry local Three metres",
+        "keep_only_whole_triangles_inside": [
+          [
+            -44.11,
+            -43.69,
+            1.025,
+            1.028,
+            23.895,
+            24.205
+          ]
+        ],
+        "policy": "If dedicated partial trim unavailable retain this small original atlas mesh rather than losing registration surface."
+      },
+      "protectedTrianglesRetained": 0,
+      "keepOnlyTrianglesRetained": 2
+    },
+    "g1125": {
+      "node": 1667,
+      "parent": 1648,
+      "group": "world.room6.fixed",
+      "geo": 1125,
+      "tris": 156,
+      "acceptedPreviousTris": [
+        156
+      ],
+      "resultTris": 48,
+      "removed": 108,
+      "removedBy": {
+        "MotelRoomReplacement": 108
+      },
+      "hidden": false,
+      "asset": "/Game/TownBuildings/RoomTrim/StaticMeshes/g1125.g1125",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        717
+      ],
+      "originalIndexSha256": "3c244e461e27481c3378933d4e97309d170b47018b163048a43d0254ba46fa3d",
+      "retainedIndexSha256": "150098af37861f2d5a1217e6040a237a3364917b98348951b716457dba60b1dd",
+      "recipe": {
+        "node": 1667,
+        "parent": 1648,
+        "geo": 1125,
+        "source_material_ids": [
+          717
+        ],
+        "name": "",
+        "reason": "AC dark grille replaced, table ashtray dark center must stay",
+        "source_coordinate_space": "Room6 local Three metres, not Blender",
+        "remove_whole_triangles_inside": [
+          [
+            0.2,
+            1.31,
+            0.1,
+            0.61,
+            2.7,
+            2.96
+          ]
+        ],
+        "policy": "Retain all triangles outside AC prism, especially table ashtray at(.59,.844,1.59)"
+      },
+      "protectedTrianglesRetained": 0,
+      "keepOnlyTrianglesRetained": 0
+    }
+  },
+  "files": [
+    "trim_geo_003.glb",
+    "trim_geo_004.glb",
+    "trim_geo_009.glb"
+  ],
+  "fileSha256": {
+    "trim_geo_003.glb": "45abe066709fc880f103fdeb5ef455d4c58eb3cc5ffee0a5087c94756ebf4df2",
+    "trim_geo_004.glb": "9d4265189a0a81efc739f6f89a07271d8e077eb77d37b62ab22195f6b2aa5b83",
+    "trim_geo_009.glb": "aa793b2e05316e33ecfa071ec162b1f866fd258840c16a035b41dbd4de5add5e"
+  },
+  "sourceVerification": {
+    "status": "PASS",
+    "scope": "Actual prepared GLB buffers/index order; native rendering not run",
+    "checks": [
+      "trim_geo_003.glb immutable position/normal/UV/color byte prefix preserved",
+      "g457 exact retained triangle indices and slot order",
+      "g459 exact retained triangle indices and slot order",
+      "g460 exact retained triangle indices and slot order",
+      "g461 exact retained triangle indices and slot order",
+      "g463 exact retained triangle indices and slot order",
+      "g464 exact retained triangle indices and slot order",
+      "g467 exact retained triangle indices and slot order",
+      "g470 exact retained triangle indices and slot order",
+      "trim_geo_004.glb immutable position/normal/UV/color byte prefix preserved",
+      "g488 exact retained triangle indices and slot order",
+      "trim_geo_009.glb immutable position/normal/UV/color byte prefix preserved",
+      "g1125 exact retained triangle indices and slot order"
+    ],
+    "emittedMeshes": 10,
+    "hiddenMeshes": 1
+  },
+  "wholeLeafPreviousStateAudit": [
+    {
+      "node": 680,
+      "geo": 465,
+      "tris": 348,
+      "acceptedPreviousTris": [
+        348
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 681,
+      "geo": 466,
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 684,
+      "geo": 469,
+      "tris": 14,
+      "acceptedPreviousTris": [
+        14
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 686,
+      "geo": 471,
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 687,
+      "geo": 472,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 703,
+      "geo": 477,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 704,
+      "geo": 478,
+      "tris": 72,
+      "acceptedPreviousTris": [
+        72
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 705,
+      "geo": 479,
+      "tris": 72,
+      "acceptedPreviousTris": [
+        72
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 707,
+      "geo": 480,
+      "tris": 24,
+      "acceptedPreviousTris": [
+        24
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 708,
+      "geo": 481,
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 710,
+      "geo": 482,
+      "tris": 196,
+      "acceptedPreviousTris": [
+        132,
+        196
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 711,
+      "geo": 483,
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 712,
+      "geo": 484,
+      "tris": 116,
+      "acceptedPreviousTris": [
+        116
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 713,
+      "geo": 485,
+      "tris": 760,
+      "acceptedPreviousTris": [
+        760
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 714,
+      "geo": 486,
+      "tris": 64,
+      "acceptedPreviousTris": [
+        20,
+        64
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 715,
+      "geo": 487,
+      "tris": 80,
+      "acceptedPreviousTris": [
+        80
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 717,
+      "geo": 489,
+      "tris": 280,
+      "acceptedPreviousTris": [
+        224,
+        280
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 718,
+      "geo": 490,
+      "tris": 112,
+      "acceptedPreviousTris": [
+        112
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 719,
+      "geo": 491,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 720,
+      "geo": 492,
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ],
+      "kelvoraPreviouslyHidden": true
+    },
+    {
+      "node": 735,
+      "geo": 501,
+      "tris": 614,
+      "acceptedPreviousTris": [
+        614
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 736,
+      "geo": 502,
+      "tris": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1644,
+      "geo": 1109,
+      "tris": 132,
+      "acceptedPreviousTris": [
+        132
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1645,
+      "geo": 1110,
+      "tris": 72,
+      "acceptedPreviousTris": [
+        72
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1646,
+      "geo": 1111,
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1655,
+      "geo": 1115,
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1656,
+      "geo": 1116,
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1659,
+      "geo": 1117,
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1660,
+      "geo": 1118,
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1661,
+      "geo": 1119,
+      "tris": 20,
+      "acceptedPreviousTris": [
+        20
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1662,
+      "geo": 1120,
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1663,
+      "geo": 1121,
+      "tris": 108,
+      "acceptedPreviousTris": [
+        108
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1665,
+      "geo": 1123,
+      "tris": 96,
+      "acceptedPreviousTris": [
+        96
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1666,
+      "geo": 1124,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1679,
+      "geo": 1133,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1680,
+      "geo": 1134,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1681,
+      "geo": 1135,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1686,
+      "geo": 1139,
+      "tris": 2144,
+      "acceptedPreviousTris": [
+        2144
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1695,
+      "geo": 1144,
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1696,
+      "geo": 1145,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1697,
+      "geo": 1146,
+      "tris": 36,
+      "acceptedPreviousTris": [
+        36
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1698,
+      "geo": 1147,
+      "tris": 5500,
+      "acceptedPreviousTris": [
+        5500
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1710,
+      "geo": 1155,
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1711,
+      "geo": 1156,
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1712,
+      "geo": 1157,
+      "tris": 780,
+      "acceptedPreviousTris": [
+        780
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1747,
+      "geo": 502,
+      "tris": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ],
+      "kelvoraPreviouslyHidden": false
+    },
+    {
+      "node": 1748,
+      "geo": 502,
+      "tris": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ],
+      "kelvoraPreviouslyHidden": false
+    }
+  ],
+  "kelvoraMetadataSha256": "68005a988b6ef6f9c7159ec0276f331f16c448a6e1a5a70e87ffe71222e80aeb",
+  "preserved": [
+    {
+      "handle": "world.motel.tv.group",
+      "node": 709
+    },
+    {
+      "handle": "world.motel.objs.envelope",
+      "node": 721
+    },
+    {
+      "handle": "world.motel.objs.message",
+      "node": 725
+    },
+    {
+      "handle": "world.motel.objs.key6Hook",
+      "node": 727
+    },
+    {
+      "handle": "world.motel.objs.officePhoneHandset",
+      "node": 729
+    },
+    {
+      "handle": "world.motel.objs.room6DoorLeaf",
+      "node": 752
+    },
+    {
+      "handle": "world.motel.models.models[2]",
+      "node": 737
+    },
+    {
+      "handle": "world.room6.objs.door",
+      "node": 1669
+    },
+    {
+      "handle": "world.room6.objs.bed",
+      "node": 1672
+    },
+    {
+      "handle": "world.room6.objs.phone",
+      "node": 1690
+    },
+    {
+      "handle": "world.room6.objs.tv",
+      "node": 1699
+    },
+    {
+      "handle": "world.room6.objs.photo",
+      "node": 1705
+    },
+    {
+      "handle": "world.room6.objs.lamp",
+      "node": 1713
+    },
+    {
+      "handle": "world.room6.objs.fieldCard",
+      "node": 1721
+    },
+    {
+      "handle": "world.room6.objs.letter",
+      "node": 1724
+    },
+    {
+      "handle": "world.room6.objs.correction",
+      "node": 1727
+    },
+    {
+      "handle": "world.room6.objs.shoebox",
+      "node": 1730
+    },
+    {
+      "handle": "world.room6.objs.walkie",
+      "node": 1733
+    },
+    {
+      "handle": "world.room6.objs.nora",
+      "node": 1737
+    },
+    {
+      "handle": "world.room6.models.models[5]",
+      "node": 1687
+    },
+    {
+      "handle": "world.room6.models.models[6]",
+      "node": 1718
+    },
+    {
+      "handle": "world.room6.models.models[7]",
+      "node": 1749
+    },
+    {
+      "node": 1664,
+      "parent": 1648,
+      "geo": 1122,
+      "source_material_ids": [
+        714
+      ],
+      "name": "",
+      "reason": "Original Room6 night-view canvas retained; new shell does not duplicate this static outside view"
+    },
+    {
+      "node": 1668,
+      "parent": 1648,
+      "geo": 1126,
+      "source_material_ids": [
+        710
+      ],
+      "name": "",
+      "reason": "Original table ashtray metal cup"
+    },
+    {
+      "node": 733,
+      "parent": 732,
+      "geo": 499,
+      "source_material_ids": [
+        341
+      ],
+      "name": "clutter:office",
+      "reason": "Unique reception clutter including mug/papers/calendar/fan, not authored twice"
+    },
+    {
+      "node": 734,
+      "parent": 732,
+      "geo": 500,
+      "source_material_ids": [
+        342
+      ],
+      "name": "clutter:office:dirt",
+      "reason": "Reception weathering/dirt retained unless visually redundant later"
+    },
+    {
+      "node": 1745,
+      "parent": 1647,
+      "geo": 1178,
+      "source_material_ids": [
+        737
+      ],
+      "name": "clutter:room6",
+      "reason": "Nora suitcase/mug/pills/clothes and story-room clutter, not authored twice"
+    },
+    {
+      "node": 1746,
+      "parent": 1647,
+      "geo": 1179,
+      "source_material_ids": [
+        738
+      ],
+      "name": "clutter:room6:dirt",
+      "reason": "Room6 wear/dirt retained"
+    },
+    {
+      "node": 673,
+      "parent": 663,
+      "geo": 458,
+      "source_material_ids": [
+        322
+      ],
+      "name": "",
+      "reason": "Original parking paint and car/pool pieces outside new court"
+    },
+    {
+      "node": 677,
+      "parent": 663,
+      "geo": 462,
+      "source_material_ids": [
+        326
+      ],
+      "name": "",
+      "reason": "Original potted plant leaves"
+    },
+    {
+      "node": 688,
+      "parent": 663,
+      "geo": 473,
+      "source_material_ids": [
+        337
+      ],
+      "name": "",
+      "reason": "Original pool water"
+    },
+    {
+      "node": 770,
+      "parent": 767,
+      "geo": 530,
+      "source_material_ids": [
+        351
+      ],
+      "name": "",
+      "reason": "Original court ice/telephone decorative props near proxy"
+    }
+  ],
+  "neverHideParents": [
+    662,
+    663,
+    689,
+    690,
+    1642,
+    1643,
+    1647,
+    1648,
+    1677,
+    1693,
+    1708
+  ],
+  "runtimeNotes": [
+    "Only mixed-leaf index cuts; all 47 full-leaf retirements are separate assembly policy.",
+    "Bind native slots through originalMaterialIndices and preserve existing component transform/proxy state.",
+    "g488 keeps only the original registration-card surface. g1125 keeps table ashtray triangles outside the AC prism.",
+    "Kelvora changes only g482/486/489/g492 in whole-leaf audit; own bed replacement hides its separate subtree without changing partial mesh triangle counts.",
+    "No collider, door, pose, NPC or story changes."
+  ]
+}
