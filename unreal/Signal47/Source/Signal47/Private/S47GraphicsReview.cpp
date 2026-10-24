@@ -85,7 +85,13 @@ static const FCamera Cameras[] = {
  { TEXT("street-north-route"), TEXT("diner"), 8007, 2080, 0.12, -0.10 },
  { TEXT("street-souvenir-window"), TEXT("diner"), 8018.6, 2062.3, -UE_DOUBLE_HALF_PI, -0.06 },
  { TEXT("street-radio-detail"), TEXT("diner"), 8015.4, 2038.7, -1.20, 0.07 },
- { TEXT("street-souvenir-detail"), TEXT("diner"), 8015.0, 2066.5, -1.20, 0.07 }
+ { TEXT("street-souvenir-detail"), TEXT("diner"), 8015.0, 2066.5, -1.20, 0.07 },
+ // Sky and cloud review (SKY.md): the evening commute's start south of town, looking north up the
+ // road toward Caliche as in the dusk concept; the same spot toward the western sunset and up.
+ { TEXT("sky-commute"), TEXT("road"), 8001.8, 2335, 0, 0.04 },
+ { TEXT("sky-west"), TEXT("road"), 8001.8, 2335, 1.25, 0.10 },
+ { TEXT("sky-up"), TEXT("road"), 8001.8, 2335, 0.35, 0.62 },
+ { TEXT("sky-saro"), TEXT("saro"), 7, 19, 0.08, 0.16 }
 };
 void Tick(AS47Web* W, float)
 {

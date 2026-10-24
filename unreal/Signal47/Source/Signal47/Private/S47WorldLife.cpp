@@ -636,6 +636,25 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	EveningSky.SetClock(5 * 3600 + 29 * 60, 2.0);
 	Check(EveningSky.Evening == 0 && EveningSky.Sun == 1 && FMath::IsNearlyEqual(EveningSky.SunDir.Y, FMath::Sin(FMath::DegreesToRadians(2.0)), 1e-12),
 		TEXT("evening sky: finale sun elevation override retained"));
+	// SKY.md: volumetric cloud cover follows the clock, continuously, without hiding the night.
+	{
+		bool bBroken = true, bSparse = true, bSmooth = true;
+		double Prev = FS47Sky::CloudCoverAt(0), MaxNight = 0;
+		for (int32 Minute = 1; Minute <= 24 * 60; ++Minute)
+		{
+			const double Cover = FS47Sky::CloudCoverAt(Minute * 60.0), H = Minute / 60.0;
+			bSmooth &= FMath::Abs(Cover - Prev) < 0.01;
+			if ((H >= 7 && H <= 18.8)) bBroken &= Cover >= 0.4 && Cover <= 0.7;
+			if (H >= 21 || H <= 4.5) { bSparse &= Cover <= 0.2; MaxNight = FMath::Max(MaxNight, Cover); }
+			Prev = Cover;
+		}
+		Check(bBroken && bSparse && bSmooth && FS47Sky::CloudCoverAt(-5.5 * 3600) >= 0.4 && FMath::Abs(FS47Sky::CloudCoverAt(-86400 + 18.5 * 3600) - FS47Sky::CloudCoverAt(18.5 * 3600)) < 1e-9,
+			*FString::Printf(TEXT("clouds: broken 40-70 %% layer by day and dusk, at most %.2f at night, no per-minute jumps, evening clock wraps"), MaxNight));
+		Check(FS47Sky::CloudCoverAt(5 * 3600 + 30 * 60) > FS47Sky::CloudCoverAt(4 * 3600) && FS47Sky::CloudCoverAt(6 * 3600 + 30 * 60) >= 0.4 && FS47Sky::CirrusAt(18.5 * 3600) > FS47Sky::CirrusAt(2 * 3600 + 15 * 60),
+			TEXT("clouds: dawn builds the layer back; cirrus thins at night"));
+		FS47Sky Holes; Holes.SetClock(2 * 3600 + 15 * 60 + 12 + STAR_HOLE.After + 200);
+		Check(Holes.HoleK == 1 && Holes.CloudCover < 0.2, TEXT("clouds: the star hole after 02:15 opens in a sparse night sky (Draw clears its direction)"));
+	}
 	// the web version's own numbers (export.js lifeOf: tests), when the world is there
 	AS47Web* W = nullptr;
 	for (TObjectIterator<AS47Web> It; It; ++It) if (It->IsLoaded()) { W = *It; break; }
