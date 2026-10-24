@@ -1,5 +1,10 @@
 # Minne for unreal/
 
+## Xbox-kontroller, 24. oktober 2026
+
+- Xbox-kilde `3d016a07`, kandidat X4: 1373 selvtester, elleve native kernel/SDL/Slate-opptak i målte scopes og 16 målrettede regresjoner PASS. PR149 til unreal-port-core er klar for fletting og installasjon. GAMEPAD.md har kontroller, bevis og uverifiserte handlinger.
+- Tom ber om kortere testløp 24.10: velg nødvendige, målrettede kontroller etter endringens risiko. Den komplette 110-runden for Xbox ble stoppet etter 16 beståtte scenarioer; ikke kall den fullført. Bruk parallelle agenter til kode/gjennomgang; én tung jobb på maskinen består.
+
 ## Skyoppgaven sluttkontrollert, 24. oktober 2026
 
 - Tom ber Codex fullføre Claudes volumetriske skyer etter limit. Skykode f55b760c/04d98231 er allerede integrert; ved overtakelsen gjenstod cache og levering på samlet natur/film/sky. Gammelt opptak under Signal47-sky har andre shader keys og kan ikke dokumentere ny pakke. SKY.md har faktisk sluttbevis.

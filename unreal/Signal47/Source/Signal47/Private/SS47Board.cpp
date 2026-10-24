@@ -4,6 +4,7 @@
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Engine/Texture2D.h"
 #include "S47Theme.h"
+#include "S47Gamepad.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/UserInterfaceSettings.h"
@@ -264,6 +265,7 @@ struct FS47BoardImpl
 	double MinScale() const { return FMath::Min(0.5, FMath::Max(0.12, FMath::Min(ViewSize.X / O.Size.X, ViewSize.Y / O.Size.Y) * 0.95)); }
 	void ClampView();
 	void ZoomAt(double Ns, const FVector2D& P);
+	bool PadView(const FKey& Key);
 	void Look(const FS47BoardRegion& R);
 	bool Frame(const TArray<FString>& Ids);
 	bool Show(const FString& Id);
@@ -813,6 +815,22 @@ void FS47BoardImpl::ZoomAt(double Ns, const FVector2D& P)
 	Tx = P.X - (P.X - Tx) * Ns / S; Ty = P.Y - (P.Y - Ty) * Ns / S; S = Ns;
 	ClampView();
 	if (Drag.Kind != FDrag::EKind::Pan) Follow();
+}
+
+// Xbox view actions leave card placement and yarn on the existing pointer path.
+bool FS47BoardImpl::PadView(const FKey& K)
+{
+	const int32 X = K == EKeys::Gamepad_DPad_Left ? 1 : K == EKeys::Gamepad_DPad_Right ? -1 : 0;
+	const int32 Y = K == EKeys::Gamepad_DPad_Up ? 1 : K == EKeys::Gamepad_DPad_Down ? -1 : 0;
+	if (X || Y) { Tx += X * 80; Ty += Y * 80; ClampView(); Follow(); return true; }
+	if (K == EKeys::Gamepad_LeftShoulder || K == EKeys::Gamepad_RightShoulder)
+	{
+		ZoomAt(S * (K == EKeys::Gamepad_LeftShoulder ? 0.8 : 1.25), ViewSize / 2);
+		return true;
+	}
+	if (K == EKeys::Gamepad_FaceButton_Left) { S = MinScale(); ClampView(); return true; }
+	if (K == EKeys::Gamepad_FaceButton_Top) { ShowHow(GHowHidden); return true; }
+	return false;
 }
 
 void FS47BoardImpl::Look(const FS47BoardRegion& R)
@@ -1376,6 +1394,10 @@ void SS47Board::Construct(const FArguments& InArgs)
 			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 6)
 			[SAssignNew(P->HowEl, STextBlock).Font(S47Style::Body(14)).ColorAndOpacity(Css(0xb8b0a0)).AutoWrapText(true)]
 			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 6)[P->HowStrip.ToSharedRef()]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 6)
+			[SNew(STextBlock).Font(S47Style::Mono(17)).ColorAndOpacity(Css(0xffd6aa)).AutoWrapText(true)
+			.Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+			.Text(FText::FromString(TEXT("RIGHT STICK: POINTER   A: CLICK / HOLD TO DRAG   D-PAD: PAN   LB/RB: ZOOM   X: ALL   Y: HOW   B: CLOSE")))]
 			+ SVerticalBox::Slot().FillHeight(1).Padding(0, 0, 0, 6)[SAssignNew(P->Surface, SS47BoardSurface).Board(P.Get())]
 			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 4)[P->HintBox.ToSharedRef()]
 			+ SVerticalBox::Slot().AutoHeight()
@@ -1413,11 +1435,13 @@ void SS47Board::ShowAll() { P->S = P->MinScale(); P->ClampView(); }
 
 FReply SS47Board::OnKeyDown(const FGeometry&, const FKeyEvent& E)
 {
-	if (E.GetKey() == EKeys::B || E.GetKey() == EKeys::Escape || E.GetKey() == EKeys::Tab)
+	if (E.GetKey() == EKeys::B || E.GetKey() == EKeys::Escape || E.GetKey() == EKeys::Tab || E.GetKey() == EKeys::Gamepad_FaceButton_Right)
 	{
 		if (P->UI.IsValid()) P->UI->Close();
 		return FReply::Handled();
 	}
+	if (E.IsRepeat() && E.GetKey() == EKeys::Gamepad_FaceButton_Top) return FReply::Handled();
+	if (P->PadView(E.GetKey())) return FReply::Handled();
 	return FReply::Unhandled();
 }
 
@@ -1502,5 +1526,11 @@ bool SS47Board::SelfTest(TArray<FString>& Lines)
 	Check(Hinted == TEXT("question") && P.Offer.IsEmpty() && P.SayEl->GetText().ToString() == TEXT("Look at the dates."), TEXT("the offered hint is the question's own"));
 	P.O.Questions = [] { FS47BoardQuestion Q; Q.Id = TEXT("question"); Q.Stamp = TEXT("WHY"); Q.Text = TEXT("What do these show?"); Q.Slots = 2; Q.Filled = { TEXT("one"), TEXT("two") }; Q.Region = TEXT("test"); return TArray<FS47BoardQuestion>{ Q }; };
 	Check(P.OpenQuestionIn(TEXT("test")).IsEmpty(), TEXT("no hint is offered for a question whose lines are filled"));
+	P.S = 1; P.Tx = P.Ty = 0;
+	Check(P.PadView(EKeys::Gamepad_DPad_Right) && P.Tx == -80, TEXT("Xbox D-pad pans the board view without moving evidence"));
+	const double BeforeZoom = P.S;
+	Check(P.PadView(EKeys::Gamepad_RightShoulder) && P.S > BeforeZoom, TEXT("Xbox RB zooms the same board view"));
+	Check(P.PadView(EKeys::Gamepad_FaceButton_Left) && FMath::IsNearlyEqual(P.S, P.MinScale()), TEXT("Xbox X fits all evidence"));
+	Check(!P.PadView(EKeys::Gamepad_FaceButton_Bottom), TEXT("Xbox A stays on the pointer or focused-button route"));
 	return Ok;
 }

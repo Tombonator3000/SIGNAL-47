@@ -37,6 +37,7 @@ namespace S47Keys
 	SIGNAL47_API bool Is(FName Action, const FKey& K);                  // K is one of the action's keys
 	SIGNAL47_API bool Down(const APlayerController* PC, FName Action);   // held now
 	SIGNAL47_API bool Pressed(const APlayerController* PC, FName Action); // pressed this frame
+	SIGNAL47_API bool WasPressed(const APlayerController* PC, const FKey& Key);
 	// names for the screen: Short is a keycap's ("E", "SPACE", "RMB"); Name is for a sentence ("E",
 	// "Space", "Right mouse"). Label is the action's first key (or the second when the first is empty).
 	SIGNAL47_API FString Short(const FKey& K);

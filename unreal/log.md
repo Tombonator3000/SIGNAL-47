@@ -212,3 +212,13 @@ Den første strenge shader-key-sammenligningen avviste endrede navn etter cook. 
 ## 2026-10-24 kl. 14:55, skycache lokalt flettet og installert
 
 Kilde/cache/sluttbevis 82a58751 er fast-forward-flettet til unreal-port-core etter full 110/110-regresjon. Testet pakke er installert med 40 bytekontrollerte payloadfiler, 48 byteidentiske Saved-filer og sikkerhetskopiert gammel payload i /home/tom/scratch-bm/Signal47-cloud-completion/installed-backup-1792846056728357356. Ingen installert spillprosess ble startet eller stoppet. Leveransen ~/Desktop/Signal47 skyer og lys har 52 originale runtime-bilder, to 1:1-kontrollark og konseptreferansen, redigerbare skykilder og faktisk teststatus. Ordnet rutedithering i enkelte månelyse High/Clean-skyer, oppstartshakk og naturens stiliserte form er fortsatt åpne kvalitetsforbedringer. Menneskelig gjennomspilling, lytting og langvarig skybevegelse er UNVERIFIED.
+
+## 2026-10-24 kl. 15:52, Xbox-styring implementert i kilde
+
+Tom bestiller Xbox-kontroller, commit og push. Fast knappetildeling, proporsjonal gange, tidsbasert blikk, biltriggere, UI-navigasjon/peker og separate lagrede kontrollerinnstillinger er skrevet. Kodegjennomgang fant og rettet blandet bilinput, doble triggerkanter, UI-tastopp, avbrutt brettdrag, bakgrunnsinput og input som kunne lekke etter paneler. Nøytral uinput-enhet er kontrollert uten spill. Bygg og runtime avventer avslutning av installert Signal47; ingen prosess stoppes. Forrige ferdigtestede natur-/skyoppdatering b23a337a er pushet til origin/unreal-port-core. Ingen Xbox-installasjon eller runtime-PASS ennå.
+
+## 2026-10-24 kl. 16:54, Xbox sluttkontroll og redusert testomfang
+
+Kandidat X4 fra 3d016a07 består 1373 selvtester og elleve native kernel/SDL/Slate-opptak i målte scopes. Egen uinput-enhet, private X11-vinduer og isolerte UserDir er brukt. Faktisk gange/blikk, bilens RT/LS/LT, pause/notatbok, nøytralport, held frakobling, dokumentopplesning og innstillinger ved ny prosess er kontrollert. Kilde-/pakkehash er uendret. Tidlige nullpeker-/keyboardhintfeil er rettet, og SDL-testfellens utsatte første halvtrigger er forklart uten produksjonssærkode.
+
+Tom ber om mindre tidsbruk på testing. Hele110-runden er stoppet etter 16 beståtte målrettede scenarioer og markert ikke fullført; ingen ny spillfeil er skjult. Videre tester velges etter risiko. Fullverdensrunde kreves fortsatt før main når regelen gjelder. Midlertidige Content-lenker og OpenOrder er ryddet. PR149 er klar for fletting og den eksakte testpakkens installasjon med Saved bevart. Fysisk Xbox og detaljerte native UI-/drag-scenarier er UNVERIFIED.

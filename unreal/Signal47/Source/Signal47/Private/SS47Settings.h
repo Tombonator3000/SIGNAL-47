@@ -35,7 +35,7 @@ public:
 private:
 	struct FRow
 	{
-		enum class EKind : uint8 { Choice, Slider, Toggle, Keys, Action, Sep };
+		enum class EKind : uint8 { Choice, Slider, Toggle, Keys, Action, Info, Sep };
 		EKind Kind = EKind::Choice;
 		FString Label;
 		TFunction<FString()> Value;         // a choice's or a slider's words

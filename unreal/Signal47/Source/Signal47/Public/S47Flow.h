@@ -93,8 +93,8 @@ public:
 	S47J::FObj Carry;               // the save that was opened, for the fields this version does not write
 
 	// the settings (main.ts store), as they are now
-	float Volume = 0.8f, MusicLevel = 0.7f, RadioLevel = 1.f, Sens = 1.f, BaseFov = 70.f;
-	bool bInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bAbductOn = true;
+	float Volume = 0.8f, MusicLevel = 0.7f, RadioLevel = 1.f, Sens = 1.f, PadLookSpeed = 1.f, BaseFov = 70.f;
+	bool bInvertY = false, bPadInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bAbductOn = true;
 	bool bCharacters = true, bSerling = true, bKinski = false, bArtBell = true, bRadioCast = true;
 	FString Quality = TEXT("high"), Picture = TEXT("carpenter");
 	float PictureStrength = 1.f;   // film/tape blend; zero keeps the selected look for later

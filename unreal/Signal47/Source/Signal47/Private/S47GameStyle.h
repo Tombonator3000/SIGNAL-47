@@ -64,6 +64,7 @@ namespace S47Game
 	// the keycaps (base.css .keys b, hud.html .key, notebook.html .use b)
 	enum class EKey : uint8 { Outline, Amber, Ink };
 	TSharedRef<SWidget> Keycap(const FString& Key, EKey Style = EKey::Outline, float Px = 22.f);
+	TSharedRef<SWidget> ActionKeycap(FName Action, EKey Style = EKey::Outline, float Px = 22.f);
 	// a keycap and its word (.keys span); Dim: the word's colour
 	TSharedRef<SWidget> KeyHint(const FString& Key, const FString& Label, float Px = 22.f, const FLinearColor& Word = Hint(), EKey Style = EKey::Outline);
 	// a strip of tape (.tape), and a rubber stamp (.st: the word in a red frame, a little crooked)
