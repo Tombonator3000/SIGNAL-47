@@ -37,8 +37,8 @@
     ],
     "texture_tint_linear": [
       1,
-      0.96,
-      0.94
+      0.99,
+      0.98
     ],
     "metallic": 0,
     "roughness": 0.93,
@@ -90,9 +90,9 @@
       1
     ],
     "texture_tint_linear": [
-      0.62,
-      0.73,
-      0.82
+      0.86,
+      0.9,
+      0.94
     ],
     "metallic": 0,
     "roughness": 0.93,

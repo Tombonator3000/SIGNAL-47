@@ -70,8 +70,8 @@ not claim metadata proves distance culling.
 
 The current runtime applies the authored placement JSON's `cull_metres` per
 family, start at82% of that value: grass73.8..90m, sage180.4..220m,
-yucca213.2..260m, juniper984..1200m, stone90.2..110m. Grass/stone cast no
-shadows; the other three families do. These are component settings, independent
+yucca213.2..260m, juniper984..1200m, stone90.2..110m. Grass and the smallest Caliche_A stones cast no
+shadows; the remaining authored variants do. These are component settings, independent
 of the asset screen-size defaults.
 
 Use distinct scratch report paths for each frozen run. Import entry point:

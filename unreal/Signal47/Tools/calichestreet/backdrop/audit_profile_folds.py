@@ -1,9 +1,8 @@
 """Light exact source-row monotonicity audit. No Blender, meshes or textures."""
 from pathlib import Path
-import math,json,importlib.util,datetime
+import math,json,importlib.util,datetime,argparse
 import geology as current
 R=Path(__file__).resolve().parent
-spec=importlib.util.spec_from_file_location('rejected_geology',R/'evidence/cn3-uv2-rejected-folds/geology.py');old=importlib.util.module_from_spec(spec);spec.loader.exec_module(old)
 def audit(module):
     result=[]
     for b in module.BELTS:
@@ -20,8 +19,15 @@ def audit(module):
                 previous=lateral
         result.append({'belt':b['id'],'minimum_projected_profile_width_m':minimum,'reversed_or_zero_intervals':bad,'worst':worst})
     return result
-previous=audit(old);fixed=audit(current)
-assert sum(r['reversed_or_zero_intervals'] for r in previous)>0,'Need reproduce actual source failure'
+ap=argparse.ArgumentParser(description=__doc__)
+ap.add_argument('--compare',type=Path,help='Optional explicit rejected geology.py; historical archives are not a production dependency')
+ap.add_argument('--out',type=Path,help='Optional new JSON report; existing reports are preserved')
+args=ap.parse_args();fixed=audit(current)
 assert all(r['reversed_or_zero_intervals']==0 and r['minimum_projected_profile_width_m']>1e-4 for r in fixed),fixed
-result={'status':'SOURCE_PROFILE_FOLD_CAUSE_REPRODUCED_AND_FIXED','utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'rejected_source':previous,'corrected_source':fixed,'scope':'Exact source rows and split-profile intervals only; no Blender or FBX performed','triangulation_implication':'Strict front-to-back ordering at each along row makes projected quads convex trapezoids; either Blender diagonal has strictly positive area after consistent winding.'}
-(R/'profile_fold_fix.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))
+result={'status':'PASS','utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'current_source':fixed,'scope':'Exact source rows and split-profile intervals only; no Blender, FBX or runtime performed'}
+if args.compare:
+    spec=importlib.util.spec_from_file_location('rejected_geology',args.compare);old=importlib.util.module_from_spec(spec);spec.loader.exec_module(old)
+    result['comparison_source']=str(args.compare);result['comparison_rows']=audit(old)
+if args.out:
+    with args.out.open('x') as stream:stream.write(json.dumps(result,indent=2)+'\n')
+print(json.dumps(result,indent=2))

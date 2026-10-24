@@ -40,13 +40,13 @@ def generate():
     fissure=np.clip((.19-bands)*5.5,0,.70)*(.30+.70*joints)
     bedding=np.clip((.38-beds)*1.7,0,.46)
     tone=.79+.16*macro+.12*(medium-.5)+.045*(fine-.5)-bedding*.28-fissure*.23
-    color=np.array([152,118,108])[None,None,:]*tone[:,:,None]
+    color=np.array([142,122,111])[None,None,:]*tone[:,:,None]
     color[:,:,0]+=(macro-.5)*8;color[:,:,2]+=(medium-.5)*5
     height=medium*.18+fine*.085+beds*.12-fissure*.32-bedding*.18
     write_maps('MesaRock',color,height,.84+.14*medium)
     # Cap is a separate original mineral image, not the same pale map across
     # every vertical face. Six stable native material names remain unchanged.
-    capcolor=np.array([170,149,128])[None,None,:]*(.88+.13*macro+.065*(medium-.5))[:,:,None]
+    capcolor=np.array([144,123,111])[None,None,:]*(.81+.16*macro+.10*(medium-.5))[:,:,None]
     write_maps('MesaCap',capcolor,height*.62,.88+.10*medium)
     rng=np.random.default_rng(198625)
     broad=noise(rng,11);aggregate=noise(rng,150);fine=rng.random((SIZE,SIZE),dtype=np.float32)
@@ -58,9 +58,9 @@ def generate():
     rows=[]
     # Stable names/slots; original images and light physical tints only.
     roles=[('talus_fines','MesaTalus',[1,1,1],.42),
-           ('sandstone_beds','MesaRock',[1,.96,.94],.66),
+           ('sandstone_beds','MesaRock',[1,.99,.98],.66),
            ('resistant_pale_cap','MesaCap',[1,1,1],.40),
-           ('thin_recessive_beds','MesaRock',[.62,.73,.82],.54),
+           ('thin_recessive_beds','MesaRock',[.86,.90,.94],.54),
            ('eroded_talus','MesaTalus',[.92,.94,.96],.62),
            ('distant_ridges','MesaRock',[.84,.91,1],.18)]
     for i,(role,label,tint,strength) in enumerate(roles):

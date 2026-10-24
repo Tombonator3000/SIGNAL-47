@@ -62,23 +62,20 @@ def protection(x,z):
     old=smooth(ROAD_BUFFER+100,ROAD_BUFFER+240,old_road_distance(x,z))
     return main*old
 
-# CN3: talus is the lower22% of the relief, not a smooth half-height apron.
-# Five thick resistant sandstone risers alternate with broad recessed gray beds.
-# Small setbacks preserve the bedded cliff silhouette instead of smoothing it
-# into one long ramp; the broad plateau remains a real surface behind the rim.
+# CN4: one coherent rock headwall, with only three narrow unequal ledges.
+# Benches are1–2m deep rather than10–14m repeated pale roads. Thick, unequal
+# rock units carry restrained mineral bedding; cap is no longer a white stripe.
 PROFILE=[(0,0,0),(55,.012,0),(110,.045,4),(160,.105,4),(195,.155,4),
- (220,.22,4),(235,.24,1),(244,.36,2),(254,.38,3),(266,.42,1),
- (273,.53,2),(286,.55,3),(299,.59,1),(307,.70,2),(320,.72,3),
- (334,.76,1),(342,.86,2),(356,.88,3),(371,.92,1),(380,.985,2),
- (393,1,2),(460,1,2),(610,.995,2),(830,.96,2),(1080,.83,0),
- (1270,.20,4),(1340,0,0)]
+ (220,.22,4),(235,.24,1),(244,.48,2),(245,.485,3),(248,.51,1),
+ (258,.63,2),(260,.634,1),(275,.79,3),(279,.81,1),(287,.93,2),
+ (288,.934,1),(300,1,2),(360,1,2),(610,.995,2),(830,.96,2),
+ (1080,.83,0),(1270,.20,4),(1340,0,0)]
 DISTANT_PROFILE=[(0,0,5),(100,.025,5),(205,.13,5),(270,.22,5),
  (283,.48,5),(305,.51,5),(320,.76,5),(345,.79,5),(360,.99,5),
  (430,1,5),(650,.96,5),(830,.10,5),(900,0,5)]
 BELTS=[
  {'id':'western_escarpment','axis':'z','side':-1,'along':[-2300,1200],'toe':740,'height':117,'seed':81,'step':8,'profile':PROFILE,'layer':'middle','main_cliff_min_m':700},
- {'id':'eastern_north_escarpment','axis':'z','side':1,'along':[-2700,-340],'toe':620,'height':227,'seed':97,'step':8,'profile':PROFILE,'layer':'middle','main_cliff_min_m':700},
- {'id':'eastern_south_escarpment','axis':'z','side':1,'along':[400,1450],'toe':660,'height':173,'seed':119,'step':8,'profile':PROFILE,'layer':'middle','main_cliff_min_m':700},
+ {'id':'eastern_north_escarpment','axis':'z','side':1,'along':[-2700,1450],'toe':620,'height':227,'seed':97,'step':8,'profile':PROFILE,'layer':'middle','main_cliff_min_m':700},
  {'id':'far_northern_ridges','axis':'x','side':-1,'along':[-2250,2250],'toe':2600,'height':151,'seed':137,'step':27,'profile':DISTANT_PROFILE,'layer':'far'},
  {'id':'far_western_ridges','axis':'z','side':-1,'along':[-2850,1850],'toe':1950,'height':171,'seed':173,'step':28,'profile':DISTANT_PROFILE,'layer':'far'},
 ]
@@ -87,6 +84,24 @@ def angular_noise(x,seed):
     # Piecewise linear erosion preserves angular drainage/headland shoulders.
     i=math.floor(x);t=x-i
     return hash1(i,seed)*(1-t)+hash1(i+1,seed)*t
+
+def oldroad_erosion(belt,s,setback,fraction,x,z):
+    """CN5 localized relief/material envelope, outside the unchanged road mask.
+
+    Only the raised east-rim transition is treated. The exact road corridor
+    and the original protection(x,z) function are deliberately untouched.
+    """
+    if belt['id']!='eastern_north_escarpment':return 0.,0.,0.
+    distance=old_road_distance(x,z)
+    zone=smooth(286,315,distance)*(1-smooth(397,435,distance))*smooth(.48,.85,fraction)
+    # Angular31m drainage cuts and broader90m cross-ridges, not periodic sine
+    # waves or independent random vertex spikes. Setback phase creates broken
+    # branching ribs instead of one unbroken pale plateau plane.
+    phase=.70*noise1(setback/170,belt['seed']+44)
+    ridge=abs(2*angular_noise(s/31+phase,belt['seed']+45)-1)
+    cross=angular_noise(setback/90+noise1(s/150,belt['seed']+49),belt['seed']+50)
+    relief=zone*((ridge-.50)*22+(cross-.5)*6)
+    return zone,relief,ridge
 
 def surface_point(belt,s,setback,fraction):
     seed=belt['seed'];a0,a1=belt['along']
@@ -100,15 +115,19 @@ def surface_point(belt,s,setback,fraction):
     # Coves stay recessed behind the rim as well: a height-based weight
     # unwound the220m setback on the descending backslope and folded it.
     lateral=belt['toe']+setback+embay+cove*smooth(30,220,setback)
-    # Continuous erosion weights: the former34->22m branch atfraction.25
-    # could reverse a9m profile interval, creating concave/bow-tie quads.
-    lateral+=gully*(34-12*smooth(.18,.62,fraction))*smooth(.015,.16,fraction)
-    lateral+=8*(angular_noise(s/23,seed+23)-.5)*smooth(.15,.35,fraction)
+    # Erosion offsets settle before the headwall. All narrow rock ledges
+    # inherit the same lateral gully displacement, so even1m benches remain
+    # strictly ordered; no fraction-dependent offset unwinds behind the rim.
+    lateral+=28*gully*smooth(30,210,setback)
+    lateral+=8*(angular_noise(s/23,seed+23)-.5)*smooth(80,210,setback)
     # Geologically broad stepped height families: low western rim, taller east,
     # lower distant skylines. A cove erodes the rim independently of the talus.
     height=belt['height']*(.74+.34*noise1(s/650,seed+5))
     height*=1-.19*smooth(.50,.92,headland)
     h=height*fraction
+    # Subtle, nonperiodic2m bedding departures, with different phases per bed.
+    # Large strata remain geologically coherent rather than parallel stairways.
+    h+=2.0*(noise1(s/120+fraction*3.7,seed+31)-.5)*smooth(.20,.32,fraction)
     if .01<fraction<.25:
         fan=angular_noise(s/95,seed+17)-.5
         h+=height*(fan*.055-gully*.043)*math.sin(math.pi*fraction/.25)
@@ -117,7 +136,8 @@ def surface_point(belt,s,setback,fraction):
     elif fraction>=.985:
         h-=height*.008*gully
     x,z=(belt['side']*lateral,s) if belt['axis']=='z' else (s,belt['side']*lateral)
-    return x,z,max(0,h)*end*protection(x,z)-4
+    zone,relief,ridge=oldroad_erosion(belt,s,setback,fraction,x,z)
+    return x,z,max(0,h)*end*protection(x,z)-4+relief*end
 
 def split_profile(profile):
     result=[]
@@ -158,6 +178,16 @@ def build_geometry():
                 e=[ps[1][k]-ps[0][k] for k in range(3)];f=[ps[2][k]-ps[0][k] for k in range(3)]
                 if e[0]*f[1]-e[1]*f[0]<0:ids.reverse();ps.reverse()
                 mat=profile[j][2]
+                # A plateau tilted down into the protected OldRoad opening is
+                # eroded rubble/exposed rock, not a pale intact cap roof.
+                cx=sum(p[0] for p in ps)/4;cz=-sum(p[1] for p in ps)/4
+                along=(a0+(a1-a0)*(i+.5)/n)
+                setback=(profile[j][0]+profile[j+1][0])*.5
+                fraction=(profile[j][1]+profile[j+1][1])*.5
+                eroded,relief,ridge=oldroad_erosion(belt,along,setback,fraction,cx,cz)
+                patch=hash1(math.floor(along/29)+math.floor(setback/43)*251,belt['seed']+61)
+                if eroded>0 and patch<eroded:
+                    mat=1 if ridge>.72 else 3 if ridge<.16 else 4
                 normal=(e[1]*f[2]-e[2]*f[1],e[2]*f[0]-e[0]*f[2],e[0]*f[1]-e[1]*f[0])
                 steep=abs(normal[2])<.78*math.sqrt(sum(t*t for t in normal))
                 # Follow the face's dominant horizontal normal, not the belt's

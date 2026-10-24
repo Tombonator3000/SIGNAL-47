@@ -11,32 +11,32 @@
     "binary_GLB_bounds_triangles_materials": true,
     "saved_Blend_current_packed_maps": true
   },
-  "triangles": 98730,
+  "triangles": 103550,
   "bounds_local_m": [
     [
-      -3055.107666015625,
+      -3071.326904296875,
       -1850.0,
-      -4.000608921051025
+      -4.000612258911133
     ],
     [
       2250.0,
-      3737.95166015625,
-      235.2544708251953
+      3759.0615234375,
+      234.64971923828125
     ]
   ],
-  "FBX_bounds_error_m": 0.0006089210510253906,
+  "FBX_bounds_error_m": 0.0006122589111328125,
   "FBX_bounds_tolerance_m": 0.001,
   "GLB_bounds_error_m": 0.0,
-  "minimum_UV_triangle_area": 0.008777431769105615,
-  "raised_triangles": 82250,
-  "oldroad_clearance_lower_bound_m": 225.36319454364462,
-  "mainroad_clearance_lower_bound_m": 237.70844090871162,
+  "minimum_UV_triangle_area": 0.0028857178612888834,
+  "raised_triangles": 85811,
+  "oldroad_clearance_lower_bound_m": 224.55525479441397,
+  "mainroad_clearance_lower_bound_m": 237.93414306640625,
   "packed_textures": [
     {
       "name": "MesaCap_base_color.png",
       "width": 2048,
       "height": 2048,
-      "sha256": "40aa509c61e079af89ae306bead6f6815d047879a796c1f27c65dd123e16da93"
+      "sha256": "8c60f15323dc0f45300e0ed52423601debed04db68c5dfc4dc78cab62c31ae0a"
     },
     {
       "name": "MesaCap_normal.png",
@@ -54,7 +54,7 @@
       "name": "MesaRock_base_color.png",
       "width": 2048,
       "height": 2048,
-      "sha256": "71ca375ebbade7e2e1841d7d6cce5f175501fd6ac3f27dcd736c16978bff16db"
+      "sha256": "524bc4f30e381129dd19bb4b5970fbe736de48e2d4ec0ecc187cc447ae167d00"
     },
     {
       "name": "MesaRock_normal.png",

@@ -1,18 +1,17 @@
 {
   "asset": "Original Caliche vegetation prototype kit",
   "source_revision": "CN3-masked-small-leaf-needle-sprays",
+  "inventory_scope": "Explicit production kit: current source, contracts, proofs, textures and contract-named exports only; no pending/history/raw job evidence/log/cache",
   "technical_status": "270/270 source/FBX/GLB checks PASS",
   "preview_completed_for_current_blend": true,
+  "preview_byte_binding": {
+    "blend_sha256": "78c607d8e05fdca9a7e34e62fd84457184604f8d4f9bcdc51e948341848b8b02",
+    "image_sha256": "0f8e97e0210738cd3602ba79dfb1ef13c8f602e7074b2f262003cd8858f24893",
+    "status": "COMPLETED_GUARDED_RENDER",
+    "scope": "Previously completed guarded render retained only for exact matching Blend/image bytes, or fresh successful guard plus render timestamp; no new render or visual acceptance"
+  },
   "visual_status": "UNVERIFIED pending explicit review of actual botanical image and native game frames",
   "files": {
-    "CN2_pending.json": {
-      "bytes": 1100,
-      "sha256": "fd24f0409322da1136001ce0dbf93a9ecb0b30a600b35227c58cf75ade4cc513"
-    },
-    "CN3_pending.json": {
-      "bytes": 1084,
-      "sha256": "8d3855d7071573caa39c21e862f98282a17642fc0e3329acd2b994fc99fcc2a6"
-    },
     "README.md": {
       "bytes": 6078,
       "sha256": "94a1960becfa13c9c7938775b5c76122d405cb483f4267476983493bd618aee6"
@@ -20,10 +19,6 @@
     "alpha_texture_verification.json": {
       "bytes": 9408,
       "sha256": "d898aaa6016e4b0d1196f64696ca6429f488b447429f25e4d74fef70f5abcccf"
-    },
-    "analyze_canopy.py": {
-      "bytes": 2148,
-      "sha256": "f06c1f07d65f7e43c377c8e8399a02a310e4485e38d5ffa2ee580ac00963e8d5"
     },
     "botanical_preview.png": {
       "bytes": 1673451,
@@ -40,14 +35,6 @@
     "caliche_vegetation.glb": {
       "bytes": 4574948,
       "sha256": "b7a9fc67e02807f77659e637ca1a20c84f175592013064e599bc611f1178601a"
-    },
-    "canopy_cn1_comparison.json": {
-      "bytes": 465,
-      "sha256": "77cb89eabfe9ecb7ecc90ffdb8f1d03fa92fa91a5cb490068046c5f72bb3c171"
-    },
-    "canopy_projection_estimate.json": {
-      "bytes": 4202,
-      "sha256": "44f992f95573968e1b640e42d99640f5a8cd3225df103adcd98ca6b71582ca04"
     },
     "exports/SM_CN_Caliche_A.fbx": {
       "bytes": 25132,
@@ -373,14 +360,6 @@
       "bytes": 1417,
       "sha256": "67d7df9ed3ed69ba44fe2782ad688da54d9b40dfe7ca8686490a168c8594d3bc"
     },
-    "source_art/CN3-mask-study.json": {
-      "bytes": 380,
-      "sha256": "fcf6d3baed2223042d658e7454609ff55fb67104b9d501c867f482f496646c31"
-    },
-    "source_art/CN3-mask-study.png": {
-      "bytes": 240251,
-      "sha256": "a424d880ad116cd0b9dd75e9578de9a29d047ec979134549797cbbaef3082907"
-    },
     "source_audit.json": {
       "bytes": 4906,
       "sha256": "5ec4dd150ff2c0d8ab68682fe895258be55a4954a227776c1042a9a457dfaefa"
@@ -418,88 +397,8 @@
       "sha256": "9444fe73eb0cbe79bb10bcb9df5f2a016de6c898dd9718391290412bb61e820f"
     },
     "update_manifest.py": {
-      "bytes": 2173,
-      "sha256": "07e3047998433cf859dbf15a6fbe65bd935976cdf4dc60609a5becb26663a18e"
-    },
-    "verification/build-attempt1-failed-guard.json": {
-      "bytes": 955,
-      "sha256": "68762d63960dab28fa4a97b3e18b1521873647c69aa0f882cb119a06b825ff7f"
-    },
-    "verification/build-attempt1-failed.log": {
-      "bytes": 760,
-      "sha256": "b9df5fe514bdc6a11c7929478e4e73f648697fc9416e3996e7638c46005018c7"
-    },
-    "verification/build-attempt2-guard-rejected.json": {
-      "bytes": 403,
-      "sha256": "eebf8808393db771c387c7a7cc48bb781d3bdaf1507d52b79b7382bca5fcc919"
-    },
-    "verification/build-attempt3-guard-rejected.json": {
-      "bytes": 411,
-      "sha256": "d7506b132d05f969f64e3ff7795107977d14fb94ad82d6df71dfddaf988fec28"
-    },
-    "verification/build-attempt4-failed-guard.json": {
-      "bytes": 954,
-      "sha256": "89feb5cc848c319e61cfc122c6dd1f42336893f51f0b4c2afd9e345e6c6ee595"
-    },
-    "verification/build-attempt4-failed.log": {
-      "bytes": 1415,
-      "sha256": "4cdcba1b19295c20cb92b582ebb07e3cd2dbc4778b25d9c9e0174413d2564687"
-    },
-    "verification/build-attempt5-failed-guard.json": {
-      "bytes": 955,
-      "sha256": "84b9c6623a6f710ef9ca8eda1904f13be8ab10fdddf3f945e44a64bc37918e71"
-    },
-    "verification/build-attempt5-failed.log": {
-      "bytes": 1928,
-      "sha256": "093d029d90d244d4a3f4380d14268630d0ad9f6f3648001335f460937385817f"
-    },
-    "verification/build-attempt6-guard-rejected.json": {
-      "bytes": 427,
-      "sha256": "7926334031556b82d2a622f2fe3b9b06678e13495cf845d28057f2deaca099d4"
-    },
-    "verification/build-attempt7-guard-rejected.json": {
-      "bytes": 466,
-      "sha256": "b495bb11f0485d2d05037e9a6b6652ac6b4236ab2df3cd1415fe66dd8b264638"
-    },
-    "verification/build-guard.json": {
-      "bytes": 1537,
-      "sha256": "981b00273b42f728933507279b1ddf92ea6728e6800dc4766eb50615715478ed"
-    },
-    "verification/build.log": {
-      "bytes": 21975,
-      "sha256": "c60e2686628400d47b78fce146b726fe3f80a1509f9944d4dcf42b4be873d3ed"
-    },
-    "verification/light-texture-api-check.json": {
-      "bytes": 241,
-      "sha256": "a183e752137f1ad96607d2a94ab4ddaea3e32ac38f3151dfbd11288c608ca450"
-    },
-    "verification/preview-attempt1-contention-aborted-guard.json": {
-      "bytes": 2428,
-      "sha256": "0b32cf9f4b10654e85d6d274a76a4d61d87d1f6a95658c9308f80898feab33b5"
-    },
-    "verification/preview-attempt1-contention-aborted.log": {
-      "bytes": 614,
-      "sha256": "3bd0d84f730fa994efc455482388696b2e48e57dcc99a06db65f5b79a3dd48e1"
-    },
-    "verification/preview-attempt1-source.py": {
-      "bytes": 2630,
-      "sha256": "3503388c76260a5d1e26e59bf92793dd76ef2076f1b77ae491c8628b498bfa8a"
-    },
-    "verification/preview-guard.json": {
-      "bytes": 1625,
-      "sha256": "539d04629f92c5f74fc816c864cf20ba3088d357a15befee999542e71262cdf7"
-    },
-    "verification/preview.log": {
-      "bytes": 1378,
-      "sha256": "ddfd7721472d5421f642823ca4b7b1e1dae3008c7573b9d93730b64ea9a2131b"
-    },
-    "verification/verify-guard.json": {
-      "bytes": 1624,
-      "sha256": "853343bc5cb8759631d8a3f2db827c3509faf2102a76ea5eeca018a85ec72f2c"
-    },
-    "verification/verify.log": {
-      "bytes": 35419,
-      "sha256": "fa2adfb3c3460b8964c699a54aa8de2b68e7b76d193bbf0605f95746a619d354"
+      "bytes": 5102,
+      "sha256": "42d7a352f4d53de704c315d794ab2da619d93bf6a13b1280d8d6bc7e8c379a1b"
     },
     "verification.json": {
       "bytes": 46243,
