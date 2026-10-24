@@ -83,6 +83,9 @@ public:
 	FS47Pose Pose(const FString& Path) const;         // an {x, z, yaw} the code holds (an anchor)
 	bool HasPath(const FString& Path) const;
 	bool MesaDinerReady() const { return bMesaDinerReady; }
+	bool HighwayLandscapeReady() const { return HighwayLandscapeRoot.IsValid(); }
+	FVector HighwayMapEye(const FVector& ThreeEye) const;
+	bool AuditHighwayLandscape(TArray<FString>& Lines) const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
 	// what FS47Obj and FS47Mat use
 	TArray<class UMaterialInstanceDynamic*> NodeMids(int32 Node);
@@ -283,6 +286,15 @@ private:
 	void BuildMesaDiner();
 	bool bMesaDinerReady = false;
 	void BuildCalicheNature();
+	void BuildHighwayPower();
+	void BuildHighwayLandscape();
+	void BeginHighwayAudit();
+	void UpdateHighwayLandscape();
+	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
+	TMap<int32, FTransform> HighwayVisuals;
+	TSet<int32> HighwaySharedNodes;
+	FVector HighwayOffset = FVector::ZeroVector;
+	int32 HighwayBridgeInstances = 0;
 	void BuildAuthoredArray();
 	void UpdateRetroProps();
 	struct FRetroTv { TWeakObjectPtr<UMaterialInstanceDynamic> Screen, Pilot; };

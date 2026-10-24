@@ -91,12 +91,13 @@ FS47Play US47Audio::Sfx(const FString& Name, const FS47Sound& O)
 	FBatch Batch(*Ctx);
 	auto Src = Ctx->CreateBufferSource(); Src->Buffer = B; Src->PlaybackRate.SetValue(O.Rate); Src->bLoop = O.bLoop;
 	auto G = Ctx->CreateGain(); G->Gain.SetValue(O.Gain * LicGain(Name));
-	if (O.Lp > 0.f) { auto F = Ctx->CreateBiquadFilter(); F->SetType(TEXT("lowpass")); F->Frequency.SetValue(O.Lp); Src->Connect(F); F->Connect(G); }
+	TSharedPtr<FS47BiquadFilterNode> Filter;
+	if (O.Lp > 0.f) { Filter = Ctx->CreateBiquadFilter(); Filter->SetType(TEXT("lowpass")); Filter->Frequency.SetValue(O.Lp); Src->Connect(Filter); Filter->Connect(G); }
 	else Src->Connect(G);
 	const TSharedPtr<FS47AudioNode> Dest = Node(O.DestNode, BusNamed(O.Dest));
 	G->Connect(Dest.IsValid() ? Dest : O.At ? TSharedPtr<FS47AudioNode>(Panner(*O.At)) : TSharedPtr<FS47AudioNode>(SfxBus));
 	Src->Start(Ctx->CurrentTime() + O.When, O.From, O.Dur ? *O.Dur : -1.0);
-	return { Src, G };
+	return { Src, G, Filter };
 }
 
 FString US47Audio::Or(const FString& Name, const FString& Old) const
@@ -1087,7 +1088,22 @@ void US47Audio::LoopLevel(const FString& Key, float Gain, float Rate, float LowP
 	FBatch Batch(*Ctx);
 	if (P->Gain.IsValid()) P->Gain->Gain.SetValue(FMath::Max(0.f, Gain));
 	P->Src->PlaybackRate.SetValue(FMath::Max(0.01f, Rate));
-	(void)LowPass; // (the cab's low-pass is EngineBus's, on the engine's own bus once that is in)
+	if (P->Filter.IsValid() && LowPass > 0.f) P->Filter->Frequency.SetValue(LowPass);
+}
+
+TOptional<FS47LoopState> US47Audio::InspectLoop(const FString& Key) const
+{
+	const FS47Play* P = Loops.Find(Key);
+	if (!P || !*P || !Ctx.IsValid()) return {};
+	FBatch Batch(*Ctx);
+	FS47LoopState State;
+	State.bPlaying = P->Src->Started() && !P->Src->Ended();
+	State.bLoop = P->Src->bLoop;
+	State.Gain = P->Gain.IsValid() ? P->Gain->Gain.Value() : 0;
+	State.Rate = P->Src->PlaybackRate.Value();
+	State.LowPass = P->Filter.IsValid() ? P->Filter->Frequency.Value() : 0;
+	State.Buffer = P->Src->Buffer;
+	return State;
 }
 
 float US47Audio::Duration(const FString& Name)

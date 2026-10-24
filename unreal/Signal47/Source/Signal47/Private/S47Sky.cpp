@@ -372,7 +372,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("HoleDir"), Holes);
 		D->SetVectorParameterValue(TEXT("HoleR"), HoleRad);
 		D->SetScalarParameterValue(TEXT("Hole"), float(HoleK));
-		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(Eye)));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))));
 	};
 	auto Sunny = [&](UMaterialInstanceDynamic* D)
 	{
@@ -380,7 +380,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetScalarParameterValue(TEXT("Yaw"), float(Yaw));
 		D->SetScalarParameterValue(TEXT("Dawn"), float(Daylight()));
 		D->SetScalarParameterValue(TEXT("Sun"), float(Sun));
-		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(Eye)));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))));
 		D->SetVectorParameterValue(TEXT("SunDir"), V4(SunDir));
 		for (int32 k = 0; k < 3; ++k) D->SetVectorParameterValue(*FString::Printf(TEXT("Glow%d"), k), FLinearColor(float(Glow[k].X), float(Glow[k].Y), float(Glow[k].Z), float(Glow[k].W)));
 	};
@@ -388,7 +388,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	{
 		Sunny(D); Common(D);
 		D->SetScalarParameterValue(TEXT("Flash"), float(Flash));
-		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(Eye)));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))));
 		D->SetScalarParameterValue(TEXT("Midday"), float(Midday));
 		D->SetVectorParameterValue(TEXT("FlashDir"), V4(FlashDir));
 	}
@@ -439,8 +439,8 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	}
 	const FS47WebNode* BackdropNode = W->Node(ConceptBackdropNode);
 	const UStaticMeshComponent* Backdrop = BackdropNode ? Cast<UStaticMeshComponent>(BackdropNode->Comp.Get()) : nullptr;
-	const bool bBackdropReady = Backdrop && Backdrop->GetStaticMesh() && W->ObjAt(ConceptBackdropNode).Shown();
-	const bool bReplaceLegacy = bBackdropReady && S47CalicheVisualWeight(Eye) > .999;
+	const bool bBackdropReady = Backdrop && Backdrop->GetStaticMesh() && Backdrop->IsVisible() && !Backdrop->bHiddenInGame;
+	const bool bReplaceLegacy = bBackdropReady && (W->HighwayLandscapeReady() || S47CalicheVisualWeight(W->HighwayMapEye(Eye)) > .999);
 	if (bReplaceLegacy != bConceptLegacyMesasHidden)
 	{
 		for (const TPair<int32, bool>& Entry : ConceptLegacyMesas) W->SetVisible(Entry.Key, Entry.Value && !bReplaceLegacy);

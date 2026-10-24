@@ -1,0 +1,266 @@
+{
+  "status": "PASS",
+  "scope": "Roswell barrier, decoded car engine audio, continuous Motor Court nature and one detailed highway power line; seven focused packaged runs. Merge/install recorded separately.",
+  "source_commit": "464078bef26b45f1c1237b8778957d4dd8bca342",
+  "candidate": "H3",
+  "package": {
+    "path": "/home/tom/scratch-bm/Signal47-highway-continuity/candidate-H3/Linux/Signal47/Binaries/Linux/Signal47",
+    "bytes": 311789504,
+    "sha256": "1b329d1835e412084b9f802e86f7944ae7dcc08c7e1a09ffdd0181fddfb93028",
+    "containers": [
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.pak",
+        "bytes": 1264489548,
+        "sha256": "43338f34b39fb73ccae60f15ecab87baf904e350deedd607af1ec4ee0269e406"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.ucas",
+        "bytes": 1888677200,
+        "sha256": "d54753742c219cb3ec75cca2fb6581c0d4f033867866b4a869933c31f5ad261b"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.utoc",
+        "bytes": 2064618,
+        "sha256": "82e3c64d42aaaf49efe1266be61ff613a7b6501a441c29e76c440f02bbfe9b40"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.ucas",
+        "bytes": 3323168,
+        "sha256": "1cb75e90b6c0b71594b619ce286a246c5966b0831d26e308bb1d144cbc7236e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.utoc",
+        "bytes": 806,
+        "sha256": "b6456194ab08e29851afaa5ef6f0b3ccc3d71dc1282699200d0975b93a2a5238"
+      }
+    ]
+  },
+  "self_test_checks": 1392,
+  "runtime": {
+    "status": "PASS",
+    "cases": [
+      {
+        "case": "barrier",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "9d5abe1daeb1963f7ecb5361e9d93670ebd0fb97fe5286b700f1ccfafbd5919a",
+        "markers": [
+          "[2026.10.24-20.02.09:172][  2]LogS47HUD: Display: S47: self test OK (1392 checks)",
+          "[2026.10.24-20.02.15:768][560]LogS47HighwayAudit: Display: S47: highway audio entry truck:idle actual_buffer=1 gain=0.13116610 rate=1.08333 lowpass=846.25 isolated_loop_pcm_rms=0.012798227",
+          "[2026.10.24-20.02.15:768][560]LogS47HighwayAudit: Display: S47: highway audio entry truck:drive actual_buffer=1 gain=0.00000000 rate=0.55000 lowpass=846.25 isolated_loop_pcm_rms=0.000000000",
+          "[2026.10.24-20.02.15:768][560]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=road leg=road",
+          "[2026.10.24-20.02.15:770][560]LogS47HighwayAudit: Display: S47: highway audit barrier PASS: actual drive controller: closed posts stop; open passes posts and stops at permanent wall; actual walk gate and state restoration; elapsed=3.01 transitions=0 max_canonical_eye_step=0.0000",
+          "[2026.10.24-20.02.24:692][237]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1237, viewport 1600x900, parts 2052, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "seam-day",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "8800e0f0bab7c9d7b2cc9a6bd797a08b315aec2c42998b08dc5380e1b188b1f2",
+        "markers": [
+          "[2026.10.24-20.02.41:729][558]LogS47HighwayAudit: Display: S47: highway audio entry truck:idle actual_buffer=1 gain=0.13116986 rate=1.08333 lowpass=846.25 isolated_loop_pcm_rms=0.012798593",
+          "[2026.10.24-20.02.41:729][558]LogS47HighwayAudit: Display: S47: highway audio entry truck:drive actual_buffer=1 gain=0.00000000 rate=0.55000 lowpass=846.25 isolated_loop_pcm_rms=0.000000000",
+          "[2026.10.24-20.02.41:730][558]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=road leg=road",
+          "[2026.10.24-20.02.49:938][204]LogS47HighwayAudit: Display: S47: highway actual transition road -> saro canonical_eye=8001.4675,-1.2592,474.5420 speed=11.7726",
+          "[2026.10.24-20.02.49:939][204]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=saro leg=saro",
+          "[2026.10.24-20.02.49:939][204]LogS47HighwayAudit: Display: S47: highway audio transfer truck:idle actual_buffer=1 gain=0.04494848 rate=1.90000 lowpass=1100.00 isolated_loop_pcm_rms=0.004502058",
+          "[2026.10.24-20.02.49:939][204]LogS47HighwayAudit: Display: S47: highway audio transfer truck:drive actual_buffer=1 gain=0.17791072 rate=0.75215 lowpass=1100.00 isolated_loop_pcm_rms=0.019866219",
+          "[2026.10.24-20.02.52:733][412]LogS47HighwayAudit: Display: S47: highway audio north-stop truck:idle actual_buffer=1 gain=0.13119209 rate=1.08486 lowpass=846.53 isolated_loop_pcm_rms=0.012813253",
+          "[2026.10.24-20.02.52:733][412]LogS47HighwayAudit: Display: S47: highway audio north-stop truck:drive actual_buffer=1 gain=0.00000001 rate=0.55000 lowpass=846.53 isolated_loop_pcm_rms=0.000000001",
+          "[2026.10.24-20.02.59:630][ 57]LogS47HighwayAudit: Display: S47: highway actual transition saro -> road canonical_eye=8002.1684,-1.3188,485.4540 speed=10.1015",
+          "[2026.10.24-20.02.59:631][ 57]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=road leg=road",
+          "[2026.10.24-20.02.59:631][ 57]LogS47HighwayAudit: Display: S47: highway audio transfer truck:idle actual_buffer=1 gain=0.14967722 rate=1.89951 lowpass=1100.00 isolated_loop_pcm_rms=0.014992450",
+          "[2026.10.24-20.02.59:631][ 57]LogS47HighwayAudit: Display: S47: highway audio transfer truck:drive actual_buffer=1 gain=0.10124631 rate=0.64168 lowpass=1100.00 isolated_loop_pcm_rms=0.011293037",
+          "[2026.10.24-20.03.07:238][764]LogS47HighwayAudit: Display: S47: highway audio reentry truck:idle actual_buffer=1 gain=0.13116619 rate=1.08333 lowpass=846.25 isolated_loop_pcm_rms=0.012798235",
+          "[2026.10.24-20.03.07:238][764]LogS47HighwayAudit: Display: S47: highway audio reentry truck:drive actual_buffer=1 gain=0.00000000 rate=0.55000 lowpass=846.25 isolated_loop_pcm_rms=0.000000000",
+          "[2026.10.24-20.03.07:239][764]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=road leg=road",
+          "[2026.10.24-20.03.07:239][764]LogS47HighwayAudit: Display: S47: highway audit seam PASS: two actual seam crossings, continuous mapped player eye, native landscape/power, decoded loop PCM, normal exit shutdown and re-entry; no full save restore claim; elapsed=28.58 transitions=2 max_canonical_eye_step=2.4055",
+          "[2026.10.24-20.03.43:163][100]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 6100, viewport 1600x900, parts 2075, phase 0, modal none"
+        ]
+      },
+      {
+        "case": "seam-night",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "92099153e591c710e3a725aa163861c6c7450951cd49ebeb264d1248b2d14f83",
+        "markers": [
+          "[2026.10.24-20.04.00:347][584]LogS47HighwayAudit: Display: S47: highway audio entry truck:idle actual_buffer=1 gain=0.13116579 rate=1.08333 lowpass=846.25 isolated_loop_pcm_rms=0.012798196",
+          "[2026.10.24-20.04.00:347][584]LogS47HighwayAudit: Display: S47: highway audio entry truck:drive actual_buffer=1 gain=0.00000000 rate=0.55000 lowpass=846.25 isolated_loop_pcm_rms=0.000000000",
+          "[2026.10.24-20.04.00:347][584]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=road leg=road",
+          "[2026.10.24-20.04.08:557][279]LogS47HighwayAudit: Display: S47: highway actual transition road -> saro canonical_eye=8001.4681,-1.2588,474.6682 speed=11.7598",
+          "[2026.10.24-20.04.08:558][279]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=saro leg=saro",
+          "[2026.10.24-20.04.08:558][279]LogS47HighwayAudit: Display: S47: highway audio transfer truck:idle actual_buffer=1 gain=0.04579873 rate=1.90000 lowpass=1100.00 isolated_loop_pcm_rms=0.004587219",
+          "[2026.10.24-20.04.08:558][279]LogS47HighwayAudit: Display: S47: highway audio transfer truck:drive actual_buffer=1 gain=0.17767084 rate=0.75128 lowpass=1100.00 isolated_loop_pcm_rms=0.019828772",
+          "[2026.10.24-20.04.11:351][493]LogS47HighwayAudit: Display: S47: highway audio north-stop truck:idle actual_buffer=1 gain=0.13119110 rate=1.08479 lowpass=846.51 isolated_loop_pcm_rms=0.012812717",
+          "[2026.10.24-20.04.11:351][493]LogS47HighwayAudit: Display: S47: highway audio north-stop truck:drive actual_buffer=1 gain=0.00000001 rate=0.55000 lowpass=846.51 isolated_loop_pcm_rms=0.000000001",
+          "[2026.10.24-20.04.18:259][223]LogS47HighwayAudit: Display: S47: highway actual transition saro -> road canonical_eye=8002.1690,-1.3183,485.4901 speed=10.1038",
+          "[2026.10.24-20.04.18:260][223]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=road leg=road",
+          "[2026.10.24-20.04.18:260][223]LogS47HighwayAudit: Display: S47: highway audio transfer truck:idle actual_buffer=1 gain=0.14992537 rate=1.89951 lowpass=1100.00 isolated_loop_pcm_rms=0.015017335",
+          "[2026.10.24-20.04.18:260][223]LogS47HighwayAudit: Display: S47: highway audio transfer truck:drive actual_buffer=1 gain=0.10089847 rate=0.64111 lowpass=1100.00 isolated_loop_pcm_rms=0.011258898",
+          "[2026.10.24-20.04.25:850][998]LogS47HighwayAudit: Display: S47: highway audio reentry truck:idle actual_buffer=1 gain=0.13116634 rate=1.08333 lowpass=846.25 isolated_loop_pcm_rms=0.012798250",
+          "[2026.10.24-20.04.25:850][998]LogS47HighwayAudit: Display: S47: highway audio reentry truck:drive actual_buffer=1 gain=0.00000000 rate=0.55000 lowpass=846.25 isolated_loop_pcm_rms=0.000000000",
+          "[2026.10.24-20.04.25:851][998]LogS47HighwayAudit: Display: S47: highway audit actual overlap families=5 instances=4816 power_ready=1 main=118 spur=12 wires=5988 area=road leg=road",
+          "[2026.10.24-20.04.25:851][998]LogS47HighwayAudit: Display: S47: highway audit seam PASS: two actual seam crossings, continuous mapped player eye, native landscape/power, decoded loop PCM, normal exit shutdown and re-entry; no full save restore claim; elapsed=28.50 transitions=2 max_canonical_eye_step=3.7938",
+          "[2026.10.24-20.05.02:289][690]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 6690, viewport 1600x900, parts 2052, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "diner",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "803b9da567f6556468dae50fb59781c37de8951cefe609305fdc1d9d131941c8",
+        "markers": [
+          "[2026.10.24-20.05.33:956][113]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 2113, viewport 1600x900, parts 2052, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "takeaway",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "1558ed152a7fecc331df48f61809fdaa966d776eba85b828bd918d80825ce0a4",
+        "markers": [
+          "[2026.10.24-20.06.14:768][748]LogTemp: Display: S47: takeaway PASS COMPLETE: physical diner/desk/annex/hood/passenger/bench set-down and pickup, ordinary phone/document/original archive work-table use unobstructed, held with uninterrupted fade meal optional with exactly one twelve-minute skip, 10 disk/fresh-store/full-world restores including paid reply/held/all physical surface positions/eaten, camera/light/notebook suppression and no duplicate portion; human input UNVERIFIED"
+        ]
+      },
+      {
+        "case": "old-archive",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "6ae7d022537cbdcc92ee5a0ba76581ab2188f4babb9d49e8e39a77b1c08c0baf",
+        "markers": [
+          "[2026.10.24-20.06.38:455][341]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1341, viewport 1600x900, parts 2052, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "old-controlroom",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "2d70530b34dd92a240569ca5428edb7b12a5c96a73f61bb40686b0b434ddd7b1",
+        "markers": [
+          "[2026.10.24-20.07.00:447][ 44]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1044, viewport 1600x900, parts 2052, phase 0, modal none"
+        ]
+      }
+    ],
+    "scope": "7 focused runs; no full world or PSO suite; visual review separate"
+  },
+  "transitions": {
+    "day": {
+      "actual_transitions": [
+        "road -> saro",
+        "saro -> road"
+      ],
+      "max_sampled_eye_step_metres": 2.4055
+    },
+    "night": {
+      "actual_transitions": [
+        "road -> saro",
+        "saro -> road"
+      ],
+      "max_sampled_eye_step_metres": 3.7938
+    }
+  },
+  "visual_review": {
+    "status": "PASS",
+    "scope": "Nature and single main power-line continuity at Motor Court; no whole-building continuity claim",
+    "images": 8,
+    "reviewers": [
+      "root",
+      "dish_model"
+    ],
+    "findings": [
+      "Day north/south before/after preserve mountains and single power-line alignment; actual Evening cab visible.",
+      "Night north/south preserve mountain/pole/wire silhouettes; ground too dark for fine plant/stone review.",
+      "No visible duplicate main power line, floating rocks or 8km transform jump.",
+      "Motel building/light area proxies still switch; outside the nature continuity scope.",
+      "Red RT developer warning remains in H3 day, exactly 83.107 MiB/400 MiB20%, identical to independently viewed prior D2 baseline."
+    ],
+    "baseline_warning_image": "/home/tom/scratch-bm/Signal47-mesa-diner/takeaway-shots/takeaway-held-diner.png",
+    "baseline_warning_sha256": "59d67bd177a822fc18c2e3bd0d77fbf7786f50af9d9a7b882ef148e13166ecc0",
+    "not_claimed": [
+      "Warning-free runtime",
+      "Night fine-ground-detail visibility",
+      "Photorealistic new mesa shapes",
+      "Human listening or full-night playthrough"
+    ]
+  },
+  "images": [
+    {
+      "period": "day",
+      "shot": "north-before",
+      "sha256": "9c96932a0180c3197186b00003d9f8fd652bbdafb6285bd2d7d79a46f0b9537c"
+    },
+    {
+      "period": "day",
+      "shot": "north-after",
+      "sha256": "c2374fcc2dba682e6a747c97587ca0696b487bf3b2830fc118e6e7d560405397"
+    },
+    {
+      "period": "day",
+      "shot": "south-before",
+      "sha256": "1ed860c4d42bfbb2e4834b051f1d442e78645d7482fd9e8b1773c39613701246"
+    },
+    {
+      "period": "day",
+      "shot": "south-after",
+      "sha256": "85e7904b4fe3afda13ed80d1ee8c40ec206f3762c8f9a5c2432306d73dfceb6e"
+    },
+    {
+      "period": "night",
+      "shot": "north-before",
+      "sha256": "57ed1f4c6ea1364b3d50e31bdae8c20e407aba769feb1ddeb9f74e739f09fc97"
+    },
+    {
+      "period": "night",
+      "shot": "north-after",
+      "sha256": "f701b974e885fe4592e6d9e2c6c55ec7d6a2de21aff74fa463908fcc78cb88da"
+    },
+    {
+      "period": "night",
+      "shot": "south-before",
+      "sha256": "b9f138fef060dc00b2a711971e23866ef79fe7af1bf7edb2d90de14f970ce4f4"
+    },
+    {
+      "period": "night",
+      "shot": "south-after",
+      "sha256": "e34551a72d0f283585579e9e4bc78ea405b08bbcf45993ac3182ae2166233178"
+    }
+  ],
+  "native_geometry": {
+    "shared_components": 86,
+    "overlap_instances": 4816,
+    "overlap_metres": 200,
+    "main_poles": 118,
+    "spur_poles": 12,
+    "wire_segments": 5988,
+    "removed_old_overhead_triangles": 17920,
+    "preserved_fence_triangles": 36848,
+    "preserved_outside_fence_wire_segments": 10680
+  },
+  "limits": [
+    "No full 110-scenario or PSO suite, human input/listening or complete playthrough/performance claim.",
+    "Engine PCM is isolated replay of actual decoded loop buffers/gain/rate/filter, not a whole mixed output recording.",
+    "Two non-shadow-casting 6mm fence-wire clones rasterize normally but are omitted from hardware RT GI/reflections to avoid duplicate always-resident BLAS. New poles/power lines retain RT.",
+    "Geology continuity is fixed; existing stylized mesa shapes/materials remain.",
+    "Existing developer RT always-resident warning 83.107 MiB/400 MiB at 20% threshold is unchanged from prior D2 takeaway images; not a new H3 regression and not hidden with console overrides."
+  ],
+  "rejected_candidates": {
+    "H1": "missing runtime RT representation handled ensure; first diagnostic seam only, not accepted",
+    "H2": "opening fixture replaced position while original StartTrip callback pending; native day timeout from normal town start. RT proxy fixed; resident warning subsequently confirmed identical in prior D2 images."
+  },
+  "evidence_directory": "/home/tom/scratch-bm/Signal47-highway-continuity"
+}

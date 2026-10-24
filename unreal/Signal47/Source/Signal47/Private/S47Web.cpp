@@ -658,6 +658,8 @@ void AS47Web::BeginPlay()
 	BuildCalicheStreet();
 	BuildMesaDiner();
 	BuildCalicheNature();
+	BuildHighwayPower();
+	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));
@@ -727,6 +729,7 @@ void AS47Web::BeginPlay()
 		for (const FString& I : Ids) SetVisible(FCString::Atoi(*I), false);
 	}
 	DrawDishes();
+	BeginHighwayAudit();
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
 
@@ -735,7 +738,9 @@ void AS47Web::BeginPlay()
 void AS47Web::ApplyVisibility(int32 I, bool bParent)
 {
 	FS47WebNode& N = Nodes[I];
-	const bool bOn = bParent && N.bVis;
+	const bool bHighway = HighwaySharedNodes.Contains(I);
+	const bool bExterior = CurrentArea == TEXT("saro") || CurrentArea == TEXT("road") || CurrentArea == TEXT("diner");
+	const bool bOn = N.bVis && (bHighway ? bExterior : bParent);
 	if (USceneComponent* C = N.Comp.Get())
 	{
 		if (UPrimitiveComponent* P = Cast<UPrimitiveComponent>(C)) P->SetVisibility(bOn, false);
@@ -779,6 +784,7 @@ void AS47Web::Enter(const FString& Area)
 {
 	if (CurrentArea != Area) bSkyCaptured = false;
 	CurrentArea = Area;
+	UpdateHighwayLandscape();
 	// the motel's lot is SARO's area, the diner stands in the road's (World.enter)
 	auto Shown = [&](const FString& A)
 	{

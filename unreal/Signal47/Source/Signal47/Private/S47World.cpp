@@ -696,7 +696,7 @@ void US47World::SetStoryPlaces(bool bStationOpen, bool bOldRoadOpen)
 	// (the walk gap at STATION 01 is the station's: Station01.setWalkGate, with the station's port)
 	(void)bStationOpen;
 	EnsureLegs();
-	if (Road) Road->SetRoadClosed(!bOldRoadOpen && !bCommuteVehicle);
+	if (Road) Road->SetRoadClosed(!bOldRoadOpen);
 }
 
 void US47World::Place(double X, double Z, double Yaw)

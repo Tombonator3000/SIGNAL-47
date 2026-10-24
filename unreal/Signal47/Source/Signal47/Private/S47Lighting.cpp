@@ -266,7 +266,7 @@ void AS47Web::SetLightingQuality(const FString& Quality)
 void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
 {
 	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash; SkyEvening = Evening;
-	const float Caliche = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
+	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
 	UpdateCloudLight(SunDirection, Daylight);
 	if (DawnSun)
 	{
@@ -315,7 +315,7 @@ void AS47Web::UpdateNativeFog()
 	if (!LightingFog) return;
 	// FogExp2 is not a physical extinction coefficient. Match its thin night air near eye level,
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
-	const float Caliche = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
+	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
 	LightingFog->SetFogDensity(FMath::Clamp(FogDensity * 2.f + Caliche * .0012f, 0.0003f, 0.012f));
 	// SKY.md: aerial perspective of the concept. Through late afternoon and dusk the far mesas go
 	// dusty blue-violet, with a warm glow in the haze toward the low (or just set) sun.
@@ -393,14 +393,14 @@ void AS47Web::UpdateNativeLighting()
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
-		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.24f, float(S47CalicheVisualWeight(S47Three::ToThree(Eye))));
+		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
 		Moon->SetIntensity(R.Base > 0 ? LocalMoon * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
 		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
 		Bounce(Moon);
 		Moon->SetLightSourceAngle(0.52f);
 		Moon->SetLightSourceSoftAngle(0.08f);
 	}
-	const float CalicheSky = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
+	const float CalicheSky = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
 	const bool bCalicheBoundary = (CalicheSky == 0.f && CapturedCaliche > 0.f) || (CalicheSky == 1.f && CapturedCaliche < 1.f);
 	if (NightSky && !NightSky->bRealTimeCapture && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f || FMath::Abs(CapturedCaliche - CalicheSky) > 0.08f || bCalicheBoundary))
 	{
