@@ -1,0 +1,25 @@
+{
+  "revision": "R2-concept-fascia",
+  "protected_interior_PNG_byte_identical": true,
+  "compared_count": 18,
+  "sha256": {
+    "TealTile_base_color.png": "40090e3e72636bcfe81aea166b34c143578350a730e4eb3b45a839f0e91ea256",
+    "TealTile_normal.png": "7f3b4a25424b27e8e8d52b700fa7c4f3903ce75ae624c40ea8510ffa63e4936c",
+    "TealTile_roughness.png": "ce2e8bc3b4de5f5d23806b1b11314bb57642d1be43ba6c28cdfba27767804859",
+    "CheckerFloor_base_color.png": "9ec4491fdb638df4a591c397dd0ec2d4c06506f43d8423955b100c1025980a8c",
+    "CheckerFloor_normal.png": "4daf14f043dadc8878f0afeb0dd9d999b0a376eafa2f689370cd8ecaebb40272",
+    "CheckerFloor_roughness.png": "cb253c7b6e1a4807d229b8a72d60848bbd4f9442df550ba9712f514f49545af6",
+    "Vinyl_base_color.png": "19ad0bc7dc1f924858f70ce564387688c9fdc43a8dd35c9e926654a4f404476b",
+    "Vinyl_normal.png": "7a3e973d94aa32c04fb4eb1cccefe78f1b9dad86439c6c4b7dc2e57778248449",
+    "Vinyl_roughness.png": "fa107b31ab7ccce75a36dfca34de84daac56294f77b0b6cc5bddddfb3b98c471",
+    "Formica_base_color.png": "49c74a85a72c05de5564e44267f61bedb64e7b16f1b621fe1c327166935240bd",
+    "Formica_normal.png": "195819c7306ea0ba3f6742a33a457d4af6a9b28618e7759bad16031e17c7f94b",
+    "Formica_roughness.png": "d45eeb70917497dd39e78eb4360b66ece71875b655822406a3d2744b634edfb8",
+    "Wood_base_color.png": "138ba6cd02fe3bf075317c0f3c9c5d670d6d6b49349c4ce27f0e25e67eaeef1e",
+    "Wood_normal.png": "d43dd9527fa027f6c265fc5d8365b476679c2c3d48e1cb7331f777ebf020a0e0",
+    "Wood_roughness.png": "fc06ee7989e297c260241adf68d8c8db02a34b03c063e33745f1a85e7f1d3875",
+    "PrintAtlas_base_color.png": "f84d77cb9439591b42ad911808f9206ee9f8c9094fb766afba0b1ecde1a15f87",
+    "PrintAtlas_normal.png": "86993e9276b669289b91c2563b704bd0116c0c59af1949f08c79bfc2e2e8ff9b",
+    "PrintAtlas_roughness.png": "17c0c632cb14807d8f885c72e79d8d9bbf87c2914c82c7e8c1c483e54b938757"
+  }
+}
