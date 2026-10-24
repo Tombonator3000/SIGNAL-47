@@ -7,6 +7,7 @@ import unreal
 ROOT = Path(__file__).resolve().parent
 OUT = Path(os.environ['S47_STREET_VERIFY'])
 E = unreal.EditorAssetLibrary
+S = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem)
 checks = []
 
 
@@ -36,7 +37,7 @@ for label in ('souvenir','ground','backdrop'):
             data=mesh.get_editor_property('asset_import_data')
             check(name+' authored vertex colors imported',data.get_editor_property('vertex_color_import_option')==unreal.VertexColorImportOption.REPLACE)
             if name in ('SM_Caliche_Surface','SM_Caliche_RoadWear'):
-                check(name+' real perimeter vertex colors retained',unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem).has_vertex_colors(mesh))
+                check(name+' real perimeter vertex colors retained',S.has_vertex_colors(mesh))
 
 patches=json.loads((Path(unreal.Paths.project_content_dir())/'CalicheStreet/street-patches.json').read_text())
 for name,row in patches['meshes'].items():

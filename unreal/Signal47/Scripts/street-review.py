@@ -2,7 +2,7 @@
 """Plan or run the six packaged Caliche street reviews, sequentially.
 
 Default is a read-only plan, printed as JSON; only --run launches the guarded graphics driver.
-Each leaf captures four unchanged player-height cameras at one exact clock/timeline. This is
+Each leaf captures six fixed player-height cameras at one exact clock/timeline. This is
 static visual evidence: the cinematic guard holds narrative events, while normal clock-driven
 lights and scheduled presence remain active. It is not a walking, interaction or audio proof.
 """
