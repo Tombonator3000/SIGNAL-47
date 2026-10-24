@@ -13,6 +13,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "StaticMeshResources.h"
+#include "RenderUtils.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47HighwayPower, Log, All);
 namespace
@@ -58,7 +59,7 @@ namespace
   // Copy every original vertex, tangent, UV, color and slot. Only overhead indices differ.
   // The imported asset itself is immutable and remains available for atomic fallback.
   UStaticMesh* Cut=NewObject<UStaticMesh>(W,NAME_None,RF_Transient);
-  Cut->bAllowCPUAccess=true;Cut->NeverStream=true;Cut->GetStaticMaterials()=Original->GetStaticMaterials();
+  Cut->bAllowCPUAccess=true;Cut->NeverStream=true;Cut->bSupportRayTracing=Original->bSupportRayTracing;Cut->GetStaticMaterials()=Original->GetStaticMaterials();
   auto Data=MakeUnique<FStaticMeshRenderData>();Data->AllocateLODResources(1);
   Data->Bounds=Original->GetRenderData()->Bounds;Data->ScreenSize[0].Default=1;
   Data->NumInlinedLODs=1;Data->CurrentFirstLODIdx=0;Data->bReadyForStreaming=false;
@@ -82,6 +83,13 @@ namespace
   }
   Dst.bHasColorVertexData=Colors>0;Dst.bBuffersInlined=true;Dst.bIsOptionalLOD=false;
   Dst.SourceMeshBounds=Data->Bounds;Dst.MaxDeviation=0;Dst.IndexBuffer.SetIndices(Keep,EIndexBufferStride::Force32Bit);
+  // Same runtime RT-proxy construction policy as UStaticMesh::BuildFromMeshDescriptions.
+  // InitResources then builds its geometry from these trimmed indices, without renderer overrides.
+  bool bInitRayTracing=Cut->bSupportRayTracing;
+#if !WITH_EDITOR
+  bInitRayTracing=bInitRayTracing&&IsRayTracingAllowed();
+#endif
+  if(bInitRayTracing)Data->InitializeRayTracingRepresentationFromRenderingLODs();
   Cut->SetRenderData(MoveTemp(Data));Cut->SetExtendedBounds(Original->GetBounds());
   Out={C,Cut,Removed,Keep.Num()/3};return true;
  }
