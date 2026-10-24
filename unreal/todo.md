@@ -1,5 +1,12 @@
 # Todo for unreal/
 
+## Caliche konseptpass, 24. oktober 2026
+
+- [x] Ni visuelle runder av den bestilte gatebiten, inkludert fire originale Blender-kilder, PBR/eksporter, kontaktbakke, planter/stein og fjern horisont.
+- [x] 42 faktiske spillerhøye bilder ved dag/skumring/natt gjennomgått. Full 110/110 screenshots.sh, elleve runtimeprøver, fotopilot, horisontfallback og native/kildeportabilitet består på samme pakke.
+- [x] Lokalt flettet og installert med backup, hashkontroll og uendrede Saved-data. Skrivebordsleveranse med originaler, bildevelger, prioritert modelliste og bevis. Se CALICHE_CONCEPT_PASS.md.
+- [ ] Neste modellpass etter denne gateprøven: Mesa Diner, sheriffkontor, motell, vaskeri/fôrbutikk, kino og kirke. Dette er prioritert videre arbeid, ikke utført i denne leveransen.
+
 ## Skumlere pilotrunde, codex/anomaly-pilot, 23. oktober 2026
 
 - [x] Sparsomme verdenshint, plausible uavklarte A02-valg, nattefilm ved vaskeriet, rettet/andre flyttet pappfigur og P01 som kommer nærmere ved gange med ett ON AIR-blink.

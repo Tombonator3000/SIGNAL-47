@@ -2,6 +2,15 @@
 
 Beslutninger og fallgruver. Dagbok hører hjemme i log.md.
 
+## Caliche konseptpass, 24. oktober 2026
+
+- Ni faktiske visuelle iterasjoner er levert og installert. Se CALICHE_CONCEPT_PASS.md og Signal47/Tools/calichestreet/acceptance.json for kilde, pakke, begrensninger og modellprioritet. Sluttpakke 6103dd97769d, native f63aba3a, C++/config 266f6fc2.
+- Radio og butikk har slitt mineralpuss, malte skilt, treverk og variert fysisk innredning. Lokal grus/asfalt/jord har myke vertexalpha-kanter og rolige avbrutte spor. Sju fjerne mesaformer og lokale sky-/lysjusteringer gir mer dybde. Originale gulv, markeringer, ankre, klokker og samtlige 27 antenner bevares.
+- Legacy FBX-reimport kunne beholde feil mesh-seksjonsbindinger etter materialsporendring. Egne genererte Caliche-/Station-mesher opprettes ferskt på samme stier; kontroller faktisk seksjon mot source used_materials, ikke bare materialspornavn. VertexColor REPLACE og eksplisitt GLB COLOR_0 alpha er verifisert. Dither-fades bruker teksturalpha ganger vertexalpha uten å endre original bakkekollisjon.
+- Bakgrunnens gamle innbakte nattfjell skjules bare lokalt ved full Caliche-vekt og faktisk synlig ny bakgrunn. Alle opprinnelige synlighetsflagg gjenopprettes ved områdebytte eller fallback. Radioens punktorb er fjernet; innelys følger fysiske armaturer, fasadelys følger eksisterende døgngrense. R9-printkort og metrisk tre-UV endrer ikke pivoter eller adgang.
+- 42 faktiske spillbilder visuelt gjennomgått, 110/110 komplett screenshots.sh, 11 runtimeprøver/1305 selvtestsjekker, fotopilot og tre horisontprøver PASS på samme uendrede pakke. 249 native kontroller, 239 filhasher og fire portable Blender-kilder PASS. 40 installerte payloadhasher og 51 uendrede Saved-filer. Dette er automatiske kamera-/API-prøver; menneskelig input, lytting, fullnatt og helruteytelse er fortsatt UNVERIFIED. Ingen ny ekstern publisering eller push/PR.
+- Leveranse: ~/Desktop/Signal47 Caliche konseptpass. Fire originalblends med teksturer/eksporter, offline SPILLBILDER.html, LES_MEG_KONSEPTPASS.md og pakkehashbundne bevis. Tidligere antennekilde SARO_Array.blend og bensinstasjonsoriginal bevares på sine opprinnelige leveringsstier.
+
 ## Skumlere anomaly-pilot, Codex 23. oktober 2026
 
 - Tom ba om sterkere uro etter integrert `ed061aca`. Gjeldende pass står i `ANOMALY_SCARIER.md`; førsteleveransens rapport er historikk. Korte observasjoner i verdensbildet, ingen ekstra fotokvittering, ingen «pappen lever»-stråmann. Bevis og plausible uavklarte valg ligger i film/notatbok.

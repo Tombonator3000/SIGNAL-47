@@ -2,6 +2,10 @@
 
 Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgave har eier, gren og status. Les denne før du starter, og oppdater status når du begynner og når du er ferdig.
 
+## Caliche konseptpass levert 24.10.2026 kl. 06:51
+
+Codex, `codex/caliche-concept`: ni visuelle iterasjoner av gatebiten ved bensinstasjonen, suvenirbutikken og 1420 AM er ferdige, lokalt flettet og installert. 42 faktiske spillerhøye sluttbilder, hele 110/110 screenshots.sh, elleve runtimeprøver, A02-pilot, tre horisontprøver, 249 native kontroller og fire portable Blender-kilder PASS. 40 payloadhash og 51 uendrede Saved-filer. Originaler, bildevelger og prioriteringsliste ligger i `~/Desktop/Signal47 Caliche konseptpass`; detaljstatus i [CALICHE_CONCEPT_PASS.md](CALICHE_CONCEPT_PASS.md). Videre bygningsprioritet starter med Mesa Diner og sheriffkontoret. Menneskelig input/lytting/fullnatt og helruteytelse er ikke målt her. Ingen ny ekstern publisering eller push/PR.
+
 ## Arbeidsdeling
 
 - Codex: rendering, lys, skygger, materialer, post-prosess, importløypa for materialer.

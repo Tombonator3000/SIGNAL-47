@@ -1,12 +1,13 @@
 {
-  "version": 1,
+  "version": 2,
   "project": "SIGNAL / 47",
-  "scope": "Caliche street: gas, souvenir, 1420 AM and immediate ground",
+  "scope": "Caliche street: gas station, souvenir shop, 1420 AM, immediate ground and distant visual mesa context",
   "engine": "Unreal Engine 5.8.4",
   "platform": "Linux Vulkan",
   "source_dcc": "Blender 5.2.2 LTS",
   "units": "metres in Blender, centimetres in Unreal",
   "visual_references": [
+    "unreal/Concepts/Caliche-2026-10-23/03-radiostudio-1420-am.png",
     "unreal/Concepts/Caliche-2026-10-23/04-suvenirbutikk.png",
     "~/Desktop/Signal47 konseptbilder/Caliche-byen.png"
   ],
@@ -15,10 +16,11 @@
     "palette": "sun-worn cream plaster, muted olive trim, walnut, pale dusty gravel, restrained amber practical lights",
     "detail": "concentrate on pedestrian windows, signs, thresholds and material contact; preserve quiet empty areas",
     "weathering": "sun-faded paint, lower-wall dust, localized wear; maintained 1986 rural town",
-    "light": "same native sky/exposure as current game, day12:00 dusk18:30 night02:15"
+    "light": "Fixed exposure and original story clock retained; local Caliche sky/clouds, twilight skylight compensation, practical lamps and distance fog; compare12:00/18:30/02:15 in packaged game",
+    "terrain": "Continuous granular shoulders with authored temporal vertex-alpha fades at every open border; dry sage clumps; distant shared-normal escarpments with broad caps"
   },
   "locks": [
-    "gas and radio source models reused",
+    "Existing gas and 27-antenna sources retained; radio and souvenir sources revised with footprint, pivots and story anchors protected",
     "walk floors and road centre markings preserved",
     "souvenir door remains closed",
     "A02 physical figure/price/split/film IDs and sightline preserved",
@@ -47,9 +49,21 @@
       "library": "ressurser/x-2097343467026289039.md",
       "status": "UNVERIFIED",
       "use": "reviewed as workflow reference; no code or asset reused"
+    },
+    {
+      "library_reference": "scenario-labs/skills:scenario-unreal-pipeline-automation",
+      "url": "https://github.com/scenario-labs/skills/blob/f0adb5b5ebc1fc8f7e333554d2aeb767c5558d6b/skills/game-engines/unreal/scenario-unreal-pipeline-automation/SKILL.md",
+      "status": "UNVERIFIED in Unreal according to its own test declaration",
+      "use": "Read as import/settings/validation reference; no third-party code reused. Actual UE5.8.4 source and native FBX/section evidence diagnosed stale bindings."
+    },
+    {
+      "library_reference": "scenario-labs/skills:scenario-unreal-lighting-rendering",
+      "url": "https://github.com/scenario-labs/skills/blob/f0adb5b5ebc1fc8f7e333554d2aeb767c5558d6b/skills/game-engines/unreal/scenario-unreal-lighting-rendering/SKILL.md",
+      "status": "Toolkit not yet run in Unreal according to source declaration; offline tests only",
+      "use": "Fixture-shaped local lights and distinct emissive/direct lighting considered as reference. Existing project light parser and fixed exposure retained; no toolkit imported or installed."
     }
   ],
-  "status": "IN_PROGRESS: concept fidelity iteration 2; prior acceptance belongs to 84470178",
+  "status": "PASS: R9 final visual review, complete frozen-package tests and local installation",
   "acceptance_record": "acceptance.json",
   "revision_targets": [
     "Painted large facade signage",
@@ -57,6 +71,14 @@
     "Curated varied physical interior stock and analog equipment",
     "Neutral mineral ground, asphalt cracks and planted edges",
     "Blue-hour cloud and stratified 3D mesa context",
-    "Readable local night materials with retained story lighting schedules"
-  ]
+    "Readable local night materials with retained story lighting schedules",
+    "Natural local sage/stone islands, macro plaster wear, warm phosphor fixture tint and broken cloud/mesa detail",
+    "Localized broken wheel and parking wear with measured alpha coverage; preserve all terrain geometry and fades",
+    "Replace legacy baked-night mesa geometry locally only while actual new backdrop is shown"
+  ],
+  "source_art": {
+    "shop_printed_artwork": "Original imagegen bitmap only in M_Souvenir_PrintedArtwork.base_color; original pixels/prompt/AI provenance in souvenir/source_art and print_art_provenance_v3.json",
+    "other_surfaces": "Deterministic authored PBR, labels and geometry; reference photos are not used as texture pixels"
+  },
+  "rejected_iteration": "Actual packaged review-first rejected for angular floor borders, stepped cone mesas, dark blue-hour context, legacy rooftop backing, window orb and sparse geometric stock"
 }
