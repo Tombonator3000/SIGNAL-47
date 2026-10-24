@@ -265,7 +265,7 @@ FVector2D S47Gamepad::Drive()
  if(!Pad.IsValid()||!Pad->AcceptInput())return FVector2D::ZeroVector;
  Pad->SyncMenu(FSlateApplication::Get());
  const auto Trigger=[](double V){return FMath::Clamp((V-.06)/.94,0.0,1.0);};
- return FVector2D(Pad->WaitLeft?0:DeadZone(Pad->Left).X,Trigger(Pad->WaitRT?0:Pad->RT)-Trigger(Pad->WaitLT?0:Pad->LT));
+ return FVector2D(Pad->WaitLeft?0:DeadZone(FVector2D(Pad->Left.X,0)).X,Trigger(Pad->WaitRT?0:Pad->RT)-Trigger(Pad->WaitLT?0:Pad->LT));
 }
 bool S47Gamepad::SelfTest(TArray<FString>& Out)
 {
@@ -280,6 +280,7 @@ bool S47Gamepad::SelfTest(TArray<FString>& Out)
  {
   TGuardValue<bool> Active(Pad->bActive,true);
   Pad->Left=FVector2D(0,1);Check(Move().Y==-1,TEXT("stick up walks forwards"));
+  Pad->Left=FVector2D(.1,1);Pad->RT=Pad->LT=0;Check(Drive().IsNearlyZero(),TEXT("unused vertical stick cannot amplify steering drift"));
   Pad->RT=1;Pad->LT=0;Check(Drive().Y==1,TEXT("RT drives forwards"));
   Pad->RT=0;Pad->LT=1;Check(Drive().Y==-1,TEXT("LT brakes and reverses"));
   Pad->Right=FVector2D(1,1);const FVector2D A=Look(1./60,1,false),B=Look(1./30,1,false);

@@ -139,11 +139,24 @@ namespace
 	struct FCtlGroup { FString Head; TArray<TPair<FString, FString>> Rows; };
 	struct FCtlPage { FString Title; TArray<FCtlGroup> Groups; };
 
+	// The keyboard table describes the two rebound keyboard/mouse slots. KeysOf also contains
+	// fixed Xbox gameplay aliases, which belong to the controller hints rather than this table.
+	TArray<FKey, TInlineAllocator<2>> KeyboardKeys(FName Action)
+	{
+		TArray<FKey, TInlineAllocator<2>> Out;
+		for (int32 Slot = 0; Slot < 2; ++Slot)
+		{
+			const FKey K = S47Keys::Key(Action, Slot);
+			if (K.IsValid() && !K.IsGamepadKey()) Out.Add(K);
+		}
+		return Out;
+	}
+
 	// an action's keys for the key column: "Tab, N", "E, Enter" ("(no key)" when it has none)
 	FString KeysSaid(FName Action, bool bFirstOnly = false)
 	{
 		TArray<FString> W;
-		for (const FKey& K : S47Keys::KeysOf(Action))
+		for (const FKey& K : KeyboardKeys(Action))
 		{
 			FString N = K == EKeys::Escape ? FString(TEXT("Esc")) : S47Keys::Name(K);
 			if (N.StartsWith(TEXT("a "))) N.RightChopInline(2);
@@ -157,7 +170,8 @@ namespace
 	// an action's key in a sentence ("Shift: run."), "(no key)" when it has none
 	FString KeySaid(FName Action)
 	{
-		const FString S = S47Keys::Said(Action);
+		const TArray<FKey, TInlineAllocator<2>> Keys = KeyboardKeys(Action);
+		const FString S = Keys.Num() ? S47Keys::Name(Keys[0]) : FString();
 		return S.IsEmpty() ? FString(TEXT("(no key)")) : S;
 	}
 
@@ -190,7 +204,8 @@ namespace
 			auto First = [](const TCHAR* A) { return KeysSaid(A, true); };
 			// (Space is both the jump and the shutter until one of them is given another key)
 			const FKey Jump = S47Keys::Key(TEXT("jump"), 0);
-			const bool bShared = Jump.IsValid() && S47Keys::Is(TEXT("shutter"), Jump) && S47Keys::KeysOf(TEXT("shutter")).Num() == 1;
+			const TArray<FKey, TInlineAllocator<2>> Shutter = KeyboardKeys(TEXT("shutter"));
+			const bool bShared = Jump.IsValid() && Shutter.Num() == 1 && Shutter[0] == Jump;
 			FCtlGroup Foot = { TEXT("On foot"), {
 				{ WalkKeys(), FString::Printf(TEXT("Walk. %s: run."), *KeySaid(TEXT("run"))) },
 				{ TEXT("Mouse"), TEXT("Look. Click the picture first to take the mouse.") },
@@ -1338,6 +1353,7 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		Check(TEXT("controls: a walk key rebound"), Row(Now, 0, 0) == TEXT("I A S D, arrows | Walk. Shift: run."), Row(Now, 0, 0));
 		Check(TEXT("controls: the kit's old key goes to the walk"), Has(Now, TEXT("Tab, N | The notebook. K: its map. W: the kit. H: these controls.")), Row(Now, 0, 9));
 		Check(TEXT("controls: the shutter apart from the jump"), Has(Now, TEXT("G | The shutter, with the camera raised.")) && Has(Now, TEXT("Space | Jump.")));
+		Check(TEXT("controls: keyboard rebinds preserve fixed Xbox aliases"), S47Keys::Is(TEXT("shutter"), EKeys::Gamepad_RightTrigger) && S47Keys::Is(TEXT("notebook"), EKeys::Gamepad_LeftShoulder) && S47Keys::KeysOf(TEXT("notebook")).Contains(EKeys::Gamepad_Special_Left));
 		Check(TEXT("controls: the truck's throttle"), Row(Now, 1, 0) == TEXT("I, S | Throttle and brake. S at a stop: reverse."), Row(Now, 1, 0));
 		Check(TEXT("controls: the page knows the keys moved"), Nb->KeysShown != S47Keys::Changes());
 		S47Keys::Load(Keys);
