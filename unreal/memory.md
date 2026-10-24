@@ -1,5 +1,12 @@
 # Minne for unreal/
 
+## SARO-ankomst og matstyring, 24. oktober 2026
+
+- Sluttkilde `5ae3a3fc`, kandidat A3: markert besøksparkering ved (-12.8,-.60,14.3), flyttet og belyst monument ved (-7.3,-.60,15.5), gjennomsiktige vinduer med rammer. Asfalten er tett; kun tegnet overflate heves24mm for å dekke gammel vei, fysisk gulv er fortsatt-.60. Prosedyregress utelates fra lot og smale gangstriper.
+- Personbil beholdes etter ankomst og diskreload. Ventende servicepickup er et snapshot av den samme originale bilen, med lokale synligheter, ISM-data og egne kopierte materialparametre. Gamle utrygge personbilposer migreres med arrivalParkingVersion=2; nye trygge poser beholdes.
+- Mat: B Xbox / Q tastatur, D-pad/piltaster og A/Enter. Nedsetting krever nærliggende synlig originalflate; stow/discard er egne vedvarende tilstander uten konsumering/dialogflytting/tidshopp. Mindre og lavere pose. Originalt E/A-pickup og måltid bevares.
+- Editor/pakking, 1400 selvtester, fem korte native pakkede kontroller og19 vurderte bilder PASS. Faktisk drive/controller/TripStep og gang til døren, disk-/verdenslastinger, syntetiske Slate-inputs. Fysisk Xbox-transport og menneskelig gjennomspilling/lytting er fortsatt UNVERIFIED. A1/A2 avvist med rålogger bevart. Se SARO_ARRIVAL.md for endelig merge/installasjon. Eksisterende rødt RT-minnevarsel80.499MiB/400MiB ved20%-terskel er synlig; ingen global grafikk- eller budsjettjustering.
+
 ## Highway-kontinuitet, 24. oktober 2026
 
 - PR 153 flettet i acaa99d7. Samme testede H3 installert med 40 hashverifiserte payloadfiler, 46 uendrede Saved-filer og verifisert sikkerhetskopi.

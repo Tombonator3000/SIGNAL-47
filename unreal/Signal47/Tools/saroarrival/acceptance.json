@@ -1,0 +1,357 @@
+{
+  "status": "PASS",
+  "scope": "SARO visitor arrival, stable cars, sign/windows and takeaway controls; merge/install recorded separately",
+  "candidate": "A3",
+  "source_commit": "5ae3a3fcc2da49aeec0397b875b29b24f1f5b0e5",
+  "package": {
+    "path": "/home/tom/scratch-bm/Signal47-saro-arrival/candidate-A3/Linux/Signal47/Binaries/Linux/Signal47",
+    "bytes": 311879616,
+    "sha256": "739002897aa6a3b27eb495b588dcc22bfa487e0ecaf99fb850722c3f2f41a262",
+    "containers": [
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.pak",
+        "bytes": 1264489548,
+        "sha256": "3620de8b8e9f7843c74a712f96429ca33b5ae6a26a4a6f866ddbbeb3c0f8f7e8"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.ucas",
+        "bytes": 1888677200,
+        "sha256": "f8b365560ea978adcb7733731162c25a9f8eee4b2515a7f60d0774c9d561b52a"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.utoc",
+        "bytes": 2064618,
+        "sha256": "346b11aedc97dc8223fc8da60c3d8237907375352eed0890fdf67329ce43fe51"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.ucas",
+        "bytes": 3323168,
+        "sha256": "1cb75e90b6c0b71594b619ce286a246c5966b0831d26e308bb1d144cbc7236e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.utoc",
+        "bytes": 806,
+        "sha256": "b6456194ab08e29851afaa5ef6f0b3ccc3d71dc1282699200d0975b93a2a5238"
+      }
+    ]
+  },
+  "source_binding_sha256": "ba0addeb374b6712eddcf726dbb8eabdff0984fb05bdc3c16e9ef11f20003e62",
+  "self_test_checks": 1400,
+  "runtime": {
+    "status": "PASS",
+    "cases": [
+      {
+        "case": "parking",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "fce3a2bab69e63ae0ad33380545e22efea3fa4aa1e566c86336e7d1fc9313531",
+        "markers": [
+          "[2026.10.24-21.07.25:961][  0]LogS47SaroArrival: Display: S47: SARO arrival ready: opaque lot visual top -0.576 / query and gameplay -0.600, personal bay -12.8/14.3, sign -7.3/15.5, exact concrete cut 228+12, walk/drive moved 1/1; original ramps and room apertures preserved",
+          "[2026.10.24-21.07.33:475][477]LogTemp: Display: S47: SARO parking START ordinary controller/TripStep from entrance -22.2 32; human input UNVERIFIED",
+          "[2026.10.24-21.07.45:540][576]LogTemp: Display: S47: SARO parking awaiting normal 0.4 s OnParked handover after actual TripStep stop",
+          "[2026.10.24-21.07.46:110][630]LogTemp: Display: S47: SARO parking PASS normal delayed OnParked committed after 0.569 s",
+          "[2026.10.24-21.07.46:110][630]LogTemp: Display: S47: SARO parking PASS actual arrival pos -12.817736 -0.599993 14.384659 heading -0.246234 floor -0.600000; waiting service persisted and original service restored",
+          "[2026.10.24-21.08.20:400][769]LogTemp: Display: S47: SARO parking PASS actual egress-to-entrance walker route 7.577 1.603 floor -0.000, no teleport or Walkable-only assertion",
+          "[2026.10.24-21.08.22:437][928]LogS47Saves: Display: S47: saved 1:manual:0 (SARO parking control, SARO, 18:00)",
+          "[2026.10.24-21.08.24:476][105]LogTemp: Display: S47: SARO parking PASS COMPLETE ordinary drive/controller/TripStep, full visitor-bay footprint, actual egress-to-entrance walk, stable white service during travel, distinct blue personal car after arrival and fresh disk/full-world reload; no phone shortcut or human-input claim"
+        ]
+      },
+      {
+        "case": "food-menu",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "acb313f6d059666c87e8f6f03e5cb5d1ae2fc17c4f839062c072abf2ceb3312b",
+        "markers": [
+          "[2026.10.24-21.08.34:519][  0]LogS47SaroArrival: Display: S47: SARO arrival ready: opaque lot visual top -0.576 / query and gameplay -0.600, personal bay -12.8/14.3, sign -7.3/15.5, exact concrete cut 228+12, walk/drive moved 1/1; original ramps and room apertures preserved",
+          "[2026.10.24-21.08.50:227][289]LogTemp: Display: S47: takeaway PAD PASS COMPLETE: keyboard alt and Xbox B through actual Slate/action routing; D-pad/A food panel set-down/stow/take-out/discard; actual A ray/walker/HUD pickup; v1 held migration and two disk/fresh-store/full-world restores; no food_eaten or twelve-minute skip; synthetic Slate input, physical controller transport UNVERIFIED"
+        ]
+      },
+      {
+        "case": "views",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "2c1ae68756230ff31ab88bc3c98de285a1fbd491a89e5b4a3f11618a6687d050",
+        "markers": [
+          "[2026.10.24-21.08.59:321][  0]LogS47SaroArrival: Display: S47: SARO arrival ready: opaque lot visual top -0.576 / query and gameplay -0.600, personal bay -12.8/14.3, sign -7.3/15.5, exact concrete cut 228+12, walk/drive moved 1/1; original ramps and room apertures preserved",
+          "[2026.10.24-21.09.01:498][  2]LogS47HUD: Display: S47: self test OK (1400 checks)",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival monument moved in walk and drive data atomically",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival exact old sign cube removed,228 concrete triangles preserved",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival actual lot visual top -0.576 metres,24mm over unchanged floor",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival asphalt RGB uses opaque material; visual finish does not change query floor",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival separate actual visitor query box top remains -0.600 metres",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival existing SARO floor equals new parking plane",
+          "[2026.10.24-21.09.07:582][458]LogS47ArrivalViews: Display: S47: arrival OK SARO arrival restrained lit transparent window, no opaque/emissive backing",
+          "[2026.10.24-21.09.07:583][458]LogS47ArrivalViews: Display: S47: SARO arrival view day-arrival floor=-0.6000 eye=1.0200 clock=-30597.910; camera fixture",
+          "[2026.10.24-21.09.09:787][655]LogS47ArrivalViews: Display: S47: SARO arrival view day-sign floor=-0.6000 eye=1.0200 clock=-30597.992; camera fixture",
+          "[2026.10.24-21.09.11:986][849]LogS47ArrivalViews: Display: S47: SARO arrival view day-windows floor=-0.6000 eye=1.0200 clock=-30597.995; camera fixture",
+          "[2026.10.24-21.09.14:182][ 37]LogS47ArrivalViews: Display: S47: SARO arrival view day-room floor=0.0000 eye=1.6200 clock=-30597.992; camera fixture",
+          "[2026.10.24-21.09.16:387][231]LogS47ArrivalViews: Display: S47: SARO arrival view dusk-arrival floor=-0.6000 eye=1.0200 clock=-16197.974; camera fixture",
+          "[2026.10.24-21.09.18:588][453]LogS47ArrivalViews: Display: S47: SARO arrival view dusk-sign floor=-0.6000 eye=1.0200 clock=-16197.906; camera fixture",
+          "[2026.10.24-21.09.20:784][669]LogS47ArrivalViews: Display: S47: SARO arrival view dusk-windows floor=-0.6000 eye=1.0200 clock=-16197.953; camera fixture",
+          "[2026.10.24-21.09.22:990][880]LogS47ArrivalViews: Display: S47: SARO arrival view dusk-room floor=0.0000 eye=1.6200 clock=-16197.925; camera fixture",
+          "[2026.10.24-21.09.25:186][ 94]LogS47ArrivalViews: Display: S47: SARO arrival view night-arrival floor=-0.6000 eye=1.0200 clock=-7197.970; camera fixture",
+          "[2026.10.24-21.09.27:384][318]LogS47ArrivalViews: Display: S47: SARO arrival view night-sign floor=-0.6000 eye=1.0200 clock=-7197.917; camera fixture",
+          "[2026.10.24-21.09.29:590][534]LogS47ArrivalViews: Display: S47: SARO arrival view night-windows floor=-0.6000 eye=1.0200 clock=-7197.948; camera fixture",
+          "[2026.10.24-21.09.31:787][744]LogS47ArrivalViews: Display: S47: SARO arrival view night-room floor=0.0000 eye=1.6200 clock=-7197.943; camera fixture",
+          "[2026.10.24-21.09.31:787][744]LogS47ArrivalViews: Display: S47: SARO arrival views PASS 12 player-height fixtures; driving and input checked separately",
+          "[2026.10.24-21.09.43:012][836]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 3836, viewport 1600x900, parts 2126, phase 0, modal none"
+        ]
+      },
+      {
+        "case": "takeaway",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "f0eb667a48bb7d07b21a07065afa6a1c42b77e155acc1953bdf31dcb6082a48e",
+        "markers": [
+          "[2026.10.24-21.09.52:319][  0]LogS47SaroArrival: Display: S47: SARO arrival ready: opaque lot visual top -0.576 / query and gameplay -0.600, personal bay -12.8/14.3, sign -7.3/15.5, exact concrete cut 228+12, walk/drive moved 1/1; original ramps and room apertures preserved",
+          "[2026.10.24-21.10.23:967][744]LogTemp: Display: S47: takeaway PASS COMPLETE: physical diner/desk/annex/hood/passenger/bench set-down and pickup, ordinary phone/document/original archive work-table use unobstructed, held with uninterrupted fade meal optional with exactly one twelve-minute skip, 10 disk/fresh-store/full-world restores including paid reply/held/all physical surface positions/eaten, camera/light/notebook suppression and no duplicate portion; human input UNVERIFIED"
+        ]
+      },
+      {
+        "case": "service-diner",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "1fe17de353ea8fba1202c96bf9eaad419a8dc01e2e8c53735fd34d237a03c38a",
+        "markers": [
+          "[2026.10.24-21.10.33:476][  0]LogS47SaroArrival: Display: S47: SARO arrival ready: opaque lot visual top -0.576 / query and gameplay -0.600, personal bay -12.8/14.3, sign -7.3/15.5, exact concrete cut 228+12, walk/drive moved 1/1; original ramps and room apertures preserved",
+          "[2026.10.24-21.10.55:738][101]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 2101, viewport 1600x900, parts 2103, phase 15, modal none"
+        ]
+      }
+    ],
+    "scope": "5 focused runs; visual review and delivery separate; no full world/PSO matrix"
+  },
+  "editor": {
+    "status": "PASS",
+    "wall_seconds": 8.099778617004631
+  },
+  "cpu_prepare": {
+    "status": "PASS",
+    "asset": "/Game/Web/Geo/geo_003/StaticMeshes/g435.g435",
+    "triangles": 240,
+    "before": false,
+    "allow_cpu_access": true,
+    "scope": "CPU retention only; geometry/materials unchanged"
+  },
+  "native_geometry": {
+    "old_sign_removed_triangles": 12,
+    "other_concrete_preserved_triangles": 228,
+    "walk_and_drive_colliders_moved": [
+      1,
+      1
+    ],
+    "floor_probes": 9,
+    "visual_top_m": -0.576,
+    "query_and_gameplay_top_m": -0.6,
+    "finish_material": "opaque; original asphalt RGB only"
+  },
+  "visual_review": {
+    "status": "PASS",
+    "root": {
+      "status": "PASS",
+      "reviewer": "root",
+      "reviewed": [
+        "A3-parking-shots/entrance-saro-actual-parking.png",
+        "A3-parking-shots/entrance-saro-walk-entrance.png",
+        "A3-parking-shots/entrance-saro-disk-parking.png",
+        "A3-food-shots/takeaway-pad-food-menu.png",
+        "A3-food-shots/takeaway-pad-desk-set-down.png",
+        "A3-food-shots/takeaway-pad-stowed.png",
+        "A3-food-shots/takeaway-pad-discarded.png"
+      ],
+      "findings": [
+        "Solid marked visitor lot without plants through parking asphalt; personal car remains in its own bay with an open driver door after arrival and disk/world reload",
+        "Entrance reached by the actual walker, service door visible and usable",
+        "Takeaway panel has clear D-pad/A/B guidance and set-down/stow/discard choices; set-down A pickup prompt is visible; held props absent when stowed/discarded"
+      ],
+      "limits": [
+        "Existing red RT resident-memory warning remains visible",
+        "Camera placement used for overview images after actual drive/walk proof; input test is synthetic Slate, no physical controller claim"
+      ]
+    },
+    "independent_scene_review": {
+      "status": "PASS",
+      "scope": "Read-only assistant visual review of 15 actual A3 native screenshots; no human playthrough, new runtime/DCC run or source mutation",
+      "reviewer": "dish_model",
+      "reviewed_at_utc": "2026-10-24T21:10:23.772641+00:00",
+      "reviewed_images": [
+        {
+          "name": "A3-arrival-shots/day-arrival.png",
+          "sha256": "646d72b7ebeeabae170ced5a75f634551369e7d53078214197177909a2745534"
+        },
+        {
+          "name": "A3-arrival-shots/day-sign.png",
+          "sha256": "54f7b1648780caa1382c450c280f791db69b0cb7a67c0e3a23964616ab1b08d6"
+        },
+        {
+          "name": "A3-arrival-shots/day-windows.png",
+          "sha256": "1c56103b91b35bfda41600a9164c1a88da827a04212d6aa582f150926ff4c39f"
+        },
+        {
+          "name": "A3-arrival-shots/day-room.png",
+          "sha256": "acfbd7007f1af918d26adf8e9cff1434709ccccf3cd08127b9935bb63e7391d3"
+        },
+        {
+          "name": "A3-arrival-shots/dusk-arrival.png",
+          "sha256": "267f0d784c6b6a271242b7738ebb6ca5f01ca17354b59eaf5d55ba33dfb193e3"
+        },
+        {
+          "name": "A3-arrival-shots/dusk-sign.png",
+          "sha256": "cf01acfccc1a24be0f44139089c5d79172c6852b77712681c3e50d2149f581ec"
+        },
+        {
+          "name": "A3-arrival-shots/dusk-windows.png",
+          "sha256": "66f27897714701c91c536beb503a73cd7ac17d02642fc320a5ff67a1cf262fba"
+        },
+        {
+          "name": "A3-arrival-shots/dusk-room.png",
+          "sha256": "fb9cd1310bd3f1c4aba2b469771bd4fe0fa88c336e67bf11a651ab6c207ea03b"
+        },
+        {
+          "name": "A3-arrival-shots/night-arrival.png",
+          "sha256": "f6f864b48c3ea4089e64aa6ecdb5449707c7410e0b05c24057bb548c0800b8d0"
+        },
+        {
+          "name": "A3-arrival-shots/night-sign.png",
+          "sha256": "f945bc2a5ba46a099f8dfb431b32bc2d29c542c0a0ccbf76647ebc1e21834fe6"
+        },
+        {
+          "name": "A3-arrival-shots/night-windows.png",
+          "sha256": "f5b85298dedeff43afd49482f779d2fea9917c55d2fb7236d892a74c7fdcc67e"
+        },
+        {
+          "name": "A3-arrival-shots/night-room.png",
+          "sha256": "595b77cb9f4dd256df5b591d5d25874cddb47668ae6f8c97bd9e0dfa926684f9"
+        },
+        {
+          "name": "A3-parking-shots/entrance-saro-actual-parking.png",
+          "sha256": "4db1a134bf5f7738542034e21e31142b6ca4fdf6bbe93b24d130c25d61a71a91"
+        },
+        {
+          "name": "A3-parking-shots/entrance-saro-walk-entrance.png",
+          "sha256": "1cf138ec6c8ce1f74c53c20f76b63e6a5e48028d269bf0a4832afd16ba4be812"
+        },
+        {
+          "name": "A3-parking-shots/entrance-saro-disk-parking.png",
+          "sha256": "ac27265db272e512bb935635b7f1567ea046daf0be4514241828db4168499322"
+        }
+      ],
+      "blocking_findings": [],
+      "checks": [
+        {
+          "name": "solid_parking_and_apron",
+          "status": "PASS",
+          "evidence": [
+            "A3-parking-shots/entrance-saro-actual-parking.png",
+            "A3-arrival-shots/dusk-sign.png"
+          ],
+          "observation": "Asphalt reads as one closed textured surface, with clear bay lines and kerbed boundary. A2 soil holes and plants through the bays are absent; visible footpath is clear."
+        },
+        {
+          "name": "car_contact_and_reload_pose",
+          "status": "PASS",
+          "evidence": [
+            "A3-parking-shots/entrance-saro-actual-parking.png",
+            "A3-parking-shots/entrance-saro-disk-parking.png"
+          ],
+          "observation": "Parked wagon appears grounded within the marked middle bay; wheels/body position and open driver door agree before and after disk reload. No floating white duplicate appears in these reviewed views."
+        },
+        {
+          "name": "sign_location_and_legibility",
+          "status": "PASS",
+          "evidence": [
+            "A3-arrival-shots/day-sign.png",
+            "A3-arrival-shots/dusk-sign.png",
+            "A3-arrival-shots/night-sign.png",
+            "A3-parking-shots/entrance-saro-actual-parking.png"
+          ],
+          "observation": "Monument is on the shoulder beyond the bay edge, leaving the entrance and walking strip clear. SARO and lower wording are readable in close day/dusk/night views. Local lamps resolve the A1 dark-sign failure."
+        },
+        {
+          "name": "glazing_and_frames",
+          "status": "PASS",
+          "evidence": [
+            "A3-arrival-shots/day-windows.png",
+            "A3-arrival-shots/day-room.png",
+            "A3-arrival-shots/dusk-windows.png",
+            "A3-arrival-shots/dusk-room.png",
+            "A3-arrival-shots/night-windows.png",
+            "A3-arrival-shots/night-room.png"
+          ],
+          "observation": "Actual room equipment and lights are visible from outside, and the antenna field remains visible from inside in all three time settings. Frames and sill are solid and aligned; no fake opaque black window sheets or blown-out glass surfaces observed."
+        },
+        {
+          "name": "entrance_walk_target",
+          "status": "PASS",
+          "evidence": [
+            "A3-parking-shots/entrance-saro-walk-entrance.png"
+          ],
+          "observation": "Actual walk ends at the service door with its normal E OPEN SERVICE DOOR prompt. This still confirms the resulting view; movement success is covered by the root runtime test rather than re-executed here."
+        }
+      ],
+      "limitations": [
+        "Still images cannot independently prove absence of a transient model pop between frames; reviewed before/after disk poses are visually consistent and show no duplicate wagon.",
+        "The distant night arrival remains dark away from the local lamps; close sign and pedestrian/bay views are readable. Fine tire contact is assessed from the daylight parking frames.",
+        "Known existing red ray-tracing always-resident memory warning remains visible (80.499 MiB / 400 MiB); this arrival scope does not resolve that pre-existing issue.",
+        "Food/menu behavior is outside this visual review and remains owned by root."
+      ]
+    }
+  },
+  "images": {
+    "A3-arrival-shots/day-arrival.png": "646d72b7ebeeabae170ced5a75f634551369e7d53078214197177909a2745534",
+    "A3-arrival-shots/day-sign.png": "54f7b1648780caa1382c450c280f791db69b0cb7a67c0e3a23964616ab1b08d6",
+    "A3-arrival-shots/day-windows.png": "1c56103b91b35bfda41600a9164c1a88da827a04212d6aa582f150926ff4c39f",
+    "A3-arrival-shots/day-room.png": "acfbd7007f1af918d26adf8e9cff1434709ccccf3cd08127b9935bb63e7391d3",
+    "A3-arrival-shots/dusk-arrival.png": "267f0d784c6b6a271242b7738ebb6ca5f01ca17354b59eaf5d55ba33dfb193e3",
+    "A3-arrival-shots/dusk-sign.png": "cf01acfccc1a24be0f44139089c5d79172c6852b77712681c3e50d2149f581ec",
+    "A3-arrival-shots/dusk-windows.png": "66f27897714701c91c536beb503a73cd7ac17d02642fc320a5ff67a1cf262fba",
+    "A3-arrival-shots/dusk-room.png": "fb9cd1310bd3f1c4aba2b469771bd4fe0fa88c336e67bf11a651ab6c207ea03b",
+    "A3-arrival-shots/night-arrival.png": "f6f864b48c3ea4089e64aa6ecdb5449707c7410e0b05c24057bb548c0800b8d0",
+    "A3-arrival-shots/night-sign.png": "f945bc2a5ba46a099f8dfb431b32bc2d29c542c0a0ccbf76647ebc1e21834fe6",
+    "A3-arrival-shots/night-windows.png": "f5b85298dedeff43afd49482f779d2fea9917c55d2fb7236d892a74c7fdcc67e",
+    "A3-arrival-shots/night-room.png": "595b77cb9f4dd256df5b591d5d25874cddb47668ae6f8c97bd9e0dfa926684f9",
+    "A3-parking-shots/entrance-saro-walk-entrance.png": "1cf138ec6c8ce1f74c53c20f76b63e6a5e48028d269bf0a4832afd16ba4be812",
+    "A3-parking-shots/entrance-saro-actual-parking.png": "4db1a134bf5f7738542034e21e31142b6ca4fdf6bbe93b24d130c25d61a71a91",
+    "A3-parking-shots/entrance-saro-disk-parking.png": "ac27265db272e512bb935635b7f1567ea046daf0be4514241828db4168499322",
+    "A3-food-shots/takeaway-pad-food-menu.png": "25d3e14ed53a2717ce5b1f54ac6b60d124491d5a79d285b904e70ad34b091ab9",
+    "A3-food-shots/takeaway-pad-stowed.png": "c6883fce2973df803132e4d95f8d0d1e08772f35f68f0f78f43e963efaf645a1",
+    "A3-food-shots/takeaway-pad-desk-set-down.png": "8b2bbb4168e2003e4403f992a596586da7b050f4b1f306d47137801d57c2fa7b",
+    "A3-food-shots/takeaway-pad-discarded.png": "cfe2d738fd58fa35205e04f825859dc33d657a84537c6c86c152422d4cbe27a1"
+  },
+  "source_surface_proof_sha256": "651c6f27d6004d824ef8e33c1cb28373115d5aef22ac21361763f0b1c25507be",
+  "rejected_candidates": [
+    {
+      "candidate": "A1",
+      "reason": "Real old SARO_WAY boundary blocked the new lot at Z21.4; four other diagnostics passed, candidate not accepted",
+      "runtime_sha256": "7a305b0b63c27033640ff88ef06df093a37dc96bacf6d2b147d938edab2af244"
+    },
+    {
+      "candidate": "A2",
+      "reason": "Parking fixture asserted before normal delayed OnParked; diagnostic views exposed perforated asphalt and procedural grass",
+      "runtime_sha256": "bd5fb2f22dab7b0270d2b400182185f15c515f34b41b73783f0603a1e05d531a"
+    }
+  ],
+  "limits": [
+    "Synthetic Slate input and normal native drive/walk controllers are tested; physical Xbox transport and human playthrough/listening remain unverified",
+    "No full-world 110-scenario or PSO matrix; no new performance guarantee",
+    "Existing AlwaysResident ray-tracing warning remains visible (80.499 MiB / 400 MiB in A2; no budget or renderer override)"
+  ],
+  "evidence_root": "/home/tom/scratch-bm/Signal47-saro-arrival"
+}

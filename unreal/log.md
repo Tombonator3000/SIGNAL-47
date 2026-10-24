@@ -260,3 +260,6 @@ Tom godkjenner planen: Roswell-sperre beholdes frem til historiens åpning, rikt
 ## 2026-10-24 kl. 22:16, SARO-ankomst
 
 Ny gren codex/saro-arrival fra a2c33e3d. Fire brukerfeil i nye bilder: skilt/kjørekorridor, manglende parkering ved skilt, personlig bil som byttes mot servicepickup og mat uten tydelig nedsetting/bortvalg. Biblioteksøk utført med fallback, bare generelle UNVERIFIED-editorverktøy; eksisterende native flyter brukes. Tre avgrensede hjelpere, én tung jobb. Ingen aktiv spill/editor ved oppstart.
+
+
+- 2026-10-24 kl. 23:12 SARO A3 fra5ae3a3fc består editorbygg/Linux-pakking,1400 selvtestsjekker og fem korte pakkede kontroller: faktisk kjøring/parkering/gange/diskreload, matens syntetiske Slate-knapper og to nye reloads,12 lys-/vindusbilder, original takeaway med ti diskreloads og service/diner. Totalt19 faktiske bilder vurdert. A1 stoppet ved gammel SARO_WAY; A2-testen sjekket før normal0.4s OnParked og bildene viste perforert asfalt/gress. Rettet med begrenset kjøreflate, normal overgangsventing, tett RGB-asfalt +24mm visuelt over uendret querygulv og floraeksklusjoner. Første editorforsøk fant privat Wheels-tilgang, rettet til eksportert objekthåndtak. Råforsøk beholdt. Ingen full110/PSO eller fysisk Xbox-/lydprøve; tidligere RT-varsel består. Merge/installasjon gjenstår.
