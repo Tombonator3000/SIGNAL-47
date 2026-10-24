@@ -276,3 +276,9 @@ Tom bestiller logisk mastantall, bygg2-fasade uten skilt/vindusoverlapp, realist
 
 - Originale modellkilder, FBX-/GLB-kontroller og native lesing av SARO-fasade samt seks byfamilier består. 28 bygningsdeler, 32 sammensatte trimrader og presis behandling av 47 gamle drawblader. Native import hadde færre ugyldige trekanter enn rå glTF i to gamle møbelmodeller; faktisk lagret native antall er målt og inngår i kontrakten.
 - Kjøretøyets faktiske Blender-bilde avdekket feilvendte stag og feilplasserte linser; korrigert mot målte geometrier. Import/kandidat/visuell sluttkontroll pågår. Ingen installasjon erstattet ennå.
+
+## 2026-10-25 kl. 01:25, første modellkandidat avvist
+
+M1 fra34e3fcd2 er teknisk pakket, men visuelt avvist: 56 fjernere bygnings-LOD-er var rotert90 grader ved customLOD-import. Alle196 LOD0-kontroller bestod, og dermed var samlet bounds/trekantantall utilstrekkelig som geometribevis. Ny direkte lesing av alle84 lagrede MeshDescriptions gir588 kontroller; alle56 feil matcher konkret+90-graders rotasjon. Korrekt global FBX-importflagg brukes ved ny import. Ingen kompenserende modellrotasjon.
+
+Rom6-kamerafiksturen startet trace under gulvet etter motellhopp; isolert gulv0 i opptaksfiksturen retter dette uten å endre spillflyt. Bilens faktiske kjørekontroller, instrumenter, hjul og lamper bestod; gjeninnstigning ble korrekt avvist av historiegaten fordi testoppsettet manglet kapittel1. Bare testens forutsetning endres. Installert A3 er urørt.

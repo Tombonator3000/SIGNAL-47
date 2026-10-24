@@ -51,32 +51,44 @@ void AS47Web::BeginProductionViews()
   {TEXT("room6"),TEXT("room6"),{-1.4,0,-7997.7},{1,1,-8001.4}},
   {TEXT("room6-bath"),TEXT("room6"),{-.5,0,-8001.5},{-.6,1.2,-8004.2}}
  };
- struct FState {int32 Index=0;bool Placed=false,Done=false;double Since=0;FString Dir,Suite;};
+ struct FState {int32 Index=0;bool Placed=false,Done=false,bFloorOverride=false;double Since=0;FString Dir,Suite;TFunction<double(double,double)> PreviousFloor;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
  const TWeakObjectPtr<AS47Web> Self=this;FTimerHandle Timer;
  GetWorldTimerManager().SetTimer(Timer,[Self,State]{
   if(State->Done)return;AS47Web* W=Self.Get();auto* M=W?US47Main::Get(W):nullptr;
   if(!M||!M->Flow||!M->Story||!M->World||!M->Player||S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
-  auto Fail=[State](const TCHAR* Why){State->Done=true;UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);};
+  auto RestoreFixtureFloor=[State,M]{if(State->bFloorOverride){M->Player->Floor=MoveTemp(State->PreviousFloor);State->bFloorOverride=false;}};
+  auto Fail=[State,RestoreFixtureFloor](const TCHAR* Why){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);};
   FString UserDir;if(!M->Flow->bDevRun||M->Flow->CaseId!=0||!FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir)||!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),FPaths::ConvertRelativePathToFull(UserDir))||State->Dir.IsEmpty()){Fail(TEXT("requires isolated unsaved profile"));return;}
   while(State->Index<UE_ARRAY_COUNT(Views)*3)
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
    if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&Saro)){++State->Index;continue;}break;
   }
-  if(State->Index>=UE_ARRAY_COUNT(Views)*3){State->Done=true;UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));return;}
+  if(State->Index>=UE_ARRAY_COUNT(Views)*3){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));return;}
   const int32 I=State->Index%UE_ARRAY_COUNT(Views),Light=State->Index/UE_ARRAY_COUNT(Views);const auto& V=Views[I];const double Now=FPlatformTime::Seconds();
   if(!State->Placed)
   {
    if(M->World->bDriving){Fail(TEXT("fixture starts outside vehicle"));return;}
+   RestoreFixtureFloor();
    M->Story->SetCinematic(true);M->World->Enter(V.Area);
+   if(FString(V.Area)==TEXT("room6"))
+   {
+    // A review jump skips the normal door's arrival placement. Enter clears Player.floor;
+    // a trace from the previous motel floor (-2.099m) starts below Room6's authored floor0.
+    // Scope that known floor to this static fixture; do not invoke chapter arrival callbacks.
+    State->PreviousFloor=MoveTemp(M->Player->Floor);State->bFloorOverride=true;
+    M->Player->Floor=[](double,double){return 0.;};
+   }
    static const double Clock[]={-12.*3600,-5.5*3600,-2.*3600};M->Story->SetClock(Clock[Light]);
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
+   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture must stand on authored floor0"));return;}
    const FVector Eye(V.Foot.X,M->Player->FloorY+M->Player->Eye,V.Foot.Z),D=V.Target-Eye;
    M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FMath::Sqrt(D.X*D.X+D.Z*D.Z));
    State->Since=Now;State->Placed=true;return;
   }
   if(Now-State->Since<2.5)return;
+  if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
   if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }
