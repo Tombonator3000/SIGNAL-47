@@ -1,4 +1,4 @@
-"""Original multi-frequency mineral/plant atlas authoring, R7 localized-wear revision.
+"""Original multi-frequency mineral/plant atlas authoring, R8 interrupted wheel-albedo revision.
 
 NumPy and Pillow from the bundled workspace runtime. No downloaded pixels.
 Albedo: up to 2048; roughness/normal: 1024. All height detail is visual only.
@@ -147,7 +147,25 @@ def wear_atlas(name,path,concrete=False):
     if concrete:
         alpha=np.minimum(.88,alpha*3.5)
     else:
-        rut_band=np.clip(ruts*broken*3.0,0,1)
+        # R8 changes ONLY dark albedo: the old ruts above continue to
+        # determine the exact R7 alpha. Independent, gently steered tracks
+        # avoid the old32-control-point wavy grooves. Irregular long breaks
+        # read as dry wheel contact, with both tracks slightly different.
+        rut_band=np.zeros_like(x)
+        albedo_rng=np.random.default_rng(7800)
+        ys=y[:,0]
+        schedules=[[(.08,.20),(.29,.43),(.53,.66),(.76,.88)],
+                   [(.12,.27),(.37,.51),(.59,.71),(.82,.91)]]
+        for side,intervals in zip([-.11,.11],schedules):
+            control=albedo_rng.uniform(-.007,.007,4)
+            curve=np.interp(ys,[0,1/3,2/3,1],control)[:,None]
+            center_albedo=.5+side+curve+(y-.5)*(.008 if side<0 else .011)
+            longitudinal=np.zeros_like(y)
+            for begin,end in intervals:
+                a=np.clip((y-begin)/.022,0,1);b=np.clip((end-y)/.022,0,1)
+                longitudinal=np.maximum(longitudinal,a*a*(3-2*a)*b*b*(3-2*b))
+            transverse=np.exp(-((x-center_albedo)/.020)**2)
+            rut_band=np.maximum(rut_band,transverse*longitudinal*(.72+.28*broken))
         rut_tone=.92+.16*mid+.06*(fine-.5)
         rut_color=np.array([96,87,71])[None,None,:]*rut_tone[:,:,None]
         color=np.clip(color*(1-rut_band[:,:,None])+rut_color*rut_band[:,:,None],0,255).astype(np.uint8)
