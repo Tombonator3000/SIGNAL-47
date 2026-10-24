@@ -14,7 +14,7 @@ S47_STREET_TRIM="$WORK/trim" S47_STREET_REPORT="$REPORT" \
  -run=pythonscript -script="$PROJECT_ROOT/Tools/calichestreet/import_assets.py" \
  -unattended -nullrhi -nosplash -NoSound \
  '-ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0' \
- > "$WORK/import.log" 2>&1
+ > "$WORK/import-unreal.log" 2>&1
 python3 - "$REPORT" <<'PY'
 import json,sys
 r=json.load(open(sys.argv[1]))

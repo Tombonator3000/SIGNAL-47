@@ -9,7 +9,8 @@ M=unreal.MaterialEditingLibrary
 T=unreal.AssetToolsHelpers.get_asset_tools()
 name='M_Caliche_Sky'; dest='/Game/CalicheStreet/Atmosphere'
 mat=E.load_asset(dest+'/'+name) if E.does_asset_exist(dest+'/'+name) else T.create_asset(name,dest,unreal.Material,unreal.MaterialFactoryNew())
-M.delete_all_material_expressions(mat)
+for previous in list(M.get_material_expressions(mat)):M.delete_material_expression(mat,previous)
+assert M.get_num_material_expressions(mat)==0
 mat.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_UNLIT)
 mat.set_editor_property('blend_mode',unreal.BlendMode.BLEND_OPAQUE)
 mat.set_editor_property('two_sided',True)
@@ -50,7 +51,7 @@ for i in range(3):
  inputs.append(('Glow'+str(i),v4,''))
 color=custom(code,inputs)
 assert M.connect_material_property(color,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
-M.recompile_material(mat);E.save_loaded_asset(mat)
+assert not list(M.recompile_material(mat));E.save_loaded_asset(mat)
 unreal.log('CALICHE CONCEPT ATMOSPHERE SAVED')
 
 # Reuse our project's established graph builder, without executing its importer or touching /Game/Web.
@@ -63,7 +64,8 @@ def fresh(path):
  assert path.startswith('/Game/CalicheStreet/Atmosphere/')
  folder,name=path.rsplit('/',1)
  m=E.load_asset(path) if E.does_asset_exist(path) else T.create_asset(name,folder,unreal.Material,unreal.MaterialFactoryNew())
- M.delete_all_material_expressions(m)
+ for previous in list(M.get_material_expressions(m)):M.delete_material_expression(m,previous)
+ assert M.get_num_material_expressions(m)==0
  return m
 ns={'unreal':unreal,'fresh':fresh,'mel':M,'eal':E,'mpc':E.load_asset('/Game/Web/Base/MPC_Web'),
     'white':E.load_asset('/Game/Web/Base/T_White'),'white_lin':E.load_asset('/Game/Web/Base/T_WhiteLinear'),
@@ -97,7 +99,7 @@ float3 cp=float3(pp*.7,4.71); float bank=nz.fbm(cp+float3(1.4,5.7,0));
 float detail=nz.fbm(cp*3.8+float3(8.1,0,2.4));
 float cover=smoothstep(.43,.64,bank*.78+detail*.22)*smoothstep(-.015,.065,dd.y)*(1.-smoothstep(.72,.99,dd.y));
 return c*a*lerp(1.,.44*(1.-cover*.92),saturate(ConceptBlend));'''
-code=noise+values['STAR_COL'].replace('return c * a;',cloud)
+code=noise+values['STAR_COL'].replace('return c * a;','if (ConceptBlend < .001) return c*a;\n'+cloud)
 c=g.custom(code,[('Dir',g.cdata3(0)),('Col',g.cdata3(3)),('Time',g.builtin(unreal.MaterialExpressionTime)),
  ('Ph',g.cdata(7)),('Dawn',g.scalar('Dawn',0)),('UV',g.uv(0)),('Size',g.cdata(6,1)),
  ('HoleDir',g.vector('HoleDir',(.3718,.5299,-.7622,0))),('HoleR',g.vector('HoleR',(.0593,.0803,0,0))),

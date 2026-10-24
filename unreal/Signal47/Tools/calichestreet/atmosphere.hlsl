@@ -1,5 +1,6 @@
 // Caliche concept study: layered dry-air blue hour and broken high cloud.
 // Existing night panorama, solar direction, star hole and thunder remain the underlying sky.
+if (ConceptBlend < .001) return col;
 float light = saturate(Dawn);
 float horizon = exp(-max(h,0.0)*7.0);
 float west = pow(saturate(dot(normalize(d.xz+float2(.0001,0)),normalize(SunDir.xz+float2(.0001,0)))*.5+.5),6.0);

@@ -36,7 +36,10 @@ def expression(mat, cls, **values):
 def material(row, dest, src):
     name = row['name']
     mat = E.load_asset(dest + '/' + name) if E.does_asset_exist(dest + '/' + name) else T.create_asset(name, dest, unreal.Material, unreal.MaterialFactoryNew())
-    M.delete_all_material_expressions(mat)
+    # Delete a snapshot: UE 5.8's bulk helper skips nodes while mutating its own array.
+    for previous in list(M.get_material_expressions(mat)):
+        M.delete_material_expression(mat, previous)
+    check(name+' previous graph fully removed',M.get_num_material_expressions(mat)==0)
     mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_OPAQUE)
     mat.set_editor_property('two_sided', bool(row.get('two_sided', False)))
     col = row.get('base_color_linear', row.get('base_color', [.5, .5, .5, 1]))
@@ -104,7 +107,8 @@ def material(row, dest, src):
         mat.set_editor_property('two_sided', True)
         n = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name='Opacity', default_value=float(row['alpha']))
         M.connect_material_property(n, '', unreal.MaterialProperty.MP_OPACITY)
-    M.recompile_material(mat)
+    errors=list(M.recompile_material(mat))
+    check(name+' material compiles',not errors,errors)
     E.save_loaded_asset(mat)
     return mat
 
