@@ -206,6 +206,7 @@ void AS47Web::BuildNativeLighting()
 	DawnSun->ContactShadowLengthInWS = true; DawnSun->ContactShadowLength = 20.f;
 	DawnSun->ContactShadowCastingIntensity = 0.65f;
 	DawnSun->RegisterComponent();
+	BuildClouds();
 	SetLightingQuality(TEXT("high"));
 	UpdateNativeFog();
 	UE_LOG(LogTemp, Display, TEXT("S47: native lighting, %d lamp slots, Lumen (hardware when available), fixed exposure, no material floods or hemisphere"), PoolLights.Num());
@@ -258,22 +259,30 @@ void AS47Web::SetLightingQuality(const FString& Quality)
 		// Surface cache reflections fit the 60 fps profile; hit lighting remains an Ultra option.
 		P.bOverride_LumenRayLightingMode = true; P.LumenRayLightingMode = LightingQuality == 2 ? ELumenRayLightingModeOverride::HitLightingForReflections : ELumenRayLightingModeOverride::SurfaceCache;
 	}
+	ApplyCloudQuality();
 	UE_LOG(LogTemp, Display, TEXT("S47: lighting quality %s, Lumen %s, volumetrics %s"), *Quality, LightingQuality ? TEXT("on") : TEXT("off"), LightingQuality ? TEXT("on") : TEXT("off"));
 }
 
 void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
 {
-	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash;
+	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash; SkyEvening = Evening;
 	const float Caliche = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
+	UpdateCloudLight(SunDirection, Daylight);
 	if (DawnSun)
 	{
-		DawnSun->SetWorldRotation(S47Three::DirToUE(-SunDirection).Rotation());
+		// SKY.md, rendering only (FS47Sky::Sun keeps its story values): the dusk concept keeps a last
+		// grazing light on west-facing cliffs a few minutes past sunset, never from below the ground.
+		const float El = FMath::RadiansToDegrees(FMath::Asin(FMath::Clamp(float(SunDirection.Y), -1.f, 1.f)));
+		const float GroundSun = Evening > 0.f && El < -0.33f ? FMath::Max(Sun, 0.22f * FMath::SmoothStep(-2.8f, -0.33f, El)) : Sun;
+		FVector GroundDir = SunDirection;
+		if (El < 0.6f) GroundDir = FVector(SunDirection.X, 0, SunDirection.Z).GetSafeNormal() * FMath::Cos(FMath::DegreesToRadians(0.6f)) + FVector(0, FMath::Sin(FMath::DegreesToRadians(0.6f)), 0);
+		DawnSun->SetWorldRotation(S47Three::DirToUE(-GroundDir).Rotation());
 		// Forward translucency/water/fog get the live sun, or the area's moon at night.
 		// Leaving the zero-intensity sun at highest priority would suppress moonlit fog.
-		DawnSun->SetForwardShadingPriority(Sun > 0.f ? Lights.Num() + 1 : 0);
+		DawnSun->SetForwardShadingPriority(GroundSun > 0.f ? Lights.Num() + 1 : 0);
 		// The existing fixed exposure is intentionally retained. These are calibrated game
 		// light values, not a physical 120,000 lux daylight rig; avoid overexposing the cabin.
-		DawnSun->SetIntensity(Sun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)));
+		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)));
 		DawnSun->SetLightColor(Evening > 0.f
 			? FMath::Lerp(FLinearColor(1.f, 0.36f, 0.14f), FLinearColor(1.f, 0.76f, 0.52f), FMath::Clamp(Evening, 0.f, 1.f))
 			: FLinearColor(1.f, 0.55f, 0.28f));
@@ -288,7 +297,12 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// Compensate the fixed-exposure cubemap at twilight; noon and full night keep
 		// their endpoint values and all story clocks retain their original curves.
 		const float LocalSky = FMath::Lerp(.72f, 1.98f, D) + 3.5f * 4.f * D * (1.f - D);
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche));
+		// SKY.md: the real-time capture now sees the cloud layer, whose dark bases replace bright open
+		// sky. Keep the old calibrated ambient on the ground for the same clock; the cover still
+		// shapes its direction and colour, and night (few clouds) stays as dark as before.
+		static const float Boost = [] { float V = 2.4f; FParse::Value(FCommandLine::Get(), TEXT("S47SkyBoost="), V); return V; }();
+		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) : 1.f;
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);
@@ -303,7 +317,15 @@ void AS47Web::UpdateNativeFog()
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
 	const float Caliche = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
 	LightingFog->SetFogDensity(FMath::Clamp(FogDensity * 2.f + Caliche * .0012f, 0.0003f, 0.012f));
-	LightingFog->SetFogInscatteringColor(FogColor * FMath::Lerp(.12f, .32f, Caliche));
+	// SKY.md: aerial perspective of the concept. Through late afternoon and dusk the far mesas go
+	// dusty blue-violet, with a warm glow in the haze toward the low (or just set) sun.
+	const float D = FMath::Clamp(SkyDawn, 0.f, 1.f);
+	const float Dusk = FMath::Clamp(SkyEvening * 3.f, 0.f, 1.f) * FMath::Clamp(D * 3.f, 0.f, 1.f);
+	const FLinearColor Blue = FLinearColor(.16f, .19f, .30f) * FMath::Lerp(.25f, 1.f, D);
+	LightingFog->SetFogInscatteringColor(FMath::Lerp(FogColor, Blue, Dusk * .75f) * FMath::Lerp(.12f, .32f, Caliche));
+	LightingFog->SetDirectionalInscatteringExponent(6.f);
+	LightingFog->SetDirectionalInscatteringStartDistance(3000.f);
+	LightingFog->SetDirectionalInscatteringColor(FLinearColor(.55f, .26f, .10f) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * FMath::Lerp(.15f, .45f, Caliche)));
 	LightingFog->SetStartDistance(7000.f * Caliche);
 	LightingFog->SetVolumetricFogDistance(FMath::Lerp(14000.f, 120000.f, Caliche));
 }
@@ -380,7 +402,7 @@ void AS47Web::UpdateNativeLighting()
 	}
 	const float CalicheSky = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
 	const bool bCalicheBoundary = (CalicheSky == 0.f && CapturedCaliche > 0.f) || (CalicheSky == 1.f && CapturedCaliche < 1.f);
-	if (NightSky && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f || FMath::Abs(CapturedCaliche - CalicheSky) > 0.08f || bCalicheBoundary))
+	if (NightSky && !NightSky->bRealTimeCapture && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f || FMath::Abs(CapturedCaliche - CalicheSky) > 0.08f || bCalicheBoundary))
 	{
 		NightSky->RecaptureSky(); bSkyCaptured = true; CapturedDawn = SkyDawn; CapturedCaliche = CalicheSky; SkyCaptureTime = LightingRunTime;
 		if (FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"))) UE_LOG(LogTemp, Display, TEXT("S47: sky capture daylight=%.4f caliche=%.4f"), SkyDawn, CalicheSky);

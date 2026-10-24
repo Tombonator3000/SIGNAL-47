@@ -8,6 +8,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/Paths.h"
 #include "S47Three.h"
 #include "S47Web.h"
 
@@ -51,7 +52,11 @@ double S47CalicheVisualWeight(const FVector& EyeThree)
 	static const bool bLegacy = FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheConcept")) || FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheStreet")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff"));
 	if (bLegacy) return 0;
 	const double D = FVector2D(EyeThree.X - 8000, EyeThree.Z - 2050).Size();
-	return 1 - Smooth01((D - 120) / 480);
+	// Nature extends through the town outskirts. Keep its authored escarpments
+	// fully active there, so the old mesa ring cannot reappear through them.
+	static const bool bNature = !FParse::Param(FCommandLine::Get(), TEXT("S47CalicheNatureOff")) &&
+		FPaths::FileExists(FPaths::ProjectContentDir() / TEXT("CalicheStreet/Nature/nature-placement.json"));
+	return bNature ? 1 - Smooth01((D - 420) / 480) : 1 - Smooth01((D - 120) / 480);
 }
 
 double S47StarHoleAt(double Clock, double From)
@@ -139,6 +144,7 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 	Evening = FMath::Pow(EveningK * EveningK * (3 - 2 * EveningK), 1.4);
 	// from 02:15, where the dishes point (it fades with the stars at dawn, by itself)
 	HoleK = S47StarHoleAt(Clock, HoleFrom);
+	CloudCover = CloudCoverAt(Clock); Cirrus = CirrusAt(Clock);
 	const FLinearColor A(0.043f, 0.059f, 0.098f), B(0.19f, 0.2f, 0.25f);
 	FogColor = A + (B - A) * float(D * 0.8);
 	// the sun: azimuth 79 degrees, rising about 0.18 degrees a minute; its upper limb reaches
@@ -177,6 +183,26 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 		// haze too; this blend is zero throughout the documented dawn and evening fades.
 		FogColor = FogColor + (FLinearColor(0.30f, 0.40f, 0.55f) - FogColor) * float(Midday);
 	}
+}
+
+double FS47Sky::CloudCoverAt(double Clock)
+{
+	const double H = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0) / 3600;
+	// A slow, deterministic variation over the day: broken alto/stratocumulus, 40-70 %.
+	const double Day = 0.55 + 0.11 * FMath::Sin(H * 0.83 + 0.6) + 0.04 * FMath::Sin(H * 2.3 + 1.1);
+	// A few scattered clouds that now and then cross the moon; never a closed overcast.
+	const double Night = 0.11 + 0.04 * FMath::Sin(H * UE_DOUBLE_PI / 6 + 0.4); // 24 h periodic: no jump at midnight
+	const double K = H >= 12 ? 1 - Smooth01((H - 18.8) / 2.2) : Smooth01((H - 4.5) / 2.0);
+	// The dusk concept: a broad broken layer over the commute and the handover (about 17:40-19:00).
+	const double Dusk = FMath::Exp(-FMath::Square((H - 18.35) / 0.55));
+	return FMath::Min(0.7, Night + (Day + 0.16 * Dusk - Night) * K);
+}
+
+double FS47Sky::CirrusAt(double Clock)
+{
+	const double H = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0) / 3600;
+	const double K = H >= 12 ? 1 - Smooth01((H - 19.0) / 2.5) : Smooth01((H - 4.2) / 2.0);
+	return 0.12 + 0.36 * K + 0.08 * FMath::Sin(H * UE_DOUBLE_PI / 12 + 2.0);
 }
 
 void FS47Sky::SetCometClock(double Clock)
@@ -368,6 +394,36 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	}
 	Common(StarsMid.Get());
 	if (UMaterialInstanceDynamic* D = StarsMid.Get()) D->SetScalarParameterValue(TEXT("Dawn"), float(StarDimming()));
+	// SKY.md: the volumetric layer. Its own clouds replace the painted ones (Low keeps the painted).
+	const float Vol = W->CloudsActive() ? 1.f : 0.f;
+	if (UMaterialInstanceDynamic* D = DomeMid.Get())
+	{
+		D->SetScalarParameterValue(TEXT("VolClouds"), Vol);
+		// The painted cirrus above the layer, drifting slowly with the same west-southwest wind.
+		D->SetScalarParameterValue(TEXT("Cirrus"), float(Cirrus));
+		D->SetVectorParameterValue(TEXT("CirrusDrift"), FLinearColor(float(FMath::Fmod(Time * 0.0011, 1000.0)), float(FMath::Fmod(Time * 0.0004, 1000.0)), 0.f, 0.f));
+	}
+	if (UMaterialInstanceDynamic* D = StarsMid.Get()) D->SetScalarParameterValue(TEXT("VolClouds"), Vol);
+	{
+		// Sky terms -> three's world: the group turns by Yaw about +Y (three's rotation.y).
+		auto Turn = [Yaw](const FVector& V) { const double C = FMath::Cos(Yaw), S = FMath::Sin(Yaw); return FVector(V.X * C + V.Z * S, V.Y, -V.X * S + V.Z * C); };
+		// Story beats keep open sky: the star hole where the dishes point from 02:15, and Halley's comet.
+		const FVector Hole = Turn(HoleDir.GetSafeNormal());
+		FVector Comet = FVector(0, 0, 1); double CometK = 0;
+		if (CometComp.IsValid() && CometComp->IsVisible())
+		{
+			const FVector D = (CometComp->Bounds.Origin - S47Three::ToUE(Eye)).GetSafeNormal();
+			Comet = FVector(D.X, D.Z, D.Y); CometK = 1 - Daylight();
+		}
+		// By day the same slot keeps a low sun open where the player stands (late afternoon commute,
+		// sunrise): its light still reaches the road under the layer; shadows still drift elsewhere.
+		if (CometK < 0.05 && Sun > 0 && SunDir.Y > -0.02 && SunDir.Y < 0.4)
+		{
+			Comet = SunDir.GetSafeNormal(); CometK = 0.85 * (1 - FMath::Clamp((SunDir.Y - 0.25) / 0.15, 0.0, 1.0));
+		}
+		W->SetClouds(float(CloudCover), float(Cirrus), FVector4(Hole.X, Hole.Y, Hole.Z, HoleK), FVector4(Comet.X, Comet.Y, Comet.Z, CometK),
+			float(Flash), Turn(FlashDir), Time);
+	}
 	if (CometComp.IsValid() && CometComp->IsVisible() != bComet) CometComp->SetVisibility(bComet);
 	if (MeteorComp.IsValid() && MeteorComp->IsVisible() != bMetVisible) MeteorComp->SetVisibility(bMetVisible);
 	if (UMaterialInstanceDynamic* D = MeteorMid.Get(); D && bMetVisible)

@@ -1,0 +1,445 @@
+{
+  "_doc": "Original Caliche nature overlays. No collision, no ground traces; existing road and walker heights remain authoritative. The separate baked HISM kit is loaded by BuildCalicheNature.",
+  "area": "diner",
+  "parent": "world.town.group",
+  "walk": "road",
+  "leg": "",
+  "grounds": [
+    "diner",
+    "road"
+  ],
+  "props": [
+    {
+      "id": "streetGroundNatureShoulder_2_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_2_0.SM_CN_Shoulder_2_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureShoulder_2_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_2_1.SM_CN_Shoulder_2_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureShoulder_2_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_2_2.SM_CN_Shoulder_2_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureShoulder_2_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_2_3.SM_CN_Shoulder_2_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureShoulder_3_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_3_0.SM_CN_Shoulder_3_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureShoulder_3_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_3_1.SM_CN_Shoulder_3_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureShoulder_3_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_3_2.SM_CN_Shoulder_3_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureShoulder_3_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Shoulder_3_3.SM_CN_Shoulder_3_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_0_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_0_0.SM_CN_Terrain_0_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_0_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_0_1.SM_CN_Terrain_0_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_0_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_0_2.SM_CN_Terrain_0_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_0_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_0_3.SM_CN_Terrain_0_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_1_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_1_0.SM_CN_Terrain_1_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_1_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_1_1.SM_CN_Terrain_1_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_1_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_1_2.SM_CN_Terrain_1_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_1_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_1_3.SM_CN_Terrain_1_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_2_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_2_0.SM_CN_Terrain_2_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_2_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_2_1.SM_CN_Terrain_2_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_2_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_2_2.SM_CN_Terrain_2_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_2_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_2_3.SM_CN_Terrain_2_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_3_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_3_0.SM_CN_Terrain_3_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_3_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_3_1.SM_CN_Terrain_3_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_3_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_3_2.SM_CN_Terrain_3_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_3_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_3_3.SM_CN_Terrain_3_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_4_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_4_0.SM_CN_Terrain_4_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_4_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_4_1.SM_CN_Terrain_4_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_4_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_4_2.SM_CN_Terrain_4_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_4_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_4_3.SM_CN_Terrain_4_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_5_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_5_0.SM_CN_Terrain_5_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_5_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_5_1.SM_CN_Terrain_5_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_5_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_5_2.SM_CN_Terrain_5_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_5_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_5_3.SM_CN_Terrain_5_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_6_0",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_6_0.SM_CN_Terrain_6_0",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_6_1",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_6_1.SM_CN_Terrain_6_1",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_6_2",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_6_2.SM_CN_Terrain_6_2",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    },
+    {
+      "id": "streetGroundNatureTerrain_6_3",
+      "model": "/Game/CalicheStreet/NatureGround/SM_CN_Terrain_6_3.SM_CN_Terrain_6_3",
+      "at": [
+        8000.0,
+        0.0,
+        2060.0
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
+    }
+  ]
+}

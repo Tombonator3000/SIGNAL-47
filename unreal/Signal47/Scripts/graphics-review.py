@@ -33,7 +33,8 @@ STATE_VIEWS = ('rack-online', 'rack-dark', 'indicators-online', 'indicators-dark
 ASSET_VIEWS = ('array-front', 'array-rear', 'array-field', 'radio-exterior', 'radio-lobby', 'radio-studio')
 STREET_VIEWS = ('street-west-front', 'street-east-front', 'street-north-route', 'street-souvenir-window',
                 'street-radio-detail', 'street-souvenir-detail')
-ALL_VIEWS = VIEWS + STATE_VIEWS + ASSET_VIEWS + STREET_VIEWS
+SKY_VIEWS = ('sky-commute', 'sky-west', 'sky-up', 'sky-saro')
+ALL_VIEWS = VIEWS + STATE_VIEWS + ASSET_VIEWS + STREET_VIEWS + SKY_VIEWS
 CLOCKS = {'night': '02:15', 'dawn': '05:40', 'day': '12:00', 'dusk': '18:30'}
 
 
@@ -383,7 +384,7 @@ def run(args):
     binary = build / 'Linux/Signal47/Binaries/Linux/Signal47'
     if not binary.is_file():
         raise RuntimeError('Packaged executable missing: ' + str(binary))
-    suite = {'all': ALL_VIEWS, 'states': STATE_VIEWS, 'street': STREET_VIEWS, 'world': VIEWS}[args.suite]
+    suite = {'all': ALL_VIEWS, 'states': STATE_VIEWS, 'street': STREET_VIEWS, 'sky': SKY_VIEWS, 'world': VIEWS}[args.suite]
     views = args.views or ([args.view] if args.view else list(suite))
     if len(set(views)) != len(views):
         raise RuntimeError('Duplicate camera selection')
@@ -432,8 +433,8 @@ def main():
                     help='hold autonomous narrative events with the cinematic guard; automatic for street cameras')
     ap.add_argument('--quality', choices=['low', 'high', 'ultra'], default='high')
     ap.add_argument('--picture', choices=['off', 'vhs', 'carpenter', '16mm', 'super8'], help='historical baseline default: Low clean; High/Ultra VHS. Use --picture carpenter for the new game default.')
-    ap.add_argument('--suite', choices=['world', 'states', 'street', 'all'], default='world',
-                    help='world: original20 baseline cameras; states: power, portable lights and menus; street: four public Caliche player-height views')
+    ap.add_argument('--suite', choices=['world', 'states', 'street', 'sky', 'all'], default='world',
+                    help='world: original20 baseline cameras; states: power, portable lights and menus; street: four public Caliche player-height views; sky: clock and cloud review views')
     selection = ap.add_mutually_exclusive_group()
     selection.add_argument('--view', choices=ALL_VIEWS)
     selection.add_argument('--views', nargs='+', choices=ALL_VIEWS)

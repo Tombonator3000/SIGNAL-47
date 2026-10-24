@@ -1,0 +1,3022 @@
+{
+  "source": "/home/tom/scratch-bm/Signal47-web/manifest.json",
+  "source_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "source_kind": "Original exported road walk colliders, before new Props replacements",
+  "domain_world_xz": [
+    7400,
+    8600,
+    1650,
+    2450
+  ],
+  "world_to_road_local": "localX=worldX-8000; localZ=worldZ",
+  "count": 124,
+  "rows": [
+    {
+      "road_collider_index": 0,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7981.75,
+        7981.95,
+        2000.55,
+        2002.1000000000001
+      ],
+      "road_local_rect_xz": [
+        -18.25,
+        -18.050000000000182,
+        2000.55,
+        2002.1000000000001
+      ],
+      "source_handles": [
+        "world.diner.colliders[0]",
+        "world.dinerWalk.colliders[0]",
+        "world.roadWalk.colliders[0]",
+        "world.oldRoad.obstacles[14]",
+        "world.legs.road.area.obstacles[200]"
+      ]
+    },
+    {
+      "road_collider_index": 1,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7981.75,
+        7981.95,
+        1990.95,
+        1999.3500000000001
+      ],
+      "road_local_rect_xz": [
+        -18.25,
+        -18.050000000000182,
+        1990.95,
+        1999.3500000000001
+      ],
+      "source_handles": [
+        "world.diner.colliders[1]",
+        "world.dinerWalk.colliders[1]",
+        "world.roadWalk.colliders[1]",
+        "world.oldRoad.obstacles[15]",
+        "world.legs.road.area.obstacles[201]"
+      ]
+    },
+    {
+      "road_collider_index": 2,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7981.75,
+        7981.95,
+        2002.1000000000001,
+        2008.95
+      ],
+      "road_local_rect_xz": [
+        -18.25,
+        -18.050000000000182,
+        2002.1000000000001,
+        2008.95
+      ],
+      "source_handles": [
+        "world.diner.colliders[2]",
+        "world.dinerWalk.colliders[2]",
+        "world.roadWalk.colliders[2]",
+        "world.oldRoad.obstacles[16]",
+        "world.legs.road.area.obstacles[202]"
+      ]
+    },
+    {
+      "road_collider_index": 3,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7971.95,
+        7972.15,
+        1990.95,
+        2008.95
+      ],
+      "road_local_rect_xz": [
+        -28.050000000000182,
+        -27.850000000000364,
+        1990.95,
+        2008.95
+      ],
+      "source_handles": [
+        "world.diner.colliders[3]",
+        "world.dinerWalk.colliders[3]",
+        "world.roadWalk.colliders[3]",
+        "world.oldRoad.obstacles[17]",
+        "world.legs.road.area.obstacles[203]"
+      ]
+    },
+    {
+      "road_collider_index": 4,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7971.95,
+        7981.95,
+        1990.95,
+        1991.15
+      ],
+      "road_local_rect_xz": [
+        -28.050000000000182,
+        -18.050000000000182,
+        1990.95,
+        1991.15
+      ],
+      "source_handles": [
+        "world.diner.colliders[4]",
+        "world.dinerWalk.colliders[4]",
+        "world.roadWalk.colliders[4]",
+        "world.oldRoad.obstacles[18]",
+        "world.legs.road.area.obstacles[204]"
+      ]
+    },
+    {
+      "road_collider_index": 5,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7971.95,
+        7981.95,
+        2008.75,
+        2008.95
+      ],
+      "road_local_rect_xz": [
+        -28.050000000000182,
+        -18.050000000000182,
+        2008.75,
+        2008.95
+      ],
+      "source_handles": [
+        "world.diner.colliders[5]",
+        "world.dinerWalk.colliders[5]",
+        "world.roadWalk.colliders[5]",
+        "world.oldRoad.obstacles[19]",
+        "world.legs.road.area.obstacles[205]"
+      ]
+    },
+    {
+      "road_collider_index": 6,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7971.95,
+        7974.25,
+        1991.15,
+        2008.75
+      ],
+      "road_local_rect_xz": [
+        -28.050000000000182,
+        -25.75,
+        1991.15,
+        2008.75
+      ],
+      "source_handles": [
+        "world.diner.colliders[6]",
+        "world.dinerWalk.colliders[6]",
+        "world.roadWalk.colliders[6]",
+        "world.oldRoad.obstacles[20]",
+        "world.legs.road.area.obstacles[206]"
+      ]
+    },
+    {
+      "road_collider_index": 7,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7975.139999999999,
+        7975.76,
+        1994.45,
+        2005.45
+      ],
+      "road_local_rect_xz": [
+        -24.860000000000582,
+        -24.23999999999978,
+        1994.45,
+        2005.45
+      ],
+      "source_handles": [
+        "world.diner.colliders[7]",
+        "world.dinerWalk.colliders[7]",
+        "world.roadWalk.colliders[7]",
+        "world.oldRoad.obstacles[21]",
+        "world.legs.road.area.obstacles[207]"
+      ]
+    },
+    {
+      "road_collider_index": 8,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7976.2699999999995,
+        7976.83,
+        1994.8700000000001,
+        1995.43
+      ],
+      "road_local_rect_xz": [
+        -23.730000000000473,
+        -23.170000000000073,
+        1994.8700000000001,
+        1995.43
+      ],
+      "source_handles": [
+        "world.diner.colliders[8]",
+        "world.dinerWalk.colliders[8]",
+        "world.roadWalk.colliders[8]",
+        "world.oldRoad.obstacles[22]",
+        "world.legs.road.area.obstacles[208]"
+      ]
+    },
+    {
+      "road_collider_index": 9,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7976.2699999999995,
+        7976.83,
+        1996.47,
+        1997.03
+      ],
+      "road_local_rect_xz": [
+        -23.730000000000473,
+        -23.170000000000073,
+        1996.47,
+        1997.03
+      ],
+      "source_handles": [
+        "world.diner.colliders[9]",
+        "world.dinerWalk.colliders[9]",
+        "world.roadWalk.colliders[9]",
+        "world.oldRoad.obstacles[23]",
+        "world.legs.road.area.obstacles[209]"
+      ]
+    },
+    {
+      "road_collider_index": 10,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7976.2699999999995,
+        7976.83,
+        1998.07,
+        1998.63
+      ],
+      "road_local_rect_xz": [
+        -23.730000000000473,
+        -23.170000000000073,
+        1998.07,
+        1998.63
+      ],
+      "source_handles": [
+        "world.diner.colliders[10]",
+        "world.dinerWalk.colliders[10]",
+        "world.roadWalk.colliders[10]",
+        "world.oldRoad.obstacles[24]",
+        "world.legs.road.area.obstacles[210]"
+      ]
+    },
+    {
+      "road_collider_index": 11,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7976.2699999999995,
+        7976.83,
+        1999.67,
+        2000.23
+      ],
+      "road_local_rect_xz": [
+        -23.730000000000473,
+        -23.170000000000073,
+        1999.67,
+        2000.23
+      ],
+      "source_handles": [
+        "world.diner.colliders[11]",
+        "world.dinerWalk.colliders[11]",
+        "world.roadWalk.colliders[11]",
+        "world.oldRoad.obstacles[25]",
+        "world.legs.road.area.obstacles[211]"
+      ]
+    },
+    {
+      "road_collider_index": 12,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7976.2699999999995,
+        7976.83,
+        2001.27,
+        2001.8300000000002
+      ],
+      "road_local_rect_xz": [
+        -23.730000000000473,
+        -23.170000000000073,
+        2001.27,
+        2001.8300000000002
+      ],
+      "source_handles": [
+        "world.diner.colliders[12]",
+        "world.dinerWalk.colliders[12]",
+        "world.roadWalk.colliders[12]",
+        "world.oldRoad.obstacles[26]",
+        "world.legs.road.area.obstacles[212]"
+      ]
+    },
+    {
+      "road_collider_index": 13,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7976.2699999999995,
+        7976.83,
+        2002.8700000000001,
+        2003.43
+      ],
+      "road_local_rect_xz": [
+        -23.730000000000473,
+        -23.170000000000073,
+        2002.8700000000001,
+        2003.43
+      ],
+      "source_handles": [
+        "world.diner.colliders[13]",
+        "world.dinerWalk.colliders[13]",
+        "world.roadWalk.colliders[13]",
+        "world.oldRoad.obstacles[27]",
+        "world.legs.road.area.obstacles[213]"
+      ]
+    },
+    {
+      "road_collider_index": 14,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7976.2699999999995,
+        7976.83,
+        2004.47,
+        2005.03
+      ],
+      "road_local_rect_xz": [
+        -23.730000000000473,
+        -23.170000000000073,
+        2004.47,
+        2005.03
+      ],
+      "source_handles": [
+        "world.diner.colliders[14]",
+        "world.dinerWalk.colliders[14]",
+        "world.roadWalk.colliders[14]",
+        "world.oldRoad.obstacles[28]",
+        "world.legs.road.area.obstacles[214]"
+      ]
+    },
+    {
+      "road_collider_index": 15,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7979.679999999999,
+        7981.62,
+        1992.6100000000001,
+        1995.0900000000001
+      ],
+      "road_local_rect_xz": [
+        -20.32000000000062,
+        -18.38000000000011,
+        1992.6100000000001,
+        1995.0900000000001
+      ],
+      "source_handles": [
+        "world.diner.colliders[15]",
+        "world.dinerWalk.colliders[15]",
+        "world.roadWalk.colliders[15]",
+        "world.oldRoad.obstacles[29]",
+        "world.legs.road.area.obstacles[215]"
+      ]
+    },
+    {
+      "road_collider_index": 16,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7979.679999999999,
+        7981.62,
+        1995.66,
+        1998.14
+      ],
+      "road_local_rect_xz": [
+        -20.32000000000062,
+        -18.38000000000011,
+        1995.66,
+        1998.14
+      ],
+      "source_handles": [
+        "world.diner.colliders[16]",
+        "world.dinerWalk.colliders[16]",
+        "world.roadWalk.colliders[16]",
+        "world.oldRoad.obstacles[30]",
+        "world.legs.road.area.obstacles[216]"
+      ]
+    },
+    {
+      "road_collider_index": 17,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7979.679999999999,
+        7981.62,
+        2001.76,
+        2004.24
+      ],
+      "road_local_rect_xz": [
+        -20.32000000000062,
+        -18.38000000000011,
+        2001.76,
+        2004.24
+      ],
+      "source_handles": [
+        "world.diner.colliders[17]",
+        "world.dinerWalk.colliders[17]",
+        "world.roadWalk.colliders[17]",
+        "world.oldRoad.obstacles[31]",
+        "world.legs.road.area.obstacles[217]"
+      ]
+    },
+    {
+      "road_collider_index": 18,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7979.679999999999,
+        7981.62,
+        2004.81,
+        2007.29
+      ],
+      "road_local_rect_xz": [
+        -20.32000000000062,
+        -18.38000000000011,
+        2004.81,
+        2007.29
+      ],
+      "source_handles": [
+        "world.diner.colliders[18]",
+        "world.dinerWalk.colliders[18]",
+        "world.roadWalk.colliders[18]",
+        "world.oldRoad.obstacles[32]",
+        "world.legs.road.area.obstacles[218]"
+      ]
+    },
+    {
+      "road_collider_index": 19,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7978.34,
+        7979.36,
+        1991.3500000000001,
+        1992.0800000000002
+      ],
+      "road_local_rect_xz": [
+        -21.659999999999854,
+        -20.640000000000327,
+        1991.3500000000001,
+        1992.0800000000002
+      ],
+      "source_handles": [
+        "world.diner.colliders[19]",
+        "world.dinerWalk.colliders[19]",
+        "world.roadWalk.colliders[19]",
+        "world.oldRoad.obstacles[33]",
+        "world.legs.road.area.obstacles[219]"
+      ]
+    },
+    {
+      "road_collider_index": 20,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7979.99,
+        7980.72,
+        2008.42,
+        2008.75
+      ],
+      "road_local_rect_xz": [
+        -20.01000000000022,
+        -19.279999999999745,
+        2008.42,
+        2008.75
+      ],
+      "source_handles": [
+        "world.diner.colliders[20]",
+        "world.dinerWalk.colliders[20]",
+        "world.roadWalk.colliders[20]",
+        "world.oldRoad.obstacles[34]",
+        "world.legs.road.area.obstacles[220]"
+      ]
+    },
+    {
+      "road_collider_index": 21,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.75,
+        7993.15,
+        1987.78,
+        1988.18
+      ],
+      "road_local_rect_xz": [
+        -7.25,
+        -6.850000000000364,
+        1987.78,
+        1988.18
+      ],
+      "source_handles": [
+        "world.diner.colliders[21]",
+        "world.dinerWalk.colliders[21]",
+        "world.roadWalk.colliders[21]",
+        "world.oldRoad.obstacles[35]",
+        "world.legs.road.area.obstacles[221]"
+      ]
+    },
+    {
+      "road_collider_index": 22,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.75,
+        7993.15,
+        1991.72,
+        1992.1200000000001
+      ],
+      "road_local_rect_xz": [
+        -7.25,
+        -6.850000000000364,
+        1991.72,
+        1992.1200000000001
+      ],
+      "source_handles": [
+        "world.diner.colliders[22]",
+        "world.dinerWalk.colliders[22]",
+        "world.roadWalk.colliders[22]",
+        "world.oldRoad.obstacles[36]",
+        "world.legs.road.area.obstacles[222]"
+      ]
+    },
+    {
+      "road_collider_index": 23,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7987.28,
+        7987.679999999999,
+        1978.75,
+        1979.15
+      ],
+      "road_local_rect_xz": [
+        -12.720000000000255,
+        -12.320000000000618,
+        1978.75,
+        1979.15
+      ],
+      "source_handles": [
+        "world.diner.colliders[23]",
+        "world.dinerWalk.colliders[23]",
+        "world.roadWalk.colliders[23]",
+        "world.oldRoad.obstacles[37]",
+        "world.legs.road.area.obstacles[223]"
+      ]
+    },
+    {
+      "road_collider_index": 24,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7991.22,
+        7991.62,
+        1978.75,
+        1979.15
+      ],
+      "road_local_rect_xz": [
+        -8.779999999999745,
+        -8.38000000000011,
+        1978.75,
+        1979.15
+      ],
+      "source_handles": [
+        "world.diner.colliders[24]",
+        "world.dinerWalk.colliders[24]",
+        "world.roadWalk.colliders[24]",
+        "world.oldRoad.obstacles[38]",
+        "world.legs.road.area.obstacles[224]"
+      ]
+    },
+    {
+      "road_collider_index": 25,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7983.65,
+        7994.8,
+        1984.4,
+        1987.2
+      ],
+      "road_local_rect_xz": [
+        -16.350000000000364,
+        -5.199999999999818,
+        1984.4,
+        1987.2
+      ],
+      "source_handles": [
+        "world.diner.colliders[25]",
+        "world.dinerWalk.colliders[25]",
+        "world.roadWalk.colliders[25]",
+        "world.oldRoad.obstacles[39]",
+        "world.legs.road.area.obstacles[225]"
+      ]
+    },
+    {
+      "road_collider_index": 26,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7982.99,
+        7983.41,
+        2001.17,
+        2001.63
+      ],
+      "road_local_rect_xz": [
+        -17.01000000000022,
+        -16.590000000000146,
+        2001.17,
+        2001.63
+      ],
+      "source_handles": [
+        "world.diner.colliders[26]",
+        "world.dinerWalk.colliders[26]",
+        "world.roadWalk.colliders[26]",
+        "world.oldRoad.obstacles[40]",
+        "world.legs.road.area.obstacles[226]"
+      ]
+    },
+    {
+      "road_collider_index": 27,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7981.99,
+        7982.7699999999995,
+        2003.8,
+        2006.1000000000001
+      ],
+      "road_local_rect_xz": [
+        -18.01000000000022,
+        -17.230000000000473,
+        2003.8,
+        2006.1000000000001
+      ],
+      "source_handles": [
+        "world.diner.colliders[27]",
+        "world.dinerWalk.colliders[27]",
+        "world.roadWalk.colliders[27]",
+        "world.oldRoad.obstacles[41]",
+        "world.legs.road.area.obstacles[227]"
+      ]
+    },
+    {
+      "road_collider_index": 28,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7982.11,
+        7982.91,
+        2007.78,
+        2008.72
+      ],
+      "road_local_rect_xz": [
+        -17.890000000000327,
+        -17.090000000000146,
+        2007.78,
+        2008.72
+      ],
+      "source_handles": [
+        "world.diner.colliders[28]",
+        "world.dinerWalk.colliders[28]",
+        "world.roadWalk.colliders[28]",
+        "world.oldRoad.obstacles[42]",
+        "world.legs.road.area.obstacles[228]"
+      ]
+    },
+    {
+      "road_collider_index": 29,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7982.95,
+        7983.55,
+        1998.2,
+        1998.8
+      ],
+      "road_local_rect_xz": [
+        -17.050000000000182,
+        -16.449999999999818,
+        1998.2,
+        1998.8
+      ],
+      "source_handles": [
+        "world.diner.colliders[29]",
+        "world.dinerWalk.colliders[29]",
+        "world.roadWalk.colliders[29]",
+        "world.oldRoad.obstacles[43]",
+        "world.legs.road.area.obstacles[229]"
+      ]
+    },
+    {
+      "road_collider_index": 30,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7973.8,
+        7979.3,
+        2010.65,
+        2012.65
+      ],
+      "road_local_rect_xz": [
+        -26.199999999999818,
+        -20.699999999999818,
+        2010.65,
+        2012.65
+      ],
+      "source_handles": [
+        "world.diner.colliders[30]",
+        "world.dinerWalk.colliders[30]",
+        "world.roadWalk.colliders[30]",
+        "world.oldRoad.obstacles[44]",
+        "world.legs.road.area.obstacles[230]"
+      ]
+    },
+    {
+      "road_collider_index": 31,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7973.952458083332,
+        7979.947541916667,
+        1987.1788424337467,
+        1989.5211575662534
+      ],
+      "road_local_rect_xz": [
+        -26.047541916667797,
+        -20.052458083332567,
+        1987.1788424337467,
+        1989.5211575662534
+      ],
+      "source_handles": [
+        "world.diner.colliders[31]",
+        "world.dinerWalk.colliders[31]",
+        "world.roadWalk.colliders[31]",
+        "world.oldRoad.obstacles[45]",
+        "world.legs.road.area.obstacles[231]"
+      ]
+    },
+    {
+      "road_collider_index": 32,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7972.45,
+        7973.05,
+        2009.4,
+        2010
+      ],
+      "road_local_rect_xz": [
+        -27.550000000000182,
+        -26.949999999999818,
+        2009.4,
+        2010
+      ],
+      "source_handles": [
+        "world.diner.colliders[32]",
+        "world.dinerWalk.colliders[32]",
+        "world.roadWalk.colliders[32]",
+        "world.oldRoad.obstacles[46]",
+        "world.legs.road.area.obstacles[232]"
+      ]
+    },
+    {
+      "road_collider_index": 33,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7973.15,
+        7973.75,
+        2009.45,
+        2010.05
+      ],
+      "road_local_rect_xz": [
+        -26.850000000000364,
+        -26.25,
+        2009.45,
+        2010.05
+      ],
+      "source_handles": [
+        "world.diner.colliders[33]",
+        "world.dinerWalk.colliders[33]",
+        "world.roadWalk.colliders[33]",
+        "world.oldRoad.obstacles[47]",
+        "world.legs.road.area.obstacles[233]"
+      ]
+    },
+    {
+      "road_collider_index": 34,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7971.05,
+        7971.65,
+        2007.8500000000001,
+        2008.45
+      ],
+      "road_local_rect_xz": [
+        -28.949999999999818,
+        -28.350000000000364,
+        2007.8500000000001,
+        2008.45
+      ],
+      "source_handles": [
+        "world.diner.colliders[34]",
+        "world.dinerWalk.colliders[34]",
+        "world.roadWalk.colliders[34]",
+        "world.oldRoad.obstacles[48]",
+        "world.legs.road.area.obstacles[234]"
+      ]
+    },
+    {
+      "road_collider_index": 36,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7989.85,
+        7990.15,
+        1879.85,
+        1880.15
+      ],
+      "road_local_rect_xz": [
+        -10.149999999999636,
+        -9.850000000000364,
+        1879.85,
+        1880.15
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[0]",
+        "world.town.obstacles[0]",
+        "world.dinerWalk.colliders[36]",
+        "world.roadWalk.colliders[36]",
+        "world.legs.road.area.obstacles[235]"
+      ]
+    },
+    {
+      "road_collider_index": 37,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.65,
+        7992.95,
+        1879.85,
+        1880.15
+      ],
+      "road_local_rect_xz": [
+        -7.350000000000364,
+        -7.050000000000182,
+        1879.85,
+        1880.15
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[1]",
+        "world.town.obstacles[1]",
+        "world.dinerWalk.colliders[37]",
+        "world.roadWalk.colliders[37]",
+        "world.legs.road.area.obstacles[236]"
+      ]
+    },
+    {
+      "road_collider_index": 38,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8007.05,
+        8007.35,
+        2334.85,
+        2335.15
+      ],
+      "road_local_rect_xz": [
+        7.050000000000182,
+        7.350000000000364,
+        2334.85,
+        2335.15
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[2]",
+        "world.town.obstacles[2]",
+        "world.dinerWalk.colliders[38]",
+        "world.roadWalk.colliders[38]",
+        "world.legs.road.area.obstacles[237]"
+      ]
+    },
+    {
+      "road_collider_index": 39,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8009.85,
+        8010.15,
+        2334.85,
+        2335.15
+      ],
+      "road_local_rect_xz": [
+        9.850000000000364,
+        10.149999999999636,
+        2334.85,
+        2335.15
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[3]",
+        "world.town.obstacles[3]",
+        "world.dinerWalk.colliders[39]",
+        "world.roadWalk.colliders[39]",
+        "world.legs.road.area.obstacles[238]"
+      ]
+    },
+    {
+      "road_collider_index": 40,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7991.15,
+        7991.65,
+        2018.75,
+        2019.25
+      ],
+      "road_local_rect_xz": [
+        -8.850000000000364,
+        -8.350000000000364,
+        2018.75,
+        2019.25
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[4]",
+        "world.town.obstacles[4]",
+        "world.dinerWalk.colliders[40]",
+        "world.roadWalk.colliders[40]",
+        "world.legs.road.area.obstacles[239]"
+      ]
+    },
+    {
+      "road_collider_index": 41,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8009.35,
+        8009.85,
+        1980.75,
+        1981.25
+      ],
+      "road_local_rect_xz": [
+        9.350000000000364,
+        9.850000000000364,
+        1980.75,
+        1981.25
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[5]",
+        "world.town.obstacles[5]",
+        "world.dinerWalk.colliders[41]",
+        "world.roadWalk.colliders[41]",
+        "world.legs.road.area.obstacles[240]"
+      ]
+    },
+    {
+      "road_collider_index": 42,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.8,
+        7993.2,
+        2029.8,
+        2030.2
+      ],
+      "road_local_rect_xz": [
+        -7.199999999999818,
+        -6.800000000000182,
+        2029.8,
+        2030.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[6]",
+        "world.town.obstacles[6]",
+        "world.dinerWalk.colliders[42]",
+        "world.roadWalk.colliders[42]",
+        "world.legs.road.area.obstacles[241]"
+      ]
+    },
+    {
+      "road_collider_index": 43,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.8,
+        7993.2,
+        2091.8,
+        2092.2
+      ],
+      "road_local_rect_xz": [
+        -7.199999999999818,
+        -6.800000000000182,
+        2091.8,
+        2092.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[7]",
+        "world.town.obstacles[7]",
+        "world.dinerWalk.colliders[43]",
+        "world.roadWalk.colliders[43]",
+        "world.legs.road.area.obstacles[242]"
+      ]
+    },
+    {
+      "road_collider_index": 44,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.8,
+        7993.2,
+        2121.8,
+        2122.2
+      ],
+      "road_local_rect_xz": [
+        -7.199999999999818,
+        -6.800000000000182,
+        2121.8,
+        2122.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[8]",
+        "world.town.obstacles[8]",
+        "world.dinerWalk.colliders[44]",
+        "world.roadWalk.colliders[44]",
+        "world.legs.road.area.obstacles[243]"
+      ]
+    },
+    {
+      "road_collider_index": 45,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.8,
+        7993.2,
+        2149.8,
+        2150.2
+      ],
+      "road_local_rect_xz": [
+        -7.199999999999818,
+        -6.800000000000182,
+        2149.8,
+        2150.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[9]",
+        "world.town.obstacles[9]",
+        "world.dinerWalk.colliders[45]",
+        "world.roadWalk.colliders[45]",
+        "world.legs.road.area.obstacles[244]"
+      ]
+    },
+    {
+      "road_collider_index": 46,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.8,
+        7993.2,
+        2183.8,
+        2184.2
+      ],
+      "road_local_rect_xz": [
+        -7.199999999999818,
+        -6.800000000000182,
+        2183.8,
+        2184.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[10]",
+        "world.town.obstacles[10]",
+        "world.dinerWalk.colliders[46]",
+        "world.roadWalk.colliders[46]",
+        "world.legs.road.area.obstacles[245]"
+      ]
+    },
+    {
+      "road_collider_index": 47,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.8,
+        7993.2,
+        2221.8,
+        2222.2
+      ],
+      "road_local_rect_xz": [
+        -7.199999999999818,
+        -6.800000000000182,
+        2221.8,
+        2222.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[11]",
+        "world.town.obstacles[11]",
+        "world.dinerWalk.colliders[47]",
+        "world.roadWalk.colliders[47]",
+        "world.legs.road.area.obstacles[246]"
+      ]
+    },
+    {
+      "road_collider_index": 48,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7992.8,
+        7993.2,
+        2261.8,
+        2262.2
+      ],
+      "road_local_rect_xz": [
+        -7.199999999999818,
+        -6.800000000000182,
+        2261.8,
+        2262.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[12]",
+        "world.town.obstacles[12]",
+        "world.dinerWalk.colliders[48]",
+        "world.roadWalk.colliders[48]",
+        "world.legs.road.area.obstacles[247]"
+      ]
+    },
+    {
+      "road_collider_index": 49,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7973,
+        7983,
+        2066,
+        2078
+      ],
+      "road_local_rect_xz": [
+        -27,
+        -17,
+        2066,
+        2078
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[13]",
+        "world.town.obstacles[13]",
+        "world.dinerWalk.colliders[49]",
+        "world.roadWalk.colliders[49]",
+        "world.legs.road.area.obstacles[248]"
+      ]
+    },
+    {
+      "road_collider_index": 50,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7973,
+        7982.6,
+        2078,
+        2088
+      ],
+      "road_local_rect_xz": [
+        -27,
+        -17.399999999999636,
+        2078,
+        2088
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[14]",
+        "world.town.obstacles[14]",
+        "world.dinerWalk.colliders[50]",
+        "world.roadWalk.colliders[50]",
+        "world.legs.road.area.obstacles[249]"
+      ]
+    },
+    {
+      "road_collider_index": 51,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7983,
+        7983.9,
+        2066.3999999999996,
+        2068
+      ],
+      "road_local_rect_xz": [
+        -17,
+        -16.100000000000364,
+        2066.3999999999996,
+        2068
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[15]",
+        "world.dinerWalk.colliders[51]",
+        "world.roadWalk.colliders[51]"
+      ]
+    },
+    {
+      "road_collider_index": 52,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7982.6,
+        7983.5,
+        2081.2,
+        2084.8
+      ],
+      "road_local_rect_xz": [
+        -17.399999999999636,
+        -16.5,
+        2081.2,
+        2084.8
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[16]",
+        "world.dinerWalk.colliders[52]",
+        "world.roadWalk.colliders[52]"
+      ]
+    },
+    {
+      "road_collider_index": 53,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7989,
+        7990.5,
+        2047,
+        2063
+      ],
+      "road_local_rect_xz": [
+        -11,
+        -9.5,
+        2047,
+        2063
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[17]",
+        "world.town.obstacles[15]",
+        "world.dinerWalk.colliders[53]",
+        "world.roadWalk.colliders[53]",
+        "world.legs.road.area.obstacles[250]"
+      ]
+    },
+    {
+      "road_collider_index": 54,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7984.55,
+        7985.05,
+        2041.75,
+        2042.25
+      ],
+      "road_local_rect_xz": [
+        -15.449999999999818,
+        -14.949999999999818,
+        2041.75,
+        2042.25
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[18]",
+        "world.town.obstacles[16]",
+        "world.dinerWalk.colliders[54]",
+        "world.roadWalk.colliders[54]",
+        "world.legs.road.area.obstacles[251]"
+      ]
+    },
+    {
+      "road_collider_index": 55,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7983.9,
+        7984.7,
+        2064.2,
+        2065
+      ],
+      "road_local_rect_xz": [
+        -16.100000000000364,
+        -15.300000000000182,
+        2064.2,
+        2065
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[19]",
+        "world.town.obstacles[17]",
+        "world.dinerWalk.colliders[55]",
+        "world.roadWalk.colliders[55]",
+        "world.legs.road.area.obstacles[252]"
+      ]
+    },
+    {
+      "road_collider_index": 56,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7974,
+        7984,
+        2100,
+        2112
+      ],
+      "road_local_rect_xz": [
+        -26,
+        -16,
+        2100,
+        2112
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[20]",
+        "world.town.obstacles[18]",
+        "world.dinerWalk.colliders[56]",
+        "world.roadWalk.colliders[56]",
+        "world.legs.road.area.obstacles[253]"
+      ]
+    },
+    {
+      "road_collider_index": 57,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7984,
+        7984.9,
+        2100.85,
+        2102.35
+      ],
+      "road_local_rect_xz": [
+        -16,
+        -15.100000000000364,
+        2100.85,
+        2102.35
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[21]",
+        "world.dinerWalk.colliders[57]",
+        "world.roadWalk.colliders[57]"
+      ]
+    },
+    {
+      "road_collider_index": 58,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985.28,
+        7985.52,
+        2099.08,
+        2099.3199999999997
+      ],
+      "road_local_rect_xz": [
+        -14.720000000000255,
+        -14.479999999999563,
+        2099.08,
+        2099.3199999999997
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[22]",
+        "world.town.obstacles[19]",
+        "world.dinerWalk.colliders[58]",
+        "world.roadWalk.colliders[58]",
+        "world.legs.road.area.obstacles[254]"
+      ]
+    },
+    {
+      "road_collider_index": 59,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7975,
+        7985,
+        2126,
+        2140
+      ],
+      "road_local_rect_xz": [
+        -25,
+        -15,
+        2126,
+        2140
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[23]",
+        "world.town.obstacles[20]",
+        "world.dinerWalk.colliders[59]",
+        "world.roadWalk.colliders[59]",
+        "world.legs.road.area.obstacles[255]"
+      ]
+    },
+    {
+      "road_collider_index": 60,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985,
+        7985.9,
+        2136.6,
+        2138.2000000000003
+      ],
+      "road_local_rect_xz": [
+        -15,
+        -14.100000000000364,
+        2136.6,
+        2138.2000000000003
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[24]",
+        "world.dinerWalk.colliders[60]",
+        "world.roadWalk.colliders[60]"
+      ]
+    },
+    {
+      "road_collider_index": 61,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985.03,
+        7985.85,
+        2131.25,
+        2133.6499999999996
+      ],
+      "road_local_rect_xz": [
+        -14.970000000000255,
+        -14.149999999999636,
+        2131.25,
+        2133.6499999999996
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[25]",
+        "world.dinerWalk.colliders[61]",
+        "world.roadWalk.colliders[61]"
+      ]
+    },
+    {
+      "road_collider_index": 62,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7971,
+        7985,
+        2152,
+        2172
+      ],
+      "road_local_rect_xz": [
+        -29,
+        -15,
+        2152,
+        2172
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[26]",
+        "world.town.obstacles[21]",
+        "world.dinerWalk.colliders[62]",
+        "world.roadWalk.colliders[62]",
+        "world.legs.road.area.obstacles[256]"
+      ]
+    },
+    {
+      "road_collider_index": 63,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985,
+        7985.9,
+        2162.1,
+        2163.5
+      ],
+      "road_local_rect_xz": [
+        -15,
+        -14.100000000000364,
+        2162.1,
+        2163.5
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[27]",
+        "world.town.obstacles[22]",
+        "world.dinerWalk.colliders[63]",
+        "world.roadWalk.colliders[63]",
+        "world.legs.road.area.obstacles[257]"
+      ]
+    },
+    {
+      "road_collider_index": 64,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7969,
+        7985,
+        2190,
+        2214
+      ],
+      "road_local_rect_xz": [
+        -31,
+        -15,
+        2190,
+        2214
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[28]",
+        "world.town.obstacles[23]",
+        "world.dinerWalk.colliders[64]",
+        "world.roadWalk.colliders[64]",
+        "world.legs.road.area.obstacles[258]"
+      ]
+    },
+    {
+      "road_collider_index": 65,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985,
+        7987.6,
+        2196,
+        2206
+      ],
+      "road_local_rect_xz": [
+        -15,
+        -12.399999999999636,
+        2196,
+        2206
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[29]",
+        "world.town.obstacles[24]",
+        "world.dinerWalk.colliders[65]",
+        "world.roadWalk.colliders[65]",
+        "world.legs.road.area.obstacles[259]"
+      ]
+    },
+    {
+      "road_collider_index": 66,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8020,
+        8030,
+        2030,
+        2042
+      ],
+      "road_local_rect_xz": [
+        20,
+        30,
+        2030,
+        2042
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[30]",
+        "world.town.obstacles[25]",
+        "world.dinerWalk.colliders[66]",
+        "world.roadWalk.colliders[66]",
+        "world.legs.road.area.obstacles[260]"
+      ]
+    },
+    {
+      "road_collider_index": 67,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8019.1,
+        8020,
+        2030.7,
+        2032.1000000000001
+      ],
+      "road_local_rect_xz": [
+        19.100000000000364,
+        20,
+        2030.7,
+        2032.1000000000001
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[31]",
+        "world.dinerWalk.colliders[67]",
+        "world.roadWalk.colliders[67]"
+      ]
+    },
+    {
+      "road_collider_index": 68,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8037.2,
+        8038.8,
+        2035.2,
+        2036.8
+      ],
+      "road_local_rect_xz": [
+        37.19999999999982,
+        38.80000000000018,
+        2035.2,
+        2036.8
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[32]",
+        "world.town.obstacles[26]",
+        "world.dinerWalk.colliders[68]",
+        "world.roadWalk.colliders[68]",
+        "world.legs.road.area.obstacles[261]"
+      ]
+    },
+    {
+      "road_collider_index": 69,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8020.5,
+        8029.5,
+        2058,
+        2070
+      ],
+      "road_local_rect_xz": [
+        20.5,
+        29.5,
+        2058,
+        2070
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[33]",
+        "world.town.obstacles[27]",
+        "world.dinerWalk.colliders[69]",
+        "world.roadWalk.colliders[69]",
+        "world.legs.road.area.obstacles[262]"
+      ]
+    },
+    {
+      "road_collider_index": 70,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.45,
+        8018.75,
+        2058.25,
+        2058.55
+      ],
+      "road_local_rect_xz": [
+        18.449999999999818,
+        18.75,
+        2058.25,
+        2058.55
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[34]",
+        "world.town.obstacles[28]",
+        "world.dinerWalk.colliders[70]",
+        "world.roadWalk.colliders[70]",
+        "world.legs.road.area.obstacles[263]"
+      ]
+    },
+    {
+      "road_collider_index": 71,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.45,
+        8018.75,
+        2063.85,
+        2064.15
+      ],
+      "road_local_rect_xz": [
+        18.449999999999818,
+        18.75,
+        2063.85,
+        2064.15
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[35]",
+        "world.town.obstacles[29]",
+        "world.dinerWalk.colliders[71]",
+        "world.roadWalk.colliders[71]",
+        "world.legs.road.area.obstacles[264]"
+      ]
+    },
+    {
+      "road_collider_index": 72,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.45,
+        8018.75,
+        2069.45,
+        2069.75
+      ],
+      "road_local_rect_xz": [
+        18.449999999999818,
+        18.75,
+        2069.45,
+        2069.75
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[36]",
+        "world.town.obstacles[30]",
+        "world.dinerWalk.colliders[72]",
+        "world.roadWalk.colliders[72]",
+        "world.legs.road.area.obstacles[265]"
+      ]
+    },
+    {
+      "road_collider_index": 73,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8019.6,
+        8020.5,
+        2066.1000000000004,
+        2067.5
+      ],
+      "road_local_rect_xz": [
+        19.600000000000364,
+        20.5,
+        2066.1000000000004,
+        2067.5
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[37]",
+        "world.dinerWalk.colliders[73]",
+        "world.roadWalk.colliders[73]"
+      ]
+    },
+    {
+      "road_collider_index": 74,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8021,
+        8035,
+        2091,
+        2100
+      ],
+      "road_local_rect_xz": [
+        21,
+        35,
+        2091,
+        2100
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[38]",
+        "world.town.obstacles[31]",
+        "world.dinerWalk.colliders[74]",
+        "world.roadWalk.colliders[74]",
+        "world.legs.road.area.obstacles[266]"
+      ]
+    },
+    {
+      "road_collider_index": 75,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8020.1,
+        8021,
+        2094,
+        2097
+      ],
+      "road_local_rect_xz": [
+        20.100000000000364,
+        21,
+        2094,
+        2097
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[39]",
+        "world.dinerWalk.colliders[75]",
+        "world.roadWalk.colliders[75]"
+      ]
+    },
+    {
+      "road_collider_index": 76,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.78,
+        8019.02,
+        2085.88,
+        2086.12
+      ],
+      "road_local_rect_xz": [
+        18.779999999999745,
+        19.020000000000437,
+        2085.88,
+        2086.12
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[40]",
+        "world.town.obstacles[32]",
+        "world.dinerWalk.colliders[76]",
+        "world.roadWalk.colliders[76]",
+        "world.legs.road.area.obstacles[267]"
+      ]
+    },
+    {
+      "road_collider_index": 77,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.78,
+        8019.02,
+        2088.48,
+        2088.72
+      ],
+      "road_local_rect_xz": [
+        18.779999999999745,
+        19.020000000000437,
+        2088.48,
+        2088.72
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[41]",
+        "world.town.obstacles[33]",
+        "world.dinerWalk.colliders[77]",
+        "world.roadWalk.colliders[77]",
+        "world.legs.road.area.obstacles[268]"
+      ]
+    },
+    {
+      "road_collider_index": 78,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8024,
+        8033,
+        2128,
+        2138
+      ],
+      "road_local_rect_xz": [
+        24,
+        33,
+        2128,
+        2138
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[42]",
+        "world.town.obstacles[34]",
+        "world.dinerWalk.colliders[78]",
+        "world.roadWalk.colliders[78]",
+        "world.legs.road.area.obstacles[269]"
+      ]
+    },
+    {
+      "road_collider_index": 79,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8023.1,
+        8024,
+        2135.75,
+        2137.05
+      ],
+      "road_local_rect_xz": [
+        23.100000000000364,
+        24,
+        2135.75,
+        2137.05
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[43]",
+        "world.dinerWalk.colliders[79]",
+        "world.roadWalk.colliders[79]"
+      ]
+    },
+    {
+      "road_collider_index": 80,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.58,
+        8018.82,
+        2131.08,
+        2131.3199999999997
+      ],
+      "road_local_rect_xz": [
+        18.579999999999927,
+        18.81999999999971,
+        2131.08,
+        2131.3199999999997
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[44]",
+        "world.dinerWalk.colliders[80]",
+        "world.roadWalk.colliders[80]"
+      ]
+    },
+    {
+      "road_collider_index": 81,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8024.5,
+        8032,
+        2152,
+        2161
+      ],
+      "road_local_rect_xz": [
+        24.5,
+        32,
+        2152,
+        2161
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[45]",
+        "world.town.obstacles[35]",
+        "world.dinerWalk.colliders[81]",
+        "world.roadWalk.colliders[81]",
+        "world.legs.road.area.obstacles[270]"
+      ]
+    },
+    {
+      "road_collider_index": 82,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8023.6,
+        8024.5,
+        2158.75,
+        2160.05
+      ],
+      "road_local_rect_xz": [
+        23.600000000000364,
+        24.5,
+        2158.75,
+        2160.05
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[46]",
+        "world.dinerWalk.colliders[82]",
+        "world.roadWalk.colliders[82]"
+      ]
+    },
+    {
+      "road_collider_index": 83,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.58,
+        8018.82,
+        2155.08,
+        2155.3199999999997
+      ],
+      "road_local_rect_xz": [
+        18.579999999999927,
+        18.81999999999971,
+        2155.08,
+        2155.3199999999997
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[47]",
+        "world.dinerWalk.colliders[83]",
+        "world.roadWalk.colliders[83]"
+      ]
+    },
+    {
+      "road_collider_index": 84,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8025,
+        8034,
+        2180,
+        2190
+      ],
+      "road_local_rect_xz": [
+        25,
+        34,
+        2180,
+        2190
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[48]",
+        "world.town.obstacles[36]",
+        "world.dinerWalk.colliders[84]",
+        "world.roadWalk.colliders[84]",
+        "world.legs.road.area.obstacles[271]"
+      ]
+    },
+    {
+      "road_collider_index": 85,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8024.1,
+        8025,
+        2180.95,
+        2182.25
+      ],
+      "road_local_rect_xz": [
+        24.100000000000364,
+        25,
+        2180.95,
+        2182.25
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[49]",
+        "world.dinerWalk.colliders[85]",
+        "world.roadWalk.colliders[85]"
+      ]
+    },
+    {
+      "road_collider_index": 86,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8018.58,
+        8018.82,
+        2186.48,
+        2186.72
+      ],
+      "road_local_rect_xz": [
+        18.579999999999927,
+        18.81999999999971,
+        2186.48,
+        2186.72
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[50]",
+        "world.dinerWalk.colliders[86]",
+        "world.roadWalk.colliders[86]"
+      ]
+    },
+    {
+      "road_collider_index": 87,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7972,
+        7981,
+        2236,
+        2246
+      ],
+      "road_local_rect_xz": [
+        -28,
+        -19,
+        2236,
+        2246
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[51]",
+        "world.town.obstacles[37]",
+        "world.dinerWalk.colliders[87]",
+        "world.roadWalk.colliders[87]",
+        "world.legs.road.area.obstacles[272]"
+      ]
+    },
+    {
+      "road_collider_index": 88,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7981,
+        7981.9,
+        2243.75,
+        2245.05
+      ],
+      "road_local_rect_xz": [
+        -19,
+        -18.100000000000364,
+        2243.75,
+        2245.05
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[52]",
+        "world.dinerWalk.colliders[88]",
+        "world.roadWalk.colliders[88]"
+      ]
+    },
+    {
+      "road_collider_index": 89,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7982.58,
+        7982.82,
+        2239.08,
+        2239.3199999999997
+      ],
+      "road_local_rect_xz": [
+        -17.420000000000073,
+        -17.18000000000029,
+        2239.08,
+        2239.3199999999997
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[53]",
+        "world.dinerWalk.colliders[89]",
+        "world.roadWalk.colliders[89]"
+      ]
+    },
+    {
+      "road_collider_index": 90,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.78,
+        8015.22,
+        2013.798211868126,
+        2014.238211868126
+      ],
+      "road_local_rect_xz": [
+        14.779999999999745,
+        15.220000000000255,
+        2013.798211868126,
+        2014.238211868126
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[54]",
+        "world.town.obstacles[38]",
+        "world.dinerWalk.colliders[90]",
+        "world.roadWalk.colliders[90]",
+        "world.legs.road.area.obstacles[273]"
+      ]
+    },
+    {
+      "road_collider_index": 91,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.78,
+        8015.22,
+        2060.904501379498,
+        2061.3445013794976
+      ],
+      "road_local_rect_xz": [
+        14.779999999999745,
+        15.220000000000255,
+        2060.904501379498,
+        2061.3445013794976
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[55]",
+        "world.town.obstacles[39]",
+        "world.dinerWalk.colliders[91]",
+        "world.roadWalk.colliders[91]",
+        "world.legs.road.area.obstacles[274]"
+      ]
+    },
+    {
+      "road_collider_index": 92,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.78,
+        8015.22,
+        2102.798946791097,
+        2103.2389467910966
+      ],
+      "road_local_rect_xz": [
+        14.779999999999745,
+        15.220000000000255,
+        2102.798946791097,
+        2103.2389467910966
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[56]",
+        "world.town.obstacles[40]",
+        "world.dinerWalk.colliders[92]",
+        "world.roadWalk.colliders[92]",
+        "world.legs.road.area.obstacles[275]"
+      ]
+    },
+    {
+      "road_collider_index": 93,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.78,
+        8015.22,
+        2151.54693001829,
+        2151.9869300182895
+      ],
+      "road_local_rect_xz": [
+        14.779999999999745,
+        15.220000000000255,
+        2151.54693001829,
+        2151.9869300182895
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[57]",
+        "world.town.obstacles[41]",
+        "world.dinerWalk.colliders[93]",
+        "world.roadWalk.colliders[93]",
+        "world.legs.road.area.obstacles[276]"
+      ]
+    },
+    {
+      "road_collider_index": 94,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.78,
+        8015.22,
+        2196.054600963705,
+        2196.4946009637047
+      ],
+      "road_local_rect_xz": [
+        14.779999999999745,
+        15.220000000000255,
+        2196.054600963705,
+        2196.4946009637047
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[58]",
+        "world.town.obstacles[42]",
+        "world.dinerWalk.colliders[94]",
+        "world.roadWalk.colliders[94]",
+        "world.legs.road.area.obstacles[277]"
+      ]
+    },
+    {
+      "road_collider_index": 95,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.78,
+        8015.22,
+        2241.618583751669,
+        2242.0585837516687
+      ],
+      "road_local_rect_xz": [
+        14.779999999999745,
+        15.220000000000255,
+        2241.618583751669,
+        2242.0585837516687
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[59]",
+        "world.town.obstacles[43]",
+        "world.dinerWalk.colliders[95]",
+        "world.roadWalk.colliders[95]",
+        "world.legs.road.area.obstacles[278]"
+      ]
+    },
+    {
+      "road_collider_index": 96,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7986.7,
+        7988.7,
+        2103.8,
+        2109.2
+      ],
+      "road_local_rect_xz": [
+        -13.300000000000182,
+        -11.300000000000182,
+        2103.8,
+        2109.2
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[60]",
+        "world.town.obstacles[44]",
+        "world.town.carCol",
+        "world.dinerWalk.colliders[96]",
+        "world.roadWalk.colliders[96]",
+        "world.legs.road.area.obstacles[279]"
+      ]
+    },
+    {
+      "road_collider_index": 97,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7982.45,
+        7983.75,
+        2085.98,
+        2086.82
+      ],
+      "road_local_rect_xz": [
+        -17.550000000000182,
+        -16.25,
+        2085.98,
+        2086.82
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[61]",
+        "world.town.obstacles[45]",
+        "world.dinerWalk.colliders[97]",
+        "world.roadWalk.colliders[97]",
+        "world.legs.road.area.obstacles[280]"
+      ]
+    },
+    {
+      "road_collider_index": 98,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7982.95,
+        7983.55,
+        2078.35,
+        2078.9500000000003
+      ],
+      "road_local_rect_xz": [
+        -17.050000000000182,
+        -16.449999999999818,
+        2078.35,
+        2078.9500000000003
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[62]",
+        "world.town.obstacles[46]",
+        "world.dinerWalk.colliders[98]",
+        "world.roadWalk.colliders[98]",
+        "world.legs.road.area.obstacles[281]"
+      ]
+    },
+    {
+      "road_collider_index": 99,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7983.1,
+        7983.7,
+        2079.1,
+        2079.7000000000003
+      ],
+      "road_local_rect_xz": [
+        -16.899999999999636,
+        -16.300000000000182,
+        2079.1,
+        2079.7000000000003
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[63]",
+        "world.town.obstacles[47]",
+        "world.dinerWalk.colliders[99]",
+        "world.roadWalk.colliders[99]",
+        "world.legs.road.area.obstacles[282]"
+      ]
+    },
+    {
+      "road_collider_index": 100,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7983,
+        7983.8,
+        2076.03,
+        2076.97
+      ],
+      "road_local_rect_xz": [
+        -17,
+        -16.199999999999818,
+        2076.03,
+        2076.97
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[64]",
+        "world.town.obstacles[48]",
+        "world.dinerWalk.colliders[100]",
+        "world.roadWalk.colliders[100]",
+        "world.legs.road.area.obstacles[283]"
+      ]
+    },
+    {
+      "road_collider_index": 101,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7983.24,
+        7983.66,
+        2065.37,
+        2065.83
+      ],
+      "road_local_rect_xz": [
+        -16.76000000000022,
+        -16.340000000000146,
+        2065.37,
+        2065.83
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[65]",
+        "world.town.obstacles[49]",
+        "world.dinerWalk.colliders[101]",
+        "world.roadWalk.colliders[101]",
+        "world.legs.road.area.obstacles[284]"
+      ]
+    },
+    {
+      "road_collider_index": 102,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7989.45,
+        7990.05,
+        2045.7,
+        2046.3
+      ],
+      "road_local_rect_xz": [
+        -10.550000000000182,
+        -9.949999999999818,
+        2045.7,
+        2046.3
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[66]",
+        "world.town.obstacles[50]",
+        "world.dinerWalk.colliders[102]",
+        "world.roadWalk.colliders[102]",
+        "world.legs.road.area.obstacles[285]"
+      ]
+    },
+    {
+      "road_collider_index": 103,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985,
+        7985.8,
+        2134.13,
+        2135.0699999999997
+      ],
+      "road_local_rect_xz": [
+        -15,
+        -14.199999999999818,
+        2134.13,
+        2135.0699999999997
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[67]",
+        "world.town.obstacles[51]",
+        "world.dinerWalk.colliders[103]",
+        "world.roadWalk.colliders[103]",
+        "world.legs.road.area.obstacles[286]"
+      ]
+    },
+    {
+      "road_collider_index": 104,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985,
+        7985.6,
+        2138.75,
+        2139.3500000000004
+      ],
+      "road_local_rect_xz": [
+        -15,
+        -14.399999999999636,
+        2138.75,
+        2139.3500000000004
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[68]",
+        "world.town.obstacles[52]",
+        "world.dinerWalk.colliders[104]",
+        "world.roadWalk.colliders[104]",
+        "world.legs.road.area.obstacles[287]"
+      ]
+    },
+    {
+      "road_collider_index": 105,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985.871097672799,
+        7987.128902327201,
+        2191.9649213261446,
+        2193.0350786738554
+      ],
+      "road_local_rect_xz": [
+        -14.128902327201104,
+        -12.871097672798896,
+        2191.9649213261446,
+        2193.0350786738554
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[69]",
+        "world.town.obstacles[53]",
+        "world.dinerWalk.colliders[105]",
+        "world.roadWalk.colliders[105]",
+        "world.legs.road.area.obstacles[288]"
+      ]
+    },
+    {
+      "road_collider_index": 106,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985.96206496723,
+        7986.83793503277,
+        2206.96206496723,
+        2207.83793503277
+      ],
+      "road_local_rect_xz": [
+        -14.037935032770292,
+        -13.162064967230435,
+        2206.96206496723,
+        2207.83793503277
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[70]",
+        "world.town.obstacles[54]",
+        "world.dinerWalk.colliders[106]",
+        "world.roadWalk.colliders[106]",
+        "world.legs.road.area.obstacles[289]"
+      ]
+    },
+    {
+      "road_collider_index": 107,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7986.7963792274095,
+        7987.503620772591,
+        2207.246379227409,
+        2207.953620772591
+      ],
+      "road_local_rect_xz": [
+        -13.203620772590511,
+        -12.496379227409307,
+        2207.246379227409,
+        2207.953620772591
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[71]",
+        "world.town.obstacles[55]",
+        "world.dinerWalk.colliders[107]",
+        "world.roadWalk.colliders[107]",
+        "world.legs.road.area.obstacles[290]"
+      ]
+    },
+    {
+      "road_collider_index": 108,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985.3,
+        7985.9,
+        2214.7,
+        2215.3
+      ],
+      "road_local_rect_xz": [
+        -14.699999999999818,
+        -14.100000000000364,
+        2214.7,
+        2215.3
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[72]",
+        "world.town.obstacles[56]",
+        "world.dinerWalk.colliders[108]",
+        "world.roadWalk.colliders[108]",
+        "world.legs.road.area.obstacles[291]"
+      ]
+    },
+    {
+      "road_collider_index": 109,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7985.749369240733,
+        7986.750630759267,
+        2214.86657882779,
+        2215.63342117221
+      ],
+      "road_local_rect_xz": [
+        -14.250630759266642,
+        -13.249369240733358,
+        2214.86657882779,
+        2215.63342117221
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[73]",
+        "world.town.obstacles[57]",
+        "world.dinerWalk.colliders[109]",
+        "world.roadWalk.colliders[109]",
+        "world.legs.road.area.obstacles[292]"
+      ]
+    },
+    {
+      "road_collider_index": 110,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8021.812210372495,
+        8027.387789627504,
+        2026.3908292243257,
+        2028.6091707756743
+      ],
+      "road_local_rect_xz": [
+        21.81221037249543,
+        27.38778962750439,
+        2026.3908292243257,
+        2028.6091707756743
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[74]",
+        "world.town.obstacles[58]",
+        "world.dinerWalk.colliders[110]",
+        "world.roadWalk.colliders[110]",
+        "world.legs.road.area.obstacles[293]"
+      ]
+    },
+    {
+      "road_collider_index": 111,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8021.166288584828,
+        8022.033711415172,
+        2070.8662885848285,
+        2071.733711415172
+      ],
+      "road_local_rect_xz": [
+        21.16628858482818,
+        22.033711415171638,
+        2070.8662885848285,
+        2071.733711415172
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[75]",
+        "world.dinerWalk.colliders[111]",
+        "world.roadWalk.colliders[111]"
+      ]
+    },
+    {
+      "road_collider_index": 112,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8022.1177560257165,
+        8022.8822439742835,
+        2071.217756025716,
+        2071.982243974284
+      ],
+      "road_local_rect_xz": [
+        22.117756025716517,
+        22.882243974283483,
+        2071.217756025716,
+        2071.982243974284
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[76]",
+        "world.dinerWalk.colliders[112]",
+        "world.roadWalk.colliders[112]"
+      ]
+    },
+    {
+      "road_collider_index": 113,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8023,
+        8023.6,
+        2070.8999999999996,
+        2071.5
+      ],
+      "road_local_rect_xz": [
+        23,
+        23.600000000000364,
+        2070.8999999999996,
+        2071.5
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[77]",
+        "world.dinerWalk.colliders[113]",
+        "world.roadWalk.colliders[113]"
+      ]
+    },
+    {
+      "road_collider_index": 114,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8023.55,
+        8029.45,
+        2139.275,
+        2141.3250000000003
+      ],
+      "road_local_rect_xz": [
+        23.550000000000182,
+        29.449999999999818,
+        2139.275,
+        2141.3250000000003
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[78]",
+        "world.town.obstacles[59]",
+        "world.dinerWalk.colliders[114]",
+        "world.roadWalk.colliders[114]",
+        "world.legs.road.area.obstacles[294]"
+      ]
+    },
+    {
+      "road_collider_index": 115,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8024.403457614643,
+        8029.996542385356,
+        2176.463807024111,
+        2178.736192975889
+      ],
+      "road_local_rect_xz": [
+        24.40345761464323,
+        29.996542385356406,
+        2176.463807024111,
+        2178.736192975889
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[79]",
+        "world.town.obstacles[60]",
+        "world.dinerWalk.colliders[115]",
+        "world.roadWalk.colliders[115]",
+        "world.legs.road.area.obstacles[295]"
+      ]
+    },
+    {
+      "road_collider_index": 116,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7973.55,
+        7979.45,
+        2232.775,
+        2234.8250000000003
+      ],
+      "road_local_rect_xz": [
+        -26.449999999999818,
+        -20.550000000000182,
+        2232.775,
+        2234.8250000000003
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[80]",
+        "world.town.obstacles[61]",
+        "world.dinerWalk.colliders[116]",
+        "world.roadWalk.colliders[116]",
+        "world.legs.road.area.obstacles[296]"
+      ]
+    },
+    {
+      "road_collider_index": 117,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8023.1,
+        8023.7,
+        2137,
+        2137.6000000000004
+      ],
+      "road_local_rect_xz": [
+        23.100000000000364,
+        23.699999999999818,
+        2137,
+        2137.6000000000004
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[81]",
+        "world.dinerWalk.colliders[117]",
+        "world.roadWalk.colliders[117]"
+      ]
+    },
+    {
+      "road_collider_index": 118,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8024.1,
+        8024.7,
+        2190.45,
+        2191.05
+      ],
+      "road_local_rect_xz": [
+        24.100000000000364,
+        24.699999999999818,
+        2190.45,
+        2191.05
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[82]",
+        "world.dinerWalk.colliders[118]",
+        "world.roadWalk.colliders[118]"
+      ]
+    },
+    {
+      "road_collider_index": 119,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7981.3,
+        7981.9,
+        2246.2999999999997,
+        2246.9
+      ],
+      "road_local_rect_xz": [
+        -18.699999999999818,
+        -18.100000000000364,
+        2246.2999999999997,
+        2246.9
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.town.colliders[83]",
+        "world.dinerWalk.colliders[119]",
+        "world.roadWalk.colliders[119]"
+      ]
+    },
+    {
+      "road_collider_index": 123,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.7,
+        8015.3,
+        1653.7805656426492,
+        1654.3805656426491
+      ],
+      "road_local_rect_xz": [
+        14.699999999999818,
+        15.300000000000182,
+        1653.7805656426492,
+        1654.3805656426491
+      ],
+      "source_handles": [
+        "world.roadWalk.colliders[123]",
+        "world.legs.road.area.walkColliders[3]"
+      ]
+    },
+    {
+      "road_collider_index": 124,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8014.7,
+        8015.3,
+        1701.041051449992,
+        1701.641051449992
+      ],
+      "road_local_rect_xz": [
+        14.699999999999818,
+        15.300000000000182,
+        1701.041051449992,
+        1701.641051449992
+      ],
+      "source_handles": [
+        "world.roadWalk.colliders[124]",
+        "world.legs.road.area.walkColliders[4]"
+      ]
+    },
+    {
+      "road_collider_index": 125,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8020.85,
+        8021.15,
+        -120,
+        1981.95
+      ],
+      "road_local_rect_xz": [
+        20.850000000000364,
+        21.149999999999636,
+        -120,
+        1981.95
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.roadWalk.colliders[125]",
+        "world.legs.road.area.obstacles[70]",
+        "world.legs.road.area.walkColliders[5]"
+      ]
+    },
+    {
+      "road_collider_index": 127,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        7978.85,
+        7979.15,
+        523,
+        1959.95
+      ],
+      "road_local_rect_xz": [
+        -21.149999999999636,
+        -20.850000000000364,
+        523,
+        1959.95
+      ],
+      "kind": "box",
+      "source_handles": [
+        "world.roadWalk.colliders[127]",
+        "world.legs.road.area.obstacles[78]",
+        "world.legs.road.area.walkColliders[7]"
+      ]
+    },
+    {
+      "road_collider_index": 142,
+      "id": null,
+      "enabled": true,
+      "world_rect_xz": [
+        8013.672348761534,
+        8014.24900078458,
+        1653.146416114159,
+        1653.7230681372062
+      ],
+      "road_local_rect_xz": [
+        13.672348761533613,
+        14.249000784579948,
+        1653.146416114159,
+        1653.7230681372062
+      ],
+      "source_handles": [
+        "world.roadWalk.colliders[142]",
+        "world.legs.road.area.walkColliders[22]"
+      ]
+    }
+  ],
+  "limits": "No per-collider source object IDs supplied unless id exists. Indices refer to walks.road.colliders. Add current native Props blocks, vehicle schedule, proxy sight/approach masks and full unbounded OldStub separately; this is not a blanket town exclusion."
+}

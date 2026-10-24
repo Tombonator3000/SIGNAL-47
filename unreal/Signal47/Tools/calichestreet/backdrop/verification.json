@@ -1,16 +1,90 @@
 {
   "status": "PASS",
   "checks": {
-    "single_mesh": true,
-    "bounds_m": true,
-    "triangles": true,
-    "uv_map": true,
-    "material_slots": true,
-    "used_materials": true,
-    "nondegenerate": true,
-    "world_origin": true,
-    "scale_one": true
+    "single_editable_mesh": true,
+    "FBX_pivots_scale_bounds_triangles": true,
+    "six_stable_slots_all_used": true,
+    "UV_finite": true,
+    "UV_all_triangles_noncollapsed": true,
+    "outward_nondegenerate_faces": true,
+    "whole_triangle_protected_road_clearance": true,
+    "binary_GLB_bounds_triangles_materials": true,
+    "saved_Blend_current_packed_maps": true
   },
-  "bounds_error_m": 0.0002699277538340539,
-  "triangles": 62496
+  "triangles": 103550,
+  "bounds_local_m": [
+    [
+      -3071.326904296875,
+      -1850.0,
+      -4.000612258911133
+    ],
+    [
+      2250.0,
+      3759.0615234375,
+      234.64971923828125
+    ]
+  ],
+  "FBX_bounds_error_m": 0.0006122589111328125,
+  "FBX_bounds_tolerance_m": 0.001,
+  "GLB_bounds_error_m": 0.0,
+  "minimum_UV_triangle_area": 0.0028857178612888834,
+  "raised_triangles": 85811,
+  "oldroad_clearance_lower_bound_m": 224.55525479441397,
+  "mainroad_clearance_lower_bound_m": 237.93414306640625,
+  "packed_textures": [
+    {
+      "name": "MesaCap_base_color.png",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "8c60f15323dc0f45300e0ed52423601debed04db68c5dfc4dc78cab62c31ae0a"
+    },
+    {
+      "name": "MesaCap_normal.png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "8decc02699068609fe2c762714323ad2d9156f3e5994f687e07e5c48729ab3c9"
+    },
+    {
+      "name": "MesaCap_roughness.png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "0b40644ff1ad5798364dd376e59ff250a84e5c0c591292432dc9343912d7d3ec"
+    },
+    {
+      "name": "MesaRock_base_color.png",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "524bc4f30e381129dd19bb4b5970fbe736de48e2d4ec0ecc187cc447ae167d00"
+    },
+    {
+      "name": "MesaRock_normal.png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "98031c7f5225d00e6b1a401d8b444c925508560df0644a6046254ff1b4fab8e9"
+    },
+    {
+      "name": "MesaRock_roughness.png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "c49d3dac80a4c2e556569f6fe91ea7f27aeb888038fce9a4b99459ee7f8014da"
+    },
+    {
+      "name": "MesaTalus_base_color.png",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "2f34e2f7169c8a7b5911ecfaaabbbfc055a4e9f7407d88704cd1504f7c76e890"
+    },
+    {
+      "name": "MesaTalus_normal.png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "fc07a63585190dca4b312573bf50a9ad66a0f4c452506f7051476a6fc49139b7"
+    },
+    {
+      "name": "MesaTalus_roughness.png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "223319b71bc56744e35f0822c818debc467bac9538c610730917ebdd7cb9f5b0"
+    }
+  ]
 }

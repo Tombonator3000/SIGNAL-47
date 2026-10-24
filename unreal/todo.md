@@ -1,5 +1,12 @@
 # Todo for unreal/
 
+## Caliche natur, 24. oktober 2026
+
+- [x] Tre originale Blenderkit, 36 terrengfliser, 12 plante-/steinprototyper med tre LOD-er og revidert lagdelt geologi.
+- [x] 33 faktiske spillerhøye bilder ved dag/skumring/natt gjennomgått. Elleve funksjonstester og 1328 selvtester, kilde og ferske native kontroller PASS på fryst CN5.
+- [ ] Hele 110-scenario screenshots.sh, lokal sluttfletting, installasjon med backup/Saved-kontroll og skrivebordsleveranse fullføres etter faktisk testresultat. Se CALICHE_NATURE_PASS.md.
+- [ ] Videre fotolikhet: mer naturlig talus/fotrelieff og adskilte berglag, mindre gjentatte busksilhuetter og rikere terrengdrenering. CN5 er et stilisert produksjonsinkrement, ikke nær-foto-godkjenning.
+
 ## Caliche konseptpass, 24. oktober 2026
 
 - [x] Ni visuelle runder av den bestilte gatebiten, inkludert fire originale Blender-kilder, PBR/eksporter, kontaktbakke, planter/stein og fjern horisont.

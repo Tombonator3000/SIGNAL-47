@@ -45,6 +45,7 @@ inputs=[('V',node(unreal.MaterialExpressionCameraVectorWS),''),('Yaw',scalar('Ya
  ('Flash',scalar('Flash',0),''),('FlashDir',vector('FlashDir',(.957,.048,-.287,0)),''),
  ('HoleSky',vector('HoleSky',(.0044,.0066,.016,0)),''),('Hole',scalar('Hole',0),''),
  ('HoleDir',vector('HoleDir',(.3718,.5299,-.7622,0)),''),('HoleR',vector('HoleR',(.0593,.0803,0,0)),''),
+ ('VolClouds',scalar('VolClouds',0),''),('Cirrus',scalar('Cirrus',0),''),('CirrusDrift',vector('CirrusDrift',(0,0,0,0)),''),
  ('Pano',node(unreal.MaterialExpressionTextureObjectParameter,parameter_name='Pano',texture=E.load_asset('/Engine/EngineResources/WhiteSquareTexture')), '')]
 for i in range(3):
  v=vector('Glow'+str(i),(1,0,0,1));v4=custom('return float4(C,A);',[('C',v,''),('A',v,'A')],4)
@@ -83,7 +84,9 @@ col=g.custom(code,[('V',g.builtin(unreal.MaterialExpressionCameraVectorWS)),('Ya
  ('BodyK',g.scalar('BodyK',.2)),('Dip',g.scalar('Dip',0)),('Texel',g.scalar('Texel',1/128)),('BackdropReady',g.scalar('BackdropReady',0)),
  ('Fog',g.vector('Fog',(.0155,.0212,.0353,0))),('Mesa',g.vector('Mesa',(.0045,.0055,.0085,0))),
  ('Land',g.vector('Land',(.009,.009,.012,0))),('EdgeFog',g.scalar('EdgeFog',1))]+sun(g),4)
-g.out(g.mask(col,'rgb'),MP.MP_EMISSIVE_COLOR);g.out(g.mask(col,'a'),MP.MP_OPACITY);g.save()
+g.out(g.mask(col,'rgb'),MP.MP_EMISSIVE_COLOR);g.out(g.mask(col,'a'),MP.MP_OPACITY)
+# SKY.md: volumetric clouds in front of the painted horizon dim it like any distant surface.
+g.m.set_editor_property('use_translucency_vertex_fog',True);g.m.set_editor_property('apply_cloud_fogging',True);g.save()
 
 g=Graph(dest+'/M_Caliche_Stars',B.BLEND_ADDITIVE,ism=True)
 VP=unreal.MaterialExposedViewProperty
@@ -99,11 +102,14 @@ float3 cp=float3(pp*.7,4.71); float bank=nz.fbm(cp+float3(1.4,5.7,0));
 float detail=nz.fbm(cp*3.8+float3(8.1,0,2.4));
 float cells=nz.fbm(cp*15.0+float3(2.1,8.7,4.2));
 float cover=smoothstep(.46,.60,bank*.62+detail*.23+cells*.15)*smoothstep(-.015,.065,dd.y)*(1.-smoothstep(.72,.99,dd.y));
+cover*=1.-saturate(VolClouds)*smoothstep(.05,.10,dd.y);
 return c*a*lerp(1.,.44*(1.-cover*.92),saturate(ConceptBlend));'''
 code=noise+values['STAR_COL'].replace('return c * a;','if (ConceptBlend < .001) return c*a;\n'+cloud)
 c=g.custom(code,[('Dir',g.cdata3(0)),('Col',g.cdata3(3)),('Time',g.builtin(unreal.MaterialExpressionTime)),
  ('Ph',g.cdata(7)),('Dawn',g.scalar('Dawn',0)),('UV',g.uv(0)),('Size',g.cdata(6,1)),
  ('HoleDir',g.vector('HoleDir',(.3718,.5299,-.7622,0))),('HoleR',g.vector('HoleR',(.0593,.0803,0,0))),
- ('Hole',g.scalar('Hole',0)),('ConceptBlend',g.scalar('ConceptBlend',0))])
-g.out(g.untoned(c),MP.MP_EMISSIVE_COLOR);g.save()
+ ('Hole',g.scalar('Hole',0)),('ConceptBlend',g.scalar('ConceptBlend',0)),('VolClouds',g.scalar('VolClouds',0))])
+g.out(g.untoned(c),MP.MP_EMISSIVE_COLOR)
+# SKY.md: real volumetric clouds hide the stars behind them (UE cloud fogging on translucency).
+g.m.set_editor_property('use_translucency_vertex_fog',True);g.m.set_editor_property('apply_cloud_fogging',True);g.save()
 unreal.log('CALICHE HORIZON AND CLOUD-OCCLUDED STARS SAVED')

@@ -39,6 +39,12 @@ public:
 	double Dawn = 0;                      // Morning-only curve; story gates keep their old meaning.
 	double Evening = 0;                   // Late afternoon -> sunset -> blue hour, independent of Dawn.
 	double Midday = 0;                    // Rendering only: full daylight 06:00-17:00; never a story Dawn gate.
+	/** Rendering only (SKY.md): the volumetric layer's cover and the cirrus above it, from the clock.
+	 *  Day and dusk a broken 40-70 % layer; 18:50-21:00 it breaks up to a few night clouds (never
+	 *  overcast); 04:30-06:30 it builds back. Story beats keep open sky locally (Draw: clear directions). */
+	double CloudCover = 0.55, Cirrus = 0.45;
+	static double CloudCoverAt(double Clock);
+	static double CirrusAt(double Clock);
 	/** The shared day/night response of the existing dome, stars, horizon and native lights. */
 	double Daylight() const { const double Base = FMath::Max(Dawn, Evening); return Base + (1.0 - Base) * Midday; }
 	/** Stars stay absent until civil twilight; the old morning star fade remains unchanged. */

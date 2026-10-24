@@ -1,0 +1,130 @@
+{
+  "status": "SOURCE_PROFILE_FOLD_CAUSE_REPRODUCED_AND_FIXED",
+  "utc": "2026-10-24T08:02:53.300634+00:00",
+  "rejected_source": [
+    {
+      "belt": "western_escarpment",
+      "minimum_projected_profile_width_m": -94.16645849101496,
+      "reversed_or_zero_intervals": 378,
+      "worst": {
+        "row": 48,
+        "profile": 46,
+        "along_m": -1916.4383561643835,
+        "setback_m": 1305.0,
+        "fraction": 0.1
+      }
+    },
+    {
+      "belt": "eastern_north_escarpment",
+      "minimum_projected_profile_width_m": -72.15533133543113,
+      "reversed_or_zero_intervals": 248,
+      "worst": {
+        "row": 212,
+        "profile": 46,
+        "along_m": -1004.0,
+        "setback_m": 1305.0,
+        "fraction": 0.1
+      }
+    },
+    {
+      "belt": "eastern_south_escarpment",
+      "minimum_projected_profile_width_m": -21.908840112178495,
+      "reversed_or_zero_intervals": 37,
+      "worst": {
+        "row": 101,
+        "profile": 46,
+        "along_m": 1203.409090909091,
+        "setback_m": 1305.0,
+        "fraction": 0.1
+      }
+    },
+    {
+      "belt": "far_northern_ridges",
+      "minimum_projected_profile_width_m": -143.07590717503672,
+      "reversed_or_zero_intervals": 45,
+      "worst": {
+        "row": 30,
+        "profile": 24,
+        "along_m": -1441.6167664670659,
+        "setback_m": 830.0,
+        "fraction": 0.1
+      }
+    },
+    {
+      "belt": "far_western_ridges",
+      "minimum_projected_profile_width_m": -123.87868158330684,
+      "reversed_or_zero_intervals": 71,
+      "worst": {
+        "row": 8,
+        "profile": 24,
+        "along_m": -2626.190476190476,
+        "setback_m": 830.0,
+        "fraction": 0.1
+      }
+    }
+  ],
+  "corrected_source": [
+    {
+      "belt": "western_escarpment",
+      "minimum_projected_profile_width_m": 3.1194029310479436,
+      "reversed_or_zero_intervals": 0,
+      "worst": {
+        "row": 297,
+        "profile": 13,
+        "along_m": 73.28767123287662,
+        "setback_m": 273.0,
+        "fraction": 0.53
+      }
+    },
+    {
+      "belt": "eastern_north_escarpment",
+      "minimum_projected_profile_width_m": 3.1380180388022154,
+      "reversed_or_zero_intervals": 0,
+      "worst": {
+        "row": 119,
+        "profile": 13,
+        "along_m": -1748.0,
+        "setback_m": 273.0,
+        "fraction": 0.53
+      }
+    },
+    {
+      "belt": "eastern_south_escarpment",
+      "minimum_projected_profile_width_m": 3.1434156282082313,
+      "reversed_or_zero_intervals": 0,
+      "worst": {
+        "row": 73,
+        "profile": 13,
+        "along_m": 980.6818181818181,
+        "setback_m": 273.0,
+        "fraction": 0.53
+      }
+    },
+    {
+      "belt": "far_northern_ridges",
+      "minimum_projected_profile_width_m": 2.1169249842982936,
+      "reversed_or_zero_intervals": 0,
+      "worst": {
+        "row": 40,
+        "profile": 9,
+        "along_m": -1172.1556886227545,
+        "setback_m": 283.0,
+        "fraction": 0.48
+      }
+    },
+    {
+      "belt": "far_western_ridges",
+      "minimum_projected_profile_width_m": 2.297971066799164,
+      "reversed_or_zero_intervals": 0,
+      "worst": {
+        "row": 115,
+        "profile": 9,
+        "along_m": 367.2619047619046,
+        "setback_m": 283.0,
+        "fraction": 0.48
+      }
+    }
+  ],
+  "scope": "Exact source rows and split-profile intervals only; no Blender or FBX performed",
+  "triangulation_implication": "Strict front-to-back ordering at each along row makes projected quads convex trapezoids; either Blender diagonal has strictly positive area after consistent winding."
+}

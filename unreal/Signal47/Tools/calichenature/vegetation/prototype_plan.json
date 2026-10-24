@@ -1,0 +1,902 @@
+{
+  "status": "CN2_SOURCE_GEOMETRY_ONLY_NOT_BUILT_OR_VISUALLY_ACCEPTED",
+  "parts": {
+    "SM_CN_Sage_A": {
+      "family": "sage",
+      "design_height_m": 0.45,
+      "design_width_m": 1.0,
+      "lods": [
+        {
+          "triangles": 6128,
+          "vertices": 5448,
+          "bounds_local_m": [
+            [
+              -0.5029238444935566,
+              -0.5032541737654661,
+              0.0
+            ],
+            [
+              0.4970761555064434,
+              0.43339453791967275,
+              0.45
+            ]
+          ],
+          "minimum_triangle_area_m2": 1.57429811232513e-07,
+          "sha256_geometry": "00acb06cedd5e55022319497c968eddccb4fc839ef9e2a93101f021012e3166e",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 424
+        },
+        {
+          "triangles": 1800,
+          "vertices": 1668,
+          "bounds_local_m": [
+            [
+              -0.4921443623074617,
+              -0.49848279587628624,
+              0.0
+            ],
+            [
+              0.4590722383043318,
+              0.5015172041237138,
+              0.45
+            ]
+          ],
+          "minimum_triangle_area_m2": 1.2202646246585393e-07,
+          "sha256_geometry": "360ba65fcd3db25cfe5e8868c4cf613b7f71383e1e704d889d466de29c41feeb",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 168
+        },
+        {
+          "triangles": 504,
+          "vertices": 500,
+          "bounds_local_m": [
+            [
+              -0.5274366059150846,
+              -0.43439842995017525,
+              0.0
+            ],
+            [
+              0.44076565176125776,
+              0.5656015700498246,
+              0.45
+            ]
+          ],
+          "minimum_triangle_area_m2": 9.317502753875961e-08,
+          "sha256_geometry": "a7e346e7817edcef8d2025475065f51e2fcae9e97faf118d10bea180b2b11c8f",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 68
+        }
+      ]
+    },
+    "SM_CN_Sage_B": {
+      "family": "sage",
+      "design_height_m": 0.62,
+      "design_width_m": 1.25,
+      "lods": [
+        {
+          "triangles": 6128,
+          "vertices": 5448,
+          "bounds_local_m": [
+            [
+              -0.6153832804198208,
+              -0.5676051540907491,
+              0.0
+            ],
+            [
+              0.6346167195801793,
+              0.6070875395338861,
+              0.62
+            ]
+          ],
+          "minimum_triangle_area_m2": 1.8656537429329753e-07,
+          "sha256_geometry": "cb4ff8dc98d802ab02c6aebe78d04e443b39dee79c1e5e2d3d9c1f821e88b3e3",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 424
+        },
+        {
+          "triangles": 1800,
+          "vertices": 1668,
+          "bounds_local_m": [
+            [
+              -0.6016016671249502,
+              -0.49121548783672747,
+              0.0
+            ],
+            [
+              0.6483983328750499,
+              0.43926880444556876,
+              0.62
+            ]
+          ],
+          "minimum_triangle_area_m2": 1.1151996276012517e-07,
+          "sha256_geometry": "eb4e6b7b415a90521da84f614cfdcb1e425fb41caf7cc8dd5be892b378f830d6",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 168
+        },
+        {
+          "triangles": 504,
+          "vertices": 500,
+          "bounds_local_m": [
+            [
+              -0.655382822384044,
+              -0.5483590954506804,
+              0.0
+            ],
+            [
+              0.5429884309597042,
+              0.7016409045493197,
+              0.62
+            ]
+          ],
+          "minimum_triangle_area_m2": 9.310414049005897e-08,
+          "sha256_geometry": "9d92cb893caa0182c4dcd523339ea0f0fda062ab2eb45f8f999f1f1cc891d8b8",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 68
+        }
+      ]
+    },
+    "SM_CN_Sage_C": {
+      "family": "sage",
+      "design_height_m": 0.34,
+      "design_width_m": 0.84,
+      "lods": [
+        {
+          "triangles": 6128,
+          "vertices": 5448,
+          "bounds_local_m": [
+            [
+              -0.4532565719018046,
+              -0.39417077538541573,
+              0.0
+            ],
+            [
+              0.38674342809819534,
+              0.4264690964056218,
+              0.34
+            ]
+          ],
+          "minimum_triangle_area_m2": 1.3708342005773268e-07,
+          "sha256_geometry": "86a3e7642d9e201526a3c5786b3d907615465b14b1dbf369e86e617bfea2fd6c",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 424
+        },
+        {
+          "triangles": 1800,
+          "vertices": 1668,
+          "bounds_local_m": [
+            [
+              -0.3977497167792278,
+              -0.427517609650236,
+              0.0
+            ],
+            [
+              0.4402434428303781,
+              0.4124823903497639,
+              0.34
+            ]
+          ],
+          "minimum_triangle_area_m2": 1.1918341921999236e-07,
+          "sha256_geometry": "7825cc7c17879f21f8424aa9c90af6bb4a4efd31dcdf424e9ad63ebb9eff44d6",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 168
+        },
+        {
+          "triangles": 504,
+          "vertices": 500,
+          "bounds_local_m": [
+            [
+              -0.4084735573932897,
+              -0.4271816318839624,
+              0.0
+            ],
+            [
+              0.4315264426067102,
+              0.3865329320270854,
+              0.34
+            ]
+          ],
+          "minimum_triangle_area_m2": 7.083235710653252e-08,
+          "sha256_geometry": "a45ecff43dc1c8775a2ccf5b814182b8f0a021d46caf0b2e414de7adbd807b9e",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 68
+        }
+      ]
+    },
+    "SM_CN_Grass_A": {
+      "family": "grass",
+      "design_height_m": 0.43,
+      "design_width_m": 0.62,
+      "lods": [
+        {
+          "triangles": 2100,
+          "vertices": 1876,
+          "bounds_local_m": [
+            [
+              -0.288886197479882,
+              -0.314573063740115,
+              0.0
+            ],
+            [
+              0.2683782542907164,
+              0.305426936259885,
+              0.43
+            ]
+          ],
+          "minimum_triangle_area_m2": 2.772663381818362e-08,
+          "sha256_geometry": "b5822ba6a92e408cee86d3f5f5267f1b25dc874d29fe8dbc7a19571a2d5456bb",
+          "materials": [
+            "M_CN_Foliage"
+          ],
+          "component_count": 126
+        },
+        {
+          "triangles": 460,
+          "vertices": 460,
+          "bounds_local_m": [
+            [
+              -0.3004912405358905,
+              -0.29869715090678634,
+              0.0
+            ],
+            [
+              0.3195087594641095,
+              0.32066582303296237,
+              0.43
+            ]
+          ],
+          "minimum_triangle_area_m2": 2.5341867351551265e-05,
+          "sha256_geometry": "5d5d0190816325d9f361e2a90bc058d022556d76829df0f62ceec07aaa02ad16",
+          "materials": [
+            "M_CN_Foliage"
+          ],
+          "component_count": 46
+        },
+        {
+          "triangles": 144,
+          "vertices": 168,
+          "bounds_local_m": [
+            [
+              -0.2885467712422962,
+              -0.33106596125275506,
+              0.0
+            ],
+            [
+              0.26917651482195465,
+              0.288934038747245,
+              0.43000000000000005
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.00011195622847537918,
+          "sha256_geometry": "5867f6068635f86320525e3053dbd196392fba907289cd70211ae69678a79c23",
+          "materials": [
+            "M_CN_Foliage"
+          ],
+          "component_count": 24
+        }
+      ]
+    },
+    "SM_CN_Grass_B": {
+      "family": "grass",
+      "design_height_m": 0.64,
+      "design_width_m": 0.88,
+      "lods": [
+        {
+          "triangles": 2100,
+          "vertices": 1876,
+          "bounds_local_m": [
+            [
+              -0.45659194700860417,
+              -0.44380551634707976,
+              0.0
+            ],
+            [
+              0.42340805299139583,
+              0.3825722161856829,
+              0.64
+            ]
+          ],
+          "minimum_triangle_area_m2": 2.9743573783859616e-08,
+          "sha256_geometry": "0cbbbf78347a949992b7a0a8774df441f9909414a9b6f2f60f210edb582aa0e9",
+          "materials": [
+            "M_CN_Foliage"
+          ],
+          "component_count": 126
+        },
+        {
+          "triangles": 460,
+          "vertices": 460,
+          "bounds_local_m": [
+            [
+              -0.39893191154545765,
+              -0.4531237795987217,
+              0.0
+            ],
+            [
+              0.3649613128795982,
+              0.4268762204012784,
+              0.64
+            ]
+          ],
+          "minimum_triangle_area_m2": 6.343999445579342e-05,
+          "sha256_geometry": "bd712f632ff9ab4c1e1ae6f9ec8d2507daf22aa6bfd1f206d8343f121d170de4",
+          "materials": [
+            "M_CN_Foliage"
+          ],
+          "component_count": 46
+        },
+        {
+          "triangles": 144,
+          "vertices": 168,
+          "bounds_local_m": [
+            [
+              -0.4967404731927765,
+              -0.4098598592826403,
+              0.0
+            ],
+            [
+              0.34048254527016775,
+              0.4701401407173598,
+              0.6400000000000001
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.00023171448220604332,
+          "sha256_geometry": "edd3ca4c365e1c5ad401350314f9cf87ad470e0f9a4601b5fec290203b9add53",
+          "materials": [
+            "M_CN_Foliage"
+          ],
+          "component_count": 24
+        }
+      ]
+    },
+    "SM_CN_Yucca_A": {
+      "family": "yucca",
+      "design_height_m": 0.78,
+      "design_width_m": 1.32,
+      "lods": [
+        {
+          "triangles": 1046,
+          "vertices": 876,
+          "bounds_local_m": [
+            [
+              -0.713663878869193,
+              -0.6511269780808167,
+              0.0
+            ],
+            [
+              0.606336121130807,
+              0.6633341761432622,
+              0.78
+            ]
+          ],
+          "minimum_triangle_area_m2": 9.532125980977465e-05,
+          "sha256_geometry": "1a98df78429f6428e272442dbc8d355b94975c0a487e4042de6d29d634b1607b",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 40
+        },
+        {
+          "triangles": 346,
+          "vertices": 313,
+          "bounds_local_m": [
+            [
+              -0.7166207168326193,
+              -0.6811427622988547,
+              0.0
+            ],
+            [
+              0.6033792831673809,
+              0.6365019197106917,
+              0.78
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.00022172190746162822,
+          "sha256_geometry": "5edda108217d227c14d0c780e334ab3a1f8fb530138feb58000096701b1bd36f",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 24
+        },
+        {
+          "triangles": 88,
+          "vertices": 94,
+          "bounds_local_m": [
+            [
+              -0.42061970031011636,
+              -0.6518477812801275,
+              0.0
+            ],
+            [
+              0.748914701005904,
+              0.6681522187198725,
+              0.78
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.0002945138849921158,
+          "sha256_geometry": "20ebfc376017f6d4c78bca1c6619c8b69213007d582b352043e9067e435b7305",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 13
+        }
+      ]
+    },
+    "SM_CN_Yucca_B": {
+      "family": "yucca",
+      "design_height_m": 1.05,
+      "design_width_m": 1.64,
+      "lods": [
+        {
+          "triangles": 1046,
+          "vertices": 876,
+          "bounds_local_m": [
+            [
+              -0.7808472755166395,
+              -0.7852187605658231,
+              0.0
+            ],
+            [
+              0.8133438517514485,
+              0.8547812394341766,
+              1.05
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.00013496352506709586,
+          "sha256_geometry": "c3e0e2daf3b60350487d54f0ef1001d8b6a8afd03969263ba57e85fe36c3841f",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 40
+        },
+        {
+          "triangles": 346,
+          "vertices": 313,
+          "bounds_local_m": [
+            [
+              -0.7238814937517997,
+              -0.9130561375059709,
+              0.0
+            ],
+            [
+              0.7582531387980961,
+              0.7269438624940289,
+              1.05
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.0002281323810556051,
+          "sha256_geometry": "5c287e0db572702edf15584a371fc99f4e3e6fda90bfb987c1a0419c1fbd6fa2",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 24
+        },
+        {
+          "triangles": 88,
+          "vertices": 94,
+          "bounds_local_m": [
+            [
+              -0.5048016889978497,
+              -0.8475478223058507,
+              0.0
+            ],
+            [
+              0.79000090510699,
+              0.792452177694149,
+              1.05
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.00025289623069226034,
+          "sha256_geometry": "f1e1178b5da1d105021dcd46de47da09bd093313be1f3cd698d6cfb3516506b8",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 13
+        }
+      ]
+    },
+    "SM_CN_Juniper_A": {
+      "family": "juniper",
+      "design_height_m": 1.65,
+      "design_width_m": 2.35,
+      "lods": [
+        {
+          "triangles": 11388,
+          "vertices": 10156,
+          "bounds_local_m": [
+            [
+              -1.1434470911469221,
+              -1.2868178553799985,
+              0.0
+            ],
+            [
+              1.0421027682502488,
+              1.0631821446200014,
+              1.6500000000000001
+            ]
+          ],
+          "minimum_triangle_area_m2": 6.200112554539566e-07,
+          "sha256_geometry": "51b7ca0d0ff114166a65b2892a70a6ce941c2171d1352e636f95b075f34ec260",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 791
+        },
+        {
+          "triangles": 3172,
+          "vertices": 2948,
+          "bounds_local_m": [
+            [
+              -1.0716360150354107,
+              -1.1890455012695411,
+              0.0
+            ],
+            [
+              0.9285947148075991,
+              1.1609544987304588,
+              1.65
+            ]
+          ],
+          "minimum_triangle_area_m2": 4.821597406077833e-07,
+          "sha256_geometry": "11c40ca969c9537104e63299f03825d9196f67f0ba4289e4f22b5abdae27175d",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 297
+        },
+        {
+          "triangles": 1104,
+          "vertices": 1106,
+          "bounds_local_m": [
+            [
+              -1.1760810010672202,
+              -1.245553219216982,
+              0.0
+            ],
+            [
+              1.1739189989327798,
+              1.041553388073965,
+              1.65
+            ]
+          ],
+          "minimum_triangle_area_m2": 4.1237039917377177e-07,
+          "sha256_geometry": "58491bfff3ddda2420870d035e296bd902bf911660499243c51d450210048c93",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 151
+        }
+      ]
+    },
+    "SM_CN_Juniper_B": {
+      "family": "juniper",
+      "design_height_m": 2.65,
+      "design_width_m": 3.5,
+      "lods": [
+        {
+          "triangles": 11388,
+          "vertices": 10156,
+          "bounds_local_m": [
+            [
+              -1.6840234987834892,
+              -1.8611529425664846,
+              0.0
+            ],
+            [
+              1.6160952288607868,
+              1.6388470574335159,
+              2.65
+            ]
+          ],
+          "minimum_triangle_area_m2": 6.075871569027371e-07,
+          "sha256_geometry": "a0fb917d6550addd400a5ae624ec7bbb9b92a38c0a32486392bd99bab025b54b",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 791
+        },
+        {
+          "triangles": 3172,
+          "vertices": 2948,
+          "bounds_local_m": [
+            [
+              -1.9073338064759295,
+              -1.7362558589926977,
+              0.0
+            ],
+            [
+              1.4045046327716704,
+              1.7637441410073025,
+              2.65
+            ]
+          ],
+          "minimum_triangle_area_m2": 5.156458449431039e-07,
+          "sha256_geometry": "b432c6618f02046893c25ebe7060809b5daa6152b8f621bae58c9134b7d161ef",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 297
+        },
+        {
+          "triangles": 1104,
+          "vertices": 1106,
+          "bounds_local_m": [
+            [
+              -2.027900910900871,
+              -1.625924780053292,
+              0.0
+            ],
+            [
+              1.472099089099129,
+              1.7433924178548177,
+              2.65
+            ]
+          ],
+          "minimum_triangle_area_m2": 4.4052136827771745e-07,
+          "sha256_geometry": "4a63f710069a325c762aefce75c61805db68f0d00691bdc668695ec73c80ba18",
+          "materials": [
+            "M_CN_Bark",
+            "M_CN_Foliage"
+          ],
+          "component_count": 151
+        }
+      ]
+    },
+    "SM_CN_Caliche_A": {
+      "family": "stone",
+      "design_height_m": 0.19,
+      "design_width_m": 0.64,
+      "lods": [
+        {
+          "triangles": 88,
+          "vertices": 46,
+          "bounds_local_m": [
+            [
+              -0.3244411190521655,
+              -0.2611018664492434,
+              0.0
+            ],
+            [
+              0.3155588809478345,
+              0.2430437225548024,
+              0.19
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.0027846328129873432,
+          "sha256_geometry": "8b9211b5366c52138dd00112095db638ea97cf292147df89594c937a014f1b26",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        },
+        {
+          "triangles": 64,
+          "vertices": 34,
+          "bounds_local_m": [
+            [
+              -0.3340607742157437,
+              -0.21592145309229355,
+              0.0
+            ],
+            [
+              0.30593922578425625,
+              0.22517777539880418,
+              0.19
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.003294431989630605,
+          "sha256_geometry": "26f85584f70da105cb6defba6693839329a0261e4015cca069189e172e982c8a",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        },
+        {
+          "triangles": 40,
+          "vertices": 22,
+          "bounds_local_m": [
+            [
+              -0.3257191823627117,
+              -0.2349905003897309,
+              0.0
+            ],
+            [
+              0.31428081763728827,
+              0.25873275357178377,
+              0.19
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.0064349049756808685,
+          "sha256_geometry": "5727b57b2a0943d06a5447a232d0352d5eb1f68b8dcec610144d46ba7514510b",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        }
+      ]
+    },
+    "SM_CN_Caliche_B": {
+      "family": "stone",
+      "design_height_m": 0.37,
+      "design_width_m": 0.88,
+      "lods": [
+        {
+          "triangles": 88,
+          "vertices": 46,
+          "bounds_local_m": [
+            [
+              -0.42366956175585785,
+              -0.2859880406166312,
+              0.0
+            ],
+            [
+              0.45633043824414216,
+              0.27929896731800175,
+              0.37
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.0056010883481830585,
+          "sha256_geometry": "c1bc374874407a4d9ad49731e0014033ace139e8d69e144adfb536d314b926ca",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        },
+        {
+          "triangles": 64,
+          "vertices": 34,
+          "bounds_local_m": [
+            [
+              -0.4383731605989365,
+              -0.3161549049981268,
+              0.0
+            ],
+            [
+              0.4416268394010635,
+              0.3178220803904573,
+              0.37
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.005817731211884062,
+          "sha256_geometry": "04d4d01ac68e68bb05dfa3d9548a946a82ceb08ef8538d80f2005211e1200501",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        },
+        {
+          "triangles": 40,
+          "vertices": 22,
+          "bounds_local_m": [
+            [
+              -0.434284173200378,
+              -0.27762278907119414,
+              0.0
+            ],
+            [
+              0.44571582679962196,
+              0.30909451654765885,
+              0.37
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.009479987946531966,
+          "sha256_geometry": "6a3f527f907be4f68254fb8d7242645dab8925e9427a57a1cea6898cf8b253db",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        }
+      ]
+    },
+    "SM_CN_Sandstone_A": {
+      "family": "stone",
+      "design_height_m": 0.52,
+      "design_width_m": 1.2,
+      "lods": [
+        {
+          "triangles": 88,
+          "vertices": 46,
+          "bounds_local_m": [
+            [
+              -0.629968576087912,
+              -0.49153051353609417,
+              0.0
+            ],
+            [
+              0.570031423912088,
+              0.4367993840485994,
+              0.52
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.011690013299622028,
+          "sha256_geometry": "5223b07c65469222c2773c179044bf9c07fa14f6027db198ba364e81e311c335",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        },
+        {
+          "triangles": 64,
+          "vertices": 34,
+          "bounds_local_m": [
+            [
+              -0.5747984934037126,
+              -0.48283503827281327,
+              0.0
+            ],
+            [
+              0.6252015065962876,
+              0.46798779765099086,
+              0.52
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.008317271782165887,
+          "sha256_geometry": "40bd5c789bfcf6aa74ab7b731022efe791f1825a92734a331d137240438bb553",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        },
+        {
+          "triangles": 40,
+          "vertices": 22,
+          "bounds_local_m": [
+            [
+              -0.5116904186259449,
+              -0.4124882769031423,
+              0.0
+            ],
+            [
+              0.688309581374055,
+              0.44416081861478507,
+              0.52
+            ]
+          ],
+          "minimum_triangle_area_m2": 0.021739341129862158,
+          "sha256_geometry": "e8e8e61531b33bef4c7c5a2e2c0d9b27f563c6ed53b7a7cc0ab55aafaa3d5863",
+          "materials": [
+            "M_CN_Stone"
+          ],
+          "component_count": 0
+        }
+      ]
+    }
+  }
+}

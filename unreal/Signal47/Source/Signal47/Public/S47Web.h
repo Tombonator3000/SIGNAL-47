@@ -62,6 +62,11 @@ public:
 	bool IsLoaded() const { return bLoaded; }
 	void SetLightingQuality(const FString& Quality);
 	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
+	/** SKY.md: the volumetric cloud layer. Cover/cirrus 0..1 from the clock; clear directions (three's
+	 *  world terms, w = strength) keep story beats in open sky; Flash/FlashDir light them from inside. */
+	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time);
+	float CloudCoverNow() const { return CloudCover; }
+	bool CloudsActive() const;
 	void SuppressFloodLight(int32 Set, int32 Index);
 	float LightIntensity(const FString& Uuid) const;
 	void SetLightIntensity(const FString& Uuid, float Value);
@@ -274,6 +279,7 @@ private:
 	void BuildRetroProps();
 	void BuildRadioStation();
 	void BuildCalicheStreet();
+	void BuildCalicheNature();
 	void BuildAuthoredArray();
 	void UpdateRetroProps();
 	struct FRetroTv { TWeakObjectPtr<UMaterialInstanceDynamic> Screen, Pilot; };
@@ -397,7 +403,17 @@ private:
 	TArray<float> PerfFrames, PerfGame, PerfDraw, PerfGpu;
 	TSet<uint64> SuppressedPools;
 	int32 LightingQuality = 1;
-	float SkyDawn = 0, SkySun = 0, SkyFlash = 0;
+	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0;
+	// SKY.md: volumetric clouds, their cloud-only light (set sun from below / moon) and drift.
+	UPROPERTY() TObjectPtr<class UVolumetricCloudComponent> Clouds;
+	UPROPERTY() TObjectPtr<class UMaterialInstanceDynamic> CloudMid;
+	UPROPERTY() TObjectPtr<UDirectionalLightComponent> CloudLight;
+	float CloudCover = 0, CloudCirrus = 0;
+	double CloudTime = -1;
+	FVector CloudWind = FVector::ZeroVector;
+	void BuildClouds();
+	void ApplyCloudQuality();
+	void UpdateCloudLight(const FVector& SunDirection, float Daylight);
 	void BuildNativeLighting();
 	void UpdateNativeLighting();
 	void UpdateNativeFog();

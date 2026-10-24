@@ -1,0 +1,17 @@
+{
+  "author": "Original deterministic mineral synthesis",
+  "seed": 1947047,
+  "physical_tile_metres": 6,
+  "normal_convention": "DirectX tangent space",
+  "reference_pixels_used": false,
+  "baked_illumination": false,
+  "size": [
+    2048,
+    2048
+  ],
+  "roles": {
+    "base_color": "sRGB",
+    "normal": "linear",
+    "roughness": "linear"
+  }
+}
