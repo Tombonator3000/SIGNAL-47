@@ -1,5 +1,5 @@
-#include "S47Keys.h"
 #include "S47GameStyle.h"
+#include "S47Keys.h"
 
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateImageBrush.h"

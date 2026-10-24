@@ -770,6 +770,8 @@ void AS47HUD::Tick(float DeltaSeconds)
 		static double Next = 0; const double Now = FPlatformTime::Seconds();
 		if (Now >= Next) { Next = Now + .25; const FVector2D Move = S47Gamepad::Move(), Drive = S47Gamepad::Drive();
 			UE_LOG(LogS47HUD, Display, TEXT("S47: pad state mode=%s modal=%d move=%.3f,%.3f drive=%.3f,%.3f pos=%.3f,%.3f yaw=%.4f pitch=%.4f"), S47Gamepad::UsingGamepad()?TEXT("xbox"):TEXT("keyboard"), Modal.IsValid()?1:0, Move.X,Move.Y,Drive.X,Drive.Y,Walker->Pos.X,Walker->Pos.Z,Walker->Yaw,Walker->Pitch);
+			if (M && M->World && M->World->bDriving) if (const FS47DriveController* D = M->World->CabDrive())
+				UE_LOG(LogS47HUD, Display, TEXT("S47: pad vehicle speed=%.4f pos=%.3f,%.3f heading=%.4f"), D->Speed, D->Pos.X, D->Pos.Z, D->Heading);
 		}
 	}
 	// the keys the ported modules answer (main.ts input.onKey)
