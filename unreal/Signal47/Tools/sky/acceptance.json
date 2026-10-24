@@ -440,5 +440,22 @@
     "Human long-duration traversal, audio and continuous cloud-motion review remain UNVERIFIED.",
     "Editor opt-in cloud rendering remains UNVERIFIED; evidence is from packaged Vulkan runtime."
   ],
-  "installation": "PENDING local merge"
+  "installation": {
+    "status": "PASS",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-cloud-completion/installed-backup-1792846056728357356",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "source_head": "82a587518624980887601f64b108943d5dcdc5d2"
+  },
+  "delivery": {
+    "status": "PASS",
+    "path": "/home/tom/Desktop/Signal47 skyer og lys",
+    "images": 55,
+    "original_runtime_images": 52,
+    "qa_crop_sheets": 2,
+    "concept_references": 1,
+    "files": 74
+  },
+  "installation_evidence_sha256": "7c227fe130a0b0478394515f0b7a845835b2bf8c0d73a4d18af53e12e6ced2c0"
 }

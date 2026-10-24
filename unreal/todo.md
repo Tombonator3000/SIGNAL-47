@@ -17,6 +17,7 @@ Kilder fra vurderingen: [Quixels Moab-opptak](https://www.youtube.com/watch?v=ND
 - [x] Kode f55b760c/04d98231 finnes allerede i integrert natur-/filmversjon; Claudes SKY.md og dokumentlenker er bevart.
 - [x] Fullfør cache og sluttdokumentasjon på integrert natur/film/sky-kilde. Claudes ufullstendige opptak bygger på eldre sky-pakke og andre shader keys, og brukes ikke som cachebevis for dagens pakke.
 - [x] Kontroller nye pakkede himmelbilder ved dag, kveld, natt, midnatt og daggry, Low-fallback, komet/stjernehull, selvtester og full screenshots.sh før fletting/installasjon.
+- [x] Lokalt flettet og installert med 40 kontrollerte payloadfiler, 48 uendrede Saved-filer og backup. Bildene ligger i Signal47 skyer og lys på skrivebordet.
 - [x] Dokumenter faktisk cache-/cook-/runtime-binding og målte begrensninger; behold menneskelig gjennomspilling/lytting og lang tids skybevegelse som UNVERIFIED til prøvd.
 
 - [ ] Reduser ordnet rutedithering i enkelte månelyse High/Clean-skyer; sluttbildene dokumenterer dette som åpen kvalitetsgjeld.
