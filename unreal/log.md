@@ -239,3 +239,8 @@ PR149 er flettet til unreal-port-core i fda74798. Kandidat X4 fra testkilde 3d01
 ## 2026-10-24 kl. 19:06, Mesa Diner startet
 
 Tom bestiller diner/interiør/parkering/skilt/lastebil. Ny gren codex/mesa-diner fra01884c4c, tre avgrensede hjelpere på modell/interiør, truck/ute og native anker-/interaksjonsbevaring. Konseptet er lest og faktisk footprint låst; eksisterende original Blender/FBX-import brukes. Biblioteksøk fant bare generiske UNVERIFIED-profiler, ingen kode gjenbrukt. Én tung jobb om gangen og målrettet pakket kontroll, etter Toms reduserte testomfang.
+
+
+## 2026-10-24 kl. 19:58, Mesa Diner testet
+
+Originalt11-delt Blenderkit med interiør, perioderiktig tractor/reefer, parkering og skilt. Etter Toms utvendige tilbakemelding fikk fasaden høyere krem/rød-bånd, dypere rammer, skilt ved bygget og støvete vegetert sokkel. D2 retter faktisk skirting gjennom døren, audit-timerens selvdestruksjon og neonpunktets nærflekker. Spillkilde9ff022a3, kandidatD2:320 kilde-,47 native-,1383 selvtester og9 målrettede pakkede kontroller PASS, ti faktiske sluttbilder vurdert. Mat/ti diskload, vanlig gange og opprinnelig interaksjon bevart. Full110/PSO-runde ikke kjørt. Utviklervarsel om83.107MiB always-resident raytracing-geometri er dokumentert, ingen ny ytelsesgaranti. Mislykkede råforsøk beholdt. Fem eide lenker og to OpenOrder-filer ryddet. Merge/installasjon gjenstår.

@@ -1,15 +1,28 @@
 # Mesa Diner, 24. oktober 2026
 
-Tom bestiller original Blender-diner med interiør, parkeringsplass, skilt og lastebil utenfor. Visuell referanse er `Concepts/Caliche-2026-10-23/01-mesa-diner.png`: mineralpuss, teal fliser, slitt rød stripe, burgunder båser og krom/Formica. Kilden er egne modeller og prosedyremalte PBR-kart, ingen nye eksterne assetkjøp.
+Mesa Diner har original Blender-fasade og interiør, parkering, neonskilt og trekkvogn med kjølehenger. Den nye fasaden følger konseptets høye kremfargede bånd, sammenhengende røde stripe, dype vindusprofiler, tealfliser og varmt synlig interiør. Skiltet er flyttet tett ved fasaden til Blender `[2.65,-6.8,0]`. Støvete maskert asfalt/grus, sju lokale ørkenplanter og kontaktstein erstatter den rene parkeringsflaten.
 
-Status: under arbeid på `codex/mesa-diner`. Native import, pakket visuell vurdering, merge og installasjon er ennå ikke utført.
+Elleve deler har tre LOD-er med 110791 / 54460 / 25430 trekanter, originale PBR-kart og pakket redigerbar `Tools/mesadiner/Mesa_Diner.blend`. Botanikken gjenbruker bare prosjektets egne Caliche-kilder. Ingen nye eksterne assets eller kjøp. Prosjektbiblioteket ga ingen testet dinerressurs; eksisterende original mesh-/FBX-import brukes.
 
-Dinerens faktiske rot er Three(7979.95,4.309006389843889,1999.95), yaw0. Blenderlokal (x,y,z) blir Three(root.x+x,root.y+z,root.z-y). Eksisterende inngang, interaksjoner, mennesker, mat, spillerbil og lagring beholdes. Visuelle erstatninger må være atomiske og beholde hele originalen ved ufullstendig import.
+Dinerens faktisk eksporterte root Three(7979.95,4.309006389843889,1999.95), yaw0, gulv, gangsoner, folk og dynamiske kaffe-/telefon-/matobjekter er bevart. Originalsignets ID/handling beholdes med ny fysisk trefflate og lysplassering. Komplett original diner beholdes som fallback dersom det nye kitet er ufullstendig. Skjult original geometri mister også query-kollisjon, og bare faktisk fjernet dekor mister sine gamle hinderbokser.
 
-Planlagt nødvendig kontroll: faktiske eksporterte mål/UV/materialer og tre LOD-er, fersk native avlesning, editorbygg og pakket dag/skumring/natt fra spillerhøyde, kort fysisk inngang-/interaksjonsprøve, eksisterende takeaway/disklasting og to gamle motiv. Ingen fullverdens- eller PSO-matrise i dette passet.
+Døren står fysisk åpen i den eksisterende åpningen. Nytt åpent blad og skiltfot har faktisk gangkollisjon. Ingen ny dørmekanikk, historie eller betalingsregel innføres.
 
-Første Blender- og native kontroll av elleve deler bestod, men utvendig R1 er diagnostikk. Ny fasaderunde etter Toms tilbakemelding: skilt forankres tett ved venstre fasade i Blender `[2.65,-6.8,0]`, høyere krem/rød gesims, dypere rammer, styrt malingsslitasje og ujevn asfalt/grus med lokale tørre planter. Interiør og fungerende ankre beholdes.
+## Kontrollert kandidat D2
 
-Kontrollpunkt før pakket kandidat: R2 har 110779 / 54448 / 25418 trekanter fordelt på elleve deler, faktisk kildekontroll320 PASS og lagret native47 PASS. Editorbygg består. Pakket visuell kontroll, merge og installasjon er fortsatt ikke utført.
+Spillkilde `9ff022a3`, modellkilder/native innlemmet i samme commit. `Tools/mesadiner/acceptance.json` binder eksakt executable og alle fem innholdscontainere til kilden. Råbevis: `~/scratch-bm/Signal47-mesa-diner`.
 
-D1 avdekket gulvlist gjennom døråpningen og en levetidsfeil i den nye audit-timeren. Råforsøket er bevart. D2 deler bare listen, retter timeren, bruker Walkers komplekse gulvtrace med uendret 10cm-krav og flytter sign-punktene fra 3.9cm til omtrent 55cm foran flaten. Sluttkilde/native-kontroll og målrettet pakke utføres på nytt for disse konkrete rettingene.
+- 320 faktiske kildekontroller av FBX/GLB, UV-er, mål, materialer, masker og pakket Blender.
+- 47 kontroller av lagrede native mål/pivoter, materialbindinger og alle tre LOD-er. Maskene er lest tilbake i eget editorprogram. Editorbygg og pakket cook bestod.
+- 1383 selvtester og ni målrettede pakkede scenarioer bestod. Normal gange gjennom døren begge veier, stopp mot bladet, gulv og faktiske dør-/disk-/kaffetreff. Dag, skumring, natt og nærfasade fra spillerhøyde, interiør, eksisterende matkjøp/bruk med ti disk-/verdenslastinger, samt to gamle kameramotiv.
+- Ti sluttbilder er faktisk åpnet og vurdert. Fasadeplassering, neonlys uten hvite nærflekker, sammenhengende materialer, mat ved faktisk disktopp og inngang er kontrollert. Ingen fullverdens- eller ny PSO-matrise kjøres i dette passet, etter Toms begrensning av testomfanget.
+
+R1-utside ble videreført mot konseptet. D1-testen fant en 14cm gulvlist gjennom inngangen og en levetidsfeil ved timerens selvavslutning. D2 deler listen rundt By±0.65m og gjør kontrollen trygg med uendret gulvkrav. Lyspunkter 3.9cm fra signflaten ble flyttet til omtrent55cm for å fjerne hvite flekker over neon. Mislykkede råforsøk er beholdt.
+
+Referansebildet har fortsatt rikere overflateslitasje og små naturdetaljer. Menneskelig input, lytting, fullnatt og helruteytelse er ikke prøvd her. Takeaway-testens raske lastinger viste utviklervarsel om always-resident raytracing-geometri83.107MiB over20prosent av400MiB-budsjettet. Ingen minnekrasj oppstod; ingen ytelsesgaranti gis på grunnlag av dette.
+
+## Levering
+
+Kilder, separat Blender-arbeidsscene med kamera/lys, originalen, eksportene, nødvendige originale hjelpekilder og ti spillbilder er samlet i `~/Desktop/Signal47 Mesa Diner 24okt`. `SPILLBILDER.html` viser fasade og interiør. Blender-presentasjonslys/-bakke er kun for kildevisning; spillbildene er native Unreal.
+
+Merge og standardinstallasjon avventer siste leveringskontroll. Ingen normal spillerøkt er startet. Fem eide Content-lenker er fjernet med mål bevart, og begge OpenOrder-filer er gjenopprettet.
