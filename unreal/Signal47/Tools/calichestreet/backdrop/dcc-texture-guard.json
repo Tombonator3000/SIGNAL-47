@@ -1,0 +1,19 @@
+{
+  "returncode": 0,
+  "wall_seconds": 5.554948451012024,
+  "contention": [],
+  "stop_reason": null,
+  "preflight": {
+    "available_gib": 26.045177459716797,
+    "heavy_jobs": [],
+    "pgrep": "1192365 /bin/bash -c source /home/tom/.claude/shell-snapshots/snapshot-bash-1792732279947-547f80.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && { \\builtin unalias -- 'unsetenv'; \\builtin unset -f -- 'unsetenv'; } >/dev/null 2>&1 || true && eval 'until ! pgrep -f \"RunUAT|AutomationTool\" >/dev/null; do sleep 10; done; tail -3 ~/scratch-bm/Signal47-sky/package-1.log; grep -c \"Error\" ~/scratch-bm/Signal47-sky/package-1.log' < /dev/null && pwd -P >| /tmp/claude-7803-cwd\n",
+    "exempted_installed_game": [],
+    "grace_policy": {
+      "enabled": false,
+      "eligible": false,
+      "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "performance_status": "UNCONTENDED"
+}
