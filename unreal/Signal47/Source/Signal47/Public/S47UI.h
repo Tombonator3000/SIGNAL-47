@@ -47,6 +47,8 @@ struct FS47PauseOpts
 	TFunction<void(const FString&)> OnPicture;
 	float PictureStrength = 1.f; TFunction<void(float)> OnPictureStrength;
 	bool bInvertY = false; TFunction<void(bool)> OnInvertY;
+	float PadLookSpeed = 1.f; TFunction<void(float)> OnPadLookSpeed;
+	bool bPadInvertY = false; TFunction<void(bool)> OnPadInvertY;
 	float Fov = 70.f; TFunction<void(float)> OnFov;
 	bool bLargeText = false; TFunction<void(bool)> OnLargeText;
 	bool bCalmFlash = false; TFunction<void(bool)> OnCalmFlash;

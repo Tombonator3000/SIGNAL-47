@@ -44,6 +44,8 @@ public:
 	double Yaw = 0, Pitch = -0.06, Eye = 1.62, Radius = 0.27, Speed = 1.9, Bob = 0, StepDist = 0, Shake = 0, FloorY = 0;
 	float Fov = 70.f; // three's vertical field of view
 	double Sensitivity = 1.0; // Input.sensitivity (Look speed)
+	float PadLookSpeed = 1.f;
+	bool bPadInvertY = false;
 	bool bInvertY = false;    // Invert look
 	double LookFine = 1.0;    // main.ts: 1 - 0.6 zoomK, a finer aim through the closer look
 

@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47Gamepad.h"
 #include "S47Evening.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
@@ -110,6 +111,7 @@ void AS47HUD::Start()
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
 	APlayerController* PC = GetOwningPlayerController();
 	if (!Viewport || !PC) return;
+	S47Gamepad::Init(PC);
 	for (TActorIterator<AS47Web> It(GetWorld()); It; ++It) Saro = *It;
 	for (TActorIterator<AS47Story> It(GetWorld()); It; ++It) Story = *It;
 	Walker = Cast<AS47Walker>(PC->GetPawn());
@@ -142,7 +144,7 @@ void AS47HUD::Start()
 		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
 		bOk &= FS47DecoderDesk::SelfTest(Lines) & FS47ReadAloud::SelfTest(Lines); // (the signal processor's desk and panel; read-aloud's text matching)
-		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
+		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines) & S47Gamepad::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= FS47Evening::SelfTest(Lines);
@@ -763,6 +765,13 @@ void AS47HUD::Tick(float DeltaSeconds)
 	US47Main* M = US47Main::Get(this);
 	const bool bPlaying = !M || M->Mode == US47Main::EMode::Play;
 	if (M) M->Step(DeltaSeconds);
+	if (Walker.IsValid() && FParse::Param(FCommandLine::Get(), TEXT("S47GamepadLog")))
+	{
+		static double Next = 0; const double Now = FPlatformTime::Seconds();
+		if (Now >= Next) { Next = Now + .25; const FVector2D Move = S47Gamepad::Move(), Drive = S47Gamepad::Drive();
+			UE_LOG(LogS47HUD, Display, TEXT("S47: pad state mode=%s modal=%d move=%.3f,%.3f drive=%.3f,%.3f pos=%.3f,%.3f yaw=%.4f pitch=%.4f"), S47Gamepad::UsingGamepad()?TEXT("xbox"):TEXT("keyboard"), Modal.IsValid()?1:0, Move.X,Move.Y,Drive.X,Drive.Y,Walker->Pos.X,Walker->Pos.Z,Walker->Yaw,Walker->Pitch);
+		}
+	}
 	// the keys the ported modules answer (main.ts input.onKey)
 	if (M && PC)
 	{
@@ -774,7 +783,7 @@ void AS47HUD::Tick(float DeltaSeconds)
 			const TArray<FKey, TInlineAllocator<2>> Ks = K.Action.IsNone() ? TArray<FKey, TInlineAllocator<2>>{ K.Key } : S47Keys::KeysOf(K.Action);
 			for (const FKey& Key : Ks)
 			{
-				if (!Key.IsValid() || Taken.Contains(Key) || !PC->WasInputKeyJustPressed(Key)) continue;
+				if (!Key.IsValid() || Taken.Contains(Key) || !S47Keys::WasPressed(PC, Key)) continue;
 				if (K.Fn && K.Fn()) Taken.Add(Key);
 				break;
 			}
@@ -825,6 +834,7 @@ void AS47HUD::FinishSmokeTest()
 
 void AS47HUD::EndPlay(const EEndPlayReason::Type Reason)
 {
+	S47Gamepad::Shutdown();
 	if (Renderer) { BeginCleanup(Renderer); Renderer = nullptr; }
 	if (GEngine && GEngine->GameViewport)
 	{

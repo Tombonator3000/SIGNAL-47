@@ -1,5 +1,6 @@
 #include "SS47Notebook.h"
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 
 #include "Dom/JsonObject.h"
 #include "Engine/Texture2D.h"
@@ -463,7 +464,14 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 								+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Keycap(S47Keys::Label(TEXT("notebook")).ToUpper())], [this] { Close(); })
 						]
 					]
-					+ SCanvas::Slot().Position(P2(150, 846)).Size(P2(900, 32))[Keys]
+					+ SCanvas::Slot().Position(P2(150, 846)).Size(P2(900, 32))
+					[
+						SNew(SOverlay)
+						+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::Collapsed : EVisibility::SelfHitTestInvisible; })[Keys]]
+						+ SOverlay::Slot()[SNew(STextBlock).Font(Term(20)).ColorAndOpacity(Hint())
+							.Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+							.Text_Lambda([this] { return FText::FromString(OnBoard ? TEXT("LB/RB TABS   D-PAD CHOOSE   A OPEN   X READ   Y BOARD   B CLOSE") : TEXT("LB/RB TABS   D-PAD CHOOSE   A OPEN   X READ   B CLOSE")); })]
+					]
 					+ SCanvas::Slot().Position(P2(1100, 842)).Size(P2(444, 36))
 					[
 						SNew(SBox).HAlign(HAlign_Right)[Osd(TAttribute<FText>::CreateLambda([] { const US47Main* M = US47Main::Get(nullptr); return FText::FromString(M && M->Story ? OsdLine(M->Story->Clock()) : FString()); }), 26.f)]
@@ -1056,8 +1064,8 @@ void SS47Notebook::Activate()
 	{
 		const FString Art = (*X.Kit)[I].Art;
 		if (Art == TEXT("papers")) Show(TEXT("papers"));
-		else if (Art == TEXT("camera")) Press(EKeys::C);
-		else if (Art == TEXT("flashlight")) Press(EKeys::F);
+		else if (Art == TEXT("camera")) Press(S47Keys::Key(TEXT("camera"), 0));
+		else if (Art == TEXT("flashlight")) Press(S47Keys::Key(TEXT("light"), 0));
 	}
 }
 
@@ -1114,17 +1122,19 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	// one print open big: these only page through the album and put the print back (ui/album.ts)
 	if (Big != INDEX_NONE)
 	{
-		if (K == EKeys::Left || K == EKeys::A) { ShowBig(Big - 1); return FReply::Handled(); }
-		if (K == EKeys::Right || K == EKeys::D) { ShowBig(Big + 1); return FReply::Handled(); }
-		if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Enter || K == EKeys::SpaceBar) { CloseBig(); return FReply::Handled(); }
+		if (K == EKeys::Left || K == EKeys::A || K == EKeys::Gamepad_DPad_Left || K == EKeys::Gamepad_LeftShoulder) { ShowBig(Big - 1); return FReply::Handled(); }
+		if (K == EKeys::Right || K == EKeys::D || K == EKeys::Gamepad_DPad_Right || K == EKeys::Gamepad_RightShoulder) { ShowBig(Big + 1); return FReply::Handled(); }
+		if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom || K == EKeys::Gamepad_FaceButton_Right) { CloseBig(); return FReply::Handled(); }
 	}
-	// (the keys as bound, S47Keys: the notebook's own, its pages', and the pause's close it)
-	if (K == EKeys::Escape || S47Keys::Is(TEXT("notebook"), K) || S47Keys::Is(TEXT("map"), K) || S47Keys::Is(TEXT("kit"), K) || S47Keys::Is(TEXT("controls"), K) || S47Keys::Is(TEXT("pause"), K)) { Close(); return FReply::Handled(); }
-	if (S47Keys::Is(TEXT("board"), K) && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
+	// Gameplay pad bindings share these keys (LB notebook, RB board, D-pad map/light).
+	// This modal owns its raw pad layout; rebound keyboard shortcuts still work as before.
+	const bool bKeyboard = !K.IsGamepadKey();
+	if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right || K == EKeys::Gamepad_Special_Left || K == EKeys::Gamepad_Special_Right || (bKeyboard && (S47Keys::Is(TEXT("notebook"), K) || S47Keys::Is(TEXT("map"), K) || S47Keys::Is(TEXT("kit"), K) || S47Keys::Is(TEXT("controls"), K) || S47Keys::Is(TEXT("pause"), K)))) { Close(); return FReply::Handled(); }
+	if (((bKeyboard && S47Keys::Is(TEXT("board"), K)) || K == EKeys::Gamepad_FaceButton_Top) && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
 	// Q and E turn the tabs; the arrows (or W A S D) choose on a page of entries, else scroll it
-	if (K == EKeys::Q) { Turn(-1); return FReply::Handled(); }
-	if (K == EKeys::E) { Turn(1); return FReply::Handled(); }
-	const bool bUp = K == EKeys::Up || K == EKeys::W, bDown = K == EKeys::Down || K == EKeys::S, bLeft = K == EKeys::Left || K == EKeys::A, bRight = K == EKeys::Right || K == EKeys::D;
+	if (K == EKeys::Q || K == EKeys::Gamepad_LeftShoulder) { Turn(-1); return FReply::Handled(); }
+	if (K == EKeys::E || K == EKeys::Gamepad_RightShoulder) { Turn(1); return FReply::Handled(); }
+	const bool bUp = K == EKeys::Up || K == EKeys::W || K == EKeys::Gamepad_DPad_Up, bDown = K == EKeys::Down || K == EKeys::S || K == EKeys::Gamepad_DPad_Down, bLeft = K == EKeys::Left || K == EKeys::A || K == EKeys::Gamepad_DPad_Left, bRight = K == EKeys::Right || K == EKeys::D || K == EKeys::Gamepad_DPad_Right;
 	if (bUp || bDown || bLeft || bRight)
 	{
 		if (Count()) Choose(Chosen() + (bUp ? -Columns() : bDown ? Columns() : bLeft ? -1 : 1));
@@ -1132,10 +1142,10 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 		return FReply::Handled();
 	}
 	if (K == EKeys::PageUp || K == EKeys::PageDown) { Scroll(S47Game::P(K == EKeys::PageUp ? -400.f : 400.f)); return FReply::Handled(); }
-	if (K == EKeys::Enter || K == EKeys::SpaceBar) { Activate(); return FReply::Handled(); }
-	if (S47Keys::Is(TEXT("describe"), K)) { if (Reading.IsValid()) Reading->Toggle(); return FReply::Handled(); }
+	if (K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom) { Activate(); return FReply::Handled(); }
+	if ((bKeyboard && S47Keys::Is(TEXT("describe"), K)) || K == EKeys::Gamepad_FaceButton_Left) { if (Reading.IsValid()) Reading->Toggle(); return FReply::Handled(); }
 	// the kit's own keys on its page (C raises the camera, F the light)
-	if ((S47Keys::Is(TEXT("camera"), K) || S47Keys::Is(TEXT("light"), K)) && Tab == TEXT("kit") && X.Kit)
+	if (bKeyboard && (S47Keys::Is(TEXT("camera"), K) || S47Keys::Is(TEXT("light"), K)) && Tab == TEXT("kit") && X.Kit)
 	{
 		const FString Want = S47Keys::Is(TEXT("camera"), K) ? TEXT("camera") : TEXT("flashlight");
 		if (X.Kit->ContainsByPredicate([&](const FS47KitItem& It) { return It.Art == Want; })) { Press(K); return FReply::Handled(); }
@@ -1234,7 +1244,7 @@ void SS47Notebook::ShowBig(int32 I)
 			[
 				SNew(SButton).ButtonStyle(Flat()).ContentPadding(FMargin(0, P(6))).IsFocusable(false).OnClicked_Lambda([this] { CloseBig(); return FReply::Handled(); })
 				[
-					KeyHint(TEXT("E"), TEXT("Back to the album"), 22.f, C(0xcfc8b5))
+					SNew(STextBlock).Font(Term(22)).ColorAndOpacity(C(0xcfc8b5)).Text_Lambda([] { return FText::FromString(S47Gamepad::UsingGamepad() ? TEXT("B  Back to the album     LB/RB  Previous / next") : TEXT("E  Back to the album")); })
 				]
 			]
 		]);
@@ -1271,8 +1281,9 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 	Ex.People = TArray<FS47PersonCard>{ { TEXT("Dale"), TEXT("SARO"), TEXT("Left."), FString() } };
 	TArray<FS47Task> T; T.Add({ TEXT("Read the log"), true }); T.Add({ TEXT("Answer the line"), false });
 	FString Opened;
+	int32 Boards = 0;
 	const TSharedRef<SS47Notebook> Nb = SNew(SS47Notebook).Tasks(T).Notes({ TEXT("One."), TEXT("Two.") }).Docs({ Log, Typed, Find })
-		.OnDoc([&Opened](const FS47Doc& D) { Opened = D.Id; }).Extras(Ex);
+		.OnDoc([&Opened](const FS47Doc& D) { Opened = D.Id; }).OnBoard([&Boards] { ++Boards; }).Extras(Ex);
 	auto Key = [&](const FKey& K) { Nb->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
 	Check(TEXT("tabs in order"), FString::Join(Nb->Order, TEXT(" ")) == TEXT("tasks notes findings papers photos map kit people controls"), FString::Join(Nb->Order, TEXT(" ")));
 	Check(TEXT("opens on tasks"), Nb->Tab == TEXT("tasks"), Nb->Tab);
@@ -1292,6 +1303,23 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 	Check(TEXT("Enter opens the chosen paper"), Opened == TEXT("s03log"), Opened);
 	Nb->Show(TEXT("kit"));
 	Check(TEXT("each tab keeps its choice"), Nb->Chosen() == 3, FString::FromInt(Nb->Chosen()));
+	// Xbox uses the same selected entries, tab state and callbacks as the keyboard.
+	Nb->Show(TEXT("tasks")); Key(EKeys::Gamepad_RightShoulder);
+	Check(TEXT("RB turns to the next tab without opening the board"), Nb->Tab == TEXT("notes") && Boards == 0);
+	Key(EKeys::Gamepad_LeftShoulder);
+	Check(TEXT("LB returns to the previous tab"), Nb->Tab == TEXT("tasks"));
+	Nb->Show(TEXT("papers")); Nb->Choose(0); Key(EKeys::Gamepad_DPad_Right);
+	Opened.Empty(); Key(EKeys::Gamepad_FaceButton_Bottom);
+	Check(TEXT("D-pad and A open the selected paper"), Nb->Chosen() == 1 && Opened == TEXT("s03log"));
+	Key(EKeys::Gamepad_DPad_Left);
+	Check(TEXT("D-pad returns to the first paper"), Nb->Chosen() == 0);
+	Nb->Album = FS47AlbumView(); Nb->Album->Shots = { { TEXT("one"), FString(), TEXT("One"), FString() }, { TEXT("two"), FString(), TEXT("Two"), FString() } };
+	Nb->Show(TEXT("photos")); Nb->ShowBig(0); Key(EKeys::Gamepad_RightShoulder);
+	Check(TEXT("RB pages a large print without turning notebook tabs"), Nb->Big == 1 && Nb->Tab == TEXT("photos"));
+	Key(EKeys::Gamepad_FaceButton_Right);
+	Check(TEXT("B puts a large print back in the album"), Nb->Big == INDEX_NONE && Nb->Tab == TEXT("photos"));
+	Key(EKeys::Gamepad_FaceButton_Top);
+	Check(TEXT("Y opens the board once"), Boards == 1);
 	// CONTROLS: the keys as bound, and the page built again when one changes
 	{
 		const TSharedPtr<FJsonObject> Keys = S47Keys::Save();

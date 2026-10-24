@@ -1,5 +1,10 @@
 # Minne for unreal/
 
+## Xbox-kontroller, 24. oktober 2026
+
+- Tom bestiller kontrollerstyring, commit og push. Kilde på codex/xbox-controller gir analog gange/blikk/bil, Xbox-knapper, UI-navigasjon og peker, dynamiske hints og separate lagrede kontrollerinnstillinger. GAMEPAD.md skiller kilde, plattformtest og fysisk utstyr. Bygg og runtime venter på ledig maskin; ingen Xbox-runtime-PASS eller installasjon ennå.
+
+
 ## Skyoppgaven sluttkontrollert, 24. oktober 2026
 
 - Tom ber Codex fullføre Claudes volumetriske skyer etter limit. Skykode f55b760c/04d98231 er allerede integrert; ved overtakelsen gjenstod cache og levering på samlet natur/film/sky. Gammelt opptak under Signal47-sky har andre shader keys og kan ikke dokumentere ny pakke. SKY.md har faktisk sluttbevis.

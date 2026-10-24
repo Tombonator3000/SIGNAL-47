@@ -1,5 +1,13 @@
 # Todo for unreal/
 
+## Xbox-kontroller, 24. oktober 2026
+
+- [x] Implementer analog gange/blikk, biltriggere, fast Xbox-oppsett, menyer/panelpeker og separate lagrede kontrollerinnstillinger.
+- [ ] Bygg og kontroller faktisk kernel/SDL/Slate/gameplay, selvtester og full regresjon før fletting/installasjon.
+- [ ] Commit/push, kontroller faktisk remote og lever testet pakke med bevarte Saved-data.
+- [ ] Menneskelig prøve med Toms Xbox-kontroller. Se GAMEPAD.md for faktisk teststatus.
+
+
 ## Filmisk New Mexico-natur, muligheter lagret 24. oktober 2026
 
 - [ ] Undersøk Quixels Canyons of Utah / Desert Western på Fab som kilde til skannede klipper, steiner og bakke. Samlingen er ikke funnet lokalt; Epic-kontoens eierskap og faktisk nedlastingslisens må kontrolleres. Hele Megascans-biblioteket er ikke automatisk gratis. Bevar lisensbevis og hold tredjeparts råassets utenfor offentlig Git.

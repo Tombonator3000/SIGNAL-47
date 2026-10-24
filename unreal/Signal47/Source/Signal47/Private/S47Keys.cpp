@@ -1,4 +1,5 @@
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 
 #include "Containers/Ticker.h"
 #include "Dom/JsonObject.h"
@@ -103,27 +104,35 @@ TArray<FKey, TInlineAllocator<2>> S47Keys::KeysOf(FName Action)
 {
 	TArray<FKey, TInlineAllocator<2>> Out;
 	if (const TStaticArray<FKey, 2>* K = S47KeysLocal::Slots(Action)) for (const FKey& X : *K) if (X.IsValid()) Out.Add(X);
+	const FKey Pad = S47Gamepad::Key(Action);
+	if (Pad.IsValid()) Out.Add(Pad);
+	if (Action == TEXT("notebook")) Out.Add(EKeys::Gamepad_LeftShoulder);
 	return Out;
 }
 
 bool S47Keys::Is(FName Action, const FKey& K)
 {
 	const TStaticArray<FKey, 2>* S = S47KeysLocal::Slots(Action);
-	return S && K.IsValid() && ((*S)[0] == K || (*S)[1] == K);
+	return K.IsValid() && ((S && ((*S)[0] == K || (*S)[1] == K)) || S47Gamepad::Key(Action) == K || (Action == TEXT("notebook") && K == EKeys::Gamepad_LeftShoulder));
 }
 
 bool S47Keys::Down(const APlayerController* PC, FName Action)
 {
 	if (!PC) return false;
-	for (const FKey& K : KeysOf(Action)) if (PC->IsInputKeyDown(K)) return true;
+	for (const FKey& K : KeysOf(Action)) if (K.IsGamepadKey() ? S47Gamepad::Down(K) : PC->IsInputKeyDown(K)) return true;
 	return false;
 }
 
 bool S47Keys::Pressed(const APlayerController* PC, FName Action)
 {
 	if (!PC) return false;
-	for (const FKey& K : KeysOf(Action)) if (PC->WasInputKeyJustPressed(K)) return true;
+	for (const FKey& K : KeysOf(Action)) if (WasPressed(PC, K)) return true;
 	return false;
+}
+
+bool S47Keys::WasPressed(const APlayerController* PC, const FKey& K)
+{
+	return K.IsGamepadKey() ? S47Gamepad::Pressed(K) : PC && PC->WasInputKeyJustPressed(K);
 }
 
 FString S47Keys::Short(const FKey& K)
@@ -156,12 +165,14 @@ FString S47Keys::Name(const FKey& K)
 
 FString S47Keys::Label(FName Action)
 {
+	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
 	const TArray<FKey, TInlineAllocator<2>> K = KeysOf(Action);
 	return K.Num() ? Short(K[0]) : FString();
 }
 
 FString S47Keys::Said(FName Action)
 {
+	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
 	const TArray<FKey, TInlineAllocator<2>> K = KeysOf(Action);
 	return K.Num() ? Name(K[0]) : FString();
 }
@@ -317,7 +328,7 @@ void S47Keys::Load(const TSharedPtr<FJsonObject>& O)
 	++S47KeysLocal::St().Changes;
 }
 
-uint32 S47Keys::Changes() { return S47KeysLocal::St().Changes; }
+uint32 S47Keys::Changes() { return S47KeysLocal::St().Changes + S47Gamepad::Changes(); }
 
 bool S47Keys::SelfTest(TArray<FString>& Out)
 {

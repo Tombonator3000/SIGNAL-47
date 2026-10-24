@@ -1,3 +1,4 @@
+#include "S47Gamepad.h"
 #include "S47World.h"
 #include "S47Evening.h"
 #include "S47EveningVisual.h"
@@ -1791,7 +1792,10 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	else if (bDriving)
 	{
 		// main.ts: steer = move.x, throttle = -move.z
-		FS47DriveIn In; In.Steer = Move.X; In.Throttle = -Move.Y;
+		FS47DriveIn In;
+		// Xbox uses proportional triggers for throttle/brake; left-stick forward never accelerates.
+		In.Steer = FMath::Clamp(Move.X, -1., 1.);
+		In.Throttle = FMath::Clamp(-Move.Y, -1., 1.);
 		if (C && C->Input) In = C->Input(Dt);
 		else if (Autopilot) In = AutoInput(Dt);
 		else if (TestInput) In = TestInput();
@@ -1885,7 +1889,7 @@ void US47World::BeginCommute(const S47J::FObj& SavedCar)
  O.AtPos = Saved ? FVector(S47J::Num(SavedCar,TEXT("x")), S47J::Num(SavedCar,TEXT("y")), S47J::Num(SavedCar,TEXT("z"))) : FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);
  O.AtHeading = Saved ? S47J::Num(SavedCar,TEXT("h")) : 0;
  O.Hint = TEXT("SARO: take the marked turn, drive up the ramp and park. Mesa Diner is open if you want supper first.");
- O.OnStart = [this] { Toast(TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
+ O.OnStart = [this] { Toast(S47Gamepad::UsingGamepad() ? TEXT("RT: throttle. LT: brake / reverse. LS: steer. D-pad down: radio. Stop and press A to get out. SARO is north through town; the diner stop is optional.") : TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
  TruckAt = TEXT("saro");
  FString Route;
  const bool bTest=FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),Route);

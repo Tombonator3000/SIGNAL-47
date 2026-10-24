@@ -40,7 +40,8 @@ namespace
 		virtual void Tick(float, FSlateApplication&, TSharedRef<ICursor>) override {}
 		virtual bool HandleKeyDownEvent(FSlateApplication&, const FKeyEvent& E) override
 		{
-			return S47Keys::Is(TEXT("board"), E.GetKey()) && !E.IsRepeat() && Fn && Fn();
+			// Xbox RB turns notebook pages; its Y shortcut is handled by the notebook itself.
+			return !E.GetKey().IsGamepadKey() && S47Keys::Is(TEXT("board"), E.GetKey()) && !E.IsRepeat() && Fn && Fn();
 		}
 	private:
 		TFunction<bool()> Fn;

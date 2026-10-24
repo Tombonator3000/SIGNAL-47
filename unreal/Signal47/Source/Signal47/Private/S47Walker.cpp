@@ -8,6 +8,7 @@
 #include "S47Three.h"
 #include "S47Inter.h"
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 #include "S47Web.h"
 #include "S47Props.h"
 #include "S47Startup.h"
@@ -183,6 +184,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 	Focused.Reset();
 	// the keys and the look, as Input.ts gives them
 	double LookX = 0, LookY = 0, Mx = 0, Mz = 0;
+	FVector2D VehicleMove = FVector2D::ZeroVector;
 	if (PC && bInput)
 	{
 		float DX = 0, DY = 0;
@@ -193,18 +195,25 @@ void AS47Walker::Tick(float DeltaSeconds)
 		// (the settings' look speed and invert, main.ts step: player.look(look.x, invertY ? -look.y : look.y))
 		LookX = FMath::Clamp(DX, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
 		LookY = (bInvertY ? 1.0 : -1.0) * FMath::Clamp(DY, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
+		const FVector2D PadLook = S47Gamepad::Look(Dt, PadLookSpeed, bPadInvertY);
+		LookX += PadLook.X; LookY += PadLook.Y;
+		const FVector2D PadMove = S47Gamepad::Move();
 		// (the keys as bound in Settings > Controls: S47Keys, W A S D and the arrows unless changed)
 		if (S47Keys::Down(PC, TEXT("forward"))) Mz -= 1;
 		if (S47Keys::Down(PC, TEXT("back"))) Mz += 1;
 		if (S47Keys::Down(PC, TEXT("left"))) Mx -= 1;
 		if (S47Keys::Down(PC, TEXT("right"))) Mx += 1;
-		if (TestMove) { Mx = TestMove->X; Mz = TestMove->Y; }
+		// Keep car controls separate before radial normalization of walking input.
+		const FVector2D PadDrive = S47Gamepad::Drive();
+		VehicleMove = FVector2D(Mx + PadDrive.X, Mz - PadDrive.Y);
+		Mx += PadMove.X; Mz += PadMove.Y;
+		if (TestMove) { Mx = TestMove->X; Mz = TestMove->Y; VehicleMove = *TestMove; }
 		const double L = FMath::Sqrt(Mx * Mx + Mz * Mz);
 		if (L > 1) { Mx /= L; Mz /= L; }
 	}
 	// the camera held by something else (the truck's cab): its eye, no walking and no picking
 	FS47View View;
-	if (CameraOverride && CameraOverride(Dt, FVector2D(Mx, Mz), FVector2D(LookX, LookY), View))
+	if (CameraOverride && CameraOverride(Dt, VehicleMove, FVector2D(LookX, LookY), View))
 	{
 		if (bAir) Land(true); // (no jump goes on in the truck)
 		SetActorLocationAndRotation(ToUE(View.Eye), CameraRotation(View.Yaw, View.Pitch, View.Roll));

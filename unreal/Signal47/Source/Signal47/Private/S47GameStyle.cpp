@@ -1,3 +1,4 @@
+#include "S47Keys.h"
 #include "S47GameStyle.h"
 
 #include "Brushes/SlateColorBrush.h"
@@ -205,6 +206,19 @@ namespace S47Game
 		return SNew(SBorder).BorderImage(Box(Fill, Line, Line.A > 0 ? 1.f : 0.f, Style == EKey::Outline ? 2.f : 0.f)).Padding(FMargin(P(PadX), 0))
 			[
 				SNew(STextBlock).Text(FText::FromString(Key)).Font(Term(Px)).ColorAndOpacity(Text)
+			];
+	}
+
+	TSharedRef<SWidget> ActionKeycap(FName Action, EKey Style, float Px)
+	{
+		// .keys b: a thin frame, the key in paper; .key: amber, the key dark; .use b: ink brown on the page
+		const FLinearColor Fill = Style == EKey::Amber ? Amber() : Style == EKey::Ink ? C(0x5d4f3a) : FLinearColor::Transparent;
+		const FLinearColor Line = Style == EKey::Outline ? C(0x5d584e) : FLinearColor::Transparent;
+		const FLinearColor Text = Style == EKey::Amber ? C(0x1b1408) : Style == EKey::Ink ? C(0xece4cf) : Paper();
+		const float PadX = Style == EKey::Amber ? 8.f : Style == EKey::Ink ? 7.f : 6.f;
+		return SNew(SBorder).BorderImage(Box(Fill, Line, Line.A > 0 ? 1.f : 0.f, Style == EKey::Outline ? 2.f : 0.f)).Padding(FMargin(P(PadX), 0))
+			[
+				SNew(STextBlock).Text_Lambda([Action] { return FText::FromString(S47Keys::Label(Action)); }).Font(Term(Px)).ColorAndOpacity(Text)
 			];
 	}
 

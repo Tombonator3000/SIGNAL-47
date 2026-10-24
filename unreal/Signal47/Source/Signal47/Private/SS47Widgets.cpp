@@ -1,6 +1,7 @@
 #include "SS47Widgets.h"
 #include "S47Evening.h"
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
@@ -195,7 +196,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		.ColorAndOpacity_Lambda([this] { return FLinearColor(1, 1, 1, DescButton.bDisabled ? 0.5f : 1.f); })
 		[
 			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[Keycap(S47Keys::Label(TEXT("describe")), EKey::Outline, 20)]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(6), 0)[ActionKeycap(TEXT("describe"), EKey::Outline, 20)]
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 			[
 				SNew(STextBlock).Font(Term(20, 1)).ColorAndOpacity(Hint()).ShadowOffset(FVector2D(0, P(1))).ShadowColorAndOpacity(FLinearColor(0, 0, 0, 0.85f))
@@ -216,7 +217,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 
 	// .prompt: the keycap and the label on a thin backing with an amber edge; the second thing (Q) on a
 	// line of its own; a closer look's words (.examine) under them
-	auto PromptLine = [](TAttribute<FText> Label, const FString& Key, bool bMain) -> TSharedRef<SWidget>
+	auto PromptLine = [](TAttribute<FText> Label, FName Action, bool bMain) -> TSharedRef<SWidget>
 	{
 		return SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(P(2))[SNew(SBorder).BorderImage(Box(bMain ? Amber() : C(0xffb052, 0.5f)))]]
@@ -225,7 +226,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 				SNew(SBorder).BorderImage(Box(C(0x05070d, 0.6f))).Padding(bMain ? FMargin(P(8), P(6), P(16), P(6)) : FMargin(P(8), P(3), P(14), P(3)))
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(12), 0)[Keycap(*Key, bMain ? EKey::Amber : EKey::Outline, bMain ? 24 : 20)]
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, P(12), 0)[ActionKeycap(Action, bMain ? EKey::Amber : EKey::Outline, bMain ? 24 : 20)]
 					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 					[
 						SNew(STextBlock).Font(Term(bMain ? 28 : 22, 2)).ColorAndOpacity(bMain ? C(0xf4ecdb) : C(0xcfc8b5))
@@ -238,12 +239,12 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 		[
 			SNew(SBox).Visibility_Lambda([this, PromptOn] { return PromptOn() && !PromptAttr.Get().IsEmpty() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
-			[PromptLine(PromptAttr, S47Keys::Label(TEXT("use")), true)]
+			[PromptLine(PromptAttr, TEXT("use"), true)]
 		]
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(6), 0, 0)
 		[
 			SNew(SBox).Visibility_Lambda([this, PromptOn] { return PromptOn() && !AltAttr.Get().IsEmpty() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
-			[PromptLine(AltAttr, S47Keys::Label(TEXT("alt")), false)]
+			[PromptLine(AltAttr, TEXT("alt"), false)]
 		]
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(10), 0, 0)
 		[
@@ -441,7 +442,7 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 		Place = M && M->Flow && M->Mode == US47Main::EMode::Play ? M->Flow->PlaceName().ToUpper() : FString();
 		const bool bBoard = M && bool(M->Board.Open);
 		const bool bLight = M && M->Night && M->Night->Flashlight.IsValid() && M->Night->Flashlight->bHave;
-		const FString Key = FString::Printf(TEXT("%d%d"), bBoard, bLight);
+		const FString Key = FString::Printf(TEXT("%d%d:%u"), bBoard, bLight, S47Keys::Changes());
 		if (Key != HintKey && HintRow.IsValid())
 		{
 			HintKey = Key;
@@ -450,7 +451,7 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 			Add(S47Keys::Label(TEXT("notebook")).ToUpper(), TEXT("NOTEBOOK"));
 			if (bBoard) Add(S47Keys::Label(TEXT("board")).ToUpper(), TEXT("CASE BOARD"));
 			if (bLight) Add(S47Keys::Label(TEXT("light")).ToUpper(), TEXT("FLASHLIGHT"));
-			Add(TEXT("ESC"), TEXT("PAUSE"));
+			Add(S47Keys::Label(TEXT("pause")), TEXT("PAUSE"));
 		}
 	}
 }
@@ -597,6 +598,10 @@ void SS47Document::Construct(const FArguments& InArgs)
 			]
 		];
 	}
+	Btns->AddSlot().AutoHeight().Padding(P(14), P(8))
+	[SNew(STextBlock).Font(Term(18)).ColorAndOpacity(Hint()).AutoWrapText(true)
+	.Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+	.Text(FText::FromString(TEXT("D-PAD: ACTION   A: SELECT   X: READ   LB/RB: SCROLL   B: PUT IT DOWN")))];
 	// [data-reading-status]: the chosen reading's state (the voice, Loading recording..., or why not)
 	auto ChosenReading = [this]() -> TSharedPtr<FS47ReadingAction> { return Actions.IsValidIndex(Chosen) ? Actions[Chosen].Reading : nullptr; };
 	Btns->AddSlot().AutoHeight().Padding(P(17), P(2), 0, 0)
@@ -756,19 +761,19 @@ void SS47Document::Act(int32 I)
 FReply SS47Document::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
 	const FKey K = InKeyEvent.GetKey();
-	if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Tab)
+	if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Tab || K == EKeys::Gamepad_FaceButton_Right)
 	{
 		if (OnClose) OnClose();
 		return FReply::Handled();
 	}
 	// V: the first reading; the arrows choose, Enter acts; the paper scrolls with the page keys and the wheel
-	if (K == EKeys::V) { if (Actions.Num() && Actions[0].Reading.IsValid()) { Chosen = 0; Act(0); } return FReply::Handled(); }
-	if (K == EKeys::Up || K == EKeys::W) { Chosen = (Chosen + Actions.Num() - 1) % FMath::Max(1, Actions.Num()); return FReply::Handled(); }
-	if (K == EKeys::Down || K == EKeys::S) { Chosen = (Chosen + 1) % FMath::Max(1, Actions.Num()); return FReply::Handled(); }
-	if (K == EKeys::Enter || K == EKeys::SpaceBar) { Act(Chosen); return FReply::Handled(); }
-	if (PageScroll.IsValid() && (K == EKeys::PageDown || K == EKeys::PageUp))
+	if (K == EKeys::V || K == EKeys::Gamepad_FaceButton_Left) { if (Actions.Num() && Actions[0].Reading.IsValid()) { Chosen = 0; Act(0); } return FReply::Handled(); }
+	if (K == EKeys::Up || K == EKeys::W || K == EKeys::Gamepad_DPad_Up) { Chosen = (Chosen + Actions.Num() - 1) % FMath::Max(1, Actions.Num()); return FReply::Handled(); }
+	if (K == EKeys::Down || K == EKeys::S || K == EKeys::Gamepad_DPad_Down) { Chosen = (Chosen + 1) % FMath::Max(1, Actions.Num()); return FReply::Handled(); }
+	if (K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom) { Act(Chosen); return FReply::Handled(); }
+	if (PageScroll.IsValid() && (K == EKeys::PageDown || K == EKeys::PageUp || K == EKeys::Gamepad_RightShoulder || K == EKeys::Gamepad_LeftShoulder))
 	{
-		PageScroll->SetScrollOffset(FMath::Max(0.f, PageScroll->GetScrollOffset() + (K == EKeys::PageDown ? 1.f : -1.f) * S47Game::P(300)));
+		PageScroll->SetScrollOffset(FMath::Max(0.f, PageScroll->GetScrollOffset() + (K == EKeys::PageDown || K == EKeys::Gamepad_RightShoulder ? 1.f : -1.f) * S47Game::P(300)));
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();
@@ -911,7 +916,7 @@ namespace
 		virtual FReply OnKeyDown(const FGeometry&, const FKeyEvent& E) override
 		{
 			const FKey K = E.GetKey();
-			if ((K == EKeys::Enter || K == EKeys::SpaceBar) && Usable.Get(true))
+			if ((K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom) && Usable.Get(true))
 			{
 				if (OnClick) OnClick();
 				return FReply::Handled();
@@ -975,7 +980,7 @@ namespace
 		virtual bool SupportsKeyboardFocus() const override { return Usable.Get(true); }
 		virtual FReply OnKeyDown(const FGeometry&, const FKeyEvent& E) override
 		{
-			const int32 D = E.GetKey() == EKeys::Left ? -1 : E.GetKey() == EKeys::Right ? 1 : 0;
+			const int32 D = E.GetKey() == EKeys::Left || E.GetKey() == EKeys::Gamepad_DPad_Left ? -1 : E.GetKey() == EKeys::Right || E.GetKey() == EKeys::Gamepad_DPad_Right ? 1 : 0;
 			if (!D || !Usable.Get(true)) return FReply::Unhandled();
 			if (OnChanged) OnChanged(FMath::Clamp(Value.Get(0.f) + D * Step, 0.f, 1.f));
 			return FReply::Handled();
@@ -1338,6 +1343,8 @@ void SS47Console::Construct(const FArguments& InArgs)
 			]
 		]
 	];
+	if (LeftCol.IsValid()) LeftCol->AddSlot().AutoHeight()
+	[RxText(RxStr([] { return S47Gamepad::UsingGamepad() ? FString(TEXT("D-PAD: CONTROLS / ADJUST   A: PRESS   B: EXIT   RIGHT STICK: POINTER")) : FString(); }), 17.f, RxDim())];
 	// the receiver's card can be read as its description (receiver-description), the box under it in .lcol
 	if (US47UI* UI = US47Main::Get(nullptr)->UI; UI && LeftCol.IsValid())
 		LeftCol->AddSlot().AutoHeight()[UI->DescriptionReadings(LeftCol.ToSharedRef(), TEXT("receiver-description"))];
@@ -1345,7 +1352,7 @@ void SS47Console::Construct(const FArguments& InArgs)
 
 FReply SS47Console::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
-	if (InKeyEvent.GetKey() == EKeys::Escape)
+	if (InKeyEvent.GetKey() == EKeys::Escape || InKeyEvent.GetKey() == EKeys::Gamepad_FaceButton_Right)
 	{
 		if (OnClose) OnClose();
 		return FReply::Handled();
@@ -1402,10 +1409,12 @@ void SS47Ops::Construct(const FArguments& InArgs)
 		]
 		// .term-cmds: the commands as keys
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, Px(10), 0, 0)[SAssignNew(Buttons, SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(Px(8), Px(8)))]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, Px(8), 0, 0)
+		[RxText(RxStr([] { return S47Gamepad::UsingGamepad() ? FString(TEXT("D-PAD: COMMAND   A: RUN   LB/RB: SCROLL   RIGHT STICK: POINTER")) : FString(); }), 17.f, RxDim())]
 		// .term-foot
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0, Px(10), 0, 0)
 		[
-			SNew(SRxKey).Label(FString(TEXT("LOG OUT   [ESC]"))).Px(20.f).MinHeight(44.f).OnClick([this] { if (OnClose) OnClose(); })
+			SNew(SRxKey).Label_Lambda([] { return FString(S47Gamepad::UsingGamepad() ? TEXT("LOG OUT   [B]") : TEXT("LOG OUT   [ESC]")); }).Px(20.f).MinHeight(44.f).OnClick([this] { if (OnClose) OnClose(); })
 		]
 	];
 	RebuildButtons();
@@ -1424,12 +1433,15 @@ void SS47Ops::RebuildButtons()
 {
 	if (!Buttons.IsValid() || !Story) return;
 	Buttons->ClearChildren();
-	for (const FString& B : Story->Ops().Buttons())
+	PadCommands = Story->Ops().Buttons();
+	PadCommand = PadCommands.IsValidIndex(PadCommand) ? PadCommand : INDEX_NONE;
+	for (int32 I = 0; I < PadCommands.Num(); ++I)
 	{
-		const FString Cmd = B;
+		const FString Cmd = PadCommands[I];
 		Buttons->AddSlot()
 		[
-			SNew(SRxKey).Label(B).Px(19.f).MinHeight(44.f).OnClick([this, Cmd] { Exec(Cmd); })
+			SNew(SRxKey).Label_Lambda([this, I, Cmd] { return S47Gamepad::UsingGamepad() && PadCommand == I ? TEXT("> ") + Cmd + TEXT("  [A]") : Cmd; })
+			.Px(19.f).MinHeight(44.f).OnClick([this, I, Cmd] { PadCommand = I; Exec(Cmd); })
 		];
 	}
 }
@@ -1453,12 +1465,102 @@ void SS47Ops::Exec(const FString& Cmd)
 
 FReply SS47Ops::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
-	if (InKeyEvent.GetKey() == EKeys::Escape)
+	if (InKeyEvent.GetKey() == EKeys::Escape || InKeyEvent.GetKey() == EKeys::Gamepad_FaceButton_Right)
 	{
 		if (OnClose) OnClose();
 		return FReply::Handled();
 	}
+	const FKey K = InKeyEvent.GetKey();
+	if (K == EKeys::Gamepad_LeftShoulder || K == EKeys::Gamepad_RightShoulder)
+	{
+		if (Scroll.IsValid()) Scroll->SetScrollOffset(FMath::Max(0.f, Scroll->GetScrollOffset() + (K == EKeys::Gamepad_LeftShoulder ? -1.f : 1.f) * S47Theme::Px(300)));
+		return FReply::Handled();
+	}
 	return FReply::Unhandled();
+}
+
+// The editable command line retains keyboard typing. Raw pad events choose the existing
+// command buttons before that text field can treat A/B as virtual-keyboard input.
+FReply SS47Ops::OnPreviewKeyDown(const FGeometry& G, const FKeyEvent& E)
+{
+	const FKey K = E.GetKey();
+	if (K == EKeys::Gamepad_FaceButton_Right || K == EKeys::Gamepad_LeftShoulder || K == EKeys::Gamepad_RightShoulder) return OnKeyDown(G, E);
+	const bool Prev = K == EKeys::Gamepad_DPad_Up || K == EKeys::Gamepad_DPad_Left;
+	const bool Next = K == EKeys::Gamepad_DPad_Down || K == EKeys::Gamepad_DPad_Right;
+	if (Prev || Next)
+	{
+		if (!PadCommands.IsEmpty()) PadCommand = PadCommand == INDEX_NONE ? (Prev ? PadCommands.Num() - 1 : 0) : (PadCommand + PadCommands.Num() + (Prev ? -1 : 1)) % PadCommands.Num();
+		return FReply::Handled();
+	}
+	if (K == EKeys::Gamepad_FaceButton_Bottom)
+	{
+		if (!E.IsRepeat() && !PadCommands.IsEmpty())
+		{
+			if (!PadCommands.IsValidIndex(PadCommand)) PadCommand = 0;
+			const FString Cmd = PadCommands[PadCommand]; Exec(Cmd);
+		}
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
+}
+
+bool SS47Document::SelfTest(TArray<FString>& Lines)
+{
+	bool Ok = true;
+	auto Check = [&](bool Pass, const TCHAR* Name) { Lines.Add(FString(Pass ? TEXT("ok  document pad: ") : TEXT("FAIL document pad: ")) + Name); Ok &= Pass; };
+	int32 Closed = 0, Used = 0;
+	FS47Doc D; D.Kind = TEXT("typed"); D.Title = TEXT("Input sample"); D.Page = TEXT("A paper.");
+	const TSharedRef<SS47Document> W = SNew(SS47Document).Doc(D).OnClose([&Closed] { ++Closed; });
+	W->Actions.Insert({ TEXT("TEST ACTION"), FString(), [&Used] { ++Used; }, nullptr, nullptr }, 0);
+	auto Key = [&](const FKey& K) { return W->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
+	Key(EKeys::Gamepad_DPad_Down);
+	Check(W->Chosen == 1 && Closed == 0, TEXT("D-pad chooses without executing"));
+	Key(EKeys::Gamepad_DPad_Up); Key(EKeys::Gamepad_FaceButton_Bottom);
+	Check(W->Chosen == 0 && Used == 1 && Closed == 0, TEXT("A executes the selected action exactly once"));
+	Check(Key(EKeys::Gamepad_RightShoulder).IsEventHandled() && Key(EKeys::Gamepad_LeftShoulder).IsEventHandled(), TEXT("shoulders route to paper scrolling"));
+	Key(EKeys::Gamepad_FaceButton_Right);
+	Check(Closed == 1, TEXT("B puts the paper down"));
+	return Ok;
+}
+
+bool SS47Ops::SelfTest(TArray<FString>& Lines)
+{
+	bool Ok = true;
+	auto Check = [&](bool Pass, const TCHAR* Name) { Lines.Add(FString(Pass ? TEXT("ok  ops pad: ") : TEXT("FAIL ops pad: ")) + Name); Ok &= Pass; };
+	int32 Closed = 0;
+	const TSharedRef<SS47Ops> W = SNew(SS47Ops).OnClose([&Closed] { ++Closed; });
+	W->PadCommands = { TEXT("HELP"), TEXT("LOGOUT") };
+	auto Key = [&](const FKey& K, bool Repeat = false) { return W->OnPreviewKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, Repeat, 0, 0)); };
+	Key(EKeys::Gamepad_DPad_Down);
+	Check(W->PadCommand == 0 && Closed == 0, TEXT("first D-pad input chooses the first existing command"));
+	Key(EKeys::Gamepad_DPad_Right);
+	Check(W->PadCommand == 1 && Closed == 0, TEXT("D-pad advances without running a command"));
+	Key(EKeys::Gamepad_FaceButton_Bottom, true);
+	Check(Closed == 0, TEXT("held A cannot repeatedly execute commands"));
+	Key(EKeys::Gamepad_FaceButton_Bottom);
+	Check(Closed == 1, TEXT("A runs the selected LOGOUT command"));
+	W->Input->SetText(FText::FromString(TEXT("SHOW LOG")));
+	Check(!Key(EKeys::L).IsEventHandled() && W->Input->GetText().ToString() == TEXT("SHOW LOG"), TEXT("keyboard typing remains on the editable command line"));
+	return Ok;
+}
+
+bool S47WidgetInput::SelfTest(TArray<FString>& Lines)
+{
+	bool Ok = true;
+	auto Check = [&](bool Pass, const TCHAR* Name) { Lines.Add(FString(Pass ? TEXT("ok  receiver pad: ") : TEXT("FAIL receiver pad: ")) + Name); Ok &= Pass; };
+	int32 Used = 0;
+	const TSharedRef<SRxKey> Button = SNew(SRxKey).Label(FString(TEXT("ACT"))).OnClick([&Used] { ++Used; });
+	const auto Key = [](const FKey& K) { return FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0); };
+	Check(Button->OnKeyDown(FGeometry(), Key(EKeys::Gamepad_FaceButton_Bottom)).IsEventHandled() && Used == 1, TEXT("A presses a focused receiver key"));
+	const TSharedRef<SRxKey> Disabled = SNew(SRxKey).Label(FString(TEXT("LOCKED"))).Usable(false).OnClick([&Used] { ++Used; });
+	Check(!Disabled->OnKeyDown(FGeometry(), Key(EKeys::Gamepad_FaceButton_Bottom)).IsEventHandled() && Used == 1, TEXT("A respects disabled receiver actions"));
+	float Value = 0.5f;
+	const TSharedRef<SRxSlider> Slider = SNew(SRxSlider).Value_Lambda([&Value] { return Value; }).Step(0.1f).OnChanged([&Value](float V) { Value = V; });
+	Slider->OnKeyDown(FGeometry(), Key(EKeys::Gamepad_DPad_Left));
+	Check(FMath::IsNearlyEqual(Value, 0.4f), TEXT("D-pad left decreases the actual slider value"));
+	Slider->OnKeyDown(FGeometry(), Key(EKeys::Gamepad_DPad_Right));
+	Check(FMath::IsNearlyEqual(Value, 0.5f), TEXT("D-pad right increases the actual slider value"));
+	return Ok;
 }
 
 // ---------- the end card ----------

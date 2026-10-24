@@ -199,6 +199,8 @@ void US47Flow::Init(US47Main* InM)
 	bAbductOn = S47J::Bool(Store, TEXT("abductions"), true);
 	Sens = float(S47J::Num(Store, TEXT("sens"), 1));
 	bInvertY = S47J::Bool(Store, TEXT("invertY"), false);
+	PadLookSpeed = FMath::Clamp(float(S47J::Num(Store, TEXT("padLookSpeed"), 1)), .3f, 2.5f);
+	bPadInvertY = S47J::Bool(Store, TEXT("padInvertY"), false);
 	BaseFov = float(S47J::Num(Store, TEXT("fov"), 70));
 	bLargeText = S47J::Bool(Store, TEXT("largeText"), false);
 	if (M->UI) M->UI->bLargeText = bLargeText;
@@ -916,6 +918,9 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnPicture = [this](const FString& P) { ApplyPicture(P); };
 	O.PictureStrength = PictureStrength;
 	O.OnPictureStrength = [this](float V) { PictureStrength = S47Picture::Strength(V); ApplyPicture(Picture, false); StoreSet(TEXT("pictureStrength"), double(PictureStrength)); };
+	O.PadLookSpeed = PadLookSpeed; O.bPadInvertY = bPadInvertY;
+	O.OnPadLookSpeed = [this](float V) { PadLookSpeed = FMath::Clamp(V,.3f,2.5f); ApplyLook(); StoreSet(TEXT("padLookSpeed"), double(PadLookSpeed)); };
+	O.OnPadInvertY = [this](bool V) { bPadInvertY = V; ApplyLook(); StoreSet(TEXT("padInvertY"), V); };
 	O.bInvertY = bInvertY;
 	O.OnInvertY = [this](bool V) { bInvertY = V; ApplyLook(); StoreSet(TEXT("invertY"), V); };
 	O.Fov = BaseFov;
@@ -981,6 +986,7 @@ void US47Flow::ApplyLook()
 	if (!M->Player) return;
 	M->Player->Sensitivity = Sens;
 	M->Player->bInvertY = bInvertY;
+	M->Player->PadLookSpeed = PadLookSpeed; M->Player->bPadInvertY = bPadInvertY;
 	M->Player->Fov = BaseFov;
 }
 
