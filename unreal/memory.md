@@ -3,7 +3,7 @@
 ## Mesa Diner, 24. oktober 2026
 
 - Originalt ellevedelt Blenderkit i Tools/mesadiner: fasade/interiør, maskert støvparkering, neonskilt ved fasaden og tractor/reefer. Faktisk root/yaw/floor og originale handlinger/dynamiske objekter beholdes. Dør fysisk åpen; ny fysisk leaf/signfoot, atomisk komplett-kit-fallback.
-- D2 fra9ff022a3:320 kilde-,47 native-,1383 selvtester og9 korte pakkede scenarioer PASS, ti sluttbilder vurdert. Kildescene og spillbilder leveres i skrivebordsmappen Signal47 Mesa Diner 24okt. MESA_DINER.md/acceptance.json har faktisk scope; merge/installasjon gjenstår.
+- D2 fra9ff022a3:320 kilde-,47 native-,1383 selvtester og9 korte pakkede scenarioer PASS, ti sluttbilder vurdert. Kildescene og spillbilder leveres i skrivebordsmappen Signal47 Mesa Diner 24okt. MESA_DINER.md/acceptance.json har faktisk scope; PR152 flettet i61598105 og D2 installert med40 payloadhash/48 uendrede Saved-filer og verifisert backup.
 - Ikke legg frontskirting gjennom åpen dør. ClearTimer inne i executing lambda kan destruere callbackens shared-captures; sett ferdigvakt før etterfølgende ticks. Plasser ikke native neonpunkter fåcm fra malt skiltflate; det ga hvite inverse-square-flekker.
 
 ## Trafostasjonens omgivelser og nærlys,24. oktober2026

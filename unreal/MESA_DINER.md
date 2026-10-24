@@ -25,4 +25,4 @@ Referansebildet har fortsatt rikere overflateslitasje og små naturdetaljer. Men
 
 Kilder, separat Blender-arbeidsscene med kamera/lys, originalen, eksportene, nødvendige originale hjelpekilder og ti spillbilder er samlet i `~/Desktop/Signal47 Mesa Diner 24okt`. `SPILLBILDER.html` viser fasade og interiør. Blender-presentasjonslys/-bakke er kun for kildevisning; spillbildene er native Unreal.
 
-Merge og standardinstallasjon avventer siste leveringskontroll. Ingen normal spillerøkt er startet. Fem eide Content-lenker er fjernet med mål bevart, og begge OpenOrder-filer er gjenopprettet.
+PR152 er flettet i61598105 og testet kandidatD2 installert på standardstien. 40 payloadfiler er hashidentiske, 48 Saved-filer er byteidentiske. Verifisert backup: `/home/tom/scratch-bm/Signal47-mesa-diner/installed-backup-1792864850565907985`. Ingen normal spillerøkt er startet. Fem eide Content-lenker er fjernet med mål bevart, og begge OpenOrder-filer er gjenopprettet.

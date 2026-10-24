@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "directory": "/home/tom/Desktop/Signal47 Mesa Diner 24okt",
+  "original_blend_sha256": "f1ee8c8385b08ac7e94d2f27766f43c07852465423282734943a43f774d23072",
+  "working_scene_sha256": "794de26b5fa10c69287b164d8032ccb3d79807993feff69c083cd21f4005bdff",
+  "native_image_sha256": {
+    "d2-test-front-dusk.png": "3df12b3b6f1b8742b3bbd3996b0699ab57a6878f31554c78675ff19fa45cae76",
+    "d2-test-front-close.png": "7eba5c9c34cdecfbed57bc87738473e21ca6d71a0d03500dd6030bcfb2b6c8e6",
+    "d2-test-front-day.png": "f30dc65cb0cd69357e9672566c2c61a1e47594e4ecfaa69739f34395dfa041fe",
+    "d2-test-front-night.png": "7787f271cb2ad7e48f9c657b5b630593e97b5ebf96b1fe024341174404110ff0",
+    "d2-test-interior.png": "bad04171c7a2e14e865790bea9648704ab5a365038779636f93c476ab5929b61",
+    "d2-test-diner-audit.png": "279fb01ca250d1bf2e62d38ea77bbc590d753d2ddb328f379a51de50598fb745",
+    "d2-test-old-archive.png": "26cc9eab980aaf0b9d93e6ec7dba0b6a00c8efcb353ddcd31e480328dd1cb07e",
+    "d2-test-old-controlroom.png": "d11ba71627936bbbdb30f3b34cd8af24357e499fa3d94b6821d2c59fe21a9681",
+    "takeaway-diner-set-down.png": "349fcb5f1abfad1c5a46cc940925b36e65092b510475658dc5a2c5ae03770d98",
+    "takeaway-held-diner.png": "59d67bd177a822fc18c2e3bd0d77fbf7786f50af9d9a7b882ef148e13166ecc0"
+  },
+  "pr": 152,
+  "candidate": "D2",
+  "tested_source": "9ff022a355339f15e075d485dec4bbd4d2a82aae",
+  "merge_commit": "6159810553c4bba4957b3014ecb3f756d5923fc0",
+  "packed_images": true,
+  "presentation_only_objects": "separate labelled collection; no game-authority claim"
+}

@@ -171,8 +171,13 @@
   ],
   "full_world_suite": "NOT_RUN: user requested focused tests",
   "delivery": {
-    "status": "MERGE_AND_INSTALL_PENDING",
-    "directory": "/home/tom/Desktop/Signal47 Mesa Diner 24okt"
+    "status": "INSTALLED",
+    "pr": 152,
+    "merge_commit": "6159810553c4bba4957b3014ecb3f756d5923fc0",
+    "directory": "/home/tom/Desktop/Signal47 Mesa Diner 24okt",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "backup": "/home/tom/scratch-bm/Signal47-mesa-diner/installed-backup-1792864850565907985"
   },
   "evidence_root": "/home/tom/scratch-bm/Signal47-mesa-diner"
 }
