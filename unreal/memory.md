@@ -1,5 +1,10 @@
 # Minne for unreal/
 
+## Skyoppgaven overtatt, 24. oktober 2026
+
+- Tom ber Codex fullføre Claudes volumetriske skyer etter limit. Skykode f55b760c/04d98231 er allerede integrert; gjenstående cache og levering må bruke natur/film/sky sammen. Gammelt opptak under Signal47-sky har andre shader keys og kan ikke dokumentere ny pakke. SKY.md er bevart og oppdateres med faktisk sluttbevis.
+- Naturmulighetene Canyons of Utah, New Mexico-geologi, fotografisk fjernprojeksjon og Mesh Terrain er lagret som åpne vurderings-/prøvepunkter i todo.md, uten nedlasting eller migrering.
+
 ## Caliche natur, 24. oktober 2026
 
 - Pakke/runtime/kilde/native/installasjonsbevis finnes i Tools/calichenature/acceptance.json og CALICHE_NATURE_PASS.md. screenshots.sh bruker starhole.log/png to ganger; første scenario er derfor tatt om med eget navn, uten å skjule rårapporten med avvist antallsport. Selve 110-scenariorunden bestod på 52,3 minutter.

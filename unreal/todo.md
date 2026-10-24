@@ -1,5 +1,24 @@
 # Todo for unreal/
 
+## Filmisk New Mexico-natur, muligheter lagret 24. oktober 2026
+
+- [ ] Undersøk Quixels Canyons of Utah / Desert Western på Fab som kilde til skannede klipper, steiner og bakke. Samlingen er ikke funnet lokalt; Epic-kontoens eierskap og faktisk nedlastingslisens må kontrolleres. Hele Megascans-biblioteket er ikke automatisk gratis. Bevar lisensbevis og hold tredjeparts råassets utenfor offentlig Git.
+- [ ] Start utvalget med gratisoppføringer som Desert Western Cliff Layered XL 14, Canyon Sandstone Rocky Ground og Desert Western Cluster Rock Medium 05. Kontroller pris, format og lisens på selve nedlastingen, og importer bare relevante deler.
+- [ ] Form mesaer etter New Mexico-referanser, eksempelvis Chaco/San Juan Basin: lagdelt sandstein, separate klippevegger, eroderte skråninger/rasmark og naturlige overganger mot dalbunnen. Skannede Utah-overflater erstatter ikke korrekt silhuett og skala.
+- [ ] Prøv tre avstandslag i gatebiten: detaljert skannet grus/stein, grøfter og vegetasjon nært; belyst 3D-geometri med PBR i mellomgrunnen; enkel fjellgeometri med fotobaserte detaljer og atmosfærisk dis langt unna.
+- [ ] Lag en avgrenset prøve med fotografisk kameraprojeksjon / matte painting på fjerngeometri. Kontroller parallax, sideveis spillerbevegelse, strekking/skjulte flater og innbakt sol/skygge ved dagslys, skumring og natt. Bruk vanlig belyst PBR nær spilleren; skill kameraprojeksjon fra verdensjustert/triplanar materialprojeksjon.
+- [ ] Vurder Mesh Terrain i en separat prøve dersom terrengverktøyene trengs. UE 5.8.4 har MeshTerrainMode, merket Experimental og ikke aktivert her. Ingen automatisk migrering av fungerende verden; mål faktisk spillerutsikt, kostnad og regresjoner først.
+- [ ] Sammenlign samme gateutsikt ved bensinstasjon, suvenirbutikk og radiostasjon fra spillerhøyde i dagslys, skumring og natt. Kvalitetsmål er konseptbildets natur, troverdig dybde, materialer og lys; eksisterende CN5 er fortsatt stilisert.
+
+Kilder fra vurderingen: [Quixels Moab-opptak](https://www.youtube.com/watch?v=ND53AjjPA8Q), [Quixel på Fab](https://www.fab.com/sellers/Quixel%20Megascans?q=arid), [tidligere Fab-/Quixel-rettigheter](https://dev.epicgames.com/documentation/fab/purchasing-and-downloading-assets-in-fab), [Chacos geologi](https://home.nps.gov/chcu/learn/nature/geology.htm), [Mesh Terrain](https://dev.epicgames.com/documentation/unreal-engine/mesh-terrain-in-unreal-engine), [materialprojeksjon](https://dev.epicgames.com/documentation/unreal-engine/texturing-material-functions-in-unreal-engine). Muligheter, ikke implementerte eller visuelt godkjente løsninger.
+
+## Volumetriske skyer, overtatt fra Claude 24. oktober 2026
+
+- [x] Kode f55b760c/04d98231 finnes allerede i integrert natur-/filmversjon; Claudes SKY.md og dokumentlenker er bevart.
+- [ ] Fullfør cache og sluttdokumentasjon på integrert natur/film/sky-kilde. Claudes ufullstendige opptak bygger på eldre sky-pakke og andre shader keys, og brukes ikke som cachebevis for dagens pakke.
+- [ ] Kontroller nye pakkede himmelbilder ved dag, kveld, natt, midnatt og daggry, Low-fallback, komet/stjernehull, selvtester og full screenshots.sh før fletting/installasjon.
+- [ ] Dokumenter faktisk cache-/cook-/runtime-binding og målte begrensninger; behold menneskelig gjennomspilling/lytting og lang tids skybevegelse som UNVERIFIED til prøvd.
+
 ## Caliche natur, 24. oktober 2026
 
 - [x] Tre originale Blenderkit, 36 terrengfliser, 12 plante-/steinprototyper med tre LOD-er og revidert lagdelt geologi.
