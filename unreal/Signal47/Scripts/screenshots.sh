@@ -110,7 +110,7 @@ shot abductframes "S47: the time away: taken" "-S47Jump=chapter1 -S47Face=at:-20
 shot abductover "S47: the time away: one of them over you" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 32
 shot truckb "S47: the truck on B: four done" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35" 30
 shot trucktaken "S47: taken in the truck: woken at the wheel" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35 -S47TruckTaken=5 -S47AwayAt=16" 48
-shot starhole "S47: no stars at 026: noticed" "-S47Jump=chapter2 -S47Face=at:-20;30;3.14;0 -S47StarHole" 10
+shot starhole-noticed "S47: no stars at 026: noticed" "-S47Jump=chapter2 -S47Face=at:-20;30;3.14;0 -S47StarHole" 10
 shot lostnights "S47: the lost nights: the binder and the green pins on the board, 1 book" "-S47Jump=chapter2 -S47Face=room -S47LostNights -S47AwayAt=1.5" 8
 shot flash "S47: FLASH frames shown, 10" "-S47Jump=chapter1 -S47Face=room -S47Flash -S47AwayAt=6.6" 14
 shot third "S47: the third one stands" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Third" 8

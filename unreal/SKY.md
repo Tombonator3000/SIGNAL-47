@@ -1,6 +1,6 @@
 # Volumetriske skyer og skumringslys (sky-pass)
 
-24. oktober 2026, gren `sky-pass` fra `unreal-port-core` dc2820c2. Toms bestilling: volumetriske skyer, få om natta og fritt om dagen, lys, skyer og stemning så nær konseptbildet (`~/scratch-bm/prompts/ref/dusk-concept.png`) som mulig. Codex eier natur (vegetasjon, terreng, mesaer) på `codex/caliche-nature`; dette passet rører bare himmel, skyer, sol/måne/skylight, tåke og eksponering.
+24. oktober 2026, opprinnelig gren `sky-pass` fra `unreal-port-core` dc2820c2. Codex har overtatt sluttføringen etter Claudes limit på Toms bestilling; sky-koden er allerede integrert med natur/film i core1f471862. Toms bestilling: volumetriske skyer, få om natta og fritt om dagen, lys, skyer og stemning så nær konseptbildet (`~/scratch-bm/prompts/ref/dusk-concept.png`) som mulig. Codex eier natur (vegetasjon, terreng, mesaer) på `codex/caliche-nature`; dette passet rører bare himmel, skyer, sol/måne/skylight, tåke og eksponering.
 
 ## Hva som er gjort
 
@@ -47,7 +47,7 @@ Pakkede bilder, High/VHS, 1600 × 900, kveldstidslinjen. `sky-commute` er innkj�
 | Enkeltbilder | `~/scratch-bm/Signal47-sky/final/<HHMM>/<view>.png` |
 | 1440p dusk/dag | `~/scratch-bm/Signal47-sky/perf/*/` |
 
-## Ytelse, RTX 3080, 2560 × 1440, pakket build
+## Historiske målinger før ferdig natur/film, RTX 3080, 2560 × 1440
 
 Snitt/p95 i ms over cirka 3,5 s per kamera (statisk kamera, `graphics-review`-måling), uten konkurrerende tung jobb.
 
@@ -60,7 +60,7 @@ Snitt/p95 i ms over cirka 3,5 s per kamera (statisk kamera, `graphics-review`-m�
 | yard | 12,83 / 19,78 | 11,91 / 16,66 | 12,88 / 17,11 | 9,70 / 11,02 | 24,89 / 38,61 |
 | highway | 10,96 / 12,44 | 10,12 / 11,54 | 10,85 / 12,05 | | |
 
-High holder 60 fps med god margin (tyngste snitt 12,93 ms, cirka 77 fps); skylaget koster cirka 0,7 til 0,9 ms. Ultra (100 % oppløsning, flere prøver) ligger på cirka 40 til 44 fps som før dette passet. Korte prøver er ikke steady state for hele kvelden.
+Historiske High-snitt i disse korte utsnittene er høyst 12,93 ms, cirka 77 fps. Gårdens p95 er 19,78 ms; dette dokumenterer ikke låst 60 fps. På denne eldre pakken er skyenes målte snittforskjell cirka 0,7 til 0,9 ms. Ultra ligger på cirka 40 til 44 fps i utsnittene. Målingene gjelder før ferdig natur-/film-integrasjon og er ikke steady state eller helrutebevis.
 
 ## Prøver
 
@@ -74,4 +74,4 @@ Tuning for gjennomgang uten ny bygg: `-S47NoClouds`, `-S47CloudCover=`, `-S47Clo
 
 ## PSO-cache
 
-Nye shadere (skymaterialet, cloud fogging på stjerner og horisont, skyskygger) betyr at den bundlede graphics-PSO-cachen må tas opp på nytt fra denne cooken (`Scripts/pso-cache.py record`, deretter `expand` og ny pakking, se LIGHTING.md). Opptaket tas i korte bolker (én kvalitet og én klokke av gangen) med pauser, så naturpasset får maskinen innimellom. Status: pågår.
+Nye shadere (skymaterialet, cloud fogging på stjerner og horisont, skyskygger) betyr at den bundlede graphics-PSO-cachen må tas opp på nytt fra denne cooken (`Scripts/pso-cache.py record`, deretter `expand` og ny pakking, se LIGHTING.md). Opptaket tas i korte bolker (én kvalitet og én klokke av gangen) med pauser, så naturpasset får maskinen innimellom. Det gamle opptaket under `~/scratch-bm/Signal47-sky/pso` er ufullstendig og bruker eldre pakke/shader keys. Det er bevart som historikk. Nytt opptak under `~/scratch-bm/Signal47-cloud-completion/pso` bruker den hashkontrollerte, integrerte CN5-pakken og frosne keys. Status: pågår; 4 s oppvarming og 4 s per utsnitt er et cacheopptak, ikke ny helruteytelse.
