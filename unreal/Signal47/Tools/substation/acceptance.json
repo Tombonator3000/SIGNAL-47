@@ -127,5 +127,13 @@
     "limitation": "Existing flashlight washes out the cabinet at close range in the clean night capture. Dusk/night contrast is high; global light/exposure polish is not part of this model pass."
   },
   "evidence_root": "/home/tom/scratch-bm/Signal47-substation",
-  "installation": "PENDING"
+  "installation": {
+    "status": "PASS",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-substation/installed-backup-1792857344762409257",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "source_head": "8bd33349916e25c13987c34784586e0aa4cb1032",
+    "pr": 150
+  }
 }

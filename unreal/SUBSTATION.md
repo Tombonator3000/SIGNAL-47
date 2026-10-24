@@ -14,7 +14,7 @@ Kilde `43ab2430`, pakket kandidat S2 i `~/scratch-bm/Signal47-substation/candida
 
 Seks målrettede pakkede kontroller består: inspeksjon med fysisk gange/blikk/lagre/last, dag, skumring, natt, SARO-kontrollrom og STATION 01s normale ankomstområde. Inspeksjonen går gjennom samme Walker-bevegelse og Inter::Pick som vanlig spill før handlingene utføres: opp rampen, stopp ved gjerdet, les servicejournal, kjør lokal kontroll, sammenlign faktisk lampemateriale/lys og åpne en manuell disk-lagring gjennom Flow. Posisjon, resultat og klokkeslett gjenopprettes. Normal fotgjengermodus på denne veietappen heter `diner` i eksisterende kode. Ingen ny reise eller område er innført.
 
-Originale Blender-kilder og 10 separate deler med tre FBX-LOD-er er bevart. Ingen full 110-runde eller ny PSO-matrise er kjørt. Dette er avgrenset funksjons-/plasseringsbevis, ingen menneskelig kontrollerprøve eller helruteytelsesmåling. `Tools/substation/acceptance.json` peker på pakkehash og råbevis. Merge og lokal installasjon gjenstår ved dette kontrollpunktet.
+Originale Blender-kilder og 10 separate deler med tre FBX-LOD-er er bevart. Ingen full 110-runde eller ny PSO-matrise er kjørt. Dette er avgrenset funksjons-/plasseringsbevis, ingen menneskelig kontrollerprøve eller helruteytelsesmåling. `Tools/substation/acceptance.json` peker på pakkehash og råbevis. PR150 er flettet i `8bd33349`. Samme testede kandidat er installert i `~/Games/Signal47/Linux`, med 40 identiske payloadfiler og 48 uendrede Saved-filer. Sikkerhetskopi: `/home/tom/scratch-bm/Signal47-substation/installed-backup-1792857344762409257`. Standardstarteren åpner denne installasjonen.
 
 ## Visuell kontroll og grenser
 

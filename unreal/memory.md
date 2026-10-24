@@ -3,6 +3,7 @@
 ## Caliche Junction Substation, 24. oktober 2026
 
 - Originalt kit i Tools/substation: 10 deler, 3 LOD-er, redigerbar Blend og originale PBR-kart. Native root Three(7890,-1.10,536.20), yaw180, tilgjengelig kontrollfront utenfor stengt yard. Normal fotgjengermodus her er diner, selv om Props og gangdata er road.
+- PR150 flettet i8bd33349, kandidatS2 installert: 40 payloadhash, 48 uendrede Saved-filer og verifisert backup.
 - Kilde43ab2430 / kandidatS2: 304 kilde-,41 native-,1378 selvtester og seks korte pakkede kontroller PASS. Faktisk Walker-gange, gjerdestopp, øyetrace, journal/service/lampe og diskreload med samme pose/tid er kontrollert. SUBSTATION.md/acceptance.json har råforsøk og begrensninger.
 - Walkable tester bare soner; collidere håndheves av Resolve. Test fysisk gange når et gjerde skal verifiseres. STATION01 world-origin er z8000, ikke0. Unngå ugyldige diagnostiske posisjoner. Nær lommelykt kan overeksponere nytt skap; lysbalanse gjenstår.
 

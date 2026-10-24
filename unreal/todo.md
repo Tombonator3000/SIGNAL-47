@@ -4,7 +4,7 @@
 
 - [x] Bygg original Blender-transformator og serviceanlegg, plasser tilgjengelig langs eksisterende rute og koble undersøkelser til faktisk scene.
 - [x] Kort målrettet modell-/plassering-/interaksjonskontroll og commit/push. Seks sluttkontroller, ingen full verdensrunde.
-- [ ] Flett og installer samme testede pakke med spillerlagring bevart.
+- [x] PR150 flettet og samme testede kandidat S2 installert, 40 payloadhash og 48 uendrede Saved-filer.
 - [ ] Finjuster nattens nærlys/eksponering: eksisterende lommelykt vasker ut skapet på nært hold.
 - [ ] Neste modellprioritet rundt anlegget: avgangsstolper og luftlinje, lite vedlikeholdsskur med kabeltromler, deretter veigrøft/kulvert og eroderte grusoverganger. Forslag, ikke påbegynt.
 
