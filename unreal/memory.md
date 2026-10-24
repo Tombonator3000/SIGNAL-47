@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Caliche Junction Substation, 24. oktober 2026
+
+- Originalt kit i Tools/substation: 10 deler, 3 LOD-er, redigerbar Blend og originale PBR-kart. Native root Three(7890,-1.10,536.20), yaw180, tilgjengelig kontrollfront utenfor stengt yard. Normal fotgjengermodus her er diner, selv om Props og gangdata er road.
+- Kilde43ab2430 / kandidatS2: 304 kilde-,41 native-,1378 selvtester og seks korte pakkede kontroller PASS. Faktisk Walker-gange, gjerdestopp, øyetrace, journal/service/lampe og diskreload med samme pose/tid er kontrollert. SUBSTATION.md/acceptance.json har råforsøk og begrensninger.
+- Walkable tester bare soner; collidere håndheves av Resolve. Test fysisk gange når et gjerde skal verifiseres. STATION01 world-origin er z8000, ikke0. Unngå ugyldige diagnostiske posisjoner. Nær lommelykt kan overeksponere nytt skap; lysbalanse gjenstår.
+
 ## Xbox-kontroller, 24. oktober 2026
 
 - Xbox-kilde `3d016a07`, kandidat X4: 1373 selvtester, elleve native kernel/SDL/Slate-opptak i målte scopes og 16 målrettede regresjoner PASS. PR149 er flettet i fda74798 og kandidat X4 installert med 40 verifiserte payloadfiler og 48 uendrede Saved-filer. GAMEPAD.md har kontroller, bevis og uverifiserte handlinger.

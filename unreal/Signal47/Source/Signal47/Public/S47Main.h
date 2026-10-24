@@ -50,6 +50,7 @@ public:
 	TSharedPtr<class FS47AnomalyTest> AnomalyTest;
 	TSharedPtr<class FS47Anomaly> Anomaly;
 	TSharedPtr<class FS47AnomalyWorld> AnomalyWorld;
+	TSharedPtr<class FS47Substation> Substation; // local, persistent Caliche Junction inspection circuit
 	TSharedPtr<class FS47Evening> Evening; // authored evening opening and persistent pack gates
 	TSharedPtr<class FS47CB> CB; // core/cb.ts: the CB under the truck's dash (main.ts const cb; made with chapter four)
 

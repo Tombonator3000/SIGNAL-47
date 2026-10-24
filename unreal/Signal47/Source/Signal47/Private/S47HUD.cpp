@@ -1,6 +1,7 @@
 #include "S47HUD.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
+#include "S47Substation.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 #include "S47AnomalyTest.h"
@@ -148,6 +149,7 @@ void AS47HUD::Start()
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= FS47Evening::SelfTest(Lines);
+		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);
 		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
@@ -500,6 +502,8 @@ void AS47HUD::Start()
 		M->Anomaly = MakeShared<FS47Anomaly>(M);
 		M->AnomalyWorld = MakeShared<FS47AnomalyWorld>(M);
 		M->AnomalyTest = MakeShared<FS47AnomalyTest>(M);
+		M->Substation = MakeShared<FS47Substation>(M);
+		M->Substation->Begin();
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

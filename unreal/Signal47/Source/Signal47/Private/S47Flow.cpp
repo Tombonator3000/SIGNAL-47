@@ -1,5 +1,6 @@
 #include "S47Flow.h"
 #include "S47Evening.h"
+#include "S47Substation.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 
@@ -579,7 +580,7 @@ void US47Flow::StartGame(const FStart& O)
 	}
 	// a save made at the station or in room 6 needs that area (the exported world has them all)
 	const FString SavedArea = S47J::Str(O.State, TEXT("area"));
-	const FString Area = SavedArea == TEXT("station01") || SavedArea == TEXT("room6") || SavedArea == TEXT("diner") ? SavedArea : FString(TEXT("saro"));
+	const FString Area = SavedArea == TEXT("station01") || SavedArea == TEXT("room6") || SavedArea == TEXT("diner") || SavedArea == TEXT("road") ? SavedArea : FString(TEXT("saro"));
 	CaseId = O.CaseId;
 	M->Playtime = O.Playtime;
 	if (CaseId) Saves.SetActive(CaseId);
@@ -633,6 +634,7 @@ void US47Flow::StartGame(const FStart& O)
 		if (A.bValid) M->Player->Place(A.X, A.Z, A.Yaw);
 	}
 	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
+	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
 	if (Checkpoint == TEXT("routine")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
 	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
 	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
@@ -1079,6 +1081,7 @@ S47J::FObj US47Flow::GameState()
 	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);
 	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());
 	if (M->Anomaly) S47J::Set(State,TEXT("anomaly"),M->Anomaly->Save());
+	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
 	if (Checkpoint == TEXT("routine")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
@@ -1181,6 +1184,7 @@ FString US47Flow::PlaceName(const FVector& P) const
 {
 	// main.ts placeName: the place on a save's card
 	const FString Area = M->Web ? M->Web->Area() : FString(TEXT("saro"));
+	if (M->Substation && M->Substation->Ready() && (Area == TEXT("road") || Area == TEXT("diner")) && P.X >= 7878 && P.X <= 7902 && P.Z >= 519 && P.Z <= 546) return TEXT("Caliche Junction Substation");
 	auto In = [&](const TCHAR* Path) { return M->Web && M->Web->Rect(Path).Contains(P.X, P.Z); };
 	// (world.indoors, the town and the road's stops are the world's, not ported yet: the inside of the
 	// hut by its bounds, the rest by the area's own name)

@@ -1,0 +1,196 @@
+{
+  "_doc": "Original Caliche Junction local inspection front beside the existing survey service track. Three world root [7890,-1.10,536.20], kit yaw180. Blender (x,y,z) maps to world (7890-x,-1.10+z,536.20+y). Closed yard begins worldZ529; journal and enclosed service control remain outside. Floor Y0/Y1 follow WORLD min-to-max axis as required by S47Props, after the 180deg rotation. No new area/trip/story gate.",
+  "area": "road",
+  "walk": "road",
+  "leg": "road",
+  "grounds": [
+    "road"
+  ],
+  "parent": "world.legs.road.area.group",
+  "props": [
+    {
+      "id": "substationTransformer",
+      "model": "/Game/Substation/SM_Substation_Transformer.SM_Substation_Transformer",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationBuswork",
+      "model": "/Game/Substation/SM_Substation_Buswork.SM_Substation_Buswork",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationControl",
+      "model": "/Game/Substation/SM_Substation_Control.SM_Substation_Control",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false,
+      "blocks": [
+        [
+          4.25,
+          5.75,
+          8.04,
+          8.94
+        ]
+      ]
+    },
+    {
+      "id": "substationStatusLamp",
+      "model": "/Game/Substation/SM_Substation_StatusLamp.SM_Substation_StatusLamp",
+      "at": [
+        7885.38,
+        0.6,
+        527.275
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationLever",
+      "model": "/Game/Substation/SM_Substation_Lever.SM_Substation_Lever",
+      "at": [
+        7884.48,
+        0.05,
+        527.26
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationFence",
+      "model": "/Game/Substation/SM_Substation_Fence.SM_Substation_Fence",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false,
+      "blocks": [
+        [
+          -10,
+          10,
+          -8,
+          7.2
+        ]
+      ]
+    },
+    {
+      "id": "substationGate_L",
+      "model": "/Game/Substation/SM_Substation_Gate_L.SM_Substation_Gate_L",
+      "at": [
+        7892.2,
+        -1.1,
+        529
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationGate_R",
+      "model": "/Game/Substation/SM_Substation_Gate_R.SM_Substation_Gate_R",
+      "at": [
+        7887.8,
+        -1.1,
+        529
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationPad",
+      "model": "/Game/Substation/SM_Substation_Pad.SM_Substation_Pad",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false,
+      "zones": [
+        [
+          3.2,
+          6.8,
+          7.7,
+          14.5
+        ]
+      ],
+      "floors": [
+        [
+          4.1,
+          5.9,
+          7.75,
+          9.25,
+          0,
+          0,
+          "z"
+        ],
+        [
+          3.2,
+          6.8,
+          9.25,
+          14,
+          -0.25,
+          0,
+          "z"
+        ]
+      ]
+    },
+    {
+      "id": "substationGravel",
+      "model": "/Game/Substation/SM_Substation_Gravel.SM_Substation_Gravel",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    }
+  ],
+  "views": [
+    {
+      "name": "substation-front",
+      "at": [
+        7885,
+        524.8,
+        3.14159,
+        -0.05
+      ]
+    },
+    {
+      "name": "substation-yard",
+      "at": [
+        7894,
+        523.4,
+        3.14159,
+        0.12
+      ]
+    }
+  ]
+}
