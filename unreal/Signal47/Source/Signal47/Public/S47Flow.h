@@ -96,7 +96,8 @@ public:
 	float Volume = 0.8f, MusicLevel = 0.7f, RadioLevel = 1.f, Sens = 1.f, BaseFov = 70.f;
 	bool bInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bAbductOn = true;
 	bool bCharacters = true, bSerling = true, bKinski = false, bArtBell = true, bRadioCast = true;
-	FString Quality = TEXT("high"), Picture = TEXT("vhs");
+	FString Quality = TEXT("high"), Picture = TEXT("carpenter");
+	float PictureStrength = 1.f;   // film/tape blend; zero keeps the selected look for later
 	float Brightness = 0.5f;        // the Unreal version's own: the light into the tone curve (0..1, .5 as made)
 
 	// tests (-S47Open=<view>): opening, save, load, settings, card

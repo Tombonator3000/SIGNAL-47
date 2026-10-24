@@ -43,8 +43,9 @@ struct FS47PauseOpts
 	bool bUltraOk = false;
 	FString Title;                        // empty: 'Paused'
 	bool bSettingsOnly = false;
-	FString Picture = TEXT("vhs");        // 'off' | 'vhs'
+	FString Picture = TEXT("carpenter");  // 'off' | 'vhs' | 'carpenter' | '16mm' | 'super8'
 	TFunction<void(const FString&)> OnPicture;
+	float PictureStrength = 1.f; TFunction<void(float)> OnPictureStrength;
 	bool bInvertY = false; TFunction<void(bool)> OnInvertY;
 	float Fov = 70.f; TFunction<void(float)> OnFov;
 	bool bLargeText = false; TFunction<void(bool)> OnLargeText;

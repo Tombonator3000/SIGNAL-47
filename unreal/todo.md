@@ -27,6 +27,11 @@
 - [x] Reprodusert terskellåsing ved lukking under spilleren, sperret lukking og reparert gammel save før lasterens Walkable-port. Samme posisjon og klokke beholdes.
 - [x] Flettet bygg/pakking, 1286 selvtester, 48 vanlige gangpasseringer, fire ferske lastinger pluss gammel terskelsave, hel burgerrute, seks regresjonshopp og alle påkrevde bil-/inngangsbilder PASS. Rapport EVENING_VEHICLE_FIXES.md, pakkekilde 66d2b5a6/core04517414; hasher uendret, lenker/OpenOrder ryddet. Ingen push/PR/installasjon, Claude integrerer.
 - [ ] Menneskelig gjentakelse etter Claudes integrasjon. Denne leveransen beviser automatiske bevegelses-/lastescenarioer, ikke Toms neste fullnatt med ekte input.
+## Filmfiltre, codex/film-looks, 23. oktober 2026
+- [x] Carpenter 35 mm, Desert 16 mm, Super 8, forbedret VHS og Clean; styrke, lagring og tilgjengelighetskobling.
+- [x] Separat PictureMode med bevart Vhs-blend og capture-kontrakt; privat materialregenerering.
+- [x] Sluttpakke 8ba39556 med core 04517414, 1298 selvtester, ni funksjons-/UI-/diskprøver, 36 kamerabilder og varm High/1440p-kostnad. Claude-gjennomgang, cache-remapping og hasher PASS. Se FILM_LOOKS.md.
+- [ ] Menneskelig vurdering av levende korn/flimring og komfort; HDR og SteamOS/Deck. Ny full PSO-matrise for hele den endrede verdenen gjenstår før en slik dekningspåstand.
 
 ## Anomaly-pilot, codex/anomaly-pilot, 23. oktober 2026
 
@@ -156,7 +161,7 @@
 - [ ] Musikk- og radionivået (Music, Radio) inn i lydmodulen når den har egne busser; volumet virker allerede.
 - [ ] Feltkameraet og rullen i Kit-fanen: sett `M->Flow->HaveCamera` og `RollText` når kapittel 1 og albumet er portert.
 - [x] Musikk- og radionivået (Music, Radio) inn i lydmodulens busser, inklusive tittellåten (2026-10-22).
-- [ ] Worn VHS (bildet `heavy`) i M_WebTone; nå bare Clean og VHS.
+- [x] Bildevalg erstattet av filmprofilene i FILM_LOOKS.md; gamle `heavy`-valg normaliseres til forbedret VHS.
 - [ ] Fortelleren (Serling) til åpningskortet og kapittelkortet når stemmene er portert.
 
 ## Nattens lag (2026-10-22)
