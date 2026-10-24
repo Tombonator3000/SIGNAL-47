@@ -166,15 +166,24 @@ FString S47Keys::Name(const FKey& K)
 FString S47Keys::Label(FName Action)
 {
 	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
-	const TArray<FKey, TInlineAllocator<2>> K = KeysOf(Action);
-	return K.Num() ? Short(K[0]) : FString();
+	// KeysOf also contains fixed controller aliases; keyboard hints use only the saved slots.
+	for (int32 Slot = 0; Slot < 2; ++Slot)
+	{
+		const FKey K = Key(Action, Slot);
+		if (K.IsValid()) return Short(K);
+	}
+	return FString();
 }
 
 FString S47Keys::Said(FName Action)
 {
 	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
-	const TArray<FKey, TInlineAllocator<2>> K = KeysOf(Action);
-	return K.Num() ? Name(K[0]) : FString();
+	for (int32 Slot = 0; Slot < 2; ++Slot)
+	{
+		const FKey K = Key(Action, Slot);
+		if (K.IsValid()) return Name(K);
+	}
+	return FString();
 }
 
 bool S47Keys::Bindable(const FKey& K)
@@ -380,6 +389,11 @@ bool S47Keys::SelfTest(TArray<FString>& Out)
 		Load(Both);
 		Check(Is(TEXT("shutter"), EKeys::SpaceBar) && Is(TEXT("jump"), EKeys::SpaceBar) && !Is(TEXT("describe"), EKeys::SpaceBar), TEXT("a file with both keeps both, and no third"));
 	}
+	// A user may deliberately leave both keyboard slots empty while Xbox remains usable.
+	Clear(TEXT("camera"), 0); Clear(TEXT("camera"), 1);
+	Check(Label(TEXT("camera")).IsEmpty() && Said(TEXT("camera")).IsEmpty(), TEXT("fully unbound keyboard hints stay empty rather than showing an Xbox alias"));
+	Check(Is(TEXT("camera"), EKeys::Gamepad_FaceButton_Left) && KeysOf(TEXT("camera")).Contains(EKeys::Gamepad_FaceButton_Left) && S47Gamepad::Label(TEXT("camera")) == TEXT("X"), TEXT("clearing keyboard slots preserves the fixed Xbox camera binding and label"));
+	Check(Bind(TEXT("camera"), 1, EKeys::K) == EBind::Done && Label(TEXT("camera")) == TEXT("K") && Said(TEXT("camera")) == TEXT("K"), TEXT("keyboard hints fall through an empty first slot to the second saved key"));
 	Load(Before);
 	return bOk;
 }

@@ -144,6 +144,10 @@ namespace
    if(bDispatch)return false;
    SyncMenu(App);
    const FKey K=E.GetKey();const float V=E.GetAnalogValue();
+   if(FParse::Param(FCommandLine::Get(),TEXT("S47GamepadLog")) &&
+      ((K==EKeys::Gamepad_LeftTriggerAxis&&!FMath::IsNearlyEqual(LT,double(V),.001)) ||
+       (K==EKeys::Gamepad_RightTriggerAxis&&!FMath::IsNearlyEqual(RT,double(V),.001))))
+    UE_LOG(LogS47Gamepad,Display,TEXT("S47: pad trigger key=%s value=%.4f ui=%d active=%d waitLT=%d waitRT=%d device=%d"),*K.ToString(),V,Menu()?1:0,AcceptInput()?1:0,WaitLT?1:0,WaitRT?1:0,E.GetInputDeviceId().GetId());
    if(!K.IsGamepadKey())return false;
    if(!AcceptInput())return true;
    if(!Adopt(E,FMath::Abs(V)>.20f))return false;
