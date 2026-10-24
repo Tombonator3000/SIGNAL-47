@@ -10,6 +10,18 @@ Transformator, bussføring, kontrollskap, statuslampe, servicehendel, gjerde, po
 
 ## Gjeldende status
 
-Modellkilden og alle ti native deler er kontrollert: 304 kildekontroller og 41 native kontroller PASS. Tre faktiske LOD-er per del gir totalt 52 994 / 27 130 / 16 950 trekanter. Editorbygget er bestått. Pakket spill og installasjon avventer kort runtimekontroll. Verifisering begrenses til det nye stedet, adkomst og service/lagring, spillerbilder i relevante lysforhold og et kort gammelt regresjonsutvalg. Ingen full 110-runde er bestilt.
+Kilde `43ab2430`, pakket kandidat S2 i `~/scratch-bm/Signal47-substation/candidate-S2`. Original Blend og eksport, 304 faktiske kildekontroller, 41 native mål-/LOD-/materialkontroller, editorbygg, Linux-pakke og 1378 selvtester PASS. Kitets tre detaljnivåer har 52 994 / 27 130 / 16 950 trekanter totalt.
+
+Seks målrettede pakkede kontroller består: inspeksjon med fysisk gange/blikk/lagre/last, dag, skumring, natt, SARO-kontrollrom og STATION 01s normale ankomstområde. Inspeksjonen går gjennom samme Walker-bevegelse og Inter::Pick som vanlig spill før handlingene utføres: opp rampen, stopp ved gjerdet, les servicejournal, kjør lokal kontroll, sammenlign faktisk lampemateriale/lys og åpne en manuell disk-lagring gjennom Flow. Posisjon, resultat og klokkeslett gjenopprettes. Normal fotgjengermodus på denne veietappen heter `diner` i eksisterende kode. Ingen ny reise eller område er innført.
+
+Originale Blender-kilder og 10 separate deler med tre FBX-LOD-er er bevart. Ingen full 110-runde eller ny PSO-matrise er kjørt. Dette er avgrenset funksjons-/plasseringsbevis, ingen menneskelig kontrollerprøve eller helruteytelsesmåling. `Tools/substation/acceptance.json` peker på pakkehash og råbevis. Merge og lokal installasjon gjenstår ved dette kontrollpunktet.
+
+## Visuell kontroll og grenser
+
+Blender-forhåndsvisning og seks faktiske spillerbilder er vurdert. Gjerde, fysisk skilt, kjøleribber, tre faseisolatorer, busstativ, kontrollskap og rampe finnes i scenen med egne materialer. Det synlige håndtaket ligger nå innenfor bruksmålet. Dag og skumring er tatt ved samme spillerhøye frontposisjon; natt viser kontrollfronten, og fullført lampetilstand er fanget separat etter lagring/lasting.
+
+Nattkontrasten er høy, og eksisterende lommelykt kan overeksponere skapet på nært hold. Videre lys-/eksponeringsbalanse er ført i todo; denne leveransen hevder ikke ferdig fotorealistisk landskap eller full visuell nattpolering.
+
+Råforsøk er beholdt: første kildeverifikasjon krevde feilaktig glatte endekapper; korreksjonen krever faktisk glatte porselenskropper og nøyaktige flate kapper. Første runtimekontroll brukte Walkable som kollisjonstest, men API-et tester gangsoner. Sluttprøven bruker faktisk bevegelse. Et senere gammelt områdeforsøk brukte ugyldig STATION 01-posisjon `(0,0)` og fikk Vulkan device-lost; årsaken til grafikkfeilen er ikke fastslått. Eksporten har stasjonsorigin z8000. Nytt forsøk ved reell ankomst `(-22,8032)` bestod. Ingen av de avviste forsøkene telles som PASS.
 
 Prosjektbiblioteket ble søkt før implementering. Profilene `x-2108195576206488058` og `x-2111849852350894319` er generelle, uverifiserte Blender/Unreal-arbeidsflyter. Ingen geometri eller kode derfra brukes. Importoppsettet gjenbruker prosjektets egen målte FBX-/materialoppskrift fra `Tools/radioarray/import_assets.py`.

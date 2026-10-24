@@ -2,8 +2,10 @@
 
 ## Trafostasjon, 24. oktober 2026
 
-- [ ] Bygg original Blender-transformator og serviceanlegg, plasser tilgjengelig langs eksisterende rute og koble undersøkelser til faktisk scene.
-- [ ] Kort målrettet modell-/plassering-/interaksjonskontroll, deretter commit/push og testet levering.
+- [x] Bygg original Blender-transformator og serviceanlegg, plasser tilgjengelig langs eksisterende rute og koble undersøkelser til faktisk scene.
+- [x] Kort målrettet modell-/plassering-/interaksjonskontroll og commit/push. Seks sluttkontroller, ingen full verdensrunde.
+- [ ] Flett og installer samme testede pakke med spillerlagring bevart.
+- [ ] Finjuster nattens nærlys/eksponering: eksisterende lommelykt vasker ut skapet på nært hold.
 - [ ] Neste modellprioritet rundt anlegget: avgangsstolper og luftlinje, lite vedlikeholdsskur med kabeltromler, deretter veigrøft/kulvert og eroderte grusoverganger. Forslag, ikke påbegynt.
 
 
