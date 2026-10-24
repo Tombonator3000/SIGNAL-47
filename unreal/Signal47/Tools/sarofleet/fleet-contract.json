@@ -647,28 +647,28 @@
           7.21999979019165
         ]
       ],
-      "triangles": 12574,
+      "triangles": 10702,
       "materials": [
         "slot0.001"
       ],
       "lods": [
         {
           "lod": 0,
-          "triangles": 12574,
+          "triangles": 10702,
           "materials": [
             "slot0.001"
           ]
         },
         {
           "lod": 1,
-          "triangles": 12574,
+          "triangles": 10702,
           "materials": [
             "slot0.001"
           ]
         },
         {
           "lod": 2,
-          "triangles": 12574,
+          "triangles": 10702,
           "materials": [
             "slot0.001"
           ]
@@ -759,7 +759,261 @@
       "url": "https://sketchfab.com/3d-models/41b3a5c0bc534817b3311c3736c403e6"
     }
   ],
-  "legacy_trim_removed_triangles": 976,
+  "legacy_trim_removed_triangles": 2848,
+  "legacy_window_trim": {
+    "status": "SOURCE_INDEX_UNION_VERIFIED_NATIVE_UNVERIFIED",
+    "source_geo": 454,
+    "source_file_sha256": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9",
+    "source_triangles": 13550,
+    "car_removed_triangles": 976,
+    "window_removed_triangles": 1872,
+    "result_triangles": 10702,
+    "window_openings": [
+      {
+        "side": "north",
+        "index": 0,
+        "sign": -1,
+        "bounds_three_m": [
+          20.939,
+          22.511,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 108,
+        "removed_triangles": 108
+      },
+      {
+        "side": "north",
+        "index": 1,
+        "sign": -1,
+        "bounds_three_m": [
+          23.189,
+          24.761,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 204,
+        "removed_triangles": 204
+      },
+      {
+        "side": "north",
+        "index": 2,
+        "sign": -1,
+        "bounds_three_m": [
+          25.439,
+          27.011,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 48,
+        "removed_triangles": 48
+      },
+      {
+        "side": "north",
+        "index": 3,
+        "sign": -1,
+        "bounds_three_m": [
+          27.689,
+          29.261,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 48,
+        "removed_triangles": 48
+      },
+      {
+        "side": "north",
+        "index": 4,
+        "sign": -1,
+        "bounds_three_m": [
+          29.939,
+          31.511,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 48,
+        "removed_triangles": 48
+      },
+      {
+        "side": "north",
+        "index": 5,
+        "sign": -1,
+        "bounds_three_m": [
+          32.189,
+          33.761,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 48,
+        "removed_triangles": 48
+      },
+      {
+        "side": "north",
+        "index": 6,
+        "sign": -1,
+        "bounds_three_m": [
+          34.439,
+          36.011,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 48,
+        "removed_triangles": 48
+      },
+      {
+        "side": "north",
+        "index": 7,
+        "sign": -1,
+        "bounds_three_m": [
+          36.689,
+          38.261,
+          0.529,
+          2.387,
+          -5.5501,
+          -5.4999
+        ],
+        "expected_triangles": 144,
+        "removed_triangles": 144
+      },
+      {
+        "side": "south",
+        "index": 0,
+        "sign": 1,
+        "bounds_three_m": [
+          20.939,
+          22.511,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 108,
+        "removed_triangles": 108
+      },
+      {
+        "side": "south",
+        "index": 1,
+        "sign": 1,
+        "bounds_three_m": [
+          23.189,
+          24.761,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 168,
+        "removed_triangles": 168
+      },
+      {
+        "side": "south",
+        "index": 2,
+        "sign": 1,
+        "bounds_three_m": [
+          25.439,
+          27.011,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 228,
+        "removed_triangles": 228
+      },
+      {
+        "side": "south",
+        "index": 3,
+        "sign": 1,
+        "bounds_three_m": [
+          27.689,
+          29.261,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 156,
+        "removed_triangles": 156
+      },
+      {
+        "side": "south",
+        "index": 4,
+        "sign": 1,
+        "bounds_three_m": [
+          29.939,
+          31.511,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 216,
+        "removed_triangles": 216
+      },
+      {
+        "side": "south",
+        "index": 5,
+        "sign": 1,
+        "bounds_three_m": [
+          32.189,
+          33.761,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 48,
+        "removed_triangles": 48
+      },
+      {
+        "side": "south",
+        "index": 6,
+        "sign": 1,
+        "bounds_three_m": [
+          34.439,
+          36.011,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 204,
+        "removed_triangles": 204
+      },
+      {
+        "side": "south",
+        "index": 7,
+        "sign": 1,
+        "bounds_three_m": [
+          36.689,
+          38.261,
+          0.529,
+          2.387,
+          5.4999,
+          5.5501
+        ],
+        "expected_triangles": 48,
+        "removed_triangles": 48
+      }
+    ],
+    "retained_corner_uv_material_sha256": "39bad6b723d85a381ddb17f3e14e4d3aa0415294cea505caaa65ad8adbc82f94",
+    "retained_corner_uv_material_exact": true,
+    "preserved": "Every triangle outside the two old car bodies and sixteen individual old window prisms; roof/details/lights/downspouts/meters/site props and all gameplay nodes retained."
+  },
   "targeted_geometry_cleanup": [
     {
       "part": "SM_SaroPark_Sedan",
@@ -1106,22 +1360,22 @@
       "part": "SM_SaroPark_LegacyTrim",
       "lod": 0,
       "changed": false,
-      "triangles_before": 12574,
-      "triangles_after": 12574
+      "triangles_before": 10702,
+      "triangles_after": 10702
     },
     {
       "part": "SM_SaroPark_LegacyTrim",
       "lod": 1,
       "changed": false,
-      "triangles_before": 12574,
-      "triangles_after": 12574
+      "triangles_before": 10702,
+      "triangles_after": 10702
     },
     {
       "part": "SM_SaroPark_LegacyTrim",
       "lod": 2,
       "changed": false,
-      "triangles_before": 12574,
-      "triangles_after": 12574
+      "triangles_before": 10702,
+      "triangles_after": 10702
     }
   ]
 }

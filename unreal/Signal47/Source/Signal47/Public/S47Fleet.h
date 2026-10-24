@@ -31,7 +31,7 @@ private:
 class SIGNAL47_API FS47FleetParked
 {
 public:
- static TSharedPtr<FS47FleetParked> Build(AS47Web* Web);
+ static TSharedPtr<FS47FleetParked> Build(AS47Web* Web,bool bSiteReady);
  bool Ready()const{return bReady;}
  int32 Parts()const{return Components.Num();}
  bool Audit(TArray<FString>& Lines)const;

@@ -12,12 +12,28 @@
 #include "S47Startup.h"
 #include "S47UI.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformFileManager.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
 DEFINE_LOG_CATEGORY_STATIC(LogS47ProductionViews,Log,All);
+namespace
+{
+ // A screenshot request is asynchronous. File existence alone can observe a partial PNG;
+ // require its signature and complete terminal IEND before changing the review scene.
+ bool ProductionPngWritten(const FString& Path)
+ {
+  TUniquePtr<IFileHandle> File(FPlatformFileManager::Get().GetPlatformFile().OpenRead(*Path,true));
+  if(!File || File->Size()<20)return false;
+  static const uint8 Signature[]={137,80,78,71,13,10,26,10};
+  static const uint8 End[]={0,0,0,0,73,69,78,68,174,66,96,130};
+  uint8 Header[8],Tail[12];
+  return File->Read(Header,sizeof(Header)) && File->Seek(File->Size()-sizeof(Tail)) && File->Read(Tail,sizeof(Tail))
+   && FMemory::Memcmp(Header,Signature,sizeof(Header))==0 && FMemory::Memcmp(Tail,End,sizeof(Tail))==0;
+ }
+}
 void AS47Web::BeginProductionViews()
 {
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ProductionCab")))
@@ -51,14 +67,25 @@ void AS47Web::BeginProductionViews()
   {TEXT("room6"),TEXT("room6"),{-1.4,0,-7997.7},{1,1,-8001.4}},
   {TEXT("room6-bath"),TEXT("room6"),{-1.05,0,-8003.55},{-.3,1,-8004.95}}
  };
- struct FState {int32 Index=0;bool Placed=false,Done=false,bFloorOverride=false;double Since=0;FString Dir,Suite;TFunction<double(double,double)> PreviousFloor;};
+ struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false;double Since=0,Hold=2.5,RequestedAt=0;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
  const TWeakObjectPtr<AS47Web> Self=this;FTimerHandle Timer;
  GetWorldTimerManager().SetTimer(Timer,[Self,State]{
   if(State->Done)return;AS47Web* W=Self.Get();auto* M=W?US47Main::Get(W):nullptr;
-  if(!M||!M->Flow||!M->Story||!M->World||!M->Player||S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
+  if(!M||!M->Flow||!M->Story||!M->World||!M->Player)return;
   auto RestoreFixtureFloor=[State,M]{if(State->bFloorOverride){M->Player->Floor=MoveTemp(State->PreviousFloor);State->bFloorOverride=false;}};
   auto Fail=[State,RestoreFixtureFloor](const TCHAR* Why){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);};
+  if(!State->PendingFile.IsEmpty())
+  {
+   if(ProductionPngWritten(State->PendingFile))
+   {
+    UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production screenshot written %s"),*State->PendingFile);
+    State->PendingFile.Empty();++State->Index;State->Placed=false;
+   }
+   else if(FPlatformTime::Seconds()-State->RequestedAt>15.)Fail(TEXT("requested PNG was not completely written within 15 seconds"));
+   return;
+  }
+  if(S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
   FString UserDir;if(!M->Flow->bDevRun||M->Flow->CaseId!=0||!FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir)||!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),FPaths::ConvertRelativePathToFull(UserDir))||State->Dir.IsEmpty()){Fail(TEXT("requires isolated unsaved profile"));return;}
   while(State->Index<UE_ARRAY_COUNT(Views)*3)
   {
@@ -71,7 +98,8 @@ void AS47Web::BeginProductionViews()
   {
    if(M->World->bDriving){Fail(TEXT("fixture starts outside vehicle"));return;}
    RestoreFixtureFloor();
-   M->Story->SetCinematic(true);M->World->Enter(V.Area);
+   const bool AreaChanged=M->World->Area!=V.Area,LightChanged=State->LastLight!=Light;
+   M->Story->SetCinematic(true);if(AreaChanged)M->World->Enter(V.Area);
    if(FString(V.Area)==TEXT("room6"))
    {
     // A review jump skips the normal door's arrival placement. Enter clears Player.floor;
@@ -80,14 +108,15 @@ void AS47Web::BeginProductionViews()
     State->PreviousFloor=MoveTemp(M->Player->Floor);State->bFloorOverride=true;
     M->Player->Floor=[](double,double){return 0.;};
    }
-   static const double Clock[]={-12.*3600,-5.5*3600,-2.*3600};M->Story->SetClock(Clock[Light]);
+   static const double Clock[]={-12.*3600,-5.5*3600,-2.*3600};
+   if(LightChanged){M->Story->SetClock(Clock[Light]);State->LastLight=Light;}
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
    if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture must stand on authored floor0"));return;}
    const FVector Eye(V.Foot.X,M->Player->FloorY+M->Player->Eye,V.Foot.Z),D=V.Target-Eye;
    M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FMath::Sqrt(D.X*D.X+D.Z*D.Z));
-   State->Since=Now;State->Placed=true;return;
+   State->Hold=AreaChanged||LightChanged?5.:2.5;State->Since=Now;State->Placed=true;return;
   }
-  if(Now-State->Since<2.5)return;
+  if(Now-State->Since<State->Hold)return;
   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
   if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
@@ -99,6 +128,6 @@ void AS47Web::BeginProductionViews()
   IFileManager::Get().MakeDirectory(*State->Dir,true);if(IFileManager::Get().FileExists(*File)){Fail(TEXT("refusing evidence overwrite"));return;}
   if(M->UI)M->UI->ClearToasts();FScreenshotRequest::RequestScreenshot(File,true,false);
   UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production view %s foot=%.3f,%.3f,%.3f eye=%.3f"),*Name,M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z,M->Player->FloorY+M->Player->Eye);
-  ++State->Index;State->Placed=false;
+  State->PendingFile=File;State->RequestedAt=FPlatformTime::Seconds();
  },.1f,true);
 }

@@ -219,23 +219,54 @@ for m in bpy.data.materials:
   for n in m.node_tree.nodes:
    if n.type=='TEX_IMAGE'and n.image:portable_image(n.image)
 
-# Narrow staff-car body trim. Ground contacts/stains, curb and all unrelated dressing survive.
-original=set(bpy.data.objects);bpy.ops.import_scene.gltf(filepath=str(Path('/home/tom/scratch-bm/Signal47-web/geo/geo_003.glb')))
+# Exact union: old staff-car bodies plus the sixteen obsolete wing window fittings.
+# The new SARO facade owns all reveals, sills and blinds. Never hide the mixed g454
+# parent: it also contains roof equipment, meters, drums, curbs and other site props.
+original=set(bpy.data.objects);legacy_source=Path('/home/tom/scratch-bm/Signal47-web/geo/geo_003.glb');bpy.ops.import_scene.gltf(filepath=str(legacy_source))
 loaded=[o for o in bpy.data.objects if o not in original];target=next((o for o in loaded if o.type=='MESH'and o.name=='g454'),None)
 assert target,'immutable original g454 missing'
 world=target.matrix_world.copy();target.parent=None;target.matrix_world=Matrix.Identity(4);target.data.transform(world)
-bm=bmesh.new();bm.from_mesh(target.data);remove=[]
+bm=bmesh.new();bm.from_mesh(target.data);remove=[];uv=bm.loops.layers.uv.active
+assert uv is not None and len(bm.faces)==13550,('immutable g454 face/UV guard',len(bm.faces))
+# Exact source dressSaro.ts window apertures: x21+2.25*i ..22.45+2.25*i,
+# y.58..2.34, at z+/-5.5. Include only their 6cm sill/4.5cm frame/5mm blinds.
+window_rows=[]
+for side,expected in [(-1,[108,204,48,48,48,48,48,144]),(1,[108,168,228,156,216,48,204,48])]:
+ for index in range(8):
+  a0=21+2.25*index;a1=a0+1.45
+  window_rows.append({'side':'north'if side<0 else'south','index':index,'sign':side,'bounds_three_m':[a0-.061,a1+.061,.529,2.387,5.4999 if side>0 else-5.5501,5.5501 if side>0 else-5.4999],'expected_triangles':expected[index],'removed_triangles':0})
+def source_three(v):return (float(v.co.x),float(v.co.z),float(-v.co.y))
+def window_point(v,row):
+ x,y,z=source_three(v);x0,x1,y0,y1,z0,z1=row['bounds_three_m'];return x0<=x<=x1 and y0<=y<=y1 and z0<=z<=z1
+# A signature covers every retained corner's coordinate, UV, winding and material.
+# No new UV projection or topology reduction is applied by this union selection.
+def bm_signature(face):
+ return (face.material_index,tuple((float(loop.vert.co.x),float(loop.vert.co.y),float(loop.vert.co.z),float(loop[uv].uv.x),float(loop[uv].uv.y))for loop in face.loops))
+kept_signatures=[];car_removed=0;window_removed=0
 for f in bm.faces:
+ assert len(f.verts)==3
  def car(v):
-  x,z,y=v.co.x,-v.co.y,v.co.z
+  x,y,z=source_three(v)
   return y>-.57 and ((25.8<=x<=28.2 and 6.6<=z<=12.6)or(29.8<=x<=32.2 and 6.55<=z<=13.25))
- if all(car(v)for v in f.verts):remove.append(f)
-assert len(remove)>100,('insufficient exact car trim',len(remove))
+ is_car=all(car(v)for v in f.verts)
+ hits=[row for row in window_rows if all(window_point(v,row)for v in f.verts)]
+ assert len(hits)<=1 and not(is_car and hits),('overlapping removal recipes',len(hits))
+ if is_car:car_removed+=1;remove.append(f)
+ elif hits:hits[0]['removed_triangles']+=1;window_removed+=1;remove.append(f)
+ else:kept_signatures.append(bm_signature(f))
+assert car_removed==976,('existing exact car trim changed',car_removed)
+assert all(row['removed_triangles']==row['expected_triangles']for row in window_rows),window_rows
+assert window_removed==1872 and len(kept_signatures)==10702
 trim_removed=len(remove);bmesh.ops.delete(bm,geom=remove,context='FACES');bm.to_mesh(target.data);bm.free()
+actual_uv=target.data.uv_layers.active
+actual_signatures=[(face.material_index,tuple((float(target.data.vertices[target.data.loops[li].vertex_index].co.x),float(target.data.vertices[target.data.loops[li].vertex_index].co.y),float(target.data.vertices[target.data.loops[li].vertex_index].co.z),float(actual_uv.data[li].uv.x),float(actual_uv.data[li].uv.y))for li in face.loop_indices))for face in target.data.polygons]
+assert sorted(actual_signatures)==sorted(kept_signatures),'Unrelated source corner/UV/winding/material changed'
+window_trim_proof={'status':'SOURCE_INDEX_UNION_VERIFIED_NATIVE_UNVERIFIED','source_geo':454,'source_file_sha256':hashlib.sha256(legacy_source.read_bytes()).hexdigest(),'source_triangles':13550,'car_removed_triangles':car_removed,'window_removed_triangles':window_removed,'result_triangles':len(actual_signatures),'window_openings':window_rows,'retained_corner_uv_material_sha256':hashlib.sha256(json.dumps(sorted(actual_signatures),separators=(',',':')).encode()).hexdigest(),'retained_corner_uv_material_exact':True,'preserved':'Every triangle outside the two old car bodies and sixteen individual old window prisms; roof/details/lights/downspouts/meters/site props and all gameplay nodes retained.'}
+(WORK/'legacy-dressing-trim-proof.json').write_text(json.dumps(window_trim_proof,indent=2)+'\n')
 target.name='SM_SaroPark_LegacyTrim';parts[target.name]=target
 for o in loaded:
  if o!=target:bpy.data.objects.remove(o,do_unlink=True)
-contract={'revision':REVISION,'axis':'Blender metres Z-up; Three=(Bx,Bz,-By); body nose Three-Z; FBX -Y/Z force_front_x_axis','driver_eye_three':[-.42,1.48,.2],'parts':{},'wheels':sorted(wheel_centres,key=lambda w:w['part']),'parked':PARKED,'credits':CREDITS,'legacy_trim_removed_triangles':trim_removed}
+contract={'revision':REVISION,'axis':'Blender metres Z-up; Three=(Bx,Bz,-By); body nose Three-Z; FBX -Y/Z force_front_x_axis','driver_eye_three':[-.42,1.48,.2],'parts':{},'wheels':sorted(wheel_centres,key=lambda w:w['part']),'parked':PARKED,'credits':CREDITS,'legacy_trim_removed_triangles':trim_removed,'legacy_window_trim':window_trim_proof}
 for name,o in parts.items():
  bpy.ops.object.select_all(action='DESELECT');o.select_set(True);bpy.context.view_layer.objects.active=o
  bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.triangulate(bm,faces=list(bm.faces));bad=[f for f in bm.faces if f.calc_area()<1e-9]

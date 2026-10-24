@@ -82,6 +82,16 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
   if(!GoodMesh(M,S)){UE_LOG(LogS47SaroSite,Warning,TEXT("S47: SARO site preserved original: native mesh contract unavailable %s"),S.Name);return {};}
   Meshes.Add(M);
  }
+ // g454 merges the old fake wing windows with roof/yard dressing. Use the measured
+ // car+window composition, never hide that shared leaf. Require the matching staff cars too.
+ UStaticMesh* DressingTrim=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Free/ServiceFleet/SM_SaroPark_LegacyTrim.SM_SaroPark_LegacyTrim"));
+ auto* StaffSedan=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Free/ServiceFleet/SM_SaroPark_Sedan.SM_SaroPark_Sedan"));
+ auto* StaffPickup=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Free/ServiceFleet/SM_SaroPark_Pickup.SM_SaroPark_Pickup"));
+ UStaticMeshComponent* Dressing=nullptr;
+ for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Geo==454&&Under(I,Grounds))
+ {if(Dressing)return {};Dressing=Cast<UStaticMeshComponent>(N->Comp.Get());}
+ if(!Dressing||!Dressing->GetStaticMesh()||Dressing->GetStaticMesh()->GetNumTriangles(0)!=13550||!DressingTrim||DressingTrim->GetNumLODs()!=3||!StaffSedan||!StaffPickup)return {};
+ for(int32 L=0;L<3;++L)if(DressingTrim->GetNumTriangles(L)!=10702)return {};
  const auto& Drive=W->DriveData();const TSharedPtr<FJsonObject>* Legs=nullptr,*Leg=nullptr;const TArray<TSharedPtr<FJsonValue>>* Obs=nullptr;
  if(!Drive.IsValid()||!Drive->TryGetObjectField(TEXT("legs"),Legs)||!(*Legs)->TryGetObjectField(TEXT("saro"),Leg)||!(*Leg)->TryGetArrayField(TEXT("obstacles"),Obs))return {};
  int32 Walk=0,Driving=0;
@@ -105,12 +115,14 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
  {
   auto* C=Cast<UStaticMeshComponent>(W->Node(I)->Comp.Get());C->SetVisibility(false,false);C->SetHiddenInGame(true,false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  }
+ // The original material atlas is unchanged on every retained dressing triangle.
+ auto* DressingAtlas=Dressing->GetMaterial(0);Dressing->SetStaticMesh(DressingTrim);Dressing->SetMaterial(0,DressingAtlas);
  S->RetiredNodes=Retire;
  S->RemovedWalkFeet=W->CollidersMutable(TEXT("saro")).RemoveAll([](const FS47Rect& R){return OldFoot(R.MinX,R.MaxX,R.MinZ,R.MaxZ);});
  TArray<TSharedPtr<FJsonValue>> Kept;
  for(const auto& V:*Obs){const auto& A=V->AsArray();if(A.Num()==4&&OldFoot(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber(),A[3]->AsNumber()))++S->RemovedDriveFeet;else Kept.Add(V);}
  (*Leg)->SetArrayField(TEXT("obstacles"),Kept);S->Update();
- UE_LOG(LogS47SaroSite,Display,TEXT("S47: SARO site ready: original wing+title replaced, recessed glass .27m, solid sign wall; retired legacy poles=6 utilityGeos=4 walkFeet=%d driveFeet=%d; natural mainWithin100m=2 service=1 total=3; meter glass, field lights, fences, roof details and story proxies preserved"),S->RemovedWalkFeet,S->RemovedDriveFeet);
+ UE_LOG(LogS47SaroSite,Display,TEXT("S47: SARO site ready: original wing+title and16 old fake windows replaced, recessed glass .27m, solid sign wall; retired legacy poles=6 utilityGeos=4 walkFeet=%d driveFeet=%d; natural mainWithin100m=2 service=1 total=3; meter glass, field lights, fences, roof details and story proxies preserved"),S->RemovedWalkFeet,S->RemovedDriveFeet);
  return S;
 }
 void FS47SaroSite::Update()
@@ -130,6 +142,10 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
   OK&=Good;Lines.Add(FString::Printf(TEXT("SARO_SITE part=%s mesh/root/visibility=%s"),Spec[I].Name,Good?TEXT("PASS"):TEXT("FAIL")));
  }
  for(int32 I:RetiredNodes){const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;OK&=C&&!C->IsVisible()&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision;}
+ bool ComposedWindows=false;
+ for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Geo==454)
+  if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))ComposedWindows=C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_LegacyTrim")&&C->GetStaticMesh()->GetNumTriangles(0)==10702;
+ OK&=ComposedWindows;Lines.Add(FString::Printf(TEXT("SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; %s"),ComposedWindows?TEXT("PASS"):TEXT("FAIL")));
  const auto Power=S47HighwayPower::Status(W);OK&=Power.bReady&&Power.SaroMainWithin100m==2&&Power.SaroServicePoles==1&&Power.SaroTotalWithin100m==3;
  Lines.Add(FString::Printf(TEXT("SARO_SITE retired=6 legacyWalkFeet=%d legacyDriveFeet=%d utilityWithin100m=%d (main=%d service=%d), field lights/proxies unchanged; %s"),RemovedWalkFeet,RemovedDriveFeet,Power.SaroTotalWithin100m,Power.SaroMainWithin100m,Power.SaroServicePoles,OK?TEXT("PASS"):TEXT("FAIL")));return OK;
 }

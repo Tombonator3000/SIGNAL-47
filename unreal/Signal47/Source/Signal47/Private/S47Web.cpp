@@ -665,7 +665,7 @@ void AS47Web::BeginPlay()
 	SaroArrival = FS47SaroArrival::Build(this);
 	BuildHighwayPower();
 	SaroSite = FS47SaroSite::Build(this);
-	FleetParked = FS47FleetParked::Build(this);
+	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
 	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's

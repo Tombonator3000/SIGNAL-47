@@ -286,3 +286,9 @@ Rom6-kamerafiksturen startet trace under gulvet etter motellhopp; isolert gulv0 
 ## 2026-10-25 kl. 01:37, M2 visuelt avvist og M3 klargjort
 
 M2s SARO-bilder viser samme feil som bymodellene: Site var også først importert med et virkningsløst flagg. Direkte probe bekrefter roterteLOD1/2; Site er nå importert med korrekt globalflag0 og alle63 faktiske geometrisjekker består. Ny atlas tegnes fra målte fysiske skiltproporsjoner med textbbox-guard. Kinoens sider/billettluke får egne tidligere ubrukte celler; bare CinemaShell-UV-er og atlaset reimporteres. Nye Blender-kilder består793 sjekker, Town native113 og perLOD588. Badets kamera står nå inne i fri midtgang og en avgrenset varm lampe følger den nye takdiffuseren. Spilladgang er uendret. M2-køen er stoppet etter bilder, ingen unødvendige resterende funksjonsprøver. Ingen ny standard installert.
+
+## 2026-10-25 kl. 01:50, presist kutt av gamle SARO-vinduer
+
+M3-nærbildet viste16gamle vindusrammer/persienner under nytt skilt. De lå i sammenslått g454 med annet tak-/gårdsutstyr. F10 klipper eksakt1872vindustrekanter sammen med de tidligere976biltrekantene:13550→10702. Hvert prisme, bevart geometri/UV/vinding/material og kilde-FBX/native92kontroller består. Kun den eksisterende trimmeshen er reimportert. Site/Fleet har nå felles fullstendighetsguard; manglende deler beholder den gamle hjørneløsningen.
+
+M3s Town-visningsprøve fikk VK_ERROR_DEVICE_LOST ved Capture Sky Materials Face4. Sky/Clouds/Lighting er byteuendret, og årsaken er ikke bevist. Opptaksfiksturen endres til Enter bare ved faktisk områdeskifte, klokke bare per lysfase, 5s ro ved store skifter og venting på komplett PNG før neste flytting. Ingen renderer-/skykvalitet eller budsjettendring. M4 blir kontrollert med samme39utsnitt og korte funksjonsutvalg. Installert A3 er fortsatt urørt.

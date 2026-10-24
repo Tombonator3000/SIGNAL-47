@@ -85,15 +85,15 @@ void FS47Fleet::Lenses(const FLinearColor& Color,double Head,double Tail)
  for(auto& P:HeadMids)if(auto* M=P.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),ExpectedHead);
  for(auto& P:TailMids)if(auto* M=P.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),ExpectedTail);
 }
-TSharedPtr<FS47FleetParked> FS47FleetParked::Build(AS47Web* W)
+TSharedPtr<FS47FleetParked> FS47FleetParked::Build(AS47Web* W,bool bSiteReady)
 {
- if(!W)return {};auto* Sedan=Asset(TEXT("SM_SaroPark_Sedan"));auto* Pickup=Asset(TEXT("SM_SaroPark_Pickup"));auto* Trim=Asset(TEXT("SM_SaroPark_LegacyTrim"));
+ if(!W||!bSiteReady)return {};auto* Sedan=Asset(TEXT("SM_SaroPark_Sedan"));auto* Pickup=Asset(TEXT("SM_SaroPark_Pickup"));auto* Trim=Asset(TEXT("SM_SaroPark_LegacyTrim"));
  const int32 Parent=W->Handle(TEXT("world.grounds.group"));UStaticMeshComponent* Old=nullptr;
  for(int32 I=0;I<W->PartCount();++I){const auto* N=W->Node(I);if(N&&N->Geo==454&&Within(W,I,Parent))Old=Cast<UStaticMeshComponent>(N->Comp.Get());}
  if(!Sedan||!Pickup||!Trim||!Old||Parent<0){UE_LOG(LogS47Fleet,Warning,TEXT("S47: parked fleet unavailable; complete legacy staff corner retained"));return {};}
  auto F=MakeShared<FS47FleetParked>();auto* A=Part(W,Sedan,Parent,TEXT("fleet:staff-sedan"),FVector(27,-.60,9.6));auto* B=Part(W,Pickup,Parent,TEXT("fleet:staff-pickup"),FVector(31,-.60,9.9),.04);
  if(!A||!B){if(A)A->DestroyComponent();if(B)B->DestroyComponent();return {};}
- // This imported trim contains every old dressing triangle outside the two vehicle bodies.
+ // This composed trim removes only the two old vehicle bodies and the sixteen replaced wing windows.
  // Reuse the exact original atlas material and retain all existing footprint colliders.
  auto* OriginalMaterial=Old->GetMaterial(0);Old->SetStaticMesh(Trim);Old->SetMaterial(0,OriginalMaterial);
  F->Components={A,B};F->TrimmedDressing=Old;F->DressingMaterial=OriginalMaterial;F->bReady=true;UE_LOG(LogS47Fleet,Display,TEXT("S47: staff fleet ready: two period vehicles, original poses/colliders and other dressing retained"));return F;
