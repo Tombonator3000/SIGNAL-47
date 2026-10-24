@@ -221,7 +221,7 @@ namespace
 				Foot.Rows.Add({ KeysSaid(TEXT("shutter")), TEXT("The shutter, with the camera raised.") });
 			}
 			// (the second choice and the case board have rows of their own here; the web's table has neither)
-			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("The other choice at a prompt, when one is offered.") });
+			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("Manage takeaway: set down, stow, take out or discard. Otherwise, the other choice at a prompt.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("notebook")), FString::Printf(TEXT("The notebook. %s: its map. %s: the kit. %s: these controls."), *KeySaid(TEXT("map")), *KeySaid(TEXT("kit")), *KeySaid(TEXT("controls"))) });
 			Foot.Rows.Add({ KeysSaid(TEXT("board")), TEXT("The case board, once there is one.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("pause")), TEXT("Pause: settings, save and load.") });

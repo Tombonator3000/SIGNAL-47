@@ -109,6 +109,7 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
  }
  M->Story->bEveningTimeline = true;
  M->Story->bOpeningHeld = Opening();
+ bool bMigratedArrival=false;
  if (Commute())
  {
   M->Story->SetClock(-6*3600-40*60); // late afternoon; shift time has not begun
@@ -121,6 +122,13 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
    const auto P = S47J::New();
    for (const TCHAR* K : {TEXT("x"),TEXT("y"),TEXT("z"),TEXT("h")}) S47J::Set(P,K,S47J::Num(Car,K));
    S47J::Set(P,TEXT("at"),At);
+   if (At==TEXT("saro") && S47J::Int(Saved,TEXT("arrivalParkingVersion"))<2)
+   {
+    const FVector Old(S47J::Num(P,TEXT("x")),S47J::Num(P,TEXT("y")),S47J::Num(P,TEXT("z")));
+    Visual->RestorePersonal(Old,S47J::Num(P,TEXT("h")),0);
+    bMigratedArrival=!Visual->ParkedPosition().Equals(Old,.01);
+    if(bMigratedArrival){const FVector Bay=FS47EveningVisual::ArrivalPark();S47J::Set(P,TEXT("x"),Bay.X);S47J::Set(P,TEXT("y"),Bay.Y);S47J::Set(P,TEXT("z"),Bay.Z);S47J::Set(P,TEXT("h"),0.0);}
+   }
    M->World->PlaceTruck(At,P);
    M->World->Enter(S47J::Str(Saved,TEXT("area"),TEXT("diner")));
   }
@@ -128,12 +136,13 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
  else
  {
   const auto Visitor=S47J::Obj(Saved,TEXT("personalPark"));
-  if (Visitor) Visual->ParkPersonal(FVector(S47J::Num(Visitor,TEXT("x")),S47J::Num(Visitor,TEXT("y")),S47J::Num(Visitor,TEXT("z"))),S47J::Num(Visitor,TEXT("h")));
+  if (Visitor) Visual->RestorePersonal(FVector(S47J::Num(Visitor,TEXT("x")),S47J::Num(Visitor,TEXT("y")),S47J::Num(Visitor,TEXT("z"))),S47J::Num(Visitor,TEXT("h")),S47J::Int(Saved,TEXT("arrivalParkingVersion")));
   Visual->SetParked(true);
   if (Opening()) { M->Story->SetClock(S47J::Num(Saved,TEXT("clock"),-21600)); RingAt = M->T; }
   bWorkStarted = Pack.Flag(TEXT("handover_done"));
  }
  Takeaway->Begin(S47J::Obj(Saved,TEXT("takeaway")));
+ if(bMigratedArrival)Parked(TEXT("saro"));
  Context(); Refile();
  if (Opening()) M->UI->Objective(Commute() ? TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. MESA DINER IS OPEN FOR SUPPER.") : TEXT("SARO // ANSWER DALE'S CALL IN THE CONTROL ROOM"));
  if (Pack.CurrentScene()) Resume();
@@ -429,6 +438,7 @@ void FS47Evening::Step(double Dt)
 S47J::FObj FS47Evening::Save() const
 {
  auto O=S47J::New(); S47J::Set(O,TEXT("takeaway"),Takeaway->Save()); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
+ S47J::Set(O,TEXT("arrivalParkingVersion"),2);
  S47J::Set(O,TEXT("clock"),M->Story->Clock()); S47J::Set(O,TEXT("area"),M->World->Area);
  S47J::Set(O,TEXT("radioOn"),bRadioOn); S47J::Set(O,TEXT("radioHold"),RadioHold); S47J::Set(O,TEXT("radioRest"),RadioRest);
  S47J::Set(O,TEXT("musicPosition"),Music?Music->CurrentTime():MusicPosition);
@@ -470,7 +480,10 @@ void FS47Evening::BootstrapTest(const FString& Mode)
  }
  if (Mode==TEXT("parking") || Mode==TEXT("phone") || Mode==TEXT("dusk"))
  {
-  M->World->StopDriving(); M->World->PlaceTruck(TEXT("saro")); M->World->Enter(TEXT("saro"));
+  M->World->StopDriving(); M->World->bCommuteVehicle=true;
+  auto Car=S47J::New();const FVector Bay=FS47EveningVisual::ArrivalPark();
+  S47J::Set(Car,TEXT("x"),Bay.X);S47J::Set(Car,TEXT("y"),Bay.Y);S47J::Set(Car,TEXT("z"),Bay.Z);S47J::Set(Car,TEXT("h"),0.0);S47J::Set(Car,TEXT("at"),TEXT("saro"));
+  M->World->PlaceTruck(TEXT("saro"),Car); M->World->Enter(TEXT("saro"));
   Parked(TEXT("saro"));
   const FVector Spawn=M->Web->SpawnThree(); M->Player->Place(Spawn.X,Spawn.Z,Spawn.Y);
   if (Mode==TEXT("phone")) Answer();
@@ -484,14 +497,18 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
  bool Valid=Ok;
  auto Check=[&](bool Good,const TCHAR* What){Valid&=Good;Lines.Add(FString(Good?TEXT("PASS evening vehicles: "):TEXT("FAIL evening vehicles: "))+What);};
  FS47EveningVisual V(nullptr);
- const FVector Bay(4.5,-0.62,14), Moved(-12,-0.62,14);
+ const FVector Bay=FS47EveningVisual::ArrivalPark(), Moved(-12,-0.62,14);
  V.SetParked(false);V.SetParked(true);Check(V.ParkedPosition().Equals(Bay),TEXT("missing old visitor pose restores the clear visitor bay"));
- V.ParkPersonal(Bay,UE_DOUBLE_PI);Check(V.ParkedPosition().Equals(Bay),TEXT("visitor bay is outside entrance, annex and service pad"));
+ V.ParkPersonal(Bay,0);Check(V.ParkedPosition().Equals(Bay),TEXT("visitor bay is outside entrance, annex and service pad"));
  V.ParkPersonal(Moved,UE_DOUBLE_PI);Check(V.ParkedPosition().Equals(Moved),TEXT("moving the car to clear ground preserves its pose"));
  for (const FVector& P : {FVector(2,0,8),FVector(8.9,0,8),FVector(8,0,1),FVector(4,0,4)})
  {
-  V.ParkPersonal(P,0.7);Check(V.ParkedPosition().Equals(Bay) && FMath::IsNearlyEqual(V.ParkedHeading(),UE_DOUBLE_PI),TEXT("unsafe old parking pose restores the clear visitor bay"));
+  V.ParkPersonal(P,0.7);Check(V.ParkedPosition().Equals(Bay) && FMath::IsNearlyZero(V.ParkedHeading()),TEXT("unsafe old parking pose restores the clear visitor bay"));
  }
+ Check(FS47EveningVisual::FitsArrivalBay(Bay,0),TEXT("north-facing car fits the marked arrival bay"));
+ Check(!FS47EveningVisual::FitsArrivalBay(FVector(8.9,0,8),0) && !FS47EveningVisual::FitsArrivalBay(Bay,UE_DOUBLE_PI/2) && !FS47EveningVisual::FitsArrivalBay(Bay+FVector(1,0,0),0),TEXT("service pad, sideways and protruding cars cannot complete arrival"));
+ V.RestorePersonal(FVector(4.5,-.62,14),UE_DOUBLE_PI,0);Check(V.ParkedPosition().Equals(Bay)&&FMath::IsNearlyZero(V.ParkedHeading()),TEXT("legacy fallback save migrates to marked visitor parking"));
+ V.RestorePersonal(Moved,.2,2);Check(V.ParkedPosition().Equals(Moved)&&FMath::IsNearlyEqual(V.ParkedHeading(),.2),TEXT("current safe custom pose survives restore"));
  FS47Truck T;T.SetPose(FVector(9,0.2,15),FVector(0.25,0.7,-0.18));T.SetParkPose(FVector(8.9,0,8),UE_DOUBLE_PI);
  Check(T.Position.Equals(FVector(8.9,0,8)) && T.Rotation.Equals(FVector(0,UE_DOUBLE_PI,0)),TEXT("canonical service parking drops inherited ramp pitch and roll"));
  FS47EveningPack Supper;

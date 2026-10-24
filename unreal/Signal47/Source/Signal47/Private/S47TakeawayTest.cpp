@@ -6,6 +6,7 @@
 #include "S47Flashlight.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47RecordedDialogue.h"
@@ -29,7 +30,7 @@
 // the same walker OnUse -> HUD -> Evening -> Interaction chain as the use key.
 struct FS47Evening::FTakeawayTest
 {
- bool bEnabled = false, bDone = false, bCameraHave = false, bLightHave = false, bLightOn = false, bEatPlaced = false, bMealReloaded = false;
+ bool bEnabled = false, bDone = false, bCameraHave = false, bLightHave = false, bLightOn = false, bEatPlaced = false, bMealReloaded = false, bPad = false;
  int32 Stage = 0, TraceAttempts = 0, Uses = 0, Restores = 0, ExtraSpot = 0;
  double Elapsed = 0, Since = 0, Hold = 2, LastClock = 0, MealClock = 0;
  FString Shots, TargetId;
@@ -43,7 +44,8 @@ void FS47Evening::ControlTakeawayTest(double Dt)
  if (!TakeawayTest)
  {
   TakeawayTest = MakeShared<FTakeawayTest>();
-  TakeawayTest->bEnabled = FParse::Param(FCommandLine::Get(), TEXT("S47EveningTakeaway"));
+  TakeawayTest->bPad = FParse::Param(FCommandLine::Get(), TEXT("S47TakeawayPad"));
+  TakeawayTest->bEnabled = TakeawayTest->bPad || FParse::Param(FCommandLine::Get(), TEXT("S47EveningTakeaway"));
   if (!TakeawayTest->bEnabled) return;
   TakeawayTest->bEatPlaced = FParse::Param(FCommandLine::Get(), TEXT("S47TakeawayEatPlaced"));
   FParse::Value(FCommandLine::Get(), TEXT("S47EveningShots="), TakeawayTest->Shots);
@@ -60,6 +62,12 @@ void FS47Evening::ControlTakeawayTest(double Dt)
  };
  if (!M || !M->Player || !M->World || !M->Story || !M->Flow || !M->Web || !M->Inter || !M->UI || !Takeaway) { Fail(TEXT("missing runtime dependency")); return; }
  if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("requires an isolated developer run without S47Case")); return; }
+ if(T.bPad) {
+  FString UserDir;
+  if(!FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir) || UserDir.IsEmpty() || !FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),FPaths::ConvertRelativePathToFull(UserDir))) {
+   Fail(TEXT("food input control requires an explicit isolated -UserDir")); return;
+  }
+ }
  T.Elapsed += Dt;
  if (T.Elapsed > 240) { Fail(TEXT("240 s control timeout")); return; }
  if (M->World->bBusy) return;
@@ -83,7 +91,7 @@ void FS47Evening::ControlTakeawayTest(double Dt)
  };
  const auto Roundtrip = [this, &T, &Fail](const FString& Name)
  {
-  const bool Held = Takeaway->Carried(), Eaten = Takeaway->Eaten(); const FString Spot = Takeaway->PlacedSpot();
+  const bool Held = Takeaway->Carried(), Eaten = Takeaway->Eaten(); const FString Spot = Takeaway->PlacedSpot(), Location = Takeaway->Location();
   const FString Surface = S47J::Str(Takeaway->Save(), TEXT("spotId"));
   const FVector SurfaceBefore = Surface.IsEmpty() ? FVector::ZeroVector : Takeaway->SpotPosition(Surface);
   const FString Pending = Pack.GetPendingChoice(), Scene = Pack.CurrentScene() ? Pack.CurrentScene()->Id : FString();
@@ -99,6 +107,7 @@ void FS47Evening::ControlTakeawayTest(double Dt)
   if (!T.Shots.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(Saved, true), *(T.Shots / (TEXT("takeaway-") + Name + TEXT(".disk-save.json"))));
   US47Flow::FStart Restore; Restore.State = Saved; Restore.CaseId = 0; Restore.bDev = true; Restore.Playtime = M->Playtime;
   M->Flow->StartGame(Restore);
+  if(Takeaway->Location()!=Location) { Fail(TEXT("disk restore changed effective food location: ")+Location+TEXT(" -> ")+Takeaway->Location()); return false; }
   const FString RestoredScene = Pack.CurrentScene() ? Pack.CurrentScene()->Id : FString();
   if (Takeaway->Carried() != Held || Takeaway->Eaten() != Eaten || Takeaway->PlacedSpot() != Spot || !M->Player->Pos.Equals(Before, 0.015) || M->Story->Clock() != Clock || Pack.GetPendingChoice() != Pending || RestoredScene != Scene || Pack.NextLine() != Cursor || Pack.Documents().Num() != Docs || Pack.Flag(TEXT("food_bought")) != Bought || Pack.Flag(TEXT("food_taken")) != Taken || Pack.Flag(TEXT("food_eaten")) != FoodEaten)
   {
@@ -171,6 +180,82 @@ void FS47Evening::ControlTakeawayTest(double Dt)
   return true;
  };
  if (!CheckOnePortion(TEXT("per-frame invariant"))) return;
+ if(T.bPad)
+ {
+  const auto Press=[&](const FString& Keys) { S47Keys::TestPresses(Keys,.12f); };
+  const auto Choose=[&](const FString& Id) {
+   if(!M->ModalOpen()) { Fail(TEXT("food menu did not remain open after input edge")); return false; }
+   const int32 Index=Takeaway->FoodMenuOptions().Find(Id);
+   if(Index==INDEX_NONE) { Fail(TEXT("actual food menu lacks option: ")+Id); return false; }
+   FString Keys; for(int32 I=0;I<Index;++I) Keys+=TEXT("Gamepad_DPad_Down,");
+   Keys+=TEXT("Gamepad_FaceButton_Bottom"); Press(Keys); return true;
+  };
+  const auto UnchangedMeal=[&]() {
+   return !Pack.Flag(TEXT("food_eaten")) && Pack.Flag(TEXT("food_bought")) && Pack.Flag(TEXT("food_taken"))
+    && !Takeaway->MealBusy() && M->Story->Clock()>=T.MealClock && M->Story->Clock()-T.MealClock<60;
+  };
+  switch(T.Stage)
+  {
+  case 0:
+   if(Voice) Voice->Stop(); M->UI->Close(true); bDialogueOpen=false;
+   Pack.Reset(); BootstrapTest(TEXT("burger")); FinishLeaf(); AfterDialogue(); BootstrapTest(TEXT("parking"));
+   {
+    auto Old=S47J::New(); S47J::Set(Old,TEXT("version"),1); S47J::Set(Old,TEXT("mode"),TEXT("held"));
+    Takeaway->Begin(Old);
+   }
+   T.MealClock=M->Story->Clock(); Stage(100,.7); return;
+  case 100:
+   if(!Takeaway->Carried() || !Prepare(TEXT("takeaway:place:desk"))) { Fail(TEXT("legacy held meal / physical desk setup")); return; }
+   {
+    const FKey Key=S47Keys::Key(TEXT("alt"),0);
+    if(!Key.IsValid()) { Fail(TEXT("keyboard alt test requires a bound primary key")); return; }
+    Press(Key.ToString());
+   }
+   Stage(101,.5); return;
+  case 101:
+   if(Choose(TEXT("stow"))) { Shot(TEXT("pad-food-menu")); Stage(102,.7); } return;
+  case 102:
+   if(!Takeaway->Stowed() || Takeaway->HeldVisible() || Takeaway->PlacedVisible() || M->ModalOpen() || !UnchangedMeal()) { Fail(TEXT("keyboard open -> D-pad/A stow did not free hands without consuming supper")); return; }
+   if(!Roundtrip(TEXT("pad-stowed"))) return;
+   Shot(TEXT("pad-stowed")); Press(TEXT("Gamepad_FaceButton_Right")); Stage(103,.5); return;
+  case 103:
+   if(!M->ModalOpen()) { Fail(TEXT("Xbox B did not open and retain the food menu")); return; }
+   Press(TEXT("Gamepad_FaceButton_Right")); Stage(203,.5); return;
+  case 203:
+   if(M->ModalOpen() || !Takeaway->Stowed()) { Fail(TEXT("Xbox B back closed/reopened the same menu or changed food")); return; }
+   Press(TEXT("Gamepad_FaceButton_Right")); Stage(204,.5); return;
+  case 204: if(Choose(TEXT("takeout"))) Stage(104,.7); return;
+  case 104:
+   if(!Takeaway->Carried() || M->ModalOpen() || !UnchangedMeal()) { Fail(TEXT("Xbox B -> A take out failed")); return; }
+   if(!Prepare(TEXT("takeaway:place:desk"))) return;
+   Press(TEXT("Gamepad_FaceButton_Right")); Stage(105,.5); return;
+  case 105: if(Choose(TEXT("place:desk"))) Stage(106,.7); return;
+  case 106:
+   if(Takeaway->PlacedSpot()!=TEXT("desk") || !Takeaway->PlacedVisible() || Takeaway->Carried() || M->ModalOpen() || !UnchangedMeal()) { Fail(TEXT("Xbox menu set-down did not use the actual nearby visible desk surface")); return; }
+   Shot(TEXT("pad-desk-set-down"));
+   if(Prepare(TEXT("takeaway:pickup:desk"))) Stage(107,.4); return;
+  case 107:
+   if(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())!=T.TargetId || M->Player->FocusedId()!=T.TargetId) { Fail(TEXT("Xbox A pickup setup is not the actual focused ray target")); return; }
+   Press(TEXT("Gamepad_FaceButton_Bottom")); Stage(108,.7); return;
+  case 108:
+   if(!Takeaway->Carried() || !Takeaway->PlacedSpot().IsEmpty() || M->ModalOpen()) { Fail(TEXT("actual Xbox A -> walker -> HUD -> existing pickup chain failed")); return; }
+   Press(TEXT("Gamepad_FaceButton_Right")); Stage(109,.5); return;
+  case 109: if(Choose(TEXT("discard"))) Stage(110,.8); return;
+  case 110:
+   if(!Takeaway->Discarded() || Takeaway->Carried() || Takeaway->HeldVisible() || Takeaway->PlacedVisible() || M->ModalOpen() || !UnchangedMeal()) { Fail(TEXT("Xbox discard failed or changed meal/story clock")); return; }
+   if(!Roundtrip(TEXT("pad-discarded"))) return;
+   Press(TEXT("Gamepad_FaceButton_Right")); Stage(111,.7); return;
+  case 111:
+   if(M->ModalOpen() || !Takeaway->Discarded() || Takeaway->Carried() || Takeaway->HeldVisible() || !UnchangedMeal()) { Fail(TEXT("discarded save respawned food, reopened food action, or consumed time")); return; }
+   Shot(TEXT("pad-discarded")); Stage(112,.5); return;
+  case 112:
+   for(const FString& Path:T.Captures) if(IFileManager::Get().FileSize(*Path)<1000) { if(T.Elapsed-T.Since<3) return; Fail(TEXT("food input screenshot missing: ")+Path); return; }
+   T.bDone=true;
+   UE_LOG(LogTemp,Display,TEXT("S47: takeaway PAD PASS COMPLETE: keyboard alt and Xbox B through actual Slate/action routing; D-pad/A food panel set-down/stow/take-out/discard; actual A ray/walker/HUD pickup; v1 held migration and two disk/fresh-store/full-world restores; no food_eaten or twelve-minute skip; synthetic Slate input, physical controller transport UNVERIFIED"));
+   FPlatformMisc::RequestExit(false); return;
+  default: Fail(TEXT("unknown focused food input stage")); return;
+  }
+ }
  switch (T.Stage)
  {
  case 0:

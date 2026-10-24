@@ -35,7 +35,7 @@ namespace S47KeysLocal
 			// the two are never wanted at once, S47Keys::MayShare)
 			A(TEXT("jump"), TEXT("Jump"), Foot, TEXT("Jump. With the camera raised the same key is the shutter."), EKeys::SpaceBar),
 			A(TEXT("use"), TEXT("Use"), Foot, TEXT("Use what the crosshair is on. Put a paper back. With the camera raised it is the shutter; in the truck it turns the key, works the radio or gets you out. A left click does the same."), EKeys::E, EKeys::Enter),
-			A(TEXT("alt"), TEXT("Second choice"), Foot, TEXT("The other choice at the prompt, when one is offered: out of the truck while Use turns the key."), EKeys::Q),
+			A(TEXT("alt"), TEXT("Second choice / takeaway"), Foot, TEXT("Manage takeaway on foot: set down, stow, take out or discard. At a prompt, choose the other action; in the truck, get out while Use turns the key."), EKeys::Q),
 			A(TEXT("zoom"), TEXT("Closer look"), Foot, TEXT("Hold for a closer look at what the crosshair is on."), EKeys::RightMouseButton),
 			A(TEXT("describe"), TEXT("Read description"), Foot, TEXT("Read the current or last description. Press again to stop."), EKeys::V),
 			A(TEXT("light"), TEXT("Flashlight"), Foot, TEXT("The flashlight, once you have it."), EKeys::F),

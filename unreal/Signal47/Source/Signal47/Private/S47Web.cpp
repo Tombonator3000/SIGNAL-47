@@ -3,6 +3,7 @@
 #include "S47Picture.h"
 #include "S47Startup.h"
 #include "S47Props.h"
+#include "S47SaroArrival.h"
 
 #include "Components/BillboardComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -658,6 +659,7 @@ void AS47Web::BeginPlay()
 	BuildCalicheStreet();
 	BuildMesaDiner();
 	BuildCalicheNature();
+	SaroArrival = FS47SaroArrival::Build(this);
 	BuildHighwayPower();
 	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
@@ -730,6 +732,7 @@ void AS47Web::BeginPlay()
 	}
 	DrawDishes();
 	BeginHighwayAudit();
+	BeginSaroArrivalViews();
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
 
@@ -801,6 +804,7 @@ void AS47Web::Enter(const FString& Area)
 		L.L->SetVisibility(bOn);
 	}
 	ApplyHemi();
+	if (SaroArrival) SaroArrival->Update();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
 	if (T && SkyMid)
@@ -1282,6 +1286,7 @@ void AS47Web::Tick(float Dt)
 {
 	Super::Tick(Dt);
 	if (!bLoaded) return;
+	if (SaroArrival) SaroArrival->Update();
 	if (S47Startup::Blocking())
 	{
 		// The complete world must exist before warmup. Keep its rendering and sky capture alive,

@@ -20,6 +20,10 @@ public:
 	void ParkPersonal(const FVector& Position, double Heading);
 	/** Restore from intro_arrived. Visitor gravel is clear of the annex plinth and SARO 07. */
 	void SetParked(bool bOn);
+	void RestorePersonal(const FVector& Position,double Heading,int32 ParkingVersion);
+	static FVector ArrivalPark() { return FVector(-12.8,-.60,14.3); }
+	static bool FitsArrivalBay(const FVector& Position,double Heading);
+	bool ServiceWaitingVisible() const;
 	void Hide();
 	FVector ParkedPosition() const { return PersonalPark; }
 	double ParkedHeading() const { return PersonalHeading; }
@@ -35,7 +39,8 @@ public:
 
 private:
 	US47Main* M = nullptr;
-	TWeakObjectPtr<UStaticMeshComponent> Personal, PersonalDoor, Service;
+	TWeakObjectPtr<UStaticMeshComponent> Personal, PersonalDoor;
+	TArray<TWeakObjectPtr<UStaticMeshComponent>> ServiceParts;
 	TUniquePtr<FS47Group> CounterFood, HeldFood;
 	FS47Node* CounterBurger = nullptr;
 	FS47Node* CounterSandwich = nullptr;
@@ -47,8 +52,8 @@ private:
 	FS47Node* HeldPlate = nullptr;
 	FS47Node* HeldCup = nullptr;
 	bool bBuilt = false, bParked = false;
-	FVector PersonalPark = FVector(4.5, -0.62, 14);
-	double PersonalHeading = UE_DOUBLE_PI;
+	FVector PersonalPark = ArrivalPark();
+	double PersonalHeading = 0;
 	double DoorAngle = 0;
 	FVector PresentedPosition = FVector::ZeroVector;
 	void Build();
