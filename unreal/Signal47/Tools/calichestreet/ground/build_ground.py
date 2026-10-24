@@ -25,6 +25,8 @@ for row in spec:
     m=bpy.data.materials.new(row['name']);m.use_nodes=True
     bs=m.node_tree.nodes.get('Principled BSDF')
     bs.inputs['Roughness'].default_value=row['roughness']
+    if 'specular' in row:
+        bs.inputs['Specular IOR Level'].default_value=row['specular']
     if row.get('vertex_alpha_opacity'):
         vertex=m.node_tree.nodes.new('ShaderNodeVertexColor');vertex.layer_name='Color'
         m.node_tree.links.new(vertex.outputs['Alpha'],bs.inputs['Alpha'])

@@ -125,6 +125,10 @@ def generate(root=ROOT):
     for name,_,rough,strength in specs:
         blend=name in ['ShoulderBlend','DustFeather'];plant=name in ['GrassAtlas','SageAtlas'];edge=name in ['CalicheSoil','OldAsphalt']
         rows.append({'name':'M_CS_'+name,'base_color_linear':[1,1,1,1],'metallic':0,'roughness':rough,'emission':[0,0,0,1],'emission_strength':0,'alpha':1,'two_sided':plant or name in ['DryPlant','Yucca'],'normal_strength':strength,'uv_scale':1.0,'opacity_from_base_color':blend or plant,'vertex_alpha_opacity':edge,'alpha_mode':'dithered_masked' if edge else 'translucent' if blend else 'masked' if plant else 'opaque','normal_convention':'DirectX','texture_color_space':'sRGB','textures':{k:'textures/'+name+'_'+s+'.png' for k,s in [('base_color','color'),('normal','normal'),('roughness','roughness')]}})
+        if blend:
+            # Native R4: translucent ground can retain a glass-like specular
+            # response beyond its atlas mask. Use deferred dithered coverage.
+            rows[-1].update(alpha_mode='dithered_masked',opacity_from_base_color=True,vertex_alpha_opacity=False,specular=0.0)
     (root/'materials.json').write_text(json.dumps(rows,indent=2)+'\n')
     print('DETAIL_TEXTURES_GENERATED',len(rows),'materials',len(rows)*3,'maps')
 

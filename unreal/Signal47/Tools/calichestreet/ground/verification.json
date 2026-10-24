@@ -94,35 +94,13 @@
       "pass": true
     },
     {
-      "name": "all_GLB_primitives_preserve_RGBA_vertex_colors",
+      "name": "R4_material_only_refresh_preserves_exact_mesh_UV_RGBA_transform_slot_hashes",
       "pass": true,
-      "files": [
-        {
-          "file": "Caliche_Ground_Assembly.glb",
-          "primitives_with_COLOR_0": 12,
-          "pass": true
-        },
-        {
-          "file": "SM_Caliche_DryPlants.glb",
-          "primitives_with_COLOR_0": 4,
-          "pass": true
-        },
-        {
-          "file": "SM_Caliche_RoadWear.glb",
-          "primitives_with_COLOR_0": 2,
-          "pass": true
-        },
-        {
-          "file": "SM_Caliche_Rocks.glb",
-          "primitives_with_COLOR_0": 1,
-          "pass": true
-        },
-        {
-          "file": "SM_Caliche_Surface.glb",
-          "primitives_with_COLOR_0": 5,
-          "pass": true
-        }
-      ]
+      "evidence": "r4_material_refresh.json"
+    },
+    {
+      "name": "all_GLB_primitives_have_COLOR_0",
+      "pass": true
     }
   ]
 }

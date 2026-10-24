@@ -62,8 +62,8 @@ mesas=[(760,210,240,190,91,47),(-760,100,310,235,100,48),
        (-200,-1370,290,250,105,51),(390,1060,330,240,108,52),(-530,1200,350,260,116,53)]
 # Small bedding ledges interrupt an otherwise upright sandstone escarpment.
 profiles=[(0,1.10),(.07,1.05),(.16,.96),(.24,.89),(.30,.85),
-          (.38,.84),(.46,.83),(.48,.845),(.50,.82),(.61,.815),
-          (.70,.80),(.72,.812),(.74,.79),(.85,.785),(.96,.78),(1,.765)]
+          (.38,.84),(.46,.83),(.48,.832),(.50,.825),(.61,.815),
+          (.70,.80),(.72,.802),(.74,.795),(.85,.785),(.96,.78),(1,.765)]
 count=288
 for cx,cz,rx,rz,H,seed in mesas:
  rr=random.Random(seed)
@@ -79,12 +79,15 @@ for cx,cz,rx,rz,H,seed in mesas:
   ring=[]
   for i in range(count):
    a=math.tau*i/count
-   radius=r+radial(a,h)
+   radius=r+radial(a,h)+.007*math.sin(a*9+j*.84)*math.sin(math.pi*h)
    # Correlated, low-amplitude beds prevent a corrugated cardboard silhouette.
-   wave=.22*math.sin(5*a+phase[1])+.18*math.sin(11*a+phase[4])
+   wave=(1.0*math.sin(5*a+phase[1])+.48*math.sin(11*a+phase[4]))*h
    topwave=(.55*math.sin(3*a+phase[2])+.24*math.sin(17*a+phase[6]))*h
    z=H*h+wave+topwave
-   ring.append(len(v));v.append((cx+math.cos(a)*rx*radius,-(cz+math.sin(a)*rz*radius),z))
+   co=math.cos(a);si=math.sin(a)
+   # Broad cliff faces and irregular corners break the old circular layer-cake outline.
+   co=math.copysign(abs(co)**.72,co);si=math.copysign(abs(si)**.72,si)
+   ring.append(len(v));v.append((cx+co*rx*radius,-(cz+si*rz*radius),z))
   rings.append(ring)
  for j in range(len(rings)-1):
   mi=[1,1,2,1,4,1,3,2,1,4,3,2,1,4,2][j]

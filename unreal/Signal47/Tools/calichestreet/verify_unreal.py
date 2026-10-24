@@ -55,11 +55,14 @@ for label in ('souvenir','ground','backdrop'):
             value=M.get_material_default_scalar_parameter_value(mat,'NormalStrength')
             check(row['name']+' controlled normal strength',abs(value-float(row.get('normal_strength',.2)))<.00001,value)
         check(row['name']+' sidedness',mat.get_editor_property('two_sided')==(bool(row.get('two_sided',False)) or float(row.get('alpha',1))<1))
-        if row.get('vertex_alpha_opacity'):
+        if 'specular' in row:
+            check(row['name']+' authored specular',abs(M.get_material_default_scalar_parameter_value(mat,'Specular')-float(row['specular']))<.00001)
+        if row.get('vertex_alpha_opacity') or row.get('alpha_mode')=='dithered_masked':
             expressions=M.get_material_expressions(mat)
             mask=M.get_material_property_input_node(mat,unreal.MaterialProperty.MP_OPACITY_MASK)
             check(row['name']+' masked perimeter',mat.get_editor_property('blend_mode')==unreal.BlendMode.BLEND_MASKED)
-            check(row['name']+' vertex opacity node',any(isinstance(n,unreal.MaterialExpressionVertexColor) for n in expressions))
+            if row.get('vertex_alpha_opacity'):
+                check(row['name']+' vertex opacity node',any(isinstance(n,unreal.MaterialExpressionVertexColor) for n in expressions))
             check(row['name']+' temporal perimeter mask',isinstance(mask,unreal.MaterialExpressionMaterialFunctionCall) and 'DitherTemporalAA' in str(mask.get_editor_property('material_function')))
 radio_rows=json.loads((ROOT.parent/'radioarray/station/materials.json').read_text())
 for name,row in radio_rows.items():

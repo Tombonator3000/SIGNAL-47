@@ -10,6 +10,6 @@
     "world_origin": true,
     "scale_one": true
   },
-  "bounds_error_m": 0.0001068115234375,
+  "bounds_error_m": 0.0002699277538340539,
   "triangles": 62496
 }

@@ -117,7 +117,7 @@ def material(row, dest, src):
                 M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
         if role == 'base_color' and row.get('opacity_from_base_color'):
             texture_alpha = sample
-            if row.get('vertex_alpha_opacity'):
+            if row.get('vertex_alpha_opacity') or row.get('alpha_mode')=='dithered_masked':
                 continue  # The perimeter fade multiplies the atlas alpha below.
             masked = row.get('alpha_mode', 'masked') == 'masked'
             mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED if masked else unreal.BlendMode.BLEND_TRANSLUCENT)
@@ -126,13 +126,14 @@ def material(row, dest, src):
             else:
                 mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
             check(name+' texture alpha connection', M.connect_material_property(sample, 'A', unreal.MaterialProperty.MP_OPACITY_MASK if masked else unreal.MaterialProperty.MP_OPACITY))
-    if row.get('vertex_alpha_opacity'):
+    if row.get('vertex_alpha_opacity') or row.get('alpha_mode')=='dithered_masked':
         check(name+' vertex fade contract', row.get('alpha_mode')=='dithered_masked')
         mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED)
         mat.set_editor_property('opacity_mask_clip_value', .333)
-        vertex = expression(mat, unreal.MaterialExpressionVertexColor)
-        alpha, output = vertex, 'A'
-        if texture_alpha:
+        vertex = expression(mat, unreal.MaterialExpressionVertexColor) if row.get('vertex_alpha_opacity') else None
+        alpha, output = (vertex, 'A') if vertex else (texture_alpha, 'A')
+        check(name+' authored fade input', alpha is not None)
+        if texture_alpha and vertex:
             alpha = expression(mat, unreal.MaterialExpressionMultiply)
             check(name+' atlas fade', M.connect_material_expressions(texture_alpha, 'A', alpha, 'A'))
             check(name+' perimeter fade', M.connect_material_expressions(vertex, 'A', alpha, 'B'))
