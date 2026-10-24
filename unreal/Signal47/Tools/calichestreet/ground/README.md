@@ -68,3 +68,13 @@ Blender 5.2 sin glTF-eksportør støtter ikke vertexalpha brukt uten vertex-RGB 
 Sage bruker fem forskjøvede og roterte atlasplan innenfor deklarert fotavtrykk. Lysere støvet olivengrått løv, mer løvdekning og lys transparent padding gjør plantene lesbare også under blått kveldslys. Gras er tørt strågult; det er fortsatt åpne mellomrom mellom øyene. Oppdaterte originalatlas er pakket inn i blend-filen.
 
 Surface/RoadWear-geometri, UV, vertexalpha, transform og materialplasser har eksakt samme SHA256 som før R5; partskontraktene er identiske. `r5_frozen_surfaces.json` og `r5_report.json` dokumenterer dette. Samlet kildetriantall er 56 323. Native bilder avgjør endelig visuell aksept.
+
+## R6 — localized surface use, actual contact authority
+
+Six controlled fields add coherent wheel-use dust on the east apron/service gap and matte scuff/oil traces in the gas pump lanes/turnout. No new plants were added. The three soil fields use original rendered top+12mm, above existing Soil top+8mm. The three concrete fields use original rendered top+7mm. Triangle centroid and edge-midpoint tests reject bridges across source height steps: one cell was removed, with its open edge faded. Centroid clearance is5.24–12.94mm above original ground and at least2.74mm above the actual unchanged Soil triangles; concrete6.97–8.08mm with no Soil underneath. The original maximum14mm test remains strict.
+
+The gas apron in `gs_preview.py` is preview-only; original exported town `g1004` triangles remain the actual contact authority. The raised gas pump island and protected approaches are excluded. Collision and player floor are unchanged.
+
+Surface now has19,568triangles and15slots. RoadWear26,838, Rocks11,055, DryPlants6,828 keep their13slots. Total64,289triangles. Both new materials have original2048 RGBA maps, texture-alpha multiplied by vertex-alpha, actual0.55m boundary fade, and specular0. New maps use a single0..1UV field rather than repeated wheel patterns.
+
+`r6_geometry_preservation.json` checks every original face's coordinates, UV and Color RGBA on all four parts against the saved R5 blend. All are hash-identical; the other three part contracts are identical. `verification.json` checks FBX, contact and protected placement; `glb_verification.json` checks actual binary RGBA values against saved Blender points; `r6_glb_texture_alpha.json` confirms embedded2048RGBA pixel identity and nontrivial alpha. `r6_report.json` contains per-field footprints, measured contact ranges and the gas preview distinction. Prior R5 exports are preserved at `/home/tom/scratch-bm/Signal47-caliche-concept/ground-before-r6`; rejected R6 evidence is under `evidence/r6-rejected-7mm-under-soil`. Native visual approval is pending.
