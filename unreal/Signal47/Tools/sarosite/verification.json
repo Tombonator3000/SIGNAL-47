@@ -1,0 +1,402 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_SaroSite_Facade single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2618,
+      "materials": [
+        "M_SaroSite_Stucco",
+        "M_SaroSite_Concrete",
+        "M_SaroSite_Trim",
+        "M_SaroSite_Roof",
+        "M_SaroSite_Interior",
+        "M_SaroSite_Wood",
+        "M_SaroSite_SignBack",
+        "M_SaroSite_Sign"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_Facade valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.00017999989509576153
+    },
+    {
+      "name": "SM_SaroSite_Glass single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 120,
+      "materials": [
+        "M_SaroSite_Glass"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_Glass valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.008339996103048364
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 7.152557373046875e-07,
+      "triangles": 1624,
+      "materials": [
+        "M_SaroSite_Metal",
+        "M_SaroSite_DarkMetal",
+        "M_SaroSite_Ceramic",
+        "M_SaroSite_Label"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.621640705946504e-05
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2258,
+      "materials": [
+        "M_SaroSite_Stucco",
+        "M_SaroSite_Concrete",
+        "M_SaroSite_Trim",
+        "M_SaroSite_Roof",
+        "M_SaroSite_Interior",
+        "M_SaroSite_Wood",
+        "M_SaroSite_SignBack",
+        "M_SaroSite_Sign"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.00017999989509576153
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 120,
+      "materials": [
+        "M_SaroSite_Glass"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.008339996103048364
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 7.152557373046875e-07,
+      "triangles": 1048,
+      "materials": [
+        "M_SaroSite_Metal",
+        "M_SaroSite_DarkMetal",
+        "M_SaroSite_Ceramic",
+        "M_SaroSite_Label"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.9823147813967665e-05
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1898,
+      "materials": [
+        "M_SaroSite_Stucco",
+        "M_SaroSite_Concrete",
+        "M_SaroSite_Trim",
+        "M_SaroSite_Roof",
+        "M_SaroSite_Interior",
+        "M_SaroSite_Wood",
+        "M_SaroSite_SignBack",
+        "M_SaroSite_Sign"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.0011439995703694805
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 120,
+      "materials": [
+        "M_SaroSite_Glass"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.008339996103048364
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 7.152557373046875e-07,
+      "triangles": 712,
+      "materials": [
+        "M_SaroSite_Metal",
+        "M_SaroSite_DarkMetal",
+        "M_SaroSite_Ceramic",
+        "M_SaroSite_Label"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.9823147813967665e-05
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Facade GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 2618
+    },
+    {
+      "name": "SM_SaroSite_Glass glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 120
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 1624
+    },
+    {
+      "name": "actual asymmetric export probe",
+      "passed": true
+    },
+    {
+      "name": "single original editable Blender project",
+      "passed": true,
+      "paths": [
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/sarosite/SARO_Site.blend"
+      ]
+    },
+    {
+      "name": "SM_SaroSite_Facade saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_Glass saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_SaroSite_ServiceEquipment saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "Concrete_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Concrete_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Concrete_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "SARO_sign_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Stucco_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Stucco_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Stucco_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "all original PBR maps packed",
+      "passed": true,
+      "required": 7,
+      "packed": 7
+    },
+    {
+      "name": "complete descending LODs",
+      "passed": true
+    }
+  ],
+  "source_revision": "SARO_SITE_ORIGINAL_R1",
+  "scope": "Actual FBX, GLB, source scene and packed original pixels. Native and visual acceptance are separate."
+}

@@ -1,0 +1,864 @@
+{
+  "status": "SOURCE_VERIFIED_NATIVE_VISUAL_UNVERIFIED",
+  "source_revision": "TB1-original-six-building-production",
+  "parts": 28,
+  "families": 6,
+  "LOD_triangles": {
+    "0": 65154,
+    "1": 48610,
+    "2": 27450
+  },
+  "actual_source_checks": 793,
+  "files": [
+    {
+      "path": "Church.blend",
+      "bytes": 5007727,
+      "sha256": "929f4b1638785fc90350f065193047c753e29a2450592ec8509258e65c401d12"
+    },
+    {
+      "path": "Church.glb",
+      "bytes": 5456972,
+      "sha256": "dbb0365ba038db4ff5e84e1009e6882345aa87c9d68d37fab174d9422fbcfec5"
+    },
+    {
+      "path": "Cinema.blend",
+      "bytes": 4689779,
+      "sha256": "47778f7190eeb6de49b5dda05155cb93a20f7b34a95cd28c9cc5b4d92c121206"
+    },
+    {
+      "path": "Cinema.glb",
+      "bytes": 5148540,
+      "sha256": "f952ef2c741e45055d9474d2258c7bb2974f03a0857496c1d9f142e9418328a5"
+    },
+    {
+      "path": "Feed.blend",
+      "bytes": 6758942,
+      "sha256": "f4f2e7df07d6fdcf02677f480440d40cf3aeb90645a53c9ceb706ae667dbc32e"
+    },
+    {
+      "path": "Feed.glb",
+      "bytes": 7215956,
+      "sha256": "fb0b7c4824304f2125fa6fd32bf33b80b37b1148680a27b0bbe4f6ece655e536"
+    },
+    {
+      "path": "Laundry.blend",
+      "bytes": 5314287,
+      "sha256": "615f1b873b459a6e77e93d79dcea33375c26fe5ad44fb5c02a1035508ed3d4f6"
+    },
+    {
+      "path": "Laundry.glb",
+      "bytes": 5649372,
+      "sha256": "dcffea97b94f4f4203391c6a55a14d00b64d2576330610fe7389bafc16b7bd42"
+    },
+    {
+      "path": "Motel.blend",
+      "bytes": 5714657,
+      "sha256": "40c4c67a50bac6ed45da88ffca885e63023be25e2f1378a663ff06d8076bb51d"
+    },
+    {
+      "path": "Motel_Court.glb",
+      "bytes": 5325040,
+      "sha256": "cd9a837aa55953586e4fc32bb3a8233eee8662ad1babe94805d5968cce1b544a"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4970,
+      "sha256": "72b4195b9bf64c3565fb411764e52c2fb2015b0eea19fdbc1ceda970d4383da6"
+    },
+    {
+      "path": "Room6.glb",
+      "bytes": 6035744,
+      "sha256": "375c9e87482a114219338a6d31e9112cbeb54039611810d78afb0f23bd992934"
+    },
+    {
+      "path": "Sheriff.blend",
+      "bytes": 4745220,
+      "sha256": "2b91434eb0852589d8066085ebaa44ff4e0198a2891a9235fc65a1cdcef130b2"
+    },
+    {
+      "path": "Sheriff.glb",
+      "bytes": 5265632,
+      "sha256": "b4f831dee066102d72d031cd830410682af415ea9451cd3c859e2041f1bb1885"
+    },
+    {
+      "path": "build_townbuildings.py",
+      "bytes": 10723,
+      "sha256": "01ca0549baab8715158e855c7735387e04bb9c56bee75acae68b3075a591424e"
+    },
+    {
+      "path": "check_source_plan.py",
+      "bytes": 1818,
+      "sha256": "858949c75449cbf1ab2687c03352face461afa5bd0532611bba6e6a99c92ff69"
+    },
+    {
+      "path": "design.py",
+      "bytes": 3492,
+      "sha256": "8c73e01b668ae607eac141db4ed598f6341acf686ad9fdf8008d5479764ace60"
+    },
+    {
+      "path": "exports/SM_Town_Church_Fixtures.fbx",
+      "bytes": 52892,
+      "sha256": "6246b9307cd02d1dc3f2b85660159d05e938438415a6d619c464dba8ea07b36b"
+    },
+    {
+      "path": "exports/SM_Town_Church_Fixtures.glb",
+      "bytes": 63640,
+      "sha256": "99c8d4264415498264f6e0e201e144296f217839c9fc3769c51482d72f7ace2c"
+    },
+    {
+      "path": "exports/SM_Town_Church_Fixtures_LOD1.fbx",
+      "bytes": 40188,
+      "sha256": "82169dc5f328a7dd9df0ffbd7d4c4cb9f75b1a140e6e741cfd476cf256268aaf"
+    },
+    {
+      "path": "exports/SM_Town_Church_Fixtures_LOD2.fbx",
+      "bytes": 33580,
+      "sha256": "e0a8556f627daeef936a0d5397390a454edae3f5fdf13f19b1c4f0a471fbadfa"
+    },
+    {
+      "path": "exports/SM_Town_Church_Glass.fbx",
+      "bytes": 16124,
+      "sha256": "5d743acf2ecb8e16070251a0a989021688dd45e66adad0bb5f92bc5fcbbd3c2e"
+    },
+    {
+      "path": "exports/SM_Town_Church_Glass.glb",
+      "bytes": 4076,
+      "sha256": "b6d5315fd9b1ca81281ea969ef25c8cf98dda77b11e6158529fd3e668017f94e"
+    },
+    {
+      "path": "exports/SM_Town_Church_Glass_LOD1.fbx",
+      "bytes": 16140,
+      "sha256": "327805f3cc151702147903df440296162d5e4f85841b2868b7cd243b35e8efcb"
+    },
+    {
+      "path": "exports/SM_Town_Church_Glass_LOD2.fbx",
+      "bytes": 16140,
+      "sha256": "bc9389193b4aa4a1a9b158e53c6861470a31c806616177fa031da5a55323dd84"
+    },
+    {
+      "path": "exports/SM_Town_Church_Interior.fbx",
+      "bytes": 88828,
+      "sha256": "6b56660ba3b4ca0fe20cf8b190116551e11f8253c9c70fcc1bc7472cfbe28144"
+    },
+    {
+      "path": "exports/SM_Town_Church_Interior.glb",
+      "bytes": 3926212,
+      "sha256": "08443f81bab0f801ae87766e7cb24f8fd6d1cc3e0dc9c977f0e36a9034c76f6a"
+    },
+    {
+      "path": "exports/SM_Town_Church_Interior_LOD1.fbx",
+      "bytes": 87468,
+      "sha256": "d749ca2d08821b54614b5c0ecda6e7e5d57b6e6b659916a9288385a244125cc1"
+    },
+    {
+      "path": "exports/SM_Town_Church_Interior_LOD2.fbx",
+      "bytes": 80876,
+      "sha256": "f36c3af988ebb926a9a2de113096450af8a6991260dc351204d6cb01f8b1aa5b"
+    },
+    {
+      "path": "exports/SM_Town_Church_Shell.fbx",
+      "bytes": 106124,
+      "sha256": "8796079da6d67dd85e6a7f3b26bae5dfa43ae178188c76d8233d7160acf2bbbe"
+    },
+    {
+      "path": "exports/SM_Town_Church_Shell.glb",
+      "bytes": 4512024,
+      "sha256": "9f255c0dab98a1ff117c9459e1ca26432d38561348ff934e523e16b764565eb3"
+    },
+    {
+      "path": "exports/SM_Town_Church_Shell_LOD1.fbx",
+      "bytes": 104172,
+      "sha256": "f5b7cbf371a5f18123c18877e004a19856c7db447dc203227b97fab32ba01e38"
+    },
+    {
+      "path": "exports/SM_Town_Church_Shell_LOD2.fbx",
+      "bytes": 74812,
+      "sha256": "12828bab08cb15f8da3f4706dc5bd148c9bf9ab79ba870ad0a4bbafe17842930"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Fixtures.fbx",
+      "bytes": 68284,
+      "sha256": "d0787c9ffe039c889a510fda881a6f1727fca1441e651867e7af44a9710db0cb"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Fixtures.glb",
+      "bytes": 86840,
+      "sha256": "6a5db5091085221ed0a6628736d73cfd04ff5565cc1f2ff5ef7550dec53bc113"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Fixtures_LOD1.fbx",
+      "bytes": 50684,
+      "sha256": "68645e4ac5079f7c674edbea90f2526c90cce86299e0b2c9785e4577abfbbe40"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Fixtures_LOD2.fbx",
+      "bytes": 38604,
+      "sha256": "3094eaaeeedb8582a1b1a9854de0cfeba0b5af838f05cb3b459b1a47c5710888"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Glass.fbx",
+      "bytes": 15836,
+      "sha256": "2e7d610c9631623f353b522813126c5d1f21b9d1a1b6f9893a670fe33a08d23e"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Glass.glb",
+      "bytes": 3488,
+      "sha256": "802e7e45c3be144a922693b14b9dc437a7e432a8dc9de65d713474e4c8c66d73"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Glass_LOD1.fbx",
+      "bytes": 15836,
+      "sha256": "6a15efac70ddb0be624528d20a37a28b468c484143bda944d30723cdaaf435ac"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Glass_LOD2.fbx",
+      "bytes": 15836,
+      "sha256": "eaebcb7b28186bea7d5ffd7a908700f0538bceb6b61fe84836835087d8243497"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Interior.fbx",
+      "bytes": 59484,
+      "sha256": "fc35848bd187b07874abed189c245fa2e1005a02c54074bffc8ea842d1e52082"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Interior.glb",
+      "bytes": 4936384,
+      "sha256": "d29b915d8e01b0b1e151c35bf71081cf865209530c09a36f6b25721589d0012a"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Interior_LOD1.fbx",
+      "bytes": 55580,
+      "sha256": "980e65618ca6fd7c7db5705e075e6a43e884bb848367c40dd9a819a9727dfc9b"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Interior_LOD2.fbx",
+      "bytes": 42684,
+      "sha256": "0e73e3b3e5eaa8ce2293d592eb794a0b338ae4204d4180e3ac10dad5b70f72f4"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Shell.fbx",
+      "bytes": 71820,
+      "sha256": "9e31a3bca6a3eb38fd32c8885f11ded537bdda5f27f7a54b394eeb3b8af2ef86"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Shell.glb",
+      "bytes": 3415632,
+      "sha256": "3e4c2abceef4181d978684983520b6e311b4dec65394da08e0c8a3dbeec0d58a"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Shell_LOD1.fbx",
+      "bytes": 64716,
+      "sha256": "b53f2994763de8722bf15712bd8f171e6ca00565980e639c2316b1ee28be7c01"
+    },
+    {
+      "path": "exports/SM_Town_Cinema_Shell_LOD2.fbx",
+      "bytes": 54204,
+      "sha256": "9245e75d2b5f8f9c599c9315e474a9a890e996a7495950170a9d6e0617aa4610"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Fixtures.fbx",
+      "bytes": 52860,
+      "sha256": "7455d62f091f02f167cf8f0bd1b8539fa16a00b5253c90b0b2a3d32b6b24422b"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Fixtures.glb",
+      "bytes": 63396,
+      "sha256": "05d33a793fb125645434bedaa7a4d1b98acf8e48a7254caf24afa841440937eb"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Fixtures_LOD1.fbx",
+      "bytes": 39804,
+      "sha256": "4e2d35bfaba0dd4475a57bbe3fa79fab05faf2b929367bb31e79eb8506b00bd7"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Fixtures_LOD2.fbx",
+      "bytes": 32684,
+      "sha256": "37d01b92d2d3f6fc6fc914654901a0c9357817fe5f8298898527b6a84cb9d482"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Glass.fbx",
+      "bytes": 15836,
+      "sha256": "d149655ed5933684ac12330e962ffc2dcde8df0dd0893b879a8d47455be86bbf"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Glass.glb",
+      "bytes": 3200,
+      "sha256": "981b08502d58e85b2371758b3967f6f1dff6b5878ba72f144de661ede3f3ac92"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Glass_LOD1.fbx",
+      "bytes": 15836,
+      "sha256": "db42a7bc8e2296177d30048cbc1a09ec528086d8c9e9d31fc4a336b22e3db093"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Glass_LOD2.fbx",
+      "bytes": 15836,
+      "sha256": "61edc6ab2fdb12552aac9c0965ccc829a33d072a947a8dcd0fe4dc738ec6ce7d"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Interior.fbx",
+      "bytes": 419692,
+      "sha256": "ddffbf79c36a0ff89ef4b7de18c60acc6fe467e7ef189cf0fd991df75d4eb67a"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Interior.glb",
+      "bytes": 4326628,
+      "sha256": "772734d00d4be8343746070ff8304a7495d17a8613562ab5152f1b15295476a1"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Interior_LOD1.fbx",
+      "bytes": 274956,
+      "sha256": "f0f7557c284201a4f79f8e19f231c095fdf2f0b5ecc7926e56fb4941144a0649"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Interior_LOD2.fbx",
+      "bytes": 69004,
+      "sha256": "35ecab698b9767c9d9696ea61919d0f6819c2b44c03083b72ef4c78ed1e91433"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Shell.fbx",
+      "bytes": 102556,
+      "sha256": "dea1a2984adbbb215a1fdc6ef5ea308d146bd5617d2c0ddc78b262216b17ffc2"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Shell.glb",
+      "bytes": 6570556,
+      "sha256": "cc846a1f5c13572e88d4aa7454aee5bbb57ca92f538afb76e9a7786d7745c7e8"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Shell_LOD1.fbx",
+      "bytes": 81436,
+      "sha256": "8ae8c2ac18fca16e03fc8e480cffcd10ee4dee59124d0bde39fa334f5053d18f"
+    },
+    {
+      "path": "exports/SM_Town_Feed_Shell_LOD2.fbx",
+      "bytes": 56076,
+      "sha256": "50c2ea910d6fcc02c9975ff677fb097a8590c8501f14cfc738e9a8f1efa2efc2"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Fixtures.fbx",
+      "bytes": 31948,
+      "sha256": "4f174a8a7e7754a4d2e5dd1952a8cbe1664ccf870e2541f722e09cf07843ba26"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Fixtures.glb",
+      "bytes": 29644,
+      "sha256": "fd6190816c2b07fbed8b6163303c86e4234bfbf88e36d65cb21063dfc0ca07ea"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Fixtures_LOD1.fbx",
+      "bytes": 28380,
+      "sha256": "89dedaef3cf605af92a09f2017fab92dc10027cf29f84b0d2c235f7f3b1784f0"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Fixtures_LOD2.fbx",
+      "bytes": 26860,
+      "sha256": "4e9dba0b6f0ad5309e1bd70b4e039a32a789b70b7c15abdb5ef7447c06053128"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Glass.fbx",
+      "bytes": 15708,
+      "sha256": "0e9ba8e21ba50685cc64e8f39a61b9935b2d87602c441dfc50725aa8acb273b4"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Glass.glb",
+      "bytes": 3064,
+      "sha256": "b3a800d1d51ecd5a6768ceb18aac80cd4786a29bc667e4f47033cb91ef5096cd"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Glass_LOD1.fbx",
+      "bytes": 15724,
+      "sha256": "f911a3387ef6762224ea84696353886ca7bb0194f49c7878f579fae71b01b258"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Glass_LOD2.fbx",
+      "bytes": 15724,
+      "sha256": "0ba810781072db632030e714585638d7092af267d9f3c63d3f618d90224b39b5"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Interior.fbx",
+      "bytes": 398540,
+      "sha256": "c939ee90272ee14305a5fecfa1dee408c09543cd49e0182e065467a4f2a711e2"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Interior.glb",
+      "bytes": 5559860,
+      "sha256": "391a3c4a783a8c42905e5c845a00d914e8b3643d3af6f6d88efa9f01beaa567b"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Interior_LOD1.fbx",
+      "bytes": 282012,
+      "sha256": "cb4f1ded7c430c6c446179967f1947b894854639e1aa6e1fe48b0c474420db10"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Interior_LOD2.fbx",
+      "bytes": 195468,
+      "sha256": "3041da0128c4d111ddd3e57ad2949a24915ff8d4897bfcaadd05fdde8a9c6f34"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Shell.fbx",
+      "bytes": 50092,
+      "sha256": "cf6b66b8e68f3b5bfea3941d38354f3bdc1ebe28b5a33375b763c4b4b595c75a"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Shell.glb",
+      "bytes": 3929664,
+      "sha256": "53c3421faf9cb0646a8a2cd04846f78a1ab1df776895820b8618d6e5cfafdb7e"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Shell_LOD1.fbx",
+      "bytes": 47420,
+      "sha256": "c08ae5be8a4a134ad9095cf8b7912401b42a9c14196c789a9248dd2766ed46dc"
+    },
+    {
+      "path": "exports/SM_Town_Laundry_Shell_LOD2.fbx",
+      "bytes": 40492,
+      "sha256": "ef638b89030bfc9d1213e62a45e5db545a8de2d19d1e51a824792726fab983a1"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Bathroom.fbx",
+      "bytes": 63292,
+      "sha256": "aa7c908b0194b24638b2067c12c08b3999265ae750f06b33860e327994aed7ab"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Bathroom.glb",
+      "bytes": 2875036,
+      "sha256": "b7b929c1aa5dd8158f611cb75c43009f1a5b97abffb039b87c95c5115553ca67"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Bathroom_LOD1.fbx",
+      "bytes": 52060,
+      "sha256": "9d565e19cf1c4d678e69c06b6f23988fdc041d4f70b5b9cbd3eb7243d356f2af"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Bathroom_LOD2.fbx",
+      "bytes": 45292,
+      "sha256": "7e14756b9ed7312e0e34fb7031d543c7333ebf5c13b0bbaf661bb77b49ce7e34"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Fixtures.fbx",
+      "bytes": 19852,
+      "sha256": "f82f67da8db57913cd2f462fd48a65cc5ce8f6effa0dadd90c57301a476ec5d2"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Fixtures.glb",
+      "bytes": 14284,
+      "sha256": "d40b614eeb136b911dc7defc995476dd12050951ba0a6964667bcc575d2bc309"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Fixtures_LOD1.fbx",
+      "bytes": 19868,
+      "sha256": "d08ef3fe61a0776e79e01c68fc8ad7a2a7710b12610ca8ec6be5dcbe18511a54"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Fixtures_LOD2.fbx",
+      "bytes": 19868,
+      "sha256": "5a1a5c4bf1378ddff7f60ce02b57021c156060735c36776806a2c41d35337ed2"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Glass.fbx",
+      "bytes": 15868,
+      "sha256": "1d2eb6c83222cd8d6bfe8bcf938a118a213087da5eb713da42316fcc4225c4e2"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Glass.glb",
+      "bytes": 3916,
+      "sha256": "d96cfed011e0c2f7e989b73f51ef5b26ce78e4af8b6fb0dda6c1307e0c8fdb14"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Glass_LOD1.fbx",
+      "bytes": 15884,
+      "sha256": "c69c7c415b03ba104bd75bc0ef7908af520a4cbafd81e9b3045a2aefacc08766"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Glass_LOD2.fbx",
+      "bytes": 15884,
+      "sha256": "32a6a4c00cf94e509c66bfd5ef2611662c396cf0722f511c8be7f50d85804633"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Office.fbx",
+      "bytes": 67612,
+      "sha256": "613e437b2d6ec2df2bacfcf99948788642d3fbcc866a13ee209df21660fd0565"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Office.glb",
+      "bytes": 4135356,
+      "sha256": "c4ee9e5486232644348a0ca0ff06bc59401fc8f1c9d8e14392909863447ba86b"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Office_LOD1.fbx",
+      "bytes": 63852,
+      "sha256": "b40ffe878a3a09cfa294013335c21777d77c8ddeeee9d01382ce6b95bf2c283b"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Office_LOD2.fbx",
+      "bytes": 62524,
+      "sha256": "ecbe795f4af6c3e8de365fc69fb78da1d6bbfd323905024de1e8b20199ae4411"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Fixtures.fbx",
+      "bytes": 20604,
+      "sha256": "20fea95152630b3c655262b7ddc88a893410cf4a17fc5f66edca3721b987e1fe"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Fixtures.glb",
+      "bytes": 9200,
+      "sha256": "a8a1b0951a80382f5d7629f0400ef02f7f6b0314a377083c896f697056e8eba7"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Fixtures_LOD1.fbx",
+      "bytes": 19292,
+      "sha256": "58ea5467069498123aa9a197b624408eabb9e62f10bcee6cb4a7973e775af28e"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Fixtures_LOD2.fbx",
+      "bytes": 18556,
+      "sha256": "a5a9859507c74957ace50c4797854048b62e7772bc4f730cf09d46f2c67a29ec"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Interior.fbx",
+      "bytes": 63292,
+      "sha256": "dc79531733d5e42a2c877a234d407c5d92ff37d3d8a91a559cead4fc4eedce85"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Interior.glb",
+      "bytes": 3586548,
+      "sha256": "f9a921cad800633e2213c4e67044c5751ec1b02f9bed938ca3fcccfe3fc53a25"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Interior_LOD1.fbx",
+      "bytes": 59516,
+      "sha256": "8010af25719dc512e11338724b1617f10911bdca29de3406648a538e393a7e35"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Interior_LOD2.fbx",
+      "bytes": 57516,
+      "sha256": "9fe3a2ae61aad7309d39949ddb3c9b83b5959a1566d85a27888b1950686cf2db"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Shell.fbx",
+      "bytes": 32620,
+      "sha256": "7d75cc88f1caef12c17da767fbb7a04915ad6cf6594067f9accfe2df1c8c73ff"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Shell.glb",
+      "bytes": 2655080,
+      "sha256": "97e03911162d22d7fbab98edcca7e596979dbac24fdd88a25b11e75b3169d665"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Shell_LOD1.fbx",
+      "bytes": 32636,
+      "sha256": "d4dc8258e0e6666d486682080c29040fcb80658fc20d76aed74ea00f0a945eab"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Room6Shell_LOD2.fbx",
+      "bytes": 32636,
+      "sha256": "233a92198c8205bb02cab5ead5cb97fc5dcb6f1f017ce8b7721f6908966b3dbd"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Shell.fbx",
+      "bytes": 130556,
+      "sha256": "1d472c13d1e467ce17daabe3584e562e1159ae8ae8d052dbdadb55949b2dc417"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Shell.glb",
+      "bytes": 4919496,
+      "sha256": "72724bf19f68f01eecfc04b32b4d4ef0584b13e89c0b38f51c135b33f3a863fa"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Shell_LOD1.fbx",
+      "bytes": 115836,
+      "sha256": "b9d5619f4055c05ff7ddfb41c87e8e111d520d4cae52bd43ca8c5e086711fb44"
+    },
+    {
+      "path": "exports/SM_Town_Motel_Shell_LOD2.fbx",
+      "bytes": 97708,
+      "sha256": "64a7e4434c0d29e1a2c8b14dbd91b59021f7d96b65d1524e4f621ef76571a019"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Fixtures.fbx",
+      "bytes": 30940,
+      "sha256": "2b05e5643c4b56170c753d74c34fa3c5aa2838baab1a7bce7011da4d8965b221"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Fixtures.glb",
+      "bytes": 24740,
+      "sha256": "39de7bf706618c992dcf1c9fb88b9f07c5baee47e0429c73c1679c2bae127a6f"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Fixtures_LOD1.fbx",
+      "bytes": 27564,
+      "sha256": "ba7daededfc92049147f7631ec0e692deae0289447ff508e12afae4232217a52"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Fixtures_LOD2.fbx",
+      "bytes": 26028,
+      "sha256": "39cd65f76735da322c21213c758dd7d5a2bbc5baf1ebd901629a3aa774f3fe55"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Glass.fbx",
+      "bytes": 15564,
+      "sha256": "e60d3ca4f94a4b3ac2b5b0a9b34a87c240a13066f6a2b8d6992e78b89d5f064d"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Glass.glb",
+      "bytes": 2092,
+      "sha256": "f4472d97e7d3ee8f766e14c8a008c94220f27a065edff93d2c3953ea8f4da1b1"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Glass_LOD1.fbx",
+      "bytes": 15580,
+      "sha256": "c965b186385de4794682eb0040ccc55083caf37e312cbaafeeedf47632ebbbd7"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Glass_LOD2.fbx",
+      "bytes": 15580,
+      "sha256": "06617bea6aa9963db71f88c84049726feda814c7edf349b85ba230ef8e726d62"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Interior.fbx",
+      "bytes": 171196,
+      "sha256": "d1fd98d3795c0e78aa3ed472dcafb4eb9dabb9cacc6a8076e36d58b88357da29"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Interior.glb",
+      "bytes": 5172768,
+      "sha256": "33cc872c8758b726c17126c78606756032b9485474d6e125a330b243da58a1ca"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Interior_LOD1.fbx",
+      "bytes": 137900,
+      "sha256": "38d54c39b29bca3ac224e37acc06d6bd52d1c4bfde28b379fb8b919e81c17459"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Interior_LOD2.fbx",
+      "bytes": 97900,
+      "sha256": "c573d4945397b49f5a054d11cf2197b5a1a62fbed41c86c88d1652501ed16ba0"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Shell.fbx",
+      "bytes": 53212,
+      "sha256": "1d3213234d238b9e8a63c3159ce1d6b95b11b398d8961a1f8b37b97abf078afc"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Shell.glb",
+      "bytes": 3358208,
+      "sha256": "384d55cd6515e14d8836352af1281ff5aed16b51308fc314dabe9f27ed6f056d"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Shell_LOD1.fbx",
+      "bytes": 46812,
+      "sha256": "4343881e323a18a2b74864baca72997be7d3a5d348716644a5ce3fcb594a7164"
+    },
+    {
+      "path": "exports/SM_Town_Sheriff_Shell_LOD2.fbx",
+      "bytes": 40108,
+      "sha256": "6e33b57c37aabdcb7cc2c72d264281a62bfb6f453de53fd01a4db10162025d53"
+    },
+    {
+      "path": "exports/axis_probe.fbx",
+      "bytes": 12364,
+      "sha256": "16c719ec8bd49c613cfacae9d2300ab1501c4613608ac6ee304959e869129061"
+    },
+    {
+      "path": "geometry.py",
+      "bytes": 5798,
+      "sha256": "85205ca16f709687ab8b271badb0285f02b54ba650555a5095c1b36e6d04e6de"
+    },
+    {
+      "path": "lettering.py",
+      "bytes": 964,
+      "sha256": "9f21c79cc7b4c3f11ba4856e6a60737e514f11174df5eb4ca463a0f84f993989"
+    },
+    {
+      "path": "make_textures.py",
+      "bytes": 5276,
+      "sha256": "2d08f08e0461a4bd714082b88549c9acf5ddfd2831008f73de00ae3585a0ff26"
+    },
+    {
+      "path": "materials.json",
+      "bytes": 21125,
+      "sha256": "2bf52ec228286b3915085f76f45061ebcb897ebb68d005f590dec32946d8b264"
+    },
+    {
+      "path": "materials.py",
+      "bytes": 2723,
+      "sha256": "312e9c039b39c2a2ee8f0e8b0e0d575d70240f5ce365c4c7e92f512d7e973e60"
+    },
+    {
+      "path": "model_contract.json",
+      "bytes": 143163,
+      "sha256": "a7d20dfbc01884abb0c691bc1e3e09a32dc6c7fe94d75dd97bd393be575d2f89"
+    },
+    {
+      "path": "motel_geometry.py",
+      "bytes": 10704,
+      "sha256": "e886c2f17137b3bc80538327d5bd20e7326cfb901b8964a3b28513a9364df2e2"
+    },
+    {
+      "path": "runtime_replacement.json",
+      "bytes": 30992,
+      "sha256": "da47ab8cb34dbd24e606a8e440ea7355a55b6dfe47c7749cd0feec7fc68f619b"
+    },
+    {
+      "path": "source_plan.json",
+      "bytes": 112190,
+      "sha256": "70dc0496eff205a69943d91fc786977d962e600f58614281e03f786490f0c4e4"
+    },
+    {
+      "path": "textures/Carpet_base_color.png",
+      "bytes": 249862,
+      "sha256": "55534e55a9452f690f1701f8736fdfafd9b6c9acdce4358be2bc6f5a897afe99"
+    },
+    {
+      "path": "textures/Carpet_normal.png",
+      "bytes": 341682,
+      "sha256": "3424be9e6fac860feb1260f95c1b30264f3fd2355c358258c08a7aa0740a8aa3"
+    },
+    {
+      "path": "textures/Carpet_roughness.png",
+      "bytes": 207892,
+      "sha256": "7650b312fe22975c1d6600807cae30be6de40878eb83251c2981da1df241cc2f"
+    },
+    {
+      "path": "textures/Cloth_base_color.png",
+      "bytes": 231555,
+      "sha256": "dd27a16e35b6e5019ba2edaffb9054ec8ff33dfb7cb710099cbb4f76b0a34db5"
+    },
+    {
+      "path": "textures/Cloth_normal.png",
+      "bytes": 341401,
+      "sha256": "a3a9f8944855db14e8028e876c5a33902791e2ec71983a23cc1fce1752ef8a02"
+    },
+    {
+      "path": "textures/Cloth_roughness.png",
+      "bytes": 55346,
+      "sha256": "3736085dd3f01741e3f1e33e76e4f8139ce6bea8861780992ad97de4d0439a6f"
+    },
+    {
+      "path": "textures/FloorTile_base_color.png",
+      "bytes": 77966,
+      "sha256": "4283b8dcc272b978739150e6bd130a96620f5e833063f9cb0becb79dd9291676"
+    },
+    {
+      "path": "textures/FloorTile_normal.png",
+      "bytes": 138637,
+      "sha256": "f7c41b6f2ad79634bbbf2b4e8b8d8a103a081ceb47c9c80c93716a8ba693b1f9"
+    },
+    {
+      "path": "textures/FloorTile_roughness.png",
+      "bytes": 36828,
+      "sha256": "b593aa1c965f6775164bff5c807012437f0e5614cb181f61cbf21f9e5dd9d078"
+    },
+    {
+      "path": "textures/MetalPaint_base_color.png",
+      "bytes": 160169,
+      "sha256": "56ef4c6ef0b77dc5d33b63e3694d229797d2521b79d248736b9c1ae68dd69329"
+    },
+    {
+      "path": "textures/MetalPaint_normal.png",
+      "bytes": 263977,
+      "sha256": "2e03ad51308685f5053f55263d262c25a7b705949b2aed343ba02f28d5aee98b"
+    },
+    {
+      "path": "textures/MetalPaint_roughness.png",
+      "bytes": 75135,
+      "sha256": "90ba1bc952e3f0334d80b9f50b2e49109b4d0bb264741b5a2f0b7326a898bd47"
+    },
+    {
+      "path": "textures/PrintAtlas_base_color.png",
+      "bytes": 167981,
+      "sha256": "7fc395f4c57ccbb8a327fec87aa6a47b86bc566166522a5ef49b860511ed81d5"
+    },
+    {
+      "path": "textures/PrintAtlas_normal.png",
+      "bytes": 16912,
+      "sha256": "e8a7c51e5513cb6989ebc7494110b2f6b9a92cf28d24767ea6ee564916d2b568"
+    },
+    {
+      "path": "textures/PrintAtlas_roughness.png",
+      "bytes": 8534,
+      "sha256": "f1c4bf9710fada7b5bb753f13749021b4479eae98e19a6ee4f1e5ceccfbe4860"
+    },
+    {
+      "path": "textures/RoofShingle_base_color.png",
+      "bytes": 787463,
+      "sha256": "1b3cecc5cc07ee2f803efd0dcd70edbc62e9e957bcd3425397c24190bdfbfef2"
+    },
+    {
+      "path": "textures/RoofShingle_normal.png",
+      "bytes": 348756,
+      "sha256": "91eb1ce80a0c8353d79bc04cbee1f4af4ffeaa5ee26506804738cb0a7d8341e0"
+    },
+    {
+      "path": "textures/RoofShingle_roughness.png",
+      "bytes": 38917,
+      "sha256": "e446b9d604e8fd847241188fc93cbcb1992377851f953a3d486caca951499db1"
+    },
+    {
+      "path": "textures/RustTin_base_color.png",
+      "bytes": 1910219,
+      "sha256": "2feb0eeefcf5f94e5ef9bdef4538bcac3b100dd2a95c1c66c5f6150b011b9f16"
+    },
+    {
+      "path": "textures/RustTin_normal.png",
+      "bytes": 325677,
+      "sha256": "f99fe484e3305bd48d7e33a8e29cae8c8f0ad902456787f49977d0e99357fc6a"
+    },
+    {
+      "path": "textures/RustTin_roughness.png",
+      "bytes": 96478,
+      "sha256": "0278ed450fc0f52f51cddfebd1ea4d6da3ec61be70da43361b583a74679fa2d9"
+    },
+    {
+      "path": "textures/Stucco_base_color.png",
+      "bytes": 628350,
+      "sha256": "6d962f2de17923a6fc12e7e381a0f606b38fd3503bd91f9fd13e6019345058da"
+    },
+    {
+      "path": "textures/Stucco_normal.png",
+      "bytes": 1088779,
+      "sha256": "cf3f3de573782e95c41fbc9532f0e1e53cd62ed9ac60e5468a50d0b1f4452f1f"
+    },
+    {
+      "path": "textures/Stucco_roughness.png",
+      "bytes": 41831,
+      "sha256": "77634f625fc9634eb21bc795623be4e783489c1724c6ba1d7dabeb4d1e14c9f8"
+    },
+    {
+      "path": "textures/Wood_base_color.png",
+      "bytes": 666660,
+      "sha256": "2dde1f2ad3ff7ba39eaf9766344a7fdf9e00d149bb072ecb9167b6b970008e5d"
+    },
+    {
+      "path": "textures/Wood_normal.png",
+      "bytes": 416977,
+      "sha256": "0d85c15823513826c18cec237a86ac8a2c7222fba671f49993813a435d6bf245"
+    },
+    {
+      "path": "textures/Wood_roughness.png",
+      "bytes": 65395,
+      "sha256": "be045f01fb190a021a1e16b20235d1f999d9e407e4907af974a345e59dfc742b"
+    },
+    {
+      "path": "town_geometry.py",
+      "bytes": 22212,
+      "sha256": "6581ea059c381124044ad2c05276e628e7d98cdda4413d37cdbdbf9af3584719"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 105465,
+      "sha256": "df769914894a3327acf9dce453d650ee1e03569272d2fe477e4b3171bb7eed46"
+    },
+    {
+      "path": "verify_source.py",
+      "bytes": 7563,
+      "sha256": "26c53d9207f0ed8f80b289619bfddadba464bbd9655990e41c621d639bdeb31f"
+    },
+    {
+      "path": "write_manifest.py",
+      "bytes": 1084,
+      "sha256": "ab75fc3d3b1f3d54bca52ba9930e7b50b61617930269f16e43fa534d98dfc388"
+    }
+  ]
+}

@@ -168,15 +168,22 @@ void AS47Web::BuildHighwayPower()
  // New junctions replace the closest ordinary pole, rather than adding a crowded second row.
  TArray<double> Zs;
  for(int32 Z=-1900;Z<=3400;Z+=45)Zs.Add(Z+(S47RoadShape::Hash(Z,1)-.5)*4);
- for(double Z:{-254.0,190.0,380.0,622.0})
+ for(double Z:{190.0,380.0,622.0})
  {
   int32 Closest=0;for(int32 K=1;K<Zs.Num();++K)if(FMath::Abs(Zs[K]-Z)<FMath::Abs(Zs[Closest]-Z))Closest=K;
   Zs[Closest]=Z;
  }
  Zs.Sort();
  TArray<FVector> Main;for(double Z:Zs)Main.Add(At(15,Z));
+ int32 SaroSource=0;
+ for(int32 K=1;K<Main.Num();++K)if(FMath::Abs(Main[K].Z+281.4)<FMath::Abs(Main[SaroSource].Z+281.4))SaroSource=K;
+ // Terminate the highway line before the antenna field. The previous north extension
+ // crossed actual S02/S11 reflector triangles; the field uses its existing buried cable.
+ Main.RemoveAt(0,SaroSource);SaroSource=0;
+ // This one natural-spaced highway stem stands on SARO's authored planar visitor ground.
+ Main[SaroSource].Y=-.6;
  TArray<TArray<FVector>> Spurs;
- Spurs.Add({At(15,-254),At(26,-254),At(65,-254)}); // original SARO service branch
+ Spurs.Add({Main[SaroSource],FVector(27.6,-.6,-281.4)}); // one necessary SARO transformer pole
  Spurs.Add({At(15,190),At(75,190.72),At(135,191.44),At(195,192.16),At(255,192.88),At(315,193.60),At(375,194.32),At(435,195.04)});
  Spurs.Add({At(15,380),At(-13,380)}); // Motor Court service drop, clear of the highway
  const bool bSubstation=Nodes.ContainsByPredicate([](const FS47WebNode& N){return N.Name==TEXT("prop:substationSitePole_C");});
@@ -232,6 +239,11 @@ void AS47Web::BuildHighwayPower()
     Span(A,S[K+1]+FVector(0,Top,Ports[Phase]),.7);
    }
  }
+ // Two short primary jumpers and a three-wire service to the existing annex weatherhead.
+ const FVector Transformer(27.6,-.6,-281.4);
+ Span(Transformer+FVector(0,Top,-1.95),Transformer+FVector(-.53,8.20,.16),.12);
+ Span(Transformer+FVector(0,Top,1.95),Transformer+FVector(-.19,8.20,-.16),.12);
+ for(double D:{-.06,0.,.06})Span(Transformer+FVector(-.36,7.70,D*3),FVector(25.6,3.55,-289.14+D),.28);
  // Preserve the original authored transformer branch; terminate its three phases exactly at C.
  if(bSubstation)
   for(int32 Phase=0;Phase<3;++Phase)
@@ -267,7 +279,7 @@ void AS47Web::BuildHighwayPower()
   State.RemovedWalkBlocks+=Cs.RemoveAll([&](const FS47Rect& R){return OldFoot(R,OldFeet,Offset);});
   for(const FVector& P:Feet)
   {
-   if(Area==TEXT("saro")&&(P.Z<-264||P.Z>485))continue;
+   if(Area==TEXT("saro")&&(P.Z<-316||P.Z>485))continue;
    FS47Rect R;R.MinX=P.X+Offset.X-Foot;R.MaxX=P.X+Offset.X+Foot;R.MinZ=P.Z+Offset.Z-Foot;R.MaxZ=P.Z+Offset.Z+Foot;R.Id=TEXT("highway:power:stem");Cs.Add(R);
   }
   const TSharedPtr<FJsonObject>* Legs=nullptr,*Leg=nullptr;const TArray<TSharedPtr<FJsonValue>>* Obstacles=nullptr;
@@ -286,11 +298,14 @@ void AS47Web::BuildHighwayPower()
   }
   for(const FVector& P:Feet)
   {
-   if(Area==TEXT("saro")&&(P.Z<-264||P.Z>485))continue;
+   if(Area==TEXT("saro")&&(P.Z<-316||P.Z>485))continue;
    Kept.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{MakeShared<FJsonValueNumber>(P.X+Offset.X),MakeShared<FJsonValueNumber>(P.Z+Offset.Z),MakeShared<FJsonValueNumber>(Foot)}));
   }
   (*Leg)->SetArrayField(TEXT("obstacles"),Kept);
  }
- State.bReady=true;State.MainPoles=Main.Num();State.SpurPoles=Feet.Num()-Main.Num();Results.Add(this,State);
+ State.bReady=true;State.MainPoles=Main.Num();State.SpurPoles=Feet.Num()-Main.Num();
+ for(const FVector& P:Main)if(FMath::Square(P.X-24)+FMath::Square(P.Z+300)<=10000)++State.SaroMainWithin100m;
+ State.SaroServicePoles=1;State.SaroTotalWithin100m=State.SaroMainWithin100m+1;Results.Add(this,State);
+ UE_LOG(LogS47HighwayPower,Display,TEXT("S47: SARO utility layout mainWithin100m=%d service=%d totalWithin100m=%d naturalSourceSite=-9,%.6f sourceGround=-.600 serviceSite=3.6,18.6; legacy Grounds stems retired only by complete SaroSite kit"),State.SaroMainWithin100m,State.SaroServicePoles,State.SaroTotalWithin100m,Main[SaroSource].Z+300);
  UE_LOG(LogS47HighwayPower,Display,TEXT("S47: highway power ready main=%d spur=%d wireSegments=%d oldOverheadTriangles=%d preservedFenceTriangles=%d removedWalkStems=%d removedDriveStems=%d outsidePowerSegments=%d outsideFenceSegments=%d; canonical roadX15, wreck/fences/substation preserved"),State.MainPoles,State.SpurPoles,State.WireSegments,State.RemovedOverheadTriangles,State.PreservedWireTriangles,State.RemovedWalkBlocks,State.RemovedDriveBlocks,State.RemovedOutsidePowerSegments,State.PreservedOutsideFenceSegments);
 }

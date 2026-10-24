@@ -1,0 +1,177 @@
+[
+  {
+    "name": "M_SaroSite_Stucco",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.93,
+    "metallic": 0,
+    "specular": 0.25,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.25,
+    "textures": {
+      "base_color": "textures/Stucco_base_color.png",
+      "normal": "textures/Stucco_normal.png",
+      "roughness": "textures/Stucco_roughness.png"
+    }
+  },
+  {
+    "name": "M_SaroSite_Concrete",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.93,
+    "metallic": 0,
+    "specular": 0.25,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.25,
+    "textures": {
+      "base_color": "textures/Concrete_base_color.png",
+      "normal": "textures/Concrete_normal.png",
+      "roughness": "textures/Concrete_roughness.png"
+    }
+  },
+  {
+    "name": "M_SaroSite_Trim",
+    "base_color_linear": [
+      0.31,
+      0.32,
+      0.29,
+      1
+    ],
+    "roughness": 0.6,
+    "metallic": 0.1,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_Roof",
+    "base_color_linear": [
+      0.1,
+      0.105,
+      0.09,
+      1
+    ],
+    "roughness": 0.95,
+    "metallic": 0,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_Interior",
+    "base_color_linear": [
+      0.2,
+      0.19,
+      0.15,
+      1
+    ],
+    "roughness": 0.94,
+    "metallic": 0,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_Wood",
+    "base_color_linear": [
+      0.11,
+      0.065,
+      0.029,
+      1
+    ],
+    "roughness": 0.8,
+    "metallic": 0,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_Glass",
+    "base_color_linear": [
+      0.18,
+      0.25,
+      0.26,
+      1
+    ],
+    "roughness": 0.12,
+    "metallic": 0,
+    "specular": 0.25,
+    "alpha": 0.17,
+    "two_sided": true
+  },
+  {
+    "name": "M_SaroSite_SignBack",
+    "base_color_linear": [
+      0.034,
+      0.045,
+      0.04,
+      1
+    ],
+    "roughness": 0.87,
+    "metallic": 0,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_Sign",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.88,
+    "metallic": 0,
+    "specular": 0.25,
+    "textures": {
+      "base_color": "textures/SARO_sign_base_color.png"
+    }
+  },
+  {
+    "name": "M_SaroSite_Metal",
+    "base_color_linear": [
+      0.27,
+      0.3,
+      0.27,
+      1
+    ],
+    "roughness": 0.48,
+    "metallic": 0.65,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_DarkMetal",
+    "base_color_linear": [
+      0.045,
+      0.052,
+      0.047,
+      1
+    ],
+    "roughness": 0.65,
+    "metallic": 0.65,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_Ceramic",
+    "base_color_linear": [
+      0.65,
+      0.66,
+      0.57,
+      1
+    ],
+    "roughness": 0.22,
+    "metallic": 0,
+    "specular": 0.25
+  },
+  {
+    "name": "M_SaroSite_Label",
+    "base_color_linear": [
+      0.64,
+      0.61,
+      0.49,
+      1
+    ],
+    "roughness": 0.83,
+    "metallic": 0,
+    "specular": 0.25
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "revision": "SF1-original-cab-C10-adaptation",
+  "objects": 80,
+  "editable_collections": [
+    "Editable_SM_Saro07_Branding",
+    "Editable_SM_Saro07_Cabin",
+    "Editable_SM_Saro07_HeadLens",
+    "Editable_SM_Saro07_TailLens"
+  ],
+  "parts": [
+    "SM_Saro07_Branding",
+    "SM_Saro07_Cabin",
+    "SM_Saro07_HeadLens",
+    "SM_Saro07_TailLens"
+  ],
+  "materials": [
+    "M_Fleet_Chrome",
+    "M_Fleet_Dash",
+    "M_Fleet_Head",
+    "M_Fleet_Logo",
+    "M_Fleet_Paint",
+    "M_Fleet_Rubber",
+    "M_Fleet_Tail",
+    "M_Fleet_Vinyl"
+  ],
+  "packed_original_images": [
+    "Dash_base.png",
+    "Dash_normalDX.png",
+    "Dash_rough.png",
+    "Paint_base.png",
+    "Paint_normalDX.png",
+    "Paint_rough.png",
+    "Vinyl_base.png",
+    "Vinyl_normalDX.png",
+    "Vinyl_rough.png"
+  ],
+  "relative_original_textures_sha256": {
+    "//textures/Vinyl_rough.png": "e60315edac074b38fb56969c10ac2e75fe33cac7b1714df3d54e6bd3c2de3fd1",
+    "//textures/Dash_rough.png": "e60315edac074b38fb56969c10ac2e75fe33cac7b1714df3d54e6bd3c2de3fd1",
+    "//textures/Paint_rough.png": "e60315edac074b38fb56969c10ac2e75fe33cac7b1714df3d54e6bd3c2de3fd1",
+    "//textures/Paint_normalDX.png": "764c3a53c9beb57b264320ee9624ab00ed0902c48dc867f50f63b52bc533c1cd",
+    "//textures/Dash_base.png": "56b4eca143525d9c0c8ea39cc1fbea1dbc47e722c32859429f28b9ca7c728c48",
+    "//textures/Vinyl_base.png": "88c57c326b3795a3f11d4732e67c5c1aba71343227a624db0f967d9214b3d6e3",
+    "//textures/Vinyl_normalDX.png": "764c3a53c9beb57b264320ee9624ab00ed0902c48dc867f50f63b52bc533c1cd",
+    "//textures/Dash_normalDX.png": "764c3a53c9beb57b264320ee9624ab00ed0902c48dc867f50f63b52bc533c1cd",
+    "//textures/Paint_base.png": "c81173a79dd5bd0daa72fd6e8041ab33717854d9a62d20c4723072da2b99894a"
+  },
+  "third_party_objects": 0,
+  "third_party_materials": 0
+}

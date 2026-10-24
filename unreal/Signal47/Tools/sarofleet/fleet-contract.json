@@ -1,0 +1,1127 @@
+{
+  "revision": "SF1-original-cab-C10-adaptation",
+  "axis": "Blender metres Z-up; Three=(Bx,Bz,-By); body nose Three-Z; FBX -Y/Z force_front_x_axis",
+  "driver_eye_three": [
+    -0.42,
+    1.48,
+    0.2
+  ],
+  "parts": {
+    "SM_Saro07_WheelFL": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.14225929975509644,
+          -0.37295204401016235,
+          -0.372952401638031
+        ],
+        [
+          0.14225929975509644,
+          0.37295210361480713,
+          0.3729524314403534
+        ]
+      ],
+      "triangles": 7296,
+      "materials": [
+        "wire_229166215_001"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 7296,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 3792,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 1751,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_WheelRL": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.14225929975509644,
+          -0.37295210361480713,
+          -0.3729519546031952
+        ],
+        [
+          0.14225929975509644,
+          0.3729522228240967,
+          0.3729519248008728
+        ]
+      ],
+      "triangles": 7296,
+      "materials": [
+        "wire_229166215_001"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 7296,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 3792,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 1750,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_WheelFR": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.14226919412612915,
+          -0.37305784225463867,
+          -0.373058021068573
+        ],
+        [
+          0.14226925373077393,
+          0.3730577230453491,
+          0.373058021068573
+        ]
+      ],
+      "triangles": 7296,
+      "materials": [
+        "wire_229166215_001"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 7296,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 3792,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 1750,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_WheelRR": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.14226758480072021,
+          -0.37305617332458496,
+          -0.373058021068573
+        ],
+        [
+          0.14226758480072021,
+          0.37305617332458496,
+          0.373058021068573
+        ]
+      ],
+      "triangles": 7296,
+      "materials": [
+        "wire_229166215_001"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 7296,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 3792,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 1750,
+          "materials": [
+            "wire_229166215_001"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_Body": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.9996684193611145,
+          -2.680053234100342,
+          0.3006339371204376
+        ],
+        [
+          1.0055094957351685,
+          2.0800528526306152,
+          1.2232474088668823
+        ]
+      ],
+      "triangles": 32751,
+      "materials": [
+        "M_C10_FleetPaint"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 32751,
+          "materials": [
+            "M_C10_FleetPaint"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 17030,
+          "materials": [
+            "M_C10_FleetPaint"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 7860,
+          "materials": [
+            "M_C10_FleetPaint"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_Shell": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -1.0299986600875854,
+          -0.530532717704773,
+          1.074265480041504
+        ],
+        [
+          1.0300015211105347,
+          0.8505845665931702,
+          2.0052716732025146
+        ]
+      ],
+      "triangles": 4038,
+      "materials": [
+        "M_C10_FleetPaint"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 4038,
+          "materials": [
+            "M_C10_FleetPaint"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 2099,
+          "materials": [
+            "M_C10_FleetPaint"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 968,
+          "materials": [
+            "M_C10_FleetPaint"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_Glass": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.8159415125846863,
+          -0.479209840297699,
+          1.1774985790252686
+        ],
+        [
+          0.8050629496574402,
+          0.6820409297943115,
+          1.6592955589294434
+        ]
+      ],
+      "triangles": 624,
+      "materials": [
+        "14___Default_001"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 624,
+          "materials": [
+            "14___Default_001"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 324,
+          "materials": [
+            "14___Default_001"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 149,
+          "materials": [
+            "14___Default_001"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_Cabin": {
+      "asset_folder": "/Game/SaroFleet",
+      "bounds_local_m": [
+        [
+          -0.843500018119812,
+          -0.5249999761581421,
+          0.33000001311302185
+        ],
+        [
+          0.843500018119812,
+          0.7450000047683716,
+          1.623000144958496
+        ]
+      ],
+      "triangles": 6148,
+      "materials": [
+        "M_Fleet_Vinyl",
+        "M_Fleet_Rubber",
+        "M_Fleet_Dash",
+        "M_Fleet_Paint",
+        "M_Fleet_Chrome"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 6148,
+          "materials": [
+            "M_Fleet_Vinyl",
+            "M_Fleet_Rubber",
+            "M_Fleet_Dash",
+            "M_Fleet_Paint",
+            "M_Fleet_Chrome"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 3196,
+          "materials": [
+            "M_Fleet_Vinyl",
+            "M_Fleet_Rubber",
+            "M_Fleet_Dash",
+            "M_Fleet_Paint",
+            "M_Fleet_Chrome"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 1475,
+          "materials": [
+            "M_Fleet_Vinyl",
+            "M_Fleet_Rubber",
+            "M_Fleet_Dash",
+            "M_Fleet_Paint",
+            "M_Fleet_Chrome"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_Branding": {
+      "asset_folder": "/Game/SaroFleet",
+      "bounds_local_m": [
+        [
+          -0.9452999830245972,
+          -2.6992998123168945,
+          0.6899999976158142
+        ],
+        [
+          0.9452999830245972,
+          2.0989999771118164,
+          1.2032849788665771
+        ]
+      ],
+      "triangles": 9220,
+      "materials": [
+        "M_Fleet_Paint",
+        "M_Fleet_Logo"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 9220,
+          "materials": [
+            "M_Fleet_Paint",
+            "M_Fleet_Logo"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 4794,
+          "materials": [
+            "M_Fleet_Paint",
+            "M_Fleet_Logo"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 2211,
+          "materials": [
+            "M_Fleet_Paint",
+            "M_Fleet_Logo"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_HeadLens": {
+      "asset_folder": "/Game/SaroFleet",
+      "bounds_local_m": [
+        [
+          -0.8050000071525574,
+          2.064500093460083,
+          0.5990000367164612
+        ],
+        [
+          0.812999963760376,
+          2.070499897003174,
+          0.7720000147819519
+        ]
+      ],
+      "triangles": 312,
+      "materials": [
+        "M_Fleet_Head"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 312,
+          "materials": [
+            "M_Fleet_Head"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 162,
+          "materials": [
+            "M_Fleet_Head"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 74,
+          "materials": [
+            "M_Fleet_Head"
+          ]
+        }
+      ]
+    },
+    "SM_Saro07_TailLens": {
+      "asset_folder": "/Game/SaroFleet",
+      "bounds_local_m": [
+        [
+          -0.9214000105857849,
+          -2.3984999656677246,
+          0.6184999942779541
+        ],
+        [
+          0.9134999513626099,
+          -2.3914999961853027,
+          0.7127000093460083
+        ]
+      ],
+      "triangles": 312,
+      "materials": [
+        "M_Fleet_Tail"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 312,
+          "materials": [
+            "M_Fleet_Tail"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 162,
+          "materials": [
+            "M_Fleet_Tail"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 74,
+          "materials": [
+            "M_Fleet_Tail"
+          ]
+        }
+      ]
+    },
+    "SM_SaroPark_Sedan": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.9161589741706848,
+          -2.5005393028259277,
+          2.3692846298217773e-05
+        ],
+        [
+          0.9163334965705872,
+          2.5007126331329346,
+          1.349486231803894
+        ]
+      ],
+      "triangles": 19701,
+      "materials": [
+        "Fairheaven_LT80_Bodymat",
+        "UCB_BOTTOM_GT",
+        "UCB_Lights_and_Glass_Transperent",
+        "UCB_Lights_and_Glass",
+        "RB1c_Tire_1k",
+        "Numberplates_Misk_U",
+        "Carbadges_misc_U",
+        "UCB_Interior_Trim"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 19701,
+          "materials": [
+            "Fairheaven_LT80_Bodymat",
+            "UCB_BOTTOM_GT",
+            "UCB_Lights_and_Glass_Transperent",
+            "UCB_Lights_and_Glass",
+            "RB1c_Tire_1k",
+            "Numberplates_Misk_U",
+            "Carbadges_misc_U",
+            "UCB_Interior_Trim"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 10244,
+          "materials": [
+            "Fairheaven_LT80_Bodymat",
+            "UCB_BOTTOM_GT",
+            "UCB_Lights_and_Glass_Transperent",
+            "UCB_Lights_and_Glass",
+            "RB1c_Tire_1k",
+            "Numberplates_Misk_U",
+            "Carbadges_misc_U",
+            "UCB_Interior_Trim"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 4722,
+          "materials": [
+            "Fairheaven_LT80_Bodymat",
+            "UCB_BOTTOM_GT",
+            "UCB_Lights_and_Glass_Transperent",
+            "UCB_Lights_and_Glass",
+            "RB1c_Tire_1k",
+            "Numberplates_Misk_U",
+            "Carbadges_misc_U",
+            "UCB_Interior_Trim"
+          ]
+        }
+      ]
+    },
+    "SM_SaroPark_Pickup": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -0.9545696973800659,
+          -2.563242197036743,
+          0.0
+        ],
+        [
+          0.9545696973800659,
+          2.563242197036743,
+          1.3824913501739502
+        ]
+      ],
+      "triangles": 16126,
+      "materials": [
+        "Carbadges_misc_U_001",
+        "ElAlamo78_Bodymat",
+        "UCB_BOTTOM",
+        "UCB_BOTTOM_LT",
+        "UCB_Lights_and_Glass_Transperent_001",
+        "UCB_Interiors_2",
+        "UCB_Lights_and_Glass_001",
+        "RB1c_Tire_1k_001",
+        "Numberplates_Misk_U_001"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 16126,
+          "materials": [
+            "Carbadges_misc_U_001",
+            "ElAlamo78_Bodymat",
+            "UCB_BOTTOM",
+            "UCB_BOTTOM_LT",
+            "UCB_Lights_and_Glass_Transperent_001",
+            "UCB_Interiors_2",
+            "UCB_Lights_and_Glass_001",
+            "RB1c_Tire_1k_001",
+            "Numberplates_Misk_U_001"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 8385,
+          "materials": [
+            "Carbadges_misc_U_001",
+            "ElAlamo78_Bodymat",
+            "UCB_BOTTOM",
+            "UCB_BOTTOM_LT",
+            "UCB_Lights_and_Glass_Transperent_001",
+            "UCB_Interiors_2",
+            "UCB_Lights_and_Glass_001",
+            "RB1c_Tire_1k_001",
+            "Numberplates_Misk_U_001"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 3859,
+          "materials": [
+            "Carbadges_misc_U_001",
+            "ElAlamo78_Bodymat",
+            "UCB_BOTTOM",
+            "UCB_BOTTOM_LT",
+            "UCB_Lights_and_Glass_Transperent_001",
+            "UCB_Interiors_2",
+            "UCB_Lights_and_Glass_001",
+            "RB1c_Tire_1k_001",
+            "Numberplates_Misk_U_001"
+          ]
+        }
+      ]
+    },
+    "SM_SaroPark_LegacyTrim": {
+      "asset_folder": "/Game/Free/ServiceFleet",
+      "bounds_local_m": [
+        [
+          -7.519735336303711,
+          -18.214265823364258,
+          -0.7454765439033508
+        ],
+        [
+          39.922786712646484,
+          7.650000095367432,
+          7.21999979019165
+        ]
+      ],
+      "triangles": 12574,
+      "materials": [
+        "slot0.001"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "triangles": 12574,
+          "materials": [
+            "slot0.001"
+          ]
+        },
+        {
+          "lod": 1,
+          "triangles": 12574,
+          "materials": [
+            "slot0.001"
+          ]
+        },
+        {
+          "lod": 2,
+          "triangles": 12574,
+          "materials": [
+            "slot0.001"
+          ]
+        }
+      ]
+    }
+  },
+  "wheels": [
+    {
+      "part": "SM_Saro07_WheelFL",
+      "three": [
+        -0.8003202676773071,
+        0.37295242212712765,
+        -1.3428523540496826
+      ],
+      "radius_m": 0.37295242212712765
+    },
+    {
+      "part": "SM_Saro07_WheelFR",
+      "three": [
+        0.8142604827880859,
+        0.37305801548063755,
+        -1.339475393295288
+      ],
+      "radius_m": 0.37305801548063755
+    },
+    {
+      "part": "SM_Saro07_WheelRL",
+      "three": [
+        -0.8058252930641174,
+        0.3729519384144737,
+        1.5062921047210693
+      ],
+      "radius_m": 0.3729519384144737
+    },
+    {
+      "part": "SM_Saro07_WheelRR",
+      "three": [
+        0.8087571859359741,
+        0.3730580137344077,
+        1.5096675157546997
+      ],
+      "radius_m": 0.3730580137344077
+    }
+  ],
+  "parked": [
+    {
+      "name": "reyesSedan",
+      "model": "fairheaven_lt80",
+      "at": [
+        27,
+        -0.6,
+        9.6
+      ],
+      "heading": 0
+    },
+    {
+      "name": "sitePickup",
+      "model": "el_alamo_78",
+      "at": [
+        31,
+        -0.6,
+        9.9
+      ],
+      "heading": 0.04
+    }
+  ],
+  "credits": [
+    {
+      "model": "pickup_c10_1966",
+      "title": "Chevrolet C10 Stepside1966",
+      "author": "Raphael Baget",
+      "license": "CC BY4.0",
+      "url": "https://sketchfab.com/3d-models/0a2ae2eea2cf4073a843ee7a381c74af"
+    },
+    {
+      "model": "fairheaven_lt80",
+      "title": "Fairheaven LT80",
+      "author": "Daniel Zhabotinsky",
+      "license": "CC BY4.0",
+      "url": "https://sketchfab.com/3d-models/e2678da920cc4be68dbc193727919ffb"
+    },
+    {
+      "model": "el_alamo_78",
+      "title": "El Alamo78",
+      "author": "Daniel Zhabotinsky",
+      "license": "CC BY4.0",
+      "url": "https://sketchfab.com/3d-models/41b3a5c0bc534817b3311c3736c403e6"
+    }
+  ],
+  "legacy_trim_removed_triangles": 976,
+  "targeted_geometry_cleanup": [
+    {
+      "part": "SM_SaroPark_Sedan",
+      "lod": 0,
+      "weld_tolerance_m": 1e-05,
+      "minimum_edge_m": 2e-05,
+      "minimum_area_m2": 5e-09,
+      "faces_before": 19702,
+      "faces_after": 19701,
+      "verts_before": 17720,
+      "verts_after": 11078
+    },
+    {
+      "part": "SM_SaroPark_Sedan",
+      "lod": 1,
+      "weld_tolerance_m": 1e-05,
+      "minimum_edge_m": 2e-05,
+      "minimum_area_m2": 5e-09,
+      "faces_before": 10244,
+      "faces_after": 10244,
+      "verts_before": 6120,
+      "verts_after": 6120
+    },
+    {
+      "part": "SM_SaroPark_Sedan",
+      "lod": 2,
+      "weld_tolerance_m": 1e-05,
+      "minimum_edge_m": 2e-05,
+      "minimum_area_m2": 5e-09,
+      "faces_before": 4728,
+      "faces_after": 4728,
+      "verts_before": 3021,
+      "verts_after": 3021
+    },
+    {
+      "part": "SM_SaroPark_Pickup",
+      "lod": 0,
+      "weld_tolerance_m": 1e-05,
+      "minimum_edge_m": 2e-05,
+      "minimum_area_m2": 5e-09,
+      "faces_before": 16170,
+      "faces_after": 16126,
+      "verts_before": 15645,
+      "verts_after": 9110
+    },
+    {
+      "part": "SM_SaroPark_Pickup",
+      "lod": 1,
+      "weld_tolerance_m": 1e-05,
+      "minimum_edge_m": 2e-05,
+      "minimum_area_m2": 5e-09,
+      "faces_before": 8385,
+      "faces_after": 8385,
+      "verts_before": 5147,
+      "verts_after": 5147
+    },
+    {
+      "part": "SM_SaroPark_Pickup",
+      "lod": 2,
+      "weld_tolerance_m": 1e-05,
+      "minimum_edge_m": 2e-05,
+      "minimum_area_m2": 5e-09,
+      "faces_before": 3869,
+      "faces_after": 3869,
+      "verts_before": 2661,
+      "verts_after": 2661
+    }
+  ],
+  "mesh_validation_cleanup": [
+    {
+      "part": "SM_Saro07_WheelFL",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 7296,
+      "triangles_after": 7296
+    },
+    {
+      "part": "SM_Saro07_WheelFL",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 3792,
+      "triangles_after": 3792
+    },
+    {
+      "part": "SM_Saro07_WheelFL",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 1751,
+      "triangles_after": 1751
+    },
+    {
+      "part": "SM_Saro07_WheelRL",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 7296,
+      "triangles_after": 7296
+    },
+    {
+      "part": "SM_Saro07_WheelRL",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 3792,
+      "triangles_after": 3792
+    },
+    {
+      "part": "SM_Saro07_WheelRL",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 1750,
+      "triangles_after": 1750
+    },
+    {
+      "part": "SM_Saro07_WheelFR",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 7296,
+      "triangles_after": 7296
+    },
+    {
+      "part": "SM_Saro07_WheelFR",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 3792,
+      "triangles_after": 3792
+    },
+    {
+      "part": "SM_Saro07_WheelFR",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 1750,
+      "triangles_after": 1750
+    },
+    {
+      "part": "SM_Saro07_WheelRR",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 7296,
+      "triangles_after": 7296
+    },
+    {
+      "part": "SM_Saro07_WheelRR",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 3792,
+      "triangles_after": 3792
+    },
+    {
+      "part": "SM_Saro07_WheelRR",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 1750,
+      "triangles_after": 1750
+    },
+    {
+      "part": "SM_Saro07_Body",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 32751,
+      "triangles_after": 32751
+    },
+    {
+      "part": "SM_Saro07_Body",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 17030,
+      "triangles_after": 17030
+    },
+    {
+      "part": "SM_Saro07_Body",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 7860,
+      "triangles_after": 7860
+    },
+    {
+      "part": "SM_Saro07_Shell",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 4038,
+      "triangles_after": 4038
+    },
+    {
+      "part": "SM_Saro07_Shell",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 2099,
+      "triangles_after": 2099
+    },
+    {
+      "part": "SM_Saro07_Shell",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 968,
+      "triangles_after": 968
+    },
+    {
+      "part": "SM_Saro07_Glass",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 624,
+      "triangles_after": 624
+    },
+    {
+      "part": "SM_Saro07_Glass",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 324,
+      "triangles_after": 324
+    },
+    {
+      "part": "SM_Saro07_Glass",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 149,
+      "triangles_after": 149
+    },
+    {
+      "part": "SM_Saro07_Cabin",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 6148,
+      "triangles_after": 6148
+    },
+    {
+      "part": "SM_Saro07_Cabin",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 3196,
+      "triangles_after": 3196
+    },
+    {
+      "part": "SM_Saro07_Cabin",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 1475,
+      "triangles_after": 1475
+    },
+    {
+      "part": "SM_Saro07_Branding",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 9220,
+      "triangles_after": 9220
+    },
+    {
+      "part": "SM_Saro07_Branding",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 4794,
+      "triangles_after": 4794
+    },
+    {
+      "part": "SM_Saro07_Branding",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 2211,
+      "triangles_after": 2211
+    },
+    {
+      "part": "SM_Saro07_HeadLens",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 312,
+      "triangles_after": 312
+    },
+    {
+      "part": "SM_Saro07_HeadLens",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 162,
+      "triangles_after": 162
+    },
+    {
+      "part": "SM_Saro07_HeadLens",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 74,
+      "triangles_after": 74
+    },
+    {
+      "part": "SM_Saro07_TailLens",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 312,
+      "triangles_after": 312
+    },
+    {
+      "part": "SM_Saro07_TailLens",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 162,
+      "triangles_after": 162
+    },
+    {
+      "part": "SM_Saro07_TailLens",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 74,
+      "triangles_after": 74
+    },
+    {
+      "part": "SM_SaroPark_Sedan",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 19701,
+      "triangles_after": 19701
+    },
+    {
+      "part": "SM_SaroPark_Sedan",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 10244,
+      "triangles_after": 10244
+    },
+    {
+      "part": "SM_SaroPark_Sedan",
+      "lod": 2,
+      "changed": true,
+      "triangles_before": 4728,
+      "triangles_after": 4722
+    },
+    {
+      "part": "SM_SaroPark_Pickup",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 16126,
+      "triangles_after": 16126
+    },
+    {
+      "part": "SM_SaroPark_Pickup",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 8385,
+      "triangles_after": 8385
+    },
+    {
+      "part": "SM_SaroPark_Pickup",
+      "lod": 2,
+      "changed": true,
+      "triangles_before": 3869,
+      "triangles_after": 3859
+    },
+    {
+      "part": "SM_SaroPark_LegacyTrim",
+      "lod": 0,
+      "changed": false,
+      "triangles_before": 12574,
+      "triangles_after": 12574
+    },
+    {
+      "part": "SM_SaroPark_LegacyTrim",
+      "lod": 1,
+      "changed": false,
+      "triangles_before": 12574,
+      "triangles_after": 12574
+    },
+    {
+      "part": "SM_SaroPark_LegacyTrim",
+      "lod": 2,
+      "changed": false,
+      "triangles_before": 12574,
+      "triangles_after": 12574
+    }
+  ]
+}
