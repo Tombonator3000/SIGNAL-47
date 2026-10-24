@@ -15,6 +15,7 @@
 #include "DynamicRHI.h"
 #include "RenderTimer.h"
 #include "S47Three.h"
+#include "S47Sky.h"
 
 namespace
 {
@@ -263,6 +264,7 @@ void AS47Web::SetLightingQuality(const FString& Quality)
 void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
 {
 	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash;
+	const float Caliche = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
 	if (DawnSun)
 	{
 		DawnSun->SetWorldRotation(S47Three::DirToUE(-SunDirection).Rotation());
@@ -275,10 +277,13 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		DawnSun->SetLightColor(Evening > 0.f
 			? FMath::Lerp(FLinearColor(1.f, 0.36f, 0.14f), FLinearColor(1.f, 0.76f, 0.52f), FMath::Clamp(Evening, 0.f, 1.f))
 			: FLinearColor(1.f, 0.55f, 0.28f));
+		// The old dawn-only orange sun should not tint a whole noon street orange.
+		const float HighSun = Caliche * FMath::Clamp(float((SunDirection.Y - 0.08) / 0.45), 0.f, 1.f);
+		DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, 0.94f, 0.83f), HighSun));
 	}
 	if (NightSky)
 	{
-		NightSky->SetIntensity(NightSkyIntensity(Daylight));
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), FMath::Lerp(0.16f, 1.98f, FMath::Clamp(Daylight, 0.f, 1.f)), Caliche));
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		NightSky->SetLightColor(FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Daylight, 0.f, 1.f)));
@@ -354,15 +359,17 @@ void AS47Web::UpdateNativeLighting()
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
-		Moon->SetIntensity(R.Base > 0 ? (PreviousNight() ? 0.16f : 0.055f) * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
+		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.15f, float(S47CalicheVisualWeight(S47Three::ToThree(Eye))));
+		Moon->SetIntensity(R.Base > 0 ? LocalMoon * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
 		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
 		Bounce(Moon);
 		Moon->SetLightSourceAngle(0.52f);
 		Moon->SetLightSourceSoftAngle(0.08f);
 	}
-	if (NightSky && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f))
+	const float CalicheSky = float(S47CalicheVisualWeight(S47Three::ToThree(Eye)));
+	if (NightSky && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f || FMath::Abs(CapturedCaliche - CalicheSky) > 0.08f))
 	{
-		NightSky->RecaptureSky(); bSkyCaptured = true; CapturedDawn = SkyDawn; SkyCaptureTime = LightingRunTime;
+		NightSky->RecaptureSky(); bSkyCaptured = true; CapturedDawn = SkyDawn; CapturedCaliche = CalicheSky; SkyCaptureTime = LightingRunTime;
 	}
 }
 

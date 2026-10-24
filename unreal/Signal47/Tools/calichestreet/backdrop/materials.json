@@ -1,0 +1,140 @@
+[
+  {
+    "name": "M_Caliche_Mesa_0",
+    "base_color_linear": [
+      0.2666,
+      0.215,
+      0.17200000000000001,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "normal_strength": 0.35,
+    "uv_scale": 1,
+    "texture_tint_linear": [
+      0.86,
+      0.8513999999999999,
+      0.8341999999999999
+    ],
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_1",
+    "base_color_linear": [
+      0.31,
+      0.25,
+      0.2,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "normal_strength": 0.35,
+    "uv_scale": 1,
+    "texture_tint_linear": [
+      1.0,
+      0.99,
+      0.97
+    ],
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_2",
+    "base_color_linear": [
+      0.2883,
+      0.2325,
+      0.18600000000000003,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "normal_strength": 0.35,
+    "uv_scale": 1,
+    "texture_tint_linear": [
+      0.93,
+      0.9207000000000001,
+      0.9021
+    ],
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_3",
+    "base_color_linear": [
+      0.33790000000000003,
+      0.2725,
+      0.21800000000000003,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "normal_strength": 0.35,
+    "uv_scale": 1,
+    "texture_tint_linear": [
+      1.09,
+      1.0791000000000002,
+      1.0573000000000001
+    ],
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_4",
+    "base_color_linear": [
+      0.3162,
+      0.255,
+      0.20400000000000001,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "normal_strength": 0.35,
+    "uv_scale": 1,
+    "texture_tint_linear": [
+      1.02,
+      1.0098,
+      0.9894
+    ],
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_5",
+    "base_color_linear": [
+      0.279,
+      0.225,
+      0.18000000000000002,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "normal_strength": 0.35,
+    "uv_scale": 1,
+    "texture_tint_linear": [
+      0.9,
+      0.891,
+      0.873
+    ],
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  }
+]

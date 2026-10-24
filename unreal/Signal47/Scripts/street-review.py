@@ -22,7 +22,7 @@ def plan(args):
             out = args.out.expanduser().resolve() / f'{timeline}-{clock}'
             command = [sys.executable, str(driver.resolve()), '--build', str(args.build.expanduser().resolve()),
                        '--out', str(out), '--suite', 'street', '--timeline', timeline, '--clock', clock,
-                       '--quality', args.quality, '--picture', args.picture, '--batch-size', '4',
+                       '--quality', args.quality, '--picture', args.picture, '--batch-size', '6',
                        '--warmup', '8', '--hold', '7', '--width', str(args.width), '--height', str(args.height)]
             if args.resume:
                 command += ['--resume']
@@ -30,7 +30,8 @@ def plan(args):
                 command += ['--driver-cache', str(args.driver_cache.expanduser().resolve())]
             rows.append({'timeline': timeline, 'clock': wall, 'clock_seconds': signed,
                          'static_world': True, 'views': ['street-west-front', 'street-east-front',
-                         'street-north-route', 'street-souvenir-window'], 'out': str(out), 'command': command})
+                         'street-north-route', 'street-souvenir-window', 'street-radio-detail',
+                         'street-souvenir-detail'], 'out': str(out), 'command': command})
     return rows
 
 

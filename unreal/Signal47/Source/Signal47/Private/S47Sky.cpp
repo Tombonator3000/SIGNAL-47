@@ -6,6 +6,8 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "S47Three.h"
 #include "S47Web.h"
 
@@ -42,6 +44,14 @@ FVector S47SkyDir(double Az, double El)
 {
 	// skyDir: v.set(sin(az) cos(el), sin(el), -cos(az) cos(el))
 	return FVector(FMath::Sin(Az * DEG) * FMath::Cos(El * DEG), FMath::Sin(El * DEG), -FMath::Cos(Az * DEG) * FMath::Cos(El * DEG));
+}
+
+double S47CalicheVisualWeight(const FVector& EyeThree)
+{
+	static const bool bLegacy = FParse::Param(FCommandLine::Get(), TEXT("S47LegacyCalicheConcept")) || FParse::Param(FCommandLine::Get(), TEXT("S47PropsOff"));
+	if (bLegacy) return 0;
+	const double D = FVector2D(EyeThree.X - 8000, EyeThree.Z - 2050).Size();
+	return 1 - Smooth01((D - 120) / 480);
 }
 
 double S47StarHoleAt(double Clock, double From)
@@ -212,9 +222,13 @@ bool FS47Sky::Build(AS47Web* W)
 	const TSharedPtr<FJsonObject>* SkyJ = nullptr;
 	if (!L.IsValid() || !L->TryGetObjectField(TEXT("sky"), SkyJ)) return false;
 	UMaterialInterface* DomeBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebSkyDome.M_WebSkyDome"));
+	// A locally calibrated sky keeps the existing night/story uniforms and the old import as fallback.
+	if (UMaterialInterface* Concept = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/CalicheStreet/Atmosphere/M_Caliche_Sky.M_Caliche_Sky"))) DomeBase = Concept;
 	UMaterialInterface* StarsBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebStars.M_WebStars"));
+	if (UMaterialInterface* Concept = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/CalicheStreet/Atmosphere/M_Caliche_Stars.M_Caliche_Stars"))) StarsBase = Concept;
 	UMaterialInterface* MeteorBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebMeteor.M_WebMeteor"));
 	UMaterialInterface* BandBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebSkyBand.M_WebSkyBand"));
+	if (UMaterialInterface* Concept = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/CalicheStreet/Atmosphere/M_Caliche_Horizon.M_Caliche_Horizon"))) BandBase = Concept;
 	if (!DomeBase || !StarsBase || !MeteorBase || !BandBase)
 	{
 		UE_LOG(LogS47Sky, Warning, TEXT("S47: the live sky's materials are not imported (Tools/webexport/import.sh): the sky stays the export's picture"));
@@ -321,6 +335,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("HoleDir"), Holes);
 		D->SetVectorParameterValue(TEXT("HoleR"), HoleRad);
 		D->SetScalarParameterValue(TEXT("Hole"), float(HoleK));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(Eye)));
 	};
 	auto Sunny = [&](UMaterialInstanceDynamic* D)
 	{
@@ -328,6 +343,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetScalarParameterValue(TEXT("Yaw"), float(Yaw));
 		D->SetScalarParameterValue(TEXT("Dawn"), float(Daylight()));
 		D->SetScalarParameterValue(TEXT("Sun"), float(Sun));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(Eye)));
 		D->SetVectorParameterValue(TEXT("SunDir"), V4(SunDir));
 		for (int32 k = 0; k < 3; ++k) D->SetVectorParameterValue(*FString::Printf(TEXT("Glow%d"), k), FLinearColor(float(Glow[k].X), float(Glow[k].Y), float(Glow[k].Z), float(Glow[k].W)));
 	};
@@ -335,6 +351,8 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	{
 		Sunny(D); Common(D);
 		D->SetScalarParameterValue(TEXT("Flash"), float(Flash));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(Eye)));
+		D->SetScalarParameterValue(TEXT("Midday"), float(Midday));
 		D->SetVectorParameterValue(TEXT("FlashDir"), V4(FlashDir));
 	}
 	Common(StarsMid.Get());

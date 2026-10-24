@@ -199,6 +199,18 @@
       "yaw": 0,
       "ground": false,
       "trace": false
+    },
+    {
+      "id": "streetGroundMesas",
+      "model": "/Game/CalicheStreet/Backdrop/SM_Caliche_Mesas.SM_Caliche_Mesas",
+      "at": [
+        8000,
+        0,
+        2060
+      ],
+      "yaw": 0,
+      "ground": false,
+      "trace": false
     }
   ]
 }

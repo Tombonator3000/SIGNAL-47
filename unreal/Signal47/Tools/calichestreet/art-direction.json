@@ -49,6 +49,14 @@
       "use": "reviewed as workflow reference; no code or asset reused"
     }
   ],
-  "status": "PASS",
-  "acceptance_record": "acceptance.json"
+  "status": "IN_PROGRESS: concept fidelity iteration 2; prior acceptance belongs to 84470178",
+  "acceptance_record": "acceptance.json",
+  "revision_targets": [
+    "Painted large facade signage",
+    "Layered weathered stucco and darker timber",
+    "Curated varied physical interior stock and analog equipment",
+    "Neutral mineral ground, asphalt cracks and planted edges",
+    "Blue-hour cloud and stratified 3D mesa context",
+    "Readable local night materials with retained story lighting schedules"
+  ]
 }

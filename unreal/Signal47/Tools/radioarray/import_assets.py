@@ -37,6 +37,8 @@ def material(row, dest, src):
     name = row['name']
     mat = E.load_asset(dest + '/' + name) if E.does_asset_exist(dest + '/' + name) else T.create_asset(name, dest, unreal.Material, unreal.MaterialFactoryNew())
     M.delete_all_material_expressions(mat)
+    mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_OPAQUE)
+    mat.set_editor_property('two_sided', bool(row.get('two_sided', False)))
     col = row.get('base_color_linear', row.get('base_color', [.5, .5, .5, 1]))
     color = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='Color', default_value=unreal.LinearColor(*col[:3], 1))
     M.connect_material_property(color, 'RGB', unreal.MaterialProperty.MP_BASE_COLOR)
@@ -70,6 +72,8 @@ def material(row, dest, src):
             tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
             # Source normals are DirectX tangent-space, exported explicitly by the generator.
             tex.set_editor_property('flip_green_channel', False)
+        elif role == 'roughness':
+            tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_DEFAULT)
         E.save_loaded_asset(tex)
         sample = expression(mat, unreal.MaterialExpressionTextureSample, texture=tex,
                             sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL if role == 'normal' else
@@ -96,6 +100,7 @@ def material(row, dest, src):
             M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
     if float(row.get('alpha', 1)) < 1:
         mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
+        mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
         mat.set_editor_property('two_sided', True)
         n = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name='Opacity', default_value=float(row['alpha']))
         M.connect_material_property(n, '', unreal.MaterialProperty.MP_OPACITY)

@@ -392,6 +392,7 @@ private:
 	bool bSkyCaptured = false;
 	bool bLightingProfiled = false;
 	float CapturedDawn = 0;
+	float CapturedCaliche = 0;
 	double SkyCaptureTime = 0;
 	TArray<float> PerfFrames, PerfGame, PerfDraw, PerfGpu;
 	TSet<uint64> SuppressedPools;

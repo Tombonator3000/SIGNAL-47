@@ -24,6 +24,8 @@ inline constexpr FS47StarHole STAR_HOLE = { 26, 32, 3.4, 4.6, 10, 100 };
 SIGNAL47_API FVector S47SkyDir(double Az, double El);
 /** starHoleAt: how much of the hole there is at a clock, when it begins at `from` (Infinity: not tonight yet). */
 SIGNAL47_API double S47StarHoleAt(double Clock, double From);
+/** Render-only art calibration around Caliche; zero at SARO and the story's other locations. */
+SIGNAL47_API double S47CalicheVisualWeight(const FVector& EyeThree);
 
 class SIGNAL47_API FS47Sky
 {

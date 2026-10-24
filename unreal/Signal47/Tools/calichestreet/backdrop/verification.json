@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "checks": {
+    "single_mesh": true,
+    "bounds_m": true,
+    "triangles": true,
+    "uv_map": true,
+    "material_slots": true,
+    "nondegenerate": true,
+    "world_origin": true,
+    "scale_one": true
+  },
+  "bounds_error_m": 0.0001068115234375,
+  "triangles": 22736
+}

@@ -31,7 +31,8 @@ STATE_VIEWS = ('rack-online', 'rack-dark', 'indicators-online', 'indicators-dark
                'menu-settings', 'menu-save', 'menu-load', 'menu-notebook',
                'terminal-online', 'terminal-dark')
 ASSET_VIEWS = ('array-front', 'array-rear', 'array-field', 'radio-exterior', 'radio-lobby', 'radio-studio')
-STREET_VIEWS = ('street-west-front', 'street-east-front', 'street-north-route', 'street-souvenir-window')
+STREET_VIEWS = ('street-west-front', 'street-east-front', 'street-north-route', 'street-souvenir-window',
+                'street-radio-detail', 'street-souvenir-detail')
 ALL_VIEWS = VIEWS + STATE_VIEWS + ASSET_VIEWS + STREET_VIEWS
 CLOCKS = {'night': '02:15', 'dawn': '05:40', 'day': '12:00', 'dusk': '18:30'}
 

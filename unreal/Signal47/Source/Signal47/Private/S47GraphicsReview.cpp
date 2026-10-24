@@ -83,7 +83,9 @@ static const FCamera Cameras[] = {
  { TEXT("street-west-front"), TEXT("diner"), 7997, 2062, 1.55, -0.08 },
  { TEXT("street-east-front"), TEXT("diner"), 8000, 2052, -UE_DOUBLE_HALF_PI, -0.06 },
  { TEXT("street-north-route"), TEXT("diner"), 8007, 2080, 0.12, -0.10 },
- { TEXT("street-souvenir-window"), TEXT("diner"), 8018.6, 2062.3, -UE_DOUBLE_HALF_PI, -0.06 }
+ { TEXT("street-souvenir-window"), TEXT("diner"), 8018.6, 2062.3, -UE_DOUBLE_HALF_PI, -0.06 },
+ { TEXT("street-radio-detail"), TEXT("diner"), 8015.4, 2038.7, -1.20, 0.07 },
+ { TEXT("street-souvenir-detail"), TEXT("diner"), 8015.0, 2066.5, -1.20, 0.07 }
 };
 void Tick(AS47Web* W, float)
 {

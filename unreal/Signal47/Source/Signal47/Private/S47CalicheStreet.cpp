@@ -108,5 +108,14 @@ void AS47Web::BuildCalicheStreet()
 	// The actual A02 figure already belongs to the anomaly system. Its former flat display
 	// background would cover the new room. Keep the proxy, physical figure, price and film IDs.
 	for (const FString& Path : PathsUnder(TEXT("world.town.runtime.panels.display."))) SetVisible(Handle(Path), false);
+	// A painted facade replaces the old floating TOURS board; keep its familiar interaction ID.
+	if (FS47Obj Sign = Obj(TEXT("world.town.proxies.souvenirSign"))) Sign.SetPosition(FVector(20.48, 8.332807474, 2064));
+	bool bPaintedRadio = false;
+	for (const FS47WebNode& N : Nodes) if (N.Name == TEXT("prop:radioStationShell"))
+		if (UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N.Comp.Get()))
+			for (UMaterialInterface* Material : C->GetMaterials())
+				bPaintedRadio |= Material && Material->GetName().Contains(TEXT("WeatheredFacadePaint"));
+	if (bPaintedRadio)
+		for (const FString& Path : PathsUnder(TEXT("world.town.runtime.panels.amSign."))) SetVisible(Handle(Path), false);
 	UE_LOG(LogS47CalicheStreet, Display, TEXT("S47: Caliche street ready: %d composed gas/radio/souvenir patches; existing story anchors and walk floors preserved"), Ready.Num());
 }

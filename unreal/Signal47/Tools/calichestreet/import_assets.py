@@ -37,6 +37,7 @@ def material(row, dest, src):
     name = row['name']
     mat = E.load_asset(dest + '/' + name) if E.does_asset_exist(dest + '/' + name) else T.create_asset(name, dest, unreal.Material, unreal.MaterialFactoryNew())
     M.delete_all_material_expressions(mat)
+    mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_OPAQUE)
     mat.set_editor_property('two_sided', bool(row.get('two_sided', False)))
     col = row.get('base_color_linear', row.get('base_color', [.5, .5, .5, 1]))
     color = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='Color', default_value=unreal.LinearColor(*col[:3], 1))
@@ -67,6 +68,9 @@ def material(row, dest, src):
         tex = E.load_asset(task.destination_path + '/' + task.destination_name)
         check(name + ' texture ' + role, isinstance(tex, unreal.Texture2D))
         tex.set_editor_property('srgb', role == 'base_color')
+        if role == 'base_color' and row.get('opacity_from_base_color') and row.get('alpha_mode','masked') == 'masked':
+            tex.set_editor_property('do_scale_mips_for_alpha_coverage', True)
+            tex.set_editor_property('alpha_coverage_thresholds', unreal.Vector4(0,0,0,float(row.get('alpha_cutoff',.333))))
         if role == 'normal':
             tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
             # Source normals are DirectX tangent-space, exported explicitly by the generator.
@@ -98,9 +102,25 @@ def material(row, dest, src):
             check(name+' normal VectorInput connection', M.connect_material_expressions(blend, '', normalized, 'VectorInput'))
             M.connect_material_property(normalized, '', prop)
         else:
-            M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
+            if role == 'base_color' and row.get('texture_tint_linear'):
+                tint = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='TextureTint', default_value=unreal.LinearColor(*row['texture_tint_linear'][:3],1))
+                multiply = expression(mat, unreal.MaterialExpressionMultiply)
+                check(name+' tint texture', M.connect_material_expressions(sample, 'RGB', multiply, 'A'))
+                check(name+' tint color', M.connect_material_expressions(tint, 'RGB', multiply, 'B'))
+                M.connect_material_property(multiply, '', prop)
+            else:
+                M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
+        if role == 'base_color' and row.get('opacity_from_base_color'):
+            masked = row.get('alpha_mode', 'masked') == 'masked'
+            mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED if masked else unreal.BlendMode.BLEND_TRANSLUCENT)
+            if masked:
+                mat.set_editor_property('opacity_mask_clip_value', float(row.get('alpha_cutoff', .333)))
+            else:
+                mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
+            check(name+' texture alpha connection', M.connect_material_property(sample, 'A', unreal.MaterialProperty.MP_OPACITY_MASK if masked else unreal.MaterialProperty.MP_OPACITY))
     if float(row.get('alpha', 1)) < 1:
         mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
+        mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
         mat.set_editor_property('two_sided', True)
         n = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name='Opacity', default_value=float(row['alpha']))
         M.connect_material_property(n, '', unreal.MaterialProperty.MP_OPACITY)
@@ -218,9 +238,12 @@ try:
     b = probe.get_bounds()
     check('FBX coordinate probe', max(abs(a-b) for a,b in zip(
           [b.origin.x,b.origin.y,b.origin.z], [200,-400,600])) < .1)
-    labels = os.environ.get('S47_STREET_ONLY', 'souvenir,ground,radio-materials').split(',')
+    labels = os.environ.get('S47_STREET_ONLY', 'souvenir,ground,backdrop,atmosphere').split(',')
     for label in labels:
-        if label in ('souvenir','ground'): import_set(label)
+        if label in ('souvenir','ground','backdrop'): import_set(label)
+        if label == 'atmosphere':
+            import runpy
+            runpy.run_path(str(ROOT/'import_atmosphere.py'))
         if label == 'radio-materials':
             src = ROOT.parent / 'radioarray/station'
             for name,row in json.loads((src/'materials.json').read_text()).items():

@@ -163,7 +163,7 @@ void AS47Web::BuildExteriorLighting()
 		const FVector At(Pool.R, Pool.G + 0.255, Pool.B);
 		const FString Name = FString::Printf(TEXT("Caliche%02d"), I);
 		Add(*Name, TEXT("world.town.group"), Town, I, TEXT(""), -1,
-			At, At + FVector(2.3, -7.5, 0), 65.f, 16.f, 61.f, 12.f, 8.f);
+			At, At + FVector(2.3, -7.5, 0), 120.f, 16.f, 61.f, 18.f, 8.f);
 		if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
 		{
 			// The second sprite was a thirteen-metre additive substitute for ground light.
