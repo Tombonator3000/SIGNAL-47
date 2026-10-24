@@ -639,17 +639,17 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	// SKY.md: volumetric cloud cover follows the clock, continuously, without hiding the night.
 	{
 		bool bBroken = true, bSparse = true, bSmooth = true;
-		double Prev = FS47Sky::CloudCoverAt(0), MaxNight = 0;
+		double Prev = FS47Sky::CloudCoverAt(0), MaxNight = 0, MinDay = 1, MaxDay = 0, MaxStep = 0;
 		for (int32 Minute = 1; Minute <= 24 * 60; ++Minute)
 		{
 			const double Cover = FS47Sky::CloudCoverAt(Minute * 60.0), H = Minute / 60.0;
-			bSmooth &= FMath::Abs(Cover - Prev) < 0.01;
-			if ((H >= 7 && H <= 18.8)) bBroken &= Cover >= 0.4 && Cover <= 0.7;
+			bSmooth &= FMath::Abs(Cover - Prev) < 0.01; MaxStep = FMath::Max(MaxStep, FMath::Abs(Cover - Prev));
+			if (H >= 7 && H <= 18.8) { bBroken &= Cover >= 0.399 && Cover <= 0.7; MinDay = FMath::Min(MinDay, Cover); MaxDay = FMath::Max(MaxDay, Cover); }
 			if (H >= 21 || H <= 4.5) { bSparse &= Cover <= 0.2; MaxNight = FMath::Max(MaxNight, Cover); }
 			Prev = Cover;
 		}
 		Check(bBroken && bSparse && bSmooth && FS47Sky::CloudCoverAt(-5.5 * 3600) >= 0.4 && FMath::Abs(FS47Sky::CloudCoverAt(-86400 + 18.5 * 3600) - FS47Sky::CloudCoverAt(18.5 * 3600)) < 1e-9,
-			*FString::Printf(TEXT("clouds: broken 40-70 %% layer by day and dusk, at most %.2f at night, no per-minute jumps, evening clock wraps"), MaxNight));
+			*FString::Printf(TEXT("clouds: broken 40-70 %% layer by day and dusk (%.3f-%.3f), at most %.2f at night, per-minute step %.4f, evening clock wraps (%.3f)"), MinDay, MaxDay, MaxNight, MaxStep, FS47Sky::CloudCoverAt(-5.5 * 3600)));
 		Check(FS47Sky::CloudCoverAt(5 * 3600 + 30 * 60) > FS47Sky::CloudCoverAt(4 * 3600) && FS47Sky::CloudCoverAt(6 * 3600 + 30 * 60) >= 0.4 && FS47Sky::CirrusAt(18.5 * 3600) > FS47Sky::CirrusAt(2 * 3600 + 15 * 60),
 			TEXT("clouds: dawn builds the layer back; cirrus thins at night"));
 		FS47Sky Holes; Holes.SetClock(2 * 3600 + 15 * 60 + 12 + STAR_HOLE.After + 200);

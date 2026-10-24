@@ -186,7 +186,7 @@ double FS47Sky::CloudCoverAt(double Clock)
 	// A slow, deterministic variation over the day: broken alto/stratocumulus, 40-70 %.
 	const double Day = 0.55 + 0.11 * FMath::Sin(H * 0.83 + 0.6) + 0.04 * FMath::Sin(H * 2.3 + 1.1);
 	// A few scattered clouds that now and then cross the moon; never a closed overcast.
-	const double Night = 0.11 + 0.04 * FMath::Sin(H * 1.7 + 0.4);
+	const double Night = 0.11 + 0.04 * FMath::Sin(H * UE_DOUBLE_PI / 6 + 0.4); // 24 h periodic: no jump at midnight
 	const double K = H >= 12 ? 1 - Smooth01((H - 18.8) / 2.2) : Smooth01((H - 4.5) / 2.0);
 	// The dusk concept: a broad broken layer over the commute and the handover (about 17:40-19:00).
 	const double Dusk = FMath::Exp(-FMath::Square((H - 18.35) / 0.55));
@@ -197,7 +197,7 @@ double FS47Sky::CirrusAt(double Clock)
 {
 	const double H = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0) / 3600;
 	const double K = H >= 12 ? 1 - Smooth01((H - 19.0) / 2.5) : Smooth01((H - 4.2) / 2.0);
-	return 0.12 + 0.36 * K + 0.08 * FMath::Sin(H * 0.6 + 2.0);
+	return 0.12 + 0.36 * K + 0.08 * FMath::Sin(H * UE_DOUBLE_PI / 12 + 2.0);
 }
 
 void FS47Sky::SetCometClock(double Clock)
