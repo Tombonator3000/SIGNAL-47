@@ -4,6 +4,7 @@ class AS47Web;
 class UPrimitiveComponent;
 class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
+class URectLightComponent;
 
 // Native visitor arrival dressing; story/vehicle ownership stays with World/Evening.
 class FS47SaroArrival
@@ -19,6 +20,8 @@ private:
  TWeakObjectPtr<UStaticMeshComponent> OldConcrete;
  TWeakObjectPtr<UStaticMeshComponent> OldSignFace;
  TWeakObjectPtr<UMaterialInstanceDynamic> WindowGlass;
+ TArray<TWeakObjectPtr<URectLightComponent>> ArrivalLights;
+ TArray<float> ArrivalLightLumens;
  int32 WalkMoved=0,DriveMoved=0,RemovedTriangles=0;
  bool bLastShown=false;
 };

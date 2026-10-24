@@ -39,6 +39,27 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47World, Log, All);
 
 namespace
 {
+	// Unreal-only visitor lot. The exported service corridors and obstacles stay authoritative
+	// elsewhere; enable this extension only when its native geometry/floors validated.
+	class FArrivalSaroDrive final : public FS47SaroDrive
+	{
+	public:
+		using FS47SaroDrive::FS47SaroDrive;
+		bool bVisitorLot = false;
+		bool OnVisitorLot(double X, double Z) const
+		{
+			return bVisitorLot && ((X >= -18.2 && X <= -7.8 && Z >= 10.5 && Z <= 20.5)
+				|| (X >= -16.5 && X <= -9.5 && Z >= 20.5 && Z <= 23.5));
+		}
+		virtual bool Blocked(double X, double Z) override
+		{
+			return OnVisitorLot(X,Z) ? false : FS47SaroDrive::Blocked(X,Z);
+		}
+		virtual FS47Surface Surface(double X, double Z) const override
+		{
+			return OnVisitorLot(X,Z) ? FS47SaroDrive::Surface(8.9,8) : FS47SaroDrive::Surface(X,Z);
+		}
+	};
 	// world/World.ts: FOG and FOG_OLDROAD (the old road's air is thinner at dawn)
 	constexpr float FOG = 0.0021f, FOG_OLDROAD = 0.00055f;
 	const FVector ROAD_ORIGIN(8000, 0, 0);
@@ -557,7 +578,10 @@ void US47World::EnsureLegs()
 	// SARO's own ground (ensureSaroLeg): its colliders without the truck's own, and the posts of
 	// the road's stretch (the export's list has both)
 	{
-		TUniquePtr<FS47SaroDrive> A = MakeUnique<FS47SaroDrive>(Boxes(W->CollidersMutable(TEXT("saro")), SaroCol), TArray<FS47Obstacle>());
+		TUniquePtr<FArrivalSaroDrive> A = MakeUnique<FArrivalSaroDrive>(Boxes(W->CollidersMutable(TEXT("saro")), SaroCol), TArray<FS47Obstacle>());
+		TArray<FString> ArrivalChecks;
+		A->bVisitorLot = W->AuditSaroArrival(ArrivalChecks);
+		UE_LOG(LogS47World,Display,TEXT("S47: SARO visitor driving corridor ready=%d; original service corridors retained"),A->bVisitorLot);
 		Fill(*A, TEXT("saro"), nullptr);
 		Head(*A, TEXT("saro"), nullptr, {});
 		FLegRec& L = Legs.Add(TEXT("saro"));

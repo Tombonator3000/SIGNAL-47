@@ -4,6 +4,10 @@
 #include "S47Obj.h"
 #include "S47Three.h"
 #include "S47Night.h"
+#include "S47Main.h"
+#include "S47Story.h"
+#include "S47Timeline.h"
+#include "Components/RectLightComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -179,6 +183,25 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  }
  UStaticMeshComponent* Sign=NewObject<UStaticMeshComponent>(W);Sign->SetMobility(EComponentMobility::Movable);Sign->SetStaticMesh(Face->GetStaticMesh());Sign->SetMaterial(0,Face->GetMaterial(0));Sign->SetCollisionEnabled(ECollisionEnabled::NoCollision);Sign->SetCastShadow(false);Sign->SetHiddenInGame(true);Sign->SetupAttachment(G->Comp.Get());Sign->RegisterComponent();
  FTransform SignPose=Face->GetComponentTransform();SignPose.AddToTranslation(S47Three::ToUE(SignDelta));Sign->SetWorldTransform(SignPose);W->AdoptNode(Sign,Parent,TEXT("arrival:legibleSiteSign"));S->Parts.Add(Sign);
+ // Shielded period-style sign lamps and one annex wall pack illuminate the new visitor ground.
+ auto Lamp=[&](const FVector& At,const FVector& Target,float Lumens,float Width,float Reach)
+ {
+  URectLightComponent* L=NewObject<URectLightComponent>(W);L->SetupAttachment(G->Comp.Get());L->SetMobility(EComponentMobility::Movable);
+  L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1.f,.76f,.43f));
+  L->SetSourceWidth(Width);L->SetSourceHeight(12);L->SetAttenuationRadius(Reach);L->SetBarnDoorAngle(65);L->SetBarnDoorLength(15);
+  L->SetCastShadows(true);L->SetVolumetricScatteringIntensity(.15f);L->RegisterComponent();
+  L->SetWorldLocationAndRotation(S47Three::ToUE(At),S47Three::DirToUE(Target-At).Rotation());
+  S->ArrivalLights.Add(L);S->ArrivalLightLumens.Add(Lumens);
+ };
+ for(double Z:{14.4,16.6})
+ {
+  Box(TEXT("signLampStem"),FVector(-7.3,1.03,Z),FVector(.045,.55,.045),Metal);
+  Box(TEXT("signLampArm"),FVector(-7.70,1.30,Z),FVector(.80,.045,.045),Metal);
+  Box(TEXT("signLampHood"),FVector(-8.10,1.27,Z),FVector(.24,.10,.32),Metal);
+  Lamp(FVector(-8.10,1.21,Z),FVector(-7.52,.10,Z),65,90,450);
+ }
+ Box(TEXT("annexParkingWallPack"),FVector(-6.14,2.50,8.5),FVector(.22,.28,.42),Metal);
+ Lamp(FVector(-6.28,2.42,8.5),FVector(-13,-.60,15.5),1400,70,1800);
  // Existing glazing geometry keeps its exact aperture, with a restrained physically lit glass.
  UMaterialInstanceDynamic* Glass=UMaterialInstanceDynamic::Create(GlassBase,W);Glass->SetVectorParameterValue(TEXT("Color"),FLinearColor(.44,.52,.53,1));Glass->SetVectorParameterValue(TEXT("EmissiveFactor"),FLinearColor::Black);Glass->SetScalarParameterValue(TEXT("Opacity"),.045);Glass->SetScalarParameterValue(TEXT("Roughness"),.12);S->WindowGlass=Glass;
  for(int32 K=0;K<=6;++K)Box(TEXT("exteriorWindowBead"),FVector(-5.4+K*1.8,1.85,-4.685),FVector(.035,1.78,.04),Metal);
@@ -207,6 +230,12 @@ void FS47SaroArrival::Update()
  bLastShown=Shown;
  for(const auto& Weak:FloorQueries)if(UPrimitiveComponent* C=Weak.Get())C->SetCollisionEnabled(Shown?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
  for(const auto& Weak:Parts)if(UPrimitiveComponent* C=Weak.Get())C->SetVisibility(Shown,false);
+ const US47Main* M=US47Main::Get(W);
+ const double Hour=M&&M->Story?S47Timeline::Day(M->Story->Clock())/3600:12;
+ const float Night=Hour<6?1.f:Hour<7?float(7-Hour):float(FMath::Clamp((Hour-17.5)/1.25,0.,1.));
+ for(int32 I=0;I<ArrivalLights.Num();++I)if(URectLightComponent* L=ArrivalLights[I].Get())
+ {L->SetVisibility(Shown&&Night>0);L->SetIntensity(ArrivalLightLumens[I]*Night);}
+
 }
 
 bool FS47SaroArrival::Audit(TArray<FString>& Lines)const

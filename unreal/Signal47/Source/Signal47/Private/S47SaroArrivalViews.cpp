@@ -5,6 +5,7 @@
 #include "S47Main.h"
 #include "S47Startup.h"
 #include "S47Story.h"
+#include "S47UI.h"
 #include "S47Walker.h"
 #include "S47World.h"
 #include "HAL/FileManager.h"
@@ -65,6 +66,8 @@ void AS47Web::BeginSaroArrivalViews()
   const FString Name=FString(Lights[Light])+TEXT("-")+Views[View].Name;
   const FString File=P->Shots/(Name+TEXT(".png"));
   if(IFileManager::Get().FileExists(*File)){Fail(TEXT("refusing to overwrite view evidence"));return;}
+  // Camera setup/parking toasts obscure the lot in short developer fixtures; retain the HUD.
+  if(M->UI)M->UI->ClearToasts();
   FScreenshotRequest::RequestScreenshot(File,true,false);
   UE_LOG(LogS47ArrivalViews,Display,TEXT("S47: SARO arrival view %s floor=%.4f eye=%.4f clock=%.3f; camera fixture"),*Name,M->Player->FloorY,M->Player->FloorY+M->Player->Eye,M->Story->Clock());
   ++P->Index;P->Placed=false;
