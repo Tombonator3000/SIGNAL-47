@@ -1,0 +1,15 @@
+00:00.696  blend            | Read blend: "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/1420_AM_station.blend"
+Traceback (most recent call last):
+  File "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/verify_station.py", line 64, in <module>
+    from station_revision_nine import INTERIOR_SLOT_PREFIX
+ModuleNotFoundError: No module named 'station_revision_nine'
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+
+Error: script failed, file: '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/verify_station.py', exiting.
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+
+Blender quit

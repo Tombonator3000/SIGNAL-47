@@ -92,3 +92,21 @@ Blender-materialene og GLB er oppdatert uten modellgenerering. `r5_plaster_refre
 R5s nativebilder viste for glatt puss og for tydelige grå reparasjonsfelter. Materialrevisjon `R6-mineral-plaster-correction` halverer derfor bare fargeopasiteten i de sju isolerte reparasjonsfeltene. Sammenhengende sokkel- og takvasking er uendret. Høydeblandingen beholder pussdrag og mellomskala, men kornandelen økes fra 16 til 34 prosent. Normalstyrken er 0,38 for Stucco og 0,40 for fasadeatlaset; UV2/UV1 beholdes.
 
 Blender og GLB er pakket med de samme teksturene som sidecar refererer til. `r6_plaster_refresh.json` beviser samme geometri-/UV-/materialplass-/transformhash som R5, og byteidentiske FBX-filer og tolv tre-PNGer. **45/45 kontroller består**. Den tekniske kontrollen er ikke en visuell godkjenning; R6-finishen må vurderes i neste native-bilder.
+
+## R9, lesbart lobbyoppslag og praktisk studiolys
+
+Den faktiske interiørkontrollen viste tre blanke oppslagskort og sterkt strukket, vannrett treåre. R9 beholder kortenes geometri, men gir forsiden originalt engelsk trykk: programoppslag med Night Line fra midnatt til fire, telefonnotater og rutiner for spolebånd. Et lite stabelark med teknisk logg og to blyanter ligger på det eksisterende resepsjonsbordet. Trykkatlaset i `textures/revision9/` er originalt, 2048 × 1024 piksler og kan gjenskapes med `make_revision_nine_textures.py`.
+
+Bare de fem valgte vertikale treveggene får metrisk UV: U følger høyde delt på 2,4 meter, V følger vegglengde delt på 0,30 meter. Den eksisterende teksturens lange åre følger dermed vegghøyden, med flere naturlige planker langs veggen. Gulv, møbler, øvrige materialer og den aksepterte R6-pussen er uendret.
+
+En diskret opaldiffuser med kremfarget ramme er lagt under bakre studiotak ved source `(1.3, 6.3, 3.07)`, størrelse `(1.1, 0.45, 0.045)` meter. Den bruker eksisterende `M_1420_Lamp_glow`. Den tilhørende lyskilden, bordlampen og lobbylysets styrke styres av runtime-eieren. Ingen ny lyskule er lagt i vindusfeltet. Spolemaskinens kameravendte bakside har en liten serviceplate med fem ventilasjonsspor.
+
+`r9_preservation.json` sammenligner samtlige tidligere redigerbare komponenter før og etter bygging. Geometri og transform skal være identiske for alle tidligere kildedeler. Bare de fem veggenes UV og tre oppslagskortenes UV/materialvalg kan endres. De fire øvrige sammenslåtte eksportdelene skal være helt uendret. Alle fem delers grenser og pivoter og de 17 eksisterende interiørmaterialplassenes rekkefølge bevares. `M_1420_StationNotices` legges sist. Eksakt trekanttall og UE sin minste trekantflate kontrolleres fremdeles ved faktisk FBX-tilbakeimport.
+
+Ingen R9-rendere er kjørt. Den faktiske visuelle vurderingen av innvendig lys og lesbarhet krever nye pakkede interiørbilder hos runtime-eieren.
+
+To avviste R9-forsøk er bevart i `verification/r9-build-attempt*-failed*`. Første wrapper beholdt skjulte gamle redigeringsobjekter etter baselineinnlasting. Andre forsøk brukte en tom factory-scene uten World og stoppet før lagring. Wrapperen tar nå baseline, tilbakestiller hele Blender-scenen til standard factory-innhold og kjører så generatoren. Sluttkontrollen krever både vellykket prosess, bevaringsrapport og fullstendig PASS ved tilbakeimport.
+
+Tredje bevaringskontroll fanget nye UV-flytverdier fra uendret bevel-geometri ved full regenerering. `r9_original_uv.json` bevarer derfor de opprinnelige UV-hjørneverdiene og gjenbrukes for alle tidligere komponenter utenfor de åtte målrettede flatene/objektene. Samtidig kontroll av nøyaktig geometri, transform, materialvalg, løkkeantall og navn avviser manglende eller feil tilordning. Det avviste forsøket har egen logg, guard og bevaringsrapport.
+
+Endelig R9-kontroll består **51/51**. Interior har **79 266 trekanter**, 508 flere enn R6. Shell har fortsatt 10 340, Door 1 852, Glass 12 og Mast 1 264. Alle bounds og pivoter er eksakt bevart. Alle tidligere kildedeler har identisk geometri og transform, og alle øvrige UV-er og materialvalg er bevart. `r9_texture_preservation.json` beviser 44 byteidentiske tidligere PNGer. `revision9-contract-diff.json` viser de kontrollerte forskjellene. Første verifikasjonsforsøk manglet lokal Python-modulsti etter blend-innlasting; stien er rettet, og både avvist og vellykket forsøk er bevart.

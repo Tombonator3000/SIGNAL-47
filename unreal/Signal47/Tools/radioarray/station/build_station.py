@@ -368,6 +368,10 @@ r2_materials=apply_revision_two(groups,mat,cube,cyl,torus,text,globals())
 if '--reuse-textures' not in sys.argv: subprocess.run(['python3',str(OUT/'make_revision_three_textures.py')],check=True)
 from station_revision_three import apply as apply_revision_three
 r3_materials,r3_evidence=apply_revision_three(groups,mat,cube,cyl,torus,text,globals())
+if '--reuse-textures' not in sys.argv: subprocess.run(['python3',str(OUT/'make_revision_nine_textures.py')],check=True)
+from station_revision_nine import apply as apply_revision_nine, preserve_interior_slots, restore_original_uvs
+r9_materials,r9_evidence=apply_revision_nine(groups,mat,cube,cyl,globals())
+restore_original_uvs(groups)
 
 def join_group(key):
  obs=groups[key]; bpy.ops.object.select_all(action='DESELECT')
@@ -377,7 +381,9 @@ def join_group(key):
  bpy.ops.object.origin_set(type='ORIGIN_CURSOR'); scene.cursor.location=(0,0,0)
  # UVs retained from primitives; text adds no texture dependency.
  o['original_asset']='SIGNAL / 47 original procedural mesh, 2026-10-23'
- o['part']=key; o['units']='metres'; return o
+ o['part']=key; o['units']='metres'
+ if key=='Interior':preserve_interior_slots(o)
+ return o
 # Preserve every named component for Blender editing, hidden to avoid double rendering.
 source=bpy.data.collections.new('EDITABLE_SOURCE_enable_to_edit'); scene.collection.children.link(source)
 for key,objects in groups.items():
@@ -413,6 +419,7 @@ for m,prefix in TEXTURE_MATS.items():
   material_data[m.name]['textures']['normal']='textures/'+prefix+'_normal_dx.png'
 material_data.update(r2_materials)
 material_data.update(r3_materials)
+material_data.update(r9_materials)
 material_data['M_1420_Clear_glass']['alpha']=.14
 (OUT/'materials.json').write_text(json.dumps(material_data,indent=2))
 # Basis probe is excluded from final scene and exports.
@@ -423,6 +430,8 @@ bpy.ops.export_scene.fbx(filepath=str(EXPORTS/'axis_probe.fbx'),use_selection=Tr
 bpy.data.objects.remove(probe,do_unlink=True)
 contract['source_revision']='R3-street-visible-studio-2026-10-24'
 contract['r3_changes']=r3_evidence
+contract['interior_revision']='R9-lobby-print-vertical-veneer-opal-2026-10-24'
+contract['r9_changes']=r9_evidence
 contract['source_patch']='R3.1-cue-typography-stable-triangulation'
 contract['material_revision']='R6-mineral-plaster-correction'
 contract['plaster_materials']={'M_1420_Stucco_cream':{'uv_scale':2,'normal_strength':.38},'M_1420_WeatheredFacadePaint':{'uv_scale':1,'normal_strength':.40}}

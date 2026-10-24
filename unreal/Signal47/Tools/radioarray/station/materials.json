@@ -390,6 +390,32 @@
     "uv_scale": 1,
     "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
   },
+  "M_1420_StationNotices": {
+    "base_color_linear": [
+      0.7,
+      0.65,
+      0.53,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.91,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {
+      "base_color": "textures/revision9/station_notices_color.png",
+      "normal": "textures/revision9/station_notices_normal_dx.png",
+      "roughness": "textures/revision9/station_notices_roughness.png"
+    },
+    "normal_strength": 0.05,
+    "uv_scale": 1,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
+  },
   "M_1420_Stucco_cream": {
     "base_color_linear": [
       0.6,

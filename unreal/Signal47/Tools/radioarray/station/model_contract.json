@@ -71,8 +71,8 @@
       ]
     },
     "SM_1420_Interior": {
-      "vertices": 54000,
-      "triangles": 78758,
+      "vertices": 54288,
+      "triangles": 79266,
       "triangulated": true,
       "zero_area_triangles": 0,
       "materials": [
@@ -92,7 +92,8 @@
         "M_1420_OliveWornTimber",
         "M_1420_Vinyl_green",
         "M_1420_LeatherStitch",
-        "M_1420_ProgramPanelPrint"
+        "M_1420_ProgramPanelPrint",
+        "M_1420_StationNotices"
       ],
       "bounds_local_m": [
         [
@@ -248,7 +249,45 @@
     ],
     "practical_emitter": "Recessed under shade at source (4,1.25,1.505), diameter0.141m. No free sphere in source. Native orb requires runtime light/glass isolation."
   },
+  "interior_revision": "R9-lobby-print-vertical-veneer-opal-2026-10-24",
+  "r9_changes": {
+    "printed_notice_objects": [
+      "Lobby_notice",
+      "Lobby_notice.001",
+      "Lobby_notice.002"
+    ],
+    "metric_vertical_wood_objects": [
+      "Walnut_side_lining",
+      "Walnut_side_lining.001",
+      "Walnut_back_lining",
+      "Studio_corridor_partition",
+      "Lobby_back_wall"
+    ],
+    "wall_uv_rule": "U=worldZ/2.4, V=worldY/.30 for X-facing walls; V=worldX/.30 for Y-facing walls. Long grain follows vertical U.",
+    "ceiling_diffuser_source_m": [
+      1.3,
+      6.3,
+      3.07
+    ],
+    "ceiling_diffuser_size_m": [
+      1.1,
+      0.45,
+      0.045
+    ],
+    "preserved": "All previous anchors, dimensions, clocks, proxies, printed canonical Night Line hours, old material slot order, footprint and walking surfaces."
+  },
   "source_patch": "R3.1-cue-typography-stable-triangulation",
+  "material_revision": "R6-mineral-plaster-correction",
+  "plaster_materials": {
+    "M_1420_Stucco_cream": {
+      "uv_scale": 2,
+      "normal_strength": 0.38
+    },
+    "M_1420_WeatheredFacadePaint": {
+      "uv_scale": 1,
+      "normal_strength": 0.4
+    }
+  },
   "ue_import_min_area_m2": 5e-09,
   "r3_preserved": "Footprint, door/window opening, pivots, console/body anchors and story proxy IDs unchanged.",
   "r2_texture_authoring": {
@@ -278,16 +317,5 @@
     "M_1420_Desk_walnut",
     "M_1420_WeatheredFacadePaint",
     "M_1420_OliveWornTimber"
-  ],
-  "material_revision": "R6-mineral-plaster-correction",
-  "plaster_materials": {
-    "M_1420_Stucco_cream": {
-      "uv_scale": 2,
-      "normal_strength": 0.38
-    },
-    "M_1420_WeatheredFacadePaint": {
-      "uv_scale": 1,
-      "normal_strength": 0.4
-    }
-  }
+  ]
 }

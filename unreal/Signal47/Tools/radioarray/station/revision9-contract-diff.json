@@ -1,0 +1,67 @@
+{
+  "interior_revision": "R9-lobby-print-vertical-veneer-opal-2026-10-24",
+  "triangles": {
+    "SM_1420_Shell": [
+      10340,
+      10340
+    ],
+    "SM_1420_Interior": [
+      78758,
+      79266
+    ],
+    "SM_1420_Door": [
+      1852,
+      1852
+    ],
+    "SM_1420_Glass": [
+      12,
+      12
+    ],
+    "SM_1420_Mast": [
+      1264,
+      1264
+    ]
+  },
+  "bounds_local_m_identical": true,
+  "origins_identical": true,
+  "material_slots_before": [
+    "M_1420_Walnut",
+    "M_1420_Desk_walnut",
+    "M_1420_Acoustic_fabric",
+    "M_1420_Black_enamel",
+    "M_1420_Galvanized_metal",
+    "M_1420_Brushed_aluminium",
+    "M_1420_VU_backlight",
+    "M_1420_Ink",
+    "M_1420_Ivory_plastic",
+    "M_1420_Brick_red",
+    "M_1420_Painted_olive",
+    "M_1420_Paper",
+    "M_1420_Lamp_glow",
+    "M_1420_OliveWornTimber",
+    "M_1420_Vinyl_green",
+    "M_1420_LeatherStitch",
+    "M_1420_ProgramPanelPrint"
+  ],
+  "material_slots_after": [
+    "M_1420_Walnut",
+    "M_1420_Desk_walnut",
+    "M_1420_Acoustic_fabric",
+    "M_1420_Black_enamel",
+    "M_1420_Galvanized_metal",
+    "M_1420_Brushed_aluminium",
+    "M_1420_VU_backlight",
+    "M_1420_Ink",
+    "M_1420_Ivory_plastic",
+    "M_1420_Brick_red",
+    "M_1420_Painted_olive",
+    "M_1420_Paper",
+    "M_1420_Lamp_glow",
+    "M_1420_OliveWornTimber",
+    "M_1420_Vinyl_green",
+    "M_1420_LeatherStitch",
+    "M_1420_ProgramPanelPrint",
+    "M_1420_StationNotices"
+  ],
+  "window_door_world_anchors_identical": true
+}

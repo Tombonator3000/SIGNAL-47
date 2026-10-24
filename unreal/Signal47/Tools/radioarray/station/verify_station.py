@@ -5,6 +5,8 @@ import bpy, json, math, struct
 from pathlib import Path
 from mathutils import Vector
 ROOT=Path(__file__).resolve().parent
+import sys
+sys.path.insert(0,str(ROOT))
 contract=json.loads((ROOT/'model_contract.json').read_text())
 checks=[]; meshes={}
 def check(name,ok,**evidence): checks.append({'name':name,'result':'PASS' if ok else 'FAIL',**evidence})
@@ -33,7 +35,7 @@ for name,expected in contract['parts'].items():
   check('Door and studio window are actual shell openings',not hit(-4.6,1.1) and not hit(1.2,1.55) and hit(-2,1.1),door_empty=not hit(-4.6,1.1),window_empty=not hit(1.2,1.55),solid_pier_hit=hit(-2,1.1))
   check('Roof and window lintel normals face outward',sum(1 for p in mesh.polygons if p.normal.z>.99)>10)
 materials=json.loads((ROOT/'materials.json').read_text()); tex=[ROOT/v for m in materials.values() for v in m.get('textures',{}).values()]
-check('R3 eight-family PBR texture dependencies exist',len(tex)==24 and all(p.is_file() and p.read_bytes()[:8]==b'\x89PNG\r\n\x1a\n' for p in tex),count=len(tex),relative_paths=[str(p.relative_to(ROOT)) for p in tex])
+check('R9 nine-family PBR texture dependencies exist',len(tex)==27 and all(p.is_file() and p.read_bytes()[:8]==b'\x89PNG\r\n\x1a\n' for p in tex),count=len(tex),relative_paths=[str(p.relative_to(ROOT)) for p in tex])
 check('Source and GLB preserved',(ROOT/'1420_AM_station.blend').is_file() and (ROOT/'1420_AM_station.glb').read_bytes()[:4]==b'glTF')
 glb=(ROOT/'1420_AM_station.glb').read_bytes(); chunk_size=struct.unpack_from('<I',glb,12)[0]; gltf=json.loads(glb[20:20+chunk_size])
 gcounts={n['name']:sum(gltf['accessors'][p['indices']]['count']//3 for p in gltf['meshes'][n['mesh']]['primitives']) for n in gltf['nodes'] if 'mesh' in n}
@@ -61,6 +63,28 @@ for o in bpy.data.objects:
   pts=[o.matrix_basis@v.co for v in o.data.vertices]
   if min(p.x for p in pts)<3.05 and max(p.x for p in pts)>-.65 and min(p.z for p in pts)<2.375 and max(p.z for p in pts)>.725:emissive.append(o.name)
 check('No exposed Lamp_glow geometry in window rectangle',not emissive,overlaps=emissive)
+from station_revision_nine import INTERIOR_SLOT_PREFIX
+check('R9 old material order preserved and notices appended',contract['parts']['SM_1420_Interior']['materials']==INTERIOR_SLOT_PREFIX+['M_1420_StationNotices'])
+notices=[o for o in bpy.data.objects if o.name=='SRC_Lobby_notice' or o.name.startswith('SRC_Lobby_notice.')]
+printed=[]
+for ob in notices:
+ printed.extend([ob.name for p in ob.data.polygons if p.normal.x>.9 and ob.data.materials[p.material_index].name=='M_1420_StationNotices'])
+check('R9 three existing notice cards have printed visible faces',len(notices)==3 and len(printed)==3,printed_faces=printed)
+wall_names=contract['r9_changes']['metric_vertical_wood_objects'];uv_errors=[]
+for name in wall_names:
+ ob=bpy.data.objects.get('SRC_'+name)
+ for p in ob.data.polygons:
+  if abs(p.normal.x)<.9 and abs(p.normal.y)<.9:continue
+  for li in p.loop_indices:
+   co=ob.matrix_basis@ob.data.vertices[ob.data.loops[li].vertex_index].co
+   expected=Vector((co.z/2.4,(co.y if abs(p.normal.x)>.9 else co.x)/.30))
+   uv_errors.append((Vector(ob.data.uv_layers.active.data[li].uv)-expected).length)
+check('R9 selected veneer walls use metric vertical grain',len(wall_names)==5 and uv_errors and max(uv_errors)<1e-5,wall_names=wall_names,max_uv_error=max(uv_errors))
+diffuser=bpy.data.objects.get('SRC_StudioCeilingOpalDiffuser')
+check('R9 opal diffuser matches native practical position',diffuser is not None and (diffuser.matrix_basis.translation-Vector((1.3,6.3,3.07))).length<1e-6 and any(m.name=='M_1420_Lamp_glow' for m in diffuser.data.materials))
+check('R9 reception log and pencils are physical source objects',all(any(o.name.startswith(n) for o in bpy.data.objects) for n in ['SRC_LobbyProgramLogSheet','SRC_LobbyDeskPencil','SRC_LobbyPencilTip']))
+preservation=json.loads((ROOT/'r9_preservation.json').read_text())
+check('R9 original source geometry and anchors preserved',preservation['status']=='PASS' and not preservation['unexpected_changes'] and all(preservation['contract_preserved'].values()),proof_file='r9_preservation.json')
 report={'tool':'Blender '+bpy.app.version_string,'status':'PASS' if all(c['result']=='PASS' for c in checks) else 'FAIL','checks':checks,'passed':sum(c['result']=='PASS' for c in checks),'total':len(checks),'runtime_note':'This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests.'}
 (ROOT/'verification.json').write_text(json.dumps(report,indent=2)); print('STATION_VERIFY',json.dumps(report))
 if report['status']!='PASS': raise RuntimeError('Station verification failed; see verification.json')

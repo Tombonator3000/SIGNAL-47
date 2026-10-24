@@ -14,7 +14,7 @@
     "remaining_zero_area": 0
   },
   "SM_1420_Interior": {
-    "before_triangles": 79398,
+    "before_triangles": 79906,
     "removed_exact_zero_area": 640,
     "removed_by_material": {
       "M_1420_VU_backlight": 120,
@@ -22,9 +22,9 @@
       "M_1420_Brushed_aluminium": 24,
       "M_1420_Vinyl_green": 112
     },
-    "after_triangles": 78758,
-    "visible_surface_hash_before": "c45afd0785c1f66a7ea07f73c4fcd997ef6a71df3709f49b190e4c4eacb3b10b",
-    "visible_surface_hash_after": "c45afd0785c1f66a7ea07f73c4fcd997ef6a71df3709f49b190e4c4eacb3b10b",
+    "after_triangles": 79266,
+    "visible_surface_hash_before": "6b9327d7a63700631d702c1bf76e0e85135ece7fc92ff75fc3993d88efa9ce03",
+    "visible_surface_hash_after": "6b9327d7a63700631d702c1bf76e0e85135ece7fc92ff75fc3993d88efa9ce03",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,

@@ -135,14 +135,15 @@
         "M_1420_OliveWornTimber",
         "M_1420_Vinyl_green",
         "M_1420_LeatherStitch",
-        "M_1420_ProgramPanelPrint"
+        "M_1420_ProgramPanelPrint",
+        "M_1420_StationNotices"
       ]
     },
     {
       "name": "SM_1420_Interior exact triangle contract",
       "result": "PASS",
-      "triangles": 78758,
-      "expected_triangles": 78758,
+      "triangles": 79266,
+      "expected_triangles": 79266,
       "zero_area_triangles": 0
     },
     {
@@ -156,7 +157,7 @@
       "name": "SM_1420_Interior finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
-      "faces": 78758
+      "faces": 79266
     },
     {
       "name": "SM_1420_Door separate mesh",
@@ -342,9 +343,9 @@
       "faces": 1264
     },
     {
-      "name": "R3 eight-family PBR texture dependencies exist",
+      "name": "R9 nine-family PBR texture dependencies exist",
       "result": "PASS",
-      "count": 24,
+      "count": 27,
       "relative_paths": [
         "textures/concrete_color.png",
         "textures/concrete_normal_dx.png",
@@ -358,6 +359,9 @@
         "textures/revision3/program_panel_color.png",
         "textures/revision3/program_panel_normal_dx.png",
         "textures/revision3/program_panel_roughness.png",
+        "textures/revision9/station_notices_color.png",
+        "textures/revision9/station_notices_normal_dx.png",
+        "textures/revision9/station_notices_roughness.png",
         "textures/revision2/stucco_layers_color.png",
         "textures/revision2/stucco_layers_normal_dx.png",
         "textures/revision2/stucco_layers_roughness.png",
@@ -382,7 +386,7 @@
       "triangles": {
         "SM_1420_Door": 1852,
         "SM_1420_Glass": 12,
-        "SM_1420_Interior": 78758,
+        "SM_1420_Interior": 79266,
         "SM_1420_Mast": 1264,
         "SM_1420_Shell": 10340
       }
@@ -503,9 +507,47 @@
       "name": "No exposed Lamp_glow geometry in window rectangle",
       "result": "PASS",
       "overlaps": []
+    },
+    {
+      "name": "R9 old material order preserved and notices appended",
+      "result": "PASS"
+    },
+    {
+      "name": "R9 three existing notice cards have printed visible faces",
+      "result": "PASS",
+      "printed_faces": [
+        "SRC_Lobby_notice",
+        "SRC_Lobby_notice.001",
+        "SRC_Lobby_notice.002"
+      ]
+    },
+    {
+      "name": "R9 selected veneer walls use metric vertical grain",
+      "result": "PASS",
+      "wall_names": [
+        "Walnut_side_lining",
+        "Walnut_side_lining.001",
+        "Walnut_back_lining",
+        "Studio_corridor_partition",
+        "Lobby_back_wall"
+      ],
+      "max_uv_error": 0.0
+    },
+    {
+      "name": "R9 opal diffuser matches native practical position",
+      "result": "PASS"
+    },
+    {
+      "name": "R9 reception log and pencils are physical source objects",
+      "result": "PASS"
+    },
+    {
+      "name": "R9 original source geometry and anchors preserved",
+      "result": "PASS",
+      "proof_file": "r9_preservation.json"
     }
   ],
-  "passed": 45,
-  "total": 45,
+  "passed": 51,
+  "total": 51,
   "runtime_note": "This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests."
 }

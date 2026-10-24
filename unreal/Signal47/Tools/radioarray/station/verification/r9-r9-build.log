@@ -1,0 +1,47 @@
+00:00.252  blend            | Read blend: "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/1420_AM_station.blend"
+/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_station.py:73: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name); m.diffuse_color=(*color,1); m.use_nodes=True
+Warning: No mesh data to join
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Shell.fbx'
+export finished in 0.0167 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Interior.fbx'
+export finished in 0.0715 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Door.fbx'
+export finished in 0.0047 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Glass.fbx'
+export finished in 0.0017 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Mast.fbx'
+export finished in 0.0031 sec.
+INFO Draco is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+05:29:49 | INFO: Starting glTF 2.0 export
+05:29:49 | INFO: Extracting primitive: Cube.055_CleanTriangles
+05:29:49 | INFO: Primitives created: 5
+05:29:49 | INFO: Extracting primitive: Cube.061_CleanTriangles
+05:29:49 | INFO: Primitives created: 1
+05:29:49 | INFO: Extracting primitive: Cube.062_CleanTriangles
+05:29:50 | INFO: Primitives created: 18
+05:29:50 | INFO: Extracting primitive: Cube.841_CleanTriangles
+05:29:50 | INFO: Primitives created: 3
+05:29:50 | INFO: Extracting primitive: Cube.001_CleanTriangles
+05:29:50 | INFO: Primitives created: 12
+05:29:50 | INFO: Finished glTF 2.0 export in 0.8564243316650391 s
+/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_station.py:413: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  p=m.node_tree.nodes.get('Principled BSDF') if m.use_nodes else None
+/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_station.py:73: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name); m.diffuse_color=(*color,1); m.use_nodes=True
+
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/axis_probe.fbx'
+export finished in 0.0017 sec.
+Info: Saved as "1420_AM_station.blend"
+STATION_COMPLETE {"SM_1420_Shell": 10340, "SM_1420_Interior": 79266, "SM_1420_Door": 1852, "SM_1420_Glass": 12, "SM_1420_Mast": 1264}
+R9_PRESERVATION {"status": "PASS", "changed_existing": {"SM_1420_Interior": ["geometry", "uv", "slots"], "SRC_Lobby_back_wall": ["uv"], "SRC_Lobby_notice": ["uv", "slots"], "SRC_Lobby_notice.001": ["uv", "slots"], "SRC_Lobby_notice.002": ["uv", "slots"], "SRC_Studio_corridor_partition": ["uv"], "SRC_Walnut_back_lining": ["uv"], "SRC_Walnut_side_lining": ["uv"], "SRC_Walnut_side_lining.001": ["uv"]}, "unexpected_changes": {}, "new_source_objects": ["SRC_DiffuserCaptiveScrew", "SRC_DiffuserCaptiveScrew.001", "SRC_LobbyDeskPencil", "SRC_LobbyDeskPencil.001", "SRC_LobbyPencilTip", "SRC_LobbyPencilTip.001", "SRC_LobbyProgramLogSheet", "SRC_LobbyProgramLogSheet.001", "SRC_LobbyProgramLogSheet.002", "SRC_StudioCeilingDiffuserFrame", "SRC_StudioCeilingOpalDiffuser", "SRC_TapeRearServicePanel", "SRC_TapeRearVent", "SRC_TapeRearVent.001", "SRC_TapeRearVent.002", "SRC_TapeRearVent.003", "SRC_TapeRearVent.004"], "contract_preserved": {"bounds_local_m": true, "origin": true}, "existing_17_material_slots_preserved": true, "triangle_diff": {"SM_1420_Shell": [10340, 10340], "SM_1420_Interior": [78758, 79266], "SM_1420_Door": [1852, 1852], "SM_1420_Glass": [12, 12], "SM_1420_Mast": [1264, 1264]}}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+
+Blender quit
