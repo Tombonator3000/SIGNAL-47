@@ -1,0 +1,438 @@
+{
+  "status": "SOURCE_PASS_NATIVE_VISUAL_PENDING",
+  "revision": "R6_controlled_six_fields",
+  "DCC_slot_released": true,
+  "changes": [
+    "Three coherent compacted-use fields, three restrained pump-lane/turnout scuff fields.",
+    "Two original2048 RGBA base-color maps,1024 normal/roughness maps, nonrepeating field UV0..1.",
+    "Soil fields at originaltop+12mm above existing Soil; concrete at originaltop+7mm.",
+    "Strict seven-probe triangle contact filtering keeps originaltop clearance1..14mm and existingSoil clearance>=1mm; one discontinuity cell omitted.",
+    "AtlasAlpha\u00d7boundaryVertexAlpha, dithered-mask, specular0, actual open-edge fade.55m."
+  ],
+  "fields": [
+    {
+      "name": "east_radio_parking",
+      "kind": "soil",
+      "center": [
+        11.65,
+        2048.2
+      ],
+      "size": [
+        8.2,
+        18.4
+      ],
+      "angle": 0.05,
+      "triangles": 2446,
+      "vertex_lift_m": 0.012,
+      "skipped_height_step_cells": 0,
+      "centroid_above_original_top_range_m": [
+        0.011764460049215053,
+        0.012870893943389916
+      ],
+      "centroid_above_existing_Soil_range_m": [
+        0.002738548365657678,
+        0.004578809017559138
+      ],
+      "soil_overlap_centroids": 2442,
+      "height_authority": "Unchanged original exported road/desert/g1004 triangles; actual existing CalicheSoil triangles are a second visibility authority."
+    },
+    {
+      "name": "east_shop_parking",
+      "kind": "soil",
+      "center": [
+        12.4,
+        2065.0
+      ],
+      "size": [
+        7.0,
+        13.0
+      ],
+      "angle": -0.13,
+      "triangles": 1512,
+      "vertex_lift_m": 0.012,
+      "skipped_height_step_cells": 1,
+      "centroid_above_original_top_range_m": [
+        0.005238942293082083,
+        0.012944690051410745
+      ],
+      "centroid_above_existing_Soil_range_m": [
+        0.002854624700787234,
+        0.0046421414555171125
+      ],
+      "soil_overlap_centroids": 1490,
+      "height_authority": "Unchanged original exported road/desert/g1004 triangles; actual existing CalicheSoil triangles are a second visibility authority."
+    },
+    {
+      "name": "service_gap",
+      "kind": "soil",
+      "center": [
+        25.0,
+        2050.0
+      ],
+      "size": [
+        9.4,
+        12.0
+      ],
+      "angle": 0.04,
+      "triangles": 1870,
+      "vertex_lift_m": 0.012,
+      "skipped_height_step_cells": 0,
+      "centroid_above_original_top_range_m": [
+        0.011999999999995126,
+        0.012685479191246074
+      ],
+      "centroid_above_existing_Soil_range_m": [
+        0.003022797898095675,
+        0.004503413748212282
+      ],
+      "soil_overlap_centroids": 1842,
+      "height_authority": "Unchanged original exported road/desert/g1004 triangles; actual existing CalicheSoil triangles are a second visibility authority."
+    },
+    {
+      "name": "pump_west_lane",
+      "kind": "concrete",
+      "center": [
+        -13.1,
+        2054.2
+      ],
+      "size": [
+        3.4,
+        14.0
+      ],
+      "angle": 0.01,
+      "triangles": 800,
+      "vertex_lift_m": 0.007,
+      "skipped_height_step_cells": 0,
+      "centroid_above_original_top_range_m": [
+        0.006970723547349067,
+        0.007290251649980206
+      ],
+      "centroid_above_existing_Soil_range_m": null,
+      "soil_overlap_centroids": 0,
+      "height_authority": "Unchanged original exported road/desert/g1004 triangles; actual existing CalicheSoil triangles are a second visibility authority."
+    },
+    {
+      "name": "pump_east_lane",
+      "kind": "concrete",
+      "center": [
+        -7.5,
+        2054.2
+      ],
+      "size": [
+        3.4,
+        14.0
+      ],
+      "angle": -0.01,
+      "triangles": 800,
+      "vertex_lift_m": 0.007,
+      "skipped_height_step_cells": 0,
+      "centroid_above_original_top_range_m": [
+        0.006984792869373813,
+        0.00805473111876065
+      ],
+      "centroid_above_existing_Soil_range_m": null,
+      "soil_overlap_centroids": 0,
+      "height_authority": "Unchanged original exported road/desert/g1004 triangles; actual existing CalicheSoil triangles are a second visibility authority."
+    },
+    {
+      "name": "gas_turnout_scuff",
+      "kind": "concrete",
+      "center": [
+        -7.8,
+        2068.4
+      ],
+      "size": [
+        4.0,
+        7.8
+      ],
+      "angle": 0.09,
+      "triangles": 538,
+      "vertex_lift_m": 0.007,
+      "skipped_height_step_cells": 0,
+      "centroid_above_original_top_range_m": [
+        0.006972158138967011,
+        0.008084051849233553
+      ],
+      "centroid_above_existing_Soil_range_m": null,
+      "soil_overlap_centroids": 0,
+      "height_authority": "Unchanged original exported road/desert/g1004 triangles; actual existing CalicheSoil triangles are a second visibility authority."
+    }
+  ],
+  "anchor_world_three_m": [
+    8000.0,
+    0.0,
+    2060.0
+  ],
+  "collision": "NoCollision for all fourparts; no playerfloor changes",
+  "protected_masks": "Original building, facade, door/photo/figure/drive protections retained; gas pumpisland x[-11.05,-9.45],z[2046.6,2063.4] plus.16m excluded.",
+  "parts": {
+    "SM_Caliche_Surface": {
+      "triangles": 19568,
+      "bounds_local_m": [
+        [
+          -29.34113121032715,
+          -28.703702926635742,
+          4.067006587982178
+        ],
+        [
+          39.844078063964844,
+          39.099998474121094,
+          5.779888153076172
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca",
+        "M_CS_CompactedUse",
+        "M_CS_ConcreteUse"
+      ],
+      "used_materials": [
+        "M_CS_CalicheSoil",
+        "M_CS_CompactedUse",
+        "M_CS_ConcreteUse",
+        "M_CS_DrySilt",
+        "M_CS_DustFeather",
+        "M_CS_PeaGravel",
+        "M_CS_ShoulderBlend"
+      ],
+      "edge_fade": {
+        "M_CS_CalicheSoil": {
+          "width_m": 1.8,
+          "open_edges": 826,
+          "boundary_alpha_max": 0,
+          "unique_points": 5923,
+          "alpha_zero": 826,
+          "alpha_partial": 1564,
+          "alpha_one": 3533
+        },
+        "M_CS_CompactedUse": {
+          "width_m": 0.55,
+          "open_edges": 402,
+          "boundary_alpha_max": 0,
+          "unique_points": 3118,
+          "alpha_zero": 402,
+          "alpha_partial": 378,
+          "alpha_one": 2338
+        },
+        "M_CS_ConcreteUse": {
+          "width_m": 0.55,
+          "open_edges": 270,
+          "boundary_alpha_max": 0,
+          "unique_points": 1207,
+          "alpha_zero": 270,
+          "alpha_partial": 246,
+          "alpha_one": 691
+        }
+      }
+    },
+    "SM_Caliche_RoadWear": {
+      "triangles": 26838,
+      "bounds_local_m": [
+        [
+          -5.442420482635498,
+          -29.75,
+          4.249885082244873
+        ],
+        [
+          5.450954437255859,
+          39.75,
+          5.857419967651367
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "used_materials": [
+        "M_CS_DustFeather",
+        "M_CS_OldAsphalt"
+      ],
+      "edge_fade": {
+        "M_CS_OldAsphalt": {
+          "width_m": 0.45,
+          "open_edges": 636,
+          "boundary_alpha_max": 0,
+          "unique_points": 13719,
+          "alpha_zero": 636,
+          "alpha_partial": 628,
+          "alpha_one": 12455
+        }
+      }
+    },
+    "SM_Caliche_Rocks": {
+      "triangles": 11055,
+      "bounds_local_m": [
+        [
+          -29.651090621948242,
+          -29.76345443725586,
+          4.134025573730469
+        ],
+        [
+          39.562599182128906,
+          37.091835021972656,
+          5.8762125968933105
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "used_materials": [
+        "M_CS_Limestone"
+      ],
+      "edge_fade": {}
+    },
+    "SM_Caliche_DryPlants": {
+      "triangles": 6828,
+      "bounds_local_m": [
+        [
+          -29.66736602783203,
+          -29.853469848632812,
+          4.149817943572998
+        ],
+        [
+          39.0820426940918,
+          36.307334899902344,
+          6.490347862243652
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "used_materials": [
+        "M_CS_DryPlant",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "edge_fade": {}
+    }
+  },
+  "total_triangles": 64289,
+  "preservation_proof": "r6_geometry_preservation.json: all original material<13 face geometry/UV/RGBA hashes unchanged on all4parts; other3partcontracts byte-structurally unchanged.",
+  "alpha_proof": {
+    "saved_blender": "Principled Alpha receives Math MULTIPLY(TextureAlpha, ColorAlpha); specular0.",
+    "glb_point_alpha": "glb_verification.json validates range0..1, partial alpha, source point agreement<2e-5.",
+    "embedded_rgba": {
+      "status": "PASS",
+      "embedded_base_color_maps": [
+        {
+          "file": "SM_Caliche_Surface.glb",
+          "material": "M_CS_CompactedUse",
+          "alphaMode": "BLEND",
+          "size": [
+            2048,
+            2048
+          ],
+          "alpha_byte_range": [
+            0,
+            129
+          ],
+          "source_RGBA_pixel_identical": true
+        },
+        {
+          "file": "SM_Caliche_Surface.glb",
+          "material": "M_CS_ConcreteUse",
+          "alphaMode": "BLEND",
+          "size": [
+            2048,
+            2048
+          ],
+          "alpha_byte_range": [
+            0,
+            140
+          ],
+          "source_RGBA_pixel_identical": true
+        },
+        {
+          "file": "Caliche_Ground_Assembly.glb",
+          "material": "M_CS_CompactedUse",
+          "alphaMode": "BLEND",
+          "size": [
+            2048,
+            2048
+          ],
+          "alpha_byte_range": [
+            0,
+            129
+          ],
+          "source_RGBA_pixel_identical": true
+        },
+        {
+          "file": "Caliche_Ground_Assembly.glb",
+          "material": "M_CS_ConcreteUse",
+          "alphaMode": "BLEND",
+          "size": [
+            2048,
+            2048
+          ],
+          "alpha_byte_range": [
+            0,
+            140
+          ],
+          "source_RGBA_pixel_identical": true
+        }
+      ]
+    },
+    "fbx": "verification.json validates actual imported FBX Color boundaryalpha0, partial values, materialslots and trianglecounts."
+  },
+  "gas_read_only_authority": {
+    "source_root": "/home/tom/Assets/signal47-free/own/gas_station",
+    "files_read": [
+      "src/gs_ground.py",
+      "src/gs_preview.py",
+      "src/gas_station.py",
+      "placement.json"
+    ],
+    "preview_distinction": "gs_preview.py apron plane is Blender-preview-only and not part of exported Station. gs_ground.py sampled table is an approximation. Neither overrides original rendered g1004 triangles used by contact_triangles.json/top().",
+    "pump_island": "Raised island comes from original gas source, excluded from all six fields."
+  },
+  "prior_evidence": "/home/tom/scratch-bm/Signal47-caliche-concept/ground-before-r6",
+  "rejected_evidence": "evidence/r6-rejected-7mm-under-soil; earlier failure values retained honestly where processlogs had already been overwritten.",
+  "remaining_limit": "Source checks establish contact, alpha and preservation; actual day/dusk camera appearance remains for root native QA. No render or Unreal job performed."
+}

@@ -1,4 +1,4 @@
-"""Original multi-frequency mineral/plant atlas authoring, revision 4.
+"""Original multi-frequency mineral/plant atlas authoring, R7 localized-wear revision.
 
 NumPy and Pillow from the bundled workspace runtime. No downloaded pixels.
 Albedo: up to 2048; roughness/normal: 1024. All height detail is visual only.
@@ -139,7 +139,19 @@ def wear_atlas(name,path,concrete=False):
         alpha=(envelope*(.20+.35*macro)+ruts*broken*.25)*ends
         rgb=np.array([135,122,99]);tone=.84+.27*macro+.12*(fine-.5)-ruts*.19*broken
     color=np.clip(rgb[None,None,:]*tone[:,:,None],0,255).astype(np.uint8)
+    # R7: authored contrast, with every zero-mask pixel and existing geometry
+    # retained. R6's pale wheel texture at only~10% effective coverage was
+    # almost imperceptible against Soil. Keep dusty margins light; introduce
+    # narrow interrupted mineral-brown tracks, never a solid dark polygon.
     alpha=np.clip(alpha,0,.68);alpha[alpha<.008]=0
+    if concrete:
+        alpha=np.minimum(.88,alpha*3.5)
+    else:
+        rut_band=np.clip(ruts*broken*3.0,0,1)
+        rut_tone=.92+.16*mid+.06*(fine-.5)
+        rut_color=np.array([96,87,71])[None,None,:]*rut_tone[:,:,None]
+        color=np.clip(color*(1-rut_band[:,:,None])+rut_color*rut_band[:,:,None],0,255).astype(np.uint8)
+        alpha=np.minimum(.88,alpha*2.2)
     rgba=np.dstack((color,np.clip(alpha*255,0,255).astype(np.uint8)))
     save_maps(name,Image.fromarray(rgba,'RGBA'),fine*.05+mid*.035,
               np.clip(.90+.06*mid,0,1),path)
