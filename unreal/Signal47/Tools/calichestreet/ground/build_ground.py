@@ -14,7 +14,7 @@ from mathutils import Vector
 ROOT=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT))
 from gltf_export import export_glb
-from terrain import ANCHOR, REGION, floor_y, clear_surface, clear_dressing, pavement, in_box, BUILDINGS, r5_dressing_plan
+from terrain import ANCHOR, REGION, floor_y, clear_surface, clear_dressing, pavement, in_box, BUILDINGS, r5_dressing_plan, r6_surface_fields, r6_surface_clear
 
 OUT=ROOT/'exports';OUT.mkdir(exist_ok=True)
 bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete(use_global=False)
@@ -26,6 +26,7 @@ for row in spec:
     m=bpy.data.materials.new(row['name']);m.use_nodes=True
     bs=m.node_tree.nodes.get('Principled BSDF')
     bs.inputs['Roughness'].default_value=row['roughness']
+    vertex=None
     if 'specular' in row:
         bs.inputs['Specular IOR Level'].default_value=row['specular']
     if row.get('vertex_alpha_opacity'):
@@ -53,7 +54,12 @@ for row in spec:
         else:
             m.node_tree.links.new(tex.outputs['Color'],bs.inputs['Base Color' if role=='base_color' else 'Roughness'])
             if role=='base_color' and row.get('opacity_from_base_color'):
-                if row.get('alpha_mode')=='masked':
+                if row.get('vertex_alpha_opacity'):
+                    mult=m.node_tree.nodes.new('ShaderNodeMath');mult.operation='MULTIPLY';mult.label='AtlasAlphaTimesBoundaryAlpha'
+                    m.node_tree.links.new(tex.outputs['Alpha'],mult.inputs[0])
+                    m.node_tree.links.new(vertex.outputs['Alpha'],mult.inputs[1])
+                    m.node_tree.links.new(mult.outputs[0],bs.inputs['Alpha'])
+                elif row.get('alpha_mode')=='masked':
                     clip=m.node_tree.nodes.new('ShaderNodeMath');clip.operation='GREATER_THAN';clip.inputs[1].default_value=.333
                     m.node_tree.links.new(tex.outputs['Alpha'],clip.inputs[0]);m.node_tree.links.new(clip.outputs[0],bs.inputs['Alpha'])
                 else:m.node_tree.links.new(tex.outputs['Alpha'],bs.inputs['Alpha'])
@@ -178,6 +184,41 @@ class Mesh:
             if not (-30<=px<=40 and 2020<=pz<=2090):return
             vs.append(self.overlay(px,pz,lift))
         self.face(vs,mat,[(0,0),(0,1),(1,1),(1,0)])
+    def draped_field(self,row,mat):
+        # Each vertex samples the ORIGINAL source triangle top. Local UV spans
+        # the entire coherent wear image once, rather than repeating a carpet.
+        x,z=row['center'];width,length=row['size'];cs=math.cos(row['angle']);sn=math.sin(row['angle'])
+        nx=math.ceil(width/.35);nz=math.ceil(length/.35);first=len(self.f);skipped_contact=0
+        lift=.012 if row['kind']=='soil' else .007
+        def xz(u,v):
+            a=(u-.5)*width;b=(v-.5)*length
+            return x+a*cs-b*sn,z+a*sn+b*cs
+        for j in range(nz):
+            for i in range(nx):
+                uv=[(i/nx,j/nz),(i/nx,(j+1)/nz),((i+1)/nx,j/nz),((i+1)/nx,(j+1)/nz)]
+                xzs=[xz(*p) for p in uv]
+                if not all(r6_surface_clear(a,b,row['kind']) for a,b in xzs+[xz((i+.5)/nx,(j+.5)/nz)]):continue
+                pts=[self.overlay(a,b,lift) for a,b in xzs]
+                # Some original drapes have a real height step. Do not bridge
+                # it with a floating/embedded new triangle. Leave that tiny
+                # cell uncovered; its actual open edges receive the same fade.
+                contact=[];soil_contact=[]
+                for indices in [(0,1,2),(2,1,3)]:
+                    tri=[pts[k] for k in indices]
+                    probes=[tuple(sum(p[k] for p in tri)/3 for k in range(3))]
+                    probes += [tuple((tri[a][k]+tri[b][k])*.5 for k in range(3)) for a,b in [(0,1),(1,2),(2,0)]]
+                    probes += tri
+                    contact += [p[2]-top(p[0],2060-p[1]) for p in probes]
+                    soil_contact += [p[2]-h for p in probes if (h:=existing_soil_top(p[0],p[1])) is not None]
+                if not all(.001<=d<=.014 for d in contact) or not all(d>=.001 for d in soil_contact):skipped_contact+=1;continue
+                self.face([pts[0],pts[1],pts[2]],mat,[uv[0],uv[1],uv[2]])
+                self.face([pts[2],pts[1],pts[3]],mat,[uv[2],uv[1],uv[3]])
+        samples=[]
+        for face in self.f[first:]:
+            vs=[self.v[i] for i in face];p=tuple(sum(v[k] for v in vs)/3 for k in range(3));a=p[0];b=2060-p[1]
+            h=existing_soil_top(a,p[1])
+            samples.append({'xz':[a,b],'mesh_height_m':p[2],'source_height_m':top(a,b),'above_source_m':p[2]-top(a,b),'existing_soil_height_m':h,'above_existing_soil_m':p[2]-h if h is not None else None})
+        return dict(row,triangles=len(self.f)-first,vertex_lift_m=lift,skipped_height_step_cells=skipped_contact,centroid_samples=samples)
     def beam(self,a,b,r,mat=5,sides=4):
         a=Vector(a);b=Vector(b);d=(b-a).normalized();u=d.cross(Vector((0,0,1)))
         if u.length<.01:u=d.cross(Vector((0,1,0)))
@@ -187,7 +228,9 @@ class Mesh:
             self.face([a+r*(u*math.cos(aa)+v*math.sin(aa)),a+r*(u*math.cos(bb)+v*math.sin(bb)),b+r*(u*math.cos(bb)+v*math.sin(bb)),b+r*(u*math.cos(aa)+v*math.sin(aa))],mat)
     def object(self,name):
         me=bpy.data.meshes.new(name);me.from_pydata(self.v,[],self.f);me.update()
-        for m in MATS:me.materials.append(m)
+        # Keep the existing thirteen slots unchanged on the other three parts;
+        # only Surface needs the two additional R6 wear materials.
+        for m in MATS[:max(13,max(self.mat,default=0)+1)]:me.materials.append(m)
         for f,idx in zip(me.polygons,self.mat):f.material_index=idx
         uv=me.uv_layers.new(name='UVMap')
         for loop in me.loops:uv.data[loop.index].uv=self.uv[loop.vertex_index]
@@ -247,6 +290,32 @@ for x,z,l in [(-25.6,2023,35),(-22.9,2038,22),(33,2044,40),(37.8,2053,31)]:
     surfaces.ribbon(pts,.3,3,lift=.012)
     for i in range(6,len(pts)-6,12):
         a=pts[i];surfaces.ribbon([a,(a[0]+.7,a[1]-1),(a[0]+1.3,a[1]-1.8)],.14,1,lift=.012)
+
+# R6: six spatially authored wear fields, all draped on the unchanged drawn
+# floor. Their new boundary fades do not touch Soil or RoadWear alpha values.
+# Freeze the actual unchanged Soil triangles BEFORE adding R6 overlays.
+SOIL_BINS={}
+for face,mat in zip(surfaces.f,surfaces.mat):
+    if mat!=0:continue
+    t=[surfaces.v[i] for i in face]
+    for ix in range(math.floor(min(p[0] for p in t)),math.floor(max(p[0] for p in t))+1):
+        for iy in range(math.floor(min(p[1] for p in t)),math.floor(max(p[1] for p in t))+1):
+            SOIL_BINS.setdefault((ix,iy),[]).append(t)
+def existing_soil_top(x,y):
+    hits=[]
+    for a,b,c in SOIL_BINS.get((math.floor(x),math.floor(y)),[]):
+        den=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1])
+        if abs(den)<1e-12:continue
+        u=((b[1]-c[1])*(x-c[0])+(c[0]-b[0])*(y-c[1]))/den
+        v=((c[1]-a[1])*(x-c[0])+(a[0]-c[0])*(y-c[1]))/den
+        if min(u,v,1-u-v)>=-1e-7:hits.append(u*a[2]+v*b[2]+(1-u-v)*c[2])
+    return max(hits) if hits else None
+wear_fields=[]
+for field in r6_surface_fields():
+    material=13 if field['kind']=='soil' else 14
+    wear_fields.append(surfaces.draped_field(field,material))
+surfaces.fade_edges(13,.55);surfaces.fade_edges(14,.55)
+(ROOT/'wear_contact_samples.json').write_text(json.dumps({'fields':wear_fields},indent=2)+'\n')
 
 def rock(x,z,s):
     h=top(x,z)-s*.28;verts=[];n=7

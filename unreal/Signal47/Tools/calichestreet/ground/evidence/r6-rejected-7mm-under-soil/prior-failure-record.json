@@ -1,0 +1,13 @@
+{
+  "earlier_rejected_contact": {
+    "field": "east_shop_parking",
+    "centroid_above_original_top_m": -0.012708178,
+    "reason": "Cells bridging source height discontinuities; fixed by strict sampled filtering without relaxed tolerance."
+  },
+  "earlier_rejected_alpha": {
+    "material": "M_CS_ConcreteUse",
+    "reason": "0.35m fade lacked partial vertex alpha on 0.35m grid; fixed actual width to0.55m."
+  },
+  "current_rejection": "Soil wear +7mm below existing Soil +8mm; all original top centroid checks pass but layering requires+12mm and actual Soil clearance test.",
+  "note": "Earlier overwritten process logs are unavailable; recorded values retained from live failed checks, not reconstructed logs."
+}

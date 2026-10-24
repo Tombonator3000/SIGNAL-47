@@ -86,3 +86,9 @@ R3.1 gir Interior **78 758 trekanter**, øvrige deler beholder sine eksakte tall
 Materialrevisjon `R5-macro-lime-plaster` endrer bare to pussfamilier. Det fine kornfeltet utgjør 16 prosent av høydeblandingen fremfor omtrent 70 prosent. Bredere pussdrag dominerer relieffet. Fasadeatlaset har sju plassbestemte gamle limepussreparasjoner i omtrent 0,4 til 2 meters skala, sammenhengende sokkelfukt og ujevn vasking ved taket. Tekst og sprekker beholder plasseringen. Stucco har normalstyrke 0,20 og UV2; fasadeatlaset 0,22 og UV1.
 
 Blender-materialene og GLB er oppdatert uten modellgenerering. `r5_plaster_refresh.json` beviser identisk hash for mesh, UV, materialplasser og transform før/etter. Alle FBX-filer og tolv tre-PNGer er byteidentiske med forrige revisjon. Samme eksterne teksturstier og materialidentiteter brukes i native-importen. Tilbakeimport med lagrede materialnoder består **45/45**, inkludert uendret UE-arealgrense og alle fem trekanttall. Nye nativebilder av pussfinishen gjenstår hos runtime-eieren.
+
+## R6, mineralsk korn tilbake
+
+R5s nativebilder viste for glatt puss og for tydelige grå reparasjonsfelter. Materialrevisjon `R6-mineral-plaster-correction` halverer derfor bare fargeopasiteten i de sju isolerte reparasjonsfeltene. Sammenhengende sokkel- og takvasking er uendret. Høydeblandingen beholder pussdrag og mellomskala, men kornandelen økes fra 16 til 34 prosent. Normalstyrken er 0,38 for Stucco og 0,40 for fasadeatlaset; UV2/UV1 beholdes.
+
+Blender og GLB er pakket med de samme teksturene som sidecar refererer til. `r6_plaster_refresh.json` beviser samme geometri-/UV-/materialplass-/transformhash som R5, og byteidentiske FBX-filer og tolv tre-PNGer. **45/45 kontroller består**. Den tekniske kontrollen er ikke en visuell godkjenning; R6-finishen må vurderes i neste native-bilder.

@@ -1,4 +1,4 @@
-"""Material-only R5 packing; run only via owned guard after a granted DCC slot."""
+"""Material-only R6 packing; run only via owned guard after a granted DCC slot."""
 import bpy,hashlib,json
 from pathlib import Path
 from mathutils import Vector
@@ -27,8 +27,8 @@ bpy.ops.export_scene.gltf(filepath=str(ROOT/'1420_AM_station.glb'),export_format
 for o in parts:o.location=locations[o.name]
 bpy.context.view_layer.update();after=geometry_hash();assert before==after,'Material refresh changed geometry/UV/slot/transform'
 bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'1420_AM_station.blend'))
-pre=json.loads((ROOT/'r5_plaster_pre_refresh.json').read_text())
+pre=json.loads((ROOT/'r6_plaster_pre_refresh.json').read_text())
 assert all(hashlib.sha256((ROOT/p).read_bytes()).hexdigest()==v for p,v in pre['fbx_hashes'].items()),'FBX geometry changed'
 assert all(hashlib.sha256((ROOT/p).read_bytes()).hexdigest()==v for p,v in pre['untouched_timber_hashes'].items()),'Timber maps changed'
-proof={'revision':'R5-macro-lime-plaster','geometry_hash_before':before,'geometry_hash_after':after,'geometry_identical':before==after,'fbx_byte_identical':True,'timber_byte_identical':True,'normal_strengths':{n:rows[n]['normal_strength'] for n in ['M_1420_Stucco_cream','M_1420_WeatheredFacadePaint']},'scope':'Two plaster PBR families, Blender material nodes and packed GLB only; no geometry rebuild or FBX export.'}
-(ROOT/'r5_plaster_refresh.json').write_text(json.dumps(proof,indent=2));print('PLASTER_REFRESH',json.dumps(proof))
+proof={'revision':'R6-mineral-plaster-correction','geometry_hash_before':before,'geometry_hash_after':after,'geometry_identical':before==after,'fbx_byte_identical':True,'timber_byte_identical':True,'normal_strengths':{n:rows[n]['normal_strength'] for n in ['M_1420_Stucco_cream','M_1420_WeatheredFacadePaint']},'scope':'Two plaster PBR families, Blender material nodes and packed GLB only; no geometry rebuild or FBX export.'}
+(ROOT/'r6_plaster_refresh.json').write_text(json.dumps(proof,indent=2));print('PLASTER_REFRESH',json.dumps(proof))

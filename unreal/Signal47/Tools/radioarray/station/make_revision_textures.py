@@ -34,7 +34,7 @@ def plaster(size=(1024,1024),facade=False):
  w,h=size; coarse=field(size,(5,4),51); middle=field(size,(31,27),52); grain=field(size,(w//3,h//3),53)
  # Broad dragged lime plaster dominates the relief; grain is a small residual.
  drag=field(size,(23,9),54)
- height=Image.blend(Image.blend(middle,drag,.40),grain,.16)
+ height=Image.blend(Image.blend(middle,drag,.40),grain,.34)
  rgb=Image.new('RGB',size); rough=Image.new('L',size)
  cp=coarse.load();mp=middle.load();gp=grain.load(); px=rgb.load();rp=rough.load()
  for y in range(h):
@@ -65,7 +65,8 @@ def plaster(size=(1024,1024),facade=False):
      if not alpha:continue
      tone=1+(mp[x,y]-128)/255*.08+(gp[x,y]-128)/255*.012
      color=tuple(srgb(max(0,min(1,v*tone))) for v in base)
-     px[x,y]=tuple(round(px[x,y][i]*(1-alpha)+color[i]*alpha) for i in range(3))
+     color_alpha=alpha*.5
+     px[x,y]=tuple(round(px[x,y][i]*(1-color_alpha)+color[i]*color_alpha) for i in range(3))
      hp[x,y]=round(hp[x,y]*(1-alpha)+118*alpha);rp[x,y]=round(rp[x,y]*(1-alpha)+242*alpha)
   # Variable damp/base and coping trails read at street distance without black dirt borders.
   for y in range(h):

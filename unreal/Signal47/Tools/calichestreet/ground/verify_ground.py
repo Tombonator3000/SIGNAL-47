@@ -9,6 +9,7 @@ sys.path.insert(0,str(ROOT))
 from terrain import clear_dressing, ANCHOR
 contract=json.loads((ROOT/'model_contract.json').read_text())
 report={'status':'PASS','parts':{},'checks':[]}
+(ROOT/'verification.json').write_text(json.dumps({'status':'RUNNING','note':'Current export verification has not completed.'},indent=2)+'\n')
 for name,row in contract['parts'].items():
     bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete(use_global=False)
     bpy.ops.import_scene.fbx(filepath=str(ROOT/'exports'/(name+'.fbx')))
@@ -44,7 +45,7 @@ for name,row in contract['parts'].items():
         assert maximum<.003,(name,material,'open edge alpha',maximum)
         seam_error=max(max(v)-min(v) for v in points.values())
         assert seam_error<.003,(name,material,'alpha discontinuity',seam_error)
-        assert any(.01<a<.99 for values in points.values() for a in values),(name,'missing soft alpha')
+        assert any(.01<a<.99 for values in points.values() for a in values),(name,material,'missing soft alpha')
         fade_report[material]={'open_edges':len(boundary),'boundary_alpha_max':maximum,'duplicate_position_alpha_error':seam_error,'width_m':fade['width_m']}
     if name=='SM_Caliche_RoadWear':
         for polygon in me.polygons:
@@ -66,6 +67,16 @@ report['checks'].append({'name':'all_material_texture_files_present','pass':True
 road=contract['parts']['SM_Caliche_RoadWear']
 assert 'M_CS_TarRepair' not in road['used_materials']
 report['checks'].append({'name':'no_large_opaque_tar_repair_polygons','pass':True})
+wear=json.loads((ROOT/'wear_contact_samples.json').read_text())
+for field in wear['fields']:
+    assert field['triangles']>0,field['name']
+    values=[s['above_source_m'] for s in field['centroid_samples']]
+    assert all(0<=v<=.014 for v in values),(field['name'],min(values),max(values))
+    soil_values=[s['above_existing_soil_m'] for s in field['centroid_samples'] if s['above_existing_soil_m'] is not None]
+    assert all(v>=.001 for v in soil_values),(field['name'],'wear hidden below existing Soil',min(soil_values))
+    report['checks'].append({'name':'R6_'+field['name']+'_above_actual_unchanged_Soil_triangles','pass':True,'overlapping_centroids':len(soil_values),'minimum_m':min(soil_values) if soil_values else None})
+    report['checks'].append({'name':'R6_'+field['name']+'_draped_centroids_above_actual_original_top',
+                            'pass':True,'triangles':field['triangles'],'minimum_m':min(values),'maximum_m':max(values)})
 from verify_glb import verify as verify_glb_rgba
 glb=verify_glb_rgba(ROOT)
 (ROOT/'glb_verification.json').write_text(json.dumps(glb,indent=2)+'\n')

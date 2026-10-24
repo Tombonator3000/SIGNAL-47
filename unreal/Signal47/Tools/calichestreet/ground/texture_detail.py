@@ -111,6 +111,39 @@ def plant_atlas(name,path,sage=False):
     Image.new('RGB',(1024,1024),(128,128,255)).save(path/(name+'_normal.png'))
     Image.new('L',(1024,1024),235).save(path/(name+'_roughness.png'))
 
+
+def wear_atlas(name,path,concrete=False):
+    """One coherent local-use field; alpha dies on all image boundaries."""
+    size=2048;rng=np.random.default_rng(7601 if concrete else 7600)
+    macro=smooth_image(rng,size,7);mid=smooth_image(rng,size,48)
+    fine=rng.random((size,size),dtype=np.float32);y,x=np.mgrid[0:size,0:size]/(size-1)
+    ends=np.sin(np.pi*x)**1.35*np.sin(np.pi*y)**1.2
+    if concrete:
+        # Stops line up with the two 1986 pump bays in the long lane fields.
+        oil=np.zeros((size,size),dtype=np.float32)
+        for cx,cy,rx,ry in [(.51,.25,.23,.115),(.46,.62,.27,.12),(.68,.45,.11,.045)]:
+            d=((x-cx)/rx)**2+((y-cy)/ry)**2
+            oil=np.maximum(oil,np.clip(1-d+(macro-.5)*.65,0,1))
+        tyre=(np.exp(-((x-.19)/.026)**2)+np.exp(-((x-.81)/.026)**2))
+        tyre*=np.clip((mid-.20)*1.5,0,1)*np.sin(np.pi*y)**1.5
+        alpha=(oil*.60+tyre*.25)*ends*np.clip(.65+.7*mid,0,1)
+        rgb=np.array([94,88,73]);tone=.84+.25*macro+.12*(fine-.5)
+    else:
+        # A softly wandering compacted lane with pale granular margins and
+        # two restrained wheel paths. No tiled repeating tread or dark polygons.
+        centers=np.asarray(Image.fromarray((rng.random((32,1))*255).astype(np.uint8)).resize((1,size),Image.Resampling.BICUBIC),dtype=np.float32)/255
+        center=.5+(centers-.5)*.16
+        envelope=np.clip(1-abs(x-center)/(.45+.04*(macro-.5)),0,1)**.65
+        ruts=np.exp(-((x-center-.15)/.025)**2)+np.exp(-((x-center+.15)/.025)**2)
+        broken=np.clip((mid-.24)*1.8,0,1)
+        alpha=(envelope*(.20+.35*macro)+ruts*broken*.25)*ends
+        rgb=np.array([135,122,99]);tone=.84+.27*macro+.12*(fine-.5)-ruts*.19*broken
+    color=np.clip(rgb[None,None,:]*tone[:,:,None],0,255).astype(np.uint8)
+    alpha=np.clip(alpha,0,.68);alpha[alpha<.008]=0
+    rgba=np.dstack((color,np.clip(alpha*255,0,255).astype(np.uint8)))
+    save_maps(name,Image.fromarray(rgba,'RGBA'),fine*.05+mid*.035,
+              np.clip(.90+.06*mid,0,1),path)
+
 def generate(root=ROOT):
     path=root/'textures';path.mkdir(exist_ok=True)
     # Native R3 revealed that the neutral grey soil reads like a separate
@@ -121,7 +154,9 @@ def generate(root=ROOT):
     blend_patch('ShoulderBlend',path,5101,True);blend_patch('DustFeather',path,5102)
     plant_atlas('GrassAtlas',path);plant_atlas('SageAtlas',path,True)
     mineral('Yucca',(101,111,82),5120,path,1024)
+    wear_atlas('CompactedUse',path);wear_atlas('ConcreteUse',path,True)
     specs += [('ShoulderBlend',(127,123,111),.96,.30),('DustFeather',(127,123,111),.96,.18),('GrassAtlas',(128,119,88),.94,.12),('SageAtlas',(110,120,95),.94,.12),('Yucca',(101,111,82),.94,.18)]
+    specs += [('CompactedUse',(135,122,99),.95,.15),('ConcreteUse',(94,88,73),.96,.10)]
     rows=[]
     for name,_,rough,strength in specs:
         blend=name in ['ShoulderBlend','DustFeather'];plant=name in ['GrassAtlas','SageAtlas'];edge=name in ['CalicheSoil','OldAsphalt']
@@ -130,6 +165,8 @@ def generate(root=ROOT):
             # Native R4: translucent ground can retain a glass-like specular
             # response beyond its atlas mask. Use deferred dithered coverage.
             rows[-1].update(alpha_mode='dithered_masked',opacity_from_base_color=True,vertex_alpha_opacity=False,specular=0.0)
+        if name in ['CompactedUse','ConcreteUse']:
+            rows[-1].update(alpha_mode='dithered_masked',opacity_from_base_color=True,vertex_alpha_opacity=True,specular=0.0)
     (root/'materials.json').write_text(json.dumps(rows,indent=2)+'\n')
     print('DETAIL_TEXTURES_GENERATED',len(rows),'materials',len(rows)*3,'maps')
 

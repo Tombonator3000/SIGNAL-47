@@ -140,3 +140,24 @@ def r5_dressing_plan():
                     result.append({'kind':kind,'xz':[x,z],'radius_m':radius,'width_m':width,
                                    'height_m':height,'facade':True,'r5_island':island})
     return result
+
+
+def r6_surface_fields():
+    return [
+        {'name':'east_radio_parking','kind':'soil','center':[11.65,2048.20],'size':[8.20,18.40],'angle':.05},
+        {'name':'east_shop_parking','kind':'soil','center':[12.40,2065.00],'size':[7.00,13.00],'angle':-.13},
+        {'name':'service_gap','kind':'soil','center':[25.00,2050.00],'size':[9.40,12.00],'angle':.04},
+        {'name':'pump_west_lane','kind':'concrete','center':[-13.10,2054.20],'size':[3.40,14.00],'angle':.01},
+        {'name':'pump_east_lane','kind':'concrete','center':[-7.50,2054.20],'size':[3.40,14.00],'angle':-.01},
+        {'name':'gas_turnout_scuff','kind':'concrete','center':[-7.80,2068.40],'size':[4.00,7.80],'angle':.09},
+    ]
+
+
+def r6_surface_clear(x,z,kind):
+    if not REGION[0]<x<REGION[1] or not REGION[2]<z<REGION[3]:return False
+    if any(in_box(x,z,b,.12) for b in BUILDINGS+FACADE_PROTECTED):return False
+    # Actual own gas island: IX=-10.25, half-width .8, Z2046.6..2063.4,
+    # +.24m above apron. Never project apron wear onto that separate slab.
+    if in_box(x,z,(-11.05,-9.45,2046.6,2063.4),.16):return False
+    if kind=='concrete':return -17.4<x<-5.65 and 2040<z<2090
+    return abs(x)>6.5 and not pavement(x,z)

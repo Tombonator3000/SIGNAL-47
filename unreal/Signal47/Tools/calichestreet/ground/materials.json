@@ -416,5 +416,71 @@
       "normal": "textures/Yucca_normal.png",
       "roughness": "textures/Yucca_roughness.png"
     }
+  },
+  {
+    "name": "M_CS_CompactedUse",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.95,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.15,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/CompactedUse_color.png",
+      "normal": "textures/CompactedUse_normal.png",
+      "roughness": "textures/CompactedUse_roughness.png"
+    },
+    "specular": 0.0
+  },
+  {
+    "name": "M_CS_ConcreteUse",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.96,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.1,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/ConcreteUse_color.png",
+      "normal": "textures/ConcreteUse_normal.png",
+      "roughness": "textures/ConcreteUse_roughness.png"
+    },
+    "specular": 0.0
   }
 ]

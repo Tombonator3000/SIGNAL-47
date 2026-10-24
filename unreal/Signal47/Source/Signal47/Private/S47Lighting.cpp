@@ -287,7 +287,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// The concept's blue hour still has broad sky illumination after the disk sets.
 		// Compensate the fixed-exposure cubemap at twilight; noon and full night keep
 		// their endpoint values and all story clocks retain their original curves.
-		const float LocalSky = FMath::Lerp(.72f, 1.98f, D) + 2.f * 4.f * D * (1.f - D);
+		const float LocalSky = FMath::Lerp(.72f, 1.98f, D) + 3.5f * 4.f * D * (1.f - D);
 		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche));
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.

@@ -26,7 +26,7 @@
           5.779888153076172
         ]
       ],
-      "triangles": 11602,
+      "triangles": 19568,
       "origin_m": [
         0.0,
         0.0,
@@ -45,10 +45,14 @@
         "M_CS_DustFeather",
         "M_CS_GrassAtlas",
         "M_CS_SageAtlas",
-        "M_CS_Yucca"
+        "M_CS_Yucca",
+        "M_CS_CompactedUse",
+        "M_CS_ConcreteUse"
       ],
       "used_materials": [
         "M_CS_CalicheSoil",
+        "M_CS_CompactedUse",
+        "M_CS_ConcreteUse",
         "M_CS_DrySilt",
         "M_CS_DustFeather",
         "M_CS_PeaGravel",
@@ -67,6 +71,24 @@
           "alpha_zero": 826,
           "alpha_partial": 1564,
           "alpha_one": 3533
+        },
+        "M_CS_CompactedUse": {
+          "width_m": 0.55,
+          "open_edges": 402,
+          "boundary_alpha_max": 0,
+          "unique_points": 3118,
+          "alpha_zero": 402,
+          "alpha_partial": 378,
+          "alpha_one": 2338
+        },
+        "M_CS_ConcreteUse": {
+          "width_m": 0.55,
+          "open_edges": 270,
+          "boundary_alpha_max": 0,
+          "unique_points": 1207,
+          "alpha_zero": 270,
+          "alpha_partial": 246,
+          "alpha_one": 691
         }
       },
       "max_above_source_m": 0.012,

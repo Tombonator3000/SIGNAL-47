@@ -487,17 +487,17 @@
       "name": "M_1420_Stucco_cream saved plaster normal matches sidecar",
       "result": "PASS",
       "normal_strength": [
-        0.20000000298023224
+        0.3799999952316284
       ],
-      "sidecar_strength": 0.2
+      "sidecar_strength": 0.38
     },
     {
       "name": "M_1420_WeatheredFacadePaint saved plaster normal matches sidecar",
       "result": "PASS",
       "normal_strength": [
-        0.2199999988079071
+        0.4000000059604645
       ],
-      "sidecar_strength": 0.22
+      "sidecar_strength": 0.4
     },
     {
       "name": "No exposed Lamp_glow geometry in window rectangle",

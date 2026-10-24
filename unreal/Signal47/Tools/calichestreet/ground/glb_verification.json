@@ -112,6 +112,24 @@
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,
           "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_CompactedUse",
+          "vertices": 17484,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 2268,
+          "source_alpha_max_error": 6.591509724929168e-06
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_ConcreteUse",
+          "vertices": 6414,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 1476,
+          "source_alpha_max_error": 4.3442340794674905e-06
         }
       ]
     },
@@ -244,6 +262,24 @@
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,
           "source_alpha_max_error": 0.0
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_CompactedUse",
+          "vertices": 17484,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 2268,
+          "source_alpha_max_error": 6.591509724929168e-06
+        },
+        {
+          "mesh": "SM_Caliche_Surface",
+          "material": "M_CS_ConcreteUse",
+          "vertices": 6414,
+          "alpha_min": 0.0,
+          "alpha_max": 1.0,
+          "partial_alpha_vertices": 1476,
+          "source_alpha_max_error": 4.3442340794674905e-06
         }
       ]
     }

@@ -28,12 +28,12 @@ def apply(groups,mat,cube,cyl,torus,text,namespace):
  rows={}
  bpy.context.view_layer.update()
  for name,stem,col,uv,strength in [
-  ('M_1420_Stucco_cream','stucco_layers',(.60,.525,.405),2,.20),
+  ('M_1420_Stucco_cream','stucco_layers',(.60,.525,.405),2,.38),
   ('M_1420_Walnut','walnut_worked',(.105,.048,.021),1,.25),
   ('M_1420_Desk_walnut','desk_worn',(.23,.105,.038),1,.28)]:
   rows[name]=textured(bpy.data.materials[name],stem,col,uv,strength)
  facade=mat('M_1420_WeatheredFacadePaint',(.60,.525,.405),rough=.88)
- rows[facade.name]=textured(facade,'facade_1420_weathered',(.60,.525,.405),1,.22)
+ rows[facade.name]=textured(facade,'facade_1420_weathered',(.60,.525,.405),1,.40)
  olive=mat('M_1420_OliveWornTimber',(.062,.079,.041),rough=.64)
  rows[olive.name]=textured(olive,'olive_timber',(.062,.079,.041),1,.24)
  exposed=mat('M_1420_ExposedLimeRender',(.47,.40,.30),rough=.97)

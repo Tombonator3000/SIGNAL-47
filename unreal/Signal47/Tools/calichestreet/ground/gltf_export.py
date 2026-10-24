@@ -15,8 +15,8 @@ def export_glb(path):
             if not material.use_nodes:continue
             tree=material.node_tree;bs=tree.nodes.get('Principled BSDF')
             if not bs or not bs.inputs['Alpha'].is_linked:continue
-            vertex=bs.inputs['Alpha'].links[0].from_node
-            if vertex.type!='VERTEX_COLOR' or vertex.layer_name!='Color':continue
+            vertex=next((n for n in tree.nodes if n.type=='VERTEX_COLOR' and n.layer_name=='Color'),None)
+            if vertex is None:continue
             base=bs.inputs['Base Color']
             if not base.is_linked:raise AssertionError(material.name+' missing original base-color texture')
             original=base.links[0].from_socket

@@ -1,0 +1,18 @@
+{
+  "before_original_material_faces": {
+    "SM_Caliche_DryPlants": "a10afc7223e50e8058573d9a7e387c548a85c59a821282b80d2fc1ca7e0c88fb",
+    "SM_Caliche_RoadWear": "ffbe8c4f7ba44f0cfe89f47d97857059f88dd9064bf145d12c832c29029f1cdb",
+    "SM_Caliche_Rocks": "d4c41cdd366607bfac198cb472c18a8375897c5a5881e87761e1300f08e61fc3",
+    "SM_Caliche_Surface": "f7428b6ac06f789bdd37a12d8afa8561cecbd64854899ccb57a1bf40896ae988"
+  },
+  "after_original_material_faces": {
+    "SM_Caliche_DryPlants": "a10afc7223e50e8058573d9a7e387c548a85c59a821282b80d2fc1ca7e0c88fb",
+    "SM_Caliche_RoadWear": "ffbe8c4f7ba44f0cfe89f47d97857059f88dd9064bf145d12c832c29029f1cdb",
+    "SM_Caliche_Rocks": "d4c41cdd366607bfac198cb472c18a8375897c5a5881e87761e1300f08e61fc3",
+    "SM_Caliche_Surface": "f7428b6ac06f789bdd37a12d8afa8561cecbd64854899ccb57a1bf40896ae988"
+  },
+  "status": "PASS",
+  "existing_road_soil_fades_and_plants_rocks_unchanged": true,
+  "Blender_atlas_times_boundary_alpha": true,
+  "unchanged_other_three_part_contracts": true
+}

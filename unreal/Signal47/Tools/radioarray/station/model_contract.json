@@ -279,15 +279,15 @@
     "M_1420_WeatheredFacadePaint",
     "M_1420_OliveWornTimber"
   ],
-  "material_revision": "R5-macro-lime-plaster",
+  "material_revision": "R6-mineral-plaster-correction",
   "plaster_materials": {
     "M_1420_Stucco_cream": {
       "uv_scale": 2,
-      "normal_strength": 0.2
+      "normal_strength": 0.38
     },
     "M_1420_WeatheredFacadePaint": {
       "uv_scale": 1,
-      "normal_strength": 0.22
+      "normal_strength": 0.4
     }
   }
 }
