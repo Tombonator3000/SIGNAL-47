@@ -110,15 +110,23 @@ void FS47Evening::ControlEntranceTest(double Dt)
    UE_LOG(LogTemp,Display,TEXT("S47: SARO parking START ordinary controller/TripStep from entrance -22.2 32; human input UNVERIFIED"));
    Stage(1,1);return;
   }
-  if(T.Stage==1)
+  if(T.Stage==1 || T.Stage==7)
   {
-   if(M->World->bDriving)
+   if(T.Stage==1 && M->World->bDriving)
    {
     T.bSawWaitingService|=Visual->ServiceWaitingVisible();
     if(!Visual->PersonalVisible()||!Visual->ServiceWaitingVisible()){Fail(TEXT("moving personal car or stable waiting service pickup missing"));return;}
     return;
    }
-   if(Commute()||!T.bSawWaitingService){Fail(TEXT("ordinary TripStep failed to commit arrival with waiting service visible"));return;}
+   if(T.Stage==1)
+   {
+    // Park releases the cab immediately; its normal OnParked story transaction follows
+    // the 0.4 s fade. bBusy is not the indicator for that existing asynchronous handover.
+    UE_LOG(LogTemp,Display,TEXT("S47: SARO parking awaiting normal 0.4 s OnParked handover after actual TripStep stop"));
+    Stage(7,.55);return;
+   }
+   if(M->World->bDriving || Commute() || !Pack.Flag(TEXT("intro_arrived")) || !T.bSawWaitingService){Fail(TEXT("ordinary TripStep failed to commit arrival with waiting service visible after normal handover"));return;}
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS normal delayed OnParked committed after %.3f s"),T.Elapsed-T.Since);
    T.Park=Visual->ParkedPosition();T.Heading=Visual->ParkedHeading();
    if(!FS47EveningVisual::FitsArrivalBay(T.Park,T.Heading)||!CheckPark()){Fail(TEXT("arrival body/collider or distinct service pose invalid"));return;}
    UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS actual arrival pos %.6f %.6f %.6f heading %.6f floor %.6f; waiting service persisted and original service restored"),T.Park.X,T.Park.Y,T.Park.Z,T.Heading,M->Player->FloorY);
