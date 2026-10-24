@@ -1,5 +1,12 @@
 # Todo for unreal/
 
+## Trafostasjon, 24. oktober 2026
+
+- [ ] Bygg original Blender-transformator og serviceanlegg, plasser tilgjengelig langs eksisterende rute og koble undersøkelser til faktisk scene.
+- [ ] Kort målrettet modell-/plassering-/interaksjonskontroll, deretter commit/push og testet levering.
+- [ ] Neste modellprioritet rundt anlegget: avgangsstolper og luftlinje, lite vedlikeholdsskur med kabeltromler, deretter veigrøft/kulvert og eroderte grusoverganger. Forslag, ikke påbegynt.
+
+
 ## Xbox-kontroller, 24. oktober 2026
 
 - [x] Implementer analog gange/blikk, biltriggere, fast Xbox-oppsett, menyer/panelpeker og separate lagrede kontrollerinnstillinger.

@@ -1,0 +1,2104 @@
+{
+  "status": "PASS",
+  "source_revision": "R1-original-Caliche-Junction-1986",
+  "checks": [
+    {
+      "name": "SM_Substation_Transformer one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer exact triangles",
+      "pass": true,
+      "actual": 23462,
+      "expected": 23462
+    },
+    {
+      "name": "SM_Substation_Transformer meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Transformer ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_OlivePaint",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_DarkSteel",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_Copper",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_Copper",
+        "M_Substation_DarkSteel",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_OlivePaint",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Transformer UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 5.960054750175914e-06
+    },
+    {
+      "name": "SM_Substation_Transformer actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 4.753546139824039e-06
+    },
+    {
+      "name": "SM_Substation_Buswork one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork exact triangles",
+      "pass": true,
+      "actual": 5660,
+      "expected": 5660
+    },
+    {
+      "name": "SM_Substation_Buswork meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 2.384185791015625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Buswork ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_Copper"
+      ],
+      "used": [
+        "M_Substation_Copper",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PorcelainBrown"
+      ]
+    },
+    {
+      "name": "SM_Substation_Buswork UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 2.6715606509242207e-05
+    },
+    {
+      "name": "SM_Substation_Buswork actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 2.671582779001369e-05
+    },
+    {
+      "name": "SM_Substation_Control one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control exact triangles",
+      "pass": true,
+      "actual": 820,
+      "expected": 820
+    },
+    {
+      "name": "SM_Substation_Control meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Control ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_OlivePaint",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_DarkSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_DarkSteel",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_OlivePaint",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Control UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 1.4109020412433892e-05
+    },
+    {
+      "name": "SM_Substation_Control actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 5.982016162420223e-06
+    },
+    {
+      "name": "SM_Substation_StatusLamp one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp exact triangles",
+      "pass": true,
+      "actual": 188,
+      "expected": 188
+    },
+    {
+      "name": "SM_Substation_StatusLamp meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 3.759198730080016e-09,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_StatusLamp ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_LampAmber"
+      ],
+      "used": [
+        "M_Substation_LampAmber"
+      ]
+    },
+    {
+      "name": "SM_Substation_StatusLamp UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 5.511338713404257e-06
+    },
+    {
+      "name": "SM_Substation_StatusLamp actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 5.51161229189745e-06
+    },
+    {
+      "name": "SM_Substation_Lever one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever exact triangles",
+      "pass": true,
+      "actual": 112,
+      "expected": 112
+    },
+    {
+      "name": "SM_Substation_Lever meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Lever ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_Rubber"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_Rubber"
+      ]
+    },
+    {
+      "name": "SM_Substation_Lever UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 3.2418254704680294e-05
+    },
+    {
+      "name": "SM_Substation_Lever actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 2.5316969039401727e-05
+    },
+    {
+      "name": "SM_Substation_Fence one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence exact triangles",
+      "pass": true,
+      "actual": 16890,
+      "expected": 16890
+    },
+    {
+      "name": "SM_Substation_Fence meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Fence ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Fence UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 2.0316223526606336e-05
+    },
+    {
+      "name": "SM_Substation_Fence actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 2.0318461462665027e-05
+    },
+    {
+      "name": "SM_Substation_Gate_L one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L exact triangles",
+      "pass": true,
+      "actual": 850,
+      "expected": 850
+    },
+    {
+      "name": "SM_Substation_Gate_L meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_L ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_L UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 3.543532147887163e-05
+    },
+    {
+      "name": "SM_Substation_Gate_L actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 2.5202791242406875e-05
+    },
+    {
+      "name": "SM_Substation_Gate_R one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R exact triangles",
+      "pass": true,
+      "actual": 848,
+      "expected": 848
+    },
+    {
+      "name": "SM_Substation_Gate_R meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_R ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_R UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 3.543532147887163e-05
+    },
+    {
+      "name": "SM_Substation_Gate_R actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 2.5202791242406875e-05
+    },
+    {
+      "name": "SM_Substation_Pad one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad exact triangles",
+      "pass": true,
+      "actual": 120,
+      "expected": 120
+    },
+    {
+      "name": "SM_Substation_Pad meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.430511474609375e-06,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Pad ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_DarkSteel",
+        "M_Substation_Concrete"
+      ],
+      "used": [
+        "M_Substation_Concrete",
+        "M_Substation_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Pad UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 1.2000000424450263e-05
+    },
+    {
+      "name": "SM_Substation_Pad actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 1.1999965284018033e-05
+    },
+    {
+      "name": "SM_Substation_Gravel one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel exact triangles",
+      "pass": true,
+      "actual": 4044,
+      "expected": 4044
+    },
+    {
+      "name": "SM_Substation_Gravel meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gravel ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_Gravel"
+      ],
+      "used": [
+        "M_Substation_Gravel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gravel UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 4.2555115214781836e-05
+    },
+    {
+      "name": "SM_Substation_Gravel actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 4.255537113451169e-05
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD1 exact triangles",
+      "pass": true,
+      "actual": 12118,
+      "expected": 12118
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_OlivePaint",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_DarkSteel",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_Copper",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_Copper",
+        "M_Substation_DarkSteel",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_OlivePaint",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 1.0825370736711193e-05
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 1.0403831812055842e-05
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD1 exact triangles",
+      "pass": true,
+      "actual": 3044,
+      "expected": 3044
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 2.384185791015625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_Copper"
+      ],
+      "used": [
+        "M_Substation_Copper",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PorcelainBrown"
+      ]
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 8.90271840034984e-05
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 6.295615391138654e-05
+    },
+    {
+      "name": "SM_Substation_Control_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control_LOD1 exact triangles",
+      "pass": true,
+      "actual": 596,
+      "expected": 596
+    },
+    {
+      "name": "SM_Substation_Control_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Control_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_OlivePaint",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_DarkSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_DarkSteel",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_OlivePaint",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Control_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 3.9690654375590384e-05
+    },
+    {
+      "name": "SM_Substation_Control_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 9.922413482854608e-06
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD1 exact triangles",
+      "pass": true,
+      "actual": 92,
+      "expected": 92
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 3.759198730080016e-09,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_LampAmber"
+      ],
+      "used": [
+        "M_Substation_LampAmber"
+      ]
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 4.1866071114782244e-05
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 4.186696231300857e-05
+    },
+    {
+      "name": "SM_Substation_Lever_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever_LOD1 exact triangles",
+      "pass": true,
+      "actual": 112,
+      "expected": 112
+    },
+    {
+      "name": "SM_Substation_Lever_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Lever_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_Rubber"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_Rubber"
+      ]
+    },
+    {
+      "name": "SM_Substation_Lever_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 3.2418254704680294e-05
+    },
+    {
+      "name": "SM_Substation_Lever_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 2.5316969039401727e-05
+    },
+    {
+      "name": "SM_Substation_Fence_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence_LOD1 exact triangles",
+      "pass": true,
+      "actual": 8306,
+      "expected": 8306
+    },
+    {
+      "name": "SM_Substation_Fence_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Fence_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Fence_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.00014000109513290226
+    },
+    {
+      "name": "SM_Substation_Fence_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 0.00014000388409707298
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD1 exact triangles",
+      "pass": true,
+      "actual": 446,
+      "expected": 446
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.00010955946345347911
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 7.792049956734104e-05
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD1 exact triangles",
+      "pass": true,
+      "actual": 444,
+      "expected": 444
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.00010955946345347911
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 7.792060149336422e-05
+    },
+    {
+      "name": "SM_Substation_Pad_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad_LOD1 exact triangles",
+      "pass": true,
+      "actual": 104,
+      "expected": 104
+    },
+    {
+      "name": "SM_Substation_Pad_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.430511474609375e-06,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Pad_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_DarkSteel",
+        "M_Substation_Concrete"
+      ],
+      "used": [
+        "M_Substation_Concrete",
+        "M_Substation_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Pad_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 1.2000000424450263e-05
+    },
+    {
+      "name": "SM_Substation_Pad_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 1.1999965284018033e-05
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD1 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD1 exact triangles",
+      "pass": true,
+      "actual": 1868,
+      "expected": 1868
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD1 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD1 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_Gravel"
+      ],
+      "used": [
+        "M_Substation_Gravel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD1 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 4.435252776602283e-05
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD1 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD1 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 4.4354943566915495e-05
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD2 exact triangles",
+      "pass": true,
+      "actual": 7694,
+      "expected": 7694
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_OlivePaint",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_DarkSteel",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_Copper",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_Copper",
+        "M_Substation_DarkSteel",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_OlivePaint",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 1.0825370736711193e-05
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 1.0403831812055842e-05
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD2 exact triangles",
+      "pass": true,
+      "actual": 2300,
+      "expected": 2300
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 2.384185791015625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PorcelainBrown",
+        "M_Substation_Copper"
+      ],
+      "used": [
+        "M_Substation_Copper",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PorcelainBrown"
+      ]
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.00012943711772095412
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 0.00010000077840122135
+    },
+    {
+      "name": "SM_Substation_Control_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control_LOD2 exact triangles",
+      "pass": true,
+      "actual": 500,
+      "expected": 500
+    },
+    {
+      "name": "SM_Substation_Control_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Control_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_OlivePaint",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_DarkSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_DarkSteel",
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_OlivePaint",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Control_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 3.9690654375590384e-05
+    },
+    {
+      "name": "SM_Substation_Control_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 9.922413482854608e-06
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD2 exact triangles",
+      "pass": true,
+      "actual": 60,
+      "expected": 60
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 3.759198730080016e-09,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_LampAmber"
+      ],
+      "used": [
+        "M_Substation_LampAmber"
+      ]
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.0001294413668802008
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 0.00012944136619807978
+    },
+    {
+      "name": "SM_Substation_Lever_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever_LOD2 exact triangles",
+      "pass": true,
+      "actual": 112,
+      "expected": 112
+    },
+    {
+      "name": "SM_Substation_Lever_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Lever_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_Rubber"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_Rubber"
+      ]
+    },
+    {
+      "name": "SM_Substation_Lever_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 3.2418254704680294e-05
+    },
+    {
+      "name": "SM_Substation_Lever_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 2.5316969039401727e-05
+    },
+    {
+      "name": "SM_Substation_Fence_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence_LOD2 exact triangles",
+      "pass": true,
+      "actual": 5094,
+      "expected": 5094
+    },
+    {
+      "name": "SM_Substation_Fence_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Fence_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Fence_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.00014000109513290226
+    },
+    {
+      "name": "SM_Substation_Fence_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 0.00014000388409707298
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD2 exact triangles",
+      "pass": true,
+      "actual": 306,
+      "expected": 306
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel",
+        "M_Substation_PrintAtlas"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.00010955946345347911
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 7.792049956734104e-05
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD2 exact triangles",
+      "pass": true,
+      "actual": 304,
+      "expected": 304
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_GalvanizedSteel"
+      ],
+      "used": [
+        "M_Substation_GalvanizedSteel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 0.00010955946345347911
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 7.792060149336422e-05
+    },
+    {
+      "name": "SM_Substation_Pad_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad_LOD2 exact triangles",
+      "pass": true,
+      "actual": 88,
+      "expected": 88
+    },
+    {
+      "name": "SM_Substation_Pad_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 1.430511474609375e-06,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Pad_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_DarkSteel",
+        "M_Substation_Concrete"
+      ],
+      "used": [
+        "M_Substation_Concrete",
+        "M_Substation_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Pad_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 1.2000000424450263e-05
+    },
+    {
+      "name": "SM_Substation_Pad_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 1.1999965284018033e-05
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD2 one mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD2 exact triangles",
+      "pass": true,
+      "actual": 492,
+      "expected": 492
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD2 meter bounds and neutral pivot",
+      "pass": true,
+      "max_bounds_error_m": 9.5367431640625e-07,
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD2 ordered used materials",
+      "pass": true,
+      "slots": [
+        "M_Substation_Gravel"
+      ],
+      "used": [
+        "M_Substation_Gravel"
+      ]
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD2 UE stable area and unit normals",
+      "pass": true,
+      "minimum_triangle_area_m2": 4.4366919610183686e-05
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD2 actual UV layer",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel_LOD2 noncollapsed UVs",
+      "pass": true,
+      "minimum_uv_area": 4.43671155494485e-05
+    },
+    {
+      "name": "asymmetric FBX source probe",
+      "pass": true,
+      "center_m": [
+        1.9999999403953552,
+        3.9999998807907104,
+        6.0
+      ],
+      "dimensions_m": [
+        0.19999992847442627,
+        0.39999985694885254,
+        0.6000003814697266
+      ]
+    },
+    {
+      "name": "SM_Substation_Transformer GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer actual GLB geometry",
+      "pass": true,
+      "triangles": 23462,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Transformer actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer M_Substation_OlivePaint GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer M_Substation_GalvanizedSteel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer M_Substation_PrintAtlas GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork actual GLB geometry",
+      "pass": true,
+      "triangles": 5660,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Buswork actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork M_Substation_GalvanizedSteel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control actual GLB geometry",
+      "pass": true,
+      "triangles": 820,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Control actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control M_Substation_OlivePaint GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control M_Substation_GalvanizedSteel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control M_Substation_PrintAtlas GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp actual GLB geometry",
+      "pass": true,
+      "triangles": 188,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_StatusLamp actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever actual GLB geometry",
+      "pass": true,
+      "triangles": 112,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Lever actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever M_Substation_GalvanizedSteel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence actual GLB geometry",
+      "pass": true,
+      "triangles": 16890,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Fence actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence M_Substation_GalvanizedSteel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence M_Substation_PrintAtlas GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L actual GLB geometry",
+      "pass": true,
+      "triangles": 850,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Gate_L actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L M_Substation_GalvanizedSteel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L M_Substation_PrintAtlas GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R actual GLB geometry",
+      "pass": true,
+      "triangles": 848,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Gate_R actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R M_Substation_GalvanizedSteel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad actual GLB geometry",
+      "pass": true,
+      "triangles": 120,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Pad actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad M_Substation_Concrete GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel GLB UV primitive",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel actual GLB geometry",
+      "pass": true,
+      "triangles": 4044,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_Substation_Gravel actual GLB material set",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel M_Substation_Gravel GLB PBR maps",
+      "pass": true
+    },
+    {
+      "name": "ten separate runtime modules",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Transformer saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Buswork saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Control saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_StatusLamp saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Lever saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Fence saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_L saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gate_R saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Pad saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "SM_Substation_Gravel saved site assembly offset",
+      "pass": true
+    },
+    {
+      "name": "porcelain genuinely shared topology",
+      "pass": true,
+      "shared_vertices": 6744,
+      "corners": 40380
+    },
+    {
+      "name": "porcelain intended smooth bodies and flat end caps",
+      "pass": true,
+      "smooth_body_triangles": 13176,
+      "flat_cap_triangles": 284,
+      "expected_flat_caps": 284
+    },
+    {
+      "name": "porcelain actual rounded corner normals",
+      "pass": true,
+      "nonflat_corner_normals": 39642
+    },
+    {
+      "name": "editable named component groups retained",
+      "pass": true
+    },
+    {
+      "name": "original editable assembly preserved",
+      "pass": true
+    },
+    {
+      "name": "Concrete_base_color.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Concrete_normal.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Concrete_roughness.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Galvanized_base_color.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Galvanized_normal.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Galvanized_roughness.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Gravel_base_color.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Gravel_normal.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "Gravel_roughness.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "OlivePaint_base_color.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "OlivePaint_normal.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "OlivePaint_roughness.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_base_color.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_normal.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_roughness.png current packed image",
+      "pass": true
+    },
+    {
+      "name": "fifteen original PBR images packed",
+      "pass": true,
+      "count": 15
+    },
+    {
+      "name": "separate controllable amber lens",
+      "pass": true
+    },
+    {
+      "name": "locked world and ground contract",
+      "pass": true
+    }
+  ],
+  "check_count": 304,
+  "total_LOD0_triangles": 52994,
+  "lod_totals": {
+    "0": 52994,
+    "1": 27130,
+    "2": 16950
+  },
+  "packed_textures": [
+    {
+      "name": "Concrete_base_color.png",
+      "sha256": "ed49f5912f2bf179cbd5a48106667dd2e35f848b0fe4e64a52f9d9c4b131a517",
+      "dimensions": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "Concrete_normal.png",
+      "sha256": "c5d31e6a13c1aa468cdd9ddb73118adc37c2f329d2ee948c13a3814220f0c619",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "Concrete_roughness.png",
+      "sha256": "6b695f780a51aecedbf55ee75bfdb62bcc45c2e9c350dba2b694becac9c457ae",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "Galvanized_base_color.png",
+      "sha256": "c906afe8817731d091483dbfb0bfce67614723b0dd31c100074575ded2ead3d4",
+      "dimensions": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "Galvanized_normal.png",
+      "sha256": "84821922fd05af99e5a6af055523991b1e5795f5c07ae44d6556b247dcb25b20",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "Galvanized_roughness.png",
+      "sha256": "f0a02b0ca6ce1706ec28fb2d304214f4492d8ab310e9010d30f45456e8d5f442",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "Gravel_base_color.png",
+      "sha256": "5cc740c60348447d4f4533c55a781de82720ea9da04615474347b0015a160896",
+      "dimensions": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "Gravel_normal.png",
+      "sha256": "b4c076e73733649f7300e0b89f41d1e086e518cedf4f92cb03a44a56c2eac94a",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "Gravel_roughness.png",
+      "sha256": "0df52b9cfee6234b36fc5c4cbfdc31c59cb22d380d626b645ac688c2fdc7febf",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "OlivePaint_base_color.png",
+      "sha256": "16b89d0f23f300c4904db072bd7a070609b7be0fb155ced62e127c1d82fcd2c7",
+      "dimensions": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "OlivePaint_normal.png",
+      "sha256": "585d439db310324e399426c84f5c73a1f05bf7ba89160d8ec2805eebff4564b7",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "OlivePaint_roughness.png",
+      "sha256": "402ef4feda1e931f618e5fa54f03dd22220729a1d76476d75c342b31bc72481d",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "PrintAtlas_base_color.png",
+      "sha256": "de60a5549a137231ccab95e9e848e43ea4340f7f4b0fef9d37c9f3578032d018",
+      "dimensions": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "PrintAtlas_normal.png",
+      "sha256": "86993e9276b669289b91c2563b704bd0116c0c59af1949f08c79bfc2e2e8ff9b",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "PrintAtlas_roughness.png",
+      "sha256": "d2ea3dde001625773b5a8d628d2db047a70ead96a1ff1eefe7147c36eb7dcfd9",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "native_visual_status": "UNVERIFIED",
+  "scope": "Fresh actual FBX for all30LOD chunks and probe, actual binaryGLB geometry/PBR, saved original Blend and smooth ceramic normals. No Unreal or render."
+}

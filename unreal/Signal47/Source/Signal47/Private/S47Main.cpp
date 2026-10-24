@@ -1,5 +1,6 @@
 #include "S47Main.h"
 #include "S47Evening.h"
+#include "S47Substation.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 #include "S47AnomalyTest.h"
@@ -59,6 +60,7 @@ void US47Main::Step(double Dt)
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
 	if (Evening) Evening->Step(Dt);
+	if (Substation) Substation->Step(Dt);
 	if (Mode == EMode::Play && Anomaly) Anomaly->Step(Dt);
 	if (Mode == EMode::Play && AnomalyWorld) AnomalyWorld->Step(Dt);
 	const bool bOpening = Evening && Evening->Opening();
