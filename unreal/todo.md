@@ -1,5 +1,9 @@
 # Todo for unreal/
 
+## Highway og åpningstur, 24. oktober 2026
+
+- [ ] Roswell-sperre, faktisk motorlyd, Motor Court-naturkontinuitet og én detaljert strømlinje. Kildearbeid pågår; native/pakket aksept og levering i HIGHWAY_FIXES.md.
+
 - [x] Mesa Diner: original Blender-fasade/interiør, parkering/skilt/tractor+reefer, original interaksjon bevart. D2 målrettet pakket kontroll9/9; merge/installasjonsstatus i MESA_DINER.md.
 
 ## Trafostasjon, 24. oktober 2026

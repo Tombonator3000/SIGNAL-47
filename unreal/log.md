@@ -247,3 +247,8 @@ Originalt11-delt Blenderkit med interiør, perioderiktig tractor/reefer, parkeri
 
 
 - 2026-10-24 kl. 20:03 Codex: PR152 er flettet i61598105 og testet kandidatD2 installert på standardstien. 40 payloadfiler er hashidentiske, 48 Saved-filer er byteidentiske. Verifisert backup: `/home/tom/scratch-bm/Signal47-mesa-diner/installed-backup-1792864850565907985`. Ingen normal spillerøkt er startet. Midlertidige Content-lenker og begge OpenOrder-filer er ryddet. Blender-original, redigerbar arbeidsscene, minimale originale generatoravhengigheter og ti spillbilder er levert i skrivebordsmappen Signal47 Mesa Diner24okt.
+
+
+## 2026-10-24 kl. 21:21, highway-retting startet
+
+Tom godkjenner planen: Roswell-sperre beholdes frem til historiens åpning, riktige motorlydnøkler, sammenhengende natur gjennom Motor Court og én detaljert strømlinje med nødvendige avgreninger. Biblioteksøk ga ingen relevant bekreftet løsning, eksisterende prosjektkode gjenbrukes. Spill kjører ennå; kodearbeid fortsetter mens lukking er forespurt. Én tung jobb og korte berørte prøver.

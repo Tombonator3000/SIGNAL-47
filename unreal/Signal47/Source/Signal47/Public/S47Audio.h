@@ -32,8 +32,17 @@ struct FS47Play
 {
 	TSharedPtr<FS47BufferSourceNode> Src;
 	TSharedPtr<FS47GainNode> Gain;
+	TSharedPtr<FS47BiquadFilterNode> Filter;
 	bool IsValid() const { return Src.IsValid(); }
 	explicit operator bool() const { return Src.IsValid(); }
+};
+
+/** Read-only snapshot of a recording loop's actual audio graph (not an asset/component estimate). */
+struct FS47LoopState
+{
+	bool bPlaying = false, bLoop = false;
+	double Gain = 0, Rate = 0, LowPass = 0;
+	TSharedPtr<const FS47AudioBuffer> Buffer;
 };
 
 // a line of a telephone call (core/phoneScripts.ts PhoneCue) and the timeline audio.phoneCall gives
@@ -191,6 +200,7 @@ public:
 	// A loop's level now (the engine's recordings, mixed by rpm each frame): volume, playback rate,
 	// and a low-pass in Hz (0: none).
 	void LoopLevel(const FString& Key, float Gain, float Rate, float LowPass = 0.f);
+	TOptional<FS47LoopState> InspectLoop(const FString& Key) const;
 	float Duration(const FString& Name);     // a recording's length in seconds (0 when it is missing)
 	// The truck's sounds made with Web Audio nodes in the web version, by EngineSound's own names
 	// (silent stand-ins until the procedural sound is in, S47AudioWeb.cpp):

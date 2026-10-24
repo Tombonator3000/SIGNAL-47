@@ -538,7 +538,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 	if (!G) return false;
 	// the meshes the patch has (flora.ts: one per kind, the second of a pair in the first's), by name
 	const TPair<const TCHAR*, int32> Draws[] = { { TEXT("flora-grass+sage"), 0 }, { TEXT("flora-creosote+stalks"), 2 }, { TEXT("flora-succulent"), 4 }, { TEXT("flora-stones"), 5 }, { TEXT("flora-stain"), 6 } };
-	int32 Bound = 0;
+	int32 Bound = 0, ActivatedEmptyDraws = 0;
 	for (int32 Ch : G->Children)
 	{
 		const FS47WebNode* N = W->Node(Ch);
@@ -547,7 +547,10 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 		{
 			if (N->Name != Dw.Key) continue;
 			UInstancedStaticMeshComponent* A = Cast<UInstancedStaticMeshComponent>(N->Comp.Get());
-			if (!A) continue;
+			if (!A || !A->GetStaticMesh()) continue;
+			const bool bRuntimeDraw = Spec.Name == TEXT("road") || Spec.Name == TEXT("saro");
+			const bool bActivateDraw = bRuntimeDraw && !N->bVis;
+			const bool bEmptyExport = A->GetInstanceCount() == 0;
 			// the first kind: the export's own mesh, refilled from here (four floats a copy: its colour
 			// and whether it is mirrored, a cholla); the plants cast no shadows and are hit by no ray
 			A->ClearInstances();
@@ -556,6 +559,13 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 			A->SetVisibleInRayTracing(false);
 			A->bAffectDistanceFieldLighting = false;
 			A->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			// Empty exported road draws were hidden before the web's first fill.
+			// Runtime now owns their population; keep the area's parent gate intact.
+			if (bActivateDraw)
+			{
+				W->SetVisible(Ch, true);
+				if (bEmptyExport) ++ActivatedEmptyDraws;
+			}
 			TArray<UMaterialInstanceDynamic*> Mids = W->NodeMids(Ch);
 			UMaterialInstanceDynamic* Da = Mids.Num() ? Mids[0] : nullptr;
 			if (Da) Da->SetScalarParameterValue(TEXT("UseInstanceColor"), 1.f);
@@ -581,7 +591,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 			}
 		}
 	}
-	UE_LOG(LogS47Flora, Display, TEXT("S47: flora %s bound, %d meshes"), *Spec.Name, Bound);
+	UE_LOG(LogS47Flora, Display, TEXT("S47: flora %s bound, %d meshes, runtime-enabled empty export draws=%d"), *Spec.Name, Bound, ActivatedEmptyDraws);
 	return Bound > 0;
 }
 

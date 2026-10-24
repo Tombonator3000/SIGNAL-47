@@ -127,10 +127,11 @@ void FS47EngineSound::EngineNodes()
 	if (Audio && !bLoops)
 	{
 		// (started just audible, so the mixer keeps them playing until their level comes up)
-		FS47Sound S; S.Gain = 0.0001f; S.bLoop = true;
-		Audio->LoopSfx(IDLE_KEY, TEXT("engine_idle"), S);
-		Audio->LoopSfx(DRIVE_KEY, TEXT("engine_drive"), S);
-		bLoops = true;
+		FS47Sound S; S.Gain = 0.0001f; S.bLoop = true; S.Lp = float(CAB_LP);
+		const bool bIdle = bool(Audio->LoopSfx(IDLE_KEY, TEXT("engineIdle"), S));
+		const bool bDrive = bool(Audio->LoopSfx(DRIVE_KEY, TEXT("engineDrive"), S));
+		bLoops = bIdle && bDrive;
+		if (!bLoops) { Audio->Stop(IDLE_KEY); Audio->Stop(DRIVE_KEY); }
 	}
 	StopAt = -1;
 	bEng = true;
@@ -163,7 +164,7 @@ void FS47EngineSound::Start()
 	Out.SetTargetAtTime(Master(), T, 0.25);
 	Set(650, 0);
 	// the key: it turns over and catches, and the idle comes up under it
-	if (bFresh && Once(TEXT("engine_start"), 1.1) > 0 && bEng)
+	if (bFresh && Once(TEXT("engineStart"), 1.1) > 0 && bEng)
 	{
 		Bus.CancelScheduledValues(T); Bus.SetValueAtTime(0, T); Bus.SetValueAtTime(0, T + 1.3); Bus.LinearRampToValueAtTime(Level, T + 2.6);
 	}
@@ -174,8 +175,11 @@ void FS47EngineSound::Stop()
 	if (!bEng) return;
 	const double T = Now();
 	// switched off, not dead already: the shut-off, then quiet
-	const double Off = bRunning && !bStalled ? Once(TEXT("engine_off"), 1.0) : 0;
+	const double Off = bRunning && !bStalled ? Once(TEXT("engineOff"), 1.0) : 0;
 	bRunning = false;
+	const double BusNow = Bus.Value(T);
+	Bus.CancelScheduledValues(T);
+	Bus.SetValueAtTime(BusNow, T);
 	Bus.SetTargetAtTime(0, T, 0.06);
 	Out.CancelScheduledValues(T);
 	Out.SetTargetAtTime(0, T + Off, 0.15);
@@ -306,7 +310,11 @@ void FS47EngineSound::Thump(double Speed) { if (Audio) Audio->EngineThump(float(
 
 void FS47EngineSound::Tick()
 {
-	const double T = Now();
+	TickAt(Now());
+}
+
+void FS47EngineSound::TickAt(double T)
+{
 	for (FS47EngineParam* P : { &Out, &Bus, &Gi, &Gd, &IdleRate, &DriveRate, &Lp, &Band, &Noise }) P->Prune(T);
 	// solenoidClicks uses the same out as the engine: Master, Hush and Stop still apply when
 	// the recordings have stopped and bLoops is false. The existing port evaluates out per frame.
@@ -405,6 +413,57 @@ bool FS47EngineSound::SelfTest(TArray<FString>& Lines)
 		Check(E.SolenoidOut->Gain.Value() == 0, TEXT("quiet truck out reaches the solenoid even with no recordings"));
 		E.SolenoidOut->Disconnect();
 		C->Close();
+	}
+	{
+		// Exercise the real loop graph and stop/re-entry timer with decoded-name fixtures, offline.
+		US47Audio* A = NewObject<US47Audio>(GetTransientPackage());
+		A->Ctx = FS47AudioContext::Make(float(Rate));
+		A->SfxBus = A->Ctx->CreateGain(); A->SfxBus->Connect(A->Ctx->Destination);
+		auto Clip = [&](double Seconds, float Value)
+		{
+			auto B = A->Ctx->CreateBuffer(1, int32(Seconds * Rate), float(Rate));
+			for (int32 I = 0; I < B->Length(); ++I) B->GetChannelData(0)[I] = Value;
+			return B;
+		};
+		A->Buf.Add(TEXT("engineIdle"), Clip(1, .4f));
+		A->Buf.Add(TEXT("engineDrive"), Clip(1, -.3f));
+		A->Buf.Add(TEXT("engineStart"), Clip(.07, 0));
+		A->Buf.Add(TEXT("engineOff"), Clip(.13, 0));
+		{
+			FS47EngineSound E(A);
+			E.Start();
+			auto Idle = A->InspectLoop(IDLE_KEY), Drive = A->InspectLoop(DRIVE_KEY);
+			Check(E.LoopsReady() && Idle.IsSet() && Drive.IsSet()
+				&& Idle->Buffer.Get() == A->Buf[TEXT("engineIdle")].Get() && Drive->Buffer.Get() == A->Buf[TEXT("engineDrive")].Get(),
+				TEXT("recorded motor loops resolve the camelCase decoder keys"));
+			Check(E.Once(TEXT("engineStart"), 0) > .06 && E.Once(TEXT("engineOff"), 0) > .12,
+				TEXT("start and shut-off recordings resolve through the same decoder keys"));
+			E.TickAt(E.Now() + 3);
+			Idle = A->InspectLoop(IDLE_KEY);
+			Check(Idle.IsSet() && Idle->bPlaying && Idle->bLoop && Idle->Gain > .01 && Idle->LowPass > 0 && Idle->LowPass <= CAB_LP,
+				TEXT("actual idle graph has audible gain, loop playback and a cab low-pass"));
+			A->LoopLevel(IDLE_KEY, .25f, 1.25f, 740.f);
+			Idle = A->InspectLoop(IDLE_KEY);
+			Check(Idle.IsSet() && FMath::IsNearlyEqual(Idle->Gain, .25, 1e-6) && FMath::IsNearlyEqual(Idle->Rate, 1.25, 1e-6) && FMath::IsNearlyEqual(Idle->LowPass, 740.0, 1e-6),
+				TEXT("LoopLevel updates actual graph gain, pitch and filter frequency"));
+			TArray<float> Motor; Motor.SetNumZeroed(int32(.05 * Rate) * 2);
+			A->Ctx->Render(Motor.GetData(), Motor.Num() / 2, 2);
+			Check(Rms(Motor, .01, .05) > .02, TEXT("resolved idle recording produces nonzero offline PCM"));
+			// Stop during the key's startup ramp, then re-enter before that stop deadline expires.
+			E.Stop(); E.Start(); E.Stop();
+			const double OldDeadline = E.StopAt;
+			Check(E.Stopping() && !E.On() && E.Bus.Value(E.Now() + 3) < 1e-6,
+				TEXT("leaving during startup cancels its future bus ramp and schedules final loop stop"));
+			E.Start(); E.TickAt(OldDeadline + .1);
+			Check(E.On() && E.LoopsReady() && !E.Stopping() && A->InspectLoop(IDLE_KEY).IsSet(),
+				TEXT("re-entry cancels the previous stop deadline without killing the new running engine"));
+			E.Stop(); E.TickAt(E.StopAt + .01);
+			Check(!E.LoopsReady() && !E.Stopping() && !A->InspectLoop(IDLE_KEY).IsSet() && !A->InspectLoop(DRIVE_KEY).IsSet(),
+				TEXT("completed shutdown removes both actual recording loops"));
+			E.Start();
+			Check(E.LoopsReady() && E.On(), TEXT("entry after a completed shutdown creates both recording loops again"));
+		}
+		A->Ctx->Close();
 	}
 	return bOk;
 }
