@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "date_oslo": "2026-10-24T23:15:35.371835+02:00",
+  "pull_request": "https://github.com/Tombonator3000/SIGNAL-47/pull/154",
+  "merge_commit": "86eb0f8cb2d2695f540656c60ac3043e91a4d52e",
+  "tested_source": "5ae3a3fcc2da49aeec0397b875b29b24f1f5b0e5",
+  "candidate": "A3",
+  "package_sha256": "739002897aa6a3b27eb495b588dcc22bfa487e0ecaf99fb850722c3f2f41a262",
+  "installed": "/home/tom/Games/Signal47/Linux",
+  "verified_payload_files": 40,
+  "saved_files_unchanged": 46,
+  "backup": "/home/tom/scratch-bm/Signal47-saro-arrival/installed-backup-1792876403571799419",
+  "cleanup": {
+    "status": "PASS",
+    "owned_symlinks_removed": 5,
+    "generated_open_order_files_restored": 2
+  },
+  "installation_record_sha256": "64c682a00983eb10d4144125988f6852d58f01b74e44ef2a4657138b9060e047"
+}

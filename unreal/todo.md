@@ -4,7 +4,7 @@
 
 - [x] Flytt skiltet utenfor kjørekorridoren, lag ryddig besøksparkering og gangsti, forbedre skilt/vinduer og behold egen personbil atskilt fra stabil servicepickup.
 - [x] B/Q-matmeny med D-pad/A, nedsetting, bortstuing, fremtaking og kasting, med varig lagring og original måltidsflyt bevart.
-- [x] A3: editor/pakking, 1400 selvtester, fem fokuserte pakkede scenarioer og19 faktisk vurderte bilder. Merge/installasjon dokumenteres i SARO_ARRIVAL.md.
+- [x] A3: editor/pakking, 1400 selvtester, fem fokuserte pakkede scenarioer og19 faktisk vurderte bilder. PR154 flettet og samme A3 installert,40 payloadhash og46 uendrede Saved-filer. Se SARO_ARRIVAL.md.
 - [ ] Menneskelig prøve av SARO-parkering og B-matmeny med fysisk Xbox-kontroller. Syntetisk Slate-ruting og vanlig native kjøre-/gangkontroller er prøvd.
 
 ## Highway og åpningstur, 24. oktober 2026
