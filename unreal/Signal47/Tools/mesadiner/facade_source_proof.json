@@ -1,0 +1,91 @@
+{
+  "status": "SOURCE_LIGHT_CHECK_PASS",
+  "revision": "R2-concept-fascia",
+  "protected_interior_geometry_byte_identical": true,
+  "protected_chunks_per_LOD": 6,
+  "LOD": {
+    "0": {
+      "triangles_diner": 26918,
+      "min_area_m2": 7.665288786970234e-06,
+      "min_UV_area": 5.420177681019947e-06,
+      "shell_triangles": 4460
+    },
+    "1": {
+      "triangles_diner": 17994,
+      "min_area_m2": 1.2000000000000014e-05,
+      "min_UV_area": 8.967622392717878e-06,
+      "shell_triangles": 4096
+    },
+    "2": {
+      "triangles_diner": 10730,
+      "min_area_m2": 1.2249999999999634e-05,
+      "min_UV_area": 1.2249999999999634e-05,
+      "shell_triangles": 1124
+    }
+  },
+  "changes": [
+    "1m fascia2.58..3.58, continuous20cm redbelt",
+    "28cm window profiles",
+    "external bevelled25cm tiles LOD0/1",
+    "entry transom+threshold detail",
+    "new independent Stucco/PaintRed texture RNG"
+  ],
+  "native_visual_status": "UNVERIFIED",
+  "actual_export_status": "PASS",
+  "actual_checks": 320,
+  "actual_lod_triangles": {
+    "0": 110779,
+    "1": 54448,
+    "2": 25418
+  },
+  "actual_files_sha256": {
+    "Mesa_Diner.blend": "cddf5e5a44a27678cfb049118c3c0d795a49b307b2b10bcba433d965523a5b2f",
+    "Mesa_Diner.glb": "46ffb23bc34c006336a2a839e8e5458cb547c565b9cf1a5e2ccc46ed2bfa81e0",
+    "model_contract.json": "6457f7d1b2bb621aac1907f0a37256fbab6114f1898ae4965f342979918bb659",
+    "materials.json": "c354b67a4a63cfbc2fc12e1b7c5e881ba072e005feb06db9d60ca1a13ea1821a",
+    "verification.json": "76c24412262dfada11589e3df9085a7ca66948f070a257a77a20d9d7752dc3cb",
+    "facade_texture_proof.json": "d3446cb00469383441184f0400d45ac14dcfb06adb517092e23bb1806619cbe9"
+  },
+  "parent_guard_logs": {
+    "r2-textures-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-mesa-diner/r2-textures-result.json",
+      "sha256": "1aeee4862f6a268cf02000d322bd23fcc0d78b5dc1b9f62197a319b75a1f69f7",
+      "returncode": 0,
+      "wall_seconds": 17.71738300099969,
+      "performance_status": "UNCONTENDED"
+    },
+    "r2-source-build-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-mesa-diner/r2-source-build-result.json",
+      "sha256": "bc2a0baa9a99885d4b2a04a7c69386c49a244b95bc372a47a00bb6540090ccb0",
+      "returncode": 0,
+      "wall_seconds": 6.0746208270138595,
+      "performance_status": "UNCONTENDED"
+    },
+    "r2-source-verify-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-mesa-diner/r2-source-verify-result.json",
+      "sha256": "ea61cb68a7f5c08865e8b26d8dfa2675fd16d62065c97aaadd0433eecc096ee7",
+      "returncode": 0,
+      "wall_seconds": 2.02365734797786,
+      "performance_status": "UNCONTENDED"
+    }
+  },
+  "final_door_clearance": {
+    "reason": "Frontskirting must not span open doorway",
+    "opening_By_m": [
+      -0.65,
+      0.65
+    ],
+    "source_revision": "R2-original-Mesa-Diner-1986-door-clearance",
+    "lod_triangles": [
+      110791,
+      54460,
+      25430
+    ],
+    "actual_files_sha256": {
+      "Mesa_Diner.blend": "f1ee8c8385b08ac7e94d2f27766f43c07852465423282734943a43f774d23072",
+      "Mesa_Diner.glb": "de6dff08fe89cd6e21c3ff3f93bc8176c183ba3b58b2fe4c1aacb6bac9b7734b",
+      "model_contract.json": "b33ac55d47106206b37919d7bccd5af0c10f2cb5cb1bdd2895c5e813af3a3100",
+      "verification.json": "9f7caef6ce9ac0f42d3cf512ac4e6a814253a5937a8fa7213fa9efbd4fca56fd"
+    }
+  }
+}

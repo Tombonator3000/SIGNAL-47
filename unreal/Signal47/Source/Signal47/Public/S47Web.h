@@ -82,6 +82,7 @@ public:
 	FS47Area Rect(const FString& Path) const;         // a {minX, maxX, minZ, maxZ} the code holds
 	FS47Pose Pose(const FString& Path) const;         // an {x, z, yaw} the code holds (an anchor)
 	bool HasPath(const FString& Path) const;
+	bool MesaDinerReady() const { return bMesaDinerReady; }
 	TArray<FString> PathsUnder(const FString& Prefix) const;
 	// what FS47Obj and FS47Mat use
 	TArray<class UMaterialInstanceDynamic*> NodeMids(int32 Node);
@@ -279,6 +280,8 @@ private:
 	void BuildRetroProps();
 	void BuildRadioStation();
 	void BuildCalicheStreet();
+	void BuildMesaDiner();
+	bool bMesaDinerReady = false;
 	void BuildCalicheNature();
 	void BuildAuthoredArray();
 	void UpdateRetroProps();
