@@ -120,6 +120,9 @@ void AS47Web::BeginHighwayAudit()
    return Ok && Families>0 && Instances>100 && Power.bReady;
   };
   if(P->Stage==0) {
+   // An opening commute may still own its delayed StartTrip callback.
+   // Wait for it before replacing the isolated fixture's starting position.
+   if(World->bBusy) return;
    P->WallStart=Now;
    FString UserDir;
    if((Mode!=TEXT("seam") && Mode!=TEXT("barrier")) || !FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir) || UserDir.IsEmpty()
