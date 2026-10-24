@@ -3,7 +3,7 @@
 ## Xbox-kontroller, 24. oktober 2026
 
 - [x] Implementer analog gange/blikk, biltriggere, fast Xbox-oppsett, menyer/panelpeker og separate lagrede kontrollerinnstillinger.
-- [ ] Bygg og kontroller faktisk kernel/SDL/Slate/gameplay, selvtester og full regresjon før fletting/installasjon.
+- [x] Bygg og kontroller faktisk kernel/SDL/Slate/gameplay, 1373 selvtester, elleve native opptak og 16 relevante regresjoner. Full verdensrunde stoppet etter Toms beskjed om mindre testomfang.
 - [ ] Commit/push, kontroller faktisk remote og lever testet pakke med bevarte Saved-data.
 - [ ] Menneskelig prøve med Toms Xbox-kontroller. Se GAMEPAD.md for faktisk teststatus.
 
