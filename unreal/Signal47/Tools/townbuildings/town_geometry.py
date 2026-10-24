@@ -186,7 +186,7 @@ def cinema(lod):
  s.box('Marquee_real_volume',(1.25,0,3.55),(2.5,9.8,1.15),'DarkMetal')
  for z in [2.96,4.18]:s.box('Marquee_rolled_metal_trim',(1.25,0,z),(2.59,9.9,.12),'Metal')
  s.panel('Marquee_CLOSED',(2.552,0,3.55),9.6,.99,4)
- for y in [-4.91,4.91]:s.panel('Side_marquee_CLOSED',(1.25,y,3.55),2.42,.99,4,normal=(0,1 if y>0 else -1,0))
+ for y in [-4.91,4.91]:s.panel('Side_marquee_CLOSED',(1.25,y,3.55),2.42,.99,5,normal=(0,1 if y>0 else -1,0))
  for k in range(10 if lod<2 else 5):s.box('Physical_marquee_letter_groove',(2.562,0,3.08+k*.10),(.014,9.6,.013),'DarkMetal')
  s.rounded_box('PLAZA_blade_volume',(.48,0,6.1),(.9,.28,3.4),.12,'DarkWood',3)
  for y in [-.15,.15]:s.panel('PLAZA_blade_lettering',(.48,y,6.10),.78,3.21,3,normal=(0,1 if y>0 else -1,0))
@@ -201,7 +201,7 @@ def cinema(lod):
  booth.box('Ticket_booth_header',(.96,-.8,2.55),(.12,1.55,.16),'Timber')
  for k in range([25,16,8][lod]):booth.box('Blind_lowered_metal_slat',(1.01,-.8,1.31+k*1.14/[25,16,8][lod]),(.022,1.28,.034),'Metal')
  booth.torus('Ticket_speaking_port',(1.033,-.8,1.70),.105,.015,'DarkMetal',n,5,axis=(1,0,0));s.merge(booth)
- s.panel('Ticket_booth_closed',(1.035,-.8,1.1),.50,.27,4)
+ s.panel('Ticket_booth_closed',(1.035,-.8,1.1),.50,.27,15)
  # Paired poster vitrines, independent depth, glass, cornice and warm hood.
  for y,cell in [(-7.0,11),(7.0,12)]:
   s.box('Poster_case_back',(.16,y,1.50),(.18,1.28,1.95),'DarkWood');s.panel('Original_fictional_film_poster',(.265,y,1.50),1.13,1.77,cell)

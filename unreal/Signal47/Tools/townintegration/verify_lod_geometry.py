@@ -1,16 +1,19 @@
 """Read saved native MeshDescriptions for every authored LOD; never imports/saves assets.
 Root launches the existing guarded editor. S47_TOWN_LOD_REPORT is a fresh JSON path.
+Optional S47_GEOMETRY_SOURCE_DIR and S47_GEOMETRY_ASSET_ROOT select another kit.
 Uses UE5.8 public reflected StaticMesh/MeshDescription methods, not LOD0 aggregate bounds.
 """
 from pathlib import Path
 import os,json,math,runpy,traceback,hashlib
 import unreal
-R=Path(__file__).resolve().parent.parent/'townbuildings'
+TOOLS=Path(__file__).resolve().parent.parent
+R=Path(os.environ.get('S47_GEOMETRY_SOURCE_DIR',str(TOOLS/'townbuildings'))).resolve()
+ASSET_ROOT=os.environ.get('S47_GEOMETRY_ASSET_ROOT','/Game/TownBuildings').rstrip('/')
 OUT=Path(os.environ['S47_TOWN_LOD_REPORT'])
 C=json.loads((R/'model_contract.json').read_text())
-FBX=runpy.run_path(str(R.parent/'calichenature/verify_unreal.py'))['fbx_nodes']
+FBX=runpy.run_path(str(TOOLS/'calichenature/verify_unreal.py'))['fbx_nodes']
 TOL=.025 # centimetres, .25mm; does not hide an axis/translation mismatch.
-report={'status':'RUNNING','method':'Saved per-LOD StaticMeshDescription actual vertex positions against actual authored FBX control points, expected UE=(100x,-100y,100z)','tolerance_cm':TOL,'checks':[],'meshes':[],'scope':'Read-only saved source MeshDescriptions; render build settings recorded separately. Runtime visual acceptance remains separate.'}
+report={'status':'RUNNING','source_dir':str(R),'asset_root':ASSET_ROOT,'method':'Saved per-LOD StaticMeshDescription actual vertex positions against actual authored FBX control points, expected UE=(100x,-100y,100z)','tolerance_cm':TOL,'checks':[],'meshes':[],'scope':'Read-only saved source MeshDescriptions; render build settings recorded separately. Runtime visual acceptance remains separate.'}
 def write():OUT.parent.mkdir(parents=True,exist_ok=True);OUT.write_text(json.dumps(report,indent=2)+'\n')
 def check(label,ok,detail=None):report['checks'].append({'name':label,'pass':bool(ok),'detail':detail});write();return bool(ok)
 def child(n,name):return next((c for c in n['children']if c['name']==name),None)
@@ -49,7 +52,7 @@ def native_vertices(desc):
 try:
  S=(unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem))
  for name,p in C['parts'].items():
-  mesh=unreal.load_asset('/Game/TownBuildings/'+name);assert isinstance(mesh,unreal.StaticMesh),name
+  mesh=unreal.load_asset(ASSET_ROOT+'/'+name);assert isinstance(mesh,unreal.StaticMesh),name
   row={'name':name,'lods':[]}
   for lod in range(3):
    label=name+' LOD'+str(lod);d=mesh.get_static_mesh_description(lod)

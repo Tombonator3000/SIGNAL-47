@@ -14,9 +14,9 @@ Start: 2026-10-25 kl. 00:20. Gren `codex/saro-production-models`, fra `cfadc1c0`
 
 | Eier | Filer/område | Status |
 |---|---|---|
-| station_runtime | SaroSite, HighwayPower, Tools/sarosite | Kartlegging og implementering startet |
-| radio_model | Truck, EveningVisual ved behov, Fleet, Tools/sarofleet | Modellvalg og tilpasning startet |
-| dish_model | Tools/townbuildings, seks originale modellsett | Ankre og generatorer forberedes |
+| station_runtime | SaroSite, HighwayPower, Tools/sarosite | Kilde/native og SARO-bilder PASS |
+| radio_model | Truck, EveningVisual ved behov, Fleet, Tools/sarofleet | F9 kilde/native og kjørekontroll PASS |
+| dish_model | Tools/townbuildings, seks originale modellsett | 28 deler, 84 LOD-er native kontrollert |
 | root | Plan, integrasjon, maskinkø, kontroll, levering | Aktiv |
 
 Hjelpere skriver kilde og modellgeneratorer parallelt. Bare root starter tunge Blender-/Unreal-jobber, med unreal_guard. Modellkilder og import forberedes parallelt; hele SARO- og bysettet kontrolleres i samme sluttkandidat. Modellfiler er ikke ferdige før eksport, Unreal-import og faktisk bilde-/funksjonskontroll består.
@@ -32,7 +32,7 @@ PNMs [Electric Service Guide-tegninger](https://www.pnm.com/esg-construction-dra
 | Del | Modell/kode | Import | Pakket funksjon | Visuell kontroll | Levert |
 |---|---|---|---|---|---|
 | SARO strøm/fasade | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
-| SARO 07 og parkerte biler | Pågår | Gjenstår | Gjenstår | Gjenstår | Gjenstår |
+| SARO 07 og parkerte biler | Kilde PASS | Native PASS | Pågår | Pågår | Gjenstår |
 | Sheriffkontor | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
 | Motell | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
 | Vaskeri/fôrbutikk | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
@@ -48,3 +48,7 @@ Seks bygningsfamilier består av 28 originale modeller og tre LOD-er, 65154/4861
 SARO 07 bruker den lokalt lisensierte C10-modellen med originalt tilpasset førermiljø, SARO-merking og animerte hjul. Ansattbilene bruker Fairheaven LT80 og El Alamo78. Kreditering er bevart i CREDITS.txt. Fullstendige lisensierte derivater ligger lokalt utenfor offentlig Git; egne addonmodeller ligger i Tools/sarofleet.
 
 Første ukokte bilde bekrefter faktisk romdybde gjennom sheriffvinduet, men er ikke pakket aksept. Eksisterende RT-minnevarsel er fortsatt synlig, uten endret globalt budsjett. Sluttstatus og begrensninger føres etter pakket kontroll.
+
+## M1 avvist, M2 under kontroll
+
+Første pakkede gjennomgang fant en reell importfeil: alle56 LOD1/2 var rotert90 grader selv om LOD0 og trekanttall var korrekte. M1 er avvist. Global legacy-FBX-innstilling og ny import retter aksene. Ny kontroll av alle84 faktiske lagrede MeshDescriptions består588 sjekker; fresh assetlesing består113. Rom6-kamerafiksturen er rettet til gulv0 ved direkte visningshopp. Biltesten bruker nå riktig kapitteladgang for vanlig gjeninnstigning.

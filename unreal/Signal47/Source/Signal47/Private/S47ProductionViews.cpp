@@ -49,7 +49,7 @@ void AS47Web::BeginProductionViews()
   {TEXT("motel-court"),TEXT("saro"),{-37.5,0,694},{-43,0,698}},
   {TEXT("motel-office"),TEXT("saro"),{-42,0,673},{-46.5,-.7,674.7}},
   {TEXT("room6"),TEXT("room6"),{-1.4,0,-7997.7},{1,1,-8001.4}},
-  {TEXT("room6-bath"),TEXT("room6"),{-.5,0,-8001.5},{-.6,1.2,-8004.2}}
+  {TEXT("room6-bath"),TEXT("room6"),{-1.05,0,-8003.55},{-.3,1,-8004.95}}
  };
  struct FState {int32 Index=0;bool Placed=false,Done=false,bFloorOverride=false;double Since=0;FString Dir,Suite;TFunction<double(double,double)> PreviousFloor;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);

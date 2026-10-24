@@ -1,0 +1,934 @@
+{
+  "status": "PASS",
+  "scope": "Measured glyph bounds on physical-aspect canvases; unchanged geometry and guarded atlas UVs",
+  "cells": [
+    {
+      "cell": 0,
+      "title": "CALICHE COUNTY",
+      "primary_panel_m": [
+        3.5,
+        0.62
+      ],
+      "canvas_px": [
+        2048,
+        363
+      ],
+      "glyphs": [
+        {
+          "text": "CALICHE COUNTY",
+          "actual_bbox_canvas_px": [
+            198.0,
+            43.584999999999994,
+            1850.0,
+            170.58499999999998
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            43.559999999999995,
+            1904.64,
+            170.60999999999999
+          ],
+          "font_size": 169
+        },
+        {
+          "text": "SHERIFF",
+          "actual_bbox_canvas_px": [
+            869.5,
+            203.28250000000003,
+            1178.5,
+            252.28250000000003
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            203.28000000000003,
+            1884.16,
+            252.28500000000003
+          ],
+          "font_size": 65
+        },
+        {
+          "text": "SUBSTATION",
+          "actual_bbox_canvas_px": [
+            794.5,
+            257.7325,
+            1253.5,
+            306.7325
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            257.73,
+            1884.16,
+            306.735
+          ],
+          "font_size": 65
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 1,
+      "title": "LAUNDROMAT",
+      "primary_panel_m": [
+        4.5,
+        0.67
+      ],
+      "canvas_px": [
+        2048,
+        305
+      ],
+      "glyphs": [
+        {
+          "text": "LAUNDROMAT",
+          "actual_bbox_canvas_px": [
+            474.5,
+            36.974999999999994,
+            1573.5,
+            142.975
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            36.6,
+            1904.64,
+            143.35
+          ],
+          "font_size": 140
+        },
+        {
+          "text": "OPEN 24 HOURS",
+          "actual_bbox_canvas_px": [
+            776.0,
+            170.88750000000002,
+            1272.0,
+            211.88750000000002
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            170.8,
+            1884.16,
+            211.97500000000002
+          ],
+          "font_size": 54
+        },
+        {
+          "text": "COIN OPERATED",
+          "actual_bbox_canvas_px": [
+            779.0,
+            216.63750000000002,
+            1269.0,
+            257.63750000000005
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            216.55,
+            1884.16,
+            257.725
+          ],
+          "font_size": 54
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 2,
+      "title": "FEED & SEED",
+      "primary_panel_m": [
+        6.7,
+        1.1
+      ],
+      "canvas_px": [
+        2048,
+        336
+      ],
+      "glyphs": [
+        {
+          "text": "FEED & SEED",
+          "actual_bbox_canvas_px": [
+            453.5,
+            40.61999999999999,
+            1594.5,
+            157.62
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            40.32,
+            1904.64,
+            157.92
+          ],
+          "font_size": 155
+        },
+        {
+          "text": "FARM SUPPLIES",
+          "actual_bbox_canvas_px": [
+            762.5,
+            188.34000000000003,
+            1285.5,
+            233.34000000000003
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            188.16000000000003,
+            1884.16,
+            233.52
+          ],
+          "font_size": 59
+        },
+        {
+          "text": "CALICHE, NEW MEXICO",
+          "actual_bbox_canvas_px": [
+            695.5,
+            238.74,
+            1352.5,
+            283.74
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            238.56000000000003,
+            1884.16,
+            283.92
+          ],
+          "font_size": 51
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 3,
+      "title": "PLAZA",
+      "primary_panel_m": [
+        0.78,
+        3.21
+      ],
+      "canvas_px": [
+        256,
+        1054
+      ],
+      "glyphs": [
+        {
+          "text": "P",
+          "actual_bbox_canvas_px": [
+            64.5,
+            89.82999999999998,
+            191.5,
+            215.82999999999998
+          ],
+          "allowed_bbox_canvas_px": [
+            51.2,
+            89.59,
+            204.8,
+            216.07
+          ],
+          "font_size": 173
+        },
+        {
+          "text": "L",
+          "actual_bbox_canvas_px": [
+            73.0,
+            240.55199999999996,
+            183.0,
+            366.55199999999996
+          ],
+          "allowed_bbox_canvas_px": [
+            51.2,
+            240.31199999999998,
+            204.8,
+            366.792
+          ],
+          "font_size": 173
+        },
+        {
+          "text": "A",
+          "actual_bbox_canvas_px": [
+            61.0,
+            391.274,
+            195.0,
+            517.274
+          ],
+          "allowed_bbox_canvas_px": [
+            51.2,
+            391.034,
+            204.8,
+            517.514
+          ],
+          "font_size": 173
+        },
+        {
+          "text": "Z",
+          "actual_bbox_canvas_px": [
+            65.5,
+            541.9959999999999,
+            190.5,
+            667.9959999999999
+          ],
+          "allowed_bbox_canvas_px": [
+            51.2,
+            541.7559999999999,
+            204.8,
+            668.2359999999999
+          ],
+          "font_size": 173
+        },
+        {
+          "text": "A",
+          "actual_bbox_canvas_px": [
+            61.0,
+            692.7179999999998,
+            195.0,
+            818.7179999999998
+          ],
+          "allowed_bbox_canvas_px": [
+            51.2,
+            692.478,
+            204.8,
+            818.9579999999999
+          ],
+          "font_size": 173
+        },
+        {
+          "text": "PICTURE",
+          "actual_bbox_canvas_px": [
+            27.5,
+            882.535,
+            228.5,
+            914.535
+          ],
+          "allowed_bbox_canvas_px": [
+            25.6,
+            869.55,
+            230.4,
+            927.52
+          ],
+          "font_size": 42
+        },
+        {
+          "text": "HOUSE",
+          "actual_bbox_canvas_px": [
+            26.5,
+            944.4100000000001,
+            229.5,
+            984.4100000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            25.6,
+            938.0600000000001,
+            230.4,
+            990.76
+          ],
+          "font_size": 52
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 4,
+      "title": "CLOSED",
+      "primary_panel_m": [
+        9.6,
+        0.99
+      ],
+      "canvas_px": [
+        2048,
+        211
+      ],
+      "glyphs": [
+        {
+          "text": "CLOSED",
+          "actual_bbox_canvas_px": [
+            812.0,
+            25.74499999999999,
+            1236.0,
+            98.74499999999999
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            25.32,
+            1904.64,
+            99.16999999999999
+          ],
+          "font_size": 96
+        },
+        {
+          "text": "PLAZA THEATRE",
+          "actual_bbox_canvas_px": [
+            676.5,
+            118.64500000000001,
+            1371.5,
+            174.645
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            118.16000000000001,
+            1884.16,
+            175.13000000000002
+          ],
+          "font_size": 77
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 5,
+      "title": "CLOSED",
+      "primary_panel_m": [
+        2.42,
+        0.99
+      ],
+      "canvas_px": [
+        2048,
+        838
+      ],
+      "glyphs": [
+        {
+          "text": "CLOSED",
+          "actual_bbox_canvas_px": [
+            169.0,
+            101.20999999999998,
+            1879.0,
+            393.21
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            100.56,
+            1904.64,
+            393.85999999999996
+          ],
+          "font_size": 387
+        },
+        {
+          "text": "PLAZA THEATRE",
+          "actual_bbox_canvas_px": [
+            166.5,
+            512.9100000000001,
+            1881.5,
+            651.9100000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            469.28000000000003,
+            1884.16,
+            695.5400000000001
+          ],
+          "font_size": 190
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 6,
+      "title": "6",
+      "primary_panel_m": [
+        0.19,
+        0.27
+      ],
+      "canvas_px": [
+        721,
+        1025
+      ],
+      "glyphs": [
+        {
+          "text": "6",
+          "actual_bbox_canvas_px": [
+            94.0,
+            223.0,
+            627.0,
+            802.0
+          ],
+          "allowed_bbox_canvas_px": [
+            93.73,
+            133.25,
+            627.27,
+            891.75
+          ],
+          "font_size": 766
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 7,
+      "title": "OFFICE",
+      "primary_panel_m": [
+        1.15,
+        0.29
+      ],
+      "canvas_px": [
+        2048,
+        516
+      ],
+      "glyphs": [
+        {
+          "text": "OFFICE",
+          "actual_bbox_canvas_px": [
+            545.5,
+            62.22,
+            1502.5,
+            242.22
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            61.919999999999995,
+            1904.64,
+            242.51999999999998
+          ],
+          "font_size": 239
+        },
+        {
+          "text": "REGISTER HERE",
+          "actual_bbox_canvas_px": [
+            212.5,
+            289.12,
+            1835.5,
+            428.12
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            288.96000000000004,
+            1884.16,
+            428.28000000000003
+          ],
+          "font_size": 184
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 8,
+      "title": "SIERRA MOTOR COURT",
+      "primary_panel_m": [
+        0.6,
+        0.44
+      ],
+      "canvas_px": [
+        2048,
+        1502
+      ],
+      "glyphs": [
+        {
+          "text": "SIERRA MOTOR COURT",
+          "actual_bbox_canvas_px": [
+            145.0,
+            390.59,
+            1903.0,
+            495.59
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            180.23999999999998,
+            1904.64,
+            705.9399999999999
+          ],
+          "font_size": 138
+        },
+        {
+          "text": "SINGLE     $18.00",
+          "actual_bbox_canvas_px": [
+            168.0,
+            862.0050000000001,
+            1880.0,
+            1023.0050000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            841.1200000000001,
+            1884.16,
+            1043.89
+          ],
+          "font_size": 177
+        },
+        {
+          "text": "DOUBLE     $24.00",
+          "actual_bbox_canvas_px": [
+            164.0,
+            1090.805,
+            1884.0,
+            1244.805
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            1066.42,
+            1884.16,
+            1269.19
+          ],
+          "font_size": 169
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 9,
+      "title": "WASH 75c",
+      "primary_panel_m": [
+        0.6,
+        0.74
+      ],
+      "canvas_px": [
+        830,
+        1024
+      ],
+      "glyphs": [
+        {
+          "text": "WASH 75c",
+          "actual_bbox_canvas_px": [
+            60.00000000000006,
+            255.07999999999998,
+            770.0,
+            349.08
+          ],
+          "allowed_bbox_canvas_px": [
+            58.10000000000001,
+            122.88,
+            771.9000000000001,
+            481.28
+          ],
+          "font_size": 124
+        },
+        {
+          "text": "DRY 25c",
+          "actual_bbox_canvas_px": [
+            67.5,
+            585.5600000000001,
+            762.5,
+            699.5600000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            66.4,
+            573.44,
+            763.6,
+            711.6800000000001
+          ],
+          "font_size": 151
+        },
+        {
+          "text": "PLEASE REMOVE LINT",
+          "actual_bbox_canvas_px": [
+            67.5,
+            774.1600000000001,
+            762.5,
+            818.1600000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            66.4,
+            727.0400000000001,
+            763.6,
+            865.2800000000001
+          ],
+          "font_size": 57
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 10,
+      "title": "NEW MEXICO",
+      "primary_panel_m": [
+        2.83,
+        1.68
+      ],
+      "canvas_px": [
+        2048,
+        1216
+      ],
+      "glyphs": [
+        {
+          "text": "NEW MEXICO",
+          "actual_bbox_canvas_px": [
+            282.5,
+            91.20000000000002,
+            1765.5,
+            243.20000000000002
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            91.2,
+            1884.16,
+            243.20000000000002
+          ],
+          "font_size": 201
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 11,
+      "title": "THE DESERT SKY",
+      "primary_panel_m": [
+        1.13,
+        1.77
+      ],
+      "canvas_px": [
+        654,
+        1024
+      ],
+      "glyphs": [
+        {
+          "text": "THE DESERT SKY",
+          "actual_bbox_canvas_px": [
+            48.0,
+            136.22,
+            606.0,
+            181.22
+          ],
+          "allowed_bbox_canvas_px": [
+            45.78,
+            92.16,
+            608.22,
+            225.28
+          ],
+          "font_size": 59
+        },
+        {
+          "text": "A PLAZA PRESENTATION",
+          "actual_bbox_canvas_px": [
+            55.50000000000006,
+            824.6800000000001,
+            598.5,
+            854.6800000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            52.32,
+            808.96,
+            601.6800000000001,
+            870.4
+          ],
+          "font_size": 40
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 12,
+      "title": "FRIDAY MATINEE",
+      "primary_panel_m": [
+        1.13,
+        1.77
+      ],
+      "canvas_px": [
+        654,
+        1024
+      ],
+      "glyphs": [
+        {
+          "text": "FRIDAY MATINEE",
+          "actual_bbox_canvas_px": [
+            46.5,
+            136.72,
+            607.5,
+            180.72
+          ],
+          "allowed_bbox_canvas_px": [
+            45.78,
+            92.16,
+            608.22,
+            225.28
+          ],
+          "font_size": 60
+        },
+        {
+          "text": "PLAZA THEATRE",
+          "actual_bbox_canvas_px": [
+            56.50000000000006,
+            817.6800000000001,
+            597.5,
+            861.6800000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            52.32,
+            808.96,
+            601.6800000000001,
+            870.4
+          ],
+          "font_size": 60
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 13,
+      "title": "CALICHE CHAPEL",
+      "primary_panel_m": [
+        3.5,
+        0.62
+      ],
+      "canvas_px": [
+        2048,
+        363
+      ],
+      "glyphs": [
+        {
+          "text": "CALICHE CHAPEL",
+          "actual_bbox_canvas_px": [
+            220.0,
+            43.584999999999994,
+            1828.0,
+            170.58499999999998
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            43.559999999999995,
+            1904.64,
+            170.60999999999999
+          ],
+          "font_size": 169
+        },
+        {
+          "text": "SUNDAY SERVICE 10 AM",
+          "actual_bbox_canvas_px": [
+            164.0,
+            203.78500000000003,
+            1884.0,
+            300.785
+          ],
+          "allowed_bbox_canvas_px": [
+            163.84,
+            203.28000000000003,
+            1884.16,
+            301.29
+          ],
+          "font_size": 127
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 14,
+      "title": "CALICHE FEED",
+      "primary_panel_m": [
+        0.6,
+        0.8
+      ],
+      "canvas_px": [
+        768,
+        1024
+      ],
+      "glyphs": [
+        {
+          "text": "CALICHE FEED",
+          "actual_bbox_canvas_px": [
+            56.0,
+            271.08,
+            712.0,
+            333.08
+          ],
+          "allowed_bbox_canvas_px": [
+            53.760000000000005,
+            122.88,
+            714.24,
+            481.28
+          ],
+          "font_size": 82
+        },
+        {
+          "text": "NET WT 50 LB",
+          "actual_bbox_canvas_px": [
+            63.5,
+            611.5600000000001,
+            704.5,
+            673.5600000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            61.44,
+            573.44,
+            706.5600000000001,
+            711.6800000000001
+          ],
+          "font_size": 82
+        },
+        {
+          "text": "GRAIN & SEED",
+          "actual_bbox_canvas_px": [
+            61.5,
+            766.1600000000001,
+            706.5,
+            826.1600000000001
+          ],
+          "allowed_bbox_canvas_px": [
+            61.44,
+            727.0400000000001,
+            706.5600000000001,
+            865.2800000000001
+          ],
+          "font_size": 80
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    },
+    {
+      "cell": 15,
+      "title": "CLOSED",
+      "primary_panel_m": [
+        0.5,
+        0.27
+      ],
+      "canvas_px": [
+        2048,
+        1106
+      ],
+      "glyphs": [
+        {
+          "text": "CLOSED",
+          "actual_bbox_canvas_px": [
+            144.5,
+            402.5,
+            1903.5,
+            703.5
+          ],
+          "allowed_bbox_canvas_px": [
+            143.36,
+            132.72,
+            1904.64,
+            973.28
+          ],
+          "font_size": 398
+        }
+      ],
+      "guarded_uv_cell_fraction": [
+        0.035,
+        0.965
+      ]
+    }
+  ]
+}

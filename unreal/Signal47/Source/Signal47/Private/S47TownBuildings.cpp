@@ -107,6 +107,12 @@ TSharedPtr<FS47TownBuildings> FS47TownBuildings::Build(AS47Web* W)
  {
   auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(W->Node(R.Parent)->Comp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1,.86,.66));L->SetAttenuationRadius(650);L->SetSourceRadius(60);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.At+FVector(-3.1,2.65,0)));F->Lamps.Add({L,R.Parent,R.Family});
  }
+ // The new closed bathroom has an authored opal ceiling diffuser. Light its actual room,
+ // parented to Room6 so it cannot illuminate another area or change the closed-door rule.
+ for(const auto& R:Ready)if(R.Name==TEXT("SM_Town_Motel_Bathroom"))
+ {
+  auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(W->Node(R.Parent)->Comp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1,.86,.66));L->SetAttenuationRadius(350);L->SetSourceRadius(18);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.At+FVector(-.67,2.45,-4.25)));F->Lamps.Add({L,R.Parent,R.Family});
+ }
  F->Update();UE_LOG(LogS47TownBuildings,Display,TEXT("S47: town architecture ready: 6 families, 28 native parts, %d composed patches, %d replaced draw meshes; gameplay anchors retained"),F->PatchCount,F->Retired.Num());return F;
 }
 void FS47TownBuildings::Update()

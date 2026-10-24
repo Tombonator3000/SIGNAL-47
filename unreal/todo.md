@@ -321,3 +321,8 @@ Kilder fra vurderingen: [Quixels Moab-opptak](https://www.youtube.com/watch?v=ND
 ## Radiostasjon og array, 2026-10-23 kl. 23:53
 
 - [x] Blender-kilder, realistisk antenne på alle 27 plasser og radiostasjon med interiør integrert, verifisert og installert. Se RADIO_ARRAY.md for bevis og kildekontrakt.
+
+## Modellprioritet SARO og Caliche, 25. oktober 2026
+
+- [ ] Sluttkandidat M2: SARO-fasade/tre master, SARO07 og to ansattbiler, sheriff, motell/resepsjon/Rom6/bad, vaskeri, fôrbutikk, kinofoajé og kirke. Modellkilder og native import er klare; pakket sluttkontroll og levering pågår. Se PRODUCTION_MODELS.md.
+- [ ] Ved senere innføring av av/på for motellets Room6-utelys: splitt den nye diffuserens delte MotelOfficeGlow-materiale og bind off-tilstanden. Dagens historiesti kaller bare SetRoom6Light(true); opprinnelig lysdriver beholdes.

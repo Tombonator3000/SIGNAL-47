@@ -9,27 +9,73 @@ from materials import material_rows
 R=Path(__file__).resolve().parent
 s=importlib.util.spec_from_file_location('town_original_pbr_helpers',R.parent/'substation/make_textures.py');base=importlib.util.module_from_spec(s);s.loader.exec_module(base);base.R=R
 N=2048
-LABELS=[('CALICHE COUNTY',['SHERIFF','SUBSTATION']),('LAUNDROMAT',['OPEN 24 HOURS','COIN OPERATED']),('FEED & SEED',['FARM SUPPLIES','CALICHE, NEW MEXICO']),('PLAZA',['PICTURE HOUSE']),('CLOSED',['PLAZA THEATRE']),('SIERRA',['MOTOR COURT','VACANCY']),('6',[]),('OFFICE',['REGISTER HERE']),('SIERRA MOTOR COURT',['SINGLE     $18.00','DOUBLE     $24.00']),('WASH 75c',['DRY 25c','PLEASE REMOVE LINT']),('NEW MEXICO',['COUNTY ROAD MAP']),('THE DESERT SKY',['A PLAZA PRESENTATION']),('FRIDAY MATINEE',['PLAZA THEATRE']),('CALICHE CHAPEL',['SUNDAY SERVICE 10 AM']),('CALICHE FEED',['NET WT 50 LB','GRAIN & SEED']),('BATHROOM',[])]
+LABELS=[('CALICHE COUNTY',['SHERIFF','SUBSTATION']),('LAUNDROMAT',['OPEN 24 HOURS','COIN OPERATED']),('FEED & SEED',['FARM SUPPLIES','CALICHE, NEW MEXICO']),('PLAZA',['PICTURE HOUSE']),('CLOSED',['PLAZA THEATRE']),('CLOSED',['PLAZA THEATRE']),('6',[]),('OFFICE',['REGISTER HERE']),('SIERRA MOTOR COURT',['SINGLE     $18.00','DOUBLE     $24.00']),('WASH 75c',['DRY 25c','PLEASE REMOVE LINT']),('NEW MEXICO',['COUNTY ROAD MAP']),('THE DESERT SKY',['A PLAZA PRESENTATION']),('FRIDAY MATINEE',['PLAZA THEATRE']),('CALICHE CHAPEL',['SUNDAY SERVICE 10 AM']),('CALICHE FEED',['NET WT 50 LB','GRAIN & SEED']),('CLOSED',[])]
+# Physical panel dimensions. Separate cells4/5/15 keep the front marquee,
+# its shorter returns and the ticket notice aspect-correct independently.
+# Only the two secondary Cinema sign UV-cell assignments change.
+PANEL_SIZE_M=[(3.5,.62),(4.5,.67),(6.7,1.1),(.78,3.21),(9.6,.99),
+ (2.42,.99),(.19,.27),(1.15,.29),(.60,.44),(.60,.74),(2.83,1.68),
+ (1.13,1.77),(1.13,1.77),(3.5,.62),(.60,.80),(.50,.27)]
+def fitted_text(draw,text,rect,ink,proof):
+ # Measure the actual font glyph bbox, including bearings, rather than guessing
+ # from string length. No title can spill into an adjacent atlas cell.
+ x0,y0,x1,y1=rect;available_w=x1-x0;available_h=y1-y0
+ chosen=None
+ for size in range(max(1,int(available_h*1.6)),0,-1):
+  font=base.font(size,True);bb=draw.textbbox((0,0),text,font=font)
+  if bb[2]-bb[0]<=available_w and bb[3]-bb[1]<=available_h:
+   chosen=(font,bb);break
+ assert chosen is not None,('text cannot fit',text,rect)
+ font,bb=chosen;xx=(x0+x1-bb[2]-bb[0])/2;yy=(y0+y1-bb[3]-bb[1])/2
+ actual=draw.textbbox((xx,yy),text,font=font)
+ assert actual[0]>=x0-1 and actual[1]>=y0-1 and actual[2]<=x1+1 and actual[3]<=y1+1,(text,actual,rect)
+ draw.text((xx,yy),text,font=font,fill=ink)
+ proof.append({'text':text,'actual_bbox_canvas_px':list(actual),'allowed_bbox_canvas_px':list(rect),'font_size':font.size})
 def atlas():
- im=Image.new('RGB',(N,N),(212,200,167));d=ImageDraw.Draw(im)
+ im=Image.new('RGB',(N,N),(212,200,167));layout=[]
  for i,(title,lines)in enumerate(LABELS):
-  x=i%4*512;y=i//4*512;dark=i in [0,1,2,3,5,6,13];bg=(42,51,46)if dark else(218,204,167);ink=(223,211,173)if dark else(49,48,36)
-  d.rectangle((x+6,y+6,x+506,y+506),fill=bg,outline=ink,width=5)
+  x=i%4*512;y=i//4*512;dark=i in [0,1,2,3,6,13]
+  bg=(42,51,46)if dark else(218,204,167);ink=(223,211,173)if dark else(49,48,36)
+  pw,ph=PANEL_SIZE_M[i];aspect=pw/ph
+  # Work at the real sign's aspect, then pre-distort to its square atlas tile.
+  # The unchanged square UV mapping to the physical panel reverses that resize.
+  w=max(256,round(1024*aspect))if aspect<1 else 2048
+  h=round(w/aspect);canvas=Image.new('RGB',(w,h),bg);d=ImageDraw.Draw(canvas);proof=[]
+  def box(a,b,c,e):return(a*w,b*h,c*w,e*h)
+  def label(t,a,b,c,e):fitted_text(d,t,box(a,b,c,e),ink,proof)
+  # Keep border and all glyphs inside existing.035..965 guarded UV limits.
+  d.rectangle(box(.045,.045,.955,.955),outline=ink,width=max(1,round(min(w,h)*.008)))
   if i==10:
-   d.rectangle((x+27,y+77,x+485,y+474),fill=(194,185,153),outline=ink,width=2)
+   d.rectangle(box(.07,.24,.93,.91),fill=(194,185,153),outline=ink,width=2)
    for k in range(17):
-    xx=x+30+k*27;d.line([(xx,y+80),(xx+int(9*math.sin(k)),y+470)],fill=(147,145,115),width=1)
-   for k in range(15):d.line([(x+30,y+80+k*27),(x+485,y+78+k*27)],fill=(147,145,115),width=1)
+    xx=w*(.08+k*.052);d.line([(xx,h*.25),(xx+w*.008*math.sin(k),h*.90)],fill=(147,145,115),width=1)
+   for k in range(15):d.line([(w*.08,h*(.25+k*.046)),(w*.92,h*(.25+k*.046))],fill=(147,145,115),width=1)
    for k in range(6):
-    pts=[(x+35+j*56,y+100+k*54+int(17*math.sin(j*.9+k)))for j in range(9)];d.line(pts,fill=(103,90,69),width=2)
-   for px,py in [(140,210),(280,330),(370,180),(230,390)]:d.ellipse((x+px-4,y+py-4,x+px+4,y+py+4),fill=(137,47,31))
-   d.text((x+256,y+24),'NEW MEXICO',font=base.font(33,True),anchor='mt',fill=ink);continue
-  if i in [11,12]:
-   d.polygon([(x+25,y+340),(x+160,y+180),(x+305,y+320),(x+420,y+215),(x+487,y+340)],fill=(127,97,67));d.ellipse((x+310,y+95,x+405,y+190),fill=(181,126,70))
-  size=142 if title=='6'else min(60,int(720/max(6,len(title))))
-  d.text((x+256,y+100 if title!='6'else y+148),title,font=base.font(size,True),anchor='mt',fill=ink)
-  for k,t in enumerate(lines):d.text((x+256,y+245+k*74),t,font=base.font(min(38,int(650/max(6,len(t)))),True),anchor='mt',fill=ink)
- im.save(R/'textures/PrintAtlas_base_color.png');Image.new('RGB',(N,N),(128,128,255)).save(R/'textures/PrintAtlas_normal.png');Image.new('L',(N,N),220).save(R/'textures/PrintAtlas_roughness.png')
+    pts=[(w*(.09+j*.10),h*(.30+k*.10+.025*math.sin(j*.9+k)))for j in range(9)];d.line(pts,fill=(103,90,69),width=2)
+   for px,py in[(.25,.44),(.56,.67),(.74,.38),(.46,.78)]:d.ellipse((w*px-4,h*py-4,w*px+4,h*py+4),fill=(137,47,31))
+   label(title,.08,.075,.92,.20)
+  elif i==3:
+   # The tall blade sign uses vertical lettering, not a horizontal word stretched.
+   for k,ch in enumerate(title):label(ch,.20,.085+k*.143,.80,.205+k*.143)
+   label('PICTURE',.10,.825,.90,.88);label('HOUSE',.10,.89,.90,.94)
+  elif i in [11,12]:
+   d.polygon([(w*.07,h*.72),(w*.30,h*.36),(w*.58,h*.67),(w*.82,h*.42),(w*.93,h*.72)],fill=(127,97,67))
+   d.ellipse((w*.58,h*.28,w*.82,h*.44),fill=(181,126,70))
+   label(title,.07,.09,.93,.22)
+   for k,t in enumerate(lines):label(t,.08,.79+k*.07,.92,.85+k*.07)
+  elif i==6:label(title,.13,.13,.87,.87)
+  else:
+   label(title,.07,.12,.93,.47 if lines else .88)
+   for k,t in enumerate(lines):
+    lo=.56+k*(.30/max(1,len(lines)));hi=lo+.27/max(1,len(lines))
+    label(t,.08,lo,.92,hi)
+  layout.append({'cell':i,'title':title,'primary_panel_m':[pw,ph],'canvas_px':[w,h],
+   'glyphs':proof,'guarded_uv_cell_fraction':[.035,.965]})
+  im.paste(canvas.resize((512,512),Image.Resampling.LANCZOS),(x,y))
+ im.save(R/'textures/PrintAtlas_base_color.png')
+ Image.new('RGB',(N,N),(128,128,255)).save(R/'textures/PrintAtlas_normal.png')
+ Image.new('L',(N,N),220).save(R/'textures/PrintAtlas_roughness.png')
+ (R/'atlas_layout.json').write_text(json.dumps({'status':'PASS','scope':'Measured glyph bounds on physical-aspect canvases; unchanged geometry and guarded atlas UVs','cells':layout},indent=2)+'\n')
 def main():
  (R/'textures').mkdir(exist_ok=True);rng=np.random.default_rng(19864725);yy,xx=np.indices((N,N),dtype=np.float32)
  broad=base.noise(rng,7);fine=base.noise(rng,180);grain=rng.random((N,N),dtype=np.float32)
