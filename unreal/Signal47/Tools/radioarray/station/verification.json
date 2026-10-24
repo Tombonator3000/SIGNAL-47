@@ -41,24 +41,29 @@
         "M_1420_Concrete",
         "M_1420_Walnut",
         "M_1420_Stucco_cream",
+        "M_1420_WeatheredFacadePaint",
         "M_1420_Galvanized_metal",
+        "M_1420_OliveWornTimber",
         "M_1420_Black_enamel",
         "M_1420_Brick_red",
-        "M_1420_Lamp_glow"
+        "M_1420_Lamp_glow",
+        "M_1420_ChalkFlakeEdge",
+        "M_1420_Paper",
+        "M_1420_ExposedLimeRender"
       ]
     },
     {
       "name": "SM_1420_Shell exact triangle contract",
       "result": "PASS",
-      "triangles": 4952,
-      "expected_triangles": 4952,
+      "triangles": 9972,
+      "expected_triangles": 9972,
       "zero_area_triangles": 0
     },
     {
       "name": "SM_1420_Shell finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
-      "faces": 4952
+      "faces": 9972
     },
     {
       "name": "Door and studio window are actual shell openings",
@@ -120,21 +125,22 @@
         "M_1420_Painted_olive",
         "M_1420_Paper",
         "M_1420_Vinyl_green",
-        "M_1420_Lamp_glow"
+        "M_1420_Lamp_glow",
+        "M_1420_OliveWornTimber"
       ]
     },
     {
       "name": "SM_1420_Interior exact triangle contract",
       "result": "PASS",
-      "triangles": 43268,
-      "expected_triangles": 43268,
+      "triangles": 50520,
+      "expected_triangles": 50520,
       "zero_area_triangles": 0
     },
     {
       "name": "SM_1420_Interior finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
-      "faces": 43268
+      "faces": 50520
     },
     {
       "name": "SM_1420_Door separate mesh",
@@ -172,10 +178,9 @@
       "name": "SM_1420_Door material slots",
       "result": "PASS",
       "slots": [
-        "M_1420_Painted_olive",
+        "M_1420_OliveWornTimber",
         "M_1420_Black_enamel",
         "M_1420_Clear_glass",
-        "M_1420_Ivory_plastic",
         "M_1420_Galvanized_metal",
         "M_1420_Paper"
       ]
@@ -300,22 +305,28 @@
       "faces": 1264
     },
     {
-      "name": "PBR texture dependencies exist",
+      "name": "R2 six-family PBR texture dependencies exist",
       "result": "PASS",
-      "count": 12,
+      "count": 18,
       "relative_paths": [
         "textures/concrete_color.png",
-        "textures/concrete_normal.png",
+        "textures/concrete_normal_dx.png",
         "textures/concrete_roughness.png",
-        "textures/desk_walnut_color.png",
-        "textures/desk_walnut_normal.png",
-        "textures/desk_walnut_roughness.png",
-        "textures/stucco_color.png",
-        "textures/stucco_normal.png",
-        "textures/stucco_roughness.png",
-        "textures/walnut_color.png",
-        "textures/walnut_normal.png",
-        "textures/walnut_roughness.png"
+        "textures/revision2/desk_worn_color.png",
+        "textures/revision2/desk_worn_normal_dx.png",
+        "textures/revision2/desk_worn_roughness.png",
+        "textures/revision2/olive_timber_color.png",
+        "textures/revision2/olive_timber_normal_dx.png",
+        "textures/revision2/olive_timber_roughness.png",
+        "textures/revision2/stucco_layers_color.png",
+        "textures/revision2/stucco_layers_normal_dx.png",
+        "textures/revision2/stucco_layers_roughness.png",
+        "textures/revision2/walnut_worked_color.png",
+        "textures/revision2/walnut_worked_normal_dx.png",
+        "textures/revision2/walnut_worked_roughness.png",
+        "textures/revision2/facade_1420_weathered_color.png",
+        "textures/revision2/facade_1420_weathered_normal_dx.png",
+        "textures/revision2/facade_1420_weathered_roughness.png"
       ]
     },
     {
@@ -328,9 +339,9 @@
       "triangles": {
         "SM_1420_Door": 1852,
         "SM_1420_Glass": 12,
-        "SM_1420_Interior": 43268,
+        "SM_1420_Interior": 50520,
         "SM_1420_Mast": 1264,
-        "SM_1420_Shell": 4952
+        "SM_1420_Shell": 9972
       }
     },
     {
@@ -339,18 +350,22 @@
       "proof_file": "mesh_cleanup.json",
       "removed": {
         "SM_1420_Shell": 0,
+        "SM_1420_Interior": 144,
         "SM_1420_Door": 0,
         "SM_1420_Glass": 0,
-        "SM_1420_Interior": 144,
         "SM_1420_Mast": 0
       }
     },
     {
       "name": "Story proxy anchor preserved",
       "result": "PASS"
+    },
+    {
+      "name": "R2 facade identity exported",
+      "result": "PASS"
     }
   ],
-  "passed": 32,
-  "total": 32,
+  "passed": 33,
+  "total": 33,
   "runtime_note": "This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests."
 }

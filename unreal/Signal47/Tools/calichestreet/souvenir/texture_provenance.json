@@ -1,0 +1,73 @@
+{
+  "author": "SIGNAL / 47 original raster painting",
+  "resolution": 2048,
+  "method": "drawn fibre paths, growth knots, flaked lime, capillary cracks, oxide blooms; no sine field",
+  "surfaces": {
+    "stucco": {
+      "size": [
+        2048,
+        2048
+      ],
+      "structural_marks": true,
+      "directx_normal": "green complement of OpenGL",
+      "uv_scale": 0.42,
+      "normal_strength": 0.22,
+      "resolution": 2048
+    },
+    "concrete": {
+      "size": [
+        2048,
+        2048
+      ],
+      "structural_marks": true,
+      "directx_normal": "green complement of OpenGL",
+      "uv_scale": 0.65,
+      "normal_strength": 0.2,
+      "resolution": 2048
+    },
+    "walnut": {
+      "size": [
+        2048,
+        2048
+      ],
+      "structural_marks": true,
+      "directx_normal": "green complement of OpenGL",
+      "uv_scale": 1,
+      "normal_strength": 0.28,
+      "resolution": 2048
+    },
+    "desk_walnut": {
+      "size": [
+        2048,
+        2048
+      ],
+      "structural_marks": true,
+      "directx_normal": "green complement of OpenGL",
+      "uv_scale": 1,
+      "normal_strength": 0.25,
+      "resolution": 2048
+    },
+    "weathered_timber": {
+      "size": [
+        2048,
+        2048
+      ],
+      "structural_marks": true,
+      "directx_normal": "green complement of OpenGL",
+      "uv_scale": 1,
+      "normal_strength": 0.35,
+      "resolution": 2048
+    },
+    "rust_metal": {
+      "size": [
+        2048,
+        2048
+      ],
+      "structural_marks": true,
+      "directx_normal": "green complement of OpenGL",
+      "uv_scale": 0.7,
+      "normal_strength": 0.25,
+      "resolution": 2048
+    }
+  }
+}

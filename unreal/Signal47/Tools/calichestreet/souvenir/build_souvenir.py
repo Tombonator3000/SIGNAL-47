@@ -7,7 +7,7 @@ import bpy, math, random, json, sys, hashlib
 from pathlib import Path
 from mathutils import Vector
 ROOT=Path(__file__).resolve().parent; sys.path.insert(0,str(ROOT))
-from make_textures import generate, STONE_SETTINGS
+from make_textures import generate, STONE_SETTINGS, SURFACE_SETTINGS
 def configure_stone_material(m,prefix):
  """Shader-only refresh: keep the mesh's original UVs and material slots intact."""
  n=m.node_tree.nodes; links=m.node_tree.links; p=n.get('Principled BSDF')
@@ -15,7 +15,7 @@ def configure_stone_material(m,prefix):
   if node.type in {'TEX_IMAGE','NORMAL_MAP','TEX_COORD','VECT_MATH','MAPPING'}: n.remove(node)
  coord=n.new('ShaderNodeTexCoord')
  scale=n.new('ShaderNodeMapping'); scale.vector_type='POINT'; scale.label='StoneUVScale'
- k=STONE_SETTINGS[prefix]['uv_scale']; scale.inputs['Scale'].default_value=(k,k,k)
+ k=SURFACE_SETTINGS[prefix]['uv_scale']; scale.inputs['Scale'].default_value=(k,k,k)
  links.new(coord.outputs['UV'],scale.inputs['Vector'])
  for suffix,socket in [('color','Base Color'),('roughness','Roughness'),('normal','Normal')]:
   tex=n.new('ShaderNodeTexImage'); path=str(ROOT/'textures'/(prefix+'_'+suffix+'.png'))
@@ -23,7 +23,7 @@ def configure_stone_material(m,prefix):
   if suffix!='color': tex.image.colorspace_settings.name='Non-Color'
   links.new(scale.outputs['Vector'],tex.inputs['Vector'])
   if suffix=='normal':
-   norm=n.new('ShaderNodeNormalMap'); norm.inputs['Strength'].default_value=STONE_SETTINGS[prefix]['normal_strength']
+   norm=n.new('ShaderNodeNormalMap'); norm.inputs['Strength'].default_value=SURFACE_SETTINGS[prefix]['normal_strength']
    links.new(tex.outputs['Color'],norm.inputs['Color']); links.new(norm.outputs['Normal'],p.inputs[socket])
   else: links.new(tex.outputs['Color'],p.inputs[socket])
 
@@ -59,7 +59,8 @@ if '--materials-only' in sys.argv:
  print('STONE_MATERIAL_REFRESH',json.dumps(proof))
  raise SystemExit(0)
 from mesh_cleanup import clean_triangulated_mesh
-ROOT.joinpath('exports').mkdir(exist_ok=True); generate(ROOT/'textures')
+ROOT.joinpath('exports').mkdir(exist_ok=True)
+if '--reuse-textures' not in sys.argv: generate(ROOT/'textures')
 random.seed(1947)
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
 for m in list(bpy.data.materials): bpy.data.materials.remove(m)
@@ -72,8 +73,8 @@ def material(name,col,metal=0,rough=.7,em=0):
  if em: p.inputs['Emission Color'].default_value=(*col,1); p.inputs['Emission Strength'].default_value=em
  return m
 cream=material('CreamStucco',(.60,.53,.41),rough=.9)
-walnut=material('Walnut',(.16,.065,.023),rough=.6)
-counter=material('CounterWalnut',(.28,.13,.045),rough=.5)
+walnut=material('Walnut',(.074,.027,.012),rough=.7)
+counter=material('CounterWalnut',(.125,.050,.017),rough=.62)
 olive=material('OlivePaint',(.14,.17,.12),rough=.67)
 concrete=material('Concrete',(.30,.28,.24),rough=.92)
 iron=material('BlackIron',(.018,.023,.020),metal=.35,rough=.48)
@@ -81,18 +82,25 @@ steel=material('Galvanized',(.32,.35,.32),metal=.75,rough=.45)
 brass=material('WornBrass',(.38,.24,.075),metal=.72,rough=.4)
 ivory=material('CeramicIvory',(.68,.59,.41),rough=.3)
 teal=material('CeramicTeal',(.055,.18,.19),rough=.32)
-red=material('FadedRed',(.37,.065,.035),rough=.65)
+red=material('FadedRed',(.19,.023,.014),rough=.84)
 paper=material('CreamPaper',(.66,.60,.43),rough=.88)
 ink=material('PrintInk',(.025,.032,.027),rough=.8)
 mesa=material('MesaPrint',(.40,.19,.075),rough=.9)
 sky=material('SkyPrint',(.14,.28,.34),rough=.9)
 lamp=material('WarmLamp',(1,.62,.24),rough=.3,em=1.8)
+timber=material('WeatheredTimber',(.17,.135,.087),rough=.84)
+rust=material('OxidizedCanopy',(.15,.095,.047),metal=.50,rough=.82)
+plaster=material('ExposedPlaster',(.25,.19,.115),rough=.96)
+grime=material('BaseGrime',(.105,.092,.064),rough=.97)
+foil=material('CreasedFoil',(.58,.60,.56),metal=.95,rough=.23)
+cloth=material('WovenCanvas',(.42,.31,.18),rough=.96)
+brick=material('OldBrick',(.20,.065,.030),rough=.96)
 glass=material('ClearGlass',(.22,.26,.23),rough=.10)
 glass.node_tree.nodes['Principled BSDF'].inputs['Transmission Weight'].default_value=.96
 glass.node_tree.nodes['Principled BSDF'].inputs['IOR'].default_value=1.45
-textured={cream:'stucco',walnut:'walnut',counter:'desk_walnut',concrete:'concrete'}
+textured={cream:'stucco',walnut:'walnut',counter:'desk_walnut',concrete:'concrete',timber:'weathered_timber',rust:'rust_metal'}
 for m,prefix in textured.items():
- if prefix in STONE_SETTINGS:
+ if prefix in SURFACE_SETTINGS:
   configure_stone_material(m,prefix); continue
  n=m.node_tree.nodes; links=m.node_tree.links; p=n.get('Principled BSDF')
  for suffix,socket in [('color','Base Color'),('roughness','Roughness'),('normal_gl','Normal')]:
@@ -136,10 +144,39 @@ def flat_mesh(name,vertices,faces,mat):
  mesh=bpy.data.meshes.new(name); mesh.from_pydata(vertices,[],faces); mesh.update()
  o=bpy.data.objects.new(name,mesh); scene.collection.objects.link(o); return add(o,name,mat)
 
+def painted_name():
+ # Flush, bold letters occupy the parapet rather than another little signboard.
+ bpy.ops.object.text_add(location=(0,-4.517,2.98),rotation=(math.pi/2,0,0)); o=bpy.context.object
+ o.data.body='SAUCER CRASH 1947'; o.data.align_x='CENTER'; o.data.size=1.03; o.data.extrude=.0002; o.data.resolution_u=3
+ font=Path('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf')
+ if font.is_file(): o.data.font=bpy.data.fonts.load(str(font))
+ bpy.context.view_layer.update(); o.scale.x=10.65/o.dimensions.x
+ bpy.ops.object.convert(target='MESH'); bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
+ add(o,'LargeHandPaintedFacadeName',red)
+ from mathutils.bvhtree import BVHTree
+ tree=BVHTree.FromObject(o,bpy.context.evaluated_depsgraph_get())
+ for i in range(240):
+  x=random.uniform(-5.3,5.3); z=random.uniform(3.02,3.77)
+  start=o.matrix_world.inverted()@Vector((x,-4.54,z)); direction=o.matrix_world.to_3x3().inverted()@Vector((0,1,0))
+  if tree.ray_cast(start,direction,.1)[0] is not None:
+   w=random.uniform(.008,.04); h=random.uniform(.007,.026)
+   flat_mesh('WornFacadePaintChip',[(x-w,-4.520,z-h),(x+w,-4.520,z-h*.3),(x+w*.6,-4.520,z+h),(x-w*.8,-4.520,z+h*.5)],[(0,1,2,3)],cream)
+
+def wall_patch(name,x,z,w,h,mat,y=-4.503):
+ # An irregular, shallow scar; no extra slab or collision crossing an opening.
+ pts=[]
+ for i in range(11):
+  a=i*math.tau/11; rr=random.uniform(.64,1)
+  pts.append((x+math.cos(a)*w*.5*rr,y,z+math.sin(a)*h*.5*rr))
+ return flat_mesh(name,pts,[tuple(range(11))],mat)
+
 # Reference facade plane: world X8020.5, floor4.952807474, worldZ2058..2070.
 box('ShopFoundation',(0,0,-.23),(12.16,9.16,.46),concrete)
 box('FloorboardsSubfloor',(0,0,-.045),(11.6,8.6,.09),walnut)
-for i in range(42): box('TimberFloorBoard',(-5.65+i*.273,0,.012),(.265,8.55,.024),counter)
+for i in range(42):
+ for j in range(4):
+  # Short, staggered boards replace the perfectly continuous 8.5m strips.
+  y=-3.2+j*2.135; box('TimberFloorBoard',(-5.65+i*.273,y,.012),(.265,2.127,.024),counter if (i+j)%4 else walnut)
 box('LeftStuccoWall',(-5.87,0,1.85),(.26,9,3.7),cream)
 box('RightStuccoWall',(5.87,0,1.85),(.26,9,3.7),cream)
 box('BackStuccoWall',(0,4.37,1.85),(12,.26,3.7),cream)
@@ -151,6 +188,19 @@ box('DoorLintel',(2.8,-4.37,2.9375),(1,.26,1.525),cream)
 box('FlatRoof',(0,0,3.67),(12,9,.14),concrete)
 for y in [-4.375,4.375]: box('RoofParapet',(0,y,3.875),(12.06,.25,.35),cream)
 for x in [-5.875,5.875]: box('RoofParapet',(x,0,3.875),(.25,9,.35),cream)
+# Weathering is tied to the base, exposed corners and roof runoff.
+for i in range(96):
+ x=random.uniform(-5.9,5.9); z=random.uniform(.09,.37)
+ wall_patch('FlakedLimeAtBase',x,z,random.uniform(.12,.55),random.uniform(.08,.25),plaster)
+for x in [-5.88,-3.55,.58,4.45,5.86]:
+ for i in range(8): wall_patch('RunoffAndCornerScar',x+random.uniform(-.10,.10),random.uniform(2.5,3.95),random.uniform(.04,.13),random.uniform(.1,.38),grime)
+for a,b in [(-5.99,-2.9),(-.48,2.18),(3.42,5.99)]:
+ pts=[(a,-4.506,.01),(b,-4.506,.01),(b,-4.506,.15)]
+ pts.extend((a+(b-a)*k/15,-4.506,.10+random.uniform(.01,.12)) for k in range(15,-1,-1))
+ flat_mesh('AccumulatedBasePatina',pts,[tuple(range(len(pts)))],grime)
+for x,z in [(-5.65,.48),(-4.8,.17),(4.15,.24),(5.8,.65)]:
+ wall_patch('ExposedMortarIsland',x,z,.5,.32,plaster)
+ for k in range(3): box('OldBrickInLime',(x+(k%2)*.13-.1,-4.508,z+(k//2)*.085-.045),(.22,.006,.072),brick,.004)
 for x in [-5.82,5.82]: rod('RainDownpipe',(x,-4.55,.02),(x,-4.55,3.65),.035,steel)
 # Deep timber reveal projects glazing towards street, in front of original A02.
 for x in [-2.855,-.545]: box('DisplayFrameVertical',(x,-4.63,1.45),(.11,.40,1.92),walnut,.015)
@@ -171,29 +221,29 @@ box('DoorStoop',(2.8,-4.95,-.07),(1.4,.9,.14),concrete,.02)
 # Original porch spans xworld18.3..20.5 and three peeled timber posts.
 box('PorchSlab',(0,-5.42,-.14),(12.4,2.4,.20),concrete,.025)
 for x in [-5.6,0,5.6]:
- box('PeeledPorchPost',(x,-6.4,1.31),(.17,.17,2.62),walnut,.025)
+ box('PeeledPorchPost',(x,-6.4,1.31),(.17,.17,2.62),timber,.012)
+ for k in range(5):
+  z=.25+k*.43
+  box('PostSilveredFibre',(x+random.uniform(-.055,.055),-6.487,z),(.007,.004,random.uniform(.17,.36)),plaster)
+ for z in [.19,2.48]: rod('PorchBoltHead',(x,-6.49,z),(x,-6.497,z),.014,iron,8)
  box('PorchPostFoot',(x,-6.4,.06),(.25,.25,.12),concrete,.015)
- rod('PorchDiagonalBrace',(x,-6.4,2.0),(x+(.45 if x<0 else -.45),-6.4,2.59),.037,walnut)
-box('PorchFrontBeam',(0,-6.4,2.68),(12.4,.18,.18),counter,.02)
-box('PorchWallLedger',(0,-4.42,2.85),(12.2,.14,.16),walnut,.015)
-for x in [-5.8+i*1.45 for i in range(9)]: rod('PorchRafter',(x,-6.55,2.66),(x,-4.32,2.87),.055,walnut)
+ rod('PorchDiagonalBrace',(x,-6.4,2.0),(x+(.45 if x<0 else -.45),-6.4,2.59),.047,timber)
+box('PorchFrontBeam',(0,-6.4,2.68),(12.4,.18,.18),timber,.01)
+box('PorchWallLedger',(0,-4.42,2.85),(12.2,.14,.16),timber,.01)
+for x in [-5.8+i*1.45 for i in range(9)]:
+ o=box('RoughSawnPorchRafter',(x,-5.42,2.70),(.12,2.35,.17),timber,.007); o.rotation_euler.x=math.radians(5)
+for i in range(42):
+ x=-6.10+i*.2975
+ o=box('WeatheredCanopyUnderslat',(x,-5.44,2.76),(.288,2.37,.037),timber if i%5 else walnut,.003); o.rotation_euler.x=math.radians(5)
 # Corrugated metal canopy, a few rust patches in the joints rather than random clutter.
-roof=box('CorrugatedCanopy',(0,-5.44,2.82),(12.5,2.4,.055),steel)
+roof=box('CorrugatedCanopy',(0,-5.44,2.82),(12.5,2.4,.055),rust)
 roof.rotation_euler.x=math.radians(5)
 for i in range(78):
- x=-6.15+i*.16; rod('CorrugatedRoofRib',(x,-6.64,2.725),(x,-4.24,2.935),.018,steel,6)
+ x=-6.15+i*.16; rod('CorrugatedRoofRib',(x,-6.64,2.725),(x,-4.24,2.935),.018,rust,6)
 for x in [-5.7,-2.5,1.4,5.6]: box('CanopyWeatheredSeam',(x,-5.45,2.86),(.035,2.35,.006),red)
-# A facade ghost sign and standing tour board preserve the existing name and proxy.
-lettering('FadedFacadeName','SAUCER CRASH 1947',(0,-4.515,3.18),.56,red)
-for x in [-1,1.2]: box('TourBoardSupport',(x,-6.2,3.19),(.075,.075,1.12),walnut)
-box('StandingTourBoard',(.1,-6.3,3.60),(2.6,.13,1.30),counter,.02)
-box('TourBoardPaint',(.1,-6.375,3.60),(2.5,.02,1.19),paper)
-lettering('TourBoardTitle','SAUCER CRASH 1947',(.1,-6.39,3.94),.16,red)
-lettering('TourBoardTours','TOURS',(.28,-6.39,3.48),.35,olive)
-lettering('TourBoardAsk','ASK INSIDE',(.1,-6.39,3.18),.17,ink)
-# Painted saucer pictogram is a toy-like disc, never a second alien/figure.
-sphere('TourSignSaucer',(-.85,-6.405,3.58),(.28,.01,.065),steel)
-sphere('TourSignDome',(-.85,-6.42,3.64),(.12,.012,.08),teal)
+# The painted frontage replaces the freestanding board that hid its own title.
+# Runtime keeps the existing souvenirSign ID; its target may move to this wall.
+painted_name()
 # Exterior practical lamp geometry. Actual runtime lights are owned by the parent.
 for x in [-1.7,2.8]:
  rod('PorchLampStem',(x,-4.61,2.57),(x,-4.88,2.57),.016,iron)
@@ -208,6 +258,11 @@ rod('AshUrnBase',(4.5,-5.45,.01),(4.5,-5.45,.04),.15,iron,16)
 ring('AshUrnRim',(4.5,-5.45,.76),.13,.025,steel)
 
 current='Interior'
+# Small TOURS card occupies the left upper corner, away from A02's silhouette.
+box('WindowToursCard',(-2.52,-4.32,1.98),(.38,.018,.30),paper,.003)
+lettering('WindowToursTitle','TOURS',(-2.52,-4.334,2.015),.064,red)
+lettering('WindowToursAsk','ASK INSIDE',(-2.52,-4.334,1.915),.035,ink)
+for x in [-2.66,-2.38]: rod('WindowToursString',(x,-4.32,2.13),(x,-4.32,2.29),.002,cloth,6)
 # Only the first five metres are dressed; opaque storage partition terminates view.
 box('RearStorePartition',(0,.75,1.75),(11.5,.13,3.45),walnut)
 box('InnerCeiling',(0,-1.9,3.52),(11.5,5.15,.06),paper)
@@ -242,13 +297,14 @@ box('RegisterReceipt',(1.20,-2.74,1.60),(.095,.17,.004),paper)
 def bookcase(name,x,y,width,depth,height,front=True):
  for xx in [x-width/2,x+width/2]: box(name+'_Side',(xx,y,height/2),( .07,depth,height),walnut,.01)
  box(name+'_Back',(x,y+depth/2-.025,height/2),(width,.05,height),walnut)
- levels=[.15,.67,1.19,1.71,2.23]
+ levels=[.15,.63,1.15,1.68,2.18]
  for z in levels: box(name+'_Shelf',(x,y,z),(width,depth,.055),counter,.007)
  for z in levels[:-1]:
   for xx in [x-width*.36,x+width*.36]:
    rod(name+'_Bracket',(xx,y+depth/2-.06,z-.16),(xx,y-depth/2+.08,z-.03),.012,brass,6)
  return levels
-for x in [-4.2,-1.9,.4,2.7,5.0]: bookcase('RearSouvenirBookcase',x,.20,2.08,.70,2.53)
+for bay,x in enumerate([-4.2,-1.9,.4,2.7,5.0]):
+ bookcase('RearSouvenirBookcase',x,.20,[2.05,2.13,1.96,2.08,2.02][bay],[.64,.77,.70,.65,.73][bay],[2.43,2.60,2.37,2.52,2.46][bay])
 # Side bookcase is visible obliquely through the left display reveal.
 bookcase('LeftSideCabinet',-4.55,-2.12,1.7,.76,2.40)
 
@@ -271,32 +327,61 @@ def ufo(name,x,y,z):
  sphere(name+'_Dome',(x,y,z+.089),(.066,.066,.045),teal)
  ring(name+'_Rim',(x,y,z+.055),.13,.008,brass)
  for a in [0,2.094,4.188]: rod(name+'_ToyLeg',(x+.055*math.cos(a),y+.055*math.sin(a),z+.05),(x+.08*math.cos(a),y+.08*math.sin(a),z),.007,iron,6)
+def foil_memento(x,y,z):
+ # Uneven faceted packet: hard folds catch light, unlike a polished steel sphere.
+ bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1,radius=1,location=(x,y,z+.10)); o=bpy.context.object
+ for v in o.data.vertices:
+  v.co.x*=.075*random.uniform(.8,1.2); v.co.y*=.055*random.uniform(.75,1.1); v.co.z*=.10*random.uniform(.8,1.15)
+ add(o,'CrumpledFoilMemento',foil)
+ box('FoilPacketCrimp',(x,y,z+.198),(.10,.024,.025),foil)
+ box('FoilPacketLabel',(x,y-.052,z+.10),(.074,.008,.040),paper)
+def book_stack(x,y,z,count=4):
+ for i in range(count):
+  o=box('UnevenTravelGuideStack',(x+random.uniform(-.022,.022),y,z+.018+i*.027),(.28,.30,.022),[paper,olive,red,sky][i%4]); o.rotation_euler.z=random.uniform(-.11,.11)
+def mineral_jar(x,y,z):
+ rod('MineralSampleTin',(x,y,z),(x,y,z+.12),.061,olive,12)
+ rod('MineralTinLid',(x,y,z+.12),(x,y,z+.135),.066,brass,12)
+ box('MineralTinLabel',(x,y-.061,z+.067),(.065,.006,.052),paper)
+def folded_textile(x,y,z):
+ for i in range(3):
+  box('FoldedDesertTeaTowel',(x+i*.008,y,z+.016+i*.036),(.28,.29,.032),cloth if i%2 else red,.008)
+ for dx in [-.095,.07]: box('TeaTowelWovenStripe',(x+dx,y-.148,z+.052),(.012,.005,.10),ivory)
 for bay,x in enumerate([-4.2,-1.9,.4,2.7,5.0]):
- for row,z in enumerate([.71,1.23,1.75]):
-  for col in range(4):
-   xx=x-.72+col*.46
-   if row==1: ufo('ShelfToyUFO',xx,.02,z)
-   elif row==0: mug('ShelfMug',xx,.01,z,ivory if (col+bay)%2 else teal)
-   else:
-    box('FoldedMapBundle',(xx,.03,z+.10),(.28,.34,.19),paper,.01)
-    box('MapBundleWrapper',(xx,-.147,z+.10),(.09,.005,.16),olive)
-  box('ShelfPriceCard',(x,-.174,z-.035),(.27,.012,.10),paper,.004)
-  lettering('ShelfPriceInk','$1.00  UP',(x,-.183,z-.058),.036,ink)
+ for row,z in enumerate([.6575,1.1775,1.7075]):
+  for col in range(5):
+   if random.random()<.22: continue
+   xx=x-.80+col*.39+random.uniform(-.045,.045); yy=random.uniform(-.08,.10)
+   kind=(bay*3+row+col//2)%6
+   if kind==0: mug('MixedShelfMug',xx,yy,z,ivory if col%2 else teal)
+   elif kind==1: ufo('LooseShelfToyUFO',xx,yy,z)
+   elif kind==2: book_stack(xx,yy,z,random.randint(2,6))
+   elif kind==3:
+    for k in range(random.randint(1,3)): foil_memento(xx+(k-1)*.10,yy,z)
+   elif kind==4: mineral_jar(xx,yy,z)
+   else: folded_textile(xx,yy,z)
+  if row<2 or bay%2:
+   labelx=x+random.uniform(-.45,.45)
+   box('HandwrittenShelfPrice',(labelx,-.206,z-.055),(.20,.012,.078),paper,.002)
+   lettering('ShelfPriceInk',['$1.95','$3.00','$2.50'][row],(labelx,-.214,z-.073),.029,ink)
+for x in [-4.65,-1.45,1.15,4.72]:
+ book_stack(x,.02,.1775,random.randint(4,8))
+ box('ShippingCrateOnLowShelf',(x+.42,.11,.3125),(.46,.40,.27),timber,.009)
 # Forward low display table supports stock only behind the A02 silhouette.
 box('WindowDisplayTable',(-1.7,-3.83,.48),(2.00,.55,.07),counter,.012)
 for x in [-2.5,-.9]:
  for y in [-4.02,-3.65]: box('WindowTableLeg',(x,y,.23),(.045,.045,.46),walnut)
 for i,x in enumerate([-2.45,-.95]):
  ufo('WindowToySaucer',x,-3.80,.52)
- mug('WindowMug',x,-3.70,.72,ivory) if i==0 else None
+ mug('WindowMug',x+.30,-3.70,.515,ivory) if i==0 else None
 
 def postcard(name,x,y,z,w=.23,h=.33):
  box(name+'_Card',(x,y,z),(w,.009,h),paper)
- box(name+'_Sky',(x,y-.006,z+.025),(w*.86,.003,h*.55),sky)
+ variant=random.randrange(4)
+ box(name+'_Sky',(x,y-.006,z+.025),(w*.86,.003,h*.55),[sky,olive,mesa,red][variant])
  # Original printed desert mesa polygon on each postcard.
  flat_mesh(name+'_Mesa',[(x-w*.43,y-.009,z-.07),(x-w*.43,y-.009,z-.01),(x-w*.2,y-.009,z+.045),(x+w*.07,y-.009,z+.045),(x+w*.2,y-.009,z-.025),(x+w*.43,y-.009,z-.025),(x+w*.43,y-.009,z-.07)],[(0,1,2,3,4,5,6)],mesa)
  sphere(name+'_Sun',(x+w*.27,y-.012,z+.095),(w*.08,.002,w*.08),ivory)
- lettering(name+'_NewMexico','NEW MEXICO',(x,y-.011,z-h*.43),w*.10,ink)
+ lettering(name+'_NewMexico',['NEW MEXICO','CALICHE  NM','DESERT TOURS','ROUTE 47'][variant],(x,y-.011,z-h*.43),w*.10,ink)
 # Postcard spinner rack left of the counter, clear of the window centre.
 rod('PostcardRackSpine',(-3.48,-2.72,.1),(-3.48,-2.72,2.18),.022,iron)
 rod('PostcardRackBase',(-3.48,-2.72,.035),(-3.48,-2.72,.075),.30,iron,20)
@@ -314,7 +399,20 @@ for i in range(7):
  rod('MapRoadLine',(x,.096,2.62),(x+.17,.096,3.21),.004,mesa,6)
 for a,b in [((2.0,.09,2.87),(3.4,.09,2.96)),((2.7,.09,2.63),(2.45,.09,3.2))]: rod('MapHighway',a,b,.009,red,6)
 lettering('MapHeading','NEW MEXICO  /  ROAD MAP',(2.7,.08,3.26),.07,ink)
-for i,x in enumerate([-4.7,-2.3,-.1,4.9]): postcard('WallPostcard',x,.13,2.94,.60,.73)
+for i,x in enumerate([-4.7,-3.85,3.9,4.9]):
+ postcard('PinnedTravelPoster',x,.13,2.92,[.53,.45,.63,.57][i],[.70,.59,.76,.65][i])
+ for dx in [-.18,.18]: rod('PosterDrawingPin',(x+dx,.111,3.12),(x+dx,.105,3.12),.008,brass,8)
+# A woven trading-post hanging is a large, readable break in the wall of stock.
+box('WovenDesertBanner',(-1.48,.12,2.91),(1.18,.036,.95),cloth,.004)
+for z in [2.52,2.60,2.72,3.10,3.22,3.29]: box('BannerHorizontalWeave',(-1.48,.096,z),(1.13,.010,.024),red if z<3 else olive)
+for x in [-1.83,-1.48,-1.13]:
+ flat_mesh('BannerDiamond',[(x-.12,.088,2.92),(x,.088,3.06),(x+.12,.088,2.92),(x,.088,2.78)],[(0,1,2,3)],red)
+for i in range(25): rod('BannerFringe',(-2.03+i*.046,.13,2.44),(-2.03+i*.046,.13,2.39+random.uniform(-.025,.015)),.004,cloth,6)
+# A canvas tee on a hanger is merchandise, without a face or figure silhouette.
+verts=[(-.12,.09,2.92),(.05,.09,3.05),(.20,.09,3.05),(.38,.09,2.92),(.31,.09,2.77),(.24,.09,2.80),(.24,.09,2.39),(-.01,.09,2.39),(-.01,.09,2.80),(-.08,.09,2.77)]
+flat_mesh('CanvasSouvenirShirt',verts,[tuple(range(len(verts)))],cloth)
+lettering('ShirtCalichePrint','CALICHE',(.12,.078,2.69),.047,red)
+for a,b in [((-.1,.11,3.04),(.12,.11,3.15)),((.12,.11,3.15),(.35,.11,3.04)),((-.1,.11,3.04),(.35,.11,3.04))]: rod('WireShirtHanger',a,b,.006,iron,6)
 # Small counter merchandise and paper bags create a believable working shop.
 for i in range(4):
  box('PaperShoppingBag',(2.77+i*.11,-2.61,1.37),(.085,.21,.33),paper,.004)
@@ -324,6 +422,19 @@ lettering('TourLeafletInk','SAUCER\nTOURS',(.5,-2.8,1.234),.06,red,rot=(0,0,0))
 box('CounterGenuineDebris',(.70,-2.47,1.31),(.25,.26,.22),counter,.015)
 for i in range(6): sphere('FoilDebrisBag',(.61+(i%3)*.08,-2.55+(i//3)*.09,1.43),(.035,.04,.055),steel)
 lettering('DebrisCrateInk','GENUINE DEBRIS',(.70,-2.614,1.28),.025,ink)
+# Shallow basket, crumpled foil and pinned leaflets give the near counter a purpose.
+for i in range(6): foil_memento(.46+(i%3)*.13,-2.86+(i//3)*.12,1.215)
+for i in range(9):
+ x=2.4+i*.065; box('WovenCounterBasketRail',(x,-2.65,1.30),(.012,.50,.15),cloth)
+for i in range(6): box('CounterBasketWeft',(2.66,-2.904,1.235+i*.027),(.59,.01,.011),timber)
+book_stack(1.76,-2.65,1.22,4)
+for x in [-3.85,-2.95]:
+ # Front stock sits well behind A02 at Y=-4.69 and below its silhouette.
+ book_stack(x,-3.55,.25,random.randint(3,6))
+# An oval woven floor mat under the open aisle, not an added walking surface.
+for i in range(16):
+ o=ring('BraidedOvalShopMat',(-1.55,-2.15,.033),.27+i*.026,.009,cloth if i%3 else red)
+ o.scale.x=1.4
 # Ceiling fixtures are export geometry, with mild emissive surfaces.
 for x in [-1.7,2.0]:
  for y in [-2.7,-.7]: rod('FluorescentHangWire',(x,y,3.30),(x,y,3.50),.005,iron,6)
@@ -332,7 +443,7 @@ for x in [-1.7,2.0]:
 
 # Keep the counter visibly inside the narrow original window from the pavement.
 for o in groups['Interior']:
- if o.name.startswith(('CashCounter','Counter','Register','PaperShoppingBag','PaperBagHandle','FoilDebrisBag','DebrisCrateInk','TourLeafletInk')): o.location.x-=.9
+ if o.name.startswith(('CashCounter','Counter','Register','PaperShoppingBag','PaperBagHandle','FoilDebrisBag','DebrisCrateInk','TourLeafletInk','WovenCounterBasketRail')): o.location.x-=.9
 
 current='Glass'
 # Separate no-collision runtime glass is streetward of the existing unique figure.
@@ -370,7 +481,8 @@ contract={'asset':'Saucer Crash 1947 / Caliche souvenir shop','world_three_pivot
  'mapping':'worldThree=(8025+localY,floor+localZ,2064+localX)','blender_axes':'metres Z up; FBX -Y forward, Z up; UE runtime yaw=-90 same as radio station',
  'building_dimensions_m':[12,9,4.05],'front':'local -Y; structural facade Y=-4.5',
  'window_center_local_m':[-1.7,-4.5,1.45],'window_opening_m':[2.2,1.7],'glass_center_local_m':[-1.7,-4.76,1.45],
- 'door_center_local_m':[2.8,-4.5,1.1],'door_opening_m':[1,2.15],'sign_center_local_m':[.1,-6.3,3.60],
+ 'door_center_local_m':[2.8,-4.5,1.1],'door_opening_m':[1,2.15],'sign_center_local_m':[0,-4.52,3.38],
+ 'legacy_sign_proxy_local_m':[.1,-6.3,3.60],'tours_card_center_local_m':[-2.52,-4.32,1.98],
  'figure_reserved_world_three_m':[8020.31,5.782807474136353,2062.3],
  'figure_policy':'No alien geometry is authored here. Preserve the one existing A02 cutout, price and split edge. Its proxy/logic remains unchanged.',
  'room_back_wall_local_y_m':.75,'visible_room_depth_m':5.25,'closed_door':True,'parts':stats,
@@ -387,11 +499,11 @@ materials={}
 for m in bpy.data.materials:
  p=m.node_tree.nodes.get('Principled BSDF')
  row={'base_color_linear':list(p.inputs['Base Color'].default_value),'metallic':p.inputs['Metallic'].default_value,'roughness':p.inputs['Roughness'].default_value,
-      'emission':list(p.inputs['Emission Color'].default_value),'emission_strength':p.inputs['Emission Strength'].default_value,'alpha':.10 if m==glass else 1.0,'textures':{}}
+      'emission':list(p.inputs['Emission Color'].default_value),'emission_strength':p.inputs['Emission Strength'].default_value,'alpha':.10 if m==glass else 1.0,'textures':{},'two_sided':m in (cloth,mesa)}
  if m in textured:
   prefix=textured[m]; row['textures']={'base_color':'textures/'+prefix+'_color.png','normal':'textures/'+prefix+'_normal_dx.png','roughness':'textures/'+prefix+'_roughness.png'}
   row['normal_convention']='DirectX tangent space; Blender preview uses normal_gl image'
-  if prefix in STONE_SETTINGS: row.update(STONE_SETTINGS[prefix])
+  if prefix in SURFACE_SETTINGS: row.update(SURFACE_SETTINGS[prefix])
  materials[m.name]=row
 (ROOT/'materials.json').write_text(json.dumps(materials,indent=2))
 
@@ -409,6 +521,7 @@ def camera(name,loc,target,lens):
 outside=camera('CAM_Exterior',(-10,-19,4.7),(0,-2,1.65),36)
 inside=camera('CAM_Interior',(-2.8,-4.10,1.70),(1.5,-1.2,1.25),22)
 street=camera('CAM_StreetWindow',(-3.1,-8.2,1.8),(.3,-1.9,1.48),30)
+camera('CAM_RuntimeWindow',(-1.7,-6.4,1.62),(-1.7,-1.0,1.45),26)
 scene.world.color=(.055,.065,.08); scene.render.engine='CYCLES'; scene.cycles.samples=32; scene.cycles.use_denoising=True
 scene.render.threads_mode='FIXED'; scene.render.threads=2
 scene.render.resolution_x=1440; scene.render.resolution_y=1080; scene.render.resolution_percentage=100; scene.view_settings.view_transform='AgX'

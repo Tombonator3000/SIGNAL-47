@@ -75,6 +75,25 @@
     "alpha": 1.0,
     "transmission": 0.0
   },
+  "M_1420_ChalkFlakeEdge": {
+    "base_color": [
+      0.5799999833106995,
+      0.5199999809265137,
+      0.4099999964237213,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.9800000190734863,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
   "M_1420_Clear_glass": {
     "base_color": [
       0.18000000715255737,
@@ -119,17 +138,44 @@
     },
     "uv_scale": 3.0,
     "normal_strength": 0.18,
-    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement"
+    "resolution": 512,
+    "normal_convention": "DirectX tangent space"
   },
   "M_1420_Desk_walnut": {
+    "base_color_linear": [
+      0.23,
+      0.105,
+      0.038,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6000000238418579,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {
+      "base_color": "textures/revision2/desk_worn_color.png",
+      "normal": "textures/revision2/desk_worn_normal_dx.png",
+      "roughness": "textures/revision2/desk_worn_roughness.png"
+    },
+    "normal_strength": 0.28,
+    "uv_scale": 1,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
+  },
+  "M_1420_ExposedLimeRender": {
     "base_color": [
-      0.2800000011920929,
-      0.12999999523162842,
-      0.04500000178813934,
+      0.3700000047683716,
+      0.28999999165534973,
+      0.1899999976158142,
       1.0
     ],
     "metallic": 0.0,
-    "roughness": 0.4699999988079071,
+    "roughness": 0.9700000286102295,
     "emission": [
       1.0,
       1.0,
@@ -138,12 +184,7 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "transmission": 0.0,
-    "textures": {
-      "base_color": "textures/desk_walnut_color.png",
-      "normal": "textures/desk_walnut_normal.png",
-      "roughness": "textures/desk_walnut_roughness.png"
-    }
+    "transmission": 0.0
   },
   "M_1420_Galvanized_metal": {
     "base_color": [
@@ -221,6 +262,32 @@
     "alpha": 1.0,
     "transmission": 0.0
   },
+  "M_1420_OliveWornTimber": {
+    "base_color_linear": [
+      0.062,
+      0.079,
+      0.041,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6000000238418579,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {
+      "base_color": "textures/revision2/olive_timber_color.png",
+      "normal": "textures/revision2/olive_timber_normal_dx.png",
+      "roughness": "textures/revision2/olive_timber_roughness.png"
+    },
+    "normal_strength": 0.24,
+    "uv_scale": 1,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
+  },
   "M_1420_On_air": {
     "base_color": [
       1.0,
@@ -279,31 +346,30 @@
     "transmission": 0.0
   },
   "M_1420_Stucco_cream": {
-    "base_color": [
-      0.6700000166893005,
-      0.5899999737739563,
-      0.44999998807907104,
-      1.0
+    "base_color_linear": [
+      0.6,
+      0.525,
+      0.405,
+      1
     ],
-    "metallic": 0.0,
-    "roughness": 0.8999999761581421,
+    "metallic": 0,
+    "roughness": 0.800000011920929,
     "emission": [
-      1.0,
-      1.0,
-      1.0,
-      1.0
+      0,
+      0,
+      0,
+      1
     ],
-    "emission_strength": 0.0,
-    "alpha": 1.0,
-    "transmission": 0.0,
+    "emission_strength": 0,
+    "alpha": 1,
     "textures": {
-      "base_color": "textures/stucco_color.png",
-      "normal": "textures/stucco_normal_dx.png",
-      "roughness": "textures/stucco_roughness.png"
+      "base_color": "textures/revision2/stucco_layers_color.png",
+      "normal": "textures/revision2/stucco_layers_normal_dx.png",
+      "roughness": "textures/revision2/stucco_layers_roughness.png"
     },
-    "uv_scale": 3.0,
-    "normal_strength": 0.18,
-    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement"
+    "normal_strength": 0.34,
+    "uv_scale": 2,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
   },
   "M_1420_Vinyl_green": {
     "base_color": [
@@ -344,27 +410,55 @@
     "transmission": 0.0
   },
   "M_1420_Walnut": {
-    "base_color": [
-      0.1599999964237213,
-      0.06499999761581421,
-      0.023000000044703484,
-      1.0
+    "base_color_linear": [
+      0.105,
+      0.048,
+      0.021,
+      1
     ],
-    "metallic": 0.0,
+    "metallic": 0,
     "roughness": 0.6000000238418579,
     "emission": [
-      1.0,
-      1.0,
-      1.0,
-      1.0
+      0,
+      0,
+      0,
+      1
     ],
-    "emission_strength": 0.0,
-    "alpha": 1.0,
-    "transmission": 0.0,
+    "emission_strength": 0,
+    "alpha": 1,
     "textures": {
-      "base_color": "textures/walnut_color.png",
-      "normal": "textures/walnut_normal.png",
-      "roughness": "textures/walnut_roughness.png"
-    }
+      "base_color": "textures/revision2/walnut_worked_color.png",
+      "normal": "textures/revision2/walnut_worked_normal_dx.png",
+      "roughness": "textures/revision2/walnut_worked_roughness.png"
+    },
+    "normal_strength": 0.25,
+    "uv_scale": 1,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
+  },
+  "M_1420_WeatheredFacadePaint": {
+    "base_color_linear": [
+      0.6,
+      0.525,
+      0.405,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.800000011920929,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {
+      "base_color": "textures/revision2/facade_1420_weathered_color.png",
+      "normal": "textures/revision2/facade_1420_weathered_normal_dx.png",
+      "roughness": "textures/revision2/facade_1420_weathered_roughness.png"
+    },
+    "normal_strength": 0.34,
+    "uv_scale": 1,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
   }
 }

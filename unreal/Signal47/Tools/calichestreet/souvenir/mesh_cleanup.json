@@ -1,32 +1,34 @@
 {
   "SM_Souvenir_Shell": {
-    "before_triangles": 11592,
-    "removed_exact_zero_area": 0,
-    "removed_by_material": {},
-    "after_triangles": 11592,
-    "visible_surface_hash_before": "59a7c751a9b87ea87a020a2f42666d6d4c48d46e070982f909a4799a7ebc5e4c",
-    "visible_surface_hash_after": "59a7c751a9b87ea87a020a2f42666d6d4c48d46e070982f909a4799a7ebc5e4c",
+    "before_triangles": 19503,
+    "removed_exact_zero_area": 2,
+    "removed_by_material": {
+      "M_Souvenir_BaseGrime": 2
+    },
+    "after_triangles": 19501,
+    "visible_surface_hash_before": "f224dc210572aab46ccf443dc4b531d4895dde737a996e48f7b76875be2cd122",
+    "visible_surface_hash_after": "f224dc210572aab46ccf443dc4b531d4895dde737a996e48f7b76875be2cd122",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,
-    "corner_normal_max_component_delta": 0.0003666877746582031,
+    "corner_normal_max_component_delta": 0.00042515993118286133,
     "all_faces_triangles": true,
     "remaining_zero_area": 0
   },
   "SM_Souvenir_Interior": {
-    "before_triangles": 77836,
-    "removed_exact_zero_area": 1260,
+    "before_triangles": 68766,
+    "removed_exact_zero_area": 480,
     "removed_by_material": {
-      "M_Souvenir_CeramicTeal": 600,
-      "M_Souvenir_CeramicIvory": 660
+      "M_Souvenir_CeramicTeal": 300,
+      "M_Souvenir_CeramicIvory": 180
     },
-    "after_triangles": 76576,
-    "visible_surface_hash_before": "cbbb3fef13c339fe26692a14896e69ad0de7374f596f1c459a71633f7d0c998b",
-    "visible_surface_hash_after": "cbbb3fef13c339fe26692a14896e69ad0de7374f596f1c459a71633f7d0c998b",
+    "after_triangles": 68286,
+    "visible_surface_hash_before": "6b9dc4f4998a921d722ce45b72d1eeaa6b2c870ad0c0c9e5cb6889145b826e74",
+    "visible_surface_hash_after": "6b9dc4f4998a921d722ce45b72d1eeaa6b2c870ad0c0c9e5cb6889145b826e74",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,
-    "corner_normal_max_component_delta": 0.0005187690258026123,
+    "corner_normal_max_component_delta": 0.0005281567573547363,
     "all_faces_triangles": true,
     "remaining_zero_area": 0
   },

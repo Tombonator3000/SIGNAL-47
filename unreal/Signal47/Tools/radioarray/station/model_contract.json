@@ -34,16 +34,23 @@
   ],
   "parts": {
     "SM_1420_Shell": {
-      "vertices": 2656,
-      "triangles": 4952,
+      "vertices": 6728,
+      "triangles": 9972,
+      "triangulated": true,
+      "zero_area_triangles": 0,
       "materials": [
         "M_1420_Concrete",
         "M_1420_Walnut",
         "M_1420_Stucco_cream",
+        "M_1420_WeatheredFacadePaint",
         "M_1420_Galvanized_metal",
+        "M_1420_OliveWornTimber",
         "M_1420_Black_enamel",
         "M_1420_Brick_red",
-        "M_1420_Lamp_glow"
+        "M_1420_Lamp_glow",
+        "M_1420_ChalkFlakeEdge",
+        "M_1420_Paper",
+        "M_1420_ExposedLimeRender"
       ],
       "bounds_local_m": [
         [
@@ -61,13 +68,13 @@
         0.0,
         5.0,
         0.0
-      ],
-      "zero_area_triangles": 0,
-      "triangulated": true
+      ]
     },
     "SM_1420_Interior": {
-      "vertices": 30472,
-      "triangles": 43268,
+      "vertices": 36492,
+      "triangles": 50520,
+      "triangulated": true,
+      "zero_area_triangles": 0,
       "materials": [
         "M_1420_Walnut",
         "M_1420_Desk_walnut",
@@ -82,7 +89,8 @@
         "M_1420_Painted_olive",
         "M_1420_Paper",
         "M_1420_Vinyl_green",
-        "M_1420_Lamp_glow"
+        "M_1420_Lamp_glow",
+        "M_1420_OliveWornTimber"
       ],
       "bounds_local_m": [
         [
@@ -100,18 +108,17 @@
         0.0,
         5.0,
         0.0
-      ],
-      "zero_area_triangles": 0,
-      "triangulated": true
+      ]
     },
     "SM_1420_Door": {
       "vertices": 1760,
       "triangles": 1852,
+      "triangulated": true,
+      "zero_area_triangles": 0,
       "materials": [
-        "M_1420_Painted_olive",
+        "M_1420_OliveWornTimber",
         "M_1420_Black_enamel",
         "M_1420_Clear_glass",
-        "M_1420_Ivory_plastic",
         "M_1420_Galvanized_metal",
         "M_1420_Paper"
       ],
@@ -131,13 +138,13 @@
         -5.070000171661377,
         0.09000000357627869,
         0.02499997615814209
-      ],
-      "zero_area_triangles": 0,
-      "triangulated": true
+      ]
     },
     "SM_1420_Glass": {
       "vertices": 8,
       "triangles": 12,
+      "triangulated": true,
+      "zero_area_triangles": 0,
       "materials": [
         "M_1420_Clear_glass"
       ],
@@ -157,13 +164,13 @@
         0.0,
         5.0,
         0.0
-      ],
-      "zero_area_triangles": 0,
-      "triangulated": true
+      ]
     },
     "SM_1420_Mast": {
       "vertices": 752,
       "triangles": 1264,
+      "triangulated": true,
+      "zero_area_triangles": 0,
       "materials": [
         "M_1420_Concrete",
         "M_1420_Galvanized_metal",
@@ -185,23 +192,50 @@
         0.0,
         5.0,
         0.0
-      ],
-      "zero_area_triangles": 0,
-      "triangulated": true
+      ]
     }
   },
   "notes": [
     "Glass is separate; preserve story photo/anomaly panels in front of local Y=-5.",
     "Mast is separate and optional: legacy 36m mast, guy wires and aviation lights can remain.",
-    "All static parts other than the door share pivot at Blender scene (0,5,0), world building centre. Exported FBX vertices are pivot-local with neutral object translation. Door hinge offset is door_hinge_local_m.",
-    "FBX PBR uses named material slots; original tiling color, normal and roughness PNG maps are referenced by materials.json.",
+    "All static parts other than the door share origin at Blender scene 0,5,0, world building centre. Door FBX has neutral translation and hinge-local vertices; place it at door_hinge_local_m relative to the building pivot.",
+    "FBX PBR uses named material slots with base color, metal and roughness; Original tiling color, normal and roughness PNG maps are referenced by materials.json.",
     "No gameplay or collision changes; shell uses actual openings and interior corridor."
   ],
+  "export_triangulation": "Explicit Blender loop triangulation, exact area=0 triangles omitted; visible triangle coordinates/UVs/materials unchanged.",
   "lobby_walk_world_three_xz_m": [
     8020.32,
     8026.5,
     2030.4,
     2032.8
   ],
-  "export_triangulation": "Explicit Blender loop triangulation, exact area=0 triangles omitted; visible triangle coordinates/UVs/materials unchanged."
+  "source_revision": "R2-concept-match-2026-10-24",
+  "facade_identity": "1420 AM painted in opaque facade PBR; hide legacy roof sign in native integration",
+  "preserved_anchors": [
+    "door hinge",
+    "window opening",
+    "mixing console",
+    "main microphone boom/body",
+    "studio photo and ON AIR runtime objects"
+  ],
+  "new_material_families": [
+    "M_1420_Stucco_cream",
+    "M_1420_Walnut",
+    "M_1420_Desk_walnut",
+    "M_1420_WeatheredFacadePaint",
+    "M_1420_OliveWornTimber"
+  ],
+  "r2_texture_authoring": {
+    "facade_1420_weathered": [
+      2048,
+      1024
+    ],
+    "tiling_families": [
+      1024,
+      1024
+    ],
+    "paint_losses": "Sparse sub-centimetre chips; fine random field 720x360, threshold250/255",
+    "source": "make_revision_textures.py",
+    "normal_convention": "DirectX in materials.json, OpenGL in Blender/GLB"
+  }
 }

@@ -37,9 +37,19 @@
     2.15
   ],
   "sign_center_local_m": [
+    0,
+    -4.52,
+    3.38
+  ],
+  "legacy_sign_proxy_local_m": [
     0.1,
     -6.3,
     3.6
+  ],
+  "tours_card_center_local_m": [
+    -2.52,
+    -4.32,
+    1.98
   ],
   "figure_reserved_world_three_m": [
     8020.31,
@@ -52,22 +62,26 @@
   "closed_door": true,
   "parts": {
     "SM_Souvenir_Shell": {
-      "vertices": 8240,
-      "triangles": 11592,
+      "vertices": 13013,
+      "triangles": 19501,
       "materials": [
         "M_Souvenir_Concrete",
         "M_Souvenir_Walnut",
         "M_Souvenir_CounterWalnut",
         "M_Souvenir_CreamStucco",
+        "M_Souvenir_OldBrick",
         "M_Souvenir_Galvanized",
         "M_Souvenir_OlivePaint",
         "M_Souvenir_BlackIron",
         "M_Souvenir_WornBrass",
         "M_Souvenir_CreamPaper",
         "M_Souvenir_PrintInk",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_ExposedPlaster",
+        "M_Souvenir_OxidizedCanopy",
         "M_Souvenir_FadedRed",
-        "M_Souvenir_CeramicTeal",
-        "M_Souvenir_WarmLamp"
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_BaseGrime"
       ],
       "bounds_local_m": [
         [
@@ -78,7 +92,7 @@
         [
           6.25,
           4.579999923706055,
-          4.25
+          4.050000190734863
         ]
       ],
       "origin": [
@@ -92,37 +106,40 @@
         "UVMap"
       ],
       "uv_loops": {
-        "UVMap": 34776
+        "UVMap": 58503
       }
     },
     "SM_Souvenir_Interior": {
-      "vertices": 51690,
-      "triangles": 76576,
+      "vertices": 47614,
+      "triangles": 68286,
       "materials": [
-        "M_Souvenir_Walnut",
         "M_Souvenir_CreamPaper",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_WovenCanvas",
+        "M_Souvenir_Walnut",
         "M_Souvenir_CounterWalnut",
         "M_Souvenir_OlivePaint",
         "M_Souvenir_BlackIron",
         "M_Souvenir_WornBrass",
         "M_Souvenir_CeramicIvory",
         "M_Souvenir_CeramicTeal",
-        "M_Souvenir_PrintInk",
         "M_Souvenir_Galvanized",
         "M_Souvenir_SkyPrint",
+        "M_Souvenir_CreasedFoil",
+        "M_Souvenir_WeatheredTimber",
         "M_Souvenir_MesaPrint",
-        "M_Souvenir_FadedRed",
         "M_Souvenir_WarmLamp"
       ],
       "bounds_local_m": [
         [
           -5.75,
           -4.475000381469727,
-          -0.021744608879089355
+          -0.021752357482910156
         ],
         [
-          6.074999809265137,
-          0.8149999976158142,
+          6.0450005531311035,
+          0.815000057220459,
           3.549999952316284
         ]
       ],
@@ -137,7 +154,7 @@
         "UVMap"
       ],
       "uv_loops": {
-        "UVMap": 229728
+        "UVMap": 204858
       }
     },
     "SM_Souvenir_Glass": {
@@ -203,5 +220,5 @@
     ]
   },
   "source_editable_collection": "EDITABLE_SOURCE_enable_to_edit",
-  "preview_status": "NOT_RENDERED: awaiting shared graphics queue; no runtime result claimed"
+  "preview_status": "Blender previews rendered; visual inspection and native UE street review are separate checks."
 }

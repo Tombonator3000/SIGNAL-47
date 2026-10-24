@@ -2,48 +2,52 @@
   "status": "PASS",
   "parts": {
     "SM_Caliche_Surface": {
-      "triangles": 24346,
+      "triangles": 11372,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 8
+      "material_slots": 13
     },
     "SM_Caliche_RoadWear": {
-      "triangles": 11636,
+      "triangles": 11370,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 8
+      "material_slots": 13
     },
     "SM_Caliche_Rocks": {
-      "triangles": 4752,
+      "triangles": 8976,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 8
+      "material_slots": 13
     },
     "SM_Caliche_DryPlants": {
-      "triangles": 2430,
+      "triangles": 5304,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 8
+      "material_slots": 13
     }
   },
   "checks": [
     {
       "name": "rocks_and_plants_clear_main_walk_and_protected_approaches",
       "pass": true,
-      "count": 198
+      "count": 482
     },
     {
       "name": "all_overlay_vertices_max_14mm_above_unchanged_source_surface",
       "pass": true,
-      "count": 71976,
+      "count": 45484,
       "maximum_m": 0.013
     },
     {
       "name": "all_material_texture_files_present",
+      "pass": true
+    },
+    {
+      "name": "no_large_opaque_tar_repair_polygons",
       "pass": true
     }
   ]

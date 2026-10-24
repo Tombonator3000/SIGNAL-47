@@ -25,7 +25,7 @@ for name,row in contract['parts'].items():
     assert zero==0,(name,zero)
     report['parts'][name]={'triangles':len(me.loop_triangles),'bounds_error_m':error,'zero_area_triangles':zero,'uv_layers':len(me.uv_layers),'material_slots':len(me.materials)}
 for row in contract['dressing']:
-    assert clear_dressing(*row['xz'],row['radius_m']),row
+    assert clear_dressing(*row['xz'],row['radius_m'],facade=row.get('facade',False)),row
 report['checks'].append({'name':'rocks_and_plants_clear_main_walk_and_protected_approaches','pass':True,'count':len(contract['dressing'])})
 samples=json.loads((ROOT/'surface_samples.json').read_text())
 assert all(0<=r['above_source_m']<=.014 for r in samples)
@@ -33,5 +33,8 @@ report['checks'].append({'name':'all_overlay_vertices_max_14mm_above_unchanged_s
 for mat in json.loads((ROOT/'materials.json').read_text()):
     for filename in mat['textures'].values():assert (ROOT/filename).is_file(),filename
 report['checks'].append({'name':'all_material_texture_files_present','pass':True})
+road=contract['parts']['SM_Caliche_RoadWear']
+assert 'M_CS_TarRepair' not in road['used_materials']
+report['checks'].append({'name':'no_large_opaque_tar_repair_polygons','pass':True})
 (ROOT/'verification.json').write_text(json.dumps(report,indent=2)+'\n')
 print('CALICHE_GROUND_VERIFIED',json.dumps(report['parts']))

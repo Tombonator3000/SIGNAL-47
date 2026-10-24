@@ -1,0 +1,26 @@
+{
+  "verify": {
+    "returncode": 0,
+    "wall_seconds": 1.0110262910020538,
+    "stop_reason": null,
+    "contention": false,
+    "available_gib": 24.708114624023438,
+    "status": "PASS"
+  },
+  "build": {
+    "returncode": 0,
+    "wall_seconds": 60.652722696002456,
+    "stop_reason": null,
+    "contention": false,
+    "available_gib": 24.84942626953125,
+    "status": "PASS"
+  },
+  "preview": {
+    "returncode": 0,
+    "wall_seconds": 14.665393689996563,
+    "stop_reason": null,
+    "contention": false,
+    "available_gib": 24.846019744873047,
+    "status": "PASS"
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "reference": "04-suvenirbutikk.png + Caliche-byen.png; parent owns real runtime iteration",
+  "source_status": "PASS",
+  "runtime_status": "UNVERIFIED: awaiting parent native import and fresh day/dusk/night captures",
+  "protected_openings_door_glass": {
+    "name": "Door, facade openings, frames and glass unchanged from approved source",
+    "result": "PASS",
+    "source_objects": 27,
+    "sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633",
+    "baseline_sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633"
+  },
+  "changes": {
+    "SM_Souvenir_Shell": {
+      "old_triangles": 11592,
+      "triangles": 19501,
+      "old_bounds_local_m": [
+        [
+          -6.25,
+          -6.641568660736084,
+          -0.46000000834465027
+        ],
+        [
+          6.25,
+          4.579999923706055,
+          4.25
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -6.25,
+          -6.641568660736084,
+          -0.46000000834465027
+        ],
+        [
+          6.25,
+          4.579999923706055,
+          4.050000190734863
+        ]
+      ],
+      "materials": [
+        "M_Souvenir_Concrete",
+        "M_Souvenir_Walnut",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_CreamStucco",
+        "M_Souvenir_OldBrick",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_WornBrass",
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_ExposedPlaster",
+        "M_Souvenir_OxidizedCanopy",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_BaseGrime"
+      ],
+      "added_materials": [
+        "M_Souvenir_BaseGrime",
+        "M_Souvenir_ExposedPlaster",
+        "M_Souvenir_OldBrick",
+        "M_Souvenir_OxidizedCanopy",
+        "M_Souvenir_WeatheredTimber"
+      ]
+    },
+    "SM_Souvenir_Interior": {
+      "old_triangles": 76576,
+      "triangles": 68286,
+      "old_bounds_local_m": [
+        [
+          -5.75,
+          -4.475000381469727,
+          -0.021744608879089355
+        ],
+        [
+          6.074999809265137,
+          0.8149999976158142,
+          3.549999952316284
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -5.75,
+          -4.475000381469727,
+          -0.021752357482910156
+        ],
+        [
+          6.0450005531311035,
+          0.815000057220459,
+          3.549999952316284
+        ]
+      ],
+      "materials": [
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_WovenCanvas",
+        "M_Souvenir_Walnut",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_WornBrass",
+        "M_Souvenir_CeramicIvory",
+        "M_Souvenir_CeramicTeal",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_SkyPrint",
+        "M_Souvenir_CreasedFoil",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_MesaPrint",
+        "M_Souvenir_WarmLamp"
+      ],
+      "added_materials": [
+        "M_Souvenir_CreasedFoil",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_WovenCanvas"
+      ]
+    },
+    "SM_Souvenir_Glass": {
+      "old_triangles": 12,
+      "triangles": 12,
+      "old_bounds_local_m": [
+        [
+          -2.7899999618530273,
+          -4.766000270843506,
+          0.6100000739097595
+        ],
+        [
+          -0.6100000143051147,
+          -4.754000186920166,
+          2.2899999618530273
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -2.7899999618530273,
+          -4.766000270843506,
+          0.6100000739097595
+        ],
+        [
+          -0.6100000143051147,
+          -4.754000186920166,
+          2.2899999618530273
+        ]
+      ],
+      "materials": [
+        "M_Souvenir_ClearGlass"
+      ],
+      "added_materials": []
+    }
+  },
+  "sign_target_local_m": [
+    0,
+    -4.52,
+    3.38
+  ],
+  "legacy_sign_proxy_local_m": [
+    0.1,
+    -6.3,
+    3.6
+  ],
+  "tours_card_local_m": [
+    -2.52,
+    -4.32,
+    1.98
+  ],
+  "font_outline_source": "DejaVu Sans Bold, system font; converted to mesh, not a runtime dependency",
+  "source_checks": {
+    "passed": 34,
+    "total": 34
+  },
+  "window_mug_support": {
+    "name": "Window mug rests on display table instead of floating",
+    "result": "PASS",
+    "cup_base_z_m": 0.5149999856948853,
+    "table_top_z_m": 0.5149999856948853
+  },
+  "source_blend_sha256": "052ac6b5eeeea0aa754855a82c222cc2872a2467673601b0c37908d13ed0b153"
+}

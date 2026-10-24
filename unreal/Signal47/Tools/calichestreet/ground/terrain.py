@@ -94,9 +94,17 @@ def in_box(x,z,b,pad=0):return b[0]-pad<=x<=b[1]+pad and b[2]-pad<=z<=b[3]+pad
 def clear_surface(x,z):
     return not (abs(x)<4.45 or pavement(x,z) or any(in_box(x,z,b,.15) for b in BUILDINGS))
 
-def clear_dressing(x,z,radius=.0):
+FACADE_PROTECTED=[(-18.6,-13.3,2062.,2072.3),(18.4,21.3,2029.9,2033.8),(18.2,20.6,2035.7,2038.7),(15.,20.,2042.2,2046.2),(18.,21.1,2060.4,2064.1),(18.2,21.6,2065.4,2068.4)]
+EXACT_BUILDINGS=[(-27.,-17.,2066.,2088.),(20.,30.15,2030.,2042.),(20.5,29.5,2058.,2070.)]
+
+def clear_dressing(x,z,radius=.0,facade=False):
     # The full main walking rectangle, parking apron, road and sidewalks are
     # free of new stones/vegetation, regardless of their collision setting.
+    if facade:
+        # Low façade plants may occupy the narrow edge beyond the actual
+        # walk rectangle, while doors, buzzer and both photo subjects stay clear.
+        if -17.6-radius<=x<=19.5+radius:return False
+        return not any(in_box(x,z,b,radius+.08) for b in EXACT_BUILDINGS+FACADE_PROTECTED)
     if -18.3-radius<=x<=20.9+radius:return False
     return not any(in_box(x,z,b,.75+radius) for b in BUILDINGS+PROTECTED)
 

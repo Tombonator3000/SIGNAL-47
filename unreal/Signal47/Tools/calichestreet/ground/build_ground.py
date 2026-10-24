@@ -43,7 +43,14 @@ for row in spec:
             norm.inputs['Strength'].default_value=row.get('normal_strength',.2)
             m.node_tree.links.new(combine.outputs[0],norm.inputs['Color'])
             m.node_tree.links.new(norm.outputs['Normal'],bs.inputs['Normal'])
-        else:m.node_tree.links.new(tex.outputs['Color'],bs.inputs['Base Color' if role=='base_color' else 'Roughness'])
+        else:
+            m.node_tree.links.new(tex.outputs['Color'],bs.inputs['Base Color' if role=='base_color' else 'Roughness'])
+            if role=='base_color' and row.get('opacity_from_base_color'):
+                if row.get('alpha_mode')=='masked':
+                    clip=m.node_tree.nodes.new('ShaderNodeMath');clip.operation='GREATER_THAN';clip.inputs[1].default_value=.333
+                    m.node_tree.links.new(tex.outputs['Alpha'],clip.inputs[0]);m.node_tree.links.new(clip.outputs[0],bs.inputs['Alpha'])
+                else:m.node_tree.links.new(tex.outputs['Alpha'],bs.inputs['Alpha'])
+                m.surface_render_method='DITHERED'
     MATS.append(m)
 
 # A spatial index of the unchanged rendered triangles. The top sample uses
@@ -75,10 +82,20 @@ def point(x,z,lift=.008):return (x,-(z-2060),top(x,z)+lift)
 class Mesh:
     def __init__(self):self.v=[];self.f=[];self.mat=[];self.uv=[];self.clearance=[]
     def face(self,vs,mat=0,uv=None):
+        # Sword-leaf tips converge to one point. Keep a real triangle rather
+        # than emitting a zero-area triangle from a repeated quad endpoint.
+        clean=[];clean_uv=[]
+        source_uv=uv or [(p[0]/6,-p[1]/6) for p in vs]
+        for p,t in zip(vs,source_uv):
+            if not clean or (Vector(p)-Vector(clean[-1])).length_squared>1e-20:
+                clean.append(p);clean_uv.append(t)
+        if len(clean)>1 and (Vector(clean[0])-Vector(clean[-1])).length_squared<1e-20:
+            clean.pop();clean_uv.pop()
+        vs=clean;uv=clean_uv
         if len(vs)<3:return
         if (Vector(vs[1])-Vector(vs[0])).cross(Vector(vs[2])-Vector(vs[0])).length<1e-9:return
         n=len(self.v);self.v.extend(vs);self.f.append(tuple(range(n,n+len(vs))));self.mat.append(mat)
-        self.uv.extend(uv or [(p[0]/4,-p[1]/4) for p in vs])
+        self.uv.extend(uv)
     def overlay(self,x,z,lift):
         p=point(x,z,lift);self.clearance.append({'xz':[x,z],'above_source_m':lift,'above_floor_m':p[2]-floor_y(x,z)})
         return p
@@ -115,6 +132,20 @@ class Mesh:
         for i,(a,b) in enumerate(ring):
             c,d=ring[(i+1)%count]
             self.face([center,self.overlay(c,d,lift),self.overlay(a,b,lift)],mat)
+    def patch(self,x,z,width,length,mat,angle=0,lift=.012):
+        cs=math.cos(angle);sn=math.sin(angle);vs=[]
+        for xx,zz in [(-.5,-.5),(-.5,.5),(.5,.5),(.5,-.5)]:
+            px=x+xx*width*cs-zz*length*sn;pz=z+xx*width*sn+zz*length*cs
+            if not (-30<=px<=40 and 2020<=pz<=2090):return
+            vs.append(self.overlay(px,pz,lift))
+        self.face(vs,mat,[(0,0),(0,1),(1,1),(1,0)])
+    def beam(self,a,b,r,mat=5,sides=4):
+        a=Vector(a);b=Vector(b);d=(b-a).normalized();u=d.cross(Vector((0,0,1)))
+        if u.length<.01:u=d.cross(Vector((0,1,0)))
+        u.normalize();v=d.cross(u)
+        for i in range(sides):
+            aa=math.tau*i/sides;bb=math.tau*(i+1)/sides
+            self.face([a+r*(u*math.cos(aa)+v*math.sin(aa)),a+r*(u*math.cos(bb)+v*math.sin(bb)),b+r*(u*math.cos(bb)+v*math.sin(bb)),b+r*(u*math.cos(aa)+v*math.sin(aa))],mat)
     def object(self,name):
         me=bpy.data.meshes.new(name);me.from_pydata(self.v,[],self.f);me.update()
         for m in MATS:me.materials.append(m)
@@ -133,15 +164,17 @@ def soilmask(x,z):
     border=min(x+30,40-x,z-2020,2090-z)
     return border>.7+.45*math.sin(z*.61+x*.47) and clear_surface(x,z) and abs(x)>6
 surfaces.grid(REGION,0,step=.65,mask=soilmask)
-# Graded shoulders stop at the actual sidewalk/apron. These flat aggregate
-# bands give the road edge much more readable material and scale variation.
+# Local alpha-feathered patches replace the old broad, hard-edged gravel bands.
+# They reveal underlying soil between chips instead of drawing a new rectangle.
 for side in [-1,1]:
-    box=[4.83*side,8.4*side,2020.5,2089.5];box[:2]=sorted(box[:2])
-    surfaces.grid(box,1,step=.25,lift=.010,mask=lambda x,z:clear_surface(x,z) and not (z<2021 or z>2089))
+    for i in range(32):
+        z=2022.0+i*2.08;x=side*(5.9+.48*math.sin(i*1.71))
+        if pavement(x,z):continue
+        surfaces.patch(x,z,1.35,2.2,8,angle=.22*math.sin(i*1.43),lift=.012)
 # Pavement wear is a thin overlay over g1004. Existing wet/oil wear is +8 mm;
 # the concrete field sits at +6 mm so those authored story/light marks remain.
-for box in [(-16.9,-14.3,2041,2062.5),(-16.8,-13.8,2072,2087.8),(16.75,19.5,2025,2028.8),(16.75,18.85,2048.2,2056.2),(16.75,18.7,2072.2,2088.8)]:
-    surfaces.grid(box,7,step=.35,lift=.006,mask=lambda x,z:not any(in_box(x,z,b,.1) for b in BUILDINGS))
+for x,z in [(-16.6,2044),(-16.4,2059),(-16.5,2075),(-16.3,2086),(18.8,2027),(19.1,2034.5),(18.9,2040.7),(18.6,2052.4),(19.0,2058.8),(19.0,2069.7),(18.5,2079.4),(18.4,2086.7)]:
+    surfaces.patch(x,z,1.2,1.7,9,angle=.4*math.sin(z),lift=.006)
 # Keep both the yellow center marking and its immediate blacktop context.
 # Outside 1.05 m from the center, worn aggregate varies in broad irregular
 # fields rather than repeating a uniformly clean road strip.
@@ -151,12 +184,12 @@ for side in [-1,1]:
         return inner<abs(x)<outer and 2020.5<z<2089.5
     bb=sorted([1.08*side,4.48*side])+[2020.25,2089.75]
     road.grid(bb,2,step=.28,lift=.008,mask=roadmask)
-    for k,z in enumerate([2028.2,2041.6,2049.5,2060.4,2073.7,2086.0]):
-        z+=rng.uniform(-1.3,1.3);x=side*(2.05+rng.random()*.95)
-        road.blob(x,z,.30+rng.random()*.17,.45+rng.random()*.35,6,lift=.012,seed=k+int(side)*50,mask=lambda x,z:1.1<abs(x)<4.43)
+    # Repairs/cracks now live inside the detailed asphalt image. Large opaque
+    # blobs read as featureless polygons at player height, so none are drawn.
     # Thin dust fingers cross onto the outside blacktop edge, under 12 mm high.
     for k in range(15):
-        z=2021+k*4.7;road.ribbon([(side*4.30,z),(side*4.72,z+.3),(side*5.15,z+.4)],.06+rng.random()*.09,1,lift=.013,mask=lambda x,z:abs(x)>4.1 and not pavement(x,z))
+        z=2021.6+k*4.65
+        if not pavement(side*5.0,z):road.patch(side*4.95,z,.8,1.2,9,angle=.18*math.sin(k),lift=.013)
 # Dry drainage is texture/pebbly sediment, with no excavated channel or new
 # height field. Its branching outline follows the unchanged source surface.
 for x,z,l in [(-25.6,2023,35),(-22.9,2038,22),(33,2044,40),(37.8,2053,31)]:
@@ -176,16 +209,34 @@ def rock(x,z,s):
             k=(i+1)%n;rocks.face([verts[j*n+i],verts[j*n+k],verts[(j+1)*n+k],verts[(j+1)*n+i]],4)
     rocks.face(verts[-n:],4)
 
-def bush(x,z,s):
-    h=top(x,z)-.015
-    for i in range(15):
-        a=rng.random()*math.tau;length=s*(.35+rng.random()*.6);lean=s*(.18+rng.random()*.22)
-        root=(x,-(z-2060),h);tip=(x+math.cos(a)*lean,-(z-2060)+math.sin(a)*lean,h+length)
-        w=.008+s*.015
-        plants.face([(root[0]-w,root[1],root[2]),(root[0]+w,root[1],root[2]),tip],5,[(0,0),(1,0),(.5,1)])
-        for j in [0,1]:
-            p=Vector(root).lerp(Vector(tip),.4+j*.23);leaf=p+Vector((math.cos(a+.8)*s*.22,math.sin(a+.8)*s*.22,s*.11))
-            plants.face([p,p+Vector((w*.9,w*.7,.01)),leaf],5,[(0,0),(1,0),(.5,1)])
+def bush(x,z,s,sage=False,width=None):
+    h=top(x,z)-.025;width=width or s*.95;tile=rng.randrange(4)
+    u0=(tile%2)*.5+.002;u1=u0+.496;v0=1-(tile//2+1)*.5+.002;v1=v0+.496
+    for i in range(3):
+        a=i*math.pi/3+rng.uniform(-.1,.1);dx=math.cos(a)*width*.5;dy=math.sin(a)*width*.5
+        plants.face([(x-dx,-(z-2060)-dy,h),(x+dx,-(z-2060)+dy,h),(x+dx,-(z-2060)+dy,h+s),(x-dx,-(z-2060)-dy,h+s)],11 if sage else 10,[(u0,v0),(u1,v0),(u1,v1),(u0,v1)])
+
+def yucca(x,z,s):
+    h=top(x,z)-.03
+    for i in range(22):
+        a=i*math.tau/22+rng.uniform(-.11,.11);length=s*rng.uniform(.65,1.1);last=None
+        for j in range(4):
+            t=j/3;r=length*(.12+t*.8);zz=h+length*(.22+math.sin(t*math.pi*.8)*.65)
+            w=length*.035*math.sin((t*.9+.1)*math.pi)
+            left=(x+math.cos(a)*r-math.sin(a)*w,-(z-2060)+math.sin(a)*r+math.cos(a)*w,zz)
+            right=(x+math.cos(a)*r+math.sin(a)*w,-(z-2060)+math.sin(a)*r-math.cos(a)*w,zz)
+            if last:plants.face([last[0],last[1],right,left],12,[(0,(j-1)/3),(1,(j-1)/3),(1,t),(0,t)])
+            last=(left,right)
+
+def tumbleweed(x,z,r):
+    h=top(x,z)+r*.65-.04
+    for i in range(8):
+        a=i*math.pi/8+rng.uniform(-.09,.09);last=None
+        for j in range(13):
+            t=j*math.tau/12;rr=r*(.86+rng.random()*.22)
+            p=(x+math.cos(a)*math.cos(t)*rr,-(z-2060)+math.sin(a)*math.cos(t)*rr,h+math.sin(t)*rr*.74)
+            if last:plants.beam(last,p,.0045,5,3)
+            last=p
 
 clusters=[(-26,2027),(-22,2043),(-28.5,2059),(-29.2,2087),(34,2025),(35,2047),(33,2055),(35,2074),(38,2085)]
 dressing=[]
@@ -197,7 +248,7 @@ for cx,cz in clusters:
     for k in range(5):
         x=cx+rng.uniform(-1.5,1.5);z=cz+rng.uniform(-1.5,1.5);s=rng.uniform(.22,.55)
         if -29.5<x<39.5 and 2020.5<z<2089.5 and clear_dressing(x,z,s) and math.hypot(x-38,z-2036)>2:
-            bush(x,z,s);dressing.append({'kind':'dryplant','xz':[x,z],'radius_m':s})
+            bush(x,z,s,sage=k%3==0);dressing.append({'kind':'dryplant','xz':[x,z],'radius_m':s})
 
 # Three deliberately placed, compact clusters visible through the gap between
 # radio and souvenir. They remain well outside the full main walk rectangle
@@ -212,13 +263,41 @@ for hero,(cx,cz) in enumerate([(23.8,2049.0),(26.3,2051.5),(28.3,2048.6)]):
     for k in range(5):
         x=cx+hero_rng.uniform(-.65,.65);z=cz+hero_rng.uniform(-.65,.65);s=hero_rng.uniform(.48,.78)
         if clear_dressing(x,z,s):
-            bush(x,z,s);dressing.append({'kind':'dryplant','xz':[x,z],'radius_m':s,'hero_cluster':hero})
+            bush(x,z,s,sage=k%2==0);dressing.append({'kind':'dryplant','xz':[x,z],'radius_m':s,'hero_cluster':hero})
+
+# Façade skirts from the actual concept: low straw tufts and dusty sage at
+# wall/porch corners, outside the real main-walk rectangle. Specific protected
+# boxes leave the buzzer, entrances, window subject and moved A02 figure clear.
+facade_clusters=[(19.82,2034.4),(19.84,2040.1),(20.7,2042.8),(22.2,2042.9),(24.2,2042.9),(27.2,2043.0),(29.6,2043.1),(20.1,2059.0),(20.1,2064.8),(20.1,2069.4),(21.0,2057.1),(23.3,2057.1),(26.0,2057.1),(28.9,2057.1),(29.9,2059.3),(30.1,2067.4),(-24.8,2065.0),(-20.8,2064.9),(-28.2,2064.9),(-28.8,2071.2)]
+for cluster,(cx,cz) in enumerate(facade_clusters):
+    rr=random.Random(5300+cluster)
+    # Short grasses fit between the sidewalk and wall; larger sage is
+    # concentrated round the exposed side corners and building gap.
+    for k in range(8):
+        x=cx+rr.uniform(-.22,.22);z=cz+rr.uniform(-.43,.43)
+        width=rr.uniform(.18,.32);r=width*.5;s=rr.uniform(.25,.46)
+        if clear_dressing(x,z,r,facade=True):
+            bush(x,z,s,sage=k%4==0,width=width)
+            dressing.append({'kind':'sage' if k%4==0 else 'grass','xz':[x,z],'radius_m':r,'facade':True,'facade_cluster':cluster})
+    for k in range(7):
+        x=cx+rr.uniform(-.4,.4);z=cz+rr.uniform(-.55,.55);s=rr.uniform(.055,.18)
+        if clear_dressing(x,z,s,facade=True):
+            rock(x,z,s);dressing.append({'kind':'rock','xz':[x,z],'radius_m':s,'facade':True})
+    surfaces.patch(cx,cz,.75,1.25,9,angle=rr.uniform(-.5,.5),lift=.012)
+
+for x,z,s in [(21.5,2047.2,.61),(28.9,2054.2,.75),(31.0,2058.0,.65),(-28.8,2062.8,.58),(31.3,2044.5,.67),(22.5,2072.5,.52)]:
+    r=s*1.0
+    if clear_dressing(x,z,r,facade=True):
+        yucca(x,z,s);dressing.append({'kind':'yucca','xz':[x,z],'radius_m':r,'facade':True})
+for x,z,r in [(23.0,2055.0,.34),(30.9,2048.0,.39),(-27.8,2063.6,.32),(30.9,2072.0,.36),(-22.0,2046.5,.31),(33.0,2079.0,.40)]:
+    if clear_dressing(x,z,r,facade=True):
+        tumbleweed(x,z,r);dressing.append({'kind':'tumbleweed','xz':[x,z],'radius_m':r,'facade':True})
 
 manifest={'anchor_world_three_m':ANCHOR,'coordinate_mapping':'worldThree=(8000+bx,bz,2060-by)','import_policy':{'force_front_x_axis':True,'coordinate_system_policy':'MATCH_UP_FORWARD_AXES','import_rotation_yaw':90,'runtime_yaw':0},'collision':'NoCollision for every part','parts':{},'dressing':dressing}
 for name,mesh in [('SM_Caliche_Surface',surfaces),('SM_Caliche_RoadWear',road),('SM_Caliche_Rocks',rocks),('SM_Caliche_DryPlants',plants)]:
     ob=mesh.object(name);ob.data.calc_loop_triangles()
     bounds=[[min(v.co[i] for v in ob.data.vertices) for i in range(3)],[max(v.co[i] for v in ob.data.vertices) for i in range(3)]]
-    manifest['parts'][name]={'bounds_local_m':bounds,'triangles':len(ob.data.loop_triangles),'origin_m':list(ob.location),'material_slots':[m.name for m in ob.data.materials],'uv_layers':len(ob.data.uv_layers),'max_above_source_m':max((r['above_source_m'] for r in mesh.clearance),default=None),'max_above_floor_m':max((r['above_floor_m'] for r in mesh.clearance),default=None)}
+    manifest['parts'][name]={'bounds_local_m':bounds,'triangles':len(ob.data.loop_triangles),'origin_m':list(ob.location),'material_slots':[m.name for m in ob.data.materials],'used_materials':sorted(set(MATS[i].name for i in mesh.mat)),'uv_layers':len(ob.data.uv_layers),'max_above_source_m':max((r['above_source_m'] for r in mesh.clearance),default=None),'max_above_floor_m':max((r['above_floor_m'] for r in mesh.clearance),default=None)}
     bpy.ops.object.select_all(action='DESELECT');ob.select_set(True);bpy.context.view_layer.objects.active=ob
     bpy.ops.export_scene.fbx(filepath=str(OUT/(name+'.fbx')),use_selection=True,object_types={'MESH'},axis_forward='-Y',axis_up='Z',global_scale=1,apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',use_triangles=True,mesh_smooth_type='FACE',bake_space_transform=False,add_leaf_bones=False,path_mode='AUTO')
     bpy.ops.export_scene.gltf(filepath=str(OUT/(name+'.glb')),use_selection=True,export_format='GLB')

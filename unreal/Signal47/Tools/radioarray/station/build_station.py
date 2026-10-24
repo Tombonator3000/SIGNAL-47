@@ -358,6 +358,12 @@ for k in range(18):
   cyl('Mast_brace',(a[0],a[1],k+.2),(b[0],b[1],k+1.2),.009,metal,6)
 for z in [9,18]: cyl('Mast_red_beacon',(mx,my,z),(mx,my,z+.13),.07,onair,12)
 
+# Revision R2 is authored against the original component and world-space contracts.
+import subprocess
+subprocess.run(['python3',str(OUT/'make_revision_textures.py')],check=True)
+from station_revision_two import apply as apply_revision_two
+r2_materials=apply_revision_two(groups,mat,cube,cyl,torus,text,globals())
+
 def join_group(key):
  obs=groups[key]; bpy.ops.object.select_all(action='DESELECT')
  for o in obs: o.select_set(True)
@@ -400,6 +406,7 @@ for m,prefix in TEXTURE_MATS.items():
  if prefix in STONE_SETTINGS:
   material_data[m.name].update(STONE_SETTINGS[prefix]); material_data[m.name]['normal_convention']='DirectX tangent space'
   material_data[m.name]['textures']['normal']='textures/'+prefix+'_normal_dx.png'
+material_data.update(r2_materials)
 material_data['M_1420_Clear_glass']['alpha']=.14
 (OUT/'materials.json').write_text(json.dumps(material_data,indent=2))
 # Basis probe is excluded from final scene and exports.
@@ -408,6 +415,11 @@ bpy.ops.mesh.primitive_cube_add(size=1,location=(2,4,6)); probe=bpy.context.obje
 bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
 bpy.ops.export_scene.fbx(filepath=str(EXPORTS/'axis_probe.fbx'),use_selection=True,object_types={'MESH'},apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',axis_forward='-Y',axis_up='Z',bake_anim=False,add_leaf_bones=False)
 bpy.data.objects.remove(probe,do_unlink=True)
+contract['source_revision']='R2-concept-match-2026-10-24'
+contract['r2_texture_authoring']={'facade_1420_weathered':[2048,1024],'tiling_families':[1024,1024],'paint_losses':'Sparse sub-centimetre chips; fine random field 720x360, threshold250/255','source':'make_revision_textures.py','normal_convention':'DirectX in materials.json, OpenGL in Blender/GLB'}
+contract['facade_identity']='1420 AM painted in opaque facade PBR; hide legacy roof sign in native integration'
+contract['preserved_anchors']=['door hinge','window opening','mixing console','main microphone boom/body','studio photo and ON AIR runtime objects']
+contract['new_material_families']=list(r2_materials)
 (OUT/'model_contract.json').write_text(json.dumps(contract,indent=2))
 
 # Presentation stage is excluded from exports and visible only in Blender renders.
@@ -423,7 +435,7 @@ area('Preview_desk_lamp',(4,1.25,1.43),18,(1,.55,.20),.25,(2.8,1.7,.8))
 area('Preview_window_fill',(1.2,-1,2),100,(.40,.55,1),3,(1.2,3,1))
 for x in [-1.2,1.3,3.8]: area('Preview_gooseneck',(x,-.57,2.90),30,(1,.63,.25),.25,(x,-.05,2))
 scene.world.color=(.07,.07,.07)
-scene.render.engine='CYCLES'; scene.render.threads_mode='FIXED'; scene.render.threads=6
+scene.render.engine='CYCLES'; scene.render.threads_mode='FIXED'; scene.render.threads=2
 scene.cycles.samples=48
 scene.cycles.use_denoising=True
 scene.render.resolution_x=1440; scene.render.resolution_y=1080; scene.render.resolution_percentage=100
@@ -436,6 +448,7 @@ scene.camera=ext
 for img in bpy.data.images:
  if img.source=='FILE': img.filepath=bpy.path.relpath(img.filepath,start=str(OUT))
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'1420_AM_station.blend'))
-scene.render.filepath=str(OUT/'exterior.png'); bpy.ops.render.render(write_still=True)
-scene.camera=inside; scene.render.filepath=str(OUT/'interior.png'); bpy.ops.render.render(write_still=True)
+if '--render' in sys.argv:
+ scene.render.filepath=str(OUT/'exterior.png'); bpy.ops.render.render(write_still=True)
+ scene.camera=inside; scene.render.filepath=str(OUT/'interior.png'); bpy.ops.render.render(write_still=True)
 print('STATION_COMPLETE',json.dumps({k:v['triangles'] for k,v in stats.items()}))

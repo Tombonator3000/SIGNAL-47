@@ -1,16 +1,14 @@
 """Small original texture set and source-height audit. Run with system Python.
 
-Uses standard Python and Pillow already present on this workstation.
-This script does not start Blender or Unreal.
+The audit uses standard Python; texture_detail.py runs with the bundled
+NumPy/Pillow workspace runtime. This script starts neither Blender nor Unreal.
 """
 import hashlib
 import json
 import math
-import random
 from pathlib import Path
 import struct
 import sys
-from PIL import Image, ImageDraw, ImageFilter
 from terrain import floor_y, ANCHOR, REGION
 
 ROOT=Path(__file__).resolve().parent
@@ -65,51 +63,11 @@ def audit():
     return out
 
 def textures():
-    path=ROOT/'textures';path.mkdir(exist_ok=True);size=512
-    specs=[('CalicheSoil',[.49,.385,.264],.93),('PeaGravel',[.43,.369,.286],.96),('OldAsphalt',[.22,.212,.192],.87),('DrySilt',[.56,.437,.291],.98),('Limestone',[.54,.478,.363],.91),('DryPlant',[.36,.315,.17],.91),('TarRepair',[.17,.162,.146],.82),('WornConcrete',[.49,.464,.406],.95)]
-    strengths={'CalicheSoil':.12,'DrySilt':.12,'PeaGravel':.16,'OldAsphalt':.10,'TarRepair':.10,'WornConcrete':.10,'Limestone':.22,'DryPlant':.14}
-    rows=[]
-    for seed,(name,color,rough) in enumerate(specs):
-        rng=random.Random(4700+seed);height=[];col=bytearray();roughness=bytearray()
-        byte=lambda f:max(0,min(255,int(f*255)))
-        # Wrapped value noise replaces the regular trigonometric waves that
-        # became conspicuous at low player-camera angles in the first QA.
-        grids={n:[[rng.random() for _ in range(n)] for _ in range(n)] for n in [4,17,53]}
-        def noise(u,v,n):
-            px=u*n;py=v*n;ix=int(px);iy=int(py);a=px-ix;b=py-iy
-            a=a*a*(3-2*a);b=b*b*(3-2*b);g=grids[n]
-            return (g[iy%n][ix%n]*(1-a)+g[iy%n][(ix+1)%n]*a)*(1-b)+(g[(iy+1)%n][ix%n]*(1-a)+g[(iy+1)%n][(ix+1)%n]*a)*b
-        crack=Image.new('L',(size,size),0);draw=ImageDraw.Draw(crack)
-        if name in ['OldAsphalt','TarRepair','WornConcrete']:
-            for _ in range(9):
-                px=rng.uniform(0,size);py=rng.uniform(0,size);heading=rng.random()*math.tau
-                points=[(px,py)]
-                for _ in range(rng.randint(4,10)):
-                    heading+=rng.uniform(-.58,.58);length=rng.uniform(7,19)
-                    px+=math.cos(heading)*length;py+=math.sin(heading)*length;points.append((px,py))
-                draw.line(points,fill=rng.randint(85,150),width=1)
-        crackbytes=crack.filter(ImageFilter.GaussianBlur(.45)).tobytes()
-        for y in range(size):
-            v=y/size
-            for x in range(size):
-                u=x/size;grain=rng.random()
-                macro=noise(u,v,4);mid=noise(u,v,17);fine=noise(u,v,53)
-                fissure=crackbytes[y*size+x]/255
-                h=.30*grain+.10*mid+.04*fine-.10*fissure
-                tint=.79+.12*grain+.05*macro+.02*mid-.05*fissure
-                height.append(h);col.extend(byte(c*tint) for c in color);roughness.append(byte(rough+(.5-grain)*.06))
-        normals=bytearray()
-        for y in range(size):
-            for x in range(size):
-                dx=(height[y*size+(x+1)%size]-height[y*size+(x-1)%size])*.6
-                dy=(height[((y+1)%size)*size+x]-height[((y-1)%size)*size+x])*.6
-                length=math.sqrt(dx*dx+dy*dy+1)
-                normals.extend(byte(q/length*.5+.5) for q in [-dx,dy,1])
-        Image.frombytes('RGB',(size,size),bytes(col)).save(path/(name+'_color.png'))
-        Image.frombytes('RGB',(size,size),bytes(normals)).save(path/(name+'_normal.png'))
-        Image.frombytes('L',(size,size),bytes(roughness)).save(path/(name+'_roughness.png'))
-        rows.append({'name':'M_CS_'+name,'base_color_linear':[1,1,1,1],'metallic':0,'roughness':rough,'emission':[0,0,0,1],'emission_strength':0,'alpha':1,'two_sided':name=='DryPlant','normal_strength':strengths[name],'uv_scale':1.0,'normal_convention':'DirectX','texture_color_space':'sRGB','roughness_compression':'TC_GRAYSCALE','roughness_sampler':'SAMPLERTYPE_LINEAR_GRAYSCALE','textures':{k:'textures/'+name+'_'+s+'.png' for k,s in [('base_color','color'),('normal','normal'),('roughness','roughness')]}})
-    (ROOT/'materials.json').write_text(json.dumps(rows,indent=2)+'\n')
+    # The bundled runtime supplies NumPy; system Python remains sufficient
+    # for the geometry-height audit and launches this isolated texture step.
+    import subprocess
+    runtime=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3'
+    subprocess.run([str(runtime),str(ROOT/'texture_detail.py')],check=True)
 
 if __name__=='__main__':
     print(json.dumps(audit(),indent=2));textures();print('GROUND_PREPARED')

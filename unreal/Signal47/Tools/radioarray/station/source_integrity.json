@@ -9,5 +9,6 @@
     "SM_1420_Interior": 0.0004245936870574951,
     "SM_1420_Mast": 0.0004956318443873897,
     "SM_1420_Shell": 0.00019475817680358887
-  }
+  },
+  "scope_note": "Historical R1 zero-area cleanup proof. R2 authoring intentionally adds components and updates materials; see revision2-contract-diff.json and verification.json."
 }

@@ -29,9 +29,15 @@ Vegens sentrum med midtstripe og en buffer på minst 1,05 m på hver side er ur�
 
 ## PBR og UV
 
-Åtte originale materialer har hver farge, DirectX-normal og ruhet: 24 PNG-filer på 512 × 512. Store flater bruker sammenhengende UV i meter med repetisjon per 4 m. Steiner og tørre blader har ekte UV. Ingen rendereravhengige Blender-prosedyrenoder er nødvendige i spillet. `materials.json` gir eksakte materialnavn og relative teksturstier. DryPlant skal være tosidig. Ruhet er enkanals L-PNG: bruk TC_GRAYSCALE/LinearGrayscale, eller TC_DEFAULT/LinearColor med R-kanal. Normalene har DirectX-grønnkanal; Blender-visningen inverterer grønnkanalen bare i visningsnoden.
+Revisjon 3 bruker 13 originalmaterialer og 39 kart. Asfalt, jord, grus og slitt betong har albedo på 2048 × 2048; øvrig albedo, normal og ruhet er 1024 × 1024. `texture_detail.py` kombinerer uregelmessig makrovariasjon, fine mineralkorn, kantete steinfliser og forgrenede sprekkforløp. Ingen fotopiksler, store tjærepolygoner eller sinusmønstre er brukt. Fargene er dempede gråbrune mineralfarger fra konseptretningen.
 
-Første ekte motorkontroll fant for regelmessige bølger og rette tjærefelt. Teksturkilden bruker derfor innpakket flerskala verdistøy og få uregelmessige sprekkforløp. Tolv avgrensede tjæreklatter har ujevn radial omkrets og dempet fargekontrast. `normal_strength` er asfalt/tjære/betong 0,10, jord/silt 0,12, grus 0,16, stein 0,22 og planter 0,14. `uv_scale` er 1. Tre kompakte kalkstein-/grasgrupper er bevisst plassert i åpningen mellom radio og suvenir, omtrent world X 8023–8029 og Z 2048–2053, utenfor protected-sonene. Endringen krever ny teksturforberedelse, geometri-/blend-eksport og FBX-kontroll; bilder av den forrige pakken dokumenterer funnet, ikke den reviderte pakkens resultat.
+`materials.json` angir eksakte navn, normaleffekt, UV-skala og teksturstier. `ShoulderBlend` og `DustFeather` har RGBA med gjennomsiktige, uregelmessige kanter og brukes bare i avgrensede tynne kantfelt. Importøren skal lese `opacity_from_base_color=True`, med `alpha_mode=translucent`. Hele bakkeplanet er fortsatt opakt. Store flater bruker sammenhengende UV per 6 meter; kantpatcher har lokal UV 0–1.
+
+`GrassAtlas` og `SageAtlas` har fire forskjellige tue-/busksilhuetter i hvert RGBA-atlas. Kortene bruker bare én slik rute per plante, tosidig `alpha_mode=masked`, UV-skala 1 og ingen atlasoverskridelse. Bevar mip-alphadekning ved materialets terskel, slik at de tynne stråene ikke forsvinner på spilleravstand. Yucca har geometriske sverdblader; tumbleweeds har faktisk åpen kvistgeometri. Gras og sage samles ved bygningskantene, i tillegg til de tre synlige gruppene i åpningen mellom radio og suvenir.
+
+Lavt fasadegras bruker et eget, presist plasseringsfilter: hovedgåsonens faktiske rektangel og bygningsfotavtrykk beholdes, mens egne beskyttede bokser holder dørtilnærminger, gas-payphone/journal, radio-buzzer, studiovindu og begge A02-posisjonene frie. Stein og høyere planter får større margin. Alle runtime-delene skal fortsatt ha NoCollision.
+
+Normalene bruker DirectX-grønnkanal. Blender-visningen inverterer grønnkanalen bare i visningsnoden. Ruhetskart er enkanals L-PNG; den eksisterende importøren bruker TC_DEFAULT/LinearColor med R-kanal. De nye materialene er fullstendig beskrevet av sidecaren og krever ingen Blender-prosedyrenoder i motoren.
 
 ## Generering og kontroll
 

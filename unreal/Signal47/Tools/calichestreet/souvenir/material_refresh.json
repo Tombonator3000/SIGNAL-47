@@ -1,51 +1,78 @@
 {
-  "geometry_hash_before": "b97c2cd87744c523481163171856002b4ab2503b0268836b745966316e4ab3a0",
-  "geometry_hash_after": "b97c2cd87744c523481163171856002b4ab2503b0268836b745966316e4ab3a0",
-  "geometry_unchanged": true,
+  "scope": "Concept geometry and all six original 2048px PBR surfaces; regenerated blend/GLB/FBX",
+  "geometry_unchanged": false,
+  "protected_geometry_unchanged": true,
   "settings": {
-    "stucco": {
-      "uv_scale": 1.0,
-      "normal_strength": 0.18,
-      "resolution": 512
-    },
-    "concrete": {
-      "uv_scale": 1.0,
-      "normal_strength": 0.18,
-      "resolution": 512
-    }
-  },
-  "scope": "shader-only and GLB material packaging; no geometry or FBX regenerated",
-  "glb_geometry_hash_before": "c791f3c1e66f38b63e85ae9b99c2139826e79af34ee3ff5ae51bd96057a666b8",
-  "glb_geometry_hash_after": "c791f3c1e66f38b63e85ae9b99c2139826e79af34ee3ff5ae51bd96057a666b8",
-  "glb_geometry_unchanged": true,
-  "wood_textures_byte_identical": true,
-  "fbx_byte_identical": true,
-  "glb_stone_materials": {
-    "M_Souvenir_Concrete": {
-      "normal_scale": 0.18000000715255737,
-      "uv_transform": {}
-    },
-    "M_Souvenir_CreamStucco": {
-      "normal_scale": 0.18000000715255737,
-      "uv_transform": {}
-    }
-  },
-  "png_checks": {
-    "stucco": {
-      "dimensions": [
-        512,
-        512
-      ],
-      "GL_DX_green_complement": true,
-      "noise": "deterministic periodic value noise and aggregate grain; no sine bands"
-    },
-    "concrete": {
-      "dimensions": [
-        512,
-        512
-      ],
-      "GL_DX_green_complement": true,
-      "noise": "deterministic periodic value noise and aggregate grain; no sine bands"
+    "author": "SIGNAL / 47 original raster painting",
+    "resolution": 2048,
+    "method": "drawn fibre paths, growth knots, flaked lime, capillary cracks, oxide blooms; no sine field",
+    "surfaces": {
+      "stucco": {
+        "size": [
+          2048,
+          2048
+        ],
+        "structural_marks": true,
+        "directx_normal": "green complement of OpenGL",
+        "uv_scale": 0.42,
+        "normal_strength": 0.22,
+        "resolution": 2048
+      },
+      "concrete": {
+        "size": [
+          2048,
+          2048
+        ],
+        "structural_marks": true,
+        "directx_normal": "green complement of OpenGL",
+        "uv_scale": 0.65,
+        "normal_strength": 0.2,
+        "resolution": 2048
+      },
+      "walnut": {
+        "size": [
+          2048,
+          2048
+        ],
+        "structural_marks": true,
+        "directx_normal": "green complement of OpenGL",
+        "uv_scale": 1,
+        "normal_strength": 0.28,
+        "resolution": 2048
+      },
+      "desk_walnut": {
+        "size": [
+          2048,
+          2048
+        ],
+        "structural_marks": true,
+        "directx_normal": "green complement of OpenGL",
+        "uv_scale": 1,
+        "normal_strength": 0.25,
+        "resolution": 2048
+      },
+      "weathered_timber": {
+        "size": [
+          2048,
+          2048
+        ],
+        "structural_marks": true,
+        "directx_normal": "green complement of OpenGL",
+        "uv_scale": 1,
+        "normal_strength": 0.35,
+        "resolution": 2048
+      },
+      "rust_metal": {
+        "size": [
+          2048,
+          2048
+        ],
+        "structural_marks": true,
+        "directx_normal": "green complement of OpenGL",
+        "uv_scale": 0.7,
+        "normal_strength": 0.25,
+        "resolution": 2048
+      }
     }
   }
 }

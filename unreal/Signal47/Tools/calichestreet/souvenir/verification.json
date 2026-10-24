@@ -1,8 +1,8 @@
 {
   "tool": "Blender 5.2.2 LTS",
   "status": "PASS",
-  "passed": 26,
-  "total": 26,
+  "passed": 34,
+  "total": 34,
   "checks": [
     {
       "name": "SM_Souvenir_Shell separate mesh",
@@ -21,7 +21,7 @@
         [
           6.25,
           4.579999923706055,
-          4.25
+          4.050000190734863
         ]
       ],
       "max_bounds_error_m": 0.0
@@ -29,8 +29,8 @@
     {
       "name": "SM_Souvenir_Shell exact triangle contract",
       "result": "PASS",
-      "triangles": 11592,
-      "expected": 11592,
+      "triangles": 19501,
+      "expected": 19501,
       "zero_area": 0
     },
     {
@@ -41,15 +41,19 @@
         "M_Souvenir_Walnut",
         "M_Souvenir_CounterWalnut",
         "M_Souvenir_CreamStucco",
+        "M_Souvenir_OldBrick",
         "M_Souvenir_Galvanized",
         "M_Souvenir_OlivePaint",
         "M_Souvenir_BlackIron",
         "M_Souvenir_WornBrass",
         "M_Souvenir_CreamPaper",
         "M_Souvenir_PrintInk",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_ExposedPlaster",
+        "M_Souvenir_OxidizedCanopy",
         "M_Souvenir_FadedRed",
-        "M_Souvenir_CeramicTeal",
-        "M_Souvenir_WarmLamp"
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_BaseGrime"
       ]
     },
     {
@@ -58,7 +62,7 @@
       "layers": [
         "UVMap"
       ],
-      "loops": 34776
+      "loops": 58503
     },
     {
       "name": "SM_Souvenir_Shell finite normals",
@@ -75,6 +79,11 @@
       "result": "PASS"
     },
     {
+      "name": "A02 window silhouette and photograph rays remain clear",
+      "result": "PASS",
+      "sampled_rays": 20
+    },
+    {
       "name": "SM_Souvenir_Interior separate mesh",
       "result": "PASS",
       "count": 1
@@ -86,11 +95,11 @@
         [
           -5.75,
           -4.475000381469727,
-          -0.021744608879089355
+          -0.021752357482910156
         ],
         [
-          6.074999809265137,
-          0.8149999976158142,
+          6.0450005531311035,
+          0.815000057220459,
           3.549999952316284
         ]
       ],
@@ -99,27 +108,30 @@
     {
       "name": "SM_Souvenir_Interior exact triangle contract",
       "result": "PASS",
-      "triangles": 76576,
-      "expected": 76576,
+      "triangles": 68286,
+      "expected": 68286,
       "zero_area": 0
     },
     {
       "name": "SM_Souvenir_Interior material order",
       "result": "PASS",
       "slots": [
-        "M_Souvenir_Walnut",
         "M_Souvenir_CreamPaper",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_WovenCanvas",
+        "M_Souvenir_Walnut",
         "M_Souvenir_CounterWalnut",
         "M_Souvenir_OlivePaint",
         "M_Souvenir_BlackIron",
         "M_Souvenir_WornBrass",
         "M_Souvenir_CeramicIvory",
         "M_Souvenir_CeramicTeal",
-        "M_Souvenir_PrintInk",
         "M_Souvenir_Galvanized",
         "M_Souvenir_SkyPrint",
+        "M_Souvenir_CreasedFoil",
+        "M_Souvenir_WeatheredTimber",
         "M_Souvenir_MesaPrint",
-        "M_Souvenir_FadedRed",
         "M_Souvenir_WarmLamp"
       ]
     },
@@ -129,11 +141,17 @@
       "layers": [
         "UVMap"
       ],
-      "loops": 229728
+      "loops": 204858
     },
     {
       "name": "SM_Souvenir_Interior finite normals",
       "result": "PASS"
+    },
+    {
+      "name": "All interior stock remains behind the A02 plane",
+      "result": "PASS",
+      "nearest_interior_y": -4.475000381469727,
+      "figure_y": -4.69
     },
     {
       "name": "SM_Souvenir_Glass separate mesh",
@@ -192,7 +210,85 @@
     {
       "name": "PBR files and linear material colors",
       "result": "PASS",
-      "texture_dependencies": 12
+      "texture_dependencies": 18
+    },
+    {
+      "name": "All original PBR plates are 2048 pixels",
+      "result": "PASS",
+      "sizes": {
+        "textures/concrete_color.png": [
+          2048,
+          2048
+        ],
+        "textures/concrete_normal_dx.png": [
+          2048,
+          2048
+        ],
+        "textures/concrete_roughness.png": [
+          2048,
+          2048
+        ],
+        "textures/desk_walnut_color.png": [
+          2048,
+          2048
+        ],
+        "textures/desk_walnut_normal_dx.png": [
+          2048,
+          2048
+        ],
+        "textures/desk_walnut_roughness.png": [
+          2048,
+          2048
+        ],
+        "textures/stucco_color.png": [
+          2048,
+          2048
+        ],
+        "textures/stucco_normal_dx.png": [
+          2048,
+          2048
+        ],
+        "textures/stucco_roughness.png": [
+          2048,
+          2048
+        ],
+        "textures/rust_metal_color.png": [
+          2048,
+          2048
+        ],
+        "textures/rust_metal_normal_dx.png": [
+          2048,
+          2048
+        ],
+        "textures/rust_metal_roughness.png": [
+          2048,
+          2048
+        ],
+        "textures/walnut_color.png": [
+          2048,
+          2048
+        ],
+        "textures/walnut_normal_dx.png": [
+          2048,
+          2048
+        ],
+        "textures/walnut_roughness.png": [
+          2048,
+          2048
+        ],
+        "textures/weathered_timber_color.png": [
+          2048,
+          2048
+        ],
+        "textures/weathered_timber_normal_dx.png": [
+          2048,
+          2048
+        ],
+        "textures/weathered_timber_roughness.png": [
+          2048,
+          2048
+        ]
+      }
     },
     {
       "name": "Runtime glass is translucent",
@@ -203,8 +299,8 @@
       "result": "PASS",
       "counts": {
         "SM_Souvenir_Glass": 12,
-        "SM_Souvenir_Interior": 76576,
-        "SM_Souvenir_Shell": 11592
+        "SM_Souvenir_Interior": 68286,
+        "SM_Souvenir_Shell": 19501
       }
     },
     {
@@ -214,6 +310,46 @@
     {
       "name": "Nondegenerate explicit triangulation preserves authored surfaces",
       "result": "PASS"
+    },
+    {
+      "name": "Authored concept details retained in editable source",
+      "result": "PASS",
+      "counts": {
+        "LargeHandPaintedFacadeName": 1,
+        "RoughSawnPorchRafter": 9,
+        "WeatheredCanopyUnderslat": 42,
+        "FlakedLimeAtBase": 96,
+        "RunoffAndCornerScar": 40,
+        "CrumpledFoilMemento": 25,
+        "WovenDesertBanner": 1,
+        "CanvasSouvenirShirt": 1,
+        "RackPostcard": 60,
+        "UnevenTravelGuideStack": 73,
+        "MineralSampleTin": 8,
+        "FoldedDesertTeaTowel": 27
+      }
+    },
+    {
+      "name": "Large painted facade name fits original parapet",
+      "result": "PASS",
+      "width_m": 10.649999618530273
+    },
+    {
+      "name": "Source textures resolve after reopening",
+      "result": "PASS"
+    },
+    {
+      "name": "Window mug rests on display table instead of floating",
+      "result": "PASS",
+      "cup_base_z_m": 0.5149999856948853,
+      "table_top_z_m": 0.5149999856948853
+    },
+    {
+      "name": "Door, facade openings, frames and glass unchanged from approved source",
+      "result": "PASS",
+      "source_objects": 27,
+      "sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633",
+      "baseline_sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633"
     }
   ],
   "runtime_note": "Source and FBX/GLB checks only. Parent owns Unreal import, A02/photo regression, closed door, terrain and day/dusk/night review."

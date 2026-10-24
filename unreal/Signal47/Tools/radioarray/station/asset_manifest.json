@@ -1,49 +1,50 @@
 {
-  "authoring": "Original SIGNAL / 47 procedural geometry, authored 2026-10-23",
+  "authoring": "Original SIGNAL / 47 geometry and seeded multiscale PBR; R2 2026-10-24",
+  "source_revision": "R2-concept-match-2026-10-24",
   "files": {
     "1420_AM_station.blend": {
-      "bytes": 2038812,
-      "sha256": "d98646ad9923adde124c26df4a859042c1055ee63193aa2f42edf88f2c22d174"
+      "bytes": 2411039,
+      "sha256": "e8f8dba3da6175882f22c757c55d6a55d77d714b39db52e0fad08b95c1db932b"
     },
     "1420_AM_station.glb": {
-      "bytes": 4843308,
-      "sha256": "abdc435f2cff1ae93513822af663435f47bef441b274f565fdf6277f662b4d2b"
+      "bytes": 15752824,
+      "sha256": "fc6c74bdc6655fe37d5b1037c642d78ea3b23e17bb567ad5c13015e91221f646"
     },
     "README.md": {
-      "bytes": 5379,
-      "sha256": "7c38d91e69912f23aacba6b0e9d750e1012b7b05af519a452a892342d5a86757"
+      "bytes": 7613,
+      "sha256": "840d5cec6fbf597b86b0a03cbbb7d153cf9c71d2e35e4551fec408a7c11b4995"
     },
     "build_station.py": {
-      "bytes": 30109,
-      "sha256": "7ccac3618062616e6a65525d77689ae45771870566148e418d2e467ba7671dd0"
+      "bytes": 31158,
+      "sha256": "eb5c8ddff1c062e73be9fed193d148c87c122659adabdc55d9cfd16d02e35012"
     },
     "clean_existing_exports.py": {
       "bytes": 2129,
       "sha256": "03f6d30bf1eddc0fcdc099c1b5082e47e1725e50f205ecfc7444fd3c57de8ce3"
     },
     "exports/SM_1420_Door.fbx": {
-      "bytes": 72108,
-      "sha256": "cba6a7b37d4f525e904c67b5374bd26dae2160cd4cbc3c3a115734ee3dddc7fc"
+      "bytes": 77996,
+      "sha256": "5df14faa388050cda2ba497b430e9a72dc9346d9db845e48e10d403ce34509b2"
     },
     "exports/SM_1420_Glass.fbx": {
-      "bytes": 15612,
-      "sha256": "ced4385ac84edc8fd0521f5cd019f5fdfde0dad9f6dabbd0d7c7251daa5a6681"
+      "bytes": 15468,
+      "sha256": "8794f82f7036c153bbfcd3872a7c4a5bd14ac58ac5c81aa45bed19d133f427d3"
     },
     "exports/SM_1420_Interior.fbx": {
-      "bytes": 1067132,
-      "sha256": "ab025e7c62c88a84ded6b3492d0438aa3e5ad317936efb0107d70297d759a365"
+      "bytes": 1277420,
+      "sha256": "42404a45193c62252ca95345805a9622c3327e17d87c1d3eae930d62c5a0e2d2"
     },
     "exports/SM_1420_Mast.fbx": {
-      "bytes": 52092,
-      "sha256": "7f27ce6012de577ccd99184107ad0d62d8f858f3a1297a11cc89a96349c7fde9"
+      "bytes": 52204,
+      "sha256": "819a5d7d7f90bd98c3537d54d9926fd6d11abd3b026fbdc838c74e7f4aafe66f"
     },
     "exports/SM_1420_Shell.fbx": {
-      "bytes": 165932,
-      "sha256": "c91a54004936b247692df63857cd43b9e2c82467000856c4c581985402529849"
+      "bytes": 334828,
+      "sha256": "28c36854a77113fb7decf027d36f65837e894abe1960284326e049d8817662c8"
     },
     "exports/axis_probe.fbx": {
       "bytes": 11868,
-      "sha256": "025c548ac03d66e17d33ddd7dbf853188471e35a0db393abcece20bd042376ad"
+      "sha256": "4266178bc868d8b10ec267149aa06e5c256c4c5e68aff22e8aad7f10913f6795"
     },
     "exterior.png": {
       "bytes": 1511295,
@@ -57,6 +58,10 @@
       "bytes": 1851245,
       "sha256": "c4470ec8ff1ec337d6309424641063141b38e80d6e022381947ba473ef1b5b7a"
     },
+    "make_revision_textures.py": {
+      "bytes": 6020,
+      "sha256": "6a6629d3ade249855d6932133ea5181b6d6052fcb4df2378969b5edfa1214353"
+    },
     "make_textures.py": {
       "bytes": 4429,
       "sha256": "45c2675d1fa74969221e85de306ece79a944f9f79b2f2c70e5969e963d5af5ab"
@@ -66,24 +71,60 @@
       "sha256": "1b76a9213bfbb425fe864cfeb10080427dceaad8b3f62ec62aaf70430e9f1dce"
     },
     "materials.json": {
-      "bytes": 7257,
-      "sha256": "4aad529b54c67902fe503334ed7c21595a14fa7d41b7a430222b6e39f0c2329f"
+      "bytes": 9395,
+      "sha256": "fd218ababcb4f2efdc56a8e10150228b7ab3a08741a2aac5ee9c4a22b5a99fc5"
     },
     "mesh_cleanup.json": {
-      "bytes": 3020,
-      "sha256": "977f96bcef42abdea7f2da27b08309c6a0a2dc5433ced1573160e2a396fcfafd"
+      "bytes": 3019,
+      "sha256": "7a14cfc3ccb6ef99d56c97755d25e2b86d0bc27d04eeca33e08116d5e4104376"
     },
     "model_contract.json": {
-      "bytes": 4805,
-      "sha256": "428d1e45d87b44287a2fac175fb59ab7e01947d2fd6f4d1341d6f2e04a93e058"
+      "bytes": 5886,
+      "sha256": "b144ed738646fa44e59c9cb8bdcae97a187f4dced7817c3d100356ed789d52f5"
+    },
+    "r2-exterior.png": {
+      "bytes": 1230610,
+      "sha256": "b277b6a033932ace2fad280b7ed6abbdc72dda550af6dee8f7ecef66f322db33"
+    },
+    "r2-interior.png": {
+      "bytes": 1482642,
+      "sha256": "0066dd4e007b67b647d851ec0b4c3b2335d6f2ae5e812bf907518711b0332025"
+    },
+    "r2-street-window.png": {
+      "bytes": 1410118,
+      "sha256": "dcbad6ce3923e0539113d198a44c0642cdfe0ea9fc033ddbd0c7a4db652c1ad7"
+    },
+    "r2_material_refinement.json": {
+      "bytes": 397,
+      "sha256": "aa6ff2ac5fa08ece088f541708febce310216ac4fa7e123d4139807183880beb"
+    },
+    "refine_revision_two.py": {
+      "bytes": 1946,
+      "sha256": "1bb54c2fbd7afb8f7dcd3c34bc0dac66a5e42008b1670e9a4c5a396812759813"
+    },
+    "render_revision_two.py": {
+      "bytes": 1284,
+      "sha256": "ecf292937fc7634980de5a95dc0e08423b88d553615399282c0a3cb3b7f1b44d"
+    },
+    "revision2-contract-diff.json": {
+      "bytes": 3260,
+      "sha256": "4b1d25edf564ff8a3bdda003702a02629f3c26358dd9d7b16b29c436f20f684c"
+    },
+    "run_guarded.py": {
+      "bytes": 1512,
+      "sha256": "5e6ec382be4792c9482284409d4e51024d0ef9b7e0aa4d84a511fa37612205ae"
     },
     "source_integrity.json": {
-      "bytes": 543,
-      "sha256": "a1b116835d04d1921d4c4ce5f980c4f5b2ba78572d7c41c8a3e486a024c442d4"
+      "bytes": 723,
+      "sha256": "73d3e382ec31a44dc96dd4498db011be67f69cbfa711ccbe979c2b906a7cb167"
     },
     "station_mesh_cleanup.py": {
       "bytes": 3317,
       "sha256": "32c8dc4d71c110e5f2f6234bfc56a9564e8e32105141e59411a9c2785fc0519c"
+    },
+    "station_revision_two.py": {
+      "bytes": 9115,
+      "sha256": "829b0918cb8c907b8d29c51666bce5018c576787e2173136211331d82a0717bb"
     },
     "textures/concrete_color.png": {
       "bytes": 61870,
@@ -117,6 +158,86 @@
       "bytes": 22974,
       "sha256": "efb392a2e9817fea966aa5aca9d18ead355c4098ff1c29f8ba8294739ef54e9d"
     },
+    "textures/revision2/desk_worn_color.png": {
+      "bytes": 450825,
+      "sha256": "529e800f99675dbda3c341fa9f19d06b49df95b1a6a85ceed5b09d78e7aea04e"
+    },
+    "textures/revision2/desk_worn_normal_dx.png": {
+      "bytes": 196968,
+      "sha256": "7f8c23f5848a66d8ec2634a212e16ad051647d3efff6381323495ab4df6c805f"
+    },
+    "textures/revision2/desk_worn_normal_gl.png": {
+      "bytes": 196888,
+      "sha256": "1908fdb9319310106d9e5cccc7958b4c733eb8a51897eb9b7e640e1e38582a21"
+    },
+    "textures/revision2/desk_worn_roughness.png": {
+      "bytes": 275093,
+      "sha256": "54f750656a6b292b7cd8c98bf32f59a13b1b0d11637d45baf53975d86a042a61"
+    },
+    "textures/revision2/facade_1420_weathered_color.png": {
+      "bytes": 917008,
+      "sha256": "3f618430679d356a94a5053c487701e095c167b9fac9e19454a83cdb781c6549"
+    },
+    "textures/revision2/facade_1420_weathered_normal_dx.png": {
+      "bytes": 3194335,
+      "sha256": "6dce95b168301b8ce9d0713194f7a7ab2aba87364de8937912bcd0b0ac7f20b3"
+    },
+    "textures/revision2/facade_1420_weathered_normal_gl.png": {
+      "bytes": 3194155,
+      "sha256": "3ebd29411f08cd3c8c369c87bf1ad9d8e4303ef88f33ec25726a56b67445e865"
+    },
+    "textures/revision2/facade_1420_weathered_roughness.png": {
+      "bytes": 1032317,
+      "sha256": "54d452ff2aabc487491d70298f0831abbc9547ccb649cdb680cc34b749d71c5a"
+    },
+    "textures/revision2/olive_timber_color.png": {
+      "bytes": 165617,
+      "sha256": "ceb173cba86c24770c2fd148ac35cabafc79ef0a97ba39eb057ce28f49c4a905"
+    },
+    "textures/revision2/olive_timber_normal_dx.png": {
+      "bytes": 241676,
+      "sha256": "59467a01785af43e0abe0276e44bd7c4083635f8f082c71fca2e019a261793fa"
+    },
+    "textures/revision2/olive_timber_normal_gl.png": {
+      "bytes": 241795,
+      "sha256": "c5513cd1b98e2ec4ad3ba20a3802449c0867aaeecb6f6f14ec3f3c7982938b41"
+    },
+    "textures/revision2/olive_timber_roughness.png": {
+      "bytes": 273384,
+      "sha256": "73bc3018dcb7d4e30b3ee7d1f048d940b9bbfaecde1eb045aa0c776595b47656"
+    },
+    "textures/revision2/stucco_layers_color.png": {
+      "bytes": 437924,
+      "sha256": "5b0b74f4e754dc17fbb310b6084a5a91a07b17e97a64db62618180ebed08a19f"
+    },
+    "textures/revision2/stucco_layers_normal_dx.png": {
+      "bytes": 1602073,
+      "sha256": "10bc780d8fd08c3aa7b50d0eae3f79f1f2343e0ee825d89b4534f855d8d52a88"
+    },
+    "textures/revision2/stucco_layers_normal_gl.png": {
+      "bytes": 1602141,
+      "sha256": "d3e67d3f277189667888f6c048ee977afe6e86ac7faa4c1a8396a180e49fa21a"
+    },
+    "textures/revision2/stucco_layers_roughness.png": {
+      "bytes": 514926,
+      "sha256": "732a84568ed2035e2a71cd9e7374266f5414a5d6aaf63ddaf8a35700779d62fb"
+    },
+    "textures/revision2/walnut_worked_color.png": {
+      "bytes": 394061,
+      "sha256": "4e1d8b276e4216db1a06b9c4269eeee4cbcfa316b757db155dfa54155dc241a2"
+    },
+    "textures/revision2/walnut_worked_normal_dx.png": {
+      "bytes": 198391,
+      "sha256": "a6629334594acecfd17000c7cc9ac31a20f317b428d28c674dbef8842b737b6f"
+    },
+    "textures/revision2/walnut_worked_normal_gl.png": {
+      "bytes": 198516,
+      "sha256": "5211ad386a9a3c7015608dbb6157672d4c4ff9f39e7ff643143de7435ffeab8a"
+    },
+    "textures/revision2/walnut_worked_roughness.png": {
+      "bytes": 274611,
+      "sha256": "dd89f82d6f9345743dd8589f39a4bec727e616e254d96e28d400921656c2c7ba"
+    },
     "textures/stucco_color.png": {
       "bytes": 61887,
       "sha256": "77ede2b90e166fc49789681579397d60fe23bc162199bdfac9edbc457e904cdd"
@@ -149,14 +270,53 @@
       "bytes": 22941,
       "sha256": "ea3aa5f91fc0b286de2211a9d74b165b48ba78c35ca29ff4c4ccbfc00526ba1f"
     },
+    "verification/r2-build-guard.json": {
+      "bytes": 1357,
+      "sha256": "34abd5a697671bd73b3990d724e14e55de1bb8d64fe6911ee7214d15cd1d652e"
+    },
+    "verification/r2-build.log": {
+      "bytes": 3682,
+      "sha256": "74cd0c64dc8fe020235382455fe58aac98292de62994a1b04360818e321906b5"
+    },
+    "verification/r2-refine-guard.json": {
+      "bytes": 954,
+      "sha256": "0b93c3dc8a09766336470c74b39b0cdf569f981b64a360c543435a3f156236c9"
+    },
+    "verification/r2-refine.log": {
+      "bytes": 1575,
+      "sha256": "82556a910cc2c82027a83f33dc45c1bf715248702f4993e721b5a4cdad2bdf0a"
+    },
+    "verification/r2-render-guard.json": {
+      "bytes": 1171,
+      "sha256": "7026ae0cb1239e6d212fa895a6cf49c6d392c9fc8fd947c14c3c4fa867bc3bd7"
+    },
+    "verification/r2-render.log": {
+      "bytes": 801,
+      "sha256": "bfbab1b2d95b59cff0da2201de8e8764187649f6ec4e2c7830c13dc38e17851f"
+    },
+    "verification/r2-verify-guard.json": {
+      "bytes": 951,
+      "sha256": "de23dbe8e0acb95c7f900ff3b2362b2628b88426c184d63b2fbffa5921b4f540"
+    },
+    "verification/r2-verify.log": {
+      "bytes": 6259,
+      "sha256": "ea5e82d63646feaa485d1f7c00772908c6870f7b70b9d70a8367b7af8567439f"
+    },
     "verification.json": {
-      "bytes": 7849,
-      "sha256": "2599fe0b51dae9d9203e8b5f0523543f8a20c96df4feaf5a1a4e73b0f545eaa5"
+      "bytes": 8613,
+      "sha256": "02d55d34b13ee229c490dab8c9dea600a5cd378890cf45d9adfb0099f8e7a56e"
     },
     "verify_station.py": {
-      "bytes": 4500,
-      "sha256": "25a10236037a413b4a73cff85d4777084f78caab7c0ac12423a7e278b682d824"
+      "bytes": 4700,
+      "sha256": "211f7137e101e9dcecd195acb9e5f7b6a50993a1b82ca71e17860d74562ffdfd"
     }
   },
-  "material_refresh": "512px value/grain stone; see material_refresh.json. Blender and GLB geometry, FBX and wood image bytes preserved."
+  "verification": {
+    "status": "PASS",
+    "passed": 33,
+    "total": 33,
+    "actual_fbx_roundtrip": true
+  },
+  "material_refinement": "Fine sparse paint losses; geometry/UV/slot/transform hash identical; see r2_material_refinement.json",
+  "native_handoff": "Hide old roof 1420 board. Keep ON AIR, photo IDs, door proxies and legacy mast. Use materials.json texture strengths and conventions."
 }

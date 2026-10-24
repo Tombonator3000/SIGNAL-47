@@ -1,4 +1,24 @@
 {
+  "M_Souvenir_BaseGrime": {
+    "base_color_linear": [
+      0.10499999672174454,
+      0.09200000017881393,
+      0.06400000303983688,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.9700000286102295,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {},
+    "two_sided": false
+  },
   "M_Souvenir_BlackIron": {
     "base_color_linear": [
       0.017999999225139618,
@@ -16,7 +36,8 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_CeramicIvory": {
     "base_color_linear": [
@@ -35,7 +56,8 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_CeramicTeal": {
     "base_color_linear": [
@@ -54,7 +76,8 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_ClearGlass": {
     "base_color_linear": [
@@ -73,7 +96,8 @@
     ],
     "emission_strength": 0.0,
     "alpha": 0.1,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_Concrete": {
     "base_color_linear": [
@@ -97,19 +121,21 @@
       "normal": "textures/concrete_normal_dx.png",
       "roughness": "textures/concrete_roughness.png"
     },
-    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement",
-    "uv_scale": 1.0,
-    "normal_strength": 0.18
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 0.65,
+    "normal_strength": 0.2,
+    "resolution": 2048
   },
   "M_Souvenir_CounterWalnut": {
     "base_color_linear": [
-      0.2800000011920929,
-      0.12999999523162842,
-      0.04500000178813934,
+      0.125,
+      0.05000000074505806,
+      0.017000000923871994,
       1.0
     ],
     "metallic": 0.0,
-    "roughness": 0.5,
+    "roughness": 0.6200000047683716,
     "emission": [
       1.0,
       1.0,
@@ -123,7 +149,11 @@
       "normal": "textures/desk_walnut_normal_dx.png",
       "roughness": "textures/desk_walnut_roughness.png"
     },
-    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 1,
+    "normal_strength": 0.25,
+    "resolution": 2048
   },
   "M_Souvenir_CreamPaper": {
     "base_color_linear": [
@@ -142,7 +172,8 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_CreamStucco": {
     "base_color_linear": [
@@ -166,19 +197,21 @@
       "normal": "textures/stucco_normal_dx.png",
       "roughness": "textures/stucco_roughness.png"
     },
-    "normal_convention": "DirectX tangent space; OpenGL preview map is the green-channel complement",
-    "uv_scale": 1.0,
-    "normal_strength": 0.18
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 0.42,
+    "normal_strength": 0.22,
+    "resolution": 2048
   },
-  "M_Souvenir_FadedRed": {
+  "M_Souvenir_CreasedFoil": {
     "base_color_linear": [
-      0.3700000047683716,
-      0.06499999761581421,
-      0.03500000014901161,
+      0.5799999833106995,
+      0.6000000238418579,
+      0.5600000023841858,
       1.0
     ],
-    "metallic": 0.0,
-    "roughness": 0.6499999761581421,
+    "metallic": 0.949999988079071,
+    "roughness": 0.23000000417232513,
     "emission": [
       1.0,
       1.0,
@@ -187,7 +220,48 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
+  },
+  "M_Souvenir_ExposedPlaster": {
+    "base_color_linear": [
+      0.25,
+      0.1899999976158142,
+      0.11500000208616257,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.9599999785423279,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {},
+    "two_sided": false
+  },
+  "M_Souvenir_FadedRed": {
+    "base_color_linear": [
+      0.1899999976158142,
+      0.023000000044703484,
+      0.014000000432133675,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8399999737739563,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_Galvanized": {
     "base_color_linear": [
@@ -206,7 +280,8 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_MesaPrint": {
     "base_color_linear": [
@@ -225,7 +300,28 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": true
+  },
+  "M_Souvenir_OldBrick": {
+    "base_color_linear": [
+      0.20000000298023224,
+      0.06499999761581421,
+      0.029999999329447746,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.9599999785423279,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_OlivePaint": {
     "base_color_linear": [
@@ -244,7 +340,36 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
+  },
+  "M_Souvenir_OxidizedCanopy": {
+    "base_color_linear": [
+      0.15000000596046448,
+      0.0949999988079071,
+      0.04699999839067459,
+      1.0
+    ],
+    "metallic": 0.5,
+    "roughness": 0.8199999928474426,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/rust_metal_color.png",
+      "normal": "textures/rust_metal_normal_dx.png",
+      "roughness": "textures/rust_metal_roughness.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 0.7,
+    "normal_strength": 0.25,
+    "resolution": 2048
   },
   "M_Souvenir_PrintInk": {
     "base_color_linear": [
@@ -263,7 +388,8 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_SkyPrint": {
     "base_color_linear": [
@@ -282,17 +408,18 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
   },
   "M_Souvenir_Walnut": {
     "base_color_linear": [
-      0.1599999964237213,
-      0.06499999761581421,
-      0.023000000044703484,
+      0.07400000095367432,
+      0.027000000700354576,
+      0.012000000104308128,
       1.0
     ],
     "metallic": 0.0,
-    "roughness": 0.6000000238418579,
+    "roughness": 0.699999988079071,
     "emission": [
       1.0,
       1.0,
@@ -306,7 +433,11 @@
       "normal": "textures/walnut_normal_dx.png",
       "roughness": "textures/walnut_roughness.png"
     },
-    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image"
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 1,
+    "normal_strength": 0.28,
+    "resolution": 2048
   },
   "M_Souvenir_WarmLamp": {
     "base_color_linear": [
@@ -325,7 +456,36 @@
     ],
     "emission_strength": 1.7999999523162842,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
+  },
+  "M_Souvenir_WeatheredTimber": {
+    "base_color_linear": [
+      0.17000000178813934,
+      0.13500000536441803,
+      0.08699999749660492,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8399999737739563,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/weathered_timber_color.png",
+      "normal": "textures/weathered_timber_normal_dx.png",
+      "roughness": "textures/weathered_timber_roughness.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 1,
+    "normal_strength": 0.35,
+    "resolution": 2048
   },
   "M_Souvenir_WornBrass": {
     "base_color_linear": [
@@ -344,6 +504,27 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {}
+    "textures": {},
+    "two_sided": false
+  },
+  "M_Souvenir_WovenCanvas": {
+    "base_color_linear": [
+      0.41999998688697815,
+      0.3100000023841858,
+      0.18000000715255737,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.9599999785423279,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {},
+    "two_sided": true
   }
 }
