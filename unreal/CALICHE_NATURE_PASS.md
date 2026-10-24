@@ -1,6 +1,6 @@
 # Caliche natur, 24. oktober 2026
 
-**Kandidat under sluttkontroll, ikke installert.** Pakke `de38da9747d9680c9788414688de9f641f09086bc1c936a38a8685619bad7ea8`. Redigerbare modellkilder og native assets er samlet i `19ed326d`, med natur-runtime fra `faf278c6`. Claudes skyarbeid til `04d98231` og core/film `f9e1d4aa` er integrert. 721 faktiske Source/Config/Content-filer er bundet til kandidaten i `candidate-production-binding.json`.
+**Installert og lokalt flettet.** Pakke `de38da9747d9680c9788414688de9f641f09086bc1c936a38a8685619bad7ea8`. Redigerbare modellkilder og native assets er samlet i `19ed326d`, med natur-runtime fra `faf278c6`. Claudes skyarbeid til `04d98231` og core/film `f9e1d4aa` er integrert. 721 faktiske Source/Config/Content-filer er bundet til kandidaten i `candidate-production-binding.json`.
 
 ## Resultat og sammenligning med konseptet
 
@@ -34,9 +34,9 @@ CN5 endrer bare en påvist OldRoad-overgang i geologien. Alle 53 213 XY-punkter,
 | Linux-pakke | PASS, materialcook uten erstatningsmaterialer. |
 | Bildegjennomgang | 33 faktisk åpnede spillbilder, akseptert med kjente stilbegrensninger. |
 | Dører, array, buzzer, foto og historie | 11/11 PASS på samme pakke. |
-| Hele eksisterende screenshots.sh | Pågår eller venter, ingen slutt-PASS. |
+| Hele eksisterende screenshots.sh | 110/110 PASS, faktisk 52.3 minutter. |
 
-[Native natur](</home/tom/scratch-bm/Signal47-caliche-nature/CN5/nature-native.json>), [gateassets](</home/tom/scratch-bm/Signal47-caliche-nature/CN5/street-native.json>), [funksjonstester](</home/tom/scratch-bm/Signal47-caliche-nature/runtime-latest.json>) og [full regresjon](</home/tom/scratch-bm/Signal47-caliche-nature/screenshots-full-result.json>) har separate bevis. Bevisroten er `~/scratch-bm/Signal47-caliche-nature`; tidligere forkastede kandidater er bevart der.
+[Native natur](</home/tom/scratch-bm/Signal47-caliche-nature/CN5/nature-native.json>), [gateassets](</home/tom/scratch-bm/Signal47-caliche-nature/CN5/street-native.json>), [funksjonstester](</home/tom/scratch-bm/Signal47-caliche-nature/runtime-latest.json>) og [full regresjon](</home/tom/scratch-bm/Signal47-caliche-nature/screenshots-full-result.json>) har separate bevis. Bevisroten er `~/scratch-bm/Signal47-caliche-nature`; tidligere forkastede kandidater er bevart der. Den eksisterende screenshots.sh bruker starhole.log/png to ganger. Alle 110 opprinnelige scenarioer bestod, men den første loggen ble overskrevet. Den prøven er derfor kjørt én gang til med eget filnavn. Naturbeviset består av 109 bevarte originallogger og denne ene omkjøringen; de opprinnelige rapportene med avvist antallsport er bevart som original-*.json. Selve testskriptet er uendret.
 
 Terrengets faktisk lagrede render-UV-er er sammenlignet med kilde ved absolutt toleranse `1e-4`; FP32-UV unngår tidligere FP16-trinn. Render-RGBA kontrolleres separat. Alle tre plantematerialer har faktisk lagret instansbruksflagg, er rekompilert og kontrolleres også før runtime-opprettelse. Pakket logging leser faktiske kokte LOD-grenser 1/.12/.025, antall, cull-avstand, NoCollision og første/siste verdenstransform for alle 12 familier. Nature-spesifikke shader-/SMU-/fallbackvarsler avvises.
 
@@ -57,10 +57,10 @@ High, 2560x1440, bildeeffekt av, RTX 3080 / driver 595.99, samme ståsted og klo
 
 ## Levering og avgrensning
 
-Eksisterende installasjon beholdes mens sluttprøvene kjører.
+40 payloadfiler hashkontrollert og 51 Saved-filer uendret. Backup: `/home/tom/scratch-bm/Signal47-caliche-nature/installed-backup-1792836126826197217`.
 
 Den nye kildeleveransen er `~/Desktop/Signal47 Caliche natur`, med tre originale Blend-filer, tilhørende teksturer/eksporter, SHA256-manifest og offline `SPILLBILDER.html`. Den eldre leveransen `Signal47 Caliche konseptpass` beholdes. Leveransefilene opprettes først fra de fryste kildene og testbevisene; eventuell installasjons-/leveranse-PASS må finnes i egne JSON-rapporter.
 
 Automatiske faste teleporter, API-bruk og screenshots.sh er ikke menneskelig gjennomspilling, lytting, komfortvurdering eller en spilt fullnatt. Nattbilder uten lommelykt bekrefter orientering/silhuett; fin plantedetalj vurderes fra dagslys. Ingen ny ekstern spillpublisering er utført.
 
-Prosjektbiblioteket ble brukt før implementering. Scenario world-building/materials ved festet commit f0adb5b5 ga prinsipper, men toolkit var ikke motorverifisert og ble ikke installert. VibeUE krevde en ekstra editorplugin og ble ikke brukt. De faktiske FP32-UV- og HISM-bruksflaggene bygger på prosjektets eksisterende Free/Web-import og er kontrollert i dette prosjektet med UE 5.8.4 / Blender 5.2.2.
+Prosjektbiblioteket ble brukt før implementering. Scenario world-building/materials ved festet commit f0adb5b5 ga prinsipper, men toolkit var ikke motorverifisert og ble ikke installert. VibeUE krevde en ekstra editorplugin og ble ikke brukt. Det lenkede [awesome-gamedev-agent-skills](https://github.com/gamedev-skills/awesome-gamedev-agent-skills/tree/184b72be02884f782a0058f2eeae2ce4277453e4) ble også vurdert, særlig create-game-assets og unreal-packaging. Rådene overlapper den eksisterende kilde-/eksport-/native-/runtime-kontrollen. Ingen ny skillpakke eller motorplugin ble installert. De faktiske FP32-UV- og HISM-bruksflaggene bygger på prosjektets eksisterende Free/Web-import og er kontrollert i dette prosjektet med UE 5.8.4 / Blender 5.2.2.
