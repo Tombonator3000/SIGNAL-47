@@ -7,7 +7,7 @@
 - [x] PR150 flettet og samme testede kandidat S2 installert, 40 payloadhash og 48 uendrede Saved-filer.
 - [x] Rett nattens utvaskede nærlys på skapet: native nærkompensasjon, uendret ordinær rekkevidde, kontrollert på kandidatP1.
 - [x] Originale avgangsstolper/ledere, vedlikeholdsskur med kabeltromler/verktøykasse og kontaktstein. Kulverten ved avkjøringen beholdes; ingen ny pipe i flat bakke.
-- [ ] Flett og installer testet kandidatP1 med spillerlagring bevart.
+- [x] PR151 flettet og testet kandidat P1 installert: 40 payloadhash og 48 uendrede Saved-filer.
 - [ ] Senere terrengpolering: mer naturlige eroderte grusoverganger rundt eksisterende fundament. Ingen terrengendring er gjort i dette modellpasset.
 
 

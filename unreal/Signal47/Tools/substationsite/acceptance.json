@@ -200,5 +200,13 @@
     "scope": "Model placement/contact/materials and local near-torch legibility. Shed rust lies in shadow in the native view; DCC source preview supplies complementary material evidence. Existing dusk contrast remains high. No claim of a fully photorealistic environment or complete AA polish."
   },
   "evidence_root": "/home/tom/scratch-bm/Signal47-substationsite",
-  "installation": "PENDING"
+  "installation": {
+    "status": "PASS",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-substationsite/installed-backup-1792860101469498881",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "source_head": "c8c4de1f6b1e8423d0fbfd1ba6280d29968b5974",
+    "pr": 151
+  }
 }

@@ -3,7 +3,7 @@
 ## Trafostasjonens omgivelser og nærlys,24. oktober2026
 
 - Tools/substationsite: tre egne kraftmaster på faktisk g873-bakke, eksakte ledere fra gamle busstubber, vedlikeholdsskur, tromler/verktøykasse og kontaktstein. Telefonlinje og eksisterende kulvert er bevart. Original Blend/PBR/3LOD; ingen ny falsk inngang eller oppdragsport.
-- Kilde3f3687d5/kandidatP1:222 kilde-,29 native-,1383 selvtester og7 korte pakkede scenarioer PASS. Eksisterende inspeksjon/diskreload, nye modellvinkler og nær/far-lykt er kontrollert. SUBSTATION_SITE.md/acceptance.json har faktisk bevis; merge/installasjon gjenstår ved dette punktet.
+- Kilde3f3687d5/kandidatP1:222 kilde-,29 native-,1383 selvtester og7 korte pakkede scenarioer PASS. Eksisterende inspeksjon/diskreload, nye modellvinkler og nær/far-lykt er kontrollert. SUBSTATION_SITE.md/acceptance.json har faktisk bevis; PR151 er flettet i c8c4de1f og kandidat P1 installert: 40 payloadhash, 48 uendrede Saved-filer og verifisert backup.
 - Lommelyktens native spot kompenserer nå for nært synlig treff under3.5m, med jevn overgang og story/flicker uendret. Faktisk P1:1.472m→74.309cd,5.280m→420cd, begge ThreeIntensity64. Ikke mørklegg teksturene som lokal eksponeringsløsning.
 
 ## Caliche Junction Substation, 24. oktober 2026
