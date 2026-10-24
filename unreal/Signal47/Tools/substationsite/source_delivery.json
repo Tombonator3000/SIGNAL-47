@@ -1,0 +1,111 @@
+{
+  "status": "SOURCE_VERIFIED",
+  "revision": "R1b-sparse-gravity-rust",
+  "native_visual_status": "UNVERIFIED",
+  "check_count": 222,
+  "lod_totals": {
+    "0": 25666,
+    "1": 14342,
+    "2": 8652
+  },
+  "budget_LOD0": 35000,
+  "scope": "Original authoring and actual exported geometry/PBR only; no Unreal launched by authoring agent. Parent ran guarded DCC.",
+  "rust": {
+    "revision": "R1b-sparse-gravity-rust",
+    "corrugated_visible_rust_fraction": 0.20999979972839355,
+    "roof_visible_rust_fraction": 0.23999977111816406,
+    "intended_coverage": [
+      0.15,
+      0.25
+    ],
+    "macro_grid_main": [
+      3,
+      1
+    ],
+    "edge_break_grid": [
+      5,
+      2
+    ],
+    "unchanged_geometry": true,
+    "native_visual_status": "UNVERIFIED"
+  },
+  "guards": {
+    "source-textures-final-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-substationsite/source-textures-final-result.json",
+      "sha256": "4f9eef4b82c3f968549300586f575937401c51fdd7faba7e970e7228173b8b42",
+      "returncode": 0,
+      "wall_seconds": 3.0392211449943716,
+      "performance_status": "UNCONTENDED"
+    },
+    "source-build-final-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-substationsite/source-build-final-result.json",
+      "sha256": "955323ddafe008cb2faeb96fe24506d2c2ab84a42ae1e075fcfca450785c3d91",
+      "returncode": 0,
+      "wall_seconds": 3.0367735709878616,
+      "performance_status": "UNCONTENDED"
+    },
+    "source-verify-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-substationsite/source-verify-result.json",
+      "sha256": "b2f243154ba95cfae5b02516cf1d776356e09f0fecb496d706f58d7604320fd6",
+      "returncode": 0,
+      "wall_seconds": 1.0113466710026842,
+      "performance_status": "UNCONTENDED"
+    },
+    "source-preview-final-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-substationsite/source-preview-final-result.json",
+      "sha256": "5cd71478fa5f360ba0ab99f64984215861dd0f5f77041ace2550e07953b40992",
+      "returncode": 0,
+      "wall_seconds": 16.711090214987053,
+      "performance_status": "UNCONTENDED"
+    }
+  },
+  "files": {
+    "Substation_Site.blend": "aeac01b2e6638371e8d91bcad242c02a9fbd0163061cb86ef1c5738ffd08d548",
+    "Substation_Site.glb": "044f834136ac41c65556dd6a709aef367738cbd707b3befec83d64f8d26c442b",
+    "materials.json": "993c863ed263dd4d66065c69b17b1e16303d61fe0ed5cfa26233db9818a8af36",
+    "model_contract.json": "d5eb42bda786beace57fff21991e9e0c716f7eb0de491218c42493c2fe230b6a",
+    "verification.json": "54c8c1f8330457da8e55309584ab30a9d417b19e2236ad74b6990d38b3fe3240",
+    "texture_authoring.json": "1cea8885cde93b3d4f30fece2ffe543eabce1e8cf72e89400759435729b97782",
+    "exports/SM_SubstationSite_Equipment.fbx": "de4434937a8a1771c54c4d2d9cdccd4b3a322b631682f02774626120e1aebf3b",
+    "exports/SM_SubstationSite_Equipment.glb": "cce011fb98926960d4bf802eb79890dad7c422c3310ee737d19fa007a6c42ad5",
+    "exports/SM_SubstationSite_Equipment_LOD1.fbx": "cea8a15a1fbb723c434e302e2503387bd0acafa4942839516ff6b52527f3276c",
+    "exports/SM_SubstationSite_Equipment_LOD2.fbx": "6f07e00ada9d2302f9a5ecd56d117b25576d9fad5a8607d40b5451c4b46acf5c",
+    "exports/SM_SubstationSite_Ground.fbx": "13e585c2ce8f04b02039f8cffc231cda27723cf1d73890837b35d58bf001792b",
+    "exports/SM_SubstationSite_Ground.glb": "1afbeb5204a69daacbb383806750a4b2d1f3a1104b534d7f3765e0ed5c7e8b73",
+    "exports/SM_SubstationSite_Ground_LOD1.fbx": "33936911a212836d67c0a02e9cc92d776430323c03dd74fa4d39fd355bb7403c",
+    "exports/SM_SubstationSite_Ground_LOD2.fbx": "51bf60da3d0cdd3f0cbb640f829adcb6b6219dcc525af41d45f19a1253ce500a",
+    "exports/SM_SubstationSite_Lines.fbx": "564791a7b9af3f249d4614379cf8a0901db5535641d20e186c07b2f0dc73fbc7",
+    "exports/SM_SubstationSite_Lines.glb": "f8352d7b6b877472ee2811f960d027b5b2256fbf984e5ef848a8fe6c707c558d",
+    "exports/SM_SubstationSite_Lines_LOD1.fbx": "cda9d1d6c0f98e7f0a666fd2067958cffe1342d8533fc49daf2a1094065643a3",
+    "exports/SM_SubstationSite_Lines_LOD2.fbx": "b3e070f7b315d284f783c882ca4bda7f899f131d7576e260b1a33e2c5b624a38",
+    "exports/SM_SubstationSite_Pole_A.fbx": "a6218667bea924291c155c8e1a4320d8d1e508f5b336c8188aad09971803dd1b",
+    "exports/SM_SubstationSite_Pole_A.glb": "a116b561f4fe872692fbd8beb6725f3c396801510f6cb8aea7d81e8f60669d05",
+    "exports/SM_SubstationSite_Pole_A_LOD1.fbx": "eee8c3a0d44e342f306b0b0523ae223b0a88b1ae527afa4f7420ab646b5d4aba",
+    "exports/SM_SubstationSite_Pole_A_LOD2.fbx": "396ce4dd1400b7b8af3f772082197037a176bcf134e217523d72c5cadadcb5b4",
+    "exports/SM_SubstationSite_Pole_B.fbx": "1a61f57e570cd2e0b94cb0f43b3a513bee00e78339ca4fd9b4035f1f9b0afc3a",
+    "exports/SM_SubstationSite_Pole_B.glb": "27ecb0a54849aa0df84b34b97040661d953a22027a717e645174d380045435ff",
+    "exports/SM_SubstationSite_Pole_B_LOD1.fbx": "8c3f755433add1929fc25ffa325530b9593bf2f7382def23dc2c9ca4fe7a191c",
+    "exports/SM_SubstationSite_Pole_B_LOD2.fbx": "860a288651ac586ef9dae79aafb3df6d3ab948f21ebc4d5dca60ecea6e64a380",
+    "exports/SM_SubstationSite_Pole_C.fbx": "8277eabeec6d4c345a55b9c8da8857c79bfdcfda455fb4305b7bbf9726e464b5",
+    "exports/SM_SubstationSite_Pole_C.glb": "6cbf9d39b03da273ea185c477f79006bb490e551a5d048b0c97cfc6c794547ec",
+    "exports/SM_SubstationSite_Pole_C_LOD1.fbx": "937c694b979d891d591b0f855e785591f9977818cdbef71a6acaef1f7484068e",
+    "exports/SM_SubstationSite_Pole_C_LOD2.fbx": "4e9aa8d63004bff9fafb41865d5b878961d4eb53dd2578edee987f27397318a5",
+    "exports/SM_SubstationSite_Shed.fbx": "1d3cdc11c1907f59aa8dbceca0b301196555698b7a18ea366702b11a11a1e8f2",
+    "exports/SM_SubstationSite_Shed.glb": "50dbd6e580511b56819cf4588e7d044f37bcf7fa98e280ac0a507aedaff68628",
+    "exports/SM_SubstationSite_Shed_LOD1.fbx": "5eb5a7df3c1efc6e5f746414c7982e1ffaba381ce59d6dc0383e0b1d3ab44558",
+    "exports/SM_SubstationSite_Shed_LOD2.fbx": "fee06f70b773a2fb5cfc845928949be963ec4c2c76a27a752af3487f577b29bd",
+    "exports/axis_probe.fbx": "e730b4447638f41f8c127d275d40f8c43a5589cf9d1dcf59703e676d38ffad98",
+    "textures/CorrugatedSteel_base_color.png": "9a2fca2241d0d5436a054c2e5d7bca26ba5636dcaf77aafca22ff8144b83b898",
+    "textures/CorrugatedSteel_normal.png": "432bce4312c54a0a4a2950f63b73dd1a4d163950af748a14619b3421962087c9",
+    "textures/CorrugatedSteel_roughness.png": "b58912975f597f501b8aab900ee532188f3a1635ac832498b682d7e614afe048",
+    "textures/PrintAtlas_base_color.png": "a5d9750c53f84059d3b89a498dd7ae42c006c5a1a8ef08d7d6c3fac8ddd1cc86",
+    "textures/PrintAtlas_normal.png": "86993e9276b669289b91c2563b704bd0116c0c59af1949f08c79bfc2e2e8ff9b",
+    "textures/PrintAtlas_roughness.png": "7ef7a185e9ab63db60073311b98a3d93b5dcd9fb1f1d36c9ecbac5b241962144",
+    "textures/RoofRust_base_color.png": "c4b386096255c4ca8f95586b36e4d0f71800bbec6b499805d75c8211e6d8b309",
+    "textures/RoofRust_normal.png": "9018e699270baf88ed4d96ecf1ab294c6aff73e9ad3dae399c251770bf697646",
+    "textures/RoofRust_roughness.png": "47958764b616775e92c49c86105127b502b70b82d94c44e30f2101e1bb46a7d3",
+    "textures/WeatheredWood_base_color.png": "d67b9e1b8de9824315fae2d99be073ae01413e8d8c005339c78fe92a307eda7a",
+    "textures/WeatheredWood_normal.png": "2366286b5fca7a91855fa2cbfa5f66f4d1dadc267906cf08dfb36d1faf9a0290",
+    "textures/WeatheredWood_roughness.png": "91b0049c164d1dcba10d90f6a18d0948afb38f47f05994f1747e2e14b2aa481a"
+  }
+}

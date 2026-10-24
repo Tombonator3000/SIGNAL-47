@@ -1,0 +1,160 @@
+{
+  "_doc": "Original additions to Caliche Junction. Blender offset maps to world Three (7890-bx,-1.10+bz,536.20+by), yaw180. Only pole-foot boxes of half-width .25m and guy-anchor box of half-width .18m block the walk/drive. No line/ground AABB collider or new floor/zone; the existing substation yard blocks the locked shed and equipment. Views explicitly use existing diner foot area (World.PlaceOfLeg(road)), while props and collision remain in road. No clock is forced by these views.",
+  "area": "road",
+  "walk": "road",
+  "leg": "road",
+  "grounds": [
+    "road"
+  ],
+  "parent": "world.legs.road.area.group",
+  "props": [
+    {
+      "id": "substationSitePole_A",
+      "model": "/Game/SubstationSite/SM_SubstationSite_Pole_A.SM_SubstationSite_Pole_A",
+      "at": [
+        7890,
+        -1.340012,
+        558.0
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false,
+      "blocks": [
+        [
+          -0.25,
+          0.25,
+          -0.25,
+          0.25
+        ]
+      ]
+    },
+    {
+      "id": "substationSitePole_B",
+      "model": "/Game/SubstationSite/SM_SubstationSite_Pole_B.SM_SubstationSite_Pole_B",
+      "at": [
+        7890,
+        -1.328311,
+        590.0
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false,
+      "blocks": [
+        [
+          -0.25,
+          0.25,
+          -0.25,
+          0.25
+        ]
+      ]
+    },
+    {
+      "id": "substationSitePole_C",
+      "model": "/Game/SubstationSite/SM_SubstationSite_Pole_C.SM_SubstationSite_Pole_C",
+      "at": [
+        7890,
+        -1.401798,
+        622.0
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false,
+      "blocks": [
+        [
+          -0.25,
+          0.25,
+          -0.25,
+          0.25
+        ]
+      ]
+    },
+    {
+      "id": "substationSiteShed",
+      "model": "/Game/SubstationSite/SM_SubstationSite_Shed.SM_SubstationSite_Shed",
+      "at": [
+        7883.5,
+        -1.1,
+        541.1
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationSiteEquipment",
+      "model": "/Game/SubstationSite/SM_SubstationSite_Equipment.SM_SubstationSite_Equipment",
+      "at": [
+        7883.2,
+        -1.18,
+        538.85
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "substationSiteLines",
+      "model": "/Game/SubstationSite/SM_SubstationSite_Lines.SM_SubstationSite_Lines",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false,
+      "blocks": [
+        [
+          -0.18,
+          0.18,
+          -90.18,
+          -89.82
+        ]
+      ]
+    },
+    {
+      "id": "substationSiteGround",
+      "model": "/Game/SubstationSite/SM_SubstationSite_Ground.SM_SubstationSite_Ground",
+      "at": [
+        7890,
+        -1.1,
+        536.2
+      ],
+      "yaw": 180,
+      "ground": false,
+      "collide": false
+    }
+  ],
+  "views": [
+    {
+      "name": "substationsite-approach",
+      "area": "diner",
+      "at": [
+        7890,
+        519,
+        3.14159265,
+        0.02
+      ]
+    },
+    {
+      "name": "substationsite-line",
+      "area": "diner",
+      "at": [
+        7908,
+        531,
+        2.78,
+        0.18
+      ]
+    },
+    {
+      "name": "substationsite-shed",
+      "area": "diner",
+      "at": [
+        7877.5,
+        536.4,
+        -2.235,
+        0.06
+      ]
+    }
+  ]
+}
