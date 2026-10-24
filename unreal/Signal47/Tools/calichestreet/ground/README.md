@@ -7,7 +7,7 @@ Original Blender-pakke for gatebiten med bensinstasjon, radiostasjon og suvenirb
 Fire uavhengige deler deler ett anker og én origin:
 
 - `SM_Caliche_Surface`: caliche, grusskuldre, grunne sedimentrenner og slitt betong foran fasadene.
-- `SM_Caliche_RoadWear`: asfaltaggregat, tjærelapper og grusfingre langs kantene.
+- `SM_Caliche_RoadWear`: asfaltaggregat, sprekknett og grusfingre langs kantene.
 - `SM_Caliche_Rocks`: lave, delvis nedgravde kalksteingrupper utenfor main-gåsonen.
 - `SM_Caliche_DryPlants`: lave tørre gras-/buskklynger utenfor main-gåsonen.
 
@@ -23,15 +23,15 @@ Gjenbruk radioarray-importens faktisk verifiserte legacy-FBX-policy: `force_fron
 
 `prepare_ground.py` leser faktiske eksporterte triangler for g873 (ørken/grade), g874 (asfalt) og g1004 (Town-pave). `source_contact.json` dokumenterer manifesthash, kildeantall og punktvise kilde-/fotunderlagshøyder. Selve triangelutdraget lagres i `contact_triangles.json`, så modellen kan regenereres uten å åpne hele spillet.
 
-Nye jordflater ligger normalt 8 mm over målt gammel tegnet flate; grus 10 mm; tørre sediment-/tjærefelt 12 mm; smale grusfingre høyst 13 mm. Betongfeltene ligger 6 mm over gammel pave, under de gamle wear-merkene som ligger 8 mm over pave. Overgangene mellom hovedjord og grus er material-/normalvariasjoner med høyst 2 mm høydesprang. Den ytre kanten er uregelmessig og følger det opprinnelige høydefeltet. Ingen forhøyd kantstein eller dyp grøft er lagt til.
+Nye jordflater ligger normalt 8 mm over målt gammel tegnet flate; tørre sedimentfelt og støv 12 mm; smale grusfingre høyst 13 mm. Betongfeltene ligger 6 mm over gammel pave, under de gamle wear-merkene som ligger 8 mm over pave. Overgangene mellom hovedjord og grus er material-/normalvariasjoner med høyst 2 mm høydesprang. Den ytre kanten er uregelmessig og følger det opprinnelige høydefeltet. Ingen forhøyd kantstein eller dyp grøft er lagt til.
 
-Vegens sentrum med midtstripe og en buffer på minst 1,05 m på hver side er urørt. Nye asfaltfelt stopper innenfor den gamle kantlinjen. Grusskuldrene møter eksisterende asfalt, apron og fortau. Stein og vegetasjon utelukkes fra hele main-gåsonen og dens margin, alle bygningsfotavtrykk og ekstra soner rundt payphone, Sentinel-journal, dørtilnærminger, radiobuzzer, studiovindu og A02s opprinnelige og senere posisjoner. Renner er grunne visuelle sediment-/grusspor, ikke nye kolliderende utgravninger.
+Veien er sammenhengende detaljert over begge felt. Bare gulmerkingen ved X ±0,1 m (0,1 m bred) og hvite kantlinjer ved X ±3,6 m (0,12 m bred) holdes udekket: alpha er 0 innenfor X ±0,18 m og ved kantlinjen ±0,09 m, med myk overgang videre. Ingen bred, mørk midtbuffer beholdes. Grusskuldrene møter eksisterende asfalt, apron og fortau. Stein og vegetasjon utelukkes fra hele main-gåsonen og dens margin, alle bygningsfotavtrykk og ekstra soner rundt payphone, Sentinel-journal, dørtilnærminger, radiobuzzer, studiovindu og A02s opprinnelige og senere posisjoner. Renner er grunne visuelle sediment-/grusspor, ikke nye kolliderende utgravninger.
 
 ## PBR og UV
 
-Revisjon 3 bruker 13 originalmaterialer og 39 kart. Asfalt, jord, grus og slitt betong har albedo på 2048 × 2048; øvrig albedo, normal og ruhet er 1024 × 1024. `texture_detail.py` kombinerer uregelmessig makrovariasjon, fine mineralkorn, kantete steinfliser og forgrenede sprekkforløp. Ingen fotopiksler, store tjærepolygoner eller sinusmønstre er brukt. Fargene er dempede gråbrune mineralfarger fra konseptretningen.
+Revisjon 4 / native R3 bruker 13 originalmaterialer og 39 kart. Asfalt, jord, grus og slitt betong har albedo på 2048 × 2048; øvrig albedo, normal og ruhet er 1024 × 1024. `texture_detail.py` kombinerer uregelmessig makrovariasjon, fine mineralkorn, kantete steinfliser og forgrenede sprekkforløp. Ingen fotopiksler, store tjærepolygoner eller sinusmønstre er brukt. Jordtonen er varm sandtan/gråbrun og ligger nærmere det eksisterende ørkenunderlaget, slik at regionen ikke leses som en separat betongplate.
 
-`materials.json` angir eksakte navn, normaleffekt, UV-skala og teksturstier. `ShoulderBlend` og `DustFeather` har RGBA med gjennomsiktige, uregelmessige kanter og brukes bare i avgrensede tynne kantfelt. Importøren skal lese `opacity_from_base_color=True`, med `alpha_mode=translucent`. Hele bakkeplanet er fortsatt opakt. Store flater bruker sammenhengende UV per 6 meter; kantpatcher har lokal UV 0–1.
+`materials.json` angir eksakte navn, normaleffekt, UV-skala og teksturstier. `ShoulderBlend` og `DustFeather` har RGBA med gjennomsiktige, uregelmessige kanter og brukes bare i avgrensede tynne kantfelt. Importøren skal lese `opacity_from_base_color=True`, med `alpha_mode=translucent`. Både `CalicheSoil` og `OldAsphalt` bruker `vertex_alpha_opacity=True`, `alpha_mode=dithered_masked`. Hvert mesh har RGBA-attributtet `Color`, også de delene der alle verdier er hvite. RGB er alltid 1. Alpha er nøyaktig 0 på alle faktiske åpne polygonkanter, inkludert hull rundt opprinnelig pave/bygg. Alpha går med smoothstep til 1 over 1,8 m for jord og 0,45 m for asfalt. I UE må `DitherTemporalAA(VertexColor.A)` drive OpacityMask; et vanlig alpha-clip ville bare flytte den harde sikksakkgrensen. FBX-importen må bruke vertex_color_import_option=REPLACE. Lokale shoulder-patcher har nå teksturalpha 0 på alle fire kanter. Store flater bruker sammenhengende UV per 6 meter; kantpatcher har lokal UV 0–1.
 
 `GrassAtlas` og `SageAtlas` har fire forskjellige tue-/busksilhuetter i hvert RGBA-atlas. Kortene bruker bare én slik rute per plante, tosidig `alpha_mode=masked`, UV-skala 1 og ingen atlasoverskridelse. Bevar mip-alphadekning ved materialets terskel, slik at de tynne stråene ikke forsvinner på spilleravstand. Yucca har geometriske sverdblader; tumbleweeds har faktisk åpen kvistgeometri. Gras og sage samles ved bygningskantene, i tillegg til de tre synlige gruppene i åpningen mellom radio og suvenir.
 
@@ -45,10 +45,12 @@ Ikke kjør Blender eller Unreal samtidig med en annen tung jobb på maskinen. Et
 
 ```sh
 python3 prepare_ground.py ~/scratch-bm/Signal47-web
-blender -b --threads 4 --python build_ground.py
+blender -b --threads 2 --python build_ground.py
 blender -b --threads 2 --python verify_ground.py
 ```
 
 Generatoren lagrer redigerbar `Caliche_Ground.blend`, FBX/GLB per del, samlet GLB og kontrakter. Teksturene pakkes også inn i blend-filen. Generering rendrer ikke automatisk. Etter separat klarsignal kan `-- --render` gi tre CPU-inspeksjonsbilder. `verification.json` bekrefter den faktiske FBX-tilbakeimporten, UV, materialplasser, frie passasjer og alle registrerte flatehøyder.
 
 Kildebilder og Blender-kontroll er ikke runtimebevis. Endelig aksept krever samme kameravinkler ved spillerhøyde i dag, skumring og natt, med synlig forbedret asfalt/grus foran fasadene. Import, runtimeplassering, kollisjonskontroll og sluttprøver utføres av parent.
+
+Native R3 verifiserer i tillegg at FBX faktisk bevarer `Color` og alpha-intervall, at alle åpne kanter har alpha 0, at dupliserte posisjoner har identisk alpha, og at de faktiske veimerkingssonene er udekket. Tidligere native bilder og rapporter er beholdt i arbeidsbevisene før regenerering. Fire tydeligere, avgrensede tue-/sagegrupper ved bygningshjørner og små grasrøtter ved radiobenkens nordende er lagt til utenfor de beskyttede sonene.

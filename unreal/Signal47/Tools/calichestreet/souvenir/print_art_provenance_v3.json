@@ -1,0 +1,36 @@
+{
+  "type": "original generated bitmap artwork for in-game paper, no third-party/reference pixels",
+  "tool": "built-in image_gen.imagegen",
+  "actual_pixels": [
+    1254,
+    1254
+  ],
+  "grid": [
+    2,
+    2
+  ],
+  "quadrants": [
+    "New Mexico mesa postcard",
+    "New Mexico highway map",
+    "Caliche trading-post postcard",
+    "Desert Tours souvenir handbill"
+  ],
+  "file": "textures/souvenir_print_atlas_v3.png",
+  "sha256": "6e4dd99457dd6de48669c8019d9ec3a13fa026344b5602733d5a3953a94af0e5",
+  "runtime_status": "UNVERIFIED until fresh native capture",
+  "ai_generated": true,
+  "source_original": "source_art/souvenir_print_atlas_v3.original.png",
+  "prompt_file": "source_art/print_atlas_v3.prompt.txt",
+  "requested_pixels": [
+    2048,
+    2048
+  ],
+  "ai_generated_material_fields": {
+    "M_Souvenir_PrintedArtwork.base_color": "textures/souvenir_print_atlas_v3.png"
+  },
+  "not_ai_generated_material_fields": {
+    "M_Souvenir_PrintedLabels.base_color": "Pillow typography from make_merch_labels.py",
+    "PBR_basecolor_normal_roughness": "original deterministic painting in make_textures.py"
+  },
+  "input_images": []
+}

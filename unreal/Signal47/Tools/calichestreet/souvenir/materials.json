@@ -1,9 +1,9 @@
 {
   "M_Souvenir_BaseGrime": {
     "base_color_linear": [
-      0.10499999672174454,
-      0.09200000017881393,
-      0.06400000303983688,
+      0.3400000035762787,
+      0.28999999165534973,
+      0.20499999821186066,
       1.0
     ],
     "metallic": 0.0,
@@ -16,8 +16,21 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {},
-    "two_sided": false
+    "textures": {
+      "base_color": "textures/stucco_color.png",
+      "normal": "textures/stucco_normal_dx.png",
+      "roughness": "textures/stucco_roughness.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 0.42,
+    "normal_strength": 0.12,
+    "resolution": 2048,
+    "texture_tint_linear": [
+      0.74,
+      0.72,
+      0.67
+    ]
   },
   "M_Souvenir_BlackIron": {
     "base_color_linear": [
@@ -200,7 +213,7 @@
     "two_sided": false,
     "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
     "uv_scale": 0.42,
-    "normal_strength": 0.22,
+    "normal_strength": 0.12,
     "resolution": 2048
   },
   "M_Souvenir_CreasedFoil": {
@@ -225,9 +238,9 @@
   },
   "M_Souvenir_ExposedPlaster": {
     "base_color_linear": [
+      0.4000000059604645,
+      0.3449999988079071,
       0.25,
-      0.1899999976158142,
-      0.11500000208616257,
       1.0
     ],
     "metallic": 0.0,
@@ -240,8 +253,21 @@
     ],
     "emission_strength": 0.0,
     "alpha": 1.0,
-    "textures": {},
-    "two_sided": false
+    "textures": {
+      "base_color": "textures/stucco_color.png",
+      "normal": "textures/stucco_normal_dx.png",
+      "roughness": "textures/stucco_roughness.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DirectX tangent space; Blender preview uses normal_gl image",
+    "uv_scale": 0.42,
+    "normal_strength": 0.12,
+    "resolution": 2048,
+    "texture_tint_linear": [
+      0.88,
+      0.86,
+      0.83
+    ]
   },
   "M_Souvenir_FadedRed": {
     "base_color_linear": [
@@ -370,6 +396,50 @@
     "uv_scale": 0.7,
     "normal_strength": 0.25,
     "resolution": 2048
+  },
+  "M_Souvenir_PrintedArtwork": {
+    "base_color_linear": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8999999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/souvenir_print_atlas_v3.png"
+    },
+    "two_sided": true
+  },
+  "M_Souvenir_PrintedLabels": {
+    "base_color_linear": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.9100000262260437,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "textures": {
+      "base_color": "textures/souvenir_labels_v3.png"
+    },
+    "two_sided": true
   },
   "M_Souvenir_PrintInk": {
     "base_color_linear": [

@@ -6,6 +6,8 @@ Original butikkmodell til den samlede Caliche-gatebiten, etter `Concepts/Caliche
 
 Innredningen har hyller med ulike bredder, høyder og ujevn varefylling, mørkere tre, korte gulvbord, mekanisk kasse med runde taster, papirposer og kvittering. Postkortstativet har flere originale trykk, kart, brosjyrer, keramikkmugger, UFO-leker, mineralbokser, brettede tekstiler og krøllete folieminner med «GENUINE DEBRIS». Vevd veggheng, souvenirskjorte og flettet gulvmatte gir større lesbare flater mellom småvarene. Ingen ny alien er laget; spillets opprinnelige A02-pappfigur med egen pris og skade beholdes av runtime.
 
+R3 bygger videre på første native dag-/skumringsbilder: fire fylte hyllehøyder, både fremre varegrupper og bakenforliggende pakkvarer, runde souvenirflasker, flere mugger og oppstilte reisebøker. Runde kopper har 56 segmenter og glatte normaler; UFO-formene bruker 40 × 20-segments glatte sfærer. De gamle vektorpostkortene er erstattet av trykkatlas. Sokkelarr er lysere beige, teksturerte og har små bruddkanter; den nesten svarte bunnstripen er dempet. Tre fysiske skiltlamper har diffuserankre på Blender `[-3.7,-5.05,4.10]`, `[0,-5.05,4.10]`, `[3.7,-5.05,4.10]`. Integratoren eier de faktiske lysene og tidstilstanden.
+
 ## Koordinatkontrakt
 
 Blender bruker meter og Z opp. Felles Three.js-pivot er `[8025, 4.952807474136353, 2064]`; `worldThree=(8025+localY, floor+localZ, 2064+localX)`. FBX bruker `-Y` fremover og `Z` opp. Unreal-importen følger den tidligere radiostasjonen, med runtime yaw `-90`.
@@ -21,6 +23,8 @@ Glasset ligger ved world X `8020.24`, foran A02-figuren ved `8020.31`, i en dyp 
 `materials.json` bruker `base_color_linear`, metall, ruhet, emissjon og relative PBR-stier. Basecolor-PNG er sRGB; roughness er lineær; Unreal-normaler bruker DirectX. Blender og GLB bruker egne OpenGL-normalbilder fra samme originale høydefelt. Spillglasset har alpha 0,10. Praktiske lysflater har mild emissjon; faktiske Unreal-lys settes av integrasjonen.
 
 Seks originale PBR-sett er nå 2048 × 2048: kalkpuss, betong, mørk valnøtt, diskvalnøtt, værslitt tre og oksidert metall. `make_textures.py` tegner langsgående trefibre, vekstknuter, lokal slitasje, trowelmerker, pussbrudd, kapillærsprekker og rustøyer. Det bruker ingen fotopiksler fra konseptet, sinusfelt eller en homogen støymasse. `texture_provenance.json` dokumenterer metoden. Høydekart lagres som kilde, men importeres ikke som ekstra runtimekart. Pillow er en lokal forfatteravhengighet, ikke en spillavhengighet.
+
+Kun `M_Souvenir_PrintedArtwork.base_color` er AI-generert bitmapkunst. Den innebygde imagegen-skillen laget det originale 1254 × 1254-atlaset med fire trykk, uten inputbilder. Uendret original ligger i `source_art/souvenir_print_atlas_v3.original.png`, den eksakte prompten i `source_art/print_atlas_v3.prompt.txt`, og felt-/hashproveniens i `print_art_provenance_v3.json`. Runtimefilen i `textures/` er byteidentisk med originalen. Pris-/pakkeetiketter er egne deterministiske tekstkort i `make_merch_labels.py`, med 2048 × 1024-atlas og labels i `label_atlas.json`. Ingen brukerfoto, VLA-foto eller tredjepartkunst er brukt som trykktekstur.
 
 ```sh
 python3 Tools/calichestreet/souvenir/run_guarded.py build

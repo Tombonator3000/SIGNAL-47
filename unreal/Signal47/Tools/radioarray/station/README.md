@@ -60,3 +60,15 @@ Alle fem delers eksakte lokalgrenser og pivoter er identiske med R1. Byggets fot
 `r2-exterior.png`, `r2-interior.png` og `r2-street-window.png` viser første R2-kildepreview. Bokstavslitasjen er etter disse bildene gjort finere og mer sparsom; atlaset og eksportpakken er autoritative. Blender-glasset bruker fysisk transmisjon og reflekterer kraftigere enn native-glassets alpha 0,14. Kildepreviewen viser derfor ikke den endelige lesbarheten gjennom vinduet. Native lys, glass og fototilstander må vurderes i den pakkede runtimekandidaten.
 
 Bygg, tilbakeimport og preview kjøres sekvensielt gjennom prosjektets guard med maksimalt to Blender-tråder. `verification/` inneholder faktiske kommandologger og guardbevis. Prosjektbiblioteket er søkt; ingen ekstern modell, tekstur eller kode fra treffene er gjenbrukt.
+
+## R3, gatevendt studio
+
+`R3-street-visible-studio-2026-10-24` bruker faktiske native-nærbilder fra `Signal47-caliche-concept/review-first` som grunnlag. Spolemaskinen er flyttet inn i vindusfeltet og vendt mot gata. Konsollens tidligere blanke bakside har et fysisk programmonitorpanel med originalt trykkatlas, to analoge skalaer, ventilasjon, kontakter og separate knotter. En synlig cart-maskin, kassett og cue-kort gir rommet utstyr i flere dybder. Hovedkonsollen og mikrofonkroppens eksisterende posisjoner bevares og kontrolleres mot den redigerbare kilden.
+
+Stolen har myke puter med seks bevel-segmenter, pipede sømmer, små sting og knapper samt eget originalt vinylkart. Mikrofonen har fin wiregrill, sjokkoppheng med elastiske bånd, bevegelige ledd, fjær og hengende kabel. Pussavslagene er mindre, lysere og mer uregelmessige; skarpe grove flake-klumper er dempet. Materialfamiliene for vinyl og programmonitor ligger i `textures/revision3/`.
+
+Den eneste innvendige emitteren er en flat disk under bordlampens skjerm ved source X4, utenfor vindusbredden. Disken er redusert og trukket inn i skjermen. Blender-kilden inneholder ingen fri lysende hvit kule i vindusfeltet. Native-glassets direkte lysrefleks må isoleres av runtime-eieren før denne årsaken kan erklæres løst. Ingen nye R3-kilderendere er kjørt; forbedringen skal vurderes i native.
+
+R3 tilbakeimport og kildekontroll: **38/38 PASS**. Shell 10 340 trekanter, Interior 80 882, Door 1 852, Glass 12 og Mast 1 264. Interiøret får to nye materialplasser, `M_1420_ProgramPanelPrint` og `M_1420_LeatherStitch`; øvrige materialnavn og alle fem delers eksakte grenser og pivoter beholdes. Interiørets eksisterende Vinyl_green flyttes fra slot12 til14, Lamp_glow fra13 til12 og OliveWornTimber fra14 til13; import må bruke den nye kontraktens rekkefølge. `revision3-contract-diff.json` gir forskjellen mot R2. Ingen native-aksept er påstått før den nye runtimekandidaten er vurdert.
+
+Første R3-byggeforsøk stoppet før eksport på feil navn på en Blender-API-egenskap i stolens bevel-modifikator. Feilen er rettet til `use_clamp_overlap`. Det vellykkede forsøket gjenbrukte de allerede genererte identiske kartene med `--reuse-textures`. `verification/r3-build-attempt1-failed*` bevarer feilen; `r3-build*` og `r3-verify*` er de vellykkede kjøringene.

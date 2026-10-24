@@ -33,9 +33,10 @@ for name,expected in contract['parts'].items():
   check('Glass lies streetward of unique A02',cy<-4.69 and abs(cy+4.76)<.00005,glass_world_three_x=8025+cy,figure_world_three_x=8020.31)
 materials=json.loads((ROOT/'materials.json').read_text())
 paths=[ROOT/v for row in materials.values() for v in row.get('textures',{}).values()]
-check('PBR files and linear material colors',len(paths)==18 and all(p.is_file() and p.read_bytes()[:8]==b'\x89PNG\r\n\x1a\n' for p in paths) and all(len(v['base_color_linear'])==4 for v in materials.values()),texture_dependencies=len(paths))
+check('PBR files and linear material colors',len(paths)==26 and all(p.is_file() and p.read_bytes()[:8]==b'\x89PNG\r\n\x1a\n' for p in paths) and all(len(v['base_color_linear'])==4 for v in materials.values()),texture_dependencies=len(paths))
 sizes={str(p.relative_to(ROOT)):list(struct.unpack_from('>II',p.read_bytes(),16)) for p in paths}
-check('All original PBR plates are 2048 pixels',all(s==[2048,2048] for s in sizes.values()),sizes=sizes)
+expected_sizes={'textures/souvenir_print_atlas_v3.png':[1254,1254],'textures/souvenir_labels_v3.png':[2048,1024]}
+check('PBR and print atlas source resolutions',all(s==expected_sizes.get(name,[2048,2048]) for name,s in sizes.items()),sizes=sizes)
 check('Runtime glass is translucent',materials['M_Souvenir_ClearGlass']['alpha']==.10)
 b=(ROOT/'Saucer_Crash_1947.glb').read_bytes(); n=struct.unpack_from('<I',b,12)[0]; d=json.loads(b[20:20+n])
 gcounts={node['name']:sum(d['accessors'][p['indices']]['count']//3 for p in d['meshes'][node['mesh']]['primitives']) for node in d['nodes'] if 'mesh' in node}
@@ -51,6 +52,12 @@ check('Authored concept details retained in editable source',all(counts.values()
 sign=bpy.data.objects.get('SRC_LargeHandPaintedFacadeName')
 check('Large painted facade name fits original parapet',sign is not None and abs(sign.dimensions.x-10.65)<.001 and sign.location.y<-4.5 and sign.location.z>=2.95,width_m=sign.dimensions.x if sign else 0)
 check('Source textures resolve after reopening',all(Path(bpy.path.abspath(i.filepath)).is_file() for i in bpy.data.images if i.source=='FILE'))
+round_objects=[o for o in bpy.data.collections['EDITABLE_SOURCE_enable_to_edit'].objects if o.name.startswith(('SRC_MixedShelfMug_Cup','SRC_WindowMug_Cup','SRC_LooseShelfToyUFO_Disc','SRC_WindowToySaucer_Disc','SRC_DesertKeepsakeBottle'))]
+check('Round merchandise has smooth shading and dense silhouette',len(round_objects)>20 and all(all(p.use_smooth for p in o.data.polygons) and len(o.data.vertices)>=300 for o in round_objects),objects=len(round_objects))
+stock_prefixes=['PackedGiftBox','StandingTravelGuide','DesertKeepsakeBottle','ShelfPrintedPrice','DetailedNewMexicoRoadMap']
+stock_counts={prefix:sum(n.startswith('SRC_'+prefix) for n in scene_names) for prefix in stock_prefixes}
+check('Stock depth, printed map and price labels authored',all(stock_counts.values()) and stock_counts['PackedGiftBox']>=35 and stock_counts['StandingTravelGuide']>=40,counts=stock_counts)
+check('Generated print original and prompt retained', (ROOT/'source_art/print_atlas_v3.prompt.txt').is_file() and (ROOT/'source_art/souvenir_print_atlas_v3.original.png').read_bytes()==(ROOT/'textures/souvenir_print_atlas_v3.png').read_bytes())
 cup=bpy.data.objects.get('SRC_WindowMug_Cup'); table=bpy.data.objects.get('SRC_WindowDisplayTable')
 cup_base=min((cup.matrix_basis@v.co).z for v in cup.data.vertices) if cup else None
 table_top=max((table.matrix_basis@v.co).z for v in table.data.vertices) if table else None

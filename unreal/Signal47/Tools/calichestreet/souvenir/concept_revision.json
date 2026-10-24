@@ -1,18 +1,21 @@
 {
-  "reference": "04-suvenirbutikk.png + Caliche-byen.png; parent owns real runtime iteration",
+  "revision": "R3 after first native concept review",
+  "references": [
+    "review-first/day/street-souvenir-window.png",
+    "review-first/dusk/street-souvenir-window.png",
+    "04-suvenirbutikk.png"
+  ],
   "source_status": "PASS",
-  "runtime_status": "UNVERIFIED: awaiting parent native import and fresh day/dusk/night captures",
-  "protected_openings_door_glass": {
-    "name": "Door, facade openings, frames and glass unchanged from approved source",
-    "result": "PASS",
-    "source_objects": 27,
-    "sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633",
-    "baseline_sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633"
+  "source_checks": {
+    "passed": 37,
+    "total": 37
   },
+  "runtime_status": "UNVERIFIED: R3 awaits fresh native day/dusk/night acceptance; no R3 DCC render",
+  "source_blend_sha256": "0e5fec50caea6f052b291a4381ce2eabcb164864929ac98ef0d8aa778407c322",
   "changes": {
     "SM_Souvenir_Shell": {
-      "old_triangles": 11592,
-      "triangles": 19501,
+      "old_triangles": 19501,
+      "triangles": 26774,
       "old_bounds_local_m": [
         [
           -6.25,
@@ -22,7 +25,7 @@
         [
           6.25,
           4.579999923706055,
-          4.25
+          4.050000190734863
         ]
       ],
       "bounds_local_m": [
@@ -34,7 +37,7 @@
         [
           6.25,
           4.579999923706055,
-          4.050000190734863
+          4.266976356506348
         ]
       ],
       "materials": [
@@ -56,26 +59,20 @@
         "M_Souvenir_WarmLamp",
         "M_Souvenir_BaseGrime"
       ],
-      "added_materials": [
-        "M_Souvenir_BaseGrime",
-        "M_Souvenir_ExposedPlaster",
-        "M_Souvenir_OldBrick",
-        "M_Souvenir_OxidizedCanopy",
-        "M_Souvenir_WeatheredTimber"
-      ]
+      "added_materials": []
     },
     "SM_Souvenir_Interior": {
-      "old_triangles": 76576,
-      "triangles": 68286,
+      "old_triangles": 68286,
+      "triangles": 156462,
       "old_bounds_local_m": [
         [
           -5.75,
           -4.475000381469727,
-          -0.021744608879089355
+          -0.021752357482910156
         ],
         [
-          6.074999809265137,
-          0.8149999976158142,
+          6.0450005531311035,
+          0.815000057220459,
           3.549999952316284
         ]
       ],
@@ -107,13 +104,13 @@
         "M_Souvenir_SkyPrint",
         "M_Souvenir_CreasedFoil",
         "M_Souvenir_WeatheredTimber",
-        "M_Souvenir_MesaPrint",
-        "M_Souvenir_WarmLamp"
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_PrintedArtwork",
+        "M_Souvenir_PrintedLabels"
       ],
       "added_materials": [
-        "M_Souvenir_CreasedFoil",
-        "M_Souvenir_WeatheredTimber",
-        "M_Souvenir_WovenCanvas"
+        "M_Souvenir_PrintedArtwork",
+        "M_Souvenir_PrintedLabels"
       ]
     },
     "SM_Souvenir_Glass": {
@@ -149,25 +146,12 @@
       "added_materials": []
     }
   },
-  "sign_target_local_m": [
-    0,
-    -4.52,
-    3.38
-  ],
-  "legacy_sign_proxy_local_m": [
-    0.1,
-    -6.3,
-    3.6
-  ],
-  "tours_card_local_m": [
-    -2.52,
-    -4.32,
-    1.98
-  ],
-  "font_outline_source": "DejaVu Sans Bold, system font; converted to mesh, not a runtime dependency",
-  "source_checks": {
-    "passed": 34,
-    "total": 34
+  "protected_openings_door_glass": {
+    "name": "Door, facade openings, frames and glass unchanged from approved source",
+    "result": "PASS",
+    "source_objects": 27,
+    "sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633",
+    "baseline_sha256": "181c4bdb1c304ac14e5b3f0d8a31a636c5e8efe21f6c4ffec90708d7c3d9f633"
   },
   "window_mug_support": {
     "name": "Window mug rests on display table instead of floating",
@@ -175,5 +159,68 @@
     "cup_base_z_m": 0.5149999856948853,
     "table_top_z_m": 0.5149999856948853
   },
-  "source_blend_sha256": "052ac6b5eeeea0aa754855a82c222cc2872a2467673601b0c37908d13ed0b153"
+  "round_merchandise": {
+    "name": "Round merchandise has smooth shading and dense silhouette",
+    "result": "PASS",
+    "objects": 36
+  },
+  "stock": {
+    "name": "Stock depth, printed map and price labels authored",
+    "result": "PASS",
+    "counts": {
+      "PackedGiftBox": 48,
+      "StandingTravelGuide": 144,
+      "DesertKeepsakeBottle": 13,
+      "ShelfPrintedPrice": 14,
+      "DetailedNewMexicoRoadMap": 1
+    }
+  },
+  "sign_target_local_m": [
+    0,
+    -4.52,
+    3.38
+  ],
+  "practical_light_anchors_local_m": {
+    "porch_window": [
+      -1.7,
+      -4.88,
+      2.505
+    ],
+    "porch_door": [
+      2.8,
+      -4.88,
+      2.505
+    ],
+    "ceiling_left": [
+      -1.7,
+      -1.7,
+      3.24
+    ],
+    "ceiling_right": [
+      2.0,
+      -1.7,
+      3.24
+    ],
+    "facade_sign": [
+      [
+        -3.7,
+        -5.05,
+        4.1
+      ],
+      [
+        0,
+        -5.05,
+        4.1
+      ],
+      [
+        3.7,
+        -5.05,
+        4.1
+      ]
+    ]
+  },
+  "ai_bitmap_fields": {
+    "M_Souvenir_PrintedArtwork.base_color": "textures/souvenir_print_atlas_v3.png"
+  },
+  "print_provenance": "print_art_provenance_v3.json"
 }

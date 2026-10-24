@@ -1,4 +1,4 @@
-"""Original multi-frequency mineral/plant atlas authoring, revision 3.
+"""Original multi-frequency mineral/plant atlas authoring, revision 4.
 
 NumPy and Pillow from the bundled workspace runtime. No downloaded pixels.
 Albedo: up to 2048; roughness/normal: 1024. All height detail is visual only.
@@ -74,8 +74,9 @@ def blend_patch(name,path,seed,shoulder=False):
     noise=smooth_image(rng,size,31);macro=smooth_image(rng,size,6)
     y,x=np.mgrid[0:size,0:size]/(size-1)
     if shoulder:
-        # Alpha dies across both long edges: no visible straight strip boundary.
-        alpha=(np.sin(np.pi*x)**1.45)*np.clip((noise-.24)*2,0,1)*.84
+        # ALL four edges die to zero. The previous long-edge-only feather
+        # left bright straight patch ends in the real shallow street camera.
+        alpha=(np.sin(np.pi*x)**1.45)*(np.sin(np.pi*y)**1.3)*np.clip((noise-.24)*2,0,1)*.67
     else:
         r=np.sqrt(((x-.5)*2.05)**2+((y-.5)*2.05)**2)
         alpha=np.clip((1-r)*3,0,1)*np.clip((noise-.18)*1.8,0,1)*(.25+.45*macro)
@@ -88,17 +89,18 @@ def plant_atlas(name,path,sage=False):
     image=Image.new('RGBA',(size,size),(55,52,39,0));d=ImageDraw.Draw(image)
     for tile in range(4):
         ox=(tile%2)*512;oy=(tile//2)*512;root=(ox+256,oy+499)
-        for stem in range(55 if sage else 66):
+        # Broader, leafy sage rather than isolated wire stems at street scale.
+        for stem in range(72 if sage else 66):
             endx=ox+rr.uniform(38,474);endy=oy+rr.uniform(24,330 if sage else 260)
             bend=rr.uniform(-75,75);pts=[]
             for k in range(13):
                 t=k/12;pts.append((root[0]+(endx-root[0])*t+bend*math.sin(math.pi*t),root[1]+(endy-root[1])*t))
             c=rr.choice([(111,103,73,255),(135,125,86,255),(94,99,75,255),(153,139,99,255),(122,117,91,255)])
-            d.line(pts,fill=c,width=rr.choice([1,2,3]))
+            d.line(pts,fill=c,width=rr.choice([2,3,4]) if sage else rr.choice([1,2,3]))
             if sage:
                 for p in pts[3::2]:
                     for sign in [-1,1]:
-                        ex=p[0]+sign*rr.uniform(5,18);ey=p[1]-rr.uniform(3,15);r=rr.uniform(3,7)
+                        ex=p[0]+sign*rr.uniform(5,18);ey=p[1]-rr.uniform(3,15);r=rr.uniform(4.5,9)
                         leaf=rr.choice([(93,105,84,255),(118,128,101,255),(139,141,113,255),(103,115,92,255)])
                         d.ellipse((ex-r,ey-r*.45,ex+r,ey+r*.45),fill=leaf)
             else:
@@ -110,7 +112,10 @@ def plant_atlas(name,path,sage=False):
 
 def generate(root=ROOT):
     path=root/'textures';path.mkdir(exist_ok=True)
-    specs=[('CalicheSoil',(109,103,90),.93,.26),('PeaGravel',(127,123,111),.96,.38),('OldAsphalt',(67,68,65),.87,.32),('DrySilt',(131,123,105),.98,.22),('Limestone',(144,139,122),.91,.34),('DryPlant',(128,119,88),.91,.15),('TarRepair',(59,60,57),.85,.24),('WornConcrete',(140,136,124),.95,.25)]
+    # Native R3 revealed that the neutral grey soil reads like a separate
+    # concrete plate. Warm dusty tan stays closer to the existing desert;
+    # stronger gravel remains confined to small shoulder/plant patches.
+    specs=[('CalicheSoil',(126,111,89),.93,.22),('PeaGravel',(130,119,99),.96,.32),('OldAsphalt',(67,68,65),.87,.32),('DrySilt',(131,119,99),.98,.22),('Limestone',(144,135,115),.91,.34),('DryPlant',(128,119,88),.91,.15),('TarRepair',(59,60,57),.85,.24),('WornConcrete',(140,136,124),.95,.25)]
     for seed,(name,color,_,_) in enumerate(specs):mineral(name,color,4900+seed,path,2048 if name in ['CalicheSoil','PeaGravel','OldAsphalt','WornConcrete'] else 1024)
     blend_patch('ShoulderBlend',path,5101,True);blend_patch('DustFeather',path,5102)
     plant_atlas('GrassAtlas',path);plant_atlas('SageAtlas',path,True)
@@ -118,8 +123,8 @@ def generate(root=ROOT):
     specs += [('ShoulderBlend',(127,123,111),.96,.30),('DustFeather',(127,123,111),.96,.18),('GrassAtlas',(128,119,88),.94,.12),('SageAtlas',(110,120,95),.94,.12),('Yucca',(101,111,82),.94,.18)]
     rows=[]
     for name,_,rough,strength in specs:
-        blend=name in ['ShoulderBlend','DustFeather'];plant=name in ['GrassAtlas','SageAtlas']
-        rows.append({'name':'M_CS_'+name,'base_color_linear':[1,1,1,1],'metallic':0,'roughness':rough,'emission':[0,0,0,1],'emission_strength':0,'alpha':1,'two_sided':plant or name in ['DryPlant','Yucca'],'normal_strength':strength,'uv_scale':1.0,'opacity_from_base_color':blend or plant,'alpha_mode':'translucent' if blend else 'masked' if plant else 'opaque','normal_convention':'DirectX','texture_color_space':'sRGB','textures':{k:'textures/'+name+'_'+s+'.png' for k,s in [('base_color','color'),('normal','normal'),('roughness','roughness')]}})
+        blend=name in ['ShoulderBlend','DustFeather'];plant=name in ['GrassAtlas','SageAtlas'];edge=name in ['CalicheSoil','OldAsphalt']
+        rows.append({'name':'M_CS_'+name,'base_color_linear':[1,1,1,1],'metallic':0,'roughness':rough,'emission':[0,0,0,1],'emission_strength':0,'alpha':1,'two_sided':plant or name in ['DryPlant','Yucca'],'normal_strength':strength,'uv_scale':1.0,'opacity_from_base_color':blend or plant,'vertex_alpha_opacity':edge,'alpha_mode':'dithered_masked' if edge else 'translucent' if blend else 'masked' if plant else 'opaque','normal_convention':'DirectX','texture_color_space':'sRGB','textures':{k:'textures/'+name+'_'+s+'.png' for k,s in [('base_color','color'),('normal','normal'),('roughness','roughness')]}})
     (root/'materials.json').write_text(json.dumps(rows,indent=2)+'\n')
     print('DETAIL_TEXTURES_GENERATED',len(rows),'materials',len(rows)*3,'maps')
 

@@ -1,13 +1,13 @@
 {
   "SM_Souvenir_Shell": {
-    "before_triangles": 19503,
+    "before_triangles": 26776,
     "removed_exact_zero_area": 2,
     "removed_by_material": {
       "M_Souvenir_BaseGrime": 2
     },
-    "after_triangles": 19501,
-    "visible_surface_hash_before": "f224dc210572aab46ccf443dc4b531d4895dde737a996e48f7b76875be2cd122",
-    "visible_surface_hash_after": "f224dc210572aab46ccf443dc4b531d4895dde737a996e48f7b76875be2cd122",
+    "after_triangles": 26774,
+    "visible_surface_hash_before": "097f0fdafbd77a8a8c72d4a608d0ffd656dd31ab7f3ad870052f63db9c83d751",
+    "visible_surface_hash_after": "097f0fdafbd77a8a8c72d4a608d0ffd656dd31ab7f3ad870052f63db9c83d751",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,
@@ -16,19 +16,19 @@
     "remaining_zero_area": 0
   },
   "SM_Souvenir_Interior": {
-    "before_triangles": 68766,
-    "removed_exact_zero_area": 480,
+    "before_triangles": 158478,
+    "removed_exact_zero_area": 2016,
     "removed_by_material": {
-      "M_Souvenir_CeramicTeal": 300,
-      "M_Souvenir_CeramicIvory": 180
+      "M_Souvenir_CeramicIvory": 1176,
+      "M_Souvenir_CeramicTeal": 840
     },
-    "after_triangles": 68286,
-    "visible_surface_hash_before": "6b9dc4f4998a921d722ce45b72d1eeaa6b2c870ad0c0c9e5cb6889145b826e74",
-    "visible_surface_hash_after": "6b9dc4f4998a921d722ce45b72d1eeaa6b2c870ad0c0c9e5cb6889145b826e74",
+    "after_triangles": 156462,
+    "visible_surface_hash_before": "5eeb60fad4693ad1a6d6a08142dba0e9fb9c1a88616611a1604d8e016a9a9076",
+    "visible_surface_hash_after": "5eeb60fad4693ad1a6d6a08142dba0e9fb9c1a88616611a1604d8e016a9a9076",
     "visible_surface_identical": true,
     "vertices_retained": true,
     "material_slots_identical": true,
-    "corner_normal_max_component_delta": 0.0005281567573547363,
+    "corner_normal_max_component_delta": 0.0006577605481652427,
     "all_faces_triangles": true,
     "remaining_zero_area": 0
   },

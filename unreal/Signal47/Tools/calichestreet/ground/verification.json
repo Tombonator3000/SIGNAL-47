@@ -2,44 +2,87 @@
   "status": "PASS",
   "parts": {
     "SM_Caliche_Surface": {
-      "triangles": 11372,
+      "triangles": 11602,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 13
+      "material_slots": 13,
+      "color_attribute": "Color",
+      "alpha_range": [
+        0.0,
+        1.0
+      ],
+      "edge_fade": {
+        "M_CS_CalicheSoil": {
+          "open_edges": 826,
+          "boundary_alpha_max": 0.0,
+          "duplicate_position_alpha_error": 0.0,
+          "width_m": 1.8
+        }
+      }
     },
     "SM_Caliche_RoadWear": {
-      "triangles": 11370,
+      "triangles": 26838,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 13
+      "material_slots": 13,
+      "color_attribute": "Color",
+      "alpha_range": [
+        0.0,
+        1.0
+      ],
+      "edge_fade": {
+        "M_CS_OldAsphalt": {
+          "open_edges": 636,
+          "boundary_alpha_max": 0.0,
+          "duplicate_position_alpha_error": 0.0,
+          "width_m": 0.45
+        }
+      }
     },
     "SM_Caliche_Rocks": {
       "triangles": 8976,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 13
+      "material_slots": 13,
+      "color_attribute": "Color",
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "edge_fade": {}
     },
     "SM_Caliche_DryPlants": {
-      "triangles": 5304,
+      "triangles": 5532,
       "bounds_error_m": 0.0,
       "zero_area_triangles": 0,
       "uv_layers": 1,
-      "material_slots": 13
+      "material_slots": 13,
+      "color_attribute": "Color",
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "edge_fade": {}
     }
   },
   "checks": [
     {
+      "name": "only_actual_yellow_and_white_road_paint_preserved_without_broad_center_strip",
+      "pass": true,
+      "yellow_buffer_half_width_m": 0.18
+    },
+    {
       "name": "rocks_and_plants_clear_main_walk_and_protected_approaches",
       "pass": true,
-      "count": 482
+      "count": 520
     },
     {
       "name": "all_overlay_vertices_max_14mm_above_unchanged_source_surface",
       "pass": true,
-      "count": 45484,
+      "count": 76881,
       "maximum_m": 0.013
     },
     {
@@ -49,6 +92,37 @@
     {
       "name": "no_large_opaque_tar_repair_polygons",
       "pass": true
+    },
+    {
+      "name": "all_GLB_primitives_preserve_RGBA_vertex_colors",
+      "pass": true,
+      "files": [
+        {
+          "file": "Caliche_Ground_Assembly.glb",
+          "primitives_with_COLOR_0": 12,
+          "pass": true
+        },
+        {
+          "file": "SM_Caliche_DryPlants.glb",
+          "primitives_with_COLOR_0": 4,
+          "pass": true
+        },
+        {
+          "file": "SM_Caliche_RoadWear.glb",
+          "primitives_with_COLOR_0": 2,
+          "pass": true
+        },
+        {
+          "file": "SM_Caliche_Rocks.glb",
+          "primitives_with_COLOR_0": 1,
+          "pass": true
+        },
+        {
+          "file": "SM_Caliche_Surface.glb",
+          "primitives_with_COLOR_0": 5,
+          "pass": true
+        }
+      ]
     }
   ]
 }

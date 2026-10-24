@@ -4,7 +4,7 @@ from pathlib import Path
 from mathutils import Vector
 ROOT=Path(__file__).resolve().parent
 
-def textured(material,stem,color,uv=1,strength=.30):
+def textured(material,stem,color,uv=1,strength=.30,folder='revision2'):
  n=material.node_tree.nodes;l=material.node_tree.links;p=n.get('Principled BSDF')
  for node in list(n):
   if node.type not in {'BSDF_PRINCIPLED','OUTPUT_MATERIAL'}: n.remove(node)
@@ -13,14 +13,14 @@ def textured(material,stem,color,uv=1,strength=.30):
  coord=n.new('ShaderNodeTexCoord');mapping=n.new('ShaderNodeMapping');mapping.inputs['Scale'].default_value=(uv,uv,uv)
  l.new(coord.outputs['UV'],mapping.inputs['Vector'])
  for suffix,socket in [('color','Base Color'),('roughness','Roughness'),('normal_gl','Normal')]:
-  t=n.new('ShaderNodeTexImage');t.image=bpy.data.images.load(str(ROOT/'textures'/'revision2'/(stem+'_'+suffix+'.png')),check_existing=True)
+  t=n.new('ShaderNodeTexImage');t.image=bpy.data.images.load(str(ROOT/'textures'/folder/(stem+'_'+suffix+'.png')),check_existing=True)
   if suffix!='color':t.image.colorspace_settings.name='Non-Color'
   l.new(mapping.outputs['Vector'],t.inputs['Vector'])
   if suffix=='normal_gl':
    normal=n.new('ShaderNodeNormalMap');normal.inputs['Strength'].default_value=strength;l.new(t.outputs['Color'],normal.inputs['Color']);l.new(normal.outputs['Normal'],p.inputs[socket])
   else:l.new(t.outputs['Color'],p.inputs[socket])
  return {'base_color_linear':[*color,1],'metallic':0,'roughness':p.inputs['Roughness'].default_value,'emission':[0,0,0,1],'emission_strength':0,'alpha':1,
-         'textures':{'base_color':'textures/revision2/'+stem+'_color.png','normal':'textures/revision2/'+stem+'_normal_dx.png','roughness':'textures/revision2/'+stem+'_roughness.png'},
+         'textures':{'base_color':'textures/'+folder+'/'+stem+'_color.png','normal':'textures/'+folder+'/'+stem+'_normal_dx.png','roughness':'textures/'+folder+'/'+stem+'_roughness.png'},
          'normal_strength':strength,'uv_scale':uv,'normal_convention':'DirectX tangent space; Blender/GLB uses explicit normal_gl map'}
 
 def apply(groups,mat,cube,cyl,torus,text,namespace):
@@ -36,8 +36,8 @@ def apply(groups,mat,cube,cyl,torus,text,namespace):
  rows[facade.name]=textured(facade,'facade_1420_weathered',(.60,.525,.405),1,.34)
  olive=mat('M_1420_OliveWornTimber',(.062,.079,.041),rough=.64)
  rows[olive.name]=textured(olive,'olive_timber',(.062,.079,.041),1,.24)
- exposed=mat('M_1420_ExposedLimeRender',(.37,.29,.19),rough=.97)
- edge=mat('M_1420_ChalkFlakeEdge',(.58,.52,.41),rough=.98)
+ exposed=mat('M_1420_ExposedLimeRender',(.47,.40,.30),rough=.97)
+ edge=mat('M_1420_ChalkFlakeEdge',(.59,.52,.40),rough=.98)
  dark=bpy.data.materials['M_1420_Black_enamel'];ink=bpy.data.materials['M_1420_Ink'];paper=bpy.data.materials['M_1420_Paper']
  wood=bpy.data.materials['M_1420_Walnut'];woodlight=bpy.data.materials['M_1420_Desk_walnut'];metal=bpy.data.materials['M_1420_Brushed_aluminium']
  ivory=bpy.data.materials['M_1420_Ivory_plastic'];red=bpy.data.materials['M_1420_Brick_red']
@@ -66,14 +66,14 @@ def apply(groups,mat,cube,cyl,torus,text,namespace):
  namespace['current']='Shell'
  def patch(name,x,z,rad):
   points=[]
-  for j in range(7):
-   a=j*math.tau/7;points.append((x+math.cos(a)*rad*r.uniform(.7,1.25),-.004,z+math.sin(a)*rad*r.uniform(.7,1.25)))
-  mesh=bpy.data.meshes.new(name);mesh.from_pydata(points,[],[tuple(range(7))]);mesh.update()
+  for j in range(17):
+   a=j*math.tau/17;points.append((x+math.cos(a)*rad*r.uniform(.65,1.25),-.004,z+math.sin(a)*rad*r.uniform(.65,1.25)))
+  mesh=bpy.data.meshes.new(name);mesh.from_pydata(points,[],[tuple(range(17))]);mesh.update()
   o=bpy.data.objects.new(name,mesh);bpy.context.scene.collection.objects.link(o);o.data.materials.append(exposed);groups['Shell'].append(o)
   for a,b in zip(points,points[1:]+points[:1]):
-   if r.random()<.5:cyl('BrokenPlasterLip',(a[0],-.011,a[2]),(b[0],-.011,b[2]),.0035,edge,5)
+   if r.random()<.22:cyl('BrokenPlasterLip',(a[0],-.011,a[2]),(b[0],-.011,b[2]),.0018,edge,5)
  for x,z in [(-5.72,.28),(-5.68,3.38),(-3.75,.24),(-3.30,2.48),(3.36,.40),(5.72,.27),(5.72,3.38),(1.30,.18)]:
-  for j in range(4):patch('CuratedPlasterLoss',x+r.uniform(-.09,.09),z+r.uniform(-.08,.08),r.uniform(.018,.060))
+  for j in range(4):patch('CuratedPlasterLoss',x+r.uniform(-.09,.09),z+r.uniform(-.08,.08),r.uniform(.010,.033))
  # Crooked small station plaque, original operational identity rather than new puzzle text.
  plaque=cube('StationServicePlaque',(-2.6,-.025,1.52),(.46,.035,.27),olive,.008)
  text('StationServicePlaqueText','1420 AM\nSERVICE',(-2.6,-.047,1.52),.06,paper)

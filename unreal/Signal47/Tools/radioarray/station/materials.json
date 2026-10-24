@@ -77,9 +77,9 @@
   },
   "M_1420_ChalkFlakeEdge": {
     "base_color": [
-      0.5799999833106995,
+      0.5899999737739563,
       0.5199999809265137,
-      0.4099999964237213,
+      0.4000000059604645,
       1.0
     ],
     "metallic": 0.0,
@@ -169,9 +169,9 @@
   },
   "M_1420_ExposedLimeRender": {
     "base_color": [
-      0.3700000047683716,
-      0.28999999165534973,
-      0.1899999976158142,
+      0.4699999988079071,
+      0.4000000059604645,
+      0.30000001192092896,
       1.0
     ],
     "metallic": 0.0,
@@ -262,6 +262,25 @@
     "alpha": 1.0,
     "transmission": 0.0
   },
+  "M_1420_LeatherStitch": {
+    "base_color": [
+      0.10999999940395355,
+      0.11999999731779099,
+      0.07500000298023224,
+      1.0
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8999999761581421,
+    "emission": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "emission_strength": 0.0,
+    "alpha": 1.0,
+    "transmission": 0.0
+  },
   "M_1420_OliveWornTimber": {
     "base_color_linear": [
       0.062,
@@ -345,6 +364,32 @@
     "alpha": 1.0,
     "transmission": 0.0
   },
+  "M_1420_ProgramPanelPrint": {
+    "base_color_linear": [
+      0.15,
+      0.16,
+      0.13,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6000000238418579,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {
+      "base_color": "textures/revision3/program_panel_color.png",
+      "normal": "textures/revision3/program_panel_normal_dx.png",
+      "roughness": "textures/revision3/program_panel_roughness.png"
+    },
+    "normal_strength": 0.05,
+    "uv_scale": 1,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
+  },
   "M_1420_Stucco_cream": {
     "base_color_linear": [
       0.6,
@@ -372,23 +417,30 @@
     "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
   },
   "M_1420_Vinyl_green": {
-    "base_color": [
-      0.02800000086426735,
-      0.07000000029802322,
-      0.04500000178813934,
-      1.0
+    "base_color_linear": [
+      0.025,
+      0.042,
+      0.028,
+      1
     ],
-    "metallic": 0.0,
-    "roughness": 0.5,
+    "metallic": 0,
+    "roughness": 0.6000000238418579,
     "emission": [
-      1.0,
-      1.0,
-      1.0,
-      1.0
+      0,
+      0,
+      0,
+      1
     ],
-    "emission_strength": 0.0,
-    "alpha": 1.0,
-    "transmission": 0.0
+    "emission_strength": 0,
+    "alpha": 1,
+    "textures": {
+      "base_color": "textures/revision3/aged_vinyl_color.png",
+      "normal": "textures/revision3/aged_vinyl_normal_dx.png",
+      "roughness": "textures/revision3/aged_vinyl_roughness.png"
+    },
+    "normal_strength": 0.28,
+    "uv_scale": 1,
+    "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
   },
   "M_1420_VU_backlight": {
     "base_color": [

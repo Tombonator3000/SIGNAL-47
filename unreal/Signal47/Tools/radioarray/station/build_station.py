@@ -62,7 +62,7 @@ if '--materials-only' in sys.argv:
  (OUT/'material_refresh.json').write_text(json.dumps(proof,indent=2))
  print('STONE_MATERIAL_REFRESH',json.dumps(proof))
  raise SystemExit(0)
-generate(OUT/'textures')
+if '--reuse-textures' not in sys.argv: generate(OUT/'textures')
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
 for d in list(bpy.data.materials): bpy.data.materials.remove(d)
 scene=bpy.context.scene; scene.unit_settings.system='METRIC'
@@ -360,9 +360,12 @@ for z in [9,18]: cyl('Mast_red_beacon',(mx,my,z),(mx,my,z+.13),.07,onair,12)
 
 # Revision R2 is authored against the original component and world-space contracts.
 import subprocess
-subprocess.run(['python3',str(OUT/'make_revision_textures.py')],check=True)
+if '--reuse-textures' not in sys.argv: subprocess.run(['python3',str(OUT/'make_revision_textures.py')],check=True)
 from station_revision_two import apply as apply_revision_two
 r2_materials=apply_revision_two(groups,mat,cube,cyl,torus,text,globals())
+if '--reuse-textures' not in sys.argv: subprocess.run(['python3',str(OUT/'make_revision_three_textures.py')],check=True)
+from station_revision_three import apply as apply_revision_three
+r3_materials,r3_evidence=apply_revision_three(groups,mat,cube,cyl,torus,text,globals())
 
 def join_group(key):
  obs=groups[key]; bpy.ops.object.select_all(action='DESELECT')
@@ -407,6 +410,7 @@ for m,prefix in TEXTURE_MATS.items():
   material_data[m.name].update(STONE_SETTINGS[prefix]); material_data[m.name]['normal_convention']='DirectX tangent space'
   material_data[m.name]['textures']['normal']='textures/'+prefix+'_normal_dx.png'
 material_data.update(r2_materials)
+material_data.update(r3_materials)
 material_data['M_1420_Clear_glass']['alpha']=.14
 (OUT/'materials.json').write_text(json.dumps(material_data,indent=2))
 # Basis probe is excluded from final scene and exports.
@@ -415,7 +419,9 @@ bpy.ops.mesh.primitive_cube_add(size=1,location=(2,4,6)); probe=bpy.context.obje
 bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
 bpy.ops.export_scene.fbx(filepath=str(EXPORTS/'axis_probe.fbx'),use_selection=True,object_types={'MESH'},apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',axis_forward='-Y',axis_up='Z',bake_anim=False,add_leaf_bones=False)
 bpy.data.objects.remove(probe,do_unlink=True)
-contract['source_revision']='R2-concept-match-2026-10-24'
+contract['source_revision']='R3-street-visible-studio-2026-10-24'
+contract['r3_changes']=r3_evidence
+contract['r3_preserved']='Footprint, door/window opening, pivots, console/body anchors and story proxy IDs unchanged.'
 contract['r2_texture_authoring']={'facade_1420_weathered':[2048,1024],'tiling_families':[1024,1024],'paint_losses':'Sparse sub-centimetre chips; fine random field 720x360, threshold250/255','source':'make_revision_textures.py','normal_convention':'DirectX in materials.json, OpenGL in Blender/GLB'}
 contract['facade_identity']='1420 AM painted in opaque facade PBR; hide legacy roof sign in native integration'
 contract['preserved_anchors']=['door hinge','window opening','mixing console','main microphone boom/body','studio photo and ON AIR runtime objects']

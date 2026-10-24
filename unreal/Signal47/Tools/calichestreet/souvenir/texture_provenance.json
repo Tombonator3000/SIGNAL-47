@@ -11,7 +11,7 @@
       "structural_marks": true,
       "directx_normal": "green complement of OpenGL",
       "uv_scale": 0.42,
-      "normal_strength": 0.22,
+      "normal_strength": 0.12,
       "resolution": 2048
     },
     "concrete": {
@@ -69,5 +69,6 @@
       "normal_strength": 0.25,
       "resolution": 2048
     }
-  }
+  },
+  "revision3": "Only stucco repainted quieter, with smaller marks and reduced normal strength .12; other five R2 plates preserved."
 }

@@ -1,8 +1,8 @@
 {
   "tool": "Blender 5.2.2 LTS",
   "status": "PASS",
-  "passed": 34,
-  "total": 34,
+  "passed": 37,
+  "total": 37,
   "checks": [
     {
       "name": "SM_Souvenir_Shell separate mesh",
@@ -21,7 +21,7 @@
         [
           6.25,
           4.579999923706055,
-          4.050000190734863
+          4.266976356506348
         ]
       ],
       "max_bounds_error_m": 0.0
@@ -29,8 +29,8 @@
     {
       "name": "SM_Souvenir_Shell exact triangle contract",
       "result": "PASS",
-      "triangles": 19501,
-      "expected": 19501,
+      "triangles": 26774,
+      "expected": 26774,
       "zero_area": 0
     },
     {
@@ -62,7 +62,7 @@
       "layers": [
         "UVMap"
       ],
-      "loops": 58503
+      "loops": 80322
     },
     {
       "name": "SM_Souvenir_Shell finite normals",
@@ -108,8 +108,8 @@
     {
       "name": "SM_Souvenir_Interior exact triangle contract",
       "result": "PASS",
-      "triangles": 68286,
-      "expected": 68286,
+      "triangles": 156462,
+      "expected": 156462,
       "zero_area": 0
     },
     {
@@ -131,8 +131,9 @@
         "M_Souvenir_SkyPrint",
         "M_Souvenir_CreasedFoil",
         "M_Souvenir_WeatheredTimber",
-        "M_Souvenir_MesaPrint",
-        "M_Souvenir_WarmLamp"
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_PrintedArtwork",
+        "M_Souvenir_PrintedLabels"
       ]
     },
     {
@@ -141,7 +142,7 @@
       "layers": [
         "UVMap"
       ],
-      "loops": 204858
+      "loops": 469386
     },
     {
       "name": "SM_Souvenir_Interior finite normals",
@@ -210,12 +211,24 @@
     {
       "name": "PBR files and linear material colors",
       "result": "PASS",
-      "texture_dependencies": 18
+      "texture_dependencies": 26
     },
     {
-      "name": "All original PBR plates are 2048 pixels",
+      "name": "PBR and print atlas source resolutions",
       "result": "PASS",
       "sizes": {
+        "textures/stucco_color.png": [
+          2048,
+          2048
+        ],
+        "textures/stucco_normal_dx.png": [
+          2048,
+          2048
+        ],
+        "textures/stucco_roughness.png": [
+          2048,
+          2048
+        ],
         "textures/concrete_color.png": [
           2048,
           2048
@@ -240,18 +253,6 @@
           2048,
           2048
         ],
-        "textures/stucco_color.png": [
-          2048,
-          2048
-        ],
-        "textures/stucco_normal_dx.png": [
-          2048,
-          2048
-        ],
-        "textures/stucco_roughness.png": [
-          2048,
-          2048
-        ],
         "textures/rust_metal_color.png": [
           2048,
           2048
@@ -263,6 +264,14 @@
         "textures/rust_metal_roughness.png": [
           2048,
           2048
+        ],
+        "textures/souvenir_print_atlas_v3.png": [
+          1254,
+          1254
+        ],
+        "textures/souvenir_labels_v3.png": [
+          2048,
+          1024
         ],
         "textures/walnut_color.png": [
           2048,
@@ -299,8 +308,8 @@
       "result": "PASS",
       "counts": {
         "SM_Souvenir_Glass": 12,
-        "SM_Souvenir_Interior": 68286,
-        "SM_Souvenir_Shell": 19501
+        "SM_Souvenir_Interior": 156462,
+        "SM_Souvenir_Shell": 26774
       }
     },
     {
@@ -320,13 +329,13 @@
         "WeatheredCanopyUnderslat": 42,
         "FlakedLimeAtBase": 96,
         "RunoffAndCornerScar": 40,
-        "CrumpledFoilMemento": 25,
+        "CrumpledFoilMemento": 38,
         "WovenDesertBanner": 1,
         "CanvasSouvenirShirt": 1,
-        "RackPostcard": 60,
-        "UnevenTravelGuideStack": 73,
-        "MineralSampleTin": 8,
-        "FoldedDesertTeaTowel": 27
+        "RackPostcard": 24,
+        "UnevenTravelGuideStack": 89,
+        "MineralSampleTin": 16,
+        "FoldedDesertTeaTowel": 45
       }
     },
     {
@@ -336,6 +345,26 @@
     },
     {
       "name": "Source textures resolve after reopening",
+      "result": "PASS"
+    },
+    {
+      "name": "Round merchandise has smooth shading and dense silhouette",
+      "result": "PASS",
+      "objects": 36
+    },
+    {
+      "name": "Stock depth, printed map and price labels authored",
+      "result": "PASS",
+      "counts": {
+        "PackedGiftBox": 48,
+        "StandingTravelGuide": 144,
+        "DesertKeepsakeBottle": 13,
+        "ShelfPrintedPrice": 14,
+        "DetailedNewMexicoRoadMap": 1
+      }
+    },
+    {
+      "name": "Generated print original and prompt retained",
       "result": "PASS"
     },
     {

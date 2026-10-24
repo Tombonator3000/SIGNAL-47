@@ -34,8 +34,8 @@
   ],
   "parts": {
     "SM_1420_Shell": {
-      "vertices": 6728,
-      "triangles": 9972,
+      "vertices": 7078,
+      "triangles": 10340,
       "triangulated": true,
       "zero_area_triangles": 0,
       "materials": [
@@ -71,8 +71,8 @@
       ]
     },
     "SM_1420_Interior": {
-      "vertices": 36492,
-      "triangles": 50520,
+      "vertices": 56124,
+      "triangles": 80882,
       "triangulated": true,
       "zero_area_triangles": 0,
       "materials": [
@@ -88,9 +88,11 @@
         "M_1420_Brick_red",
         "M_1420_Painted_olive",
         "M_1420_Paper",
-        "M_1420_Vinyl_green",
         "M_1420_Lamp_glow",
-        "M_1420_OliveWornTimber"
+        "M_1420_OliveWornTimber",
+        "M_1420_Vinyl_green",
+        "M_1420_LeatherStitch",
+        "M_1420_ProgramPanelPrint"
       ],
       "bounds_local_m": [
         [
@@ -209,7 +211,57 @@
     2030.4,
     2032.8
   ],
-  "source_revision": "R2-concept-match-2026-10-24",
+  "source_revision": "R3-street-visible-studio-2026-10-24",
+  "r3_changes": {
+    "moved_tape_parts": [
+      "Reel_machine",
+      "Reel_machine_face",
+      "Tape_reel_spool",
+      "Tape_reel_tape",
+      "Tape_reel_hub",
+      "Tape_reel_spoke",
+      "Tape_reel_spoke.001",
+      "Tape_reel_spoke.002",
+      "Tape_reel_spool.001",
+      "Tape_reel_tape.001",
+      "Tape_reel_hub.001",
+      "Tape_reel_spoke.003",
+      "Tape_reel_spoke.004",
+      "Tape_reel_spoke.005",
+      "Exposed_tape",
+      "Tape_head_cover",
+      "Tape_controls",
+      "Tape_controls.001",
+      "Tape_controls.002",
+      "Tape_meter",
+      "Tape_meter.001"
+    ],
+    "console_anchor_unchanged": [
+      1.2,
+      1.53,
+      1.0
+    ],
+    "microphone_body_unchanged": [
+      1.72,
+      1.68,
+      1.405
+    ],
+    "practical_emitter": "Recessed under shade at source (4,1.25,1.505), diameter0.141m. No free sphere in source. Native orb requires runtime light/glass isolation."
+  },
+  "r3_preserved": "Footprint, door/window opening, pivots, console/body anchors and story proxy IDs unchanged.",
+  "r2_texture_authoring": {
+    "facade_1420_weathered": [
+      2048,
+      1024
+    ],
+    "tiling_families": [
+      1024,
+      1024
+    ],
+    "paint_losses": "Sparse sub-centimetre chips; fine random field 720x360, threshold250/255",
+    "source": "make_revision_textures.py",
+    "normal_convention": "DirectX in materials.json, OpenGL in Blender/GLB"
+  },
   "facade_identity": "1420 AM painted in opaque facade PBR; hide legacy roof sign in native integration",
   "preserved_anchors": [
     "door hinge",
@@ -224,18 +276,5 @@
     "M_1420_Desk_walnut",
     "M_1420_WeatheredFacadePaint",
     "M_1420_OliveWornTimber"
-  ],
-  "r2_texture_authoring": {
-    "facade_1420_weathered": [
-      2048,
-      1024
-    ],
-    "tiling_families": [
-      1024,
-      1024
-    ],
-    "paint_losses": "Sparse sub-centimetre chips; fine random field 720x360, threshold250/255",
-    "source": "make_revision_textures.py",
-    "normal_convention": "DirectX in materials.json, OpenGL in Blender/GLB"
-  }
+  ]
 }

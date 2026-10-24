@@ -1,78 +1,10 @@
 {
-  "scope": "Concept geometry and all six original 2048px PBR surfaces; regenerated blend/GLB/FBX",
-  "geometry_unchanged": false,
+  "revision": "R3 native-feedback pass",
+  "scope": "Quieter original stucco + textured beige scar materials, original AI print atlas, deterministic label atlas; no baked lamp lighting",
+  "stucco_normal_strength": 0.12,
+  "AI_bitmap_fields": {
+    "M_Souvenir_PrintedArtwork.base_color": "textures/souvenir_print_atlas_v3.png"
+  },
   "protected_geometry_unchanged": true,
-  "settings": {
-    "author": "SIGNAL / 47 original raster painting",
-    "resolution": 2048,
-    "method": "drawn fibre paths, growth knots, flaked lime, capillary cracks, oxide blooms; no sine field",
-    "surfaces": {
-      "stucco": {
-        "size": [
-          2048,
-          2048
-        ],
-        "structural_marks": true,
-        "directx_normal": "green complement of OpenGL",
-        "uv_scale": 0.42,
-        "normal_strength": 0.22,
-        "resolution": 2048
-      },
-      "concrete": {
-        "size": [
-          2048,
-          2048
-        ],
-        "structural_marks": true,
-        "directx_normal": "green complement of OpenGL",
-        "uv_scale": 0.65,
-        "normal_strength": 0.2,
-        "resolution": 2048
-      },
-      "walnut": {
-        "size": [
-          2048,
-          2048
-        ],
-        "structural_marks": true,
-        "directx_normal": "green complement of OpenGL",
-        "uv_scale": 1,
-        "normal_strength": 0.28,
-        "resolution": 2048
-      },
-      "desk_walnut": {
-        "size": [
-          2048,
-          2048
-        ],
-        "structural_marks": true,
-        "directx_normal": "green complement of OpenGL",
-        "uv_scale": 1,
-        "normal_strength": 0.25,
-        "resolution": 2048
-      },
-      "weathered_timber": {
-        "size": [
-          2048,
-          2048
-        ],
-        "structural_marks": true,
-        "directx_normal": "green complement of OpenGL",
-        "uv_scale": 1,
-        "normal_strength": 0.35,
-        "resolution": 2048
-      },
-      "rust_metal": {
-        "size": [
-          2048,
-          2048
-        ],
-        "structural_marks": true,
-        "directx_normal": "green complement of OpenGL",
-        "uv_scale": 0.7,
-        "normal_strength": 0.25,
-        "resolution": 2048
-      }
-    }
-  }
+  "source_verification": "verification.json"
 }

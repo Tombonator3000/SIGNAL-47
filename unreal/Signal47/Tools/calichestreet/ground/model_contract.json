@@ -16,17 +16,17 @@
     "SM_Caliche_Surface": {
       "bounds_local_m": [
         [
-          -29.351852416992188,
-          -29.351852416992188,
+          -29.34113121032715,
+          -28.703702926635742,
           4.067006587982178
         ],
         [
           39.844078063964844,
-          39.35185241699219,
-          6.159697532653809
+          39.099998474121094,
+          5.779888153076172
         ]
       ],
-      "triangles": 11372,
+      "triangles": 11602,
       "origin_m": [
         0.0,
         0.0,
@@ -55,6 +55,20 @@
         "M_CS_ShoulderBlend"
       ],
       "uv_layers": 1,
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "edge_fade": {
+        "M_CS_CalicheSoil": {
+          "width_m": 1.8,
+          "open_edges": 826,
+          "boundary_alpha_max": 0,
+          "unique_points": 5923,
+          "alpha_zero": 826,
+          "alpha_partial": 1564,
+          "alpha_one": 3533
+        }
+      },
       "max_above_source_m": 0.012,
       "max_above_floor_m": 0.13932800115569055
     },
@@ -62,16 +76,16 @@
       "bounds_local_m": [
         [
           -5.442420482635498,
-          -29.470884323120117,
+          -29.75,
           4.249885082244873
         ],
         [
           5.450954437255859,
-          39.470882415771484,
-          5.837985515594482
+          39.75,
+          5.857419967651367
         ]
       ],
-      "triangles": 11370,
+      "triangles": 26838,
       "origin_m": [
         0.0,
         0.0,
@@ -97,6 +111,20 @@
         "M_CS_OldAsphalt"
       ],
       "uv_layers": 1,
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "edge_fade": {
+        "M_CS_OldAsphalt": {
+          "width_m": 0.45,
+          "open_edges": 636,
+          "boundary_alpha_max": 0,
+          "unique_points": 13719,
+          "alpha_zero": 636,
+          "alpha_partial": 628,
+          "alpha_one": 12455
+        }
+      },
       "max_above_source_m": 0.013,
       "max_above_floor_m": 0.02538901107262692
     },
@@ -138,6 +166,10 @@
         "M_CS_Limestone"
       ],
       "uv_layers": 1,
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 1.0,
+      "vertex_alpha_max": 1.0,
+      "edge_fade": {},
       "max_above_source_m": null,
       "max_above_floor_m": null
     },
@@ -145,16 +177,16 @@
       "bounds_local_m": [
         [
           -29.314531326293945,
-          -26.413984298706055,
+          -29.69125747680664,
           4.146481990814209
         ],
         [
           39.329410552978516,
           35.92887496948242,
-          5.911004543304443
+          6.429114818572998
         ]
       ],
-      "triangles": 5304,
+      "triangles": 5532,
       "origin_m": [
         0.0,
         0.0,
@@ -182,6 +214,10 @@
         "M_CS_Yucca"
       ],
       "uv_layers": 1,
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 1.0,
+      "vertex_alpha_max": 1.0,
+      "edge_fade": {},
       "max_above_source_m": null,
       "max_above_floor_m": null
     }
@@ -4506,6 +4542,398 @@
       ],
       "radius_m": 0.4,
       "facade": true
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.92,
+        2043.15
+      ],
+      "radius_m": 0.5,
+      "facade": true,
+      "visible_corner_group": 0,
+      "primary_sage": true,
+      "height_m": 0.69,
+      "width_m": 1.0
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        21.009785329166316,
+        2042.835715061221
+      ],
+      "radius_m": 0.290007145051995,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.436087856583164,
+        2043.2551709414442
+      ],
+      "radius_m": 0.2595146452668538,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        21.461079855678246,
+        2042.7621430527902
+      ],
+      "radius_m": 0.1363256384913155,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        21.22365090683317,
+        2042.7599049399582
+      ],
+      "radius_m": 0.12400736124083257,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        21.064629959615747,
+        2042.5791762921067
+      ],
+      "radius_m": 0.12558913538849426,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        21.258530099175122,
+        2043.2009441371397
+      ],
+      "radius_m": 0.12989500640697593,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        21.32752866008214,
+        2043.5953114565477
+      ],
+      "radius_m": 0.13894002936048272,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        21.016154132627786,
+        2043.3036849787711
+      ],
+      "radius_m": 0.15681681289599506,
+      "facade": true,
+      "visible_corner_group": 0
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.32,
+        2056.48
+      ],
+      "radius_m": 0.5,
+      "facade": true,
+      "visible_corner_group": 1,
+      "primary_sage": true,
+      "height_m": 0.69,
+      "width_m": 1.0
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.214794088365363,
+        2056.1478193416388
+      ],
+      "radius_m": 0.23626153894596286,
+      "facade": true,
+      "visible_corner_group": 1
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.431078528908426,
+        2056.273752323607
+      ],
+      "radius_m": 0.26000767042166717,
+      "facade": true,
+      "visible_corner_group": 1
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.458505110600058,
+        2056.281030074551
+      ],
+      "radius_m": 0.1043081496980484,
+      "facade": true,
+      "visible_corner_group": 1
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.673812531638124,
+        2056.359169208501
+      ],
+      "radius_m": 0.09543922332718652,
+      "facade": true,
+      "visible_corner_group": 1
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.00764795994193,
+        2056.3462147195573
+      ],
+      "radius_m": 0.09555428605087886,
+      "facade": true,
+      "visible_corner_group": 1
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.050100285347277,
+        2056.575437123858
+      ],
+      "radius_m": 0.15274086335266462,
+      "facade": true,
+      "visible_corner_group": 1
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.078098913937485,
+        2057.2525501530126
+      ],
+      "radius_m": 0.16122049788067716,
+      "facade": true,
+      "visible_corner_group": 1
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.28,
+        2071.08
+      ],
+      "radius_m": 0.5,
+      "facade": true,
+      "visible_corner_group": 2,
+      "primary_sage": true,
+      "height_m": 0.69,
+      "width_m": 1.0
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.541295207544863,
+        2071.457269323673
+      ],
+      "radius_m": 0.24134705549426366,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        20.753088748891475,
+        2070.868110666545
+      ],
+      "radius_m": 0.26395099760900875,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        19.913729641102268,
+        2070.347429798551
+      ],
+      "radius_m": 0.122379509176971,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.67183481385266,
+        2071.262393852737
+      ],
+      "radius_m": 0.14473765544697706,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.766404447427877,
+        2071.323546237261
+      ],
+      "radius_m": 0.12360758243178778,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        20.499745415049016,
+        2070.7587768595704
+      ],
+      "radius_m": 0.0995438053295774,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        19.65108694189295,
+        2070.584813842331
+      ],
+      "radius_m": 0.11298390836980149,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        19.817908082817016,
+        2071.3775721548104
+      ],
+      "radius_m": 0.1470923060797631,
+      "facade": true,
+      "visible_corner_group": 2
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        -18.42,
+        2089.02
+      ],
+      "radius_m": 0.5,
+      "facade": true,
+      "visible_corner_group": 3,
+      "primary_sage": true,
+      "height_m": 0.69,
+      "width_m": 1.0
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        -18.77101722024581,
+        2088.885685437327
+      ],
+      "radius_m": 0.3053745863167877,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "sage",
+      "xz": [
+        -18.982700738918407,
+        2089.0926234120725
+      ],
+      "radius_m": 0.24156150327912268,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        -18.536863707639384,
+        2088.7360765561384
+      ],
+      "radius_m": 0.15792184486388539,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        -18.358059434411114,
+        2088.4021884441986
+      ],
+      "radius_m": 0.16504891341547612,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        -18.168128156522975,
+        2088.9166531130872
+      ],
+      "radius_m": 0.11460536481730091,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        -18.215530571079228,
+        2089.3714735689923
+      ],
+      "radius_m": 0.13839348267791457,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        -18.32560339482639,
+        2088.547898778885
+      ],
+      "radius_m": 0.12959114395421653,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        -18.524761101410245,
+        2089.5474187695672
+      ],
+      "radius_m": 0.1601977145956185,
+      "facade": true,
+      "visible_corner_group": 3
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        19.73,
+        2041.72
+      ],
+      "radius_m": 0.065,
+      "facade": true,
+      "beside_bench": true
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        19.72,
+        2041.9
+      ],
+      "radius_m": 0.065,
+      "facade": true,
+      "beside_bench": true
+    },
+    {
+      "kind": "grass",
+      "xz": [
+        19.74,
+        2039.68
+      ],
+      "radius_m": 0.065,
+      "facade": true,
+      "beside_bench": true
     }
   ]
 }

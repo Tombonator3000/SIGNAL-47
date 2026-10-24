@@ -55,10 +55,10 @@ def plaster(size=(1024,1024),facade=False):
   # Edges peel in selected dry clusters, not uniform dirt scattered over every surface.
   centres=[(-5.85,.40),(-5.72,3.44),(-3.95,.23),(-3.35,2.50),(-.83,2.42),(3.30,.48),(5.80,.18),(5.78,3.42),(1.3,.17)]
   for cx,cz in centres:
-   for j in range(r.randint(4,12)):
-    x=cx+r.gauss(0,.12);z=cz+r.gauss(0,.13);rr=r.uniform(.012,.065)
-    poly=[pt(x+math.cos(a)*rr*r.uniform(.65,1.4),z+math.sin(a)*rr*r.uniform(.65,1.4)) for a in [i*math.tau/7 for i in range(7)]]
-    d.polygon(poly,fill=r.choice([(161,143,111),(174,155,121),(185,168,136)]));hd.polygon(poly,fill=89);rd.polygon(poly,fill=247)
+   for j in range(r.randint(6,16)):
+    x=cx+r.gauss(0,.12);z=cz+r.gauss(0,.13);rr=r.uniform(.006,.027)
+    poly=[pt(x+math.cos(a)*rr*r.uniform(.65,1.4),z+math.sin(a)*rr*r.uniform(.65,1.4)) for a in [i*math.tau/17 for i in range(17)]]
+    d.polygon(poly,fill=r.choice([(185,168,136),(194,177,145),(202,186,156)]));hd.polygon(poly,fill=112);rd.polygon(poly,fill=247)
   # Dry hairline cracks lead away from lintel corners and old filled repairs.
   for x,z,endx,endz in [(-.77,2.48,-1.1,3.14),(3.2,2.48,3.45,3.13),(-4.03,2.2,-3.7,2.62),(5.8,1.6,5.48,.75),(-5.8,3.42,-5.25,3.15)]:
    points=[]

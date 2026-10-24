@@ -7,7 +7,7 @@ import math, random, json, subprocess
 from pathlib import Path
 
 STONE_SETTINGS = {
-    'stucco': {'uv_scale': .42, 'normal_strength': .22, 'resolution': 2048},
+    'stucco': {'uv_scale': .42, 'normal_strength': .12, 'resolution': 2048},
     'concrete': {'uv_scale': .65, 'normal_strength': .20, 'resolution': 2048},
 }
 SURFACE_SETTINGS = {**STONE_SETTINGS,
@@ -66,11 +66,11 @@ def generate(folder, only=None):
         else:
             # Uneven trowel strokes, chipped lime, mineral cavities and larger oxide islands.
             for i in range(6200):
-                x,y=rng.randint(-30,n),rng.randint(-30,n); r=rng.choices([2,5,12,34],[6,7,3,1])[0]
+                x,y=rng.randint(-30,n),rng.randint(-30,n); r=rng.choices([2,4,8,16] if name=='stucco' else [2,5,12,34],[6,7,3,1])[0]
                 points=[(x+math.cos(k*math.tau/7)*r*rng.uniform(.6,1.4),
                          y+math.sin(k*math.tau/7)*r*rng.uniform(.5,1.2)) for k in range(7)]
-                d=rng.randint(-21,17)
-                cd.polygon(points,fill=pigment(d)); hd.polygon(points,fill=128+rng.randint(-8,8))
+                d=rng.randint(-9,7) if name=='stucco' else rng.randint(-21,17)
+                cd.polygon(points,fill=pigment(d)); hd.polygon(points,fill=128+rng.randint(-4,4) if name=='stucco' else 128+rng.randint(-8,8))
                 rd.polygon(points,fill=rng.randint(208,242))
             if name=='rust_metal':
                 for i in range(350):

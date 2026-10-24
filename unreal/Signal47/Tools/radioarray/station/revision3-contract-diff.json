@@ -1,0 +1,63 @@
+{
+  "SM_1420_Shell": {
+    "triangles_before": 9972,
+    "triangles_after": 10340,
+    "bounds_identical": true,
+    "origin_identical": true,
+    "new_material_slots": [],
+    "removed_material_slots": [],
+    "existing_slot_index_changes": {}
+  },
+  "SM_1420_Interior": {
+    "triangles_before": 50520,
+    "triangles_after": 80882,
+    "bounds_identical": true,
+    "origin_identical": true,
+    "new_material_slots": [
+      "M_1420_ProgramPanelPrint",
+      "M_1420_LeatherStitch"
+    ],
+    "removed_material_slots": [],
+    "existing_slot_index_changes": {
+      "M_1420_Vinyl_green": [
+        12,
+        14
+      ],
+      "M_1420_Lamp_glow": [
+        13,
+        12
+      ],
+      "M_1420_OliveWornTimber": [
+        14,
+        13
+      ]
+    }
+  },
+  "SM_1420_Door": {
+    "triangles_before": 1852,
+    "triangles_after": 1852,
+    "bounds_identical": true,
+    "origin_identical": true,
+    "new_material_slots": [],
+    "removed_material_slots": [],
+    "existing_slot_index_changes": {}
+  },
+  "SM_1420_Glass": {
+    "triangles_before": 12,
+    "triangles_after": 12,
+    "bounds_identical": true,
+    "origin_identical": true,
+    "new_material_slots": [],
+    "removed_material_slots": [],
+    "existing_slot_index_changes": {}
+  },
+  "SM_1420_Mast": {
+    "triangles_before": 1264,
+    "triangles_after": 1264,
+    "bounds_identical": true,
+    "origin_identical": true,
+    "new_material_slots": [],
+    "removed_material_slots": [],
+    "existing_slot_index_changes": {}
+  }
+}

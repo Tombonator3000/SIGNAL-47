@@ -11,5 +11,6 @@
     "window": "LIMITED: source transmission glass blurs and darkens the room. Native alpha 0.10 material must be assessed in fresh runtime captures.",
     "runtime_status": "UNVERIFIED",
     "dcc_jobs_complete": true
-  }
+  },
+  "status": "SUPERSEDED R2 SOURCE PREVIEWS; R3 is verified without DCC rendering, awaiting native runtime acceptance"
 }

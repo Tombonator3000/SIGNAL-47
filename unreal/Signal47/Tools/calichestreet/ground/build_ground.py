@@ -25,6 +25,10 @@ for row in spec:
     m=bpy.data.materials.new(row['name']);m.use_nodes=True
     bs=m.node_tree.nodes.get('Principled BSDF')
     bs.inputs['Roughness'].default_value=row['roughness']
+    if row.get('vertex_alpha_opacity'):
+        vertex=m.node_tree.nodes.new('ShaderNodeVertexColor');vertex.layer_name='Color'
+        m.node_tree.links.new(vertex.outputs['Alpha'],bs.inputs['Alpha'])
+        m.surface_render_method='DITHERED'
     for role,filename in row['textures'].items():
         img=bpy.data.images.load(str(ROOT/filename),check_existing=True)
         if role!='base_color':img.colorspace_settings.name='Non-Color'
@@ -80,7 +84,7 @@ def top(x,z):
 def point(x,z,lift=.008):return (x,-(z-2060),top(x,z)+lift)
 
 class Mesh:
-    def __init__(self):self.v=[];self.f=[];self.mat=[];self.uv=[];self.clearance=[]
+    def __init__(self):self.v=[];self.f=[];self.mat=[];self.uv=[];self.clearance=[];self.alpha=[];self.fade_stats={}
     def face(self,vs,mat=0,uv=None):
         # Sword-leaf tips converge to one point. Keep a real triangle rather
         # than emitting a zero-area triangle from a repeated quad endpoint.
@@ -96,14 +100,46 @@ class Mesh:
         if (Vector(vs[1])-Vector(vs[0])).cross(Vector(vs[2])-Vector(vs[0])).length<1e-9:return
         n=len(self.v);self.v.extend(vs);self.f.append(tuple(range(n,n+len(vs))));self.mat.append(mat)
         self.uv.extend(uv)
+        self.alpha.extend([1.0]*len(vs))
+    def fade_edges(self,mat,width):
+        # Determine every actual open edge from the accepted source grid,
+        # including the holes around pavement and buildings. Duplicated face
+        # vertices use the same XY key and therefore get identical alpha.
+        # Alpha reaches zero AT the polygon boundary, not one cell before it.
+        def key(p):return (round(p[0],6),round(p[1],6))
+        edges={};positions={}
+        for face,idx in zip(self.f,self.mat):
+            if idx!=mat:continue
+            for i in range(len(face)):
+                a=key(self.v[face[i]]);b=key(self.v[face[(i+1)%len(face)]])
+                edge=tuple(sorted([a,b]));edges[edge]=edges.get(edge,0)+1
+                positions[a]=None;positions[b]=None
+        boundary=[edge for edge,count in edges.items() if count==1]
+        bins={}
+        for a,b in boundary:
+            for ix in range(math.floor((min(a[0],b[0])-width)/width),math.floor((max(a[0],b[0])+width)/width)+1):
+                for iy in range(math.floor((min(a[1],b[1])-width)/width),math.floor((max(a[1],b[1])+width)/width)+1):
+                    bins.setdefault((ix,iy),[]).append((a,b))
+        for p in positions:
+            distance=width
+            for a,b in bins.get((math.floor(p[0]/width),math.floor(p[1]/width)),[]):
+                dx=b[0]-a[0];dy=b[1]-a[1];den=dx*dx+dy*dy
+                t=max(0,min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/den)) if den else 0
+                distance=min(distance,math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy))
+            t=max(0,min(1,distance/width));positions[p]=t*t*(3-2*t)
+        for face,idx in zip(self.f,self.mat):
+            if idx==mat:
+                for vi in face:self.alpha[vi]=positions[key(self.v[vi])]
+        self.fade_stats[MATS[mat].name]={'width_m':width,'open_edges':len(boundary),'boundary_alpha_max':max((positions[a] for edge in boundary for a in edge),default=0),'unique_points':len(positions),'alpha_zero':sum(a<1e-5 for a in positions.values()),'alpha_partial':sum(1e-5<a<.99999 for a in positions.values()),'alpha_one':sum(a>=.99999 for a in positions.values())}
     def overlay(self,x,z,lift):
         p=point(x,z,lift);self.clearance.append({'xz':[x,z],'above_source_m':lift,'above_floor_m':p[2]-floor_y(x,z)})
         return p
-    def grid(self,box,mat,step=.5,lift=.008,mask=lambda x,z:True):
+    def grid(self,box,mat,step=.5,lift=.008,mask=lambda x,z:True,x_breaks=()):
         x0,x1,z0,z1=box;nx=math.ceil((x1-x0)/step);nz=math.ceil((z1-z0)/step)
+        xs=sorted(set([round(x0+(x1-x0)*i/nx,12) for i in range(nx+1)]+list(x_breaks)))
         for j in range(nz):
-            for i in range(nx):
-                xa=x0+(x1-x0)*i/nx;xb=x0+(x1-x0)*(i+1)/nx
+            for i in range(len(xs)-1):
+                xa=xs[i];xb=xs[i+1]
                 za=z0+(z1-z0)*j/nz;zb=z0+(z1-z0)*(j+1)/nz
                 if not all(mask(x,z) for x,z in [(xa,za),(xb,za),(xa,zb),(xb,zb),((xa+xb)/2,(za+zb)/2)]):continue
                 a=self.overlay(xa,za,lift);b=self.overlay(xb,za,lift);c=self.overlay(xa,zb,lift);d=self.overlay(xb,zb,lift)
@@ -152,18 +188,22 @@ class Mesh:
         for f,idx in zip(me.polygons,self.mat):f.material_index=idx
         uv=me.uv_layers.new(name='UVMap')
         for loop in me.loops:uv.data[loop.index].uv=self.uv[loop.vertex_index]
+        colors=me.color_attributes.new(name='Color',type='FLOAT_COLOR',domain='POINT')
+        for i,c in enumerate(colors.data):c.color=(1,1,1,self.alpha[i])
+        me.color_attributes.active_color=colors
         ob=bpy.data.objects.new(name,me);bpy.context.collection.objects.link(ob)
         ob['collision']='disabled_visual_dressing';ob['anchor_world_three_m']=ANCHOR
         return ob
 
 surfaces=Mesh();road=Mesh();rocks=Mesh();plants=Mesh();rng=random.Random(470047)
-# Warm caliche fills the spaces between the already paved strips. The upper
-# plate is 8 mm above the measured original surface. Perimeter cells retreat
-# irregularly so the 70 m cell never appears as a rectangle from street level.
+# Caliche follows the existing rendered ground +8 mm. Every open mesh edge
+# fades over 1.8 m through vertex alpha, including holes around original pave.
+# A ragged opaque grid silhouette is NOT a soft transition by itself.
 def soilmask(x,z):
     border=min(x+30,40-x,z-2020,2090-z)
-    return border>.7+.45*math.sin(z*.61+x*.47) and clear_surface(x,z) and abs(x)>6
+    return border>.7 and clear_surface(x,z) and abs(x)>4.9
 surfaces.grid(REGION,0,step=.65,mask=soilmask)
+surfaces.fade_edges(0,1.8)
 # Local alpha-feathered patches replace the old broad, hard-edged gravel bands.
 # They reveal underlying soil between chips instead of drawing a new rectangle.
 for side in [-1,1]:
@@ -175,15 +215,22 @@ for side in [-1,1]:
 # the concrete field sits at +6 mm so those authored story/light marks remain.
 for x,z in [(-16.6,2044),(-16.4,2059),(-16.5,2075),(-16.3,2086),(18.8,2027),(19.1,2034.5),(18.9,2040.7),(18.6,2052.4),(19.0,2058.8),(19.0,2069.7),(18.5,2079.4),(18.4,2086.7)]:
     surfaces.patch(x,z,1.2,1.7,9,angle=.4*math.sin(z),lift=.006)
-# Keep both the yellow center marking and its immediate blacktop context.
-# Outside 1.05 m from the center, worn aggregate varies in broad irregular
-# fields rather than repeating a uniformly clean road strip.
+# Continuous lane wear has no 2.2m-wide old-blacktop centre stripe. Actual
+# roadTexture.ts markings are only +/-0.1m x0.1m and +/-3.6m x0.12m.
+# A fine cross-road grid samples the alpha holes without covering their paint.
+road.grid([-4.7,4.7,2020.25,2089.75],2,step=.26,lift=.008,
+          x_breaks=[-3.85,-3.69,-3.51,-3.35,-.38,-.18,0,.18,.38,3.35,3.51,3.69,3.85])
+road.fade_edges(2,.45)
+for face,mat in zip(road.f,road.mat):
+    if mat!=2:continue
+    for vi in face:
+        x=abs(road.v[vi][0])
+        # Entire yellow paint and a 2cm antialias margin stay fully uncovered.
+        t=max(0,min(1,(x-.18)/.20));yellow=t*t*(3-2*t)
+        # Preserve existing white edge paint too, with no broad colour stripe.
+        t=max(0,min(1,(abs(x-3.6)-.09)/.16));white=t*t*(3-2*t)
+        road.alpha[vi]=min(road.alpha[vi],yellow,white)
 for side in [-1,1]:
-    def roadmask(x,z):
-        inner=1.10+.13*math.sin(z*.31);outer=4.42+.035*math.sin(z*1.7)
-        return inner<abs(x)<outer and 2020.5<z<2089.5
-    bb=sorted([1.08*side,4.48*side])+[2020.25,2089.75]
-    road.grid(bb,2,step=.28,lift=.008,mask=roadmask)
     # Repairs/cracks now live inside the detailed asphalt image. Large opaque
     # blobs read as featureless polygons at player height, so none are drawn.
     # Thin dust fingers cross onto the outside blacktop edge, under 12 mm high.
@@ -293,21 +340,47 @@ for x,z,r in [(23.0,2055.0,.34),(30.9,2048.0,.39),(-27.8,2063.6,.32),(30.9,2072.
     if clear_dressing(x,z,r,facade=True):
         tumbleweed(x,z,r);dressing.append({'kind':'tumbleweed','xz':[x,z],'radius_m':r,'facade':True})
 
+# R3 native view: make a few readable organic groups at exposed building
+# corners, with a broad sage silhouette and smaller grass satellites. Never
+# scatter tall details across the street or photo/door approach rectangle.
+for hero,(cx,cz) in enumerate([(20.92,2043.15),(20.32,2056.48),(20.28,2071.08),(-18.42,2089.02)]):
+    rr=random.Random(6500+hero)
+    if clear_dressing(cx,cz,.50,facade=True):
+        bush(cx,cz,.69,sage=True,width=1.0)
+        dressing.append({'kind':'sage','xz':[cx,cz],'radius_m':.50,'facade':True,'visible_corner_group':hero,'primary_sage':True,'height_m':.69,'width_m':1.0})
+    for k in range(8):
+        a=rr.random()*math.tau;r=rr.uniform(.16,.82)
+        x=cx+math.cos(a)*r;z=cz+math.sin(a)*r
+        width=rr.uniform(.45,.62) if k<2 else rr.uniform(.19,.34)
+        radius=width*.5;height=rr.uniform(.42,.58) if k<2 else rr.uniform(.28,.47)
+        if clear_dressing(x,z,radius,facade=True):
+            bush(x,z,height,sage=k<2,width=width)
+            dressing.append({'kind':'sage' if k<2 else 'grass','xz':[x,z],'radius_m':radius,'facade':True,'visible_corner_group':hero})
+    surfaces.patch(cx,cz,1.35,1.8,9,angle=rr.uniform(-.8,.8),lift=.012)
+
+# Tiny roots beside the radio bench's north end fit in the real 0.2m strip
+# outside the walking rectangle. They do not project into the bench approach.
+for x,z in [(19.73,2041.72),(19.72,2041.90),(19.74,2039.68)]:
+    r=.065
+    if clear_dressing(x,z,r,facade=True):
+        bush(x,z,.33,width=r*2)
+        dressing.append({'kind':'grass','xz':[x,z],'radius_m':r,'facade':True,'beside_bench':True})
+
 manifest={'anchor_world_three_m':ANCHOR,'coordinate_mapping':'worldThree=(8000+bx,bz,2060-by)','import_policy':{'force_front_x_axis':True,'coordinate_system_policy':'MATCH_UP_FORWARD_AXES','import_rotation_yaw':90,'runtime_yaw':0},'collision':'NoCollision for every part','parts':{},'dressing':dressing}
 for name,mesh in [('SM_Caliche_Surface',surfaces),('SM_Caliche_RoadWear',road),('SM_Caliche_Rocks',rocks),('SM_Caliche_DryPlants',plants)]:
     ob=mesh.object(name);ob.data.calc_loop_triangles()
     bounds=[[min(v.co[i] for v in ob.data.vertices) for i in range(3)],[max(v.co[i] for v in ob.data.vertices) for i in range(3)]]
-    manifest['parts'][name]={'bounds_local_m':bounds,'triangles':len(ob.data.loop_triangles),'origin_m':list(ob.location),'material_slots':[m.name for m in ob.data.materials],'used_materials':sorted(set(MATS[i].name for i in mesh.mat)),'uv_layers':len(ob.data.uv_layers),'max_above_source_m':max((r['above_source_m'] for r in mesh.clearance),default=None),'max_above_floor_m':max((r['above_floor_m'] for r in mesh.clearance),default=None)}
+    manifest['parts'][name]={'bounds_local_m':bounds,'triangles':len(ob.data.loop_triangles),'origin_m':list(ob.location),'material_slots':[m.name for m in ob.data.materials],'used_materials':sorted(set(MATS[i].name for i in mesh.mat)),'uv_layers':len(ob.data.uv_layers),'vertex_color_attribute':'Color','vertex_alpha_min':min(mesh.alpha),'vertex_alpha_max':max(mesh.alpha),'edge_fade':mesh.fade_stats,'max_above_source_m':max((r['above_source_m'] for r in mesh.clearance),default=None),'max_above_floor_m':max((r['above_floor_m'] for r in mesh.clearance),default=None)}
     bpy.ops.object.select_all(action='DESELECT');ob.select_set(True);bpy.context.view_layer.objects.active=ob
-    bpy.ops.export_scene.fbx(filepath=str(OUT/(name+'.fbx')),use_selection=True,object_types={'MESH'},axis_forward='-Y',axis_up='Z',global_scale=1,apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',use_triangles=True,mesh_smooth_type='FACE',bake_space_transform=False,add_leaf_bones=False,path_mode='AUTO')
-    bpy.ops.export_scene.gltf(filepath=str(OUT/(name+'.glb')),use_selection=True,export_format='GLB')
+    bpy.ops.export_scene.fbx(filepath=str(OUT/(name+'.fbx')),use_selection=True,object_types={'MESH'},axis_forward='-Y',axis_up='Z',global_scale=1,apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',use_triangles=True,mesh_smooth_type='FACE',bake_space_transform=False,add_leaf_bones=False,path_mode='AUTO',colors_type='LINEAR',prioritize_active_color=True)
+    bpy.ops.export_scene.gltf(filepath=str(OUT/(name+'.glb')),use_selection=True,export_format='GLB',export_vertex_color='ACTIVE',export_all_vertex_colors=False)
 (ROOT/'model_contract.json').write_text(json.dumps(manifest,indent=2)+'\n')
 (ROOT/'surface_samples.json').write_text(json.dumps(surfaces.clearance+road.clearance,separators=(',',':'))+'\n')
 # Portable Blender file contains the original texture images as packed data.
 for image in bpy.data.images:
     if image.source=='FILE':image.pack()
 bpy.ops.object.select_all(action='SELECT')
-bpy.ops.export_scene.gltf(filepath=str(OUT/'Caliche_Ground_Assembly.glb'),use_selection=True,export_format='GLB')
+bpy.ops.export_scene.gltf(filepath=str(OUT/'Caliche_Ground_Assembly.glb'),use_selection=True,export_format='GLB',export_vertex_color='ACTIVE',export_all_vertex_colors=False)
 bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'Caliche_Ground.blend'),compress=True)
 print('CALICHE_GROUND_GENERATED',json.dumps({k:v['triangles'] for k,v in manifest['parts'].items()}))
 

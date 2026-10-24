@@ -62,8 +62,8 @@
   "closed_door": true,
   "parts": {
     "SM_Souvenir_Shell": {
-      "vertices": 13013,
-      "triangles": 19501,
+      "vertices": 19276,
+      "triangles": 26774,
       "materials": [
         "M_Souvenir_Concrete",
         "M_Souvenir_Walnut",
@@ -92,7 +92,7 @@
         [
           6.25,
           4.579999923706055,
-          4.050000190734863
+          4.266976356506348
         ]
       ],
       "origin": [
@@ -106,12 +106,12 @@
         "UVMap"
       ],
       "uv_loops": {
-        "UVMap": 58503
+        "UVMap": 80322
       }
     },
     "SM_Souvenir_Interior": {
-      "vertices": 47614,
-      "triangles": 68286,
+      "vertices": 85690,
+      "triangles": 156462,
       "materials": [
         "M_Souvenir_CreamPaper",
         "M_Souvenir_FadedRed",
@@ -128,8 +128,9 @@
         "M_Souvenir_SkyPrint",
         "M_Souvenir_CreasedFoil",
         "M_Souvenir_WeatheredTimber",
-        "M_Souvenir_MesaPrint",
-        "M_Souvenir_WarmLamp"
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_PrintedArtwork",
+        "M_Souvenir_PrintedLabels"
       ],
       "bounds_local_m": [
         [
@@ -154,7 +155,7 @@
         "UVMap"
       ],
       "uv_loops": {
-        "UVMap": 204858
+        "UVMap": 469386
       }
     },
     "SM_Souvenir_Glass": {
@@ -217,8 +218,25 @@
       2.0,
       -1.7,
       3.24
+    ],
+    "facade_sign": [
+      [
+        -3.7,
+        -5.05,
+        4.1
+      ],
+      [
+        0,
+        -5.05,
+        4.1
+      ],
+      [
+        3.7,
+        -5.05,
+        4.1
+      ]
     ]
   },
   "source_editable_collection": "EDITABLE_SOURCE_enable_to_edit",
-  "preview_status": "Blender previews rendered; visual inspection and native UE street review are separate checks."
+  "preview_status": "NOT_RENDERED unless opt-in --render was requested"
 }

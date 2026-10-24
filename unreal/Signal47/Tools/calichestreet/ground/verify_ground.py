@@ -23,7 +23,37 @@ for name,row in contract['parts'].items():
     assert error<1e-4,(name,error)
     zero=sum((me.vertices[t.vertices[1]].co-me.vertices[t.vertices[0]].co).cross(me.vertices[t.vertices[2]].co-me.vertices[t.vertices[0]].co).length_squared<1e-20 for t in me.loop_triangles)
     assert zero==0,(name,zero)
-    report['parts'][name]={'triangles':len(me.loop_triangles),'bounds_error_m':error,'zero_area_triangles':zero,'uv_layers':len(me.uv_layers),'material_slots':len(me.materials)}
+    color=me.color_attributes.get('Color');assert color is not None,(name,'missing Color RGBA')
+    alphas=[c.color[3] for c in color.data]
+    assert abs(min(alphas)-row['vertex_alpha_min'])<.003 and abs(max(alphas)-row['vertex_alpha_max'])<.003,(name,min(alphas),max(alphas))
+    fade_report={}
+    def alpha_at(loop):return color.data[loop.vertex_index if color.domain=='POINT' else loop.index].color[3]
+    for material,fade in row.get('edge_fade',{}).items():
+        idx=row['material_slots'].index(material);edges={};points={}
+        for polygon in me.polygons:
+            if polygon.material_index!=idx:continue
+            keys=[]
+            for li in polygon.loop_indices:
+                loop=me.loops[li];p=me.vertices[loop.vertex_index].co
+                key=(round(p.x,4),round(p.y,4));keys.append(key)
+                points.setdefault(key,[]).append(alpha_at(loop))
+            for a,b in zip(keys,keys[1:]+keys[:1]):
+                e=tuple(sorted([a,b]));edges[e]=edges.get(e,0)+1
+        boundary=[e for e,count in edges.items() if count==1]
+        maximum=max(a for e in boundary for p in e for a in points[p])
+        assert maximum<.003,(name,material,'open edge alpha',maximum)
+        seam_error=max(max(v)-min(v) for v in points.values())
+        assert seam_error<.003,(name,material,'alpha discontinuity',seam_error)
+        assert any(.01<a<.99 for values in points.values() for a in values),(name,'missing soft alpha')
+        fade_report[material]={'open_edges':len(boundary),'boundary_alpha_max':maximum,'duplicate_position_alpha_error':seam_error,'width_m':fade['width_m']}
+    if name=='SM_Caliche_RoadWear':
+        for polygon in me.polygons:
+            if row['material_slots'][polygon.material_index]!='M_CS_OldAsphalt':continue
+            for li in polygon.loop_indices:
+                loop=me.loops[li];x=abs(me.vertices[loop.vertex_index].co.x)
+                if x<=.18001 or abs(x-3.6)<=.09001:assert alpha_at(loop)<.003,('paint not preserved',x,alpha_at(loop))
+        report['checks'].append({'name':'only_actual_yellow_and_white_road_paint_preserved_without_broad_center_strip','pass':True,'yellow_buffer_half_width_m':.18})
+    report['parts'][name]={'triangles':len(me.loop_triangles),'bounds_error_m':error,'zero_area_triangles':zero,'uv_layers':len(me.uv_layers),'material_slots':len(me.materials),'color_attribute':color.name,'alpha_range':[min(alphas),max(alphas)],'edge_fade':fade_report}
 for row in contract['dressing']:
     assert clear_dressing(*row['xz'],row['radius_m'],facade=row.get('facade',False)),row
 report['checks'].append({'name':'rocks_and_plants_clear_main_walk_and_protected_approaches','pass':True,'count':len(contract['dressing'])})

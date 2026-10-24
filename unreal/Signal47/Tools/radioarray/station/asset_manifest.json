@@ -1,22 +1,22 @@
 {
-  "authoring": "Original SIGNAL / 47 geometry and seeded multiscale PBR; R2 2026-10-24",
-  "source_revision": "R2-concept-match-2026-10-24",
+  "authoring": "Original SIGNAL / 47 geometry and seeded multiscale PBR, 2026-10-24",
+  "source_revision": "R3-street-visible-studio-2026-10-24",
   "files": {
     "1420_AM_station.blend": {
-      "bytes": 2411039,
-      "sha256": "e8f8dba3da6175882f22c757c55d6a55d77d714b39db52e0fad08b95c1db932b"
+      "bytes": 3350681,
+      "sha256": "63bb94cc5e0905ea93a5d109bb411e3093a7acb48522098b8bd38a5f900fb7eb"
     },
     "1420_AM_station.glb": {
-      "bytes": 15752824,
-      "sha256": "fc6c74bdc6655fe37d5b1037c642d78ea3b23e17bb567ad5c13015e91221f646"
+      "bytes": 19930232,
+      "sha256": "93096cc45b5d3d51ebf7721ed1af082cc5283cee99882256ea7f2fea9af6c2fb"
     },
     "README.md": {
-      "bytes": 7613,
-      "sha256": "840d5cec6fbf597b86b0a03cbbb7d153cf9c71d2e35e4551fec408a7c11b4995"
+      "bytes": 9956,
+      "sha256": "4a60526eb52c545aa73cc23985ce0151fcac82b19d5ac65543533af52b6e3b6a"
     },
     "build_station.py": {
-      "bytes": 31158,
-      "sha256": "eb5c8ddff1c062e73be9fed193d148c87c122659adabdc55d9cfd16d02e35012"
+      "bytes": 31707,
+      "sha256": "3ec4e72127bdf07ee391fb83c49414cc0f04c79ec3cb372fed73af871a8b9195"
     },
     "clean_existing_exports.py": {
       "bytes": 2129,
@@ -24,27 +24,27 @@
     },
     "exports/SM_1420_Door.fbx": {
       "bytes": 77996,
-      "sha256": "5df14faa388050cda2ba497b430e9a72dc9346d9db845e48e10d403ce34509b2"
+      "sha256": "42f4ef59d2d28a282ef3178d1f182f879b59d316a86703ffbb239a0c989799a7"
     },
     "exports/SM_1420_Glass.fbx": {
       "bytes": 15468,
-      "sha256": "8794f82f7036c153bbfcd3872a7c4a5bd14ac58ac5c81aa45bed19d133f427d3"
+      "sha256": "5ee123504fc2255491f567d37c2efc7529067c58b027a88ccc042980a225972c"
     },
     "exports/SM_1420_Interior.fbx": {
-      "bytes": 1277420,
-      "sha256": "42404a45193c62252ca95345805a9622c3327e17d87c1d3eae930d62c5a0e2d2"
+      "bytes": 2055340,
+      "sha256": "f563af28d3730521cba9612444952d9fc7e820f73c968ebd29e6f5e6a9f2028b"
     },
     "exports/SM_1420_Mast.fbx": {
       "bytes": 52204,
-      "sha256": "819a5d7d7f90bd98c3537d54d9926fd6d11abd3b026fbdc838c74e7f4aafe66f"
+      "sha256": "4b4281c7706cef4a4008884ac3e5cd82c178d17194df489fe8687d02fad4fa53"
     },
     "exports/SM_1420_Shell.fbx": {
-      "bytes": 334828,
-      "sha256": "28c36854a77113fb7decf027d36f65837e894abe1960284326e049d8817662c8"
+      "bytes": 349180,
+      "sha256": "4c7cdfc0500f573c5ed2c64101a445656e445434f392c55d76eb6c8eb3a4af00"
     },
     "exports/axis_probe.fbx": {
       "bytes": 11868,
-      "sha256": "4266178bc868d8b10ec267149aa06e5c256c4c5e68aff22e8aad7f10913f6795"
+      "sha256": "a0d93d841872bd9bc7a73b10131e9a230c3d15cfce7c7157e4e5a633b51bc260"
     },
     "exterior.png": {
       "bytes": 1511295,
@@ -59,8 +59,12 @@
       "sha256": "c4470ec8ff1ec337d6309424641063141b38e80d6e022381947ba473ef1b5b7a"
     },
     "make_revision_textures.py": {
-      "bytes": 6020,
-      "sha256": "6a6629d3ade249855d6932133ea5181b6d6052fcb4df2378969b5edfa1214353"
+      "bytes": 6023,
+      "sha256": "70c7eec4b4a37aa9a8033322fa699b33f98bf06be03bb8cd5c818b68eb5dac05"
+    },
+    "make_revision_three_textures.py": {
+      "bytes": 2642,
+      "sha256": "8383e21beb077a3cc4c20b4073c28abca4f275e5e6f4ff49804f78da6707e599"
     },
     "make_textures.py": {
       "bytes": 4429,
@@ -71,16 +75,16 @@
       "sha256": "1b76a9213bfbb425fe864cfeb10080427dceaad8b3f62ec62aaf70430e9f1dce"
     },
     "materials.json": {
-      "bytes": 9395,
-      "sha256": "fd218ababcb4f2efdc56a8e10150228b7ab3a08741a2aac5ee9c4a22b5a99fc5"
+      "bytes": 10676,
+      "sha256": "8a697a0f34dd6089f9b9d4613c274e0afb925a8b6b4a557451d5390ac123859b"
     },
     "mesh_cleanup.json": {
-      "bytes": 3019,
-      "sha256": "7a14cfc3ccb6ef99d56c97755d25e2b86d0bc27d04eeca33e08116d5e4104376"
+      "bytes": 3094,
+      "sha256": "b5814198c0d688392d3cfa4e9d010ef792432c73d8e5fb18487cf4433b97b343"
     },
     "model_contract.json": {
-      "bytes": 5886,
-      "sha256": "b144ed738646fa44e59c9cb8bdcae97a187f4dced7817c3d100356ed789d52f5"
+      "bytes": 6993,
+      "sha256": "90c54183cbcb3177334dd8692f4a619720448dde533c2c1f60bdfab1793ffb5a"
     },
     "r2-exterior.png": {
       "bytes": 1230610,
@@ -110,9 +114,13 @@
       "bytes": 3260,
       "sha256": "4b1d25edf564ff8a3bdda003702a02629f3c26358dd9d7b16b29c436f20f684c"
     },
+    "revision3-contract-diff.json": {
+      "bytes": 1497,
+      "sha256": "7178fca657d08870e86e5ed184222f2b04acbfe3dfc4890ef953b10cfe45ae10"
+    },
     "run_guarded.py": {
-      "bytes": 1512,
-      "sha256": "5e6ec382be4792c9482284409d4e51024d0ef9b7e0aa4d84a511fa37612205ae"
+      "bytes": 1626,
+      "sha256": "ee6a5180160de8944b3307e28ed1763d6e28588a02a8c486c6bae3fa40c440ea"
     },
     "source_integrity.json": {
       "bytes": 723,
@@ -122,9 +130,13 @@
       "bytes": 3317,
       "sha256": "32c8dc4d71c110e5f2f6234bfc56a9564e8e32105141e59411a9c2785fc0519c"
     },
+    "station_revision_three.py": {
+      "bytes": 8007,
+      "sha256": "45fcfb6e4a216c4f341c31d9a8b8c273d4cd6549c7e7e4c15734b90a040b80a7"
+    },
     "station_revision_two.py": {
-      "bytes": 9115,
-      "sha256": "829b0918cb8c907b8d29c51666bce5018c576787e2173136211331d82a0717bb"
+      "bytes": 9138,
+      "sha256": "df55d9063c9a79219eb5254c8fff8c37152e357d501280fd09821476d2f1a4f5"
     },
     "textures/concrete_color.png": {
       "bytes": 61870,
@@ -175,20 +187,20 @@
       "sha256": "54f750656a6b292b7cd8c98bf32f59a13b1b0d11637d45baf53975d86a042a61"
     },
     "textures/revision2/facade_1420_weathered_color.png": {
-      "bytes": 917008,
-      "sha256": "3f618430679d356a94a5053c487701e095c167b9fac9e19454a83cdb781c6549"
+      "bytes": 920450,
+      "sha256": "f6ebd66bbc9b8d40a3d88d352dc2f41faa97031dc222ff28fe60445fc1a0479e"
     },
     "textures/revision2/facade_1420_weathered_normal_dx.png": {
-      "bytes": 3194335,
-      "sha256": "6dce95b168301b8ce9d0713194f7a7ab2aba87364de8937912bcd0b0ac7f20b3"
+      "bytes": 3206780,
+      "sha256": "3769bba334e0f33065d9658252450d8173990cbfdd0e799bf270295b039b25e9"
     },
     "textures/revision2/facade_1420_weathered_normal_gl.png": {
-      "bytes": 3194155,
-      "sha256": "3ebd29411f08cd3c8c369c87bf1ad9d8e4303ef88f33ec25726a56b67445e865"
+      "bytes": 3206703,
+      "sha256": "a39bf4d9e96457999dc08e8b2c6495b3c77d0c732987b810e45e9e0d59dc2a8e"
     },
     "textures/revision2/facade_1420_weathered_roughness.png": {
-      "bytes": 1032317,
-      "sha256": "54d452ff2aabc487491d70298f0831abbc9547ccb649cdb680cc34b749d71c5a"
+      "bytes": 1035522,
+      "sha256": "eb12a54145a4aa5b5e1e2540aa8984cbc736a425313497e6be465e7b39f8e371"
     },
     "textures/revision2/olive_timber_color.png": {
       "bytes": 165617,
@@ -237,6 +249,38 @@
     "textures/revision2/walnut_worked_roughness.png": {
       "bytes": 274611,
       "sha256": "dd89f82d6f9345743dd8589f39a4bec727e616e254d96e28d400921656c2c7ba"
+    },
+    "textures/revision3/aged_vinyl_color.png": {
+      "bytes": 730562,
+      "sha256": "4e062a90b2e304c88f91fafa49dd803f51998f90b92f0ecf4dd6fcb4a46d81df"
+    },
+    "textures/revision3/aged_vinyl_normal_dx.png": {
+      "bytes": 1335472,
+      "sha256": "f05a9e9d9702bbc610ff16e96ee0cbc0e09237ebe0c2f60894216e2e74218705"
+    },
+    "textures/revision3/aged_vinyl_normal_gl.png": {
+      "bytes": 1335421,
+      "sha256": "1ad0e8b1745e361c8fde6cd7a6d7486d39be7c9dd927f988d3643290aa69e7d1"
+    },
+    "textures/revision3/aged_vinyl_roughness.png": {
+      "bytes": 719047,
+      "sha256": "6a9b17a236509dcfa98647284cb61fdbcadcabd4f7834aac96a458fab7ca5703"
+    },
+    "textures/revision3/program_panel_color.png": {
+      "bytes": 11725,
+      "sha256": "eda028a435dbd4f24b07b38505facd1e53ef3e50c4a8fd023c62e668aafccfca"
+    },
+    "textures/revision3/program_panel_normal_dx.png": {
+      "bytes": 2680,
+      "sha256": "d3cde33d7d1e125e401acce2cca9884bec682a62cf5535a3af5c56ea1134a7af"
+    },
+    "textures/revision3/program_panel_normal_gl.png": {
+      "bytes": 2679,
+      "sha256": "5e09c5d60539f986e062d3d96c8bef6ca8d364222c209728eabc0bd4e6cd1494"
+    },
+    "textures/revision3/program_panel_roughness.png": {
+      "bytes": 2680,
+      "sha256": "a130415ef061b78b6de70180dd424527e93d07c6467e6076253fd3927a44efa5"
     },
     "textures/stucco_color.png": {
       "bytes": 61887,
@@ -302,21 +346,44 @@
       "bytes": 6259,
       "sha256": "ea5e82d63646feaa485d1f7c00772908c6870f7b70b9d70a8367b7af8567439f"
     },
+    "verification/r3-build-attempt1-failed-guard.json": {
+      "bytes": 954,
+      "sha256": "281e2165bddc4fda23cdaf157c747a1a40d718aa466c270388047ada5ace0fa5"
+    },
+    "verification/r3-build-attempt1-failed.log": {
+      "bytes": 2645,
+      "sha256": "df7317d72a722be204ae1da719dad1150411d156489ae435daa75afa9f6a9c4f"
+    },
+    "verification/r3-build-guard.json": {
+      "bytes": 954,
+      "sha256": "aea66a91a084c5e60aff02472ec6a57a5f2321851af8fd2f36baee77adbed10b"
+    },
+    "verification/r3-build.log": {
+      "bytes": 3235,
+      "sha256": "ae33ddadd440189d7e1e3d864969ec4ab0986fa0479832b61b3e6988b8188d80"
+    },
+    "verification/r3-verify-guard.json": {
+      "bytes": 954,
+      "sha256": "00a47d9676e639359285d5a22cd6d0245e5dd06223c1d80ba24152da8544aaf3"
+    },
+    "verification/r3-verify.log": {
+      "bytes": 8008,
+      "sha256": "f302cad648cf378fba756e54fb03315a2cc9df58c444851e80dda91271a50999"
+    },
     "verification.json": {
-      "bytes": 8613,
-      "sha256": "02d55d34b13ee229c490dab8c9dea600a5cd378890cf45d9adfb0099f8e7a56e"
+      "bytes": 10841,
+      "sha256": "d82180d4e247ca2e9c52a00da40ac952ba5ba612429b2df7a4a39c113e20d41b"
     },
     "verify_station.py": {
-      "bytes": 4700,
-      "sha256": "211f7137e101e9dcecd195acb9e5f7b6a50993a1b82ca71e17860d74562ffdfd"
+      "bytes": 6376,
+      "sha256": "d47370fbcb1404d88ea6b5641388e726d010668c121486c1f1d6dea786c29311"
     }
   },
   "verification": {
     "status": "PASS",
-    "passed": 33,
-    "total": 33,
+    "passed": 38,
+    "total": 38,
     "actual_fbx_roundtrip": true
   },
-  "material_refinement": "Fine sparse paint losses; geometry/UV/slot/transform hash identical; see r2_material_refinement.json",
-  "native_handoff": "Hide old roof 1420 board. Keep ON AIR, photo IDs, door proxies and legacy mast. Use materials.json texture strengths and conventions."
+  "native_handoff": "Hide old roof sign. Preserve ON AIR/photo IDs/door proxies/mast. Use sidecar UV+normal conventions. R3 native appearance pending."
 }

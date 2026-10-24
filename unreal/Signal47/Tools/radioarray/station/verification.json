@@ -55,15 +55,15 @@
     {
       "name": "SM_1420_Shell exact triangle contract",
       "result": "PASS",
-      "triangles": 9972,
-      "expected_triangles": 9972,
+      "triangles": 10340,
+      "expected_triangles": 10340,
       "zero_area_triangles": 0
     },
     {
       "name": "SM_1420_Shell finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
-      "faces": 9972
+      "faces": 10340
     },
     {
       "name": "Door and studio window are actual shell openings",
@@ -124,23 +124,25 @@
         "M_1420_Brick_red",
         "M_1420_Painted_olive",
         "M_1420_Paper",
-        "M_1420_Vinyl_green",
         "M_1420_Lamp_glow",
-        "M_1420_OliveWornTimber"
+        "M_1420_OliveWornTimber",
+        "M_1420_Vinyl_green",
+        "M_1420_LeatherStitch",
+        "M_1420_ProgramPanelPrint"
       ]
     },
     {
       "name": "SM_1420_Interior exact triangle contract",
       "result": "PASS",
-      "triangles": 50520,
-      "expected_triangles": 50520,
+      "triangles": 80882,
+      "expected_triangles": 80882,
       "zero_area_triangles": 0
     },
     {
       "name": "SM_1420_Interior finite face normals",
       "result": "PASS",
       "invalid_face_normals": 0,
-      "faces": 50520
+      "faces": 80882
     },
     {
       "name": "SM_1420_Door separate mesh",
@@ -305,9 +307,9 @@
       "faces": 1264
     },
     {
-      "name": "R2 six-family PBR texture dependencies exist",
+      "name": "R3 eight-family PBR texture dependencies exist",
       "result": "PASS",
-      "count": 18,
+      "count": 24,
       "relative_paths": [
         "textures/concrete_color.png",
         "textures/concrete_normal_dx.png",
@@ -318,9 +320,15 @@
         "textures/revision2/olive_timber_color.png",
         "textures/revision2/olive_timber_normal_dx.png",
         "textures/revision2/olive_timber_roughness.png",
+        "textures/revision3/program_panel_color.png",
+        "textures/revision3/program_panel_normal_dx.png",
+        "textures/revision3/program_panel_roughness.png",
         "textures/revision2/stucco_layers_color.png",
         "textures/revision2/stucco_layers_normal_dx.png",
         "textures/revision2/stucco_layers_roughness.png",
+        "textures/revision3/aged_vinyl_color.png",
+        "textures/revision3/aged_vinyl_normal_dx.png",
+        "textures/revision3/aged_vinyl_roughness.png",
         "textures/revision2/walnut_worked_color.png",
         "textures/revision2/walnut_worked_normal_dx.png",
         "textures/revision2/walnut_worked_roughness.png",
@@ -339,9 +347,9 @@
       "triangles": {
         "SM_1420_Door": 1852,
         "SM_1420_Glass": 12,
-        "SM_1420_Interior": 50520,
+        "SM_1420_Interior": 80882,
         "SM_1420_Mast": 1264,
-        "SM_1420_Shell": 9972
+        "SM_1420_Shell": 10340
       }
     },
     {
@@ -350,7 +358,7 @@
       "proof_file": "mesh_cleanup.json",
       "removed": {
         "SM_1420_Shell": 0,
-        "SM_1420_Interior": 144,
+        "SM_1420_Interior": 640,
         "SM_1420_Door": 0,
         "SM_1420_Glass": 0,
         "SM_1420_Mast": 0
@@ -363,9 +371,90 @@
     {
       "name": "R2 facade identity exported",
       "result": "PASS"
+    },
+    {
+      "name": "SRC_Console_chassis original physical anchor",
+      "result": "PASS",
+      "actual": [
+        1.2000000476837158,
+        1.5299999713897705,
+        1.0
+      ],
+      "expected": [
+        1.2,
+        1.53,
+        1.0
+      ]
+    },
+    {
+      "name": "SRC_Microphone_body original physical anchor",
+      "result": "PASS",
+      "actual": [
+        1.7200000286102295,
+        1.6799999475479126,
+        1.4049999713897705
+      ],
+      "expected": [
+        1.72,
+        1.68,
+        1.405
+      ]
+    },
+    {
+      "name": "Street-facing tape transport is within window",
+      "result": "PASS",
+      "parts": [
+        "Reel_machine",
+        "Reel_machine_face",
+        "Tape_reel_spool",
+        "Tape_reel_tape",
+        "Tape_reel_hub",
+        "Tape_reel_spoke",
+        "Tape_reel_spoke.001",
+        "Tape_reel_spoke.002",
+        "Tape_reel_spool.001",
+        "Tape_reel_tape.001",
+        "Tape_reel_hub.001",
+        "Tape_reel_spoke.003",
+        "Tape_reel_spoke.004",
+        "Tape_reel_spoke.005",
+        "Exposed_tape",
+        "Tape_head_cover",
+        "Tape_controls",
+        "Tape_controls.001",
+        "Tape_controls.002",
+        "Tape_meter",
+        "Tape_meter.001"
+      ]
+    },
+    {
+      "name": "Tape face physically within clear window and facing street",
+      "result": "PASS",
+      "bounds": [
+        [
+          -0.2900000512599945,
+          2.0424997806549072,
+          0.9050000309944153
+        ],
+        [
+          0.5699999928474426,
+          2.077500104904175,
+          2.075000047683716
+        ]
+      ],
+      "front_normal": [
+        -1.5099580252808664e-07,
+        -1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "No exposed Lamp_glow geometry in window rectangle",
+      "result": "PASS",
+      "overlaps": []
     }
   ],
-  "passed": 33,
-  "total": 33,
+  "passed": 38,
+  "total": 38,
   "runtime_note": "This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests."
 }
