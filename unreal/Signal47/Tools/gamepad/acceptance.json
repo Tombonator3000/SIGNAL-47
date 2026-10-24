@@ -47,5 +47,15 @@
     "Native digital shutter thresholds, focus loss and post-reconnect active input",
     "Human ergonomics and temporal comfort"
   ],
-  "evidence": "/home/tom/scratch-bm/Signal47-xbox"
+  "evidence": "/home/tom/scratch-bm/Signal47-xbox",
+  "installation": {
+    "status": "PASS",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-xbox/installed-backup-1792853722324495699",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "source_head": "fda747988c1ea044e6999e3d098baec82c16232d",
+    "tested_source": "3d016a078a149c253f0bad0e6c415030075b68aa",
+    "pr": 149
+  }
 }

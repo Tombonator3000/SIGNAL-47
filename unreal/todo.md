@@ -4,7 +4,7 @@
 
 - [x] Implementer analog gange/blikk, biltriggere, fast Xbox-oppsett, menyer/panelpeker og separate lagrede kontrollerinnstillinger.
 - [x] Bygg og kontroller faktisk kernel/SDL/Slate/gameplay, 1373 selvtester, elleve native opptak og 16 relevante regresjoner. Full verdensrunde stoppet etter Toms beskjed om mindre testomfang.
-- [ ] Commit/push, kontroller faktisk remote og lever testet pakke med bevarte Saved-data.
+- [x] Commit/push, PR149 flettet til unreal-port-core og testet kandidat X4 installert: 40 payloadhash, 48 uendrede Saved-filer og verifisert sikkerhetskopi.
 - [ ] Menneskelig prøve med Toms Xbox-kontroller. Se GAMEPAD.md for faktisk teststatus.
 
 

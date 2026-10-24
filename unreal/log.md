@@ -222,3 +222,7 @@ Tom bestiller Xbox-kontroller, commit og push. Fast knappetildeling, proporsjona
 Kandidat X4 fra 3d016a07 består 1373 selvtester og elleve native kernel/SDL/Slate-opptak i målte scopes. Egen uinput-enhet, private X11-vinduer og isolerte UserDir er brukt. Faktisk gange/blikk, bilens RT/LS/LT, pause/notatbok, nøytralport, held frakobling, dokumentopplesning og innstillinger ved ny prosess er kontrollert. Kilde-/pakkehash er uendret. Tidlige nullpeker-/keyboardhintfeil er rettet, og SDL-testfellens utsatte første halvtrigger er forklart uten produksjonssærkode.
 
 Tom ber om mindre tidsbruk på testing. Hele110-runden er stoppet etter 16 beståtte målrettede scenarioer og markert ikke fullført; ingen ny spillfeil er skjult. Videre tester velges etter risiko. Fullverdensrunde kreves fortsatt før main når regelen gjelder. Midlertidige Content-lenker og OpenOrder er ryddet. PR149 er klar for fletting og den eksakte testpakkens installasjon med Saved bevart. Fysisk Xbox og detaljerte native UI-/drag-scenarier er UNVERIFIED.
+
+## 2026-10-24 kl. 16:59, Xbox flettet, pushet og installert
+
+PR149 er flettet til unreal-port-core i fda74798. Kandidat X4 fra testkilde 3d016a07 er installert på standardstien. Alle 40 payloadfiler er hashkontrollert mot kandidaten, og samtlige 48 Saved-filer er uendret. Sikkerhetskopien er verifisert i /home/tom/scratch-bm/Signal47-xbox/installed-backup-1792853722324495699. Vanlig starter peker til oppdatert pakke; ingen normal spilløkt er startet. Fysisk kontrollerprøve gjenstår. Den stoppede 110-runden hevdes fortsatt ikke fullført.
