@@ -157,6 +157,14 @@ def material(row, dest, src):
 
 
 def import_mesh(path, dest):
+    existing = E.load_asset(dest + '/' + path.stem) if E.does_asset_exist(dest + '/' + path.stem) else None
+    if isinstance(existing, unreal.StaticMesh):
+        # Legacy FBX delegates replacement to its reimport factory, which reads
+        # the saved import data rather than the new task's ImportUI for colours.
+        previous = existing.get_editor_property('asset_import_data')
+        if isinstance(previous, unreal.FbxStaticMeshImportData):
+            previous.set_editor_property('vertex_color_import_option', unreal.VertexColorImportOption.REPLACE)
+            E.save_loaded_asset(existing, False)
     options = unreal.FbxImportUI()
     options.automated_import_should_detect_type = False
     options.import_as_skeletal = False
@@ -189,6 +197,8 @@ def import_mesh(path, dest):
     T.import_asset_tasks([task])
     mesh = E.load_asset(dest + '/' + path.stem)
     check(path.stem + ' imported', isinstance(mesh, unreal.StaticMesh))
+    if path.stem in ('SM_Caliche_Surface','SM_Caliche_RoadWear'):
+        check(path.stem + ' nonwhite opacity vertices survived import', S.has_vertex_colors(mesh))
     return mesh
 
 
