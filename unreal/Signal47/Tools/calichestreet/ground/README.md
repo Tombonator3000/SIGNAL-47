@@ -60,3 +60,11 @@ Native R3 verifiserer i tillegg at FBX faktisk bevarer `Color` og alpha-interval
 Blender 5.2 sin glTF-eksportør støtter ikke vertexalpha brukt uten vertex-RGB i shaderen. `gltf_export.py` legger derfor midlertidig inn teksturRGB × hvit vertexRGB under GLB-eksport, slik at eksportørens støttede RGBA-vei brukes. RGB er 1 i kilden, så fargen endres ikke. Koblingene gjenopprettes etterpå; FBX, redigerbar blend og sidecar berøres ikke av GLB-refresh. glTF bruker vanlig alpha-blending som portabel erstatning for motorens temporale dithering.
 
 `verify_glb.py` leser faktiske binære COLOR_0-verdier for hver materialprimitive. Soil/asfalt må ha alpha 0, 1 og mellomverdier; øvrige vertexfarger må ha alpha 1. `verify_ground.py` kaller denne kontrollen. `refresh_glb.py` sammenligner dessuten hvert GLB-punkts alpha med Blender-kilden og dokumenterer SHA256 for uendret FBX/blend/kontrakter i `glb_refresh.json`. `glb_verification.json` inneholder de målte intervallene og avvikene.
+
+## R5: tydelige, lokale vegetasjonsøyer
+
+`r5_dressing_plan()` i terrain.py definerer tolv avgrensede øyer ved radio-/souvenirveggene, i mellomrommet og ved to ubebygde gas-apron-kanter. Etter uendrede gang-/foto-/dørfiltre og hard regiongrense er tilleggene 12 store sagebusker, 35 mindre sage, 86 grastuer og 63 småsteiner. Gas-øyene står utenfor betong-apron. Alle tilleggene holder hovedgåsonen og pumpe-/payphone-/journal-/foto-/dørtilnærminger frie.
+
+Sage bruker fem forskjøvede og roterte atlasplan innenfor deklarert fotavtrykk. Lysere støvet olivengrått løv, mer løvdekning og lys transparent padding gjør plantene lesbare også under blått kveldslys. Gras er tørt strågult; det er fortsatt åpne mellomrom mellom øyene. Oppdaterte originalatlas er pakket inn i blend-filen.
+
+Surface/RoadWear-geometri, UV, vertexalpha, transform og materialplasser har eksakt samme SHA256 som før R5; partskontraktene er identiske. `r5_frozen_surfaces.json` og `r5_report.json` dokumenterer dette. Samlet kildetriantall er 56 323. Native bilder avgjør endelig visuell aksept.

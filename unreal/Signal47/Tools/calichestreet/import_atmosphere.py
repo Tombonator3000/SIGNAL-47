@@ -97,7 +97,8 @@ noise=values['SKY_DOME'][values['SKY_DOME'].index('struct N {'):values['SKY_DOME
 cloud='''float3 dd=normalize(Dir); float2 pp=dd.xz/max(.12,dd.y+.15);
 float3 cp=float3(pp*.7,4.71); float bank=nz.fbm(cp+float3(1.4,5.7,0));
 float detail=nz.fbm(cp*3.8+float3(8.1,0,2.4));
-float cover=smoothstep(.43,.64,bank*.78+detail*.22)*smoothstep(-.015,.065,dd.y)*(1.-smoothstep(.72,.99,dd.y));
+float cells=nz.fbm(cp*15.0+float3(2.1,8.7,4.2));
+float cover=smoothstep(.46,.60,bank*.62+detail*.23+cells*.15)*smoothstep(-.015,.065,dd.y)*(1.-smoothstep(.72,.99,dd.y));
 return c*a*lerp(1.,.44*(1.-cover*.92),saturate(ConceptBlend));'''
 code=noise+values['STAR_COL'].replace('return c * a;','if (ConceptBlend < .001) return c*a;\n'+cloud)
 c=g.custom(code,[('Dir',g.cdata3(0)),('Col',g.cdata3(3)),('Time',g.builtin(unreal.MaterialExpressionTime)),

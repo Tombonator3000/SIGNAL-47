@@ -18,9 +18,14 @@ def noise(n):
  return ((a[i[:,None],i[None,:]]*(1-f)[None,:]+a[i[:,None],i[None,:]+1]*f[None,:])*(1-f)[:,None]+
          (a[i[:,None]+1,i[None,:]]*(1-f)[None,:]+a[i[:,None]+1,i[None,:]+1]*f[None,:])*f[:,None])
 fine=noise(192);n=noise(12)*.45+noise(47)*.3+fine*.25
+# Weathered beds have fluted drainage, coarse fractures and variegated iron stains.
+u=np.arange(size)[None,:]/size; vv=np.arange(size)[:,None]/size
+streak=(np.sin(u*173+noise(9)*2.5)+np.sin(u*353+noise(17)*1.2))*.5
+fracture=np.exp(-np.square(np.sin(u*39+vv*4+noise(5)*.6))*380)
+rockvariation=noise(7)*.42+noise(29)*.32+fine*.26
 yy=np.arange(size)[:,None]/size
 strata=np.clip(noise(5)*.65+noise(55)*.15+fine*.2,0,1)
-height=n*.12+strata*.10
+height=n*.12+strata*.10+streak*.065-fracture*.12
 dx=np.gradient(height,axis=1)*1.5;dy=np.gradient(height,axis=0)*1.5
 norm=np.stack((-dx,dy,np.ones_like(n)),axis=2);norm/=np.linalg.norm(norm,axis=2)[:,:,None]
 def image(name,values,srgb):
@@ -30,7 +35,7 @@ def image(name,values,srgb):
  rgba[:,:,:3]=values if values.ndim==3 else values[:,:,None]
  im.pixels.foreach_set(rgba.ravel());im.filepath_raw=str(TEX/(name+'.png'));im.file_format='PNG';im.save()
  return 'textures/'+name+'.png',im
-base=np.clip(np.array([.41,.335,.265])[None,None,:]*(.78+n[:,:,None]*.45)+strata[:,:,None]*.035,0,1)
+base=np.clip(np.array([.41,.335,.265])[None,None,:]*(.65+rockvariation[:,:,None]*.68+streak[:,:,None]*.06-fracture[:,:,None]*.19)+strata[:,:,None]*.035,0,1)
 maps={}
 for role,values,srgb in [('base_color',base,True),('normal',norm*.5+.5,False),('roughness',.83+fine*.12,False)]:
  path,im=image('MesaRock_'+role,values,srgb);maps[role]=(path,im)
@@ -79,10 +84,10 @@ for cx,cz,rx,rz,H,seed in mesas:
   ring=[]
   for i in range(count):
    a=math.tau*i/count
-   radius=r+radial(a,h)+.007*math.sin(a*9+j*.84)*math.sin(math.pi*h)
+   radius=r+radial(a,h)+(.012*math.sin(a*9+j*.84)+.008*math.sin(a*37+phase[4])+.005*math.sin(a*61+phase[0]))*math.sin(math.pi*h)
    # Correlated, low-amplitude beds prevent a corrugated cardboard silhouette.
    wave=(1.0*math.sin(5*a+phase[1])+.48*math.sin(11*a+phase[4]))*h
-   topwave=(.55*math.sin(3*a+phase[2])+.24*math.sin(17*a+phase[6]))*h
+   topwave=(2.1*math.sin(3*a+phase[2])+1.2*math.sin(17*a+phase[6])+.55*math.sin(41*a+phase[0]))*h
    z=H*h+wave+topwave
    co=math.cos(a);si=math.sin(a)
    # Broad cliff faces and irregular corners break the old circular layer-cake outline.

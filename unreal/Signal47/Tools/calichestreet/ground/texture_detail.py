@@ -86,22 +86,23 @@ def blend_patch(name,path,seed,shoulder=False):
 
 def plant_atlas(name,path,sage=False):
     rr=random.Random(4801 if sage else 4800);size=1024
-    image=Image.new('RGBA',(size,size),(55,52,39,0));d=ImageDraw.Draw(image)
+    # Dusty light grey-olive padding also avoids dark fringes in filtered mips.
+    image=Image.new('RGBA',(size,size),(139,143,118,0) if sage else (156,143,111,0));d=ImageDraw.Draw(image)
     for tile in range(4):
         ox=(tile%2)*512;oy=(tile//2)*512;root=(ox+256,oy+499)
         # Broader, leafy sage rather than isolated wire stems at street scale.
-        for stem in range(72 if sage else 66):
+        for stem in range(86 if sage else 66):
             endx=ox+rr.uniform(38,474);endy=oy+rr.uniform(24,330 if sage else 260)
             bend=rr.uniform(-75,75);pts=[]
             for k in range(13):
                 t=k/12;pts.append((root[0]+(endx-root[0])*t+bend*math.sin(math.pi*t),root[1]+(endy-root[1])*t))
-            c=rr.choice([(111,103,73,255),(135,125,86,255),(94,99,75,255),(153,139,99,255),(122,117,91,255)])
+            c=rr.choice([(144,147,116,255),(163,163,128,255),(133,145,117,255),(176,168,133,255),(151,156,127,255)]) if sage else rr.choice([(156,143,107,255),(174,158,117,255),(139,141,108,255),(184,167,126,255),(163,152,119,255)])
             d.line(pts,fill=c,width=rr.choice([2,3,4]) if sage else rr.choice([1,2,3]))
             if sage:
                 for p in pts[3::2]:
                     for sign in [-1,1]:
-                        ex=p[0]+sign*rr.uniform(5,18);ey=p[1]-rr.uniform(3,15);r=rr.uniform(4.5,9)
-                        leaf=rr.choice([(93,105,84,255),(118,128,101,255),(139,141,113,255),(103,115,92,255)])
+                        ex=p[0]+sign*rr.uniform(5,18);ey=p[1]-rr.uniform(3,15);r=rr.uniform(5.5,10)
+                        leaf=rr.choice([(143,154,127,255),(163,171,142,255),(178,178,150,255),(151,163,135,255)])
                         d.ellipse((ex-r,ey-r*.45,ex+r,ey+r*.45),fill=leaf)
             else:
                 for p in pts[-5::2]:

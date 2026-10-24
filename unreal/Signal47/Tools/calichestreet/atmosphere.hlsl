@@ -15,14 +15,16 @@ float2 plane = d.xz / max(.12,d.y+.15);
 float3 cp = float3(plane.x*.7,plane.y*.7,4.71);
 float bank = nz.fbm(cp+float3(1.4,5.7,0));
 float detail = nz.fbm(cp*3.8+float3(8.1,0,2.4));
-float cloud = smoothstep(.43,.64,bank*.78+detail*.22);
+// Smaller broken altocumulus cells sit on the broad bank instead of one blurred blob.
+float cells = nz.fbm(cp*15.0+float3(2.1,8.7,4.2));
+float cloud = smoothstep(.46,.60,bank*.62+detail*.23+cells*.15);
 cloud *= smoothstep(-.015,.065,h)*(1.0-smoothstep(.72,.99,h));
 float3 cloudNight = float3(.012,.020,.037);
-float3 cloudDusk = lerp(float3(.045,.075,.125),float3(.17,.145,.145),west*horizon);
+float3 cloudDusk = lerp(float3(.022,.038,.067),float3(.17,.135,.12),west*horizon);
 float3 cloudDay = lerp(float3(.29,.38,.49),float3(.72,.76,.77),smoothstep(.48,.72,bank));
 float3 cloudCol = lerp(cloudNight,cloudDusk,smoothstep(0.0,.18,light));
 cloudCol = lerp(cloudCol,cloudDay,Midday);
-calibrated = lerp(calibrated,cloudCol,cloud*.72);
+calibrated = lerp(calibrated,cloudCol,cloud*.87);
 // Keep the painted Milky Way at night; broken cloud reduces its contrast locally.
 calibrated += col*.32*(1.0-smoothstep(.0,.12,light))*(1.0-cloud*.8);
 calibrated += float3(1.0,.72,.43)*Sun*(pow(max(sd,0.0),130.0)*.20+smoothstep(.99996,.99999,sd)*3.0);

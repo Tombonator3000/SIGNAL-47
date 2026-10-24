@@ -80,3 +80,9 @@ Native-importen av første R3 fjernet 32 trekanter fra `SRC_CueCardVisible`, ikk
 Cue-tekstens fontkurver bruker nå resolution_u3 fremfor12 før meshkonvertering. Innhold, størrelse, plassering og materialnavn er beholdt. Eksportkontrollen krever fortsatt eksakte trekanttall og avviser nå også hver trekant under UE sin FBX-arealgrense i alle fem deler. Ingen toleranse eller importerinnstilling er svekket.
 
 R3.1 gir Interior **78 758 trekanter**, øvrige deler beholder sine eksakte tall. Ny kilde-/FBX-kontroll består **43/43**, inkludert null flater under UE-arealgrensen i alle deler. Native-reimport av den rettede pakken gjenstår hos runtime-eieren.
+
+## R5, makroslitasje i pussen
+
+Materialrevisjon `R5-macro-lime-plaster` endrer bare to pussfamilier. Det fine kornfeltet utgjør 16 prosent av høydeblandingen fremfor omtrent 70 prosent. Bredere pussdrag dominerer relieffet. Fasadeatlaset har sju plassbestemte gamle limepussreparasjoner i omtrent 0,4 til 2 meters skala, sammenhengende sokkelfukt og ujevn vasking ved taket. Tekst og sprekker beholder plasseringen. Stucco har normalstyrke 0,20 og UV2; fasadeatlaset 0,22 og UV1.
+
+Blender-materialene og GLB er oppdatert uten modellgenerering. `r5_plaster_refresh.json` beviser identisk hash for mesh, UV, materialplasser og transform før/etter. Alle FBX-filer og tolv tre-PNGer er byteidentiske med forrige revisjon. Samme eksterne teksturstier og materialidentiteter brukes i native-importen. Tilbakeimport med lagrede materialnoder består **45/45**, inkludert uendret UE-arealgrense og alle fem trekanttall. Nye nativebilder av pussfinishen gjenstår hos runtime-eieren.

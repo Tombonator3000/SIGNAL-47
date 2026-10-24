@@ -716,6 +716,10 @@ void AS47Props::AddLit(UStaticMeshComponent* C, int32 Node, const TSharedPtr<FJs
 		if (!M || !M->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("EmissiveFactor")), F) || F.R + F.G + F.B < 0.001f) continue;
 		FLit::FGlow G;
 		G.Mid = C->CreateDynamicMaterialInstance(I, M);
+		// Optional art tint changes a fixture's tube phosphor without changing its flood schedule.
+		const TArray<TSharedPtr<FJsonValue>>* Tint = nullptr;
+		if (J->TryGetArrayField(TEXT("emissive_tint"), Tint) && Tint->Num() == 3)
+			F *= FLinearColor(float((*Tint)[0]->AsNumber()), float((*Tint)[1]->AsNumber()), float((*Tint)[2]->AsNumber()));
 		G.Factor = F;
 		G.bFlicker = !Flicker.IsEmpty() && M->GetName().Contains(Flicker);
 		L.Glows.Add(G);

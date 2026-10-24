@@ -14,7 +14,7 @@ from mathutils import Vector
 ROOT=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT))
 from gltf_export import export_glb
-from terrain import ANCHOR, REGION, floor_y, clear_surface, clear_dressing, pavement, in_box, BUILDINGS
+from terrain import ANCHOR, REGION, floor_y, clear_surface, clear_dressing, pavement, in_box, BUILDINGS, r5_dressing_plan
 
 OUT=ROOT/'exports';OUT.mkdir(exist_ok=True)
 bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete(use_global=False)
@@ -260,11 +260,19 @@ def rock(x,z,s):
     rocks.face(verts[-n:],4)
 
 def bush(x,z,s,sage=False,width=None):
-    h=top(x,z)-.025;width=width or s*.95;tile=rng.randrange(4)
-    u0=(tile%2)*.5+.002;u1=u0+.496;v0=1-(tile//2+1)*.5+.002;v1=v0+.496
-    for i in range(3):
-        a=i*math.pi/3+rng.uniform(-.1,.1);dx=math.cos(a)*width*.5;dy=math.sin(a)*width*.5
-        plants.face([(x-dx,-(z-2060)-dy,h),(x+dx,-(z-2060)+dy,h),(x+dx,-(z-2060)+dy,h+s),(x-dx,-(z-2060)-dy,h+s)],11 if sage else 10,[(u0,v0),(u1,v0),(u1,v1),(u0,v1)])
+    h=top(x,z)-.025;width=width or s*.95
+    # A plant-local RNG keeps pre-existing terrain and scatter placement stable.
+    rr=random.Random(round(x*10000)*47047+round(z*1000))
+    count=5 if sage else 3
+    for i in range(count):
+        tile=rr.randrange(4);u0=(tile%2)*.5+.002;u1=u0+.496;v0=1-(tile//2+1)*.5+.002;v1=v0+.496
+        a=i*math.pi/count+rr.uniform(-.16,.16)
+        # Offset sage planes form a rounded volume inside the declared radius.
+        offset=width*.10 if sage and i<4 else 0
+        cx=x+math.cos(a+math.pi/2)*offset;cy=-(z-2060)+math.sin(a+math.pi/2)*offset
+        half=width*(.38 if sage else .5);dx=math.cos(a)*half;dy=math.sin(a)*half
+        height=s*rr.uniform(.87,1.0) if sage else s
+        plants.face([(cx-dx,cy-dy,h),(cx+dx,cy+dy,h),(cx+dx,cy+dy,h+height),(cx-dx,cy-dy,h+height)],11 if sage else 10,[(u0,v0),(u1,v0),(u1,v1),(u0,v1)])
 
 def yucca(x,z,s):
     h=top(x,z)-.03
@@ -368,6 +376,14 @@ for x,z in [(19.73,2041.72),(19.72,2041.90),(19.74,2039.68)]:
     if clear_dressing(x,z,r,facade=True):
         bush(x,z,.33,width=r*2)
         dressing.append({'kind':'grass','xz':[x,z],'radius_m':r,'facade':True,'beside_bench':True})
+
+# R5: read from street height as connected, varied dry sage islands. Source
+# terrain, its fades and every protected approach remain exactly unchanged.
+for row in r5_dressing_plan():
+    x,z=row['xz']
+    if row['kind']=='rock':rock(x,z,row['width_m'])
+    else:bush(x,z,row['height_m'],sage=row['kind'].startswith('sage'),width=row['width_m'])
+    dressing.append(row)
 
 manifest={'anchor_world_three_m':ANCHOR,'coordinate_mapping':'worldThree=(8000+bx,bz,2060-by)','import_policy':{'force_front_x_axis':True,'coordinate_system_policy':'MATCH_UP_FORWARD_AXES','import_rotation_yaw':90,'runtime_yaw':0},'collision':'NoCollision for every part','parts':{},'dressing':dressing}
 for name,mesh in [('SM_Caliche_Surface',surfaces),('SM_Caliche_RoadWear',road),('SM_Caliche_Rocks',rocks),('SM_Caliche_DryPlants',plants)]:

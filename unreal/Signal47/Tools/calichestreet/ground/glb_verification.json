@@ -17,7 +17,7 @@
         {
           "mesh": "SM_Caliche_DryPlants",
           "material": "M_CS_GrassAtlas",
-          "vertices": 1968,
+          "vertices": 3024,
           "alpha_min": 1.0,
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,
@@ -26,7 +26,7 @@
         {
           "mesh": "SM_Caliche_DryPlants",
           "material": "M_CS_SageAtlas",
-          "vertices": 864,
+          "vertices": 2400,
           "alpha_min": 1.0,
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,
@@ -62,7 +62,7 @@
         {
           "mesh": "SM_Caliche_Rocks",
           "material": "M_CS_Limestone",
-          "vertices": 17136,
+          "vertices": 21105,
           "alpha_min": 1.0,
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,
@@ -131,7 +131,7 @@
         {
           "mesh": "SM_Caliche_DryPlants",
           "material": "M_CS_GrassAtlas",
-          "vertices": 1968,
+          "vertices": 3024,
           "alpha_min": 1.0,
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,
@@ -140,7 +140,7 @@
         {
           "mesh": "SM_Caliche_DryPlants",
           "material": "M_CS_SageAtlas",
-          "vertices": 864,
+          "vertices": 2400,
           "alpha_min": 1.0,
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,
@@ -188,7 +188,7 @@
         {
           "mesh": "SM_Caliche_Rocks",
           "material": "M_CS_Limestone",
-          "vertices": 17136,
+          "vertices": 21105,
           "alpha_min": 1.0,
           "alpha_max": 1.0,
           "partial_alpha_vertices": 0,

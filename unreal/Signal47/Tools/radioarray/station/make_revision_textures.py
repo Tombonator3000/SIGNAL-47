@@ -32,17 +32,51 @@ def normals(height,stem,amount=.65):
 
 def plaster(size=(1024,1024),facade=False):
  w,h=size; coarse=field(size,(5,4),51); middle=field(size,(31,27),52); grain=field(size,(w//3,h//3),53)
- height=Image.blend(Image.blend(grain,middle,.24),coarse,.08)
+ # Broad dragged lime plaster dominates the relief; grain is a small residual.
+ drag=field(size,(23,9),54)
+ height=Image.blend(Image.blend(middle,drag,.40),grain,.16)
  rgb=Image.new('RGB',size); rough=Image.new('L',size)
  cp=coarse.load();mp=middle.load();gp=grain.load(); px=rgb.load();rp=rough.load()
  for y in range(h):
   for x in range(w):
-   k=1+(cp[x,y]-128)/255*.10+(mp[x,y]-128)/255*.045+(gp[x,y]-128)/255*.022
+   k=1+(cp[x,y]-128)/255*.16+(mp[x,y]-128)/255*.065+(gp[x,y]-128)/255*.012
    px[x,y]=tuple(srgb(max(0,min(1,b*k))) for b in (.60,.525,.405))
    rp[x,y]=max(208,min(246,round(230+(gp[x,y]-128)*.055)))
  if facade:
   d=ImageDraw.Draw(rgb);hd=ImageDraw.Draw(height);rd=ImageDraw.Draw(rough); r=random.Random(2036)
   def pt(x,z): return ((x+6)/12*w,(3.65-z)/3.65*h)
+  # Site-specific weathering is continuous along the wall, not isolated polygon confetti.
+  # Irregular soft edges and different lime mixes describe old repairs across 0.4-2 metres.
+  edge=field(size,(53,31),2037);ep=edge.load();px=rgb.load();hp=height.load();rp=rough.load()
+  repairs=[(-5.62,3.17,.39,.34,(.72,.68,.57),.65),
+           (-4.36,2.73,.44,.28,(.51,.46,.37),.55),
+           (-2.35,.77,1.05,.57,(.47,.43,.35),.60),
+           (-1.54,1.92,.45,.38,(.70,.64,.51),.50),
+           (1.25,.30,1.53,.23,(.46,.41,.32),.68),
+           (4.10,.67,.91,.43,(.50,.45,.36),.62),
+           (5.62,2.17,.24,.73,(.70,.64,.53),.48)]
+  for cx,cz,rx,rz,base,opacity in repairs:
+   a,b=pt(cx-rx*1.3,cz+rz*1.3),pt(cx+rx*1.3,cz-rz*1.3)
+   for y in range(max(0,int(a[1])),min(h,int(b[1])+1)):
+    z=3.65-y/h*3.65
+    for x in range(max(0,int(a[0])),min(w,int(b[0])+1)):
+     xx=x/w*12-6;q=((xx-cx)/rx)**2+((z-cz)/rz)**2+(ep[x,y]-128)/255*.65
+     alpha=max(0,min(1,(1-q)/.18))*opacity
+     if not alpha:continue
+     tone=1+(mp[x,y]-128)/255*.08+(gp[x,y]-128)/255*.012
+     color=tuple(srgb(max(0,min(1,v*tone))) for v in base)
+     px[x,y]=tuple(round(px[x,y][i]*(1-alpha)+color[i]*alpha) for i in range(3))
+     hp[x,y]=round(hp[x,y]*(1-alpha)+118*alpha);rp[x,y]=round(rp[x,y]*(1-alpha)+242*alpha)
+  # Variable damp/base and coping trails read at street distance without black dirt borders.
+  for y in range(h):
+   z=3.65-y/h*3.65
+   if z>.62 and z<3.20:continue
+   for x in range(w):
+    boundary=.24+(cp[x,y]/255)*.24
+    damp=max(0,min(1,(boundary-z)/.22))*.19
+    coping=max(0,min(1,(z-3.25)/.36))*(.04+ep[x,y]/255*.055)
+    a=damp+coping
+    px[x,y]=tuple(round(c*(1-a)) for c in px[x,y]);rp[x,y]=min(248,rp[x,y]+round(a*42))
   # Ground splash, softened rain stains and dark accumulated dust under the coping.
   stain=Image.new('RGBA',size);sd=ImageDraw.Draw(stain)
   for i in range(95):
@@ -79,7 +113,7 @@ def plaster(size=(1024,1024),facade=False):
   paint=Image.new('RGB',size,(37,35,27));rgb.paste(paint,(0,0),mask)
   stem='facade_1420_weathered'
  else: stem='stucco_layers'
- rgb.save(OUT/(stem+'_color.png'));rough.convert('RGB').save(OUT/(stem+'_roughness.png'));normals(height,stem,.62)
+ rgb.save(OUT/(stem+'_color.png'));rough.convert('RGB').save(OUT/(stem+'_roughness.png'));normals(height,stem,.50)
  return stem
 
 def timber(stem,base,seed,olive=False):

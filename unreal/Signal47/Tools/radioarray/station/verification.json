@@ -484,12 +484,28 @@
       ]
     },
     {
+      "name": "M_1420_Stucco_cream saved plaster normal matches sidecar",
+      "result": "PASS",
+      "normal_strength": [
+        0.20000000298023224
+      ],
+      "sidecar_strength": 0.2
+    },
+    {
+      "name": "M_1420_WeatheredFacadePaint saved plaster normal matches sidecar",
+      "result": "PASS",
+      "normal_strength": [
+        0.2199999988079071
+      ],
+      "sidecar_strength": 0.22
+    },
+    {
       "name": "No exposed Lamp_glow geometry in window rectangle",
       "result": "PASS",
       "overlaps": []
     }
   ],
-  "passed": 43,
-  "total": 43,
+  "passed": 45,
+  "total": 45,
   "runtime_note": "This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests."
 }

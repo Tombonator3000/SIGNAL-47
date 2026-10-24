@@ -109,3 +109,34 @@ def clear_dressing(x,z,radius=.0,facade=False):
     return not any(in_box(x,z,b,.75+radius) for b in BUILDINGS+PROTECTED)
 
 def blender_point(x,z,lift=.008):return (x,-(z-2060),floor_y(x,z)+lift)
+
+
+def r5_dressing_plan():
+    """Deterministic visible sage islands, filtered before any DCC execution.
+
+    Open gap and wall-corner pockets only; the old walking/door/photo filters
+    remain unchanged. A separate RNG keeps the frozen road/surface generation
+    independent of the extra plant/stone counts.
+    """
+    import random
+    centers=[(21.05,2043.30),(25.10,2042.95),(29.70,2043.00),
+             (21.40,2047.30),(22.00,2052.20),(30.60,2050.70),
+             (21.20,2057.00),(27.90,2057.00),(20.60,2071.10),(26.70,2071.00),
+             (-21.00,2064.60),(-18.65,2089.15)]
+    result=[]
+    for island,(cx,cz) in enumerate(centers):
+        rr=random.Random(71470+island)
+        for kind,count in [('sage_primary',1),('sage',3),('grass',8),('rock',6)]:
+            for i in range(count):
+                angle=rr.random()*math.tau
+                distance=0 if kind=='sage_primary' else rr.uniform(.42,1.22) if kind=='sage' else rr.uniform(.25,1.48)
+                x=cx+math.cos(angle)*distance;z=cz+math.sin(angle)*distance
+                if kind=='rock':width=rr.uniform(.055,.14);height=width;radius=width
+                elif kind=='sage_primary':width=rr.uniform(.90,1.22);height=rr.uniform(.60,.80);radius=width*.5
+                elif kind=='sage':width=rr.uniform(.45,.75);height=rr.uniform(.36,.59);radius=width*.5
+                else:width=rr.uniform(.20,.36);height=rr.uniform(.28,.52);radius=width*.5
+                bounded=REGION[0]+radius<=x<=REGION[1]-radius and REGION[2]+radius<=z<=REGION[3]-radius
+                if bounded and clear_dressing(x,z,radius,facade=True):
+                    result.append({'kind':kind,'xz':[x,z],'radius_m':radius,'width_m':width,
+                                   'height_m':height,'facade':True,'r5_island':island})
+    return result

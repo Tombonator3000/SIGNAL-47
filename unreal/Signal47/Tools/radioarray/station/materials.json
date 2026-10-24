@@ -412,7 +412,7 @@
       "normal": "textures/revision2/stucco_layers_normal_dx.png",
       "roughness": "textures/revision2/stucco_layers_roughness.png"
     },
-    "normal_strength": 0.34,
+    "normal_strength": 0.2,
     "uv_scale": 2,
     "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
   },
@@ -509,7 +509,7 @@
       "normal": "textures/revision2/facade_1420_weathered_normal_dx.png",
       "roughness": "textures/revision2/facade_1420_weathered_roughness.png"
     },
-    "normal_strength": 0.34,
+    "normal_strength": 0.22,
     "uv_scale": 1,
     "normal_convention": "DirectX tangent space; Blender/GLB uses explicit normal_gl map"
   }

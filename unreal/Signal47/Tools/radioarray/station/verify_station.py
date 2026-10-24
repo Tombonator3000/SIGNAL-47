@@ -52,6 +52,9 @@ if tape:
  pts=[tape.matrix_basis@v.co for v in tape.data.vertices];forward=tape.matrix_basis.to_3x3()@Vector((0,1,0))
  check('Tape face physically within clear window and facing street',min(p.x for p in pts)>-.65 and max(p.x for p in pts)<3.05 and max(p.z for p in pts)<2.375 and forward.y<-.99,bounds=[[min(p[i] for p in pts) for i in range(3)],[max(p[i] for p in pts) for i in range(3)]],front_normal=list(forward))
 else:check('Tape face physically within clear window and facing street',False)
+for name,strength in [('M_1420_Stucco_cream',.20),('M_1420_WeatheredFacadePaint',.22)]:
+ normals=[n.inputs['Strength'].default_value for n in bpy.data.materials[name].node_tree.nodes if n.type=='NORMAL_MAP']
+ check(name+' saved plaster normal matches sidecar',len(normals)==1 and abs(normals[0]-strength)<1e-6 and materials[name]['normal_strength']==strength,normal_strength=normals,sidecar_strength=materials[name]['normal_strength'])
 emissive=[]
 for o in bpy.data.objects:
  if o.name.startswith('SRC_') and o.type=='MESH' and any(m.name=='M_1420_Lamp_glow' for m in o.data.materials):

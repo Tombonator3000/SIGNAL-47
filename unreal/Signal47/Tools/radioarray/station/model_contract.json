@@ -278,5 +278,16 @@
     "M_1420_Desk_walnut",
     "M_1420_WeatheredFacadePaint",
     "M_1420_OliveWornTimber"
-  ]
+  ],
+  "material_revision": "R5-macro-lime-plaster",
+  "plaster_materials": {
+    "M_1420_Stucco_cream": {
+      "uv_scale": 2,
+      "normal_strength": 0.2
+    },
+    "M_1420_WeatheredFacadePaint": {
+      "uv_scale": 1,
+      "normal_strength": 0.22
+    }
+  }
 }
