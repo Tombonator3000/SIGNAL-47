@@ -99,6 +99,8 @@ private:
 	TWeakObjectPtr<AS47Web> Web;
 	int32 GroupNode = -1;
 	int32 ConceptBackdropNode = -1;
+	TArray<TPair<int32, bool>> ConceptLegacyMesas;
+	bool bConceptLegacyMesasHidden = false;
 	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp;
 	TWeakObjectPtr<UInstancedStaticMeshComponent> StarsComp;
 	TWeakObjectPtr<UMaterialInstanceDynamic> DomeMid, BandMid, StarsMid, MeteorMid;

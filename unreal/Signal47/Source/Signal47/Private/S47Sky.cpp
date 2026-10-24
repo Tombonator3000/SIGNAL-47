@@ -244,6 +244,13 @@ bool FS47Sky::Build(AS47Web* W)
 	for (int32 I = 0; I < W->PartCount(); ++I)
 		if (const FS47WebNode* N = W->Node(I); N && N->Name == TEXT("prop:streetGroundMesas"))
 			if (UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N->Comp.Get()); C && C->GetStaticMesh()) ConceptBackdropNode = I;
+	// Original horizon.ts meshes have baked night vertex colours. They stay black at
+	// noon; the authored local escarpments replace them only while actually visible.
+	ConceptLegacyMesas.Reset(); bConceptLegacyMesasHidden = false;
+	for (int32 I = 0; I < W->PartCount(); ++I)
+		if (const FS47WebNode* N = W->Node(I); N && N->Geo >= 0 &&
+			(N->Name == TEXT("mesas:near") || N->Name == TEXT("mesas")))
+			ConceptLegacyMesas.Emplace(I, W->IsVisible(I));
 	const TArray<TSharedPtr<FJsonValue>>* HS = nullptr;
 	if (S->TryGetArrayField(TEXT("holeSky"), HS) && HS->Num() >= 3) HoleSky = FLinearColor((*HS)[0]->AsNumber(), (*HS)[1]->AsNumber(), (*HS)[2]->AsNumber());
 	auto Under = [W](int32 Node) -> USceneComponent* { const FS47WebNode* N = W->Node(Node); return N ? N->Comp.Get() : nullptr; };
@@ -374,13 +381,22 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("Way"), V4(Met.Tan));
 		D->SetScalarParameterValue(TEXT("I"), float(MetI));
 	}
+	const FS47WebNode* BackdropNode = W->Node(ConceptBackdropNode);
+	const UStaticMeshComponent* Backdrop = BackdropNode ? Cast<UStaticMeshComponent>(BackdropNode->Comp.Get()) : nullptr;
+	const bool bBackdropReady = Backdrop && Backdrop->GetStaticMesh() && W->ObjAt(ConceptBackdropNode).Shown();
+	const bool bReplaceLegacy = bBackdropReady && S47CalicheVisualWeight(Eye) > .999;
+	if (bReplaceLegacy != bConceptLegacyMesasHidden)
+	{
+		for (const TPair<int32, bool>& Entry : ConceptLegacyMesas) W->SetVisible(Entry.Key, Entry.Value && !bReplaceLegacy);
+		bConceptLegacyMesasHidden = bReplaceLegacy;
+		UE_LOG(LogS47Sky, Display, TEXT("S47: Caliche legacy night mesas %s: %d original visibility flags preserved"),
+			bReplaceLegacy ? TEXT("replaced") : TEXT("restored"), ConceptLegacyMesas.Num());
+	}
 	if (UMaterialInstanceDynamic* D = BandMid.Get())
 	{
 		Sunny(D);
 		// A partial import must keep the painted horizon, even with the new sky material present.
-		const FS47WebNode* N = W->Node(ConceptBackdropNode);
-		const UStaticMeshComponent* C = N ? Cast<UStaticMeshComponent>(N->Comp.Get()) : nullptr;
-		D->SetScalarParameterValue(TEXT("BackdropReady"), C && C->GetStaticMesh() && W->ObjAt(ConceptBackdropNode).Shown() ? 1.f : 0.f);
+		D->SetScalarParameterValue(TEXT("BackdropReady"), bBackdropReady ? 1.f : 0.f);
 	}
 	if (BandComp.IsValid() && BandComp->IsVisible() != BandVisible) BandComp->SetVisibility(BandVisible);
 }
