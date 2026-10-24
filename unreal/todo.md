@@ -4,7 +4,7 @@
 
 - [ ] Senere RT-minnepolering: eksisterende rød AlwaysResident-advarsel 83.107 MiB / 400 MiB ved 20%-terskelen finnes allerede i D2 og er uendret i H3. Optimaliser relevante mesh-LOD-er etter måling; ikke skjul varslingen eller endre budsjettet for å få rene testbilder.
 
-- [x] Roswell-sperre, faktisk motorlyd, Motor Court-naturkontinuitet og én detaljert strømlinje. H3/464078be, 1392 selvtester, 7 korte pakkede scenarioer og 8 vurderte overgangsbilder PASS; faktisk merge/installasjon i HIGHWAY_FIXES.md.
+- [x] Roswell-sperre, faktisk motorlyd, Motor Court-naturkontinuitet og én detaljert strømlinje. H3/464078be, 1392 selvtester, 7 korte pakkede scenarioer og 8 vurderte overgangsbilder PASS; PR 153 flettet og samme H3 installert med 40 payloadhash og 46 uendrede Saved-filer. Se HIGHWAY_FIXES.md.
 
 - [x] Mesa Diner: original Blender-fasade/interiør, parkering/skilt/tractor+reefer, original interaksjon bevart. D2 målrettet pakket kontroll9/9; merge/installasjonsstatus i MESA_DINER.md.
 

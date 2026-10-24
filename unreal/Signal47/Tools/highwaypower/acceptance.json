@@ -262,5 +262,17 @@
     "H1": "missing runtime RT representation handled ensure; first diagnostic seam only, not accepted",
     "H2": "opening fixture replaced position while original StartTrip callback pending; native day timeout from normal town start. RT proxy fixed; resident warning subsequently confirmed identical in prior D2 images."
   },
-  "evidence_directory": "/home/tom/scratch-bm/Signal47-highway-continuity"
+  "evidence_directory": "/home/tom/scratch-bm/Signal47-highway-continuity",
+  "delivery": {
+    "status": "PASS",
+    "pr": 153,
+    "url": "https://github.com/Tombonator3000/SIGNAL-47/pull/153",
+    "merge_commit": "acaa99d71e694c982e425bdb838997517900484a",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 46,
+    "backup": "/home/tom/scratch-bm/Signal47-highway-continuity/installed-backup-1792872595117367731",
+    "backup_payload_verified": true,
+    "installed_binary_sha256": "1b329d1835e412084b9f802e86f7944ae7dcc08c7e1a09ffdd0181fddfb93028"
+  }
 }

@@ -2,6 +2,8 @@
 
 ## Highway-kontinuitet, 24. oktober 2026
 
+- PR 153 flettet i acaa99d7. Samme testede H3 installert med 40 hashverifiserte payloadfiler, 46 uendrede Saved-filer og verifisert sikkerhetskopi.
+
 - H3 fra 464078be: Roswell følger eksisterende historieport også i pendlerbilen; lydregisterets camelCase-motornavn brukes med reell lavpassfiltrering og trygg stopp/ny innstigning.
 - Natur og én detaljert hovedstrømlinje deler kanonisk road-ramme; SARO-offset (8024, 0, -300), 200 m overlapp, 86 delte komponenter/4816 instanser. RoadFloras fem tomt eksporterte drawbarn måtte aktiveres etter runtimefylling. Ikke aktiver alle skjulte eksportnoder.
 - Gamle wiremeshes deler gjerder og kraftledning. Tools/highwaypower/prepare_cpu.py må gjøre g684/g918 CPU-lesbare før cook; runtime fjerner bare høye ledningstriangler. 6 mm gjerdetrådkloner rasteriseres uten egen hardwareRT; nye stolper/kraftledninger beholder RT.

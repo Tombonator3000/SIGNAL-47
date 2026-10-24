@@ -8,7 +8,7 @@ Codex, `codex/caliche-concept`: ni visuelle iterasjoner av gatebiten ved bensins
 
 ## Highway-kontinuitet, 24.10.2026
 
-Codex med avgrensede lyd-/sperre-, strøm- og visuelle hjelpere, `codex/highway-continuity`: H3 fra 464078be, Roswell-sperre, motorlyd, Motor Court-natur og én detaljert hovedstrømlinje ferdige. Editor/pakke, 1392 selvtester og 7 korte pakkede scenarioer PASS; 8 før-/etter-bilder vurdert. Eksisterende RT-advarsel og mørk nattbakke dokumentert i HIGHWAY_FIXES.md. Fletting/installasjon gjenstår; ingen full verdens-/PSO-runde.
+Codex med avgrensede lyd-/sperre-, strøm- og visuelle hjelpere, `codex/highway-continuity`: H3 fra 464078be, Roswell-sperre, motorlyd, Motor Court-natur og én detaljert hovedstrømlinje ferdige. Editor/pakke, 1392 selvtester og 7 korte pakkede scenarioer PASS; 8 før-/etter-bilder vurdert. Eksisterende RT-advarsel og mørk nattbakke dokumentert i HIGHWAY_FIXES.md. PR 153 flettet i acaa99d7; H3 installert med 40 verifiserte payloadfiler, 46 uendrede Saved-filer og backup. Ingen full verdens-/PSO-runde.
 
 ## Arbeidsdeling
 
