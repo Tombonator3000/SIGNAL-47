@@ -116,7 +116,7 @@ namespace S47WidgetInput { bool SelfTest(TArray<FString>& Lines); }
 class SS47Document : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Document) {}
+	SLATE_BEGIN_ARGS(SS47Document) : _UI(nullptr) {}
 		SLATE_ARGUMENT(FS47Doc, Doc)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
 		SLATE_ARGUMENT(class US47UI*, UI) // the readers (Read document, Read description); none: no reading

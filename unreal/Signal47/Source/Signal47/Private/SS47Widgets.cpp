@@ -1508,9 +1508,10 @@ bool SS47Document::SelfTest(TArray<FString>& Lines)
 {
 	bool Ok = true;
 	auto Check = [&](bool Pass, const TCHAR* Name) { Lines.Add(FString(Pass ? TEXT("ok  document pad: ") : TEXT("FAIL document pad: ")) + Name); Ok &= Pass; };
+	Check(FArguments()._UI == nullptr, TEXT("optional reader defaults to null"));
 	int32 Closed = 0, Used = 0;
 	FS47Doc D; D.Kind = TEXT("typed"); D.Title = TEXT("Input sample"); D.Page = TEXT("A paper.");
-	const TSharedRef<SS47Document> W = SNew(SS47Document).Doc(D).OnClose([&Closed] { ++Closed; });
+	const TSharedRef<SS47Document> W = SNew(SS47Document).Doc(D).UI(nullptr).OnClose([&Closed] { ++Closed; });
 	W->Actions.Insert({ TEXT("TEST ACTION"), FString(), [&Used] { ++Used; }, nullptr, nullptr }, 0);
 	auto Key = [&](const FKey& K) { return W->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
 	Key(EKeys::Gamepad_DPad_Down);
@@ -1528,7 +1529,7 @@ bool SS47Ops::SelfTest(TArray<FString>& Lines)
 	bool Ok = true;
 	auto Check = [&](bool Pass, const TCHAR* Name) { Lines.Add(FString(Pass ? TEXT("ok  ops pad: ") : TEXT("FAIL ops pad: ")) + Name); Ok &= Pass; };
 	int32 Closed = 0;
-	const TSharedRef<SS47Ops> W = SNew(SS47Ops).OnClose([&Closed] { ++Closed; });
+	const TSharedRef<SS47Ops> W = SNew(SS47Ops).Story(nullptr).OnClose([&Closed] { ++Closed; });
 	W->PadCommands = { TEXT("HELP"), TEXT("LOGOUT") };
 	auto Key = [&](const FKey& K, bool Repeat = false) { return W->OnPreviewKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, Repeat, 0, 0)); };
 	Key(EKeys::Gamepad_DPad_Down);
