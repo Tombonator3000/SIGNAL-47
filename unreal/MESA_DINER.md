@@ -11,3 +11,5 @@ Planlagt nødvendig kontroll: faktiske eksporterte mål/UV/materialer og tre LOD
 Første Blender- og native kontroll av elleve deler bestod, men utvendig R1 er diagnostikk. Ny fasaderunde etter Toms tilbakemelding: skilt forankres tett ved venstre fasade i Blender `[2.65,-6.8,0]`, høyere krem/rød gesims, dypere rammer, styrt malingsslitasje og ujevn asfalt/grus med lokale tørre planter. Interiør og fungerende ankre beholdes.
 
 Kontrollpunkt før pakket kandidat: R2 har 110779 / 54448 / 25418 trekanter fordelt på elleve deler, faktisk kildekontroll320 PASS og lagret native47 PASS. Editorbygg består. Pakket visuell kontroll, merge og installasjon er fortsatt ikke utført.
+
+D1 avdekket gulvlist gjennom døråpningen og en levetidsfeil i den nye audit-timeren. Råforsøket er bevart. D2 deler bare listen, retter timeren, bruker Walkers komplekse gulvtrace med uendret 10cm-krav og flytter sign-punktene fra 3.9cm til omtrent 55cm foran flaten. Sluttkilde/native-kontroll og målrettet pakke utføres på nytt for disse konkrete rettingene.

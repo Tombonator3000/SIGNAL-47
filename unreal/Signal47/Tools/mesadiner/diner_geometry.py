@@ -140,7 +140,8 @@ def interior(lod):
   m.box('Interior_teal_wainscot',(-1.8,y,.48),(7.8,.028,.96),'TealTile')
   m.box('Wall_chrome_dado',(-1.8,y*.998,.98),(7.8,.035,.032),'Chrome')
   m.box('Dark_floor_skirting',(-1.8,y*.995,.07),(7.8,.04,.14),'DarkMetal')
- for x in [-5.67,1.75]:m.box('Long_floor_skirting',(x,0,.07),(.04,17.6,.14),'DarkMetal')
+ m.box('Long_floor_skirting',(-5.67,0,.07),(.04,17.6,.14),'DarkMetal')
+ for a,b in [(-8.8,-.65),(.65,8.8)]:m.box('Long_floor_skirting',(1.75,(a+b)/2,.07),(.04,b-a,.14),'DarkMetal')
  # Suspended acoustic ceiling on a physical grid, glass remains below it.
  m.box('Acoustic_ceiling',(-3,0,3.105),(9.6,17.6,.035),'Ceiling')
  for y in range(-8,9,2):m.box('Ceiling_grid_cross',(-3,y,3.077),(9.6,.018,.025),'Chrome')

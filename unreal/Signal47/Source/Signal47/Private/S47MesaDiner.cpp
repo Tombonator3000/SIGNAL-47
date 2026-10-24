@@ -107,12 +107,15 @@ void AS47Web::BuildMesaDiner()
  UE_LOG(LogS47MesaDiner,Display,TEXT("S47: Mesa Diner ready: 11 native parts, 13 original proxies and 9 dynamic objects retained; %d obsolete walk boxes disabled; open door footprint %.3f %.3f %.3f %.3f"),Removed,Leaf.MinX,Leaf.MaxX,Leaf.MinZ,Leaf.MaxZ);
  if (!FParse::Param(FCommandLine::Get(),TEXT("S47MesaDinerAudit"))) return;
  struct FProbe { int32 Stage=0; double T=0,At=0; bool Done=false; };
- const TSharedRef<FProbe> P=MakeShared<FProbe>(); const TSharedRef<FTimerHandle> Timer=MakeShared<FTimerHandle>(); TWeakObjectPtr<AS47Web> Self=this;
- GetWorldTimerManager().SetTimer(*Timer,[Self,P,Timer,Leaf] {
+ const TSharedRef<FProbe> P=MakeShared<FProbe>(); FTimerHandle Timer; TWeakObjectPtr<AS47Web> Self=this;
+ GetWorldTimerManager().SetTimer(Timer,[Self,P,Leaf] {
+  if (P->Done) return;
   AS47Web* W=Self.Get(); US47Main* M=W?US47Main::Get(W):nullptr;
   if (!W || !M || !M->Player || !M->World || !M->Inter || S47Startup::Blocking()) return;
   P->T+=.1;
-  auto Finish=[&](bool Pass,const TCHAR* Why) { M->Player->TestMove.Reset(); W->GetWorldTimerManager().ClearTimer(*Timer); P->Done=true; UE_LOG(LogS47MesaDiner,Display,TEXT("S47: Mesa Diner audit %s: %s"),Pass?TEXT("PASS"):TEXT("FAIL"),Why); };
+  // The timer owns this capture. Clearing that timer while executing destroys P's only
+  // owning reference underneath the callback. A done guard leaves it inert until world teardown.
+  auto Finish=[&](bool Pass,const TCHAR* Why) { P->Done=true; M->Player->TestMove.Reset(); UE_LOG(LogS47MesaDiner,Display,TEXT("S47: Mesa Diner audit %s: %s"),Pass?TEXT("PASS"):TEXT("FAIL"),Why); };
   if (P->T>12) { Finish(false,TEXT("walking or initialization timeout")); return; }
   if (P->Stage==0) {
    if (P->T<2 || M->Mode!=US47Main::EMode::Play) return;
@@ -127,8 +130,21 @@ void AS47Web::BuildMesaDiner()
   }
   if (P->Stage==2 || P->Stage==3 || P->Stage==4) {
    FHitResult Hit; const FVector V=M->Player->Pos;
-   if (!W->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(FVector(V.X,M->Player->FloorY+.25,V.Z)),S47Three::ToUE(FVector(V.X,M->Player->FloorY-4,V.Z)),ECC_Visibility) ||
-    FMath::Abs(S47Three::ToThree(Hit.ImpactPoint).Y-M->Player->FloorY)>.1) { Finish(false,TEXT("normal walking lost its actual visible floor")); return; }
+   FCollisionQueryParams Query(SCENE_QUERY_STAT(S47MesaDinerFloor),true,M->Player);
+   Query.bReturnFaceIndex=true;
+   const bool FloorHit=W->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(FVector(V.X,M->Player->FloorY+.25,V.Z)),S47Three::ToUE(FVector(V.X,M->Player->FloorY-4,V.Z)),ECC_Visibility,Query);
+   const double HitY=FloorHit?S47Three::ToThree(Hit.ImpactPoint).Y:-9999;
+   if (!FloorHit || FMath::Abs(HitY-M->Player->FloorY)>.1) {
+    UPrimitiveComponent* C=Hit.GetComponent(); int32 Section=INDEX_NONE;
+    UMaterialInterface* Material=C?C->GetMaterialFromCollisionFaceIndex(Hit.FaceIndex,Section):nullptr;
+    UStaticMeshComponent* Static=Cast<UStaticMeshComponent>(C);
+    const int32 NodeIndex=W->NodeOf(C); const FS47WebNode* N=W->Node(NodeIndex);
+    FString Tags; if (C) for (FName Tag:C->ComponentTags) Tags+=Tag.ToString()+TEXT("|");
+    UE_LOG(LogS47MesaDiner,Error,TEXT("S47: Mesa Diner floor detail stage=%d t=%.3f posXZ=%.6f,%.6f localXZ=%.6f,%.6f floorY=%.6f callbackFloorY=%.6f hit=%d hitY=%.6f delta=%.6f actor=%s component=%s node=%s mesh=%s face=%d section=%d material=%s tags=%s traceComplex=1"),
+     P->Stage,P->T,V.X,V.Z,V.X-Origin.X,V.Z-Origin.Z,M->Player->FloorY,M->Player->Floor?M->Player->Floor(V.X,V.Z):-9999,FloorHit,HitY,HitY-M->Player->FloorY,
+     *GetNameSafe(Hit.GetActor()),*GetNameSafe(C),N?*N->Name:TEXT("none"),Static?*GetNameSafe(Static->GetStaticMesh()):TEXT("none"),Hit.FaceIndex,Section,*GetNameSafe(Material),*Tags);
+    Finish(false,TEXT("normal walking lost its actual visible floor")); return;
+   }
    if (P->Stage==4) {
     if (P->T-P->At<.8) return;
     if (FMath::Abs(V.Z-(Leaf.MinZ-M->Player->Radius))>.04) { Finish(false,TEXT("normal walking passed through the physical open door leaf")); return; }

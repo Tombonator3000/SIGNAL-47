@@ -68,5 +68,24 @@
       "wall_seconds": 2.02365734797786,
       "performance_status": "UNCONTENDED"
     }
+  },
+  "final_door_clearance": {
+    "reason": "Frontskirting must not span open doorway",
+    "opening_By_m": [
+      -0.65,
+      0.65
+    ],
+    "source_revision": "R2-original-Mesa-Diner-1986-door-clearance",
+    "lod_triangles": [
+      110791,
+      54460,
+      25430
+    ],
+    "actual_files_sha256": {
+      "Mesa_Diner.blend": "f1ee8c8385b08ac7e94d2f27766f43c07852465423282734943a43f774d23072",
+      "Mesa_Diner.glb": "de6dff08fe89cd6e21c3ff3f93bc8176c183ba3b58b2fe4c1aacb6bac9b7734b",
+      "model_contract.json": "b33ac55d47106206b37919d7bccd5af0c10f2cb5cb1bdd2895c5e813af3a3100",
+      "verification.json": "9f7caef6ce9ac0f42d3cf512ac4e6a814253a5937a8fa7213fa9efbd4fca56fd"
+    }
   }
 }

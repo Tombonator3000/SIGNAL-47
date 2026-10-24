@@ -701,7 +701,24 @@
     "baked_z_rotation_degrees": -105,
     "new_mechanics": false,
     "original_action": "diner:door toast retained",
-    "actual_leaf_collision": "Added only after complete atomic native guard, from actual imported door bounds; no shut collider across the opening."
+    "actual_leaf_collision": "Added only after complete atomic native guard, from actual imported door bounds; no shut collider across the opening.",
+    "source_floor_clearance_check": {
+      "source_glb": "exports/SM_Mesa_Interior.glb",
+      "ray_blender_xy_m": [
+        1.75,
+        0
+      ],
+      "from_blender_z_m": 0.25,
+      "to_blender_z_m": -0.1,
+      "actual_hits": [
+        [
+          0.001,
+          "M_Mesa_CheckerFloor"
+        ]
+      ],
+      "method": "Pure-Python decoded GLB triangle intersections, after the isolated front skirting source fix.",
+      "native_status": "UNVERIFIED"
+    }
   },
   "counter_top_blender_z_m": 1.0,
   "booth_table_top_blender_z_m": 0.8025,
@@ -791,12 +808,12 @@
       0
     ],
     "new_red_light_blender_m": [
-      2.84,
+      3.35,
       -6.8,
       4.8
     ],
     "new_cyan_light_blender_m": [
-      2.84,
+      3.35,
       -6.8,
       3.65
     ],
@@ -817,7 +834,8 @@
         2007.16
       ]
     ],
-    "revision_note": "Root-authorized facade concept placement. Existing sign ID/action retained; actual new taller sign bounds drive the proxy. Dynamic player-car parking anchors remain unchanged."
+    "revision_note": "Root-authorized facade concept placement. Existing sign ID/action retained; actual new taller sign bounds drive the proxy. Dynamic player-car parking anchors remain unchanged.",
+    "light_offset_reason": "D2 local correction: move original state-controlled point pools about0.55m in front of actual neon instead of0.039m, preserving widths/colours/flicker."
   },
   "atomic_trim": {
     "hide_group_handles": [
@@ -994,6 +1012,6 @@
       "nearest_original_drive_obstacle_clearance_m": 4.157523
     }
   ],
-  "actual_model_contract_sha256": null,
-  "actual_model_contract_validation": "Awaiting regenerated facade-pass source contract after root-authorized SignAnchor relocation; all 11 mesh names/root offsets remain locked."
+  "actual_model_contract_sha256": "b33ac55d47106206b37919d7bccd5af0c10f2cb5cb1bdd2895c5e813af3a3100",
+  "actual_model_contract_validation": "R2-original-Mesa-Diner-1986-door-clearance source contract read. Native D2 import/runtime validation pending root."
 }

@@ -96,7 +96,7 @@
       "name": "SM_Mesa_Interior metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 498,
+      "triangles": 510,
       "materials": [
         "M_Mesa_TealTile",
         "M_Mesa_CheckerFloor",
@@ -451,7 +451,7 @@
       "name": "SM_Mesa_Interior_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 466,
+      "triangles": 478,
       "materials": [
         "M_Mesa_TealTile",
         "M_Mesa_CheckerFloor",
@@ -805,7 +805,7 @@
       "name": "SM_Mesa_Interior_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 466,
+      "triangles": 478,
       "materials": [
         "M_Mesa_TealTile",
         "M_Mesa_CheckerFloor",
@@ -1168,7 +1168,7 @@
       "name": "SM_Mesa_Interior GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 498
+      "triangles": 510
     },
     {
       "name": "SM_Mesa_Booths glTF UV present",
@@ -1712,6 +1712,6 @@
       "passed": true
     }
   ],
-  "source_revision": "R1-original-Mesa-Diner-1986",
+  "source_revision": "R2-original-Mesa-Diner-1986-door-clearance",
   "scope": "Actual FBX, GLB, source scene and packed original pixels. Native and visual acceptance are separate."
 }

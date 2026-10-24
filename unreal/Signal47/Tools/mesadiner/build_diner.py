@@ -10,7 +10,7 @@ import diner_geometry
 exterior_geometry=None
 if (R/'exterior_geometry.py').exists():
  import exterior_geometry
-REVISION='R1-original-Mesa-Diner-1986';SITE_WORLD_THREE=ROOT;WORLD_YAW_DEGREES=0;BUDGET_TRIANGLES=125000
+REVISION='R2-original-Mesa-Diner-1986-door-clearance';SITE_WORLD_THREE=ROOT;WORLD_YAW_DEGREES=0;BUDGET_TRIANGLES=125000
 PARTS=dict(DINER_PARTS)
 def build(lod):
  data=diner_geometry.build(lod)

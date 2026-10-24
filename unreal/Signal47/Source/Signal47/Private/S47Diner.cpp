@@ -59,7 +59,7 @@ void FS47Diner::BindAuthoredLighting()
 	{
 		FVector P; float Width; FLinearColor Color;
 		if (M->Web->FloodPool(Flood, Slot, P, Width, Color))
-			M->Web->SetFloodPool(Flood, Slot, Group.LocalToWorld(FVector(2.84, Slot == 0 ? 4.8 : 3.65, 6.8)), Width, Color);
+			M->Web->SetFloodPool(Flood, Slot, Group.LocalToWorld(FVector(3.35, Slot == 0 ? 4.8 : 3.65, 6.8)), Width, Color);
 	}
 	ApplyAuthoredLighting();
 }

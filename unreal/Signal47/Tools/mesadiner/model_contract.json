@@ -1,6 +1,6 @@
 {
   "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
-  "source_revision": "R1-original-Mesa-Diner-1986",
+  "source_revision": "R2-original-Mesa-Diner-1986-door-clearance",
   "site_world_three_m": [
     7979.95,
     4.309006389843889,
@@ -145,7 +145,7 @@
       ]
     },
     "SM_Mesa_Interior": {
-      "triangles": 498,
+      "triangles": 510,
       "bounds_local_m": [
         [
           -7.800000190734863,
@@ -190,12 +190,12 @@
         0,
         0
       ],
-      "vertices_before_weld": 956,
-      "vertices_after_weld": 332,
+      "vertices_before_weld": 980,
+      "vertices_after_weld": 340,
       "lod_triangles": [
-        498,
-        466,
-        466
+        510,
+        478,
+        478
       ]
     },
     "SM_Mesa_Booths": {
@@ -704,7 +704,7 @@
         ]
       },
       "SM_Mesa_Interior": {
-        "triangles": 498,
+        "triangles": 510,
         "bounds_local_m": [
           [
             -7.800000190734863,
@@ -749,12 +749,12 @@
           0,
           0
         ],
-        "vertices_before_weld": 956,
-        "vertices_after_weld": 332,
+        "vertices_before_weld": 980,
+        "vertices_after_weld": 340,
         "lod_triangles": [
-          498,
-          466,
-          466
+          510,
+          478,
+          478
         ]
       },
       "SM_Mesa_Booths": {
@@ -1247,7 +1247,7 @@
         "vertices_after_weld": 152
       },
       "SM_Mesa_Interior": {
-        "triangles": 466,
+        "triangles": 478,
         "bounds_local_m": [
           [
             -7.800000190734863,
@@ -1292,8 +1292,8 @@
           0,
           0
         ],
-        "vertices_before_weld": 908,
-        "vertices_after_weld": 316
+        "vertices_before_weld": 932,
+        "vertices_after_weld": 324
       },
       "SM_Mesa_Booths": {
         "triangles": 4384,
@@ -1748,7 +1748,7 @@
         "vertices_after_weld": 152
       },
       "SM_Mesa_Interior": {
-        "triangles": 466,
+        "triangles": 478,
         "bounds_local_m": [
           [
             -7.800000190734863,
@@ -1793,8 +1793,8 @@
           0,
           0
         ],
-        "vertices_before_weld": 908,
-        "vertices_after_weld": 316
+        "vertices_before_weld": 932,
+        "vertices_after_weld": 324
       },
       "SM_Mesa_Booths": {
         "triangles": 3104,
@@ -2127,7 +2127,7 @@
       }
     }
   },
-  "total_LOD0_triangles": 110779,
+  "total_LOD0_triangles": 110791,
   "collision": "Original diner zones/proxies preserved; authored visual meshes no collision except explicit opened door proxy",
   "axis_probe_source_center_m": [
     2,
