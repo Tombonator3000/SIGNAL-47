@@ -1,8 +1,9 @@
 # Minne for unreal/
 
-## Skyoppgaven overtatt, 24. oktober 2026
+## Skyoppgaven sluttkontrollert, 24. oktober 2026
 
-- Tom ber Codex fullføre Claudes volumetriske skyer etter limit. Skykode f55b760c/04d98231 er allerede integrert; gjenstående cache og levering må bruke natur/film/sky sammen. Gammelt opptak under Signal47-sky har andre shader keys og kan ikke dokumentere ny pakke. SKY.md er bevart og oppdateres med faktisk sluttbevis.
+- Tom ber Codex fullføre Claudes volumetriske skyer etter limit. Skykode f55b760c/04d98231 er allerede integrert; ved overtakelsen gjenstod cache og levering på samlet natur/film/sky. Gammelt opptak under Signal47-sky har andre shader keys og kan ikke dokumentere ny pakke. SKY.md har faktisk sluttbevis.
+- Ny samlet cache og sluttpakke er kontrollert: 84/84 opptaksbolker, 4329 SPC, 620 binære PSO-er, 285 runtime-graphics, 1328 selvtester, 110/110 unike scenarier/naturkontroller og 52 visuelt vurderte bilder. Installasjon avventer lokal fletting; SKY.md har gjeldende bevis og målegrenser.
 - Naturmulighetene Canyons of Utah, New Mexico-geologi, fotografisk fjernprojeksjon og Mesh Terrain er lagret som åpne vurderings-/prøvepunkter i todo.md, uten nedlasting eller migrering.
 
 ## Caliche natur, 24. oktober 2026

@@ -2,6 +2,77 @@
 
 24. oktober 2026, opprinnelig gren `sky-pass` fra `unreal-port-core` dc2820c2. Codex har overtatt sluttføringen etter Claudes limit på Toms bestilling; sky-koden er allerede integrert med natur/film i core1f471862. Toms bestilling: volumetriske skyer, få om natta og fritt om dagen, lys, skyer og stemning så nær konseptbildet (`~/scratch-bm/prompts/ref/dusk-concept.png`) som mulig. Codex eier natur (vegetasjon, terreng, mesaer) på `codex/caliche-nature`; dette passet rører bare himmel, skyer, sol/måne/skylight, tåke og eksponering.
 
+
+## Integrert sluttkontroll, Codex 24. oktober 2026
+
+Claudes sky-/lysarbeid f55b760c og 04d98231 var allerede integrert med natur/film i CN5. Codex har fullført ny cache, pakking, sluttbilder og regresjon på denne samlede kilden etter Claudes limit. Naturmulighetene er lagret som åpne oppgaver i todo.md. Dette ferdigstiller skyoppgaven, men gir ikke fotoets detaljnivå i fjell og vegetasjon.
+
+Bevisrot: `~/scratch-bm/Signal47-cloud-completion`. `final-package.json` binder executable og alle fem innholdscontainere. 721 Source/Config/Content-filer er kontrollert mot kildebindingen. Den nye cache-cooken har byteidentiske 21 107 kokte prosjektassets og shaderfiler mot opptaksgrunnlaget.
+
+- PASS: 84 korte opptaksbolker dekker 54 kameramotiv ganger Low/High/Ultra og natt/daggry. 4 s oppvarming og 4 s hold er cacheopptak, ikke stabil ytelsesmåling.
+- PASS: 4329 stabile PSO-er i SPC på 98 886 byte. Cook konsumerer 623 oppskrifter, avviser 0 og slår sammen 3706; tre ugyldige compute-varianter fjernes av cook. Ferdig binær cache har 620 PSO-er, inklusive 285 graphics. Runtime åpner samme GUID 01A16DA4E3017B5A8D9B7F441D9C718C og behandler alle 285 graphics. Cachebevisets ni kontroller består.
+- PASS: 1328 selvtestsjekker og seks vanlige funksjonsprøver, inklusive levende stjernehull, komet før/etter og pause/gjenopptakelse. De opprinnelige kometbildene hadde en antenne foran utsnittet; fire separate før/etter-bilder fra fri veiskulder bekrefter komet og stjernehull visuelt. De gamle bildene beholdes som diagnostikk.
+- PASS: 14 ukonkurrerte kameraturer og 48 gjennomgåtte originalbilder ved dag, 17:20, 18:30, 21:00, 03:00, daggry og midnatt, samt Low, Ultra, standard Carpenter og NoClouds. Fire ekstra himmelhendelsesbilder gir 52 faktisk vurderte bilder. High/Clean viser tydelig ordnet rutedithering i enkelte månelyse skyer og fin støy i skykanter; dette er åpen kvalitetsgjeld, ikke fotorealistisk godkjenning. Full visuell avgrensning står i visual-acceptance.json.
+- PASS: hele screenshots.sh med 110 unike logger, 110 OK og 110 naturkontroller. Det første av de to tidligere like starhole-filnavnene heter nå starhole-noticed; scenariet og flaggene er uendret.
+- Installasjon: avventer kontrollert lokal fletting og kopiering; eksisterende installasjon bevares inntil da.
+
+Den første strenge shader-key-sammenligningen avviste endrede navn etter cook. Avvisningen er bevart. En separat kontroll dokumenterer at FName er case-insensitivt: ingen tidligere normalisert objekt-/shaderidentitet, PipelineHash eller OutputHash er borte eller endret. 112 nye aliaser for åtte eksisterende MI_W-materialer matcher gamle M_Web_Lit_Opaque-signaturer nøyaktig. Begge sett har 3405 unike kompilerte shaderutganger, Global er byteidentisk og alle 21 107 prosjektassetfiler er byteidentiske. stable-key-compatibility.json har den snevre kompatibilitetskontrollen; de gamle avviste rårapportene er ikke overskrevet.
+
+Én siste skumringsmåling ble avbrutt da brukeren startet installert spill. Guard avsluttet bare testens egen prosess. Den avbrutte prøven ligger i karantene; samme utsnitt er tatt om uten konkurranse før sluttmålingene. Ingen andres prosess ble stoppet.
+
+### Målinger på den integrerte pakken
+
+Dette er et måleutdrag fra den nåværende fullverdenspakken i `Signal47-cloud-completion/final-build`, ikke historiske sky-only-tester. Målt på RTX 3080 / i7-12700KF, Vulkan, NVIDIA 595.99, 2560 × 1440, VSync og FPS-grense av. Alle 14 turer og begge oppstarter har gyldige, ukonkurrerte capture-metadata med samme executable og alle fem innholdscontainere. Dette er gyldige måledata, ikke et løfte om jevn bildefrekvens.
+
+Executable SHA256: `92660b26686afe841f2fbd1c168331b21bad0a5c8497a428282f09416970dca9`. PAK SHA256: `31d2dd669e8fccf9f146531f75568de20e3673559fedaf51245a5014bb2850bd`. Full identitet og kildenes SHA256 står i `current-performance-summary.json`.
+
+Turene bruker faste kameraer med pauset verden, 8 s innledende oppvarming og 7 s hold per vinkel. Det faktiske målevinduet er cirka 3,2 s per vinkel. Snitt er vektet over målte bilder; p95-kolonnen nedenfor er høyeste individuelle vinkel-p95, ikke en sammenslått p95 for hele turen. GPU-kolonnen er målt GPU-snitt; snitt/p95 for bildetid er faktisk veggklokketid mellom bilder og inkluderer hakking.
+
+| Tur | Klokke / kvalitet / bilde | Vinkler | Prøvetid totalt (s) | Bildetid snitt (ms) | Høyeste vinkel-p95 (ms) | GPU-snitt (ms) |
+|---|---|---:|---:|---:|---:|---:|
+| dawn | 05:40 / high / off | 4 | 12.81 | 11.47 | 20.06 (sky-saro) | 10.79 |
+| day | 12:00 / high / off | 4 | 12.80 | 11.44 | 20.31 (sky-saro) | 10.76 |
+| dusk | 18:30 / high / off | 4 | 12.80 | 11.58 | 20.17 (sky-saro) | 10.90 |
+| dusk-default-carpenter | 18:30 / high / carpenter | 2 | 6.40 | 12.75 | 16.94 (sky-commute) | 12.04 |
+| dusk-no-clouds | 18:30 / high / NoClouds / off | 4 | 12.79 | 10.73 | 19.48 (sky-saro) | 10.08 |
+| early-night | 21:00 / high / off | 4 | 12.80 | 10.68 | 23.70 (sky-saro) | 10.02 |
+| heaviest-day | 12:00 / high / off | 4 | 12.80 | 12.80 | 15.95 (highway) | 12.08 |
+| heaviest-dusk | 18:30 / high / off | 4 | 12.80 | 13.36 | 19.43 (highway) | 12.37 |
+| late-afternoon | 17:20 / high / off | 4 | 12.83 | 11.85 | 21.97 (sky-saro) | 11.16 |
+| low-fallback-dusk | 18:30 / low / off | 4 | 12.80 | 8.78 | 11.90 (sky-commute) | 8.20 |
+| midnight-after | 00:00 / high / off | 2 | 6.40 | 10.54 | 22.01 (sky-saro) | 9.91 |
+| midnight-before | 23:59 / high / off | 2 | 6.39 | 10.38 | 18.96 (sky-saro) | 9.74 |
+| night | 03:00 / high / off | 4 | 12.79 | 10.52 | 19.11 (sky-saro) | 9.86 |
+| ultra-dusk | 18:30 / ultra / off | 2 | 6.38 | 22.38 | 25.85 (sky-commute) | 21.69 |
+
+Snitt under 16,67 ms er ikke alene bevis på stabilt 60 FPS. Alle konkrete overskridelser av p95-budsjettet er bevart per vinkel i JSON; SARO-vinklene og highway/street-north-route i den tyngre skumringsturen har målte overskridelser. Ultra-resultatet gjelder den separate Ultra-innstillingen, ikke High.
+
+High mot NoClouds ved 18:30, samme fire vinkler og innstillinger:
+
+| Vinkel | High snitt / p95 (ms) | NoClouds snitt / p95 (ms) | Forskjell snitt High − NoClouds (ms) | Forskjell GPU-snitt (ms) |
+|---|---:|---:|---:|---:|
+| sky-commute | 14.22 / 15.19 | 13.37 / 14.63 | 0.85 | 0.83 |
+| sky-west | 10.12 / 10.87 | 9.33 / 10.01 | 0.79 | 0.76 |
+| sky-up | 10.60 / 11.27 | 9.71 / 10.55 | 0.89 | 0.87 |
+| sky-saro | 12.21 / 20.17 | 11.39 / 19.48 | 0.82 | 0.78 |
+
+Den observerte forskjellen inkluderer skyene og tilhørende skylight/fallback, og isolerer derfor ikke skyshaderens kostnad. Dette er én sekvensiell måling per innstilling, med cirka 3,2 s per vinkel; forskjellene er ikke et statistisk estimat fra gjentatte forsøk.
+
+Oppstart er målt separat med High og standard Carpenter-bilde i chapter1-default, ikke som en fast dag-/skumringskameratur. READY er tid fra verdensoppstart. Første synlige bilde kommer etter at oppstartsdekningen slipper. Prosessens totale kjøretid inkluderer venting, skjermbilde og avslutning og er ikke presentert som lastetid.
+
+| Oppstart | READY (s) | Første synlige (s fra verdensstart) | Første 10 s snitt / p95 / maks (ms) | Første synlige 10 s snitt / p95 / maks (ms) | Synlig FPS, bilder/10 s | Synlige intervaller >50 ms |
+|---|---:|---:|---:|---:|---:|---:|
+| startup-cold | 8.878 | 8.900 | 31.77 / 29.42 / 3664.34 | 15.56 / 27.90 / 37.82 | 64.2 | 0 |
+| startup-warm | 6.362 | 6.734 | 29.33 / 31.75 / 2476.34 | 17.27 / 25.16 / 372.56 | 57.9 | 6 |
+
+Begge oppstartsvinduer varer 10 s; hele råintervaller som krysser vindusgrensen inngår. De første 10 s omfatter oppstartsdekning og lange lasteintervaller. Synlig FPS er antall bilder/10 s, ikke 1000 delt på oppgitt snitt. Cold har ny isolert driver-cache og `-clearPSODriverCache`; warm gjenbruker samme driver-cache. OS-diskcache er ikke tømt. Dette er ett forsøk av hver type.
+
+Warm når READY tidligere, men har i dette ene forsøket en synlig hitch på 372,56 ms. Første synlige 10 s oppnår derfor ikke et stabilt 60 FPS-resultat. Ved READY viser loggene null ventende PSO/RHI-/material-/shaderjobber; det beviser ikke fravær av senere strømme- eller kompileringshakking. Rå trace og køtopper er bevart i JSON.
+
+
+Menneskelig gjennomspilling, lytting, langvarig skybevegelse og editorens opt-in-skyer er fortsatt UNVERIFIED. Kun pakket Vulkan på denne maskinen er godkjent. Låst 60 FPS er ikke dokumentert; varm oppstart har ett synlig hakk på 372,56 ms. Videre utbedring av oppstartshakking og naturens fotolikhet er åpne TODO-punkter.
+
+
 ## Hva som er gjort
 
 **Ett VolumetricCloud-lag uten SkyAtmosphere.** Den levende himmelen (S47Sky, kuppelen 30 km ute med stjerner, komet, stjernehull og lyn) er beholdt som himmel. Skylaget komponeres foran kuppelen. SkyAtmosphere ble vurdert og valgt bort: den ville tatt over horisontfarger og solens transmittans i alle områder og krevd ny kalibrering av den faste eksponeringen. Uten den bruker skyene egen planet (6360 km); laget løftes med `d²/2R` over øyet fordi områdene ligger opptil 80 km fra origo (`S47Clouds.cpp`).
@@ -35,7 +106,7 @@ Skyene driver med vind fra vest-sørvest (cirka 9 m/s) og endrer form sakte.
 
 Natta er uendret mørk med sterk kontrast (skylight 0,055, måne 0,055 lux, indirekte 0,52). Gatelampene tennes som før.
 
-## Bilder
+## Historiske bilder fra sky-pass
 
 Pakkede bilder, High/VHS, 1600 × 900, kveldstidslinjen. `sky-commute` er innkjøringens start sør for Caliche, mot nord langs veien som i konseptet; `sky-west` mot solnedgangen, `sky-up` oppover, `sky-saro` ved SARO.
 
@@ -62,16 +133,16 @@ Snitt/p95 i ms over cirka 3,5 s per kamera (statisk kamera, `graphics-review`-m�
 
 Historiske High-snitt i disse korte utsnittene er høyst 12,93 ms, cirka 77 fps. Gårdens p95 er 19,78 ms; dette dokumenterer ikke låst 60 fps. På denne eldre pakken er skyenes målte snittforskjell cirka 0,7 til 0,9 ms. Ultra ligger på cirka 40 til 44 fps i utsnittene. Målingene gjelder før ferdig natur-/film-integrasjon og er ikke steady state eller helrutebevis.
 
-## Prøver
+## Historiske prøver fra sky-pass
 
 - `-S47SelfTest` i pakket build: PASS, 1308 sjekker, inkludert tre nye skykontroller (dagdekning 0,400 til 0,698, natt høyst 0,15, største minuttsteg 0,0055, kveldsklokka går rundt). Første kjøring fant et reelt hopp i nattvariasjonen ved midnatt; rettet.
 - Kort regresjon på samme pakke: room, event, outside, radio, nightsteps, caliche, beacon og Low ved 18:30 PASS.
 - Editor `-game` har skylaget av med vilje (`-S47EditorClouds` slår det på): on-demand shaderkart i editoren mangler skypassene, og UE faller da tilbake til overflatemateriale og stopper på en assert i skyrendereren. Kokte builds er komplette.
 - PSO-cache: se avsnittet nedenfor.
-- UNVERIFIED: menneskelig gjennomspilling i bevegelse, skyenes drift over lang tid, alle 110 screenshots.sh.
+- På dette historiske tidspunktet var full regresjon ikke utført. Gjeldende sluttstatus står øverst; menneskelig gjennomspilling og langvarig drift er fortsatt UNVERIFIED.
 
 Tuning for gjennomgang uten ny bygg: `-S47NoClouds`, `-S47CloudCover=`, `-S47CloudExt=`, `-S47CloudAmb=`, `-S47CloudGlow=`, `-S47CloudGlowEl=`, `-S47CloudSamples=`, `-S47CloudShadowKm=`, `-S47SkyBoost=`.
 
-## PSO-cache
+## Historisk PSO-status før Codex overtakelse
 
-Nye shadere (skymaterialet, cloud fogging på stjerner og horisont, skyskygger) betyr at den bundlede graphics-PSO-cachen må tas opp på nytt fra denne cooken (`Scripts/pso-cache.py record`, deretter `expand` og ny pakking, se LIGHTING.md). Opptaket tas i korte bolker (én kvalitet og én klokke av gangen) med pauser, så naturpasset får maskinen innimellom. Det gamle opptaket under `~/scratch-bm/Signal47-sky/pso` er ufullstendig og bruker eldre pakke/shader keys. Det er bevart som historikk. Nytt opptak under `~/scratch-bm/Signal47-cloud-completion/pso` bruker den hashkontrollerte, integrerte CN5-pakken og frosne keys. Status: pågår; 4 s oppvarming og 4 s per utsnitt er et cacheopptak, ikke ny helruteytelse.
+Nye shadere (skymaterialet, cloud fogging på stjerner og horisont, skyskygger) betyr at den bundlede graphics-PSO-cachen må tas opp på nytt fra denne cooken (`Scripts/pso-cache.py record`, deretter `expand` og ny pakking, se LIGHTING.md). Opptaket tas i korte bolker (én kvalitet og én klokke av gangen) med pauser, så naturpasset får maskinen innimellom. Det gamle opptaket under `~/scratch-bm/Signal47-sky/pso` er ufullstendig og bruker eldre pakke/shader keys. Det er bevart som historikk. Nytt opptak under `~/scratch-bm/Signal47-cloud-completion/pso` bruker den hashkontrollerte, integrerte CN5-pakken og frosne keys. Dette opptaket er nå komplett; gjeldende sluttbevis står øverst. 4 s oppvarming og 4 s per utsnitt er cacheopptak, ikke ny helruteytelse.

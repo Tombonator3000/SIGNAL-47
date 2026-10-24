@@ -1,0 +1,444 @@
+{
+  "status": "PASS",
+  "scope": "Visual acceptance of cloud completion on the frozen integrated package, not reference-level photorealism or guaranteed frame rate.",
+  "claude_source_commits": [
+    "f55b760c",
+    "04d98231"
+  ],
+  "package": {
+    "path": "/home/tom/scratch-bm/Signal47-cloud-completion/final-build/Linux/Signal47/Binaries/Linux/Signal47",
+    "bytes": 311531072,
+    "sha256": "92660b26686afe841f2fbd1c168331b21bad0a5c8497a428282f09416970dca9",
+    "containers": [
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.pak",
+        "bytes": 1264478975,
+        "sha256": "31d2dd669e8fccf9f146531f75568de20e3673559fedaf51245a5014bb2850bd"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.ucas",
+        "bytes": 1836176672,
+        "sha256": "78f8e2f963a066562ca56a4b7e3d6422fe136f8cc982f1609ac9317a62c40c1a"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.utoc",
+        "bytes": 2000145,
+        "sha256": "a74daecb0ea2e96eb50f5b85b8b33dc576982e2ceaebee8b9668d59da19f2554"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.ucas",
+        "bytes": 3323168,
+        "sha256": "1cb75e90b6c0b71594b619ce286a246c5966b0831d26e308bb1d144cbc7236e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.utoc",
+        "bytes": 806,
+        "sha256": "b6456194ab08e29851afaa5ef6f0b3ccc3d71dc1282699200d0975b93a2a5238"
+      }
+    ]
+  },
+  "cache": {
+    "stable_psos": 4329,
+    "spc_sha256": "0fc3425dc0c48b1e603f27933f0199ddcc4d5c338e084064cbef6b262e57f1ab",
+    "binary_psos": 620,
+    "runtime_graphics_psos": 285,
+    "checks": {
+      "all_required_views_quality_clock_coverage": true,
+      "expanded_stable_cache": true,
+      "cook_consumed_our_spc": true,
+      "cooked_graphics_psos_positive": true,
+      "consistent_cook_counts": true,
+      "runtime_opened_same_binary_guid": true,
+      "runtime_cache_count_matches_cook": true,
+      "runtime_processed_bundled_graphics": true,
+      "cook_output_matches_binary_bytes": true
+    }
+  },
+  "selftest_checks": 1328,
+  "runtime_cases": 6,
+  "celestial_cases": 4,
+  "full_scenarios": 110,
+  "unique_logs": 110,
+  "nature_audits": 110,
+  "visual_images": 52,
+  "visual_cases": 14,
+  "images": [
+    {
+      "case": "day",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/day/sky-commute.png",
+      "sha256": "10a4301b84ec47a69d5a065882c0eac8ce611e18ac21abc1735450ee58de11d5",
+      "status": "PASS"
+    },
+    {
+      "case": "day",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/day/sky-west.png",
+      "sha256": "723ad90e4f4d5b9b412eb3710c0e1beb2f13ca26701ef59c5c62fb021df934c0",
+      "status": "PASS"
+    },
+    {
+      "case": "day",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/day/sky-up.png",
+      "sha256": "d7e5980da2809ac94e27ac7aecc930d1c1fdfe9b18b56d91e792af054ec22e45",
+      "status": "PASS"
+    },
+    {
+      "case": "day",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/day/sky-saro.png",
+      "sha256": "874bbcd4193e4b123b236b3fe96b92bab7d76c05bab15c2f8c12bbbfbd4fd5f2",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk/sky-commute.png",
+      "sha256": "8589dc23a3313650bd6de6c6319e6318cb9c8f1e65b48e4458f09a73998b9ea4",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk/sky-west.png",
+      "sha256": "c69706ee45fa9af1a7cf08aa37d51216cca6d4f6586b0842631155fccbeb0085",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk/sky-up.png",
+      "sha256": "c8fd3c71d71966ebf7ba4915eae6eae2f9935a2d7ef538078ef0010b70820d47",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk/sky-saro.png",
+      "sha256": "0d4348029b05ccdf49b44aab792858a67be7384d3ec464bfa4916e05932f33a7",
+      "status": "PASS"
+    },
+    {
+      "case": "night",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/night/sky-commute.png",
+      "sha256": "3d11397a9ef91fa156228e3e12c4dd861a6c437c7fe9ea5fdeb6dad7bd1c4ffe",
+      "status": "PASS"
+    },
+    {
+      "case": "night",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/night/sky-west.png",
+      "sha256": "6317c6f35468b9d51364de253d7c60d16fab57b5e2e616b6d38bd7b0f77b109e",
+      "status": "PASS"
+    },
+    {
+      "case": "night",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/night/sky-up.png",
+      "sha256": "5e45aec004bb22da78d45813baec7616dce400b60004cf21f6abbd132c79e9f5",
+      "status": "PASS"
+    },
+    {
+      "case": "night",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/night/sky-saro.png",
+      "sha256": "24de11a12e5ed32adb40bf5e56953fc7d90e6899ba0a6db017186c2adae8274c",
+      "status": "PASS"
+    },
+    {
+      "case": "dawn",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dawn/sky-commute.png",
+      "sha256": "0f9b0ecf80ab243360c6cfd2807792147c0d8230780f0685be7fba824e24cbfd",
+      "status": "PASS"
+    },
+    {
+      "case": "dawn",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dawn/sky-west.png",
+      "sha256": "1604cfcc48556e7d4ac98a234fa1b5b3e90c4d801cef82a0caa1dd8d92383ac1",
+      "status": "PASS"
+    },
+    {
+      "case": "dawn",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dawn/sky-up.png",
+      "sha256": "00b9676feaaa54ffa15164206b2d1ca3ae9485999bbf41ae732723788da819ce",
+      "status": "PASS"
+    },
+    {
+      "case": "dawn",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dawn/sky-saro.png",
+      "sha256": "1551466fb7f5477fb184279fb96f619a9d4553bc50dc29744aa1362af86bb8ce",
+      "status": "PASS"
+    },
+    {
+      "case": "midnight-before",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/midnight-before/sky-up.png",
+      "sha256": "2d6a8181a26d7f19892a3474f3a678f38240dd58001933e805ca926fcba821d5",
+      "status": "PASS"
+    },
+    {
+      "case": "midnight-before",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/midnight-before/sky-saro.png",
+      "sha256": "98ea333d8599873c747a11cb17a6191bb5404494e8b7a9ea7d25d9afd3c7120f",
+      "status": "PASS"
+    },
+    {
+      "case": "midnight-after",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/midnight-after/sky-up.png",
+      "sha256": "4dadb9c0334466d614c4a5cb9bb9c50f1fc1b45742a0c9f7bb720ec7577bee6e",
+      "status": "PASS"
+    },
+    {
+      "case": "midnight-after",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/midnight-after/sky-saro.png",
+      "sha256": "4a0cb87e677c87ed8efbe996989af747ec67661f1cff5e437188abf4b2d4a753",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk-no-clouds",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk-no-clouds/sky-commute.png",
+      "sha256": "ce90c091589c7951360bab63cd8b113cb6b6c415be915b9b4e0d0296e2dbc153",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk-no-clouds",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk-no-clouds/sky-west.png",
+      "sha256": "34fd2bed99b145cbf2a4c4df3d2682b0735f9a215e506aca172100bd0e80194e",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk-no-clouds",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk-no-clouds/sky-up.png",
+      "sha256": "d81cc18a375349bd013f4beda1b985bd501233a892f20a7ce7acf7f9f116643a",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk-no-clouds",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk-no-clouds/sky-saro.png",
+      "sha256": "472842c9c7b7c889e301da4c91f81fc140536d5f32fc8aef260993ba3f3e25da",
+      "status": "PASS"
+    },
+    {
+      "case": "low-fallback-dusk",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/low-fallback-dusk/sky-commute.png",
+      "sha256": "d0ef667710e611a5d07f58278b74af1952e3e28da39fd9226a0e0ab1474b5350",
+      "status": "PASS"
+    },
+    {
+      "case": "low-fallback-dusk",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/low-fallback-dusk/sky-west.png",
+      "sha256": "37035653c161c613ed10e546f853c50e9c265064ff7ad954418c3bd39879a9eb",
+      "status": "PASS"
+    },
+    {
+      "case": "low-fallback-dusk",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/low-fallback-dusk/sky-up.png",
+      "sha256": "b81a4d3904fc2978a02a446841e87995a2003fa904565a769a6206c7b385904b",
+      "status": "PASS"
+    },
+    {
+      "case": "low-fallback-dusk",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/low-fallback-dusk/sky-saro.png",
+      "sha256": "60ef006045492c04bc45b0c3f3f2dcc3e757833ad9c17deeebbfc0707795ec96",
+      "status": "PASS"
+    },
+    {
+      "case": "ultra-dusk",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/ultra-dusk/sky-commute.png",
+      "sha256": "fe2a8fe12a47f2374d6efa398abebcbe4c047ee0659a8cdb1f177a24f831716b",
+      "status": "PASS"
+    },
+    {
+      "case": "ultra-dusk",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/ultra-dusk/sky-up.png",
+      "sha256": "5329a9ee157f6f6db59eea9cd52957134f9f5b5270be25967e9c37a60b29a407",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk-default-carpenter",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk-default-carpenter/sky-commute.png",
+      "sha256": "66484d9a390b2bc1e6157ffaa47fcd6b5bd69931434a1955dcdbc337ca6b3fed",
+      "status": "PASS"
+    },
+    {
+      "case": "dusk-default-carpenter",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/dusk-default-carpenter/sky-west.png",
+      "sha256": "a03a973436076a0da71b480ee2f7a19b2a381219088eeb657d2f57ce6cfc932b",
+      "status": "PASS"
+    },
+    {
+      "case": "late-afternoon",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/late-afternoon/sky-commute.png",
+      "sha256": "f1985bdaa646642074bddbd52a406eb2f8852fe4fb47541a24ea59e9143e2e02",
+      "status": "PASS"
+    },
+    {
+      "case": "late-afternoon",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/late-afternoon/sky-west.png",
+      "sha256": "e877afe459d2dfca7107dad117e27ce94709502c6c48f0101eb157167f080445",
+      "status": "PASS"
+    },
+    {
+      "case": "late-afternoon",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/late-afternoon/sky-up.png",
+      "sha256": "e40bc537e336cd435f2f8961a95e619fa1f1bbc29c53cc19d92185300ebb0cd4",
+      "status": "PASS"
+    },
+    {
+      "case": "late-afternoon",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/late-afternoon/sky-saro.png",
+      "sha256": "b3b3f3598f2fb1d8d29bc924a95de1d558c7bd567879c1a1e2f8504f1bbf20cd",
+      "status": "PASS"
+    },
+    {
+      "case": "early-night",
+      "view": "sky-commute",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/early-night/sky-commute.png",
+      "sha256": "6e308a0771d26b4e102c6b73d03014ad159521ed421a0e469f254a0136ad1024",
+      "status": "PASS"
+    },
+    {
+      "case": "early-night",
+      "view": "sky-west",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/early-night/sky-west.png",
+      "sha256": "b9e43aef9b462cd4f7ef93183d9a56a3d0600df5cc4e8f7af27dd0547fa2d6b7",
+      "status": "PASS"
+    },
+    {
+      "case": "early-night",
+      "view": "sky-up",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/early-night/sky-up.png",
+      "sha256": "c6bafe0a22fe3b15f2ed84df0388c7638dc3248865f01843a7aafd90a2410fab",
+      "status": "PASS"
+    },
+    {
+      "case": "early-night",
+      "view": "sky-saro",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/early-night/sky-saro.png",
+      "sha256": "a10a936255dcbffcd435a50082416145eb80421426cc5cc63365253a22a6b180",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-day",
+      "view": "yard",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-day/yard.png",
+      "sha256": "0f4abce2de11c67da64d0544300a6be569b505380c22de27fbcb9fbe2a0e1a74",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-day",
+      "view": "array-field",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-day/array-field.png",
+      "sha256": "f9d8050a644c01c1b9bc22cc716354a662a354686a7666412f51403b869631c6",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-day",
+      "view": "highway",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-day/highway.png",
+      "sha256": "76773f2486c3231c9231bce8964a201bf4e08ffebabc7d2439e58fc16ca8bb3d",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-day",
+      "view": "street-north-route",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-day/street-north-route.png",
+      "sha256": "3cd2044dad8c9fb15afcf47d2b7bd8bfbb374814a26b71cc2b9baaf8d3a0e39f",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-dusk",
+      "view": "yard",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-dusk/yard.png",
+      "sha256": "a791a31b83ad330383dbeac3009cdc30b0de97edfbea5f7fe48754a571f21be5",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-dusk",
+      "view": "array-field",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-dusk/array-field.png",
+      "sha256": "3c80c6402306c20a311641f7aec7ffdf316d60d71baafb92722e4693e49a69ea",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-dusk",
+      "view": "highway",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-dusk/highway.png",
+      "sha256": "95a8233e2b8457743b2d4894fdb8e1693c05e6e7abf3dcc56d148186b67b852f",
+      "status": "PASS"
+    },
+    {
+      "case": "heaviest-dusk",
+      "view": "street-north-route",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/sky-validation/heaviest-dusk/street-north-route.png",
+      "sha256": "a4bd0c3e7e88a82a1266121d7b3450b58ce8d2942df6e444a55f40e7db1e4b46",
+      "status": "PASS"
+    },
+    {
+      "case": "hole-before",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/celestial-confirmation/hole-before/final.png",
+      "sha256": "9f3306ca74f15735e8f0f1dfa4a5417c1a0d39eaa990f3f8334e474f8d3bb801",
+      "status": "PASS"
+    },
+    {
+      "case": "hole-open",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/celestial-confirmation/hole-open/final.png",
+      "sha256": "49f177fb271a32a1b82fad3105d88d6d4c6e1c451b3e7022c30e44353f16f3be",
+      "status": "PASS"
+    },
+    {
+      "case": "comet-before",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/celestial-confirmation/comet-before/final.png",
+      "sha256": "dcba609e06526ae0d68b7ad1adac78bec3c1c21828ca12774866bcf16d90ccab",
+      "status": "PASS"
+    },
+    {
+      "case": "comet-after",
+      "path": "/home/tom/scratch-bm/Signal47-cloud-completion/celestial-confirmation/comet-after/final.png",
+      "sha256": "1b37ae00f7d770ffa734a243d5397c3f5468efa4fa8555f804d7a12534a7b7cc",
+      "status": "PASS"
+    }
+  ],
+  "evidence_root": "/home/tom/scratch-bm/Signal47-cloud-completion",
+  "evidence_hashes": {
+    "cache-proof.json": "284875db2c7e0c77b0f805e30aa07a811907ab91473dad409b52fde5c6713f8f",
+    "full-regression-result.json": "0716126e650fe6b1437072b2eeb7cb946a52be66047bf4c4ef5ee1668ff9449f",
+    "celestial-result.json": "9d226c9014e6dd68f10982ef8f0c387bebe1de6ef0aeb518268d7ad26cf01b79",
+    "stable-key-compatibility.json": "bf84dc3f1afb8088d2fe6a976030f8ec4e21cfb2a22df43092ae9f3f6d9bd241",
+    "runtime-result.json": "19c401c411ea963deb842ae4ca6beae08599a3e483b458f92054a5761ff90c4b"
+  },
+  "limitations": [
+    "Clearly visible ordered grid dithering in some moonlit High/Clean clouds and fine noise at cloud edges.",
+    "Stylized terrain and vegetation remain below concept photography realism.",
+    "Short static camera measurements are not a whole-route or steady-state performance guarantee.",
+    "Warm startup sample contains a 372.56 ms visible hitch.",
+    "Human long-duration traversal, audio and continuous cloud-motion review remain UNVERIFIED.",
+    "Editor opt-in cloud rendering remains UNVERIFIED; evidence is from packaged Vulkan runtime."
+  ],
+  "installation": "PENDING local merge"
+}

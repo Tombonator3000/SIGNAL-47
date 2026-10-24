@@ -15,9 +15,12 @@ Kilder fra vurderingen: [Quixels Moab-opptak](https://www.youtube.com/watch?v=ND
 ## Volumetriske skyer, overtatt fra Claude 24. oktober 2026
 
 - [x] Kode f55b760c/04d98231 finnes allerede i integrert natur-/filmversjon; Claudes SKY.md og dokumentlenker er bevart.
-- [ ] Fullfør cache og sluttdokumentasjon på integrert natur/film/sky-kilde. Claudes ufullstendige opptak bygger på eldre sky-pakke og andre shader keys, og brukes ikke som cachebevis for dagens pakke.
-- [ ] Kontroller nye pakkede himmelbilder ved dag, kveld, natt, midnatt og daggry, Low-fallback, komet/stjernehull, selvtester og full screenshots.sh før fletting/installasjon.
-- [ ] Dokumenter faktisk cache-/cook-/runtime-binding og målte begrensninger; behold menneskelig gjennomspilling/lytting og lang tids skybevegelse som UNVERIFIED til prøvd.
+- [x] Fullfør cache og sluttdokumentasjon på integrert natur/film/sky-kilde. Claudes ufullstendige opptak bygger på eldre sky-pakke og andre shader keys, og brukes ikke som cachebevis for dagens pakke.
+- [x] Kontroller nye pakkede himmelbilder ved dag, kveld, natt, midnatt og daggry, Low-fallback, komet/stjernehull, selvtester og full screenshots.sh før fletting/installasjon.
+- [x] Dokumenter faktisk cache-/cook-/runtime-binding og målte begrensninger; behold menneskelig gjennomspilling/lytting og lang tids skybevegelse som UNVERIFIED til prøvd.
+
+- [ ] Reduser ordnet rutedithering i enkelte månelyse High/Clean-skyer; sluttbildene dokumenterer dette som åpen kvalitetsgjeld.
+- [ ] Undersøk gjenværende oppstartshakking: det ene varme driver-cache-forsøket har 372,56 ms synlig hakk og 57,9 FPS første synlige 10 s. Cachebevis er ikke garanti for jevn oppstart.
 
 ## Caliche natur, 24. oktober 2026
 

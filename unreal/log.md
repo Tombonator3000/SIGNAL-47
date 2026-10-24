@@ -190,3 +190,21 @@ Core 26dbb3df inneholder de testede modellene og sky-/film-integrasjonen. 721 So
 ## 2026-10-24 kl. 12:25, TODO og overtakelse av Claudes skyer
 
 Tom ber om lagring av naturmulighetene og fullføring av skyoppgaven etter Claudes limit. todo.md har konkrete vurderingspunkter med kilder og avgrensninger. Eksisterende Claude-kilde f55b760c/04d98231 er allerede i core1f471862; dokumentcommit3fea823c er hentet inn med ny naturstatus bevart ved oppgaveradkonflikten. Historisk PSO-opptak har to Low-blader, men gammel pakke/keys. Ny samlet cache og sluttdokumentasjon må bindes til natur/film/sky. Ingen andres prosess stoppet.
+
+
+## 2026-10-24 kl. 14:46, Claudes skyoppgave sluttkontrollert
+
+Claudes sky-/lysarbeid f55b760c og 04d98231 var allerede integrert med natur/film i CN5. Codex har fullført ny cache, pakking, sluttbilder og regresjon på denne samlede kilden etter Claudes limit. Naturmulighetene er lagret som åpne oppgaver i todo.md. Dette ferdigstiller skyoppgaven, men gir ikke fotoets detaljnivå i fjell og vegetasjon.
+
+Bevisrot: `~/scratch-bm/Signal47-cloud-completion`. `final-package.json` binder executable og alle fem innholdscontainere. 721 Source/Config/Content-filer er kontrollert mot kildebindingen. Den nye cache-cooken har byteidentiske 21 107 kokte prosjektassets og shaderfiler mot opptaksgrunnlaget.
+
+- PASS: 84 korte opptaksbolker dekker 54 kameramotiv ganger Low/High/Ultra og natt/daggry. 4 s oppvarming og 4 s hold er cacheopptak, ikke stabil ytelsesmåling.
+- PASS: 4329 stabile PSO-er i SPC på 98 886 byte. Cook konsumerer 623 oppskrifter, avviser 0 og slår sammen 3706; tre ugyldige compute-varianter fjernes av cook. Ferdig binær cache har 620 PSO-er, inklusive 285 graphics. Runtime åpner samme GUID 01A16DA4E3017B5A8D9B7F441D9C718C og behandler alle 285 graphics. Cachebevisets ni kontroller består.
+- PASS: 1328 selvtestsjekker og seks vanlige funksjonsprøver, inklusive levende stjernehull, komet før/etter og pause/gjenopptakelse. De opprinnelige kometbildene hadde en antenne foran utsnittet; fire separate før/etter-bilder fra fri veiskulder bekrefter komet og stjernehull visuelt. De gamle bildene beholdes som diagnostikk.
+- PASS: 14 ukonkurrerte kameraturer og 48 gjennomgåtte originalbilder ved dag, 17:20, 18:30, 21:00, 03:00, daggry og midnatt, samt Low, Ultra, standard Carpenter og NoClouds. Fire ekstra himmelhendelsesbilder gir 52 faktisk vurderte bilder. High/Clean viser tydelig ordnet rutedithering i enkelte månelyse skyer og fin støy i skykanter; dette er åpen kvalitetsgjeld, ikke fotorealistisk godkjenning. Full visuell avgrensning står i visual-acceptance.json.
+- PASS: hele screenshots.sh med 110 unike logger, 110 OK og 110 naturkontroller. Det første av de to tidligere like starhole-filnavnene heter nå starhole-noticed; scenariet og flaggene er uendret.
+- Installasjon: avventer kontrollert lokal fletting og kopiering; eksisterende installasjon bevares inntil da.
+
+Den første strenge shader-key-sammenligningen avviste endrede navn etter cook. Avvisningen er bevart. En separat kontroll dokumenterer at FName er case-insensitivt: ingen tidligere normalisert objekt-/shaderidentitet, PipelineHash eller OutputHash er borte eller endret. 112 nye aliaser for åtte eksisterende MI_W-materialer matcher gamle M_Web_Lit_Opaque-signaturer nøyaktig. Begge sett har 3405 unike kompilerte shaderutganger, Global er byteidentisk og alle 21 107 prosjektassetfiler er byteidentiske. stable-key-compatibility.json har den snevre kompatibilitetskontrollen; de gamle avviste rårapportene er ikke overskrevet.
+
+Én siste skumringsmåling ble avbrutt da brukeren startet installert spill. Guard avsluttet bare testens egen prosess. Den avbrutte prøven ligger i karantene; samme utsnitt er tatt om uten konkurranse før sluttmålingene. Ingen andres prosess ble stoppet.
