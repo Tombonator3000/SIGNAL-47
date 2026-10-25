@@ -1,0 +1,2030 @@
+{
+  "status": "PASS",
+  "candidate": "M6",
+  "scope": "SARO power/facade/fleet and all six remaining prioritised town model families; merge/install recorded separately",
+  "source_commit": "aefd18157be7502ac98d3e1695b4c4fcdd7d26a0",
+  "source_binding_sha256": "90b54ece3aedc5524902a287dd0e43fe5791813f838e974f20a0f1d55d3ea9b8",
+  "package": {
+    "path": "/home/tom/scratch-bm/Signal47-production-models/candidate-M6/Linux/Signal47/Binaries/Linux/Signal47",
+    "bytes": 311957760,
+    "sha256": "69159c9f94843f2ef8aef696ce57a7c68c8b0fd03f50e8f8154ef43f439d9743",
+    "containers": [
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.pak",
+        "bytes": 1264521642,
+        "sha256": "86c9f31f8f24f5f6890dad697029d9f3bd21152aa4bb78a9d8dd003edb138fc2"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.ucas",
+        "bytes": 1989614112,
+        "sha256": "a87660a1edaa64b28375f3881c14eaf5d86cde46e8d1a51e672455201fcbf2ab"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.utoc",
+        "bytes": 2186010,
+        "sha256": "dd7f75219d538b3fb85ca73c928ec021b5c68470da4a510dc4630727bfafa113"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.ucas",
+        "bytes": 3323168,
+        "sha256": "1cb75e90b6c0b71594b619ce286a246c5966b0831d26e308bb1d144cbc7236e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.utoc",
+        "bytes": 806,
+        "sha256": "b6456194ab08e29851afaa5ef6f0b3ccc3d71dc1282699200d0975b93a2a5238"
+      }
+    ]
+  },
+  "self_test_checks": 1400,
+  "runtime": {
+    "status": "PASS",
+    "cases": [
+      {
+        "case": "room6-views",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "eddf1a9e24daa2b3a82d8cb193d01d9e816ac4c4c9cacb99c4563c638f91e4ca",
+        "markers": [
+          "[2026.10.25-00.57.48:570][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.57.48:571][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.57.48:572][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.57.48:573][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.57.57:179][833]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-00.57.57:179][833]LogS47ProductionViews: Display: S47: production view day-room6 foot=-1.400,0.000,-7997.700 eye=1.620",
+          "[2026.10.25-00.57.57:336][834]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-room6.png",
+          "[2026.10.25-00.57.59:877][334]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-00.57.59:877][334]LogS47ProductionViews: Display: S47: production view day-room6-bath foot=-1.050,0.000,-8003.550 eye=1.620",
+          "[2026.10.25-00.58.01:511][335]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-room6-bath.png",
+          "[2026.10.25-00.58.06:613][914]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-00.58.06:613][914]LogS47ProductionViews: Display: S47: production view dusk-room6 foot=-1.400,0.000,-7997.700 eye=1.620",
+          "[2026.10.25-00.58.06:757][915]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-room6.png",
+          "[2026.10.25-00.58.09:409][468]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-00.58.09:409][468]LogS47ProductionViews: Display: S47: production view dusk-room6-bath foot=-1.050,0.000,-8003.550 eye=1.620",
+          "[2026.10.25-00.58.11:117][469]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-room6-bath.png",
+          "[2026.10.25-00.58.16:219][ 96]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-00.58.16:219][ 96]LogS47ProductionViews: Display: S47: production view night-room6 foot=-1.400,0.000,-7997.700 eye=1.620",
+          "[2026.10.25-00.58.16:362][ 97]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-room6.png",
+          "[2026.10.25-00.58.19:018][661]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-00.58.19:018][661]LogS47ProductionViews: Display: S47: production view night-room6-bath foot=-1.050,0.000,-8003.550 eye=1.620",
+          "[2026.10.25-00.58.20:540][662]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-room6-bath.png",
+          "[2026.10.25-00.58.20:540][662]LogS47ProductionViews: Display: S47: production views PASS; static camera fixtures, input and interactions separate",
+          "[2026.10.25-00.58.46:052][203]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 7203, viewport 1600x900, parts 2211, phase 0, modal none"
+        ]
+      },
+      {
+        "case": "saro-views",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "3f6a502815dcc5d4ff204a624c2645fe4113411c3aba1aa08dbc5ca26ba81a29",
+        "markers": [
+          "[2026.10.25-00.58.59:054][  2]LogS47HUD: Display: S47: self test OK (1400 checks)",
+          "[2026.10.25-00.58.59:553][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.58.59:554][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.58.59:555][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.58.59:556][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.08:162][786]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.08:163][786]LogS47ProductionViews: Display: S47: production view day-saro-east-wing foot=18.000,-0.600,24.000 eye=1.020",
+          "[2026.10.25-00.59.08:351][787]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/day-saro-east-wing.png",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.10:861][ 52]LogS47ProductionViews: Display: S47: production view day-saro-staff-cars foot=21.000,-0.600,18.000 eye=1.020",
+          "[2026.10.25-00.59.11:048][ 53]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/day-saro-staff-cars.png",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.13:564][302]LogS47ProductionViews: Display: S47: production view day-saro-utilities foot=-15.000,-0.600,27.000 eye=1.020",
+          "[2026.10.25-00.59.13:758][303]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/day-saro-utilities.png",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production PASS fleet: complete fitted C10 body/shell/glass/cabin/lenses/four wheels",
+          "[2026.10.25-00.59.16:359][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 0 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 1 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 2 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 3 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 4 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 5 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 6 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 7 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 8 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 9 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 10 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 11 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: part 12 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node912 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node911 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node910 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node909 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node908 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node907 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node906 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node905 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node904 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node903 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node902 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node921 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node920 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node919 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node918 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node917 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node916 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node915 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node951 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node950 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node949 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node948 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node947 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node946 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node945 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node944 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node942 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node941 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node940 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node938 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node931 retired",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: four authored wheels",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel0 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel0 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel1 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel1 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel2 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel2 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel3 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: wheel3 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: physical lens material bindings",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: actual sealed-beam lens follows headlight state",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS fleet: actual tail lens follows lamp/brake state",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS truck production: production art installed",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS truck production: actual driver eye retained for current vehicle",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS truck production: live gauges, radio atlas, keys, compass and steering retained",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight follows C10 sealed-beam anchor",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight visibility matches truck and headlight switch",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight follows C10 sealed-beam anchor",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight visibility matches truck and headlight switch",
+          "[2026.10.25-00.59.16:360][555]LogS47ProductionViews: Display: S47: production view day-saro-service foot=4.000,-0.600,13.500 eye=1.020",
+          "[2026.10.25-00.59.16:552][556]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/day-saro-service.png",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.21:560][ 94]LogS47ProductionViews: Display: S47: production view dusk-saro-east-wing foot=18.000,-0.600,24.000 eye=1.020",
+          "[2026.10.25-00.59.21:737][ 95]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/dusk-saro-east-wing.png",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.24:263][376]LogS47ProductionViews: Display: S47: production view dusk-saro-staff-cars foot=21.000,-0.600,18.000 eye=1.020",
+          "[2026.10.25-00.59.24:440][377]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/dusk-saro-staff-cars.png",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.27:056][637]LogS47ProductionViews: Display: S47: production view dusk-saro-utilities foot=-15.000,-0.600,27.000 eye=1.020",
+          "[2026.10.25-00.59.27:235][638]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/dusk-saro-utilities.png",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: complete fitted C10 body/shell/glass/cabin/lenses/four wheels",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 0 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 1 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 2 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 3 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 4 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 5 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 6 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 7 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 8 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 9 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 10 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 11 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: part 12 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node912 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node911 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node910 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node909 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node908 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node907 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node906 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node905 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node904 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node903 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node902 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node921 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node920 retired",
+          "[2026.10.25-00.59.29:760][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node919 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node918 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node917 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node916 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node915 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node951 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node950 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node949 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node948 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node947 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node946 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node945 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node944 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node942 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node941 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node940 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node938 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node931 retired",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: four authored wheels",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel0 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel0 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel1 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel1 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel2 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel2 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel3 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: wheel3 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: physical lens material bindings",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: actual sealed-beam lens follows headlight state",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS fleet: actual tail lens follows lamp/brake state",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS truck production: production art installed",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS truck production: actual driver eye retained for current vehicle",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS truck production: live gauges, radio atlas, keys, compass and steering retained",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight follows C10 sealed-beam anchor",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight visibility matches truck and headlight switch",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight follows C10 sealed-beam anchor",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight visibility matches truck and headlight switch",
+          "[2026.10.25-00.59.29:761][894]LogS47ProductionViews: Display: S47: production view dusk-saro-service foot=4.000,-0.600,13.500 eye=1.020",
+          "[2026.10.25-00.59.29:914][895]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/dusk-saro-service.png",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.34:964][457]LogS47ProductionViews: Display: S47: production view night-saro-east-wing foot=18.000,-0.600,24.000 eye=1.020",
+          "[2026.10.25-00.59.35:086][458]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/night-saro-east-wing.png",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.37:761][782]LogS47ProductionViews: Display: S47: production view night-saro-staff-cars foot=21.000,-0.600,18.000 eye=1.020",
+          "[2026.10.25-00.59.37:898][783]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/night-saro-staff-cars.png",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.40:462][ 69]LogS47ProductionViews: Display: S47: production view night-saro-utilities foot=-15.000,-0.600,27.000 eye=1.020",
+          "[2026.10.25-00.59.40:594][ 70]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/night-saro-utilities.png",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Facade mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_Glass mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production SARO_SITE part=SM_SaroSite_ServiceEquipment mesh/root/visibility=PASS",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; PASS",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; PASS",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=1.0000; PASS",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production SARO_SITE retiredDraws=6 legacyWalkFeet=6 legacyDriveFeet=6 utilityWithin100m=3 (main=2 service=1), field lights/proxies unchanged; PASS",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS staff fleet: two production vehicles",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS staff fleet: car0 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS staff fleet: car1 correct imported body, original pose and grounded height",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS staff fleet: exact old-car trim installed with original dressing atlas",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: complete fitted C10 body/shell/glass/cabin/lenses/four wheels",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 0 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 1 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 2 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 3 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 4 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 5 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 6 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 7 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 8 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 9 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 10 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 11 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: part 12 actual mesh/materials; existing gameplay collision retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node912 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node911 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node910 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node909 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node908 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node907 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node906 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node905 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node904 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node903 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node902 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node921 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node920 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node919 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node918 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node917 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node916 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node915 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node951 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node950 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node949 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node948 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node947 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node946 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node945 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node944 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node942 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node941 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node940 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node938 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: legacy body/cab node931 retired",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: four authored wheels",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel0 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel0 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel1 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel1 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel2 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel2 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel3 actual rolling/steering/suspension pose",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: wheel3 real tyre radius and grounded neutral position",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: physical lens material bindings",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: actual sealed-beam lens follows headlight state",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS fleet: actual tail lens follows lamp/brake state",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS truck production: production art installed",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS truck production: actual driver eye retained for current vehicle",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS truck production: live gauges, radio atlas, keys, compass and steering retained",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight follows C10 sealed-beam anchor",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight visibility matches truck and headlight switch",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight follows C10 sealed-beam anchor",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production PASS truck production: real spotlight visibility matches truck and headlight switch",
+          "[2026.10.25-00.59.43:163][351]LogS47ProductionViews: Display: S47: production view night-saro-service foot=4.000,-0.600,13.500 eye=1.020",
+          "[2026.10.25-00.59.43:279][352]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-saro-shots/night-saro-service.png",
+          "[2026.10.25-00.59.43:358][362]LogS47ProductionViews: Display: S47: production views PASS; static camera fixtures, input and interactions separate",
+          "[2026.10.25-01.00.02:594][447]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 6447, viewport 1600x900, parts 2211, phase 0, modal none"
+        ]
+      },
+      {
+        "case": "town-views",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "912d26f20135acaf8792f33a779b820cb744c782a11d7bed9597c5bb169e585e",
+        "markers": [
+          "[2026.10.25-01.00.13:030][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.00.13:031][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.00.13:032][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.00.13:033][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.00.21:631][794]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.21:631][794]LogS47ProductionViews: Display: S47: production view day-sheriff foot=7989.000,6.809,2110.000 eye=8.429",
+          "[2026.10.25-01.00.21:825][795]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-sheriff.png",
+          "[2026.10.25-01.00.24:332][ 53]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.24:332][ 53]LogS47ProductionViews: Display: S47: production view day-laundry foot=7989.000,7.366,2130.000 eye=8.986",
+          "[2026.10.25-01.00.24:524][ 54]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-laundry.png",
+          "[2026.10.25-01.00.27:036][322]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.27:036][322]LogS47ProductionViews: Display: S47: production view day-cinema foot=7991.000,8.129,2157.000 eye=9.749",
+          "[2026.10.25-01.00.27:220][323]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-cinema.png",
+          "[2026.10.25-01.00.29:737][592]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.29:737][592]LogS47ProductionViews: Display: S47: production view day-feed foot=7992.000,9.276,2195.000 eye=10.896",
+          "[2026.10.25-01.00.29:922][593]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-feed.png",
+          "[2026.10.25-01.00.32:532][849]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.32:532][849]LogS47ProductionViews: Display: S47: production view day-church foot=8014.000,5.665,2089.000 eye=7.285",
+          "[2026.10.25-01.00.32:720][850]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-church.png",
+          "[2026.10.25-01.00.37:738][373]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.37:738][373]LogS47ProductionViews: Display: S47: production view dusk-sheriff foot=7989.000,6.809,2110.000 eye=8.429",
+          "[2026.10.25-01.00.37:933][374]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-sheriff.png",
+          "[2026.10.25-01.00.40:433][643]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.40:434][643]LogS47ProductionViews: Display: S47: production view dusk-laundry foot=7989.000,7.366,2130.000 eye=8.986",
+          "[2026.10.25-01.00.40:624][644]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-laundry.png",
+          "[2026.10.25-01.00.43:136][927]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.43:136][927]LogS47ProductionViews: Display: S47: production view dusk-cinema foot=7991.000,8.129,2157.000 eye=9.749",
+          "[2026.10.25-01.00.43:320][928]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-cinema.png",
+          "[2026.10.25-01.00.45:937][221]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.45:937][221]LogS47ProductionViews: Display: S47: production view dusk-feed foot=7992.000,9.276,2195.000 eye=10.896",
+          "[2026.10.25-01.00.46:125][222]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-feed.png",
+          "[2026.10.25-01.00.48:639][477]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.48:639][477]LogS47ProductionViews: Display: S47: production view dusk-church foot=8014.000,5.665,2089.000 eye=7.285",
+          "[2026.10.25-01.00.48:830][478]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-church.png",
+          "[2026.10.25-01.00.53:831][ 13]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.53:831][ 13]LogS47ProductionViews: Display: S47: production view night-sheriff foot=7989.000,6.809,2110.000 eye=8.429",
+          "[2026.10.25-01.00.54:001][ 14]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-sheriff.png",
+          "[2026.10.25-01.00.56:536][312]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.56:536][312]LogS47ProductionViews: Display: S47: production view night-laundry foot=7989.000,7.366,2130.000 eye=8.986",
+          "[2026.10.25-01.00.56:714][313]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-laundry.png",
+          "[2026.10.25-01.00.59:332][633]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.00.59:332][633]LogS47ProductionViews: Display: S47: production view night-cinema foot=7991.000,8.129,2157.000 eye=9.749",
+          "[2026.10.25-01.00.59:430][638]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-cinema.png",
+          "[2026.10.25-01.01.02:133][964]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.01.02:133][964]LogS47ProductionViews: Display: S47: production view night-feed foot=7992.000,9.276,2195.000 eye=10.896",
+          "[2026.10.25-01.01.02:230][967]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-feed.png",
+          "[2026.10.25-01.01.04:935][273]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.01.04:935][273]LogS47ProductionViews: Display: S47: production view night-church foot=8014.000,5.665,2089.000 eye=7.285",
+          "[2026.10.25-01.01.05:082][274]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-church.png",
+          "[2026.10.25-01.01.05:130][281]LogS47ProductionViews: Display: S47: production views PASS; static camera fixtures, input and interactions separate",
+          "[2026.10.25-01.01.32:072][330]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 8330, viewport 1600x900, parts 2211, phase 0, modal none"
+        ]
+      },
+      {
+        "case": "motel-views",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "741fddc777973410867597e57e44a6b750f4ca874bee502ab023d6b486b1227b",
+        "markers": [
+          "[2026.10.25-01.01.43:401][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.01.43:402][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.01.43:403][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.01.43:404][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.01.51:990][789]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.01.51:990][789]LogS47ProductionViews: Display: S47: production view day-motel-court foot=-41.921,-2.099,694.000 eye=-0.479",
+          "[2026.10.25-01.01.52:172][790]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-motel-court.png",
+          "[2026.10.25-01.01.54:696][ 44]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.01.54:696][ 44]LogS47ProductionViews: Display: S47: production view day-motel-office foot=-42.000,-2.099,673.000 eye=-0.479",
+          "[2026.10.25-01.01.54:901][ 45]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-motel-office.png",
+          "[2026.10.25-01.01.59:992][555]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.01.59:992][555]LogS47ProductionViews: Display: S47: production view dusk-motel-court foot=-37.500,-2.099,694.000 eye=-0.479",
+          "[2026.10.25-01.02.00:145][556]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-motel-court.png",
+          "[2026.10.25-01.02.02:793][842]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.02.02:793][842]LogS47ProductionViews: Display: S47: production view dusk-motel-office foot=-42.000,-2.099,673.000 eye=-0.479",
+          "[2026.10.25-01.02.02:981][843]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/dusk-motel-office.png",
+          "[2026.10.25-01.02.08:093][381]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.02.08:093][381]LogS47ProductionViews: Display: S47: production view night-motel-court foot=-37.500,-2.099,694.000 eye=-0.479",
+          "[2026.10.25-01.02.08:214][382]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-motel-court.png",
+          "[2026.10.25-01.02.10:893][691]LogS47ProductionViews: Display: S47: production town models PASS parts=28/28 patches=32 retired=60",
+          "[2026.10.25-01.02.10:893][691]LogS47ProductionViews: Display: S47: production view night-motel-office foot=-42.000,-2.099,673.000 eye=-0.479",
+          "[2026.10.25-01.02.11:069][692]LogS47ProductionViews: Display: S47: production screenshot written /home/tom/scratch-bm/Signal47-production-models/M6-town-shots/night-motel-office.png",
+          "[2026.10.25-01.02.11:089][696]LogS47ProductionViews: Display: S47: production views PASS; static camera fixtures, input and interactions separate",
+          "[2026.10.25-01.02.34:431][362]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 5362, viewport 1600x900, parts 2211, phase 0, modal none"
+        ]
+      },
+      {
+        "case": "cab-drive",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "e60b65ffe563b959257a88f5738a5b8e64141143c819131c1001450f47eb8bc7",
+        "markers": [
+          "[2026.10.25-01.02.45:670][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.02.45:671][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.02.45:672][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.02.45:673][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.02.54:389][810]LogS47ProductionViews: Display: S47: production cab PASS distance=9.041m speed=4.168m/s; normal drive controller and fitted cockpit",
+          "[2026.10.25-01.02.58:221][172]LogS47World: Display: S47: test get out: braking at 7.3 m/s, leg saro",
+          "[2026.10.25-01.02.59:219][273]LogS47World: Display: S47: test get out: out of the truck in leg saro, truck at -11.68 -0.60 24.64 heading 1.60",
+          "[2026.10.25-01.03.00:216][394]LogS47World: Display: S47: test get out: put at saro in saro: player -11.93 26.40, 1.78 m from the truck's middle, floor -0.600 (ground there -0.600, truck -0.600), walkable yes, ground round the truck no; walkable round it of 16: 16 at 3 m, 16 at 10 m, 16 at 28 m, 14 at 33 m",
+          "[2026.10.25-01.03.03:215][681]LogS47World: Display: S47: test get out: walked away to 2.89 m from the truck (farthest 2.9 m), at -12.8 27.3, floor -0.600; ground meshes under every step: yes (worst floor off the meshes 0.01 m)",
+          "[2026.10.25-01.03.05:214][872]LogS47World: Display: S47: test get out: back by the truck, 1.95 m from its middle, floor -0.600; looking at 'truck' (Drive)",
+          "[2026.10.25-01.03.05:719][924]LogS47World: Display: S47: test get out: back in, driving, leg saro",
+          "[2026.10.25-01.03.22:719][768]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 3768, viewport 1600x900, parts 2188, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "parking",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "7308caed20414ac7077f5fe7503acae24ed986d3e53d101e08bd110bd6eca26c",
+        "markers": [
+          "[2026.10.25-01.03.33:777][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.03.33:778][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.03.33:779][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.03.33:779][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.03.40:221][488]LogTemp: Display: S47: SARO parking START ordinary controller/TripStep from entrance -22.2 32; human input UNVERIFIED",
+          "[2026.10.25-01.03.52:295][593]LogTemp: Display: S47: SARO parking awaiting normal 0.4 s OnParked handover after actual TripStep stop",
+          "[2026.10.25-01.03.52:860][648]LogTemp: Display: S47: SARO parking PASS normal delayed OnParked committed after 0.566 s",
+          "[2026.10.25-01.03.52:860][648]LogTemp: Display: S47: SARO parking PASS actual arrival pos -12.817504 -0.599992 14.384178 heading -0.245060 floor -0.600000; waiting service persisted and original service restored",
+          "[2026.10.25-01.04.27:127][810]LogTemp: Display: S47: SARO parking PASS actual egress-to-entrance walker route 7.579 1.603 floor -0.000, no teleport or Walkable-only assertion",
+          "[2026.10.25-01.04.29:154][972]LogS47Saves: Display: S47: saved 1:manual:0 (SARO parking control, SARO, 18:00)",
+          "[2026.10.25-01.04.31:180][149]LogTemp: Display: S47: SARO parking PASS COMPLETE ordinary drive/controller/TripStep, full visitor-bay footprint, actual egress-to-entrance walk, stable white service during travel, distinct blue personal car after arrival and fresh disk/full-world reload; no phone shortcut or human-input claim"
+        ]
+      },
+      {
+        "case": "room6-table",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "916fbea7990bf002b9da3c021e8c50566c752d239dfa41fc0cf05a12ddcaa657",
+        "markers": [
+          "[2026.10.25-01.04.42:493][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.04.42:494][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.04.42:495][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.04.42:496][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.04.55:640][458]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1458, viewport 1600x900, parts 2188, phase 15, modal open"
+        ]
+      },
+      {
+        "case": "motel-tv",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "130d962b86431babe85645df03004916378d52baccd02f1bcb3c4ec63303da88",
+        "markers": [
+          "[2026.10.25-01.05.06:521][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.05.06:522][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.05.06:523][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.05.06:524][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.06:574][703]LogS47Town: Display: S47: motel television save roundtrip OK, image 21927 bytes, variance 2383.83",
+          "[2026.10.25-01.06.13:572][466]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 7466, viewport 1600x900, parts 2188, phase 15, modal open"
+        ]
+      },
+      {
+        "case": "town-phone",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "28971c0d54dd15efa3b5ef92f0d58157a84427487c9bc5f950768c707cf08db9",
+        "markers": [
+          "[2026.10.25-01.06.25:058][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.25:059][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.25:060][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.25:061][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.37:105][194]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1194, viewport 1600x900, parts 2188, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "motel-roof",
+        "status": "PASS",
+        "returncode": 0,
+        "missing_markers": [],
+        "errors": [],
+        "log_sha256": "34a8a79e9a57ed8af311f31e4abf798f7009b7a2f88ac99b7a0a060801438e2b",
+        "markers": [
+          "[2026.10.25-01.06.48:387][  2]LogS47Fleet: Display: S47: production SARO07 ready world.saroTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.48:388][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.road.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.48:389][  2]LogS47Fleet: Display: S47: production SARO07 ready world.legs.station01.drive.truck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.06.48:390][  2]LogS47Fleet: Display: S47: production SARO07 ready world.oldTruck; C10+original fitted cab; 31 legacy meshes replaced, live instrument anchors retained",
+          "[2026.10.25-01.07.00:440][261]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1261, viewport 1600x900, parts 2188, phase 15, modal none"
+        ]
+      }
+    ],
+    "scope": "10 focused packaged runs; the39camera views are separated by area; original bath failure was also reproduced in an isolated area and mitigated in the reflection-only shader; static camera views, ordinary drive/walk and selected existing story/media API fixtures; physical Xbox and full world/PSO matrix not run"
+  },
+  "native": {
+    "saro": {
+      "status": "PASS",
+      "sha256": "c924bcab37678a8d729603e9d8febd6ecd9b1299d9ad59e91af810386ae6e0cc",
+      "checks": 13
+    },
+    "saro_all_lod_geometry": {
+      "status": "PASS",
+      "sha256": "bfd76b69f6b948ccdc9ec7778903484709986138a64d862eaf73580634fc2460",
+      "checks": 63
+    },
+    "town_atlas": {
+      "status": "PASS",
+      "sha256": "c6890b208fd0728ba183320873707cd1d1b522a8c327209cac5408ea8434e2c5",
+      "checks": 0
+    },
+    "saro_stain_trim": {
+      "status": "PASS",
+      "sha256": "fb9ec694b32983acd855cecc1563043219f88783d2d09f023f26c662dded8169",
+      "checks": 11
+    },
+    "sky_capture_graph": {
+      "status": "PASS",
+      "sha256": "f4baea8beba53bd3582c15a117174f062095152f5c4e3fc03b5a302afe4149a7",
+      "checks": 14
+    },
+    "fleet_material_roles": {
+      "status": "PASS",
+      "sha256": "13055489dfffd62687776605f4befbb828d24c41961538744bdb71efb8308b56",
+      "checks": 7
+    },
+    "fleet": {
+      "status": "PASS",
+      "sha256": "7401cbae8b809272e00a5c5f251841b6d96f2c7c09cbb34dfa4159461cafde24",
+      "checks": 92
+    },
+    "town": {
+      "status": "PASS",
+      "sha256": "742312ead512e68aa0a40c35b2e99b5cf730e065c95fd2ac3c65291f3fec7f46",
+      "checks": 113
+    },
+    "town_all_lod_geometry": {
+      "status": "PASS",
+      "sha256": "f3f95eea7ee97d8fee16d5dc3f95a47af88216654653702e83fb3a05c00f0bc7",
+      "checks": 588
+    },
+    "town_trim": {
+      "status": "PASS",
+      "sha256": "f461cf69cc9ff953b69f8f309f5abdb5425bed5a363b367ba816e8e9f60593b9",
+      "checks": 109
+    },
+    "room_trim": {
+      "status": "PASS",
+      "sha256": "e3d4ab0a67820ccdfa9d31d3d8638809e6c8e7b0abdec85682162035d10c33d1",
+      "checks": 74
+    }
+  },
+  "visual_review": {
+    "status": "PASS",
+    "candidate": "M6",
+    "source_commit": "aefd18157be7502ac98d3e1695b4c4fcdd7d26a0",
+    "candidate_package_sha256": "69159c9f94843f2ef8aef696ce57a7c68c8b0fd03f50e8f8154ef43f439d9743",
+    "scope": "Visual model integration only; runtime function/GPU acceptance separate. Root reviewed all39staticframes via four contact sheets, staff-car day/night and cab/table/threeparkingframes at full resolution. Independent SAROreview opened all12originals.",
+    "reviewed_images": [
+      {
+        "name": "M6-parking-shots/entrance-saro-actual-parking.png",
+        "sha256": "cf035bfa3a396a8d8d4115f51142dbad67afac09c16b6a15b64ab7348d8a118a"
+      },
+      {
+        "name": "M6-parking-shots/entrance-saro-disk-parking.png",
+        "sha256": "a2bd5da3a0f035f9595ac1cf18b9e903f5d2b1dfb582ff185f1a7bde3cd617bf"
+      },
+      {
+        "name": "M6-parking-shots/entrance-saro-walk-entrance.png",
+        "sha256": "321a533f3f2a78625f83a4a4fc12b2c0ec4d3ee8ca70184f773ea2669b054eae"
+      },
+      {
+        "name": "M6-saro-shots/day-saro-east-wing.png",
+        "sha256": "ba5ac8311358480b1c5472388d463bcab0cd2113a25c0439906cefec293a6752"
+      },
+      {
+        "name": "M6-saro-shots/day-saro-service.png",
+        "sha256": "e31ac516e7b712dc3c9a4e2a85bbc166ec7170315a578e60638ba2522a63c9c9"
+      },
+      {
+        "name": "M6-saro-shots/day-saro-staff-cars.png",
+        "sha256": "bdea0c00e4d1a143255ed2752b8f54a0fea29301e5d4a2b95dcc9fe8e927a07e"
+      },
+      {
+        "name": "M6-saro-shots/day-saro-utilities.png",
+        "sha256": "31cc133ee5b9e20ed2546583967a07ff34216aae4f44dd6779c087e7ca964a2e"
+      },
+      {
+        "name": "M6-saro-shots/dusk-saro-east-wing.png",
+        "sha256": "8163078b64bec890531d8488db7d818b1b8b46c2105f4104975f967c5b662a12"
+      },
+      {
+        "name": "M6-saro-shots/dusk-saro-service.png",
+        "sha256": "1d0a6cc694e700ceb0884f683f0c9ba6485f90366d16148e64484d448d7de4d3"
+      },
+      {
+        "name": "M6-saro-shots/dusk-saro-staff-cars.png",
+        "sha256": "618e15afcf2464b7d1f8c2e8b4d9b5b78ec628d925b875aa6644939896199835"
+      },
+      {
+        "name": "M6-saro-shots/dusk-saro-utilities.png",
+        "sha256": "9c8d38c39b6d46ffc331c7438dac09a1aad90d64737e04f96ff00da6557ef7c7"
+      },
+      {
+        "name": "M6-saro-shots/night-saro-east-wing.png",
+        "sha256": "b259735b64be7b2b891d6e017cb387c8dda9d81bcd159e82e5505e30ccd7b6d7"
+      },
+      {
+        "name": "M6-saro-shots/night-saro-service.png",
+        "sha256": "92e489141870c3707868807ec916d169dcb93e9e2bbb22811ca5a688f04a4473"
+      },
+      {
+        "name": "M6-saro-shots/night-saro-staff-cars.png",
+        "sha256": "89098c75e66096b32a99675aaddaf179712496806ad17c27f0da75fc8ce0745e"
+      },
+      {
+        "name": "M6-saro-shots/night-saro-utilities.png",
+        "sha256": "c2e41744c8e5b973bec90616d87504c2068f0c633a91eb945ed4777d7b956546"
+      },
+      {
+        "name": "M6-test-cab-drive.png",
+        "sha256": "670819325b45cfa7e635451a376d53576eb7cd0c6afd5f381b396c3587d8d91c"
+      },
+      {
+        "name": "M6-test-room6-table.png",
+        "sha256": "9fcae79ed2fbcf63f4ad3953e7d66642fd37476a21e3a1cbdeca2202888778eb"
+      },
+      {
+        "name": "M6-town-shots/day-church.png",
+        "sha256": "380137f26e114e874c0d1fff0470fc04adc1c6ba99f6729201c4dbbfabb3834f"
+      },
+      {
+        "name": "M6-town-shots/day-cinema.png",
+        "sha256": "4d4997e81faa8a4eea4a965dd6d23a865451bfccdf4a13c5f9c53a0fff6f79cc"
+      },
+      {
+        "name": "M6-town-shots/day-feed.png",
+        "sha256": "c1489766cc44f1f027d74dcadcfdeab09d486e56053b379734289a77f2146cf2"
+      },
+      {
+        "name": "M6-town-shots/day-laundry.png",
+        "sha256": "a16ef1873b3401432281da52d719e827dc4550247a6cc3a738e444c5cda91782"
+      },
+      {
+        "name": "M6-town-shots/day-motel-court.png",
+        "sha256": "fba274702807474a047f574aad7d709082e02d666de4b25e2db1f4768b96bf63"
+      },
+      {
+        "name": "M6-town-shots/day-motel-office.png",
+        "sha256": "80406033c901bb9e40ae58a956c4b7ece3b929d15fb723a546535226289f8399"
+      },
+      {
+        "name": "M6-town-shots/day-room6-bath.png",
+        "sha256": "e42533a6a4f2879f38c8d6c4fa71d467bcc53e33382a57a17f7f0690d7c7ec4d"
+      },
+      {
+        "name": "M6-town-shots/day-room6.png",
+        "sha256": "5a9bf91e3edb3ad2c658c99d187ebf61af3d383cea8ca8623184819a8eee0ea4"
+      },
+      {
+        "name": "M6-town-shots/day-sheriff.png",
+        "sha256": "1d1e9d8e793071afc117a49d917768c1c82942460ecae8c01ad63f3dd267c64f"
+      },
+      {
+        "name": "M6-town-shots/dusk-church.png",
+        "sha256": "0fd63c418e4612403ba462418d4c7eff6537f9b063f4add75c7b7671ed8bee25"
+      },
+      {
+        "name": "M6-town-shots/dusk-cinema.png",
+        "sha256": "80e0de7b0f3a5c4fc639b39448c385d67b259cec8e795340f943c761c11a34f3"
+      },
+      {
+        "name": "M6-town-shots/dusk-feed.png",
+        "sha256": "3d1861f262a65d44decfb1533ecb0f88ba34c4b6ff59db24baa161f24503dfae"
+      },
+      {
+        "name": "M6-town-shots/dusk-laundry.png",
+        "sha256": "41ef2bce4e53311163fb54a037271949a5ff3dbb4e47226ca3478207d1f032ef"
+      },
+      {
+        "name": "M6-town-shots/dusk-motel-court.png",
+        "sha256": "75aa3d8168ccc1941ca447646509ab4ecca1b93ec50b788378d05b4d7883d168"
+      },
+      {
+        "name": "M6-town-shots/dusk-motel-office.png",
+        "sha256": "a08451e25474dc824639cbc1c2b9f7d2e424a70bdb1a765a67e2a7a0bad7a6fb"
+      },
+      {
+        "name": "M6-town-shots/dusk-room6-bath.png",
+        "sha256": "552bd23eefd1b5135e0baa38a0e9e1fd9027ab0842636d63e44538d2a73d7aac"
+      },
+      {
+        "name": "M6-town-shots/dusk-room6.png",
+        "sha256": "9f55d729e69a5e46040759db023f6e2a635c3297267f25bd06ad49442bcb2d85"
+      },
+      {
+        "name": "M6-town-shots/dusk-sheriff.png",
+        "sha256": "33ab52d5037c6817161002e47ab9bfac7fd4d91e6688d251bf01f2bcba06058c"
+      },
+      {
+        "name": "M6-town-shots/night-church.png",
+        "sha256": "73f70c30480f47a17e2e28d2530f1644dc0de4b0b91bc54bf37561a240c81205"
+      },
+      {
+        "name": "M6-town-shots/night-cinema.png",
+        "sha256": "77c1c0b1be353e5ffaed9ff8ca376c4039087da0d197cf72ea624e90f44873d6"
+      },
+      {
+        "name": "M6-town-shots/night-feed.png",
+        "sha256": "2356184c7724f870cf3b662314f1d524e12fcf8fc274a022d7c851a2e708351c"
+      },
+      {
+        "name": "M6-town-shots/night-laundry.png",
+        "sha256": "dadbb2d89261047ff7266b579b29544f1d25eb16473d6766f5e15fd7dd948884"
+      },
+      {
+        "name": "M6-town-shots/night-motel-court.png",
+        "sha256": "8bb4488b30f590de947494a7c485b75903db34443057c9091817e4f532397192"
+      },
+      {
+        "name": "M6-town-shots/night-motel-office.png",
+        "sha256": "df9d30eacaea2d1012d67354e3c8b7da510ac8ed66f50f081d11670d69688912"
+      },
+      {
+        "name": "M6-town-shots/night-room6-bath.png",
+        "sha256": "5ac7604527eb824bc3a28fede0d5abb4f9997b052323e8b6d66e83fa8d0d4941"
+      },
+      {
+        "name": "M6-town-shots/night-room6.png",
+        "sha256": "949a909d682a998ce5b3ff3f532048e8ac35ac99ebbe3987bc4b97be0aed997c"
+      },
+      {
+        "name": "M6-town-shots/night-sheriff.png",
+        "sha256": "cf0711a5f2a8ab2a65415887791d52cc56e2be88865efee757c6e3cfa1d5021c"
+      }
+    ],
+    "contact_sheets": [
+      {
+        "name": "M6-saro-contact.png",
+        "sha256": "fcbfbfeb0c25ff3ea25d7f41b5b83c3472f7ad523cc22cd1c84bb85d93c8622f"
+      },
+      {
+        "name": "M6-town-contact-0.png",
+        "sha256": "67980b2fd46f6a2d5d6550463efdee55725f5471104ecea291dd4176d8129329"
+      },
+      {
+        "name": "M6-town-contact-1.png",
+        "sha256": "9c6c7e5feb7821c7ebd99c86af3f9a51456f6f4f35d43627e147849995aa10a9"
+      },
+      {
+        "name": "M6-town-contact-2.png",
+        "sha256": "530a6d268fdf47429e866a37db1f89c37d57c21da7272fd86bac8a5ab149ca12"
+      }
+    ],
+    "independent_saro_review_sha256": "5ea556358d90dce31739061c6ee2ccd8c54f9f13882fa0b89efeb3b3d87ddd2e",
+    "findings": [
+      "SARO solid sign wall has no old window frames or window-shaped grime; recessed true windows and night sign readability confirmed.",
+      "Two period staff vehicles have source red/dark paint, dark tires and separate metal rims; white specular-as-albedo defect gone.",
+      "Utility main-to-transformer-to-building topology is coherent; numeric3pole count comes from nativeAudit, not one photograph.",
+      "All six Townfamilies have correct orientation/scale; signs proportionate, Sheriff/Laundry interiors have real depth, Motel/Room6/bath furniture and shells coherent.",
+      "Cab has fitted physical dash, readable live instruments/radio; actual normal controller drive, exit/walk/reentry are logged separately.",
+      "Visitor bay paving, personal car, separate service vehicle and entrance route visible before/after disk reload."
+    ],
+    "limits": [
+      "Some original NPC/document/proxy objects remain; this pass changes the requested models.",
+      "Closed Feed/Cinema/Church are dark at night under existing power rules.",
+      "C10 door logo is partly hidden by preserved railing/pole in exterior fixture; source/native branding checked separately.",
+      "Dark pickup fine texture is judged from day view; full night detail is not visible outside fixture light pools.",
+      "Existing RTmemorywarning remains; no physical Xbox, audio listening, human full playthrough, long-route performance or full110/PSOmatrix claim.",
+      "Reflection-only sky approximation loses panorama/Milky Way microdetail; visible full finite sky and volumetric clouds remain. Actual shader/driver root cause unproven."
+    ]
+  },
+  "images": {
+    "M6-saro-shots/day-saro-east-wing.png": "ba5ac8311358480b1c5472388d463bcab0cd2113a25c0439906cefec293a6752",
+    "M6-saro-shots/day-saro-staff-cars.png": "bdea0c00e4d1a143255ed2752b8f54a0fea29301e5d4a2b95dcc9fe8e927a07e",
+    "M6-saro-shots/day-saro-utilities.png": "31cc133ee5b9e20ed2546583967a07ff34216aae4f44dd6779c087e7ca964a2e",
+    "M6-saro-shots/day-saro-service.png": "e31ac516e7b712dc3c9a4e2a85bbc166ec7170315a578e60638ba2522a63c9c9",
+    "M6-saro-shots/dusk-saro-east-wing.png": "8163078b64bec890531d8488db7d818b1b8b46c2105f4104975f967c5b662a12",
+    "M6-saro-shots/dusk-saro-staff-cars.png": "618e15afcf2464b7d1f8c2e8b4d9b5b78ec628d925b875aa6644939896199835",
+    "M6-saro-shots/dusk-saro-utilities.png": "9c8d38c39b6d46ffc331c7438dac09a1aad90d64737e04f96ff00da6557ef7c7",
+    "M6-saro-shots/dusk-saro-service.png": "1d0a6cc694e700ceb0884f683f0c9ba6485f90366d16148e64484d448d7de4d3",
+    "M6-saro-shots/night-saro-east-wing.png": "b259735b64be7b2b891d6e017cb387c8dda9d81bcd159e82e5505e30ccd7b6d7",
+    "M6-saro-shots/night-saro-staff-cars.png": "89098c75e66096b32a99675aaddaf179712496806ad17c27f0da75fc8ce0745e",
+    "M6-saro-shots/night-saro-utilities.png": "c2e41744c8e5b973bec90616d87504c2068f0c633a91eb945ed4777d7b956546",
+    "M6-saro-shots/night-saro-service.png": "92e489141870c3707868807ec916d169dcb93e9e2bbb22811ca5a688f04a4473",
+    "M6-town-shots/day-room6.png": "5a9bf91e3edb3ad2c658c99d187ebf61af3d383cea8ca8623184819a8eee0ea4",
+    "M6-town-shots/day-room6-bath.png": "e42533a6a4f2879f38c8d6c4fa71d467bcc53e33382a57a17f7f0690d7c7ec4d",
+    "M6-town-shots/dusk-room6.png": "9f55d729e69a5e46040759db023f6e2a635c3297267f25bd06ad49442bcb2d85",
+    "M6-town-shots/dusk-room6-bath.png": "552bd23eefd1b5135e0baa38a0e9e1fd9027ab0842636d63e44538d2a73d7aac",
+    "M6-town-shots/night-room6.png": "949a909d682a998ce5b3ff3f532048e8ac35ac99ebbe3987bc4b97be0aed997c",
+    "M6-town-shots/night-room6-bath.png": "5ac7604527eb824bc3a28fede0d5abb4f9997b052323e8b6d66e83fa8d0d4941",
+    "M6-town-shots/day-sheriff.png": "1d1e9d8e793071afc117a49d917768c1c82942460ecae8c01ad63f3dd267c64f",
+    "M6-town-shots/day-laundry.png": "a16ef1873b3401432281da52d719e827dc4550247a6cc3a738e444c5cda91782",
+    "M6-town-shots/day-cinema.png": "4d4997e81faa8a4eea4a965dd6d23a865451bfccdf4a13c5f9c53a0fff6f79cc",
+    "M6-town-shots/day-feed.png": "c1489766cc44f1f027d74dcadcfdeab09d486e56053b379734289a77f2146cf2",
+    "M6-town-shots/day-church.png": "380137f26e114e874c0d1fff0470fc04adc1c6ba99f6729201c4dbbfabb3834f",
+    "M6-town-shots/dusk-sheriff.png": "33ab52d5037c6817161002e47ab9bfac7fd4d91e6688d251bf01f2bcba06058c",
+    "M6-town-shots/dusk-laundry.png": "41ef2bce4e53311163fb54a037271949a5ff3dbb4e47226ca3478207d1f032ef",
+    "M6-town-shots/dusk-cinema.png": "80e0de7b0f3a5c4fc639b39448c385d67b259cec8e795340f943c761c11a34f3",
+    "M6-town-shots/dusk-feed.png": "3d1861f262a65d44decfb1533ecb0f88ba34c4b6ff59db24baa161f24503dfae",
+    "M6-town-shots/dusk-church.png": "0fd63c418e4612403ba462418d4c7eff6537f9b063f4add75c7b7671ed8bee25",
+    "M6-town-shots/night-sheriff.png": "cf0711a5f2a8ab2a65415887791d52cc56e2be88865efee757c6e3cfa1d5021c",
+    "M6-town-shots/night-laundry.png": "dadbb2d89261047ff7266b579b29544f1d25eb16473d6766f5e15fd7dd948884",
+    "M6-town-shots/night-cinema.png": "77c1c0b1be353e5ffaed9ff8ca376c4039087da0d197cf72ea624e90f44873d6",
+    "M6-town-shots/night-feed.png": "2356184c7724f870cf3b662314f1d524e12fcf8fc274a022d7c851a2e708351c",
+    "M6-town-shots/night-church.png": "73f70c30480f47a17e2e28d2530f1644dc0de4b0b91bc54bf37561a240c81205",
+    "M6-town-shots/day-motel-court.png": "fba274702807474a047f574aad7d709082e02d666de4b25e2db1f4768b96bf63",
+    "M6-town-shots/day-motel-office.png": "80406033c901bb9e40ae58a956c4b7ece3b929d15fb723a546535226289f8399",
+    "M6-town-shots/dusk-motel-court.png": "75aa3d8168ccc1941ca447646509ab4ecca1b93ec50b788378d05b4d7883d168",
+    "M6-town-shots/dusk-motel-office.png": "a08451e25474dc824639cbc1c2b9f7d2e424a70bdb1a765a67e2a7a0bad7a6fb",
+    "M6-town-shots/night-motel-court.png": "8bb4488b30f590de947494a7c485b75903db34443057c9091817e4f532397192",
+    "M6-town-shots/night-motel-office.png": "df9d30eacaea2d1012d67354e3c8b7da510ac8ed66f50f081d11670d69688912",
+    "M6-parking-shots/entrance-saro-walk-entrance.png": "321a533f3f2a78625f83a4a4fc12b2c0ec4d3ee8ca70184f773ea2669b054eae",
+    "M6-parking-shots/entrance-saro-actual-parking.png": "cf035bfa3a396a8d8d4115f51142dbad67afac09c16b6a15b64ab7348d8a118a",
+    "M6-parking-shots/entrance-saro-disk-parking.png": "a2bd5da3a0f035f9595ac1cf18b9e903f5d2b1dfb582ff185f1a7bde3cd617bf",
+    "M6-test-cab-drive.png": "670819325b45cfa7e635451a376d53576eb7cd0c6afd5f381b396c3587d8d91c",
+    "M6-test-room6-table.png": "9fcae79ed2fbcf63f4ad3953e7d66642fd37476a21e3a1cbdeca2202888778eb"
+  },
+  "power": {
+    "old_within100m": 12,
+    "new_main": 2,
+    "new_service": 1,
+    "new_total": 3,
+    "reflector_crossings": 0
+  },
+  "town": {
+    "families": 6,
+    "parts": 28,
+    "lods": 3,
+    "native_geometry_checks": 588,
+    "whole_leaf_draws_replaced": 47,
+    "partial_trim_rows": 32,
+    "source_triangles": [
+      65154,
+      48610,
+      27450
+    ]
+  },
+  "fleet": {
+    "service": "C10 1966 with own SARO branding and cab",
+    "staff": [
+      "Fairheaven LT80",
+      "El Alamo78"
+    ],
+    "licensed_derivatives": "Local ignored /Game/Free/ServiceFleet and private Blender work; absent from public Git"
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "M1",
+      "runtime_sha256": "5e8f3712224e8ef9a8f806221772136c68422a3123a12f779c29d073451bf54a",
+      "reason": "All custom Town LOD1/2 imported rotated90; source/native LOD0 and technical view checks were insufficient. Room6 review fixture stood under floor. Cab test did not enter Chapter1, so story correctly refused reentry.",
+      "lod_geometry_rejection_sha256": "6c1bd05857fc975175bb4dfa73fc5c6e6711fb73d2590619baabe993685850bc"
+    },
+    {
+      "candidate": "M2",
+      "reason": "Stopped after visual review: SARO site customLOD1/2 had the same90degree legacy import error. Town sign atlas distorted text and Room6 bath fixture viewed closed door rather than modeled interior.",
+      "runtime_sha256": "f0d487e4ee07867d734603e92495ccd60b9fbe11c787fcdf976ab9db58cbc794",
+      "saro_lod_rejection_sha256": "5862e2d532fef97ebcea697c9ddf29c85b14c1b2c59bd57499fd3c711c151755"
+    },
+    {
+      "candidate": "M3",
+      "reason": "Native source/readback passed but detailed SARO image retained merged legacy window frames. Town view run also stopped with Vulkan device-lost in Capture Sky Materials; not accepted.",
+      "runtime_sha256": "1d646c31503ed279625c4445983271ac3002b1dbd13e5b1d1c5e616de2a294f2"
+    },
+    {
+      "candidate": "M4",
+      "reason": "Vulkan device-lost at bath pose reproduced in isolated Room6 runs. NoLight/NoMesh/TimeSlice0/Async0/Depth0/stable-proxy/finite-only A/B did not fix it. Old wing grime still showed window-shaped negative spaces; both facade grime planes subsequently removed precisely.",
+      "runtime_sha256": "5951657b831af9d3900b2cb8bbc9b78f1e13e62616ac7fbcd816a8708a0c8968"
+    },
+    {
+      "candidate": "M5",
+      "reason": "Stopped after39visualviews: seven staff-car material rows used specularF0 instead of source BaseColor; SARO sign was unreadable at night. Material-only repair preserves45source exports/Blend hashes; two existing-fixture sign washes added with original power gate.",
+      "runtime_sha256": "496636311858112f8efb80e19b9a718767198590caf11aed5f708c2c16995e48"
+    }
+  ],
+  "limits": [
+    "Static views, native API scenarios and normal drive/walk controllers tested; physical Xbox, human playthrough and listening not verified",
+    "Original sky capture shader repeatedly caused Vulkan device-lost at the bath pose. A bounded reflection-only shader branch passed the isolated editor A/B and this focused packaged selection. Actual shader/driver cause is not proven; no full-route stability guarantee. Capture omits fine panorama/Milky Way detail and uses HoleSky-calibrated night energy; the complete finite main-view shader body and volumetric cloud quality are preserved.",
+    "No full-world 110-scenario or PSO matrix; no new performance guarantee",
+    "Existing always-resident ray-tracing memory warning remains visible; no global renderer or memory-budget override",
+    "Closed-building access rules retained; modeled interiors do not add new story access"
+  ],
+  "evidence_root": "/home/tom/scratch-bm/Signal47-production-models",
+  "sky_capture_diagnosis_sha256": "65bf8c16367600bad5b899d1e0cc7e6299f4339da0937ae0720c2e7cbf43fca8",
+  "sky_capture_graph": {
+    "status": "PASS",
+    "asset": "/Game/CalicheStreet/Atmosphere/M_Caliche_Sky",
+    "checks": [
+      {
+        "check": "native_material_present",
+        "status": "PASS"
+      },
+      {
+        "check": "exact_capture_custom_code_sha",
+        "status": "PASS"
+      },
+      {
+        "check": "finite_main_body_preserved",
+        "status": "PASS"
+      },
+      {
+        "check": "all_custom_inputs_connected",
+        "status": "PASS"
+      },
+      {
+        "check": "IsCapture_uses_official_switch",
+        "status": "PASS"
+      },
+      {
+        "check": "switch_has_Default_Reflection_inputs",
+        "status": "PASS"
+      },
+      {
+        "check": "Default_constant_type",
+        "status": "PASS"
+      },
+      {
+        "check": "Default_constant_value",
+        "status": "PASS"
+      },
+      {
+        "check": "Reflection_constant_type",
+        "status": "PASS"
+      },
+      {
+        "check": "Reflection_constant_value",
+        "status": "PASS"
+      },
+      {
+        "check": "single_capture_switch",
+        "status": "PASS"
+      },
+      {
+        "check": "material_still_sky",
+        "status": "PASS"
+      },
+      {
+        "check": "material_still_opaque",
+        "status": "PASS"
+      },
+      {
+        "check": "material_still_unlit",
+        "status": "PASS"
+      }
+    ],
+    "scope": "Read-only source/graph proof; GPU and visual acceptance are separate.",
+    "custom_code_sha256": "9f046f77d38ba26541d0c1fc3431cead5dfcbf8258fa8515aaff33bfe26e3c39",
+    "node_count": 27,
+    "custom_input_count": 21,
+    "expression": "/Game/CalicheStreet/Atmosphere/M_Caliche_Sky.M_Caliche_Sky:MaterialExpressionCustom_3",
+    "switch": "/Game/CalicheStreet/Atmosphere/M_Caliche_Sky.M_Caliche_Sky:MaterialExpressionReflectionCapturePassSwitch_0",
+    "saved_assets": [],
+    "modified_assets": []
+  },
+  "fleet_material_source": {
+    "status": "PASS",
+    "scope": "Seven glTF PBR BaseColor role/factor repairs; no native import or geometry export.",
+    "changes": [
+      {
+        "name": "Fairheaven_LT80_Bodymat",
+        "source_gltf": "/home/tom/scratch-bm/Signal47-free/src/fairheaven_lt80/S47_fairheaven_lt80.gltf",
+        "source_sha256": "ad5c49361b95822d598dcf2b27e44dde8054f075acb88669f4d1561cfbff1261",
+        "before": {
+          "name": "Fairheaven_LT80_Bodymat",
+          "base_color_linear": [
+            0.12743768095970154,
+            0.012286487966775894,
+            0.019382361322641373,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/Fairheaven_LT80_Bodymat_specularf0.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/Fairheaven_LT80_Bodymat_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "after": {
+          "name": "Fairheaven_LT80_Bodymat",
+          "base_color_linear": [
+            0.12743768043564743,
+            0.012286488356915867,
+            0.019382360956935737,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {},
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/Fairheaven_LT80_Bodymat_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "copied_base_color": null
+      },
+      {
+        "name": "UCB_BOTTOM_GT",
+        "source_gltf": "/home/tom/scratch-bm/Signal47-free/src/fairheaven_lt80/S47_fairheaven_lt80.gltf",
+        "source_sha256": "ad5c49361b95822d598dcf2b27e44dde8054f075acb88669f4d1561cfbff1261",
+        "before": {
+          "name": "UCB_BOTTOM_GT",
+          "base_color_linear": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/UCB_BOTTOM_GT_specularf0.png",
+            "normal": "textures/UCB_BOTTOM_GT_normal.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_BOTTOM_GT_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "after": {
+          "name": "UCB_BOTTOM_GT",
+          "base_color_linear": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "normal": "textures/UCB_BOTTOM_GT_normal.png",
+            "base_color": "textures/UCB_BOTTOM_GT_baseColor.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_BOTTOM_GT_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "copied_base_color": {
+          "source": "/home/tom/scratch-bm/Signal47-free/src/fairheaven_lt80/textures/UCB_BOTTOM_GT_baseColor.png",
+          "sha256": "bad18f36d7b576d569fb5e5c74ec9f9bfd47e8601ac0e617b7b9610dce05202d",
+          "relative": "textures/UCB_BOTTOM_GT_baseColor.png"
+        }
+      },
+      {
+        "name": "UCB_Interior_Trim",
+        "source_gltf": "/home/tom/scratch-bm/Signal47-free/src/fairheaven_lt80/S47_fairheaven_lt80.gltf",
+        "source_sha256": "ad5c49361b95822d598dcf2b27e44dde8054f075acb88669f4d1561cfbff1261",
+        "before": {
+          "name": "UCB_Interior_Trim",
+          "base_color_linear": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/UCB_BOTTOM_GT_specularf0.png",
+            "normal": "textures/UCB_BOTTOM_GT_normal.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_Interior_Trim_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "after": {
+          "name": "UCB_Interior_Trim",
+          "base_color_linear": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "normal": "textures/UCB_BOTTOM_GT_normal.png",
+            "base_color": "textures/UCB_BOTTOM_GT_baseColor.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_Interior_Trim_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "copied_base_color": {
+          "source": "/home/tom/scratch-bm/Signal47-free/src/fairheaven_lt80/textures/UCB_BOTTOM_GT_baseColor.png",
+          "sha256": "bad18f36d7b576d569fb5e5c74ec9f9bfd47e8601ac0e617b7b9610dce05202d",
+          "relative": "textures/UCB_BOTTOM_GT_baseColor.png"
+        }
+      },
+      {
+        "name": "ElAlamo78_Bodymat",
+        "source_gltf": "/home/tom/scratch-bm/Signal47-free/src/el_alamo_78/S47_el_alamo_78.gltf",
+        "source_sha256": "c668cc5f162b9f735bbba4f5b9ca1c84abaf9801615991bebe25829ea527bb95",
+        "before": {
+          "name": "ElAlamo78_Bodymat",
+          "base_color_linear": [
+            0.02722454071044922,
+            0.02722454071044922,
+            0.02943900041282177,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "normal": "textures/ElAlamo78_Bodymat_normal.png",
+            "base_color": "textures/ElAlamo78_Bodymat_specularf0.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/ElAlamo78_Bodymat_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "after": {
+          "name": "ElAlamo78_Bodymat",
+          "base_color_linear": [
+            0.027224540413635707,
+            0.027224540413635707,
+            0.029439000325920124,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "normal": "textures/ElAlamo78_Bodymat_normal.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/ElAlamo78_Bodymat_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "copied_base_color": null
+      },
+      {
+        "name": "UCB_BOTTOM",
+        "source_gltf": "/home/tom/scratch-bm/Signal47-free/src/el_alamo_78/S47_el_alamo_78.gltf",
+        "source_sha256": "c668cc5f162b9f735bbba4f5b9ca1c84abaf9801615991bebe25829ea527bb95",
+        "before": {
+          "name": "UCB_BOTTOM",
+          "base_color_linear": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/UCB_BOTTOM_specularf0.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_BOTTOM_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "after": {
+          "name": "UCB_BOTTOM",
+          "base_color_linear": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/UCB_BOTTOM_baseColor.jpeg"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_BOTTOM_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "copied_base_color": {
+          "source": "/home/tom/scratch-bm/Signal47-free/src/el_alamo_78/textures/UCB_BOTTOM_baseColor.jpeg",
+          "sha256": "fc28012a2ad328b44d0b261a56eb5f7be6b8e11c9dc4763c3409677389b4785d",
+          "relative": "textures/UCB_BOTTOM_baseColor.jpeg"
+        }
+      },
+      {
+        "name": "UCB_BOTTOM_LT",
+        "source_gltf": "/home/tom/scratch-bm/Signal47-free/src/el_alamo_78/S47_el_alamo_78.gltf",
+        "source_sha256": "c668cc5f162b9f735bbba4f5b9ca1c84abaf9801615991bebe25829ea527bb95",
+        "before": {
+          "name": "UCB_BOTTOM_LT",
+          "base_color_linear": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/UCB_BOTTOM_specularf0.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_BOTTOM_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "after": {
+          "name": "UCB_BOTTOM_LT",
+          "base_color_linear": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/UCB_BOTTOM_baseColor.jpeg"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/UCB_BOTTOM_metallicRoughness.png",
+          "normal_format": "OpenGL"
+        },
+        "copied_base_color": {
+          "source": "/home/tom/scratch-bm/Signal47-free/src/el_alamo_78/textures/UCB_BOTTOM_baseColor.jpeg",
+          "sha256": "fc28012a2ad328b44d0b261a56eb5f7be6b8e11c9dc4763c3409677389b4785d",
+          "relative": "textures/UCB_BOTTOM_baseColor.jpeg"
+        }
+      },
+      {
+        "name": "RB1c_Tire_1k_001",
+        "source_gltf": "/home/tom/scratch-bm/Signal47-free/src/el_alamo_78/S47_el_alamo_78.gltf",
+        "source_sha256": "c668cc5f162b9f735bbba4f5b9ca1c84abaf9801615991bebe25829ea527bb95",
+        "before": {
+          "name": "RB1c_Tire_1k_001",
+          "base_color_linear": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/RB1c_Tire_1k_specularf0.png"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/RB1c_Tire_1k_metallicRoughness.png.png",
+          "normal_format": "OpenGL"
+        },
+        "after": {
+          "name": "RB1c_Tire_1k_001",
+          "base_color_linear": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "textures": {
+            "base_color": "textures/RB1c_Tire_1k_baseColor.jpeg"
+          },
+          "alpha": 1,
+          "packed_metallic_roughness": "textures/RB1c_Tire_1k_metallicRoughness.png.png",
+          "normal_format": "OpenGL"
+        },
+        "copied_base_color": {
+          "source": "/home/tom/scratch-bm/Signal47-free/src/el_alamo_78/textures/RB1c_Tire_1k_baseColor.jpeg",
+          "sha256": "c17c6f6bfd2cc502baf967cc707a8047d0fa8eaf191c7701c557f461db835e8b",
+          "relative": "textures/RB1c_Tire_1k_baseColor.jpeg"
+        }
+      }
+    ],
+    "mesh_files_before": {
+      "axis_probe.fbx": "8e7423e839b6ab2ebe89bbe6e3ad7025dcc492b53490b21a65039292e38ab74d",
+      "SaroFleet.glb": "4ff893a3111bdca1accb2fecda949e9aa11e86ea3623f970c56ebb942562664c",
+      "SaroFleet.blend": "60da38c74aad7be942a952940188a25b084b77ce97d79b7c64dbb92f437951ef",
+      "exports/SM_Saro07_WheelFL.fbx": "8267f26ecc16b08b2f54bd0330dc21e0aea875a454b44e7d67f5563974bb5c8e",
+      "exports/SM_Saro07_WheelFL_LOD1.fbx": "49ff467c8386b7ff307a7a879d77d9b4d627aba6a7f8081cbd9ccdbb14d18ada",
+      "exports/SM_Saro07_WheelFL_LOD2.fbx": "a0b2a66556df0e93863d572f0eec665b820970e2f1edd0e25750c8c021fdc967",
+      "exports/SM_Saro07_WheelRL.fbx": "62ff47d02bfa9394e3109cd784f73e9d169e8b7ea0d373a0091b20ab42ac82ba",
+      "exports/SM_Saro07_WheelRL_LOD1.fbx": "fcdf1a486d3a1a5878cfe06120895a21a93eebb6d3d453fe652262d0dbd870f9",
+      "exports/SM_Saro07_WheelRL_LOD2.fbx": "8b2ead1c7b3073e80afc70bb083746157bafb487616f0812134d203f83dcf30f",
+      "exports/SM_Saro07_WheelFR.fbx": "c651641ca2858fc87d6834f678d2a4e3827c3fd749c29f23e0f75a4da0a59fdb",
+      "exports/SM_Saro07_WheelFR_LOD1.fbx": "5c44399e614d19474b6ace3dd48ed938199b20e28bd67ed12759175f43f216a3",
+      "exports/SM_Saro07_WheelFR_LOD2.fbx": "fb265c3bec140fddba40cf4bc8ffee34e79b1f52cc58a939cca090e1370e8507",
+      "exports/SM_Saro07_WheelRR.fbx": "e12d2036cda7156b5ce379a111b638b217ba27921b847c42a34c191f3b254f4d",
+      "exports/SM_Saro07_WheelRR_LOD1.fbx": "bb3992f0ab270475fbc7ab0bc20725973b8bb49d862a89925f3f2d15e0150005",
+      "exports/SM_Saro07_WheelRR_LOD2.fbx": "821792195a1c645bed5c42a0ea228b3f522a9ea281cc46276cb5ef1aeb4ce1e9",
+      "exports/SM_Saro07_Body.fbx": "00b4ea0227f303e0a0230b1f51e48ec5a427f022995d5ceabd706edb78ddf574",
+      "exports/SM_Saro07_Body_LOD1.fbx": "ede7654a4136ddf206f024d4ee58ccb02cee43bd422e7d1a5c24d32a6d7db893",
+      "exports/SM_Saro07_Body_LOD2.fbx": "1f58c1f11a1cc0ed6d1f344fde6cce131970fe4b64a280cd47a5b815c150f9b0",
+      "exports/SM_Saro07_Shell.fbx": "159b6208810ff811e70aad881e24320d46a655fa2cd1b8aa9784c1fdb2b46cfc",
+      "exports/SM_Saro07_Shell_LOD1.fbx": "9a92d2dca7b902838cde9607fec8106c10bf79927d0632b387c1b6dc1db6c9c9",
+      "exports/SM_Saro07_Shell_LOD2.fbx": "0836fd2759add638a0109540a315a0a72ec18d6ee817f73e8a2accece451ec55",
+      "exports/SM_Saro07_Glass.fbx": "be06d6376abdd5c0abd2130be280cd63e48a06e3cc715d1bc7c6a024be69fd40",
+      "exports/SM_Saro07_Glass_LOD1.fbx": "9c719c42a2104fe876b211ce20fce3c7c9967fa92248ba1593377b5811807fe8",
+      "exports/SM_Saro07_Glass_LOD2.fbx": "9f977fb9eb82ccaf81f3fbfbd2f5c91946d7e3b54ac2c5f7a77cf5372173ce57",
+      "exports/SM_Saro07_Cabin.fbx": "fe7750be3e28d3237613c68495030f0357e5aebdbeb6251a65388a8c29b10710",
+      "exports/SM_Saro07_Cabin_LOD1.fbx": "08541b92ca97eb42847d3697a13fe1645c1525a9834486e92df8552e63a7d8a5",
+      "exports/SM_Saro07_Cabin_LOD2.fbx": "a0a11c06f7c8c24fa08cb7710ac56bec75445bcc98c136659da561826b592242",
+      "exports/SM_Saro07_Branding.fbx": "04690ec2086bce4de6cdecd2c202c38a963b362d3593ecbb476a4daa8ea1f393",
+      "exports/SM_Saro07_Branding_LOD1.fbx": "4b306171a4dcdf2bd3f5ac5884c547037d98c5fda46d2758912b4fe745eab0e5",
+      "exports/SM_Saro07_Branding_LOD2.fbx": "169b1193743b98f2b7ccc4754698d36fb65be33a782fe2c6e7afe9cce746aa24",
+      "exports/SM_Saro07_HeadLens.fbx": "bf647d611e1f84e49981ee62ad7743119fbd7c95a106a2db0e5b0dae60d54b9d",
+      "exports/SM_Saro07_HeadLens_LOD1.fbx": "25b993bd2a9cbc5dca00d7aa48a33f27bc47d5ea9fe26206627935931e7ecd01",
+      "exports/SM_Saro07_HeadLens_LOD2.fbx": "3917df52c16c6900b543487c463aa6567544fdfb4aa0bc23bcf615020f0eac21",
+      "exports/SM_Saro07_TailLens.fbx": "56894b5bc0c84c80d5ea4ef579239d3e8f3280caa82c853448ddc2557b906a50",
+      "exports/SM_Saro07_TailLens_LOD1.fbx": "1fc6c7947687ae53ed1551c9487d410d2bd9f28eba6a05dc62aad5a6a51611eb",
+      "exports/SM_Saro07_TailLens_LOD2.fbx": "5b48c1871ab9c32a36cdd5df298a24b634cf2256910ecc10f7b3b21ae7ee2dd9",
+      "exports/SM_SaroPark_Sedan.fbx": "22890a648d9158b71a56780e812773bcf5656a0cae5ccdde6975552d40fb4d90",
+      "exports/SM_SaroPark_Sedan_LOD1.fbx": "fac2c6a825f16096af0b5c01fd774b040df4620a717c1f808bd50dcaa1df7c0e",
+      "exports/SM_SaroPark_Sedan_LOD2.fbx": "33489b14ec839293f3573d7a0d2c158bc0844efc7e865f31620f5f51f9544c8d",
+      "exports/SM_SaroPark_Pickup.fbx": "fb5668f964095799e5a26a3ca54a8fae42b3a942ab2eb9babc53b1e4d3f7bbfc",
+      "exports/SM_SaroPark_Pickup_LOD1.fbx": "64726331b3be25bbdbc72d4e3a805dac68f50099d6925a26166a86bed6a67d16",
+      "exports/SM_SaroPark_Pickup_LOD2.fbx": "d8adaf38142cd7019a2c2b2bc144f49405da6816492557970a3c43ec4efafa26",
+      "exports/SM_SaroPark_LegacyTrim.fbx": "f45a0b2c15321eb9bc2282e3157f9b61fcfe3ebc5e0731492d4f9204ad8d88c0",
+      "exports/SM_SaroPark_LegacyTrim_LOD1.fbx": "d74e3f9ae97ee0a4df06bfc5f63cfb9c1cd7edb4839d6dadbb91b27dcc80d528",
+      "exports/SM_SaroPark_LegacyTrim_LOD2.fbx": "f5d7b2a4aaa25cb940add04dcb45fa765ee161e80af8a377df84dd8e70dbd4c3"
+    },
+    "mesh_files_after": {
+      "axis_probe.fbx": "8e7423e839b6ab2ebe89bbe6e3ad7025dcc492b53490b21a65039292e38ab74d",
+      "SaroFleet.glb": "4ff893a3111bdca1accb2fecda949e9aa11e86ea3623f970c56ebb942562664c",
+      "SaroFleet.blend": "60da38c74aad7be942a952940188a25b084b77ce97d79b7c64dbb92f437951ef",
+      "exports/SM_Saro07_WheelFL.fbx": "8267f26ecc16b08b2f54bd0330dc21e0aea875a454b44e7d67f5563974bb5c8e",
+      "exports/SM_Saro07_WheelFL_LOD1.fbx": "49ff467c8386b7ff307a7a879d77d9b4d627aba6a7f8081cbd9ccdbb14d18ada",
+      "exports/SM_Saro07_WheelFL_LOD2.fbx": "a0b2a66556df0e93863d572f0eec665b820970e2f1edd0e25750c8c021fdc967",
+      "exports/SM_Saro07_WheelRL.fbx": "62ff47d02bfa9394e3109cd784f73e9d169e8b7ea0d373a0091b20ab42ac82ba",
+      "exports/SM_Saro07_WheelRL_LOD1.fbx": "fcdf1a486d3a1a5878cfe06120895a21a93eebb6d3d453fe652262d0dbd870f9",
+      "exports/SM_Saro07_WheelRL_LOD2.fbx": "8b2ead1c7b3073e80afc70bb083746157bafb487616f0812134d203f83dcf30f",
+      "exports/SM_Saro07_WheelFR.fbx": "c651641ca2858fc87d6834f678d2a4e3827c3fd749c29f23e0f75a4da0a59fdb",
+      "exports/SM_Saro07_WheelFR_LOD1.fbx": "5c44399e614d19474b6ace3dd48ed938199b20e28bd67ed12759175f43f216a3",
+      "exports/SM_Saro07_WheelFR_LOD2.fbx": "fb265c3bec140fddba40cf4bc8ffee34e79b1f52cc58a939cca090e1370e8507",
+      "exports/SM_Saro07_WheelRR.fbx": "e12d2036cda7156b5ce379a111b638b217ba27921b847c42a34c191f3b254f4d",
+      "exports/SM_Saro07_WheelRR_LOD1.fbx": "bb3992f0ab270475fbc7ab0bc20725973b8bb49d862a89925f3f2d15e0150005",
+      "exports/SM_Saro07_WheelRR_LOD2.fbx": "821792195a1c645bed5c42a0ea228b3f522a9ea281cc46276cb5ef1aeb4ce1e9",
+      "exports/SM_Saro07_Body.fbx": "00b4ea0227f303e0a0230b1f51e48ec5a427f022995d5ceabd706edb78ddf574",
+      "exports/SM_Saro07_Body_LOD1.fbx": "ede7654a4136ddf206f024d4ee58ccb02cee43bd422e7d1a5c24d32a6d7db893",
+      "exports/SM_Saro07_Body_LOD2.fbx": "1f58c1f11a1cc0ed6d1f344fde6cce131970fe4b64a280cd47a5b815c150f9b0",
+      "exports/SM_Saro07_Shell.fbx": "159b6208810ff811e70aad881e24320d46a655fa2cd1b8aa9784c1fdb2b46cfc",
+      "exports/SM_Saro07_Shell_LOD1.fbx": "9a92d2dca7b902838cde9607fec8106c10bf79927d0632b387c1b6dc1db6c9c9",
+      "exports/SM_Saro07_Shell_LOD2.fbx": "0836fd2759add638a0109540a315a0a72ec18d6ee817f73e8a2accece451ec55",
+      "exports/SM_Saro07_Glass.fbx": "be06d6376abdd5c0abd2130be280cd63e48a06e3cc715d1bc7c6a024be69fd40",
+      "exports/SM_Saro07_Glass_LOD1.fbx": "9c719c42a2104fe876b211ce20fce3c7c9967fa92248ba1593377b5811807fe8",
+      "exports/SM_Saro07_Glass_LOD2.fbx": "9f977fb9eb82ccaf81f3fbfbd2f5c91946d7e3b54ac2c5f7a77cf5372173ce57",
+      "exports/SM_Saro07_Cabin.fbx": "fe7750be3e28d3237613c68495030f0357e5aebdbeb6251a65388a8c29b10710",
+      "exports/SM_Saro07_Cabin_LOD1.fbx": "08541b92ca97eb42847d3697a13fe1645c1525a9834486e92df8552e63a7d8a5",
+      "exports/SM_Saro07_Cabin_LOD2.fbx": "a0a11c06f7c8c24fa08cb7710ac56bec75445bcc98c136659da561826b592242",
+      "exports/SM_Saro07_Branding.fbx": "04690ec2086bce4de6cdecd2c202c38a963b362d3593ecbb476a4daa8ea1f393",
+      "exports/SM_Saro07_Branding_LOD1.fbx": "4b306171a4dcdf2bd3f5ac5884c547037d98c5fda46d2758912b4fe745eab0e5",
+      "exports/SM_Saro07_Branding_LOD2.fbx": "169b1193743b98f2b7ccc4754698d36fb65be33a782fe2c6e7afe9cce746aa24",
+      "exports/SM_Saro07_HeadLens.fbx": "bf647d611e1f84e49981ee62ad7743119fbd7c95a106a2db0e5b0dae60d54b9d",
+      "exports/SM_Saro07_HeadLens_LOD1.fbx": "25b993bd2a9cbc5dca00d7aa48a33f27bc47d5ea9fe26206627935931e7ecd01",
+      "exports/SM_Saro07_HeadLens_LOD2.fbx": "3917df52c16c6900b543487c463aa6567544fdfb4aa0bc23bcf615020f0eac21",
+      "exports/SM_Saro07_TailLens.fbx": "56894b5bc0c84c80d5ea4ef579239d3e8f3280caa82c853448ddc2557b906a50",
+      "exports/SM_Saro07_TailLens_LOD1.fbx": "1fc6c7947687ae53ed1551c9487d410d2bd9f28eba6a05dc62aad5a6a51611eb",
+      "exports/SM_Saro07_TailLens_LOD2.fbx": "5b48c1871ab9c32a36cdd5df298a24b634cf2256910ecc10f7b3b21ae7ee2dd9",
+      "exports/SM_SaroPark_Sedan.fbx": "22890a648d9158b71a56780e812773bcf5656a0cae5ccdde6975552d40fb4d90",
+      "exports/SM_SaroPark_Sedan_LOD1.fbx": "fac2c6a825f16096af0b5c01fd774b040df4620a717c1f808bd50dcaa1df7c0e",
+      "exports/SM_SaroPark_Sedan_LOD2.fbx": "33489b14ec839293f3573d7a0d2c158bc0844efc7e865f31620f5f51f9544c8d",
+      "exports/SM_SaroPark_Pickup.fbx": "fb5668f964095799e5a26a3ca54a8fae42b3a942ab2eb9babc53b1e4d3f7bbfc",
+      "exports/SM_SaroPark_Pickup_LOD1.fbx": "64726331b3be25bbdbc72d4e3a805dac68f50099d6925a26166a86bed6a67d16",
+      "exports/SM_SaroPark_Pickup_LOD2.fbx": "d8adaf38142cd7019a2c2b2bc144f49405da6816492557970a3c43ec4efafa26",
+      "exports/SM_SaroPark_LegacyTrim.fbx": "f45a0b2c15321eb9bc2282e3157f9b61fcfe3ebc5e0731492d4f9204ad8d88c0",
+      "exports/SM_SaroPark_LegacyTrim_LOD1.fbx": "d74e3f9ae97ee0a4df06bfc5f63cfb9c1cd7edb4839d6dadbb91b27dcc80d528",
+      "exports/SM_SaroPark_LegacyTrim_LOD2.fbx": "f5d7b2a4aaa25cb940add04dcb45fa765ee161e80af8a377df84dd8e70dbd4c3"
+    },
+    "geometry_files_unchanged": true,
+    "material_order_unchanged": true,
+    "materials_sha256": "ea1b7a4d87e2d567733a09710aaf49a8208fa8d6b84355782c648e2f3415cd65"
+  },
+  "fleet_material_saved": {
+    "checks": [
+      {
+        "name": "Fairheaven_LT80_Bodymat source BaseColor role and factor",
+        "pass": true,
+        "texture": null,
+        "factor": [
+          0.12743768095970154,
+          0.012286487966775894,
+          0.019382361322641373
+        ]
+      },
+      {
+        "name": "UCB_BOTTOM_GT source BaseColor role and factor",
+        "pass": true,
+        "texture": "textures/UCB_BOTTOM_GT_baseColor.png",
+        "factor": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "UCB_Interior_Trim source BaseColor role and factor",
+        "pass": true,
+        "texture": "textures/UCB_BOTTOM_GT_baseColor.png",
+        "factor": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "ElAlamo78_Bodymat source BaseColor role and factor",
+        "pass": true,
+        "texture": null,
+        "factor": [
+          0.02722454071044922,
+          0.02722454071044922,
+          0.02943900041282177
+        ]
+      },
+      {
+        "name": "UCB_BOTTOM source BaseColor role and factor",
+        "pass": true,
+        "texture": "textures/UCB_BOTTOM_baseColor.jpeg",
+        "factor": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "UCB_BOTTOM_LT source BaseColor role and factor",
+        "pass": true,
+        "texture": "textures/UCB_BOTTOM_baseColor.jpeg",
+        "factor": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "RB1c_Tire_1k_001 source BaseColor role and factor",
+        "pass": true,
+        "texture": "textures/RB1c_Tire_1k_baseColor.jpeg",
+        "factor": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    ],
+    "meshes": [],
+    "status": "PASS",
+    "scope": "Seven material graphs/textures only; exact source BaseColor/factors, mesh bytes unchanged",
+    "verify_only": true,
+    "affected": [
+      "Fairheaven_LT80_Bodymat",
+      "UCB_BOTTOM_GT",
+      "UCB_Interior_Trim",
+      "ElAlamo78_Bodymat",
+      "UCB_BOTTOM",
+      "UCB_BOTTOM_LT",
+      "RB1c_Tire_1k_001"
+    ],
+    "unchanged_mesh_sha256": {
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_Saro07_WheelFL.uasset": "171ef5713b60113be70105cbdcf879a16bf10f85fea99ebcebbc6190309f8a27",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_Saro07_WheelRL.uasset": "536c1510ea79a1ac9821d22ecefa187e19d6120c5f47e95878f2c8a264647dba",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_Saro07_WheelFR.uasset": "dc44d3d1e52b573bddfe6e095e738241a81587c50c60ec6059a1a12b2f87d468",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_Saro07_WheelRR.uasset": "06bb97a603ce9e8648254e1b616e39ed6ee0f4b79c852095f8b1ddc6f82f9372",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_Saro07_Body.uasset": "fa70039958f4ed9bd3a838fd051ce033cc18647c5f3cf484a73a8d0ced01801d",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_Saro07_Shell.uasset": "585bf289f6a72b4df9c050c04b8153a0a190db1c8b4740d15e96a6af735f9fc0",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_Saro07_Glass.uasset": "024d320089a49965b5fa3b14fd6fcac359a6c396d76717b1d89386034680e5f2",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_SaroPark_Sedan.uasset": "c7762bb18f44cd81e4235bba97f58b5ef5bb007dbf4f6a2aec005aba2fe7a246",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_SaroPark_Pickup.uasset": "03b591ae3c8baf4a8bb492fb324ec754b4f6db1b3c4e679c516140c1a6279962",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/Free/ServiceFleet/SM_SaroPark_LegacyTrim.uasset": "06effffbfa9237c12382963332e0078f6930f9ad82cc352da2c9444890792a14",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/SaroFleet/SM_Saro07_Cabin.uasset": "448c845432ffe4c471b3ad6b212c72ba8b14468522cd06adb0c5bad1e9642729",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/SaroFleet/SM_Saro07_Branding.uasset": "fbb30a4a7e6a3229c5a4dd5dcfc4536ccf0705abd6c5e5c1973919a01a8afb78",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/SaroFleet/SM_Saro07_HeadLens.uasset": "2f2d458ce1ec1aa55e86bd23797538db6282ae693cd7bfdab45e3224edb716d5",
+      "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Content/SaroFleet/SM_Saro07_TailLens.uasset": "44d5490c62bb34ee7b37fc680ce3d432b2c3c07729640bac59d89032168b8b5d"
+    }
+  },
+  "model_delivery": {
+    "own_and_local_licensed_blender_sources": 9,
+    "copied_source_files": 411,
+    "bundle_manifest_sha256": "f1bd37cc475babc5547600e403c3dae1bfc19b2f359dafd4024b3e502034fc49",
+    "actual_copied_blender_portability_sha256": "59f3f2a4b383243134496c7bccdb879a7753617974b7d9abfa1bbbad1df89818",
+    "directory": "/home/tom/Desktop/Signal47 modeller 25okt"
+  },
+  "legacy_dressing_trim": {
+    "source": {
+      "status": "SOURCE_INDEX_UNION_VERIFIED_NATIVE_UNVERIFIED",
+      "source_geo": 454,
+      "source_file_sha256": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9",
+      "source_triangles": 13550,
+      "car_removed_triangles": 976,
+      "window_removed_triangles": 1872,
+      "result_triangles": 10702,
+      "window_openings": [
+        {
+          "side": "north",
+          "index": 0,
+          "sign": -1,
+          "bounds_three_m": [
+            20.939,
+            22.511,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 108,
+          "removed_triangles": 108
+        },
+        {
+          "side": "north",
+          "index": 1,
+          "sign": -1,
+          "bounds_three_m": [
+            23.189,
+            24.761,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 204,
+          "removed_triangles": 204
+        },
+        {
+          "side": "north",
+          "index": 2,
+          "sign": -1,
+          "bounds_three_m": [
+            25.439,
+            27.011,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 48,
+          "removed_triangles": 48
+        },
+        {
+          "side": "north",
+          "index": 3,
+          "sign": -1,
+          "bounds_three_m": [
+            27.689,
+            29.261,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 48,
+          "removed_triangles": 48
+        },
+        {
+          "side": "north",
+          "index": 4,
+          "sign": -1,
+          "bounds_three_m": [
+            29.939,
+            31.511,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 48,
+          "removed_triangles": 48
+        },
+        {
+          "side": "north",
+          "index": 5,
+          "sign": -1,
+          "bounds_three_m": [
+            32.189,
+            33.761,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 48,
+          "removed_triangles": 48
+        },
+        {
+          "side": "north",
+          "index": 6,
+          "sign": -1,
+          "bounds_three_m": [
+            34.439,
+            36.011,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 48,
+          "removed_triangles": 48
+        },
+        {
+          "side": "north",
+          "index": 7,
+          "sign": -1,
+          "bounds_three_m": [
+            36.689,
+            38.261,
+            0.529,
+            2.387,
+            -5.5501,
+            -5.4999
+          ],
+          "expected_triangles": 144,
+          "removed_triangles": 144
+        },
+        {
+          "side": "south",
+          "index": 0,
+          "sign": 1,
+          "bounds_three_m": [
+            20.939,
+            22.511,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 108,
+          "removed_triangles": 108
+        },
+        {
+          "side": "south",
+          "index": 1,
+          "sign": 1,
+          "bounds_three_m": [
+            23.189,
+            24.761,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 168,
+          "removed_triangles": 168
+        },
+        {
+          "side": "south",
+          "index": 2,
+          "sign": 1,
+          "bounds_three_m": [
+            25.439,
+            27.011,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 228,
+          "removed_triangles": 228
+        },
+        {
+          "side": "south",
+          "index": 3,
+          "sign": 1,
+          "bounds_three_m": [
+            27.689,
+            29.261,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 156,
+          "removed_triangles": 156
+        },
+        {
+          "side": "south",
+          "index": 4,
+          "sign": 1,
+          "bounds_three_m": [
+            29.939,
+            31.511,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 216,
+          "removed_triangles": 216
+        },
+        {
+          "side": "south",
+          "index": 5,
+          "sign": 1,
+          "bounds_three_m": [
+            32.189,
+            33.761,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 48,
+          "removed_triangles": 48
+        },
+        {
+          "side": "south",
+          "index": 6,
+          "sign": 1,
+          "bounds_three_m": [
+            34.439,
+            36.011,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 204,
+          "removed_triangles": 204
+        },
+        {
+          "side": "south",
+          "index": 7,
+          "sign": 1,
+          "bounds_three_m": [
+            36.689,
+            38.261,
+            0.529,
+            2.387,
+            5.4999,
+            5.5501
+          ],
+          "expected_triangles": 48,
+          "removed_triangles": 48
+        }
+      ],
+      "retained_corner_uv_material_sha256": "39bad6b723d85a381ddb17f3e14e4d3aa0415294cea505caaa65ad8adbc82f94",
+      "retained_corner_uv_material_exact": true,
+      "preserved": "Every triangle outside the two old car bodies and sixteen individual old window prisms; roof/details/lights/downspouts/meters/site props and all gameplay nodes retained."
+    },
+    "native": {
+      "status": "PASS",
+      "original_native_g454_triangles": 13550,
+      "asset": "/Game/Free/ServiceFleet/SM_SaroPark_LegacyTrim",
+      "LOD_triangles": [
+        10702,
+        10702,
+        10702
+      ],
+      "retained_material_slots": 1
+    }
+  },
+  "legacy_stain_trim": {
+    "source": {
+      "status": "PASS",
+      "scope": "Actual prepared GLB only; native/render acceptance separate",
+      "source_file": "geo_003.glb",
+      "source_sha256": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9",
+      "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+      "source_triangles": 1712,
+      "removed_triangles": 488,
+      "retained_triangles": 1224,
+      "removed_by_plane": {
+        "south": 246,
+        "north": 242
+      },
+      "source_attribute_buffer_prefix_byte_identical": true,
+      "retained_triangle_index_order_identical": true,
+      "originalMaterialIndices": [
+        0
+      ],
+      "bounds_three_m": [
+        [
+          -7.900000095367432,
+          -0.6000000238418579,
+          -7.800000190734863
+        ],
+        [
+          40.20000076293945,
+          3.5999999046325684,
+          18.375
+        ]
+      ],
+      "criteria": {
+        "x_m": [
+          20.1,
+          39.1
+        ],
+        "y_m": [
+          -0.7,
+          3.7
+        ],
+        "z_planes_m": [
+          -5.512,
+          5.512
+        ],
+        "z_tolerance_m": 0.0001,
+        "selection": "Every triangle vertex must lie on ONE matching wing-wall plane; other site walls/roof/plinth/ground stain geometry is retained."
+      },
+      "preserved": "Original normals/UV/color/position buffer bytes, triangle order and material slot; all1224 unrelated stain triangles; no hierarchy/collider/story changes."
+    },
+    "native": {
+      "status": "PASS",
+      "checks": [
+        {
+          "name": "exact owned source contract",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "one GLB source",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "safe source file",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "actual prepared GLB hash",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "single exact source mesh name",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "saved native mesh exists",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "saved native exact1224tri",
+          "pass": true,
+          "detail": 1224
+        },
+        {
+          "name": "saved1LOD1materialslot",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "saved FP32 UV policy",
+          "pass": true,
+          "detail": null
+        },
+        {
+          "name": "retained metric bounds/source transform",
+          "pass": true,
+          "detail": {
+            "actual": [
+              1615.0,
+              528.75,
+              149.99999809265137,
+              4810.0,
+              2617.5,
+              420.00000381469727
+            ],
+            "expected": [
+              1615.000033378601,
+              528.7499904632568,
+              149.99999403953552,
+              4810.0000858306885,
+              2617.5000190734863,
+              419.9999928474426
+            ]
+          }
+        },
+        {
+          "name": "staged metadata hash",
+          "pass": true,
+          "detail": null
+        }
+      ],
+      "scope": "Actual saved native g455; runtime original-atlas rebinding and screenshots are separate.",
+      "metadataSha256": "f0a9fe5c78387e4e002021f0035bad13667f6932148fb9afd44b5c8c9ed07ca1"
+    }
+  },
+  "sign_atlas": {
+    "native": {
+      "status": "PASS",
+      "source_sha256": "dac66cbbf99b03e4d41f798154cf4ea157ace649d29292ed47b91eabb4161c0f",
+      "native_asset": "/Game/TownBuildings/Materials/Textures/T_M_Town_PrintAtlas_base_color.T_M_Town_PrintAtlas_base_color",
+      "size": [
+        2048,
+        2048
+      ],
+      "srgb": true,
+      "scope": "Only existing authored PrintAtlas texture reimported. Mesh geometry, UVs and material bindings unchanged."
+    },
+    "layout_sha256": "3cdcd97497252ec26a85d37e5ecb33ee352bbe4a55655b42ec2be53b782a1d08",
+    "method": "Actual glyph bbox fitted to physical sign aspect; distinct cells for main/side/ticket cinema signs"
+  }
+}

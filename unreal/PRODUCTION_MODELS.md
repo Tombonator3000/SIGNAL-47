@@ -1,54 +1,44 @@
-# Gjennomføringsplan: SARO og resterende Blender-modeller
+# Gjennomføringsplan og modellresultat: SARO og Caliche
 
-Start: 2026-10-25 kl. 00:20. Gren `codex/saro-production-models`, fra `cfadc1c0`.
+Bestilt 25. oktober 2026. Testet spillkilde `aefd18157be7502ac98d3e1695b4c4fcdd7d26a0`, kandidat `M6`. Akseptbeviset er `Signal47/Tools/townintegration/acceptance.json`. Fletting og installasjon føres separat etter faktisk resultat.
 
-## Avtalt omfang og rekkefølge
+## Rekkefølge og resultat
 
-1. SARO strømnett: kartlegg faktiske stolper/spenn og skill strømfordeling fra feltlys. Ett hovednett langs veien, nødvendig serviceavgrening og trafo. Fjern eksakte duplikater, tilhørende tråder og kollidere sammen.
-2. SARO bygg 2: erstatt falske vindusflater med vindusnisjer/glass og synlig dybde. Flytt fasadeskiltet til en solid veggflate. Bevar originale interaksjoner, siktlinjer og gangsoner.
-3. Kjøretøy: bruk detaljert, lovlig tilgjengelig tidsriktig bilmodell som SARO 07, med egen SARO-logo og tilpasset førermiljø/dashbord. Bevar instrumenter, radio, lys, hjul, Xbox-kjøring og inn-/utstigning. Bytt enkle parkerte biler med realistiske periodemodeller.
-4. Resterende modellprioritering fra CALICHE_CONCEPT_PASS.md: sheriffkontor; motell/resepsjon/Rom 6/bad; vaskeri og fôrbutikk; Plaza-kino med foajé; kirke med enkelt interiør. Mesa Diner, bensinstasjon, suvenirbutikk og radio er allerede levert og beholdes.
-5. Sekvensiell eksport/import og målrettet pakket kontroll. Faktiske bilder fra spillerhøyde i dag/skumring/natt, og korte prøver av berørte interaksjoner, lagring og bilflyt. Ikke full verdens-/PSO-kø. Flett og installer kun testet kandidat med backup og uendrede Saved-data.
+1. SARO strøm: 2 hovedmaster og 1 service-/trafostolpe innen 100 m, mot 12 tidligere master. Luftlinjen ender før antennefeltet. Feltlys, meterflate, gjerder, takutstyr og historieobjekter beholdes.
+2. Bygg 2: skilt på sammenhengende vegg, inntrukket glass og fysisk romdybde. De 16 gamle vindusrammene/persiennene fjernes presist fra g454: 13550 minus 976 bil- og 1872 vindustrekanter gir 10702 beholdte. I tillegg fjernes 488 trekanter fra de to gamle grimeplanene i g455, slik at gamle vindusåpninger i grimen ikke lager lyse rektangler på den nye veggen. Øvrige 1224 grime-trekanter beholdes med opprinnelig atlas. Beholdte attributter/UV/indekser er kontrollert; sammenslåtte foreldre skjules ikke. To varme skiltlys ved eksisterende lampeankre gir nattlesbarhet og følger opprinnelig SARO-strøm/blackout.
+3. SARO07: lokalt lisensiert C10 med eget førermiljø og SARO-merking, levende instrumenter/radio, lys og animerte hjul. To parkerte periodemodeller erstatter gamle bilkropper. Sju materialrader bruker nå faktiske BaseColor-kart/faktorer i stedet for feilaktige specularF0-kart; geometri og materialslots er bevart. Personlig stasjonsvogn beholdes. Site/Fleet installeres bare som et komplett sett.
+4. Sheriffkontor, motell/resepsjon/Rom 6/bad, vaskeri, fôrbutikk, Plaza-kino med foajé og kirke: 6 originale Blender-familier, 28 deler og 84 geometriske LOD-er. Trekantantall LOD0/1/2: 65154/48610/27450. Mesa Diner, bensinstasjon, suvenirbutikk og 1420 AM beholdes.
+5. Eksport, native lesing, pakket funksjon og bilder er egne bevis. Standardinstallasjon: Ikke registrert; føres separat etter faktisk resultat.
 
-## Arbeidsdeling
+| Leveranse | Kilde/native | Avgrenset pakket kontroll | Dag/skumring/natt |
+|---|---|---|---|
+| SARO strøm/fasade | PASS | PASS | PASS |
+| SARO07 og to ansattbiler | PASS | PASS | PASS |
+| Sheriffkontor | PASS | PASS | PASS |
+| Motell/resepsjon/Rom 6/bad | PASS | PASS | PASS |
+| Vaskeri og fôrbutikk | PASS | PASS | PASS |
+| Kinofoajé og kirke | PASS | PASS | PASS |
 
-| Eier | Filer/område | Status |
-|---|---|---|
-| station_runtime | SaroSite, HighwayPower, Tools/sarosite | Kilde/native og SARO-bilder PASS |
-| radio_model | Truck, EveningVisual ved behov, Fleet, Tools/sarofleet | F9 kilde/native og kjørekontroll PASS |
-| dish_model | Tools/townbuildings, seks originale modellsett | 28 deler, 84 LOD-er native kontrollert |
-| root | Plan, integrasjon, maskinkø, kontroll, levering | Aktiv |
+## Kontroll og avviste forsøk
 
-Hjelpere skriver kilde og modellgeneratorer parallelt. Bare root starter tunge Blender-/Unreal-jobber, med unreal_guard. Modellkilder og import forberedes parallelt; hele SARO- og bysettet kontrolleres i samme sluttkandidat. Modellfiler er ikke ferdige før eksport, Unreal-import og faktisk bilde-/funksjonskontroll består.
+M6 har 1400 selvtester og 10 ulike målrettede pakkede forløp PASS. 39 faste kamerastillinger ved spillerhøyde og 44 bildehash er registrert og vurdert. De konkrete forløpene er room6-views, saro-views, town-views, motel-views, cab-drive, parking, room6-table, motel-tv, town-phone, motel-roof. Eksisterende dører, gangsoner, telefoner, TV-er, dokumenter, Nora og historieporter beholdes.
 
-## Kilder og avgrensninger
+Faktiske native kontrollantall fra akseptbeviset: saro: 13, saro_all_lod_geometry: 63, town_atlas: 0, saro_stain_trim: 11, sky_capture_graph: 14, fleet_material_roles: 7, fleet: 92, town: 113, town_all_lod_geometry: 588, town_trim: 109, room_trim: 74. 9 kopierte Blender-originaler er åpnet og kontrollert med pakkede/relative teksturer; 411 kildefiler er kopiert med hash. Avviste kandidater: M1, M2, M3, M4, M5. Deres årsaker og råbevis står i akseptfilen. Tidligere importfeil viser hvorfor LOD0-bounds og trekanttall alene ikke er tilstrekkelig kontroll av LOD1/2.
 
-Prosjektbibliotekets søk og fallback er utført. De to Blender/Unreal-arbeidsflytprofilene er UNVERIFIED, ikke gjenbrukt kode. Den refererte Blender-eksportskillen er lest som kontrollreferanse; eksisterende, prosjektprøvd FBX-/akse-/roundtrip-løype brukes. Ingen ny plugin eller betalt modellanskaffelse.
+## GPU-status og øvrige avgrensninger
 
-PNMs [Electric Service Guide-tegninger](https://www.pnm.com/esg-construction-drawings) og [RUS-tegninger fra 1986](https://www.rd.usda.gov/sites/default/files/50-4-specifications-and-drawings-for-distribution-line-construction-Nov.-20-1986.pdf) brukes som visuelle referanser for en sammenhengende strømtilførsel. Det endelige stolpetallet velges fra spillets målte layout, ikke fra et påstått universelt antall for observatorier.
+Følgende er hentet fra sluttbevisets `limits`. Et PASS for de valgte forløpene betyr ikke at en tidligere GPU-feil er rettet:
 
-## Leveringsoversikt
+- Faste kamerastillinger, native API-forløp og ordinære kjøre-/gangkontrollere er prøvd. Fysisk Xbox, full gjennomspilling og lydlytting er ikke verifisert.
+- Den opprinnelige skycapture-shaderen utløste gjentatt Vulkan device-lost ved badekameraet. En avgrenset shadergren for refleksjonsopptak består isolert editor-A/B og dette pakkede utvalget. Selve shader-/driverårsaken er ikke bevist, og hele ruten er ikke stabilitetsmålt. Capture utelater fin panorama-/Melkevei-detalj og bruker HoleSky-kalibrert nattenergi; hele finite-hovedshaderen og kvaliteten på volumskyene er bevart.
+- Full 110-scenariorunde og PSO-matrise er ikke kjørt. Ingen ny ytelsesgaranti.
+- Det eksisterende varselet om raytracing-minne er fortsatt synlig. Renderer og minnebudsjett er ikke overstyrt globalt.
+- Adgangsreglene til stengte bygg beholdes. Modellerte interiører gir ingen ny historieadgang.
 
-| Del | Modell/kode | Import | Pakket funksjon | Visuell kontroll | Levert |
-|---|---|---|---|---|---|
-| SARO strøm/fasade | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
-| SARO 07 og parkerte biler | Kilde PASS | Native PASS | Pågår | Pågår | Gjenstår |
-| Sheriffkontor | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
-| Motell | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
-| Vaskeri/fôrbutikk | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
-| Kino | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
-| Kirke | Kilde PASS | Native PASS | Gjenstår | Gjenstår | Gjenstår |
+## Kilder, arbeidsdeling og leveranse
 
-## Konkret resultat før pakket kontroll
+Avgrensede hjelpere skrev Site/strøm, Fleet og Town-kilder. Root integrerte og kjørte tunge jobber sekvensielt med strict unreal_guard. Prosjektbibliotekets Blender/Unreal-profiler var generelle UNVERIFIED-referanser; prosjektets etablerte FBX-/PBR-løype ble brukt. Ingen ny plugin eller betalt modellanskaffelse.
 
-SARO får to hovedmaster og én service-/trafostolpe innen 100m, mot tolv overlappende eldre master. Luftlinjen ender før antennefeltet; faktiske reflektorkrysninger er fjernet. Bygg 2 har fysisk inntrukne vinduer og et skilt på hel mur.
+PNMs [Electric Service Guide](https://www.pnm.com/esg-construction-drawings) og [RUS-tegninger fra 1986](https://www.rd.usda.gov/sites/default/files/50-4-specifications-and-drawings-for-distribution-line-construction-Nov.-20-1986.pdf) er visuelle referanser. Stolpetallet er et målt layoutvalg.
 
-Seks bygningsfamilier består av 28 originale modeller og tre LOD-er, 65154/48610/27450 trekanter. Presise sammensatte kutt erstatter gammel statisk geometri. TV, telefon, levende lamper, Nora, dokumenter, dører og opprinnelige spillgrenser beholdes. Kinoen har modellert foajé og lukket sal; modellen innfører ingen ny adgang.
-
-SARO 07 bruker den lokalt lisensierte C10-modellen med originalt tilpasset førermiljø, SARO-merking og animerte hjul. Ansattbilene bruker Fairheaven LT80 og El Alamo78. Kreditering er bevart i CREDITS.txt. Fullstendige lisensierte derivater ligger lokalt utenfor offentlig Git; egne addonmodeller ligger i Tools/sarofleet.
-
-Første ukokte bilde bekrefter faktisk romdybde gjennom sheriffvinduet, men er ikke pakket aksept. Eksisterende RT-minnevarsel er fortsatt synlig, uten endret globalt budsjett. Sluttstatus og begrensninger føres etter pakket kontroll.
-
-## M1 avvist, M2 under kontroll
-
-Første pakkede gjennomgang fant en reell importfeil: alle56 LOD1/2 var rotert90 grader selv om LOD0 og trekanttall var korrekte. M1 er avvist. Global legacy-FBX-innstilling og ny import retter aksene. Ny kontroll av alle84 faktiske lagrede MeshDescriptions består588 sjekker; fresh assetlesing består113. Rom6-kamerafiksturen er rettet til gulv0 ved direkte visningshopp. Biltesten bruker nå riktig kapitteladgang for vanlig gjeninnstigning.
+Egne kilder: `Tools/sarosite`, `Tools/townbuildings`, `Tools/sarofleet`. Fullstendige lisensierte biler og derivater ligger utenfor offentlig Git, med kreditering og lisenser. Leveringsmappe: `/home/tom/Desktop/Signal47 modeller 25okt`. Bevisrot: `/home/tom/scratch-bm/Signal47-production-models`. Bilde-/kildefiler er knyttet til den testede kandidaten gjennom akseptfilens hash.

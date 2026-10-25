@@ -304,3 +304,15 @@ Egen tidlig capturegren i samme skymateriale bruker klokke-/solstyrte brede himm
 M5s fire områdeopptak ga39bilder og skycapture-krasjen er ikke sett i denne pakkede sekvensen. SARO-nærbildet viste likevel hvite biler/dekk: en allnodes-heuristikk lot specularF0 overskrive BaseColor i7materialrader. Resterende funksjonskø er stoppet. Roller/faktorer er nå hentet fra faktiske glTF-PBR-data; generatoren følger bare Principled-socketlenker. Native material-only-retting og fresh readback består;45FBX/GLB/Blend-hasher og14native-meshbytes er uendret. Faktisk editorbilde viser rød Fairheaven, mørk ElAlamo og svarte dekk.
 
 To varme lokale skiltlys ved de eksisterende lampeankrene gir lesbar nattfasade, med opprinnelig site9/ext.glow20/21-strøm og blackout/area-gate. Faktisk nattbilde består. Ingen global natt-/eksponeringsendring. Ni oppdaterte kopierte Blender-originaler er åpnet og411kildefiler er hashkontrollert. M6 pakkes/testes før merge/installasjon; A3 er ennå urørt.
+
+## 2026-10-25 kl. 02:07, M6 modellpass kontrollert
+
+M6, spillkilde aefd18157be7502ac98d3e1695b4c4fcdd7d26a0: 1400 selvtester og 10 målrettede pakkede forløp PASS. 39 faste spillerhøydebilder, 44 registrerte bildehash og 9 faktisk åpnede Blender-originaler. 411 kopierte kildefiler med hash. Begrensningene i acceptance.json gjelder fortsatt; test-PASS er ingen påstand om løst GPU-problem eller fullrutestabilitet. G454 er sammensatt til 10702 trekanter; g455 mister nøyaktig 488 gamle fasadegrimetrekanter og beholder 1224 med samme atlas. Avviste forsøk: M1, M2, M3, M4, M5.
+
+- Faste kamerastillinger, native API-forløp og ordinære kjøre-/gangkontrollere er prøvd. Fysisk Xbox, full gjennomspilling og lydlytting er ikke verifisert.
+- Den opprinnelige skycapture-shaderen utløste gjentatt Vulkan device-lost ved badekameraet. En avgrenset shadergren for refleksjonsopptak består isolert editor-A/B og dette pakkede utvalget. Selve shader-/driverårsaken er ikke bevist, og hele ruten er ikke stabilitetsmålt. Capture utelater fin panorama-/Melkevei-detalj og bruker HoleSky-kalibrert nattenergi; hele finite-hovedshaderen og kvaliteten på volumskyene er bevart.
+- Full 110-scenariorunde og PSO-matrise er ikke kjørt. Ingen ny ytelsesgaranti.
+- Det eksisterende varselet om raytracing-minne er fortsatt synlig. Renderer og minnebudsjett er ikke overstyrt globalt.
+- Adgangsreglene til stengte bygg beholdes. Modellerte interiører gir ingen ny historieadgang.
+
+Se PRODUCTION_MODELS.md og acceptance.json. Fletting/installasjon føres separat.

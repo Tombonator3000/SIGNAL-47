@@ -1,5 +1,20 @@
 # Minne for unreal/
 
+## SARO og resterende modellprioritet, 2026-10-25 kl. 02:07
+
+- Testet spillkilde `aefd18157be7502ac98d3e1695b4c4fcdd7d26a0`, kandidat `M6`. SARO har 2 hovedmaster og 1 service-/trafostolpe innen 100 m; bygg 2 har inntrukket glass og solid skiltvegg.
+- G454 13550 til 10702: 976 bil- og 1872 gamle vindustrekanter fjernet. G455 1712 til 1224: de to gamle fasadegrimeplanenes 488 trekanter fjernet; opprinnelig atlas og øvrige flater beholdes.
+- SARO07 C10 med eget førermiljø og merking, to parkerte biler og 6 originale bygningsfamilier/28 deler/84 LOD-er. Servicebil, personlig bil og parkerte biler har egne roller. Lisensierte derivater holdes utenfor offentlig Git.
+- 1400 selvtester, 10 målrettede pakkede forløp, 39 faste kamerastillinger og 44 bildehash. 9 kopierte Blender-originaler åpnet; 411 kildefiler hashkontrollert. Disse resultatene overstyrer ikke følgende avgrensninger:
+
+- Faste kamerastillinger, native API-forløp og ordinære kjøre-/gangkontrollere er prøvd. Fysisk Xbox, full gjennomspilling og lydlytting er ikke verifisert.
+- Den opprinnelige skycapture-shaderen utløste gjentatt Vulkan device-lost ved badekameraet. En avgrenset shadergren for refleksjonsopptak består isolert editor-A/B og dette pakkede utvalget. Selve shader-/driverårsaken er ikke bevist, og hele ruten er ikke stabilitetsmålt. Capture utelater fin panorama-/Melkevei-detalj og bruker HoleSky-kalibrert nattenergi; hele finite-hovedshaderen og kvaliteten på volumskyene er bevart.
+- Full 110-scenariorunde og PSO-matrise er ikke kjørt. Ingen ny ytelsesgaranti.
+- Det eksisterende varselet om raytracing-minne er fortsatt synlig. Renderer og minnebudsjett er ikke overstyrt globalt.
+- Adgangsreglene til stengte bygg beholdes. Modellerte interiører gir ingen ny historieadgang.
+
+- Levering: `/home/tom/Desktop/Signal47 modeller 25okt`. Bevis: `/home/tom/scratch-bm/Signal47-production-models`. Fletting/installasjon: Ikke registrert; føres separat etter faktisk resultat. Se PRODUCTION_MODELS.md og acceptance.json.
+
 ## SARO-ankomst og matstyring, 24. oktober 2026
 
 - Sluttkilde `5ae3a3fc`, kandidat A3: markert besøksparkering ved (-12.8,-.60,14.3), flyttet og belyst monument ved (-7.3,-.60,15.5), gjennomsiktige vinduer med rammer. Asfalten er tett; kun tegnet overflate heves24mm for å dekke gammel vei, fysisk gulv er fortsatt-.60. Prosedyregress utelates fra lot og smale gangstriper.
