@@ -129,7 +129,8 @@ void US47World::Init(US47Main* InM)
 			{
 				return { TEXT("Service truck"), [this] { Toast(TEXT("SARO 07, the service truck. Not now: someone has to sit the console tonight."), 3.4f); } };
 			}
-			return { EarlyReferenceTrip ? TEXT("Drive / optional Caliche reference round") : TEXT("Drive"), [this, Place] { Roam(Place); } };
+   const bool ServiceTrip = EarlyReferenceTrip && M->Evening->ServicePending();
+			return { ServiceTrip ? TEXT("Drive / Caliche Junction inspection") : EarlyReferenceTrip ? TEXT("Drive / optional Caliche reference round") : TEXT("Drive"), [this, Place] { Roam(Place); } };
 		};
 	}
 	// main.ts input.onKey and useCurrent: in the cab Use turns the key, uses the radio or gets out;

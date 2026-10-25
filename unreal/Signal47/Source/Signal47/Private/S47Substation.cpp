@@ -194,7 +194,14 @@ void FS47Substation::Refile()
 
 void FS47Substation::SyncFacts()
 {
- if (M && M->Evening) M->Evening->Pack.SetExternal(TEXT("ctx_trafo_service_ok"), bJournal && bComplete && bObserved);
+ if (M && M->Evening)
+ {
+  M->Evening->Pack.SetExternal(TEXT("ctx_trafo_service_ok"), HasNormalResult());
+  // If another authored conversation owned Pack during the physical action, acknowledge
+  // the actual journal/result once it is idle. CanStart preserves phase/idempotency gates.
+  if (bJournal) Commit(TEXT("T01_SERVICE_LOG"));
+  if (HasNormalResult()) Commit(TEXT("T01_NORMAL_RESULT"));
+ }
 }
 
 S47J::FObj FS47Substation::Save() const

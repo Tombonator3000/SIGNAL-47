@@ -20,6 +20,10 @@ public:
  S47J::FObj Save() const;
  static bool SelfTest(TArray<FString>& Lines);
  bool Ready() const { return bReady; }
+ bool HasJournal() const { return bJournal; }
+ // Only the physical lamp comparison records this result; the narrative host reads it.
+ bool HasNormalResult() const { return bJournal && bComplete && bObserved && !CompletedStamp.IsEmpty() && FMath::IsFinite(CompletedAt); }
+ const FString& NormalCompletionStamp() const { return CompletedStamp; }
  static FVector Site(const FVector& Blender); // authored metres, Z up -> world Three
 private:
  US47Main* M = nullptr;
