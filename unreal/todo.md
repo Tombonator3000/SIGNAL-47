@@ -342,3 +342,12 @@ Kilder fra vurderingen: [Quixels Moab-opptak](https://www.youtube.com/watch?v=ND
 
 - [x] Modellprioriteten er implementert og avgrenset kontrollert i M6 fra aefd18157be7502ac98d3e1695b4c4fcdd7d26a0: SARO-fasade/tre master, SARO07/to ansattbiler og sheriff, motell/resepsjon/Rom 6/bad, vaskeri, fôrbutikk, kinofoajé og kirke. 10 fokuserte forløp; GPU-status og øvrige begrensninger står i PRODUCTION_MODELS.md. PR155 er flettet i da4e2394 og samme testede M6 er installert: 40 identiske payloadfiler og 46 byteidentiske Saved-filer.
 - [ ] Ved senere innføring av av/på for motellets Room6-utelys: splitt den nye diffuserens delte MotelOfficeGlow-materiale og bind off-tilstanden. Dagens historiesti kaller bare SetRoom6Light(true); opprinnelig lysdriver beholdes.
+
+## Fullført: SARO-ankomst og forplass, 2026-10-25 kl. 13:22
+
+- [x] Valgfritt dinerstopp, tydelig besøksparkering, alle tre felt begge veier og direkte overlevering uten mat.
+- [x] Asfalt foran østfløyen, personalbil på egen plass, samsvarende collider og presis fjerning av gamle planter/hjulrester. Bygget beholdes for senere utvidelse.
+- [x] Avstandsvisning av flora og færre stolper; runtime-instans-/geometrikontroll.
+- [x] Bekreftet faktisk motell/Rom6-modellintegrasjon i pakket spill.
+- [x] Varig grense: gjeldende+to eldre testbygg; vedlikehold utført med kilder/Saved/bevis bevart.
+- [x] Editor/pakke, fokuserte runtimeforløp, bilde-QA og installasjon med 40 uendrede Saved-filer. VISITOR_PARKING.md skiller P1/P2 og uprøvde forhold.

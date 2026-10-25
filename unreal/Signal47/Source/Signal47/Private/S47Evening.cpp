@@ -144,7 +144,7 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
  Takeaway->Begin(S47J::Obj(Saved,TEXT("takeaway")));
  if(bMigratedArrival)Parked(TEXT("saro"));
  Context(); Refile();
- if (Opening()) M->UI->Objective(Commute() ? TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. MESA DINER IS OPEN FOR SUPPER.") : TEXT("SARO // ANSWER DALE'S CALL IN THE CONTROL ROOM"));
+ if (Opening()) M->UI->Objective(Commute() ? TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. STOP AT MESA DINER IF YOU FEEL LIKE SUPPER.") : TEXT("SARO // ANSWER DALE'S CALL IN THE CONTROL ROOM"));
  if (Pack.CurrentScene()) Resume();
  UE_LOG(LogTemp,Display,TEXT("S47: evening %s, phase %s, scene %s"),Saved ? TEXT("restored") : TEXT("new"),*Pack.GetPhase(),Pack.CurrentScene()?*Pack.CurrentScene()->Id:TEXT("none"));
 }
@@ -427,6 +427,12 @@ void FS47Evening::Step(double Dt)
  if (bRing) M->Web->SetHandsetRattle(true);
  RadioStep(Dt);
  FS47Truck* Carrier=M->World->CabTruck(); if (!Carrier) Carrier=M->World->TruckHere();
+ if(Commute())
+ {
+  if(M->World->Area==TEXT("saro") && Carrier && Carrier->Position.Z<120)
+   M->UI->Objective(TEXT("SARO // PARK IN ANY VISITOR BAY LEFT OF THE SIGN. STOP BETWEEN THE LINES, THEN WALK TO THE ENTRANCE."));
+  else M->UI->Objective(M->World->bDriving?TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. STOP AT MESA DINER IF YOU FEEL LIKE SUPPER."):TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));
+ }
  Visual->Tick(Commute(),M->World->bDriving,Carrier,Pack.Flag(TEXT("intro_arrived")),Pack.Flag(TEXT("food_bought")),Pack.Flag(TEXT("food_taken")),Pack.Flag(TEXT("food_eaten")),Pack.CurrentScene() && Pack.CurrentScene()->Id==TEXT("I08_WATER"),Pack.Flag(TEXT("arrival_order_burger")));
  if (!TestMode.IsEmpty() && !M->World->bBusy) { const FString Mode=TestMode; TestMode.Empty(); BootstrapTest(Mode); }
  if (bDialogueOpen && !M->ModalOpen()) bDialogueOpen=false;
@@ -505,7 +511,8 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
  {
   V.ParkPersonal(P,0.7);Check(V.ParkedPosition().Equals(Bay) && FMath::IsNearlyZero(V.ParkedHeading()),TEXT("unsafe old parking pose restores the clear visitor bay"));
  }
- Check(FS47EveningVisual::FitsArrivalBay(Bay,0),TEXT("north-facing car fits the marked arrival bay"));
+ for(double X:{-15.8,-12.8,-9.8})for(double H:{0.0,UE_DOUBLE_PI})
+  Check(FS47EveningVisual::FitsArrivalBay(FVector(X,-.6,14.3),H),TEXT("all three visitor bays accept forward and reverse parking without food"));
  Check(!FS47EveningVisual::FitsArrivalBay(FVector(8.9,0,8),0) && !FS47EveningVisual::FitsArrivalBay(Bay,UE_DOUBLE_PI/2) && !FS47EveningVisual::FitsArrivalBay(Bay+FVector(1,0,0),0),TEXT("service pad, sideways and protruding cars cannot complete arrival"));
  V.RestorePersonal(FVector(4.5,-.62,14),UE_DOUBLE_PI,0);Check(V.ParkedPosition().Equals(Bay)&&FMath::IsNearlyZero(V.ParkedHeading()),TEXT("legacy fallback save migrates to marked visitor parking"));
  V.RestorePersonal(Moved,.2,2);Check(V.ParkedPosition().Equals(Moved)&&FMath::IsNearlyEqual(V.ParkedHeading(),.2),TEXT("current safe custom pose survives restore"));

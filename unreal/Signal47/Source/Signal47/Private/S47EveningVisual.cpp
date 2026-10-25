@@ -248,8 +248,13 @@ bool FS47EveningVisual::FitsArrivalBay(const FVector& P,double H)
  if(!FMath::IsFinite(P.X)||!FMath::IsFinite(P.Z)||!FMath::IsFinite(H))return false;
  const double C=FMath::Abs(FMath::Cos(H)),S=FMath::Abs(FMath::Sin(H));
  const double X=PersonalHalfWidth()*C+PersonalHalfLength()*S,Z=PersonalHalfWidth()*S+PersonalHalfLength()*C;
- const double Heading=FMath::Abs(FMath::Atan2(FMath::Sin(H),FMath::Cos(H)));
- return Heading<.32 && P.X-X>=-14.45 && P.X+X<=-11.15 && P.Z-Z>=11.40 && P.Z+Z<=17.20;
+ // All three painted visitor bays work, facing either end. Keep the body inside
+ // one bay so the pedestrian strip and entrance remain clear.
+ const double Alignment=FMath::Abs(FMath::Sin(H));
+ if(Alignment>FMath::Sin(.40) || P.Z-Z<11.35 || P.Z+Z>17.25)return false;
+ for(double Centre:{-15.8,-12.8,-9.8})
+  if(P.X-X>=Centre-1.65 && P.X+X<=Centre+1.65)return true;
+ return false;
 }
 void FS47EveningVisual::RestorePersonal(const FVector& P,double H,int32 Version)
 {

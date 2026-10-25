@@ -37,6 +37,7 @@ public:
  bool Audit(TArray<FString>& Lines)const;
 private:
  bool bReady=false;
+ TWeakObjectPtr<AS47Web> Web;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Components;
  TWeakObjectPtr<UStaticMeshComponent> TrimmedDressing;
  TWeakObjectPtr<class UMaterialInterface> DressingMaterial;

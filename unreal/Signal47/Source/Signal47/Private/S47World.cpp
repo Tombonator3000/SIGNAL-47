@@ -838,7 +838,7 @@ void US47World::DriveToMotel(TFunction<void()> OnArrive)
 void US47World::DriveBack()
 {
 	FS47TripOpts O;
-	O.Hint = bCommuteVehicle ? TEXT("Park in the marked visitor bay before the SARO sign, then walk to the entrance.") : TEXT("The truck goes back on its pad by the service yard: up the ramp, and stop there.");
+	O.Hint = bCommuteVehicle ? TEXT("Park in any of the three VISITOR bays left of the SARO sign. Stop fully between the lines; either direction works.") : TEXT("The truck goes back on its pad by the service yard: up the ramp, and stop there.");
 	O.OnArrive = [this]
 	{
 		if (OnArriveSaro) OnArriveSaro();
@@ -1016,7 +1016,7 @@ void US47World::TripStep(double Dt)
 
 TOptional<FS47Box2> US47World::ParkBox(const FString& Place) const
 {
-	if (Place == TEXT("saro") && bCommuteVehicle) return FS47Box2{-14.3,-11.3,11.55,17.05};
+	if (Place == TEXT("saro") && bCommuteVehicle) return FS47Box2{-17.3,-8.3,11.55,17.05};
 	if (Place == TEXT("diner")) return bLegsMade ? TOptional<FS47Box2>(DinerPark) : TOptional<FS47Box2>();
 	if (Place == TEXT("motel")) { const FLegRec* L = Legs.Find(TEXT("saro")); return L ? TOptional<FS47Box2>(static_cast<const FS47SaroDrive*>(L->Area.Get())->MotelPark) : TOptional<FS47Box2>(); }
 	const FLegRec* L = Legs.Find(Place);
@@ -1919,7 +1919,7 @@ void US47World::BeginCommute(const S47J::FObj& SavedCar)
  O.Leg = Leg0;
  O.AtPos = Saved ? FVector(S47J::Num(SavedCar,TEXT("x")), S47J::Num(SavedCar,TEXT("y")), S47J::Num(SavedCar,TEXT("z"))) : FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);
  O.AtHeading = Saved ? S47J::Num(SavedCar,TEXT("h")) : 0;
- O.Hint = TEXT("SARO: park in the marked visitor bay before the sign, then walk to the entrance. Mesa Diner is open if you want supper first.");
+ O.Hint = TEXT("SARO: use any of the three VISITOR bays left of the sign. Supper at Mesa Diner is optional.");
  O.OnStart = [this] { Toast(S47Gamepad::UsingGamepad() ? TEXT("RT: throttle. LT: brake / reverse. LS: steer. D-pad down: radio. Stop and press A to get out. SARO is north through town; the diner stop is optional.") : TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
  TruckAt = TEXT("saro");
  FString Route;

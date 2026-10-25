@@ -93,7 +93,7 @@ void FS47Evening::ControlEntranceTest(double Dt)
   const auto CheckPark=[this,&T]()
   {
    const auto* Service=M->World->SaroTruck();const auto& Box=M->Player->PersonalCarBox;
-   return !Commute() && Pack.Flag(TEXT("intro_arrived")) && !M->World->bDriving
+   return !Commute() && Pack.Flag(TEXT("intro_arrived")) && !Pack.Flag(TEXT("food_bought")) && !M->World->bDriving
     && Visual->PersonalVisible() && Visual->ParkedPosition().Equals(T.Park,.015)
     && FMath::IsNearlyEqual(Visual->ParkedHeading(),T.Heading,.001)
     && Box && FMath::IsNearlyEqual(Box->X,T.Park.X,.015) && FMath::IsNearlyEqual(Box->Z,T.Park.Z,.015)
@@ -106,9 +106,18 @@ void FS47Evening::ControlEntranceTest(double Dt)
    if(!Commute()){Fail(TEXT("S47SaroParking requires a fresh -S47Evening=commute"));return;}
    M->World->StopDriving();M->World->bCommuteVehicle=true;
    FS47TripOpts O;O.Leg=TEXT("saro");O.AtPos=FVector(-22.2,-.62,32);O.AtHeading=0;
-   M->World->Autopilot=3.5;M->World->StartTrip(TEXT("saro"),TEXT("saro"),O);
-   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking START ordinary controller/TripStep from entrance -22.2 32; human input UNVERIFIED"));
-   Stage(1,1);return;
+   double BayX=0;
+   const bool BayFixture=FParse::Value(FCommandLine::Get(),TEXT("S47VisitorBay="),BayX);
+   if(BayFixture)
+   {
+    if(BayX!=-15.8 && BayX!=-12.8 && BayX!=-9.8){Fail(TEXT("invalid visitor bay fixture"));return;}
+    O.AtPos=FVector(BayX,-.6,14.3);
+    O.AtHeading=FParse::Param(FCommandLine::Get(),TEXT("S47ReverseParking"))?UE_DOUBLE_PI:0;
+   }
+   M->World->Autopilot=BayFixture?TOptional<double>():TOptional<double>(3.5);
+   M->World->StartTrip(TEXT("saro"),TEXT("saro"),O);
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking START ordinary controller/TripStep, fixture=%s x=%.2f z=%.2f heading=%.3f; no food purchased; human input UNVERIFIED"),BayFixture?TEXT("stationary visitor bay"):TEXT("entrance approach"),O.AtPos->X,O.AtPos->Z,O.AtHeading);
+   Stage(1,BayFixture?.05:1);return;
   }
   if(T.Stage==1 || T.Stage==7)
   {

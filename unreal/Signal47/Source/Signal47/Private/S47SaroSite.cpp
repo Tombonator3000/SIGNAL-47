@@ -9,6 +9,8 @@
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Engine/Texture.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "StaticMeshResources.h"
@@ -150,6 +152,41 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
   L->SetVolumetricScatteringIntensity(0.f);L->SetIndirectLightingIntensity(1.f);
   L->SetVisibility(false);L->RegisterComponent();S->SignWash.Add(L);
  }
+ // Unreal: a continuous paved east forecourt connects to the original service road.
+ // Visual finish only: retain the existing -.600m walk/drive plane and every query floor.
+ UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+ UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ UTexture* AsphaltRGB=LoadObject<UTexture>(nullptr,TEXT("/Game/MesaDiner/Materials/Textures/T_M_Mesa_Asphalt_base_color.T_M_Mesa_Asphalt_base_color"));
+ if(Cube&&Base&&Base->GetBlendMode()==BLEND_Opaque&&AsphaltRGB)
+ {
+  auto Mat=[&](uint32 Color)
+  {
+   auto* M=UMaterialInstanceDynamic::Create(Base,W);M->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(Color));
+   M->SetScalarParameterValue(TEXT("NativeLighting"),1);M->SetScalarParameterValue(TEXT("Roughness"),.96f);
+   M->SetScalarParameterValue(TEXT("Metalness"),0);M->SetScalarParameterValue(TEXT("EmissivePower"),0);return M;
+  };
+  auto* Asphalt=Mat(0xffffff);Asphalt->SetTextureParameterValue(TEXT("Map"),AsphaltRGB);Asphalt->SetScalarParameterValue(TEXT("UseMap"),1);
+  Asphalt->SetVectorParameterValue(TEXT("MapU"),FLinearColor(2.4,0,.08,0));Asphalt->SetVectorParameterValue(TEXT("MapV"),FLinearColor(0,1.5,.08,0));
+  auto* Paint=Mat(0xb6ad8a);auto* Concrete=Mat(0x8c8776);
+  auto Box=[&](const TCHAR* Name,const FVector& At,const FVector& Size,UMaterialInterface* M)
+  {
+   auto* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,M);
+   C->SetupAttachment(W->Node(Grounds)->Comp.Get());C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(false);C->RegisterComponent();
+   C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldScale3D(S47Three::DirToUE(Size));
+   int32 I=W->AdoptNode(C,Grounds,FString(TEXT("saroSite:forecourt:"))+Name);W->ObjAt(I).SetScale(Size);
+   S->PartNodes.Add(I);S->Forecourt.Add(C);S->ForecourtPoses.Add(C->GetComponentTransform());
+  };
+  using namespace S47SaroForecourt;
+  // Top -.576m clears the old road drawing by 12mm, same as the visitor-lot finish.
+  Box(TEXT("eastApron"),FVector((X0+X1)/2,-.636,(Z0+Z1)/2),FVector(X1-X0,.12,Z1-Z0),Asphalt);
+  Box(TEXT("serviceRoadAccess"),FVector((AccessX0+AccessX1)/2,-.636,(AccessZ0+AccessZ1)/2),FVector(AccessX1-AccessX0,.12,AccessZ1-AccessZ0),Asphalt);
+  // A clear pedestrian edge and generous 4m staff bays. Keep all visitor bays vacant.
+  Box(TEXT("facadeWalk"),FVector(29.95,-.574,6.2),FVector(19.7,.004,.6),Concrete);
+  for(double X:{25.,29.,33.,37.})Box(TEXT("staffBayLine"),FVector(X,-.572,9.65),FVector(.065,.004,6.1),Paint);
+  Box(TEXT("staffBayEnds"),FVector(31,-.572,6.6),FVector(12,.004,.065),Paint);
+  Box(TEXT("staffEastStop"),FVector(SedanX,-.54,6.45),FVector(1.8,.12,.2),Concrete);
+ }
+ else UE_LOG(LogS47SaroSite,Warning,TEXT("S47: SARO forecourt finish unavailable"));
  // Commit only after every source/native check. SetVisible on the wing would recurse into
  // preserved roof details, so retire only these exact draw components, leaving parent flags intact.
  for(int32 I:Retire)
@@ -186,10 +223,16 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
   OK&=Good;Lines.Add(FString::Printf(TEXT("SARO_SITE part=%s mesh/root/visibility=%s"),Spec[I].Name,Good?TEXT("PASS"):TEXT("FAIL")));
  }
  for(int32 I:RetiredNodes){const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;OK&=C&&!C->IsVisible()&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision;}
+ bool ForecourtOK=Forecourt.Num()==9&&ForecourtPoses.Num()==9;
+ for(int32 I=0;I<Forecourt.Num();++I)
+ {
+  const auto* C=Forecourt[I].Get();ForecourtOK&=C&&C->GetComponentTransform().Equals(ForecourtPoses[I],.001)&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&C->IsVisible()==bShown;
+ }
+ OK&=ForecourtOK;Lines.Add(FString::Printf(TEXT("SARO_SITE paved east apron x20.1..39.8 z5.9..18, service-road access x10..39.8 z18..23, three staff bays and clear facade walk; original physical floor/query collision retained; %s"),ForecourtOK?TEXT("PASS"):TEXT("FAIL")));
  bool ComposedWindows=false;
  for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Geo==454)
-  if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))ComposedWindows=C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_LegacyTrim")&&C->GetStaticMesh()->GetNumTriangles(0)==10702;
- OK&=ComposedWindows;Lines.Add(FString::Printf(TEXT("SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; %s"),ComposedWindows?TEXT("PASS"):TEXT("FAIL")));
+  if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))ComposedWindows=C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")&&C->GetStaticMesh()->GetNumTriangles(0)==10328;
+ OK&=ComposedWindows;Lines.Add(FString::Printf(TEXT("SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10328 incl230 forecourt brush+144 wheel remnants removed; %s"),ComposedWindows?TEXT("PASS"):TEXT("FAIL")));
  auto* OldStains=Stains.Get();const bool StainsOK=OldStains&&OldStains->GetStaticMesh()&&OldStains->GetStaticMesh()->GetPathName()==TEXT("/Game/SaroSite/Trim/StaticMeshes/g455.g455")&&OldStains->GetStaticMesh()->GetNumTriangles(0)==1224&&OldStains->GetMaterial(0)==StainAtlas.Get();
  OK&=StainsOK;Lines.Add(FString::Printf(TEXT("SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; %s"),StainsOK?TEXT("PASS"):TEXT("FAIL")));
  const float WashPower=bShown?SignPower(W):0.f;bool WashOK=SignWash.Num()==2;

@@ -68,6 +68,8 @@ public:
 
 	/** The copies in the meshes now, by kind (tests). */
 	TMap<ES47FloraKind, int32> Drawn() const;
+	/** Opt-in highway audit: last fill candidates, omitted invisible copies and actual GPU upload. */
+	void AuditDrawCounts(TArray<FString>& Lines) const;
 	/** A cell's copies of a kind (tests): made as the web version makes them. */
 	const FKindCell& CellOf(int32 I, int32 J, int32 Ki) { return Cell(I, J, Ki); }
 	bool Shown() const;
@@ -97,7 +99,7 @@ private:
 	TWeakObjectPtr<AS47Web> Web;
 	int32 Group = -1;
 	/** a kind's mesh: the export's for the first of a pair, one of its own for the second */
-	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh; TWeakObjectPtr<UMaterialInstanceDynamic> Mid; double Reach = 0; int32 N = 0; };
+	struct FLayer { TWeakObjectPtr<UInstancedStaticMeshComponent> Mesh; TWeakObjectPtr<UMaterialInstanceDynamic> Mid; double Reach = 0; int32 N = 0, Candidates = 0, Omitted = 0, EndCull = 0; };
 	TArray<FLayer> Layers;
 	void Put(int32 Ki, const TArray<float>& M, const TArray<float>& C, int32 N);
 };

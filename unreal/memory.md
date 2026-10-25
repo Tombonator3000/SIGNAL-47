@@ -319,3 +319,11 @@ Installert i ~/Games/Signal47/Linux med 40 kontrollerte payloadhash og 51 Saved-
 - S47FieldModels bruker atomisk validering av native assets og presise forgjengere; 73 patcher, 60 helt skjulte gamle blader og13 eksakte restmesher. Ekte interaksjonsforeldre, skuffer, foto-/gangpunkter, kabelbrudd, papir og KSU beholdes. Skala/lampe leser originale materialtilstander. FBX-akse: UE=(100x,-100y,100z).
 - Native F4/1191 og609 lagrede LOD-geometrikontroller PASS. glTF-restimport mistet tynne trekanter og ble avvist; bruk kontrollert FBX-løype. F3/093a4326 består fem fokuserte pakkede scenarioer og18 visuelt vurderte High/Clean-bilder. F1/F2 ble avvist på store gamle glød-/støvkort; F3 retter nære kort/støvkorn uten global lysendring.
 - Feltrollens nattfoto er svært mørke. Foto/fremkalling/innsamling og ekte disk-Continue er prøvd via native API. Ingen fysisk Xbox, menneskelig gjennomspilling, lytting, fullnatt eller helruteytelse. Eksisterende RT-minnevarsel beholdes. Se FIELD_MODELS.md og acceptance.json. Fletting/installasjon føres separat.
+
+## SARO-parkering, forplass og avstandsvisning, 2026-10-25 kl. 13:22
+
+- Mat er valgfritt. Alle tre VISITOR-felt virker begge veier; hele direkte kjørerute og telefonoverlevering uten mat PASS. Tre leselige skilt og kontekstmål ved SARO.
+- Østfløyen har asfalt/personalparkering; sedan og gangcollider flyttes til x35. Bakt kantvegetasjon 230 tri og gamle hjulrester 144 tri fjernes presist; 10328 dressingtrekanter beholdes. Tools/saroforecourt/prepare_cpu.py må beholde CPU-data på LegacyTrim før cook i andre arbeidskopier.
+- Eksisterende flora-krymping beholdes; usynlige instanser utelates.57 hovedstolper mot 82; 65 m spenn med faste avgreninger. Ingen FPS-garanti.
+- P1 elleve forløp og P2 målrettet sluttkontroll/1405 selvtester/36 vurderte bilder PASS. P2 avviker bare i rendertrim/audit; øvrige testinnganger er hashkontrollert. Samme P2 installert, 40 payloadhash og 40 uendrede Saved-filer; installert smoke PASS. Se VISITOR_PARKING.md og scratch-bm/Signal47-visitor-fix.
+- AGENTS.md og prune-test-builds.py gir gjeldende+to eldre testpakker. To gamle payloadkopier pensjonert, kilder/Saved/bevis bevart. Fysisk Xbox, full 110 og menneskelig fullnatt/lytting er uprøvd.

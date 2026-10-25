@@ -1,10 +1,13 @@
 #include "S47Fleet.h"
 #include "S47Truck.h"
 #include "S47Three.h"
+#include "S47SaroSite.h"
 #include "S47Web.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "StaticMeshResources.h"
+#include "RenderUtils.h"
 DEFINE_LOG_CATEGORY_STATIC(LogS47Fleet,Log,All);
 namespace
 {
@@ -27,6 +30,93 @@ namespace
   for(;I>=0;){if(I==Root)return true;const FS47WebNode* N=W->Node(I);if(!N)return false;I=N->Parent;}return false;
  }
 
+ UStaticMesh* ForecourtTrim(AS47Web* W,UStaticMesh* Original)
+ {
+  if(!Original||!Original->bAllowCPUAccess||!Original->GetRenderData()||Original->GetRenderData()->LODResources.Num()!=3)return nullptr;
+  const FStaticMeshLODResources& Src=Original->GetRenderData()->LODResources[0];
+  const FStaticMeshVertexBuffers& B=Src.VertexBuffers;
+  if(Src.GetNumTriangles()!=10702||!B.PositionVertexBuffer.GetVertexData()||
+     !B.StaticMeshVertexBuffer.GetTangentData()||!B.StaticMeshVertexBuffer.GetTexCoordData()||Src.IndexBuffer.GetIndexDataSize()==0)return nullptr;
+  auto Plant=[&](uint32 I)
+  {
+   const FVector P=S47Three::ToThree(FVector(B.PositionVertexBuffer.VertexPosition(I)));
+   const FVector2f UV=B.StaticMeshVertexBuffer.GetVertexUV(I,0);
+   // Exact brushDry/grassDry constant palette swatches from weathering.ts.
+   // Accept the source V convention or the FBX V flip; exact230 guard below.
+   // The measured front clumps overlap the paving edge by up to 15cm: remove whole
+   // authored triangles in this narrow seam only, preserving all plinth/roof/props.
+   return P.X>=19.8&&P.X<=40&&P.Y>=-1&&P.Y<=.1&&P.Z>=5.6&&P.Z<=6.6&&
+    (FMath::Abs(UV.Y-.1875f)<.0001f||FMath::Abs(UV.Y-.8125f)<.0001f)&&(FMath::Abs(UV.X-.5625f)<.0001f||FMath::Abs(UV.X-.6875f)<.0001f);
+  };
+  auto CarRemnant=[&](uint32 I)
+  {
+   const FVector P=S47Three::ToThree(FVector(B.PositionVertexBuffer.VertexPosition(I)));
+   const FVector2f UV=B.StaticMeshVertexBuffer.GetVertexUV(I,0);
+   const bool InCar=P.Y<-.1&&((P.X>=25.8&&P.X<=28.2&&P.Z>=6.6&&P.Z<=12.6)||
+    (P.X>=29.8&&P.X<=32.2&&P.Z>=6.55&&P.Z<=13.25));
+   // Original y>-.57 car trim missed bottom-crossing wheel/well triangles.
+   // Only the two exact dark swatches; retain the concrete wheel stops.
+   const bool Rubber=FMath::Abs(UV.X-.9375f)<.0001f&&(FMath::Abs(UV.Y-.9375f)<.0001f||FMath::Abs(UV.Y-.0625f)<.0001f);
+   const bool Well=FMath::Abs(UV.X-.3125f)<.0001f&&(FMath::Abs(UV.Y-.1875f)<.0001f||FMath::Abs(UV.Y-.8125f)<.0001f);
+   return InCar&&(Rubber||Well);
+  };
+  TArray<uint32> Old,Keep;Src.IndexBuffer.GetCopy(Old);Keep.Reserve(Old.Num());
+  TArray<FStaticMeshSection> Sections;
+  int32 Removed=0,RemovedPlants=0,RemovedCars=0;
+  for(const FStaticMeshSection& Section:Src.Sections)
+  {
+   FStaticMeshSection Copy=Section;Copy.FirstIndex=Keep.Num();Copy.NumTriangles=0;
+   for(uint32 I=Section.FirstIndex;I<Section.FirstIndex+Section.NumTriangles*3;I+=3)
+   {
+    if(I+2>=uint32(Old.Num()))return nullptr;
+    const uint32 A=Old[I],Bidx=Old[I+1],Cidx=Old[I+2];
+    if(FMath::Max3(A,Bidx,Cidx)>=B.PositionVertexBuffer.GetNumVertices())return nullptr;
+    if(Plant(A)&&Plant(Bidx)&&Plant(Cidx)) {++Removed;++RemovedPlants;continue;}
+    if(CarRemnant(A)&&CarRemnant(Bidx)&&CarRemnant(Cidx)) {++Removed;++RemovedCars;continue;}
+    Keep.Append({A,Bidx,Cidx});++Copy.NumTriangles;
+   }
+   if(Copy.NumTriangles)Sections.Add(Copy);
+  }
+  if(RemovedPlants!=230||RemovedCars!=144||Removed!=374||Keep.Num()!=10328*3||Keep.Num()+Removed*3!=Old.Num())return nullptr;
+  // Preserve every other dressing triangle, normal, UV and slot; imported asset is immutable.
+  // The imported asset itself is immutable and remains available for atomic fallback.
+  UStaticMesh* Cut=NewObject<UStaticMesh>(W,TEXT("SM_SaroPark_ForecourtTrim"),RF_Transient);
+  Cut->bAllowCPUAccess=true;Cut->NeverStream=true;Cut->GetStaticMaterials()=Original->GetStaticMaterials();
+  // This dressing clone keeps native ray tracing with correctly initialised render geometry.
+  Cut->bSupportRayTracing=true;
+  auto Data=MakeUnique<FStaticMeshRenderData>();Data->AllocateLODResources(1);
+  Data->Bounds=Original->GetRenderData()->Bounds;Data->ScreenSize[0].Default=1;
+  Data->NumInlinedLODs=1;Data->CurrentFirstLODIdx=0;Data->bReadyForStreaming=false;
+  FStaticMeshLODResources& Dst=Data->LODResources[0];Dst.Sections.Append(Sections);
+  Dst.VertexBuffers.PositionVertexBuffer.Init(B.PositionVertexBuffer,true);
+  auto& Tangents=Dst.VertexBuffers.StaticMeshVertexBuffer;
+  Tangents.SetUseHighPrecisionTangentBasis(B.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());
+  Tangents.SetUseFullPrecisionUVs(B.StaticMeshVertexBuffer.GetUseFullPrecisionUVs());
+  Tangents.Init(B.StaticMeshVertexBuffer.GetNumVertices(),B.StaticMeshVertexBuffer.GetNumTexCoords(),true);
+  for(uint32 I=0;I<B.StaticMeshVertexBuffer.GetNumVertices();++I)
+  {
+   Tangents.SetVertexTangents(I,FVector3f(B.StaticMeshVertexBuffer.VertexTangentX(I)),B.StaticMeshVertexBuffer.VertexTangentY(I),FVector3f(B.StaticMeshVertexBuffer.VertexTangentZ(I)));
+   for(uint32 U=0;U<B.StaticMeshVertexBuffer.GetNumTexCoords();++U)Tangents.SetVertexUV(I,U,B.StaticMeshVertexBuffer.GetVertexUV(I,U));
+  }
+  const uint32 Colors=B.ColorVertexBuffer.GetNumVertices();
+  if(Colors)
+  {
+   if(!B.ColorVertexBuffer.GetVertexData())return nullptr;
+   Dst.VertexBuffers.ColorVertexBuffer.Init(Colors,true);
+   for(uint32 I=0;I<Colors;++I)Dst.VertexBuffers.ColorVertexBuffer.VertexColor(I)=B.ColorVertexBuffer.VertexColor(I);
+  }
+  Dst.bHasColorVertexData=Colors>0;Dst.bBuffersInlined=true;Dst.bIsOptionalLOD=false;
+  Dst.SourceMeshBounds=Data->Bounds;Dst.MaxDeviation=0;Dst.IndexBuffer.SetIndices(Keep,EIndexBufferStride::Force32Bit);
+  // Same runtime RT-proxy construction policy as UStaticMesh::BuildFromMeshDescriptions.
+  // If enabled, InitResources builds its geometry from these indices without renderer overrides.
+  bool bInitRayTracing=Cut->bSupportRayTracing;
+#if !WITH_EDITOR
+  bInitRayTracing=bInitRayTracing&&IsRayTracingAllowed();
+#endif
+  if(bInitRayTracing)Data->InitializeRayTracingRepresentationFromRenderingLODs();
+  Cut->SetRenderData(MoveTemp(Data));Cut->SetExtendedBounds(Original->GetBounds());
+  Cut->InitResources();return Cut;
+ }
 }
 TUniquePtr<FS47Fleet> FS47Fleet::Install(AS47Web* W,FS47Truck& T)
 {
@@ -91,12 +181,23 @@ TSharedPtr<FS47FleetParked> FS47FleetParked::Build(AS47Web* W,bool bSiteReady)
  const int32 Parent=W->Handle(TEXT("world.grounds.group"));UStaticMeshComponent* Old=nullptr;
  for(int32 I=0;I<W->PartCount();++I){const auto* N=W->Node(I);if(N&&N->Geo==454&&Within(W,I,Parent))Old=Cast<UStaticMeshComponent>(N->Comp.Get());}
  if(!Sedan||!Pickup||!Trim||!Old||Parent<0){UE_LOG(LogS47Fleet,Warning,TEXT("S47: parked fleet unavailable; complete legacy staff corner retained"));return {};}
- auto F=MakeShared<FS47FleetParked>();auto* A=Part(W,Sedan,Parent,TEXT("fleet:staff-sedan"),FVector(27,-.60,9.6));auto* B=Part(W,Pickup,Parent,TEXT("fleet:staff-pickup"),FVector(31,-.60,9.9),.04);
+ // Move the red sedan to the east staff bay, keeping every west visitor bay free.
+ // Only its exact original walking footprint moves with it; no stale invisible car remains.
+ int32 SedanFeet=0;
+ for(const auto& R:W->CollidersMutable(TEXT("saro")))
+  if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++SedanFeet;
+ if(SedanFeet!=1){UE_LOG(LogS47Fleet,Warning,TEXT("S47: staff fleet unchanged: exact sedan foot unavailable"));return {};}
+ UStaticMesh* PavedTrim=ForecourtTrim(W,Trim);
+ if(!PavedTrim){UE_LOG(LogS47Fleet,Error,TEXT("S47: forecourt trim requires exact10702 source with230 brush+144 wheel remnants and CPU access"));return {};}
+ auto F=MakeShared<FS47FleetParked>();F->Web=W;auto* A=Part(W,Sedan,Parent,TEXT("fleet:staff-sedan"),FVector(S47SaroForecourt::SedanX,-.576,9.6));auto* B=Part(W,Pickup,Parent,TEXT("fleet:staff-pickup"),FVector(31,-.576,9.9),.04);
  if(!A||!B){if(A)A->DestroyComponent();if(B)B->DestroyComponent();return {};}
+ for(auto& R:W->CollidersMutable(TEXT("saro")))
+  if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))
+  {R.MinX+=S47SaroForecourt::SedanX-27.;R.MaxX+=S47SaroForecourt::SedanX-27.;}
  // This composed trim removes only the two old vehicle bodies and the sixteen replaced wing windows.
- // Reuse the exact original atlas material and retain all existing footprint colliders.
- auto* OriginalMaterial=Old->GetMaterial(0);Old->SetStaticMesh(Trim);Old->SetMaterial(0,OriginalMaterial);
- F->Components={A,B};F->TrimmedDressing=Old;F->DressingMaterial=OriginalMaterial;F->bReady=true;UE_LOG(LogS47Fleet,Display,TEXT("S47: staff fleet ready: two period vehicles, original poses/colliders and other dressing retained"));return F;
+ // Reuse the exact original atlas; unrelated footprint colliders stay byte-for-byte in place.
+ auto* OriginalMaterial=Old->GetMaterial(0);Old->SetStaticMesh(PavedTrim);Old->SetMaterial(0,OriginalMaterial);
+ F->Components={A,B};F->TrimmedDressing=Old;F->DressingMaterial=OriginalMaterial;F->bReady=true;UE_LOG(LogS47Fleet,Display,TEXT("S47: staff fleet ready: two period vehicles on paved staff bays, sedan east35 and matching foot moved, visitors free"));return F;
 }
 
 bool FS47Fleet::Audit(TArray<FString>& Lines)const
@@ -124,12 +225,19 @@ bool FS47FleetParked::Audit(TArray<FString>& Lines)const
 {
  bool Ok=true;auto Check=[&](bool B,const FString& N){Ok&=B;Lines.Add(FString(B?TEXT("PASS staff fleet: "):TEXT("FAIL staff fleet: "))+N);};
  Check(bReady&&Components.Num()==2,TEXT("two production vehicles"));
- const FVector At[]={FVector(27,-.60,9.6),FVector(31,-.60,9.9)};
+ const FVector At[]={FVector(S47SaroForecourt::SedanX,-.576,9.6),FVector(31,-.576,9.9)};
  const TCHAR* Names[]={TEXT("SM_SaroPark_Sedan"),TEXT("SM_SaroPark_Pickup")};
  for(int32 I=0;I<Components.Num();++I)
  {
   auto* C=Components[I].Get();double E[16];S47Three::Compose(At[I],S47Three::Euler(0,I==0?0:.04,0),FVector::OneVector,E);
-  Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==Names[I]&&C->GetRelativeTransform().Equals(S47Three::MatToUE(E),.001),FString::Printf(TEXT("car%d correct imported body, original pose and grounded height"),I));
+  Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==Names[I]&&C->GetRelativeTransform().Equals(S47Three::MatToUE(E),.001),FString::Printf(TEXT("car%d correct imported body, staff bay and paved grounded height"),I));
  }
- auto* D=TrimmedDressing.Get();Check(D&&D->GetStaticMesh()&&D->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_LegacyTrim")&&D->GetMaterial(0)==DressingMaterial.Get(),TEXT("exact old-car trim installed with original dressing atlas"));return Ok;
+ int32 NewFeet=0,OldFeet=0;
+ if(auto* W=Web.Get())for(const auto& R:W->CollidersMutable(TEXT("saro")))
+ {
+  if(FMath::IsNearlyEqual(R.MinX,34.,.0001)&&FMath::IsNearlyEqual(R.MaxX,36.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++NewFeet;
+  if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++OldFeet;
+ }
+ Check(NewFeet==1&&OldFeet==0,TEXT("sedan actual foot follows east staff bay, old position clear; all visitor bays free"));
+ auto* D=TrimmedDressing.Get();Check(D&&D->GetStaticMesh()&&D->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")&&D->GetStaticMesh()->GetNumTriangles(0)==10328&&D->GetMaterial(0)==DressingMaterial.Get(),TEXT("exact old-car/window trim plus230 front brush+144 old wheel triangles removed,10328 unrelated triangles retain original dressing atlas"));return Ok;
 }
