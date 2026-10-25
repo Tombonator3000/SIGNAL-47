@@ -1,6 +1,6 @@
 # T01: Caliche-inspeksjon og retur til SARO
 
-25. oktober 2026. Kilde `85aee47585c5201dabb5d8fef973f6b0c6ec606e` på `codex/t01-service-route`, fra levert core `f60d30eb`. R2 er akseptert innenfor det skriptede omfanget: 14 pakkede funksjonskjøringer og 11 faktisk gjennomgåtte originalbilder. Samme kilde og pakke er bevart gjennom prøvene. PR/merge/installasjon gjenstår ved dette loggpunktet; Q3 er fortsatt installert. H2.1 samlet er åpen fordi T02 og nødvendig kontorreferanse gjenstår.
+25. oktober 2026. Kilde `85aee47585c5201dabb5d8fef973f6b0c6ec606e` på `codex/t01-service-route`, fra levert core `f60d30eb`. R2 er akseptert innenfor det skriptede omfanget: 14 pakkede funksjonskjøringer og 11 faktisk gjennomgåtte originalbilder. Samme kilde og pakke er bevart gjennom prøvene. PR160 er flettet i `d4a25411`, og samme R2 er installert med 40 hashverifiserte payloadfiler og 40 uendrede personlige Saved-filer. Installert oppstart med isolert profil består; Saved er fortsatt identisk etter smoke og pruning. H2.1 samlet er åpen fordi T02 og nødvendig kontorreferanse gjenstår.
 
 ## Spillerreisen
 
@@ -46,7 +46,11 @@ To scratch-postchecks antok UTF8 for native UTF16/BOM-eksporter og avviste dem. 
 
 ## Levering og det som står åpent
 
-PR/merge/installasjon og kontrollert pruning føres etter faktisk utførelse. Ingen ny hel 110 er kjørt for T01. Q3s 110/110 gjelder Q3; R2 bruker målrettede kontroller av endret oppgave-, lagrings- og UI-flyt mot core. Ingen nye renderer-/materialendringer eller VSM-ytelsespåstander inngår.
+[PR160](https://github.com/Tombonator3000/SIGNAL-47/pull/160) er flettet fra kontrollert head `656b283d` i `d4a25411`. GitHub rapporterte ingen checks/status/jobs for denne headen; dette omtales ikke som CI-PASS. Lokal core er vanlig fast-forward, og etter testet `85aee475` var bare dokumenter endret. `t01-acceptance-r2.json` binder 27 rapporter, med separat uavhengig audit.
+
+Installasjonen bruker gjennomgåtte snapshot-/rsync-hjelpere, full hashkontrollert Q3-payloadbackup og `--exclude=Saved`. Alle 40 payloadfiler stemmer, alle40 personlige Saved-filer er byteidentiske. Installert tittelsmoke med egen profil består med descriptor heap. Ingen brukerprosess ble stoppet.
+
+Canonical prune ble først tørrkjørt og konkret gjennomgått, så anvendt i streng idle. Tre gamle payloadkopier ble pensjonert, 10,647 GiB logisk størrelse. Gjeldende R2, R1 og full Q3-backup er de tre gjenværende komplette testpakkene. Q3/Q2/Q1-kandidatenes genererte payload ble pensjonert; kilder, Saved, bilder, logger, bevis, Engine-filer og mappeskall er bevart. Q3-backupen er etterkontrollert fullstendig/hashidentisk. Se `t01-installation-after-retention.json` og `prune-t01-*`. Logisk størrelse er ingen lovnad om fysisk frigjort diskplass. Ingen ny hel 110 er kjørt for T01. Q3s 110/110 gjelder Q3; R2 bruker målrettede kontroller av endret oppgave-, lagrings- og UI-flyt mot core. Ingen nye renderer-/materialendringer eller VSM-ytelsespåstander inngår.
 
 Menneskelig Roam-navigasjon, mus/Xbox-komfort, lytting og ubrutt fullnatt står åpne. H2.1b/T02 trenger fysisk kontor/nøkkel/feltmappe og fire faktiske feltkontroller. Ny original 72s Dale-VHS krever egen produksjon og nonloop pause-/strøm-/save-transport. Eksisterende STATION01/Nora/K3/C og hovedrute med uavklart bevis skal bevares. Se fortsatt åpne punkter i [todo.md](todo.md).
 
