@@ -140,7 +140,7 @@
         {
           "line_id": "H02_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "The two readings do not agree yet. Keep the service card and return to the marked control when you can repeat the comparison.",
+          "text": "The readings do not agree yet. You can finish the calibration, but the unattended survey needs the completed inspection filed at SARO. Keep the card and repeat the comparison at the marked control.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -509,7 +509,7 @@
         {
           "line_id": "H07_CHECK_002",
           "speaker": "DESCRIPTION",
-          "text": "When you changed the radio, the visitor turned to the new sound. The old fragment kept its same words.",
+          "text": "It searched one room earlier. Now the outside band is closing the exits as the visitor moves. The recorded fragment has not changed.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -707,7 +707,7 @@
         {
           "line_id": "H08_WARNING_ACK_001",
           "speaker": "WARD",
-          "text": "The warning is entered. I have stopped the six o'clock series. The other sites have read it back: nobody closes a reference or completes a run.",
+          "text": "The network warning is entered. The six o'clock series remains suspended after your earlier report. The other sites have read it back: nobody closes a reference or completes a run.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
@@ -716,7 +716,7 @@
         {
           "line_id": "H08_WARNING_ACK_003",
           "speaker": "WARD",
-          "text": "Your copies are outside SARO. You did not call too late. Keep the originals with their source sheets.",
+          "text": "I have written the source IDs and the measurements into the call log. The warning is outside SARO. Keep the photographs and the originals with their source sheets.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
@@ -758,7 +758,7 @@
         {
           "line_id": "H09_BRIEF_003",
           "speaker": "DESCRIPTION",
-          "text": "On the table the tracing is still loose. Place its transit on STATION 01, north to north. The newspaper picture has no survey scale.",
+          "text": "On the table the tracing is still loose. Place its transit on STATION 01, north to north. The framed newspaper clipping has no survey scale.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -806,7 +806,7 @@
         {
           "line_id": "H09_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "C is not placed yet. Put the transit on STATION 01 first. Keep the newspaper beside the map; it establishes the old photograph, not the crossing.",
+          "text": "C is not placed yet. Put the transit on STATION 01 first. Keep the old framed clipping beside the map; it establishes the photograph, not the crossing.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -821,7 +821,7 @@
         {
           "line_id": "H10_BRIEF_001",
           "speaker": "DESCRIPTION",
-          "text": "The originals are in the cab. Ward has the copies and the warning.",
+          "text": "The originals are in the cab. Ward has the warning and the dictated measurement tables.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,

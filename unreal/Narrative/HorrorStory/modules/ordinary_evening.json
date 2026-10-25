@@ -298,7 +298,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H02: Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten; SARO-rutinen fortsetter. T02 må da tilby ny normal kontroll før sammenligning. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "trigger_nb": "H02: Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten. Kalibrering kan fortsette, men nye R2-kveldssaker krever fullført journal, kontroll, faktisk lampesammenligning og fysisk SARO-arkivering før overgangen til ubetjent survey. Gamle saker får ingen ny gate. T02 tilbyr ny normal kontroll der den historiske baselinen mangler. Vis bare ved et faktisk utilstrekkelig resultat.",
       "requires": {
         "all": [
           "ctx_hr_h02_ready",
@@ -311,7 +311,7 @@
         {
           "id": "H02_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "The two readings do not agree yet. Keep the service card and return to the marked control when you can repeat the comparison.",
+          "text": "The readings do not agree yet. You can finish the calibration, but the unattended survey needs the completed inspection filed at SARO. Keep the card and repeat the comparison at the marked control.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],

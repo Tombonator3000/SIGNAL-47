@@ -107,13 +107,13 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H02_INCOMPLETE (early_shift / ui / live)
 
-**Utløser:** H02: Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten; SARO-rutinen fortsetter. T02 må da tilby ny normal kontroll før sammenligning. Vis bare ved et faktisk utilstrekkelig resultat.
+**Utløser:** H02: Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten. Kalibrering kan fortsette, men nye R2-kveldssaker krever fullført journal, kontroll, faktisk lampesammenligning og fysisk SARO-arkivering før overgangen til ubetjent survey. Gamle saker får ingen ny gate. T02 tilbyr ny normal kontroll der den historiske baselinen mangler. Vis bare ved et faktisk utilstrekkelig resultat.
 
 **Regi:** Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.
 
 **Krav:** {"all": ["ctx_hr_h02_ready", "ctx_hr_h02_insufficient"], "none": []}
 
-**DESCRIPTION [H02_INCOMPLETE_001]**: The two readings do not agree yet. Keep the service card and return to the marked control when you can repeat the comparison.
+**DESCRIPTION [H02_INCOMPLETE_001]**: The readings do not agree yet. You can finish the calibration, but the unattended survey needs the completed inspection filed at SARO. Keep the card and repeat the comparison at the marked control.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -371,7 +371,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H07_BRIEF (field / phone / live)
 
-**Utløser:** H07: Etter Rom 6: returner til SARO for den navngitte måleoriginalen og bestilte fjernlogger. Utfør normal kontroll av kjent skjerm/utgang før møtet. Første prototype krever fysisk to gyldige ruter fra H3. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.
+**Utløser:** H07: Etter Rom 6 og tidligst 04:04: returner til SARO og sikre mottakeroriginal, tomt/påbegynt hendelsesark og ferdige fjernlogger før møtet. Utfør normal kontroll av kjent skjerm/utgang. Den senere HR_SARO_ORIGINAL-kompositten lages først etter faktisk lyskontroll, reaktivt møte og flukt. Første prototype krever fysisk to gyldige ruter fra H3. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
@@ -394,17 +394,17 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H07_CHECK (field / ui / live)
 
-**Utløser:** H07: Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.
+**Utløser:** H07: Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet. Presenter ferdig romobservasjon først etter faktisk lyskontroll, reaktivt møte og gjennomført flukt; ingen fremtidig hendelsesbeskrivelse i før-angrepsbunten. Skrekkrevisjon R2: aktører er kjent fra kvelden; denne kontrollen krever faktisk observert samordning av søk og avsøkning, ikke første bevis på reaksjon.
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
-**Krav:** {"all": ["ctx_hr_h07_ready", "ctx_hr_h07_checked"], "none": ["hr_h07_recorded"]}
+**Krav:** {"all": ["ctx_hr_h07_ready", "ctx_hr_h07_checked", "ctx_hr_h07_escape_complete"], "none": ["hr_h07_recorded"]}
 
 **DESCRIPTION [H07_CHECK_001]**: The local lamp is off. The band still crosses the glass, and the opaque screen cuts it off.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
-**DESCRIPTION [H07_CHECK_002]**: When you changed the radio, the visitor turned to the new sound. The old fragment kept its same words.
+**DESCRIPTION [H07_CHECK_002]**: It searched one room earlier. Now the outside band is closing the exits as the visitor moves. The recorded fragment has not changed.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -506,7 +506,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H08_CHECK (field / ui / live)
 
-**Utløser:** H08: Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.
+**Utløser:** H08: Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet. Varslingsgrunnlaget blir eksternt sikret som dikterte måletabeller/kilde-ID-er og datert readback, ikke automatisk kopi av fotoarkivet.
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
@@ -540,11 +540,11 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H08_COMPARE_RECORDS (field / ui / live)
 
-**Utløser:** Spilleren har faktisk samlet og sammenlignet alle tre lokale kilder og klokke-/kontrollark.
+**Utløser:** Spilleren har faktisk samlet og sammenlignet alle tre lokale kilder og klokke-/kontrollark. Den komplette SARO-kilden krever faktisk lys-/reaksjonskontroll og gjennomført flukt. Før-angrepsbunten inneholder ikke disse ferdige observasjonene.
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
-**Krav:** {"all": ["ctx_hr_remote_sources_verified"], "none": []}
+**Krav:** {"all": ["ctx_hr_remote_sources_verified", "ctx_hr_h07_checked", "ctx_hr_h07_escape_complete"], "none": []}
 
 **DESCRIPTION [H08_COMPARE_RECORDS_001]**: The source sheets contain different local readings. Their sequence and timing agree.
 
@@ -563,17 +563,17 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H08_WARNING_ACK (field / phone / live)
 
-**Utløser:** Kvittering først når Ward faktisk er nådd, advarselen lest tilbake og 06:00-jobben suspendert. Ikke et tilfeldig tidsutløp.
+**Utløser:** Kvittering først når Ward faktisk er nådd, advarselen lest tilbake og 06:00-jobben suspendert. Ikke et tilfeldig tidsutløp. Kvitteringen krever faktisk diktering av valgte kildeark og Wards daterte logg/readback; foto og negative blir hos spilleren.
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
 **Krav:** {"all": ["ctx_hr_warning_acknowledged", "ctx_hr_remote_sources_verified"], "none": ["hr_h08_warning_ack_presented"]}
 
-**WARD [H08_WARNING_ACK_001]**: The warning is entered. I have stopped the six o'clock series. The other sites have read it back: nobody closes a reference or completes a run.
+**WARD [H08_WARNING_ACK_001]**: The network warning is entered. The six o'clock series remains suspended after your earlier report. The other sites have read it back: nobody closes a reference or completes a run.
 
 *Eksisterende vakthavende. Må ikke slås sammen med Dale.*
 
-**WARD [H08_WARNING_ACK_003]**: Your copies are outside SARO. You did not call too late. Keep the originals with their source sheets.
+**WARD [H08_WARNING_ACK_003]**: I have written the source IDs and the measurements into the call log. The warning is outside SARO. Keep the photographs and the originals with their source sheets.
 
 *Eksisterende vakthavende. Må ikke slås sammen med Dale.*
 
@@ -586,7 +586,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H09_BRIEF (all_night / physical / live)
 
-**Utløser:** H09: Rolig diner: les dagens fysisk leverte avis med 1947-utklippet og legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.
+**Utløser:** H09: Rolig diner: les E15, det innrammede utklippet fra juli 1947 som allerede henger ved døren. Legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Dagens avis i byen er en annen, valgfri kilde. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
@@ -600,7 +600,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 *Eksisterende lastebilsjåfør. Praktisk, lavmælt, bare egne veiopplevelser.*
 
-**DESCRIPTION [H09_BRIEF_003]**: On the table the tracing is still loose. Place its transit on STATION 01, north to north. The newspaper picture has no survey scale.
+**DESCRIPTION [H09_BRIEF_003]**: On the table the tracing is still loose. Place its transit on STATION 01, north to north. The framed newspaper clipping has no survey scale.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -632,13 +632,13 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 ### H09_INCOMPLETE (all_night / ui / live)
 
-**Utløser:** H09: Avis før04:45 er ikke levert; behold mat/ro/annet kartgrunnlag tilgjengelig uten tom venting. Feil plassering får eksisterende karttips; avisbildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise. Vis bare ved et faktisk utilstrekkelig resultat.
+**Utløser:** H09: E15 er et gammelt, tilgjengelig dinerutklipp og skal ikke ha 04:45-port. Leveringsregelen gjelder dagens avis i byen. Feil kartplassering får eksisterende karttips; bildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise. Vis bare ved et faktisk utilstrekkelig resultat.
 
 **Regi:** Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.
 
 **Krav:** {"all": ["ctx_hr_h09_ready", "ctx_hr_h09_insufficient"], "none": []}
 
-**DESCRIPTION [H09_INCOMPLETE_001]**: C is not placed yet. Put the transit on STATION 01 first. Keep the newspaper beside the map; it establishes the old photograph, not the crossing.
+**DESCRIPTION [H09_INCOMPLETE_001]**: C is not placed yet. Put the transit on STATION 01 first. Keep the old framed clipping beside the map; it establishes the photograph, not the crossing.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -653,7 +653,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Krav:** {"all": ["ctx_hr_h10_ready", "ctx_hr_warning_acknowledged"], "none": ["hr_h10_recorded", "hr_h10_brief_presented"]}
 
-**DESCRIPTION [H10_BRIEF_001]**: The originals are in the cab. Ward has the copies and the warning.
+**DESCRIPTION [H10_BRIEF_001]**: The originals are in the cab. Ward has the warning and the dictated measurement tables.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -710,9 +710,9 @@ LOCAL SOURCE / SARO 07. Keep the original receiver record with the separate room
 
 The outside band crossed successive windows. The local lamp control did not remove it. An opaque screen interrupted it at the wall.
 
-A visitor turned to a newly changed radio sound after the sound began. The retained field fragment continued unchanged. This is a present response, separate from the recording.
+A visitor reacted to a new radio sound, as in the earlier encounter. Here the outside band moved across the exits in step with the visitor's search. The retained fragment continued unchanged. The new observation concerns coordination, not the first presence of a responsive visitor.
 
-**Produksjon:** Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto.
+**Produksjon:** Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto. Før angrepet finnes bare mottakeroriginal og tomt/påbegynt hendelsesark. Denne sammensatte kilden tildeles først etter faktisk lyskontroll, reaktivt møte og flukt.
 
 ### HR_HONDO_LOCAL: Hondo / local record
 
@@ -768,9 +768,9 @@ typed / 14 APR 1986 / LOCAL RECORD
 
 RECEIVED / E. WARD. SARO original identified; local observations separated from receiver copy. Hondo and Site 11 originals requested and their source checks retained.
 
-The 06:00 morning series is suspended. No fresh observer is to close a reference or complete the old run. Other sites have acknowledged the same instruction. This suspension is a change to the work order, not a claim that the external activity has stopped.
+The 06:00 morning series remains suspended after the earlier local safety report. No fresh observer is to close a reference or complete the old run. Other sites have now acknowledged the same instruction. This does not claim that the external activity has stopped.
 
-Copies are outside SARO. The originals will be transferred with their exposure records and source sheets. The courier has the field map. The current handover point is the existing survey bolt at mile 10.4 on the old Roswell road; it is not C.
+The warning, source IDs and dictated measurement tables are retained in Ward's dated call log outside SARO. Photographs, negatives and complete source sheets remain in the transfer folder. The courier has the field map. The handover point is the existing survey bolt at mile 10.4 on the old Roswell road; it is not C.
 
 Time of acknowledgement is entered when this call is actually completed. Do not preprint a successful acknowledgement before the line has been answered.
 

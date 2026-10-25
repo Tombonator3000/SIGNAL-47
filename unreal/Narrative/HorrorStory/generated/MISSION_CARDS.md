@@ -30,7 +30,7 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Følge:** En ordinær feil har en reproduserbar forklaring og et normalt etterbilde. Senere T02 får et faktisk kontrollgrunnlag, ikke et gammelt telex som bevis på hele byens strøm.
 
-**Utilstrekkelig bevis:** Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten; SARO-rutinen fortsetter. T02 må da tilby ny normal kontroll før sammenligning.
+**Utilstrekkelig bevis:** Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten. Kalibrering kan fortsette, men nye R2-kveldssaker krever fullført journal, kontroll, faktisk lampesammenligning og fysisk SARO-arkivering før overgangen til ubetjent survey. Gamle saker får ingen ny gate. T02 tilbyr ny normal kontroll der den historiske baselinen mangler.
 
 **Eksisterende ID-er beholdes:** `T01`, `EV_TRAFO_CHECK`, `EV_SERVICE_LOG`
 
@@ -112,13 +112,13 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 ## H07: The Inspection
 
-**Spørsmål:** Is something responding to what you do now?
+**Spørsmål:** What has changed about the search at SARO?
 
-**Fysisk handling:** Etter Rom 6: returner til SARO for den navngitte måleoriginalen og bestilte fjernlogger. Utfør normal kontroll av kjent skjerm/utgang før møtet. Første prototype krever fysisk to gyldige ruter fra H3.
+**Fysisk handling:** Etter Rom 6 og tidligst 04:04: returner til SARO og sikre mottakeroriginal, tomt/påbegynt hendelsesark og ferdige fjernlogger før møtet. Utfør normal kontroll av kjent skjerm/utgang. Den senere HR_SARO_ORIGINAL-kompositten lages først etter faktisk lyskontroll, reaktivt møte og flukt. Første prototype krever fysisk to gyldige ruter fra H3.
 
-**Kontroll:** Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst.
+**Kontroll:** Bruk kveldens lærte lampe-, skjermings- og lydkontroller. Dokumenter at den ytre avsøkningen nå avskjærer åpninger i sammenheng med inntrengerens søk. Reaktiv aktør er kjent fra før; ny kunnskap er koordinert dekning av SARO. Det gamle fragmentet fortsetter uendret.
 
-**Følge:** Atferden er nåtidig og reaktiv. Sikre originalen og kom til servicebilen via skjermet rute eller avledning; vellykket flukt respekteres. H08s trygge etterarbeid er neste handling.
+**Følge:** Sikre originalene og unnslipp samordnet avsøkning/inntrenger. Tidligere lærte regler beholdes, men enkle ruter er nå avskåret. H08 sammenligner denne eskaleringen med fjernarkene.
 
 **Utilstrekkelig bevis:** Ingen fotoport under jakt. Journalfør en faktisk sanset reaksjon fra begge ruter; spilleren kan gjenta kontrollen før faren uten å måtte velge avledning som fluktmetode. Fangst tilbyr tydelig lokal gjenopptakelse fra trygt sjekkpunkt, ikke ny tapt-tid-gren.
 
@@ -134,9 +134,9 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Fysisk handling:** På trygg plass: legg SARO-original og eget romnotat ved Hondo- og Site11-utskrifter. Hent bevart kopi ved sen ankomst. Sammenlign proveniens, uavhengige kanaler, klokker, faseorden og kommende spor.
 
-**Kontroll:** Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger.
+**Kontroll:** Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward, velg kildeark og dikter deres markerte måletabeller og begrensningene. Hun fører kilde-ID-er/tabellverdier i en datert samtalelogg og leser dem tilbake; foto/negative kopieres ikke over telefon.
 
-**Følge:** Støttet varsel om samordnet forberedelse og kommende ankomst. Ward stanser faktisk 06:00-serien, varsler andre stasjoner og kvitterer for eksternt lagrede kopier før finalen. Spilleren har gjort nyttig arbeid.
+**Følge:** Støttet nettverksvarsel om samordnet forberedelse og kommende ankomst. Ward bekrefter at den lokale 06:00-serien fortsatt er suspendert etter kveldens melding, varsler andre stasjoner om de nye funnene og kvitterer for dikterte måleavskrifter. Foto, negative og originalark blir i mappen.
 
 **Utilstrekkelig bevis:** Manglende sanntidsmottak erstattes av bevart lokalt stempel/originalkopi på telex. Uverifisert kilde føres som foreløpig og ringer Ward for kildekontroll; varsel om lokal fare kan sendes straks. Sterk nettverksslutning venter på de to uavhengige fjernkildene.
 
@@ -150,13 +150,13 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Spørsmål:** Where is C, and can the originals be moved without repeating the observation?
 
-**Fysisk handling:** Rolig diner: les dagens fysisk leverte avis med 1947-utklippet og legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave.
+**Fysisk handling:** Rolig diner: les E15, det innrammede utklippet fra juli 1947 som allerede henger ved døren. Legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Dagens avis i byen er en annen, valgfri kilde.
 
 **Kontroll:** Finn C ved 8.15-bolten og avtal separat 10.4-bolt med Ward. Sjåførens oktoberstopp ved8.15 må tas med i risikovurderingen. Spør om hans nylige gjennomkjøring: det er et nåtidig vitnemål, ikke et generelt trygghetsbevis.
 
 **Følge:** Formålet er fysisk overlevering av originaler med kopier allerede sikret eksternt. Planen er å kjøre gjennom uten stopp/avlesning ved C. Ingen skjult feilvalg, ny global frist eller påstand om at kryssing er bevist trygg.
 
-**Utilstrekkelig bevis:** Avis før04:45 er ikke levert; behold mat/ro/annet kartgrunnlag tilgjengelig uten tom venting. Feil plassering får eksisterende karttips; avisbildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise.
+**Utilstrekkelig bevis:** E15 er et gammelt, tilgjengelig dinerutklipp og skal ikke ha 04:45-port. Leveringsregelen gjelder dagens avis i byen. Feil kartplassering får eksisterende karttips; bildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise.
 
 **Eksisterende ID-er beholdes:** `E09A`, `E14`, `E15`, `P13`, `E11`
 

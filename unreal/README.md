@@ -1,5 +1,7 @@
 # SIGNAL / 47 i Unreal
 
+Nyeste hovedscenario: [én sammenhengende natt fra18:00 til Roswell Road](MISSION_FLOW_1800_ROSWELL.md). Tretten scenarioer fletter sammen eksisterende historie, aktiv kveld, tre Calichebesøk og ekstra arrayoppdrag. Alle eksisterende randomfamilier beholdes. Ett tidlig himmellys blir gradvis flere; [Dales kontor](DALE_OFFICE_DOCUMENTS.md) får seks nye frivillige lesedokumenter rundt den eksisterende feltmappen. Produksjonsoppgaver S.1 til S.9 står i [todo](todo.md). Dette er design/manusutkast for senere integrasjon.
+
 Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Videre spillarbeid gjelder desktoputgaven i Unreal. `web/` og Unity er historiske referanser. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
 
 Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen kom først; 22. oktober ble resten av spillet portert (Tom valgte en ren C++-port framfor å kjøre nettversjonens kode i en innebygd nettleser).
@@ -9,6 +11,10 @@ Gjeldende retting og teststatus: [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md
 QA-grunnlaget Q3 ble levert gjennom PR158. Gjeldende standard er nå T01 R2 fra [PR160](https://github.com/Tombonator3000/SIGNAL-47/pull/160), med 40 verifiserte payloadfiler og 40 uendrede personlige Saved-filer. Installert oppstart og kontrollert opprydding består. R2, R1 og full Q3-backup er de tre komplette testpakkene; alle kilder/Saved/bevis er bevart.
 
 Samlet videre plan for historie og skrekk: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md). Kosmisk etterforskning, gradvis kommende invasjon, stabile skyggemannregler og en faktisk skjul/flukt-sekvens ved SARO. Detaljerte oppdrag og produksjonsetapper H1 til H6 ligger øverst i [todo.md](todo.md). Dette er planlagt for senere implementering, ikke nye funksjoner i dagens spill.
+
+De tidligere32 arbeidskortene, seks valgfrie sporene og revisjonene er bevart i [sekundært løsningsoppslag](MISSION_DETAILS_REFERENCE.md). Hovedscenarioet bestemmer nå rekkefølge og sammenheng; kontrollverdier og eksisterende bevis-ID-er videreføres.
+
+Fem nødvendige aktive trusselmøter, tre før midnatt, og synlig bortføring bygger mot den faste finalen. Ny himmel-/kveldskoordinator og engelske delscener må produseres. Gammel tilfeldig bortføring med tapt tid beholdes og skilles fra nye møters lokale gjenopptakelse. Dette er en planrevisjon, ikke den installerte T01 R2-pakken.
 
 H1.2 til H1.4 er nå produsert som engelske forfatterkilder i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti oppdrag, 36 scener og fem dokumenter med validert generator. Ingen ny runtimehistorie eller nye opptak er hevdet. T01-service-/returreisen er nå implementert og prøvd som R2: faktisk journal/kontroll/lampe, én fysisk returarkivering, versjonert lagring og riktige RX-mål etter Continue. Se [T01_RUNTIME.md](T01_RUNTIME.md) for kilde, 14 pakkede kjøringer, sju ferske Continue-prosesser, elleve originalbilder og videre leveringsstatus. T02, kontor/VHS og resten av H2 står åpne.
 

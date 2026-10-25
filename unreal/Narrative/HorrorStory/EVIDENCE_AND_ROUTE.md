@@ -1,8 +1,14 @@
 # Beviskjede, varsling og siste reise
 
+Gjeldende rekkefølge står i [sammenflettet hovedscenario SC01 til13](../../MISSION_FLOW_1800_ROSWELL.md). Byen utløser hjelp, gir datert kildekontroll før ARRAY-01 og blir sen sammenstillings-/avreiseplass. Arrayet tester fysisk posisjonsrespons og peker videre mot etablert STATION01-henvisning, uten å løse C eller Noras motiv. Fjerde aktive møte ligger der. Behold randomfamilier, gammel tapt-tid-bortføring og gradvis himmelprogresjon. Rute mot10.4 trenger ferske lokale observasjoner. Dette er nye design-/integrasjonskrav, ikke allerede implementert bevis.
+
+[SC01 til04](../../MISSION_FLOW_1800_ROSWELL.md#sc01-den-første-overflygningen) flytter fysisk nærvær, meldinger og tre unnslippelser til før midnatt. H07 viser koordinert avsøkning etter tidligere møter. Lokal06:00-serie settes på hold tidlig; H08 bekrefter fortsatt suspensjon og nye kvitteringer andre steder. Normal lampeprøve forklarer ikke bort personen spilleren så. Det nødvendige spørsmålet endres fra om noe finnes til hva registreringen gjør.
+
 Dette er forfatter- og integrasjonskontrakt, 25. oktober 2026. Nye fakta nedenfor gjelder den planlagte versjonen. De er ikke funn fra den installerte pakken eller fra en faktisk fjernstasjon. Engelske produkttekster ligger i JSON-kildene.
 
 ## Hovedmotivasjon
+
+Oppdragsdetaljer og full løsningsfasit: [18:00 til Roswell Road](../../MISSION_FLOW_1800_ROSWELL.md). Første integrasjonsmål sikrer mottakeroriginal, påbegynt hendelsesark og begge ferdige fjernark før SARO-angrepet, tidligst 04:04. Romobservasjonene føres først etter faktisk lyskontroll og møte; HR_SARO_ORIGINAL-kompositten tildeles da. Etterarbeidet krever ingen ny tur inn i det truede bygget. E15 er det historiske utklippet som allerede henger i dineren og har ingen port ved dagens avislevering 04:45.
 
 Reyes kommer for å holde surveyen i drift, dokumentere feil og levere en lesbar nattevakt til neste skift. En vanlig feil kan forklares. Den nye residualen og et kontrollert fotografi kan ikke forklares på samme måte. Arbeidet endres gradvis fra vedlikehold til undersøkelse, deretter til å sikre bevis og hindre andre i å gjenta et farlig forsøk. Varslingen lykkes før finalen. Ingen lover å redde Tomás eller stanse alt som nærmer seg.
 
@@ -36,7 +42,7 @@ Skyggemannen forblir svart menneskeform, stille mens den observeres, med usett f
 
 ## Varsling som faktisk betyr noe
 
-Før H09-avreise kreves en reell telefonkvittering fra Ward. Adapteren må registrere at hun fikk originalens identitet og begrensningene i slutningen, leste tilbake varselet, stanset 06:00-serien og fikk andre stasjoners kvitteringer. `HR_WARNING_RECEIPT` tildeles først etter dette. Å trykke «send» på et tomt panel er ikke tilstrekkelig.
+Før H09-avreise kreves en reell telefonkvittering fra Ward. Adapteren må registrere at hun fikk originalens identitet og begrensningene i slutningen, skrev de valgte dikterte måletabellene og kilde-ID-ene i sin daterte samtalelogg, leste tilbake varselet, stanset 06:00-serien og fikk andre stasjoners kvitteringer. `HR_WARNING_RECEIPT` tildeles først etter dette. Eksternt sikret materiale er varsel og måleavskrifter; fotografier, negative og komplette originalark er fortsatt i transportmappen. En telefonsamtale kopierer ikke bildearkivet automatisk. Å trykke «send» på et tomt panel er ikke tilstrekkelig.
 
 Dette erstatter senere dagens kapittel 5-løfte om å komme tilbake til konsollen klokka seks. Den gamle replikken skal ikke bli stående ved siden av en ny påstand om at serien er suspendert. Morgenjobben er en menneskelig arbeidsordre som Ward kan stanse; den fremmede aktiviteten stanser ikke automatisk av samme grunn.
 
@@ -48,7 +54,7 @@ Dagens E14-kart har allerede surveybolter ved 3.3, 6.0, 8.15 og 10.4 miles. C m�
 
 Den gamle Roswell-veien er allerede en direkte vei østover fra dineren; sjåføren sier at den sparer elleve miles mot den nyere veien. Den velges som praktisk møtevei, ikke som eneste mulig utvei eller bevist trygg rute. Nye ord gjør vurderingen eksplisitt:
 
-- Kopier og varsel er allerede utenfor SARO. Målet er å overlevere identifiserte originaler med kilderekke, uten ny observerkobling.
+- Varsel, kilde-ID-er og dikterte måletabeller er allerede bevart i Wards daterte logg utenfor SARO. Foto, negative og komplette kildeark overleveres som originaler med kilderekke, uten ny observerkobling.
 - C kartlegges for å unngå stopp og avlesning på stedet. Bolten ved 10.4 er et annet punkt.
 - Sjåførens oktoberstopp ved 8.15 er en relevant advarsel. Hans ferske gjennomkjøring gir begrenset nåtidsgrunnlag for å prøve passasje, uten løfte om sikkerhet. Denne nye replikken må integreres som faktisk tidsbundet vitnemål, ikke som tilbakevirkende endring av en gammel sak.
 - Nora ber ikke Reyes undersøke om linjen fortsatt virker. Ward ber ikke om å fullføre Tomás' observasjon. Ingen ny tidsfrist tvinger et selvmordsvalg.

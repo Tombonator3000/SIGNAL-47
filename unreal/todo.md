@@ -1,5 +1,58 @@
 # Todo for unreal/
 
+## Sammenflettet hovedscenario, randombevaring, himmel og Dale
+
+[MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) er nå én hovedrekkefølge med 13 sammenhengende scenarioer. Tidligere revisjoner og alle 32 løsningskort ligger urørt i [MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md) som sekundært oppslagsverk. Oppgavene her presiserer eksisterende I-/R2-/H-arbeid; de er ikke en ekstra parallell implementering.
+
+- [x] S.0: Flett kveld, tre Calichebesøk, arkiv/kontor, ekstra arrayoppdrag, STATION01, Nora, beleiring og fast finale til én årsakskjede. Bevar tidligere detaljkort og skriv seks frivillige engelske UFO-/humanoiddokumenter i [DALE_OFFICE_DOCUMENTS.md](DALE_OFFICE_DOCUMENTS.md). Inventer eksisterende randomfamilier og deres fase-/tidsvilkår. Dette er levert design, ikke runtime.
+- [ ] S.1: Oppdater engelske JSON-kilder og personkunnskap etter SC01 til SC13, i samarbeid med I.1/I.2/R2.1/R2.8/H1.5. Bevar eksisterende H-/P-/E-/T-ID-er og EveningShifts eierskap til overlevering/kontor/T01/T02. Hjelperens bortføring, første melding og sen nettverksvarsling må få forskjellig følge. Regenerer via generatorene.
+- [ ] S.2: Implementer versjonert kveld-/tidskoordinator etter R2.2/H1.7. Gammel Survey/K3/dip/TimeSkip må vente til SC01 til04 og T01-returfiling er fullført. La residualen starte i passiv mottaking uten å oppheve SC04s plansperre. Lag fremoverbudsjett med faktiske transport-/felt-/mørkeromsbehov og vern av 00:13:47/04:04/05:29. Gamle saker beholder gammel mapping; nødvendig innhold hoppes ikke over ved tidsbortfall.
+- [ ] S.3: Produser SKY01 til05: ett tidlig kryssende lys, to i Caliche, flere sent på kvelden, ordnet feltbevegelse og større spredning før morgen. Verdensbaner, okklusjon, naturlige siktmuligheter og separat opptrådt/observert/fullført-status. Lagre global fase og faktisk sett; ingen kameratvang, fotoquota eller gratis journalbevis. Behold LineLights, komet, meteorer og StarHole.
+- [ ] S.4: Bevar hele eksisterende randominventar, odds som utgangspunkt, gjentakelsesgrenser, vinduer og saveflagg. Utvid eksisterende opptattvern til de nye møtene. Utsett ustartet kandidat uten å bruke opp engangsflagg; ingen hendelseskø etter dialog. Gi påbegynt hendelse en trygg avslutning før hovedtopp. Gammel ch1 til5-pool og bAnomalyBaseline krever eksplisitt kveldsmapping, ikke flytting av sene byvinduer til20:00. Samordnes med H5.3.
+- [ ] S.5: Behold gammel tilfeldig bortføring med varsel, maks3, minst40min avstand,17 til47min tap og etterspor. Utvid NextFixed-budsjettet for ny scenariorekkefølge uten å endre legacy. Skill dette fra lokal retry i de fem nye møtene og fra fast finale. Samordne betinget gammel STATION01-bortføring med kort ny lyspassasje; ingen lovet lykkeflukt som straks overstyres av Force.
+- [ ] S.6: Rett LineLights-observasjonskontrakten: start/avbrudd/manglende truck skal ikke skrive full observert lyssekvens eller permanent bruke opp en uopplevd sjanse. Behold legitim faktisk opplevd engangshendelse. Verifiser avbrudd/Continue i samme avgrensede arbeid som S.3/S.4.
+- [ ] S.7: Integrer Dales seks nye frivillige dokumenter i EveningShift med registrerte ID-er, faktisk tekstvisning/skalering og lesestatus. Behold de sju eksisterende dokumentene og én kort nødvendig feltmapperute. Lag eget ordinært arrayservicevedlegg for nye A/B-ståsteder; eksisterende indeks beholder T02s kulvert. Produser eventuelle skisser/foto som faktiske rekvisitter. VHS_DALE_FIELD_01 er fortsatt et72sek manus, ikke produsert film; egen video-/transport-/avbrudds-/saveoppgave. Ingen lesekvote eller tidlige sluttspoilere.
+- [ ] S.8: Produser SC04s begrensede sikkerhetsmål og SC12s konkrete rutegrunn. Lokal fysisk auto-/surveyplansperre stanser automatisk kjøring, ikke all passiv mottaking/avgrenset feltkontroll. Vis fungerende utvei og fysisk rute fra bilflukt til SAROs låsbare kontrollrom, med Reyes' avtalte loggsikring og Ward på linjen før SC05. Produser fersk sted-/tidsfestet utfartsobservasjon og bud ved10.4. Test at begge valgene om SARO og senere avreise fra trygg diner gir mening.
+- [ ] S.9: Prøv én hel reise uten tilfeldige funn og én med kvalifisert gammel bortføring/tidsbortfall. Ta med oversett tidlig lys, lest/ulest Dale-samling, avbrutt VHS, uavklart T02, alle fem møters lykkeflukt/lokal retry, faktisk kildekontroll, sen Earl-kilde, feltfilm før Nora, fjernark tidlig/sent, Ward-readback og gammel save. Mål faktisk transport, frykt og ro. Ingen PASS på menneskelig opplevelse fra manus alene.
+
+## Integrasjonsforslag: historie, ARRAY-01 og Caliche
+
+[Hovedscenarioets SC03/08/12](MISSION_FLOW_1800_ROSWELL.md) samler anbefalingen etter brainstorming, lokal game-production og kritisk Gauntlet-gjennomgang. De tidligere kortene bevares i oppslagsverket; hovedscenarioet bestemmer rekkefølgen. Detaljene skal prøves før integrasjon.
+
+- [x] Utvikle og sammenligne tre arraymekanikker og tre byroller. Konkretiser «De peker på deg», tre meningsfulle bybesøk, årsakskjede til1947/Nora/Tomás og prøvbare løsninger på kritikk. Skil konseptgjennomgang fra menneskelig spilltest.
+- [ ] I.1: Skriv nye engelske delscener for inntrengermelding/utkalling, avtalt hjelpestopp og bortføring i Caliche. Flytt kveldens svarte skikkelse til det samme bybesøket. Produser reell kvittering og savnetmelding; behold tidlig valgfritt diner/mat som separat flyt.
+- [ ] I.2: Produser BY-02 med datert Earl/1981-kildekontroll før ARRAY-01, tydelig isolert bånd/live-valg og et begrenset feltregistreringsopplegg. Bånd måler lyd/tid, ikke peiling. Gi legitimt alternativ ved sen ankomst.1420 AM og1420.405 MHz forblir forskjellige.
+- [ ] I.3: Produser ARRAY-01 på selve antennefeltet: fast referanse, to navngitte og fysisk tilgjengelige ståsteder, fritt valg A→B/B→A og kort retur, ekte antennerespons, geometrisk observasjon og separat kommando-/drivkontroll. Ingen tre-bokser-sikringsjakt eller forhåndsanimert fasit.
+- [ ] I.4: Lag egen versjonert arrayfase og lokal gjenopptakelse, med nattkurvereservasjon og retrett. Gjenbruk per-antenne-bevegelse fra DishesFollow uten gammel Warning/Force-bortføring. Samordne ArrayBack/ArchiveDishes. Gamle saker får ingen retroaktiv hovedgate.
+- [ ] I.5: Behold fem aktive møter ved å legge møte4 til arrayet. STATION01 får undersøkelse og kort avskjæring fremfor ny stor jakt. Byen skal gi hjelp, uavhengig kontroll og sen sammenstilling; kutt øvrige pliktbesøk. Produksjonsrekkefølge: hjelpekontakt→arkiv/dato→BY02→array→STATION01→Nora→samordning/varsling→P13/rute.
+- [ ] I.6: Gjør avgrenset papir-/leseprøve av reisemotivasjon, kildeuavhengighet og rutevalg, deretter native arrayprototype med faktisk sikt/bevegelse/lagring. Kontroller at samme klokke og forskjellig ståsted gir forskjellig riktig respons. Frykt, varighet og troverdig retur til SARO er UNVERIFIED til prøvd.
+
+## Skrekkrevisjon R2: aktiv kveld og flere alienmøter
+
+Tom vurderte førsteutgaven som anemisk, med én stor aliensekvens og for lite18-24. [SC01 til04 i hovedscenarioet](MISSION_FLOW_1800_ROSWELL.md#sc01-den-første-overflygningen) samler nå kveldsakten. R2 her er designrevisjon, ikke levert T01 R2. Fem nødvendige trusselmøter, tre før midnatt, samt synlig bortføring og fast finale anbefales. Eksisterende randomhendelser beholdes i tillegg. Ingen nye spillfunksjoner er levert av planendringen.
+
+- [x] Skriv seks konkrete førmidnatt-beats: fysisk nærvær ved vinduet18:15, flukt ved trafo19:00, svart figur inne20:15, tilkalt hjelper bortført21:00, annex-inntrenging22:15 og nært bilmøte23:20. Tider er designvinduer, ikke ventefrister.
+- [ ] R2.1: Lag nye engelske delscener for KVELD-01 til06 og endret personkunnskap. Etter første hendelse går arbeidsmålet til sikkerhet, hjelp og dokumentasjon. Vis konkrete hjelpe-/avreiseforsøk; ikke beordr fortsatt normal drift etter bortføring.
+- [ ] R2.2: Implementer lagret kveldskoordinator med fullføringsporter og korte fremoveroverganger. Dagens Survey/K3/dip/tidshopp må ikke slette akten. Bevar00:13:47-residualen,1947-tider og05:29-finalen. Ingen seks timers virkelig venting.
+- [ ] R2.3: Produser trusselmøte1 ved trafostasjonen, etter normal T01-prøve: opak dekning, avsøkt retur, alternativ passasje til bilen og faktisk fangst/gjenopptakelse. Bevar utført servicearbeid.
+- [ ] R2.4: Produser særskilt regional kveldshjelper, ordinær ankomst/identifikasjon, synlig bortføring, kjøretøy/etterspor og savnetmelding. Ikke fjern nødvendige eksisterende vitner. Lyd eller tekst alene teller ikke som levert bortføring.
+- [ ] R2.5: Produser annex-inntrenging med fast, tidligere hørt Dale-fragment og to virkelige fluktveier. Reaktiv enhet og usett-flyttende skyggemann skal ha klart ulike regler/utseende.
+- [ ] R2.6: Produser aktivt bilmøte med lesbar sikt/lyd, mulig vellykket skjul og fysisk gyldige handlinger. Ikke kopier finalens motorstopp eller erstatt gameplay med lang venting/QTE.
+- [ ] R2.7: Legg aktivt trusselmøte4 til ARRAY-01 og gjør H07 til koordinert beleiring. STATION01 beholder undersøkelsen og kort avskjæring; unngå enda en lik lang jakt. Se integrasjonsforslaget og I.1-I.6.
+- [ ] R2.8: Revider tidlig lokal hold av06:00-serien og H08s fortsatte/nettverksbrede suspensjon. B-12/P07 undersøker mekanisme og kontrollmuligheter etter at aktører er sett; de skal ikke bortforklare observasjonene.
+- [ ] R2.9: Prøv pacing med vanlig input: første tydelige brudd omtrent10-15min, første unnslippelse omtrent25-40min, handling/ettervirkning mellom toppene og reell ro etterpå. Tallene er uprøvde mål. Fem møter må være ulike og gjennomførbare, ikke bare plasserte figurer.
+
+## Hele nattens oppdragsdetaljer, utvidet 25. oktober 2026
+
+[MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md) bevarer de32 arbeidskortene og seks valgfrie undersøkelsene med løsninger, kontrollbevis, farer, hint og recovery. [Hovedscenarioet](MISSION_FLOW_1800_ROSWELL.md) bestemmer nå sammenhengen. T01 R2 og dagens kapitler er grunnlag; nye skrekkdeler er ikke implementert.
+
+- [x] Utvid hele reisen fra 18:00 via service, residual, B-12, arkiv, STATION01, Nora, SARO-beleiring, fjernbevis og All Night til Roswell-veien og den eksisterende finalen. Dokumenter begge B-12-løsninger, normal P07, tonefølgen, 1947-tider, Nora/P13 og separate 8.15-/10.4-punkter.
+- [x] Rett forfatteravvik i HorrorStory: ufullført T01 sperrer Survey i nye R2-saker, E15 er gammelt dinerutklipp uten 04:45-port, romnotat følger faktisk hendelse og ekstern sikring har konkret måleavskrift/readback. Regenerer lesefilene fra JSON og kontroller manuspakken. Ingen spillkode eller nye takes inngår.
+- [ ] H1.5: Bind NATT-01 til NATT-32 til eksisterende engelske H-scener og nødvendige nye delscener/verdenshandlinger. Unngå doble overleveringer og 32 separate kapittelskjermer; hovedspørsmålet skal fortsatt være enkelt å følge.
+- [ ] H1.6: Produser nødvendige, konkrete rekvisitter, motivutsnitt, kart-/måleoverlegg og tre nivåer med valgfrie hint for detaljkortene. Bevar ekte fotopiksler, valgte kontrollveier og begrensede slutninger. Ingen dokumentknapp erstatter en fysisk kontroll.
+- [ ] H1.7: Innpass hele tids-/transportkjeden: aktive kveldsoppdrag før siste notch/Survey, ingen fremtidsark før 04:04, nødvendig dokumentbunt sikret før beleiring og romnotat først etter hendelsen. Rolig varsling etter flukt og ingen 04:45-sperre for E15. Ikke flytt historiske TAPE A/E10-tider eller finalen.
+- [ ] H6.5: Prøv detaljvedleggets sammenhengende rute og feilsituasjoner med vanlig input: direkte ankomst uten diner, begge B-12-kontroller, usett skikkelse, avbrutt VHS, uavklart T02, tåkete kopi/manglende foto, begge fluktruter/fangst, tidlig/sen ankomst, avbrutt varsling, feil P13 og gammel sak. Mål oppdragsmengde og transport før flere pliktærend legges til.
+
 ## Prioritet etter spilltest, 25. oktober 2026 kl. 15:03 CET
 
 Før-funn og presise bevis: [SPILLTEST_2026-10-25.md](SPILLTEST_2026-10-25.md). Retting og ny validering: [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md).
@@ -63,7 +116,7 @@ Produksjonsgrunnlaget for H1.2 til H1.4 er levert i [Narrative/HorrorStory](Narr
 
 - [ ] H5.1: Integrer uavhengige fjernlogger og samtidige faser i H08. Spilleren skal kunne etterprøve at dette gjelder flere steder og en kommende ankomst; ett duplisert radiosignal er utilstrekkelig.
 - [ ] H5.2: Koble faktisk varsling, rolig diner/kartarbeid og begrunnet siste kjøretur. Bevar A/C-skillet, ufrivillig motorstopp, THE EVENT 05:29:00 til 05:29:47 og hele 1947-bildet med Reyes.
-- [ ] H5.3: Kurater skrekktopper, lyd og jumpscares gjennom hele reisen. Nye sekvenser bruker felles nattkurve og erstatter konkurrerende topper på samme etappe. Vern Nora, brev, kartarbeid og etterarbeid.
+- [ ] H5.3: Kurater skrekktopper, lyd og jumpscares gjennom hele reisen. Nye sekvenser bruker felles nattkurve og utsetter konkurrerende kandidater uten å slette gamle hendelser eller bruke opp ustartede engangsflagg. Vern Nora, brev, kartarbeid og etterarbeid. Se S.4/S.5.
 - [ ] H5.4: Innpass i eksisterende tidslinje 2 uten tilbakesprang eller straffende global nedtelling. Gamle saker beholder tider/foto og får ingen retroaktiv beleiring. Spilltekst og generert manus går gjennom korrekte kilder.
 
 ### H6: Ferdigkriterier og senere integrasjon

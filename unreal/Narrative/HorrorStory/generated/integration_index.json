@@ -35,8 +35,9 @@
         "EV_SERVICE_LOG"
       ],
       "source_files": [
-        "unreal/Signal47/Source/Signal47/Private/S47Anomaly.cpp",
-        "unreal/Signal47/Source/Signal47/Private/S47FreeModels.cpp"
+        "unreal/Signal47/Source/Signal47/Private/S47Substation.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Evening.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Story.cpp"
       ]
     },
     {
