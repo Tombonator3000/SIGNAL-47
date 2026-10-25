@@ -20,6 +20,7 @@ import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from surface_profiles import PROFILES, material_labels, texture_labels, profile_for, glass_parameters, is_control_crt, write_detail_tile
+from ribbon_geometry import ribbon_asset_paths
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -165,6 +166,8 @@ if 'geo' in only:
         eal.delete_directory('/Game/Web/Geo')
     for f in man['geoFiles']:
         tools.import_asset_tasks([task(os.path.join(SRC, 'geo', f['file']), '/Game/Web/Geo')])
+    ribbon_paths, ribbon_rejected = ribbon_asset_paths(man)
+    log('line ribbon RT exclusions %d; shared/unproven geometry retained %s' % (len(ribbon_paths), sorted(ribbon_rejected)))
     count = 0
     for a in eal.list_assets('/Game/Web/Geo', recursive=True):
         if '/StaticMeshes/' not in a:
@@ -176,6 +179,9 @@ if 'geo' in only:
         if ns.get_editor_property('enabled'):
             ns.set_editor_property('enabled', False)
             sm.set_editor_property('nanite_settings', ns)
+        # Crossed quads approximate source lines only. Retain RT on every solid/shared mesh.
+        if sm.get_path_name() in ribbon_paths:
+            sm.set_editor_property('support_ray_tracing', False)
         bs = sm.get_editor_property('body_setup')
         if bs:
             bs.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)

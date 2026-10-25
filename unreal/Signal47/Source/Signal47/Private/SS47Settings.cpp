@@ -367,7 +367,9 @@ void SS47Settings::BuildRows()
 			[P] { return FString(P->bCalmFlash ? TEXT("Slow fades") : TEXT("Flashes")); },
 			Says(TEXT("Near the end of the night there is a short sequence of flashing images. Slow fades shows the same pictures fading in and out instead. It also stops film flicker, frame weave and moving tape disturbances.")));
 		AddToggle(TEXT("Large text"), &FS47PauseOpts::bLargeText, &FS47PauseOpts::OnLargeText, false,
-			TEXT("Larger words in the notebook and at the end of the night."));
+			TEXT("Larger words in the notebook, on the case board's evidence and question cards, and at the end of the night."));
+		AddToggle(TEXT("Head motion and bumps"), &FS47PauseOpts::bHeadMotion, &FS47PauseOpts::OnHeadMotion, true,
+			TEXT("Walking bob, camera roll, landing dip and camera shake, plus engine vibration and suspension bumps while driving. Turn off for a steadier view; movement and vehicle handling stay the same."));
 		AddToggle(TEXT("Still shots at the end"), &FS47PauseOpts::bStillShots, &FS47PauseOpts::OnStillShots, false,
 			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances. The same setting as on the Game tab."));
 		break;

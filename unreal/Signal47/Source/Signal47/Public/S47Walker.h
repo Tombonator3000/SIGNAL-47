@@ -47,6 +47,7 @@ public:
 	float PadLookSpeed = 1.f;
 	bool bPadInvertY = false;
 	bool bInvertY = false;    // Invert look
+	bool bHeadMotion = true; // Walking bob, landing dip and shake; also read by the driving camera.
 	double LookFine = 1.0;    // main.ts: 1 - 0.6 zoomK, a finer aim through the closer look
 
 	// The camera held by something else (US47World while the truck is driven): given the frame's

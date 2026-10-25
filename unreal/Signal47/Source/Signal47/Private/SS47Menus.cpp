@@ -318,7 +318,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 	if (O->OnLoad) Items.Add({ TEXT("LOAD CASE"), [this] { if (OnSub) OnSub(O->OnLoad); } });
 	Items.Add({ TEXT("SETTINGS"), [this] { if (OnSettings) OnSettings(O->Tab, Sel); } });
 	Items.Add({ TEXT("CONTROLS"), [this] { if (OnSettings) OnSettings(TEXT("controls"), Sel); } });
-	Items.Add({ TEXT("QUIT TO TITLE"), [this] { TFunction<void()> Title = O->OnTitle; if (OnClose) OnClose(true); if (Title) Title(); }, true });
+	Items.Add({ TEXT("QUIT TO TITLE"), [this] { if (OnSub) OnSub(O->OnTitle); else if (O->OnTitle) O->OnTitle(); }, true });
 	Sel = FMath::Clamp(InArgs._Selected, 0, Items.Num() - 1);
 
 	TSharedRef<SVerticalBox> Menu = SNew(SVerticalBox);

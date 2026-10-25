@@ -159,6 +159,9 @@ void US47Station::SetFlash(const TOptional<FVector>& P, double W)
 	if (!M || !M->Web || FieldFlood < 0) return;
 	if (P) M->Web->SetFloodPool(FieldFlood, 0, *P, float(W), S47Three::Hex(0xfff6ec), true);
 	else M->Web->SetFlood(FieldFlood, 0, 0.f); // fieldFlood.pos[0].w = 0
+	// Expose captures before the next world tick, then clears the flash in the same call.
+	// Push both states to native lights now; a deferred pool update never lights the film.
+	M->Web->SyncFloodLights();
 }
 
 void US47Station::SetReceiver(bool bOn)

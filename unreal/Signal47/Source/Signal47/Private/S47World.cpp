@@ -1830,6 +1830,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 		if (C && C->Input) In = C->Input(Dt);
 		else if (Autopilot) In = AutoInput(Dt);
 		else if (TestInput) In = TestInput();
+		L->Drive->bCameraMotion = !M->Player || M->Player->bHeadMotion;
 		L->Drive->Update(Dt, In, LookIn);
 		TripStep(Dt);
 	}

@@ -40,6 +40,9 @@ def material(row, dest, src):
     for previous in list(M.get_material_expressions(mat)):
         M.delete_material_expression(mat, previous)
     check(name+' previous graph fully removed',M.get_num_material_expressions(mat)==0)
+    # The three dish assemblies are drawn with 27 ISM instances in the cooked game.
+    if dest.startswith('/Game/RadioArray/Dish/'):
+        mat.set_editor_property('used_with_instanced_static_meshes', True)
     mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_OPAQUE)
     mat.set_editor_property('two_sided', bool(row.get('two_sided', False)))
     col = row.get('base_color_linear', row.get('base_color', [.5, .5, .5, 1]))

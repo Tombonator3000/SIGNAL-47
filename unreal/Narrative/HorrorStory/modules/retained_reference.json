@@ -1,0 +1,493 @@
+{
+  "module_id": "retained_reference",
+  "flags": {},
+  "scenes": [
+    {
+      "id": "H05_BRIEF",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H05: Kjør til STATION 01 via hovedvei/surveyspor. Utfør E09A/fastmerke A, lokal nulltest, kabelundersøkelse og receiver/E10. T02 følger samme feltreise via eksisterende trafoadkomst. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h05_ready"
+        ],
+        "none": [
+          "hr_h05_recorded",
+          "hr_h05_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H05_BRIEF_001",
+          "speaker": "DESCRIPTION",
+          "text": "E09A fixes A against the transit and B. C is a separate closing sight line.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H05_BRIEF_002",
+          "speaker": "DESCRIPTION",
+          "text": "The empty footing and the marked post can be photographed together. Check them before deciding what moved.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H05_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "Use Dale's post as a second observation point. A position written in his notebook is a lead until you check it yourself.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h05_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H05_CHECK",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H05: Hold A fra transitkortet adskilt fra C-linjen. Sammenlign to nåtidige, fysisk kontrollerte referansesteder fra Dales notat mot de faste surveymerkene. T02 krever egne faktiske indikator-, kilde- og backupkontroller. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h05_ready",
+          "ctx_hr_h05_checked"
+        ],
+        "none": [
+          "hr_h05_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H05_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "Both controlled observation points resolve against fixed survey references. The positions form an arrangement rather than an isolated sighting.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H05_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The cut faces and the covered lamp answer separate questions. Neither identifies who cut the cable.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H05_CHECK_003",
+          "speaker": "DESCRIPTION",
+          "text": "The receiver repeats the 1947 correction at the same place in the fragment. Take the record and field prints to Nora Vega.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h05_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H05_INCOMPLETE",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H05: Feil bilde kan fremkalles på nytt fra negativet. T02 kan være uavklart uten å sperre hovedhistorien; kartleggingssporet får da obligatorisk normal-/ekstern-lyskontroll ved SARO i H07, ikke en valgfri skyggemann som eneste bevis. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h05_ready",
+          "ctx_hr_h05_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H05_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The lamp follow-up remains unresolved. Keep that limit on the card. The cable record, timing record and trip to Nora remain available.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H05_FIXED_FRAGMENT",
+      "phase": "field",
+      "channel": "radio",
+      "mode": "fixed",
+      "entry": "trigger",
+      "trigger_nb": "Spill eksisterende Tomás-fragment fra receiveren i hytta. Gjenbruk den ferdige eksisterende kilden, ikke produser ny timing fra denne teksten.",
+      "requires": {
+        "all": [
+          "ctx_hr_h05_receiver_playing"
+        ],
+        "none": []
+      },
+      "direction_nb": "Fast avtrykk. Ord og avspillingsrytme kommer fra eksisterende opptak. Ingen svarvalg, ingen ny replikk til et nytt spørsmål.",
+      "lines": [
+        {
+          "id": "H05_FIXED_FRAGMENT_001",
+          "speaker": "DESCRIPTION",
+          "text": "[Field receiver: \"Reference west. No. East. Hold the last reading.\"]",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H06_BRIEF",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H06: Ta feltkopier og original/amendert rapport til Nora i Rom 6. Bruk eksisterende P10/P11/P12, brevet, feltkortet og returlinjen; gi samtalen ro. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h06_ready"
+        ],
+        "none": [
+          "hr_h06_recorded",
+          "hr_h06_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H06_BRIEF_001",
+          "speaker": "NORA",
+          "text": "Tomás was my brother. Nineteen. He checked the reading twice before he wrote it down.",
+          "delivery_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
+        },
+        {
+          "id": "H06_BRIEF_002",
+          "speaker": "NORA",
+          "text": "Yes. I cut it. The lamp was off. The reference stayed.",
+          "delivery_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
+        },
+        {
+          "id": "H06_BRIEF_003",
+          "speaker": "NORA",
+          "text": "What you heard is what he said then. I have asked it other things. It gives me the same words.",
+          "delivery_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h06_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H06_CHECK",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H06: Sammenlign hennes opprinnelige plate med B-12-kontrollen. Still Noras konkrete nye spørsmål til returlinjen og hør at samme gamle korreksjon kommer igjen. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h06_ready",
+          "ctx_hr_h06_checked"
+        ],
+        "none": [
+          "hr_h06_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H06_CHECK_001",
+          "speaker": "NORA",
+          "text": "C ran east from STATION 01. The old road crosses it at a bolt in the shoulder.",
+          "delivery_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
+        },
+        {
+          "id": "H06_CHECK_002",
+          "speaker": "NORA",
+          "text": "Keep the original where somebody can read it. I tried leaving out a line. It did not make the place go away.",
+          "delivery_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
+        },
+        {
+          "id": "H06_CHECK_003",
+          "speaker": "NORA",
+          "text": "Do not finish his observation. And do not stop on the line.",
+          "delivery_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h06_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H06_INCOMPLETE",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H06: P10/P11/P12 og papirene blir stående tilgjengelig. Manglende plate/tema fører tilbake til bordet eller originalkilden, ikke til et nytt angrep. Brevet er aldri en tidsprøve. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h06_ready",
+          "ctx_hr_h06_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H06_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The letter and the field card are still on the table. Ask about the missing part before leaving.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H07_BRIEF",
+      "phase": "field",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H07: Etter Rom 6: returner til SARO for den navngitte måleoriginalen og bestilte fjernlogger. Utfør normal kontroll av kjent skjerm/utgang før møtet. Første prototype krever fysisk to gyldige ruter fra H3. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h07_ready"
+        ],
+        "none": [
+          "hr_h07_recorded",
+          "hr_h07_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H07_BRIEF_001",
+          "speaker": "WARD",
+          "text": "Bring the original run off the rack. Keep the receiver copy with it.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H07_BRIEF_002",
+          "speaker": "WARD",
+          "text": "Hondo and Site 11 are sending their local records. I want the records, not three accounts of the same broadcast.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H07_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "The ventilation stops. A white band moves across the outside wall. You can still see the doorway and the floor.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h07_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H07_CHECK",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H07: Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h07_ready",
+          "ctx_hr_h07_checked"
+        ],
+        "none": [
+          "hr_h07_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H07_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local lamp is off. The band still crosses the glass, and the opaque screen cuts it off.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H07_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "When you changed the radio, the visitor turned to the new sound. The old fragment kept its same words.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h07_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H07_INCOMPLETE",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H07: Ingen fotoport under jakt. Journalfør en faktisk sanset reaksjon fra begge ruter; spilleren kan gjenta kontrollen før faren uten å måtte velge avledning som fluktmetode. Fangst tilbyr tydelig lokal gjenopptakelse fra trygt sjekkpunkt, ikke ny tapt-tid-gren. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h07_ready",
+          "ctx_hr_h07_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H07_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "A photograph is not required. Check the original's recorded location. If it is not secured, reach it by a clear route; then use the service exit.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H07_FIRST_WARNING",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Første avsøkning, før inntrengerkontakt. Hold fysisk kontroll hos spilleren og vis kjent opak dekning og serviceutgang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h07_scan_started"
+        ],
+        "none": [
+          "hr_h07_first_warning_presented"
+        ]
+      },
+      "direction_nb": "Én tydelig reaksjonsmulighet. Ingen blendende fullskjerm og ingen umiddelbar fangst.",
+      "lines": [
+        {
+          "id": "H07_FIRST_WARNING_001",
+          "speaker": "DESCRIPTION",
+          "text": "The band is moving toward the next window. The wall between the windows stays dark.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H07_FIRST_WARNING_002",
+          "speaker": "DESCRIPTION",
+          "text": "The service route is behind the screen. The front yard is in the light.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h07_first_warning_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H07_CAPTURE",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun etter bekreftet fysisk fangst. Ikke spill ved vellykket flukt.",
+      "requires": {
+        "all": [
+          "ctx_hr_h07_captured"
+        ],
+        "none": []
+      },
+      "direction_nb": "Kort særskilt overgang. Ikke tapt tid i fiksjonen, tilfeldig ny returposisjon eller ny obligatorisk fangst.",
+      "lines": [
+        {
+          "id": "H07_CAPTURE_001",
+          "speaker": "DESCRIPTION",
+          "text": "Caught inside SARO.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H07_CAPTURE_002",
+          "speaker": "DESCRIPTION",
+          "text": "Resume from before the inspection. The findings already secured are kept.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H07_ESCAPE_COMPLETE",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Bare etter faktisk sikret original og fullført flukt til det målte sikre servicebilpunktet. Lys-/radiokontroll alene utløser ikke denne noden. Lagres én gang med fluktresultatet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h07_original_secured",
+          "ctx_hr_h07_escape_complete"
+        ],
+        "none": [
+          "hr_h07_escape_complete_presented"
+        ]
+      },
+      "direction_nb": "Rolig etterarbeid. Ingen ny tilfeldig bortføring eller ny obligatorisk fangst. Denne utgangen kan nås via begge målte ruter.",
+      "lines": [
+        {
+          "id": "H07_ESCAPE_COMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The original is secured in the truck. The visitor has lost contact. Its search has ended.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h07_escape_complete_presented": true
+        },
+        "give_documents": []
+      }
+    }
+  ],
+  "documents": [],
+  "media": [],
+  "strings": []
+}

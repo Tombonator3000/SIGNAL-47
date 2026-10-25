@@ -42,6 +42,13 @@ for label, filename, key in [('dish', 'verification.json', 'meshes'), ('station'
         check(name + ' original materials', bool(slots) and all(slot.material_interface and
               slot.material_interface.get_name().startswith('M_Array_' if label == 'dish' else 'M_1420_') for slot in slots),
               [slot.material_interface.get_name() if slot.material_interface else None for slot in slots])
+        if label == 'dish':
+            for lod in range(S.get_lod_count(mesh)):
+                for section in range(mesh.get_num_sections(lod)):
+                    material = mesh.get_material(S.get_lod_material_slot(mesh, lod, section))
+                    check(name + ' LOD' + str(lod) + ' section' + str(section) + ' cooked ISM usage',
+                          bool(material) and bool(material.get_editor_property('used_with_instanced_static_meshes')),
+                          material.get_path_name() if material else None)
         if label=='station':
             actual_materials=[mesh.get_material(S.get_lod_material_slot(mesh,0,i)).get_name() for i in range(mesh.get_num_sections(0))]
             check(name+' source materials used by real sections',set(actual_materials)==set(source['materials']),{'expected':source['materials'],'actual':actual_materials})

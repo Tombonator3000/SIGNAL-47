@@ -1,5 +1,31 @@
 # Minne for unreal/
 
+## QA-retting Q3 validert, 25. oktober 2026 kl. 19:16 CET
+
+- Arbeidsgren `codex/qa-fixes-horror-production`, testet kilde `d87af618`, PR158. Bevis i `/home/tom/scratch-bm/Signal47-qa-fixes-20261025`. [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) har gjeldende status. Q3 er ferdig validert; installert PR157 er foreløpig uendret til fletting/levering.
+- Kvalitetsbevarende Vulkan-omgåelse: `r.Vulkan.Bindless.PreferredExtension=1` før RHI-init velger støttet descriptor heap på RTX3080/595.99.02. Samme installerte Low-baseline feiler uten og består med dette ene flagget. Q1 består komplette High/Clean- og Low/Clean-finaler helt til meny. Ingen himmelshader eller motorfiler er endret; unsupported hardware beholder motorens descriptor-buffer-fallback. Universell driverrotårsak er ikke bevist.
+- Åtte eksklusive eksporterte LineSegments-ribboner bygger ikke RT-strukturer. Q1 måler 78,1538 MiB AlwaysResident i 349 aktive kontrollromsprøver, under uendret 80 MiB-grense. Runtime materialaudit har null fallback/mappingfeil; egne antenners 33 seksjoner er kontrollert. VSM-oppstartskøen er fortsatt profilgjeld, ikke løst av disse endringene.
+- FRAME03/04 er tydelige i faktiske lagrede High/Low-JPEG-er etter synkron native blits. Dump/store-bytes og targets består kontroll. QA03 til QA09 har konkrete kildeendringer. Q2 retter påvist fokusfeil i utgangsvarselet; faktisk Esc/default Enter/Xbox B/Down+A/Down+Enter, skrivefeil, settingsreopen, metadata/controls, ombundne navn og P13 består. Q3 retter automatisk kortoverdekking ved stor tekst uten å flytte brukerlagrede kort. Fem målrettede brettbilder/Slate-pan/Esc og fem nye API-geometrikontroller består.
+- Q3: 1 424 selvtester, hele kanoniske 110/110 på samme binær og komplette High/Low-finaler til meny består. To ekstra High/Carpenter-bortføringer har ulik RNG og ingen GPU-feil. Native gammel cache er faktisk lastet og de sju originale installerte cachefilene er uendrede. Matrisens 197 aktive RT-prøver er 78,1538 MiB AlwaysResident med uendrede 400/20/true. Ingen ny device-lost i dette omfanget, ingen påstått generell krasjprosent eller FPS-garanti.
+- H1.2 til H1.4 er engelske forfatterkilder i `Narrative/HorrorStory`: ti oppdrag, 36 scener og fem dokumenter; generator og eksisterende EveningShift består. Ingen nye opptak, ny runtimehistorie eller stealth er produsert. H1.1 menneskelig måling, H2 til H6, fysisk Xbox, lyd og ubrutt ny sak står åpne.
+- Neste T01-reise er konkretisert som ukompilert, uprøvd scratch-utkast utenfor Q3-kilden. Det kobler eksisterende fysiske journal/kontroll/lampe til nye sakers Shift og én returarkivering før survey; gamle saker får ingen ny gate. T02 trenger kontorreferanse og reelle kontroller og er ikke levert.
+
+## Spilltest av installert PR157, 25. oktober 2026 kl. 15:03 CET
+
+- Tom ba om full spilltest, feilrapport og forbedringer. [SPILLTEST_2026-10-25.md](SPILLTEST_2026-10-25.md) er ferdig: installert kilde `1e89ae00d07b1e891489cd44eeae8412094d9322`, 110 matrisescenarioer med 108 PASS, 13 tillegg med 12 PASS og separat Low-finale FAIL. 1 405 interne selvtester PASS. Sekvensielle guardede jobber, egne profiler, ingen tung konkurrerende jobb.
+- Fire unike Vulkan device-lost-krasj: én bortføring og tre finaler. Gammel High/Carpenter, ny High/Clean og ny Low/Clean feiler 7,1 til 7,6 sekunder inn i uttrekket etter 05:29:47. Ingen full finale nådde sluttittel/credits/foto/meny. Low er ingen omvei; rotårsak er uavklart. Den tidligere avgrensede skycapture-rettelsen beviser ikke at hele spillet er stabilt.
+- Direkte åpning uten mat, burger/sandwich/vann, parkering/overlevering, forberedt kapittel 1 til 2, delvis injisert kapittel 3 til 6, frisk Continue til kapittel 5 og nyere anomaly-kontroller består. Fotoassets er bevart ved Continue. Normal kapittel 2 til 3, fri fullnatt, lyd og fysisk Xbox er fortsatt UNVERIFIED. Anomaly-vinduets svake andre form er ikke sikkert visuelt identifisert; pappfigurens ekstra form og ON AIR kan sees.
+- Prioriter GPU-krasj før større utvidelser. Rapporten har 11 QA-funn og åtte forbedringspunkter: motorvarsel, aktive ISM-materialvarsler, mørke feltfoto, lagringsvarsel, bindingsnavn, tilgjengelighet, kartbevis, tekstfeil, reisemotivasjon, repetisjon og personmodeller. Ingen ytelsestall eller målt menneskelig spilletid hevdes.
+- Ingen spillendring/ny pakke/installasjon. 40 installerte payloadfiler, 40 personlige Saved-filer og 411 kilde/config/scriptfiler er før/etter-identiske; HEAD uendret. 58 unike fullbilder/foto og sju kontaktark faktisk vurdert. Bevis: `/home/tom/scratch-bm/Signal47-playtest-20261025`.
+
+## Samlet historie- og skrekkplan, 25. oktober 2026
+
+- Tom ønsker cosmic investigation / psychological hide-and-seek / stealth horror, gradvis kommende invasjon, senere jumpscares og en solid loop. Han ba deretter om å legge planen i todo for senere innføring. Detaljplanen er [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md); H0 er dokumentarbeid, H1 til H6 er åpne produksjonsetapper øverst i todo.md.
+- Anbefalt signatur: kjent SARO bades i eksternt hvitt søkelys, fronten blir ubrukelig, én reaktiv inntrenger kommer inn og spilleren bruker undersøkte lys-/skjulregler og to ruter til servicebilen. Et funn skal endre en fysisk handling. Ingen survival-ressursøkonomi.
+- Skyggemannen beholder stabil usett-flytting etter ANOMALY_PLAN del 13. Inntrengeren er en annen visuell/atferdsmessig kategori og kan bevege seg under blikk. Nåværende kode har ikke et ferdig stealth-system; Walker/dekning, sansing, søk og lagring er eget kommende arbeid.
+- Bevar Nora/Tomás/1947, avtrykk som ikke svarer, A/C-skillet, 1420.405 MHz, 27 antenner, az 026 og én finale 05:29:00 til 05:29:47. Invasjonen er et bevisst nytt fortolkningslag med nødvendige hovedrutespor. Varsling og siste reisemål må få en troverdig begrunnelse.
+- Kun plan og oppgaver er innarbeidet. Ingen ny runtime, modell, lyd, bygg, pakke eller installasjon. Frykt, stealth, ny total spilletid og den nye beviskjedens spillerforståelse er UNVERIFIED.
+
 ## Skyggemenn, 25. oktober 2026
 
 - Tom ønsker helt svarte menneskeskikkelser som bare flytter seg usett, og ba om flere agenter til psykologi-/skrekkvurdering. Tre parallelle lesegjennomganger og primærforskning er samlet i ANOMALY_PLAN.md del 13; produksjonssteg ligger i todo.md.

@@ -1,0 +1,548 @@
+{
+  "module_id": "ordinary_evening",
+  "flags": {
+    "hr_h01_recorded": {
+      "default": false,
+      "purpose_nb": "H01: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h02_recorded": {
+      "default": false,
+      "purpose_nb": "H02: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h03_recorded": {
+      "default": false,
+      "purpose_nb": "H03: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h04_recorded": {
+      "default": false,
+      "purpose_nb": "H04: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h05_recorded": {
+      "default": false,
+      "purpose_nb": "H05: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h06_recorded": {
+      "default": false,
+      "purpose_nb": "H06: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h07_recorded": {
+      "default": false,
+      "purpose_nb": "H07: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h08_recorded": {
+      "default": false,
+      "purpose_nb": "H08: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h09_recorded": {
+      "default": false,
+      "purpose_nb": "H09: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h10_recorded": {
+      "default": false,
+      "purpose_nb": "H10: den avgrensede konklusjonen er vist og ført etter verifisert resultat."
+    },
+    "hr_h08_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h08_warning_ack_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h09_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h10_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h01_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h02_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h03_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h04_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h05_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h06_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h07_brief_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h07_first_warning_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    },
+    "hr_h07_escape_complete_presented": {
+      "default": false,
+      "purpose_nb": "Denne scenen er faktisk ferdig presentert. Dette er ingen ny fysisk måling eller kapittelport."
+    }
+  },
+  "scenes": [
+    {
+      "id": "H01_BRIEF",
+      "phase": "handover",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H01: Etter eksisterende Dale-overlevering: hent kameraet, kontroller én rutinevisning og gå de faktisk tilgjengelige dørene på normalrunden. Ikke påstå at en fremtidig forbindelsesdør allerede er åpen. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h01_ready"
+        ],
+        "none": [
+          "hr_h01_recorded",
+          "hr_h01_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H01_BRIEF_001",
+          "speaker": "DALE",
+          "text": "Keep the survey running. Write down anything you have to change, even if it fixes itself.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        },
+        {
+          "id": "H01_BRIEF_002",
+          "speaker": "DALE",
+          "text": "The camera is beside the east door. Take a reference before you touch the fault.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        },
+        {
+          "id": "H01_BRIEF_003",
+          "speaker": "DALE",
+          "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h01_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H01_CHECK",
+      "phase": "handover",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H01: Prøv SAROs østdør og den tilgjengelige korridorutgangen fra innsiden. Sammenlign en vanlig lampe sett direkte og via glass, og trekk for en faktisk opak skjerm når H3 har levert den. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h01_ready",
+          "ctx_hr_h01_checked"
+        ],
+        "none": [
+          "hr_h01_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H01_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The lamp, its reflection and the dark glass agree when you change the light. This is an ordinary reference.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H01_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The notebook records the doors you actually opened. Untried routes stay unmarked.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h01_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H01_INCOMPLETE",
+      "phase": "handover",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H01: Hvis en planlagt utgang eller skjerm ikke er levert, før den som uprøvd og gi normalrutinen en eksisterende vei. Ikke kvitter for to fluktruter før H3-topologien er målt. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h01_ready",
+          "ctx_hr_h01_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H01_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "One route is still untested. Check the door from this side; the drawing alone does not show whether it opens.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H02_BRIEF",
+      "phase": "early_shift",
+      "channel": "walkie",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H02: Kjør eksisterende avstikker til trafostasjonens tilgjengelige kontrollfront. Finn T01-klagen på servicekortet, observer inspeksjonslampen og utfør den fiktive, avgrensede servicekontrollen. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h02_ready"
+        ],
+        "none": [
+          "hr_h02_recorded",
+          "hr_h02_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H02_BRIEF_001",
+          "speaker": "DALE",
+          "text": "The complaint is about the inspection lamp. Just that lamp.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        },
+        {
+          "id": "H02_BRIEF_002",
+          "speaker": "DALE",
+          "text": "Use the marked service control outside the fence. Leave the locked equipment alone.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        },
+        {
+          "id": "H02_BRIEF_003",
+          "speaker": "DALE",
+          "text": "Watch the lamp and the indicator separately. Tell me whether they agree.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h02_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H02_CHECK",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H02: Sammenlign lampen og den separate indikatoren før/etter normal kontroll. Hold STATION 01, SAROs K3 og byens hovedforsyning atskilt. Spilleren åpner ikke høyspenningsområdet. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h02_ready",
+          "ctx_hr_h02_checked"
+        ],
+        "none": [
+          "hr_h02_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H02_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The inspection lamp follows its local control. The separate indicator agrees with the service test.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H02_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The complaint can be explained here. This does not establish the power state of the whole town.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h02_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H02_INCOMPLETE",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H02: Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten; SARO-rutinen fortsetter. T02 må da tilby ny normal kontroll før sammenligning. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h02_ready",
+          "ctx_hr_h02_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H02_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The two readings do not agree yet. Keep the service card and return to the marked control when you can repeat the comparison.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H03_BRIEF",
+      "phase": "signal",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H03: Etter reell residual 00:13:47 og eksisterende signalhendelse: bruk S-03/B-12-ruten, to faktiske eksponeringer og vanlig fremkalling. Behold nåværende bevis-ID-er og porter. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h03_ready"
+        ],
+        "none": [
+          "hr_h03_recorded",
+          "hr_h03_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H03_BRIEF_001",
+          "speaker": "DESCRIPTION",
+          "text": "The residual has a time of its own: 00:13:47. The earlier service complaint does not explain it.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H03_BRIEF_002",
+          "speaker": "DESCRIPTION",
+          "text": "Mark one detail on FRAME 01 that you can check at B-12. Change one local condition, then expose again.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h03_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H03_CHECK",
+      "phase": "signal",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H03: Velg eksisterende aktiv kontroll, noter direkte observasjon og sammenlign samme detalj på de to fremkalte bildene. Ingen nytt panelvalg erstatter lukkeren eller bildepikslene. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h03_ready",
+          "ctx_hr_h03_checked"
+        ],
+        "none": [
+          "hr_h03_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H03_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local condition changed. The marked reference remains on the controlled print.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H03_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "File what the two exposures support. The next question is where B-12 got that reference.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h03_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H03_INCOMPLETE",
+      "phase": "signal",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H03: Feil fremkalling beholder negativet; lukk mørkeromsdøren og lag ny kopi. Et uleselig bilde kan ikke bære påstanden. P03 forblir åpent til eksisterende kontroll eller gyldig ny kopi finnes. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h03_ready",
+          "ctx_hr_h03_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H03_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The controlled detail is not readable on this copy. Keep the negative and print it again with the darkroom shut.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H04_BRIEF",
+      "phase": "archive",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H04: Følg begrunnet serviceskuffspor til reservenøkkel og eksisterende kontordør. Hent feltmappen; den korte hovedruten krever ikke hele VHS-filmen. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h04_ready"
+        ],
+        "none": [
+          "hr_h04_recorded",
+          "hr_h04_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H04_BRIEF_001",
+          "speaker": "DALE",
+          "text": "The service drawer has a spare. Brass tag, OFFICE. I should have put it in the handover.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        },
+        {
+          "id": "H04_BRIEF_002",
+          "speaker": "DALE",
+          "text": "Take the field folder. I wrote down where I stood so somebody else could try it.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        },
+        {
+          "id": "H04_BRIEF_003",
+          "speaker": "DALE",
+          "text": "I saw the same shape from two places. I do not know whether it was looking at me.",
+          "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h04_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H04_CHECK",
+      "phase": "archive",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H04: Legg Dales daterte ståstedsnotat ved faktisk vindusutsyn og referansestolpe. Se eventuell VHS som bevegelig opptak og test ett av stedene fysisk senere. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h04_ready",
+          "ctx_hr_h04_checked"
+        ],
+        "none": [
+          "hr_h04_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H04_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The notes specify a post and a standing place. They can be checked in the world.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H04_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The archive gives STATION 01 a separate history. Dale has not identified the person in the old record.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h04_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H04_INCOMPLETE",
+      "phase": "archive",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H04: Feltmappe gir hovedsporet selv uten strøm til VHS. Manglende sett film føres som usett; opptaket gjenopptas fra lagret sted. Nøkkelen har konkret spor i serviceskuff, ikke tilfeldig spawn. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h04_ready",
+          "ctx_hr_h04_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H04_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field folder gives you the post and the standing place. The tape is still unviewed; there is enough to make the field check.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    }
+  ],
+  "documents": [],
+  "media": [],
+  "strings": []
+}

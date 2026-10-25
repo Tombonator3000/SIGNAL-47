@@ -1,5 +1,75 @@
 # Todo for unreal/
 
+## Prioritet etter spilltest, 25. oktober 2026 kl. 15:03 CET
+
+Før-funn og presise bevis: [SPILLTEST_2026-10-25.md](SPILLTEST_2026-10-25.md). Retting og ny validering: [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md).
+
+- [x] Kjør hele 110-matrisen og avgrensede tillegg på installert PR157. 108/110 og 12/13 PASS; separat Low-finale FAIL. 1 405 selvtester PASS, fire unike GPU-krasj. Rapport, bilde-/kodegjennomgang og før/etter-bevaring fullført.
+- [x] P1 QA00: Rett den reproduserte finalefeilen med støttet Vulkan descriptor heap på denne maskinen. Q3 består hele THE EVENT, uttrekk, sluttittel, credits, sluttfoto og meny på High og Low, samt hele 110-matrisen. Bortføring består matrisen og to ekstra forløp; samme rotårsak som den tidligere enkeltfeilen er ikke bevist.
+- [x] P2 QA01/QA02-materialer/QA10: 78,1538 MiB AlwaysResident under uendret 80 MiB-grense, null aktiv/inaktiv materialfallback og null mappingfeil i fersk runtimeaudit. Ekte FRAME03/04 er visuelt leselige på High/Low. Solide ledere, CPU-wiredata og gjerdetriangler er bevart; dette er ingen FPS-måling.
+- [ ] P2 QA02-VSM: Profilér oppstartskøen i normal rute/dag/natt. Kort aktivt utsnitt har ingen vedvarende overflow, men lokal motor har en forskyvning i CSV-statnavn. Verken rå nullverdi eller materialrettingen lukker denne ytelsesgjelden.
+- [x] P2 QA03/QA04/QA05/QA09: Varsle om siste sikre sjekkpunkt, også ved ekte skrivefeil; bruk gjeldende bindingsnavn; lagre hodebevegelsesvalg; gjør bretttekst større uten automatisk kortoverdekking; krev faktisk P13-justering. Faktisk Slate-pan, Esc, default Enter og Xbox-knapphendelser består. Fysisk Xbox og kamerakomfort er fortsatt menneskelige kontroller.
+- [x] P3 QA06/QA07/QA08: Tekstklipp og desktop-/Xbox-hjelp rettet, overgangsmål beskriver neste kapittel, og credits oppgir Unreal Engine.
+- [ ] Kjør en faktisk menneskelig ny sak til slutt uten hopp, med lyd, normal kapittel 2 til 3, fysisk Xbox og forståelse uten scriptkunnskap. Mål pacing/transport/venting og kontroller den svake anomaly-formen ved vaskerivinduet. Rapportens åtte forbedringspunkter er forslag, ikke nye implementasjoner.
+
+## Historie, invasjon og stealth horror, planlagt 25. oktober 2026
+
+Samlet plan: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md). Tom ba om at planen legges her for senere innføring. H0 er dokumentleveransen; H1 til H6 er åpne produksjonsetapper. Eldre skyggemann-, anomaly-, kontor- og trafooppgaver nedenfor inngår i disse etappene, ikke som parallelle kopier av samme arbeid. Dette er ingen melding om at spillmekanikkene er implementert.
+
+### H0: Plan og overlevering
+
+- [x] Gjennomgå eksisterende historie, oppdrag, kanon og faktiske Unreal-systemer, med adskilte lesende gjennomganger av historie, loop og referansespill.
+- [x] Undersøk P.T., Alien: Isolation, Amnesia: The Bunker, SOMA og The Exit 8 i primærkilder; dokumenter hva som kan tilpasses uten survival-ressursøkonomi.
+- [x] Lag detaljert samlet plan med invasjonens beviskjede, H01 til H10, SARO-beleiring, trusselregler, fangst, tekniske avhengigheter og ferdigkriterier. Koble fra README, ANOMALY_PLAN, memory og OPPGAVER.
+
+### H1: Historie og målt oppdragsgrunnlag
+
+- [ ] H1.1: Kontroller gjeldende kode og spillrute på nytt. Kartlegg tid, transport, panelbruk, venting, bevis og alle eksisterende skrekktopper. Mål faktisk spillerreise; eldre API-hopp er ikke total spilletid.
+- [x] H1.2: Skriv om hovedmotivasjonen og H01 til H10 til engelske produksjonsscener. Hvert oppdrag skal ha spørsmål, fysisk handling, kontroll, følge og vei videre ved utilstrekkelig bevis.
+- [x] H1.3: Skriv nødvendige, uavhengige hovedrutespor for kartlegging, reaktiv tilstedeværelse og samordnet kommende ankomst. Bevar Nora/Tomás/1947, avtrykksregelen og én slutt. Skill invasjonens nye forfatterfasit fra hva hver person faktisk vet.
+- [x] H1.4: Avklar troverdig varsling og formål/rute for siste kjøretur. Kartlegg C med dagens avis/kart; unngå en åpenbart selvdestruktiv frivillig kontroll etter beleiringen. Varslingen skal ha verdi før finalen.
+
+Produksjonsgrunnlaget for H1.2 til H1.4 er levert i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti oppdrag, 36 scener, fem dokumenter og kontrollert generator. Dette er forfatterkilder, ikke runtimeintegrasjon eller nye opptak. H1.1 er kildekartlagt; menneskelig måling står åpen.
+
+### H2: Etterforskning og skyggemannintroduksjon
+
+- [ ] H2.1: Fullfør nødvendige T01/T02 som faktisk service-/kontrollreise ved trafostasjonen. Modeller/inspeksjoner er allerede levert; den nye fortellersekvensen krever egen integrasjon. Hold STATION01, SAROs K3 og byforsyning atskilt.
+- [ ] H2.2: Fullfør kontornøkkel, Dales eksisterende kontordør, relevante private funn og bevegelig VHS fra manuspakken, med fysisk oppfølging, pause/strøm og lagring. Dale forblir bare telefon/radio/walkie.
+- [ ] H2.3: Samordne Glimpses/SaroDark med én regel for svarte skyggemenn. Original 3D-silhuett, usett flytting, perifer observasjon, zoom/lykt/fotosøker og panelvern etter ANOMALY_PLAN del 13.
+- [ ] H2.4: Fullfør én hel SARO-vindu/trafo/retur-pilot uten skade, med ekte bilder, kontrollerbar sammenligning, fysisk oppfølging og disk-Continue. Valgfri skikkelse må kunne overses.
+- [ ] H2.5: Reduser dobbeltkvitteringer i paneler. Bruk saksbrettet til større slutninger; et fysisk kontrollresultat skal ikke kreve flere like dokumentknapper. Bevar eksisterende bevis-ID-er og bilder.
+
+### H3: Avgrenset stealth-prototype på SARO
+
+- [ ] H3.1: Mål faktisk rom-/dør-/sikttopologi fra spillerhøyde. Lag en liten håndtegnet forbindelsesgraf med to gyldige ruter og skjul som ikke er låsbare blindveier. Eventuell ny serviceforbindelse skal være fysisk og avgrenset.
+- [ ] H3.2: Implementer huking og reell kropp-/øyeeksponering bak dekning i dagens Walker/kollisjonsløype, med tastatur og Xbox. En senket kamerahøyde alene er ikke ferdig dekning.
+- [ ] H3.3: Lag én inntrenger med faktisk syn/lyd, siste kjente sted, søk, kontakt, forfølgelse, brutt kontakt og tilbaketrekning. Egen gjenkjennelig visuell kategori, adskilt fra skyggemannen. Vurder eksisterende alienressurs før ny modellproduksjon.
+- [ ] H3.4: Implementer ekstern avsøkning gjennom vinduer, fungerende opak avskjerming og lesbare rutevinduer. Ikke bruk K3 som global bryter eller blend skjermen slik at handling blir umulig.
+- [ ] H3.5: Legg inn én ordinær lydavledning og to gjennomførbare fremgangsmåter uten forbruksinventar. Fangst skal ha forståelig årsak og første oppdagelse en prøvbar reaksjonsmargin.
+- [ ] H3.6: Samordne pause, notatbok, dokumenter, dialog, fotosøker og møtevern. Kontroller særskilt SAROs innendørs-/dekningsregler; World::Indoors er ikke et ferdig SARO-vern.
+
+### H4: Hele SARO-beleiringen, The Inspection
+
+- [ ] H4.1: Koble normal befaring, lyskontroll, sperret front, varslet ankomst, sikre måleoriginal, skjul/flukt til servicebilen og rolig etterarbeid i én sak etter Room6 og før All Night.
+- [ ] H4.2: La tidligere undersøkelse gi praktisk hjelp med lys, skjerming og rutevalg. Spilleren får ingen ny sikringsjakt eller tilfeldig inventarsperre under angrepet.
+- [ ] H4.3: Fangst gir kort særskilt overgang og tydelig lokal gjenopptakelse fra trygt sjekkpunkt. En vellykket flukt respekteres. Alternativ bortføringsgren med tapt tid/oppvåkning utsettes og må ikke snike seg inn gjennom gammel Force-logikk.
+- [ ] H4.4: Lagre versjonert møtefase, node, siste sansede sted, søketid, lys/dører/skjerming, variant, bevis og engangseffekter. Prøv ny sak, gammel sak, før møte, støttet midtfase, etter flukt og etter fangst med faktisk disk-Continue.
+- [ ] H4.5: Mål hele prototypeforløpet mot prøveanslaget 25 til 35 minutter. Behold korte jaktpartier og handling under press; fjern passiv skapventing og gjentatt tvungen fangst.
+
+### H5: Gradvis invasjon og hel natt
+
+- [ ] H5.1: Integrer uavhengige fjernlogger og samtidige faser i H08. Spilleren skal kunne etterprøve at dette gjelder flere steder og en kommende ankomst; ett duplisert radiosignal er utilstrekkelig.
+- [ ] H5.2: Koble faktisk varsling, rolig diner/kartarbeid og begrunnet siste kjøretur. Bevar A/C-skillet, ufrivillig motorstopp, THE EVENT 05:29:00 til 05:29:47 og hele 1947-bildet med Reyes.
+- [ ] H5.3: Kurater skrekktopper, lyd og jumpscares gjennom hele reisen. Nye sekvenser bruker felles nattkurve og erstatter konkurrerende topper på samme etappe. Vern Nora, brev, kartarbeid og etterarbeid.
+- [ ] H5.4: Innpass i eksisterende tidslinje 2 uten tilbakesprang eller straffende global nedtelling. Gamle saker beholder tider/foto og får ingen retroaktiv beleiring. Spilltekst og generert manus går gjennom korrekte kilder.
+
+### H6: Ferdigkriterier og senere integrasjon
+
+- [ ] H6.1: Kjør bygg/selvtest og kort relevant pakket kontroll når kode endres: loop, faktisk dekning/syn/lyd, begge ruter, pause, foto, disk-Continue, gammel kapittelrute og finale. Ingen full testmatrise bare for å krysse av designarbeid.
+- [ ] H6.2: Kontroller spillerhøyde, skjul og nødvendige lyssignaler i High/Low og Clean/filmprofil, med redusert blinking/bevegelse og lydtekster. Lytt på romlig trussellyd og kritisk tale.
+- [ ] H6.3: Menneskelig prøve med vanlig input, deretter fysisk Xbox. Bruk gjerne fem ukjente spillere; registrer forstått regel, hvorfor oppdagelse skjedde, reell flukt, venting, uro og irritasjon. Juster før flere møter bygges.
+- [ ] H6.4: Spill hele historien uten fixturehopp og kontroller at hovedruten alene bærer invasjonens avsløring og reisemotivasjonen. Før faktisk kilde/pakke/teststatus i overleveringen før senere integrasjon/installasjon.
+
 ## Neste originalmodeller, feltreise 25. oktober 2026
 
 - [x] STATION01-felthytte med faktiske åpninger, redigerbart interiør og separat dør.

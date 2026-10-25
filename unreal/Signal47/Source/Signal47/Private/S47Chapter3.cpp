@@ -545,7 +545,7 @@ FString US47Chapter3::Objective() const
 		if (S.Dev == 1) return TEXT("SARO PHOTOLAB // TRANSFER THE FIELD PRINTS TO THE FIXER");
 		return TEXT("SARO PHOTOLAB // COLLECT THE FIELD PRINTS");
 	}
-	if (St == TEXT("complete")) return TEXT("ROOM 6 // SIERRA MOTOR COURT / NEXT AREA NOT YET PLAYABLE");
+	if (St == TEXT("complete")) return TEXT("ROOM 6 // TAKE THE FIELD FINDINGS TO SIERRA MOTOR COURT");
 	return FString();
 }
 

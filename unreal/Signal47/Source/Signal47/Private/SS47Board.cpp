@@ -66,7 +66,7 @@ namespace
 		return bRecord ? &Record : bText ? &Text : &Plain;
 	}
 
-	FW Text(const FString& S, float Size, uint32 Colour, bool bTerm = false, double Wrap = 0, float LineHeight = 1.12f)
+	FW BoardText(const FString& S, float Size, uint32 Colour, bool bTerm = false, double Wrap = 0, float LineHeight = 1.12f)
 	{
 		return SNew(STextBlock).Text(FText::FromString(S)).Font(bTerm ? S47Style::Mono(Size) : S47Style::Body(Size))
 			.ColorAndOpacity(Css(Colour)).WrapTextAt(Wrap).LineHeightPercentage(LineHeight);
@@ -77,7 +77,7 @@ namespace
 		return SNew(SButton).ButtonStyle(ButtonStyle(bRecord, bText)).ContentPadding(FMargin(bRecord ? 14 : 6, 2))
 			.OnClicked_Lambda([Fn] { if (Fn) Fn(); return FReply::Handled(); })
 			[SNew(SBox).MinDesiredWidth(Width - (bRecord ? 28 : 12)).MinDesiredHeight(Height - 4).HAlign(HAlign_Center).VAlign(VAlign_Center)
-			[Text(Label, FontSize, Colour, true)]];
+			[BoardText(Label, FontSize, Colour, true)]];
 	}
 
 	TSharedPtr<FSlateBrush> Art(const TCHAR* Name) { return S47Kit::BrushFor(S47Image::Art(Name)); }
@@ -204,6 +204,12 @@ struct FS47BoardImpl
 	FString PendingLook, PendingShow;
 	TArray<FString> PendingFrame;
 	TMap<FString, TSharedPtr<FSlateBrush>> ArtBrushes;
+	float TextScale() const { return UI.IsValid() && UI->bLargeText ? 1.35f : 1.f; }
+	FW Text(const FString& Value, float Size, uint32 Colour, bool bTerm = false, double Wrap = 0, float LineHeight = 1.12f) const
+	{
+		// Larger card text reflows at the same width; placement uses the resulting measured size.
+		return BoardText(Value, Size * TextScale(), Colour, bTerm, Wrap, LineHeight);
+	}
 
 	struct FPin
 	{
@@ -215,12 +221,13 @@ struct FS47BoardImpl
 	struct FBox
 	{
 		FString Id, Region, Node;
-		FVector2D At = FVector2D::ZeroVector, Size = FVector2D::ZeroVector;
+		FVector2D At = FVector2D::ZeroVector, Size = FVector2D::ZeroVector, Want = FVector2D::ZeroVector;
 		TSharedPtr<SWidget> Widget;
 		TSharedPtr<SScrollBox> Full;
 		TArray<FPin> Pins;
 		bool bFree = false, bLines = false, bHand = false, bNote = false, bLift = false;
 		bool bQuestion = false, bDone = false, bFinding = false, bPhoto = false;
+		bool bAutomatic = false, bAutoFree = false;
 		int32 Z = 2;
 	};
 	TArray<TSharedPtr<FBox>> Boxes;
@@ -254,6 +261,8 @@ struct FS47BoardImpl
 	TSharedRef<SWidget> CardHtml(const FS47BoardCard& C, const TSharedPtr<FBox>& B);
 	TSharedRef<SWidget> QuestionHtml(const FS47BoardQuestion& Q, const TSharedPtr<FBox>& B);
 	void PlaceFree();
+	void PlaceLargeText();
+	FVector2D BoardSize() const;
 	void Render();
 	FS47Result Link(const FString& A, const FString& B);
 	void TapNode(const FString& N);
@@ -262,7 +271,7 @@ struct FS47BoardImpl
 	void ShowHint(const FString& Q);
 	void ShowHow(bool bShow);
 	FVector2D ToBoardXY(const FVector2D& P) const { return (P - FVector2D(Tx, Ty)) / S; }
-	double MinScale() const { return FMath::Min(0.5, FMath::Max(0.12, FMath::Min(ViewSize.X / O.Size.X, ViewSize.Y / O.Size.Y) * 0.95)); }
+	double MinScale() const { const FVector2D Size = BoardSize(); return FMath::Min(0.5, FMath::Max(0.12, FMath::Min(ViewSize.X / Size.X, ViewSize.Y / Size.Y) * 0.95)); }
 	void ClampView();
 	void ZoomAt(double Ns, const FVector2D& P);
 	bool PadView(const FKey& Key);
@@ -426,10 +435,70 @@ void FS47BoardImpl::AddBox(const TSharedPtr<FBox>& B, const FString& Region, TOp
 	const TOptional<FVector2D> Place = PlaceOf(B->Id, Region, X, Y);
 	B->bFree = !Place;
 	if (Place) B->At = *Place;
+	B->bAutomatic = TextScale() > 1 && !(O.LayoutGet && O.LayoutGet(B->Id).IsSet());
+	B->bAutoFree = B->bFree;
+	B->Want = B->At;
+	if (B->bFree)
+	{
+		const TOptional<FS47BoardRegion> R = RegionOf(Region);
+		B->Want = R ? FVector2D(R->X + 14, R->Y + 14) : FVector2D(34, 34);
+	}
 	B->Widget = SNew(SBox).WidthOverride(Width)[B->Widget.ToSharedRef()];
 	B->Widget->SlatePrepass();
 	B->Size = FVector2D(Width, B->Widget->GetDesiredSize().Y);
 	Boxes.Add(B);
+}
+
+FVector2D FS47BoardImpl::BoardSize() const
+{
+	FVector2D Size = O.Size;
+	for (const TSharedPtr<FBox>& B : Boxes)
+	{
+		Size.X = FMath::Max(Size.X, B->At.X + B->Size.X + 40);
+		Size.Y = FMath::Max(Size.Y, B->At.Y + B->Size.Y + 40);
+	}
+	return Size;
+}
+
+// Fixed chapter coordinates assume the ordinary font. Only unsaved large-text cards are
+// repacked, using their measured height; a player's saved arrangement remains authoritative.
+void FS47BoardImpl::PlaceLargeText()
+{
+	TArray<TSharedPtr<FBox>> Taken, Automatic;
+	for (const TSharedPtr<FBox>& B : Boxes) (B->bAutomatic ? Automatic : Taken).Add(B);
+	Automatic.StableSort([](const TSharedPtr<FBox>& A, const TSharedPtr<FBox>& B) {
+		if (A->bNote != B->bNote) return !A->bNote;
+		return A->Want.Y == B->Want.Y ? A->Want.X < B->Want.X : A->Want.Y < B->Want.Y;
+	});
+	for (const TSharedPtr<FBox>& B : Automatic)
+	{
+		auto BelowOccupied = [&](FVector2D At) {
+			At.X = FMath::Max(4.0, At.X); At.Y = FMath::Max(4.0, At.Y);
+			for (int32 Pass = 0; Pass <= Taken.Num(); ++Pass)
+			{
+				double NextY = At.Y;
+				for (const TSharedPtr<FBox>& T : Taken)
+					if (Overlap(At, B->Size, T->At, T->Size, 20)) NextY = FMath::Max(NextY, T->At.Y + T->Size.Y + 20);
+				if (NextY == At.Y) break;
+				At.Y = NextY;
+			}
+			return At;
+		};
+		FVector2D At = BelowOccupied(B->Want);
+		if (B->bAutoFree)
+		{
+			const TOptional<FS47BoardRegion> R = RegionOf(B->Region);
+			if (R) for (double X = R->X + 14; X + B->Size.X <= R->X + R->W - 14; X += B->Size.X + 20)
+			{
+				const FVector2D Candidate = BelowOccupied(FVector2D(X, R->Y + 14));
+				if (Candidate.Y < At.Y) At = Candidate;
+			}
+		}
+		B->At = At;
+		B->bFree = false;
+		Taken.Add(B);
+		// Do not persist an automatic arrangement as a user move. End() still saves real drags.
+	}
 }
 
 TSharedRef<SWidget> FS47BoardImpl::CardHtml(const FS47BoardCard& C, const TSharedPtr<FBox>& B)
@@ -569,7 +638,7 @@ TSharedRef<SWidget> FS47BoardImpl::QuestionHtml(const FS47BoardQuestion& Q, cons
 			{
 				const bool Pencil = L.StartsWith(TEXT("~ "));
 				Else->AddSlot().AutoHeight().Padding(Pencil ? 6 : 0, Pencil ? 2 : 0, 0, 0)
-				[SNew(STextBlock).Text(FText::FromString(Pencil ? L.Mid(2) : L)).Font(Pencil ? S47Style::Hand(25) : S47Style::Body(12.5f))
+				[SNew(STextBlock).Text(FText::FromString(Pencil ? L.Mid(2) : L)).Font(Pencil ? S47Style::Hand(25 * TextScale()) : S47Style::Body(12.5f * TextScale()))
 				.ColorAndOpacity(Css(Pencil ? 0x3f3e47 : 0x5d564a)).WrapTextAt(Width - 20).LineHeightPercentage(Pencil ? 1.05f : 1.12f)];
 			}
 			Body->AddSlot().AutoHeight().Padding(10, 4, 10, 6)[Else];
@@ -594,6 +663,7 @@ TSharedRef<SWidget> FS47BoardImpl::QuestionHtml(const FS47BoardQuestion& Q, cons
 // ui/Board.ts placeFree(): the first unoccupied spot in the chapter's patch, kept in the save.
 void FS47BoardImpl::PlaceFree()
 {
+	if (TextScale() > 1) { PlaceLargeText(); return; }
 	TArray<TSharedPtr<FBox>> Taken;
 	for (const TSharedPtr<FBox>& B : Boxes) if (!B->bFree) Taken.Add(B);
 	for (const TSharedPtr<FBox>& B : Boxes)
@@ -655,7 +725,7 @@ void FS47BoardImpl::Render()
 		TSharedPtr<FBox> B = MakeShared<FBox>(); B->Id = N.Id; B->bNote = true; B->bHand = N.bHand;
 		const TOptional<FVector2D> Saved = PlaceOf(N.Id);
 		B->Widget = SNew(SBorder).BorderImage(N.bHand ? Box(0, 0, 0, 0) : Box(0xf1dc7c)).Padding(N.bHand ? FMargin(12, 3, 12, 1) : FMargin(10, 14, 10, 8))
-			[SNew(STextBlock).Text(FText::FromString(N.Text)).Font(N.bHand ? S47Style::Hand(34) : S47Style::Body(12.5f))
+			[SNew(STextBlock).Text(FText::FromString(N.Text)).Font(N.bHand ? S47Style::Hand(34 * TextScale()) : S47Style::Body(12.5f * TextScale()))
 			.ColorAndOpacity(Css(N.bHand ? 0x3f3e47 : 0x1e2430)).WrapTextAt(N.bHand ? 0 : 170).LineHeightPercentage(N.bHand ? 1.f : 1.28f)];
 		if (N.bHand) B->Widget = SNew(SOverlay) + SOverlay::Slot()[SNew(SS47BoardScrap)] + SOverlay::Slot()[B->Widget.ToSharedRef()];
 		B->Widget->SlatePrepass();
@@ -665,6 +735,7 @@ void FS47BoardImpl::Render()
 		if (Saved) { B->At = *Saved; continue; }
 		const TOptional<FVector2D> A = Centre(N.FromA), C = Centre(N.FromB);
 		const FVector2D Want = A && C ? (*A + *C) / 2 + FVector2D(-95, 18) : FVector2D(60, 60);
+		if (TextScale() > 1) { B->Want = Want; B->bAutoFree = false; continue; }
 		auto Free = [&](const FVector2D& At) {
 			return At.X >= 4 && At.Y >= 4 && At.X + B->Size.X <= O.Size.X - 4 && At.Y + B->Size.Y <= O.Size.Y - 4
 				&& !Boxes.ContainsByPredicate([&](const TSharedPtr<FBox>& T) { return T != B && Overlap(At, B->Size, T->At, T->Size, 10); });
@@ -707,6 +778,7 @@ void FS47BoardImpl::Render()
 		B->At = At.Get(FVector2D(FMath::RoundToDouble(FMath::Clamp(Want.X, 4.0, O.Size.X - B->Size.X - 4)), FMath::RoundToDouble(FMath::Clamp(Want.Y, 4.0, O.Size.Y - B->Size.Y - 4))));
 		if (O.LayoutSet) O.LayoutSet(N.Id, B->At.X, B->At.Y);
 	}
+	if (TextScale() > 1) PlaceLargeText();
 	for (const FS47BoardRegion& R : Regions())
 	{
 		if (R.Label.IsEmpty()) continue;
@@ -804,7 +876,8 @@ void FS47BoardImpl::ShowHow(bool bShow)
 
 void FS47BoardImpl::ClampView()
 {
-	const double W = O.Size.X, H = O.Size.Y, Vw = ViewSize.X, Vh = ViewSize.Y, M = 60;
+	const FVector2D Size = BoardSize();
+	const double W = Size.X, H = Size.Y, Vw = ViewSize.X, Vh = ViewSize.Y, M = 60;
 	Tx = W * S + 2 * M <= Vw ? (Vw - W * S) / 2 : FMath::Clamp(Tx, Vw - W * S - M, M);
 	Ty = H * S + 2 * M <= Vh ? (Vh - H * S) / 2 : FMath::Clamp(Ty, Vh - H * S - M, M);
 }
@@ -836,6 +909,25 @@ bool FS47BoardImpl::PadView(const FKey& K)
 void FS47BoardImpl::Look(const FS47BoardRegion& R)
 {
 	if (ViewSize.X <= 0 || ViewSize.Y <= 0) return;
+	if (TextScale() > 1)
+	{
+		FVector2D Min(TNumericLimits<double>::Max(), TNumericLimits<double>::Max()), Max = -Min;
+		for (const TSharedPtr<FBox>& B : Boxes) if (B->Region == R.Id)
+		{
+			Min.X = FMath::Min(Min.X, B->At.X); Min.Y = FMath::Min(Min.Y, B->At.Y);
+			Max.X = FMath::Max(Max.X, B->At.X + B->Size.X); Max.Y = FMath::Max(Max.Y, B->At.Y + B->Size.Y);
+		}
+		if (Min.X <= Max.X)
+		{
+			// Keep large text readable at first glance. A tall patch starts at its top and can
+			// be panned normally; ALL remains the explicit overview rather than shrinking it here.
+			S = FMath::Clamp(FMath::Min(ViewSize.X / (Max.X - Min.X + 40), ViewSize.Y / (Max.Y - Min.Y + 40)), 0.85, 1.25);
+			Tx = (Max.X - Min.X) * S <= ViewSize.X - 24 ? ViewSize.X / 2 - (Min.X + Max.X) / 2 * S : 12 - Min.X * S;
+			Ty = (Max.Y - Min.Y) * S <= ViewSize.Y - 24 ? ViewSize.Y / 2 - (Min.Y + Max.Y) / 2 * S : 12 - Min.Y * S;
+			ClampView();
+			return;
+		}
+	}
 	S = Small() ? 0.8 : FMath::Clamp(FMath::Min(ViewSize.X / (R.W + 24), ViewSize.Y / (R.H + 24)), 0.45, 1.25);
 	Tx = R.W * S <= ViewSize.X ? ViewSize.X / 2 - (R.X + R.W / 2) * S : 12 - R.X * S;
 	Ty = R.H * S <= ViewSize.Y ? ViewSize.Y / 2 - (R.Y + R.H / 2) * S : 12 - (R.Y - 30) * S;
@@ -879,7 +971,8 @@ void FS47BoardImpl::Follow()
 	if (Drag.Kind == FDrag::EKind::Card && Drag.bMoved && Drag.Box)
 	{
 		const FVector2D P = ToBoardXY(Drag.Now) - Drag.Grab;
-		Drag.Box->At = FVector2D(FMath::Clamp(P.X, 0.0, O.Size.X - 60), FMath::Clamp(P.Y, 0.0, O.Size.Y - 40));
+		const FVector2D Size = BoardSize();
+		Drag.Box->At = FVector2D(FMath::Clamp(P.X, 0.0, Size.X - 60), FMath::Clamp(P.Y, 0.0, Size.Y - 40));
 	}
 }
 
@@ -1038,7 +1131,7 @@ void FS47BoardImpl::Tick(const FVector2D& InSize)
 	HowEl->SetVisibility(bSmall || (HowStrip && !GHowHidden) ? EVisibility::Collapsed : EVisibility::HitTestInvisible);
 	if (HowStrip && bSmall) HowStrip->SetVisibility(EVisibility::Collapsed);
 	else if (HowStrip) HowStrip->SetVisibility(GHowHidden ? EVisibility::Collapsed : EVisibility::Visible);
-	SayEl->SetFont(S47Style::Body(bSmall ? 14 : 15.5f));
+	SayEl->SetFont(S47Style::Body((bSmall ? 14 : 15.5f) * TextScale()));
 	Slack.RemoveAll([](const FSlack& T) { return FPlatformTime::Seconds() - T.Born >= 2.0; });
 	// A while on the board without a thread that holds: offer the hint once.
 	const double Now = FPlatformTime::Seconds();
@@ -1065,17 +1158,18 @@ void FS47BoardImpl::Tick(const FVector2D& InSize)
 
 int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer, bool bAbove) const
 {
-	const FGeometry Board = G.MakeChild(O.Size, FSlateLayoutTransform(S, FVector2D(Tx, Ty)));
+	const FVector2D Size = BoardSize();
+	const FGeometry Board = G.MakeChild(Size, FSlateLayoutTransform(S, FVector2D(Tx, Ty)));
 	auto PaintBox = [&](const FVector2D& At, const FVector2D& Size, const FSlateBrush* Brush, const FLinearColor& Tint = FLinearColor::White, int32 L = 0) {
 		FSlateDrawElement::MakeBox(Out, Layer + L, Board.ToPaintGeometry(Size, FSlateLayoutTransform(At)), Brush, ESlateDrawEffect::None, Tint * Brush->GetTint(FWidgetStyle()));
 	};
 	auto Tile = [&](const FSlateBrush& Original, double Pitch) {
-		for (double Y = 0; Y < O.Size.Y; Y += Pitch) for (double X = 0; X < O.Size.X; X += Pitch)
+		for (double Y = 0; Y < Size.Y; Y += Pitch) for (double X = 0; X < Size.X; X += Pitch)
 		{
-			const FVector2D Size(FMath::Min(Pitch, O.Size.X - X), FMath::Min(Pitch, O.Size.Y - Y));
+			const FVector2D TileSize(FMath::Min(Pitch, Size.X - X), FMath::Min(Pitch, Size.Y - Y));
 			FSlateBrush Part = Original; Part.DrawAs = ESlateBrushDrawType::Image; Part.Tiling = ESlateBrushTileType::NoTile;
-			Part.SetUVRegion(FBox2f(FVector2f::ZeroVector, FVector2f(Size / Pitch)));
-			PaintBox(FVector2D(X, Y), Size, &Part);
+			Part.SetUVRegion(FBox2f(FVector2f::ZeroVector, FVector2f(TileSize / Pitch)));
+			PaintBox(FVector2D(X, Y), TileSize, &Part);
 		}
 	};
 	auto Rotated = [&](const FVector2D& At, const FVector2D& Size, const FSlateBrush* Brush, double Angle, const FLinearColor& Tint = FLinearColor::White, bool bOrigin = false) {
@@ -1097,7 +1191,7 @@ int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int
 		if (Cork) Tile(*Cork, 512);
 		else
 		{
-			PaintBox(FVector2D::ZeroVector, O.Size, Box(0x8a5f3a));
+			PaintBox(FVector2D::ZeroVector, Size, Box(0x8a5f3a));
 			// CSS radial gradients are a repeated image in Slate, rather than thousands of draw calls.
 			static TSharedPtr<FSlateBrush> Pattern;
 			if (!Pattern)
@@ -1121,7 +1215,7 @@ int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int
 		if (Frame)
 		{
 			// CSS border-image:64 / 40px stretch. Native Slate Border keeps physical texel margins.
-			const double X[] = { 0, 40, O.Size.X - 40, O.Size.X }, Y[] = { 0, 40, O.Size.Y - 40, O.Size.Y };
+			const double X[] = { 0, 40, Size.X - 40, Size.X }, Y[] = { 0, 40, Size.Y - 40, Size.Y };
 			const double U[] = { 0, 64.0 / 2048, 1 - 64.0 / 2048, 1 }, V[] = { 0, 64.0 / 1280, 1 - 64.0 / 1280, 1 };
 			for (int32 J = 0; J < 3; ++J) for (int32 I = 0; I < 3; ++I)
 			{
@@ -1133,11 +1227,11 @@ int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int
 		}
 		else
 		{
-			PaintBox(FVector2D::ZeroVector, O.Size, Box(0, 0x4a3220, 0, 1, 16));
-			PaintBox(FVector2D(16), O.Size - FVector2D(32), Box(0, 0x2e1f14, 0, 1, 2));
+			PaintBox(FVector2D::ZeroVector, Size, Box(0, 0x4a3220, 0, 1, 16));
+			PaintBox(FVector2D(16), Size - FVector2D(32), Box(0, 0x2e1f14, 0, 1, 2));
 		}
 		++Layer;
-		const FVector2D Stain(FMath::RoundToDouble(O.Size.X * 0.43), FMath::RoundToDouble(O.Size.Y * 0.47));
+		const FVector2D Stain(FMath::RoundToDouble(Size.X * 0.43), FMath::RoundToDouble(Size.Y * 0.47));
 		const TSharedPtr<FSlateBrush> Coffee = ArtBrushes.FindRef(TEXT("stain_coffee"));
 		if (Coffee) Rotated(Stain, FVector2D(220), Coffee.Get(), FMath::DegreesToRadians(18.0), FLinearColor(1, 1, 1, 0.8f));
 		else { Ring(Stain + FVector2D(110), 106.5, Css(0x46280f, 0.11f), 7); Ring(Stain + FVector2D(110), 101.5, Css(0x46280f, 0.03f), 5); }
@@ -1357,11 +1451,11 @@ void SS47Board::Construct(const FArguments& InArgs)
 	{
 		return SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, 0, 8, 0)
-			[SNew(SBorder).BorderImage(Box(0xc4241c, 0, 0.9f)).Padding(FMargin(7, 0, 7, 0))[Text(N, 17, 0xfff3e2, true)]]
+			[SNew(SBorder).BorderImage(Box(0xc4241c, 0, 0.9f)).Padding(FMargin(7, 0, 7, 0))[P->Text(N, 17, 0xfff3e2, true)]]
 			+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
 			[SNew(SVerticalBox)
-			+ SVerticalBox::Slot().AutoHeight()[Text(Head, 15, 0xffd6aa, true)]
-			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([Body] { return FText::FromString(Body()); }).Font(S47Style::Body(14.5f)).ColorAndOpacity(Css(0xd8cfbd)).AutoWrapText(true).LineHeightPercentage(1.2f)]];
+			+ SVerticalBox::Slot().AutoHeight()[P->Text(Head, 15, 0xffd6aa, true)]
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([Body] { return FText::FromString(Body()); }).Font(S47Style::Body(14.5f * P->TextScale())).ColorAndOpacity(Css(0xd8cfbd)).AutoWrapText(true).LineHeightPercentage(1.2f)]];
 	};
 	P->HowStrip = SNew(SBorder).BorderImage(Box(0x2a1d14, 0xffbe8c, 0.95f, 0.28f)).Padding(FMargin(12, 8)).Visibility(GHowHidden ? EVisibility::Collapsed : EVisibility::Visible)
 		[SNew(SHorizontalBox)
@@ -1378,7 +1472,7 @@ void SS47Board::Construct(const FArguments& InArgs)
 	P->HintBox = SNew(SBorder).BorderImage(Box(0xf1e6c8, 0xd9a441, 1, 1, 2)).Padding(FMargin(14, 8)).Visibility(EVisibility::Collapsed)
 		[SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, 0, 14, 0)[SAssignNew(P->HintHead, STextBlock).Font(S47Style::Mono(17)).ColorAndOpacity(Css(0x8f2a1d))]
-		+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[SAssignNew(P->HintText, STextBlock).Font(S47Style::Body(17)).ColorAndOpacity(Css(0x1e2430)).AutoWrapText(true).LineHeightPercentage(1.25f)]
+		+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[SAssignNew(P->HintText, STextBlock).Font(S47Style::Body(17 * P->TextScale())).ColorAndOpacity(Css(0x1e2430)).AutoWrapText(true).LineHeightPercentage(1.25f)]
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(10, 0, 0, 0)
 		[Button(TEXT("x"), [this] { P->HintBox->SetVisibility(EVisibility::Collapsed); }, 17, 0x6b6458, 32, 28, false, true)]];
 	ChildSlot
@@ -1526,6 +1620,48 @@ bool SS47Board::SelfTest(TArray<FString>& Lines)
 	Check(Hinted == TEXT("question") && P.Offer.IsEmpty() && P.SayEl->GetText().ToString() == TEXT("Look at the dates."), TEXT("the offered hint is the question's own"));
 	P.O.Questions = [] { FS47BoardQuestion Q; Q.Id = TEXT("question"); Q.Stamp = TEXT("WHY"); Q.Text = TEXT("What do these show?"); Q.Slots = 2; Q.Filled = { TEXT("one"), TEXT("two") }; Q.Region = TEXT("test"); return TArray<FS47BoardQuestion>{ Q }; };
 	Check(P.OpenQuestionIn(TEXT("test")).IsEmpty(), TEXT("no hint is offered for a question whose lines are filled"));
+	US47UI* LargeTextUI = NewObject<US47UI>(); P.UI = LargeTextUI;
+	P.Render(); const double NormalQuestionHeight = P.Boxes[0]->Size.Y;
+	LargeTextUI->bLargeText = true;
+	P.Render();
+	Check(P.TextScale() > 1 && P.Boxes[0]->Size.Y > NormalQuestionHeight, TEXT("large text enlarges and reflows the mandatory question-card text"));
+	// Measured large-text cards must not cover the records or the question's Hint/Record row.
+	FS47BoardImpl L; L.UI = LargeTextUI;
+	L.Canvas = SNew(SCanvas); L.StatusEl = SNew(STextBlock); L.HowEl = SNew(STextBlock); L.SayEl = SNew(STextBlock);
+	L.O.Size = FVector2D(800, 500);
+	L.O.Regions = [] { return TArray<FS47BoardRegion>{ { TEXT("large"), FString(), 40, 60, 720, 420 } }; };
+	TMap<FString, FVector2D> LargeLayout; LargeLayout.Add(TEXT("anchor"), FVector2D(60, 80));
+	L.O.LayoutGet = [&](const FString& Id) -> TOptional<FVector2D> { const FVector2D* At = LargeLayout.Find(Id); return At ? TOptional<FVector2D>(*At) : TOptional<FVector2D>(); };
+	L.O.LayoutSet = [&](const FString& Id, double X, double Y) { LargeLayout.Add(Id, FVector2D(X, Y)); };
+	L.O.Cards = [] {
+		FS47BoardCard A; A.Id = TEXT("anchor"); A.Stamp = TEXT("SAVED"); A.Region = TEXT("large"); A.bHave = true; A.X = 20; A.Y = 14; A.W = 220;
+		A.Text = TEXT("The original receiver record remains beside the independent control observation. Preserve both records and compare the marked sight line before drawing a conclusion. The date, heading and control state are part of the evidence.");
+		FS47BoardCard B = A; B.Id = TEXT("record"); B.Stamp = TEXT("RECORD"); B.Y = 70;
+		B.Lines = { { TEXT("record-line"), TEXT("No command was sent while the physical reference changed."), FString() } };
+		return TArray<FS47BoardCard>{ A, B };
+	};
+	L.O.Questions = [] { FS47BoardQuestion Q; Q.Id = TEXT("large-question"); Q.Region = TEXT("large"); Q.Stamp = TEXT("WHY"); Q.Text = TEXT("What do the original record and the independent control support?"); Q.Slots = 2; Q.Filled = { TEXT("Original record"), TEXT("Independent control") }; Q.X = 20; Q.Y = 120; Q.W = 220; return TArray<FS47BoardQuestion>{ Q }; };
+	L.Render();
+	bool bSeparated = true;
+	for (int32 I = 0; I < L.Boxes.Num(); ++I) for (int32 J = I + 1; J < L.Boxes.Num(); ++J)
+		bSeparated &= !Overlap(L.Boxes[I]->At, L.Boxes[I]->Size, L.Boxes[J]->At, L.Boxes[J]->Size, 0);
+	Check(bSeparated && LargeLayout.Num() == 1, TEXT("measured large-text records and complete question controls do not overlap or overwrite saved layout"));
+	const auto FindLarge = [&](const FString& Id) { return *L.Boxes.FindByPredicate([&](const TSharedPtr<FS47BoardImpl::FBox>& B) { return B->Id == Id; }); };
+	Check(FindLarge(TEXT("anchor"))->At == LargeLayout[TEXT("anchor")] && L.Centre(TEXT("record-line")).IsSet(), TEXT("large-text packing preserves the saved anchor and relocated evidence pins"));
+	const FVector2D AutomaticRecord = FindLarge(TEXT("record"))->At;
+	L.Render();
+	Check(FindLarge(TEXT("record"))->At == AutomaticRecord, TEXT("unsaved large-text packing stays stable across redraws"));
+	L.ViewSize = FVector2D(800, 500); L.Look(*L.RegionOf(TEXT("large")));
+	Check(L.S >= 0.85 && L.BoardSize().Y > L.O.Size.Y, TEXT("large-text opening view retains readable zoom and extends the pannable canvas for full cards"));
+	// An actual drag stores a position; it remains reachable after switching back to ordinary text.
+	L.S = 1; L.Tx = L.Ty = 0;
+	const FVector2D LargeStart = FindLarge(TEXT("record"))->At + FVector2D(30, 25);
+	L.Down(9, LargeStart, false); L.Move(9, LargeStart + FVector2D(35, 180)); L.End(9, LargeStart + FVector2D(35, 180), false);
+	const FVector2D DraggedLarge = LargeLayout.FindRef(TEXT("record"));
+	LargeTextUI->bLargeText = false; L.Render();
+	Check(LargeLayout.Contains(TEXT("record")) && FindLarge(TEXT("record"))->At == DraggedLarge && L.BoardSize().Y >= DraggedLarge.Y + FindLarge(TEXT("record"))->Size.Y,
+		TEXT("a saved large-text drag keeps its position and reachable canvas after returning to ordinary text"));
+	LargeTextUI->bLargeText = true;
 	P.S = 1; P.Tx = P.Ty = 0;
 	Check(P.PadView(EKeys::Gamepad_DPad_Right) && P.Tx == -80, TEXT("Xbox D-pad pans the board view without moving evidence"));
 	const double BeforeZoom = P.S;

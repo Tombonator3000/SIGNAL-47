@@ -57,6 +57,7 @@ private:
 	FS47NbExtras X;
 	TMap<FString, int32> Sel;    // the chosen entry on each tab
 	uint32 KeysShown = 0;        // S47Keys::Changes() when the CONTROLS page was built
+	uint32 PadShown = 0;         // active input when the control pages were built
 
 	// the spread: the left page, the right page, a sheet across both (the map), the actions at the foot
 	TSharedPtr<SBox> LeftSlot, RightSlot, SpreadSlot, UseSlot;

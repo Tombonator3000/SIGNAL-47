@@ -226,12 +226,12 @@ TSharedRef<SWidget> S47MapOverlay::MapOverlay(US47UI* UI, const FOpts& O)
 		const FString Id = C.Id;
 		Buttons.Add(S47Kit::Button(C.Label, [D, OnChoose, Id]
 		{
-			if (!OnChoose) return;
+			if (!OnChoose || !D->Aligned()) return;
 			const FS47Result R = OnChoose(Id);
 			// panelSay(el, '[data-say]', r)
 			D->Say = R.Text; D->Tone = R.bOk ? 1 : -1;
 			if (R.bOk) D->bAskHidden = true;
-		}));
+		}, false, TAttribute<bool>::CreateLambda([D] { return D->Aligned(); })));
 	}
 	const S47Kit::FW Ask = SNew(SBox).Visibility_Lambda([D] { return D->bAskHidden ? EVisibility::Collapsed : EVisibility::Visible; })
 		[

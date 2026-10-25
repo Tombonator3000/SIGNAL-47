@@ -1,0 +1,519 @@
+{
+  "module_id": "arrival",
+  "flags": {},
+  "scenes": [
+    {
+      "id": "H08_BRIEF",
+      "phase": "field",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H08: På trygg plass: legg SARO-original og eget romnotat ved Hondo- og Site11-utskrifter. Hent bevart kopi ved sen ankomst. Sammenlign proveniens, uavhengige kanaler, klokker, faseorden og kommende spor. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h08_ready"
+        ],
+        "none": [
+          "hr_h08_recorded",
+          "hr_h08_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H08_BRIEF_001",
+          "speaker": "WARD",
+          "text": "Hondo kept its power when you lost yours. Their paper is a local record. Do not put your outage on their chart.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H08_BRIEF_002",
+          "speaker": "WARD",
+          "text": "Site 11 took the second reading with the audio feed unplugged. Their transit still recorded it.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H08_BRIEF_003",
+          "speaker": "WARD",
+          "text": "Compare the times and the order. Then tell me what is observation and what is your explanation.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h08_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H08_CHECK",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H08: Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h08_ready",
+          "ctx_hr_h08_checked",
+          "ctx_hr_remote_sources_verified"
+        ],
+        "none": [
+          "hr_h08_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H08_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local source sheets agree on phase order and measured interval. Their separate optical readings show continuing approach.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H08_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The warning can state coordinated preparation for an arrival. Identity and purpose remain unestablished. Call Ward and keep those limits on the report.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h08_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H08_INCOMPLETE",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H08: Manglende sanntidsmottak erstattes av bevart lokalt stempel/originalkopi på telex. Uverifisert kilde føres som foreløpig og ringer Ward for kildekontroll; varsel om lokal fare kan sendes straks. Sterk nettverksslutning venter på de to uavhengige fjernkildene. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h08_ready",
+          "ctx_hr_h08_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H08_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "One remote source is not verified. Send the local warning now, then ask Ward for the original source sheet before recording a network conclusion.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H08_COMPARE_RECORDS",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren har faktisk samlet og sammenlignet alle tre lokale kilder og klokke-/kontrollark.",
+      "requires": {
+        "all": [
+          "ctx_hr_remote_sources_verified"
+        ],
+        "none": []
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H08_COMPARE_RECORDS_001",
+          "speaker": "DESCRIPTION",
+          "text": "The source sheets contain different local readings. Their sequence and timing agree.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H08_COMPARE_RECORDS_002",
+          "speaker": "DESCRIPTION",
+          "text": "Hondo and Site 11 each recorded approaching tracks after the reference sweep. SARO is one prepared place among several.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H08_COMPARE_RECORDS_003",
+          "speaker": "DESCRIPTION",
+          "text": "The records support a warning about a coordinated arrival. They do not identify who is coming.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": [
+          "HR_SARO_ORIGINAL",
+          "HR_HONDO_LOCAL",
+          "HR_SITE11_LOCAL",
+          "HR_NETWORK_CHECK"
+        ]
+      }
+    },
+    {
+      "id": "H08_WARNING_ACK",
+      "phase": "field",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kvittering først når Ward faktisk er nådd, advarselen lest tilbake og 06:00-jobben suspendert. Ikke et tilfeldig tidsutløp.",
+      "requires": {
+        "all": [
+          "ctx_hr_warning_acknowledged",
+          "ctx_hr_remote_sources_verified"
+        ],
+        "none": [
+          "hr_h08_warning_ack_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H08_WARNING_ACK_001",
+          "speaker": "WARD",
+          "text": "The warning is entered. I have stopped the six o'clock series. The other sites have read it back: nobody closes a reference or completes a run.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H08_WARNING_ACK_003",
+          "speaker": "WARD",
+          "text": "Your copies are outside SARO. You did not call too late. Keep the originals with their source sheets.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H08_WARNING_ACK_002",
+          "speaker": "WARD",
+          "text": "The field courier is on the old Roswell road, east of the mapped reference. Check the map at the diner before you agree a handover point.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h08_warning_ack_presented": true
+        },
+        "give_documents": [
+          "HR_WARNING_RECEIPT"
+        ]
+      }
+    },
+    {
+      "id": "H09_BRIEF",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H09: Rolig diner: les dagens fysisk leverte avis med 1947-utklippet og legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h09_ready",
+          "ctx_hr_warning_acknowledged"
+        ],
+        "none": [
+          "hr_h09_recorded",
+          "hr_h09_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H09_BRIEF_001",
+          "speaker": "DRIVER",
+          "text": "Last October it all quit past the eight-mile post. Engine, lights, radio. Then it came back.",
+          "delivery_nb": "Eksisterende lastebilsjåfør. Praktisk, lavmælt, bare egne veiopplevelser."
+        },
+        {
+          "id": "H09_BRIEF_002",
+          "speaker": "DRIVER",
+          "text": "I came through again before I stopped here this morning. Nothing quit. That is one trip. I cannot tell you what made the other one different.",
+          "delivery_nb": "Eksisterende lastebilsjåfør. Praktisk, lavmælt, bare egne veiopplevelser."
+        },
+        {
+          "id": "H09_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "On the table the tracing is still loose. Place its transit on STATION 01, north to north. The newspaper picture has no survey scale.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h09_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H09_CHECK",
+      "phase": "all_night",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H09: Finn C ved 8.15-bolten og avtal separat 10.4-bolt med Ward. Sjåførens oktoberstopp ved8.15 må tas med i risikovurderingen. Spør om hans nylige gjennomkjøring: det er et nåtidig vitnemål, ikke et generelt trygghetsbevis. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h09_ready",
+          "ctx_hr_h09_checked",
+          "ctx_hr_warning_acknowledged"
+        ],
+        "none": [
+          "hr_h09_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H09_CHECK_001",
+          "speaker": "WARD",
+          "text": "C is the bolt at eight point one five. The handover is ten point four. I have both marked.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H09_CHECK_002",
+          "speaker": "WARD",
+          "text": "The old road is the direct approach to the courier. It is a practical route, not a finding that the reference is safe.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        },
+        {
+          "id": "H09_CHECK_003",
+          "speaker": "WARD",
+          "text": "Take the originals through. Stay in the cab, keep moving and take no reading at the bolt. If the truck falters before the crossing, turn back while you can.",
+          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h09_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H09_INCOMPLETE",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H09: Avis før04:45 er ikke levert; behold mat/ro/annet kartgrunnlag tilgjengelig uten tom venting. Feil plassering får eksisterende karttips; avisbildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h09_ready",
+          "ctx_hr_h09_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H09_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "C is not placed yet. Put the transit on STATION 01 first. Keep the newspaper beside the map; it establishes the old photograph, not the crossing.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H10_BRIEF",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H10: Gå til servicebilen og velg tydelig overleveringsoppdrag. Kjør den eksisterende veien fra dinerens mile0 mot det avtalte10.4-punktet, forbi C ved8.15 uten planlagt stopp. Varsling er allerede levert. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "requires": {
+        "all": [
+          "ctx_hr_h10_ready",
+          "ctx_hr_warning_acknowledged"
+        ],
+        "none": [
+          "hr_h10_recorded",
+          "hr_h10_brief_presented"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H10_BRIEF_001",
+          "speaker": "DESCRIPTION",
+          "text": "The originals are in the cab. Ward has the copies and the warning.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H10_BRIEF_002",
+          "speaker": "DESCRIPTION",
+          "text": "Handover: mile 10.4. C: mile 8.15. Pass the reference without stopping or taking a reading.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H10_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "Leave for the handover when you are ready.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h10_brief_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H10_CHECK",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H10: Før avreise bekreft at originalene er med, at Ward har kvittert og at C og overleveringspunkt er forskjellige. Ikke lag en ny parkerings-/avlesningsoppgave ved C. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "requires": {
+        "all": [
+          "ctx_hr_h10_ready",
+          "ctx_hr_h10_checked",
+          "ctx_hr_h10_stalled"
+        ],
+        "none": [
+          "hr_h10_recorded"
+        ]
+      },
+      "direction_nb": "Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.",
+      "lines": [
+        {
+          "id": "H10_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "At the crossing the engine stops. You did not turn the key off.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        },
+        {
+          "id": "H10_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The warning has already gone through. The originals are beside you.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_h10_recorded": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "H10_INCOMPLETE",
+      "phase": "all_night",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "H10: Uferdig kart eller ukvittert varsel sender spilleren tilbake til den konkrete handlingen før avreise. Under finalen tilbys ingen falsk redningsgren eller skyldtekst. Vanlig Continue starter ved det tydelig oppgitte sikre sjekkpunktet. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "requires": {
+        "all": [
+          "ctx_hr_h10_ready",
+          "ctx_hr_h10_insufficient"
+        ],
+        "none": []
+      },
+      "direction_nb": "Ingen feil-lyd eller skremmestikk. Bevar eksisterende funn og vis neste gjennomførbare handling. Settet markerer ikke oppdraget fullført.",
+      "lines": [
+        {
+          "id": "H10_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The warning has not been acknowledged. Use the diner payphone before leaving.",
+          "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {},
+        "give_documents": []
+      }
+    }
+  ],
+  "documents": [
+    {
+      "id": "HR_SARO_ORIGINAL",
+      "title": "SARO / original run and incident note",
+      "kind": "typed",
+      "stamp": "14 APR 1986 / LOCAL RECORD",
+      "body": [
+        "LOCAL SOURCE / SARO 07. Keep the original receiver record with the separate room-observation sheet. The room observation was written here; it was not received over the network.",
+        "The outside band crossed successive windows. The local lamp control did not remove it. An opaque screen interrupted it at the wall.",
+        "A visitor turned to a newly changed radio sound after the sound began. The retained field fragment continued unchanged. This is a present response, separate from the recording."
+      ],
+      "production_nb": "Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto."
+    },
+    {
+      "id": "HR_HONDO_LOCAL",
+      "title": "Hondo / local record",
+      "kind": "typed",
+      "stamp": "14 APR 1986 / LOCAL RECORD",
+      "body": [
+        "LOCAL SOURCE / HONDO. Copied from Hondo's battery-backed event logger and the operator's separate optical sheet. This is not the SARO telex forwarded back.",
+        "Power remained available during the earlier SARO blackout. During the later inspection cycle our local supply and the outside band changed independently.",
+        "LOCAL SHEET / reference passes: 03:56:08 R1; 03:56:55 R2; 03:57:42 R3. R1, R2 and R3 are Hondo's surveyed bearings. They are not a copied SARO azimuth setting.",
+        "PAIRED OPTICAL HEADS / surveyed baseline 480 m. At 04:00:00, local triangulated slant ranges: track H-A 18.4 km, H-B 21.1 km. At 04:00:30: H-A 18.3 km, H-B 21.0 km. At 04:01:00: H-A 18.2 km, H-B 20.9 km. Range uncertainty per reading: 0.04 km. The closing trend exceeds the measurement uncertainty over the full interval.",
+        "Our optical recorder shows the band returning to three surveyed bearings in the same order. After the third pass, two separate tracks entered the recorded approach sector. Their angular separation changed; they are not a still photograph or a repeated radio trace.",
+        "Observation interval: 03:56:00 to 04:04:00 MST, 14 APR 1986. Clock check against the time service before and after: within one second. Optical-sheet readings retained with the original. Identity unknown."
+      ],
+      "production_nb": "Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto. De numeriske fjernmålingene er ny fiktiv forfatterkilde. Ikke hent dem fra en faktisk test, gamle telex eller gjenta dem som målt spillbevis. Produser to separate kildeark med lokal skisse og råverdier; paired-head oppsett er nytt fjernstasjonsgrunnlag, ikke eksisterende SARO-utstyr."
+    },
+    {
+      "id": "HR_SITE11_LOCAL",
+      "title": "Site 11 / local record",
+      "kind": "typed",
+      "stamp": "14 APR 1986 / LOCAL RECORD",
+      "body": [
+        "LOCAL SOURCE / SITE 11. Local receiver chart plus independently clocked transit observations. Receiver was disconnected from the intersite audio feed during the second observation.",
+        "Three reference bearings were occupied in sequence. Two incoming tracks were then observed in the measured approach sector. Successive local readings show continued approach. The two tracks held their order while the reference cycle advanced.",
+        "LOCAL SHEET / reference passes: 03:56:08 R1; 03:56:56 R2; 03:57:42 R3. These labels refer to Site 11's own survey diagram. The middle boundary differs by one second, within the checked clocks; do not erase that difference.",
+        "PAIRED OPTICAL HEADS / surveyed baseline 620 m. At 04:00:00, local triangulated slant ranges: track S-A 22.6 km, S-B 24.0 km. At 04:00:30: S-A 22.5 km, S-B 23.9 km. At 04:01:00: S-A 22.4 km, S-B 23.8 km. Range uncertainty per reading: 0.04 km. Directions differ from Hondo's local observations. Identity unknown; no predicted arrival minute entered.",
+        "Observation interval: 03:56:00 to 04:04:00 MST, 14 APR 1986. Clock check before and after: within one second. The receiver trace alone cannot establish an approach; the transit readings are a separate observation.",
+        "The sequence boundaries agree with Hondo to the resolution of the local clocks. The approach measurements differ by station, as separate locations should. The instruments were not running an agreed survey sequence."
+      ],
+      "production_nb": "Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto. De numeriske fjernmålingene er ny fiktiv forfatterkilde. Ikke hent dem fra en faktisk test, gamle telex eller gjenta dem som målt spillbevis. Produser to separate kildeark med lokal skisse og råverdier; paired-head oppsett er nytt fjernstasjonsgrunnlag, ikke eksisterende SARO-utstyr."
+    },
+    {
+      "id": "HR_NETWORK_CHECK",
+      "title": "Source check / three local records",
+      "kind": "typed",
+      "stamp": "14 APR 1986 / LOCAL RECORD",
+      "body": [
+        "SARO: room observation and original receiver run. Hondo: local event logger and optical record. Site 11: local receiver and transit sheet with the intersite audio feed disconnected.",
+        "The ordinary radio programme explains none of the optical changes. Matching words on a radio would establish only a shared recording; these records contain different local measurements.",
+        "The same ordered reference cycle occurs at separated sites during the same measured interval. Two stations independently record continuing incoming tracks after that cycle. A coordinated preparation for an arrival is the supported working warning. Identity and purpose remain unknown."
+      ],
+      "production_nb": "Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto."
+    },
+    {
+      "id": "HR_WARNING_RECEIPT",
+      "title": "Ward / warning and suspension receipt",
+      "kind": "typed",
+      "stamp": "14 APR 1986 / LOCAL RECORD",
+      "body": [
+        "RECEIVED / E. WARD. SARO original identified; local observations separated from receiver copy. Hondo and Site 11 originals requested and their source checks retained.",
+        "The 06:00 morning series is suspended. No fresh observer is to close a reference or complete the old run. Other sites have acknowledged the same instruction. This suspension is a change to the work order, not a claim that the external activity has stopped.",
+        "Copies are outside SARO. The originals will be transferred with their exposure records and source sheets. The courier has the field map. The current handover point is the existing survey bolt at mile 10.4 on the old Roswell road; it is not C.",
+        "Time of acknowledgement is entered when this call is actually completed. Do not preprint a successful acknowledgement before the line has been answered."
+      ],
+      "production_nb": "Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto."
+    }
+  ],
+  "media": [],
+  "strings": []
+}
