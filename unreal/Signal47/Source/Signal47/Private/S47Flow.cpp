@@ -1,6 +1,7 @@
 #include "S47Flow.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
+#include "S47Office.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 
@@ -28,6 +29,7 @@
 #include "S47CB.h"
 #include "S47Chapter.h"
 #include "S47Chapter1.h"
+#include "S47Chapter2.h"
 #include "S47Chapter6.h"
 #include "S47FieldCamera.h"
 #include "S47HUD.h"
@@ -399,6 +401,8 @@ void US47Flow::Boot()
 		if (M->Away) M->Away->Restored();
 		if (M->TownLayer) M->TownLayer->Refile(S47J::FObj());
 		if (M->Night) M->Night->Restored();
+		if (M->Evening && !M->Evening->Enabled() && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation();
+		if (M->Office) M->Office->Begin(nullptr, M->Story->bEveningTimeline && M->Evening && M->Evening->Opening());
 		if (M->Anomaly) M->Anomaly->Begin(nullptr);
 		if (M->AnomalyWorld) M->AnomalyWorld->Begin();
 		if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
@@ -679,10 +683,13 @@ void US47Flow::StartGame(const FStart& O)
 		if (A.bValid) M->Player->Place(A.X, A.Z, A.Yaw);
 	}
 	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
+	else if (M->Evening && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation(EveningSaved);
+	if (M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
 	if (Checkpoint == TEXT("routine")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
  // Both restored systems now belong to this case; validate T01 filing against its actual record.
  if (M->Evening) M->Evening->ValidateServiceRestore();
+ if (M->Evening) M->Evening->ValidateInvestigationRestore();
 	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
 	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
@@ -694,6 +701,7 @@ void US47Flow::StartGame(const FStart& O)
 		// Old saves can have a closed door disabling the threshold under their pose.
 		// Recover that one doorway before applying the normal saved-pose walkability gate.
 		if (!M->Player->Walkable(X, Z) && M->Web) M->Web->RestoreDoorwayAt(FVector(X, 0, Z), M->Player->Radius);
+		if (!M->Player->Walkable(X, Z) && M->Office) M->Office->RestoreDoorwayAt(FVector(X, 0, Z), M->Player->Radius);
 		if (M->Player->Walkable(X, Z))
 		{
 			M->Player->Place(X, Z, S47J::Num(Pose, TEXT("yaw")));
@@ -701,6 +709,15 @@ void US47Flow::StartGame(const FStart& O)
 		}
 	}
 	bStarting = false;
+	// A chosen departure survives a save before the roof-step wrapper/transition finishes.
+	if (O.State.IsValid() && M->Office && (!M->Office->RouteRequired() || M->Office->DepartureReleased()) && M->Story->ChapterKey == TEXT("ch2"))
+	{
+		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))); C2 && C2->S.Stage == TEXT("complete") && C2->S.bCalled && C2->S.bP04 && C2->S.bP05)
+		{
+			TWeakObjectPtr<US47Chapter2> Weak = C2;
+			M->Story->After(.3, [Weak] { if (Weak.IsValid() && Weak->bActive && Weak->OnEnd) Weak->OnEnd(); });
+		}
+	}
 	// seenSync(); seenQuiet = false: the night's log listens again
 	if (M->Night) M->Night->Restored();
 	if (!bEveningTimeline && O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: original 02:13 references and photographs are unchanged. Any unstored printout acquisition time is marked unavailable."));
@@ -1166,6 +1183,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());
 	if (M->Anomaly) S47J::Set(State,TEXT("anomaly"),M->Anomaly->Save());
 	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
+	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
 	if (Checkpoint == TEXT("routine")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
@@ -1268,6 +1286,7 @@ FString US47Flow::PlaceName(const FVector& P) const
 {
 	// main.ts placeName: the place on a save's card
 	const FString Area = M->Web ? M->Web->Area() : FString(TEXT("saro"));
+	if (Area == TEXT("saro") && M->Office && M->Office->Contains(P)) return TEXT("SARO Operations office");
 	if (M->Substation && M->Substation->Ready() && (Area == TEXT("road") || Area == TEXT("diner")) && P.X >= 7878 && P.X <= 7902 && P.Z >= 519 && P.Z <= 546) return TEXT("Caliche Junction Substation");
 	auto In = [&](const TCHAR* Path) { return M->Web && M->Web->Rect(Path).Contains(P.X, P.Z); };
 	// (world.indoors, the town and the road's stops are the world's, not ported yet: the inside of the
@@ -1414,7 +1433,18 @@ void US47Flow::OpenNotebook()
 	TWeakObjectPtr<US47Main> Mn = M;
 	TArray<FS47Task> NotebookTasks = S->Tasks();
 	if (M->Anomaly) NotebookTasks.Append(M->Anomaly->Tasks());
-	M->UI->Notebook(NotebookTasks, S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc) { if (Mn.IsValid() && Mn->Anomaly && Mn->Anomaly->OpenDoc(Doc)) return; if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return; if (UI.IsValid()) UI->Document(Doc, [] {}); },
+	if (M->Substation) NotebookTasks.Append(M->Substation->FollowupTasks());
+	M->UI->Notebook(NotebookTasks, S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc)
+ {
+  if (Mn.IsValid() && Mn->Anomaly && Mn->Anomaly->OpenDoc(Doc)) return;
+  if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return;
+  if (UI.IsValid() && Mn.IsValid() && Mn->Substation && Doc.Id == TEXT("EV_TRAFO_FOLLOWUP"))
+  {
+   const FS47Doc Filed = Mn->Substation->FiledFollowupDocument(true);
+   UI->Document(Filed.Id.IsEmpty() ? Doc : Filed, [] {}); return;
+  }
+  if (UI.IsValid()) UI->Document(Doc, [] {});
+ },
 		H ? *H : FString(TEXT("Tonight")), OnBoard, NotebookExtras());
 }
 

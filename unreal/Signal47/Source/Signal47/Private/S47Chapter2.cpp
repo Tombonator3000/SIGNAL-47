@@ -1,4 +1,6 @@
 #include "S47Chapter2.h"
+#include "S47Office.h"
+#include "S47Evening.h"
 
 #include "Internationalization/Regex.h"
 #include "S47Annex.h"
@@ -332,7 +334,13 @@ FString US47Chapter2::Objective() const
 		return TEXT("SARO RECORDS // ON THE CASE BOARD: MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX");
 	}
 	if (S.Stage == TEXT("call-nora")) return TEXT("STATION 01 // CALL THE KEY HOLDER FROM THE RECORDS ROOM PHONE");
-	if (S.Stage == TEXT("complete")) return TEXT("STATION 01 // FIELD ACCESS PREPARED");
+	if (S.Stage == TEXT("complete"))
+	{
+		if (M && M->Office && M->Office->RouteRequired() && !M->Office->DepartureReleased())
+			return M->Office->HasFieldSheet() ? TEXT("SARO OPERATIONS // FIELD SHEET RETAINED. USE THE DEPARTURE CARD WHEN READY FOR STATION 01")
+			 : TEXT("SARO OPERATIONS // SERVICE DRAWER: TAKE THE SPARE KEY, THEN COLLECT THE FIELD CHECKS COPY");
+		return TEXT("STATION 01 // FIELD ACCESS PREPARED");
+	}
 	return FString();
 }
 
@@ -351,6 +359,12 @@ TArray<FS47Task> US47Chapter2::Tasks() const
 		{ TEXT("Record a supported field destination, on the case board (P05)"), S.bP05 },
 	});
 	if (S.bP05) T.Add({ TEXT("Call the key holder for STATION 01"), S.bCalled });
+	if (S.Stage == TEXT("complete") && M && M->Office && M->Office->RouteRequired())
+	{
+		T.Add({TEXT("Find the Operations spare key in the service drawer"), M->Office->HasKey()});
+		T.Add({TEXT("Collect the Field checks copy in Operations; VHS is optional"), M->Office->HasFieldSheet()});
+		T.Add({TEXT("Use the Operations departure card when ready for STATION 01"), M->Office->DepartureReleased()});
+	}
 	if (S.ArrayAsk.Get(false)) T.Add({ TEXT("Put the array back on the schedule (operations terminal)"), ArrayTried ? ArrayTried() : false });
 	return T;
 }
@@ -899,6 +913,8 @@ void US47Chapter2::BeginChapter2(const S47J::FObj& SavedCase)
 	}
 	if (M && M->UI) M->UI->Fade(false);
 	Host->BeginChapter(TEXT("ch2"), Ch2);
+	// A legacy chapter-one case can reach the archive without reloading the game.
+	if (M && M->Evening && !M->Evening->Enabled()) M->Evening->BeginInvestigation();
 	if (Host->OnCheckpoint) Host->OnCheckpoint(TEXT("chapter2"));
 }
 

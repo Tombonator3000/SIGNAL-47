@@ -18,6 +18,7 @@
 #include "S47Station.h"
 #include "S47StationTaken.h"
 #include "S47Story.h"
+#include "S47Substation.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -1256,7 +1257,11 @@ void US47Chapter3::Update(double Dt, double T)
 	}
 	if (CallT >= 0 && Gt() >= CallT && !(Host && Host->IsCinematic()) && !(Ui() && Ui()->Modal())) { CallT = -1; Ring(); }
 	if (Area() == TEXT("station01") && !Driving() && !S.bArrived) ArrivedStation();
-	if (US47UI* U = Ui()) U->Objective(Objective());
+	if (US47UI* U = Ui())
+	{
+		const FString Local = M && M->Substation ? M->Substation->FollowupObjective() : FString();
+		U->Objective(Local.IsEmpty() ? Objective() : Local);
+	}
 }
 
 // ---------- the host (Prologue.ts) ----------

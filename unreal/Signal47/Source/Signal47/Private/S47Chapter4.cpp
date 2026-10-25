@@ -16,6 +16,7 @@
 #include "S47NpcDialogue.h"
 #include "S47Room6.h"
 #include "S47Story.h"
+#include "S47Substation.h"
 #include "S47UI.h"
 #include "S47Walkie.h"
 #include "S47Walker.h"
@@ -1284,7 +1285,11 @@ void US47Chapter4::Update(double Dt, double T)
 		HeadYaw += (Want - HeadYaw) * FMath::Min(1.0, Dt * 3);
 		Head.SetRotY(HeadYaw);
 	}
-	if (M->UI) M->UI->Objective(Objective());
+	if (M->UI)
+	{
+		const FString Local = M->Substation ? M->Substation->FollowupObjective() : FString();
+		M->UI->Objective(Local.IsEmpty() ? Objective() : Local);
+	}
 }
 
 // ---------- the host (Prologue.ts) ----------

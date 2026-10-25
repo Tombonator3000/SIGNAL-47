@@ -33,7 +33,7 @@ bool FS47EveningPack::SelfTest(FString& Error)
 		TSharedPtr<FJsonObject> Snapshot;
 		return FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Serialized), Snapshot) && P.Load(Snapshot, Error);
 	};
-	EVENING_CHECK(P.Scenes.Num() == 61 && P.DocumentData.Num() == 10, "Evening source scene/document count");
+	EVENING_CHECK(P.Scenes.Num() == 80 && P.DocumentData.Num() == 10, "Evening source scene/document count");
 	int32 MeasuredCues = 0;
 	for (const auto& Scene : P.Scenes) for (const auto& Line : Scene.Value.Lines) if (Line.bRecord)
 	{
@@ -113,10 +113,17 @@ bool FS47EveningPack::SelfTest(FString& Error)
 	P.SetExternal(TEXT("ctx_trafo_indicator_checked"), true);
 	EVENING_CHECK(Run(TEXT("T02_CHECKS")) && P.Choices().Num() == 1, "Three controls cannot confirm T02");
 	P.SetExternal(TEXT("ctx_trafo_lamp_persists"), true);
-	EVENING_CHECK(P.Choices().Num() == 2, "All four external controls expose verified choice");
+	EVENING_CHECK(P.Choices().Num() == 1, "Four controls without the actual reserved photo cannot confirm T02");
+	P.SetExternal(TEXT("ctx_trafo_photo_available"), true);
+	EVENING_CHECK(P.Choices().Num() == 2, "Four external controls and a real photo expose verified choice");
 	P.SetExternal(TEXT("ctx_trafo_indicator_checked"), false);
 	EVENING_CHECK(!P.Select(TEXT("T02_CH_VERIFIED")), "Selection rechecks changed external results");
 	P.SetExternal(TEXT("ctx_trafo_indicator_checked"), true);
+	EVENING_CHECK(P.Select(TEXT("T02_CH_VERIFIED")) && RoundTrip(), "A pending verified response round-trips before its host rebuilds context");
+	P.ValidateWorldRestore(true, true, true, true, false);
+	EVENING_CHECK(!P.CurrentScene() && !P.Flag(TEXT("trafo_anomaly_checked")), "Missing current physical/photo proof cancels a restored verified response");
+	for (const TCHAR* K : { TEXT("ctx_trafo_isolation_verified"), TEXT("ctx_trafo_backup_excluded"), TEXT("ctx_trafo_indicator_checked"), TEXT("ctx_trafo_lamp_persists"), TEXT("ctx_trafo_photo_available") }) P.SetExternal(K, true);
+	EVENING_CHECK(Run(TEXT("T02_CHECKS")), "A cancelled response remains retryable after fresh controls");
 	EVENING_CHECK(Choose(TEXT("T02_CH_VERIFIED")) && P.Flag(TEXT("trafo_anomaly_checked")) && !P.Flag(TEXT("dale_field_call_done")), "Player must report result for Dale to know");
 	P.SetExternal(TEXT("ctx_room_quiet"), true);
 	EVENING_CHECK(P.Start(TEXT("D61_FIXED_FRAGMENT")), "Fixed Dale fragment after verified field observation");

@@ -1117,7 +1117,325 @@ APRIL 13, 1986
 
 *Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
 
-**DESCRIPTION [D02_TAKE_FIELD_FOLDER_002]**: It asks for a comparison from the same position, with the nearest pole and both conductors in frame. The tape may help explain what to look for.
+**DESCRIPTION [D02_TAKE_FIELD_FOLDER_002]**: It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_evidence_taken": true, "office_field_lead_filed": true}, "give_documents": ["EV_DALE_INDEX", "EV_DALE_NOTE"]}`
+
+### D02_FIELD_LOCKED_OFFICE (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["ctx_archive_open"], "none": ["office_open", "office_door_inspected"]}
+
+**DESCRIPTION [D02_FIELD_LOCKED_OFFICE_001]**: OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_FIELD_LOCKED_OFFICE_002]**: A coffee ring has spread across the word SPARE.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_door_inspected": true}, "give_documents": []}`
+
+### D02_FIELD_SERVICE_DRAWER (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Plukk opp reservenøkkelen med faktisk input. Egen nøkkel-ID for kontoret; Noras nøkkel, motelldører og øvrige nøkkelregler røres ikke.
+
+**Krav:** {"all": ["ctx_archive_open"], "none": ["office_key_found"]}
+
+**DESCRIPTION [D02_FIELD_SERVICE_DRAWER_001]**: Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_FIELD_SERVICE_DRAWER_002]**: The tag reads OPERATIONS / SPARE.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_key_found": true}, "give_documents": []}`
+
+### D02_FIELD_OPEN_OFFICE (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["ctx_archive_open", "office_key_found"], "none": ["office_open"]}
+
+**DESCRIPTION [D02_FIELD_OPEN_OFFICE_001]**: The spare turns once. The latch catches on the frame until you lift the handle.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_FIELD_OPEN_OFFICE_002]**: An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_open": true}, "give_documents": []}`
+
+### D02_FIELD_DESK_FIRST_LOOK (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_desk_inspected"]}
+
+**DESCRIPTION [D02_FIELD_DESK_FIRST_LOOK_001]**: A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_FIELD_DESK_FIRST_LOOK_002]**: Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_desk_inspected": true}, "give_documents": ["EV_HANDOVER", "EV_SERVICE_LOG", "EV_RADIO_SCHEDULE", "EV_DALE_INDEX"]}`
+
+### D02_FIELD_READ_FIELD_INDEX (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_index_read"]}
+
+**DESCRIPTION [D02_FIELD_READ_FIELD_INDEX_001]**: The first page lists what each item can establish. Most entries end with a question or a correction.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_index_read": true}, "give_documents": ["EV_DALE_INDEX"]}`
+
+### D02_FIELD_READ_CLIPPINGS (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_clippings_read"]}
+
+**DESCRIPTION [D02_FIELD_READ_CLIPPINGS_001]**: Two local cuttings, neither about a crash. A third rectangle on the page is empty.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_FIELD_READ_CLIPPINGS_002]**: In the margin: GET THE ORIGINAL BEFORE USING THE DATE.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_clippings_read": true}, "give_documents": ["EV_DALE_CLIPPINGS"]}`
+
+### D02_FIELD_READ_DALE_NOTE (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_note_read"]}
+
+**DESCRIPTION [D02_FIELD_READ_DALE_NOTE_001]**: The note starts as a list of things to check. Halfway down, the handwriting gets smaller.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_note_read": true}, "give_documents": ["EV_DALE_NOTE"]}`
+
+### D02_FIELD_SAVE_CONTACT (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_contact_read"]}
+
+**DESCRIPTION [D02_FIELD_SAVE_CONTACT_001]**: A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_contact_read": true, "vhs_contact_saved": true}, "give_documents": ["EV_DALE_CONTACT"]}`
+
+### D02_FIELD_TAKE_FIELD_FOLDER (field / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Gi konkret spor til T02 og gå tilbake til gjeldende arkiv-/feltoppdrag. Å ta mappen starter ikke STATION 01, Room 6, P13 eller finalen. Nora beholder sin nøkkel og historiefunksjon.
+
+**Krav:** {"all": ["office_open"], "none": ["office_evidence_taken"]}
+
+**DESCRIPTION [D02_FIELD_TAKE_FIELD_FOLDER_001]**: The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_FIELD_TAKE_FIELD_FOLDER_002]**: It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_evidence_taken": true, "office_field_lead_filed": true}, "give_documents": ["EV_DALE_INDEX", "EV_DALE_NOTE"]}`
+
+### D02_NIGHT_LOCKED_OFFICE (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["ctx_archive_open"], "none": ["office_open", "office_door_inspected"]}
+
+**DESCRIPTION [D02_NIGHT_LOCKED_OFFICE_001]**: OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_NIGHT_LOCKED_OFFICE_002]**: A coffee ring has spread across the word SPARE.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_door_inspected": true}, "give_documents": []}`
+
+### D02_NIGHT_SERVICE_DRAWER (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Plukk opp reservenøkkelen med faktisk input. Egen nøkkel-ID for kontoret; Noras nøkkel, motelldører og øvrige nøkkelregler røres ikke.
+
+**Krav:** {"all": ["ctx_archive_open"], "none": ["office_key_found"]}
+
+**DESCRIPTION [D02_NIGHT_SERVICE_DRAWER_001]**: Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_NIGHT_SERVICE_DRAWER_002]**: The tag reads OPERATIONS / SPARE.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_key_found": true}, "give_documents": []}`
+
+### D02_NIGHT_OPEN_OFFICE (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["ctx_archive_open", "office_key_found"], "none": ["office_open"]}
+
+**DESCRIPTION [D02_NIGHT_OPEN_OFFICE_001]**: The spare turns once. The latch catches on the frame until you lift the handle.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_NIGHT_OPEN_OFFICE_002]**: An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_open": true}, "give_documents": []}`
+
+### D02_NIGHT_DESK_FIRST_LOOK (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_desk_inspected"]}
+
+**DESCRIPTION [D02_NIGHT_DESK_FIRST_LOOK_001]**: A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_NIGHT_DESK_FIRST_LOOK_002]**: Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_desk_inspected": true}, "give_documents": ["EV_HANDOVER", "EV_SERVICE_LOG", "EV_RADIO_SCHEDULE", "EV_DALE_INDEX"]}`
+
+### D02_NIGHT_READ_FIELD_INDEX (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_index_read"]}
+
+**DESCRIPTION [D02_NIGHT_READ_FIELD_INDEX_001]**: The first page lists what each item can establish. Most entries end with a question or a correction.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_index_read": true}, "give_documents": ["EV_DALE_INDEX"]}`
+
+### D02_NIGHT_READ_CLIPPINGS (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_clippings_read"]}
+
+**DESCRIPTION [D02_NIGHT_READ_CLIPPINGS_001]**: Two local cuttings, neither about a crash. A third rectangle on the page is empty.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_NIGHT_READ_CLIPPINGS_002]**: In the margin: GET THE ORIGINAL BEFORE USING THE DATE.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_clippings_read": true}, "give_documents": ["EV_DALE_CLIPPINGS"]}`
+
+### D02_NIGHT_READ_DALE_NOTE (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_note_read"]}
+
+**DESCRIPTION [D02_NIGHT_READ_DALE_NOTE_001]**: The note starts as a list of things to check. Halfway down, the handwriting gets smaller.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_note_read": true}, "give_documents": ["EV_DALE_NOTE"]}`
+
+### D02_NIGHT_SAVE_CONTACT (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.
+
+**Krav:** {"all": ["office_open"], "none": ["office_contact_read"]}
+
+**DESCRIPTION [D02_NIGHT_SAVE_CONTACT_001]**: A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+
+**Ved fullføring:** `{"set_flags": {"office_contact_read": true, "vhs_contact_saved": true}, "give_documents": ["EV_DALE_CONTACT"]}`
+
+### D02_NIGHT_TAKE_FIELD_FOLDER (all_night / physical / live)
+
+**Utløser:** Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.
+
+**Regi:** Gi konkret spor til T02 og gå tilbake til gjeldende arkiv-/feltoppdrag. Å ta mappen starter ikke STATION 01, Room 6, P13 eller finalen. Nora beholder sin nøkkel og historiefunksjon.
+
+**Krav:** {"all": ["office_open"], "none": ["office_evidence_taken"]}
+
+**DESCRIPTION [D02_NIGHT_TAKE_FIELD_FOLDER_001]**: The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.
+
+*Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
+
+**DESCRIPTION [D02_NIGHT_TAKE_FIELD_FOLDER_002]**: It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.
 
 *Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk.*
 
@@ -1190,9 +1508,9 @@ Not a report. Keep this with the maintenance forms. Some of these are ordinary f
 
 1. SERVICE ROAD / FIELD 01. VHS cassette in the desk unit. Environment sound only. The middle section contains the movement I could not account for. The recording date on the camera was not set correctly. Do not use it to establish a date or an exact time.
 
-2. CAMERA POSITION. Outside the substation fence. Low concrete culvert beside the service gate. Stand on the road side of the post with two white bands. Face the nearest pole so both visible conductors and the top of the pole remain in frame. The fence corner should sit at the lower left.
+2. CAMERA POSITION. Outside the substation fence. Low concrete culvert beside the service gate. Stand on the road side of the post with two white bands. Face the nearest pole so the two outer conductors and the top of the pole remain in frame. The fence corner should sit at the lower left.
 
-3. COMPARISON. First inspect the ordinary supply indication and the permitted lamp test. Return to the same position. Compare the nearest pole, the two conductors and the moving patch separately. Do not use camera shake as movement in the scene.
+3. COMPARISON. First inspect the ordinary supply indication and the permitted lamp test. Return to the same position. Compare the nearest pole, the two outer conductors and the moving patch separately. Do not use camera shake as movement in the scene.
 
 4. LIMIT. The cassette cannot establish what supplied the lamp or whether the shape was in the air. It does establish where the camera stood. A fresh observation from that position would be more useful than another opinion about the tape.
 
@@ -1289,7 +1607,7 @@ Bilde: Kameraet holdes i samme utsnitt med liten naturlig håndholdt drift. Stol
 
 Lyd: Vind i samme retning og et lavt, uregelmessig gjerdetikk. Lampen gir ingen egen overdreven effektlyd.
 
-Undertekst: Nearest pole and both wires in frame.
+Undertekst: Nearest pole and both outer wires in frame.
 The lamp alone proves nothing about its supply.
 
 **27–39 s (planlagt)**
@@ -1580,6 +1898,25 @@ Check the ordinary supply first. Then make a fresh observation.
 
 **Ved fullføring:** `{"set_flags": {}, "give_documents": []}`
 
+### T02_BASELINE_RESULT (field / ui / live)
+
+**Utløser:** Faktisk normalbaseline i feltfasen for en eldre sak, uten tilbakespoling til kveldsoverleveringen.
+
+**Regi:** Kvitter bare den fysiske controllerens gyldige normalrecord. Bevar originalt tidspunkt og gamle kort. Ingen automatisk feltkonklusjon.
+
+**Krav:** {"all": ["ctx_trafo_service_ok"], "none": ["trafo_normal_checked"]}
+
+**DESCRIPTION [T02_BASELINE_RESULT_001]**: The completed service check and the inspection light now agree.
+
+*Ingen innspilt stemme. Tekst på panelet eller i notatboken.*
+
+**DESCRIPTION [T02_BASELINE_RESULT_002]**: The ordinary lamp complaint is resolved under this control. Keep the actual completion time on the inspection card.
+
+*Ingen innspilt stemme. Tekst på panelet eller i notatboken.*
+
+
+**Ved fullføring:** `{"set_flags": {"trafo_normal_checked": true, "field_service_read": true}, "give_documents": ["EV_TRAFO_CHECK"]}`
+
 ### T02_REFERENCE (field / ui / live)
 
 **Utløser:** Legg EV_DALE_NOTE eller kontaktarket ved kjent ståsted; hovedsporet krever ikke at hele VHS er sett.
@@ -1616,7 +1953,7 @@ Check the ordinary supply first. Then make a fresh observation.
 *Ingen innspilt stemme. Tekst på panelet eller i notatboken.*
 
 - **T02_CH_VERIFIED**: File the observed disagreement after all checks. → `T02_VERIFIED`
-  Krav: `{"all": ["ctx_trafo_isolation_verified", "ctx_trafo_backup_excluded", "ctx_trafo_indicator_checked", "ctx_trafo_lamp_persists"], "none": []}`; ved valg: `{"set_flags": {}, "give_documents": []}`
+  Krav: `{"all": ["ctx_trafo_isolation_verified", "ctx_trafo_backup_excluded", "ctx_trafo_indicator_checked", "ctx_trafo_lamp_persists", "ctx_trafo_photo_available"], "none": []}`; ved valg: `{"set_flags": {}, "give_documents": []}`
 - **T02_CH_UNRESOLVED**: Keep this unresolved. → `T02_UNRESOLVED`
   Krav: `{"all": [], "none": []}`; ved valg: `{"set_flags": {}, "give_documents": []}`
 
@@ -1628,7 +1965,7 @@ Check the ordinary supply first. Then make a fresh observation.
 
 **Regi:** Vis som kort undersøkelsestekst uten fortellerstemme. Gå tilbake til samme fysiske oppgave etterpå.
 
-**Krav:** {"all": ["ctx_trafo_isolation_verified", "ctx_trafo_backup_excluded", "ctx_trafo_indicator_checked", "ctx_trafo_lamp_persists"], "none": []}
+**Krav:** {"all": ["ctx_trafo_isolation_verified", "ctx_trafo_backup_excluded", "ctx_trafo_indicator_checked", "ctx_trafo_lamp_persists", "ctx_trafo_photo_available"], "none": []}
 
 **DESCRIPTION [T02_VERIFIED_001]**: The local isolation result is recorded. The checked backup does not account for the light. The indicator has been compared with the independent service check.
 

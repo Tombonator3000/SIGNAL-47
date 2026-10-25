@@ -57,6 +57,9 @@ public:
 	bool Flag(const FString& Id) const;
 	// Host-only physical meal transaction; preserves the active dialogue and pending reply.
 	bool EatTakeaway();
+	// Host reconciliation only removes credits which lack the current case's physical proof.
+	void ValidateWorldRestore(bool bOfficeKey, bool bOfficeUnlocked, bool bOfficeSheet, bool bReference, bool bFollowup);
+	void ResetFollowupAttempt(); // only the actual physical new-attempt transaction calls this
 	bool CanStart(const FString& Id) const;
 	bool Start(const FString& Id);
 	const FS47EveningScene* CurrentScene() const;

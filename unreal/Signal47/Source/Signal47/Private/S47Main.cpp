@@ -1,6 +1,8 @@
 #include "S47Main.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
+#include "S47Office.h"
+#include "S47T02Test.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 #include "S47AnomalyTest.h"
@@ -60,6 +62,7 @@ void US47Main::Step(double Dt)
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
 	if (Evening) Evening->Step(Dt);
+	if (Office) Office->Step(Dt);
 	if (Substation) Substation->Step(Dt);
  // Opt-in live contract tests must also observe legacy restores with Evening disabled.
  if (Evening) Evening->ControlServiceTest(Dt);
@@ -116,6 +119,7 @@ void US47Main::Step(double Dt)
 		static const TCHAR* Indoors[] = { TEXT("room.bounds"), TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") };
 		bool bIn = Web->Rect(TEXT("world.motel.zones[2]")).Contains(P);
 		for (const TCHAR* B : Indoors) bIn |= Web->Rect(B).Contains(P);
+		bIn |= Office && Office->Contains(P);
 		Sp = bIn ? TEXT("room") : Web->Rect(TEXT("yard.zone.lab")).Contains(P) ? TEXT("lab") : TEXT("yard");
 	}
 	if (Sp != Space) { Space = Sp; Audio->SetSpace(Sp); }
@@ -126,6 +130,7 @@ void US47Main::Step(double Dt)
 	{
 		bool bIn = false;
 		for (const TCHAR* B : { TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") }) bIn |= Web->Rect(B).Contains(P);
+		bIn |= Office && Office->Contains(P);
 		bIn |= Web->Rect(TEXT("room.bounds")).Contains(P) && Web->Obj(TEXT("room.southDoorHinge")).Rotation().Y > 0.01;
 		bIn |= Web->DoorStates().FindRef(TEXT("exit")) && Web->Rect(TEXT("world.crossing.zone.stoop")).Contains(P);
 		bIn |= Web->Rect(TEXT("annex.zone.exitDoor")).Contains(P);
@@ -138,6 +143,7 @@ void US47Main::Step(double Dt)
 	// glows and windows (and World.update's light in the air), the ground cover before the picture
 	if (Life) Life->Step(Dt);
 	if (AnomalyTest) AnomalyTest->Step(Dt);
+	if (T02Test) T02Test->Step(Dt);
 }
 
 void US47Main::InitRadio()

@@ -2,6 +2,7 @@
 #include "S47EveningVisual.h"
 #include "S47Takeaway.h"
 #include "S47Substation.h"
+#include "S47Office.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47World.h"
@@ -138,7 +139,7 @@ void FS47Evening::Stop()
  if (Music) { Music->Stop(); Music->Disconnect(); Music.Reset(); }
  if (MusicGain) { MusicGain->Disconnect(); MusicGain.Reset(); }
  bEnabled = false; bDialogueOpen = false; bRadioRecorded = false; SpokenLine.Empty(); RadioSpokenLine.Empty();
- bServiceRoute = bServiceFiled = false;
+ bServiceRoute = bServiceFiled = bInvestigationOnly = false;
  if (M && M->Web) M->Web->SetHandsetVisible(true);
  if (M && M->Story) M->Story->bOpeningHeld = false;
  if (M && M->World) M->World->bCommuteVehicle = false;
@@ -228,11 +229,58 @@ void FS47Evening::Context()
   Pack.SetPhase(K==TEXT("ch5")||K==TEXT("ch6")?TEXT("all_night"):K==TEXT("ch3")||K==TEXT("ch4")?TEXT("field"):K==TEXT("ch2")?TEXT("archive"):M->Story->bResidualVisible?TEXT("signal"):TEXT("early_shift"));
  }
 }
+void FS47Evening::BeginInvestigation(const S47J::FObj& Saved)
+{
+ Stop(); Pack.Reset(); RadioPack.Reset(); bEnabled = bInvestigationOnly = true;
+ bWorkStarted = true;
+ FString Error;
+ if (Saved && !Pack.Load(S47J::Obj(Saved, TEXT("pack")), Error))
+ {
+  bEnabled = false;
+  UE_LOG(LogTemp, Error, TEXT("S47: investigation restore: %s"), *Error);
+  return;
+ }
+ // Legacy chapters retain their own clock, vehicle and radio; no synthetic D01 completion.
+ Context(); Refile();
+ if (Pack.CurrentScene()) Resume();
+}
+
+bool FS47Evening::CommitWorldScene(const FString& Id)
+{
+ if (!bEnabled || !M || !M->Story) return false;
+ Context();
+ FString Actual = Id;
+ if (Id.StartsWith(TEXT("D02_")))
+ {
+  if (Pack.GetPhase() == TEXT("field")) Actual = TEXT("D02_FIELD_") + Id.Mid(4);
+  else if (Pack.GetPhase() == TEXT("all_night")) Actual = TEXT("D02_NIGHT_") + Id.Mid(4);
+ }
+ const auto* Scene = Pack.FindScene(Actual);
+ if (!Scene || !Scene->Choices.IsEmpty() || !Pack.CanStart(Actual) || !Pack.Start(Actual)) return false;
+ while (Pack.CurrentLine()) Pack.Advance();
+ Changed();
+ return true;
+}
+
+void FS47Evening::ValidateInvestigationRestore()
+{
+ if (!bEnabled) return;
+ const bool bSheet = M->Office && M->Office->HasFieldSheet();
+ Pack.ValidateWorldRestore(M->Office && M->Office->HasKey(), M->Office && M->Office->WasUnlocked(),
+  bSheet, bSheet && M->Substation && M->Substation->ReferenceMatched(),
+  bSheet && M->Substation && M->Substation->FollowupVerified());
+ Context(); Refile();
+}
+
 void FS47Evening::Refile()
 {
  if (!M->Story) return;
  for (const FString& Id : Pack.Documents()) if (const auto* D = Pack.FindDocument(Id))
  {
+  // The physical controller owns the measured card, stamp and reserved photograph.
+  if (Id == TEXT("EV_TRAFO_FOLLOWUP")) continue;
+  // Restore office credits only after the physical controller has validated this case.
+  if (Id.StartsWith(TEXT("EV_DALE_")) && (!M->Office || !M->Office->WasUnlocked())) continue;
   // Never replace an already saved paper/photo or its stamp when resuming a case.
   if (M->Story->Docs().ContainsByPredicate([&](const FS47Doc& Doc){return Doc.Id==Id;})) continue;
   FS47Doc Doc; Doc.Id=D->Id; Doc.Title=D->Title; Doc.Kind=D->Kind; Doc.Stamp=D->Stamp;
@@ -263,6 +311,7 @@ void FS47Evening::ShowDialogue()
  TArray<S47Kit::FW> Rows;
  const auto* L=Pack.CurrentLine();
  FString Title=S->Channel==TEXT("phone")?TEXT("TELEPHONE"):S->Channel==TEXT("walkie")?TEXT("WALKIE-TALKIE"):S->Channel==TEXT("radio")?TEXT("RADIO"):TEXT("MESA DINER");
+ if (S->Id.StartsWith(TEXT("T02_"))) Title = TEXT("CALICHE JUNCTION / LOCAL FOLLOW-UP");
  if (L)
  {
   if (L->bRecord) Rows.Add(S47Kit::Unread(S47Kit::Sub(L->Speaker)));
@@ -323,6 +372,7 @@ bool FS47Evening::Use(const FString& Id)
 {
  if (!bEnabled) return false;
  if (MealBusy()) return true;
+ if (Id == TEXT("logbook") && M->Substation) M->Substation->TryFileFollowup();
  if (Takeaway->Use(Id)) return true;
  if (ServicePending() && Id == TEXT("logbook") && AtShiftFolder() && M->Substation &&
      M->Substation->HasNormalResult() && Pack.Flag(TEXT("trafo_normal_checked")) && !Pack.CurrentScene())
@@ -475,6 +525,12 @@ void FS47Evening::RadioStep(double Dt)
 void FS47Evening::Step(double Dt)
 {
  if (!bEnabled || M->Mode!=US47Main::EMode::Play) return;
+ if (bInvestigationOnly)
+ {
+  Context();
+  if (bResumeRequested && !M->ModalOpen() && !M->World->bBusy) { bResumeRequested=false; ShowDialogue(); }
+  return;
+ }
  if (!bBindings && M->Inter->Get(TEXT("diner:waitress")))
  {
   bBindings=true;
@@ -525,6 +581,7 @@ S47J::FObj FS47Evening::Save() const
 {
  auto O=S47J::New(); S47J::Set(O,TEXT("takeaway"),Takeaway->Save()); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
  S47J::Set(O,TEXT("arrivalParkingVersion"),2);
+ S47J::Set(O,TEXT("investigationOnly"),bInvestigationOnly);
  S47J::Set(O,TEXT("serviceRouteVersion"),bServiceRoute ? 1 : 0);
  S47J::Set(O,TEXT("serviceFiled"),bServiceRoute && bServiceFiled);
  S47J::Set(O,TEXT("clock"),M->Story->Clock()); S47J::Set(O,TEXT("area"),M->World->Area);
