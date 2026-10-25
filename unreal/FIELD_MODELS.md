@@ -20,6 +20,14 @@ Originale GLB-attributter og beholdte indekser kontrolleres før import. glTF-im
 
 ## Faktisk kontrollstatus
 
-Kildekontroller: PASS for tre lagrede Blender-originaler, 87 faktiske FBX-er og 87 GLB-er. Nativeimport F4: PASS, 1191 porter. Editorbygg F2 og første avgrensede visuelle felthytteprøve: PASS. Pakket kandidat, endelig visuell gjennomgang og levering føres etter gjennomføring. Ingen påstand om fysisk Xbox-prøve, full gjennomspilling eller ny ytelsesgaranti.
+Kildekontroller: PASS for tre lagrede Blender-originaler, 87 faktiske FBX-er og 87 GLB-er (285/78/356 kontroller). Nativeimport F4: PASS, 1191 kontroller. 609 ekstra kontroller av faktiske lagrede native LOD-posisjoner mot FBX: PASS. Editorbygg F3b og pakket kandidat F3 fra 093a4326: PASS.
+
+Fem fokuserte pakkede scenarioer PASS: feltbilder med 1400 selvtester, arkivbilder, feltundersøkelsen med faktiske foto/fremkalling/innsamling, arkivhendelsen og Continue fra samme profils faktiske lagring. Feltforløpet bruker native API-plassering og handlinger; det er ikke en menneskelig kjøretur.
+
+Alle 18 faktiske spillerhøydebilder i High/Clean ved dag, skumring og natt er åpnet og visuelt vurdert. F1 og F2 ble avvist visuelt: gamle lys- og støvplassholdere ble store hvite skiver ved døren. F3 begrenser nære lyskort og gamle støvkorn til fysisk små flater, uten å endre fjerne signalgløder, ankere eller tidsstyring. Dør, instrumenter og lokalt lys er synlig i sluttbildene. Eksisterende mølleffekter rundt lampene beholdes.
+
+To faktiske fremkalte nattfoto og transitdokumentet er også åpnet. Nattfotoene er svært mørke; de beviser foto-/bevisløypa, ikke god motivlesbarhet. Fysisk Xbox, fri menneskelig gjennomspilling, lytting, full natt og helruteytelse er ikke verifisert. Eksisterende rødt RT-minnevarsel står fortsatt synlig. Ingen ny sky-, driver- eller global stabilitetsgaranti. T01/T02 ved trafostasjonen og skyggemannmekanikk er egne gjenstående oppgaver.
+
+305 kopierte kildefiler er hashkontrollert i `/home/tom/Desktop/Signal47 feltmodeller 25okt`, med tre Blender-originaler og `Galleri.html`. Akseptanse: `Signal47/Tools/fieldintegration/acceptance.json`. Bevis: `F3-runtime.json`, `F3-visual-review.json` og kandidatens kilde-/pakkehash i bevisroten. PR156 og installasjonsresultat føres separat etter bekreftelse.
 
 Kilder: Signal47/Tools/fieldstation, fieldinstruments, archiveprops og fieldintegration. Bevisrot: /home/tom/scratch-bm/Signal47-field-models. Prosjektbibliotekets historiske Blender MCP-profil ga ingen dokumentert løsning for denne produksjonen; prosjektets egne verifiserte eksport-/PBR-verktøy er gjenbrukt. Ingen tredjeparts råmodeller eller nye plugins er hentet.

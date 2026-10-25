@@ -2,10 +2,12 @@
 
 ## Neste originalmodeller, feltreise 25. oktober 2026
 
-- [ ] STATION01-felthytte med faktiske åpninger, redigerbart interiør og separat dør.
-- [ ] Transit, feltlampe/deksel, feltreceiver, felttelefon/rør, timingbenk/logg/diagram og bevisrekvisitter.
-- [ ] SARO-arkiv med skap, kartotek, reoler, feltboks, bevegelig skuff, bryterbord og samtaleopptaker, med levende papir/indikatorer bevart.
-- [ ] Faktisk Blender-eksportkontroll, native import, kort pakket feltreise og levering av originaler/spillbilder.
+- [x] STATION01-felthytte med faktiske åpninger, redigerbart interiør og separat dør.
+- [x] Transit, feltlampe/deksel, feltreceiver, felttelefon/rør, timingbenk/logg/diagram og bevisrekvisitter.
+- [x] SARO-arkiv med skap, kartotek, reoler, feltboks, bevegelig skuff, bryterbord og samtaleopptaker, med levende papir/indikatorer bevart.
+- [x] Faktisk Blender-eksportkontroll, native import, kort pakket feltreise og levering av originaler/spillbilder.
+
+- [ ] Senere menneskelig feltreise med fysisk Xbox og lytting; vurder motivlesbarhet i nattfoto. Ingen fullnatt-/helruteytelse verifisert i modellpasset.
 
 ## Skyggemenn, designforslag 25. oktober 2026
 

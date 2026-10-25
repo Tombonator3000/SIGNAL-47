@@ -2,9 +2,9 @@
 
 Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgave har eier, gren og status. Les denne før du starter, og oppdater status når du begynner og når du er ferdig.
 
-## Feltreise, originalmodellpakke startet 25.10.2026
+## Feltreise, originalmodellpakke kontrollert 25.10.2026
 
-Codex på `codex/field-investigation-models`, fra 7f14e338. Den tidligere bygningslisten er levert i M6; neste reelle hull er STATION01-hytta, feltinstrumentene og SARO-arkivet. Tre avgrensede hjelpere eier Tools/fieldstation, Tools/fieldinstruments og Tools/archiveprops. Root eier felles import, presise gamle geometriutskiftninger, integrasjon og alle tunge jobber sekvensielt. Eksisterende gang-/fotopunkter, skuffer, lamper, dør og telefon beholdes som historiedrivere. Ingen ny adgang til Dales kontor eller skyggemannmekanikk inngår. Tidligere skyggemanndesign er bevart som dokumenter.
+Codex på `codex/field-investigation-models`, fra 7f14e338. Den tidligere bygningslisten er levert i M6; neste reelle hull er STATION01-hytta, feltinstrumentene og SARO-arkivet. Tre avgrensede hjelpere eier Tools/fieldstation, Tools/fieldinstruments og Tools/archiveprops. Root eier felles import, presise gamle geometriutskiftninger, integrasjon og alle tunge jobber sekvensielt. Eksisterende gang-/fotopunkter, skuffer, lamper, dør og telefon beholdes som historiedrivere. Ingen ny adgang til Dales kontor eller skyggemannmekanikk inngår. Tidligere skyggemanndesign er bevart som dokumenter. 29 deler med tre LOD-er er nå integrert. F3 fra093a4326: fem fokuserte pakkede scenarioer, 1400 selvtester og18 faktisk vurderte spillerhøydebilder PASS. Tre portable Blender-originaler og305 hashkontrollerte kildefiler ligger på skrivebordet. Se FIELD_MODELS.md for begrensninger og videre leveringsstatus.
 
 ## Skyggemenn, designgjennomgang 25.10.2026
 
