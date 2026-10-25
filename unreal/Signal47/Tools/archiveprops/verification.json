@@ -1,0 +1,1819 @@
+{
+  "status": "PASS",
+  "scope": "Actual33FBX/33GLB, asymmetric probe, eleven saved source parts, component groups and eighteen packed original textures. No native/runtime/visual acceptance.",
+  "checks": [
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-07,
+      "triangles": 5482,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB matches FBX contract",
+      "pass": true,
+      "triangles": 5482,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 5.960464477539063e-08,
+      "triangles": 2970,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets GLB matches FBX contract",
+      "pass": true,
+      "triangles": 2970,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 2.9802322387695312e-08,
+      "triangles": 1710,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex GLB matches FBX contract",
+      "pass": true,
+      "triangles": 1710,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 8.940696716308594e-08,
+      "triangles": 1404,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Brass",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase GLB matches FBX contract",
+      "pass": true,
+      "triangles": 1404,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 5.960464477539063e-08,
+      "triangles": 196,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable GLB matches FBX contract",
+      "pass": true,
+      "triangles": 196,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 162,
+      "materials": [
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox GLB matches FBX contract",
+      "pass": true,
+      "triangles": 162,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 3.725290298461914e-09,
+      "triangles": 194,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer GLB matches FBX contract",
+      "pass": true,
+      "triangles": 194,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 7.450580596923828e-09,
+      "triangles": 102,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_GreyBoard"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box GLB matches FBX contract",
+      "pass": true,
+      "triangles": 102,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 566,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard GLB matches FBX contract",
+      "pass": true,
+      "triangles": 566,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 358,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_Paper"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder GLB matches FBX contract",
+      "pass": true,
+      "triangles": 358,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 126,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_BookBlue"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder GLB matches FBX contract",
+      "pass": true,
+      "triangles": 126,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-07,
+      "triangles": 3266,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 3266,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 5.960464477539063e-08,
+      "triangles": 1674,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 1674,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 2.9802322387695312e-08,
+      "triangles": 1054,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 1054,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 8.940696716308594e-08,
+      "triangles": 984,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Brass",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 984,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 5.960464477539063e-08,
+      "triangles": 164,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 164,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 130,
+      "materials": [
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 130,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 3.725290298461914e-09,
+      "triangles": 146,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 146,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 7.450580596923828e-09,
+      "triangles": 70,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_GreyBoard"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 70,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 470,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 470,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 246,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_Paper"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 246,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 94,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_BookBlue"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD1 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 94,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-07,
+      "triangles": 1802,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 1802,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 5.960464477539063e-08,
+      "triangles": 1020,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 1020,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 2.9802322387695312e-08,
+      "triangles": 714,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 714,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 8.940696716308594e-08,
+      "triangles": 732,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_Brass",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 732,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 5.960464477539063e-08,
+      "triangles": 148,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 148,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 78,
+      "materials": [
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_KraftEdge"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 78,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 3.725290298461914e-09,
+      "triangles": 122,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 122,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 7.450580596923828e-09,
+      "triangles": 54,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_GreyBoard"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 54,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 338,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 338,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 190,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_Paper"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 190,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 one FBX mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 FBX pivot/metres/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.4901161193847656e-08,
+      "triangles": 78,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_BookBlue"
+      ]
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 valid face UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 GLB binary header",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder_LOD2 GLB matches FBX contract",
+      "pass": true,
+      "triangles": 78,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "asymmetric FBX probe",
+      "pass": true,
+      "center_m": [
+        1.9999999403953552,
+        3.9999998807907104,
+        6.0
+      ],
+      "size_m": [
+        0.19999992847442627,
+        0.39999985694885254,
+        0.6000003814697266
+      ]
+    },
+    {
+      "name": "eleven saved modular meshes",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder saved assembly single offset",
+      "pass": true
+    },
+    {
+      "name": "editable source assembly preserved",
+      "pass": true
+    },
+    {
+      "name": "BeigeEnamel_base_color.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "BeigeEnamel_normal.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "BeigeEnamel_roughness.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "Kraft_base_color.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "Kraft_normal.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "Kraft_roughness.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_base_color.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_normal.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_roughness.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "SteelGreen_base_color.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "SteelGreen_normal.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "SteelGreen_roughness.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "SteelOlive_base_color.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "SteelOlive_normal.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "SteelOlive_roughness.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "Walnut_base_color.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "Walnut_normal.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "Walnut_roughness.png exact packed original bytes",
+      "pass": true
+    },
+    {
+      "name": "eighteen original textures packed",
+      "pass": true,
+      "count": 18
+    },
+    {
+      "name": "native dynamic split preserved",
+      "pass": true
+    }
+  ],
+  "check_count": 356,
+  "packed_textures": [
+    "BeigeEnamel_base_color.png",
+    "BeigeEnamel_normal.png",
+    "BeigeEnamel_roughness.png",
+    "Kraft_base_color.png",
+    "Kraft_normal.png",
+    "Kraft_roughness.png",
+    "PrintAtlas_base_color.png",
+    "PrintAtlas_normal.png",
+    "PrintAtlas_roughness.png",
+    "SteelGreen_base_color.png",
+    "SteelGreen_normal.png",
+    "SteelGreen_roughness.png",
+    "SteelOlive_base_color.png",
+    "SteelOlive_normal.png",
+    "SteelOlive_roughness.png",
+    "Walnut_base_color.png",
+    "Walnut_normal.png",
+    "Walnut_roughness.png"
+  ],
+  "source_revision": "R1-original-SARO-records-room-1986",
+  "native_visual_status": "UNVERIFIED"
+}

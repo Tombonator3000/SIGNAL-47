@@ -286,6 +286,11 @@ private:
 	static FQuat S47ThreeEuler(double X, double Y, double Z);
 	bool bLoaded = false;
 	void BuildRetroProps();
+	void BuildFieldModels();
+	void UpdateFieldModels();
+	TArray<TWeakObjectPtr<class UStaticMeshComponent>> FieldModelComponents, FieldModelRetired;
+	struct FFieldModelBinding { TWeakObjectPtr<class UMaterialInstanceDynamic> Mid; int32 Source; bool Shared; float Emission; };
+	TArray<FFieldModelBinding> FieldModelBindings;
 	void BuildRadioStation();
 	void BuildCalicheStreet();
 	void BuildMesaDiner();

@@ -1,0 +1,2534 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "source_revision": "R1-original-SARO-records-room-1986",
+  "units": "metres",
+  "blender_up": "Z",
+  "mapping": "Blender=(three.x,-three.z,three.y); imported UE=(100bx,-100by,100bz)",
+  "asset_root": "/Game/ArchiveProps",
+  "parts": {
+    "SM_ArchiveProps_ShelvingStorage": {
+      "triangles": 5482,
+      "bounds_local_m": [
+        [
+          -0.25699999928474426,
+          -1.5499999523162842,
+          0.0
+        ],
+        [
+          0.25699999928474426,
+          1.5499999523162842,
+          2.299999952316284
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_KraftEdge",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_SteelGreen"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Five-tier bolted steel shelving and ordinary archive cartons",
+      "site_world_three_m": [
+        -5.78,
+        0,
+        8.65
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        361,
+        362,
+        378,
+        379
+      ],
+      "retire_node_names": [
+        "lic:archive_box",
+        "lic:archive_box_lid"
+      ],
+      "lod_triangles": [
+        5482,
+        3266,
+        1802
+      ]
+    },
+    "SM_ArchiveProps_FilingCabinets": {
+      "triangles": 2970,
+      "bounds_local_m": [
+        [
+          -0.7900000214576721,
+          -0.3100000023841858,
+          0.0
+        ],
+        [
+          0.7900000214576721,
+          0.492000013589859,
+          1.5889999866485596
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_KraftEdge",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Three four-drawer cabinets at original footprints",
+      "site_world_three_m": [
+        -4.46,
+        0,
+        10.17
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        335,
+        336,
+        337,
+        338,
+        401
+      ],
+      "retire_node_names": [
+        "lic:filing_cabinet"
+      ],
+      "lod_triangles": [
+        2970,
+        1674,
+        1020
+      ]
+    },
+    "SM_ArchiveProps_CardIndex": {
+      "triangles": 1710,
+      "bounds_local_m": [
+        [
+          -0.4830000102519989,
+          -0.4650000035762787,
+          0.0
+        ],
+        [
+          0.26499998569488525,
+          0.4650000035762787,
+          1.3899999856948853
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Twelve-drawer maintenance index with one open card tray",
+      "site_world_three_m": [
+        -1.25,
+        0,
+        7.95
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        329,
+        330,
+        331,
+        332
+      ],
+      "lod_triangles": [
+        1710,
+        1054,
+        714
+      ]
+    },
+    "SM_ArchiveProps_Bookcase": {
+      "triangles": 1404,
+      "bounds_local_m": [
+        [
+          -0.949999988079071,
+          -0.18000000715255737,
+          0.0
+        ],
+        [
+          0.949999988079071,
+          0.18000000715255737,
+          1.2000000476837158
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Brass",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown",
+        "M_ArchiveProps_Brass",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Walnut"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Low walnut bookcase and bound service-reference volumes",
+      "site_world_three_m": [
+        -2.35,
+        0,
+        10.3
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        363,
+        364,
+        365,
+        366,
+        367
+      ],
+      "lod_triangles": [
+        1404,
+        984,
+        732
+      ]
+    },
+    "SM_ArchiveProps_WorkTable": {
+      "triangles": 196,
+      "bounds_local_m": [
+        [
+          -0.8500000238418579,
+          -0.42500001192092896,
+          0.0
+        ],
+        [
+          0.8500000238418579,
+          0.42500001192092896,
+          0.7699999809265137
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_Walnut"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Steel research table, original 0.77m working height",
+      "site_world_three_m": [
+        -3.65,
+        0,
+        8.6
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        369
+      ],
+      "retire_triangle_regions": [
+        {
+          "geo": 370,
+          "bounds_three_m": [
+            -4.51,
+            -2.79,
+            0,
+            0.73,
+            8.17,
+            9.03
+          ],
+          "reason": "Only table legs. This merged steel mesh also includes corridor and other furniture, so do not retire it wholesale."
+        }
+      ],
+      "lod_triangles": [
+        196,
+        164,
+        148
+      ]
+    },
+    "SM_ArchiveProps_FieldBox": {
+      "triangles": 162,
+      "bounds_local_m": [
+        [
+          -0.19699999690055847,
+          -0.1770000010728836,
+          0.0
+        ],
+        [
+          0.20399999618530273,
+          0.1770000010728836,
+          0.2939999997615814
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_KraftEdge",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Independent STATION 01 box following the original fall animation",
+      "site_world_three_m": [
+        -5.62,
+        1.135,
+        8.6
+      ],
+      "parent_handle": "annex.objs.fieldBoxModel",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "replaces": [
+        "annex.objs.fieldBoxModel"
+      ],
+      "lod_triangles": [
+        162,
+        130,
+        78
+      ]
+    },
+    "SM_ArchiveProps_FireDrawer": {
+      "triangles": 194,
+      "bounds_local_m": [
+        [
+          -0.30000001192092896,
+          -0.13500000536441803,
+          -0.09200000017881393
+        ],
+        [
+          0.03099999949336052,
+          0.13500000536441803,
+          0.05900000035762787
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Open steel reel drawer, original sliding origin preserved",
+      "site_world_three_m": [
+        -5.994,
+        1.27,
+        8.6
+      ],
+      "parent_handle": "annex.arc.drawer",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        383,
+        384,
+        385,
+        386
+      ],
+      "lod_triangles": [
+        194,
+        146,
+        122
+      ]
+    },
+    "SM_ArchiveProps_Reel047Box": {
+      "triangles": 102,
+      "bounds_local_m": [
+        [
+          -0.01600000075995922,
+          -0.0949999988079071,
+          0.0
+        ],
+        [
+          0.019500000402331352,
+          0.0949999988079071,
+          0.1899999976158142
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_GreyBoard"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_GreyBoard",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Separate grey 047 reel container, hidden when taken",
+      "site_world_three_m": [
+        -6.154,
+        1.186,
+        8.6
+      ],
+      "parent_handle": "annex.arc.reel",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "replaces": [
+        "annex.arc.reel"
+      ],
+      "preview_rotation_blender": [
+        0,
+        -0.3,
+        0
+      ],
+      "lod_triangles": [
+        102,
+        70,
+        54
+      ]
+    },
+    "SM_ArchiveProps_Switchboard": {
+      "triangles": 566,
+      "bounds_local_m": [
+        [
+          -0.06199999898672104,
+          -0.17000000178813934,
+          -0.23000000417232513
+        ],
+        [
+          0.05000000074505806,
+          0.17000000178813934,
+          1.1299999952316284
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "KSU-12 metal shell and printed extension card; native TRK lamps retained",
+      "site_world_three_m": [
+        -1.05,
+        1.62,
+        10.22
+      ],
+      "parent_handle": "annex.arc.group",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        389,
+        390,
+        393
+      ],
+      "preserve_geo_ids": [
+        391,
+        392
+      ],
+      "lod_triangles": [
+        566,
+        470,
+        338
+      ]
+    },
+    "SM_ArchiveProps_CallRecorder": {
+      "triangles": 358,
+      "bounds_local_m": [
+        [
+          -0.11999999731779099,
+          -0.20000000298023224,
+          -0.01600000075995922
+        ],
+        [
+          0.11999999731779099,
+          0.20000000298023224,
+          0.15000000596046448
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_Paper"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Bracket-mounted mechanical strip recorder with native living paper",
+      "site_world_three_m": [
+        -1.12,
+        1.0,
+        10.22
+      ],
+      "parent_handle": "annex.arc.group",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        395,
+        396,
+        397,
+        398
+      ],
+      "preserve_geo_ids": [
+        400
+      ],
+      "lod_triangles": [
+        358,
+        246,
+        190
+      ]
+    },
+    "SM_ArchiveProps_ServiceBinder": {
+      "triangles": 126,
+      "bounds_local_m": [
+        [
+          -0.15700000524520874,
+          -0.17399999499320984,
+          0.0
+        ],
+        [
+          0.1535000056028366,
+          0.17399999499320984,
+          0.06199999898672104
+        ]
+      ],
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_BookBlue"
+      ],
+      "used_materials": [
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "role": "Cloth-bound service copies folder at original document anchor",
+      "site_world_three_m": [
+        -2.32,
+        0.9,
+        10.24
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        327,
+        328
+      ],
+      "preview_rotation_blender": [
+        0,
+        0,
+        0.25
+      ],
+      "runtime_yaw_degrees": 14.323944878,
+      "lod_triangles": [
+        126,
+        94,
+        78
+      ]
+    }
+  },
+  "lods": {
+    "0": {
+      "SM_ArchiveProps_ShelvingStorage": {
+        "triangles": 5482,
+        "bounds_local_m": [
+          [
+            -0.25699999928474426,
+            -1.5499999523162842,
+            0.0
+          ],
+          [
+            0.25699999928474426,
+            1.5499999523162842,
+            2.299999952316284
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_SteelGreen"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Five-tier bolted steel shelving and ordinary archive cartons",
+        "site_world_three_m": [
+          -5.78,
+          0,
+          8.65
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          361,
+          362,
+          378,
+          379
+        ],
+        "retire_node_names": [
+          "lic:archive_box",
+          "lic:archive_box_lid"
+        ],
+        "lod_triangles": [
+          5482,
+          3266,
+          1802
+        ]
+      },
+      "SM_ArchiveProps_FilingCabinets": {
+        "triangles": 2970,
+        "bounds_local_m": [
+          [
+            -0.7900000214576721,
+            -0.3100000023841858,
+            0.0
+          ],
+          [
+            0.7900000214576721,
+            0.492000013589859,
+            1.5889999866485596
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Three four-drawer cabinets at original footprints",
+        "site_world_three_m": [
+          -4.46,
+          0,
+          10.17
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          335,
+          336,
+          337,
+          338,
+          401
+        ],
+        "retire_node_names": [
+          "lic:filing_cabinet"
+        ],
+        "lod_triangles": [
+          2970,
+          1674,
+          1020
+        ]
+      },
+      "SM_ArchiveProps_CardIndex": {
+        "triangles": 1710,
+        "bounds_local_m": [
+          [
+            -0.4830000102519989,
+            -0.4650000035762787,
+            0.0
+          ],
+          [
+            0.26499998569488525,
+            0.4650000035762787,
+            1.3899999856948853
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive",
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Twelve-drawer maintenance index with one open card tray",
+        "site_world_three_m": [
+          -1.25,
+          0,
+          7.95
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          329,
+          330,
+          331,
+          332
+        ],
+        "lod_triangles": [
+          1710,
+          1054,
+          714
+        ]
+      },
+      "SM_ArchiveProps_Bookcase": {
+        "triangles": 1404,
+        "bounds_local_m": [
+          [
+            -0.949999988079071,
+            -0.18000000715255737,
+            0.0
+          ],
+          [
+            0.949999988079071,
+            0.18000000715255737,
+            1.2000000476837158
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Walnut",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Brass",
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown",
+          "M_ArchiveProps_Brass",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Walnut"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Low walnut bookcase and bound service-reference volumes",
+        "site_world_three_m": [
+          -2.35,
+          0,
+          10.3
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          363,
+          364,
+          365,
+          366,
+          367
+        ],
+        "lod_triangles": [
+          1404,
+          984,
+          732
+        ]
+      },
+      "SM_ArchiveProps_WorkTable": {
+        "triangles": 196,
+        "bounds_local_m": [
+          [
+            -0.8500000238418579,
+            -0.42500001192092896,
+            0.0
+          ],
+          [
+            0.8500000238418579,
+            0.42500001192092896,
+            0.7699999809265137
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Walnut",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_Walnut"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Steel research table, original 0.77m working height",
+        "site_world_three_m": [
+          -3.65,
+          0,
+          8.6
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          369
+        ],
+        "retire_triangle_regions": [
+          {
+            "geo": 370,
+            "bounds_three_m": [
+              -4.51,
+              -2.79,
+              0,
+              0.73,
+              8.17,
+              9.03
+            ],
+            "reason": "Only table legs. This merged steel mesh also includes corridor and other furniture, so do not retire it wholesale."
+          }
+        ],
+        "lod_triangles": [
+          196,
+          164,
+          148
+        ]
+      },
+      "SM_ArchiveProps_FieldBox": {
+        "triangles": 162,
+        "bounds_local_m": [
+          [
+            -0.19699999690055847,
+            -0.1770000010728836,
+            0.0
+          ],
+          [
+            0.20399999618530273,
+            0.1770000010728836,
+            0.2939999997615814
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Independent STATION 01 box following the original fall animation",
+        "site_world_three_m": [
+          -5.62,
+          1.135,
+          8.6
+        ],
+        "parent_handle": "annex.objs.fieldBoxModel",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "replaces": [
+          "annex.objs.fieldBoxModel"
+        ],
+        "lod_triangles": [
+          162,
+          130,
+          78
+        ]
+      },
+      "SM_ArchiveProps_FireDrawer": {
+        "triangles": 194,
+        "bounds_local_m": [
+          [
+            -0.30000001192092896,
+            -0.13500000536441803,
+            -0.09200000017881393
+          ],
+          [
+            0.03099999949336052,
+            0.13500000536441803,
+            0.05900000035762787
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Open steel reel drawer, original sliding origin preserved",
+        "site_world_three_m": [
+          -5.994,
+          1.27,
+          8.6
+        ],
+        "parent_handle": "annex.arc.drawer",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          383,
+          384,
+          385,
+          386
+        ],
+        "lod_triangles": [
+          194,
+          146,
+          122
+        ]
+      },
+      "SM_ArchiveProps_Reel047Box": {
+        "triangles": 102,
+        "bounds_local_m": [
+          [
+            -0.01600000075995922,
+            -0.0949999988079071,
+            0.0
+          ],
+          [
+            0.019500000402331352,
+            0.0949999988079071,
+            0.1899999976158142
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_GreyBoard"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_GreyBoard",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Separate grey 047 reel container, hidden when taken",
+        "site_world_three_m": [
+          -6.154,
+          1.186,
+          8.6
+        ],
+        "parent_handle": "annex.arc.reel",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "replaces": [
+          "annex.arc.reel"
+        ],
+        "preview_rotation_blender": [
+          0,
+          -0.3,
+          0
+        ],
+        "lod_triangles": [
+          102,
+          70,
+          54
+        ]
+      },
+      "SM_ArchiveProps_Switchboard": {
+        "triangles": 566,
+        "bounds_local_m": [
+          [
+            -0.06199999898672104,
+            -0.17000000178813934,
+            -0.23000000417232513
+          ],
+          [
+            0.05000000074505806,
+            0.17000000178813934,
+            1.1299999952316284
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "KSU-12 metal shell and printed extension card; native TRK lamps retained",
+        "site_world_three_m": [
+          -1.05,
+          1.62,
+          10.22
+        ],
+        "parent_handle": "annex.arc.group",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          389,
+          390,
+          393
+        ],
+        "preserve_geo_ids": [
+          391,
+          392
+        ],
+        "lod_triangles": [
+          566,
+          470,
+          338
+        ]
+      },
+      "SM_ArchiveProps_CallRecorder": {
+        "triangles": 358,
+        "bounds_local_m": [
+          [
+            -0.11999999731779099,
+            -0.20000000298023224,
+            -0.01600000075995922
+          ],
+          [
+            0.11999999731779099,
+            0.20000000298023224,
+            0.15000000596046448
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_Paper"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Bracket-mounted mechanical strip recorder with native living paper",
+        "site_world_three_m": [
+          -1.12,
+          1.0,
+          10.22
+        ],
+        "parent_handle": "annex.arc.group",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          395,
+          396,
+          397,
+          398
+        ],
+        "preserve_geo_ids": [
+          400
+        ],
+        "lod_triangles": [
+          358,
+          246,
+          190
+        ]
+      },
+      "SM_ArchiveProps_ServiceBinder": {
+        "triangles": 126,
+        "bounds_local_m": [
+          [
+            -0.15700000524520874,
+            -0.17399999499320984,
+            0.0
+          ],
+          [
+            0.1535000056028366,
+            0.17399999499320984,
+            0.06199999898672104
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_BookBlue"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Cloth-bound service copies folder at original document anchor",
+        "site_world_three_m": [
+          -2.32,
+          0.9,
+          10.24
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          327,
+          328
+        ],
+        "preview_rotation_blender": [
+          0,
+          0,
+          0.25
+        ],
+        "runtime_yaw_degrees": 14.323944878,
+        "lod_triangles": [
+          126,
+          94,
+          78
+        ]
+      }
+    },
+    "1": {
+      "SM_ArchiveProps_ShelvingStorage": {
+        "triangles": 3266,
+        "bounds_local_m": [
+          [
+            -0.25699999928474426,
+            -1.5499999523162842,
+            0.0
+          ],
+          [
+            0.25699999928474426,
+            1.5499999523162842,
+            2.299999952316284
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_SteelGreen"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Five-tier bolted steel shelving and ordinary archive cartons",
+        "site_world_three_m": [
+          -5.78,
+          0,
+          8.65
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          361,
+          362,
+          378,
+          379
+        ],
+        "retire_node_names": [
+          "lic:archive_box",
+          "lic:archive_box_lid"
+        ]
+      },
+      "SM_ArchiveProps_FilingCabinets": {
+        "triangles": 1674,
+        "bounds_local_m": [
+          [
+            -0.7900000214576721,
+            -0.3100000023841858,
+            0.0
+          ],
+          [
+            0.7900000214576721,
+            0.492000013589859,
+            1.5889999866485596
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Three four-drawer cabinets at original footprints",
+        "site_world_three_m": [
+          -4.46,
+          0,
+          10.17
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          335,
+          336,
+          337,
+          338,
+          401
+        ],
+        "retire_node_names": [
+          "lic:filing_cabinet"
+        ]
+      },
+      "SM_ArchiveProps_CardIndex": {
+        "triangles": 1054,
+        "bounds_local_m": [
+          [
+            -0.4830000102519989,
+            -0.4650000035762787,
+            0.0
+          ],
+          [
+            0.26499998569488525,
+            0.4650000035762787,
+            1.3899999856948853
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive",
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Twelve-drawer maintenance index with one open card tray",
+        "site_world_three_m": [
+          -1.25,
+          0,
+          7.95
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          329,
+          330,
+          331,
+          332
+        ]
+      },
+      "SM_ArchiveProps_Bookcase": {
+        "triangles": 984,
+        "bounds_local_m": [
+          [
+            -0.949999988079071,
+            -0.18000000715255737,
+            0.0
+          ],
+          [
+            0.949999988079071,
+            0.18000000715255737,
+            1.2000000476837158
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Walnut",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Brass",
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown",
+          "M_ArchiveProps_Brass",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Walnut"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Low walnut bookcase and bound service-reference volumes",
+        "site_world_three_m": [
+          -2.35,
+          0,
+          10.3
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          363,
+          364,
+          365,
+          366,
+          367
+        ]
+      },
+      "SM_ArchiveProps_WorkTable": {
+        "triangles": 164,
+        "bounds_local_m": [
+          [
+            -0.8500000238418579,
+            -0.42500001192092896,
+            0.0
+          ],
+          [
+            0.8500000238418579,
+            0.42500001192092896,
+            0.7699999809265137
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Walnut",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_Walnut"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Steel research table, original 0.77m working height",
+        "site_world_three_m": [
+          -3.65,
+          0,
+          8.6
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          369
+        ],
+        "retire_triangle_regions": [
+          {
+            "geo": 370,
+            "bounds_three_m": [
+              -4.51,
+              -2.79,
+              0,
+              0.73,
+              8.17,
+              9.03
+            ],
+            "reason": "Only table legs. This merged steel mesh also includes corridor and other furniture, so do not retire it wholesale."
+          }
+        ]
+      },
+      "SM_ArchiveProps_FieldBox": {
+        "triangles": 130,
+        "bounds_local_m": [
+          [
+            -0.19699999690055847,
+            -0.1770000010728836,
+            0.0
+          ],
+          [
+            0.20399999618530273,
+            0.1770000010728836,
+            0.2939999997615814
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Independent STATION 01 box following the original fall animation",
+        "site_world_three_m": [
+          -5.62,
+          1.135,
+          8.6
+        ],
+        "parent_handle": "annex.objs.fieldBoxModel",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "replaces": [
+          "annex.objs.fieldBoxModel"
+        ]
+      },
+      "SM_ArchiveProps_FireDrawer": {
+        "triangles": 146,
+        "bounds_local_m": [
+          [
+            -0.30000001192092896,
+            -0.13500000536441803,
+            -0.09200000017881393
+          ],
+          [
+            0.03099999949336052,
+            0.13500000536441803,
+            0.05900000035762787
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Open steel reel drawer, original sliding origin preserved",
+        "site_world_three_m": [
+          -5.994,
+          1.27,
+          8.6
+        ],
+        "parent_handle": "annex.arc.drawer",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          383,
+          384,
+          385,
+          386
+        ]
+      },
+      "SM_ArchiveProps_Reel047Box": {
+        "triangles": 70,
+        "bounds_local_m": [
+          [
+            -0.01600000075995922,
+            -0.0949999988079071,
+            0.0
+          ],
+          [
+            0.019500000402331352,
+            0.0949999988079071,
+            0.1899999976158142
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_GreyBoard"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_GreyBoard",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Separate grey 047 reel container, hidden when taken",
+        "site_world_three_m": [
+          -6.154,
+          1.186,
+          8.6
+        ],
+        "parent_handle": "annex.arc.reel",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "replaces": [
+          "annex.arc.reel"
+        ],
+        "preview_rotation_blender": [
+          0,
+          -0.3,
+          0
+        ]
+      },
+      "SM_ArchiveProps_Switchboard": {
+        "triangles": 470,
+        "bounds_local_m": [
+          [
+            -0.06199999898672104,
+            -0.17000000178813934,
+            -0.23000000417232513
+          ],
+          [
+            0.05000000074505806,
+            0.17000000178813934,
+            1.1299999952316284
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "KSU-12 metal shell and printed extension card; native TRK lamps retained",
+        "site_world_three_m": [
+          -1.05,
+          1.62,
+          10.22
+        ],
+        "parent_handle": "annex.arc.group",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          389,
+          390,
+          393
+        ],
+        "preserve_geo_ids": [
+          391,
+          392
+        ]
+      },
+      "SM_ArchiveProps_CallRecorder": {
+        "triangles": 246,
+        "bounds_local_m": [
+          [
+            -0.11999999731779099,
+            -0.20000000298023224,
+            -0.01600000075995922
+          ],
+          [
+            0.11999999731779099,
+            0.20000000298023224,
+            0.15000000596046448
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_Paper"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Bracket-mounted mechanical strip recorder with native living paper",
+        "site_world_three_m": [
+          -1.12,
+          1.0,
+          10.22
+        ],
+        "parent_handle": "annex.arc.group",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          395,
+          396,
+          397,
+          398
+        ],
+        "preserve_geo_ids": [
+          400
+        ]
+      },
+      "SM_ArchiveProps_ServiceBinder": {
+        "triangles": 94,
+        "bounds_local_m": [
+          [
+            -0.15700000524520874,
+            -0.17399999499320984,
+            0.0
+          ],
+          [
+            0.1535000056028366,
+            0.17399999499320984,
+            0.06199999898672104
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_BookBlue"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Cloth-bound service copies folder at original document anchor",
+        "site_world_three_m": [
+          -2.32,
+          0.9,
+          10.24
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          327,
+          328
+        ],
+        "preview_rotation_blender": [
+          0,
+          0,
+          0.25
+        ],
+        "runtime_yaw_degrees": 14.323944878
+      }
+    },
+    "2": {
+      "SM_ArchiveProps_ShelvingStorage": {
+        "triangles": 1802,
+        "bounds_local_m": [
+          [
+            -0.25699999928474426,
+            -1.5499999523162842,
+            0.0
+          ],
+          [
+            0.25699999928474426,
+            1.5499999523162842,
+            2.299999952316284
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_SteelGreen"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Five-tier bolted steel shelving and ordinary archive cartons",
+        "site_world_three_m": [
+          -5.78,
+          0,
+          8.65
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          361,
+          362,
+          378,
+          379
+        ],
+        "retire_node_names": [
+          "lic:archive_box",
+          "lic:archive_box_lid"
+        ]
+      },
+      "SM_ArchiveProps_FilingCabinets": {
+        "triangles": 1020,
+        "bounds_local_m": [
+          [
+            -0.7900000214576721,
+            -0.3100000023841858,
+            0.0
+          ],
+          [
+            0.7900000214576721,
+            0.492000013589859,
+            1.3200000524520874
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Three four-drawer cabinets at original footprints",
+        "site_world_three_m": [
+          -4.46,
+          0,
+          10.17
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          335,
+          336,
+          337,
+          338,
+          401
+        ],
+        "retire_node_names": [
+          "lic:filing_cabinet"
+        ]
+      },
+      "SM_ArchiveProps_CardIndex": {
+        "triangles": 714,
+        "bounds_local_m": [
+          [
+            -0.4830000102519989,
+            -0.4650000035762787,
+            0.0
+          ],
+          [
+            0.26499998569488525,
+            0.4650000035762787,
+            1.3899999856948853
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive",
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_SteelGreen",
+          "M_ArchiveProps_SteelOlive"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Twelve-drawer maintenance index with one open card tray",
+        "site_world_three_m": [
+          -1.25,
+          0,
+          7.95
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          329,
+          330,
+          331,
+          332
+        ]
+      },
+      "SM_ArchiveProps_Bookcase": {
+        "triangles": 732,
+        "bounds_local_m": [
+          [
+            -0.949999988079071,
+            -0.18000000715255737,
+            0.0
+          ],
+          [
+            0.949999988079071,
+            0.18000000715255737,
+            1.2000000476837158
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Walnut",
+          "M_ArchiveProps_Brass",
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown",
+          "M_ArchiveProps_Brass",
+          "M_ArchiveProps_Walnut"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Low walnut bookcase and bound service-reference volumes",
+        "site_world_three_m": [
+          -2.35,
+          0,
+          10.3
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          363,
+          364,
+          365,
+          366,
+          367
+        ]
+      },
+      "SM_ArchiveProps_WorkTable": {
+        "triangles": 148,
+        "bounds_local_m": [
+          [
+            -0.8500000238418579,
+            -0.42500001192092896,
+            0.0
+          ],
+          [
+            0.8500000238418579,
+            0.42500001192092896,
+            0.7699999809265137
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Walnut",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_Walnut"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Steel research table, original 0.77m working height",
+        "site_world_three_m": [
+          -3.65,
+          0,
+          8.6
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          369
+        ],
+        "retire_triangle_regions": [
+          {
+            "geo": 370,
+            "bounds_three_m": [
+              -4.51,
+              -2.79,
+              0,
+              0.73,
+              8.17,
+              9.03
+            ],
+            "reason": "Only table legs. This merged steel mesh also includes corridor and other furniture, so do not retire it wholesale."
+          }
+        ]
+      },
+      "SM_ArchiveProps_FieldBox": {
+        "triangles": 78,
+        "bounds_local_m": [
+          [
+            -0.19699999690055847,
+            -0.1770000010728836,
+            0.0
+          ],
+          [
+            0.20100000500679016,
+            0.1770000010728836,
+            0.2939999997615814
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_KraftEdge"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_Kraft",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Independent STATION 01 box following the original fall animation",
+        "site_world_three_m": [
+          -5.62,
+          1.135,
+          8.6
+        ],
+        "parent_handle": "annex.objs.fieldBoxModel",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "replaces": [
+          "annex.objs.fieldBoxModel"
+        ]
+      },
+      "SM_ArchiveProps_FireDrawer": {
+        "triangles": 122,
+        "bounds_local_m": [
+          [
+            -0.30000001192092896,
+            -0.13500000536441803,
+            -0.09200000017881393
+          ],
+          [
+            0.03099999949336052,
+            0.13500000536441803,
+            0.05900000035762787
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Open steel reel drawer, original sliding origin preserved",
+        "site_world_three_m": [
+          -5.994,
+          1.27,
+          8.6
+        ],
+        "parent_handle": "annex.arc.drawer",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          383,
+          384,
+          385,
+          386
+        ]
+      },
+      "SM_ArchiveProps_Reel047Box": {
+        "triangles": 54,
+        "bounds_local_m": [
+          [
+            -0.01600000075995922,
+            -0.0949999988079071,
+            0.0
+          ],
+          [
+            0.019500000402331352,
+            0.0949999988079071,
+            0.1899999976158142
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_GreyBoard"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_GreyBoard",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Separate grey 047 reel container, hidden when taken",
+        "site_world_three_m": [
+          -6.154,
+          1.186,
+          8.6
+        ],
+        "parent_handle": "annex.arc.reel",
+        "local": true,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "replaces": [
+          "annex.arc.reel"
+        ],
+        "preview_rotation_blender": [
+          0,
+          -0.3,
+          0
+        ]
+      },
+      "SM_ArchiveProps_Switchboard": {
+        "triangles": 338,
+        "bounds_local_m": [
+          [
+            -0.06199999898672104,
+            -0.17000000178813934,
+            -0.23000000417232513
+          ],
+          [
+            0.05000000074505806,
+            0.17000000178813934,
+            1.1299999952316284
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "KSU-12 metal shell and printed extension card; native TRK lamps retained",
+        "site_world_three_m": [
+          -1.05,
+          1.62,
+          10.22
+        ],
+        "parent_handle": "annex.arc.group",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          389,
+          390,
+          393
+        ],
+        "preserve_geo_ids": [
+          391,
+          392
+        ]
+      },
+      "SM_ArchiveProps_CallRecorder": {
+        "triangles": 190,
+        "bounds_local_m": [
+          [
+            -0.11999999731779099,
+            -0.20000000298023224,
+            -0.01600000075995922
+          ],
+          [
+            0.11999999731779099,
+            0.20000000298023224,
+            0.1453108936548233
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Rubber",
+          "M_ArchiveProps_Paper"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BeigeEnamel",
+          "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Bracket-mounted mechanical strip recorder with native living paper",
+        "site_world_three_m": [
+          -1.12,
+          1.0,
+          10.22
+        ],
+        "parent_handle": "annex.arc.group",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          395,
+          396,
+          397,
+          398
+        ],
+        "preserve_geo_ids": [
+          400
+        ]
+      },
+      "SM_ArchiveProps_ServiceBinder": {
+        "triangles": 78,
+        "bounds_local_m": [
+          [
+            -0.15700000524520874,
+            -0.17399999499320984,
+            0.0
+          ],
+          [
+            0.1535000056028366,
+            0.17399999499320984,
+            0.06199999898672104
+          ]
+        ],
+        "materials": [
+          "M_ArchiveProps_PrintAtlas",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_BookBlue"
+        ],
+        "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "role": "Cloth-bound service copies folder at original document anchor",
+        "site_world_three_m": [
+          -2.32,
+          0.9,
+          10.24
+        ],
+        "parent_handle": "annex.interior",
+        "local": false,
+        "native_asset_root": "/Game/ArchiveProps",
+        "retire_scope_handle": "annex.interior",
+        "retire_geo_ids": [
+          327,
+          328
+        ],
+        "preview_rotation_blender": [
+          0,
+          0,
+          0.25
+        ],
+        "runtime_yaw_degrees": 14.323944878
+      }
+    }
+  },
+  "total_LOD0_triangles": 13270,
+  "room_bounds_three_xxzz": [
+    -6,
+    -1,
+    6.8,
+    10.5
+  ],
+  "preserve_handles": [
+    "annex.interior",
+    "annex.objs.officeDoor",
+    "annex.objs.recordsDoor",
+    "annex.objs.fieldBoxModel",
+    "annex.objs.fieldBox",
+    "annex.objs.binder",
+    "annex.objs.lineage",
+    "annex.objs.workTable",
+    "annex.objs.recPhone",
+    "annex.arc.group",
+    "annex.arc.drawer",
+    "annex.arc.reel",
+    "annex.arc.papers",
+    "annex.arc.hit.drawer",
+    "annex.arc.hit.ksu",
+    "annex.arc.hit.recorder",
+    "annex.arc.lamps.trk1",
+    "annex.arc.lamps.trk2",
+    "annex.arc.strip"
+  ],
+  "native_dynamic": {
+    "annex.arc.drawer": {
+      "three_origin": [
+        -5.994,
+        1.27,
+        8.6
+      ],
+      "travel_three": [
+        0.3,
+        0,
+        0
+      ]
+    },
+    "annex.arc.reel": {
+      "parent": "annex.arc.drawer",
+      "three_local_origin": [
+        -0.16,
+        -0.084,
+        0
+      ],
+      "rotation_three_z": 0.3,
+      "visibility": "archivePhone taking reel"
+    },
+    "annex.objs.fieldBoxModel": {
+      "three_origin": [
+        -5.62,
+        1.135,
+        8.6
+      ],
+      "motion": "archivePhone box falling; attach replacement locally"
+    },
+    "annex.arc.lamps.trk1": {
+      "three_origin": [
+        -1.105,
+        1.732,
+        10.103125
+      ],
+      "geo": 391
+    },
+    "annex.arc.lamps.trk2": {
+      "three_origin": [
+        -1.105,
+        1.732,
+        10.1775
+      ],
+      "geo": 392
+    },
+    "annex.arc.strip": {
+      "three_origin": [
+        -1.218,
+        1.07,
+        10.22
+      ],
+      "width_m": 0.056,
+      "geo": 400,
+      "motion": "native runtime UV, length and curled rotation"
+    },
+    "annex.arc.papers": {
+      "visibility": "native fall event",
+      "keep_geos": [
+        387,
+        388
+      ]
+    }
+  },
+  "collision": "Existing room rectangles, door zones and all interaction proxies stay authoritative. No new collision.",
+  "axis_probe_expected_UE_center_cm": [
+    200,
+    -400,
+    600
+  ],
+  "axis_probe_expected_UE_dimensions_cm": [
+    20,
+    40,
+    60
+  ],
+  "originality": "Original geometry and textures; project-owned substation mesh primitives and system DejaVu raster labels only.",
+  "verification": "Generated source is not native import, gameplay or visual acceptance."
+}

@@ -489,3 +489,86 @@ Eksterne referanser undersøkt i forrige vurdering:
 Prosjektbiblioteket ble søkt med behov og teknologi, deretter ett bredere søk. Ingen relevant løsning ble gjenbrukt. Brainstorming og gauntlet-loop er brukt fra `../Automation/Skills/`. `game-design` var ikke tilgjengelig som egen skill.
 
 Neste produksjonsarbeid starter med trinn 0 og hele trinn 1: mål baseline og lag tidsreferanseoversikten, bygg kvelden og den første sammenhengende gatebiten med aktive sammenligninger og gjenbesøk. Deretter følger trafostasjonen, de øvrige bybygningene og den fremmede tilstedeværelsen etter trinnene over. Planen endrer ingen kildekode, assets, lagringer, pakket utgave eller standardstarter.
+
+## 13. Skyggemenn og oppbygging av ubehag, 25. oktober 2026
+
+Toms idé: fullstendig svarte menneskeaktige skikkelser som står helt stille når de blir sett, og bare beveger seg usett. Anbefalingen er én pålitelig observasjonsregel, gradvis nærhet og usikker hensikt. Vanlig SARO-arbeid gir spilleren en grunn til selv å se bort. Etterforskningen lar spilleren kontrollere det som skjedde.
+
+Dette er et nytt designforslag etter parallell gjennomgang av psykologi, eksisterende kode og møter. Det er ikke implementert, modellert eller spilltestet. Delene under utvider den tidligere planen; de omskriver ikke allerede leverte N01/N02/A02/P01. Bibliotekssøk ga ingen relevant, verifisert løsning. Den generelle UNVERIFIED-oversikten over Unreal-verktøy ga ingen gjenbrukbar mekanikk eller psykologisk dokumentasjon.
+
+### 13.1 Forskningsgrunnlag og designvalg
+
+| Forskningsfunn | Anvendelse som skal prøves i SIGNAL / 47 |
+|---|---|
+| I et forsøk med usikker sammenheng mellom visuelle signaler og elektriske støt fulgte rapportert stress, pupillrespons og hudledning usikkerheten. [de Berker mfl., 2016](https://www.nature.com/articles/ncomms10996). | Spilleren lærer en stabil blikkregel, men vet ikke når en figur kommer, hvor den vil eller hva den betyr. Vilkårlige regelbrudd gir ikke en bedre lærbar trussel. |
+| Et forsøk med en virtuell forfølger og støt fant endret trusselrespons ved kortere avstand, sammen med mer gru og lavere tro på å unnslippe. [Mobbs mfl., 2007](https://pmc.ncbi.nlm.nih.gov/articles/PMC2648508/). | Avstand brukes som dramaturgi: først en person ved gjerdet, senere nærmere et kjent arbeidssted. Et sjeldent nært møte får en lesbar vei ut. |
+| Mennesker som fulgte en visuell oppgave kunne overse et uventet, fullt synlig objekt. [Simons og Chabris, 1999](https://www.chabris.com/Simons1999.pdf). | Arbeidet skaper naturlige blikkvekslinger. Faste stolper og fotografier støtter hukommelsen. Spilleren straffes ikke for å overse første figur. Kameraretning måler ikke faktisk oppmerksomhet. |
+| En feltstudie av 110 besøkende i en skrekkattraksjon fant en omvendt U-sammenheng mellom frykt og glede ved bestemte steder, men ikke i helhetsvurderingen. [Andersen mfl., 2020](https://journals.sagepub.com/doi/10.1177/0956797620972116). | Veksle mellom rutine, uro, en kort topp og reell lettelse. Konstant maksimal intensitet er ikke et dokumentert kvalitetsmål. |
+
+Studiene tester ikke skyggemenn i dette spillet. Overføring til mekanikk, avstander, antall møter og pauser er designhypoteser. Ingen bestemt frekvens, infralydtone, synsvinkel eller avstand kan loves å skape frykt. Målet er engasjerende uro med korte panikktopper, ikke vedvarende press gjennom hele skiftet.
+
+### 13.2 Regelen spilleren skal kunne stole på
+
+1. Figuren er en original tredimensjonal menneskesilhuett, helt svart uten ansikt, øyne, glans, randlys, pust eller tomgangsanimasjon. Ingen automatisk kameravending mens den observeres. En vanlig, avslappet ståpositur prøves før monsterpositurer.
+2. Direkte observasjon stanser alltid figuren. Første utgave bruker den romsligere regelen at også en synlig del i periferien fryser den. Dette unngår at en figur flytter seg i spillerens syn fordi siktekornet peker litt ved siden av.
+3. Flytting skjer bare mellom forhåndskontrollerte ståsteder når både avgang og ankomst er helt usett. Figuren krysser ikke solide vegger eller gjerder. En kort sammenhengende periode ute av syn og margin ved bildekanten hindrer flimring; verdiene stemmes i prøven.
+4. Lykt, zoom og foto får den ikke til å forsvinne mens den sees. Svartheten leses mot en lysere himmel, grus eller vegg. Bakgrunn og plassering løser lesbarheten; kroppen får ikke glød for å bli synlig.
+5. Pause, meny, dokumenter, dialog, lasting og andre beskyttede sekvenser fryser møtet. Ingen oppspart tilnærming utløses når panelet lukkes. Den aktive fotosøkeren teller som observasjon; lukker/opptak beholder samme figurtilstand gjennom eksponeringen. Et stillbilde i albumet fryser ikke en fjern figur etter at vanlig spilling har begynt igjen.
+6. Hvert møte har et lite, endelig antall mulige flyttinger. Figuren kommer ikke nærmere ved hvert hodekast resten av natten. Spilleren kan undersøke, holde den under oppsyn, trekke seg unna eller fortsette oppgaven. Ingen evig baklengs marsj eller blokkering av eneste utgang.
+7. Møtestadium, ståsted, opplevde flyttinger og eventuelt tilfeldig valg lagres. Continue gjentar ikke en topp eller setter figuren nærmere. Hovedhistorien krever ikke at alle ser alle valgfrie skikkelser.
+
+Behold pappfiguren og de særlige fotoomrissene som andre, gjenkjennelige fenomener. Ekte skyggemenn skal ha samme regel overalt. Hvis de eksisterende mørke skikkelsene beholder samme utseende, må deres gamle forsvinningsregel erstattes ved innføringen.
+
+### 13.3 Første sammenhengende pilot
+
+Bygg SARO-vindu, trafostasjon og retur som én spillerreise med én skikkelse. Ingen skade eller død i introduksjonen. Meter og varigheter nedenfor er utgangspunkt for utprøving, ikke forskningsfastsatte terskler.
+
+| Del | Handling og endring | Hensikt |
+|---|---|---|
+| Normalen | Spilleren lærer utsikten fra kontrollrommet og gjør en ordinær kontroll. Gjerdet og en navngitt stolpe gir faste referanser. | Et sted spilleren kjenner, før avviket. |
+| Første observasjon | En figur står omtrent 30 til 50 meter unna, mot lesbar bakgrunn. Den blir stående under direkte blikk, zoom, lykt og et valgfritt foto. | Lære svartheten og stillheten uten lydstikk eller kamp. |
+| Første flytting | Spilleren velger å se mot et fysisk instrument og tilbake. Figuren har flyttet til neste gjenkjennelige sted. En modal instrumentskjerm gir ingen tilnærming; flytting kan først skje under vanlig spilling mens man ser bort. | Spilleren oppdager selv konflikten mellom arbeidet og observasjonen. |
+| Trafostasjonen | Et faktisk tilgjengelig serviceoppdrag leder ut. Først vanlig ankomst, senere figuren utenfor gjerdet. Ved neste usette flytting forblir den på samme side. | Etterprøve regelen på et nytt sted uten å bryte rommets logikk. |
+| Bevis | Kameraet tar ekte bilder med samme gjerdehjørne eller stolpe. Sammenligning kan fastslå ulik plassering, men ikke hensikt eller identitet. Manglende eller uleselig bilde gir utilstrekkelig bevis. | Undersøkelse gir kunnskap og et spor videre. |
+| Retur | Ingen figur i kjørefeltet eller inne i bilen. Kontrollmaterialet arkiveres på SARO. Enten én siste fjern, stillestående observasjon eller bare fravær før en roperiode. | Avslutte møtet og la ettervirkningen vare uten enda et fremstøt. |
+
+Trafoens senere T01/T02-fortelling er delvis forfattergrunnlag. Produksjonen må velge en eksisterende fungerende servicefase eller fullføre nødvendig oppgaveflyt først. Ingen påstand om at den nye spillerreisen allerede finnes i runtime. Ett av disse møtestedene kan utgå dersom begge føles som samme gjentakelse.
+
+### 13.4 Videre eskalering og lyd
+
+Etter piloten velges få møter fra denne rekken. De skal ikke automatisk komme ved hvert besøk:
+
+| Sted | Ny erkjennelse eller handling |
+|---|---|
+| Arrayet | En menneskestor figur mellom parabolene gir målestokk. Senere posisjon ved en annen støtte knytter tilstedeværelsen til spillerens arbeidsrute. |
+| Motor Court etter Nora | Figuren står på motsatt side av parkeringen etter at samtalen er ferdig. Rommet og samtalen får være i fred. Bil eller kjent dør gir et tydelig neste valg. |
+| Dineren etter vanlig arbeid | En figur ute mot en lysere vegg kan sees etter lesing eller kartarbeid. Menneskestemmer og det opplyste rommet gir kontrast. Ingen tilnærming mens en bok eller meny er åpen. |
+| Sen topp ved servicebil eller array | Først når regelen er lært: én nær figur, eventuelt en andre langt unna, og kort vei til en kjent dør eller bilen. Ett eller to usette fremstøt, lesbar retrett og rask avslutning. Nye skade-/dødsregler inngår ikke i første pilot. |
+
+Noen tilbakeblikk skal vise nøyaktig samme plassering. Ikke alle tomme steder får et senere angrep. Bilen skal fortsatt kunne brukes, og ingen skikkelse tvinger frem påkjørsel. Speilmøter utsettes til refleksjoner kan omfattes av synsregelen pålitelig.
+
+Lyd begynner med en kjent normal: vind, insekter, ventilasjon, trafosumming og radio. Et lokalt bortfall eller én tørr gruslyd fra figurens forrige ståsted prøves før musikkstikk. Ingen lydkvittering ved hver flytting. Bevar kritisk tale og gjenopprett normal ambience etter møtet. Romlig lyd kan støttes av valgfrie, nøkterne lydtekster uten å avsløre figurens posisjon med et HUD-merke.
+
+Dale kan via eksisterende telefon/radio be om en konkret kontroll av adgangslogg eller hvor personen står. Han kjenner ikke monsterets regler eller årsaken. Forslag til nye engelske replikktekster er ikke ferdig manus eller innspilt dialog. Skyggemenn forklarer ikke Nora, Dale, aliens eller den tredje personen i 1947-bildet. THE EVENT, 47 sekunder, 1420.405 MHz, az 026 og 27 antenner beholdes.
+
+### 13.5 Eksisterende kode og gjennomføringsrekkefølge
+
+| Prioritet | Arbeid | Gjenbruk og avklaring |
+|---|---|---|
+| P0 | Samle regel og visuell kategori. | `Private/S47Glimpses.cpp`, `FS47Glimpses::Update`, skjuler i dag ved direkte blikk innen 25 grader, zoom, lykt eller nærhet. `Private/S47SaroDark.cpp`, `FS47SaroDark::Watch`, skjuler ved zoom, lykt eller nærhet. Ingen av dem har den nye bevegelsesregelen. |
+| P1 | Lag original Blender-silhuett og tre til fire mulige ståsteder per pilotsted. | `Private/S47Figures.cpp`, `FS47CardSilhouette`, er et malt kort med rand og kameravending. Det er ikke en svart menneskemodell. Kontroller volum og underlag fra spillerhøyde i dagslys, skumring og natt. |
+| P2 | Lag konservativ synlighetsport og liten lagret møtetilstand. | `Private/S47Seen.cpp` gir kamera og observasjonslogg; `S47Facing` tester ikke fri sikt. Hode, kropp og føtter eller silhuettvolum trenger både projeksjon og bevisst okklusjon gjennom glass og rundt native modeller. Ikke bruk «nylig rendret» som bevis for faktisk observasjon. |
+| P3 | Koble hele SARO/trafo/retur-reisen til eksisterende rytme, foto og lagring. | `Public/S47Curve.h`, `Private/S47Night.cpp` (`CurveStep`, `OneAtATime`) og `Private/S47AnomalyDread.cpp` (`Protected`) gir felles trykkurve og beskyttelse. `Private/S47FieldCamera.cpp` (`Sync`, `ClearLine`, `Render`) gir ekte eksponering. Ingen konkurrerende tilfeldig skrekktimer. |
+| P4 | Kort menneskelig prøve, deretter justering og noen få senere møter. | Figuren registreres ikke som opplevd bare fordi den er plassert. «Sett»-loggen er en teknisk tilnærming, ikke bevis for spillerens bevissthet eller frykt. Behold etablert restfase før neste topp. |
+
+Filene i tabellen ligger under `Signal47/Source/Signal47/`. Kameraretning, utsyn i bil, FOV og glass må kontrolleres mot faktisk hovedbilde. Refleksjoner og andre levende kamerabilder krever uttrykkelig håndtering; første ståsteder velges slik at de ikke kan vise en ukontrollert flytting der. Generiske kollisjonsstråler kan overse dekor. Ikke anta at gamle hardkodede bygningsavtrykk beskriver alle de nye modellene.
+
+### 13.6 Avgrenset godkjenning av en senere pilot
+
+- Ingen posisjons- eller rotasjonsendring mens en relevant del kan sees, heller ikke med raskt hodekast, bilblikk, zoom, lykt eller aktiv fotosøker. Pause, panel og lasting gir ingen oppspart flytting.
+- Samme figur og møtestadium gjennom lagring og Continue. Ekte fotopiksler viser den fotograferte plasseringen. Ingen oppdiktet filmbekreftelse eller ødelagte gamle foto.
+- En spillbar SARO/trafo/retur-rute, med mulighet for å overse eller forlate møtet uten å låse historien. Kritisk dialog, den eksisterende A02-piloten og hovedhendelsen beholdes.
+- Kort visuell kontroll i relevante lysforhold og VHS/Clean/lav kvalitet, samt menneskelig prøve med vanlig mus/tastatur og Xbox. Figuren må være lesbar uten å endre hele nattens eksponering.
+- Spør etter prøven: «Hva trodde du regelen var?», «Når ble du urolig?» og «Når ble dette irriterende?». Sammenhold svar med faktiske oppdagelser og oppgaveavbrudd. Flere kameravendinger eller høyere puls alene beviser ikke bedre skrekk.
+
+Bygg og et kort relevant pakket utvalg kommer når runtime faktisk endres. Ingen full verdensrunde, PSO-kø eller GPU-jobb er nødvendig for dette designarbeidet. Frykt, spilletid og ytelse for den nye mekanikken er foreløpig UNVERIFIED.

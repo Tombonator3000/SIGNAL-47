@@ -1,0 +1,743 @@
+{
+  "status": "EXACT_TRIANGLE_COUNT_NOT_RUNTIME_VERIFIED",
+  "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "scope": "Static meshes with identity transform in world.site st/interior only. Animated descendants excluded. No clipping performed.",
+  "volumes": [
+    {
+      "id": "transit_and_pier",
+      "candidates": [
+        {
+          "node": 1006,
+          "geo": 690,
+          "materials": [
+            435
+          ],
+          "triangles_fully_inside": 12,
+          "triangles_total": 472,
+          "cut_boxes": [
+            {
+              "min": [
+                2.53,
+                -0.26,
+                -4.47
+              ],
+              "max": [
+                3.47,
+                1.51,
+                -3.53
+              ]
+            }
+          ],
+          "protect_boxes": [
+            {
+              "min": [
+                3.035,
+                0.26,
+                -3.88
+              ],
+              "max": [
+                3.165,
+                0.8,
+                -3.48
+              ],
+              "reason": "Original cable clips retained on pier face",
+              "geos_only": [
+                690
+              ]
+            }
+          ],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1007,
+          "geo": 691,
+          "materials": [
+            434
+          ],
+          "triangles_fully_inside": 352,
+          "triangles_total": 1426,
+          "cut_boxes": [
+            {
+              "min": [
+                2.53,
+                -0.26,
+                -4.47
+              ],
+              "max": [
+                3.47,
+                1.51,
+                -3.53
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1008,
+          "geo": 692,
+          "materials": [
+            437
+          ],
+          "triangles_fully_inside": 393,
+          "triangles_total": 432,
+          "cut_boxes": [
+            {
+              "min": [
+                2.53,
+                -0.26,
+                -4.47
+              ],
+              "max": [
+                3.47,
+                1.51,
+                -3.53
+              ]
+            }
+          ],
+          "protect_boxes": [
+            {
+              "min": [
+                3.025,
+                1.045,
+                -3.91
+              ],
+              "max": [
+                3.135,
+                1.115,
+                -3.82
+              ],
+              "reason": "Original cable terminal box, separate from transit instrument",
+              "geos_only": [
+                692
+              ]
+            }
+          ],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1009,
+          "geo": 693,
+          "materials": [
+            438
+          ],
+          "triangles_fully_inside": 2,
+          "triangles_total": 36,
+          "cut_boxes": [
+            {
+              "min": [
+                2.53,
+                -0.26,
+                -4.47
+              ],
+              "max": [
+                3.47,
+                1.51,
+                -3.53
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1013,
+          "geo": 697,
+          "materials": [
+            442
+          ],
+          "triangles_fully_inside": 16,
+          "triangles_total": 76,
+          "cut_boxes": [
+            {
+              "min": [
+                2.53,
+                -0.26,
+                -4.47
+              ],
+              "max": [
+                3.47,
+                1.51,
+                -3.53
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1016,
+          "geo": 700,
+          "materials": [
+            445
+          ],
+          "triangles_fully_inside": 136,
+          "triangles_total": 188,
+          "cut_boxes": [
+            {
+              "min": [
+                2.53,
+                -0.26,
+                -4.47
+              ],
+              "max": [
+                3.47,
+                1.51,
+                -3.53
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1021,
+          "geo": 705,
+          "materials": [
+            449
+          ],
+          "triangles_fully_inside": 12,
+          "triangles_total": 24,
+          "cut_boxes": [
+            {
+              "min": [
+                2.53,
+                -0.26,
+                -4.47
+              ],
+              "max": [
+                3.47,
+                1.51,
+                -3.53
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        }
+      ],
+      "triangles": 923
+    },
+    {
+      "id": "lamp_stand_and_head",
+      "candidates": [
+        {
+          "node": 1006,
+          "geo": 690,
+          "materials": [
+            435
+          ],
+          "triangles_fully_inside": 24,
+          "triangles_total": 472,
+          "cut_boxes": [
+            {
+              "min": [
+                1.08,
+                -0.16,
+                -3.06
+              ],
+              "max": [
+                2.04,
+                2.06,
+                -2.15
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1007,
+          "geo": 691,
+          "materials": [
+            434
+          ],
+          "triangles_fully_inside": 180,
+          "triangles_total": 1426,
+          "cut_boxes": [
+            {
+              "min": [
+                1.08,
+                -0.16,
+                -3.06
+              ],
+              "max": [
+                2.04,
+                2.06,
+                -2.15
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1019,
+          "geo": 703,
+          "materials": [
+            447
+          ],
+          "triangles_fully_inside": 28,
+          "triangles_total": 42,
+          "cut_boxes": [
+            {
+              "min": [
+                1.08,
+                -0.16,
+                -3.06
+              ],
+              "max": [
+                2.04,
+                2.06,
+                -2.15
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1026,
+          "geo": 710,
+          "materials": [
+            454
+          ],
+          "triangles_fully_inside": 32,
+          "triangles_total": 6416,
+          "cut_boxes": [
+            {
+              "min": [
+                1.08,
+                -0.16,
+                -3.06
+              ],
+              "max": [
+                2.04,
+                2.06,
+                -2.15
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1027,
+          "geo": 711,
+          "materials": [
+            455
+          ],
+          "triangles_fully_inside": 64,
+          "triangles_total": 64,
+          "cut_boxes": [
+            {
+              "min": [
+                1.08,
+                -0.16,
+                -3.06
+              ],
+              "max": [
+                2.04,
+                2.06,
+                -2.15
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        }
+      ],
+      "triangles": 328
+    },
+    {
+      "id": "receiver_and_speaker",
+      "candidates": [
+        {
+          "node": 1042,
+          "geo": 721,
+          "materials": [
+            464
+          ],
+          "triangles_fully_inside": 448,
+          "triangles_total": 774,
+          "cut_boxes": [
+            {
+              "min": [
+                -12.45,
+                0.795,
+                1.6
+              ],
+              "max": [
+                -11.3,
+                1.13,
+                2.17
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1043,
+          "geo": 722,
+          "materials": [
+            465
+          ],
+          "triangles_fully_inside": 192,
+          "triangles_total": 556,
+          "cut_boxes": [
+            {
+              "min": [
+                -12.45,
+                0.795,
+                1.6
+              ],
+              "max": [
+                -11.3,
+                1.13,
+                2.17
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1044,
+          "geo": 723,
+          "materials": [
+            466
+          ],
+          "triangles_fully_inside": 24,
+          "triangles_total": 24,
+          "cut_boxes": [
+            {
+              "min": [
+                -12.45,
+                0.795,
+                1.6
+              ],
+              "max": [
+                -11.3,
+                1.13,
+                2.17
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1045,
+          "geo": 724,
+          "materials": [
+            467
+          ],
+          "triangles_fully_inside": 4,
+          "triangles_total": 4,
+          "cut_boxes": [
+            {
+              "min": [
+                -12.45,
+                0.795,
+                1.6
+              ],
+              "max": [
+                -11.3,
+                1.13,
+                2.17
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        }
+      ],
+      "triangles": 668
+    },
+    {
+      "id": "timing_ledger",
+      "candidates": [
+        {
+          "node": 1037,
+          "geo": 716,
+          "materials": [
+            457
+          ],
+          "triangles_fully_inside": 20,
+          "triangles_total": 356,
+          "cut_boxes": [
+            {
+              "min": [
+                -11.32,
+                0.802,
+                1.75
+              ],
+              "max": [
+                -10.78,
+                0.86,
+                2.17
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1040,
+          "geo": 719,
+          "materials": [
+            462
+          ],
+          "triangles_fully_inside": 12,
+          "triangles_total": 72,
+          "cut_boxes": [
+            {
+              "min": [
+                -11.32,
+                0.802,
+                1.75
+              ],
+              "max": [
+                -10.78,
+                0.86,
+                2.17
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1046,
+          "geo": 725,
+          "materials": [
+            468
+          ],
+          "triangles_fully_inside": 4,
+          "triangles_total": 4,
+          "cut_boxes": [
+            {
+              "min": [
+                -11.32,
+                0.802,
+                1.75
+              ],
+              "max": [
+                -10.78,
+                0.86,
+                2.17
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        }
+      ],
+      "triangles": 36
+    },
+    {
+      "id": "bench_wood_only",
+      "candidates": [
+        {
+          "node": 1037,
+          "geo": 716,
+          "materials": [
+            457
+          ],
+          "triangles_fully_inside": 84,
+          "triangles_total": 356,
+          "cut_boxes": [
+            {
+              "min": [
+                -12.955,
+                -0.03,
+                1.495
+              ],
+              "max": [
+                -9.945,
+                0.801,
+                2.225
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        }
+      ],
+      "triangles": 84
+    },
+    {
+      "id": "phone_base",
+      "candidates": [
+        {
+          "node": 1037,
+          "geo": 716,
+          "materials": [
+            457
+          ],
+          "triangles_fully_inside": 36,
+          "triangles_total": 356,
+          "cut_boxes": [
+            {
+              "min": [
+                -13.03,
+                1.16,
+                2.32
+              ],
+              "max": [
+                -12.63,
+                2.18,
+                2.78
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1042,
+          "geo": 721,
+          "materials": [
+            464
+          ],
+          "triangles_fully_inside": 54,
+          "triangles_total": 774,
+          "cut_boxes": [
+            {
+              "min": [
+                -13.03,
+                1.16,
+                2.32
+              ],
+              "max": [
+                -12.63,
+                2.18,
+                2.78
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1043,
+          "geo": 722,
+          "materials": [
+            465
+          ],
+          "triangles_fully_inside": 260,
+          "triangles_total": 556,
+          "cut_boxes": [
+            {
+              "min": [
+                -13.03,
+                1.16,
+                2.32
+              ],
+              "max": [
+                -12.63,
+                2.18,
+                2.78
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        }
+      ],
+      "triangles": 350
+    },
+    {
+      "id": "diagram_frame_and_print",
+      "candidates": [
+        {
+          "node": 1037,
+          "geo": 716,
+          "materials": [
+            457
+          ],
+          "triangles_fully_inside": 48,
+          "triangles_total": 356,
+          "cut_boxes": [
+            {
+              "min": [
+                -11.51,
+                1.58,
+                1.505
+              ],
+              "max": [
+                -10.79,
+                1.98,
+                1.56
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1042,
+          "geo": 721,
+          "materials": [
+            464
+          ],
+          "triangles_fully_inside": 12,
+          "triangles_total": 774,
+          "cut_boxes": [
+            {
+              "min": [
+                -11.51,
+                1.58,
+                1.505
+              ],
+              "max": [
+                -10.79,
+                1.98,
+                1.56
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        },
+        {
+          "node": 1049,
+          "geo": 728,
+          "materials": [
+            471
+          ],
+          "triangles_fully_inside": 2,
+          "triangles_total": 2,
+          "cut_boxes": [
+            {
+              "min": [
+                -11.51,
+                1.58,
+                1.505
+              ],
+              "max": [
+                -10.79,
+                1.98,
+                1.56
+              ]
+            }
+          ],
+          "protect_boxes": [],
+          "geometry_local_three_coordinates": true
+        }
+      ],
+      "triangles": 62
+    }
+  ],
+  "hide_original_mesh_descendants_only": [
+    "world.site.objs.lampHood",
+    "world.site.objs.fieldPhoneHandset"
+  ],
+  "additional_retire_named_meshes": [
+    {
+      "node": 1133,
+      "reason": "existing replacement car battery at field lamp; original new battery supplied by LampStand; confirm manifest name lic:car_battery before retiring"
+    }
+  ]
+}

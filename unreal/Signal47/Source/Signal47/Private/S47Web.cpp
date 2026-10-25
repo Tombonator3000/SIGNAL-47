@@ -667,6 +667,7 @@ void AS47Web::BeginPlay()
 	SaroSite = FS47SaroSite::Build(this);
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
+	BuildFieldModels();
 	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
@@ -1293,6 +1294,7 @@ void AS47Web::CloseAllDoors()
 
 void AS47Web::Tick(float Dt)
 {
+	UpdateFieldModels();
 	Super::Tick(Dt);
 	if (!bLoaded) return;
 	if (SaroArrival) SaroArrival->Update();

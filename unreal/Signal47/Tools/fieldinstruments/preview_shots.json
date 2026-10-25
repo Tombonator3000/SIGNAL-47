@@ -1,0 +1,14 @@
+{
+  "coordinates": "Blender station-local metres, Z up; camera position and target",
+  "status": "PLANNED_NOT_RENDERED",
+  "shots": [
+    {"id":"transit_player_height","camera":[1.5,1.7,1.62],"target":[3,4,0.98],"lens_mm":50,"purpose":"Pier scale, optical direction, real mechanics and readable field card"},
+    {"id":"transit_instrument_close","camera":[2.40,3.40,1.62],"target":[3,4,1.29],"lens_mm":65,"purpose":"Brass circle, degree ticks, levelling screws, telescope lens and trunnion"},
+    {"id":"lamp_hood_open","camera":[3.1,0.8,1.62],"target":[1.6,2.6,1.50],"lens_mm":55,"purpose":"Physical hood hinge follows original uncovered state"},
+    {"id":"receiver_player_height","camera":[-11.4,-3.20,1.62],"target":[-11.93,-1.80,0.97],"lens_mm":55,"purpose":"Original receiver/speaker/headphones, controls and separate illuminated dial"},
+    {"id":"phone_player_height","camera":[-11.45,-3.30,1.62],"target":[-12.82,-2.55,1.45],"lens_mm":60,"purpose":"Oak telephone box, bells, crank, speaking horn and independently animated receiver"},
+    {"id":"bench_drawer_clearance","camera":[-10.30,-3.00,1.20],"target":[-10.45,-2.24,0.70],"lens_mm":55,"purpose":"Animated drawer opens into an actual gap with no baked replacement front"},
+    {"id":"evidence_close","camera":[-9.85,-2.03,1.15],"target":[-10.13,-1.67,0.82],"lens_mm":65,"purpose":"Film can, physical recorded cassette and original evidence sleeve"}
+  ],
+  "runtime_states_required":["lamp uncovered and powered","lamp covered, no lens emission","receiver on and off","telephone ringing and picked up","drawer closed and fully open"]
+}

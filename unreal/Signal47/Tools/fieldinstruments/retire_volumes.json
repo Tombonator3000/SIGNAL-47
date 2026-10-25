@@ -1,0 +1,180 @@
+{
+  "status": "PROPOSED_REQUIRES_TRIANGLE_INSPECTION",
+  "coordinates": "station local Three metres (x,y,z), site origin (0,0,8000)",
+  "rule": "Remove only original static visual triangles wholly inside each volume. Preserve proxies, named animated children, marker geometry, cut cable and all original collision/occluder records.",
+  "volumes": [
+    {
+      "id": "transit_and_pier",
+      "min": [
+        2.53,
+        -0.26,
+        -4.47
+      ],
+      "max": [
+        3.47,
+        1.51,
+        -3.53
+      ],
+      "preserve": [
+        "world.site.proxies.transit",
+        "world.site.occluders",
+        "all original geo710 rubber cable triangles"
+      ],
+      "exclude_geos": [
+        710
+      ],
+      "protect_boxes": [
+        {
+          "min": [
+            3.035,
+            0.26,
+            -3.88
+          ],
+          "max": [
+            3.165,
+            0.8,
+            -3.48
+          ],
+          "reason": "Original cable clips retained on pier face",
+          "geos_only": [
+            690
+          ]
+        },
+        {
+          "min": [
+            3.025,
+            1.045,
+            -3.91
+          ],
+          "max": [
+            3.135,
+            1.115,
+            -3.82
+          ],
+          "reason": "Original cable terminal box, separate from transit instrument",
+          "geos_only": [
+            692
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lamp_stand_and_head",
+      "min": [
+        1.08,
+        -0.16,
+        -3.06
+      ],
+      "max": [
+        2.04,
+        2.06,
+        -2.15
+      ],
+      "preserve": [
+        "world.site.objs.lampHead",
+        "world.site.objs.lampHood",
+        "world.site.proxies.lamp",
+        "world.site.glow"
+      ]
+    },
+    {
+      "id": "receiver_and_speaker",
+      "min": [
+        -12.45,
+        0.795,
+        1.6
+      ],
+      "max": [
+        -11.3,
+        1.13,
+        2.17
+      ],
+      "preserve": [
+        "world.site.proxies.receiver",
+        "world.site.glow"
+      ]
+    },
+    {
+      "id": "timing_ledger",
+      "min": [
+        -11.32,
+        0.802,
+        1.75
+      ],
+      "max": [
+        -10.78,
+        0.86,
+        2.17
+      ],
+      "preserve": [
+        "world.site.proxies.timingLog"
+      ]
+    },
+    {
+      "id": "bench_wood_only",
+      "min": [
+        -12.955,
+        -0.03,
+        1.495
+      ],
+      "max": [
+        -9.945,
+        0.801,
+        2.225
+      ],
+      "materials_only": [
+        "woodIn"
+      ],
+      "preserve": [
+        "world.site.objs.drawer",
+        "world.site.objs.drawerInside",
+        "world.site.proxies.drawer"
+      ]
+    },
+    {
+      "id": "phone_base",
+      "min": [
+        -13.03,
+        1.16,
+        2.32
+      ],
+      "max": [
+        -12.63,
+        2.18,
+        2.78
+      ],
+      "preserve": [
+        "world.site.objs.fieldPhoneHandset",
+        "world.site.proxies.fieldPhone"
+      ]
+    },
+    {
+      "id": "diagram_frame_and_print",
+      "min": [
+        -11.51,
+        1.58,
+        1.505
+      ],
+      "max": [
+        -10.79,
+        1.98,
+        1.56
+      ],
+      "preserve": [
+        "world.site.proxies.diagram"
+      ]
+    }
+  ],
+  "named_children_visual_only_replacements": [
+    {
+      "handle": "world.site.objs.lampHood",
+      "preserve_node": true,
+      "hide_original_descendant_meshes_only": true
+    },
+    {
+      "handle": "world.site.objs.fieldPhoneHandset",
+      "preserve_node": true,
+      "hide_original_descendant_meshes_only": true
+    }
+  ]
+}

@@ -1,0 +1,1265 @@
+{
+  "version": 1,
+  "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "policy": "Only measured leaf meshes or whole triangles inside authored volumes; no parent/proxy/collider edits",
+  "meshes": [
+    {
+      "node": 503,
+      "parent": 502,
+      "geo": 327,
+      "source_material_ids": [
+        214
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 504,
+      "parent": 502,
+      "geo": 328,
+      "source_material_ids": [
+        215
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 506,
+      "parent": 505,
+      "geo": 329,
+      "source_material_ids": [
+        216
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 507,
+      "parent": 505,
+      "geo": 330,
+      "source_material_ids": [
+        217
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 508,
+      "parent": 505,
+      "geo": 331,
+      "source_material_ids": [
+        218
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 509,
+      "parent": 505,
+      "geo": 332,
+      "source_material_ids": [
+        219
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 514,
+      "parent": 513,
+      "geo": 335,
+      "source_material_ids": [
+        217
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 515,
+      "parent": 513,
+      "geo": 336,
+      "source_material_ids": [
+        216
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 516,
+      "parent": 513,
+      "geo": 337,
+      "source_material_ids": [
+        210
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 517,
+      "parent": 513,
+      "geo": 338,
+      "source_material_ids": [
+        218
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 542,
+      "parent": 483,
+      "geo": 361,
+      "source_material_ids": [
+        216
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 543,
+      "parent": 483,
+      "geo": 362,
+      "source_material_ids": [
+        217
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 544,
+      "parent": 483,
+      "geo": 363,
+      "source_material_ids": [
+        243
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 545,
+      "parent": 483,
+      "geo": 364,
+      "source_material_ids": [
+        244
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 546,
+      "parent": 483,
+      "geo": 365,
+      "source_material_ids": [
+        245
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 547,
+      "parent": 483,
+      "geo": 366,
+      "source_material_ids": [
+        246
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 548,
+      "parent": 483,
+      "geo": 367,
+      "source_material_ids": [
+        247
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 550,
+      "parent": 483,
+      "geo": 369,
+      "source_material_ids": [
+        249
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 551,
+      "parent": 483,
+      "geo": 370,
+      "source_material_ids": [
+        210
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -4.51,
+          -2.79,
+          0,
+          0.73,
+          8.17,
+          9.03
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 560,
+      "parent": 559,
+      "geo": 378,
+      "source_material_ids": [
+        256
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 562,
+      "parent": 561,
+      "geo": 379,
+      "source_material_ids": [
+        257
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 569,
+      "parent": 564,
+      "geo": 383,
+      "source_material_ids": [
+        261
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 570,
+      "parent": 564,
+      "geo": 384,
+      "source_material_ids": [
+        262
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 571,
+      "parent": 564,
+      "geo": 385,
+      "source_material_ids": [
+        263
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 572,
+      "parent": 564,
+      "geo": 386,
+      "source_material_ids": [
+        264
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 577,
+      "parent": 576,
+      "geo": 389,
+      "source_material_ids": [
+        267
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 578,
+      "parent": 576,
+      "geo": 390,
+      "source_material_ids": [
+        268
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 581,
+      "parent": 576,
+      "geo": 393,
+      "source_material_ids": [
+        271
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 584,
+      "parent": 583,
+      "geo": 395,
+      "source_material_ids": [
+        262
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 585,
+      "parent": 583,
+      "geo": 396,
+      "source_material_ids": [
+        267
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 586,
+      "parent": 583,
+      "geo": 397,
+      "source_material_ids": [
+        271
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 587,
+      "parent": 583,
+      "geo": 398,
+      "source_material_ids": [
+        272
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 590,
+      "parent": 483,
+      "geo": 401,
+      "source_material_ids": [
+        274
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 592,
+      "parent": 483,
+      "geo": 229,
+      "source_material_ids": [
+        276
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 593,
+      "parent": 483,
+      "geo": 230,
+      "source_material_ids": [
+        276
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1003,
+      "parent": 1002,
+      "geo": 687,
+      "source_material_ids": [
+        435
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1004,
+      "parent": 1002,
+      "geo": 688,
+      "source_material_ids": [
+        434
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1006,
+      "parent": 993,
+      "geo": 690,
+      "source_material_ids": [
+        435
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -9.2,
+          -8.6,
+          1.38,
+          3.75,
+          4.09,
+          4.61
+        ],
+        [
+          -9.151,
+          -9.049,
+          -0.01,
+          1.11,
+          4.669,
+          4.811
+        ],
+        [
+          2.53,
+          3.47,
+          -0.26,
+          1.51,
+          -4.47,
+          -3.53
+        ],
+        [
+          1.08,
+          2.04,
+          -0.16,
+          2.06,
+          -3.06,
+          -2.15
+        ]
+      ],
+      "protect_boxes": [
+        [
+          3.035,
+          3.165,
+          0.26,
+          0.8,
+          -3.88,
+          -3.48
+        ]
+      ]
+    },
+    {
+      "node": 1007,
+      "parent": 993,
+      "geo": 691,
+      "source_material_ids": [
+        434
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -12.57,
+          -12.23,
+          2.75,
+          3.7,
+          1.83,
+          2.17
+        ],
+        [
+          -9.16,
+          -8.94,
+          3.55,
+          3.8,
+          4.33,
+          4.57
+        ],
+        [
+          -10.261,
+          -9.639,
+          2.161,
+          2.363,
+          4.699,
+          4.712
+        ],
+        [
+          2.53,
+          3.47,
+          -0.26,
+          1.51,
+          -4.47,
+          -3.53
+        ],
+        [
+          1.08,
+          2.04,
+          -0.16,
+          2.06,
+          -3.06,
+          -2.15
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1008,
+      "parent": 993,
+      "geo": 692,
+      "source_material_ids": [
+        437
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          2.53,
+          3.47,
+          -0.26,
+          1.51,
+          -4.47,
+          -3.53
+        ]
+      ],
+      "protect_boxes": [
+        [
+          3.025,
+          3.135,
+          1.045,
+          1.115,
+          -3.91,
+          -3.82
+        ]
+      ]
+    },
+    {
+      "node": 1009,
+      "parent": 993,
+      "geo": 693,
+      "source_material_ids": [
+        438
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -10.261,
+          -9.639,
+          2.161,
+          2.363,
+          4.699,
+          4.725
+        ],
+        [
+          -9.211,
+          -8.989,
+          1.199,
+          1.341,
+          4.809,
+          4.829
+        ],
+        [
+          2.53,
+          3.47,
+          -0.26,
+          1.51,
+          -4.47,
+          -3.53
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1010,
+      "parent": 993,
+      "geo": 694,
+      "source_material_ids": [
+        439
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -13.486,
+          -8.514,
+          2.594,
+          2.666,
+          1.014,
+          4.986
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1013,
+      "parent": 993,
+      "geo": 697,
+      "source_material_ids": [
+        442
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -13.501,
+          -8.499,
+          -0.251,
+          0.001,
+          0.999,
+          5.001
+        ],
+        [
+          -10.651,
+          -9.249,
+          -0.251,
+          -0.069,
+          4.999,
+          5.421
+        ],
+        [
+          2.53,
+          3.47,
+          -0.26,
+          1.51,
+          -4.47,
+          -3.53
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1014,
+      "parent": 993,
+      "geo": 698,
+      "source_material_ids": [
+        443
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1015,
+      "parent": 993,
+      "geo": 699,
+      "source_material_ids": [
+        444
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1016,
+      "parent": 993,
+      "geo": 700,
+      "source_material_ids": [
+        445
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -13.001,
+          -8.5,
+          0.8,
+          2.0,
+          1.499,
+          4.701
+        ],
+        [
+          2.53,
+          3.47,
+          -0.26,
+          1.51,
+          -4.47,
+          -3.53
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1017,
+      "parent": 993,
+      "geo": 701,
+      "source_material_ids": [
+        433
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1018,
+      "parent": 993,
+      "geo": 702,
+      "source_material_ids": [
+        446
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1019,
+      "parent": 993,
+      "geo": 703,
+      "source_material_ids": [
+        447
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          1.08,
+          2.04,
+          -0.16,
+          2.06,
+          -3.06,
+          -2.15
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1021,
+      "parent": 993,
+      "geo": 705,
+      "source_material_ids": [
+        449
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -9.231,
+          -8.969,
+          1.089,
+          1.411,
+          4.699,
+          4.821
+        ],
+        [
+          2.53,
+          3.47,
+          -0.26,
+          1.51,
+          -4.47,
+          -3.53
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1026,
+      "parent": 993,
+      "geo": 710,
+      "source_material_ids": [
+        454
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          1.08,
+          2.04,
+          -0.16,
+          2.06,
+          -3.06,
+          -2.15
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1027,
+      "parent": 993,
+      "geo": 711,
+      "source_material_ids": [
+        455
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          1.08,
+          2.04,
+          -0.16,
+          2.06,
+          -3.06,
+          -2.15
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1034,
+      "parent": 1032,
+      "geo": 713,
+      "source_material_ids": [
+        457
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1035,
+      "parent": 1030,
+      "geo": 714,
+      "source_material_ids": [
+        458
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1036,
+      "parent": 1030,
+      "geo": 715,
+      "source_material_ids": [
+        459
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1037,
+      "parent": 1030,
+      "geo": 716,
+      "source_material_ids": [
+        457
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -13.001,
+          -8.999,
+          2.479,
+          2.601,
+          2.159,
+          2.241
+        ],
+        [
+          -13.001,
+          -8.999,
+          2.479,
+          2.601,
+          3.759,
+          3.841
+        ],
+        [
+          -13.001,
+          -8.999,
+          0.881,
+          0.919,
+          1.479,
+          1.526
+        ],
+        [
+          -13.001,
+          -8.999,
+          0.881,
+          0.919,
+          4.474,
+          4.521
+        ],
+        [
+          -13.026,
+          -12.974,
+          0.881,
+          0.919,
+          1.499,
+          4.501
+        ],
+        [
+          -9.026,
+          -8.974,
+          0.881,
+          0.919,
+          1.499,
+          4.501
+        ],
+        [
+          -12.951,
+          -12.049,
+          1.319,
+          1.496,
+          1.499,
+          1.771
+        ],
+        [
+          -11.32,
+          -10.78,
+          0.802,
+          0.86,
+          1.75,
+          2.17
+        ],
+        [
+          -12.955,
+          -9.945,
+          -0.03,
+          0.801,
+          1.495,
+          2.225
+        ],
+        [
+          -13.03,
+          -12.63,
+          1.16,
+          2.18,
+          2.32,
+          2.78
+        ],
+        [
+          -11.51,
+          -10.79,
+          1.58,
+          1.98,
+          1.505,
+          1.56
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1038,
+      "parent": 1030,
+      "geo": 717,
+      "source_material_ids": [
+        460
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1039,
+      "parent": 1030,
+      "geo": 718,
+      "source_material_ids": [
+        461
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1040,
+      "parent": 1030,
+      "geo": 719,
+      "source_material_ids": [
+        462
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -12.91,
+          -12.08,
+          1.49,
+          1.76,
+          1.55,
+          1.71
+        ],
+        [
+          -11.32,
+          -10.78,
+          0.802,
+          0.86,
+          1.75,
+          2.17
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1041,
+      "parent": 1030,
+      "geo": 720,
+      "source_material_ids": [
+        463
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -12.91,
+          -12.08,
+          1.49,
+          1.76,
+          1.55,
+          1.71
+        ],
+        [
+          -12.535,
+          -12.525,
+          1.419,
+          1.481,
+          3.619,
+          3.741
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1042,
+      "parent": 1030,
+      "geo": 721,
+      "source_material_ids": [
+        464
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -12.535,
+          -12.52,
+          0.039,
+          1.741,
+          3.892,
+          3.908
+        ],
+        [
+          -12.45,
+          -11.3,
+          0.795,
+          1.13,
+          1.6,
+          2.17
+        ],
+        [
+          -13.03,
+          -12.63,
+          1.16,
+          2.18,
+          2.32,
+          2.78
+        ],
+        [
+          -11.51,
+          -10.79,
+          1.58,
+          1.98,
+          1.505,
+          1.56
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1043,
+      "parent": 1030,
+      "geo": 722,
+      "source_material_ids": [
+        465
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -12.54,
+          -12.49,
+          0.919,
+          1.081,
+          3.819,
+          3.981
+        ],
+        [
+          -12.22,
+          -12.08,
+          1.489,
+          1.671,
+          1.559,
+          1.701
+        ],
+        [
+          -12.45,
+          -11.3,
+          0.795,
+          1.13,
+          1.6,
+          2.17
+        ],
+        [
+          -13.03,
+          -12.63,
+          1.16,
+          2.18,
+          2.32,
+          2.78
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1044,
+      "parent": 1030,
+      "geo": 723,
+      "source_material_ids": [
+        466
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -12.45,
+          -11.3,
+          0.795,
+          1.13,
+          1.6,
+          2.17
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1045,
+      "parent": 1030,
+      "geo": 724,
+      "source_material_ids": [
+        467
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -12.45,
+          -11.3,
+          0.795,
+          1.13,
+          1.6,
+          2.17
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1046,
+      "parent": 1030,
+      "geo": 725,
+      "source_material_ids": [
+        468
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -11.32,
+          -10.78,
+          0.802,
+          0.86,
+          1.75,
+          2.17
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1049,
+      "parent": 1030,
+      "geo": 728,
+      "source_material_ids": [
+        471
+      ],
+      "whole": false,
+      "cut_boxes": [
+        [
+          -11.51,
+          -10.79,
+          1.58,
+          1.98,
+          1.505,
+          1.56
+        ]
+      ],
+      "protect_boxes": []
+    },
+    {
+      "node": 1050,
+      "parent": 1030,
+      "geo": 729,
+      "source_material_ids": [
+        472
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1052,
+      "parent": 1051,
+      "geo": 730,
+      "source_material_ids": [
+        473
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1053,
+      "parent": 1051,
+      "geo": 731,
+      "source_material_ids": [
+        465
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1065,
+      "parent": 1064,
+      "geo": 739,
+      "source_material_ids": [
+        464
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1066,
+      "parent": 1064,
+      "geo": 740,
+      "source_material_ids": [
+        465
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1071,
+      "parent": 1029,
+      "geo": 743,
+      "source_material_ids": [
+        477
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    },
+    {
+      "node": 1133,
+      "parent": 992,
+      "geo": 788,
+      "source_material_ids": [
+        508
+      ],
+      "whole": true,
+      "cut_boxes": [],
+      "protect_boxes": []
+    }
+  ]
+}

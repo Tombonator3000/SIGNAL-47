@@ -1,0 +1,1209 @@
+{
+  "status": "PASS",
+  "source_revision": "FS1-original-station01-hut",
+  "checks": [
+    {
+      "name": "SM_FieldStation_Hut_Shell one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2576
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 7.530680250056321e-06
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 2576
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1202
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 2.9999916702494467e-06
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 1202
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 16
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 0.07801600728073732
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 16
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 1.0728836059570312e-06,
+      "triangles": 1268
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 9.09265851056773e-06
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 1268
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 8.195638656616211e-08,
+      "triangles": 444
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 8.999857664448996e-06
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 444
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1632
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 7.530680250056321e-06
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD1 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 1632
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 590
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 1.0825310754469797e-05
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD1 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 590
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 16
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 0.07801600728073732
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD1 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 16
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 1.0728836059570312e-06,
+      "triangles": 1048
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 2.024970209646426e-05
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD1 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 1048
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 8.195638656616211e-08,
+      "triangles": 332
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 8.999857664448996e-06
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD1 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 332
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 888
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 6.894267194379466e-05
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell_LOD2 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 888
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 422
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 1.0825310754469797e-05
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior_LOD2 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 422
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 16
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 0.07801600728073732
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass_LOD2 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 16
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 1.0728836059570312e-06,
+      "triangles": 754
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 2.024970209646426e-05
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props_LOD2 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 754
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 one exported part",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 metre geometry and zero pivot",
+      "passed": true,
+      "maximum_error_m": 8.195638656616211e-08,
+      "triangles": 272
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 material slot contract",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 finite valid normals",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 actual UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 noncollapsed finite UVs",
+      "passed": true,
+      "minimum_uv_area": 5.239435433423978e-05
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 actual GLB primitive UVs",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door_LOD2 GLB geometry matches FBX",
+      "passed": true,
+      "triangles": 272
+    },
+    {
+      "name": "Actual asymmetric FBX axis probe",
+      "passed": true
+    },
+    {
+      "name": "Saved metric original scene",
+      "passed": true
+    },
+    {
+      "name": "Independently editable original collection",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell editable saved mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell retained original component mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Shell source local-zero placement",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior editable saved mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior retained original component mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior source local-zero placement",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass editable saved mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass retained original component mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass source local-zero placement",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props editable saved mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props retained original component mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props source local-zero placement",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door editable saved mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door retained original component mesh",
+      "passed": true
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door source local-zero placement",
+      "passed": true
+    },
+    {
+      "name": "Door preview parent preserves native hinge-local part",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Cloth_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Cloth_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Cloth_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Cloth_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Cloth_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Cloth_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image MetalPaint_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path MetalPaint_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image MetalPaint_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path MetalPaint_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image MetalPaint_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path MetalPaint_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image PrintAtlas_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path PrintAtlas_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image PrintAtlas_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path PrintAtlas_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image PrintAtlas_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path PrintAtlas_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image RoofShingle_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path RoofShingle_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image RoofShingle_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path RoofShingle_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image RoofShingle_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path RoofShingle_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image RustTin_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path RustTin_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image RustTin_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path RustTin_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image RustTin_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path RustTin_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Stucco_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Stucco_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Stucco_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Stucco_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Stucco_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Stucco_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Wood_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Wood_base_color.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Wood_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Wood_normal.png",
+      "passed": true
+    },
+    {
+      "name": "Packed original image Wood_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "Relative editable image path Wood_roughness.png",
+      "passed": true
+    },
+    {
+      "name": "All used original PBR maps packed",
+      "passed": true,
+      "required": 21,
+      "packed": 21
+    },
+    {
+      "name": "Three authored descending LODs",
+      "passed": true
+    },
+    {
+      "name": "Exactly five separate hut chunks",
+      "passed": true
+    }
+  ],
+  "scope": "Actual exported geometry, UVs, material slots, hinge pivot, source scene and packed pixels only. Native placement, lighting, interaction and visual acceptance are separate."
+}

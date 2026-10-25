@@ -1,0 +1,1794 @@
+{
+  "status": "GENERATOR_AUTHORED_NOT_NATIVE_VERIFIED",
+  "revision": "R1-original-SARO-records-room-1986",
+  "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "manifest_node_count": 1863,
+  "scope_handle": "annex.interior",
+  "scope_node": {
+    "node": 483
+  },
+  "parts": {
+    "SM_ArchiveProps_ShelvingStorage": {
+      "role": "Five-tier bolted steel shelving and ordinary archive cartons",
+      "site_world_three_m": [
+        -5.78,
+        0,
+        8.65
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        361,
+        362,
+        378,
+        379
+      ],
+      "retire_node_names": [
+        "lic:archive_box",
+        "lic:archive_box_lid"
+      ]
+    },
+    "SM_ArchiveProps_FilingCabinets": {
+      "role": "Three four-drawer cabinets at original footprints",
+      "site_world_three_m": [
+        -4.46,
+        0,
+        10.17
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        335,
+        336,
+        337,
+        338,
+        401
+      ],
+      "retire_node_names": [
+        "lic:filing_cabinet"
+      ]
+    },
+    "SM_ArchiveProps_CardIndex": {
+      "role": "Twelve-drawer maintenance index with one open card tray",
+      "site_world_three_m": [
+        -1.25,
+        0,
+        7.95
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        329,
+        330,
+        331,
+        332
+      ]
+    },
+    "SM_ArchiveProps_Bookcase": {
+      "role": "Low walnut bookcase and bound service-reference volumes",
+      "site_world_three_m": [
+        -2.35,
+        0,
+        10.3
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        363,
+        364,
+        365,
+        366,
+        367
+      ]
+    },
+    "SM_ArchiveProps_WorkTable": {
+      "role": "Steel research table, original 0.77m working height",
+      "site_world_three_m": [
+        -3.65,
+        0,
+        8.6
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        369
+      ],
+      "retire_triangle_regions": [
+        {
+          "geo": 370,
+          "bounds_three_m": [
+            -4.51,
+            -2.79,
+            0,
+            0.73,
+            8.17,
+            9.03
+          ],
+          "reason": "Only table legs. This merged steel mesh also includes corridor and other furniture, so do not retire it wholesale."
+        }
+      ]
+    },
+    "SM_ArchiveProps_FieldBox": {
+      "role": "Independent STATION 01 box following the original fall animation",
+      "site_world_three_m": [
+        -5.62,
+        1.135,
+        8.6
+      ],
+      "parent_handle": "annex.objs.fieldBoxModel",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "replaces": [
+        "annex.objs.fieldBoxModel"
+      ]
+    },
+    "SM_ArchiveProps_FireDrawer": {
+      "role": "Open steel reel drawer, original sliding origin preserved",
+      "site_world_three_m": [
+        -5.994,
+        1.27,
+        8.6
+      ],
+      "parent_handle": "annex.arc.drawer",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        383,
+        384,
+        385,
+        386
+      ]
+    },
+    "SM_ArchiveProps_Reel047Box": {
+      "role": "Separate grey 047 reel container, hidden when taken",
+      "site_world_three_m": [
+        -6.154,
+        1.186,
+        8.6
+      ],
+      "parent_handle": "annex.arc.reel",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "replaces": [
+        "annex.arc.reel"
+      ],
+      "preview_rotation_blender": [
+        0,
+        -0.3,
+        0
+      ]
+    },
+    "SM_ArchiveProps_Switchboard": {
+      "role": "KSU-12 metal shell and printed extension card; native TRK lamps retained",
+      "site_world_three_m": [
+        -1.05,
+        1.62,
+        10.22
+      ],
+      "parent_handle": "annex.arc.group",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        389,
+        390,
+        393
+      ],
+      "preserve_geo_ids": [
+        391,
+        392
+      ]
+    },
+    "SM_ArchiveProps_CallRecorder": {
+      "role": "Bracket-mounted mechanical strip recorder with native living paper",
+      "site_world_three_m": [
+        -1.12,
+        1.0,
+        10.22
+      ],
+      "parent_handle": "annex.arc.group",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        395,
+        396,
+        397,
+        398
+      ],
+      "preserve_geo_ids": [
+        400
+      ]
+    },
+    "SM_ArchiveProps_ServiceBinder": {
+      "role": "Cloth-bound service copies folder at original document anchor",
+      "site_world_three_m": [
+        -2.32,
+        0.9,
+        10.24
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        327,
+        328
+      ],
+      "preview_rotation_blender": [
+        0,
+        0,
+        0.25
+      ],
+      "runtime_yaw_degrees": 14.323944878
+    }
+  },
+  "preserve_handles": {
+    "annex.interior": {
+      "node": 483
+    },
+    "annex.objs.officeDoor": {
+      "node": 594
+    },
+    "annex.objs.recordsDoor": {
+      "node": 492
+    },
+    "annex.objs.fieldBoxModel": {
+      "node": 496
+    },
+    "annex.objs.fieldBox": {
+      "node": 602
+    },
+    "annex.objs.binder": {
+      "node": 603
+    },
+    "annex.objs.lineage": {
+      "node": 604
+    },
+    "annex.objs.workTable": {
+      "node": 606
+    },
+    "annex.objs.recPhone": {
+      "node": 605
+    },
+    "annex.arc.group": {
+      "node": 563
+    },
+    "annex.arc.drawer": {
+      "node": 564
+    },
+    "annex.arc.reel": {
+      "node": 565
+    },
+    "annex.arc.papers": {
+      "node": 573
+    },
+    "annex.arc.hit.drawer": {
+      "node": 568
+    },
+    "annex.arc.hit.ksu": {
+      "node": 582
+    },
+    "annex.arc.hit.recorder": {
+      "node": 588
+    },
+    "annex.arc.lamps.trk1": {
+      "node": 579
+    },
+    "annex.arc.lamps.trk2": {
+      "node": 580
+    },
+    "annex.arc.strip": {
+      "node": 589
+    }
+  },
+  "native_dynamic": {
+    "annex.arc.drawer": {
+      "three_origin": [
+        -5.994,
+        1.27,
+        8.6
+      ],
+      "travel_three": [
+        0.3,
+        0,
+        0
+      ]
+    },
+    "annex.arc.reel": {
+      "parent": "annex.arc.drawer",
+      "three_local_origin": [
+        -0.16,
+        -0.084,
+        0
+      ],
+      "rotation_three_z": 0.3,
+      "visibility": "archivePhone taking reel"
+    },
+    "annex.objs.fieldBoxModel": {
+      "three_origin": [
+        -5.62,
+        1.135,
+        8.6
+      ],
+      "motion": "archivePhone box falling; attach replacement locally"
+    },
+    "annex.arc.lamps.trk1": {
+      "three_origin": [
+        -1.105,
+        1.732,
+        10.103125
+      ],
+      "geo": 391
+    },
+    "annex.arc.lamps.trk2": {
+      "three_origin": [
+        -1.105,
+        1.732,
+        10.1775
+      ],
+      "geo": 392
+    },
+    "annex.arc.strip": {
+      "three_origin": [
+        -1.218,
+        1.07,
+        10.22
+      ],
+      "width_m": 0.056,
+      "geo": 400,
+      "motion": "native runtime UV, length and curled rotation"
+    },
+    "annex.arc.papers": {
+      "visibility": "native fall event",
+      "keep_geos": [
+        387,
+        388
+      ]
+    }
+  },
+  "retire_geometry_expected_nodes": {
+    "327": [
+      {
+        "i": 503,
+        "p": 502,
+        "name": "",
+        "type": "Mesh",
+        "geo": 327,
+        "mats": [
+          214
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "328": [
+      {
+        "i": 504,
+        "p": 502,
+        "name": "",
+        "type": "Mesh",
+        "geo": 328,
+        "mats": [
+          215
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "329": [
+      {
+        "i": 506,
+        "p": 505,
+        "name": "",
+        "type": "Mesh",
+        "geo": 329,
+        "mats": [
+          216
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "330": [
+      {
+        "i": 507,
+        "p": 505,
+        "name": "",
+        "type": "Mesh",
+        "geo": 330,
+        "mats": [
+          217
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "331": [
+      {
+        "i": 508,
+        "p": 505,
+        "name": "",
+        "type": "Mesh",
+        "geo": 331,
+        "mats": [
+          218
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "332": [
+      {
+        "i": 509,
+        "p": 505,
+        "name": "",
+        "type": "Mesh",
+        "geo": 332,
+        "mats": [
+          219
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "335": [
+      {
+        "i": 514,
+        "p": 513,
+        "name": "",
+        "type": "Mesh",
+        "geo": 335,
+        "mats": [
+          217
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "336": [
+      {
+        "i": 515,
+        "p": 513,
+        "name": "",
+        "type": "Mesh",
+        "geo": 336,
+        "mats": [
+          216
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "337": [
+      {
+        "i": 516,
+        "p": 513,
+        "name": "",
+        "type": "Mesh",
+        "geo": 337,
+        "mats": [
+          210
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "338": [
+      {
+        "i": 517,
+        "p": 513,
+        "name": "",
+        "type": "Mesh",
+        "geo": 338,
+        "mats": [
+          218
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "361": [
+      {
+        "i": 542,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 361,
+        "mats": [
+          216
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "362": [
+      {
+        "i": 543,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 362,
+        "mats": [
+          217
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "363": [
+      {
+        "i": 544,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 363,
+        "mats": [
+          243
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "364": [
+      {
+        "i": 545,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 364,
+        "mats": [
+          244
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "365": [
+      {
+        "i": 546,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 365,
+        "mats": [
+          245
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "366": [
+      {
+        "i": 547,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 366,
+        "mats": [
+          246
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "367": [
+      {
+        "i": 548,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 367,
+        "mats": [
+          247
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "369": [
+      {
+        "i": 550,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 369,
+        "mats": [
+          249
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "378": [
+      {
+        "i": 560,
+        "p": 559,
+        "name": "clutter:annex:archive_box",
+        "type": "Mesh",
+        "geo": 378,
+        "mats": [
+          256
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "379": [
+      {
+        "i": 562,
+        "p": 561,
+        "name": "clutter:annex:labels",
+        "type": "Mesh",
+        "geo": 379,
+        "mats": [
+          257
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "383": [
+      {
+        "i": 569,
+        "p": 564,
+        "name": "",
+        "type": "Mesh",
+        "geo": 383,
+        "mats": [
+          261
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "384": [
+      {
+        "i": 570,
+        "p": 564,
+        "name": "",
+        "type": "Mesh",
+        "geo": 384,
+        "mats": [
+          262
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "385": [
+      {
+        "i": 571,
+        "p": 564,
+        "name": "",
+        "type": "Mesh",
+        "geo": 385,
+        "mats": [
+          263
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "386": [
+      {
+        "i": 572,
+        "p": 564,
+        "name": "",
+        "type": "Mesh",
+        "geo": 386,
+        "mats": [
+          264
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "389": [
+      {
+        "i": 577,
+        "p": 576,
+        "name": "",
+        "type": "Mesh",
+        "geo": 389,
+        "mats": [
+          267
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "390": [
+      {
+        "i": 578,
+        "p": 576,
+        "name": "",
+        "type": "Mesh",
+        "geo": 390,
+        "mats": [
+          268
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "393": [
+      {
+        "i": 581,
+        "p": 576,
+        "name": "",
+        "type": "Mesh",
+        "geo": 393,
+        "mats": [
+          271
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "395": [
+      {
+        "i": 584,
+        "p": 583,
+        "name": "",
+        "type": "Mesh",
+        "geo": 395,
+        "mats": [
+          262
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "396": [
+      {
+        "i": 585,
+        "p": 583,
+        "name": "",
+        "type": "Mesh",
+        "geo": 396,
+        "mats": [
+          267
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "397": [
+      {
+        "i": 586,
+        "p": 583,
+        "name": "",
+        "type": "Mesh",
+        "geo": 397,
+        "mats": [
+          271
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "398": [
+      {
+        "i": 587,
+        "p": 583,
+        "name": "",
+        "type": "Mesh",
+        "geo": 398,
+        "mats": [
+          272
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "401": [
+      {
+        "i": 590,
+        "p": 483,
+        "name": "lic:filing_cabinet",
+        "type": "Mesh",
+        "geo": 401,
+        "mats": [
+          274
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "preserve_geometry_expected_nodes": {
+    "371": [
+      {
+        "i": 552,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 371,
+        "mats": [
+          250
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "372": [
+      {
+        "i": 553,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 372,
+        "mats": [
+          218
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "373": [
+      {
+        "i": 554,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 373,
+        "mats": [
+          251
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "374": [
+      {
+        "i": 555,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 374,
+        "mats": [
+          252
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "387": [
+      {
+        "i": 574,
+        "p": 573,
+        "name": "",
+        "type": "Mesh",
+        "geo": 387,
+        "mats": [
+          265
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "388": [
+      {
+        "i": 575,
+        "p": 573,
+        "name": "",
+        "type": "Mesh",
+        "geo": 388,
+        "mats": [
+          266
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "391": [
+      {
+        "i": 579,
+        "p": 576,
+        "name": "",
+        "type": "Mesh",
+        "geo": 391,
+        "mats": [
+          269
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "392": [
+      {
+        "i": 580,
+        "p": 576,
+        "name": "",
+        "type": "Mesh",
+        "geo": 392,
+        "mats": [
+          270
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "400": [
+      {
+        "i": 589,
+        "p": 563,
+        "name": "",
+        "type": "Mesh",
+        "geo": 400,
+        "mats": [
+          273
+        ],
+        "m": [
+          0,
+          0,
+          1,
+          0,
+          0.020546026576075682,
+          0.14050573223870688,
+          -1.970645868709653e-18,
+          0,
+          -0.9894769875965274,
+          0.14469032800053294,
+          0,
+          0,
+          -1.2180000000000002,
+          1.07,
+          10.22,
+          1
+        ]
+      }
+    ]
+  },
+  "retire_named_nodes_in_scope": [
+    {
+      "i": 590,
+      "p": 483,
+      "name": "lic:filing_cabinet",
+      "type": "Mesh",
+      "geo": 401,
+      "mats": [
+        274
+      ],
+      "m": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "i": 592,
+      "p": 483,
+      "name": "lic:archive_box",
+      "type": "Mesh",
+      "geo": 229,
+      "mats": [
+        276
+      ],
+      "m": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "i": 593,
+      "p": 483,
+      "name": "lic:archive_box_lid",
+      "type": "Mesh",
+      "geo": 230,
+      "mats": [
+        276
+      ],
+      "m": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "mixed_geometry": {
+    "370": {
+      "policy": "partial triangles only, preserve every remaining triangle and original material",
+      "cuts_three_mesh_local_xxyyzz": [
+        [
+          -4.51,
+          -2.79,
+          0,
+          0.73,
+          8.17,
+          9.03
+        ]
+      ],
+      "role": "only four worktable legs",
+      "node": {
+        "i": 551,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 370,
+        "mats": [
+          210
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    "376": {
+      "policy": "KEEP unchanged; mixed decorative room clutter, requires future specific spatial audit if overlapping",
+      "node": {
+        "i": 557,
+        "p": 483,
+        "name": "clutter:annex",
+        "type": "Mesh",
+        "geo": 376,
+        "mats": [
+          254
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    "371": {
+      "policy": "KEEP unchanged, original desk blotter, not table steel",
+      "node": {
+        "i": 552,
+        "p": 483,
+        "name": "",
+        "type": "Mesh",
+        "geo": 371,
+        "mats": [
+          250
+        ],
+        "m": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "readable_source_checks": {
+    "parser": "CPython ast",
+    "all_33_geometry_material_sets_resolve": true
+  },
+  "native_visual_status": "UNVERIFIED"
+}

@@ -1,0 +1,3954 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "source_revision": "R1-original-STATION01-field-instruments-1986",
+  "units": "metres",
+  "blender_up": "Z",
+  "front": "negativeY",
+  "mapping": "siteThree=(bx,bz,-by); Unreal=(100bx,-100by,100bz)",
+  "site_world_three_m": [
+    0,
+    0,
+    8000
+  ],
+  "parts": {
+    "SM_FieldKit_Transit": {
+      "triangles": 4976,
+      "vertices": 2880,
+      "bounds_local_m": [
+        [
+          -0.44999998807907104,
+          -0.44999998807907104,
+          -0.25
+        ],
+        [
+          0.44999998807907104,
+          0.44999998807907104,
+          1.434000015258789
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Concrete",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_FieldKit_Concrete",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        3.0,
+        4.0,
+        0.0
+      ],
+      "site_world_three_m": [
+        3.0,
+        0.0,
+        7996.0
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "tapered survey pier, levelling screws, engraved horizontal circle, telescope and optical lenses",
+      "proxy_handle": "world.site.proxies.transit",
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -44.999998807907104,
+          -44.999998807907104,
+          -25.0
+        ],
+        [
+          44.999998807907104,
+          44.999998807907104,
+          143.4000015258789
+        ]
+      ],
+      "lod_triangles": [
+        4976,
+        2416,
+        1068
+      ]
+    },
+    "SM_FieldKit_LampStand": {
+      "triangles": 1066,
+      "vertices": 588,
+      "bounds_local_m": [
+        [
+          -0.49000000953674316,
+          -0.4699999988079071,
+          -0.15459927916526794
+        ],
+        [
+          0.39103302359580994,
+          0.23561841249465942,
+          1.7999999523162842
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        1.600000023841858,
+        2.5999999046325684,
+        0.0
+      ],
+      "site_world_three_m": [
+        1.600000023841858,
+        0.0,
+        7997.400000095367
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "three-foot stand, telescopic mast, battery and wiring; no hood or bulb",
+      "proxy_handle": "world.site.proxies.lamp",
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -49.000000953674316,
+          -23.561841249465942,
+          -15.459927916526794
+        ],
+        [
+          39.103302359580994,
+          46.99999988079071,
+          179.99999523162842
+        ]
+      ],
+      "lod_triangles": [
+        1066,
+        698,
+        514
+      ]
+    },
+    "SM_FieldKit_LampHead": {
+      "triangles": 1768,
+      "vertices": 960,
+      "bounds_local_m": [
+        [
+          -0.14710059762001038,
+          -0.11299999803304672,
+          -0.13500000536441803
+        ],
+        [
+          0.14900000393390656,
+          0.11999999731779099,
+          0.14300000667572021
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal"
+      ],
+      "used_materials": [
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        1.600000023841858,
+        2.5999999046325684,
+        1.8600000143051147
+      ],
+      "site_world_three_m": [
+        1.600000023841858,
+        1.8600000143051147,
+        7997.400000095367
+      ],
+      "local": true,
+      "parent_handle": "world.site.objs.lampHead",
+      "role": "reflector shell, cooling fins, yoke and hinge; parent local coordinates",
+      "proxy_handle": null,
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -14.710059762001038,
+          -11.999999731779099,
+          -13.500000536441803
+        ],
+        [
+          14.900000393390656,
+          11.299999803304672,
+          14.300000667572021
+        ]
+      ],
+      "lod_triangles": [
+        1768,
+        920,
+        436
+      ]
+    },
+    "SM_FieldKit_LampBulb": {
+      "triangles": 124,
+      "vertices": 64,
+      "bounds_local_m": [
+        [
+          -0.12300000339746475,
+          -0.10300000011920929,
+          -0.12300000339746475
+        ],
+        [
+          0.12300000339746475,
+          -0.09799999743700027,
+          0.12300000339746475
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "used_materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        1.600000023841858,
+        2.5999999046325684,
+        1.8600000143051147
+      ],
+      "site_world_three_m": [
+        1.600000023841858,
+        1.8600000143051147,
+        7997.400000095367
+      ],
+      "local": true,
+      "parent_handle": "world.site.objs.lampHead",
+      "role": "separate field lens driven by the existing fieldBulb state",
+      "proxy_handle": null,
+      "state_material_handle": "world.site.m.fieldBulb",
+      "bounds_expected_ue_cm": [
+        [
+          -12.300000339746475,
+          9.799999743700027,
+          -12.300000339746475
+        ],
+        [
+          12.300000339746475,
+          10.300000011920929,
+          12.300000339746475
+        ]
+      ],
+      "lod_triangles": [
+        124,
+        60,
+        36
+      ]
+    },
+    "SM_FieldKit_LampHood": {
+      "triangles": 572,
+      "vertices": 296,
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.00800000037997961,
+          0.008500000461935997
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal"
+      ],
+      "used_materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        1.600000023841858,
+        2.494999885559082,
+        1.9950000047683716
+      ],
+      "site_world_three_m": [
+        1.600000023841858,
+        1.9950000047683716,
+        7997.505000114441
+      ],
+      "local": true,
+      "parent_handle": "world.site.objs.lampHood",
+      "role": "opaque tin blackout lid, local zero hinge; covered rotation X=0, uncovered Three X=2.1",
+      "proxy_handle": null,
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -14.350000023841858,
+          -0.800000037997961,
+          -28.850001096725464
+        ],
+        [
+          14.350000023841858,
+          6.300000101327896,
+          0.8500000461935997
+        ]
+      ],
+      "lod_triangles": [
+        572,
+        316,
+        220
+      ]
+    },
+    "SM_FieldKit_Receiver": {
+      "triangles": 6078,
+      "vertices": 3430,
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.2809999883174896,
+          -0.004999999888241291
+        ],
+        [
+          0.4707386791706085,
+          0.17000000178813934,
+          0.30399999022483826
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Cloth"
+      ],
+      "used_materials": [
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Cloth"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -11.850000381469727,
+        -1.7999999523162842,
+        0.800000011920929
+      ],
+      "site_world_three_m": [
+        -11.850000381469727,
+        0.800000011920929,
+        8001.799999952316
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "valve field receiver, open dial aperture, separate speaker, headphones, ventilated metal case, controls",
+      "proxy_handle": "world.site.proxies.receiver",
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -56.00000023841858,
+          -17.000000178813934,
+          -0.4999999888241291
+        ],
+        [
+          47.07386791706085,
+          28.099998831748962,
+          30.399999022483826
+        ]
+      ],
+      "lod_triangles": [
+        6078,
+        2846,
+        2030
+      ]
+    },
+    "SM_FieldKit_ReceiverDial": {
+      "triangles": 4,
+      "vertices": 8,
+      "bounds_local_m": [
+        [
+          -0.20399999618530273,
+          -0.1979999989271164,
+          0.16750000417232513
+        ],
+        [
+          0.20999999344348907,
+          -0.19599999487400055,
+          0.24250000715255737
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -11.850000381469727,
+        -1.7999999523162842,
+        0.800000011920929
+      ],
+      "site_world_three_m": [
+        -11.850000381469727,
+        0.800000011920929,
+        8001.799999952316
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "separate printed slide-rule dial and S meter, driven together by existing dial state",
+      "proxy_handle": null,
+      "state_material_handle": "world.site.m.dial",
+      "bounds_expected_ue_cm": [
+        [
+          -20.399999618530273,
+          19.599999487400055,
+          16.750000417232513
+        ],
+        [
+          20.999999344348907,
+          19.79999989271164,
+          24.250000715255737
+        ]
+      ],
+      "lod_triangles": [
+        4,
+        4,
+        4
+      ]
+    },
+    "SM_FieldKit_FieldPhone": {
+      "triangles": 3902,
+      "vertices": 2292,
+      "bounds_local_m": [
+        [
+          -0.09600000083446503,
+          -0.16093185544013977,
+          -0.3116694390773773
+        ],
+        [
+          0.25,
+          0.210999995470047,
+          0.713716447353363
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -12.920000076293945,
+        -2.549999952316284,
+        1.4500000476837158
+      ],
+      "site_world_three_m": [
+        -12.920000076293945,
+        1.4500000476837158,
+        8002.549999952316
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "wall mounted oak magneto telephone, paired bells, speaking horn, crank and cord; no hanging receiver",
+      "proxy_handle": "world.site.proxies.fieldPhone",
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -9.600000083446503,
+          -21.0999995470047,
+          -31.166943907737732
+        ],
+        [
+          25.0,
+          16.093185544013977,
+          71.3716447353363
+        ]
+      ],
+      "lod_triangles": [
+        3902,
+        1870,
+        1328
+      ]
+    },
+    "SM_FieldKit_Handset": {
+      "triangles": 256,
+      "vertices": 144,
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.032999999821186066,
+          -0.16200000047683716
+        ],
+        [
+          0.032999999821186066,
+          0.032999999821186066,
+          0.009999999776482582
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber"
+      ],
+      "used_materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -12.819999694824219,
+        -2.700000047683716,
+        1.5499999523162842
+      ],
+      "site_world_three_m": [
+        -12.819999694824219,
+        1.5499999523162842,
+        8002.700000047684
+      ],
+      "local": true,
+      "parent_handle": "world.site.objs.fieldPhoneHandset",
+      "role": "hanging Bakelite earpiece and hook, retained independent for ringing and pickup",
+      "proxy_handle": null,
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -3.2999999821186066,
+          -3.2999999821186066,
+          -16.200000047683716
+        ],
+        [
+          3.2999999821186066,
+          3.2999999821186066,
+          0.9999999776482582
+        ]
+      ],
+      "lod_triangles": [
+        256,
+        192,
+        100
+      ]
+    },
+    "SM_FieldKit_TimingBench": {
+      "triangles": 792,
+      "vertices": 480,
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.35850000381469727,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.35850000381469727,
+          0.8019999861717224
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -11.449999809265137,
+        -1.8600000143051147,
+        0.0
+      ],
+      "site_world_three_m": [
+        -11.449999809265137,
+        0.0,
+        8001.860000014305
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "three metre worn oak field bench, shelf, levelling feet and open drawer clearance; no static drawer front",
+      "proxy_handle": null,
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -150.0,
+          -35.85000038146973,
+          -1.2000000104308128
+        ],
+        [
+          150.0,
+          35.85000038146973,
+          80.19999861717224
+        ]
+      ],
+      "lod_triangles": [
+        792,
+        552,
+        484
+      ]
+    },
+    "SM_FieldKit_TimingLog": {
+      "triangles": 210,
+      "vertices": 140,
+      "bounds_local_m": [
+        [
+          -0.23499999940395355,
+          -0.16500000655651093,
+          0.0
+        ],
+        [
+          0.23499999940395355,
+          0.16500000655651093,
+          0.041290897876024246
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Cloth"
+      ],
+      "used_materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Cloth"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -11.050000190734863,
+        -1.9600000381469727,
+        0.8040000200271606
+      ],
+      "site_world_three_m": [
+        -11.050000190734863,
+        0.8040000200271606,
+        8001.960000038147
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "open 1947 timing ledger, readable printed chronology and pencil",
+      "proxy_handle": "world.site.proxies.timingLog",
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -23.499999940395355,
+          -16.500000655651093,
+          0.0
+        ],
+        [
+          23.499999940395355,
+          16.500000655651093,
+          4.129089787602425
+        ]
+      ],
+      "lod_triangles": [
+        210,
+        138,
+        138
+      ]
+    },
+    "SM_FieldKit_Diagram": {
+      "triangles": 154,
+      "vertices": 92,
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.029999999329447746,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.017999999225139618,
+          0.1850000023841858
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -11.149999618530273,
+        -1.5369999408721924,
+        1.7799999713897705
+      ],
+      "site_world_three_m": [
+        -11.149999618530273,
+        1.7799999713897705,
+        8001.536999940872
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "framed A/B/C arrangement in the existing clue location; no text over existing projection",
+      "proxy_handle": "world.site.proxies.diagram",
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -34.99999940395355,
+          -1.7999999225139618,
+          -18.50000023841858
+        ],
+        [
+          34.99999940395355,
+          2.9999999329447746,
+          18.50000023841858
+        ]
+      ],
+      "lod_triangles": [
+        154,
+        154,
+        74
+      ]
+    },
+    "SM_FieldKit_EvidenceProps": {
+      "triangles": 598,
+      "vertices": 332,
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.10999999940395355,
+          0.061000000685453415
+        ]
+      ],
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Film"
+      ],
+      "used_materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Film"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        -10.130000114440918,
+        -1.6699999570846558,
+        0.800000011920929
+      ],
+      "site_world_three_m": [
+        -10.130000114440918,
+        0.800000011920929,
+        8001.669999957085
+      ],
+      "local": false,
+      "parent_handle": "world.site.group",
+      "role": "original film can, unopened evidence sleeve and recorded compact cassette, cosmetic set dressing",
+      "proxy_handle": null,
+      "state_material_handle": null,
+      "bounds_expected_ue_cm": [
+        [
+          -6.300000101327896,
+          -10.999999940395355,
+          0.0
+        ],
+        [
+          9.749999642372131,
+          14.20000046491623,
+          6.1000000685453415
+        ]
+      ],
+      "lod_triangles": [
+        598,
+        406,
+        318
+      ]
+    }
+  },
+  "lods": {
+    "0": {
+      "SM_FieldKit_Transit": {
+        "triangles": 4976,
+        "vertices": 2880,
+        "bounds_local_m": [
+          [
+            -0.44999998807907104,
+            -0.44999998807907104,
+            -0.25
+          ],
+          [
+            0.44999998807907104,
+            0.44999998807907104,
+            1.434000015258789
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Concrete",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Concrete",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          3.0,
+          4.0,
+          0.0
+        ],
+        "site_world_three_m": [
+          3.0,
+          0.0,
+          7996.0
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "tapered survey pier, levelling screws, engraved horizontal circle, telescope and optical lenses",
+        "proxy_handle": "world.site.proxies.transit",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -44.999998807907104,
+            -44.999998807907104,
+            -25.0
+          ],
+          [
+            44.999998807907104,
+            44.999998807907104,
+            143.4000015258789
+          ]
+        ],
+        "lod_triangles": [
+          4976,
+          2416,
+          1068
+        ]
+      },
+      "SM_FieldKit_LampStand": {
+        "triangles": 1066,
+        "vertices": 588,
+        "bounds_local_m": [
+          [
+            -0.49000000953674316,
+            -0.4699999988079071,
+            -0.15459927916526794
+          ],
+          [
+            0.39103302359580994,
+            0.23561841249465942,
+            1.7999999523162842
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          0.0
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          0.0,
+          7997.400000095367
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "three-foot stand, telescopic mast, battery and wiring; no hood or bulb",
+        "proxy_handle": "world.site.proxies.lamp",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -49.000000953674316,
+            -23.561841249465942,
+            -15.459927916526794
+          ],
+          [
+            39.103302359580994,
+            46.99999988079071,
+            179.99999523162842
+          ]
+        ],
+        "lod_triangles": [
+          1066,
+          698,
+          514
+        ]
+      },
+      "SM_FieldKit_LampHead": {
+        "triangles": 1768,
+        "vertices": 960,
+        "bounds_local_m": [
+          [
+            -0.14710059762001038,
+            -0.11299999803304672,
+            -0.13500000536441803
+          ],
+          [
+            0.14900000393390656,
+            0.11999999731779099,
+            0.14300000667572021
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "used_materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          1.8600000143051147
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.8600000143051147,
+          7997.400000095367
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHead",
+        "role": "reflector shell, cooling fins, yoke and hinge; parent local coordinates",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -14.710059762001038,
+            -11.999999731779099,
+            -13.500000536441803
+          ],
+          [
+            14.900000393390656,
+            11.299999803304672,
+            14.300000667572021
+          ]
+        ],
+        "lod_triangles": [
+          1768,
+          920,
+          436
+        ]
+      },
+      "SM_FieldKit_LampBulb": {
+        "triangles": 124,
+        "vertices": 64,
+        "bounds_local_m": [
+          [
+            -0.12300000339746475,
+            -0.10300000011920929,
+            -0.12300000339746475
+          ],
+          [
+            0.12300000339746475,
+            -0.09799999743700027,
+            0.12300000339746475
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_FieldBulb"
+        ],
+        "used_materials": [
+          "M_FieldKit_FieldBulb"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          1.8600000143051147
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.8600000143051147,
+          7997.400000095367
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHead",
+        "role": "separate field lens driven by the existing fieldBulb state",
+        "proxy_handle": null,
+        "state_material_handle": "world.site.m.fieldBulb",
+        "bounds_expected_ue_cm": [
+          [
+            -12.300000339746475,
+            9.799999743700027,
+            -12.300000339746475
+          ],
+          [
+            12.300000339746475,
+            10.300000011920929,
+            12.300000339746475
+          ]
+        ],
+        "lod_triangles": [
+          124,
+          60,
+          36
+        ]
+      },
+      "SM_FieldKit_LampHood": {
+        "triangles": 572,
+        "vertices": 296,
+        "bounds_local_m": [
+          [
+            -0.14350000023841858,
+            -0.06300000101327896,
+            -0.28850001096725464
+          ],
+          [
+            0.14350000023841858,
+            0.00800000037997961,
+            0.008500000461935997
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.494999885559082,
+          1.9950000047683716
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.9950000047683716,
+          7997.505000114441
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHood",
+        "role": "opaque tin blackout lid, local zero hinge; covered rotation X=0, uncovered Three X=2.1",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -14.350000023841858,
+            -0.800000037997961,
+            -28.850001096725464
+          ],
+          [
+            14.350000023841858,
+            6.300000101327896,
+            0.8500000461935997
+          ]
+        ],
+        "lod_triangles": [
+          572,
+          316,
+          220
+        ]
+      },
+      "SM_FieldKit_Receiver": {
+        "triangles": 6078,
+        "vertices": 3430,
+        "bounds_local_m": [
+          [
+            -0.5600000023841858,
+            -0.2809999883174896,
+            -0.004999999888241291
+          ],
+          [
+            0.4707386791706085,
+            0.17000000178813934,
+            0.30399999022483826
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "used_materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.850000381469727,
+          -1.7999999523162842,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -11.850000381469727,
+          0.800000011920929,
+          8001.799999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "valve field receiver, open dial aperture, separate speaker, headphones, ventilated metal case, controls",
+        "proxy_handle": "world.site.proxies.receiver",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -56.00000023841858,
+            -17.000000178813934,
+            -0.4999999888241291
+          ],
+          [
+            47.07386791706085,
+            28.099998831748962,
+            30.399999022483826
+          ]
+        ],
+        "lod_triangles": [
+          6078,
+          2846,
+          2030
+        ]
+      },
+      "SM_FieldKit_ReceiverDial": {
+        "triangles": 4,
+        "vertices": 8,
+        "bounds_local_m": [
+          [
+            -0.20399999618530273,
+            -0.1979999989271164,
+            0.16750000417232513
+          ],
+          [
+            0.20999999344348907,
+            -0.19599999487400055,
+            0.24250000715255737
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.850000381469727,
+          -1.7999999523162842,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -11.850000381469727,
+          0.800000011920929,
+          8001.799999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "separate printed slide-rule dial and S meter, driven together by existing dial state",
+        "proxy_handle": null,
+        "state_material_handle": "world.site.m.dial",
+        "bounds_expected_ue_cm": [
+          [
+            -20.399999618530273,
+            19.599999487400055,
+            16.750000417232513
+          ],
+          [
+            20.999999344348907,
+            19.79999989271164,
+            24.250000715255737
+          ]
+        ],
+        "lod_triangles": [
+          4,
+          4,
+          4
+        ]
+      },
+      "SM_FieldKit_FieldPhone": {
+        "triangles": 3902,
+        "vertices": 2292,
+        "bounds_local_m": [
+          [
+            -0.09600000083446503,
+            -0.16093185544013977,
+            -0.3116694390773773
+          ],
+          [
+            0.25,
+            0.210999995470047,
+            0.713716447353363
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -12.920000076293945,
+          -2.549999952316284,
+          1.4500000476837158
+        ],
+        "site_world_three_m": [
+          -12.920000076293945,
+          1.4500000476837158,
+          8002.549999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "wall mounted oak magneto telephone, paired bells, speaking horn, crank and cord; no hanging receiver",
+        "proxy_handle": "world.site.proxies.fieldPhone",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -9.600000083446503,
+            -21.0999995470047,
+            -31.166943907737732
+          ],
+          [
+            25.0,
+            16.093185544013977,
+            71.3716447353363
+          ]
+        ],
+        "lod_triangles": [
+          3902,
+          1870,
+          1328
+        ]
+      },
+      "SM_FieldKit_Handset": {
+        "triangles": 256,
+        "vertices": 144,
+        "bounds_local_m": [
+          [
+            -0.032999999821186066,
+            -0.032999999821186066,
+            -0.16200000047683716
+          ],
+          [
+            0.032999999821186066,
+            0.032999999821186066,
+            0.009999999776482582
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -12.819999694824219,
+          -2.700000047683716,
+          1.5499999523162842
+        ],
+        "site_world_three_m": [
+          -12.819999694824219,
+          1.5499999523162842,
+          8002.700000047684
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.fieldPhoneHandset",
+        "role": "hanging Bakelite earpiece and hook, retained independent for ringing and pickup",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -3.2999999821186066,
+            -3.2999999821186066,
+            -16.200000047683716
+          ],
+          [
+            3.2999999821186066,
+            3.2999999821186066,
+            0.9999999776482582
+          ]
+        ],
+        "lod_triangles": [
+          256,
+          192,
+          100
+        ]
+      },
+      "SM_FieldKit_TimingBench": {
+        "triangles": 792,
+        "vertices": 480,
+        "bounds_local_m": [
+          [
+            -1.5,
+            -0.35850000381469727,
+            -0.012000000104308128
+          ],
+          [
+            1.5,
+            0.35850000381469727,
+            0.8019999861717224
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.449999809265137,
+          -1.8600000143051147,
+          0.0
+        ],
+        "site_world_three_m": [
+          -11.449999809265137,
+          0.0,
+          8001.860000014305
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "three metre worn oak field bench, shelf, levelling feet and open drawer clearance; no static drawer front",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -150.0,
+            -35.85000038146973,
+            -1.2000000104308128
+          ],
+          [
+            150.0,
+            35.85000038146973,
+            80.19999861717224
+          ]
+        ],
+        "lod_triangles": [
+          792,
+          552,
+          484
+        ]
+      },
+      "SM_FieldKit_TimingLog": {
+        "triangles": 210,
+        "vertices": 140,
+        "bounds_local_m": [
+          [
+            -0.23499999940395355,
+            -0.16500000655651093,
+            0.0
+          ],
+          [
+            0.23499999940395355,
+            0.16500000655651093,
+            0.041290897876024246
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.050000190734863,
+          -1.9600000381469727,
+          0.8040000200271606
+        ],
+        "site_world_three_m": [
+          -11.050000190734863,
+          0.8040000200271606,
+          8001.960000038147
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "open 1947 timing ledger, readable printed chronology and pencil",
+        "proxy_handle": "world.site.proxies.timingLog",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -23.499999940395355,
+            -16.500000655651093,
+            0.0
+          ],
+          [
+            23.499999940395355,
+            16.500000655651093,
+            4.129089787602425
+          ]
+        ],
+        "lod_triangles": [
+          210,
+          138,
+          138
+        ]
+      },
+      "SM_FieldKit_Diagram": {
+        "triangles": 154,
+        "vertices": 92,
+        "bounds_local_m": [
+          [
+            -0.3499999940395355,
+            -0.029999999329447746,
+            -0.1850000023841858
+          ],
+          [
+            0.3499999940395355,
+            0.017999999225139618,
+            0.1850000023841858
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.149999618530273,
+          -1.5369999408721924,
+          1.7799999713897705
+        ],
+        "site_world_three_m": [
+          -11.149999618530273,
+          1.7799999713897705,
+          8001.536999940872
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "framed A/B/C arrangement in the existing clue location; no text over existing projection",
+        "proxy_handle": "world.site.proxies.diagram",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -34.99999940395355,
+            -1.7999999225139618,
+            -18.50000023841858
+          ],
+          [
+            34.99999940395355,
+            2.9999999329447746,
+            18.50000023841858
+          ]
+        ],
+        "lod_triangles": [
+          154,
+          154,
+          74
+        ]
+      },
+      "SM_FieldKit_EvidenceProps": {
+        "triangles": 598,
+        "vertices": 332,
+        "bounds_local_m": [
+          [
+            -0.06300000101327896,
+            -0.1420000046491623,
+            0.0
+          ],
+          [
+            0.09749999642372131,
+            0.10999999940395355,
+            0.061000000685453415
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Film"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Film"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -10.130000114440918,
+          -1.6699999570846558,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -10.130000114440918,
+          0.800000011920929,
+          8001.669999957085
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "original film can, unopened evidence sleeve and recorded compact cassette, cosmetic set dressing",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -6.300000101327896,
+            -10.999999940395355,
+            0.0
+          ],
+          [
+            9.749999642372131,
+            14.20000046491623,
+            6.1000000685453415
+          ]
+        ],
+        "lod_triangles": [
+          598,
+          406,
+          318
+        ]
+      }
+    },
+    "1": {
+      "SM_FieldKit_Transit": {
+        "triangles": 2416,
+        "vertices": 1408,
+        "bounds_local_m": [
+          [
+            -0.44999998807907104,
+            -0.44999998807907104,
+            -0.25
+          ],
+          [
+            0.44999998807907104,
+            0.44999998807907104,
+            1.434000015258789
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Concrete",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Concrete",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          3.0,
+          4.0,
+          0.0
+        ],
+        "site_world_three_m": [
+          3.0,
+          0.0,
+          7996.0
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "tapered survey pier, levelling screws, engraved horizontal circle, telescope and optical lenses",
+        "proxy_handle": "world.site.proxies.transit",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -44.999998807907104,
+            -44.999998807907104,
+            -25.0
+          ],
+          [
+            44.999998807907104,
+            44.999998807907104,
+            143.4000015258789
+          ]
+        ]
+      },
+      "SM_FieldKit_LampStand": {
+        "triangles": 698,
+        "vertices": 404,
+        "bounds_local_m": [
+          [
+            -0.49000000953674316,
+            -0.4699999988079071,
+            -0.15459784865379333
+          ],
+          [
+            0.39103302359580994,
+            0.23561841249465942,
+            1.7999999523162842
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          0.0
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          0.0,
+          7997.400000095367
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "three-foot stand, telescopic mast, battery and wiring; no hood or bulb",
+        "proxy_handle": "world.site.proxies.lamp",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -49.000000953674316,
+            -23.561841249465942,
+            -15.459784865379333
+          ],
+          [
+            39.103302359580994,
+            46.99999988079071,
+            179.99999523162842
+          ]
+        ]
+      },
+      "SM_FieldKit_LampHead": {
+        "triangles": 920,
+        "vertices": 504,
+        "bounds_local_m": [
+          [
+            -0.14710059762001038,
+            -0.11299999803304672,
+            -0.13500000536441803
+          ],
+          [
+            0.14900000393390656,
+            0.11999999731779099,
+            0.14300000667572021
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "used_materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          1.8600000143051147
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.8600000143051147,
+          7997.400000095367
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHead",
+        "role": "reflector shell, cooling fins, yoke and hinge; parent local coordinates",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -14.710059762001038,
+            -11.999999731779099,
+            -13.500000536441803
+          ],
+          [
+            14.900000393390656,
+            11.299999803304672,
+            14.300000667572021
+          ]
+        ]
+      },
+      "SM_FieldKit_LampBulb": {
+        "triangles": 60,
+        "vertices": 32,
+        "bounds_local_m": [
+          [
+            -0.12300000339746475,
+            -0.10300000011920929,
+            -0.12300000339746475
+          ],
+          [
+            0.12300000339746475,
+            -0.09799999743700027,
+            0.12300000339746475
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_FieldBulb"
+        ],
+        "used_materials": [
+          "M_FieldKit_FieldBulb"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          1.8600000143051147
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.8600000143051147,
+          7997.400000095367
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHead",
+        "role": "separate field lens driven by the existing fieldBulb state",
+        "proxy_handle": null,
+        "state_material_handle": "world.site.m.fieldBulb",
+        "bounds_expected_ue_cm": [
+          [
+            -12.300000339746475,
+            9.799999743700027,
+            -12.300000339746475
+          ],
+          [
+            12.300000339746475,
+            10.300000011920929,
+            12.300000339746475
+          ]
+        ]
+      },
+      "SM_FieldKit_LampHood": {
+        "triangles": 316,
+        "vertices": 168,
+        "bounds_local_m": [
+          [
+            -0.14350000023841858,
+            -0.06300000101327896,
+            -0.28850001096725464
+          ],
+          [
+            0.14350000023841858,
+            0.00800000037997961,
+            0.008500000461935997
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.494999885559082,
+          1.9950000047683716
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.9950000047683716,
+          7997.505000114441
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHood",
+        "role": "opaque tin blackout lid, local zero hinge; covered rotation X=0, uncovered Three X=2.1",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -14.350000023841858,
+            -0.800000037997961,
+            -28.850001096725464
+          ],
+          [
+            14.350000023841858,
+            6.300000101327896,
+            0.8500000461935997
+          ]
+        ]
+      },
+      "SM_FieldKit_Receiver": {
+        "triangles": 2846,
+        "vertices": 1638,
+        "bounds_local_m": [
+          [
+            -0.5600000023841858,
+            -0.2809999883174896,
+            -0.004999999888241291
+          ],
+          [
+            0.47019603848457336,
+            0.17000000178813934,
+            0.30399999022483826
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "used_materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.850000381469727,
+          -1.7999999523162842,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -11.850000381469727,
+          0.800000011920929,
+          8001.799999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "valve field receiver, open dial aperture, separate speaker, headphones, ventilated metal case, controls",
+        "proxy_handle": "world.site.proxies.receiver",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -56.00000023841858,
+            -17.000000178813934,
+            -0.4999999888241291
+          ],
+          [
+            47.019603848457336,
+            28.099998831748962,
+            30.399999022483826
+          ]
+        ]
+      },
+      "SM_FieldKit_ReceiverDial": {
+        "triangles": 4,
+        "vertices": 8,
+        "bounds_local_m": [
+          [
+            -0.20399999618530273,
+            -0.1979999989271164,
+            0.16750000417232513
+          ],
+          [
+            0.20999999344348907,
+            -0.19599999487400055,
+            0.24250000715255737
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.850000381469727,
+          -1.7999999523162842,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -11.850000381469727,
+          0.800000011920929,
+          8001.799999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "separate printed slide-rule dial and S meter, driven together by existing dial state",
+        "proxy_handle": null,
+        "state_material_handle": "world.site.m.dial",
+        "bounds_expected_ue_cm": [
+          [
+            -20.399999618530273,
+            19.599999487400055,
+            16.750000417232513
+          ],
+          [
+            20.999999344348907,
+            19.79999989271164,
+            24.250000715255737
+          ]
+        ]
+      },
+      "SM_FieldKit_FieldPhone": {
+        "triangles": 1870,
+        "vertices": 1180,
+        "bounds_local_m": [
+          [
+            -0.09600000083446503,
+            -0.1608477532863617,
+            -0.3119257092475891
+          ],
+          [
+            0.25,
+            0.210999995470047,
+            0.713716447353363
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -12.920000076293945,
+          -2.549999952316284,
+          1.4500000476837158
+        ],
+        "site_world_three_m": [
+          -12.920000076293945,
+          1.4500000476837158,
+          8002.549999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "wall mounted oak magneto telephone, paired bells, speaking horn, crank and cord; no hanging receiver",
+        "proxy_handle": "world.site.proxies.fieldPhone",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -9.600000083446503,
+            -21.0999995470047,
+            -31.19257092475891
+          ],
+          [
+            25.0,
+            16.08477532863617,
+            71.3716447353363
+          ]
+        ]
+      },
+      "SM_FieldKit_Handset": {
+        "triangles": 192,
+        "vertices": 112,
+        "bounds_local_m": [
+          [
+            -0.032999999821186066,
+            -0.032999999821186066,
+            -0.16200000047683716
+          ],
+          [
+            0.032999999821186066,
+            0.032999999821186066,
+            0.009999999776482582
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -12.819999694824219,
+          -2.700000047683716,
+          1.5499999523162842
+        ],
+        "site_world_three_m": [
+          -12.819999694824219,
+          1.5499999523162842,
+          8002.700000047684
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.fieldPhoneHandset",
+        "role": "hanging Bakelite earpiece and hook, retained independent for ringing and pickup",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -3.2999999821186066,
+            -3.2999999821186066,
+            -16.200000047683716
+          ],
+          [
+            3.2999999821186066,
+            3.2999999821186066,
+            0.9999999776482582
+          ]
+        ]
+      },
+      "SM_FieldKit_TimingBench": {
+        "triangles": 552,
+        "vertices": 352,
+        "bounds_local_m": [
+          [
+            -1.5,
+            -0.35850000381469727,
+            -0.012000000104308128
+          ],
+          [
+            1.5,
+            0.35850000381469727,
+            0.800000011920929
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.449999809265137,
+          -1.8600000143051147,
+          0.0
+        ],
+        "site_world_three_m": [
+          -11.449999809265137,
+          0.0,
+          8001.860000014305
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "three metre worn oak field bench, shelf, levelling feet and open drawer clearance; no static drawer front",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -150.0,
+            -35.85000038146973,
+            -1.2000000104308128
+          ],
+          [
+            150.0,
+            35.85000038146973,
+            80.0000011920929
+          ]
+        ]
+      },
+      "SM_FieldKit_TimingLog": {
+        "triangles": 138,
+        "vertices": 92,
+        "bounds_local_m": [
+          [
+            -0.23499999940395355,
+            -0.16500000655651093,
+            0.0
+          ],
+          [
+            0.23499999940395355,
+            0.16500000655651093,
+            0.041290897876024246
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.050000190734863,
+          -1.9600000381469727,
+          0.8040000200271606
+        ],
+        "site_world_three_m": [
+          -11.050000190734863,
+          0.8040000200271606,
+          8001.960000038147
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "open 1947 timing ledger, readable printed chronology and pencil",
+        "proxy_handle": "world.site.proxies.timingLog",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -23.499999940395355,
+            -16.500000655651093,
+            0.0
+          ],
+          [
+            23.499999940395355,
+            16.500000655651093,
+            4.129089787602425
+          ]
+        ]
+      },
+      "SM_FieldKit_Diagram": {
+        "triangles": 154,
+        "vertices": 92,
+        "bounds_local_m": [
+          [
+            -0.3499999940395355,
+            -0.029999999329447746,
+            -0.1850000023841858
+          ],
+          [
+            0.3499999940395355,
+            0.017999999225139618,
+            0.1850000023841858
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.149999618530273,
+          -1.5369999408721924,
+          1.7799999713897705
+        ],
+        "site_world_three_m": [
+          -11.149999618530273,
+          1.7799999713897705,
+          8001.536999940872
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "framed A/B/C arrangement in the existing clue location; no text over existing projection",
+        "proxy_handle": "world.site.proxies.diagram",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -34.99999940395355,
+            -1.7999999225139618,
+            -18.50000023841858
+          ],
+          [
+            34.99999940395355,
+            2.9999999329447746,
+            18.50000023841858
+          ]
+        ]
+      },
+      "SM_FieldKit_EvidenceProps": {
+        "triangles": 406,
+        "vertices": 236,
+        "bounds_local_m": [
+          [
+            -0.06300000101327896,
+            -0.1420000046491623,
+            0.0
+          ],
+          [
+            0.09749999642372131,
+            0.10999999940395355,
+            0.061000000685453415
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Film"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Film"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -10.130000114440918,
+          -1.6699999570846558,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -10.130000114440918,
+          0.800000011920929,
+          8001.669999957085
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "original film can, unopened evidence sleeve and recorded compact cassette, cosmetic set dressing",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -6.300000101327896,
+            -10.999999940395355,
+            0.0
+          ],
+          [
+            9.749999642372131,
+            14.20000046491623,
+            6.1000000685453415
+          ]
+        ]
+      }
+    },
+    "2": {
+      "SM_FieldKit_Transit": {
+        "triangles": 1068,
+        "vertices": 606,
+        "bounds_local_m": [
+          [
+            -0.44999998807907104,
+            -0.44999998807907104,
+            -0.25
+          ],
+          [
+            0.44999998807907104,
+            0.44999998807907104,
+            1.430965542793274
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Concrete",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Concrete",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          3.0,
+          4.0,
+          0.0
+        ],
+        "site_world_three_m": [
+          3.0,
+          0.0,
+          7996.0
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "tapered survey pier, levelling screws, engraved horizontal circle, telescope and optical lenses",
+        "proxy_handle": "world.site.proxies.transit",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -44.999998807907104,
+            -44.999998807907104,
+            -25.0
+          ],
+          [
+            44.999998807907104,
+            44.999998807907104,
+            143.0965542793274
+          ]
+        ]
+      },
+      "SM_FieldKit_LampStand": {
+        "triangles": 514,
+        "vertices": 312,
+        "bounds_local_m": [
+          [
+            -0.49000000953674316,
+            -0.4699999988079071,
+            -0.15408727526664734
+          ],
+          [
+            0.39103302359580994,
+            0.23561841249465942,
+            1.7999999523162842
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          0.0
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          0.0,
+          7997.400000095367
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "three-foot stand, telescopic mast, battery and wiring; no hood or bulb",
+        "proxy_handle": "world.site.proxies.lamp",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -49.000000953674316,
+            -23.561841249465942,
+            -15.408727526664734
+          ],
+          [
+            39.103302359580994,
+            46.99999988079071,
+            179.99999523162842
+          ]
+        ]
+      },
+      "SM_FieldKit_LampHead": {
+        "triangles": 436,
+        "vertices": 246,
+        "bounds_local_m": [
+          [
+            -0.14614929258823395,
+            -0.11299999803304672,
+            -0.12839263677597046
+          ],
+          [
+            0.14614929258823395,
+            0.11999999731779099,
+            0.14192819595336914
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "used_materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          1.8600000143051147
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.8600000143051147,
+          7997.400000095367
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHead",
+        "role": "reflector shell, cooling fins, yoke and hinge; parent local coordinates",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -14.614929258823395,
+            -11.999999731779099,
+            -12.839263677597046
+          ],
+          [
+            14.614929258823395,
+            11.299999803304672,
+            14.192819595336914
+          ]
+        ]
+      },
+      "SM_FieldKit_LampBulb": {
+        "triangles": 36,
+        "vertices": 20,
+        "bounds_local_m": [
+          [
+            -0.12300000339746475,
+            -0.10300000011920929,
+            -0.11697994917631149
+          ],
+          [
+            0.12300000339746475,
+            -0.09799999743700027,
+            0.11697994917631149
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_FieldBulb"
+        ],
+        "used_materials": [
+          "M_FieldKit_FieldBulb"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.5999999046325684,
+          1.8600000143051147
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.8600000143051147,
+          7997.400000095367
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHead",
+        "role": "separate field lens driven by the existing fieldBulb state",
+        "proxy_handle": null,
+        "state_material_handle": "world.site.m.fieldBulb",
+        "bounds_expected_ue_cm": [
+          [
+            -12.300000339746475,
+            9.799999743700027,
+            -11.69799491763115
+          ],
+          [
+            12.300000339746475,
+            10.300000011920929,
+            11.69799491763115
+          ]
+        ]
+      },
+      "SM_FieldKit_LampHood": {
+        "triangles": 220,
+        "vertices": 120,
+        "bounds_local_m": [
+          [
+            -0.14350000023841858,
+            -0.06300000101327896,
+            -0.28850001096725464
+          ],
+          [
+            0.14350000023841858,
+            0.00800000037997961,
+            0.006500000134110451
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          1.600000023841858,
+          2.494999885559082,
+          1.9950000047683716
+        ],
+        "site_world_three_m": [
+          1.600000023841858,
+          1.9950000047683716,
+          7997.505000114441
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.lampHood",
+        "role": "opaque tin blackout lid, local zero hinge; covered rotation X=0, uncovered Three X=2.1",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -14.350000023841858,
+            -0.800000037997961,
+            -28.850001096725464
+          ],
+          [
+            14.350000023841858,
+            6.300000101327896,
+            0.6500000134110451
+          ]
+        ]
+      },
+      "SM_FieldKit_Receiver": {
+        "triangles": 2030,
+        "vertices": 1228,
+        "bounds_local_m": [
+          [
+            -0.5600000023841858,
+            -0.2768467962741852,
+            -0.004999999888241291
+          ],
+          [
+            0.470209538936615,
+            0.17000000178813934,
+            0.30399999022483826
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "used_materials": [
+          "M_FieldKit_OlivePaint",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.850000381469727,
+          -1.7999999523162842,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -11.850000381469727,
+          0.800000011920929,
+          8001.799999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "valve field receiver, open dial aperture, separate speaker, headphones, ventilated metal case, controls",
+        "proxy_handle": "world.site.proxies.receiver",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -56.00000023841858,
+            -17.000000178813934,
+            -0.4999999888241291
+          ],
+          [
+            47.0209538936615,
+            27.684679627418518,
+            30.399999022483826
+          ]
+        ]
+      },
+      "SM_FieldKit_ReceiverDial": {
+        "triangles": 4,
+        "vertices": 8,
+        "bounds_local_m": [
+          [
+            -0.20399999618530273,
+            -0.1979999989271164,
+            0.16750000417232513
+          ],
+          [
+            0.20999999344348907,
+            -0.19599999487400055,
+            0.24250000715255737
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.850000381469727,
+          -1.7999999523162842,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -11.850000381469727,
+          0.800000011920929,
+          8001.799999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "separate printed slide-rule dial and S meter, driven together by existing dial state",
+        "proxy_handle": null,
+        "state_material_handle": "world.site.m.dial",
+        "bounds_expected_ue_cm": [
+          [
+            -20.399999618530273,
+            19.599999487400055,
+            16.750000417232513
+          ],
+          [
+            20.999999344348907,
+            19.79999989271164,
+            24.250000715255737
+          ]
+        ]
+      },
+      "SM_FieldKit_FieldPhone": {
+        "triangles": 1328,
+        "vertices": 854,
+        "bounds_local_m": [
+          [
+            -0.09600000083446503,
+            -0.15979422628879547,
+            -0.3119227886199951
+          ],
+          [
+            0.25,
+            0.210999995470047,
+            0.7132185101509094
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Brass",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -12.920000076293945,
+          -2.549999952316284,
+          1.4500000476837158
+        ],
+        "site_world_three_m": [
+          -12.920000076293945,
+          1.4500000476837158,
+          8002.549999952316
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "wall mounted oak magneto telephone, paired bells, speaking horn, crank and cord; no hanging receiver",
+        "proxy_handle": "world.site.proxies.fieldPhone",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -9.600000083446503,
+            -21.0999995470047,
+            -31.19227886199951
+          ],
+          [
+            25.0,
+            15.979422628879547,
+            71.32185101509094
+          ]
+        ]
+      },
+      "SM_FieldKit_Handset": {
+        "triangles": 100,
+        "vertices": 56,
+        "bounds_local_m": [
+          [
+            -0.032999999821186066,
+            -0.02857883833348751,
+            -0.1599999964237213
+          ],
+          [
+            0.032999999821186066,
+            0.029999999329447746,
+            0.009999999776482582
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -12.819999694824219,
+          -2.700000047683716,
+          1.5499999523162842
+        ],
+        "site_world_three_m": [
+          -12.819999694824219,
+          1.5499999523162842,
+          8002.700000047684
+        ],
+        "local": true,
+        "parent_handle": "world.site.objs.fieldPhoneHandset",
+        "role": "hanging Bakelite earpiece and hook, retained independent for ringing and pickup",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -3.2999999821186066,
+            -2.9999999329447746,
+            -15.999999642372131
+          ],
+          [
+            3.2999999821186066,
+            2.857883833348751,
+            0.9999999776482582
+          ]
+        ]
+      },
+      "SM_FieldKit_TimingBench": {
+        "triangles": 484,
+        "vertices": 318,
+        "bounds_local_m": [
+          [
+            -1.5,
+            -0.35850000381469727,
+            -0.012000000104308128
+          ],
+          [
+            1.5,
+            0.35850000381469727,
+            0.800000011920929
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.449999809265137,
+          -1.8600000143051147,
+          0.0
+        ],
+        "site_world_three_m": [
+          -11.449999809265137,
+          0.0,
+          8001.860000014305
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "three metre worn oak field bench, shelf, levelling feet and open drawer clearance; no static drawer front",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -150.0,
+            -35.85000038146973,
+            -1.2000000104308128
+          ],
+          [
+            150.0,
+            35.85000038146973,
+            80.0000011920929
+          ]
+        ]
+      },
+      "SM_FieldKit_TimingLog": {
+        "triangles": 138,
+        "vertices": 92,
+        "bounds_local_m": [
+          [
+            -0.23499999940395355,
+            -0.16500000655651093,
+            0.0
+          ],
+          [
+            0.23499999940395355,
+            0.16500000655651093,
+            0.041290897876024246
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Cloth"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.050000190734863,
+          -1.9600000381469727,
+          0.8040000200271606
+        ],
+        "site_world_three_m": [
+          -11.050000190734863,
+          0.8040000200271606,
+          8001.960000038147
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "open 1947 timing ledger, readable printed chronology and pencil",
+        "proxy_handle": "world.site.proxies.timingLog",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -23.499999940395355,
+            -16.500000655651093,
+            0.0
+          ],
+          [
+            23.499999940395355,
+            16.500000655651093,
+            4.129089787602425
+          ]
+        ]
+      },
+      "SM_FieldKit_Diagram": {
+        "triangles": 74,
+        "vertices": 44,
+        "bounds_local_m": [
+          [
+            -0.3499999940395355,
+            -0.02500000037252903,
+            -0.1850000023841858
+          ],
+          [
+            0.3499999940395355,
+            0.017999999225139618,
+            0.1850000023841858
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_FieldKit_Wood",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Glass",
+          "M_FieldKit_PrintAtlas"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -11.149999618530273,
+          -1.5369999408721924,
+          1.7799999713897705
+        ],
+        "site_world_three_m": [
+          -11.149999618530273,
+          1.7799999713897705,
+          8001.536999940872
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "framed A/B/C arrangement in the existing clue location; no text over existing projection",
+        "proxy_handle": "world.site.proxies.diagram",
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -34.99999940395355,
+            -1.7999999225139618,
+            -18.50000023841858
+          ],
+          [
+            34.99999940395355,
+            2.500000037252903,
+            18.50000023841858
+          ]
+        ]
+      },
+      "SM_FieldKit_EvidenceProps": {
+        "triangles": 318,
+        "vertices": 192,
+        "bounds_local_m": [
+          [
+            -0.06300000101327896,
+            -0.1420000046491623,
+            0.0
+          ],
+          [
+            0.09749999642372131,
+            0.10999999940395355,
+            0.061000000685453415
+          ]
+        ],
+        "materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Film"
+        ],
+        "used_materials": [
+          "M_FieldKit_Metal",
+          "M_FieldKit_DarkMetal",
+          "M_FieldKit_Rubber",
+          "M_FieldKit_Paper",
+          "M_FieldKit_PrintAtlas",
+          "M_FieldKit_Film"
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          -10.130000114440918,
+          -1.6699999570846558,
+          0.800000011920929
+        ],
+        "site_world_three_m": [
+          -10.130000114440918,
+          0.800000011920929,
+          8001.669999957085
+        ],
+        "local": false,
+        "parent_handle": "world.site.group",
+        "role": "original film can, unopened evidence sleeve and recorded compact cassette, cosmetic set dressing",
+        "proxy_handle": null,
+        "state_material_handle": null,
+        "bounds_expected_ue_cm": [
+          [
+            -6.300000101327896,
+            -10.999999940395355,
+            0.0
+          ],
+          [
+            9.749999642372131,
+            14.20000046491623,
+            6.1000000685453415
+          ]
+        ]
+      }
+    }
+  },
+  "inventory": {
+    "SM_FieldKit_Transit": {
+      "components": [
+        "A_frame_upright",
+        "Alidade",
+        "Brass_optical_band",
+        "Bubble_level_tube",
+        "Eyepiece_lens",
+        "Focus_knob",
+        "Focus_knob_spindle",
+        "Horizontal_circle",
+        "Horizontal_degree_0",
+        "Horizontal_degree_1",
+        "Horizontal_degree_10",
+        "Horizontal_degree_11",
+        "Horizontal_degree_12",
+        "Horizontal_degree_13",
+        "Horizontal_degree_14",
+        "Horizontal_degree_15",
+        "Horizontal_degree_16",
+        "Horizontal_degree_17",
+        "Horizontal_degree_18",
+        "Horizontal_degree_19",
+        "Horizontal_degree_2",
+        "Horizontal_degree_20",
+        "Horizontal_degree_21",
+        "Horizontal_degree_22",
+        "Horizontal_degree_23",
+        "Horizontal_degree_24",
+        "Horizontal_degree_25",
+        "Horizontal_degree_26",
+        "Horizontal_degree_27",
+        "Horizontal_degree_28",
+        "Horizontal_degree_29",
+        "Horizontal_degree_3",
+        "Horizontal_degree_30",
+        "Horizontal_degree_31",
+        "Horizontal_degree_32",
+        "Horizontal_degree_33",
+        "Horizontal_degree_34",
+        "Horizontal_degree_35",
+        "Horizontal_degree_36",
+        "Horizontal_degree_37",
+        "Horizontal_degree_38",
+        "Horizontal_degree_39",
+        "Horizontal_degree_4",
+        "Horizontal_degree_40",
+        "Horizontal_degree_41",
+        "Horizontal_degree_42",
+        "Horizontal_degree_43",
+        "Horizontal_degree_44",
+        "Horizontal_degree_45",
+        "Horizontal_degree_46",
+        "Horizontal_degree_47",
+        "Horizontal_degree_48",
+        "Horizontal_degree_49",
+        "Horizontal_degree_5",
+        "Horizontal_degree_50",
+        "Horizontal_degree_51",
+        "Horizontal_degree_52",
+        "Horizontal_degree_53",
+        "Horizontal_degree_54",
+        "Horizontal_degree_55",
+        "Horizontal_degree_56",
+        "Horizontal_degree_57",
+        "Horizontal_degree_58",
+        "Horizontal_degree_59",
+        "Horizontal_degree_6",
+        "Horizontal_degree_60",
+        "Horizontal_degree_61",
+        "Horizontal_degree_62",
+        "Horizontal_degree_63",
+        "Horizontal_degree_64",
+        "Horizontal_degree_65",
+        "Horizontal_degree_66",
+        "Horizontal_degree_67",
+        "Horizontal_degree_68",
+        "Horizontal_degree_69",
+        "Horizontal_degree_7",
+        "Horizontal_degree_70",
+        "Horizontal_degree_71",
+        "Horizontal_degree_8",
+        "Horizontal_degree_9",
+        "Knurled_levelling_wheel",
+        "Level_sight_window",
+        "Levelling_screw_stem",
+        "Mounting_disc",
+        "Objective_lens",
+        "Pier_cap_shadow",
+        "Pier_cap_stone",
+        "Record_box_back",
+        "Record_box_horizontal_frame",
+        "Record_box_vertical_frame",
+        "Record_card",
+        "Record_frame_screw0",
+        "Record_frame_screw1",
+        "Record_frame_screw2",
+        "Record_frame_screw3",
+        "Survey_inventory",
+        "Tapered_concrete_pier",
+        "Telescope_barrel",
+        "Trunnion_axle",
+        "Trunnion_hub",
+        "Vertical_circle",
+        "Vertical_degree_0",
+        "Vertical_degree_1",
+        "Vertical_degree_10",
+        "Vertical_degree_11",
+        "Vertical_degree_12",
+        "Vertical_degree_13",
+        "Vertical_degree_14",
+        "Vertical_degree_15",
+        "Vertical_degree_16",
+        "Vertical_degree_17",
+        "Vertical_degree_18",
+        "Vertical_degree_19",
+        "Vertical_degree_2",
+        "Vertical_degree_20",
+        "Vertical_degree_21",
+        "Vertical_degree_22",
+        "Vertical_degree_23",
+        "Vertical_degree_24",
+        "Vertical_degree_25",
+        "Vertical_degree_26",
+        "Vertical_degree_27",
+        "Vertical_degree_28",
+        "Vertical_degree_29",
+        "Vertical_degree_3",
+        "Vertical_degree_30",
+        "Vertical_degree_31",
+        "Vertical_degree_32",
+        "Vertical_degree_33",
+        "Vertical_degree_34",
+        "Vertical_degree_35",
+        "Vertical_degree_36",
+        "Vertical_degree_37",
+        "Vertical_degree_38",
+        "Vertical_degree_39",
+        "Vertical_degree_4",
+        "Vertical_degree_40",
+        "Vertical_degree_41",
+        "Vertical_degree_42",
+        "Vertical_degree_43",
+        "Vertical_degree_44",
+        "Vertical_degree_45",
+        "Vertical_degree_46",
+        "Vertical_degree_47",
+        "Vertical_degree_5",
+        "Vertical_degree_6",
+        "Vertical_degree_7",
+        "Vertical_degree_8",
+        "Vertical_degree_9",
+        "Wheel_knurl"
+      ],
+      "count": 150
+    },
+    "SM_FieldKit_LampStand": {
+      "components": [
+        "Battery_base",
+        "Battery_cell_cap",
+        "Battery_lead_0",
+        "Battery_lead_1",
+        "Battery_lead_2",
+        "Battery_post",
+        "Battery_top",
+        "Lamp_safety",
+        "Lead_acid_case",
+        "Mast_locking_collar",
+        "Mast_thumbscrew",
+        "Telescopic_mast",
+        "Tripod_cross_link",
+        "Tripod_foot",
+        "Tripod_leg"
+      ],
+      "count": 15
+    },
+    "SM_FieldKit_LampHead": {
+      "components": [
+        "Aluminium_reflector",
+        "Cooling_fin",
+        "Front_rim",
+        "Head_mount_screw0",
+        "Head_mount_screw1",
+        "Head_yoke",
+        "Lamp_back_cover",
+        "Reflector_shell",
+        "Tin_hood_hinge"
+      ],
+      "count": 9
+    },
+    "SM_FieldKit_LampBulb": {
+      "components": [
+        "Separate_switchable_lens"
+      ],
+      "count": 1
+    },
+    "SM_FieldKit_LampHood": {
+      "components": [
+        "Hinge_leaf",
+        "Hinge_rivet",
+        "Lid_latch",
+        "Opaque_blackout_lid",
+        "Rolled_lid_rim"
+      ],
+      "count": 5
+    },
+    "SM_FieldKit_Receiver": {
+      "components": [
+        "Case_rubber_foot",
+        "Control_index",
+        "Control_shaft",
+        "Crinkle_enamel_case",
+        "Dial_horizontal_bezel",
+        "Dial_recess",
+        "Dial_vertical_bezel",
+        "Front_handle_0",
+        "Front_handle_1",
+        "Front_handle_2",
+        "Front_panel",
+        "Headphone_coiled_lead_0",
+        "Headphone_coiled_lead_1",
+        "Headphone_coiled_lead_10",
+        "Headphone_coiled_lead_11",
+        "Headphone_coiled_lead_12",
+        "Headphone_coiled_lead_13",
+        "Headphone_coiled_lead_14",
+        "Headphone_coiled_lead_15",
+        "Headphone_coiled_lead_16",
+        "Headphone_coiled_lead_17",
+        "Headphone_coiled_lead_18",
+        "Headphone_coiled_lead_19",
+        "Headphone_coiled_lead_2",
+        "Headphone_coiled_lead_20",
+        "Headphone_coiled_lead_21",
+        "Headphone_coiled_lead_22",
+        "Headphone_coiled_lead_23",
+        "Headphone_coiled_lead_24",
+        "Headphone_coiled_lead_25",
+        "Headphone_coiled_lead_26",
+        "Headphone_coiled_lead_27",
+        "Headphone_coiled_lead_28",
+        "Headphone_coiled_lead_29",
+        "Headphone_coiled_lead_3",
+        "Headphone_coiled_lead_30",
+        "Headphone_coiled_lead_31",
+        "Headphone_coiled_lead_32",
+        "Headphone_coiled_lead_33",
+        "Headphone_coiled_lead_34",
+        "Headphone_coiled_lead_35",
+        "Headphone_coiled_lead_36",
+        "Headphone_coiled_lead_37",
+        "Headphone_coiled_lead_38",
+        "Headphone_coiled_lead_39",
+        "Headphone_coiled_lead_4",
+        "Headphone_coiled_lead_40",
+        "Headphone_coiled_lead_41",
+        "Headphone_coiled_lead_42",
+        "Headphone_coiled_lead_43",
+        "Headphone_coiled_lead_44",
+        "Headphone_coiled_lead_45",
+        "Headphone_coiled_lead_46",
+        "Headphone_coiled_lead_47",
+        "Headphone_coiled_lead_48",
+        "Headphone_coiled_lead_49",
+        "Headphone_coiled_lead_5",
+        "Headphone_coiled_lead_50",
+        "Headphone_coiled_lead_51",
+        "Headphone_coiled_lead_52",
+        "Headphone_coiled_lead_53",
+        "Headphone_coiled_lead_54",
+        "Headphone_coiled_lead_55",
+        "Headphone_coiled_lead_56",
+        "Headphone_coiled_lead_57",
+        "Headphone_coiled_lead_58",
+        "Headphone_coiled_lead_59",
+        "Headphone_coiled_lead_6",
+        "Headphone_coiled_lead_60",
+        "Headphone_coiled_lead_61",
+        "Headphone_coiled_lead_62",
+        "Headphone_coiled_lead_63",
+        "Headphone_coiled_lead_64",
+        "Headphone_coiled_lead_65",
+        "Headphone_coiled_lead_66",
+        "Headphone_coiled_lead_67",
+        "Headphone_coiled_lead_68",
+        "Headphone_coiled_lead_69",
+        "Headphone_coiled_lead_7",
+        "Headphone_coiled_lead_70",
+        "Headphone_coiled_lead_71",
+        "Headphone_coiled_lead_72",
+        "Headphone_coiled_lead_73",
+        "Headphone_coiled_lead_74",
+        "Headphone_coiled_lead_75",
+        "Headphone_coiled_lead_76",
+        "Headphone_coiled_lead_77",
+        "Headphone_coiled_lead_78",
+        "Headphone_coiled_lead_79",
+        "Headphone_coiled_lead_8",
+        "Headphone_coiled_lead_80",
+        "Headphone_coiled_lead_81",
+        "Headphone_coiled_lead_82",
+        "Headphone_coiled_lead_83",
+        "Headphone_coiled_lead_84",
+        "Headphone_coiled_lead_85",
+        "Headphone_coiled_lead_86",
+        "Headphone_coiled_lead_87",
+        "Headphone_coiled_lead_88",
+        "Headphone_coiled_lead_89",
+        "Headphone_coiled_lead_9",
+        "Headphone_coiled_lead_90",
+        "Headphone_coiled_lead_91",
+        "Headphone_coiled_lead_92",
+        "Headphone_coiled_lead_93",
+        "Headphone_coiled_lead_94",
+        "Headphone_coiled_lead_95",
+        "Headphone_earcup",
+        "Headphone_earpad",
+        "Headphone_headband_0",
+        "Headphone_headband_1",
+        "Headphone_headband_10",
+        "Headphone_headband_11",
+        "Headphone_headband_12",
+        "Headphone_headband_13",
+        "Headphone_headband_14",
+        "Headphone_headband_15",
+        "Headphone_headband_2",
+        "Headphone_headband_3",
+        "Headphone_headband_4",
+        "Headphone_headband_5",
+        "Headphone_headband_6",
+        "Headphone_headband_7",
+        "Headphone_headband_8",
+        "Headphone_headband_9",
+        "Knob_ridge",
+        "Manufacturer_plate",
+        "Panel_screw0",
+        "Panel_screw1",
+        "Panel_screw2",
+        "Panel_screw3",
+        "Ribbed_Bakelite_control",
+        "S_meter_pointer",
+        "Separate_speaker",
+        "Signal_meter_bezel",
+        "Speaker_cable_0",
+        "Speaker_cable_1",
+        "Speaker_cable_2",
+        "Speaker_cone",
+        "Speaker_grille_rib",
+        "Speaker_surround",
+        "Top_vent_slot"
+      ],
+      "count": 142
+    },
+    "SM_FieldKit_ReceiverDial": {
+      "components": [
+        "Backlit_S_meter",
+        "Backlit_slide_rule"
+      ],
+      "count": 2
+    },
+    "SM_FieldKit_FieldPhone": {
+      "components": [
+        "Bell_striker_head",
+        "Bell_striker_stem",
+        "Crank_grip",
+        "Field_line_0",
+        "Field_line_1",
+        "Field_phone_plaque",
+        "Front_panel_screw0",
+        "Front_panel_screw1",
+        "Front_panel_screw2",
+        "Front_panel_screw3",
+        "Gong_screw",
+        "Magneto_crank_0",
+        "Magneto_crank_1",
+        "Nickel_gong",
+        "Oak_front_door",
+        "Oak_lower_shelf",
+        "Oak_phone_box",
+        "Phone_shelf_brace",
+        "Raised_oak_door_rail",
+        "Raised_oak_door_stile",
+        "Receiver_cord_0",
+        "Receiver_cord_1",
+        "Receiver_cord_10",
+        "Receiver_cord_100",
+        "Receiver_cord_101",
+        "Receiver_cord_102",
+        "Receiver_cord_103",
+        "Receiver_cord_104",
+        "Receiver_cord_105",
+        "Receiver_cord_106",
+        "Receiver_cord_107",
+        "Receiver_cord_108",
+        "Receiver_cord_109",
+        "Receiver_cord_11",
+        "Receiver_cord_110",
+        "Receiver_cord_111",
+        "Receiver_cord_112",
+        "Receiver_cord_113",
+        "Receiver_cord_114",
+        "Receiver_cord_115",
+        "Receiver_cord_116",
+        "Receiver_cord_117",
+        "Receiver_cord_118",
+        "Receiver_cord_119",
+        "Receiver_cord_12",
+        "Receiver_cord_120",
+        "Receiver_cord_121",
+        "Receiver_cord_122",
+        "Receiver_cord_123",
+        "Receiver_cord_124",
+        "Receiver_cord_125",
+        "Receiver_cord_126",
+        "Receiver_cord_127",
+        "Receiver_cord_128",
+        "Receiver_cord_129",
+        "Receiver_cord_13",
+        "Receiver_cord_130",
+        "Receiver_cord_131",
+        "Receiver_cord_14",
+        "Receiver_cord_15",
+        "Receiver_cord_16",
+        "Receiver_cord_17",
+        "Receiver_cord_18",
+        "Receiver_cord_19",
+        "Receiver_cord_2",
+        "Receiver_cord_20",
+        "Receiver_cord_21",
+        "Receiver_cord_22",
+        "Receiver_cord_23",
+        "Receiver_cord_24",
+        "Receiver_cord_25",
+        "Receiver_cord_26",
+        "Receiver_cord_27",
+        "Receiver_cord_28",
+        "Receiver_cord_29",
+        "Receiver_cord_3",
+        "Receiver_cord_30",
+        "Receiver_cord_31",
+        "Receiver_cord_32",
+        "Receiver_cord_33",
+        "Receiver_cord_34",
+        "Receiver_cord_35",
+        "Receiver_cord_36",
+        "Receiver_cord_37",
+        "Receiver_cord_38",
+        "Receiver_cord_39",
+        "Receiver_cord_4",
+        "Receiver_cord_40",
+        "Receiver_cord_41",
+        "Receiver_cord_42",
+        "Receiver_cord_43",
+        "Receiver_cord_44",
+        "Receiver_cord_45",
+        "Receiver_cord_46",
+        "Receiver_cord_47",
+        "Receiver_cord_48",
+        "Receiver_cord_49",
+        "Receiver_cord_5",
+        "Receiver_cord_50",
+        "Receiver_cord_51",
+        "Receiver_cord_52",
+        "Receiver_cord_53",
+        "Receiver_cord_54",
+        "Receiver_cord_55",
+        "Receiver_cord_56",
+        "Receiver_cord_57",
+        "Receiver_cord_58",
+        "Receiver_cord_59",
+        "Receiver_cord_6",
+        "Receiver_cord_60",
+        "Receiver_cord_61",
+        "Receiver_cord_62",
+        "Receiver_cord_63",
+        "Receiver_cord_64",
+        "Receiver_cord_65",
+        "Receiver_cord_66",
+        "Receiver_cord_67",
+        "Receiver_cord_68",
+        "Receiver_cord_69",
+        "Receiver_cord_7",
+        "Receiver_cord_70",
+        "Receiver_cord_71",
+        "Receiver_cord_72",
+        "Receiver_cord_73",
+        "Receiver_cord_74",
+        "Receiver_cord_75",
+        "Receiver_cord_76",
+        "Receiver_cord_77",
+        "Receiver_cord_78",
+        "Receiver_cord_79",
+        "Receiver_cord_8",
+        "Receiver_cord_80",
+        "Receiver_cord_81",
+        "Receiver_cord_82",
+        "Receiver_cord_83",
+        "Receiver_cord_84",
+        "Receiver_cord_85",
+        "Receiver_cord_86",
+        "Receiver_cord_87",
+        "Receiver_cord_88",
+        "Receiver_cord_89",
+        "Receiver_cord_9",
+        "Receiver_cord_90",
+        "Receiver_cord_91",
+        "Receiver_cord_92",
+        "Receiver_cord_93",
+        "Receiver_cord_94",
+        "Receiver_cord_95",
+        "Receiver_cord_96",
+        "Receiver_cord_97",
+        "Receiver_cord_98",
+        "Receiver_cord_99",
+        "Speaking_horn",
+        "Speaking_horn_neck",
+        "Speaking_horn_recess",
+        "Wall_mounting_ear"
+      ],
+      "count": 156
+    },
+    "SM_FieldKit_Handset": {
+      "components": [
+        "Bakelite_earpiece",
+        "Ear_cap_aperture",
+        "Earpiece_cap",
+        "Receiver_hook"
+      ],
+      "count": 4
+    },
+    "SM_FieldKit_TimingBench": {
+      "components": [
+        "Adjustable_level_foot",
+        "Back_apron",
+        "Bench_leg",
+        "Countersunk_top_screw",
+        "Drawer_cavity_back",
+        "Drawer_guide_rail",
+        "End_apron",
+        "Front_apron_clear_drawer",
+        "Iron_foot_shoe",
+        "Lower_shelf",
+        "Oak_top_plank_0",
+        "Oak_top_plank_1",
+        "Oak_top_plank_2",
+        "Oak_top_plank_3",
+        "Oak_top_plank_4",
+        "Shelf_crossrail",
+        "Spare_valve_carton",
+        "Spare_valve_label",
+        "Spare_wire_coil"
+      ],
+      "count": 19
+    },
+    "SM_FieldKit_TimingLog": {
+      "components": [
+        "Cloth_ledger_cover",
+        "Ledger_spine_shadow",
+        "Open_1947_record",
+        "Paper_text_block",
+        "Pencil",
+        "Pencil_graphite",
+        "Visible_page_edge"
+      ],
+      "count": 7
+    },
+    "SM_FieldKit_Diagram": {
+      "components": [
+        "Arrangement_backboard",
+        "Frame_corner_pin0",
+        "Frame_corner_pin1",
+        "Frame_corner_pin2",
+        "Frame_corner_pin3",
+        "Glazing_bottom_edge",
+        "Oak_diagram_horizontal",
+        "Oak_diagram_vertical",
+        "Original_1947_arrangement"
+      ],
+      "count": 9
+    },
+    "SM_FieldKit_EvidenceProps": {
+      "components": [
+        "Cassette_label_recess",
+        "Cassette_reel_hub",
+        "Cassette_reel_well",
+        "Cassette_screw",
+        "Compact_cassette",
+        "Evidence_sleeve",
+        "Evidence_sleeve_print",
+        "Film_can_body",
+        "Film_can_label",
+        "Film_can_lid",
+        "Recorded_cassette_label",
+        "Tape_window"
+      ],
+      "count": 12
+    }
+  },
+  "total_LOD0_triangles": 20500,
+  "collision": "Native floor, evidence occluders and story proxies retained; no model collision generated",
+  "states": {
+    "lamp_hood": {
+      "parent": "world.site.objs.lampHood",
+      "covered_Three_rotX": 0,
+      "uncovered_Three_rotX": 2.1,
+      "translation_baked": false
+    },
+    "lamp_bulb": {
+      "part": "SM_FieldKit_LampBulb",
+      "material_handle": "world.site.m.fieldBulb"
+    },
+    "receiver_dial": {
+      "part": "SM_FieldKit_ReceiverDial",
+      "material_handle": "world.site.m.dial"
+    },
+    "handset": {
+      "part": "SM_FieldKit_Handset",
+      "parent": "world.site.objs.fieldPhoneHandset"
+    }
+  },
+  "preserved_handles": [
+    "world.site.proxies.transit",
+    "world.site.proxies.lamp",
+    "world.site.proxies.receiver",
+    "world.site.proxies.fieldPhone",
+    "world.site.proxies.timingLog",
+    "world.site.proxies.diagram",
+    "world.site.proxies.drawer",
+    "world.site.proxies.cable",
+    "world.site.proxies.footing",
+    "world.site.proxies.markerA",
+    "world.site.proxies.markerB",
+    "world.site.proxies.stakesC",
+    "world.site.objs.drawer",
+    "world.site.objs.drawerInside"
+  ],
+  "drawer_clearance_three_m": {
+    "x": [
+      -10.69,
+      -10.21
+    ],
+    "y": [
+      0.63,
+      0.76
+    ],
+    "z": [
+      1.75,
+      2.53
+    ]
+  },
+  "originality": "Original geometry and deterministic printed/PBR maps; no external raw assets. Shared helper shapes adapted from our own substation meshkit. DejaVu used only to rasterise authored labels."
+}

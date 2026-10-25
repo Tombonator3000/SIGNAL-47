@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Skyggemenn, 25. oktober 2026
+
+- Tom ønsker helt svarte menneskeskikkelser som bare flytter seg usett, og ba om flere agenter til psykologi-/skrekkvurdering. Tre parallelle lesegjennomganger og primærforskning er samlet i ANOMALY_PLAN.md del 13; produksjonssteg ligger i todo.md.
+- Forslag: stabil observasjonsregel, konservativ frysing også i periferien, ingen forsvinning ved zoom/lykt, beskyttede paneler/dialog og en hel SARO-vindu/trafo/retur-pilot med foto/lagring. Gamle Glimpses og SaroDark har motstridende forsvinningsregler; de er fortsatt uendret.
+- Kun design og dokumenter. Ingen skyggemannmodell, ny runtime, bygg, pakking eller installasjon. Frykteffekt, spilletid og ytelse er ikke prøvd. Eksisterende M6 beholdes.
+
 ## SARO og resterende modellprioritet, 2026-10-25 kl. 02:07
 
 - Testet spillkilde `aefd18157be7502ac98d3e1695b4c4fcdd7d26a0`, kandidat `M6`. SARO har 2 hovedmaster og 1 service-/trafostolpe innen 100 m; bygg 2 har inntrukket glass og solid skiltvegg.
