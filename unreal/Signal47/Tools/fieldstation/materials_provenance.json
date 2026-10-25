@@ -1,0 +1,98 @@
+{
+  "originality": "All geometry and labels authored for SIGNAL47. Six procedural PBR texture families are copied byte-for-byte from our own townbuildings source; no purchased or third-party artwork. Font rasterized using locally available open font, no font file distributed.",
+  "texture_families": [
+    "Cloth",
+    "MetalPaint",
+    "RoofShingle",
+    "RustTin",
+    "Stucco",
+    "Wood"
+  ],
+  "shared_source": "../townbuildings/textures",
+  "files": [
+    {
+      "path": "textures/Cloth_base_color.png",
+      "sha256": "dd27a16e35b6e5019ba2edaffb9054ec8ff33dfb7cb710099cbb4f76b0a34db5"
+    },
+    {
+      "path": "textures/Cloth_normal.png",
+      "sha256": "a3a9f8944855db14e8028e876c5a33902791e2ec71983a23cc1fce1752ef8a02"
+    },
+    {
+      "path": "textures/Cloth_roughness.png",
+      "sha256": "3736085dd3f01741e3f1e33e76e4f8139ce6bea8861780992ad97de4d0439a6f"
+    },
+    {
+      "path": "textures/MetalPaint_base_color.png",
+      "sha256": "56ef4c6ef0b77dc5d33b63e3694d229797d2521b79d248736b9c1ae68dd69329"
+    },
+    {
+      "path": "textures/MetalPaint_normal.png",
+      "sha256": "2e03ad51308685f5053f55263d262c25a7b705949b2aed343ba02f28d5aee98b"
+    },
+    {
+      "path": "textures/MetalPaint_roughness.png",
+      "sha256": "90ba1bc952e3f0334d80b9f50b2e49109b4d0bb264741b5a2f0b7326a898bd47"
+    },
+    {
+      "path": "textures/PrintAtlas_base_color.png",
+      "sha256": "08f4886841d098715083efc33ceb8920f4ea2291327afd1f1b4172b5c28e09b5"
+    },
+    {
+      "path": "textures/PrintAtlas_normal.png",
+      "sha256": "e8a7c51e5513cb6989ebc7494110b2f6b9a92cf28d24767ea6ee564916d2b568"
+    },
+    {
+      "path": "textures/PrintAtlas_roughness.png",
+      "sha256": "f1c4bf9710fada7b5bb753f13749021b4479eae98e19a6ee4f1e5ceccfbe4860"
+    },
+    {
+      "path": "textures/RoofShingle_base_color.png",
+      "sha256": "1b3cecc5cc07ee2f803efd0dcd70edbc62e9e957bcd3425397c24190bdfbfef2"
+    },
+    {
+      "path": "textures/RoofShingle_normal.png",
+      "sha256": "91eb1ce80a0c8353d79bc04cbee1f4af4ffeaa5ee26506804738cb0a7d8341e0"
+    },
+    {
+      "path": "textures/RoofShingle_roughness.png",
+      "sha256": "e446b9d604e8fd847241188fc93cbcb1992377851f953a3d486caca951499db1"
+    },
+    {
+      "path": "textures/RustTin_base_color.png",
+      "sha256": "2feb0eeefcf5f94e5ef9bdef4538bcac3b100dd2a95c1c66c5f6150b011b9f16"
+    },
+    {
+      "path": "textures/RustTin_normal.png",
+      "sha256": "f99fe484e3305bd48d7e33a8e29cae8c8f0ad902456787f49977d0e99357fc6a"
+    },
+    {
+      "path": "textures/RustTin_roughness.png",
+      "sha256": "0278ed450fc0f52f51cddfebd1ea4d6da3ec61be70da43361b583a74679fa2d9"
+    },
+    {
+      "path": "textures/Stucco_base_color.png",
+      "sha256": "6d962f2de17923a6fc12e7e381a0f606b38fd3503bd91f9fd13e6019345058da"
+    },
+    {
+      "path": "textures/Stucco_normal.png",
+      "sha256": "cf3f3de573782e95c41fbc9532f0e1e53cd62ed9ac60e5468a50d0b1f4452f1f"
+    },
+    {
+      "path": "textures/Stucco_roughness.png",
+      "sha256": "77634f625fc9634eb21bc795623be4e783489c1724c6ba1d7dabeb4d1e14c9f8"
+    },
+    {
+      "path": "textures/Wood_base_color.png",
+      "sha256": "2dde1f2ad3ff7ba39eaf9766344a7fdf9e00d149bb072ecb9167b6b970008e5d"
+    },
+    {
+      "path": "textures/Wood_normal.png",
+      "sha256": "0d85c15823513826c18cec237a86ac8a2c7222fba671f49993813a435d6bf245"
+    },
+    {
+      "path": "textures/Wood_roughness.png",
+      "sha256": "be045f01fb190a021a1e16b20235d1f999d9e407e4907af974a345e59dfc742b"
+    }
+  ]
+}

@@ -1,0 +1,2417 @@
+{
+  "status": "PASS",
+  "scope": "Read-only portable Blender source plus 39 FBX imports and 39 GLB accessor audits. No Unreal or packaged runtime validation.",
+  "portable_source": {
+    "file_images": 15,
+    "all_packed": true,
+    "all_relative": true,
+    "metric": true,
+    "unit_scale": 1.0
+  },
+  "checks": [
+    {
+      "triangles": 4976,
+      "bounds_local_m": [
+        [
+          -0.44999998807907104,
+          -0.44999998807907104,
+          -0.25
+        ],
+        [
+          0.44999998807907104,
+          0.44999998807907104,
+          1.434000015258789
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_Concrete",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_vertex_count": 6909,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Transit",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 4976,
+      "bounds_local_m": [
+        [
+          -0.45000001788139343,
+          -0.45000001788139343,
+          -0.25
+        ],
+        [
+          0.45000001788139343,
+          0.45000001788139343,
+          1.434000015258789
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_Concrete",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_loop_count": 14928,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Transit",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 1066,
+      "bounds_local_m": [
+        [
+          -0.49000000953674316,
+          -0.4699999988079071,
+          -0.15459927916526794
+        ],
+        [
+          0.39103302359580994,
+          0.23561841249465942,
+          1.7999999523162842
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 1576,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampStand",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 1066,
+      "bounds_local_m": [
+        [
+          -0.4899999797344208,
+          -0.4700000286102295,
+          -0.15459927916526794
+        ],
+        [
+          0.39103302359580994,
+          0.23561838269233704,
+          1.7999999523162842
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 3198,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampStand",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 1768,
+      "bounds_local_m": [
+        [
+          -0.14710059762001038,
+          -0.11299999803304672,
+          -0.13500000536441803
+        ],
+        [
+          0.14900000393390656,
+          0.11999999731779099,
+          0.14300000667572021
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint"
+      ],
+      "uv_vertex_count": 1724,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampHead",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 1768,
+      "bounds_local_m": [
+        [
+          -0.14710059762001038,
+          -0.11299999803304672,
+          -0.13500000536441803
+        ],
+        [
+          0.14900000393390656,
+          0.12000000476837158,
+          0.14300000667572021
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint"
+      ],
+      "uv_loop_count": 5304,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampHead",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 124,
+      "bounds_local_m": [
+        [
+          -0.12300000339746475,
+          -0.10300000011920929,
+          -0.12300000339746475
+        ],
+        [
+          0.12300000339746475,
+          -0.09799999743700027,
+          0.12300000339746475
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "uv_vertex_count": 144,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 0,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampBulb",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 124,
+      "bounds_local_m": [
+        [
+          -0.12299999594688416,
+          -0.10300000756978989,
+          -0.12300000339746475
+        ],
+        [
+          0.12300001084804535,
+          -0.09799998998641968,
+          0.12300000339746475
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "uv_loop_count": 372,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampBulb",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 572,
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.00800000037997961,
+          0.008500000461935997
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal"
+      ],
+      "uv_vertex_count": 640,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampHood",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 572,
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.008000003173947334,
+          0.008500000461935997
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal"
+      ],
+      "uv_loop_count": 1716,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampHood",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 2.7939677238464355e-09,
+      "pass": true
+    },
+    {
+      "triangles": 6078,
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.2809999883174896,
+          -0.004999999888241291
+        ],
+        [
+          0.4707386791706085,
+          0.17000000178813934,
+          0.30399999022483826
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 8656,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Receiver",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 6078,
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.28099995851516724,
+          -0.004999999888241291
+        ],
+        [
+          0.4707387089729309,
+          0.17000001668930054,
+          0.30399999022483826
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 18234,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Receiver",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          -0.20399999618530273,
+          -0.1979999989271164,
+          0.16750000417232513
+        ],
+        [
+          0.20999999344348907,
+          -0.19599999487400055,
+          0.24250000715255737
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_vertex_count": 8,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_ReceiverDial",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          -0.20399998128414154,
+          -0.1980000138282776,
+          0.16750000417232513
+        ],
+        [
+          0.21000000834465027,
+          -0.19599997997283936,
+          0.24250000715255737
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_loop_count": 12,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_ReceiverDial",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 3902,
+      "bounds_local_m": [
+        [
+          -0.09600000083446503,
+          -0.16093185544013977,
+          -0.3116694390773773
+        ],
+        [
+          0.25,
+          0.210999995470047,
+          0.713716447353363
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 6938,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_FieldPhone",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 3902,
+      "bounds_local_m": [
+        [
+          -0.09600000828504562,
+          -0.16093184053897858,
+          -0.3116694390773773
+        ],
+        [
+          0.25,
+          0.2110000103712082,
+          0.713716447353363
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 11706,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_FieldPhone",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 256,
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.032999999821186066,
+          -0.16200000047683716
+        ],
+        [
+          0.032999999821186066,
+          0.032999999821186066,
+          0.009999999776482582
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 350,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Handset",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 256,
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.032999999821186066,
+          -0.16200000047683716
+        ],
+        [
+          0.032999999821186066,
+          0.032999999821186066,
+          0.009999999776482582
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 768,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Handset",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 792,
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.35850000381469727,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.35850000381469727,
+          0.8019999861717224
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 1264,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_TimingBench",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 792,
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.3585001230239868,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.3585001230239868,
+          0.8019999861717224
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 2376,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_TimingBench",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 1.1920928955078125e-07,
+      "pass": true
+    },
+    {
+      "triangles": 210,
+      "bounds_local_m": [
+        [
+          -0.23499999940395355,
+          -0.16500000655651093,
+          0.0
+        ],
+        [
+          0.23499999940395355,
+          0.16500000655651093,
+          0.041290897876024246
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 409,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_TimingLog",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 210,
+      "bounds_local_m": [
+        [
+          -0.23500001430511475,
+          -0.16500002145767212,
+          0.0
+        ],
+        [
+          0.23500001430511475,
+          0.16500002145767212,
+          0.041290897876024246
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 630,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_TimingLog",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 154,
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.029999999329447746,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.017999999225139618,
+          0.1850000023841858
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 266,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Diagram",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 154,
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.030000029131770134,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.018000029027462006,
+          0.1850000023841858
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 462,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Diagram",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 598,
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.10999999940395355,
+          0.061000000685453415
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Film",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 768,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_EvidenceProps",
+      "lod": 0,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 598,
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.11000000685453415,
+          0.061000000685453415
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Film",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 1794,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_EvidenceProps",
+      "lod": 0,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 2416,
+      "bounds_local_m": [
+        [
+          -0.44999998807907104,
+          -0.44999998807907104,
+          -0.25
+        ],
+        [
+          0.44999998807907104,
+          0.44999998807907104,
+          1.434000015258789
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_Concrete",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_vertex_count": 3533,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Transit",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 2416,
+      "bounds_local_m": [
+        [
+          -0.45000001788139343,
+          -0.45000001788139343,
+          -0.25
+        ],
+        [
+          0.45000001788139343,
+          0.45000001788139343,
+          1.434000015258789
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_Concrete",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_loop_count": 7248,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Transit",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 698,
+      "bounds_local_m": [
+        [
+          -0.49000000953674316,
+          -0.4699999988079071,
+          -0.15459784865379333
+        ],
+        [
+          0.39103302359580994,
+          0.23561841249465942,
+          1.7999999523162842
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 1122,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampStand",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 698,
+      "bounds_local_m": [
+        [
+          -0.4899999797344208,
+          -0.4700000286102295,
+          -0.15459784865379333
+        ],
+        [
+          0.39103302359580994,
+          0.23561838269233704,
+          1.7999999523162842
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 2094,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampStand",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 920,
+      "bounds_local_m": [
+        [
+          -0.14710059762001038,
+          -0.11299999803304672,
+          -0.13500000536441803
+        ],
+        [
+          0.14900000393390656,
+          0.11999999731779099,
+          0.14300000667572021
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint"
+      ],
+      "uv_vertex_count": 1164,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampHead",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 920,
+      "bounds_local_m": [
+        [
+          -0.14710059762001038,
+          -0.11299999803304672,
+          -0.13500000536441803
+        ],
+        [
+          0.14900000393390656,
+          0.12000000476837158,
+          0.14300000667572021
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint"
+      ],
+      "uv_loop_count": 2760,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampHead",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 60,
+      "bounds_local_m": [
+        [
+          -0.12300000339746475,
+          -0.10300000011920929,
+          -0.12300000339746475
+        ],
+        [
+          0.12300000339746475,
+          -0.09799999743700027,
+          0.12300000339746475
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "uv_vertex_count": 80,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 0,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampBulb",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 60,
+      "bounds_local_m": [
+        [
+          -0.12299999594688416,
+          -0.10300000756978989,
+          -0.12300000339746475
+        ],
+        [
+          0.12300001084804535,
+          -0.09799998998641968,
+          0.12300000339746475
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "uv_loop_count": 180,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampBulb",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 316,
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.00800000037997961,
+          0.008500000461935997
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal"
+      ],
+      "uv_vertex_count": 416,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampHood",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 316,
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.008000003173947334,
+          0.008500000461935997
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal"
+      ],
+      "uv_loop_count": 948,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampHood",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 2.7939677238464355e-09,
+      "pass": true
+    },
+    {
+      "triangles": 2846,
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.2809999883174896,
+          -0.004999999888241291
+        ],
+        [
+          0.47019603848457336,
+          0.17000000178813934,
+          0.30399999022483826
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 4449,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Receiver",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 2846,
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.28099995851516724,
+          -0.004999999888241291
+        ],
+        [
+          0.47019606828689575,
+          0.17000001668930054,
+          0.30399999022483826
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 8538,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Receiver",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          -0.20399999618530273,
+          -0.1979999989271164,
+          0.16750000417232513
+        ],
+        [
+          0.20999999344348907,
+          -0.19599999487400055,
+          0.24250000715255737
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_vertex_count": 8,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_ReceiverDial",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          -0.20399998128414154,
+          -0.1980000138282776,
+          0.16750000417232513
+        ],
+        [
+          0.21000000834465027,
+          -0.19599997997283936,
+          0.24250000715255737
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_loop_count": 12,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_ReceiverDial",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 1870,
+      "bounds_local_m": [
+        [
+          -0.09600000083446503,
+          -0.1608477532863617,
+          -0.3119257092475891
+        ],
+        [
+          0.25,
+          0.210999995470047,
+          0.713716447353363
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 3316,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_FieldPhone",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 1870,
+      "bounds_local_m": [
+        [
+          -0.09600000828504562,
+          -0.1608477383852005,
+          -0.3119257092475891
+        ],
+        [
+          0.25,
+          0.2110000103712082,
+          0.713716447353363
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 5610,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_FieldPhone",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 192,
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.032999999821186066,
+          -0.16200000047683716
+        ],
+        [
+          0.032999999821186066,
+          0.032999999821186066,
+          0.009999999776482582
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 268,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Handset",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 192,
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.032999999821186066,
+          -0.16200000047683716
+        ],
+        [
+          0.032999999821186066,
+          0.032999999821186066,
+          0.009999999776482582
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 576,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Handset",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 552,
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.35850000381469727,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.35850000381469727,
+          0.800000011920929
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 982,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_TimingBench",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 552,
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.3585001230239868,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.3585001230239868,
+          0.800000011920929
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 1656,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_TimingBench",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 1.1920928955078125e-07,
+      "pass": true
+    },
+    {
+      "triangles": 138,
+      "bounds_local_m": [
+        [
+          -0.23499999940395355,
+          -0.16500000655651093,
+          0.0
+        ],
+        [
+          0.23499999940395355,
+          0.16500000655651093,
+          0.041290897876024246
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 265,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_TimingLog",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 138,
+      "bounds_local_m": [
+        [
+          -0.23500001430511475,
+          -0.16500002145767212,
+          0.0
+        ],
+        [
+          0.23500001430511475,
+          0.16500002145767212,
+          0.041290897876024246
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 414,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_TimingLog",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 154,
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.029999999329447746,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.017999999225139618,
+          0.1850000023841858
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 266,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Diagram",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 154,
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.030000029131770134,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.018000029027462006,
+          0.1850000023841858
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 462,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Diagram",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 406,
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.10999999940395355,
+          0.061000000685453415
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Film",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 570,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_EvidenceProps",
+      "lod": 1,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 406,
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.11000000685453415,
+          0.061000000685453415
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Film",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 1218,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_EvidenceProps",
+      "lod": 1,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 1068,
+      "bounds_local_m": [
+        [
+          -0.44999998807907104,
+          -0.44999998807907104,
+          -0.25
+        ],
+        [
+          0.44999998807907104,
+          0.44999998807907104,
+          1.430965542793274
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_Concrete",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_vertex_count": 1656,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Transit",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 1068,
+      "bounds_local_m": [
+        [
+          -0.45000001788139343,
+          -0.45000001788139343,
+          -0.25
+        ],
+        [
+          0.45000001788139343,
+          0.45000001788139343,
+          1.430965542793274
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_Concrete",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_loop_count": 3204,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Transit",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 514,
+      "bounds_local_m": [
+        [
+          -0.49000000953674316,
+          -0.4699999988079071,
+          -0.15408727526664734
+        ],
+        [
+          0.39103302359580994,
+          0.23561841249465942,
+          1.7999999523162842
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 895,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampStand",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 514,
+      "bounds_local_m": [
+        [
+          -0.4899999797344208,
+          -0.4700000286102295,
+          -0.15408727526664734
+        ],
+        [
+          0.39103302359580994,
+          0.23561838269233704,
+          1.7999999523162842
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 1542,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampStand",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 436,
+      "bounds_local_m": [
+        [
+          -0.14614929258823395,
+          -0.11299999803304672,
+          -0.12839263677597046
+        ],
+        [
+          0.14614929258823395,
+          0.11999999731779099,
+          0.14192819595336914
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint"
+      ],
+      "uv_vertex_count": 587,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampHead",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 436,
+      "bounds_local_m": [
+        [
+          -0.14614929258823395,
+          -0.11299999803304672,
+          -0.12839263677597046
+        ],
+        [
+          0.14614929258823395,
+          0.12000000476837158,
+          0.14192819595336914
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint"
+      ],
+      "uv_loop_count": 1308,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampHead",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 36,
+      "bounds_local_m": [
+        [
+          -0.12300000339746475,
+          -0.10300000011920929,
+          -0.11697994917631149
+        ],
+        [
+          0.12300000339746475,
+          -0.09799999743700027,
+          0.11697994917631149
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "uv_vertex_count": 54,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 0,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampBulb",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 36,
+      "bounds_local_m": [
+        [
+          -0.12299999594688416,
+          -0.10300000756978989,
+          -0.11697994917631149
+        ],
+        [
+          0.12300001084804535,
+          -0.09799998998641968,
+          0.11697994917631149
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "uv_loop_count": 108,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampBulb",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "triangles": 220,
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.00800000037997961,
+          0.006500000134110451
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal"
+      ],
+      "uv_vertex_count": 332,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_LampHood",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 220,
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.008000003173947334,
+          0.006500000134110451
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal"
+      ],
+      "uv_loop_count": 660,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_LampHood",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 2.7939677238464355e-09,
+      "pass": true
+    },
+    {
+      "triangles": 2030,
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.2768467962741852,
+          -0.004999999888241291
+        ],
+        [
+          0.470209538936615,
+          0.17000000178813934,
+          0.30399999022483826
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 3263,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Receiver",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 2030,
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.2768467664718628,
+          -0.004999999888241291
+        ],
+        [
+          0.4702095687389374,
+          0.17000001668930054,
+          0.30399999022483826
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 6090,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Receiver",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          -0.20399999618530273,
+          -0.1979999989271164,
+          0.16750000417232513
+        ],
+        [
+          0.20999999344348907,
+          -0.19599999487400055,
+          0.24250000715255737
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_vertex_count": 8,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_ReceiverDial",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          -0.20399998128414154,
+          -0.1980000138282776,
+          0.16750000417232513
+        ],
+        [
+          0.21000000834465027,
+          -0.19599997997283936,
+          0.24250000715255737
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "uv_loop_count": 12,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_ReceiverDial",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 1328,
+      "bounds_local_m": [
+        [
+          -0.09600000083446503,
+          -0.15979422628879547,
+          -0.3119227886199951
+        ],
+        [
+          0.25,
+          0.210999995470047,
+          0.7132185101509094
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 2435,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_FieldPhone",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 1328,
+      "bounds_local_m": [
+        [
+          -0.09600000828504562,
+          -0.15979421138763428,
+          -0.3119227886199951
+        ],
+        [
+          0.25,
+          0.2110000103712082,
+          0.7132185101509094
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Brass",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 3984,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_FieldPhone",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 100,
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.02857883833348751,
+          -0.1599999964237213
+        ],
+        [
+          0.032999999821186066,
+          0.029999999329447746,
+          0.009999999776482582
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 136,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 3,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Handset",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 100,
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.02857884019613266,
+          -0.1599999964237213
+        ],
+        [
+          0.032999999821186066,
+          0.030000001192092896,
+          0.009999999776482582
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 300,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Handset",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 1.862645149230957e-09,
+      "pass": true
+    },
+    {
+      "triangles": 484,
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.35850000381469727,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.35850000381469727,
+          0.800000011920929
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 912,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 9,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_TimingBench",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 484,
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.3585001230239868,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.3585001230239868,
+          0.800000011920929
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 1452,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_TimingBench",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 1.1920928955078125e-07,
+      "pass": true
+    },
+    {
+      "triangles": 138,
+      "bounds_local_m": [
+        [
+          -0.23499999940395355,
+          -0.16500000655651093,
+          0.0
+        ],
+        [
+          0.23499999940395355,
+          0.16500000655651093,
+          0.041290897876024246
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 265,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_TimingLog",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 138,
+      "bounds_local_m": [
+        [
+          -0.23500001430511475,
+          -0.16500002145767212,
+          0.0
+        ],
+        [
+          0.23500001430511475,
+          0.16500002145767212,
+          0.041290897876024246
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_Cloth",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 414,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_TimingLog",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 1.4901161193847656e-08,
+      "pass": true
+    },
+    {
+      "triangles": 74,
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.02500000037252903,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.017999999225139618,
+          0.1850000023841858
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_vertex_count": 138,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_Diagram",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 74,
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.025000030174851418,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.018000029027462006,
+          0.1850000023841858
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Wood"
+      ],
+      "uv_loop_count": 222,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_Diagram",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 2.9802322387695312e-08,
+      "pass": true
+    },
+    {
+      "triangles": 318,
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.10999999940395355,
+          0.061000000685453415
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Film",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_vertex_count": 483,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "embedded_images": 6,
+      "external_image_uris": [],
+      "part": "SM_FieldKit_EvidenceProps",
+      "lod": 2,
+      "format": "glb",
+      "bounds_max_error_m": 0.0,
+      "pass": true
+    },
+    {
+      "triangles": 318,
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.11000000685453415,
+          0.061000000685453415
+        ]
+      ],
+      "used_materials": [
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Film",
+        "M_FieldKit_Metal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Rubber"
+      ],
+      "uv_loop_count": 954,
+      "finite_coordinates_uv": true,
+      "valid_normals": true,
+      "objects": 1,
+      "part": "SM_FieldKit_EvidenceProps",
+      "lod": 2,
+      "format": "fbx",
+      "bounds_max_error_m": 7.450580596923828e-09,
+      "pass": true
+    }
+  ],
+  "failures": [],
+  "source_sha256": "007f9076b1db6e1a7b2450a67c4ddf9405f89eed3dc6f4e3baf4e363c7b4a061",
+  "contract_sha256": "4b00d190cca380e4000ccb6399535289a1695428b892c4ec6300de1c5b086e3b"
+}

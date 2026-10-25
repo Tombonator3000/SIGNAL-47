@@ -1,5 +1,21 @@
 # Todo for unreal/
 
+## Neste originalmodeller, feltreise 25. oktober 2026
+
+- [x] STATION01-felthytte med faktiske åpninger, redigerbart interiør og separat dør.
+- [x] Transit, feltlampe/deksel, feltreceiver, felttelefon/rør, timingbenk/logg/diagram og bevisrekvisitter.
+- [x] SARO-arkiv med skap, kartotek, reoler, feltboks, bevegelig skuff, bryterbord og samtaleopptaker, med levende papir/indikatorer bevart.
+- [x] Faktisk Blender-eksportkontroll, native import, kort pakket feltreise og levering av originaler/spillbilder.
+
+- [ ] Senere menneskelig feltreise med fysisk Xbox og lytting; vurder motivlesbarhet i nattfoto. Ingen fullnatt-/helruteytelse verifisert i modellpasset.
+
+## Skyggemenn, designforslag 25. oktober 2026
+
+- [x] Parallell analyse av psykologi, eksisterende skikkelseskode og møter; forslag og primærkilder i [ANOMALY_PLAN.md, del 13](ANOMALY_PLAN.md#13-skyggemenn-og-oppbygging-av-ubehag-25-oktober-2026). Ingen ny runtime eller modell produsert.
+- [ ] P0/P1: én konsekvent observasjonsregel, original helt svart 3D-menneskesilhuett og håndplasserte ståsteder. Avklar gamle glimpse-/SARO-forsvinninger før samme visuelle kategori tas i bruk.
+- [ ] P2/P3: konservativ synstest, panel-/dialogvern, lagret tilstand og én hel SARO-vindu/trafo/retur-pilot med ekte foto og eksisterende spenningskurve. Ingen skade eller død i introduksjonen.
+- [ ] P4: kort menneskelig prøve av forstått regel, uro og irritasjon før senere array-/motell-/dinermøter og en avgrenset sen panikktopp. Antall, avstand og varighet stemmes etter prøven.
+
 ## SARO-ankomst, 24. oktober 2026
 
 - [x] Flytt skiltet utenfor kjørekorridoren, lag ryddig besøksparkering og gangsti, forbedre skilt/vinduer og behold egen personbil atskilt fra stabil servicepickup.
@@ -69,7 +85,7 @@ Kilder fra vurderingen: [Quixels Moab-opptak](https://www.youtube.com/watch?v=ND
 - [x] Ni visuelle runder av den bestilte gatebiten, inkludert fire originale Blender-kilder, PBR/eksporter, kontaktbakke, planter/stein og fjern horisont.
 - [x] 42 faktiske spillerhøye bilder ved dag/skumring/natt gjennomgått. Full 110/110 screenshots.sh, elleve runtimeprøver, fotopilot, horisontfallback og native/kildeportabilitet består på samme pakke.
 - [x] Lokalt flettet og installert med backup, hashkontroll og uendrede Saved-data. Skrivebordsleveranse med originaler, bildevelger, prioritert modelliste og bevis. Se CALICHE_CONCEPT_PASS.md.
-- [ ] Neste modellpass etter denne gateprøven: Mesa Diner, sheriffkontor, motell, vaskeri/fôrbutikk, kino og kirke. Dette er prioritert videre arbeid, ikke utført i denne leveransen.
+- [x] Modellpasset etter gateprøven er senere levert: Mesa Diner, sheriffkontor, motell, vaskeri/fôrbutikk, kino og kirke. Se PRODUCTION_MODELS.md for M6 og faktisk leveringsstatus.
 
 ## Skumlere pilotrunde, codex/anomaly-pilot, 23. oktober 2026
 

@@ -1,0 +1,362 @@
+[
+  {
+    "name": "M_ArchiveProps_SteelGreen",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.43,
+    "roughness": 0.72,
+    "specular": 0.27,
+    "normal_strength": 0.1,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/SteelGreen_base_color.png",
+      "normal": "textures/SteelGreen_normal.png",
+      "roughness": "textures/SteelGreen_roughness.png"
+    }
+  },
+  {
+    "name": "M_ArchiveProps_SteelOlive",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.35,
+    "roughness": 0.73,
+    "specular": 0.27,
+    "normal_strength": 0.1,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/SteelOlive_base_color.png",
+      "normal": "textures/SteelOlive_normal.png",
+      "roughness": "textures/SteelOlive_roughness.png"
+    }
+  },
+  {
+    "name": "M_ArchiveProps_BeigeEnamel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.25,
+    "roughness": 0.68,
+    "specular": 0.27,
+    "normal_strength": 0.1,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/BeigeEnamel_base_color.png",
+      "normal": "textures/BeigeEnamel_normal.png",
+      "roughness": "textures/BeigeEnamel_roughness.png"
+    }
+  },
+  {
+    "name": "M_ArchiveProps_Kraft",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.88,
+    "specular": 0.27,
+    "normal_strength": 0.1,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/Kraft_base_color.png",
+      "normal": "textures/Kraft_normal.png",
+      "roughness": "textures/Kraft_roughness.png"
+    }
+  },
+  {
+    "name": "M_ArchiveProps_Walnut",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.75,
+    "specular": 0.27,
+    "normal_strength": 0.1,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/Walnut_base_color.png",
+      "normal": "textures/Walnut_normal.png",
+      "roughness": "textures/Walnut_roughness.png"
+    }
+  },
+  {
+    "name": "M_ArchiveProps_PrintAtlas",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.86,
+    "specular": 0.27,
+    "normal_strength": 0.025,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false,
+    "textures": {
+      "base_color": "textures/PrintAtlas_base_color.png",
+      "normal": "textures/PrintAtlas_normal.png",
+      "roughness": "textures/PrintAtlas_roughness.png"
+    }
+  },
+  {
+    "name": "M_ArchiveProps_DarkSteel",
+    "base_color_linear": [
+      0.045,
+      0.055,
+      0.05,
+      1
+    ],
+    "metallic": 0.64,
+    "roughness": 0.71,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_Metal",
+    "base_color_linear": [
+      0.34,
+      0.38,
+      0.36,
+      1
+    ],
+    "metallic": 0.85,
+    "roughness": 0.4,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_Brass",
+    "base_color_linear": [
+      0.25,
+      0.16,
+      0.055,
+      1
+    ],
+    "metallic": 0.72,
+    "roughness": 0.57,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_Rubber",
+    "base_color_linear": [
+      0.012,
+      0.015,
+      0.013,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.92,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_Paper",
+    "base_color_linear": [
+      0.66,
+      0.62,
+      0.49,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.94,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_KraftEdge",
+    "base_color_linear": [
+      0.32,
+      0.25,
+      0.15,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.91,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_GreyBoard",
+    "base_color_linear": [
+      0.27,
+      0.29,
+      0.26,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_BookBlue",
+    "base_color_linear": [
+      0.026,
+      0.061,
+      0.084,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.84,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  },
+  {
+    "name": "M_ArchiveProps_BookBrown",
+    "base_color_linear": [
+      0.1,
+      0.04,
+      0.021,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.88,
+    "specular": 0.27,
+    "normal_strength": 0.12,
+    "normal_convention": "DirectX",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "two_sided": false
+  }
+]

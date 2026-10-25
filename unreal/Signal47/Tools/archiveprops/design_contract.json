@@ -1,0 +1,275 @@
+{
+  "status": "GENERATOR_AUTHORED_NOT_EXPORTED",
+  "revision": "R1-original-SARO-records-room-1986",
+  "parts": {
+    "SM_ArchiveProps_ShelvingStorage": {
+      "role": "Five-tier bolted steel shelving and ordinary archive cartons",
+      "site_world_three_m": [
+        -5.78,
+        0,
+        8.65
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        361,
+        362,
+        378,
+        379
+      ],
+      "retire_node_names": [
+        "lic:archive_box",
+        "lic:archive_box_lid"
+      ]
+    },
+    "SM_ArchiveProps_FilingCabinets": {
+      "role": "Three four-drawer cabinets at original footprints",
+      "site_world_three_m": [
+        -4.46,
+        0,
+        10.17
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        335,
+        336,
+        337,
+        338,
+        401
+      ],
+      "retire_node_names": [
+        "lic:filing_cabinet"
+      ]
+    },
+    "SM_ArchiveProps_CardIndex": {
+      "role": "Twelve-drawer maintenance index with one open card tray",
+      "site_world_three_m": [
+        -1.25,
+        0,
+        7.95
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        329,
+        330,
+        331,
+        332
+      ]
+    },
+    "SM_ArchiveProps_Bookcase": {
+      "role": "Low walnut bookcase and bound service-reference volumes",
+      "site_world_three_m": [
+        -2.35,
+        0,
+        10.3
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        363,
+        364,
+        365,
+        366,
+        367
+      ]
+    },
+    "SM_ArchiveProps_WorkTable": {
+      "role": "Steel research table, original 0.77m working height",
+      "site_world_three_m": [
+        -3.65,
+        0,
+        8.6
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        369
+      ],
+      "retire_triangle_regions": [
+        {
+          "geo": 370,
+          "bounds_three_m": [
+            -4.51,
+            -2.79,
+            0,
+            0.73,
+            8.17,
+            9.03
+          ],
+          "reason": "Only table legs. This merged steel mesh also includes corridor and other furniture, so do not retire it wholesale."
+        }
+      ]
+    },
+    "SM_ArchiveProps_FieldBox": {
+      "role": "Independent STATION 01 box following the original fall animation",
+      "site_world_three_m": [
+        -5.62,
+        1.135,
+        8.6
+      ],
+      "parent_handle": "annex.objs.fieldBoxModel",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "replaces": [
+        "annex.objs.fieldBoxModel"
+      ]
+    },
+    "SM_ArchiveProps_FireDrawer": {
+      "role": "Open steel reel drawer, original sliding origin preserved",
+      "site_world_three_m": [
+        -5.994,
+        1.27,
+        8.6
+      ],
+      "parent_handle": "annex.arc.drawer",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        383,
+        384,
+        385,
+        386
+      ]
+    },
+    "SM_ArchiveProps_Reel047Box": {
+      "role": "Separate grey 047 reel container, hidden when taken",
+      "site_world_three_m": [
+        -6.154,
+        1.186,
+        8.6
+      ],
+      "parent_handle": "annex.arc.reel",
+      "local": true,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "replaces": [
+        "annex.arc.reel"
+      ],
+      "preview_rotation_blender": [
+        0,
+        -0.3,
+        0
+      ]
+    },
+    "SM_ArchiveProps_Switchboard": {
+      "role": "KSU-12 metal shell and printed extension card; native TRK lamps retained",
+      "site_world_three_m": [
+        -1.05,
+        1.62,
+        10.22
+      ],
+      "parent_handle": "annex.arc.group",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        389,
+        390,
+        393
+      ],
+      "preserve_geo_ids": [
+        391,
+        392
+      ]
+    },
+    "SM_ArchiveProps_CallRecorder": {
+      "role": "Bracket-mounted mechanical strip recorder with native living paper",
+      "site_world_three_m": [
+        -1.12,
+        1.0,
+        10.22
+      ],
+      "parent_handle": "annex.arc.group",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        395,
+        396,
+        397,
+        398
+      ],
+      "preserve_geo_ids": [
+        400
+      ]
+    },
+    "SM_ArchiveProps_ServiceBinder": {
+      "role": "Cloth-bound service copies folder at original document anchor",
+      "site_world_three_m": [
+        -2.32,
+        0.9,
+        10.24
+      ],
+      "parent_handle": "annex.interior",
+      "local": false,
+      "native_asset_root": "/Game/ArchiveProps",
+      "retire_scope_handle": "annex.interior",
+      "retire_geo_ids": [
+        327,
+        328
+      ],
+      "preview_rotation_blender": [
+        0,
+        0,
+        0.25
+      ],
+      "runtime_yaw_degrees": 14.323944878
+    }
+  },
+  "pure_mesh_triangles": {
+    "0": {
+      "SM_ArchiveProps_ShelvingStorage": 5482,
+      "SM_ArchiveProps_FilingCabinets": 2970,
+      "SM_ArchiveProps_CardIndex": 1710,
+      "SM_ArchiveProps_Bookcase": 1404,
+      "SM_ArchiveProps_WorkTable": 196,
+      "SM_ArchiveProps_FieldBox": 162,
+      "SM_ArchiveProps_FireDrawer": 194,
+      "SM_ArchiveProps_Reel047Box": 102,
+      "SM_ArchiveProps_Switchboard": 566,
+      "SM_ArchiveProps_CallRecorder": 358,
+      "SM_ArchiveProps_ServiceBinder": 126
+    },
+    "1": {
+      "SM_ArchiveProps_ShelvingStorage": 3266,
+      "SM_ArchiveProps_FilingCabinets": 1674,
+      "SM_ArchiveProps_CardIndex": 1054,
+      "SM_ArchiveProps_Bookcase": 984,
+      "SM_ArchiveProps_WorkTable": 164,
+      "SM_ArchiveProps_FieldBox": 130,
+      "SM_ArchiveProps_FireDrawer": 146,
+      "SM_ArchiveProps_Reel047Box": 70,
+      "SM_ArchiveProps_Switchboard": 470,
+      "SM_ArchiveProps_CallRecorder": 246,
+      "SM_ArchiveProps_ServiceBinder": 94
+    },
+    "2": {
+      "SM_ArchiveProps_ShelvingStorage": 1802,
+      "SM_ArchiveProps_FilingCabinets": 1020,
+      "SM_ArchiveProps_CardIndex": 714,
+      "SM_ArchiveProps_Bookcase": 732,
+      "SM_ArchiveProps_WorkTable": 148,
+      "SM_ArchiveProps_FieldBox": 78,
+      "SM_ArchiveProps_FireDrawer": 122,
+      "SM_ArchiveProps_Reel047Box": 54,
+      "SM_ArchiveProps_Switchboard": 338,
+      "SM_ArchiveProps_CallRecorder": 190,
+      "SM_ArchiveProps_ServiceBinder": 78
+    }
+  },
+  "blender_status": "ROOT owns export; see model_contract.json only after real run"
+}

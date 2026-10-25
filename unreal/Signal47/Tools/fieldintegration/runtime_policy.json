@@ -1,0 +1,24 @@
+{
+  "use": {
+    "SM_FieldStation_Hut_Door": "s1hutDoor",
+    "SM_FieldKit_Transit": "s1transit",
+    "SM_FieldKit_LampStand": "s1lamp",
+    "SM_FieldKit_LampHead": "s1lamp",
+    "SM_FieldKit_LampBulb": "s1lamp",
+    "SM_FieldKit_LampHood": "s1lamp",
+    "SM_FieldKit_Receiver": "s1receiver",
+    "SM_FieldKit_ReceiverDial": "s1receiver",
+    "SM_FieldKit_FieldPhone": "s1phone",
+    "SM_FieldKit_Handset": "s1phone",
+    "SM_FieldKit_TimingLog": "s1timing",
+    "SM_FieldKit_Diagram": "s1diagram",
+    "SM_ArchiveProps_FireDrawer": "arc:drawer",
+    "SM_ArchiveProps_Reel047Box": "arc:drawer",
+    "SM_ArchiveProps_Switchboard": "arc:ksu",
+    "SM_ArchiveProps_CallRecorder": "arc:recorder"
+  },
+  "bindings": [
+    {"part":"SM_FieldKit_LampBulb","material":"M_FieldKit_FieldBulb","kind":"material","handle":"world.site.m.fieldBulb","emission":1.2},
+    {"part":"SM_FieldKit_ReceiverDial","material":"M_FieldKit_PrintAtlas","kind":"material","handle":"world.site.m.dial","emission":0.35}
+  ]
+}

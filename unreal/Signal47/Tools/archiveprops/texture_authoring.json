@@ -1,0 +1,10 @@
+{
+  "source": "R1-original-SARO-records-room-1986",
+  "base_color_px": 1024,
+  "atlas_px": 2048,
+  "normal_roughness_px": 512,
+  "normal_convention": "DirectX",
+  "assets": "Original deterministic paint/wood/cardboard and fictional English labels",
+  "external_assets": false,
+  "native_visual_status": "UNVERIFIED"
+}

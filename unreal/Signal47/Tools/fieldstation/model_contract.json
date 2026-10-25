@@ -1,0 +1,1757 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "source_revision": "FS1-original-station01-hut",
+  "units": "metres",
+  "blender_up": "Z",
+  "mapping": "worldThree=(rootX+Bx,rootY+Bz,rootZ-By); door vertices are hinge-local, inherit existing parent transform",
+  "native_import_policy": {
+    "force_front_x_axis": true,
+    "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+    "import_rotation_yaw": 90
+  },
+  "parts": {
+    "SM_FieldStation_Hut_Shell": {
+      "triangles": 2576,
+      "bounds_local_m": [
+        [
+          -13.5,
+          -5.420000076293945,
+          -0.25
+        ],
+        [
+          -8.5,
+          -1.0,
+          3.6749258041381836
+        ]
+      ],
+      "materials": [
+        "M_FieldStation_Stucco",
+        "M_FieldStation_Concrete",
+        "M_FieldStation_Masonry",
+        "M_FieldStation_WeatherStain",
+        "M_FieldStation_Timber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_TealPaint",
+        "M_FieldStation_WhitePaint",
+        "M_FieldStation_RoofFelt",
+        "M_FieldStation_RustTin",
+        "M_FieldStation_Metal",
+        "M_FieldStation_DarkMetal",
+        "M_FieldStation_OliveEnamel",
+        "M_FieldStation_Ceramic",
+        "M_FieldStation_PrintAtlas"
+      ],
+      "lod": 0,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "local": false,
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "parent_handle": "world.site.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        8000
+      ],
+      "role": "Aperture-partitioned stucco, flashing, roof, meter, plinth, threshold and plaque",
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "minimum_uv_area": 7.530680250056321e-06,
+      "component_inventory": [
+        "Bent_metal_head_flashing",
+        "Dark_open_sill_rebate",
+        "Door_head_joinery",
+        "Door_reveal_timber_jamb",
+        "Electrical_junction_box",
+        "Existing_doorstep_top_minus_point07",
+        "Existing_folded_meter_base",
+        "Existing_plinth_top_at_zero",
+        "Existing_service_weatherhead_mast",
+        "Existing_stovepipe",
+        "Exposed_old_masonry_chip",
+        "External_door_casing",
+        "External_door_head_casing",
+        "Folded_roof_edge_lip",
+        "Folded_roof_return_lip",
+        "Galvanized_conduit_saddle",
+        "Hairline_stucco_crack",
+        "Junction_original_120volt_label",
+        "Junction_riser",
+        "Lamp_mount_timber_pattress",
+        "Old_electrical_service_conduit",
+        "Old_flat_roof_deck",
+        "Old_survey_north_wall",
+        "Old_survey_west_wall",
+        "Overlapped_roll_roof_seam",
+        "Oxidized_roof_edge_drip",
+        "Oxidized_roof_edge_return",
+        "Oxidized_window_fastener",
+        "Painted_timber_window_jamb",
+        "Painted_timber_window_rail",
+        "Projecting_weathered_timber_drip_sill",
+        "Real_stucco_aperture_east",
+        "Real_stucco_aperture_south",
+        "Roof_drip_cut_nail",
+        "Round_utility_meter_rim",
+        "STATION01_legible_original_label",
+        "Small_contact_mineral_grit",
+        "Station01_mounted_enamel_plaque",
+        "Stovepipe_base_flashing",
+        "Stovepipe_vented_rain_cap",
+        "Thin_glazing_putty",
+        "Weathered_meter_face",
+        "Weatherhead_gooseneck",
+        "Window_central_wood_mullion",
+        "Window_central_wood_transom",
+        "Worn_oak_threshold_top_point025"
+      ],
+      "lod_triangles": [
+        2576,
+        1632,
+        888
+      ]
+    },
+    "SM_FieldStation_Hut_Interior": {
+      "triangles": 1202,
+      "bounds_local_m": [
+        [
+          -13.0,
+          -4.500999927520752,
+          -0.017999999225139618
+        ],
+        [
+          -9.0,
+          -1.5,
+          2.5999999046325684
+        ]
+      ],
+      "materials": [
+        "M_FieldStation_Plaster",
+        "M_FieldStation_PlasterRepair",
+        "M_FieldStation_Dado",
+        "M_FieldStation_Timber",
+        "M_FieldStation_FloorTimber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_TealPaint",
+        "M_FieldStation_DarkMetal",
+        "M_FieldStation_Rubber",
+        "M_FieldStation_Ceramic",
+        "M_FieldStation_Ceiling"
+      ],
+      "lod": 0,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "local": false,
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "parent_handle": "world.site.interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        8000
+      ],
+      "role": "Plaster and dado lining, existing-floor-height timber boards, beams and cable clips",
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "minimum_uv_area": 2.9999916702494467e-06,
+      "component_inventory": [
+        "Ceiling_cloth_service_line",
+        "Dado_top_timber_rail",
+        "Door_inside_head_timber",
+        "Door_inside_timber_jamb",
+        "Exposed_existing_roof_joist",
+        "Floor_cut_nail_head",
+        "Mineral_wash_above_original_dark_dado",
+        "North_timber_baseboard",
+        "Old_limewash_ceiling",
+        "Old_wiring_ceramic_clip",
+        "South_baseboard_stops_at_door",
+        "Subtle_plaster_repair",
+        "Timber_baseboard",
+        "Worn_individual_floorboard"
+      ],
+      "lod_triangles": [
+        1202,
+        590,
+        422
+      ]
+    },
+    "SM_FieldStation_Hut_Glass": {
+      "triangles": 16,
+      "bounds_local_m": [
+        [
+          -12.241999626159668,
+          -4.613999843597412,
+          1.00600004196167
+        ],
+        [
+          -8.88599967956543,
+          -2.3580000400543213,
+          1.7940000295639038
+        ]
+      ],
+      "materials": [
+        "M_FieldStation_Glass"
+      ],
+      "lod": 0,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "local": false,
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "parent_handle": "world.site.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        8000
+      ],
+      "role": "Eight actual thin panes in two open wall apertures",
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "minimum_uv_area": 0.07801600728073732,
+      "component_inventory": [
+        "Independent_thin_actual_glass_pane"
+      ],
+      "lod_triangles": [
+        16,
+        16,
+        16
+      ]
+    },
+    "SM_FieldStation_Hut_Props": {
+      "triangles": 1268,
+      "bounds_local_m": [
+        [
+          -12.989999771118164,
+          -4.349999904632568,
+          0.0
+        ],
+        [
+          -11.716434478759766,
+          -1.5,
+          1.7799999713897705
+        ]
+      ],
+      "materials": [
+        "M_FieldStation_Timber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_Metal",
+        "M_FieldStation_DarkMetal",
+        "M_FieldStation_OliveEnamel",
+        "M_FieldStation_Rubber",
+        "M_FieldStation_Cardboard",
+        "M_FieldStation_BookCloth",
+        "M_FieldStation_PrintAtlas"
+      ],
+      "lod": 0,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "local": false,
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "parent_handle": "world.site.interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        8000
+      ],
+      "role": "Steel cupboard, open timber shelving and survey chair at existing furniture anchors",
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "minimum_uv_area": 9.09265851056773e-06,
+      "component_inventory": [
+        "Archival_spares_carton_label",
+        "Bound_spare_valve_carton",
+        "Chair_back_upright",
+        "Chair_side_stretcher",
+        "Cupboard_archival_service_label",
+        "Cupboard_bent_pull",
+        "Cupboard_door_edge_reveal",
+        "Cupboard_masonry_isolation_foot",
+        "Cupboard_pressed_vent",
+        "Cupboard_visible_hinge",
+        "Folded_sheet_cupboard_carcass",
+        "Front_chair_stretcher",
+        "Independent_rolled_cupboard_door",
+        "Old_survey_seat_slat",
+        "Original_shelf_tin_spares_can",
+        "Shaped_survey_chair_back",
+        "Shelf_diagonal_brace",
+        "Shelf_fixed_bracket",
+        "Shelf_front_cut_nail",
+        "Wall_shelf_at_original_height",
+        "Worn_chair_tapered_leg"
+      ],
+      "lod_triangles": [
+        1268,
+        1048,
+        754
+      ]
+    },
+    "SM_FieldStation_Hut_Door": {
+      "triangles": 444,
+      "bounds_local_m": [
+        [
+          -0.9800000190734863,
+          -0.09200000017881393,
+          0.009999999776482582
+        ],
+        [
+          0.008999999612569809,
+          0.09200000017881393,
+          1.9800000190734863
+        ]
+      ],
+      "materials": [
+        "M_FieldStation_DoorTimber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_TealPaint",
+        "M_FieldStation_RustTin",
+        "M_FieldStation_Metal",
+        "M_FieldStation_DarkMetal"
+      ],
+      "lod": 0,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "parent_handle": "world.site.objs.hutDoorLeaf",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        8000
+      ],
+      "role": "Independent physical timber door and hardware, local hinge origin; inherit existing door animation",
+      "parent_pivot_site_three_m": [
+        -9.45,
+        0,
+        4.48
+      ],
+      "initial_parent_rotation_three_y_rad": -1.75,
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "minimum_uv_area": 8.999857664448996e-06,
+      "component_inventory": [
+        "Continuous_original_timber_door",
+        "Door_handle_escutcheon",
+        "Door_hinge_barrel",
+        "Door_hinge_leaf",
+        "Door_joinery_rail",
+        "Door_joinery_stile",
+        "Door_round_handle_spindle",
+        "Door_rounded_lever",
+        "Door_vertical_board_rebate",
+        "Dull_kickplate"
+      ],
+      "lod_triangles": [
+        444,
+        332,
+        272
+      ]
+    }
+  },
+  "lods": {
+    "0": {
+      "SM_FieldStation_Hut_Shell": {
+        "triangles": 2576,
+        "bounds_local_m": [
+          [
+            -13.5,
+            -5.420000076293945,
+            -0.25
+          ],
+          [
+            -8.5,
+            -1.0,
+            3.6749258041381836
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Stucco",
+          "M_FieldStation_Concrete",
+          "M_FieldStation_Masonry",
+          "M_FieldStation_WeatherStain",
+          "M_FieldStation_Timber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_WhitePaint",
+          "M_FieldStation_RoofFelt",
+          "M_FieldStation_RustTin",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal",
+          "M_FieldStation_OliveEnamel",
+          "M_FieldStation_Ceramic",
+          "M_FieldStation_PrintAtlas"
+        ],
+        "lod": 0,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Aperture-partitioned stucco, flashing, roof, meter, plinth, threshold and plaque",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 7.530680250056321e-06,
+        "component_inventory": [
+          "Bent_metal_head_flashing",
+          "Dark_open_sill_rebate",
+          "Door_head_joinery",
+          "Door_reveal_timber_jamb",
+          "Electrical_junction_box",
+          "Existing_doorstep_top_minus_point07",
+          "Existing_folded_meter_base",
+          "Existing_plinth_top_at_zero",
+          "Existing_service_weatherhead_mast",
+          "Existing_stovepipe",
+          "Exposed_old_masonry_chip",
+          "External_door_casing",
+          "External_door_head_casing",
+          "Folded_roof_edge_lip",
+          "Folded_roof_return_lip",
+          "Galvanized_conduit_saddle",
+          "Hairline_stucco_crack",
+          "Junction_original_120volt_label",
+          "Junction_riser",
+          "Lamp_mount_timber_pattress",
+          "Old_electrical_service_conduit",
+          "Old_flat_roof_deck",
+          "Old_survey_north_wall",
+          "Old_survey_west_wall",
+          "Overlapped_roll_roof_seam",
+          "Oxidized_roof_edge_drip",
+          "Oxidized_roof_edge_return",
+          "Oxidized_window_fastener",
+          "Painted_timber_window_jamb",
+          "Painted_timber_window_rail",
+          "Projecting_weathered_timber_drip_sill",
+          "Real_stucco_aperture_east",
+          "Real_stucco_aperture_south",
+          "Roof_drip_cut_nail",
+          "Round_utility_meter_rim",
+          "STATION01_legible_original_label",
+          "Small_contact_mineral_grit",
+          "Station01_mounted_enamel_plaque",
+          "Stovepipe_base_flashing",
+          "Stovepipe_vented_rain_cap",
+          "Thin_glazing_putty",
+          "Weathered_meter_face",
+          "Weatherhead_gooseneck",
+          "Window_central_wood_mullion",
+          "Window_central_wood_transom",
+          "Worn_oak_threshold_top_point025"
+        ],
+        "lod_triangles": [
+          2576,
+          1632,
+          888
+        ]
+      },
+      "SM_FieldStation_Hut_Interior": {
+        "triangles": 1202,
+        "bounds_local_m": [
+          [
+            -13.0,
+            -4.500999927520752,
+            -0.017999999225139618
+          ],
+          [
+            -9.0,
+            -1.5,
+            2.5999999046325684
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Plaster",
+          "M_FieldStation_PlasterRepair",
+          "M_FieldStation_Dado",
+          "M_FieldStation_Timber",
+          "M_FieldStation_FloorTimber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_DarkMetal",
+          "M_FieldStation_Rubber",
+          "M_FieldStation_Ceramic",
+          "M_FieldStation_Ceiling"
+        ],
+        "lod": 0,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Plaster and dado lining, existing-floor-height timber boards, beams and cable clips",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 2.9999916702494467e-06,
+        "component_inventory": [
+          "Ceiling_cloth_service_line",
+          "Dado_top_timber_rail",
+          "Door_inside_head_timber",
+          "Door_inside_timber_jamb",
+          "Exposed_existing_roof_joist",
+          "Floor_cut_nail_head",
+          "Mineral_wash_above_original_dark_dado",
+          "North_timber_baseboard",
+          "Old_limewash_ceiling",
+          "Old_wiring_ceramic_clip",
+          "South_baseboard_stops_at_door",
+          "Subtle_plaster_repair",
+          "Timber_baseboard",
+          "Worn_individual_floorboard"
+        ],
+        "lod_triangles": [
+          1202,
+          590,
+          422
+        ]
+      },
+      "SM_FieldStation_Hut_Glass": {
+        "triangles": 16,
+        "bounds_local_m": [
+          [
+            -12.241999626159668,
+            -4.613999843597412,
+            1.00600004196167
+          ],
+          [
+            -8.88599967956543,
+            -2.3580000400543213,
+            1.7940000295639038
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Glass"
+        ],
+        "lod": 0,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Eight actual thin panes in two open wall apertures",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 0.07801600728073732,
+        "component_inventory": [
+          "Independent_thin_actual_glass_pane"
+        ],
+        "lod_triangles": [
+          16,
+          16,
+          16
+        ]
+      },
+      "SM_FieldStation_Hut_Props": {
+        "triangles": 1268,
+        "bounds_local_m": [
+          [
+            -12.989999771118164,
+            -4.349999904632568,
+            0.0
+          ],
+          [
+            -11.716434478759766,
+            -1.5,
+            1.7799999713897705
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Timber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal",
+          "M_FieldStation_OliveEnamel",
+          "M_FieldStation_Rubber",
+          "M_FieldStation_Cardboard",
+          "M_FieldStation_BookCloth",
+          "M_FieldStation_PrintAtlas"
+        ],
+        "lod": 0,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Steel cupboard, open timber shelving and survey chair at existing furniture anchors",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 9.09265851056773e-06,
+        "component_inventory": [
+          "Archival_spares_carton_label",
+          "Bound_spare_valve_carton",
+          "Chair_back_upright",
+          "Chair_side_stretcher",
+          "Cupboard_archival_service_label",
+          "Cupboard_bent_pull",
+          "Cupboard_door_edge_reveal",
+          "Cupboard_masonry_isolation_foot",
+          "Cupboard_pressed_vent",
+          "Cupboard_visible_hinge",
+          "Folded_sheet_cupboard_carcass",
+          "Front_chair_stretcher",
+          "Independent_rolled_cupboard_door",
+          "Old_survey_seat_slat",
+          "Original_shelf_tin_spares_can",
+          "Shaped_survey_chair_back",
+          "Shelf_diagonal_brace",
+          "Shelf_fixed_bracket",
+          "Shelf_front_cut_nail",
+          "Wall_shelf_at_original_height",
+          "Worn_chair_tapered_leg"
+        ],
+        "lod_triangles": [
+          1268,
+          1048,
+          754
+        ]
+      },
+      "SM_FieldStation_Hut_Door": {
+        "triangles": 444,
+        "bounds_local_m": [
+          [
+            -0.9800000190734863,
+            -0.09200000017881393,
+            0.009999999776482582
+          ],
+          [
+            0.008999999612569809,
+            0.09200000017881393,
+            1.9800000190734863
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_DoorTimber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_RustTin",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal"
+        ],
+        "lod": 0,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": true,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.objs.hutDoorLeaf",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Independent physical timber door and hardware, local hinge origin; inherit existing door animation",
+        "parent_pivot_site_three_m": [
+          -9.45,
+          0,
+          4.48
+        ],
+        "initial_parent_rotation_three_y_rad": -1.75,
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 8.999857664448996e-06,
+        "component_inventory": [
+          "Continuous_original_timber_door",
+          "Door_handle_escutcheon",
+          "Door_hinge_barrel",
+          "Door_hinge_leaf",
+          "Door_joinery_rail",
+          "Door_joinery_stile",
+          "Door_round_handle_spindle",
+          "Door_rounded_lever",
+          "Door_vertical_board_rebate",
+          "Dull_kickplate"
+        ],
+        "lod_triangles": [
+          444,
+          332,
+          272
+        ]
+      }
+    },
+    "1": {
+      "SM_FieldStation_Hut_Shell": {
+        "triangles": 1632,
+        "bounds_local_m": [
+          [
+            -13.5,
+            -5.420000076293945,
+            -0.25
+          ],
+          [
+            -8.5,
+            -1.0,
+            3.6749258041381836
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Stucco",
+          "M_FieldStation_Concrete",
+          "M_FieldStation_Masonry",
+          "M_FieldStation_WeatherStain",
+          "M_FieldStation_Timber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_RoofFelt",
+          "M_FieldStation_RustTin",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal",
+          "M_FieldStation_OliveEnamel",
+          "M_FieldStation_Ceramic",
+          "M_FieldStation_PrintAtlas"
+        ],
+        "lod": 1,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Aperture-partitioned stucco, flashing, roof, meter, plinth, threshold and plaque",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 7.530680250056321e-06,
+        "component_inventory": [
+          "Bent_metal_head_flashing",
+          "Dark_open_sill_rebate",
+          "Door_head_joinery",
+          "Door_reveal_timber_jamb",
+          "Electrical_junction_box",
+          "Existing_doorstep_top_minus_point07",
+          "Existing_folded_meter_base",
+          "Existing_plinth_top_at_zero",
+          "Existing_service_weatherhead_mast",
+          "Existing_stovepipe",
+          "Exposed_old_masonry_chip",
+          "External_door_casing",
+          "External_door_head_casing",
+          "Folded_roof_edge_lip",
+          "Folded_roof_return_lip",
+          "Galvanized_conduit_saddle",
+          "Hairline_stucco_crack",
+          "Junction_original_120volt_label",
+          "Junction_riser",
+          "Lamp_mount_timber_pattress",
+          "Old_electrical_service_conduit",
+          "Old_flat_roof_deck",
+          "Old_survey_north_wall",
+          "Old_survey_west_wall",
+          "Overlapped_roll_roof_seam",
+          "Oxidized_roof_edge_drip",
+          "Oxidized_roof_edge_return",
+          "Oxidized_window_fastener",
+          "Painted_timber_window_jamb",
+          "Painted_timber_window_rail",
+          "Projecting_weathered_timber_drip_sill",
+          "Real_stucco_aperture_east",
+          "Real_stucco_aperture_south",
+          "Roof_drip_cut_nail",
+          "Round_utility_meter_rim",
+          "STATION01_legible_original_label",
+          "Small_contact_mineral_grit",
+          "Station01_mounted_enamel_plaque",
+          "Stovepipe_base_flashing",
+          "Stovepipe_vented_rain_cap",
+          "Weathered_meter_face",
+          "Weatherhead_gooseneck",
+          "Window_central_wood_mullion",
+          "Window_central_wood_transom",
+          "Worn_oak_threshold_top_point025"
+        ]
+      },
+      "SM_FieldStation_Hut_Interior": {
+        "triangles": 590,
+        "bounds_local_m": [
+          [
+            -13.0,
+            -4.500999927520752,
+            -0.017999999225139618
+          ],
+          [
+            -9.0,
+            -1.5,
+            2.5999999046325684
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Plaster",
+          "M_FieldStation_PlasterRepair",
+          "M_FieldStation_Dado",
+          "M_FieldStation_Timber",
+          "M_FieldStation_FloorTimber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_Rubber",
+          "M_FieldStation_Ceramic",
+          "M_FieldStation_Ceiling"
+        ],
+        "lod": 1,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Plaster and dado lining, existing-floor-height timber boards, beams and cable clips",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 1.0825310754469797e-05,
+        "component_inventory": [
+          "Ceiling_cloth_service_line",
+          "Dado_top_timber_rail",
+          "Door_inside_head_timber",
+          "Door_inside_timber_jamb",
+          "Exposed_existing_roof_joist",
+          "Mineral_wash_above_original_dark_dado",
+          "North_timber_baseboard",
+          "Old_limewash_ceiling",
+          "Old_wiring_ceramic_clip",
+          "South_baseboard_stops_at_door",
+          "Subtle_plaster_repair",
+          "Timber_baseboard",
+          "Worn_individual_floorboard"
+        ]
+      },
+      "SM_FieldStation_Hut_Glass": {
+        "triangles": 16,
+        "bounds_local_m": [
+          [
+            -12.241999626159668,
+            -4.613999843597412,
+            1.00600004196167
+          ],
+          [
+            -8.88599967956543,
+            -2.3580000400543213,
+            1.7940000295639038
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Glass"
+        ],
+        "lod": 1,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Eight actual thin panes in two open wall apertures",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 0.07801600728073732,
+        "component_inventory": [
+          "Independent_thin_actual_glass_pane"
+        ]
+      },
+      "SM_FieldStation_Hut_Props": {
+        "triangles": 1048,
+        "bounds_local_m": [
+          [
+            -12.989999771118164,
+            -4.349999904632568,
+            0.0
+          ],
+          [
+            -11.71755313873291,
+            -1.5,
+            1.7799999713897705
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Timber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal",
+          "M_FieldStation_OliveEnamel",
+          "M_FieldStation_Rubber",
+          "M_FieldStation_Cardboard",
+          "M_FieldStation_BookCloth",
+          "M_FieldStation_PrintAtlas"
+        ],
+        "lod": 1,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Steel cupboard, open timber shelving and survey chair at existing furniture anchors",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 2.024970209646426e-05,
+        "component_inventory": [
+          "Archival_spares_carton_label",
+          "Bound_spare_valve_carton",
+          "Chair_back_upright",
+          "Chair_side_stretcher",
+          "Cupboard_archival_service_label",
+          "Cupboard_bent_pull",
+          "Cupboard_door_edge_reveal",
+          "Cupboard_masonry_isolation_foot",
+          "Cupboard_pressed_vent",
+          "Cupboard_visible_hinge",
+          "Folded_sheet_cupboard_carcass",
+          "Front_chair_stretcher",
+          "Independent_rolled_cupboard_door",
+          "Old_survey_seat_slat",
+          "Original_shelf_tin_spares_can",
+          "Shaped_survey_chair_back",
+          "Shelf_diagonal_brace",
+          "Shelf_fixed_bracket",
+          "Shelf_front_cut_nail",
+          "Wall_shelf_at_original_height",
+          "Worn_chair_tapered_leg"
+        ]
+      },
+      "SM_FieldStation_Hut_Door": {
+        "triangles": 332,
+        "bounds_local_m": [
+          [
+            -0.9800000190734863,
+            -0.09200000017881393,
+            0.009999999776482582
+          ],
+          [
+            0.008999999612569809,
+            0.09200000017881393,
+            1.9800000190734863
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_DoorTimber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_RustTin",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal"
+        ],
+        "lod": 1,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": true,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.objs.hutDoorLeaf",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Independent physical timber door and hardware, local hinge origin; inherit existing door animation",
+        "parent_pivot_site_three_m": [
+          -9.45,
+          0,
+          4.48
+        ],
+        "initial_parent_rotation_three_y_rad": -1.75,
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 8.999857664448996e-06,
+        "component_inventory": [
+          "Continuous_original_timber_door",
+          "Door_handle_escutcheon",
+          "Door_hinge_barrel",
+          "Door_hinge_leaf",
+          "Door_joinery_rail",
+          "Door_joinery_stile",
+          "Door_round_handle_spindle",
+          "Door_rounded_lever",
+          "Door_vertical_board_rebate",
+          "Dull_kickplate"
+        ]
+      }
+    },
+    "2": {
+      "SM_FieldStation_Hut_Shell": {
+        "triangles": 888,
+        "bounds_local_m": [
+          [
+            -13.5,
+            -5.420000076293945,
+            -0.25
+          ],
+          [
+            -8.5,
+            -1.0,
+            3.6749258041381836
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Stucco",
+          "M_FieldStation_Concrete",
+          "M_FieldStation_Timber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_RoofFelt",
+          "M_FieldStation_RustTin",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal",
+          "M_FieldStation_OliveEnamel",
+          "M_FieldStation_Ceramic",
+          "M_FieldStation_PrintAtlas"
+        ],
+        "lod": 2,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Aperture-partitioned stucco, flashing, roof, meter, plinth, threshold and plaque",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 6.894267194379466e-05,
+        "component_inventory": [
+          "Bent_metal_head_flashing",
+          "Dark_open_sill_rebate",
+          "Door_head_joinery",
+          "Door_reveal_timber_jamb",
+          "Electrical_junction_box",
+          "Existing_doorstep_top_minus_point07",
+          "Existing_folded_meter_base",
+          "Existing_plinth_top_at_zero",
+          "Existing_service_weatherhead_mast",
+          "Existing_stovepipe",
+          "External_door_casing",
+          "External_door_head_casing",
+          "Folded_roof_edge_lip",
+          "Folded_roof_return_lip",
+          "Junction_original_120volt_label",
+          "Junction_riser",
+          "Lamp_mount_timber_pattress",
+          "Old_electrical_service_conduit",
+          "Old_flat_roof_deck",
+          "Old_survey_north_wall",
+          "Old_survey_west_wall",
+          "Overlapped_roll_roof_seam",
+          "Oxidized_roof_edge_drip",
+          "Oxidized_roof_edge_return",
+          "Painted_timber_window_jamb",
+          "Painted_timber_window_rail",
+          "Projecting_weathered_timber_drip_sill",
+          "Real_stucco_aperture_east",
+          "Real_stucco_aperture_south",
+          "Round_utility_meter_rim",
+          "STATION01_legible_original_label",
+          "Station01_mounted_enamel_plaque",
+          "Stovepipe_base_flashing",
+          "Stovepipe_vented_rain_cap",
+          "Weathered_meter_face",
+          "Weatherhead_gooseneck",
+          "Window_central_wood_mullion",
+          "Window_central_wood_transom",
+          "Worn_oak_threshold_top_point025"
+        ]
+      },
+      "SM_FieldStation_Hut_Interior": {
+        "triangles": 422,
+        "bounds_local_m": [
+          [
+            -13.0,
+            -4.500999927520752,
+            -0.017999999225139618
+          ],
+          [
+            -9.0,
+            -1.5,
+            2.5999999046325684
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Plaster",
+          "M_FieldStation_Dado",
+          "M_FieldStation_Timber",
+          "M_FieldStation_FloorTimber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_Rubber",
+          "M_FieldStation_Ceiling"
+        ],
+        "lod": 2,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Plaster and dado lining, existing-floor-height timber boards, beams and cable clips",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 1.0825310754469797e-05,
+        "component_inventory": [
+          "Ceiling_cloth_service_line",
+          "Dado_top_timber_rail",
+          "Door_inside_head_timber",
+          "Door_inside_timber_jamb",
+          "Exposed_existing_roof_joist",
+          "Mineral_wash_above_original_dark_dado",
+          "North_timber_baseboard",
+          "Old_limewash_ceiling",
+          "South_baseboard_stops_at_door",
+          "Timber_baseboard",
+          "Worn_individual_floorboard"
+        ]
+      },
+      "SM_FieldStation_Hut_Glass": {
+        "triangles": 16,
+        "bounds_local_m": [
+          [
+            -12.241999626159668,
+            -4.613999843597412,
+            1.00600004196167
+          ],
+          [
+            -8.88599967956543,
+            -2.3580000400543213,
+            1.7940000295639038
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Glass"
+        ],
+        "lod": 2,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Eight actual thin panes in two open wall apertures",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 0.07801600728073732,
+        "component_inventory": [
+          "Independent_thin_actual_glass_pane"
+        ]
+      },
+      "SM_FieldStation_Hut_Props": {
+        "triangles": 754,
+        "bounds_local_m": [
+          [
+            -12.989999771118164,
+            -4.349999904632568,
+            0.0
+          ],
+          [
+            -11.71755313873291,
+            -1.5,
+            1.7799999713897705
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_Timber",
+          "M_FieldStation_DarkWood",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal",
+          "M_FieldStation_OliveEnamel",
+          "M_FieldStation_Rubber",
+          "M_FieldStation_Cardboard",
+          "M_FieldStation_BookCloth",
+          "M_FieldStation_PrintAtlas"
+        ],
+        "lod": 2,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": false,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Steel cupboard, open timber shelving and survey chair at existing furniture anchors",
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 2.024970209646426e-05,
+        "component_inventory": [
+          "Bound_spare_valve_carton",
+          "Chair_back_upright",
+          "Chair_side_stretcher",
+          "Cupboard_archival_service_label",
+          "Cupboard_bent_pull",
+          "Cupboard_door_edge_reveal",
+          "Cupboard_masonry_isolation_foot",
+          "Cupboard_visible_hinge",
+          "Folded_sheet_cupboard_carcass",
+          "Front_chair_stretcher",
+          "Independent_rolled_cupboard_door",
+          "Old_survey_seat_slat",
+          "Original_shelf_tin_spares_can",
+          "Shaped_survey_chair_back",
+          "Shelf_diagonal_brace",
+          "Shelf_fixed_bracket",
+          "Wall_shelf_at_original_height",
+          "Worn_chair_tapered_leg"
+        ]
+      },
+      "SM_FieldStation_Hut_Door": {
+        "triangles": 272,
+        "bounds_local_m": [
+          [
+            -0.9800000190734863,
+            -0.09200000017881393,
+            0.009999999776482582
+          ],
+          [
+            0.008999999612569809,
+            0.09200000017881393,
+            1.9800000190734863
+          ]
+        ],
+        "materials": [
+          "M_FieldStation_DoorTimber",
+          "M_FieldStation_TealPaint",
+          "M_FieldStation_Metal",
+          "M_FieldStation_DarkMetal"
+        ],
+        "lod": 2,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "local": true,
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "parent_handle": "world.site.objs.hutDoorLeaf",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          8000
+        ],
+        "role": "Independent physical timber door and hardware, local hinge origin; inherit existing door animation",
+        "parent_pivot_site_three_m": [
+          -9.45,
+          0,
+          4.48
+        ],
+        "initial_parent_rotation_three_y_rad": -1.75,
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "minimum_uv_area": 5.239435433423978e-05,
+        "component_inventory": [
+          "Continuous_original_timber_door",
+          "Door_handle_escutcheon",
+          "Door_hinge_barrel",
+          "Door_hinge_leaf",
+          "Door_joinery_rail",
+          "Door_joinery_stile",
+          "Door_round_handle_spindle",
+          "Door_rounded_lever"
+        ]
+      }
+    }
+  },
+  "total_LOD0_triangles": 5506,
+  "axis_probe_source_center_m": [
+    2,
+    4,
+    6
+  ],
+  "axis_probe_source_dimensions_m": [
+    0.2,
+    0.4,
+    0.6
+  ],
+  "axis_probe_expected_UE_center_cm": [
+    200,
+    -400,
+    600
+  ],
+  "site_world_three_m": [
+    0,
+    0,
+    8000
+  ],
+  "hut": {
+    "x0": -13.0,
+    "x1": -9.0,
+    "z0": 1.5,
+    "z1": 4.5,
+    "thickness": 0.2,
+    "height": 2.6
+  },
+  "apertures": {
+    "south_door": {
+      "x": [
+        -10.5,
+        -9.4
+      ],
+      "z": [
+        4.5,
+        4.7
+      ],
+      "y": [
+        0,
+        2.0
+      ]
+    },
+    "south_window": {
+      "x": [
+        -12.3,
+        -11.3
+      ],
+      "z": [
+        4.5,
+        4.7
+      ],
+      "y": [
+        0.95,
+        1.85
+      ]
+    },
+    "east_window": {
+      "x": [
+        -9.0,
+        -8.8
+      ],
+      "z": [
+        2.3,
+        3.3
+      ],
+      "y": [
+        0.95,
+        1.85
+      ]
+    }
+  },
+  "coverage": {
+    "Shell": {
+      "site_three_min": [
+        -13.5,
+        -0.25,
+        1.0
+      ],
+      "site_three_max": [
+        -8.5,
+        3.8,
+        5.45
+      ]
+    },
+    "Interior": {
+      "site_three_min": [
+        -13.0,
+        -0.03,
+        1.5
+      ],
+      "site_three_max": [
+        -9.0,
+        2.6,
+        4.5
+      ]
+    },
+    "Props": {
+      "cabinet": {
+        "site_three_min": [
+          -12.99,
+          0,
+          3.45
+        ],
+        "site_three_max": [
+          -12.51,
+          1.8,
+          4.35
+        ]
+      },
+      "chair": {
+        "site_three_center": [
+          -12.0,
+          0,
+          3.05
+        ],
+        "yaw_three_y_rad": 0.6
+      },
+      "shelf": {
+        "site_three_min": [
+          -12.95,
+          1.37,
+          1.5
+        ],
+        "site_three_max": [
+          -12.05,
+          1.85,
+          1.77
+        ]
+      }
+    }
+  },
+  "protected_runtime": [
+    "world.site.group",
+    "world.site.interior",
+    "world.site.colliders[*]",
+    "world.site.occluders[*]",
+    "world.site.proxies.*",
+    "world.site.anchors.*",
+    "world.site.objs.hutDoorLeaf transform",
+    "world.site.objs.drawer",
+    "world.site.objs.drawerInside",
+    "world.site.objs.fieldPhoneHandset transform",
+    "world.site.glow.points",
+    "world.site.m.hutBulb",
+    "world.site.m.wallBulb",
+    "world.site.m.lampBulb",
+    "world.site.m.fieldBulb",
+    "world.site.m.dial",
+    "world.site.m.receiverDial",
+    "world.site.m.paneOut",
+    "world.site.m.paneIn"
+  ],
+  "excluded": [
+    "receiver",
+    "bench",
+    "desk lamp",
+    "ceiling bulb and shade",
+    "external working lamps",
+    "field telephone and handset",
+    "timing log",
+    "1947 diagram",
+    "drawer and book",
+    "transit and sight lines",
+    "generator shed",
+    "yard/fence/pole/track",
+    "mission markers"
+  ],
+  "collision": "Existing hut floor, walking zones, colliders and interaction proxies remain authority. No new collision or story admission implied.",
+  "originality": "Original geometry and labels; read-only use of own substation mesh primitives and own townbuildings procedural PBR maps.",
+  "preview_door": "Saved .blend presents the open door under PREVIEW_hutDoorLeaf_existing_game_pivot. Per-part FBX/GLB stay hinge-local at zero."
+}

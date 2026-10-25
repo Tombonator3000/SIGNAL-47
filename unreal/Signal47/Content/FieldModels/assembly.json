@@ -1,0 +1,3632 @@
+{
+  "version": 1,
+  "parts": [
+    {
+      "name": "SM_FieldStation_Hut_Shell",
+      "asset": "/Game/FieldStation/SM_FieldStation_Hut_Shell.SM_FieldStation_Hut_Shell",
+      "parent_handle": "world.site.group",
+      "at": [
+        0,
+        0,
+        8000
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldStation_Stucco",
+        "M_FieldStation_Concrete",
+        "M_FieldStation_Masonry",
+        "M_FieldStation_WeatherStain",
+        "M_FieldStation_Timber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_TealPaint",
+        "M_FieldStation_WhitePaint",
+        "M_FieldStation_RoofFelt",
+        "M_FieldStation_RustTin",
+        "M_FieldStation_Metal",
+        "M_FieldStation_DarkMetal",
+        "M_FieldStation_OliveEnamel",
+        "M_FieldStation_Ceramic",
+        "M_FieldStation_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -13.5,
+          -5.420000076293945,
+          -0.25
+        ],
+        [
+          -8.5,
+          -1.0,
+          3.6749258041381836
+        ]
+      ],
+      "lod_triangles": [
+        2576,
+        1632,
+        888
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldStation_Hut_Interior",
+      "asset": "/Game/FieldStation/SM_FieldStation_Hut_Interior.SM_FieldStation_Hut_Interior",
+      "parent_handle": "world.site.interior",
+      "at": [
+        0,
+        0,
+        8000
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldStation_Plaster",
+        "M_FieldStation_PlasterRepair",
+        "M_FieldStation_Dado",
+        "M_FieldStation_Timber",
+        "M_FieldStation_FloorTimber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_TealPaint",
+        "M_FieldStation_DarkMetal",
+        "M_FieldStation_Rubber",
+        "M_FieldStation_Ceramic",
+        "M_FieldStation_Ceiling"
+      ],
+      "bounds_local_m": [
+        [
+          -13.0,
+          -4.500999927520752,
+          -0.017999999225139618
+        ],
+        [
+          -9.0,
+          -1.5,
+          2.5999999046325684
+        ]
+      ],
+      "lod_triangles": [
+        1202,
+        590,
+        422
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldStation_Hut_Glass",
+      "asset": "/Game/FieldStation/SM_FieldStation_Hut_Glass.SM_FieldStation_Hut_Glass",
+      "parent_handle": "world.site.group",
+      "at": [
+        0,
+        0,
+        8000
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldStation_Glass"
+      ],
+      "bounds_local_m": [
+        [
+          -12.241999626159668,
+          -4.613999843597412,
+          1.00600004196167
+        ],
+        [
+          -8.88599967956543,
+          -2.3580000400543213,
+          1.7940000295639038
+        ]
+      ],
+      "lod_triangles": [
+        16,
+        16,
+        16
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldStation_Hut_Props",
+      "asset": "/Game/FieldStation/SM_FieldStation_Hut_Props.SM_FieldStation_Hut_Props",
+      "parent_handle": "world.site.interior",
+      "at": [
+        0,
+        0,
+        8000
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldStation_Timber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_Metal",
+        "M_FieldStation_DarkMetal",
+        "M_FieldStation_OliveEnamel",
+        "M_FieldStation_Rubber",
+        "M_FieldStation_Cardboard",
+        "M_FieldStation_BookCloth",
+        "M_FieldStation_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -12.989999771118164,
+          -4.349999904632568,
+          0.0
+        ],
+        [
+          -11.716434478759766,
+          -1.5,
+          1.7799999713897705
+        ]
+      ],
+      "lod_triangles": [
+        1268,
+        1048,
+        754
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldStation_Hut_Door",
+      "asset": "/Game/FieldStation/SM_FieldStation_Hut_Door.SM_FieldStation_Hut_Door",
+      "parent_handle": "world.site.objs.hutDoorLeaf",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_FieldStation_DoorTimber",
+        "M_FieldStation_DarkWood",
+        "M_FieldStation_TealPaint",
+        "M_FieldStation_RustTin",
+        "M_FieldStation_Metal",
+        "M_FieldStation_DarkMetal"
+      ],
+      "bounds_local_m": [
+        [
+          -0.9800000190734863,
+          -0.09200000017881393,
+          0.009999999776482582
+        ],
+        [
+          0.008999999612569809,
+          0.09200000017881393,
+          1.9800000190734863
+        ]
+      ],
+      "lod_triangles": [
+        444,
+        332,
+        272
+      ],
+      "use": "s1hutDoor",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_Transit",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_Transit.SM_FieldKit_Transit",
+      "parent_handle": "world.site.group",
+      "at": [
+        3.0,
+        0.0,
+        7996.0
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_Concrete",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -0.44999998807907104,
+          -0.44999998807907104,
+          -0.25
+        ],
+        [
+          0.44999998807907104,
+          0.44999998807907104,
+          1.434000015258789
+        ]
+      ],
+      "lod_triangles": [
+        4976,
+        2416,
+        1068
+      ],
+      "use": "s1transit",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_LampStand",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_LampStand.SM_FieldKit_LampStand",
+      "parent_handle": "world.site.group",
+      "at": [
+        1.600000023841858,
+        0.0,
+        7997.400000095367
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -0.49000000953674316,
+          -0.4699999988079071,
+          -0.15459927916526794
+        ],
+        [
+          0.39103302359580994,
+          0.23561841249465942,
+          1.7999999523162842
+        ]
+      ],
+      "lod_triangles": [
+        1066,
+        698,
+        514
+      ],
+      "use": "s1lamp",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_LampHead",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_LampHead.SM_FieldKit_LampHead",
+      "parent_handle": "world.site.objs.lampHead",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal"
+      ],
+      "bounds_local_m": [
+        [
+          -0.14710059762001038,
+          -0.11299999803304672,
+          -0.13500000536441803
+        ],
+        [
+          0.14900000393390656,
+          0.11999999731779099,
+          0.14300000667572021
+        ]
+      ],
+      "lod_triangles": [
+        1768,
+        920,
+        436
+      ],
+      "use": "s1lamp",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_LampBulb",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_LampBulb.SM_FieldKit_LampBulb",
+      "parent_handle": "world.site.objs.lampHead",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_FieldKit_FieldBulb"
+      ],
+      "bounds_local_m": [
+        [
+          -0.12300000339746475,
+          -0.10300000011920929,
+          -0.12300000339746475
+        ],
+        [
+          0.12300000339746475,
+          -0.09799999743700027,
+          0.12300000339746475
+        ]
+      ],
+      "lod_triangles": [
+        124,
+        60,
+        36
+      ],
+      "use": "s1lamp",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_LampHood",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_LampHood.SM_FieldKit_LampHood",
+      "parent_handle": "world.site.objs.lampHood",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal"
+      ],
+      "bounds_local_m": [
+        [
+          -0.14350000023841858,
+          -0.06300000101327896,
+          -0.28850001096725464
+        ],
+        [
+          0.14350000023841858,
+          0.00800000037997961,
+          0.008500000461935997
+        ]
+      ],
+      "lod_triangles": [
+        572,
+        316,
+        220
+      ],
+      "use": "s1lamp",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_Receiver",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_Receiver.SM_FieldKit_Receiver",
+      "parent_handle": "world.site.group",
+      "at": [
+        -11.850000381469727,
+        0.800000011920929,
+        8001.799999952316
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_OlivePaint",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Cloth"
+      ],
+      "bounds_local_m": [
+        [
+          -0.5600000023841858,
+          -0.2809999883174896,
+          -0.004999999888241291
+        ],
+        [
+          0.4707386791706085,
+          0.17000000178813934,
+          0.30399999022483826
+        ]
+      ],
+      "lod_triangles": [
+        6078,
+        2846,
+        2030
+      ],
+      "use": "s1receiver",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_ReceiverDial",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_ReceiverDial.SM_FieldKit_ReceiverDial",
+      "parent_handle": "world.site.group",
+      "at": [
+        -11.850000381469727,
+        0.800000011920929,
+        8001.799999952316
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -0.20399999618530273,
+          -0.1979999989271164,
+          0.16750000417232513
+        ],
+        [
+          0.20999999344348907,
+          -0.19599999487400055,
+          0.24250000715255737
+        ]
+      ],
+      "lod_triangles": [
+        4,
+        4,
+        4
+      ],
+      "use": "s1receiver",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_FieldPhone",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_FieldPhone.SM_FieldKit_FieldPhone",
+      "parent_handle": "world.site.group",
+      "at": [
+        -12.920000076293945,
+        1.4500000476837158,
+        8002.549999952316
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Brass",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -0.09600000083446503,
+          -0.16093185544013977,
+          -0.3116694390773773
+        ],
+        [
+          0.25,
+          0.210999995470047,
+          0.713716447353363
+        ]
+      ],
+      "lod_triangles": [
+        3902,
+        1870,
+        1328
+      ],
+      "use": "s1phone",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_Handset",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_Handset.SM_FieldKit_Handset",
+      "parent_handle": "world.site.objs.fieldPhoneHandset",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber"
+      ],
+      "bounds_local_m": [
+        [
+          -0.032999999821186066,
+          -0.032999999821186066,
+          -0.16200000047683716
+        ],
+        [
+          0.032999999821186066,
+          0.032999999821186066,
+          0.009999999776482582
+        ]
+      ],
+      "lod_triangles": [
+        256,
+        192,
+        100
+      ],
+      "use": "s1phone",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_TimingBench",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_TimingBench.SM_FieldKit_TimingBench",
+      "parent_handle": "world.site.group",
+      "at": [
+        -11.449999809265137,
+        0.0,
+        8001.860000014305
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -1.5,
+          -0.35850000381469727,
+          -0.012000000104308128
+        ],
+        [
+          1.5,
+          0.35850000381469727,
+          0.8019999861717224
+        ]
+      ],
+      "lod_triangles": [
+        792,
+        552,
+        484
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_TimingLog",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_TimingLog.SM_FieldKit_TimingLog",
+      "parent_handle": "world.site.group",
+      "at": [
+        -11.050000190734863,
+        0.8040000200271606,
+        8001.960000038147
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Cloth"
+      ],
+      "bounds_local_m": [
+        [
+          -0.23499999940395355,
+          -0.16500000655651093,
+          0.0
+        ],
+        [
+          0.23499999940395355,
+          0.16500000655651093,
+          0.041290897876024246
+        ]
+      ],
+      "lod_triangles": [
+        210,
+        138,
+        138
+      ],
+      "use": "s1timing",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_Diagram",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_Diagram.SM_FieldKit_Diagram",
+      "parent_handle": "world.site.group",
+      "at": [
+        -11.149999618530273,
+        1.7799999713897705,
+        8001.536999940872
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_Wood",
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Glass",
+        "M_FieldKit_PrintAtlas"
+      ],
+      "bounds_local_m": [
+        [
+          -0.3499999940395355,
+          -0.029999999329447746,
+          -0.1850000023841858
+        ],
+        [
+          0.3499999940395355,
+          0.017999999225139618,
+          0.1850000023841858
+        ]
+      ],
+      "lod_triangles": [
+        154,
+        154,
+        74
+      ],
+      "use": "s1diagram",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_FieldKit_EvidenceProps",
+      "asset": "/Game/FieldInstruments/SM_FieldKit_EvidenceProps.SM_FieldKit_EvidenceProps",
+      "parent_handle": "world.site.group",
+      "at": [
+        -10.130000114440918,
+        0.800000011920929,
+        8001.669999957085
+      ],
+      "local": false,
+      "materials": [
+        "M_FieldKit_Metal",
+        "M_FieldKit_DarkMetal",
+        "M_FieldKit_Rubber",
+        "M_FieldKit_Paper",
+        "M_FieldKit_PrintAtlas",
+        "M_FieldKit_Film"
+      ],
+      "bounds_local_m": [
+        [
+          -0.06300000101327896,
+          -0.1420000046491623,
+          0.0
+        ],
+        [
+          0.09749999642372131,
+          0.10999999940395355,
+          0.061000000685453415
+        ]
+      ],
+      "lod_triangles": [
+        598,
+        406,
+        318
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_ShelvingStorage.SM_ArchiveProps_ShelvingStorage",
+      "parent_handle": "annex.interior",
+      "at": [
+        -5.78,
+        0,
+        8.65
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ],
+      "bounds_local_m": [
+        [
+          -0.25699999928474426,
+          -1.5499999523162842,
+          0.0
+        ],
+        [
+          0.25699999928474426,
+          1.5499999523162842,
+          2.299999952316284
+        ]
+      ],
+      "lod_triangles": [
+        5482,
+        3266,
+        1802
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FilingCabinets",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_FilingCabinets.SM_ArchiveProps_FilingCabinets",
+      "parent_handle": "annex.interior",
+      "at": [
+        -4.46,
+        0,
+        10.17
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ],
+      "bounds_local_m": [
+        [
+          -0.7900000214576721,
+          -0.3100000023841858,
+          0.0
+        ],
+        [
+          0.7900000214576721,
+          0.492000013589859,
+          1.5889999866485596
+        ]
+      ],
+      "lod_triangles": [
+        2970,
+        1674,
+        1020
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CardIndex",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_CardIndex.SM_ArchiveProps_CardIndex",
+      "parent_handle": "annex.interior",
+      "at": [
+        -1.25,
+        0,
+        7.95
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_SteelGreen",
+        "M_ArchiveProps_SteelOlive",
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper"
+      ],
+      "bounds_local_m": [
+        [
+          -0.4830000102519989,
+          -0.4650000035762787,
+          0.0
+        ],
+        [
+          0.26499998569488525,
+          0.4650000035762787,
+          1.3899999856948853
+        ]
+      ],
+      "lod_triangles": [
+        1710,
+        1054,
+        714
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Bookcase",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_Bookcase.SM_ArchiveProps_Bookcase",
+      "parent_handle": "annex.interior",
+      "at": [
+        -2.35,
+        0,
+        10.3
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Brass",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
+      ],
+      "bounds_local_m": [
+        [
+          -0.949999988079071,
+          -0.18000000715255737,
+          0.0
+        ],
+        [
+          0.949999988079071,
+          0.18000000715255737,
+          1.2000000476837158
+        ]
+      ],
+      "lod_triangles": [
+        1404,
+        984,
+        732
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_WorkTable",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_WorkTable.SM_ArchiveProps_WorkTable",
+      "parent_handle": "annex.interior",
+      "at": [
+        -3.65,
+        0,
+        8.6
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_Walnut",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ],
+      "bounds_local_m": [
+        [
+          -0.8500000238418579,
+          -0.42500001192092896,
+          0.0
+        ],
+        [
+          0.8500000238418579,
+          0.42500001192092896,
+          0.7699999809265137
+        ]
+      ],
+      "lod_triangles": [
+        196,
+        164,
+        148
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FieldBox",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_FieldBox.SM_ArchiveProps_FieldBox",
+      "parent_handle": "annex.objs.fieldBoxModel",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_ArchiveProps_Kraft",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_KraftEdge"
+      ],
+      "bounds_local_m": [
+        [
+          -0.19699999690055847,
+          -0.1770000010728836,
+          0.0
+        ],
+        [
+          0.20399999618530273,
+          0.1770000010728836,
+          0.2939999997615814
+        ]
+      ],
+      "lod_triangles": [
+        162,
+        130,
+        78
+      ],
+      "use": "",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_FireDrawer",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_FireDrawer.SM_ArchiveProps_FireDrawer",
+      "parent_handle": "annex.arc.drawer",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal"
+      ],
+      "bounds_local_m": [
+        [
+          -0.30000001192092896,
+          -0.13500000536441803,
+          -0.09200000017881393
+        ],
+        [
+          0.03099999949336052,
+          0.13500000536441803,
+          0.05900000035762787
+        ]
+      ],
+      "lod_triangles": [
+        194,
+        146,
+        122
+      ],
+      "use": "arc:drawer",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Reel047Box",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_Reel047Box.SM_ArchiveProps_Reel047Box",
+      "parent_handle": "annex.arc.reel",
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "local": true,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_GreyBoard"
+      ],
+      "bounds_local_m": [
+        [
+          -0.01600000075995922,
+          -0.0949999988079071,
+          0.0
+        ],
+        [
+          0.019500000402331352,
+          0.0949999988079071,
+          0.1899999976158142
+        ]
+      ],
+      "lod_triangles": [
+        102,
+        70,
+        54
+      ],
+      "use": "arc:drawer",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_Switchboard",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_Switchboard.SM_ArchiveProps_Switchboard",
+      "parent_handle": "annex.arc.group",
+      "at": [
+        -1.05,
+        1.62,
+        10.22
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber"
+      ],
+      "bounds_local_m": [
+        [
+          -0.06199999898672104,
+          -0.17000000178813934,
+          -0.23000000417232513
+        ],
+        [
+          0.05000000074505806,
+          0.17000000178813934,
+          1.1299999952316284
+        ]
+      ],
+      "lod_triangles": [
+        566,
+        470,
+        338
+      ],
+      "use": "arc:ksu",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_CallRecorder",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_CallRecorder.SM_ArchiveProps_CallRecorder",
+      "parent_handle": "annex.arc.group",
+      "at": [
+        -1.12,
+        1.0,
+        10.22
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_BeigeEnamel",
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Rubber",
+        "M_ArchiveProps_Paper"
+      ],
+      "bounds_local_m": [
+        [
+          -0.11999999731779099,
+          -0.20000000298023224,
+          -0.01600000075995922
+        ],
+        [
+          0.11999999731779099,
+          0.20000000298023224,
+          0.15000000596046448
+        ]
+      ],
+      "lod_triangles": [
+        358,
+        246,
+        190
+      ],
+      "use": "arc:recorder",
+      "yaw": 0.0
+    },
+    {
+      "name": "SM_ArchiveProps_ServiceBinder",
+      "asset": "/Game/ArchiveProps/SM_ArchiveProps_ServiceBinder.SM_ArchiveProps_ServiceBinder",
+      "parent_handle": "annex.interior",
+      "at": [
+        -2.32,
+        0.9,
+        10.24
+      ],
+      "local": false,
+      "materials": [
+        "M_ArchiveProps_PrintAtlas",
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_BookBlue"
+      ],
+      "bounds_local_m": [
+        [
+          -0.15700000524520874,
+          -0.17399999499320984,
+          0.0
+        ],
+        [
+          0.1535000056028366,
+          0.17399999499320984,
+          0.06199999898672104
+        ]
+      ],
+      "lod_triangles": [
+        126,
+        94,
+        78
+      ],
+      "use": "",
+      "yaw": 14.323944878
+    }
+  ],
+  "patches": [
+    {
+      "node": 592,
+      "parent": 483,
+      "geo": 229,
+      "tris": 515,
+      "resultTris": 0,
+      "removed": 515,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        276
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 592,
+        "parent": 483,
+        "geo": 229,
+        "source_material_ids": [
+          276
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 515
+    },
+    {
+      "node": 593,
+      "parent": 483,
+      "geo": 230,
+      "tris": 145,
+      "resultTris": 0,
+      "removed": 145,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        276
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 593,
+        "parent": 483,
+        "geo": 230,
+        "source_material_ids": [
+          276
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 145
+    },
+    {
+      "node": 503,
+      "parent": 502,
+      "geo": 327,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        214
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 503,
+        "parent": 502,
+        "geo": 327,
+        "source_material_ids": [
+          214
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 504,
+      "parent": 502,
+      "geo": 328,
+      "tris": 2,
+      "resultTris": 0,
+      "removed": 2,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        215
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 504,
+        "parent": 502,
+        "geo": 328,
+        "source_material_ids": [
+          215
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2
+    },
+    {
+      "node": 506,
+      "parent": 505,
+      "geo": 329,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        216
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 506,
+        "parent": 505,
+        "geo": 329,
+        "source_material_ids": [
+          216
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 507,
+      "parent": 505,
+      "geo": 330,
+      "tris": 156,
+      "resultTris": 0,
+      "removed": 156,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        217
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 507,
+        "parent": 505,
+        "geo": 330,
+        "source_material_ids": [
+          217
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 156
+    },
+    {
+      "node": 508,
+      "parent": 505,
+      "geo": 331,
+      "tris": 26,
+      "resultTris": 0,
+      "removed": 26,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        218
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 508,
+        "parent": 505,
+        "geo": 331,
+        "source_material_ids": [
+          218
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 26
+    },
+    {
+      "node": 509,
+      "parent": 505,
+      "geo": 332,
+      "tris": 2,
+      "resultTris": 0,
+      "removed": 2,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        219
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 509,
+        "parent": 505,
+        "geo": 332,
+        "source_material_ids": [
+          219
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2
+    },
+    {
+      "node": 514,
+      "parent": 513,
+      "geo": 335,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        217
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 514,
+        "parent": 513,
+        "geo": 335,
+        "source_material_ids": [
+          217
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 515,
+      "parent": 513,
+      "geo": 336,
+      "tris": 144,
+      "resultTris": 0,
+      "removed": 144,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        216
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 515,
+        "parent": 513,
+        "geo": 336,
+        "source_material_ids": [
+          216
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 144
+    },
+    {
+      "node": 516,
+      "parent": 513,
+      "geo": 337,
+      "tris": 144,
+      "resultTris": 0,
+      "removed": 144,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        210
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 516,
+        "parent": 513,
+        "geo": 337,
+        "source_material_ids": [
+          210
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 144
+    },
+    {
+      "node": 517,
+      "parent": 513,
+      "geo": 338,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        218
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 517,
+        "parent": 513,
+        "geo": 338,
+        "source_material_ids": [
+          218
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 542,
+      "parent": 483,
+      "geo": 361,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        216
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 542,
+        "parent": 483,
+        "geo": 361,
+        "source_material_ids": [
+          216
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 543,
+      "parent": 483,
+      "geo": 362,
+      "tris": 60,
+      "resultTris": 0,
+      "removed": 60,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        217
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 543,
+        "parent": 483,
+        "geo": 362,
+        "source_material_ids": [
+          217
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 60
+    },
+    {
+      "node": 544,
+      "parent": 483,
+      "geo": 363,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        243
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 544,
+        "parent": 483,
+        "geo": 363,
+        "source_material_ids": [
+          243
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 545,
+      "parent": 483,
+      "geo": 364,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        244
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 545,
+        "parent": 483,
+        "geo": 364,
+        "source_material_ids": [
+          244
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 546,
+      "parent": 483,
+      "geo": 365,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        245
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 546,
+        "parent": 483,
+        "geo": 365,
+        "source_material_ids": [
+          245
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 547,
+      "parent": 483,
+      "geo": 366,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        246
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 547,
+        "parent": 483,
+        "geo": 366,
+        "source_material_ids": [
+          246
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 548,
+      "parent": 483,
+      "geo": 367,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        247
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 548,
+        "parent": 483,
+        "geo": 367,
+        "source_material_ids": [
+          247
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 550,
+      "parent": 483,
+      "geo": 369,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        249
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 550,
+        "parent": 483,
+        "geo": 369,
+        "source_material_ids": [
+          249
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 551,
+      "parent": 483,
+      "geo": 370,
+      "tris": 84,
+      "resultTris": 36,
+      "removed": 48,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g370.g370",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        210
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "f9b361c5c23301111730acf19f299b79c28511cfb56a30a52854b4300537c125",
+      "recipe": {
+        "node": 551,
+        "parent": 483,
+        "geo": 370,
+        "source_material_ids": [
+          210
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -4.51,
+            -2.79,
+            0,
+            0.73,
+            8.17,
+            9.03
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 84
+    },
+    {
+      "node": 560,
+      "parent": 559,
+      "geo": 378,
+      "tris": 722,
+      "resultTris": 0,
+      "removed": 722,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        256
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 560,
+        "parent": 559,
+        "geo": 378,
+        "source_material_ids": [
+          256
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 722
+    },
+    {
+      "node": 562,
+      "parent": 561,
+      "geo": 379,
+      "tris": 2,
+      "resultTris": 0,
+      "removed": 2,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        257
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 562,
+        "parent": 561,
+        "geo": 379,
+        "source_material_ids": [
+          257
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2
+    },
+    {
+      "node": 569,
+      "parent": 564,
+      "geo": 383,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        261
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 569,
+        "parent": 564,
+        "geo": 383,
+        "source_material_ids": [
+          261
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 570,
+      "parent": 564,
+      "geo": 384,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        262
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 570,
+        "parent": 564,
+        "geo": 384,
+        "source_material_ids": [
+          262
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 571,
+      "parent": 564,
+      "geo": 385,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        263
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 571,
+        "parent": 564,
+        "geo": 385,
+        "source_material_ids": [
+          263
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 572,
+      "parent": 564,
+      "geo": 386,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        264
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 572,
+        "parent": 564,
+        "geo": 386,
+        "source_material_ids": [
+          264
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 577,
+      "parent": 576,
+      "geo": 389,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        267
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 577,
+        "parent": 576,
+        "geo": 389,
+        "source_material_ids": [
+          267
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 578,
+      "parent": 576,
+      "geo": 390,
+      "tris": 2,
+      "resultTris": 0,
+      "removed": 2,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        268
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 578,
+        "parent": 576,
+        "geo": 390,
+        "source_material_ids": [
+          268
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2
+    },
+    {
+      "node": 581,
+      "parent": 576,
+      "geo": 393,
+      "tris": 36,
+      "resultTris": 0,
+      "removed": 36,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        271
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 581,
+        "parent": 576,
+        "geo": 393,
+        "source_material_ids": [
+          271
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 584,
+      "parent": 583,
+      "geo": 395,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        262
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 584,
+        "parent": 583,
+        "geo": 395,
+        "source_material_ids": [
+          262
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 585,
+      "parent": 583,
+      "geo": 396,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        267
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 585,
+        "parent": 583,
+        "geo": 396,
+        "source_material_ids": [
+          267
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 586,
+      "parent": 583,
+      "geo": 397,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        271
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 586,
+        "parent": 583,
+        "geo": 397,
+        "source_material_ids": [
+          271
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 587,
+      "parent": 583,
+      "geo": 398,
+      "tris": 56,
+      "resultTris": 0,
+      "removed": 56,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        272
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 587,
+        "parent": 583,
+        "geo": 398,
+        "source_material_ids": [
+          272
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 56
+    },
+    {
+      "node": 590,
+      "parent": 483,
+      "geo": 401,
+      "tris": 9750,
+      "resultTris": 0,
+      "removed": 9750,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        274
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 590,
+        "parent": 483,
+        "geo": 401,
+        "source_material_ids": [
+          274
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 9750
+    },
+    {
+      "node": 1003,
+      "parent": 1002,
+      "geo": 687,
+      "tris": 64,
+      "resultTris": 0,
+      "removed": 64,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        435
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1003,
+        "parent": 1002,
+        "geo": 687,
+        "source_material_ids": [
+          435
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 64
+    },
+    {
+      "node": 1004,
+      "parent": 1002,
+      "geo": 688,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        434
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1004,
+        "parent": 1002,
+        "geo": 688,
+        "source_material_ids": [
+          434
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 1006,
+      "parent": 993,
+      "geo": 690,
+      "tris": 472,
+      "resultTris": 344,
+      "removed": 128,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g690.g690",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        435
+      ],
+      "protectedTrianglesRetained": 24,
+      "retainedIndexSha256": "c9c6e5c86ae0d056809a53f5561c3cf02a2f69fa769a92d44a466ff76f520af5",
+      "recipe": {
+        "node": 1006,
+        "parent": 993,
+        "geo": 690,
+        "source_material_ids": [
+          435
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -9.2,
+            -8.6,
+            1.38,
+            3.75,
+            4.09,
+            4.61
+          ],
+          [
+            -9.151,
+            -9.049,
+            -0.01,
+            1.11,
+            4.669,
+            4.811
+          ],
+          [
+            2.53,
+            3.47,
+            -0.26,
+            1.51,
+            -4.47,
+            -3.53
+          ],
+          [
+            1.08,
+            2.04,
+            -0.16,
+            2.06,
+            -3.06,
+            -2.15
+          ]
+        ],
+        "protect_boxes": [
+          [
+            3.035,
+            3.165,
+            0.26,
+            0.8,
+            -3.88,
+            -3.48
+          ]
+        ]
+      },
+      "sourceRawTris": 472
+    },
+    {
+      "node": 1007,
+      "parent": 993,
+      "geo": 691,
+      "tris": 1426,
+      "resultTris": 778,
+      "removed": 648,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g691.g691",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        434
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "a47473285ea592c55bed7037ecc2257d7e4a489c43657683d350c42f833c3168",
+      "recipe": {
+        "node": 1007,
+        "parent": 993,
+        "geo": 691,
+        "source_material_ids": [
+          434
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -12.57,
+            -12.23,
+            2.75,
+            3.7,
+            1.83,
+            2.17
+          ],
+          [
+            -9.16,
+            -8.94,
+            3.55,
+            3.8,
+            4.33,
+            4.57
+          ],
+          [
+            -10.261,
+            -9.639,
+            2.161,
+            2.363,
+            4.699,
+            4.712
+          ],
+          [
+            2.53,
+            3.47,
+            -0.26,
+            1.51,
+            -4.47,
+            -3.53
+          ],
+          [
+            1.08,
+            2.04,
+            -0.16,
+            2.06,
+            -3.06,
+            -2.15
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 1426
+    },
+    {
+      "node": 1008,
+      "parent": 993,
+      "geo": 692,
+      "tris": 432,
+      "resultTris": 26,
+      "removed": 406,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g692.g692",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        437
+      ],
+      "protectedTrianglesRetained": 14,
+      "retainedIndexSha256": "66362e6c0decdacd4d13a8b9ef53c88173a58b3135bab6ae1a7ed4bcfb0f78c8",
+      "recipe": {
+        "node": 1008,
+        "parent": 993,
+        "geo": 692,
+        "source_material_ids": [
+          437
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            2.53,
+            3.47,
+            -0.26,
+            1.51,
+            -4.47,
+            -3.53
+          ]
+        ],
+        "protect_boxes": [
+          [
+            3.025,
+            3.135,
+            1.045,
+            1.115,
+            -3.91,
+            -3.82
+          ]
+        ]
+      },
+      "sourceRawTris": 432
+    },
+    {
+      "node": 1009,
+      "parent": 993,
+      "geo": 693,
+      "tris": 36,
+      "resultTris": 30,
+      "removed": 6,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g693.g693",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        438
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "7ea7d40da86ebe2bae49c31f1fa8426a107ced2dde35ca5c8bb186d8d0657286",
+      "recipe": {
+        "node": 1009,
+        "parent": 993,
+        "geo": 693,
+        "source_material_ids": [
+          438
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -10.261,
+            -9.639,
+            2.161,
+            2.363,
+            4.699,
+            4.725
+          ],
+          [
+            -9.211,
+            -8.989,
+            1.199,
+            1.341,
+            4.809,
+            4.829
+          ],
+          [
+            2.53,
+            3.47,
+            -0.26,
+            1.51,
+            -4.47,
+            -3.53
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 36
+    },
+    {
+      "node": 1010,
+      "parent": 993,
+      "geo": 694,
+      "tris": 288,
+      "resultTris": 240,
+      "removed": 48,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g694.g694",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        439
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "24349b4069694ef4427847ac7b40c621695db32baa6a1adc1e58baef537d316c",
+      "recipe": {
+        "node": 1010,
+        "parent": 993,
+        "geo": 694,
+        "source_material_ids": [
+          439
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -13.486,
+            -8.514,
+            2.594,
+            2.666,
+            1.014,
+            4.986
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 288
+    },
+    {
+      "node": 1013,
+      "parent": 993,
+      "geo": 697,
+      "tris": 76,
+      "resultTris": 36,
+      "removed": 40,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g697.g697",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        442
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e937b52b2a6dcc1b031615a3561bd631647928f5acfb7f8f8ba58f96e93322e4",
+      "recipe": {
+        "node": 1013,
+        "parent": 993,
+        "geo": 697,
+        "source_material_ids": [
+          442
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -13.501,
+            -8.499,
+            -0.251,
+            0.001,
+            0.999,
+            5.001
+          ],
+          [
+            -10.651,
+            -9.249,
+            -0.251,
+            -0.069,
+            4.999,
+            5.421
+          ],
+          [
+            2.53,
+            3.47,
+            -0.26,
+            1.51,
+            -4.47,
+            -3.53
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 76
+    },
+    {
+      "node": 1014,
+      "parent": 993,
+      "geo": 698,
+      "tris": 144,
+      "resultTris": 0,
+      "removed": 144,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        443
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1014,
+        "parent": 993,
+        "geo": 698,
+        "source_material_ids": [
+          443
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 144
+    },
+    {
+      "node": 1015,
+      "parent": 993,
+      "geo": 699,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        444
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1015,
+        "parent": 993,
+        "geo": 699,
+        "source_material_ids": [
+          444
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 1016,
+      "parent": 993,
+      "geo": 700,
+      "tris": 188,
+      "resultTris": 0,
+      "removed": 188,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        445
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1016,
+        "parent": 993,
+        "geo": 700,
+        "source_material_ids": [
+          445
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -13.001,
+            -8.5,
+            0.8,
+            2.0,
+            1.499,
+            4.701
+          ],
+          [
+            2.53,
+            3.47,
+            -0.26,
+            1.51,
+            -4.47,
+            -3.53
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 188
+    },
+    {
+      "node": 1017,
+      "parent": 993,
+      "geo": 701,
+      "tris": 240,
+      "resultTris": 0,
+      "removed": 240,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        433
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1017,
+        "parent": 993,
+        "geo": 701,
+        "source_material_ids": [
+          433
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 240
+    },
+    {
+      "node": 1018,
+      "parent": 993,
+      "geo": 702,
+      "tris": 4,
+      "resultTris": 0,
+      "removed": 4,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        446
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1018,
+        "parent": 993,
+        "geo": 702,
+        "source_material_ids": [
+          446
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 4
+    },
+    {
+      "node": 1019,
+      "parent": 993,
+      "geo": 703,
+      "tris": 42,
+      "resultTris": 14,
+      "removed": 28,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g703.g703",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        447
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "53803e079daacdf158d3a332a3eca153ece5477af09ab3cfea3cc797ca9dddd7",
+      "recipe": {
+        "node": 1019,
+        "parent": 993,
+        "geo": 703,
+        "source_material_ids": [
+          447
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            1.08,
+            2.04,
+            -0.16,
+            2.06,
+            -3.06,
+            -2.15
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 42
+    },
+    {
+      "node": 1021,
+      "parent": 993,
+      "geo": 705,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        449
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1021,
+        "parent": 993,
+        "geo": 705,
+        "source_material_ids": [
+          449
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -9.231,
+            -8.969,
+            1.089,
+            1.411,
+            4.699,
+            4.821
+          ],
+          [
+            2.53,
+            3.47,
+            -0.26,
+            1.51,
+            -4.47,
+            -3.53
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 1026,
+      "parent": 993,
+      "geo": 710,
+      "tris": 6416,
+      "resultTris": 6384,
+      "removed": 32,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g710.g710",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        454
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "b9f34cd56826f1138b539b04aa932cf81801e78b392272564261d46fecb40430",
+      "recipe": {
+        "node": 1026,
+        "parent": 993,
+        "geo": 710,
+        "source_material_ids": [
+          454
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            1.08,
+            2.04,
+            -0.16,
+            2.06,
+            -3.06,
+            -2.15
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 6416
+    },
+    {
+      "node": 1027,
+      "parent": 993,
+      "geo": 711,
+      "tris": 64,
+      "resultTris": 0,
+      "removed": 64,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        455
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1027,
+        "parent": 993,
+        "geo": 711,
+        "source_material_ids": [
+          455
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            1.08,
+            2.04,
+            -0.16,
+            2.06,
+            -3.06,
+            -2.15
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 64
+    },
+    {
+      "node": 1034,
+      "parent": 1032,
+      "geo": 713,
+      "tris": 84,
+      "resultTris": 0,
+      "removed": 84,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        457
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1034,
+        "parent": 1032,
+        "geo": 713,
+        "source_material_ids": [
+          457
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 84
+    },
+    {
+      "node": 1035,
+      "parent": 1030,
+      "geo": 714,
+      "tris": 18,
+      "resultTris": 0,
+      "removed": 18,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        458
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1035,
+        "parent": 1030,
+        "geo": 714,
+        "source_material_ids": [
+          458
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 18
+    },
+    {
+      "node": 1036,
+      "parent": 1030,
+      "geo": 715,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        459
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1036,
+        "parent": 1030,
+        "geo": 715,
+        "source_material_ids": [
+          459
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 1037,
+      "parent": 1030,
+      "geo": 716,
+      "tris": 356,
+      "resultTris": 0,
+      "removed": 356,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        457
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1037,
+        "parent": 1030,
+        "geo": 716,
+        "source_material_ids": [
+          457
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -13.001,
+            -8.999,
+            2.479,
+            2.601,
+            2.159,
+            2.241
+          ],
+          [
+            -13.001,
+            -8.999,
+            2.479,
+            2.601,
+            3.759,
+            3.841
+          ],
+          [
+            -13.001,
+            -8.999,
+            0.881,
+            0.919,
+            1.479,
+            1.526
+          ],
+          [
+            -13.001,
+            -8.999,
+            0.881,
+            0.919,
+            4.474,
+            4.521
+          ],
+          [
+            -13.026,
+            -12.974,
+            0.881,
+            0.919,
+            1.499,
+            4.501
+          ],
+          [
+            -9.026,
+            -8.974,
+            0.881,
+            0.919,
+            1.499,
+            4.501
+          ],
+          [
+            -12.951,
+            -12.049,
+            1.319,
+            1.496,
+            1.499,
+            1.771
+          ],
+          [
+            -11.32,
+            -10.78,
+            0.802,
+            0.86,
+            1.75,
+            2.17
+          ],
+          [
+            -12.955,
+            -9.945,
+            -0.03,
+            0.801,
+            1.495,
+            2.225
+          ],
+          [
+            -13.03,
+            -12.63,
+            1.16,
+            2.18,
+            2.32,
+            2.78
+          ],
+          [
+            -11.51,
+            -10.79,
+            1.58,
+            1.98,
+            1.505,
+            1.56
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 356
+    },
+    {
+      "node": 1038,
+      "parent": 1030,
+      "geo": 717,
+      "tris": 2,
+      "resultTris": 0,
+      "removed": 2,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        460
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1038,
+        "parent": 1030,
+        "geo": 717,
+        "source_material_ids": [
+          460
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2
+    },
+    {
+      "node": 1039,
+      "parent": 1030,
+      "geo": 718,
+      "tris": 2,
+      "resultTris": 0,
+      "removed": 2,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        461
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1039,
+        "parent": 1030,
+        "geo": 718,
+        "source_material_ids": [
+          461
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2
+    },
+    {
+      "node": 1040,
+      "parent": 1030,
+      "geo": 719,
+      "tris": 72,
+      "resultTris": 24,
+      "removed": 48,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g719.g719",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        462
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "981fa2eba4abdfe7921bd783f033a7083a7264093b0da94ec775da1a168bf088",
+      "recipe": {
+        "node": 1040,
+        "parent": 1030,
+        "geo": 719,
+        "source_material_ids": [
+          462
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -12.91,
+            -12.08,
+            1.49,
+            1.76,
+            1.55,
+            1.71
+          ],
+          [
+            -11.32,
+            -10.78,
+            0.802,
+            0.86,
+            1.75,
+            2.17
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 72
+    },
+    {
+      "node": 1041,
+      "parent": 1030,
+      "geo": 720,
+      "tris": 60,
+      "resultTris": 34,
+      "removed": 26,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g720.g720",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        463
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "9b7daa307264c2fc1d90e53b76c85b32ce7226dd8ceda13d2e8a7af0dd9d560c",
+      "recipe": {
+        "node": 1041,
+        "parent": 1030,
+        "geo": 720,
+        "source_material_ids": [
+          463
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -12.91,
+            -12.08,
+            1.49,
+            1.76,
+            1.55,
+            1.71
+          ],
+          [
+            -12.535,
+            -12.525,
+            1.419,
+            1.481,
+            3.619,
+            3.741
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 60
+    },
+    {
+      "node": 1042,
+      "parent": 1030,
+      "geo": 721,
+      "tris": 774,
+      "resultTris": 248,
+      "removed": 526,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g721.g721",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        464
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "7a51793289e9cbedc115dd7f49d85da56dcb46b564457b9fb86de80ac6336419",
+      "recipe": {
+        "node": 1042,
+        "parent": 1030,
+        "geo": 721,
+        "source_material_ids": [
+          464
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -12.535,
+            -12.52,
+            0.039,
+            1.741,
+            3.892,
+            3.908
+          ],
+          [
+            -12.45,
+            -11.3,
+            0.795,
+            1.13,
+            1.6,
+            2.17
+          ],
+          [
+            -13.03,
+            -12.63,
+            1.16,
+            2.18,
+            2.32,
+            2.78
+          ],
+          [
+            -11.51,
+            -10.79,
+            1.58,
+            1.98,
+            1.505,
+            1.56
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 774
+    },
+    {
+      "node": 1043,
+      "parent": 1030,
+      "geo": 722,
+      "tris": 556,
+      "resultTris": 40,
+      "removed": 516,
+      "hidden": false,
+      "asset": "/Game/FieldStation/Trim/StaticMeshes/g722.g722",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialIds": [
+        465
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "04b9c3a0be86c2eea7341e691bfbd47d89c2d6246652f9bafa78a9e8a0c90166",
+      "recipe": {
+        "node": 1043,
+        "parent": 1030,
+        "geo": 722,
+        "source_material_ids": [
+          465
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -12.54,
+            -12.49,
+            0.919,
+            1.081,
+            3.819,
+            3.981
+          ],
+          [
+            -12.22,
+            -12.08,
+            1.489,
+            1.671,
+            1.559,
+            1.701
+          ],
+          [
+            -12.45,
+            -11.3,
+            0.795,
+            1.13,
+            1.6,
+            2.17
+          ],
+          [
+            -13.03,
+            -12.63,
+            1.16,
+            2.18,
+            2.32,
+            2.78
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 556
+    },
+    {
+      "node": 1044,
+      "parent": 1030,
+      "geo": 723,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        466
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1044,
+        "parent": 1030,
+        "geo": 723,
+        "source_material_ids": [
+          466
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -12.45,
+            -11.3,
+            0.795,
+            1.13,
+            1.6,
+            2.17
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 1045,
+      "parent": 1030,
+      "geo": 724,
+      "tris": 4,
+      "resultTris": 0,
+      "removed": 4,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        467
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1045,
+        "parent": 1030,
+        "geo": 724,
+        "source_material_ids": [
+          467
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -12.45,
+            -11.3,
+            0.795,
+            1.13,
+            1.6,
+            2.17
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 4
+    },
+    {
+      "node": 1046,
+      "parent": 1030,
+      "geo": 725,
+      "tris": 4,
+      "resultTris": 0,
+      "removed": 4,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        468
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1046,
+        "parent": 1030,
+        "geo": 725,
+        "source_material_ids": [
+          468
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -11.32,
+            -10.78,
+            0.802,
+            0.86,
+            1.75,
+            2.17
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 4
+    },
+    {
+      "node": 1049,
+      "parent": 1030,
+      "geo": 728,
+      "tris": 2,
+      "resultTris": 0,
+      "removed": 2,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        471
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1049,
+        "parent": 1030,
+        "geo": 728,
+        "source_material_ids": [
+          471
+        ],
+        "whole": false,
+        "cut_boxes": [
+          [
+            -11.51,
+            -10.79,
+            1.58,
+            1.98,
+            1.505,
+            1.56
+          ]
+        ],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2
+    },
+    {
+      "node": 1050,
+      "parent": 1030,
+      "geo": 729,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        472
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1050,
+        "parent": 1030,
+        "geo": 729,
+        "source_material_ids": [
+          472
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 1052,
+      "parent": 1051,
+      "geo": 730,
+      "tris": 48,
+      "resultTris": 0,
+      "removed": 48,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        473
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1052,
+        "parent": 1051,
+        "geo": 730,
+        "source_material_ids": [
+          473
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 48
+    },
+    {
+      "node": 1053,
+      "parent": 1051,
+      "geo": 731,
+      "tris": 24,
+      "resultTris": 0,
+      "removed": 24,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        465
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1053,
+        "parent": 1051,
+        "geo": 731,
+        "source_material_ids": [
+          465
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 24
+    },
+    {
+      "node": 1065,
+      "parent": 1064,
+      "geo": 739,
+      "tris": 80,
+      "resultTris": 0,
+      "removed": 80,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        464
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1065,
+        "parent": 1064,
+        "geo": 739,
+        "source_material_ids": [
+          464
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 80
+    },
+    {
+      "node": 1066,
+      "parent": 1064,
+      "geo": 740,
+      "tris": 12,
+      "resultTris": 0,
+      "removed": 12,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        465
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1066,
+        "parent": 1064,
+        "geo": 740,
+        "source_material_ids": [
+          465
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 12
+    },
+    {
+      "node": 1071,
+      "parent": 1029,
+      "geo": 743,
+      "tris": 3450,
+      "resultTris": 0,
+      "removed": 3450,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        477
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1071,
+        "parent": 1029,
+        "geo": 743,
+        "source_material_ids": [
+          477
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 3450
+    },
+    {
+      "node": 1133,
+      "parent": 992,
+      "geo": 788,
+      "tris": 2468,
+      "resultTris": 0,
+      "removed": 2497,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialIds": [
+        508
+      ],
+      "protectedTrianglesRetained": 0,
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "recipe": {
+        "node": 1133,
+        "parent": 992,
+        "geo": 788,
+        "source_material_ids": [
+          508
+        ],
+        "whole": true,
+        "cut_boxes": [],
+        "protect_boxes": []
+      },
+      "sourceRawTris": 2497
+    }
+  ],
+  "bindings": [
+    {
+      "part": "SM_FieldKit_LampBulb",
+      "material": "M_FieldKit_FieldBulb",
+      "kind": "material",
+      "handle": "world.site.m.fieldBulb",
+      "emission": 1.2,
+      "slot": 0
+    },
+    {
+      "part": "SM_FieldKit_ReceiverDial",
+      "material": "M_FieldKit_PrintAtlas",
+      "kind": "material",
+      "handle": "world.site.m.dial",
+      "emission": 0.35,
+      "slot": 0
+    }
+  ],
+  "part_count": 29
+}

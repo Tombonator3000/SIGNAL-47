@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Skyggemenn, 25. oktober 2026
+
+- Tom ønsker helt svarte menneskeskikkelser som bare flytter seg usett, og ba om flere agenter til psykologi-/skrekkvurdering. Tre parallelle lesegjennomganger og primærforskning er samlet i ANOMALY_PLAN.md del 13; produksjonssteg ligger i todo.md.
+- Forslag: stabil observasjonsregel, konservativ frysing også i periferien, ingen forsvinning ved zoom/lykt, beskyttede paneler/dialog og en hel SARO-vindu/trafo/retur-pilot med foto/lagring. Gamle Glimpses og SaroDark har motstridende forsvinningsregler; de er fortsatt uendret.
+- Kun design og dokumenter. Ingen skyggemannmodell, ny runtime, bygg, pakking eller installasjon. Frykteffekt, spilletid og ytelse er ikke prøvd. Eksisterende M6 beholdes.
+
 ## SARO og resterende modellprioritet, 2026-10-25 kl. 02:07
 
 - Testet spillkilde `aefd18157be7502ac98d3e1695b4c4fcdd7d26a0`, kandidat `M6`. SARO har 2 hovedmaster og 1 service-/trafostolpe innen 100 m; bygg 2 har inntrukket glass og solid skiltvegg.
@@ -305,3 +311,11 @@ Installert i ~/Games/Signal47/Linux med 40 kontrollerte payloadhash og 51 Saved-
 
 - Caliche-gatebiten er lokalt flettet fra codex/caliche-street og installert i ~/Games/Signal47/Linux. Original suvenirbutikk med butikkrom, sju nye native deler og kontaktjustert bakke rundt eksisterende bensinstasjon og 1420 AM. Steinmaterialer, lokalt lys og faktisk dagslys er rettet etter første visuelle gjennomgang. 212 importkontroller, 84 native kontroller, 1305 selvtester, dør/bevegelse/buzzer, fotopilot og fem korte historieregresjoner PASS. 24 bilder ved 1,62 m i to tidslinjer og dag/skumring/natt er visuelt kontrollert; sekundær kode-/bildegjennomgang uten blokkerende funn. Kjørt sekvensielt med guard, ingen brukerprosess stoppet. 40 payloadfiler hashkontrollert; 51 Saved-filer uendret. Sikkerhetskopi: /home/tom/scratch-bm/Signal47-caliche-street/installed-backup-1792799774134625695. Kilder og bilder: ~/Desktop/Signal47 Caliche gatebit; bevis: ~/scratch-bm/Signal47-caliche-street. Testet C++/config 61120335, native c20beabe, pakke 485f3b19832a. Automatiske scenarioer er ikke menneskelig gjennomspilling, lytting eller fullnatt. Ingen ny ekstern publisering, push eller PR. Midlertidige Content-lenker og OpenOrder-endringer ryddet.
 - Blender/Fbx bruker eksplisitte ulike aksekontrakter for butikk og bakke. Ground/glass er NoCollision; behold gamle ganggulv. Uniontrim er atomisk og bevarer fortausmaterialet. Normalstyrke/UV-skala har eksplisitte importparametre; UE-pinnen heter UVs. Midday gjelder bare render fra 05:40, uten å endre Dawn eller historiegater. Se Signal47/Tools/calichestreet/acceptance.json.
+
+
+## STATION01 og SARO-arkiv, 25. oktober 2026
+
+- Tom prioriterte feltstasjon og interiør foran skyggemannmodellen. 29 originale deler, 87 geometriske LOD-er; kilder i Tools/fieldstation, fieldinstruments og archiveprops. Tre portable Blender-originaler med pakkede teksturer på Desktop/Signal47 feltmodeller 25okt.
+- S47FieldModels bruker atomisk validering av native assets og presise forgjengere; 73 patcher, 60 helt skjulte gamle blader og13 eksakte restmesher. Ekte interaksjonsforeldre, skuffer, foto-/gangpunkter, kabelbrudd, papir og KSU beholdes. Skala/lampe leser originale materialtilstander. FBX-akse: UE=(100x,-100y,100z).
+- Native F4/1191 og609 lagrede LOD-geometrikontroller PASS. glTF-restimport mistet tynne trekanter og ble avvist; bruk kontrollert FBX-løype. F3/093a4326 består fem fokuserte pakkede scenarioer og18 visuelt vurderte High/Clean-bilder. F1/F2 ble avvist på store gamle glød-/støvkort; F3 retter nære kort/støvkorn uten global lysendring.
+- Feltrollens nattfoto er svært mørke. Foto/fremkalling/innsamling og ekte disk-Continue er prøvd via native API. Ingen fysisk Xbox, menneskelig gjennomspilling, lytting, fullnatt eller helruteytelse. Eksisterende RT-minnevarsel beholdes. Se FIELD_MODELS.md og acceptance.json. Fletting/installasjon føres separat.

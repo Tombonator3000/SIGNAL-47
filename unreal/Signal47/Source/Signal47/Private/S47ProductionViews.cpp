@@ -65,7 +65,13 @@ void AS47Web::BeginProductionViews()
   {TEXT("motel-court"),TEXT("saro"),{-37.5,0,694},{-43,0,698}},
   {TEXT("motel-office"),TEXT("saro"),{-42,0,673},{-46.5,-.7,674.7}},
   {TEXT("room6"),TEXT("room6"),{-1.4,0,-7997.7},{1,1,-8001.4}},
-  {TEXT("room6-bath"),TEXT("room6"),{-1.05,0,-8003.55},{-.3,1,-8004.95}}
+  {TEXT("room6-bath"),TEXT("room6"),{-1.05,0,-8003.55},{-.3,1,-8004.95}},
+  {TEXT("field-hut"),TEXT("station01"),{-7,0,8008},{-11,1.35,8003.3}},
+  {TEXT("field-interior"),TEXT("station01"),{-10.6,0,8003.7},{-11.5,1.1,8001.9}},
+  {TEXT("field-transit"),TEXT("station01"),{5,0,7998},{3,1.1,7996}},
+  {TEXT("field-phone"),TEXT("station01"),{-11.5,0,8003.4},{-12.85,1.6,8002.7}},
+  {TEXT("archive-shelves"),TEXT("saro"),{-3.2,0,7.3},{-5.4,1.1,8.9}},
+  {TEXT("archive-recorder"),TEXT("saro"),{-1.9,0,9.3},{-1.1,1.5,10.22}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false;double Since=0,Hold=2.5,RequestedAt=0;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -91,7 +97,9 @@ void AS47Web::BeginProductionViews()
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
    if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
-    ||(State->Suite==TEXT("motel")&&(I<9||I>10))||(State->Suite==TEXT("room6")&&(I<11||I>12))){++State->Index;continue;}break;
+    ||(State->Suite==TEXT("motel")&&(I<9||I>10))||(State->Suite==TEXT("room6")&&(I<11||I>12))
+    ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))
+    ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
   if(State->Index>=UE_ARRAY_COUNT(Views)*3){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));return;}
   const int32 I=State->Index%UE_ARRAY_COUNT(Views),Light=State->Index/UE_ARRAY_COUNT(Views);const auto& V=Views[I];const double Now=FPlatformTime::Seconds();
@@ -122,7 +130,11 @@ void AS47Web::BeginProductionViews()
   TArray<FString> Lines;bool Ok=true;
   if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }
-  else Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines);
+  else if(I<13) Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines);
+  else { Ok=W->FieldModelComponents.Num()==29 && W->FieldModelBindings.Num()==2 && W->FieldModelRetired.Num()>0;
+   for(const auto& C:W->FieldModelComponents)Ok&=C.IsValid();
+   for(const auto& C:W->FieldModelRetired)Ok&=C.IsValid()&&C->bHiddenInGame;
+   Lines.Add(FString::Printf(TEXT("field kit %s: %d parts, %d live bindings, %d old leaves hidden"),Ok?TEXT("PASS"):TEXT("FAIL"),W->FieldModelComponents.Num(),W->FieldModelBindings.Num(),W->FieldModelRetired.Num())); }
   for(const auto& Line:Lines)UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production %s"),*Line);
   if(!Ok){Fail(TEXT("native installation audit"));return;}
   static const TCHAR* Lights[]={TEXT("day"),TEXT("dusk"),TEXT("night")};const FString Name=FString(Lights[Light])+TEXT("-")+V.Name,File=State->Dir/(Name+TEXT(".png"));

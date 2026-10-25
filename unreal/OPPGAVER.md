@@ -2,6 +2,14 @@
 
 Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgave har eier, gren og status. Les denne før du starter, og oppdater status når du begynner og når du er ferdig.
 
+## Feltreise, originalmodellpakke kontrollert 25.10.2026
+
+Codex på `codex/field-investigation-models`, fra 7f14e338. Den tidligere bygningslisten er levert i M6; neste reelle hull er STATION01-hytta, feltinstrumentene og SARO-arkivet. Tre avgrensede hjelpere eier Tools/fieldstation, Tools/fieldinstruments og Tools/archiveprops. Root eier felles import, presise gamle geometriutskiftninger, integrasjon og alle tunge jobber sekvensielt. Eksisterende gang-/fotopunkter, skuffer, lamper, dør og telefon beholdes som historiedrivere. Ingen ny adgang til Dales kontor eller skyggemannmekanikk inngår. Tidligere skyggemanndesign er bevart som dokumenter. 29 deler med tre LOD-er er nå integrert. F3 fra093a4326: fem fokuserte pakkede scenarioer, 1400 selvtester og18 faktisk vurderte spillerhøydebilder PASS. Tre portable Blender-originaler og305 hashkontrollerte kildefiler ligger på skrivebordet. Se FIELD_MODELS.md for begrensninger og videre leveringsstatus.
+
+## Skyggemenn, designgjennomgang 25.10.2026
+
+Codex med tre avgrensede lesende agenter for primærforskning, kodekartlegging og møter. Ferdig analyse i ANOMALY_PLAN.md del 13 og prioritert produksjonsforslag i todo.md. Anbefalt første reise er SARO-vindu, trafostasjon og retur med én helt svart skikkelse, konsekvent usett flytting og ekte foto/lagring. Eksisterende skikkelser forsvinner under visse blikk-/lyktvilkår og krever samordning før innføring. Kun dokumentendringer på `codex/saro-production-models`; ingen runtime-, modell-, bygge- eller installasjonsendring.
+
 ## Caliche konseptpass levert 24.10.2026 kl. 06:51
 
 Codex, `codex/caliche-concept`: ni visuelle iterasjoner av gatebiten ved bensinstasjonen, suvenirbutikken og 1420 AM er ferdige, lokalt flettet og installert. 42 faktiske spillerhøye sluttbilder, hele 110/110 screenshots.sh, elleve runtimeprøver, A02-pilot, tre horisontprøver, 249 native kontroller og fire portable Blender-kilder PASS. 40 payloadhash og 51 uendrede Saved-filer. Originaler, bildevelger og prioriteringsliste ligger i `~/Desktop/Signal47 Caliche konseptpass`; detaljstatus i [CALICHE_CONCEPT_PASS.md](CALICHE_CONCEPT_PASS.md). Videre bygningsprioritet starter med Mesa Diner og sheriffkontoret. Menneskelig input/lytting/fullnatt og helruteytelse er ikke målt her. Ingen ny ekstern publisering eller push/PR.
