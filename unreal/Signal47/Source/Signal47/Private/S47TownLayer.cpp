@@ -404,7 +404,29 @@ void US47TownLayer::TestFlags()
 				}, 54.f, false);
 			}
 		}
-		if (bCow) { M->World->Enter(TEXT("station01")); L->Ninth->Now(); const FVector P = L->NinthModel->NinthAt(TEXT("middle")); M->Player->Place(P.X, P.Z + 12, PI); FS47NinthIn S; S.bOk = S.bFree = true; S.Area = TEXT("station01"); S.Chapter = TEXT("ch3"); S.Cam.Pos = P + FVector(0, 1.62, 12); S.Cam.Forward = FVector(0, 0, 1); L->Ninth->Update(.05, S); M->Player->Yaw = 0; if (Cow == TEXT("found")) { M->Player->Place(P.X, P.Z + 5, 0); S.Cam.Pos = P + FVector(0, 1.62, 5); S.Cam.Forward = (P - S.Cam.Pos).GetSafeNormal(); S.bLight = true; L->Ninth->Update(2.1, S); } UE_LOG(LogS47Town, Display, TEXT("S47: ninth cow test %s"), *L->Ninth->State()); }
+		if (bCow)
+		{
+			M->World->Enter(TEXT("station01")); L->Ninth->Now();
+			const FVector P = L->NinthModel->NinthAt(TEXT("middle"));
+			M->Player->Place(P.X, P.Z + 12, PI);
+			FS47NinthIn S; S.bOk = S.bFree = true; S.Area = TEXT("station01"); S.Chapter = TEXT("ch3");
+			S.Cam.Pos = P + FVector(0, 1.62, 12); S.Cam.Forward = FVector(0, 0, 1);
+			L->Ninth->Update(.05, S); M->Player->Yaw = 0;
+			if (Cow == TEXT("found") || Cow == TEXT("details"))
+			{
+				M->Player->Place(P.X, P.Z + 5, 0);
+				S.Cam.Pos = P + FVector(0, 1.62, 5); S.Cam.Forward = (P - S.Cam.Pos).GetSafeNormal();
+				S.bLight = true; L->Ninth->Update(2.1, S);
+				if (Cow == TEXT("details"))
+				{
+					// Debug view only: run after the same discovery fixture, so an earlier
+					// PropsAt timer cannot be overwritten by this three-second setup.
+					M->Player->Place(P.X + 2.2, P.Z - 4.5, 2.687); M->Player->Pitch = -.22;
+					UE_LOG(LogS47Town, Display, TEXT("S47: ninth cow details view"));
+				}
+			}
+			UE_LOG(LogS47Town, Display, TEXT("S47: ninth cow test %s"), *L->Ninth->State());
+		}
 		if (bMorning) { M->World->Enter(TEXT("diner")); M->World->PlaceAtDiner(TEXT("inside")); M->Story->SetClock(S47Morning::FROM); FS47MorningIn S; S.bHere = S.bArea = S.bFree = true; S.Clock = L->Clock(); const bool b = L->Morning->Now(S); UE_LOG(LogS47Town, Display, TEXT("S47: morning test %s"), b ? TEXT("held") : TEXT("not here")); }
 		if (bCut) { bool b; if (Cut == TEXT("post")) b = L->Cutouts->PlacePost(L->Camera().Pos + L->Camera().Forward * 18 - FVector(0, 1.62, 0), L->PlayerAt()); else b = L->Cutouts->Place(L->CutoutIn(true)); UE_LOG(LogS47Town, Display, TEXT("S47: cutout test %s %s"), *L->Cutouts->Up, b ? TEXT("placed") : TEXT("nowhere")); }
 		if (bPerson) { M->World->Enter(TEXT("diner")); M->World->PlaceAtDiner(TEXT("inside")); M->Story->SetClock(3 * 3600); L->Caliche->Talk(Person); UE_LOG(LogS47Town, Display, TEXT("S47: Caliche conversation %s, people %d"), *Person, FS47Caliche::TownPeople(M->TownSeen).Num()); }
