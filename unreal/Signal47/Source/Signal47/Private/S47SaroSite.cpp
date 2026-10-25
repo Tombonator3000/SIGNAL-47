@@ -5,6 +5,7 @@
 #include "S47Three.h"
 #include "S47HighwayPower.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
@@ -22,6 +23,25 @@ namespace
  {TEXT("SM_SaroSite_Glass"),{29.6,-.6,0},{-8.295,-5.236,1.285},{8.495,5.236,2.865},{120,120,120},1},
  {TEXT("SM_SaroSite_ServiceEquipment"),{3.6,-.6,18.6},{-2.15,-.36,1.89},{.12,7.79,8.2},{1624,1048,712},4}
  };
+ // Existing Exterior.ts wing wall-pack apertures; sign is on Three Z=5.552.
+ const FVector SignWashAt[]={{20.9,2.665,5.94},{30.4,2.665,5.94}};
+ const FVector SignWashTarget[]={{24.4,2.1,5.552},{27.2,2.1,5.552}};
+ float SignPower(AS47Web* W)
+ {
+  // Same site slot9 and ext.glow20/21 feed as WingWest/WingEast. Fixed original
+  // reference14*.07 avoids capturing a blackout or recovery ramp as full power.
+  const int32 Site=W->FloodSet(TEXT("site"));
+  if(Site<0||W->FloodSlots(Site)<=9||!W->Obj(TEXT("ext.group")).Shown())return 0;
+  float K=FMath::Clamp(W->FloodPos(Site,9).A*W->FloodScaleOf(Site)/(14.f*.07f),0.f,1.f);
+  const auto* G=W->Glow(TEXT("ext.glow.points"));
+  if(!G)return 0;
+  for(int32 I:{20,21})
+  {
+   if(!G->Pos.IsValidIndex(I)||!G->Col.IsValidIndex(I)||W->NodeWorldThree(G->Node).TransformPosition(G->Pos[I]).Y < -900)return 0;
+   const FLinearColor C=G->Col[I];K=FMath::Min(K,FMath::Clamp(FMath::Max3(C.R,C.G,C.B),0.f,1.f));
+  }
+  return K;
+ }
  const FVector2D OldFeet[]={{-16.8,-16.8},{-16.8,28.5},{-16.8,69},{-16.8,-14},{-3,28.5},{3.6,18.6}};
  bool OldFoot(double X0,double X1,double Z0,double Z1)
  {
@@ -117,6 +137,19 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
   C->SetWorldTransform(FTransform(S47Three::ToUE(Spec[I].Root)));
   S->PartNodes.Add(W->AdoptNode(C,Grounds,FString(TEXT("saroSite:"))+Spec[I].Name));S->Parts.Add(C);
  }
+ // Two finite, shadow-casting warm sign washes at the preserved physical lamps.
+ // Their grazing cross-aim lights the printed sign without emissive lettering.
+ for(int32 I=0;I<2;++I)
+ {
+  auto* L=NewObject<USpotLightComponent>(W,*FString::Printf(TEXT("S47SaroSignWash%d"),I));
+  L->SetupAttachment(W->GetRootComponent());L->SetMobility(EComponentMobility::Movable);
+  L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1.f,.72f,.43f));
+  L->SetWorldLocationAndRotation(S47Three::ToUE(SignWashAt[I]),S47Three::DirToUE(SignWashTarget[I]-SignWashAt[I]).Rotation());
+  L->SetInnerConeAngle(45.f);L->SetOuterConeAngle(70.f);L->SetAttenuationRadius(900.f);
+  L->SetSourceRadius(3.f);L->SetSoftSourceRadius(3.f);L->SetCastShadows(true);
+  L->SetVolumetricScatteringIntensity(0.f);L->SetIndirectLightingIntensity(1.f);
+  L->SetVisibility(false);L->RegisterComponent();S->SignWash.Add(L);
+ }
  // Commit only after every source/native check. SetVisible on the wing would recurse into
  // preserved roof details, so retire only these exact draw components, leaving parent flags intact.
  for(int32 I:Retire)
@@ -140,6 +173,8 @@ void FS47SaroSite::Update()
  for(int32 I:PartNodes)W->SetVisible(I,Shown);
  // Area changes can reapply the original hierarchy visibility; suppress only retired draws.
  for(int32 I:RetiredNodes)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetVisibility(false,false);C->SetHiddenInGame(true,false);}
+ const float Power=Shown?SignPower(W):0.f;
+ for(const auto& P:SignWash)if(auto* L=P.Get()){L->SetIntensity(1200.f*Power);L->SetVisibility(Power>.0001f);}
  bShown=Shown;
 }
 bool FS47SaroSite::Audit(TArray<FString>& Lines)const
@@ -157,6 +192,9 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
  OK&=ComposedWindows;Lines.Add(FString::Printf(TEXT("SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; %s"),ComposedWindows?TEXT("PASS"):TEXT("FAIL")));
  auto* OldStains=Stains.Get();const bool StainsOK=OldStains&&OldStains->GetStaticMesh()&&OldStains->GetStaticMesh()->GetPathName()==TEXT("/Game/SaroSite/Trim/StaticMeshes/g455.g455")&&OldStains->GetStaticMesh()->GetNumTriangles(0)==1224&&OldStains->GetMaterial(0)==StainAtlas.Get();
  OK&=StainsOK;Lines.Add(FString::Printf(TEXT("SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; %s"),StainsOK?TEXT("PASS"):TEXT("FAIL")));
+ const float WashPower=bShown?SignPower(W):0.f;bool WashOK=SignWash.Num()==2;
+ for(int32 I=0;I<SignWash.Num();++I){const auto* L=SignWash[I].Get();WashOK&=L&&L->GetComponentLocation().Equals(S47Three::ToUE(SignWashAt[I]),.01)&&L->CastShadows&&L->IsVisible()==(WashPower>.0001f)&&FMath::IsNearlyEqual(L->Intensity,1200.f*WashPower,.1f);}
+ OK&=WashOK;Lines.Add(FString::Printf(TEXT("SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=%.4f; %s"),WashPower,WashOK?TEXT("PASS"):TEXT("FAIL")));
  const auto Power=S47HighwayPower::Status(W);OK&=Power.bReady&&Power.SaroMainWithin100m==2&&Power.SaroServicePoles==1&&Power.SaroTotalWithin100m==3;
  Lines.Add(FString::Printf(TEXT("SARO_SITE retiredDraws=%d legacyWalkFeet=%d legacyDriveFeet=%d utilityWithin100m=%d (main=%d service=%d), field lights/proxies unchanged; %s"),RetiredNodes.Num(),RemovedWalkFeet,RemovedDriveFeet,Power.SaroTotalWithin100m,Power.SaroMainWithin100m,Power.SaroServicePoles,OK?TEXT("PASS"):TEXT("FAIL")));return OK;
 }

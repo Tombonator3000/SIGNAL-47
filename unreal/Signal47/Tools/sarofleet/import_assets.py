@@ -19,19 +19,32 @@ OWN_DEST='/Game/SaroFleet'
 def imported_texture(filename,name,srgb):
  task=unreal.AssetImportTask();task.filename=str(WORK/filename);task.destination_path=DEST+'/Textures';task.destination_name=name;task.replace_existing=True;task.automated=True;task.save=True;T.import_asset_tasks([task]);tex=E.load_asset(task.destination_path+'/'+name);check(name+' imported',isinstance(tex,unreal.Texture2D));tex.set_editor_property('srgb',srgb);E.save_loaded_asset(tex);return tex
 
+
+def import_material(row):
+ # Share this exact material-only path with repairs; never reimport vehicle geometry.
+ material_dest=(OWN_DEST if row['name'].startswith('M_Fleet_') else DEST)+'/Materials'
+ mat=ns['material'](row,material_dest,WORK)
+ if row.get('textures',{}).get('base_color'):
+  # glTF multiplies sampled sRGB colour by the linear BaseColor factor.
+  sample=M.get_material_property_input_node(mat,unreal.MaterialProperty.MP_BASE_COLOR)
+  factor=next(n for n in M.get_material_expressions(mat) if isinstance(n,unreal.MaterialExpressionVectorParameter) and str(n.get_editor_property('parameter_name'))=='Color')
+  multiply=ns['expression'](mat,unreal.MaterialExpressionMultiply)
+  check(row['name']+' sampled base colour',isinstance(sample,unreal.MaterialExpressionTextureSample))
+  check(row['name']+' base texture factor A',M.connect_material_expressions(sample,'RGB',multiply,'A'))
+  check(row['name']+' base texture factor B',M.connect_material_expressions(factor,'RGB',multiply,'B'))
+  check(row['name']+' base texture factor output',M.connect_material_property(multiply,'',unreal.MaterialProperty.MP_BASE_COLOR))
+ if row.get('normal_format')=='OpenGL' and row.get('textures',{}).get('normal'):
+  tex=E.load_asset(material_dest+'/Textures/T_'+row['name']+'_normal');tex.set_editor_property('flip_green_channel',True);E.save_loaded_asset(tex)
+ if row.get('packed_metallic_roughness'):
+  tex=imported_texture(row['packed_metallic_roughness'],'T_'+row['name']+'_ORM',False)
+  n=ns['expression'](mat,unreal.MaterialExpressionTextureSample,texture=tex,sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+  check(row['name']+' roughness G',M.connect_material_property(n,'G',unreal.MaterialProperty.MP_ROUGHNESS));check(row['name']+' metallic B',M.connect_material_property(n,'B',unreal.MaterialProperty.MP_METALLIC))
+ check(row['name']+' final material compiles',not list(M.recompile_material(mat)));E.save_loaded_asset(mat)
+ return mat
+
 def main():
  contract=json.loads((WORK/'model_contract.json').read_text());rows=json.loads((WORK/'materials.json').read_text());mats={}
- for row in rows:
-  # Packed glTF metal/rough maps use G/B respectively; do not treat RGB as gray roughness.
-  material_dest=(OWN_DEST if row['name'].startswith('M_Fleet_') else DEST)+'/Materials'
-  mat=ns['material'](row,material_dest,WORK);mats[row['name']]=mat
-  if row.get('normal_format')=='OpenGL' and row.get('textures',{}).get('normal'):
-   tex=E.load_asset(material_dest+'/Textures/T_'+row['name']+'_normal');tex.set_editor_property('flip_green_channel',True);E.save_loaded_asset(tex)
-  if row.get('packed_metallic_roughness'):
-   tex=imported_texture(row['packed_metallic_roughness'],'T_'+row['name']+'_ORM',False)
-   n=ns['expression'](mat,unreal.MaterialExpressionTextureSample,texture=tex,sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
-   check(row['name']+' roughness G',M.connect_material_property(n,'G',unreal.MaterialProperty.MP_ROUGHNESS));check(row['name']+' metallic B',M.connect_material_property(n,'B',unreal.MaterialProperty.MP_METALLIC))
-   M.recompile_material(mat);E.save_loaded_asset(mat)
+ for row in rows:mats[row['name']]=import_material(row)
  for name,part in contract['parts'].items():
   mesh_dest=part['asset_folder'];path=mesh_dest+'/'+name
   if E.does_asset_exist(path):check(name+' fresh generated asset',E.delete_asset(path))

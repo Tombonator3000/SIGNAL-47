@@ -3,6 +3,7 @@
 class AS47Web;
 class UStaticMeshComponent;
 class UMaterialInterface;
+class USpotLightComponent;
 
 // Original wing facade and one necessary service transformer. No story or floor changes.
 class FS47SaroSite
@@ -16,6 +17,7 @@ private:
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;
  TWeakObjectPtr<UStaticMeshComponent> Stains;
  TWeakObjectPtr<UMaterialInterface> StainAtlas;
+ TArray<TWeakObjectPtr<USpotLightComponent>> SignWash;
  TArray<int32> PartNodes, RetiredNodes;
  int32 RemovedWalkFeet=0,RemovedDriveFeet=0;
  bool bShown=false;

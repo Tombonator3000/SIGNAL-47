@@ -182,6 +182,19 @@ def portable_image(im):
  dest=TEX/(Path(im.name).stem.replace('/','_')+suffix)
  if not dest.exists()or dest.read_bytes()!=raw:dest.write_bytes(raw)
  im.filepath_raw=str(dest);im.pack(data=raw,data_len=len(raw));portable_images[key]=dest;return dest
+def socket_image(socket):
+ # Follow only this semantic Principled input; specular/clearcoat images must never
+ # be inferred as BaseColor just because they are present in the same node tree.
+ pending=[link.from_node for link in socket.links];seen=set();images={}
+ while pending:
+  node=pending.pop()
+  if node.as_pointer()in seen:continue
+  seen.add(node.as_pointer())
+  if node.type=='TEX_IMAGE'and node.image:images[node.image.as_pointer()]=node.image;continue
+  pending.extend(link.from_node for inp in node.inputs for link in inp.links)
+ assert len(images)<=1,('ambiguous texture source',socket.name,[im.name for im in images.values()])
+ return next(iter(images.values()),None)
+
 # Collect portable image pixels without changing source UVs or baking lighting.
 # glTF OpenGL normal convention is declared explicitly for native green-channel inversion.
 for o in parts.values():
@@ -192,12 +205,17 @@ for o in parts.values():
   if m.name.startswith('14___Default') or 'Transperent'in m.name:row['alpha']=.16
   if p:
    row['alpha']=min(row.get('alpha',1),float(p.inputs['Alpha'].default_value))
-   for node in m.node_tree.nodes:
-    if node.type!='TEX_IMAGE' or not node.image:continue
-    im=node.image;dest=portable_image(im)
-    role='normal'if any(s in node.label.lower()+im.name.lower()for s in ['normal','_nor'])else'roughness'if 'metallicroughness'in im.name.lower()else'base_color'
-    if role=='roughness':row['packed_metallic_roughness']=str(dest.relative_to(WORK));continue
-    row['textures'][role]=str(dest.relative_to(WORK))
+   base=socket_image(p.inputs['Base Color']);normal=socket_image(p.inputs['Normal'])
+   rough=socket_image(p.inputs['Roughness']);metal=socket_image(p.inputs['Metallic'])
+   for role,im in [('base_color',base),('normal',normal)]:
+    if im:row['textures'][role]=str(portable_image(im).relative_to(WORK))
+   if base and p.inputs['Base Color'].links[0].from_node.type=='TEX_IMAGE':
+    # A linked direct image ignores Principled's unused .8 UI default.
+    row['base_color_linear']=[1,1,1,1]
+   if rough and metal:
+    assert rough==metal,('separate roughness/metallic maps need explicit conversion',m.name)
+    row['packed_metallic_roughness']=str(portable_image(rough).relative_to(WORK))
+   elif rough:row['textures']['roughness']=str(portable_image(rough).relative_to(WORK))
    row['normal_format']='OpenGL'
   rows[m.name]=row
 for key in ['Paint','Vinyl','Dash']:
