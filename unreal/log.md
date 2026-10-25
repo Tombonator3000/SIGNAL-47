@@ -316,3 +316,7 @@ M6, spillkilde aefd18157be7502ac98d3e1695b4c4fcdd7d26a0: 1400 selvtester og 10 m
 - Adgangsreglene til stengte bygg beholdes. Modellerte interiører gir ingen ny historieadgang.
 
 Se PRODUCTION_MODELS.md og acceptance.json. Fletting/installasjon føres separat.
+
+## 2026-10-25 kl. 02:13 CET, modelloppdrag levert
+
+PR155 er flettet i da4e2394 og samme testede M6 er installert: 40 identiske payloadfiler og 46 byteidentiske Saved-filer. Vanlig PRmerge etter kontroll av eksakt head8da3f743/baseunreal-port-core, CLEAN og ingen påkrevde CI-kontroller. Installer verifiserte1225 kilde-/assetinput og tok bytekontrollert backup før utskifting: `/home/tom/scratch-bm/Signal47-production-models/installation-M6-20261025T010934Z-db509ecb/payload-backup`. Eide Content-lenker er fjernet og begge OpenOrder-filer gjenopprettet. Ingen normal spillerøkt startet. Blender-/bildeleveransen har411 kontrollerte kildefiler og ni faktisk åpnede originaler. Se PRODUCTION_MODELS.md og `/home/tom/scratch-bm/Signal47-production-models/installation-M6-20261025T010934Z-db509ecb/result.json`.

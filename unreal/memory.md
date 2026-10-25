@@ -13,7 +13,7 @@
 - Det eksisterende varselet om raytracing-minne er fortsatt synlig. Renderer og minnebudsjett er ikke overstyrt globalt.
 - Adgangsreglene til stengte bygg beholdes. Modellerte interiører gir ingen ny historieadgang.
 
-- Levering: `/home/tom/Desktop/Signal47 modeller 25okt`. Bevis: `/home/tom/scratch-bm/Signal47-production-models`. Fletting/installasjon: Ikke registrert; føres separat etter faktisk resultat. Se PRODUCTION_MODELS.md og acceptance.json.
+- Levering: `/home/tom/Desktop/Signal47 modeller 25okt`. Bevis: `/home/tom/scratch-bm/Signal47-production-models`. PR155 er flettet i da4e2394 og samme testede M6 er installert: 40 identiske payloadfiler og 46 byteidentiske Saved-filer. Se PRODUCTION_MODELS.md og acceptance.json.
 
 ## SARO-ankomst og matstyring, 24. oktober 2026
 

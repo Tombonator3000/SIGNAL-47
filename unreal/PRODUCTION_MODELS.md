@@ -1,6 +1,6 @@
 # Gjennomføringsplan og modellresultat: SARO og Caliche
 
-Bestilt 25. oktober 2026. Testet spillkilde `aefd18157be7502ac98d3e1695b4c4fcdd7d26a0`, kandidat `M6`. Akseptbeviset er `Signal47/Tools/townintegration/acceptance.json`. Fletting og installasjon føres separat etter faktisk resultat.
+Bestilt 25. oktober 2026. Testet spillkilde `aefd18157be7502ac98d3e1695b4c4fcdd7d26a0`, kandidat `M6`. Akseptbeviset er `Signal47/Tools/townintegration/acceptance.json`. PR155 er flettet i da4e2394 og samme testede M6 er installert: 40 identiske payloadfiler og 46 byteidentiske Saved-filer.
 
 ## Rekkefølge og resultat
 
@@ -8,7 +8,7 @@ Bestilt 25. oktober 2026. Testet spillkilde `aefd18157be7502ac98d3e1695b4c4fcdd7
 2. Bygg 2: skilt på sammenhengende vegg, inntrukket glass og fysisk romdybde. De 16 gamle vindusrammene/persiennene fjernes presist fra g454: 13550 minus 976 bil- og 1872 vindustrekanter gir 10702 beholdte. I tillegg fjernes 488 trekanter fra de to gamle grimeplanene i g455, slik at gamle vindusåpninger i grimen ikke lager lyse rektangler på den nye veggen. Øvrige 1224 grime-trekanter beholdes med opprinnelig atlas. Beholdte attributter/UV/indekser er kontrollert; sammenslåtte foreldre skjules ikke. To varme skiltlys ved eksisterende lampeankre gir nattlesbarhet og følger opprinnelig SARO-strøm/blackout.
 3. SARO07: lokalt lisensiert C10 med eget førermiljø og SARO-merking, levende instrumenter/radio, lys og animerte hjul. To parkerte periodemodeller erstatter gamle bilkropper. Sju materialrader bruker nå faktiske BaseColor-kart/faktorer i stedet for feilaktige specularF0-kart; geometri og materialslots er bevart. Personlig stasjonsvogn beholdes. Site/Fleet installeres bare som et komplett sett.
 4. Sheriffkontor, motell/resepsjon/Rom 6/bad, vaskeri, fôrbutikk, Plaza-kino med foajé og kirke: 6 originale Blender-familier, 28 deler og 84 geometriske LOD-er. Trekantantall LOD0/1/2: 65154/48610/27450. Mesa Diner, bensinstasjon, suvenirbutikk og 1420 AM beholdes.
-5. Eksport, native lesing, pakket funksjon og bilder er egne bevis. Standardinstallasjon: Ikke registrert; føres separat etter faktisk resultat.
+5. Eksport, native lesing, pakket funksjon og bilder er egne bevis. Standardinstallasjon: PR155 er flettet i da4e2394 og samme testede M6 er installert: 40 identiske payloadfiler og 46 byteidentiske Saved-filer.
 
 | Leveranse | Kilde/native | Avgrenset pakket kontroll | Dag/skumring/natt |
 |---|---|---|---|
@@ -42,3 +42,7 @@ Avgrensede hjelpere skrev Site/strøm, Fleet og Town-kilder. Root integrerte og 
 PNMs [Electric Service Guide](https://www.pnm.com/esg-construction-drawings) og [RUS-tegninger fra 1986](https://www.rd.usda.gov/sites/default/files/50-4-specifications-and-drawings-for-distribution-line-construction-Nov.-20-1986.pdf) er visuelle referanser. Stolpetallet er et målt layoutvalg.
 
 Egne kilder: `Tools/sarosite`, `Tools/townbuildings`, `Tools/sarofleet`. Fullstendige lisensierte biler og derivater ligger utenfor offentlig Git, med kreditering og lisenser. Leveringsmappe: `/home/tom/Desktop/Signal47 modeller 25okt`. Bevisrot: `/home/tom/scratch-bm/Signal47-production-models`. Bilde-/kildefiler er knyttet til den testede kandidaten gjennom akseptfilens hash.
+
+## Faktisk levering, 2026-10-25 kl. 02:13 CET
+
+PR155 er flettet i da4e2394 og samme testede M6 er installert: 40 identiske payloadfiler og 46 byteidentiske Saved-filer. Verifisert sikkerhetskopi: `/home/tom/scratch-bm/Signal47-production-models/installation-M6-20261025T010934Z-db509ecb/payload-backup`. Bevis: `/home/tom/scratch-bm/Signal47-production-models/installation-M6-20261025T010934Z-db509ecb/result.json`. Alle1225 kilde-/assetinput matcher kandidaten. Ingen ny normal spillerøkt er startet. Galleri og ni Blender-originaler ligger i `/home/tom/Desktop/Signal47 modeller 25okt`.
