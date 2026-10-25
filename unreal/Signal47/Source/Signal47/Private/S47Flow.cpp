@@ -681,6 +681,8 @@ void US47Flow::StartGame(const FStart& O)
 	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
 	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
 	if (Checkpoint == TEXT("routine")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
+ // Both restored systems now belong to this case; validate T01 filing against its actual record.
+ if (M->Evening) M->Evening->ValidateServiceRestore();
 	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
 	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();

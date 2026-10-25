@@ -61,6 +61,9 @@ void US47Main::Step(double Dt)
 	if (Flow) Flow->Step(Dt);
 	if (Evening) Evening->Step(Dt);
 	if (Substation) Substation->Step(Dt);
+ // Opt-in live contract tests must also observe legacy restores with Evening disabled.
+ if (Evening) Evening->ControlServiceTest(Dt);
+ if (Evening) Evening->ControlServiceDriveTest(Dt);
 	if (Mode == EMode::Play && Anomaly) Anomaly->Step(Dt);
 	if (Mode == EMode::Play && AnomalyWorld) AnomalyWorld->Step(Dt);
 	const bool bOpening = Evening && Evening->Opening();

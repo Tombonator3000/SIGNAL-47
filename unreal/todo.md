@@ -35,6 +35,8 @@ Produksjonsgrunnlaget for H1.2 til H1.4 er levert i [Narrative/HorrorStory](Narr
 ### H2: Etterforskning og skyggemannintroduksjon
 
 - [ ] H2.1: Fullfør nødvendige T01/T02 som faktisk service-/kontrollreise ved trafostasjonen. Modeller/inspeksjoner er allerede levert; den nye fortellersekvensen krever egen integrasjon. Hold STATION01, SAROs K3 og byforsyning atskilt.
+- [x] H2.1a: Integrer T01 fra D01 via fysisk Caliche-kontroll til én SARO-arkivering. R2 består native ut-/returreise, 1 424 selvtester, 53 API/19 diskrestores, sju ferske Continue-prosesser, mat/D01 og elleve faktisk vurderte bilder. Gamle saker får ingen ny gate; faktisk manglende HUDmål etter filing/Continue er rettet. Manuell Roam/Xbox/lyd/fullnatt står fortsatt som menneskelig prøve. Se [T01_RUNTIME.md](T01_RUNTIME.md).
+- [ ] H2.1b: Fullfør T02 med fysisk kontor/nøkkel/feltmappe, fire faktiske kontrollprodusenter, bilde og én returarkivering. Bevar hovedruten videre med uavklart bevis, STATION01/Nora/K3/C og en ny fysisk baseline for gamle saker. VHS krever egen originalfilm/transport og skal ikke være tvungen adgangsbillett til feltreisen.
 - [ ] H2.2: Fullfør kontornøkkel, Dales eksisterende kontordør, relevante private funn og bevegelig VHS fra manuspakken, med fysisk oppfølging, pause/strøm og lagring. Dale forblir bare telefon/radio/walkie.
 - [ ] H2.3: Samordne Glimpses/SaroDark med én regel for svarte skyggemenn. Original 3D-silhuett, usett flytting, perifer observasjon, zoom/lykt/fotosøker og panelvern etter ANOMALY_PLAN del 13.
 - [ ] H2.4: Fullfør én hel SARO-vindu/trafo/retur-pilot uten skade, med ekte bilder, kontrollerbar sammenligning, fysisk oppfølging og disk-Continue. Valgfri skikkelse må kunne overses.

@@ -1,6 +1,7 @@
 #include "S47Evening.h"
 #include "S47EveningVisual.h"
 #include "S47Takeaway.h"
+#include "S47Substation.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47World.h"
@@ -18,6 +19,16 @@
 #include "S47Chapter.h"
 #include "S47Timeline.h"
 #include "Misc/CommandLine.h"
+
+namespace
+{
+ const TCHAR* FiledRoutineObjective(const AS47Story& Story)
+ {
+  if (!Story.BankIn()) return TEXT("CONTROL ROOM // RESTORE RX BANK 3");
+  return Story.Rx.Stage == 0 ? TEXT("CONTROL ROOM // CALIBRATE ON 1419.900 MHz")
+   : TEXT("CONTROL ROOM // NOTCH THE HIGHWAY RELAY NEAR 1420.1 TO START THE ROUTINE SURVEY");
+ }
+}
 
 FS47Evening::FS47Evening(US47Main* InM) : M(InM)
 {
@@ -64,6 +75,51 @@ FS47Evening::~FS47Evening()
 }
 
 bool FS47Evening::MealBusy() const { return bEnabled && Takeaway && Takeaway->MealBusy(); }
+
+bool FS47Evening::ServicePending() const
+{
+ return bEnabled && bServiceRoute && !bServiceFiled && Pack.Flag(TEXT("handover_done")) &&
+  M && M->Story && M->Story->bEveningTimeline && M->Story->Phase() == ES47Phase::Shift;
+}
+
+bool FS47Evening::AtShiftFolder() const
+{
+ return M && M->World && M->Player && M->Web && M->Mode == US47Main::EMode::Play &&
+  !M->World->bDriving && M->World->Area == TEXT("saro") &&
+  M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos);
+}
+
+FString FS47Evening::ServiceObjective() const
+{
+ if (!ServicePending()) return FString();
+ if (M->Substation && M->Substation->HasNormalResult())
+  return AtShiftFolder() ? TEXT("SHIFT FOLDER // FILE THE COMPLETED INSPECTION CARD, THEN START THE ROUTINE SURVEY")
+   : TEXT("SARO // RETURN TO THE CONTROL-ROOM SHIFT FOLDER WITH THE COMPLETED INSPECTION CARD");
+ if (M->World && M->World->Area == TEXT("saro"))
+  return TEXT("CALICHE JUNCTION // TAKE SARO 07 SOUTH TO THE SIGNED GRAVEL TURNOFF. CHECK THE INSPECTION LAMP OUTSIDE THE FENCE");
+ return TEXT("CALICHE JUNCTION // READ THE JOURNAL, RUN THE ENCLOSED SERVICE CHECK, THEN COMPARE THE MARKED LAMP");
+}
+
+TArray<FS47Task> FS47Evening::ServiceTasks() const
+{
+ if (!ServicePending()) return {};
+ const bool Journal = M->Substation && M->Substation->HasJournal();
+ const bool Compared = M->Substation && M->Substation->HasNormalResult();
+ return {{TEXT("Read the service journal at Caliche Junction's marked inspection front"), Journal},
+  {TEXT("Run the local check and compare its completed result with the marked lamp"), Compared},
+  {TEXT("Return to SARO and file the inspection card in the control-room shift folder before starting the overnight survey"), false}};
+}
+void FS47Evening::ValidateServiceRestore()
+{
+ if (!bEnabled || !bServiceRoute || !bServiceFiled) return;
+ if (!M || !M->Substation || !M->Substation->HasNormalResult() || !Pack.Flag(TEXT("trafo_normal_checked")))
+ {
+  // Begin runs before Substation::Begin. Never borrow the previous case's result.
+  bServiceFiled = false;
+  UE_LOG(LogTemp, Warning, TEXT("S47: T01 filed credit rejected after restore: current case has no complete physical inspection record"));
+ }
+}
+
 FVector FS47Evening::PersonalCarPosition() const { return Visual->ParkedPosition(); }
 double FS47Evening::PersonalCarHeading() const { return Visual->ParkedHeading(); }
 
@@ -82,6 +138,7 @@ void FS47Evening::Stop()
  if (Music) { Music->Stop(); Music->Disconnect(); Music.Reset(); }
  if (MusicGain) { MusicGain->Disconnect(); MusicGain.Reset(); }
  bEnabled = false; bDialogueOpen = false; bRadioRecorded = false; SpokenLine.Empty(); RadioSpokenLine.Empty();
+ bServiceRoute = bServiceFiled = false;
  if (M && M->Web) M->Web->SetHandsetVisible(true);
  if (M && M->Story) M->Story->bOpeningHeld = false;
  if (M && M->World) M->World->bCommuteVehicle = false;
@@ -91,11 +148,15 @@ void FS47Evening::Stop()
 void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
 {
  Stop(); Pack.Reset(); RadioPack.Reset(); bEnabled = true;
+ // Versioned opt-in belongs only to new nights. Missing/unknown versions retain the old route.
+ bServiceRoute = !Saved && !bPastOpening; bServiceFiled = false;
  bWorkStarted = false; bRadioOn = true; RadioHold = RadioRest = MusicPosition = 0;
  FString Error;
  if (Saved)
  {
   if (!Pack.Load(S47J::Obj(Saved,TEXT("pack")),Error)) { bEnabled=false; M->Story->bOpeningHeld=false; M->UI->Toast(TEXT("The evening state could not be restored: ")+Error,12); UE_LOG(LogTemp, Error,TEXT("S47: evening restore: %s"),*Error); return; }
+  bServiceRoute = S47J::Int(Saved,TEXT("serviceRouteVersion")) == 1;
+  bServiceFiled = bServiceRoute && S47J::Bool(Saved,TEXT("serviceFiled")) && Pack.Flag(TEXT("trafo_normal_checked"));
   if (S47J::Has(Saved,TEXT("radioPack"))) RadioPack.Load(S47J::Obj(Saved,TEXT("radioPack")),Error);
   bRadioOn = S47J::Bool(Saved,TEXT("radioOn"),true);
   RadioHold = S47J::Num(Saved,TEXT("radioHold")); RadioRest = S47J::Num(Saved,TEXT("radioRest"));
@@ -247,7 +308,7 @@ void FS47Evening::AfterDialogue()
   bWorkStarted=true; StopRing(); M->Web->SetHandsetVisible(true);
   M->Audio->Play(TEXT("handset_down"),0.5f,M->Web->PropLocation(TEXT("phone")));
   M->Story->BeginEveningShift(); Refile(); Context();
-  M->UI->Objective(TEXT("CONTROL ROOM // POWER THE RACK AND START THE ROUTINE SURVEY")); Changed();
+  M->UI->Objective(ServicePending() ? ServiceObjective() : FString(TEXT("CONTROL ROOM // POWER THE RACK AND START THE ROUTINE SURVEY"))); Changed();
  }
  else if (Commute()) M->UI->Objective(TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));
 }
@@ -263,6 +324,18 @@ bool FS47Evening::Use(const FString& Id)
  if (!bEnabled) return false;
  if (MealBusy()) return true;
  if (Takeaway->Use(Id)) return true;
+ if (ServicePending() && Id == TEXT("logbook") && AtShiftFolder() && M->Substation &&
+     M->Substation->HasNormalResult() && Pack.Flag(TEXT("trafo_normal_checked")) && !Pack.CurrentScene())
+ {
+  // One physical filing in the existing folder. Its normal comparison view still opens below.
+  bServiceFiled = true;
+  M->Story->Note(FString::Printf(TEXT("%s. Back at SARO, filed the Caliche Junction inspection card. The local panel and marked lamp agreed at %s. This records that circuit, not the town supply or SARO K3."),
+   *M->Story->ClockText(false), *M->Substation->NormalCompletionStamp()));
+  M->UI->Toast(TEXT("Local inspection card filed. The receiver calibration and overnight survey can continue."), 4);
+  M->UI->Objective(FiledRoutineObjective(*M->Story));
+  Changed();
+  // Do not consume this use: the existing shift-folder/N01 panel is the only panel opened.
+ }
  if (Id==TEXT("evening:radio") && Commute()) {bRadioOn=!bRadioOn;M->UI->Toast(bRadioOn?TEXT("Local evening radio on"):TEXT("Radio off"),2); Changed();return true;}
  if (Opening())
  {
@@ -418,6 +491,13 @@ void FS47Evening::Step(double Dt)
  if (bResumeRequested && !M->ModalOpen() && !M->World->bBusy) { bResumeRequested=false; ShowDialogue(); }
 
  Context();
+ if (ServicePending() && !M->World->bDriving) M->UI->Objective(ServiceObjective());
+ else if (bEnabled && bServiceRoute && bServiceFiled && M->Story->bEveningTimeline && !M->World->bDriving)
+ {
+  // Continue must restore the next receiver action as well as the filed evidence.
+  if (M->Story->Phase() == ES47Phase::Shift) M->UI->Objective(FiledRoutineObjective(*M->Story));
+  else if (M->Story->Phase() == ES47Phase::Survey) M->UI->Objective(FString());
+ }
  if (Opening() && !Commute() && !M->ModalOpen() && !M->bPausedByMenu) M->Story->SetClock(S47Timeline::AdvanceStoryClock(M->Story->Clock(),Dt,true));
  if (Opening() && !Commute() && !bRing && !Pack.CurrentScene() && M->T>=RingAt)
  {
@@ -445,6 +525,8 @@ S47J::FObj FS47Evening::Save() const
 {
  auto O=S47J::New(); S47J::Set(O,TEXT("takeaway"),Takeaway->Save()); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
  S47J::Set(O,TEXT("arrivalParkingVersion"),2);
+ S47J::Set(O,TEXT("serviceRouteVersion"),bServiceRoute ? 1 : 0);
+ S47J::Set(O,TEXT("serviceFiled"),bServiceRoute && bServiceFiled);
  S47J::Set(O,TEXT("clock"),M->Story->Clock()); S47J::Set(O,TEXT("area"),M->World->Area);
  S47J::Set(O,TEXT("radioOn"),bRadioOn); S47J::Set(O,TEXT("radioHold"),RadioHold); S47J::Set(O,TEXT("radioRest"),RadioRest);
  S47J::Set(O,TEXT("musicPosition"),Music?Music->CurrentTime():MusicPosition);

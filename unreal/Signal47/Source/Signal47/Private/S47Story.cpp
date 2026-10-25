@@ -267,6 +267,7 @@ TArray<FS47Task> AS47Story::Tasks() const
    {TEXT("Answer Dale on the control-room phone"),P.Flag(TEXT("handover_done"))}};
  }
 
+ if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->ServicePending()) return M->Evening->ServiceTasks();
 	if (const US47Chapter* C = Chapter(ChapterKey); C && C->bActive) return C->Tasks();
 	TArray<FS47Task> T;
 	T.Add({ TEXT("Read Dale's shift log"), bLogRead });
@@ -541,6 +542,17 @@ void AS47Story::ConsoleAction()
 void AS47Story::StagePassed()
 {
 	const int32 S = Rx.Stage;
+ if (S == 1 && bEveningTimeline)
+ {
+  const US47Main* Main = US47Main::Get(this);
+  if (Main && Main->Evening && Main->Evening->ServicePending())
+  {
+   // Local calibration remains usable. Only the unattended overnight survey waits for T01.
+   Rx.Status = TEXT("LOCAL INSPECTION CARD REQUIRED BEFORE OVERNIGHT SURVEY");
+   Toast(Main->Evening->ServiceObjective(), 5);
+   return;
+  }
+ }
 	Note(S47Signal::Profiles()[FMath::Min(S, 2)].Note);
 	Rx.Advance();
 	PointDishes(Rx.Azimuth, SurveyEl, 6);
