@@ -1,10 +1,12 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
-Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgave har eier, gren og status. Les denne før du starter, og oppdater status når du begynner og når du er ferdig.
+## T01 R2 akseptert før levering, 2026-10-25 kl. 20:37 CET
+
+Codex på `codex/t01-service-route`, kilde `85aee475`. Samme R2 består 14 pakkede kjøringer: 1 424 selvtester, 53 API/19 diskrestores, hel native felt-/returreise, sju ferske Continue, mat og fokuserte bilder. Elleve nye originalbilder er faktisk gjennomgått, inkludert alle tre rettede filed-rutinemål. R1s tre blanke mål er bevart som FAIL. Q3 er fortsatt installert; root eier nå kontrollert PR/merge/installasjon med Saved-bevaring og pruning. Hjelpere har gjort uavhengig kilde-/installer-/bildegjennomgang, uten parallelle UE-jobber. Ingen nye assets/opptak. H2.1 samlet, T02/kontor/VHS/stealth og menneskelig Roam/Xbox/lyd/fullnatt står åpne. Se [T01_RUNTIME.md](T01_RUNTIME.md).
 
 ## QA-retting og H1, levert 25.10.2026
 
-Codex eier `codex/qa-fixes-horror-production` og all sekvensiell pakking/runtime. Avgrensede hjelpere har levert kontroller/UI, materialer/lys/RT og uavhengig kilde-/bildegjennomgang. Q3 fra d87af618 består 1 424 selvtester, hele 110/110, komplette High/Low-finaler, to ekstra bortføringer og fem målrettede brett-/pan-/Esc-prøver. PR158 er flettet i d31dc112 og samme Q3 installert med 40 payloadhash og 40 uendrede Saved-filer; installert smoke og kontrollert pruning består. H1.2 til H1.4 er validerte forfatterkilder. T01 er konkret, men fortsatt ukompilert scratch-utkast til neste gren; H2.1 er ikke ferdig og T02/kontor/VHS/stealth gjenstår. Se [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) og nyeste memory/log før videre arbeid.
+Codex eier `codex/qa-fixes-horror-production` og all sekvensiell pakking/runtime. Avgrensede hjelpere har levert kontroller/UI, materialer/lys/RT og uavhengig kilde-/bildegjennomgang. Q3 fra d87af618 består 1 424 selvtester, hele 110/110, komplette High/Low-finaler, to ekstra bortføringer og fem målrettede brett-/pan-/Esc-prøver. PR158 er flettet i d31dc112 og samme Q3 installert med 40 payloadhash og 40 uendrede Saved-filer; installert smoke og kontrollert pruning består. H1.2 til H1.4 er validerte forfatterkilder. Ved QA-leveringen var T01 fortsatt et ukompilert scratch-utkast; H2.1 er ikke ferdig og T02/kontor/VHS/stealth gjenstår. Se [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) og nyeste memory/log før videre arbeid.
 
 ## Historie og stealth horror, plan levert 25.10.2026
 

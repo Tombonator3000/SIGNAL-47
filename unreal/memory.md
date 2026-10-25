@@ -1,5 +1,13 @@
 # Minne for unreal/
 
+## T01 R2 akseptert før levering, 2026-10-25 kl. 20:37 CET
+
+- `codex/t01-service-route`, kilde `85aee475`, fra core `f60d30eb`. R2-pakken har binær `81af1808a19e89b805de8093a4863d9005345d24c613cb96039024e8dd710de9`, 40 payloadfiler og 1 839 frosne kildefiler. Alle 14 pakkede funksjonskjøringer og 11 faktisk gjennomgåtte originalbilder består på samme pakke. Q3 er fortsatt installert; PR/merge/installasjon/pruning utføres etter denne aksepten.
+- Ny kveldssak gjør journal, faktisk kontroll og lampesammenligning før én fysisk SARO-filing. RX0 til1 er fri, RX1 til survey venter. Gamle/ukjente/no-version-saker får ingen ny gate. Credit valideres etter den aktuelle controller/routine. Etter filing/Continue vises faktisk neste RX-handling og notch-målet tømmes ved Survey.
+- Pakket selvtest 1 424, kontrakt 53 API/19 store-leser/full-Flow-restores, native 10 kontroller/932,3 m ut/966,7 m retur/55,4 m gange, sju rene nye Continue-prosesser, mat/D01 og tre målrettede billedscenarioer består. Faktiske observed-/filed-storer har samme fysiske resultat/tid og false til true arkivering. R1s tre tomme HUDmål er reprodusert og rettet i R2; R1-rapporten forblir FAIL. Første native-editorganglinje gjennom trucken og UTF8-only scratch-parsere er bevart som feilbevis, ikke omdøpt.
+- [T01_RUNTIME.md](T01_RUNTIME.md) har omfang/grenser. Bevisrot `/home/tom/scratch-bm/Signal47-qa-fixes-20261025`. Native har D01/mål/start-fixtures og ingen flytting/lasting etter START; manuell Roam, mus/Xbox, lytting og ubrutt fullnatt er ikke prøvd. Ingen ny hel110 eller VSM-ytelsespåstand.
+- H2.1a er runtimeintegrert/testet, men H2.1 samlet, T02, kontor/VHS, skyggemann og stealth er åpne. Neste konkrete kildekart ligger i `t02-office-preparation-v1/PLAN.md` med 36 hasher: ekte kontor/dør/terskel, egen Operations-nøkkel/feltmappe og fire faktiske T02-produsenter mangler. Ny original72s VHS og egen pause/strøm/save-transport trengs, uten å blokkere hovedruten. STATION01/Nora/K3/C bevares.
+
 ## QA-retting Q3 levert, 25. oktober 2026
 
 - Arbeidsgren `codex/qa-fixes-horror-production`, testet kilde `d87af618`, PR158 flettet i `d31dc112`. Bevis i `/home/tom/scratch-bm/Signal47-qa-fixes-20261025`. [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) har gjeldende status. Samme Q3 er installert med 40 payloadhash og 40 byteidentiske personlige Saved-filer. Installert smoke med isolert profil består; Saved er fortsatt identisk etterpå.

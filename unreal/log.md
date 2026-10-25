@@ -393,3 +393,21 @@ PR158 er flettet fra kontrollert head 144195d7 i d31dc112, og lokal unreal-port-
 Canonical prune er kjørt som tørrkjøring, planen gjennomgått og deretter anvendt uten aktive Unreal-jobber. Fire gamle payloadkopier er pensjonert, 14,187 GiB logisk størrelse. Q3 og Q2/Q1 beholdes som tre komplette testpakker. Den gamle PR157-backupens genererte payload ble også pensjonert; manifest og Engine-filer er bevart, så backupen omtales ikke som en komplett kjørbar pakke etter opprydding. Kilder, personlige Saved, logger og bilder er urørt. Se q3-installation-after-retention.json og prune-q3-* i bevisroten.
 
 QA-leveransen er avsluttet med de dokumenterte menneskelige og VSM-avgrensningene åpne. Neste arbeid er T01-service-/returreisen på egen gren fra levert core. Scratch-utkastet er fortsatt ikke anvendt eller kjørt; dette loggpunktet hevder ingen ny T01-runtime.
+
+
+## 2026-10-25 kl. 19:34 CET, T01-implementering startet etter QA-levering
+
+Ny gren codex/t01-service-route fra f60d30eb. Hashbundet core-v2 og separat API/disk-testoverlay er anvendt etter uavhengig lesing og applicability-kontroll. Restore-validering ligger etter både Evening/Substation og routine slik at forrige saks data ikke gir filing-credit. Ingen repoendring ble gjort under Q3-matrisen. Editorbygg kjører nå; T01 er foreløpig ikke runtimeverifisert eller installert. Installasjonen forblir Q3.
+
+Prosjektbiblioteket ble søkt først og én gang bredere. Den faktisk leste ChiR24/Unreal_mcp-profilen har ikke verifisert fortellerintegrasjon og er ikke gjenbrukt eller installert. Eksisterende lokal controller/modeller brukes. T01 trenger ingen nye kjøpte assets eller opptak; T02 og øvrig H2 holdes åpne.
+
+
+## 2026-10-25 kl. 20:37 CET, T01 R2 ferdig akseptert før PR
+
+T01-kilde 30d74676 kobler ekte Caliche-journal/kontroll/lampe til nye kveldssakers Shift og én fysisk returarkivering. RX0 til1 beholdes, RX1 til nattsurvey venter. Versjonert opt-in og etter-controller-validering hindrer retroaktive oppgaver eller credit fra forrige sak. Eksisterende modeller/opptak og K3/STATION01/byforsyningsskillet beholdes.
+
+R1 fullførte funksjonstester, men den uavhengige faktiske gjennomgangen av elleve bilder fant tre tomme HUDmål etter filing/Continue. 85aee475 retter neste handling for bankstrøm/RX0/RX1 og tømmer notch-målet ved Survey. R1-rapporten forblir FAIL. Den første native-editorprøvens østlige ganglinje etter vestlig utstigning ble blokkert av trucken; testkilden går nå fysisk rundt faktisk side uten flyttefallback. To scratch-parsere antok UTF8 for UTF16/BOM-eksporter; originalfeil er bevart og BOM-bevisst lesing rettet uten å endre bytes.
+
+R2 editor04 og package02 består. Samme pakke og 1 839 kildefiler er bundet gjennom alle14 pakkede kjøringer: 1 424 selvtester, 53 API/19 faktiske store/full-Flow-restores, 10 native-kontroller med 932,3 m ut/966,7 m retur/55,4 m gange, sju rene nye Continue-prosesser, mat/D01 og tre bildekontroller. Elleve nye originalbilder består faktisk granskning på High/Low og Large text; alle tre filed-mål er synlig rettet. Binær81af1808,40 payloadfiler identiske før/etter. Ingen ny hel110 eller generell FPS-/VSM-påstand.
+
+Dette er automatisert native/API-aksept med eksplisitte D01/mål/start-/delposisjonsfixtures, ikke menneskelig Roam/Xbox/lytting/fullnatt. T02/kontor/VHS/stealth og H2 samlet står åpne. Gjennomgått neste-plan har36 kildehash og konkrete fysiske kontor-/kontrollhull, uten ny runtimepåstand. Q3 er ennå standard ved dette loggpunktet; faktisk PR/merge/installasjon/Saved-bevaring/pruning loggføres etter utførelse.
