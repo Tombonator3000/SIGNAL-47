@@ -384,3 +384,12 @@ Materialauditen har null aktiv/inaktiv fallback og null mappingfeil, inkludert t
 Q1s påviste Esc-fokusfeil er rettet i Q2 og prøvd gjennom faktisk Slate. Q2s store brettkort overlappet; Q3 pakker usavede kort etter mål, beholder brukerposisjoner og opprettholder canvas etter fontbytte. Fem målrettede Q3-brettbilder/Slate-pan/Esc og fem nye API-kontroller består. FRAME 03/04 er tydelige i ekte High/Low-JPEG-er med byte- og targetbevaring. Skrivefeil, sjekkpunktvarsel, innstillinger, notatbok, bindingsnavn og kart er prøvd. Fysisk Xbox/mus, lytting og ubrutt menneskelig natt står UNVERIFIED.
 
 H1.2 til H1.4 er produsert som forfatterkilder. Ny T01-service-/returreise er forberedt og uavhengig lest som ukompilert scratch-utkast; den er ikke anvendt i Q3. T02, kontor, VHS og stealth gjenstår. Installert PR157 er ennå uendret; faktisk merge, installasjon, Saved-bevaring og pruning loggføres etter utførelse.
+
+
+## 2026-10-25 kl. 19:27 CET, PR158 og samme Q3 levert
+
+PR158 er flettet fra kontrollert head 144195d7 i d31dc112, og lokal unreal-port-core er synkronisert med vanlig fast-forward. Kilde- og pakkevalidering består. Samme Q3 er installert med 40 hashverifiserte payloadfiler og 40 byteidentiske personlige Saved-filer. Installer bruker tidligere bevist snapshot/rsync-metode med --exclude=Saved, verifisert backup og kontrollert rollback. Uavhengig lesereview rettet to proof-/rollback-kanter før bruk. Installert tittelsmoke med egen profil består med heap; personlige Saved er fortsatt identiske etter prøven. Ingen brukerprosess er stoppet.
+
+Canonical prune er kjørt som tørrkjøring, planen gjennomgått og deretter anvendt uten aktive Unreal-jobber. Fire gamle payloadkopier er pensjonert, 14,187 GiB logisk størrelse. Q3 og Q2/Q1 beholdes som tre komplette testpakker. Den gamle PR157-backupens genererte payload ble også pensjonert; manifest og Engine-filer er bevart, så backupen omtales ikke som en komplett kjørbar pakke etter opprydding. Kilder, personlige Saved, logger og bilder er urørt. Se q3-installation-after-retention.json og prune-q3-* i bevisroten.
+
+QA-leveransen er avsluttet med de dokumenterte menneskelige og VSM-avgrensningene åpne. Neste arbeid er T01-service-/returreisen på egen gren fra levert core. Scratch-utkastet er fortsatt ikke anvendt eller kjørt; dette loggpunktet hevder ingen ny T01-runtime.

@@ -6,6 +6,8 @@ Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen ko
 
 Gjeldende retting og teststatus: [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md). Q3 består 110/110 skriptede scenarioer, 1 424 selvtester og komplette High/Low-finaler helt til meny. Feltfoto, materialbindinger, utgang ved lagringsfeil, bindingsnavn, tekststørrelse og P13 er rettet. VSM-profilering og menneskelig fullnatt med lyd/fysisk Xbox står fortsatt åpne. [Før-rapporten fra PR157](SPILLTEST_2026-10-25.md) beholder de opprinnelige krasjene og feilene.
 
+PR158 er flettet, og samme Q3 er installert med 40 verifiserte payloadfiler og 40 uendrede Saved-filer. Installert oppstart med egen profil består. Gjeldende pakke og to eldre komplette testbygg beholdes etter kontrollert opprydding.
+
 Samlet videre plan for historie og skrekk: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md). Kosmisk etterforskning, gradvis kommende invasjon, stabile skyggemannregler og en faktisk skjul/flukt-sekvens ved SARO. Detaljerte oppdrag og produksjonsetapper H1 til H6 ligger øverst i [todo.md](todo.md). Dette er planlagt for senere implementering, ikke nye funksjoner i dagens spill.
 
 H1.2 til H1.4 er nå produsert som engelske forfatterkilder i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti oppdrag, 36 scener og fem dokumenter med validert generator. Ingen ny runtimehistorie eller nye opptak er hevdet. Neste konkrete runtime-inkrement er den fulle T01-service-/returreisen; utkastet holdes adskilt fra Q3 til rettelsen er levert.

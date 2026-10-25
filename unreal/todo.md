@@ -10,6 +10,7 @@ Før-funn og presise bevis: [SPILLTEST_2026-10-25.md](SPILLTEST_2026-10-25.md). 
 - [ ] P2 QA02-VSM: Profilér oppstartskøen i normal rute/dag/natt. Kort aktivt utsnitt har ingen vedvarende overflow, men lokal motor har en forskyvning i CSV-statnavn. Verken rå nullverdi eller materialrettingen lukker denne ytelsesgjelden.
 - [x] P2 QA03/QA04/QA05/QA09: Varsle om siste sikre sjekkpunkt, også ved ekte skrivefeil; bruk gjeldende bindingsnavn; lagre hodebevegelsesvalg; gjør bretttekst større uten automatisk kortoverdekking; krev faktisk P13-justering. Faktisk Slate-pan, Esc, default Enter og Xbox-knapphendelser består. Fysisk Xbox og kamerakomfort er fortsatt menneskelige kontroller.
 - [x] P3 QA06/QA07/QA08: Tekstklipp og desktop-/Xbox-hjelp rettet, overgangsmål beskriver neste kapittel, og credits oppgir Unreal Engine.
+- [x] Lever samme verifiserte Q3 etter PR158-merge, med 40 payloadhash, 40 uendrede personlige Saved-filer og installert smoke. Prune-plan anvendt; gjeldende og to eldre komplette testpakker beholdes, kilder/Saved/bevis bevart.
 - [ ] Kjør en faktisk menneskelig ny sak til slutt uten hopp, med lyd, normal kapittel 2 til 3, fysisk Xbox og forståelse uten scriptkunnskap. Mål pacing/transport/venting og kontroller den svake anomaly-formen ved vaskerivinduet. Rapportens åtte forbedringspunkter er forslag, ikke nye implementasjoner.
 
 ## Historie, invasjon og stealth horror, planlagt 25. oktober 2026

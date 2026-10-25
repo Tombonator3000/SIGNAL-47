@@ -2,9 +2,9 @@
 
 Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgave har eier, gren og status. Les denne før du starter, og oppdater status når du begynner og når du er ferdig.
 
-## QA-retting og H1, validert 25.10.2026 kl. 19:16 CET
+## QA-retting og H1, levert 25.10.2026
 
-Codex eier `codex/qa-fixes-horror-production` og all sekvensiell pakking/runtime. Avgrensede hjelpere har levert kontroller/UI, materialer/lys/RT og uavhengig kilde-/bildegjennomgang. Q3 fra d87af618 består 1 424 selvtester, hele 110/110, komplette High/Low-finaler, to ekstra bortføringer og fem målrettede brett-/pan-/Esc-prøver. PR158 er opprettet; installasjon følger faktisk fletting. H1.2 til H1.4 er validerte forfatterkilder. T01 er konkret, men fortsatt ukompilert scratch-utkast til neste gren; H2.1 er ikke ferdig og T02/kontor/VHS/stealth gjenstår. Se [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) og nyeste memory/log før videre arbeid.
+Codex eier `codex/qa-fixes-horror-production` og all sekvensiell pakking/runtime. Avgrensede hjelpere har levert kontroller/UI, materialer/lys/RT og uavhengig kilde-/bildegjennomgang. Q3 fra d87af618 består 1 424 selvtester, hele 110/110, komplette High/Low-finaler, to ekstra bortføringer og fem målrettede brett-/pan-/Esc-prøver. PR158 er flettet i d31dc112 og samme Q3 installert med 40 payloadhash og 40 uendrede Saved-filer; installert smoke og kontrollert pruning består. H1.2 til H1.4 er validerte forfatterkilder. T01 er konkret, men fortsatt ukompilert scratch-utkast til neste gren; H2.1 er ikke ferdig og T02/kontor/VHS/stealth gjenstår. Se [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) og nyeste memory/log før videre arbeid.
 
 ## Historie og stealth horror, plan levert 25.10.2026
 
