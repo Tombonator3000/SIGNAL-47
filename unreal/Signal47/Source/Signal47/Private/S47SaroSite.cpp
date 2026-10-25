@@ -92,6 +92,14 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
  {if(Dressing)return {};Dressing=Cast<UStaticMeshComponent>(N->Comp.Get());}
  if(!Dressing||!Dressing->GetStaticMesh()||Dressing->GetStaticMesh()->GetNumTriangles(0)!=13550||!DressingTrim||DressingTrim->GetNumLODs()!=3||!StaffSedan||!StaffPickup)return {};
  for(int32 L=0;L<3;++L)if(DressingTrim->GetNumTriangles(L)!=10702)return {};
+ // Old wall-grime overlays contain rectangular holes for the obsolete windows. They
+ // sit 12mm in front of the new stucco, so preserve only the unrelated original stains.
+ UStaticMesh* StainTrim=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/SaroSite/Trim/StaticMeshes/g455.g455"));
+ UStaticMeshComponent* Stains=nullptr;const int32 DressingGroup=W->Handle(TEXT("world.grounds.dressing.group"));
+ for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Geo==455&&N->Parent==DressingGroup)
+ {if(Stains)return {};Stains=Cast<UStaticMeshComponent>(N->Comp.Get());}
+ if(!Stains||!Stains->GetStaticMesh()||Stains->GetStaticMesh()->GetNumTriangles(0)!=1712||!Stains->GetMaterial(0)||!StainTrim||StainTrim->GetNumLODs()!=1||StainTrim->GetNumTriangles(0)!=1224||StainTrim->GetStaticMaterials().Num()!=1)
+ {UE_LOG(LogS47SaroSite,Warning,TEXT("S47: SARO site preserved original: exact g455 stain composition1712 to1224 unavailable"));return {};}
  const auto& Drive=W->DriveData();const TSharedPtr<FJsonObject>* Legs=nullptr,*Leg=nullptr;const TArray<TSharedPtr<FJsonValue>>* Obs=nullptr;
  if(!Drive.IsValid()||!Drive->TryGetObjectField(TEXT("legs"),Legs)||!(*Legs)->TryGetObjectField(TEXT("saro"),Leg)||!(*Leg)->TryGetArrayField(TEXT("obstacles"),Obs))return {};
  int32 Walk=0,Driving=0;
@@ -117,12 +125,13 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
  }
  // The original material atlas is unchanged on every retained dressing triangle.
  auto* DressingAtlas=Dressing->GetMaterial(0);Dressing->SetStaticMesh(DressingTrim);Dressing->SetMaterial(0,DressingAtlas);
+ auto* StainAtlas=Stains->GetMaterial(0);Stains->SetStaticMesh(StainTrim);Stains->SetMaterial(0,StainAtlas);S->Stains=Stains;S->StainAtlas=StainAtlas;
  S->RetiredNodes=Retire;
  S->RemovedWalkFeet=W->CollidersMutable(TEXT("saro")).RemoveAll([](const FS47Rect& R){return OldFoot(R.MinX,R.MaxX,R.MinZ,R.MaxZ);});
  TArray<TSharedPtr<FJsonValue>> Kept;
  for(const auto& V:*Obs){const auto& A=V->AsArray();if(A.Num()==4&&OldFoot(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber(),A[3]->AsNumber()))++S->RemovedDriveFeet;else Kept.Add(V);}
  (*Leg)->SetArrayField(TEXT("obstacles"),Kept);S->Update();
- UE_LOG(LogS47SaroSite,Display,TEXT("S47: SARO site ready: original wing+title and16 old fake windows replaced, recessed glass .27m, solid sign wall; retired legacy poles=6 utilityGeos=4 walkFeet=%d driveFeet=%d; natural mainWithin100m=2 service=1 total=3; meter glass, field lights, fences, roof details and story proxies preserved"),S->RemovedWalkFeet,S->RemovedDriveFeet);
+ UE_LOG(LogS47SaroSite,Display,TEXT("S47: SARO site ready: original wing+title and16 old fake windows replaced, old window-shaped grime488tri removed, recessed glass .27m, solid sign wall; retired legacy poles=6 utilityGeos=4 walkFeet=%d driveFeet=%d; natural mainWithin100m=2 service=1 total=3; meter glass, field lights, fences, roof details and story proxies preserved"),S->RemovedWalkFeet,S->RemovedDriveFeet);
  return S;
 }
 void FS47SaroSite::Update()
@@ -146,6 +155,8 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
  for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Geo==454)
   if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))ComposedWindows=C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_LegacyTrim")&&C->GetStaticMesh()->GetNumTriangles(0)==10702;
  OK&=ComposedWindows;Lines.Add(FString::Printf(TEXT("SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10702; %s"),ComposedWindows?TEXT("PASS"):TEXT("FAIL")));
+ auto* OldStains=Stains.Get();const bool StainsOK=OldStains&&OldStains->GetStaticMesh()&&OldStains->GetStaticMesh()->GetPathName()==TEXT("/Game/SaroSite/Trim/StaticMeshes/g455.g455")&&OldStains->GetStaticMesh()->GetNumTriangles(0)==1224&&OldStains->GetMaterial(0)==StainAtlas.Get();
+ OK&=StainsOK;Lines.Add(FString::Printf(TEXT("SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; %s"),StainsOK?TEXT("PASS"):TEXT("FAIL")));
  const auto Power=S47HighwayPower::Status(W);OK&=Power.bReady&&Power.SaroMainWithin100m==2&&Power.SaroServicePoles==1&&Power.SaroTotalWithin100m==3;
- Lines.Add(FString::Printf(TEXT("SARO_SITE retired=6 legacyWalkFeet=%d legacyDriveFeet=%d utilityWithin100m=%d (main=%d service=%d), field lights/proxies unchanged; %s"),RemovedWalkFeet,RemovedDriveFeet,Power.SaroTotalWithin100m,Power.SaroMainWithin100m,Power.SaroServicePoles,OK?TEXT("PASS"):TEXT("FAIL")));return OK;
+ Lines.Add(FString::Printf(TEXT("SARO_SITE retiredDraws=%d legacyWalkFeet=%d legacyDriveFeet=%d utilityWithin100m=%d (main=%d service=%d), field lights/proxies unchanged; %s"),RetiredNodes.Num(),RemovedWalkFeet,RemovedDriveFeet,Power.SaroTotalWithin100m,Power.SaroMainWithin100m,Power.SaroServicePoles,OK?TEXT("PASS"):TEXT("FAIL")));return OK;
 }

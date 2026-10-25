@@ -90,7 +90,8 @@ void AS47Web::BeginProductionViews()
   while(State->Index<UE_ARRAY_COUNT(Views)*3)
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
-   if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&Saro)){++State->Index;continue;}break;
+   if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
+    ||(State->Suite==TEXT("motel")&&(I<9||I>10))||(State->Suite==TEXT("room6")&&(I<11||I>12))){++State->Index;continue;}break;
   }
   if(State->Index>=UE_ARRAY_COUNT(Views)*3){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));return;}
   const int32 I=State->Index%UE_ARRAY_COUNT(Views),Light=State->Index/UE_ARRAY_COUNT(Views);const auto& V=Views[I];const double Now=FPlatformTime::Seconds();

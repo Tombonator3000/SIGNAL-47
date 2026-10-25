@@ -16,7 +16,7 @@ private:
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;
  TArray<int32> Nodes,Retired;
  struct FGlow { TWeakObjectPtr<UMaterialInstanceDynamic> Mid; FString Family; FLinearColor Base; };
- struct FLamp { TWeakObjectPtr<UPointLightComponent> Light; int32 Parent; FString Family; };
+ struct FLamp { TWeakObjectPtr<UPointLightComponent> Light; int32 Parent; FString Family; float Lumens=900; };
  TArray<FGlow> Glows;
  TArray<FLamp> Lamps;
  int32 PatchCount=0;

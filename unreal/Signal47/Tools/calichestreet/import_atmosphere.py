@@ -1,9 +1,12 @@
 """Own Caliche sky material; retains the original sky and story parameters outside the town."""
 import ast
+import sys
 from pathlib import Path
 import unreal
 
 ROOT=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT.parent/'sky'))
+from sky_capture import capture_code
 E=unreal.EditorAssetLibrary
 M=unreal.MaterialEditingLibrary
 T=unreal.AssetToolsHelpers.get_asset_tools()
@@ -38,7 +41,7 @@ for n in source.body:
   key=n.targets[0].id
   constants[key]=ast.literal_eval(n.value) if isinstance(n.value,ast.Constant) else constants['SKY_DIR']+ast.literal_eval(n.value.right)
 base=constants['SKY_DOME'];assert base.endswith('return col;')
-code=base[:-len('return col;')]+(ROOT/'atmosphere.hlsl').read_text()
+code=capture_code(base[:-len('return col;')]+(ROOT/'atmosphere.hlsl').read_text())
 inputs=[('V',node(unreal.MaterialExpressionCameraVectorWS),''),('Yaw',scalar('Yaw',0),''),
  ('Dawn',scalar('Dawn',0),''),('Sun',scalar('Sun',0),''),('Midday',scalar('Midday',0),''),
  ('ConceptBlend',scalar('ConceptBlend',0),''),('SunDir',vector('SunDir',(.98,-.02,-.19,0)),''),
@@ -50,6 +53,14 @@ inputs=[('V',node(unreal.MaterialExpressionCameraVectorWS),''),('Yaw',scalar('Ya
 for i in range(3):
  v=vector('Glow'+str(i),(1,0,0,1));v4=custom('return float4(C,A);',[('C',v,''),('A',v,'A')],4)
  inputs.append(('Glow'+str(i),v4,''))
+# Uniform reflection-capture switch enters the early branch inside this same Custom;
+# the expensive main recipe is not calculated as an upstream graph expression.
+zero=node(unreal.MaterialExpressionConstant,r=0.)
+one=node(unreal.MaterialExpressionConstant,r=1.)
+capture_switch=node(unreal.MaterialExpressionReflectionCapturePassSwitch)
+assert M.connect_material_expressions(zero,'',capture_switch,'Default')
+assert M.connect_material_expressions(one,'',capture_switch,'Reflection')
+inputs.append(('IsCapture',capture_switch,''))
 color=custom(code,inputs)
 assert M.connect_material_property(color,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
 assert not list(M.recompile_material(mat));E.save_loaded_asset(mat)

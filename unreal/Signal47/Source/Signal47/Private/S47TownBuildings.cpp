@@ -111,7 +111,7 @@ TSharedPtr<FS47TownBuildings> FS47TownBuildings::Build(AS47Web* W)
  // parented to Room6 so it cannot illuminate another area or change the closed-door rule.
  for(const auto& R:Ready)if(R.Name==TEXT("SM_Town_Motel_Bathroom"))
  {
-  auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(W->Node(R.Parent)->Comp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1,.86,.66));L->SetAttenuationRadius(350);L->SetSourceRadius(18);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.At+FVector(-.67,2.45,-4.25)));F->Lamps.Add({L,R.Parent,R.Family});
+  auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(W->Node(R.Parent)->Comp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1,.86,.66));L->SetAttenuationRadius(350);L->SetSourceRadius(18);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.At+FVector(-.67,2.45,-4.25)));F->Lamps.Add({L,R.Parent,R.Family,140.f});
  }
  F->Update();UE_LOG(LogS47TownBuildings,Display,TEXT("S47: town architecture ready: 6 families, 28 native parts, %d composed patches, %d replaced draw meshes; gameplay anchors retained"),F->PatchCount,F->Retired.Num());return F;
 }
@@ -121,7 +121,7 @@ void FS47TownBuildings::Update()
  auto Level=[W](const FString& Family){if(Family==TEXT("Sheriff"))return FMath::Clamp(double(W->FloodPos(W->FloodSet(TEXT("town")),10).A)/4.5,0.,1.);if(Family==TEXT("Laundry"))return FMath::Clamp(double(W->FloodPos(W->FloodSet(TEXT("town")),11).A)/6.,0.,1.);return Family==TEXT("Feed")||Family==TEXT("Cinema")||Family==TEXT("Church")?0.:1.;};
  for(int32 I:Retired)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetHiddenInGame(true,false);C->SetVisibility(false,false);}
  for(auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*float(Level(G.Family)));
- for(auto& L:Lamps)if(auto* P=L.Light.Get()){const float V=FS47Obj(W,L.Parent).Shown()?float(Level(L.Family)*900):0;P->SetIntensity(V);P->SetVisibility(V>1);}
+ for(auto& L:Lamps)if(auto* P=L.Light.Get()){const float V=FS47Obj(W,L.Parent).Shown()?float(Level(L.Family)*L.Lumens):0;P->SetIntensity(V);P->SetVisibility(V>1);}
 }
 bool FS47TownBuildings::Audit(TArray<FString>& Lines) const
 {
