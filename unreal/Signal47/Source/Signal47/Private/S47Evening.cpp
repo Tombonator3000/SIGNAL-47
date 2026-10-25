@@ -20,6 +20,16 @@
 #include "S47Timeline.h"
 #include "Misc/CommandLine.h"
 
+namespace
+{
+ const TCHAR* FiledRoutineObjective(const AS47Story& Story)
+ {
+  if (!Story.BankIn()) return TEXT("CONTROL ROOM // RESTORE RX BANK 3");
+  return Story.Rx.Stage == 0 ? TEXT("CONTROL ROOM // CALIBRATE ON 1419.900 MHz")
+   : TEXT("CONTROL ROOM // NOTCH THE HIGHWAY RELAY NEAR 1420.1 TO START THE ROUTINE SURVEY");
+ }
+}
+
 FS47Evening::FS47Evening(US47Main* InM) : M(InM)
 {
  FString Error;
@@ -322,7 +332,7 @@ bool FS47Evening::Use(const FString& Id)
   M->Story->Note(FString::Printf(TEXT("%s. Back at SARO, filed the Caliche Junction inspection card. The local panel and marked lamp agreed at %s. This records that circuit, not the town supply or SARO K3."),
    *M->Story->ClockText(false), *M->Substation->NormalCompletionStamp()));
   M->UI->Toast(TEXT("Local inspection card filed. The receiver calibration and overnight survey can continue."), 4);
-  M->UI->Objective(TEXT("CONTROL ROOM // POWER THE RACK AND START THE ROUTINE SURVEY"));
+  M->UI->Objective(FiledRoutineObjective(*M->Story));
   Changed();
   // Do not consume this use: the existing shift-folder/N01 panel is the only panel opened.
  }
@@ -482,6 +492,12 @@ void FS47Evening::Step(double Dt)
 
  Context();
  if (ServicePending() && !M->World->bDriving) M->UI->Objective(ServiceObjective());
+ else if (bEnabled && bServiceRoute && bServiceFiled && M->Story->bEveningTimeline && !M->World->bDriving)
+ {
+  // Continue must restore the next receiver action as well as the filed evidence.
+  if (M->Story->Phase() == ES47Phase::Shift) M->UI->Objective(FiledRoutineObjective(*M->Story));
+  else if (M->Story->Phase() == ES47Phase::Survey) M->UI->Objective(FString());
+ }
  if (Opening() && !Commute() && !M->ModalOpen() && !M->bPausedByMenu) M->Story->SetClock(S47Timeline::AdvanceStoryClock(M->Story->Clock(),Dt,true));
  if (Opening() && !Commute() && !bRing && !Pack.CurrentScene() && M->T>=RingAt)
  {
