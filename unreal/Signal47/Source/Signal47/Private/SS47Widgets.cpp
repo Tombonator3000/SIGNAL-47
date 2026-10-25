@@ -542,6 +542,7 @@ void SS47Document::Construct(const FArguments& InArgs)
 	OnClose = InArgs._OnClose;
 	const FS47Doc& D = InArgs._Doc;
 	US47UI* UI = InArgs._UI;
+	TextScale = UI && UI->bLargeText ? 1.35f : 1.f;
 	// UI.document's readings: Kinski reads the page (Read document, without its pencil marks and rules),
 	// the description reader the transcript (Read description), each when that reader is on
 	if (UI)
@@ -586,27 +587,27 @@ void SS47Document::Construct(const FArguments& InArgs)
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 					[
-						SNew(STextBlock).Font(Term(26, 2))
+						SNew(STextBlock).Font(Term(26 * TextScale, 2))
 						.Text_Lambda([Live, Label] { return FText::FromString(Live ? Live() : Label); })
 						.ColorAndOpacity_Lambda([this, I, R] { const FLinearColor Col = Chosen == I ? Amber() : C(0xf4ecdb); return FSlateColor(R.IsValid() && !R->bAvailable && !R->bActive ? Col * FLinearColor(1, 1, 1, 0.45f) : Col); })
 					]
 					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(P(10), P(2), 0, 0)
 					[
-						SNew(STextBlock).Text(FText::FromString(A.Key)).Font(Term(20, 1)).ColorAndOpacity(Hint())
+						SNew(STextBlock).Text(FText::FromString(A.Key)).Font(Term(20 * TextScale, 1)).ColorAndOpacity(Hint())
 					]
 				]
 			]
 		];
 	}
 	Btns->AddSlot().AutoHeight().Padding(P(14), P(8))
-	[SNew(STextBlock).Font(Term(18)).ColorAndOpacity(Hint()).AutoWrapText(true)
+	[SNew(STextBlock).Font(Term(18 * TextScale)).ColorAndOpacity(Hint()).AutoWrapText(true)
 	.Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
 	.Text(FText::FromString(TEXT("D-PAD: ACTION   A: SELECT   X: READ   LB/RB: SCROLL   B: PUT IT DOWN")))];
 	// [data-reading-status]: the chosen reading's state (the voice, Loading recording..., or why not)
 	auto ChosenReading = [this]() -> TSharedPtr<FS47ReadingAction> { return Actions.IsValidIndex(Chosen) ? Actions[Chosen].Reading : nullptr; };
 	Btns->AddSlot().AutoHeight().Padding(P(17), P(2), 0, 0)
 	[
-		SNew(STextBlock).Font(Type(14)).ColorAndOpacity(Hint()).AutoWrapText(true)
+		SNew(STextBlock).Font(Type(14 * TextScale)).ColorAndOpacity(Hint()).AutoWrapText(true)
 		.Text_Lambda([ChosenReading] { const TSharedPtr<FS47ReadingAction> R = ChosenReading(); return FText::FromString(R.IsValid() ? R->Status() : FString()); })
 	];
 
@@ -628,10 +629,10 @@ void SS47Document::Construct(const FArguments& InArgs)
 					+ SCanvas::Slot().Position(P2(960, 150)).Size(P2(440, 720))
 					[
 						SNew(SVerticalBox)
-						+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(KindLine)).Font(Term(22, 2)).ColorAndOpacity(C(0x6f8f78))]
+						+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(KindLine)).Font(Term(22 * TextScale, 2)).ColorAndOpacity(C(0x6f8f78))]
 						+ SVerticalBox::Slot().AutoHeight().Padding(0, P(8), 0, P(14))
 						[
-							SNew(STextBlock).Text(FText::FromString(D.Title)).Font(Display(40)).ColorAndOpacity(C(0xf1ecdf)).AutoWrapText(true)
+							SNew(STextBlock).Text(FText::FromString(D.Title)).Font(Display(40 * TextScale)).ColorAndOpacity(C(0xf1ecdf)).AutoWrapText(true)
 						]
 						+ SVerticalBox::Slot().AutoHeight()
 						[
@@ -640,8 +641,8 @@ void SS47Document::Construct(const FArguments& InArgs)
 								SNew(SScrollBox).Style(QuietScroll()).ScrollBarStyle(QuietBar(C(0xcfc8b7, 0.25f))).ScrollBarThickness(FVector2D(P(3), P(3)))
 								+ SScrollBox::Slot().Padding(FMargin(0, 0, P(10), 0))
 								[
-									SNew(STextBlock).Text(FText::FromString(D.Transcript)).Font(Type(18)).ColorAndOpacity(C(0xcfc8b7)).AutoWrapText(true)
-									.LineHeightPercentage(LinePercent(Type(18), 18 * 1.6f))
+									SNew(STextBlock).Text(FText::FromString(D.Transcript)).Font(Type(18 * TextScale)).ColorAndOpacity(C(0xcfc8b7)).AutoWrapText(true)
+									.LineHeightPercentage(LinePercent(Type(18 * TextScale), 18 * 1.6f * TextScale))
 								]
 							]
 						]
@@ -710,11 +711,11 @@ TSharedRef<SWidget> SS47Document::PageWidget(const FS47Doc& D)
 			if (H <= Room) break;
 		}
 	}
-	const FSlateFontInfo Font = bHand ? Hand(HandPx) : bPrint ? Term(24) : Type(19);
-	const float Pitch = bHand ? HandPx * 1.08f : bPrint ? 26.f : 29.f;
+	const FSlateFontInfo Font = bHand ? Hand(HandPx * TextScale) : bPrint ? Term(24 * TextScale) : Type(19 * TextScale);
+	const float Pitch = (bHand ? HandPx * 1.08f : bPrint ? 26.f : 29.f) * TextScale;
 	const FLinearColor InkCol = bHand ? InkBlue() : bPrint ? C(0x2b2b2b) : Ink();
 	TSharedRef<SVerticalBox> Col = SNew(SVerticalBox);
-	if (!D.Stamp.IsEmpty()) Col->AddSlot().AutoHeight().Padding(0, 0, 0, P(10))[SNew(STextBlock).Text(FText::FromString(D.Stamp)).Font(Term(22, 2)).ColorAndOpacity(StampRed())];
+	if (!D.Stamp.IsEmpty()) Col->AddSlot().AutoHeight().Padding(0, 0, 0, P(10))[SNew(STextBlock).Text(FText::FromString(D.Stamp)).Font(Term(22 * TextScale, 2)).ColorAndOpacity(StampRed())];
 	for (const FString& L : Lines)
 	{
 		// "~ " pencil in the margin's grey; a line of dashes is where one sheet ends and the next begins
@@ -724,11 +725,11 @@ TSharedRef<SWidget> SS47Document::PageWidget(const FS47Doc& D)
 			Col->AddSlot().AutoHeight().Padding(0, P(14))[SNew(SBox).HeightOverride(FMath::Max(1.f, P(1)))[SNew(SBorder).BorderImage(Box(C(0x000000, 0.22f)))]];
 			continue;
 		}
-		const FSlateFontInfo F = bPencil ? Hand(30) : Font;
+		const FSlateFontInfo F = bPencil ? Hand(30 * TextScale) : Font;
 		Col->AddSlot().AutoHeight()
 		[
 			SNew(STextBlock).Text(FText::FromString(bPencil ? L.Mid(2) : (L.IsEmpty() ? TEXT(" ") : L))).AutoWrapText(true).WrapTextAt(P(Wrap))
-			.Font(F).ColorAndOpacity(bPencil ? C(0x4a4a52) : InkCol).LineHeightPercentage(LinePercent(F, bPencil ? 32.f : Pitch))
+			.Font(F).ColorAndOpacity(bPencil ? C(0x4a4a52) : InkCol).LineHeightPercentage(LinePercent(F, bPencil ? 32.f * TextScale : Pitch))
 		];
 	}
 	if (Image)
@@ -753,6 +754,13 @@ TSharedRef<SWidget> SS47Document::PageWidget(const FS47Doc& D)
 		+ SOverlay::Slot().Padding(FMargin(P(60), P(56), P(50), P(56)))[Text], FVector2D(600, 800), -1.2f);
 }
 
+float SS47Document::DocumentScrollOffset() const
+{
+ // SScrollBox retains an unclamped requested offset; the visible view uses its clamped range.
+ return PageScroll.IsValid() ? FMath::Clamp(PageScroll->GetScrollOffset(), 0.f, PageScroll->GetScrollOffsetOfEnd()) : 0.f;
+}
+float SS47Document::DocumentScrollEnd() const { return PageScroll.IsValid() ? PageScroll->GetScrollOffsetOfEnd() : 0.f; }
+
 void SS47Document::Act(int32 I)
 {
 	if (Actions.IsValidIndex(I) && Actions[I].Fn) Actions[I].Fn();
@@ -773,7 +781,9 @@ FReply SS47Document::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InK
 	if (K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom) { Act(Chosen); return FReply::Handled(); }
 	if (PageScroll.IsValid() && (K == EKeys::PageDown || K == EKeys::PageUp || K == EKeys::Gamepad_RightShoulder || K == EKeys::Gamepad_LeftShoulder))
 	{
-		PageScroll->SetScrollOffset(FMath::Max(0.f, PageScroll->GetScrollOffset() + (K == EKeys::PageDown || K == EKeys::Gamepad_RightShoulder ? 1.f : -1.f) * S47Game::P(300)));
+		// Clamp the stored request as well as the displayed view. Repeated PageDown at
+		// the end must not create invisible extra distance to undo with PageUp.
+		PageScroll->SetScrollOffset(FMath::Clamp(PageScroll->GetScrollOffset() + (K == EKeys::PageDown || K == EKeys::Gamepad_RightShoulder ? 1.f : -1.f) * S47Game::P(300), 0.f, PageScroll->GetScrollOffsetOfEnd()));
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();
@@ -1513,12 +1523,20 @@ bool SS47Document::SelfTest(TArray<FString>& Lines)
 	FS47Doc D; D.Kind = TEXT("typed"); D.Title = TEXT("Input sample"); D.Page = TEXT("A paper.");
 	const TSharedRef<SS47Document> W = SNew(SS47Document).Doc(D).UI(nullptr).OnClose([&Closed] { ++Closed; });
 	W->Actions.Insert({ TEXT("TEST ACTION"), FString(), [&Used] { ++Used; }, nullptr, nullptr }, 0);
+ Check(W->DocumentTextScale() == 1.f && W->PageScroll.IsValid(), TEXT("standard document retains normal scale and scrollable text"));
+ US47UI* LargeUI = NewObject<US47UI>(); LargeUI->bLargeText = true;
+ const TSharedRef<SS47Document> Large = SNew(SS47Document).Doc(D).UI(LargeUI).OnClose([] {});
+ Check(FMath::IsNearlyEqual(Large->DocumentTextScale(), 1.35f) && Large->PageScroll.IsValid(), TEXT("large text constructs a larger document and retains its scroll surface"));
 	auto Key = [&](const FKey& K) { return W->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
 	Key(EKeys::Gamepad_DPad_Down);
 	Check(W->Chosen == 1 && Closed == 0, TEXT("D-pad chooses without executing"));
 	Key(EKeys::Gamepad_DPad_Up); Key(EKeys::Gamepad_FaceButton_Bottom);
 	Check(W->Chosen == 0 && Used == 1 && Closed == 0, TEXT("A executes the selected action exactly once"));
 	Check(Key(EKeys::Gamepad_RightShoulder).IsEventHandled() && Key(EKeys::Gamepad_LeftShoulder).IsEventHandled(), TEXT("shoulders route to paper scrolling"));
+ Key(EKeys::PageDown); Key(EKeys::PageDown); Key(EKeys::PageDown);
+ Check(W->PageScroll->GetScrollOffset() <= W->PageScroll->GetScrollOffsetOfEnd() + .01f, TEXT("repeated end scrolling cannot accumulate an invisible requested overshoot"));
+ Key(EKeys::PageUp);
+ Check(W->PageScroll->GetScrollOffset() >= 0.f && W->PageScroll->GetScrollOffset() <= W->PageScroll->GetScrollOffsetOfEnd() + .01f, TEXT("reverse page key remains in actual content range"));
 	Key(EKeys::Gamepad_FaceButton_Right);
 	Check(Closed == 1, TEXT("B puts the paper down"));
 	return Ok;

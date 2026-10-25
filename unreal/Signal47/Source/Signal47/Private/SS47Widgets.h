@@ -127,12 +127,16 @@ public:
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
 
 	static bool SelfTest(TArray<FString>& Lines);
+	float DocumentTextScale() const { return TextScale; }
+	float DocumentScrollOffset() const;
+	float DocumentScrollEnd() const;
 
 private:
 	TFunction<void()> OnClose;
 	struct FAction { FString Label, Key; TFunction<void()> Fn; TFunction<FString()> Live; TSharedPtr<FS47ReadingAction> Reading; };
 	TArray<FAction> Actions;
 	int32 Chosen = 0;
+	float TextScale = 1.f;
 	TSharedPtr<FS47ReadingAction> ReadDoc, ReadDesc;
 	TSharedPtr<class SScrollBox> PageScroll;
 	TSharedRef<SWidget> PageWidget(const FS47Doc& Doc);

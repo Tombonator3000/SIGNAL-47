@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Kontorfunn og himmelkandidat, 26.10.2026 kl. 00:42 CET
+
+Nyeste arbeid foregår isolert på `codex/night-production`. HorrorStory har nå10 hovedoppdrag,13 scenarioer,79 scener og16 dokumenter med20 kildekontraktprøver. EveningShift har101 scener/17 dokumenter og uendrede109 takes. Seks frivillige loretekster og et separat arrayserviceark er faktisk lesbare i kontoret; lesestatus og legacy/T02/VHS-grenser bevares. Dokumentets store tekst er1,35 med fysisk rulling. LineLights skiller opptrådt, faktisk sett og avsluttet, og gjenopptar fra disk. Fem optional himmeltrinn bruker fysiske baner, siktsjekk og separat versjonert lagring. De knyttes foreløpig til faktisk kapittelprogresjon, ikke en ferdig SC01 tilSC13-koordinator.
+
+Gjeldende installasjon ved oppstart av leveringskontrollen var allerede ku-R2, binær `60e63f4e7cac1afd5097534cdf885d009f73705dbe892d41c63fc991949da4c9`. Dens140 kilde-/assetfiler er tatt inn uendret fra verifisert snapshot, uten å redigere den andre chatens arbeidsmappe. Ny kandidat må testes og inkludere disse før standard erstattes. [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md) fører gjeldende test-/leveringsstatus.
+
 ## T02 levert og installert, 25. oktober 2026
 
 Kilde `5b9fcb3c` er flettet i PR162 (`d152fb6d`) og samme Linux-pakke er installert via standardstarteren. Den fysiske serviceskuffen, egen Operations-nøkkel, dør/terskel, D02-papirer og feltmappe leder til T02s faktiske normalreferanse, ståsted, fire kontroller, eget originalfoto og én SARO-arkivering. Uavklart utfall beholder hovedruten. Kontoret krever ingen sett VHS; STATION 01, Nora, K3, C og byforsyning beholder sine roller.

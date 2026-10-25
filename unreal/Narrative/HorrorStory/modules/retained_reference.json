@@ -35,7 +35,7 @@
         {
           "id": "H05_BRIEF_003",
           "speaker": "DESCRIPTION",
-          "text": "Use Dale's post as a second observation point. A position written in his notebook is a lead until you check it yourself.",
+          "text": "The culvert camera place belongs to T02. The separate array service comparison concerns its own operator places; do not treat the two records as the same geometry.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],
@@ -68,7 +68,7 @@
         {
           "id": "H05_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "Both controlled observation points resolve against fixed survey references. The positions form an arrangement rather than an isolated sighting.",
+          "text": "The empty footing and moved A-post resolve against the fixed transit references. C remains a separate sight line. The earlier array comparison is a distinct controlled observation.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         },
         {
@@ -324,7 +324,8 @@
         "all": [
           "ctx_hr_h07_ready",
           "ctx_hr_h07_checked",
-          "ctx_hr_h07_escape_complete"
+          "ctx_hr_h07_escape_complete",
+          "ctx_hr_h07_bundle_secured"
         ],
         "none": [
           "hr_h07_recorded"
@@ -372,7 +373,7 @@
         {
           "id": "H07_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "A photograph is not required. Check the original's recorded location. If it is not secured, reach it by a clear route; then use the service exit.",
+          "text": "A photograph is not required. If the original was not secured, return to the covered checkpoint before the inspection and collect it before the encounter starts. Do not go back through an active search for another sheet.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],
@@ -391,7 +392,8 @@
       "trigger_nb": "Første avsøkning, før inntrengerkontakt. Hold fysisk kontroll hos spilleren og vis kjent opak dekning og serviceutgang.",
       "requires": {
         "all": [
-          "ctx_hr_h07_scan_started"
+          "ctx_hr_h07_scan_started",
+          "ctx_hr_h07_bundle_secured"
         ],
         "none": [
           "hr_h07_first_warning_presented"
@@ -464,7 +466,8 @@
       "requires": {
         "all": [
           "ctx_hr_h07_original_secured",
-          "ctx_hr_h07_escape_complete"
+          "ctx_hr_h07_escape_complete",
+          "ctx_hr_h07_bundle_secured"
         ],
         "none": [
           "hr_h07_escape_complete_presented"

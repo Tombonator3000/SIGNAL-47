@@ -14,7 +14,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Krav:** {"all": ["ctx_hr_h01_ready"], "none": ["hr_h01_recorded", "hr_h01_brief_presented"]}
 
-**DALE [H01_BRIEF_001]**: Keep the survey running. Write down anything you have to change, even if it fixes itself.
+**DALE [H01_BRIEF_001]**: Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.
 
 *Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller.*
 
@@ -113,7 +113,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Krav:** {"all": ["ctx_hr_h02_ready", "ctx_hr_h02_insufficient"], "none": []}
 
-**DESCRIPTION [H02_INCOMPLETE_001]**: The readings do not agree yet. You can finish the calibration, but the unattended survey needs the completed inspection filed at SARO. Keep the card and repeat the comparison at the marked control.
+**DESCRIPTION [H02_INCOMPLETE_001]**: The readings do not agree yet. Calibration can continue. Complete and file the lamp inspection, then follow the agreed safety work; do not restart an isolated automatic schedule.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -204,7 +204,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Krav:** {"all": ["ctx_hr_h04_ready", "ctx_hr_h04_checked"], "none": ["hr_h04_recorded"]}
 
-**DESCRIPTION [H04_CHECK_001]**: The notes specify a post and a standing place. They can be checked in the world.
+**DESCRIPTION [H04_CHECK_001]**: Dale's field index identifies the culvert camera place. The separate array service card describes a different controlled comparison. Neither record is the result of a test you have not performed.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -248,7 +248,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
-**DESCRIPTION [H05_BRIEF_003]**: Use Dale's post as a second observation point. A position written in his notebook is a lead until you check it yourself.
+**DESCRIPTION [H05_BRIEF_003]**: The culvert camera place belongs to T02. The separate array service comparison concerns its own operator places; do not treat the two records as the same geometry.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -263,7 +263,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Krav:** {"all": ["ctx_hr_h05_ready", "ctx_hr_h05_checked"], "none": ["hr_h05_recorded"]}
 
-**DESCRIPTION [H05_CHECK_001]**: Both controlled observation points resolve against fixed survey references. The positions form an arrangement rather than an isolated sighting.
+**DESCRIPTION [H05_CHECK_001]**: The empty footing and moved A-post resolve against the fixed transit references. C remains a separate sight line. The earlier array comparison is a distinct controlled observation.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -398,7 +398,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
-**Krav:** {"all": ["ctx_hr_h07_ready", "ctx_hr_h07_checked", "ctx_hr_h07_escape_complete"], "none": ["hr_h07_recorded"]}
+**Krav:** {"all": ["ctx_hr_h07_ready", "ctx_hr_h07_checked", "ctx_hr_h07_escape_complete", "ctx_hr_h07_bundle_secured"], "none": ["hr_h07_recorded"]}
 
 **DESCRIPTION [H07_CHECK_001]**: The local lamp is off. The band still crosses the glass, and the opaque screen cuts it off.
 
@@ -419,7 +419,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Krav:** {"all": ["ctx_hr_h07_ready", "ctx_hr_h07_insufficient"], "none": []}
 
-**DESCRIPTION [H07_INCOMPLETE_001]**: A photograph is not required. Check the original's recorded location. If it is not secured, reach it by a clear route; then use the service exit.
+**DESCRIPTION [H07_INCOMPLETE_001]**: A photograph is not required. If the original was not secured, return to the covered checkpoint before the inspection and collect it before the encounter starts. Do not go back through an active search for another sheet.
 
 *Stille undersøkelsestekst, ingen fortellerstemme.*
 
@@ -432,7 +432,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Regi:** Én tydelig reaksjonsmulighet. Ingen blendende fullskjerm og ingen umiddelbar fangst.
 
-**Krav:** {"all": ["ctx_hr_h07_scan_started"], "none": ["hr_h07_first_warning_presented"]}
+**Krav:** {"all": ["ctx_hr_h07_scan_started", "ctx_hr_h07_bundle_secured"], "none": ["hr_h07_first_warning_presented"]}
 
 **DESCRIPTION [H07_FIRST_WARNING_001]**: The band is moving toward the next window. The wall between the windows stays dark.
 
@@ -470,7 +470,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Regi:** Rolig etterarbeid. Ingen ny tilfeldig bortføring eller ny obligatorisk fangst. Denne utgangen kan nås via begge målte ruter.
 
-**Krav:** {"all": ["ctx_hr_h07_original_secured", "ctx_hr_h07_escape_complete"], "none": ["hr_h07_escape_complete_presented"]}
+**Krav:** {"all": ["ctx_hr_h07_original_secured", "ctx_hr_h07_escape_complete", "ctx_hr_h07_bundle_secured"], "none": ["hr_h07_escape_complete_presented"]}
 
 **DESCRIPTION [H07_ESCAPE_COMPLETE_001]**: The original is secured in the truck. The visitor has lost contact. Its search has ended.
 
@@ -544,7 +544,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
-**Krav:** {"all": ["ctx_hr_remote_sources_verified", "ctx_hr_h07_checked", "ctx_hr_h07_escape_complete"], "none": []}
+**Krav:** {"all": ["ctx_hr_remote_sources_verified", "ctx_hr_h07_checked", "ctx_hr_h07_escape_complete", "ctx_hr_h07_original_secured", "ctx_hr_h07_bundle_secured"], "none": []}
 
 **DESCRIPTION [H08_COMPARE_RECORDS_001]**: The source sheets contain different local readings. Their sequence and timing agree.
 
@@ -590,7 +590,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
-**Krav:** {"all": ["ctx_hr_h09_ready", "ctx_hr_warning_acknowledged"], "none": ["hr_h09_recorded", "hr_h09_brief_presented"]}
+**Krav:** {"all": ["ctx_hr_h09_ready", "ctx_hr_warning_acknowledged", "ctx_hr_sc12_driver_recent_passage"], "none": ["hr_h09_recorded", "hr_h09_brief_presented"]}
 
 **DRIVER [H09_BRIEF_001]**: Last October it all quit past the eight-mile post. Engine, lights, radio. Then it came back.
 
@@ -613,7 +613,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
-**Krav:** {"all": ["ctx_hr_h09_ready", "ctx_hr_h09_checked", "ctx_hr_warning_acknowledged"], "none": ["hr_h09_recorded"]}
+**Krav:** {"all": ["ctx_hr_h09_ready", "ctx_hr_h09_checked", "ctx_hr_warning_acknowledged", "ctx_hr_sc12_courier_104_confirmed"], "none": ["hr_h09_recorded"]}
 
 **WARD [H09_CHECK_001]**: C is the bolt at eight point one five. The handover is ten point four. I have both marked.
 
@@ -651,7 +651,7 @@ Spilltekst: engelsk. Regi: norsk. Medietider er planlagte, ikke ferdige opptakst
 
 **Regi:** Korte linjer med naturlige pauser. Ingen automatisk slutning utover det spilleren faktisk har kontrollert.
 
-**Krav:** {"all": ["ctx_hr_h10_ready", "ctx_hr_warning_acknowledged"], "none": ["hr_h10_recorded", "hr_h10_brief_presented"]}
+**Krav:** {"all": ["ctx_hr_h10_ready", "ctx_hr_warning_acknowledged", "ctx_hr_sc12_driver_recent_passage", "ctx_hr_sc12_exit_sighting_readback", "ctx_hr_sc12_courier_104_confirmed"], "none": ["hr_h10_recorded", "hr_h10_brief_presented"]}
 
 **DESCRIPTION [H10_BRIEF_001]**: The originals are in the cab. Ward has the warning and the dictated measurement tables.
 
@@ -770,8 +770,911 @@ RECEIVED / E. WARD. SARO original identified; local observations separated from 
 
 The 06:00 morning series remains suspended after the earlier local safety report. No fresh observer is to close a reference or complete the old run. Other sites have now acknowledged the same instruction. This does not claim that the external activity has stopped.
 
-The warning, source IDs and dictated measurement tables are retained in Ward's dated call log outside SARO. Photographs, negatives and complete source sheets remain in the transfer folder. The courier has the field map. The handover point is the existing survey bolt at mile 10.4 on the old Roswell road; it is not C.
+The warning, source IDs and dictated measurement tables are retained in Ward's dated call log outside SARO. Photographs, negatives and complete source sheets remain in the transfer folder. The courier has the field map. A handover point is to be agreed after the diner map and current route checks; this receipt does not confirm one.
 
 Time of acknowledgement is entered when this call is actually completed. Do not preprint a successful acknowledgement before the line has been answered.
 
 **Produksjon:** Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto.
+
+## unified_scenarios
+
+### SC01_WINDOW_CHECK (early_shift / ui / live)
+
+**Utløser:** Etter faktisk vindusobservasjon og kontroll fra trygg side. Foto er frivillig.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc01_window_seen", "ctx_hr_sc01_marks_checked"], "none": ["hr_sc01_window_check_presented"]}
+
+**DESCRIPTION [SC01_WINDOW_CHECK_001]**: The moving hand was outside the glass. The marks are on that side too. Switching the room lamp does not remove them.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC01_WINDOW_CHECK_002]**: Secure the known door. You can report what you saw without going outside after it.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc01_window_check_presented": true}, "give_documents": []}`
+
+### SC01_FIRST_REPORT (early_shift / phone / live)
+
+**Utløser:** Første melding etter faktisk observert hånd og ekte kontakt/readback. Merker kan undersøkes separat senere; denne meldingen krever ingen etterforskningsrunde.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc01_window_seen", "ctx_hr_sc01_report_readback"], "none": ["hr_sc01_first_report_presented"]}
+
+**DISPATCH [SC01_FIRST_REPORT_001]**: SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.
+
+*Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
+
+**DISPATCH [SC01_FIRST_REPORT_002]**: Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.
+
+*Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc01_first_report_presented": true}, "give_documents": ["HR_INITIAL_REPORT"]}`
+
+### SC02_RETURN_WARNING (early_shift / ui / live)
+
+**Utløser:** Bare mens ekte kropp/forvarsel og fysisk rute er etablert. Ingen fotoport.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc02_t01_complete", "ctx_hr_sc02_threat_visible"], "none": ["hr_sc02_return_warning_presented"]}
+
+**DESCRIPTION [SC02_RETURN_WARNING_001]**: A pale body stands between the service front and SARO 07. It turns towards a new sound. The opaque shed wall breaks the view.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC02_RETURN_WARNING_002]**: The route outside the fence goes around the shed. Watch the open crossing before you move. The high-voltage yard is not an exit.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc02_return_warning_presented": true}, "give_documents": []}`
+
+### SC02_ESCAPE (early_shift / ui / live)
+
+**Utløser:** Faktisk brutt kontakt/retrett; ingen videre pliktfangst.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc02_t01_complete", "ctx_hr_sc02_escape_complete"], "none": ["hr_sc02_escape_presented"]}
+
+**DESCRIPTION [SC02_ESCAPE_001]**: The search has moved away from the route you used. The truck starts. Your completed lamp test is still on the service card.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC02_ESCAPE_002]**: Caliche has a working phone and people. Report the encounter and ask for someone to meet you.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc02_escape_presented": true}, "give_documents": ["HR_TRAFO_ENCOUNTER"]}`
+
+### SC02_RETRY (early_shift / ui / live)
+
+**Utløser:** Kun etter lokal fangst; ingen17-47min/gammel teller/etterspor.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc02_local_retry"], "none": []}
+
+**DESCRIPTION [SC02_RETRY_001]**: Return to cover before the crossing. The lamp inspection is preserved. Read the search before trying the truck again.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {}, "give_documents": []}`
+
+### SC03_DISPATCH_RECEIPT (early_shift / phone / live)
+
+**Utløser:** Faktisk sted-/tidsmelding og utkalling kvittert, ikke automatisk fra T01 eller å se skapning.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc02_escape_complete", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc01_report_readback", "ctx_hr_sc03_ortiz_assigned"], "none": ["hr_sc03_dispatch_receipt_presented"]}
+
+**DISPATCH [SC03_DISPATCH_RECEIPT_001]**: Caliche Junction service front. A tall pale person moved while you were watching and turned towards new sound. You reached your truck.
+
+*Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
+
+**DISPATCH [SC03_DISPATCH_RECEIPT_002]**: The district is sending a relief technician to meet you at the Caliche fuel station. Stay at the lit public stop until the contact is identified.
+
+*Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_dispatch_receipt_presented": true}, "give_documents": ["HR_DISPATCH_RECEIPT"]}`
+
+### SC03_RELIEF_CONTACT (early_shift / phone / live)
+
+**Utløser:** Utkalling har faktisk egen person/vogn og avtalt møte. Ny identitet i forfatterkilden.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_ortiz_assigned"], "none": ["hr_sc03_relief_contact_presented"]}
+
+**WARD [SC03_RELIEF_CONTACT_001]**: Mara Ortiz, district maintenance. White utility wagon, number twenty-three. She will meet you at the fuel station, in view of the counter.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+**WARD [SC03_RELIEF_CONTACT_002]**: Tell her what you saw before you discuss equipment. She is there to bring help, not to send you back into a yard alone.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_relief_contact_presented": true}, "give_documents": []}`
+
+### SC03_SHADOW_RULE (early_shift / ui / live)
+
+**Utløser:** To kontrollerte usette flyttinger, ingen flytting i panel/perifert/zoom/lykt/fotosøker. Valgfritt observasjonsspor.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_shadow_observed"], "none": ["hr_sc03_shadow_rule_presented"]}
+
+**DESCRIPTION [SC03_SHADOW_RULE_001]**: The black outline stays still while you keep it in view. When it moves, it does so between your observations.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC03_SHADOW_RULE_002]**: Keep the opening in view and step behind the solid wall. It is not moving like the pale figure at the service front.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_shadow_rule_presented": true}, "give_documents": []}`
+
+### SC03_ORTIZ_IDENTIFY (early_shift / physical / live)
+
+**Utløser:** Vanlig synlig ankomst før fare. Ny hjelper, ikke Earl/sheriff/servitrise som fjernes.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_ortiz_assigned", "ctx_hr_sc03_ortiz_identified"], "none": ["hr_sc03_ortiz_identify_presented"]}
+
+**ORTIZ [SC03_ORTIZ_IDENTIFY_001]**: Mara Ortiz. District maintenance, wagon twenty-three. Dr. Ward said you would be here.
+
+*Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes.*
+
+**ORTIZ [SC03_ORTIZ_IDENTIFY_002]**: I brought a second handset. Before we go anywhere, show me where you were standing and where the person moved.
+
+*Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes.*
+
+**ORTIZ [SC03_ORTIZ_IDENTIFY_003]**: We can make that report from here. Nobody needs you to get closer for a photograph.
+
+*Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_ortiz_identify_presented": true}, "give_documents": []}`
+
+### SC03_HELPER_TAKEN (early_shift / ui / live)
+
+**Utløser:** Observasjonstekst først etter virkelig synlig løft/forsvinning og trygg retrett. Lydtekst alene er ingen levert bortføring.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_ortiz_identified", "ctx_hr_sc03_lift_observed", "ctx_hr_sc03_safe_retreat"], "none": ["hr_sc03_helper_taken_presented"]}
+
+**DESCRIPTION [SC03_HELPER_TAKEN_001]**: Ortiz rose clear of the ground in the light. There was no ladder or support. Then she was gone. Her wagon is still at the stop.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC03_HELPER_TAKEN_002]**: You are behind cover. The encounter is over. Report her missing from the working phone.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_helper_taken_presented": true}, "give_documents": []}`
+
+### SC03_HELPER_TRACES (early_shift / ui / live)
+
+**Utløser:** Undersøk faktiske rekvisitter etter ro; ikke automatisk ved startet lys.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_safe_retreat", "ctx_hr_sc03_traces_checked"], "none": ["hr_sc03_helper_traces_presented"]}
+
+**DESCRIPTION [SC03_HELPER_TRACES_001]**: Wagon twenty-three is empty. Ortiz's district handset lies beside the open door; her name is on its service tag.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC03_HELPER_TRACES_002]**: The dispatch record establishes why she came. The empty wagon and handset establish what remained. Neither explains where she went.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_helper_traces_presented": true}, "give_documents": ["HR_HELPER_TRACE_NOTE"]}`
+
+### SC03_MISSING_RECEIPT (early_shift / phone / live)
+
+**Utløser:** Reell separat savnetsak/readback. Ikke hevde full ettersporsundersøkelse eller lokal plansperre fra denne alene.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_lift_observed", "ctx_hr_sc03_safe_retreat", "ctx_hr_sc03_missing_readback", "ctx_hr_sc03_ortiz_identified", "ctx_hr_sc03_dispatch_readback"], "none": ["hr_sc03_missing_receipt_presented"]}
+
+**DISPATCH [SC03_MISSING_RECEIPT_001]**: Mara Ortiz, district maintenance. Last seen at the Caliche fuel stop beside wagon twenty-three. You saw her lifted in a light and then could no longer see her.
+
+*Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
+
+**DISPATCH [SC03_MISSING_RECEIPT_002]**: That is now a missing-person report, linked to the earlier call. We are handling the search. Keep the handset where it is and stay at a working contact point.
+
+*Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_missing_receipt_presented": true}, "give_documents": ["HR_MISSING_RECEIPT"]}`
+
+### SC03_LOCAL_ORDER_HOLD (early_shift / phone / live)
+
+**Utløser:** Faktisk Ward-ordre, uavhengig av fysisk betjening senere. Ingen nettverksvid ordre ennå.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_missing_readback", "ctx_hr_sc03_local_order_suspended"], "none": ["hr_sc03_local_order_hold_presented"]}
+
+**WARD [SC03_LOCAL_ORDER_HOLD_001]**: The SARO six o'clock observer series is suspended. I have recorded that as a local order. Dispatch has Ortiz's case.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+**WARD [SC03_LOCAL_ORDER_HOLD_002]**: You are not being asked to carry on a normal shift. Stay with the people at Caliche while we agree what can be secured without exposing you again.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc03_local_order_hold_presented": true}, "give_documents": ["HR_LOCAL_HOLD_RECEIPT"]}`
+
+### SC04_LIMITED_RETURN (early_shift / phone / live)
+
+**Utløser:** Valg fra faktisk tilflukt, kjent prøvd utvei og avgrenset hensikt. Ingen global avreisesperre.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc03_local_order_suspended", "ctx_hr_sc04_return_agreed"], "none": ["hr_sc04_limited_return_presented"]}
+
+**WARD [SC04_LIMITED_RETURN_001]**: The automatic schedule is still set locally. We can secure that and the dated shift record, then talk again from the control room.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+**WARD [SC04_LIMITED_RETURN_002]**: Only if the known way back is clear. The truck and the public road are available. Call me from the secured room; do not restart the survey.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_limited_return_presented": true}, "give_documents": []}`
+
+### SC04_LOCAL_HOLD (early_shift / ui / live)
+
+**Utløser:** Bare etter faktisk fysisk betjening/kontroll og sikrede originale papirer; eget local hold-resultat.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_schedule_isolated", "ctx_hr_sc04_shift_originals_secured"], "none": ["hr_sc04_local_hold_presented"]}
+
+**DESCRIPTION [SC04_LOCAL_HOLD_001]**: The local automatic schedule is isolated. The receiver still monitors passively, and a separately authorised service check remains possible.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC04_LOCAL_HOLD_002]**: The dated shift record and service original are secured for the missing-person report. Turning off a local schedule has not turned off the sky.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_local_hold_presented": true}, "give_documents": ["HR_LOCAL_ISOLATION_NOTE"]}`
+
+### SC04_ANNEX_IMPRINT (early_shift / radio / fixed)
+
+**Utløser:** Fast identisk fragment fra tidligere H01_BRIEF_002 med samme pause. Feil annexretning, ingen ny Dale-instruks eller fysisk Dale.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_schedule_isolated", "ctx_hr_sc04_annex_imprint_playing", "ctx_hr_sc01_dale_reference_heard"], "none": ["hr_sc04_annex_imprint_presented"]}
+
+**DALE [SC04_ANNEX_IMPRINT_001]**: The camera is beside the east door. Take a reference before you touch the fault.
+
+*Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_annex_imprint_presented": true}, "give_documents": []}`
+
+### SC04_ANNEX_LONG_ESCAPE (early_shift / ui / live)
+
+**Utløser:** Bare faktisk lang fluktlinje; ingen krav om avledning eller nytt pliktfoto.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_annex_long_escape"], "none": ["hr_sc04_annex_long_escape_presented"]}
+
+**DESCRIPTION [SC04_ANNEX_LONG_ESCAPE_001]**: The solid wall broke the view. Behind the closed door, the search stayed at your last position while you used the longer passage.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC04_ANNEX_LONG_ESCAPE_002]**: Contact is broken and the search has withdrawn. The secured records are still with you.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_annex_long_escape_presented": true}, "give_documents": []}`
+
+### SC04_ANNEX_SOUND_ESCAPE (early_shift / ui / live)
+
+**Utløser:** Kort rute krever faktisk sanset lydreaksjon og gjennomført passasje. Ingen global usynlighet.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_annex_sound_escape"], "none": ["hr_sc04_annex_sound_escape_presented"]}
+
+**DESCRIPTION [SC04_ANNEX_SOUND_ESCAPE_001]**: The ordinary radio drew the figure towards the new sound. From cover you saw it leave the shorter crossing.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC04_ANNEX_SOUND_ESCAPE_002]**: You crossed while the route was clear. Contact is broken and the search has withdrawn.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_annex_sound_escape_presented": true}, "give_documents": []}`
+
+### SC04_ANNEX_RETRY (early_shift / ui / live)
+
+**Utløser:** Lokal retry bevarer tidligere servicearbeid og papirer.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_annex_local_retry"], "none": []}
+
+**DESCRIPTION [SC04_ANNEX_RETRY_001]**: The schedule and records remain secured. Return to the last covered point before the intrusion and choose a clear route.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {}, "give_documents": []}`
+
+### SC04_CAR_READ (early_shift / ui / live)
+
+**Utløser:** Etter faktisk ro; krever prøvd kropp-/rutegeometri. Ingen QTE/passiv venting.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_after_annex_calm", "ctx_hr_sc04_car_route_known", "ctx_hr_sc04_car_threat_visible"], "none": ["hr_sc04_car_read_presented"]}
+
+**DESCRIPTION [SC04_CAR_READ_001]**: The control-room door is reachable from the screened parking place. You have tried that route. The engine works.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC04_CAR_READ_002]**: A shape passes close to the cab. Glass does not hide you. Use the solid screen or drive when the crossing is clear.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_car_read_presented": true}, "give_documents": []}`
+
+### SC04_CAR_ESCAPE (early_shift / ui / live)
+
+**Utløser:** Faktisk kroppsskjul eller gyldig kjøreflukt; samme bil virker etterpå.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_car_escape", "ctx_hr_sc04_car_route_known"], "none": ["hr_sc04_car_escape_presented"]}
+
+**DESCRIPTION [SC04_CAR_ESCAPE_001]**: You left the exposed place while the route was open. The figure has lost contact; it is no longer searching your path.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC04_CAR_ESCAPE_002]**: The truck still runs. Use the control-room route you checked, watching the crossing before you move. Ward is expecting you at that secured contact point.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_car_escape_presented": true}, "give_documents": []}`
+
+### SC04_CAR_RETRY (early_shift / ui / live)
+
+**Utløser:** Særskilt lokal retry, ikke tidlig finale eller gammel tilfeldig bortføring.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_car_local_retry"], "none": []}
+
+**DESCRIPTION [SC04_CAR_RETRY_001]**: Return to the covered approach. The truck is usable and the secured work is preserved. Choose the passage after the sweep moves away.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {}, "give_documents": []}`
+
+### SC04_SAFE_ROOM_AGREEMENT (early_shift / phone / live)
+
+**Utløser:** Avgrenset loggsikring i faktisk trygg situasjon og ekte kontakt før fremoverovergang; ingen tvangsordre om normal drift.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_car_escape", "ctx_hr_sc04_control_room_safe", "ctx_hr_sc04_ward_on_line", "ctx_hr_sc04_schedule_isolated", "ctx_hr_sc04_shift_originals_secured"], "none": ["hr_sc04_safe_room_agreement_presented"]}
+
+**WARD [SC04_SAFE_ROOM_AGREEMENT_001]**: I have you on the control-room line. Keep the door secured. Dispatch is following up Ortiz; I am staying on this call.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+**WARD [SC04_SAFE_ROOM_AGREEMENT_002]**: Read me the receiver log's original heading and time. We are preserving the record from cover. Leave the automatic plan isolated.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+**WARD [SC04_SAFE_ROOM_AGREEMENT_003]**: If this room stops being safe, use the route you tested. You do not owe us another normal round.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc04_safe_room_agreement_presented": true}, "give_documents": []}`
+
+### SC05_PASSIVE_RESIDUAL (signal / ui / live)
+
+**Utløser:** Faktisk passiv residual under fortsatt plansperre. Eksisterende mottaker/telefon47-sek-romkontroll må fortsatt gjøres.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_sc04_schedule_isolated", "ctx_hr_sc05_residual_passive"], "none": ["hr_sc05_passive_residual_presented"]}
+
+**DESCRIPTION [SC05_PASSIVE_RESIDUAL_001]**: 00:13:47. A new residual appears in passive reception. The isolated automatic schedule has not resumed.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [SC05_PASSIVE_RESIDUAL_002]**: Use the existing receiver controls and preserve the print. The moving bodies you saw are separate observations; this test asks what the signal retains.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc05_passive_residual_presented": true}, "give_documents": []}`
+
+### BY02_REQUEST (archive / physical / live)
+
+**Utløser:** Earl fysisk før04:00; datert arkivgrunn først. Ingen automatisk studioadgang.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_by02_dated_lead", "ctx_hr_by02_earl_present"], "none": ["hr_by02_request_presented"]}
+
+**EARL [BY02_REQUEST_001]**: That date is on my off-air reel. Nineteen eighty-one. I kept the station log with it.
+
+*Eksisterende1420AM-vert. Uttaler bare eget1981-materiales opphav og faktiske valgt bånd/live-kontroll. Fysisk replikk krever tilstedeværelse før04:00.*
+
+**EARL [BY02_REQUEST_002]**: This is fourteen-twenty AM, the town station. Your fourteen-twenty-point-four-zero-five receiver is different equipment. Let us keep the sources straight.
+
+*Eksisterende1420AM-vert. Uttaler bare eget1981-materiales opphav og faktiske valgt bånd/live-kontroll. Fysisk replikk krever tilstedeværelse før04:00.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_by02_request_presented": true}, "give_documents": []}`
+
+### BY02_REEL_IDENTIFY (archive / physical / live)
+
+**Utløser:** Merking/kilde-/ruteopplegg faktisk tilgjengelig i offentlig lobby eller utlevering.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_by02_earl_present", "ctx_hr_by02_reel_identity"], "none": ["hr_by02_reel_identify_presented"]}
+
+**EARL [BY02_REEL_IDENTIFY_001]**: The reel box, the off-air entry and my initials belong together. The transmitter was shut down; that does not by itself tell us what made the sound.
+
+*Eksisterende1420AM-vert. Uttaler bare eget1981-materiales opphav og faktiske valgt bånd/live-kontroll. Fysisk replikk krever tilstedeværelse før04:00.*
+
+**EARL [BY02_REEL_IDENTIFY_002]**: The marked source switch has two positions. Tape is this reel with the monitor feed disconnected. Live is tonight's monitor with the deck disconnected.
+
+*Eksisterende1420AM-vert. Uttaler bare eget1981-materiales opphav og faktiske valgt bånd/live-kontroll. Fysisk replikk krever tilstedeværelse før04:00.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_by02_reel_identify_presented": true}, "give_documents": []}`
+
+### BY02_TAPE_CHECK (archive / ui / live)
+
+**Utløser:** Fysisk isolert avspilling, ikke dialogvalg som måler signalveien.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_by02_reel_identity", "ctx_hr_by02_tape_isolated"], "none": ["hr_by02_tape_check_presented"]}
+
+**DESCRIPTION [BY02_TAPE_CHECK_001]**: TAPE is selected. The live monitor is disconnected from the playback path. The dated reel supplies the old fragment.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [BY02_TAPE_CHECK_002]**: This establishes the source of this playback. It does not identify the source of the original sound or measure a bearing.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_by02_tape_check_presented": true}, "give_documents": []}`
+
+### BY02_LIVE_CHECK (archive / ui / live)
+
+**Utløser:** Ekte skilt live-monitor med bånd frakoblet; ingen kildekonklusjon fra valg alene.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_by02_reel_identity", "ctx_hr_by02_live_selected"], "none": ["hr_by02_live_check_presented"]}
+
+**DESCRIPTION [BY02_LIVE_CHECK_001]**: LIVE MONITOR is selected. The reel deck is disconnected from this path. What you hear now belongs to tonight's monitor.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [BY02_LIVE_CHECK_002]**: A match in sound is not a shared source record. Keep tonight's monitor and the labelled reel separate.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_by02_live_check_presented": true}, "give_documents": []}`
+
+### BY02_SOURCE_COMPARE (archive / ui / live)
+
+**Utløser:** To lagrede fullførte kildeprøver og nytt spørsmål er sammenlignet. Aktuell TAPE-/LIVE-velger er gjensidig utelukkende; resultatet krever ikke at begge er valgt samtidig.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_by02_reel_identity", "ctx_hr_by02_question_compared", "ctx_hr_by02_tape_sample_verified", "ctx_hr_by02_live_sample_verified"], "none": ["hr_by02_source_compare_presented"]}
+
+**DESCRIPTION [BY02_SOURCE_COMPARE_001]**: The isolated reel repeats the same old fragment after a new question. The recorded words have not answered it.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [BY02_SOURCE_COMPARE_002]**: The dated local reel is a separately preserved source. Record the source and timing. Direction still needs fixed landmarks and field observations.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_by02_source_compare_presented": true}, "give_documents": ["HR_EARL_SOURCE_CHECK"]}`
+
+### BY02_LATE_COPY (archive / ui / live)
+
+**Utløser:** Sen legitim datert kildekopi er identifisert mot konvolutt/logg/frakoblingsark, faktisk avspilt isolert på lobbydekket og nytt spørsmål sammenlignet med uendret fragment. Ingen Earl-replikk etter04:00. Bare metadata gir ingen lydkonklusjon.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_by02_dated_lead", "ctx_hr_by02_source_copy_verified", "ctx_hr_by02_question_compared"], "none": ["hr_by02_late_copy_presented"]}
+
+**DESCRIPTION [BY02_LATE_COPY_001]**: Earl has left. The labelled collection envelope contains his dated source copy, the off-air log copy and the marked playback-disconnection sheet.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [BY02_LATE_COPY_002]**: You checked the copy on the isolated lobby deck. Its old fragment stays unchanged after your question. There is no new live reply from Earl.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [BY02_LATE_COPY_003]**: This is a checked copy of the identified source, not a claim to have handled the original reel. Keep that limit on the record.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_by02_late_copy_presented": true}, "give_documents": ["HR_EARL_SOURCE_COPY"]}`
+
+### BY02_INCOMPLETE (archive / ui / live)
+
+**Utløser:** Ingen konklusjon eller kildekvittering ved uavklart opphav.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_by02_source_insufficient"], "none": []}
+
+**DESCRIPTION [BY02_INCOMPLETE_001]**: The source or signal path is not verified. Ask for the labelled off-air log and use the isolated playback position. A familiar sound alone is not the check.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {}, "give_documents": []}`
+
+### ARRAY_BRIEF (field / ui / live)
+
+**Utløser:** Eget ordinært servicevedlegg fra EveningShift, ikke omskriving av kulvertindeks eller tre-bokser-gåte.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_service_card_acquired"], "none": ["hr_array_brief_presented"]}
+
+**DESCRIPTION [ARRAY_BRIEF_001]**: The separate array service card marks A / ROW 1 WEST, B / ROW 1 EAST and REF / R1. It describes an ordinary comparison, not what the array will follow.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [ARRAY_BRIEF_002]**: Identify the nearby dishes and check their command history. Leave the reference lamp fixed. Choose either operator place first, then the other, then return briefly.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_brief_presented": true}, "give_documents": []}`
+
+### ARRAY_COMMAND_CHECK (field / ui / live)
+
+**Utløser:** Separat faktisk kommando-/drivkontroll; åpnet papir er utilstrekkelig.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_command_checked"], "none": ["hr_array_command_check_presented"]}
+
+**DESCRIPTION [ARRAY_COMMAND_CHECK_001]**: The nearby dish identifiers match the local command and drive record you checked. The automatic schedule remains isolated; this is a separate bounded service check.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_command_check_presented": true}, "give_documents": []}`
+
+### ARRAY_FIXED_REFERENCE (field / ui / live)
+
+**Utløser:** Faktisk lampeplassering/innstilling i verdensrommet; ingen logger som måler peiling.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_reference_fixed"], "none": ["hr_array_fixed_reference_presented"]}
+
+**DESCRIPTION [ARRAY_FIXED_REFERENCE_001]**: The reference lamp stays at REF / R1 at the same setting. Move yourself, not the lamp. Compare the dishes against the fixed Row One landmarks.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_fixed_reference_presented": true}, "give_documents": []}`
+
+### ARRAY_POINT_A (field / ui / live)
+
+**Utløser:** Faktisk A-posisjon/sikt/respons. Kan være første eller andre ståsted; ingen klokkeanimert fasit.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_command_checked", "ctx_hr_array_reference_fixed", "ctx_hr_array_a_observed"], "none": ["hr_array_point_a_presented"]}
+
+**DESCRIPTION [ARRAY_POINT_A_001]**: At A / ROW 1 WEST, the observed dishes turn towards this operator position. REF / R1 and the fixed landmarks have not moved. Record what you actually see from here.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_point_a_presented": true}, "give_documents": []}`
+
+### ARRAY_POINT_B (field / ui / live)
+
+**Utløser:** Faktisk B-posisjon/sikt/respons, fritt A→B/B→A.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_command_checked", "ctx_hr_array_reference_fixed", "ctx_hr_array_b_observed"], "none": ["hr_array_point_b_presented"]}
+
+**DESCRIPTION [ARRAY_POINT_B_001]**: At B / ROW 1 EAST, the observed dishes turn towards this operator position. The reference lamp is still at REF / R1. Compare their angles against the same landmarks.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_point_b_presented": true}, "give_documents": []}`
+
+### ARRAY_RETURN (field / ui / live)
+
+**Utløser:** Faktisk retur til det først valgte ståstedet; kontrollert forskjellig respons ved samme klokke.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_a_observed", "ctx_hr_array_b_observed", "ctx_hr_array_return_observed"], "none": ["hr_array_return_presented"]}
+
+**DESCRIPTION [ARRAY_RETURN_001]**: On your short return to the first operator place, the dishes turn back towards it. The response follows your chosen route, not a fixed order of stations.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_return_presented": true}, "give_documents": []}`
+
+### ARRAY_RESULT (field / ui / live)
+
+**Utløser:** Styring/geometri adskilt fra lyd. Ingen løsning på C/Nora eller pliktfoto under senere fare.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_command_checked", "ctx_hr_array_reference_fixed", "ctx_hr_array_a_observed", "ctx_hr_array_b_observed", "ctx_hr_array_return_observed", "ctx_hr_array_geometry_compared", "ctx_hr_array_command_history_compared"], "none": ["hr_array_result_presented"]}
+
+**DESCRIPTION [ARRAY_RESULT_001]**: The physical response followed the operator between two places and back while the reference lamp stayed fixed. The separate command record does not account for those changes.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+**DESCRIPTION [ARRAY_RESULT_002]**: That is a result for this controlled path. It does not establish anyone's identity, a county-wide safe route or what happened to Tomás. STATION 01 records an older arrangement to examine next.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_result_presented": true}, "give_documents": ["HR_ARRAY_CONTROL_NOTE"]}`
+
+### ARRAY_RETREAT (field / ui / live)
+
+**Utløser:** Trusselmøte4 fysisk vellykket retrett. Ingen gammel Warning/Force eller ny stor STATION01-jakt.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_geometry_compared", "ctx_hr_array_escape_complete"], "none": ["hr_array_retreat_presented"]}
+
+**DESCRIPTION [ARRAY_RETREAT_001]**: You used the clear passage and broke contact behind opaque cover. The searching figure has withdrawn. The completed comparison is preserved.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_retreat_presented": true}, "give_documents": []}`
+
+### ARRAY_EMPTY_HOLD (field / ui / live)
+
+**Utløser:** Bare faktisk observert tomt ståsted/retur026 etter riktig retrett; ikke gratis fra avslutning.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_escape_complete", "ctx_hr_array_empty_hold_observed"], "none": ["hr_array_empty_hold_presented"]}
+
+**DESCRIPTION [ARRAY_EMPTY_HOLD_001]**: The dishes hold briefly on the empty place you left. Then they return to 026. Nobody is standing there now.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_array_empty_hold_presented": true}, "give_documents": []}`
+
+### ARRAY_RETRY (field / ui / live)
+
+**Utløser:** Lokal retrettretry, ingen gammel teller/tidstap/gjenganger.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_local_retry"], "none": []}
+
+**DESCRIPTION [ARRAY_RETRY_001]**: The command, source and geometry checks are preserved. Resume from the covered point before the passage was searched; choose a clear retreat.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {}, "give_documents": []}`
+
+### ARRAY_INCOMPLETE (field / ui / live)
+
+**Utløser:** Bevar faktiske delmålinger uten å fabrikkere samlet kontroll.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_array_insufficient"], "none": []}
+
+**DESCRIPTION [ARRAY_INCOMPLETE_001]**: The comparison is incomplete. Keep the fixed lamp in place, check the other marked position and return to the first. Do not record a tracking result without the geometry and command checks.
+
+*Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
+
+
+**Ved fullføring:** `{"set_flags": {}, "give_documents": []}`
+
+### SC12_ROUTE_READBACK (all_night / phone / live)
+
+**Utløser:** Ny fersk sted-/tidsfestet utfartsrapport og reell budkvittering trengs. Ingen1985kvittering som fersk veiinfo.
+
+**Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
+
+**Krav:** {"all": ["ctx_hr_warning_acknowledged", "ctx_hr_h09_checked", "ctx_hr_sc12_driver_recent_passage", "ctx_hr_sc12_exit_sighting_readback", "ctx_hr_sc12_courier_104_confirmed"], "none": ["hr_sc12_route_readback_presented"]}
+
+**WARD [SC12_ROUTE_READBACK_001]**: The patrol note places low lights across the northbound highway beyond the Caliche Junction turnoff. I have its actual time and the driver's recent eastbound passage in the log. They are limited reports, not a map of everywhere it is safe.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+**WARD [SC12_ROUTE_READBACK_002]**: The courier is confirmed at bolt ten-point-four, beyond the mapped C crossing at eight-point-one-five. Carry the originals. No stopping or new reading at C.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+**WARD [SC12_ROUTE_READBACK_003]**: The warning and dictated measurements are already outside SARO. You can remain at the diner; the handover is a choice to preserve the original source chain, not a new experiment.
+
+*Eksisterende vakthavende. Må ikke slås sammen med Dale.*
+
+
+**Ved fullføring:** `{"set_flags": {"hr_sc12_route_readback_presented": true}, "give_documents": ["HR_ROUTE_READBACK"]}`
+
+### HR_INITIAL_REPORT: Initial window report
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+CALICHE DISPATCH / INITIAL REPORT. SARO control-room window, outside face of glass. Reyes reports a moving hand or forearm. Identity not established. Exterior marks are a separate physical check and are not certified by this first call.
+
+The incident time and caller's location are copied from the actual call log and read back. This report does not establish a relief dispatch or a missing person.
+
+**Produksjon:** Adapter må sette faktisk in-game dato/tid/sted fra første meldingslogg. Ingen oppdiktet permanent klokkeslett.
+
+### HR_TRAFO_ENCOUNTER: Caliche Junction encounter note
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+The completed local lamp check remains recorded on its service card. Physical return filing at SARO is a separate action. At the service front a pale body moved under direct observation and turned towards new sound.
+
+Reyes used the available route outside the fence, reached SARO 07 and broke contact. This note does not identify the body or explain the lamp fault.
+
+**Produksjon:** Bare faktisk vellykket flukt. Lokal retry gir ikke denne før ny vellykket retrett.
+
+### HR_DISPATCH_RECEIPT: District relief dispatch receipt
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+CALICHE DISPATCH / RELIEF REQUEST. Reports at SARO and Caliche Junction linked under the current incident reference.
+
+Regional technician Mara Ortiz, district wagon 23, assigned to meet Reyes at the public Caliche fuel stop. Actual dispatch time and contact readback attached.
+
+This is an assignment record. It is not proof of arrival, abduction or a missing-person filing.
+
+**Produksjon:** Reell utkalling har egen dato/tid/ID fra adapter. Ny person/vogn må produseres.
+
+### HR_HELPER_TRACE_NOTE: Wagon 23: observed traces
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+After reaching cover, Reyes checked the empty district wagon and the handset beside its door. The handset service tag names Mara Ortiz.
+
+The trace note records remaining objects. The separately witnessed lift and the subsequent missing-person report have their own records.
+
+**Produksjon:** Faktiske navngitte rekvisitter må finnes; ikke løft-credit fra bare objekter.
+
+### HR_MISSING_RECEIPT: Mara Ortiz: missing-person receipt
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+CALICHE DISPATCH / MISSING PERSON. Mara Ortiz, district maintenance, last seen at the public Caliche fuel stop beside wagon 23.
+
+Reyes reports seeing Ortiz rise clear of support in an external light and then disappear. Dispatch has read back identity, place and actual report time, and linked the relief assignment.
+
+Search assigned to the authorities. This report does not explain the disappearance.
+
+**Produksjon:** Dynamisk hendelses-ID/dato/tid fra faktisk savnetmelding, adskilt fra utkallingskvittering.
+
+### HR_LOCAL_HOLD_RECEIPT: SARO local morning-series hold
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+DR. WARD / LOCAL WORK ORDER. SARO 06:00 observer series suspended after the Caliche missing-person report.
+
+Dispatch owns the search for Mara Ortiz. Reyes is to remain at an established contact point. This order is local to SARO; network action requires later independent evidence.
+
+Physical automatic-schedule isolation has its own check and must not be inferred from this order.
+
+**Produksjon:** Bare faktisk Ward-ordre/readback. Ingen nettverkskvittering eller fysisk bryterstatus fra tekst alene.
+
+### HR_LOCAL_ISOLATION_NOTE: Local automatic schedule: isolated
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+The physical auto/survey schedule has been placed in its marked isolated state and checked locally. Passive reception remains available.
+
+Dated shift and service originals are secured for the incident record. A separately authorised bounded array check remains possible; unattended operation stays suspended.
+
+**Produksjon:** Ekte betjening/kontroll og papirhenting. Ingen avbryting av all strøm eller K3 som global bryter.
+
+### HR_EARL_SOURCE_CHECK: 1420 AM: identified original-source check
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+Identified 1981 off-air reel and separately preserved local log examined at 1420 AM. Source switch checked in isolated TAPE and LIVE MONITOR paths; the unused input was disconnected in each test.
+
+The reel repeated the same fragment after a new question. The result establishes this playback's dated source and fixed content. It does not measure a bearing or identify the original sound.
+
+1420 AM is distinct from the SARO receiver at 1420.405 MHz. Field geometry needs operator positions and fixed landmarks.
+
+**Produksjon:** Originalkontroll før Earl går04:00. Målinger stammer fra fysisk isolert opplegg; ingen Earl-forklaring etter avgang.
+
+### HR_EARL_SOURCE_COPY: 1420 AM: checked dated source copy
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+Earl's labelled collection envelope contains a copy identified to the 1981 off-air reel, its dated local log and a playback/disconnection sheet.
+
+After Earl left, Reyes used the isolated lobby deck and checked the copy's fixed fragment against a new question. This is a verified copy-source path, not an examination of the original reel.
+
+No bearing or present location follows from the audio. Earl did not answer after his departure.
+
+**Produksjon:** Sen legitim kopi krever utleveringsrekvisitt/merking/deck/kildekontroll i runtime. Ingen gratis positivt faktum ved sen klokke.
+
+### HR_ARRAY_CONTROL_NOTE: Array service comparison
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+Separate command and drive record checked for the identified Row One near group. Fixed reference lamp left at REF / R1 at unchanged setting. The ordinary service card is EV_DALE_ARRAY_SERVICE; T02's culvert index remains separate.
+
+Operator chose A / ROW 1 WEST or B / ROW 1 EAST first, moved to the other and briefly returned. Observed dish angles changed with those physical positions against fixed landmarks; the lamp stayed at REF / R1.
+
+The selected route, local timings and actual observations belong in the field record. Audio supports sequence and timing, not bearing. This check does not establish identity, C or Nora's motive.
+
+**Produksjon:** Servicekort/fysiske ståsteder eies av EveningShift/arrayadapter. Dynamiske navn/rute-/vinkeldata må fylles fra faktisk feltresultat.
+
+### HR_ROUTE_READBACK: Old Roswell road: route and courier readback
+
+typed / SARO / NIGHT SHIFT / 13-14 APR 1986
+
+Caliche dispatch patrol note: low lights crossing the northbound highway beyond the Caliche Junction service turnoff, recorded at the actual observation time. Ward authenticated that note and the driver's separately timed recent eastbound passage on the old Roswell road. Neither is proof of future safe passage.
+
+After mapping C at bolt 8.15, Reyes agreed a courier handover at bolt 10.4 beyond it. Plan: carry the originals, pass C without stopping or taking another reading.
+
+The warning and dictated measurement tables are already secured outside SARO. The diner remains a refuge; the handover preserves the source chain and is not another observer experiment.
+
+**Produksjon:** Adapter må binde faktiske dato/tider/retninger/kilde-ID-er/bud til avskrift; ingen gammel bergingskvittering som fersk opplysning.

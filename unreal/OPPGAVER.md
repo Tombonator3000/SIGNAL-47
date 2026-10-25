@@ -1,5 +1,9 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Kontorfunn, himmel og observasjonslagring, startet 26.10.2026 kl. 00:42 CET
+
+Codex på `codex/night-production`, separat arbeidskopi i `/home/tom/scratch-bm/wt/night-production`. Avgrensede hjelpere eier HorrorStory-kilder, Dales kontorpapirer og LineLights; root eier himmellys, integrasjon, sekvensielle bygg/prøver og levering. S.1/R2.1 produseres som engelske forfatterkilder; S.7s seks tekster og separat arrayserviceark får faktisk kontor-/lese-/lagringsflyt, S.6 retter usette/avbrutte lys, S.3 får fem verdensbaner med egen faktisk observasjon. Dagens kapitteladapter erstatter ikke S.2s nye kveldskoordinator. Original VHS, fem aktive møter og fullnatt er fortsatt åpne. Installert ku-R2 er oppdaget i leveringskontrollen og bevares byteidentisk fra testet kilde-/assetsnapshot før ny pakking. Se [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md).
+
 ## T02 runtime levert, 25. oktober 2026
 
 Codex fullførte den sammenhengende kontor-/Caliche-/returreisen på `codex/t02-field-followup`, kilde `5b9fcb3c`, PR162 flettet i `d152fb6d`. Avgrensede hjelpere leverte kontor/geometri, feltcontroller, foto/test og uavhengige kode-, bilde-, aksept- og installerreviews. Alle UE-/pakke-/spilljobber ble kjørt sekvensielt. 15 pakkede prøver, 23 bundne akseptrapporter og 25 faktisk vurderte originaler består. Samme pakke er installert; 40 payloadfiler og 40 personlige Saved-filer er verifisert, installert standardstarter-smoke og canonical pruning består. Ingen øvrige forfatterdokumenter fra parallelt arbeid er tatt inn i denne runtime-leveransen. Se [T02_RUNTIME.md](T02_RUNTIME.md). VHS, nye forfatterfunn, stealth og menneskelig helnatt står åpne.

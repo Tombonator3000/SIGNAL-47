@@ -33,7 +33,7 @@ bool FS47EveningPack::SelfTest(FString& Error)
 		TSharedPtr<FJsonObject> Snapshot;
 		return FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Serialized), Snapshot) && P.Load(Snapshot, Error);
 	};
-	EVENING_CHECK(P.Scenes.Num() == 80 && P.DocumentData.Num() == 10, "Evening source scene/document count");
+	EVENING_CHECK(P.Scenes.Num() == 101 && P.DocumentData.Num() == 17, "Evening source scene/document count");
 	int32 MeasuredCues = 0;
 	for (const auto& Scene : P.Scenes) for (const auto& Line : Scene.Value.Lines) if (Line.bRecord)
 	{
@@ -130,6 +130,18 @@ bool FS47EveningPack::SelfTest(FString& Error)
 	EVENING_CHECK(P.CurrentScene()->Mode == TEXT("fixed") && P.CurrentScene()->Channel == TEXT("radio") && P.CurrentScene()->Choices.IsEmpty() && P.CurrentLine()->RecordingId == TEXT("D01_HANDOVER_001"), "Fixed fragment reuses exact original cue without answer choices");
 	Drain();
 	EVENING_CHECK(Run(TEXT("D41_FIELD_WALKIE")) && P.Flag(TEXT("dale_field_call_done")), "Field report uses walkie");
+
+ // A private-folder menu is not an implicit read of the whole collection.
+ P.Reset();
+ P.SetExternal(TEXT("ctx_archive_open"), true);
+ EVENING_CHECK(Run(TEXT("D02_SERVICE_DRAWER")) && Run(TEXT("D02_OPEN_OFFICE")) && Run(TEXT("D02_TAKE_FIELD_FOLDER")), "Short office route remains independent of private documents");
+ EVENING_CHECK(!P.Flag(TEXT("office_skylog_read")) && !P.Documents().Contains(TEXT("EV_DALE_SKYLOG")), "Taking field folder does not read private notes");
+ EVENING_CHECK(Run(TEXT("D02_READ_SKYLOG")) && P.Flag(TEXT("office_skylog_read")) && !P.Flag(TEXT("office_witness_read")) && !P.Flag(TEXT("vhs_seen")), "One actual document acknowledgement grants only that page");
+ EVENING_CHECK(RoundTrip() && P.Flag(TEXT("office_skylog_read")) && !P.Flag(TEXT("office_witness_read")), "Optional read states survive exact serialization independently");
+ P.ValidateOfficeReadDocuments({});
+ EVENING_CHECK(!P.Flag(TEXT("office_skylog_read")) && !P.Documents().Contains(TEXT("EV_DALE_SKYLOG")) && P.Documents().Contains(TEXT("EV_DALE_INDEX")), "Missing physical read history removes optional credits without removing field sheet");
+ P.ValidateOfficeReadDocuments({TEXT("EV_DALE_SKYLOG"),TEXT("EV_DALE_ARRAY_SERVICE")});
+ EVENING_CHECK(P.Flag(TEXT("office_skylog_read")) && P.Flag(TEXT("office_array_service_read")) && !P.Flag(TEXT("vhs_seen")) && !P.Flag(TEXT("trafo_anomaly_checked")), "Restored service appendix is not completed film or field experiment");
 
 	// Adversarial checks protect invariants even when data gains new content later.
 	P.Reset();
