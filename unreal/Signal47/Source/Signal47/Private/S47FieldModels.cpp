@@ -1,6 +1,7 @@
 // Unreal-only authored field investigation kit. Story anchors and colliders remain authoritative.
 #include "S47Web.h"
 #include "S47Three.h"
+#include "S47Glow.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -107,6 +108,10 @@ void AS47Web::BuildFieldModels()
   const bool Shared=R->GetStringField(TEXT("kind"))==TEXT("material"); const FString H=R->GetStringField(TEXT("handle"));
   FieldModelBindings.Add({Mid,Shared ? HandleMat(H) : Handle(H),Shared,float(R->GetNumberField(TEXT("emission")))});
  }
+ // The old metre-wide glow cards cover the authored door from normal player height.
+ // Keep their existing switch/colour controls, with a physical bulb-sized footprint.
+ if (auto* G=Glow(Handle(TEXT("world.site.glow.points"))))
+  for (int32 I=0; I<G->Num(); ++I) G->SetSize(I,FMath::Min(G->Size[I],.08f));
  UpdateFieldModels();
  UE_LOG(LogS47FieldModels,Display,TEXT("S47: field models ready: %d native parts, %d precise patches, %d live bindings; original story anchors retained"),Ready.Num(),Cuts.Num(),FieldModelBindings.Num());
 }
