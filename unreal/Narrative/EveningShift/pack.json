@@ -181,6 +181,9 @@
     },
     "ctx_trafo_lamp_persists": {
       "purpose_nb": "Den avvikende lyskilden fortsetter synlig etter de fullførte kontrollene."
+    },
+    "ctx_trafo_photo_available": {
+      "purpose_nb": "Et faktisk nytt T02-foto fra riktig ståsted/utsnitt finnes for den aktuelle kontrollprøven; manglende diskfoto gir ikke bekreftet bevis."
     }
   },
   "modules": [

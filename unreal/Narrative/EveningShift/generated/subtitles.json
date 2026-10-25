@@ -1420,7 +1420,385 @@
         {
           "line_id": "D02_TAKE_FIELD_FOLDER_002",
           "speaker": "DESCRIPTION",
-          "text": "It asks for a comparison from the same position, with the nearest pole and both conductors in frame. The tape may help explain what to look for.",
+          "text": "It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_LOCKED_OFFICE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_LOCKED_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_FIELD_LOCKED_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "A coffee ring has spread across the word SPARE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_SERVICE_DRAWER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_SERVICE_DRAWER_001",
+          "speaker": "DESCRIPTION",
+          "text": "Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_FIELD_SERVICE_DRAWER_002",
+          "speaker": "DESCRIPTION",
+          "text": "The tag reads OPERATIONS / SPARE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_OPEN_OFFICE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_OPEN_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The spare turns once. The latch catches on the frame until you lift the handle.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_FIELD_OPEN_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_DESK_FIRST_LOOK",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_DESK_FIRST_LOOK_001",
+          "speaker": "DESCRIPTION",
+          "text": "A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_FIELD_DESK_FIRST_LOOK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_READ_FIELD_INDEX",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_READ_FIELD_INDEX_001",
+          "speaker": "DESCRIPTION",
+          "text": "The first page lists what each item can establish. Most entries end with a question or a correction.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_READ_CLIPPINGS",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_READ_CLIPPINGS_001",
+          "speaker": "DESCRIPTION",
+          "text": "Two local cuttings, neither about a crash. A third rectangle on the page is empty.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_FIELD_READ_CLIPPINGS_002",
+          "speaker": "DESCRIPTION",
+          "text": "In the margin: GET THE ORIGINAL BEFORE USING THE DATE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_READ_DALE_NOTE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_READ_DALE_NOTE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The note starts as a list of things to check. Halfway down, the handwriting gets smaller.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_SAVE_CONTACT",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_SAVE_CONTACT_001",
+          "speaker": "DESCRIPTION",
+          "text": "A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_FIELD_TAKE_FIELD_FOLDER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_FIELD_TAKE_FIELD_FOLDER_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_FIELD_TAKE_FIELD_FOLDER_002",
+          "speaker": "DESCRIPTION",
+          "text": "It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_LOCKED_OFFICE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_LOCKED_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_NIGHT_LOCKED_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "A coffee ring has spread across the word SPARE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_SERVICE_DRAWER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_SERVICE_DRAWER_001",
+          "speaker": "DESCRIPTION",
+          "text": "Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_NIGHT_SERVICE_DRAWER_002",
+          "speaker": "DESCRIPTION",
+          "text": "The tag reads OPERATIONS / SPARE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_OPEN_OFFICE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_OPEN_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The spare turns once. The latch catches on the frame until you lift the handle.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_NIGHT_OPEN_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_DESK_FIRST_LOOK",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_DESK_FIRST_LOOK_001",
+          "speaker": "DESCRIPTION",
+          "text": "A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_NIGHT_DESK_FIRST_LOOK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_FIELD_INDEX",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_READ_FIELD_INDEX_001",
+          "speaker": "DESCRIPTION",
+          "text": "The first page lists what each item can establish. Most entries end with a question or a correction.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_CLIPPINGS",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_READ_CLIPPINGS_001",
+          "speaker": "DESCRIPTION",
+          "text": "Two local cuttings, neither about a crash. A third rectangle on the page is empty.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_NIGHT_READ_CLIPPINGS_002",
+          "speaker": "DESCRIPTION",
+          "text": "In the margin: GET THE ORIGINAL BEFORE USING THE DATE.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_DALE_NOTE",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_READ_DALE_NOTE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The note starts as a list of things to check. Halfway down, the handwriting gets smaller.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_SAVE_CONTACT",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_SAVE_CONTACT_001",
+          "speaker": "DESCRIPTION",
+          "text": "A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "D02_NIGHT_TAKE_FIELD_FOLDER",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "D02_NIGHT_TAKE_FIELD_FOLDER_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "D02_NIGHT_TAKE_FIELD_FOLDER_002",
+          "speaker": "DESCRIPTION",
+          "text": "It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1645,6 +2023,30 @@
       ]
     },
     {
+      "scene_id": "T02_BASELINE_RESULT",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "T02_BASELINE_RESULT_001",
+          "speaker": "DESCRIPTION",
+          "text": "The completed service check and the inspection light now agree.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "T02_BASELINE_RESULT_002",
+          "speaker": "DESCRIPTION",
+          "text": "The ordinary lamp complaint is resolved under this control. Keep the actual completion time on the inspection card.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
       "scene_id": "T02_REFERENCE",
       "channel": "ui",
       "lines": [
@@ -1839,7 +2241,7 @@
         {
           "start_seconds": 17,
           "end_seconds": 27,
-          "text": "Nearest pole and both wires in frame.\nThe lamp alone proves nothing about its supply."
+          "text": "Nearest pole and both outer wires in frame.\nThe lamp alone proves nothing about its supply."
         },
         {
           "start_seconds": 27,

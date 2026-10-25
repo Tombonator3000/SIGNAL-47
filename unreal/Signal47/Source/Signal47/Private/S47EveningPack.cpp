@@ -254,6 +254,12 @@ void FS47EveningPack::CompleteLeaf()
 {
 	const auto* Scene = CurrentScene();
 	if (!Scene || !Scene->Choices.IsEmpty()) return;
+	// A pending response can be restored before external world/photo facts are rebuilt.
+	if (Scene->Id == TEXT("T02_VERIFIED") && !Meets(Scene->Requires, Flags))
+	{
+		ActiveScene.Reset(); PendingChoice.Reset(); Cursor = 0;
+		return;
+	}
 	Apply(Scene->OnComplete);
 	ActiveScene.Reset(); PendingChoice.Reset(); Cursor = 0;
 }
@@ -266,6 +272,31 @@ bool FS47EveningPack::Advance()
 	PendingChoice.Reset();
 	if (Cursor == Scene->Lines.Num() && Scene->Choices.IsEmpty()) CompleteLeaf();
 	return true;
+}
+
+void FS47EveningPack::ValidateWorldRestore(bool bOfficeKey, bool bOfficeUnlocked, bool bOfficeSheet, bool bReference, bool bFollowup)
+{
+	if (!bOfficeKey) Flags.Add(TEXT("office_key_found"), false);
+	if (!bOfficeUnlocked)
+	{
+		Flags.Add(TEXT("office_open"), false);
+		OwnedDocuments.RemoveAll([](const FString& Id) { return Id.StartsWith(TEXT("EV_DALE_")); });
+	}
+	if (!bOfficeSheet) { Flags.Add(TEXT("office_evidence_taken"), false); Flags.Add(TEXT("office_field_lead_filed"), false); }
+	if (!bReference) Flags.Add(TEXT("field_reference_matched"), false);
+	if (!bFollowup) { Flags.Add(TEXT("trafo_anomaly_checked"), false); OwnedDocuments.Remove(TEXT("EV_TRAFO_FOLLOWUP")); }
+	// Physical office transactions complete synchronously, never as a delayed movie acknowledgement.
+	if (ActiveScene.StartsWith(TEXT("D02_")) ||
+		(ActiveScene.StartsWith(TEXT("T02_")) && ((!bReference && ActiveScene != TEXT("T02_BASELINE_RESULT")) ||
+		 (ActiveScene == TEXT("T02_VERIFIED") && !bFollowup))))
+	{ ActiveScene.Reset(); PendingChoice.Reset(); Cursor = 0; }
+}
+
+void FS47EveningPack::ResetFollowupAttempt()
+{
+	for (const TCHAR* Id : {TEXT("field_reference_matched"), TEXT("field_followup_unresolved"), TEXT("trafo_anomaly_checked")}) Flags.Add(Id, false);
+	OwnedDocuments.Remove(TEXT("EV_TRAFO_FOLLOWUP"));
+	if (ActiveScene.StartsWith(TEXT("T02_"))) { ActiveScene.Reset(); PendingChoice.Reset(); Cursor = 0; }
 }
 
 bool FS47EveningPack::Eligible(const FS47EveningChoice& Choice) const

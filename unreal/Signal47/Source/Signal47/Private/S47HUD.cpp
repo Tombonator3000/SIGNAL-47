@@ -2,6 +2,8 @@
 #include "S47Gamepad.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
+#include "S47Office.h"
+#include "S47T02Test.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 #include "S47AnomalyTest.h"
@@ -499,11 +501,36 @@ void AS47HUD::Start()
 			Hd.OfficePhoneBusy = H.OfficePhoneBusy; Hd.ArchiveBusy = H.ArchiveBusy; Hd.ArrayBackBusy = H.ArrayBackBusy;
 		}
 		M->Evening = MakeShared<FS47Evening>(M);
+		M->Office = MakeShared<FS47Office>(M);
+		M->Office->Init();
+		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))))
+		{
+			const auto PreviousEnd = C2->OnEnd; // includes the existing roof-step/phone quiet wrapper
+			TWeakObjectPtr<US47Chapter2> Weak = C2;
+			M->Office->CanDepart = [M, Weak]
+			{
+				return Weak.IsValid() && M->Story->ChapterKey == TEXT("ch2") && Weak->S.Stage == TEXT("complete") &&
+				 Weak->S.bCalled && Weak->S.bP04 && Weak->S.bP05 && M->Office->HasFieldSheet() &&
+				 !M->Story->IsCinematic() && !M->ModalOpen() && !M->World->bBusy;
+			};
+			M->Office->OnDepart = [PreviousEnd] { if (PreviousEnd) PreviousEnd(); };
+			C2->OnEnd = [M, PreviousEnd]
+			{
+				if (M->Office && M->Office->RouteRequired() && !M->Office->DepartureReleased())
+				{
+					M->UI->Toast(M->Office->HasFieldSheet() ? TEXT("Field sheet retained. Use the Operations departure card when you are ready for STATION 01.")
+					 : TEXT("Before leaving, collect the Field checks copy from Operations. The service drawer holds the spare key."), 5);
+					M->RequestAutosave(); return;
+				}
+				if (PreviousEnd) PreviousEnd();
+			};
+		}
 		M->Anomaly = MakeShared<FS47Anomaly>(M);
 		M->AnomalyWorld = MakeShared<FS47AnomalyWorld>(M);
 		M->AnomalyTest = MakeShared<FS47AnomalyTest>(M);
 		M->Substation = MakeShared<FS47Substation>(M);
 		M->Substation->Begin();
+		M->T02Test = MakeShared<FS47T02Test>(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

@@ -1,5 +1,6 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
+#include "S47T02Photo.h"
 #include "S47Keys.h"
 #include "S47Anomaly.h"
 #include "S47Evening.h"
@@ -1218,6 +1219,7 @@ void US47Chapter1::ToggleCamera()
 
 FString US47Chapter1::FrameNo() const
 {
+	if (FS47T02Photo::InContext(M)) return TEXT("T02 INSTANT PRINT");
 	return Field ? Field->FrameNo() : S.F2 ? TEXT("FRAME 03") : S.F1 ? TEXT("FRAME 02") : TEXT("FRAME 01");
 }
 
@@ -1256,6 +1258,11 @@ FVector US47Chapter1::S03Centre() const
 
 FS47ShotCheck US47Chapter1::Check() const
 {
+	if (FS47T02Photo::InContext(M))
+	{
+		FString Reason; const bool Ready = FS47T02Photo::Ready(M, Reason);
+		return {Reason, Ready, true};
+	}
 	// Why the shutter would (not) fire right now. Mirrors the Unity rules. bNear marks where the
 	// case frame keeps the shutter: the S-03 apron until frame 01, and the B-12 sight line mark.
 	if (!Active) return { TEXT("ROUTINE REFERENCE // INSTANT BACK"), false, false };
@@ -1290,6 +1297,7 @@ FS47ShotCheck US47Chapter1::Check() const
 
 void US47Chapter1::FreeLine(FS47Viewfinder& V) const
 {
+	if (FS47T02Photo::InContext(M)) return;
 	// The free frames' line in the viewfinder: ready (here the shutter takes one), or how many are left.
 	if (!Free) return;
 	const int32 Left = Free->Left ? Free->Left() : 0;
@@ -1305,6 +1313,7 @@ void US47Chapter1::Shutter()
 	US47UI* U = Ui();
 	US47Audio* A = Au();
 	if (!F || !F->bRaised) return;
+	if (FS47T02Photo::TryShutter(M)) return;
 	const FS47ShotCheck C = Check();
 	if (!C.bOk)
 	{

@@ -52,6 +52,7 @@ void FS47Substation::Begin(const S47J::FObj& Saved)
   bObserved = bComplete && S47J::Bool(Saved, TEXT("observed")) && S47J::Has(Saved, TEXT("observedAt")) && FMath::IsFinite(ObservedAt);
  }
  if (!bBuilt) Install();
+ BeginFollowup(S47J::Obj(Saved, TEXT("t02")));
  Apply(); SyncFacts(); Refile();
 }
 
@@ -108,19 +109,25 @@ bool FS47Substation::Install()
  S.Label = [this] { return !Here() ? FString() : Running > 0 ? FString(TEXT("Service check running")) : bComplete ? FString(TEXT("Service check complete / compare the lamp")) : FString(TEXT("Run local service check")); };
  S.Use = [this] { StartCheck(); }; S.Examine = [this] { return !bComplete ? FString(TEXT("INSPECTION CIRCUIT. The ordinary complaint is a weak exterior light. The enclosed service control does not operate SARO's receiver or the town supply.")) : FString(TEXT("PANEL: CHECK COMPLETE. Compare this result with the marked lamp before filing it.")); }; M->Inter->Add(S);
  FS47Interactable O; O.Id = LampId; O.Object = Lens; O.Range = 3.2; O.ExamineRange = 10;
- O.Label = [this] { return Here() ? FString(bObserved ? TEXT("Read completed inspection") : TEXT("Inspect marked lamp")) : FString(); };
- O.Use = [this] { Observe(); }; O.Examine = [this] { return FString(bComplete ? TEXT("The marked inspection lamp burns steadily. The panel's completed check can be compared with this actual response.") : TEXT("The marked inspection lamp is weak. Its local service control is on the cabinet below.")); }; M->Inter->Add(O);
+ O.Label = [this] { return Here() ? FString(FollowupAvailable() && !AttemptId.IsEmpty() ? TEXT("Observe current follow-up lamp") : bObserved ? TEXT("Read completed inspection") : TEXT("Inspect marked lamp")) : FString(); };
+ O.Use = [this] { Observe(); }; O.Examine = [this]
+ {
+  if (!AttemptId.IsEmpty() && FollowupRecordValid()) return FString(bIsolated ? TEXT("The marked lamp continues a slow bright/dim sequence while the enclosed panel and independent isolation flag show OPEN. The earlier normal result remains a dated baseline, not a report of this later light.") : TEXT("The marked lamp is lit. The new enclosed controls have not yet accounted for its supply. The historical normal comparison keeps its own date."));
+  return FString(bComplete ? TEXT("The marked inspection lamp burns steadily. The panel's completed check can be compared with this actual response.") : TEXT("The marked inspection lamp is weak. Its local service control is on the cabinet below."));
+ }; M->Inter->Add(O);
  UE_LOG(LogS47Substation, Display, TEXT("S47: substation ready root=(7890,-1.10,536.20) fenceFrontZ=529.00; inspection outside closed yard"));
+ InstallFollowup();
  return true;
 }
 
 void FS47Substation::Apply()
 {
  if (!bReady) return;
- const float K = bComplete ? Strong : Running > 0 ? 0.f : Weak;
+ const float K = !AttemptId.IsEmpty() && FollowupRecordValid() ? FollowupLampStrength() : bComplete ? Strong : Running > 0 ? 0.f : Weak;
  for (const auto& W : LampMids) if (UMaterialInstanceDynamic* D = W.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), Warm * K);
  if (UPointLightComponent* L = Light.Get()) { L->SetIntensity(Lumens * K / Strong); L->SetVisibility(Root.Shown()); }
  if (UStaticMeshComponent* C = LeverComp.Get()) { FTransform T = LeverRest; T.SetRotation(LeverRest.GetRotation() * FQuat(FVector::ForwardVector, Running > 0 || bComplete ? -.65 : 0)); C->SetRelativeTransform(T); }
+ ApplyFollowup();
 }
 
 bool FS47Substation::RenderedResult() const
@@ -139,6 +146,7 @@ void FS47Substation::Commit(const FString& Scene)
  // These UI-only authored effects acknowledge the same physical paper/result already shown here.
  // A late/legacy case keeps this local evidence without forcing an authored phase or starting T02.
  if (!M || !M->Evening || !M->Evening->Enabled()) return;
+ if (M->Flow && M->Flow->bStarting) return; // All current-case controllers must restore before authored acknowledgement.
  auto& P = M->Evening->Pack;
  if (!P.CanStart(Scene) || !P.Start(Scene)) return;
  while (P.CurrentLine()) P.Advance();
@@ -155,6 +163,7 @@ void FS47Substation::ReadJournal()
 void FS47Substation::StartCheck()
 {
  if (!Here() || !M->UI || Running > 0) return;
+ if (!AttemptId.IsEmpty() && FollowupRecordValid()) { M->UI->Toast(TEXT("The normal baseline keeps its original completion time. Use the separate enclosed follow-up and auxiliary controls for the current comparison."), 4); return; }
  if (!bJournal) { M->UI->Toast(TEXT("Read the service journal and match the inspection-circuit label first."), 3.5); return; }
  if (bComplete) { M->UI->Toast(TEXT("The panel check is complete. Compare the marked lamp, then retain the result."), 3.5); return; }
  Running = .001; Apply();
@@ -165,6 +174,7 @@ void FS47Substation::StartCheck()
 void FS47Substation::Observe()
 {
  if (!Here() || !M->UI) return;
+ if (FollowupAvailable() && !AttemptId.IsEmpty()) { ObserveFollowupLamp(); return; }
  if (!bComplete || !RenderedResult()) { M->UI->Toast(TEXT("No completed comparison to file. The marked lamp and the service journal are still available."), 3.5); return; }
  if (!bObserved)
  {
@@ -190,6 +200,10 @@ void FS47Substation::Refile()
   FS47Doc D; D.Id = TEXT("EV_TRAFO_CHECK"); D.Title = TEXT("Inspection card / completed local check"); D.Kind = TEXT("hand"); D.Stamp = TEXT("OPERATOR RECORD / CURRENT SHIFT");
   D.Page = TEXT("CALICHE JUNCTION / LOCAL INSPECTION CIRCUIT\n\nThe service panel completed its check. I compared the marked lamp with that result: it was burning steadily.\n\nActual completion: ") + CompletedStamp + TEXT("\nObserved: ") + Stamp(ObservedAt) + TEXT("\n\nThe ordinary local lamp complaint was resolved under this check. This records that circuit at that time, not the supply state of the town or observatory throughout the night."); D.Transcript = D.Page; Add(D);
  }
+ // Chapter saves retain this measured paper in the controller's immutable filing history.
+ // Reopening a case restores the original paper, never a new filing or current-attempt preview.
+ const FS47Doc Filed = FiledFollowupDocument();
+ if (!Filed.Id.IsEmpty()) Add(Filed);
 }
 
 void FS47Substation::SyncFacts()
@@ -201,7 +215,9 @@ void FS47Substation::SyncFacts()
   // the actual journal/result once it is idle. CanStart preserves phase/idempotency gates.
   if (bJournal) Commit(TEXT("T01_SERVICE_LOG"));
   if (HasNormalResult()) Commit(TEXT("T01_NORMAL_RESULT"));
+  if (HasNormalResult()) Commit(TEXT("T02_BASELINE_RESULT"));
  }
+ SyncFollowupFacts();
 }
 
 S47J::FObj FS47Substation::Save() const
@@ -209,6 +225,7 @@ S47J::FObj FS47Substation::Save() const
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), 1); S47J::Set(O, TEXT("journal"), bJournal);
  S47J::Set(O, TEXT("complete"), bComplete); S47J::Set(O, TEXT("observed"), bObserved);
  S47J::Set(O, TEXT("completedAt"), CompletedAt); S47J::Set(O, TEXT("observedAt"), ObservedAt); S47J::Set(O, TEXT("completedStamp"), CompletedStamp);
+ S47J::Set(O, TEXT("t02"), FollowupSnapshot());
  return O;
 }
 
@@ -220,7 +237,7 @@ void FS47Substation::Step(double Dt)
   Running += Dt;
   if (Running >= Duration) { Running = 0; bComplete = true; CompletedAt = M->Story->Clock(); CompletedStamp = Stamp(CompletedAt); M->RequestAutosave(); UE_LOG(LogS47Substation, Display, TEXT("S47: substation service complete at %s; compare actual lamp"), *CompletedStamp); }
  }
- Apply(); SyncFacts(); TestStep(Dt);
+ StepFollowup(Dt); Apply(); SyncFacts(); TestStep(Dt);
 }
 
 void FS47Substation::TestStep(double Dt)
@@ -325,5 +342,6 @@ bool FS47Substation::SelfTest(TArray<FString>& Lines)
  FS47Substation R(nullptr); R.Begin(S.Save()); Check(R.bObserved && R.CompletedAt == -19800 && R.CompletedStamp == S.CompletedStamp, TEXT("roundtrip retains real signed completion time"));
  auto Bad = S.Save(); S47J::Set(Bad, TEXT("complete"), false); R.Begin(Bad); Check(!R.bObserved, TEXT("an observation cannot restore without a completed service check"));
  Check(Stamp(-19800).Contains(TEXT("13 APR 1986")) && Stamp(3600).Contains(TEXT("14 APR 1986")), TEXT("completion stamps follow the existing midnight axis"));
+ Ok &= FollowupSelfTest(Lines);
  return Ok;
 }

@@ -417,6 +417,47 @@
       }
     },
     {
+      "id": "T02_BASELINE_RESULT",
+      "phase": "field",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Faktisk normalbaseline i feltfasen for en eldre sak, uten tilbakespoling til kveldsoverleveringen.",
+      "requires": {
+        "all": [
+          "ctx_trafo_service_ok"
+        ],
+        "none": [
+          "trafo_normal_checked"
+        ]
+      },
+      "direction_nb": "Kvitter bare den fysiske controllerens gyldige normalrecord. Bevar originalt tidspunkt og gamle kort. Ingen automatisk feltkonklusjon.",
+      "lines": [
+        {
+          "id": "T02_BASELINE_RESULT_001",
+          "speaker": "DESCRIPTION",
+          "text": "The completed service check and the inspection light now agree.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        },
+        {
+          "id": "T02_BASELINE_RESULT_002",
+          "speaker": "DESCRIPTION",
+          "text": "The ordinary lamp complaint is resolved under this control. Keep the actual completion time on the inspection card.",
+          "delivery_nb": "Ingen innspilt stemme. Tekst på panelet eller i notatboken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "trafo_normal_checked": true,
+          "field_service_read": true
+        },
+        "give_documents": [
+          "EV_TRAFO_CHECK"
+        ]
+      }
+    },
+    {
       "id": "T02_REFERENCE",
       "phase": "field",
       "channel": "ui",
@@ -495,7 +536,8 @@
               "ctx_trafo_isolation_verified",
               "ctx_trafo_backup_excluded",
               "ctx_trafo_indicator_checked",
-              "ctx_trafo_lamp_persists"
+              "ctx_trafo_lamp_persists",
+              "ctx_trafo_photo_available"
             ],
             "none": []
           },
@@ -535,7 +577,8 @@
           "ctx_trafo_isolation_verified",
           "ctx_trafo_backup_excluded",
           "ctx_trafo_indicator_checked",
-          "ctx_trafo_lamp_persists"
+          "ctx_trafo_lamp_persists",
+          "ctx_trafo_photo_available"
         ],
         "none": []
       },

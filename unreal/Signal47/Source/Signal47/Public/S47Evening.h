@@ -17,9 +17,11 @@ public:
  explicit FS47Evening(US47Main* InM);
  ~FS47Evening();
  void Begin(const S47J::FObj& Saved = nullptr, bool bPastOpening = false);
+ // Later optional investigation for legacy cases, without replacing their timeline/opening.
+ void BeginInvestigation(const S47J::FObj& Saved = nullptr);
  void Stop();
  void Step(double Dt);
- bool Opening() const { return bEnabled && !Pack.Flag(TEXT("handover_done")); }
+ bool Opening() const { return bEnabled && !bInvestigationOnly && !Pack.Flag(TEXT("handover_done")); }
  bool Commute() const { return Opening() && !Pack.Flag(TEXT("intro_arrived")); }
  bool Enabled() const { return bEnabled; }
  bool MealBusy() const;
@@ -30,6 +32,8 @@ public:
  TArray<FS47Task> ServiceTasks() const;
  // Flow calls after the new case's local controller and routine have both restored.
  void ValidateServiceRestore();
+ void ValidateInvestigationRestore();
+ bool CommitWorldScene(const FString& Id);
  FVector PersonalCarPosition() const;
  double PersonalCarHeading() const;
  bool Use(const FString& Id);
@@ -63,7 +67,7 @@ private:
  TSharedPtr<FS47MediaSource> Music;
  TSharedPtr<FS47GainNode> MusicGain;
  bool bResumeRequested = false, bBindings = false;
- bool bServiceRoute = false, bServiceFiled = false;
+ bool bServiceRoute = false, bServiceFiled = false, bInvestigationOnly = false;
  bool AtShiftFolder() const;
  bool bEnabled = false, bRing = false, bDialogueOpen = false, bRadioOn = true, bWorkStarted = false;
  bool bRadioRecorded = false;
