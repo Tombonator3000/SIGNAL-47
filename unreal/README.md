@@ -1,5 +1,9 @@
 # SIGNAL / 47 i Unreal
 
+## Nyeste leverte runtime: T02
+
+[T02_RUNTIME.md](T02_RUNTIME.md) beskriver det installerte kontoret med egen nøkkel/feltmappe og den faktiske T02-felt-/returreisen. Verifisert og uavklart arkivering, originalfoto, diskrestore og fem ferske Continue-prosesser er prøvd i samme pakkede kandidat. PR162 er flettet; standardstarteren bruker den testede pakken. Original 72-sekunders VHS, videre forfatterintegrasjon og menneskelig helnatt er fortsatt åpne.
+
 Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Videre spillarbeid gjelder desktoputgaven i Unreal. `web/` og Unity er historiske referanser. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
 
 Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen kom først; 22. oktober ble resten av spillet portert (Tom valgte en ren C++-port framfor å kjøre nettversjonens kode i en innebygd nettleser).
