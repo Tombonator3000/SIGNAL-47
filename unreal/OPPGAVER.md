@@ -1,5 +1,9 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## T02 runtime levert, 25. oktober 2026
+
+Codex fullførte den sammenhengende kontor-/Caliche-/returreisen på `codex/t02-field-followup`, kilde `5b9fcb3c`, PR162 flettet i `d152fb6d`. Avgrensede hjelpere leverte kontor/geometri, feltcontroller, foto/test og uavhengige kode-, bilde-, aksept- og installerreviews. Alle UE-/pakke-/spilljobber ble kjørt sekvensielt. 15 pakkede prøver, 23 bundne akseptrapporter og 25 faktisk vurderte originaler består. Samme pakke er installert; 40 payloadfiler og 40 personlige Saved-filer er verifisert, installert standardstarter-smoke og canonical pruning består. Ingen øvrige forfatterdokumenter fra parallelt arbeid er tatt inn i denne runtime-leveransen. Se [T02_RUNTIME.md](T02_RUNTIME.md). VHS, nye forfatterfunn, stealth og menneskelig helnatt står åpne.
+
 ## T01 R2 levert, 25. oktober 2026
 
 Codex på `codex/t01-service-route`, kilde `85aee475`. Samme R2 består 14 pakkede kjøringer: 1 424 selvtester, 53 API/19 diskrestores, hel native felt-/returreise, sju ferske Continue, mat og fokuserte bilder. Elleve nye originalbilder er faktisk gjennomgått, inkludert alle tre rettede filed-rutinemål. R1s tre blanke mål er bevart som FAIL. PR160 er flettet fra kontrollert head i `d4a25411`; samme R2 er installert med 40 verifiserte payloadfiler og 40 uendrede personlige Saved. Installert smoke, Saved-etterkontroll og canonical pruning består. R2, R1 og full Q3-backup beholdes som tre komplette testpakker. Hjelpere har gjort uavhengig kilde-/installer-/bildegjennomgang, uten parallelle UE-jobber. Ingen nye assets/opptak. H2.1 samlet, T02/kontor/VHS/stealth og menneskelig Roam/Xbox/lyd/fullnatt står åpne. Se [T01_RUNTIME.md](T01_RUNTIME.md).
