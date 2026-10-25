@@ -21,6 +21,9 @@ class ULightComponent;
 class ULocalLightComponent;
 class UPrimitiveComponent;
 class FS47SaroArrival;
+class FS47SaroSite;
+class FS47FleetParked;
+class FS47TownBuildings;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
 struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
@@ -293,6 +296,10 @@ private:
 	void BeginHighwayAudit();
 	void BeginSaroArrivalViews();
 	TSharedPtr<FS47SaroArrival> SaroArrival;
+	TSharedPtr<FS47SaroSite> SaroSite;
+	TSharedPtr<FS47FleetParked> FleetParked;
+	TSharedPtr<FS47TownBuildings> TownBuildings;
+	void BeginProductionViews();
 	void UpdateHighwayLandscape();
 	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
 	TMap<int32, FTransform> HighwayVisuals;

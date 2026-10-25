@@ -289,6 +289,7 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 		MGauge.SetMap(RT, true);
 		DrawDash();
 	}
+	Fleet=FS47Fleet::Install(Web,*this);
 	SetDriving(false);
 	Update(0, 0);
 	ApplyLights();
@@ -355,7 +356,7 @@ void FS47Truck::SetDriving(bool bOn)
 	Cab.SetVisible(bOn);
 	Shell.SetVisible(!bOn);
 	// from the driver's seat the lamps face away: their glows only poked over the hood
-	GlowPoints.SetVisible(!bOn);
+	GlowPoints.SetVisible(!bOn && !Fleet);
 	if (bPersonalVehicle) Group.SetVisible(false);
 }
 
@@ -494,6 +495,7 @@ void FS47Truck::ApplyLights()
 		}
 	};
 	Put(GiHead, HeadColor, 0.75 * Head); Put(GiPark, AMBER, 0.3 * Head); Put(GiTail, TAIL, 0.4 * Tail);
+	if(Fleet)Fleet->Lenses(HeadColor,Head,Tail);
 	PlaceFloods();
 }
 
@@ -530,9 +532,10 @@ void FS47Truck::PlaceHeadlights()
 		USpotLightComponent* L = Headlights[I].Get();
 		if (!L) continue;
 		const double X = I == 0 ? -0.657 : 0.657;
-		const FVector P = Group.LocalToWorld(FVector(X, 0.8435, -2.65));
+		const FVector Lamp=Fleet?FS47Fleet::Headlamp(I):FVector(X,0.8435,-2.65);
+		const FVector P = Group.LocalToWorld(Lamp);
 		// A slight downward aim keeps the verge visible without lighting the night sky.
-		const FVector Target = Group.LocalToWorld(FVector(X, 0.1, -32.65));
+		const FVector Target = Group.LocalToWorld(FVector(Lamp.X, 0.1, Lamp.Z-30));
 		L->SetWorldLocationAndRotation(ToUE(P), (ToUE(Target) - ToUE(P)).Rotation());
 		const float ColorGain = FMath::Max(1.f, FMath::Max3(HeadColor.R, HeadColor.G, HeadColor.B));
 		L->SetLightColor(HeadColor / ColorGain);
@@ -552,6 +555,7 @@ void FS47Truck::Update(double Dt, double Speed, double InWheelAngle)
 		const FQuat Q = Euler(bLeft ? -Spin : Spin, (bFront ? -WheelAngle : 0) + (bLeft ? UE_DOUBLE_PI : 0), 0, TEXT("YXZ"));
 		Wheels.SetInstance(i, FVector(WHEELS[i][0], WHEEL_R + Drops[i], WHEELS[i][1]), Q, FVector::OneVector, i == 3);
 	}
+	if(Fleet)Fleet->Wheels(Spin*WHEEL_R,WheelAngle,Drops);
 	// needles have a little weight to them
 	FGauge& G = Gauge;
 	const double K = 1 - FMath::Exp(-Dt * 6);
@@ -607,4 +611,20 @@ bool FS47Truck::RadioHit(const FVector& From, const FVector& Dir, double Far) co
 		if (T0 > T1) return false;
 	}
 	return true;
+}
+
+bool FS47Truck::AuditProductionArt(TArray<FString>& Lines)const
+{
+ bool Ok=Fleet&&Fleet->Audit(Lines);
+ auto Check=[&](bool B,const TCHAR* N){Ok&=B;Lines.Add(FString(B?TEXT("PASS truck production: "):TEXT("FAIL truck production: "))+N);};
+ Check(Fleet!=nullptr,TEXT("production art installed"));
+ Check(DriverEye.Equals(bPersonalVehicle?FS47EveningVisual::PersonalDriverEye():ServiceDriverEye,.0001),TEXT("actual driver eye retained for current vehicle"));
+ Check(Needles.IsValid()&&Keys.IsValid()&&CompassCard.IsValid()&&WheelSpin.IsValid()&&DashRT.IsValid(),TEXT("live gauges, radio atlas, keys, compass and steering retained"));
+ if(Fleet)for(int32 I=0;I<2;++I)
+ {
+  const auto* L=Headlights[I].Get();const FVector P=LocalToWorld(FS47Fleet::Headlamp(I));
+  Check(L&&L->GetComponentLocation().Equals(S47Three::ToUE(P),.10),TEXT("real spotlight follows C10 sealed-beam anchor"));
+  if(L)Check(L->IsVisible()==(Group.Shown()&&bHeadOn&&LightLevel>.01),TEXT("real spotlight visibility matches truck and headlight switch"));
+ }
+ return Ok;
 }

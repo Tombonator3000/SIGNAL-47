@@ -1,0 +1,40 @@
+"""Nine shared original 2k PBR families; native material tint preserves variation."""
+def linear(rgb):return [c/3294.6 if c<=10.31475 else ((c/255+.055)/1.055)**2.4 for c in rgb]
+def material_rows():
+ rows=[]
+ def row(label,rgb,rough=.8,metal=0,texture=None,normal=.22,**kw):
+  tint=[*linear(rgb),1];r={'name':'M_Town_'+label,'base_color_linear':tint,'roughness':rough,'metallic':metal,'specular':.28,'normal_strength':normal,'normal_convention':'DirectX','uv_scale':1,'emission':[0,0,0,1],'emission_strength':0,**kw}
+  if texture:r.update(textures={k:'textures/'+texture+'_'+k+'.png' for k in ['base_color','roughness','normal']},texture_tint_linear=tint)
+  rows.append(r)
+ row('Stucco',[215,202,176],.93,texture='Stucco',normal=.34)
+ row('WhitePaint',[221,215,192],.81,texture='MetalPaint',normal=.18)
+ row('PinkPlaster',[188,153,129],.91,texture='Stucco',normal=.30)
+ row('BluePaint',[72,109,127],.74,texture='MetalPaint',normal=.15)
+ row('TealPaint',[62,99,91],.65,texture='MetalPaint',normal=.15)
+ row('OliveEnamel',[100,109,88],.62,.35,'MetalPaint',.15)
+ row('CreamEnamel',[207,205,181],.50,.22,'MetalPaint',.11)
+ row('Timber',[135,99,62],.71,texture='Wood',normal=.26)
+ row('DarkWood',[79,55,35],.77,texture='Wood',normal=.2)
+ row('Clapboard',[217,211,188],.84,texture='Wood',normal=.17)
+ row('RustTin',[169,156,134],.84,.66,'RustTin',.24)
+ row('Metal',[167,174,168],.32,.87)
+ row('DarkMetal',[38,44,39],.72,.65)
+ row('Rubber',[22,23,20],.91)
+ row('Ceramic',[219,211,184],.30)
+ row('Concrete',[153,144,126],.96,texture='Stucco',normal=.21)
+ row('FloorTile',[178,172,146],.69,texture='FloorTile',normal=.10)
+ row('Terrazzo',[176,151,119],.58,texture='FloorTile',normal=.065)
+ row('Carpet',[141,112,83],.97,texture='Carpet',normal=.24)
+ row('Upholstery',[103,74,49],.61,texture='Cloth',normal=.19)
+ row('BookCloth',[94,113,105],.86,texture='Cloth',normal=.15)
+ row('Bedding',[184,136,83],.92,texture='Cloth',normal=.2)
+ row('LampFabric',[225,199,147],.91,texture='Cloth',normal=.12)
+ row('Burlap',[168,146,103],.97,texture='Cloth',normal=.32)
+ row('RoofShingle',[62,58,48],.94,texture='RoofShingle',normal=.32)
+ row('Paper',[214,205,174],.91)
+ row('Ceiling',[189,181,157],.94,texture='Stucco',normal=.10)
+ row('PrintAtlas',[255,255,255],.86,texture='PrintAtlas',normal=.01)
+ row('Glass',[163,188,185],.12,alpha=.055,alpha_mode='translucent',two_sided=True)
+ row('WasherGlass',[45,63,61],.15,alpha=.28,alpha_mode='translucent',two_sided=True)
+ for label,rgb,power in [('WarmGlow',[255,222,154],1.5),('TubeGlow',[230,234,211],1.25),('CinemaRedGlow',[233,65,37],1.65),('MotelOfficeGlow',[255,221,159],1.5),('Room6Glow',[255,219,152],1.5)]:row(label,rgb,.38,emission=[*linear(rgb),1],emission_strength=power)
+ return rows

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "S47Obj.h"
+#include "S47Fleet.h"
 
 class US47Main;
 class AS47Web;
@@ -68,6 +69,8 @@ struct SIGNAL47_API FS47Truck
 	// The evening car uses this controller, but none of SARO 07's exported geometry.
 	void SetPersonalVehicle(bool bOn);
 	bool IsPersonalVehicle() const { return bPersonalVehicle; }
+	bool ProductionArtReady() const { return Fleet && Fleet->Ready(); }
+	bool AuditProductionArt(TArray<FString>& Lines)const;
 	/** The camera has left the driver's seat (a cut): the whole truck again. */
 	void ViewFrom(const FVector& CamThree);
 	/** Take over another copy's needles and swinging keys (the truck goes on in another area). */
@@ -119,6 +122,7 @@ private:
 	US47Main* M = nullptr;
 	AS47Web* Web = nullptr;
 	FS47Obj Wheels, Needles, Keys, WheelSpin, CompassCard, GlowPoints;
+	TUniquePtr<FS47Fleet> Fleet;
 	FS47Obj Lamps[4];
 	FS47Mat MHead, MPark, MTail, MGauge, MNeedle, MCompass;
 	TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>> Glows; // the glow points' sprites, in their order

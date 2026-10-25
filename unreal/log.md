@@ -266,3 +266,53 @@ Ny gren codex/saro-arrival fra a2c33e3d. Fire brukerfeil i nye bilder: skilt/kj�
 
 
 - 2026-10-24 kl. 23:15 SARO-oppdrag levert. PR [154](https://github.com/Tombonator3000/SIGNAL-47/pull/154) er vanlig flettet til `unreal-port-core` i `86eb0f8c` etter kontroll av eksakt head/base, CLEAN og ingen påkrevde CI-kontroller. Samme testede A3 er installert i `~/Games/Signal47/Linux`: alle 40 payloadfiler er hashidentiske med kandidaten og alle 46 Saved-filer er byteidentiske med før installasjonen. Verifisert sikkerhetskopi: `/home/tom/scratch-bm/Signal47-saro-arrival/installed-backup-1792876403571799419`. Fem eide Content-lenker er fjernet og begge genererte OpenOrder-filer gjenopprettet. Ingen ny normal spillerøkt er startet.
+
+
+## 2026-10-25 kl. 00:20, SARO og resten av modellprioriteringen
+
+Tom bestiller logisk mastantall, bygg2-fasade uten skilt/vindusoverlapp, realistiske parkerte biler og SARO07 med egen logo/dash, deretter alle resterende prioriterte Blender-bygg. Plan i PRODUCTION_MODELS.md. Tre avgrensede hjelpere, root eier all tung eksport/import/bygg/test. Gren codex/saro-production-models fra cfadc1c0. Ingen aktiv UE/Blender/spill ved start. Bibliotekssøk med fallback ga bare generelle UNVERIFIED-arbeidsflyter; eksisterende native løype brukes.
+
+## 2026-10-25 kl. 01:02, SARO og resterende modellsett
+
+- Originale modellkilder, FBX-/GLB-kontroller og native lesing av SARO-fasade samt seks byfamilier består. 28 bygningsdeler, 32 sammensatte trimrader og presis behandling av 47 gamle drawblader. Native import hadde færre ugyldige trekanter enn rå glTF i to gamle møbelmodeller; faktisk lagret native antall er målt og inngår i kontrakten.
+- Kjøretøyets faktiske Blender-bilde avdekket feilvendte stag og feilplasserte linser; korrigert mot målte geometrier. Import/kandidat/visuell sluttkontroll pågår. Ingen installasjon erstattet ennå.
+
+## 2026-10-25 kl. 01:25, første modellkandidat avvist
+
+M1 fra34e3fcd2 er teknisk pakket, men visuelt avvist: 56 fjernere bygnings-LOD-er var rotert90 grader ved customLOD-import. Alle196 LOD0-kontroller bestod, og dermed var samlet bounds/trekantantall utilstrekkelig som geometribevis. Ny direkte lesing av alle84 lagrede MeshDescriptions gir588 kontroller; alle56 feil matcher konkret+90-graders rotasjon. Korrekt global FBX-importflagg brukes ved ny import. Ingen kompenserende modellrotasjon.
+
+Rom6-kamerafiksturen startet trace under gulvet etter motellhopp; isolert gulv0 i opptaksfiksturen retter dette uten å endre spillflyt. Bilens faktiske kjørekontroller, instrumenter, hjul og lamper bestod; gjeninnstigning ble korrekt avvist av historiegaten fordi testoppsettet manglet kapittel1. Bare testens forutsetning endres. Installert A3 er urørt.
+
+## 2026-10-25 kl. 01:37, M2 visuelt avvist og M3 klargjort
+
+M2s SARO-bilder viser samme feil som bymodellene: Site var også først importert med et virkningsløst flagg. Direkte probe bekrefter roterteLOD1/2; Site er nå importert med korrekt globalflag0 og alle63 faktiske geometrisjekker består. Ny atlas tegnes fra målte fysiske skiltproporsjoner med textbbox-guard. Kinoens sider/billettluke får egne tidligere ubrukte celler; bare CinemaShell-UV-er og atlaset reimporteres. Nye Blender-kilder består793 sjekker, Town native113 og perLOD588. Badets kamera står nå inne i fri midtgang og en avgrenset varm lampe følger den nye takdiffuseren. Spilladgang er uendret. M2-køen er stoppet etter bilder, ingen unødvendige resterende funksjonsprøver. Ingen ny standard installert.
+
+## 2026-10-25 kl. 01:50, presist kutt av gamle SARO-vinduer
+
+M3-nærbildet viste16gamle vindusrammer/persienner under nytt skilt. De lå i sammenslått g454 med annet tak-/gårdsutstyr. F10 klipper eksakt1872vindustrekanter sammen med de tidligere976biltrekantene:13550→10702. Hvert prisme, bevart geometri/UV/vinding/material og kilde-FBX/native92kontroller består. Kun den eksisterende trimmeshen er reimportert. Site/Fleet har nå felles fullstendighetsguard; manglende deler beholder den gamle hjørneløsningen.
+
+M3s Town-visningsprøve fikk VK_ERROR_DEVICE_LOST ved Capture Sky Materials Face4. Sky/Clouds/Lighting er byteuendret, og årsaken er ikke bevist. Opptaksfiksturen endres til Enter bare ved faktisk områdeskifte, klokke bare per lysfase, 5s ro ved store skifter og venting på komplett PNG før neste flytting. Ingen renderer-/skykvalitet eller budsjettendring. M4 blir kontrollert med samme39utsnitt og korte funksjonsutvalg. Installert A3 er fortsatt urørt.
+
+## 2026-10-25 kl. 02:35, avgrenset skycapture ved modellkontroll
+
+M4 fikk samme Vulkan device-lost ved badets kameravinkel. Feilen vedvarer uten ny lampe, uten ny badmesh, uten asyncLumen, uten timeslicing, uten capture-depth og med egen fast capture-dome. Bare å ekskludere domen består, men mangler korrekt skycapture og er avvist som levering. Finite-only sikring løser ikke GPU-feilen. Alle diagnostiske C++-flagg er fjernet.
+
+Egen tidlig capturegren i samme skymateriale bruker klokke-/solstyrte brede himmelfarger, mens hovedvisningen beholder hele finite-oppskriften. Offisiell ReflectionCapturePassSwitch styrer grenen. Volumskyer, skygger, High og budsjetter er beholdt. Editorens samme seks Rom6/bad-bilder og smoke består med eksplisitt aktive skyer. Capture mister fin panorama-/Melkevei-detalj og bruker HoleSky-kalibrert nattenergi, ikke målt panorama-gjennomsnitt. Faktisk shader-/driverårsak er ikke bevist. Ny pakket sluttkontroll gjenstår. Prosjektbibliotekets GPU-søk hadde ingen kompatibel bekreftet løsning; lokal motorkilde ga capture-kontrakten.
+
+## 2026-10-25 kl. 02:54, M5 visuelt avvist og M6 forberedt
+
+M5s fire områdeopptak ga39bilder og skycapture-krasjen er ikke sett i denne pakkede sekvensen. SARO-nærbildet viste likevel hvite biler/dekk: en allnodes-heuristikk lot specularF0 overskrive BaseColor i7materialrader. Resterende funksjonskø er stoppet. Roller/faktorer er nå hentet fra faktiske glTF-PBR-data; generatoren følger bare Principled-socketlenker. Native material-only-retting og fresh readback består;45FBX/GLB/Blend-hasher og14native-meshbytes er uendret. Faktisk editorbilde viser rød Fairheaven, mørk ElAlamo og svarte dekk.
+
+To varme lokale skiltlys ved de eksisterende lampeankrene gir lesbar nattfasade, med opprinnelig site9/ext.glow20/21-strøm og blackout/area-gate. Faktisk nattbilde består. Ingen global natt-/eksponeringsendring. Ni oppdaterte kopierte Blender-originaler er åpnet og411kildefiler er hashkontrollert. M6 pakkes/testes før merge/installasjon; A3 er ennå urørt.
+
+## 2026-10-25 kl. 02:07, M6 modellpass kontrollert
+
+M6, spillkilde aefd18157be7502ac98d3e1695b4c4fcdd7d26a0: 1400 selvtester og 10 målrettede pakkede forløp PASS. 39 faste spillerhøydebilder, 44 registrerte bildehash og 9 faktisk åpnede Blender-originaler. 411 kopierte kildefiler med hash. Begrensningene i acceptance.json gjelder fortsatt; test-PASS er ingen påstand om løst GPU-problem eller fullrutestabilitet. G454 er sammensatt til 10702 trekanter; g455 mister nøyaktig 488 gamle fasadegrimetrekanter og beholder 1224 med samme atlas. Avviste forsøk: M1, M2, M3, M4, M5.
+
+- Faste kamerastillinger, native API-forløp og ordinære kjøre-/gangkontrollere er prøvd. Fysisk Xbox, full gjennomspilling og lydlytting er ikke verifisert.
+- Den opprinnelige skycapture-shaderen utløste gjentatt Vulkan device-lost ved badekameraet. En avgrenset shadergren for refleksjonsopptak består isolert editor-A/B og dette pakkede utvalget. Selve shader-/driverårsaken er ikke bevist, og hele ruten er ikke stabilitetsmålt. Capture utelater fin panorama-/Melkevei-detalj og bruker HoleSky-kalibrert nattenergi; hele finite-hovedshaderen og kvaliteten på volumskyene er bevart.
+- Full 110-scenariorunde og PSO-matrise er ikke kjørt. Ingen ny ytelsesgaranti.
+- Det eksisterende varselet om raytracing-minne er fortsatt synlig. Renderer og minnebudsjett er ikke overstyrt globalt.
+- Adgangsreglene til stengte bygg beholdes. Modellerte interiører gir ingen ny historieadgang.
+
+Se PRODUCTION_MODELS.md og acceptance.json. Fletting/installasjon føres separat.

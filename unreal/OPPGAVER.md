@@ -115,3 +115,12 @@ Radiostasjon/array: leveransen er ferdig. Ingen gjenstående bygg eller tester, 
 
 
 - 2026-10-24 kl. 23:15 SARO-oppdrag levert. PR [154](https://github.com/Tombonator3000/SIGNAL-47/pull/154) er vanlig flettet til `unreal-port-core` i `86eb0f8c` etter kontroll av eksakt head/base, CLEAN og ingen påkrevde CI-kontroller. Samme testede A3 er installert i `~/Games/Signal47/Linux`: alle 40 payloadfiler er hashidentiske med kandidaten og alle 46 Saved-filer er byteidentiske med før installasjonen. Verifisert sikkerhetskopi: `/home/tom/scratch-bm/Signal47-saro-arrival/installed-backup-1792876403571799419`. Fem eide Content-lenker er fjernet og begge genererte OpenOrder-filer gjenopprettet. Ingen ny normal spillerøkt er startet.
+
+
+## 2026-10-25 kl. 00:20, SARO og resten av modellprioriteringen
+
+Tom bestiller logisk mastantall, bygg2-fasade uten skilt/vindusoverlapp, realistiske parkerte biler og SARO07 med egen logo/dash, deretter alle resterende prioriterte Blender-bygg. Plan i PRODUCTION_MODELS.md. Tre avgrensede hjelpere, root eier all tung eksport/import/bygg/test. Gren codex/saro-production-models fra cfadc1c0. Ingen aktiv UE/Blender/spill ved start. Bibliotekssøk med fallback ga bare generelle UNVERIFIED-arbeidsflyter; eksisterende native løype brukes.
+
+## SARO og resterende modellprioritet, 2026-10-25 kl. 02:07
+
+M6, spillkilde aefd18157be7502ac98d3e1695b4c4fcdd7d26a0: 1400 selvtester og 10 målrettede pakkede forløp PASS. 39 faste spillerhøydebilder, 44 registrerte bildehash og 9 faktisk åpnede Blender-originaler. 411 kopierte kildefiler med hash. Begrensningene i acceptance.json gjelder fortsatt; test-PASS er ingen påstand om løst GPU-problem eller fullrutestabilitet. Hele modellprioriteten er implementert; gjeldende tekniske avgrensninger står i PRODUCTION_MODELS.md. Fletting/installasjon: Ikke registrert; føres separat etter faktisk resultat.

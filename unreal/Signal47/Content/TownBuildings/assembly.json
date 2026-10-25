@@ -1,0 +1,2352 @@
+{
+  "source_revision": "TB1-original-six-building-production",
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "parts": {
+    "SM_Town_Sheriff_Shell": {
+      "triangles": 1034,
+      "bounds_local_m": [
+        [
+          -10.125,
+          -6.125,
+          -0.699999988079071
+        ],
+        [
+          0.8349999785423279,
+          6.125,
+          4.369999885559082
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Concrete",
+        "M_Town_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 1928,
+      "vertices_after_weld": 596,
+      "minimum_uv_area": 2.52577854749636e-05,
+      "building": "Sheriff",
+      "chunk": "Shell",
+      "lod_triangles": [
+        1034,
+        778,
+        506
+      ]
+    },
+    "SM_Town_Sheriff_Glass": {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          0.03500000014901161,
+          -3.0999999046325684,
+          0.800000011920929
+        ],
+        [
+          0.03999999910593033,
+          4.809999942779541,
+          2.4000000953674316
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "used_materials": [
+        "M_Town_Glass"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 8,
+      "vertices_after_weld": 8,
+      "minimum_uv_area": 0.5,
+      "building": "Sheriff",
+      "chunk": "Glass",
+      "lod_triangles": [
+        4,
+        4,
+        4
+      ]
+    },
+    "SM_Town_Sheriff_Interior": {
+      "triangles": 5188,
+      "bounds_local_m": [
+        [
+          -9.899999618530273,
+          -5.900000095367432,
+          -0.10999999940395355
+        ],
+        [
+          -0.10000000149011612,
+          6.199999809265137,
+          3.4600000381469727
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_OliveEnamel",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
+        "M_Town_FloorTile",
+        "M_Town_Upholstery",
+        "M_Town_BookCloth",
+        "M_Town_Paper",
+        "M_Town_Ceiling",
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaRedGlow"
+      ],
+      "used_materials": [
+        "M_Town_BookCloth",
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_CinemaRedGlow",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_FloorTile",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 9464,
+      "vertices_after_weld": 3064,
+      "minimum_uv_area": 9.45239602323511e-06,
+      "building": "Sheriff",
+      "chunk": "Interior",
+      "lod_triangles": [
+        5188,
+        4256,
+        2420
+      ]
+    },
+    "SM_Town_Sheriff_Fixtures": {
+      "triangles": 428,
+      "bounds_local_m": [
+        [
+          -8.260000228881836,
+          -1.899999976158142,
+          0.8999999761581421
+        ],
+        [
+          0.550000011920929,
+          4.75,
+          3.125
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_WarmGlow",
+        "M_Town_TubeGlow"
+      ],
+      "used_materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_TubeGlow",
+        "M_Town_WarmGlow"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 776,
+      "vertices_after_weld": 252,
+      "minimum_uv_area": 3.6371211007385496e-05,
+      "building": "Sheriff",
+      "chunk": "Fixtures",
+      "lod_triangles": [
+        428,
+        316,
+        260
+      ]
+    },
+    "SM_Town_Laundry_Shell": {
+      "triangles": 830,
+      "bounds_local_m": [
+        [
+          -10.125,
+          -7.125,
+          -0.699999988079071
+        ],
+        [
+          0.8349999785423279,
+          7.125,
+          4.269999980926514
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_BluePaint",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Concrete",
+        "M_Town_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_Town_BluePaint",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 1628,
+      "vertices_after_weld": 480,
+      "minimum_uv_area": 0.00016199958372098422,
+      "building": "Laundry",
+      "chunk": "Shell",
+      "lod_triangles": [
+        830,
+        718,
+        470
+      ]
+    },
+    "SM_Town_Laundry_Glass": {
+      "triangles": 6,
+      "bounds_local_m": [
+        [
+          0.03500000014901161,
+          -4.860000133514404,
+          0.6000000238418579
+        ],
+        [
+          0.03999999910593033,
+          5.650000095367432,
+          2.299999952316284
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "used_materials": [
+        "M_Town_Glass"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 12,
+      "vertices_after_weld": 12,
+      "minimum_uv_area": 0.5,
+      "building": "Laundry",
+      "chunk": "Glass",
+      "lod_triangles": [
+        6,
+        6,
+        6
+      ]
+    },
+    "SM_Town_Laundry_Interior": {
+      "triangles": 14782,
+      "bounds_local_m": [
+        [
+          -9.899999618530273,
+          -6.900000095367432,
+          -0.10999999940395355
+        ],
+        [
+          -0.10000000149011612,
+          6.900000095367432,
+          3.359999895095825
+        ]
+      ],
+      "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_FloorTile",
+        "M_Town_Upholstery",
+        "M_Town_Paper",
+        "M_Town_Ceiling",
+        "M_Town_PrintAtlas",
+        "M_Town_WasherGlass"
+      ],
+      "used_materials": [
+        "M_Town_Ceiling",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_FloorTile",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_Timber",
+        "M_Town_Upholstery",
+        "M_Town_WasherGlass"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 27480,
+      "vertices_after_weld": 8144,
+      "minimum_uv_area": 2.999988317498037e-05,
+      "building": "Laundry",
+      "chunk": "Interior",
+      "lod_triangles": [
+        14782,
+        10262,
+        6462
+      ]
+    },
+    "SM_Town_Laundry_Fixtures": {
+      "triangles": 496,
+      "bounds_local_m": [
+        [
+          -3.109999895095825,
+          -4.769118785858154,
+          0.8999999761581421
+        ],
+        [
+          0.550000011920929,
+          4.75,
+          3.115000009536743
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_WarmGlow",
+        "M_Town_TubeGlow"
+      ],
+      "used_materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_TubeGlow",
+        "M_Town_WarmGlow"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 896,
+      "vertices_after_weld": 292,
+      "minimum_uv_area": 3.6371205199614565e-05,
+      "building": "Laundry",
+      "chunk": "Fixtures",
+      "lod_triangles": [
+        496,
+        384,
+        328
+      ]
+    },
+    "SM_Town_Feed_Shell": {
+      "triangles": 2658,
+      "bounds_local_m": [
+        [
+          -16.125,
+          -12.125,
+          -0.699999988079071
+        ],
+        [
+          2.5999999046325684,
+          12.125,
+          6.070000171661377
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_RustTin",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Concrete",
+        "M_Town_Burlap",
+        "M_Town_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_Town_Burlap",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PrintAtlas",
+        "M_Town_RustTin",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 5152,
+      "vertices_after_weld": 1602,
+      "minimum_uv_area": 4.899978137018479e-05,
+      "building": "Feed",
+      "chunk": "Shell",
+      "lod_triangles": [
+        2658,
+        1866,
+        982
+      ]
+    },
+    "SM_Town_Feed_Glass": {
+      "triangles": 8,
+      "bounds_local_m": [
+        [
+          0.03500000014901161,
+          -7.099999904632568,
+          1.2000000476837158
+        ],
+        [
+          0.17000000178813934,
+          7.699999809265137,
+          3.200000047683716
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "used_materials": [
+        "M_Town_Glass"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 16,
+      "vertices_after_weld": 16,
+      "minimum_uv_area": 0.5,
+      "building": "Feed",
+      "chunk": "Glass",
+      "lod_triangles": [
+        8,
+        8,
+        8
+      ]
+    },
+    "SM_Town_Feed_Interior": {
+      "triangles": 16216,
+      "bounds_local_m": [
+        [
+          -15.899999618530273,
+          -11.899999618530273,
+          0.0
+        ],
+        [
+          -0.10000000149011612,
+          11.899999618530273,
+          5.159999847412109
+        ]
+      ],
+      "materials": [
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Ceramic",
+        "M_Town_Burlap",
+        "M_Town_Ceiling"
+      ],
+      "used_materials": [
+        "M_Town_Burlap",
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 31380,
+      "vertices_after_weld": 8640,
+      "minimum_uv_area": 4.899978137018479e-05,
+      "building": "Feed",
+      "chunk": "Interior",
+      "lod_triangles": [
+        16216,
+        10312,
+        1672
+      ]
+    },
+    "SM_Town_Feed_Fixtures": {
+      "triangles": 1316,
+      "bounds_local_m": [
+        [
+          -14.260000228881836,
+          -4.260000228881836,
+          0.8999999761581421
+        ],
+        [
+          0.550000011920929,
+          4.260000228881836,
+          4.900000095367432
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_WarmGlow"
+      ],
+      "used_materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_WarmGlow"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 2440,
+      "vertices_after_weld": 780,
+      "minimum_uv_area": 3.637120309263331e-05,
+      "building": "Feed",
+      "chunk": "Fixtures",
+      "lod_triangles": [
+        1316,
+        820,
+        572
+      ]
+    },
+    "SM_Town_Cinema_Shell": {
+      "triangles": 1848,
+      "bounds_local_m": [
+        [
+          -14.125,
+          -10.125,
+          -0.699999988079071
+        ],
+        [
+          2.569000005722046,
+          10.125,
+          7.800000190734863
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_PinkPlaster",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Concrete",
+        "M_Town_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PinkPlaster",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 3640,
+      "vertices_after_weld": 1120,
+      "minimum_uv_area": 9.099965357783901e-05,
+      "building": "Cinema",
+      "chunk": "Shell",
+      "lod_triangles": [
+        1848,
+        1548,
+        1080
+      ]
+    },
+    "SM_Town_Cinema_Glass": {
+      "triangles": 12,
+      "bounds_local_m": [
+        [
+          -3.109999895095825,
+          -7.574999809265137,
+          0.10000000149011612
+        ],
+        [
+          0.2849999964237213,
+          8.114999771118164,
+          2.3949999809265137
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "used_materials": [
+        "M_Town_Glass"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 24,
+      "vertices_after_weld": 24,
+      "minimum_uv_area": 0.5,
+      "building": "Cinema",
+      "chunk": "Glass",
+      "lod_triangles": [
+        12,
+        12,
+        12
+      ]
+    },
+    "SM_Town_Cinema_Interior": {
+      "triangles": 1036,
+      "bounds_local_m": [
+        [
+          -13.899999618530273,
+          -9.899999618530273,
+          -0.10999999940395355
+        ],
+        [
+          -0.10000000149011612,
+          9.899999618530273,
+          6.159999847412109
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_OliveEnamel",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Ceramic",
+        "M_Town_Terrazzo",
+        "M_Town_Upholstery",
+        "M_Town_Ceiling",
+        "M_Town_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Terrazzo",
+        "M_Town_Upholstery"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 1924,
+      "vertices_after_weld": 652,
+      "minimum_uv_area": 8.486993863243697e-05,
+      "building": "Cinema",
+      "chunk": "Interior",
+      "lod_triangles": [
+        1036,
+        876,
+        276
+      ]
+    },
+    "SM_Town_Cinema_Fixtures": {
+      "triangles": 1852,
+      "bounds_local_m": [
+        [
+          -2.759999990463257,
+          -5.260000228881836,
+          0.8999999761581421
+        ],
+        [
+          2.2850000858306885,
+          4.684999942779541,
+          7.650000095367432
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_WarmGlow",
+        "M_Town_CinemaRedGlow"
+      ],
+      "used_materials": [
+        "M_Town_CinemaRedGlow",
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_WarmGlow"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 3392,
+      "vertices_after_weld": 1052,
+      "minimum_uv_area": 3.637124453498286e-05,
+      "building": "Cinema",
+      "chunk": "Fixtures",
+      "lod_triangles": [
+        1852,
+        1196,
+        736
+      ]
+    },
+    "SM_Town_Church_Shell": {
+      "triangles": 3614,
+      "bounds_local_m": [
+        [
+          -1.2000000476837158,
+          -4.849999904632568,
+          -0.5600000023841858
+        ],
+        [
+          14.300000190734863,
+          4.849999904632568,
+          9.770000457763672
+        ]
+      ],
+      "materials": [
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Clapboard",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Concrete",
+        "M_Town_RoofShingle"
+      ],
+      "used_materials": [
+        "M_Town_Clapboard",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_RoofShingle",
+        "M_Town_Timber"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 7034,
+      "vertices_after_weld": 2253,
+      "minimum_uv_area": 0.00021292086789204134,
+      "building": "Church",
+      "chunk": "Shell",
+      "lod_triangles": [
+        3614,
+        3550,
+        1886
+      ]
+    },
+    "SM_Town_Church_Glass": {
+      "triangles": 24,
+      "bounds_local_m": [
+        [
+          -0.014999999664723873,
+          -4.514999866485596,
+          1.25
+        ],
+        [
+          11.649999618530273,
+          4.514999866485596,
+          3.950000047683716
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "used_materials": [
+        "M_Town_Glass"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 40,
+      "vertices_after_weld": 40,
+      "minimum_uv_area": 0.15000000596046448,
+      "building": "Church",
+      "chunk": "Glass",
+      "lod_triangles": [
+        24,
+        24,
+        24
+      ]
+    },
+    "SM_Town_Church_Interior": {
+      "triangles": 2800,
+      "bounds_local_m": [
+        [
+          0.10000000149011612,
+          -4.400000095367432,
+          -0.10000000149011612
+        ],
+        [
+          13.90999984741211,
+          4.400000095367432,
+          6.327480316162109
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Clapboard",
+        "M_Town_Metal",
+        "M_Town_Upholstery",
+        "M_Town_LampFabric",
+        "M_Town_Paper"
+      ],
+      "used_materials": [
+        "M_Town_Clapboard",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 4956,
+      "vertices_after_weld": 1638,
+      "minimum_uv_area": 5.4332121247835374e-05,
+      "building": "Church",
+      "chunk": "Interior",
+      "lod_triangles": [
+        2800,
+        2736,
+        2468
+      ]
+    },
+    "SM_Town_Church_Fixtures": {
+      "triangles": 1320,
+      "bounds_local_m": [
+        [
+          -0.11800000071525574,
+          -2.359999895095825,
+          1.0499999523162842
+        ],
+        [
+          11.260000228881836,
+          2.359999895095825,
+          4.800000190734863
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_WarmGlow"
+      ],
+      "used_materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_WarmGlow"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 2452,
+      "vertices_after_weld": 784,
+      "minimum_uv_area": 3.781012540926554e-05,
+      "building": "Church",
+      "chunk": "Fixtures",
+      "lod_triangles": [
+        1320,
+        840,
+        600
+      ]
+    },
+    "SM_Town_Motel_Shell": {
+      "triangles": 5192,
+      "bounds_local_m": [
+        [
+          -6.699999809265137,
+          -45.900001525878906,
+          -0.14000000059604645
+        ],
+        [
+          5.150000095367432,
+          3.4000000953674316,
+          3.125
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_TealPaint",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Concrete",
+        "M_Town_LampFabric",
+        "M_Town_Paper",
+        "M_Town_Ceiling",
+        "M_Town_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_Town_Ceiling",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_TealPaint",
+        "M_Town_Timber"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 10108,
+      "vertices_after_weld": 3182,
+      "minimum_uv_area": 7.016055021225043e-05,
+      "building": "Motel",
+      "chunk": "Shell",
+      "lod_triangles": [
+        5192,
+        4376,
+        3412
+      ]
+    },
+    "SM_Town_Motel_Glass": {
+      "triangles": 18,
+      "bounds_local_m": [
+        [
+          2.380000114440918,
+          -42.83000183105469,
+          0.7099999785423279
+        ],
+        [
+          2.4110000133514404,
+          -0.2800000011920929,
+          2.069999933242798
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "used_materials": [
+        "M_Town_Glass"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 36,
+      "vertices_after_weld": 36,
+      "minimum_uv_area": 0.5,
+      "building": "Motel",
+      "chunk": "Glass",
+      "lod_triangles": [
+        18,
+        18,
+        18
+      ]
+    },
+    "SM_Town_Motel_Office": {
+      "triangles": 1398,
+      "bounds_local_m": [
+        [
+          -2.2049999237060547,
+          -2.700000047683716,
+          -0.10999999940395355
+        ],
+        [
+          2.200000047683716,
+          2.700000047683716,
+          2.799999952316284
+        ]
+      ],
+      "materials": [
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Terrazzo",
+        "M_Town_Upholstery",
+        "M_Town_BookCloth",
+        "M_Town_Paper",
+        "M_Town_Ceiling"
+      ],
+      "used_materials": [
+        "M_Town_BookCloth",
+        "M_Town_Ceiling",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_Terrazzo",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 2666,
+      "vertices_after_weld": 924,
+      "minimum_uv_area": 3.761803642632344e-05,
+      "building": "Motel",
+      "chunk": "Office",
+      "lod_triangles": [
+        1398,
+        1254,
+        1198
+      ]
+    },
+    "SM_Town_Motel_Fixtures": {
+      "triangles": 164,
+      "bounds_local_m": [
+        [
+          -0.4099999964237213,
+          -40.209999084472656,
+          2.1524999141693115
+        ],
+        [
+          2.619999885559082,
+          0.6000000238418579,
+          2.694999933242798
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_MotelOfficeGlow"
+      ],
+      "used_materials": [
+        "M_Town_Metal",
+        "M_Town_MotelOfficeGlow"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 312,
+      "vertices_after_weld": 104,
+      "minimum_uv_area": 7.476500844205702e-05,
+      "building": "Motel",
+      "chunk": "Fixtures",
+      "lod_triangles": [
+        164,
+        164,
+        164
+      ]
+    },
+    "SM_Town_Motel_Room6Shell": {
+      "triangles": 230,
+      "bounds_local_m": [
+        [
+          -2.700000047683716,
+          -5.199999809265137,
+          -0.14000000059604645
+        ],
+        [
+          2.700000047683716,
+          3.1600000858306885,
+          2.7899999618530273
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_TealPaint",
+        "M_Town_Concrete",
+        "M_Town_Ceiling",
+        "M_Town_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_Town_Ceiling",
+        "M_Town_Concrete",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_TealPaint"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 460,
+      "vertices_after_weld": 140,
+      "minimum_uv_area": 0.005999995708464212,
+      "building": "Motel",
+      "chunk": "Room6Shell",
+      "lod_triangles": [
+        230,
+        230,
+        230
+      ]
+    },
+    "SM_Town_Motel_Room6Interior": {
+      "triangles": 1240,
+      "bounds_local_m": [
+        [
+          -2.25,
+          -3.0299999713897705,
+          -0.10999999940395355
+        ],
+        [
+          2.25,
+          3.0,
+          2.1500000953674316
+        ]
+      ],
+      "materials": [
+        "M_Town_TealPaint",
+        "M_Town_CreamEnamel",
+        "M_Town_Timber",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Carpet",
+        "M_Town_Upholstery",
+        "M_Town_Bedding"
+      ],
+      "used_materials": [
+        "M_Town_Bedding",
+        "M_Town_Carpet",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_TealPaint",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 2232,
+      "vertices_after_weld": 740,
+      "minimum_uv_area": 5.4332121247835374e-05,
+      "building": "Motel",
+      "chunk": "Room6Interior",
+      "lod_triangles": [
+        1240,
+        1072,
+        960
+      ]
+    },
+    "SM_Town_Motel_Room6Fixtures": {
+      "triangles": 144,
+      "bounds_local_m": [
+        [
+          -0.8600000143051147,
+          4.059999942779541,
+          2.252000093460083
+        ],
+        [
+          0.6399999856948853,
+          4.440000057220459,
+          2.6500000953674316
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_Room6Glow"
+      ],
+      "used_materials": [
+        "M_Town_Metal",
+        "M_Town_Room6Glow"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 248,
+      "vertices_after_weld": 76,
+      "minimum_uv_area": 6.710242470875372e-05,
+      "building": "Motel",
+      "chunk": "Room6Fixtures",
+      "lod_triangles": [
+        144,
+        96,
+        72
+      ]
+    },
+    "SM_Town_Motel_Bathroom": {
+      "triangles": 1296,
+      "bounds_local_m": [
+        [
+          -2.059999942779541,
+          2.940000057220459,
+          -0.10999999940395355
+        ],
+        [
+          0.7200000286102295,
+          5.559999942779541,
+          2.700000047683716
+        ]
+      ],
+      "materials": [
+        "M_Town_Stucco",
+        "M_Town_Metal",
+        "M_Town_Ceramic",
+        "M_Town_FloorTile",
+        "M_Town_LampFabric",
+        "M_Town_Ceiling"
+      ],
+      "used_materials": [
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_FloorTile",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Stucco"
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 2416,
+      "vertices_after_weld": 748,
+      "minimum_uv_area": 5.985378212564063e-05,
+      "building": "Motel",
+      "chunk": "Bathroom",
+      "lod_triangles": [
+        1296,
+        888,
+        624
+      ]
+    }
+  },
+  "retire": [
+    {
+      "node": 680,
+      "parent": 663,
+      "geo": 465,
+      "source_material_ids": [
+        329
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced",
+      "tris": 348,
+      "acceptedPreviousTris": [
+        348
+      ]
+    },
+    {
+      "node": 681,
+      "parent": 663,
+      "geo": 466,
+      "source_material_ids": [
+        330
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced",
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 684,
+      "parent": 663,
+      "geo": 469,
+      "source_material_ids": [
+        333
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced",
+      "tris": 14,
+      "acceptedPreviousTris": [
+        14
+      ]
+    },
+    {
+      "node": 686,
+      "parent": 663,
+      "geo": 471,
+      "source_material_ids": [
+        335
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced",
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 687,
+      "parent": 663,
+      "geo": 472,
+      "source_material_ids": [
+        336
+      ],
+      "name": "",
+      "reason": "Motel building plaster/window/curtains/Room6 outside lamp fully replaced",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 703,
+      "parent": 702,
+      "geo": 477,
+      "source_material_ids": [
+        324
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 704,
+      "parent": 702,
+      "geo": 478,
+      "source_material_ids": [
+        339
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 72,
+      "acceptedPreviousTris": [
+        72
+      ]
+    },
+    {
+      "node": 705,
+      "parent": 702,
+      "geo": 479,
+      "source_material_ids": [
+        323
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 72,
+      "acceptedPreviousTris": [
+        72
+      ]
+    },
+    {
+      "node": 707,
+      "parent": 706,
+      "geo": 480,
+      "source_material_ids": [
+        323
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 24,
+      "acceptedPreviousTris": [
+        24
+      ]
+    },
+    {
+      "node": 708,
+      "parent": 706,
+      "geo": 481,
+      "source_material_ids": [
+        324
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 710,
+      "parent": 690,
+      "geo": 482,
+      "source_material_ids": [
+        323
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 196,
+      "acceptedPreviousTris": [
+        132,
+        196
+      ]
+    },
+    {
+      "node": 711,
+      "parent": 690,
+      "geo": 483,
+      "source_material_ids": [
+        321
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 712,
+      "parent": 690,
+      "geo": 484,
+      "source_material_ids": [
+        324
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 116,
+      "acceptedPreviousTris": [
+        116
+      ]
+    },
+    {
+      "node": 713,
+      "parent": 690,
+      "geo": 485,
+      "source_material_ids": [
+        332
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 760,
+      "acceptedPreviousTris": [
+        760
+      ]
+    },
+    {
+      "node": 714,
+      "parent": 690,
+      "geo": 486,
+      "source_material_ids": [
+        327
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 64,
+      "acceptedPreviousTris": [
+        20,
+        64
+      ]
+    },
+    {
+      "node": 715,
+      "parent": 690,
+      "geo": 487,
+      "source_material_ids": [
+        339
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 80,
+      "acceptedPreviousTris": [
+        80
+      ]
+    },
+    {
+      "node": 717,
+      "parent": 690,
+      "geo": 489,
+      "source_material_ids": [
+        325
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 280,
+      "acceptedPreviousTris": [
+        224,
+        280
+      ]
+    },
+    {
+      "node": 718,
+      "parent": 690,
+      "geo": 490,
+      "source_material_ids": [
+        326
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 112,
+      "acceptedPreviousTris": [
+        112
+      ]
+    },
+    {
+      "node": 719,
+      "parent": 690,
+      "geo": 491,
+      "source_material_ids": [
+        338
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 720,
+      "parent": 690,
+      "geo": 492,
+      "source_material_ids": [
+        340
+      ],
+      "name": "",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 735,
+      "parent": 689,
+      "geo": 501,
+      "source_material_ids": [
+        343
+      ],
+      "name": "lic:bookcase",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 614,
+      "acceptedPreviousTris": [
+        614
+      ]
+    },
+    {
+      "node": 736,
+      "parent": 689,
+      "geo": 502,
+      "source_material_ids": [
+        344
+      ],
+      "name": "lic:dining_chair",
+      "reason": "Reception static finishes/counter/shelf/chair/phone base replaced; preserve their parent and independent live children",
+      "tris": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ]
+    },
+    {
+      "node": 1644,
+      "parent": 1643,
+      "geo": 1109,
+      "source_material_ids": [
+        706
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 132,
+      "acceptedPreviousTris": [
+        132
+      ]
+    },
+    {
+      "node": 1645,
+      "parent": 1643,
+      "geo": 1110,
+      "source_material_ids": [
+        707
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 72,
+      "acceptedPreviousTris": [
+        72
+      ]
+    },
+    {
+      "node": 1646,
+      "parent": 1643,
+      "geo": 1111,
+      "source_material_ids": [
+        708
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 1655,
+      "parent": 1653,
+      "geo": 1115,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1656,
+      "parent": 1653,
+      "geo": 1116,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1659,
+      "parent": 1657,
+      "geo": 1117,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1660,
+      "parent": 1657,
+      "geo": 1118,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1661,
+      "parent": 1648,
+      "geo": 1119,
+      "source_material_ids": [
+        712
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 20,
+      "acceptedPreviousTris": [
+        20
+      ]
+    },
+    {
+      "node": 1662,
+      "parent": 1648,
+      "geo": 1120,
+      "source_material_ids": [
+        713
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 2,
+      "acceptedPreviousTris": [
+        2
+      ]
+    },
+    {
+      "node": 1663,
+      "parent": 1648,
+      "geo": 1121,
+      "source_material_ids": [
+        707
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 108,
+      "acceptedPreviousTris": [
+        108
+      ]
+    },
+    {
+      "node": 1665,
+      "parent": 1648,
+      "geo": 1123,
+      "source_material_ids": [
+        715
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 96,
+      "acceptedPreviousTris": [
+        96
+      ]
+    },
+    {
+      "node": 1666,
+      "parent": 1648,
+      "geo": 1124,
+      "source_material_ids": [
+        716
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1679,
+      "parent": 1678,
+      "geo": 1133,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1680,
+      "parent": 1678,
+      "geo": 1134,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1681,
+      "parent": 1678,
+      "geo": 1135,
+      "source_material_ids": [
+        710
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1686,
+      "parent": 1677,
+      "geo": 1139,
+      "source_material_ids": [
+        719
+      ],
+      "name": "lic:nightstand",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 2144,
+      "acceptedPreviousTris": [
+        2132,
+        2144
+      ]
+    },
+    {
+      "node": 1695,
+      "parent": 1694,
+      "geo": 1144,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1696,
+      "parent": 1694,
+      "geo": 1145,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1697,
+      "parent": 1694,
+      "geo": 1146,
+      "source_material_ids": [
+        710
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 36,
+      "acceptedPreviousTris": [
+        36
+      ]
+    },
+    {
+      "node": 1698,
+      "parent": 1693,
+      "geo": 1147,
+      "source_material_ids": [
+        722
+      ],
+      "name": "lic:dresser",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 5500,
+      "acceptedPreviousTris": [
+        5342,
+        5500
+      ]
+    },
+    {
+      "node": 1710,
+      "parent": 1709,
+      "geo": 1155,
+      "source_material_ids": [
+        711
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 12,
+      "acceptedPreviousTris": [
+        12
+      ]
+    },
+    {
+      "node": 1711,
+      "parent": 1709,
+      "geo": 1156,
+      "source_material_ids": [
+        709
+      ],
+      "name": "",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 48,
+      "acceptedPreviousTris": [
+        48
+      ]
+    },
+    {
+      "node": 1712,
+      "parent": 1708,
+      "geo": 1157,
+      "source_material_ids": [
+        725
+      ],
+      "name": "lic:dining_table",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 780,
+      "acceptedPreviousTris": [
+        780
+      ]
+    },
+    {
+      "node": 1747,
+      "parent": 1647,
+      "geo": 502,
+      "source_material_ids": [
+        739
+      ],
+      "name": "lic:dining_chair",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ]
+    },
+    {
+      "node": 1748,
+      "parent": 1647,
+      "geo": 502,
+      "source_material_ids": [
+        739
+      ],
+      "name": "lic:dining_chair",
+      "reason": "Room6 static shell/floor/curtains/AC/furniture replaced; do not hide parent because it can own live lamp/media",
+      "tris": 3000,
+      "acceptedPreviousTris": [
+        3000
+      ]
+    }
+  ],
+  "retained": [
+    {
+      "handle": "world.motel.tv.group",
+      "node": 709
+    },
+    {
+      "handle": "world.motel.objs.envelope",
+      "node": 721
+    },
+    {
+      "handle": "world.motel.objs.message",
+      "node": 725
+    },
+    {
+      "handle": "world.motel.objs.key6Hook",
+      "node": 727
+    },
+    {
+      "handle": "world.motel.objs.officePhoneHandset",
+      "node": 729
+    },
+    {
+      "handle": "world.motel.objs.room6DoorLeaf",
+      "node": 752
+    },
+    {
+      "handle": "world.motel.models.models[2]",
+      "node": 737
+    },
+    {
+      "handle": "world.room6.objs.door",
+      "node": 1669
+    },
+    {
+      "handle": "world.room6.objs.bed",
+      "node": 1672
+    },
+    {
+      "handle": "world.room6.objs.phone",
+      "node": 1690
+    },
+    {
+      "handle": "world.room6.objs.tv",
+      "node": 1699
+    },
+    {
+      "handle": "world.room6.objs.photo",
+      "node": 1705
+    },
+    {
+      "handle": "world.room6.objs.lamp",
+      "node": 1713
+    },
+    {
+      "handle": "world.room6.objs.fieldCard",
+      "node": 1721
+    },
+    {
+      "handle": "world.room6.objs.letter",
+      "node": 1724
+    },
+    {
+      "handle": "world.room6.objs.correction",
+      "node": 1727
+    },
+    {
+      "handle": "world.room6.objs.shoebox",
+      "node": 1730
+    },
+    {
+      "handle": "world.room6.objs.walkie",
+      "node": 1733
+    },
+    {
+      "handle": "world.room6.objs.nora",
+      "node": 1737
+    },
+    {
+      "handle": "world.room6.models.models[5]",
+      "node": 1687
+    },
+    {
+      "handle": "world.room6.models.models[6]",
+      "node": 1718
+    },
+    {
+      "handle": "world.room6.models.models[7]",
+      "node": 1749
+    }
+  ],
+  "never_hide_parents": [
+    662,
+    663,
+    689,
+    690,
+    1642,
+    1643,
+    1647,
+    1648,
+    1677,
+    1693,
+    1708
+  ]
+}

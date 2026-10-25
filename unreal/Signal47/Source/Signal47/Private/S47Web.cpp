@@ -4,6 +4,9 @@
 #include "S47Startup.h"
 #include "S47Props.h"
 #include "S47SaroArrival.h"
+#include "S47SaroSite.h"
+#include "S47Fleet.h"
+#include "S47TownBuildings.h"
 
 #include "Components/BillboardComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -661,6 +664,9 @@ void AS47Web::BeginPlay()
 	BuildCalicheNature();
 	SaroArrival = FS47SaroArrival::Build(this);
 	BuildHighwayPower();
+	SaroSite = FS47SaroSite::Build(this);
+	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
+	TownBuildings = FS47TownBuildings::Build(this);
 	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
@@ -733,6 +739,7 @@ void AS47Web::BeginPlay()
 	DrawDishes();
 	BeginHighwayAudit();
 	BeginSaroArrivalViews();
+	BeginProductionViews();
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
 
@@ -805,6 +812,8 @@ void AS47Web::Enter(const FString& Area)
 	}
 	ApplyHemi();
 	if (SaroArrival) SaroArrival->Update();
+	if (SaroSite) SaroSite->Update();
+	if (TownBuildings) TownBuildings->Update();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
 	if (T && SkyMid)
@@ -1287,6 +1296,8 @@ void AS47Web::Tick(float Dt)
 	Super::Tick(Dt);
 	if (!bLoaded) return;
 	if (SaroArrival) SaroArrival->Update();
+	if (SaroSite) SaroSite->Update();
+	if (TownBuildings) TownBuildings->Update();
 	if (S47Startup::Blocking())
 	{
 		// The complete world must exist before warmup. Keep its rendering and sky capture alive,
