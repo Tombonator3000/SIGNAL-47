@@ -1,12 +1,14 @@
 # Minne for unreal/
 
-## QA-retting og H1-produksjon pågår, 25. oktober 2026 kl. 17:34 CET
+## QA-retting Q3 validert, 25. oktober 2026 kl. 19:16 CET
 
-- Arbeidsgren `codex/qa-fixes-horror-production`, bevis i `/home/tom/scratch-bm/Signal47-qa-fixes-20261025`. [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) har gjeldende status. Installert PR157 er foreløpig uendret.
+- Arbeidsgren `codex/qa-fixes-horror-production`, testet kilde `d87af618`, PR158. Bevis i `/home/tom/scratch-bm/Signal47-qa-fixes-20261025`. [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) har gjeldende status. Q3 er ferdig validert; installert PR157 er foreløpig uendret til fletting/levering.
 - Kvalitetsbevarende Vulkan-omgåelse: `r.Vulkan.Bindless.PreferredExtension=1` før RHI-init velger støttet descriptor heap på RTX3080/595.99.02. Samme installerte Low-baseline feiler uten og består med dette ene flagget. Q1 består komplette High/Clean- og Low/Clean-finaler helt til meny. Ingen himmelshader eller motorfiler er endret; unsupported hardware beholder motorens descriptor-buffer-fallback. Universell driverrotårsak er ikke bevist.
 - Åtte eksklusive eksporterte LineSegments-ribboner bygger ikke RT-strukturer. Q1 måler 78,1538 MiB AlwaysResident i 349 aktive kontrollromsprøver, under uendret 80 MiB-grense. Runtime materialaudit har null fallback/mappingfeil; egne antenners 33 seksjoner er kontrollert. VSM-oppstartskøen er fortsatt profilgjeld, ikke løst av disse endringene.
-- FRAME03/04 er tydelige i faktiske lagrede High/Low-JPEG-er etter synkron native blits. Dump/store-bytes og targets består kontroll. QA03 til QA09 har konkrete kildeendringer og 1 419 selvtester. Faktisk Slate-test avdekket manglende fokus i det nye utgangsvarselet; Q2 retter dette. Esc, standard Enter og Xbox B består allerede i Q2, resten kontrolleres før levering.
+- FRAME03/04 er tydelige i faktiske lagrede High/Low-JPEG-er etter synkron native blits. Dump/store-bytes og targets består kontroll. QA03 til QA09 har konkrete kildeendringer. Q2 retter påvist fokusfeil i utgangsvarselet; faktisk Esc/default Enter/Xbox B/Down+A/Down+Enter, skrivefeil, settingsreopen, metadata/controls, ombundne navn og P13 består. Q3 retter automatisk kortoverdekking ved stor tekst uten å flytte brukerlagrede kort. Fem målrettede brettbilder/Slate-pan/Esc og fem nye API-geometrikontroller består.
+- Q3: 1 424 selvtester, hele kanoniske 110/110 på samme binær og komplette High/Low-finaler til meny består. To ekstra High/Carpenter-bortføringer har ulik RNG og ingen GPU-feil. Native gammel cache er faktisk lastet og de sju originale installerte cachefilene er uendrede. Matrisens 197 aktive RT-prøver er 78,1538 MiB AlwaysResident med uendrede 400/20/true. Ingen ny device-lost i dette omfanget, ingen påstått generell krasjprosent eller FPS-garanti.
 - H1.2 til H1.4 er engelske forfatterkilder i `Narrative/HorrorStory`: ti oppdrag, 36 scener og fem dokumenter; generator og eksisterende EveningShift består. Ingen nye opptak, ny runtimehistorie eller stealth er produsert. H1.1 menneskelig måling, H2 til H6, fysisk Xbox, lyd og ubrutt ny sak står åpne.
+- Neste T01-reise er konkretisert som ukompilert, uprøvd scratch-utkast utenfor Q3-kilden. Det kobler eksisterende fysiske journal/kontroll/lampe til nye sakers Shift og én returarkivering før survey; gamle saker får ingen ny gate. T02 trenger kontorreferanse og reelle kontroller og er ikke levert.
 
 ## Spilltest av installert PR157, 25. oktober 2026 kl. 15:03 CET
 

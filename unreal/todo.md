@@ -2,13 +2,14 @@
 
 ## Prioritet etter spilltest, 25. oktober 2026 kl. 15:03 CET
 
-Funn og presise bevis: [SPILLTEST_2026-10-25.md](SPILLTEST_2026-10-25.md). Dokumenterte feil skal ikke markeres rettet av denne testen.
+Før-funn og presise bevis: [SPILLTEST_2026-10-25.md](SPILLTEST_2026-10-25.md). Retting og ny validering: [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md).
 
 - [x] Kjør hele 110-matrisen og avgrensede tillegg på installert PR157. 108/110 og 12/13 PASS; separat Low-finale FAIL. 1 405 selvtester PASS, fire unike GPU-krasj. Rapport, bilde-/kodegjennomgang og før/etter-bevaring fullført.
-- [ ] P1 QA00: Rett Vulkan device-lost i finalens uttrekk og undersøk bortføringskrasjet. Verifiser hele THE EVENT, uttrekk, sluttittel, credits, sluttfoto og meny. High og Low feiler; ingen fungerende kvalitetsomvei påvist.
-- [ ] P2 QA01/QA02/QA10: Undersøk raytracing-varselet, aktive ISM-materialers usage/mapping og VSM-varsel; gjør nødvendige feltfoto visuelt leselige. Ikke kall objektantall en FPS-måling.
-- [ ] P2 QA03/QA04/QA05/QA09: Varsle om siste sikre sjekkpunkt ved utgang uten lagring, bruk aktuelle bindingsnavn, utvid tilgjengelighet til brett/gange og avklar kartjustering mot godkjent notat.
-- [ ] P3 QA06/QA07/QA08: Rett tekstklipp/kontrollhjelp, gamle not-yet-playable-mål og feil motorangivelse i credits.
+- [x] P1 QA00: Rett den reproduserte finalefeilen med støttet Vulkan descriptor heap på denne maskinen. Q3 består hele THE EVENT, uttrekk, sluttittel, credits, sluttfoto og meny på High og Low, samt hele 110-matrisen. Bortføring består matrisen og to ekstra forløp; samme rotårsak som den tidligere enkeltfeilen er ikke bevist.
+- [x] P2 QA01/QA02-materialer/QA10: 78,1538 MiB AlwaysResident under uendret 80 MiB-grense, null aktiv/inaktiv materialfallback og null mappingfeil i fersk runtimeaudit. Ekte FRAME03/04 er visuelt leselige på High/Low. Solide ledere, CPU-wiredata og gjerdetriangler er bevart; dette er ingen FPS-måling.
+- [ ] P2 QA02-VSM: Profilér oppstartskøen i normal rute/dag/natt. Kort aktivt utsnitt har ingen vedvarende overflow, men lokal motor har en forskyvning i CSV-statnavn. Verken rå nullverdi eller materialrettingen lukker denne ytelsesgjelden.
+- [x] P2 QA03/QA04/QA05/QA09: Varsle om siste sikre sjekkpunkt, også ved ekte skrivefeil; bruk gjeldende bindingsnavn; lagre hodebevegelsesvalg; gjør bretttekst større uten automatisk kortoverdekking; krev faktisk P13-justering. Faktisk Slate-pan, Esc, default Enter og Xbox-knapphendelser består. Fysisk Xbox og kamerakomfort er fortsatt menneskelige kontroller.
+- [x] P3 QA06/QA07/QA08: Tekstklipp og desktop-/Xbox-hjelp rettet, overgangsmål beskriver neste kapittel, og credits oppgir Unreal Engine.
 - [ ] Kjør en faktisk menneskelig ny sak til slutt uten hopp, med lyd, normal kapittel 2 til 3, fysisk Xbox og forståelse uten scriptkunnskap. Mål pacing/transport/venting og kontroller den svake anomaly-formen ved vaskerivinduet. Rapportens åtte forbedringspunkter er forslag, ikke nye implementasjoner.
 
 ## Historie, invasjon og stealth horror, planlagt 25. oktober 2026
