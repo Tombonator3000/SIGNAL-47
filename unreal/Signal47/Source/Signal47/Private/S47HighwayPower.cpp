@@ -167,8 +167,11 @@ void AS47Web::BuildHighwayPower()
  if(OldMainNodes!=2||Patches.Num()!=2)return;
  // New junctions replace the closest ordinary pole, rather than adding a crowded second row.
  TArray<double> Zs;
- for(int32 Z=-1900;Z<=3400;Z+=45)Zs.Add(Z+(S47RoadShape::Hash(Z,1)-.5)*4);
- for(double Z:{190.0,380.0,622.0})
+ // Wider spans reduce both poles and the four twelve-segment cable runs.
+ // Keep the installed SARO source position and all authored service junctions.
+ const double SaroSourceZ=-280+(S47RoadShape::Hash(-280,1)-.5)*4;
+ for(int32 Z=-1900;Z<=3400;Z+=65)Zs.Add(Z+(S47RoadShape::Hash(Z,1)-.5)*4);
+ for(double Z:{SaroSourceZ,190.0,380.0,622.0})
  {
   int32 Closest=0;for(int32 K=1;K<Zs.Num();++K)if(FMath::Abs(Zs[K]-Z)<FMath::Abs(Zs[Closest]-Z))Closest=K;
   Zs[Closest]=Z;

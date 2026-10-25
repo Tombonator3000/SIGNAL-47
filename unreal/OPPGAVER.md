@@ -132,3 +132,7 @@ Tom bestiller logisk mastantall, bygg2-fasade uten skilt/vindusoverlapp, realist
 ## SARO og resterende modellprioritet, 2026-10-25 kl. 02:07
 
 M6, spillkilde aefd18157be7502ac98d3e1695b4c4fcdd7d26a0: 1400 selvtester og 10 målrettede pakkede forløp PASS. 39 faste spillerhøydebilder, 44 registrerte bildehash og 9 faktisk åpnede Blender-originaler. 411 kopierte kildefiler med hash. Begrensningene i acceptance.json gjelder fortsatt; test-PASS er ingen påstand om løst GPU-problem eller fullrutestabilitet. Hele modellprioriteten er implementert; gjeldende tekniske avgrensninger står i PRODUCTION_MODELS.md. PR155 er flettet i da4e2394 og samme testede M6 er installert: 40 identiske payloadfiler og 46 byteidentiske Saved-filer.
+
+## Fullført 2026-10-25 kl. 13:22: SARO-ankomst, forplass og testbygggrense
+
+Valgfritt matstopp, tre fungerende besøksfelt begge veier, skilt/kontekstmål, asfaltert østlig personalområde og flyttet sedan/collider levert. Presis dressingtrim, færre usynlige florainstanser og 65 m hovedstolpespenn kontrollert. Motellmodellene bekreftet i runtime. Gjeldende+to eldre testbygg innført og ryddet. P1 elleve scenarioer, P2 native-/parkeringskontroll,1405 selvtester og 36 bilder PASS; P2 installert med 40 kontrollerte payloadfiler og 40 uendrede Saved. VISITOR_PARKING.md beskriver bevis og uprøvde forhold.

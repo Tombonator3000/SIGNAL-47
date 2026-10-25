@@ -8,6 +8,7 @@
 #include "S47Story.h"
 #include "S47Timeline.h"
 #include "Components/RectLightComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -180,6 +181,24 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  {
   Box(TEXT("bayEndLine"),FVector(X,-.597+FinishOffset,11.55),FVector(3,.004,.065),Paint);
   Box(TEXT("wheelStop"),FVector(X,-.54,11.2),FVector(1.8,.12,.18),Kerb);
+ }
+ // Ordinary site signage identifies every bay before the player has to stop.
+ auto Label=[&](const FVector& At,const FString& Text,float Size)
+ {
+  UTextRenderComponent* C=NewObject<UTextRenderComponent>(W);
+  C->SetupAttachment(G->Comp.Get());C->SetMobility(EComponentMobility::Movable);
+  C->SetHorizontalAlignment(EHTA_Center);C->SetVerticalAlignment(EVRTA_TextCenter);
+  C->SetWorldSize(Size);C->SetTextRenderColor(FColor(245,225,167));C->SetText(FText::FromString(Text));
+  C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(false);C->RegisterComponent();
+  C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldRotation(FRotator(0,90,0));
+  W->AdoptNode(C,Parent,TEXT("arrival:visitorLabel"));S->Parts.Add(C);
+ };
+ for(double X:{-15.8,-12.8,-9.8})
+ {
+  Box(TEXT("visitorPost"),FVector(X,.04,10.85),FVector(.055,1.28,.055),Metal);
+  Box(TEXT("visitorBoard"),FVector(X,.82,10.85),FVector(2.30,.66,.06),Metal);
+  Label(FVector(X,.91,10.89),TEXT("VISITOR"),24);
+  Label(FVector(X,.66,10.89),TEXT("PARKING"),15);
  }
  Box(TEXT("westKerb"),FVector(-18.25,-.57,15.5),FVector(.10,.18,10.10),Kerb);
  Box(TEXT("northKerb"),FVector(-13,-.57,10.45),FVector(10.6,.18,.10),Kerb);

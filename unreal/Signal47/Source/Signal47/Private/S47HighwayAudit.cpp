@@ -4,6 +4,8 @@
 #include "S47EngineSound.h"
 #include "S47Flow.h"
 #include "S47HighwayPower.h"
+#include "S47Flora.h"
+#include "S47WorldLife.h"
 #include "S47Json.h"
 #include "S47Legs.h"
 #include "S47Main.h"
@@ -96,6 +98,7 @@ void AS47Web::BeginHighwayAudit()
   };
   auto Landscape=[&]() {
    TArray<FString> Lines; bool Ok=W->AuditHighwayLandscape(Lines);
+   if(M->Life) for(const auto& Flora:M->Life->Flora) if(Flora && Flora->Shown()) Flora->AuditDrawCounts(Lines);
    for(const FString& Line:Lines) UE_LOG(LogS47HighwayAudit,Display,TEXT("S47: audit %s"),*Line);
    int32 Families=0,Instances=0;
    for(int32 I:W->HighwaySharedNodes) if(const FS47WebNode* N=W->Node(I)) if(const auto* C=Cast<UInstancedStaticMeshComponent>(N->Comp.Get())) {

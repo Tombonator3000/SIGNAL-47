@@ -297,7 +297,9 @@ void FS47Evening::ControlTest(double Dt)
 		if (M->Story->Clock() != Before || Pack.CanStart(TEXT("I11_SARO_ARRIVAL"))) { Fail(TEXT("repeated parking reset the clock or arrival")); return; }
 		// The service pad has a rail across its north edge. Walk behind the truck,
 		// then through the real opening on its east side instead of through the rail.
-		Shot(TEXT("parking")); RouteWalk = {FVector(7.4,0,12.0), FVector(10.5,0,12.0), FVector(10.5,0,2.0), FVector(7.5,0,1.6)}; RouteWalkIndex = 0;
+		Shot(TEXT("parking")); // The personal car now remains in its bay. Walk around its rear and the annex,
+  // then use the existing ramp; the old fixture crossed the retained car.
+  RouteWalk = {FVector(-15.2,0,18.3),FVector(-8.3,0,18.3),FVector(-8.3,0,12.2),FVector(-6.1,0,13.5),FVector(2,0,14.3),FVector(6,0,18),FVector(11.5,0,18),FVector(11.5,0,12),FVector(11.5,0,4),FVector(9.8,0,4),FVector(9.8,0,1.6),FVector(7.5,0,1.6)}; RouteWalkIndex = 0;
 		Stage(11, 2); return;
 	}
 	if (RouteStage == 11)

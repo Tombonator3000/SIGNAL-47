@@ -449,6 +449,14 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 {
 	const int32 Ci = int32(FMath::FloorToDouble(Px / C)), Cj = int32(FMath::FloorToDouble(Pz / C));
 	const double Cr = C * 0.71;
+	// Unreal-only: do not upload instances already collapsed by FLORA_WPO. Keep one
+	// refill step outside its fade so approaching plants enter while still invisible.
+	// The distance comparison below is valid for the authored, level unit-scale patches.
+	// Preserve the original fill for any future tilted/scaled patch.
+	const FS47WebNode* GroupNode = Web.IsValid() ? Web->Node(Group) : nullptr;
+	const USceneComponent* GroupComp = GroupNode ? GroupNode->Comp.Get() : nullptr;
+	const bool bTrimInvisible = GroupComp && GroupComp->GetComponentScale().Equals(FVector::OneVector, 1e-5) &&
+		GroupComp->GetUpVector().Equals(FVector::UpVector, 1e-5);
 	bPending = false;
 	const TArray<FOff>& OFF = OFFSETS();
 	// a cell is in front when its centre is within the cone, widened by the cell's own size: once
@@ -472,7 +480,7 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 		const bool bFar = !bLow && K.bFar;
 		// Low: none of the far ring, and nearer
 		const double Reach = bLow ? (K.bFar ? K.Far[0] : K.Reach) * LOW_REACH : K.Reach;
-		int32 N = 0;
+		int32 N = 0, Candidates = 0, Omitted = 0;
 		TArray<float> M, Cc;
 		if (Keep > 0)
 		{
@@ -497,15 +505,33 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 				const double Share = bFar && Of.Dist > K.Far[0] ? 1 + (K.Far[1] - 1) * FMath::Min(1.0, (Of.Dist - K.Far[0]) / (3 * C)) : 1;
 				int32 Mn = Cell0->N;
 				if (Keep * Share < 1) { Mn = 0; while (Mn < Cell0->N && Cell0->Rank[Mn] < Keep * Share) Mn++; }
-				Mn = FMath::Min(Mn, K.Cap - N);
-				if (Mn <= 0) continue;
-				M.Append(Cell0->M.GetData(), Mn * 16);
-				Cc.Append(Cell0->C.GetData(), Mn * 3);
-				N += Mn;
+				for (int32 Instance = 0; Instance < Mn && N < K.Cap; ++Instance)
+				{
+					const float* Matrix = Cell0->M.GetData() + Instance * 16;
+					++Candidates;
+					if (bTrimInvisible && Layers.IsValidIndex(Ki) && Layers[Ki].Mid.IsValid())
+					{
+						// Exact FLORA_WPO size/reach expression; cached procedural cells stay intact.
+						const double Scale = FMath::Sqrt(FMath::Square(double(Matrix[0])) +
+							FMath::Square(double(Matrix[1])) + FMath::Square(double(Matrix[2])));
+						const double VisibleReach = Reach * FMath::Clamp(.05 + .75 * Scale, .3, 1.0) + STEP;
+						if (FMath::Square(double(Matrix[12]) - Px) + FMath::Square(double(Matrix[14]) - Pz) >
+							FMath::Square(VisibleReach)) { ++Omitted; continue; }
+					}
+					M.Append(Matrix, 16);
+					Cc.Append(Cell0->C.GetData() + Instance * 3, 3);
+					++N;
+				}
 				if (N >= K.Cap) break;
 			}
 		}
-		if (Layers.IsValidIndex(Ki)) Layers[Ki].Reach = Reach;
+		if (Layers.IsValidIndex(Ki))
+		{
+			Layers[Ki].Reach = Reach;
+			Layers[Ki].Candidates = Candidates;
+			Layers[Ki].Omitted = Omitted;
+			Layers[Ki].EndCull = bTrimInvisible ? FMath::CeilToInt((Reach + STEP + 4) * 100) : 0;
+		}
 		Put(Ki, M, Cc, N);
 	}
 	// forget the cells far behind
@@ -526,6 +552,19 @@ TMap<ES47FloraKind, int32> FS47Flora::Drawn() const
 	TMap<ES47FloraKind, int32> O;
 	for (int32 Ki = 0; Ki < Layers.Num(); ++Ki) if (Layers[Ki].N > 0) O.Add(KINDS[Ki].Id, Layers[Ki].N);
 	return O;
+}
+
+void FS47Flora::AuditDrawCounts(TArray<FString>& Lines) const
+{
+	for (int32 Ki = 0; Ki < Layers.Num(); ++Ki)
+	{
+		const FLayer& L = Layers[Ki];
+		const UInstancedStaticMeshComponent* Mesh = L.Mesh.Get();
+		int32 Start = 0, End = 0;
+		if (Mesh) Mesh->GetCullDistances(Start, End);
+		Lines.Add(FString::Printf(TEXT("flora %s kind=%d shown=%d eligible_examined=%d invisible_omitted=%d uploaded=%d actual_instances=%d cull_cm=%d,%d"),
+			*Spec.Name, Ki, Shown(), L.Candidates, L.Omitted, L.N, Mesh ? Mesh->GetInstanceCount() : 0, Start, End));
+	}
 }
 
 // ---------- Unreal ----------
@@ -602,6 +641,10 @@ void FS47Flora::Put(int32 Ki, const TArray<float>& M, const TArray<float>& Cc, i
 	L.N = N;
 	UInstancedStaticMeshComponent* I = L.Mesh.Get();
 	if (!I) return;
+	// FLORA_WPO has fully collapsed every kind by Reach. Native culling also
+	// discards its remaining vertex work outside that radius (plus refill/bounds margin).
+	const int32 EndCull = L.EndCull;
+	if (I->InstanceEndCullDistance != EndCull) I->SetCullDistances(EndCull, EndCull);
 	if (UMaterialInstanceDynamic* D = L.Mid.Get()) D->SetScalarParameterValue(TEXT("Reach"), float(L.Reach));
 	TArray<FTransform> T;
 	TArray<float> Cd;
