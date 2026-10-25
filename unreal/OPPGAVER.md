@@ -1,5 +1,9 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## T02 runtime levert, 25. oktober 2026
+
+Codex fullførte den sammenhengende kontor-/Caliche-/returreisen på `codex/t02-field-followup`, kilde `5b9fcb3c`, PR162 flettet i `d152fb6d`. Avgrensede hjelpere leverte kontor/geometri, feltcontroller, foto/test og uavhengige kode-, bilde-, aksept- og installerreviews. Alle UE-/pakke-/spilljobber ble kjørt sekvensielt. 15 pakkede prøver, 23 bundne akseptrapporter og 25 faktisk vurderte originaler består. Samme pakke er installert; 40 payloadfiler og 40 personlige Saved-filer er verifisert, installert standardstarter-smoke og canonical pruning består. Ingen øvrige forfatterdokumenter fra parallelt arbeid er tatt inn i denne runtime-leveransen. Se [T02_RUNTIME.md](T02_RUNTIME.md). VHS, nye forfatterfunn, stealth og menneskelig helnatt står åpne.
+
 ## Én sammenhengende natt, random, himmel og Dale, 25.10.2026
 
 Codex har flettet de tidligere rundene til13 scenarioer i [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md). Tre lesende hjelpere kartla random/himmel, hentet gamle kontorideer og kritiserte årsakskjeden. Tidligere løsningskort er bevart i sekundært oppslagsverk med innholdshash, ikke slettet. Alle randomfamilier består; nye faste himmellys øker fra én overflygning til flere samtidige grupper. Dales vedlegg har sju eksisterende dokumenter og seks nye frivillige engelske lesetekster, med korrekt uprodusert VHS-status. Kritikk rettet konkret overgang SC04→SC05, nytt arrayservicevedlegg i stedet for feil bruk av T02-indeksen, historisk krusnøkkel og Wards pronomen. S.1 tilS.9 står åpne for senere produksjon og prøve. Bare dokumentarbeid; ingen endring av separat T02-/runtime-/kildepakke, bygg eller installasjon.

@@ -1,5 +1,15 @@
 # Minne for unreal/
 
+## T02 levert og installert, 25. oktober 2026
+
+Kilde `5b9fcb3c` er flettet i PR162 (`d152fb6d`) og samme Linux-pakke er installert via standardstarteren. Den fysiske serviceskuffen, egen Operations-nøkkel, dør/terskel, D02-papirer og feltmappe leder til T02s faktiske normalreferanse, ståsted, fire kontroller, eget originalfoto og én SARO-arkivering. Uavklart utfall beholder hovedruten. Kontoret krever ingen sett VHS; STATION 01, Nora, K3, C og byforsyning beholder sine roller.
+
+15 pakkede kjøringer består: 1 437 selvtester, T02 High/Low 65 API/15 diskrestores hver, uavklart 30/6, eksisterende T01 53/19, sammenhengende native tur 41 kontroller/fire lagerlesere uten mellomlast, fokuserte kapittelprøver og fem vanlige ferske Continue. Native målte 932,2 m ut, 966,7 m retur og 124,1 m gange. De fire native lagerleserne er Writer/fresh-reader, uten Flow-omlasting. 23 akseptrapporter og 25 faktisk sette originalbilder er hashbundet. Endelig binær er `7531698e9695c595ddba2868ab37e2f839c16a82d7e47b77e42f8c2cfdbaa86b`. Ingen CI-jobber var rapportert for eksakt PR-head; dette er lokal aksept.
+
+Arkivkortets originale tittel, stempel og side gjenopprettes fra faktisk historikk. Manglende fotofil gir ikke bekreftet credit, erstatter ikke originalbildet og tillater ikke ny arkivering av samme forsøk. 40 installerte payloadfiler og alle 40 personlige Saved-filer (57 noder) er etterkontrollert uendret også etter installert smoke og pruning. Gjeldende T02, full T01 R2-backup og T01 R2-kandidat er de tre komplette testpakkene som beholdes. To eldre payloads er pensjonert, 7 621 635 760 logiske bytes; kilder/Saved/Engine/logger/bilder/bevis er bevart.
+
+[T02_RUNTIME.md](T02_RUNTIME.md) og `/home/tom/scratch-bm/Signal47-t02-20261025` har bevis og grenser. Fersk Continue beviser normal last, bevarte kildestorer og scene/HUD, ikke en fersk minnedump eller sletting av tidligere positivt flagg. Foto identifiserer ståsted/utsnitt; mørke ledere og lampestatus avledes ikke fra print alene. Previewbildene er delvise sider. Original 72-sekunders VHS, nye forfatterfunn, samordnet helrute, skyggemann/stealth og menneskelig Roam/Xbox/lytting/fullnatt står fortsatt åpne.
+
 ## Sammenflettet hovedscenario, 25. oktober 2026
 
 - Nyeste bestilling: flett alle designrundene sammen, behold eksisterende randomhendelser, vis ett tidlig UFO-lys og flere etter hvert, og gjenbruk tidligere Dale-kontorideer med lesbare UFO-/aliendokumenter.

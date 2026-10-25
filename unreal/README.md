@@ -1,5 +1,9 @@
 # SIGNAL / 47 i Unreal
 
+## Nyeste leverte runtime: T02
+
+[T02_RUNTIME.md](T02_RUNTIME.md) beskriver det installerte kontoret med egen nøkkel/feltmappe og den faktiske T02-felt-/returreisen. Verifisert og uavklart arkivering, originalfoto, diskrestore og fem ferske Continue-prosesser er prøvd i samme pakkede kandidat. PR162 er flettet; standardstarteren bruker den testede pakken. Original 72-sekunders VHS, videre forfatterintegrasjon og menneskelig helnatt er fortsatt åpne.
+
 Nyeste hovedscenario: [én sammenhengende natt fra18:00 til Roswell Road](MISSION_FLOW_1800_ROSWELL.md). Tretten scenarioer fletter sammen eksisterende historie, aktiv kveld, tre Calichebesøk og ekstra arrayoppdrag. Alle eksisterende randomfamilier beholdes. Ett tidlig himmellys blir gradvis flere; [Dales kontor](DALE_OFFICE_DOCUMENTS.md) får seks nye frivillige lesedokumenter rundt den eksisterende feltmappen. Produksjonsoppgaver S.1 til S.9 står i [todo](todo.md). Dette er design/manusutkast for senere integrasjon.
 
 Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Videre spillarbeid gjelder desktoputgaven i Unreal. `web/` og Unity er historiske referanser. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
