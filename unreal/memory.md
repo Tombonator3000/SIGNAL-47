@@ -1,6 +1,6 @@
 # Minne for unreal/
 
-## T01 R2 levert, 2026-10-25 kl. 20:37 CET
+## T01 R2 levert, 25. oktober 2026
 
 - `codex/t01-service-route`, kilde `85aee475`, fra core `f60d30eb`. R2-pakken har binær `81af1808a19e89b805de8093a4863d9005345d24c613cb96039024e8dd710de9`, 40 payloadfiler og 1 839 frosne kildefiler. Alle 14 pakkede funksjonskjøringer og 11 faktisk gjennomgåtte originalbilder består på samme pakke. PR160 er flettet fra head `656b283d` i `d4a25411`, og samme R2 er installert. Alle 40 payloadfiler og 40 personlige Saved er kontrollert; installert smoke og etterkontroll etter pruning består. Ingen CI-jobber var rapportert for eksakt head.
 - Ny kveldssak gjør journal, faktisk kontroll og lampesammenligning før én fysisk SARO-filing. RX0 til1 er fri, RX1 til survey venter. Gamle/ukjente/no-version-saker får ingen ny gate. Credit valideres etter den aktuelle controller/routine. Etter filing/Continue vises faktisk neste RX-handling og notch-målet tømmes ved Survey.

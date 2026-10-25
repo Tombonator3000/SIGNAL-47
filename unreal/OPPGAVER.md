@@ -1,6 +1,6 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
-## T01 R2 levert, 2026-10-25 kl. 20:37 CET
+## T01 R2 levert, 25. oktober 2026
 
 Codex på `codex/t01-service-route`, kilde `85aee475`. Samme R2 består 14 pakkede kjøringer: 1 424 selvtester, 53 API/19 diskrestores, hel native felt-/returreise, sju ferske Continue, mat og fokuserte bilder. Elleve nye originalbilder er faktisk gjennomgått, inkludert alle tre rettede filed-rutinemål. R1s tre blanke mål er bevart som FAIL. PR160 er flettet fra kontrollert head i `d4a25411`; samme R2 er installert med 40 verifiserte payloadfiler og 40 uendrede personlige Saved. Installert smoke, Saved-etterkontroll og canonical pruning består. R2, R1 og full Q3-backup beholdes som tre komplette testpakker. Hjelpere har gjort uavhengig kilde-/installer-/bildegjennomgang, uten parallelle UE-jobber. Ingen nye assets/opptak. H2.1 samlet, T02/kontor/VHS/stealth og menneskelig Roam/Xbox/lyd/fullnatt står åpne. Se [T01_RUNTIME.md](T01_RUNTIME.md).
 
