@@ -330,11 +330,8 @@ void AS47Web::UpdateNativeFog()
 	LightingFog->SetVolumetricFogDistance(FMath::Lerp(14000.f, 120000.f, Caliche));
 }
 
-void AS47Web::UpdateNativeLighting()
+void AS47Web::SyncFloodLights()
 {
-	// The clock can keep an identical fog colour for hours. Position-dependent aerial
-	// perspective must still follow a drive into/out of Caliche during that interval.
-	UpdateNativeFog();
 	const FVector Camera = S47Three::ToThree(Eye);
 	TArray<FVector> Occupied;
 	for (FPoolLight& P : PoolLights)
@@ -371,6 +368,14 @@ void AS47Web::UpdateNativeLighting()
 		const float Reach = L->AttenuationRadius * 0.01f;
 		L->SetCastShadows(LightingQuality > 0 || Dist < Reach + 5.f);
 	}
+}
+
+void AS47Web::UpdateNativeLighting()
+{
+	// The clock can keep an identical fog colour for hours. Position-dependent aerial
+	// perspective must still follow a drive into/out of Caliche during that interval.
+	UpdateNativeFog();
+	SyncFloodLights();
 	UpdateFixtureLighting();
 	UpdateScreenLighting();
 	UpdateArrayLighting();

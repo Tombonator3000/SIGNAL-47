@@ -488,7 +488,7 @@ FString US47Chapter1::Objective() const
 	const FString& St = S.Stage;
 	if (St == TEXT("collect-camera")) return TEXT("FIELD KIT // COLLECT THE CAMERA BESIDE THE EAST DOOR");
 	if (St == TEXT("motor-log")) return TEXT("S-03 // READ THE MOTOR CABINET IN THE EAST SERVICE YARD");
-	if (St == TEXT("first-exposure")) return Touch() ? TEXT("S-03 APRON // CAMERA, THEN SHUTTER: EXPOSE THE CENTRAL ANTENNA") : TEXT("S-03 APRON // C: CAMERA / SPACE: EXPOSE THE CENTRAL ANTENNA");
+	if (St == TEXT("first-exposure")) return Touch() ? TEXT("S-03 APRON // CAMERA, THEN SHUTTER: EXPOSE THE CENTRAL ANTENNA") : FString::Printf(TEXT("S-03 APRON // %s: CAMERA / %s: EXPOSE THE CENTRAL ANTENNA"), *S47Keys::Said(TEXT("camera")).ToUpper(), *S47Keys::Said(TEXT("shutter")).ToUpper());
 	if (St == TEXT("develop-first") || St == TEXT("develop-second"))
 	{
 		const int32 Dev = St == TEXT("develop-first") ? S.Dev1 : S.Dev2;
@@ -509,7 +509,7 @@ FString US47Chapter1::Objective() const
 	}
 	if (St == TEXT("choose-control")) return TEXT("B-12 // FOLLOW THE EAST WALK NORTH TO THE LOCAL REFERENCE CONTROL");
 	if (St == TEXT("observe-control")) return bSettled ? TEXT("B-12 // NOTE THE DIRECT OBSERVATION AFTER THE VANE SETTLES") : TEXT("B-12 // WAIT FOR THE REFERENCE VANE TO SETTLE");
-	if (St == TEXT("second-exposure")) return Touch() ? TEXT("B-12 // FROM THE SIGHT LINE MARK: CAMERA, SHUTTER") : TEXT("B-12 // C: CAMERA / SPACE: RECORD THE CONTROLLED REFERENCE");
+	if (St == TEXT("second-exposure")) return Touch() ? TEXT("B-12 // FROM THE SIGHT LINE MARK: CAMERA, SHUTTER") : FString::Printf(TEXT("B-12 // %s: CAMERA / %s: RECORD THE CONTROLLED REFERENCE"), *S47Keys::Said(TEXT("camera")).ToUpper(), *S47Keys::Said(TEXT("shutter")).ToUpper());
 	if (St == TEXT("compare-exposures")) return S.Mark2 ? TEXT("CASE BOARD // COMPARE THE PRINTS WITH THE CONTROL OBSERVATION AND RECORD THE FINDING") : TEXT("TWO PRINTS // MARK THE SAME REFERENCE IN FRAME 02 AT THE ARCHIVE BENCH");
 	if (St == TEXT("file-report")) return LabName + TEXT(" // FILE THE TWO-EXPOSURE REPORT AT THE RECORDS DESK");
 	if (St == TEXT("complete")) return TEXT("LOCAL CASE FILED // THE SECOND EXPOSURE");
@@ -1686,6 +1686,26 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 	bool bOk = US47FieldCamera::SelfTest(Lines);
 	bOk &= S47Drawings::SelfTest(Lines);
 	auto Expect = [&](bool bCond, const FString& What) { Lines.Add(FString::Printf(TEXT("%s chapter one: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), *What)); bOk &= bCond; };
+	{
+		const S47J::FObj OriginalKeys = S47Keys::Save();
+		US47Chapter1* C = NewObject<US47Chapter1>();
+		S47Keys::ResetAll();
+		C->S.Stage = TEXT("first-exposure");
+		const FString FirstBefore = C->Objective();
+		C->S.Stage = TEXT("second-exposure");
+		const FString SecondBefore = C->Objective();
+		const FString CameraBefore = S47Keys::Said(TEXT("camera")).ToUpper(), ShutterBefore = S47Keys::Said(TEXT("shutter")).ToUpper();
+		Expect(FirstBefore.Contains(CameraBefore + TEXT(": CAMERA")) && FirstBefore.Contains(ShutterBefore + TEXT(": EXPOSE")) && SecondBefore.Contains(ShutterBefore + TEXT(": RECORD")), TEXT("both exposure objectives use the active input's camera and shutter names"));
+		S47Keys::Bind(TEXT("camera"), 0, EKeys::K); S47Keys::Bind(TEXT("shutter"), 0, EKeys::G);
+		const FString CameraAfter = S47Keys::Said(TEXT("camera")).ToUpper(), ShutterAfter = S47Keys::Said(TEXT("shutter")).ToUpper();
+		C->S.Stage = TEXT("first-exposure");
+		const FString FirstAfter = C->Objective();
+		C->S.Stage = TEXT("second-exposure");
+		const FString SecondAfter = C->Objective();
+		Expect(FirstAfter.Contains(CameraAfter + TEXT(": CAMERA")) && FirstAfter.Contains(ShutterAfter + TEXT(": EXPOSE")) && SecondAfter.Contains(ShutterAfter + TEXT(": RECORD"))
+			&& (CameraAfter == CameraBefore || FirstAfter != FirstBefore) && (ShutterAfter == ShutterBefore || SecondAfter != SecondBefore), TEXT("both exposure objectives refresh after rebinding while fixed controller aliases remain usable"));
+		S47Keys::Load(OriginalKeys);
+	}
 
 	// the S-03 feed and the frame's centre (values from three, Dish.ts at az 26, el 32)
 	{

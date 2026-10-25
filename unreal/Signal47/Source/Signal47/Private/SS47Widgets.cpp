@@ -144,7 +144,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		.ColorAndOpacity_Lambda([this] { const float K = FMath::SmoothStep(0.f, 1.f, ObjectiveIn); return FLinearColor(1, 1, 1, 0.2f + 0.8f * K); })
 		.Visibility_Lambda([this] { return ObjectiveText.IsEmpty() || Vf.bOn || !Playing() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
 		[
-			Shadowed(SNew(SBox).MaxDesiredWidth(P(520))
+			Shadowed(SNew(SBox).MinDesiredWidth(P(400)).MaxDesiredWidth(P(520))
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()

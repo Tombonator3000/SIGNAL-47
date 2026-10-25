@@ -271,15 +271,17 @@ void FS47DriveController::Pose(double Dt, double WheelAngle, bool bSettle)
 		Truck->Update(Dt, Speed, WheelAngle);
 	}
 	// camera: the eye, a little engine shake and road vibration
-	const double Eng = Rpm > 50 ? (0.0004 + 0.0008 * FMath::Min(1.0, Rpm / 3000)) * (0.5 + Load) : 0;
-	const double Road = (Rough * 0.01 + 0.001) * Fast;
+	const double Eng = bCameraMotion && Rpm > 50 ? (0.0004 + 0.0008 * FMath::Min(1.0, Rpm / 3000)) * (0.5 + Load) : 0;
+	const double Road = bCameraMotion ? (Rough * 0.01 + 0.001) * Fast : 0;
 	FVector V = Truck ? Truck->DriverEye : FVector(-0.42, 1.48, 0.2);
 	V.Y += FMath::Sin(Tt * 47.3) * Eng + FMath::Sin(Tt * 17.9 + 0.7) * Road * 0.5;
 	V.X += FMath::Sin(Tt * 23.1 + 2.1) * Road * 0.3;
-	CamPos = Qb.RotateVector(V) + FVector(Pos.X, B.Y, Pos.Z);
+	// Keep the physical truck on its springs; the comfort view follows the ground without sway.
+	const FQuat EyeBody = bCameraMotion ? Qb : S47Three::Euler(0, Heading, 0, TEXT("YXZ"));
+	CamPos = EyeBody.RotateVector(V) + FVector(Pos.X, bCameraMotion ? B.Y : G.Y, Pos.Z);
 	const double Jitter = (FMath::Sin(Tt * 19.3) * 0.6 + FMath::Sin(Tt * 29.9 + 1.7) * 0.4) * Road * 0.5;
 	const FQuat Qh = S47Three::Euler(Pitch + Jitter, Yaw, 0, TEXT("YXZ"));
-	CamQuat = Qb * Qh;
+	CamQuat = EyeBody * Qh;
 }
 
 // ---------- the self tests ----------
@@ -292,6 +294,20 @@ bool S47Drive::SelfTest(TArray<FString>& Lines)
 	auto Near3 = [&Near](const FVector& A, const FVector& B, double Tol) { return Near(A.X, B.X, Tol) && Near(A.Y, B.Y, Tol) && Near(A.Z, B.Z, Tol); };
 	auto DinerOrigin = [] { const S47RoadShape::FDinerAt& D = S47RoadShape::DINER(); return FVector(8000 + D.X, D.Y + 0.1, D.Z); };
 	Check(Near(FS47DriveController::LockAt(0, 1), 32 * UE_DOUBLE_PI / 180), TEXT("full lock at a standstill is 32 degrees"));
+	{
+		struct FComfortRoad : IS47DriveArea
+		{
+			virtual FS47Surface Surface(double, double) const override { return { ES47SurfaceKind::Gravel, 1, 30, .8 }; }
+		} A;
+		FS47DriveController Moving(nullptr, &A), Calm(nullptr, &A);
+		Calm.bCameraMotion = false;
+		Moving.Place(FVector::ZeroVector, 0); Calm.Place(FVector::ZeroVector, 0);
+		for (int32 I = 0; I < 120; ++I) { Moving.Update(1. / 60., { .12, 1 }, FVector2D::ZeroVector); Calm.Update(1. / 60., { .12, 1 }, FVector2D::ZeroVector); }
+		const FQuat LevelBody = S47Three::Euler(0, Calm.Heading, 0, TEXT("YXZ"));
+		const FVector ExpectedEye = LevelBody.RotateVector(FVector(-.42, 1.48, .2)) + Calm.Pos;
+		Check(Near3(Moving.Pos, Calm.Pos, 1e-12) && Near(Moving.Speed, Calm.Speed) && Near(Moving.Heading, Calm.Heading), TEXT("camera comfort preserves the vehicle's motion and handling"));
+		Check(Near3(Calm.CamPos, ExpectedEye, 1e-9) && Calm.CamQuat.Equals(LevelBody * S47Three::Euler(Calm.Look().Y, Calm.Look().X, 0, TEXT("YXZ")), 1e-9), TEXT("comfort camera omits suspension sway, road vibration and engine shake"));
+	}
 	{
 		// SteerFor is the inverse of the step: the curvature it asks for is the curvature driven
 		FS47OldRoad A(FVector(8000, 0, 0));

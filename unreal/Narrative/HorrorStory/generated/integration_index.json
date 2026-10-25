@@ -1,0 +1,206 @@
+{
+  "pack_id": "signal47_horror_story_h1",
+  "status": "authored_not_integrated",
+  "note_nb": "Lesbar adapterindeks. Ingen runtime-loader eller kapittel-/lagringsendring er koblet inn.",
+  "missions": [
+    {
+      "id": "H01",
+      "scene_ids": [
+        "H01_BRIEF",
+        "H01_CHECK",
+        "H01_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "EV_HANDOVER",
+        "EV_SERVICE_LOG",
+        "EV_RADIO_SCHEDULE",
+        "N01"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Evening.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter1.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47World.cpp"
+      ]
+    },
+    {
+      "id": "H02",
+      "scene_ids": [
+        "H02_BRIEF",
+        "H02_CHECK",
+        "H02_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "T01",
+        "EV_TRAFO_CHECK",
+        "EV_SERVICE_LOG"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Anomaly.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47FreeModels.cpp"
+      ]
+    },
+    {
+      "id": "H03",
+      "scene_ids": [
+        "H03_BRIEF",
+        "H03_CHECK",
+        "H03_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "S-03",
+        "B-12",
+        "FRAME 01",
+        "FRAME 02",
+        "P01",
+        "P02",
+        "P03"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter1.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47FieldCamera.cpp"
+      ]
+    },
+    {
+      "id": "H04",
+      "scene_ids": [
+        "H04_BRIEF",
+        "H04_CHECK",
+        "H04_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "EV_DALE_INDEX",
+        "EV_DALE_NOTE",
+        "VHS_DALE_FIELD_01",
+        "E06",
+        "E07",
+        "E08",
+        "P04",
+        "P05"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter2.cpp",
+        "unreal/Narrative/EveningShift/modules/office.json",
+        "unreal/Narrative/EveningShift/modules/dale.json"
+      ]
+    },
+    {
+      "id": "H05",
+      "scene_ids": [
+        "H05_BRIEF",
+        "H05_CHECK",
+        "H05_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "E09A",
+        "E10",
+        "FRAME 03",
+        "FRAME 04",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "T02",
+        "EV_DALE_NOTE"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter3.cpp",
+        "unreal/Narrative/EveningShift/modules/field.json"
+      ]
+    },
+    {
+      "id": "H06",
+      "scene_ids": [
+        "H06_BRIEF",
+        "H06_CHECK",
+        "H06_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "E11",
+        "E12",
+        "E13",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter4.cpp"
+      ]
+    },
+    {
+      "id": "H07",
+      "scene_ids": [
+        "H07_BRIEF",
+        "H07_CHECK",
+        "H07_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "EV_DALE_NOTE",
+        "E11",
+        "P12"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Walker.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47World.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Night.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Curve.cpp"
+      ]
+    },
+    {
+      "id": "H08",
+      "scene_ids": [
+        "H08_BRIEF",
+        "H08_CHECK",
+        "H08_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "EV_RADIO_SCHEDULE",
+        "E11",
+        "P12"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47SaroDark.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Ops.cpp"
+      ]
+    },
+    {
+      "id": "H09",
+      "scene_ids": [
+        "H09_BRIEF",
+        "H09_CHECK",
+        "H09_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "E09A",
+        "E14",
+        "E15",
+        "P13",
+        "E11"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Drawings.cpp",
+        "unreal/Signal47/Source/Signal47/Public/S47OldRoadLayout.h"
+      ]
+    },
+    {
+      "id": "H10",
+      "scene_ids": [
+        "H10_BRIEF",
+        "H10_CHECK",
+        "H10_INCOMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "P13",
+        "E11",
+        "E14",
+        "photo1947"
+      ],
+      "source_files": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter6.cpp",
+        "unreal/Signal47/Source/Signal47/Private/SS47Ending.cpp",
+        "unreal/Signal47/Source/Signal47/Public/S47OldRoad.h"
+      ]
+    }
+  ]
+}

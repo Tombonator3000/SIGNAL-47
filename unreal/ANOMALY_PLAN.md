@@ -2,6 +2,8 @@
 
 Dato: 23. oktober 2026. Oppdatert med innkjøring før skiftet, Dale med Kinski-stemme, hemmelig kontor, trafostasjon og bedre bybygninger. Gjelder bare Unreal-versjonen.
 
+Videre retning 25. oktober: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md) samler den nye gjennomgangen av historie, oppdrag og psychological hide-and-seek / stealth horror, med gradvis invasjon og SARO-beleiring. Planen er lagt til senere implementering i [todo.md](todo.md), H1 til H6. Del 13 nedenfor er fortsatt detaljgrunnlaget for skyggemenn. Eldre formuleringer om foreslått 18:00-start/00:13-hendelse er historikk; gjeldende implementerte tider står i [EVENING_TIMELINE.md](EVENING_TIMELINE.md). Det nye planarbeidet endrer ingen runtime eller eksisterende bevis.
+
 Tom har sluttet seg til retningen med aktiv etterprøving, en nyttigere by og gradvis fremmed tilstedeværelse. Detaljene nedenfor er anbefalt design og rekkefølge for gjennomføring. Åpningen/tidslinjen og første N01/N02/A02/P01-pilot er siden implementert; [ANOMALY_RUNTIME.md](ANOMALY_RUNTIME.md) gir gjeldende kilde-, pakke- og teststatus. Senere plansteg gjenstår. Spillet skal gi spilleren stadig bedre forståelse av hvordan et avvik kan undersøkes, samtidig som det blir vanskeligere å føle seg trygg på hva som observerer dem.
 
 Tom har valgt at skiftet starter 18:00 søndag 13. april ved ankomst til SARO. Før dette får spilleren en rolig, spillbar kjøretur gjennom byen med lystig radiomusikk og valgfritt matstopp i dineren. Dale er kollegaen som overleverer skiftet på telefon og senere kan nås på telefon eller tjenesteradio/walkie, med prosjektets Kinski-stemme. Han vises aldri fysisk. Nøkkelen til kontoret hans og hans private UFO-undersøkelser blir en del av etterforskningen.

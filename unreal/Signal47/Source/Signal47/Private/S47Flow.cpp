@@ -33,6 +33,7 @@
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Keys.h"
+#include "S47Kit.h"
 #include "S47Album.h"
 #include "S47Flashlight.h"
 #include "S47Main.h"
@@ -77,6 +78,49 @@ using EMode = US47Main::EMode;
 
 namespace
 {
+	class SS47LeaveWarning : public SCompoundWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47LeaveWarning) : _UI(nullptr) {}
+			SLATE_ARGUMENT(US47UI*, UI)
+			SLATE_ARGUMENT(FString, Reason)
+			SLATE_ARGUMENT(FString, ReturnTo)
+			SLATE_ARGUMENT(TFunction<void()>, OnCancel)
+			SLATE_ARGUMENT(TFunction<void()>, OnLeave)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A)
+		{
+			Cancel = A._OnCancel; Leave = A._OnLeave;
+			ChildSlot[S47Kit::Shell(A._UI, TEXT("LEAVE THIS NIGHT?"), S47Kit::Col({
+				S47Kit::Text(TEXT("Your current progress could not be saved. ") + A._Reason, -1),
+				S47Kit::Text(A._ReturnTo),
+				S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this] { return FString(Selected == 0 ? TEXT("> BACK TO PAUSE") : TEXT("BACK TO PAUSE")); }), [this] { const auto Fn = Cancel; if (Fn) Fn(); }, true),
+				S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this] { return FString(Selected == 1 ? TEXT("> QUIT WITHOUT SAVING") : TEXT("QUIT WITHOUT SAVING")); }), [this] { const auto Fn = Leave; if (Fn) Fn(); }),
+				S47Kit::Small(TEXT("UP / DOWN: CHOOSE   ENTER / A: CONFIRM   ESC / B: BACK"))
+			}))];
+		}
+		virtual bool SupportsKeyboardFocus() const override { return true; }
+		virtual void Tick(const FGeometry& G, const double InCurrentTime, const float InDeltaTime) override
+		{
+			SCompoundWidget::Tick(G, InCurrentTime, InDeltaTime);
+			S47Theme::KeepFocus(SharedThis(this));
+		}
+		virtual FReply OnKeyDown(const FGeometry&, const FKeyEvent& E) override
+		{
+			const FKey K = E.GetKey();
+			if (K == EKeys::Up || K == EKeys::Down || K == EKeys::Gamepad_DPad_Up || K == EKeys::Gamepad_DPad_Down) { Selected = 1 - Selected; return FReply::Handled(); }
+			TFunction<void()> Fn;
+			if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right) Fn = Cancel;
+			else if (K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom) Fn = Selected ? Leave : Cancel;
+			else return FReply::Unhandled();
+			if (Fn) Fn();
+			return FReply::Handled();
+		}
+	private:
+		int32 Selected = 0;
+		TFunction<void()> Cancel, Leave;
+	};
+
 	FString StorePath() { return FPaths::ProjectSavedDir() / TEXT("SaveGames") / TEXT("settings.json"); }
 
 	// a test flag on the command line: any -S47... but the picture (a setting) and -S47Title
@@ -207,6 +251,7 @@ void US47Flow::Init(US47Main* InM)
 	if (M->UI) M->UI->bLargeText = bLargeText;
 	bCalmFlash = S47J::Bool(Store, TEXT("calmFlash"), false);
 	bStillShots = S47J::Bool(Store, TEXT("stillShots"), false);
+	bHeadMotion = S47J::Bool(Store, TEXT("headMotion"), true);
 	// An explicit saved look survives quality changes. CLI overrides affect this run only.
 	const FString Chosen = S47J::Str(Store, TEXT("picture"));
 	PictureStrength = S47Picture::Strength(float(S47J::Num(Store, TEXT("pictureStrength"), 1)));
@@ -844,7 +889,7 @@ void US47Flow::OpenPause()
 	};
 	FS47PauseOpts O = PauseStatus(Settings());
 	O.OnResume = Resume;
-	O.OnTitle = [this, Resume] { Resume(); AutosaveNow(); ToTitle(); };
+	O.OnTitle = [this, Resume] { RequestTitle(Resume); };
 	// the case menus sit on top of the pause menu and go back to it
 	O.OnSave = [this]
 	{
@@ -865,6 +910,35 @@ void US47Flow::OpenPause()
 	};
 	M->UI->Pause(O);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: pause opened"));
+}
+
+void US47Flow::RequestTitle(TFunction<void()> Resume)
+{
+	FString Reason;
+	if (AutosaveNow(&Reason)) { if (Resume) Resume(); ToTitle(); return; }
+	// Unreal: leaving an unsafe story state or a failed disk write requires an informed choice.
+	const TOptional<FS47SaveMeta> Last = CaseId ? Saves.Latest(CaseId) : TOptional<FS47SaveMeta>();
+	FString ReturnTo = Last
+		? FString::Printf(TEXT("Continue returns to %s, %s (%s). Progress since that save must be repeated."), *Last->Chapter, *Last->Place, *Last->Clock)
+		: FString(TEXT("This night has no saved checkpoint. Leaving now loses this night's progress."));
+	if (M->Story && M->Story->ChapterKey == TEXT("ch6")) ReturnTo += TEXT(" The last drive and the ending must be played again from the diner.");
+	UE_LOG(LogS47Flow, Display, TEXT("S47: quit warning: %s / %s"), *Reason, *ReturnTo);
+	TWeakObjectPtr<US47Flow> Self = this;
+	const TSharedRef<bool> Leaving = MakeShared<bool>(false);
+	M->UI->Open(SNew(SS47LeaveWarning).UI(M->UI).Reason(Reason).ReturnTo(ReturnTo)
+		.OnCancel([Self] { if (Self.IsValid()) Self->M->UI->Close(); })
+		.OnLeave([Self, Leaving, Resume]
+		{
+			if (!Self.IsValid()) return;
+			*Leaving = true;
+			if (Resume) Resume();
+			Self->ToTitle();
+		}), [Self, Leaving]
+	{
+		if (!Self.IsValid() || *Leaving) return;
+		Self->M->bPausedByMenu = false;
+		Self->OpenPause();
+	});
 }
 
 FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
@@ -933,6 +1007,8 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnCalmFlash = [this](bool V) { bCalmFlash = V; ApplyPicture(Picture, false); StoreSet(TEXT("calmFlash"), V); };
 	O.bStillShots = bStillShots;
 	O.OnStillShots = [this](bool V) { bStillShots = V; ApplyPicture(Picture, false); StoreSet(TEXT("stillShots"), V); };
+	O.bHeadMotion = bHeadMotion;
+	O.OnHeadMotion = [this](bool V) { bHeadMotion = V; ApplyLook(); StoreSet(TEXT("headMotion"), V); };
 	O.bAbduct = bAbductOn;
 	O.OnAbduct = [this](bool V) { bAbductOn = V; StoreSet(TEXT("abductions"), V); };
 	O.Brightness = Brightness;
@@ -988,6 +1064,7 @@ void US47Flow::ApplyLook()
 	if (!M->Player) return;
 	M->Player->Sensitivity = Sens;
 	M->Player->bInvertY = bInvertY;
+	M->Player->bHeadMotion = bHeadMotion;
 	M->Player->PadLookSpeed = PadLookSpeed; M->Player->bPadInvertY = bPadInvertY;
 	M->Player->Fov = BaseFov;
 }
@@ -1063,12 +1140,17 @@ void US47Flow::FlushAutosave()
 	if (!WriteSave(TEXT("auto"), -1, Err)) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
 }
 
-void US47Flow::AutosaveNow()
+bool US47Flow::AutosaveNow(FString* OutError)
 {
 	// right now, before leaving
-	if (!SaveBlock().IsEmpty()) return;
-	bPendingAuto = true;
-	FlushAutosave();
+	const FString Block = SaveBlock();
+	if (!Block.IsEmpty()) { if (OutError) *OutError = Block; return false; }
+	bPendingAuto = false;
+	FString Err;
+	const bool bSaved = WriteSave(TEXT("auto"), -1, Err).IsSet();
+	if (OutError) *OutError = Err;
+	else if (!bSaved && M->UI) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
+	return bSaved;
 }
 
 S47J::FObj US47Flow::GameState()
@@ -1507,6 +1589,19 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 		bOk &= bPass;
 	};
 	// SaveMenu.ts played()
+	{
+		int32 Cancelled = 0, Left = 0;
+		const TSharedRef<SS47LeaveWarning> Warning = SNew(SS47LeaveWarning).Reason(TEXT("Not on the road.")).ReturnTo(TEXT("Continue returns to the diner."))
+			.OnCancel([&] { ++Cancelled; }).OnLeave([&] { ++Left; });
+		auto Key = [&](const FKey& K) { Warning->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
+		Key(EKeys::Enter);
+		Check(TEXT("quit warning defaults to keeping the night open"), Cancelled == 1 && Left == 0);
+		Key(EKeys::Down); Key(EKeys::Enter);
+		Check(TEXT("quit warning requires choosing the unsaved exit"), Cancelled == 1 && Left == 1);
+		Key(EKeys::Gamepad_FaceButton_Right);
+		Key(EKeys::Gamepad_DPad_Up); Key(EKeys::Gamepad_FaceButton_Bottom);
+		Check(TEXT("quit warning supports Xbox cancellation and confirmation"), Cancelled == 3 && Left == 1);
+	}
 	Check(TEXT("played 0"), S47Css::Played(0) == TEXT("under a minute"));
 	Check(TEXT("played 59"), S47Css::Played(59) == TEXT("under a minute"));
 	Check(TEXT("played 60"), S47Css::Played(60) == TEXT("1 min"));
@@ -1540,6 +1635,17 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 	US47Main* Main = NewObject<US47Main>(); US47Flow* Flow = NewObject<US47Flow>(); Flow->M = Main;
 	// Test the real apply path without a world or any writes to the user's settings file.
 	Flow->Store = S47J::New();
+	Check(TEXT("old settings default to head motion enabled"), S47J::Bool(Flow->Store, TEXT("headMotion"), true));
+	for (const bool bMotion : { false, true })
+	{
+		const S47J::FObj MotionSettings = S47J::New();
+		S47J::Set(MotionSettings, TEXT("headMotion"), bMotion);
+		const S47J::FObj LoadedMotion = S47J::Read(S47J::Write(MotionSettings));
+		Flow->bHeadMotion = S47J::Bool(LoadedMotion, TEXT("headMotion"), true);
+		const FS47PauseOpts MotionOpts = Flow->Settings();
+		Check(bMotion ? TEXT("head motion on survives settings JSON and pause options") : TEXT("head motion off survives settings JSON and pause options"),
+			Flow->bHeadMotion == bMotion && MotionOpts.bHeadMotion == bMotion && bool(MotionOpts.OnHeadMotion));
+	}
 	S47J::Set(Flow->Store, TEXT("picture"), TEXT("off"));
 	const FString SettingsBefore = S47J::Write(Flow->Store);
 	Flow->ApplyPicture(TEXT("  CARPENTER  "), false);

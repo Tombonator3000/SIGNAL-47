@@ -53,6 +53,7 @@ struct FS47PauseOpts
 	bool bLargeText = false; TFunction<void(bool)> OnLargeText;
 	bool bCalmFlash = false; TFunction<void(bool)> OnCalmFlash;
 	bool bStillShots = false; TFunction<void(bool)> OnStillShots;
+	bool bHeadMotion = true; TFunction<void(bool)> OnHeadMotion;
 	bool bAbduct = true; TFunction<void(bool)> OnAbduct; // unset: not offered
 	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
 	// bound in Settings > Controls (S47Keys; the store keeps them)

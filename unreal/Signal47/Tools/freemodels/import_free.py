@@ -11,7 +11,12 @@
 # S47_FREE_ONLY=name,name imports only those models (the manifest keeps the others' rows).
 import json
 import os
+from pathlib import Path
+import sys
 import unreal
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from material_usage import ensure_mesh_material_usage
 
 eal = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -87,6 +92,10 @@ def finish_mesh(sm, nanite, full_uv=False):
 		bs = lib.get_lod_build_settings(sm, 0)
 		bs.set_editor_property('use_full_precision_u_vs', True)
 		lib.set_lod_build_settings(sm, 0, bs)
+	# Native rows/scatter draw these models through ISM; Nanite adds a second usage.
+	# Compile before cook, which cannot repair missing permutations at runtime.
+	usage = ensure_mesh_material_usage(sm)
+	assert all(row["after"] for row in usage), usage
 	eal.save_loaded_asset(sm)
 
 

@@ -470,7 +470,7 @@ FString US47Chapter4::Objective() const
 		return TEXT("ROOM 6 // ASK HER WHERE C WENT");
 	}
 	if (S.Stage == TEXT("leave")) return bRoom ? TEXT("ROOM 6 // THE ROAD SOUTH IS NEXT. LEAVE ROOM 6") : TEXT("SIERRA MOTOR COURT // THE ROAD SOUTH IS NEXT");
-	if (S.Stage == TEXT("complete")) return TEXT("ALL NIGHT // NEXT PART NOT YET PLAYABLE");
+	if (S.Stage == TEXT("complete")) return TEXT("MESA DINER // TAKE THE ROAD SOUTH AND CHECK THE SERVICE MAP");
 	return FString();
 }
 

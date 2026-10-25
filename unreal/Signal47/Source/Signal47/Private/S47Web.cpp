@@ -1,5 +1,6 @@
 #include "S47Web.h"
 #include "S47GraphicsReview.h"
+#include "S47RenderAudit.h"
 #include "S47Picture.h"
 #include "S47Startup.h"
 #include "S47Props.h"
@@ -375,13 +376,26 @@ bool AS47Web::Load()
 			M->SetRelativeTransform(MatToUE(N.Local));
 			if (SM) M->SetStaticMesh(SM);
 			bool bShader = false, bHidden = false;
+			// Three applies one Material to every geometry group. glTF imports those groups
+			// as separate slots, including the six faces of a BoxGeometry.
+			auto BindMaterial = [M, &N](int32 MaterialIndex, UMaterialInterface* Material)
+			{
+				if (N.Mats.Num() == 1)
+				{
+					for (int32 Slot = 0; Slot < M->GetNumMaterials(); ++Slot) M->SetMaterial(Slot, Material);
+				}
+				else M->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), MaterialIndex)), Material);
+			};
 			for (int32 k = 0; k < N.Mats.Num(); ++k)
 			{
 				if (ShaderMats.Contains(N.Mats[k])) bShader = true;
 				if (HiddenMats.Contains(N.Mats[k])) bHidden = true;
-				if (UMaterialInterface* MI = Mat(N.Mats[k])) M->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), k)), MI);
+				if (UMaterialInterface* MI = Mat(N.Mats[k])) BindMaterial(k, MI);
 			}
 			const bool bWire = Bool(O, TEXT("wire"));
+			// Exported LineSegments are crossed raster ribbons, not solid cable geometry.
+			// Keep their view representation out of RT effects; native cable volumes retain RT.
+			if (bWire && Str(O, TEXT("type")) == TEXT("LineSegments")) M->SetVisibleInRayTracing(false);
 			M->SetCastShadow(!bWire && !bShader);
 			M->SetEmissiveLightSource(N.Mats.ContainsByPredicate([&](int32 Id) { return EmissiveMats.Contains(Id); }));
 			M->SetCollisionEnabled(bWire ? ECollisionEnabled::NoCollision : ECollisionEnabled::QueryOnly);
@@ -421,7 +435,7 @@ bool AS47Web::Load()
 							if (Src) D->CopyParameterOverrides(Src);
 							if (const int32* Fs = MatFloodSet.Find(N.Mats[k])) FloodMids.FindOrAdd(*Fs).Add(D);
 							D->SetScalarParameterValue(TEXT("UseInstanceColor"), 1.f);
-							I->SetMaterialByName(FName(*FString::Printf(TEXT("slot%d"), k)), D);
+							BindMaterial(k, D);
 							KeepMids.Add(D);
 						}
 					}
@@ -1317,6 +1331,7 @@ void AS47Web::Tick(float Dt)
 	UpdateRetroProps();
 	SampleLightingPerformance(Dt);
 	S47GraphicsReview::Tick(this, Dt);
+	S47RenderAudit::Tick(this);
 	// the sky follows the eye
 	if (SkySphere) SkySphere->SetWorldLocation(Eye);
 	// dishes slew (Dish.update)
@@ -1518,10 +1533,12 @@ UMaterialInstanceDynamic* AS47Web::SharedMid(int32 MatId)
 		for (FS47WebNode& N : Nodes)
 		{
 			UMeshComponent* M = Cast<UMeshComponent>(N.Comp.Get());
-			if (!M) continue;
-			for (int32 k = 0; k < N.Mats.Num(); ++k)
+			if (!M || !N.Mats.Contains(MatId)) continue;
+			// A scalar Three material can occupy every imported geometry-group slot.
+			// Keep all of those slots on the shared runtime state, including cab needles.
+			for (int32 k = 0; k < M->GetNumMaterials(); ++k)
 			{
-				if (N.Mats[k] == MatId && M->GetMaterial(k) == Base) M->SetMaterial(k, D);
+				if (M->GetMaterial(k) == Base) M->SetMaterial(k, D);
 			}
 		}
 	}

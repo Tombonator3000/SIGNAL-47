@@ -4,6 +4,10 @@ Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til
 
 Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen kom først; 22. oktober ble resten av spillet portert (Tom valgte en ren C++-port framfor å kjøre nettversjonens kode i en innebygd nettleser).
 
+Gjeldende testrapport: [SPILLTEST_2026-10-25.md](SPILLTEST_2026-10-25.md). Hele 110-matrisen er kjørt, 108 besto. Tre fullstendige finaleforsøk krasjet også på Low; avslutningen er ikke godkjent. Rapporten skiller runtime, bilde-/kodegjennomgang og den fortsatt manglende menneskelige fullnatten med lyd.
+
+Samlet videre plan for historie og skrekk: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md). Kosmisk etterforskning, gradvis kommende invasjon, stabile skyggemannregler og en faktisk skjul/flukt-sekvens ved SARO. Detaljerte oppdrag og produksjonsetapper H1 til H6 ligger øverst i [todo.md](todo.md). Dette er planlagt for senere implementering, ikke nye funksjoner i dagens spill.
+
 Ny fortellerretning og manus: [ANOMALY_PLAN.md](ANOMALY_PLAN.md) og [kveldspakken](Narrative/EveningShift/README.md). Pakken inneholder innkjøring/diner, Dales telefon-/radiodialog, kontorfunn, dokumenter og VHS-manus. Innkjøring, telefonoverlevering og ny tidslinje har runtime i kandidaten på `codex/evening-runtime`; se [runtime-rapporten](EVENING_RUNTIME.md). Senere kontor-/felt-/filminnhold er fortsatt forfattergrunnlag. Claude har siden integrert og installert runtimeåpningen. De 109 nye takesene er koblet til lydløypa på samme gren; se [lydrapporten](EVENING_AUDIO.md). Codex oppdaterer ikke installasjonen.
 
 Første anomaly-pilot på `codex/anomaly-pilot` gir N01/N02/A02/P01 med kamera, aktive sammenligninger, fysisk oppfølging og lagring. [ANOMALY_RUNTIME.md](ANOMALY_RUNTIME.md) skiller kilde, pakket kandidat, testbevis og gjenstående menneskelig prøve. Ingen installasjon eller publisering inngår i denne leveransen.

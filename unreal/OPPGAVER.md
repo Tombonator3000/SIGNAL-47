@@ -2,6 +2,14 @@
 
 Felles liste for Claude (integrator og hjelpere) og Codex (ChatGPT). Hver oppgave har eier, gren og status. Les denne før du starter, og oppdater status når du begynner og når du er ferdig.
 
+## QA-retting og H1, pågår 25.10.2026 kl. 17:34 CET
+
+Codex eier `codex/qa-fixes-horror-production` og all sekvensiell pakking/runtime. Tre avgrensede hjelpere har levert kontroller/UI, materialer/lys/RT og uavhengig krasj-/historiegjennomgang. Q1 består komplette High/Low-finaler og faktiske feltfoto; Q2 retter en påvist fokusfeil i utgangsvarselet og er under pakket kontroll. Ingen ny pakke er installert. H1.2 til H1.4 er produsert som validerte forfatterkilder, H2 til H6 er fremtidig runtimearbeid. Se [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md) og nyeste memory/log før videre arbeid.
+
+## Historie og stealth horror, plan levert 25.10.2026
+
+Codex med tre avgrensede, lesende gjennomganger av referansespill, historie og teknisk loop. Tom ba om å legge planen i todo for senere innføring. [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md) har H01 til H10, kommende invasjon med hovedrutespor, SARO-beleiring med reell flukt, adskilte regler for skyggemann/inntrenger/avsøkning, fangst-/lagringskontrakt og akseptansekriterier. Én eksisterende slutt beholdes; reisemotivasjonen styrkes. [todo.md](todo.md) har H0 ferdig som dokumentleveranse og H1 til H6 åpne som produksjonsarbeid. Runtime-eier/gren avtales når arbeidet tas opp; ingen ny spillkode, modeller, lyd, bygg eller installasjon inngår i planleveransen. Eksisterende kontor-/trafo-/skyggemannpunkter inngår i denne rekkefølgen og skal ikke implementeres dobbelt.
+
 ## Feltreise, originalmodellpakke kontrollert 25.10.2026
 
 Codex på `codex/field-investigation-models`, fra 7f14e338. Den tidligere bygningslisten er levert i M6; neste reelle hull er STATION01-hytta, feltinstrumentene og SARO-arkivet. Tre avgrensede hjelpere eier Tools/fieldstation, Tools/fieldinstruments og Tools/archiveprops. Root eier felles import, presise gamle geometriutskiftninger, integrasjon og alle tunge jobber sekvensielt. Eksisterende gang-/fotopunkter, skuffer, lamper, dør og telefon beholdes som historiedrivere. Ingen ny adgang til Dales kontor eller skyggemannmekanikk inngår. Tidligere skyggemanndesign er bevart som dokumenter. 29 deler med tre LOD-er er nå integrert. F3 fra093a4326: fem fokuserte pakkede scenarioer, 1400 selvtester og18 faktisk vurderte spillerhøydebilder PASS. Tre portable Blender-originaler og305 hashkontrollerte kildefiler ligger på skrivebordet. Se FIELD_MODELS.md for begrensninger og videre leveringsstatus.
@@ -136,3 +144,8 @@ M6, spillkilde aefd18157be7502ac98d3e1695b4c4fcdd7d26a0: 1400 selvtester og 10 m
 ## Fullført 2026-10-25 kl. 13:22: SARO-ankomst, forplass og testbygggrense
 
 Valgfritt matstopp, tre fungerende besøksfelt begge veier, skilt/kontekstmål, asfaltert østlig personalområde og flyttet sedan/collider levert. Presis dressingtrim, færre usynlige florainstanser og 65 m hovedstolpespenn kontrollert. Motellmodellene bekreftet i runtime. Gjeldende+to eldre testbygg innført og ryddet. P1 elleve scenarioer, P2 native-/parkeringskontroll,1405 selvtester og 36 bilder PASS; P2 installert med 40 kontrollerte payloadfiler og 40 uendrede Saved. VISITOR_PARKING.md beskriver bevis og uprøvde forhold.
+
+
+## Pågår 2026-10-25 kl. 17:04 CET: QA-retting og H1-produksjon
+
+Codex eier `codex/qa-fixes-horror-production` i `/home/tom/SIGNAL-47`. Tre hjelpere har levert avgrenset UI-/lagrings-/kartkode, material-/blitsretting og H1-manus. Root eier all sekvensiell Unreal-bygging og GPU-undersøkelse. Kildeendringer er ikke installert. QA00-finalekrasjet er fortsatt åpent; ingen normal spillstandard er erstattet. Bevis og løpende planer ligger i `/home/tom/scratch-bm/Signal47-qa-fixes-20261025`.

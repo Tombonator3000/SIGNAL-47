@@ -118,6 +118,8 @@ public:
 	// several slots is sent once.
 	void SetFloodPool(int32 Set, int32 Index, const FVector& P, float Width, const FLinearColor& C, bool bUpload = true);
 	void FlushFlood(int32 Set);
+	// Apply changed pool state before a one-shot photo, without advancing fog or sky captures.
+	void SyncFloodLights();
 	// A pool as it is now (pos[i]: x, y, z and its width) and its colour
 	// (world/saroPower.ts takes SARO's lamps down from what they are and puts them back).
 	FLinearColor FloodPool(int32 Set, int32 Index) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Pos.IsValidIndex(Index) ? FloodSets[Set].Pos[Index] : FLinearColor(0, -999, 0, 0); }

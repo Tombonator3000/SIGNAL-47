@@ -197,8 +197,29 @@ namespace
 		return Out.IsEmpty() ? FString(TEXT("(no key)")) : FString::Join(Out, TEXT(", "));
 	}
 
-	FCtlPage Controls(bool bPhone)
+	FCtlPage Controls(bool bPhone, bool bPad = false)
 	{
+		if (bPad) return { TEXT("Xbox controller"), {
+			{ TEXT("On foot"), {
+				{ TEXT("LS / L3"), TEXT("Walk / run.") },
+				{ TEXT("RS"), TEXT("Look around.") },
+				{ TEXT("A / B"), TEXT("Use / secondary choice or takeaway management.") },
+				{ TEXT("X / RT"), TEXT("Raise or lower the camera / shutter while raised.") },
+				{ TEXT("LT / Y"), TEXT("Hold to look closer / jump.") },
+				{ TEXT("D-pad Up / Down"), TEXT("Flashlight / radio.") },
+				{ TEXT("D-pad Left / Right"), TEXT("Map / spoken description.") },
+				{ TEXT("LB / View"), TEXT("The notebook. View has two overlapping rectangles.") },
+				{ TEXT("RB / Menu"), TEXT("The case board / pause, settings, save and load.") } } },
+			{ TEXT("In the truck"), {
+				{ TEXT("LS / RS"), TEXT("Steer / look around the cab.") },
+				{ TEXT("RT / LT"), TEXT("Throttle / brake or reverse.") },
+				{ TEXT("A, stopped"), TEXT("Get out, or turn the key when the engine has died.") },
+				{ TEXT("D-pad Down"), TEXT("The radio: on, the next station, off.") } } },
+			{ TEXT("Menus and the case board"), {
+				{ TEXT("D-pad / A / B"), TEXT("Select / confirm / go back.") },
+				{ TEXT("LB / RB"), TEXT("Turn tabs. On the case board: zoom out / in.") },
+				{ TEXT("RS / A held"), TEXT("Move a pointer / click or drag a card, tracing or thread.") } } }
+		} };
 		if (!bPhone)
 		{
 			auto First = [](const TCHAR* A) { return KeysSaid(A, true); };
@@ -263,7 +284,7 @@ namespace
 				B->AddSlot().AutoHeight().Padding(0, 0, 0, P(4))
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(P(170))[SNew(STextBlock).Text(FText::FromString(R.Key)).Font(Term(20)).ColorAndOpacity(C(0x2e2a22))]]
+					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(P(170))[SNew(STextBlock).Text(FText::FromString(R.Key)).Font(Term(20)).ColorAndOpacity(C(0x2e2a22)).AutoWrapText(true)]]
 					+ SHorizontalBox::Slot().FillWidth(1.f).Padding(P(12), P(1), 0, 0)[SNew(STextBlock).Text(FText::FromString(R.Value)).Font(Type(15)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true)]
 				];
 			}
@@ -740,7 +761,7 @@ void SS47Notebook::Build()
 				Entry(I, Shadowed(SNew(SBorder).BorderImage(Box(C(0xf6f1e3))).Padding(FMargin(P(12), P(8)))
 					[
 						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(P(62))[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(26)).ColorAndOpacity(C(0x2f6a3c))]]
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(P(100))[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(26)).ColorAndOpacity(C(0x2f6a3c)).AutoWrapText(true)]]
 						+ SHorizontalBox::Slot().FillWidth(1.f).Padding(P(10), 0, 0, 0)
 						[
 							SNew(SVerticalBox)
@@ -788,7 +809,7 @@ void SS47Notebook::Build()
 							+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(bHand ? Hand(25) : Type(15)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
 							+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, 0)
 							[
-								SNew(STextBlock).Text(FText::FromString(FString(KindName(D)) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(17)).ColorAndOpacity(C(0x8a8270))
+								SNew(STextBlock).Text(FText::FromString(FString(KindName(D)) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(17)).ColorAndOpacity(C(0x8a8270)).AutoWrapText(true)
 							]
 						]
 					], 6.f, FVector2D(0, 2), 0.18f), true)
@@ -915,14 +936,16 @@ void SS47Notebook::Build()
 	}
 	else if (Tab == TEXT("controls"))
 	{
-		// every control: the keyboard and mouse on the left, a phone's on the right (a phone's first on a phone)
+		// Unreal desktop: the active controls first, with the other supported input on the facing page.
 		auto Page = [](const FCtlPage& Pg, TSharedPtr<SScrollBox>& Scroll)
 		{
 			return SNew(SBox).Padding(FMargin(P(84), P(40), P(30), P(30)))[SAssignNew(Scroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3))) + SScrollBox::Slot()[ControlsBlock(Pg)]];
 		};
-		LeftSlot->SetContent(Page(Controls(X.bTouch), LeftScroll));
-		RightSlot->SetContent(Page(Controls(!X.bTouch), RightScroll));
+		const bool bPad = S47Gamepad::UsingGamepad();
+		LeftSlot->SetContent(Page(Controls(X.bTouch, bPad), LeftScroll));
+		RightSlot->SetContent(Page(Controls(false, !bPad), RightScroll));
 		KeysShown = S47Keys::Changes();
+		PadShown = S47Gamepad::Changes();
 	}
 	if (!Read.IsEmpty() && UI.IsValid()) Reading = UI->ReadingAction(Read, TEXT("notebook-description"));
 	BuildRight();
@@ -1126,7 +1149,7 @@ void SS47Notebook::Close()
 void SS47Notebook::Tick(const FGeometry& G, const double Now, const float Dt)
 {
 	SCompoundWidget::Tick(G, Now, Dt);
-	if (Tab == TEXT("controls") && KeysShown != S47Keys::Changes()) Build();
+	if (Tab == TEXT("controls") && (KeysShown != S47Keys::Changes() || PadShown != S47Gamepad::Changes())) Build();
 }
 
 FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
@@ -1342,6 +1365,8 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		auto Row = [](const FCtlPage& Pg, int32 G, int32 R) { return Pg.Groups.IsValidIndex(G) && Pg.Groups[G].Rows.IsValidIndex(R) ? Pg.Groups[G].Rows[R].Key + TEXT(" | ") + Pg.Groups[G].Rows[R].Value : FString(); };
 		auto Has = [](const FCtlPage& Pg, const FString& Want) { for (const FCtlGroup& Gr : Pg.Groups) for (const TPair<FString, FString>& R : Gr.Rows) if (R.Key + TEXT(" | ") + R.Value == Want) return true; return false; };
 		const FCtlPage Desk = Controls(false);
+		const FCtlPage Pad = Controls(false, true);
+		Check(TEXT("controls: Xbox has camera, trigger and driving help"), Pad.Title == TEXT("Xbox controller") && Has(Pad, TEXT("X / RT | Raise or lower the camera / shutter while raised.")) && Has(Pad, TEXT("RT / LT | Throttle / brake or reverse.")));
 		Check(TEXT("controls: the walk keys as the web has them"), Row(Desk, 0, 0) == TEXT("W A S D, arrows | Walk. Shift: run."), Row(Desk, 0, 0));
 		Check(TEXT("controls: the notebook's keys as the web has them"), Has(Desk, TEXT("Tab, N | The notebook. M: its map. I: the kit. H: these controls.")));
 		Check(TEXT("controls: Space both jump and shutter"), Has(Desk, TEXT("Space | Jump. With the camera raised: the shutter.")));

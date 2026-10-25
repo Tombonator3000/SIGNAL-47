@@ -268,9 +268,9 @@ void AS47Walker::Tick(float DeltaSeconds)
 		else Dip = -LAND_DIP * LandK * FMath::Sin(UE_DOUBLE_PI * LandT / LAND_SECS);
 	}
 	Shake = FMath::Max(0.0, Shake - Dt * 1.4);
-	const double Sh = Shake * Shake;
-	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Dip + Eye + FMath::Sin(Bob) * 0.018 + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
-	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, FMath::Sin(Bob * 0.5) * 0.004));
+	const double Sh = bHeadMotion ? Shake * Shake : 0;
+	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Eye + (bHeadMotion ? Dip + FMath::Sin(Bob) * 0.018 : 0) + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
+	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, bHeadMotion ? FMath::Sin(Bob * 0.5) * 0.004 : 0));
 	FVector2D Size(16, 9);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
 	Camera->SetFieldOfView(HorizontalFov(Fov, float(Size.X / FMath::Max(1.0, Size.Y))));

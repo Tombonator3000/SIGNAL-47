@@ -84,7 +84,7 @@ TArray<TPair<FString, FString>> SS47Ending::CreditsRows(bool bBoughtSfx)
 	// free ones (CC BY 4.0 asks for title, author, licence and link: the links are in CREDITS.txt).
 #include "S47FreeCredits.inl"
 	Rows.Emplace(TEXT("Fonts"), TEXT("VT323, Reenie Beanie and Oswald (SIL Open Font License 1.1). Special Elite (Apache License 2.0)."));
-	Rows.Emplace(TEXT("Built with"), TEXT("three.js (MIT)"));
+	Rows.Emplace(TEXT("Built with"), TEXT("Unreal Engine 5.8.4 (Epic Games)"));
 	Rows.Emplace(TEXT(""), TEXT("Everything in this story is invented. The comet was real."));
 	return Rows;
 }
