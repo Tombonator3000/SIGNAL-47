@@ -62,7 +62,7 @@ def hand_ray_tracing(mesh):
     proxy = mesh.get_editor_property("ray_tracing_proxy_settings")
     proxy.set_editor_property("enabled", True)
     proxy.set_editor_property("fallback_target", target)
-    proxy.set_editor_property("fallback_percent_triangles", .25)
+    proxy.set_editor_property("fallback_percent_triangles", .10)
     proxy.set_editor_property("fallback_relative_error", 0.0)
     mesh.set_editor_property("ray_tracing_proxy_settings", proxy)
     mesh.set_editor_property("lod_for_collision", 0)
@@ -81,16 +81,19 @@ def verify_hand_ray_tracing(mesh):
             and nanite.get_editor_property("fallback_target") == target
             and nanite.get_editor_property("fallback_percent_triangles") == 1.0
             and nanite.get_editor_property("fallback_relative_error") == 0.0)
-    R.check(HAND + " separate quarter-triangle hardware RT proxy",
+    actual_rt_fraction = proxy.get_editor_property("fallback_percent_triangles")
+    R.check(HAND + " separate tenth-triangle hardware RT proxy",
             proxy.get_editor_property("enabled")
             and proxy.get_editor_property("fallback_target") == target
-            and proxy.get_editor_property("fallback_percent_triangles") == .25
-            and proxy.get_editor_property("fallback_relative_error") == 0.0)
+            and abs(actual_rt_fraction - .10) < 1e-6
+            and proxy.get_editor_property("fallback_relative_error") == 0.0,
+            {"requested_fraction": .10, "actual_native_fraction": actual_rt_fraction})
     R.check(HAND + " full-detail collision LOD0", mesh.get_editor_property("lod_for_collision") == 0)
     R.check(HAND + " complete CPU geometry retained", mesh.get_editor_property("allow_cpu_access"))
     return {"nanite_enabled": True, "rendering_fallback_percent_triangles": 1.0,
             "rendering_lod_count": S.get_lod_count(mesh), "collision_lod": 0,
-            "separate_rt_proxy_enabled": True, "rt_proxy_percent_triangles": .25,
+            "separate_rt_proxy_enabled": True, "rt_proxy_percent_triangles": actual_rt_fraction,
+            "rt_proxy_requested_percent_triangles": .10,
             "rt_proxy_relative_error": 0.0,
             "rt_proxy_triangle_count": None,
             "measurement_limit": "Dedicated RT proxy triangle count is not exposed by editor Python. Native settings and full LOD0 are checked here; actual RT residency and pixels require the packaged run."}
