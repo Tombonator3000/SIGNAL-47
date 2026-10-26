@@ -35,7 +35,7 @@
         {
           "id": "H05_BRIEF_003",
           "speaker": "DESCRIPTION",
-          "text": "Use Dale's post as a second observation point. A position written in his notebook is a lead until you check it yourself.",
+          "text": "The culvert camera place belongs to T02. The separate array service comparison concerns its own operator places; do not treat the two records as the same geometry.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],
@@ -68,7 +68,7 @@
         {
           "id": "H05_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "Both controlled observation points resolve against fixed survey references. The positions form an arrangement rather than an isolated sighting.",
+          "text": "The empty footing and moved A-post resolve against the fixed transit references. C remains a separate sight line. The earlier array comparison is a distinct controlled observation.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         },
         {
@@ -274,7 +274,7 @@
       "channel": "phone",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H07: Etter Rom 6: returner til SARO for den navngitte måleoriginalen og bestilte fjernlogger. Utfør normal kontroll av kjent skjerm/utgang før møtet. Første prototype krever fysisk to gyldige ruter fra H3. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "trigger_nb": "H07: Etter Rom 6 og tidligst 04:04: returner til SARO og sikre mottakeroriginal, tomt/påbegynt hendelsesark og ferdige fjernlogger før møtet. Utfør normal kontroll av kjent skjerm/utgang. Den senere HR_SARO_ORIGINAL-kompositten lages først etter faktisk lyskontroll, reaktivt møte og flukt. Første prototype krever fysisk to gyldige ruter fra H3. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
       "requires": {
         "all": [
           "ctx_hr_h07_ready"
@@ -319,11 +319,13 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H07: Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "trigger_nb": "H07: Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet. Presenter ferdig romobservasjon først etter faktisk lyskontroll, reaktivt møte og gjennomført flukt; ingen fremtidig hendelsesbeskrivelse i før-angrepsbunten. Skrekkrevisjon R2: aktører er kjent fra kvelden; denne kontrollen krever faktisk observert samordning av søk og avsøkning, ikke første bevis på reaksjon.",
       "requires": {
         "all": [
           "ctx_hr_h07_ready",
-          "ctx_hr_h07_checked"
+          "ctx_hr_h07_checked",
+          "ctx_hr_h07_escape_complete",
+          "ctx_hr_h07_bundle_secured"
         ],
         "none": [
           "hr_h07_recorded"
@@ -340,7 +342,7 @@
         {
           "id": "H07_CHECK_002",
           "speaker": "DESCRIPTION",
-          "text": "When you changed the radio, the visitor turned to the new sound. The old fragment kept its same words.",
+          "text": "It searched one room earlier. Now the outside band is closing the exits as the visitor moves. The recorded fragment has not changed.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],
@@ -371,7 +373,7 @@
         {
           "id": "H07_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "A photograph is not required. Check the original's recorded location. If it is not secured, reach it by a clear route; then use the service exit.",
+          "text": "A photograph is not required. If the original was not secured, return to the covered checkpoint before the inspection and collect it before the encounter starts. Do not go back through an active search for another sheet.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],
@@ -390,7 +392,8 @@
       "trigger_nb": "Første avsøkning, før inntrengerkontakt. Hold fysisk kontroll hos spilleren og vis kjent opak dekning og serviceutgang.",
       "requires": {
         "all": [
-          "ctx_hr_h07_scan_started"
+          "ctx_hr_h07_scan_started",
+          "ctx_hr_h07_bundle_secured"
         ],
         "none": [
           "hr_h07_first_warning_presented"
@@ -463,7 +466,8 @@
       "requires": {
         "all": [
           "ctx_hr_h07_original_secured",
-          "ctx_hr_h07_escape_complete"
+          "ctx_hr_h07_escape_complete",
+          "ctx_hr_h07_bundle_secured"
         ],
         "none": [
           "hr_h07_escape_complete_presented"

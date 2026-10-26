@@ -1,8 +1,32 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## NP1 klar for integrasjon, 26.10.2026 kl. 01:12 CET
+
+Codex, `codex/night-production`, kilde `2c05e33d`. Samlet kontor/tekst/lesestatus, himmelbaner og LineLights-save er bygget og prøvd i17 faktiske pakkede kjøringer.1 493 selvtester og28 vurderte originalbilder. Tre avgrensede hjelpere og root har utført kilde-/kontrakt-/pixel-/installerreview; alle UE-jobber sekvensielt. Ku-R2 fra den allerede installerte standarden er tatt inn uendret. Manusdelen S.1/R2.1 er produsert, ikke runtime-koordinator eller nye aktive møter. PR/merge/installasjon gjenstår ved denne oppføringen.
+
+## Kontorfunn, himmel og observasjonslagring, startet 26.10.2026 kl. 00:42 CET
+
+Codex på `codex/night-production`, separat arbeidskopi i `/home/tom/scratch-bm/wt/night-production`. Avgrensede hjelpere eier HorrorStory-kilder, Dales kontorpapirer og LineLights; root eier himmellys, integrasjon, sekvensielle bygg/prøver og levering. S.1/R2.1 produseres som engelske forfatterkilder; S.7s seks tekster og separat arrayserviceark får faktisk kontor-/lese-/lagringsflyt, S.6 retter usette/avbrutte lys, S.3 får fem verdensbaner med egen faktisk observasjon. Dagens kapitteladapter erstatter ikke S.2s nye kveldskoordinator. Original VHS, fem aktive møter og fullnatt er fortsatt åpne. Installert ku-R2 er oppdaget i leveringskontrollen og bevares byteidentisk fra testet kilde-/assetsnapshot før ny pakking. Se [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md).
+
 ## T02 runtime levert, 25. oktober 2026
 
 Codex fullførte den sammenhengende kontor-/Caliche-/returreisen på `codex/t02-field-followup`, kilde `5b9fcb3c`, PR162 flettet i `d152fb6d`. Avgrensede hjelpere leverte kontor/geometri, feltcontroller, foto/test og uavhengige kode-, bilde-, aksept- og installerreviews. Alle UE-/pakke-/spilljobber ble kjørt sekvensielt. 15 pakkede prøver, 23 bundne akseptrapporter og 25 faktisk vurderte originaler består. Samme pakke er installert; 40 payloadfiler og 40 personlige Saved-filer er verifisert, installert standardstarter-smoke og canonical pruning består. Ingen øvrige forfatterdokumenter fra parallelt arbeid er tatt inn i denne runtime-leveransen. Se [T02_RUNTIME.md](T02_RUNTIME.md). VHS, nye forfatterfunn, stealth og menneskelig helnatt står åpne.
+
+## Én sammenhengende natt, random, himmel og Dale, 25.10.2026
+
+Codex har flettet de tidligere rundene til13 scenarioer i [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md). Tre lesende hjelpere kartla random/himmel, hentet gamle kontorideer og kritiserte årsakskjeden. Tidligere løsningskort er bevart i sekundært oppslagsverk med innholdshash, ikke slettet. Alle randomfamilier består; nye faste himmellys øker fra én overflygning til flere samtidige grupper. Dales vedlegg har sju eksisterende dokumenter og seks nye frivillige engelske lesetekster, med korrekt uprodusert VHS-status. Kritikk rettet konkret overgang SC04→SC05, nytt arrayservicevedlegg i stedet for feil bruk av T02-indeksen, historisk krusnøkkel og Wards pronomen. S.1 tilS.9 står åpne for senere produksjon og prøve. Bare dokumentarbeid; ingen endring av separat T02-/runtime-/kildepakke, bygg eller installasjon.
+
+## Historieintegrasjon, array og Caliche, designforslag25.10.2026
+
+Codex med tre lesende gjennomganger av arraymekanikker, byens funksjon og kritisk årsakslogikk. Brainstorming/Gauntlet-skillene er lest fra synkronisert lokal mappe; game-design er ikke funnet lokalt, så repoets game-production er brukt som faglig grunnlag. MISSION_FLOW del0B har anbefalt ARRAY-01 «De peker på deg», tre bybesøk med faktisk følge og bevart1947/Nora/Tomás-kjede. Arrayet overtar aktivt møte4; STATION01 beholder historien uten en ny lang jakt. Kritikk av tidsstyrt antenneanimasjon og magisk feltlogger er rettet med fritt valgt ståstedsrekkefølge/retur og adskilte lyd/geometri/styringskilder. I.1-I.6 står åpne i todo. Bare plan/dokumenter; nye delscener, runtime, modeller og menneskelig prøve er ikke levert.
+
+## Skrekkrevisjon R2 etter Toms kritikk, 25.10.2026
+
+Codex med to lesende designgjennomganger. Første plan hadde for trygg kveld og én stor sen aliensekvens. MISSION_FLOW del0 har nå seks nødvendige førmidnatt-beats, tre aktive trusselmøter før midnatt, synlig bortføring og to senere trusselmøter før den faste finalen. H07 eskalerer koordinering;00:13:47 er første store RF-residual, ikke første fysiske nærvær. Todo R2.1-R2.9 dekker nye engelske scener, kveldskoordinator, helper/personproduksjon, fem møter, motivasjon/06:00-ordre og prøving. Nye tidlige scener er ikke allerede i den36sceners forfatterpakken. Bare plan/dokumenter endret, ingen egen T02/runtimeendring eller testbygg.
+
+## Hele nattens oppdragsdetaljer, 25.10.2026
+
+Codex med tre avgrensede, lesende gjennomganger av kveld/T01, kapitlenes løsningsfasit og senfase/rute. [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) konkretiserer H01 til H10 i 32 arbeidskort og seks valgfrie spor med løsninger, farer, utveier, hint og bevisporter. Det bygger på nyere HorrorStory-kilder og levert T01 R2; aktiv T02-kode eies av annet arbeid og røres ikke. Forfatterkildene for H02/T01-port, H09/E15, hendelsesark og ekstern måleavskrift er presisert og eksportene regenerert. [todo.md](todo.md) har H1.5 til H1.7 og H6.5 åpne for videre kildescener, rekvisitter, tidsinnpassing og helruteprøve. Bare dokument-/forfatterarbeid i denne leveransen, ingen ny runtime, lyd, bygg eller installasjon.
 
 ## T01 R2 levert, 25. oktober 2026
 

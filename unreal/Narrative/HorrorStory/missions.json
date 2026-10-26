@@ -6,10 +6,10 @@
       "id": "H01",
       "title": "The evening round",
       "phase": "handover",
-      "question": "What has to work before the night survey can begin?",
+      "question": "What works normally here, and what changed at the window?",
       "physical_action": "Etter eksisterende Dale-overlevering: hent kameraet, kontroller én rutinevisning og gå de faktisk tilgjengelige dørene på normalrunden. Ikke påstå at en fremtidig forbindelsesdør allerede er åpen.",
       "control": "Prøv SAROs østdør og den tilgjengelige korridorutgangen fra innsiden. Sammenlign en vanlig lampe sett direkte og via glass, og trekk for en faktisk opak skjerm når H3 har levert den.",
-      "consequence": "Jobben og utstyret er forstått. Senere beleiring kan bare bruke utganger/dekning som er lært og målt fysisk.",
+      "consequence": "Normal inngang, prøvde dører og faktisk vindusobservasjon holdes adskilt. Første fare kan meldes straks. T01 gir normal servicebaseline; automatisk drift er ikke lenger hovedmål etter virkelig inntrengermelding.",
       "insufficient_evidence": "Hvis en planlagt utgang eller skjerm ikke er levert, før den som uprøvd og gi normalrutinen en eksisterende vei. Ikke kvitter for to fluktruter før H3-topologien er målt.",
       "scene_ids": [
         "H01_BRIEF",
@@ -41,8 +41,8 @@
       "question": "Is the inspection lamp faulty, or is its supply being interrupted?",
       "physical_action": "Kjør eksisterende avstikker til trafostasjonens tilgjengelige kontrollfront. Finn T01-klagen på servicekortet, observer inspeksjonslampen og utfør den fiktive, avgrensede servicekontrollen.",
       "control": "Sammenlign lampen og den separate indikatoren før/etter normal kontroll. Hold STATION 01, SAROs K3 og byens hovedforsyning atskilt. Spilleren åpner ikke høyspenningsområdet.",
-      "consequence": "En ordinær feil har en reproduserbar forklaring og et normalt etterbilde. Senere T02 får et faktisk kontrollgrunnlag, ikke et gammelt telex som bevis på hele byens strøm.",
-      "insufficient_evidence": "Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten; SARO-rutinen fortsetter. T02 må da tilby ny normal kontroll før sammenligning.",
+      "consequence": "Vanlig lampetest gir faktisk normalreferanse. Deretter skjer trusselmøte1 med mulig fysisk flukt/lokal retry som bevarer testen. T01 arkiveres én gang ved SARO; videre handlinger søker hjelp og sikkerhet, ikke en automatisk normalrunde.",
+      "insufficient_evidence": "Uavklart lampetest kan gjentas; bevar kalibrering og faktisk delarbeid. I nye saker kreves T01-filingen og fullført sikkerhetsakt før passiv residualovergang, uten å oppheve fysisk auto/surveyplansperre. Gamle saker får ingen ny gate.",
       "scene_ids": [
         "H02_BRIEF",
         "H02_CHECK",
@@ -54,8 +54,9 @@
         "EV_SERVICE_LOG"
       ],
       "source_files": [
-        "unreal/Signal47/Source/Signal47/Private/S47Anomaly.cpp",
-        "unreal/Signal47/Source/Signal47/Private/S47FreeModels.cpp"
+        "unreal/Signal47/Source/Signal47/Private/S47Substation.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Evening.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Story.cpp"
       ],
       "optional_clues": [
         "Fjern skyggemann som kan overses uten progresjonstap"
@@ -100,8 +101,8 @@
       "phase": "archive",
       "question": "Why did Dale record these particular standing places?",
       "physical_action": "Følg begrunnet serviceskuffspor til reservenøkkel og eksisterende kontordør. Hent feltmappen; den korte hovedruten krever ikke hele VHS-filmen.",
-      "control": "Legg Dales daterte ståstedsnotat ved faktisk vindusutsyn og referansestolpe. Se eventuell VHS som bevegelig opptak og test ett av stedene fysisk senere.",
-      "consequence": "Dale har funnet et mønster i sammenlignbare ståsteder, ikke løst 1947. Arkivets E06/E07/E08 og P04/P05 avgjør STATION 01. Kontorsporet følger feltreisen uten å erstatte Nora.",
+      "control": "Behold EV_DALE_INDEX/NOTE som T02s kulvert-/kamerareferanse. Nytt separat ordinært arrayservicevedlegg gir egne A/B-ståsteder. Kontroller arkivets daterte spor hos Earl eller autentisert sen kopi før arrayet; lyd gir tid, ikke peiling.",
+      "consequence": "Dales frivillige samling gir kontekst uten lesekvote. Arkivets kildekontroll leder BY02 og ARRAY-01, med faktisk valgfri A→B/B→A/retur, deretter STATION01. Ingen forteller kjenner Nora eller finalen på forskudd.",
       "insufficient_evidence": "Feltmappe gir hovedsporet selv uten strøm til VHS. Manglende sett film føres som usett; opptaket gjenopptas fra lagret sted. Nøkkelen har konkret spor i serviceskuff, ikke tilfeldig spawn.",
       "scene_ids": [
         "H04_BRIEF",
@@ -136,9 +137,9 @@
       "title": "Survey marks",
       "phase": "field",
       "question": "Are the places being selected, and is the old voice answering anyone now?",
-      "physical_action": "Kjør til STATION 01 via hovedvei/surveyspor. Utfør E09A/fastmerke A, lokal nulltest, kabelundersøkelse og receiver/E10. T02 følger samme feltreise via eksisterende trafoadkomst.",
-      "control": "Hold A fra transitkortet adskilt fra C-linjen. Sammenlign to nåtidige, fysisk kontrollerte referansesteder fra Dales notat mot de faste surveymerkene. T02 krever egne faktiske indikator-, kilde- og backupkontroller.",
-      "consequence": "Kartlegging blir en støttet arbeidshypotese: to kontrollerte nåtidige steder er knyttet til samme faste referanser. Klipt lyd er fortsatt et uendret avtrykk. Dra tilbake til SARO for feltkopier, så til Nora.",
+      "physical_action": "Etter BY02 og egen ARRAY-01-geometrikontroll/trusselmøte4: kjør til STATION01. Utfør E09A/fastmerkeA, normal lokal nullprøve, kabelundersøkelse og receiver/E10. T02 er egen levert kontroll via Caliche, uten ny hovedgate.",
+      "control": "STATION01s tomme fot og flyttedeA mot transit/B er én kontroll. ARRAY-01s egne A/B-operatørplasser og faste lykt er en annen. T02s kulvertståsted gir et tredje opplegg. Ingen sammenblanding av deres geometri eller ID-er.",
+      "consequence": "Flyttet referanse og bevisst kabelkutt undersøkes uten ny lang jakt. Kort lysavskjæring er adskilt fra eventuell gammel betinget bortføring; ingen vellykket ny retrett etterfølges av tvungen Force. Feltfilm fremkalles før Nora.",
       "insufficient_evidence": "Feil bilde kan fremkalles på nytt fra negativet. T02 kan være uavklart uten å sperre hovedhistorien; kartleggingssporet får da obligatorisk normal-/ekstern-lyskontroll ved SARO i H07, ikke en valgfri skyggemann som eneste bevis.",
       "scene_ids": [
         "H05_BRIEF",
@@ -204,10 +205,10 @@
       "id": "H07",
       "title": "The Inspection",
       "phase": "field",
-      "question": "Is something responding to what you do now?",
-      "physical_action": "Etter Rom 6: returner til SARO for den navngitte måleoriginalen og bestilte fjernlogger. Utfør normal kontroll av kjent skjerm/utgang før møtet. Første prototype krever fysisk to gyldige ruter fra H3.",
-      "control": "Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst.",
-      "consequence": "Atferden er nåtidig og reaktiv. Sikre originalen og kom til servicebilen via skjermet rute eller avledning; vellykket flukt respekteres. H08s trygge etterarbeid er neste handling.",
+      "question": "What has changed about the search at SARO?",
+      "physical_action": "Etter Rom 6 og tidligst 04:04: returner til SARO og sikre mottakeroriginal, tomt/påbegynt hendelsesark og ferdige fjernlogger før møtet. Utfør normal kontroll av kjent skjerm/utgang. Den senere HR_SARO_ORIGINAL-kompositten lages først etter faktisk lyskontroll, reaktivt møte og flukt. Første prototype krever fysisk to gyldige ruter fra H3.",
+      "control": "Bruk kveldens lærte lampe-, skjermings- og lydkontroller. Dokumenter at den ytre avsøkningen nå avskjærer åpninger i sammenheng med inntrengerens søk. Reaktiv aktør er kjent fra før; ny kunnskap er koordinert dekning av SARO. Det gamle fragmentet fortsetter uendret.",
+      "consequence": "Sikre originalene og unnslipp samordnet avsøkning/inntrenger. Tidligere lærte regler beholdes, men enkle ruter er nå avskåret. H08 sammenligner denne eskaleringen med fjernarkene.",
       "insufficient_evidence": "Ingen fotoport under jakt. Journalfør en faktisk sanset reaksjon fra begge ruter; spilleren kan gjenta kontrollen før faren uten å måtte velge avledning som fluktmetode. Fangst tilbyr tydelig lokal gjenopptakelse fra trygt sjekkpunkt, ikke ny tapt-tid-gren.",
       "scene_ids": [
         "H07_BRIEF",
@@ -235,8 +236,8 @@
       "phase": "field",
       "question": "Is this a local recording, or coordinated activity preparing something larger?",
       "physical_action": "På trygg plass: legg SARO-original og eget romnotat ved Hondo- og Site11-utskrifter. Hent bevart kopi ved sen ankomst. Sammenlign proveniens, uavhengige kanaler, klokker, faseorden og kommende spor.",
-      "control": "Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger.",
-      "consequence": "Støttet varsel om samordnet forberedelse og kommende ankomst. Ward stanser faktisk 06:00-serien, varsler andre stasjoner og kvitterer for eksternt lagrede kopier før finalen. Spilleren har gjort nyttig arbeid.",
+      "control": "Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward, velg kildeark og dikter deres markerte måletabeller og begrensningene. Hun fører kilde-ID-er/tabellverdier i en datert samtalelogg og leser dem tilbake; foto/negative kopieres ikke over telefon.",
+      "consequence": "Støttet nettverksvarsel om samordnet forberedelse og kommende ankomst. Ward bekrefter at den lokale 06:00-serien fortsatt er suspendert etter kveldens melding, varsler andre stasjoner om de nye funnene og kvitterer for dikterte måleavskrifter. Foto, negative og originalark blir i mappen.",
       "insufficient_evidence": "Manglende sanntidsmottak erstattes av bevart lokalt stempel/originalkopi på telex. Uverifisert kilde føres som foreløpig og ringer Ward for kildekontroll; varsel om lokal fare kan sendes straks. Sterk nettverksslutning venter på de to uavhengige fjernkildene.",
       "scene_ids": [
         "H08_BRIEF",
@@ -262,10 +263,10 @@
       "title": "All Night",
       "phase": "all_night",
       "question": "Where is C, and can the originals be moved without repeating the observation?",
-      "physical_action": "Rolig diner: les dagens fysisk leverte avis med 1947-utklippet og legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave.",
-      "control": "Finn C ved 8.15-bolten og avtal separat 10.4-bolt med Ward. Sjåførens oktoberstopp ved8.15 må tas med i risikovurderingen. Spør om hans nylige gjennomkjøring: det er et nåtidig vitnemål, ikke et generelt trygghetsbevis.",
+      "physical_action": "Rolig diner: les E15, det innrammede utklippet fra juli 1947 som allerede henger ved døren. Legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Dagens avis i byen er en annen, valgfri kilde.",
+      "control": "Løs P13 med E15/E09A/E14 og skill C8.15 fra bud10.4. Autentiser fersk sted-/tidsfestet utfartsobservasjon, sjåførens nylige gjennomkjøring og faktisk budavtale før avreise. Oktoberstopp/1985kvittering er ikke ferske rutedata.",
       "consequence": "Formålet er fysisk overlevering av originaler med kopier allerede sikret eksternt. Planen er å kjøre gjennom uten stopp/avlesning ved C. Ingen skjult feilvalg, ny global frist eller påstand om at kryssing er bevist trygg.",
-      "insufficient_evidence": "Avis før04:45 er ikke levert; behold mat/ro/annet kartgrunnlag tilgjengelig uten tom venting. Feil plassering får eksisterende karttips; avisbildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise.",
+      "insufficient_evidence": "E15 er et gammelt, tilgjengelig dinerutklipp og skal ikke ha 04:45-port. Leveringsregelen gjelder dagens avis i byen. Feil kartplassering får eksisterende karttips; bildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise.",
       "scene_ids": [
         "H09_BRIEF",
         "H09_CHECK",

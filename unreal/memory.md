@@ -1,5 +1,15 @@
 # Minne for unreal/
 
+## NP1 pakket aksept, 26.10.2026 kl. 01:12 CET
+
+Kilde `2c05e33d18156c85df174c5afcc0f4030de38878` har17 pakkede kjøringer,1 493 selvtester og28 faktisk vurderte originalbilder. Dales High/Low har191/5 hver; LineLights12/3, Sky16+full Flow per High/Low, T0153/19, T0265/15 og38,89m gange. Feltfilm/mørkerom og hele finalen består. RT79,3446MiB i625 aktive samples ligger under uendret80MiB-varselgrense. Akseptfilen binder21 rapporter. S.1/R2.1 er forfattergrunnlag, S.6 og runtime-delene S.3a/S.7a er levert kandidat. Nye SC-/kveldsporter, fem aktive møter og original VHS er fortsatt åpne. Ku-R2 er bytebevart. Installering av NP1 skal fortsatt verifiseres; ikke anta at en pakket kandidat allerede er standard.
+
+## Kontorfunn og himmelkandidat, 26.10.2026 kl. 00:42 CET
+
+Nyeste arbeid foregår isolert på `codex/night-production`. HorrorStory har nå10 hovedoppdrag,13 scenarioer,79 scener og16 dokumenter med20 kildekontraktprøver. EveningShift har101 scener/17 dokumenter og uendrede109 takes. Seks frivillige loretekster og et separat arrayserviceark er faktisk lesbare i kontoret; lesestatus og legacy/T02/VHS-grenser bevares. Dokumentets store tekst er1,35 med fysisk rulling. LineLights skiller opptrådt, faktisk sett og avsluttet, og gjenopptar fra disk. Fem optional himmeltrinn bruker fysiske baner, siktsjekk og separat versjonert lagring. De knyttes foreløpig til faktisk kapittelprogresjon, ikke en ferdig SC01 tilSC13-koordinator.
+
+Gjeldende installasjon ved oppstart av leveringskontrollen var allerede ku-R2, binær `60e63f4e7cac1afd5097534cdf885d009f73705dbe892d41c63fc991949da4c9`. Dens140 kilde-/assetfiler er tatt inn uendret fra verifisert snapshot, uten å redigere den andre chatens arbeidsmappe. Ny kandidat må testes og inkludere disse før standard erstattes. [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md) fører gjeldende test-/leveringsstatus.
+
 ## T02 levert og installert, 25. oktober 2026
 
 Kilde `5b9fcb3c` er flettet i PR162 (`d152fb6d`) og samme Linux-pakke er installert via standardstarteren. Den fysiske serviceskuffen, egen Operations-nøkkel, dør/terskel, D02-papirer og feltmappe leder til T02s faktiske normalreferanse, ståsted, fire kontroller, eget originalfoto og én SARO-arkivering. Uavklart utfall beholder hovedruten. Kontoret krever ingen sett VHS; STATION 01, Nora, K3, C og byforsyning beholder sine roller.
@@ -9,6 +19,40 @@ Kilde `5b9fcb3c` er flettet i PR162 (`d152fb6d`) og samme Linux-pakke er install
 Arkivkortets originale tittel, stempel og side gjenopprettes fra faktisk historikk. Manglende fotofil gir ikke bekreftet credit, erstatter ikke originalbildet og tillater ikke ny arkivering av samme forsøk. 40 installerte payloadfiler og alle 40 personlige Saved-filer (57 noder) er etterkontrollert uendret også etter installert smoke og pruning. Gjeldende T02, full T01 R2-backup og T01 R2-kandidat er de tre komplette testpakkene som beholdes. To eldre payloads er pensjonert, 7 621 635 760 logiske bytes; kilder/Saved/Engine/logger/bilder/bevis er bevart.
 
 [T02_RUNTIME.md](T02_RUNTIME.md) og `/home/tom/scratch-bm/Signal47-t02-20261025` har bevis og grenser. Fersk Continue beviser normal last, bevarte kildestorer og scene/HUD, ikke en fersk minnedump eller sletting av tidligere positivt flagg. Foto identifiserer ståsted/utsnitt; mørke ledere og lampestatus avledes ikke fra print alene. Previewbildene er delvise sider. Original 72-sekunders VHS, nye forfatterfunn, samordnet helrute, skyggemann/stealth og menneskelig Roam/Xbox/lytting/fullnatt står fortsatt åpne.
+
+## Sammenflettet hovedscenario, 25. oktober 2026
+
+- Nyeste bestilling: flett alle designrundene sammen, behold eksisterende randomhendelser, vis ett tidlig UFO-lys og flere etter hvert, og gjenbruk tidligere Dale-kontorideer med lesbare UFO-/aliendokumenter.
+- [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) er nå én hovedrekkefølge SC01 tilSC13, ikke nye overlappende revisjoner. Tidligere82 406bytes er bevart med SHA-256 i [MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md). Alle32 NATT-kort/seks valgfrie spor finnes der. Eldre memory-/loggoppføringers «del0/del0B» gjelder den bevarte arbeidsversjonen.
+- Fem skrevne aktive møter og tre ulike Calichebesøk består. SC04 får faktisk lokal plansperre, prøvd retrett fra bil til SAROs kontrollrom og en avgrenset loggsikring med Ward på linjen før residualen. Troverdig motivasjon og faktisk transport er fortsatt uprøvd.
+- SKY01 til05: ett kryssende lys under første utvendige runde, to fra Caliche, flere i ulike sektorer, ordnet feltbevegelse, spredte grupper før morgen. Ingen kameratvang/kvote/gratis observasjon. Gamle LineLights, StarHole, komet og meteorer beholdes. Lagre global progresjon og faktisk observert separat.
+- Randominventar er kildekontrollert og beholdes, inklusive gammel tapt-tid-bortføring. Gammel pool kjører ch1 til5 og bybaseline sperrer gamle kveldsvarianter; ny akt trenger eksplisitt fasekart. Utvid eksisterende opptattvern og versjonert Fixed→NextFixed-budsjett. Behold gamle saves og korrekt avbrudd/gjenopptakelse. Ny fangst er lokal retry uten gammel teller/etterspor. LineLights' avbrudds-/observasjonsfeil har egen åpen oppgave.
+- [DALE_OFFICE_DOCUMENTS.md](DALE_OFFICE_DOCUMENTS.md): sju eksisterende dokumenter, seks nye frivillige engelske tekstutkast og tydelig opphav/lesestatus. Feltmappe/indeks bærer hovedspor; EV_DALE_CONTACT er kontaktinstruks, ikke fotografisk kontaktark. Arrayet trenger nytt servicevedlegg; eksisterende mappeindeks beholder T02s ene kulvert-/kameraståsted. VHS72sek er manus, ikke produsert/spillbar film.
+- Kanonpresiseringer: Ward er kvinne. Nøkkelen i kruset er opplysning i Tomás' historiske brev, ikke en nåværende nøkkel/adgangsgate. Operations-reserven er en separat faktisk rekvisitt. Ankomst13. april18:00, residual00:13:47,1947-tider, fjernark04:04 og én finale05:29 beholdes. Residualen må kunne starte passivt uten å oppheve SC04s automatiske plansperre.
+- S.1 tilS.9 er åpne og samordnet med I/R2/H. Ingen ny JSON-/runtime-/lyd-/modell-/film-/bygg-/installasjonsleveranse i denne sammenflettingen. HorrorStory er fortsatt10 hovedkort/36scener, som må omskrives før ny integrasjon. Andre chatters T02-/runtimearbeid er ikke endret.
+
+## Integrasjonsforslag for array og Caliche,25. oktober2026
+
+- Tom ber om kobling til eksisterende historie, ekstra oppdrag på selve arrayet og faktisk byfunksjon. MISSION_FLOW del0B samler forslaget etter brainstorming, lokal game-production og en Gauntlet-kritikkrunde. Dette er en anbefaling, ikke ferdig runtime eller påstått brukervalidert design.
+- ARRAY-01 etter arkiv/BY02 før STATION01: fast kilde blir stående, operatøren velger A→B/B→A og kort retur, nærmeste antenner følger faktisk posisjon, holder tom plass kort og returnerer026. Fysisk observasjon/landemerker støtter geometri; opptaker støtter bare lyd/tid; kommando-/drivlogg er egen kilde. Dette peker mot videreført1947-oppmåling uten å løse C eller Noras motiv.
+- Tre Calichebesøk gjør ulikt arbeid: BY01 inntrengermelding/utkalling og avtalt hjelper/bortføring; BY02 datert Earl/1981-kildekontroll/feltopplegg; BY03 trygg sammenstilling, readback, E15/P13 og risikovurdert avreise. Førmidnatt-skyggemann flyttes til kjent byvindu/verksted ved samme besøk for å unngå flere pliktturer.
+- Aktivt trusselmøte4 legges til arrayet. STATION01 beholder lokal nullprøve, kabel, Tomás og kort avskjæring. Behold fem aktive møter totalt og den faste finalen. Byen er reell tilflukt; retur til SARO har et avgrenset sikkerhets-/kontrollformål og må prøves som troverdig handling.
+- I.1-I.6 er åpne for senere scener/kilder, fysisk arraytilgang, oppdragsfase uten gammel Force-bortføring, byhandlinger og prøve. Ingen egne runtime-/T02-/pakke-/installasjonsendringer i dette designarbeidet.
+
+## Skrekkrevisjon R2, 25. oktober 2026
+
+- Tom mener første oppdragsplan er anemisk, med én alienhendelse og nesten tom kveld18-24. Revidert hovedretning i MISSION_FLOW del0 og HORROR_STORY_PLAN: fem nødvendige spillbare trusselmøter, tre før midnatt, pluss synlig vitnebortføring og én fast finale.
+- Kveldsbeats: nærvær utenfor glass18:15, faktisk trafoflukt19:00, svart figur inne20:15, tilkalt kveldshjelper tatt21:00, annex-inntrenging22:15 og aktivt bilmøte23:20. Deretter feltmøte ved STATION01 og størst samordnet SARO-beleiring etter04:04. Tidene er forslag og krever ingen passiv venting.
+- Reyes melder fare tidlig og søker hjelp/avreise. Jobben blir sikkerhet/kommunikasjon/dokumentasjon. Lokal06:00-serie på hold tidlig; H08 kvitterer fortsatt suspensjon og tiltak ved andre stasjoner. B-12/nullprøver tester mekanismen, ikke om alt bare var en lampe.
+- Bevar00:13:47 som første store instrumentelle residual, avtrykksregel, svart skikkelses usett-flytting og05:29-finalen. Reaktive fremmede kan sees tidligere; slutten avslører hva registreringen gjør med Reyes. R2.1-R2.9 er åpne for senere produksjon. Den36sceners engelske pakken har ennå ikke de nye kveldsscenene. Ingen ny runtime/lyd/modell/bygg/installasjon i denne revisjonen.
+
+## Detaljert oppdragsreise 18:00 til Roswell, 25. oktober 2026
+
+- Nytt detaljvedlegg: [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md), 32 arbeidskort under H01 til H10 og seks valgfrie spor. Hvert kort har løsning, fare/ro, utvei/recovery og forbindelse videre. Ingen survival-ressursøkonomi, tilfeldig anomalikvote eller nye slutter.
+- Bygger på levert T01 R2 og nyere engelske HorrorStory-kilder. Forfatterpresiseringer: ufullført T01 tillater kalibrering, men sperrer Survey til faktisk kontroll/filing i nye saker; E15 er gammelt, innrammet 1947-utklipp uten 04:45-port. JSON-kilder rettet og generert lesestoff oppdatert.
+- Aktive kveldsoppgaver må skje før siste notch/Survey som starter dagens automatiske K3/dip/tidshopp. Fjernarkenes fulle intervall er til04:04; første beleiringsversjon sikrer mottakeroriginal, påbegynt hendelsesark og ferdige fjernark etter dette og før angrep. Romobservasjoner føres først etter hendelsen. Ekstern sikring er konkret diktering/readback av kilde-ID/måletabeller til Wards daterte logg; foto/negative blir i mappen.
+- To B-12-kontroller er gyldige, P07 er normal lokal nullprøve, og avtrykk svarer ikke på nye spørsmål. C8.15 og ment overlevering10.4 beholdes forskjellige. Varsling lykkes før den ene faste finalen05:29:00 til05:29:47.
+- H1.5 til H1.7 og H6.5 står åpne i todo for delscener, rekvisitter, faktisk tids-/transportinnpassing og menneskelig prøving. Bare dokument-/forfatterarbeid nå. Pågående T02-spillkode er ikke endret av denne leveransen.
 
 ## T01 R2 levert, 25. oktober 2026
 

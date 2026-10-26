@@ -212,7 +212,7 @@
       "sample_format": "PCM16",
       "channels": 1
     },
-    "note_nb": "Kveldstart og tidslinje har runtime i S47Evening/S47EveningPack. De 109 rene stemmetakene er produsert (voice/README.md); Unreal-import av takene, kanalmiks i spillet, musikk og video gjenstår. Senere felt-, kontor- og filmoppgaver er porter for videre produksjon."
+    "note_nb": "109 eksisterende stemmetakes er produsert. Åpning, kontor og T01/T02 har egne runtimeleveranser. Seks frivillige loretekster og ordinært arrayserviceark er kildeintegrert uten nye takes; original 72-sekunders felt-VHS er uprodusert. Pakke-/menneskeprøving dokumenteres separat."
   },
   "recording_aliases": {
     "D61_FIXED_FRAGMENT_001": "D01_HANDOVER_001"

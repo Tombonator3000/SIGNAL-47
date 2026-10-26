@@ -146,6 +146,9 @@ private:
 	bool bTestWalk = false;          // the walk has the developer's recording (no time away's to hold)
 	bool bArrayStepped = false;      // StepArray has run this frame
 	bool bWalkNear = false;          // -S47RecWalk=near: the nearest time away walks once there is one
+	struct FLineContract;
+	TSharedPtr<FLineContract> LineContract;
+	void ControlLightsTest(double Dt);
 
 	bool Is(const TFunction<bool()>& F) const { return F && F(); }
 	FString Phase() const;

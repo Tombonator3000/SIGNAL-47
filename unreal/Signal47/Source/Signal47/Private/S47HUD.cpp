@@ -4,6 +4,8 @@
 #include "S47Substation.h"
 #include "S47Office.h"
 #include "S47T02Test.h"
+#include "S47SkyVisitors.h"
+#include "S47DaleDocumentsTest.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 #include "S47AnomalyTest.h"
@@ -151,6 +153,8 @@ void AS47HUD::Start()
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= FS47Evening::SelfTest(Lines);
+		bOk &= FS47SkyVisitors::SelfTest(Lines);
+		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);
@@ -501,6 +505,7 @@ void AS47HUD::Start()
 			Hd.OfficePhoneBusy = H.OfficePhoneBusy; Hd.ArchiveBusy = H.ArchiveBusy; Hd.ArrayBackBusy = H.ArrayBackBusy;
 		}
 		M->Evening = MakeShared<FS47Evening>(M);
+		M->SkyVisitors = MakeShared<FS47SkyVisitors>(M);
 		M->Office = MakeShared<FS47Office>(M);
 		M->Office->Init();
 		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))))
@@ -531,6 +536,7 @@ void AS47HUD::Start()
 		M->Substation = MakeShared<FS47Substation>(M);
 		M->Substation->Begin();
 		M->T02Test = MakeShared<FS47T02Test>(M);
+		M->DaleDocumentsTest = MakeShared<FS47DaleDocumentsTest>(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

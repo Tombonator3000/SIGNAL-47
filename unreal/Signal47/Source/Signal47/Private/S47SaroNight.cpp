@@ -144,6 +144,15 @@ void US47SaroNight::Init(US47Main* InM)
 		if (!Self.IsValid()) return;
 		Self->M->TownSeen.Add(TEXT("ev:lights")); Self->M->TownSeen.Add(FString::Printf(TEXT("mark:lights@%d"), int32(JsRound(Clock)))); Self->Autosave();
 	});
+	LineLights->OnObserved = [Self](double Clock)
+	{
+		if (!Self.IsValid() || !Self->M->Night) return;
+		FS47SawOpts O; O.At = Self->LineLights->At(); O.Line = S47Lines::LineOfMark(TEXT("lights"));
+		if (const S47Lines::FMapPt* Mp = S47Lines::PLACES().Find(TEXT("lights"))) O.Map = *Mp;
+		O.bLookingSet = true; O.Looking = true; O.bNoWatch = true;
+		Self->M->Night->Saw(TEXT("event"), TEXT("lights"), O);
+		Self->Autosave();
+	};
 
 	// ---------- the recording walks the player's last 47 seconds where they were taken (story/recording.ts) ----------
 	FS47RecordingDeps Wd;
@@ -384,11 +393,13 @@ void US47SaroNight::StepDark(double Dt, bool bModal)
 void US47SaroNight::StepLights(double Dt, bool bModal)
 {
 	if (M->Mode != US47Main::EMode::Play) return;
+	ControlLightsTest(Dt);
 	FS47LineLightsIn S;
+	S.bPaused = bModal || (M->UI && M->UI->Modal()) || Cinematic(); S.Camera = Camera();
 	S.bOk = !bModal && !Cinematic() && AtCh(1) && Phase() != TEXT("ch6") && Dawn() < 0.3 && !(M->Night && M->Night->Hooks.AbductionBusy && M->Night->Hooks.AbductionBusy()) && !ArrayBack->Busy();
 	if (Driving() && Area() == TEXT("saro")) if (const FS47Truck* Tr = M->World->TruckHere()) S.Truck = Tr->Position;
 	// (the developer's drive past them: a truck going south down the highway from the turn-off)
-	if (TestTruck) { TestTruck->Z += 12 * Dt; S.Truck = *TestTruck; if (TestTruck->Z > 330) TestTruck.Reset(); }
+	if (TestTruck) { if (!S.bPaused) TestTruck->Z += 12 * Dt; S.Truck = *TestTruck; if (TestTruck->Z > 430) TestTruck.Reset(); }
 	S.Clock = Clock();
 	AS47Web* W = M->Web;
 	S.Ground = [W](double X, double Z) { return US47Night::SaroFloorAt(W, X, Z); };
@@ -595,19 +606,9 @@ void US47SaroNight::SeenStep()
 		}
 		Was.Follow = Follow->Mode;
 	}
-	if (LineLights->State != Was.Lights)
-	{
-		if (LineLights->State == TEXT("pace") && Was.Lights == TEXT("none"))
-		{
-			FS47SawOpts O; O.At = LineLights->At();
-			if (const S47Lines::FMapPt* Mp = S47Lines::PLACES().Find(TEXT("lights"))) O.Map = *Mp;
-			O.Line = S47Lines::LineOfMark(TEXT("lights"));
-			FS47SeenWatch W; W.Pos = [Self] { return Self.IsValid() ? Self->LineLights->At() : TOptional<FVector>(); }; W.Secs = 40; W.Range = 900;
-			O.Watch = W;
-			N->Saw(TEXT("event"), TEXT("lights"), O);
-		}
-		Was.Lights = LineLights->State;
-	}
+	// LineLights owns its visibility/occlusion test. An offscreen occurrence is not a seen event;
+	// the observation callback above writes exactly once, without a geometry-blind SeenLog watch.
+	Was.Lights = LineLights->State;
 	// Earl's reel from 9/22/81 (core/reelTape.ts): only heard, at the studio door; how it ended,
 	// heard to the end or walked away from
 	if (ReelTape->bBusy != Was.bReel)
@@ -678,7 +679,7 @@ void US47SaroNight::Restore(const S47J::FObj& State)
 	RecWalk->Reset();
 	// (AbductSave.dishes, kept here while the time away is not ported)
 	DishesKept = FS47DishesSave::Copy(S47J::Obj(S47J::Obj(State, TEXT("abduct")), TEXT("dishes")));
-	LineLights->Reset(M->TownSeen.Contains(TEXT("ev:lights")));
+	LineLights->Restore(S47J::Obj(State, TEXT("lineLights")), M->TownSeen.Contains(TEXT("ev:lights")));
 	Dark->Halt();
 	TestWarn.Reset(); TestTruck.Reset(); TestRec.Reset(); bTestWalk = false; bReelTest = false;
 }
@@ -698,6 +699,7 @@ void US47SaroNight::Leave(bool bTitle)
 {
 	Dark->Halt();   // (and the power back, before the room is put back as the night began)
 	Follow->Reset(); ArrayBack->Reset(); RecWalk->Reset(); bTestWalk = false;
+	LineLights->Reset(LineLights->bDone);
 	if (!bTitle) ReelTape->Stop();
 	// (reel 047 stopped and the processor's display its own: archive.halt does it in the web version,
 	// story/archivePhone.ts, whose port has the deck after this)
@@ -707,6 +709,7 @@ void US47SaroNight::Leave(bool bTitle)
 
 void US47SaroNight::Save(const S47J::FObj& State) const
 {
+	S47J::Set(State, TEXT("lineLights"), LineLights->Save());
 	// AbductSave.dishes: the time away's part of the state, which its own port writes once it is in
 	if (Abduct.GetDishes || !DishesKept) return;
 	S47J::FObj Ab = S47J::Obj(State, TEXT("abduct"));

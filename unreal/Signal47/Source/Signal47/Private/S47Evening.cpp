@@ -269,6 +269,9 @@ void FS47Evening::ValidateInvestigationRestore()
  Pack.ValidateWorldRestore(M->Office && M->Office->HasKey(), M->Office && M->Office->WasUnlocked(),
   bSheet, bSheet && M->Substation && M->Substation->ReferenceMatched(),
   bSheet && M->Substation && M->Substation->FollowupVerified());
+ TArray<FString> Read;
+ if (M->Office) for (const FString& Id : FS47Office::LibraryDocumentIds()) if (M->Office->DocumentRead(Id)) Read.Add(Id);
+ Pack.ValidateOfficeReadDocuments(Read);
  Context(); Refile();
 }
 
@@ -281,6 +284,7 @@ void FS47Evening::Refile()
   if (Id == TEXT("EV_TRAFO_FOLLOWUP")) continue;
   // Restore office credits only after the physical controller has validated this case.
   if (Id.StartsWith(TEXT("EV_DALE_")) && (!M->Office || !M->Office->WasUnlocked())) continue;
+  if (FS47Office::LibraryDocumentIds().Contains(Id) && (!M->Office || !M->Office->DocumentRead(Id))) continue;
   // Never replace an already saved paper/photo or its stamp when resuming a case.
   if (M->Story->Docs().ContainsByPredicate([&](const FS47Doc& Doc){return Doc.Id==Id;})) continue;
   FS47Doc Doc; Doc.Id=D->Id; Doc.Title=D->Title; Doc.Kind=D->Kind; Doc.Stamp=D->Stamp;

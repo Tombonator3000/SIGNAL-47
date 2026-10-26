@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "S47Json.h"
 #include "S47Seen.h"
 
 class AS47Web;
@@ -28,6 +29,11 @@ struct FS47LineLightsIn
 	TFunction<double(double, double)> Ground;
 	/** The night's curve (story/curve.ts) lets them come now (an event); unset, they may. */
 	TOptional<bool> May;
+	/** Panels/cinematics freeze an existing encounter; they do not count as losing the truck. */
+	bool bPaused = false;
+	TOptional<FS47Cam> Camera;
+	/** Optional sight provider for isolated contract tests. Runtime traces the shown world. */
+	TFunction<bool(const FVector&, const FVector&)> Clear;
 };
 
 class SIGNAL47_API FS47LineLights
@@ -38,6 +44,9 @@ public:
 	/** 'none' | 'pace' | 'off' */
 	FString State = TEXT("none");
 	bool bDone = false;
+	/** Occurrence, actual observation and natural completion have different save contracts. */
+	bool bStarted = false, bObserved = false, bCompleted = false;
+	TFunction<void(double)> OnObserved;
 	/** T. Vega's field book has them (story/fieldBook.ts): not seen yet, they may come northbound too,
 	 *  on the way back. */
 	bool bAnyWay = false;
@@ -47,6 +56,8 @@ public:
 	TOptional<FVector> At() const;
 	/** A new night or a case opened: whether it has been seen in it. */
 	void Reset(bool bInDone);
+	S47J::FObj Save() const;
+	void Restore(const S47J::FObj& Saved, bool bLegacyDone = false);
 	/** The points as the camera sees them: four pixels across (Unreal: billboards are sized in the world). */
 	void Draw(const FS47Cam& Cam, double ViewportH);
 	/** Now, abreast of the truck (the tests): `Ahead` +1 driving south, -1 north. */
@@ -67,6 +78,8 @@ private:
 	TArray<FVector> Shown;
 	double T = 0;
 	double LastZ = 0;
+	double ViewTime = 0, ObservedClock = 0;
+	bool bPaceSeen = false, bDepartureSeen = false, bFadeSeen = false, bReported = false, bLegacyConsumed = false;
 	/** Which way they go when they leave the truck: onto B and along it towards STATION 01. */
 	FVector Off;
 
@@ -74,4 +87,7 @@ private:
 	void Begin(const FVector& Tr, const FS47LineLightsIn& S, int32 Ahead = 1);
 	void SetVisible(bool bOn);
 	void Apply();
+	void Observe(double Dt, const FS47LineLightsIn& S);
+	bool Clear(const FVector& From, const FVector& To) const;
+	void Finish(bool bNatural, double Clock);
 };

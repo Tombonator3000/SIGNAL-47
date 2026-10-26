@@ -1,8 +1,12 @@
 # SIGNAL / 47 i Unreal
 
-## Nyeste leverte runtime: T02
+Nyeste kandidat NP1: [kontorfunn, himmel og korrekt observasjonslagring](NIGHT_PRODUCTION_RUNTIME.md). Seks nye frivillige lesedokumenter, eget arrayserviceark, faktisk stor tekst/rulling og fem lagrede himmeltrinn er integrert. LineLights beholder reell observert del og gjenopptar korrekt. Installert ku-R2 er tatt med uendret. 17 pakkede kjøringer og28 vurderte originalbilder består. Git-/installasjonslevering ferdigstilles. Den nye SC01 tilSC13-historien har produsert manusgrunnlag, mens kveldskoordinator, aktive møter og original VHS fortsatt står åpne.
+
+## Levert grunnlag: T02
 
 [T02_RUNTIME.md](T02_RUNTIME.md) beskriver det installerte kontoret med egen nøkkel/feltmappe og den faktiske T02-felt-/returreisen. Verifisert og uavklart arkivering, originalfoto, diskrestore og fem ferske Continue-prosesser er prøvd i samme pakkede kandidat. PR162 er flettet; standardstarteren bruker den testede pakken. Original 72-sekunders VHS, videre forfatterintegrasjon og menneskelig helnatt er fortsatt åpne.
+
+Nyeste hovedscenario: [én sammenhengende natt fra18:00 til Roswell Road](MISSION_FLOW_1800_ROSWELL.md). Tretten scenarioer fletter sammen eksisterende historie, aktiv kveld, tre Calichebesøk og ekstra arrayoppdrag. Alle eksisterende randomfamilier beholdes. Ett tidlig himmellys blir gradvis flere; [Dales kontor](DALE_OFFICE_DOCUMENTS.md) får seks nye frivillige lesedokumenter rundt den eksisterende feltmappen. Produksjonsoppgaver S.1 til S.9 står i [todo](todo.md). S.1s engelske JSON-/personkunnskapsgrunnlag er produsert; den nye scenariorekkefølgen trenger fortsatt runtimeintegrasjon.
 
 Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Videre spillarbeid gjelder desktoputgaven i Unreal. `web/` og Unity er historiske referanser. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
 
@@ -10,11 +14,15 @@ Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen ko
 
 Gjeldende retting og teststatus: [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md). Q3 består 110/110 skriptede scenarioer, 1 424 selvtester og komplette High/Low-finaler helt til meny. Feltfoto, materialbindinger, utgang ved lagringsfeil, bindingsnavn, tekststørrelse og P13 er rettet. VSM-profilering og menneskelig fullnatt med lyd/fysisk Xbox står fortsatt åpne. [Før-rapporten fra PR157](SPILLTEST_2026-10-25.md) beholder de opprinnelige krasjene og feilene.
 
-QA-grunnlaget Q3 ble levert gjennom PR158. Gjeldende standard er nå T01 R2 fra [PR160](https://github.com/Tombonator3000/SIGNAL-47/pull/160), med 40 verifiserte payloadfiler og 40 uendrede personlige Saved-filer. Installert oppstart og kontrollert opprydding består. R2, R1 og full Q3-backup er de tre komplette testpakkene; alle kilder/Saved/bevis er bevart.
+QA-grunnlaget Q3 ble levert gjennom PR158. Tidligere standard T01 R2 kom fra [PR160](https://github.com/Tombonator3000/SIGNAL-47/pull/160), med 40 verifiserte payloadfiler og 40 uendrede personlige Saved-filer. Installert oppstart og kontrollert opprydding består. R2, R1 og full Q3-backup er de tre komplette testpakkene; alle kilder/Saved/bevis er bevart.
 
 Samlet videre plan for historie og skrekk: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md). Kosmisk etterforskning, gradvis kommende invasjon, stabile skyggemannregler og en faktisk skjul/flukt-sekvens ved SARO. Detaljerte oppdrag og produksjonsetapper H1 til H6 ligger øverst i [todo.md](todo.md). Dette er planlagt for senere implementering, ikke nye funksjoner i dagens spill.
 
-H1.2 til H1.4 er nå produsert som engelske forfatterkilder i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti oppdrag, 36 scener og fem dokumenter med validert generator. Ingen ny runtimehistorie eller nye opptak er hevdet. T01-service-/returreisen er nå implementert og prøvd som R2: faktisk journal/kontroll/lampe, én fysisk returarkivering, versjonert lagring og riktige RX-mål etter Continue. Se [T01_RUNTIME.md](T01_RUNTIME.md) for kilde, 14 pakkede kjøringer, sju ferske Continue-prosesser, elleve originalbilder og videre leveringsstatus. T02, kontor/VHS og resten av H2 står åpne.
+De tidligere32 arbeidskortene, seks valgfrie sporene og revisjonene er bevart i [sekundært løsningsoppslag](MISSION_DETAILS_REFERENCE.md). Hovedscenarioet bestemmer nå rekkefølge og sammenheng; kontrollverdier og eksisterende bevis-ID-er videreføres.
+
+Fem nødvendige aktive trusselmøter, tre før midnatt, og synlig bortføring bygger mot den faste finalen. Ny himmel-/kveldskoordinator og engelske delscener må produseres. Gammel tilfeldig bortføring med tapt tid beholdes og skilles fra nye møters lokale gjenopptakelse. Dette er en planrevisjon, ikke den installerte T01 R2-pakken.
+
+H1.2 til H1.4 er nå produsert som engelske forfatterkilder i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti hovedkort,13 scenariokontrakter,79 scener og16 dokumenter med validert generator. Ingen ny runtimehistorie eller nye opptak er hevdet. T01-service-/returreisen er nå implementert og prøvd som R2: faktisk journal/kontroll/lampe, én fysisk returarkivering, versjonert lagring og riktige RX-mål etter Continue. Se [T01_RUNTIME.md](T01_RUNTIME.md) for kilde, 14 pakkede kjøringer, sju ferske Continue-prosesser, elleve originalbilder og videre leveringsstatus. T02 er levert, og NP1 utvider kontorfunnene. Original VHS og resten av H2 står åpne.
 
 Ny fortellerretning og manus: [ANOMALY_PLAN.md](ANOMALY_PLAN.md) og [kveldspakken](Narrative/EveningShift/README.md). Pakken inneholder innkjøring/diner, Dales telefon-/radiodialog, kontorfunn, dokumenter og VHS-manus. Innkjøring, telefonoverlevering og ny tidslinje har runtime i kandidaten på `codex/evening-runtime`; se [runtime-rapporten](EVENING_RUNTIME.md). Senere kontor-/felt-/filminnhold er fortsatt forfattergrunnlag. Claude har siden integrert og installert runtimeåpningen. De 109 nye takesene er koblet til lydløypa på samme gren; se [lydrapporten](EVENING_AUDIO.md). Codex oppdaterer ikke installasjonen.
 

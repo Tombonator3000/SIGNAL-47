@@ -7,8 +7,8 @@
 class US47Main;
 class UMaterialInstanceDynamic;
 
-// drive/herd.ts: the exported Herefords. Geometry, frost and eye sprites come from the web scene;
-// this keeps their instanced pose, grazing clock, headlight beam, glints and missing cow in step.
+// drive/herd.ts: the Herefords. Authored body/head meshes reuse the original instance pools;
+// frost, eye sprites, grazing clock, headlight beam and missing cow remain in step.
 namespace S47Herd
 {
 	extern SIGNAL47_API const TCHAR* TAG_RANCH;
@@ -52,6 +52,7 @@ private:
 	TArray<FVector> EyeAt;
 	TArray<TWeakObjectPtr<UMaterialInstanceDynamic>> Eyes;
 	bool bEyesLit = false;
+	bool bNativeModels = false;
 	TArray<double> Ys;
 	bool bDirty = true;
 	double LastT = 0;

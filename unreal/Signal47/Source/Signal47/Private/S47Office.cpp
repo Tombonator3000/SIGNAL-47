@@ -2,6 +2,7 @@
 #include "S47Evening.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
+#include "S47Kit.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -250,6 +251,11 @@ void FS47Office::Init()
  FS47Obj Clippings = Box(TEXT("office:clippings"), FVector(.79, .812, 9.73), FVector(.29, .014, .34), Paper);
  FS47Obj Note = Box(TEXT("office:foldedNote"), FVector(-.25, .824, 9.30), FVector(.20, .012, .13), Paper);
  FS47Obj Contact = Box(TEXT("office:contactCard"), FVector(.76, .813, 9.36), FVector(.16, .010, .10), Paper);
+ // A separate low cabinet leaves the desk's short field-folder route unobstructed.
+ Box(TEXT("office:privateCabinet"), FVector(-.66, .33, 8.75), FVector(.28, .66, .84), Steel);
+ FS47Obj PrivateFolder = Box(TEXT("office:privateFolder"), FVector(-.64, .676, 8.98), FVector(.25, .025, .30), Kraft);
+ FS47Obj ArraySheet = Box(TEXT("office:arrayServiceSheet"), FVector(-.65, .676, 8.48), FVector(.21, .012, .25), Paper);
+ Collider(TEXT("office:privateCabinetFoot"), -.80, -.52, 8.33, 9.17);
  // Printed lines and labels lie on real paper; flat text faces up in Unreal.
  auto PaperText = [&](const FString& Name, const FString& Text, const FVector& At, float Size)
  {
@@ -260,6 +266,17 @@ void FS47Office::Init()
  PaperText(TEXT("office:indexPrint"), TEXT("WORKING INDEX"), FVector(-.28, .819, 9.52), 1.9f);
  PaperText(TEXT("office:notePrint"), TEXT("D. / WORKING NOTE"), FVector(-.25, .835, 9.30), 1.6f);
  PaperText(TEXT("office:contactPrint"), TEXT("DALE / SERVICE"), FVector(.76, .823, 9.36), 1.4f);
+ PaperText(TEXT("office:privatePrint"), TEXT("PRIVATE / NOTES"), FVector(-.64, .692, 8.98), 1.3f);
+ PaperText(TEXT("office:arrayServicePrint"), TEXT("ARRAY SERVICE\nROW 1 / A + B"), FVector(-.65, .687, 8.48), 1.2f);
+ // Ordinary service boards on the existing gravel row, not encounter-result props.
+ // The 0.27 m walking radius has clear access from gate/spine and either A/B order.
+ for (const auto& Mark : TArray<TPair<FString, double>>{{TEXT("A / ROW 1 WEST"), -8.}, {TEXT("REF / R1"), -1.}, {TEXT("B / ROW 1 EAST"), 18.}})
+ {
+  const FString Name = FString(TEXT("office:arrayBoard:")) + Mark.Key;
+  Box(Name + TEXT(":post"), FVector(Mark.Value, -.04, -75.3), FVector(.035, 1.16, .035), Steel);
+  Box(Name, FVector(Mark.Value, .37, -75.3), FVector(.66, .23, .018), Paper);
+  Label(Name + TEXT(":label"), Mark.Key, FVector(Mark.Value, .37, -75.286), 90, 3.6f);
+ }
  FS47Obj TVObj = Mesh(TEXT("office:fieldDeck"), TV, FVector(-.45, .62, 7.75), FVector(.7), nullptr);
  if (const FS47WebNode* N = W->Node(TVObj.I)) if (UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N->Comp.Get()))
  {
@@ -277,6 +294,7 @@ void FS47Office::Init()
  Visual->Objects.Add(TEXT("office:door"), DoorPanel); Visual->Objects.Add(TEXT("officeDoor"), DoorPanel);
  Visual->Objects.Add(TEXT("office:drawer"), DrawerFront); Visual->Objects.Add(TEXT("office:key"), KeyTag);
  Visual->Objects.Add(TEXT("office:desk"), DeskPaper); Visual->Objects.Add(TEXT("office:folder"), Folder); Visual->Objects.Add(TEXT("office:index"), Index);
+ Visual->Objects.Add(TEXT("office:private"), PrivateFolder); Visual->Objects.Add(TEXT("office:arrayService"), ArraySheet);
  Visual->Objects.Add(TEXT("office:clippings"), Clippings); Visual->Objects.Add(TEXT("office:note"), Note); Visual->Objects.Add(TEXT("office:contact"), Contact);
  Visual->Objects.Add(TEXT("office:tape"), Deck); Visual->Objects.Add(TEXT("office:depart"), Depart);
  auto Bind = [&](const FString& Id)
@@ -296,6 +314,8 @@ void FS47Office::Init()
    if (Id == TEXT("office:clippings")) return TEXT("Examine the local cuttings");
    if (Id == TEXT("office:note")) return TEXT("Read the folded note");
    if (Id == TEXT("office:contact")) return TEXT("Copy the field contact");
+   if (Id == TEXT("office:private")) return TEXT("Browse Dale's private notes");
+   if (Id == TEXT("office:arrayService")) return TEXT("Read Row One array service sheet");
    if (Id == TEXT("office:tape")) return TEXT("Inspect Service Road / Field 01");
    if (Id == TEXT("office:depart")) return WantsDeparture() ? TEXT("Leave for STATION 01") : FString();
    return {};
@@ -334,6 +354,7 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
  bRequired = bNewNight; bKey = bUnlocked = bEverOpened = bEntered = false;
  bDoorInspected = bDoorTarget = bDrawerTarget = false;
  bDeskSeen = bIndexRead = bClippingsRead = bNoteRead = bContactRead = bFieldSheet = bDeparted = false;
+ ReadDocuments.Reset();
  DoorK = DrawerK = FieldSheetAt = SyncWait = 0;
  double Version = 0;
  if (Saved.IsValid() && Saved->HasTypedField<EJson::Number>(TEXT("v")) && Saved->TryGetNumberField(TEXT("v"), Version) && Version == 1.)
@@ -351,6 +372,20 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
   const bool bHasAcquisitionTime = Saved->HasTypedField<EJson::Number>(TEXT("fieldSheetAt")) && Saved->TryGetNumberField(TEXT("fieldSheetAt"), FieldSheetAt) && FMath::IsFinite(FieldSheetAt);
   bFieldSheet = bEntered && S47J::Bool(Saved, TEXT("fieldSheet")) && bHasAcquisitionTime;
   bDeparted = bFieldSheet && S47J::Bool(Saved, TEXT("departed"));
+  // Legacy office saves omit this optional list and therefore gain no read credit.
+  // Reject the whole list when one entry is not a registered string; never coerce bools.
+  const TArray<TSharedPtr<FJsonValue>>* Read = nullptr;
+  if (bEntered && Saved->TryGetArrayField(TEXT("readDocuments"), Read))
+  {
+   bool Valid = true;
+   for (const auto& Value : *Read)
+   {
+    FString Id;
+    if (!Value.IsValid() || Value->Type != EJson::String || !Value->TryGetString(Id) || !LibraryDocumentIds().Contains(Id)) { Valid = false; break; }
+    ReadDocuments.AddUnique(Id);
+   }
+   if (!Valid) ReadDocuments.Reset();
+  }
  }
  Init();
  // Rebuild the saved opening before the host validates the restored walking pose.
@@ -404,13 +439,17 @@ bool FS47Office::InReach(const FString& Id) const
 bool FS47Office::WantsDeparture() const
 { return !bDeparted && HasFieldSheet() && CanDepart && CanDepart(); }
 
-void FS47Office::OpenDocument(const FString& Id)
+bool FS47Office::OpenDocument(const FString& Id)
 {
- if (!M || !M->Story || !M->UI) return;
+ if (!M || !M->Story || !M->UI) return false;
  const FS47Doc* Doc = M->Story->Docs().FindByPredicate([&](const FS47Doc& D) { return D.Id == Id; });
+ const bool bLibrary = LibraryDocumentIds().Contains(Id);
+ // New private pages always show their registered text, even when an older saved
+ // notebook copy is blank/corrupt. The original seven papers retain historical copies.
+ if (bLibrary && (!M->Evening || !M->Evening->Pack.FindDocument(Id))) return false;
  // Physical paper retrieval remains useful if an authored scene is currently occupied.
  // Filing this actual paper is independent of granting Pack scene/route facts.
- if (!Doc && M->Evening)
+ if ((!Doc || bLibrary) && M->Evening)
  {
   if (const FS47EveningDocument* Source = M->Evening->Pack.FindDocument(Id))
   {
@@ -419,8 +458,49 @@ void FS47Office::OpenDocument(const FString& Id)
    Doc = M->Story->Docs().FindByPredicate([&](const FS47Doc& D) { return D.Id == Id; });
   }
  }
- if (Doc) M->UI->Document(*Doc);
- else M->UI->Toast(TEXT("The working sheet remains on the desk. The document source is unavailable."), 4);
+ if (Doc) { M->UI->Document(*Doc); return true; }
+ M->UI->Toast(TEXT("The working sheet remains on the desk. The document source is unavailable."), 4);
+ return false;
+}
+
+
+const TArray<FString>& FS47Office::LibraryDocumentIds()
+{
+ static const TArray<FString> Ids = {TEXT("EV_DALE_SKYLOG"), TEXT("EV_DALE_WITNESS"), TEXT("EV_DALE_EXPLANATIONS"),
+  TEXT("EV_DALE_FRAME18"), TEXT("EV_DALE_TAPELOAN"), TEXT("EV_DALE_UNSENT"), TEXT("EV_DALE_ARRAY_SERVICE")};
+ return Ids;
+}
+
+bool FS47Office::DocumentRead(const FString& Id) const
+{ return bEntered && WasUnlocked() && LibraryDocumentIds().Contains(Id) && ReadDocuments.Contains(Id); }
+
+void FS47Office::OpenLibrary()
+{
+ if (!M || !M->UI || !M->Evening) return;
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47Kit::Text(TEXT("Personal copies. Choose a page to read; you can leave with the field sheet at any time.")));
+ for (const FString& Id : LibraryDocumentIds())
+ {
+  if (Id == TEXT("EV_DALE_ARRAY_SERVICE")) continue;
+  const auto* Source = M->Evening->Pack.FindDocument(Id); if (!Source) continue;
+  Rows.Add(S47Kit::Card(Source->Title, DocumentRead(Id) ? TEXT("Read / retained in notebook") : TEXT("Unread"), [this, Id]
+  {
+   if (!M || !M->UI) return;
+   M->UI->Close(); ReadLibraryDocument(Id);
+  }));
+ }
+ M->UI->Open(S47Kit::Shell(M->UI, TEXT("DALE / PRIVATE NOTES"), S47Kit::Col(Rows), 920.f));
+}
+
+bool FS47Office::ReadLibraryDocument(const FString& Id)
+{
+ const FString ObjectId = Id == TEXT("EV_DALE_ARRAY_SERVICE") ? TEXT("office:arrayService") : TEXT("office:private");
+ if (!LibraryDocumentIds().Contains(Id) || !Here() || !ArchiveAvailable() || !Contains(M->Player->Pos) ||
+  !WasUnlocked() || !bEverOpened || !bEntered || !InReach(ObjectId)) return false;
+ // Only opening the actual document gives read credit. Browsing, missing sources,
+ // unavailable film and uncreated photographs cannot acknowledge this transaction.
+ if (!OpenDocument(Id)) return false;
+ ReadDocuments.AddUnique(Id); Changed(); return true;
 }
 
 void FS47Office::SyncFacts()
@@ -432,6 +512,8 @@ void FS47Office::SyncFacts()
  Commit(bIndexRead, TEXT("D02_READ_FIELD_INDEX")); Commit(bClippingsRead, TEXT("D02_READ_CLIPPINGS"));
  Commit(bNoteRead, TEXT("D02_READ_DALE_NOTE")); Commit(bContactRead, TEXT("D02_SAVE_CONTACT"));
  Commit(HasFieldSheet(), TEXT("D02_TAKE_FIELD_FOLDER"));
+ for (const FString& Id : ReadDocuments) if (DocumentRead(Id))
+  M->Evening->CommitWorldScene(FString(TEXT("D02_READ_")) + Id.Mid(8));
  // There is no produced 72-second tape. Neither tape-start nor vhs_seen is acknowledged.
 }
 
@@ -467,6 +549,8 @@ bool FS47Office::Use(const FString& Id)
   UE_LOG(LogS47Office, Display, TEXT("S47: office explicit departure released; actual field sheet at %.3f"), FieldSheetAt);
   if (OnDepart) OnDepart(); return true;
  }
+ if (Id == TEXT("office:private")) { OpenLibrary(); return true; }
+ if (Id == TEXT("office:arrayService")) return ReadLibraryDocument(TEXT("EV_DALE_ARRAY_SERVICE"));
  if (Id == TEXT("office:tape"))
  {
   M->UI->Toast(!M->Story->bPowered || M->Story->bDark ? TEXT("The VHS deck has no power. The field sheet is beside the maintenance forms.") : TEXT("The tape will not play. The field sheet still gives the camera position."), 5);
@@ -529,5 +613,28 @@ S47J::FObj FS47Office::Save() const
  S47J::Set(O, TEXT("deskSeen"), bDeskSeen); S47J::Set(O, TEXT("indexRead"), bIndexRead); S47J::Set(O, TEXT("clippingsRead"), bClippingsRead);
  S47J::Set(O, TEXT("noteRead"), bNoteRead); S47J::Set(O, TEXT("contactRead"), bContactRead); S47J::Set(O, TEXT("fieldSheet"), bFieldSheet);
  if (bFieldSheet && FMath::IsFinite(FieldSheetAt)) S47J::Set(O, TEXT("fieldSheetAt"), FieldSheetAt);
+ TArray<TSharedPtr<FJsonValue>> Read; for (const FString& Id : ReadDocuments) if (DocumentRead(Id)) Read.Add(MakeShared<FJsonValueString>(Id));
+ O->SetArrayField(TEXT("readDocuments"), Read);
  S47J::Set(O, TEXT("hasFieldSheet"), HasFieldSheet()); S47J::Set(O, TEXT("departed"), DepartureReleased()); return O;
+}
+
+bool FS47Office::SelfTest(TArray<FString>& Lines)
+{
+ bool Ok = true;
+ auto Check = [&](bool Value, const TCHAR* Why) { Lines.Add(FString(Value ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("Office optional papers: ") + Why); Ok &= Value; };
+ FS47Office A(nullptr), B(nullptr);
+ A.bKey = A.bUnlocked = A.bEverOpened = A.bEntered = true;
+ A.ReadDocuments = {TEXT("EV_DALE_SKYLOG")};
+ const auto Actual = A.Save(); B.Begin(S47J::Clone(Actual));
+ Check(B.DocumentRead(TEXT("EV_DALE_SKYLOG")) && !B.DocumentRead(TEXT("EV_DALE_WITNESS")), TEXT("one opened page restores without reading the collection"));
+ auto Old = S47J::Clone(Actual); Old->RemoveField(TEXT("readDocuments")); B.Begin(Old);
+ Check(!B.DocumentRead(TEXT("EV_DALE_SKYLOG")), TEXT("old office save gains no new optional read"));
+ auto Locked = S47J::Clone(Actual); S47J::Set(Locked, TEXT("key"), false); B.Begin(Locked);
+ Check(!B.DocumentRead(TEXT("EV_DALE_SKYLOG")), TEXT("read list without actual entry and own key is ignored"));
+ auto Invalid = S47J::Clone(Actual); Invalid->SetArrayField(TEXT("readDocuments"), {MakeShared<FJsonValueString>(TEXT("EV_DALE_SKYLOG")), MakeShared<FJsonValueBoolean>(true)}); B.Begin(Invalid);
+ Check(!B.DocumentRead(TEXT("EV_DALE_SKYLOG")), TEXT("mixed invalid read-list types give no partial credit"));
+ auto Unknown = S47J::Clone(Actual); S47J::Set(Unknown, TEXT("readDocuments"), TArray<FString>{TEXT("VHS_DALE_FIELD_01")}); B.Begin(Unknown);
+ Check(!B.DocumentRead(TEXT("VHS_DALE_FIELD_01")), TEXT("a film ID cannot be acknowledged as an opened paper"));
+ Check(LibraryDocumentIds().Num() == 7 && !LibraryDocumentIds().Contains(TEXT("EV_DALE_INDEX")), TEXT("six optional texts and separate service appendix preserve T02 index identity"));
+ return Ok;
 }

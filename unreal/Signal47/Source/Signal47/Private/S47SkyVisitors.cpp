@@ -1,0 +1,419 @@
+#include "S47SkyVisitors.h"
+
+#include "S47Evening.h"
+#include "S47Flow.h"
+#include "S47Geo.h"
+#include "S47Main.h"
+#include "S47Night.h"
+#include "S47Story.h"
+#include "S47Three.h"
+#include "S47Timeline.h"
+#include "S47UI.h"
+#include "S47Walker.h"
+#include "S47Web.h"
+#include "S47World.h"
+#include "Components/MaterialBillboardComponent.h"
+#include "Engine/GameViewportClient.h"
+#include "Engine/World.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "HAL/FileManager.h"
+#include "HAL/PlatformMisc.h"
+#include "UnrealClient.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogS47SkyVisitors, Log, All);
+
+namespace
+{
+ bool StrictBool(const S47J::FObj& O, const TCHAR* K, bool& Out)
+ {
+  const auto V = O.IsValid() ? O->TryGetField(K) : nullptr;
+  return V.IsValid() && V->Type == EJson::Boolean && V->TryGetBool(Out);
+ }
+ bool StrictNumber(const S47J::FObj& O, const TCHAR* K, double& Out)
+ {
+  const auto V = O.IsValid() ? O->TryGetField(K) : nullptr;
+  return V.IsValid() && V->Type == EJson::Number && V->TryGetNumber(Out) && FMath::IsFinite(Out);
+ }
+}
+
+double FS47SkyVisitorState::Duration(int32 S)
+{
+ const double Durations[5] = {80, 120, 150, 160, 240};
+ return S >= 1 && S <= 5 ? Durations[S - 1] : 0;
+}
+int32 FS47SkyVisitorState::Count(int32 S) { const int32 N[5] = {1, 2, 4, 6, 9}; return S >= 1 && S <= 5 ? N[S - 1] : 0; }
+int32 FS47SkyVisitorState::RequiredVisible(int32 S) { const int32 N[5] = {1, 2, 2, 3, 4}; return S >= 1 && S <= 5 ? N[S - 1] : MAX_int32; }
+
+void FS47SkyVisitorState::Begin(const S47J::FObj& Saved, bool bNewNight)
+{
+ *this = FS47SkyVisitorState();
+ if (!Saved.IsValid()) { bEnabled = bNewNight; return; }
+ double Version = 0, Phase = 0, Time = 0;
+ bool Enabled = false, Second = false;
+ if (!StrictNumber(Saved, TEXT("v"), Version) || Version != 1 ||
+  !StrictNumber(Saved, TEXT("stage"), Phase) || Phase < 0 || Phase > 5 || Phase != FMath::FloorToDouble(Phase) ||
+  !StrictNumber(Saved, TEXT("elapsed"), Time) || Time < 0 || Time > Duration(int32(Phase)) ||
+  !StrictBool(Saved, TEXT("enabled"), Enabled) || !StrictBool(Saved, TEXT("secondEarlyPass"), Second)) return;
+ const auto Stages = S47J::Arr(Saved, TEXT("stages"));
+ if (Stages.Num() != 5) return;
+ FS47SkyVisitorState Restored;
+ Restored.bEnabled = Enabled; Restored.Stage = int32(Phase); Restored.Elapsed = Time; Restored.bSecondEarlyPass = Second;
+ for (int32 I = 0; I < 5; ++I)
+ {
+  if (!Stages[I].IsValid() || Stages[I]->Type != EJson::Object) return;
+  const auto O = Stages[I]->AsObject();
+  if (!StrictBool(O, TEXT("occurred"), Restored.Occurred[I]) ||
+   !StrictBool(O, TEXT("observed"), Restored.Observed[I]) ||
+   !StrictBool(O, TEXT("completed"), Restored.Completed[I])) return;
+  if ((Restored.Observed[I] || Restored.Completed[I]) && !Restored.Occurred[I]) return;
+  if (I + 1 > Restored.Stage && Restored.Occurred[I]) return;
+ }
+ if (Restored.Stage && (!Restored.Occurred[Restored.Stage - 1] ||
+   (Restored.Completed[Restored.Stage - 1] != (Time >= Duration(Restored.Stage))))) return;
+ if (Second && !Restored.Occurred[0]) return;
+ *this = Restored; // Pending gaze dwell is deliberately not a saved observation.
+}
+
+bool FS47SkyVisitorState::Advance(int32 Requested, double Dt, bool bHeld)
+{
+ if (!bEnabled || bHeld || !FMath::IsFinite(Dt) || Dt <= 0) return false;
+ Requested = FMath::Clamp(Requested, 0, 5);
+ bool Changed = false;
+ if (Requested > Stage)
+ {
+  // Optional sky opportunities can be missed. A later chapter never replays all
+  // old tracks, nor marks them observed, after a clock jump or a time away.
+  Stage = Requested; Elapsed = 0; Looking = 0; Occurred[Stage - 1] = true; Changed = true;
+ }
+ if (!Stage || Completed[Stage - 1]) return Changed;
+ Elapsed = FMath::Min(Duration(Stage), Elapsed + Dt);
+ if (Elapsed >= Duration(Stage)) { Completed[Stage - 1] = true; Looking = 0; Changed = true; }
+ return Changed;
+}
+bool FS47SkyVisitorState::Observe(int32 Visible, double Dt)
+{
+ if (!bEnabled || Stage < 1 || Completed[Stage - 1] || Observed[Stage - 1] || !FMath::IsFinite(Dt) || Dt <= 0) return false;
+ Looking = Visible >= RequiredVisible(Stage) ? Looking + Dt : 0;
+ if (Looking < .65) return false;
+ Observed[Stage - 1] = true; Looking = 0; return true;
+}
+bool FS47SkyVisitorState::OfferEarlyPass()
+{
+ if (!bEnabled || Stage != 1 || !Completed[0] || Observed[0] || bSecondEarlyPass) return false;
+ bSecondEarlyPass = true; Completed[0] = false; Elapsed = Looking = 0; return true;
+}
+S47J::FObj FS47SkyVisitorState::Save() const
+{
+ const auto O = S47J::New();
+ S47J::Set(O, TEXT("v"), 1); S47J::Set(O, TEXT("enabled"), bEnabled);
+ S47J::Set(O, TEXT("stage"), Stage); S47J::Set(O, TEXT("elapsed"), Elapsed);
+ S47J::Set(O, TEXT("secondEarlyPass"), bSecondEarlyPass);
+ TArray<TSharedPtr<FJsonValue>> Stages;
+ for (int32 I = 0; I < 5; ++I)
+ {
+  const auto P = S47J::New(); S47J::Set(P, TEXT("occurred"), Occurred[I]);
+  S47J::Set(P, TEXT("observed"), Observed[I]); S47J::Set(P, TEXT("completed"), Completed[I]);
+  Stages.Add(MakeShared<FJsonValueObject>(P));
+ }
+ O->SetArrayField(TEXT("stages"), Stages); return O;
+}
+
+FVector FS47SkyVisitorState::MapPosition(int32 S, int32 I, double Seconds)
+{
+ const double P = FMath::Clamp(Seconds / FMath::Max(1., Duration(S)), 0., 1.);
+ if (S == 1) return FVector(-1050 + 2100 * P, 510 + 35 * FMath::Sin(P * PI), -1050 + 160 * P);
+ if (S == 2) return I == 0 ? FVector(-510 - 650 * P, 650 + 70 * P, 1410 + 360 * P)
+  : FVector(-430 + 1100 * P, 760 + 70 * P, 1320 - 520 * P);
+ if (S == 3)
+ {
+  static const FVector Starts[] = {{-760,800,-1000},{220,950,-1300},{-950,760,900},{900,900,1200}};
+  const FVector A = Starts[FMath::Clamp(I, 0, 3)];
+  return I % 2 ? A + FVector(650 * P, -40 * P, 310 * P) : A;
+ }
+ if (S == 4) return FVector(-700 + I * 105 + 800 * P, 670 + (I % 2) * 55, -1050 - I * 90 - 410 * P);
+ const int32 Group = FMath::Clamp(I / 3, 0, 2), Member = I % 3;
+ return FVector(-1000 + Group * 900 + Member * 75 + (Group - 1) * 440 * P,
+  750 + Group * 80 + Member * 22, -850 - Member * 130 - 800 * P);
+}
+
+FS47SkyVisitors::FS47SkyVisitors(US47Main* InM) : M(InM)
+{
+ FParse::Value(FCommandLine::Get(), TEXT("S47SkyVisit="), TestStage);
+ TestStage = FMath::Clamp(TestStage, 0, 5);
+ bContract = FParse::Param(FCommandLine::Get(), TEXT("S47SkyVisitContract"));
+ FParse::Value(FCommandLine::Get(), TEXT("S47SkyVisitProof="), ContractRoot);
+}
+FS47SkyVisitors::~FS47SkyVisitors()
+{
+ for (auto& W : Points) if (W.IsValid()) W->DestroyComponent();
+}
+void FS47SkyVisitors::Begin(const S47J::FObj& Saved, bool bNewNight)
+{
+ State.Begin(Saved, bNewNight); ObservationStep = 0; Hide();
+ if (TestStage && !Saved.IsValid()) State.Begin(nullptr, true);
+ if (State.bEnabled) Build();
+}
+void FS47SkyVisitors::Build()
+{
+ if (bBuilt || !M || !M->Web) return;
+ auto* Glow = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebGlow.M_WebGlow"));
+ if (!Glow) return;
+ for (int32 I = 0; I < 9; ++I)
+ {
+  auto* B = NewObject<UMaterialBillboardComponent>(M->Web, *FString::Printf(TEXT("SkyVisitor%d"), I));
+  B->SetupAttachment(M->Web->GetRootComponent()); B->SetMobility(EComponentMobility::Movable);
+  auto* D = UMaterialInstanceDynamic::Create(Glow, M->Web);
+  D->SetVectorParameterValue(TEXT("Color"), FLinearColor::Black);
+  B->AddElement(D, nullptr, false, 50, 50, nullptr);
+  B->SetCollisionEnabled(ECollisionEnabled::NoCollision); B->SetCastShadow(false);
+  B->RegisterComponent(); B->SetVisibility(false); Points.Add(B);
+ }
+ bBuilt = true;
+}
+void FS47SkyVisitors::Hide()
+{
+ State.Looking = 0; ObservationStep = 0;
+ for (auto& B : Points) if (B.IsValid()) B->SetVisibility(false);
+}
+
+FVector FS47SkyVisitors::WorldPosition(const FVector& P, const FString& Area)
+{
+ if (Area == TEXT("saro")) return P - FVector(S47Geo::SARO_IN_ROAD.X, 0, S47Geo::SARO_IN_ROAD.Z);
+ if (Area == TEXT("station01"))
+ {
+  const auto Q = S47Geo::RoadToStation(P.X, P.Z); return FVector(Q.X, P.Y + S47Geo::STATION_DY(), Q.Z + 8000);
+ }
+ return P + FVector(8000, 0, 0); // road, diner and Roswell share the same geographic frame.
+}
+bool FS47SkyVisitors::ClearLine(const FVector& Eye, const FVector& At) const
+{
+ if (!M || !M->Web || !M->Web->GetWorld()) return false;
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SkyVisitorSight), true);
+ const FVector From = S47Three::ToUE(Eye), End = S47Three::ToUE(At);
+ for (int32 I = 0; I < 32; ++I)
+ {
+  FHitResult H;
+  if (!M->Web->GetWorld()->LineTraceSingleByChannel(H, From, End, ECC_Visibility, Q)) return true;
+  const auto* C = H.GetComponent();
+  if (!C) return false;
+  bool Solid = C->IsVisible();
+  if (Solid && M->Web->ItemOf(C))
+  {
+   const auto* Node = M->Web->Node(M->Web->NodeOf(C));
+   if (Node && Node->Name.StartsWith(TEXT("proxy"))) Solid = false;
+  }
+  if (const auto* Mat = C->GetMaterial(FMath::Max<int32>(0, H.ElementIndex)))
+  {
+   const auto Blend = Mat->GetBlendMode(); float Opacity = 1;
+   Mat->GetScalarParameterValue(TEXT("Opacity"), Opacity);
+   if (Blend == BLEND_Additive || (Blend == BLEND_Translucent && Opacity < .5f)) Solid = false;
+  }
+  if (Solid) return false;
+  Q.AddIgnoredComponent(C);
+ }
+ return false;
+}
+int32 FS47SkyVisitors::RequestedStage() const
+{
+ if (TestStage) return TestStage;
+ if (!M || !M->Story || !M->Story->bEveningTimeline) return 0;
+ // The current chapter route supplies real milestones until S.2 owns the new
+ // evening encounters. A phase transition is never an observation or a gate.
+ const FString& C = M->Story->ChapterKey;
+ const int32 Chapter = C.StartsWith(TEXT("ch")) ? FCString::Atoi(*C.Mid(2)) : 0;
+ if (Chapter >= 5) return 5;
+ if (Chapter >= 3) return 4;
+ if (Chapter >= 2) return 3;
+ if (Chapter >= 1) return 2;
+ if (M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")))
+ {
+  const double Clock = S47Timeline::Night(M->Story->Clock());
+  return Clock >= -2 * 3600 ? 3 : Clock >= -4 * 3600 ? 2 : 1;
+ }
+ return 0;
+}
+void FS47SkyVisitors::RecordObservation(int32 Visible)
+{
+ static const TCHAR* Notes[] = {
+  TEXT("One pale light above the mesa."),
+  TEXT("Two lights visible together in the sky."),
+  TEXT("More than one light in the sky, in separate parts of the view."),
+  TEXT("A row of lights above the field."),
+  TEXT("Separate groups of lights over the horizon.")};
+ FString Text = Notes[State.Stage - 1];
+ if (State.Stage == 5 && State.Observed[0]) Text += TEXT(" More lights than the first one I saw.");
+ if (M->Story) M->Story->Note(Text);
+ UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: SKY%02d observed: %d world lights in view with clear sight"), State.Stage, Visible);
+ M->RequestAutosave();
+}
+void FS47SkyVisitors::Step(double Dt)
+{
+ ControlTest(Dt);
+ if (!M || !M->Story || !M->Player || !M->World || !State.bEnabled || M->Mode != US47Main::EMode::Play)
+ { Hide(); return; }
+ const bool Held = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic();
+ if (State.Advance(RequestedStage(), Dt, Held)) M->RequestAutosave();
+ // An early miss gets one further natural opportunity on the first field trip.
+ // Loading, opening a door and simply walking outside never restart a track.
+ if (!Held && M->Evening && M->Evening->ServicePending() && M->World->bDriving &&
+  M->World->Area == TEXT("road") && State.OfferEarlyPass()) M->RequestAutosave();
+ if (!State.Stage || State.Completed[State.Stage - 1] || M->World->Area == TEXT("room6")) { Hide(); return; }
+ Build();
+ if (!bBuilt || Points.Num() != 9) { Hide(); return; }
+ const FS47Cam Cam = FS47Cam::Of(M->Player, 12000);
+ FVector2D Size(1600, 900);
+ if (M->Web && M->Web->GetWorld() && M->Web->GetWorld()->GetGameViewport()) M->Web->GetWorld()->GetGameViewport()->GetViewportSize(Size);
+ const double Fade = FMath::Clamp(State.Elapsed / 3, 0., 1.) * FMath::Clamp((FS47SkyVisitorState::Duration(State.Stage) - State.Elapsed) / 8, 0., 1.);
+ const int32 Count = FS47SkyVisitorState::Count(State.Stage);
+ for (int32 I = 0; I < Points.Num(); ++I)
+ {
+  auto* B = Points[I].Get(); if (!B) continue;
+  B->SetVisibility(I < Count && Fade > 0);
+  if (I >= Count || B->Elements.IsEmpty()) continue;
+  const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(State.Stage, I, State.Elapsed), M->World->Area);
+  B->SetWorldLocation(S47Three::ToUE(At));
+  // A soft six-pixel disc stays distinct from the existing star points. Its
+  // world location and depth remain physical; only the distant glow keeps size.
+  const float Half = float(6.4 * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
+  B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
+  if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))
+   D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Fade * 4.0));
+  B->MarkRenderStateDirty();
+ }
+ if (Held || Dt <= 0) { State.Looking = 0; ObservationStep = 0; return; }
+ ObservationStep += Dt;
+ if (ObservationStep < .12) return;
+ const double Sample = FMath::Min(ObservationStep, .2); ObservationStep = 0;
+ int32 Visible = 0;
+ if (Fade >= .6)
+  for (int32 I = 0; I < Count; ++I)
+  {
+   const auto* B = Points[I].Get();
+   if (!B || !B->IsRegistered() || !B->IsVisible() || B->Elements.IsEmpty() || !B->Elements[0].Material) continue;
+   const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(State.Stage, I, State.Elapsed), M->World->Area);
+   const FVector P = Cam.Project(At);
+   if (P.Z < 1 && FMath::Abs(P.X) < .94 && FMath::Abs(P.Y) < .94 && ClearLine(Cam.Pos, At)) ++Visible;
+  }
+ if (State.Observe(Visible, Sample)) RecordObservation(Visible);
+}
+
+bool FS47SkyVisitors::Check(bool Good, const FString& What)
+{
+ ++ContractChecks;
+ UE_LOG(LogS47SkyVisitors, Display, TEXT("S47: sky contract %s: %s"), Good ? TEXT("PASS") : TEXT("FAIL"), *What);
+ if (Good) return true;
+ bContractDone = true;
+ auto O = S47J::New(); S47J::Set(O,TEXT("status"),TEXT("FAIL")); S47J::Set(O,TEXT("reason"),What);
+ S47J::Set(O,TEXT("phase"),ContractPhase); S47J::Set(O,TEXT("checks"),ContractChecks);
+ if (!ContractRoot.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(O,true), *(ContractRoot / TEXT("result.json")));
+ FPlatformMisc::RequestExitWithStatus(false, 1); return false;
+}
+void FS47SkyVisitors::ControlTest(double Dt)
+{
+ if (!bContract || bContractDone || !M || !M->Flow || !M->World || !M->Player || !M->Story) return;
+ ContractTime += Dt;
+ if (ContractTime > 100) { Check(false,TEXT("world sight/save contract timed out")); return; }
+ if (!ContractPhase)
+ {
+  FString User;
+  FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
+  if (ContractRoot.IsEmpty() || !ContractRoot.StartsWith(TEXT("/tmp/")) || !User.StartsWith(TEXT("/tmp/")) || M->Flow->CaseId != 0)
+  { bContractDone = true; UE_LOG(LogS47SkyVisitors,Error,TEXT("S47: sky contract requires developer case zero and /tmp proof/UserDir")); FPlatformMisc::RequestExitWithStatus(false,1); return; }
+  IFileManager::Get().MakeDirectory(*ContractRoot,true);
+  M->World->Enter(TEXT("saro")); M->Player->Place(9.5,-18.5,0); M->Player->Pitch = -.5;
+  State.Begin(nullptr,true); TestStage = 1; ContractPhase = 1; ContractSince = ContractTime;
+  return;
+ }
+ const double Since = ContractTime - ContractSince;
+ if (ContractPhase == 1)
+ {
+  if (Since < 4) return;
+  if (!Check(State.Occurred[0] && !State.Observed[0],TEXT("early light moves in the world while looking down without journal credit"))) return;
+  const FVector Target = WorldPosition(FS47SkyVisitorState::MapPosition(1,0,State.Elapsed),TEXT("saro"));
+  if (!Check(!ClearLine(FVector(0,1.6,0),Target),TEXT("actual control-room roof or wall occludes the sky sight ray"))) return;
+  HeldTime = State.Elapsed; M->bPausedByMenu = true; ContractPhase = 2; ContractSince = ContractTime; return;
+ }
+ if (ContractPhase == 2)
+ {
+  if (Since < .8) return;
+  if (!Check(State.Elapsed == HeldTime && !State.Observed[0],TEXT("menu pause freezes actual world trajectory and observation"))) return;
+  M->bPausedByMenu = false;
+  const auto Full = M->Flow->GameState();
+  if (!Check(FFileHelper::SaveStringToFile(S47J::Write(Full,true),*(ContractRoot/TEXT("midpass.json"))),TEXT("write real full-case snapshot before seeing the light"))) return;
+  FString Bytes; FFileHelper::LoadFileToString(Bytes,*(ContractRoot/TEXT("midpass.json")));
+  const auto Saved = S47J::Read(Bytes);
+  if (!Check(Saved.IsValid(),TEXT("fresh reader parses the on-disk case"))) return;
+  US47Flow::FStart Start; Start.State = Saved; Start.bDev = true; Start.CaseId = 0;
+  M->Flow->StartGame(Start);
+  if (!Check(State.Elapsed == HeldTime && State.Occurred[0] && !State.Observed[0],TEXT("full Flow restore retains midpass time and unseen status"))) return;
+  M->World->Enter(TEXT("saro")); M->Player->Place(9.5,-18.5,0);
+  ContractPhase = 3; ContractSince = ContractTime;
+ }
+ // This test follows the physical targets using the ordinary Walker view. Production
+ // code never changes the camera or follows player position with the light path.
+ FVector Center = FVector::ZeroVector;
+ const int32 N = FS47SkyVisitorState::Count(TestStage);
+ const int32 AimN = TestStage == 3 ? 2 : N;
+ for (int32 I = 0; I < AimN; ++I) Center += WorldPosition(FS47SkyVisitorState::MapPosition(TestStage,I,State.Elapsed),TEXT("saro"));
+ Center /= FMath::Max(1,AimN);
+ const FVector D = Center - S47Three::ToThree(M->Player->EyeUE());
+ M->Player->Yaw = FMath::Atan2(-D.X,-D.Z); M->Player->Pitch = FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+ if (State.Stage == TestStage && State.Observed[TestStage - 1] && Since > 4)
+ {
+  if (!Check(true,FString::Printf(TEXT("SKY%02d seen through actual projected and unoccluded sight"),TestStage))) return;
+  FScreenshotRequest::RequestScreenshot(ContractRoot/FString::Printf(TEXT("sky%02d.png"),TestStage),false,false);
+  const auto Snapshot = S47J::Clone(State.Save()); FS47SkyVisitorState Restored; Restored.Begin(Snapshot,false);
+  if (!Check(Restored.Observed[TestStage-1] && Restored.Stage == TestStage && Restored.Elapsed == State.Elapsed,TEXT("phase position and actual observation survive serialization"))) return;
+  if (TestStage < 5)
+  {
+   ++TestStage; ContractSince = ContractTime; return;
+  }
+  bContractDone = true;
+  auto O = S47J::New(); S47J::Set(O,TEXT("status"),TEXT("PASS")); S47J::Set(O,TEXT("checks"),ContractChecks);
+  S47J::Set(O,TEXT("elapsed"),ContractTime); S47J::Set(O,TEXT("skyVisitors"),State.Save());
+  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(ContractRoot/TEXT("result.json")));
+  UE_LOG(LogS47SkyVisitors,Display,TEXT("S47: sky contract PASS complete (%d checks)"),ContractChecks);
+  M->Story->After(1., [] { FPlatformMisc::RequestExit(false); });
+ }
+}
+
+bool FS47SkyVisitors::SelfTest(TArray<FString>& Lines)
+{
+ bool Good = true;
+ auto Check = [&](bool B, const TCHAR* Text) { Lines.Add(FString::Printf(TEXT("%s sky visitors: %s"), B ? TEXT("ok") : TEXT("FAIL"), Text)); Good &= B; };
+ FS47SkyVisitorState S; S.Begin(nullptr, false);
+ Check(!S.bEnabled && !S.Advance(5, 2, false), TEXT("legacy cases gain no retroactive sky sequence"));
+ S.Begin(nullptr, true); S.Advance(1, 5, false);
+ Check(S.Stage == 1 && S.Occurred[0] && !S.Observed[0] && !S.Completed[0], TEXT("occurrence does not imply observation or completion"));
+ const double Before = S.Elapsed; S.Advance(5, 20, true);
+ Check(S.Stage == 1 && S.Elapsed == Before, TEXT("pause and modal cannot advance the global phase"));
+ S.Observe(0, 20); Check(!S.Observed[0], TEXT("offscreen and occluded light gives no observation"));
+ S.Observe(1, .4); S.Observe(0, .1); S.Observe(1, .4);
+ Check(!S.Observed[0], TEXT("discontinuous glimpses do not manufacture a sustained view"));
+ S.Looking = 0; const auto Early = S.Save(); FS47SkyVisitorState R; R.Begin(S47J::Clone(Early), false);
+ Check(R.bEnabled && R.Stage == 1 && R.Elapsed == Before && !R.Observed[0], TEXT("Continue retains the exact route time without resetting the pass"));
+ R.Advance(1, 100, false); Check(R.Completed[0] && !R.Observed[0] && R.OfferEarlyPass(), TEXT("missed first pass gets one field-trip opportunity"));
+ R.Advance(1, 100, false); Check(!R.OfferEarlyPass(), TEXT("second early pass cannot become a doorway replay"));
+ S.Looking = 0; Check(S.Observe(1, .7) && !S.Observe(1, 1), TEXT("actual sustained sight records exactly once"));
+ S.Advance(4, 1, false); Check(S.Stage == 4 && !S.Occurred[1] && !S.Observed[2], TEXT("time loss does not queue or fabricate missed stages"));
+ Check(!S.Completed[0], TEXT("interrupted earlier trajectory is not marked naturally complete"));
+ Check(!S.Observe(2, 1) && S.Observe(3, .7), TEXT("formation claim needs multiple simultaneous visible lights"));
+ S.Advance(1, 2, false); Check(S.Stage == 4, TEXT("old clock or chapter cannot rewind the phase"));
+ R.Begin(S47J::Clone(S.Save()), false); Check(R.bEnabled && R.Stage == 4 && R.Observed[3], TEXT("observed phase survives a serialized restore"));
+ auto Bad = S47J::Clone(S.Save()); Bad->SetBoolField(TEXT("stage"), true); R.Begin(Bad, true);
+ Check(!R.bEnabled, TEXT("corrupt bool-to-number phase is rejected atomically"));
+ Bad = S47J::Clone(S.Save()); S47J::Set(Bad, TEXT("elapsed"), -1.); R.Begin(Bad, true);
+ Check(!R.bEnabled, TEXT("negative or invalid track time grants no sequence"));
+ for (int32 P = 1; P <= 5; ++P)
+ {
+  const FVector A = FS47SkyVisitorState::MapPosition(P, 0, 0), B = FS47SkyVisitorState::MapPosition(P, 0, 40);
+  Check(!A.Equals(B, .1) || P == 3, TEXT("overflight is a world trajectory independent of player movement"));
+  Check(FS47SkyVisitorState::Count(P) >= FS47SkyVisitorState::RequiredVisible(P), TEXT("each authored sight threshold is physically attainable"));
+ }
+ const FVector P(55, 700, 1200), Road = WorldPosition(P, TEXT("road")), Site = WorldPosition(P, TEXT("saro"));
+ Check(Road.Equals(P + FVector(8000,0,0), 1e-9) && (Site + FVector(24,0,-300)).Equals(P,1e-9), TEXT("SARO and road draw the same geographic path in their distinct world frames"));
+ return Good;
+}

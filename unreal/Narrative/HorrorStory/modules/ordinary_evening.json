@@ -116,7 +116,7 @@
         {
           "id": "H01_BRIEF_001",
           "speaker": "DALE",
-          "text": "Keep the survey running. Write down anything you have to change, even if it fixes itself.",
+          "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
           "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
         },
         {
@@ -298,7 +298,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H02: Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten; SARO-rutinen fortsetter. T02 må da tilby ny normal kontroll før sammenligning. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "trigger_nb": "H02: Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten. Kalibrering kan fortsette, men nye R2-kveldssaker krever fullført journal, kontroll, faktisk lampesammenligning og fysisk SARO-arkivering før overgangen til ubetjent survey. Gamle saker får ingen ny gate. T02 tilbyr ny normal kontroll der den historiske baselinen mangler. Vis bare ved et faktisk utilstrekkelig resultat.",
       "requires": {
         "all": [
           "ctx_hr_h02_ready",
@@ -311,7 +311,7 @@
         {
           "id": "H02_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "The two readings do not agree yet. Keep the service card and return to the marked control when you can repeat the comparison.",
+          "text": "The readings do not agree yet. Calibration can continue. Complete and file the lamp inspection, then follow the agreed safety work; do not restart an isolated automatic schedule.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],
@@ -494,7 +494,7 @@
         {
           "id": "H04_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "The notes specify a post and a standing place. They can be checked in the world.",
+          "text": "Dale's field index identifies the culvert camera place. The separate array service card describes a different controlled comparison. Neither record is the result of a test you have not performed.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         },
         {

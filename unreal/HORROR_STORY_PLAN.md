@@ -4,7 +4,13 @@ Dato: 25. oktober 2026. Status: detaljert plan og produksjonsbacklog, klar for s
 
 Tom ba deretter om å legge planen i todo slik at innholdet kan settes inn senere. Denne leveransen innarbeider derfor retningen i prosjektdokumentene. Nye oppdrag, bevis, fiender og fluktsekvenser nedenfor er ikke implementert eller spilltestet. Produksjonsoppgavene står åpne i [todo.md](todo.md). Spilltekst som foreslås her er engelsk; den er ikke ferdig innspilt manus.
 
+Nyeste sammenfletting: [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) er én hovedrekkefølge med13 scenarioer og gjelder foran eldre oppdragsrekkefølge her. Alle eksisterende randomfamilier beholdes. Ett tidlig lys blir gradvis flere over himmelen. [Dales kontorvedlegg](DALE_OFFICE_DOCUMENTS.md) viderefører sju eksisterende dokumenter og seks nye frivillige tekstutkast. De tidligere32 arbeidskortene er bevart som [sekundært oppslag](MISSION_DETAILS_REFERENCE.md). Nye produksjonsoppgaver S.1 til S.9 står åpne.
+
 ## 1. Anbefalt retning
+
+Skrekkrevisjon R2 etter Toms kritikk: kvelden var for passiv og planen hadde for få reelle alienmøter. [Hovedscenarioets SC01 til04](MISSION_FLOW_1800_ROSWELL.md#sc01-den-første-overflygningen) samler seks nødvendige kveldsbeats. Fem skrevne trusselmøter gjennom natten, tre før midnatt, og synlig bortføring bygger mot fast finale. 00:13:47 er fortsatt første store instrumentelle residual. Fremmed fysisk tilstedeværelse er kjent tidligere. Dette er planlagt produksjon, ikke innhold i levert T01 R2-testpakke.
+
+Detaljerte løsninger er bevart i [MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md) og innpasset i hovedscenarioet. Bruk dem med [engelske forfatterkilder](Narrative/HorrorStory/README.md). T01 R2 er levert; utvidet skrekkreise krever senere integrasjon. E15 er gammelt dinerutklipp uten04:45-port. Mottakeroriginal, påbegynt hendelsesark og ferdige fjernark sikres tidligst04:04 før beleiring; romobservasjoner føres først etter hendelsen.
 
 Spilleren kommer for å holde en radiostasjon i drift. Etter hvert lærer de at avvikene er deler av en systematisk kartlegging av mennesker, steder og forbindelser. Den samme kunnskapen som gjør dem til en god etterforsker, lar dem lese en trussel, finne dekning og komme seg ut. Mot slutten forstår de at SARO bare er ett punkt i en større forberedelse. Invasjonen nærmer seg.
 
@@ -12,7 +18,7 @@ Spillets løfte er: **Undersøk det fremmede. Lær hvordan det finner deg. Bruk 
 
 Kamera, målinger, lydopptak, kart og vitner er hovedverktøyene. Korte sekvenser med skjul og flukt gjør funnene fysisk betydningsfulle. Ingen kamp, våpenprogresjon, crafting, sult, bandasjer eller jakt på batterier. Press kommer fra plassering, lyd, sikt og valg av tidspunkt. Utstyr skal normalt være tilgjengelig når det trengs.
 
-Prioriter én gjennomarbeidet SARO-beleiring og et lite antall ulike møter fremfor et stort antall tilfeldige skremmehendelser. Det guffne oppstår når spilleren kjenner et sted, oppdager at noe har endret seg og må avgjøre hva endringen betyr.
+Prioriter fem forskjellige, sammenhengende trusselmøter: trafostasjonens retur, inntrenging i annexet, et nært bilmøte, det nye arrayoppdraget og den store SARO-beleiringen. Korte fysiske tegn, skyggemannen og en faktisk bortføring binder dem sammen. Det guffne skal påvirke hvor spilleren kan gå og hva de må gjøre, i tillegg til hva de leser.
 
 ## 2. Grunnlag og konkrete forbedringsbehov
 
@@ -22,7 +28,7 @@ Gjennomgangen tok utgangspunkt i lokal `unreal-port-core`, spillkilde `0be9fbd8`
 |---|---|---|
 | Etterforskning | Kamera, faktisk fotografisk dokumentasjon, fremkalling, sammenligninger, saksbrett, vitner og kapitler. | La hvert hovedfunn endre en konkret handling eller rute. Reduser gjentatte paneltrinn som bare kvitterer for samme slutning. |
 | Nye historier | Kveld/ankomst/Dale og N01/N02/A02/P01 finnes i runtime. Kontor/VHS og senere T01/T02 er helt eller delvis manusgrunnlag. | Fullfør nødvendige oppgaver som sammenhengende spillerreiser; en modell eller skrevet scene er ikke en ferdig oppgave. |
-| Skrekkrytme | Felles nattkurve, beskyttede sekvenser, lyd, glimt, lys og bortføring. | Kurater hva som får være en topp. Nye jaktsekvenser må erstatte overlappende tilfeldige topper på samme etappe. |
+| Skrekkrytme | Felles nattkurve, beskyttede sekvenser, lyd, glimt, lys og bortføring. | Behold randomfamiliene. Reserver hovedmøter og utsett konkurrerende kandidater uten å bruke opp ustartede engangsflagg. Ingen oppsamlet hendelsesbarrage etter dialog. |
 | Skyggemenn | Detaljert forslag i ANOMALY_PLAN del 13. Eldre skikkelser kan forsvinne ved blikk, zoom eller lykt. | Innfør den stabile observasjonsregelen før figurene får større betydning. Samme utseende må ikke ha motstridende regler. |
 | Sniking | Gange/løp og egen spillerkollisjon. Ingen identifisert komplett mekanikk for huking, dekning, sansing, søk og brutt kontakt. | Bygg et lite faktisk stealth-system; lys og en figur alene gir ikke skjul/flykt-gameplay. |
 | Historie | Nora, Tomás, 1947, C, avtrykk og én fast slutt har en sterk personlig sammenheng. | Gjør den kommende invasjonen til et nytt lag over denne historien, med nødvendige bevis i hovedruten. |
@@ -69,10 +75,10 @@ De 39 årene og avtrykkene beholdes som historiens særpreg. Ikke legg til en ny
 
 | Trinn | Spillerens første forklaring | Beviset som endrer den | Praktisk følge |
 |---|---|---|---|
-| 1. Lokal feil | Lys og mottaker har en vanlig feil. | En normal feil kan faktisk forklares og skilles fra residualen. | Spilleren lærer kontrollprøver og stoler mer på egne vurderinger. |
+| 1. Noe er her | Jobben begynner med vanlig drift, men stedet er ikke trygt lenge. | Normal lampetest etterfølges av en reaktiv enhet og reell unnslippelse. | Meld inntrenger, søk hjelp og bruk dekning. En normal prøve forklarer ikke aktøren. |
 | 2. Noe blir bevart | Et bilde eller et bånd har en feil. | Kontrollbilder og uendret lydfragment viser at et forløp blir liggende. | Fotografi og gjentakelseskontroll blir pålitelige verktøy. |
 | 3. Noe kartlegger | Tilfeldige skikkelser og lys viser seg. | Plasseringer følger faste referanser; kart og fysisk kontroll viser et ordnet mønster. | Spilleren kan forutse et avsøkt område og velge en annen rute. |
-| 4. Det handler nå | Alt er fortsatt rester fra 1947. | En levende inntrenger undersøker en ny lyd spilleren selv lager. Samtidig finnes en separat, identisk gammel avspilling. | Spilleren må skille reaksjon fra gjentakelse og bruke skjul/flukt. |
+| 4. De samordner søket | De tidlige møtene kan fortsatt være lokale og avgrensede. | Sen avsøkning blokkerer ruter i sammenheng med inntrengerens bevegelse. Et gammelt lydfragment fortsetter separat. | Kombiner lærte regler og skil aktør, avtrykk og koordinering. |
 | 5. Det er forberedelser | Dette gjelder SARO alene. | Uavhengige, lokale logger fra andre stasjoner viser samme faseorden med egne instrumentdata og en kommende felles fase. | Spilleren varsler andre og innser at en større ankomst er nært forestående. |
 
 De nødvendige bevisene for trinn 4 og 5 legges i hovedreisen. Valgfrie hendelser gir dybde, ikke eneansvar for historiens hovedavsløring. Et manglende valgfritt fotografi skal aldri gjøre invasjonshistorien uforståelig.
@@ -95,17 +101,21 @@ Hver oppgave skal ha et spørsmål, en fysisk handling, en meningsfull kontroll,
 
 ## 6. Anbefalt oppdragsreise
 
+[Hovedscenarioets SC08](MISSION_FLOW_1800_ROSWELL.md#sc08-de-peker-på-deg) legger ARRAY-01 etter arkiv/bykontroll før STATION01: fast referanse, to selvvalgte ståsteder, faktisk antennerespons og retrett. Et nytt ordinært arrayservicevedlegg må produseres; Dales eksisterende indeks peker til T02s kulvert. Caliche gir hjelp, kildekontroll og sen sammenstilling. Det fjerde aktive møtet ligger på arrayet, ikke en ny lang STATION01-jakt. Nye scener/faseporter er produksjonsforslag.
+
+Presise oppdragsløsninger, feilsituasjoner og farer står i [detaljvedlegget fra 18:00 til Roswell](MISSION_FLOW_1800_ROSWELL.md). Tabellen nedenfor er den overordnede strukturen, ikke en alternativ rekke med ekstra pliktoppdrag.
+
 H-numrene nedenfor er nye planreferanser. De erstatter ikke dagens P-, N-, A- eller T-ID-er i kode og lagring. Kapitlenes eksisterende bevis bevares og omarbeides bare der det trengs for den nye sammenhengen.
 
 | Planoppdrag | Spørsmål og spillerhandling | Ny kunnskap og følge | Skrekk og ferdigkriterium |
 |---|---|---|---|
 | H01: Vanlig kveld | Ankomst, Dale, normalrunde på SARO. Lær to aktuelle utganger, en innvendig skjermet plass og utstyr. N01 og valgfri byreferanse inngår. | Spilleren forstår jobben og vet hvor de kan gå. | Varm, hverdagslig normal. Ingen påtvunget stor skremmehendelse. Direkte innkjøring uten diner må fungere. |
-| H02: Den ordinære feilen | Fullfør T01 som en faktisk serviceoppgave ved trafostasjonens tilgjengelige kontrollfront. Sammenlign logg og observerbar virkning. | Én feil blir forklart; K3 på SARO og byens forsyning får ulike roller. | En fjern skikkelse kan observeres etter oppgaven. Oppgaven fungerer også om den overses. |
-| H03: Den andre eksponeringen | Etter residualen: behold S-03/B-12, velg en kontroll som skiller lampe, motiv og film. | En referanse vedvarer uten den lokale kilden. | Den første tydelige umuligheten kommer fra egen undersøkelse. Fotoresultatet må være i faktiske bildepiksler. |
+| H02: Den ordinære feilen og det som står ved bilen | Fullfør T01 ved kontrollfronten. På returen kreves virkelig unnslippelse fra en reaktiv enhet, senere hjelpekontakt og en ny kveldsakt. | Lokal feil forklares; aktøren og de nye hendelsene tas alvorlig. | Nødvendig fangstrisiko før midnatt. Ferdig T01 beholdes ved lokal gjenopptakelse. |
+| H03: Den andre eksponeringen | Etter residualen: behold S-03/B-12, velg en kontroll som skiller lampe, motiv og film. | Fremmed tilstedeværelse er kjent; nå undersøkes hvordan en referanse kan vedvare. | Ny mekanisme avsløres gjennom egen prøve. Ingen NPC later som kveldens aktør bare var lampefeil. |
 | H04: Det Dale ikke leverte | Finn reservenøkkel gjennom et begrunnet spor. Les utvalgte kontorfunn og se VHS som bevegelig opptak. | Dales plasseringer gir et prøvbart mønster, men han mangler forklaringen. | Et kjent vindusutsyn har endret seg etter undersøkelsen. Nøkkel og film driver en feltoppgave; de løser ikke Nora. |
 | H05: Kartleggingen | STATION 01, kabelkutt, fastpunkt og Tomás. Relevant T02 på samme feltreise kontrollerer lyset mot T01. | Det gamle forløpet gjentas; nåtidens plasseringer er systematiske. | Ett kort, lesbart skjulmøte kan lære dekning uten lang jakt. Gjerder og utilgjengelig høyspenningsområde beholdes. |
 | H06: Rom 6 | Vis Nora relevante bevis, sammenlign rapportene og still et nytt spørsmål til returlinjen. | Hun kuttet med vilje; stemmen er et avtrykk. Kostnaden får et menneskelig ansikt. | Samtalen er en rolig, beskyttet sekvens. Ingen angrep mens spilleren leser brevet eller snakker. |
-| H07: SARO blir undersøkt | Returner for å sikre måleoriginalen og kontrollere de andre stasjonenes data. Fremmed lys stenger fronten; inntrengeren kommer inn. | Nåtidens aktør reagerer på nye handlinger. Lys og dekning kan leses. | Full skjul/flukt-sekvens, to brukbare ruter og reell mulighet til å unnslippe. Se del 8. |
+| H07: SARO blir undersøkt | Sikre måleoriginal og ferdige fjernark. Samordnet avsøkning og inntrengerens søk avskjærer vante ruter. | Aktøren er kjent; organisering og kontroll over SARO eskalerer. | Den største skjul/flukt-sekvensen bruker alt som ble lært før midnatt. To brukbare ruter og reell unnslippelse. |
 | H08: Det samme skjer flere steder | Ved trygg sammenstilling kontrolleres SARO mot uavhengige fjernlogger og den vanlige sendeplanen. Varsle Ward med underlag. | Faseorden og samtidighet peker mot en koordinert kommende ankomst. | Ettervirkning og uro, uten enda en lang jakt. Nødvendig logg kan hentes som bevart utskrift ved sen ankomst. |
 | H09: All Night | Avis, vitner og kart løser C ved veien. Avklar et konkret oppdrag for verifikasjon/varsling utenfor SARO. | Personhistorien og det større mønsteret samles. | Dineren gir en reell pustepause. P01 og andre valgfrie hendelser får ikke avbryte kartarbeidet. |
 | H10: Roswell Road | Kjør til et begrunnet kontroll-/overleveringspunkt langs den eksisterende ruten, med plan om å passere C uten stopp. | Bilen stanser ufrivillig; fenomenet har allerede registrert spilleren. | Behold 47-sekundersfinalen og 1947-bildet. Ikke presenter dette som en jakt spilleren kunne ha vunnet. |
@@ -173,15 +183,18 @@ En alternativ bortføringsgren med oppvåkning, tapt tid og ny posisjon er en se
 
 ## 10. Skrekkrytme, lyd og jumpscares
 
-Bygg fra hverdagslig gjenkjennelse til usikkerhet, et etterprøvbart umulig funn, fysisk tilstedeværelse og først deretter nær fare. Den første store skrekken kommer når spilleren både kjenner stedet og har fullført en ordentlig undersøkelsessløyfe. Bruk fremdrift og forståelse som port fremfor et vilkårlig antall minutter.
+Gi spilleren en kort normal og et fysisk brudd tidlig. Første unnslippelse kommer allerede på kveldens servicetur. Mellom aktive møter bygger låser, kjent utsyn, nye bevegelser og konkrete etterspor ubehaget videre. Som uprøvde mål settes første tydelige brudd innen10 til15 faktiske spilleminutter og første unnslippelse innen25 til40; forståelse og faktisk rute må måles i menneskelig prøve.
 
-Forslag til tre forskjellige toppøyeblikk i den nye reisen:
+De viktigste toppene har forskjellige funksjoner:
 
-1. Etter en kontroll er en fjern skikkelse mye nærmere, men blir stående når den sees. Ingen lydstikk er nødvendig.
-2. Under SARO-beleiringen oppstår en plutselig fysisk hendelse ved en tidligere kontrollert åpning. Den avslører en ny angrepsvinkel og gir en forståelig handling.
-3. THE EVENT beholder sitt særskilte, sene bildespråk. De tidligere møtene bruker ikke opp hele avsløringens ansikt og nærbilder.
+1. Trafostasjonens retur blir en virkelig unnslippelse; spilleren lærer at noe kan komme mellom dem og bilen.
+2. En tilkalt hjelper blir tatt før midnatt. Det gir et menneskelig tap og en konkret savnetmelding.
+3. En blek hånd i annexets dørkarm innleder nær fare og en faktisk innendørsflukt. Dette er et tidlig ordentlig jumpscare, ikke panelstraff.
+4. Bilmøtet tvinger spilleren til å lese glass, sikt og lyd på nært hold. Motoren virker; oppgaven er forskjellig fra finalen.
+5. Feltpassasjen og den sene beleiringen bruker lærte regler med større avskjæring og koordinering.
+6. THE EVENT beholder sitt sene bildespråk. Sluttens hovedavsløring er hva registreringen gjør med Reyes, ikke at fremmede finnes.
 
-Dette er et startutvalg, ikke en vitenskapelig riktig kvote. Tell eksisterende topper før nye legges til. Dersom takskritt, telefon, bortføring og beleiring konkurrerer på samme etappe, behold den sterkeste sammenhengende scenen og flytt eller utelat de andre.
+Dette er et startutvalg, ingen kvote. Behold alle eksisterende hendelsesfamilier. Dersom takskritt, telefon, bortføring og beleiring konkurrerer, reserver hovedmøtet og utsett kvalifiserte kandidater uten å markere dem opplevd. Ingen garanti om at alt skal spilles i én natt. Allerede påbegynt hendelse trenger korrekt avslutning/gjenopptakelse, ikke falskt observasjonsflagg.
 
 Etabler ventilasjon, insekter, trafo, servoer og lokalradio som normal. Et lokalt bortfall gjør stillhet meningsfull. Trussellyd kommer fra faktisk posisjon og handling. Misvisende lyd kan brukes som et dokumenterbart avtrykk, men må ha samme gjentakelsesregel som resten av historien. Inntrengerens sanseinformasjon skal ikke være ren lyddekor uten sammenheng med hvor den er.
 
@@ -223,7 +236,7 @@ Nye saker kan få en egen innholdsversjon. Gamle saker beholder sine tider, foto
 
 H2 og H3 kan få avgrensede parallelle kode-/modelloppgaver når arbeidet starter. Felles Story/Main/Flow/Web-endringer eies av én integrator. Tunge eksport-, Unreal-, pakke- og spilljobber kjøres sekvensielt etter gjeldende maskinrutine.
 
-Første omfang er ett beleiret bygg, én aktiv inntrenger, én passiv skyggemannkategori og ett avsøkningssystem. Nye store interiører i hele Caliche, romskipinteriør, generell fiende-AI på motorveien, alternative slutter og en spillbar bortføringsverden utsettes. Ingen motormigrering eller ny plugin er nødvendig for planen.
+Første tekniske prototype kan fortsatt bruke ett lite romforløp og én aktiv inntrenger. Den fulle reisen krever fem distinkte trusselmøter med samme sanse-/søkelogikk, en passiv skyggemannkategori, avsøkning og en produsert vitnebortføring med egen kveldsperson. Nye store interiører i hele Caliche, romskipinteriør, generell fiende-AI på motorveien, alternative slutter og en spillbar bortføringsverden utsettes. Ingen motormigrering er nødvendig.
 
 ## 13. Akseptansekriterier for senere implementering
 

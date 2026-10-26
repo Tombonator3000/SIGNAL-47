@@ -4,13 +4,13 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 ## H01: The evening round
 
-**Spørsmål:** What has to work before the night survey can begin?
+**Spørsmål:** What works normally here, and what changed at the window?
 
 **Fysisk handling:** Etter eksisterende Dale-overlevering: hent kameraet, kontroller én rutinevisning og gå de faktisk tilgjengelige dørene på normalrunden. Ikke påstå at en fremtidig forbindelsesdør allerede er åpen.
 
 **Kontroll:** Prøv SAROs østdør og den tilgjengelige korridorutgangen fra innsiden. Sammenlign en vanlig lampe sett direkte og via glass, og trekk for en faktisk opak skjerm når H3 har levert den.
 
-**Følge:** Jobben og utstyret er forstått. Senere beleiring kan bare bruke utganger/dekning som er lært og målt fysisk.
+**Følge:** Normal inngang, prøvde dører og faktisk vindusobservasjon holdes adskilt. Første fare kan meldes straks. T01 gir normal servicebaseline; automatisk drift er ikke lenger hovedmål etter virkelig inntrengermelding.
 
 **Utilstrekkelig bevis:** Hvis en planlagt utgang eller skjerm ikke er levert, før den som uprøvd og gi normalrutinen en eksisterende vei. Ikke kvitter for to fluktruter før H3-topologien er målt.
 
@@ -28,9 +28,9 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Kontroll:** Sammenlign lampen og den separate indikatoren før/etter normal kontroll. Hold STATION 01, SAROs K3 og byens hovedforsyning atskilt. Spilleren åpner ikke høyspenningsområdet.
 
-**Følge:** En ordinær feil har en reproduserbar forklaring og et normalt etterbilde. Senere T02 får et faktisk kontrollgrunnlag, ikke et gammelt telex som bevis på hele byens strøm.
+**Følge:** Vanlig lampetest gir faktisk normalreferanse. Deretter skjer trusselmøte1 med mulig fysisk flukt/lokal retry som bevarer testen. T01 arkiveres én gang ved SARO; videre handlinger søker hjelp og sikkerhet, ikke en automatisk normalrunde.
 
-**Utilstrekkelig bevis:** Avbrutt eller uenig prøve føres som uavklart og kan tas opp fra den merkede kontrollfronten; SARO-rutinen fortsetter. T02 må da tilby ny normal kontroll før sammenligning.
+**Utilstrekkelig bevis:** Uavklart lampetest kan gjentas; bevar kalibrering og faktisk delarbeid. I nye saker kreves T01-filingen og fullført sikkerhetsakt før passiv residualovergang, uten å oppheve fysisk auto/surveyplansperre. Gamle saker får ingen ny gate.
 
 **Eksisterende ID-er beholdes:** `T01`, `EV_TRAFO_CHECK`, `EV_SERVICE_LOG`
 
@@ -62,9 +62,9 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Fysisk handling:** Følg begrunnet serviceskuffspor til reservenøkkel og eksisterende kontordør. Hent feltmappen; den korte hovedruten krever ikke hele VHS-filmen.
 
-**Kontroll:** Legg Dales daterte ståstedsnotat ved faktisk vindusutsyn og referansestolpe. Se eventuell VHS som bevegelig opptak og test ett av stedene fysisk senere.
+**Kontroll:** Behold EV_DALE_INDEX/NOTE som T02s kulvert-/kamerareferanse. Nytt separat ordinært arrayservicevedlegg gir egne A/B-ståsteder. Kontroller arkivets daterte spor hos Earl eller autentisert sen kopi før arrayet; lyd gir tid, ikke peiling.
 
-**Følge:** Dale har funnet et mønster i sammenlignbare ståsteder, ikke løst 1947. Arkivets E06/E07/E08 og P04/P05 avgjør STATION 01. Kontorsporet følger feltreisen uten å erstatte Nora.
+**Følge:** Dales frivillige samling gir kontekst uten lesekvote. Arkivets kildekontroll leder BY02 og ARRAY-01, med faktisk valgfri A→B/B→A/retur, deretter STATION01. Ingen forteller kjenner Nora eller finalen på forskudd.
 
 **Utilstrekkelig bevis:** Feltmappe gir hovedsporet selv uten strøm til VHS. Manglende sett film føres som usett; opptaket gjenopptas fra lagret sted. Nøkkelen har konkret spor i serviceskuff, ikke tilfeldig spawn.
 
@@ -78,11 +78,11 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Spørsmål:** Are the places being selected, and is the old voice answering anyone now?
 
-**Fysisk handling:** Kjør til STATION 01 via hovedvei/surveyspor. Utfør E09A/fastmerke A, lokal nulltest, kabelundersøkelse og receiver/E10. T02 følger samme feltreise via eksisterende trafoadkomst.
+**Fysisk handling:** Etter BY02 og egen ARRAY-01-geometrikontroll/trusselmøte4: kjør til STATION01. Utfør E09A/fastmerkeA, normal lokal nullprøve, kabelundersøkelse og receiver/E10. T02 er egen levert kontroll via Caliche, uten ny hovedgate.
 
-**Kontroll:** Hold A fra transitkortet adskilt fra C-linjen. Sammenlign to nåtidige, fysisk kontrollerte referansesteder fra Dales notat mot de faste surveymerkene. T02 krever egne faktiske indikator-, kilde- og backupkontroller.
+**Kontroll:** STATION01s tomme fot og flyttedeA mot transit/B er én kontroll. ARRAY-01s egne A/B-operatørplasser og faste lykt er en annen. T02s kulvertståsted gir et tredje opplegg. Ingen sammenblanding av deres geometri eller ID-er.
 
-**Følge:** Kartlegging blir en støttet arbeidshypotese: to kontrollerte nåtidige steder er knyttet til samme faste referanser. Klipt lyd er fortsatt et uendret avtrykk. Dra tilbake til SARO for feltkopier, så til Nora.
+**Følge:** Flyttet referanse og bevisst kabelkutt undersøkes uten ny lang jakt. Kort lysavskjæring er adskilt fra eventuell gammel betinget bortføring; ingen vellykket ny retrett etterfølges av tvungen Force. Feltfilm fremkalles før Nora.
 
 **Utilstrekkelig bevis:** Feil bilde kan fremkalles på nytt fra negativet. T02 kan være uavklart uten å sperre hovedhistorien; kartleggingssporet får da obligatorisk normal-/ekstern-lyskontroll ved SARO i H07, ikke en valgfri skyggemann som eneste bevis.
 
@@ -112,13 +112,13 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 ## H07: The Inspection
 
-**Spørsmål:** Is something responding to what you do now?
+**Spørsmål:** What has changed about the search at SARO?
 
-**Fysisk handling:** Etter Rom 6: returner til SARO for den navngitte måleoriginalen og bestilte fjernlogger. Utfør normal kontroll av kjent skjerm/utgang før møtet. Første prototype krever fysisk to gyldige ruter fra H3.
+**Fysisk handling:** Etter Rom 6 og tidligst 04:04: returner til SARO og sikre mottakeroriginal, tomt/påbegynt hendelsesark og ferdige fjernlogger før møtet. Utfør normal kontroll av kjent skjerm/utgang. Den senere HR_SARO_ORIGINAL-kompositten lages først etter faktisk lyskontroll, reaktivt møte og flukt. Første prototype krever fysisk to gyldige ruter fra H3.
 
-**Kontroll:** Kontroller ekstern lysflate mot lokal lampe og opak skjerm. Inntrengeren undersøker en ny lyd fra spillerens radio, mens et separat gammelt fragment fortsetter uendret. Reaksjon bygger på faktisk sikt/lyd, ikke på valgtekst.
+**Kontroll:** Bruk kveldens lærte lampe-, skjermings- og lydkontroller. Dokumenter at den ytre avsøkningen nå avskjærer åpninger i sammenheng med inntrengerens søk. Reaktiv aktør er kjent fra før; ny kunnskap er koordinert dekning av SARO. Det gamle fragmentet fortsetter uendret.
 
-**Følge:** Atferden er nåtidig og reaktiv. Sikre originalen og kom til servicebilen via skjermet rute eller avledning; vellykket flukt respekteres. H08s trygge etterarbeid er neste handling.
+**Følge:** Sikre originalene og unnslipp samordnet avsøkning/inntrenger. Tidligere lærte regler beholdes, men enkle ruter er nå avskåret. H08 sammenligner denne eskaleringen med fjernarkene.
 
 **Utilstrekkelig bevis:** Ingen fotoport under jakt. Journalfør en faktisk sanset reaksjon fra begge ruter; spilleren kan gjenta kontrollen før faren uten å måtte velge avledning som fluktmetode. Fangst tilbyr tydelig lokal gjenopptakelse fra trygt sjekkpunkt, ikke ny tapt-tid-gren.
 
@@ -134,9 +134,9 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Fysisk handling:** På trygg plass: legg SARO-original og eget romnotat ved Hondo- og Site11-utskrifter. Hent bevart kopi ved sen ankomst. Sammenlign proveniens, uavhengige kanaler, klokker, faseorden og kommende spor.
 
-**Kontroll:** Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger.
+**Kontroll:** Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward, velg kildeark og dikter deres markerte måletabeller og begrensningene. Hun fører kilde-ID-er/tabellverdier i en datert samtalelogg og leser dem tilbake; foto/negative kopieres ikke over telefon.
 
-**Følge:** Støttet varsel om samordnet forberedelse og kommende ankomst. Ward stanser faktisk 06:00-serien, varsler andre stasjoner og kvitterer for eksternt lagrede kopier før finalen. Spilleren har gjort nyttig arbeid.
+**Følge:** Støttet nettverksvarsel om samordnet forberedelse og kommende ankomst. Ward bekrefter at den lokale 06:00-serien fortsatt er suspendert etter kveldens melding, varsler andre stasjoner om de nye funnene og kvitterer for dikterte måleavskrifter. Foto, negative og originalark blir i mappen.
 
 **Utilstrekkelig bevis:** Manglende sanntidsmottak erstattes av bevart lokalt stempel/originalkopi på telex. Uverifisert kilde føres som foreløpig og ringer Ward for kildekontroll; varsel om lokal fare kan sendes straks. Sterk nettverksslutning venter på de to uavhengige fjernkildene.
 
@@ -150,13 +150,13 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Spørsmål:** Where is C, and can the originals be moved without repeating the observation?
 
-**Fysisk handling:** Rolig diner: les dagens fysisk leverte avis med 1947-utklippet og legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave.
+**Fysisk handling:** Rolig diner: les E15, det innrammede utklippet fra juli 1947 som allerede henger ved døren. Legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Dagens avis i byen er en annen, valgfri kilde.
 
-**Kontroll:** Finn C ved 8.15-bolten og avtal separat 10.4-bolt med Ward. Sjåførens oktoberstopp ved8.15 må tas med i risikovurderingen. Spør om hans nylige gjennomkjøring: det er et nåtidig vitnemål, ikke et generelt trygghetsbevis.
+**Kontroll:** Løs P13 med E15/E09A/E14 og skill C8.15 fra bud10.4. Autentiser fersk sted-/tidsfestet utfartsobservasjon, sjåførens nylige gjennomkjøring og faktisk budavtale før avreise. Oktoberstopp/1985kvittering er ikke ferske rutedata.
 
 **Følge:** Formålet er fysisk overlevering av originaler med kopier allerede sikret eksternt. Planen er å kjøre gjennom uten stopp/avlesning ved C. Ingen skjult feilvalg, ny global frist eller påstand om at kryssing er bevist trygg.
 
-**Utilstrekkelig bevis:** Avis før04:45 er ikke levert; behold mat/ro/annet kartgrunnlag tilgjengelig uten tom venting. Feil plassering får eksisterende karttips; avisbildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise.
+**Utilstrekkelig bevis:** E15 er et gammelt, tilgjengelig dinerutklipp og skal ikke ha 04:45-port. Leveringsregelen gjelder dagens avis i byen. Feil kartplassering får eksisterende karttips; bildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise.
 
 **Eksisterende ID-er beholdes:** `E09A`, `E14`, `E15`, `P13`, `E11`
 

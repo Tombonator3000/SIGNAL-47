@@ -11,7 +11,7 @@
         {
           "line_id": "H01_BRIEF_001",
           "speaker": "DALE",
-          "text": "Keep the survey running. Write down anything you have to change, even if it fixes itself.",
+          "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
@@ -140,7 +140,7 @@
         {
           "line_id": "H02_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "The two readings do not agree yet. Keep the service card and return to the marked control when you can repeat the comparison.",
+          "text": "The readings do not agree yet. Calibration can continue. Complete and file the lamp inspection, then follow the agreed safety work; do not restart an isolated automatic schedule.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -251,7 +251,7 @@
         {
           "line_id": "H04_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "The notes specify a post and a standing place. They can be checked in the world.",
+          "text": "Dale's field index identifies the culvert camera place. The separate array service card describes a different controlled comparison. Neither record is the result of a test you have not performed.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -308,7 +308,7 @@
         {
           "line_id": "H05_BRIEF_003",
           "speaker": "DESCRIPTION",
-          "text": "Use Dale's post as a second observation point. A position written in his notebook is a lead until you check it yourself.",
+          "text": "The culvert camera place belongs to T02. The separate array service comparison concerns its own operator places; do not treat the two records as the same geometry.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -323,7 +323,7 @@
         {
           "line_id": "H05_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "Both controlled observation points resolve against fixed survey references. The positions form an arrangement rather than an isolated sighting.",
+          "text": "The empty footing and moved A-post resolve against the fixed transit references. C remains a separate sight line. The earlier array comparison is a distinct controlled observation.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -509,7 +509,7 @@
         {
           "line_id": "H07_CHECK_002",
           "speaker": "DESCRIPTION",
-          "text": "When you changed the radio, the visitor turned to the new sound. The old fragment kept its same words.",
+          "text": "It searched one room earlier. Now the outside band is closing the exits as the visitor moves. The recorded fragment has not changed.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -524,7 +524,7 @@
         {
           "line_id": "H07_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "A photograph is not required. Check the original's recorded location. If it is not secured, reach it by a clear route; then use the service exit.",
+          "text": "A photograph is not required. If the original was not secured, return to the covered checkpoint before the inspection and collect it before the encounter starts. Do not go back through an active search for another sheet.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -707,7 +707,7 @@
         {
           "line_id": "H08_WARNING_ACK_001",
           "speaker": "WARD",
-          "text": "The warning is entered. I have stopped the six o'clock series. The other sites have read it back: nobody closes a reference or completes a run.",
+          "text": "The network warning is entered. The six o'clock series remains suspended after your earlier report. The other sites have read it back: nobody closes a reference or completes a run.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
@@ -716,7 +716,7 @@
         {
           "line_id": "H08_WARNING_ACK_003",
           "speaker": "WARD",
-          "text": "Your copies are outside SARO. You did not call too late. Keep the originals with their source sheets.",
+          "text": "I have written the source IDs and the measurements into the call log. The warning is outside SARO. Keep the photographs and the originals with their source sheets.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
@@ -758,7 +758,7 @@
         {
           "line_id": "H09_BRIEF_003",
           "speaker": "DESCRIPTION",
-          "text": "On the table the tracing is still loose. Place its transit on STATION 01, north to north. The newspaper picture has no survey scale.",
+          "text": "On the table the tracing is still loose. Place its transit on STATION 01, north to north. The framed newspaper clipping has no survey scale.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -806,7 +806,7 @@
         {
           "line_id": "H09_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "C is not placed yet. Put the transit on STATION 01 first. Keep the newspaper beside the map; it establishes the old photograph, not the crossing.",
+          "text": "C is not placed yet. Put the transit on STATION 01 first. Keep the old framed clipping beside the map; it establishes the photograph, not the crossing.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -821,7 +821,7 @@
         {
           "line_id": "H10_BRIEF_001",
           "speaker": "DESCRIPTION",
-          "text": "The originals are in the cab. Ward has the copies and the warning.",
+          "text": "The originals are in the cab. Ward has the warning and the dictated measurement tables.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -883,6 +883,948 @@
           "start_seconds": null,
           "end_seconds": null,
           "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC01_WINDOW_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC01_WINDOW_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The moving hand was outside the glass. The marks are on that side too. Switching the room lamp does not remove them.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC01_WINDOW_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Secure the known door. You can report what you saw without going outside after it.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC01_FIRST_REPORT",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC01_FIRST_REPORT_001",
+          "speaker": "DISPATCH",
+          "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC01_FIRST_REPORT_002",
+          "speaker": "DISPATCH",
+          "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC02_RETURN_WARNING",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC02_RETURN_WARNING_001",
+          "speaker": "DESCRIPTION",
+          "text": "A pale body stands between the service front and SARO 07. It turns towards a new sound. The opaque shed wall breaks the view.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC02_RETURN_WARNING_002",
+          "speaker": "DESCRIPTION",
+          "text": "The route outside the fence goes around the shed. Watch the open crossing before you move. The high-voltage yard is not an exit.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC02_ESCAPE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC02_ESCAPE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The search has moved away from the route you used. The truck starts. Your completed lamp test is still on the service card.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC02_ESCAPE_002",
+          "speaker": "DESCRIPTION",
+          "text": "Caliche has a working phone and people. Report the encounter and ask for someone to meet you.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC02_RETRY",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC02_RETRY_001",
+          "speaker": "DESCRIPTION",
+          "text": "Return to cover before the crossing. The lamp inspection is preserved. Read the search before trying the truck again.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_DISPATCH_RECEIPT",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC03_DISPATCH_RECEIPT_001",
+          "speaker": "DISPATCH",
+          "text": "Caliche Junction service front. A tall pale person moved while you were watching and turned towards new sound. You reached your truck.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC03_DISPATCH_RECEIPT_002",
+          "speaker": "DISPATCH",
+          "text": "The district is sending a relief technician to meet you at the Caliche fuel station. Stay at the lit public stop until the contact is identified.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_RELIEF_CONTACT",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC03_RELIEF_CONTACT_001",
+          "speaker": "WARD",
+          "text": "Mara Ortiz, district maintenance. White utility wagon, number twenty-three. She will meet you at the fuel station, in view of the counter.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC03_RELIEF_CONTACT_002",
+          "speaker": "WARD",
+          "text": "Tell her what you saw before you discuss equipment. She is there to bring help, not to send you back into a yard alone.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_SHADOW_RULE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC03_SHADOW_RULE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The black outline stays still while you keep it in view. When it moves, it does so between your observations.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC03_SHADOW_RULE_002",
+          "speaker": "DESCRIPTION",
+          "text": "Keep the opening in view and step behind the solid wall. It is not moving like the pale figure at the service front.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_ORTIZ_IDENTIFY",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "SC03_ORTIZ_IDENTIFY_001",
+          "speaker": "ORTIZ",
+          "text": "Mara Ortiz. District maintenance, wagon twenty-three. Dr. Ward said you would be here.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC03_ORTIZ_IDENTIFY_002",
+          "speaker": "ORTIZ",
+          "text": "I brought a second handset. Before we go anywhere, show me where you were standing and where the person moved.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC03_ORTIZ_IDENTIFY_003",
+          "speaker": "ORTIZ",
+          "text": "We can make that report from here. Nobody needs you to get closer for a photograph.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_HELPER_TAKEN",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC03_HELPER_TAKEN_001",
+          "speaker": "DESCRIPTION",
+          "text": "Ortiz rose clear of the ground in the light. There was no ladder or support. Then she was gone. Her wagon is still at the stop.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC03_HELPER_TAKEN_002",
+          "speaker": "DESCRIPTION",
+          "text": "You are behind cover. The encounter is over. Report her missing from the working phone.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_HELPER_TRACES",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC03_HELPER_TRACES_001",
+          "speaker": "DESCRIPTION",
+          "text": "Wagon twenty-three is empty. Ortiz's district handset lies beside the open door; her name is on its service tag.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC03_HELPER_TRACES_002",
+          "speaker": "DESCRIPTION",
+          "text": "The dispatch record establishes why she came. The empty wagon and handset establish what remained. Neither explains where she went.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_MISSING_RECEIPT",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC03_MISSING_RECEIPT_001",
+          "speaker": "DISPATCH",
+          "text": "Mara Ortiz, district maintenance. Last seen at the Caliche fuel stop beside wagon twenty-three. You saw her lifted in a light and then could no longer see her.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC03_MISSING_RECEIPT_002",
+          "speaker": "DISPATCH",
+          "text": "That is now a missing-person report, linked to the earlier call. We are handling the search. Keep the handset where it is and stay at a working contact point.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_LOCAL_ORDER_HOLD",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC03_LOCAL_ORDER_HOLD_001",
+          "speaker": "WARD",
+          "text": "The SARO six o'clock observer series is suspended. I have recorded that as a local order. Dispatch has Ortiz's case.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC03_LOCAL_ORDER_HOLD_002",
+          "speaker": "WARD",
+          "text": "You are not being asked to carry on a normal shift. Stay with the people at Caliche while we agree what can be secured without exposing you again.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_LIMITED_RETURN",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC04_LIMITED_RETURN_001",
+          "speaker": "WARD",
+          "text": "The automatic schedule is still set locally. We can secure that and the dated shift record, then talk again from the control room.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC04_LIMITED_RETURN_002",
+          "speaker": "WARD",
+          "text": "Only if the known way back is clear. The truck and the public road are available. Call me from the secured room; do not restart the survey.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_LOCAL_HOLD",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC04_LOCAL_HOLD_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local automatic schedule is isolated. The receiver still monitors passively, and a separately authorised service check remains possible.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC04_LOCAL_HOLD_002",
+          "speaker": "DESCRIPTION",
+          "text": "The dated shift record and service original are secured for the missing-person report. Turning off a local schedule has not turned off the sky.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_ANNEX_IMPRINT",
+      "channel": "radio",
+      "lines": [
+        {
+          "line_id": "SC04_ANNEX_IMPRINT_001",
+          "speaker": "DALE",
+          "text": "The camera is beside the east door. Take a reference before you touch the fault.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_ANNEX_LONG_ESCAPE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC04_ANNEX_LONG_ESCAPE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The solid wall broke the view. Behind the closed door, the search stayed at your last position while you used the longer passage.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC04_ANNEX_LONG_ESCAPE_002",
+          "speaker": "DESCRIPTION",
+          "text": "Contact is broken and the search has withdrawn. The secured records are still with you.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_ANNEX_SOUND_ESCAPE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC04_ANNEX_SOUND_ESCAPE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The ordinary radio drew the figure towards the new sound. From cover you saw it leave the shorter crossing.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC04_ANNEX_SOUND_ESCAPE_002",
+          "speaker": "DESCRIPTION",
+          "text": "You crossed while the route was clear. Contact is broken and the search has withdrawn.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_ANNEX_RETRY",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC04_ANNEX_RETRY_001",
+          "speaker": "DESCRIPTION",
+          "text": "The schedule and records remain secured. Return to the last covered point before the intrusion and choose a clear route.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_CAR_READ",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC04_CAR_READ_001",
+          "speaker": "DESCRIPTION",
+          "text": "The control-room door is reachable from the screened parking place. You have tried that route. The engine works.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC04_CAR_READ_002",
+          "speaker": "DESCRIPTION",
+          "text": "A shape passes close to the cab. Glass does not hide you. Use the solid screen or drive when the crossing is clear.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_CAR_ESCAPE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC04_CAR_ESCAPE_001",
+          "speaker": "DESCRIPTION",
+          "text": "You left the exposed place while the route was open. The figure has lost contact; it is no longer searching your path.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC04_CAR_ESCAPE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The truck still runs. Use the control-room route you checked, watching the crossing before you move. Ward is expecting you at that secured contact point.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_CAR_RETRY",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC04_CAR_RETRY_001",
+          "speaker": "DESCRIPTION",
+          "text": "Return to the covered approach. The truck is usable and the secured work is preserved. Choose the passage after the sweep moves away.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC04_SAFE_ROOM_AGREEMENT",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC04_SAFE_ROOM_AGREEMENT_001",
+          "speaker": "WARD",
+          "text": "I have you on the control-room line. Keep the door secured. Dispatch is following up Ortiz; I am staying on this call.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC04_SAFE_ROOM_AGREEMENT_002",
+          "speaker": "WARD",
+          "text": "Read me the receiver log's original heading and time. We are preserving the record from cover. Leave the automatic plan isolated.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC04_SAFE_ROOM_AGREEMENT_003",
+          "speaker": "WARD",
+          "text": "If this room stops being safe, use the route you tested. You do not owe us another normal round.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC05_PASSIVE_RESIDUAL",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC05_PASSIVE_RESIDUAL_001",
+          "speaker": "DESCRIPTION",
+          "text": "00:13:47. A new residual appears in passive reception. The isolated automatic schedule has not resumed.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC05_PASSIVE_RESIDUAL_002",
+          "speaker": "DESCRIPTION",
+          "text": "Use the existing receiver controls and preserve the print. The moving bodies you saw are separate observations; this test asks what the signal retains.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "BY02_REQUEST",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "BY02_REQUEST_001",
+          "speaker": "EARL",
+          "text": "That date is on my off-air reel. Nineteen eighty-one. I kept the station log with it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "BY02_REQUEST_002",
+          "speaker": "EARL",
+          "text": "This is fourteen-twenty AM, the town station. Your fourteen-twenty-point-four-zero-five receiver is different equipment. Let us keep the sources straight.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "BY02_REEL_IDENTIFY",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "BY02_REEL_IDENTIFY_001",
+          "speaker": "EARL",
+          "text": "The reel box, the off-air entry and my initials belong together. The transmitter was shut down; that does not by itself tell us what made the sound.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "BY02_REEL_IDENTIFY_002",
+          "speaker": "EARL",
+          "text": "The marked source switch has two positions. Tape is this reel with the monitor feed disconnected. Live is tonight's monitor with the deck disconnected.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "BY02_TAPE_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "BY02_TAPE_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "TAPE is selected. The live monitor is disconnected from the playback path. The dated reel supplies the old fragment.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "BY02_TAPE_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "This establishes the source of this playback. It does not identify the source of the original sound or measure a bearing.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "BY02_LIVE_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "BY02_LIVE_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "LIVE MONITOR is selected. The reel deck is disconnected from this path. What you hear now belongs to tonight's monitor.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "BY02_LIVE_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "A match in sound is not a shared source record. Keep tonight's monitor and the labelled reel separate.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "BY02_SOURCE_COMPARE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "BY02_SOURCE_COMPARE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The isolated reel repeats the same old fragment after a new question. The recorded words have not answered it.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "BY02_SOURCE_COMPARE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The dated local reel is a separately preserved source. Record the source and timing. Direction still needs fixed landmarks and field observations.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "BY02_LATE_COPY",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "BY02_LATE_COPY_001",
+          "speaker": "DESCRIPTION",
+          "text": "Earl has left. The labelled collection envelope contains his dated source copy, the off-air log copy and the marked playback-disconnection sheet.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "BY02_LATE_COPY_002",
+          "speaker": "DESCRIPTION",
+          "text": "You checked the copy on the isolated lobby deck. Its old fragment stays unchanged after your question. There is no new live reply from Earl.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "BY02_LATE_COPY_003",
+          "speaker": "DESCRIPTION",
+          "text": "This is a checked copy of the identified source, not a claim to have handled the original reel. Keep that limit on the record.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "BY02_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "BY02_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The source or signal path is not verified. Ask for the labelled off-air log and use the isolated playback position. A familiar sound alone is not the check.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_BRIEF",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_BRIEF_001",
+          "speaker": "DESCRIPTION",
+          "text": "The separate array service card marks A / ROW 1 WEST, B / ROW 1 EAST and REF / R1. It describes an ordinary comparison, not what the array will follow.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "ARRAY_BRIEF_002",
+          "speaker": "DESCRIPTION",
+          "text": "Identify the nearby dishes and check their command history. Leave the reference lamp fixed. Choose either operator place first, then the other, then return briefly.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_COMMAND_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_COMMAND_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The nearby dish identifiers match the local command and drive record you checked. The automatic schedule remains isolated; this is a separate bounded service check.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_FIXED_REFERENCE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_FIXED_REFERENCE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The reference lamp stays at REF / R1 at the same setting. Move yourself, not the lamp. Compare the dishes against the fixed Row One landmarks.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_POINT_A",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_POINT_A_001",
+          "speaker": "DESCRIPTION",
+          "text": "At A / ROW 1 WEST, the observed dishes turn towards this operator position. REF / R1 and the fixed landmarks have not moved. Record what you actually see from here.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_POINT_B",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_POINT_B_001",
+          "speaker": "DESCRIPTION",
+          "text": "At B / ROW 1 EAST, the observed dishes turn towards this operator position. The reference lamp is still at REF / R1. Compare their angles against the same landmarks.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_RETURN",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_RETURN_001",
+          "speaker": "DESCRIPTION",
+          "text": "On your short return to the first operator place, the dishes turn back towards it. The response follows your chosen route, not a fixed order of stations.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_RESULT",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_RESULT_001",
+          "speaker": "DESCRIPTION",
+          "text": "The physical response followed the operator between two places and back while the reference lamp stayed fixed. The separate command record does not account for those changes.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "ARRAY_RESULT_002",
+          "speaker": "DESCRIPTION",
+          "text": "That is a result for this controlled path. It does not establish anyone's identity, a county-wide safe route or what happened to Tomás. STATION 01 records an older arrangement to examine next.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_RETREAT",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_RETREAT_001",
+          "speaker": "DESCRIPTION",
+          "text": "You used the clear passage and broke contact behind opaque cover. The searching figure has withdrawn. The completed comparison is preserved.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_EMPTY_HOLD",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_EMPTY_HOLD_001",
+          "speaker": "DESCRIPTION",
+          "text": "The dishes hold briefly on the empty place you left. Then they return to 026. Nobody is standing there now.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_RETRY",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_RETRY_001",
+          "speaker": "DESCRIPTION",
+          "text": "The command, source and geometry checks are preserved. Resume from the covered point before the passage was searched; choose a clear retreat.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "ARRAY_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "ARRAY_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The comparison is incomplete. Keep the fixed lamp in place, check the other marked position and return to the first. Do not record a tracking result without the geometry and command checks.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC12_ROUTE_READBACK",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC12_ROUTE_READBACK_001",
+          "speaker": "WARD",
+          "text": "The patrol note places low lights across the northbound highway beyond the Caliche Junction turnoff. I have its actual time and the driver's recent eastbound passage in the log. They are limited reports, not a map of everywhere it is safe.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC12_ROUTE_READBACK_002",
+          "speaker": "WARD",
+          "text": "The courier is confirmed at bolt ten-point-four, beyond the mapped C crossing at eight-point-one-five. Carry the originals. No stopping or new reading at C.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC12_ROUTE_READBACK_003",
+          "speaker": "WARD",
+          "text": "The warning and dictated measurements are already outside SARO. You can remain at the diner; the handover is a choice to preserve the original source chain, not a new experiment.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
         }
       ]
     }
