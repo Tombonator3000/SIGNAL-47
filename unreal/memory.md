@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## GitHub-levering klargjort, 26. oktober 2026
+
+- Tom ba om fletting til GitHub. Samlet kildeleveranse er pushet på `codex/saro-visual-route-20261026` i [PR170](https://github.com/Tombonator3000/SIGNAL-47/pull/170). Nyeste main med dokument-/miljøbilder er flettet inn uten endring av testet spillkode eller produksjonsassets. De seks private tekstene er integrert; JPG-/UV-binding er fortsatt separat arbeid.
+- Publiseringsaudit består: 175 egne/CC0-uassets bruker Git LFS; private Fab-assets, personlige lagringer og 23 genererte kontrollfiler er utelatt. Begge narrative generatorer og HorrorStorys 20 tester består. HorrorStory-scenarioene er fortsatt forfatterkilder uten ny SC-runtime.
+- PR-en er konfliktfri, men **ikke flettet til main**. Hele eksisterende `Scripts/screenshots.sh` kreves før merge. Den klargjorte kjøringen bruker samme R2-pakke, men er ikke startet. Tom svarte at MetaHuman-arbeidet må fortsette først; ingen automatisk teststart mellom Claudes jobber. Fortsett fullkontrollen etter faktisk frigitt Unreal-arbeid, og flett deretter samme verifiserte PR-head. Ny autorisasjon til vanlig merge trengs ikke.
+
 ## Terreng og natur langs ruten, R2 installert 26. oktober 2026
 
 - Tom bestilte punkt 3 med flere agenter. Original Blender-geologi har nå 179 476 trekanter med sammenhengende erosjon, endret fjernprofil og glattere fjernnormaler. Samme veimasker, koordinater og spillbare høyder beholdes. De store sentrale/høyre trinnene i førbildet var far_northern_ridges; første R1 lot dem stå og ble avvist visuelt. R2 retter dette.
