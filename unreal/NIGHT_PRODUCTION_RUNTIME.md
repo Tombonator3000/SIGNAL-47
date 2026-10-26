@@ -1,6 +1,6 @@
 # Kontorfunn, himmel og korrekt observasjonslagring
 
-Arbeidsgren: `codex/night-production`. Rapporten gjelder et sammenhengende kontor-/undersøkelsesinkrement og valgfri himmelprogresjon. Kandidaten er under kontroll; denne oppføringen er ennå ingen installasjonskvittering.
+Arbeidsgren: `codex/night-production`. Rapporten gjelder et sammenhengende kontor-/undersøkelsesinkrement og valgfri himmelprogresjon. NP1 er pakket fra kilde `2c05e33d18156c85df174c5afcc0f4030de38878`. Elleve pakkede funksjonsprøver består; målrettede bildeforhold og installasjonskvittering fullføres nedenfor.
 
 ## Levert kilde og spillerflyt
 
@@ -29,3 +29,19 @@ Bevisrot: `/home/tom/scratch-bm/Signal47-night-production-20261026`. Testene kj�
 Endelig pakket prøve, bilde-QA, Git-head, installasjon og faktisk Saved-/payloadbevaring føres her etter utføring. Menneskelig input/lytting/fysisk Xbox, ny kveldsakt, fem aktive møter, original72s VHS og helnatt er ikke attestert av API-/manusprøver.
 
 Biblioteket ble søkt først og én gang bredere. ChiR24/Unreal_mcp-profilen oppgir UE5.0 til5.8 og MIT, men teststatus er UNVERIFIED. Ingen MCP-kode eller tredjepartsasset er gjenbrukt; prosjektets egne porter, materialer, generatorer og lagringshjelpere er videreført.
+
+## Pakket NP1, funksjonskontroll
+
+Linux-pakking fullførte build/cook/stage/archive på237s uten materialfallback. Pakken består1 493 selvtester; Dales High/Low-forløp har191 kontroller og5 faktiske Writer/fresh-reader/full-Flow-restores hver. De nye tastaturprøvene når siste avsnitt, holder tre gjentatte PageDown ved bunnen, går opp igjen med første PageUp og lukker med Escape. LineLights har12 native kontroller/3 diskrestores; himmelen har16 kontroller og full Flow-restore per High/Low. T01 har53/19, T02 har65/15 og38,89m faktisk waypointgange. Pakket feltfilm/mørkerom og hele05:29-finalen til sluttittel består. Dette er fokuserte kontroller med eksplisitte tidligere-historie-/ståstedsfiksturer, ikke en menneskelig helnatt.
+
+RT-prøven har625 faktiske verdensaktive samples fra en fullført900-frame CSV. AlwaysResident er79,3446MiB i alle disse, under uendret400MiB-pool/20prosent/80MiB-varselgrense. Ikke total GPU-VRAM, hele nattens topp eller FPS.
+
+Cook regenererte de to sporede FileOpenOrder-loggene. De genererte kopiene er bevart i bevismappen, og bare disse byggproduserte filene er satt tilbake til de opprinnelige frosne byteverdiene. Alle2 948 sporede kilde-/asset-/konfigurasjonsfiler er etterkontrollert. De første kontraktskjermbildene skifter skyfase før faktisk render; nye fixed-phase-opptak brukes for fasebestemt piksel-QA. Dette endrer ikke runtimekilden eller kontraktens separate funksjonsbevis.
+
+Uavhengig dokumentkontroll har faktisk lest18 originale High/Low-bilder. Ingen blokker: tekst, skalering, rulling og utgang virker. Mindre begrensning: opptakshjelpeteksten nederst kan bli delvis klippet ved enkelte trelinjers store titler; READ ALOUD og PUT IT DOWN/Esc er synlige. Ingen full attest av alle mellomliggende tekstutsnitt eller menneskelig opplesning.
+
+## Samlet aksept før integrasjon
+
+`np1-acceptance.json` binder17 pakkede kjøringer,21 rapporter og28 faktisk vurderte originalbilder til samme NP1-binær og kilde. De seks ekstra bildekjøringene holder fasen fast under opptak. Dagslysets ene punkt er tydelig på Low; High mot lys sky har svak kontrast og er ikke attestert som pålitelig menneskelig gjenkjenning. Nattens to punkter, sektorer, rekke og grupper har scoped pikselkontroll. Gammel LineLights-trepunkts lesbarhet er ikke nyattestert; kamera-/opaquesikt-, pause-, avbrudds- og lagringskontrakten er faktisk prøvd.
+
+Aksepten inneholder ingen editorprøver. Den nye scenariokoordinatoren, fem aktive møter, original film, menneskelig helnatt/lytting/Xbox og samlet ytelse står åpne. Ingen ny spillutgave er publisert eksternt. PR-/installasjonsresultat føres etter faktisk gjennomføring.

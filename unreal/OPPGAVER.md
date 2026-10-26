@@ -1,5 +1,9 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## NP1 klar for integrasjon, 26.10.2026 kl. 01:12 CET
+
+Codex, `codex/night-production`, kilde `2c05e33d`. Samlet kontor/tekst/lesestatus, himmelbaner og LineLights-save er bygget og prøvd i17 faktiske pakkede kjøringer.1 493 selvtester og28 vurderte originalbilder. Tre avgrensede hjelpere og root har utført kilde-/kontrakt-/pixel-/installerreview; alle UE-jobber sekvensielt. Ku-R2 fra den allerede installerte standarden er tatt inn uendret. Manusdelen S.1/R2.1 er produsert, ikke runtime-koordinator eller nye aktive møter. PR/merge/installasjon gjenstår ved denne oppføringen.
+
 ## Kontorfunn, himmel og observasjonslagring, startet 26.10.2026 kl. 00:42 CET
 
 Codex på `codex/night-production`, separat arbeidskopi i `/home/tom/scratch-bm/wt/night-production`. Avgrensede hjelpere eier HorrorStory-kilder, Dales kontorpapirer og LineLights; root eier himmellys, integrasjon, sekvensielle bygg/prøver og levering. S.1/R2.1 produseres som engelske forfatterkilder; S.7s seks tekster og separat arrayserviceark får faktisk kontor-/lese-/lagringsflyt, S.6 retter usette/avbrutte lys, S.3 får fem verdensbaner med egen faktisk observasjon. Dagens kapitteladapter erstatter ikke S.2s nye kveldskoordinator. Original VHS, fem aktive møter og fullnatt er fortsatt åpne. Installert ku-R2 er oppdaget i leveringskontrollen og bevares byteidentisk fra testet kilde-/assetsnapshot før ny pakking. Se [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md).

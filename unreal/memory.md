@@ -1,5 +1,9 @@
 # Minne for unreal/
 
+## NP1 pakket aksept, 26.10.2026 kl. 01:12 CET
+
+Kilde `2c05e33d18156c85df174c5afcc0f4030de38878` har17 pakkede kjøringer,1 493 selvtester og28 faktisk vurderte originalbilder. Dales High/Low har191/5 hver; LineLights12/3, Sky16+full Flow per High/Low, T0153/19, T0265/15 og38,89m gange. Feltfilm/mørkerom og hele finalen består. RT79,3446MiB i625 aktive samples ligger under uendret80MiB-varselgrense. Akseptfilen binder21 rapporter. S.1/R2.1 er forfattergrunnlag, S.6 og runtime-delene S.3a/S.7a er levert kandidat. Nye SC-/kveldsporter, fem aktive møter og original VHS er fortsatt åpne. Ku-R2 er bytebevart. Installering av NP1 skal fortsatt verifiseres; ikke anta at en pakket kandidat allerede er standard.
+
 ## Kontorfunn og himmelkandidat, 26.10.2026 kl. 00:42 CET
 
 Nyeste arbeid foregår isolert på `codex/night-production`. HorrorStory har nå10 hovedoppdrag,13 scenarioer,79 scener og16 dokumenter med20 kildekontraktprøver. EveningShift har101 scener/17 dokumenter og uendrede109 takes. Seks frivillige loretekster og et separat arrayserviceark er faktisk lesbare i kontoret; lesestatus og legacy/T02/VHS-grenser bevares. Dokumentets store tekst er1,35 med fysisk rulling. LineLights skiller opptrådt, faktisk sett og avsluttet, og gjenopptar fra disk. Fem optional himmeltrinn bruker fysiske baner, siktsjekk og separat versjonert lagring. De knyttes foreløpig til faktisk kapittelprogresjon, ikke en ferdig SC01 tilSC13-koordinator.
