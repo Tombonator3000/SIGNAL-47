@@ -1,5 +1,7 @@
 # Dales kontor: feltmappe, UFO-materiale og lesbare dokumenter
 
+Bilderekvisittene er produsert 26. oktober 2026: [Dokumentpakken](ArtSource/Documents/README.md) har alle sju eksisterende ark, alle seks frivillige utkast med skisser/foto, et mappeomslag og eldre arkivmateriale som JPG. Nye dokument-ID-er, lesestatus, fotoets bruk som bevis og eventuell runtimevisning er fortsatt integrasjonsarbeid. Denne leveransen produserer ingen VHS-film.
+
 25. oktober 2026. Vedlegg til [hovedscenarioets SC07](MISSION_FLOW_1800_ROSWELL.md#sc07-det-dale-ikke-leverte-inn). Dette viderefører tidligere kontorideer i [ANOMALY_PLAN](ANOMALY_PLAN.md) og [EveningShift office.json](Narrative/EveningShift/modules/office.json), uten å erstatte deres eksisterende ID-er. De seks engelske tekstene nederst er nye fiktive manusutkast, ikke allerede registrerte spilldokumenter eller historiske kilder.
 
 ## Et menneskes arbeidsrom

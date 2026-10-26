@@ -1,5 +1,12 @@
 # Minne for unreal/
 
+## Dokumentbilder levert, 26. oktober 2026
+
+- `ArtSource/Documents` har 31 originale imagegen-rekvisitter som progressive sRGB-JPG: mappeomslag, alle sju EveningShift-ark og seks private Dale-utkast, 13 senere arkivark og fire nye valgfrie bakgrunnsark. Galleri, transkripsjoner, prompter, kildehasher og kontrollverktøy følger med.
+- JPG-filene bruker 12 143 169 byte mot PNG-originalenes 89 438 281 byte, 86,4 prosent mindre. Originalene er bevart utenfor Git. Konvertering endrer ikke tekst eller beskjæring.
+- 31 tekniske kontroller og uavhengig visuell nærlesing av alle finaler består. E15 følger crop B-komposisjonen som generert nytolkning; det er ikke en pikselidentisk kildebeskjæring. E09A er kvalitativ figur, ikke et nytt målsatt overlegg. E10 dateres i tittel/katalog; kildebrødteksten har ikke trykt årstall.
+- Dette er assetproduksjon. De seks private dokumentene er fortsatt ikke registrert i Narrative-JSON eller runtime. S.7 beholder gjenstående tekst-/lesestatusintegrasjon; VHS72sek er fortsatt en separat oppgave. Ingen bygg, pakking eller installasjon inngår.
+
 ## Sammenflettet hovedscenario, 25. oktober 2026
 
 - Nyeste bestilling: flett alle designrundene sammen, behold eksisterende randomhendelser, vis ett tidlig UFO-lys og flere etter hvert, og gjenbruk tidligere Dale-kontorideer med lesbare UFO-/aliendokumenter.

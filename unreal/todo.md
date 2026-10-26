@@ -1,5 +1,10 @@
 # Todo for unreal/
 
+## Dokumentrekvisitter, 26. oktober 2026
+
+- [x] Lag hele Dales dokumentsamling og gamle aviser/arkivark som komprimerte JPG. [ArtSource/Documents](ArtSource/Documents/README.md) har 31 bilder, engelsk kildetekst, promptsett, oversikt og offlinegalleri. Manuell bilde-/kanonkontroll og filkontroll er utført.
+- Videre bruk ligger under eksisterende S.7: registrer nye private ID-er i EveningShift og koble på tekstvisning/lesestatus. Vurder E15 mot eksisterende foto før utskifting; bruk opprinnelig geometrisk grunnlag for målsatte sammenligninger. Ingen ny runtimeoppgave er fullført av JPG-leveransen.
+
 ## Sammenflettet hovedscenario, randombevaring, himmel og Dale
 
 [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) er nå én hovedrekkefølge med 13 sammenhengende scenarioer. Tidligere revisjoner og alle 32 løsningskort ligger urørt i [MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md) som sekundært oppslagsverk. Oppgavene her presiserer eksisterende I-/R2-/H-arbeid; de er ikke en ekstra parallell implementering.

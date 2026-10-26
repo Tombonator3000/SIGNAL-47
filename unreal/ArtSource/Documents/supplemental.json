@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "language": "en",
+  "notes_nb": [
+    "Fire nyskrevne, fiktive bakgrunnsrekvisitter for mulig senere bruk i SIGNAL / 47. De gjengir ikke virkelige avisartikler, myndighetsrapporter eller medisinske journaler.",
+    "Ingen runtimekobling, ny dokumentport eller nytt kanonisk bevis er opprettet. Plassering og eventuell senere integrasjon må bestemmes separat.",
+    "Ingen av tekstene fastslår utenomjordisk kontakt, art, en felles årsak eller forbindelse til STATION 01, C, 1947 eller invasjonen.",
+    "[REDACTED] er en uttrykkelig plassholder for mørk sladding av navn og adresser. Ingen observasjon eller kritisk ledetråd skal skjules.",
+    "Uttrykket kan bruke maskinskrift, kommunal kopipraksis, gult avispapir, veterinærfeltark og sjablongkopi. Ingen virkelige institusjonssegl, føderale klassifikasjoner eller ekte forelesermerker."
+  ],
+  "assets": [
+    {
+      "id": "PROP_COUNTY_LIGHTS_1978",
+      "title": "Light reports remain unresolved",
+      "filename": "jpg/28-county-lights-1978.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "typed",
+      "date_metadata": "August 14, 1978",
+      "text": "COUNTY INQUIRIES / RELEASED COPY\n14 AUG 1978\n\nLIGHT REPORTS REMAIN UNRESOLVED\n\nWitness A name: [REDACTED]\nAddress: [REDACTED]\nWitness B name: [REDACTED]\nAddress: [REDACTED]\n\nTwo residents described a white light from separate roadside positions. One placed it above the ridge; the other placed it below the ridge line. Statements were taken separately before either witness read the other account.\n\nThe sketches do not establish that both observers saw the same object. Distance, size and route remain unconfirmed. No instrument record accompanies this copy.\n\nDISPOSITION: UNRESOLVED.\nNames and addresses withheld. Observation text released without alteration.",
+      "key_checks": [
+        "August 14, 1978; a fictional county inquiry copy, without a federal seal or classification.",
+        "Two separate viewpoints disagree about the ridge line; object identity, distance and route remain unconfirmed.",
+        "Place dark redaction bars ONLY over the four [REDACTED] name/address values, never over observations or disposition.",
+        "No claimed link to SARO, STATION 01, C, 1947, or the invasion."
+      ],
+      "intended_use_nb": "Frivillig eldre saksark med troverdig personsladding, til mulig senere arkiv- eller miljøbruk.",
+      "notes_nb": "Nyskrevet fiksjon for produksjonen. Ingen eksisterende vitneidentitet eller kanonisk sammenheng fastslås."
+    },
+    {
+      "id": "PROP_SENTINEL_MISSING_HOURS_1974",
+      "title": "Clocks disagree after late return",
+      "filename": "jpg/29-sentinel-missing-hours-1974.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "newspaper",
+      "date_metadata": "November 9, 1974",
+      "text": "PECOS VALLEY SENTINEL\nNOVEMBER 9, 1974\n\nCLOCKS DISAGREE AFTER LATE RETURN\n\nA local motorist arrived home long after his family expected him, saying he remembered an ordinary drive and no prolonged stop. His dashboard clock had stopped. The kitchen clock, according to his wife, had been reset that afternoon.\n\nNo departure time was written down. The driver declined to have his name printed. No collision or injury was reported, and the route has not been independently checked.\n\nNeighbors have offered explanations ranging from a wrong turn to sleep beside the road. None was confirmed. The Sentinel cannot establish a missing interval from the clocks described.",
+      "key_checks": [
+        "November 9, 1974; an original fictional Pecos Valley Sentinel article, distinct from E15 and the 1985 cuttings.",
+        "The dashboard clock stopped and the kitchen clock was reset; no reliable departure time or measured missing interval.",
+        "A late return is reported, without confirmed abduction, injury or cause.",
+        "No C, eight-mile crossing, 1947 identity, invasion reference or new main-route clue."
+      ],
+      "intended_use_nb": "Gammelt frivillig avisutklipp om tapt tidsfølelse, med motstridende klokker og åpent hendelsesforløp.",
+      "notes_nb": "Nyskrevet fiktiv avisartikkel. Den beskrevne bilisten er ikke en eksisterende figur, og artikkelen gir ikke målt tidsbortfall."
+    },
+    {
+      "id": "PROP_CATTLE_EXAM_1982",
+      "title": "Field examination / cause undetermined",
+      "filename": "jpg/30-cattle-exam-1982.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "typed",
+      "date_metadata": "June 3, 1982",
+      "text": "VETERINARY FIELD EXAMINATION\n3 JUN 1982 / UNSIGNED FIELD COPY\n\nSUBJECT: ADULT HEREFORD COW, FOUND DEAD\nOwner / ranch / ear tag: NOT RECORDED\n\nEXTERNAL OBSERVATIONS\nOne circular, dry area of missing hair and hide on the upper flank. No fresh blood observed at that site. Photograph made before the carcass was moved. Exposure and scale were not entered on the print.\n\nLIMITS\nA complete necropsy was not performed. This sheet does not establish the time or cause of death. The photograph records an external appearance; it does not identify what produced it.\n\nCAUSE OF DEATH: UNDETERMINED.\nFurther examination required. Retain the original print with this sheet.",
+      "key_checks": [
+        "June 3, 1982; unsigned field examination of a dead adult Hereford cow.",
+        "Owner, ranch and ear tag are NOT RECORDED; do not invent ALDERETE, tag 25, or another identification.",
+        "If illustrated, show one circular dry flank area with restrained non-bloody forensic appearance; no fresh blood or exposed organs.",
+        "CAUSE OF DEATH: UNDETERMINED remains legible; no completed necropsy or confirmed cause.",
+        "A photograph is not evidence of a species, perpetrator or extraterrestrial origin."
+      ],
+      "intended_use_nb": "Frivillig eldre veterinærark med et nøkternt feltfotografi, til senere miljø- eller arkivbruk.",
+      "notes_nb": "Nyskrevet fiktivt feltark. Dyret er ikke identifisert som den eksisterende Alderete-kua; ingen ny kanonisk veterinærhendelse er koblet til runtime."
+    },
+    {
+      "id": "PROP_CONTACT_FLYER_1984",
+      "title": "Keep watch. Keep notes.",
+      "filename": "jpg/31-sky-watch-flyer-1984.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "stencil",
+      "date_metadata": "May 18, 1984",
+      "text": "KEEP WATCH. KEEP NOTES.\n\nSKY WATCH / AN OPEN EVENING\nMAY 18, 1984\nCOMMUNITY MEETING ROOM\nADMISSION FREE\n\nA public talk on distant lights, visitors in local stories, and the words people use when they describe the sky. Bring a pencil, a watch and questions.\n\nNo confirmed contact will be presented. A strange account can be discussed without accepting its explanation.\n\nFIELD NOTE\nObserve from a public place with permission. Do not climb towers, enter fenced sites, touch electrical equipment or shine lights at aircraft. Log time and direction. Compare observations with stars and aircraft before naming a cause.",
+      "key_checks": [
+        "May 18, 1984; fictional local public lecture and stencil-copy appearance.",
+        "No confirmed contact will be presented; discussion is not an established finding.",
+        "Retain the safety and observation footer, including no entry into fenced sites or contact with electrical equipment.",
+        "No real Unarius name, lecturer portrait, institutional seal, branding or borrowed lecture footage.",
+        "This flyer is optional background and not Dale's Service Road / Field 01 VHS."
+      ],
+      "intended_use_nb": "Frivillig sjablongkopiert foredragsplakat som gir folkelig UFO-miljø før spillnatten.",
+      "notes_nb": "Nyskrevet fiktivt arrangement, uten virkelig foreleser eller organisasjon. Ikke et bevis på kontakt eller lokal feltobservasjon."
+    }
+  ]
+}
