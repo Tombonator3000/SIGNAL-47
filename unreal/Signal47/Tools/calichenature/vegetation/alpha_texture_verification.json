@@ -1,0 +1,332 @@
+{
+  "source_revision": "CN3-masked-small-leaf-needle-sprays",
+  "status": "PASS",
+  "scope": "Technical alpha channels and glTF MASK encoding only. No botanical density, shape or native visual acceptance claimed.",
+  "source": {
+    "dimensions": [
+      2048,
+      1024
+    ],
+    "mode": "RGBA",
+    "tiles": {
+      "0": {
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 0.4159126281738281
+      },
+      "1": {
+        "alpha_min": 255,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 1.0
+      },
+      "2": {
+        "alpha_min": 255,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 1.0
+      },
+      "3": {
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 0.39081573486328125
+      },
+      "4": {
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 0.4001960754394531
+      },
+      "5": {
+        "alpha_min": 255,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 1.0
+      },
+      "6": {
+        "alpha_min": 255,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 1.0
+      },
+      "7": {
+        "alpha_min": 255,
+        "alpha_max": 255,
+        "opaque_at_cutoff_fraction": 1.0
+      }
+    }
+  },
+  "glb": {
+    "SM_CN_Sage_A": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_A_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_A_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_B": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_B_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_B_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_C": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_C_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Sage_C_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Grass_A": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Grass_A_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Grass_A_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Grass_B": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Grass_B_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Grass_B_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Yucca_A": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Yucca_A_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Yucca_A_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Yucca_B": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Yucca_B_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Yucca_B_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Juniper_A": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Juniper_A_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Juniper_A_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Juniper_B": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Juniper_B_LOD1": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Juniper_B_LOD2": [
+      {
+        "name": "M_CN_Foliage",
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.3330000042915344,
+        "rgba_sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+      }
+    ],
+    "SM_CN_Caliche_A": [],
+    "SM_CN_Caliche_A_LOD1": [],
+    "SM_CN_Caliche_A_LOD2": [],
+    "SM_CN_Caliche_B": [],
+    "SM_CN_Caliche_B_LOD1": [],
+    "SM_CN_Caliche_B_LOD2": [],
+    "SM_CN_Sandstone_A": [],
+    "SM_CN_Sandstone_A_LOD1": [],
+    "SM_CN_Sandstone_A_LOD2": []
+  },
+  "unique_embedded_pngs": {
+    "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e": {
+      "dimensions": [
+        2048,
+        1024
+      ],
+      "mode": "RGBA",
+      "tiles": {
+        "0": {
+          "alpha_min": 0,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 0.4159126281738281
+        },
+        "1": {
+          "alpha_min": 255,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 1.0
+        },
+        "2": {
+          "alpha_min": 255,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 1.0
+        },
+        "3": {
+          "alpha_min": 0,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 0.39081573486328125
+        },
+        "4": {
+          "alpha_min": 0,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 0.4001960754394531
+        },
+        "5": {
+          "alpha_min": 255,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 1.0
+        },
+        "6": {
+          "alpha_min": 255,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 1.0
+        },
+        "7": {
+          "alpha_min": 255,
+          "alpha_max": 255,
+          "opaque_at_cutoff_fraction": 1.0
+        }
+      }
+    }
+  }
+}

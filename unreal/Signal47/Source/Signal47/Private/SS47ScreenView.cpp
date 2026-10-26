@@ -337,7 +337,7 @@ FReply SS47ScreenView::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	if (bForwarding) return FReply::Unhandled();
 	const FKey K = E.GetKey();
 	// (use's other key, Enter, and Space press the key chosen on the screen)
-	if (K == EKeys::Escape || (bUseLeaves && S47Keys::Is(TEXT("use"), K) && K != EKeys::Enter && K != EKeys::SpaceBar))
+	if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right || (bUseLeaves && !K.IsGamepadKey() && S47Keys::Is(TEXT("use"), K) && K != EKeys::Enter && K != EKeys::SpaceBar))
 	{
 		Leave();
 		return FReply::Handled();
@@ -386,6 +386,15 @@ bool SS47ScreenView::SelfTest(TArray<FString>& Lines)
 	const FVector2D S(37, 28);
 	const FVector2D Mid = Pixel(C, C, R, U, S), Corner = Pixel(C + R * S.X / 2 + U * S.Y / 2, C, R, U, S);
 	Check(Mid.Equals(FVector2D(PicW / 2, PicH / 2), 0.01) && Corner.Equals(FVector2D(PicW, 0), 0.01), FString::Printf(TEXT("glass to pixels: middle %s, top right %s"), *Mid.ToString(), *Corner.ToString()));
+	int32 Left = 0;
+	const TSharedRef<SS47ScreenView> Fallback = SNew(SS47ScreenView).OnLeft([&Left] { ++Left; });
+	const auto Key = [](const FKey& K) { return FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0); };
+	Check(!Fallback->OnKeyDown(FGeometry(), Key(EKeys::Gamepad_FaceButton_Bottom)).IsEventHandled() && Left == 0, TEXT("A stays available to fallback screen content, never use-to-leave"));
+	Fallback->OnKeyDown(FGeometry(), Key(EKeys::Gamepad_FaceButton_Right));
+	Check(Fallback->OnKeyDown(FGeometry(), Key(EKeys::Gamepad_FaceButton_Right)).IsEventHandled() && Left == 1, TEXT("B leaves a fallback screen exactly once"));
+	bOk &= SS47Document::SelfTest(Lines);
+	bOk &= SS47Ops::SelfTest(Lines);
+	bOk &= S47WidgetInput::SelfTest(Lines);
 	Check(Ease(0.f) == 0.f && Ease(1.f) == 1.f && FMath::IsNearlyEqual(Ease(0.5f), 0.5f), TEXT("the steps ease in and out"));
 	Check(S47Theme::GrabCursor(false) != EMouseCursor::None && S47Theme::GrabCursor(true) != EMouseCursor::None, TEXT("the case board's grab cursor is one that shows"));
 	return bOk;

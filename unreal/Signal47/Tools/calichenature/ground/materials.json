@@ -1,0 +1,56 @@
+[
+  {
+    "name": "M_CN_MineralSoil",
+    "base_color_linear": [
+      0.25,
+      0.22,
+      0.18,
+      1
+    ],
+    "roughness": 0.92,
+    "metallic": 0,
+    "specular": 0.18,
+    "normal_strength": 0.38,
+    "uv_scale": 1,
+    "vertex_rgb_tint": true,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/MineralSoil_color.png",
+      "normal": "textures/MineralSoil_normal_dx.png",
+      "roughness": "textures/MineralSoil_roughness.png"
+    }
+  },
+  {
+    "name": "M_CN_GravelShoulder",
+    "base_color_linear": [
+      0.25,
+      0.22,
+      0.18,
+      1
+    ],
+    "roughness": 0.92,
+    "metallic": 0,
+    "specular": 0.18,
+    "normal_strength": 0.38,
+    "uv_scale": 1,
+    "vertex_rgb_tint": true,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "texture_tint_linear": [
+      1.04,
+      1.025,
+      1.0
+    ],
+    "textures": {
+      "base_color": "textures/MineralSoil_color.png",
+      "normal": "textures/MineralSoil_normal_dx.png",
+      "roughness": "textures/MineralSoil_roughness.png"
+    }
+  }
+]

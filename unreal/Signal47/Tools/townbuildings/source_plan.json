@@ -1,0 +1,4546 @@
+{
+  "status": "SOURCE_PLAN_PASS_EXPORT_UNVERIFIED",
+  "source_revision": "TB1-original-six-building-production",
+  "scope": "Light mathematical geometry/UV/material and coordinate gates only; Blender triangulation/weld/export/native are separate",
+  "parts": {
+    "SM_Town_Sheriff_Shell": {
+      "planned_triangles": 1034,
+      "minimum_raw_triangle_area": 2.5257823682601487e-05,
+      "minimum_raw_UV_area": 2.5257823682601487e-05,
+      "raw_bounds_local_m": [
+        [
+          -10.125,
+          -6.125,
+          -0.7
+        ],
+        [
+          0.835,
+          6.125,
+          4.37
+        ]
+      ],
+      "materials": [
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "building": "Sheriff",
+      "chunk": "Shell",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
+    },
+    "SM_Town_Sheriff_Glass": {
+      "planned_triangles": 4,
+      "minimum_raw_triangle_area": 0.328,
+      "minimum_raw_UV_area": 0.5,
+      "raw_bounds_local_m": [
+        [
+          0.035,
+          -3.1,
+          0.8000000000000002
+        ],
+        [
+          0.04,
+          4.8100000000000005,
+          2.4
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "building": "Sheriff",
+      "chunk": "Glass",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
+    },
+    "SM_Town_Sheriff_Interior": {
+      "planned_triangles": 5188,
+      "minimum_raw_triangle_area": 9.452730142946785e-06,
+      "minimum_raw_UV_area": 9.452730142946785e-06,
+      "raw_bounds_local_m": [
+        [
+          -9.9,
+          -5.9,
+          -0.11
+        ],
+        [
+          -0.09999999999999964,
+          6.2,
+          3.46
+        ]
+      ],
+      "materials": [
+        "M_Town_BookCloth",
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_CinemaRedGlow",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_FloorTile",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "building": "Sheriff",
+      "chunk": "Interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
+    },
+    "SM_Town_Sheriff_Fixtures": {
+      "planned_triangles": 428,
+      "minimum_raw_triangle_area": 3.637126610294571e-05,
+      "minimum_raw_UV_area": 3.637126610294571e-05,
+      "raw_bounds_local_m": [
+        [
+          -8.26,
+          -1.9,
+          0.9
+        ],
+        [
+          0.55,
+          4.75,
+          3.125
+        ]
+      ],
+      "materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_TubeGlow",
+        "M_Town_WarmGlow"
+      ],
+      "building": "Sheriff",
+      "chunk": "Fixtures",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "parent_handle": "world.town.group",
+      "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
+    },
+    "SM_Town_Laundry_Shell": {
+      "planned_triangles": 830,
+      "minimum_raw_triangle_area": 0.0001620000000000043,
+      "minimum_raw_UV_area": 0.0001620000000000043,
+      "raw_bounds_local_m": [
+        [
+          -10.125,
+          -7.125,
+          -0.7
+        ],
+        [
+          0.835,
+          7.125,
+          4.27
+        ]
+      ],
+      "materials": [
+        "M_Town_BluePaint",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "building": "Laundry",
+      "chunk": "Shell",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
+    },
+    "SM_Town_Laundry_Glass": {
+      "planned_triangles": 6,
+      "minimum_raw_triangle_area": 0.3679999999999999,
+      "minimum_raw_UV_area": 0.5,
+      "raw_bounds_local_m": [
+        [
+          0.035,
+          -4.86,
+          0.6000000000000001
+        ],
+        [
+          0.04,
+          5.6499999999999995,
+          2.3
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "building": "Laundry",
+      "chunk": "Glass",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
+    },
+    "SM_Town_Laundry_Interior": {
+      "planned_triangles": 14782,
+      "minimum_raw_triangle_area": 2.9999999999998276e-05,
+      "minimum_raw_UV_area": 2.9999999999998276e-05,
+      "raw_bounds_local_m": [
+        [
+          -9.9,
+          -6.9,
+          -0.11
+        ],
+        [
+          -0.09999999999999964,
+          6.9,
+          3.36
+        ]
+      ],
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_FloorTile",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_Timber",
+        "M_Town_Upholstery",
+        "M_Town_WasherGlass"
+      ],
+      "building": "Laundry",
+      "chunk": "Interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
+    },
+    "SM_Town_Laundry_Fixtures": {
+      "planned_triangles": 496,
+      "minimum_raw_triangle_area": 3.637126610294571e-05,
+      "minimum_raw_UV_area": 3.637126610294571e-05,
+      "raw_bounds_local_m": [
+        [
+          -3.11,
+          -4.769119017293313,
+          0.9
+        ],
+        [
+          0.55,
+          4.75,
+          3.1149999999999998
+        ]
+      ],
+      "materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_TubeGlow",
+        "M_Town_WarmGlow"
+      ],
+      "building": "Laundry",
+      "chunk": "Fixtures",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "parent_handle": "world.town.group",
+      "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
+    },
+    "SM_Town_Feed_Shell": {
+      "planned_triangles": 2658,
+      "minimum_raw_triangle_area": 4.9000000000000087e-05,
+      "minimum_raw_UV_area": 4.9000000000000087e-05,
+      "raw_bounds_local_m": [
+        [
+          -16.125,
+          -12.125,
+          -0.7
+        ],
+        [
+          2.6,
+          12.125,
+          6.069999999999999
+        ]
+      ],
+      "materials": [
+        "M_Town_Burlap",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PrintAtlas",
+        "M_Town_RustTin",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "building": "Feed",
+      "chunk": "Shell",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
+    },
+    "SM_Town_Feed_Glass": {
+      "planned_triangles": 8,
+      "minimum_raw_triangle_area": 0.6380000000000001,
+      "minimum_raw_UV_area": 0.5,
+      "raw_bounds_local_m": [
+        [
+          0.035,
+          -7.1,
+          1.1999999999999997
+        ],
+        [
+          0.17,
+          7.7,
+          3.2
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "building": "Feed",
+      "chunk": "Glass",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
+    },
+    "SM_Town_Feed_Interior": {
+      "planned_triangles": 16216,
+      "minimum_raw_triangle_area": 4.8999999999996976e-05,
+      "minimum_raw_UV_area": 4.8999999999996976e-05,
+      "raw_bounds_local_m": [
+        [
+          -15.9,
+          -11.9,
+          0.0
+        ],
+        [
+          -0.09999999999999964,
+          11.9,
+          5.16
+        ]
+      ],
+      "materials": [
+        "M_Town_Burlap",
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "building": "Feed",
+      "chunk": "Interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
+    },
+    "SM_Town_Feed_Fixtures": {
+      "planned_triangles": 1316,
+      "minimum_raw_triangle_area": 3.637126610294534e-05,
+      "minimum_raw_UV_area": 3.637126610294534e-05,
+      "raw_bounds_local_m": [
+        [
+          -14.26,
+          -4.26,
+          0.9
+        ],
+        [
+          0.55,
+          4.26,
+          4.9
+        ]
+      ],
+      "materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_WarmGlow"
+      ],
+      "building": "Feed",
+      "chunk": "Fixtures",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "parent_handle": "world.town.group",
+      "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
+    },
+    "SM_Town_Cinema_Shell": {
+      "planned_triangles": 1848,
+      "minimum_raw_triangle_area": 9.100000000000083e-05,
+      "minimum_raw_UV_area": 9.100000000000083e-05,
+      "raw_bounds_local_m": [
+        [
+          -14.125,
+          -10.125,
+          -0.7
+        ],
+        [
+          2.569,
+          10.125,
+          7.8
+        ]
+      ],
+      "materials": [
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_PinkPlaster",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Timber"
+      ],
+      "building": "Cinema",
+      "chunk": "Shell",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
+    },
+    "SM_Town_Cinema_Glass": {
+      "planned_triangles": 12,
+      "minimum_raw_triangle_area": 0.1643000000000001,
+      "minimum_raw_UV_area": 0.5,
+      "raw_bounds_local_m": [
+        [
+          -3.11,
+          -7.575,
+          0.10000000000000009
+        ],
+        [
+          0.285,
+          8.115,
+          2.395
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "building": "Cinema",
+      "chunk": "Glass",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
+    },
+    "SM_Town_Cinema_Interior": {
+      "planned_triangles": 1036,
+      "minimum_raw_triangle_area": 8.487048957086832e-05,
+      "minimum_raw_UV_area": 8.487048957086832e-05,
+      "raw_bounds_local_m": [
+        [
+          -13.9,
+          -9.9,
+          -0.11
+        ],
+        [
+          -0.09999999999999964,
+          9.9,
+          6.16
+        ]
+      ],
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_Terrazzo",
+        "M_Town_Upholstery"
+      ],
+      "building": "Cinema",
+      "chunk": "Interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
+    },
+    "SM_Town_Cinema_Fixtures": {
+      "planned_triangles": 1852,
+      "minimum_raw_triangle_area": 3.637126610294571e-05,
+      "minimum_raw_UV_area": 3.637126610294571e-05,
+      "raw_bounds_local_m": [
+        [
+          -2.76,
+          -5.26,
+          0.9
+        ],
+        [
+          2.285,
+          4.6850000000000005,
+          7.65
+        ]
+      ],
+      "materials": [
+        "M_Town_CinemaRedGlow",
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_WarmGlow"
+      ],
+      "building": "Cinema",
+      "chunk": "Fixtures",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "parent_handle": "world.town.group",
+      "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
+    },
+    "SM_Town_Church_Shell": {
+      "planned_triangles": 3614,
+      "minimum_raw_triangle_area": 0.00021292110040824037,
+      "minimum_raw_UV_area": 0.00021292110040824037,
+      "raw_bounds_local_m": [
+        [
+          -1.2,
+          -4.85,
+          -0.56
+        ],
+        [
+          14.3,
+          4.85,
+          9.77
+        ]
+      ],
+      "materials": [
+        "M_Town_Clapboard",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_RoofShingle",
+        "M_Town_Timber"
+      ],
+      "building": "Church",
+      "chunk": "Shell",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
+    },
+    "SM_Town_Church_Glass": {
+      "planned_triangles": 24,
+      "minimum_raw_triangle_area": 0.16087499999999993,
+      "minimum_raw_UV_area": 0.175,
+      "raw_bounds_local_m": [
+        [
+          -0.015,
+          -4.515,
+          1.25
+        ],
+        [
+          11.65,
+          4.515,
+          3.95
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "building": "Church",
+      "chunk": "Glass",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
+    },
+    "SM_Town_Church_Interior": {
+      "planned_triangles": 2800,
+      "minimum_raw_triangle_area": 3.7069298006084125e-05,
+      "minimum_raw_UV_area": 3.7069298006077755e-05,
+      "raw_bounds_local_m": [
+        [
+          0.09999999999999964,
+          -4.4,
+          -0.1
+        ],
+        [
+          13.91,
+          4.4,
+          6.327480520920261
+        ]
+      ],
+      "materials": [
+        "M_Town_Clapboard",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "building": "Church",
+      "chunk": "Interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
+    },
+    "SM_Town_Church_Fixtures": {
+      "planned_triangles": 1320,
+      "minimum_raw_triangle_area": 3.781092057177341e-05,
+      "minimum_raw_UV_area": 3.781092057177341e-05,
+      "raw_bounds_local_m": [
+        [
+          -0.11800000000000001,
+          -2.3600000000000003,
+          1.05
+        ],
+        [
+          11.26,
+          2.3600000000000003,
+          4.800000000000001
+        ]
+      ],
+      "materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_WarmGlow"
+      ],
+      "building": "Church",
+      "chunk": "Fixtures",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "parent_handle": "world.town.group",
+      "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Fixtures"
+    },
+    "SM_Town_Motel_Shell": {
+      "planned_triangles": 5192,
+      "minimum_raw_triangle_area": 7.016062134050454e-05,
+      "minimum_raw_UV_area": 7.016062134050454e-05,
+      "raw_bounds_local_m": [
+        [
+          -6.699999999999999,
+          -45.9,
+          -0.14
+        ],
+        [
+          5.15,
+          3.3999999999999986,
+          3.125
+        ]
+      ],
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_TealPaint",
+        "M_Town_Timber"
+      ],
+      "building": "Motel",
+      "chunk": "Shell",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Shell"
+    },
+    "SM_Town_Motel_Glass": {
+      "planned_triangles": 18,
+      "minimum_raw_triangle_area": 0.8399999999999993,
+      "minimum_raw_UV_area": 0.5,
+      "raw_bounds_local_m": [
+        [
+          2.38,
+          -42.830000000000005,
+          0.7099999999999999
+        ],
+        [
+          2.411,
+          -0.28,
+          2.07
+        ]
+      ],
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "building": "Motel",
+      "chunk": "Glass",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Glass"
+    },
+    "SM_Town_Motel_Office": {
+      "planned_triangles": 1398,
+      "minimum_raw_triangle_area": 3.7069298006079124e-05,
+      "minimum_raw_UV_area": 3.7069298006077755e-05,
+      "raw_bounds_local_m": [
+        [
+          -2.205,
+          -2.7,
+          -0.11
+        ],
+        [
+          2.2,
+          2.7,
+          2.8
+        ]
+      ],
+      "materials": [
+        "M_Town_BookCloth",
+        "M_Town_Ceiling",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_Terrazzo",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "building": "Motel",
+      "chunk": "Office",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Office"
+    },
+    "SM_Town_Motel_Fixtures": {
+      "planned_triangles": 164,
+      "minimum_raw_triangle_area": 7.476554800834128e-05,
+      "minimum_raw_UV_area": 7.476554800834182e-05,
+      "raw_bounds_local_m": [
+        [
+          -0.41,
+          -40.21,
+          2.1525
+        ],
+        [
+          2.6199999999999997,
+          0.6,
+          2.695
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_MotelOfficeGlow"
+      ],
+      "building": "Motel",
+      "chunk": "Fixtures",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "parent_handle": "world.motel.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Fixtures"
+    },
+    "SM_Town_Motel_Room6Shell": {
+      "planned_triangles": 230,
+      "minimum_raw_triangle_area": 0.005999999999999989,
+      "minimum_raw_UV_area": 0.005999999999999989,
+      "raw_bounds_local_m": [
+        [
+          -2.7,
+          -5.199999999999999,
+          -0.14
+        ],
+        [
+          2.7,
+          3.16,
+          2.79
+        ]
+      ],
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_Concrete",
+        "M_Town_PrintAtlas",
+        "M_Town_Stucco",
+        "M_Town_TealPaint"
+      ],
+      "building": "Motel",
+      "chunk": "Room6Shell",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Shell"
+    },
+    "SM_Town_Motel_Room6Interior": {
+      "planned_triangles": 1240,
+      "minimum_raw_triangle_area": 3.7069298006077484e-05,
+      "minimum_raw_UV_area": 3.7069298006077755e-05,
+      "raw_bounds_local_m": [
+        [
+          -2.25,
+          -3.03,
+          -0.11
+        ],
+        [
+          2.25,
+          3.0,
+          2.15
+        ]
+      ],
+      "materials": [
+        "M_Town_Bedding",
+        "M_Town_Carpet",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_TealPaint",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "building": "Motel",
+      "chunk": "Room6Interior",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Interior"
+    },
+    "SM_Town_Motel_Room6Fixtures": {
+      "planned_triangles": 144,
+      "minimum_raw_triangle_area": 6.71025971044387e-05,
+      "minimum_raw_UV_area": 6.71025971044387e-05,
+      "raw_bounds_local_m": [
+        [
+          -0.8600000000000001,
+          4.06,
+          2.2520000000000002
+        ],
+        [
+          0.64,
+          4.44,
+          2.65
+        ]
+      ],
+      "materials": [
+        "M_Town_Metal",
+        "M_Town_Room6Glow"
+      ],
+      "building": "Motel",
+      "chunk": "Room6Fixtures",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Fixtures"
+    },
+    "SM_Town_Motel_Bathroom": {
+      "planned_triangles": 1296,
+      "minimum_raw_triangle_area": 5.985385976290926e-05,
+      "minimum_raw_UV_area": 5.985385976290926e-05,
+      "raw_bounds_local_m": [
+        [
+          -2.06,
+          2.94,
+          -0.11
+        ],
+        [
+          0.72,
+          5.5600000000000005,
+          2.6999999999999997
+        ]
+      ],
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_FloorTile",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Stucco"
+      ],
+      "building": "Motel",
+      "chunk": "Bathroom",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "parent_handle": "world.room6.group",
+      "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Bathroom"
+    }
+  },
+  "lods": {
+    "0": {
+      "SM_Town_Sheriff_Shell": {
+        "planned_triangles": 1034,
+        "minimum_raw_triangle_area": 2.5257823682601487e-05,
+        "minimum_raw_UV_area": 2.5257823682601487e-05,
+        "raw_bounds_local_m": [
+          [
+            -10.125,
+            -6.125,
+            -0.7
+          ],
+          [
+            0.835,
+            6.125,
+            4.37
+          ]
+        ],
+        "materials": [
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Sheriff",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
+      },
+      "SM_Town_Sheriff_Glass": {
+        "planned_triangles": 4,
+        "minimum_raw_triangle_area": 0.328,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -3.1,
+            0.8000000000000002
+          ],
+          [
+            0.04,
+            4.8100000000000005,
+            2.4
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Sheriff",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
+      },
+      "SM_Town_Sheriff_Interior": {
+        "planned_triangles": 5188,
+        "minimum_raw_triangle_area": 9.452730142946785e-06,
+        "minimum_raw_UV_area": 9.452730142946785e-06,
+        "raw_bounds_local_m": [
+          [
+            -9.9,
+            -5.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            6.2,
+            3.46
+          ]
+        ],
+        "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_CinemaRedGlow",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_FloorTile",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
+          "M_Town_Stucco",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Sheriff",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
+      },
+      "SM_Town_Sheriff_Fixtures": {
+        "planned_triangles": 428,
+        "minimum_raw_triangle_area": 3.637126610294571e-05,
+        "minimum_raw_UV_area": 3.637126610294571e-05,
+        "raw_bounds_local_m": [
+          [
+            -8.26,
+            -1.9,
+            0.9
+          ],
+          [
+            0.55,
+            4.75,
+            3.125
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_TubeGlow",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Sheriff",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
+      },
+      "SM_Town_Laundry_Shell": {
+        "planned_triangles": 830,
+        "minimum_raw_triangle_area": 0.0001620000000000043,
+        "minimum_raw_UV_area": 0.0001620000000000043,
+        "raw_bounds_local_m": [
+          [
+            -10.125,
+            -7.125,
+            -0.7
+          ],
+          [
+            0.835,
+            7.125,
+            4.27
+          ]
+        ],
+        "materials": [
+          "M_Town_BluePaint",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Laundry",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
+      },
+      "SM_Town_Laundry_Glass": {
+        "planned_triangles": 6,
+        "minimum_raw_triangle_area": 0.3679999999999999,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -4.86,
+            0.6000000000000001
+          ],
+          [
+            0.04,
+            5.6499999999999995,
+            2.3
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Laundry",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
+      },
+      "SM_Town_Laundry_Interior": {
+        "planned_triangles": 14782,
+        "minimum_raw_triangle_area": 2.9999999999998276e-05,
+        "minimum_raw_UV_area": 2.9999999999998276e-05,
+        "raw_bounds_local_m": [
+          [
+            -9.9,
+            -6.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            6.9,
+            3.36
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_FloorTile",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
+          "M_Town_Timber",
+          "M_Town_Upholstery",
+          "M_Town_WasherGlass"
+        ],
+        "building": "Laundry",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
+      },
+      "SM_Town_Laundry_Fixtures": {
+        "planned_triangles": 496,
+        "minimum_raw_triangle_area": 3.637126610294571e-05,
+        "minimum_raw_UV_area": 3.637126610294571e-05,
+        "raw_bounds_local_m": [
+          [
+            -3.11,
+            -4.769119017293313,
+            0.9
+          ],
+          [
+            0.55,
+            4.75,
+            3.1149999999999998
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_TubeGlow",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Laundry",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
+      },
+      "SM_Town_Feed_Shell": {
+        "planned_triangles": 2658,
+        "minimum_raw_triangle_area": 4.9000000000000087e-05,
+        "minimum_raw_UV_area": 4.9000000000000087e-05,
+        "raw_bounds_local_m": [
+          [
+            -16.125,
+            -12.125,
+            -0.7
+          ],
+          [
+            2.6,
+            12.125,
+            6.069999999999999
+          ]
+        ],
+        "materials": [
+          "M_Town_Burlap",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PrintAtlas",
+          "M_Town_RustTin",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Feed",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
+      },
+      "SM_Town_Feed_Glass": {
+        "planned_triangles": 8,
+        "minimum_raw_triangle_area": 0.6380000000000001,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -7.1,
+            1.1999999999999997
+          ],
+          [
+            0.17,
+            7.7,
+            3.2
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Feed",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
+      },
+      "SM_Town_Feed_Interior": {
+        "planned_triangles": 16216,
+        "minimum_raw_triangle_area": 4.8999999999996976e-05,
+        "minimum_raw_UV_area": 4.8999999999996976e-05,
+        "raw_bounds_local_m": [
+          [
+            -15.9,
+            -11.9,
+            0.0
+          ],
+          [
+            -0.09999999999999964,
+            11.9,
+            5.16
+          ]
+        ],
+        "materials": [
+          "M_Town_Burlap",
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_Timber"
+        ],
+        "building": "Feed",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
+      },
+      "SM_Town_Feed_Fixtures": {
+        "planned_triangles": 1316,
+        "minimum_raw_triangle_area": 3.637126610294534e-05,
+        "minimum_raw_UV_area": 3.637126610294534e-05,
+        "raw_bounds_local_m": [
+          [
+            -14.26,
+            -4.26,
+            0.9
+          ],
+          [
+            0.55,
+            4.26,
+            4.9
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Feed",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
+      },
+      "SM_Town_Cinema_Shell": {
+        "planned_triangles": 1848,
+        "minimum_raw_triangle_area": 9.100000000000083e-05,
+        "minimum_raw_UV_area": 9.100000000000083e-05,
+        "raw_bounds_local_m": [
+          [
+            -14.125,
+            -10.125,
+            -0.7
+          ],
+          [
+            2.569,
+            10.125,
+            7.8
+          ]
+        ],
+        "materials": [
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PinkPlaster",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Cinema",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
+      },
+      "SM_Town_Cinema_Glass": {
+        "planned_triangles": 12,
+        "minimum_raw_triangle_area": 0.1643000000000001,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            -3.11,
+            -7.575,
+            0.10000000000000009
+          ],
+          [
+            0.285,
+            8.115,
+            2.395
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Cinema",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
+      },
+      "SM_Town_Cinema_Interior": {
+        "planned_triangles": 1036,
+        "minimum_raw_triangle_area": 8.487048957086832e-05,
+        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "raw_bounds_local_m": [
+          [
+            -13.9,
+            -9.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            9.9,
+            6.16
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Terrazzo",
+          "M_Town_Upholstery"
+        ],
+        "building": "Cinema",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
+      },
+      "SM_Town_Cinema_Fixtures": {
+        "planned_triangles": 1852,
+        "minimum_raw_triangle_area": 3.637126610294571e-05,
+        "minimum_raw_UV_area": 3.637126610294571e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.76,
+            -5.26,
+            0.9
+          ],
+          [
+            2.285,
+            4.6850000000000005,
+            7.65
+          ]
+        ],
+        "materials": [
+          "M_Town_CinemaRedGlow",
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Cinema",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
+      },
+      "SM_Town_Church_Shell": {
+        "planned_triangles": 3614,
+        "minimum_raw_triangle_area": 0.00021292110040824037,
+        "minimum_raw_UV_area": 0.00021292110040824037,
+        "raw_bounds_local_m": [
+          [
+            -1.2,
+            -4.85,
+            -0.56
+          ],
+          [
+            14.3,
+            4.85,
+            9.77
+          ]
+        ],
+        "materials": [
+          "M_Town_Clapboard",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_RoofShingle",
+          "M_Town_Timber"
+        ],
+        "building": "Church",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
+      },
+      "SM_Town_Church_Glass": {
+        "planned_triangles": 24,
+        "minimum_raw_triangle_area": 0.16087499999999993,
+        "minimum_raw_UV_area": 0.175,
+        "raw_bounds_local_m": [
+          [
+            -0.015,
+            -4.515,
+            1.25
+          ],
+          [
+            11.65,
+            4.515,
+            3.95
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Church",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
+      },
+      "SM_Town_Church_Interior": {
+        "planned_triangles": 2800,
+        "minimum_raw_triangle_area": 3.7069298006084125e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            0.09999999999999964,
+            -4.4,
+            -0.1
+          ],
+          [
+            13.91,
+            4.4,
+            6.327480520920261
+          ]
+        ],
+        "materials": [
+          "M_Town_Clapboard",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_Stucco",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Church",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
+      },
+      "SM_Town_Church_Fixtures": {
+        "planned_triangles": 1320,
+        "minimum_raw_triangle_area": 3.781092057177341e-05,
+        "minimum_raw_UV_area": 3.781092057177341e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.11800000000000001,
+            -2.3600000000000003,
+            1.05
+          ],
+          [
+            11.26,
+            2.3600000000000003,
+            4.800000000000001
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Church",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Fixtures"
+      },
+      "SM_Town_Motel_Shell": {
+        "planned_triangles": 5192,
+        "minimum_raw_triangle_area": 7.016062134050454e-05,
+        "minimum_raw_UV_area": 7.016062134050454e-05,
+        "raw_bounds_local_m": [
+          [
+            -6.699999999999999,
+            -45.9,
+            -0.14
+          ],
+          [
+            5.15,
+            3.3999999999999986,
+            3.125
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_TealPaint",
+          "M_Town_Timber"
+        ],
+        "building": "Motel",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Shell"
+      },
+      "SM_Town_Motel_Glass": {
+        "planned_triangles": 18,
+        "minimum_raw_triangle_area": 0.8399999999999993,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            2.38,
+            -42.830000000000005,
+            0.7099999999999999
+          ],
+          [
+            2.411,
+            -0.28,
+            2.07
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Motel",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Glass"
+      },
+      "SM_Town_Motel_Office": {
+        "planned_triangles": 1398,
+        "minimum_raw_triangle_area": 3.7069298006079124e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.205,
+            -2.7,
+            -0.11
+          ],
+          [
+            2.2,
+            2.7,
+            2.8
+          ]
+        ],
+        "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Ceiling",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_Terrazzo",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Motel",
+        "chunk": "Office",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Office"
+      },
+      "SM_Town_Motel_Fixtures": {
+        "planned_triangles": 164,
+        "minimum_raw_triangle_area": 7.476554800834128e-05,
+        "minimum_raw_UV_area": 7.476554800834182e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.41,
+            -40.21,
+            2.1525
+          ],
+          [
+            2.6199999999999997,
+            0.6,
+            2.695
+          ]
+        ],
+        "materials": [
+          "M_Town_Metal",
+          "M_Town_MotelOfficeGlow"
+        ],
+        "building": "Motel",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Fixtures"
+      },
+      "SM_Town_Motel_Room6Shell": {
+        "planned_triangles": 230,
+        "minimum_raw_triangle_area": 0.005999999999999989,
+        "minimum_raw_UV_area": 0.005999999999999989,
+        "raw_bounds_local_m": [
+          [
+            -2.7,
+            -5.199999999999999,
+            -0.14
+          ],
+          [
+            2.7,
+            3.16,
+            2.79
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Concrete",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_TealPaint"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Shell"
+      },
+      "SM_Town_Motel_Room6Interior": {
+        "planned_triangles": 1240,
+        "minimum_raw_triangle_area": 3.7069298006077484e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.25,
+            -3.03,
+            -0.11
+          ],
+          [
+            2.25,
+            3.0,
+            2.15
+          ]
+        ],
+        "materials": [
+          "M_Town_Bedding",
+          "M_Town_Carpet",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_TealPaint",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Interior"
+      },
+      "SM_Town_Motel_Room6Fixtures": {
+        "planned_triangles": 144,
+        "minimum_raw_triangle_area": 6.71025971044387e-05,
+        "minimum_raw_UV_area": 6.71025971044387e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.8600000000000001,
+            4.06,
+            2.2520000000000002
+          ],
+          [
+            0.64,
+            4.44,
+            2.65
+          ]
+        ],
+        "materials": [
+          "M_Town_Metal",
+          "M_Town_Room6Glow"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Fixtures"
+      },
+      "SM_Town_Motel_Bathroom": {
+        "planned_triangles": 1296,
+        "minimum_raw_triangle_area": 5.985385976290926e-05,
+        "minimum_raw_UV_area": 5.985385976290926e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.06,
+            2.94,
+            -0.11
+          ],
+          [
+            0.72,
+            5.5600000000000005,
+            2.6999999999999997
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_FloorTile",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Stucco"
+        ],
+        "building": "Motel",
+        "chunk": "Bathroom",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Bathroom"
+      }
+    },
+    "1": {
+      "SM_Town_Sheriff_Shell": {
+        "planned_triangles": 778,
+        "minimum_raw_triangle_area": 9.742785792574787e-05,
+        "minimum_raw_UV_area": 9.742785792574787e-05,
+        "raw_bounds_local_m": [
+          [
+            -10.125,
+            -6.125,
+            -0.7
+          ],
+          [
+            0.835,
+            6.125,
+            4.37
+          ]
+        ],
+        "materials": [
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Sheriff",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
+      },
+      "SM_Town_Sheriff_Glass": {
+        "planned_triangles": 4,
+        "minimum_raw_triangle_area": 0.328,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -3.1,
+            0.8000000000000002
+          ],
+          [
+            0.04,
+            4.8100000000000005,
+            2.4
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Sheriff",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
+      },
+      "SM_Town_Sheriff_Interior": {
+        "planned_triangles": 4256,
+        "minimum_raw_triangle_area": 1.3499999999999855e-05,
+        "minimum_raw_UV_area": 1.1691342951089989e-05,
+        "raw_bounds_local_m": [
+          [
+            -9.9,
+            -5.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            6.2,
+            3.46
+          ]
+        ],
+        "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_CinemaRedGlow",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_FloorTile",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
+          "M_Town_Stucco",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Sheriff",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
+      },
+      "SM_Town_Sheriff_Fixtures": {
+        "planned_triangles": 316,
+        "minimum_raw_triangle_area": 7.476554800833518e-05,
+        "minimum_raw_UV_area": 7.476554800833518e-05,
+        "raw_bounds_local_m": [
+          [
+            -8.26,
+            -1.9,
+            0.9
+          ],
+          [
+            0.55,
+            4.75,
+            3.125
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_TubeGlow",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Sheriff",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
+      },
+      "SM_Town_Laundry_Shell": {
+        "planned_triangles": 718,
+        "minimum_raw_triangle_area": 0.0001620000000000043,
+        "minimum_raw_UV_area": 0.0001620000000000043,
+        "raw_bounds_local_m": [
+          [
+            -10.125,
+            -7.125,
+            -0.7
+          ],
+          [
+            0.835,
+            7.125,
+            4.27
+          ]
+        ],
+        "materials": [
+          "M_Town_BluePaint",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Laundry",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
+      },
+      "SM_Town_Laundry_Glass": {
+        "planned_triangles": 6,
+        "minimum_raw_triangle_area": 0.3679999999999999,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -4.86,
+            0.6000000000000001
+          ],
+          [
+            0.04,
+            5.6499999999999995,
+            2.3
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Laundry",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
+      },
+      "SM_Town_Laundry_Interior": {
+        "planned_triangles": 10262,
+        "minimum_raw_triangle_area": 2.9999999999998276e-05,
+        "minimum_raw_UV_area": 2.9999999999998276e-05,
+        "raw_bounds_local_m": [
+          [
+            -9.9,
+            -6.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            6.9,
+            3.36
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_FloorTile",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
+          "M_Town_Timber",
+          "M_Town_Upholstery",
+          "M_Town_WasherGlass"
+        ],
+        "building": "Laundry",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
+      },
+      "SM_Town_Laundry_Fixtures": {
+        "planned_triangles": 384,
+        "minimum_raw_triangle_area": 7.476554800833941e-05,
+        "minimum_raw_UV_area": 7.476554800833941e-05,
+        "raw_bounds_local_m": [
+          [
+            -3.11,
+            -4.76758845726812,
+            0.9
+          ],
+          [
+            0.55,
+            4.75,
+            3.1149999999999998
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_TubeGlow",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Laundry",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
+      },
+      "SM_Town_Feed_Shell": {
+        "planned_triangles": 1866,
+        "minimum_raw_triangle_area": 4.9000000000000087e-05,
+        "minimum_raw_UV_area": 4.9000000000000087e-05,
+        "raw_bounds_local_m": [
+          [
+            -16.125,
+            -12.125,
+            -0.7
+          ],
+          [
+            2.6,
+            12.125,
+            6.069999999999999
+          ]
+        ],
+        "materials": [
+          "M_Town_Burlap",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PrintAtlas",
+          "M_Town_RustTin",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Feed",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
+      },
+      "SM_Town_Feed_Glass": {
+        "planned_triangles": 8,
+        "minimum_raw_triangle_area": 0.6380000000000001,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -7.1,
+            1.1999999999999997
+          ],
+          [
+            0.17,
+            7.7,
+            3.2
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Feed",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
+      },
+      "SM_Town_Feed_Interior": {
+        "planned_triangles": 10312,
+        "minimum_raw_triangle_area": 4.8999999999996976e-05,
+        "minimum_raw_UV_area": 4.8999999999996976e-05,
+        "raw_bounds_local_m": [
+          [
+            -15.9,
+            -11.9,
+            0.0
+          ],
+          [
+            -0.09999999999999964,
+            11.9,
+            5.16
+          ]
+        ],
+        "materials": [
+          "M_Town_Burlap",
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_Timber"
+        ],
+        "building": "Feed",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
+      },
+      "SM_Town_Feed_Fixtures": {
+        "planned_triangles": 820,
+        "minimum_raw_triangle_area": 8.487048957086988e-05,
+        "minimum_raw_UV_area": 8.487048957086988e-05,
+        "raw_bounds_local_m": [
+          [
+            -14.26,
+            -4.26,
+            0.9
+          ],
+          [
+            0.55,
+            4.26,
+            4.9
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Feed",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
+      },
+      "SM_Town_Cinema_Shell": {
+        "planned_triangles": 1548,
+        "minimum_raw_triangle_area": 9.100000000000083e-05,
+        "minimum_raw_UV_area": 9.100000000000083e-05,
+        "raw_bounds_local_m": [
+          [
+            -14.125,
+            -10.125,
+            -0.7
+          ],
+          [
+            2.569,
+            10.125,
+            7.8
+          ]
+        ],
+        "materials": [
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PinkPlaster",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Cinema",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
+      },
+      "SM_Town_Cinema_Glass": {
+        "planned_triangles": 12,
+        "minimum_raw_triangle_area": 0.1643000000000001,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            -3.11,
+            -7.575,
+            0.10000000000000009
+          ],
+          [
+            0.285,
+            8.115,
+            2.395
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Cinema",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
+      },
+      "SM_Town_Cinema_Interior": {
+        "planned_triangles": 876,
+        "minimum_raw_triangle_area": 8.487048957086832e-05,
+        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "raw_bounds_local_m": [
+          [
+            -13.9,
+            -9.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            9.9,
+            6.16
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Terrazzo",
+          "M_Town_Upholstery"
+        ],
+        "building": "Cinema",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
+      },
+      "SM_Town_Cinema_Fixtures": {
+        "planned_triangles": 1196,
+        "minimum_raw_triangle_area": 8.487048957086832e-05,
+        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.76,
+            -5.26,
+            0.9
+          ],
+          [
+            2.285,
+            4.6850000000000005,
+            7.65
+          ]
+        ],
+        "materials": [
+          "M_Town_CinemaRedGlow",
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Cinema",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
+      },
+      "SM_Town_Church_Shell": {
+        "planned_triangles": 3550,
+        "minimum_raw_triangle_area": 0.00021292110040824037,
+        "minimum_raw_UV_area": 0.00021292110040824037,
+        "raw_bounds_local_m": [
+          [
+            -1.2,
+            -4.85,
+            -0.56
+          ],
+          [
+            14.3,
+            4.85,
+            9.77
+          ]
+        ],
+        "materials": [
+          "M_Town_Clapboard",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_RoofShingle",
+          "M_Town_Timber"
+        ],
+        "building": "Church",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
+      },
+      "SM_Town_Church_Glass": {
+        "planned_triangles": 24,
+        "minimum_raw_triangle_area": 0.16087499999999993,
+        "minimum_raw_UV_area": 0.175,
+        "raw_bounds_local_m": [
+          [
+            -0.015,
+            -4.515,
+            1.25
+          ],
+          [
+            11.65,
+            4.515,
+            3.95
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Church",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
+      },
+      "SM_Town_Church_Interior": {
+        "planned_triangles": 2736,
+        "minimum_raw_triangle_area": 3.7069298006084125e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            0.09999999999999964,
+            -4.4,
+            -0.1
+          ],
+          [
+            13.91,
+            4.4,
+            6.327480520920261
+          ]
+        ],
+        "materials": [
+          "M_Town_Clapboard",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_Stucco",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Church",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
+      },
+      "SM_Town_Church_Fixtures": {
+        "planned_triangles": 840,
+        "minimum_raw_triangle_area": 8.487048957087099e-05,
+        "minimum_raw_UV_area": 8.487048957087067e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.11800000000000001,
+            -2.3600000000000003,
+            1.05
+          ],
+          [
+            11.26,
+            2.3600000000000003,
+            4.800000000000001
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Church",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Fixtures"
+      },
+      "SM_Town_Motel_Shell": {
+        "planned_triangles": 4376,
+        "minimum_raw_triangle_area": 7.799999999999947e-05,
+        "minimum_raw_UV_area": 7.799999999999947e-05,
+        "raw_bounds_local_m": [
+          [
+            -6.699999999999999,
+            -45.9,
+            -0.14
+          ],
+          [
+            5.15,
+            3.3999999999999986,
+            3.125
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_TealPaint",
+          "M_Town_Timber"
+        ],
+        "building": "Motel",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Shell"
+      },
+      "SM_Town_Motel_Glass": {
+        "planned_triangles": 18,
+        "minimum_raw_triangle_area": 0.8399999999999993,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            2.38,
+            -42.830000000000005,
+            0.7099999999999999
+          ],
+          [
+            2.411,
+            -0.28,
+            2.07
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Motel",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Glass"
+      },
+      "SM_Town_Motel_Office": {
+        "planned_triangles": 1254,
+        "minimum_raw_triangle_area": 3.7069298006079124e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.205,
+            -2.7,
+            -0.11
+          ],
+          [
+            2.2,
+            2.7,
+            2.8
+          ]
+        ],
+        "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Ceiling",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_Terrazzo",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Motel",
+        "chunk": "Office",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Office"
+      },
+      "SM_Town_Motel_Fixtures": {
+        "planned_triangles": 164,
+        "minimum_raw_triangle_area": 7.476554800834128e-05,
+        "minimum_raw_UV_area": 7.476554800834182e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.41,
+            -40.21,
+            2.1525
+          ],
+          [
+            2.6199999999999997,
+            0.6,
+            2.695
+          ]
+        ],
+        "materials": [
+          "M_Town_Metal",
+          "M_Town_MotelOfficeGlow"
+        ],
+        "building": "Motel",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Fixtures"
+      },
+      "SM_Town_Motel_Room6Shell": {
+        "planned_triangles": 230,
+        "minimum_raw_triangle_area": 0.005999999999999989,
+        "minimum_raw_UV_area": 0.005999999999999989,
+        "raw_bounds_local_m": [
+          [
+            -2.7,
+            -5.199999999999999,
+            -0.14
+          ],
+          [
+            2.7,
+            3.16,
+            2.79
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Concrete",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_TealPaint"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Shell"
+      },
+      "SM_Town_Motel_Room6Interior": {
+        "planned_triangles": 1072,
+        "minimum_raw_triangle_area": 3.7069298006077484e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.25,
+            -3.03,
+            -0.11
+          ],
+          [
+            2.25,
+            3.0,
+            2.15
+          ]
+        ],
+        "materials": [
+          "M_Town_Bedding",
+          "M_Town_Carpet",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_TealPaint",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Interior"
+      },
+      "SM_Town_Motel_Room6Fixtures": {
+        "planned_triangles": 96,
+        "minimum_raw_triangle_area": 6.71025971044387e-05,
+        "minimum_raw_UV_area": 6.71025971044387e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.8600000000000001,
+            4.06,
+            2.2520000000000002
+          ],
+          [
+            0.64,
+            4.44,
+            2.65
+          ]
+        ],
+        "materials": [
+          "M_Town_Metal",
+          "M_Town_Room6Glow"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Fixtures"
+      },
+      "SM_Town_Motel_Bathroom": {
+        "planned_triangles": 888,
+        "minimum_raw_triangle_area": 5.985385976290926e-05,
+        "minimum_raw_UV_area": 5.985385976290926e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.06,
+            2.94,
+            -0.11
+          ],
+          [
+            0.72,
+            5.5600000000000005,
+            2.6999999999999997
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_FloorTile",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Stucco"
+        ],
+        "building": "Motel",
+        "chunk": "Bathroom",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Bathroom"
+      }
+    },
+    "2": {
+      "SM_Town_Sheriff_Shell": {
+        "planned_triangles": 506,
+        "minimum_raw_triangle_area": 0.0001478618752835059,
+        "minimum_raw_UV_area": 0.0001478618752835059,
+        "raw_bounds_local_m": [
+          [
+            -10.125,
+            -6.125,
+            -0.7
+          ],
+          [
+            0.835,
+            6.125,
+            3.8200000000000003
+          ]
+        ],
+        "materials": [
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Sheriff",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
+      },
+      "SM_Town_Sheriff_Glass": {
+        "planned_triangles": 4,
+        "minimum_raw_triangle_area": 0.328,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -3.1,
+            0.8000000000000002
+          ],
+          [
+            0.04,
+            4.8100000000000005,
+            2.4
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Sheriff",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
+      },
+      "SM_Town_Sheriff_Interior": {
+        "planned_triangles": 2420,
+        "minimum_raw_triangle_area": 1.3499999999999855e-05,
+        "minimum_raw_UV_area": 1.1691342951089989e-05,
+        "raw_bounds_local_m": [
+          [
+            -9.9,
+            -5.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            6.2,
+            3.46
+          ]
+        ],
+        "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Ceiling",
+          "M_Town_CinemaRedGlow",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_FloorTile",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
+          "M_Town_Stucco",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Sheriff",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
+      },
+      "SM_Town_Sheriff_Fixtures": {
+        "planned_triangles": 260,
+        "minimum_raw_triangle_area": 7.476554800833518e-05,
+        "minimum_raw_UV_area": 7.476554800833518e-05,
+        "raw_bounds_local_m": [
+          [
+            -8.26,
+            -1.9,
+            0.9
+          ],
+          [
+            0.55,
+            4.75,
+            3.125
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_TubeGlow",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Sheriff",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7984,
+          7.192696381179047,
+          2106
+        ],
+        "parent_handle": "world.town.group",
+        "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
+      },
+      "SM_Town_Laundry_Shell": {
+        "planned_triangles": 470,
+        "minimum_raw_triangle_area": 0.0034999999999999923,
+        "minimum_raw_UV_area": 0.0034999999999999953,
+        "raw_bounds_local_m": [
+          [
+            -10.125,
+            -7.125,
+            -0.7
+          ],
+          [
+            0.835,
+            7.125,
+            3.72
+          ]
+        ],
+        "materials": [
+          "M_Town_BluePaint",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Laundry",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
+      },
+      "SM_Town_Laundry_Glass": {
+        "planned_triangles": 6,
+        "minimum_raw_triangle_area": 0.3679999999999999,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -4.86,
+            0.6000000000000001
+          ],
+          [
+            0.04,
+            5.6499999999999995,
+            2.3
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Laundry",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
+      },
+      "SM_Town_Laundry_Interior": {
+        "planned_triangles": 6462,
+        "minimum_raw_triangle_area": 2.9999999999998276e-05,
+        "minimum_raw_UV_area": 2.9999999999998276e-05,
+        "raw_bounds_local_m": [
+          [
+            -9.9,
+            -6.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            6.9,
+            3.36
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_FloorTile",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
+          "M_Town_Timber",
+          "M_Town_Upholstery",
+          "M_Town_WasherGlass"
+        ],
+        "building": "Laundry",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
+      },
+      "SM_Town_Laundry_Fixtures": {
+        "planned_triangles": 328,
+        "minimum_raw_triangle_area": 7.476554800833941e-05,
+        "minimum_raw_UV_area": 7.476554800833941e-05,
+        "raw_bounds_local_m": [
+          [
+            -3.11,
+            -4.7700000000000005,
+            0.9
+          ],
+          [
+            0.55,
+            4.75,
+            3.1149999999999998
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_TubeGlow",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Laundry",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.013043546669646,
+          2133
+        ],
+        "parent_handle": "world.town.group",
+        "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
+      },
+      "SM_Town_Feed_Shell": {
+        "planned_triangles": 982,
+        "minimum_raw_triangle_area": 0.0013307568775515234,
+        "minimum_raw_UV_area": 0.0013307568775515234,
+        "raw_bounds_local_m": [
+          [
+            -16.125,
+            -12.125,
+            -0.7
+          ],
+          [
+            2.6,
+            12.125,
+            5.5200000000000005
+          ]
+        ],
+        "materials": [
+          "M_Town_Burlap",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_PrintAtlas",
+          "M_Town_RustTin",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Feed",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
+      },
+      "SM_Town_Feed_Glass": {
+        "planned_triangles": 8,
+        "minimum_raw_triangle_area": 0.6380000000000001,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            0.035,
+            -7.1,
+            1.1999999999999997
+          ],
+          [
+            0.17,
+            7.7,
+            3.2
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Feed",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
+      },
+      "SM_Town_Feed_Interior": {
+        "planned_triangles": 1672,
+        "minimum_raw_triangle_area": 0.0001402961154130613,
+        "minimum_raw_UV_area": 0.00014004823346493178,
+        "raw_bounds_local_m": [
+          [
+            -15.9,
+            -11.9,
+            0.0
+          ],
+          [
+            -0.09999999999999964,
+            11.9,
+            5.16
+          ]
+        ],
+        "materials": [
+          "M_Town_Burlap",
+          "M_Town_Ceiling",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_Timber"
+        ],
+        "building": "Feed",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
+      },
+      "SM_Town_Feed_Fixtures": {
+        "planned_triangles": 572,
+        "minimum_raw_triangle_area": 8.487048957086988e-05,
+        "minimum_raw_UV_area": 8.487048957086988e-05,
+        "raw_bounds_local_m": [
+          [
+            -14.26,
+            -4.26,
+            0.9
+          ],
+          [
+            0.55,
+            4.26,
+            4.9
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Feed",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          10.375556755065919,
+          2202
+        ],
+        "parent_handle": "world.town.group",
+        "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
+      },
+      "SM_Town_Cinema_Shell": {
+        "planned_triangles": 1080,
+        "minimum_raw_triangle_area": 9.100000000000083e-05,
+        "minimum_raw_UV_area": 9.100000000000083e-05,
+        "raw_bounds_local_m": [
+          [
+            -14.125,
+            -10.125,
+            -0.7
+          ],
+          [
+            2.569,
+            10.125,
+            7.8
+          ]
+        ],
+        "materials": [
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_PinkPlaster",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Timber"
+        ],
+        "building": "Cinema",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
+      },
+      "SM_Town_Cinema_Glass": {
+        "planned_triangles": 12,
+        "minimum_raw_triangle_area": 0.1643000000000001,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            -3.11,
+            -7.575,
+            0.10000000000000009
+          ],
+          [
+            0.285,
+            8.115,
+            2.395
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Cinema",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
+      },
+      "SM_Town_Cinema_Interior": {
+        "planned_triangles": 276,
+        "minimum_raw_triangle_area": 8.487048957086832e-05,
+        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "raw_bounds_local_m": [
+          [
+            -13.9,
+            -9.9,
+            -0.11
+          ],
+          [
+            -0.09999999999999964,
+            9.9,
+            6.16
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_Terrazzo",
+          "M_Town_Upholstery"
+        ],
+        "building": "Cinema",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
+      },
+      "SM_Town_Cinema_Fixtures": {
+        "planned_triangles": 736,
+        "minimum_raw_triangle_area": 8.487048957086832e-05,
+        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.76,
+            -5.26,
+            0.9
+          ],
+          [
+            2.285,
+            4.6850000000000005,
+            7.65
+          ]
+        ],
+        "materials": [
+          "M_Town_CinemaRedGlow",
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Cinema",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          7985,
+          8.987393474578857,
+          2162
+        ],
+        "parent_handle": "world.town.group",
+        "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
+      },
+      "SM_Town_Church_Shell": {
+        "planned_triangles": 1886,
+        "minimum_raw_triangle_area": 0.00021292110040824037,
+        "minimum_raw_UV_area": 0.00021292110040824037,
+        "raw_bounds_local_m": [
+          [
+            -1.2,
+            -4.85,
+            -0.56
+          ],
+          [
+            14.3,
+            4.85,
+            9.77
+          ]
+        ],
+        "materials": [
+          "M_Town_Clapboard",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_RoofShingle",
+          "M_Town_Timber"
+        ],
+        "building": "Church",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
+      },
+      "SM_Town_Church_Glass": {
+        "planned_triangles": 24,
+        "minimum_raw_triangle_area": 0.16087499999999993,
+        "minimum_raw_UV_area": 0.175,
+        "raw_bounds_local_m": [
+          [
+            -0.015,
+            -4.515,
+            1.25
+          ],
+          [
+            11.65,
+            4.515,
+            3.95
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Church",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
+      },
+      "SM_Town_Church_Interior": {
+        "planned_triangles": 2468,
+        "minimum_raw_triangle_area": 3.7069298006084125e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            0.09999999999999964,
+            -4.4,
+            -0.1
+          ],
+          [
+            13.91,
+            4.4,
+            6.327480520920261
+          ]
+        ],
+        "materials": [
+          "M_Town_Clapboard",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
+          "M_Town_Paper",
+          "M_Town_Stucco",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Church",
+        "chunk": "Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
+      },
+      "SM_Town_Church_Fixtures": {
+        "planned_triangles": 600,
+        "minimum_raw_triangle_area": 8.487048957087099e-05,
+        "minimum_raw_UV_area": 8.487048957087067e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.11800000000000001,
+            -2.3600000000000003,
+            1.05
+          ],
+          [
+            11.26,
+            2.3600000000000003,
+            4.800000000000001
+          ]
+        ],
+        "materials": [
+          "M_Town_DarkMetal",
+          "M_Town_Metal",
+          "M_Town_WarmGlow"
+        ],
+        "building": "Church",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          8021,
+          6.315627861022949,
+          2095.5
+        ],
+        "parent_handle": "world.town.group",
+        "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Fixtures"
+      },
+      "SM_Town_Motel_Shell": {
+        "planned_triangles": 3412,
+        "minimum_raw_triangle_area": 7.799999999999947e-05,
+        "minimum_raw_UV_area": 7.799999999999947e-05,
+        "raw_bounds_local_m": [
+          [
+            -6.699999999999999,
+            -45.9,
+            -0.14
+          ],
+          [
+            5.15,
+            3.3999999999999986,
+            3.125
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_TealPaint",
+          "M_Town_Timber"
+        ],
+        "building": "Motel",
+        "chunk": "Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Shell"
+      },
+      "SM_Town_Motel_Glass": {
+        "planned_triangles": 18,
+        "minimum_raw_triangle_area": 0.8399999999999993,
+        "minimum_raw_UV_area": 0.5,
+        "raw_bounds_local_m": [
+          [
+            2.38,
+            -42.830000000000005,
+            0.7099999999999999
+          ],
+          [
+            2.411,
+            -0.28,
+            2.07
+          ]
+        ],
+        "materials": [
+          "M_Town_Glass"
+        ],
+        "building": "Motel",
+        "chunk": "Glass",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Glass"
+      },
+      "SM_Town_Motel_Office": {
+        "planned_triangles": 1198,
+        "minimum_raw_triangle_area": 3.7069298006079124e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.205,
+            -2.7,
+            -0.11
+          ],
+          [
+            2.2,
+            2.7,
+            2.8
+          ]
+        ],
+        "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Ceiling",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_Paper",
+          "M_Town_Terrazzo",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Motel",
+        "chunk": "Office",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Office"
+      },
+      "SM_Town_Motel_Fixtures": {
+        "planned_triangles": 164,
+        "minimum_raw_triangle_area": 7.476554800834128e-05,
+        "minimum_raw_UV_area": 7.476554800834182e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.41,
+            -40.21,
+            2.1525
+          ],
+          [
+            2.6199999999999997,
+            0.6,
+            2.695
+          ]
+        ],
+        "materials": [
+          "M_Town_Metal",
+          "M_Town_MotelOfficeGlow"
+        ],
+        "building": "Motel",
+        "chunk": "Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          -45.9,
+          -2.0985683853163195,
+          674.9
+        ],
+        "parent_handle": "world.motel.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Fixtures"
+      },
+      "SM_Town_Motel_Room6Shell": {
+        "planned_triangles": 230,
+        "minimum_raw_triangle_area": 0.005999999999999989,
+        "minimum_raw_UV_area": 0.005999999999999989,
+        "raw_bounds_local_m": [
+          [
+            -2.7,
+            -5.199999999999999,
+            -0.14
+          ],
+          [
+            2.7,
+            3.16,
+            2.79
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Concrete",
+          "M_Town_PrintAtlas",
+          "M_Town_Stucco",
+          "M_Town_TealPaint"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Shell",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Shell"
+      },
+      "SM_Town_Motel_Room6Interior": {
+        "planned_triangles": 960,
+        "minimum_raw_triangle_area": 3.7069298006077484e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.25,
+            -3.03,
+            -0.11
+          ],
+          [
+            2.25,
+            3.0,
+            2.15
+          ]
+        ],
+        "materials": [
+          "M_Town_Bedding",
+          "M_Town_Carpet",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_TealPaint",
+          "M_Town_Timber",
+          "M_Town_Upholstery"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Interior",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Interior"
+      },
+      "SM_Town_Motel_Room6Fixtures": {
+        "planned_triangles": 72,
+        "minimum_raw_triangle_area": 6.71025971044387e-05,
+        "minimum_raw_UV_area": 6.71025971044387e-05,
+        "raw_bounds_local_m": [
+          [
+            -0.8600000000000001,
+            4.06,
+            2.2520000000000002
+          ],
+          [
+            0.64,
+            4.44,
+            2.65
+          ]
+        ],
+        "materials": [
+          "M_Town_Metal",
+          "M_Town_Room6Glow"
+        ],
+        "building": "Motel",
+        "chunk": "Room6Fixtures",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Room6Fixtures"
+      },
+      "SM_Town_Motel_Bathroom": {
+        "planned_triangles": 624,
+        "minimum_raw_triangle_area": 5.985385976290926e-05,
+        "minimum_raw_UV_area": 5.985385976290926e-05,
+        "raw_bounds_local_m": [
+          [
+            -2.06,
+            2.94,
+            -0.11
+          ],
+          [
+            0.72,
+            5.5600000000000005,
+            2.6999999999999997
+          ]
+        ],
+        "materials": [
+          "M_Town_Ceiling",
+          "M_Town_Ceramic",
+          "M_Town_FloorTile",
+          "M_Town_LampFabric",
+          "M_Town_Metal",
+          "M_Town_Stucco"
+        ],
+        "building": "Motel",
+        "chunk": "Bathroom",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "site_world_three_m": [
+          0,
+          0,
+          -8000
+        ],
+        "parent_handle": "world.room6.group",
+        "role": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6 / Bathroom"
+      }
+    }
+  },
+  "lod_totals": {
+    "0": 65154,
+    "1": 48610,
+    "2": 27450
+  },
+  "building_contract": {
+    "Sheriff": {
+      "root": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "footprint": [
+        -10,
+        0,
+        -6,
+        6
+      ],
+      "height": 3.5,
+      "front": 1,
+      "door": [
+        4.4,
+        1.0,
+        2.15
+      ],
+      "windows": [
+        [
+          -1.3,
+          3.6,
+          0.8,
+          2.4
+        ]
+      ],
+      "style": "weathered tan mineral courthouse, barred oak office and records room"
+    },
+    "Laundry": {
+      "root": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "footprint": [
+        -10,
+        0,
+        -7,
+        7
+      ],
+      "height": 3.4,
+      "front": 1,
+      "door": [
+        -4.4,
+        1.1,
+        2.2
+      ],
+      "windows": [
+        [
+          4.1,
+          3.1,
+          0.6,
+          2.3
+        ],
+        [
+          0.7,
+          3.1,
+          0.6,
+          2.3
+        ]
+      ],
+      "style": "chipped cream concrete block, faded blue enamel and coin operated washing machines"
+    },
+    "Feed": {
+      "root": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "footprint": [
+        -16,
+        0,
+        -12,
+        12
+      ],
+      "height": 5.2,
+      "front": 1,
+      "door": [
+        0.5,
+        5.2,
+        3.6
+      ],
+      "windows": [
+        [
+          -5.8,
+          2.6,
+          1.2,
+          2.9
+        ],
+        [
+          6.4,
+          2.6,
+          1.2,
+          2.9
+        ]
+      ],
+      "style": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock"
+    },
+    "Cinema": {
+      "root": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "footprint": [
+        -14,
+        0,
+        -10,
+        10
+      ],
+      "height": 6.2,
+      "front": 1,
+      "door": [
+        2.6,
+        1.3,
+        2.3
+      ],
+      "windows": [
+        [
+          1,
+          1.3,
+          0.1,
+          2.3
+        ],
+        [
+          -2.6,
+          1.3,
+          0.1,
+          2.3
+        ]
+      ],
+      "style": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby"
+    },
+    "Church": {
+      "root": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "footprint": [
+        0,
+        14,
+        -4.5,
+        4.5
+      ],
+      "height": 5.4,
+      "front": -1,
+      "door": [
+        0,
+        2.2,
+        2.9
+      ],
+      "windows": [
+        [
+          2.9,
+          0.55,
+          2.45,
+          3.95
+        ],
+        [
+          -2.9,
+          0.55,
+          2.45,
+          3.95
+        ]
+      ],
+      "style": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy"
+    },
+    "Motel": {
+      "root": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "footprint": [
+        -6.6,
+        2.4,
+        -45.1,
+        2.9
+      ],
+      "height": 2.8,
+      "front": 1,
+      "door": [
+        0.8,
+        1.4,
+        2.2
+      ],
+      "windows": [
+        [
+          -1.3,
+          2.04,
+          0.71,
+          2.07
+        ]
+      ],
+      "style": "Sierra Motor Court eight-room wing, teal frames, open reception and complete independent Room 6"
+    }
+  }
+}

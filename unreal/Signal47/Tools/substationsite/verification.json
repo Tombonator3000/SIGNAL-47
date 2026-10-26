@@ -1,0 +1,1098 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_SubstationSite_Pole_A single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 3970,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 3970,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 3970,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Shed single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "triangles": 1992,
+      "minimum_area_m2": 2.6794514269568026e-05
+    },
+    {
+      "name": "SM_SubstationSite_Shed UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 2.6794514223382748e-05
+    },
+    {
+      "name": "SM_SubstationSite_Equipment single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "triangles": 2740,
+      "minimum_area_m2": 6.235357432160527e-05
+    },
+    {
+      "name": "SM_SubstationSite_Equipment UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 6.235357665307362e-05
+    },
+    {
+      "name": "SM_SubstationSite_Lines single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 7.510185241699219e-06,
+      "triangles": 2028,
+      "minimum_area_m2": 0.00014028124860487878
+    },
+    {
+      "name": "SM_SubstationSite_Lines UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 0.00013535353444260598
+    },
+    {
+      "name": "SM_SubstationSite_Ground single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 4.76837158203125e-07,
+      "triangles": 6996,
+      "minimum_area_m2": 1.1087226994277444e-05
+    },
+    {
+      "name": "SM_SubstationSite_Ground UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 1.1086769225898685e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD1 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD1 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 2474,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD1 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD1 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD1 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD1 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 2474,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD1 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD1 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD1 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD1 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 2474,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD1 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD1 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD1 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD1 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "triangles": 1544,
+      "minimum_area_m2": 5.9839599998667836e-05
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD1 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD1 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 4.243504567469358e-05
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD1 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD1 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "triangles": 1444,
+      "minimum_area_m2": 6.235357432160527e-05
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD1 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD1 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 6.235357665307362e-05
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD1 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD1 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 7.510185241699219e-06,
+      "triangles": 872,
+      "minimum_area_m2": 0.00014028124860487878
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD1 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD1 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 0.00013535353444260598
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD1 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD1 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 4.76837158203125e-07,
+      "triangles": 3060,
+      "minimum_area_m2": 1.6825364582473412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD1 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD1 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 1.6825858194513543e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD2 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD2 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 1754,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD2 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A_LOD2 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD2 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD2 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 1754,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD2 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B_LOD2 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD2 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD2 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 0.0,
+      "triangles": 1754,
+      "minimum_area_m2": 3.507401925162412e-05
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD2 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C_LOD2 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 3.5073919191219716e-05
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD2 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD2 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "triangles": 1008,
+      "minimum_area_m2": 7.361969619523734e-05
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD2 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed_LOD2 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 6.001205528249898e-05
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD2 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD2 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 1.1920928955078125e-07,
+      "triangles": 836,
+      "minimum_area_m2": 6.235357432160527e-05
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD2 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment_LOD2 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 6.235357665307362e-05
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD2 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD2 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 7.510185241699219e-06,
+      "triangles": 510,
+      "minimum_area_m2": 0.00014028124860487878
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD2 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines_LOD2 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 0.00013535353444260598
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD2 single chunk",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD2 actual FBX metres/pivot/triangles/materials",
+      "pass": true,
+      "max_bounds_error_m": 4.76837158203125e-07,
+      "triangles": 1036,
+      "minimum_area_m2": 2.5579423891031183e-05
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD2 UV and normals",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground_LOD2 noncollapsed texture triangles",
+      "pass": true,
+      "minimum_uv_area": 2.557249164869546e-05
+    },
+    {
+      "name": "actual asymmetric axisprobe",
+      "pass": true,
+      "center_m": [
+        1.9999999403953552,
+        3.9999998807907104,
+        6.0
+      ],
+      "size_m": [
+        0.19999992847442627,
+        0.39999985694885254,
+        0.6000003814697266
+      ]
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A actual GLB matches FBX contract",
+      "pass": true,
+      "triangles": 3970,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B actual GLB matches FBX contract",
+      "pass": true,
+      "triangles": 3970,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C actual GLB matches FBX contract",
+      "pass": true,
+      "triangles": 3970,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_SubstationSite_Shed GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed actual GLB matches FBX contract",
+      "pass": true,
+      "triangles": 1992,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_SubstationSite_Equipment GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment actual GLB matches FBX contract",
+      "pass": true,
+      "triangles": 2740,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_SubstationSite_Lines GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines actual GLB matches FBX contract",
+      "pass": true,
+      "triangles": 2028,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_SubstationSite_Ground GLB primitive UV",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground actual GLB matches FBX contract",
+      "pass": true,
+      "triangles": 6996,
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "span0 start conductor exists",
+      "pass": true,
+      "ring_vertices": 6
+    },
+    {
+      "name": "span0 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 4.76837158203125e-07
+    },
+    {
+      "name": "span0 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span0 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 4.76837158203125e-07
+    },
+    {
+      "name": "span0 end conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span0 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 2.132480599880018e-06
+    },
+    {
+      "name": "span0 exact sag",
+      "pass": true,
+      "sag_m": 0.6500000000000004
+    },
+    {
+      "name": "span1 start conductor exists",
+      "pass": true,
+      "ring_vertices": 6
+    },
+    {
+      "name": "span1 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 4.76837158203125e-07
+    },
+    {
+      "name": "span1 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span1 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 4.76837158203125e-07
+    },
+    {
+      "name": "span1 end conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span1 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 2.1324806019137103e-06
+    },
+    {
+      "name": "span1 exact sag",
+      "pass": true,
+      "sag_m": 0.6500000000000004
+    },
+    {
+      "name": "span2 start conductor exists",
+      "pass": true,
+      "ring_vertices": 6
+    },
+    {
+      "name": "span2 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 4.76837158203125e-07
+    },
+    {
+      "name": "span2 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span2 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 4.76837158203125e-07
+    },
+    {
+      "name": "span2 end conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span2 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 2.132480599880018e-06
+    },
+    {
+      "name": "span2 exact sag",
+      "pass": true,
+      "sag_m": 0.6500000000000004
+    },
+    {
+      "name": "span3 start conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span3 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 2.132480599880018e-06
+    },
+    {
+      "name": "span3 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span3 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 0.0
+    },
+    {
+      "name": "span3 end conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span3 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 0.0
+    },
+    {
+      "name": "span3 exact sag",
+      "pass": true,
+      "sag_m": 0.9000000000000004
+    },
+    {
+      "name": "span4 start conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span4 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 2.1324806019137103e-06
+    },
+    {
+      "name": "span4 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span4 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 9.536743209537238e-07
+    },
+    {
+      "name": "span4 end conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span4 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 9.31322607575224e-11
+    },
+    {
+      "name": "span4 exact sag",
+      "pass": true,
+      "sag_m": 0.9000000000000004
+    },
+    {
+      "name": "span5 start conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span5 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 2.132480599880018e-06
+    },
+    {
+      "name": "span5 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span5 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 3.932099938981686e-06
+    },
+    {
+      "name": "span5 end conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span5 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 0.0
+    },
+    {
+      "name": "span5 exact sag",
+      "pass": true,
+      "sag_m": 0.9000000000000004
+    },
+    {
+      "name": "span6 start conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span6 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 0.0
+    },
+    {
+      "name": "span6 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span6 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 7.62939453125e-06
+    },
+    {
+      "name": "span6 end conductor exists",
+      "pass": true,
+      "ring_vertices": 6
+    },
+    {
+      "name": "span6 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 0.0
+    },
+    {
+      "name": "span6 exact sag",
+      "pass": true,
+      "sag_m": 0.9000000000000004
+    },
+    {
+      "name": "span7 start conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span7 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 9.31322607575224e-11
+    },
+    {
+      "name": "span7 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span7 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 0.0
+    },
+    {
+      "name": "span7 end conductor exists",
+      "pass": true,
+      "ring_vertices": 6
+    },
+    {
+      "name": "span7 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 7.688768148366402e-06
+    },
+    {
+      "name": "span7 exact sag",
+      "pass": true,
+      "sag_m": 0.9000000000000004
+    },
+    {
+      "name": "span8 start conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span8 start actual ring centre",
+      "pass": true,
+      "centre_error_m": 0.0
+    },
+    {
+      "name": "span8 midpoint conductor exists",
+      "pass": true,
+      "ring_vertices": 10
+    },
+    {
+      "name": "span8 midpoint actual ring centre",
+      "pass": true,
+      "centre_error_m": 7.62939453125e-06
+    },
+    {
+      "name": "span8 end conductor exists",
+      "pass": true,
+      "ring_vertices": 6
+    },
+    {
+      "name": "span8 end actual ring centre",
+      "pass": true,
+      "centre_error_m": 9.610960183499514e-07
+    },
+    {
+      "name": "span8 exact sag",
+      "pass": true,
+      "sag_m": 0.9000000000000004
+    },
+    {
+      "name": "nine physically terminated phases",
+      "pass": true
+    },
+    {
+      "name": "seven modular saved meshes",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A single offset in saved assembly",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B single offset in saved assembly",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C single offset in saved assembly",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Shed single offset in saved assembly",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Equipment single offset in saved assembly",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Lines single offset in saved assembly",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Ground single offset in saved assembly",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_A real shared rounded ceramic",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_B real shared rounded ceramic",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationSite_Pole_C real shared rounded ceramic",
+      "pass": true
+    },
+    {
+      "name": "editable source groups preserved",
+      "pass": true
+    },
+    {
+      "name": "Concrete_base_color.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Concrete_normal.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Concrete_roughness.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "CorrugatedSteel_base_color.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "CorrugatedSteel_normal.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "CorrugatedSteel_roughness.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Galvanized_base_color.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Galvanized_normal.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Galvanized_roughness.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Gravel_base_color.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Gravel_normal.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "Gravel_roughness.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_base_color.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_normal.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "PrintAtlas_roughness.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "RoofRust_base_color.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "RoofRust_normal.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "RoofRust_roughness.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "WeatheredWood_base_color.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "WeatheredWood_normal.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "WeatheredWood_roughness.png exact original packed pixels",
+      "pass": true
+    },
+    {
+      "name": "original and reused PBR packed",
+      "pass": true,
+      "count": 21
+    },
+    {
+      "name": "LOD0 bounded budget",
+      "pass": true,
+      "total_triangles": 25666
+    }
+  ],
+  "check_count": 222,
+  "source_revision": "R1-original-substation-site-1986",
+  "lod_totals": {
+    "0": 25666,
+    "1": 14342,
+    "2": 8652
+  },
+  "packed_textures": [
+    "Concrete_base_color.png",
+    "Concrete_normal.png",
+    "Concrete_roughness.png",
+    "CorrugatedSteel_base_color.png",
+    "CorrugatedSteel_normal.png",
+    "CorrugatedSteel_roughness.png",
+    "Galvanized_base_color.png",
+    "Galvanized_normal.png",
+    "Galvanized_roughness.png",
+    "Gravel_base_color.png",
+    "Gravel_normal.png",
+    "Gravel_roughness.png",
+    "PrintAtlas_base_color.png",
+    "PrintAtlas_normal.png",
+    "PrintAtlas_roughness.png",
+    "RoofRust_base_color.png",
+    "RoofRust_normal.png",
+    "RoofRust_roughness.png",
+    "WeatheredWood_base_color.png",
+    "WeatheredWood_normal.png",
+    "WeatheredWood_roughness.png"
+  ],
+  "native_visual_status": "UNVERIFIED",
+  "scope": "Actual21LOD FBXs,7binaryGLBs, conductor endpoint/midpoint ring centres, sag, asymmetricprobe, savedBlend/UV/smooth ceramics and packedPBR; no native launch."
+}

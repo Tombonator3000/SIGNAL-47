@@ -1,0 +1,266 @@
+{
+  "authoring": "Original SIGNAL / 47 Caliche souvenir R3, 2026-10-24",
+  "material_refresh": "See material_refresh.json and print_art_provenance_v3.json for explicit AI/non-AI fields. Source exports verified; native R3 acceptance pending.",
+  "files": {
+    "Saucer_Crash_1947.blend": {
+      "bytes": 5138492,
+      "sha256": "0e5fec50caea6f052b291a4381ce2eabcb164864929ac98ef0d8aa778407c322"
+    },
+    "Saucer_Crash_1947.glb": {
+      "bytes": 33987872,
+      "sha256": "77948e0c0a0ec8ebe02c17deae8c8964e515b6297fef8ad84dfd128e1f51a1e6"
+    },
+    "authoring_guard.json": {
+      "bytes": 576,
+      "sha256": "bfac62e164d725b85abfc07a17fbefc36a15a639249df6bacbfdd2b2080d34b8"
+    },
+    "build_souvenir.py": {
+      "bytes": 39244,
+      "sha256": "d137c82baf3894ccce18315216aab7e6b886a09f94cf14910e2a635053a3e8a0"
+    },
+    "concept_revision.json": {
+      "bytes": 5389,
+      "sha256": "2ec2036c38b244bf9264dc633eb0ec4fcf6145e44e032129ccabd7b6e5e0b8a8"
+    },
+    "exports/SM_Souvenir_Glass.fbx": {
+      "bytes": 15484,
+      "sha256": "d95eb52fffedc2dc21e8053b6f32f85de414382327281d7f719892c907d2747d"
+    },
+    "exports/SM_Souvenir_Interior.fbx": {
+      "bytes": 3755244,
+      "sha256": "2d7bc11ce23504dac5bc740bdb91e05a0a3ebecf985ac4e0eee7a627c9030304"
+    },
+    "exports/SM_Souvenir_Shell.fbx": {
+      "bytes": 801964,
+      "sha256": "1eadc4d5b93dc3ada62241001e52a275fa69d375f0cc492df71afb216079a4f7"
+    },
+    "exterior.png": {
+      "bytes": 427776,
+      "sha256": "846cc67d8d3c37a68dcf674250118b2499f9e4f8b867a65d25441efbf35aa8d8"
+    },
+    "label_atlas.json": {
+      "bytes": 1010,
+      "sha256": "e6590ab0746bbe16ae4a9c649d40100b9e800abd93f8b81c18555247a287354a"
+    },
+    "make_merch_labels.py": {
+      "bytes": 1852,
+      "sha256": "d2909de6e01295e405f50fe833d49b04d17e72ba8db6e86ce3cea5a372080a06"
+    },
+    "make_textures.py": {
+      "bytes": 6815,
+      "sha256": "ba3c957e86bfd65d734b8b0f05246224e1e9aac9eb51a9b83c9179f41501f0db"
+    },
+    "material_refresh.json": {
+      "bytes": 421,
+      "sha256": "16eb303d5e1ac1053f4205a92dd16c32bb2b61eebf56abc2c72cd4218cc78305"
+    },
+    "materials.json": {
+      "bytes": 12571,
+      "sha256": "40b3fca84cb86d1a56df5dab0bb3b78f7ddf32b6b8c86090afdd63fe7c2c372a"
+    },
+    "mesh_cleanup.json": {
+      "bytes": 1907,
+      "sha256": "b5366020524925050f6dd687b0632b4686003dfb83e5819eac5417987fcb33a3"
+    },
+    "mesh_cleanup.py": {
+      "bytes": 3317,
+      "sha256": "32c8dc4d71c110e5f2f6234bfc56a9564e8e32105141e59411a9c2785fc0519c"
+    },
+    "model_contract.json": {
+      "bytes": 5351,
+      "sha256": "711b102ce0daf01d9e934eb581382688ca6baee391353205bcb4c3e8dbe63a18"
+    },
+    "print_art_provenance_v3.json": {
+      "bytes": 1139,
+      "sha256": "3e02d893de6896b0bc1b243243e3fb246d57392482a130b56b99a60a38f807d5"
+    },
+    "render_previews.py": {
+      "bytes": 1910,
+      "sha256": "6a4add9d76c0fc61582aa27004f8b0fc2bd2684a69a17a6daad5a9df682589a8"
+    },
+    "run_guarded.py": {
+      "bytes": 1747,
+      "sha256": "794374ca15064223163ef68e0668386067924c1b615ec43a5517ae911eacfa08"
+    },
+    "runtime_window.png": {
+      "bytes": 426741,
+      "sha256": "cea2cc3506f7f5c8f1caa9c8fd214c73e3e9ae42268cf394efc9536c33aed82b"
+    },
+    "source_art/print_atlas_v3.prompt.txt": {
+      "bytes": 1677,
+      "sha256": "56d0491b11780dda29d57f49628b4a5db67bd38366d06af5d4c02c623b88122c"
+    },
+    "source_art/souvenir_print_atlas_v3.original.png": {
+      "bytes": 4030302,
+      "sha256": "6e4dd99457dd6de48669c8019d9ec3a13fa026344b5602733d5a3953a94af0e5"
+    },
+    "source_preview.json": {
+      "bytes": 876,
+      "sha256": "deed844b3a80a734090f9c3eb9eb24ab04be151dcbb7ed451d8a91d55d1bdf03"
+    },
+    "texture_provenance.json": {
+      "bytes": 1792,
+      "sha256": "5a3efb1665160855710ef287ae77fe548ce0577518320ec45cc663413899f4a4"
+    },
+    "textures/concrete_color.png": {
+      "bytes": 472926,
+      "sha256": "fc42037a64cc95581ae440f39f8f5fda4240d406881a619a8bcc9ef286dec0f0"
+    },
+    "textures/concrete_height.png": {
+      "bytes": 315858,
+      "sha256": "e84c0378954ab9d099fd936e1a61eb7ae9c17c4aa0b6e12f631387b4cdb5bc32"
+    },
+    "textures/concrete_normal.png": {
+      "bytes": 779093,
+      "sha256": "8476995e52024519a2cd9d4ba4df1c3dce1d74cc77197188b7336100933ea5a6"
+    },
+    "textures/concrete_normal_dx.png": {
+      "bytes": 779412,
+      "sha256": "37bcd6e26e95cc0e8d6ee198b0867bf3a93d0c76430c1cfee501d4566512db12"
+    },
+    "textures/concrete_normal_gl.png": {
+      "bytes": 779093,
+      "sha256": "8476995e52024519a2cd9d4ba4df1c3dce1d74cc77197188b7336100933ea5a6"
+    },
+    "textures/concrete_roughness.png": {
+      "bytes": 331923,
+      "sha256": "c5acba8b2f7cf026811146f08247c18b6c3c25d0701cf55a0de4588785be8b34"
+    },
+    "textures/desk_walnut_color.png": {
+      "bytes": 1023019,
+      "sha256": "4c5c2a404d226a3631883cae6ee26c61c16d249cf9fe24d49211ba4d1b94af91"
+    },
+    "textures/desk_walnut_height.png": {
+      "bytes": 874979,
+      "sha256": "26795ee1ea72d8e369aa98405d2c5dbcd45f6c579a5d1b88b80d570a3ba42c30"
+    },
+    "textures/desk_walnut_normal.png": {
+      "bytes": 2558978,
+      "sha256": "6055375d5ec75ddcda6308973fa5f501407aa67d764f6b21b79ed7679b55d7da"
+    },
+    "textures/desk_walnut_normal_dx.png": {
+      "bytes": 2558730,
+      "sha256": "aa86424ca4cecfb6ebc01adc1fd5ea5071ac93ddbbaabbe588a1596a773f8b43"
+    },
+    "textures/desk_walnut_normal_gl.png": {
+      "bytes": 2558978,
+      "sha256": "6055375d5ec75ddcda6308973fa5f501407aa67d764f6b21b79ed7679b55d7da"
+    },
+    "textures/desk_walnut_roughness.png": {
+      "bytes": 1722350,
+      "sha256": "a38a735f0d8b99aa8bb4f010dd81be2c6778d4fa350b8102c9b47bfde0c9aebc"
+    },
+    "textures/rust_metal_color.png": {
+      "bytes": 491439,
+      "sha256": "68834179c3a5fbdb9b9026d6eec0305e838be669454ff79709ff61685dc71fad"
+    },
+    "textures/rust_metal_height.png": {
+      "bytes": 301403,
+      "sha256": "d7b530c9ff118947da68eacecd9dc6c29d3847b310e266f7c93c412655a54d75"
+    },
+    "textures/rust_metal_normal.png": {
+      "bytes": 738017,
+      "sha256": "07c32bf8e290eced67a370cce51bbb89cffbc7a3044f658538f586ec8b3f6719"
+    },
+    "textures/rust_metal_normal_dx.png": {
+      "bytes": 738272,
+      "sha256": "4aafe7cb767406cb1f3b9494ecd988cdf483d01a080c94617ab9ce6850110574"
+    },
+    "textures/rust_metal_normal_gl.png": {
+      "bytes": 738017,
+      "sha256": "07c32bf8e290eced67a370cce51bbb89cffbc7a3044f658538f586ec8b3f6719"
+    },
+    "textures/rust_metal_roughness.png": {
+      "bytes": 305927,
+      "sha256": "0fc7af5a573dfbba3c352b9b05519e9aad62abbc7b214ff054de4c9d1a5bb63a"
+    },
+    "textures/souvenir_labels_v3.png": {
+      "bytes": 186440,
+      "sha256": "8fb0169ade543573baec29117d28ca34516f6db80c5c9a4535d8c4e1ca22a31f"
+    },
+    "textures/souvenir_print_atlas_v3.png": {
+      "bytes": 4030302,
+      "sha256": "6e4dd99457dd6de48669c8019d9ec3a13fa026344b5602733d5a3953a94af0e5"
+    },
+    "textures/stucco_color.png": {
+      "bytes": 389368,
+      "sha256": "8b1ced9c75edb3964ecea91dacddcd224071a58d5cca1cf3d8b6779d7d8dcd6d"
+    },
+    "textures/stucco_height.png": {
+      "bytes": 258485,
+      "sha256": "6ca816d448365c3af82bded7680da805d0f11529777b389bf53ac01d63c34813"
+    },
+    "textures/stucco_normal.png": {
+      "bytes": 622335,
+      "sha256": "40fda194c1427f53b17447c409f134c62f5668deb48b0da4a1caf20ecf505c72"
+    },
+    "textures/stucco_normal_dx.png": {
+      "bytes": 622216,
+      "sha256": "7bc6aaf84c0b0f99975a22c9b603d1e6ce102f2035991fe20c03c086b978f7e8"
+    },
+    "textures/stucco_normal_gl.png": {
+      "bytes": 622335,
+      "sha256": "40fda194c1427f53b17447c409f134c62f5668deb48b0da4a1caf20ecf505c72"
+    },
+    "textures/stucco_roughness.png": {
+      "bytes": 276057,
+      "sha256": "d8a963ce7ca33a8710256c2f7993e72052c2d8ad176a276a081e94c40fbe657a"
+    },
+    "textures/walnut_color.png": {
+      "bytes": 1025116,
+      "sha256": "291cead7f98361d284eff16deebad554f271ca7a78cf9b6ce4b3dfed17ccb637"
+    },
+    "textures/walnut_height.png": {
+      "bytes": 879199,
+      "sha256": "a56db36760f05d3173c4338bf64f0f292d5a1337708480bfc6c173cd1752489b"
+    },
+    "textures/walnut_normal.png": {
+      "bytes": 2566708,
+      "sha256": "3c430f4d65a01ca64a7029e1ad29912f6a3b8c7bbae38c5c3829b3d5181a6cce"
+    },
+    "textures/walnut_normal_dx.png": {
+      "bytes": 2566085,
+      "sha256": "5831813f1e9a9219c999b757abe82892a0b03846dc8c0846c8992629316794dd"
+    },
+    "textures/walnut_normal_gl.png": {
+      "bytes": 2566708,
+      "sha256": "3c430f4d65a01ca64a7029e1ad29912f6a3b8c7bbae38c5c3829b3d5181a6cce"
+    },
+    "textures/walnut_roughness.png": {
+      "bytes": 1715461,
+      "sha256": "12fb28ce1d2c3b0d5b35739f7890fa69713d5d08e354ed410314ec2381619361"
+    },
+    "textures/weathered_timber_color.png": {
+      "bytes": 1013364,
+      "sha256": "f4bb500c544d0bb011ea72afc3d91a646d2aa2336e44a513f8c240ae628df38d"
+    },
+    "textures/weathered_timber_height.png": {
+      "bytes": 871520,
+      "sha256": "956d83fa10c61acdd208e1eb827e5e8db7c69c9d733304ed8e3b9b53a36e036c"
+    },
+    "textures/weathered_timber_normal.png": {
+      "bytes": 2551942,
+      "sha256": "166ff6931230f47139809b1d61873c815f40a7d3c7278382cfd14c5d40fcd362"
+    },
+    "textures/weathered_timber_normal_dx.png": {
+      "bytes": 2551624,
+      "sha256": "35e2120bb98f19aae8031aedf73ec79eff5d99a30897cb5a096f86f0b1befebd"
+    },
+    "textures/weathered_timber_normal_gl.png": {
+      "bytes": 2551942,
+      "sha256": "166ff6931230f47139809b1d61873c815f40a7d3c7278382cfd14c5d40fcd362"
+    },
+    "textures/weathered_timber_roughness.png": {
+      "bytes": 1683071,
+      "sha256": "e5e580e4e8b23f7048ecb8144e2c71ce22f30d33dfd34e9d370a91894772179d"
+    },
+    "verification.json": {
+      "bytes": 9467,
+      "sha256": "dbd7315410c1d1e486cb95049fb33b99c4a786813585a893cc77404eca1bca69"
+    },
+    "verify_souvenir.py": {
+      "bytes": 8812,
+      "sha256": "63a9abc201c2254bf463ce761434ec1cfe313497998fdc97481d9f0a91c30eb1"
+    }
+  }
+}

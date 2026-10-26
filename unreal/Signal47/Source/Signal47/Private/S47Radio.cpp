@@ -1,6 +1,7 @@
 #include "S47Radio.h"
 
 #include "S47Audio.h"
+#include "S47Timeline.h"
 #include "S47Media.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
@@ -46,6 +47,19 @@ namespace
 		if (S.Kind == TEXT("anthem")) return S47Radio::ANTHEM_SECS;
 		return std::numeric_limits<double>::infinity();
 	}
+// Pending studio recordings: this host has subtitles and silence, never Earl's bank.
+TArray<TSharedPtr<FS47RadioSeg>> EVENING_LINE()
+{
+ return {
+  Talk({ FS47RadioLine(TEXT("Fourteen-twenty, Caliche. Good evening! A little music for the road home. [Temporary subtitles; evening host recording pending.]"), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
+  Music(TEXT("twostep"), 90),
+  Talk({ FS47RadioLine(TEXT("The Mesa Diner is open. Take your time, have something warm, and enjoy the last of the sun. [Temporary subtitles; evening host recording pending.]"), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
+  Music(TEXT("waltz"), 85),
+  Talk({ FS47RadioLine(TEXT("Earl brings you the Night Line at midnight. Until then, music from fourteen-twenty. [Temporary subtitles; evening host recording pending.]"), TEXT("evening"), TEXT("LOCAL EVENING HOST")) }),
+  Music(TEXT("twostep"), 95)
+ };
+}
+
 TArray<TSharedPtr<FS47RadioSeg>> NIGHT_LINE()
 {
 	return {
@@ -339,7 +353,14 @@ TArray<FS47Station::FSpokenLine> FS47Station::LinesFor(const FS47RadioSeg& S, do
 	for (const auto& L : S.Lines)
 	{
 		FSpokenLine X; X.Line = L; X.Text = L.At(Clock);
-		X.Bank = Id != TEXT("caliche") ? FString() : !S.Duration.IsSet() && Radio.HostVoice() && L.Who == TEXT("host") ? TEXT("host") : Radio.CallerVoice() && Caller(L.Who) ? TEXT("caller") : FString();
+		if (Radio.bEveningTimeline)
+  {
+   X.Text.ReplaceInline(TEXT("a little after two"), TEXT("a little after midnight"));
+   X.Text.ReplaceInline(TEXT("since one"), TEXT("since midnight"));
+   X.Text.ReplaceInline(TEXT("this afternoon"), TEXT("yesterday afternoon"));
+   if (X.Text != L.At(Clock)) { X.Line.Who = TEXT("retimed"); X.Line.By = TEXT("RADIO / temporary retimed subtitles; recording pending"); }
+  }
+		X.Bank = Id != TEXT("caliche") || X.Line.Who == TEXT("retimed") ? FString() : !S.Duration.IsSet() && Radio.HostVoice() && L.Who == TEXT("host") ? TEXT("host") : Radio.CallerVoice() && Caller(L.Who) ? TEXT("caller") : FString();
 		X.Clips = X.Bank == TEXT("host") ? Radio.HostBank.Resolve(X.Text, Clock) : X.Bank == TEXT("caller") ? Radio.CallerBank.Resolve(X.Text, Clock, L.Who) : TOptional<TArray<FS47RadioClip>>();
 		X.Secs = S47Radio::SecsOf(X.Text) * Scale;
 		if (X.Clips.IsSet()) { X.Secs = (X.Clips->Num() - 1) * FRAGMENT_GAP; for (const auto& C : *X.Clips) X.Secs += C.Duration; }
@@ -408,11 +429,18 @@ TArray<TSharedPtr<FS47RadioSeg>> FS47Station::Refill(double Clock)
 {
 	if (After == TEXT("dead")) return {Segment(TEXT("dead"))};
 	const double D = Day(Clock);
-	if (Id == TEXT("caliche") && !Radio.bBoyCalled && D >= S47Radio::BOY_AT && D < S47Radio::SIGN_OFF - 300) { Radio.bBoyCalled = true; return BOY_CALL(); }
-	const auto S = Cfg.Loop[LoopAt % Cfg.Loop.Num()]; LoopAt++; return {S};
+	if (Id == TEXT("caliche") && !Radio.bBoyCalled && D >= (Radio.bEveningTimeline ? 26 * 60 : S47Radio::BOY_AT) && D < S47Radio::SIGN_OFF - 300) { Radio.bBoyCalled = true; return BOY_CALL(); }
+	// Midnight to the residual is normal broadcasting; no caller can describe a future dropout.
+ const int32 Count = Radio.bEveningTimeline && Id == TEXT("caliche") && !bEveningProgramme && D < 14 * 60 ? 4 : Cfg.Loop.Num();
+ const auto S = Cfg.Loop[LoopAt % Count]; LoopAt++; return {S};
 }
 void FS47Station::Fixed(double Clock)
 {
+ if (Id == TEXT("caliche"))
+ {
+  const bool Evening = Radio.bEveningTimeline && S47Timeline::Day(Clock) >= 18 * 3600;
+  if (Evening != bEveningProgramme) { bEveningProgramme = Evening; Cfg.Loop = Evening ? EVENING_LINE() : NIGHT_LINE(); Prev.Reset(); LoopAt = 0; }
+ }
 	const auto Before = Prev; Prev = Clock;
 	if (Before.IsSet() && Clock >= *Before - 120)
 	{
@@ -559,7 +587,7 @@ void FS47Station::Sync()
 						PartAt += Buffer->Duration() + FRAGMENT_GAP;
 					}
 				}
-				else if (L.At + L.Secs > At) for (const auto& Y : S47Radio::Syllables(L.Text, L.Secs))
+				else if (L.Line.Who != TEXT("evening") && L.Line.Who != TEXT("retimed") && L.At + L.Secs > At) for (const auto& Y : S47Radio::Syllables(L.Text, L.Secs))
 				{
 					if (L.At + Y.At < At) continue;
 					const double Ts = Now + L.At + Y.At - At, F = Pitch(L.Line.Who) * Y.F;
@@ -771,8 +799,8 @@ FS47Radio::~FS47Radio()
 void FS47Radio::SetHostVoice(bool bOn) { if (bRecordedHost == bOn) return; bRecordedHost = bOn; Stations[TEXT("caliche")]->Revoice(); }
 void FS47Radio::SetCallerVoice(bool bOn) { if (bRecordedCallers == bOn) return; bRecordedCallers = bOn; Stations[TEXT("caliche")]->Revoice(TEXT("caller")); }
 TSharedPtr<FS47Receiver> FS47Radio::Receiver(const FS47ReceiverOpts& O) { auto R = MakeShared<FS47Receiver>(*this, O); Receivers.Add(R); return R; }
-void FS47Radio::Reset(double InClock) { Clock = InClock; for (const auto& R : Receivers) R->Reset(); for (const FString& Id : S47Radio::DIAL) Stations[Id]->Reset(Clock); }
-void FS47Radio::Update(double Dt, double InClock) { Clock = InClock; Time += Dt; for (const FString& Id : S47Radio::DIAL) Stations[Id]->Update(Dt, Clock); for (const auto& R : Receivers) R->Update(Dt); }
+void FS47Radio::Reset(double InClock) { Clock = bEveningTimeline ? S47Timeline::Night(InClock) : InClock; for (const auto& R : Receivers) R->Reset(); for (const FString& Id : S47Radio::DIAL) Stations[Id]->Reset(Clock); }
+void FS47Radio::Update(double Dt, double InClock) { Clock = bEveningTimeline ? S47Timeline::Night(InClock) : InClock; Time += Dt; for (const FString& Id : S47Radio::DIAL) Stations[Id]->Update(Dt, Clock); for (const auto& R : Receivers) R->Update(Dt); }
 
 bool FS47Radio::SelfTest(TArray<FString>& Lines)
 {
@@ -813,7 +841,12 @@ bool FS47Radio::SelfTest(TArray<FString>& Lines)
 	Ro->Update(Ro->Len,S47Radio::SIGN_ON); Check(Ro->Seg().Kind == TEXT("anthem"), TEXT("Roswell anthem"));
 	R.bBoyCalled = false; R.Reset(S47Radio::BOY_AT); Check(R.bBoyCalled && C->Seg().Lines[0].By == TEXT("a boy") && S47Radio::BoyCallTimes(R).Num() == 5, TEXT("boy calls once after 02:26"));
 	R.Reset(S47Radio::BOY_AT); Check(C->Queue[0]->Lines.IsEmpty() || C->Queue[0]->Lines[0].By != TEXT("a boy"), TEXT("reset preserves the host's boyCalled flag"));
-	A->Ctx = FS47AudioContext::Make(); C->Start({Talk({FS47RadioLine(TEXT("Hello, is this the radio?"))})},0); C->EnsureBus()->Connect(A->Ctx->Destination); C->Listen(true);
+	R.bEveningTimeline = true; R.bBoyCalled = false; R.Reset(-6 * 3600);
+ Check(C->OnAir() && C->bEveningProgramme && C->Cfg.Loop[0]->Lines[0].Who == TEXT("evening") && C->Cfg.Loop[1]->Kind == TEXT("music") && !Ro->OnAir(), TEXT("evening programme: distinct silent placeholder host with music gaps, no Earl or Roswell"));
+ R.Update(0, 0); Check(!C->bEveningProgramme && C->OnAir() && !R.bBoyCalled, TEXT("midnight switches from evening presenter to Night Line"));
+ R.Reset(26 * 60); Check(R.bBoyCalled && C->Seg().Lines[0].Who == TEXT("boy"), TEXT("evening boy call moves to 00:26"));
+ R.bEveningTimeline = false; R.Reset(3 * 3600); Check(!C->bEveningProgramme && C->OnAir(), TEXT("legacy reload restores the original night programme"));
+ A->Ctx = FS47AudioContext::Make(); C->Start({Talk({FS47RadioLine(TEXT("Hello, is this the radio?"))})},0); C->EnsureBus()->Connect(A->Ctx->Destination); C->Listen(true);
 	TArray<float> Samples; Samples.SetNumZeroed(48000 * 2); A->Ctx->Render(Samples.GetData(),48000); double Peak = 0; bool bFinite = true;
 	for (float V : Samples) { Peak = FMath::Max(Peak,double(FMath::Abs(V))); bFinite &= FMath::IsFinite(V); }
 	Check(bFinite && Peak > 0.01, TEXT("synthesised talk renders through the graph"));

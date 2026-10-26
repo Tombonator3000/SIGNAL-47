@@ -1,0 +1,300 @@
+[
+  {
+    "name": "M_FieldKit_OlivePaint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.2,
+    "roughness": 0.68,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/OlivePaint_base_color.png",
+      "roughness": "textures/OlivePaint_roughness.png",
+      "normal": "textures/OlivePaint_normal.png"
+    }
+  },
+  {
+    "name": "M_FieldKit_Wood",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.72,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Wood_base_color.png",
+      "roughness": "textures/Wood_roughness.png",
+      "normal": "textures/Wood_normal.png"
+    }
+  },
+  {
+    "name": "M_FieldKit_Concrete",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.94,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Concrete_base_color.png",
+      "roughness": "textures/Concrete_roughness.png",
+      "normal": "textures/Concrete_normal.png"
+    }
+  },
+  {
+    "name": "M_FieldKit_Metal",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.83,
+    "roughness": 0.42,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Metal_base_color.png",
+      "roughness": "textures/Metal_roughness.png",
+      "normal": "textures/Metal_normal.png"
+    }
+  },
+  {
+    "name": "M_FieldKit_DarkMetal",
+    "base_color_linear": [
+      0.035,
+      0.042,
+      0.031,
+      1
+    ],
+    "metallic": 0.7,
+    "roughness": 0.57,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_FieldKit_Brass",
+    "base_color_linear": [
+      0.36,
+      0.225,
+      0.075,
+      1
+    ],
+    "metallic": 0.84,
+    "roughness": 0.39,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_FieldKit_Rubber",
+    "base_color_linear": [
+      0.012,
+      0.014,
+      0.011,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.83,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_FieldKit_Paper",
+    "base_color_linear": [
+      0.67,
+      0.62,
+      0.47,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.88,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_FieldKit_Glass",
+    "base_color_linear": [
+      0.021,
+      0.037,
+      0.037,
+      1
+    ],
+    "metallic": 0.22,
+    "roughness": 0.13,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_FieldKit_PrintAtlas",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.75,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/PrintAtlas_base_color.png",
+      "roughness": "textures/PrintAtlas_roughness.png",
+      "normal": "textures/PrintAtlas_normal.png"
+    }
+  },
+  {
+    "name": "M_FieldKit_Cloth",
+    "base_color_linear": [
+      0.075,
+      0.1,
+      0.074,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_FieldKit_Film",
+    "base_color_linear": [
+      0.29,
+      0.115,
+      0.025,
+      1
+    ],
+    "metallic": 0.3,
+    "roughness": 0.6,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_FieldKit_FieldBulb",
+    "base_color_linear": [
+      0.86,
+      0.66,
+      0.35,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.28,
+    "specular": 0.3,
+    "normal_strength": 0.17,
+    "normal_convention": "OpenGL",
+    "emission": [
+      1,
+      0.73,
+      0.36,
+      1
+    ],
+    "emission_strength": 0.7
+  }
+]

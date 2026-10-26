@@ -7,6 +7,7 @@
 #include "Rendering/DrawElements.h"
 #include "S47Kit.h"
 #include "S47Opening.h"
+#include "S47Gamepad.h"
 #include "SS47Widgets.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Input/SButton.h"
@@ -203,6 +204,11 @@ void SS47Opening::Construct(const FArguments& InArgs)
 					]
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 12 * PX, 0, 0)
 					[
+						SNew(STextBlock).Font(Term(16)).ColorAndOpacity(C(0x9b9b8e)).AutoWrapText(true)
+						.Text_Lambda([] { return FText::FromString(S47Gamepad::UsingGamepad() ? TEXT("D-PAD select   A confirm   B back") : TEXT("TAB select   ENTER confirm   ESC back")); })
+					]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 12 * PX, 0, 0)
+					[
 						SNew(SBox).MinDesiredHeight(14 * PX * 1.4f)[SNew(STextBlock).Text_Lambda([this] { return FText::FromString(Status); }).Font(Term(14)).ColorAndOpacity(C(0x9b9b8e))]
 					]
 				]
@@ -223,13 +229,39 @@ void SS47Opening::FocusBegin() { Focus(BeginButton); }
 FReply SS47Opening::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 {
 	// Tab goes between the two buttons; Escape cancels the card (main.ts input.onKey)
-	if (E.GetKey() == EKeys::Tab)
+	const FKey K = E.GetKey();
+	if (K == EKeys::Tab)
 	{
 		Focus(BeginButton.IsValid() && BeginButton->HasKeyboardFocus() ? BackButton : BeginButton);
 		return FReply::Handled();
 	}
-	if (E.GetKey() == EKeys::Escape) { if (A.Back) A.Back(); return FReply::Handled(); }
+	if (K == EKeys::Gamepad_DPad_Left || K == EKeys::Gamepad_DPad_Right
+		|| K == EKeys::Gamepad_DPad_Up || K == EKeys::Gamepad_DPad_Down)
+	{
+		Focus(K == EKeys::Gamepad_DPad_Left || K == EKeys::Gamepad_DPad_Up ? BeginButton : BackButton);
+		return FReply::Handled();
+	}
+	if (K == EKeys::Gamepad_FaceButton_Bottom)
+	{
+		if (BackButton.IsValid() && BackButton->HasKeyboardFocus()) { if (A.Back) A.Back(); }
+		else if (A.Begin) A.Begin();
+		return FReply::Handled();
+	}
+	if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right || K == EKeys::Gamepad_Special_Right)
+	{ if (A.Back) A.Back(); return FReply::Handled(); }
 	return FReply::Unhandled();
+}
+
+FNavigationReply SS47Opening::OnNavigation(const FGeometry& G, const FNavigationEvent& E)
+{
+	const EUINavigation Direction = E.GetNavigationType();
+	if (Direction == EUINavigation::Left || Direction == EUINavigation::Right
+		|| Direction == EUINavigation::Up || Direction == EUINavigation::Down)
+	{
+		Focus(Direction == EUINavigation::Left || Direction == EUINavigation::Up ? BeginButton : BackButton);
+		return FNavigationReply::Stop();
+	}
+	return SCompoundWidget::OnNavigation(G, E);
 }
 
 // ---------- the chapter card (UI.chapterCard) ----------

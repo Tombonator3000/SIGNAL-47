@@ -1,0 +1,78 @@
+{
+  "size": [
+    2048,
+    1024
+  ],
+  "grid": [
+    4,
+    4
+  ],
+  "labels": [
+    [
+      "POSTCARDS",
+      "35c EACH"
+    ],
+    [
+      "DESERT MUGS",
+      "$2.50"
+    ],
+    [
+      "TOY SAUCERS",
+      "$3.00"
+    ],
+    [
+      "ROAD MAPS",
+      "$1.95"
+    ],
+    [
+      "GENUINE DEBRIS",
+      "$1.00"
+    ],
+    [
+      "MINERAL SAMPLES",
+      "$1.50"
+    ],
+    [
+      "DESERT TEA TOWELS",
+      "$2.00"
+    ],
+    [
+      "TRAVEL GUIDES",
+      "$1.95"
+    ],
+    [
+      "CALICHE SOUVENIRS",
+      "HAND PACKED"
+    ],
+    [
+      "NEW MEXICO",
+      "DESERT TRADING CO."
+    ],
+    [
+      "TOURS",
+      "ASK INSIDE"
+    ],
+    [
+      "GIFT SET",
+      "CALICHE  NM"
+    ],
+    [
+      "COLLECTOR SERIES",
+      "1947"
+    ],
+    [
+      "CAREFULLY WRAPPED",
+      "FRAGILE"
+    ],
+    [
+      "LOCAL MINERALS",
+      "KEEP DRY"
+    ],
+    [
+      "POSTCARD SELECTION",
+      "NEW MEXICO"
+    ]
+  ],
+  "author": "original SIGNAL / 47 typography",
+  "font": "DejaVu Serif, system font"
+}

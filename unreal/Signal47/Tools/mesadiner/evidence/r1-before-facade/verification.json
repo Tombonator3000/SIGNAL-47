@@ -1,0 +1,1654 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_Mesa_Shell single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1476,
+      "materials": [
+        "M_Mesa_Stucco",
+        "M_Mesa_PaintRed",
+        "M_Mesa_TealTile",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Concrete"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Shell valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.0001674677494332144
+    },
+    {
+      "name": "SM_Mesa_Glass single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 8.344650268554688e-07,
+      "triangles": 4,
+      "materials": [
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Glass valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 5.534999905899167
+    },
+    {
+      "name": "SM_Mesa_Door single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 8.940696716308594e-08,
+      "triangles": 336,
+      "materials": [
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Door valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 4.950491968980231e-05
+    },
+    {
+      "name": "SM_Mesa_Interior single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 498,
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_CheckerFloor",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Ceiling",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Interior valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 4.6598157943833485e-05
+    },
+    {
+      "name": "SM_Mesa_Booths single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 6.407499313354492e-07,
+      "triangles": 6736,
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Wood",
+        "M_Mesa_Chrome",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Booths valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 5.4201079266735785e-06
+    },
+    {
+      "name": "SM_Mesa_Counter single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 7176,
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_TealTile",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee",
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Counter valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 5.420189159277555e-06
+    },
+    {
+      "name": "SM_Mesa_Kitchen single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 3776,
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Kitchen valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 4.49026129132335e-05
+    },
+    {
+      "name": "SM_Mesa_Fixtures single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 3930,
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_PendantGlow",
+        "M_Mesa_Fluorescent"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Fixtures valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 9.452425560496636e-06
+    },
+    {
+      "name": "SM_Mesa_Truck single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 1.430511474609375e-06,
+      "triangles": 50292,
+      "materials": [
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_WindowGlass",
+        "M_Mesa_Headlamp",
+        "M_Mesa_RedLens",
+        "M_Mesa_AmberLens",
+        "M_Mesa_TruckPaint"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Truck valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 7.839931640774012e-06
+    },
+    {
+      "name": "SM_Mesa_Sign single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 6688,
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_SignTeal",
+        "M_Mesa_SignRedGlow",
+        "M_Mesa_SignCyanGlow",
+        "M_Mesa_Concrete"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Sign valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 1.3264751519415086e-05
+    },
+    {
+      "name": "SM_Mesa_Parking single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 1.9073486328125e-06,
+      "triangles": 4011,
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Asphalt",
+        "M_Mesa_Concrete",
+        "M_Mesa_Gravel",
+        "M_Mesa_YardMarking"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Parking valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.1000001296400672e-05
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1112,
+      "materials": [
+        "M_Mesa_Stucco",
+        "M_Mesa_PaintRed",
+        "M_Mesa_TealTile",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Concrete"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.0003249995701014585
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 8.344650268554688e-07,
+      "triangles": 4,
+      "materials": [
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 5.534999905899167
+    },
+    {
+      "name": "SM_Mesa_Door_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 8.940696716308594e-08,
+      "triangles": 256,
+      "materials": [
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Door_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.0001402960467723896
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 466,
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_CheckerFloor",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Ceiling",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.00012514059265864713
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 6.407499313354492e-07,
+      "triangles": 4384,
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Wood",
+        "M_Mesa_Chrome",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 8.96749275902664e-06
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 4516,
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_TealTile",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee",
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 8.967637562695696e-06
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1552,
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.00014029567676487886
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2718,
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_PendantGlow",
+        "M_Mesa_Fluorescent"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 1.2249893188709393e-05
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 1.430511474609375e-06,
+      "triangles": 22420,
+      "materials": [
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_WindowGlass",
+        "M_Mesa_Headlamp",
+        "M_Mesa_RedLens",
+        "M_Mesa_AmberLens",
+        "M_Mesa_TruckPaint"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 7.839931640774012e-06
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 4872,
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_SignTeal",
+        "M_Mesa_SignRedGlow",
+        "M_Mesa_SignCyanGlow",
+        "M_Mesa_Concrete"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.7733599605284098e-05
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD1 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD1 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 1.9073486328125e-06,
+      "triangles": 3193,
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Asphalt",
+        "M_Mesa_Concrete",
+        "M_Mesa_Gravel",
+        "M_Mesa_YardMarking"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD1 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD1 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD1 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.1000001296400672e-05
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 932,
+      "materials": [
+        "M_Mesa_Stucco",
+        "M_Mesa_PaintRed",
+        "M_Mesa_TealTile",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Concrete"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.0003249999426305217
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 8.344650268554688e-07,
+      "triangles": 4,
+      "materials": [
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 5.534999905899167
+    },
+    {
+      "name": "SM_Mesa_Door_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 8.940696716308594e-08,
+      "triangles": 256,
+      "materials": [
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Door_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.0001402960467723896
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 466,
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_CheckerFloor",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Ceiling",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.00012514059265864713
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 6.407499313354492e-07,
+      "triangles": 3104,
+      "materials": [
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Wood",
+        "M_Mesa_Chrome",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 1.7323881864150792e-05
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 2732,
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee",
+        "M_Mesa_WindowGlass"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 1.732412511223913e-05
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 952,
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 0.00014029567676487886
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2090,
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_PendantGlow",
+        "M_Mesa_Fluorescent"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 1.2249893188709393e-05
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 1.430511474609375e-06,
+      "triangles": 7408,
+      "materials": [
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_WindowGlass",
+        "M_Mesa_Headlamp",
+        "M_Mesa_RedLens",
+        "M_Mesa_AmberLens",
+        "M_Mesa_TruckPaint"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.7500029504246015e-05
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2928,
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_SignTeal",
+        "M_Mesa_SignRedGlow",
+        "M_Mesa_SignCyanGlow",
+        "M_Mesa_Concrete"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 6.404846630947425e-05
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD2 single exported chunk",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD2 metric pivot, triangles and slots",
+      "passed": true,
+      "maximum_error_m": 1.9073486328125e-06,
+      "triangles": 2580,
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Asphalt",
+        "M_Mesa_Concrete",
+        "M_Mesa_Gravel",
+        "M_Mesa_YardMarking"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD2 valid geometry and normals",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD2 UV layer",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking_LOD2 finite noncollapsed UVs",
+      "passed": true,
+      "minimum_uv_area": 2.1000001296400672e-05
+    },
+    {
+      "name": "SM_Mesa_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Shell GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 1476
+    },
+    {
+      "name": "SM_Mesa_Glass glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 4
+    },
+    {
+      "name": "SM_Mesa_Door glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 336
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 498
+    },
+    {
+      "name": "SM_Mesa_Booths glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 6736
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 7176
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 3776
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 3930
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 50292
+    },
+    {
+      "name": "SM_Mesa_Sign glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 6688
+    },
+    {
+      "name": "SM_Mesa_Parking glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking GLB matches actual FBX contract",
+      "passed": true,
+      "maximum_error_m": 0.0,
+      "triangles": 4011
+    },
+    {
+      "name": "actual asymmetric export probe",
+      "passed": true
+    },
+    {
+      "name": "single original editable Blender project",
+      "passed": true,
+      "paths": [
+        "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/mesadiner/Mesa_Diner.blend"
+      ]
+    },
+    {
+      "name": "SM_Mesa_Shell saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Glass saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Door saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Interior saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Booths saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Counter saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Kitchen saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Fixtures saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Truck saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Sign saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "SM_Mesa_Parking saved editable scene and single offset",
+      "passed": true
+    },
+    {
+      "name": "Asphalt_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Asphalt_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Asphalt_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "CheckerFloor_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "CheckerFloor_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "CheckerFloor_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Concrete_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Concrete_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Concrete_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Formica_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Formica_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Formica_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Gravel_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Gravel_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Gravel_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "PaintRed_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "PaintRed_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "PaintRed_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "PrintAtlas_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "PrintAtlas_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "PrintAtlas_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "SignTeal_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "SignTeal_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "SignTeal_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Stucco_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Stucco_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Stucco_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "TealTile_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "TealTile_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "TealTile_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "TruckPaint_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "TruckPaint_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "TruckPaint_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Vinyl_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Vinyl_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Vinyl_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Wood_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Wood_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Wood_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "all original PBR maps packed",
+      "passed": true,
+      "required": 39,
+      "packed": 39
+    },
+    {
+      "name": "complete descending LODs",
+      "passed": true
+    }
+  ],
+  "source_revision": "R1-original-Mesa-Diner-1986",
+  "scope": "Actual FBX, GLB, source scene and packed original pixels. Native and visual acceptance are separate."
+}

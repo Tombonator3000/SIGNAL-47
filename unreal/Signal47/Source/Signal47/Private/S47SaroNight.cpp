@@ -14,7 +14,9 @@
 #include "S47Audio.h"
 #include "S47Chapter1.h"
 #include "S47Chapter2.h"
+#include "S47ConsoleKit.h"
 #include "S47Curve.h"
+#include "S47DecoderDesk.h"
 #include "S47DishArray.h"
 #include "S47Docs.h"
 #include "S47Figures.h"
@@ -96,8 +98,16 @@ void US47SaroNight::Init(US47Main* InM)
 	// ---------- reel 047 on the deck (story/reel047.ts; the archive's phone plays it) ----------
 	FS47Reel047Deps Rd;
 	Rd.Audio = M->Audio;
-	Rd.Deck = [Self] { if (!Self.IsValid() || !Self->M->Web) return FVector::ZeroVector; return Self->M->Web->Obj(TEXT("room.objs.decoder")).WorldPosition() + FVector(-0.3, 1.1, 0); };
-	if (W) for (const FString& H : W->PathsUnder(TEXT("room.reels["))) Rd.Reels.Add(W->Obj(H));
+	// (Unreal only, Tom's request: the processor is the bought unit on the console desk when the export has
+	// it, S47ConsoleKit.h; the reel plays from there, and no reels turn: the deck on the rack is gone, and
+	// the spare reel beside the unit is part of the desk's clutter, not a thing of its own)
+	Rd.Deck = [Self]
+	{
+		if (!Self.IsValid() || !Self->M->Web) return FVector::ZeroVector;
+		if (Self->M->Story && Self->M->Story->Decoder.IsValid()) return Self->M->Story->Decoder->SoundAt();
+		return Self->M->Web->Obj(TEXT("room.objs.decoder")).WorldPosition() + FVector(-0.3, 1.1, 0);
+	};
+	if (W && FS47ConsoleKit::Find(W) < 0) for (const FString& H : W->PathsUnder(TEXT("room.reels["))) Rd.Reels.Add(W->Obj(H));
 	if (W && FApp::CanEverRender())
 	{
 		// room.dspScreen: the material whose map is its canvas (room.dspScreen.tex)
@@ -237,7 +247,7 @@ void US47SaroNight::Init(US47Main* InM)
 		H.ReelTapeBusy = [Self] { return Self.IsValid() && Self->ReelTape->bBusy; };
 		H.SaroDarkBusy = [Self] { return Self.IsValid() && Self->Dark->Busy(); };
 		// chapter one's 47 is the story's own until it has come or its time is past (story/saroDark.ts)
-		H.SaroDarkKeep = [Self] { return Self.IsValid() && Self->M->Story && !Self->M->Story->Night().Hondo && Self->Dark->Phase == TEXT("idle") && FS47SaroDark::Pending(Self->Clock()); };
+		H.SaroDarkKeep = [Self] { return Self.IsValid() && Self->M->Story && !Self->M->Story->Night().Hondo && Self->Dark->Phase == TEXT("idle") && FS47SaroDark::Pending(Self->Clock(), Self->M->Story->bEveningTimeline); };
 		H.ArrayBackBusy = [Self] { return Self.IsValid() && Self->ArrayBack->Busy(); };
 		H.RecWalkBusy = [Self] { return Self.IsValid() && Self->RecWalk->Busy(); };
 		H.RecWalkWaiting = [Self] { return Self.IsValid() && Self->RecWalk->bWaiting; };
@@ -355,15 +365,17 @@ void US47SaroNight::StepDark(double Dt, bool bModal)
 {
 	if (M->Mode != US47Main::EMode::Play) return;
 	// 02:29: SARO goes dark (story/saroDark.ts), on its own clock; one at a time
+	Dark->bEveningTimeline = M->Story && M->Story->bEveningTimeline;
 	Dark->Update(Dt, DarkIn(!Cinematic() && Dawn() < 0.3, bModal));
 	// a night that never went dark still has Hondo Valley's telex, printed at 02:29 with nobody there
 	if (M->Story && !M->Story->Night().Hondo && Dark->Phase == TEXT("idle") && AtCh(1))
 	{
 		// (not before its minute: a chapter one done early has chapter two before 02:29)
 		const double C = FMath::Fmod(FMath::Fmod(Clock(), 86400.0) + 86400.0, 86400.0);
-		if (C >= FS47SaroDark::FILED && C < 12 * 3600 && (Phase() != TEXT("ch1") || C >= FS47SaroDark::FILED + 11 * 60))
+		const double Filed = FS47SaroDark::FILED - (M->Story->bEveningTimeline ? 2 * 3600 : 0);
+		if (C >= Filed && C < 12 * 3600 && (Phase() != TEXT("ch1") || C >= Filed + 11 * 60))
 		{
-			M->Story->HondoTelex(FS47SaroDark::FILED, FS47SaroDark::FILED + 14);
+			M->Story->HondoTelex(Filed, Filed + 14);
 			UE_LOG(LogS47Saro, Display, TEXT("S47: saro dark never came: Hondo Valley's telex printed at 02:29 with nobody there"));
 		}
 	}

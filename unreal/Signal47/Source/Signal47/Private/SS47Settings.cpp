@@ -6,6 +6,8 @@
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "S47Keys.h"
+#include "S47Gamepad.h"
+#include "S47Picture.h"
 #include "S47Theme.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -75,7 +77,7 @@ void SS47Settings::Construct(const FArguments& InArgs)
 					Tabs(Names, TAttribute<int32>::CreateLambda([this] { return Tab; }), [this](int32 T) { if (Listening.IsNone() && ConfirmLeft < 0) SetTab(T); })
 				]
 				// .rows and .side
-				+ SOverlay::Slot().Padding(Pad(48, 186, 48, 76))
+				+ SOverlay::Slot().Padding(Pad(48, 186, 48, 108))
 				[
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().FillWidth(840.f)
@@ -136,7 +138,7 @@ void SS47Settings::Construct(const FArguments& InArgs)
 							+ SHorizontalBox::Slot().AutoWidth()[Button(TEXT("KEEP"), true, [this] { Keep(); }, true, true)]
 							+ SHorizontalBox::Slot().AutoWidth().Padding(12 * U, 0, 0, 0)[Button(TEXT("GO BACK"), false, [this] { Revert(); })]
 							+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(SSpacer)]
-							+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[KeyHints({ { TEXT("ENTER"), TEXT("KEEP"), nullptr }, { TEXT("ESC"), TEXT("GO BACK"), nullptr } }, 20)]
+							+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Font(Term(20)).ColorAndOpacity(Mute()).Text_Lambda([] { return FText::FromString(S47Gamepad::UsingGamepad() ? TEXT("A keep   B go back") : TEXT("ENTER keep   ESC go back")); })]
 						]
 					])
 			]
@@ -156,6 +158,14 @@ void SS47Settings::BuildRows()
 	auto Push = [this](FRow R) -> FRow& { return Rows.Add_GetRef(MoveTemp(R)); };
 	auto AddSep = [&](const FString& Label = FString()) { FRow R; R.Kind = FRow::EKind::Sep; R.Label = Label; Push(MoveTemp(R)); };
 	auto Says = [](const FString& S) { return [S] { return S; }; };
+	// Fixed controller bindings are reference rows, never keyboard rebinding targets.
+	auto AddPad = [&](const FString& Label, const FString& Buttons, const FString& Help)
+	{
+		FRow R; R.Kind = FRow::EKind::Info; R.Label = Label;
+		R.Value = Says(Buttons); R.Title = Says(TEXT("Xbox controller: ") + Label);
+		R.Text = Says(Help + TEXT("\n\nThe Xbox layout is fixed. Keyboard and mouse bindings are listed below."));
+		Push(MoveTemp(R));
+	};
 	// an ON / OFF setting
 	auto AddToggle = [&](const FString& Label, bool FS47PauseOpts::*Field, TFunction<void(bool)> FS47PauseOpts::*Fn, bool bDefault, const FString& Help)
 	{
@@ -207,7 +217,7 @@ void SS47Settings::BuildRows()
 		AddChoice(TEXT("Still shots at the end"), { TEXT("MOVING"), TEXT("STILL SHOTS") }, [P] { return P->bStillShots ? 1 : 0; },
 			[P](int32 I) { const bool V = I == 1; if (P->bStillShots == V) return; P->bStillShots = V; if (P->OnStillShots) P->OnStillShots(V); }, 0,
 			[P] { return FString(P->bStillShots ? TEXT("Still shots") : TEXT("Moving camera")); },
-			Says(TEXT("The camera in the last minutes of the night: it moves as the scene does, or it holds still shots one after another, for anyone the movement makes unwell.")));
+			Says(TEXT("The camera in the last minutes of the night: it moves as the scene does, or it holds still shots one after another, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances.")));
 		break;
 	}
 	case 1: // PICTURE
@@ -258,24 +268,21 @@ void SS47Settings::BuildRows()
 			TArray<FString> Names = P->bUltraOk ? TArray<FString>{ TEXT("LOW"), TEXT("HIGH"), TEXT("ULTRA") } : TArray<FString>{ TEXT("LOW"), TEXT("HIGH") };
 			AddChoice(TEXT("Quality"), Names, [P, Ids] { return FMath::Max(0, Ids.IndexOfByKey(P->Quality)); },
 				[P, Ids](int32 I) { if (!Ids.IsValidIndex(I) || P->Quality == Ids[I]) return; P->Quality = Ids[I]; if (P->OnQuality) P->OnQuality(P->Quality); }, Ids.Num() - 1,
-				Says(TEXT("Quality")), Says(TEXT("How much of the night is drawn: Ultra has the lamps' shadows and the soft light round bright things, Low the least, for a slower computer.")));
+				Says(TEXT("Quality")), Says(TEXT("Low keeps direct lighting and simpler shadows. High adds reflected light and mist. Ultra draws finer shadows and mist.")));
 		}
-		AddChoice(TEXT("Picture"), { TEXT("VHS TAPE"), TEXT("CLEAN") }, [P] { return P->Picture == TEXT("off") ? 1 : 0; },
+		AddChoice(TEXT("Picture"), S47Picture::Labels(), [P] { return S47Picture::Ids().IndexOfByKey(S47Picture::Normalize(P->Picture)); },
 			[P](int32 I)
 			{
-				// off and vhs here (the worn tape, 'heavy', is not in M_WebTone yet)
-				const FString V = I == 1 ? TEXT("off") : TEXT("vhs");
+				if (!S47Picture::Ids().IsValidIndex(I)) return;
+				const FString V = S47Picture::Ids()[I];
 				if (P->Picture == V) return;
 				P->Picture = V;
 				if (P->OnPicture) P->OnPicture(V);
 			}, 0,
-			[P] { return FString(P->Picture == TEXT("off") ? TEXT("Clean") : TEXT("VHS tape")); },
-			[P]
-			{
-				return FString(P->Picture == TEXT("off")
-					? TEXT("The same night without the tape: the scene as it is drawn, with the game's own grade and nothing over it.")
-					: TEXT("The night as it was taped in 1986: the soft band, the colour bleeding at the edges, the faint lines of the tape. Clean shows the same scene without it, with the game's own grade."));
-			});
+			[P] { return S47Picture::Label(P->Picture); },
+			[P] { return S47Picture::Description(P->Picture); });
+		AddSlider(TEXT("Picture strength"), &FS47PauseOpts::PictureStrength, &FS47PauseOpts::OnPictureStrength, 0.f, 1.f, 0.05f, 1.f, [](float V) { return S47SettingsLocal::Percent(V); },
+			TEXT("How much of the selected film or tape look is blended into the picture. 100% is the full look; 0% gives the base picture and keeps your look selected. Clean stays unchanged."));
 		AddSlider(TEXT("Brightness"), &FS47PauseOpts::Brightness, &FS47PauseOpts::OnBrightness, 0.f, 1.f, 0.05f, 0.5f, [](float V) { return S47SettingsLocal::Percent(V); },
 			TEXT("How bright the night is, before the picture's curve. At 50% it is as it was made; raise it if the dark hides too much on your screen, but the night should stay dark."));
 		AddSlider(TEXT("Field of view"), &FS47PauseOpts::Fov, &FS47PauseOpts::OnFov, 60.f, 90.f, 1.f, 70.f, [](float V) { return FString::Printf(TEXT("%d°"), FMath::RoundToInt32(V)); },
@@ -304,9 +311,34 @@ void SS47Settings::BuildRows()
 		break;
 	case 4: // CONTROLS
 	{
+		AddSep(TEXT("XBOX CONTROLLER"));
+		AddSlider(TEXT("Controller look speed"), &FS47PauseOpts::PadLookSpeed, &FS47PauseOpts::OnPadLookSpeed, 0.3f, 2.5f, 0.05f, 1.f,
+			[](float V) { return FString::Printf(TEXT("%.2f"), V); },
+			TEXT("How quickly the right stick turns the view, on foot and in the truck. 1.00 is the game's own. Mouse sensitivity is separate."));
+		AddToggle(TEXT("Controller invert Y"), &FS47PauseOpts::bPadInvertY, &FS47PauseOpts::OnPadInvertY, false,
+			TEXT("Push the right stick up to look down. This changes the controller only; mouse inversion is separate."));
+		AddPad(TEXT("Walk"), TEXT("LS"), TEXT("Move the left stick to walk. Push partway for a slower pace."));
+		AddPad(TEXT("Look"), TEXT("RS"), TEXT("Move the right stick to look around."));
+		AddPad(TEXT("Run"), TEXT("L3"), TEXT("Press the left stick while moving to run."));
+		AddPad(TEXT("Use / talk"), TEXT("A"), TEXT("Use what you are looking at, talk, or choose the main offered action."));
+		AddPad(TEXT("Second choice / takeaway"), TEXT("B"), TEXT("On foot, manage takeaway: set down, stow, take out or discard. Otherwise choose the secondary offered action. In menus, B goes back or closes the screen."));
+		AddPad(TEXT("Raise / lower camera"), TEXT("X"), TEXT("Raise the field camera, or put it away."));
+		AddPad(TEXT("Jump"), TEXT("Y"), TEXT("Jump while on foot."));
+		AddPad(TEXT("Look closer / zoom"), TEXT("LT"), TEXT("Hold the left trigger for a closer look or camera zoom while on foot."));
+		AddPad(TEXT("Camera shutter"), TEXT("RT"), TEXT("Use the right trigger to take a photograph while the camera is raised."));
+		AddPad(TEXT("Flashlight"), TEXT("D-PAD UP"), TEXT("Switch the flashlight on or off."));
+		AddPad(TEXT("Radio"), TEXT("D-PAD DOWN"), TEXT("Change the radio station, including in the truck."));
+		AddPad(TEXT("Map"), TEXT("D-PAD LEFT"), TEXT("Open the notebook's map."));
+		AddPad(TEXT("Describe"), TEXT("D-PAD RIGHT"), TEXT("Repeat the description of what you are looking at when spoken descriptions are enabled."));
+		AddPad(TEXT("Notebook"), TEXT("LB / VIEW"), TEXT("Open or close the notebook. View is the small button with two overlapping rectangles."));
+		AddPad(TEXT("Case board"), TEXT("RB"), TEXT("Open the case board."));
+		AddPad(TEXT("Pause"), TEXT("MENU"), TEXT("Pause or resume the night. Menu is the small button with three horizontal lines."));
+		AddPad(TEXT("Menus and panels"), TEXT("D-PAD / A / B"), TEXT("D-pad or left stick selects; A confirms; B goes back. LB and RB turn tabs. On complex panels, move the right stick for a pointer and use A to click or hold A to drag. D-pad or left stick returns to selection navigation."));
+		AddPad(TEXT("Drive the truck"), TEXT("LS / RT / LT"), TEXT("Left stick steers; right trigger is the throttle; left trigger brakes or reverses. Right stick looks around. A uses the key or exits when offered; B chooses the secondary action. D-pad Down changes the radio. The triggers control driving rather than the field camera while in the truck."));
+		AddSep(TEXT("KEYBOARD AND MOUSE"));
 		AddSlider(TEXT("Mouse sensitivity"), &FS47PauseOpts::Sens, &FS47PauseOpts::OnSens, 0.3f, 2.5f, 0.05f, 1.f, [](float V) { return FString::Printf(TEXT("%.2f"), V); },
 			TEXT("How far the view turns for the mouse's movement. 1.00 is the game's own."));
-		AddToggle(TEXT("Invert Y"), &FS47PauseOpts::bInvertY, &FS47PauseOpts::OnInvertY, false,
+		AddToggle(TEXT("Mouse invert Y"), &FS47PauseOpts::bInvertY, &FS47PauseOpts::OnInvertY, false,
 			TEXT("Mouse up looks down, as a pilot's stick does."));
 		FString Group;
 		for (const S47Keys::FAction& A : S47Keys::Actions())
@@ -333,11 +365,13 @@ void SS47Settings::BuildRows()
 		AddChoice(TEXT("Flashing images"), { TEXT("FLASHES"), TEXT("SLOW FADES") }, [P] { return P->bCalmFlash ? 1 : 0; },
 			[P](int32 I) { const bool V = I == 1; if (P->bCalmFlash == V) return; P->bCalmFlash = V; if (P->OnCalmFlash) P->OnCalmFlash(V); }, 0,
 			[P] { return FString(P->bCalmFlash ? TEXT("Slow fades") : TEXT("Flashes")); },
-			Says(TEXT("Near the end of the night there is a short sequence of flashing images. Slow fades shows the same pictures fading in and out instead.")));
+			Says(TEXT("Near the end of the night there is a short sequence of flashing images. Slow fades shows the same pictures fading in and out instead. It also stops film flicker, frame weave and moving tape disturbances.")));
 		AddToggle(TEXT("Large text"), &FS47PauseOpts::bLargeText, &FS47PauseOpts::OnLargeText, false,
-			TEXT("Larger words in the notebook and at the end of the night."));
+			TEXT("Larger words in the notebook, on the case board's evidence and question cards, and at the end of the night."));
+		AddToggle(TEXT("Head motion and bumps"), &FS47PauseOpts::bHeadMotion, &FS47PauseOpts::OnHeadMotion, true,
+			TEXT("Walking bob, camera roll, landing dip and camera shake, plus engine vibration and suspension bumps while driving. Turn off for a steadier view; movement and vehicle handling stay the same."));
 		AddToggle(TEXT("Still shots at the end"), &FS47PauseOpts::bStillShots, &FS47PauseOpts::OnStillShots, false,
-			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. The same setting as on the Game tab."));
+			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances. The same setting as on the Game tab."));
 		break;
 	default: break;
 	}
@@ -368,9 +402,10 @@ void SS47Settings::BuildRows()
 		case FRow::EKind::Toggle: Value = S47Theme::Toggle(TAttribute<bool>::CreateLambda(R.On), [this, i](bool V) { Sel = i; if (Rows.IsValidIndex(i) && Rows[i].On && Rows[i].On() != V && Rows[i].Activate) Rows[i].Activate(); }, Can); break;
 		case FRow::EKind::Keys: Value = KeyCaps(R.Action, i); break;
 		case FRow::EKind::Action: Value = Keycap(TEXT("ENTER"), 22); break;
+		case FRow::EKind::Info: Value = Keycap(R.Value(), 22); break;
 		default: break;
 		}
-		TSharedRef<SWidget> W = SNew(SS47Row).Label(R.Label).Height(R.Kind == FRow::EKind::Keys ? 46.f : 58.f)
+		TSharedRef<SWidget> W = SNew(SS47Row).Label(R.Label).Height(R.Kind == FRow::EKind::Keys || R.Kind == FRow::EKind::Info ? 46.f : 58.f)
 			.Selected_Lambda(IsSel).Usable(Can)
 			.OnHover([this, i] { if (Listening.IsNone() && ConfirmLeft < 0) Sel = i; })
 			.OnClick([this, i] { if (!Listening.IsNone() || ConfirmLeft >= 0) return; Sel = i; if (Rows.IsValidIndex(i) && Rows[i].Kind == FRow::EKind::Action && Rows[i].Activate) Rows[i].Activate(); })
@@ -480,11 +515,21 @@ TSharedRef<SWidget> SS47Settings::Hints()
 		{ TEXT("BKSP"), TEXT("CLEAR"), [this] { if (const FRow* R = Current()) { S47Keys::Clear(R->Action, KeySlot); KeysChanged(); } } }, { TEXT("R"), TEXT("DEFAULT"), Default },
 		{ TEXT("ESC"), TEXT("BACK"), [this] { Back(); } } });
 	TSharedRef<SWidget> Taking = KeyHints({ { TEXT("ANY KEY"), TEXT("BIND"), nullptr }, { TEXT("ESC"), TEXT("CANCEL"), [this] { Listening = NAME_None; Status.Reset(); } } });
+	TSharedRef<SWidget> PadNormal = SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()[KeyHints({ { TEXT("D-PAD"), TEXT("SELECT / CHANGE"), nullptr }, { TEXT("A"), TEXT("CONFIRM"), nullptr }, { TEXT("B"), TEXT("BACK"), [this] { Back(); } } }, 20)]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 5 * U, 0, 0)[KeyHints({ { TEXT("LB RB"), TEXT("TAB"), [Next] { Next(1); } }, { TEXT("X"), TEXT("DEFAULT"), Default }, { TEXT("RS"), TEXT("POINTER"), nullptr } }, 20)];
+	TSharedRef<SWidget> PadKeys = SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()[KeyHints({ { TEXT("D-PAD"), TEXT("SELECT KEY"), nullptr }, { TEXT("A"), TEXT("BIND KEY"), [this] { if (const FRow* R = Current()) Listen(R->Action, KeySlot); } }, { TEXT("B"), TEXT("BACK"), [this] { Back(); } } }, 20)]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 5 * U, 0, 0)[KeyHints({ { TEXT("LB RB"), TEXT("TAB"), [Next] { Next(1); } }, { TEXT("X"), TEXT("DEFAULT"), Default } }, 20)];
+	TSharedRef<SWidget> PadTaking = KeyHints({ { TEXT("KEYBOARD KEY"), TEXT("BIND"), nullptr }, { TEXT("B"), TEXT("CANCEL"), [this] { Listening = NAME_None; Status.Reset(); } } }, 20);
 	auto Mode = [this] { const FRow* R = Current(); return !Listening.IsNone() ? 2 : R && R->Kind == FRow::EKind::Keys ? 1 : 0; };
 	return SNew(SOverlay)
-		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 0 ? EVisibility::Visible : EVisibility::Collapsed; })[Normal]]
-		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 1 ? EVisibility::Visible : EVisibility::Collapsed; })[Keys]]
-		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 2 ? EVisibility::Visible : EVisibility::Collapsed; })[Taking]];
+		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 0 && !S47Gamepad::UsingGamepad() ? EVisibility::Visible : EVisibility::Collapsed; })[Normal]]
+		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 1 && !S47Gamepad::UsingGamepad() ? EVisibility::Visible : EVisibility::Collapsed; })[Keys]]
+		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 2 && !S47Gamepad::UsingGamepad() ? EVisibility::Visible : EVisibility::Collapsed; })[Taking]]
+		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 0 && S47Gamepad::UsingGamepad() ? EVisibility::Visible : EVisibility::Collapsed; })[PadNormal]]
+		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 1 && S47Gamepad::UsingGamepad() ? EVisibility::Visible : EVisibility::Collapsed; })[PadKeys]]
+		+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([Mode] { return Mode() == 2 && S47Gamepad::UsingGamepad() ? EVisibility::Visible : EVisibility::Collapsed; })[PadTaking]];
 }
 
 // ---------- moving about ----------

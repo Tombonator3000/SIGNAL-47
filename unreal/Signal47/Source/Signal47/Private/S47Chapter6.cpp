@@ -101,7 +101,7 @@ US47Chapter6* US47Chapter6::Register()
 }
 
 double US47Chapter6::Clock() const { return Host ? Host->Clock() : TestClock; }
-void US47Chapter6::SetClock(double C) { if (Host) Host->SetClock(C); else TestClock = C; }
+void US47Chapter6::SetClock(double C) { if (Host) Host->SetClock(Host->bEveningTimeline ? FMath::Max(Host->Clock(), C) : C); else TestClock = C; }
 FString US47Chapter6::Time() const { return S47Text::ClockText(Clock(), false); }
 void US47Chapter6::Toast(const FString& Text, float Seconds) const { if (M && M->UI) M->UI->Toast(Text, Seconds); }
 void US47Chapter6::Note(const FString& Text) const { if (Host) Host->Note(Text); }
@@ -117,7 +117,7 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 	if (M && M->World) M->World->DriveOldRoad([W]
 	{
 		if (!W.IsValid() || !W->bActive) return;
-		W->SetClock(LEAVE);
+		W->SetClock(W->Host && W->Host->bEveningTimeline ? FMath::Max(W->Clock(), LEAVE) : LEAVE);
 		if (W->M->Audio) W->M->Audio->CabRadio(TEXT("talk"));
 		W->Note(W->Time() + TEXT(". Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post."));
 		W->PlaceJump();
@@ -127,7 +127,7 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 
 void US47Chapter6::DrawFrames()
 {
-	Frames = S47FlashFrames::FlashFrames(); FrameTextures.Reset();
+	Frames = S47FlashFrames::FlashFrames(Host && Host->bEveningTimeline); FrameTextures.Reset();
 	for (const S47FlashFrames::FFrame& F : *Frames) FrameTextures.Add(S47Image::FromPixels(F.Canvas.Colors(), F.Canvas.W, F.Canvas.H));
 }
 
@@ -188,9 +188,9 @@ void US47Chapter6::Drive(double Dt)
 	const double Pace = T - FMath::Max(0.0, -At.S) / PACE;
 	if (!LastMileStep(Dt, At, Drv->Speed))
 	{
-		SetClock(FMath::Clamp(Clock(), Pace - 60, Pace));
+		SetClock(Host && Host->bEveningTimeline ? S47Timeline::ApproachClock(Clock(), Pace, LastMile.bSkipped) : FMath::Clamp(Clock(), Pace - 60, Pace));
 		const double Left = T - Clock();
-		if (Left < 20) SetClock(Clock() - Dt * (1 - FMath::Max(0.02, Left / 20)));
+		if (Left < 20 && !(Host && Host->bEveningTimeline)) SetClock(Clock() - Dt * (1 - FMath::Max(0.02, Left / 20)));
 	}
 	SetClock(FMath::Min(Clock(), T - 0.05));
 	const double H = Drv->Heading, Fx = Drv->Pos.X - FMath::Sin(H) * 2.3, Fz = Drv->Pos.Z - FMath::Cos(H) * 2.3;

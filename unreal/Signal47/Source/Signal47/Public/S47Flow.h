@@ -46,7 +46,7 @@ public:
 	// ---------- saving (main.ts) ----------
 	void RequestAutosave(bool bMilestone);
 	void FlushAutosave();
-	void AutosaveNow();
+	bool AutosaveNow(FString* OutError = nullptr);
 	TOptional<FS47SaveMeta> WriteSave(const FString& Kind, int32 Slot, FString& OutError);
 	FString SaveBlock() const;                 // why the game cannot be saved now; empty when it can
 	FString PlaceName() const;                 // the place on a save's card
@@ -93,10 +93,11 @@ public:
 	S47J::FObj Carry;               // the save that was opened, for the fields this version does not write
 
 	// the settings (main.ts store), as they are now
-	float Volume = 0.8f, MusicLevel = 0.7f, RadioLevel = 1.f, Sens = 1.f, BaseFov = 70.f;
-	bool bInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bAbductOn = true;
+	float Volume = 0.8f, MusicLevel = 0.7f, RadioLevel = 1.f, Sens = 1.f, PadLookSpeed = 1.f, BaseFov = 70.f;
+	bool bInvertY = false, bPadInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bHeadMotion = true, bAbductOn = true;
 	bool bCharacters = true, bSerling = true, bKinski = false, bArtBell = true, bRadioCast = true;
-	FString Quality = TEXT("high"), Picture = TEXT("vhs");
+	FString Quality = TEXT("high"), Picture = TEXT("carpenter");
+	float PictureStrength = 1.f;   // film/tape blend; zero keeps the selected look for later
 	float Brightness = 0.5f;        // the Unreal version's own: the light into the tone curve (0..1, .5 as made)
 
 	// tests (-S47Open=<view>): opening, save, load, settings, card
@@ -137,6 +138,7 @@ private:
 	void PlayInput();
 	void DoorChanged(const FString& Id, bool bOpen);
 	void Activation(bool bActive);
+	void RequestTitle(TFunction<void()> Resume);
 	FDelegateHandle ActivationHandle;
 	FS47NbExtras NotebookExtras() const;
 	FS47MapView MapView() const;

@@ -6,11 +6,16 @@ set -uo pipefail
 OUT=${1:?usage: screenshots.sh OUTDIR [BUILD]}
 BUILD=${2:-$HOME/scratch-bm/Signal47-build}
 mkdir -p "$OUT"
+PROFILE="$(realpath "$OUT")/profile"
 fail=0
 shot() { # name expected-log-pattern [extra args] [seconds]
   local log="$OUT/$1.log" secs=${4:-8} result=0
+  if ! python3 "$(dirname "$0")/unreal_guard.py" require-idle; then
+    echo "$1 BLOCKED: another Unreal job or less than 10 GiB available"
+    exit 2
+  fi
   rm -f "$OUT/$1.png"
-  timeout $(( ${secs%.*} + 142 )) "$BUILD/Linux/Signal47.sh" -S47SmokeTest -S47Seconds=$secs ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1 || result=$?
+  timeout $(( ${secs%.*} + 142 )) "$BUILD/Linux/Signal47.sh" -UserDir="$PROFILE" -S47SmokeTest -S47Seconds=$secs ${3:-} -S47Shot="$OUT/$1.png" -windowed -ResX=1600 -ResY=900 -log > "$log" 2>&1 || result=$?
   if [ "$result" -eq 0 ] && ! grep -Eq "Critical error:|Assertion failed:|Signal 11 caught" "$log" && grep -q "smoke test OK" "$log" && grep -q "$2" "$log" && [ -s "$OUT/$1.png" ]; then echo "$1 OK"; else echo "$1 FAILED"; fail=1; fi
 }
 shot selftest "self test OK" "-S47SelfTest -S47Face=room"
@@ -20,6 +25,7 @@ shot rack "walker placed at rack" "-S47Face=rack -S47Use"
 shot crt "walker placed at crtCenter" "-S47Face=crtCenter -S47Jump=shift"
 shot console "console opened" "-S47Face=crtCenter -S47Jump=residual -S47Open=console"
 shot notebook "notebook opened" "-S47Face=room -S47Jump=residual -S47Open=notebook"
+shot board "S47: opened board" "-S47Jump=chapter2 -S47Face=room -S47Open=board -S47BoardTest=look:ch1;hold:observation.stripe>s03log.zero"
 # the notebook on each of its tabs, and a handwritten, a typed and a printed paper (SS47Notebook,
 # SS47Document: the in-game screens as the approved mockups have them)
 for t in tasks notes findings papers photos map kit people controls; do shot "notebook-$t" "S47: opened notebook:$t" "-S47Jump=chapter2 -S47Face=room -S47Open=notebook:$t"; done
@@ -104,7 +110,7 @@ shot abductframes "S47: the time away: taken" "-S47Jump=chapter1 -S47Face=at:-20
 shot abductover "S47: the time away: one of them over you" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Abduct=4" 32
 shot truckb "S47: the truck on B: four done" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35" 30
 shot trucktaken "S47: taken in the truck: woken at the wheel" "-S47Jump=chapter2 -S47Drive=saro:station01 -S47Throttle=0.35 -S47TruckTaken=5 -S47AwayAt=16" 48
-shot starhole "S47: no stars at 026: noticed" "-S47Jump=chapter2 -S47Face=at:-20;30;3.14;0 -S47StarHole" 10
+shot starhole-noticed "S47: no stars at 026: noticed" "-S47Jump=chapter2 -S47Face=at:-20;30;3.14;0 -S47StarHole" 10
 shot lostnights "S47: the lost nights: the binder and the green pins on the board, 1 book" "-S47Jump=chapter2 -S47Face=room -S47LostNights -S47AwayAt=1.5" 8
 shot flash "S47: FLASH frames shown, 10" "-S47Jump=chapter1 -S47Face=room -S47Flash -S47AwayAt=6.6" 14
 shot third "S47: the third one stands" "-S47Jump=chapter1 -S47Face=at:-20;30;3.14;0 -S47Third" 8

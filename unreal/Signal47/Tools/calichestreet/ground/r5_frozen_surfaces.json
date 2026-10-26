@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "frozen_surface_hashes": {
+    "SM_Caliche_RoadWear": "76d1bd3e5faf31a7e5c9c61b7b286611e78a59067e172f7ee81373381c5f2a0f",
+    "SM_Caliche_Surface": "b9efd099d343b25fc5abb85b02de777ea87204d32873a8dad1bc09f98086fd0d"
+  },
+  "geometry_UV_Color_transforms_slots_unchanged": true
+}

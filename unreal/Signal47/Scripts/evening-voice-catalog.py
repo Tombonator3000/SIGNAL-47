@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+"""Validate supplied EveningShift WAV takes and write an isolated voices.json bank entry.
+
+No synthesis, conversion, copying, content import, or existing-bank mutation. All
+required takes must exist. --check compares a previously generated entry byte for byte.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+from pathlib import Path
+import re
+import shutil
+import sys
+import tempfile
+import wave
+
+PROJECT = Path(__file__).resolve().parents[1]
+DEFAULT_MANIFEST = PROJECT.parent / "Narrative/EveningShift/generated/recording_manifest.json"
+DEFAULT_TAKES = PROJECT.parent / "Narrative/EveningShift/voice/takes.json"
+
+
+class CatalogError(ValueError):
+    pass
+
+
+def require(condition, message):
+    if not condition:
+        raise CatalogError(message)
+
+
+def unique_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        require(key not in result, f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def read_json(path):
+    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_pairs)
+
+
+def wav_info(path):
+    """Read the actual PCM frame count and reject short/truncated payloads."""
+    with wave.open(str(path), "rb") as wav:
+        require(wav.getcomptype() == "NONE", f"{path.name}: uncompressed PCM required")
+        require(wav.getnchannels() == 1, f"{path.name}: mono required")
+        require(wav.getsampwidth() == 2, f"{path.name}: PCM16 required")
+        require(wav.getframerate() == 48000, f"{path.name}: 48000 Hz required")
+        frames = wav.getnframes()
+        require(frames > 0, f"{path.name}: empty recording")
+        remaining = frames * 2
+        while remaining:
+            data = wav.readframes(min(65536, remaining // 2))
+            require(data and len(data) % 2 == 0 and len(data) <= remaining,
+                    f"{path.name}: truncated or invalid PCM payload")
+            remaining -= len(data)
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return {"duration": frames / 48000, "frames": frames, "sha256": digest.hexdigest()}
+
+
+def catalog(manifest, subtitles, wav_dir, takes=None):
+    require(isinstance(manifest, dict) and manifest.get("pack_id") == "signal47_evening_shift",
+            "expected EveningShift recording_manifest.json")
+    require(manifest.get("planned_format") == {"sample_rate_hz": 48000,
+            "sample_format": "PCM16", "channels": 1}, "manifest PCM target differs from runtime contract")
+    require(isinstance(subtitles, dict) and subtitles.get("pack_id") == manifest["pack_id"],
+            "subtitles and manifest must belong to the same pack")
+    lines = {}
+    for scene in subtitles.get("scenes", []):
+        for line in scene["lines"]:
+            cue = line["line_id"]
+            require(cue not in lines, f"duplicate subtitle cue: {cue}")
+            lines[cue] = dict(line, scene_id=scene["scene_id"], channel=scene["channel"])
+    recordings = manifest.get("recordings")
+    require(isinstance(recordings, list) and recordings, "manifest has no recordings")
+    require(manifest.get("cue_count") == len(recordings), "manifest cue count mismatch")
+    by_id = {}
+    for item in recordings:
+        cue = item["line_id"]
+        require(isinstance(cue, str) and re.fullmatch(r"[A-Z][A-Z0-9_]+", cue), f"invalid cue ID: {cue}")
+        require(cue not in by_id, f"duplicate recording cue: {cue}")
+        require(cue in lines, f"{cue}: subtitle text missing")
+        line = lines[cue]
+        require(line.get("voiced") is True and isinstance(line.get("text"), str) and line["text"].strip(),
+                f"{cue}: expected voiced subtitle text")
+        require(item["actor"] == line["speaker"] and item["scene_id"] == line["scene_id"]
+                and item["channel"] == line["channel"], f"{cue}: manifest/subtitle identity mismatch")
+        require(isinstance(item.get("voice_profile"), str) and item["voice_profile"], f"{cue}: voice profile missing")
+        require(type(item.get("recording_required")) is bool, f"{cue}: recording_required must be boolean")
+        by_id[cue] = item
+    require({cue for cue, line in lines.items() if line.get("voiced")} == set(by_id),
+            "manifest omits a voiced subtitle or contains an extra recording")
+    required = {cue for cue, item in by_id.items() if item["recording_required"]}
+    require(manifest.get("required_recording_count") == len(required), "manifest required-recording count mismatch")
+    for cue, item in by_id.items():
+        source = item.get("reuse_of")
+        if item["recording_required"]:
+            require(source is None, f"{cue}: required recording cannot be an alias")
+        else:
+            require(source in required and source != cue, f"{cue}: alias must reference one original take")
+            origin = by_id[source]
+            require(origin.get("reuse_of") is None and origin["actor"] == item["actor"]
+                    and origin["voice_profile"] == item["voice_profile"]
+                    and lines[source]["text"] == lines[cue]["text"], f"{cue}: alias identity/text mismatch")
+    require(wav_dir.is_dir(), f"WAV directory does not exist: {wav_dir}")
+    expected = {cue + ".wav" for cue in required}
+    actual = {p.name for p in wav_dir.iterdir() if p.suffix.lower() == ".wav"}
+    require(actual == expected, "WAV set mismatch; missing: " + ", ".join(sorted(expected - actual))
+            + "; unexpected: " + ", ".join(sorted(actual - expected)))
+    measured = {cue: wav_info(wav_dir / (cue + ".wav")) for cue in sorted(required)}
+    if takes is not None:
+        require(takes.get("format") == manifest["planned_format"], "takes PCM target differs from manifest")
+        require(set(takes.get("takes", {})) == required, "takes metadata does not match required recordings")
+    clips, lookup = [], {}
+    for cue, item in by_id.items():
+        source = item.get("reuse_of") or cue
+        info = measured[source]
+        text = lines[cue]["text"]
+        key = (item["voice_profile"], " ".join(text.split()))
+        require(key not in lookup or lookup[key] == source,
+                f"{cue}: different takes collide in S47RadioVoice's role/text lookup")
+        lookup[key] = source
+        declared_file = item.get("audio_file")
+        require(declared_file is None or declared_file in (source + ".wav", "EveningShift/" + source + ".wav"),
+                f"{cue}: supplied filename differs from manifest")
+        declared_duration = item.get("duration_seconds")
+        require(declared_duration is None or (type(declared_duration) in (int, float)
+                and abs(declared_duration - info["duration"]) <= 1 / 48000), f"{cue}: stale declared duration")
+        timing = {}
+        if takes is not None:
+            take = takes["takes"][source]
+            require(take.get("file") == "EveningShift/" + source + ".wav", f"{cue}: takes filename mismatch")
+            require(take.get("sha256") == info["sha256"], f"{cue}: WAV SHA-256 differs from approved take")
+            require(type(take.get("duration_seconds")) in (int, float)
+                    and abs(take["duration_seconds"] - info["duration"]) <= 1 / 48000,
+                    f"{cue}: stale measured take duration")
+            start, end = take.get("speech_start_seconds"), take.get("speech_end_seconds")
+            require(all(type(t) in (int, float) and math.isfinite(t) for t in (start, end))
+                    and 0 <= start < end <= info["duration"], f"{cue}: invalid speech timing")
+            require(lines[cue].get("timing_status") == "from_audio_clip_relative"
+                    and lines[cue].get("start_seconds") == start and lines[cue].get("end_seconds") == end,
+                    f"{cue}: subtitle timing differs from measured take")
+            timing = {"speech_start_seconds": start, "speech_end_seconds": end}
+        clips.append({"id": cue, "text": text, "voice": item["voice_profile"], "file": source + ".wav",
+                      "asset": "v_" + source,
+                      "raw": "voice/evening/" + source + ".wav", "duration": info["duration"],
+                      "frames": info["frames"], "sha256": info["sha256"], "reuse_of": item.get("reuse_of"), **timing})
+    return {"evening": {"folder": "/Game/Audio/Voice/Evening", "catalog": {"clips": clips},
+            "validation": {"pack_id": manifest["pack_id"], "cue_count": len(clips),
+                           "unique_recording_count": len(measured), "sample_rate_hz": 48000,
+                           "sample_format": "PCM16", "channels": 1,
+                           "scope": "File identity, PCM format, frame duration and aliases only; listening review required."}}}
+
+
+def import_bank(entry, wav_dir, raw_dir, voices=None):
+    """Copy validated PCM unchanged and publish its bank last; leave other banks intact."""
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    index = raw_dir / "voices.json"
+    if voices is None:
+        voices = read_json(index) if index.exists() else {}
+    require(isinstance(voices, dict), "voices.json must contain an object")
+    for clip in entry["evening"]["catalog"]["clips"]:
+        if clip["reuse_of"]:
+            continue
+        destination = raw_dir / clip["raw"]
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(wav_dir / clip["file"], destination)
+    voices.update(entry)
+    payload = json.dumps(voices, ensure_ascii=False, indent=1, allow_nan=False) + "\n"
+    # Readers see either the old complete index or the new complete index.
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=raw_dir,
+                                     prefix=".voices-", suffix=".json", delete=False) as stream:
+        temporary = Path(stream.name)
+        stream.write(payload)
+    temporary.replace(index)
+    return voices
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    parser.add_argument("--subtitles", type=Path, help="defaults to subtitles.json beside the manifest")
+    parser.add_argument("--takes", type=Path, default=DEFAULT_TAKES, help="approved take hashes and measured speech timings")
+    parser.add_argument("--wav-dir", type=Path, required=True, help="109 approved original cue-ID WAV files, without the alias")
+    parser.add_argument("--output", type=Path, required=True, help="isolated JSON entry for later merge into voices.json")
+    parser.add_argument("--check", action="store_true", help="compare existing output; never write")
+    args = parser.parse_args()
+    try:
+        output, wav_dir = args.output.resolve(), args.wav_dir.resolve()
+        # A preparatory catalog command must not overwrite assets or an existing bank.
+        protected = [wav_dir, (PROJECT / "Content").resolve(), (PROJECT / "Content/Audio").resolve()]
+        require(not any(output.is_relative_to(root) for root in protected),
+                "output must be separate from supplied WAVs and current Content assets")
+        require(not args.output.is_symlink(), "output must not be a symlink")
+        entry = catalog(read_json(args.manifest),
+                        read_json(args.subtitles or args.manifest.with_name("subtitles.json")), wav_dir,
+                        read_json(args.takes))
+        payload = (json.dumps(entry, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode("utf-8")
+        if args.check:
+            require(output.is_file() and output.read_bytes() == payload, "catalog missing or stale; regenerate the isolated entry")
+        else:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(payload)
+        count = entry["evening"]["validation"]
+        print(f"PASS: {count['unique_recording_count']} supplied PCM WAVs, {count['cue_count']} cues; "
+              f"isolated entry {'byte-identical' if args.check else 'written'}. No import or listening approval performed.")
+        return 0
+    except (CatalogError, OSError, ValueError, KeyError, TypeError, wave.Error) as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

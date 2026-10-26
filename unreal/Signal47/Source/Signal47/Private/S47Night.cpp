@@ -1,6 +1,7 @@
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
+#include "S47Evening.h"
 #include "S47Keys.h"
 #include "S47StationTaken.h"
 #include "S47Chapter3.h"
@@ -20,6 +21,8 @@
 #include "S47Audio.h"
 #include "S47Calls.h"
 #include "S47Chapter1.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
 #include "S47Chapter2.h"
 #include "S47Chapter5.h"
 #include "S47Curve.h"
@@ -173,7 +176,8 @@ void US47Night::Init(US47Main* InM)
 	A.Clock = [Self] { return Self.IsValid() ? Self->Clock() : 0.0; };
 	A.Extra = [Self] { return Self.IsValid() && Self->Hooks.AbductionExtra ? Self->Hooks.AbductionExtra() : 0; };
 	// (ext.dishArray.cull(photoCam): Unreal culls the instances per view by itself)
-	A.Before = [] {};
+	A.Before = [Self] { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->BeforePhoto(); };
+	A.After = [Self] { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->AfterPhoto(); };
 	// someone on the film only: out in the night where the glimpses are (SARO, the highway, Caliche)
 	A.GhostGround = [Self]() -> TFunction<double(double, double)>
 	{
@@ -183,11 +187,13 @@ void US47Night::Init(US47Main* InM)
 		// (Caliche's own ground by the diner's lot, world/Town.ts floorAt, is the town's: the road's ground here)
 		return G.Ground;
 	};
+	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); };
 	A.Small = [Self] { return Self.IsValid() && Self->M->Flow && Self->M->Flow->Saves.bFallback; };
 	A.Done = [Self](const FS47AlbumShot& Shot, bool bFirst, int32 Left)
 	{
 		if (!Self.IsValid()) return;
 		US47Main* Mn = Self->M;
+		if (Mn->Anomaly) Mn->Anomaly->Photo(Shot);
 		if (Mn->Audio) Mn->Audio->Shutter();
 		Mn->UI->ShutterFlash();
 		// the patch with no stars in it, on the print (story/starHole.ts)
@@ -353,6 +359,8 @@ FString US47Night::SurfaceAt() const
 
 bool US47Night::OneAtATime() const
 {
+	if (M && M->Evening && M->Evening->MealBusy()) return true;
+	if (M && M->AnomalyWorld && M->AnomalyWorld->Busy()) return true;
 	// one of the night's things is going: nothing else starts (the one-at-a-time rule; each of them
 	// also waits for the others itself, as before)
 	return NightGoing() || Is(Hooks.NinthQuiet);
@@ -383,7 +391,7 @@ void US47Night::CurveStep(double Dt, bool bModal)
 	const FString Ph = Phase();
 	const bool bInDiner = Area() == TEXT("diner") && M->World && M->Player && M->World->Indoors(M->Player->Pos);
 	FS47CurveIn In;
-	In.Chapter = Ph; In.Clock = Clock();
+	In.Chapter = Ph; In.Clock = Clock(); In.bEveningTimeline = M->Story && M->Story->bEveningTimeline;
 	// nothing during a cinematic, a panel, a call, Nora's room, or the diner and its map in chapter five
 	In.bHeld = bModal || Cinematic() || (M->Audio && M->Audio->PhonePlaying()) || Area() == TEXT("room6") || (Ph == TEXT("ch5") && bInDiner);
 	In.bExposed = Driving() || M->Space == TEXT("yard");
@@ -691,9 +699,7 @@ void US47Night::SeenStep(double Dt)
 
 void US47Night::FlashlightStep(double Dt)
 {
-	// flashlight.update(dt, t, camera, mode !== 'play' || world.driving || game.cinematic, ultra.on)
-	const bool bUltra = M->Flow && M->Flow->Quality == TEXT("ultra");
-	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic(), bUltra);
+	Flashlight->Update(Dt, M->T, Camera(), M->Mode != EMode::Play || Driving() || Cinematic());
 }
 
 void US47Night::Step(double Dt)

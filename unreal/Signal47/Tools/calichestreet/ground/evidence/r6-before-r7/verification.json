@@ -1,0 +1,192 @@
+{
+  "status": "PASS",
+  "parts": {
+    "SM_Caliche_Surface": {
+      "triangles": 19568,
+      "bounds_error_m": 0.0,
+      "zero_area_triangles": 0,
+      "uv_layers": 1,
+      "material_slots": 15,
+      "color_attribute": "Color",
+      "alpha_range": [
+        0.0,
+        1.0
+      ],
+      "edge_fade": {
+        "M_CS_CalicheSoil": {
+          "open_edges": 826,
+          "boundary_alpha_max": 0.0,
+          "duplicate_position_alpha_error": 0.0,
+          "width_m": 1.8
+        },
+        "M_CS_CompactedUse": {
+          "open_edges": 402,
+          "boundary_alpha_max": 0.0,
+          "duplicate_position_alpha_error": 0.0,
+          "width_m": 0.55
+        },
+        "M_CS_ConcreteUse": {
+          "open_edges": 270,
+          "boundary_alpha_max": 0.0,
+          "duplicate_position_alpha_error": 0.0,
+          "width_m": 0.55
+        }
+      }
+    },
+    "SM_Caliche_RoadWear": {
+      "triangles": 26838,
+      "bounds_error_m": 0.0,
+      "zero_area_triangles": 0,
+      "uv_layers": 1,
+      "material_slots": 13,
+      "color_attribute": "Color",
+      "alpha_range": [
+        0.0,
+        1.0
+      ],
+      "edge_fade": {
+        "M_CS_OldAsphalt": {
+          "open_edges": 636,
+          "boundary_alpha_max": 0.0,
+          "duplicate_position_alpha_error": 0.0,
+          "width_m": 0.45
+        }
+      }
+    },
+    "SM_Caliche_Rocks": {
+      "triangles": 11055,
+      "bounds_error_m": 0.0,
+      "zero_area_triangles": 0,
+      "uv_layers": 1,
+      "material_slots": 13,
+      "color_attribute": "Color",
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "edge_fade": {}
+    },
+    "SM_Caliche_DryPlants": {
+      "triangles": 6828,
+      "bounds_error_m": 0.0,
+      "zero_area_triangles": 0,
+      "uv_layers": 1,
+      "material_slots": 13,
+      "color_attribute": "Color",
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "edge_fade": {}
+    }
+  },
+  "checks": [
+    {
+      "name": "only_actual_yellow_and_white_road_paint_preserved_without_broad_center_strip",
+      "pass": true,
+      "yellow_buffer_half_width_m": 0.18
+    },
+    {
+      "name": "rocks_and_plants_clear_main_walk_and_protected_approaches",
+      "pass": true,
+      "count": 719
+    },
+    {
+      "name": "all_overlay_vertices_max_14mm_above_unchanged_source_surface",
+      "pass": true,
+      "count": 92817,
+      "maximum_m": 0.013
+    },
+    {
+      "name": "all_material_texture_files_present",
+      "pass": true
+    },
+    {
+      "name": "no_large_opaque_tar_repair_polygons",
+      "pass": true
+    },
+    {
+      "name": "R6_east_radio_parking_above_actual_unchanged_Soil_triangles",
+      "pass": true,
+      "overlapping_centroids": 2442,
+      "minimum_m": 0.002738548365657678
+    },
+    {
+      "name": "R6_east_radio_parking_draped_centroids_above_actual_original_top",
+      "pass": true,
+      "triangles": 2446,
+      "minimum_m": 0.011764460049215053,
+      "maximum_m": 0.012870893943389916
+    },
+    {
+      "name": "R6_east_shop_parking_above_actual_unchanged_Soil_triangles",
+      "pass": true,
+      "overlapping_centroids": 1490,
+      "minimum_m": 0.002854624700787234
+    },
+    {
+      "name": "R6_east_shop_parking_draped_centroids_above_actual_original_top",
+      "pass": true,
+      "triangles": 1512,
+      "minimum_m": 0.005238942293082083,
+      "maximum_m": 0.012944690051410745
+    },
+    {
+      "name": "R6_service_gap_above_actual_unchanged_Soil_triangles",
+      "pass": true,
+      "overlapping_centroids": 1842,
+      "minimum_m": 0.003022797898095675
+    },
+    {
+      "name": "R6_service_gap_draped_centroids_above_actual_original_top",
+      "pass": true,
+      "triangles": 1870,
+      "minimum_m": 0.011999999999995126,
+      "maximum_m": 0.012685479191246074
+    },
+    {
+      "name": "R6_pump_west_lane_above_actual_unchanged_Soil_triangles",
+      "pass": true,
+      "overlapping_centroids": 0,
+      "minimum_m": null
+    },
+    {
+      "name": "R6_pump_west_lane_draped_centroids_above_actual_original_top",
+      "pass": true,
+      "triangles": 800,
+      "minimum_m": 0.006970723547349067,
+      "maximum_m": 0.007290251649980206
+    },
+    {
+      "name": "R6_pump_east_lane_above_actual_unchanged_Soil_triangles",
+      "pass": true,
+      "overlapping_centroids": 0,
+      "minimum_m": null
+    },
+    {
+      "name": "R6_pump_east_lane_draped_centroids_above_actual_original_top",
+      "pass": true,
+      "triangles": 800,
+      "minimum_m": 0.006984792869373813,
+      "maximum_m": 0.00805473111876065
+    },
+    {
+      "name": "R6_gas_turnout_scuff_above_actual_unchanged_Soil_triangles",
+      "pass": true,
+      "overlapping_centroids": 0,
+      "minimum_m": null
+    },
+    {
+      "name": "R6_gas_turnout_scuff_draped_centroids_above_actual_original_top",
+      "pass": true,
+      "triangles": 538,
+      "minimum_m": 0.006972158138967011,
+      "maximum_m": 0.008084051849233553
+    },
+    {
+      "name": "GLB_RGBA_binary_alpha_ranges_and_intermediate_values",
+      "pass": true,
+      "files": 5
+    }
+  ]
+}

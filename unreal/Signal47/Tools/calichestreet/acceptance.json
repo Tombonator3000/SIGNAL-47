@@ -1,0 +1,177 @@
+{
+  "version": 2,
+  "status": "PASS",
+  "scope": "One Caliche street: gas station, souvenir shop, 1420 AM, local ground and distant visual mesa context",
+  "iteration_count": 9,
+  "package_sha256": "6103dd97769d675de05c77bf112cf568e1fbb9536335a458c71b83e6986113af",
+  "asset_commit": "f63aba3a715529e800ae3a31b8ce9e90f593441c",
+  "compiled_cpp_config_commit": "266f6fc2",
+  "source_checks": {
+    "Tools/radioarray/station": {
+      "status": "PASS",
+      "passed": 51,
+      "total": 51
+    },
+    "Tools/calichestreet/souvenir": {
+      "status": "PASS",
+      "passed": 37,
+      "total": 37
+    },
+    "Tools/calichestreet/ground": {
+      "status": "PASS",
+      "passed": 18,
+      "total": 18
+    },
+    "Tools/calichestreet/backdrop": {
+      "status": "PASS",
+      "passed": 9,
+      "total": 9
+    },
+    "ground_glb_alpha": {
+      "status": "PASS",
+      "files": 5
+    },
+    "ground_r8_geometry_preservation": {
+      "status": "PASS",
+      "source_report": "Tools/calichestreet/ground/r8_geometry_preservation.json"
+    },
+    "ground_r8_texture_verification": {
+      "status": "PASS",
+      "source_report": "Tools/calichestreet/ground/r8_texture_verification.json"
+    },
+    "source_portability": {
+      "status": "PASS",
+      "blend_files": 4
+    }
+  },
+  "native_checks": {
+    "native-verification": 176,
+    "radio-verification": 73
+  },
+  "native_files": 239,
+  "geometry_triangles": {
+    "radio": 92734,
+    "souvenir": 183248,
+    "ground": 64289,
+    "mesas": 62496
+  },
+  "runtime": {
+    "selftest_checks": 1305,
+    "package_bound_cases": [
+      {
+        "case": "selftest",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/selftest/report.json"
+      },
+      {
+        "case": "array-motion",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/array-motion/report.json"
+      },
+      {
+        "case": "door-closed",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/door-closed/report.json"
+      },
+      {
+        "case": "door-use-walk",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/door-use-walk/report.json"
+      },
+      {
+        "case": "buzzer",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/buzzer/report.json"
+      },
+      {
+        "case": "story-room",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/story-room/report.json"
+      },
+      {
+        "case": "story-dawn",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/story-dawn/report.json"
+      },
+      {
+        "case": "story-camera",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/story-camera/report.json"
+      },
+      {
+        "case": "story-cutout",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/story-cutout/report.json"
+      },
+      {
+        "case": "story-radio",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/story-radio/report.json"
+      },
+      {
+        "case": "souvenir-sign",
+        "report": "/home/tom/scratch-bm/Signal47-caliche-concept/runtime/souvenir-sign/report.json"
+      }
+    ],
+    "complete_screenshots_sh": {
+      "passed": 110,
+      "total": 110
+    },
+    "anomaly_pilot": "PASS",
+    "mesa_fallback_cases": 3,
+    "street_images": 36,
+    "radio_interior_images": 6,
+    "player_eye_metres": 1.62,
+    "clocks": [
+      "12:00",
+      "18:30",
+      "02:15"
+    ],
+    "timelines": [
+      "legacy",
+      "evening"
+    ],
+    "visual_review": "PASS",
+    "frozen_package_audit": "PASS"
+  },
+  "preserved": [
+    "27 moving antennas and original beacons",
+    "original walk floors and road markings",
+    "A02 physical figure, price, split edge, photo IDs and sightline",
+    "gas and radio interactions, lobby access and closed broadcast room",
+    "night/dawn/finale timing",
+    "existing licensed assets and credits"
+  ],
+  "installed": {
+    "status": "PASS",
+    "package_sha256": "6103dd97769d675de05c77bf112cf568e1fbb9536335a458c71b83e6986113af",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-caliche-concept/installed-backup-1792817380617549384",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 51
+  },
+  "editable_delivery": "/home/tom/Desktop/Signal47 Caliche konseptpass",
+  "evidence": "/home/tom/scratch-bm/Signal47-caliche-concept",
+  "visual_acceptance": {
+    "status": "PASS",
+    "scope": "Visual acceptance of the specified Caliche street sample and radio interiors",
+    "package_sha256": "6103dd97769d675de05c77bf112cf568e1fbb9536335a458c71b83e6986113af",
+    "asset_commit": "f63aba3a715529e800ae3a31b8ce9e90f593441c",
+    "inspection": "All36High/VHS street PNGs on both timelines and6High/Clean interior PNGs inspected; R9also12targetedHigh/Clean external/internal images independently reviewed",
+    "iteration_count": 9,
+    "accepted": [
+      "Weathered cream stucco, painted signage and varied analog/shop interiors",
+      "Warm practical light with readable cool dusk/night context; no orphan radio orb or glass haze",
+      "Granular road shoulders, gentle interrupted wear, local sage/stone islands and distant mesa context",
+      "Radio papers, metric wall grain and fixture-based interior lighting readable without global exposure change"
+    ],
+    "limitations": [
+      "Original concept is art direction; photographic identity is not claimed",
+      "Only agreed street segment and immediate ground polished; wider town keeps older detail",
+      "Static automated cameras and API scenarios do not prove human play, audio listening or full-night experience"
+    ]
+  },
+  "limits": [
+    "Static automated camera review and API scenarios, not human play or audio listening",
+    "Full human night and whole-route performance not measured in this pass",
+    "Wider town retains older detail; concept art is visual direction, not photographic identity"
+  ],
+  "next_model_priority": [
+    "Mesa Diner",
+    "Sheriff office",
+    "Motel room 6 and reception",
+    "Laundromat and feed store",
+    "Plaza cinema facade and foyer",
+    "Church"
+  ]
+}

@@ -18,6 +18,7 @@
 #include "S47Station.h"
 #include "S47StationTaken.h"
 #include "S47Story.h"
+#include "S47Substation.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -545,7 +546,7 @@ FString US47Chapter3::Objective() const
 		if (S.Dev == 1) return TEXT("SARO PHOTOLAB // TRANSFER THE FIELD PRINTS TO THE FIXER");
 		return TEXT("SARO PHOTOLAB // COLLECT THE FIELD PRINTS");
 	}
-	if (St == TEXT("complete")) return TEXT("ROOM 6 // SIERRA MOTOR COURT / NEXT AREA NOT YET PLAYABLE");
+	if (St == TEXT("complete")) return TEXT("ROOM 6 // TAKE THE FIELD FINDINGS TO SIERRA MOTOR COURT");
 	return FString();
 }
 
@@ -555,13 +556,13 @@ TArray<FS47Task> US47Chapter3::Tasks() const
 	if (S.bArrived) T.Append({
 		{ TEXT("Read the transit record (E09A)"), S.bReadE09a },
 		{ TEXT("Expose FRAME 03: the empty footing and the marked post"), S.F3.IsSet() },
-		{ TEXT("Record which fixed marker moved (P06)"), S.bP06 },
+		{ TEXT("Record which fixed marker moved, on the case board (P06)"), S.bP06 },
 		{ TEXT("Cover the field lamp and observe the null test (P07)"), S.bP07 },
 		{ TEXT("Inspect the cable cut and expose FRAME 04"), S.bCableInspected && S.F4.IsSet() },
-		{ TEXT("Record what the cable break shows (P08)"), S.bP08 },
+		{ TEXT("Record what the cable break shows, on the case board (P08)"), S.bP08 },
 		{ TEXT("Listen to the receiver in the hut"), S.bHeard },
 		{ TEXT("Read the 1947 timing log (E10)"), S.bReadE10 },
-		{ TEXT("Match the two timing records (P09)"), S.bP09 },
+		{ TEXT("Match the two timing records, on the case board (P09)"), S.bP09 },
 	});
 	// once the player has been in at the bench: the drawer under it, which nothing asks for
 	if (S.bHeard || S.bReadE10) T.Add({ TEXT("The drawer under the hut bench (optional)"), S.Fb.IsValid() });
@@ -1256,7 +1257,11 @@ void US47Chapter3::Update(double Dt, double T)
 	}
 	if (CallT >= 0 && Gt() >= CallT && !(Host && Host->IsCinematic()) && !(Ui() && Ui()->Modal())) { CallT = -1; Ring(); }
 	if (Area() == TEXT("station01") && !Driving() && !S.bArrived) ArrivedStation();
-	if (US47UI* U = Ui()) U->Objective(Objective());
+	if (US47UI* U = Ui())
+	{
+		const FString Local = M && M->Substation ? M->Substation->FollowupObjective() : FString();
+		U->Objective(Local.IsEmpty() ? Objective() : Local);
+	}
 }
 
 // ---------- the host (Prologue.ts) ----------
@@ -1275,7 +1280,7 @@ void US47Chapter3::BeginChapter3(const S47J::FObj& SavedCase)
 		Host->NotesMutable() = S47J::Strs(SavedCase, TEXT("notes"));
 		Host->SetClock(S47J::Num(SavedCase, TEXT("clock"), Host->Clock()));
 	}
-	else Host->SetClock(FMath::Max(Host->Clock(), 3 * 3600 + 40 * 60.0));
+	else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter3(Host->bEveningTimeline)));
 	if (US47UI* U = Ui()) U->Fade(false);
 	Host->BeginChapter(TEXT("ch3"), Ch3);
 }

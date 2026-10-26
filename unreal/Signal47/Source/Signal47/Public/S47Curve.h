@@ -57,6 +57,7 @@ struct FS47CurveIn
 	bool bPeaking = false;
 	/** The night's clock, seconds since midnight. */
 	double Clock = 0;
+	bool bEveningTimeline = false;
 	/** One of the 47-second events that belong to a place is waiting there now. */
 	bool bWaiting = false;
 	/** A 47 of the story's may still come in this chapter: the chapter's one extra 47 is kept for it. */

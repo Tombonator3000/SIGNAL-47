@@ -1,0 +1,10 @@
+{
+  "revision": "R3 native-feedback pass",
+  "scope": "Quieter original stucco + textured beige scar materials, original AI print atlas, deterministic label atlas; no baked lamp lighting",
+  "stucco_normal_strength": 0.12,
+  "AI_bitmap_fields": {
+    "M_Souvenir_PrintedArtwork.base_color": "textures/souvenir_print_atlas_v3.png"
+  },
+  "protected_geometry_unchanged": true,
+  "source_verification": "verification.json"
+}

@@ -1,0 +1,1017 @@
+{
+  "status": "SOURCE_PLACEMENT_AUDIT_NATIVE_UNVERIFIED",
+  "authority": {
+    "manifest": "/home/tom/SIGNAL-47/unreal/Signal47/Content/WebData/manifest.json",
+    "sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+    "root_handle": "world.diner.group",
+    "root_node": 1321
+  },
+  "site_world_three_m": [
+    7979.95,
+    4.309006389843889,
+    1999.95
+  ],
+  "world_yaw_degrees": 0,
+  "mapping": "worldThree=(7979.95+Bx,4.309006389843889+Bz,1999.95-By)",
+  "front": "+BlenderX toward highway",
+  "building_blender_footprint_m": [
+    [
+      -8,
+      -9
+    ],
+    [
+      2,
+      9
+    ]
+  ],
+  "building_floor_blender_z_m": 0,
+  "roof_top_blender_z_m": 3.4,
+  "original_walk": {
+    "zones": [
+      {
+        "id": "lot",
+        "enabled": true,
+        "minX": 7982.75,
+        "maxX": 7996.65,
+        "minZ": 1983.95,
+        "maxZ": 2015.95
+      },
+      {
+        "id": "walk",
+        "enabled": true,
+        "minX": 7981.5,
+        "maxX": 7983.65,
+        "minZ": 1990.55,
+        "maxZ": 2009.3500000000001
+      },
+      {
+        "id": "door",
+        "enabled": true,
+        "minX": 7980.65,
+        "maxX": 7983.25,
+        "minZ": 1999.3500000000001,
+        "maxZ": 2000.55
+      },
+      {
+        "id": "inside",
+        "enabled": true,
+        "minX": 7975.9,
+        "maxX": 7981.75,
+        "minZ": 1991.15,
+        "maxZ": 2008.75
+      },
+      {
+        "id": "phone",
+        "enabled": true,
+        "minX": 7978.349999999999,
+        "maxX": 7981.75,
+        "minZ": 2007.3500000000001,
+        "maxZ": 2008.75
+      }
+    ],
+    "colliders": [
+      {
+        "minX": 7981.75,
+        "maxX": 7981.95,
+        "minZ": 2000.55,
+        "maxZ": 2002.1000000000001
+      },
+      {
+        "minX": 7981.75,
+        "maxX": 7981.95,
+        "minZ": 1990.95,
+        "maxZ": 1999.3500000000001
+      },
+      {
+        "minX": 7981.75,
+        "maxX": 7981.95,
+        "minZ": 2002.1000000000001,
+        "maxZ": 2008.95
+      },
+      {
+        "minX": 7971.95,
+        "maxX": 7972.15,
+        "minZ": 1990.95,
+        "maxZ": 2008.95
+      },
+      {
+        "minX": 7971.95,
+        "maxX": 7981.95,
+        "minZ": 1990.95,
+        "maxZ": 1991.15
+      },
+      {
+        "minX": 7971.95,
+        "maxX": 7981.95,
+        "minZ": 2008.75,
+        "maxZ": 2008.95
+      },
+      {
+        "minX": 7971.95,
+        "maxX": 7974.25,
+        "minZ": 1991.15,
+        "maxZ": 2008.75
+      },
+      {
+        "minX": 7975.139999999999,
+        "maxX": 7975.76,
+        "minZ": 1994.45,
+        "maxZ": 2005.45
+      },
+      {
+        "minX": 7976.2699999999995,
+        "maxX": 7976.83,
+        "minZ": 1994.8700000000001,
+        "maxZ": 1995.43
+      },
+      {
+        "minX": 7976.2699999999995,
+        "maxX": 7976.83,
+        "minZ": 1996.47,
+        "maxZ": 1997.03
+      },
+      {
+        "minX": 7976.2699999999995,
+        "maxX": 7976.83,
+        "minZ": 1998.07,
+        "maxZ": 1998.63
+      },
+      {
+        "minX": 7976.2699999999995,
+        "maxX": 7976.83,
+        "minZ": 1999.67,
+        "maxZ": 2000.23
+      },
+      {
+        "minX": 7976.2699999999995,
+        "maxX": 7976.83,
+        "minZ": 2001.27,
+        "maxZ": 2001.8300000000002
+      },
+      {
+        "minX": 7976.2699999999995,
+        "maxX": 7976.83,
+        "minZ": 2002.8700000000001,
+        "maxZ": 2003.43
+      },
+      {
+        "minX": 7976.2699999999995,
+        "maxX": 7976.83,
+        "minZ": 2004.47,
+        "maxZ": 2005.03
+      },
+      {
+        "minX": 7979.679999999999,
+        "maxX": 7981.62,
+        "minZ": 1992.6100000000001,
+        "maxZ": 1995.0900000000001
+      },
+      {
+        "minX": 7979.679999999999,
+        "maxX": 7981.62,
+        "minZ": 1995.66,
+        "maxZ": 1998.14
+      },
+      {
+        "minX": 7979.679999999999,
+        "maxX": 7981.62,
+        "minZ": 2001.76,
+        "maxZ": 2004.24
+      },
+      {
+        "minX": 7979.679999999999,
+        "maxX": 7981.62,
+        "minZ": 2004.81,
+        "maxZ": 2007.29
+      },
+      {
+        "minX": 7978.34,
+        "maxX": 7979.36,
+        "minZ": 1991.3500000000001,
+        "maxZ": 1992.0800000000002
+      },
+      {
+        "minX": 7979.99,
+        "maxX": 7980.72,
+        "minZ": 2008.42,
+        "maxZ": 2008.75
+      },
+      {
+        "minX": 7992.75,
+        "maxX": 7993.15,
+        "minZ": 1987.78,
+        "maxZ": 1988.18
+      },
+      {
+        "minX": 7992.75,
+        "maxX": 7993.15,
+        "minZ": 1991.72,
+        "maxZ": 1992.1200000000001
+      },
+      {
+        "minX": 7987.28,
+        "maxX": 7987.679999999999,
+        "minZ": 1978.75,
+        "maxZ": 1979.15
+      },
+      {
+        "minX": 7991.22,
+        "maxX": 7991.62,
+        "minZ": 1978.75,
+        "maxZ": 1979.15
+      },
+      {
+        "minX": 7983.65,
+        "maxX": 7994.8,
+        "minZ": 1984.4,
+        "maxZ": 1987.2
+      },
+      {
+        "minX": 7982.99,
+        "maxX": 7983.41,
+        "minZ": 2001.17,
+        "maxZ": 2001.63
+      },
+      {
+        "minX": 7981.99,
+        "maxX": 7982.7699999999995,
+        "minZ": 2003.8,
+        "maxZ": 2006.1000000000001
+      },
+      {
+        "minX": 7982.11,
+        "maxX": 7982.91,
+        "minZ": 2007.78,
+        "maxZ": 2008.72
+      },
+      {
+        "minX": 7982.95,
+        "maxX": 7983.55,
+        "minZ": 1998.2,
+        "maxZ": 1998.8
+      },
+      {
+        "minX": 7973.8,
+        "maxX": 7979.3,
+        "minZ": 2010.65,
+        "maxZ": 2012.65
+      },
+      {
+        "minX": 7973.952458083332,
+        "maxX": 7979.947541916667,
+        "minZ": 1987.1788424337467,
+        "maxZ": 1989.5211575662534
+      },
+      {
+        "minX": 7972.45,
+        "maxX": 7973.05,
+        "minZ": 2009.4,
+        "maxZ": 2010
+      },
+      {
+        "minX": 7973.15,
+        "maxX": 7973.75,
+        "minZ": 2009.45,
+        "maxZ": 2010.05
+      },
+      {
+        "minX": 7971.05,
+        "maxX": 7971.65,
+        "minZ": 2007.8500000000001,
+        "maxZ": 2008.45
+      },
+      {
+        "minX": 1000000000,
+        "maxX": 1000000000,
+        "minZ": 1000000000,
+        "maxZ": 1000000000
+      }
+    ]
+  },
+  "anchors": {
+    "world.diner.anchors.truckPark": {
+      "pose": [
+        7988.95,
+        2005.95,
+        0
+      ]
+    },
+    "world.diner.anchors.arrive": {
+      "pose": [
+        7987.2,
+        2004.8500000000001,
+        0.8198672643969563
+      ]
+    },
+    "world.diner.anchors.outside": {
+      "pose": [
+        7983.05,
+        1999.95,
+        1.5707963267948966
+      ]
+    },
+    "world.diner.anchors.inside": {
+      "pose": [
+        7980.7,
+        1999.95,
+        1.5707963267948966
+      ]
+    },
+    "world.diner.anchors.stool": {
+      "pose": [
+        7977.15,
+        1999.95,
+        1.5707963267948966
+      ]
+    },
+    "world.diner.anchors.phone": {
+      "pose": [
+        7980.349999999999,
+        2008,
+        3.141592653589793
+      ]
+    }
+  },
+  "proxies": {
+    "world.diner.proxies.menu": {
+      "node": 1393,
+      "parent": 1321,
+      "local_three": [
+        -5.65,
+        2.69,
+        -2.4
+      ],
+      "blender_local_m": [
+        -5.65,
+        2.4,
+        2.69
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.door": {
+      "node": 1400,
+      "parent": 1321,
+      "local_three": [
+        1.94,
+        1.125,
+        0
+      ],
+      "blender_local_m": [
+        1.94,
+        0,
+        1.125
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.window": {
+      "node": 1402,
+      "parent": 1321,
+      "local_three": [
+        1.965,
+        1.67,
+        -1.72
+      ],
+      "blender_local_m": [
+        1.965,
+        1.72,
+        1.67
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.counter": {
+      "node": 1404,
+      "parent": 1321,
+      "local_three": [
+        -4.5,
+        0.87,
+        0
+      ],
+      "blender_local_m": [
+        -4.5,
+        0,
+        0.87
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.coffee": {
+      "node": 1406,
+      "parent": 1321,
+      "local_three": [
+        -4.32,
+        1.18,
+        -1.15
+      ],
+      "blender_local_m": [
+        -4.32,
+        1.15,
+        1.18
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.booth": {
+      "node": 1408,
+      "parent": 1321,
+      "local_three": [
+        0.7,
+        0.65,
+        3.05
+      ],
+      "blender_local_m": [
+        0.7,
+        -3.05,
+        0.65
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.jukebox": {
+      "node": 1410,
+      "parent": 1321,
+      "local_three": [
+        -1.1,
+        0.825,
+        -8.21
+      ],
+      "blender_local_m": [
+        -1.1,
+        8.21,
+        0.825
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.clipping": {
+      "node": 1412,
+      "parent": 1321,
+      "local_three": [
+        1.72,
+        1.65,
+        1.35
+      ],
+      "blender_local_m": [
+        1.72,
+        -1.35,
+        1.65
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.payphone": {
+      "node": 1414,
+      "parent": 1321,
+      "local_three": [
+        0.4,
+        1.45,
+        8.59
+      ],
+      "blender_local_m": [
+        0.4,
+        -8.59,
+        1.45
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.waitress": {
+      "node": 1416,
+      "parent": 1321,
+      "local_three": [
+        -5.1,
+        1.17,
+        0
+      ],
+      "blender_local_m": [
+        -5.1,
+        0,
+        1.17
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.driver": {
+      "node": 1418,
+      "parent": 1321,
+      "local_three": [
+        -3.47,
+        1.08,
+        1.6
+      ],
+      "blender_local_m": [
+        -3.47,
+        -1.6,
+        1.08
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.sign": {
+      "node": 1420,
+      "parent": 1321,
+      "local_three": [
+        13,
+        2.02,
+        -10
+      ],
+      "blender_local_m": [
+        13,
+        10,
+        2.02
+      ],
+      "preserve": true
+    },
+    "world.diner.proxies.rig": {
+      "node": 1422,
+      "parent": 1321,
+      "local_three": [
+        9.28,
+        1.85,
+        -14.15
+      ],
+      "blender_local_m": [
+        9.28,
+        14.15,
+        1.85
+      ],
+      "preserve": true
+    }
+  },
+  "dynamic_objects": {
+    "world.diner.objs.door": {
+      "node": 1395,
+      "parent": 1321,
+      "local_three": [
+        1.9,
+        0,
+        0.58
+      ],
+      "blender_local_m": [
+        1.9,
+        -0.58,
+        0
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.coffeePot": {
+      "node": 1354,
+      "parent": 1353,
+      "local_three": [
+        -4.3,
+        1,
+        -1.15
+      ],
+      "blender_local_m": [
+        -4.3,
+        1.15,
+        1
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.cup": {
+      "node": 1357,
+      "parent": 1353,
+      "local_three": [
+        -4.2,
+        1,
+        0.6
+      ],
+      "blender_local_m": [
+        -4.2,
+        -0.6,
+        1
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.clipping": {
+      "node": 1360,
+      "parent": 1353,
+      "local_three": [
+        1.77,
+        1.65,
+        1.35
+      ],
+      "blender_local_m": [
+        1.77,
+        -1.35,
+        1.65
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.payphoneHandset": {
+      "node": 1364,
+      "parent": 1353,
+      "local_three": [
+        0.22,
+        1.48,
+        8.43
+      ],
+      "blender_local_m": [
+        0.22,
+        -8.43,
+        1.48
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.waitress": {
+      "node": 1366,
+      "parent": 1353,
+      "local_three": [
+        -5.13,
+        0,
+        0
+      ],
+      "blender_local_m": [
+        -5.13,
+        0,
+        0
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.waitressHead": {
+      "node": 1367,
+      "parent": 1366,
+      "local_three": [
+        0,
+        1.53,
+        0
+      ],
+      "blender_local_m": [
+        0,
+        0,
+        1.53
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.driver": {
+      "node": 1375,
+      "parent": 1353,
+      "local_three": [
+        -3.4,
+        0,
+        1.6
+      ],
+      "blender_local_m": [
+        -3.4,
+        -1.6,
+        0
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.driverHead": {
+      "node": 1376,
+      "parent": 1375,
+      "local_three": [
+        0,
+        1.52,
+        0
+      ],
+      "blender_local_m": [
+        0,
+        0,
+        1.52
+      ],
+      "preserve": true
+    },
+    "world.diner.objs.regularCup": {
+      "node": 1388,
+      "parent": 1353,
+      "local_three": [
+        -4.2,
+        1,
+        -4.8
+      ],
+      "blender_local_m": [
+        -4.2,
+        4.8,
+        1
+      ],
+      "preserve": true
+    }
+  },
+  "preserve_objects": [
+    "coffeePot",
+    "cup",
+    "regularCup",
+    "clipping",
+    "payphoneHandset",
+    "waitress",
+    "waitressHead",
+    "driver",
+    "driverHead"
+  ],
+  "door": {
+    "hinge_blender_local_m": [
+      1.9,
+      -0.58,
+      0
+    ],
+    "baked_z_rotation_degrees": -105,
+    "new_mechanics": false,
+    "original_action": "diner:door toast retained",
+    "actual_leaf_collision": "Added only after complete atomic native guard, from actual imported door bounds; no shut collider across the opening.",
+    "source_floor_clearance_check": {
+      "source_glb": "exports/SM_Mesa_Interior.glb",
+      "ray_blender_xy_m": [
+        1.75,
+        0
+      ],
+      "from_blender_z_m": 0.25,
+      "to_blender_z_m": -0.1,
+      "actual_hits": [
+        [
+          0.001,
+          "M_Mesa_CheckerFloor"
+        ]
+      ],
+      "method": "Pure-Python decoded GLB triangle intersections, after the isolated front skirting source fix.",
+      "native_status": "UNVERIFIED"
+    }
+  },
+  "counter_top_blender_z_m": 1.0,
+  "booth_table_top_blender_z_m": 0.8025,
+  "takeaway_points_blender_m": {
+    "diner": [
+      -4.5,
+      -1.65,
+      1.0
+    ],
+    "bench": [
+      2.43,
+      -5,
+      0.46
+    ]
+  },
+  "parking": {
+    "lot_blender_footprint_m": [
+      [
+        3.6,
+        -16
+      ],
+      [
+        16,
+        16
+      ]
+    ],
+    "lot_world_floor_y_m": 4.309006389843889,
+    "surrounding_terrain_nominal_blender_z_m": -0.1,
+    "keep_driving_box_blender_m": [
+      [
+        5,
+        -14
+      ],
+      [
+        14,
+        4
+      ]
+    ],
+    "dynamic_player_truck_blender": [
+      9,
+      -6,
+      0
+    ],
+    "native_existing_cars_world_xz_m": [
+      [
+        7986.2,
+        1990.4
+      ],
+      [
+        7986.2,
+        1993.4
+      ]
+    ],
+    "static_rig_old_blender_footprint_m": [
+      [
+        3.7,
+        12.75
+      ],
+      [
+        14.85,
+        15.55
+      ]
+    ],
+    "static_rig_proxy_blender_m": [
+      9.28,
+      14.15,
+      1.85
+    ],
+    "rig_story_requirement": "Tractor and refrigerated trailer, cab/front +X; existing driver and rig dialogue retained.",
+    "highway_world_center_x_m": 8000,
+    "highway_local_blender_x_m": 20.05
+  },
+  "sign": {
+    "primary_blender_base_m": [
+      2.65,
+      -6.8,
+      0
+    ],
+    "existing_proxy_blender_m": [
+      13,
+      10,
+      2.02
+    ],
+    "secondary_original_blender_base_m": [
+      9.5,
+      21,
+      0
+    ],
+    "new_red_light_blender_m": [
+      3.35,
+      -6.8,
+      4.8
+    ],
+    "new_cyan_light_blender_m": [
+      3.35,
+      -6.8,
+      3.65
+    ],
+    "state": "Existing diner sign state and original red/cyan flicker; no always-on imported emission.",
+    "proxy_adjustment": "Original ID/action/component retained; query surface follows actual taller Sign bounds, replacing the old short proxy footprint.",
+    "new_world_three_base_m": [
+      7982.6,
+      4.309006389843889,
+      2006.75
+    ],
+    "new_world_footprint_xz_m": [
+      [
+        7982.225,
+        2006.34
+      ],
+      [
+        7982.975,
+        2007.16
+      ]
+    ],
+    "revision_note": "Root-authorized facade concept placement. Existing sign ID/action retained; actual new taller sign bounds drive the proxy. Dynamic player-car parking anchors remain unchanged.",
+    "light_offset_reason": "D2 local correction: move original state-controlled point pools about0.55m in front of actual neon instead of0.039m, preserving widths/colours/flicker."
+  },
+  "atomic_trim": {
+    "hide_group_handles": [
+      "world.diner.shell"
+    ],
+    "hide_named_groups": [
+      "clutter:diner:near",
+      "wear:near"
+    ],
+    "hide_geometry_handles": [
+      "world.diner.models.models[0]",
+      "world.diner.models.models[1]"
+    ],
+    "hide_old_door_geometry": true,
+    "disable_only_obsolete_non_story_dressing_colliders": [
+      {
+        "original_diner_index": 21,
+        "world_rect": [
+          7992.75,
+          7993.15,
+          1987.78,
+          1988.18
+        ]
+      },
+      {
+        "original_diner_index": 22,
+        "world_rect": [
+          7992.75,
+          7993.15,
+          1991.72,
+          1992.1200000000001
+        ]
+      },
+      {
+        "original_diner_index": 23,
+        "world_rect": [
+          7987.28,
+          7987.679999999999,
+          1978.75,
+          1979.15
+        ]
+      },
+      {
+        "original_diner_index": 24,
+        "world_rect": [
+          7991.22,
+          7991.62,
+          1978.75,
+          1979.15
+        ]
+      },
+      {
+        "original_diner_index": 26,
+        "world_rect": [
+          7982.99,
+          7983.41,
+          2001.17,
+          2001.63
+        ]
+      },
+      {
+        "original_diner_index": 28,
+        "world_rect": [
+          7982.11,
+          7982.91,
+          2007.78,
+          2008.72
+        ]
+      },
+      {
+        "original_diner_index": 29,
+        "world_rect": [
+          7982.95,
+          7983.55,
+          1998.2,
+          1998.8
+        ]
+      },
+      {
+        "original_diner_index": 30,
+        "world_rect": [
+          7973.8,
+          7979.3,
+          2010.65,
+          2012.65
+        ]
+      },
+      {
+        "original_diner_index": 31,
+        "world_rect": [
+          7973.952458083332,
+          7979.947541916667,
+          1987.1788424337467,
+          1989.5211575662534
+        ]
+      },
+      {
+        "original_diner_index": 32,
+        "world_rect": [
+          7972.45,
+          7973.05,
+          2009.4,
+          2010
+        ]
+      },
+      {
+        "original_diner_index": 33,
+        "world_rect": [
+          7973.15,
+          7973.75,
+          2009.45,
+          2010.05
+        ]
+      },
+      {
+        "original_diner_index": 34,
+        "world_rect": [
+          7971.05,
+          7971.65,
+          2007.8500000000001,
+          2008.45
+        ]
+      }
+    ],
+    "note": "Old four sign feet also removed; one new physical central sign footing added. Original other structural/furniture/rig/bench and player-truck footprints remain."
+  },
+  "required_native_parts": [
+    "SM_Mesa_Shell",
+    "SM_Mesa_Glass",
+    "SM_Mesa_Door",
+    "SM_Mesa_Interior",
+    "SM_Mesa_Booths",
+    "SM_Mesa_Counter",
+    "SM_Mesa_Kitchen",
+    "SM_Mesa_Fixtures",
+    "SM_Mesa_Truck",
+    "SM_Mesa_Sign",
+    "SM_Mesa_Parking"
+  ],
+  "validation_scope": "Read-only source/manifest geometry audit. Actual native mesh import, visual quality, use rays, walking and takeaway reload are not certified by this file.",
+  "cameras": [
+    {
+      "view": {
+        "name": "mesa-front",
+        "at": [
+          7996.25,
+          2015.5,
+          0.67,
+          0.07
+        ]
+      },
+      "source_road_geometry_heights": null,
+      "inside_original_walk_zone_with_radius_027": true,
+      "walk_mode": "original diner lot zone",
+      "nearest_original_drive_obstacle_clearance_m": null,
+      "note": "Hero updated to root-requested exact pose. Inside eroded original lot zone; floor supplied by existing diner at4.309006389843889. Earlier source geometry proof was at7995.5,2015.2."
+    },
+    {
+      "view": {
+        "name": "mesa-parking",
+        "at": [
+          8005.2,
+          1981.5,
+          2.22,
+          0.05
+        ]
+      },
+      "source_road_geometry_heights": {
+        "g873": 3.7590065002441406,
+        "g874": 4.249006277720138
+      },
+      "inside_original_walk_zone_with_radius_027": true,
+      "walk_mode": "Original road/highway walk zone in diner area; exact g874 floor source measured above.",
+      "nearest_original_drive_obstacle_clearance_m": 4.157523
+    }
+  ],
+  "actual_model_contract_sha256": "b33ac55d47106206b37919d7bccd5af0c10f2cb5cb1bdd2895c5e813af3a3100",
+  "actual_model_contract_validation": "R2-original-Mesa-Diner-1986-door-clearance source contract read. Native D2 import/runtime validation pending root."
+}

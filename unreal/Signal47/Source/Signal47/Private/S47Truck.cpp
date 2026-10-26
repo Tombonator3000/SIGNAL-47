@@ -1,9 +1,12 @@
 #include "S47Truck.h"
+#include "S47EveningVisual.h"
 
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Components/MaterialBillboardComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Engine/World.h"
 #include "Fonts/FontMeasure.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -26,8 +29,8 @@ namespace
 	constexpr double WHEELBASE = 3.3;
 	constexpr double FRONT_AXLE = -1.8, REAR_AXLE = FRONT_AXLE + WHEELBASE, WHEEL_R = 0.37, TRACK = 0.84;
 	const double WHEELS[4][2] = { { -TRACK, FRONT_AXLE }, { TRACK, FRONT_AXLE }, { -TRACK, REAR_AXLE }, { TRACK, REAR_AXLE } };
-	// The fake headlight floods: truck-local position and intensity. Three pools in a row make a
-	// beam that widens and fades down the road.
+	// Legacy story slots retain their moving positions and state. Native headlight spots own
+	// their illumination; these slots are excluded from the area light conversion.
 	struct FPool { FVector P; double W; };
 	const FPool FLOODS[3] = { { FVector(0, 0.9, -7.8), 5.5 }, { FVector(0, 1.2, -14.6), 10 }, { FVector(0, 1.8, -28.6), 14 } };
 	const FLinearColor HEAD(1.0f, 0.9f, 0.72f), TAIL(1.f, 0.05f, 0.03f), AMBER(1.f, 0.55f, 0.12f);
@@ -194,6 +197,8 @@ private:
 
 FS47Truck::~FS47Truck()
 {
+	FWorldDelegates::OnWorldPostActorTick.Remove(HeadlightTick);
+	for (const TWeakObjectPtr<USpotLightComponent>& L : Headlights) if (L.IsValid()) L->DestroyComponent();
 	if (Renderer) { BeginCleanup(Renderer); Renderer = nullptr; }
 }
 
@@ -203,6 +208,9 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 	Web = M ? M->Web.Get() : nullptr;
 	Path = InPath;
 	CabSet = InCabSet;
+	// The second cab slot was sky fill through the glass, not a fixture. Native sky and
+	// exterior lamps now light the cab through its actual windows.
+	if (Web && CabSet >= 0) Web->SuppressFloodLight(CabSet, 1);
 	HeadColor = HEAD;
 	OdoShown = int32(FMath::Floor(S47_ODOMETER_OUT * 10));
 	if (!Web) return;
@@ -215,9 +223,41 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 	MHead = Mt(TEXT("head")); MPark = Mt(TEXT("park")); MTail = Mt(TEXT("tail"));
 	MGauge = Mt(TEXT("gauge")); MNeedle = Mt(TEXT("needle")); MCompass = Mt(TEXT("compass"));
 	DriverEye = Web->Vec(Path + TEXT(".driverEye"), DriverEye);
+	ServiceDriverEye = DriverEye;
 	// the group's pose as the export has it, its rotation read back in the YXZ order
 	Position = Group.Position();
 	Rotation = EulerYXZ(Group.Quaternion());
+	if (const FS47WebNode* N = Group.IsValid() ? Web->Node(Group.I) : nullptr)
+	{
+		for (int32 I = 0; I < 2; ++I)
+		{
+			// One soft source for each pair of the original sealed beams, just in front of its glass.
+			USpotLightComponent* L = NewObject<USpotLightComponent>(Web);
+			L->SetupAttachment(N->Comp.Get());
+			L->SetMobility(EComponentMobility::Movable);
+			L->SetIntensityUnits(ELightUnits::Candelas);
+			L->SetIntensity(0);
+			L->SetAttenuationRadius(4500);
+			L->SetOuterConeAngle(21);
+			L->SetInnerConeAngle(10);
+			L->SetSourceRadius(6);
+			L->SetSoftSourceRadius(8);
+			L->SetCastShadows(true);
+			L->SetCastVolumetricShadow(true);
+			L->ContactShadowLengthInWS = true; L->ContactShadowLength = 18.f;
+			L->ContactShadowCastingIntensity = 0.7f;
+			L->SetVolumetricScatteringIntensity(0.8f);
+			L->SetVisibility(false);
+			L->RegisterComponent();
+			Headlights[I] = L;
+		}
+		// Parked trucks do not run Update. Follow area visibility every frame too.
+		const TWeakObjectPtr<AS47Web> WeakWeb = Web;
+		HeadlightTick = FWorldDelegates::OnWorldPostActorTick.AddLambda([this, WeakWeb](UWorld* World, ELevelTick, float)
+		{
+			if (WeakWeb.IsValid() && WeakWeb->GetWorld() == World) PlaceHeadlights();
+		});
+	}
 	// the glow points (GlowPoints.add in the constructor: for each side the two headlamps, the
 	// parking lamp, the tail lamp), each a sprite of its own in the Unreal scene
 	for (int32 S = 0; S < 2; ++S)
@@ -249,6 +289,7 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 		MGauge.SetMap(RT, true);
 		DrawDash();
 	}
+	Fleet=FS47Fleet::Install(Web,*this);
 	SetDriving(false);
 	Update(0, 0);
 	ApplyLights();
@@ -262,6 +303,16 @@ void FS47Truck::SetPose(const FVector& P, const FVector& R)
 	Rotation = R;
 	Group.SetPosition(P);
 	Group.SetQuaternion(Euler(R.X, R.Y, R.Z, TEXT("YXZ")));
+	PlaceHeadlights();
+}
+
+void FS47Truck::SetParkPose(const FVector& P, double Heading)
+{
+	const double Level[4] = {};
+	SetWheelDrops(Level);
+	SetPose(P, FVector(0, Heading, 0));
+	SetDriving(false);
+	Update(0, 0);
 }
 
 FQuat FS47Truck::Quat() const { return Euler(Rotation.X, Rotation.Y, Rotation.Z, TEXT("YXZ")); }
@@ -305,7 +356,17 @@ void FS47Truck::SetDriving(bool bOn)
 	Cab.SetVisible(bOn);
 	Shell.SetVisible(!bOn);
 	// from the driver's seat the lamps face away: their glows only poked over the hood
-	GlowPoints.SetVisible(!bOn);
+	GlowPoints.SetVisible(!bOn && !Fleet);
+	if (bPersonalVehicle) Group.SetVisible(false);
+}
+
+void FS47Truck::SetPersonalVehicle(bool bOn)
+{
+	if (bPersonalVehicle == bOn) { if (bOn) Group.SetVisible(false); return; }
+	bPersonalVehicle = bOn;
+	DriverEye = bOn ? FS47EveningVisual::PersonalDriverEye() : ServiceDriverEye;
+	SetDriving(bDriving);
+	if (bOn) { Group.SetVisible(false); SetHeadlights(false); }
 }
 
 void FS47Truck::ViewFrom(const FVector& CamThree)
@@ -407,8 +468,8 @@ void FS47Truck::HeadlightFloods(int32 Set, const TArray<int32>& Slots)
 	FloodSet = Set;
 	FloodSlots = Slots;
 	if (FloodSlots.Num() > 3) FloodSlots.SetNum(3);
-	// (kit.headSlots draws them through the sealed beams' pattern; the Unreal flood material has
-	// round pools only)
+	// The two physical sealed-beam sources replace all three ground-pool proxies.
+	if (Web) for (int32 I : FloodSlots) Web->SuppressFloodLight(FloodSet, I);
 	PlaceFloods();
 }
 
@@ -434,12 +495,14 @@ void FS47Truck::ApplyLights()
 		}
 	};
 	Put(GiHead, HeadColor, 0.75 * Head); Put(GiPark, AMBER, 0.3 * Head); Put(GiTail, TAIL, 0.4 * Tail);
+	if(Fleet)Fleet->Lenses(HeadColor,Head,Tail);
 	PlaceFloods();
 }
 
 void FS47Truck::PlaceFloods()
 {
 	if (!Web) return;
+	PlaceHeadlights();
 	const double D = DashLevel ? *DashLevel : LightLevel;
 	if (CabSet >= 0)
 	{
@@ -460,6 +523,27 @@ void FS47Truck::PlaceFloods()
 	Web->FlushFlood(FloodSet);
 }
 
+void FS47Truck::PlaceHeadlights()
+{
+	if (!Web) return;
+	const bool bOn = Group.Shown() && bHeadOn && LightLevel > 0.01;
+	for (int32 I = 0; I < 2; ++I)
+	{
+		USpotLightComponent* L = Headlights[I].Get();
+		if (!L) continue;
+		const double X = I == 0 ? -0.657 : 0.657;
+		const FVector Lamp=Fleet?FS47Fleet::Headlamp(I):FVector(X,0.8435,-2.65);
+		const FVector P = Group.LocalToWorld(Lamp);
+		// A slight downward aim keeps the verge visible without lighting the night sky.
+		const FVector Target = Group.LocalToWorld(FVector(Lamp.X, 0.1, Lamp.Z-30));
+		L->SetWorldLocationAndRotation(ToUE(P), (ToUE(Target) - ToUE(P)).Rotation());
+		const float ColorGain = FMath::Max(1.f, FMath::Max3(HeadColor.R, HeadColor.G, HeadColor.B));
+		L->SetLightColor(HeadColor / ColorGain);
+		L->SetIntensity(bOn ? float(4200 * LightLevel * ColorGain) : 0.f);
+		if (L->IsVisible() != bOn) L->SetVisibility(bOn);
+	}
+}
+
 void FS47Truck::Update(double Dt, double Speed, double InWheelAngle)
 {
 	Spin -= Speed / WHEEL_R * Dt;
@@ -471,6 +555,7 @@ void FS47Truck::Update(double Dt, double Speed, double InWheelAngle)
 		const FQuat Q = Euler(bLeft ? -Spin : Spin, (bFront ? -WheelAngle : 0) + (bLeft ? UE_DOUBLE_PI : 0), 0, TEXT("YXZ"));
 		Wheels.SetInstance(i, FVector(WHEELS[i][0], WHEEL_R + Drops[i], WHEELS[i][1]), Q, FVector::OneVector, i == 3);
 	}
+	if(Fleet)Fleet->Wheels(Spin*WHEEL_R,WheelAngle,Drops);
 	// needles have a little weight to them
 	FGauge& G = Gauge;
 	const double K = 1 - FMath::Exp(-Dt * 6);
@@ -526,4 +611,20 @@ bool FS47Truck::RadioHit(const FVector& From, const FVector& Dir, double Far) co
 		if (T0 > T1) return false;
 	}
 	return true;
+}
+
+bool FS47Truck::AuditProductionArt(TArray<FString>& Lines)const
+{
+ bool Ok=Fleet&&Fleet->Audit(Lines);
+ auto Check=[&](bool B,const TCHAR* N){Ok&=B;Lines.Add(FString(B?TEXT("PASS truck production: "):TEXT("FAIL truck production: "))+N);};
+ Check(Fleet!=nullptr,TEXT("production art installed"));
+ Check(DriverEye.Equals(bPersonalVehicle?FS47EveningVisual::PersonalDriverEye():ServiceDriverEye,.0001),TEXT("actual driver eye retained for current vehicle"));
+ Check(Needles.IsValid()&&Keys.IsValid()&&CompassCard.IsValid()&&WheelSpin.IsValid()&&DashRT.IsValid(),TEXT("live gauges, radio atlas, keys, compass and steering retained"));
+ if(Fleet)for(int32 I=0;I<2;++I)
+ {
+  const auto* L=Headlights[I].Get();const FVector P=LocalToWorld(FS47Fleet::Headlamp(I));
+  Check(L&&L->GetComponentLocation().Equals(S47Three::ToUE(P),.10),TEXT("real spotlight follows C10 sealed-beam anchor"));
+  if(L)Check(L->IsVisible()==(Group.Shown()&&bHeadOn&&LightLevel>.01),TEXT("real spotlight visibility matches truck and headlight switch"));
+ }
+ return Ok;
 }

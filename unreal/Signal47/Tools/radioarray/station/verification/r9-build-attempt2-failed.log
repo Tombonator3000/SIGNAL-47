@@ -1,0 +1,57 @@
+00:00.251  blend            | Read blend: "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/1420_AM_station.blend"
+/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_station.py:73: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name); m.diffuse_color=(*color,1); m.use_nodes=True
+Warning: No mesh data to join
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Shell.fbx'
+export finished in 0.0135 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Interior.fbx'
+export finished in 0.1294 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Door.fbx'
+export finished in 0.0241 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Glass.fbx'
+export finished in 0.0068 sec.
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/SM_1420_Mast.fbx'
+export finished in 0.0288 sec.
+INFO Draco is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+05:25:38 | INFO: Starting glTF 2.0 export
+05:25:38 | INFO: Extracting primitive: Cube.054_CleanTriangles
+05:25:38 | INFO: Primitives created: 5
+05:25:38 | INFO: Extracting primitive: Cube.060_CleanTriangles
+05:25:38 | INFO: Primitives created: 1
+05:25:38 | INFO: Extracting primitive: Cube.061_CleanTriangles
+05:25:39 | INFO: Primitives created: 18
+05:25:39 | INFO: Extracting primitive: Cube.840_CleanTriangles
+05:25:39 | INFO: Primitives created: 3
+05:25:39 | INFO: Extracting primitive: Cube_CleanTriangles
+05:25:39 | INFO: Primitives created: 12
+05:25:39 | INFO: Finished glTF 2.0 export in 0.8245863914489746 s
+/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_station.py:412: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  p=m.node_tree.nodes.get('Principled BSDF') if m.use_nodes else None
+/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_station.py:73: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name); m.diffuse_color=(*color,1); m.use_nodes=True
+Traceback (most recent call last):
+  File "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_revision_nine.py", line 21, in <module>
+    runpy.run_path(str(ROOT/'build_station.py'),run_name='__main__')
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_station.py", line 457, in <module>
+    scene.world.color=(.07,.07,.07)
+    ^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'color' and no __dict__ for setting new attributes
+
+
+FBX export starting... '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/exports/axis_probe.fbx'
+export finished in 0.0018 sec.
+
+Error: script failed, file: '/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/radioarray/station/build_revision_nine.py', exiting.
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+
+Blender quit

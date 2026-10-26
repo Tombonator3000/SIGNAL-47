@@ -1,0 +1,2152 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "source_revision": "R1-original-Mesa-Diner-1986",
+  "site_world_three_m": [
+    7979.95,
+    4.309006389843889,
+    1999.95
+  ],
+  "world_yaw_degrees": 0,
+  "mapping": "worldThree=(7979.95+bx,4.309006389843889+bz,1999.95-by)",
+  "units": "metres",
+  "blender_up": "Z",
+  "front": "positiveX",
+  "parts": {
+    "SM_Mesa_Shell": {
+      "triangles": 1476,
+      "bounds_local_m": [
+        [
+          -8.130000114440918,
+          -9.085000038146973,
+          0.0
+        ],
+        [
+          2.2249999046325684,
+          9.085000038146973,
+          4.210000038146973
+        ]
+      ],
+      "materials": [
+        "M_Mesa_Stucco",
+        "M_Mesa_PaintRed",
+        "M_Mesa_TealTile",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Concrete"
+      ],
+      "used_materials": [
+        "M_Mesa_Chrome",
+        "M_Mesa_Concrete",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_PaintRed",
+        "M_Mesa_Stucco",
+        "M_Mesa_TealTile"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 2776,
+      "vertices_after_weld": 816,
+      "lod_triangles": [
+        1476,
+        1112,
+        932
+      ]
+    },
+    "SM_Mesa_Glass": {
+      "triangles": 4,
+      "bounds_local_m": [
+        [
+          1.9869999885559082,
+          -8.9399995803833,
+          0.8999999761581421
+        ],
+        [
+          1.9869999885559082,
+          8.9399995803833,
+          2.5399999618530273
+        ]
+      ],
+      "materials": [
+        "M_Mesa_WindowGlass"
+      ],
+      "used_materials": [
+        "M_Mesa_WindowGlass"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 8,
+      "vertices_after_weld": 8,
+      "lod_triangles": [
+        4,
+        4,
+        4
+      ]
+    },
+    "SM_Mesa_Door": {
+      "triangles": 336,
+      "bounds_local_m": [
+        [
+          -0.04061533883213997,
+          -0.3447345197200775,
+          0.0
+        ],
+        [
+          1.161089301109314,
+          0.044504426419734955,
+          2.247499942779541
+        ]
+      ],
+      "materials": [
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_WindowGlass"
+      ],
+      "used_materials": [
+        "M_Mesa_Chrome",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_TealPaint",
+        "M_Mesa_WindowGlass"
+      ],
+      "site_local_offset_m": [
+        1.899999976158142,
+        -0.5799999833106995,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 596,
+      "vertices_after_weld": 192,
+      "lod_triangles": [
+        336,
+        256,
+        256
+      ]
+    },
+    "SM_Mesa_Interior": {
+      "triangles": 498,
+      "bounds_local_m": [
+        [
+          -7.800000190734863,
+          -8.800000190734863,
+          0.0
+        ],
+        [
+          2.0999999046325684,
+          8.800000190734863,
+          3.122499942779541
+        ]
+      ],
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_CheckerFloor",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Ceiling",
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal"
+      ],
+      "used_materials": [
+        "M_Mesa_Ceiling",
+        "M_Mesa_CheckerFloor",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_TealPaint",
+        "M_Mesa_TealTile",
+        "M_Mesa_WallCream",
+        "M_Mesa_Wood"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 956,
+      "vertices_after_weld": 332,
+      "lod_triangles": [
+        498,
+        466,
+        466
+      ]
+    },
+    "SM_Mesa_Booths": {
+      "triangles": 6736,
+      "bounds_local_m": [
+        [
+          -0.23499999940395355,
+          -7.335000038146973,
+          0.0
+        ],
+        [
+          1.6349999904632568,
+          7.335000038146973,
+          1.2825000286102295
+        ]
+      ],
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Wood",
+        "M_Mesa_Chrome",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee"
+      ],
+      "used_materials": [
+        "M_Mesa_Ceramic",
+        "M_Mesa_Chrome",
+        "M_Mesa_Coffee",
+        "M_Mesa_Formica",
+        "M_Mesa_PaintRed",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Wood"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 11552,
+      "vertices_after_weld": 3624,
+      "lod_triangles": [
+        6736,
+        4384,
+        3104
+      ]
+    },
+    "SM_Mesa_Counter": {
+      "triangles": 7176,
+      "bounds_local_m": [
+        [
+          -4.815000057220459,
+          -5.474999904632568,
+          0.0
+        ],
+        [
+          -3.13100004196167,
+          5.474999904632568,
+          1.4550000429153442
+        ]
+      ],
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_TealTile",
+        "M_Mesa_Vinyl",
+        "M_Mesa_Formica",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_Coffee",
+        "M_Mesa_WindowGlass"
+      ],
+      "used_materials": [
+        "M_Mesa_Ceramic",
+        "M_Mesa_Chrome",
+        "M_Mesa_Coffee",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Formica",
+        "M_Mesa_PaintRed",
+        "M_Mesa_Rubber",
+        "M_Mesa_TealTile",
+        "M_Mesa_Vinyl",
+        "M_Mesa_WindowGlass"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 13040,
+      "vertices_after_weld": 3710,
+      "lod_triangles": [
+        7176,
+        4516,
+        2732
+      ]
+    },
+    "SM_Mesa_Kitchen": {
+      "triangles": 3776,
+      "bounds_local_m": [
+        [
+          -7.75,
+          -8.800000190734863,
+          0.0
+        ],
+        [
+          -5.380000114440918,
+          8.800000190734863,
+          3.140000104904175
+        ]
+      ],
+      "materials": [
+        "M_Mesa_TealTile",
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic"
+      ],
+      "used_materials": [
+        "M_Mesa_Ceramic",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_Rubber",
+        "M_Mesa_TealTile",
+        "M_Mesa_WallCream",
+        "M_Mesa_Wood"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 6508,
+      "vertices_after_weld": 2004,
+      "lod_triangles": [
+        3776,
+        1552,
+        952
+      ]
+    },
+    "SM_Mesa_Fixtures": {
+      "triangles": 3930,
+      "bounds_local_m": [
+        [
+          -5.010000228881836,
+          -8.920000076293945,
+          0.0
+        ],
+        [
+          1.8300000429153442,
+          8.920000076293945,
+          3.0875000953674316
+        ]
+      ],
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_WallCream",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_Ceramic",
+        "M_Mesa_PendantGlow",
+        "M_Mesa_Fluorescent"
+      ],
+      "used_materials": [
+        "M_Mesa_Ceramic",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Fluorescent",
+        "M_Mesa_PendantGlow",
+        "M_Mesa_PrintAtlas",
+        "M_Mesa_Rubber",
+        "M_Mesa_WallCream",
+        "M_Mesa_Wood"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 7156,
+      "vertices_after_weld": 2238,
+      "lod_triangles": [
+        3930,
+        2718,
+        2090
+      ]
+    },
+    "SM_Mesa_Truck": {
+      "triangles": 50292,
+      "bounds_local_m": [
+        [
+          3.737499952316284,
+          12.767000198364258,
+          0.008006337098777294
+        ],
+        [
+          14.666000366210938,
+          15.532999992370605,
+          3.8550000190734863
+        ]
+      ],
+      "materials": [
+        "M_Mesa_TealPaint",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Rubber",
+        "M_Mesa_WindowGlass",
+        "M_Mesa_Headlamp",
+        "M_Mesa_RedLens",
+        "M_Mesa_AmberLens",
+        "M_Mesa_TruckPaint"
+      ],
+      "used_materials": [
+        "M_Mesa_AmberLens",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Headlamp",
+        "M_Mesa_RedLens",
+        "M_Mesa_Rubber",
+        "M_Mesa_TealPaint",
+        "M_Mesa_TruckPaint",
+        "M_Mesa_WindowGlass"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 92720,
+      "vertices_after_weld": 30436,
+      "lod_triangles": [
+        50292,
+        22420,
+        7408
+      ]
+    },
+    "SM_Mesa_Sign": {
+      "triangles": 6688,
+      "bounds_local_m": [
+        [
+          12.625,
+          8.228082656860352,
+          0.0
+        ],
+        [
+          13.375,
+          11.711747169494629,
+          6.185428142547607
+        ]
+      ],
+      "materials": [
+        "M_Mesa_PaintRed",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_SignTeal",
+        "M_Mesa_SignRedGlow",
+        "M_Mesa_SignCyanGlow",
+        "M_Mesa_Concrete"
+      ],
+      "used_materials": [
+        "M_Mesa_Chrome",
+        "M_Mesa_Concrete",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_PaintRed",
+        "M_Mesa_SignCyanGlow",
+        "M_Mesa_SignRedGlow",
+        "M_Mesa_SignTeal"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 11502,
+      "vertices_after_weld": 3500,
+      "lod_triangles": [
+        6688,
+        4872,
+        2928
+      ]
+    },
+    "SM_Mesa_Parking": {
+      "triangles": 4011,
+      "bounds_local_m": [
+        [
+          2.005000114440918,
+          -16.0,
+          -0.10000000149011612
+        ],
+        [
+          16.700000762939453,
+          16.0,
+          1.0364999771118164
+        ]
+      ],
+      "materials": [
+        "M_Mesa_Wood",
+        "M_Mesa_Chrome",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Asphalt",
+        "M_Mesa_Concrete",
+        "M_Mesa_Gravel",
+        "M_Mesa_YardMarking"
+      ],
+      "used_materials": [
+        "M_Mesa_Asphalt",
+        "M_Mesa_Chrome",
+        "M_Mesa_Concrete",
+        "M_Mesa_DarkMetal",
+        "M_Mesa_Gravel",
+        "M_Mesa_Wood",
+        "M_Mesa_YardMarking"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 8011,
+      "vertices_after_weld": 2730,
+      "lod_triangles": [
+        4011,
+        3193,
+        2580
+      ]
+    }
+  },
+  "lods": {
+    "0": {
+      "SM_Mesa_Shell": {
+        "triangles": 1476,
+        "bounds_local_m": [
+          [
+            -8.130000114440918,
+            -9.085000038146973,
+            0.0
+          ],
+          [
+            2.2249999046325684,
+            9.085000038146973,
+            4.210000038146973
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Stucco",
+          "M_Mesa_PaintRed",
+          "M_Mesa_TealTile",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Concrete"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PaintRed",
+          "M_Mesa_Stucco",
+          "M_Mesa_TealTile"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 2776,
+        "vertices_after_weld": 816,
+        "lod_triangles": [
+          1476,
+          1112,
+          932
+        ]
+      },
+      "SM_Mesa_Glass": {
+        "triangles": 4,
+        "bounds_local_m": [
+          [
+            1.9869999885559082,
+            -8.9399995803833,
+            0.8999999761581421
+          ],
+          [
+            1.9869999885559082,
+            8.9399995803833,
+            2.5399999618530273
+          ]
+        ],
+        "materials": [
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 8,
+        "vertices_after_weld": 8,
+        "lod_triangles": [
+          4,
+          4,
+          4
+        ]
+      },
+      "SM_Mesa_Door": {
+        "triangles": 336,
+        "bounds_local_m": [
+          [
+            -0.04061533883213997,
+            -0.3447345197200775,
+            0.0
+          ],
+          [
+            1.161089301109314,
+            0.044504426419734955,
+            2.247499942779541
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          1.899999976158142,
+          -0.5799999833106995,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 596,
+        "vertices_after_weld": 192,
+        "lod_triangles": [
+          336,
+          256,
+          256
+        ]
+      },
+      "SM_Mesa_Interior": {
+        "triangles": 498,
+        "bounds_local_m": [
+          [
+            -7.800000190734863,
+            -8.800000190734863,
+            0.0
+          ],
+          [
+            2.0999999046325684,
+            8.800000190734863,
+            3.122499942779541
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealTile",
+          "M_Mesa_CheckerFloor",
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Ceiling",
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceiling",
+          "M_Mesa_CheckerFloor",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_TealTile",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 956,
+        "vertices_after_weld": 332,
+        "lod_triangles": [
+          498,
+          466,
+          466
+        ]
+      },
+      "SM_Mesa_Booths": {
+        "triangles": 6736,
+        "bounds_local_m": [
+          [
+            -0.23499999940395355,
+            -7.335000038146973,
+            0.0
+          ],
+          [
+            1.6349999904632568,
+            7.335000038146973,
+            1.2825000286102295
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PaintRed",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Formica",
+          "M_Mesa_Wood",
+          "M_Mesa_Chrome",
+          "M_Mesa_Ceramic",
+          "M_Mesa_Coffee"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_Coffee",
+          "M_Mesa_Formica",
+          "M_Mesa_PaintRed",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 11552,
+        "vertices_after_weld": 3624,
+        "lod_triangles": [
+          6736,
+          4384,
+          3104
+        ]
+      },
+      "SM_Mesa_Counter": {
+        "triangles": 7176,
+        "bounds_local_m": [
+          [
+            -4.815000057220459,
+            -5.474999904632568,
+            0.0
+          ],
+          [
+            -3.13100004196167,
+            5.474999904632568,
+            1.4550000429153442
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PaintRed",
+          "M_Mesa_TealTile",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Formica",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic",
+          "M_Mesa_Coffee",
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_Coffee",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Formica",
+          "M_Mesa_PaintRed",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealTile",
+          "M_Mesa_Vinyl",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 13040,
+        "vertices_after_weld": 3710,
+        "lod_triangles": [
+          7176,
+          4516,
+          2732
+        ]
+      },
+      "SM_Mesa_Kitchen": {
+        "triangles": 3776,
+        "bounds_local_m": [
+          [
+            -7.75,
+            -8.800000190734863,
+            0.0
+          ],
+          [
+            -5.380000114440918,
+            8.800000190734863,
+            3.140000104904175
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealTile",
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealTile",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 6508,
+        "vertices_after_weld": 2004,
+        "lod_triangles": [
+          3776,
+          1552,
+          952
+        ]
+      },
+      "SM_Mesa_Fixtures": {
+        "triangles": 3930,
+        "bounds_local_m": [
+          [
+            -5.010000228881836,
+            -8.920000076293945,
+            0.0
+          ],
+          [
+            1.8300000429153442,
+            8.920000076293945,
+            3.0875000953674316
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic",
+          "M_Mesa_PendantGlow",
+          "M_Mesa_Fluorescent"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Fluorescent",
+          "M_Mesa_PendantGlow",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_Rubber",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 7156,
+        "vertices_after_weld": 2238,
+        "lod_triangles": [
+          3930,
+          2718,
+          2090
+        ]
+      },
+      "SM_Mesa_Truck": {
+        "triangles": 50292,
+        "bounds_local_m": [
+          [
+            3.737499952316284,
+            12.767000198364258,
+            0.008006337098777294
+          ],
+          [
+            14.666000366210938,
+            15.532999992370605,
+            3.8550000190734863
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_WindowGlass",
+          "M_Mesa_Headlamp",
+          "M_Mesa_RedLens",
+          "M_Mesa_AmberLens",
+          "M_Mesa_TruckPaint"
+        ],
+        "used_materials": [
+          "M_Mesa_AmberLens",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Headlamp",
+          "M_Mesa_RedLens",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealPaint",
+          "M_Mesa_TruckPaint",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 92720,
+        "vertices_after_weld": 30436,
+        "lod_triangles": [
+          50292,
+          22420,
+          7408
+        ]
+      },
+      "SM_Mesa_Sign": {
+        "triangles": 6688,
+        "bounds_local_m": [
+          [
+            12.625,
+            8.228082656860352,
+            0.0
+          ],
+          [
+            13.375,
+            11.711747169494629,
+            6.185428142547607
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PaintRed",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_SignTeal",
+          "M_Mesa_SignRedGlow",
+          "M_Mesa_SignCyanGlow",
+          "M_Mesa_Concrete"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PaintRed",
+          "M_Mesa_SignCyanGlow",
+          "M_Mesa_SignRedGlow",
+          "M_Mesa_SignTeal"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 11502,
+        "vertices_after_weld": 3500,
+        "lod_triangles": [
+          6688,
+          4872,
+          2928
+        ]
+      },
+      "SM_Mesa_Parking": {
+        "triangles": 4011,
+        "bounds_local_m": [
+          [
+            2.005000114440918,
+            -16.0,
+            -0.10000000149011612
+          ],
+          [
+            16.700000762939453,
+            16.0,
+            1.0364999771118164
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Wood",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Asphalt",
+          "M_Mesa_Concrete",
+          "M_Mesa_Gravel",
+          "M_Mesa_YardMarking"
+        ],
+        "used_materials": [
+          "M_Mesa_Asphalt",
+          "M_Mesa_Chrome",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Gravel",
+          "M_Mesa_Wood",
+          "M_Mesa_YardMarking"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 8011,
+        "vertices_after_weld": 2730,
+        "lod_triangles": [
+          4011,
+          3193,
+          2580
+        ]
+      }
+    },
+    "1": {
+      "SM_Mesa_Shell": {
+        "triangles": 1112,
+        "bounds_local_m": [
+          [
+            -8.130000114440918,
+            -9.085000038146973,
+            0.0
+          ],
+          [
+            2.2249999046325684,
+            9.085000038146973,
+            4.210000038146973
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Stucco",
+          "M_Mesa_PaintRed",
+          "M_Mesa_TealTile",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Concrete"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PaintRed",
+          "M_Mesa_Stucco",
+          "M_Mesa_TealTile"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 2136,
+        "vertices_after_weld": 640
+      },
+      "SM_Mesa_Glass": {
+        "triangles": 4,
+        "bounds_local_m": [
+          [
+            1.9869999885559082,
+            -8.9399995803833,
+            0.8999999761581421
+          ],
+          [
+            1.9869999885559082,
+            8.9399995803833,
+            2.5399999618530273
+          ]
+        ],
+        "materials": [
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 8,
+        "vertices_after_weld": 8
+      },
+      "SM_Mesa_Door": {
+        "triangles": 256,
+        "bounds_local_m": [
+          [
+            -0.04061533883213997,
+            -0.3447345197200775,
+            0.0
+          ],
+          [
+            1.161089301109314,
+            0.044504426419734955,
+            2.247499942779541
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          1.899999976158142,
+          -0.5799999833106995,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 476,
+        "vertices_after_weld": 152
+      },
+      "SM_Mesa_Interior": {
+        "triangles": 466,
+        "bounds_local_m": [
+          [
+            -7.800000190734863,
+            -8.800000190734863,
+            0.0
+          ],
+          [
+            2.0999999046325684,
+            8.800000190734863,
+            3.122499942779541
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealTile",
+          "M_Mesa_CheckerFloor",
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Ceiling",
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceiling",
+          "M_Mesa_CheckerFloor",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_TealTile",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 908,
+        "vertices_after_weld": 316
+      },
+      "SM_Mesa_Booths": {
+        "triangles": 4384,
+        "bounds_local_m": [
+          [
+            -0.23499999940395355,
+            -7.335000038146973,
+            0.0
+          ],
+          [
+            1.6349999904632568,
+            7.335000038146973,
+            1.2825000286102295
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PaintRed",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Formica",
+          "M_Mesa_Wood",
+          "M_Mesa_Chrome",
+          "M_Mesa_Ceramic",
+          "M_Mesa_Coffee"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_Coffee",
+          "M_Mesa_Formica",
+          "M_Mesa_PaintRed",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 7808,
+        "vertices_after_weld": 2416
+      },
+      "SM_Mesa_Counter": {
+        "triangles": 4516,
+        "bounds_local_m": [
+          [
+            -4.815000057220459,
+            -5.474999904632568,
+            0.0
+          ],
+          [
+            -3.13100004196167,
+            5.474999904632568,
+            1.4550000429153442
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PaintRed",
+          "M_Mesa_TealTile",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Formica",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic",
+          "M_Mesa_Coffee",
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_Coffee",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Formica",
+          "M_Mesa_PaintRed",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealTile",
+          "M_Mesa_Vinyl",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 8336,
+        "vertices_after_weld": 2380
+      },
+      "SM_Mesa_Kitchen": {
+        "triangles": 1552,
+        "bounds_local_m": [
+          [
+            -7.75,
+            -8.800000190734863,
+            0.0
+          ],
+          [
+            -5.380000114440918,
+            8.800000190734863,
+            3.140000104904175
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealTile",
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealTile",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 2764,
+        "vertices_after_weld": 868
+      },
+      "SM_Mesa_Fixtures": {
+        "triangles": 2718,
+        "bounds_local_m": [
+          [
+            -5.010000228881836,
+            -8.920000076293945,
+            0.0
+          ],
+          [
+            1.8300000429153442,
+            8.920000076293945,
+            3.0875000953674316
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic",
+          "M_Mesa_PendantGlow",
+          "M_Mesa_Fluorescent"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Fluorescent",
+          "M_Mesa_PendantGlow",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_Rubber",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 5040,
+        "vertices_after_weld": 1601
+      },
+      "SM_Mesa_Truck": {
+        "triangles": 22420,
+        "bounds_local_m": [
+          [
+            3.737499952316284,
+            12.767000198364258,
+            0.008006337098777294
+          ],
+          [
+            14.666000366210938,
+            15.532999992370605,
+            3.8550000190734863
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_WindowGlass",
+          "M_Mesa_Headlamp",
+          "M_Mesa_RedLens",
+          "M_Mesa_AmberLens",
+          "M_Mesa_TruckPaint"
+        ],
+        "used_materials": [
+          "M_Mesa_AmberLens",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Headlamp",
+          "M_Mesa_RedLens",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealPaint",
+          "M_Mesa_TruckPaint",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 41396,
+        "vertices_after_weld": 14096
+      },
+      "SM_Mesa_Sign": {
+        "triangles": 4872,
+        "bounds_local_m": [
+          [
+            12.625,
+            8.231019020080566,
+            0.0
+          ],
+          [
+            13.375,
+            11.708833694458008,
+            6.184700965881348
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PaintRed",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_SignTeal",
+          "M_Mesa_SignRedGlow",
+          "M_Mesa_SignCyanGlow",
+          "M_Mesa_Concrete"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PaintRed",
+          "M_Mesa_SignCyanGlow",
+          "M_Mesa_SignRedGlow",
+          "M_Mesa_SignTeal"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 8778,
+        "vertices_after_weld": 2594
+      },
+      "SM_Mesa_Parking": {
+        "triangles": 3193,
+        "bounds_local_m": [
+          [
+            2.005000114440918,
+            -16.0,
+            -0.10000000149011612
+          ],
+          [
+            16.700000762939453,
+            16.0,
+            1.0364999771118164
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Wood",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Asphalt",
+          "M_Mesa_Concrete",
+          "M_Mesa_Gravel",
+          "M_Mesa_YardMarking"
+        ],
+        "used_materials": [
+          "M_Mesa_Asphalt",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Gravel",
+          "M_Mesa_Wood",
+          "M_Mesa_YardMarking"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 6301,
+        "vertices_after_weld": 2122
+      }
+    },
+    "2": {
+      "SM_Mesa_Shell": {
+        "triangles": 932,
+        "bounds_local_m": [
+          [
+            -8.130000114440918,
+            -9.085000038146973,
+            0.0
+          ],
+          [
+            2.2249999046325684,
+            9.085000038146973,
+            4.210000038146973
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Stucco",
+          "M_Mesa_PaintRed",
+          "M_Mesa_TealTile",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Concrete"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PaintRed",
+          "M_Mesa_Stucco",
+          "M_Mesa_TealTile"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 1816,
+        "vertices_after_weld": 552
+      },
+      "SM_Mesa_Glass": {
+        "triangles": 4,
+        "bounds_local_m": [
+          [
+            1.9869999885559082,
+            -8.9399995803833,
+            0.8999999761581421
+          ],
+          [
+            1.9869999885559082,
+            8.9399995803833,
+            2.5399999618530273
+          ]
+        ],
+        "materials": [
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 8,
+        "vertices_after_weld": 8
+      },
+      "SM_Mesa_Door": {
+        "triangles": 256,
+        "bounds_local_m": [
+          [
+            -0.04061533883213997,
+            -0.3447345197200775,
+            0.0
+          ],
+          [
+            1.161089301109314,
+            0.044504426419734955,
+            2.247499942779541
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          1.899999976158142,
+          -0.5799999833106995,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 476,
+        "vertices_after_weld": 152
+      },
+      "SM_Mesa_Interior": {
+        "triangles": 466,
+        "bounds_local_m": [
+          [
+            -7.800000190734863,
+            -8.800000190734863,
+            0.0
+          ],
+          [
+            2.0999999046325684,
+            8.800000190734863,
+            3.122499942779541
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealTile",
+          "M_Mesa_CheckerFloor",
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Ceiling",
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceiling",
+          "M_Mesa_CheckerFloor",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_TealPaint",
+          "M_Mesa_TealTile",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 908,
+        "vertices_after_weld": 316
+      },
+      "SM_Mesa_Booths": {
+        "triangles": 3104,
+        "bounds_local_m": [
+          [
+            -0.23499999940395355,
+            -7.335000038146973,
+            0.0
+          ],
+          [
+            1.6349999904632568,
+            7.335000038146973,
+            1.2825000286102295
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Vinyl",
+          "M_Mesa_Formica",
+          "M_Mesa_Wood",
+          "M_Mesa_Chrome",
+          "M_Mesa_Ceramic",
+          "M_Mesa_Coffee"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_Coffee",
+          "M_Mesa_Formica",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 5664,
+        "vertices_after_weld": 1728
+      },
+      "SM_Mesa_Counter": {
+        "triangles": 2732,
+        "bounds_local_m": [
+          [
+            -4.815000057220459,
+            -5.474999904632568,
+            0.0
+          ],
+          [
+            -3.13100004196167,
+            5.474999904632568,
+            1.4550000429153442
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealTile",
+          "M_Mesa_Vinyl",
+          "M_Mesa_Formica",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic",
+          "M_Mesa_Coffee",
+          "M_Mesa_WindowGlass"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_Coffee",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Formica",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealTile",
+          "M_Mesa_Vinyl",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 5048,
+        "vertices_after_weld": 1488
+      },
+      "SM_Mesa_Kitchen": {
+        "triangles": 952,
+        "bounds_local_m": [
+          [
+            -7.75,
+            -8.800000190734863,
+            0.0
+          ],
+          [
+            -5.380000114440918,
+            8.800000190734863,
+            3.140000104904175
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealTile",
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealTile",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 1732,
+        "vertices_after_weld": 556
+      },
+      "SM_Mesa_Fixtures": {
+        "triangles": 2090,
+        "bounds_local_m": [
+          [
+            -5.010000228881836,
+            -8.920000076293945,
+            0.0
+          ],
+          [
+            1.8300000429153442,
+            8.920000076293945,
+            3.0875000953674316
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Wood",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_WallCream",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_Ceramic",
+          "M_Mesa_PendantGlow",
+          "M_Mesa_Fluorescent"
+        ],
+        "used_materials": [
+          "M_Mesa_Ceramic",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Fluorescent",
+          "M_Mesa_PendantGlow",
+          "M_Mesa_PrintAtlas",
+          "M_Mesa_Rubber",
+          "M_Mesa_WallCream",
+          "M_Mesa_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 3904,
+        "vertices_after_weld": 1253
+      },
+      "SM_Mesa_Truck": {
+        "triangles": 7408,
+        "bounds_local_m": [
+          [
+            3.737499952316284,
+            12.767000198364258,
+            0.009999999776482582
+          ],
+          [
+            14.666000366210938,
+            15.532999992370605,
+            3.8550000190734863
+          ]
+        ],
+        "materials": [
+          "M_Mesa_TealPaint",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Rubber",
+          "M_Mesa_WindowGlass",
+          "M_Mesa_Headlamp",
+          "M_Mesa_RedLens",
+          "M_Mesa_AmberLens",
+          "M_Mesa_TruckPaint"
+        ],
+        "used_materials": [
+          "M_Mesa_AmberLens",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Headlamp",
+          "M_Mesa_RedLens",
+          "M_Mesa_Rubber",
+          "M_Mesa_TealPaint",
+          "M_Mesa_TruckPaint",
+          "M_Mesa_WindowGlass"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 14068,
+        "vertices_after_weld": 4288
+      },
+      "SM_Mesa_Sign": {
+        "triangles": 2928,
+        "bounds_local_m": [
+          [
+            12.625,
+            8.228082656860352,
+            0.0
+          ],
+          [
+            13.375,
+            11.711747169494629,
+            6.185428142547607
+          ]
+        ],
+        "materials": [
+          "M_Mesa_PaintRed",
+          "M_Mesa_Chrome",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_SignTeal",
+          "M_Mesa_SignRedGlow",
+          "M_Mesa_SignCyanGlow",
+          "M_Mesa_Concrete"
+        ],
+        "used_materials": [
+          "M_Mesa_Chrome",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_PaintRed",
+          "M_Mesa_SignCyanGlow",
+          "M_Mesa_SignRedGlow",
+          "M_Mesa_SignTeal"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 5814,
+        "vertices_after_weld": 1604
+      },
+      "SM_Mesa_Parking": {
+        "triangles": 2580,
+        "bounds_local_m": [
+          [
+            2.005000114440918,
+            -16.0,
+            -0.10000000149011612
+          ],
+          [
+            16.700000762939453,
+            16.0,
+            1.0364999771118164
+          ]
+        ],
+        "materials": [
+          "M_Mesa_Wood",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Asphalt",
+          "M_Mesa_Concrete",
+          "M_Mesa_Gravel",
+          "M_Mesa_YardMarking"
+        ],
+        "used_materials": [
+          "M_Mesa_Asphalt",
+          "M_Mesa_Concrete",
+          "M_Mesa_DarkMetal",
+          "M_Mesa_Gravel",
+          "M_Mesa_Wood",
+          "M_Mesa_YardMarking"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 5130,
+        "vertices_after_weld": 1601
+      }
+    }
+  },
+  "total_LOD0_triangles": 84923,
+  "collision": "Original diner zones/proxies preserved; authored visual meshes no collision except explicit opened door proxy",
+  "axis_probe_source_center_m": [
+    2,
+    4,
+    6
+  ],
+  "axis_probe_source_dimensions_m": [
+    0.2,
+    0.4,
+    0.6
+  ],
+  "axis_probe_expected_UE_center_cm": [
+    200,
+    -400,
+    600
+  ],
+  "door": {
+    "pivot_site_m": [
+      1.9,
+      -0.58,
+      0
+    ],
+    "baked_open_angle_degrees": -105,
+    "runtime_additional_yaw_degrees": 0,
+    "opening_y_m": [
+      -0.6,
+      0.6
+    ]
+  },
+  "protected_dynamic_objects": [
+    "coffeePot",
+    "cup",
+    "regularCup",
+    "clipping",
+    "payphoneHandset",
+    "waitress",
+    "driver"
+  ],
+  "top_authorities_m": {
+    "floor": 0,
+    "counter": 1.0,
+    "booth_table": 0.8025,
+    "bench": 0.46
+  },
+  "originality": "All geometry/maps/signage original; shared original substation mesh recipe read-only."
+}

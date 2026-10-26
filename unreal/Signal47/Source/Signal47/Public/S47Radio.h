@@ -97,6 +97,7 @@ private:
 		bool bOffBefore = false;
 	} Cfg;
 	double Len = std::numeric_limits<double>::infinity(), Sc = 0, Calm = 10;
+	bool bEveningProgramme = false;
 	int32 LoopAt = 0, Said = -1, SegNo = 0, TrackSkip = -1;
 	FString After = TEXT("loop");
 	TOptional<double> Prev, AudioAt;
@@ -207,6 +208,7 @@ public:
 	double Clock = 0, Time = 0;
 	TFunction<void(const FString&, const FString&, const FString&, TOptional<double>)> OnLine;
 	bool bBoyCalled = false;
+	bool bEveningTimeline = false;
 	FS47RadioVoice HostBank, CallerBank;
 	bool HostVoice() const { return bRecordedHost; }
 	bool CallerVoice() const { return bRecordedCallers; }

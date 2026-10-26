@@ -106,6 +106,8 @@ private:
 	bool ModalOpen() const;
 };
 
+namespace S47WidgetInput { bool SelfTest(TArray<FString>& Lines); }
+
 // A paper (mock/document.html): the sheet large and a little turned over the blurred game, as it is
 // written (typed, hand or printout; a photograph or a map is the picture), with the side panel: what
 // it is, its title, its description (the transcript) and the actions (READ ALOUD with V when a reader
@@ -114,7 +116,7 @@ private:
 class SS47Document : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47Document) {}
+	SLATE_BEGIN_ARGS(SS47Document) : _UI(nullptr) {}
 		SLATE_ARGUMENT(FS47Doc, Doc)
 		SLATE_ARGUMENT(TFunction<void()>, OnClose)
 		SLATE_ARGUMENT(class US47UI*, UI) // the readers (Read document, Read description); none: no reading
@@ -123,6 +125,8 @@ public:
 	virtual ~SS47Document() override;
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+
+	static bool SelfTest(TArray<FString>& Lines);
 
 private:
 	TFunction<void()> OnClose;
@@ -199,6 +203,9 @@ public:
 	/** The command line (the screen view gives it the keys). */
 	TSharedPtr<SWidget> Line() const;
 
+	virtual FReply OnPreviewKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+	static bool SelfTest(TArray<FString>& Lines);
+
 private:
 	AS47Story* Story = nullptr;
 	TFunction<void()> OnClose;
@@ -206,6 +213,8 @@ private:
 	TSharedPtr<SScrollBox> Scroll;
 	TSharedPtr<class SEditableText> Input;
 	TSharedPtr<class SWrapBox> Buttons;
+	TArray<FString> PadCommands;
+	int32 PadCommand = INDEX_NONE;
 	void Exec(const FString& Cmd);
 	void RebuildButtons();
 };

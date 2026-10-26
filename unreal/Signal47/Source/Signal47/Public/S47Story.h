@@ -5,6 +5,7 @@
 #include "S47Docs.h"
 #include "S47Ops.h"
 #include "S47Rx.h"
+#include "S47Timeline.h"
 #include "S47Story.generated.h"
 
 class AS47Web;
@@ -27,6 +28,10 @@ struct FS47NightState
 	TArray<FString> Papers; bool bK3Open = false; TArray<FS47LogLine> Log; TOptional<double> SolveAt; bool bJacket = false;
 	TSharedPtr<class FJsonObject> Array;
 	TOptional<double> Hondo;
+	// Acquisition stamp of the actual paper, distinct from solve time and the later array event.
+	TOptional<double> PrintoutAt;
+	/** (Unreal only, Tom's request) T. Vega's seven keyed on the processor: TAPE A has come (tapeA). */
+	bool bTapeA = false;
 };
 // The array put back on the schedule, as the status screen shows it while a try runs
 // (story/arrayBack.ts status()): its mode, its bottom line (empty: none), and whether they are amber.
@@ -43,6 +48,17 @@ public:
 
 	void Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio);
 	void Start();
+ // Set before reset/load. Absent timelineVersion in a saved case means legacy.
+ bool bEveningTimeline = false;
+ bool bOpeningHeld = false;
+ void BeginEveningShift();
+ // Stable early-shift checkpoint: before the timed survey starts.
+ TSharedPtr<class FJsonObject> SaveRoutine() const;
+ void RestoreRoutine(const TSharedPtr<class FJsonObject>& Saved);
+ static FS47Doc RestorePrintout(const TSharedPtr<class FJsonObject>& SavedNs, double FallbackClock, bool bSavedCase);
+ static bool TimelineSelfTest(TArray<FString>& Out);
+ double TimelineTime(double Legacy) const;
+ FString TimelineText(const FString& Text) const { return S47Timeline::ResidualText(Text, bEveningTimeline); }
 	virtual void Reset() override { ResetAll(); } // Prologue.reset: back to the start of the night, every chapter with it
 	// Jump straight to a beat, as the web version's Continue and tests do: shift, residual,
 	// locked, printed, countdown, event.

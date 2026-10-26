@@ -1,4 +1,5 @@
 #include "S47Town.h"
+#include "S47Timeline.h"
 
 #include "Components/MaterialBillboardComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -84,7 +85,31 @@ void FS47Town::GlowColor(int32 I, uint32 C)
 	}
 }
 
-void FS47Town::SetCutout(bool bOn) { bCutoutOut = bOn; Cutout.SetVisible(bOn); }
+void FS47Town::SetCutout(bool bOn) { if (bAnomalyCutoutOwned) return; bCutoutOut = bOn; Cutout.SetVisible(bOn); }
+FVector FS47Town::PilotCutoutAt(bool bMoved) const
+{
+	// Near the shuttered studio on the return visit, within the same walkable street segment.
+	const double X = bMoved ? 17.8 : 20.31, Z = bMoved ? 2044.0 : 2062.3;
+	double Y = S47RoadTerrain::SurfaceY(X, Z);
+	if (!bMoved)
+	{
+		// The building floor is level while the pavement slopes: use the actual window anchor.
+		const FS47Obj Window = Proxy(TEXT("souvenir"));
+		Y = Window ? Group.WorldToLocal(Window.WorldPosition()).Y - .62 : Y + 1.22;
+	}
+	return FVector(X, Y, Z);
+}
+void FS47Town::SetPilotCutout(bool bMoved)
+{
+	bAnomalyCutoutOwned = true; bCutoutOut = bMoved;
+	Cutout.SetPosition(PilotCutoutAt(bMoved)); Cutout.SetRotY(PI / 2); Cutout.SetVisible(true);
+}
+void FS47Town::ReleasePilotCutout()
+{
+	bAnomalyCutoutOwned = false; bCutoutOut = false;
+	Cutout.SetPosition(FVector(CutoutAt.X, S47RoadTerrain::SurfaceY(CutoutAt.X, CutoutAt.Z), CutoutAt.Z));
+	Cutout.SetRotY(0); Cutout.SetVisible(false);
+}
 TArray<FVector> FS47Town::WaveOrder() const
 {
 	TArray<FVector> Out; for (int32 I = Lamps.Num() - 1; I >= 0; --I) Out.Add(FVector(-3.9 + Origin.X, Origin.Y, Lamps[I].Z + Origin.Z)); return Out;
@@ -126,22 +151,22 @@ void FS47Town::SetPaper(bool bOn) { bPaperIn = bOn; Paper.SetVisible(bOn); }
 void FS47Town::Update(double T, double Clock, bool bHold)
 {
 	const double Day = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400, 86400.0);
-	const bool bDeputy = Day < 2 * 3600 + 45 * 60 || Day >= 4 * 3600 + 30 * 60;
+	const bool bDeputy = S47Timeline::DeputyOnDuty(Clock);
 	if (bDeputy != bDeputyIn && !(bDeputy && bCarOut && bHold)) SetDeputy(bDeputy);
 	const bool bPaper = Day >= 4 * 3600 + 45 * 60 && Day < 12 * 3600;
 	if (bPaper != bPaperIn) SetPaper(bPaper);
-	const bool bWoman = Day < 4 * 3600 + 50 * 60, bSmoker = Day < 4 * 3600 + 10 * 60;
+	const bool bWoman = S47Timeline::NightPerson(Clock, 4 * 3600 + 50 * 60), bSmoker = S47Timeline::NightPerson(Clock, 4 * 3600 + 10 * 60);
 	if (bWoman != bWomanIn || bSmoker != bSmokerIn) SetPeople(bWoman, bSmoker);
 	const bool bDraw = bSmoker && FMath::Fmod(T, 9.0) < 1.4;
 	if (bSmoker && bDraw != bDrawing) { bDrawing = bDraw; GlowColor(37, bDraw ? 0xff6a20 : 0x5a2408); }
 	for (int32 I = 0; I < Lamps.Num(); ++I)
 	{
 		FLamp& L = Lamps[I]; const int32 K = 6 - I; const double W = T - WaveT0 - K * WAVE_STEP;
-		const bool bOn = Day < L.Off && !(W >= 0 && W < WAVE_HOLD); if (bOn == L.bOn) continue; L.bOn = bOn;
+		const bool bOn = (Day >= 18 * 3600 || Day < L.Off) && !(W >= 0 && W < WAVE_HOLD); if (bOn == L.bOn) continue; L.bOn = bOn;
 		SetFlood(L.Slot, bOn ? 13 : 0); GlowColor(2 + I * 2, bOn ? 0xffb060 : 0); GlowColor(3 + I * 2, bOn ? 0x2c1806 : 0);
 		SetPanel(TEXT("lamps"), bOn ? 1 : 0.05, L.Quad);
 	}
-	const bool bAir = Day < 4 * 3600;
+	const bool bAir = S47Timeline::LocalOnAir(Clock);
 	SetPanel(TEXT("onAir"), bAir ? 1 : 0);
 	const bool bHaveEmpty = !M || !M->Web || M->Web->Vec(TEXT("world.town.runtime.hasStudioEmpty"), FVector(1, 0, 0)).X != 0;
 	if (!bHaveEmpty) SetPanel(TEXT("studio"), bAir ? 1 : 0.3);
@@ -150,7 +175,7 @@ void FS47Town::Update(double T, double Clock, bool bHold)
 	const bool bBlink = FMath::Fmod(T, 1.1) < 0.6;
 	if (bBlink != bBlinkOn) { bBlinkOn = bBlink; SetPanel(TEXT("blink"), bBlink ? 1 : 0.06); SetFlood(0, bBlink ? 5 : 0); GlowColor(0, bBlink ? 0xffb420 : 0); GlowColor(1, bBlink ? 0x2a1a04 : 0); }
 	auto Flick = [&](double Ph) { const double N = S47RoadShape::Hash(FMath::FloorToDouble(T * 8 + Ph), Ph); return 0.55 + 0.3 * N + 0.15 * FMath::Sin(T * 11 + Ph); };
-	const double Tv1 = Day < 3 * 3600 + 40 * 60 ? Flick(1) : 0;
+	const double Tv1 = (Day >= 18 * 3600 || Day < 3 * 3600 + 40 * 60) ? Flick(1) : 0;
 	SetPanel(TEXT("tv1"), Tv1 != 0 ? Tv1 : 0.05); SetFlood(14, Tv1 * 3); GlowColor(32, Tv1 != 0 ? 0x101828 : 0);
 	const double Tv2 = Flick(7); SetPanel(TEXT("tv2"), Tv2); SetFlood(15, Tv2 * 3);
 	const double St = S47RoadShape::Hash(FMath::FloorToDouble(T * 9), 3) > 0.985 ? 0.45 : 0.97 + 0.03 * FMath::Sin(T * 31);
@@ -164,6 +189,7 @@ void FS47Town::Shine(int32 Src, const TArray<int32>& Slots, double K)
 	if (!M || !M->Web) return;
 	for (int32 J = 0; J < 3; ++J)
 	{
+		M->Web->SuppressFloodLight(Flood, 17 + J);
 		FVector P; float W = 0; FLinearColor C;
 		if (Src < 0 || !Slots.IsValidIndex(J) || Slots[J] < 0 || !M->Web->FloodPool(Src, Slots[J], P, W, C)) { M->Web->SetFlood(Flood, 17 + J, 0); continue; }
 		M->Web->SetFloodPool(Flood, 17 + J, P, W, C * float(K), false);
@@ -187,6 +213,7 @@ void FS47Town::LampsTo(int32 Out, const TArray<int32>& Slots, const FVector& At,
 	for (int32 J = 0; J < Slots.Num(); ++J)
 	{
 		if (Slots[J] < 0) continue;
+		M->Web->SuppressFloodLight(Out, Slots[J]);
 		if (!Near.IsValidIndex(J)) { M->Web->SetFlood(Out, Slots[J], 0); continue; }
 		const FCandidate& A = Near[J]; M->Web->SetFloodPool(Out, Slots[J], A.P, A.W, A.C * float(K), false);
 	}

@@ -111,6 +111,9 @@ public:
 	/** What the processor shows: 'THREADING' | 'PLAY' | 'PULSE 4/7' | 'NO SIGNAL' | 'RELAY' | 'RANGE' ('' before it plays). */
 	FString State() const;
 	void Draw();
+	/** (Unreal: the VU unit on the processor reads it, S47ConsoleKit.h) The level of what comes off the
+	 *  tape since the last call (RMS): the tape's chain and the pulse group's playback. */
+	double Level();
 
 	static bool SelfTest(TArray<FString>& Lines);
 
@@ -120,6 +123,7 @@ private:
 	double Spin = 0;
 	double ScrT = 0;
 	TSharedPtr<FS47DecoderPlayer> Dec;
+	TSharedPtr<class FS47LevelMeter> Meter;
 	TArray<TSharedPtr<FS47AudioNode>> Nodes;
 	TArray<TSharedPtr<FS47ScheduledSourceNode>> Srcs;
 	TSharedPtr<FS47GainNode> Tape;

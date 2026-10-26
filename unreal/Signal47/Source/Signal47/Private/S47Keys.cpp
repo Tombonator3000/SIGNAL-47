@@ -1,4 +1,5 @@
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 
 #include "Containers/Ticker.h"
 #include "Dom/JsonObject.h"
@@ -34,7 +35,7 @@ namespace S47KeysLocal
 			// the two are never wanted at once, S47Keys::MayShare)
 			A(TEXT("jump"), TEXT("Jump"), Foot, TEXT("Jump. With the camera raised the same key is the shutter."), EKeys::SpaceBar),
 			A(TEXT("use"), TEXT("Use"), Foot, TEXT("Use what the crosshair is on. Put a paper back. With the camera raised it is the shutter; in the truck it turns the key, works the radio or gets you out. A left click does the same."), EKeys::E, EKeys::Enter),
-			A(TEXT("alt"), TEXT("Second choice"), Foot, TEXT("The other choice at the prompt, when one is offered: out of the truck while Use turns the key."), EKeys::Q),
+			A(TEXT("alt"), TEXT("Second choice / takeaway"), Foot, TEXT("Manage takeaway on foot: set down, stow, take out or discard. At a prompt, choose the other action; in the truck, get out while Use turns the key."), EKeys::Q),
 			A(TEXT("zoom"), TEXT("Closer look"), Foot, TEXT("Hold for a closer look at what the crosshair is on."), EKeys::RightMouseButton),
 			A(TEXT("describe"), TEXT("Read description"), Foot, TEXT("Read the current or last description. Press again to stop."), EKeys::V),
 			A(TEXT("light"), TEXT("Flashlight"), Foot, TEXT("The flashlight, once you have it."), EKeys::F),
@@ -54,6 +55,7 @@ namespace S47KeysLocal
 	{
 		TArray<S47Keys::FAction> Actions = MakeActions();
 		TMap<FName, TStaticArray<FKey, 2>> Map;
+		uint32 Changes = 0;     // counted up whenever a key changes (S47Keys::Changes)
 		FState() { for (const S47Keys::FAction& A : Actions) { TStaticArray<FKey, 2> K; K[0] = A.Default[0]; K[1] = A.Default[1]; Map.Add(A.Id, K); } }
 	};
 	FState& St() { static FState S; return S; }
@@ -102,27 +104,35 @@ TArray<FKey, TInlineAllocator<2>> S47Keys::KeysOf(FName Action)
 {
 	TArray<FKey, TInlineAllocator<2>> Out;
 	if (const TStaticArray<FKey, 2>* K = S47KeysLocal::Slots(Action)) for (const FKey& X : *K) if (X.IsValid()) Out.Add(X);
+	const FKey Pad = S47Gamepad::Key(Action);
+	if (Pad.IsValid()) Out.Add(Pad);
+	if (Action == TEXT("notebook")) Out.Add(EKeys::Gamepad_LeftShoulder);
 	return Out;
 }
 
 bool S47Keys::Is(FName Action, const FKey& K)
 {
 	const TStaticArray<FKey, 2>* S = S47KeysLocal::Slots(Action);
-	return S && K.IsValid() && ((*S)[0] == K || (*S)[1] == K);
+	return K.IsValid() && ((S && ((*S)[0] == K || (*S)[1] == K)) || S47Gamepad::Key(Action) == K || (Action == TEXT("notebook") && K == EKeys::Gamepad_LeftShoulder));
 }
 
 bool S47Keys::Down(const APlayerController* PC, FName Action)
 {
 	if (!PC) return false;
-	for (const FKey& K : KeysOf(Action)) if (PC->IsInputKeyDown(K)) return true;
+	for (const FKey& K : KeysOf(Action)) if (K.IsGamepadKey() ? S47Gamepad::Down(K) : PC->IsInputKeyDown(K)) return true;
 	return false;
 }
 
 bool S47Keys::Pressed(const APlayerController* PC, FName Action)
 {
 	if (!PC) return false;
-	for (const FKey& K : KeysOf(Action)) if (PC->WasInputKeyJustPressed(K)) return true;
+	for (const FKey& K : KeysOf(Action)) if (WasPressed(PC, K)) return true;
 	return false;
+}
+
+bool S47Keys::WasPressed(const APlayerController* PC, const FKey& K)
+{
+	return K.IsGamepadKey() ? S47Gamepad::Pressed(K) : PC && PC->WasInputKeyJustPressed(K);
 }
 
 FString S47Keys::Short(const FKey& K)
@@ -155,14 +165,25 @@ FString S47Keys::Name(const FKey& K)
 
 FString S47Keys::Label(FName Action)
 {
-	const TArray<FKey, TInlineAllocator<2>> K = KeysOf(Action);
-	return K.Num() ? Short(K[0]) : FString();
+	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
+	// KeysOf also contains fixed controller aliases; keyboard hints use only the saved slots.
+	for (int32 Slot = 0; Slot < 2; ++Slot)
+	{
+		const FKey K = Key(Action, Slot);
+		if (K.IsValid()) return Short(K);
+	}
+	return FString();
 }
 
 FString S47Keys::Said(FName Action)
 {
-	const TArray<FKey, TInlineAllocator<2>> K = KeysOf(Action);
-	return K.Num() ? Name(K[0]) : FString();
+	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
+	for (int32 Slot = 0; Slot < 2; ++Slot)
+	{
+		const FKey K = Key(Action, Slot);
+		if (K.IsValid()) return Name(K);
+	}
+	return FString();
 }
 
 bool S47Keys::Bindable(const FKey& K)
@@ -188,6 +209,7 @@ S47Keys::EBind S47Keys::Bind(FName Action, int32 Slot, const FKey& K, FName* Oth
 	{
 		if (1 - Slot == 0 && A->bFixedFirst) return EBind::Fixed;
 		(*S)[1 - Slot] = Old; (*S)[Slot] = K;
+		++S47KeysLocal::St().Changes;
 		if (Other) *Other = Action;
 		return EBind::Swapped;
 	}
@@ -210,6 +232,7 @@ S47Keys::EBind S47Keys::Bind(FName Action, int32 Slot, const FKey& K, FName* Oth
 		}
 	}
 	(*S)[Slot] = K;
+	++S47KeysLocal::St().Changes;
 	if (Takes.IsEmpty())
 	{
 		if (Other) *Other = Sharer;
@@ -241,6 +264,7 @@ void S47Keys::Clear(FName Action, int32 Slot)
 	TStaticArray<FKey, 2>* S = S47KeysLocal::Slots(Action);
 	if (!A || !S || Slot < 0 || Slot > 1 || (Slot == 0 && A->bFixedFirst)) return;
 	(*S)[Slot] = EKeys::Invalid;
+	++S47KeysLocal::St().Changes;
 }
 
 void S47Keys::Reset(FName Action)
@@ -262,11 +286,13 @@ void S47Keys::Reset(FName Action)
 		}
 		(*S)[i] = D;
 	}
+	++S47KeysLocal::St().Changes;
 }
 
 void S47Keys::ResetAll()
 {
 	for (const FAction& A : S47KeysLocal::St().Actions) { TStaticArray<FKey, 2>& K = S47KeysLocal::St().Map.FindChecked(A.Id); K[0] = A.Default[0]; K[1] = A.Default[1]; }
+	++S47KeysLocal::St().Changes;
 }
 
 bool S47Keys::IsDefault(FName Action)
@@ -308,7 +334,10 @@ void S47Keys::Load(const TSharedPtr<FJsonObject>& O)
 		}
 	}
 	S47KeysLocal::Normalize();
+	++S47KeysLocal::St().Changes;
 }
+
+uint32 S47Keys::Changes() { return S47KeysLocal::St().Changes + S47Gamepad::Changes(); }
 
 bool S47Keys::SelfTest(TArray<FString>& Out)
 {
@@ -360,6 +389,11 @@ bool S47Keys::SelfTest(TArray<FString>& Out)
 		Load(Both);
 		Check(Is(TEXT("shutter"), EKeys::SpaceBar) && Is(TEXT("jump"), EKeys::SpaceBar) && !Is(TEXT("describe"), EKeys::SpaceBar), TEXT("a file with both keeps both, and no third"));
 	}
+	// A user may deliberately leave both keyboard slots empty while Xbox remains usable.
+	Clear(TEXT("camera"), 0); Clear(TEXT("camera"), 1);
+	Check(Label(TEXT("camera")).IsEmpty() && Said(TEXT("camera")).IsEmpty(), TEXT("fully unbound keyboard hints stay empty rather than showing an Xbox alias"));
+	Check(Is(TEXT("camera"), EKeys::Gamepad_FaceButton_Left) && KeysOf(TEXT("camera")).Contains(EKeys::Gamepad_FaceButton_Left) && S47Gamepad::Label(TEXT("camera")) == TEXT("X"), TEXT("clearing keyboard slots preserves the fixed Xbox camera binding and label"));
+	Check(Bind(TEXT("camera"), 1, EKeys::K) == EBind::Done && Label(TEXT("camera")) == TEXT("K") && Said(TEXT("camera")) == TEXT("K"), TEXT("keyboard hints fall through an empty first slot to the second saved key"));
 	Load(Before);
 	return bOk;
 }

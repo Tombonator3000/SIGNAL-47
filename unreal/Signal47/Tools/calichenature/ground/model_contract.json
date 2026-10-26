@@ -1,0 +1,1062 @@
+{
+  "anchor_world_three_m": [
+    8000.0,
+    0.0,
+    2060.0
+  ],
+  "region_road_local_xz": [
+    -600.0,
+    600.0,
+    1650.0,
+    2450.0
+  ],
+  "collision": "NoCollision; unchanged native floor/road remains authoritative",
+  "lift_metres": 0.016,
+  "parts": {
+    "SM_CN_Terrain_0_0": {
+      "triangles": 799,
+      "bounds_local_m": [
+        [
+          -600.0,
+          210.0,
+          -2.463241132736206
+        ],
+        [
+          -400.0,
+          410.0,
+          1.0883766088485718
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_0_1": {
+      "triangles": 800,
+      "bounds_local_m": [
+        [
+          -600.0,
+          10.0,
+          -1.964916142463684
+        ],
+        [
+          -400.0,
+          210.0,
+          4.647003379821777
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_0_2": {
+      "triangles": 800,
+      "bounds_local_m": [
+        [
+          -600.0,
+          -190.0,
+          -0.2250711795091629
+        ],
+        [
+          -400.0,
+          10.0,
+          8.573585716247559
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_0_3": {
+      "triangles": 800,
+      "bounds_local_m": [
+        [
+          -600.0,
+          -390.0,
+          1.7014360103607178
+        ],
+        [
+          -400.0,
+          -190.0,
+          10.595975128173828
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_1_0": {
+      "triangles": 800,
+      "bounds_local_m": [
+        [
+          -400.0,
+          210.0,
+          -1.092267068862915
+        ],
+        [
+          -200.0,
+          410.0,
+          2.4562966499328613
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_1_1": {
+      "triangles": 800,
+      "bounds_local_m": [
+        [
+          -400.0,
+          10.0,
+          1.0883766088485718
+        ],
+        [
+          -200.0,
+          210.0,
+          6.867704120635986
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 1,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_1_2": {
+      "triangles": 800,
+      "bounds_local_m": [
+        [
+          -400.0,
+          -190.0,
+          4.647003379821777
+        ],
+        [
+          -200.0,
+          10.0,
+          12.316200462341309
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 1,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_1_3": {
+      "triangles": 800,
+      "bounds_local_m": [
+        [
+          -400.0,
+          -390.0,
+          8.573585716247559
+        ],
+        [
+          -200.0,
+          -190.0,
+          15.862734046936035
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_2_0": {
+      "triangles": 4640,
+      "bounds_local_m": [
+        [
+          -200.0,
+          210.0,
+          -1.058995994567871
+        ],
+        [
+          -18.0,
+          410.0,
+          2.498069730758667
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_2_1": {
+      "triangles": 3569,
+      "bounds_local_m": [
+        [
+          -200.0,
+          10.0,
+          1.596805516242981
+        ],
+        [
+          -18.0,
+          210.0,
+          6.790440765380859
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_2_2": {
+      "triangles": 3893,
+      "bounds_local_m": [
+        [
+          -200.0,
+          -190.0,
+          4.33401586151123
+        ],
+        [
+          -18.0,
+          10.0,
+          12.453795639038086
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_2_3": {
+      "triangles": 4639,
+      "bounds_local_m": [
+        [
+          -200.0,
+          -390.0,
+          11.105432716369629
+        ],
+        [
+          -18.0,
+          -190.0,
+          16.564458099365233
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_3_0": {
+      "triangles": 6519,
+      "bounds_local_m": [
+        [
+          18.0,
+          210.0,
+          -1.09868768119812
+        ],
+        [
+          200.73486328125,
+          410.0,
+          1.9164034996032715
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0.0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_3_1": {
+      "triangles": 5774,
+      "bounds_local_m": [
+        [
+          18.0,
+          10.0,
+          1.2912034664154053
+        ],
+        [
+          200.73486328125,
+          210.0,
+          4.842747417449951
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_3_2": {
+      "triangles": 5636,
+      "bounds_local_m": [
+        [
+          20.0,
+          -190.0,
+          4.441166606903076
+        ],
+        [
+          200.73486328125,
+          10.0,
+          10.682024971008302
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0.0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_3_3": {
+      "triangles": 6470,
+      "bounds_local_m": [
+        [
+          18.0,
+          -390.0,
+          9.051944938659668
+        ],
+        [
+          200.73486328125,
+          -190.0,
+          15.784763542175293
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_4_0": {
+      "triangles": 2240,
+      "bounds_local_m": [
+        [
+          200.73486328125,
+          210.0,
+          -0.8014049854278564
+        ],
+        [
+          398.0510727564494,
+          410.0,
+          4.769733714421591
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_4_1": {
+      "triangles": 2118,
+      "bounds_local_m": [
+        [
+          200.73486328125,
+          10.0,
+          1.9048890743255615
+        ],
+        [
+          398.0510727564494,
+          210.0,
+          8.642995245615642
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_4_2": {
+      "triangles": 2240,
+      "bounds_local_m": [
+        [
+          200.73486328125,
+          -190.0,
+          4.842747417449951
+        ],
+        [
+          398.0510727564494,
+          10.0,
+          11.399236408233643
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 1,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_4_3": {
+      "triangles": 2240,
+      "bounds_local_m": [
+        [
+          200.73486328125,
+          -390.0,
+          9.051944938659668
+        ],
+        [
+          398.0510727564494,
+          -190.0,
+          14.149521874745687
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_5_0": {
+      "triangles": 3256,
+      "bounds_local_m": [
+        [
+          398.0510727564494,
+          210.0,
+          0.4789012842973075
+        ],
+        [
+          609.2194662775312,
+          410.0,
+          6.775295463562012
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_5_1": {
+      "triangles": 3159,
+      "bounds_local_m": [
+        [
+          398.0510727564494,
+          10.0,
+          4.744440284729005
+        ],
+        [
+          609.2194662775312,
+          210.0,
+          12.92764779663086
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_5_2": {
+      "triangles": 3300,
+      "bounds_local_m": [
+        [
+          398.0510727564494,
+          -190.0,
+          8.642995245615642
+        ],
+        [
+          609.2194662775312,
+          10.0,
+          15.913917066301618
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_5_3": {
+      "triangles": 3300,
+      "bounds_local_m": [
+        [
+          398.0510727564494,
+          -390.0,
+          11.399236408233643
+        ],
+        [
+          609.2194662775312,
+          -190.0,
+          17.29887097385951
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_6_0": {
+      "triangles": 129,
+      "bounds_local_m": [
+        [
+          592.0766091346741,
+          210.0,
+          1.3859931757790704
+        ],
+        [
+          609.2194662775312,
+          410.0,
+          6.775295463562012
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 0.34649305814671755,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_6_1": {
+      "triangles": 140,
+      "bounds_local_m": [
+        [
+          592.0766091346741,
+          10.0,
+          6.66854899433681
+        ],
+        [
+          609.2194662775312,
+          210.0,
+          12.955608573913574
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 0.34649305814671755,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_6_2": {
+      "triangles": 140,
+      "bounds_local_m": [
+        [
+          592.0766091346741,
+          -190.0,
+          12.942167760576522
+        ],
+        [
+          609.2194662775312,
+          10.0,
+          15.914213522774832
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 0.34649305814671755,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Terrain_6_3": {
+      "triangles": 139,
+      "bounds_local_m": [
+        [
+          592.0766091346741,
+          -388.57142857142844,
+          15.716832503182548
+        ],
+        [
+          609.2194662775312,
+          -190.0,
+          17.29887097385951
+        ]
+      ],
+      "materials": [
+        "M_CN_MineralSoil"
+      ],
+      "used_materials": [
+        "M_CN_MineralSoil"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 0.34649305814671755,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_2_0": {
+      "triangles": 5599,
+      "bounds_local_m": [
+        [
+          -19,
+          210.0,
+          -1.1043393340110779
+        ],
+        [
+          -5,
+          410.0,
+          1.6772745323814735
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0.0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_2_1": {
+      "triangles": 3219,
+      "bounds_local_m": [
+        [
+          -19,
+          95.0,
+          1.5469065222740173
+        ],
+        [
+          -5,
+          210.0,
+          4.275006389843893
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_2_2": {
+      "triangles": 3096,
+      "bounds_local_m": [
+        [
+          -19,
+          -190.0,
+          5.790006822172879
+        ],
+        [
+          -5,
+          -30.0,
+          11.163099876403809
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0.0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_2_3": {
+      "triangles": 5249,
+      "bounds_local_m": [
+        [
+          -19,
+          -390.0,
+          10.990450820723993
+        ],
+        [
+          -5,
+          -190.0,
+          16.129920427669603
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_3_0": {
+      "triangles": 5599,
+      "bounds_local_m": [
+        [
+          5,
+          210.0,
+          -1.116697331905365
+        ],
+        [
+          19,
+          410.0,
+          1.6274905086271958
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0.0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_3_1": {
+      "triangles": 3219,
+      "bounds_local_m": [
+        [
+          5,
+          95.0,
+          1.3913334045410157
+        ],
+        [
+          19,
+          210.0,
+          4.275006389843893
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_3_2": {
+      "triangles": 3679,
+      "bounds_local_m": [
+        [
+          5,
+          -190.0,
+          5.651004949569702
+        ],
+        [
+          17,
+          -30.0,
+          10.891885919754557
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0.0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_CN_Shoulder_3_3": {
+      "triangles": 5349,
+      "bounds_local_m": [
+        [
+          5,
+          -390.0,
+          10.589643970489503
+        ],
+        [
+          19,
+          -190.0,
+          15.985172029294251
+        ]
+      ],
+      "materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "used_materials": [
+        "M_CN_GravelShoulder"
+      ],
+      "vertex_color_attribute": "Color",
+      "vertex_alpha_min": 0,
+      "vertex_alpha_max": 1,
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "total_triangles": 104949
+}

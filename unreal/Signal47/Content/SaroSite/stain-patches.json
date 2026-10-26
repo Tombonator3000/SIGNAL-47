@@ -1,0 +1,116 @@
+{
+  "version": 2,
+  "status": "SOURCE_STAIN_TRIM_PREPARED_NATIVE_UNVERIFIED",
+  "group": "world.grounds.dressing.group",
+  "groups": [
+    "world.grounds.dressing.group"
+  ],
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "sourceGeometrySha256": {
+    "geo_003.glb": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9"
+  },
+  "meshes": {
+    "g455": {
+      "node": 661,
+      "parent": 659,
+      "group": "world.grounds.dressing.group",
+      "geo": 455,
+      "tris": 1712,
+      "acceptedPreviousTris": [
+        1712
+      ],
+      "resultTris": 1224,
+      "removed": 488,
+      "removedBy": {
+        "wingSouthGrime": 246,
+        "wingNorthGrime": 242
+      },
+      "hidden": false,
+      "asset": "/Game/SaroSite/Trim/StaticMeshes/g455.g455",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        319
+      ],
+      "bounds_three_m": [
+        [
+          -7.900000095367432,
+          -0.6000000238418579,
+          -7.800000190734863
+        ],
+        [
+          40.20000076293945,
+          3.5999999046325684,
+          18.375
+        ]
+      ],
+      "expectedUE_center_cm": [
+        1615.000033378601,
+        528.7499904632568,
+        149.99999403953552
+      ],
+      "expectedUE_size_cm": [
+        4810.0000858306885,
+        2617.5000190734863,
+        419.9999928474426
+      ],
+      "retainedIndexSha256": "d4438a0b7ebd1b860bfea850ce5c5c8dcd5391362c9329bce226046549c4b77f"
+    }
+  },
+  "files": [
+    "trim_geo_003.glb"
+  ],
+  "fileSha256": {
+    "trim_geo_003.glb": "fb44880b3aeae3f5a8f90596a77f64427e258cfa24cbe75078cb9cd1fd2269a5"
+  },
+  "sourceVerification": {
+    "status": "PASS",
+    "scope": "Actual prepared GLB only; native/render acceptance separate",
+    "source_file": "geo_003.glb",
+    "source_sha256": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9",
+    "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+    "source_triangles": 1712,
+    "removed_triangles": 488,
+    "retained_triangles": 1224,
+    "removed_by_plane": {
+      "south": 246,
+      "north": 242
+    },
+    "source_attribute_buffer_prefix_byte_identical": true,
+    "retained_triangle_index_order_identical": true,
+    "originalMaterialIndices": [
+      0
+    ],
+    "bounds_three_m": [
+      [
+        -7.900000095367432,
+        -0.6000000238418579,
+        -7.800000190734863
+      ],
+      [
+        40.20000076293945,
+        3.5999999046325684,
+        18.375
+      ]
+    ],
+    "criteria": {
+      "x_m": [
+        20.1,
+        39.1
+      ],
+      "y_m": [
+        -0.7,
+        3.7
+      ],
+      "z_planes_m": [
+        -5.512,
+        5.512
+      ],
+      "z_tolerance_m": 0.0001,
+      "selection": "Every triangle vertex must lie on ONE matching wing-wall plane; other site walls/roof/plinth/ground stain geometry is retained."
+    },
+    "preserved": "Original normals/UV/color/position buffer bytes, triangle order and material slot; all1224 unrelated stain triangles; no hierarchy/collider/story changes."
+  }
+}

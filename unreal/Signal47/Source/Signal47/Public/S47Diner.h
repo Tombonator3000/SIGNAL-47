@@ -5,6 +5,7 @@
 
 class US47Main;
 class UTexture;
+class UMaterialInstanceDynamic;
 
 // world/Diner.ts: the exported place, its people, proxies and changing light.
 class SIGNAL47_API FS47Diner
@@ -29,4 +30,8 @@ private:
 	US47Main* M = nullptr;
 	int32 Flood = -1;
 	double Near = 1;
+	struct FAuthoredGlow { TWeakObjectPtr<UMaterialInstanceDynamic> Mid; FLinearColor Base; int32 Kind = 0; };
+	TArray<FAuthoredGlow> AuthoredGlows;
+	void BindAuthoredLighting();
+	void ApplyAuthoredLighting();
 };

@@ -1,0 +1,353 @@
+{
+  "status": "SOURCE_VERIFIED_NATIVE_VISUAL_UNVERIFIED",
+  "source_revision": "FS1-original-station01-hut",
+  "parts": 5,
+  "actual_source_checks": 285,
+  "LOD_triangles": {
+    "0": 5506,
+    "1": 3618,
+    "2": 2352
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5332,
+      "sha256": "82aaa8953f01a4e2d0d863d2f72c631e32f663775300f8e74d2c9e2e65d4b8b1"
+    },
+    {
+      "path": "Station01_Field_Hut.blend",
+      "bytes": 7955719,
+      "sha256": "87aa75355a2d1ca7577f7401974f88c0e7487eda7d31300ebaa886a7f3d4fb94"
+    },
+    {
+      "path": "Station01_Field_Hut.glb",
+      "bytes": 8587084,
+      "sha256": "278614ffb82987abfb69b40865b9d2fe65e4d83bc74a95f896583444e5b848f0"
+    },
+    {
+      "path": "audit_replacement.py",
+      "bytes": 6208,
+      "sha256": "53c9562b98825489409d19a804c5db88e4e860b02894f516e84c210eb273da0b"
+    },
+    {
+      "path": "build_fieldstation.py",
+      "bytes": 9247,
+      "sha256": "6cbf91e52e1be70e18ab82a91e886051c63f53073d3c16bcd50bb7e7baffae67"
+    },
+    {
+      "path": "check_source_plan.py",
+      "bytes": 2403,
+      "sha256": "81ffc483b8bc3ebc19aaa5eeeefe179d5fc27ca9fdf3f13034e6f01cb138520a"
+    },
+    {
+      "path": "design.py",
+      "bytes": 3170,
+      "sha256": "ed4d34ab9f361fa3c7e01867d1878d17307b184537bc8b2d0c6f056e3152c28c"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Door.fbx",
+      "bytes": 38988,
+      "sha256": "fffc33b23d296861ced89982f48476cee0549467c9dc5b203a86c9a3c0f9a302"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Door.glb",
+      "bytes": 4272872,
+      "sha256": "70b6ea242e1cfffa37fac82dec395587d66231fc905db3c5c57fd25fc0774a84"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Door_LOD1.fbx",
+      "bytes": 36188,
+      "sha256": "eb9d3cd135d6359439543c178de5d10adda111ead97208010e7f08f47171dc98"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Door_LOD1.glb",
+      "bytes": 4268040,
+      "sha256": "77436f4018da6eeddbd75109968ea7dfcec8598cb3ae05aa59d8485f0b9f6ee3"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Door_LOD2.fbx",
+      "bytes": 30380,
+      "sha256": "93e932a9d0adb5c489939fe3cad940bd14118d687544c8cfde4c278e3b42376e"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Door_LOD2.glb",
+      "bytes": 1835016,
+      "sha256": "54de6e61da295bfa1c025c83c34d20a10a89ad8b80f9d5a6a3dbec8e31d87998"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Glass.fbx",
+      "bytes": 15964,
+      "sha256": "7035d76306f7c0161f9622569a30f15854ebe1c85c0e065c910773cce7b74d8e"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Glass.glb",
+      "bytes": 2872,
+      "sha256": "5466112fae427ef623a1840e3e54d741e258fe8e6250536f19bef449feef1462"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Glass_LOD1.fbx",
+      "bytes": 15964,
+      "sha256": "14495e3b325ad4d739420a1c9d4a86e6b0c4ce7262f1c376da957fd1acbfd604"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Glass_LOD1.glb",
+      "bytes": 2572,
+      "sha256": "12bed7dcccfa986e695810c485fcadc073fa64d39656e33575e7e2cd155fcbff"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Glass_LOD2.fbx",
+      "bytes": 15964,
+      "sha256": "24302673373b782791b218aa95a3c18569d89173fb16a4767c554cd1b1c73138"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Glass_LOD2.glb",
+      "bytes": 2572,
+      "sha256": "64692d4e80edd456a36ddf0dca0f93de8ddfa4879f4307a2acad414f1867bca1"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Interior.fbx",
+      "bytes": 59724,
+      "sha256": "db47bdcc407b7b352c0e4195765f3d4465f8e1287ee12b7314ca105c8a23d63f"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Interior.glb",
+      "bytes": 3718340,
+      "sha256": "20279e48f5eb6285d5c7dbf2e10884360d510541eed9120a40165bb9f90e8681"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Interior_LOD1.fbx",
+      "bytes": 48028,
+      "sha256": "528d9a45def628a8e06b5f3e2a36aa33baffeb6e410f31ee82000835d389deb7"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Interior_LOD1.glb",
+      "bytes": 3673736,
+      "sha256": "87188d0dac4c4217890db4c17f66c72f7390dafd11b8d36cff470cdc88a95a39"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Interior_LOD2.fbx",
+      "bytes": 41708,
+      "sha256": "2ae1f8255347b1cdcd5b4a6f0203e8a5e13b897e426e4385cbb9791468bea397"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Interior_LOD2.glb",
+      "bytes": 3659872,
+      "sha256": "f368dc88cf8668110933cfb411388a06a4e5e3322e34199aa6b6b397d48710ba"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Props.fbx",
+      "bytes": 68428,
+      "sha256": "6a3a5ad4852b562d0b1205266dee8bf212da9b006707f68b70de9f478992787a"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Props.glb",
+      "bytes": 2820144,
+      "sha256": "9715b311bf93e245f8bf29ec3839b9fdc6a65601896129a707252778761db198"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Props_LOD1.fbx",
+      "bytes": 61708,
+      "sha256": "a5ea1f7cdd549897e92c700c9f27691163a9379546a7bdd887cec406596055d7"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Props_LOD1.glb",
+      "bytes": 2809576,
+      "sha256": "437a792c7ff8afde3922465ba6375e245a2d197a72bc453311d4dbfbcf626df1"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Props_LOD2.fbx",
+      "bytes": 55644,
+      "sha256": "05eaeb1249dad88b13b9a4a8091de9b78813123acb0f837b3817adac37551f15"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Props_LOD2.glb",
+      "bytes": 2790268,
+      "sha256": "a0b69cdd9948c5fb922d827516bbfa5297fa9b3bb0724b64afa164306350c448"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Shell.fbx",
+      "bytes": 107020,
+      "sha256": "b4c4d5ef98eefd931e34e53d2b1f53ac84979698f2ea68b9e2fbe18d96054aaf"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Shell.glb",
+      "bytes": 7677032,
+      "sha256": "f4def0bede623b051b397de5cbac5d6ff5196269f618ace50749954041b513df"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Shell_LOD1.fbx",
+      "bytes": 82044,
+      "sha256": "5c9484cd06b542d675100a685fdce6b573634a8e2b6f8f336570c9f9116d6126"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Shell_LOD1.glb",
+      "bytes": 7614284,
+      "sha256": "59e3a95a9d34e8e2493ce83cbd93932e90343241c817553981a8a88fd902bbcc"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Shell_LOD2.fbx",
+      "bytes": 62188,
+      "sha256": "2fde0abd0e56e0e890effeb4f3608b2357aeed7ce649e7a88dcd71564eef526d"
+    },
+    {
+      "path": "exports/SM_FieldStation_Hut_Shell_LOD2.glb",
+      "bytes": 7562600,
+      "sha256": "7d9f8bd125cbfd9e7ac9f2b6932d430b802d7d1ed67d7e4f4a34dea311fdda3e"
+    },
+    {
+      "path": "exports/axis_probe.fbx",
+      "bytes": 12396,
+      "sha256": "8b4f2c7b05ca796a9731aa79573975bd93906e48658bb5f40d9530d3a260a853"
+    },
+    {
+      "path": "geometry.py",
+      "bytes": 15679,
+      "sha256": "7f6b75e1ccf7e8b0a8a74c3ffe91b48e19eb238b7ae07be0b15f55eb4db81889"
+    },
+    {
+      "path": "make_sources.py",
+      "bytes": 4903,
+      "sha256": "e46de446e0fbf62cc4c828b33d27b8894cf57af1301a36ab3f6c1b9d3e42a1c7"
+    },
+    {
+      "path": "materials.json",
+      "bytes": 15866,
+      "sha256": "d48ecc6270df8eda1f4760d9c0a66294e9ec5ebed74853f670dfdd951175cbe5"
+    },
+    {
+      "path": "materials_provenance.json",
+      "bytes": 3486,
+      "sha256": "14f8d9bf225bb1acfa1dc09a580263798997fbea849e3c4b85ba9468b5ec70dc"
+    },
+    {
+      "path": "model_contract.json",
+      "bytes": 43740,
+      "sha256": "16a2b5f276527e90a8b6f54123232b6c7d6fd5f5e4f2db95f3ba47dcaeab9d75"
+    },
+    {
+      "path": "runtime_replacement.json",
+      "bytes": 16804,
+      "sha256": "9033d2f96b92f39a0c4e440084e55b18a084f75ee6f9249589e3d38bcdc1c813"
+    },
+    {
+      "path": "source_plan.json",
+      "bytes": 23865,
+      "sha256": "b1b59e974f2c147d073d82924cbe1036843cd85ca02611e2be86383a41ffefad"
+    },
+    {
+      "path": "textures/Cloth_base_color.png",
+      "bytes": 231555,
+      "sha256": "dd27a16e35b6e5019ba2edaffb9054ec8ff33dfb7cb710099cbb4f76b0a34db5"
+    },
+    {
+      "path": "textures/Cloth_normal.png",
+      "bytes": 341401,
+      "sha256": "a3a9f8944855db14e8028e876c5a33902791e2ec71983a23cc1fce1752ef8a02"
+    },
+    {
+      "path": "textures/Cloth_roughness.png",
+      "bytes": 55346,
+      "sha256": "3736085dd3f01741e3f1e33e76e4f8139ce6bea8861780992ad97de4d0439a6f"
+    },
+    {
+      "path": "textures/MetalPaint_base_color.png",
+      "bytes": 160169,
+      "sha256": "56ef4c6ef0b77dc5d33b63e3694d229797d2521b79d248736b9c1ae68dd69329"
+    },
+    {
+      "path": "textures/MetalPaint_normal.png",
+      "bytes": 263977,
+      "sha256": "2e03ad51308685f5053f55263d262c25a7b705949b2aed343ba02f28d5aee98b"
+    },
+    {
+      "path": "textures/MetalPaint_roughness.png",
+      "bytes": 75135,
+      "sha256": "90ba1bc952e3f0334d80b9f50b2e49109b4d0bb264741b5a2f0b7326a898bd47"
+    },
+    {
+      "path": "textures/PrintAtlas_base_color.png",
+      "bytes": 144126,
+      "sha256": "08f4886841d098715083efc33ceb8920f4ea2291327afd1f1b4172b5c28e09b5"
+    },
+    {
+      "path": "textures/PrintAtlas_normal.png",
+      "bytes": 16912,
+      "sha256": "e8a7c51e5513cb6989ebc7494110b2f6b9a92cf28d24767ea6ee564916d2b568"
+    },
+    {
+      "path": "textures/PrintAtlas_roughness.png",
+      "bytes": 8534,
+      "sha256": "f1c4bf9710fada7b5bb753f13749021b4479eae98e19a6ee4f1e5ceccfbe4860"
+    },
+    {
+      "path": "textures/RoofShingle_base_color.png",
+      "bytes": 787463,
+      "sha256": "1b3cecc5cc07ee2f803efd0dcd70edbc62e9e957bcd3425397c24190bdfbfef2"
+    },
+    {
+      "path": "textures/RoofShingle_normal.png",
+      "bytes": 348756,
+      "sha256": "91eb1ce80a0c8353d79bc04cbee1f4af4ffeaa5ee26506804738cb0a7d8341e0"
+    },
+    {
+      "path": "textures/RoofShingle_roughness.png",
+      "bytes": 38917,
+      "sha256": "e446b9d604e8fd847241188fc93cbcb1992377851f953a3d486caca951499db1"
+    },
+    {
+      "path": "textures/RustTin_base_color.png",
+      "bytes": 1910219,
+      "sha256": "2feb0eeefcf5f94e5ef9bdef4538bcac3b100dd2a95c1c66c5f6150b011b9f16"
+    },
+    {
+      "path": "textures/RustTin_normal.png",
+      "bytes": 325677,
+      "sha256": "f99fe484e3305bd48d7e33a8e29cae8c8f0ad902456787f49977d0e99357fc6a"
+    },
+    {
+      "path": "textures/RustTin_roughness.png",
+      "bytes": 96478,
+      "sha256": "0278ed450fc0f52f51cddfebd1ea4d6da3ec61be70da43361b583a74679fa2d9"
+    },
+    {
+      "path": "textures/Stucco_base_color.png",
+      "bytes": 628350,
+      "sha256": "6d962f2de17923a6fc12e7e381a0f606b38fd3503bd91f9fd13e6019345058da"
+    },
+    {
+      "path": "textures/Stucco_normal.png",
+      "bytes": 1088779,
+      "sha256": "cf3f3de573782e95c41fbc9532f0e1e53cd62ed9ac60e5468a50d0b1f4452f1f"
+    },
+    {
+      "path": "textures/Stucco_roughness.png",
+      "bytes": 41831,
+      "sha256": "77634f625fc9634eb21bc795623be4e783489c1724c6ba1d7dabeb4d1e14c9f8"
+    },
+    {
+      "path": "textures/Wood_base_color.png",
+      "bytes": 666660,
+      "sha256": "2dde1f2ad3ff7ba39eaf9766344a7fdf9e00d149bb072ecb9167b6b970008e5d"
+    },
+    {
+      "path": "textures/Wood_normal.png",
+      "bytes": 416977,
+      "sha256": "0d85c15823513826c18cec237a86ac8a2c7222fba671f49993813a435d6bf245"
+    },
+    {
+      "path": "textures/Wood_roughness.png",
+      "bytes": 65395,
+      "sha256": "be045f01fb190a021a1e16b20235d1f999d9e407e4907af974a345e59dfc742b"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 31883,
+      "sha256": "770add971d91ec45849dd80f056ad2ae6112e0696644eb0b97810236fe656690"
+    },
+    {
+      "path": "verify_source.py",
+      "bytes": 6330,
+      "sha256": "38c21f7e72ec779c671be555c615141f8d9827db624717b0d97dc67f82876c07"
+    }
+  ]
+}

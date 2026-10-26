@@ -83,6 +83,7 @@ public:
 	virtual FReply OnKeyDown(const FGeometry& G, const FKeyEvent& E) override;
 	void SetState(const FString& State);
 	void FocusBegin();
+	virtual FNavigationReply OnNavigation(const FGeometry& G, const FNavigationEvent& E) override;
 
 private:
 	FS47OpeningActions A;

@@ -1,0 +1,486 @@
+[
+  {
+    "name": "M_CS_CalicheSoil",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.22,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/CalicheSoil_color.png",
+      "normal": "textures/CalicheSoil_normal.png",
+      "roughness": "textures/CalicheSoil_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_PeaGravel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.96,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.32,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "opaque",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/PeaGravel_color.png",
+      "normal": "textures/PeaGravel_normal.png",
+      "roughness": "textures/PeaGravel_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_OldAsphalt",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.87,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.32,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/OldAsphalt_color.png",
+      "normal": "textures/OldAsphalt_normal.png",
+      "roughness": "textures/OldAsphalt_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_DrySilt",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.98,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.22,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "opaque",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/DrySilt_color.png",
+      "normal": "textures/DrySilt_normal.png",
+      "roughness": "textures/DrySilt_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_Limestone",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.91,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.34,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "opaque",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/Limestone_color.png",
+      "normal": "textures/Limestone_normal.png",
+      "roughness": "textures/Limestone_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_DryPlant",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.91,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": true,
+    "normal_strength": 0.15,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "opaque",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/DryPlant_color.png",
+      "normal": "textures/DryPlant_normal.png",
+      "roughness": "textures/DryPlant_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_TarRepair",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.85,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.24,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "opaque",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/TarRepair_color.png",
+      "normal": "textures/TarRepair_normal.png",
+      "roughness": "textures/TarRepair_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_WornConcrete",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.95,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.25,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "opaque",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/WornConcrete_color.png",
+      "normal": "textures/WornConcrete_normal.png",
+      "roughness": "textures/WornConcrete_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_ShoulderBlend",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.96,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.3,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/ShoulderBlend_color.png",
+      "normal": "textures/ShoulderBlend_normal.png",
+      "roughness": "textures/ShoulderBlend_roughness.png"
+    },
+    "specular": 0.0
+  },
+  {
+    "name": "M_CS_DustFeather",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.96,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.18,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/DustFeather_color.png",
+      "normal": "textures/DustFeather_normal.png",
+      "roughness": "textures/DustFeather_roughness.png"
+    },
+    "specular": 0.0
+  },
+  {
+    "name": "M_CS_GrassAtlas",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.94,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": true,
+    "normal_strength": 0.12,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/GrassAtlas_color.png",
+      "normal": "textures/GrassAtlas_normal.png",
+      "roughness": "textures/GrassAtlas_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_SageAtlas",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.94,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": true,
+    "normal_strength": 0.12,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/SageAtlas_color.png",
+      "normal": "textures/SageAtlas_normal.png",
+      "roughness": "textures/SageAtlas_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_Yucca",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.94,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": true,
+    "normal_strength": 0.18,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": false,
+    "vertex_alpha_opacity": false,
+    "alpha_mode": "opaque",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/Yucca_color.png",
+      "normal": "textures/Yucca_normal.png",
+      "roughness": "textures/Yucca_roughness.png"
+    }
+  },
+  {
+    "name": "M_CS_CompactedUse",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.95,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.15,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/CompactedUse_color.png",
+      "normal": "textures/CompactedUse_normal.png",
+      "roughness": "textures/CompactedUse_roughness.png"
+    },
+    "specular": 0.0
+  },
+  {
+    "name": "M_CS_ConcreteUse",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.96,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 1,
+    "two_sided": false,
+    "normal_strength": 0.1,
+    "uv_scale": 1.0,
+    "opacity_from_base_color": true,
+    "vertex_alpha_opacity": true,
+    "alpha_mode": "dithered_masked",
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/ConcreteUse_color.png",
+      "normal": "textures/ConcreteUse_normal.png",
+      "roughness": "textures/ConcreteUse_roughness.png"
+    },
+    "specular": 0.0
+  }
+]

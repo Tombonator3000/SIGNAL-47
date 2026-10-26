@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "group": "world.town.st",
+  "stationBox": [
+    19.04,
+    30.08,
+    0.0,
+    10.0,
+    2029.9,
+    2042.1
+  ],
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "meshes": {
+    "g999": {
+      "tris": 1916,
+      "gasRemoved": 128,
+      "stationRemoved": 72,
+      "resultTris": 1716,
+      "hidden": false,
+      "node": 1448,
+      "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g999.g999"
+    },
+    "g1000": {
+      "tris": 512,
+      "gasRemoved": 44,
+      "stationRemoved": 60,
+      "resultTris": 408,
+      "hidden": false,
+      "node": 1449,
+      "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1000.g1000"
+    },
+    "g1003": {
+      "tris": 180,
+      "gasRemoved": 24,
+      "stationRemoved": 12,
+      "resultTris": 144,
+      "hidden": false,
+      "node": 1452,
+      "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1003.g1003"
+    },
+    "g1006": {
+      "tris": 360,
+      "gasRemoved": 50,
+      "stationRemoved": 24,
+      "resultTris": 286,
+      "hidden": false,
+      "node": 1455,
+      "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1006.g1006"
+    },
+    "g1010": {
+      "tris": 356,
+      "gasRemoved": 48,
+      "stationRemoved": 2,
+      "resultTris": 306,
+      "hidden": false,
+      "node": 1459,
+      "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1010.g1010"
+    },
+    "g1014": {
+      "tris": 120,
+      "gasRemoved": 0,
+      "stationRemoved": 60,
+      "resultTris": 60,
+      "hidden": false,
+      "node": 1463,
+      "asset": "/Game/RadioArray/Station/Trim/StaticMeshes/g1014.g1014"
+    }
+  },
+  "files": [
+    "trim_geo_008.glb"
+  ],
+  "preserved": [
+    "studio",
+    "onAir",
+    "amSign",
+    "amDoor",
+    "mast",
+    "neighboring buildings"
+  ],
+  "composedGasTrim": {
+    "group": "world.town.st",
+    "keep": [
+      "world.town.m.pave"
+    ],
+    "boxes": [
+      [
+        -27.1,
+        -16.3,
+        3.9,
+        11.0,
+        2065.9,
+        2088.1
+      ],
+      [
+        -14.2,
+        -6.3,
+        4.25,
+        9.35,
+        2045.7,
+        2064.3
+      ],
+      [
+        -16.9,
+        -13.5,
+        4.1,
+        11.7,
+        2041.8,
+        2042.2
+      ]
+    ]
+  }
+}

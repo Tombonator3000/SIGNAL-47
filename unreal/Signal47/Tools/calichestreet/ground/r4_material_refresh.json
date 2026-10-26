@@ -1,0 +1,17 @@
+{
+  "before": {
+    "SM_Caliche_DryPlants": "9155745132eb8484269ddb33425ff729b09c6792dfbfd4f403c6dc5c7e29a29d",
+    "SM_Caliche_RoadWear": "76d1bd3e5faf31a7e5c9c61b7b286611e78a59067e172f7ee81373381c5f2a0f",
+    "SM_Caliche_Rocks": "02a4a02bc9691e3975f382146ad16accdc66e640bb648f9907859acafc9c5eb9",
+    "SM_Caliche_Surface": "b9efd099d343b25fc5abb85b02de777ea87204d32873a8dad1bc09f98086fd0d"
+  },
+  "after": {
+    "SM_Caliche_DryPlants": "9155745132eb8484269ddb33425ff729b09c6792dfbfd4f403c6dc5c7e29a29d",
+    "SM_Caliche_RoadWear": "76d1bd3e5faf31a7e5c9c61b7b286611e78a59067e172f7ee81373381c5f2a0f",
+    "SM_Caliche_Rocks": "02a4a02bc9691e3975f382146ad16accdc66e640bb648f9907859acafc9c5eb9",
+    "SM_Caliche_Surface": "b9efd099d343b25fc5abb85b02de777ea87204d32873a8dad1bc09f98086fd0d"
+  },
+  "status": "PASS",
+  "geometry_unchanged": true,
+  "decal_specular_zero": true
+}

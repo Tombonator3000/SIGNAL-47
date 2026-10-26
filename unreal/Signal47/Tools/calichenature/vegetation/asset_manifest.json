@@ -1,0 +1,416 @@
+{
+  "asset": "Original Caliche vegetation prototype kit",
+  "source_revision": "CN3-masked-small-leaf-needle-sprays",
+  "inventory_scope": "Explicit production kit: current source, contracts, proofs, textures and contract-named exports only; no pending/history/raw job evidence/log/cache",
+  "technical_status": "270/270 source/FBX/GLB checks PASS",
+  "preview_completed_for_current_blend": true,
+  "preview_byte_binding": {
+    "blend_sha256": "78c607d8e05fdca9a7e34e62fd84457184604f8d4f9bcdc51e948341848b8b02",
+    "image_sha256": "0f8e97e0210738cd3602ba79dfb1ef13c8f602e7074b2f262003cd8858f24893",
+    "status": "COMPLETED_GUARDED_RENDER",
+    "scope": "Previously completed guarded render retained only for exact matching Blend/image bytes, or fresh successful guard plus render timestamp; no new render or visual acceptance"
+  },
+  "visual_status": "UNVERIFIED pending explicit review of actual botanical image and native game frames",
+  "files": {
+    "README.md": {
+      "bytes": 6078,
+      "sha256": "94a1960becfa13c9c7938775b5c76122d405cb483f4267476983493bd618aee6"
+    },
+    "alpha_texture_verification.json": {
+      "bytes": 9408,
+      "sha256": "d898aaa6016e4b0d1196f64696ca6429f488b447429f25e4d74fef70f5abcccf"
+    },
+    "botanical_preview.png": {
+      "bytes": 1673451,
+      "sha256": "0f8e97e0210738cd3602ba79dfb1ef13c8f602e7074b2f262003cd8858f24893"
+    },
+    "build_vegetation.py": {
+      "bytes": 7378,
+      "sha256": "d1c1b7d4d55fe772ed919e5098c2246aea6bdc77db6a26862e978b3b95eb9be0"
+    },
+    "caliche_vegetation.blend": {
+      "bytes": 3250601,
+      "sha256": "78c607d8e05fdca9a7e34e62fd84457184604f8d4f9bcdc51e948341848b8b02"
+    },
+    "caliche_vegetation.glb": {
+      "bytes": 4574948,
+      "sha256": "b7a9fc67e02807f77659e637ca1a20c84f175592013064e599bc611f1178601a"
+    },
+    "exports/SM_CN_Caliche_A.fbx": {
+      "bytes": 25132,
+      "sha256": "84d7b99eb9f0a6134896ee1e481f0ad32be080835a9c1c3655f655df43450e3f"
+    },
+    "exports/SM_CN_Caliche_A.glb": {
+      "bytes": 2500388,
+      "sha256": "44f5d0e54fea3b5357ac1d37763ef599b85c7413fb9340635042eef65c9a5dc3"
+    },
+    "exports/SM_CN_Caliche_A_LOD1.fbx": {
+      "bytes": 24364,
+      "sha256": "df9af6bad362e045627cef1ab74f0843949c4e1f5fa069b79af60320983363aa"
+    },
+    "exports/SM_CN_Caliche_A_LOD1.glb": {
+      "bytes": 2498144,
+      "sha256": "51bf3ee64743059dc8c3f9443910f48643f7d99284415d9c9d173c6f6a05e46c"
+    },
+    "exports/SM_CN_Caliche_A_LOD2.fbx": {
+      "bytes": 23564,
+      "sha256": "85590c884a06b78ffe18dca4b3c2fc50fafa377d528d3209c1217f1687850208"
+    },
+    "exports/SM_CN_Caliche_A_LOD2.glb": {
+      "bytes": 2495888,
+      "sha256": "008d0fa05ed08677c56d48dfd6b9b180f6b50e8b1d82089b850895085da3c7c1"
+    },
+    "exports/SM_CN_Caliche_B.fbx": {
+      "bytes": 25132,
+      "sha256": "a1e079df310a43ef33762cac0fd73e45a0bac535a259776b3e2b9261ab16d6c9"
+    },
+    "exports/SM_CN_Caliche_B.glb": {
+      "bytes": 2500392,
+      "sha256": "f217ea9cf92ded630897d39a2d676c78d951eae55bed2ba75dd50d04f8331de0"
+    },
+    "exports/SM_CN_Caliche_B_LOD1.fbx": {
+      "bytes": 24380,
+      "sha256": "a8d29fc79882323674ccf9f270b50a3f39a2ec97bddb02b14dd93b28adcb54fc"
+    },
+    "exports/SM_CN_Caliche_B_LOD1.glb": {
+      "bytes": 2498144,
+      "sha256": "f06a59c791c3b31687ea1ac22b4ad82bd39094f50c95be451a5bffb6413505a7"
+    },
+    "exports/SM_CN_Caliche_B_LOD2.fbx": {
+      "bytes": 23564,
+      "sha256": "b3669d4dab5f2f1f8f68f3cc647863101b6c46e5dbe0c223268beb18784a39c9"
+    },
+    "exports/SM_CN_Caliche_B_LOD2.glb": {
+      "bytes": 2495884,
+      "sha256": "bf327ff71eb3a013ff79b99c3bdb8ca0862a3def3de2a216786bd263fb79d137"
+    },
+    "exports/SM_CN_Grass_A.fbx": {
+      "bytes": 95292,
+      "sha256": "8cf79deba7bc7c28fff80ad24b2cc0d06f770a8c05c22cdbdc27bae68a6d96aa"
+    },
+    "exports/SM_CN_Grass_A.glb": {
+      "bytes": 2564800,
+      "sha256": "c088ab11ceffdf275efe3393112ad15b891aabffda33f29ba1ceeaaa06960b22"
+    },
+    "exports/SM_CN_Grass_A_LOD1.fbx": {
+      "bytes": 40044,
+      "sha256": "181a4ef9f51a3f03a369b23f01f7d514a6c00415625aa3bcbb1f2c4a22c5c551"
+    },
+    "exports/SM_CN_Grass_A_LOD1.glb": {
+      "bytes": 2509648,
+      "sha256": "d55d2d5b4fb7859e283781aaa53d38e6afc6ffaab6a7e365012965c5e5a2dd35"
+    },
+    "exports/SM_CN_Grass_A_LOD2.fbx": {
+      "bytes": 28716,
+      "sha256": "eae2ff14b4326ae6b7a4b8d9590bd2ac23aa1e50335fd80a36abeee73ddc5902"
+    },
+    "exports/SM_CN_Grass_A_LOD2.glb": {
+      "bytes": 2498408,
+      "sha256": "1cb1bebba56744d3b0759a47a8a69db7835fd10f4317aaaf614fb0c883c79f63"
+    },
+    "exports/SM_CN_Grass_B.fbx": {
+      "bytes": 95308,
+      "sha256": "d39ccb7cc8e0fbc5e8c60115e8a07b0f25efc494a63159dcbba99c95ec90fac5"
+    },
+    "exports/SM_CN_Grass_B.glb": {
+      "bytes": 2564796,
+      "sha256": "75a8b511a9015943aa282b1f051181e98fbf7a03bed1596a47e8bbed1bb2fc29"
+    },
+    "exports/SM_CN_Grass_B_LOD1.fbx": {
+      "bytes": 40044,
+      "sha256": "4b79e7491534eeee637d8854cbe341587acd370be3f2303d4dc6681d7e58155e"
+    },
+    "exports/SM_CN_Grass_B_LOD1.glb": {
+      "bytes": 2509648,
+      "sha256": "5b9edc84961b2f2e4f8e0a3694e1513abc19e21c65017d792d52b0824978f32f"
+    },
+    "exports/SM_CN_Grass_B_LOD2.fbx": {
+      "bytes": 28684,
+      "sha256": "91cd203cfe18eec70117f01d7c6a5be921f336033f33ba7df68a64472d589523"
+    },
+    "exports/SM_CN_Grass_B_LOD2.glb": {
+      "bytes": 2498404,
+      "sha256": "c18761d38b0b81642740eb9a9dfc52c3107301ebfe7ab02aef86e9eeac4b5d89"
+    },
+    "exports/SM_CN_Juniper_A.fbx": {
+      "bytes": 478716,
+      "sha256": "827bb70909ac5b5f84386780a4b66d4e9a1ee3ac029a92ec4e61f6fe13ea8643"
+    },
+    "exports/SM_CN_Juniper_A.glb": {
+      "bytes": 3244464,
+      "sha256": "85c8606a86f1039030120141e654b6241a465732b2f1e8b8f6a8cb8d660067c7"
+    },
+    "exports/SM_CN_Juniper_A_LOD1.fbx": {
+      "bytes": 158828,
+      "sha256": "2bcb858efde5c10a9e848fd5a40d938c676916a3a9712bf9c3801af5b3364a80"
+    },
+    "exports/SM_CN_Juniper_A_LOD1.glb": {
+      "bytes": 2928420,
+      "sha256": "2dde6bbc334a158ee7296452fca9e18c4a2f9747aafd315adfdf4a23c4808a22"
+    },
+    "exports/SM_CN_Juniper_A_LOD2.fbx": {
+      "bytes": 76124,
+      "sha256": "b9f8c681011f3aea90b3f5563cc98c9a8543249ee5e079cf783758f0832e5fdc"
+    },
+    "exports/SM_CN_Juniper_A_LOD2.glb": {
+      "bytes": 2843296,
+      "sha256": "c51f24e09fd214380d7b414b886929b4400ba6c00305688746bb4786aec96ad4"
+    },
+    "exports/SM_CN_Juniper_B.fbx": {
+      "bytes": 478316,
+      "sha256": "80050c7b8a5957f6de3b79573fa61166d20dcb6693b01013af409c71f10fa7b8"
+    },
+    "exports/SM_CN_Juniper_B.glb": {
+      "bytes": 3251632,
+      "sha256": "2197dc68788ec8fe4a3063d55675c7aa1b413e1401dd8798a52682a20132b6e9"
+    },
+    "exports/SM_CN_Juniper_B_LOD1.fbx": {
+      "bytes": 158556,
+      "sha256": "75330ccf324bc26d395ea857d586e10c721998e27a1755dfeb002302f60626ea"
+    },
+    "exports/SM_CN_Juniper_B_LOD1.glb": {
+      "bytes": 2930536,
+      "sha256": "9651c5efb6474e02d9d4223d45f5c3d0784edb3218064f6fb5c0a776ae82cada"
+    },
+    "exports/SM_CN_Juniper_B_LOD2.fbx": {
+      "bytes": 76140,
+      "sha256": "9926c0ffa5b8f0e3e2e1c831b653e1751b543555dd504b0064d6589870ffc804"
+    },
+    "exports/SM_CN_Juniper_B_LOD2.glb": {
+      "bytes": 2844196,
+      "sha256": "635713ff1edc02399dbc08795d7933fe0a208989127c1b589090aa3928ae2fc4"
+    },
+    "exports/SM_CN_Sage_A.fbx": {
+      "bytes": 268892,
+      "sha256": "b8950e2e15717d439127a2a8630639838d3f76f23e613e0103a7ecacbabd0576"
+    },
+    "exports/SM_CN_Sage_A.glb": {
+      "bytes": 3032288,
+      "sha256": "170f4c0d2689b6a18ef6c678058f9ae52518f94ab63ddf21bbca5e2732257444"
+    },
+    "exports/SM_CN_Sage_A_LOD1.fbx": {
+      "bytes": 101708,
+      "sha256": "50cb26be3038c2fbbd7d474b6c502e65305fa200f34898dfb15fec1d4dcc8545"
+    },
+    "exports/SM_CN_Sage_A_LOD1.glb": {
+      "bytes": 2865360,
+      "sha256": "f9347799058ec139ff05d7c2662ae7119e11ffa3014e72660aa01d1a5d74851b"
+    },
+    "exports/SM_CN_Sage_A_LOD2.fbx": {
+      "bytes": 49804,
+      "sha256": "b00cc7d891bb416b0b60d399ad853ae51095ae4a9c7c03103c01992b8b72d963"
+    },
+    "exports/SM_CN_Sage_A_LOD2.glb": {
+      "bytes": 2810380,
+      "sha256": "ade403c39c76a2e8e3eb39e66e56a6e463bd61fcb59bffc0d0afae86e6fe58d6"
+    },
+    "exports/SM_CN_Sage_B.fbx": {
+      "bytes": 268732,
+      "sha256": "7290974f861b64ea03eae9e8b3b59546dc8e0c3b50ced465e5f2f1f9c0797cb0"
+    },
+    "exports/SM_CN_Sage_B.glb": {
+      "bytes": 3033216,
+      "sha256": "ee6a4fa3fb9e201740420a628b9b3952f013dba7b73f4b56a4d8fb0578a21e03"
+    },
+    "exports/SM_CN_Sage_B_LOD1.fbx": {
+      "bytes": 101484,
+      "sha256": "7f5d866da2bea9fc47778f39b5ceb8370aaa0bcc35c3ea5b655d1c450242fed4"
+    },
+    "exports/SM_CN_Sage_B_LOD1.glb": {
+      "bytes": 2866388,
+      "sha256": "63988f4ec84ee4337611ddd80fa37530d69cd62cb838694f1c37f80869ebda74"
+    },
+    "exports/SM_CN_Sage_B_LOD2.fbx": {
+      "bytes": 49788,
+      "sha256": "e9f5018666d65558fdc5ea5f1d0543555cd986af9de3c5520cf4594d4d0c4e5a"
+    },
+    "exports/SM_CN_Sage_B_LOD2.glb": {
+      "bytes": 2810312,
+      "sha256": "874fcd0f96d9e2d55da213c56bd3f1de3cac605490d2d16fdc867e0442a588d3"
+    },
+    "exports/SM_CN_Sage_C.fbx": {
+      "bytes": 269228,
+      "sha256": "18edc321eec46e07f63881d84bd2e5295230566efb15b9842936ea9085de8ecc"
+    },
+    "exports/SM_CN_Sage_C.glb": {
+      "bytes": 3029408,
+      "sha256": "edbfb99dc11d843e650051b3832734a383f39907967be988cdbe5f449d9b1566"
+    },
+    "exports/SM_CN_Sage_C_LOD1.fbx": {
+      "bytes": 101740,
+      "sha256": "3514ad4d3519cf9af6a1ed2a21c5765c68e93d93adf39d0488ca05eb42ac2d0a"
+    },
+    "exports/SM_CN_Sage_C_LOD1.glb": {
+      "bytes": 2864788,
+      "sha256": "4fffe9c9fb3adf3d7fe931c8c1f266703feb3ee52623c984ededaf52d6e31300"
+    },
+    "exports/SM_CN_Sage_C_LOD2.fbx": {
+      "bytes": 49804,
+      "sha256": "3b59ea25ffe056be9626e40885132e42e99c6bfaf7ddcb9ed0aba28b34f897ee"
+    },
+    "exports/SM_CN_Sage_C_LOD2.glb": {
+      "bytes": 2809836,
+      "sha256": "518658773543342599d4800ff5a6c4de5beeb3e6415bea13d2aba3badce4f013"
+    },
+    "exports/SM_CN_Sandstone_A.fbx": {
+      "bytes": 25132,
+      "sha256": "44ec11ab9154d42af05a95294048a01de1e9a1ed2678832c339c4080715343db"
+    },
+    "exports/SM_CN_Sandstone_A.glb": {
+      "bytes": 2500392,
+      "sha256": "5f725a55624619aa1bb310ee279e99005ed42a5630d223ca7bfa0784ca94d378"
+    },
+    "exports/SM_CN_Sandstone_A_LOD1.fbx": {
+      "bytes": 24380,
+      "sha256": "9d470ac1fcf035b460070167a245d1192413fd0492a560a180ee5c32654b70e3"
+    },
+    "exports/SM_CN_Sandstone_A_LOD1.glb": {
+      "bytes": 2498144,
+      "sha256": "fa73754f65207c97db3d5c565cd7909c74b27b2f3677ea3ff5300b39ec7ba444"
+    },
+    "exports/SM_CN_Sandstone_A_LOD2.fbx": {
+      "bytes": 23580,
+      "sha256": "432a25e8abca8e5109a00307a4d290ee04a239c64a30dfaaa4e44b0fea617ac9"
+    },
+    "exports/SM_CN_Sandstone_A_LOD2.glb": {
+      "bytes": 2495888,
+      "sha256": "b9fb5b02e6e570a21a970ea981b7229361cff3fb4fe36274dea8d404076b5663"
+    },
+    "exports/SM_CN_Yucca_A.fbx": {
+      "bytes": 65580,
+      "sha256": "ad8059da38a9087019af0ff3319ade3702e73a2426e4b47cc67d3162d7cf7aef"
+    },
+    "exports/SM_CN_Yucca_A.glb": {
+      "bytes": 2817452,
+      "sha256": "b183d90b0e6b635182a74340c15c5f9d59a675c3e479302229b396188db270ed"
+    },
+    "exports/SM_CN_Yucca_A_LOD1.fbx": {
+      "bytes": 41468,
+      "sha256": "dcde906923eee021d850bf1a38e2ed93e8340103ca364dc950be22bb27cd45c9"
+    },
+    "exports/SM_CN_Yucca_A_LOD1.glb": {
+      "bytes": 2794920,
+      "sha256": "06847c7257ed121799454c6e2acf0103c98af508c1c216e63e488d39af8ce1fd"
+    },
+    "exports/SM_CN_Yucca_A_LOD2.fbx": {
+      "bytes": 31964,
+      "sha256": "b0a28d050cba638decefe3cee1e9df286f627e08f5902b7539344be0edbd642e"
+    },
+    "exports/SM_CN_Yucca_A_LOD2.glb": {
+      "bytes": 2786168,
+      "sha256": "d3ec4263bdc6c48f713150bffd5d5f246a9266e4a51c613ff023d3a6fc695783"
+    },
+    "exports/SM_CN_Yucca_B.fbx": {
+      "bytes": 65660,
+      "sha256": "1f066471f2e7b4e1bc506d5777b0b075f6cc78618d4f2dca0f319552956bb89c"
+    },
+    "exports/SM_CN_Yucca_B.glb": {
+      "bytes": 2817388,
+      "sha256": "686c80c2877741ce91821e95cafb735e199cd614e786f6c442b85a0e6d57a375"
+    },
+    "exports/SM_CN_Yucca_B_LOD1.fbx": {
+      "bytes": 41500,
+      "sha256": "a4d23350d45cf46d1331a62a1b38f7a45297f350d0b9589198e1fb680b4908db"
+    },
+    "exports/SM_CN_Yucca_B_LOD1.glb": {
+      "bytes": 2794920,
+      "sha256": "e54d3dbbd76c64e70c797cf4925c05e3a0a1997efcb2e2b6554949a9ff9baa06"
+    },
+    "exports/SM_CN_Yucca_B_LOD2.fbx": {
+      "bytes": 31964,
+      "sha256": "d01e1238c28caa5d477103beff3206b5a40eeb3f418ba7597ec76a11d1a1b112"
+    },
+    "exports/SM_CN_Yucca_B_LOD2.glb": {
+      "bytes": 2786104,
+      "sha256": "0b118cf4d511b4c8e086c90a86298d1fbeda7ffce25a335bee5e645092419fe1"
+    },
+    "geometry.py": {
+      "bytes": 10797,
+      "sha256": "33de22ad3982746b8a3b93656dff1205b3a94751161216b27750cf22cd45a48a"
+    },
+    "make_textures.py": {
+      "bytes": 2684,
+      "sha256": "fcc815b14c3badc1d1257ac5a84afc4bcfbb9c43d54b97e8247dd7495d40e621"
+    },
+    "masked_atlas.py": {
+      "bytes": 4235,
+      "sha256": "9b452863276876bc2a7b1fc11e2ee15b00febd6c6c008d3b1ba1e855569fdc33"
+    },
+    "masked_atlas_stats.json": {
+      "bytes": 1248,
+      "sha256": "fa5b7f916881c0f30ba705f5cd15b43ab6227497c84735d3f9f90e4949da3fc1"
+    },
+    "materials.json": {
+      "bytes": 1955,
+      "sha256": "21a2461d921a5f0fe877c295665f7d24e3751f4954cf31ef0ec69539adf78e7d"
+    },
+    "model_contract.json": {
+      "bytes": 43677,
+      "sha256": "f1d25f6bcbdf82cf7149be795eaf6ed2333276ca0bea02522d6b34e06ca552a0"
+    },
+    "preview_botanical.py": {
+      "bytes": 3139,
+      "sha256": "0f320071506fb34ad3b5cd8b09d5a86d71fc87c73121610203c0eec9d86064bc"
+    },
+    "prototype_plan.json": {
+      "bytes": 24167,
+      "sha256": "18ed8a5b8a9bac83afdcb7debeb456d5445a320434a7e6c9a52833a9aea6b549"
+    },
+    "run_guarded.py": {
+      "bytes": 1417,
+      "sha256": "67d7df9ed3ed69ba44fe2782ad688da54d9b40dfe7ca8686490a168c8594d3bc"
+    },
+    "source_audit.json": {
+      "bytes": 4906,
+      "sha256": "5ec4dd150ff2c0d8ab68682fe895258be55a4954a227776c1042a9a457dfaefa"
+    },
+    "textures/bark_color.png": {
+      "bytes": 76867,
+      "sha256": "939571a148ba4f66d5eedea84a7827a8ab82872c311a38a8d06bf248e0c1bbbc"
+    },
+    "textures/bark_normal_dx.png": {
+      "bytes": 150979,
+      "sha256": "b5711c74d26beb6e480feb42deb1da154aef92ec75b0d9a02eec3e053b72b42f"
+    },
+    "textures/bark_normal_gl.png": {
+      "bytes": 151070,
+      "sha256": "304bb3c484bee936a5fecaad24ae20272325688e5c8a3393886998667fe7b606"
+    },
+    "textures/bark_roughness.png": {
+      "bytes": 38320,
+      "sha256": "d4bbfa5975e160c2c54c603934c17c50fca36808103387b7ef445a69a22e5a9c"
+    },
+    "textures/botanical_color.png": {
+      "bytes": 1070212,
+      "sha256": "a3bc2716bcd9e375b685a0c5db82d0e0a67cbbc3ad7e5d27836b2ec6e65a076e"
+    },
+    "textures/botanical_normal_dx.png": {
+      "bytes": 810764,
+      "sha256": "b559a403914b00806ce088f9c4a25c3b5d363c3dca58d3ff7aac6ee23a4d35ea"
+    },
+    "textures/botanical_normal_gl.png": {
+      "bytes": 810708,
+      "sha256": "09cda28aeb61465501e270f1c7cfc4775bcd1c703469755920ca073ad4d7cf64"
+    },
+    "textures/botanical_roughness.png": {
+      "bytes": 391778,
+      "sha256": "9444fe73eb0cbe79bb10bcb9df5f2a016de6c898dd9718391290412bb61e820f"
+    },
+    "update_manifest.py": {
+      "bytes": 5102,
+      "sha256": "42d7a352f4d53de704c315d794ab2da619d93bf6a13b1280d8d6bc7e8c379a1b"
+    },
+    "verification.json": {
+      "bytes": 46243,
+      "sha256": "9689d2091581eb550563ef7d0d807134a889eb1888a02c7dc3123d858ba0a42f"
+    },
+    "verify_mask_textures.py": {
+      "bytes": 2638,
+      "sha256": "be62f5c415205bfcae1421df6717c06c0d89ef3befbb49e60d9cf9dc71ae697c"
+    },
+    "verify_vegetation.py": {
+      "bytes": 5463,
+      "sha256": "19f679d6d93c78f3d74fe26b309ad9d6e52e7278226e783a04cd5f031d260e22"
+    }
+  }
+}

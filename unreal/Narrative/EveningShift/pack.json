@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "pack_id": "signal47_evening_shift",
+  "language": "en-US",
+  "status": "opening_runtime_integrated",
+  "engine_target": "Signal47 Unreal 5.8.4",
+  "phases": [
+    "commute",
+    "handover",
+    "early_shift",
+    "signal",
+    "archive",
+    "field",
+    "all_night"
+  ],
+  "channels": [
+    "physical",
+    "phone",
+    "walkie",
+    "radio",
+    "ui"
+  ],
+  "actors": {
+    "DALE": {
+      "display_name": "DALE",
+      "voice_profile": "kinski",
+      "record": true,
+      "allowed_channels": [
+        "phone",
+        "walkie",
+        "radio"
+      ],
+      "direction_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+    },
+    "WAITRESS": {
+      "display_name": "WAITRESS",
+      "voice_profile": "waitress",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Samme jordnære servitrise tidlig og sent; varm uten skummel undertone i innledningen."
+    },
+    "RADIO_HOST": {
+      "display_name": "RADIO HOST",
+      "voice_profile": "evening_host",
+      "record": true,
+      "allowed_channels": [
+        "radio"
+      ],
+      "direction_nb": "Ordinær lokal kveldsvert, ikke Earl eller Kinski."
+    },
+    "WARD": {
+      "display_name": "DR. WARD",
+      "voice_profile": "ward",
+      "record": true,
+      "allowed_channels": [
+        "phone",
+        "radio"
+      ],
+      "direction_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+    },
+    "ATTENDANT": {
+      "display_name": "ATTENDANT",
+      "voice_profile": "attendant",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Eksisterende ekspeditør."
+    },
+    "DESCRIPTION": {
+      "display_name": "",
+      "voice_profile": null,
+      "record": false,
+      "allowed_channels": [
+        "physical",
+        "ui",
+        "phone",
+        "walkie",
+        "radio"
+      ],
+      "direction_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
+    }
+  },
+  "flags": {
+    "intro_arrived": {
+      "default": false,
+      "purpose_nb": "Bilen er parkert ved SARO; skiftklokka starter 18:00."
+    },
+    "intro_completed": {
+      "default": false,
+      "purpose_nb": "Innkjøringen er avsluttet uten å starte senere kapitler."
+    },
+    "food_bought": {
+      "default": false,
+      "purpose_nb": "En faktisk matbestilling er gjennomført."
+    },
+    "food_eaten": {
+      "default": false,
+      "purpose_nb": "Bestillingen er spist i dineren."
+    },
+    "food_taken": {
+      "default": false,
+      "purpose_nb": "Bestillingen er tatt med."
+    },
+    "handover_done": {
+      "default": false,
+      "purpose_nb": "Dales telefonoverlevering er ferdig."
+    },
+    "routine_checked": {
+      "default": false,
+      "purpose_nb": "Overleveringsmaterialet er kontrollert før residualen."
+    },
+    "trafo_normal_checked": {
+      "default": false,
+      "purpose_nb": "T01 er kontrollert og den vanlige feilen er håndtert."
+    },
+    "trafo_anomaly_checked": {
+      "default": false,
+      "purpose_nb": "T02 er etterprøvd; en kjent feilkilde er utelukket."
+    },
+    "office_key_found": {
+      "default": false,
+      "purpose_nb": "Reservenøkkelen til Dales kontor er funnet."
+    },
+    "office_open": {
+      "default": false,
+      "purpose_nb": "Kontoret er åpnet med riktig nøkkel."
+    },
+    "office_evidence_taken": {
+      "default": false,
+      "purpose_nb": "Kontorets hovedspor er registrert."
+    },
+    "vhs_seen": {
+      "default": false,
+      "purpose_nb": "Feltopptaket er faktisk spilt til den relevante bevegelsen."
+    },
+    "vhs_contact_saved": {
+      "default": false,
+      "purpose_nb": "Kontaktarket fra feltopptaket er tatt med."
+    },
+    "record_compared": {
+      "default": false,
+      "purpose_nb": "Driftsjournal/sendeskjema er sammenlignet med residualen."
+    }
+  },
+  "external_flags": {
+    "ctx_signal_present": {
+      "purpose_nb": "1986-residualen 00:13:47 finnes i aktiv ny tidslinje."
+    },
+    "ctx_archive_open": {
+      "purpose_nb": "Den reviderte arkivfasen er aktiv; gamle rapporter kan sammenlignes."
+    },
+    "ctx_nora_contacted": {
+      "purpose_nb": "Eksisterende Nora-samtale er gjennomført."
+    },
+    "ctx_all_night_active": {
+      "purpose_nb": "Eksisterende ch5 er virkelig aktiv, ikke bare et tidlig dinerbesøk."
+    },
+    "ctx_power_available": {
+      "purpose_nb": "Relevante apparater har faktisk strøm."
+    },
+    "ctx_room_quiet": {
+      "purpose_nb": "Ingen samtale, viktig hendelse eller modal blokkering konkurrerer."
+    },
+    "ctx_map_solved": {
+      "purpose_nb": "P13 er løst gjennom eksisterende hovedgåte."
+    },
+    "ctx_trafo_service_ok": {
+      "purpose_nb": "T01s faktiske servicekontroll viser rettet normalfeil og forventet lyskilderespons."
+    },
+    "ctx_trafo_isolation_verified": {
+      "purpose_nb": "T02s merkede servicekontroll er faktisk gjennomført og isolering bekreftet i verdenstilstanden."
+    },
+    "ctx_trafo_backup_excluded": {
+      "purpose_nb": "Den lokale nødforsyningen er faktisk kontrollert og kan ikke forklare testlampen."
+    },
+    "ctx_trafo_indicator_checked": {
+      "purpose_nb": "Panelindikasjon er sammenlignet med den separate lokale kontrollen."
+    },
+    "ctx_trafo_lamp_persists": {
+      "purpose_nb": "Den avvikende lyskilden fortsetter synlig etter de fullførte kontrollene."
+    },
+    "ctx_trafo_photo_available": {
+      "purpose_nb": "Et faktisk nytt T02-foto fra riktig ståsted/utsnitt finnes for den aktuelle kontrollprøven; manglende diskfoto gir ikke bekreftet bevis."
+    }
+  },
+  "modules": [
+    "modules/arrival.json",
+    "modules/dale.json",
+    "modules/office.json",
+    "modules/field.json"
+  ],
+  "canon": {
+    "shift_date": "1986-04-13",
+    "shift_start": "18:00:00",
+    "proposed_residual_date": "1986-04-14",
+    "proposed_residual": "00:13:47",
+    "event_start": "05:29:00",
+    "event_end": "05:29:47",
+    "receiver_mhz": 1420.405,
+    "dishes": 27,
+    "azimuth_deg": 26
+  },
+  "production": {
+    "audio_status": "voice_takes_recorded",
+    "video_status": "pending",
+    "runtime_status": "commute_handover_integrated_later_phases_gated",
+    "voice_target": {
+      "sample_rate_hz": 48000,
+      "sample_format": "PCM16",
+      "channels": 1
+    },
+    "note_nb": "Kveldstart og tidslinje har runtime i S47Evening/S47EveningPack. De 109 rene stemmetakene er produsert (voice/README.md); Unreal-import av takene, kanalmiks i spillet, musikk og video gjenstår. Senere felt-, kontor- og filmoppgaver er porter for videre produksjon."
+  },
+  "recording_aliases": {
+    "D61_FIXED_FRAGMENT_001": "D01_HANDOVER_001"
+  }
+}

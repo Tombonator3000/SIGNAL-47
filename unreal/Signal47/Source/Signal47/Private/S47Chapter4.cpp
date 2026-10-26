@@ -16,6 +16,7 @@
 #include "S47NpcDialogue.h"
 #include "S47Room6.h"
 #include "S47Story.h"
+#include "S47Substation.h"
 #include "S47UI.h"
 #include "S47Walkie.h"
 #include "S47Walker.h"
@@ -470,7 +471,7 @@ FString US47Chapter4::Objective() const
 		return TEXT("ROOM 6 // ASK HER WHERE C WENT");
 	}
 	if (S.Stage == TEXT("leave")) return bRoom ? TEXT("ROOM 6 // THE ROAD SOUTH IS NEXT. LEAVE ROOM 6") : TEXT("SIERRA MOTOR COURT // THE ROAD SOUTH IS NEXT");
-	if (S.Stage == TEXT("complete")) return TEXT("ALL NIGHT // NEXT PART NOT YET PLAYABLE");
+	if (S.Stage == TEXT("complete")) return TEXT("MESA DINER // TAKE THE ROAD SOUTH AND CHECK THE SERVICE MAP");
 	return FString();
 }
 
@@ -1284,7 +1285,11 @@ void US47Chapter4::Update(double Dt, double T)
 		HeadYaw += (Want - HeadYaw) * FMath::Min(1.0, Dt * 3);
 		Head.SetRotY(HeadYaw);
 	}
-	if (M->UI) M->UI->Objective(Objective());
+	if (M->UI)
+	{
+		const FString Local = M->Substation ? M->Substation->FollowupObjective() : FString();
+		M->UI->Objective(Local.IsEmpty() ? Objective() : Local);
+	}
 }
 
 // ---------- the host (Prologue.ts) ----------
@@ -1304,7 +1309,7 @@ void US47Chapter4::BeginChapter4(const S47J::FObj& SavedCase)
 		Host->NotesMutable() = S47J::Strs(SavedCase, TEXT("notes"));
 		Host->SetClock(S47J::Num(SavedCase, TEXT("clock"), Host->Clock()));
 	}
-	else Host->SetClock(FMath::Max(Host->Clock(), 4 * 3600.0 + 35 * 60));
+	else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter4(Host->bEveningTimeline)));
 	if (M && M->UI) M->UI->Fade(false);
 	Host->BeginChapter(TEXT("ch4"), Ch4); // (ch4.begin, then onCheckpoint('chapter4'))
 }
@@ -1346,7 +1351,7 @@ void US47Chapter4::JumpChapter4()
 		S47J::Set(Done, TEXT("ch2"), J2);
 		S47J::Set(Done, TEXT("ch3"), J3);
 		S47J::Set(Done, TEXT("notes"), Host->Notes());
-		S47J::Set(Done, TEXT("clock"), 4 * 3600.0 + 32 * 60);
+		S47J::Set(Done, TEXT("clock"), Host->bEveningTimeline ? 3 * 3600.0 + 17 * 60 : 4 * 3600.0 + 32 * 60);
 	}
 	BeganCase = Done;
 	// Prologue.beginChapter1(done): chapter one's Begin takes the whole case (notes, clock, its state)
@@ -1366,7 +1371,7 @@ void US47Chapter4::JumpChapter4()
 			Host->NotesMutable() = S47J::Strs(Done, TEXT("notes"));
 			Host->SetClock(S47J::Num(Done, TEXT("clock"), Host->Clock()));
 		}
-		else Host->SetClock(FMath::Max(Host->Clock(), 3 * 3600.0 + 40 * 60));
+		else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter3(Host->bEveningTimeline)));
 		if (M && M->UI) M->UI->Fade(false);
 		// Prologue.beginChapter3 (its own: the clock to 03:40, the station bound)
 		if (US47Chapter3* C3 = Cast<US47Chapter3>(Host->Chapter(TEXT("ch3")))) C3->BeginChapter3(Done);

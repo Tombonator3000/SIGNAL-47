@@ -17,7 +17,7 @@ namespace S47EngineSound
 // rpm, crossing over between 900 and 1500 rpm, under a low-pass that opens with load and a fixed
 // "cab" low-pass. Getting in, the engine starts with its own recording; arriving, it shuts off.
 //
-// The recordings (engine_idle, engine_drive, engine_start, engine_off) play through US47Audio by
+// The recordings (engineIdle, engineDrive, engineStart, engineOff) play through US47Audio by
 // name; their gains, rates and the filter follow the web version's Web Audio automation exactly
 // (FS47EngineParam below: setValueAtTime, linear and exponential ramps, setTargetAtTime,
 // cancelScheduledValues), evaluated each frame. The parts made of Web Audio nodes (the band-passed
@@ -59,6 +59,8 @@ public:
 	bool Recorded() const { return bEng; }
 	/** Running or stalled; false when Start() would turn the key (the key's own sound). */
 	bool On() const { return bEng; }
+	bool LoopsReady() const { return bLoops; }
+	bool Stopping() const { return StopAt >= 0; }
 
 	/** Engine on (idle) and the tyre layers ready. */
 	void Start();
@@ -107,4 +109,5 @@ private:
 	void Build();
 	void EngineNodes();
 	double Once(const TCHAR* Clip, double Gain);
+	void TickAt(double T); // shared envelope evaluation, also for deterministic lifecycle checks
 };

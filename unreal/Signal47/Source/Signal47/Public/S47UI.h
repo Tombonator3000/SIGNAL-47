@@ -43,13 +43,17 @@ struct FS47PauseOpts
 	bool bUltraOk = false;
 	FString Title;                        // empty: 'Paused'
 	bool bSettingsOnly = false;
-	FString Picture = TEXT("vhs");        // 'off' | 'vhs'
+	FString Picture = TEXT("carpenter");  // 'off' | 'vhs' | 'carpenter' | '16mm' | 'super8'
 	TFunction<void(const FString&)> OnPicture;
+	float PictureStrength = 1.f; TFunction<void(float)> OnPictureStrength;
 	bool bInvertY = false; TFunction<void(bool)> OnInvertY;
+	float PadLookSpeed = 1.f; TFunction<void(float)> OnPadLookSpeed;
+	bool bPadInvertY = false; TFunction<void(bool)> OnPadInvertY;
 	float Fov = 70.f; TFunction<void(float)> OnFov;
 	bool bLargeText = false; TFunction<void(bool)> OnLargeText;
 	bool bCalmFlash = false; TFunction<void(bool)> OnCalmFlash;
 	bool bStillShots = false; TFunction<void(bool)> OnStillShots;
+	bool bHeadMotion = true; TFunction<void(bool)> OnHeadMotion;
 	bool bAbduct = true; TFunction<void(bool)> OnAbduct; // unset: not offered
 	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
 	// bound in Settings > Controls (S47Keys; the store keeps them)

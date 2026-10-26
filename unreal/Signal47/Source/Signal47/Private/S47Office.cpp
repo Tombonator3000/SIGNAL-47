@@ -1,0 +1,533 @@
+#include "S47Office.h"
+#include "S47Evening.h"
+#include "S47Flow.h"
+#include "S47Inter.h"
+#include "S47Main.h"
+#include "S47Story.h"
+#include "S47Three.h"
+#include "S47UI.h"
+#include "S47Walker.h"
+#include "S47Web.h"
+#include "S47World.h"
+#include "Components/BoxComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "StaticMeshResources.h"
+#include "RenderUtils.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogS47Office, Log, All);
+
+namespace
+{
+ constexpr double HingeX = -.03, HingeZ = 6.57, LeafWidth = 1.0;
+ struct FPortalPatch
+ {
+  UStaticMeshComponent* Comp = nullptr;
+  UStaticMesh* Cut = nullptr;
+  int32 Partition = 0, Skirting = 0, Door = 0;
+  bool bHide = false;
+ };
+ bool InBox(const FVector& P, double X0, double X1, double Y0, double Y1, double Z0, double Z1)
+ { return P.X >= X0 && P.X <= X1 && P.Y >= Y0 && P.Y <= Y1 && P.Z >= Z0 && P.Z <= Z1; }
+ bool PartitionTriangle(const FVector& A, const FVector& B, const FVector& C)
+ {
+  auto In = [](const FVector& P) { return InBox(P, -3.406, 2.006, -.006, 2.806, 6.597, 6.806); };
+  return In(A) && In(B) && In(C) && FMath::Max3(A.X, B.X, C.X) - FMath::Min3(A.X, B.X, C.X) > 5.3;
+ }
+ bool SkirtingTriangle(const FVector& A, const FVector& B, const FVector& C)
+ {
+  auto In = [](const FVector& P) { return InBox(P, -3.406, 2.006, -.006, .106, 6.569, 6.601); };
+  return In(A) && In(B) && In(C) && FMath::Max3(A.X, B.X, C.X) - FMath::Min3(A.X, B.X, C.X) > 5.3;
+ }
+ bool OldDoorPoint(const FVector& P) { return InBox(P, -.04, .94, -.01, 2.061, 6.499, 6.60); }
+ // The immutable Annex export merges the closed Operations door with unrelated geometry.
+ // Retire only its exact leaf/handle/sign, wide partition/painted faces and low skirting.
+ // The unchanged end caps lie outside the new aperture. Keep every other
+ // vertex, UV, normal, material slot and ray tracing resource, as in SaroArrival's sign patch.
+ bool PreparePortal(AS47Web* W, UStaticMeshComponent* Comp, FPortalPatch& Out)
+ {
+  UStaticMesh* Original = Comp ? Comp->GetStaticMesh() : nullptr;
+  if (!Original || !Original->bAllowCPUAccess || !Original->GetRenderData() || Original->GetRenderData()->LODResources.Num() != 1) return false;
+  const FStaticMeshLODResources& Src = Original->GetRenderData()->LODResources[0];
+  const FStaticMeshVertexBuffers& Buffers = Src.VertexBuffers;
+  if (!Buffers.PositionVertexBuffer.GetVertexData() || !Buffers.StaticMeshVertexBuffer.GetTangentData() || !Buffers.StaticMeshVertexBuffer.GetTexCoordData() || Src.IndexBuffer.GetIndexDataSize() == 0) return false;
+  TArray<uint32> Old, Keep; Src.IndexBuffer.GetCopy(Old); Keep.Reserve(Old.Num());
+  TArray<FStaticMeshSection> Sections; int32 Partition = 0, Skirting = 0, Door = 0;
+  auto Point = [&](uint32 Idx) { return S47Three::ToThree(Comp->GetComponentTransform().TransformPosition(FVector(Buffers.PositionVertexBuffer.VertexPosition(Idx)))); };
+  for (const FStaticMeshSection& Section : Src.Sections)
+  {
+   FStaticMeshSection Copy = Section; Copy.FirstIndex = Keep.Num(); Copy.NumTriangles = 0;
+   for (uint32 Index = Section.FirstIndex; Index < Section.FirstIndex + Section.NumTriangles * 3; Index += 3)
+   {
+    if (Index + 2 >= uint32(Old.Num())) return false;
+    const uint32 Aidx = Old[Index], Bidx = Old[Index + 1], Cidx = Old[Index + 2];
+    if (FMath::Max3(Aidx, Bidx, Cidx) >= Buffers.PositionVertexBuffer.GetNumVertices()) return false;
+    const FVector A = Point(Aidx), B = Point(Bidx), C = Point(Cidx);
+    if (SkirtingTriangle(A, B, C)) { ++Skirting; continue; }
+    if (PartitionTriangle(A, B, C)) { ++Partition; continue; }
+    if (OldDoorPoint(A) && OldDoorPoint(B) && OldDoorPoint(C)) { ++Door; continue; }
+    Keep.Append({Aidx, Bidx, Cidx}); ++Copy.NumTriangles;
+   }
+   if (Copy.NumTriangles) Sections.Add(Copy);
+  }
+  if (!Partition && !Skirting && !Door) return false;
+  Out.Comp = Comp; Out.Partition = Partition; Out.Skirting = Skirting; Out.Door = Door;
+  if (Keep.IsEmpty()) { Out.bHide = true; return true; }
+  UStaticMesh* Cut = NewObject<UStaticMesh>(W, NAME_None, RF_Transient);
+  Cut->bAllowCPUAccess = true; Cut->NeverStream = true; Cut->GetStaticMaterials() = Original->GetStaticMaterials(); Cut->bSupportRayTracing = true;
+  auto Data = MakeUnique<FStaticMeshRenderData>(); Data->AllocateLODResources(1);
+  Data->Bounds = Original->GetRenderData()->Bounds; Data->ScreenSize[0].Default = 1;
+  Data->NumInlinedLODs = 1; Data->CurrentFirstLODIdx = 0; Data->bReadyForStreaming = false;
+  FStaticMeshLODResources& Dst = Data->LODResources[0]; Dst.Sections.Append(Sections);
+  Dst.VertexBuffers.PositionVertexBuffer.Init(Buffers.PositionVertexBuffer, true);
+  auto& Tangents = Dst.VertexBuffers.StaticMeshVertexBuffer;
+  Tangents.SetUseHighPrecisionTangentBasis(Buffers.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());
+  Tangents.SetUseFullPrecisionUVs(Buffers.StaticMeshVertexBuffer.GetUseFullPrecisionUVs());
+  Tangents.Init(Buffers.StaticMeshVertexBuffer.GetNumVertices(), Buffers.StaticMeshVertexBuffer.GetNumTexCoords(), true);
+  for (uint32 Vertex = 0; Vertex < Buffers.StaticMeshVertexBuffer.GetNumVertices(); ++Vertex)
+  {
+   Tangents.SetVertexTangents(Vertex, FVector3f(Buffers.StaticMeshVertexBuffer.VertexTangentX(Vertex)), Buffers.StaticMeshVertexBuffer.VertexTangentY(Vertex), FVector3f(Buffers.StaticMeshVertexBuffer.VertexTangentZ(Vertex)));
+   for (uint32 UV = 0; UV < Buffers.StaticMeshVertexBuffer.GetNumTexCoords(); ++UV) Tangents.SetVertexUV(Vertex, UV, Buffers.StaticMeshVertexBuffer.GetVertexUV(Vertex, UV));
+  }
+  const uint32 Colors = Buffers.ColorVertexBuffer.GetNumVertices();
+  if (Colors)
+  {
+   if (!Buffers.ColorVertexBuffer.GetVertexData()) return false;
+   Dst.VertexBuffers.ColorVertexBuffer.Init(Colors, true);
+   for (uint32 Vertex = 0; Vertex < Colors; ++Vertex) Dst.VertexBuffers.ColorVertexBuffer.VertexColor(Vertex) = Buffers.ColorVertexBuffer.VertexColor(Vertex);
+  }
+  Dst.bHasColorVertexData = Colors > 0; Dst.bBuffersInlined = true; Dst.bIsOptionalLOD = false;
+  Dst.SourceMeshBounds = Data->Bounds; Dst.MaxDeviation = 0; Dst.IndexBuffer.SetIndices(Keep, EIndexBufferStride::Force32Bit);
+  bool bInitRayTracing = Cut->bSupportRayTracing;
+#if !WITH_EDITOR
+  bInitRayTracing = bInitRayTracing && IsRayTracingAllowed();
+#endif
+  if (bInitRayTracing) Data->InitializeRayTracingRepresentationFromRenderingLODs();
+  Cut->SetRenderData(MoveTemp(Data)); Cut->SetExtendedBounds(Original->GetBounds()); Out.Cut = Cut; return true;
+ }
+ FTransform Transform(const FVector& At, double Yaw = 0)
+ {
+  double Matrix[16]; S47Three::Compose(At, S47Three::Euler(0, Yaw, 0), FVector::OneVector, Matrix); return S47Three::MatToUE(Matrix);
+ }
+}
+
+struct FS47Office::FVisual
+{
+ FS47Obj Root, Leaf;
+ TMap<FString, FS47Obj> Objects;
+ TArray<TPair<FS47Obj, FVector>> DrawerParts;
+ TArray<FS47Obj> KeyParts;
+ TWeakObjectPtr<UPointLightComponent> Light;
+};
+
+FS47Office::FS47Office(US47Main* InM) : Visual(MakeUnique<FVisual>()), M(InM) {}
+FS47Office::~FS47Office() = default;
+
+void FS47Office::Init()
+{
+ if (bBuilt || !M || !M->Web || !M->Inter || !M->Web->IsLoaded()) return;
+ bBuilt = true;
+ AS47Web* W = M->Web; const int32 Parent = W->Handle(TEXT("annex.group"));
+ const FS47WebNode* ParentNode = W->Node(Parent); USceneComponent* ParentComp = ParentNode ? ParentNode->Comp.Get() : nullptr;
+ UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+ UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ UStaticMesh* Desk = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Free/Office/retro_office_props/StaticMeshes/retro_office_props_PI_TankerDesk.retro_office_props_PI_TankerDesk"));
+ UStaticMesh* Chair = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Free/Office/retro_office_props/StaticMeshes/retro_office_props_PI_OfficeChair.retro_office_props_PI_OfficeChair"));
+ UStaticMesh* Lamp = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Free/Office/retro_office_props/StaticMeshes/retro_office_props_PI_DeskLamp.retro_office_props_PI_DeskLamp"));
+ UStaticMesh* TV = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Kelvora/SM_Kelvora_TV.SM_Kelvora_TV"));
+ if (!ParentComp || !Cube || !Base || !Desk || !Chair || !Lamp || !TV)
+ { UE_LOG(LogS47Office, Error, TEXT("S47: office unavailable: existing annex or owned office assets absent; original partition retained")); return; }
+ TArray<FPortalPatch> Patches; int32 PartitionCount = 0, SkirtingCount = 0, DoorCount = 0; const int32 OriginalNodes = W->PartCount();
+ auto Under = [W, Parent](int32 Node)
+ {
+  for (; Node >= 0;) { if (Node == Parent) return true; const FS47WebNode* N = W->Node(Node); if (!N) break; Node = N->Parent; } return false;
+ };
+ for (int32 Node = 0; Node < OriginalNodes; ++Node)
+ {
+  const FS47WebNode* N = W->Node(Node); if (!N || !Under(Node) || N->Geo == 402 || N->Geo < 0) continue;
+  UStaticMeshComponent* Comp = Cast<UStaticMeshComponent>(N->Comp.Get()); if (!Comp || !Comp->GetStaticMesh()) continue;
+  // Bound the scan before requiring CPU data from any unrelated imported furniture.
+  const FBox Box = W->ObjAt(Node).WorldBox();
+  if (!Box.IsValid || Box.Max.X < -3.41 || Box.Min.X > 2.01 || Box.Max.Z < 6.49 || Box.Min.Z > 6.81) continue;
+  FPortalPatch Patch; if (PreparePortal(W, Comp, Patch)) { PartitionCount += Patch.Partition; SkirtingCount += Patch.Skirting; DoorCount += Patch.Door; Patches.Add(Patch); }
+ }
+ if (PartitionCount != 10 || SkirtingCount != 8 || DoorCount != 26)
+ { UE_LOG(LogS47Office, Error, TEXT("S47: office exact portal rejected partition=%d/10 skirting=%d/8 oldDoor=%d/26; original retained"), PartitionCount, SkirtingCount, DoorCount); return; }
+ auto Material = [W, Base](uint32 Color, float Roughness = .8f, float Metalness = 0.f)
+ {
+  UMaterialInstanceDynamic* Mat = UMaterialInstanceDynamic::Create(Base, W);
+  Mat->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(Color)); Mat->SetScalarParameterValue(TEXT("NativeLighting"), 1);
+  Mat->SetScalarParameterValue(TEXT("Roughness"), Roughness); Mat->SetScalarParameterValue(TEXT("Metalness"), Metalness); Mat->SetScalarParameterValue(TEXT("EmissivePower"), 0); return Mat;
+ };
+ UMaterialInterface* Wall = Material(0xa8a48c), *Green = Material(0x718073), *Floor = Material(0x5e6056), *Wood = Material(0x56432c), *Steel = Material(0x4d5553, .6, .45), *Brass = Material(0xa18d4a, .38, .7), *Paper = Material(0xd5c9a6), *Kraft = Material(0x9c895e), *Ink = Material(0x182620);
+ UBoxComponent* Group = NewObject<UBoxComponent>(W, TEXT("OperationsRoomRoot")); Group->SetMobility(EComponentMobility::Movable);
+ Group->SetupAttachment(ParentComp); Group->SetCollisionEnabled(ECollisionEnabled::NoCollision); Group->SetBoxExtent(FVector(1)); Group->RegisterComponent();
+ Visual->Root = W->ObjAt(W->AdoptNode(Group, Parent, TEXT("operations:room")));
+ const int32 Root = Visual->Root.I;
+ auto Mesh = [&](const FString& Name, UStaticMesh* Asset, const FVector& At, const FVector& Scale, UMaterialInterface* Mat, double Yaw = 0, int32 Attach = -1)
+ {
+  const int32 Owner = Attach >= 0 ? Attach : Root; const FS47WebNode* N = W->Node(Owner);
+  UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *Name); C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(N->Comp.Get()); C->SetStaticMesh(Asset);
+  if (Mat) C->SetMaterial(0, Mat); C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore); C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+  C->RegisterComponent(); C->SetWorldTransform(Transform(At, Yaw)); C->SetWorldScale3D(S47Three::DirToUE(Scale));
+  FS47Obj Obj = W->ObjAt(W->AdoptNode(C, Owner, Name)); Obj.SetScale(Scale); Obj.SetRotation(FVector(0, Yaw, 0)); return Obj;
+ };
+ auto Box = [&](const FString& Name, const FVector& At, const FVector& Size, UMaterialInterface* Mat) { return Mesh(Name, Cube, At, Size, Mat); };
+ auto Label = [&](const FString& Name, const FString& Text, const FVector& At, double Yaw, float Size = 4.f, int32 Attach = -1)
+ {
+  const int32 Owner = Attach >= 0 ? Attach : Root; const FS47WebNode* N = W->Node(Owner);
+  UTextRenderComponent* C = NewObject<UTextRenderComponent>(W, *Name); C->SetupAttachment(N->Comp.Get()); C->SetMobility(EComponentMobility::Movable);
+  C->SetText(FText::FromString(Text)); C->SetWorldSize(Size); C->SetHorizontalAlignment(EHTA_Center); C->SetVerticalAlignment(EVRTA_TextCenter); C->SetTextRenderColor(FColor(30, 38, 30)); C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  C->RegisterComponent(); C->SetWorldLocation(S47Three::ToUE(At)); C->SetWorldRotation(FRotator(0, Yaw, 0));
+  return W->ObjAt(W->AdoptNode(C, Owner, Name));
+ };
+ auto Collider = [W](const TCHAR* Id, double X0, double X1, double Z0, double Z1)
+ { W->CollidersMutable(TEXT("saro")).Add({X0, X1, Z0, Z1, FString(Id), true}); };
+ // Replace exactly the corridor partition, including the green records-facing rear.
+ Box(TEXT("office:partitionLeft"), FVector(-1.74, 1.4, 6.70), FVector(3.32, 2.8, .2), Wall);
+ Box(TEXT("office:partitionRecords"), FVector(-1.74, 1.4, 6.803), FVector(3.32, 2.8, .006), Green);
+ Box(TEXT("office:partitionRight"), FVector(1.5, 1.4, 6.70), FVector(1, 2.8, .2), Wall);
+ Box(TEXT("office:partitionHeader"), FVector(.46, 2.46, 6.70), FVector(1.08, .68, .2), Wall);
+ Box(TEXT("office:partitionSkirtingLeft"), FVector(-1.74, .05, 6.585), FVector(3.32, .1, .02), Wood);
+ Box(TEXT("office:partitionSkirtingRight"), FVector(1.5, .05, 6.585), FVector(1, .1, .02), Wood);
+ Box(TEXT("office:floor"), FVector(.47, -.035, 8.49), FVector(2.7, .07, 3.76), Floor);
+ Box(TEXT("office:ceiling"), FVector(.47, 2.77, 8.49), FVector(2.7, .06, 3.76), Wall);
+ Box(TEXT("office:westLining"), FVector(-.88, 1.39, 8.49), FVector(.1, 2.78, 3.76), Green);
+ Box(TEXT("office:eastLining"), FVector(1.83, 1.39, 8.49), FVector(.1, 2.78, 3.76), Green);
+ Box(TEXT("office:rearLining"), FVector(.47, 1.39, 10.37), FVector(2.8, 2.78, .1), Green);
+ for (double X : {-.80, 1.75}) Box(FString::Printf(TEXT("office:skirting%.2f"), X), FVector(X, .075, 8.49), FVector(.04, .15, 3.7), Wood);
+ Collider(TEXT("office:leftPartition"), -3.4, -.08, 6.6, 6.8); Collider(TEXT("office:rightPartition"), 1, 2, 6.6, 6.8);
+ Collider(TEXT("office:westWall"), -.94, -.82, 6.6, 10.43); Collider(TEXT("office:eastWall"), 1.77, 1.89, 6.6, 10.43); Collider(TEXT("office:rearWall"), -.94, 1.89, 10.31, 10.43);
+ W->ZonesMutable(TEXT("saro")).Add({-.82, 1.77, 6.8, 10.31, TEXT("office:roomZone"), true});
+ // Walker shrinks each rectangle by the capsule radius independently. Overlap both
+ // corridor and room by more than two radii, so an open doorway has no centreline gap.
+ W->ZonesMutable(TEXT("saro")).Add({-.08, 1, 5.70, 7.50, TEXT("office:thresholdZone"), false});
+ Collider(TEXT("office:doorCollider"), HingeX, HingeX + LeafWidth, HingeZ - .035, HingeZ + .035);
+ UBoxComponent* Hinge = NewObject<UBoxComponent>(W, TEXT("OperationsDoorHinge")); Hinge->SetMobility(EComponentMobility::Movable); Hinge->SetupAttachment(Group); Hinge->SetCollisionEnabled(ECollisionEnabled::NoCollision); Hinge->SetBoxExtent(FVector(1)); Hinge->RegisterComponent(); Hinge->SetWorldLocation(S47Three::ToUE(FVector(HingeX, 0, HingeZ)));
+ Visual->Leaf = W->ObjAt(W->AdoptNode(Hinge, Root, TEXT("office:doorHinge")));
+ FS47Obj DoorPanel = Mesh(TEXT("office:doorLeaf"), Cube, FVector(.47, 1.035, HingeZ), FVector(1, 2.07, .055), Wood, 0, Visual->Leaf.I);
+ // Rotate the panel around its left edge rather than around its centre.
+ // Child hardware follows the same live leaf component.
+ Mesh(TEXT("office:doorHandle"), Cube, FVector(.83, 1.01, 6.525), FVector(.14, .035, .055), Brass, 0, Visual->Leaf.I);
+ Mesh(TEXT("office:doorPlate"), Cube, FVector(.47, 1.65, 6.537), FVector(.53, .20, .012), Paper, 0, Visual->Leaf.I);
+ Label(TEXT("office:doorTitle"), TEXT("OPERATIONS"), FVector(.47, 1.65, 6.528), -90, 4.f, Visual->Leaf.I);
+ Box(TEXT("office:spareNotice"), FVector(-.29, 1.45, 6.585), FVector(.30, .31, .018), Paper);
+ Label(TEXT("office:spareText"), TEXT("SPARE IN\nSERVICE DRAWER"), FVector(-.29, 1.45, 6.572), -90, 2.8f);
+ // Own service cabinet at the workbench. It is unrelated to the archive's REEL047 drawer.
+ Box(TEXT("office:serviceCabinet"), FVector(-.59, .66, 6.43), FVector(.57, .72, .37), Steel);
+ Box(TEXT("office:worktop"), FVector(-.59, 1.04, 6.38), FVector(.65, .055, .55), Wood);
+ Collider(TEXT("office:serviceCabinetFoot"), -.94, -.26, 6.11, 6.62);
+ FS47Obj Tray = Box(TEXT("office:serviceDrawer"), FVector(-.59, .82, 6.22), FVector(.50, .09, .35), Steel);
+ Visual->DrawerParts.Add({Tray, Tray.Position()});
+ FS47Obj DrawerFront = Box(TEXT("office:drawerFront"), FVector(-.59, .85, 6.04), FVector(.53, .16, .035), Steel); Visual->DrawerParts.Add({DrawerFront, DrawerFront.Position()});
+ FS47Obj DrawerHandle = Box(TEXT("office:drawerHandle"), FVector(-.59, .85, 6.01), FVector(.19, .025, .04), Brass); Visual->DrawerParts.Add({DrawerHandle, DrawerHandle.Position()});
+ auto KeyPart = [&](const TCHAR* Name, const FVector& At, const FVector& Size)
+ { FS47Obj Part = Box(Name, At, Size, Brass); Visual->DrawerParts.Add({Part, Part.Position()}); Visual->KeyParts.Add(Part); return Part; };
+ KeyPart(TEXT("office:keyStem"), FVector(-.59, .887, 6.17), FVector(.025, .012, .10));
+ KeyPart(TEXT("office:keyBowLeft"), FVector(-.615, .887, 6.245), FVector(.014, .012, .055));
+ KeyPart(TEXT("office:keyBowRight"), FVector(-.565, .887, 6.245), FVector(.014, .012, .055));
+ KeyPart(TEXT("office:keyBowTop"), FVector(-.59, .887, 6.27), FVector(.05, .012, .014));
+ KeyPart(TEXT("office:keyBowBottom"), FVector(-.59, .887, 6.22), FVector(.05, .012, .014));
+ KeyPart(TEXT("office:keyTooth"), FVector(-.57, .887, 6.13), FVector(.04, .012, .017));
+ FS47Obj KeyTag = Box(TEXT("office:keyTag"), FVector(-.44, .89, 6.22), FVector(.13, .008, .10), Paper); Visual->DrawerParts.Add({KeyTag, KeyTag.Position()}); Visual->KeyParts.Add(KeyTag);
+ Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59, 1.14, 6.565), -90, 3.f);
+ // Existing imported desk/chair/lamp are the visual and dimensional furniture, with
+ // small authored paper surfaces above the desk. No unseen target substitutes a room.
+ Mesh(TEXT("office:desk"), Desk, FVector(.37, 0, 9.73), FVector::OneVector, nullptr);
+ Mesh(TEXT("office:chair"), Chair, FVector(1.19, 0, 8.73), FVector::OneVector, nullptr, .37);
+ Mesh(TEXT("office:deskLamp"), Lamp, FVector(-.24, .79, 9.70), FVector::OneVector, nullptr);
+ Collider(TEXT("office:deskFoot"), -.47, 1.21, 9.31, 10.16); Collider(TEXT("office:chairFoot"), .94, 1.55, 8.47, 9.02);
+ // A coat and invoices keep the office ordinary. The board is separate from the route sheet.
+ Box(TEXT("office:coatBack"), FVector(1.19, .64, 8.92), FVector(.43, .57, .055), Wood);
+ Box(TEXT("office:invoiceBoard"), FVector(1.73, 1.65, 9.5), FVector(.04, .69, .63), Wood);
+ Box(TEXT("office:invoices"), FVector(1.70, 1.66, 9.5), FVector(.012, .49, .41), Paper);
+ FS47Obj DeskPaper = Box(TEXT("office:deskForms"), FVector(.39, .802, 9.37), FVector(.40, .018, .21), Paper);
+ FS47Obj Folder = Box(TEXT("office:fieldFolder"), FVector(.05, .818, 9.35), FVector(.31, .026, .31), Kraft);
+ FS47Obj Index = Box(TEXT("office:workingIndex"), FVector(-.28, .811, 9.52), FVector(.23, .009, .29), Paper);
+ FS47Obj Clippings = Box(TEXT("office:clippings"), FVector(.79, .812, 9.73), FVector(.29, .014, .34), Paper);
+ FS47Obj Note = Box(TEXT("office:foldedNote"), FVector(-.25, .824, 9.30), FVector(.20, .012, .13), Paper);
+ FS47Obj Contact = Box(TEXT("office:contactCard"), FVector(.76, .813, 9.36), FVector(.16, .010, .10), Paper);
+ // Printed lines and labels lie on real paper; flat text faces up in Unreal.
+ auto PaperText = [&](const FString& Name, const FString& Text, const FVector& At, float Size)
+ {
+  FS47Obj Obj = Label(Name, Text, At, 0, Size); const FS47WebNode* N = W->Node(Obj.I);
+  if (N && N->Comp.IsValid()) N->Comp->SetWorldRotation(FRotator(90, 0, 0)); return Obj;
+ };
+ PaperText(TEXT("office:folderPrint"), TEXT("FIELD CHECKS\nTAKE A COPY"), FVector(.05, .834, 9.35), 2.4f);
+ PaperText(TEXT("office:indexPrint"), TEXT("WORKING INDEX"), FVector(-.28, .819, 9.52), 1.9f);
+ PaperText(TEXT("office:notePrint"), TEXT("D. / WORKING NOTE"), FVector(-.25, .835, 9.30), 1.6f);
+ PaperText(TEXT("office:contactPrint"), TEXT("DALE / SERVICE"), FVector(.76, .823, 9.36), 1.4f);
+ FS47Obj TVObj = Mesh(TEXT("office:fieldDeck"), TV, FVector(-.45, .62, 7.75), FVector(.7), nullptr);
+ if (const FS47WebNode* N = W->Node(TVObj.I)) if (UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N->Comp.Get()))
+ {
+  // The unproduced tape has no substitute image, moving sequence or pilot glow.
+  if (C->GetNumMaterials() > 1) C->SetMaterial(1, Ink);
+  if (C->GetNumMaterials() > 2) C->SetMaterial(2, Ink);
+ }
+ Box(TEXT("office:deckStand"), FVector(-.47, .30, 7.75), FVector(.55, .60, .60), Steel); Collider(TEXT("office:deckFoot"), -.77, -.17, 7.43, 8.07);
+ FS47Obj Deck = Box(TEXT("office:cassette"), FVector(-.43, .66, 8.08), FVector(.20, .025, .12), Ink);
+ PaperText(TEXT("office:tapePrint"), TEXT("FIELD 01"), FVector(-.43, .679, 8.08), 1.8f);
+ UPointLightComponent* Light = NewObject<UPointLightComponent>(W, TEXT("OperationsDeskLight")); Light->SetMobility(EComponentMobility::Movable); Light->SetupAttachment(Group);
+ Light->SetWorldLocation(S47Three::ToUE(FVector(.30, 2.35, 8.55))); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(350); Light->SetLightColor(FLinearColor(1, .79f, .48f)); Light->SetAttenuationRadius(380); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
+ FS47Obj Depart = Box(TEXT("office:departureCard"), FVector(1.39, 1.45, 6.815), FVector(.55, .30, .015), Paper);
+ Label(TEXT("office:departureText"), TEXT("SURVEY FILE\nSTATION 01"), FVector(1.39, 1.45, 6.829), 90, 3.8f);
+ Visual->Objects.Add(TEXT("office:door"), DoorPanel); Visual->Objects.Add(TEXT("officeDoor"), DoorPanel);
+ Visual->Objects.Add(TEXT("office:drawer"), DrawerFront); Visual->Objects.Add(TEXT("office:key"), KeyTag);
+ Visual->Objects.Add(TEXT("office:desk"), DeskPaper); Visual->Objects.Add(TEXT("office:folder"), Folder); Visual->Objects.Add(TEXT("office:index"), Index);
+ Visual->Objects.Add(TEXT("office:clippings"), Clippings); Visual->Objects.Add(TEXT("office:note"), Note); Visual->Objects.Add(TEXT("office:contact"), Contact);
+ Visual->Objects.Add(TEXT("office:tape"), Deck); Visual->Objects.Add(TEXT("office:depart"), Depart);
+ auto Bind = [&](const FString& Id)
+ {
+  FS47Interactable It; It.Id = Id; It.Object = Visual->Objects.FindChecked(Id); It.Range = 2.2;
+  if (const FS47WebNode* N = W->Node(It.Object.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+  It.Label = [this, Id]() -> FString
+  {
+   if (!Here() || !ArchiveAvailable()) return {};
+   if (Id == TEXT("office:door") || Id == TEXT("officeDoor")) return !bKey ? TEXT("Operations office / locked") : !bUnlocked ? TEXT("Use the Operations spare") : bDoorTarget ? TEXT("Close Operations door") : TEXT("Open Operations door");
+   if (Id == TEXT("office:drawer")) return !bDrawerTarget ? TEXT("Open service drawer") : !bKey ? TEXT("Take Operations spare key") : TEXT("Close service drawer");
+   if (Id == TEXT("office:key")) return !bKey && DrawerK >= .995 ? TEXT("Take Operations spare key") : FString();
+   if (!Contains(M->Player->Pos) || !WasUnlocked()) return {};
+   if (Id == TEXT("office:desk")) return TEXT("Examine the working desk");
+   if (Id == TEXT("office:folder")) return bFieldSheet ? TEXT("Read retained field sheet") : TEXT("Take the field sheet");
+   if (Id == TEXT("office:index")) return TEXT("Read the working index");
+   if (Id == TEXT("office:clippings")) return TEXT("Examine the local cuttings");
+   if (Id == TEXT("office:note")) return TEXT("Read the folded note");
+   if (Id == TEXT("office:contact")) return TEXT("Copy the field contact");
+   if (Id == TEXT("office:tape")) return TEXT("Inspect Service Road / Field 01");
+   if (Id == TEXT("office:depart")) return WantsDeparture() ? TEXT("Leave for STATION 01") : FString();
+   return {};
+  };
+  It.Use = [this, Id] { Use(Id); }; It.Examine = [this, Id]
+  {
+   if (Id == TEXT("office:door") || Id == TEXT("officeDoor")) return FString(TEXT("OPERATIONS. The spare is in the service drawer at the workbench. The office uses its own tagged key."));
+   if (Id == TEXT("office:tape")) return FString(TEXT("SERVICE ROAD / FIELD 01. The deck is present, but this tape cannot be played. The paper beside the maintenance forms gives the camera position."));
+   return FString(TEXT("An ordinary Operations working copy. Survey-station records keep their separate file."));
+  }; M->Inter->Add(It);
+ };
+ // Replace the old inert officeDoor interaction, then give the physical leaf its new ID.
+ Bind(TEXT("officeDoor"));
+ for (const auto& Entry : Visual->Objects) if (Entry.Key != TEXT("officeDoor")) Bind(Entry.Key);
+ // All guards and all replacement geometry are prepared before touching the old source.
+ for (const FPortalPatch& Patch : Patches)
+ {
+  if (Patch.bHide)
+  {
+   for (int32 Node = 0; Node < OriginalNodes; ++Node) if (const FS47WebNode* N = W->Node(Node)) if (N->Comp.Get() == Patch.Comp) W->ObjAt(Node).SetVisible(false);
+   Patch.Comp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  }
+  else
+  {
+   const TArray<UMaterialInterface*> Materials = Patch.Comp->GetMaterials(); Patch.Cut->InitResources(); Patch.Comp->SetStaticMesh(Patch.Cut);
+   for (int32 Slot = 0; Slot < Materials.Num(); ++Slot) if (Materials[Slot]) Patch.Comp->SetMaterial(Slot, Materials[Slot]);
+  }
+ }
+ FS47Obj OldProxy = W->Obj(TEXT("annex.objs.officeDoor")); if (OldProxy) { OldProxy.SetVisible(false); if (const FS47WebNode* N = W->Node(OldProxy.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
+ bReady = true; Apply();
+ UE_LOG(LogS47Office, Display, TEXT("S47: Operations ready physical portal=10 skirting=8 leaf/handle/sign=26; own spare/drawer; imported desk/chair/lamp; field sheet independent of unavailable tape"));
+}
+
+void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
+{
+ bRequired = bNewNight; bKey = bUnlocked = bEverOpened = bEntered = false;
+ bDoorInspected = bDoorTarget = bDrawerTarget = false;
+ bDeskSeen = bIndexRead = bClippingsRead = bNoteRead = bContactRead = bFieldSheet = bDeparted = false;
+ DoorK = DrawerK = FieldSheetAt = SyncWait = 0;
+ double Version = 0;
+ if (Saved.IsValid() && Saved->HasTypedField<EJson::Number>(TEXT("v")) && Saved->TryGetNumberField(TEXT("v"), Version) && Version == 1.)
+ {
+  // Only explicitly versioned new-night cases acquire this departure requirement.
+  // Missing/unknown route versions preserve optional access to the room in old cases.
+  double RouteVersion = 0;
+  bRequired = Saved->HasTypedField<EJson::Number>(TEXT("routeVersion")) && Saved->TryGetNumberField(TEXT("routeVersion"), RouteVersion) && RouteVersion == 1. && S47J::Bool(Saved, TEXT("routeRequired"));
+  bKey = S47J::Bool(Saved, TEXT("key")); bUnlocked = bKey && S47J::Bool(Saved, TEXT("unlocked"));
+  bEverOpened = bUnlocked && S47J::Bool(Saved, TEXT("everOpened")); bEntered = bEverOpened && S47J::Bool(Saved, TEXT("entered"));
+  bDoorInspected = S47J::Bool(Saved, TEXT("doorInspected")); bDoorTarget = bUnlocked && S47J::Bool(Saved, TEXT("doorOpen"));
+  bDrawerTarget = S47J::Bool(Saved, TEXT("drawerOpen"));
+  bDeskSeen = bEntered && S47J::Bool(Saved, TEXT("deskSeen")); bIndexRead = bEntered && S47J::Bool(Saved, TEXT("indexRead"));
+  bClippingsRead = bEntered && S47J::Bool(Saved, TEXT("clippingsRead")); bNoteRead = bEntered && S47J::Bool(Saved, TEXT("noteRead")); bContactRead = bEntered && S47J::Bool(Saved, TEXT("contactRead"));
+  const bool bHasAcquisitionTime = Saved->HasTypedField<EJson::Number>(TEXT("fieldSheetAt")) && Saved->TryGetNumberField(TEXT("fieldSheetAt"), FieldSheetAt) && FMath::IsFinite(FieldSheetAt);
+  bFieldSheet = bEntered && S47J::Bool(Saved, TEXT("fieldSheet")) && bHasAcquisitionTime;
+  bDeparted = bFieldSheet && S47J::Bool(Saved, TEXT("departed"));
+ }
+ Init();
+ // Rebuild the saved opening before the host validates the restored walking pose.
+ // A saved mid-open door resumes fully open; it never traps a valid room occupant.
+ DoorK = bDoorTarget ? 1 : 0; DrawerK = bDrawerTarget ? 1 : 0;
+ if (bDoorTarget) bEverOpened = true;
+ Apply();
+}
+
+bool FS47Office::HasFieldSheet() const
+{ return bReady && bKey && bUnlocked && bEverOpened && bEntered && bFieldSheet && FMath::IsFinite(FieldSheetAt); }
+
+bool FS47Office::Contains(const FVector& P) const
+{ return bReady && InBox(P, -.82, 1.77, -2, 4, 6.80, 10.31); }
+
+bool FS47Office::InThreshold(const FVector& P, double Radius) const
+{ return bReady && P.X >= -.08 - Radius && P.X <= 1 + Radius && P.Z >= 6.05 - Radius && P.Z <= 7.05 + Radius; }
+
+bool FS47Office::RestoreDoorwayAt(const FVector& P, double Radius)
+{
+ if (!WasUnlocked() || !InThreshold(P, Radius) || DoorOpen()) return false;
+ // The host supplies the incoming saved pose before placing the player. Reopen only
+ // this already unlocked doorway; retain entrance, paper, acquisition and departure facts.
+ bDoorTarget = true; DoorK = 1; Apply();
+ UE_LOG(LogS47Office, Display, TEXT("S47: restored unlocked office doorway at %.3f %.3f; saved pose retained"), P.X, P.Z);
+ return true;
+}
+
+bool FS47Office::ArchiveAvailable() const
+{
+ if (!M || !M->Story) return false;
+ if (M->Story->Begun.Contains(TEXT("ch2"))) return true;
+ return M->Story->ChapterKey == TEXT("ch2") || M->Story->ChapterKey == TEXT("ch3") || M->Story->ChapterKey == TEXT("ch4") || M->Story->ChapterKey == TEXT("ch5") || M->Story->ChapterKey == TEXT("ch6");
+}
+
+bool FS47Office::Here() const
+{
+ return bReady && M && M->World && M->Player && M->Story && M->UI && M->Mode == US47Main::EMode::Play &&
+  M->World->Area == TEXT("saro") && !M->World->bDriving && !M->World->bBusy && !M->ModalOpen() && !M->Story->IsCinematic();
+}
+
+FS47Obj FS47Office::Object(const FString& Id) const
+{ const FS47Obj* Obj = Visual ? Visual->Objects.Find(Id) : nullptr; return Obj ? *Obj : FS47Obj(); }
+
+bool FS47Office::InReach(const FString& Id) const
+{
+ const FS47Obj Obj = Object(Id); if (!Obj || !M || !M->Player) return false;
+ const FVector At = Obj.WorldPosition(); return FVector2D(M->Player->Pos.X - At.X, M->Player->Pos.Z - At.Z).Size() <= 2.2;
+}
+
+bool FS47Office::WantsDeparture() const
+{ return !bDeparted && HasFieldSheet() && CanDepart && CanDepart(); }
+
+void FS47Office::OpenDocument(const FString& Id)
+{
+ if (!M || !M->Story || !M->UI) return;
+ const FS47Doc* Doc = M->Story->Docs().FindByPredicate([&](const FS47Doc& D) { return D.Id == Id; });
+ // Physical paper retrieval remains useful if an authored scene is currently occupied.
+ // Filing this actual paper is independent of granting Pack scene/route facts.
+ if (!Doc && M->Evening)
+ {
+  if (const FS47EveningDocument* Source = M->Evening->Pack.FindDocument(Id))
+  {
+   FS47Doc Copy; Copy.Id = Source->Id; Copy.Title = Source->Title; Copy.Kind = Source->Kind; Copy.Stamp = Source->Stamp;
+   Copy.Page = FString::Join(Source->Body, TEXT("\n\n")); Copy.Transcript = Copy.Page; M->Story->AddDoc(Copy);
+   Doc = M->Story->Docs().FindByPredicate([&](const FS47Doc& D) { return D.Id == Id; });
+  }
+ }
+ if (Doc) M->UI->Document(*Doc);
+ else M->UI->Toast(TEXT("The working sheet remains on the desk. The document source is unavailable."), 4);
+}
+
+void FS47Office::SyncFacts()
+{
+ if (!bReady || !M || !M->Evening || (M->Flow && M->Flow->bStarting)) return;
+ auto Commit = [this](bool Fact, const TCHAR* Scene) { if (Fact) M->Evening->CommitWorldScene(Scene); };
+ Commit(bDoorInspected, TEXT("D02_LOCKED_OFFICE")); Commit(bKey, TEXT("D02_SERVICE_DRAWER"));
+ Commit(bEverOpened && WasUnlocked(), TEXT("D02_OPEN_OFFICE")); Commit(bDeskSeen, TEXT("D02_DESK_FIRST_LOOK"));
+ Commit(bIndexRead, TEXT("D02_READ_FIELD_INDEX")); Commit(bClippingsRead, TEXT("D02_READ_CLIPPINGS"));
+ Commit(bNoteRead, TEXT("D02_READ_DALE_NOTE")); Commit(bContactRead, TEXT("D02_SAVE_CONTACT"));
+ Commit(HasFieldSheet(), TEXT("D02_TAKE_FIELD_FOLDER"));
+ // There is no produced 72-second tape. Neither tape-start nor vhs_seen is acknowledged.
+}
+
+void FS47Office::Changed() { Apply(); SyncFacts(); if (M) M->RequestAutosave(); }
+
+bool FS47Office::Use(const FString& Id)
+{
+ if (!Here() || !ArchiveAvailable() || !InReach(Id)) return false;
+ if (Id == TEXT("office:drawer"))
+ {
+  if (!bDrawerTarget) { bDrawerTarget = true; Changed(); M->UI->Toast(TEXT("Fuses, pencils and a tagged brass spare. The drawer has to open before the key can be taken."), 3.5); return true; }
+  if (DrawerK < .995) return true;
+  if (!bKey) { bKey = true; Changed(); M->UI->Toast(TEXT("Operations spare key retained. This key belongs to the office latch."), 3.5); return true; }
+  bDrawerTarget = false; Changed(); return true;
+ }
+ if (Id == TEXT("office:key"))
+ {
+  if (bKey || !bDrawerTarget || DrawerK < .995) return false;
+  bKey = true; Changed(); M->UI->Toast(TEXT("Operations spare key retained."), 3); return true;
+ }
+ if (Id == TEXT("office:door") || Id == TEXT("officeDoor"))
+ {
+  if (!bKey) { bDoorInspected = true; Changed(); M->UI->Toast(TEXT("OPERATIONS / LOCKED. The paper label reads: SPARE IN SERVICE DRAWER."), 4); return true; }
+  if (bDoorTarget && InThreshold(M->Player->Pos, M->Player->Radius)) { M->UI->Toast(TEXT("Step clear of the doorway before closing it."), 3); return true; }
+  bUnlocked = true; bDoorTarget = !bDoorTarget; Changed(); return true;
+ }
+ if (!Contains(M->Player->Pos) || !WasUnlocked() || !bEverOpened) return false;
+ bEntered = true;
+ if (Id == TEXT("office:depart"))
+ {
+  if (!WantsDeparture()) return false;
+  bDeparted = true; Changed(); // Save the explicit release before the captured chapter end callback.
+  UE_LOG(LogS47Office, Display, TEXT("S47: office explicit departure released; actual field sheet at %.3f"), FieldSheetAt);
+  if (OnDepart) OnDepart(); return true;
+ }
+ if (Id == TEXT("office:tape"))
+ {
+  M->UI->Toast(!M->Story->bPowered || M->Story->bDark ? TEXT("The VHS deck has no power. The field sheet is beside the maintenance forms.") : TEXT("The tape will not play. The field sheet still gives the camera position."), 5);
+  return true;
+ }
+ FString Doc;
+ if (Id == TEXT("office:desk")) { bDeskSeen = true; Doc = TEXT("EV_DALE_INDEX"); }
+ else if (Id == TEXT("office:folder"))
+ {
+  bDeskSeen = bIndexRead = true;
+  if (!bFieldSheet) { bFieldSheet = true; FieldSheetAt = M->Story->Clock(); }
+  Doc = TEXT("EV_DALE_INDEX");
+ }
+ else if (Id == TEXT("office:index")) { bIndexRead = true; Doc = TEXT("EV_DALE_INDEX"); }
+ else if (Id == TEXT("office:clippings")) { bClippingsRead = true; Doc = TEXT("EV_DALE_CLIPPINGS"); }
+ else if (Id == TEXT("office:note")) { bNoteRead = true; Doc = TEXT("EV_DALE_NOTE"); }
+ else if (Id == TEXT("office:contact")) { bContactRead = true; Doc = TEXT("EV_DALE_CONTACT"); }
+ else return false;
+ Changed(); OpenDocument(Doc); M->RequestAutosave(); return true;
+}
+
+void FS47Office::Apply()
+{
+ if (!bReady || !M || !M->Web || !Visual) return;
+ const bool Visible = M->World && M->World->Area == TEXT("saro") && M->Mode == US47Main::EMode::Play;
+ Visual->Root.SetVisible(Visible);
+ Visual->Leaf.SetRotation(FVector(0, -PI * .5 * DoorK, 0));
+ for (auto& Part : Visual->DrawerParts) Part.Key.SetPosition(Part.Value + FVector(0, 0, -.24 * DrawerK));
+ for (FS47Obj Part : Visual->KeyParts) Part.SetVisible(!bKey && DrawerK >= .995);
+ for (const auto& Entry : Visual->Objects) if (const FS47WebNode* N = M->Web->Node(Entry.Value.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get()))
+  C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, Entry.Value.Shown() ? ECR_Block : ECR_Ignore);
+ if (UPointLightComponent* Light = Visual->Light.Get()) Light->SetVisibility(Visible && M->Story && M->Story->bPowered && !M->Story->bDark);
+ for (FS47Rect& Rect : M->Web->ZonesMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:thresholdZone")) Rect.bEnabled = DoorOpen();
+ const double Angle = PI * .5 * DoorK, EndX = HingeX + LeafWidth * FMath::Cos(Angle), EndZ = HingeZ + LeafWidth * FMath::Sin(Angle);
+ for (FS47Rect& Rect : M->Web->CollidersMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:doorCollider"))
+ { Rect.MinX = FMath::Min(HingeX, EndX) - .035; Rect.MaxX = FMath::Max(HingeX, EndX) + .035; Rect.MinZ = FMath::Min(HingeZ, EndZ) - .035; Rect.MaxZ = FMath::Max(HingeZ, EndZ) + .035; }
+}
+
+void FS47Office::Step(double Dt)
+{
+ if (!bBuilt) Init(); if (!bReady) return;
+ if (!bDoorTarget && DoorK > 0 && M && M->Player && M->World && M->World->Area == TEXT("saro") && InThreshold(M->Player->Pos, M->Player->Radius))
+ { bDoorTarget = true; if (M) M->RequestAutosave(); }
+ const bool WasOpen = DoorOpen();
+ const double SafeDt = FMath::Clamp(Dt, 0., .1);
+ DoorK = FMath::Clamp(DoorK + (bDoorTarget ? 1 : -1) * SafeDt * 1.8, 0., 1.);
+ DrawerK = FMath::Clamp(DrawerK + (bDrawerTarget ? 1 : -1) * SafeDt * 3.0, 0., 1.);
+ Apply();
+ if (!WasOpen && DoorOpen()) { bEverOpened = true; Changed(); }
+ if (!bEntered && WasUnlocked() && bEverOpened && Here() && Contains(M->Player->Pos)) { bEntered = true; Changed(); }
+ SyncWait -= SafeDt;
+ if (SyncWait <= 0) { SyncFacts(); SyncWait = .25; }
+}
+
+S47J::FObj FS47Office::Save() const
+{
+ auto O = S47J::New(); S47J::Set(O, TEXT("v"), 1); S47J::Set(O, TEXT("routeVersion"), 1); S47J::Set(O, TEXT("routeRequired"), bRequired);
+ S47J::Set(O, TEXT("key"), bKey); S47J::Set(O, TEXT("unlocked"), WasUnlocked()); S47J::Set(O, TEXT("everOpened"), bEverOpened);
+ S47J::Set(O, TEXT("entered"), bEntered); S47J::Set(O, TEXT("doorInspected"), bDoorInspected); S47J::Set(O, TEXT("doorOpen"), bDoorTarget); S47J::Set(O, TEXT("drawerOpen"), bDrawerTarget);
+ S47J::Set(O, TEXT("deskSeen"), bDeskSeen); S47J::Set(O, TEXT("indexRead"), bIndexRead); S47J::Set(O, TEXT("clippingsRead"), bClippingsRead);
+ S47J::Set(O, TEXT("noteRead"), bNoteRead); S47J::Set(O, TEXT("contactRead"), bContactRead); S47J::Set(O, TEXT("fieldSheet"), bFieldSheet);
+ if (bFieldSheet && FMath::IsFinite(FieldSheetAt)) S47J::Set(O, TEXT("fieldSheetAt"), FieldSheetAt);
+ S47J::Set(O, TEXT("hasFieldSheet"), HasFieldSheet()); S47J::Set(O, TEXT("departed"), DepartureReleased()); return O;
+}

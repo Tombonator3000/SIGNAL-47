@@ -1,0 +1,553 @@
+{
+  "tool": "Blender 5.2.2 LTS",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_1420_Shell separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Shell scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -6.125,
+          -6.199999809265137,
+          -0.4000000059604645
+        ],
+        [
+          6.125,
+          5.125,
+          5.5
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Shell material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Concrete",
+        "M_1420_Walnut",
+        "M_1420_Stucco_cream",
+        "M_1420_WeatheredFacadePaint",
+        "M_1420_Galvanized_metal",
+        "M_1420_OliveWornTimber",
+        "M_1420_Black_enamel",
+        "M_1420_Brick_red",
+        "M_1420_Lamp_glow",
+        "M_1420_ChalkFlakeEdge",
+        "M_1420_Paper",
+        "M_1420_ExposedLimeRender"
+      ]
+    },
+    {
+      "name": "SM_1420_Shell exact triangle contract",
+      "result": "PASS",
+      "triangles": 10340,
+      "expected_triangles": 10340,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Shell survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 1.199158532472211e-07
+    },
+    {
+      "name": "SM_1420_Shell finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 10340
+    },
+    {
+      "name": "Door and studio window are actual shell openings",
+      "result": "PASS",
+      "door_empty": true,
+      "window_empty": true,
+      "solid_pier_hit": true
+    },
+    {
+      "name": "Roof and window lintel normals face outward",
+      "result": "PASS"
+    },
+    {
+      "name": "SM_1420_Interior separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Interior scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -5.824999809265137,
+          -4.849999904632568,
+          0.0
+        ],
+        [
+          5.717499732971191,
+          4.75,
+          3.190000057220459
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Interior material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Walnut",
+        "M_1420_Desk_walnut",
+        "M_1420_Acoustic_fabric",
+        "M_1420_Black_enamel",
+        "M_1420_Galvanized_metal",
+        "M_1420_Brushed_aluminium",
+        "M_1420_VU_backlight",
+        "M_1420_Ink",
+        "M_1420_Ivory_plastic",
+        "M_1420_Brick_red",
+        "M_1420_Painted_olive",
+        "M_1420_Paper",
+        "M_1420_Lamp_glow",
+        "M_1420_OliveWornTimber",
+        "M_1420_Vinyl_green",
+        "M_1420_LeatherStitch",
+        "M_1420_ProgramPanelPrint",
+        "M_1420_StationNotices"
+      ]
+    },
+    {
+      "name": "SM_1420_Interior exact triangle contract",
+      "result": "PASS",
+      "triangles": 79266,
+      "expected_triangles": 79266,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Interior survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 6.198803248480544e-08
+    },
+    {
+      "name": "SM_1420_Interior finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 79266
+    },
+    {
+      "name": "SM_1420_Door separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Door scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          2.682209014892578e-07,
+          -0.12799999117851257,
+          0.02500009536743164
+        ],
+        [
+          0.9400002956390381,
+          0.042500000447034836,
+          2.125
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Door material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_OliveWornTimber",
+        "M_1420_Black_enamel",
+        "M_1420_Clear_glass",
+        "M_1420_Galvanized_metal",
+        "M_1420_Paper"
+      ]
+    },
+    {
+      "name": "SM_1420_Door exact triangle contract",
+      "result": "PASS",
+      "triangles": 1852,
+      "expected_triangles": 1852,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Door survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 1.2999799992030603e-07
+    },
+    {
+      "name": "SM_1420_Door finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 1852
+    },
+    {
+      "name": "SM_1420_Glass separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Glass scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          -0.6399999856948853,
+          -4.973999977111816,
+          0.73499995470047
+        ],
+        [
+          3.0399999618530273,
+          -4.956000328063965,
+          2.365000009536743
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Glass material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Clear_glass"
+      ]
+    },
+    {
+      "name": "SM_1420_Glass exact triangle contract",
+      "result": "PASS",
+      "triangles": 12,
+      "expected_triangles": 12,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Glass survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 0.01466971542686224
+    },
+    {
+      "name": "SM_1420_Glass finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 12
+    },
+    {
+      "name": "SM_1420_Mast separate mesh",
+      "result": "PASS",
+      "count": 1
+    },
+    {
+      "name": "SM_1420_Mast scale and pivot",
+      "result": "PASS",
+      "bounds_m": [
+        [
+          11.399999618530273,
+          0.3999999761581421,
+          0.0
+        ],
+        [
+          12.600000381469727,
+          1.600000023841858,
+          18.203454971313477
+        ]
+      ],
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "max_bounds_error_m": 0.0
+    },
+    {
+      "name": "SM_1420_Mast material slots",
+      "result": "PASS",
+      "slots": [
+        "M_1420_Concrete",
+        "M_1420_Galvanized_metal",
+        "M_1420_On_air"
+      ]
+    },
+    {
+      "name": "SM_1420_Mast exact triangle contract",
+      "result": "PASS",
+      "triangles": 1264,
+      "expected_triangles": 1264,
+      "zero_area_triangles": 0
+    },
+    {
+      "name": "SM_1420_Mast survives UE FBX minimum triangle area",
+      "result": "PASS",
+      "below_ue_area_threshold": 0,
+      "threshold_m2": 5e-09,
+      "minimum_area_m2": 3.506706343614496e-05
+    },
+    {
+      "name": "SM_1420_Mast finite face normals",
+      "result": "PASS",
+      "invalid_face_normals": 0,
+      "faces": 1264
+    },
+    {
+      "name": "R9 nine-family PBR texture dependencies exist",
+      "result": "PASS",
+      "count": 27,
+      "relative_paths": [
+        "textures/concrete_color.png",
+        "textures/concrete_normal_dx.png",
+        "textures/concrete_roughness.png",
+        "textures/revision2/desk_worn_color.png",
+        "textures/revision2/desk_worn_normal_dx.png",
+        "textures/revision2/desk_worn_roughness.png",
+        "textures/revision2/olive_timber_color.png",
+        "textures/revision2/olive_timber_normal_dx.png",
+        "textures/revision2/olive_timber_roughness.png",
+        "textures/revision3/program_panel_color.png",
+        "textures/revision3/program_panel_normal_dx.png",
+        "textures/revision3/program_panel_roughness.png",
+        "textures/revision9/station_notices_color.png",
+        "textures/revision9/station_notices_normal_dx.png",
+        "textures/revision9/station_notices_roughness.png",
+        "textures/revision2/stucco_layers_color.png",
+        "textures/revision2/stucco_layers_normal_dx.png",
+        "textures/revision2/stucco_layers_roughness.png",
+        "textures/revision3/aged_vinyl_color.png",
+        "textures/revision3/aged_vinyl_normal_dx.png",
+        "textures/revision3/aged_vinyl_roughness.png",
+        "textures/revision2/walnut_worked_color.png",
+        "textures/revision2/walnut_worked_normal_dx.png",
+        "textures/revision2/walnut_worked_roughness.png",
+        "textures/revision2/facade_1420_weathered_color.png",
+        "textures/revision2/facade_1420_weathered_normal_dx.png",
+        "textures/revision2/facade_1420_weathered_roughness.png"
+      ]
+    },
+    {
+      "name": "Source and GLB preserved",
+      "result": "PASS"
+    },
+    {
+      "name": "GLB exact triangle counts",
+      "result": "PASS",
+      "triangles": {
+        "SM_1420_Door": 1852,
+        "SM_1420_Glass": 12,
+        "SM_1420_Interior": 79266,
+        "SM_1420_Mast": 1264,
+        "SM_1420_Shell": 10340
+      }
+    },
+    {
+      "name": "Visible surface unchanged by zero-area cleanup",
+      "result": "PASS",
+      "proof_file": "mesh_cleanup.json",
+      "removed": {
+        "SM_1420_Shell": 0,
+        "SM_1420_Interior": 640,
+        "SM_1420_Door": 0,
+        "SM_1420_Glass": 0,
+        "SM_1420_Mast": 0
+      }
+    },
+    {
+      "name": "Story proxy anchor preserved",
+      "result": "PASS"
+    },
+    {
+      "name": "R2 facade identity exported",
+      "result": "PASS"
+    },
+    {
+      "name": "SRC_Console_chassis original physical anchor",
+      "result": "PASS",
+      "actual": [
+        1.2000000476837158,
+        1.5299999713897705,
+        1.0
+      ],
+      "expected": [
+        1.2,
+        1.53,
+        1.0
+      ]
+    },
+    {
+      "name": "SRC_Microphone_body original physical anchor",
+      "result": "PASS",
+      "actual": [
+        1.7200000286102295,
+        1.6799999475479126,
+        1.4049999713897705
+      ],
+      "expected": [
+        1.72,
+        1.68,
+        1.405
+      ]
+    },
+    {
+      "name": "Street-facing tape transport is within window",
+      "result": "PASS",
+      "parts": [
+        "Reel_machine",
+        "Reel_machine_face",
+        "Tape_reel_spool",
+        "Tape_reel_tape",
+        "Tape_reel_hub",
+        "Tape_reel_spoke",
+        "Tape_reel_spoke.001",
+        "Tape_reel_spoke.002",
+        "Tape_reel_spool.001",
+        "Tape_reel_tape.001",
+        "Tape_reel_hub.001",
+        "Tape_reel_spoke.003",
+        "Tape_reel_spoke.004",
+        "Tape_reel_spoke.005",
+        "Exposed_tape",
+        "Tape_head_cover",
+        "Tape_controls",
+        "Tape_controls.001",
+        "Tape_controls.002",
+        "Tape_meter",
+        "Tape_meter.001"
+      ]
+    },
+    {
+      "name": "Tape face physically within clear window and facing street",
+      "result": "PASS",
+      "bounds": [
+        [
+          -0.2900000512599945,
+          2.0424997806549072,
+          0.9050000309944153
+        ],
+        [
+          0.5699999928474426,
+          2.077500104904175,
+          2.075000047683716
+        ]
+      ],
+      "front_normal": [
+        -1.5099580252808664e-07,
+        -1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "M_1420_Stucco_cream saved plaster normal matches sidecar",
+      "result": "PASS",
+      "normal_strength": [
+        0.3799999952316284
+      ],
+      "sidecar_strength": 0.38
+    },
+    {
+      "name": "M_1420_WeatheredFacadePaint saved plaster normal matches sidecar",
+      "result": "PASS",
+      "normal_strength": [
+        0.4000000059604645
+      ],
+      "sidecar_strength": 0.4
+    },
+    {
+      "name": "No exposed Lamp_glow geometry in window rectangle",
+      "result": "PASS",
+      "overlaps": []
+    },
+    {
+      "name": "R9 old material order preserved and notices appended",
+      "result": "PASS"
+    },
+    {
+      "name": "R9 three existing notice cards have printed visible faces",
+      "result": "PASS",
+      "printed_faces": [
+        "SRC_Lobby_notice",
+        "SRC_Lobby_notice.001",
+        "SRC_Lobby_notice.002"
+      ]
+    },
+    {
+      "name": "R9 selected veneer walls use metric vertical grain",
+      "result": "PASS",
+      "wall_names": [
+        "Walnut_side_lining",
+        "Walnut_side_lining.001",
+        "Walnut_back_lining",
+        "Studio_corridor_partition",
+        "Lobby_back_wall"
+      ],
+      "max_uv_error": 0.0
+    },
+    {
+      "name": "R9 opal diffuser matches native practical position",
+      "result": "PASS"
+    },
+    {
+      "name": "R9 reception log and pencils are physical source objects",
+      "result": "PASS"
+    },
+    {
+      "name": "R9 original source geometry and anchors preserved",
+      "result": "PASS",
+      "proof_file": "r9_preservation.json"
+    }
+  ],
+  "passed": 51,
+  "total": 51,
+  "runtime_note": "This verifies authored FBX roundtrip. Unreal placement, collisions, door interaction and story regressions require parent runtime tests."
+}

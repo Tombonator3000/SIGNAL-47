@@ -1,0 +1,83 @@
+{
+  "status": "PASS",
+  "candidate": "F3",
+  "tested_source": "093a4326df1774653e6d7f17843f8e23211045e9",
+  "candidate_package_sha256": "6377af9b87a0dd5947e22b47929defd375f9fa0fe0b223475fb361b65e2b939d",
+  "scope": "29 egne deler med 3 geometriske LOD-er, STATION01 og SARO-arkiv. Modell-/interaksjonsleveranse, ikke hele spillets godkjenning.",
+  "reports": [
+    {
+      "path": "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/fieldstation/verification.json",
+      "sha256": "770add971d91ec45849dd80f056ad2ae6112e0696644eb0b97810236fe656690",
+      "status": "PASS",
+      "checks": 285
+    },
+    {
+      "path": "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/fieldinstruments/verification.json",
+      "sha256": "4aa31238437ac23a86f029086c61602769097159444d11f8aa7833bdfbb39e06",
+      "status": "PASS",
+      "checks": 78
+    },
+    {
+      "path": "/home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/archiveprops/verification.json",
+      "sha256": "d501f9e33691a8eeb03d52645f5715d0e776c3dbeb94ed219bcd8b3ff6a90189",
+      "status": "PASS",
+      "checks": 356
+    },
+    {
+      "path": "/home/tom/scratch-bm/Signal47-field-models/native-import.json",
+      "sha256": "2238cdb476e71bc243e54867fc78dce5ec9ef0aa9c9329cfa37b6e3a3c80c682",
+      "status": "PASS",
+      "checks": 1191
+    },
+    {
+      "path": "/home/tom/scratch-bm/Signal47-field-models/native-fieldstation-geometry.json",
+      "sha256": "9102617e7340d1b4e5d20c5587ecec1f8c06778497a5c49dbcaec15e66ee2169",
+      "status": "PASS",
+      "checks": 105
+    },
+    {
+      "path": "/home/tom/scratch-bm/Signal47-field-models/native-fieldinstruments-geometry.json",
+      "sha256": "1fd4832acbd6a050702371e2d284228e1619185811c51ba5b18a724b0dd199ef",
+      "status": "PASS",
+      "checks": 273
+    },
+    {
+      "path": "/home/tom/scratch-bm/Signal47-field-models/native-archiveprops-geometry.json",
+      "sha256": "125936d91f9ffadf33bba1cee1e8b35bd30b7a6997f9d086b178a4d4ec75e1b6",
+      "status": "PASS",
+      "checks": 231
+    },
+    {
+      "path": "/home/tom/scratch-bm/Signal47-field-models/F3-runtime.json",
+      "sha256": "d453bc7ab2d661ea0c0209a69db6e46243ff77b93a7143508669f456f5300f7e",
+      "status": "PASS",
+      "checks": 0
+    },
+    {
+      "path": "/home/tom/scratch-bm/Signal47-field-models/F3-visual-review.json",
+      "sha256": "0968e22cb29f2908377b7bbaa2d53b499c3fd35caaa3d315f310a3fe24069430",
+      "status": "PASS",
+      "checks": 0
+    }
+  ],
+  "runtime_cases": [
+    "field-views",
+    "archive-views",
+    "field-journey",
+    "archive-event",
+    "continue"
+  ],
+  "reviewed_static_views": 18,
+  "actual_photo_document_images": 3,
+  "limitations": [
+    "Fysisk Xbox, fri menneskelig gjennomspilling, lytting og full natt er ikke verifisert.",
+    "18 faste High/Clean-kameraer er visuelt vurdert i dag/skumring/natt; ingen helrute- eller ytelsesmatrise.",
+    "Eksisterende RT-minnevarsel beholdes. Ingen ny sky-, driver- eller global stabilitetsgaranti.",
+    "Feltrollens nattfotografier er svært mørke; de beviser eksponering, lagring og fremkalling, ikke god motivlesbarhet."
+  ],
+  "delivery": {
+    "blender_bundle": "/home/tom/Desktop/Signal47 feltmodeller 25okt",
+    "pr": "https://github.com/Tombonator3000/SIGNAL-47/pull/156",
+    "installation": "Føres separat etter bekreftet merge og hashkontrollert installasjon."
+  }
+}

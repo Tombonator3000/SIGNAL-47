@@ -1,0 +1,174 @@
+{
+  "_doc": "Complete original Mesa Diner. Blender Z-up maps worldThree=(7979.95+Bx,4.309006389843889+Bz,1999.95-By), front+X, yaw0. BuildMesaDiner atomically validates all 11 meshes/materials before replacing old geometry; this file intentionally performs no early replaces/trim/unblock. Existing world walk, floors, all story proxies and dynamic objects remain authoritative. Door mesh bakes an open -105deg BlenderZ pose at the old hinge.",
+  "area": "diner",
+  "walk": "road",
+  "leg": "road,roswell",
+  "grounds": [
+    "diner",
+    "road"
+  ],
+  "parent": "world.diner.group",
+  "props": [
+    {
+      "id": "mesaShell",
+      "model": "/Game/MesaDiner/SM_Mesa_Shell.SM_Mesa_Shell",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaGlass",
+      "model": "/Game/MesaDiner/SM_Mesa_Glass.SM_Mesa_Glass",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaDoor",
+      "model": "/Game/MesaDiner/SM_Mesa_Door.SM_Mesa_Door",
+      "at": [
+        7981.849999999999,
+        4.309006389843889,
+        2000.53
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaInterior",
+      "model": "/Game/MesaDiner/SM_Mesa_Interior.SM_Mesa_Interior",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaBooths",
+      "model": "/Game/MesaDiner/SM_Mesa_Booths.SM_Mesa_Booths",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaCounter",
+      "model": "/Game/MesaDiner/SM_Mesa_Counter.SM_Mesa_Counter",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaKitchen",
+      "model": "/Game/MesaDiner/SM_Mesa_Kitchen.SM_Mesa_Kitchen",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaFixtures",
+      "model": "/Game/MesaDiner/SM_Mesa_Fixtures.SM_Mesa_Fixtures",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaTruck",
+      "model": "/Game/MesaDiner/SM_Mesa_Truck.SM_Mesa_Truck",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaSign",
+      "model": "/Game/MesaDiner/SM_Mesa_Sign.SM_Mesa_Sign",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    },
+    {
+      "id": "mesaParking",
+      "model": "/Game/MesaDiner/SM_Mesa_Parking.SM_Mesa_Parking",
+      "at": [
+        7979.95,
+        4.309006389843889,
+        1999.95
+      ],
+      "yaw": 0,
+      "ground": false,
+      "collide": false
+    }
+  ],
+  "views": [
+    {
+      "name": "mesa-front",
+      "at": [
+        7996.25,
+        2015.5,
+        0.67,
+        0.07
+      ]
+    },
+    {
+      "name": "mesa-parking",
+      "at": [
+        8005.2,
+        1981.5,
+        2.22,
+        0.05
+      ]
+    },
+    {
+      "name": "mesa-interior",
+      "at": [
+        7978.5,
+        2006.5,
+        0,
+        -0.1
+      ]
+    }
+  ]
+}

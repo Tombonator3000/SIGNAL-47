@@ -1,6 +1,8 @@
 #include "SS47Notebook.h"
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 
+#include "Dom/JsonObject.h"
 #include "Engine/Texture2D.h"
 #include "Fonts/FontMeasure.h"
 #include "Framework/Application/SlateApplication.h"
@@ -131,29 +133,127 @@ namespace
 	}
 
 	// CONTROLS: every control, keyboard and mouse, and a phone or tablet (the hints about them are
-	// said only once on a device, core/hints.ts, so they are all kept here)
-	struct FCtlGroup { const TCHAR* Head; TArray<TPair<const TCHAR*, const TCHAR*>> Rows; };
-	struct FCtlPage { const TCHAR* Title; TArray<FCtlGroup> Groups; };
-	const FCtlPage& Controls(bool bPhone)
+	// said only once on a device, core/hints.ts, so they are all kept here). The keyboard's page shows
+	// the keys as bound (S47Keys, Settings > Controls), where the web version's are fixed; with the
+	// keys the game came with it reads as the web's table.
+	struct FCtlGroup { FString Head; TArray<TPair<FString, FString>> Rows; };
+	struct FCtlPage { FString Title; TArray<FCtlGroup> Groups; };
+
+	// The keyboard table describes the two rebound keyboard/mouse slots. KeysOf also contains
+	// fixed Xbox gameplay aliases, which belong to the controller hints rather than this table.
+	TArray<FKey, TInlineAllocator<2>> KeyboardKeys(FName Action)
 	{
-		static const FCtlPage Desk = { TEXT("Keyboard and mouse"), {
+		TArray<FKey, TInlineAllocator<2>> Out;
+		for (int32 Slot = 0; Slot < 2; ++Slot)
+		{
+			const FKey K = S47Keys::Key(Action, Slot);
+			if (K.IsValid() && !K.IsGamepadKey()) Out.Add(K);
+		}
+		return Out;
+	}
+
+	// an action's keys for the key column: "Tab, N", "E, Enter" ("(no key)" when it has none)
+	FString KeysSaid(FName Action, bool bFirstOnly = false)
+	{
+		TArray<FString> W;
+		for (const FKey& K : KeyboardKeys(Action))
+		{
+			FString N = K == EKeys::Escape ? FString(TEXT("Esc")) : S47Keys::Name(K);
+			if (N.StartsWith(TEXT("a "))) N.RightChopInline(2);
+			if (N.StartsWith(TEXT("the "))) N.RightChopInline(4);
+			if (!N.IsEmpty()) N[0] = FChar::ToUpper(N[0]);
+			W.Add(N);
+			if (bFirstOnly) break;
+		}
+		return W.IsEmpty() ? FString(TEXT("(no key)")) : FString::Join(W, TEXT(", "));
+	}
+	// an action's key in a sentence ("Shift: run."), "(no key)" when it has none
+	FString KeySaid(FName Action)
+	{
+		const TArray<FKey, TInlineAllocator<2>> Keys = KeyboardKeys(Action);
+		const FString S = Keys.Num() ? S47Keys::Name(Keys[0]) : FString();
+		return S.IsEmpty() ? FString(TEXT("(no key)")) : S;
+	}
+
+	// the four walk keys: "W A S D, arrows" (each slot's keys in the order forward, left, back, right)
+	FString WalkKeys()
+	{
+		static const FName Move[4] = { TEXT("forward"), TEXT("left"), TEXT("back"), TEXT("right") };
+		const FKey Arrows[4] = { EKeys::Up, EKeys::Left, EKeys::Down, EKeys::Right };
+		TArray<FString> Out;
+		for (int32 Slot = 0; Slot < 2; ++Slot)
+		{
+			TArray<FString> W;
+			bool bAny = false, bArrows = true;
+			for (int32 i = 0; i < 4; ++i)
+			{
+				const FKey K = S47Keys::Key(Move[i], Slot);
+				bAny |= K.IsValid();
+				bArrows &= K == Arrows[i];
+				W.Add(K.IsValid() ? S47Keys::Short(K) : FString(TEXT("-")));
+			}
+			if (bAny) Out.Add(bArrows ? FString(TEXT("arrows")) : FString::Join(W, TEXT(" ")));
+		}
+		return Out.IsEmpty() ? FString(TEXT("(no key)")) : FString::Join(Out, TEXT(", "));
+	}
+
+	FCtlPage Controls(bool bPhone, bool bPad = false)
+	{
+		if (bPad) return { TEXT("Xbox controller"), {
 			{ TEXT("On foot"), {
-				{ TEXT("W A S D, arrows"), TEXT("Walk. Shift: run.") },
-				{ TEXT("Mouse"), TEXT("Look. Click the picture first to take the mouse.") },
-				{ TEXT("E, Enter, click"), TEXT("Use what the crosshair is on. Put a paper back.") },
-				{ TEXT("Right mouse, held"), TEXT("A closer look at what the crosshair is on.") },
-				{ TEXT("V"), TEXT("Read the current or last description. Press again to stop.") },
-				{ TEXT("F"), TEXT("The flashlight, once you have it.") },
-				{ TEXT("C"), TEXT("Raise or lower the field camera.") },
-				{ TEXT("Space"), TEXT("Jump. With the camera raised: the shutter.") },
-				{ TEXT("Tab, N"), TEXT("The notebook. M: its map. I: the kit. H: these controls.") },
-				{ TEXT("Esc, P"), TEXT("Pause: settings, save and load.") } } },
+				{ TEXT("LS / L3"), TEXT("Walk / run.") },
+				{ TEXT("RS"), TEXT("Look around.") },
+				{ TEXT("A / B"), TEXT("Use / secondary choice or takeaway management.") },
+				{ TEXT("X / RT"), TEXT("Raise or lower the camera / shutter while raised.") },
+				{ TEXT("LT / Y"), TEXT("Hold to look closer / jump.") },
+				{ TEXT("D-pad Up / Down"), TEXT("Flashlight / radio.") },
+				{ TEXT("D-pad Left / Right"), TEXT("Map / spoken description.") },
+				{ TEXT("LB / View"), TEXT("The notebook. View has two overlapping rectangles.") },
+				{ TEXT("RB / Menu"), TEXT("The case board / pause, settings, save and load.") } } },
 			{ TEXT("In the truck"), {
-				{ TEXT("W, S"), TEXT("Throttle and brake. S at a stop: reverse.") },
-				{ TEXT("A, D"), TEXT("Steer.") },
+				{ TEXT("LS / RS"), TEXT("Steer / look around the cab.") },
+				{ TEXT("RT / LT"), TEXT("Throttle / brake or reverse.") },
+				{ TEXT("A, stopped"), TEXT("Get out, or turn the key when the engine has died.") },
+				{ TEXT("D-pad Down"), TEXT("The radio: on, the next station, off.") } } },
+			{ TEXT("Menus and the case board"), {
+				{ TEXT("D-pad / A / B"), TEXT("Select / confirm / go back.") },
+				{ TEXT("LB / RB"), TEXT("Turn tabs. On the case board: zoom out / in.") },
+				{ TEXT("RS / A held"), TEXT("Move a pointer / click or drag a card, tracing or thread.") } } }
+		} };
+		if (!bPhone)
+		{
+			auto First = [](const TCHAR* A) { return KeysSaid(A, true); };
+			// (Space is both the jump and the shutter until one of them is given another key)
+			const FKey Jump = S47Keys::Key(TEXT("jump"), 0);
+			const TArray<FKey, TInlineAllocator<2>> Shutter = KeyboardKeys(TEXT("shutter"));
+			const bool bShared = Jump.IsValid() && Shutter.Num() == 1 && Shutter[0] == Jump;
+			FCtlGroup Foot = { TEXT("On foot"), {
+				{ WalkKeys(), FString::Printf(TEXT("Walk. %s: run."), *KeySaid(TEXT("run"))) },
+				{ TEXT("Mouse"), TEXT("Look. Click the picture first to take the mouse.") },
+				{ KeysSaid(TEXT("use")) + TEXT(", click"), TEXT("Use what the crosshair is on. Put a paper back.") },
+				{ KeysSaid(TEXT("zoom")) + TEXT(", held"), TEXT("A closer look at what the crosshair is on.") },
+				{ KeysSaid(TEXT("describe")), TEXT("Read the current or last description. Press again to stop.") },
+				{ KeysSaid(TEXT("light")), TEXT("The flashlight, once you have it.") },
+				{ KeysSaid(TEXT("camera")), TEXT("Raise or lower the field camera.") } } };
+			if (bShared) Foot.Rows.Add({ KeysSaid(TEXT("jump")), TEXT("Jump. With the camera raised: the shutter.") });
+			else
+			{
+				Foot.Rows.Add({ KeysSaid(TEXT("jump")), TEXT("Jump.") });
+				Foot.Rows.Add({ KeysSaid(TEXT("shutter")), TEXT("The shutter, with the camera raised.") });
+			}
+			// (the second choice and the case board have rows of their own here; the web's table has neither)
+			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("Manage takeaway: set down, stow, take out or discard. Otherwise, the other choice at a prompt.") });
+			Foot.Rows.Add({ KeysSaid(TEXT("notebook")), FString::Printf(TEXT("The notebook. %s: its map. %s: the kit. %s: these controls."), *KeySaid(TEXT("map")), *KeySaid(TEXT("kit")), *KeySaid(TEXT("controls"))) });
+			Foot.Rows.Add({ KeysSaid(TEXT("board")), TEXT("The case board, once there is one.") });
+			Foot.Rows.Add({ KeysSaid(TEXT("pause")), TEXT("Pause: settings, save and load.") });
+			FCtlGroup Truck = { TEXT("In the truck"), {
+				{ First(TEXT("forward")) + TEXT(", ") + First(TEXT("back")), FString::Printf(TEXT("Throttle and brake. %s at a stop: reverse."), *KeySaid(TEXT("back"))) },
+				{ First(TEXT("left")) + TEXT(", ") + First(TEXT("right")), TEXT("Steer.") },
 				{ TEXT("Mouse"), TEXT("Look round the cab.") },
-				{ TEXT("R, or click the radio"), TEXT("The radio: on, the next station, off.") },
-				{ TEXT("E, stopped"), TEXT("Get out. When the engine has died: turn the key.") } } } } };
+				{ KeysSaid(TEXT("radio")) + TEXT(", or click the radio"), TEXT("The radio: on, the next station, off.") },
+				{ First(TEXT("use")) + TEXT(", stopped"), TEXT("Get out. When the engine has died: turn the key.") } } };
+			return { TEXT("Keyboard and mouse"), { Foot, Truck } };
+		}
 		static const FCtlPage Phone = { TEXT("Phone and tablet"), {
 			{ TEXT("On foot"), {
 				{ TEXT("Left thumb"), TEXT("Walk.") },
@@ -168,7 +268,7 @@ namespace
 				{ TEXT("Left stick"), TEXT("Throttle, brake and steering.") },
 				{ TEXT("Radio, or tap it"), TEXT("The radio: on, the next station, off.") },
 				{ TEXT("Get out"), TEXT("Stopped: out of the truck. Turn the key: when the engine has died.") } } } } };
-		return bPhone ? Phone : Desk;
+		return Phone;
 	}
 
 	TSharedRef<SWidget> ControlsBlock(const FCtlPage& Pg)
@@ -178,13 +278,13 @@ namespace
 		B->AddSlot().AutoHeight()[Head(Pg.Title, FString())];
 		for (const FCtlGroup& G : Pg.Groups)
 		{
-			B->AddSlot().AutoHeight().Padding(0, P(14), 0, P(4))[SNew(STextBlock).Text(FText::FromString(FString(G.Head).ToUpper())).Font(Term(20, 2)).ColorAndOpacity(Ph2Red())];
-			for (const TPair<const TCHAR*, const TCHAR*>& R : G.Rows)
+			B->AddSlot().AutoHeight().Padding(0, P(14), 0, P(4))[SNew(STextBlock).Text(FText::FromString(G.Head.ToUpper())).Font(Term(20, 2)).ColorAndOpacity(Ph2Red())];
+			for (const TPair<FString, FString>& R : G.Rows)
 			{
 				B->AddSlot().AutoHeight().Padding(0, 0, 0, P(4))
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(P(170))[SNew(STextBlock).Text(FText::FromString(R.Key)).Font(Term(20)).ColorAndOpacity(C(0x2e2a22))]]
+					+ SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(P(170))[SNew(STextBlock).Text(FText::FromString(R.Key)).Font(Term(20)).ColorAndOpacity(C(0x2e2a22)).AutoWrapText(true)]]
 					+ SHorizontalBox::Slot().FillWidth(1.f).Padding(P(12), P(1), 0, 0)[SNew(STextBlock).Text(FText::FromString(R.Value)).Font(Type(15)).ColorAndOpacity(C(0x4c463a)).AutoWrapText(true)]
 				];
 			}
@@ -318,7 +418,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	X = InArgs._Extras;
 	Album = X.Album;
 	static const FRegexPattern Pnn(TEXT("^p\\d\\d$"));
-	auto IsFinding = [](const FS47Doc& D) { FRegexMatcher M(Pnn, D.Id); return M.FindNext() || D.Id == TEXT("finding"); };
+	auto IsFinding = [](const FS47Doc& D) { FRegexMatcher M(Pnn, D.Id); return M.FindNext() || D.Id == TEXT("finding") || (D.Id == TEXT("anomaly:n01") || D.Id == TEXT("anomaly:n02") || D.Id == TEXT("anomaly:a02") || D.Id == TEXT("anomaly:p01")); };
 	for (const FS47Doc& D : InArgs._Docs) if (D.Kind == TEXT("photo") && !D.Image.IsEmpty()) Photos.Add(D);
 	for (const FS47Doc& D : InArgs._Docs) if (IsFinding(D)) Findings.Add(D);
 	for (const FS47Doc& D : InArgs._Docs) if (!(D.Kind == TEXT("photo") && !D.Image.IsEmpty()) && !IsFinding(D)) Papers.Add(D);
@@ -400,7 +500,14 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 								+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Keycap(S47Keys::Label(TEXT("notebook")).ToUpper())], [this] { Close(); })
 						]
 					]
-					+ SCanvas::Slot().Position(P2(150, 846)).Size(P2(900, 32))[Keys]
+					+ SCanvas::Slot().Position(P2(150, 846)).Size(P2(900, 32))
+					[
+						SNew(SOverlay)
+						+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::Collapsed : EVisibility::SelfHitTestInvisible; })[Keys]]
+						+ SOverlay::Slot()[SNew(STextBlock).Font(Term(20)).ColorAndOpacity(Hint())
+							.Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
+							.Text_Lambda([this] { return FText::FromString(OnBoard ? TEXT("LB/RB TABS   D-PAD CHOOSE   A OPEN   X READ   Y BOARD   B CLOSE") : TEXT("LB/RB TABS   D-PAD CHOOSE   A OPEN   X READ   B CLOSE")); })]
+					]
 					+ SCanvas::Slot().Position(P2(1100, 842)).Size(P2(444, 36))
 					[
 						SNew(SBox).HAlign(HAlign_Right)[Osd(TAttribute<FText>::CreateLambda([] { const US47Main* M = US47Main::Get(nullptr); return FText::FromString(M && M->Story ? OsdLine(M->Story->Clock()) : FString()); }), 26.f)]
@@ -654,7 +761,7 @@ void SS47Notebook::Build()
 				Entry(I, Shadowed(SNew(SBorder).BorderImage(Box(C(0xf6f1e3))).Padding(FMargin(P(12), P(8)))
 					[
 						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(P(62))[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(26)).ColorAndOpacity(C(0x2f6a3c))]]
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(P(100))[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(26)).ColorAndOpacity(C(0x2f6a3c)).AutoWrapText(true)]]
 						+ SHorizontalBox::Slot().FillWidth(1.f).Padding(P(10), 0, 0, 0)
 						[
 							SNew(SVerticalBox)
@@ -666,7 +773,22 @@ void SS47Notebook::Build()
 		}
 		const FString Line = Findings.Num() ? FString::Printf(TEXT("FINDINGS · %d"), Findings.Num()) : FString(TEXT("FINDINGS"));
 		LeftSlot->SetContent(Lay(Head(TEXT("Findings"), Line), Findings.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("Nothing recorded yet. A finding goes here once the records support it.")), LeftScroll));
-		if (!Findings.Num()) Read.Add(TEXT("Nothing recorded yet. A finding goes here once the records support it."));
+		if (!Findings.Num())
+		{
+			Read.Add(TEXT("Nothing recorded yet. A finding goes here once the records support it."));
+			// Departs from the web version: with nothing recorded, the right page says how a finding
+			// is made (Tom: the clues should be better explained to a new player).
+			const FString Key = S47Keys::Label(TEXT("board")).ToUpper();
+			const TArray<FString> How = {
+				FString::Printf(TEXT("Open the case board (%s). Every paper I pick up is pinned there."), *Key),
+				TEXT("Pull a red thread from a pin to the record it agrees with. A wrong one falls slack."),
+				TEXT("A question card fills its lines when the right threads hold."),
+				TEXT("Every line filled: RECORD. The finding comes here."),
+				TEXT("Stuck: the Hint on the card."),
+			};
+			RightSlot->SetContent(Lay(Head(TEXT("How a finding is made"), TEXT("ON THE CASE BOARD")), Lines(How, 0, How.Num(), false), RightScroll, 146.f, true));
+			Read.Append(How);
+		}
 	}
 	else if (Tab == TEXT("papers"))
 	{
@@ -687,7 +809,7 @@ void SS47Notebook::Build()
 							+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(bHand ? Hand(25) : Type(15)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
 							+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, 0)
 							[
-								SNew(STextBlock).Text(FText::FromString(FString(KindName(D)) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(17)).ColorAndOpacity(C(0x8a8270))
+								SNew(STextBlock).Text(FText::FromString(FString(KindName(D)) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(17)).ColorAndOpacity(C(0x8a8270)).AutoWrapText(true)
 							]
 						]
 					], 6.f, FVector2D(0, 2), 0.18f), true)
@@ -814,13 +936,16 @@ void SS47Notebook::Build()
 	}
 	else if (Tab == TEXT("controls"))
 	{
-		// every control: the keyboard and mouse on the left, a phone's on the right (a phone's first on a phone)
+		// Unreal desktop: the active controls first, with the other supported input on the facing page.
 		auto Page = [](const FCtlPage& Pg, TSharedPtr<SScrollBox>& Scroll)
 		{
 			return SNew(SBox).Padding(FMargin(P(84), P(40), P(30), P(30)))[SAssignNew(Scroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3))) + SScrollBox::Slot()[ControlsBlock(Pg)]];
 		};
-		LeftSlot->SetContent(Page(Controls(X.bTouch), LeftScroll));
-		RightSlot->SetContent(Page(Controls(!X.bTouch), RightScroll));
+		const bool bPad = S47Gamepad::UsingGamepad();
+		LeftSlot->SetContent(Page(Controls(X.bTouch, bPad), LeftScroll));
+		RightSlot->SetContent(Page(Controls(false, !bPad), RightScroll));
+		KeysShown = S47Keys::Changes();
+		PadShown = S47Gamepad::Changes();
 	}
 	if (!Read.IsEmpty() && UI.IsValid()) Reading = UI->ReadingAction(Read, TEXT("notebook-description"));
 	BuildRight();
@@ -977,8 +1102,8 @@ void SS47Notebook::Activate()
 	{
 		const FString Art = (*X.Kit)[I].Art;
 		if (Art == TEXT("papers")) Show(TEXT("papers"));
-		else if (Art == TEXT("camera")) Press(EKeys::C);
-		else if (Art == TEXT("flashlight")) Press(EKeys::F);
+		else if (Art == TEXT("camera")) Press(S47Keys::Key(TEXT("camera"), 0));
+		else if (Art == TEXT("flashlight")) Press(S47Keys::Key(TEXT("light"), 0));
 	}
 }
 
@@ -1021,6 +1146,12 @@ void SS47Notebook::Close()
 	if (UI.IsValid()) UI->Close();
 }
 
+void SS47Notebook::Tick(const FGeometry& G, const double Now, const float Dt)
+{
+	SCompoundWidget::Tick(G, Now, Dt);
+	if (Tab == TEXT("controls") && (KeysShown != S47Keys::Changes() || PadShown != S47Gamepad::Changes())) Build();
+}
+
 FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 {
 	// main.ts input.onKey with the notebook open: Tab, N, M, I, H, Escape and P close it; B lays
@@ -1029,17 +1160,19 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	// one print open big: these only page through the album and put the print back (ui/album.ts)
 	if (Big != INDEX_NONE)
 	{
-		if (K == EKeys::Left || K == EKeys::A) { ShowBig(Big - 1); return FReply::Handled(); }
-		if (K == EKeys::Right || K == EKeys::D) { ShowBig(Big + 1); return FReply::Handled(); }
-		if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Enter || K == EKeys::SpaceBar) { CloseBig(); return FReply::Handled(); }
+		if (K == EKeys::Left || K == EKeys::A || K == EKeys::Gamepad_DPad_Left || K == EKeys::Gamepad_LeftShoulder) { ShowBig(Big - 1); return FReply::Handled(); }
+		if (K == EKeys::Right || K == EKeys::D || K == EKeys::Gamepad_DPad_Right || K == EKeys::Gamepad_RightShoulder) { ShowBig(Big + 1); return FReply::Handled(); }
+		if (K == EKeys::Escape || K == EKeys::E || K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom || K == EKeys::Gamepad_FaceButton_Right) { CloseBig(); return FReply::Handled(); }
 	}
-	// (the keys as bound, S47Keys: the notebook's own, its pages', and the pause's close it)
-	if (K == EKeys::Escape || S47Keys::Is(TEXT("notebook"), K) || S47Keys::Is(TEXT("map"), K) || S47Keys::Is(TEXT("kit"), K) || S47Keys::Is(TEXT("controls"), K) || S47Keys::Is(TEXT("pause"), K)) { Close(); return FReply::Handled(); }
-	if (S47Keys::Is(TEXT("board"), K) && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
+	// Gameplay pad bindings share these keys (LB notebook, RB board, D-pad map/light).
+	// This modal owns its raw pad layout; rebound keyboard shortcuts still work as before.
+	const bool bKeyboard = !K.IsGamepadKey();
+	if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right || K == EKeys::Gamepad_Special_Left || K == EKeys::Gamepad_Special_Right || (bKeyboard && (S47Keys::Is(TEXT("notebook"), K) || S47Keys::Is(TEXT("map"), K) || S47Keys::Is(TEXT("kit"), K) || S47Keys::Is(TEXT("controls"), K) || S47Keys::Is(TEXT("pause"), K)))) { Close(); return FReply::Handled(); }
+	if (((bKeyboard && S47Keys::Is(TEXT("board"), K)) || K == EKeys::Gamepad_FaceButton_Top) && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
 	// Q and E turn the tabs; the arrows (or W A S D) choose on a page of entries, else scroll it
-	if (K == EKeys::Q) { Turn(-1); return FReply::Handled(); }
-	if (K == EKeys::E) { Turn(1); return FReply::Handled(); }
-	const bool bUp = K == EKeys::Up || K == EKeys::W, bDown = K == EKeys::Down || K == EKeys::S, bLeft = K == EKeys::Left || K == EKeys::A, bRight = K == EKeys::Right || K == EKeys::D;
+	if (K == EKeys::Q || K == EKeys::Gamepad_LeftShoulder) { Turn(-1); return FReply::Handled(); }
+	if (K == EKeys::E || K == EKeys::Gamepad_RightShoulder) { Turn(1); return FReply::Handled(); }
+	const bool bUp = K == EKeys::Up || K == EKeys::W || K == EKeys::Gamepad_DPad_Up, bDown = K == EKeys::Down || K == EKeys::S || K == EKeys::Gamepad_DPad_Down, bLeft = K == EKeys::Left || K == EKeys::A || K == EKeys::Gamepad_DPad_Left, bRight = K == EKeys::Right || K == EKeys::D || K == EKeys::Gamepad_DPad_Right;
 	if (bUp || bDown || bLeft || bRight)
 	{
 		if (Count()) Choose(Chosen() + (bUp ? -Columns() : bDown ? Columns() : bLeft ? -1 : 1));
@@ -1047,10 +1180,10 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 		return FReply::Handled();
 	}
 	if (K == EKeys::PageUp || K == EKeys::PageDown) { Scroll(S47Game::P(K == EKeys::PageUp ? -400.f : 400.f)); return FReply::Handled(); }
-	if (K == EKeys::Enter || K == EKeys::SpaceBar) { Activate(); return FReply::Handled(); }
-	if (S47Keys::Is(TEXT("describe"), K)) { if (Reading.IsValid()) Reading->Toggle(); return FReply::Handled(); }
+	if (K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom) { Activate(); return FReply::Handled(); }
+	if ((bKeyboard && S47Keys::Is(TEXT("describe"), K)) || K == EKeys::Gamepad_FaceButton_Left) { if (Reading.IsValid()) Reading->Toggle(); return FReply::Handled(); }
 	// the kit's own keys on its page (C raises the camera, F the light)
-	if ((S47Keys::Is(TEXT("camera"), K) || S47Keys::Is(TEXT("light"), K)) && Tab == TEXT("kit") && X.Kit)
+	if (bKeyboard && (S47Keys::Is(TEXT("camera"), K) || S47Keys::Is(TEXT("light"), K)) && Tab == TEXT("kit") && X.Kit)
 	{
 		const FString Want = S47Keys::Is(TEXT("camera"), K) ? TEXT("camera") : TEXT("flashlight");
 		if (X.Kit->ContainsByPredicate([&](const FS47KitItem& It) { return It.Art == Want; })) { Press(K); return FReply::Handled(); }
@@ -1149,7 +1282,7 @@ void SS47Notebook::ShowBig(int32 I)
 			[
 				SNew(SButton).ButtonStyle(Flat()).ContentPadding(FMargin(0, P(6))).IsFocusable(false).OnClicked_Lambda([this] { CloseBig(); return FReply::Handled(); })
 				[
-					KeyHint(TEXT("E"), TEXT("Back to the album"), 22.f, C(0xcfc8b5))
+					SNew(STextBlock).Font(Term(22)).ColorAndOpacity(C(0xcfc8b5)).Text_Lambda([] { return FText::FromString(S47Gamepad::UsingGamepad() ? TEXT("B  Back to the album     LB/RB  Previous / next") : TEXT("E  Back to the album")); })
 				]
 			]
 		]);
@@ -1186,8 +1319,9 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 	Ex.People = TArray<FS47PersonCard>{ { TEXT("Dale"), TEXT("SARO"), TEXT("Left."), FString() } };
 	TArray<FS47Task> T; T.Add({ TEXT("Read the log"), true }); T.Add({ TEXT("Answer the line"), false });
 	FString Opened;
+	int32 Boards = 0;
 	const TSharedRef<SS47Notebook> Nb = SNew(SS47Notebook).Tasks(T).Notes({ TEXT("One."), TEXT("Two.") }).Docs({ Log, Typed, Find })
-		.OnDoc([&Opened](const FS47Doc& D) { Opened = D.Id; }).Extras(Ex);
+		.OnDoc([&Opened](const FS47Doc& D) { Opened = D.Id; }).OnBoard([&Boards] { ++Boards; }).Extras(Ex);
 	auto Key = [&](const FKey& K) { Nb->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
 	Check(TEXT("tabs in order"), FString::Join(Nb->Order, TEXT(" ")) == TEXT("tasks notes findings papers photos map kit people controls"), FString::Join(Nb->Order, TEXT(" ")));
 	Check(TEXT("opens on tasks"), Nb->Tab == TEXT("tasks"), Nb->Tab);
@@ -1207,5 +1341,47 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 	Check(TEXT("Enter opens the chosen paper"), Opened == TEXT("s03log"), Opened);
 	Nb->Show(TEXT("kit"));
 	Check(TEXT("each tab keeps its choice"), Nb->Chosen() == 3, FString::FromInt(Nb->Chosen()));
+	// Xbox uses the same selected entries, tab state and callbacks as the keyboard.
+	Nb->Show(TEXT("tasks")); Key(EKeys::Gamepad_RightShoulder);
+	Check(TEXT("RB turns to the next tab without opening the board"), Nb->Tab == TEXT("notes") && Boards == 0);
+	Key(EKeys::Gamepad_LeftShoulder);
+	Check(TEXT("LB returns to the previous tab"), Nb->Tab == TEXT("tasks"));
+	Nb->Show(TEXT("papers")); Nb->Choose(0); Key(EKeys::Gamepad_DPad_Right);
+	Opened.Empty(); Key(EKeys::Gamepad_FaceButton_Bottom);
+	Check(TEXT("D-pad and A open the selected paper"), Nb->Chosen() == 1 && Opened == TEXT("s03log"));
+	Key(EKeys::Gamepad_DPad_Left);
+	Check(TEXT("D-pad returns to the first paper"), Nb->Chosen() == 0);
+	Nb->Album = FS47AlbumView(); Nb->Album->Shots = { { TEXT("one"), FString(), TEXT("One"), FString() }, { TEXT("two"), FString(), TEXT("Two"), FString() } };
+	Nb->Show(TEXT("photos")); Nb->ShowBig(0); Key(EKeys::Gamepad_RightShoulder);
+	Check(TEXT("RB pages a large print without turning notebook tabs"), Nb->Big == 1 && Nb->Tab == TEXT("photos"));
+	Key(EKeys::Gamepad_FaceButton_Right);
+	Check(TEXT("B puts a large print back in the album"), Nb->Big == INDEX_NONE && Nb->Tab == TEXT("photos"));
+	Key(EKeys::Gamepad_FaceButton_Top);
+	Check(TEXT("Y opens the board once"), Boards == 1);
+	// CONTROLS: the keys as bound, and the page built again when one changes
+	{
+		const TSharedPtr<FJsonObject> Keys = S47Keys::Save();
+		S47Keys::ResetAll();
+		auto Row = [](const FCtlPage& Pg, int32 G, int32 R) { return Pg.Groups.IsValidIndex(G) && Pg.Groups[G].Rows.IsValidIndex(R) ? Pg.Groups[G].Rows[R].Key + TEXT(" | ") + Pg.Groups[G].Rows[R].Value : FString(); };
+		auto Has = [](const FCtlPage& Pg, const FString& Want) { for (const FCtlGroup& Gr : Pg.Groups) for (const TPair<FString, FString>& R : Gr.Rows) if (R.Key + TEXT(" | ") + R.Value == Want) return true; return false; };
+		const FCtlPage Desk = Controls(false);
+		const FCtlPage Pad = Controls(false, true);
+		Check(TEXT("controls: Xbox has camera, trigger and driving help"), Pad.Title == TEXT("Xbox controller") && Has(Pad, TEXT("X / RT | Raise or lower the camera / shutter while raised.")) && Has(Pad, TEXT("RT / LT | Throttle / brake or reverse.")));
+		Check(TEXT("controls: the walk keys as the web has them"), Row(Desk, 0, 0) == TEXT("W A S D, arrows | Walk. Shift: run."), Row(Desk, 0, 0));
+		Check(TEXT("controls: the notebook's keys as the web has them"), Has(Desk, TEXT("Tab, N | The notebook. M: its map. I: the kit. H: these controls.")));
+		Check(TEXT("controls: Space both jump and shutter"), Has(Desk, TEXT("Space | Jump. With the camera raised: the shutter.")));
+		Nb->Show(TEXT("controls"));
+		S47Keys::Bind(TEXT("forward"), 0, EKeys::I);
+		S47Keys::Bind(TEXT("map"), 0, EKeys::K);
+		S47Keys::Bind(TEXT("shutter"), 0, EKeys::G);
+		const FCtlPage Now = Controls(false);
+		Check(TEXT("controls: a walk key rebound"), Row(Now, 0, 0) == TEXT("I A S D, arrows | Walk. Shift: run."), Row(Now, 0, 0));
+		Check(TEXT("controls: the kit's old key goes to the walk"), Has(Now, TEXT("Tab, N | The notebook. K: its map. W: the kit. H: these controls.")), Row(Now, 0, 9));
+		Check(TEXT("controls: the shutter apart from the jump"), Has(Now, TEXT("G | The shutter, with the camera raised.")) && Has(Now, TEXT("Space | Jump.")));
+		Check(TEXT("controls: keyboard rebinds preserve fixed Xbox aliases"), S47Keys::Is(TEXT("shutter"), EKeys::Gamepad_RightTrigger) && S47Keys::Is(TEXT("notebook"), EKeys::Gamepad_LeftShoulder) && S47Keys::KeysOf(TEXT("notebook")).Contains(EKeys::Gamepad_Special_Left));
+		Check(TEXT("controls: the truck's throttle"), Row(Now, 1, 0) == TEXT("I, S | Throttle and brake. S at a stop: reverse."), Row(Now, 1, 0));
+		Check(TEXT("controls: the page knows the keys moved"), Nb->KeysShown != S47Keys::Changes());
+		S47Keys::Load(Keys);
+	}
 	return bOk;
 }

@@ -1,0 +1,102 @@
+{
+  "status": "PASS_TESTED_AND_INSTALLED",
+  "scope": "Testet og installert produksjonsinkrement; fotoets detalj- og formnivå er ikke nådd.",
+  "package_sha256": "de38da9747d9680c9788414688de9f641f09086bc1c936a38a8685619bad7ea8",
+  "model_native_commit": "19ed326d",
+  "runtime_commit": "faf278c6",
+  "core_merge": "26dbb3df",
+  "integrated_sky": "04d98231",
+  "integrated_film_core": "f9e1d4aa",
+  "source_native_binding_files": 721,
+  "source_checks": {
+    "ground": 442,
+    "vegetation": 270,
+    "geology_triangles": 103550
+  },
+  "native_readable_checks": {
+    "nature": 1004,
+    "street": 182
+  },
+  "protected_editor_flags": {
+    "status": "UNVERIFIED",
+    "count": 48,
+    "reason": "UE5.8 Python protects bAutoComputeLODScreenSize; saved and actual cooked thresholds are separately verified."
+  },
+  "actual_opened_images": 33,
+  "runtime_cases": 11,
+  "selftest_checks": 1328,
+  "full_scenarios": 110,
+  "full_wall_seconds": 3137.636177534994,
+  "native_scenario_audits": 110,
+  "evidence_name_collision_retake": "Existing screenshots.sh reuses starhole.log/png at lines113 and148. Original full110 scenarios all passed; overwritten earlier no-stars-noticed evidence was separately retaken with unchanged gameplay flags and audited. Raw pre-reconciliation reports are preserved as original-*.json.",
+  "installed_payload_hashes": 40,
+  "saved_files_unchanged": 51,
+  "known_visual_limits": [
+    "Fjellvegger er for sammenhengende og lysskråningen består i hovedsilhuett.",
+    "Mindre terrengrelieff/drenering og mer like busksilhuetter enn referansen.",
+    "Stiliserte eksisterende bygg og klar veimerking.",
+    "Natt uten lommelykt bekrefter silhuetter og orientering, ikke alle plantedetaljer.",
+    "Om natten har ubelyst gate, forplass, vegetasjon og geologi svært lite detalj utenfor lyspølene. PASS betyr her bevarte belyste orienteringspunkter og åpninger; ikke høy lesbarhet over hele bakken.",
+    "Den frosne stilbegrensningen med regelmessig fjellvegg og lys skrå-/toppflate er ikke gjenåpnet som ny kunstretning eller godkjent som nøyaktig fotomatch.",
+    "Statiske bilder beviser ikke gangkollisjon, dørbruk, interaksjon, anomali-/A02-foto eller andre historieforløp. Vinduets A02-tilstand er lik den åpnede statiske W1-referansen.",
+    "Denne filen hevder ikke full110-regresjon, naturkameraenes separate15-bilders review, installasjon eller samlet sluttgodkjenning.",
+    "Kandidatbinding er kontrollert fra capture-metadata mot frosset package-identity; denne lette visuelle gjennomgangen hasher ikke hele pakken på nytt."
+  ],
+  "human_input_audio_full_night": "UNVERIFIED",
+  "performance_scope": "Fire faste High/Clean1440p utsnitt,67..71FPS mean, ett dusk-p95 over16.67ms. Kombinert natur/sky/film; ikke GPU- eller helrutemåling.",
+  "delivery_target": "/home/tom/Desktop/Signal47 Caliche natur",
+  "evidence": {
+    "CN5/nature-native.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/CN5/nature-native.json",
+      "sha256": "78076439bad717c066e4532aa36f3eaf4b0be8291b011bf76c56e93980d83bad"
+    },
+    "CN5/street-native.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/CN5/street-native.json",
+      "sha256": "91412578a4283f1929b646844da2fd59ad3eb73617c2d9fdd5c100a83eb5f684"
+    },
+    "CN5/backdrop-import.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/CN5/backdrop-import.json",
+      "sha256": "2d581e77d814a655904f36907e71b13e0a550bf16544d51e14e53b97e6af2c4e"
+    },
+    "candidate-production-binding.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/candidate-production-binding.json",
+      "sha256": "e6853aa4860bb4ba27b57bd47132f018cb4e9b44e884f7b9f764cec38ab45f7f"
+    },
+    "visual-acceptance.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/visual-acceptance.json",
+      "sha256": "945e90825fe3d3f0e67d5ffc40402808f5c7d1bfca1604e4baa1109e2efc3f31"
+    },
+    "runtime-latest.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/runtime-latest.json",
+      "sha256": "cb906dfc2607d580849d7ae8ecf1e94526a57d8048dd58eef454bae98cfb72c5"
+    },
+    "screenshots-full-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/screenshots-full-result.json",
+      "sha256": "3a850fe482651b7507892632999821e5e427c21e56ceaefe9ff71571638637f9"
+    },
+    "screenshots-full-nature-audit.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/screenshots-full-nature-audit.json",
+      "sha256": "9005ef7c303c5249331f6c0c206266d8354f93d79996c69f900173acb05c82f0"
+    },
+    "starhole-noticed-retake/report.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/starhole-noticed-retake/report.json",
+      "sha256": "fbf366e984acf6ac2fec355fc4d55318d577c08a0809cd007c87eb156bd84fe0"
+    },
+    "install-result.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/install-result.json",
+      "sha256": "0de4ebb5fbba6722481cc37fff1c69ce09f85413d6b58a6303803a403c0c7810"
+    },
+    "generated-Web-core-sync.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/generated-Web-core-sync.json",
+      "sha256": "78fff75d31194c20a61edb758ff36b55b5f913b67e5c7e172df79691aa327677"
+    },
+    "Content-links-cleanup.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/Content-links-cleanup.json",
+      "sha256": "96b90b3685b7b68dd0f7f257a7badf2f62fe102efb5f70dde771cef8cca28423"
+    },
+    "OpenOrder-cleanup.json": {
+      "path": "/home/tom/scratch-bm/Signal47-caliche-nature/OpenOrder-cleanup.json",
+      "sha256": "0b0365144b23df7f8ea0379b2a4d248b6a2f418aa460cdcbd0406577ce8f9cda"
+    }
+  }
+}

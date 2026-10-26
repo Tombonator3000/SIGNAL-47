@@ -1,0 +1,98 @@
+{
+  "status": "DIAGNOSIS_PROPOSAL_ONLY_NO_VISUAL_SOURCE_CHANGE",
+  "source": "actual nativeFBX material-assigned triangle centroid UV + vertexalpha, source RGBA sampled with flippedV",
+  "meaning": "Area-weighted expected dither coverage before temporal reconstruction, not a claim of exact rendered radiance.",
+  "fields": [
+    {
+      "field": "east_radio_parking",
+      "triangles": 2446,
+      "drawn_area_m2": 145.07893698380568,
+      "R6_expected_dither_area_fraction": 0.09907505673522182,
+      "proposed_expected_dither_area_fraction": 0.21601113155898624,
+      "R6_equivalent_opaque_area_m2": 14.373703912756218,
+      "proposed_equivalent_opaque_area_m2": 31.33866534324672,
+      "atlas_nonzero_sample_fraction": 0.7755519215044971,
+      "atlas_RGB_byte_average": [
+        130.55299592794296,
+        117.9528464074,
+        95.62826128183269
+      ]
+    },
+    {
+      "field": "east_shop_parking",
+      "triangles": 1512,
+      "drawn_area_m2": 90.56986078529494,
+      "R6_expected_dither_area_fraction": 0.09659051246134939,
+      "proposed_expected_dither_area_fraction": 0.21056491859892906,
+      "R6_equivalent_opaque_area_m2": 8.74818926680471,
+      "proposed_equivalent_opaque_area_m2": 19.070835363771966,
+      "atlas_nonzero_sample_fraction": 0.7632275132275133,
+      "atlas_RGB_byte_average": [
+        130.1191731071758,
+        117.53125949349314,
+        95.2833415636324
+      ]
+    },
+    {
+      "field": "service_gap",
+      "triangles": 1870,
+      "drawn_area_m2": 111.62124997362389,
+      "R6_expected_dither_area_fraction": 0.09717502282531966,
+      "proposed_expected_dither_area_fraction": 0.21187510572409538,
+      "R6_equivalent_opaque_area_m2": 10.846797513977613,
+      "proposed_equivalent_opaque_area_m2": 23.64976413921724,
+      "atlas_nonzero_sample_fraction": 0.7668449197860963,
+      "atlas_RGB_byte_average": [
+        130.46140163725192,
+        117.8539257977299,
+        95.54538467965004
+      ]
+    },
+    {
+      "field": "pump_west_lane",
+      "triangles": 800,
+      "drawn_area_m2": 47.606678726503446,
+      "R6_expected_dither_area_fraction": 0.04241083574938356,
+      "proposed_expected_dither_area_fraction": 0.09761796044862396,
+      "R6_equivalent_opaque_area_m2": 2.0190390320434104,
+      "proposed_equivalent_opaque_area_m2": 4.647266881014161,
+      "atlas_nonzero_sample_fraction": 0.23375,
+      "atlas_RGB_byte_average": [
+        89.18509494640362,
+        83.47633833148599,
+        69.14632280372575
+      ]
+    },
+    {
+      "field": "pump_east_lane",
+      "triangles": 800,
+      "drawn_area_m2": 47.607622796003255,
+      "R6_expected_dither_area_fraction": 0.042410428653009036,
+      "proposed_expected_dither_area_fraction": 0.09761706284476993,
+      "R6_equivalent_opaque_area_m2": 2.0190596899292625,
+      "proposed_equivalent_opaque_area_m2": 4.647316306367551,
+      "atlas_nonzero_sample_fraction": 0.23375,
+      "atlas_RGB_byte_average": [
+        89.18510872822212,
+        83.47635092830329,
+        69.14633404225918
+      ]
+    },
+    {
+      "field": "gas_turnout_scuff",
+      "triangles": 538,
+      "drawn_area_m2": 30.43263660487083,
+      "R6_expected_dither_area_fraction": 0.044709909008229604,
+      "proposed_expected_dither_area_fraction": 0.10396113606743347,
+      "R6_equivalent_opaque_area_m2": 1.3606404134842922,
+      "proposed_equivalent_opaque_area_m2": 3.163811474969733,
+      "atlas_nonzero_sample_fraction": 0.26394052044609667,
+      "atlas_RGB_byte_average": [
+        89.54846827674542,
+        83.81425792664388,
+        69.46107640500004
+      ]
+    }
+  ],
+  "proposed_R7": "Keep geometry and vertexfades exactly. Increase alpha of existing nonzero pixels2.2x Soil cap.88 and2.5x Concrete cap.85. Strengthen authored wheelpath albedo locally, never global blackpolygon or wet specular."
+}

@@ -19,6 +19,7 @@ struct FS47OpsView
 	double Clock = 0;             // now
 	TOptional<double> SolveAt;    // when tonight's range came out negative, if it has
 	TArray<FS47LogLine> Log;      // tonight's lines after the seeds, in order
+	bool bEveningTimeline = false;
 	bool bFuture = false;         // RUN860414_0529.DAT is in the directory (All Night)
 };
 

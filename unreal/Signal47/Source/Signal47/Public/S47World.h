@@ -56,6 +56,12 @@ public:
 
 	FString Area = TEXT("saro");
 	bool bDriving = false;
+	// Personal arrival vehicle borrows the drive/cab, never the service odometer or body.
+	bool bCommuteVehicle = false;
+	void BeginCommute(const S47J::FObj& SavedCar = nullptr);
+	void FinishCommute();
+	void SetArrivalServiceWaiting(bool bVisible);
+	void SetPersonalPark(const FVector& Position, double Heading, bool bVisible);
 	/** Where the truck stands when nobody drives it ('saro', 'station01', 'motel', 'diner', or
 	 *  'roswell': left on the old road); empty while it is out on a trip. */
 	FString TruckAt = TEXT("saro");
@@ -219,6 +225,8 @@ private:
 	/** The walk zones and colliders AS47Web keeps per area, and where the trucks' own colliders are
 	 *  in them (World.parkAt moves them). */
 	int32 SaroCol = -1, StationCol = -1, DinerCol = -1;
+	int32 PersonalCol = -1;
+	int32 ArrivalServiceObstacle = -1;
 	int32 OldCol = -1; // (the old road has no walk of its own in the export: its truck's collider is added here)
 	int32 TownCarObstacle = -1;
 	/** The ground round the truck where it is left with no walk zones by a door (Tom 22 October 2026):

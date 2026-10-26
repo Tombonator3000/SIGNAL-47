@@ -1,0 +1,2444 @@
+{
+  "status": "PASS",
+  "source_blend_sha256": "2723c330737b970f36a290cc7d7802c0784a8e53c860dbb302da85a662422eeb",
+  "checks": [
+    {
+      "name": "Complete original terrain tile set",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 3.242492675747943e-08
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.0599365234408307e-07
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.0599365234408307e-07
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.0599365234408307e-07
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 8.678436279330182e-08
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.0599365234408307e-07
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.7084350585904193e-07
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.0599365234408307e-07
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 8.678436279330182e-08
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.2315979021636512e-07
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 4.615783684297492e-07
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 9.384155266328742e-07
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 4.588453024340078e-07
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 3.7666780051959226e-07
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 7.074489847408438e-07
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 9.373897356251826e-07
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 7.587889942900494e-07
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 8.24348747471837e-07
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 9.327927479180209e-07
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 1.0851069145306758e-06
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 7.848978223062852e-07
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 9.496956323712391e-07
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 1.0910834422755977e-06
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 1.407720185739314e-06
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 7.840340146142433e-07
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 7.488206979072709e-07
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 8.434140550545033e-07
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 1.407720185739314e-06
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 5.939822390887972e-08
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.381381696420215e-07
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 4.766381120763219e-07
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 9.336690549727189e-07
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 unchanged drawn height contract",
+      "pass": true,
+      "detail": 5.942068125042166e-08
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 unchanged drawn height contract",
+      "pass": true,
+      "detail": 2.3697745633877165e-07
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 unchanged drawn height contract",
+      "pass": true,
+      "detail": 4.76582924249791e-07
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 actual triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 metre origin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 nondegenerate upward faces",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 actual material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 real point RGBA",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 finite bounded color",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 actual nonwhite RGB",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 actual boundary alpha",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 unchanged drawn height contract",
+      "pass": true,
+      "detail": 4.767567673841233e-07
+    },
+    {
+      "name": "Measured total terrain budget",
+      "pass": true,
+      "detail": 104949
+    },
+    {
+      "name": "MineralSoil_color.png portable existing image",
+      "pass": true,
+      "detail": "//textures/MineralSoil_color.png"
+    },
+    {
+      "name": "MineralSoil_color.png valid pixels",
+      "pass": true,
+      "detail": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "MineralSoil_normal_dx.png portable existing image",
+      "pass": true,
+      "detail": "//textures/MineralSoil_normal_dx.png"
+    },
+    {
+      "name": "MineralSoil_normal_dx.png valid pixels",
+      "pass": true,
+      "detail": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "MineralSoil_roughness.png portable existing image",
+      "pass": true,
+      "detail": "//textures/MineralSoil_roughness.png"
+    },
+    {
+      "name": "MineralSoil_roughness.png valid pixels",
+      "pass": true,
+      "detail": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 3,
+        "componentType": 5123,
+        "count": 16797,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_2_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 11,
+        "componentType": 5123,
+        "count": 9657,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_2_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 16,
+        "componentType": 5123,
+        "count": 9288,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_2_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 21,
+        "componentType": 5123,
+        "count": 15747,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_2_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 26,
+        "componentType": 5123,
+        "count": 16797,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_3_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 30,
+        "componentType": 5123,
+        "count": 9657,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_3_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 34,
+        "componentType": 5123,
+        "count": 11037,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_3_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 39,
+        "componentType": 5123,
+        "count": 16047,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Shoulder_3_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 44,
+        "componentType": 5123,
+        "count": 2397,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_0_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 49,
+        "componentType": 5123,
+        "count": 2400,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_0_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 54,
+        "componentType": 5123,
+        "count": 2400,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_0_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 58,
+        "componentType": 5123,
+        "count": 2400,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_0_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 62,
+        "componentType": 5123,
+        "count": 2400,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_1_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 66,
+        "componentType": 5123,
+        "count": 2400,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_1_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 70,
+        "componentType": 5123,
+        "count": 2400,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_1_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 74,
+        "componentType": 5123,
+        "count": 2400,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_1_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 78,
+        "componentType": 5123,
+        "count": 13920,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_2_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 83,
+        "componentType": 5123,
+        "count": 10707,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_2_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 88,
+        "componentType": 5123,
+        "count": 11679,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_2_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 93,
+        "componentType": 5123,
+        "count": 13917,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_2_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 98,
+        "componentType": 5123,
+        "count": 19557,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_3_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 103,
+        "componentType": 5123,
+        "count": 17322,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_3_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 108,
+        "componentType": 5123,
+        "count": 16908,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_3_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 113,
+        "componentType": 5123,
+        "count": 19410,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_3_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 118,
+        "componentType": 5123,
+        "count": 6720,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_4_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 123,
+        "componentType": 5123,
+        "count": 6354,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_4_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 128,
+        "componentType": 5123,
+        "count": 6720,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_4_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 132,
+        "componentType": 5123,
+        "count": 6720,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_4_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 136,
+        "componentType": 5123,
+        "count": 9768,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_5_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 141,
+        "componentType": 5123,
+        "count": 9477,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_5_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 146,
+        "componentType": 5123,
+        "count": 9900,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_5_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 151,
+        "componentType": 5123,
+        "count": 9900,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_5_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 155,
+        "componentType": 5123,
+        "count": 387,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_6_0 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 160,
+        "componentType": 5123,
+        "count": 420,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_6_1 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 165,
+        "componentType": 5123,
+        "count": 420,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_6_2 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 GLB COLOR_0 present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "GLB RGBA accessor",
+      "pass": true,
+      "detail": {
+        "bufferView": 169,
+        "componentType": 5123,
+        "count": 417,
+        "normalized": true,
+        "type": "VEC4"
+      }
+    },
+    {
+      "name": "SM_CN_Terrain_6_3 GLB boundary alpha preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "All source tiles in GLB assembly",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Saved source bytes unchanged",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "passed": 442,
+  "total": 442,
+  "native_status": "UNVERIFIED until separate actual UE import and render-buffer verification"
+}

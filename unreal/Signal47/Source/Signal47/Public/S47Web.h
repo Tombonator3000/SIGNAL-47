@@ -12,12 +12,18 @@ class UMaterialInterface;
 class UMaterialInstanceDynamic;
 class UPointLightComponent;
 class USpotLightComponent;
+class URectLightComponent;
 class UDirectionalLightComponent;
 class USkyLightComponent;
 class UTextureRenderTarget2D;
 class UTexture2D;
 class ULightComponent;
+class ULocalLightComponent;
 class UPrimitiveComponent;
+class FS47SaroArrival;
+class FS47SaroSite;
+class FS47FleetParked;
+class FS47TownBuildings;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
 struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
@@ -58,6 +64,16 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	bool IsLoaded() const { return bLoaded; }
+	void SetLightingQuality(const FString& Quality);
+	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
+	/** SKY.md: the volumetric cloud layer. Cover/cirrus 0..1 from the clock; clear directions (three's
+	 *  world terms, w = strength) keep story beats in open sky; Flash/FlashDir light them from inside. */
+	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time);
+	float CloudCoverNow() const { return CloudCover; }
+	bool CloudsActive() const;
+	void SuppressFloodLight(int32 Set, int32 Index);
+	float LightIntensity(const FString& Uuid) const;
+	void SetLightIntensity(const FString& Uuid, float Value);
 	int32 PartCount() const { return Nodes.Num(); }
 	FString Summary() const;
 
@@ -70,6 +86,11 @@ public:
 	FS47Area Rect(const FString& Path) const;         // a {minX, maxX, minZ, maxZ} the code holds
 	FS47Pose Pose(const FString& Path) const;         // an {x, z, yaw} the code holds (an anchor)
 	bool HasPath(const FString& Path) const;
+	bool MesaDinerReady() const { return bMesaDinerReady; }
+	bool HighwayLandscapeReady() const { return HighwayLandscapeRoot.IsValid(); }
+	FVector HighwayMapEye(const FVector& ThreeEye) const;
+	bool AuditHighwayLandscape(TArray<FString>& Lines) const;
+	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
 	// what FS47Obj and FS47Mat use
 	TArray<class UMaterialInstanceDynamic*> NodeMids(int32 Node);
@@ -80,10 +101,14 @@ public:
 	void MarkUsable(int32 Node, const FString& Id);
 	FString UsableAt(const UPrimitiveComponent* C) const; // the id of what a trace hit, or empty
 	int32 NodeOf(const UPrimitiveComponent* C) const { const int32* N = CompNode.Find(C); return N ? *N : -1; }
+	// (Unreal only) A part built here and not in the export (S47ConsoleKit.h: the page under the reel)
+	// taken in as a node under Parent, so the things to use can name it (FS47Obj, MarkUsable). Its
+	// transform stays the component's own: only its visibility follows the node's. Returns its index.
+	int32 AdoptNode(UPrimitiveComponent* C, int32 Parent, const FString& Name);
 
 	void SetFogDensity(float Density); // the scene's FogExp2 density (World.enter)
 
-	// ---------- the fake floodlights (kit.ts floodSet / setFlood) ----------
+	// ---------- story lamp state (kit.ts floodSet / setFlood) ----------
 	int32 FloodSet(const FString& Key) const;         // 'site', 'annex', ...; -1 when unknown
 	void SetFlood(int32 Set, int32 Index, float Width); // setFlood(i, intensity, set)
 	void SetFloodColor(int32 Set, int32 Index, const FLinearColor& C);
@@ -93,6 +118,8 @@ public:
 	// several slots is sent once.
 	void SetFloodPool(int32 Set, int32 Index, const FVector& P, float Width, const FLinearColor& C, bool bUpload = true);
 	void FlushFlood(int32 Set);
+	// Apply changed pool state before a one-shot photo, without advancing fog or sky captures.
+	void SyncFloodLights();
 	// A pool as it is now (pos[i]: x, y, z and its width) and its colour
 	// (world/saroPower.ts takes SARO's lamps down from what they are and puts them back).
 	FLinearColor FloodPool(int32 Set, int32 Index) const { return FloodSets.IsValidIndex(Set) && FloodSets[Set].Pos.IsValidIndex(Index) ? FloodSets[Set].Pos[Index] : FLinearColor(0, -999, 0, 0); }
@@ -182,6 +209,7 @@ public:
 	void SetCrtPowered(int32 Screen, bool bOn); // 0 left, 1 centre, 2 right, 3 ops
 	bool IsCrtPowered(int32 Screen) const { return CrtOn.IsValidIndex(Screen) && CrtOn[Screen]; }
 	void SetCrtGlow(float Intensity);
+	void SetCrtFlicker(int32 Screen, float K) { if (Screen >= 0 && Screen < 4) CrtFlicker[Screen] = K; }
 	UTextureRenderTarget2D* CrtTarget(int32 Screen) const { return CrtTargets.IsValidIndex(Screen) ? CrtTargets[Screen].Get() : nullptr; }
 	static constexpr int32 CrtW = 512, CrtH = 384;
 	// A screen in use (SS47ScreenView): its picture from another texture while it is (null: its own
@@ -230,7 +258,8 @@ public:
 	// ---------- doors (Doors.ts) ----------
 	bool IsDoor(const FString& ItemId) const;
 	FString DoorLabel(const FString& ItemId) const;
-	void ToggleDoor(const FString& ItemId);
+	bool ToggleDoor(const FString& ItemId);
+	bool RestoreDoorwayAt(const FVector& PlayerThree, double Radius);
 	// Doors.set(id, open, instant): by the door's id ('south') or its thing's id ('doorSouth');
 	// instant: no swing and no sound (restoring a save)
 	void SetDoorOpen(const FString& DoorOrItemId, bool bOpen, bool bInstant = true);
@@ -258,6 +287,36 @@ private:
 	friend struct FS47Mat;
 	static FQuat S47ThreeEuler(double X, double Y, double Z);
 	bool bLoaded = false;
+	void BuildRetroProps();
+	void BuildFieldModels();
+	void UpdateFieldModels();
+	TArray<TWeakObjectPtr<class UStaticMeshComponent>> FieldModelComponents, FieldModelRetired;
+	struct FFieldModelBinding { TWeakObjectPtr<class UMaterialInstanceDynamic> Mid; int32 Source; bool Shared; float Emission; };
+	TArray<FFieldModelBinding> FieldModelBindings;
+	void BuildRadioStation();
+	void BuildCalicheStreet();
+	void BuildMesaDiner();
+	bool bMesaDinerReady = false;
+	void BuildCalicheNature();
+	void BuildHighwayPower();
+	void BuildHighwayLandscape();
+	void BeginHighwayAudit();
+	void BeginSaroArrivalViews();
+	TSharedPtr<FS47SaroArrival> SaroArrival;
+	TSharedPtr<FS47SaroSite> SaroSite;
+	TSharedPtr<FS47FleetParked> FleetParked;
+	TSharedPtr<FS47TownBuildings> TownBuildings;
+	void BeginProductionViews();
+	void UpdateHighwayLandscape();
+	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
+	TMap<int32, FTransform> HighwayVisuals;
+	TSet<int32> HighwaySharedNodes;
+	FVector HighwayOffset = FVector::ZeroVector;
+	int32 HighwayBridgeInstances = 0;
+	void BuildAuthoredArray();
+	void UpdateRetroProps();
+	struct FRetroTv { TWeakObjectPtr<UMaterialInstanceDynamic> Screen, Pilot; };
+	TArray<FRetroTv> RetroTvs;
 	TArray<FS47WebNode> Nodes;
 	TArray<FString> GeoPaths;
 	TMap<FString, int32> Handles, HandleMats, HandleTexs;
@@ -289,6 +348,113 @@ private:
 	TArray<bool> MatLoaded;
 	UMaterialInterface* Mat(int32 Id);
 
+	// Exported lamp state feeds native lights; shared material pools never add light twice.
+	UPROPERTY() TObjectPtr<class APostProcessVolume> LightingPost;
+	UPROPERTY() TObjectPtr<class UExponentialHeightFogComponent> LightingFog;
+	UPROPERTY() TObjectPtr<USkyLightComponent> NightSky;
+	UPROPERTY() TObjectPtr<UDirectionalLightComponent> DawnSun;
+	struct FPoolLight { int32 Set = -1, Slot = -1; float Reach = 0; TWeakObjectPtr<UPointLightComponent> Light; };
+	TArray<FPoolLight> PoolLights;
+	struct FArrayLight { int32 Dish = -1, Glow = -1; FVector At; TWeakObjectPtr<USpotLightComponent> Light; };
+	TArray<FArrayLight> ArrayLights;
+	void BuildArrayLighting();
+	void UpdateArrayLighting();
+	struct FExteriorLight
+	{
+		int32 Node = -1, Set = -1, Slot = -1, GlowNode = -1, Glow = -1, Material = -1;
+		FVector At, Target;
+		float Reference = 1, Candela = 0, GlowReference = 1, LastK = -1;
+		bool bWasOn = false;
+		TWeakObjectPtr<USpotLightComponent> Light;
+		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+	};
+	TArray<FExteriorLight> ExteriorLights;
+	void BuildExteriorLighting();
+	void UpdateExteriorLighting();
+	struct FLabLight
+	{
+		int32 Node = -1, Role = -1, Slot = -1;
+		float WidthBase = 1, Lumens = 0;
+		TWeakObjectPtr<ULocalLightComponent> Light;
+		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+	};
+	TArray<FLabLight> LabLights;
+	float LabScaleBase = 0.22f;
+	void BuildLabLighting();
+	void UpdateLabLighting();
+	// Physical sources fitted to exported diffuser/screen meshes. Original room lights carry state only.
+	struct FFixtureLight
+	{
+		int32 Node = -1, Set = -1, Slot = -1, Tube = -1, Driver = -1;
+		float Reference = 1, Lumens = 0, LastK = -1;
+		bool bDesk = false;
+		FLinearColor Color = FLinearColor::White;
+		TWeakObjectPtr<URectLightComponent> Light;
+		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+	};
+	TArray<FFixtureLight> FixtureLights;
+	struct FScreenLight { int32 Node = -1, Screen = -1; float Base = 0, Reference = 1; TWeakObjectPtr<URectLightComponent> Light; };
+	TArray<FScreenLight> ScreenLights;
+	float CrtFlicker[4] = { 1, 1, 1, 1 };
+	void BuildFixtureLighting();
+	void UpdateFixtureLighting();
+	void BuildScreenLighting();
+	void UpdateScreenLighting();
+	// Indicator state stays separate from station dimming and from the generated material slots.
+	struct FIndicatorBrightness { float Authored = 1, Applied = 1, EmissiveAuthored = 1, EmissiveApplied = 1; };
+	struct FIndicatorSurface
+	{
+		int32 Node = -1, Screen = -1;
+		bool bFixed = false, bMapped = false;
+		TWeakObjectPtr<UStaticMeshComponent> Mesh;
+		TArray<FIndicatorBrightness> Slots;
+	};
+	TArray<FIndicatorSurface> IndicatorSurfaces;
+	// Native glTF props are adopted after BuildRoom; only their authored emitting slots are gated.
+	struct FNativeIndicatorSurface
+	{
+		int32 Node = -1, Slot = -1;
+		FLinearColor Emissive = FLinearColor::Black;
+		TWeakObjectPtr<UStaticMeshComponent> Mesh;
+	};
+	TArray<FNativeIndicatorSurface> NativeIndicatorSurfaces;
+	int32 NativeIndicatorNodeCount = -1;
+	TArray<bool> RackLedOn;
+	void BuildIndicatorLighting();
+	void DrawRackIndicator(int32 Index);
+	void UpdateIndicatorLighting(float Power);
+	void GateIndicatorMesh(UStaticMeshComponent* Mesh, float Power);
+	float SaroLightingPower() const;
+	void ReviewIndicators(); // -S47IndicatorTest=<directory>, one short camera run at a time
+	URectLightComponent* SurfaceLight(int32 Node, const FVector& FacingThree, float Lumens, float Reach);
+	TArray<TArray<int32>> PoolRoots;
+	bool bSkyCaptured = false;
+	bool bLightingProfiled = false;
+	float CapturedDawn = 0;
+	float CapturedCaliche = 0;
+	double SkyCaptureTime = 0;
+	TArray<float> PerfFrames, PerfGame, PerfDraw, PerfGpu;
+	TSet<uint64> SuppressedPools;
+	int32 LightingQuality = 1;
+	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0;
+	// SKY.md: volumetric clouds, their cloud-only light (set sun from below / moon) and drift.
+	UPROPERTY() TObjectPtr<class UVolumetricCloudComponent> Clouds;
+	UPROPERTY() TObjectPtr<class UMaterialInstanceDynamic> CloudMid;
+	UPROPERTY() TObjectPtr<UDirectionalLightComponent> CloudLight;
+	float CloudCover = 0, CloudCirrus = 0;
+	double CloudTime = -1;
+	FVector CloudWind = FVector::ZeroVector;
+	void BuildClouds();
+	void ApplyCloudQuality();
+	void UpdateCloudLight(const FVector& SunDirection, float Daylight);
+	void BuildNativeLighting();
+	void UpdateNativeLighting();
+	void UpdateNativeFog();
+	void SampleLightingPerformance(float Dt);
+	void ReviewLighting(); // -S47LightingReview=<directory>: fixed cameras, no gameplay input
+	int32 LightingReviewStep = -1, LightingReviewShot = -1;
+	bool bLightingReviewPower = false;
+	double LightingRunTime = 0, LightingLogTime = 0;
 	// lights, per area
 	struct FLightRef { TWeakObjectPtr<ULightComponent> L; FString Area; float Base = 0; FString Uuid; };
 	TArray<FLightRef> Lights;
@@ -316,8 +482,7 @@ private:
 	int32 LeverNode = -1, LedNode = -1, PaperNode = -1, HandsetNode = -1, MugNode = -1, CoffeeNode = -1, JacketNode = -1;
 	int32 HandH = -1, HandM = -1, HandS = -1;
 	TArray<int32> TubeNodes;
-	int32 TubeOnMat = -1;
-	UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> TubeOffMid;
+	TArray<bool> TubePowered;
 	FVector MugHome = FVector::ZeroVector;
 	int32 CoffeeState = 0;
 	double CoffeeY = 0.088;

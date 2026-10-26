@@ -141,6 +141,13 @@ namespace S47Panels
 		double Pitch = 0, Stretch = 2, Space = 0.6;
 		bool bPlaying = false;
 		TFunction<int32()> Current;        // which pulse sounds (0..10), -1 between
+		// (Unreal only: the ANSWER row, S47DecoderDesk.h) the last keys pressed, and the processor
+		// giving the answer back (the keys are dead meanwhile)
+		TArray<int32> Keys;
+		bool bAnswering = false;
+		// (Unreal only) T. Vega's page: still under the spare reel (the small text says someone leaves
+		// papers there), or read (the ANSWER row's faint header ties his page to the keys)
+		bool bPageThere = false, bPageRead = false;
 	};
 	struct FDecoderPanel
 	{
@@ -148,6 +155,8 @@ namespace S47Panels
 		TFunction<void(const FString& M)> OnMode;              // 'raw' | 'harmonized'
 		TFunction<void(const FString& K, double V)> OnParam;   // 'pitch' | 'stretch' | 'space'
 		TFunction<void(bool bPlay)> OnPlay;
+		TFunction<void(int32 K)> OnKey;                        // (Unreal only) the ANSWER row's keys, 1 to 7
+		bool bOnDesk = false;                                  // (Unreal only) the bought unit on the desk, not the rack
 		TFunction<void()> OnClose;
 	};
 	SIGNAL47_API FPanelHandle DecoderPanel(US47UI* UI, const FDecoderPanel& O);

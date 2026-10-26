@@ -44,7 +44,10 @@ public:
 	double Yaw = 0, Pitch = -0.06, Eye = 1.62, Radius = 0.27, Speed = 1.9, Bob = 0, StepDist = 0, Shake = 0, FloorY = 0;
 	float Fov = 70.f; // three's vertical field of view
 	double Sensitivity = 1.0; // Input.sensitivity (Look speed)
+	float PadLookSpeed = 1.f;
+	bool bPadInvertY = false;
 	bool bInvertY = false;    // Invert look
+	bool bHeadMotion = true; // Walking bob, landing dip and shake; also read by the driving camera.
 	double LookFine = 1.0;    // main.ts: 1 - 0.6 zoomK, a finer aim through the closer look
 
 	// The camera held by something else (US47World while the truck is driven): given the frame's
@@ -73,6 +76,7 @@ public:
 	// than the truck when it stands at an angle; the walker keeps to the truck itself instead.
 	struct FTruckBox { FString Area; double X = 0, Z = 0, Heading = 0, HalfW = 1.05, HalfL = 2.75; };
 	TOptional<FTruckBox> TruckBox;
+	TOptional<FTruckBox> PersonalCarBox;
 	bool InTruck(double X, double Z) const; // the player's width at X, Z is in the truck
 
 	// A jump (Tom 22 October 2026; Player.ts has none): the Jump key on foot, when CanJump says it

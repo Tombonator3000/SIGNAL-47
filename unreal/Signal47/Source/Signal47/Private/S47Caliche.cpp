@@ -1,5 +1,6 @@
 // story/caliche.ts: Caliche's street, its people and the copies in Reyes's notebook.
 #include "S47Caliche.h"
+#include "S47Props.h"
 
 #include "S47ReadAloud.h"
 #include "Widgets/SNullWidget.h"
@@ -7,6 +8,7 @@
 #include "S47Audio.h"
 #include "S47Image.h"
 #include "S47EarlDialogue.h"
+#include "S47Timeline.h"
 #include "S47NpcDialogue.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
@@ -214,7 +216,7 @@ namespace
 	{
 		if (Asked(S, W, T.Id) || (!T.After.IsEmpty() && !Asked(S, W, T.After)) || (T.bReel && !bReelReady) || (!T.Unless.IsEmpty() && S.Contains(T.Unless))) return false;
 		for (const FString& K : T.Need) if (!S.Contains(K)) return false;
-		return !T.NotBefore || Day >= *T.NotBefore;
+		return !T.NotBefore || S47Timeline::Night(Day) >= S47Timeline::Night(*T.NotBefore);
 	}
 }
 
@@ -249,7 +251,9 @@ void FS47Caliche::BindTown()
 	};
 	auto Say = [this](const FString& T, double S = 3.6) -> TFunction<void()> { return [this, T, S] { M->UI->Toast(T, S); }; };
 	auto Flyer = [this] { Once(TEXT("flyer"), TEXT("Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four.")); };
-	Add(TEXT("gasDoor"), [] { return TEXT("Gas station door"); }, [this, Flyer] { M->UI->Toast(TEXT("Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE."), 5.4); Flyer(); }, [Flyer] { Flyer(); return TEXT("SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again."); });
+	// Unreal only (Tom, 23.10): the station is walked into now, its door (S47Props) opens; where the
+	// model is not there the door is locked as in the web version
+	Add(TEXT("gasDoor"), [] { return AS47Props::IsDoorOpen(TEXT("gasDoor")) ? TEXT("Close the door") : TEXT("Gas station door"); }, [this, Flyer] { if (AS47Props::UseDoor(TEXT("gasDoor"))) { Flyer(); return; } M->UI->Toast(TEXT("Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE."), 5.4); Flyer(); }, [Flyer] { Flyer(); return TEXT("SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again."); });
 	Add(TEXT("gasWindow"), [] { return TEXT("Night window"); }, [this] { Talk(TEXT("attendant")); }, [] { return TEXT("Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once."); });
 	Add(TEXT("pumps"), [] { return TEXT("Pumps"); }, Say(TEXT("Regular, 89.9. It has come down all spring. The nozzles are padlocked for the night."), 3.8), [] { return TEXT("Two pumps on a concrete island. The counters stand at zero."); });
 	Add(TEXT("payphone"), [this] { return Town->bRinging ? TEXT("Answer the payphone") : TEXT("Payphone"); }, [this] { if (Town->bRinging) { if (Town->OnAnswer) Town->OnAnswer(); return; } M->UI->Toast(M->TownSeen.Contains(TEXT("nickel")) ? TEXT("A dial tone. The coin return is empty now.") : TEXT("A dial tone, and under it something like wind. Nobody to call at this hour."), 3.6); }, [] { return TEXT("A payphone on a post, a phone book on a chain with half its pages gone."); });
@@ -264,15 +268,16 @@ void FS47Caliche::BindTown()
 	Add(TEXT("cinema"), [] { return TEXT("The Plaza"); }, Say(TEXT("Closed. The doors are chained. The posters behind the glass have faded to the same blue."), 3.8), [] { return TEXT("A box office with its blind down, and a card: CLOSED."); });
 	Add(TEXT("marquee"), [] { return FString(); }, [] {}, [] { return TEXT("CLOSED. THANK YOU CALICHE. FOR 31 YEARS. A letter has fallen out of the last line."); }, 4);
 	Add(TEXT("feed"), [] { return TEXT("Feed store"); }, Say(TEXT("FEED & SEED. Sacks on a pallet on the dock, a bulb over the door with moths round it.")), {}, 3);
-	auto OnAir = [this] { return Day() < 4 * 3600 || Day() > 20 * 3600; };
-	Add(TEXT("studio"), [] { return TEXT("Studio window"); }, [this, OnAir] { M->UI->Toast(OnAir() ? TEXT("The Night Line, through the glass: the host at the microphone with his headphones on, the red ON AIR light. He does not look up.") : TEXT("The studio is empty and the red light is off. Through the wall, the carrier: a hum with nothing in it."), 4.6); }, [OnAir] { return OnAir() ? TEXT("Reels turning on the deck behind him. A coffee can of pencils, a phone with its line light blinking.") : TEXT("His chair pushed back. The phone's line light still blinking."); });
-	Add(TEXT("amDoor"), [OnAir] { return OnAir() ? TEXT("Buzzer") : TEXT("Door"); }, [this, OnAir] { if (OnAir()) Talk(TEXT("host")); else M->UI->Toast(TEXT("1420 AM. A buzzer and a card: STUDIO IN USE, PLEASE WAIT. Nobody comes. Through the door, the carrier."), 4.2); });
+	auto OnAir = [this] { return S47Timeline::LocalOnAir(Day()); };
+	auto EarlHere = [this] { return S47Timeline::EarlOnDuty(Day()); };
+	Add(TEXT("studio"), [] { return TEXT("Studio window"); }, [this, OnAir] { if (Day() >= 18 * 3600) { M->UI->Toast(TEXT("The evening presenter at the microphone. A record plays. The red ON AIR light is on; Earl starts the Night Line at midnight."), 4.6); return; } M->UI->Toast(OnAir() ? TEXT("The Night Line, through the glass: the host at the microphone with his headphones on, the red ON AIR light. He does not look up.") : TEXT("The studio is empty and the red light is off. Through the wall, the carrier: a hum with nothing in it."), 4.6); }, [OnAir] { return OnAir() ? TEXT("Reels turning on the deck behind him. A coffee can of pencils, a phone with its line light blinking.") : TEXT("His chair pushed back. The phone's line light still blinking."); });
+	Add(TEXT("amDoor"), [EarlHere] { return EarlHere() ? TEXT("Buzzer") : TEXT("Door"); }, [this, EarlHere] { if (EarlHere()) Talk(TEXT("host")); else if (Day() >= 18 * 3600) M->UI->Toast(TEXT("The presenter waves from behind the glass. A card: NIGHT LINE / EARL / MIDNIGHT TO FOUR."), 4.2); else M->UI->Toast(TEXT("1420 AM. A buzzer and a card: STUDIO IN USE, PLEASE WAIT. Nobody comes. Through the door, the carrier."), 4.2); });
 	Add(TEXT("souvenir"), [] { return TEXT("Shop window"); }, [this] { M->UI->Toast(M->TownSeen.Contains(TEXT("ev:cutout")) && !Town->bCutoutOut ? TEXT("The cardboard alien is back in the window. There is dew on it, and grit from the road along its feet.") : TEXT("A cardboard alien, life size if they come in that size. A rubber mask. Bags of crumpled foil, a dollar each: GENUINE DEBRIS."), 4.6); }, [] { return TEXT("The foil has been crumpled by hand. There is a price sticker on the alien too."); });
 	Add(TEXT("souvenirSign"), [] { return TEXT("Sign"); }, Say(TEXT("SAUCER CRASH 1947. TOURS. ASK INSIDE. Painted by hand, and painted over at least once."), 3.8), {}, 3.4);
 	Add(TEXT("souvenirDoor"), [] { return TEXT("Door"); }, Say(TEXT("CLOSED. The hours are on a card faded white."), 3));
 	Add(TEXT("letters"), [] { return TEXT("Letter board"); }, Say(TEXT("THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. A bulb over it, burning all night."), 3.8), {}, 3);
 	Add(TEXT("churchDoor"), [] { return TEXT("Church door"); }, Say(TEXT("Locked. Sunday 10 AM, it says. All welcome."), 3));
-	auto Tv1On = [this] { return Day() < 3 * 3600 + 40 * 60; };
+	auto Tv1On = [this] { return Day() >= 18 * 3600 || Day() < 3 * 3600 + 40 * 60; };
 	Add(TEXT("tv1"), [] { return TEXT("Window"); }, [this, Tv1On] { M->UI->Toast(Tv1On() ? TEXT("A television on in a dark front room, and someone asleep in the chair in front of it.") : TEXT("The television is off now. The chair is empty."), 3.8); }, [Tv1On] { return Tv1On() ? FString(TEXT("The late movie, black and white, with the sound down.")) : FString(); }, 6.5);
 	Add(TEXT("tv2"), [] { return TEXT("Window"); }, Say(TEXT("A television on with nobody watching it. Snow, then the test pattern, then snow."), 3.8), {}, 6.5);
 	Add(TEXT("kitchen"), [] { return TEXT("Window"); }, Say(TEXT("A kitchen light behind a curtain, and a shadow that does not move."), 3.4), {}, 4);
@@ -291,9 +296,9 @@ void FS47Caliche::Talk(const FString& W)
 	const FPerson* P = Person(W); if (!P) return;
 	StopSpeech(); ShownLines.Reset();
 	const bool bFirst = !M->TownSeen.Contains(TEXT("met:") + W); Who = W; M->TownSeen.Add(TEXT("met:") + W);
-	Lines = W == TEXT("deputy") && Day() >= DEPUTY_IN ? P->Back : bFirst ? P->First : P->Again;
+	Lines = W == TEXT("deputy") && Day() >= DEPUTY_IN && Day() < 12 * 3600 ? P->Back : bFirst ? P->First : P->Again;
 	if (W == TEXT("attendant")) Attendant(bFirst);
-	if (W == TEXT("deputy") && Day() >= DEPUTY_IN) Once(TEXT("deputyBack"), DEPUTY_BACK);
+	if (W == TEXT("deputy") && Day() >= DEPUTY_IN && Day() < 12 * 3600) Once(TEXT("deputyBack"), DEPUTY_BACK);
 	Save(); Body = SNew(SVerticalBox);
 	// ui/Panels.ts talk: Slate holds the panel and redraws its body in place.
 	M->UI->Open(S47Kit::Shell(M->UI, P->Title, Body.ToSharedRef()), [this] { Close(); }); Refresh();
@@ -418,8 +423,17 @@ bool FS47Caliche::SelfTest(TArray<FString>& Out)
 	S.Add(TEXT("ask:attendant:old")); S.Add(TEXT("ev:phone1")); S.Add(TEXT("nickel")); Check(AvailableTopic(S, TEXT("attendant"), Phone, 0, false), TEXT("the bright nickel opens the attendant's follow-up"));
 	S.Add(TEXT("ask:attendant:phone")); auto D = TownWitnessDocs(S); Check(D.Num() == 1 && D[0].Id == TEXT("witness-phone") && D[0].Page.Contains(TEXT("That phone takes dimes.")), TEXT("witness copies refile from the saved keys"));
 	S.Add(TEXT("ask:deputy:green")); S.Add(TEXT("ev:car")); const FTopic& Car = Person(TEXT("deputy"))->Topics.Last(); Check(!AvailableTopic(S, TEXT("deputy"), Car, DEPUTY_IN - 1, false) && AvailableTopic(S, TEXT("deputy"), Car, DEPUTY_IN, false), TEXT("the deputy returns at 04:30"));
+	Check(!AvailableTopic(S, TEXT("deputy"), Car, 18 * 3600, false), TEXT("evening deputy cannot recount his future patrol"));
 	bOk &= FS47RecordedDialogue::SelfTest(Out);
 	bOk &= FS47NpcDialogue::SelfTest(Out);
-	bOk &= FS47EarlDialogue::SelfTest(Out);
+	Check(S47Timeline::ShiftStart < 0 && S47Timeline::Night(18 * 3600) == S47Timeline::ShiftStart && S47Timeline::Night(23 * 3600 + 59 * 60) < 0, TEXT("evening timeline: signed clock crosses midnight forwards"));
+ Check(S47Timeline::Residual(true) == 827 && S47Timeline::Residual(false) == 8027, TEXT("evening timeline: new residual 00:13:47, legacy remains 02:13:47"));
+ Check(S47Timeline::Chapter3(true) < S47Timeline::Chapter4(true) && S47Timeline::Chapter4(true) < S47Timeline::Chapter5(true) && S47Timeline::Chapter5(true) < S47Timeline::Departure && S47Timeline::Finale - S47Timeline::Departure == 9 * 60, TEXT("evening timeline: chapter order and fixed finale"));
+ Check(S47Timeline::LocalOnAir(-6 * 3600) && !S47Timeline::EarlOnDuty(-6 * 3600) && S47Timeline::EarlOnDuty(0) && !S47Timeline::LocalOnAir(4 * 3600), TEXT("evening timeline: local presenter until midnight; Earl leaves at four"));
+ Check(S47Timeline::DeputyOnDuty(-6 * 3600) && !S47Timeline::DeputyOnDuty(3 * 3600) && S47Timeline::DeputyOnDuty(DEPUTY_IN), TEXT("evening timeline: deputy working in evening, patrol 02:45 to 04:30"));
+ Check(S47Timeline::ApproachClock(S47Timeline::Finale - 80, S47Timeline::Finale - 18, false) == S47Timeline::Finale - 47 && S47Timeline::ApproachClock(S47Timeline::Finale - 47, S47Timeline::Finale - 90, false) == S47Timeline::Finale - 47, TEXT("evening timeline: slow approach reserves exact CB time and reversing never rewinds"));
+ Check(S47Timeline::ResidualText(TEXT("02:13:47 / 02:14"), true) == TEXT("00:13:47 / 00:14") && S47Timeline::ResidualText(TEXT("02:17:00 / 02:17:47"), true) == TEXT("02:17:00 / 02:17:47"), TEXT("evening timeline: no change to 1947 timing record"));
+ bOk &= AS47Story::TimelineSelfTest(Out);
+ bOk &= FS47EarlDialogue::SelfTest(Out);
 	return bOk;
 }

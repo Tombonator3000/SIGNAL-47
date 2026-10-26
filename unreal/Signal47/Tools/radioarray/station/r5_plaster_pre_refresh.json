@@ -1,0 +1,47 @@
+{
+  "revision": "R5-macro-lime-plaster",
+  "texture_hashes_before": {
+    "textures/revision2/stucco_layers_color.png": "5b0b74f4e754dc17fbb310b6084a5a91a07b17e97a64db62618180ebed08a19f",
+    "textures/revision2/stucco_layers_roughness.png": "732a84568ed2035e2a71cd9e7374266f5414a5d6aaf63ddaf8a35700779d62fb",
+    "textures/revision2/stucco_layers_normal_gl.png": "d3e67d3f277189667888f6c048ee977afe6e86ac7faa4c1a8396a180e49fa21a",
+    "textures/revision2/stucco_layers_normal_dx.png": "10bc780d8fd08c3aa7b50d0eae3f79f1f2343e0ee825d89b4534f855d8d52a88",
+    "textures/revision2/facade_1420_weathered_color.png": "f6ebd66bbc9b8d40a3d88d352dc2f41faa97031dc222ff28fe60445fc1a0479e",
+    "textures/revision2/facade_1420_weathered_roughness.png": "eb12a54145a4aa5b5e1e2540aa8984cbc736a425313497e6be465e7b39f8e371",
+    "textures/revision2/facade_1420_weathered_normal_gl.png": "a39bf4d9e96457999dc08e8b2c6495b3c77d0c732987b810e45e9e0d59dc2a8e",
+    "textures/revision2/facade_1420_weathered_normal_dx.png": "3769bba334e0f33065d9658252450d8173990cbfdd0e799bf270295b039b25e9",
+    "textures/revision2/walnut_worked_color.png": "4e1d8b276e4216db1a06b9c4269eeee4cbcfa316b757db155dfa54155dc241a2",
+    "textures/revision2/walnut_worked_roughness.png": "dd89f82d6f9345743dd8589f39a4bec727e616e254d96e28d400921656c2c7ba",
+    "textures/revision2/walnut_worked_normal_gl.png": "5211ad386a9a3c7015608dbb6157672d4c4ff9f39e7ff643143de7435ffeab8a",
+    "textures/revision2/walnut_worked_normal_dx.png": "a6629334594acecfd17000c7cc9ac31a20f317b428d28c674dbef8842b737b6f",
+    "textures/revision2/desk_worn_color.png": "529e800f99675dbda3c341fa9f19d06b49df95b1a6a85ceed5b09d78e7aea04e",
+    "textures/revision2/desk_worn_roughness.png": "54f750656a6b292b7cd8c98bf32f59a13b1b0d11637d45baf53975d86a042a61",
+    "textures/revision2/desk_worn_normal_gl.png": "1908fdb9319310106d9e5cccc7958b4c733eb8a51897eb9b7e640e1e38582a21",
+    "textures/revision2/desk_worn_normal_dx.png": "7f8c23f5848a66d8ec2634a212e16ad051647d3efff6381323495ab4df6c805f",
+    "textures/revision2/olive_timber_color.png": "ceb173cba86c24770c2fd148ac35cabafc79ef0a97ba39eb057ce28f49c4a905",
+    "textures/revision2/olive_timber_roughness.png": "73bc3018dcb7d4e30b3ee7d1f048d940b9bbfaecde1eb045aa0c776595b47656",
+    "textures/revision2/olive_timber_normal_gl.png": "c5513cd1b98e2ec4ad3ba20a3802449c0867aaeecb6f6f14ec3f3c7982938b41",
+    "textures/revision2/olive_timber_normal_dx.png": "59467a01785af43e0abe0276e44bd7c4083635f8f082c71fca2e019a261793fa"
+  },
+  "untouched_timber_hashes": {
+    "textures/revision2/walnut_worked_color.png": "4e1d8b276e4216db1a06b9c4269eeee4cbcfa316b757db155dfa54155dc241a2",
+    "textures/revision2/walnut_worked_roughness.png": "dd89f82d6f9345743dd8589f39a4bec727e616e254d96e28d400921656c2c7ba",
+    "textures/revision2/walnut_worked_normal_gl.png": "5211ad386a9a3c7015608dbb6157672d4c4ff9f39e7ff643143de7435ffeab8a",
+    "textures/revision2/walnut_worked_normal_dx.png": "a6629334594acecfd17000c7cc9ac31a20f317b428d28c674dbef8842b737b6f",
+    "textures/revision2/desk_worn_color.png": "529e800f99675dbda3c341fa9f19d06b49df95b1a6a85ceed5b09d78e7aea04e",
+    "textures/revision2/desk_worn_roughness.png": "54f750656a6b292b7cd8c98bf32f59a13b1b0d11637d45baf53975d86a042a61",
+    "textures/revision2/desk_worn_normal_gl.png": "1908fdb9319310106d9e5cccc7958b4c733eb8a51897eb9b7e640e1e38582a21",
+    "textures/revision2/desk_worn_normal_dx.png": "7f8c23f5848a66d8ec2634a212e16ad051647d3efff6381323495ab4df6c805f",
+    "textures/revision2/olive_timber_color.png": "ceb173cba86c24770c2fd148ac35cabafc79ef0a97ba39eb057ce28f49c4a905",
+    "textures/revision2/olive_timber_roughness.png": "73bc3018dcb7d4e30b3ee7d1f048d940b9bbfaecde1eb045aa0c776595b47656",
+    "textures/revision2/olive_timber_normal_gl.png": "c5513cd1b98e2ec4ad3ba20a3802449c0867aaeecb6f6f14ec3f3c7982938b41",
+    "textures/revision2/olive_timber_normal_dx.png": "59467a01785af43e0abe0276e44bd7c4083635f8f082c71fca2e019a261793fa"
+  },
+  "fbx_hashes": {
+    "exports/SM_1420_Door.fbx": "70558cf265079e8207c90ae29787a9d6a485f2b83749b1febfb4dd7cf8c21e92",
+    "exports/SM_1420_Glass.fbx": "8a60ad2aa75bb4e0ed717a1040d6ca9630a3e0335143bb76f03504ed8c7bbfc9",
+    "exports/SM_1420_Interior.fbx": "bd7e72fac3c8dc7bd0999934b5f287fd8d6b002c9880b4d7b803828962a459de",
+    "exports/SM_1420_Mast.fbx": "2c63f82fad4360e7d9da03c52e9fd9069fbee27e547d30255cde33f343579558",
+    "exports/SM_1420_Shell.fbx": "a6c7e26c638608de05cfd2d2e372b6606da97c019385ae939c6a361d75302dc6",
+    "exports/axis_probe.fbx": "77f243e6c00e635eee66a068f4092efef585e4ff879873dede36a15787e2297c"
+  }
+}

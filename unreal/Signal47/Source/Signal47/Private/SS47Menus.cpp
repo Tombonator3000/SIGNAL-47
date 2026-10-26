@@ -7,6 +7,7 @@
 #include "Framework/Text/SlateHyperlinkRun.h"
 #include "S47Docs.h"
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 #include "S47Theme.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Layout/SBorder.h"
@@ -18,6 +19,13 @@
 
 namespace S47MenusLocal
 {
+	TSharedRef<SWidget> InputHints(const TArray<S47Theme::FHint>& Keyboard, const TArray<S47Theme::FHint>& Controller)
+	{
+		return SNew(SOverlay)
+			+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::Collapsed : EVisibility::Visible; })[S47Theme::KeyHints(Keyboard)]]
+			+ SOverlay::Slot()[SNew(SBox).Visibility_Lambda([] { return S47Gamepad::UsingGamepad() ? EVisibility::Visible : EVisibility::Collapsed; })[S47Theme::KeyHints(Controller)]];
+	}
+
 	void Focus(const TSharedPtr<SWidget>& W)
 	{
 		if (W.IsValid() && FSlateApplication::IsInitialized()) FSlateApplication::Get().SetAllUserFocus(W, EFocusCause::SetDirectly); // (not Navigation: Slate would draw its own focus frame)
@@ -71,7 +79,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 	}
 
 	// .note: the night in a line, and the flashing images' warning with the way to the setting
-	const FString Note = TEXT("The whole night, from the control room at 23:41 to the old Roswell road at dawn. Headphones help. ")
+	const FString Note = TEXT("An evening drive, a shift at SARO, and the old Roswell road at dawn. Headphones help. ")
 		TEXT("<Em>Near the end there is a short sequence of flashing images:</> <a id=\"settings\" style=\"Link\">Settings › Accessibility.</>");
 	TFunction<void(const FString&)> At = O.OnSettingsAt;
 	TFunction<void()> Plain = O.OnSettings;
@@ -118,7 +126,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 				+ SOverlay::Slot().Padding(Pad(21, 4, 0, 0))
 				[
 					// .gate: blinks (opacity 1 to .35 and back, 1.4 s each way)
-					SNew(STextBlock).Text(FText::FromString(O.bTouch ? TEXT("TAP TO BEGIN") : TEXT("PRESS ANY KEY"))).Font(Term(42, 2))
+					SNew(STextBlock).Text_Lambda([this] { return FText::FromString(O.bTouch ? TEXT("TAP TO BEGIN") : S47Gamepad::UsingGamepad() ? TEXT("PRESS A TO BEGIN") : TEXT("PRESS ANY KEY")); }).Font(Term(42, 2))
 					.ColorAndOpacity_Lambda([this]
 					{
 						const float Ph = FMath::Fmod(T, 2.8f), V = Ph < 1.4f ? Ph / 1.4f : 2.f - Ph / 1.4f;
@@ -144,7 +152,9 @@ void SS47Title::Construct(const FArguments& InArgs)
 		[
 			SNew(SBox).Visibility_Lambda(MenuVis)
 			[
-				KeyHints({ { TEXT("UP DOWN"), TEXT("SELECT"), nullptr }, { TEXT("ENTER"), TEXT("CONFIRM"), [this] { Choose(); } }, { TEXT("ESC"), TEXT("BACK"), [this] { Sel = Items.Num() - 1; } } })
+				S47MenusLocal::InputHints(
+					{ { TEXT("UP DOWN"), TEXT("SELECT"), nullptr }, { TEXT("ENTER"), TEXT("CONFIRM"), [this] { Choose(); } }, { TEXT("ESC"), TEXT("BACK"), [this] { Sel = Items.Num() - 1; } } },
+					{ { TEXT("D-PAD"), TEXT("SELECT"), nullptr }, { TEXT("A"), TEXT("CONFIRM"), [this] { Choose(); } }, { TEXT("B"), TEXT("BACK"), [this] { Sel = Items.Num() - 1; } } })
 			]
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(Pad(0, 0, 40, 28))
@@ -308,7 +318,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 	if (O->OnLoad) Items.Add({ TEXT("LOAD CASE"), [this] { if (OnSub) OnSub(O->OnLoad); } });
 	Items.Add({ TEXT("SETTINGS"), [this] { if (OnSettings) OnSettings(O->Tab, Sel); } });
 	Items.Add({ TEXT("CONTROLS"), [this] { if (OnSettings) OnSettings(TEXT("controls"), Sel); } });
-	Items.Add({ TEXT("QUIT TO TITLE"), [this] { TFunction<void()> Title = O->OnTitle; if (OnClose) OnClose(true); if (Title) Title(); }, true });
+	Items.Add({ TEXT("QUIT TO TITLE"), [this] { if (OnSub) OnSub(O->OnTitle); else if (O->OnTitle) O->OnTitle(); }, true });
 	Sel = FMath::Clamp(InArgs._Selected, 0, Items.Num() - 1);
 
 	TSharedRef<SVerticalBox> Menu = SNew(SVerticalBox);
@@ -399,8 +409,11 @@ void SS47Pause::Construct(const FArguments& InArgs)
 					+ SOverlay::Slot().VAlign(VAlign_Top).Padding(Pad(84, 350, 56, 0))[Menu]
 					+ SOverlay::Slot().VAlign(VAlign_Bottom).Padding(Pad(98, 0, 0, 26))
 					[
-						KeyHints({ { TEXT("ENTER"), TEXT("CHOOSE"), [this] { if (Items.IsValidIndex(Sel)) { const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); } } },
-							{ TEXT("ESC"), TEXT("RESUME"), [this] { if (OnClose) OnClose(false); } } })
+						S47MenusLocal::InputHints(
+							{ { TEXT("ENTER"), TEXT("CHOOSE"), [this] { if (Items.IsValidIndex(Sel)) { const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); } } },
+							  { TEXT("ESC"), TEXT("RESUME"), [this] { if (OnClose) OnClose(false); } } },
+							{ { TEXT("D-PAD"), TEXT("SELECT"), nullptr }, { TEXT("A"), TEXT("CHOOSE"), [this] { if (Items.IsValidIndex(Sel)) { const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); } } },
+							  { TEXT("B / MENU"), TEXT("RESUME"), [this] { if (OnClose) OnClose(false); } } })
 					]
 				]
 			]

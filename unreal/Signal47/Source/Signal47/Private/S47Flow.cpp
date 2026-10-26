@@ -1,4 +1,9 @@
 #include "S47Flow.h"
+#include "S47Evening.h"
+#include "S47Substation.h"
+#include "S47Office.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
 
 #include "AudioDevice.h"
 #include "Camera/CameraActor.h"
@@ -23,11 +28,14 @@
 #include "S47Audio.h"
 #include "S47CB.h"
 #include "S47Chapter.h"
+#include "S47Chapter1.h"
+#include "S47Chapter2.h"
 #include "S47Chapter6.h"
 #include "S47FieldCamera.h"
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Keys.h"
+#include "S47Kit.h"
 #include "S47Album.h"
 #include "S47Flashlight.h"
 #include "S47Main.h"
@@ -39,6 +47,7 @@
 #include "S47Score.h"
 #include "S47World.h"
 #include "S47Phones.h"
+#include "S47Picture.h"
 #include "S47SaroNight.h"
 #include "S47ArrayBack.h"
 #include "S47Away.h"
@@ -71,6 +80,49 @@ using EMode = US47Main::EMode;
 
 namespace
 {
+	class SS47LeaveWarning : public SCompoundWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47LeaveWarning) : _UI(nullptr) {}
+			SLATE_ARGUMENT(US47UI*, UI)
+			SLATE_ARGUMENT(FString, Reason)
+			SLATE_ARGUMENT(FString, ReturnTo)
+			SLATE_ARGUMENT(TFunction<void()>, OnCancel)
+			SLATE_ARGUMENT(TFunction<void()>, OnLeave)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A)
+		{
+			Cancel = A._OnCancel; Leave = A._OnLeave;
+			ChildSlot[S47Kit::Shell(A._UI, TEXT("LEAVE THIS NIGHT?"), S47Kit::Col({
+				S47Kit::Text(TEXT("Your current progress could not be saved. ") + A._Reason, -1),
+				S47Kit::Text(A._ReturnTo),
+				S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this] { return FString(Selected == 0 ? TEXT("> BACK TO PAUSE") : TEXT("BACK TO PAUSE")); }), [this] { const auto Fn = Cancel; if (Fn) Fn(); }, true),
+				S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this] { return FString(Selected == 1 ? TEXT("> QUIT WITHOUT SAVING") : TEXT("QUIT WITHOUT SAVING")); }), [this] { const auto Fn = Leave; if (Fn) Fn(); }),
+				S47Kit::Small(TEXT("UP / DOWN: CHOOSE   ENTER / A: CONFIRM   ESC / B: BACK"))
+			}))];
+		}
+		virtual bool SupportsKeyboardFocus() const override { return true; }
+		virtual void Tick(const FGeometry& G, const double InCurrentTime, const float InDeltaTime) override
+		{
+			SCompoundWidget::Tick(G, InCurrentTime, InDeltaTime);
+			S47Theme::KeepFocus(SharedThis(this));
+		}
+		virtual FReply OnKeyDown(const FGeometry&, const FKeyEvent& E) override
+		{
+			const FKey K = E.GetKey();
+			if (K == EKeys::Up || K == EKeys::Down || K == EKeys::Gamepad_DPad_Up || K == EKeys::Gamepad_DPad_Down) { Selected = 1 - Selected; return FReply::Handled(); }
+			TFunction<void()> Fn;
+			if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right) Fn = Cancel;
+			else if (K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom) Fn = Selected ? Leave : Cancel;
+			else return FReply::Unhandled();
+			if (Fn) Fn();
+			return FReply::Handled();
+		}
+	private:
+		int32 Selected = 0;
+		TFunction<void()> Cancel, Leave;
+	};
+
 	FString StorePath() { return FPaths::ProjectSavedDir() / TEXT("SaveGames") / TEXT("settings.json"); }
 
 	// a test flag on the command line: any -S47... but the picture (a setting) and -S47Title
@@ -145,8 +197,9 @@ void US47Flow::Init(US47Main* InM)
 	LoadStore();
 	Saves.Init();
 	// the settings shared by the pause menu and the title screen; all kept on this device
-	// (Ultra on a computer; an automated run starts on High, so the budgets stay testable)
-	Quality = S47J::Str(Store, TEXT("quality"), SmokeTest() ? TEXT("high") : TEXT("ultra"));
+	// High targets desktop 60 fps; Ultra spends more on shadows and mist.
+	Quality = S47J::Str(Store, TEXT("quality"), TEXT("high"));
+	FParse::Value(FCommandLine::Get(), TEXT("S47Quality="), Quality);
 	bKinski = S47J::Bool(Store, TEXT("kinskiReadAloud"), false);
 	bArtBell = S47J::Bool(Store, TEXT("artBellRadioHost"), true);
 	bSerling = S47J::Bool(Store, TEXT("serlingNarrator"), true);
@@ -193,17 +246,22 @@ void US47Flow::Init(US47Main* InM)
 	bAbductOn = S47J::Bool(Store, TEXT("abductions"), true);
 	Sens = float(S47J::Num(Store, TEXT("sens"), 1));
 	bInvertY = S47J::Bool(Store, TEXT("invertY"), false);
+	PadLookSpeed = FMath::Clamp(float(S47J::Num(Store, TEXT("padLookSpeed"), 1)), .3f, 2.5f);
+	bPadInvertY = S47J::Bool(Store, TEXT("padInvertY"), false);
 	BaseFov = float(S47J::Num(Store, TEXT("fov"), 70));
 	bLargeText = S47J::Bool(Store, TEXT("largeText"), false);
 	if (M->UI) M->UI->bLargeText = bLargeText;
 	bCalmFlash = S47J::Bool(Store, TEXT("calmFlash"), false);
 	bStillShots = S47J::Bool(Store, TEXT("stillShots"), false);
-	// the picture: as chosen, or until one is chosen as the graphics level has it; -S47Picture= on
-	// the command line (AS47Web) has the last word
+	bHeadMotion = S47J::Bool(Store, TEXT("headMotion"), true);
+	// An explicit saved look survives quality changes. CLI overrides affect this run only.
 	const FString Chosen = S47J::Str(Store, TEXT("picture"));
+	PictureStrength = S47Picture::Strength(float(S47J::Num(Store, TEXT("pictureStrength"), 1)));
+	FParse::Value(FCommandLine::Get(), TEXT("S47PictureStrength="), PictureStrength);
+	PictureStrength = S47Picture::Strength(PictureStrength);
 	FString Cmd;
-	if (FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Cmd)) Picture = Cmd == TEXT("off") ? TEXT("off") : TEXT("vhs");
-	else ApplyPicture(!Chosen.IsEmpty() ? Chosen : Quality != TEXT("low") ? TEXT("vhs") : TEXT("off"), false);
+	ApplyPicture(FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Cmd) ? Cmd : !Chosen.IsEmpty() ? Chosen : S47Picture::DefaultForQuality(Quality), false);
+	ApplyQuality(Quality);
 	ApplyVolume();
 	if (M->Audio) { M->Audio->SetMusic(MusicLevel); M->Audio->SetRadio(RadioLevel); }
 	if (M->Radio) { M->Radio->SetHostVoice(bArtBell); M->Radio->SetCallerVoice(bRadioCast); }
@@ -315,6 +373,9 @@ void US47Flow::Boot()
 		int32 Case = 0;
 		FParse::Value(FCommandLine::Get(), TEXT("S47Case="), Case);
 		CaseId = FMath::Clamp(Case, 0, S47Saves::CASES);
+		FString RouteGuard;
+		if (FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),RouteGuard)) CaseId=0; // route controls never mutate a real case
+
 		bDevRun = CaseId == 0;
 		if (CaseId) Saves.SetActive(CaseId);
 		M->Mode = EMode::Play;
@@ -323,9 +384,16 @@ void US47Flow::Boot()
 		PlayInput();
 		// (startGame's: a new night for the night's layer, and its log listening once the night has begun)
 		// (Night::Restore puts SARO's, the times away, the town's and the phones' back too, in main.ts's order)
+		if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) M->Story->Jump(Jump);
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); }
+		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump) || FParse::Value(FCommandLine::Get(), TEXT("S47EveningRoute="), Jump))
+		{
+		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
+		 FString Route;
+		 if (!FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),Route)) M->Evening->BootstrapTest(Jump.IsEmpty()?TEXT("commute"):Jump);
+		}
 		else M->Story->Start();
 		// then what is refiled after the story has begun, as the start from the title does
 		if (M->SaroNight) M->SaroNight->Restored();
@@ -333,12 +401,19 @@ void US47Flow::Boot()
 		if (M->Away) M->Away->Restored();
 		if (M->TownLayer) M->TownLayer->Refile(S47J::FObj());
 		if (M->Night) M->Night->Restored();
+		if (M->Evening && !M->Evening->Enabled() && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation();
+		if (M->Office) M->Office->Begin(nullptr, M->Story->bEveningTimeline && M->Evening && M->Evening->Opening());
+		if (M->Anomaly) M->Anomaly->Begin(nullptr);
+		if (M->AnomalyWorld) M->AnomalyWorld->Begin();
+		if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
 		M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 		return;
 	}
 	// the first title: nothing of the night is heard yet (the room tone starts with the night), and
 	// the station behind it is as the night begins (the Prologue's constructor resets it)
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
+	if (M->Evening) M->Evening->Stop();
+	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
 	M->Mode = EMode::Title;
 	ShowTitle();
@@ -476,7 +551,7 @@ void US47Flow::ShowTitle()
 	};
 	// the warning before the night: flashing images near the end, or slow fades instead
 	O.bCalm = bCalmFlash;
-	O.OnFlashPick = [this](bool bCalm) { bCalmFlash = bCalm; StoreSet(TEXT("calmFlash"), bCalm); };
+	O.OnFlashPick = [this](bool bCalm) { bCalmFlash = bCalm; ApplyPicture(Picture, false); StoreSet(TEXT("calmFlash"), bCalm); };
 	O.OnFirstTouch = [this] { bSoundUnlocked = true; MenuMusic(); };
 	M->UI->RemoveScreen(TitleEl);
 	TitleEl = M->UI->Title(O);
@@ -522,6 +597,11 @@ void US47Flow::StartGame(const FStart& O)
 {
 	if (bStarting) return;
 	bStarting = true;
+	if (M->Evening) M->Evening->Stop();
+	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
+	const auto EveningSaved = S47J::Obj(O.State,TEXT("evening"));
+	const bool bOpening = bEveningTimeline && (!O.State.IsValid() || S47J::Str(O.State,TEXT("checkpoint"))==TEXT("evening"));
+	M->Story->bEveningTimeline=bEveningTimeline; M->Story->bOpeningHeld=false;
 	Opening->Dismiss();
 	bDevRun = O.bDev;
 	bSoundUnlocked = true;
@@ -549,7 +629,7 @@ void US47Flow::StartGame(const FStart& O)
 	}
 	// a save made at the station or in room 6 needs that area (the exported world has them all)
 	const FString SavedArea = S47J::Str(O.State, TEXT("area"));
-	const FString Area = SavedArea == TEXT("station01") || SavedArea == TEXT("room6") || SavedArea == TEXT("diner") ? SavedArea : FString(TEXT("saro"));
+	const FString Area = SavedArea == TEXT("station01") || SavedArea == TEXT("room6") || SavedArea == TEXT("diner") || SavedArea == TEXT("road") ? SavedArea : FString(TEXT("saro"));
 	CaseId = O.CaseId;
 	M->Playtime = O.Playtime;
 	if (CaseId) Saves.SetActive(CaseId);
@@ -562,10 +642,12 @@ void US47Flow::StartGame(const FStart& O)
 	// what is saved for the systems not ported yet goes back into the next save as it was
 	Carry = O.State.IsValid() ? S47J::Clone(O.State) : S47J::FObj();
 	// the flashlight, the seen log, the curve, townSeen, glimpses, nightEvents and the album (S47Night)
+	if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 	if (M->Night) M->Night->Restore(O.State);
 	// (Night::Restore puts the rest back in main.ts's order: the town's, the times away, the phones, the thread)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
-	StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
+	if (bOpening) { M->Story->Reset(); M->Story->bOpeningHeld=true; }
+	else StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
 	if (LoadBoard && O.State.IsValid()) LoadBoard(S47J::Obj(S47J::Obj(O.State, TEXT("case")), TEXT("board")));
 	// the doors as they were left
 	if (const S47J::FObj Doors = S47J::Obj(O.State, TEXT("doors")); Doors.IsValid() && M->Web)
@@ -600,16 +682,45 @@ void US47Flow::StartGame(const FStart& O)
 		const FS47Pose A = M->Web->Pose(TEXT("world.room6.anchors.arrive"));
 		if (A.bValid) M->Player->Place(A.X, A.Z, A.Yaw);
 	}
+	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
+	else if (M->Evening && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation(EveningSaved);
+	if (M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
+	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
+	if (Checkpoint == TEXT("routine")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
+ // Both restored systems now belong to this case; validate T01 filing against its actual record.
+ if (M->Evening) M->Evening->ValidateServiceRestore();
+ if (M->Evening) M->Evening->ValidateInvestigationRestore();
+	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
+	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
+	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
-	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player && M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z"))))
+	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player)
 	{
-		M->Player->Place(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z")), S47J::Num(Pose, TEXT("yaw")));
-		M->Player->Pitch = S47J::Num(Pose, TEXT("pitch"));
+		const double X = S47J::Num(Pose, TEXT("x")), Z = S47J::Num(Pose, TEXT("z"));
+		// Old saves can have a closed door disabling the threshold under their pose.
+		// Recover that one doorway before applying the normal saved-pose walkability gate.
+		if (!M->Player->Walkable(X, Z) && M->Web) M->Web->RestoreDoorwayAt(FVector(X, 0, Z), M->Player->Radius);
+		if (!M->Player->Walkable(X, Z) && M->Office) M->Office->RestoreDoorwayAt(FVector(X, 0, Z), M->Player->Radius);
+		if (M->Player->Walkable(X, Z))
+		{
+			M->Player->Place(X, Z, S47J::Num(Pose, TEXT("yaw")));
+			M->Player->Pitch = S47J::Num(Pose, TEXT("pitch"));
+		}
 	}
 	bStarting = false;
+	// A chosen departure survives a save before the roof-step wrapper/transition finishes.
+	if (O.State.IsValid() && M->Office && (!M->Office->RouteRequired() || M->Office->DepartureReleased()) && M->Story->ChapterKey == TEXT("ch2"))
+	{
+		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))); C2 && C2->S.Stage == TEXT("complete") && C2->S.bCalled && C2->S.bP04 && C2->S.bP05)
+		{
+			TWeakObjectPtr<US47Chapter2> Weak = C2;
+			M->Story->After(.3, [Weak] { if (Weak.IsValid() && Weak->bActive && Weak->OnEnd) Weak->OnEnd(); });
+		}
+	}
 	// seenSync(); seenQuiet = false: the night's log listens again
 	if (M->Night) M->Night->Restored();
+	if (!bEveningTimeline && O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: original 02:13 references and photographs are unchanged. Any unstored printout acquisition time is marked unavailable."));
 	FadeInSoon(0.25f);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: night started, case %d, %s"), CaseId, Checkpoint.IsEmpty() ? TEXT("new") : *Checkpoint);
 }
@@ -619,7 +730,7 @@ void US47Flow::StartStory(const FString& Checkpoint)
 	// Prologue.start(checkpoint): back to the start of the night, the player at the spawn, then the
 	// checkpoint's beat, or the night from 23:41
 	if (!M->Story) return;
-	if (Checkpoint.IsEmpty()) { M->Story->Start(); return; }
+	if (Checkpoint.IsEmpty() || Checkpoint == TEXT("routine")) { M->Story->Start(); return; }
 	if (M->Web && M->Player) { const FVector Sp = M->Web->SpawnThree(); M->Player->Place(Sp.X, Sp.Z, Sp.Y); }
 	M->Story->Jump(Checkpoint);
 }
@@ -655,6 +766,8 @@ void US47Flow::LeavePlay()
 	if (M->Away) M->Away->Leave(false);
 	// motelTv, roadside, townEvents (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(false);
+	if (M->Evening) M->Evening->Stop();
+	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -681,6 +794,8 @@ void US47Flow::ToTitle()
 	if (M->Away) M->Away->Leave(true);
 	// motelTv, roadside (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(true);
+	if (M->Evening) M->Evening->Stop();
+	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
 	if (M->World) M->World->Enter(TEXT("saro")); else if (M->Web) M->Web->Enter(TEXT("saro"));
 	bPendingAuto = false;
@@ -793,7 +908,7 @@ void US47Flow::OpenPause()
 	};
 	FS47PauseOpts O = PauseStatus(Settings());
 	O.OnResume = Resume;
-	O.OnTitle = [this, Resume] { Resume(); AutosaveNow(); ToTitle(); };
+	O.OnTitle = [this, Resume] { RequestTitle(Resume); };
 	// the case menus sit on top of the pause menu and go back to it
 	O.OnSave = [this]
 	{
@@ -816,12 +931,42 @@ void US47Flow::OpenPause()
 	UE_LOG(LogS47Flow, Display, TEXT("S47: pause opened"));
 }
 
+void US47Flow::RequestTitle(TFunction<void()> Resume)
+{
+	FString Reason;
+	if (AutosaveNow(&Reason)) { if (Resume) Resume(); ToTitle(); return; }
+	// Unreal: leaving an unsafe story state or a failed disk write requires an informed choice.
+	const TOptional<FS47SaveMeta> Last = CaseId ? Saves.Latest(CaseId) : TOptional<FS47SaveMeta>();
+	FString ReturnTo = Last
+		? FString::Printf(TEXT("Continue returns to %s, %s (%s). Progress since that save must be repeated."), *Last->Chapter, *Last->Place, *Last->Clock)
+		: FString(TEXT("This night has no saved checkpoint. Leaving now loses this night's progress."));
+	if (M->Story && M->Story->ChapterKey == TEXT("ch6")) ReturnTo += TEXT(" The last drive and the ending must be played again from the diner.");
+	UE_LOG(LogS47Flow, Display, TEXT("S47: quit warning: %s / %s"), *Reason, *ReturnTo);
+	TWeakObjectPtr<US47Flow> Self = this;
+	const TSharedRef<bool> Leaving = MakeShared<bool>(false);
+	M->UI->Open(SNew(SS47LeaveWarning).UI(M->UI).Reason(Reason).ReturnTo(ReturnTo)
+		.OnCancel([Self] { if (Self.IsValid()) Self->M->UI->Close(); })
+		.OnLeave([Self, Leaving, Resume]
+		{
+			if (!Self.IsValid()) return;
+			*Leaving = true;
+			if (Resume) Resume();
+			Self->ToTitle();
+		}), [Self, Leaving]
+	{
+		if (!Self.IsValid() || *Leaving) return;
+		Self->M->bPausedByMenu = false;
+		Self->OpenPause();
+	});
+}
+
 FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 {
 	// the strip's lines: the chapter, the clock and the place, the case and when it was last saved
 	AS47Story* S = M->Story;
 	O.Chapter = S ? S->ChapterTitle() : FString();
-	O.Clock = S ? S->Clock() : -1;
+	O.Clock = S ? FMath::Fmod(S->Clock()+86400.,86400.) : -1;
+	if (M->Evening && M->Evening->Commute()) O.Clock=-1;
 	O.Place = PlaceName();
 	static const TSet<FString> SaroRooms = { TEXT("Control room"), TEXT("Records room"), TEXT("South corridor"), TEXT("Photo lab"), TEXT("Truck pad"), TEXT("Service yard"), TEXT("Service road") };
 	if ((M->Web ? M->Web->Area() : FString(TEXT("saro"))) == TEXT("saro") && SaroRooms.Contains(O.Place)) O.Place += TEXT(", SARO");
@@ -866,6 +1011,11 @@ FS47PauseOpts US47Flow::Settings()
 	O.bUltraOk = true; // a computer
 	O.Picture = Picture;
 	O.OnPicture = [this](const FString& P) { ApplyPicture(P); };
+	O.PictureStrength = PictureStrength;
+	O.OnPictureStrength = [this](float V) { PictureStrength = S47Picture::Strength(V); ApplyPicture(Picture, false); StoreSet(TEXT("pictureStrength"), double(PictureStrength)); };
+	O.PadLookSpeed = PadLookSpeed; O.bPadInvertY = bPadInvertY;
+	O.OnPadLookSpeed = [this](float V) { PadLookSpeed = FMath::Clamp(V,.3f,2.5f); ApplyLook(); StoreSet(TEXT("padLookSpeed"), double(PadLookSpeed)); };
+	O.OnPadInvertY = [this](bool V) { bPadInvertY = V; ApplyLook(); StoreSet(TEXT("padInvertY"), V); };
 	O.bInvertY = bInvertY;
 	O.OnInvertY = [this](bool V) { bInvertY = V; ApplyLook(); StoreSet(TEXT("invertY"), V); };
 	O.Fov = BaseFov;
@@ -873,9 +1023,11 @@ FS47PauseOpts US47Flow::Settings()
 	O.bLargeText = bLargeText;
 	O.OnLargeText = [this](bool V) { bLargeText = V; M->UI->bLargeText = V; StoreSet(TEXT("largeText"), V); };
 	O.bCalmFlash = bCalmFlash;
-	O.OnCalmFlash = [this](bool V) { bCalmFlash = V; StoreSet(TEXT("calmFlash"), V); };
+	O.OnCalmFlash = [this](bool V) { bCalmFlash = V; ApplyPicture(Picture, false); StoreSet(TEXT("calmFlash"), V); };
 	O.bStillShots = bStillShots;
-	O.OnStillShots = [this](bool V) { bStillShots = V; StoreSet(TEXT("stillShots"), V); };
+	O.OnStillShots = [this](bool V) { bStillShots = V; ApplyPicture(Picture, false); StoreSet(TEXT("stillShots"), V); };
+	O.bHeadMotion = bHeadMotion;
+	O.OnHeadMotion = [this](bool V) { bHeadMotion = V; ApplyLook(); StoreSet(TEXT("headMotion"), V); };
 	O.bAbduct = bAbductOn;
 	O.OnAbduct = [this](bool V) { bAbductOn = V; StoreSet(TEXT("abductions"), V); };
 	O.Brightness = Brightness;
@@ -887,23 +1039,41 @@ FS47PauseOpts US47Flow::Settings()
 void US47Flow::ApplyQuality(const FString& Q)
 {
 	Quality = Q;
-	StoreSet(TEXT("quality"), Q);
-	// until a picture is chosen in Settings, the picture follows the graphics level
-	if (!S47J::Has(Store, TEXT("picture"))) ApplyPicture(Q != TEXT("low") ? TEXT("vhs") : TEXT("off"), false);
-	// (the tape's samples, setQuality, the bought models' pictures, Ultra's lamps and shadows and the
-	// pixel ratio are the web renderer's; the Unreal version draws the same on every level for now)
+	if (!SmokeTest()) StoreSet(TEXT("quality"), Q);
+	// Film and tape looks are independent of the lighting budget.
+	if (M->Web) M->Web->SetLightingQuality(Q);
 }
 
 void US47Flow::ApplyPicture(const FString& P, bool bChosen)
 {
-	Picture = P;
-	if (bChosen) StoreSet(TEXT("picture"), P);
-	// the tape look (core/vhs.ts) is M_WebTone's Vhs in MPC_Web (AS47Web::BeginPlay)
+	Picture = S47Picture::Normalize(P);
+	if (bChosen) StoreSet(TEXT("picture"), Picture);
+	// Preserve the legacy Vhs blend for scene materials. The tone pass has a separate mode enum.
 	UWorld* World = GameWorld();
 	UMaterialParameterCollection* Mpc = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Web/Base/MPC_Web.MPC_Web"));
 	if (UMaterialParameterCollectionInstance* I = World && Mpc ? World->GetParameterCollectionInstance(Mpc) : nullptr)
 	{
-		I->SetScalarParameterValue(TEXT("Vhs"), P == TEXT("off") ? 0.f : 1.f);
+		float Calm = bCalmFlash || bStillShots ? 1.f : 0.f;
+		FParse::Value(FCommandLine::Get(), TEXT("S47PictureCalm="), Calm);
+		const int32 Mode = S47Picture::Mode(Picture);
+		const float Strength = S47Picture::Strength(PictureStrength);
+		I->SetScalarParameterValue(TEXT("PictureMode"), float(Mode));
+		I->SetScalarParameterValue(TEXT("Vhs"), Mode == 0 ? 0.f : Strength);
+		I->SetScalarParameterValue(TEXT("PictureStrength"), Strength);
+		I->SetScalarParameterValue(TEXT("PictureCalm"), S47Picture::Strength(Calm));
+		float ActualMode = -1.f, ActualVhs = -1.f, ActualStrength = -1.f, ActualCalm = -1.f;
+		const bool bMode = I->GetScalarParameterValue(TEXT("PictureMode"), ActualMode);
+		const bool bVhs = I->GetScalarParameterValue(TEXT("Vhs"), ActualVhs);
+		const bool bStrength = I->GetScalarParameterValue(TEXT("PictureStrength"), ActualStrength);
+		const bool bCalm = I->GetScalarParameterValue(TEXT("PictureCalm"), ActualCalm);
+		if (bMode && bVhs && bStrength && bCalm)
+		{
+			UE_LOG(LogS47Flow, Display, TEXT("S47: picture %s MPC mode=%.0f vhs=%.3f strength=%.3f calm=%.3f"), *Picture, ActualMode, ActualVhs, ActualStrength, ActualCalm);
+		}
+		else
+		{
+			UE_LOG(LogS47Flow, Warning, TEXT("S47: picture MPC parameter missing (PictureMode=%d Vhs=%d PictureStrength=%d PictureCalm=%d)"), bMode, bVhs, bStrength, bCalm);
+		}
 	}
 }
 
@@ -913,6 +1083,8 @@ void US47Flow::ApplyLook()
 	if (!M->Player) return;
 	M->Player->Sensitivity = Sens;
 	M->Player->bInvertY = bInvertY;
+	M->Player->bHeadMotion = bHeadMotion;
+	M->Player->PadLookSpeed = PadLookSpeed; M->Player->bPadInvertY = bPadInvertY;
 	M->Player->Fov = BaseFov;
 }
 
@@ -987,12 +1159,17 @@ void US47Flow::FlushAutosave()
 	if (!WriteSave(TEXT("auto"), -1, Err)) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
 }
 
-void US47Flow::AutosaveNow()
+bool US47Flow::AutosaveNow(FString* OutError)
 {
 	// right now, before leaving
-	if (!SaveBlock().IsEmpty()) return;
-	bPendingAuto = true;
-	FlushAutosave();
+	const FString Block = SaveBlock();
+	if (!Block.IsEmpty()) { if (OutError) *OutError = Block; return false; }
+	bPendingAuto = false;
+	FString Err;
+	const bool bSaved = WriteSave(TEXT("auto"), -1, Err).IsSet();
+	if (OutError) *OutError = Err;
+	else if (!bSaved && M->UI) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
+	return bSaved;
 }
 
 S47J::FObj US47Flow::GameState()
@@ -1001,7 +1178,13 @@ S47J::FObj US47Flow::GameState()
 	const bool bPrologue = Checkpoint == TEXT("residual");
 	// (the fields of the systems not in the Unreal version yet, as the opened save had them)
 	const S47J::FObj State = Carry.IsValid() ? S47J::Clone(Carry) : S47J::New();
-	S47J::Set(State, TEXT("v"), 2);
+	S47J::Set(State, TEXT("v"), 3);
+	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);
+	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());
+	if (M->Anomaly) S47J::Set(State,TEXT("anomaly"),M->Anomaly->Save());
+	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
+	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
+	if (Checkpoint == TEXT("routine")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
@@ -1041,7 +1224,7 @@ TOptional<FS47SaveMeta> US47Flow::WriteSave(const FString& Kind, int32 Slot, FSt
 	FS47SaveCard Card;
 	Card.Chapter = M->Story ? M->Story->ChapterTitle() : FString();
 	Card.Place = PlaceName();
-	Card.Clock = bPrologue ? FString(TEXT("02:13")) : S47Text::ClockText(M->Story ? M->Story->Clock() : 0, false);
+	Card.Clock = M->Evening && M->Evening->Commute() ? FString(TEXT("Late afternoon")) : bPrologue ? FString(M->Story && M->Story->bEveningTimeline ? TEXT("00:13") : TEXT("02:13")) : S47Text::ClockText(M->Story ? M->Story->Clock() : 0, false);
 	Card.Playtime = M->Playtime;
 	// the picture without what stands over you on waking (story/abduction.ts)
 	const bool bOver = M->Away && M->Away->HideOver(true);
@@ -1103,6 +1286,8 @@ FString US47Flow::PlaceName(const FVector& P) const
 {
 	// main.ts placeName: the place on a save's card
 	const FString Area = M->Web ? M->Web->Area() : FString(TEXT("saro"));
+	if (Area == TEXT("saro") && M->Office && M->Office->Contains(P)) return TEXT("SARO Operations office");
+	if (M->Substation && M->Substation->Ready() && (Area == TEXT("road") || Area == TEXT("diner")) && P.X >= 7878 && P.X <= 7902 && P.Z >= 519 && P.Z <= 546) return TEXT("Caliche Junction Substation");
 	auto In = [&](const TCHAR* Path) { return M->Web && M->Web->Rect(Path).Contains(P.X, P.Z); };
 	// (world.indoors, the town and the road's stops are the world's, not ported yet: the inside of the
 	// hut by its bounds, the rest by the area's own name)
@@ -1139,7 +1324,9 @@ FString US47Flow::CheckpointName() const
 	// Where a save resumes. The prologue only has safe points at the start of the night and at
 	// 02:13; inside a chapter the chapter's own state is the resume point.
 	const AS47Story* S = M->Story;
+	if (M->Evening && M->Evening->Opening()) return TEXT("evening");
 	if (!S) return TEXT("start");
+	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift) return TEXT("routine");
 	const FString& K = S->ChapterKey;
 	if (K == TEXT("ch5") || K == TEXT("ch6")) return TEXT("chapter5");
 	if (K == TEXT("ch4")) return TEXT("chapter4");
@@ -1154,7 +1341,10 @@ FString US47Flow::GameSaveBlock() const
 	// Prologue.saveBlock: why the game cannot be saved right now, or empty when it can
 	const AS47Story* S = M->Story;
 	if (!S) return TEXT("There is no night running to save.");
-	if (!S->At(ES47Phase::Residual)) return TEXT("The night can be saved from 02:13, once the survey has been running for a while.");
+	if (M->AnomalyWorld && M->AnomalyWorld->Busy()) return TEXT("Let the short studio sound finish before saving.");
+	if (M->Evening && M->Evening->Opening()) return M->World && M->World->bBusy ? TEXT("Let the car finish parking first.") : FString();
+	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift && !S->IsCinematic() && (S->BootT < 0 || S->Gt()-S->BootT > 2)) return FString();
+	if (!S->At(ES47Phase::Residual)) return S->bEveningTimeline ? TEXT("The survey saves when the routine interval finishes at 00:13. The opening can be saved before the handover.") : TEXT("The night can be saved from 02:13, once the survey has been running for a while.");
 	if (S->IsCinematic()) return TEXT("Not right now. Let the moment finish first.");
 	if (S->At(ES47Phase::Ringing) && ChapterNo(S) == 0) return TEXT("Not during the call and what follows it. The game saves again when the night moves on.");
 	for (const TCHAR* K : { TEXT("ch3"), TEXT("ch4"), TEXT("ch5"), TEXT("ch6") })
@@ -1203,10 +1393,13 @@ S47J::FObj US47Flow::ComposeCase() const
 		for (const FS47LogLine& L : N.Log) Log.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{ MakeShared<FJsonValueNumber>(L.Clock), MakeShared<FJsonValueString>(L.Text) }));
 		Ns->SetArrayField(TEXT("log"), Log);
 		if (N.SolveAt) S47J::Set(Ns, TEXT("solveAt"), *N.SolveAt); else S47J::SetNull(Ns, TEXT("solveAt"));
+		if (N.PrintoutAt) S47J::Set(Ns, TEXT("printoutAt"), *N.PrintoutAt); else S47J::SetNull(Ns, TEXT("printoutAt"));
 		S47J::Set(Ns, TEXT("jacket"), N.bJacket);
 		// array: copyArraySave(this.ns.array); hondo: this.ns.hondo
 		if (const TOptional<FS47ArraySave> A = FS47ArraySave::Copy(N.Array)) Ns->SetObjectField(TEXT("array"), A->ToJson());
 		if (N.Hondo) S47J::Set(Ns, TEXT("hondo"), *N.Hondo);
+		// (Unreal only, Tom's request: T. Vega's seven keyed on the processor, TAPE A given up; S47DecoderDesk.h)
+		if (N.bTapeA) S47J::Set(Ns, TEXT("tapeA"), true);
 	}
 	S47J::Set(Ns, TEXT("ln"), M->Away ? M->Away->Ln : S47J::Strs(WasNs, TEXT("ln")));
 	S47J::Set(C, TEXT("ns"), Ns);
@@ -1238,7 +1431,20 @@ void US47Flow::OpenNotebook()
 	}
 	// (game.openDoc: T. Vega's field book opens in a view of its own, story/fieldBook.ts)
 	TWeakObjectPtr<US47Main> Mn = M;
-	M->UI->Notebook(S->Tasks(), S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc) { if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return; if (UI.IsValid()) UI->Document(Doc, [] {}); },
+	TArray<FS47Task> NotebookTasks = S->Tasks();
+	if (M->Anomaly) NotebookTasks.Append(M->Anomaly->Tasks());
+	if (M->Substation) NotebookTasks.Append(M->Substation->FollowupTasks());
+	M->UI->Notebook(NotebookTasks, S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc)
+ {
+  if (Mn.IsValid() && Mn->Anomaly && Mn->Anomaly->OpenDoc(Doc)) return;
+  if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return;
+  if (UI.IsValid() && Mn.IsValid() && Mn->Substation && Doc.Id == TEXT("EV_TRAFO_FOLLOWUP"))
+  {
+   const FS47Doc Filed = Mn->Substation->FiledFollowupDocument(true);
+   UI->Document(Filed.Id.IsEmpty() ? Doc : Filed, [] {}); return;
+  }
+  if (UI.IsValid()) UI->Document(Doc, [] {});
+ },
 		H ? *H : FString(TEXT("Tonight")), OnBoard, NotebookExtras());
 }
 
@@ -1408,13 +1614,26 @@ bool US47Flow::OpenTestView(const FString& View)
 
 bool US47Flow::SelfTest(TArray<FString>& Out)
 {
-	bool bOk = true;
+	bool bOk = S47Picture::SelfTest(Out);
 	auto Check = [&](const TCHAR* Name, bool bPass, const FString& Got = FString())
 	{
 		Out.Add(bPass ? FString::Printf(TEXT("ok  flow: %s"), Name) : FString::Printf(TEXT("FAIL flow: %s %s"), Name, *Got));
 		bOk &= bPass;
 	};
 	// SaveMenu.ts played()
+	{
+		int32 Cancelled = 0, Left = 0;
+		const TSharedRef<SS47LeaveWarning> Warning = SNew(SS47LeaveWarning).Reason(TEXT("Not on the road.")).ReturnTo(TEXT("Continue returns to the diner."))
+			.OnCancel([&] { ++Cancelled; }).OnLeave([&] { ++Left; });
+		auto Key = [&](const FKey& K) { Warning->OnKeyDown(FGeometry(), FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0)); };
+		Key(EKeys::Enter);
+		Check(TEXT("quit warning defaults to keeping the night open"), Cancelled == 1 && Left == 0);
+		Key(EKeys::Down); Key(EKeys::Enter);
+		Check(TEXT("quit warning requires choosing the unsaved exit"), Cancelled == 1 && Left == 1);
+		Key(EKeys::Gamepad_FaceButton_Right);
+		Key(EKeys::Gamepad_DPad_Up); Key(EKeys::Gamepad_FaceButton_Bottom);
+		Check(TEXT("quit warning supports Xbox cancellation and confirmation"), Cancelled == 3 && Left == 1);
+	}
 	Check(TEXT("played 0"), S47Css::Played(0) == TEXT("under a minute"));
 	Check(TEXT("played 59"), S47Css::Played(59) == TEXT("under a minute"));
 	Check(TEXT("played 60"), S47Css::Played(60) == TEXT("1 min"));
@@ -1446,6 +1665,35 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 	Check(TEXT("at the motel"), AtMotel(FVector(-40, 0, 680)) && !AtMotel(FVector(-40, 0, 100)));
 	Check(TEXT("highway south"), OnHighway(FVector(-25, 0, 100)) && !OnHighway(FVector(-30, 0, 680)));
 	US47Main* Main = NewObject<US47Main>(); US47Flow* Flow = NewObject<US47Flow>(); Flow->M = Main;
+	// Test the real apply path without a world or any writes to the user's settings file.
+	Flow->Store = S47J::New();
+	Check(TEXT("old settings default to head motion enabled"), S47J::Bool(Flow->Store, TEXT("headMotion"), true));
+	for (const bool bMotion : { false, true })
+	{
+		const S47J::FObj MotionSettings = S47J::New();
+		S47J::Set(MotionSettings, TEXT("headMotion"), bMotion);
+		const S47J::FObj LoadedMotion = S47J::Read(S47J::Write(MotionSettings));
+		Flow->bHeadMotion = S47J::Bool(LoadedMotion, TEXT("headMotion"), true);
+		const FS47PauseOpts MotionOpts = Flow->Settings();
+		Check(bMotion ? TEXT("head motion on survives settings JSON and pause options") : TEXT("head motion off survives settings JSON and pause options"),
+			Flow->bHeadMotion == bMotion && MotionOpts.bHeadMotion == bMotion && bool(MotionOpts.OnHeadMotion));
+	}
+	S47J::Set(Flow->Store, TEXT("picture"), TEXT("off"));
+	const FString SettingsBefore = S47J::Write(Flow->Store);
+	Flow->ApplyPicture(TEXT("  CARPENTER  "), false);
+	Check(TEXT("runtime override applies normalized look without saving"), Flow->Picture == TEXT("carpenter") && S47J::Write(Flow->Store) == SettingsBefore);
+	Flow->PictureStrength = 0.f;
+	Flow->ApplyPicture(Flow->Picture, false);
+	Check(TEXT("zero strength retains selected look and saved preference"), Flow->Picture == TEXT("carpenter") && Flow->PictureStrength == 0.f && S47J::Write(Flow->Store) == SettingsBefore);
+	for (const FString& Id : S47Picture::Ids())
+	{
+		const auto Settings = S47J::New();
+		S47J::Set(Settings, TEXT("picture"), Id); S47J::Set(Settings, TEXT("pictureStrength"), 0.35);
+		const auto Loaded = S47J::Read(S47J::Write(Settings));
+		Flow->PictureStrength = S47Picture::Strength(float(S47J::Num(Loaded, TEXT("pictureStrength"), 1)));
+		Flow->ApplyPicture(S47J::Str(Loaded, TEXT("picture")), false);
+		Check(*FString::Printf(TEXT("%s look and strength survive settings JSON"), *Id), Flow->Picture == Id && FMath::IsNearlyEqual(Flow->PictureStrength, 0.35f));
+	}
 	Flow->Carry = S47J::New(); S47J::Set(Flow->Carry,TEXT("unported"),TEXT("preserved"));
 	for (const TCHAR* K : {TEXT("ev:boy"),TEXT("mark:boy@9000"),TEXT("tr:out1"),TEXT("ln:reel")}) Main->TownSeen.Add(K);
 	const auto Saved = S47J::Read(S47J::Write(Flow->GameState())); const auto Town = S47J::Strs(Saved,TEXT("town"));

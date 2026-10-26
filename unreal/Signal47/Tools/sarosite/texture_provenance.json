@@ -1,0 +1,14 @@
+{
+  "origin": "Original deterministic Pillow mineral/repair/grain layers and original typeset SARO lettering; no image generation or external photo pixels",
+  "ai_generated_bitmap_fields": [],
+  "font": "DejaVu Sans (installed open font; no font files redistributed)",
+  "files": {
+    "Concrete_base_color.png": "275b4662e116bdcc73acf6b50fd68c87860db3ee96ea40d5be19cdca38ec38b1",
+    "Concrete_normal.png": "0ee5343438b293903ccee74e659784a2d73a7d236ac1c9382d46b1bf25d9f8b0",
+    "Concrete_roughness.png": "295598bd79bd0aacb1c93f030c06906cce1087f02f8365685b9c7e306349e0e3",
+    "SARO_sign_base_color.png": "5a432a2d1bb7636b7bd179499395d0a6b9446c7c9d9acaf9625377b521976725",
+    "Stucco_base_color.png": "313b1f866bf6ddad70ac28a6734d8a7c4214a192478cf6c40441a2d7cddb00b5",
+    "Stucco_normal.png": "e6089e9962ef0bbb1d512a8600ee6a90227c4b51c1adf6874e1b59d2c5f69563",
+    "Stucco_roughness.png": "91045c5848bdb029a170832ee3f2b7d83ce2d84a9e68472659085e1f26f4b75a"
+  }
+}

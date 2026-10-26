@@ -29,6 +29,7 @@ public:
 	bool Rests(const FString& Pin) const;
 	void Open(const FString& Place = FString(), const FString& Region = FString());
 	void Refresh();
+	void RunTest(const FString& Steps);
 
 	// BoardSave, nested under SavedCase.board, with positions in board pixels (not world space).
 	S47J::FObj Save() const;

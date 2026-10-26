@@ -1,0 +1,86 @@
+{
+  "project_library": "No relevant ready vegetation asset/recipe found after fallback search. Historical Blender MCP candidate is not installed/reused. Existing guarded headless workflow remains compatible.",
+  "candidates": [
+    {
+      "path": "Unity/Blender/ThirdParty/grass_medium_02/grass_medium_02_1k.blend",
+      "author": "Rico Cilliers",
+      "license": "CC0-1.0",
+      "expected_sha256": "fd53aafc0650f0e7d9a10bc95f669d396ea7eb746bf2ca5a14497e331410eff1",
+      "actual_sha256": "fd53aafc0650f0e7d9a10bc95f669d396ea7eb746bf2ca5a14497e331410eff1",
+      "hash_matches": true,
+      "decision": "Not reused in CN1 original kit; retained licensed fallback, existing unspecified grass is not verified New Mexico species."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_alpha_1k.png",
+      "author": "Rico Cilliers",
+      "license": "CC0-1.0",
+      "expected_sha256": "15976877b3dbd22cd496a9549f1eb7d86710846a3631fb87eedbf046519e339f",
+      "actual_sha256": "15976877b3dbd22cd496a9549f1eb7d86710846a3631fb87eedbf046519e339f",
+      "hash_matches": true,
+      "decision": "Not reused in CN1 original kit; retained licensed fallback, existing unspecified grass is not verified New Mexico species."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_diff_1k.jpg",
+      "author": "Rico Cilliers",
+      "license": "CC0-1.0",
+      "expected_sha256": "91ae99005b449011aceb207a68a937258fd9bfd66ff367d344c50398b1df389c",
+      "actual_sha256": "91ae99005b449011aceb207a68a937258fd9bfd66ff367d344c50398b1df389c",
+      "hash_matches": true,
+      "decision": "Not reused in CN1 original kit; retained licensed fallback, existing unspecified grass is not verified New Mexico species."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_dry_diff_1k.png",
+      "author": "Rico Cilliers",
+      "license": "CC0-1.0",
+      "expected_sha256": "f22eed29790823fa58c6e2bff9b10d7b52683e1e4e5d0e4e762bedaf23499708",
+      "actual_sha256": "f22eed29790823fa58c6e2bff9b10d7b52683e1e4e5d0e4e762bedaf23499708",
+      "hash_matches": true,
+      "decision": "Not reused in CN1 original kit; retained licensed fallback, existing unspecified grass is not verified New Mexico species."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_nor_gl_1k.exr",
+      "author": "Rico Cilliers",
+      "license": "CC0-1.0",
+      "expected_sha256": "f87429d46ca64672000fe1780d223431c974889ef7d68259914fb4d8862bf631",
+      "actual_sha256": "f87429d46ca64672000fe1780d223431c974889ef7d68259914fb4d8862bf631",
+      "hash_matches": true,
+      "decision": "Not reused in CN1 original kit; retained licensed fallback, existing unspecified grass is not verified New Mexico species."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Visual10/Textures/grass_medium_02/grass_medium_02_rough_1k.exr",
+      "author": "Rico Cilliers",
+      "license": "CC0-1.0",
+      "expected_sha256": "4a3f1911c5dd08c423dbc46a230565ddfd19bae99e68b1e8fb9c999c93517db5",
+      "actual_sha256": "4a3f1911c5dd08c423dbc46a230565ddfd19bae99e68b1e8fb9c999c93517db5",
+      "hash_matches": true,
+      "decision": "Not reused in CN1 original kit; retained licensed fallback, existing unspecified grass is not verified New Mexico species."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Environment27/Models/E27_Boulder_LOD0.fbx",
+      "present": true,
+      "sha256": "6da2326d72c1f455bca48e78b83274699464439376b3844541a94e1403ac891a",
+      "author": "Rico Cilliers, Poly Haven",
+      "license": "CC0-1.0",
+      "decision": "Not reused: rounded boulder is less appropriate than angular layered caliche/sandstone."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Environment27/Models/E27_Boulder_LOD1.fbx",
+      "present": true,
+      "sha256": "9b389f106b6dc3e2cff8358d3d37345959cc5ec2288787a8acf97e663ef7d876",
+      "author": "Rico Cilliers, Poly Haven",
+      "license": "CC0-1.0",
+      "decision": "Not reused: rounded boulder is less appropriate than angular layered caliche/sandstone."
+    },
+    {
+      "path": "Unity/Assets/Signal47/Art/Environment27/boulder01-source-license-manifest.json",
+      "present": true,
+      "sha256": "afa0a1e584f084a973c67bce5450f2a8d94b3e18df916c691f670ee132da0e40",
+      "author": "Rico Cilliers, Poly Haven",
+      "license": "CC0-1.0",
+      "decision": "Not reused: rounded boulder is less appropriate than angular layered caliche/sandstone."
+    }
+  ],
+  "selected": "Original seeded editable geometry and original low-contrast PBR; no third-party art copied.",
+  "concept": "User supplied 1-1000053641.jpg, visual reference only; no photograph pixels copied to model textures.",
+  "dcc_status": "SOURCE_BUILD_AND_ROUNDTRIP_PASS; PREVIEW_ABORTED_EXTERNAL_CONTENTION"
+}

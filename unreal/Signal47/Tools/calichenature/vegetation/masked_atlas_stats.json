@@ -1,0 +1,55 @@
+{
+  "revision": "CN3-original-masked-microfoliage",
+  "alpha_cutoff": 0.333,
+  "note": "Texel statistics only; density/appearance is not accepted before actual render.",
+  "tiles": {
+    "0": {
+      "masked": true,
+      "opaque_at_cutoff_fraction": 0.4159126281738281,
+      "alpha_min": 0,
+      "alpha_max": 255
+    },
+    "1": {
+      "masked": false,
+      "opaque_at_cutoff_fraction": 1.0,
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    "2": {
+      "masked": false,
+      "opaque_at_cutoff_fraction": 1.0,
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    "3": {
+      "masked": true,
+      "opaque_at_cutoff_fraction": 0.39081573486328125,
+      "alpha_min": 0,
+      "alpha_max": 255
+    },
+    "4": {
+      "masked": true,
+      "opaque_at_cutoff_fraction": 0.4001960754394531,
+      "alpha_min": 0,
+      "alpha_max": 255
+    },
+    "5": {
+      "masked": false,
+      "opaque_at_cutoff_fraction": 1.0,
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    "6": {
+      "masked": false,
+      "opaque_at_cutoff_fraction": 1.0,
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    "7": {
+      "masked": false,
+      "opaque_at_cutoff_fraction": 1.0,
+      "alpha_min": 255,
+      "alpha_max": 255
+    }
+  }
+}

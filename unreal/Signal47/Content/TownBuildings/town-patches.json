@@ -1,0 +1,1326 @@
+{
+  "version": 2,
+  "status": "SOURCE_TRIM_PREPARED_NATIVE_UNVERIFIED",
+  "group": "world.town.st",
+  "groups": [
+    "world.town.st",
+    "world.town.dressing.group"
+  ],
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "sourceGeometrySha256": {
+    "geo_008.glb": "0e87d2acf6bbe9044304423d096ea75f7c731dd1af15c545b2d79691e5e2bfee"
+  },
+  "buildingPlanSha256": "8c73e01b668ae607eac141db4ed598f6341acf686ad9fdf8008d5479764ace60",
+  "composedGasTrim": {
+    "group": "world.town.st",
+    "keep": [
+      "world.town.m.pave"
+    ],
+    "boxes": [
+      [
+        -27.1,
+        -16.3,
+        3.9,
+        11.0,
+        2065.9,
+        2088.1
+      ],
+      [
+        -14.2,
+        -6.3,
+        4.25,
+        9.35,
+        2045.7,
+        2064.3
+      ],
+      [
+        -16.9,
+        -13.5,
+        4.1,
+        11.7,
+        2041.8,
+        2042.2
+      ]
+    ]
+  },
+  "boxes": {
+    "gas": [
+      [
+        -27.1,
+        -16.3,
+        3.9,
+        11.0,
+        2065.9,
+        2088.1
+      ],
+      [
+        -14.2,
+        -6.3,
+        4.25,
+        9.35,
+        2045.7,
+        2064.3
+      ],
+      [
+        -16.9,
+        -13.5,
+        4.1,
+        11.7,
+        2041.8,
+        2042.2
+      ]
+    ],
+    "radio": [
+      [
+        19.04,
+        30.08,
+        0.0,
+        10.0,
+        2029.9,
+        2042.1
+      ]
+    ],
+    "souvenir": [
+      [
+        18.2,
+        29.6,
+        0.0,
+        10.0,
+        2057.7,
+        2070.3
+      ]
+    ],
+    "Sheriff": [
+      [
+        -26.2,
+        -15.65,
+        -5,
+        12.592696381179048,
+        2099.8,
+        2112.2
+      ],
+      [
+        -16.1,
+        -15.0,
+        -5,
+        7.2176963811790475,
+        2100.8,
+        2102.4
+      ]
+    ],
+    "Laundry": [
+      [
+        -25.2,
+        -14.65,
+        -5,
+        13.313043546669647,
+        2125.8,
+        2140.2
+      ],
+      [
+        -15.1,
+        -14.0,
+        -5,
+        8.038043546669646,
+        2136.55,
+        2138.25
+      ]
+    ],
+    "Feed": [
+      [
+        -31.2,
+        -12.25,
+        -5,
+        17.475556755065917,
+        2189.8,
+        2214.2
+      ]
+    ],
+    "Cinema": [
+      [
+        -29.2,
+        -12.4,
+        -5,
+        17.087393474578857,
+        2151.8,
+        2172.2
+      ]
+    ],
+    "Church": [
+      [
+        20.65,
+        35.2,
+        -5,
+        15.815627861022948,
+        2090.8,
+        2100.2
+      ],
+      [
+        20.0,
+        21.1,
+        -5,
+        6.340627861022949,
+        2093.95,
+        2097.05
+      ]
+    ]
+  },
+  "meshes": {
+    "g999": {
+      "node": 1448,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 999,
+      "tris": 1916,
+      "acceptedPreviousTris": [
+        1716,
+        1788,
+        1916
+      ],
+      "resultTris": 1404,
+      "removed": 512,
+      "removedBy": {
+        "gas": 128,
+        "radio": 72,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 144,
+        "Feed": 0,
+        "Cinema": 168,
+        "Church": 0
+      },
+      "gasRemoved": 128,
+      "radioRemoved": 72,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g999.g999",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        638
+      ],
+      "retainedIndexSha256": "5488e4a52df344225c7436d95e980f447ddb0151b33f6e843f9f5159a534bbba",
+      "originalIndexSha256": "71103db2ae3a53c065ebcb162cdef3d27344e5fb5fc1e8aab9f4f74037b2a6ad"
+    },
+    "g1000": {
+      "node": 1449,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1000,
+      "tris": 512,
+      "acceptedPreviousTris": [
+        408,
+        468,
+        512
+      ],
+      "resultTris": 228,
+      "removed": 284,
+      "removedBy": {
+        "gas": 44,
+        "radio": 60,
+        "souvenir": 0,
+        "Sheriff": 120,
+        "Laundry": 12,
+        "Feed": 12,
+        "Cinema": 24,
+        "Church": 12
+      },
+      "gasRemoved": 44,
+      "radioRemoved": 60,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1000.g1000",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        641
+      ],
+      "retainedIndexSha256": "659fceb9ed1d209dd50b2b3233b8836681f030e0ef1713d6fe19f595bc9c85ac",
+      "originalIndexSha256": "57c372795f4a7d1f49185aa616ab07e32b7c75f35222d5a0996b9cbcd3f92ff4"
+    },
+    "g1001": {
+      "node": 1450,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1001,
+      "tris": 30,
+      "acceptedPreviousTris": [
+        24,
+        28,
+        30
+      ],
+      "resultTris": 8,
+      "removed": 22,
+      "removedBy": {
+        "gas": 2,
+        "radio": 0,
+        "souvenir": 4,
+        "Sheriff": 2,
+        "Laundry": 0,
+        "Feed": 2,
+        "Cinema": 12,
+        "Church": 0
+      },
+      "gasRemoved": 2,
+      "radioRemoved": 0,
+      "souvenirRemoved": 4,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1001.g1001",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        642
+      ],
+      "retainedIndexSha256": "1221c737736be21f692b4212b4e00bc8b6d05fc3529d17d1b0e4105438036690",
+      "originalIndexSha256": "709ea2f8a2c23ff65a54a16ef1d34b12d2baf9c2092d83fc35262e897242d21f"
+    },
+    "g1002": {
+      "node": 1451,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1002,
+      "tris": 754,
+      "acceptedPreviousTris": [
+        370,
+        754
+      ],
+      "resultTris": 332,
+      "removed": 422,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 384,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 12,
+        "Cinema": 0,
+        "Church": 26
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 384,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1002.g1002",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        639
+      ],
+      "retainedIndexSha256": "ae57c54441c04af25ed4b7a0483c8765bc7dec7fbad23d115bf0f5a01afe8412",
+      "originalIndexSha256": "dded0b7965ccfdf870de0e6942b44169a450551f79c8aeb56de0fac1b0d0bbcc"
+    },
+    "g1003": {
+      "node": 1452,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1003,
+      "tris": 180,
+      "acceptedPreviousTris": [
+        132,
+        144,
+        156,
+        180
+      ],
+      "resultTris": 60,
+      "removed": 120,
+      "removedBy": {
+        "gas": 24,
+        "radio": 12,
+        "souvenir": 12,
+        "Sheriff": 12,
+        "Laundry": 12,
+        "Feed": 12,
+        "Cinema": 12,
+        "Church": 24
+      },
+      "gasRemoved": 24,
+      "radioRemoved": 12,
+      "souvenirRemoved": 12,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1003.g1003",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        643
+      ],
+      "retainedIndexSha256": "378b6f9e84439579cfc0eefbe947063e938b74e9aa0dc32bd8312754ee828ce9",
+      "originalIndexSha256": "11deda148d8fd05aaf9d7bdc704d3aa9f04d72908652cdfd3fa0cd4f64dd6cc1"
+    },
+    "g1004": {
+      "node": 1453,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1004,
+      "tris": 1170,
+      "acceptedPreviousTris": [
+        1170
+      ],
+      "resultTris": 1055,
+      "removed": 115,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 12,
+        "Laundry": 15,
+        "Feed": 48,
+        "Cinema": 40,
+        "Church": 0
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1004.g1004",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        644
+      ],
+      "retainedIndexSha256": "ea188cc55da4fa0bbddafbe92277a341fdc2a9d1de638a3a6e0ee63761ba6335",
+      "originalIndexSha256": "18f9048dfef198d416bacd64c5b0cd48b31a7e5614850a4df54fc6739aabe5c7"
+    },
+    "g1005": {
+      "node": 1454,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1005,
+      "tris": 240,
+      "acceptedPreviousTris": [
+        120,
+        240
+      ],
+      "resultTris": 120,
+      "removed": 120,
+      "removedBy": {
+        "gas": 120,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 0,
+        "Cinema": 0,
+        "Church": 0
+      },
+      "gasRemoved": 120,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1005.g1005",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        645
+      ],
+      "retainedIndexSha256": "73e694711319969c0ae748987358542a70ab8ce66291cc1f5495d20b663a5836",
+      "originalIndexSha256": "24349b4069694ef4427847ac7b40c621695db32baa6a1adc1e58baef537d316c"
+    },
+    "g1006": {
+      "node": 1455,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1006,
+      "tris": 360,
+      "acceptedPreviousTris": [
+        262,
+        286,
+        310,
+        360
+      ],
+      "resultTris": 154,
+      "removed": 206,
+      "removedBy": {
+        "gas": 50,
+        "radio": 24,
+        "souvenir": 24,
+        "Sheriff": 24,
+        "Laundry": 24,
+        "Feed": 24,
+        "Cinema": 12,
+        "Church": 24
+      },
+      "gasRemoved": 50,
+      "radioRemoved": 24,
+      "souvenirRemoved": 24,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1006.g1006",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        646
+      ],
+      "retainedIndexSha256": "9b0e21eea17b41ed91294af3aadcf5282fc89ece8e2735853ca36d6e4dbadca2",
+      "originalIndexSha256": "062414c12ba0b83b7dad80454c6b473a238a4ae7ca66eb5e17c14a7190fafde0"
+    },
+    "g1007": {
+      "node": 1456,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1007,
+      "tris": 16,
+      "acceptedPreviousTris": [
+        14,
+        16
+      ],
+      "resultTris": 2,
+      "removed": 14,
+      "removedBy": {
+        "gas": 2,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 2,
+        "Feed": 0,
+        "Cinema": 6,
+        "Church": 4
+      },
+      "gasRemoved": 2,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1007.g1007",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        647
+      ],
+      "retainedIndexSha256": "74529f8ab0e4a2a07d57dc40c7be1e4148290e7881741e180b8db2bc655c4aaf",
+      "originalIndexSha256": "80fc1615f9fb52112da4a5b41f0221f733d159c4a413f5f31a6d87f9d2f62d56"
+    },
+    "g1008": {
+      "node": 1457,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1008,
+      "tris": 96,
+      "acceptedPreviousTris": [
+        48,
+        96
+      ],
+      "resultTris": 48,
+      "removed": 48,
+      "removedBy": {
+        "gas": 48,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 0,
+        "Cinema": 0,
+        "Church": 0
+      },
+      "gasRemoved": 48,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1008.g1008",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        648
+      ],
+      "retainedIndexSha256": "33dd37fb44e355403e5641587ffdcde6dd26ad245a0cb98d8d3e107973ed9319",
+      "originalIndexSha256": "22c0a50e2d481ffe5f6b9af3c9cb8c67c8d1591adebe3f37a9ce553f25daba9d"
+    },
+    "g1009": {
+      "node": 1458,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1009,
+      "tris": 62,
+      "acceptedPreviousTris": [
+        60,
+        62
+      ],
+      "resultTris": 0,
+      "removed": 62,
+      "removedBy": {
+        "gas": 2,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 60,
+        "Cinema": 0,
+        "Church": 0
+      },
+      "gasRemoved": 2,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        649
+      ],
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalIndexSha256": "44a10b475e00d36bde35e5fecaef224acdb95c39b0e81c3b63622c011c73a94a"
+    },
+    "g1010": {
+      "node": 1459,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1010,
+      "tris": 356,
+      "acceptedPreviousTris": [
+        256,
+        306,
+        308,
+        356
+      ],
+      "resultTris": 0,
+      "removed": 356,
+      "removedBy": {
+        "gas": 48,
+        "radio": 2,
+        "souvenir": 50,
+        "Sheriff": 50,
+        "Laundry": 0,
+        "Feed": 50,
+        "Cinema": 12,
+        "Church": 144
+      },
+      "gasRemoved": 48,
+      "radioRemoved": 2,
+      "souvenirRemoved": 50,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        640
+      ],
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalIndexSha256": "8adb3d31841dab303f53a9026c63b3bff5c75b850bfe0ffa8e05196e7616c387"
+    },
+    "g1011": {
+      "node": 1460,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1011,
+      "tris": 252,
+      "acceptedPreviousTris": [
+        216,
+        252
+      ],
+      "resultTris": 0,
+      "removed": 252,
+      "removedBy": {
+        "gas": 36,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 0,
+        "Cinema": 144,
+        "Church": 72
+      },
+      "gasRemoved": 36,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        650
+      ],
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalIndexSha256": "73628f9fa2558b3852ca5d37b005ee1e185126d780f218a30eb9ff3bbe78a32c"
+    },
+    "g1012": {
+      "node": 1461,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1012,
+      "tris": 24,
+      "acceptedPreviousTris": [
+        0,
+        24
+      ],
+      "resultTris": 0,
+      "removed": 24,
+      "removedBy": {
+        "gas": 24,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 0,
+        "Cinema": 0,
+        "Church": 0
+      },
+      "gasRemoved": 24,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        651
+      ],
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalIndexSha256": "981fa2eba4abdfe7921bd783f033a7083a7264093b0da94ec775da1a168bf088"
+    },
+    "g1013": {
+      "node": 1462,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1013,
+      "tris": 300,
+      "acceptedPreviousTris": [
+        240,
+        300
+      ],
+      "resultTris": 120,
+      "removed": 180,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 60,
+        "Sheriff": 60,
+        "Laundry": 0,
+        "Feed": 60,
+        "Cinema": 0,
+        "Church": 0
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 60,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1013.g1013",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        652
+      ],
+      "retainedIndexSha256": "ff01e392b97dd57ee2c6510fd5b3054764862ac11c64fb5372ed277fa0de763f",
+      "originalIndexSha256": "72c92719d57257d047af1ac353b1543efe955fc86000a879ad54c2b1d0448211"
+    },
+    "g1014": {
+      "node": 1463,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1014,
+      "tris": 120,
+      "acceptedPreviousTris": [
+        60,
+        120
+      ],
+      "resultTris": 0,
+      "removed": 120,
+      "removedBy": {
+        "gas": 0,
+        "radio": 60,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 60,
+        "Feed": 0,
+        "Cinema": 0,
+        "Church": 0
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 60,
+      "souvenirRemoved": 0,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        653
+      ],
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalIndexSha256": "816212256ef266fb21e81021809957c8ec7803c1fa970e61e631cdb16d21d85e"
+    },
+    "g1015": {
+      "node": 1464,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1015,
+      "tris": 72,
+      "acceptedPreviousTris": [
+        72
+      ],
+      "resultTris": 0,
+      "removed": 72,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 0,
+        "Cinema": 72,
+        "Church": 0
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        654
+      ],
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalIndexSha256": "8bbfb15d9c2aec399418de78ceb0cadecd0cfa503acc7d7ad45cbe4e1e754e09"
+    },
+    "g1016": {
+      "node": 1465,
+      "group": "world.town.st",
+      "parent": 1432,
+      "geo": 1016,
+      "tris": 40,
+      "acceptedPreviousTris": [
+        40
+      ],
+      "resultTris": 0,
+      "removed": 40,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 0,
+        "Cinema": 0,
+        "Church": 40
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": true,
+      "asset": "",
+      "originalMaterialIndices": [],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        655
+      ],
+      "retainedIndexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalIndexSha256": "7f029d8e2f46f92626827ee8daa966064970b15ee6fbdb9d44880f2372dbfd38"
+    },
+    "g1068": {
+      "node": 1552,
+      "group": "world.town.dressing.group",
+      "parent": 1551,
+      "geo": 1068,
+      "tris": 40426,
+      "acceptedPreviousTris": [
+        40426
+      ],
+      "resultTris": 33793,
+      "removed": 6633,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 1094,
+        "Laundry": 1131,
+        "Feed": 2231,
+        "Cinema": 1491,
+        "Church": 686
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1068.g1068",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        663
+      ],
+      "retainedIndexSha256": "1f85fe16c1bd060f6d2846ca04fd9f494ecbf38e485b7be7a29bf05c130b47cb",
+      "originalIndexSha256": "5b82e292cfa408e3ba39384c15438d4ed73e517bfc6ecc31e96ac4949b5ab0ed"
+    },
+    "g1069": {
+      "node": 1553,
+      "group": "world.town.dressing.group",
+      "parent": 1551,
+      "geo": 1069,
+      "tris": 3854,
+      "acceptedPreviousTris": [
+        3854
+      ],
+      "resultTris": 2646,
+      "removed": 1208,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 204,
+        "Laundry": 222,
+        "Feed": 274,
+        "Cinema": 310,
+        "Church": 198
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1069.g1069",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        664
+      ],
+      "retainedIndexSha256": "3f11019a1d9a7b34e89dee45ada55fba158fe4a92286d1717b1f634b9a3ee2ec",
+      "originalIndexSha256": "5618d0bab809d6d77679adb9d484d09b4b79f8c8f42873526c74fef9e925c5d8"
+    },
+    "g1070": {
+      "node": 1554,
+      "group": "world.town.dressing.group",
+      "parent": 1551,
+      "geo": 1070,
+      "tris": 28,
+      "acceptedPreviousTris": [
+        28
+      ],
+      "resultTris": 24,
+      "removed": 4,
+      "removedBy": {
+        "gas": 0,
+        "radio": 0,
+        "souvenir": 0,
+        "Sheriff": 0,
+        "Laundry": 0,
+        "Feed": 4,
+        "Cinema": 0,
+        "Church": 0
+      },
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 0,
+      "hidden": false,
+      "asset": "/Game/TownBuildings/Trim/StaticMeshes/g1070.g1070",
+      "originalMaterialIndices": [
+        0
+      ],
+      "sourceMaterialCount": 1,
+      "sourceMaterialIds": [
+        665
+      ],
+      "retainedIndexSha256": "355c4550eff0f52dab88b28af4177cf85e306463717735ebfabb86555f67e7eb",
+      "originalIndexSha256": "181ed6a5ddc5ca599bc710f397aa9c50efa3d2b0fd39138ae3b93025998803fc"
+    }
+  },
+  "files": [
+    "trim_geo_008.glb"
+  ],
+  "fileSha256": {
+    "trim_geo_008.glb": "f3784382835bb09f54b2ff2d1005bec7d835505dcd2b30c029504513c09fdce5"
+  },
+  "totalsRemovedBy": {
+    "gas": 528,
+    "radio": 230,
+    "souvenir": 534,
+    "Sheriff": 1578,
+    "Laundry": 1622,
+    "Feed": 2789,
+    "Cinema": 2303,
+    "Church": 1230
+  },
+  "protectedHandles": {
+    "world.room6.objs.door": {
+      "node": 1669
+    },
+    "world.room6.objs.phone": {
+      "node": 1690
+    },
+    "world.room6.objs.tv": {
+      "node": 1699
+    },
+    "world.room6.objs.photo": {
+      "node": 1705
+    },
+    "world.room6.objs.lamp": {
+      "node": 1713
+    },
+    "world.room6.objs.fieldCard": {
+      "node": 1721
+    },
+    "world.room6.objs.letter": {
+      "node": 1724
+    },
+    "world.room6.objs.correction": {
+      "node": 1727
+    },
+    "world.room6.objs.shoebox": {
+      "node": 1730
+    },
+    "world.room6.objs.walkie": {
+      "node": 1733
+    },
+    "world.room6.objs.noraHead": {
+      "node": 1738
+    },
+    "world.town.proxies.pumps": {
+      "node": 1496
+    },
+    "world.town.proxies.payphone": {
+      "node": 1498
+    },
+    "world.town.proxies.gasDoor": {
+      "node": 1500
+    },
+    "world.town.proxies.gasWindow": {
+      "node": 1502
+    },
+    "world.town.proxies.gasSign": {
+      "node": 1504
+    },
+    "world.town.proxies.sheriffWindow": {
+      "node": 1506
+    },
+    "world.town.proxies.sheriffDoor": {
+      "node": 1508
+    },
+    "world.town.proxies.bench": {
+      "node": 1510
+    },
+    "world.town.proxies.laundromat": {
+      "node": 1512
+    },
+    "world.town.proxies.cinema": {
+      "node": 1514
+    },
+    "world.town.proxies.marquee": {
+      "node": 1516
+    },
+    "world.town.proxies.feed": {
+      "node": 1518
+    },
+    "world.town.proxies.studio": {
+      "node": 1520
+    },
+    "world.town.proxies.amDoor": {
+      "node": 1522
+    },
+    "world.town.proxies.souvenir": {
+      "node": 1524
+    },
+    "world.town.proxies.souvenirSign": {
+      "node": 1526
+    },
+    "world.town.proxies.souvenirDoor": {
+      "node": 1528
+    },
+    "world.town.proxies.letters": {
+      "node": 1530
+    },
+    "world.town.proxies.churchDoor": {
+      "node": 1532
+    },
+    "world.town.proxies.tv1": {
+      "node": 1534
+    },
+    "world.town.proxies.tv2": {
+      "node": 1536
+    },
+    "world.town.proxies.kitchen": {
+      "node": 1538
+    },
+    "world.town.proxies.patrolCar": {
+      "node": 1540
+    },
+    "world.town.proxies.paper": {
+      "node": 1542
+    },
+    "world.town.proxies.woman": {
+      "node": 1544
+    },
+    "world.town.proxies.smoker": {
+      "node": 1546
+    },
+    "world.town.cutout": {
+      "node": 1493
+    },
+    "world.town.carDoor": {
+      "node": 1467
+    },
+    "world.town.car": {
+      "node": 1466
+    },
+    "world.town.paper": {
+      "node": 1476
+    },
+    "world.town.woman": {
+      "node": 1480
+    },
+    "world.town.smoker": {
+      "node": 1487
+    },
+    "world.town.models.holders[0]": {
+      "node": 1433
+    },
+    "world.town.models.holders[1]": {
+      "node": 1436
+    },
+    "world.town.models.holders[2]": {
+      "node": 1439
+    },
+    "world.town.models.holders[3]": {
+      "node": 1442
+    },
+    "world.town.models.holders[4]": {
+      "node": 1445
+    },
+    "world.town.models.models[0]": {
+      "node": 1562
+    },
+    "world.town.models.models[1]": {
+      "node": 1563
+    },
+    "world.town.models.places[0].box.min": {
+      "vec": [
+        7985.289999961853,
+        7.465643882751465,
+        2130.800048828125
+      ]
+    },
+    "world.town.models.places[0].box.max": {
+      "vec": [
+        7985.77499961853,
+        8.285643577575684,
+        2133.39990234375
+      ]
+    },
+    "world.town.models.places[1].box.min": {
+      "vec": [
+        8023.920000076294,
+        7.23419713973999,
+        2135.844970703125
+      ]
+    },
+    "world.town.models.places[1].box.max": {
+      "vec": [
+        8024,
+        9.494196891784668,
+        2136.955078125
+      ]
+    },
+    "world.town.models.places[2].box.min": {
+      "vec": [
+        8024.420000076294,
+        7.923066139221191,
+        2158.844970703125
+      ]
+    },
+    "world.town.models.places[2].box.max": {
+      "vec": [
+        8024.5,
+        10.183066368103027,
+        2159.955078125
+      ]
+    },
+    "world.town.models.places[3].box.min": {
+      "vec": [
+        8024.920000076294,
+        8.738749504089355,
+        2181.044921875
+      ]
+    },
+    "world.town.models.places[3].box.max": {
+      "vec": [
+        8025,
+        10.998749732971191,
+        2182.155029296875
+      ]
+    },
+    "world.town.models.places[4].box.min": {
+      "vec": [
+        7981,
+        11.188553810119629,
+        2243.844970703125
+      ]
+    },
+    "world.town.models.places[4].box.max": {
+      "vec": [
+        7981.079999923706,
+        13.448554039001465,
+        2244.955078125
+      ]
+    },
+    "world.town.runtime.panels.blink.0": {
+      "node": 1565
+    },
+    "world.town.runtime.panels.blink.4": {
+      "node": 1566
+    },
+    "world.town.runtime.panels.blink.8": {
+      "node": 1567
+    },
+    "world.town.runtime.panels.blink.12": {
+      "node": 1568
+    },
+    "world.town.runtime.panels.lamps.16": {
+      "node": 1569
+    },
+    "world.town.runtime.panels.lamps.20": {
+      "node": 1570
+    },
+    "world.town.runtime.panels.lamps.24": {
+      "node": 1571
+    },
+    "world.town.runtime.panels.lamps.28": {
+      "node": 1572
+    },
+    "world.town.runtime.panels.lamps.32": {
+      "node": 1573
+    },
+    "world.town.runtime.panels.lamps.36": {
+      "node": 1574
+    },
+    "world.town.runtime.panels.lamps.40": {
+      "node": 1575
+    },
+    "world.town.runtime.panels.gasWin.44": {
+      "node": 1576
+    },
+    "world.town.runtime.panels.pumps.48": {
+      "node": 1577
+    },
+    "world.town.runtime.panels.pumps.52": {
+      "node": 1578
+    },
+    "world.town.runtime.panels.pumps.56": {
+      "node": 1579
+    },
+    "world.town.runtime.panels.pumps.60": {
+      "node": 1580
+    },
+    "world.town.runtime.panels.canopy.64": {
+      "node": 1581
+    },
+    "world.town.runtime.panels.canopy.68": {
+      "node": 1582
+    },
+    "world.town.runtime.panels.gasSign.72": {
+      "node": 1583
+    },
+    "world.town.runtime.panels.gasSign.76": {
+      "node": 1584
+    },
+    "world.town.runtime.panels.sheriffWin.80": {
+      "node": 1585
+    },
+    "world.town.runtime.panels.laundroWin.84": {
+      "node": 1586
+    },
+    "world.town.runtime.panels.laundroWin.88": {
+      "node": 1587
+    },
+    "world.town.runtime.panels.laundroWin.92": {
+      "node": 1588
+    },
+    "world.town.runtime.panels.laundro.96": {
+      "node": 1589
+    },
+    "world.town.runtime.panels.studio.100": {
+      "node": 1590
+    },
+    "world.town.runtime.panels.onAir.104": {
+      "node": 1591
+    },
+    "world.town.runtime.panels.amSign.108": {
+      "node": 1592
+    },
+    "world.town.runtime.panels.display.112": {
+      "node": 1593
+    },
+    "world.town.runtime.panels.tv1.116": {
+      "node": 1594
+    },
+    "world.town.runtime.panels.tv2.120": {
+      "node": 1595
+    },
+    "world.town.runtime.panels.warm.124": {
+      "node": 1596
+    },
+    "world.motel.objs.room6DoorLeaf": {
+      "node": 752
+    },
+    "world.motel.objs.envelope": {
+      "node": 721
+    },
+    "world.motel.objs.message": {
+      "node": 725
+    },
+    "world.motel.objs.key6Hook": {
+      "node": 727
+    },
+    "world.motel.objs.officePhoneHandset": {
+      "node": 729
+    },
+    "world.motel.tv.group": {
+      "node": 709
+    }
+  },
+  "preserved": [
+    "licensed laundry bench and its collider",
+    "patrol vehicle/door",
+    "people/paper/A02 figure",
+    "all gameplay proxies",
+    "all runtime panel objects and state",
+    "church street letterboard and light",
+    "sheriff flagpole"
+  ],
+  "sourceVerification": {
+    "status": "PASS",
+    "scope": "Actual prepared GLB buffers/index order; native rendering not run",
+    "checks": [
+      "trim_geo_008.glb immutable position/normal/UV/color byte prefix preserved",
+      "g999 exact retained triangle indices and slot order",
+      "g1000 exact retained triangle indices and slot order",
+      "g1001 exact retained triangle indices and slot order",
+      "g1002 exact retained triangle indices and slot order",
+      "g1003 exact retained triangle indices and slot order",
+      "g1004 exact retained triangle indices and slot order",
+      "g1005 exact retained triangle indices and slot order",
+      "g1006 exact retained triangle indices and slot order",
+      "g1007 exact retained triangle indices and slot order",
+      "g1008 exact retained triangle indices and slot order",
+      "g1013 exact retained triangle indices and slot order",
+      "g1068 exact retained triangle indices and slot order",
+      "g1069 exact retained triangle indices and slot order",
+      "g1070 exact retained triangle indices and slot order"
+    ],
+    "emittedMeshes": 14,
+    "hiddenMeshes": 7
+  },
+  "runtimeNotes": [
+    "Union cuts must replace existing CalicheStreet shared meshes atomically after all five building kits are ready.",
+    "Bind each native trim slot from originalMaterialIndices; imported default material is a placeholder.",
+    "Original dynamic sheriff/laundry opaque pictures need explicit rendering treatment by native building integration; this index-only trim leaves state/proxy objects intact.",
+    "No walk/drive collider changes are performed by this tool."
+  ]
+}

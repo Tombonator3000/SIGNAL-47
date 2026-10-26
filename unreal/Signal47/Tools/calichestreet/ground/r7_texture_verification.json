@@ -1,0 +1,149 @@
+{
+  "status": "PASS",
+  "texture_stats": [
+    {
+      "name": "CompactedUse",
+      "alpha_gain": 2.2,
+      "alpha_cap": 0.88,
+      "alpha_byte_range": [
+        0,
+        224
+      ],
+      "nonzero_alpha_support_unchanged": true,
+      "RGB_unchanged": false,
+      "mean_alpha_before": 0.09621286579206878,
+      "mean_alpha_after": 0.21153097994187298,
+      "RGB_R85_105_alpha_over60_fraction": 0.04832577705383301
+    },
+    {
+      "name": "ConcreteUse",
+      "alpha_gain": 3.5,
+      "alpha_cap": 0.88,
+      "alpha_byte_range": [
+        0,
+        224
+      ],
+      "nonzero_alpha_support_unchanged": true,
+      "RGB_unchanged": true,
+      "mean_alpha_before": 0.04305444324717802,
+      "mean_alpha_after": 0.12282660054225547,
+      "RGB_R85_105_alpha_over60_fraction": 0.14882206916809082
+    }
+  ],
+  "all_other_texture_files_SHA256_unchanged": [
+    "textures/CalicheSoil_color.png",
+    "textures/CalicheSoil_normal.png",
+    "textures/CalicheSoil_roughness.png",
+    "textures/PeaGravel_color.png",
+    "textures/PeaGravel_normal.png",
+    "textures/PeaGravel_roughness.png",
+    "textures/OldAsphalt_color.png",
+    "textures/OldAsphalt_normal.png",
+    "textures/OldAsphalt_roughness.png",
+    "textures/DrySilt_color.png",
+    "textures/DrySilt_normal.png",
+    "textures/DrySilt_roughness.png",
+    "textures/Limestone_color.png",
+    "textures/Limestone_normal.png",
+    "textures/Limestone_roughness.png",
+    "textures/DryPlant_color.png",
+    "textures/DryPlant_normal.png",
+    "textures/DryPlant_roughness.png",
+    "textures/TarRepair_color.png",
+    "textures/TarRepair_normal.png",
+    "textures/TarRepair_roughness.png",
+    "textures/WornConcrete_color.png",
+    "textures/WornConcrete_normal.png",
+    "textures/WornConcrete_roughness.png",
+    "textures/ShoulderBlend_color.png",
+    "textures/ShoulderBlend_normal.png",
+    "textures/ShoulderBlend_roughness.png",
+    "textures/DustFeather_color.png",
+    "textures/DustFeather_normal.png",
+    "textures/DustFeather_roughness.png",
+    "textures/GrassAtlas_color.png",
+    "textures/GrassAtlas_normal.png",
+    "textures/GrassAtlas_roughness.png",
+    "textures/SageAtlas_color.png",
+    "textures/SageAtlas_normal.png",
+    "textures/SageAtlas_roughness.png",
+    "textures/Yucca_color.png",
+    "textures/Yucca_normal.png",
+    "textures/Yucca_roughness.png",
+    "textures/CompactedUse_normal.png",
+    "textures/CompactedUse_roughness.png",
+    "textures/ConcreteUse_normal.png",
+    "textures/ConcreteUse_roughness.png"
+  ],
+  "embedded_GLBRGBA": [
+    {
+      "file": "SM_Caliche_Surface.glb",
+      "material": "M_CS_CompactedUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    },
+    {
+      "file": "SM_Caliche_Surface.glb",
+      "material": "M_CS_ConcreteUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    },
+    {
+      "file": "Caliche_Ground_Assembly.glb",
+      "material": "M_CS_CompactedUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    },
+    {
+      "file": "Caliche_Ground_Assembly.glb",
+      "material": "M_CS_ConcreteUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    }
+  ],
+  "expected_dither_coverage": [
+    {
+      "field": "east_radio_parking",
+      "drawn_area_m2": 145.07893698380568,
+      "expected_dither_area_fraction": 0.2176051056645825
+    },
+    {
+      "field": "east_shop_parking",
+      "drawn_area_m2": 90.56986078529494,
+      "expected_dither_area_fraction": 0.21232789727269927
+    },
+    {
+      "field": "service_gap",
+      "drawn_area_m2": 111.62124997362389,
+      "expected_dither_area_fraction": 0.21353951432796536
+    },
+    {
+      "field": "pump_west_lane",
+      "drawn_area_m2": 47.606678726503446,
+      "expected_dither_area_fraction": 0.11946563020387188
+    },
+    {
+      "field": "pump_east_lane",
+      "drawn_area_m2": 47.607622796003255,
+      "expected_dither_area_fraction": 0.11946464990245467
+    },
+    {
+      "field": "gas_turnout_scuff",
+      "drawn_area_m2": 30.43263660487083,
+      "expected_dither_area_fraction": 0.12652303791659694
+    }
+  ],
+  "native_visual_status": "PENDING: only source texture and previously proven native geometry integration."
+}

@@ -1,4 +1,8 @@
 #include "S47World.h"
+#include "S47Gamepad.h"
+#include "S47Evening.h"
+#include "S47EveningVisual.h"
+#include "S47Timeline.h"
 #include "S47Keys.h"
 
 #include "Engine/TextureRenderTarget2D.h"
@@ -8,6 +12,8 @@
 #include "Misc/Paths.h"
 #include "S47Audio.h"
 #include "S47FieldCamera.h"
+#include "S47FreeModels.h"
+#include "S47Props.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
 #include "S47HUD.h"
@@ -33,6 +39,27 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47World, Log, All);
 
 namespace
 {
+	// Unreal-only visitor lot. The exported service corridors and obstacles stay authoritative
+	// elsewhere; enable this extension only when its native geometry/floors validated.
+	class FArrivalSaroDrive final : public FS47SaroDrive
+	{
+	public:
+		using FS47SaroDrive::FS47SaroDrive;
+		bool bVisitorLot = false;
+		bool OnVisitorLot(double X, double Z) const
+		{
+			return bVisitorLot && ((X >= -18.2 && X <= -7.8 && Z >= 10.5 && Z <= 20.5)
+				|| (X >= -16.5 && X <= -9.5 && Z >= 20.5 && Z <= 23.5));
+		}
+		virtual bool Blocked(double X, double Z) override
+		{
+			return OnVisitorLot(X,Z) ? false : FS47SaroDrive::Blocked(X,Z);
+		}
+		virtual FS47Surface Surface(double X, double Z) const override
+		{
+			return OnVisitorLot(X,Z) ? FS47SaroDrive::Surface(8.9,8) : FS47SaroDrive::Surface(X,Z);
+		}
+	};
 	// world/World.ts: FOG and FOG_OLDROAD (the old road's air is thinner at dawn)
 	constexpr float FOG = 0.0021f, FOG_OLDROAD = 0.00055f;
 	const FVector ROAD_ORIGIN(8000, 0, 0);
@@ -97,11 +124,13 @@ void US47World::Init(US47Main* InM)
 	{
 		TruckChoice = [this](const FString& Place) -> FChoice
 		{
-			if (M && M->Story && !M->Story->At(ES47Phase::Ch1))
+			const bool EarlyReferenceTrip = M && M->Story && M->Story->bEveningTimeline && M->Story->Phase() == ES47Phase::Shift && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done"));
+			if (M && M->Story && !M->Story->At(ES47Phase::Ch1) && !EarlyReferenceTrip)
 			{
 				return { TEXT("Service truck"), [this] { Toast(TEXT("SARO 07, the service truck. Not now: someone has to sit the console tonight."), 3.4f); } };
 			}
-			return { TEXT("Drive"), [this, Place] { Roam(Place); } };
+   const bool ServiceTrip = EarlyReferenceTrip && M->Evening->ServicePending();
+			return { ServiceTrip ? TEXT("Drive / Caliche Junction inspection") : EarlyReferenceTrip ? TEXT("Drive / optional Caliche reference round") : TEXT("Drive"), [this, Place] { Roam(Place); } };
 		};
 	}
 	// main.ts input.onKey and useCurrent: in the cab Use turns the key, uses the radio or gets out;
@@ -289,6 +318,9 @@ void US47World::Init(US47Main* InM)
 			}, 3.0f + 1.6f * i, false);
 		}
 	}
+	// -S47FreeModels[=name,...]: the free models in a row in front of the player (Unreal only)
+	S47FreeModels::Test(M);
+	AS47Props::TestPlace(M); // -S47PropsAt=<area>:x;z;yaw;pitch (Unreal only)
 }
 
 void US47World::TestGetOut(double At)
@@ -547,7 +579,10 @@ void US47World::EnsureLegs()
 	// SARO's own ground (ensureSaroLeg): its colliders without the truck's own, and the posts of
 	// the road's stretch (the export's list has both)
 	{
-		TUniquePtr<FS47SaroDrive> A = MakeUnique<FS47SaroDrive>(Boxes(W->CollidersMutable(TEXT("saro")), SaroCol), TArray<FS47Obstacle>());
+		TUniquePtr<FArrivalSaroDrive> A = MakeUnique<FArrivalSaroDrive>(Boxes(W->CollidersMutable(TEXT("saro")), SaroCol), TArray<FS47Obstacle>());
+		TArray<FString> ArrivalChecks;
+		A->bVisitorLot = W->AuditSaroArrival(ArrivalChecks);
+		UE_LOG(LogS47World,Display,TEXT("S47: SARO visitor driving corridor ready=%d; original service corridors retained"),A->bVisitorLot);
 		Fill(*A, TEXT("saro"), nullptr);
 		Head(*A, TEXT("saro"), nullptr, {});
 		FLegRec& L = Legs.Add(TEXT("saro"));
@@ -659,6 +694,7 @@ void US47World::Enter(const FString& NewArea)
 	EnsureLegs();
 	if (bLegsMade)
 	{
+		for (FS47Truck* T : {SaroTruckP.Get(), TruckP.Get()}) if (T) T->SetPersonalVehicle(bCommuteVehicle);
 		auto Here = [this](const TCHAR* Id) { return Area == Id && (TruckAt == Id || Leg == Id); };
 		// (on the motel's lot it is SARO's truck too, in SARO's area)
 		SaroTruckP->Group.SetVisible(Here(TEXT("saro")) || (Area == TEXT("saro") && TruckAt == TEXT("motel")));
@@ -666,6 +702,7 @@ void US47World::Enter(const FString& NewArea)
 		TruckP->Group.SetVisible(bOnRoad && (Leg == TEXT("road") || TruckAt == TEXT("diner")));
 		ParkedP->Group.SetVisible(Here(TEXT("station01")));
 		OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
+		if (bCommuteVehicle) {SaroTruckP->Group.SetVisible(false);TruckP->Group.SetVisible(false);}
 	}
 	if (OnEnter) OnEnter(NewArea);
 	// on foot on the old road (out of the truck anywhere, Tom 22 October 2026): its ground's height,
@@ -802,12 +839,14 @@ void US47World::DriveToMotel(TFunction<void()> OnArrive)
 void US47World::DriveBack()
 {
 	FS47TripOpts O;
-	O.Hint = TEXT("The truck goes back on its pad by the service yard: up the ramp, and stop there.");
+	O.Hint = bCommuteVehicle ? TEXT("Park in any of the three VISITOR bays left of the SARO sign. Stop fully between the lines; either direction works.") : TEXT("The truck goes back on its pad by the service yard: up the ramp, and stop there.");
 	O.OnArrive = [this]
 	{
 		if (OnArriveSaro) OnArriveSaro();
 		// (left on SARO's ground somewhere else, out among the masts say, it is back at SARO but not on its pad)
-		if (InBox(ParkBox(TEXT("saro")), SaroTruckP->Position) && M && M->Story) Toast(FString::Printf(TEXT("%s. The truck is back on its pad."), *M->Story->ClockText(false)), 3.f);
+		// Evening's OnParked starts 18:00 after this callback. Its own arrival card
+		// replaces the service return message, which would otherwise quote 17:20.
+		if (!bCommuteVehicle && InBox(ParkBox(TEXT("saro")), SaroTruckP->Position) && M && M->Story) Toast(FString::Printf(TEXT("%s. The truck is back on its pad."), *M->Story->ClockText(false)), 3.f);
 	};
 	StartTrip(TruckAt.IsEmpty() ? FString(TEXT("station01")) : TruckAt, TEXT("saro"), O);
 }
@@ -949,7 +988,7 @@ void US47World::TripStep(double Dt)
 	}
 	T.Secs += Dt;
 	T.Metres += FMath::Abs(D.Speed) * Dt;
-	if (T.PerMetre && M && M->Story) M->Story->SetClock(M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre);
+	if (T.PerMetre && M && M->Story) M->Story->SetClock(M->Story->bEveningTimeline ? FMath::Min(S47Timeline::Departure, M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre) : M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre);
 	const bool bHere = !T.To.IsEmpty() && S47Legs::LegOf(T.To) == Id;
 	const TOptional<FS47Box2> P = !T.To.IsEmpty() ? ParkBox(T.To) : TOptional<FS47Box2>();
 	// where to leave the truck, said once it is in sight
@@ -965,7 +1004,7 @@ void US47World::TripStep(double Dt)
 	{
 		for (const TCHAR* Pl : PLACES)
 		{
-			if ((Pl == T.To || T.bLeft) && S47Legs::LegOf(Pl) == Id && InBox(ParkBox(Pl), D.Pos)) { Stop = Pl; break; }
+			if ((Pl == T.To || T.bLeft) && S47Legs::LegOf(Pl) == Id && (bCommuteVehicle && FString(Pl)==TEXT("saro") ? FS47EveningVisual::FitsArrivalBay(D.Pos,D.Heading) : InBox(ParkBox(Pl), D.Pos))) { Stop = Pl; break; }
 		}
 	}
 	if (!Stop.IsEmpty())
@@ -978,6 +1017,7 @@ void US47World::TripStep(double Dt)
 
 TOptional<FS47Box2> US47World::ParkBox(const FString& Place) const
 {
+	if (Place == TEXT("saro") && bCommuteVehicle) return FS47Box2{-17.3,-8.3,11.55,17.05};
 	if (Place == TEXT("diner")) return bLegsMade ? TOptional<FS47Box2>(DinerPark) : TOptional<FS47Box2>();
 	if (Place == TEXT("motel")) { const FLegRec* L = Legs.Find(TEXT("saro")); return L ? TOptional<FS47Box2>(static_cast<const FS47SaroDrive*>(L->Area.Get())->MotelPark) : TOptional<FS47Box2>(); }
 	const FLegRec* L = Legs.Find(Place);
@@ -1394,6 +1434,7 @@ bool US47World::TruckOnLot() const
 	const FS47Truck* T = TruckAt.IsEmpty() ? nullptr : TruckOf(TruckAt);
 	const TOptional<FS47Box2> B = TruckAt.IsEmpty() ? TOptional<FS47Box2>() : ParkBox(TruckAt);
 	if (!T || !B) return false;
+	if (bCommuteVehicle && TruckAt==TEXT("saro")) return FS47EveningVisual::FitsArrivalBay(T->Position,T->Rotation.Y);
 	const FVector& Q = T->Position;
 	return Q.X > B->MinX - 2 && Q.X < B->MaxX + 2 && Q.Z > B->MinZ - 2 && Q.Z < B->MaxZ + 2;
 }
@@ -1442,6 +1483,10 @@ FS47DriveIn US47World::AutoInput(double Dt)
 	const FString Key = Next == TEXT("park") && Trip->To == TEXT("motel") ? (D.Pos.Z > S47Geo::MOTEL_RECT().MinZ + 20 ? FString(TEXT("motelS")) : FString(TEXT("motel"))) : Next;
 	const TArray<FVector>* Route = nullptr;
 	if (!Key.IsEmpty()) Route = Id == TEXT("road") ? &S47Legs::RoadRoute(RoadTo, D.Pos.Z - ROAD_ORIGIN.Z) : L->Area->Routes.Find(Key);
+	const bool Visitor = bCommuteVehicle && Id==TEXT("saro") && Next==TEXT("park") && Trip->To==TEXT("saro");
+	// Personal arrival turns off before the ramp. Service routes remain unchanged.
+	static const TArray<FVector> VisitorRoute={FVector(-22.2,-.62,60),FVector(-22.2,-.62,32),FVector(-20,-.62,26),FVector(-16.8,-.62,24),FVector(-13,-.62,22),FVector(-12.8,-.62,18),FS47EveningVisual::ArrivalPark()};
+	if (Visitor) Route=&VisitorRoute;
 	if (!Route || !Route->Num()) { In.Throttle = D.Speed > 0.2 ? -0.6 : 0; return In; }
 	const TArray<FVector>& R = *Route;
 	int32 K = 0;
@@ -1494,8 +1539,9 @@ FS47DriveIn US47World::AutoInput(double Dt)
 		Dist += FVector::Dist(P1, P0);
 	}
 	const double End = Next == TEXT("park") ? FVector::Dist(R.Last(), D.Pos) : TNumericLimits<double>::Max();
-	V = FMath::Min(V, FMath::Max(0.0, (End - 2.2) * 0.6)) * FMath::Clamp(1.15 - FMath::Abs(Err) * 1.4, 0.3, 1.0);
-	if (End < 2.2) V = 0;
+	const double StopDistance = Visitor ? .12 : 2.2;
+	V = FMath::Min(V, FMath::Max(0.0, (End - StopDistance) * 0.6)) * FMath::Clamp(1.15 - FMath::Abs(Err) * 1.4, 0.3, 1.0);
+	if (End < StopDistance) V = 0;
 	// wanting to go but not going (a post, a kerb): back off for a moment
 	A.Stuck = V > 0.8 && Sp < 0.15 ? A.Stuck + Dt : 0;
 	if (A.Stuck > 1.5) { A.Stuck = 0; A.Back = 1.4; }
@@ -1574,11 +1620,13 @@ void US47World::PlaceTruck(const FString& At, const S47J::FObj& Pose)
 	EnsureLegs();
 	StopDriving();
 	TruckAt = At;
-	auto Put = [](FS47Truck* T, double X, double Z, double H, double Y)
+	auto Put = [this](FS47Truck* T, double X, double Z, double H, double Y)
 	{
 		if (!T) return;
-		T->SetPose(FVector(X, Y, Z), FVector(T->Rotation.X, H, T->Rotation.Z));
-		T->SetDriving(false);
+		// Canonical lots are level. The commute's last suspension pitch/roll belongs
+		// to that road pose, not to SARO 07 waiting on its original concrete pad.
+		T->SetParkPose(FVector(X, Y, Z), H);
+		T->SetPersonalVehicle(bCommuteVehicle && (T == SaroTruckP.Get() || T == TruckP.Get()));
 	};
 	// YARD.truck: on its pad by the service yard
 	const S47Geo::FAt& MA = S47Geo::MOTEL_AT();
@@ -1599,6 +1647,9 @@ void US47World::PlaceTruck(const FString& At, const S47J::FObj& Pose)
 	{
 		T->SetPose(FVector(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("y")), S47J::Num(Pose, TEXT("z"))),
 			FVector(Ok(TEXT("p")) ? S47J::Num(Pose, TEXT("p")) : 0, S47J::Num(Pose, TEXT("h")), Ok(TEXT("r")) ? S47J::Num(Pose, TEXT("r")) : 0));
+		// Repair old opening saves: the flat original pad cannot inherit ramp tilt.
+		if (At == TEXT("saro") && T->Position.Equals(FVector(8.9, 0, 8), 0.01))
+			T->SetParkPose(T->Position, T->Rotation.Y);
 	}
 	for (const TCHAR* P : TRUCKS) ParkAt(P);
 	// (a save made on foot by the truck left somewhere with no walk of its own: the ground round it again)
@@ -1773,10 +1824,14 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	else if (bDriving)
 	{
 		// main.ts: steer = move.x, throttle = -move.z
-		FS47DriveIn In; In.Steer = Move.X; In.Throttle = -Move.Y;
+		FS47DriveIn In;
+		// Xbox uses proportional triggers for throttle/brake; left-stick forward never accelerates.
+		In.Steer = FMath::Clamp(Move.X, -1., 1.);
+		In.Throttle = FMath::Clamp(-Move.Y, -1., 1.);
 		if (C && C->Input) In = C->Input(Dt);
 		else if (Autopilot) In = AutoInput(Dt);
 		else if (TestInput) In = TestInput();
+		L->Drive->bCameraMotion = !M->Player || M->Player->bHeadMotion;
 		L->Drive->Update(Dt, In, LookIn);
 		TripStep(Dt);
 	}
@@ -1784,15 +1839,15 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	if (!N) N = L;
 	FS47DriveController& D = *N->Drive;
 	// trouble with the truck, on the story's trips and the player's own (not chapter six's road)
-	if (bDriving && Trip && Id != TEXT("roswell")) Trouble.Step(Dt, D, *N->Truck, Engine.Get(), TroubleOk ? TroubleOk() : false);
+	if (bDriving && Trip && Id != TEXT("roswell")) Trouble.Step(Dt, D, *N->Truck, Engine.Get(), !bCommuteVehicle && TroubleOk ? TroubleOk() : false);
 	if (Engine) { Engine->Set(D.Rpm, D.Load); Engine->Tyres(D.Surface.Kind, FMath::Abs(D.Speed)); }
 	// the odometer turns with the miles driven (not on a free drive)
-	if (bDriving && !(Trip && Trip->bFree) && Free.IsEmpty()) OdoM += FMath::Abs(D.Speed) * Dt;
+	if (bDriving && !bCommuteVehicle && !(Trip && Trip->bFree) && Free.IsEmpty()) OdoM += FMath::Abs(D.Speed) * Dt;
 	DashT -= Dt;
 	if (DashT <= 0)
 	{
 		DashT = 0.1;
-		N->Truck->SetDash(D.Mph, D.Rpm, M->Story ? M->Story->ClockText(false) : FString(), Id == TEXT("roswell") ? 0.55 : 0.62);
+		N->Truck->SetDash(D.Mph, D.Rpm, M->Story && !bCommuteVehicle ? M->Story->ClockText(false) : FString(), Id == TEXT("roswell") ? 0.55 : 0.62);
 		N->Truck->SetOdometer(Odometer());
 	}
 	// main.ts: the compass on the dash of the truck being driven reads the sky's north here
@@ -1804,6 +1859,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	}
 	// a camera that has left the cab sees the whole truck in this very frame
 	N->Truck->ViewFrom(Out.Eye);
+	if (bCommuteVehicle) N->Truck->SetPersonalVehicle(true);
 	const bool bView = bDriving || bCamera;
 	if (bView) { LastView = Out; bHaveView = true; }
 	// main.ts: in the cab the prompt is the key, the radio or the way out
@@ -1851,4 +1907,78 @@ void US47World::TownCarMoved(const FS47Area& Box)
 		TownCarObstacle = Road->Obstacles.IndexOfByPredicate([&](const FS47Obstacle& O) { return !O.bCircle && FMath::Abs(O.MinX - Original.MinX) < .01 && FMath::Abs(O.MinZ - Original.MinZ) < .01; });
 	}
 	if (Road->Obstacles.IsValidIndex(TownCarObstacle)) Road->Obstacles[TownCarObstacle] = FS47Obstacle::Box(Box.MinX, Box.MaxX, Box.MinZ, Box.MaxZ);
+}
+
+// Evening opening: drive the existing continuous highway north through Caliche.
+void US47World::BeginCommute(const S47J::FObj& SavedCar)
+{
+ EnsureLegs(); StopDriving(); bCommuteVehicle = true;
+ for (FS47Truck* T : {SaroTruckP.Get(),TruckP.Get()}) if (T) T->SetPersonalVehicle(true);
+ FS47TripOpts O;
+ const bool Saved = SavedCar.IsValid();
+ const FString A = Saved ? S47J::Str(SavedCar, TEXT("leg"), TEXT("road")) : FString(TEXT("road"));
+ const FString Leg0 = A == TEXT("saro") ? FString(TEXT("saro")) : FString(TEXT("road"));
+ O.Leg = Leg0;
+ O.AtPos = Saved ? FVector(S47J::Num(SavedCar,TEXT("x")), S47J::Num(SavedCar,TEXT("y")), S47J::Num(SavedCar,TEXT("z"))) : FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);
+ O.AtHeading = Saved ? S47J::Num(SavedCar,TEXT("h")) : 0;
+ O.Hint = TEXT("SARO: use any of the three VISITOR bays left of the sign. Supper at Mesa Diner is optional.");
+ O.OnStart = [this] { Toast(S47Gamepad::UsingGamepad() ? TEXT("RT: throttle. LT: brake / reverse. LS: steer. D-pad down: radio. Stop and press A to get out. SARO is north through town; the diner stop is optional.") : TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
+ TruckAt = TEXT("saro");
+ FString Route;
+ const bool bTest=FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),Route);
+ if (bTest) {float Speed=24;FParse::Value(FCommandLine::Get(),TEXT("S47Auto="),Speed); Autopilot=Speed;}
+ StartTrip(Leg0,bTest && Route!=TEXT("direct")?TEXT("diner"):TEXT("saro"),O);
+}
+
+void US47World::FinishCommute()
+{
+ StopDriving(); bCommuteVehicle = false;
+ for (FS47Truck* T : {SaroTruckP.Get(),TruckP.Get()}) if (T) T->SetPersonalVehicle(false);
+ // SARO 07 has stayed at work. The player's car is retained separately by Evening.
+ PlaceTruck(TEXT("saro"));
+ if (SaroTruckP) { SaroTruckP->Body.SetVisible(true); SaroTruckP->Shell.SetVisible(true); }
+ if (TruckP) { TruckP->Body.SetVisible(true); TruckP->Shell.SetVisible(true); }
+ Enter(TEXT("saro"));
+}
+
+void US47World::SetPersonalPark(const FVector& Position, double Heading, bool bVisible)
+{
+ if (!M || !M->Web || !M->Player) return;
+ auto& Cols=M->Web->CollidersMutable(TEXT("saro"));
+ // Doors append/remove leaves in this same array. Never retain a stale index.
+ PersonalCol=Cols.IndexOfByPredicate([](const FS47Rect& R){return R.Id==TEXT("personalCar");});
+ if (PersonalCol<0) {FS47Rect R;R.Id=TEXT("personalCar");PersonalCol=Cols.Add(R);}
+ FS47Rect& R=Cols[PersonalCol]; R.bEnabled=bVisible;
+ if (!bVisible)
+ {
+  R.MinX=R.MaxX=R.MinZ=R.MaxZ=1e9;M->Player->PersonalCarBox.Reset();return;
+ }
+ AS47Walker::FTruckBox B; B.Area=TEXT("saro"); B.X=Position.X; B.Z=Position.Z; B.Heading=Heading;
+ B.HalfW=FS47EveningVisual::PersonalHalfWidth();B.HalfL=FS47EveningVisual::PersonalHalfLength();
+ const double C=FMath::Abs(FMath::Cos(Heading)),S=FMath::Abs(FMath::Sin(Heading));
+ const double Hx=B.HalfW*C+B.HalfL*S,Hz=B.HalfW*S+B.HalfL*C;
+ R.MinX=B.X-Hx;R.MaxX=B.X+Hx;R.MinZ=B.Z-Hz;R.MaxZ=B.Z+Hz;
+ M->Player->PersonalCarBox=B;
+}
+
+void US47World::SetArrivalServiceWaiting(bool bVisible)
+{
+ if (!M || !M->Web) return;
+ auto& Cols=M->Web->CollidersMutable(TEXT("saro"));
+ int32 Index=Cols.IndexOfByPredicate([](const FS47Rect& R){return R.Id==TEXT("arrivalServicePickup");});
+ if(Index<0){if(!bVisible)return;FS47Rect R;R.Id=TEXT("arrivalServicePickup");Index=Cols.Add(R);}
+ FS47Rect& R=Cols[Index];R.bEnabled=bVisible;
+ // Same original pad as SARO 07; the regular TruckBox takes over after arrival.
+ R.MinX=bVisible?7.85:1e9;R.MaxX=bVisible?9.95:1e9;
+ R.MinZ=bVisible?5.25:1e9;R.MaxZ=bVisible?10.75:1e9;
+ if(FLegRec* L=Legs.Find(TEXT("saro")))
+ {
+  auto& Obstacles=L->Area->Obstacles;
+  if(!Obstacles.IsValidIndex(ArrivalServiceObstacle))
+  {
+   if(!bVisible)return;
+   ArrivalServiceObstacle=Obstacles.Add(FS47Obstacle::Box(1e9,1e9,1e9,1e9));
+  }
+  Obstacles[ArrivalServiceObstacle]=FS47Obstacle::Box(R.MinX,R.MaxX,R.MinZ,R.MaxZ);
+ }
 }

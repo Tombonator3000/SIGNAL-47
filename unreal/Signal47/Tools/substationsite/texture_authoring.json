@@ -1,0 +1,19 @@
+{
+  "revision": "R1b-sparse-gravity-rust",
+  "corrugated_visible_rust_fraction": 0.20999979972839355,
+  "roof_visible_rust_fraction": 0.23999977111816406,
+  "intended_coverage": [
+    0.15,
+    0.25
+  ],
+  "macro_grid_main": [
+    3,
+    1
+  ],
+  "edge_break_grid": [
+    5,
+    2
+  ],
+  "unchanged_geometry": true,
+  "native_visual_status": "UNVERIFIED"
+}

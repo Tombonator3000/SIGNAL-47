@@ -1,8 +1,28 @@
 # SIGNAL / 47 i Unreal
 
-Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Nettversjonen i `web/` er fortsatt spillet som publiseres; dette er en parallell utgave for desktop. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
+Ny dokumentpakke, 26. oktober 2026: [31 JPG-rekvisitter til Dales samling og arkivet](ArtSource/Documents/README.md), med [galleri](ArtSource/Documents/GALLERI.html), transkripsjoner og kildekatalog. Omtrent 12,1 MB totalt, 86,4 prosent mindre enn PNG-originalene. Dette er kontrollerte kildeassets til senere import; eksisterende runtime og installasjon er ikke endret.
+
+Nyeste hovedscenario: [én sammenhengende natt fra18:00 til Roswell Road](MISSION_FLOW_1800_ROSWELL.md). Tretten scenarioer fletter sammen eksisterende historie, aktiv kveld, tre Calichebesøk og ekstra arrayoppdrag. Alle eksisterende randomfamilier beholdes. Ett tidlig himmellys blir gradvis flere; [Dales kontor](DALE_OFFICE_DOCUMENTS.md) får seks nye frivillige lesedokumenter rundt den eksisterende feltmappen. Produksjonsoppgaver S.1 til S.9 står i [todo](todo.md). Dette er design/manusutkast for senere integrasjon.
+
+Hele SIGNAL / 47 i Unreal Engine 5.8.4: prologen «Night Shift», kapittel 1 til 6, natta med alle hendelsene, kjøringen og slutten. Videre spillarbeid gjelder desktoputgaven i Unreal. `web/` og Unity er historiske referanser. Verden hentes ut av nettversjonen selv, og all spillogikk er portert til C++ fil for fil fra `web/src`.
 
 Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen kom først; 22. oktober ble resten av spillet portert (Tom valgte en ren C++-port framfor å kjøre nettversjonens kode i en innebygd nettleser).
+
+Gjeldende retting og teststatus: [QA_FIXES_2026-10-25.md](QA_FIXES_2026-10-25.md). Q3 består 110/110 skriptede scenarioer, 1 424 selvtester og komplette High/Low-finaler helt til meny. Feltfoto, materialbindinger, utgang ved lagringsfeil, bindingsnavn, tekststørrelse og P13 er rettet. VSM-profilering og menneskelig fullnatt med lyd/fysisk Xbox står fortsatt åpne. [Før-rapporten fra PR157](SPILLTEST_2026-10-25.md) beholder de opprinnelige krasjene og feilene.
+
+QA-grunnlaget Q3 ble levert gjennom PR158. Gjeldende standard er nå T01 R2 fra [PR160](https://github.com/Tombonator3000/SIGNAL-47/pull/160), med 40 verifiserte payloadfiler og 40 uendrede personlige Saved-filer. Installert oppstart og kontrollert opprydding består. R2, R1 og full Q3-backup er de tre komplette testpakkene; alle kilder/Saved/bevis er bevart.
+
+Samlet videre plan for historie og skrekk: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md). Kosmisk etterforskning, gradvis kommende invasjon, stabile skyggemannregler og en faktisk skjul/flukt-sekvens ved SARO. Detaljerte oppdrag og produksjonsetapper H1 til H6 ligger øverst i [todo.md](todo.md). Dette er planlagt for senere implementering, ikke nye funksjoner i dagens spill.
+
+De tidligere32 arbeidskortene, seks valgfrie sporene og revisjonene er bevart i [sekundært løsningsoppslag](MISSION_DETAILS_REFERENCE.md). Hovedscenarioet bestemmer nå rekkefølge og sammenheng; kontrollverdier og eksisterende bevis-ID-er videreføres.
+
+Fem nødvendige aktive trusselmøter, tre før midnatt, og synlig bortføring bygger mot den faste finalen. Ny himmel-/kveldskoordinator og engelske delscener må produseres. Gammel tilfeldig bortføring med tapt tid beholdes og skilles fra nye møters lokale gjenopptakelse. Dette er en planrevisjon, ikke den installerte T01 R2-pakken.
+
+H1.2 til H1.4 er nå produsert som engelske forfatterkilder i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti oppdrag, 36 scener og fem dokumenter med validert generator. Ingen ny runtimehistorie eller nye opptak er hevdet. T01-service-/returreisen er nå implementert og prøvd som R2: faktisk journal/kontroll/lampe, én fysisk returarkivering, versjonert lagring og riktige RX-mål etter Continue. Se [T01_RUNTIME.md](T01_RUNTIME.md) for kilde, 14 pakkede kjøringer, sju ferske Continue-prosesser, elleve originalbilder og videre leveringsstatus. T02, kontor/VHS og resten av H2 står åpne.
+
+Ny fortellerretning og manus: [ANOMALY_PLAN.md](ANOMALY_PLAN.md) og [kveldspakken](Narrative/EveningShift/README.md). Pakken inneholder innkjøring/diner, Dales telefon-/radiodialog, kontorfunn, dokumenter og VHS-manus. Innkjøring, telefonoverlevering og ny tidslinje har runtime i kandidaten på `codex/evening-runtime`; se [runtime-rapporten](EVENING_RUNTIME.md). Senere kontor-/felt-/filminnhold er fortsatt forfattergrunnlag. Claude har siden integrert og installert runtimeåpningen. De 109 nye takesene er koblet til lydløypa på samme gren; se [lydrapporten](EVENING_AUDIO.md). Codex oppdaterer ikke installasjonen.
+
+Første anomaly-pilot på `codex/anomaly-pilot` gir N01/N02/A02/P01 med kamera, aktive sammenligninger, fysisk oppfølging og lagring. [ANOMALY_RUNTIME.md](ANOMALY_RUNTIME.md) skiller kilde, pakket kandidat, testbevis og gjenstående menneskelig prøve. Ingen installasjon eller publisering inngår i denne leveransen.
 
 ## Spill
 
@@ -11,6 +31,13 @@ Startet 21. oktober 2026 etter Toms spørsmål om en Unreal-versjon. Prologen ko
 ```
 
 Eller «SIGNAL / 47» i programmenyen. Spillet starter på tittelen (Continue, New night, Load case, Settings). WASD går (Shift løper), musa ser, E eller klikk bruker det du ser på, høyre mus ser nærmere. Tab eller N er notatboken (M, I og H åpner kartet, kitet og kontrollene i den), Esc eller P er pausen med innstillinger, lagring og lasting. I bilen: W og S gass og brems (S i stillstand rygger), A og D styrer, R eller klikk på radioen skifter stasjon, E i stillstand går ut (og vrir om nøkkelen når motoren har dødd). V leser beskrivelsen av det du ser på når opplesningen er slått på i innstillingene. Lagringene og innstillingene ligger ved siden av spillet, i `~/Games/Signal47/Linux/Signal47/Saved/SaveGames`.
+
+Takeaway kan settes ned og plukkes opp med E/A på merkede plasser i dineren, ved bilen og på SARO. B på Xbox eller Q på tastatur åpner matmenyen med nedsetting, bortstuing, fremtaking og kasting. D-pad/piltaster velger og A/Enter bekrefter. Etter telefonoverleveringen tilbyr skrivebordet og annexbordet **Eat supper (12 minutes)**. Posen skjules ved verktøybruk, og plassering/måltid lagres. SARO har en egen besøksplass før skiltet, atskilt fra servicebilen. Se [SARO-ankomst og matstyring](SARO_ARRIVAL.md) for aktuell kandidat og teststatus, og [den opprinnelige takeaway-flyten](EVENING_TAKEAWAY.md).
+Xbox-styring er lagt til med analoge stikker, biltriggere og menyer/paneler. Se [kontroller og faktisk teststatus](GAMEPAD.md). Hastighet og invertert Y finnes under Settings > Controls.
+
+## Last ned på en annen Linux-maskin
+
+[Linux-testutgave 23. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-23). Repoet og utgivelsen er private; logg inn med en GitHub-konto som har tilgang. Last ned begge ZIP-filene under Assets, pakk dem ut i samme målmappe og start `Signal47-Linux/Play.sh`. `Play-Low.sh` gir 1280 x 720, Low og Clean. Utfyllende instruksjoner og kontrollsummer følger utgivelsen. Steam Deck/SteamOS og gamepad er ikke testet. Pakken inneholder ingen personlige lagringer, logger eller innstillinger.
 
 ## Kom i gang
 
@@ -22,7 +49,7 @@ Scripts/build-editor.sh        # kompilerer editor-målet (ikke mens editoren er
 Tools/webexport/import.sh      # bygger nettversjonen, eksporterer scenen fra nettleseren og importerer den (rundt 25 min)
 Scripts/import-audio.sh        # all lyd og musikk til Content/Audio og Content/Licensed
 Scripts/package-linux.sh       # pakket build til ~/scratch-bm/Signal47-build
-Scripts/screenshots.sh UT      # 14 kjøringer av builden med skjermbilder, sjekker loggen
+Scripts/screenshots.sh UT      # 110 scenarioer med skjermbilder og loggkontroll
 ~/scratch-bm/Signal47-build/Linux/Signal47.sh   # spill (-S47Picture=off uten VHS-bildet)
 ```
 
@@ -32,7 +59,7 @@ Spillet starter på tittelen (Continue, New night, Load case, Settings); med et 
 
 Verden bygges ikke for hånd. `Tools/webexport/export.py` starter nettversjonen i Chromium, gjør klar alle områdene og henter hele three.js-scenen ut med `export.js`: hver node med matrise og synlighet, all geometri som glb, hvert materiale med farger, kart og UV-matriser, alle teksturer, lysene, de falske flomlysene (`kit.ts floodlit`), glødepunktene, dørene med åpen og lukket stilling, antennene, alt som kan brukes, gangsonene og kolliderne per område, og himmelen per område som et ekvirektangulært bilde (8192 x 4096). `Tools/webexport/import_web.py` gjør det om til Unreal-assets under `/Game/Web` (ignorert av Git) og kopierer `manifest.json` til `Content/WebData`.
 
-Ved oppstart leser `AS47Web` manifestet og bygger scenen node for node på de samme stedene. Bildet regnes som i nettleseren: Lumen er av, lysene har de samme enhetene (candela), halvkule-lyset og flomlysene ligger i materialene med three.js sine formler, og `M_WebTone` erstatter Unreals tonekurve med three.js sin tåke (FogExp2), ACES Filmic med eksponering 1,05, sRGB og VHS-båndet fra `core/vhs.ts`.
+Ved oppstart leser `AS47Web` manifestet og bygger scenen node for node på de samme stedene. Belysningen kommer fra native punktlys, spotter, vinduslys, måne og skylight, med skygger, volumetrisk tåke og Lumen på High/Ultra. Historienes eksisterende lampetilstand driver disse lysene. SAROs rectlys sitter i de faktiske diffuserne og lampeskjermene, hver registrerte skjerm har sitt eget grønne flatelys, og arrayets feltspotter lyser varmt på parabolene. Materialenes gamle flood- og halvkulebidrag er av; `M_WebTone` beholder ACES-kurven og VHS/Clean med fast eksponering, mens tåka tegnes av Unreal. Se `LIGHTING.md` for importsteg, sammenligninger og faktisk teststatus.
 
 Spillogikken bruker nettversjonens koordinater (meter, y opp); bare tegningen regnes om. three (x, y, z) er Unreal (100x, 100z, 100y).
 

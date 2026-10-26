@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "language": "en-US",
+  "engine_target": "Signal47 Unreal 5.8.4",
+  "phases": [
+    "commute",
+    "handover",
+    "early_shift",
+    "signal",
+    "archive",
+    "field",
+    "all_night"
+  ],
+  "channels": [
+    "physical",
+    "phone",
+    "walkie",
+    "radio",
+    "ui"
+  ],
+  "canon": {
+    "shift_date": "1986-04-13",
+    "shift_start": "18:00:00",
+    "proposed_residual_date": "1986-04-14",
+    "proposed_residual": "00:13:47",
+    "event_start": "05:29:00",
+    "event_end": "05:29:47",
+    "receiver_mhz": 1420.405,
+    "dishes": 27,
+    "azimuth_deg": 26
+  },
+  "pack_id": "signal47_horror_story_h1",
+  "status": "authored_not_integrated",
+  "actors": {
+    "DALE": {
+      "display_name": "DALE",
+      "voice_profile": "kinski",
+      "record": true,
+      "allowed_channels": [
+        "phone",
+        "walkie",
+        "radio"
+      ],
+      "direction_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+    },
+    "WAITRESS": {
+      "display_name": "WAITRESS",
+      "voice_profile": "waitress",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Samme jordnære servitrise tidlig og sent; varm uten skummel undertone i innledningen."
+    },
+    "RADIO_HOST": {
+      "display_name": "RADIO HOST",
+      "voice_profile": "evening_host",
+      "record": true,
+      "allowed_channels": [
+        "radio"
+      ],
+      "direction_nb": "Ordinær lokal kveldsvert, ikke Earl eller Kinski."
+    },
+    "WARD": {
+      "display_name": "DR. WARD",
+      "voice_profile": "ward",
+      "record": true,
+      "allowed_channels": [
+        "phone",
+        "radio"
+      ],
+      "direction_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+    },
+    "ATTENDANT": {
+      "display_name": "ATTENDANT",
+      "voice_profile": "attendant",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Eksisterende ekspeditør."
+    },
+    "DESCRIPTION": {
+      "display_name": "",
+      "voice_profile": null,
+      "record": false,
+      "allowed_channels": [
+        "physical",
+        "ui",
+        "phone",
+        "walkie",
+        "radio"
+      ],
+      "direction_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
+    },
+    "NORA": {
+      "display_name": "N. VEGA",
+      "voice_profile": "nora",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
+    },
+    "DRIVER": {
+      "display_name": "DRIVER",
+      "voice_profile": "driver",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Eksisterende lastebilsjåfør. Praktisk, lavmælt, bare egne veiopplevelser."
+    }
+  },
+  "flags": {},
+  "external_flags": {
+    "ctx_hr_h01_ready": {
+      "purpose_nb": "H01: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h01_checked": {
+      "purpose_nb": "H01: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    "ctx_hr_h01_insufficient": {
+      "purpose_nb": "H01: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h02_ready": {
+      "purpose_nb": "H02: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h02_checked": {
+      "purpose_nb": "H02: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    "ctx_hr_h02_insufficient": {
+      "purpose_nb": "H02: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h03_ready": {
+      "purpose_nb": "H03: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h03_checked": {
+      "purpose_nb": "H03: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    "ctx_hr_h03_insufficient": {
+      "purpose_nb": "H03: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h04_ready": {
+      "purpose_nb": "H04: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h04_checked": {
+      "purpose_nb": "H04: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    "ctx_hr_h04_insufficient": {
+      "purpose_nb": "H04: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h05_ready": {
+      "purpose_nb": "H05: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h05_checked": {
+      "purpose_nb": "H05: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    "ctx_hr_h05_insufficient": {
+      "purpose_nb": "H05: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h05_receiver_playing": {
+      "purpose_nb": "Den eksisterende receiveren spiller faktisk sitt bevarte Tomás-fragment."
+    },
+    "ctx_hr_h06_ready": {
+      "purpose_nb": "H06: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h06_checked": {
+      "purpose_nb": "H06: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    "ctx_hr_h06_insufficient": {
+      "purpose_nb": "H06: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h07_ready": {
+      "purpose_nb": "H07: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h07_checked": {
+      "purpose_nb": "Ekstern lysflate, lokal lampe og opak skjerm er faktisk kontrollert. En ny lydendring er virkelig etterfulgt av en sanset inntrengerreaksjon mens separat gammelt fragment går uendret. Dette er ingen kvittering for sikret original eller fullført flukt."
+    },
+    "ctx_hr_h07_insufficient": {
+      "purpose_nb": "H07: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h07_scan_started": {
+      "purpose_nb": "H07s eksterne avsøkning er faktisk startet, med lesbar geometri."
+    },
+    "ctx_hr_h07_captured": {
+      "purpose_nb": "Faktisk fangst med dokumentert sanseårsak; flukt setter ikke dette."
+    },
+    "ctx_hr_h08_ready": {
+      "purpose_nb": "H08: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h08_checked": {
+      "purpose_nb": "Spilleren har faktisk sammenlignet SARO-original, de to lokale fjernkildene, klokker, råverdier og sendeplan. Det er trukket en avgrenset kildekonklusjon. Dette setter ikke varselkvittering."
+    },
+    "ctx_hr_h08_insufficient": {
+      "purpose_nb": "H08: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_remote_sources_verified": {
+      "purpose_nb": "Tre faktiske kildeark finnes; to uavhengige fjernobservasjoner og klokker er kontrollert."
+    },
+    "ctx_hr_warning_acknowledged": {
+      "purpose_nb": "Faktisk telefonkvittering og endret morgenjobb er gjennomført."
+    },
+    "ctx_hr_h09_ready": {
+      "purpose_nb": "H09: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h09_checked": {
+      "purpose_nb": "H09: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    "ctx_hr_h09_insufficient": {
+      "purpose_nb": "H09: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h10_ready": {
+      "purpose_nb": "H10: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    "ctx_hr_h10_checked": {
+      "purpose_nb": "Før avreise er sikrede originaler, Ward-kvittering og adskilte kartpunkter C8.15 og overlevering10.4 faktisk kontrollert. Dette setter ikke motorstopp eller finalestatus."
+    },
+    "ctx_hr_h10_insufficient": {
+      "purpose_nb": "H10: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    "ctx_hr_h07_original_secured": {
+      "purpose_nb": "Måleoriginalen er faktisk plukket opp og plassert/sikret for transport. Kontroll av lys/radio setter ikke dette."
+    },
+    "ctx_hr_h07_escape_complete": {
+      "purpose_nb": "Spilleren er faktisk ved det definerte sikre servicebilpunktet, inntrengeren har mistet kontakt og avsluttet søk/tilbaketrekning. Ingen fangst eller ny obligatorisk hendelse gjenstår."
+    },
+    "ctx_hr_h10_stalled": {
+      "purpose_nb": "Eksisterende kapittel6 har faktisk startet THE EVENT ved C med ufrivillig motorstopp; spilleren har ikke bare bekreftet avreisemappen."
+    }
+  },
+  "modules": [
+    "modules/ordinary_evening.json",
+    "modules/retained_reference.json",
+    "modules/arrival.json"
+  ],
+  "recording_aliases": {},
+  "production": {
+    "audio_status": "pending",
+    "video_status": "pending",
+    "runtime_status": "not_integrated",
+    "voice_target": {
+      "sample_rate_hz": 48000,
+      "sample_format": "PCM16",
+      "channels": 1
+    },
+    "note_nb": "H1-produksjonsmanus, ikke runtimeintegrasjon. Ingen nye opptak eller målte spillertider. Eksisterende tale/video gjenbrukes bare etter eksplisitt ID- og tekstkontroll; denne pakken endrer ikke EveningShift."
+  }
+}

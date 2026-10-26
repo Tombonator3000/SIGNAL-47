@@ -37,6 +37,7 @@ namespace S47Keys
 	SIGNAL47_API bool Is(FName Action, const FKey& K);                  // K is one of the action's keys
 	SIGNAL47_API bool Down(const APlayerController* PC, FName Action);   // held now
 	SIGNAL47_API bool Pressed(const APlayerController* PC, FName Action); // pressed this frame
+	SIGNAL47_API bool WasPressed(const APlayerController* PC, const FKey& Key);
 	// names for the screen: Short is a keycap's ("E", "SPACE", "RMB"); Name is for a sentence ("E",
 	// "Space", "Right mouse"). Label is the action's first key (or the second when the first is empty).
 	SIGNAL47_API FString Short(const FKey& K);
@@ -61,6 +62,9 @@ namespace S47Keys
 	SIGNAL47_API void ResetAll();
 	SIGNAL47_API bool IsDefault(FName Action);
 	SIGNAL47_API bool Bindable(const FKey& K);                          // a key that can be bound at all
+	// counts up whenever a key changes (a bind, a clear, a reset, the settings loaded): a view that
+	// shows the keys (the notebook's CONTROLS) builds itself again when it moves
+	SIGNAL47_API uint32 Changes();
 
 	// ---------- kept with the settings ----------
 	SIGNAL47_API TSharedPtr<FJsonObject> Save();                        // { action: ["W", "Up"] } (FKey names, "" for none)

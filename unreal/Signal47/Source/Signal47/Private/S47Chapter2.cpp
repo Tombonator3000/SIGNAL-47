@@ -1,4 +1,6 @@
 #include "S47Chapter2.h"
+#include "S47Office.h"
+#include "S47Evening.h"
 
 #include "Internationalization/Regex.h"
 #include "S47Annex.h"
@@ -328,11 +330,17 @@ FString US47Chapter2::Objective() const
 	if (S.Stage == TEXT("records"))
 	{
 		if (!S.bEntered) return TEXT("SARO RECORDS // SOUTH CORRIDOR: FIND WHERE THE B-12 REFERENCE CAME FROM");
-		if (!S.bP04) return TEXT("SARO RECORDS // COMPARE THE ORIGINAL AND AMENDED FIELD RECORDS");
-		return TEXT("SARO RECORDS // MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX");
+		if (!S.bP04) return TEXT("SARO RECORDS // COMPARE THE ORIGINAL AND AMENDED FIELD RECORDS ON THE CASE BOARD");
+		return TEXT("SARO RECORDS // ON THE CASE BOARD: MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX");
 	}
 	if (S.Stage == TEXT("call-nora")) return TEXT("STATION 01 // CALL THE KEY HOLDER FROM THE RECORDS ROOM PHONE");
-	if (S.Stage == TEXT("complete")) return TEXT("STATION 01 // FIELD ACCESS PREPARED");
+	if (S.Stage == TEXT("complete"))
+	{
+		if (M && M->Office && M->Office->RouteRequired() && !M->Office->DepartureReleased())
+			return M->Office->HasFieldSheet() ? TEXT("SARO OPERATIONS // FIELD SHEET RETAINED. USE THE DEPARTURE CARD WHEN READY FOR STATION 01")
+			 : TEXT("SARO OPERATIONS // SERVICE DRAWER: TAKE THE SPARE KEY, THEN COLLECT THE FIELD CHECKS COPY");
+		return TEXT("STATION 01 // FIELD ACCESS PREPARED");
+	}
 	return FString();
 }
 
@@ -347,10 +355,16 @@ TArray<FS47Task> US47Chapter2::Tasks() const
 		{ TEXT("Read the amended service copy (E06)"), S.Read.bAmended },
 		{ TEXT("Read the B-12 reference lineage card"), S.Read.bLineage },
 		{ TEXT("Read the archive sleeve index (E08)"), S.Read.bIndex },
-		{ TEXT("Record what changed in 1947 (P04)"), S.bP04 },
-		{ TEXT("Record a supported field destination (P05)"), S.bP05 },
+		{ TEXT("Record what changed in 1947, on the case board (P04)"), S.bP04 },
+		{ TEXT("Record a supported field destination, on the case board (P05)"), S.bP05 },
 	});
 	if (S.bP05) T.Add({ TEXT("Call the key holder for STATION 01"), S.bCalled });
+	if (S.Stage == TEXT("complete") && M && M->Office && M->Office->RouteRequired())
+	{
+		T.Add({TEXT("Find the Operations spare key in the service drawer"), M->Office->HasKey()});
+		T.Add({TEXT("Collect the Field checks copy in Operations; VHS is optional"), M->Office->HasFieldSheet()});
+		T.Add({TEXT("Use the Operations departure card when ready for STATION 01"), M->Office->DepartureReleased()});
+	}
 	if (S.ArrayAsk.Get(false)) T.Add({ TEXT("Put the array back on the schedule (operations terminal)"), ArrayTried ? ArrayTried() : false });
 	return T;
 }
@@ -627,7 +641,7 @@ TArray<FS47BoardCard> US47Chapter2::BoardCards()
 	if (Im.Amended.IsEmpty()) Im.Amended = S47Drawings2::Arrangement(false);
 	if (Im.Index.IsEmpty()) Im.Index = S47Drawings2::SleeveMark();
 	if (Im.Icons.Num() == 0) for (const TCHAR* K : { TEXT("triangle-bar"), TEXT("triangle"), TEXT("three-bars") }) Im.Icons.Add(K, S47Drawings2::MarkIcon(K));
-	auto Card = [](const TCHAR* Id, const TCHAR* Doc, const TCHAR* Stamp, const TCHAR* Title, bool bHave, const FString& Where, const FString& Image, const FString& Full, double X, double Y, double W, TArray<FS47BoardLine> Lines)
+	auto Card = [](const TCHAR* Id, const TCHAR* Doc, const TCHAR* Stamp, const FString& Title, bool bHave, const FString& Where, const FString& Image, const FString& Full, double X, double Y, double W, TArray<FS47BoardLine> Lines)
 	{
 		FS47BoardCard C;
 		C.Id = Id; C.Doc = Doc; C.Stamp = Stamp; C.Title = Title; C.bHave = bHave; C.Where = Where; C.Image = Image; C.Full = Full;
@@ -647,7 +661,7 @@ TArray<FS47BoardCard> US47Chapter2::BoardCards()
 			Line(TEXT("e06.omit"), TEXT("The incomplete closing sight line has been omitted from the service copy.")),
 			Line(TEXT("e06.repeat"), TEXT("No repeat observation is required.")),
 			Line(TEXT("e06.sig"), TEXT("N. VEGA / FIELD TECHNICIAN")) }),
-		Card(TEXT("rx"), TEXT("printout"), TEXT("RX"), TEXT("PRINTOUT, 02:14"), true, FString(), FString(), FString(), 898, 640, 266, {
+		Card(TEXT("rx"), TEXT("printout"), TEXT("RX"), Host ? Host->TimelineText(TEXT("PRINTOUT, 02:14")) : FString(TEXT("PRINTOUT, 02:14")), true, FString(), FString(), FString(), 898, 640, 266, {
 			Line(TEXT("rx.dist"), TEXT("SOURCE DISTANCE:  -39 LY")) }),
 		Card(TEXT("b12"), TEXT("b12lineage"), TEXT("B-12"), TEXT("LINEAGE CARD"), S.Read.bLineage, WHERE_LINEAGE, FString(), LINEAGE, 600, 14, 278, {
 			Line(TEXT("b12.id"), TEXT("The B-12 vane retains the fixed-point survey identified as STATION 01.")),
@@ -899,6 +913,8 @@ void US47Chapter2::BeginChapter2(const S47J::FObj& SavedCase)
 	}
 	if (M && M->UI) M->UI->Fade(false);
 	Host->BeginChapter(TEXT("ch2"), Ch2);
+	// A legacy chapter-one case can reach the archive without reloading the game.
+	if (M && M->Evening && !M->Evening->Enabled()) M->Evening->BeginInvestigation();
 	if (Host->OnCheckpoint) Host->OnCheckpoint(TEXT("chapter2"));
 }
 
@@ -994,7 +1010,7 @@ bool US47Chapter2::SelfTest(TArray<FString>& Lines)
 	const TOptional<FS47Result> Rec4 = B.Record(TEXT("P04"));
 	Check(Rec4 && Rec4->bOk && C->S.bP04 && C->S.Wrong04 == 2 && B.Questions()[0].Done.StartsWith(TEXT("SUPPORTED")), TEXT("P04 recorded: C was omitted"));
 	C->S.Stage = TEXT("records"); C->S.bEntered = true;
-	Check(C->Objective() == TEXT("SARO RECORDS // MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX") && C->Tasks().Num() == 8, TEXT("objective and tasks after P04"));
+	Check(C->Objective() == TEXT("SARO RECORDS // ON THE CASE BOARD: MATCH THE B-12 LINEAGE TO THE ARCHIVE INDEX") && C->Tasks().Num() == 8, TEXT("objective and tasks after P04"));
 	R = Thread(TEXT("rx.dist"), TEXT("e08.id"));
 	Check(R.Contains(TEXT("1947 on the record")) && C->S.Wrong05 == 0 && C->S.Links.Contains(TEXT("e08.id|rx.dist")), TEXT("-39 against the 1947 sleeve holds as a thin thread"));
 	R = Thread(TEXT("b12.mark"), TEXT("e08.elev"));

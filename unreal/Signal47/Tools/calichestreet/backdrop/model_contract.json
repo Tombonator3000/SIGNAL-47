@@ -1,0 +1,35 @@
+{
+  "parts": {
+    "SM_Caliche_Mesas": {
+      "bounds_local_m": [
+        [
+          -3071.326904296875,
+          -1850.0,
+          -4.0
+        ],
+        [
+          2250.0,
+          3759.0615234375,
+          234.65003967285156
+        ]
+      ],
+      "triangles": 103550,
+      "materials": [
+        "M_Caliche_Mesa_0",
+        "M_Caliche_Mesa_1",
+        "M_Caliche_Mesa_2",
+        "M_Caliche_Mesa_3",
+        "M_Caliche_Mesa_4",
+        "M_Caliche_Mesa_5"
+      ],
+      "used_materials": [
+        "M_Caliche_Mesa_0",
+        "M_Caliche_Mesa_1",
+        "M_Caliche_Mesa_2",
+        "M_Caliche_Mesa_3",
+        "M_Caliche_Mesa_4",
+        "M_Caliche_Mesa_5"
+      ]
+    }
+  }
+}

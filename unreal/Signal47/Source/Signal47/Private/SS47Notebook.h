@@ -35,6 +35,8 @@ public:
 	virtual ~SS47Notebook() override;
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& G, const FKeyEvent& E) override;
+	// the CONTROLS page built again when a key is bound anew (S47Keys::Changes)
+	virtual void Tick(const FGeometry& G, const double Now, const float Dt) override;
 	void Show(const FString& T);
 
 	// the excerpt a finding shows on its line (UI.ts excerpt), for the tests too
@@ -54,6 +56,8 @@ private:
 	TArray<FS47Doc> Photos, Findings, Papers;
 	FS47NbExtras X;
 	TMap<FString, int32> Sel;    // the chosen entry on each tab
+	uint32 KeysShown = 0;        // S47Keys::Changes() when the CONTROLS page was built
+	uint32 PadShown = 0;         // active input when the control pages were built
 
 	// the spread: the left page, the right page, a sheet across both (the map), the actions at the foot
 	TSharedPtr<SBox> LeftSlot, RightSlot, SpreadSlot, UseSlot;

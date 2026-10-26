@@ -1,4 +1,13 @@
 #include "S47HUD.h"
+#include "S47Gamepad.h"
+#include "S47Evening.h"
+#include "S47Substation.h"
+#include "S47Office.h"
+#include "S47T02Test.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
+#include "S47AnomalyTest.h"
+#include "S47Props.h"
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -71,6 +80,7 @@
 #include "S47Saves.h"
 #include "S47Keys.h"
 #include "S47Theme.h"
+#include "S47Startup.h"
 #include "Containers/Ticker.h"
 #include "Internationalization/Regex.h"
 #include "S47UI.h"
@@ -89,6 +99,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47HUD, Log, All);
 AS47HUD::AS47HUD()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bTickEvenWhenPaused = true;
 }
 
 void AS47HUD::BeginPlay()
@@ -103,6 +114,7 @@ void AS47HUD::Start()
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
 	APlayerController* PC = GetOwningPlayerController();
 	if (!Viewport || !PC) return;
+	S47Gamepad::Init(PC);
 	for (TActorIterator<AS47Web> It(GetWorld()); It; ++It) Saro = *It;
 	for (TActorIterator<AS47Story> It(GetWorld()); It; ++It) Story = *It;
 	Walker = Cast<AS47Walker>(PC->GetPawn());
@@ -135,9 +147,14 @@ void AS47HUD::Start()
 		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
 		bOk &= FS47DecoderDesk::SelfTest(Lines) & FS47ReadAloud::SelfTest(Lines); // (the signal processor's desk and panel; read-aloud's text matching)
-		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
+		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines) & S47Gamepad::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
+		bOk &= FS47Evening::SelfTest(Lines);
+		bOk &= FS47Substation::SelfTest(Lines);
+		bOk &= FS47Anomaly::SelfTest(Lines);
+		bOk &= FS47AnomalyWorld::SelfTest(Lines);
+		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
@@ -179,7 +196,7 @@ void AS47HUD::Start()
 		.PromptAlt_Lambda([this] { return FText::FromString(PromptAlt); })
 		// (in the cab only what the drive offers: the walker's last look is not a prompt there)
 		.ShowPrompt_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && (bPromptOwn || !(M->World && M->World->bDriving)); })
-		.Clock_Lambda([this, Playing] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() ? Story->ClockText(false) : FString()); })
+		.Clock_Lambda([this, Playing, M] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() && !(M->Evening && M->Evening->Commute()) ? Story->ClockText(false) : FString()); })
 		.ShowAim_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && !(M->World && M->World->bDriving); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);
 	PC->bShowMouseCursor = false;
@@ -483,16 +500,54 @@ void AS47HUD::Start()
 			Hd.RoofStepsBusy = H.RoofStepsBusy; Hd.ReelTapeBusy = H.ReelTapeBusy; Hd.SaroDarkBusy = H.SaroDarkBusy;
 			Hd.OfficePhoneBusy = H.OfficePhoneBusy; Hd.ArchiveBusy = H.ArchiveBusy; Hd.ArrayBackBusy = H.ArrayBackBusy;
 		}
+		M->Evening = MakeShared<FS47Evening>(M);
+		M->Office = MakeShared<FS47Office>(M);
+		M->Office->Init();
+		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))))
+		{
+			const auto PreviousEnd = C2->OnEnd; // includes the existing roof-step/phone quiet wrapper
+			TWeakObjectPtr<US47Chapter2> Weak = C2;
+			M->Office->CanDepart = [M, Weak]
+			{
+				return Weak.IsValid() && M->Story->ChapterKey == TEXT("ch2") && Weak->S.Stage == TEXT("complete") &&
+				 Weak->S.bCalled && Weak->S.bP04 && Weak->S.bP05 && M->Office->HasFieldSheet() &&
+				 !M->Story->IsCinematic() && !M->ModalOpen() && !M->World->bBusy;
+			};
+			M->Office->OnDepart = [PreviousEnd] { if (PreviousEnd) PreviousEnd(); };
+			C2->OnEnd = [M, PreviousEnd]
+			{
+				if (M->Office && M->Office->RouteRequired() && !M->Office->DepartureReleased())
+				{
+					M->UI->Toast(M->Office->HasFieldSheet() ? TEXT("Field sheet retained. Use the Operations departure card when you are ready for STATION 01.")
+					 : TEXT("Before leaving, collect the Field checks copy from Operations. The service drawer holds the spare key."), 5);
+					M->RequestAutosave(); return;
+				}
+				if (PreviousEnd) PreviousEnd();
+			};
+		}
+		M->Anomaly = MakeShared<FS47Anomaly>(M);
+		M->AnomalyWorld = MakeShared<FS47AnomalyWorld>(M);
+		M->AnomalyTest = MakeShared<FS47AnomalyTest>(M);
+		M->Substation = MakeShared<FS47Substation>(M);
+		M->Substation->Begin();
+		M->T02Test = MakeShared<FS47T02Test>(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
 	}
-	// (linear out: the CRTs' targets are sRGB and encode it themselves; with Slate's gamma as well the
-	// screens came out pale)
+// Slate writes linear colour; the sRGB CRT target encodes it once.
 	Renderer = new FWidgetRenderer(false);
 	const SS47Crt::EKind Kinds[4] = { SS47Crt::EKind::Status, SS47Crt::EKind::Spectrum, SS47Crt::EKind::Tracking, SS47Crt::EKind::Ops };
 	for (int32 i = 0; i < 4; ++i) Crts[i] = SNew(SS47Crt).Kind(Kinds[i]).Story(Story.Get()).Saro(Saro.Get());
+	// Create the runtime-only sky/materials and actually render the CRT targets before waiting.
+	M->Step(0);
+	DrawCrts(0.1f);
+	TWeakObjectPtr<AS47HUD> StartupSelf = this;
+	S47Startup::Prepare(PC, M, [StartupSelf] { if (StartupSelf.IsValid()) StartupSelf->StartTests(); });
+}
 
+void AS47HUD::StartTests()
+{
 	if (FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")))
 	{
 		float Seconds = 3.f;
@@ -558,7 +613,7 @@ void AS47HUD::Use(const FString& Id)
 {
 	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (US47Main* M = US47Main::Get(this); M && M->Inter) M->Inter->UseId(Id);
+	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
 	else if (Story.IsValid()) Story->Use(Id);
 }
 
@@ -597,7 +652,7 @@ void AS47HUD::CloseModal()
 	PC->SetInputMode(Mode);
 	PC->bShowMouseCursor = false;
 	const US47Main* Mn = US47Main::Get(this);
-	if (Walker.IsValid() && !bEnded && (!Mn || Mn->Mode == US47Main::EMode::Play)) Walker->SetActive(true);
+	if (Walker.IsValid() && !bEnded && (!Mn || (Mn->Mode == US47Main::EMode::Play && !(Mn->Evening && Mn->Evening->MealBusy())))) Walker->SetActive(true);
 	if (Story.IsValid()) Story->SetPaused(false);
 	TFunction<void()> Fn = MoveTemp(ModalClosed);
 	ModalClosed = nullptr;
@@ -729,6 +784,11 @@ void AS47HUD::LookTowards(const FVector& T, float K)
 void AS47HUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	const bool bWasStarting = S47Startup::Blocking();
+	S47Startup::Tick();
+	// The frame which releases the loading screen still belongs to warmup. Do not charge its
+	// delta to the story, audio or the newly scheduled smoke-test actions.
+	if (bWasStarting) { DrawCrts(DeltaSeconds); return; }
 	if (Audio) Audio->Tick(DeltaSeconds);
 	APlayerController* PC = GetOwningPlayerController();
 	// (Tab and the notebook's other keys are the flow's, registered with M->OnKey)
@@ -736,6 +796,15 @@ void AS47HUD::Tick(float DeltaSeconds)
 	US47Main* M = US47Main::Get(this);
 	const bool bPlaying = !M || M->Mode == US47Main::EMode::Play;
 	if (M) M->Step(DeltaSeconds);
+	if (Walker.IsValid() && FParse::Param(FCommandLine::Get(), TEXT("S47GamepadLog")))
+	{
+		static double Next = 0; const double Now = FPlatformTime::Seconds();
+		if (Now >= Next) { Next = Now + .25; const FVector2D Move = S47Gamepad::Move(), Drive = S47Gamepad::Drive();
+			UE_LOG(LogS47HUD, Display, TEXT("S47: pad state mode=%s modal=%d move=%.3f,%.3f drive=%.3f,%.3f pos=%.3f,%.3f yaw=%.4f pitch=%.4f"), S47Gamepad::UsingGamepad()?TEXT("xbox"):TEXT("keyboard"), Modal.IsValid()?1:0, Move.X,Move.Y,Drive.X,Drive.Y,Walker->Pos.X,Walker->Pos.Z,Walker->Yaw,Walker->Pitch);
+			if (M && M->World && M->World->bDriving) if (const FS47DriveController* D = M->World->CabDrive())
+				UE_LOG(LogS47HUD, Display, TEXT("S47: pad vehicle speed=%.4f pos=%.3f,%.3f heading=%.4f"), D->Speed, D->Pos.X, D->Pos.Z, D->Heading);
+		}
+	}
 	// the keys the ported modules answer (main.ts input.onKey)
 	if (M && PC)
 	{
@@ -747,7 +816,7 @@ void AS47HUD::Tick(float DeltaSeconds)
 			const TArray<FKey, TInlineAllocator<2>> Ks = K.Action.IsNone() ? TArray<FKey, TInlineAllocator<2>>{ K.Key } : S47Keys::KeysOf(K.Action);
 			for (const FKey& Key : Ks)
 			{
-				if (!Key.IsValid() || Taken.Contains(Key) || !PC->WasInputKeyJustPressed(Key)) continue;
+				if (!Key.IsValid() || Taken.Contains(Key) || !S47Keys::WasPressed(PC, Key)) continue;
 				if (K.Fn && K.Fn()) Taken.Add(Key);
 				break;
 			}
@@ -764,7 +833,7 @@ void AS47HUD::Tick(float DeltaSeconds)
 			bPromptOwn = false;
 		}
 		// (input.enabled: only in play; the title and the end card hold the player)
-		Walker->SetActive(bPlaying && !Story->IsCinematic() && !bEnded);
+		Walker->SetActive(bPlaying && !Story->IsCinematic() && !(M && M->Evening && M->Evening->MealBusy()) && !bEnded);
 	}
 	bPromptSet = false;
 	DrawCrts(DeltaSeconds);
@@ -798,6 +867,7 @@ void AS47HUD::FinishSmokeTest()
 
 void AS47HUD::EndPlay(const EEndPlayReason::Type Reason)
 {
+	S47Gamepad::Shutdown();
 	if (Renderer) { BeginCleanup(Renderer); Renderer = nullptr; }
 	if (GEngine && GEngine->GameViewport)
 	{

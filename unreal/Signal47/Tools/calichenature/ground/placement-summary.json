@@ -1,0 +1,80 @@
+{
+  "status": "SOURCE_PLACEMENTS_PREPARED_NATIVE_UNVERIFIED",
+  "total_instances": 35597,
+  "families": {
+    "SM_CN_Juniper_A": {
+      "placed": 400,
+      "authored_foreground": 1,
+      "attempts": 751,
+      "cull_metres": 1200
+    },
+    "SM_CN_Juniper_B": {
+      "placed": 400,
+      "authored_foreground": 1,
+      "attempts": 769,
+      "cull_metres": 1200
+    },
+    "SM_CN_Yucca_A": {
+      "placed": 650,
+      "authored_foreground": 1,
+      "attempts": 1316,
+      "cull_metres": 260
+    },
+    "SM_CN_Yucca_B": {
+      "placed": 650,
+      "authored_foreground": 1,
+      "attempts": 1328,
+      "cull_metres": 260
+    },
+    "SM_CN_Sage_A": {
+      "placed": 3666,
+      "authored_foreground": 0,
+      "attempts": 8425,
+      "cull_metres": 220
+    },
+    "SM_CN_Sage_B": {
+      "placed": 3666,
+      "authored_foreground": 1,
+      "attempts": 8827,
+      "cull_metres": 220
+    },
+    "SM_CN_Sage_C": {
+      "placed": 3666,
+      "authored_foreground": 0,
+      "attempts": 9019,
+      "cull_metres": 220
+    },
+    "SM_CN_Grass_A": {
+      "placed": 7000,
+      "authored_foreground": 1,
+      "attempts": 17699,
+      "cull_metres": 90
+    },
+    "SM_CN_Grass_B": {
+      "placed": 7000,
+      "authored_foreground": 1,
+      "attempts": 19650,
+      "cull_metres": 90
+    },
+    "SM_CN_Caliche_A": {
+      "placed": 2833,
+      "authored_foreground": 2,
+      "attempts": 7145,
+      "cull_metres": 110
+    },
+    "SM_CN_Caliche_B": {
+      "placed": 2833,
+      "authored_foreground": 1,
+      "attempts": 7128,
+      "cull_metres": 110
+    },
+    "SM_CN_Sandstone_A": {
+      "placed": 2833,
+      "authored_foreground": 0,
+      "attempts": 7713,
+      "cull_metres": 110
+    }
+  },
+  "exclusions": 140,
+  "notes": "All placements checked with circumscribed prototype radius, full OldStub geometry, all original collider rectangles, town walk/proxy/own building masks; no collider added."
+}

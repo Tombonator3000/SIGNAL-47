@@ -1,0 +1,77 @@
+{
+  "SM_1420_Shell": {
+    "before_triangles": 10340,
+    "removed_exact_zero_area": 0,
+    "removed_by_material": {},
+    "after_triangles": 10340,
+    "visible_surface_hash_before": "c47aed7911d542d9009795ea744286b0a744db852d9c424f54129af0c45efcfa",
+    "visible_surface_hash_after": "c47aed7911d542d9009795ea744286b0a744db852d9c424f54129af0c45efcfa",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 0.0005144327878952026,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  },
+  "SM_1420_Interior": {
+    "before_triangles": 79906,
+    "removed_exact_zero_area": 640,
+    "removed_by_material": {
+      "M_1420_VU_backlight": 120,
+      "M_1420_Black_enamel": 384,
+      "M_1420_Brushed_aluminium": 24,
+      "M_1420_Vinyl_green": 112
+    },
+    "after_triangles": 79266,
+    "visible_surface_hash_before": "6b9327d7a63700631d702c1bf76e0e85135ece7fc92ff75fc3993d88efa9ce03",
+    "visible_surface_hash_after": "6b9327d7a63700631d702c1bf76e0e85135ece7fc92ff75fc3993d88efa9ce03",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 0.0005151033401489258,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  },
+  "SM_1420_Door": {
+    "before_triangles": 1852,
+    "removed_exact_zero_area": 0,
+    "removed_by_material": {},
+    "after_triangles": 1852,
+    "visible_surface_hash_before": "92006c3fba5935a7c7d4e4767abb7c209c0107b2d50cde34ab28909064353842",
+    "visible_surface_hash_after": "92006c3fba5935a7c7d4e4767abb7c209c0107b2d50cde34ab28909064353842",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 0.00022745877504348755,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  },
+  "SM_1420_Glass": {
+    "before_triangles": 12,
+    "removed_exact_zero_area": 0,
+    "removed_by_material": {},
+    "after_triangles": 12,
+    "visible_surface_hash_before": "a150ab5e89fbee7313f45867a5f551065b680227ea8d184bfc8401b92220f8ad",
+    "visible_surface_hash_after": "a150ab5e89fbee7313f45867a5f551065b680227ea8d184bfc8401b92220f8ad",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 5.960464477539063e-08,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  },
+  "SM_1420_Mast": {
+    "before_triangles": 1264,
+    "removed_exact_zero_area": 0,
+    "removed_by_material": {},
+    "after_triangles": 1264,
+    "visible_surface_hash_before": "93fbc4a2f55a1a24098f8810ebaac3bf932a6c661aa2df64915fdd873d86b786",
+    "visible_surface_hash_after": "93fbc4a2f55a1a24098f8810ebaac3bf932a6c661aa2df64915fdd873d86b786",
+    "visible_surface_identical": true,
+    "vertices_retained": true,
+    "material_slots_identical": true,
+    "corner_normal_max_component_delta": 0.0004956318443873897,
+    "all_faces_triangles": true,
+    "remaining_zero_area": 0
+  }
+}

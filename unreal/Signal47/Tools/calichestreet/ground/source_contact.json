@@ -1,0 +1,144 @@
+{
+  "anchor_world_three_m": [
+    8000.0,
+    0.0,
+    2060.0
+  ],
+  "region_road_local_xz": [
+    -30.0,
+    40.0,
+    2020.0,
+    2090.0
+  ],
+  "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "source_geometry_ids": [
+    873,
+    874,
+    1004
+  ],
+  "height_samples": [
+    {
+      "road_local_xz": [
+        -26,
+        2028
+      ],
+      "runtime_floor_m": 4.209006309509277,
+      "source_rendered_top_m": 4.209006309509277,
+      "difference_m": 0.0
+    },
+    {
+      "road_local_xz": [
+        -21,
+        2054
+      ],
+      "runtime_floor_m": 4.314977264404297,
+      "source_rendered_top_m": 4.3149772644042965,
+      "difference_m": -8.881784197001252e-16
+    },
+    {
+      "road_local_xz": [
+        -12,
+        2033
+      ],
+      "runtime_floor_m": 4.209006389843893,
+      "source_rendered_top_m": 4.209006309509277,
+      "difference_m": -8.033461540435383e-08
+    },
+    {
+      "road_local_xz": [
+        7,
+        2045
+      ],
+      "runtime_floor_m": 4.215801351129754,
+      "source_rendered_top_m": 4.221491623492468,
+      "difference_m": 0.005690272362714133
+    },
+    {
+      "road_local_xz": [
+        13,
+        2066
+      ],
+      "runtime_floor_m": 4.620088336065432,
+      "source_rendered_top_m": 4.6292435725529995,
+      "difference_m": 0.009155236487567109
+    },
+    {
+      "road_local_xz": [
+        16,
+        2080
+      ],
+      "runtime_floor_m": 5.216515948055477,
+      "source_rendered_top_m": 5.221599272319249,
+      "difference_m": 0.0050833242637722265
+    },
+    {
+      "road_local_xz": [
+        33,
+        2060
+      ],
+      "runtime_floor_m": 4.5991472721099855,
+      "source_rendered_top_m": 4.5991472721099855,
+      "difference_m": 0.0
+    },
+    {
+      "road_local_xz": [
+        38,
+        2084
+      ],
+      "runtime_floor_m": 5.493487644195557,
+      "source_rendered_top_m": 5.493487644195556,
+      "difference_m": -1.7763568394002505e-15
+    },
+    {
+      "road_local_xz": [
+        4.65,
+        2075
+      ],
+      "runtime_floor_m": 5.004268255849281,
+      "source_rendered_top_m": 5.007841530372923,
+      "difference_m": 0.0035732745236423114
+    },
+    {
+      "road_local_xz": [
+        -15,
+        2050
+      ],
+      "runtime_floor_m": 4.229445511291651,
+      "source_rendered_top_m": 4.2845081010075035,
+      "difference_m": 0.05506258971585254
+    },
+    {
+      "road_local_xz": [
+        -15.5,
+        2074
+      ],
+      "runtime_floor_m": 4.932796608100162,
+      "source_rendered_top_m": 4.987940107353606,
+      "difference_m": 0.055143499253444084
+    },
+    {
+      "road_local_xz": [
+        18,
+        2032
+      ],
+      "runtime_floor_m": 4.119013833999634,
+      "source_rendered_top_m": 4.19453594049263,
+      "difference_m": 0.07552210649299607
+    },
+    {
+      "road_local_xz": [
+        18,
+        2064
+      ],
+      "runtime_floor_m": 4.513150215148926,
+      "source_rendered_top_m": 4.58483425703522,
+      "difference_m": 0.07168404188629385
+    }
+  ],
+  "source_triangle_counts": {
+    "g873": 282,
+    "g874": 120,
+    "g1004": 634
+  },
+  "notes": "g873 includes desert grid, grade strips and tufts. New overlays sample the unchanged original rendered top; +6 mm on pave, +8 mm on asphalt/soil, at most +13 mm for narrow grit details. Analytic FloorAt is retained for auditing existing foot-height differences."
+}

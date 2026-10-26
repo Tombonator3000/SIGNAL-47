@@ -1,6 +1,9 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
+#include "S47T02Photo.h"
 #include "S47Keys.h"
+#include "S47Anomaly.h"
+#include "S47Evening.h"
 
 #include "Components/PrimitiveComponent.h"
 #include "Engine/Texture2D.h"
@@ -107,6 +110,9 @@ TSharedPtr<FJsonObject> FS47CaseState::ToJson() const
 	Set(O, TEXT("wrongRef"), WrongRef); Set(O, TEXT("wrongHyp"), WrongHyp); Set(O, TEXT("wrongConcl"), WrongConcl); Set(O, TEXT("rejected"), Rejected);
 	if (Sheet) Set(O, TEXT("sheet"), *Sheet);
 	if (Links) Set(O, TEXT("links"), *Links);
+	// (Unreal only: prints fogged at the lab door; not there when none were, as the web version writes it)
+	if (Fog1 > 0) Set(O, TEXT("fog1"), Fog1);
+	if (Fog2 > 0) Set(O, TEXT("fog2"), Fog2);
 	return O;
 }
 
@@ -132,6 +138,7 @@ FS47CaseState FS47CaseState::FromJson(const TSharedPtr<FJsonObject>& O, double E
 	bool bSheet = false;
 	if (O->TryGetBoolField(TEXT("sheet"), bSheet)) S.Sheet = bSheet;
 	if (O->HasTypedField<EJson::Array>(TEXT("links"))) S.Links = Strs(O, TEXT("links"));
+	S.Fog1 = Int(O, TEXT("fog1")); S.Fog2 = Int(O, TEXT("fog2"));
 	return S;
 }
 
@@ -366,6 +373,11 @@ void US47Chapter1::BeginCase(const S47J::FObj& Saved, double InEventClock)
 	Reset();
 	Active = true;
 	S = Saved.IsValid() ? FS47CaseState::FromJson(Saved, InEventClock) : FS47CaseState::Fresh(InEventClock);
+	if (M && M->Anomaly && M->Anomaly->Data.bEarlyCamera)
+	{
+		S.bCamera = true;
+		if (S.Stage == TEXT("collect-camera")) S.Stage = S.bLog ? TEXT("first-exposure") : TEXT("motor-log");
+	}
 	bool bSheet = false;
 	S.Sheet = Saved.IsValid() && Saved->TryGetBoolField(TEXT("sheet"), bSheet) ? bSheet : S.bRef;
 	if (M && BookPtr) M->Books.AddUnique(BookPtr.Get()); // the board reads the books of the chapters that have started
@@ -390,6 +402,7 @@ void US47Chapter1::Reset()
 	if (US47Audio* A = Au()) A->StopHums();
 	S = FS47CaseState::Fresh(0);
 	Busy.Reset(); bSettled = false; AnimVane.Reset(); AnimFix.Reset();
+	++DevGen; Darkroom(false);
 	if (US47FieldCamera* F = Fcam()) { F->Raise(false); F->bHave = false; }
 	if (US47UI* U = Ui()) { U->Viewfinder(false); U->CameraButton(false); U->Objective(FString()); }
 	ShowCamera(true);
@@ -476,12 +489,15 @@ FString US47Chapter1::Objective() const
 	const FString& St = S.Stage;
 	if (St == TEXT("collect-camera")) return TEXT("FIELD KIT // COLLECT THE CAMERA BESIDE THE EAST DOOR");
 	if (St == TEXT("motor-log")) return TEXT("S-03 // READ THE MOTOR CABINET IN THE EAST SERVICE YARD");
-	if (St == TEXT("first-exposure")) return Touch() ? TEXT("S-03 APRON // CAMERA, THEN SHUTTER: EXPOSE THE CENTRAL ANTENNA") : TEXT("S-03 APRON // C: CAMERA / SPACE: EXPOSE THE CENTRAL ANTENNA");
+	if (St == TEXT("first-exposure")) return Touch() ? TEXT("S-03 APRON // CAMERA, THEN SHUTTER: EXPOSE THE CENTRAL ANTENNA") : FString::Printf(TEXT("S-03 APRON // %s: CAMERA / %s: EXPOSE THE CENTRAL ANTENNA"), *S47Keys::Said(TEXT("camera")).ToUpper(), *S47Keys::Said(TEXT("shutter")).ToUpper());
 	if (St == TEXT("develop-first") || St == TEXT("develop-second"))
 	{
 		const int32 Dev = St == TEXT("develop-first") ? S.Dev1 : S.Dev2;
 		if (Busy == TEXT("tank")) return LabName + TEXT(" // THE FILM IS IN THE TANK; FINISH THE PROCESS AT THE BENCH");
 		if (Busy == TEXT("fix")) return LabName + TEXT(" // THE PRINT IS IN THE FIXER");
+		// (Unreal only) the darkroom's door
+		if (Dev <= 1 && bLabOpen) return LabName + TEXT(" // DARKROOM: SHUT THE DOOR BEFORE DEVELOPING");
+		if (Dev == 0 && (St == TEXT("develop-first") ? S.Fog1 : S.Fog2) > 0) return LabName + TEXT(" // THE PRINT FOGGED: SHUT THE DOOR, PRINT AGAIN FROM THE NEGATIVE");
 		if (Dev == 0) return St == TEXT("develop-first") ? TEXT("SEALED FILM // ") + LabName + TEXT(" EAST OF THE WALK / PROCESS AT THE WET BENCH") : TEXT("CONTROL FILM // ") + LabName + TEXT(" / PROCESS AT THE WET BENCH");
 		if (Dev == 1) return LabName + TEXT(" // TRANSFER THE CONTACT PRINT TO THE FIXER");
 		return LabName + TEXT(" // COLLECT THE PROCESSED PRINT");
@@ -494,7 +510,7 @@ FString US47Chapter1::Objective() const
 	}
 	if (St == TEXT("choose-control")) return TEXT("B-12 // FOLLOW THE EAST WALK NORTH TO THE LOCAL REFERENCE CONTROL");
 	if (St == TEXT("observe-control")) return bSettled ? TEXT("B-12 // NOTE THE DIRECT OBSERVATION AFTER THE VANE SETTLES") : TEXT("B-12 // WAIT FOR THE REFERENCE VANE TO SETTLE");
-	if (St == TEXT("second-exposure")) return Touch() ? TEXT("B-12 // FROM THE SIGHT LINE MARK: CAMERA, SHUTTER") : TEXT("B-12 // C: CAMERA / SPACE: RECORD THE CONTROLLED REFERENCE");
+	if (St == TEXT("second-exposure")) return Touch() ? TEXT("B-12 // FROM THE SIGHT LINE MARK: CAMERA, SHUTTER") : FString::Printf(TEXT("B-12 // %s: CAMERA / %s: RECORD THE CONTROLLED REFERENCE"), *S47Keys::Said(TEXT("camera")).ToUpper(), *S47Keys::Said(TEXT("shutter")).ToUpper());
 	if (St == TEXT("compare-exposures")) return S.Mark2 ? TEXT("CASE BOARD // COMPARE THE PRINTS WITH THE CONTROL OBSERVATION AND RECORD THE FINDING") : TEXT("TWO PRINTS // MARK THE SAME REFERENCE IN FRAME 02 AT THE ARCHIVE BENCH");
 	if (St == TEXT("file-report")) return LabName + TEXT(" // FILE THE TWO-EXPOSURE REPORT AT THE RECORDS DESK");
 	if (St == TEXT("complete")) return TEXT("LOCAL CASE FILED // THE SECOND EXPOSURE");
@@ -509,13 +525,13 @@ TArray<FS47Task> US47Chapter1::Tasks() const
 		{ TEXT("Expose frame 01 from the S-03 apron"), S.F1.IsSet() },
 		{ TEXT("Develop frame 01 in the photo lab"), S.Dev1 >= 3 },
 		{ TEXT("Mark a detail you can check at the site"), S.Mark1.IsSet() },
-		{ TEXT("Match it on the reference sheet"), S.bRef },
+		{ TEXT("Match it with the reference sheet, on the case board"), S.bRef },
 		{ TEXT("Choose an explanation you can test"), !S.Hyp.IsEmpty() },
 		{ TEXT("Run a control at B-12"), !S.Method.IsEmpty() },
 		{ TEXT("Note what you see at B-12"), S.bObserved },
 		{ TEXT("Expose frame 02 from the sight line"), S.F2.IsSet() },
 		{ TEXT("Develop frame 02"), S.Dev2 >= 3 },
-		{ TEXT("Compare the two exposures"), S.bConcluded },
+		{ TEXT("Compare the two exposures on the case board"), S.bConcluded },
 		{ TEXT("File the local report"), S.bFiled },
 	};
 	const int32 Next = All.IndexOfByPredicate([](const FS47Task& T) { return !T.bDone; });
@@ -537,9 +553,17 @@ void US47Chapter1::Interactables()
 	{
 		FS47Interactable It;
 		It.Id = TEXT("fieldCamera"); It.Object = Web->Obj(TEXT("room.objs.fieldCamera")); It.Range = 2.6;
-		It.Label = [this] { return !Active || S.bCamera ? FString() : FString(TEXT("Collect field camera")); };
+		It.Label = [this] { const bool Early = Host && Host->bEveningTimeline && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")); return ((!Active && !Early) || S.bCamera || EarlyCamera()) ? FString() : FString(TEXT("Collect field camera")); };
 		It.Use = [this]
 		{
+			if (!Active)
+			{
+				if (!M->Anomaly || !M->Evening || !M->Evening->Pack.Flag(TEXT("handover_done"))) return;
+				M->Anomaly->Data.bEarlyCamera = true; RestoreEarlyCamera();
+				NoteIt(TEXT("Field camera collected for routine references. C raises it; the instant back keeps the place and exposure time. B-12 sheet film remains sealed."));
+				Toast(TEXT("Field camera. C to raise, Space to expose. Reference prints go in the notebook."),4.5f);
+				M->RequestAutosave(); return;
+			}
 			S.bCamera = true;
 			ShowCamera(false);
 			if (US47FieldCamera* F = Fcam()) F->bHave = true;
@@ -577,18 +601,23 @@ void US47Chapter1::Interactables()
 	{
 		FS47Interactable It;
 		It.Id = TEXT("wetBench"); It.Object = Yard->Obj(TEXT("wetBench")); It.Range = 2.6;
-		It.Label = [this]
-		{
-			if (!Active) return FString();
-			const TOptional<FDevFrame> F = DevFrame();
-			if (!F) return FString(TEXT("Wet bench"));
-			if (Busy == TEXT("tank")) return FString(TEXT("Check processing tank"));
-			if (Busy == TEXT("fix")) return FString();
-			const int32 Dev = F->Which == 1 ? S.Dev1 : S.Dev2;
-			return FString(Dev == 0 ? TEXT("Process sealed film") : Dev == 1 ? TEXT("Transfer print to fixer") : TEXT("Collect processed print"));
-		};
+		It.Label = [this] { return BenchLabel(); };
 		It.Use = [this] { if (!InDark(TEXT("Too dark to work at the bench. Wait for the light."))) UseWetBench(); };
 		Inter->Add(It);
+	}
+	{
+		// (Unreal only, on Tom's request) the darkroom's card on the lab door: the doors are labelled by
+		// the story (AS47Story::Label, through the fallback); while chapter one runs, the lab door says
+		// what light does in there
+		const TFunction<FString(const FString&)> Prev = Inter->FallbackLabel;
+		const TWeakObjectPtr<US47Chapter1> Self = this;
+		Inter->FallbackLabel = [Prev, Self](const FString& Id)
+		{
+			FString L = Prev ? Prev(Id) : FString();
+			if (Id == TEXT("labDoor") && !L.IsEmpty() && Self.IsValid() && Self->Active && !Self->bLabOpen)
+				L += Self->Developing() ? TEXT(" (darkroom in use: light will fog the print)") : TEXT(" (darkroom: keep the door shut while developing)");
+			return L;
+		};
 	}
 	{
 		FS47Interactable It;
@@ -656,6 +685,8 @@ void US47Chapter1::DoorChanged(const FString& Id, bool bOpen)
 	if (!Active) return;
 	if (Id == TEXT("east") && bOpen && !S.bDoor) { S.bDoor = true; Save(); }
 	if (Id == TEXT("lab") && bOpen && !S.bLabDoor) { S.bLabDoor = true; Save(); }
+	// (Unreal only) light into the darkroom while a print is in the process
+	if (Id == TEXT("lab") && bOpen && Developing()) Fog();
 }
 
 // ---------- wet bench ----------
@@ -679,21 +710,30 @@ void US47Chapter1::UseWetBench()
 	if (Busy == TEXT("tank")) { Toast(TEXT("The tank is sealed. Give it a moment.")); return; }
 	if (!Busy.IsEmpty()) return;
 	const int32 Dev = F->Which == 1 ? S.Dev1 : S.Dev2;
+	// (Unreal only, on Tom's request) a darkroom: nothing goes into the process with the door open
+	if (Dev <= 1 && bLabOpen) { Toast(TEXT("Darkroom. Keep the door shut while developing. Shut the door first."), 3.4f); return; }
+	const bool bAgain = Dev == 0 && (F->Which == 1 ? S.Fog1 : S.Fog2) > 0;
 	const FString Label = F->Which == 1 ? TEXT("FRAME 01 / S-03 ARRAY PROFILE") : TEXT("FRAME 02 / B-12 CONTROL");
 	const int32 Step = Dev == 0 ? 0 : Dev == 1 ? 2 : 3;
 	const int32 Which = F->Which;
 	const FS47Photo Photo = F->Photo;
-	S47Panels::WetBench(Ui(), Label, Step, FString(), [this, Dev, Which, Photo]
+	S47Panels::WetBench(Ui(), Label, Step, FString(), [this, Dev, Which, Photo, bAgain]
 	{
 		const FVector At = Yard ? Yard->WetPrint.WorldPosition() : FVector::ZeroVector;
 		US47Audio* A = Au();
+		// (Unreal: the door may have opened while the panel was up)
+		if (Dev <= 1 && bLabOpen) { Toast(TEXT("Darkroom. Keep the door shut while developing. Shut the door first."), 3.4f); return; }
+		const int32 Gen = DevGen;
 		if (Dev == 0)
 		{
 			Busy = TEXT("tank");
 			if (A) A->PourThree(At);
-			Toast(TEXT("Sealed tank loaded. The exposed film is safe from room light."), 3.f);
-			After(TANK_TIME, [this, Which]
+			// (Unreal: the darkroom's rule, and the fogged print thrown out for a new one from the negative)
+			if (bAgain) ClearWetPrint();
+			Toast(bAgain ? TEXT("Fresh paper under the negative. Keep the door shut until the print is fixed.") : TEXT("Sealed tank loaded. Keep the door shut until the print is fixed."), 3.f);
+			After(TANK_TIME, [this, Which, Gen]
 			{
+				if (Gen != DevGen) return; // (fogged at the door meanwhile)
 				Busy.Reset();
 				SetDev(Which, 1);
 				if (US47Audio* A2 = Au()) A2->Beep(1500, 0.12f, 0.05f);
@@ -707,8 +747,9 @@ void US47Chapter1::UseWetBench()
 			ShowWetPrint(Photo);
 			AnimFix = Gt();
 			Toast(TEXT("Print in the fixer. The image is becoming stable."), 3.f);
-			After(FIX_TIME, [this, Which]
+			After(FIX_TIME, [this, Which, Gen]
 			{
+				if (Gen != DevGen) return;
 				Busy.Reset();
 				SetDev(Which, 2);
 				if (US47Audio* A2 = Au()) A2->Beep(1500, 0.12f, 0.05f);
@@ -720,6 +761,115 @@ void US47Chapter1::UseWetBench()
 }
 
 void US47Chapter1::SetDev(int32 Which, int32 V) { if (Which == 1) S.Dev1 = V; else S.Dev2 = V; Save(); }
+
+FString US47Chapter1::BenchLabel() const
+{
+	if (!Active) return FString();
+	const TOptional<FDevFrame> F = DevFrame();
+	if (!F) return FString(TEXT("Wet bench"));
+	if (Busy == TEXT("tank")) return FString(TEXT("Check processing tank"));
+	if (Busy == TEXT("fix")) return FString();
+	const int32 Dev = F->Which == 1 ? S.Dev1 : S.Dev2;
+	// (Unreal only) the darkroom's door, and a print again from the negative after a fogged one
+	if (Dev <= 1 && bLabOpen) return FString(TEXT("Shut the door first"));
+	if (Dev == 0 && (F->Which == 1 ? S.Fog1 : S.Fog2) > 0) return FString(TEXT("Print again from the negative"));
+	return FString(Dev == 0 ? TEXT("Process sealed film") : Dev == 1 ? TEXT("Transfer print to fixer") : TEXT("Collect processed print"));
+}
+
+// ---------- (Unreal only, on Tom's request, 22.10) the darkroom ----------
+// "Fotorommet bør ha at døra må være lukket, ellers ødelegger man fotofremkallingen." The web version
+// processes in daylight. Here the lab is a darkroom: a print is in the process from the tank until it
+// is fixed, the lab's white lamps go out and the safelights come up while it is, nothing goes in with
+// the door open, and the door opened on it fogs the print. The negative is kept, so the print can be
+// made again, as often as it takes (the case never stops here).
+
+bool US47Chapter1::Developing() const
+{
+	const TOptional<FDevFrame> F = DevFrame();
+	if (!F) return false;
+	return Busy == TEXT("tank") || Busy == TEXT("fix") || (F->Which == 1 ? S.Dev1 : S.Dev2) == 1;
+}
+
+void US47Chapter1::Fog()
+{
+	const TOptional<FDevFrame> F = DevFrame();
+	if (!F) return;
+	const int32 Which = F->Which;
+	++DevGen; // (the step's timers find a newer generation and let it be)
+	Busy.Reset(); AnimFix.Reset();
+	Darkroom(false);
+	if (Which == 1) ++S.Fog1; else ++S.Fog2;
+	SetDev(Which, 0);
+	// the print in the tray as the light left it: white to the edges, grain over what was there
+	if (Yard)
+	{
+		UTexture2D* Tex = FoggedTex(F->Photo);
+		SetMap(Yard->WetPrint, Tex ? Tex : TexOf(F->Photo), Tex ? 1.0 : 3.0); // (undecodable: the print itself, washed out)
+		Yard->WetPrint.SetVisible(true);
+	}
+	if (US47Audio* A = Au()) A->Beep(330, 0.4f, 0.04f, 0.2f, TEXT("sine"));
+	const FString Frame = Which == 1 ? TEXT("FRAME 01") : TEXT("FRAME 02");
+	Toast(FString::Printf(TEXT("Light in the darkroom. The print fogs white to the edges; %s is useless like this. The negative is still good: shut the door and print it again."), *Frame), 5.f);
+	NoteIt(FString::Printf(TEXT("Opened the lab door while %s was developing. The print fogged and is useless; the negative is intact, a new print can be made."), *Frame.Replace(TEXT("FRAME"), TEXT("frame"))));
+}
+
+void US47Chapter1::Darkroom(bool bOn)
+{
+	if (!M || !M->Web) return;
+	AS47Web* W = M->Web;
+	// Rendering only: the existing combined tank/contact-print step lights the enlarger.
+	// Set the named controls on phase edges, keeping independent lamp inspection possible.
+	const bool bPrinting = bOn && Busy == TEXT("tank");
+	if (bPrinting != bPrintingLight)
+	{
+		W->Light(TEXT("lab.enlarger")).SetIntensity(bPrinting ? 1.f : 0.f);
+		bPrintingLight = bPrinting;
+	}
+	if (bOn == bDarkroom) return;
+	W->Light(TEXT("lab.normal")).SetIntensity(bOn ? 0.f : 1.f);
+	W->Light(TEXT("lab.safelight")).SetIntensity(bOn ? 1.f : 0.f);
+	const int32 Set = W->FloodSet(TEXT("lab"));
+	if (Set < 0) return;
+	bDarkroom = bOn;
+	// (the lab's pools through the world's light API: the real lights follow their pools. The red ones
+	// are the safelights, ServiceYard.ts; the rest are the archive's task lamp and the desk's pool.)
+	for (int32 K = 0; K < W->FloodCount(Set); ++K)
+	{
+		const FLinearColor C = W->FloodCol(Set, K);
+		const bool bRed = C.R > 0 && C.G < 0.35f * C.R && C.B < 0.35f * C.R;
+		if (bOn)
+		{
+			const float A = W->FloodPos(Set, K).A;
+			LampBase.Add(K, A);
+			W->SetFlood(Set, K, bRed ? A * 1.5f : 0.f);
+		}
+		else if (const float* A = LampBase.Find(K)) W->SetFlood(Set, K, *A);
+	}
+	if (!bOn) LampBase.Reset();
+}
+
+UTexture2D* US47Chapter1::FoggedTex(const FS47Photo& Photo)
+{
+	const FString Key = Photo.Id + TEXT("#fogged");
+	if (TObjectPtr<UTexture2D>* T = Images.Find(Key); T && *T) return *T;
+	TArray<FColor> Px;
+	int32 W = 0, H = 0;
+	if (!S47Image::DecodePixels(Photo.Url, Px, W, H)) return nullptr;
+	// a wash of white over all of it, heavier on the side the door's light came from, and the paper's
+	// silver gone to grain
+	FRandomStream R(int32(GetTypeHash(Photo.Id)));
+	for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X)
+	{
+		FColor& C = Px[Y * W + X];
+		const double Wash = 0.7 + 0.22 * (1.0 - double(X) / FMath::Max(1, W - 1));
+		const double Grain = (R.FRand() - 0.5) * 64;
+		auto Ch = [Wash, Grain](uint8 V, double Paper) { return uint8(FMath::Clamp(V + (255 * Paper - V) * Wash + Grain, 0.0, 255.0)); };
+		C = FColor(Ch(C.R, 0.97), Ch(C.G, 0.95), Ch(C.B, 0.9), 255);
+	}
+	UTexture2D* T = S47Image::FromPixels(Px, W, H);
+	Images.Add(Key, T);
+	return T;
+}
 
 void US47Chapter1::Collect(int32 Which, const FS47Photo& Photo)
 {
@@ -1056,7 +1206,7 @@ void US47Chapter1::ToggleCamera()
 {
 	US47FieldCamera* F = Fcam();
 	US47UI* U = Ui();
-	if (!Active || !F || !F->bHave) return;
+	if ((!Active && !EarlyCamera()) || !F || !F->bHave) return;
 	if (U && U->Modal()) return;
 	F->Raise(!F->bRaised);
 	if (US47Audio* A = Au()) A->Sfx(TEXT("click"), Snd(0.35f, F->bRaised ? 1.2f : 0.9f));
@@ -1069,6 +1219,7 @@ void US47Chapter1::ToggleCamera()
 
 FString US47Chapter1::FrameNo() const
 {
+	if (FS47T02Photo::InContext(M)) return TEXT("T02 INSTANT PRINT");
 	return Field ? Field->FrameNo() : S.F2 ? TEXT("FRAME 03") : S.F1 ? TEXT("FRAME 02") : TEXT("FRAME 01");
 }
 
@@ -1107,8 +1258,14 @@ FVector US47Chapter1::S03Centre() const
 
 FS47ShotCheck US47Chapter1::Check() const
 {
+	if (FS47T02Photo::InContext(M))
+	{
+		FString Reason; const bool Ready = FS47T02Photo::Ready(M, Reason);
+		return {Reason, Ready, true};
+	}
 	// Why the shutter would (not) fire right now. Mirrors the Unity rules. bNear marks where the
 	// case frame keeps the shutter: the S-03 apron until frame 01, and the B-12 sight line mark.
+	if (!Active) return { TEXT("ROUTINE REFERENCE // INSTANT BACK"), false, false };
 	if (Field) return Field->Check();
 	const US47FieldCamera* F = Fcam();
 	const FVector P = M && M->Player ? M->Player->Pos : FVector::ZeroVector;
@@ -1140,6 +1297,7 @@ FS47ShotCheck US47Chapter1::Check() const
 
 void US47Chapter1::FreeLine(FS47Viewfinder& V) const
 {
+	if (FS47T02Photo::InContext(M)) return;
 	// The free frames' line in the viewfinder: ready (here the shutter takes one), or how many are left.
 	if (!Free) return;
 	const int32 Left = Free->Left ? Free->Left() : 0;
@@ -1155,6 +1313,7 @@ void US47Chapter1::Shutter()
 	US47UI* U = Ui();
 	US47Audio* A = Au();
 	if (!F || !F->bRaised) return;
+	if (FS47T02Photo::TryShutter(M)) return;
 	const FS47ShotCheck C = Check();
 	if (!C.bOk)
 	{
@@ -1323,8 +1482,15 @@ void US47Chapter1::Update(double Dt, double T)
 {
 	// `lead` is false while a later chapter runs: the yard and the lab stay as they were, but
 	// that chapter owns the objective line.
-	if (!Active) return;
+	if (!Active && !EarlyCamera()) return;
 	const bool bLead = Host && Host->ChapterKey == TEXT("ch1");
+	if (!Active)
+	{
+		auto* F=Fcam(); auto* U=Ui();
+		if (F && F->bRaised && U && U->Modal()) { F->Raise(false); U->Viewfinder(false); }
+		if (F && F->bRaised && U && !U->Modal()) { F->Sync(); Status=Check(); const auto R=F->FrameRect(); FS47Viewfinder V; V.X=R.X; V.Y=R.Y; V.W=R.W; V.H=R.H; V.Frame=TEXT("REFERENCE"); V.Status=Status.Text; FreeLine(V); U->Viewfinder(true,V); }
+		return;
+	}
 	const double G = Gt();
 	if (AnimVane)
 	{
@@ -1342,6 +1508,9 @@ void US47Chapter1::Update(double Dt, double T)
 	}
 	BusT -= Dt;
 	if (BusT <= 0) { BusT = 0.25; if (Yard) Yard->DrawBus(26, 0, true, T); }
+	// (Unreal only) the lab under the safelight alone while a print is in the process (left alone in
+	// the outage: saroPower has the lamps then)
+	if (!(Dark && Dark())) Darkroom(Developing());
 
 	// walking back into the control room with the log
 	const FVector P = M && M->Player ? M->Player->Pos : FVector(100, 0, 100);
@@ -1371,7 +1540,7 @@ void US47Chapter1::Update(double Dt, double T)
 			const FS47FrameRect R = F->FrameRect();
 			FS47Viewfinder V;
 			V.X = float(R.X); V.Y = float(R.Y); V.W = float(R.W); V.H = float(R.H);
-			V.Frame = FrameNo(); V.Status = Status.Text; V.bOk = Status.bOk; V.bTouch = Touch();
+			V.Frame = Active ? FrameNo() : FString(TEXT("REFERENCE")); V.Status = Status.Text; V.bOk = Status.bOk; V.bTouch = Touch();
 			FreeLine(V);
 			U->Viewfinder(true, V);
 		}
@@ -1526,6 +1695,26 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 	bool bOk = US47FieldCamera::SelfTest(Lines);
 	bOk &= S47Drawings::SelfTest(Lines);
 	auto Expect = [&](bool bCond, const FString& What) { Lines.Add(FString::Printf(TEXT("%s chapter one: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), *What)); bOk &= bCond; };
+	{
+		const S47J::FObj OriginalKeys = S47Keys::Save();
+		US47Chapter1* C = NewObject<US47Chapter1>();
+		S47Keys::ResetAll();
+		C->S.Stage = TEXT("first-exposure");
+		const FString FirstBefore = C->Objective();
+		C->S.Stage = TEXT("second-exposure");
+		const FString SecondBefore = C->Objective();
+		const FString CameraBefore = S47Keys::Said(TEXT("camera")).ToUpper(), ShutterBefore = S47Keys::Said(TEXT("shutter")).ToUpper();
+		Expect(FirstBefore.Contains(CameraBefore + TEXT(": CAMERA")) && FirstBefore.Contains(ShutterBefore + TEXT(": EXPOSE")) && SecondBefore.Contains(ShutterBefore + TEXT(": RECORD")), TEXT("both exposure objectives use the active input's camera and shutter names"));
+		S47Keys::Bind(TEXT("camera"), 0, EKeys::K); S47Keys::Bind(TEXT("shutter"), 0, EKeys::G);
+		const FString CameraAfter = S47Keys::Said(TEXT("camera")).ToUpper(), ShutterAfter = S47Keys::Said(TEXT("shutter")).ToUpper();
+		C->S.Stage = TEXT("first-exposure");
+		const FString FirstAfter = C->Objective();
+		C->S.Stage = TEXT("second-exposure");
+		const FString SecondAfter = C->Objective();
+		Expect(FirstAfter.Contains(CameraAfter + TEXT(": CAMERA")) && FirstAfter.Contains(ShutterAfter + TEXT(": EXPOSE")) && SecondAfter.Contains(ShutterAfter + TEXT(": RECORD"))
+			&& (CameraAfter == CameraBefore || FirstAfter != FirstBefore) && (ShutterAfter == ShutterBefore || SecondAfter != SecondBefore), TEXT("both exposure objectives refresh after rebinding while fixed controller aliases remain usable"));
+		S47Keys::Load(OriginalKeys);
+	}
 
 	// the S-03 feed and the frame's centre (values from three, Dish.ts at az 26, el 32)
 	{
@@ -1549,6 +1738,38 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 		Expect(B.Stage == St.Stage && B.EventClock == 8112 && B.F1 && B.F1->Targets.Num() == 2 && B.F1->Targets[1].Key == TEXT("echo") && B.Mark1 && B.Mark1->Y == 0.75 && B.Hyp == TEXT("light") && B.Method.IsEmpty() && B.Sheet.Get(false) && B.Links && B.Links->Num() == 1 && !B.F2, TEXT("and reads them back"));
 		const FS47CaseState C = FS47CaseState::FromJson(S47J::Read(TEXT("{\"stage\":\"motor-log\",\"camera\":true}")), 8112);
 		Expect(C.Stage == TEXT("motor-log") && C.bCamera && C.EventClock == 8112 && C.Dev1 == 0 && !C.Sheet && !C.Links, TEXT("an old save merges with a fresh case"));
+	}
+
+	// (Unreal only) the darkroom: the door open stops the process before it starts, light on a print in
+	// the process fogs it and keeps the negative, the fog is saved, and the print can be made again
+	{
+		US47Chapter1* C = NewObject<US47Chapter1>();
+		C->Active = true;
+		C->S = FS47CaseState::Fresh(8112);
+		C->S.Stage = TEXT("develop-first"); C->S.bCamera = true; C->S.bLog = true;
+		C->S.F1 = FS47Photo(); C->S.F1->Id = TEXT("frame01");
+		Expect(C->BenchLabel() == TEXT("Process sealed film") && !C->Developing(), TEXT("darkroom: the sealed film at the bench, nothing in the process"));
+		C->bLabOpen = true;
+		Expect(C->BenchLabel() == TEXT("Shut the door first") && C->Objective() == TEXT("PHOTO LAB // DARKROOM: SHUT THE DOOR BEFORE DEVELOPING"), TEXT("darkroom: the door open, the bench says shut it first"));
+		C->bLabOpen = false;
+		C->S.Dev1 = 1;
+		Expect(C->Developing() && C->BenchLabel() == TEXT("Transfer print to fixer"), TEXT("darkroom: the contact print waiting for the fixer is in the process"));
+		C->DoorChanged(TEXT("lab"), true);
+		Expect(C->S.Dev1 == 0 && C->S.Fog1 == 1 && !C->Developing() && C->S.bLabDoor && C->TestNotes.Num() == 1 && C->TestNotes[0].Contains(TEXT("fogged")), TEXT("darkroom: the door opened on it fogs the print, a note"));
+		C->bLabOpen = false;
+		Expect(C->BenchLabel() == TEXT("Print again from the negative") && C->Objective().Contains(TEXT("PRINT AGAIN FROM THE NEGATIVE")), TEXT("darkroom: the negative kept, a print again"));
+		const FString J = S47J::Write(C->S.ToJson());
+		const FS47CaseState B = FS47CaseState::FromJson(S47J::Read(J), 0);
+		Expect(J.Contains(TEXT("\"fog1\":1")) && !J.Contains(TEXT("fog2")) && B.Fog1 == 1 && B.Fog2 == 0 && B.Dev1 == 0, TEXT("darkroom: the fogged print saved and read back"));
+		C->Busy = TEXT("tank");
+		const int32 Gen = C->DevGen;
+		C->DoorChanged(TEXT("lab"), false);
+		Expect(C->Developing() && C->S.Fog1 == 1, TEXT("darkroom: shutting the door does nothing to it"));
+		C->DoorChanged(TEXT("lab"), true);
+		Expect(C->S.Fog1 == 2 && C->Busy.IsEmpty() && C->DevGen != Gen, TEXT("darkroom: light into the tank fogs it too, its timers let go"));
+		C->S.Stage = TEXT("interpret-first"); C->S.Dev1 = 3;
+		C->DoorChanged(TEXT("lab"), true);
+		Expect(!C->Developing() && C->S.Fog1 == 2, TEXT("darkroom: a collected print is safe in the light"));
 	}
 
 	// the chapter without a world: the board's rules, played as tools/chapter1.py plays them
@@ -1601,4 +1822,16 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 		Expect(C->S.Links && C->S.Links->Num() == 4 && C->S.Links->Contains(bLight ? TEXT("hyp.light|refsheet.lamp") : TEXT("hyp.drift|refsheet.drive")), TEXT("backfill restores the chosen hypothesis's thread"));
 	}
 	return bOk;
+}
+
+bool US47Chapter1::EarlyCamera() const
+{
+ return M && M->Anomaly && M->Anomaly->Data.bEarlyCamera;
+}
+void US47Chapter1::RestoreEarlyCamera()
+{
+ if (!EarlyCamera()) return;
+ if (auto* F=Fcam()) F->bHave=true;
+ ShowCamera(false);
+ if (Active) { S.bCamera=true; if(S.Stage==TEXT("collect-camera")) S.Stage=S.bLog?TEXT("first-exposure"):TEXT("motor-log"); }
 }

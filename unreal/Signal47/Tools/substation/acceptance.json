@@ -1,0 +1,139 @@
+{
+  "status": "PASS_WITH_VISUAL_LIMITATION",
+  "tested_source": "43ab2430c42fc7f40f38dc5259eb84c4fdf9ba36",
+  "candidate": "/home/tom/scratch-bm/Signal47-substation/candidate-S2",
+  "package": {
+    "path": "/home/tom/scratch-bm/Signal47-substation/candidate-S2/Linux/Signal47/Binaries/Linux/Signal47",
+    "bytes": 311678592,
+    "sha256": "3f8239990fc2a74022454427f20c1a076b696756f1f931eccea796fe0d118fbb",
+    "containers": [
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.pak",
+        "bytes": 1264481920,
+        "sha256": "b7a79419b67a257bda47d833a2f03f7b2f5c6ce2367cb8107b42817e9484f4ff"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.ucas",
+        "bytes": 1848236560,
+        "sha256": "f930c23eb676a44d4a87fe8a2f28b42844d67704bfe0629a4b2f73c4361350e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.utoc",
+        "bytes": 2014026,
+        "sha256": "ae69a97e984f45b343b6d18ed34adbb56145c02f4f846e17cf568bde705f79f1"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.ucas",
+        "bytes": 3323168,
+        "sha256": "1cb75e90b6c0b71594b619ce286a246c5966b0831d26e308bb1d144cbc7236e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.utoc",
+        "bytes": 806,
+        "sha256": "b6456194ab08e29851afaa5ef6f0b3ccc3d71dc1282699200d0975b93a2a5238"
+      }
+    ]
+  },
+  "source_checks": 304,
+  "native_checks": 41,
+  "selftests": 1378,
+  "runtime": {
+    "status": "PASS",
+    "cases": [
+      {
+        "case": "inspection-load",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "de9545bb0ef87ce66ef933c0ae6bbac1d56cc712812ce4d7a972ca9af1209eb7",
+        "markers": [
+          "[2026.10.24-15.48.34:707][  2]LogS47Desk: Display: S47: decoder self test: the answer's level every 0.25 s: 0.000 0.000 0.055 0.050 0.031 0.039 0.022 0.025 0.018 0.010 0.032 0.016 0.007 0.002 0.001 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.035 0.049 0.026 0.031 0.026 0.017 0.019 0.012 0.024 0.020 0.010 0.031 0.017 0.014 0.040 0.015 0.030 0.034 0.030 0.020 0.012 0.006 0.003 0.002 0.001 0.000 0.002 0.006 0.009 0.010 0.014 0.036 0.035 0.033 0.032 0.027 0.014 0.036 0.035 0.032 0.031 0.033 0.030 0.036 0.037 0.011 0.011 0.010 0.035 0.081 0.037 0.066 0.060 0.025 0.078 0.047 0.050 0.070 0.032 0.067 0.048 0.020 0.080 0.032 0.054 0.070 0.031 0.016 0.012 0.010 0.010 0.011 0.031 0.043 0.050 0.030 0.037 0.048 0.034 0.022 0.025 0.033 0.030 0.018 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.010 0.014 0.006 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 ",
+          "[2026.10.24-15.48.34:738][  2]LogS47Desk: Display: S47: decoder self test: a key's level every 0.25 s: 0.040 0.012 0.003 0.001 0.001 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 ",
+          "[2026.10.24-15.48.34:795][  2]LogS47ReadAloud: Display: S47: readAloud self test: Kinski 1555 clips (1555 with recordings), Serling 1407 (1407)",
+          "[2026.10.24-15.48.34:798][  2]LogS47ReadAloud: Display: S47: readAloud self test: the shift log's transcript recorded for the narrator",
+          "[2026.10.24-15.48.34:801][  2]LogS47ReadAloud: Display: S47: readAloud self test: the shift log's page recorded for Kinski: 23:20 handover | Kid, 1. RX bank 3 tripped again. Big red lever on the rack by the printer. 2. Calibrate on 1419.900 first. Card is taped to the console. 3. Spi",
+          "[2026.10.24-15.48.34:848][  2]LogS47HUD: Display: S47: self test OK (1378 checks)",
+          "[2026.10.24-15.48.49:185][445]LogS47Substation: Display: S47: substation test PASS: journal+service+actualLamp+comparison+serialization+walkApproach+yardBlocked+physicalPicks+diskReloadRoadPose; timestamp=14 APR 1986 / 02:16:32",
+          "[2026.10.24-15.49.13:426][461]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 4461, viewport 1600x900, parts 2026, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "site-day",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "da3e6d48e49f566a0e5a78ea0f28b9ffe709feb5e948466248a20ab3d19b13fc",
+        "markers": [
+          "[2026.10.24-15.49.37:332][312]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1312, viewport 1600x900, parts 2026, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "site-dusk",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "7174781a571f3b9bb07b9afedc4632df531add8feafa7470d0418c47cca73ae3",
+        "markers": [
+          "[2026.10.24-15.50.00:006][413]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1413, viewport 1600x900, parts 2026, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "site-night",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "b9ad456dfefbc723d69760002e32ed7cedb0666ea42e6e491646240d378a89b5",
+        "markers": [
+          "[2026.10.24-15.50.23:442][473]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1473, viewport 1600x900, parts 2026, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "old-controlroom",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "1fb8a95a05fbbde24addb0fb29021508b3c4ce1de208fa52864ed0d25bfecef7",
+        "markers": [
+          "[2026.10.24-15.50.44:542][981]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 981, viewport 1600x900, parts 2026, phase 0, modal none"
+        ]
+      },
+      {
+        "case": "old-station01-valid-arrival",
+        "status": "PASS",
+        "log_sha256": "f3ed82e8440dc742f8ea10f307f041b173b41a57d72d027ccb37a32c887ac241",
+        "scope": "existing STATION01 area smoke at real arrival world coordinates [-22,8032], not the complete mission"
+      }
+    ],
+    "completed": 6,
+    "invalid_attempts": [
+      {
+        "case": "old-station01",
+        "status": "FAIL",
+        "returncode": 1,
+        "log_sha256": "eb1052076cd24fd71fead30c151790830ea949f797c0de1767042a10d27219be",
+        "markers": [],
+        "classification": "INVALID_FIXTURE_WITH_GPU_FAILURE",
+        "reason": "station01:0;0 was not in its exported world bounds, whose origin is z8000. Raw Vulkan device-lost attempt retained; cause of GPU fault not established. Correct real arrival fixture passed separately."
+      }
+    ],
+    "scope": "new substation normal movement/ray/service/save-load plus day/dusk/night and two small existing-area captures; no full-world or physical input/performance claim"
+  },
+  "visuals": {
+    "reviewed": [
+      "source-preview",
+      "s2-test-inspection-load",
+      "s2-test-site-day",
+      "s2-test-site-dusk",
+      "s2-test-site-night",
+      "s2-test-old-controlroom",
+      "s2-test-station-arrival"
+    ],
+    "placement": "PASS",
+    "limitation": "Existing flashlight washes out the cabinet at close range in the clean night capture. Dusk/night contrast is high; global light/exposure polish is not part of this model pass."
+  },
+  "evidence_root": "/home/tom/scratch-bm/Signal47-substation",
+  "installation": {
+    "status": "PASS",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-substation/installed-backup-1792857344762409257",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "source_head": "8bd33349916e25c13987c34784586e0aa4cb1032",
+    "pr": 150
+  }
+}

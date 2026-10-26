@@ -113,6 +113,7 @@ public:
 	/** The camera: where Drive.ts puts camera.position and camera.quaternion (three.js world). */
 	FVector CamPos = FVector::ZeroVector;
 	FQuat CamQuat = FQuat::Identity;
+	bool bCameraMotion = true; // Comfort: no suspension sway or engine/road vibration in the eye.
 
 	FS47Truck* Truck = nullptr;
 	IS47DriveArea* Area = nullptr;

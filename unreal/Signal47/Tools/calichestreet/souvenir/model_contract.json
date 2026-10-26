@@ -1,0 +1,242 @@
+{
+  "asset": "Saucer Crash 1947 / Caliche souvenir shop",
+  "world_three_pivot_m": [
+    8025,
+    4.952807474136353,
+    2064
+  ],
+  "mapping": "worldThree=(8025+localY,floor+localZ,2064+localX)",
+  "blender_axes": "metres Z up; FBX -Y forward, Z up; UE runtime yaw=-90 same as radio station",
+  "building_dimensions_m": [
+    12,
+    9,
+    4.05
+  ],
+  "front": "local -Y; structural facade Y=-4.5",
+  "window_center_local_m": [
+    -1.7,
+    -4.5,
+    1.45
+  ],
+  "window_opening_m": [
+    2.2,
+    1.7
+  ],
+  "glass_center_local_m": [
+    -1.7,
+    -4.76,
+    1.45
+  ],
+  "door_center_local_m": [
+    2.8,
+    -4.5,
+    1.1
+  ],
+  "door_opening_m": [
+    1,
+    2.15
+  ],
+  "sign_center_local_m": [
+    0,
+    -4.52,
+    3.38
+  ],
+  "legacy_sign_proxy_local_m": [
+    0.1,
+    -6.3,
+    3.6
+  ],
+  "tours_card_center_local_m": [
+    -2.52,
+    -4.32,
+    1.98
+  ],
+  "figure_reserved_world_three_m": [
+    8020.31,
+    5.782807474136353,
+    2062.3
+  ],
+  "figure_policy": "No alien geometry is authored here. Preserve the one existing A02 cutout, price and split edge. Its proxy/logic remains unchanged.",
+  "room_back_wall_local_y_m": 0.75,
+  "visible_room_depth_m": 5.25,
+  "closed_door": true,
+  "parts": {
+    "SM_Souvenir_Shell": {
+      "vertices": 19276,
+      "triangles": 26774,
+      "materials": [
+        "M_Souvenir_Concrete",
+        "M_Souvenir_Walnut",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_CreamStucco",
+        "M_Souvenir_OldBrick",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_WornBrass",
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_ExposedPlaster",
+        "M_Souvenir_OxidizedCanopy",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_BaseGrime"
+      ],
+      "bounds_local_m": [
+        [
+          -6.25,
+          -6.641568660736084,
+          -0.46000000834465027
+        ],
+        [
+          6.25,
+          4.579999923706055,
+          4.266976356506348
+        ]
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "triangulated": true,
+      "zero_area_triangles": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "uv_loops": {
+        "UVMap": 80322
+      }
+    },
+    "SM_Souvenir_Interior": {
+      "vertices": 85690,
+      "triangles": 156462,
+      "materials": [
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_WovenCanvas",
+        "M_Souvenir_Walnut",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_WornBrass",
+        "M_Souvenir_CeramicIvory",
+        "M_Souvenir_CeramicTeal",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_SkyPrint",
+        "M_Souvenir_CreasedFoil",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_PrintedArtwork",
+        "M_Souvenir_PrintedLabels"
+      ],
+      "bounds_local_m": [
+        [
+          -5.75,
+          -4.475000381469727,
+          -0.021752357482910156
+        ],
+        [
+          6.0450005531311035,
+          0.815000057220459,
+          3.549999952316284
+        ]
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "triangulated": true,
+      "zero_area_triangles": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "uv_loops": {
+        "UVMap": 469386
+      }
+    },
+    "SM_Souvenir_Glass": {
+      "vertices": 8,
+      "triangles": 12,
+      "materials": [
+        "M_Souvenir_ClearGlass"
+      ],
+      "bounds_local_m": [
+        [
+          -2.7899999618530273,
+          -4.766000270843506,
+          0.6100000739097595
+        ],
+        [
+          -0.6100000143051147,
+          -4.754000186920166,
+          2.2899999618530273
+        ]
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "triangulated": true,
+      "zero_area_triangles": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "uv_loops": {
+        "UVMap": 36
+      }
+    }
+  },
+  "notes": [
+    "Original display backing may be hidden by runtime to reveal the real shop; preserve its hit proxy.",
+    "Canopy follows the three legacy post anchors at localX -5.6,0,5.6 / localY -6.4.",
+    "Floor, stoop and porch are authored level. Shared street terrain is a separate parent asset.",
+    "All export pieces use identical neutral origin and explicit nondegenerate triangles. Named originals are retained in a hidden editable source collection.",
+    "No collision, interaction, new alien, UE import or runtime code is authored by this generator."
+  ],
+  "practical_light_anchors_local_m": {
+    "porch_window": [
+      -1.7,
+      -4.88,
+      2.505
+    ],
+    "porch_door": [
+      2.8,
+      -4.88,
+      2.505
+    ],
+    "ceiling_left": [
+      -1.7,
+      -1.7,
+      3.24
+    ],
+    "ceiling_right": [
+      2.0,
+      -1.7,
+      3.24
+    ],
+    "facade_sign": [
+      [
+        -3.7,
+        -5.05,
+        4.1
+      ],
+      [
+        0,
+        -5.05,
+        4.1
+      ],
+      [
+        3.7,
+        -5.05,
+        4.1
+      ]
+    ]
+  },
+  "source_editable_collection": "EDITABLE_SOURCE_enable_to_edit",
+  "preview_status": "NOT_RENDERED unless opt-in --render was requested"
+}

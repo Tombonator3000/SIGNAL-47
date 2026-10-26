@@ -1,0 +1,1411 @@
+{
+  "module_id": "office",
+  "flags": {
+    "office_door_inspected": {
+      "default": false,
+      "purpose_nb": "Spilleren har undersøkt den låste Operations-døren under arkivreisen."
+    },
+    "office_desk_inspected": {
+      "default": false,
+      "purpose_nb": "Det alminnelige arbeidskontoret og skrivebordsoversikten er undersøkt."
+    },
+    "office_index_read": {
+      "default": false,
+      "purpose_nb": "Dales feltoversikt er åpnet."
+    },
+    "office_clippings_read": {
+      "default": false,
+      "purpose_nb": "Avismappen er undersøkt."
+    },
+    "office_note_read": {
+      "default": false,
+      "purpose_nb": "Den personlige arbeidsmerknaden er undersøkt."
+    },
+    "office_contact_read": {
+      "default": false,
+      "purpose_nb": "Kontaktkortet er undersøkt."
+    },
+    "office_tape_started": {
+      "default": false,
+      "purpose_nb": "Spilleren har startet det faktiske VHS-opptaket."
+    },
+    "office_field_lead_filed": {
+      "default": false,
+      "purpose_nb": "Det konkrete ståstedet ved trafostasjonen er lagt i saken."
+    }
+  },
+  "scenes": [
+    {
+      "id": "D02_LOCKED_OFFICE",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Ved undersøkelse av eksisterende låst Operations office under hovedarkivreisen. Får ikke utløses under hyggelig kveldsoverlevering.",
+      "requires": {
+        "all": [
+          "ctx_archive_open"
+        ],
+        "none": [
+          "office_open",
+          "office_door_inspected"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_LOCKED_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_LOCKED_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "A coffee ring has spread across the word SPARE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_door_inspected": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_SERVICE_DRAWER",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren åpner serviceskuffen ved arbeidsbenken etter å ha fått tilgang til arkivreisen. Adapteren knytter denne handlingen til en bestemt skuff, ikke et generelt søk.",
+      "requires": {
+        "all": [
+          "ctx_archive_open"
+        ],
+        "none": [
+          "office_key_found"
+        ]
+      },
+      "direction_nb": "Plukk opp reservenøkkelen med faktisk input. Egen nøkkel-ID for kontoret; Noras nøkkel, motelldører og øvrige nøkkelregler røres ikke.",
+      "lines": [
+        {
+          "id": "D02_SERVICE_DRAWER_001",
+          "speaker": "DESCRIPTION",
+          "text": "Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_SERVICE_DRAWER_002",
+          "speaker": "DESCRIPTION",
+          "text": "The tag reads OPERATIONS / SPARE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_key_found": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_OPEN_OFFICE",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Bruk Operations-reservenøkkelen på den eksisterende låste kontordøren. Gi fysisk døråpning før fullføring.",
+      "requires": {
+        "all": [
+          "ctx_archive_open",
+          "office_key_found"
+        ],
+        "none": [
+          "office_open"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_OPEN_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The spare turns once. The latch catches on the frame until you lift the handle.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_OPEN_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_open": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_DESK_FIRST_LOOK",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Første nære undersøkelse av skrivebordet etter at kontoret er åpnet.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_desk_inspected"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_DESK_FIRST_LOOK_001",
+          "speaker": "DESCRIPTION",
+          "text": "A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_DESK_FIRST_LOOK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_desk_inspected": true
+        },
+        "give_documents": [
+          "EV_HANDOVER",
+          "EV_SERVICE_LOG",
+          "EV_RADIO_SCHEDULE",
+          "EV_DALE_INDEX"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_FIELD_INDEX",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren åpner feltoversikten på skrivebordet. Dokumentet vises i eksisterende dokumentgrensesnitt.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_index_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_READ_FIELD_INDEX_001",
+          "speaker": "DESCRIPTION",
+          "text": "The first page lists what each item can establish. Most entries end with a question or a correction.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_index_read": true
+        },
+        "give_documents": [
+          "EV_DALE_INDEX"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_CLIPPINGS",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Undersøk avisutklippene i FIELD CHECKS-mappen. Ikke lås videre hovedreise til at alle fordypningsdokumenter er lest.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_clippings_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_READ_CLIPPINGS_001",
+          "speaker": "DESCRIPTION",
+          "text": "Two local cuttings, neither about a crash. A third rectangle on the page is empty.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_READ_CLIPPINGS_002",
+          "speaker": "DESCRIPTION",
+          "text": "In the margin: GET THE ORIGINAL BEFORE USING THE DATE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_clippings_read": true
+        },
+        "give_documents": [
+          "EV_DALE_CLIPPINGS"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_DALE_NOTE",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren undersøker den brettede arbeidsmerknaden under feltoversikten.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_note_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_READ_DALE_NOTE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The note starts as a list of things to check. Halfway down, the handwriting gets smaller.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_note_read": true
+        },
+        "give_documents": [
+          "EV_DALE_NOTE"
+        ]
+      }
+    },
+    {
+      "id": "D02_SAVE_CONTACT",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren undersøker kontaktkortet ved telefonen eller velger å beholde en kopi. Bare skriv av faktiske kontaktinstrukser; ingen automatisk oppringing.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_contact_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_SAVE_CONTACT_001",
+          "speaker": "DESCRIPTION",
+          "text": "A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_contact_read": true,
+          "vhs_contact_saved": true
+        },
+        "give_documents": [
+          "EV_DALE_CONTACT"
+        ]
+      }
+    },
+    {
+      "id": "D02_START_FIELD_TAPE",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren trykker PLAY på VHS-spilleren i det åpne kontoret. Start VHS_DALE_FIELD_01 som faktisk bevegelig film med lyd. Gjentatt avspilling tilbys av spilleren selv, ikke av en ny engangsscene.",
+      "requires": {
+        "all": [
+          "office_open",
+          "ctx_power_available"
+        ],
+        "none": [
+          "office_tape_started"
+        ]
+      },
+      "direction_nb": "Start bare etter fysisk PLAY. Ingen Dale-stemme, Kinski-forteller, fysisk Dale eller tale fra et avtrykk. Avbrutt avspilling setter ikke vhs_seen.",
+      "lines": [
+        {
+          "id": "D02_START_FIELD_TAPE_001",
+          "speaker": "DESCRIPTION",
+          "text": "A handwritten sleeve: SERVICE ROAD / FIELD 01. The tape counter has been copied onto the label.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_START_FIELD_TAPE_002",
+          "speaker": "DESCRIPTION",
+          "text": "There is no narration listed. The note on the sleeve says: WATCH THE POST, THEN THE LINE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_tape_started": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_FIELD_TAPE_COMPLETE",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Avspillingsadapteren utløser dette først når hele VHS_DALE_FIELD_01 faktisk er ferdig. Ikke bruk scenevisning eller PLAY som bevis på fullført film.",
+      "requires": {
+        "all": [
+          "office_open",
+          "office_tape_started"
+        ],
+        "none": [
+          "vhs_seen"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_TAPE_COMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The tape runs on past the movement. Wind, the fence, the same stretch of wire. Then the counter stops.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_FIELD_TAPE_COMPLETE_002",
+          "speaker": "DESCRIPTION",
+          "text": "The final card gives a place to stand: the low culvert outside the service gate, beside the post with two white bands.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "vhs_seen": true,
+          "office_field_lead_filed": true
+        },
+        "give_documents": [
+          "EV_DALE_INDEX",
+          "EV_DALE_NOTE"
+        ]
+      }
+    },
+    {
+      "id": "D02_TAKE_FIELD_FOLDER",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Spilleren tar med kopien av feltoversikten. Dette er den korte hovedruten gjennom kontoret: ett konkret feltspor, uten krav om alle avisutklipp, kontaktkort eller fullført VHS.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_evidence_taken"
+        ]
+      },
+      "direction_nb": "Gi konkret spor til T02 og gå tilbake til gjeldende arkiv-/feltoppdrag. Å ta mappen starter ikke STATION 01, Room 6, P13 eller finalen. Nora beholder sin nøkkel og historiefunksjon.",
+      "lines": [
+        {
+          "id": "D02_TAKE_FIELD_FOLDER_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_TAKE_FIELD_FOLDER_002",
+          "speaker": "DESCRIPTION",
+          "text": "It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_evidence_taken": true,
+          "office_field_lead_filed": true
+        },
+        "give_documents": [
+          "EV_DALE_INDEX",
+          "EV_DALE_NOTE"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_LOCKED_OFFICE",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "ctx_archive_open"
+        ],
+        "none": [
+          "office_open",
+          "office_door_inspected"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_LOCKED_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_FIELD_LOCKED_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "A coffee ring has spread across the word SPARE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_door_inspected": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_FIELD_SERVICE_DRAWER",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "ctx_archive_open"
+        ],
+        "none": [
+          "office_key_found"
+        ]
+      },
+      "direction_nb": "Plukk opp reservenøkkelen med faktisk input. Egen nøkkel-ID for kontoret; Noras nøkkel, motelldører og øvrige nøkkelregler røres ikke.",
+      "lines": [
+        {
+          "id": "D02_FIELD_SERVICE_DRAWER_001",
+          "speaker": "DESCRIPTION",
+          "text": "Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_FIELD_SERVICE_DRAWER_002",
+          "speaker": "DESCRIPTION",
+          "text": "The tag reads OPERATIONS / SPARE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_key_found": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_FIELD_OPEN_OFFICE",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "ctx_archive_open",
+          "office_key_found"
+        ],
+        "none": [
+          "office_open"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_OPEN_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The spare turns once. The latch catches on the frame until you lift the handle.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_FIELD_OPEN_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_open": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_FIELD_DESK_FIRST_LOOK",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_desk_inspected"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_DESK_FIRST_LOOK_001",
+          "speaker": "DESCRIPTION",
+          "text": "A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_FIELD_DESK_FIRST_LOOK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_desk_inspected": true
+        },
+        "give_documents": [
+          "EV_HANDOVER",
+          "EV_SERVICE_LOG",
+          "EV_RADIO_SCHEDULE",
+          "EV_DALE_INDEX"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_FIELD_INDEX",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_index_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_READ_FIELD_INDEX_001",
+          "speaker": "DESCRIPTION",
+          "text": "The first page lists what each item can establish. Most entries end with a question or a correction.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_index_read": true
+        },
+        "give_documents": [
+          "EV_DALE_INDEX"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_CLIPPINGS",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_clippings_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_READ_CLIPPINGS_001",
+          "speaker": "DESCRIPTION",
+          "text": "Two local cuttings, neither about a crash. A third rectangle on the page is empty.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_FIELD_READ_CLIPPINGS_002",
+          "speaker": "DESCRIPTION",
+          "text": "In the margin: GET THE ORIGINAL BEFORE USING THE DATE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_clippings_read": true
+        },
+        "give_documents": [
+          "EV_DALE_CLIPPINGS"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_DALE_NOTE",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_note_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_READ_DALE_NOTE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The note starts as a list of things to check. Halfway down, the handwriting gets smaller.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_note_read": true
+        },
+        "give_documents": [
+          "EV_DALE_NOTE"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_SAVE_CONTACT",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_contact_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_FIELD_SAVE_CONTACT_001",
+          "speaker": "DESCRIPTION",
+          "text": "A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_contact_read": true,
+          "vhs_contact_saved": true
+        },
+        "give_documents": [
+          "EV_DALE_CONTACT"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_TAKE_FIELD_FOLDER",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_evidence_taken"
+        ]
+      },
+      "direction_nb": "Gi konkret spor til T02 og gå tilbake til gjeldende arkiv-/feltoppdrag. Å ta mappen starter ikke STATION 01, Room 6, P13 eller finalen. Nora beholder sin nøkkel og historiefunksjon.",
+      "lines": [
+        {
+          "id": "D02_FIELD_TAKE_FIELD_FOLDER_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_FIELD_TAKE_FIELD_FOLDER_002",
+          "speaker": "DESCRIPTION",
+          "text": "It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_evidence_taken": true,
+          "office_field_lead_filed": true
+        },
+        "give_documents": [
+          "EV_DALE_INDEX",
+          "EV_DALE_NOTE"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_LOCKED_OFFICE",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "ctx_archive_open"
+        ],
+        "none": [
+          "office_open",
+          "office_door_inspected"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_LOCKED_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "OPERATIONS. The handle gives a little, then stops. A paper label beside the lock reads: SPARE IN SERVICE DRAWER.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_NIGHT_LOCKED_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "A coffee ring has spread across the word SPARE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_door_inspected": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_NIGHT_SERVICE_DRAWER",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "ctx_archive_open"
+        ],
+        "none": [
+          "office_key_found"
+        ]
+      },
+      "direction_nb": "Plukk opp reservenøkkelen med faktisk input. Egen nøkkel-ID for kontoret; Noras nøkkel, motelldører og øvrige nøkkelregler røres ikke.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_SERVICE_DRAWER_001",
+          "speaker": "DESCRIPTION",
+          "text": "Fuses, a bulb in a cardboard sleeve, two pencils worn down to the metal. A small brass key is taped beneath the drawer label.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_NIGHT_SERVICE_DRAWER_002",
+          "speaker": "DESCRIPTION",
+          "text": "The tag reads OPERATIONS / SPARE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_key_found": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_NIGHT_OPEN_OFFICE",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "ctx_archive_open",
+          "office_key_found"
+        ],
+        "none": [
+          "office_open"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_OPEN_OFFICE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The spare turns once. The latch catches on the frame until you lift the handle.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_NIGHT_OPEN_OFFICE_002",
+          "speaker": "DESCRIPTION",
+          "text": "An ordinary office: a desk lamp, a coat over the chair, invoices clipped to a board. There is a clean patch on the desk where somebody usually puts a mug.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_open": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "D02_NIGHT_DESK_FIRST_LOOK",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_desk_inspected"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_DESK_FIRST_LOOK_001",
+          "speaker": "DESCRIPTION",
+          "text": "A lunch receipt holds down a stack of maintenance forms. Someone has written MILK on the back.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_NIGHT_DESK_FIRST_LOOK_002",
+          "speaker": "DESCRIPTION",
+          "text": "Under the invoices is a folder marked FIELD CHECKS. The label is newer than the folder. A pencilled list names a tape, a service-road photograph and two newspaper cuttings.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_desk_inspected": true
+        },
+        "give_documents": [
+          "EV_HANDOVER",
+          "EV_SERVICE_LOG",
+          "EV_RADIO_SCHEDULE",
+          "EV_DALE_INDEX"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_FIELD_INDEX",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_index_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_READ_FIELD_INDEX_001",
+          "speaker": "DESCRIPTION",
+          "text": "The first page lists what each item can establish. Most entries end with a question or a correction.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_index_read": true
+        },
+        "give_documents": [
+          "EV_DALE_INDEX"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_CLIPPINGS",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_clippings_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_READ_CLIPPINGS_001",
+          "speaker": "DESCRIPTION",
+          "text": "Two local cuttings, neither about a crash. A third rectangle on the page is empty.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_NIGHT_READ_CLIPPINGS_002",
+          "speaker": "DESCRIPTION",
+          "text": "In the margin: GET THE ORIGINAL BEFORE USING THE DATE.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_clippings_read": true
+        },
+        "give_documents": [
+          "EV_DALE_CLIPPINGS"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_DALE_NOTE",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_note_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_READ_DALE_NOTE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The note starts as a list of things to check. Halfway down, the handwriting gets smaller.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_note_read": true
+        },
+        "give_documents": [
+          "EV_DALE_NOTE"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_SAVE_CONTACT",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_contact_read"
+        ]
+      },
+      "direction_nb": "Observasjonstekst uten innspilt forteller. Avsluttes tilbake til samme fysiske oppdrag; intet kapittelhopp.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_SAVE_CONTACT_001",
+          "speaker": "DESCRIPTION",
+          "text": "A contact card has been tucked under the telephone. There are no names on the back. Just the word FIELD, underlined twice.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_contact_read": true,
+          "vhs_contact_saved": true
+        },
+        "give_documents": [
+          "EV_DALE_CONTACT"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_TAKE_FIELD_FOLDER",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Valgfri senere fysisk kontorhandling; samme faktisk utførte handling og papir, uten faserewind.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_evidence_taken"
+        ]
+      },
+      "direction_nb": "Gi konkret spor til T02 og gå tilbake til gjeldende arkiv-/feltoppdrag. Å ta mappen starter ikke STATION 01, Room 6, P13 eller finalen. Nora beholder sin nøkkel og historiefunksjon.",
+      "lines": [
+        {
+          "id": "D02_NIGHT_TAKE_FIELD_FOLDER_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field sheet locates the camera outside the substation fence, beside a low culvert and a post painted with two white bands.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        },
+        {
+          "id": "D02_NIGHT_TAKE_FIELD_FOLDER_002",
+          "speaker": "DESCRIPTION",
+          "text": "It asks for a comparison from the same position, with the nearest pole and its two outer conductors in frame. The tape may help explain what to look for.",
+          "delivery_nb": "Vises som kort observasjonstekst. Ingen stemme eller spillerreplikk."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_evidence_taken": true,
+          "office_field_lead_filed": true
+        },
+        "give_documents": [
+          "EV_DALE_INDEX",
+          "EV_DALE_NOTE"
+        ]
+      }
+    }
+  ],
+  "documents": [
+    {
+      "id": "EV_HANDOVER",
+      "title": "Evening handover / Sunday, April 13",
+      "kind": "typed",
+      "stamp": "SARO / OPERATIONS / 13 APR 1986",
+      "body": [
+        "18:00 HANDOVER\nEvening operator: Reyes. Duty officer: Ward. Field maintenance contact: Dale, by telephone or service radio.",
+        "Carry out the ordinary room checks before starting the survey. There are 27 antennas on the installation list. The azimuth reference card remains 026. Record what the instruments say; do not adjust a reading simply to make it agree with the card.",
+        "The local service log and radio transmission schedule are in this handover folder. The day operator collected the copies. Keep them in the shift file. If an entry needs checking later, the service desk and station window in Caliche can help; there is no need to go down just to collect the same papers.",
+        "If the feeder complaint repeats, take the service-road route to the substation and use the marked inspection position. Follow the local isolation card. Do not enter the switching yard or work on exposed conductors.",
+        "Operations spare: service drawer at the workbench. Please put it back when you have finished. The office latch needs lifting. Milk is in the small refrigerator. Leave the receipt with petty cash."
+      ],
+      "production_nb": "Ordinær overlevering ved skiftstart 18:00, lenge før ny residual. D01_BRIEF gir EV_HANDOVER, EV_SERVICE_LOG og EV_RADIO_SCHEDULE fra mappen på SARO. Byvinduene er valgfrie oppfølginger og alternative kilder, ikke pålagt henteoppdrag. Dale er bare tilgjengelig via telefon/radio/walkie; Ward er egen vakthavende. Utstyrs- og K3-regler følger eksisterende spillkontrakt."
+    },
+    {
+      "id": "EV_SERVICE_LOG",
+      "title": "Caliche service log / released copy",
+      "kind": "typed",
+      "stamp": "LOCAL SERVICE DESK / 13 APR 1986",
+      "body": [
+        "SERVICE COPY\nPrepared Sunday, April 13, 1986. Collected for SARO by the day operator; enclosed with the evening handover. Entries below are civil time as entered by the attendant; they are not precision timing records.",
+        "April 12, 19:06. Complaint: exterior lamp on service-road inspection circuit dimming intermittently. Other premises reported normal supply. No town-wide interruption entered.",
+        "April 13, 16:40. Maintenance inspection requested. Complaint remains open until the local test is completed and the result entered on the inspection card.",
+        "Supply labels and the inspection-circuit identifier must be read at the marked service panel. A lamp lighting does not by itself prove which supply is carrying it. Compare the panel indication with the permitted local test and the actual lamp.",
+        "No entry in this book means no report was entered here. It does not establish that every circuit remained live. Retain this copy if a later occurrence needs to be compared with the service record.",
+        "RELEASED COPY. Keep the original at the service desk. Later entries must be dated separately; do not add them to this sheet."
+      ],
+      "production_nb": "Ny ordinær kveldsreferanse i Dales overleveringsmappe på SARO. Dagens dagoperatør har hentet kopien; spilleren hentet den ikke på matstoppet. Tidligere lokal feil kan prøves i T01 og sammenlignes senere, men verken den feilen eller manglende nye journaloppføringer beviser årsak til residualen eller forsyningstilstanden i hele byen 00:13. Bruk egen inspeksjonskontroll for T01/T02; ingen reelle høyspenningsinstrukser og ingen kobling fra SAROs K3 til bynettet."
+    },
+    {
+      "id": "EV_RADIO_SCHEDULE",
+      "title": "1420 AM / transmission schedule",
+      "kind": "typed",
+      "stamp": "PUBLIC COPY / SUNDAY 13 APRIL 1986",
+      "body": [
+        "1420 AM / LOCAL TRANSMISSION SCHEDULE\nSunday, April 13 into Monday, April 14. Station clock. Programs may be interrupted for local bulletins.",
+        "18:00–20:00. Evening records, weather and local notices. Evening staff on duty. Public copies and messages at the station window.",
+        "20:00–00:00. Music service. Recorded segments and local continuity. The person at the window may be covering other duties; leave a message if it is unattended.",
+        "00:00–04:00 MONDAY. THE NIGHT LINE / EARL. Telephone calls and local reports. An open microphone or ON AIR lamp does not establish that any particular caller was connected.",
+        "04:00. Night Line ends. Transmitter service and the scheduled morning program follow. An empty studio after four is normal; consult the actual program log for interruptions or changes.",
+        "This is a schedule, not proof of what was transmitted. For a disputed item, keep the date and approximate time and request the corresponding log entry or preserved program segment.",
+        "The station is an AM broadcast service. This sheet is not a tuning instruction for observatory equipment."
+      ],
+      "production_nb": "Fysisk kveldskopi som dagoperatøren allerede har hentet, vedlagt Dales overleveringsmappe på SARO. Stasjonsvinduet er en valgfri senere kilde til supplerende materiale; ingen obligatorisk hentetur. Earl arbeider bare 00–04; kveldens innhold og bemanning er egne roller. Adapteren må synkronisere vindu, ON AIR og faktisk lyd. Sendeskjemaet dokumenterer planlagt normaldrift, ikke hva som faktisk ble sendt rundt residualen."
+    },
+    {
+      "id": "EV_DALE_INDEX",
+      "title": "Field checks / working index",
+      "kind": "hand",
+      "stamp": "DALE / WORKING COPY / 13 APR",
+      "body": [
+        "FIELD CHECKS\nNot a report. Keep this with the maintenance forms. Some of these are ordinary faults. Some may be bad recordings.",
+        "1. SERVICE ROAD / FIELD 01. VHS cassette in the desk unit. Environment sound only. The middle section contains the movement I could not account for. The recording date on the camera was not set correctly. Do not use it to establish a date or an exact time.",
+        "2. CAMERA POSITION. Outside the substation fence. Low concrete culvert beside the service gate. Stand on the road side of the post with two white bands. Face the nearest pole so the two outer conductors and the top of the pole remain in frame. The fence corner should sit at the lower left.",
+        "3. COMPARISON. First inspect the ordinary supply indication and the permitted lamp test. Return to the same position. Compare the nearest pole, the two outer conductors and the moving patch separately. Do not use camera shake as movement in the scene.",
+        "4. LIMIT. The cassette cannot establish what supplied the lamp or whether the shape was in the air. It does establish where the camera stood. A fresh observation from that position would be more useful than another opinion about the tape.",
+        "5. BACKGROUND. Two newspaper cuttings and a service note. Dates uncertain on one clipping. These are leads, not a map to a destination. The survey-station papers belong to their own file.",
+        "Leave the originals here. Take this copy if you go out. Tell Ward where you are going."
+      ],
+      "production_nb": "Kort hovedspor som kan tas uten full VHS eller øvrig fordypning. T02 må bygge nøyaktig gjenkjennelig kulvert, to hvite bånd, stolpe, lederpar og gjerdehjørne som filmen viser. Gjenbruk ikke STATION 01-identitet eller C-kryss. Klippets dato er usikker med vilje og kan ikke brukes som fullført tidsbevis."
+    },
+    {
+      "id": "EV_DALE_CLIPPINGS",
+      "title": "Local cuttings / dates to check",
+      "kind": "hand",
+      "stamp": "FIELD CHECKS / BACKGROUND",
+      "body": [
+        "CUTTING A\nPECOS VALLEY SENTINEL / OCTOBER 22, 1985\nDRIVERS REPORT STALLED ENGINES ON COUNTY ROAD",
+        "Two motorists reported brief electrical failures on a county road east of the highway over the weekend. Both vehicles restarted. A county spokesman said no general supply interruption had been reported. No cause was entered in the notice.",
+        "Dale, pencil: Cars are not supplied by the town feeder. Same evening is not the same cause. Ask for a location before putting this beside the service complaint.",
+        "CUTTING B\nHEADLINE SAVED; DATE MISSING\nRANCHER FINDS FENCE LAMP BURNING AFTER LINE FAULT",
+        "The lamp had an auxiliary supply. The owner said the indicator had shown the main line was disconnected. The remainder of the item is missing.",
+        "Dale, pencil: Ordinary explanation. Keep it. A lit lamp is not evidence that a disconnected line is live. Need the whole page and the maintenance entry.",
+        "In the empty space below: I have two accounts of a movement near the service road. Neither witness agrees on the date. Do not make a pattern out of that yet."
+      ],
+      "production_nb": "Nye fiktive diegetiske utklipp skrevet for denne pakken, ikke ekte avisgjengivelse. Ingen koordinater eller åttemilsreferanse som løser P13. Dales merknader avgrenser kunnskap og tilbyr vanlig forklaring; ingen bredere 1947-fotografi eller sluttspoiler."
+    },
+    {
+      "id": "EV_DALE_CONTACT",
+      "title": "Field contact / keep with the radio",
+      "kind": "typed",
+      "stamp": "OPERATIONS / CONTACT CARD",
+      "body": [
+        "FIELD MAINTENANCE CONTACT: DALE\nUse the SARO service telephone or the marked service-radio channel. Ask the operator for Dale / field maintenance. If the line is busy, leave the place you are calling from and the circuit label you copied.",
+        "Keep the installation name, your position and the observation separate. Say what changed, what stayed still and what control you used. An uncertain reading is useful if you say it is uncertain.",
+        "If there is an immediate service problem, notify Ward, the duty officer, first. This card does not authorize switching or entry to a locked electrical yard.",
+        "Handwritten addition: I may be on another line. Keep your note. Do not wait beside the gate just to get me on the radio. — D."
+      ],
+      "production_nb": "Kortet gir kontaktinstruks, ikke ny oppdiktet tallfrekvens eller et telefonnummer som ikke finnes i spillet. Integrasjon må gi egne konkrete oppringings-/walkiehandlinger i egnet modul. Ingen fysisk Dale. Kan beholdes uten å utløse samtale eller blokkere hovedreise."
+    },
+    {
+      "id": "EV_DALE_NOTE",
+      "title": "A note beneath the inspection sheets",
+      "kind": "hand",
+      "stamp": "DALE / UNSENT WORKING NOTE",
+      "body": [
+        "I started this folder because the service complaint kept coming back under different names. Weak lamp. Bad connection. Somebody seeing a shape out by the wire. It is tempting to put them all in the same box.",
+        "The first two have ordinary tests. The third may be a camera fault. I have watched that tape enough times to start anticipating the movement. That is not the same as understanding it.",
+        "I marked the camera position because it is the one thing I could check afterwards. The culvert, the two white bands and the nearest pole are still there. Stand there before making a copy of my conclusion. I have not made one.",
+        "On the recording the lamp is visible. You cannot tell from the picture which supply feeds it. Check that before treating the lamp as a contradiction. Keep the actual supply test and the movement on the tape as separate observations.",
+        "I have put copies of the local notices behind this page. There may be something worth comparing in the old survey papers, but I have not established a connection. Similar words in two accounts are a reason to check the originals, not permission to fill the gap.",
+        "If you take the sheet, leave me a note. If I am not on the telephone, try the service radio. Do not tell the others I have found something. I have found somewhere to look."
+      ],
+      "production_nb": "Gradvis fordypning etter et menneskelig, ordinært kontor. Dale har jobbet med spor og kjenner ståstedet, men vet ikke årsak, C, Nora eller finalen. Ingen talt opplesning med Kinski-profil; dokumenttekst er skriftlig."
+    }
+  ],
+  "media": [
+    {
+      "id": "VHS_DALE_FIELD_01",
+      "title": "Service Road / Field 01",
+      "duration_seconds": 72,
+      "production_nb": "Produksjonsmanus for ny faktisk 72 sekunders bevegelig VHS-film med miljølyd. Ingen fil er generert. Ingen talt Dale, fysisk Dale, spillerstemme eller Kinski-forteller; Dale finnes bare som håndskrevne kort. Kameraets feil dato brennes ikke inn som pålitelig tid. Filmstedet modelleres sammen med T02, og samme ståsted må kunne finnes i gameplay. Avviket er bevegelig og uklart, men adskilles fra kamera-/trackingbevegelse med stabile referanser. Ikke gjenbruk film som et statisk bevisfoto. Uavklart årsak; ingen synlig full alien eller forklaring av C/finalen. Første avspilling kan pauseres/avbrytes og spilles igjen; bare hele avspilling gir vhs_seen. Tekstkort er engelske og lesbare også med undertekster.",
+      "beats": [
+        {
+          "at": 0,
+          "until": 7,
+          "picture_nb": "Bevegelig opptak starter nede ved veikanten; kameraet løftes fra grusen forbi lav kulvert og gjerdet. Et kort skriftlig pålegg i håndskrift er synlig over den levende filmen. Ingen person eller hånd må identifiseres som Dale.",
+          "audio_nb": "Båndstart, svak motor i det fjerne, vind mot mikrofonen og kontinuerlig elektrisk romling. Ingen tale.",
+          "subtitle": "SERVICE ROAD / FIELD 01\nCamera date incorrect. Use position, not timestamp."
+        },
+        {
+          "at": 7,
+          "until": 17,
+          "picture_nb": "Rolig panorering viser serviceporten og stolpen med nøyaktig to hvite bånd. Kameraet finner inspeksjonsståstedet og rammer inn nærmeste stolpe, to ledere og gjerdehjørnet nederst til venstre. En avgrenset inspeksjonslampe lyser.",
+          "audio_nb": "Vind, små metalliske klirr i gjerdet, jevn svak romling. Lydperspektivet følger panoramaet. Ingen spenningsdramaturgi eller musikk.",
+          "subtitle": "Road side of the two-band post.\nCulvert beside the service gate."
+        },
+        {
+          "at": 17,
+          "until": 27,
+          "picture_nb": "Kameraet holdes i samme utsnitt med liten naturlig håndholdt drift. Stolpen og begge lederne er hele i bildet. En liten støvstripe går langs bakken i én retning. Pålegget kommer fra et skriftlig notat, uten opplesning.",
+          "audio_nb": "Vind i samme retning og et lavt, uregelmessig gjerdetikk. Lampen gir ingen egen overdreven effektlyd.",
+          "subtitle": "Nearest pole and both outer wires in frame.\nThe lamp alone proves nothing about its supply."
+        },
+        {
+          "at": 27,
+          "until": 39,
+          "picture_nb": "En smal grålig forskyvning oppstår ved den øverste lederen. Den glir sakte sideveis mot støvets retning, krysser det tomme mellomrommet under lederen og stanser et øyeblikk ved stolpen. Nærmeste stolpe, gjerde og ledere forblir stabile. Det kan ligne en mørk fold i luften eller en lokal feil i båndet, uten gjenkjennelig kropp. Ingen skjermomfattende glitch skjuler bevegelsen.",
+          "audio_nb": "Samme miljølyd fortsetter. En kort lav demping av rumlingen, hørbar men ikke et høyt støt. Ingen stemme eller pust fra et vesen.",
+          "subtitle": ""
+        },
+        {
+          "at": 39,
+          "until": 49,
+          "picture_nb": "Kameraet tar et lite skritt sidelengs. Den grå forskyvningen glir bak stolpens silhuett og et lite stykke ned, mens gjerdehjørnet endrer plass ved normal parallakse. Den forsvinner gradvis før bevegelsen i kameraet stopper. Hold tydelig lesbar bevegelse og dekning; ingen teleportert modell eller statisk pålimt klatt.",
+          "audio_nb": "Ett vanlig grusskritt, klær mot mikrofonen, vind og gjerdet. Romlingen går tilbake til tidligere nivå uten dramatisk stinger.",
+          "subtitle": ""
+        },
+        {
+          "at": 49,
+          "until": 61,
+          "picture_nb": "Kameraet går tilbake til merket ved kulverten og holder det opprinnelige utsnittet. Ledningene beveger seg svakt normalt i vinden. Lampen lyser fremdeles. Ingen ny form kommer; båndet fortsetter som en faktisk sammenhengende registrering.",
+          "audio_nb": "Grus, vind og vanlig elektrisk romling. En fugl langt unna. Ingen tale.",
+          "subtitle": "Did the patch move with the camera?\nCompare the pole, not the tracking line."
+        },
+        {
+          "at": 61,
+          "until": 72,
+          "picture_nb": "Sakte tilt ned mot kulverten og de to hvite båndene som gjør plassen gjenfinnbar. Bildet holder seg levende med støv og svak kameradrift under siste håndskrevne pålegg. Film slutter ved72, ingen ytterligere skjult hendelse.",
+          "audio_nb": "Vind og fjernt motorbrum; vanlig båndstopp ved slutten. Ingen Dale-opplesning.",
+          "subtitle": "Return to this position.\nCheck the ordinary supply first. Then make a fresh observation.\n— D."
+        }
+      ]
+    }
+  ],
+  "strings": [
+    {
+      "id": "OFFICE_KEY_ITEM",
+      "text": "Operations spare key",
+      "context_nb": "Eget nøkkelnavn; aldri Noras nøkkel."
+    },
+    {
+      "id": "OFFICE_DOOR_LOCKED",
+      "text": "Operations office — locked",
+      "context_nb": "Dørens fokusbeskrivelse før reservenøkkel."
+    },
+    {
+      "id": "OFFICE_DOOR_UNLOCK",
+      "text": "Use the Operations spare",
+      "context_nb": "Handlingen på eksisterende låste kontordør."
+    },
+    {
+      "id": "OFFICE_SERVICE_DRAWER",
+      "text": "Service drawer",
+      "context_nb": "Gjenfinnbar fysisk skuff ved arbeidsbenken."
+    },
+    {
+      "id": "OFFICE_FIELD_FOLDER",
+      "text": "Field checks",
+      "context_nb": "Den ordinære mappen under arbeidsbilagene."
+    },
+    {
+      "id": "OFFICE_READ_INDEX",
+      "text": "Read the working index",
+      "context_nb": "Åpner EV_DALE_INDEX."
+    },
+    {
+      "id": "OFFICE_READ_CLIPPINGS",
+      "text": "Examine the local cuttings",
+      "context_nb": "Valgfri fordypning."
+    },
+    {
+      "id": "OFFICE_READ_NOTE",
+      "text": "Read the folded note",
+      "context_nb": "Åpner EV_DALE_NOTE."
+    },
+    {
+      "id": "OFFICE_KEEP_CONTACT",
+      "text": "Copy the field contact",
+      "context_nb": "Kopier kontaktkort uten automatisk samtale."
+    },
+    {
+      "id": "OFFICE_TAKE_COPY",
+      "text": "Take the field sheet",
+      "context_nb": "Kort hovedrute med konkret spor; øvrig research valgfritt."
+    },
+    {
+      "id": "OFFICE_PLAY_TAPE",
+      "text": "Play Service Road / Field 01",
+      "context_nb": "Faktisk film og miljølyd, ingen forteller."
+    },
+    {
+      "id": "OFFICE_REPLAY_TAPE",
+      "text": "Replay the field tape",
+      "context_nb": "Kan gjentas uten å duplisere funn."
+    },
+    {
+      "id": "OFFICE_TAPE_NO_POWER",
+      "text": "The VHS deck has no power. The field sheet is beside it.",
+      "context_nb": "Vis bare ved faktisk strømmangel; nødvendig feltspor ligger på papiret."
+    },
+    {
+      "id": "OFFICE_TAPE_UNAVAILABLE",
+      "text": "The tape will not play. The field sheet still gives the camera position.",
+      "context_nb": "Feilvisning hvis filmfil mangler/feiler; ikke simuler film med stillbilde eller gi vhs_seen."
+    },
+    {
+      "id": "OFFICE_FIELD_LEAD",
+      "text": "Service road: compare the view from the culvert beside the two-band post.",
+      "context_nb": "Konkret feltspor til T02, separat fra STATION 01 og P13."
+    },
+    {
+      "id": "OFFICE_INVESTIGATION_NOTE",
+      "text": "The recording gives a position to check. It does not identify what moved.",
+      "context_nb": "Saksnotat ved avsluttet tape, uten automatisk forklaring."
+    },
+    {
+      "id": "OFFICE_CONTACT_ACTION",
+      "text": "Contact Dale on the service line",
+      "context_nb": "Kontaktknapp overlates til egnet telefon-/walkiemodul; ingen fysisk Dale."
+    },
+    {
+      "id": "OFFICE_RETURN_TASK",
+      "text": "Keep the survey papers separate. Continue the archive check.",
+      "context_nb": "Retur til gjeldende hovedarkivreise; ingen automatisk ny fase."
+    }
+  ]
+}

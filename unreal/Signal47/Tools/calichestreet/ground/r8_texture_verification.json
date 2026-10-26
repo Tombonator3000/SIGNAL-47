@@ -1,0 +1,130 @@
+{
+  "status": "PASS",
+  "only_changed_texture": "textures/CompactedUse_color.png RGB",
+  "R7_all_Soil_alpha_pixels_byte_identical": true,
+  "Concrete_color_file_byte_identical": true,
+  "all_other44texture_maps_SHA256_unchanged": [
+    "textures/CalicheSoil_color.png",
+    "textures/CalicheSoil_normal.png",
+    "textures/CalicheSoil_roughness.png",
+    "textures/PeaGravel_color.png",
+    "textures/PeaGravel_normal.png",
+    "textures/PeaGravel_roughness.png",
+    "textures/OldAsphalt_color.png",
+    "textures/OldAsphalt_normal.png",
+    "textures/OldAsphalt_roughness.png",
+    "textures/DrySilt_color.png",
+    "textures/DrySilt_normal.png",
+    "textures/DrySilt_roughness.png",
+    "textures/Limestone_color.png",
+    "textures/Limestone_normal.png",
+    "textures/Limestone_roughness.png",
+    "textures/DryPlant_color.png",
+    "textures/DryPlant_normal.png",
+    "textures/DryPlant_roughness.png",
+    "textures/TarRepair_color.png",
+    "textures/TarRepair_normal.png",
+    "textures/TarRepair_roughness.png",
+    "textures/WornConcrete_color.png",
+    "textures/WornConcrete_normal.png",
+    "textures/WornConcrete_roughness.png",
+    "textures/ShoulderBlend_color.png",
+    "textures/ShoulderBlend_normal.png",
+    "textures/ShoulderBlend_roughness.png",
+    "textures/DustFeather_color.png",
+    "textures/DustFeather_normal.png",
+    "textures/DustFeather_roughness.png",
+    "textures/GrassAtlas_color.png",
+    "textures/GrassAtlas_normal.png",
+    "textures/GrassAtlas_roughness.png",
+    "textures/SageAtlas_color.png",
+    "textures/SageAtlas_normal.png",
+    "textures/SageAtlas_roughness.png",
+    "textures/Yucca_color.png",
+    "textures/Yucca_normal.png",
+    "textures/Yucca_roughness.png",
+    "textures/CompactedUse_normal.png",
+    "textures/CompactedUse_roughness.png",
+    "textures/ConcreteUse_color.png",
+    "textures/ConcreteUse_normal.png",
+    "textures/ConcreteUse_roughness.png"
+  ],
+  "embedded_GLBRGBA": [
+    {
+      "file": "SM_Caliche_Surface.glb",
+      "material": "M_CS_CompactedUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    },
+    {
+      "file": "SM_Caliche_Surface.glb",
+      "material": "M_CS_ConcreteUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    },
+    {
+      "file": "Caliche_Ground_Assembly.glb",
+      "material": "M_CS_CompactedUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    },
+    {
+      "file": "Caliche_Ground_Assembly.glb",
+      "material": "M_CS_ConcreteUse",
+      "RGBA_pixel_identical": true,
+      "alpha_byte_range": [
+        0,
+        224
+      ]
+    }
+  ],
+  "longitudinal_dark_row_fraction": 0.75390625,
+  "longitudinal_dark_runs": [
+    [
+      135,
+      166
+    ],
+    [
+      171,
+      525
+    ],
+    [
+      527,
+      528
+    ],
+    [
+      619,
+      1069
+    ],
+    [
+      1087,
+      1447
+    ],
+    [
+      1448,
+      1449
+    ],
+    [
+      1477,
+      1489
+    ],
+    [
+      1584,
+      1900
+    ],
+    [
+      1932,
+      1951
+    ]
+  ],
+  "native_visual_status": "PENDING: source shape test is not a rendered appearance acceptance."
+}

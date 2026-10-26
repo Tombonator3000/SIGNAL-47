@@ -1,6 +1,7 @@
 #include "S47RoadArea.h"
 
 #include "S47RoadTerrain.h"
+#include "S47RoadShape.h"
 
 using namespace S47RoadTerrain;
 
@@ -57,6 +58,18 @@ void FS47RoadArea::SetRoadClosed(bool bOn)
 {
 	if (bOn == bClosedOn) return;
 	bClosedOn = bOn;
+	// roadProps.ts roadClosed exports four permanent obstacle slots for its movable posts.
+	// Keep the slots (the commute car also stores an obstacle index), but take only these
+	// posts out of driving/walking collision with their group. The wall at local x=30 stays.
+	const double ClosedX = Origin.X + 25.5, AwayX = ClosedX + 1e6;
+	const double Z0 = Origin.Z + S47RoadShape::DINER().Z;
+	for (FS47Obstacle& O : Obstacles)
+	{
+		if (!O.bCircle || !FMath::IsNearlyEqual(O.R, .3, 1e-6)
+			|| (!FMath::IsNearlyEqual(O.X, ClosedX, 1e-6) && !FMath::IsNearlyEqual(O.X, AwayX, 1e-6))) continue;
+		for (const double Offset : { -2.45, -.45, .45, 2.45 })
+			if (FMath::IsNearlyEqual(O.Z, Z0 + Offset, 1e-6)) { O.X = bOn ? ClosedX : AwayX; break; }
+	}
 	// (the barricades' lamps are glow points of the road's own; the group carries the rest)
 	ClosedGroup.SetVisible(bOn);
 }

@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "embedded_base_color_maps": [
+    {
+      "file": "SM_Caliche_Surface.glb",
+      "material": "M_CS_CompactedUse",
+      "alphaMode": "BLEND",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_byte_range": [
+        0,
+        129
+      ],
+      "source_RGBA_pixel_identical": true
+    },
+    {
+      "file": "SM_Caliche_Surface.glb",
+      "material": "M_CS_ConcreteUse",
+      "alphaMode": "BLEND",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_byte_range": [
+        0,
+        140
+      ],
+      "source_RGBA_pixel_identical": true
+    },
+    {
+      "file": "Caliche_Ground_Assembly.glb",
+      "material": "M_CS_CompactedUse",
+      "alphaMode": "BLEND",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_byte_range": [
+        0,
+        129
+      ],
+      "source_RGBA_pixel_identical": true
+    },
+    {
+      "file": "Caliche_Ground_Assembly.glb",
+      "material": "M_CS_ConcreteUse",
+      "alphaMode": "BLEND",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_byte_range": [
+        0,
+        140
+      ],
+      "source_RGBA_pixel_identical": true
+    }
+  ]
+}

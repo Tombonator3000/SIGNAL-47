@@ -1,0 +1,891 @@
+{
+  "pack_id": "signal47_horror_story_h1",
+  "language": "en-US",
+  "status": "authored_not_integrated",
+  "note_nb": "Dialogtider venter på lyd. Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
+  "scenes": [
+    {
+      "scene_id": "H01_BRIEF",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "H01_BRIEF_001",
+          "speaker": "DALE",
+          "text": "Keep the survey running. Write down anything you have to change, even if it fixes itself.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H01_BRIEF_002",
+          "speaker": "DALE",
+          "text": "The camera is beside the east door. Take a reference before you touch the fault.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H01_BRIEF_003",
+          "speaker": "DALE",
+          "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H01_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H01_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The lamp, its reflection and the dark glass agree when you change the light. This is an ordinary reference.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H01_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The notebook records the doors you actually opened. Untried routes stay unmarked.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H01_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H01_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "One route is still untested. Check the door from this side; the drawing alone does not show whether it opens.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H02_BRIEF",
+      "channel": "walkie",
+      "lines": [
+        {
+          "line_id": "H02_BRIEF_001",
+          "speaker": "DALE",
+          "text": "The complaint is about the inspection lamp. Just that lamp.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H02_BRIEF_002",
+          "speaker": "DALE",
+          "text": "Use the marked service control outside the fence. Leave the locked equipment alone.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H02_BRIEF_003",
+          "speaker": "DALE",
+          "text": "Watch the lamp and the indicator separately. Tell me whether they agree.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H02_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H02_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The inspection lamp follows its local control. The separate indicator agrees with the service test.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H02_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The complaint can be explained here. This does not establish the power state of the whole town.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H02_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H02_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The readings do not agree yet. You can finish the calibration, but the unattended survey needs the completed inspection filed at SARO. Keep the card and repeat the comparison at the marked control.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H03_BRIEF",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H03_BRIEF_001",
+          "speaker": "DESCRIPTION",
+          "text": "The residual has a time of its own: 00:13:47. The earlier service complaint does not explain it.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H03_BRIEF_002",
+          "speaker": "DESCRIPTION",
+          "text": "Mark one detail on FRAME 01 that you can check at B-12. Change one local condition, then expose again.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H03_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H03_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local condition changed. The marked reference remains on the controlled print.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H03_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "File what the two exposures support. The next question is where B-12 got that reference.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H03_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H03_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The controlled detail is not readable on this copy. Keep the negative and print it again with the darkroom shut.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H04_BRIEF",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "H04_BRIEF_001",
+          "speaker": "DALE",
+          "text": "The service drawer has a spare. Brass tag, OFFICE. I should have put it in the handover.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H04_BRIEF_002",
+          "speaker": "DALE",
+          "text": "Take the field folder. I wrote down where I stood so somebody else could try it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H04_BRIEF_003",
+          "speaker": "DALE",
+          "text": "I saw the same shape from two places. I do not know whether it was looking at me.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H04_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H04_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The notes specify a post and a standing place. They can be checked in the world.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H04_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The archive gives STATION 01 a separate history. Dale has not identified the person in the old record.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H04_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H04_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The field folder gives you the post and the standing place. The tape is still unviewed; there is enough to make the field check.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H05_BRIEF",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H05_BRIEF_001",
+          "speaker": "DESCRIPTION",
+          "text": "E09A fixes A against the transit and B. C is a separate closing sight line.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H05_BRIEF_002",
+          "speaker": "DESCRIPTION",
+          "text": "The empty footing and the marked post can be photographed together. Check them before deciding what moved.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H05_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "Use Dale's post as a second observation point. A position written in his notebook is a lead until you check it yourself.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H05_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H05_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "Both controlled observation points resolve against fixed survey references. The positions form an arrangement rather than an isolated sighting.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H05_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The cut faces and the covered lamp answer separate questions. Neither identifies who cut the cable.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H05_CHECK_003",
+          "speaker": "DESCRIPTION",
+          "text": "The receiver repeats the 1947 correction at the same place in the fragment. Take the record and field prints to Nora Vega.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H05_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H05_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The lamp follow-up remains unresolved. Keep that limit on the card. The cable record, timing record and trip to Nora remain available.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H05_FIXED_FRAGMENT",
+      "channel": "radio",
+      "lines": [
+        {
+          "line_id": "H05_FIXED_FRAGMENT_001",
+          "speaker": "DESCRIPTION",
+          "text": "[Field receiver: \"Reference west. No. East. Hold the last reading.\"]",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H06_BRIEF",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "H06_BRIEF_001",
+          "speaker": "NORA",
+          "text": "Tomás was my brother. Nineteen. He checked the reading twice before he wrote it down.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H06_BRIEF_002",
+          "speaker": "NORA",
+          "text": "Yes. I cut it. The lamp was off. The reference stayed.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H06_BRIEF_003",
+          "speaker": "NORA",
+          "text": "What you heard is what he said then. I have asked it other things. It gives me the same words.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H06_CHECK",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "H06_CHECK_001",
+          "speaker": "NORA",
+          "text": "C ran east from STATION 01. The old road crosses it at a bolt in the shoulder.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H06_CHECK_002",
+          "speaker": "NORA",
+          "text": "Keep the original where somebody can read it. I tried leaving out a line. It did not make the place go away.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H06_CHECK_003",
+          "speaker": "NORA",
+          "text": "Do not finish his observation. And do not stop on the line.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H06_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H06_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The letter and the field card are still on the table. Ask about the missing part before leaving.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H07_BRIEF",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "H07_BRIEF_001",
+          "speaker": "WARD",
+          "text": "Bring the original run off the rack. Keep the receiver copy with it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H07_BRIEF_002",
+          "speaker": "WARD",
+          "text": "Hondo and Site 11 are sending their local records. I want the records, not three accounts of the same broadcast.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H07_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "The ventilation stops. A white band moves across the outside wall. You can still see the doorway and the floor.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H07_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H07_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local lamp is off. The band still crosses the glass, and the opaque screen cuts it off.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H07_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "It searched one room earlier. Now the outside band is closing the exits as the visitor moves. The recorded fragment has not changed.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H07_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H07_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "A photograph is not required. Check the original's recorded location. If it is not secured, reach it by a clear route; then use the service exit.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H07_FIRST_WARNING",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H07_FIRST_WARNING_001",
+          "speaker": "DESCRIPTION",
+          "text": "The band is moving toward the next window. The wall between the windows stays dark.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H07_FIRST_WARNING_002",
+          "speaker": "DESCRIPTION",
+          "text": "The service route is behind the screen. The front yard is in the light.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H07_CAPTURE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H07_CAPTURE_001",
+          "speaker": "DESCRIPTION",
+          "text": "Caught inside SARO.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H07_CAPTURE_002",
+          "speaker": "DESCRIPTION",
+          "text": "Resume from before the inspection. The findings already secured are kept.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H07_ESCAPE_COMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H07_ESCAPE_COMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The original is secured in the truck. The visitor has lost contact. Its search has ended.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H08_BRIEF",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "H08_BRIEF_001",
+          "speaker": "WARD",
+          "text": "Hondo kept its power when you lost yours. Their paper is a local record. Do not put your outage on their chart.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H08_BRIEF_002",
+          "speaker": "WARD",
+          "text": "Site 11 took the second reading with the audio feed unplugged. Their transit still recorded it.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H08_BRIEF_003",
+          "speaker": "WARD",
+          "text": "Compare the times and the order. Then tell me what is observation and what is your explanation.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H08_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H08_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "The local source sheets agree on phase order and measured interval. Their separate optical readings show continuing approach.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H08_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The warning can state coordinated preparation for an arrival. Identity and purpose remain unestablished. Call Ward and keep those limits on the report.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H08_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H08_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "One remote source is not verified. Send the local warning now, then ask Ward for the original source sheet before recording a network conclusion.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H08_COMPARE_RECORDS",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H08_COMPARE_RECORDS_001",
+          "speaker": "DESCRIPTION",
+          "text": "The source sheets contain different local readings. Their sequence and timing agree.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H08_COMPARE_RECORDS_002",
+          "speaker": "DESCRIPTION",
+          "text": "Hondo and Site 11 each recorded approaching tracks after the reference sweep. SARO is one prepared place among several.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H08_COMPARE_RECORDS_003",
+          "speaker": "DESCRIPTION",
+          "text": "The records support a warning about a coordinated arrival. They do not identify who is coming.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H08_WARNING_ACK",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "H08_WARNING_ACK_001",
+          "speaker": "WARD",
+          "text": "The network warning is entered. The six o'clock series remains suspended after your earlier report. The other sites have read it back: nobody closes a reference or completes a run.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H08_WARNING_ACK_003",
+          "speaker": "WARD",
+          "text": "I have written the source IDs and the measurements into the call log. The warning is outside SARO. Keep the photographs and the originals with their source sheets.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H08_WARNING_ACK_002",
+          "speaker": "WARD",
+          "text": "The field courier is on the old Roswell road, east of the mapped reference. Check the map at the diner before you agree a handover point.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H09_BRIEF",
+      "channel": "physical",
+      "lines": [
+        {
+          "line_id": "H09_BRIEF_001",
+          "speaker": "DRIVER",
+          "text": "Last October it all quit past the eight-mile post. Engine, lights, radio. Then it came back.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H09_BRIEF_002",
+          "speaker": "DRIVER",
+          "text": "I came through again before I stopped here this morning. Nothing quit. That is one trip. I cannot tell you what made the other one different.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H09_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "On the table the tracing is still loose. Place its transit on STATION 01, north to north. The framed newspaper clipping has no survey scale.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H09_CHECK",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "H09_CHECK_001",
+          "speaker": "WARD",
+          "text": "C is the bolt at eight point one five. The handover is ten point four. I have both marked.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H09_CHECK_002",
+          "speaker": "WARD",
+          "text": "The old road is the direct approach to the courier. It is a practical route, not a finding that the reference is safe.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "H09_CHECK_003",
+          "speaker": "WARD",
+          "text": "Take the originals through. Stay in the cab, keep moving and take no reading at the bolt. If the truck falters before the crossing, turn back while you can.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "H09_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H09_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "C is not placed yet. Put the transit on STATION 01 first. Keep the old framed clipping beside the map; it establishes the photograph, not the crossing.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H10_BRIEF",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H10_BRIEF_001",
+          "speaker": "DESCRIPTION",
+          "text": "The originals are in the cab. Ward has the warning and the dictated measurement tables.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H10_BRIEF_002",
+          "speaker": "DESCRIPTION",
+          "text": "Handover: mile 10.4. C: mile 8.15. Pass the reference without stopping or taking a reading.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H10_BRIEF_003",
+          "speaker": "DESCRIPTION",
+          "text": "Leave for the handover when you are ready.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H10_CHECK",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H10_CHECK_001",
+          "speaker": "DESCRIPTION",
+          "text": "At the crossing the engine stops. You did not turn the key off.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "H10_CHECK_002",
+          "speaker": "DESCRIPTION",
+          "text": "The warning has already gone through. The originals are beside you.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "H10_INCOMPLETE",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "H10_INCOMPLETE_001",
+          "speaker": "DESCRIPTION",
+          "text": "The warning has not been acknowledged. Use the diner payphone before leaving.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    }
+  ],
+  "media": []
+}

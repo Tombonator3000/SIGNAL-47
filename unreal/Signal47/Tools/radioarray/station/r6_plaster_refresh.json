@@ -1,0 +1,13 @@
+{
+  "revision": "R6-mineral-plaster-correction",
+  "geometry_hash_before": "1e60471da3356aab4b5e989858917755b4e13c5e48df2c62991aa4547ac8fbd3",
+  "geometry_hash_after": "1e60471da3356aab4b5e989858917755b4e13c5e48df2c62991aa4547ac8fbd3",
+  "geometry_identical": true,
+  "fbx_byte_identical": true,
+  "timber_byte_identical": true,
+  "normal_strengths": {
+    "M_1420_Stucco_cream": 0.38,
+    "M_1420_WeatheredFacadePaint": 0.4
+  },
+  "scope": "Two plaster PBR families, Blender material nodes and packed GLB only; no geometry rebuild or FBX export."
+}

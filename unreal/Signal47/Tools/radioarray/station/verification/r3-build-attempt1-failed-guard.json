@@ -1,0 +1,19 @@
+{
+  "returncode": 1,
+  "wall_seconds": 78.33376951700484,
+  "contention": [],
+  "stop_reason": null,
+  "preflight": {
+    "available_gib": 25.435203552246094,
+    "heavy_jobs": [],
+    "pgrep": "22751 /bin/bash -c source /home/tom/.claude/shell-snapshots/snapshot-bash-1792732279947-547f80.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && { \\builtin unalias -- 'unsetenv'; \\builtin unset -f -- 'unsetenv'; } >/dev/null 2>&1 || true && eval 'until ! pgrep -f \"UnrealBuildTool\" >/dev/null; do sleep 5; done; tail -4 /tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/build.log' < /dev/null && pwd -P >| /tmp/claude-399d-cwd\n",
+    "exempted_installed_game": [],
+    "grace_policy": {
+      "enabled": false,
+      "eligible": false,
+      "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "performance_status": "UNCONTENDED"
+}

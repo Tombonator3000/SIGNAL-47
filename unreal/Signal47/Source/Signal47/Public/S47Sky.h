@@ -24,6 +24,8 @@ inline constexpr FS47StarHole STAR_HOLE = { 26, 32, 3.4, 4.6, 10, 100 };
 SIGNAL47_API FVector S47SkyDir(double Az, double El);
 /** starHoleAt: how much of the hole there is at a clock, when it begins at `from` (Infinity: not tonight yet). */
 SIGNAL47_API double S47StarHoleAt(double Clock, double From);
+/** Render-only art calibration around Caliche; zero at SARO and the story's other locations. */
+SIGNAL47_API double S47CalicheVisualWeight(const FVector& EyeThree);
 
 class SIGNAL47_API FS47Sky
 {
@@ -34,7 +36,19 @@ public:
 	double Time = 0;
 	double Flash = 0;
 	FVector FlashDir = FVector(1, 0.05, -0.3).GetSafeNormal();
-	double Dawn = 0;                      // uDawn: 0 night, 1 sunrise (SetClock)
+	double Dawn = 0;                      // Morning-only curve; story gates keep their old meaning.
+	double Evening = 0;                   // Late afternoon -> sunset -> blue hour, independent of Dawn.
+	double Midday = 0;                    // Rendering only: full daylight 06:00-17:00; never a story Dawn gate.
+	/** Rendering only (SKY.md): the volumetric layer's cover and the cirrus above it, from the clock.
+	 *  Day and dusk a broken 40-70 % layer; 18:50-21:00 it breaks up to a few night clouds (never
+	 *  overcast); 04:30-06:30 it builds back. Story beats keep open sky locally (Draw: clear directions). */
+	double CloudCover = 0.55, Cirrus = 0.45;
+	static double CloudCoverAt(double Clock);
+	static double CirrusAt(double Clock);
+	/** The shared day/night response of the existing dome, stars, horizon and native lights. */
+	double Daylight() const { const double Base = FMath::Max(Dawn, Evening); return Base + (1.0 - Base) * Midday; }
+	/** Stars stay absent until civil twilight; the old morning star fade remains unchanged. */
+	double StarDimming() const { const double Base = Evening > 0 ? FMath::Min(1.0, Evening / 0.05) : Dawn; return Base + (1.0 - Base) * Midday; }
 	FVector SunDir = FVector(0.98, -0.02, -0.19).GetSafeNormal();
 	double Sun = 0;
 	FVector4 Glow[3] = { FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1) }; // uGlow (backdrop.ts sets them)
@@ -51,7 +65,9 @@ public:
 	TFunction<void(double, double)> OnThunder;
 
 	FS47Sky();
-	/** setClock(clock, sunElevDeg): the dawn from the game clock, 0 until 04:40, 1 at 05:30. */
+	/** Dawn remains 04:40-05:30, unchanged through 05:40. Midday blends 05:40-06:00 and 17:00-18:00.
+	 *  Evening retains westward sun, sunset 18:27 and blue hour to 19:07.
+	 *  The optional elevation remains the finale's override; it never changes the evening clock. */
 	void SetClock(double Clock, TOptional<double> SunElevDeg = TOptional<double>());
 	/** setDawnLift(k): how much of the dawn an area shows. */
 	void SetDawnLift(double K) { DawnLift = K; }
@@ -88,6 +104,9 @@ private:
 	bool bLive = false;
 	TWeakObjectPtr<AS47Web> Web;
 	int32 GroupNode = -1;
+	int32 ConceptBackdropNode = -1;
+	TArray<TPair<int32, bool>> ConceptLegacyMesas;
+	bool bConceptLegacyMesasHidden = false;
 	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp;
 	TWeakObjectPtr<UInstancedStaticMeshComponent> StarsComp;
 	TWeakObjectPtr<UMaterialInstanceDynamic> DomeMid, BandMid, StarsMid, MeteorMid;

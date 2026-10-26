@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "scope": "Xbox controller source, packaged selftest, native measured controller scenarios and targeted regression",
+  "tested_source": "3d016a078a149c253f0bad0e6c415030075b68aa",
+  "package": {
+    "path": "/home/tom/scratch-bm/Signal47-xbox/candidate-X4/Linux/Signal47/Binaries/Linux/Signal47",
+    "bytes": 311645824,
+    "sha256": "bc258d8c8d912ffcd82f3c122b6ceca5e55cb2601cd532b05d9ffbceca453536",
+    "containers": [
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.pak",
+        "bytes": 1264478975,
+        "sha256": "a76402b309bdeabb14ae8308f16a23ef81792eb8940f691a89026a55d6295029"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.ucas",
+        "bytes": 1836176672,
+        "sha256": "78f8e2f963a066562ca56a4b7e3d6422fe136f8cc982f1609ac9317a62c40c1a"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.utoc",
+        "bytes": 2000145,
+        "sha256": "a74daecb0ea2e96eb50f5b85b8b33dc576982e2ceaebee8b9668d59da19f2554"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.ucas",
+        "bytes": 3323168,
+        "sha256": "1cb75e90b6c0b71594b619ce286a246c5966b0831d26e308bb1d144cbc7236e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.utoc",
+        "bytes": 806,
+        "sha256": "b6456194ab08e29851afaa5ef6f0b3ccc3d71dc1282699200d0975b93a2a5238"
+      }
+    ]
+  },
+  "selftests": 1373,
+  "native_captures": 11,
+  "native_scope_status": "PASS for measured criteria only",
+  "targeted_regressions": 16,
+  "full_suite": "NOT_COMPLETED_SCOPE_REDUCED_AT_USER_REQUEST",
+  "visual_final_images": 11,
+  "unverified": [
+    "Physical Xbox/transport/Windows/rumble",
+    "Native card drag commit and cancel",
+    "Detailed notebook tab, receiver, ops command and radio state",
+    "Native digital shutter thresholds, focus loss and post-reconnect active input",
+    "Human ergonomics and temporal comfort"
+  ],
+  "evidence": "/home/tom/scratch-bm/Signal47-xbox",
+  "installation": {
+    "status": "PASS",
+    "installed": "/home/tom/Games/Signal47/Linux",
+    "backup": "/home/tom/scratch-bm/Signal47-xbox/installed-backup-1792853722324495699",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "source_head": "fda747988c1ea044e6999e3d098baec82c16232d",
+    "tested_source": "3d016a078a149c253f0bad0e6c415030075b68aa",
+    "pr": 149
+  }
+}

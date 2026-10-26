@@ -1,0 +1,257 @@
+{
+  "status": "SOURCE_PASS_NATIVE_VISUAL_PENDING",
+  "revision": "R8_final_dark_rut_albedo_surgery",
+  "scope": "Only CompactedUse RGB changes. No optional asset or geometry changes.",
+  "albedo_shape": {
+    "track_count": 2,
+    "control_points_per_track": 4,
+    "lateral_control_max_fraction": 0.007,
+    "track_center_offsets_U": [
+      -0.11,
+      0.11
+    ],
+    "width_gaussian_U": 0.02,
+    "explicit_intervals_V": [
+      [
+        [
+          0.08,
+          0.2
+        ],
+        [
+          0.29,
+          0.43
+        ],
+        [
+          0.53,
+          0.66
+        ],
+        [
+          0.76,
+          0.88
+        ]
+      ],
+      [
+        [
+          0.12,
+          0.27
+        ],
+        [
+          0.37,
+          0.51
+        ],
+        [
+          0.59,
+          0.71
+        ],
+        [
+          0.82,
+          0.91
+        ]
+      ]
+    ],
+    "purpose": "Nearly straight, slightly different parallel dry wheel traces with clear length gaps; retain lighter dusty margins."
+  },
+  "preservation": {
+    "status": "PASS",
+    "before_all_material_faces": {
+      "SM_Caliche_DryPlants": "a10afc7223e50e8058573d9a7e387c548a85c59a821282b80d2fc1ca7e0c88fb",
+      "SM_Caliche_RoadWear": "ffbe8c4f7ba44f0cfe89f47d97857059f88dd9064bf145d12c832c29029f1cdb",
+      "SM_Caliche_Rocks": "d4c41cdd366607bfac198cb472c18a8375897c5a5881e87761e1300f08e61fc3",
+      "SM_Caliche_Surface": "875e576738048da86258a058123cf55bce39a04645a837f846810e7023455792"
+    },
+    "after_all_material_faces": {
+      "SM_Caliche_DryPlants": "a10afc7223e50e8058573d9a7e387c548a85c59a821282b80d2fc1ca7e0c88fb",
+      "SM_Caliche_RoadWear": "ffbe8c4f7ba44f0cfe89f47d97857059f88dd9064bf145d12c832c29029f1cdb",
+      "SM_Caliche_Rocks": "d4c41cdd366607bfac198cb472c18a8375897c5a5881e87761e1300f08e61fc3",
+      "SM_Caliche_Surface": "875e576738048da86258a058123cf55bce39a04645a837f846810e7023455792"
+    },
+    "unchanged_contract_files": [
+      "model_contract.json",
+      "materials.json",
+      "wear_contact_samples.json",
+      "surface_samples.json"
+    ],
+    "all_packed_images_match_current_disk": [
+      "CalicheSoil_color.png",
+      "CalicheSoil_normal.png",
+      "CalicheSoil_roughness.png",
+      "CompactedUse_color.png",
+      "CompactedUse_normal.png",
+      "CompactedUse_roughness.png",
+      "ConcreteUse_color.png",
+      "ConcreteUse_normal.png",
+      "ConcreteUse_roughness.png",
+      "DryPlant_color.png",
+      "DryPlant_normal.png",
+      "DryPlant_roughness.png",
+      "DrySilt_color.png",
+      "DrySilt_normal.png",
+      "DrySilt_roughness.png",
+      "DustFeather_color.png",
+      "DustFeather_normal.png",
+      "DustFeather_roughness.png",
+      "GrassAtlas_color.png",
+      "GrassAtlas_normal.png",
+      "GrassAtlas_roughness.png",
+      "Limestone_color.png",
+      "Limestone_normal.png",
+      "Limestone_roughness.png",
+      "OldAsphalt_color.png",
+      "OldAsphalt_normal.png",
+      "OldAsphalt_roughness.png",
+      "PeaGravel_color.png",
+      "PeaGravel_normal.png",
+      "PeaGravel_roughness.png",
+      "SageAtlas_color.png",
+      "SageAtlas_normal.png",
+      "SageAtlas_roughness.png",
+      "ShoulderBlend_color.png",
+      "ShoulderBlend_normal.png",
+      "ShoulderBlend_roughness.png",
+      "TarRepair_color.png",
+      "TarRepair_normal.png",
+      "TarRepair_roughness.png",
+      "WornConcrete_color.png",
+      "WornConcrete_normal.png",
+      "WornConcrete_roughness.png",
+      "Yucca_color.png",
+      "Yucca_normal.png",
+      "Yucca_roughness.png"
+    ],
+    "atlas_times_vertexalpha": true
+  },
+  "texture_proof": {
+    "status": "PASS",
+    "only_changed_texture": "textures/CompactedUse_color.png RGB",
+    "R7_all_Soil_alpha_pixels_byte_identical": true,
+    "Concrete_color_file_byte_identical": true,
+    "all_other44texture_maps_SHA256_unchanged": [
+      "textures/CalicheSoil_color.png",
+      "textures/CalicheSoil_normal.png",
+      "textures/CalicheSoil_roughness.png",
+      "textures/PeaGravel_color.png",
+      "textures/PeaGravel_normal.png",
+      "textures/PeaGravel_roughness.png",
+      "textures/OldAsphalt_color.png",
+      "textures/OldAsphalt_normal.png",
+      "textures/OldAsphalt_roughness.png",
+      "textures/DrySilt_color.png",
+      "textures/DrySilt_normal.png",
+      "textures/DrySilt_roughness.png",
+      "textures/Limestone_color.png",
+      "textures/Limestone_normal.png",
+      "textures/Limestone_roughness.png",
+      "textures/DryPlant_color.png",
+      "textures/DryPlant_normal.png",
+      "textures/DryPlant_roughness.png",
+      "textures/TarRepair_color.png",
+      "textures/TarRepair_normal.png",
+      "textures/TarRepair_roughness.png",
+      "textures/WornConcrete_color.png",
+      "textures/WornConcrete_normal.png",
+      "textures/WornConcrete_roughness.png",
+      "textures/ShoulderBlend_color.png",
+      "textures/ShoulderBlend_normal.png",
+      "textures/ShoulderBlend_roughness.png",
+      "textures/DustFeather_color.png",
+      "textures/DustFeather_normal.png",
+      "textures/DustFeather_roughness.png",
+      "textures/GrassAtlas_color.png",
+      "textures/GrassAtlas_normal.png",
+      "textures/GrassAtlas_roughness.png",
+      "textures/SageAtlas_color.png",
+      "textures/SageAtlas_normal.png",
+      "textures/SageAtlas_roughness.png",
+      "textures/Yucca_color.png",
+      "textures/Yucca_normal.png",
+      "textures/Yucca_roughness.png",
+      "textures/CompactedUse_normal.png",
+      "textures/CompactedUse_roughness.png",
+      "textures/ConcreteUse_color.png",
+      "textures/ConcreteUse_normal.png",
+      "textures/ConcreteUse_roughness.png"
+    ],
+    "embedded_GLBRGBA": [
+      {
+        "file": "SM_Caliche_Surface.glb",
+        "material": "M_CS_CompactedUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      },
+      {
+        "file": "SM_Caliche_Surface.glb",
+        "material": "M_CS_ConcreteUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      },
+      {
+        "file": "Caliche_Ground_Assembly.glb",
+        "material": "M_CS_CompactedUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      },
+      {
+        "file": "Caliche_Ground_Assembly.glb",
+        "material": "M_CS_ConcreteUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      }
+    ],
+    "longitudinal_dark_row_fraction": 0.75390625,
+    "longitudinal_dark_runs": [
+      [
+        135,
+        166
+      ],
+      [
+        171,
+        525
+      ],
+      [
+        527,
+        528
+      ],
+      [
+        619,
+        1069
+      ],
+      [
+        1087,
+        1447
+      ],
+      [
+        1448,
+        1449
+      ],
+      [
+        1477,
+        1489
+      ],
+      [
+        1584,
+        1900
+      ],
+      [
+        1932,
+        1951
+      ]
+    ],
+    "native_visual_status": "PENDING: source shape test is not a rendered appearance acceptance."
+  },
+  "total_triangles": 64289,
+  "native_status": "Await focused day/dusk camera review; source shape proof is not native acceptance.",
+  "DCC_slot_released": true,
+  "previous_source_and_export_evidence": "evidence/r7-before-r8"
+}

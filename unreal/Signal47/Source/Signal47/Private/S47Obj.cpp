@@ -169,8 +169,8 @@ void FS47Obj::SetInstance(int32 K, const FVector& P, const FQuat& Q, const FVect
 
 ULightComponent* FS47Light::Component() const { return W ? W->LightByUuid(Uuid) : nullptr; }
 bool FS47Light::IsValid() const { return Component() != nullptr; }
-float FS47Light::Intensity() const { const ULightComponent* L = Component(); return L ? L->Intensity : 0.f; }
-void FS47Light::SetIntensity(float V) const { if (ULightComponent* L = Component()) L->SetIntensity(V); }
+float FS47Light::Intensity() const { return W ? W->LightIntensity(Uuid) : 0.f; }
+void FS47Light::SetIntensity(float V) const { if (W) W->SetLightIntensity(Uuid, V); }
 FLinearColor FS47Light::Color() const { const ULightComponent* L = Component(); return L ? L->GetLightColor() : FLinearColor::Black; }
 void FS47Light::SetColor(const FLinearColor& C) const { if (ULightComponent* L = Component()) L->SetLightColor(C); }
 bool FS47Light::Visible() const { const ULightComponent* L = Component(); return L && L->IsVisible(); }

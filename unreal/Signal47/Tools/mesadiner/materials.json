@@ -1,0 +1,824 @@
+[
+  {
+    "name": "M_Mesa_Stucco",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.92,
+    "specular": 0.32,
+    "normal_strength": 0.32,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Stucco_base_color.png",
+      "normal": "textures/Stucco_normal.png",
+      "roughness": "textures/Stucco_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_PaintRed",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.05,
+    "roughness": 0.72,
+    "specular": 0.32,
+    "normal_strength": 0.16,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/PaintRed_base_color.png",
+      "normal": "textures/PaintRed_normal.png",
+      "roughness": "textures/PaintRed_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_TealTile",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.34,
+    "specular": 0.32,
+    "normal_strength": 0.22,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/TealTile_base_color.png",
+      "normal": "textures/TealTile_normal.png",
+      "roughness": "textures/TealTile_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_CheckerFloor",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.72,
+    "specular": 0.32,
+    "normal_strength": 0.18,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/CheckerFloor_base_color.png",
+      "normal": "textures/CheckerFloor_normal.png",
+      "roughness": "textures/CheckerFloor_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_Vinyl",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.35,
+    "specular": 0.32,
+    "normal_strength": 0.16,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Vinyl_base_color.png",
+      "normal": "textures/Vinyl_normal.png",
+      "roughness": "textures/Vinyl_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_Formica",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.34,
+    "specular": 0.32,
+    "normal_strength": 0.1,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Formica_base_color.png",
+      "normal": "textures/Formica_normal.png",
+      "roughness": "textures/Formica_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_Wood",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.78,
+    "specular": 0.32,
+    "normal_strength": 0.18,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Wood_base_color.png",
+      "normal": "textures/Wood_normal.png",
+      "roughness": "textures/Wood_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_PrintAtlas",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.83,
+    "specular": 0.32,
+    "normal_strength": 0.025,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/PrintAtlas_base_color.png",
+      "normal": "textures/PrintAtlas_normal.png",
+      "roughness": "textures/PrintAtlas_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_WallCream",
+    "base_color_linear": [
+      0.5149176653765214,
+      0.44520119451622786,
+      0.29177064981753587,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.85,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_Ceiling",
+    "base_color_linear": [
+      0.45641102318040466,
+      0.4286904966139066,
+      0.3049873140698863,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_TealPaint",
+    "base_color_linear": [
+      0.06662593864377289,
+      0.1589608350608804,
+      0.13563332965520566,
+      1
+    ],
+    "metallic": 0.12,
+    "roughness": 0.57,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_Chrome",
+    "base_color_linear": [
+      0.4232676699860717,
+      0.467783796112159,
+      0.45078578283822346,
+      1
+    ],
+    "metallic": 0.94,
+    "roughness": 0.23,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_DarkMetal",
+    "base_color_linear": [
+      0.021219010376003555,
+      0.02518685962736163,
+      0.021219010376003555,
+      1
+    ],
+    "metallic": 0.75,
+    "roughness": 0.67,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_Rubber",
+    "base_color_linear": [
+      0.007499032043226175,
+      0.008568125618069307,
+      0.006995410187265387,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.91,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_Ceramic",
+    "base_color_linear": [
+      0.7230551289219693,
+      0.6514056374198242,
+      0.467783796112159,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.24,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_Coffee",
+    "base_color_linear": [
+      0.02315336617811041,
+      0.008568125618069307,
+      0.003346535763899161,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.25,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_WindowGlass",
+    "base_color_linear": [
+      0.3005437944157765,
+      0.4178850708481375,
+      0.4019777798321958,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.1,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 0.075,
+    "alpha_mode": "translucent",
+    "two_sided": true
+  },
+  {
+    "name": "M_Mesa_FacadeGlass",
+    "base_color_linear": [
+      0.5583403896342679,
+      0.4793201831008268,
+      0.30946892281750854,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.13,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "alpha": 0.055,
+    "alpha_mode": "translucent",
+    "two_sided": true
+  },
+  {
+    "name": "M_Mesa_Headlamp",
+    "base_color_linear": [
+      0.7011018919329731,
+      0.6514056374198242,
+      0.4019777798321958,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.18,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_RedLens",
+    "base_color_linear": [
+      0.3467040563550296,
+      0.008023192985384994,
+      0.004024717018496307,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.25,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_AmberLens",
+    "base_color_linear": [
+      0.5520114015120001,
+      0.12213877222960187,
+      0.004776953480693729,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.25,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_TruckPaint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.16,
+    "roughness": 0.62,
+    "specular": 0.3,
+    "normal_strength": 0.15,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/TruckPaint_base_color.png",
+      "normal": "textures/TruckPaint_normal.png",
+      "roughness": "textures/TruckPaint_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_SignTeal",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.3,
+    "roughness": 0.62,
+    "specular": 0.3,
+    "normal_strength": 0.18,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/SignTeal_base_color.png",
+      "normal": "textures/SignTeal_normal.png",
+      "roughness": "textures/SignTeal_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_SignRedGlow",
+    "base_color_linear": [
+      1.0,
+      0.05612849004960009,
+      0.014443843596092545,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.3,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      1.0,
+      0.05612849004960009,
+      0.014443843596092545,
+      1
+    ],
+    "emission_strength": 3.2
+  },
+  {
+    "name": "M_Mesa_SignCyanGlow",
+    "base_color_linear": [
+      0.08650046203654976,
+      0.8796223968878317,
+      0.6866853124353135,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.3,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0.08650046203654976,
+      0.8796223968878317,
+      0.6866853124353135,
+      1
+    ],
+    "emission_strength": 2.7
+  },
+  {
+    "name": "M_Mesa_PendantGlow",
+    "base_color_linear": [
+      1.0,
+      0.7304607400903537,
+      0.2961382707983211,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.3,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      1.0,
+      0.7304607400903537,
+      0.2961382707983211,
+      1
+    ],
+    "emission_strength": 1.8
+  },
+  {
+    "name": "M_Mesa_Fluorescent",
+    "base_color_linear": [
+      0.8307698767746546,
+      0.799102738014409,
+      0.5711248294648731,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.3,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0.8307698767746546,
+      0.799102738014409,
+      0.5711248294648731,
+      1
+    ],
+    "emission_strength": 1.4
+  },
+  {
+    "name": "M_Mesa_Asphalt",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.95,
+    "specular": 0.3,
+    "normal_strength": 0.4,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Asphalt_base_color.png",
+      "normal": "textures/Asphalt_normal.png",
+      "roughness": "textures/Asphalt_roughness.png"
+    },
+    "alpha_mode": "dithered_masked",
+    "opacity_from_base_color": true,
+    "alpha_cutoff": 0.333
+  },
+  {
+    "name": "M_Mesa_Concrete",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.9,
+    "specular": 0.3,
+    "normal_strength": 0.3,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Concrete_base_color.png",
+      "normal": "textures/Concrete_normal.png",
+      "roughness": "textures/Concrete_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_Gravel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.98,
+    "specular": 0.3,
+    "normal_strength": 0.44,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/Gravel_base_color.png",
+      "normal": "textures/Gravel_normal.png",
+      "roughness": "textures/Gravel_roughness.png"
+    }
+  },
+  {
+    "name": "M_Mesa_YardMarking",
+    "base_color_linear": [
+      0.4620769996544071,
+      0.3712376804741491,
+      0.16826940018969075,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.95,
+    "specular": 0.32,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0
+  },
+  {
+    "name": "M_Mesa_DryFoliage",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.84,
+    "specular": 0.22,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "alpha": 1,
+    "alpha_mode": "masked",
+    "two_sided": true,
+    "opacity_from_base_color": true,
+    "alpha_cutoff": 0.333,
+    "mip_alpha_coverage": true,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/botanical_color.png",
+      "roughness": "textures/botanical_roughness.png",
+      "normal": "textures/botanical_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Mesa_PlantBark",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.84,
+    "specular": 0.22,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "alpha": 1,
+    "alpha_mode": "opaque",
+    "two_sided": false,
+    "opacity_from_base_color": false,
+    "alpha_cutoff": 0.333,
+    "mip_alpha_coverage": false,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "textures/bark_color.png",
+      "roughness": "textures/bark_roughness.png",
+      "normal": "textures/bark_normal_dx.png"
+    }
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "name": "M_Caliche_Mesa_0",
+    "role": "talus_fines",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "specular": 0.18,
+    "normal_strength": 0.42,
+    "uv_scale": 1,
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/MesaTalus_base_color.png",
+      "normal": "textures/MesaTalus_normal.png",
+      "roughness": "textures/MesaTalus_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_1",
+    "role": "sandstone_beds",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "texture_tint_linear": [
+      1,
+      0.99,
+      0.98
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "specular": 0.18,
+    "normal_strength": 0.66,
+    "uv_scale": 1,
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_2",
+    "role": "resistant_pale_cap",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "specular": 0.18,
+    "normal_strength": 0.4,
+    "uv_scale": 1,
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/MesaCap_base_color.png",
+      "normal": "textures/MesaCap_normal.png",
+      "roughness": "textures/MesaCap_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_3",
+    "role": "thin_recessive_beds",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "texture_tint_linear": [
+      0.86,
+      0.9,
+      0.94
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "specular": 0.18,
+    "normal_strength": 0.54,
+    "uv_scale": 1,
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_4",
+    "role": "eroded_talus",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "texture_tint_linear": [
+      0.92,
+      0.94,
+      0.96
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "specular": 0.18,
+    "normal_strength": 0.62,
+    "uv_scale": 1,
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/MesaTalus_base_color.png",
+      "normal": "textures/MesaTalus_normal.png",
+      "roughness": "textures/MesaTalus_roughness.png"
+    }
+  },
+  {
+    "name": "M_Caliche_Mesa_5",
+    "role": "distant_ridges",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "texture_tint_linear": [
+      0.84,
+      0.91,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.93,
+    "specular": 0.18,
+    "normal_strength": 0.18,
+    "uv_scale": 1,
+    "normal_convention": "DirectX",
+    "texture_color_space": "sRGB",
+    "textures": {
+      "base_color": "textures/MesaRock_base_color.png",
+      "normal": "textures/MesaRock_normal.png",
+      "roughness": "textures/MesaRock_roughness.png"
+    }
+  }
+]

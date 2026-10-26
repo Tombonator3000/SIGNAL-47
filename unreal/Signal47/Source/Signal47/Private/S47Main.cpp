@@ -1,4 +1,11 @@
 #include "S47Main.h"
+#include "S47Evening.h"
+#include "S47Substation.h"
+#include "S47Office.h"
+#include "S47T02Test.h"
+#include "S47Anomaly.h"
+#include "S47AnomalyWorld.h"
+#include "S47AnomalyTest.h"
 #include "S47Chapter5.h"
 #include "S47Chapter6.h"
 #include "SS47Widgets.h"
@@ -42,7 +49,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { return Night && Night->OneAtATime(); }
+bool US47Main::OneAtATime() const { return (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -54,6 +61,15 @@ void US47Main::Step(double Dt)
 	T += Dt;
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
+	if (Evening) Evening->Step(Dt);
+	if (Office) Office->Step(Dt);
+	if (Substation) Substation->Step(Dt);
+ // Opt-in live contract tests must also observe legacy restores with Evening disabled.
+ if (Evening) Evening->ControlServiceTest(Dt);
+ if (Evening) Evening->ControlServiceDriveTest(Dt);
+	if (Mode == EMode::Play && Anomaly) Anomaly->Step(Dt);
+	if (Mode == EMode::Play && AnomalyWorld) AnomalyWorld->Step(Dt);
+	const bool bOpening = Evening && Evening->Opening();
 	// main.ts, after game.update: the walk gap to STATION 01 from chapter three, the old road's barricades
 	// open from chapter five's road (World.setStoryPlaces)
 	if (Mode == EMode::Play && World && Story)
@@ -73,20 +89,21 @@ void US47Main::Step(double Dt)
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
 	if (Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
+	if (AnomalyWorld) AnomalyWorld->DreadStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
 	if (Night) Night->FlashlightStep(Dt);
 	// main.ts radioStep: the car's and the diner's receivers, the radio, the trip's radio
-	if (Mode == EMode::Play) RadioStep(Dt);
+	if (Mode == EMode::Play && !bOpening) RadioStep(Dt);
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands
 	if (Mode == EMode::Play) Audio->NightLife(float(ModalOpen() ? 0.0 : Dt), P, Story ? Story->Clock() : 0.0);
 	// main.ts: the music by cue (core/score.ts)
-	if (Mode == EMode::Play && Score) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
+	if (Mode == EMode::Play && Score && !bOpening) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
-	if (Night) Night->Step(Dt);
+	if (Night && !bOpening) Night->Step(Dt);
 	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)
-	if (SaroNight) SaroNight->Frame(Dt);
+	if (SaroNight && !bOpening) SaroNight->Frame(Dt);
 	// main.ts: html.at-line during THE EVENT (game.ch6.stage === 'event'): the prompt sits lower
 	{
 		const US47Chapter6* C6 = Story ? Cast<US47Chapter6>(Story->Chapter(TEXT("ch6"))) : nullptr;
@@ -102,6 +119,7 @@ void US47Main::Step(double Dt)
 		static const TCHAR* Indoors[] = { TEXT("room.bounds"), TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") };
 		bool bIn = Web->Rect(TEXT("world.motel.zones[2]")).Contains(P);
 		for (const TCHAR* B : Indoors) bIn |= Web->Rect(B).Contains(P);
+		bIn |= Office && Office->Contains(P);
 		Sp = bIn ? TEXT("room") : Web->Rect(TEXT("yard.zone.lab")).Contains(P) ? TEXT("lab") : TEXT("yard");
 	}
 	if (Sp != Space) { Space = Sp; Audio->SetSpace(Sp); }
@@ -112,6 +130,7 @@ void US47Main::Step(double Dt)
 	{
 		bool bIn = false;
 		for (const TCHAR* B : { TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") }) bIn |= Web->Rect(B).Contains(P);
+		bIn |= Office && Office->Contains(P);
 		bIn |= Web->Rect(TEXT("room.bounds")).Contains(P) && Web->Obj(TEXT("room.southDoorHinge")).Rotation().Y > 0.01;
 		bIn |= Web->DoorStates().FindRef(TEXT("exit")) && Web->Rect(TEXT("world.crossing.zone.stoop")).Contains(P);
 		bIn |= Web->Rect(TEXT("annex.zone.exitDoor")).Contains(P);
@@ -123,6 +142,8 @@ void US47Main::Step(double Dt)
 	// main.ts: the sky, the lamps, the shared lights, the fog's colour, the painted horizon, the areas'
 	// glows and windows (and World.update's light in the air), the ground cover before the picture
 	if (Life) Life->Step(Dt);
+	if (AnomalyTest) AnomalyTest->Step(Dt);
+	if (T02Test) T02Test->Step(Dt);
 }
 
 void US47Main::InitRadio()
@@ -153,6 +174,7 @@ void US47Main::InitRadio()
 }
 void US47Main::TurnRadio()
 {
+	if (Evening && Evening->Commute()) { Evening->Use(TEXT("evening:radio")); return; }
 	if (Mode != EMode::Play || ModalOpen() || !World || !World->bDriving || (Story && Story->IsCinematic())) return;
 	if (!World->TruckHere()) { if (UI) UI->Toast(TEXT("The radio stays on the Roswell station."), 2.5f); return; }
 	if (!CarRadio) return;
@@ -162,6 +184,7 @@ void US47Main::TurnRadio()
 void US47Main::ResetRadio(double Clock)
 {
 	if (!Radio) return;
+	Radio->bEveningTimeline = Story && Story->bEveningTimeline;
 	Radio->bBoyCalled = TownSeen.Contains(TEXT("ev:boy")) || TownSeen.Contains(TEXT("ln:reel")); Radio->Reset(Clock); bRadioHeard = false;
 	// TripRadio's trip/last refer to the previous night's stations, not to the new case.
 	TripRadio = MakeShared<FS47TripRadio>(*Radio, TownSeen);

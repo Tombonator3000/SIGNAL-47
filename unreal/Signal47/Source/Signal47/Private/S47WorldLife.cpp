@@ -186,8 +186,9 @@ void US47WorldLife::BuildFlora(bool bBind)
 	// own stops on the road), moved into a patch's terms
 	auto CoverOf = [W](const FVector& O, TArray<FS47FloraRect>& Blocks, TArray<FS47FloraRect>& Walks)
 	{
-		for (const FS47Rect& C : W->CollidersMutable(TEXT("road"))) Blocks.Add(FR(C, O.X, O.Z));
-		for (const FS47Rect& Z : W->ZonesMutable(TEXT("road"))) if (!Z.Id.StartsWith(TEXT("rs"))) Walks.Add(FR(Z, O.X, O.Z));
+		// (not S47Props' own colliders and zones: the cover grows as the web version's does)
+		for (const FS47Rect& C : W->CollidersMutable(TEXT("road"))) if (!C.Id.StartsWith(TEXT("prop:")) && !C.Id.StartsWith(TEXT("door:"))) Blocks.Add(FR(C, O.X, O.Z));
+		for (const FS47Rect& Z : W->ZonesMutable(TEXT("road"))) if (!Z.Id.StartsWith(TEXT("rs")) && !Z.Id.StartsWith(TEXT("prop:"))) Walks.Add(FR(Z, O.X, O.Z));
 	};
 	const TPair<const TCHAR*, int32> Groups[] = { { TEXT("world.flora.patches[0].group"), 0 }, { TEXT("world.flora.patches[1].group"), 1 }, { TEXT("world.flora.patches[2].group"), 2 }, { TEXT("world.oldRoad.flora.group"), 3 } };
 	for (const auto& G : Groups)
@@ -291,14 +292,15 @@ void US47WorldLife::Step(double Dt)
 	else Sky->HoleFrom = TNumericLimits<double>::Max(); // (Infinity: not tonight yet)
 	const TOptional<double> SunElev = !bTitle && Hooks.SunElev ? Hooks.SunElev() : TOptional<double>();
 	Sky->SetClock(bTitle ? 0 : Clock, SunElev);
+	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
-	const double DawnK = Smoothstep(Sky->Dawn, 0, 0.35);
+	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
 	const double FogK = Area != TEXT("roswell") ? NIGHT_FOG + (DAWN_FOG - NIGHT_FOG) * DawnK : NIGHT_FOG + (1 - NIGHT_FOG) * DawnK;
 	const FLinearColor FogC = Sky->FogColor * float(FogK);
 	W->SetFogColor(FogC);
 	// World.update: the dawn's haze on the near mesas (world/horizon.ts), as on the land in front of
 	// them, none at night; its colour and density are the fog's (M_WebTone)
-	if (Area != TEXT("roswell")) W->SetEnvScalar(TEXT("HorizonHazeK"), float(FMath::Min(0.3, Sky->Dawn)));
+	if (Area != TEXT("roswell")) W->SetEnvScalar(TEXT("HorizonHazeK"), float(FMath::Min(0.3, Sky->Daylight())));
 	// the painted horizon: the area's air, the land where it ends, the lit places' glow where they are from here
 	Backdrop->Update(*Sky, FogC, W->FogDensity, Area == TEXT("roswell"), Cam.Pos.Y - GroundUnder(Cam.Pos), SkyPlaces(), Cam.Pos, Yaw);
 	Sky->Draw(Cam.Pos, Yaw);
@@ -339,7 +341,9 @@ void US47WorldLife::AirStep(double Dt, double T)
 	// lot and the town, and STATION 01
 	const FString Quality = M->Flow ? M->Flow->Quality : FString(TEXT("high"));
 	const bool bOn = !bAirOff && Quality != TEXT("low");
-	const double Night = 1 - Smoothstep(Dawn(), 0.12, 0.5);
+	// Visual night activity follows evening too; Dawn() remains morning-only for story gates.
+	const double Light = Sky.IsValid() ? Sky->Daylight() : Dawn();
+	const double Night = 1 - Smoothstep(Light, 0.12, 0.5);
 	for (const TSharedPtr<FS47LightCones>& C : Cones) if (C) C->Update(bOn, AIR_CONES * Night);
 	const FS47Cam Cam = FS47Cam::Of(M->Player);
 	const FVector Cp = Cam.Pos;
@@ -366,7 +370,7 @@ void US47WorldLife::AirStep(double Dt, double T)
 	static const TArray<FS47HazeLamp> None;
 	if (Haze) Haze->Update(Dt, T, Cp, Ground, AIR_HAZE * Night, M->Web->FogColor, Lamps ? *Lamps : None);
 	// and the life in it (World.lifeStep)
-	if (Life) Life->Update(Dt, T, Cam, Dawn(), Hooks.LifeQuiet ? Hooks.LifeQuiet() : M->Mode != US47Main::EMode::Play || (M->Story && M->Story->IsCinematic()));
+	if (Life) Life->Update(Dt, T, Cam, Light, Hooks.LifeQuiet ? Hooks.LifeQuiet() : M->Mode != US47Main::EMode::Play || (M->Story && M->Story->IsCinematic()));
 }
 
 TArray<FS47SkyPlace> US47WorldLife::SkyPlaces() const
@@ -433,7 +437,8 @@ void US47WorldLife::ShareLights()
 	const TSharedPtr<FJsonObject> Share = Obj(W->LifeData(), TEXT("share"));
 	if (!Share || !M->World) return;
 	const FString Area = M->World->Area, Leg = M->World->Leg;
-	// a set's head slots taking another set's lamps, their colour k times (MotelFront/Diner/Town.shine)
+	// Retain shared story slots for queries, but never create another native light for them:
+	// the source light already reaches every surface (MotelFront/Diner/Town.shine).
 	auto Shine = [W](const TSharedPtr<FJsonObject>& Own, int32 Src, const TArray<int32>& Slots, double K)
 	{
 		if (!Own) return;
@@ -442,6 +447,7 @@ void US47WorldLife::ShareLights()
 		for (int32 j = 0; j < Head.Num(); ++j)
 		{
 			const int32 H = Head[j], I = Slots.IsValidIndex(j) ? Slots[j] : -1;
+			W->SuppressFloodLight(Set, H);
 			if (Src < 0 || I < 0) { W->SetFlood(Set, H, 0); continue; }
 			const FLinearColor P = W->FloodPos(Src, I);
 			W->SetFloodPool(Set, H, FVector(P.R, P.G, P.B), P.A, W->FloodCol(Src, I) * float(K), false);
@@ -482,6 +488,7 @@ void US47WorldLife::ShareLights()
 		{
 			const int32 O = Out[j];
 			if (O < 0) continue;
+			W->SuppressFloodLight(RoadSet, O);
 			if (!Near.IsValidIndex(j)) { W->SetFlood(RoadSet, O, 0); continue; }
 			const FLinearColor P = W->FloodPos(TSet, Near[j]);
 			W->SetFloodPool(RoadSet, O, FVector(P.R, P.G, P.B), P.A, W->FloodCol(TSet, Near[j]) * float(TOWN_ON_ROAD), false);
@@ -499,7 +506,9 @@ void US47WorldLife::ShareLights()
 		for (int32 j = 0; j < 2 && j < Out.Num(); ++j)
 		{
 			const int32 O = Out[j];
-			if (O < 0 || Signs[j] < 0) continue;
+			if (O < 0) continue;
+			W->SuppressFloodLight(Dst.Value, O);
+			if (Signs[j] < 0) continue;
 			const FLinearColor P = W->FloodPos(DSet, Signs[j]);
 			W->SetFloodPool(Dst.Value, O, FVector(P.R, P.G, P.B), P.A * float(NEON_REACH), W->FloodCol(DSet, Signs[j]) * float(NEON_ON_ROAD), false);
 		}
@@ -553,8 +562,8 @@ void US47WorldLife::TestFlags(double Dt)
 		const double Bk = B && B->Num() ? FS47GlowPoints::Factor(B->Time, B->Blink[0], B->Hold, B->Level) : -1;
 		int32 ConesOn = 0;
 		for (const TSharedPtr<FS47LightCones>& C : Cones) ConesOn += C && C->Visible() ? 1 : 0;
-		UE_LOG(LogS47Life, Display, TEXT("S47: life clock %s dawn %.3f sun %.3f hole %.3f flash %.2f meteor %s | beacon %.3f | flora%s | cones %d haze %s | ultra %d"),
-			M->Story ? *M->Story->ClockText(false) : TEXT("-"), Sky->Dawn, Sky->Sun, Sky->HoleK, Sky->Flash, Sky->MeteorVisible() ? TEXT("on") : TEXT("off"), Bk, *Fl,
+		UE_LOG(LogS47Life, Display, TEXT("S47: life clock %s dawn %.3f evening %.3f sun %.3f hole %.3f flash %.2f meteor %s | beacon %.3f | flora%s | cones %d haze %s | ultra %d"),
+			M->Story ? *M->Story->ClockText(false) : TEXT("-"), Sky->Dawn, Sky->Evening, Sky->Sun, Sky->HoleK, Sky->Flash, Sky->MeteorVisible() ? TEXT("on") : TEXT("off"), Bk, *Fl,
 			ConesOn, Haze.IsValid() && Haze->Visible() ? TEXT("on") : TEXT("off"), Ultra->Held().Num());
 	}
 }
@@ -579,6 +588,73 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	// world/backdrop.ts horizonDip; Sky.ts starHoleAt
 	Check(FMath::IsNearlyEqual(S47Backdrop::HorizonDip(100), FMath::Atan(100.0 / 20000) * 180 / UE_DOUBLE_PI, 1e-12) && S47Backdrop::HorizonDip(-5) == 0, TEXT("backdrop: the horizon's dip"));
 	Check(S47StarHoleAt(2 * 3600, 8122) == 0 && S47StarHoleAt(8122 + 100, 8122) == 1 && FMath::IsNearlyEqual(S47StarHoleAt(8122 + 50, 8122), 0.5, 1e-12) && S47StarHoleAt(23 * 3600, 8122) == 0, TEXT("sky: the star hole comes in over 100 s, none in the evening"));
+	// EveningShift's sky is continuous across sunset and midnight without changing morning story gates.
+	FS47Sky EveningSky;
+	EveningSky.SetClock(17 * 3600 + 20 * 60);
+	Check(EveningSky.Dawn == 0 && EveningSky.Daylight() == 1 && EveningSky.Sun > 0.99 && EveningSky.SunDir.X < -0.8 && EveningSky.SunDir.Y > 0,
+		TEXT("evening sky: commute has a western afternoon sun, no morning dawn"));
+	double PreviousLight = EveningSky.Daylight();
+	bool bEveningContinuous = true;
+	for (int32 Minute = 17 * 60 + 21; Minute <= 19 * 60 + 7; ++Minute)
+	{
+		EveningSky.SetClock(Minute * 60);
+		const double Light = EveningSky.Daylight();
+		bEveningContinuous &= Light <= PreviousLight && PreviousLight - Light < 0.03 && EveningSky.Dawn == 0;
+		PreviousLight = Light;
+	}
+	Check(bEveningContinuous && EveningSky.Daylight() == 0 && EveningSky.Sun == 0,
+		TEXT("evening sky: sunset and blue hour fade monotonically to night without per-minute jumps"));
+	EveningSky.SetClock(18 * 3600);
+	Check(EveningSky.Daylight() == 1 && EveningSky.StarDimming() == 1 && EveningSky.SunDir.Y > 0 && EveningSky.Sun > 0,
+		TEXT("evening sky: 18:00 handover keeps the sunlit palette, no stars, and real sun shadows"));
+	int32 EveningThunder = 0;
+	EveningSky.OnThunder = [&](double, double) { ++EveningThunder; };
+	EveningSky.Update(60, 60);
+	Check(EveningThunder == 0 && EveningSky.Flash == 0 && !EveningSky.MeteorVisible(),
+		TEXT("evening sky: cheerful arrival has no forced thunder, flash or daytime meteor"));
+	EveningSky.SetClock(18 * 3600 + 27 * 60);
+	Check(EveningSky.Daylight() > 0.5 && EveningSky.Daylight() < 0.6 && EveningSky.StarDimming() == 1,
+		TEXT("evening sky: sunset retains warm twilight while stars are still absent"));
+	EveningSky.SetClock(18 * 3600 + 35 * 60);
+	Check(EveningSky.Daylight() > 0.3 && EveningSky.StarDimming() == 1 && EveningSky.Sun == 0,
+		TEXT("evening sky: 18:35 dusk has no rendered stars despite the old HDR star palette"));
+	EveningSky.SetClock(18 * 3600 + 53 * 60);
+	Check(EveningSky.Daylight() > 0 && EveningSky.Daylight() < 0.1 && EveningSky.StarDimming() > 0.9 && EveningSky.StarDimming() < 1 && EveningSky.Sun == 0 && EveningSky.SunDir.Y < 0,
+		TEXT("evening sky: civil twilight keeps stars nearly fully dimmed with sun below western horizon"));
+	EveningSky.SetClock(19 * 3600);
+	Check(EveningSky.StarDimming() > 0 && EveningSky.StarDimming() < 0.3,
+		TEXT("evening sky: stars fade in after civil twilight before full night at 19:07"));
+	EveningSky.SetClock(24 * 3600);
+	const FVector MidnightSun = EveningSky.SunDir;
+	EveningSky.SetClock(0);
+	Check(EveningSky.Evening == 0 && EveningSky.Dawn == 0 && EveningSky.Sun == 0 && EveningSky.SunDir.Equals(MidnightSun, 1e-12),
+		TEXT("evening sky: midnight wrap retains the same night state"));
+	EveningSky.SetDawnLift(0.7);
+	EveningSky.SetClock(5 * 3600 + 30 * 60);
+	Check(EveningSky.Evening == 0 && EveningSky.Dawn == 0.7 && EveningSky.Daylight() == 0.7 && EveningSky.Sun == 0.7,
+		TEXT("evening sky: existing 05:30 sunrise and per-area dawn lift retained"));
+	EveningSky.SetClock(5 * 3600 + 29 * 60, 2.0);
+	Check(EveningSky.Evening == 0 && EveningSky.Sun == 1 && FMath::IsNearlyEqual(EveningSky.SunDir.Y, FMath::Sin(FMath::DegreesToRadians(2.0)), 1e-12),
+		TEXT("evening sky: finale sun elevation override retained"));
+	// SKY.md: volumetric cloud cover follows the clock, continuously, without hiding the night.
+	{
+		bool bBroken = true, bSparse = true, bSmooth = true;
+		double Prev = FS47Sky::CloudCoverAt(0), MaxNight = 0, MinDay = 1, MaxDay = 0, MaxStep = 0;
+		for (int32 Minute = 1; Minute <= 24 * 60; ++Minute)
+		{
+			const double Cover = FS47Sky::CloudCoverAt(Minute * 60.0), H = Minute / 60.0;
+			bSmooth &= FMath::Abs(Cover - Prev) < 0.01; MaxStep = FMath::Max(MaxStep, FMath::Abs(Cover - Prev));
+			if (H >= 7 && H <= 18.8) { bBroken &= Cover >= 0.399 && Cover <= 0.7; MinDay = FMath::Min(MinDay, Cover); MaxDay = FMath::Max(MaxDay, Cover); }
+			if (H >= 21 || H <= 4.5) { bSparse &= Cover <= 0.2; MaxNight = FMath::Max(MaxNight, Cover); }
+			Prev = Cover;
+		}
+		Check(bBroken && bSparse && bSmooth && FS47Sky::CloudCoverAt(-5.5 * 3600) >= 0.4 && FMath::Abs(FS47Sky::CloudCoverAt(-86400 + 18.5 * 3600) - FS47Sky::CloudCoverAt(18.5 * 3600)) < 1e-9,
+			*FString::Printf(TEXT("clouds: broken 40-70 %% layer by day and dusk (%.3f-%.3f), at most %.2f at night, per-minute step %.4f, evening clock wraps (%.3f)"), MinDay, MaxDay, MaxNight, MaxStep, FS47Sky::CloudCoverAt(-5.5 * 3600)));
+		Check(FS47Sky::CloudCoverAt(5 * 3600 + 30 * 60) > FS47Sky::CloudCoverAt(4 * 3600) && FS47Sky::CloudCoverAt(6 * 3600 + 30 * 60) >= 0.4 && FS47Sky::CirrusAt(18.5 * 3600) > FS47Sky::CirrusAt(2 * 3600 + 15 * 60),
+			TEXT("clouds: dawn builds the layer back; cirrus thins at night"));
+		FS47Sky Holes; Holes.SetClock(2 * 3600 + 15 * 60 + 12 + STAR_HOLE.After + 200);
+		Check(Holes.HoleK == 1 && Holes.CloudCover < 0.2, TEXT("clouds: the star hole after 02:15 opens in a sparse night sky (Draw clears its direction)"));
+	}
 	// the web version's own numbers (export.js lifeOf: tests), when the world is there
 	AS47Web* W = nullptr;
 	for (TObjectIterator<AS47Web> It; It; ++It) if (It->IsLoaded()) { W = *It; break; }

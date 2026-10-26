@@ -1,0 +1,14 @@
+{
+  "editable_source_objects": 1136,
+  "editable_source_hash_before": "b9f55ea10c28646c063c08821b7ffc965add7b629d89c1d6385119cfa5c21de6",
+  "editable_source_hash_after": "b9f55ea10c28646c063c08821b7ffc965add7b629d89c1d6385119cfa5c21de6",
+  "editable_source_identical": true,
+  "max_corner_normal_component_delta": {
+    "SM_1420_Door": 0.00022745877504348755,
+    "SM_1420_Glass": 5.960464477539063e-08,
+    "SM_1420_Interior": 0.0004245936870574951,
+    "SM_1420_Mast": 0.0004956318443873897,
+    "SM_1420_Shell": 0.00019475817680358887
+  },
+  "scope_note": "Historical R1 zero-area cleanup proof. R2 authoring intentionally adds components and updates materials; see revision2-contract-diff.json and verification.json."
+}

@@ -1,0 +1,170 @@
+{
+  "SM_1420_Shell": {
+    "triangles_before": 4952,
+    "triangles_after": 9972,
+    "bounds_identical": true,
+    "bounds_before": [
+      [
+        -6.125,
+        -6.199999809265137,
+        -0.4000000059604645
+      ],
+      [
+        6.125,
+        5.125,
+        5.5
+      ]
+    ],
+    "bounds_after": [
+      [
+        -6.125,
+        -6.199999809265137,
+        -0.4000000059604645
+      ],
+      [
+        6.125,
+        5.125,
+        5.5
+      ]
+    ],
+    "new_material_slots": [
+      "M_1420_WeatheredFacadePaint",
+      "M_1420_OliveWornTimber",
+      "M_1420_ChalkFlakeEdge",
+      "M_1420_Paper",
+      "M_1420_ExposedLimeRender"
+    ],
+    "removed_material_slots": []
+  },
+  "SM_1420_Interior": {
+    "triangles_before": 43268,
+    "triangles_after": 50520,
+    "bounds_identical": true,
+    "bounds_before": [
+      [
+        -5.824999809265137,
+        -4.849999904632568,
+        0.0
+      ],
+      [
+        5.717499732971191,
+        4.75,
+        3.190000057220459
+      ]
+    ],
+    "bounds_after": [
+      [
+        -5.824999809265137,
+        -4.849999904632568,
+        0.0
+      ],
+      [
+        5.717499732971191,
+        4.75,
+        3.190000057220459
+      ]
+    ],
+    "new_material_slots": [
+      "M_1420_OliveWornTimber"
+    ],
+    "removed_material_slots": []
+  },
+  "SM_1420_Door": {
+    "triangles_before": 1852,
+    "triangles_after": 1852,
+    "bounds_identical": true,
+    "bounds_before": [
+      [
+        2.682209014892578e-07,
+        -0.12799999117851257,
+        0.02500009536743164
+      ],
+      [
+        0.9400002956390381,
+        0.042500000447034836,
+        2.125
+      ]
+    ],
+    "bounds_after": [
+      [
+        2.682209014892578e-07,
+        -0.12799999117851257,
+        0.02500009536743164
+      ],
+      [
+        0.9400002956390381,
+        0.042500000447034836,
+        2.125
+      ]
+    ],
+    "new_material_slots": [
+      "M_1420_OliveWornTimber"
+    ],
+    "removed_material_slots": [
+      "M_1420_Painted_olive",
+      "M_1420_Ivory_plastic"
+    ]
+  },
+  "SM_1420_Glass": {
+    "triangles_before": 12,
+    "triangles_after": 12,
+    "bounds_identical": true,
+    "bounds_before": [
+      [
+        -0.6399999856948853,
+        -4.973999977111816,
+        0.73499995470047
+      ],
+      [
+        3.0399999618530273,
+        -4.956000328063965,
+        2.365000009536743
+      ]
+    ],
+    "bounds_after": [
+      [
+        -0.6399999856948853,
+        -4.973999977111816,
+        0.73499995470047
+      ],
+      [
+        3.0399999618530273,
+        -4.956000328063965,
+        2.365000009536743
+      ]
+    ],
+    "new_material_slots": [],
+    "removed_material_slots": []
+  },
+  "SM_1420_Mast": {
+    "triangles_before": 1264,
+    "triangles_after": 1264,
+    "bounds_identical": true,
+    "bounds_before": [
+      [
+        11.399999618530273,
+        0.3999999761581421,
+        0.0
+      ],
+      [
+        12.600000381469727,
+        1.600000023841858,
+        18.203454971313477
+      ]
+    ],
+    "bounds_after": [
+      [
+        11.399999618530273,
+        0.3999999761581421,
+        0.0
+      ],
+      [
+        12.600000381469727,
+        1.600000023841858,
+        18.203454971313477
+      ]
+    ],
+    "new_material_slots": [],
+    "removed_material_slots": []
+  }
+}

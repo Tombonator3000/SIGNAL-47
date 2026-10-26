@@ -7,12 +7,20 @@
 # /Game/Web is ignored by Git (it is made from the web build and holds the bought models too).
 # Run: UnrealEditor-Cmd Signal47.uproject -run=pythonscript -script=Tools/webexport/import_web.py -unattended -nullrhi
 # with S47_WEB=<export folder> (default ~/scratch-bm/Signal47-web).
+# S47_ONLY=materials rebuilds Base and Mat only, without touching shared Tex or WebData.
+# S47_ONLY=masters updates Base graphs in place, retaining all material instances and parents.
+# S47_ONLY=picture updates only MPC_Web and M_WebTone; scene materials/assets stay in place.
 import json
 import os
+import sys
 import shutil
 import struct
 import zlib
 import unreal
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from surface_profiles import PROFILES, material_labels, texture_labels, profile_for, glass_parameters, is_control_crt, write_detail_tile
+from ribbon_geometry import ribbon_asset_paths
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -20,6 +28,10 @@ tools = unreal.AssetToolsHelpers.get_asset_tools()
 SRC = os.environ.get('S47_WEB', os.path.expanduser('~/scratch-bm/Signal47-web'))
 man = json.load(open(os.path.join(SRC, 'manifest.json')))
 only = os.environ.get('S47_ONLY', 'tex,geo,mat').split(',')
+masters_only = only == ['masters']
+materials_only = masters_only or only == ['materials']
+if materials_only:
+    only = ['mat']
 
 
 def log(s):
@@ -51,7 +63,8 @@ def copy_board_art():
     log('board art copied %d' % count)
 
 
-copy_board_art()
+if not materials_only and only != ['picture']:
+    copy_board_art()
 
 
 def task(filename, dest, name=None):
@@ -75,20 +88,31 @@ def png(path, rgba, w=4, h=4):
     open(path, 'wb').write(data)
 
 
-base_dir = os.path.join(SRC, 'base')
-os.makedirs(base_dir, exist_ok=True)
-png(os.path.join(base_dir, 'T_White.png'), (255, 255, 255, 255))
-png(os.path.join(base_dir, 'T_WhiteLinear.png'), (255, 255, 255, 255))
-png(os.path.join(base_dir, 'T_FlatNormal.png'), (128, 128, 255, 255))
-tools.import_asset_tasks([task(os.path.join(base_dir, n), '/Game/Web/Base') for n in ('T_White.png', 'T_WhiteLinear.png', 'T_FlatNormal.png')])
-white = eal.load_asset('/Game/Web/Base/T_White')
-white_lin = eal.load_asset('/Game/Web/Base/T_WhiteLinear')
-white_lin.set_editor_property('srgb', False)
-eal.save_loaded_asset(white_lin)
-flat = eal.load_asset('/Game/Web/Base/T_FlatNormal')
-flat.set_editor_property('srgb', False)
-flat.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
-eal.save_loaded_asset(flat)
+if only != ['picture']:
+    base_dir = os.path.join(SRC, 'base')
+    os.makedirs(base_dir, exist_ok=True)
+    png(os.path.join(base_dir, 'T_White.png'), (255, 255, 255, 255))
+    png(os.path.join(base_dir, 'T_WhiteLinear.png'), (255, 255, 255, 255))
+    png(os.path.join(base_dir, 'T_FlatNormal.png'), (128, 128, 255, 255))
+    tools.import_asset_tasks([task(os.path.join(base_dir, n), '/Game/Web/Base') for n in ('T_White.png', 'T_WhiteLinear.png', 'T_FlatNormal.png')])
+    white = eal.load_asset('/Game/Web/Base/T_White')
+    white_lin = eal.load_asset('/Game/Web/Base/T_WhiteLinear')
+    white_lin.set_editor_property('srgb', False)
+    eal.save_loaded_asset(white_lin)
+    flat = eal.load_asset('/Game/Web/Base/T_FlatNormal')
+    flat.set_editor_property('srgb', False)
+    flat.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
+    eal.save_loaded_asset(flat)
+
+    # One authored, tileable data texture.  The opt-in static switch removes both
+    # samples on paper, people, flora, emissive and already mapped PBR surfaces.
+    write_detail_tile(os.path.join(base_dir, 'T_SurfaceDetail.png'))
+    tools.import_asset_tasks([task(os.path.join(base_dir, 'T_SurfaceDetail.png'), '/Game/Web/Base')])
+    surface_detail = eal.load_asset('/Game/Web/Base/T_SurfaceDetail')
+    surface_detail.set_editor_property('srgb', False)
+    surface_detail.set_editor_property('address_x', unreal.TextureAddress.TA_WRAP)
+    surface_detail.set_editor_property('address_y', unreal.TextureAddress.TA_WRAP)
+    eal.save_loaded_asset(surface_detail)
 
 # which textures are used how (colour, data, normal)
 use = {}
@@ -125,7 +149,7 @@ if 'tex' in only:
             a.set_editor_property('srgb', False)
             a.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
         else:
-            a.set_editor_property('srgb', bool(t['srgb']))
+            a.set_editor_property('srgb', bool(t['srgb']) and not ('data' in u and 'color' not in u))
         a.set_editor_property('address_x', addr[t['wrapS']])
         a.set_editor_property('address_y', addr[t['wrapT']])
         if t.get('nearest'):
@@ -142,6 +166,8 @@ if 'geo' in only:
         eal.delete_directory('/Game/Web/Geo')
     for f in man['geoFiles']:
         tools.import_asset_tasks([task(os.path.join(SRC, 'geo', f['file']), '/Game/Web/Geo')])
+    ribbon_paths, ribbon_rejected = ribbon_asset_paths(man)
+    log('line ribbon RT exclusions %d; shared/unproven geometry retained %s' % (len(ribbon_paths), sorted(ribbon_rejected)))
     count = 0
     for a in eal.list_assets('/Game/Web/Geo', recursive=True):
         if '/StaticMeshes/' not in a:
@@ -153,6 +179,9 @@ if 'geo' in only:
         if ns.get_editor_property('enabled'):
             ns.set_editor_property('enabled', False)
             sm.set_editor_property('nanite_settings', ns)
+        # Crossed quads approximate source lines only. Retain RT on every solid/shared mesh.
+        if sm.get_path_name() in ribbon_paths:
+            sm.set_editor_property('support_ray_tracing', False)
         bs = sm.get_editor_property('body_setup')
         if bs:
             bs.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
@@ -167,12 +196,20 @@ UVX = 'return float2(dot(R0, float3(UV, 1.0)), dot(R1, float3(UV, 1.0)));'
 
 def fresh(path):
     if eal.does_asset_exist(path):
+        if masters_only or only == ['picture']:
+            # Preserve the UMaterial object: deleting it would sever existing MI parents.
+            material = eal.load_asset(path)
+            if not isinstance(material, unreal.Material):
+                raise RuntimeError('S47WEB expected material at ' + path)
+            mel.delete_all_material_expressions(material)
+            return material
         eal.delete_asset(path)
     folder, name = path.rsplit('/', 1)
     return tools.create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())
 
 
-FLOOD = """float3 p = float3(WP.x, WP.z, WP.y) * 0.01;
+FLOOD = """if (Native > 0.5) return 0;
+float3 p = float3(WP.x, WP.z, WP.y) * 0.01;
 float3 n = normalize(float3(NW.x, NW.z, NW.y));
 float3 acc = 0;
 float cnt = max(Count, 1.0);
@@ -215,86 +252,46 @@ return (WP - IO) * (fade - 1.0) + wind;"""
 FLAT = """float3 n = normalize(cross(ddy(WP), ddx(WP)));
 return dot(n, V) < 0 ? -n : n;"""
 
+# World-plane projection keeps the grain's physical size on stretched export UVs.
+# Finite slopes are baked in RG; no derivatives, texture loops or procedural noise
+# are needed in the pixel/ray-hit shader.  Only the opted-in static permutation
+# evaluates the two samples (micro-surface and broad independent macro variation).
+SURFACE_UV = """float3 a = abs(N);
+float2 p = a.z >= max(a.x, a.y) ? WP.xy : (a.x >= a.y ? WP.yz : WP.xz);
+return p / max(Size, 1.0);"""
+SURFACE_NORMAL = """float3 n = normalize(N);
+float2 slope = (RG.xy - 0.5) * 2.0 * Strength;
+float3 a = abs(n);
+float3 gradient = a.z >= max(a.x, a.y) ? float3(slope, 0.0) :
+  (a.x >= a.y ? float3(0.0, slope) : float3(slope.x, 0.0, slope.y));
+gradient -= n * dot(n, gradient);
+return normalize(n - gradient);"""
+BUMP_NORMAL = """// Bump maps are height, unlike normal maps.  WP and height are centimetres.
+#if PIXELSHADER
+float3 n = normalize(N), dx = ddx(WP), dy = ddy(WP);
+float3 rx = cross(dy, n), ry = cross(n, dx);
+float determinant = dot(dx, rx);
+float3 gradient = sign(determinant) * (ddx(H) * rx + ddy(H) * ry) * Scale;
+return normalize(max(abs(determinant), 1e-10) * n - gradient);
+#else
+return normalize(N);
+#endif
+"""
+
 
 # three.js ACESFilmicToneMapping undone: a colour three draws without tone mapping comes out
 # of AS47Web's tone mapping (M_WebTone, the same curve) as it is. K is exposure / 0.6.
-UNTONE = """float3 y = saturate(C);
+UNTONE = """if (all(C <= 0.0)) return float3(0, 0, 0);
+float3 y = saturate(C);
 float3 x = max(float3(dot(float3(0.6430382, 0.3111868, 0.0457755), y), dot(float3(0.0592687, 0.9314365, 0.0092949), y), dot(float3(0.0059619, 0.063929, 0.9301184), y)), 0);
 float3 A = 1.0 - 0.983729 * x, B = 0.0245786 - 0.432951 * x, Q = -(0.000090537 + 0.238081 * x);
 float3 v = max((-B + sqrt(max(B * B - 4 * A * Q, 0))) / (2 * A), 0);
 float3 c = float3(dot(float3(1.764741, -0.6757777, -0.0889633), v), dot(float3(-0.1470279, 1.1602515, -0.0132237), v), dot(float3(-0.0363368, -0.1624364, 1.1987733), v));
 return max(c, 0) / max(K, 1e-4);"""
 
-# The web version's picture (core/vhs.ts, the default on every tier but Low): the scene with its
-# FogExp2, ACESFilmicToneMapping and sRGB per tap, then the 1986 tape over it: chroma smeared
-# sideways, red and blue parting at the edges, a glow round bright things, the grade, faint
-# scanlines and noise, on 720 lines. Vhs 0 gives the plain picture.
-TONE = """struct W {
-  float K, Dens, HazeK; float3 FogCol;
-  float3 sc(float2 vuv) {
-    float2 b = ViewportUVToBufferUV(saturate(vuv));
-    float3 c = max(SceneTextureLookup(b, 14, true).rgb, 0);
-    c = (any(isnan(c)) ? 0 : min(c, 10.0));
-    float d = SceneTextureLookup(b, 1, false).r * 0.01;
-    // (the sky is the only thing past 25 km: S47Sky draws its group ten times as far as three; SKY_CUT)
-    float f = d > 25000.0 ? 0.0 : 1.0 - exp(-(Dens * d) * (Dens * d));
-    // (what three draws with fog: false, the near mesas and the old road's SARO, is in the custom
-    // depth: stencil 1 the mesas, which take only the dawn's haze (world/horizon.ts hazed: HazeK),
-    // 2 no fog at all; where it is what is seen)
-    float s = SceneTextureLookup(b, 25, false).r;
-    if (s > 0.5) {
-      float cd = SceneTextureLookup(b, 13, false).r * 0.01;
-      if (abs(cd - d) <= max(0.5, d * 0.002)) f *= (s < 1.5 ? HazeK : 0.0);
-    }
-    c = lerp(c, FogCol, f) * K;
-    float3 v = float3(dot(float3(0.59719, 0.35458, 0.04823), c), dot(float3(0.07600, 0.90834, 0.01566), c), dot(float3(0.02840, 0.13383, 0.83777), c));
-    v = (v * (v + 0.0245786) - 0.000090537) / (v * (0.983729 * v + 0.4329510) + 0.238081);
-    float3 o = saturate(float3(dot(float3(1.60475, -0.53108, -0.07367), v), dot(float3(-0.10208, 1.10813, -0.00605), v), dot(float3(-0.00327, -0.07276, 1.07602), v)));
-    float3 lo = o * 12.92, hi = 1.055 * pow(max(o, 1e-6), 1.0 / 2.4) - 0.055;
-    return lerp(hi, lo, step(o, 0.0031308));
-  }
-  float hash(float2 p) { float3 q = frac(float3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return frac((q.x + q.y) * q.z); }
-  float3 yiq(float3 c) { return float3(dot(float3(0.299, 0.587, 0.114), c), dot(float3(0.596, -0.274, -0.322), c), dot(float3(0.211, -0.523, 0.312), c)); }
-  float3 rgb(float3 c) { return float3(c.x + 0.956 * c.y + 0.621 * c.z, c.x - 0.272 * c.y - 0.647 * c.z, c.x - 1.106 * c.y + 1.703 * c.z); }
-};
-W w; w.K = K; w.Dens = Dens; w.HazeK = HazeK; w.FogCol = FogCol;
-if (Vhs < 0.5) return w.sc(UV);
-float2 vs = View.ViewSizeAndInvSize.xy;
-float2 size = float2(720.0 * vs.x / max(vs.y, 1.0), 720.0);
-float2 uv = float2(UV.x, 1.0 - UV.y);
-float px = 1.0 / size.x;
-float ln = floor(uv.y * size.y);
-float t = Time;
-float wobble = sin(uv.y * 220.0 + t * 7.0) * 0.18 + (w.hash(float2(ln, floor(t * 24.0) * 7.0)) - 0.5) * 0.6;
-uv.x += wobble * 0.15 * px;
-float2 r = uv - 0.5;
-float fringe = dot(r, r) * 0.0024;
-float2 at = float2(uv.x, 1.0 - uv.y);
-float3 q = w.yiq(w.sc(at));
-float3 avg = 0;
-for (int i = -3; i <= 3; i++) avg += w.yiq(w.sc(at + float2((i * 1.6 + 1.5) * px, 0)));
-avg /= 7.0;
-q.yz = avg.yz;
-float3 col = w.rgb(q);
-float2 rr = float2(r.x, -r.y) * fringe;
-col.r = lerp(col.r, w.sc(at + rr).r, 0.6);
-col.b = lerp(col.b, w.sc(at - rr).b, 0.6);
-float3 glow = 0;
-for (int j = 0; j < 8; j++) {
-  float a = j * 0.785398;
-  float3 g = w.sc(at + float2(cos(a), -sin(a)) * px * 5.0 * float2(1.0, size.x / size.y));
-  glow += max(g - 0.8, 0.0);
-}
-col += glow * 0.25 * 0.5;
-float l = dot(col, float3(0.299, 0.587, 0.114));
-col = lerp(l.xxx, col, 0.88);
-col = lerp(col, col * float3(0.86, 1.02, 1.04), smoothstep(0.45, 0.0, l));
-col = lerp(col, col * float3(1.06, 1.0, 0.9), smoothstep(0.5, 1.0, l));
-col = col * 0.95 + float3(0.026, 0.031, 0.033);
-col *= 1.0 - 0.02 * (0.5 + 0.5 * cos(uv.y * size.y * 3.14159));
-float n = w.hash(floor(uv * size) + float2(floor(t * 24.0) * 17.0, floor(t * 24.0) * 31.0));
-col += (n - 0.5) * 0.06 * 0.5;
-return saturate(col);"""
+# Kept as a separate source file so every look uses exactly the same scene/ACES curve.
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'film_tone.hlsl'), encoding='utf-8') as tone_file:
+    TONE = tone_file.read()
 
 # ---------- the world's own life: the sky, the light in the air, the windows' light (S47WorldLife) ----------
 # The sky group is drawn ten times as far off as three has it (S47Sky: beyond the farthest land, as
@@ -374,11 +371,12 @@ float elTop = %(top).4f, elBot = %(bot).4f;
 float el = degrees(asin(clamp(d.y, -1.0, 1.0))) + Dip;
 float az = U * 360.0;
 float2 uv = float2(U, clamp((el - elBot) / (elTop - elBot), 0.0, 1.0));
-float4 n = Night.Sample(NightSampler, uv);
+// Explicit LOD is also legal in the packaged Vulkan ray-hit permutations.
+float4 n = Night.SampleLevel(NightSampler, uv, 0);
 float ds = (az - 182.0 + 540.0) - 360.0 * floor((az - 182.0 + 540.0) / 360.0) - 180.0;
 float sink = 3.50 * smoothstep(10.5, 13.5, abs(ds));
 float2 uvS = float2((279.0 - ds * 1.15) / 360.0, clamp(((el + sink) / 0.62 - elBot) / (elTop - elBot), 0.0, 1.0));
-float4 nS = Night.Sample(NightSampler, uvS);
+float4 nS = Night.SampleLevel(NightSampler, uvS, 0);
 float s = (1.0 - step(13.5, abs(ds))) * step(n.a + 0.002, nS.a);
 float2 uvF = lerp(uv, uvS, s), gx = ddx(uv), gy = ddy(uv);
 n = lerp(n, nS, s);
@@ -472,7 +470,8 @@ return 1.0 / max(1.0 - f, 1e-3);""" % SKY_CUT
 
 # world/airlight.ts LightCones (CONE_VS, CONE_FS): VA the corner's place down the cone (aV) and its
 # lamp (aLamp); K the lamps' strengths (uK) in a row of a small texture, Lamps how many
-AIR_CONE = """float3 vView = (Cam - WP) * 0.01;
+AIR_CONE = """if (Native > 0.5) return 0;
+float3 vView = (Cam - WP) * 0.01;
 float dist = length(vView);
 float face = abs(dot(normalize(Nw), vView / max(dist, 1e-3)));
 float along = smoothstep(0.0, 0.1, VA.x) * pow(max(1.0 - VA.x, 0.0), 1.8);
@@ -484,7 +483,8 @@ a *= exp(-Dens * Dens * fd * fd);
 return Col * k * a;"""
 
 # world/airlight.ts GroundHaze (HAZE_FS): Layer the sheet (aLayer); the four nearest lamps
-AIR_HAZE = """float3 W = float3(WP.x, WP.z, WP.y) * 0.01, C = float3(Cam.x, Cam.z, Cam.y) * 0.01;
+AIR_HAZE = """if (Native > 0.5) return 0;
+float3 W = float3(WP.x, WP.z, WP.y) * 0.01, C = float3(Cam.x, Cam.z, Cam.y) * 0.01;
 float3 d = W - C;
 float dist = length(d);
 float sinA = abs(d.y) / max(dist, 1e-3);
@@ -516,7 +516,8 @@ WIN_WPO = """float3 v = Cam - WP;
 float l = length(v) * 0.01;
 return v * min(0.12 / max(l, 0.5), 0.2);"""
 # FS: the picture through the glass, blurred by the lamp's size seen from the ground
-WIN_FS = """float2 uv = Q0 / Q1.x;
+WIN_FS = """if (Native > 0.5) return 0;
+float2 uv = Q0 / Q1.x;
 float q = Q1.x;
 float2 blur = float2(Q1.y, Q2.x);
 float2 b = blur * max(q - 1.0, 0.0) / q;
@@ -700,7 +701,7 @@ return Col.xyz * a;"""
 
 MPC_PATH = '/Game/Web/Base/MPC_Web'
 mpc = eal.load_asset(MPC_PATH) if eal.does_asset_exist(MPC_PATH) else None
-if 'mat' in only:
+if any(step in only for step in ('mat', 'life', 'sky', 'picture')):
     if mpc is None:
         mpc = tools.create_asset('MPC_Web', '/Game/Web/Base', unreal.MaterialParameterCollection, unreal.MaterialParameterCollectionFactoryNew())
     # parameters added where missing; the ones there keep their ids, so nothing referring to them breaks
@@ -708,7 +709,9 @@ if 'mat' in only:
     have = {str(p.get_editor_property('parameter_name')) for p in sp}
     # (WindTime, WindAmp: world/wind.ts, set each frame by S47Wind; HorizonHazeK: the dawn's haze on
     # the near mesas, world/horizon.ts, set each frame by S47WorldLife)
-    for nm, v in (('ToneK', 1.05 / 0.6), ('FogDensity', 0.0021), ('Vhs', 1.0), ('WindTime', 0.0), ('WindAmp', 0.07), ('HorizonHazeK', 0.0)):
+    # NativeLighting stays zero in generated assets for historical checkouts sharing content.
+    # AS47Web sets it to one for the Unreal renderer; no player setting switches it back.
+    for nm, v in (('NativeLighting', 0.0), ('ToneK', 1.05 / 0.6), ('FogDensity', 0.0021), ('Vhs', 1.0), ('PictureMode', 1.0), ('PictureStrength', 1.0), ('PictureCalm', 0.0), ('WindTime', 0.0), ('WindAmp', 0.07), ('HorizonHazeK', 0.0)):
         if nm in have:
             continue
         p = unreal.CollectionScalarParameter(); p.set_editor_property('parameter_name', nm); p.set_editor_property('default_value', v); sp.append(p)
@@ -723,7 +726,7 @@ if 'mat' in only:
     eal.save_loaded_asset(mpc)
 
 
-def build_master(name, lit, blend, two_sided, flora=None):
+def build_master(name, lit, blend, two_sided, flora=None, control_crt=False):
     # flora: None, or which of world/flora.ts's meshes it draws ('card': the grass, the sage, the
     # creosote, the stalks; 'succulent'; 'stones'; 'stain'), with its vertex shader as a world
     # position offset (FLORA_WPO), the sky less inside a plant, the backlight through the cards'
@@ -733,8 +736,7 @@ def build_master(name, lit, blend, two_sided, flora=None):
     m.set_editor_property('blend_mode', blend)
     if flora == 'stones':
         m.set_editor_property('tangent_space_normal', False)
-    if not lit:
-        m.set_editor_property('shading_model', unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property('shading_model', unreal.MaterialShadingModel.MSM_DEFAULT_LIT if lit or control_crt else unreal.MaterialShadingModel.MSM_UNLIT)
     if blend == unreal.BlendMode.BLEND_TRANSLUCENT:
         m.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING if lit else unreal.TranslucencyLightingMode.TLM_VOLUMETRIC_NON_DIRECTIONAL)
     m.set_editor_property('used_with_instanced_static_meshes', True)
@@ -795,6 +797,25 @@ def build_master(name, lit, blend, two_sided, flora=None):
         mel.connect_material_expressions(alpha, alin, e, 'Alpha')
         return e
 
+    def switched(n, yes, no, yes_pin='', no_pin=''):
+        e = node(unreal.MaterialExpressionStaticSwitchParameter, -250)
+        e.set_editor_property('parameter_name', n)
+        e.set_editor_property('default_value', False)
+        # UMaterialExpressionStaticSwitchParameter::GetInputName exposes True/False,
+        # although its stored FExpressionInputs and compiler errors call them A/B.
+        for source, output, pin in ((yes, yes_pin, 'True'), (no, no_pin, 'False')):
+            if not mel.connect_material_expressions(source, output, e, pin):
+                raise RuntimeError('S47WEB failed switch %s.%s (output=%r; inputs=%r)' %
+                                   (n, pin, output, list(mel.get_material_expression_input_names(e))))
+        return e
+
+    def world_to_tangent(source):
+        e = node(unreal.MaterialExpressionTransform, -400)
+        e.set_editor_property('transform_source_type', unreal.MaterialVectorCoordTransformSource.TRANSFORMSOURCE_WORLD)
+        e.set_editor_property('transform_type', unreal.MaterialVectorCoordTransform.TRANSFORM_TANGENT)
+        mel.connect_material_expressions(source, '', e, '')
+        return e
+
     uv = node(unreal.MaterialExpressionTextureCoordinate)
 
     def xuv(prefix):
@@ -838,14 +859,62 @@ def build_master(name, lit, blend, two_sided, flora=None):
     vam = lerp(one, vca, scalar('UseVertexColor', 0))
     alpha = op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionMultiply, op(unreal.MaterialExpressionMultiply, scalar('Opacity', 1), tex_a), am), vam)
     if lit:
-        mel.connect_material_property(base, '', unreal.MaterialProperty.MP_BASE_COLOR)
+        detail_normal = None
         rough = op(unreal.MaterialExpressionMultiply, scalar('Roughness', 1), lerp(one, texp('RoughnessMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('Rough')), scalar('UseRoughnessMap', 0), '', 'G'))
+        if not flora:
+            world_pos = node(unreal.MaterialExpressionWorldPosition)
+            world_normal = node(unreal.MaterialExpressionVertexNormalWS)
+            duv = custom(SURFACE_UV, ['WP', 'N', 'Size'])
+            mel.connect_material_expressions(world_pos, '', duv, 'WP')
+            mel.connect_material_expressions(world_normal, '', duv, 'N')
+            mel.connect_material_expressions(scalar('DetailWorldSize', 50), '', duv, 'Size')
+            detail = texp('SurfaceDetailTex', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, surface_detail, duv)
+            macro_uv = custom('return WP.xy / max(Size, 1.0) + float2(0.173, 0.619);', ['WP', 'Size'])
+            mel.connect_material_expressions(world_pos, '', macro_uv, 'WP')
+            mel.connect_material_expressions(scalar('MacroWorldSize', 2400), '', macro_uv, 'Size')
+            macro = texp('SurfaceMacroTex', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, surface_detail, macro_uv)
+            var_base = custom('return B * max(0.0, 1.0 + (M * 2.0 - 1.0) * Amount);', ['B', 'M', 'Amount'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(base, '', var_base, 'B')
+            mel.connect_material_expressions(macro, 'A', var_base, 'M')
+            mel.connect_material_expressions(scalar('MacroColorVariation', 0), '', var_base, 'Amount')
+            base = switched('SurfaceDetail', var_base, base)
+            var_rough = custom('''float dirt = 1.0 - saturate(dot(VC, float3(0.2126, 0.7152, 0.0722)));
+// Native specular replaces roadSurface.ts's emissive wet streak.  Pale road
+// paint and gravel retain the roughness; broad dark tar catches a faint sheen.
+float darkTar = 1.0 - smoothstep(0.025, 0.18, dot(Albedo, float3(0.2126, 0.7152, 0.0722)));
+float damp = saturate(darkTar * Sheen * smoothstep(0.25, 0.72, M));
+float r = lerp(R, min(R, 0.22), damp);
+return clamp(r + (D * 2.0 - 1.0) * Variation + (M * 2.0 - 1.0) * MacroVariation + dirt * Dirt, 0.04, 1.0);''',
+                               ['R', 'D', 'M', 'Variation', 'MacroVariation', 'VC', 'Dirt', 'Albedo', 'Sheen'], unreal.CustomMaterialOutputType.CMOT_FLOAT1)
+            for pin, source, output in (('R', rough, ''), ('D', detail, 'B'), ('M', macro, 'A'), ('VC', vcm, '')):
+                mel.connect_material_expressions(source, output, var_rough, pin)
+            for pin, name in (('Variation', 'RoughnessVariation'), ('MacroVariation', 'MacroRoughnessVariation'), ('Dirt', 'VertexDirtRoughness')):
+                mel.connect_material_expressions(scalar(name, 0), '', var_rough, pin)
+            mel.connect_material_expressions(tex_rgb, '', var_rough, 'Albedo')
+            mel.connect_material_expressions(scalar('DampSheen', 0), '', var_rough, 'Sheen')
+            rough = switched('SurfaceDetail', var_rough, rough)
+            detail_normal = custom(SURFACE_NORMAL, ['N', 'RG', 'Strength'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(world_normal, '', detail_normal, 'N')
+            # A float3 input is safe: only the packed red/green slopes are read.
+            mel.connect_material_expressions(detail, 'RGB', detail_normal, 'RG')
+            mel.connect_material_expressions(scalar('DetailNormalStrength', 0), '', detail_normal, 'Strength')
+            detail_normal = world_to_tangent(detail_normal)
+        mel.connect_material_property(base, '', unreal.MaterialProperty.MP_BASE_COLOR)
         mel.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS)
+        mel.connect_material_property(scalar('Specular', .5), '', unreal.MaterialProperty.MP_SPECULAR)
+        if not flora:
+            aomap = texp('AOMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('AO'))
+            ao = lerp(one, aomap, scalar('AOIntensity', 1), '', 'R')
+            ao = switched('HasAOMap', ao, one)
+            mel.connect_material_property(ao, '', unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
         metal = op(unreal.MaterialExpressionMultiply, scalar('Metallic', 0), lerp(one, texp('MetalnessMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('Metal')), scalar('UseMetalnessMap', 0), '', 'B'))
         mel.connect_material_property(metal, '', unreal.MaterialProperty.MP_METALLIC)
         euv = xuv('Em')
         emap_c = texp('EmissiveMap', unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, white, euv)
         emis = op(unreal.MaterialExpressionMultiply, vector('Emissive', (0, 0, 0, 1)), lerp(one, emap_c, scalar('UseEmissiveMap', 0), '', 'RGB'))
+        # Native indicator/power gating keeps authored emissive maps intact. Brightness
+        # belongs to the unlit picture path and cannot dim a lit console-panel material.
+        emis = op(unreal.MaterialExpressionMultiply, emis, scalar('EmissivePower', 1))
         sway = None
         if flora:
             # the shape's sway and which of two plants a corner is (UV channel 1: export.js), the
@@ -891,14 +960,16 @@ def build_master(name, lit, blend, two_sided, flora=None):
             mel.connect_material_expressions(node(unreal.MaterialExpressionCameraVectorWS), '', nrm, 'V')
         else:
             nrm = node(unreal.MaterialExpressionVertexNormalWS)
-        # kit.ts floodlit: the fake floodlight pools, added as light the surface gives off
+        # Legacy exports keep their surface-lighting terms until AS47Web enables native lights.
+        # True material emissive remains untouched so CRTs, signs and lamps can illuminate Lumen.
         if flora:
-            fc = custom(FLOOD_FLORA, ['WP', 'NW', 'Tex', 'Count', 'Fall', 'Cam', 'Sway', 'Back'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            fc = custom(FLOOD_FLORA, ['Native', 'WP', 'NW', 'Tex', 'Count', 'Fall', 'Cam', 'Sway', 'Back'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
             mel.connect_material_expressions(node(unreal.MaterialExpressionCameraPositionWS), '', fc, 'Cam')
             mel.connect_material_expressions(sway, '', fc, 'Sway')
             mel.connect_material_expressions(scalar('Back', 0), '', fc, 'Back')
         else:
-            fc = custom(FLOOD, ['WP', 'NW', 'Tex', 'Count', 'Fall'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            fc = custom(FLOOD, ['Native', 'WP', 'NW', 'Tex', 'Count', 'Fall'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+        mel.connect_material_expressions(coll('NativeLighting'), '', fc, 'Native')
         mel.connect_material_expressions(node(unreal.MaterialExpressionWorldPosition), '', fc, 'WP')
         mel.connect_material_expressions(node(unreal.MaterialExpressionVertexNormalWS), '', fc, 'NW')
         ft = node(unreal.MaterialExpressionTextureObjectParameter)
@@ -912,13 +983,15 @@ def build_master(name, lit, blend, two_sided, flora=None):
         emis = op(unreal.MaterialExpressionAdd, emis, fl)
         # drive/herd.ts beamLit: the cows and frost also see the headlight cone itself. Its
         # level defaults to zero, so existing lit materials keep their look; S47Herd sets it.
-        bc = custom('''float3 p = float3(WP.x, WP.z, WP.y) * 0.01;
+        bc = custom('''if (Native > 0.5) return 0;
+float3 p = float3(WP.x, WP.z, WP.y) * 0.01;
 float3 n = float3(NW.x, NW.z, NW.y);
 float3 bL = BP - p; float bD = length(bL); bL /= max(bD, 1e-3);
 float bCone = smoothstep(0.68, 0.96, dot(-bL, BD));
 float bNdl = lerp(max(dot(normalize(n), bL), 0.0) * 0.8 + 0.2, 1.0, Flat);
 return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
-                    ['WP', 'NW', 'BP', 'BD', 'Level', 'Flat', 'B'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+                    ['Native', 'WP', 'NW', 'BP', 'BD', 'Level', 'Flat', 'B'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+        mel.connect_material_expressions(coll('NativeLighting'), '', bc, 'Native')
         mel.connect_material_expressions(node(unreal.MaterialExpressionWorldPosition), '', bc, 'WP')
         mel.connect_material_expressions(node(unreal.MaterialExpressionVertexNormalWS), '', bc, 'NW')
         bp = vector('BeamPos', (0, -999, 0, 0))
@@ -931,12 +1004,13 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
         # HemisphereLight: mix(ground, sky, n.y / 2 + 1/2) * diffuse / pi, as three's indirect diffuse
         if flora:
             # (flora.ts shade: the sky in a tuft, a third at the root, three quarters at the tips)
-            hc = custom('float k = saturate(N.z * 0.5 + 0.5); float fSky = lerp(1.0, lerp(0.35, 0.75, min(1.0, Sw * 1.6)), Shade); return lerp(G, S, k) * B * (1 - saturate(M)) / 3.14159265 * fSky;',
-                        ['N', 'G', 'S', 'B', 'M', 'Sw', 'Shade'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            hc = custom('if (Native > 0.5) return 0; float k = saturate(N.z * 0.5 + 0.5); float fSky = lerp(1.0, lerp(0.35, 0.75, min(1.0, Sw * 1.6)), Shade); return lerp(G, S, k) * B * (1 - saturate(M)) / 3.14159265 * fSky;',
+                        ['Native', 'N', 'G', 'S', 'B', 'M', 'Sw', 'Shade'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
             mel.connect_material_expressions(sway, '', hc, 'Sw')
             mel.connect_material_expressions(scalar('Shade', 0), '', hc, 'Shade')
         else:
-            hc = custom('float k = saturate(N.z * 0.5 + 0.5); return lerp(G, S, k) * B * (1 - saturate(M)) / 3.14159265;', ['N', 'G', 'S', 'B', 'M'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            hc = custom('if (Native > 0.5) return 0; float k = saturate(N.z * 0.5 + 0.5); return lerp(G, S, k) * B * (1 - saturate(M)) / 3.14159265;', ['Native', 'N', 'G', 'S', 'B', 'M'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+        mel.connect_material_expressions(coll('NativeLighting'), '', hc, 'Native')
         mel.connect_material_expressions(nrm, '', hc, 'N')
         mel.connect_material_expressions(coll('HemiGround'), '', hc, 'G')
         mel.connect_material_expressions(coll('HemiSky'), '', hc, 'S')
@@ -954,7 +1028,20 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
             mel.connect_material_property(tsn, '', unreal.MaterialProperty.MP_NORMAL)
         else:
             nmap = texp('NormalMap', unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, flat, xuv('Normal'))
-            mel.connect_material_property(nmap, 'RGB', unreal.MaterialProperty.MP_NORMAL)
+            normal = custom('float2 xy = N.xy * Scale.xy; return normalize(float3(xy, N.z));', ['N', 'Scale'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(nmap, 'RGB', normal, 'N')
+            mel.connect_material_expressions(vector('NormalScale', (1, 1, 0, 0)), 'RGB', normal, 'Scale')
+            bump = texp('BumpMap', unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, white_lin, xuv('Bump'))
+            bumped = custom(BUMP_NORMAL, ['WP', 'N', 'H', 'Scale'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(node(unreal.MaterialExpressionWorldPosition), '', bumped, 'WP')
+            mel.connect_material_expressions(node(unreal.MaterialExpressionVertexNormalWS), '', bumped, 'N')
+            mel.connect_material_expressions(bump, 'R', bumped, 'H')
+            # three's bumpScale is in metres, the imported world is centimetres.
+            mel.connect_material_expressions(scalar('BumpScale', 100), '', bumped, 'Scale')
+            normal = switched('HasBumpMap', world_to_tangent(bumped), normal)
+            if detail_normal:
+                normal = switched('SurfaceDetail', detail_normal, normal)
+            mel.connect_material_property(normal, '', unreal.MaterialProperty.MP_NORMAL)
     else:
         boost = op(unreal.MaterialExpressionMultiply, base, scalar('Brightness', 1))
         # toneMapped: false in three: undo the tone mapping that follows
@@ -966,6 +1053,20 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
         mel.connect_material_expressions(scalar('Untonemapped', 0), '', unk, 'U')
         mel.connect_material_expressions(coll('Vhs'), '', unk, 'V')
         boost = lerp(boost, un, unk)
+        if control_crt:
+            # Unlike the web's MeshBasicMaterial, a CRT's front glass reflects the
+            # room. Its image remains exactly the existing emissive path above:
+            # Brightness=0 removes phosphor, while the dark glass stays passive.
+            mel.connect_material_property(vector('GlassColor', (.012, .014, .013, 1)), 'RGB', unreal.MaterialProperty.MP_BASE_COLOR)
+            mel.connect_material_property(scalar('Roughness', .22), '', unreal.MaterialProperty.MP_ROUGHNESS)
+            mel.connect_material_property(scalar('Specular', .5), '', unreal.MaterialProperty.MP_SPECULAR)
+            mel.connect_material_property(scalar('Metallic', 0), '', unreal.MaterialProperty.MP_METALLIC)
+            # Inverse ACES maps black to its toe cutoff, a small positive value.
+            # A powered-off CRT must not send that value into Lumen in Clean mode.
+            off = custom('return Level <= 0.0 ? float3(0, 0, 0) : C;', ['Level', 'C'], unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+            mel.connect_material_expressions(scalar('Brightness', 1), '', off, 'Level')
+            mel.connect_material_expressions(boost, '', off, 'C')
+            boost = off
         mel.connect_material_property(boost, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     if blend == unreal.BlendMode.BLEND_MASKED:
         mel.connect_material_property(alpha, '', unreal.MaterialProperty.MP_OPACITY_MASK)
@@ -986,6 +1087,7 @@ if 'mat' in only:
             for two in (False, True):
                 nm = 'M_Web_%s_%s%s' % ('Lit' if lit else 'Unlit', bk, '_2S' if two else '')
                 masters[(lit, bk, two)] = build_master(nm, lit, bv, two)
+    crt_master = build_master('M_WebCRT', False, BLENDS['Opaque'], False, control_crt=True)
     # world/flora.ts: the ground cover's own (export.js marks its materials with the mesh they are on)
     flora_masters = {
         'card': build_master('M_WebFlora_Card', True, BLENDS['Masked'], True, 'card'),
@@ -998,6 +1100,11 @@ if 'mat' in only:
 
     # ---------- one instance per web material ----------
     tex_srgb = {t['id']: t['srgb'] for t in man['textures']}
+    tex_names = texture_labels(man)
+    mat_labels = material_labels(man)
+    detail_counts = {}
+    glass_count = 0
+    crt_count = 0
 
     def T(i):
         return eal.load_asset('/Game/Web/Tex/T%d' % i) if i is not None and i >= 0 else None
@@ -1006,8 +1113,9 @@ if 'mat' in only:
         return unreal.LinearColor(uvr[0], uvr[1], uvr[2], 0), unreal.LinearColor(uvr[3], uvr[4], uvr[5], 0)
 
     made = 0
-    for d in man['materials']:
+    for d in (() if masters_only else man['materials']):
         lit = bool(d.get('lit'))
+        labels = mat_labels.get(d['id'], set())
         uses_alpha = 'alphaMap' in d or d.get('opacity', 1) < 0.999
         if d.get('additive'):
             bk, lit = 'Add', False
@@ -1019,6 +1127,9 @@ if 'mat' in only:
             bk = 'Opaque'
         two = d.get('side') != 'front'
         parent = masters[(lit, bk, two)]
+        if is_control_crt(d, labels):
+            parent = crt_master
+            crt_count += 1
         fk = FLORA_KIND.get(d.get('flora', ''))
         if fk:
             parent = flora_masters[fk]
@@ -1068,6 +1179,31 @@ if 'mat' in only:
             if 'normalMap' in d and T(d['normalMap']):
                 tv(mi, 'NormalMap', T(d['normalMap']))
                 r0, r1 = rows(d['normalMapUV']); vv(mi, 'NormalU', r0); vv(mi, 'NormalV', r1)
+                scale = d.get('normalScale', [1, 1])
+                vv(mi, 'NormalScale', unreal.LinearColor(float(scale[0]), float(scale[1]), 0, 0))
+            # Source normal maps take precedence over bump maps, as in three.
+            if not fk and 'normalMap' not in d and 'bumpMap' in d and T(d['bumpMap']):
+                tv(mi, 'BumpMap', T(d['bumpMap']))
+                r0, r1 = rows(d['bumpMapUV']); vv(mi, 'BumpU', r0); vv(mi, 'BumpV', r1)
+                sv(mi, 'BumpScale', float(d.get('bumpScale', 1)) * 100.)
+                mel.set_material_instance_static_switch_parameter_value(mi, 'HasBumpMap', True, unreal.MaterialParameterAssociation.GLOBAL_PARAMETER, False)
+            if not fk and 'aoMap' in d and T(d['aoMap']):
+                tv(mi, 'AOMap', T(d['aoMap']))
+                r0, r1 = rows(d['aoMapUV']); vv(mi, 'AOU', r0); vv(mi, 'AOV', r1)
+                sv(mi, 'AOIntensity', float(d.get('aoMapIntensity', 1)))
+                mel.set_material_instance_static_switch_parameter_value(mi, 'HasAOMap', True, unreal.MaterialParameterAssociation.GLOBAL_PARAMETER, False)
+            profile = profile_for(d, tex_names, labels)
+            if profile:
+                for parameter, value in PROFILES[profile].items():
+                    sv(mi, parameter, value)
+                mel.set_material_instance_static_switch_parameter_value(mi, 'SurfaceDetail', True, unreal.MaterialParameterAssociation.GLOBAL_PARAMETER, False)
+                detail_counts[profile] = detail_counts.get(profile, 0) + 1
+                log('surface detail MI_W%d %s %s' % (d['id'], profile, ','.join(sorted(labels))))
+            glass = glass_parameters(d, labels)
+            if glass:
+                for parameter, value in glass.items():
+                    sv(mi, parameter, value)
+                glass_count += 1
         if not lit and d.get('toneMapped') is False:
             sv(mi, 'Untonemapped', 1.0)
         if bk == 'Masked':
@@ -1097,6 +1233,9 @@ if 'mat' in only:
         eal.save_loaded_asset(mi)
         made += 1
     log('material instances %d' % made)
+    log('surface detail profiles %s; dielectric glass %d; control CRT glass %d' % (json.dumps(detail_counts, sort_keys=True), glass_count, crt_count))
+    if masters_only:
+        log('masters only: existing material instances and parent bindings preserved')
 class Graph:
     """A material made here node by node: parameters, the MPC's values, Unreal's built-in inputs and
     custom HLSL, laid out down the left."""
@@ -1302,7 +1441,7 @@ def build_life():
     g = Graph('/Game/Web/Base/M_WebAirCone', B.BLEND_ADDITIVE)
     c = g.custom(AIR_CONE, [('Cam', CAM(g)), ('WP', WP(g)), ('Nw', g.builtin(unreal.MaterialExpressionVertexNormalWS)), ('VA', g.uv(0)), ('K', g.tex('K', linear=True)),
                             ('Lamps', g.scalar('Lamps', 1)), ('Gain', g.scalar('Gain', 0)), ('Depth', g.builtin(unreal.MaterialExpressionPixelDepth)),
-                            ('Dens', g.coll('FogDensity')), ('Col', g.builtin(unreal.MaterialExpressionVertexColor))])
+                            ('Dens', g.coll('FogDensity')), ('Col', g.builtin(unreal.MaterialExpressionVertexColor)), ('Native', g.coll('NativeLighting'))])
     g.out(g.defogged(c), MP.MP_EMISSIVE_COLOR)
     g.save()
     # the haze on the ground
@@ -1310,7 +1449,7 @@ def build_life():
     lamps = [('L%d' % i, g.vector4('Lamp%d' % i, (0, -999, 0, 1))) for i in range(4)] + [('C%d' % i, g.vector('LampCol%d' % i, (0, 0, 0, 0))) for i in range(4)]
     hz = g.custom(AIR_HAZE, [('WP', WP(g)), ('Cam', CAM(g)), ('Time', g.scalar('Time', 0)), ('Layer', g.mask(g.uv(0), 'r')), ('R', g.scalar('R', 320)),
                              ('Col', g.vector('Col', (0, 0, 0, 0))), ('K', g.scalar('K', 0)), ('Depth', g.builtin(unreal.MaterialExpressionPixelDepth)),
-                             ('Dens', g.coll('FogDensity'))] + lamps, 4)
+                             ('Dens', g.coll('FogDensity')), ('Native', g.coll('NativeLighting'))] + lamps, 4)
     g.out(g.mask(hz, 'rgb'), MP.MP_EMISSIVE_COLOR)
     g.out(g.mask(hz, 'a'), MP.MP_OPACITY)
     g.save()
@@ -1320,7 +1459,7 @@ def build_life():
     wpo = g.custom(WIN_WPO, [('Cam', CAM(g)), ('WP', WP(g))])
     g.out(wpo, MP.MP_WORLD_POSITION_OFFSET)
     c = g.custom(WIN_FS, [('Q0', g.uv(0)), ('Q1', g.uv(1)), ('Q2', g.uv(2)), ('MapSize', g.vector('MapSize', (384, 384, 0, 0))), ('Map', g.tex('Map')),
-                          ('VCol', g.interp(vcol)), ('Depth', g.builtin(unreal.MaterialExpressionPixelDepth)), ('Dens', g.coll('FogDensity'))])
+                          ('VCol', g.interp(vcol)), ('Depth', g.builtin(unreal.MaterialExpressionPixelDepth)), ('Dens', g.coll('FogDensity')), ('Native', g.coll('NativeLighting'))])
     g.out(g.defogged(c), MP.MP_EMISSIVE_COLOR)
     g.save()
     # the life in the night: the moths and bats round the lamps (custom data: seed 0-3, lamp 4, kind 5,
@@ -1353,6 +1492,50 @@ def build_life():
     log('the world\'s own life: sky dome, band, stars, meteor, cones, haze, window light, moths, motes')
 
 
+def build_picture():
+    t = fresh('/Game/Web/Base/M_WebTone')
+    t.set_editor_property('material_domain', unreal.MaterialDomain.MD_POST_PROCESS)
+    t.set_editor_property('blendable_location', unreal.BlendableLocation.BL_REPLACING_TONEMAPPER)
+    tc = mel.create_material_expression(t, unreal.MaterialExpressionCustom, -400, 0)
+    tc.set_editor_property('code', TONE); tc.set_editor_property('output_type', unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+    ins = []
+    for nm in ('UV', 'K', 'Dens', 'FogCol', 'Time', 'Mode', 'Vhs', 'Strength', 'Calm', 'HazeK', 'Native', 'Dummy'):
+        ci = unreal.CustomInput(); ci.set_editor_property('input_name', nm); ins.append(ci)
+    tc.set_editor_property('inputs', ins)
+    sp = mel.create_material_expression(t, unreal.MaterialExpressionScreenPosition, -800, 0)
+    mel.connect_material_expressions(sp, 'ViewportUV', tc, 'UV')
+    tm = mel.create_material_expression(t, unreal.MaterialExpressionTime, -800, 150)
+    mel.connect_material_expressions(tm, '', tc, 'Time')
+    # a scene texture node, so the material reads the scene (SceneTextureLookup needs it)
+    st = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 250)
+    st.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_POST_PROCESS_INPUT0)
+    sd = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 300)
+    sd.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_SCENE_DEPTH)
+    dm = mel.create_material_expression(t, unreal.MaterialExpressionAdd, -600, 280)
+    mel.connect_material_expressions(st, 'Color', dm, 'A'); mel.connect_material_expressions(sd, 'Color', dm, 'B')
+    # (and the custom depth and stencil: the unfogged)
+    cdn = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 340)
+    cdn.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_CUSTOM_DEPTH)
+    csn = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 380)
+    csn.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_CUSTOM_STENCIL)
+    dc = mel.create_material_expression(t, unreal.MaterialExpressionAdd, -600, 360)
+    mel.connect_material_expressions(cdn, 'Color', dc, 'A'); mel.connect_material_expressions(csn, 'Color', dc, 'B')
+    dm2 = mel.create_material_expression(t, unreal.MaterialExpressionAdd, -500, 300)
+    mel.connect_material_expressions(dm, '', dm2, 'A'); mel.connect_material_expressions(dc, '', dm2, 'B')
+    mel.connect_material_expressions(dm2, '', tc, 'Dummy')
+    for k, (nm, pin) in enumerate((('ToneK', 'K'), ('FogDensity', 'Dens'), ('FogColor', 'FogCol'), ('PictureMode', 'Mode'), ('Vhs', 'Vhs'), ('PictureStrength', 'Strength'), ('PictureCalm', 'Calm'), ('HorizonHazeK', 'HazeK'), ('NativeLighting', 'Native'))):
+        e = mel.create_material_expression(t, unreal.MaterialExpressionCollectionParameter, -800, 400 + k * 150)
+        e.set_editor_property('collection', mpc); e.set_editor_property('parameter_name', nm)
+        mel.connect_material_expressions(e, '', tc, pin)
+    mel.connect_material_property(tc, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    mel.recompile_material(t); eal.save_loaded_asset(t)
+    log('film picture: Clean / VHS / Carpenter 35 mm / Documentary 16 mm / Super 8')
+
+
+if only == ['picture']:
+    build_picture()
+
+
 # ---------- the sky pictures and the two special materials ----------
 if only == ['life']:
     # (only the world's own life's materials, made again)
@@ -1361,9 +1544,9 @@ if only == ['life']:
 if 'sky' in only or 'mat' in only:
     import shutil
     tasks = [task(os.path.join(SRC, 'tex', v['file']), '/Game/Web/Tex', 'Sky_' + k) for k, v in (man.get('skies') or {}).items()]
-    if tasks:
+    if tasks and not materials_only:
         tools.import_asset_tasks(tasks)
-    for k in (man.get('skies') or {}):
+    for k in (() if materials_only else (man.get('skies') or {})):
         a = eal.load_asset('/Game/Web/Tex/Sky_' + k)
         if a:
             a.set_editor_property('mip_gen_settings', unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
@@ -1434,47 +1617,13 @@ if 'sky' in only or 'mat' in only:
     mel.connect_material_expressions(m1, '', m2, 'A'); mel.connect_material_expressions(brg, '', m2, 'B')
     mel.connect_material_property(m2, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     mel.recompile_material(g); eal.save_loaded_asset(g)
-    t = fresh('/Game/Web/Base/M_WebTone')
-    t.set_editor_property('material_domain', unreal.MaterialDomain.MD_POST_PROCESS)
-    t.set_editor_property('blendable_location', unreal.BlendableLocation.BL_REPLACING_TONEMAPPER)
-    tc = mel.create_material_expression(t, unreal.MaterialExpressionCustom, -400, 0)
-    tc.set_editor_property('code', TONE); tc.set_editor_property('output_type', unreal.CustomMaterialOutputType.CMOT_FLOAT3)
-    ins = []
-    for nm in ('UV', 'K', 'Dens', 'FogCol', 'Time', 'Vhs', 'HazeK', 'Dummy'):
-        ci = unreal.CustomInput(); ci.set_editor_property('input_name', nm); ins.append(ci)
-    tc.set_editor_property('inputs', ins)
-    sp = mel.create_material_expression(t, unreal.MaterialExpressionScreenPosition, -800, 0)
-    mel.connect_material_expressions(sp, 'ViewportUV', tc, 'UV')
-    tm = mel.create_material_expression(t, unreal.MaterialExpressionTime, -800, 150)
-    mel.connect_material_expressions(tm, '', tc, 'Time')
-    # a scene texture node, so the material reads the scene (SceneTextureLookup needs it)
-    st = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 250)
-    st.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_POST_PROCESS_INPUT0)
-    sd = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 300)
-    sd.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_SCENE_DEPTH)
-    dm = mel.create_material_expression(t, unreal.MaterialExpressionAdd, -600, 280)
-    mel.connect_material_expressions(st, 'Color', dm, 'A'); mel.connect_material_expressions(sd, 'Color', dm, 'B')
-    # (and the custom depth and stencil: the unfogged)
-    cdn = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 340)
-    cdn.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_CUSTOM_DEPTH)
-    csn = mel.create_material_expression(t, unreal.MaterialExpressionSceneTexture, -800, 380)
-    csn.set_editor_property('scene_texture_id', unreal.SceneTextureId.PPI_CUSTOM_STENCIL)
-    dc = mel.create_material_expression(t, unreal.MaterialExpressionAdd, -600, 360)
-    mel.connect_material_expressions(cdn, 'Color', dc, 'A'); mel.connect_material_expressions(csn, 'Color', dc, 'B')
-    dm2 = mel.create_material_expression(t, unreal.MaterialExpressionAdd, -500, 300)
-    mel.connect_material_expressions(dm, '', dm2, 'A'); mel.connect_material_expressions(dc, '', dm2, 'B')
-    mel.connect_material_expressions(dm2, '', tc, 'Dummy')
-    for k, (nm, pin) in enumerate((('ToneK', 'K'), ('FogDensity', 'Dens'), ('FogColor', 'FogCol'), ('Vhs', 'Vhs'), ('HorizonHazeK', 'HazeK'))):
-        e = mel.create_material_expression(t, unreal.MaterialExpressionCollectionParameter, -800, 400 + k * 150)
-        e.set_editor_property('collection', mpc); e.set_editor_property('parameter_name', nm)
-        mel.connect_material_expressions(e, '', tc, pin)
-    mel.connect_material_property(tc, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
-    mel.recompile_material(t); eal.save_loaded_asset(t)
+    build_picture()
     log('sky, glow and tone materials')
     build_life()
     # the manifest goes with the build as a plain file
-    dst = os.path.join(unreal.Paths.project_content_dir(), 'WebData')
-    os.makedirs(dst, exist_ok=True)
-    shutil.copy(os.path.join(SRC, 'manifest.json'), os.path.join(dst, 'manifest.json'))
-    log('manifest copied')
+    if not materials_only:
+        dst = os.path.join(unreal.Paths.project_content_dir(), 'WebData')
+        os.makedirs(dst, exist_ok=True)
+        shutil.copy(os.path.join(SRC, 'manifest.json'), os.path.join(dst, 'manifest.json'))
+        log('manifest copied')
 log('done')

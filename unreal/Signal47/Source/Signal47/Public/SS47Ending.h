@@ -24,6 +24,9 @@ public:
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
 
 	static TArray<TPair<FString, FString>> CreditsRows(bool bBoughtSfx);
+	/** The roll's length. Departs from the web version (46 s): the 3D models' credits make the roll about
+	 *  half again as long, so it runs longer at about the web version's speed. */
+	static constexpr double CreditsSeconds = 68;
 	/** One frame of FLASH over the game (null: none). Opacity below 1 for the slow fades. */
 	void Flash(UTexture2D* C, double Opacity = 1);
 	/** Black over everything, faded in or out over milliseconds. */
@@ -45,7 +48,7 @@ private:
 	enum class ECard : uint8 { None, Title, Credits, Photo };
 	ECard Card = ECard::None;
 	bool bGone = false, bBoughtSfx = false, bLargeText = false, bPaperPlayed = false;
-	double T = 0, CreditsOut = 46.06;
+	double T = 0, CreditsOut = .06 + CreditsSeconds;
 	TFunction<void()> OnDone, OnPaper;
 	TStrongObjectPtr<UTexture2D> Frame, Photograph;
 	FSlateBrush FrameBrush, PhotoBrush;

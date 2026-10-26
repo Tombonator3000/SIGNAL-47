@@ -144,8 +144,8 @@ bool FS47SaroDark::Busy() const
 	return Phase == TEXT("relay") || Phase == TEXT("dark") || (Phase == TEXT("back") && Printed < Chars.Num());
 }
 
-bool FS47SaroDark::Window(double Clock) { const double C = Day(Clock); return C >= T0 && C < T1; }
-bool FS47SaroDark::Pending(double Clock) { return Day(Clock) < T1; }
+bool FS47SaroDark::Window(double Clock, bool bEvening) { const double C = Day(Clock) + (bEvening ? 2 * 3600 : 0); return C >= T0 && C < T1; }
+bool FS47SaroDark::Pending(double Clock, bool bEvening) { return Day(Clock) + (bEvening ? 2 * 3600 : 0) < T1; }
 
 void FS47SaroDark::Update(double Dt, const FS47DarkIn& S)
 {
@@ -167,7 +167,7 @@ void FS47SaroDark::Update(double Dt, const FS47DarkIn& S)
 
 bool FS47SaroDark::Due(const FS47DarkIn& S) const
 {
-	const double C = Day(S.Clock);
+	const double C = Day(S.Clock) + (bEveningTimeline ? 2 * 3600 : 0);
 	if (C < T0 || C >= T1) return false;
 	return S.Where == TEXT("lab") || (S.Where == TEXT("yard") && C >= YARD_FROM) || (S.Where == TEXT("room") && C >= ROOM_FROM);
 }
@@ -424,6 +424,7 @@ bool FS47SaroDark::SelfTest(TArray<FString>& Lines)
 	Check(!S47ClearAt(FVector(16, 1.6, -1.2), FVector(8, 1.6, -1.2), Shut) && S47ClearAt(FVector(16, 1.6, -1.2), FVector(8, 1.6, -1.2), Open), TEXT("from the lab through its door: only while it is open"));
 	Check(S47ClearAt(FVector(10, 1.6, -10), FVector(5.3, 4.7, -3.9), Shut, {}, 0), TEXT("a figure on the control room's roof, seen from the walk"));
 	Check(!S47ClearAt(FVector(8, 1.6, -10), FVector(-6.5, 0.5, -12.5), Shut, { { 0, 2, -14, -8 } }), TEXT("the truck in the way"));
+	Check(Window(30 * 60, true) && !Window(41 * 60, true) && Pending(20 * 60, true) && !Pending(60 * 60, true), TEXT("evening window is 00:29 to 00:40"));
 	Check(Window(2 * 3600 + 30 * 60) && !Window(2 * 3600 + 41 * 60) && Pending(2 * 3600) && !Pending(3 * 3600), TEXT("its window, 02:29 to 02:40"));
 	// a run, without the world: the relay, the sag, the dark, the light, the telex
 	TArray<FString> Logs, Notes;

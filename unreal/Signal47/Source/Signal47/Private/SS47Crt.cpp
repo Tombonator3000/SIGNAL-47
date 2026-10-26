@@ -191,6 +191,8 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 		return Layer + 9;
 	}
 	const bool bGlitch = Story->CrtGlitch > 0.f && FMath::FRand() < 0.6f;
+	// The phosphor's local light follows the very same black glitch frame as its texture.
+	Saro->SetCrtFlicker(Kind == EKind::Status ? 0 : Kind == EKind::Spectrum ? 1 : 2, bGlitch ? 0.f : 1.f);
 	const bool bBooting = Story->BootT >= 0 && Story->GameTime - Story->BootT < 2.6;
 	if (bGlitch)
 	{

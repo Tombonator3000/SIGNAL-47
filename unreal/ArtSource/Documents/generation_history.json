@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "tool": "built-in imagegen",
+  "notes_nb": [
+    "Alle endelige prompter og råbildehasher står i generation.json. Her registreres støttebilder og den tidligere genereringen som ble redigert.",
+    "Ingen av JPG-filene er tegnet om eller tekstredigert under formatkonverteringen. Endringene nedenfor ble gjort med innebygd imagegen."
+  ],
+  "edits": [
+    {
+      "id": "EV_DALE_CLIPPINGS",
+      "purpose_nb": "Flyttet fortellermerknader om manglende dato/tekst til Dales blyant på bakgrunnspapiret. Ingen observasjon eller ledetråd ble sladdet.",
+      "previous_generation": {
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait background page with TWO distinct, carefully readable old newspaper scraps pasted onto buff filing paper, with Dale's graphite annotations underneath each. The top wider cutting has Pecos Valley Sentinel masthead, OCTOBER22,1985 clearly set, and headline DRIVERS REPORT STALLED ENGINES ON COUNTY ROAD. Short two-column body. The second cutting lower down has a torn missing dateline, headline RANCHER FINDS FENCE LAMP BURNING AFTER LINE FAULT, and one readable paragraph. Handwrite the three \"Dale, pencil\"/\"In the empty space below\" remarks in the intervening spaces, as remarks themselves (do not print the narrator prefixes). Both clippings must be visually separate and no invented photos. No black redactions covering actual supplied words. Warm faded newsprint, old tape remnants, authentic tiny newspaper rules. Missing date means no date added for the second cutting. Body and annotations large enough to read.\nDocument title: Local cuttings / dates to check\nSmall stamp/header: FIELD CHECKS / BACKGROUND\nFull text to lay out, preserving all actual document wording:\nCUTTING A\nPECOS VALLEY SENTINEL / OCTOBER 22, 1985\nDRIVERS REPORT STALLED ENGINES ON COUNTY ROAD\n\nTwo motorists reported brief electrical failures on a county road east of the highway over the weekend. Both vehicles restarted. A county spokesman said no general supply interruption had been reported. No cause was entered in the notice.\n\nDale, pencil: Cars are not supplied by the town feeder. Same evening is not the same cause. Ask for a location before putting this beside the service complaint.\n\nCUTTING B\nHEADLINE SAVED; DATE MISSING\nRANCHER FINDS FENCE LAMP BURNING AFTER LINE FAULT\n\nThe lamp had an auxiliary supply. The owner said the indicator had shown the main line was disconnected. The remainder of the item is missing.\n\nDale, pencil: Ordinary explanation. Keep it. A lit lamp is not evidence that a disconnected line is live. Need the whole page and the maintenance entry.\n\nIn the empty space below: I have two accounts of a movement near the service road. Neither witness agrees on the date. Do not make a pattern out of that yet.",
+        "source_basename": "exec-0b27ad54-36a0-4f93-9575-1c5c0eb7169d.png",
+        "source_sha256": "77f434c5965ea614579dd259b3217559e553dffe9362bec11b368b504dca051d",
+        "source_bytes": 3145885
+      },
+      "final_source_sha256": "94b48bf5a78ebf88fa5b7fd499780e2d8dd653139bdbcc4127b5de882cad9eeb"
+    }
+  ],
+  "supporting_images": [
+    {
+      "id": "E06",
+      "source_asset_id": "E07",
+      "use_nb": "Originalen ble brukt som redigeringsreferanse for samme grunnoppsett og A/B-plassering. Tekst, stempel og C ble endret med imagegen."
+    },
+    {
+      "id": "E15",
+      "repo_path": "web/src/assets/art/docs/photo_1947_master.jpg",
+      "sha256": "0f52790c147be04b8cc7572356683310dcbd1fcf056364b445d8185b2ee96a8a",
+      "use_nb": "Støttebilde for komposisjon med crop B-relasjoner. Generert nytolkning, ikke en pikselidentisk beskjæring."
+    }
+  ]
+}

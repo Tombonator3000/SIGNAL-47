@@ -1,0 +1,235 @@
+{
+  "status": "PLACEMENT_SOURCE_AUDITED_NATIVE_UNVERIFIED",
+  "source_revision": "R1-original-substation-site-1986",
+  "site_world_three_m": [
+    7890,
+    -1.1,
+    536.2
+  ],
+  "world_yaw_degrees": 180,
+  "mapping": "worldThree=(7890-bx,-1.10+bz,536.20+by)",
+  "terrain_authority": {
+    "manifest": "/home/tom/SIGNAL-47/unreal/Signal47/Content/WebData/manifest.json",
+    "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+    "glb": "/home/tom/scratch-bm/Signal47-web/geo/geo_007.glb",
+    "glb_sha256": "ca6f9e6a54eb8b5a7cda62ad2f38a1ab7f9fc08fd360e5a9402129434acc760a",
+    "geometry": "g873",
+    "method": "Vertical barycentric triangle intersection at exact world x-8000,z. Original exported source geometry; not a new Unreal runtime measurement."
+  },
+  "anchors": [
+    {
+      "part": "SM_SubstationSite_Pole_A",
+      "blender_local_m": [
+        0,
+        21.8,
+        -0.240012
+      ],
+      "world_three_m": [
+        7890,
+        -1.340012,
+        558.0
+      ]
+    },
+    {
+      "part": "SM_SubstationSite_Pole_B",
+      "blender_local_m": [
+        0,
+        53.8,
+        -0.228311
+      ],
+      "world_three_m": [
+        7890,
+        -1.328311,
+        590.0
+      ]
+    },
+    {
+      "part": "SM_SubstationSite_Pole_C",
+      "blender_local_m": [
+        0,
+        85.8,
+        -0.301798
+      ],
+      "world_three_m": [
+        7890,
+        -1.401798,
+        622.0
+      ]
+    },
+    {
+      "part": "SM_SubstationSite_Shed",
+      "blender_local_m": [
+        6.5,
+        4.9,
+        0
+      ],
+      "world_three_m": [
+        7883.5,
+        -1.1,
+        541.1
+      ]
+    },
+    {
+      "part": "SM_SubstationSite_Equipment",
+      "blender_local_m": [
+        6.8,
+        2.65,
+        -0.08
+      ],
+      "world_three_m": [
+        7883.2,
+        -1.18,
+        538.85
+      ]
+    },
+    {
+      "part": "SM_SubstationSite_Lines",
+      "blender_local_m": [
+        0,
+        0,
+        0
+      ],
+      "world_three_m": [
+        7890,
+        -1.1,
+        536.2
+      ]
+    },
+    {
+      "part": "SM_SubstationSite_Ground",
+      "blender_local_m": [
+        0,
+        0,
+        0
+      ],
+      "world_three_m": [
+        7890,
+        -1.1,
+        536.2
+      ]
+    }
+  ],
+  "guy_anchor": {
+    "blender_local_m": [
+      0,
+      90.0,
+      -0.342236688
+    ],
+    "world_three_m": [
+      7890,
+      -1.442236688,
+      626.2
+    ],
+    "nearest_original_road_collider_clearance_m": 81.737514138
+  },
+  "existing_telephone_poles_nearby": {
+    "node": 1246,
+    "geometry": "g877",
+    "world_three_m": [
+      [
+        8015,
+        -2.61972,
+        486.7253
+      ],
+      [
+        8015,
+        -2.6085,
+        529.0655
+      ],
+      [
+        8015,
+        -2.53641,
+        575.7893
+      ]
+    ],
+    "note": "Four-wire telephone line from roadProps.ts. New three-phase site line does not connect to it. outside.json powerline belongs to SARO, not this road root."
+  },
+  "shed": {
+    "reserved_blender_footprint_m": [
+      [
+        4.9,
+        3.5
+      ],
+      [
+        8.1,
+        6.3
+      ]
+    ],
+    "reserved_world_footprint_xz_m": [
+      [
+        7881.9,
+        539.7
+      ],
+      [
+        7885.1,
+        542.5
+      ]
+    ],
+    "original_ground_y_at_reserved_corners_m": [
+      -1.327741,
+      -1.375245,
+      -1.285046,
+      -1.33255
+    ],
+    "existing_gravel_plane_world_y_m": -1.18,
+    "buswork_x_clearance_m": 1.075,
+    "collision": "Existing yard block only; no new access or shed interior interaction."
+  },
+  "culvert": {
+    "included": false,
+    "reason": "No open ditch at the site. At worldX7890 the actual track surface g875 is approxY-1.42..-1.47, with adjoining visible g873 approxY-1.46..-1.49. The depressed grid under the road strip is hidden overlap, not a drain opening. Adding a visible culvert requires terrain work. Existing mouth culvert is already near worldX7986.2,Z520."
+  },
+  "cameras": [
+    {
+      "name": "substationsite-approach",
+      "area": "diner",
+      "at": [
+        7890,
+        519,
+        3.14159265,
+        0.02
+      ]
+    },
+    {
+      "name": "substationsite-line",
+      "area": "diner",
+      "at": [
+        7908,
+        531,
+        2.78,
+        0.18
+      ]
+    },
+    {
+      "name": "substationsite-shed",
+      "area": "diner",
+      "at": [
+        7877.5,
+        536.4,
+        -2.235,
+        0.06
+      ]
+    }
+  ],
+  "validation_scope": "Analytic placement/config checks only. Native import, actual walking, traces and visual images are owned by root and remain unverified here.",
+  "camera_ground_and_collision_audit": [
+    {
+      "view": "substationsite-approach",
+      "g873_world_floor_y_m": -1.461529123,
+      "nearest_original_road_collider_clearance_m": 17.71894,
+      "outside_existing_yard_and_control_blocks": true
+    },
+    {
+      "view": "substationsite-line",
+      "g873_world_floor_y_m": -1.613997614,
+      "nearest_original_road_collider_clearance_m": 5.463306,
+      "outside_existing_yard_and_control_blocks": true
+    },
+    {
+      "view": "substationsite-shed",
+      "g873_world_floor_y_m": -1.323179508,
+      "nearest_original_road_collider_clearance_m": 30.508238,
+      "outside_existing_yard_and_control_blocks": true
+    }
+  ]
+}

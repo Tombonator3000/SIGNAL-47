@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "group": "world.town.st",
+  "souvenirBox": [
+    18.2,
+    29.6,
+    0.0,
+    10.0,
+    2057.7,
+    2070.3
+  ],
+  "radioBox": [
+    19.04,
+    30.08,
+    0.0,
+    10.0,
+    2029.9,
+    2042.1
+  ],
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "meshes": {
+    "g999": {
+      "tris": 1916,
+      "gasRemoved": 128,
+      "radioRemoved": 72,
+      "souvenirRemoved": 0,
+      "resultTris": 1716,
+      "hidden": false,
+      "node": 1448,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g999.g999"
+    },
+    "g1000": {
+      "tris": 512,
+      "gasRemoved": 44,
+      "radioRemoved": 60,
+      "souvenirRemoved": 0,
+      "resultTris": 408,
+      "hidden": false,
+      "node": 1449,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1000.g1000"
+    },
+    "g1001": {
+      "tris": 30,
+      "gasRemoved": 2,
+      "radioRemoved": 0,
+      "souvenirRemoved": 4,
+      "resultTris": 24,
+      "hidden": false,
+      "node": 1450,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1001.g1001"
+    },
+    "g1002": {
+      "tris": 754,
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 384,
+      "resultTris": 370,
+      "hidden": false,
+      "node": 1451,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1002.g1002"
+    },
+    "g1003": {
+      "tris": 180,
+      "gasRemoved": 24,
+      "radioRemoved": 12,
+      "souvenirRemoved": 12,
+      "resultTris": 132,
+      "hidden": false,
+      "node": 1452,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1003.g1003"
+    },
+    "g1006": {
+      "tris": 360,
+      "gasRemoved": 50,
+      "radioRemoved": 24,
+      "souvenirRemoved": 24,
+      "resultTris": 262,
+      "hidden": false,
+      "node": 1455,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1006.g1006"
+    },
+    "g1010": {
+      "tris": 356,
+      "gasRemoved": 48,
+      "radioRemoved": 2,
+      "souvenirRemoved": 50,
+      "resultTris": 256,
+      "hidden": false,
+      "node": 1459,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1010.g1010"
+    },
+    "g1013": {
+      "tris": 300,
+      "gasRemoved": 0,
+      "radioRemoved": 0,
+      "souvenirRemoved": 60,
+      "resultTris": 240,
+      "hidden": false,
+      "node": 1462,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1013.g1013"
+    },
+    "g1014": {
+      "tris": 120,
+      "gasRemoved": 0,
+      "radioRemoved": 60,
+      "souvenirRemoved": 0,
+      "resultTris": 60,
+      "hidden": false,
+      "node": 1463,
+      "asset": "/Game/CalicheStreet/Trim/StaticMeshes/g1014.g1014"
+    }
+  },
+  "files": [
+    "trim_geo_008.glb"
+  ],
+  "preserved": [
+    "studio",
+    "onAir",
+    "amSign",
+    "amDoor",
+    "mast",
+    "souvenir proxies",
+    "physical A02 figure",
+    "neighboring buildings"
+  ],
+  "composedGasTrim": {
+    "group": "world.town.st",
+    "keep": [
+      "world.town.m.pave"
+    ],
+    "boxes": [
+      [
+        -27.1,
+        -16.3,
+        3.9,
+        11.0,
+        2065.9,
+        2088.1
+      ],
+      [
+        -14.2,
+        -6.3,
+        4.25,
+        9.35,
+        2045.7,
+        2064.3
+      ],
+      [
+        -16.9,
+        -13.5,
+        4.1,
+        11.7,
+        2041.8,
+        2042.2
+      ]
+    ]
+  }
+}

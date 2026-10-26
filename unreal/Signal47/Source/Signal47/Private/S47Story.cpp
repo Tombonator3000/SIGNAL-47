@@ -1,4 +1,6 @@
 #include "S47Story.h"
+#include "S47Evening.h"
+#include "S47Anomaly.h"
 #include "S47Walker.h"
 #include "S47World.h"
 #include "S47Three.h"
@@ -12,10 +14,17 @@
 #include "S47Chapter2.h"
 #include "S47Chapter5.h"
 #include "S47DecoderDesk.h"
+#include "S47Ambience.h"
+#include "S47ArrayBack.h"
+#include "S47DishArray.h"
+#include "S47Reel047.h"
+#include "S47SaroNight.h"
 #include "S47Inter.h"
 #include "S47Json.h"
 #include "S47UI.h"
 #include "S47Main.h"
+#include "S47Startup.h"
+#include "S47Radio.h"
 #include "S47Web.h"
 #include "Misc/CommandLine.h"
 #include "TimerManager.h"
@@ -36,6 +45,7 @@ AS47Story::AS47Story()
 	{
 		FS47OpsView V;
 		V.Clock = ClockSec;
+		V.bEveningTimeline = bEveningTimeline;
 		V.SolveAt = NS.SolveAt;
 		V.Log = NS.Log;
 		V.bFuture = ChapterKey == TEXT("ch5"); // future: this.phase === 'ch5' (All Night: RUN860414_0529.DAT)
@@ -52,9 +62,43 @@ void AS47Story::Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio)
 		FS47DecoderDeskDeps Dd;
 		Dd.UI = M->UI; Dd.Audio = InAudio; Dd.Room = InSaro; Dd.Inter = M->Inter;
 		Dd.Locked = [this] { return Rx.Stage >= 3; };
-		Dd.Recorded = [] { return FString(TEXT("02:14")); };
+		Dd.Recorded = [this] { return TimelineText(TEXT("02:14")); };
 		Dd.Busy = [this] { return bCinematic; };
 		Dd.Power = [this] { return bPowered && !NS.bK3Open; };
+		// (Unreal only, Tom's request: the bought unit's meters and the tones' answer, S47DecoderDesk.h)
+		const TWeakObjectPtr<US47Main> Wm = M;
+		Dd.ReelLevel = [Wm] { return Wm.IsValid() && Wm->SaroNight && Wm->SaroNight->Reel047.IsValid() ? Wm->SaroNight->Reel047->Level() : 0.0; };
+		Dd.HasPaper = [this](const FString& Id) { return NS.Papers.Contains(Id); };
+		Dd.File = [this](const FS47Doc& Doc, const FString& N) { FilePaper(Doc); if (!N.IsEmpty()) Note(N); };
+		Dd.Answered = [this] { return NS.bTapeA; };
+		Dd.SetAnswered = [this] { NS.bTapeA = true; };
+		Dd.Save = [Wm] { if (Wm.IsValid()) Wm->RequestAutosave(false); };
+		Dd.React = [this](double Glitch, double Dip, double Flick)
+		{
+			// the screens break up and the room sags, as the lights' dip after the relay does (LightsDip);
+			// or the tubes stutter, as after the boom (Flicker)
+			if (!BankIn()) return;
+			CrtGlitch = FMath::Max(CrtGlitch, float(Glitch));
+			DipT = FMath::Max(DipT, float(Dip));
+			Flicker = FMath::Max(Flicker, float(Flick));
+			if (Audio.IsValid() && Dip > 0)
+			{
+				Audio->Play(TEXT("thud_soft"), 0.55f, Saro.IsValid() ? Saro->PropLocation(TEXT("rack")) : FVector::ZeroVector, 0.45f);
+				Audio->HoldRoomTone(0.2f);
+				After(Dip, [this] { if (Audio.IsValid()) Audio->HoldRoomTone(1.f); });
+			}
+		};
+		Dd.Hush = [this](double Secs, double Level, double Tau, double Back) { if (Audio.IsValid() && Audio->Night.IsValid()) Audio->Night->Hush(Secs, Level, Tau, Back); };
+		Dd.Lamps = [Wm](bool bOn)
+		{
+			// the array's red lamps (world/Dish.ts DishArray.beaconPhase) in one phase, or each in its own
+			// again; not while the archive's phone holds the dishes down or the array is being put back,
+			// and not the dishes that follow the player (they have their own)
+			FS47DishArray* A = Wm.IsValid() && Wm->SaroNight ? Wm->SaroNight->Dishes.Get() : nullptr;
+			if (!A || A->BeaconsHeld() || (Wm->SaroNight->TipHolds && Wm->SaroNight->TipHolds()) || (Wm->SaroNight->ArrayBack.IsValid() && Wm->SaroNight->ArrayBack->Busy())) return;
+			for (int32 I = 0; I < A->Dishes.Num(); ++I) if (!A->Dishes[I].bRogue) A->BeaconPhase(I, bOn ? 0.0 : A->Dishes[I].Phase);
+		};
+		Dd.Clock = [this] { return ClockText(false); };
 		Decoder = MakeShared<FS47DecoderDesk>(Dd);
 		// -S47Decoder (with -S47Jump=locked or later): the processor's panel opened three seconds in, as
 		// a use of it does; -S47Decoder=play: and PLAY TAPE pressed in it; =walk: played, and the panel
@@ -138,7 +182,7 @@ FVector AS47Story::TelexAt() const
 
 TArray<FString> AS47Story::TelexRoll() const
 {
-	TArray<FString> R = S47Docs::TelexEvening();
+	TArray<FString> R = S47Docs::TelexEvening(bEveningTimeline);
 	if (NS.Hondo) R.Add(S47Docs::TelexHondo(*NS.Hondo));
 	return R;
 }
@@ -150,7 +194,7 @@ void AS47Story::HondoTelex(double Filed, TOptional<double> At)
 	ConsoleLog(TEXT("TELEX RECEIVED  HONDO VALLEY"), At);
 	// (room.setTelexRoll: the roll's paper on the machine is not drawn in this version)
 	const int32 I = DocsList.IndexOfByPredicate([](const FS47Doc& D) { return D.Id == TEXT("telex"); });
-	if (I >= 0) DocsList[I] = S47Docs::Telex(TelexRoll());
+	if (I >= 0) DocsList[I] = S47Docs::Telex(TelexRoll(), bEveningTimeline);
 }
 
 void AS47Story::PowerOut(bool bOut)
@@ -193,6 +237,7 @@ void AS47Story::SetLeds(bool bOn)
 
 FString AS47Story::ChapterTitle() const
 {
+	if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->Opening()) return TEXT("Evening Shift");
 	// main.ts chapterTitle()
 	static const TMap<FString, FString> Titles = {
 		{ TEXT("ch1"), TEXT("Chapter 1: The Second Exposure") }, { TEXT("ch2"), TEXT("Chapter 2: The Amended Record") },
@@ -214,6 +259,15 @@ FString AS47Story::SurveyModeText() const
 
 TArray<FS47Task> AS47Story::Tasks() const
 {
+ if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->Opening())
+ {
+  const auto& P=M->Evening->Pack;
+  return {{TEXT("Drive north through Caliche and park at SARO"),P.Flag(TEXT("intro_arrived"))},
+   {TEXT("Stop for supper at Mesa Diner (optional)"),P.Flag(TEXT("arrival_diner_finished"))},
+   {TEXT("Answer Dale on the control-room phone"),P.Flag(TEXT("handover_done"))}};
+ }
+
+ if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->ServicePending()) return M->Evening->ServiceTasks();
 	if (const US47Chapter* C = Chapter(ChapterKey); C && C->bActive) return C->Tasks();
 	TArray<FS47Task> T;
 	T.Add({ TEXT("Read Dale's shift log"), bLogRead });
@@ -236,6 +290,7 @@ TArray<FS47Task> AS47Story::Tasks() const
 
 FString AS47Story::Label(const FString& Id) const
 {
+	if (Id == TEXT("logbook")) if (const auto* M=US47Main::Get(this); M && M->Anomaly && M->Evening && M->Evening->Enabled() && M->Evening->Pack.Flag(TEXT("handover_done"))) return TEXT("Shift folder / compare local records");
 	if (Id == TEXT("logbook")) return bLogRead ? TEXT("Read the shift log") : TEXT("Read Dale's shift log");
 	if (Id == TEXT("workOrder")) return TEXT("Read the work order");
 	if (Id == TEXT("coffeePot")) return At(ES47Phase::Event) ? TEXT("Coffee machine") : Coffee == ECoffee::None ? TEXT("Fill your mug") : TEXT("Coffee machine");
@@ -276,7 +331,16 @@ void AS47Story::Use(const FString& Id)
 {
 	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
-	if (Id == TEXT("logbook")) { OpenDoc(S47Docs::ShiftLog(), [this] { LogClosed(); }); return; }
+	if (Id == TEXT("anomaly:shiftlog"))
+	{
+		const auto* Existing = DocsList.FindByPredicate([](const FS47Doc& D){return D.Id == TEXT("log");});
+		OpenDoc(Existing ? *Existing : S47Docs::ShiftLog(bEveningTimeline), [this] { LogClosed(); }); return;
+	}
+	if (Id == TEXT("logbook"))
+	{
+		if (auto* M=US47Main::Get(this); M && M->Anomaly && M->Evening && M->Evening->Enabled() && M->Evening->Pack.Flag(TEXT("handover_done"))) { M->Anomaly->Open(TEXT("n01")); return; }
+		OpenDoc(S47Docs::ShiftLog(bEveningTimeline), [this] { LogClosed(); }); return;
+	}
 	if (Id == TEXT("workOrder")) { OpenDoc(S47Docs::WorkOrder(), [this] { WorkOrderClosed(); }); return; }
 	if (Id == TEXT("coffeePot"))
 	{
@@ -358,13 +422,13 @@ void AS47Story::Use(const FString& Id)
 	if (Id == TEXT("map")) { Toast(TEXT("SARO is the red X on the plains. Somebody drew a ring around Roswell and a question mark.")); return; }
 	if (Id == TEXT("excBinder")) { const FS47Doc D = S47Docs::Binder(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("serviceRecord")) { const FS47Doc D = S47Docs::ServiceRecord(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
-	if (Id == TEXT("telex")) { const FS47Doc D = S47Docs::Telex(TelexRoll()); OpenDoc(D, [this, D] { FilePaper(D); if (NS.Hondo) Note(S47Docs::HondoNote(*NS.Hondo)); }); return; }
+	if (Id == TEXT("telex")) { const FS47Doc D = S47Docs::Telex(TelexRoll(), bEveningTimeline); OpenDoc(D, [this, D] { FilePaper(D); if (NS.Hondo) Note(S47Docs::HondoNote(*NS.Hondo)); }); return; }
 	if (Id == TEXT("rfiCard")) { const FS47Doc D = S47Docs::InterferenceCard(Rx.Stage >= 3); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("halley")) { const FS47Doc D = S47Docs::HalleyPoster(); OpenDoc(D, [this, D] { FilePaper(D); }); return; }
 	if (Id == TEXT("opsTerminal")) { if (bDark) { Toast(TEXT("Dead screen. No power.")); return; } if (Audio.IsValid()) Audio->Play(TEXT("click"), 0.4f); if (Hud.IsValid()) Hud->OpenOps(); return; }
 	if (Id == TEXT("jacket")) { Toast(TEXT("SARO issue, with a reflective band all the way round. Too warm for in here."), 3.2f); return; }
 	if (Id == TEXT("radio")) { ToggleRadio(); return; }
-	if (Saro.IsValid() && Saro->IsDoor(Id)) { Saro->ToggleDoor(Id); return; }
+	if (Saro.IsValid() && Saro->IsDoor(Id)) { if (!Saro->ToggleDoor(Id)) Toast(TEXT("Step clear of the doorway before closing it.")); return; }
 }
 
 void AS47Story::OpsRan(const FString& Cmd, const FString& Result)
@@ -478,6 +542,17 @@ void AS47Story::ConsoleAction()
 void AS47Story::StagePassed()
 {
 	const int32 S = Rx.Stage;
+ if (S == 1 && bEveningTimeline)
+ {
+  const US47Main* Main = US47Main::Get(this);
+  if (Main && Main->Evening && Main->Evening->ServicePending())
+  {
+   // Local calibration remains usable. Only the unattended overnight survey waits for T01.
+   Rx.Status = TEXT("LOCAL INSPECTION CARD REQUIRED BEFORE OVERNIGHT SURVEY");
+   Toast(Main->Evening->ServiceObjective(), 5);
+   return;
+  }
+ }
 	Note(S47Signal::Profiles()[FMath::Min(S, 2)].Note);
 	Rx.Advance();
 	PointDishes(Rx.Azimuth, SurveyEl, 6);
@@ -487,7 +562,7 @@ void AS47Story::StagePassed()
 	else if (S == 2)
 	{
 		SetPhase(ES47Phase::Locked);
-		Note(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule."));
+		Note(TimelineText(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.")));
 		Toast(TEXT("Four pulses. A gap. Seven pulses. Again."), 4.f);
 		After(4.5, [this] { if (CurrentPhase == ES47Phase::Locked) Toast(TEXT("The tracking terminal can run a direction solve.")); });
 	}
@@ -517,7 +592,7 @@ void AS47Story::LogClosed()
 {
 	if (bLogRead) return;
 	bLogRead = true;
-	DocsList.Add(S47Docs::ShiftLog());
+	DocsList.Add(S47Docs::ShiftLog(bEveningTimeline));
 	if (CurrentPhase == ES47Phase::Intro) SetPhase(ES47Phase::Shift);
 	After(0.6, [this] { Toast(bPowered ? TEXT("Bank 3 is already up. Calibration next.") : TEXT("First the rack. Bank 3 is on the east wall, by the printer.")); });
 }
@@ -558,11 +633,11 @@ void AS47Story::TimeSkip()
 	}
 	SetPhase(ES47Phase::Skip);
 	bCinematic = true;
-	if (Hud.IsValid()) Hud->Fade(true, TEXT("02:13"));
+	if (Hud.IsValid()) Hud->Fade(true, bEveningTimeline ? TEXT("Routine survey completed\n14 APRIL 1986  00:13") : TEXT("02:13"));
 	After(3.6, [this]
 	{
 		if (Hud.IsValid()) Hud->CloseModal();
-		ClockSec = SkipClock;
+		ClockSec = bEveningTimeline ? FMath::Max(ClockSec, TimelineTime(SkipClock)) : SkipClock;
 		Coffee = Coffee == ECoffee::None ? ECoffee::None : ECoffee::Drunk;
 		if (Hud.IsValid()) Hud->Place(0.05, -2.2, 0);
 		EnterResidual();
@@ -581,8 +656,8 @@ void AS47Story::EnterResidual()
 		bResidualVisible = true;
 		Rx.Status = TEXT("UNLOGGED RESIDUAL  /  1420.4 MHz");
 		bAlarmOn = true;
-		Note(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there."));
-		Toast(TEXT("02:13:47. The console is beeping."), 3.5f);
+		Note(TimelineText(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")));
+		Toast(TimelineText(TEXT("02:13:47. The console is beeping.")), 3.5f);
 		Alarm();
 	});
 }
@@ -628,6 +703,7 @@ void AS47Story::TearPrintout()
 {
 	if (Audio.IsValid()) Audio->Play(TEXT("thud_soft"), 0.35f, Saro.IsValid() ? Saro->PropLocation(TEXT("printer")) : FVector::ZeroVector, 1.6f);
 	if (Saro.IsValid()) Saro->SetPrinterPaper(-1.f);
+	NS.PrintoutAt = ClockSec;
 	const FS47Doc Doc = S47Docs::Printout(ClockSec);
 	DocsList.Add(Doc);
 	SetPhase(ES47Phase::Ringing);
@@ -757,13 +833,16 @@ void AS47Story::Finish()
 void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 {
 	// Prologue.afterPrologue
+ // Restore the actual event before building any fixture fallback. Existing photos keep their own saved clocks.
+ const auto SavedNs = S47J::Obj(Saved, TEXT("ns"));
+ EventClock = S47J::Num(S47J::Obj(Saved, TEXT("s")), TEXT("eventClock"), EventClock);
 	bLogRead = true; bAnswered = true;
 	PowerUp(true);
 	Rx.Advance(); Rx.Advance(); Rx.Advance();
 	Rx.bSolved = true;
 	bResidualVisible = true;
 	ClockSec = S47J::Has(Saved, TEXT("clock")) ? S47J::Num(Saved, TEXT("clock")) : EventClock + 70;
-	DocsList = { S47Docs::ShiftLog(), S47Docs::Printout(EventClock - 60) };
+	DocsList = { S47Docs::ShiftLog(bEveningTimeline), RestorePrintout(SavedNs, EventClock - 60, Saved.IsValid()) };
 	NotesList.Empty();
 	for (const FString& N : { FString(S47Signal::Profiles()[0].Note), FString(S47Signal::Profiles()[1].Note),
 		FString(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")),
@@ -772,7 +851,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		FString(TEXT("Source distance on the solve: -39 light years. A negative distance. The solver cannot produce that.")),
 		FString(TEXT("Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing.")),
 		FString(TEXT("Every dish moved to az 026, el 32. Console shows no control command.")),
-		FString(TEXT("All dishes left their scheduled track and aligned together.")) }) Note(N);
+		FString(TEXT("All dishes left their scheduled track and aligned together.")) }) Note(TimelineText(N));
 	if (Saro.IsValid())
 	{
 		Saro->SetVisible(Saro->Handle(TEXT("room.mug")), false);
@@ -794,16 +873,19 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		}
 		if (S47J::Has(Ns, TEXT("solveAt"))) NS.SolveAt = S47J::Num(Ns, TEXT("solveAt"));
 		NS.bJacket = S47J::Bool(Ns, TEXT("jacket"));
+		double PrintoutAt = 0;
+		if (Ns->TryGetNumberField(TEXT("printoutAt"), PrintoutAt) && FMath::IsFinite(PrintoutAt)) NS.PrintoutAt = PrintoutAt;
 		// array: copyArraySave(saved.ns.array) (story/arrayBack.ts reads it through its store, which
 		// copies it); hondo: Number.isFinite(saved.ns.hondo) ? saved.ns.hondo : undefined
 		NS.Array = S47J::Obj(Ns, TEXT("array")).IsValid() ? S47J::Clone(S47J::Obj(Ns, TEXT("array"))) : nullptr;
 		double Hondo = 0;
 		if (Ns->TryGetNumberField(TEXT("hondo"), Hondo) && FMath::IsFinite(Hondo)) NS.Hondo = Hondo;
+		NS.bTapeA = S47J::Bool(Ns, TEXT("tapeA")); // (Unreal only: the tones' answer, S47DecoderDesk.h)
 	}
 	else
 	{
 		NS.SolveAt = E - 60;
-		NS.Log = { { 23 * 3600 + 44 * 60, TEXT("RX BANK 3  K3 CLOSED") }, { E - 60, TEXT("SOLVE  RANGE NEGATIVE") },
+		NS.Log = { { TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") }, { E - 60, TEXT("SOLVE  RANGE NEGATIVE") },
 			{ E - 47, TEXT("STATION CLOCK  WWVB REFERENCE LOST") }, { E - 7, TEXT("RX BANK 3  K3 OPEN") }, { E, TEXT("LINE POWER  DIP 1.2 S") },
 			{ E, TEXT("STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47") }, { E + 3, TEXT("ARRAY  S-01 TO S-27 MOTION  NO COMMAND") }, { E + 70, TEXT("RX BANK 3  K3 CLOSED") } };
 	}
@@ -814,7 +896,9 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		else if (Id == TEXT("service")) DocsList.Add(S47Docs::ServiceRecord());
 		else if (Id == TEXT("rfiCard")) DocsList.Add(S47Docs::InterferenceCard(Rx.Stage >= 3));
 		else if (Id == TEXT("halley")) DocsList.Add(S47Docs::HalleyPoster());
-		else if (Id == TEXT("telex")) DocsList.Add(S47Docs::Telex(TelexRoll()));
+		else if (Id == TEXT("telex")) DocsList.Add(S47Docs::Telex(TelexRoll(), bEveningTimeline));
+		// (Unreal only: T. Vega's page and TAPE A, S47DecoderDesk.h)
+		else if (const TOptional<FS47Doc> Pd = FS47DecoderDesk::PaperById(Id)) DocsList.Add(Id == TEXT("tapeA") ? FS47DecoderDesk::TapeDoc(TimelineText(TEXT("02:14"))) : *Pd);
 	}
 	ApplyK3(NS.bK3Open);
 	// (room.setTelexRoll: the telex is not ported yet)
@@ -879,7 +963,9 @@ void AS47Story::ChapterBreak(const FBreak& B)
 void AS47Story::ResetAll()
 {
 	Timers.Empty();
-	GameTime = 0; ClockSec = StartClock;
+	GameTime = 0; ClockSec = bEveningTimeline ? S47Timeline::ShiftStart : StartClock;
+	EventClock = bEveningTimeline ? 15 * 60 + 12 : 2 * 3600 + 15 * 60 + 12;
+	if (US47Main* Main = US47Main::Get(this); Main && Main->Radio) Main->Radio->bEveningTimeline = bEveningTimeline;
 	CurrentPhase = ES47Phase::Intro; bCinematic = false;
 	bLogRead = false; Coffee = ECoffee::None; bPowered = false; bAnswered = false;
 	NotesList.Empty(); DocsList.Empty();
@@ -918,10 +1004,66 @@ void AS47Story::ResetAll()
 	if (Shot.IsValid()) Shot->Stop();
 }
 
+FS47Doc AS47Story::RestorePrintout(const TSharedPtr<FJsonObject>& SavedNs, double FallbackClock, bool bSavedCase)
+{
+ double Stamp = 0;
+ if (SavedNs && SavedNs->TryGetNumberField(TEXT("printoutAt"), Stamp) && FMath::IsFinite(Stamp)) return S47Docs::Printout(Stamp);
+ FS47Doc Doc = S47Docs::Printout(FallbackClock);
+ if (bSavedCase)
+ {
+  // Old cases never stored the time the player tore off the paper. Do not invent an authentic stamp.
+  const FString Original = FString::Printf(TEXT("DATE    04/14/86   %s"), *S47Text::ClockText(FallbackClock));
+  Doc.Page.ReplaceInline(*Original, TEXT("DATE    04/14/86   TIME NOT RECORDED"));
+  Doc.Stamp = TEXT("RECONSTRUCTED LEGACY COPY");
+  Doc.Transcript += TEXT("\n\nReconstructed from an earlier save. The original paper's acquisition time was not stored. Its original clock stamp is unavailable; the case's historical timeline is unchanged.");
+ }
+ return Doc;
+}
+
+bool AS47Story::TimelineSelfTest(TArray<FString>& Out)
+{
+ bool Ok = true;
+ auto Check = [&](bool Pass, const TCHAR* What) { Out.Add(FString::Printf(TEXT("%s timeline save: %s"), Pass ? TEXT("ok") : TEXT("FAIL"), What)); Ok &= Pass; };
+ // Acquisition may be much later than solve/event: the exact paper must survive either timeline.
+ for (const double Acquired : { 30 * 60 + 17.625, 2 * 3600 + 30 * 60 + 17.625 })
+ {
+  const auto Ns = S47J::New(); S47J::Set(Ns, TEXT("printoutAt"), Acquired); S47J::Set(Ns, TEXT("solveAt"), Acquired - 120);
+  const auto Roundtrip = S47J::Read(S47J::Write(Ns));
+  const FS47Doc Original = S47Docs::Printout(Acquired), Restored = RestorePrintout(Roundtrip, Acquired - 600, true);
+  Check(Original.Page == Restored.Page && Original.Transcript == Restored.Transcript && Original.Stamp == Restored.Stamp, TEXT("exact acquisition stamp survives JSON roundtrip independently of solve and event"));
+ }
+ Check(S47Timeline::AdvanceStoryClock(-21600, 8 * 3600, true) == S47Timeline::Residual(true) - 6, TEXT("long calibration holds before the fixed residual instead of missing its timestamp"));
+ Check(S47Timeline::AdvanceStoryClock(S47Timeline::Departure - 1, 600, false) == S47Timeline::Departure && S47Timeline::AdvanceStoryClock(S47Timeline::Departure + 1, 1, false) == S47Timeline::Departure + 1, TEXT("departure deadline holds activity and never rewinds an already later loaded clock"));
+ const auto Old = S47J::New(); S47J::Set(Old, TEXT("solveAt"), 2 * 3600 + 14 * 60);
+ const FS47Doc Missing = RestorePrintout(Old, 2 * 3600 + 14 * 60, true);
+ Check(Missing.Page.Contains(TEXT("TIME NOT RECORDED")) && Missing.Transcript.Contains(TEXT("original clock stamp is unavailable")), TEXT("legacy case with no acquisition stamp is explicitly reconstructed"));
+ Check(RestorePrintout(nullptr, 2 * 3600 + 14 * 60, false).Page == S47Docs::Printout(2 * 3600 + 14 * 60).Page, TEXT("unsaved regression fixture retains authored legacy time"));
+ return Ok;
+}
+
+double AS47Story::TimelineTime(double Legacy) const
+{
+ if (!bEveningTimeline) return Legacy;
+ if (Legacy >= 18 * 3600) return S47Timeline::ShiftStart + (Legacy - StartClock);
+ return Legacy - 2 * 3600;
+}
+
+void AS47Story::BeginEveningShift()
+{
+ // Opening's phone completion calls this once; keep its documents and optional meal state.
+ bOpeningHeld = false;
+ CurrentPhase = ES47Phase::Shift;
+ bLogRead = true;
+ AddDoc(S47Docs::ShiftLog(true));
+ Toast(TEXT("18:00 shift handover complete. Restore RX bank 3, then calibrate the receiver."), 5);
+ Note(TEXT("13 April, 18:00. Dale handed the shift over by phone. The handover folder is on file."));
+}
+
 void AS47Story::Start()
 {
 	ResetAll();
 	if (Hud.IsValid() && Saro.IsValid()) { const FVector Sp = Saro->SpawnThree(); Hud->Place(Sp.X, Sp.Z, Sp.Y); }
+	if (bEveningTimeline) { BeginEveningShift(); return; }
 	After(1.2, [this] { Toast(TEXT("23:41. Dale left twenty minutes ago."), 3.4f); });
 	After(5.0, [this] { if (!bLogRead) Toast(TEXT("His shift log is on the desk."), 3.4f); });
 }
@@ -939,18 +1081,18 @@ void AS47Story::Jump(const FString& Target)
 	int32 Idx = -1;
 	for (int32 i = 0; i < 6; ++i) if (Target == Steps[i]) Idx = i;
 	if (Idx < 0) return;
-	bLogRead = true; DocsList = { S47Docs::ShiftLog() }; CurrentPhase = ES47Phase::Shift;
+	bLogRead = true; DocsList = { S47Docs::ShiftLog(bEveningTimeline) }; CurrentPhase = ES47Phase::Shift;
 	if (Idx >= 1)
 	{
 		PowerUp(true);
-		NS.Log.Add({ 23 * 3600 + 44 * 60, TEXT("RX BANK 3  K3 CLOSED") });
+		NS.Log.Add({ TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") });
 		Rx.Advance(); Rx.Advance();
 		Note(S47Signal::Profiles()[0].Note); Note(S47Signal::Profiles()[1].Note);
-		ClockSec = SkipClock;
+		ClockSec = bEveningTimeline ? FMath::Max(ClockSec, TimelineTime(SkipClock)) : SkipClock;
 		PointDishes(Rx.Azimuth, SurveyEl, 99);
 		if (Hud.IsValid()) Hud->Place(0.05, -2.2, 0);
 		EnterResidual();
-		Toast(TEXT("02:13. The survey has been running for hours."), 3.4f);
+		Toast(TimelineText(TEXT("02:13. The survey has been running for hours.")), 3.4f);
 	}
 	if (Idx >= 2)
 	{
@@ -959,7 +1101,7 @@ void AS47Story::Jump(const FString& Target)
 		bResidualVisible = true;
 		Rx.Advance();
 		PointDishes(Rx.Azimuth, SurveyEl, 99);
-		ClockSec = SkipClock + 40;
+		ClockSec = TimelineTime(SkipClock) + 40;
 		CurrentPhase = ES47Phase::Locked;
 	}
 	if (Idx >= 3)
@@ -988,6 +1130,7 @@ void AS47Story::Jump(const FString& Target)
 void AS47Story::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (S47Startup::Blocking()) return;
 	if (Shot.IsValid()) Shot->Tick();
 	// main.ts step(): game.update runs only in play (not behind the title, not on the end card)
 	if (const US47Main* Main = US47Main::Get(this); Main && Main->Mode != US47Main::EMode::Play) return;
@@ -995,7 +1138,11 @@ void AS47Story::Tick(float DeltaSeconds)
 	if (!bPaused)
 	{
 		GameTime += Dt;
-		ClockSec += Dt;
+		// Activity drives ordinary time; finishing the diner case holds the deadline rather than rewinding it.
+        // Chapter six owns a distance-based clock, so waiting/reversing there cannot move it backwards.
+        const US47Chapter* C6 = Chapter(TEXT("ch6"));
+        if (!bOpeningHeld && !(bEveningTimeline && C6 && C6->bActive))
+            ClockSec = bEveningTimeline ? S47Timeline::AdvanceStoryClock(ClockSec, Dt, int32(CurrentPhase) < int32(ES47Phase::Residual)) : ClockSec + Dt;
 		TArray<FTimer> Due;
 		for (int32 i = Timers.Num() - 1; i >= 0; --i)
 		{
@@ -1004,11 +1151,12 @@ void AS47Story::Tick(float DeltaSeconds)
 		Due.Sort([](const FTimer& A, const FTimer& B) { return A.At < B.At; });
 		for (FTimer& T : Due) T.Fn();
 	}
+	if (bOpeningHeld) return; // travel transitions still use the game-time timers above
 	// Prologue.update: the chapters (ch1 runs in every chapter: the viewfinder, the wet print)
 	for (US47Chapter* C : Chapters)
 	{
 		if (!C) continue;
-		const bool bCh1Along = C->Key() == TEXT("ch1") && ChapterKey.StartsWith(TEXT("ch"));
+		const bool bCh1Along = C->Key() == TEXT("ch1") && (ChapterKey.StartsWith(TEXT("ch")) || bEveningTimeline);
 		if (C->bActive || bCh1Along) C->Update(bPaused ? 0.0 : Dt, GameTime);
 	}
 	if (Decoder.IsValid()) { Decoder->Duck(VoicesDuck()); Decoder->Update(Dt); }
@@ -1102,4 +1250,45 @@ double AS47Story::VoicesDuck() const
 		bVoice |= M->UI->Narrator.IsValid() && M->UI->Narrator->Playing();
 	}
 	return bVoice ? 0.25 : 1.0;
+}
+
+// Unlike a residual jump, this checkpoint keeps the actual early observations and dials.
+TSharedPtr<FJsonObject> AS47Story::SaveRoutine() const
+{
+ using namespace S47J;
+ auto O=New(); Set(O,TEXT("clock"),ClockSec); Set(O,TEXT("notes"),NotesList);
+ Set(O,TEXT("coffee"),int32(Coffee)); Set(O,TEXT("radioOn"),bRadioOn); Set(O,TEXT("radioHeard"),bRadioHeard); Set(O,TEXT("opsLines"),OpsLines);
+ Set(O,TEXT("powered"),bPowered); Set(O,TEXT("k3"),NS.bK3Open); Set(O,TEXT("papers"),NS.Papers); Set(O,TEXT("jacket"),NS.bJacket);
+ Set(O,TEXT("rxStage"),Rx.Stage); Set(O,TEXT("f"),Rx.Frequency); Set(O,TEXT("g"),Rx.Gain); Set(O,TEXT("bw"),Rx.Bandwidth); Set(O,TEXT("az"),Rx.Azimuth); Set(O,TEXT("status"),Rx.Status);
+ TArray<TSharedPtr<FJsonValue>> Log, Docs;
+ for (const auto& L:NS.Log) { auto V=New(); Set(V,TEXT("clock"),L.Clock); Set(V,TEXT("text"),L.Text); Log.Add(MakeShared<FJsonValueObject>(V)); }
+ for (const auto& D:DocsList)
+ {
+  auto V=New(); Set(V,TEXT("id"),D.Id); Set(V,TEXT("title"),D.Title); Set(V,TEXT("kind"),D.Kind); Set(V,TEXT("stamp"),D.Stamp); Set(V,TEXT("page"),D.Page); Set(V,TEXT("transcript"),D.Transcript); Set(V,TEXT("image"),D.Image); Set(V,TEXT("paper"),D.Paper); Set(V,TEXT("ratio"),D.PaperRatio);
+  TArray<TSharedPtr<FJsonValue>> Sheets; for (const auto& Sheet:D.Sheets) { auto Q=New(); Set(Q,TEXT("page"),Sheet.Page); Set(Q,TEXT("paper"),Sheet.Paper); Set(Q,TEXT("strip"),Sheet.Strip); Set(Q,TEXT("term"),Sheet.Term); Sheets.Add(MakeShared<FJsonValueObject>(Q)); } V->SetArrayField(TEXT("sheets"),Sheets);
+  Docs.Add(MakeShared<FJsonValueObject>(V));
+ }
+ O->SetArrayField(TEXT("log"),Log); O->SetArrayField(TEXT("docs"),Docs); return O;
+}
+void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
+{
+ if (!Saved) return;
+ using namespace S47J;
+ ClearTimers(); CurrentPhase=ES47Phase::Shift; bOpeningHeld=false; bCinematic=false; bLogRead=true;
+ ClockSec=Num(Saved,TEXT("clock"),S47Timeline::ShiftStart); NotesList=Strs(Saved,TEXT("notes"));
+ NS.Papers=Strs(Saved,TEXT("papers")); NS.bJacket=Bool(Saved,TEXT("jacket")); NS.Log.Reset();
+ Coffee=ECoffee(FMath::Clamp(Int(Saved,TEXT("coffee")),0,2)); bRadioOn=Bool(Saved,TEXT("radioOn")); bRadioHeard=Bool(Saved,TEXT("radioHeard")); OpsLines=Strs(Saved,TEXT("opsLines"));
+ if (Saro.IsValid()) { Saro->SetJacketVisible(!NS.bJacket); Saro->SetCoffee(Coffee!=ECoffee::None); Saro->SetCoffeeLevel(Coffee==ECoffee::Drunk?.05:.088); }
+ if (Audio.IsValid() && bRadioOn) Audio->AmRadio(true,Saro.IsValid()?Saro->PropLocation(TEXT("radio")):FVector::ZeroVector);
+ for (const auto& V:Arr(Saved,TEXT("log"))) { const auto O=V->AsObject(); if(O) NS.Log.Add({Num(O,TEXT("clock")),Str(O,TEXT("text"))}); }
+ DocsList.Reset(); for (const auto& V:Arr(Saved,TEXT("docs")))
+ {
+  const auto O=V->AsObject(); if(!O) continue; FS47Doc D; D.Id=Str(O,TEXT("id")); D.Title=Str(O,TEXT("title")); D.Kind=Str(O,TEXT("kind")); D.Stamp=Str(O,TEXT("stamp")); D.Page=Str(O,TEXT("page")); D.Transcript=Str(O,TEXT("transcript")); D.Image=Str(O,TEXT("image")); D.Paper=Str(O,TEXT("paper")); D.PaperRatio=Num(O,TEXT("ratio"));
+  for (const auto& Q:Arr(O,TEXT("sheets"))) { const auto A=Q->AsObject(); if(A) D.Sheets.Add({Str(A,TEXT("page")),Str(A,TEXT("paper")),Str(A,TEXT("strip")),Str(A,TEXT("term"))}); }
+  DocsList.Add(D);
+ }
+ if (Bool(Saved,TEXT("powered"))) PowerUp(true);
+ NS.bK3Open=Bool(Saved,TEXT("k3")); if(bPowered) ApplyK3(NS.bK3Open);
+ Rx.Stage=FMath::Clamp(Int(Saved,TEXT("rxStage")),0,1); Rx.Frequency=Num(Saved,TEXT("f"),Rx.Frequency); Rx.Gain=Num(Saved,TEXT("g"),Rx.Gain); Rx.Bandwidth=Num(Saved,TEXT("bw"),Rx.Bandwidth); Rx.Azimuth=Num(Saved,TEXT("az"),Rx.Azimuth); Rx.Status=Str(Saved,TEXT("status"),Rx.Status);
+ PointDishes(Rx.Azimuth,SurveyEl,99);
 }

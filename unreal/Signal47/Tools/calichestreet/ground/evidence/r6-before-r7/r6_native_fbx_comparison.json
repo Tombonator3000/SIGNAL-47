@@ -1,0 +1,202 @@
+{
+  "status": "PASS",
+  "source_face_counts": {
+    "M_CS_CalicheSoil": 11014,
+    "M_CS_ShoulderBlend": 82,
+    "M_CS_DustFeather": 70,
+    "M_CS_DrySilt": 380,
+    "M_CS_PeaGravel": 56,
+    "M_CS_CompactedUse": 5828,
+    "M_CS_ConcreteUse": 2138
+  },
+  "native_face_counts": {
+    "M_CS_CalicheSoil": 11014,
+    "M_CS_PeaGravel": 56,
+    "M_CS_DrySilt": 380,
+    "M_CS_ShoulderBlend": 82,
+    "M_CS_DustFeather": 70,
+    "M_CS_CompactedUse": 5828,
+    "M_CS_ConcreteUse": 2138
+  },
+  "native_to_source": {
+    "axes": [
+      0,
+      1,
+      2
+    ],
+    "signs": [
+      1,
+      1,
+      1
+    ],
+    "scale": 1,
+    "bounds_error_m": 0.0
+  },
+  "maximum_position_error_m": 3.814697265625e-06,
+  "maximum_UV_error": 0.0019526481628417969,
+  "maximum_vertex_alpha_error": 0.003921568393707275,
+  "all_material_assigned_corners_matched": 58704,
+  "source_objects": [
+    {
+      "name": "SM_Caliche_Surface",
+      "transform": [
+        [
+          1.0,
+          -8.742277657347586e-08,
+          0.0,
+          0.0
+        ],
+        [
+          8.742277657347586e-08,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "color": [
+        [
+          "Color",
+          "CORNER",
+          "BYTE_COLOR"
+        ]
+      ]
+    }
+  ],
+  "native_objects": [
+    {
+      "name": "SM_Caliche_Surface",
+      "transform": [
+        [
+          0.009999999776482582,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.009999999776482582,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.009999999776482582,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "color": [
+        [
+          "Attribute",
+          "CORNER",
+          "BYTE_COLOR"
+        ]
+      ]
+    }
+  ],
+  "material_comparison": {
+    "M_CS_CalicheSoil": {
+      "triangles": 11014,
+      "matched_corners": 33042,
+      "position_error_m": 3.814697265625e-06,
+      "UV_error": 0.0019288063049316406,
+      "alpha_error": 0.003921568393707275,
+      "alpha_range": [
+        0.0,
+        1.0
+      ],
+      "partial_alpha_corners": 9384
+    },
+    "M_CS_PeaGravel": {
+      "triangles": 56,
+      "matched_corners": 168,
+      "position_error_m": 3.814697265625e-06,
+      "UV_error": 0.00191497802734375,
+      "alpha_error": 0.0,
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "partial_alpha_corners": 0
+    },
+    "M_CS_DrySilt": {
+      "triangles": 380,
+      "matched_corners": 1140,
+      "position_error_m": 3.814697265625e-06,
+      "UV_error": 0.0019526481628417969,
+      "alpha_error": 0.0,
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "partial_alpha_corners": 0
+    },
+    "M_CS_ShoulderBlend": {
+      "triangles": 82,
+      "matched_corners": 246,
+      "position_error_m": 3.814697265625e-06,
+      "UV_error": 0.0,
+      "alpha_error": 0.0,
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "partial_alpha_corners": 0
+    },
+    "M_CS_DustFeather": {
+      "triangles": 70,
+      "matched_corners": 210,
+      "position_error_m": 1.9073486328125e-06,
+      "UV_error": 0.0,
+      "alpha_error": 0.0,
+      "alpha_range": [
+        1.0,
+        1.0
+      ],
+      "partial_alpha_corners": 0
+    },
+    "M_CS_CompactedUse": {
+      "triangles": 5828,
+      "matched_corners": 17484,
+      "position_error_m": 1.9073486328125e-06,
+      "UV_error": 0.00023953616619110107,
+      "alpha_error": 0.003921568393707275,
+      "alpha_range": [
+        0.0,
+        1.0
+      ],
+      "partial_alpha_corners": 2268
+    },
+    "M_CS_ConcreteUse": {
+      "triangles": 2138,
+      "matched_corners": 6414,
+      "position_error_m": 9.5367431640625e-07,
+      "UV_error": 0.00023353099822998047,
+      "alpha_error": 0.003921568393707275,
+      "alpha_range": [
+        0.0,
+        1.0
+      ],
+      "partial_alpha_corners": 1476
+    }
+  },
+  "contact_proof": "Matching geometry in same source coordinates preserves r6_report and wear_contact_samples heights; measured point maximum error listed above."
+}

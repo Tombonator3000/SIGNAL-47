@@ -1,0 +1,31 @@
+{
+  "status": "SOURCE_PASS_NATIVE_UNVERIFIED",
+  "source": "/home/tom/scratch-bm/Signal47-web/geo/geo_003.glb",
+  "source_sha256": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9",
+  "source_triangles": 13550,
+  "existing_legacy_trim_triangles": 10702,
+  "counts": {
+    "cars": 976,
+    "windows": 1872,
+    "plants": 230,
+    "wheel_remnants": 144,
+    "kept": 10328
+  },
+  "plant_bounds_three_m": [
+    [
+      20.243358612060547,
+      39.378997802734375
+    ],
+    [
+      -0.673602283000946,
+      0.002993965055793524
+    ],
+    [
+      5.632841110229492,
+      6.450515270233154
+    ]
+  ],
+  "retained_corner_position_uv_winding_sha256": "ffc8ae415784e286ff29e5246e37d56f8ac9fa76ea94d56f7bf2b0b05a30891a",
+  "selection": "only constant brushDry/grassDry UV swatches in x19.8..40 y-1...1 z5.6..6.6; complete front edge plant triangles; 144 rubber/well bottom-crossing remnants in two old car prisms removed; concrete wheel stops retained; no whole merged-node hiding",
+  "native_followup": "prepare_cpu.py before cook; production saro suite checks transient10328-triangle composition and original atlas; inspect day/dusk/night east-wing and staff-cars pictures."
+}

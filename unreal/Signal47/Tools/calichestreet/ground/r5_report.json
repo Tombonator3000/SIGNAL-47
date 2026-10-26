@@ -1,0 +1,183 @@
+{
+  "revision": "R5",
+  "status": "PASS_SOURCE_EXPORT",
+  "native_visual_acceptance": "pending",
+  "source_changes": [
+    "terrain.py: pure filtered r5_dressing_plan",
+    "build_ground.py: rounded offset sage cards and extra plant/stone islands",
+    "texture_detail.py: dusty pale sage/straw RGB, thicker sage leaf coverage, alpha padding"
+  ],
+  "new_counts": {
+    "sage_primary": 12,
+    "sage": 35,
+    "grass": 86,
+    "rock": 63
+  },
+  "new_islands": 12,
+  "gas_islands": [
+    10,
+    11
+  ],
+  "total_triangles": 56323,
+  "parts": {
+    "SM_Caliche_Surface": {
+      "triangles": 11602,
+      "bounds_local_m": [
+        [
+          -29.34113121032715,
+          -28.703702926635742,
+          4.067006587982178
+        ],
+        [
+          39.844078063964844,
+          39.099998474121094,
+          5.779888153076172
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "used_materials": [
+        "M_CS_CalicheSoil",
+        "M_CS_DrySilt",
+        "M_CS_DustFeather",
+        "M_CS_PeaGravel",
+        "M_CS_ShoulderBlend"
+      ]
+    },
+    "SM_Caliche_RoadWear": {
+      "triangles": 26838,
+      "bounds_local_m": [
+        [
+          -5.442420482635498,
+          -29.75,
+          4.249885082244873
+        ],
+        [
+          5.450954437255859,
+          39.75,
+          5.857419967651367
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "used_materials": [
+        "M_CS_DustFeather",
+        "M_CS_OldAsphalt"
+      ]
+    },
+    "SM_Caliche_Rocks": {
+      "triangles": 11055,
+      "bounds_local_m": [
+        [
+          -29.651090621948242,
+          -29.76345443725586,
+          4.134025573730469
+        ],
+        [
+          39.562599182128906,
+          37.091835021972656,
+          5.8762125968933105
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "used_materials": [
+        "M_CS_Limestone"
+      ]
+    },
+    "SM_Caliche_DryPlants": {
+      "triangles": 6828,
+      "bounds_local_m": [
+        [
+          -29.66736602783203,
+          -29.853469848632812,
+          4.149817943572998
+        ],
+        [
+          39.0820426940918,
+          36.307334899902344,
+          6.490347862243652
+        ]
+      ],
+      "material_slots": [
+        "M_CS_CalicheSoil",
+        "M_CS_PeaGravel",
+        "M_CS_OldAsphalt",
+        "M_CS_DrySilt",
+        "M_CS_Limestone",
+        "M_CS_DryPlant",
+        "M_CS_TarRepair",
+        "M_CS_WornConcrete",
+        "M_CS_ShoulderBlend",
+        "M_CS_DustFeather",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ],
+      "used_materials": [
+        "M_CS_DryPlant",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ]
+    }
+  },
+  "frozen_surface_check": {
+    "status": "PASS",
+    "frozen_surface_hashes": {
+      "SM_Caliche_RoadWear": "76d1bd3e5faf31a7e5c9c61b7b286611e78a59067e172f7ee81373381c5f2a0f",
+      "SM_Caliche_Surface": "b9efd099d343b25fc5abb85b02de777ea87204d32873a8dad1bc09f98086fd0d"
+    },
+    "geometry_UV_Color_transforms_slots_unchanged": true
+  },
+  "sage_opaque_RGB_mean_sRGB": [
+    156.3,
+    161.5,
+    131.9
+  ],
+  "sage_atlas_coverage_percent": 32.37,
+  "sage_card_planes": 5,
+  "fbx_roundtrip": "4/4 PASS",
+  "glb_RGBA_source_alpha": "5/5 PASS",
+  "all_dressing_passes_protected_approaches": true,
+  "packed_texture_dependencies": true
+}

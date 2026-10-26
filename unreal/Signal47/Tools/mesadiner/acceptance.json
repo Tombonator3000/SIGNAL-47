@@ -1,0 +1,183 @@
+{
+  "status": "PASS",
+  "scope": "Original editable Mesa Diner exterior/interior, parking, sign and tractor/reefer; source/native/targeted packaged acceptance. Merge/install tracked separately.",
+  "source_commit": "9ff022a355339f15e075d485dec4bbd4d2a82aae",
+  "candidate": "D2",
+  "package": {
+    "path": "/home/tom/scratch-bm/Signal47-mesa-diner/candidate-D2/Linux/Signal47/Binaries/Linux/Signal47",
+    "bytes": 311707328,
+    "sha256": "b163f3e98dad2a05673d7e3f51999bab96e79feacb82732b0e699db75f1bca34",
+    "containers": [
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.pak",
+        "bytes": 1264489548,
+        "sha256": "0c9446b2b16223dafb1744fa1b693cd3580f93ee1868ce11359c0c6826ffb6a2"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.ucas",
+        "bytes": 1888677200,
+        "sha256": "94d34a4ca677c2f2cce5ae8fc86c2c206ca0efcf3cc23908a7c138ea6a6ac425"
+      },
+      {
+        "path": "Signal47/Content/Paks/Signal47-Linux.utoc",
+        "bytes": 2064618,
+        "sha256": "bf43955924e314de8b511aec4d333362aa019a029b941c90fb7f88adb4c8c44e"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.ucas",
+        "bytes": 3323168,
+        "sha256": "1cb75e90b6c0b71594b619ce286a246c5966b0831d26e308bb1d144cbc7236e5"
+      },
+      {
+        "path": "Signal47/Content/Paks/global.utoc",
+        "bytes": 806,
+        "sha256": "b6456194ab08e29851afaa5ef6f0b3ccc3d71dc1282699200d0975b93a2a5238"
+      }
+    ]
+  },
+  "source_checks": 320,
+  "saved_native_checks": 47,
+  "self_checks": 1383,
+  "runtime": {
+    "status": "PASS",
+    "scope": "9 focused packaged scenarios: actual diner door/leaf movement and picks; player-height exterior day/dusk/night/interior; existing food interaction and diskreload; two old screenshot samples. No full-world, physical input or performance claim. Visual review separate.",
+    "cases": [
+      {
+        "case": "front-dusk",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "2b3f82be2893d01c7618f7be7a73181457b957589f9b473f31a79d6be53b41c8",
+        "markers": [
+          "[2026.10.24-17.51.34:764][134]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1134, viewport 1600x900, parts 2044, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "diner-audit",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "87863698aeb80baa64aa73acd70124b7b55c90da64de307c5ffd136b6136d661",
+        "markers": [
+          "[2026.10.24-17.51.46:582][  2]LogS47HUD: Display: S47: self test OK (1383 checks)",
+          "[2026.10.24-17.52.08:216][ 60]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 2060, viewport 1600x900, parts 2044, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "front-close",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "88ccca84e1aeea4a7e141693aacbd4e79519c5bcc453fd9ddd8dc4408ba426a1",
+        "markers": [
+          "[2026.10.24-17.52.31:715][224]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1224, viewport 1600x900, parts 2044, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "front-day",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "2ab0715178d038aea0e835f993fd2cc4b099e4d650962ce1e78da606e25e5b0d",
+        "markers": [
+          "[2026.10.24-17.52.55:768][117]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1117, viewport 1600x900, parts 2044, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "front-night",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "e710d9c69c774e8958d9138efffe5d074bbb307e25712ec7eb2a3c0276403de1",
+        "markers": [
+          "[2026.10.24-17.53.19:958][188]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1188, viewport 1600x900, parts 2044, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "interior",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "5d804ec9ad81e78003851ca180a37581cdeb3b9bb8aba5216528c3761e60b3bc",
+        "markers": [
+          "[2026.10.24-17.53.43:474][165]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1165, viewport 1600x900, parts 2044, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "takeaway",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "4dadfb6dfd0a618ac65c7c594dbda6e15093ed3675a4d0c406739772a08ed409",
+        "markers": []
+      },
+      {
+        "case": "old-archive",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "1fbee2c8149ee7b1a4bdfc1c2ef0d2fc435823cbb89b82c27362ced353cc8cf3",
+        "markers": [
+          "[2026.10.24-17.54.48:244][225]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 1225, viewport 1600x900, parts 2044, phase 15, modal none"
+        ]
+      },
+      {
+        "case": "old-controlroom",
+        "status": "PASS",
+        "returncode": 0,
+        "log_sha256": "de0f7ab3e9412b77b446687bf38b97fb472baf027847107553b6ed126d780f9e",
+        "markers": [
+          "[2026.10.24-17.55.09:926][989]LogS47HUD: Display: S47: smoke test OK, RHI Vulkan, frame 989, viewport 1600x900, parts 2044, phase 0, modal none"
+        ]
+      }
+    ]
+  },
+  "visual_review": {
+    "status": "PASS_WITH_STYLE_LIMITS",
+    "images": {
+      "d2-test-front-dusk.png": "3df12b3b6f1b8742b3bbd3996b0699ab57a6878f31554c78675ff19fa45cae76",
+      "d2-test-front-close.png": "7eba5c9c34cdecfbed57bc87738473e21ca6d71a0d03500dd6030bcfb2b6c8e6",
+      "d2-test-front-day.png": "f30dc65cb0cd69357e9672566c2c61a1e47594e4ecfaa69739f34395dfa041fe",
+      "d2-test-front-night.png": "7787f271cb2ad7e48f9c657b5b630593e97b5ebf96b1fe024341174404110ff0",
+      "d2-test-interior.png": "bad04171c7a2e14e865790bea9648704ab5a365038779636f93c476ab5929b61",
+      "d2-test-diner-audit.png": "279fb01ca250d1bf2e62d38ea77bbc590d753d2ddb328f379a51de50598fb745",
+      "d2-test-old-archive.png": "26cc9eab980aaf0b9d93e6ec7dba0b6a00c8efcb353ddcd31e480328dd1cb07e",
+      "d2-test-old-controlroom.png": "d11ba71627936bbbdb30f3b34cd8af24357e499fa3d94b6821d2c59fe21a9681",
+      "takeaway-shots/takeaway-diner-set-down.png": "349fcb5f1abfad1c5a46cc940925b36e65092b510475658dc5a2c5ae03770d98",
+      "takeaway-shots/takeaway-held-diner.png": "59d67bd177a822fc18c2e3bd0d77fbf7786f50af9d9a7b882ef148e13166ecc0"
+    },
+    "notes": [
+      "R2 moves the sign to the facade, raises cream/red fascia and deepens window/tile profiles.",
+      "D2 clears the actual doorway skirting and moves nearby sign lights to remove white near-surface hotspots.",
+      "Photorealistic equivalence, physical human input, full-night play and route performance are not verified.",
+      "Takeaway reload screenshots contain an engine development warning: always-resident raytracing geometry83.107MiB exceeds20percent of400MiB budget. No OOM occurred; this is not a measured performance result."
+    ]
+  },
+  "accepted_guards": [
+    "r2-textures",
+    "d2-source-build",
+    "d2-source-verify",
+    "r2-import",
+    "d2-import-interior",
+    "d2-native-assets",
+    "d2-build-editor",
+    "package-D2",
+    "d2-test-front-dusk",
+    "d2-test-diner-audit",
+    "d2-test-front-close",
+    "d2-test-front-day",
+    "d2-test-front-night",
+    "d2-test-interior",
+    "d2-test-takeaway",
+    "d2-test-old-archive",
+    "d2-test-old-controlroom"
+  ],
+  "previous_attempts": [
+    "R1 exterior diagnostic revised against concept",
+    "native-assets used a relative project path and failed before loading project; rerun with absolute paths passed",
+    "D1 audit found a14cm skirting across the door and timer capture lifetime failure; raw log and package retained"
+  ],
+  "full_world_suite": "NOT_RUN: user requested focused tests",
+  "delivery": {
+    "status": "INSTALLED",
+    "pr": 152,
+    "merge_commit": "6159810553c4bba4957b3014ecb3f756d5923fc0",
+    "directory": "/home/tom/Desktop/Signal47 Mesa Diner 24okt",
+    "verified_payload_files": 40,
+    "saved_files_unchanged": 48,
+    "backup": "/home/tom/scratch-bm/Signal47-mesa-diner/installed-backup-1792864850565907985"
+  },
+  "evidence_root": "/home/tom/scratch-bm/Signal47-mesa-diner"
+}

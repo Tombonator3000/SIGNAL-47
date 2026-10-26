@@ -1,0 +1,1627 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_Saro07_WheelFL0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL0 exact tris",
+      "pass": true,
+      "detail": [
+        7296,
+        7296
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFL0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL0 no null triangles",
+      "pass": true,
+      "detail": 7.549903781607939e-06
+    },
+    {
+      "name": "SM_Saro07_WheelFL roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.14225929975509644,
+          -0.37295204401016235,
+          -0.372952401638031
+        ],
+        [
+          0.14225928485393524,
+          0.37295210361480713,
+          0.3729524314403534
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFL1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL1 exact tris",
+      "pass": true,
+      "detail": [
+        3792,
+        3792
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFL1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL1 no null triangles",
+      "pass": true,
+      "detail": 2.1204902515019333e-06
+    },
+    {
+      "name": "SM_Saro07_WheelFL2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL2 exact tris",
+      "pass": true,
+      "detail": [
+        1751,
+        1751
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFL2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFL2 no null triangles",
+      "pass": true,
+      "detail": 2.8107815543638117e-06
+    },
+    {
+      "name": "SM_Saro07_WheelRL0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL0 exact tris",
+      "pass": true,
+      "detail": [
+        7296,
+        7296
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRL0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL0 no null triangles",
+      "pass": true,
+      "detail": 7.5578773328995384e-06
+    },
+    {
+      "name": "SM_Saro07_WheelRL roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.14225929975509644,
+          -0.37295210361480713,
+          -0.3729519546031952
+        ],
+        [
+          0.14225928485393524,
+          0.3729522228240967,
+          0.3729519248008728
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRL1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL1 exact tris",
+      "pass": true,
+      "detail": [
+        3792,
+        3792
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRL1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL1 no null triangles",
+      "pass": true,
+      "detail": 2.093166241176924e-06
+    },
+    {
+      "name": "SM_Saro07_WheelRL2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL2 exact tris",
+      "pass": true,
+      "detail": [
+        1750,
+        1750
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRL2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRL2 no null triangles",
+      "pass": true,
+      "detail": 1.3716141749131147e-06
+    },
+    {
+      "name": "SM_Saro07_WheelFR0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR0 exact tris",
+      "pass": true,
+      "detail": [
+        7296,
+        7296
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFR0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR0 no null triangles",
+      "pass": true,
+      "detail": 7.553319969271987e-06
+    },
+    {
+      "name": "SM_Saro07_WheelFR roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.14226917922496796,
+          -0.37305784225463867,
+          -0.373058021068573
+        ],
+        [
+          0.14226925373077393,
+          0.3730577230453491,
+          0.373058021068573
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFR1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR1 exact tris",
+      "pass": true,
+      "detail": [
+        3792,
+        3792
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFR1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR1 no null triangles",
+      "pass": true,
+      "detail": 2.117064544754859e-06
+    },
+    {
+      "name": "SM_Saro07_WheelFR2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR2 exact tris",
+      "pass": true,
+      "detail": [
+        1750,
+        1750
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelFR2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelFR2 no null triangles",
+      "pass": true,
+      "detail": 1.385233187299837e-06
+    },
+    {
+      "name": "SM_Saro07_WheelRR0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR0 exact tris",
+      "pass": true,
+      "detail": [
+        7296,
+        7296
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRR0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR0 no null triangles",
+      "pass": true,
+      "detail": 7.55587723291709e-06
+    },
+    {
+      "name": "SM_Saro07_WheelRR roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.14226756989955902,
+          -0.37305617332458496,
+          -0.373058021068573
+        ],
+        [
+          0.14226758480072021,
+          0.37305617332458496,
+          0.373058021068573
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRR1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR1 exact tris",
+      "pass": true,
+      "detail": [
+        3792,
+        3792
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRR1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR1 no null triangles",
+      "pass": true,
+      "detail": 2.088205763925446e-06
+    },
+    {
+      "name": "SM_Saro07_WheelRR2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR2 exact tris",
+      "pass": true,
+      "detail": [
+        1750,
+        1750
+      ]
+    },
+    {
+      "name": "SM_Saro07_WheelRR2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_WheelRR2 no null triangles",
+      "pass": true,
+      "detail": 2.3197853677410172e-06
+    },
+    {
+      "name": "SM_Saro07_Body0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body0 exact tris",
+      "pass": true,
+      "detail": [
+        32751,
+        32751
+      ]
+    },
+    {
+      "name": "SM_Saro07_Body0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body0 no null triangles",
+      "pass": true,
+      "detail": 9.015151663716806e-08
+    },
+    {
+      "name": "SM_Saro07_Body roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.999668538570404,
+          -2.680053234100342,
+          0.3006339371204376
+        ],
+        [
+          1.005509376525879,
+          2.0800528526306152,
+          1.2232474088668823
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_Body1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body1 exact tris",
+      "pass": true,
+      "detail": [
+        17030,
+        17030
+      ]
+    },
+    {
+      "name": "SM_Saro07_Body1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body1 no null triangles",
+      "pass": true,
+      "detail": 2.350258044708323e-07
+    },
+    {
+      "name": "SM_Saro07_Body2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body2 exact tris",
+      "pass": true,
+      "detail": [
+        7860,
+        7860
+      ]
+    },
+    {
+      "name": "SM_Saro07_Body2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Body2 no null triangles",
+      "pass": true,
+      "detail": 2.394066009155857e-07
+    },
+    {
+      "name": "SM_Saro07_Shell0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell0 exact tris",
+      "pass": true,
+      "detail": [
+        4038,
+        4038
+      ]
+    },
+    {
+      "name": "SM_Saro07_Shell0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell0 no null triangles",
+      "pass": true,
+      "detail": 3.9663679122513727e-07
+    },
+    {
+      "name": "SM_Saro07_Shell roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -1.0299986600875854,
+          -0.5305326581001282,
+          1.074265480041504
+        ],
+        [
+          1.0300015211105347,
+          0.8505846261978149,
+          2.0052716732025146
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_Shell1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell1 exact tris",
+      "pass": true,
+      "detail": [
+        2099,
+        2099
+      ]
+    },
+    {
+      "name": "SM_Saro07_Shell1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell1 no null triangles",
+      "pass": true,
+      "detail": 6.452053163368239e-07
+    },
+    {
+      "name": "SM_Saro07_Shell2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell2 exact tris",
+      "pass": true,
+      "detail": [
+        968,
+        968
+      ]
+    },
+    {
+      "name": "SM_Saro07_Shell2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Shell2 no null triangles",
+      "pass": true,
+      "detail": 1.6474771269684282e-06
+    },
+    {
+      "name": "SM_Saro07_Glass0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass0 exact tris",
+      "pass": true,
+      "detail": [
+        624,
+        624
+      ]
+    },
+    {
+      "name": "SM_Saro07_Glass0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass0 no null triangles",
+      "pass": true,
+      "detail": 0.0003666813261658708
+    },
+    {
+      "name": "SM_Saro07_Glass roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.8159414529800415,
+          -0.4792097806930542,
+          1.1774985790252686
+        ],
+        [
+          0.8050628900527954,
+          0.6820409297943115,
+          1.6592955589294434
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_Glass1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass1 exact tris",
+      "pass": true,
+      "detail": [
+        324,
+        324
+      ]
+    },
+    {
+      "name": "SM_Saro07_Glass1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass1 no null triangles",
+      "pass": true,
+      "detail": 0.0003666813261658708
+    },
+    {
+      "name": "SM_Saro07_Glass2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass2 exact tris",
+      "pass": true,
+      "detail": [
+        149,
+        149
+      ]
+    },
+    {
+      "name": "SM_Saro07_Glass2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Glass2 no null triangles",
+      "pass": true,
+      "detail": 0.0002615068457575509
+    },
+    {
+      "name": "SM_Saro07_Cabin0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin0 exact tris",
+      "pass": true,
+      "detail": [
+        6148,
+        6148
+      ]
+    },
+    {
+      "name": "SM_Saro07_Cabin0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin0 no null triangles",
+      "pass": true,
+      "detail": 5.783658021016917e-08
+    },
+    {
+      "name": "SM_Saro07_Cabin roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.8435000777244568,
+          -0.5250000357627869,
+          0.33000001311302185
+        ],
+        [
+          0.8435000777244568,
+          0.7450000643730164,
+          1.623000144958496
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_Cabin1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin1 exact tris",
+      "pass": true,
+      "detail": [
+        3196,
+        3196
+      ]
+    },
+    {
+      "name": "SM_Saro07_Cabin1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin1 no null triangles",
+      "pass": true,
+      "detail": 1.2495524225818873e-06
+    },
+    {
+      "name": "SM_Saro07_Cabin2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin2 exact tris",
+      "pass": true,
+      "detail": [
+        1475,
+        1475
+      ]
+    },
+    {
+      "name": "SM_Saro07_Cabin2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Cabin2 no null triangles",
+      "pass": true,
+      "detail": 1.2342146643698722e-05
+    },
+    {
+      "name": "SM_Saro07_Branding0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding0 exact tris",
+      "pass": true,
+      "detail": [
+        9220,
+        9220
+      ]
+    },
+    {
+      "name": "SM_Saro07_Branding0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding0 no null triangles",
+      "pass": true,
+      "detail": 8.440534385660457e-08
+    },
+    {
+      "name": "SM_Saro07_Branding roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.9452999830245972,
+          -2.6992998123168945,
+          0.6899999976158142
+        ],
+        [
+          0.9452999830245972,
+          2.0989999771118164,
+          1.2032849788665771
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_Branding1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding1 exact tris",
+      "pass": true,
+      "detail": [
+        4794,
+        4794
+      ]
+    },
+    {
+      "name": "SM_Saro07_Branding1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding1 no null triangles",
+      "pass": true,
+      "detail": 6.032950124373801e-07
+    },
+    {
+      "name": "SM_Saro07_Branding2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding2 exact tris",
+      "pass": true,
+      "detail": [
+        2211,
+        2211
+      ]
+    },
+    {
+      "name": "SM_Saro07_Branding2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_Branding2 no null triangles",
+      "pass": true,
+      "detail": 8.857679644073104e-07
+    },
+    {
+      "name": "SM_Saro07_HeadLens0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens0 exact tris",
+      "pass": true,
+      "detail": [
+        312,
+        312
+      ]
+    },
+    {
+      "name": "SM_Saro07_HeadLens0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens0 no null triangles",
+      "pass": true,
+      "detail": 1.3914712281641264e-05
+    },
+    {
+      "name": "SM_Saro07_HeadLens roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.8050001859664917,
+          2.064500093460083,
+          0.5990000367164612
+        ],
+        [
+          0.8129997849464417,
+          2.070499897003174,
+          0.7720000147819519
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_HeadLens1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens1 exact tris",
+      "pass": true,
+      "detail": [
+        162,
+        162
+      ]
+    },
+    {
+      "name": "SM_Saro07_HeadLens1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens1 no null triangles",
+      "pass": true,
+      "detail": 2.8601254403377944e-05
+    },
+    {
+      "name": "SM_Saro07_HeadLens2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens2 exact tris",
+      "pass": true,
+      "detail": [
+        74,
+        74
+      ]
+    },
+    {
+      "name": "SM_Saro07_HeadLens2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_HeadLens2 no null triangles",
+      "pass": true,
+      "detail": 4.80371930001202e-05
+    },
+    {
+      "name": "SM_Saro07_TailLens0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens0 exact tris",
+      "pass": true,
+      "detail": [
+        312,
+        312
+      ]
+    },
+    {
+      "name": "SM_Saro07_TailLens0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens0 no null triangles",
+      "pass": true,
+      "detail": 3.89985320348334e-06
+    },
+    {
+      "name": "SM_Saro07_TailLens roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.9213997721672058,
+          -2.3984999656677246,
+          0.6184999942779541
+        ],
+        [
+          0.913500189781189,
+          -2.3914999961853027,
+          0.7127000093460083
+        ]
+      ]
+    },
+    {
+      "name": "SM_Saro07_TailLens1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens1 exact tris",
+      "pass": true,
+      "detail": [
+        162,
+        162
+      ]
+    },
+    {
+      "name": "SM_Saro07_TailLens1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens1 no null triangles",
+      "pass": true,
+      "detail": 1.1766156469682097e-05
+    },
+    {
+      "name": "SM_Saro07_TailLens2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens2 exact tris",
+      "pass": true,
+      "detail": [
+        74,
+        74
+      ]
+    },
+    {
+      "name": "SM_Saro07_TailLens2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Saro07_TailLens2 no null triangles",
+      "pass": true,
+      "detail": 2.6678786650684775e-05
+    },
+    {
+      "name": "SM_SaroPark_Sedan0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan0 exact tris",
+      "pass": true,
+      "detail": [
+        19701,
+        19701
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Sedan0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan0 no null triangles",
+      "pass": true,
+      "detail": 7.89518470454495e-08
+    },
+    {
+      "name": "SM_SaroPark_Sedan roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.9161590337753296,
+          -2.5005393028259277,
+          2.3692846298217773e-05
+        ],
+        [
+          0.9163334369659424,
+          2.5007126331329346,
+          1.349486231803894
+        ]
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Sedan1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan1 exact tris",
+      "pass": true,
+      "detail": [
+        10244,
+        10244
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Sedan1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan1 no null triangles",
+      "pass": true,
+      "detail": 7.89518470454495e-08
+    },
+    {
+      "name": "SM_SaroPark_Sedan2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan2 exact tris",
+      "pass": true,
+      "detail": [
+        4722,
+        4722
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Sedan2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Sedan2 no null triangles",
+      "pass": true,
+      "detail": 7.89518470454495e-08
+    },
+    {
+      "name": "SM_SaroPark_Pickup0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup0 exact tris",
+      "pass": true,
+      "detail": [
+        16126,
+        16126
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Pickup0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup0 no null triangles",
+      "pass": true,
+      "detail": 4.891571059780553e-07
+    },
+    {
+      "name": "SM_SaroPark_Pickup roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -0.9545697569847107,
+          -2.563242197036743,
+          0.0
+        ],
+        [
+          0.9545696377754211,
+          2.563242197036743,
+          1.3824913501739502
+        ]
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Pickup1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup1 exact tris",
+      "pass": true,
+      "detail": [
+        8385,
+        8385
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Pickup1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup1 no null triangles",
+      "pass": true,
+      "detail": 1.6075957226611707e-05
+    },
+    {
+      "name": "SM_SaroPark_Pickup2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup2 exact tris",
+      "pass": true,
+      "detail": [
+        3859,
+        3859
+      ]
+    },
+    {
+      "name": "SM_SaroPark_Pickup2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_Pickup2 no null triangles",
+      "pass": true,
+      "detail": 1.6075957226611707e-05
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim0 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim0 exact tris",
+      "pass": true,
+      "detail": [
+        10702,
+        10702
+      ]
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim0 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim0 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim0 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim0 no null triangles",
+      "pass": true,
+      "detail": 1.0824196629531994e-05
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim roundtrip bounds",
+      "pass": true,
+      "detail": [
+        [
+          -7.519735813140869,
+          -18.214265823364258,
+          -0.7454765439033508
+        ],
+        [
+          39.922786712646484,
+          7.650003433227539,
+          7.21999979019165
+        ]
+      ]
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim1 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim1 exact tris",
+      "pass": true,
+      "detail": [
+        10702,
+        10702
+      ]
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim1 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim1 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim1 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim1 no null triangles",
+      "pass": true,
+      "detail": 1.0824196629531994e-05
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim2 single mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim2 exact tris",
+      "pass": true,
+      "detail": [
+        10702,
+        10702
+      ]
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim2 UV",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim2 slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim2 base pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SaroPark_LegacyTrim2 no null triangles",
+      "pass": true,
+      "detail": 1.0824196629531994e-05
+    },
+    {
+      "name": "service width fits existing collider",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "driver eye and instrument contract",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "count": 268,
+  "revision": "SF1-original-cab-C10-adaptation"
+}

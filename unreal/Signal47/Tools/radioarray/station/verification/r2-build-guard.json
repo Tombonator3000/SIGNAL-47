@@ -1,0 +1,19 @@
+{
+  "returncode": 0,
+  "wall_seconds": 84.98034673300572,
+  "contention": [],
+  "stop_reason": null,
+  "preflight": {
+    "available_gib": 24.759449005126953,
+    "heavy_jobs": [],
+    "pgrep": "22751 /bin/bash -c source /home/tom/.claude/shell-snapshots/snapshot-bash-1792732279947-547f80.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && { \\builtin unalias -- 'unsetenv'; \\builtin unset -f -- 'unsetenv'; } >/dev/null 2>&1 || true && eval 'until ! pgrep -f \"UnrealBuildTool\" >/dev/null; do sleep 5; done; tail -4 /tmp/claude-1000/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2/scratchpad/build.log' < /dev/null && pwd -P >| /tmp/claude-399d-cwd\n935724 blender -b -t 2 --factory-startup --python /home/tom/Documents/Codex/2026-10-23-lag-blender-3d-av-radiostasjon-og/game/unreal/Signal47/Tools/calichestreet/souvenir/build_souvenir.py\n936088 /bin/bash -lc python3 unreal/Signal47/Tools/radioarray/station/run_guarded.py build > /tmp/s47-radio-r2-build-wrapper.log 2>&1\n936148 python3 unreal/Signal47/Tools/radioarray/station/run_guarded.py build\n",
+    "exempted_installed_game": [],
+    "grace_policy": {
+      "enabled": false,
+      "eligible": false,
+      "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "performance_status": "UNCONTENDED"
+}

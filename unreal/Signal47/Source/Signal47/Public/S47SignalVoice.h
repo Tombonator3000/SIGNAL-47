@@ -23,7 +23,12 @@ namespace S47SignalVoice
 class SIGNAL47_API FS47SignalVoice
 {
 public:
-	FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise);
+	/** Rate: (Unreal only) the speed of a tape it plays from, 1 as received (S47Decoder.h). */
+	FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, double InRate = 1);
+	/** (Unreal only, on Tom's request: departs from the web version) The tape's speed: 0.5 plays it at
+	 *  half speed, an octave down and twice as slow in every sweep, wobble and thump, as a slowed deck
+	 *  does (the signal processor's RAW playback at TIME k plays at 1/k). It glides there. */
+	void SetRate(double InRate);
 	/** Called every frame: how clear the signal is (0..1), how loud overall, and the time. */
 	void Frame(double InClarity, double InLevel, double T);
 	/** Fade out (the receiver is off, the night is over); `stop` frees the nodes. */
@@ -44,6 +49,12 @@ private:
 	TSharedPtr<FS47AudioBuffer> Nb;
 	// (Unreal: the comb's feedback loop, broken when the voice stops so its nodes are freed)
 	TSharedPtr<FS47AudioNode> Comb;
+	// (Unreal only) every rate and pitch in it with its value at speed 1, and the delay times (which
+	// scale the other way); the tape's speed
+	struct FRated { FS47AudioParam* P = nullptr; TSharedPtr<FS47AudioNode> Keep; double Base = 0; bool bTime = false; };
+	TArray<FRated> Rated;
+	double Rate = 1;
+	void Rates(const TSharedRef<FS47AudioNode>& Node, FS47AudioParam& P, double Base, bool bTime = false);
 
 	void Thump(double Strength);
 	TSharedPtr<FS47AudioBuffer> NoiseBuf();

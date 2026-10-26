@@ -3,6 +3,8 @@
 #include "S47Main.h"
 #include "S47Three.h"
 #include "S47Web.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include <limits>
 
 FS47Diner::FS47Diner(US47Main* InM) : M(InM)
@@ -10,6 +12,7 @@ FS47Diner::FS47Diner(US47Main* InM) : M(InM)
 	if (!M || !M->Web) return;
 	Group = M->Web->Obj(TEXT("world.diner.group")); Interior = M->Web->Obj(TEXT("world.diner.interior"));
 	Flood = M->Web->FloodSet(TEXT("diner"));
+	BindAuthoredLighting();
 	// Diner.ts constructor: geometry, the people and proxies come from the web export.
 	SetDawn(0.25);
 }
@@ -30,6 +33,48 @@ void FS47Diner::SetSignLit(bool bOn)
 	M->Web->SetFlood(Flood, 0, bOn ? 8 : 0); M->Web->SetFlood(Flood, 1, bOn ? 4 : 0);
 	const FS47Mat Sign = M->Web->Material(TEXT("world.diner.m.sign"));
 	Sign.SetEmissive(S47Three::Hex(0xffffff), bOn ? 0.65f : 0); Sign.SetColor(FLinearColor(bOn ? 1.f : 0.32f, bOn ? 1.f : 0.32f, bOn ? 1.f : 0.32f));
+	ApplyAuthoredLighting();
+}
+
+void FS47Diner::BindAuthoredLighting()
+{
+	if (!M || !M->Web || !M->Web->MesaDinerReady()) return;
+	Group.Traverse([this](FS47Obj O) {
+		const FS47WebNode* N = M->Web->Node(O.I);
+		UStaticMeshComponent* C = N && N->Name.StartsWith(TEXT("prop:mesa")) ? Cast<UStaticMeshComponent>(N->Comp.Get()) : nullptr;
+		if (!C) return;
+		for (int32 I = 0; I < C->GetNumMaterials(); ++I)
+		{
+			UMaterialInterface* Material = C->GetMaterial(I); if (!Material) continue;
+			const FString Name = Material->GetName();
+			const int32 Kind = Name == TEXT("M_Mesa_SignRedGlow") ? 1 : Name == TEXT("M_Mesa_SignCyanGlow") ? 2 : Name == TEXT("M_Mesa_Fluorescent") ? 3 : Name == TEXT("M_Mesa_PendantGlow") ? 4 : 0;
+			FLinearColor Base;
+			if (!Kind || !Material->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("EmissiveFactor")), Base)) continue;
+			FAuthoredGlow G; G.Mid = C->CreateDynamicMaterialInstance(I, Material); G.Base = Base; G.Kind = Kind; AuthoredGlows.Add(G);
+		}
+	});
+	// The original two state-controlled pools now meet the actual taller neon. Their existing
+	// width, colour, sign on/off state and copies into the road/old-road set are retained.
+	for (int32 Slot = 0; Slot < 2; ++Slot)
+	{
+		FVector P; float Width; FLinearColor Color;
+		if (M->Web->FloodPool(Flood, Slot, P, Width, Color))
+			M->Web->SetFloodPool(Flood, Slot, Group.LocalToWorld(FVector(3.35, Slot == 0 ? 4.8 : 3.65, 6.8)), Width, Color);
+	}
+	ApplyAuthoredLighting();
+}
+
+void FS47Diner::ApplyAuthoredLighting()
+{
+	if (!M || !M->Web) return;
+	for (const FAuthoredGlow& G : AuthoredGlows) if (UMaterialInstanceDynamic* D = G.Mid.Get())
+	{
+		const int32 Slot = G.Kind == 1 ? 0 : G.Kind == 2 ? 1 : G.Kind == 3 ? 3 : 6;
+		const float Nominal = G.Kind == 1 ? 8.f : G.Kind == 2 ? 4.f : G.Kind == 3 ? 4.5f : 4.f;
+		float K = FMath::Clamp(M->Web->FloodPool(Flood, Slot).A / Nominal, 0.f, 2.f);
+		if (G.Kind <= 2 && !bSignLit) K = 0;
+		D->SetVectorParameterValue(TEXT("EmissiveFactor"), G.Base * K);
+	}
 }
 
 void FS47Diner::SetDawn(double K)
@@ -55,6 +100,7 @@ void FS47Diner::Shine(int32 Src, const TArray<int32>& Slots, double K)
 	if (!M || !M->Web) return;
 	for (int32 J = 0; J < 3; ++J)
 	{
+		M->Web->SuppressFloodLight(Flood, 10 + J);
 		FVector P; float W = 0; FLinearColor C;
 		if (Src < 0 || !Slots.IsValidIndex(J) || Slots[J] < 0 || !M->Web->FloodPool(Src, Slots[J], P, W, C)) { M->Web->SetFlood(Flood, 10 + J, 0); continue; }
 		M->Web->SetFloodPool(Flood, 10 + J, P, W, C * float(K), false);
@@ -69,6 +115,7 @@ void FS47Diner::Neon(int32 Out, const TArray<int32>& Slots, double Reach, double
 	for (int32 J = 0; J < 2; ++J)
 	{
 		if (!Slots.IsValidIndex(J) || Slots[J] < 0) continue;
+		M->Web->SuppressFloodLight(Out, Slots[J]);
 		FVector P; float W = 0; FLinearColor C; if (!M->Web->FloodPool(Flood, J, P, W, C)) continue;
 		M->Web->SetFloodPool(Out, Slots[J], P, float(W * Reach), C * float(K), false);
 	}
@@ -86,6 +133,7 @@ void FS47Diner::Update(double Dt, double T)
 	const double K = 0.98 + 0.02 * FMath::Sin(T * 8.1) * FMath::Sin(T * 0.9);
 	M->Web->SetFlood(Flood, 3, float(4.5 * K));
 	M->Web->Material(TEXT("world.diner.m.tube")).SetEmissive(S47Three::Hex(0xddeaff), float(0.75 * K));
+	ApplyAuthoredLighting();
 }
 
 bool FS47Diner::SelfTest(TArray<FString>& Lines)

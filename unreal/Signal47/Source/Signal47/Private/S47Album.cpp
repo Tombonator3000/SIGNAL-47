@@ -126,7 +126,7 @@ FS47AlbumShot FS47Album::Expose()
 	const int32 Side = (US47FieldCamera::ToUint32(Seed) >> 4) & 1 ? 1 : -1;
 	FS47SnapOptions O;
 	O.Before = [this] { if (D.Before) D.Before(); ShowFilmOnly(true); };
-	O.After = [this] { ShowFilmOnly(false); };
+	O.After = [this] { ShowFilmOnly(false); if (D.After) D.After(); };
 	O.Seed = Seed;
 	O.W = bSmall ? 320 : 640;
 	if (bFace) O.Post = [Seed, Side](TArray<FColor>& Raw, int32 W, int32 H) { S47FilmFace::FilmFace(Raw, W, H, Seed, Side); };
@@ -157,6 +157,7 @@ FS47AlbumShot FS47Album::Expose()
 		Shot.Targets.RemoveAll([&X](const TPair<FString, FVector2D>& T) { return T.Key == X.S->Target; });
 		Shot.Targets.Add(TPair<FString, FVector2D>(X.S->Target, FVector2D(Q.U, Q.V)));
 	}
+	if (D.Tag && Snap.bRendered) D.Tag(Shot);
 	Data.Shots.Add(Shot);
 	if (bFace) Data.Face = FS47FaceSave{ Shot.Id };
 	FLast L;
@@ -189,6 +190,7 @@ void FS47Album::Restore(const S47J::FObj& V)
 			FS47AlbumShot S;
 			S.Id = S47J::Str(*O, TEXT("id")); S.Url = S47J::Str(*O, TEXT("url")); S.Clock = S47J::Num(*O, TEXT("clock"));
 			S.Place = S47J::Str(*O, TEXT("place")); S.Text = S47J::Str(*O, TEXT("text")); S.bOdd = S47J::Bool(*O, TEXT("odd"));
+			S.bUnavailable = S47J::Bool(*O, TEXT("unavailable"));
 			if (const S47J::FObj T = S47J::Obj(*O, TEXT("targets")))
 			{
 				for (const auto& KV : T->Values)
@@ -215,6 +217,7 @@ S47J::FObj FS47Album::SaveData() const
 		S47J::Set(J, TEXT("id"), S.Id); S47J::Set(J, TEXT("url"), S.Url); S47J::Set(J, TEXT("clock"), S.Clock);
 		S47J::Set(J, TEXT("place"), S.Place); S47J::Set(J, TEXT("text"), S.Text);
 		if (S.bOdd) S47J::Set(J, TEXT("odd"), true);
+		if (S.bUnavailable) S47J::Set(J, TEXT("unavailable"), true);
 		if (S.Targets.Num())
 		{
 			const S47J::FObj T = S47J::New();
@@ -270,7 +273,7 @@ FS47AlbumView FS47Album::View(double Clock)
 	for (const FS47AlbumShot& S : Data.Shots)
 	{
 		const double Dv = Dev(S, Clock);
-		V.Shots.Add({ S.Id, S.Url, S.Id == Face && Dv < 1 ? FString() : S.Text, FString::Printf(TEXT("%s, %s"), *S.Place, *S47Text::ClockText(S.Clock, false)), Dv, S.bOdd });
+		V.Shots.Add({ S.Id, S.Url, Dv < 1 && (S.Id == Face || S.Targets.ContainsByPredicate([](const auto& T){return T.Key==TEXT("anomaly:n02trace")||T.Key==TEXT("anomaly:printshadow");})) ? FString() : S.Text, FString::Printf(TEXT("%s, %s"), *S.Place, *S47Text::ClockText(S.Clock, false)), Dv, S.bOdd });
 	}
 	V.Look = [this](const FString& Id) { Looked(Id); };
 	return V;
@@ -421,5 +424,19 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
 	Check(Seen == 0 && A.FaceUp(Clock) && !A.FaceUp(Clock) && A.View(Clock).Shots[1].Text == FACE_LINE, TEXT("come up: said once, then the caption"));
 	A.Looked(TEXT("free1@10800")); A.Looked(TEXT("free2@10850")); A.Looked(TEXT("free2@10850"));
 	Check(Seen == 1 && A.Data.Face->bSeen && A.SaveData()->GetObjectField(TEXT("face"))->HasField(TEXT("seen")), TEXT("looked at closely once"));
+	// En erstatning beholder den faktiske bildeteksten/klokka, men får aldri bli
+	// originalfilm igjen bare fordi saken passerer en kapittel-/minnerundtur.
+	auto Lost = S47J::Clone(V);
+	const auto LostShot = S47J::Arr(Lost,TEXT("shots"))[0]->AsObject();
+	S47J::Set(LostShot,TEXT("unavailable"),true);
+	FS47Album Missing(Deps); Missing.Restore(Lost);
+	Check(Missing.Shots()[0].bUnavailable && !Missing.Shots()[1].bUnavailable, TEXT("missing marker restored independently of picture bytes; legacy defaults available"));
+	FS47Album Reloaded(Deps); Reloaded.Restore(S47J::Read(S47J::Write(Missing.SaveData())));
+	Check(Reloaded.Shots()[0].bUnavailable && Reloaded.Shots()[0].Id==A.Shots()[0].Id && Reloaded.Shots()[0].Url==A.Shots()[0].Url && Reloaded.Shots()[0].Clock==A.Shots()[0].Clock && Reloaded.Shots()[1].Targets.Num()==1,
+		TEXT("missing marker and original content metadata survive album JSON roundtrip"));
+	// FS47SaveStore fjerner markøren bare når den opprinnelige filen kan leses.
+	auto Recovered=Reloaded.SaveData(); S47J::Arr(Recovered,TEXT("shots"))[0]->AsObject()->RemoveField(TEXT("unavailable"));
+	Reloaded.Restore(Recovered);
+	Check(!Reloaded.Shots()[0].bUnavailable, TEXT("successfully recovered original clears missing marker on restore"));
 	return bOk;
 }

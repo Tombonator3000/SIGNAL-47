@@ -1,0 +1,1458 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "source_revision": "R1-original-substation-site-1986",
+  "site_world_three_m": [
+    7890,
+    -1.1,
+    536.2
+  ],
+  "world_yaw_degrees": 180,
+  "mapping": "worldThree=(7890-bx,-1.10+bz,536.20+by)",
+  "units": "metres",
+  "blender_up": "Z",
+  "front": "negativeY",
+  "parts": {
+    "SM_SubstationSite_Pole_A": {
+      "triangles": 3970,
+      "bounds_local_m": [
+        [
+          -1.590000033378601,
+          -0.19900000095367432,
+          -0.3499999940395355
+        ],
+        [
+          1.590000033378601,
+          0.19499999284744263,
+          9.229000091552734
+        ]
+      ],
+      "materials": [
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_PorcelainBrown",
+        "M_SubstationSite_Wood",
+        "M_SubstationSite_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_PorcelainBrown",
+        "M_SubstationSite_PrintAtlas",
+        "M_SubstationSite_Wood"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        21.799999237060547,
+        -0.2400120049715042
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 7716,
+      "vertices_after_weld": 2028,
+      "lod_triangles": [
+        3970,
+        2474,
+        1754
+      ]
+    },
+    "SM_SubstationSite_Pole_B": {
+      "triangles": 3970,
+      "bounds_local_m": [
+        [
+          -1.590000033378601,
+          -0.19900000095367432,
+          -0.3499999940395355
+        ],
+        [
+          1.590000033378601,
+          0.19499999284744263,
+          9.229000091552734
+        ]
+      ],
+      "materials": [
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_PorcelainBrown",
+        "M_SubstationSite_Wood",
+        "M_SubstationSite_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_PorcelainBrown",
+        "M_SubstationSite_PrintAtlas",
+        "M_SubstationSite_Wood"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        53.79999923706055,
+        -0.22831100225448608
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 7716,
+      "vertices_after_weld": 2028,
+      "lod_triangles": [
+        3970,
+        2474,
+        1754
+      ]
+    },
+    "SM_SubstationSite_Pole_C": {
+      "triangles": 3970,
+      "bounds_local_m": [
+        [
+          -1.590000033378601,
+          -0.19900000095367432,
+          -0.3499999940395355
+        ],
+        [
+          1.590000033378601,
+          0.19499999284744263,
+          9.229000091552734
+        ]
+      ],
+      "materials": [
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_PorcelainBrown",
+        "M_SubstationSite_Wood",
+        "M_SubstationSite_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_PorcelainBrown",
+        "M_SubstationSite_PrintAtlas",
+        "M_SubstationSite_Wood"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        85.80000305175781,
+        -0.3017979860305786
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 7716,
+      "vertices_after_weld": 2028,
+      "lod_triangles": [
+        3970,
+        2474,
+        1754
+      ]
+    },
+    "SM_SubstationSite_Shed": {
+      "triangles": 1992,
+      "bounds_local_m": [
+        [
+          -1.590999960899353,
+          -1.3940000534057617,
+          -0.09000000357627869
+        ],
+        [
+          1.590000033378601,
+          1.3925000429153442,
+          2.6572916507720947
+        ]
+      ],
+      "materials": [
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_Concrete",
+        "M_SubstationSite_Wood",
+        "M_SubstationSite_CorrugatedSteel",
+        "M_SubstationSite_RoofRust",
+        "M_SubstationSite_PrintAtlas"
+      ],
+      "used_materials": [
+        "M_SubstationSite_Concrete",
+        "M_SubstationSite_CorrugatedSteel",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_PrintAtlas",
+        "M_SubstationSite_RoofRust",
+        "M_SubstationSite_Wood"
+      ],
+      "site_local_offset_m": [
+        6.5,
+        4.900000095367432,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 3850,
+      "vertices_after_weld": 1632,
+      "lod_triangles": [
+        1992,
+        1544,
+        1008
+      ]
+    },
+    "SM_SubstationSite_Equipment": {
+      "triangles": 2740,
+      "bounds_local_m": [
+        [
+          -1.3849999904632568,
+          -0.4300000071525574,
+          0.0
+        ],
+        [
+          1.159000039100647,
+          0.5,
+          0.8600000143051147
+        ]
+      ],
+      "materials": [
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_Wood",
+        "M_SubstationSite_RoofRust",
+        "M_SubstationSite_CableBlack"
+      ],
+      "used_materials": [
+        "M_SubstationSite_CableBlack",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_RoofRust",
+        "M_SubstationSite_Wood"
+      ],
+      "site_local_offset_m": [
+        6.800000190734863,
+        2.6500000953674316,
+        -0.07999999821186066
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 5224,
+      "vertices_after_weld": 1408,
+      "lod_triangles": [
+        2740,
+        1444,
+        836
+      ]
+    },
+    "SM_SubstationSite_Lines": {
+      "triangles": 2028,
+      "bounds_local_m": [
+        [
+          -1.1150000095367432,
+          4.649064064025879,
+          -0.6622366905212402
+        ],
+        [
+          1.1150000095367432,
+          90.08899688720703,
+          8.983745574951172
+        ]
+      ],
+      "materials": [
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_SafetyOchre"
+      ],
+      "used_materials": [
+        "M_SubstationSite_DarkSteel",
+        "M_SubstationSite_GalvanizedSteel",
+        "M_SubstationSite_SafetyOchre"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 4032,
+      "vertices_after_weld": 1618,
+      "lod_triangles": [
+        2028,
+        872,
+        510
+      ]
+    },
+    "SM_SubstationSite_Ground": {
+      "triangles": 6996,
+      "bounds_local_m": [
+        [
+          -9.835386276245117,
+          -7.84388542175293,
+          -0.36023667454719543
+        ],
+        [
+          9.790141105651855,
+          90.43516540527344,
+          -0.014999999664723873
+        ]
+      ],
+      "materials": [
+        "M_SubstationSite_Gravel"
+      ],
+      "used_materials": [
+        "M_SubstationSite_Gravel"
+      ],
+      "site_local_offset_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "vertices_before_weld": 13356,
+      "vertices_after_weld": 3816,
+      "lod_triangles": [
+        6996,
+        3060,
+        1036
+      ]
+    }
+  },
+  "lods": {
+    "0": {
+      "SM_SubstationSite_Pole_A": {
+        "triangles": 3970,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          21.799999237060547,
+          -0.2400120049715042
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 7716,
+        "vertices_after_weld": 2028,
+        "lod_triangles": [
+          3970,
+          2474,
+          1754
+        ]
+      },
+      "SM_SubstationSite_Pole_B": {
+        "triangles": 3970,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          53.79999923706055,
+          -0.22831100225448608
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 7716,
+        "vertices_after_weld": 2028,
+        "lod_triangles": [
+          3970,
+          2474,
+          1754
+        ]
+      },
+      "SM_SubstationSite_Pole_C": {
+        "triangles": 3970,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          85.80000305175781,
+          -0.3017979860305786
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 7716,
+        "vertices_after_weld": 2028,
+        "lod_triangles": [
+          3970,
+          2474,
+          1754
+        ]
+      },
+      "SM_SubstationSite_Shed": {
+        "triangles": 1992,
+        "bounds_local_m": [
+          [
+            -1.590999960899353,
+            -1.3940000534057617,
+            -0.09000000357627869
+          ],
+          [
+            1.590000033378601,
+            1.3925000429153442,
+            2.6572916507720947
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_Concrete",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_CorrugatedSteel",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_Concrete",
+          "M_SubstationSite_CorrugatedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          6.5,
+          4.900000095367432,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 3850,
+        "vertices_after_weld": 1632,
+        "lod_triangles": [
+          1992,
+          1544,
+          1008
+        ]
+      },
+      "SM_SubstationSite_Equipment": {
+        "triangles": 2740,
+        "bounds_local_m": [
+          [
+            -1.3849999904632568,
+            -0.4300000071525574,
+            0.0
+          ],
+          [
+            1.159000039100647,
+            0.5,
+            0.8600000143051147
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_CableBlack"
+        ],
+        "used_materials": [
+          "M_SubstationSite_CableBlack",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          6.800000190734863,
+          2.6500000953674316,
+          -0.07999999821186066
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 5224,
+        "vertices_after_weld": 1408,
+        "lod_triangles": [
+          2740,
+          1444,
+          836
+        ]
+      },
+      "SM_SubstationSite_Lines": {
+        "triangles": 2028,
+        "bounds_local_m": [
+          [
+            -1.1150000095367432,
+            4.649064064025879,
+            -0.6622366905212402
+          ],
+          [
+            1.1150000095367432,
+            90.08899688720703,
+            8.983745574951172
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_SafetyOchre"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_SafetyOchre"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 4032,
+        "vertices_after_weld": 1618,
+        "lod_triangles": [
+          2028,
+          872,
+          510
+        ]
+      },
+      "SM_SubstationSite_Ground": {
+        "triangles": 6996,
+        "bounds_local_m": [
+          [
+            -9.835386276245117,
+            -7.84388542175293,
+            -0.36023667454719543
+          ],
+          [
+            9.790141105651855,
+            90.43516540527344,
+            -0.014999999664723873
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_Gravel"
+        ],
+        "used_materials": [
+          "M_SubstationSite_Gravel"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 13356,
+        "vertices_after_weld": 3816,
+        "lod_triangles": [
+          6996,
+          3060,
+          1036
+        ]
+      }
+    },
+    "1": {
+      "SM_SubstationSite_Pole_A": {
+        "triangles": 2474,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          21.799999237060547,
+          -0.2400120049715042
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 4816,
+        "vertices_after_weld": 1280
+      },
+      "SM_SubstationSite_Pole_B": {
+        "triangles": 2474,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          53.79999923706055,
+          -0.22831100225448608
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 4816,
+        "vertices_after_weld": 1280
+      },
+      "SM_SubstationSite_Pole_C": {
+        "triangles": 2474,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          85.80000305175781,
+          -0.3017979860305786
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 4816,
+        "vertices_after_weld": 1280
+      },
+      "SM_SubstationSite_Shed": {
+        "triangles": 1544,
+        "bounds_local_m": [
+          [
+            -1.590999960899353,
+            -1.3940000534057617,
+            -0.09000000357627869
+          ],
+          [
+            1.590000033378601,
+            1.3925000429153442,
+            2.6572916507720947
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_Concrete",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_CorrugatedSteel",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_Concrete",
+          "M_SubstationSite_CorrugatedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          6.5,
+          4.900000095367432,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 2986,
+        "vertices_after_weld": 1252
+      },
+      "SM_SubstationSite_Equipment": {
+        "triangles": 1444,
+        "bounds_local_m": [
+          [
+            -1.3849999904632568,
+            -0.4300000071525574,
+            0.0
+          ],
+          [
+            1.159000039100647,
+            0.5,
+            0.8600000143051147
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_CableBlack"
+        ],
+        "used_materials": [
+          "M_SubstationSite_CableBlack",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          6.800000190734863,
+          2.6500000953674316,
+          -0.07999999821186066
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 2736,
+        "vertices_after_weld": 760
+      },
+      "SM_SubstationSite_Lines": {
+        "triangles": 872,
+        "bounds_local_m": [
+          [
+            -1.1150000095367432,
+            4.649051189422607,
+            -0.6622366905212402
+          ],
+          [
+            1.1150000095367432,
+            90.08899688720703,
+            8.985621452331543
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_SafetyOchre"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_SafetyOchre"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 1720,
+        "vertices_after_weld": 606
+      },
+      "SM_SubstationSite_Ground": {
+        "triangles": 3060,
+        "bounds_local_m": [
+          [
+            -9.835386276245117,
+            -7.854850769042969,
+            -0.36023667454719543
+          ],
+          [
+            9.849967956542969,
+            90.36774444580078,
+            -0.014999999664723873
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_Gravel"
+        ],
+        "used_materials": [
+          "M_SubstationSite_Gravel"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 5950,
+        "vertices_after_weld": 1700
+      }
+    },
+    "2": {
+      "SM_SubstationSite_Pole_A": {
+        "triangles": 1754,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          21.799999237060547,
+          -0.2400120049715042
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 3408,
+        "vertices_after_weld": 920
+      },
+      "SM_SubstationSite_Pole_B": {
+        "triangles": 1754,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          53.79999923706055,
+          -0.22831100225448608
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 3408,
+        "vertices_after_weld": 920
+      },
+      "SM_SubstationSite_Pole_C": {
+        "triangles": 1754,
+        "bounds_local_m": [
+          [
+            -1.590000033378601,
+            -0.19900000095367432,
+            -0.3499999940395355
+          ],
+          [
+            1.590000033378601,
+            0.19499999284744263,
+            9.229000091552734
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PorcelainBrown",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          85.80000305175781,
+          -0.3017979860305786
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 3408,
+        "vertices_after_weld": 920
+      },
+      "SM_SubstationSite_Shed": {
+        "triangles": 1008,
+        "bounds_local_m": [
+          [
+            -1.590999960899353,
+            -1.3940000534057617,
+            -0.09000000357627869
+          ],
+          [
+            1.590000033378601,
+            1.3925000429153442,
+            2.6572916507720947
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_Concrete",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_CorrugatedSteel",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_PrintAtlas"
+        ],
+        "used_materials": [
+          "M_SubstationSite_Concrete",
+          "M_SubstationSite_CorrugatedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_PrintAtlas",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          6.5,
+          4.900000095367432,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 1970,
+        "vertices_after_weld": 824
+      },
+      "SM_SubstationSite_Equipment": {
+        "triangles": 836,
+        "bounds_local_m": [
+          [
+            -1.3849999904632568,
+            -0.4300000071525574,
+            0.0
+          ],
+          [
+            1.159000039100647,
+            0.5,
+            0.8600000143051147
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_Wood",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_CableBlack"
+        ],
+        "used_materials": [
+          "M_SubstationSite_CableBlack",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_RoofRust",
+          "M_SubstationSite_Wood"
+        ],
+        "site_local_offset_m": [
+          6.800000190734863,
+          2.6500000953674316,
+          -0.07999999821186066
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 1576,
+        "vertices_after_weld": 456
+      },
+      "SM_SubstationSite_Lines": {
+        "triangles": 510,
+        "bounds_local_m": [
+          [
+            -1.1150000095367432,
+            4.649406909942627,
+            -0.6622366905212402
+          ],
+          [
+            1.1150000095367432,
+            90.08899688720703,
+            8.983770370483398
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_SafetyOchre"
+        ],
+        "used_materials": [
+          "M_SubstationSite_DarkSteel",
+          "M_SubstationSite_GalvanizedSteel",
+          "M_SubstationSite_SafetyOchre"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 996,
+        "vertices_after_weld": 349
+      },
+      "SM_SubstationSite_Ground": {
+        "triangles": 1036,
+        "bounds_local_m": [
+          [
+            -9.801043510437012,
+            -7.818456649780273,
+            -0.36023667454719543
+          ],
+          [
+            9.824872970581055,
+            90.07994842529297,
+            -0.014999999664723873
+          ]
+        ],
+        "materials": [
+          "M_SubstationSite_Gravel"
+        ],
+        "used_materials": [
+          "M_SubstationSite_Gravel"
+        ],
+        "site_local_offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "vertices_before_weld": 2072,
+        "vertices_after_weld": 592
+      }
+    }
+  },
+  "total_LOD0_triangles": 25666,
+  "line_spans": [
+    {
+      "from": "bus",
+      "to": "A",
+      "sag_m": 0.65,
+      "phase": 0,
+      "start": [
+        -1.04,
+        4.65,
+        7.85
+      ],
+      "end": [
+        -1.04,
+        21.8,
+        8.959988
+      ],
+      "midpoint": [
+        -1.04,
+        13.225000000000001,
+        7.754993999999998
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "bus",
+      "to": "A",
+      "sag_m": 0.65,
+      "phase": 1,
+      "start": [
+        0,
+        4.65,
+        7.85
+      ],
+      "end": [
+        0,
+        21.8,
+        8.959988
+      ],
+      "midpoint": [
+        0.0,
+        13.225000000000001,
+        7.754993999999998
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "bus",
+      "to": "A",
+      "sag_m": 0.65,
+      "phase": 2,
+      "start": [
+        1.04,
+        4.65,
+        7.85
+      ],
+      "end": [
+        1.04,
+        21.8,
+        8.959988
+      ],
+      "midpoint": [
+        1.04,
+        13.225000000000001,
+        7.754993999999998
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "A",
+      "to": "B",
+      "sag_m": 0.9,
+      "phase": 0,
+      "start": [
+        -1.04,
+        21.8,
+        8.959988
+      ],
+      "end": [
+        -1.04,
+        53.8,
+        8.971689
+      ],
+      "midpoint": [
+        -1.04,
+        37.8,
+        8.0658385
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "A",
+      "to": "B",
+      "sag_m": 0.9,
+      "phase": 1,
+      "start": [
+        0,
+        21.8,
+        8.959988
+      ],
+      "end": [
+        0,
+        53.8,
+        8.971689
+      ],
+      "midpoint": [
+        0.0,
+        37.8,
+        8.0658385
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "A",
+      "to": "B",
+      "sag_m": 0.9,
+      "phase": 2,
+      "start": [
+        1.04,
+        21.8,
+        8.959988
+      ],
+      "end": [
+        1.04,
+        53.8,
+        8.971689
+      ],
+      "midpoint": [
+        1.04,
+        37.8,
+        8.0658385
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "B",
+      "to": "C",
+      "sag_m": 0.9,
+      "phase": 0,
+      "start": [
+        -1.04,
+        53.8,
+        8.971689
+      ],
+      "end": [
+        -1.04,
+        85.8,
+        8.898202
+      ],
+      "midpoint": [
+        -1.04,
+        69.8,
+        8.0349455
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "B",
+      "to": "C",
+      "sag_m": 0.9,
+      "phase": 1,
+      "start": [
+        0,
+        53.8,
+        8.971689
+      ],
+      "end": [
+        0,
+        85.8,
+        8.898202
+      ],
+      "midpoint": [
+        0.0,
+        69.8,
+        8.0349455
+      ],
+      "conductor_radius_m": 0.014
+    },
+    {
+      "from": "B",
+      "to": "C",
+      "sag_m": 0.9,
+      "phase": 2,
+      "start": [
+        1.04,
+        53.8,
+        8.971689
+      ],
+      "end": [
+        1.04,
+        85.8,
+        8.898202
+      ],
+      "midpoint": [
+        1.04,
+        69.8,
+        8.0349455
+      ],
+      "conductor_radius_m": 0.014
+    }
+  ],
+  "poles_site_m": {
+    "A": [
+      0,
+      21.8,
+      -0.240012
+    ],
+    "B": [
+      0,
+      53.8,
+      -0.228311
+    ],
+    "C": [
+      0,
+      85.8,
+      -0.301798
+    ]
+  },
+  "phase_x_m": [
+    -1.04,
+    0,
+    1.04
+  ],
+  "phase_height_over_local_ground_m": 9.2,
+  "pole_burial_m": 0.35,
+  "guy_ground_anchor_site_m": [
+    0,
+    90.0,
+    -0.342236688
+  ],
+  "ground_authority": "Native audited original geo_007.glb/g873; no new terrain plane or collider. Existing kit gravel topBz-.08.",
+  "collision": "Original yard preserved; native only tiny pole/guy-foot proxies, no wire-AABB blocker",
+  "axis_probe_source_center_m": [
+    2,
+    4,
+    6
+  ],
+  "axis_probe_source_dimensions_m": [
+    0.2,
+    0.4,
+    0.6
+  ],
+  "axis_probe_expected_UE_center_cm": [
+    200,
+    -400,
+    600
+  ],
+  "originality": "All geometry/maps/signage original; shared original substation helper/PBR read-only."
+}

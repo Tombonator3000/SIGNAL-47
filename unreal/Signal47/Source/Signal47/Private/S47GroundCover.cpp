@@ -1,4 +1,5 @@
 #include "S47GroundCover.h"
+#include "S47SaroSite.h"
 
 #include "S47Geo.h"
 #include "S47Legs.h"
@@ -353,6 +354,16 @@ FS47FloraSpec SaroFlora(const TArray<FS47FloraRect>& Colliders, const TArray<FS4
 	// (the site's own ground; south of it the road's rules, as the road area's) moved into the road's terms
 	for (const FRect& C : Colliders) if (C.MinZ < 80) S.Blocks.Add(ToRoadRect(C));
 	for (const FRect& Z : Zones) if (Z.MinZ < 80) S.Walks.Add(ToRoadRect(Z));
+	// Unreal visitor paving: generate no procedural plants through the lot or its footpaths.
+	// Flora is created after the arrival meshes, so a one-off mesh cleanup cannot enforce this.
+	for (const FRect& P : { R(-18.3,-7.7,10.4,20.6), R(-16.5,-9.5,20.5,23.5),
+		R(-8.3,5.9,11.65,12.75), R(4.85,5.95,12.2,17.3), R(5.4,11.5,16.75,17.85) })
+		S.Blocks.Add(ToRoadRect(P));
+	// Match the actual paved east forecourt and its service-road connector exactly.
+	// This excludes grass, scrub and stones at generation, leaving the surrounding desert intact.
+	using namespace S47SaroForecourt;
+	S.Blocks.Add(ToRoadRect(R(X0,X1,Z0,Z1)));
+	S.Blocks.Add(ToRoadRect(R(AccessX0,AccessX1,AccessZ0,AccessZ1)));
 	S.Walks.Add(SHOULDER_ROAD());
 	S.Ways = [](double X, double Z) { const double Sx = X - SIR().X, Sz = Z - SIR().Z; return Sz < 80 ? SiteWays(Sx, Sz) : RoadWays(X, Z); };
 	return S;

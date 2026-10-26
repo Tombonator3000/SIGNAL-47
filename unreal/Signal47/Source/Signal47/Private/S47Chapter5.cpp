@@ -329,7 +329,7 @@ FString US47Chapter5::Objective() const
 		return TEXT("MESA DINER // WHERE DOES C CROSS THE OLD ROAD? SPREAD THE MAPS ON A TABLE (P13)");
 	}
 	if (S.Stage == TEXT("road")) return TEXT("MESA DINER // C CROSSES JUST PAST THE EIGHT-MILE POST. THE TRUCK IS OUTSIDE");
-	if (S.Stage == TEXT("complete")) return TEXT("ROSWELL ROAD // NEXT PART NOT YET PLAYABLE");
+	if (S.Stage == TEXT("complete")) return TEXT("ROSWELL ROAD // FOLLOW C TO THE BOLT JUST PAST THE EIGHT-MILE POST");
 	return FString();
 }
 
@@ -785,11 +785,12 @@ bool US47Chapter5::Aligned() const
 
 FS47Result US47Chapter5::Answer(const FString& Id)
 {
+	// Unreal: record only an investigation actually performed on the map, including a correct guess.
+	if (!Aligned()) return { false, TEXT("Lay the tracing on STATION 01 first, transit on the station, north to north. Then follow C.") };
 	if (Id != TEXT("bm8"))
 	{
 		S.Wrong13++;
 		Save();
-		if (!Aligned()) return { false, TEXT("Lay the tracing on STATION 01 first, transit on the station, north to north. Then follow C.") };
 		return { false, Id == TEXT("none") ? TEXT("Follow C east from the station. It does meet the road.") : Id == TEXT("bm6") ? TEXT("That bolt is south of the line. C meets the road further on.") : TEXT("C meets the road before that.") };
 	}
 	S.bP13 = true;
@@ -893,7 +894,7 @@ void US47Chapter5::Update(double Dt, double T)
 	FS47Diner* Dn = Diner();
 	if (Dn && InDiner() && Host)
 	{
-		Dn->SetDawn(FMath::Clamp((FMath::Fmod(Host->Clock(), 86400.0) - DAWN) / (25 * 60), 0.15, 0.85));
+		Dn->SetDawn(FMath::Clamp((FMath::Fmod(Host->Clock(), 86400.0) - (Host->bEveningTimeline ? 4 * 3600 + 40 * 60 : DAWN)) / (Host->bEveningTimeline ? 50 * 60 : 25 * 60), Host->bEveningTimeline ? 0.0 : 0.15, 0.85));
 	}
 	if (M->UI) M->UI->Objective(Objective());
 }
@@ -914,7 +915,7 @@ void US47Chapter5::BeginChapter5(const S47J::FObj& SavedCase)
 		Host->NotesMutable() = S47J::Strs(SavedCase, TEXT("notes"));
 		Host->SetClock(S47J::Num(SavedCase, TEXT("clock"), Host->Clock()));
 	}
-	else Host->SetClock(FMath::Max(Host->Clock(), 5 * 3600.0));
+	else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter5(Host->bEveningTimeline)));
 	if (M && M->UI) M->UI->Fade(false);
 	Host->BeginChapter(TEXT("ch5"), Ch5); // (ch5.begin, then onCheckpoint('chapter5'))
 }
@@ -939,9 +940,9 @@ void US47Chapter5::JumpChapter5()
 		S47J::FObj Case = M && M->Flow ? M->Flow->ComposeCase() : S47J::FObj();
 		if (!Case.IsValid()) { Case = S47J::New(); S47J::Set(Case, TEXT("notes"), Host->Notes()); }
 		S47J::Set(Case, TEXT("ch4"), J4);
-		S47J::Set(Case, TEXT("clock"), 4 * 3600.0 + 58 * 60);
+		S47J::Set(Case, TEXT("clock"), (Host->bEveningTimeline ? 4 * 3600.0 + 8 * 60 : 4 * 3600.0 + 58 * 60));
 		C4->BeginChapter4(Case);
-		Host->SetClock(4 * 3600.0 + 58 * 60);
+		Host->SetClock((Host->bEveningTimeline ? 4 * 3600.0 + 8 * 60 : 4 * 3600.0 + 58 * 60));
 	}
 	BeginChapter5(nullptr);
 }
@@ -1107,9 +1108,21 @@ bool US47Chapter5::SelfTest(TArray<FString>& Out)
 	Check(C->S.bWard && C->Lines[1].Text.Contains(TEXT("morning series")) && V.Choices.Num() == 1 && V.Choices[0].Label == TEXT("Hang up"), TEXT("she wants you back before the morning series"));
 
 	// P13 at the booth
-	FS47Result R = C->Answer(TEXT("bm6"));
-	Check(!R.bOk && R.Text.Contains(TEXT("STATION 01 first")) && C->S.Wrong13 == 1 && !C->S.bP13, TEXT("an answer before the tracing is on the station: lay it on STATION 01 first"));
+	{
+		// Guard regressions own their state; the original serialized-case scenario keeps three real wrong answers.
+		US47Chapter5* Guard = NewObject<US47Chapter5>(GetTransientPackage());
+		Guard->S.Stage = TEXT("diner");
+		const FS47Result Guess = Guard->Answer(TEXT("bm8"));
+		Check(!Guess.bOk && Guess.Text.Contains(TEXT("STATION 01 first")) && !Guard->S.bP13 && Guard->S.Stage == TEXT("diner") && Guard->TestNotes.IsEmpty() && Guard->TestDocs.IsEmpty(),
+			TEXT("a correct guess before map alignment records no finding, note or progress"));
+		const FS47Result Unaligned = Guard->Answer(TEXT("bm6"));
+		Check(!Unaligned.bOk && Unaligned.Text.Contains(TEXT("STATION 01 first")) && Guard->S.Wrong13 == 0 && !Guard->S.bP13,
+			TEXT("an answer before the tracing is on the station: lay it on STATION 01 first"));
+		Guard->MarkAsGarbage();
+	}
 	C->S.Tracing = FVector2D(470, 360);
+	FS47Result R = C->Answer(TEXT("bm6"));
+	Check(!R.bOk && R.Text.StartsWith(TEXT("That bolt is south")) && C->S.Wrong13 == 1 && !C->S.bP13, TEXT("the aligned six-mile answer is south of C and records one wrong answer"));
 	R = C->Answer(TEXT("bm10"));
 	Check(!R.bOk && R.Text == TEXT("C meets the road before that."), TEXT("past the ten-mile post: before that"));
 	R = C->Answer(TEXT("none"));

@@ -1,0 +1,337 @@
+{
+  "status": "SOURCE_PASS_NATIVE_VISUAL_PENDING",
+  "revision": "R7_readable_local_wear",
+  "scope": "Only original CompactedUse/ConcreteUse coloratlas authoring changed. Existing geometry,UV,RGBA vertexfades,transforms,materials,normal/roughness and placement preserved.",
+  "authoring": {
+    "soil_alpha_gain": 2.2,
+    "concrete_alpha_gain": 3.5,
+    "alpha_cap": 0.88,
+    "soil_ruts": "Narrow interrupted brown mineral bands, redchannel85..105 on4.83%of atlas withalpha>60/255; lighter dusty margins retained.",
+    "concrete": "Original matte brown-gray RGB byte-identical, specular0 unchanged; no new solid darkbase.",
+    "mask_support": "Every previouslyzero pixel remainszero, all four textureedges exactlyzero; no expanded rectangular coverage."
+  },
+  "total_triangles": 64289,
+  "parts": {
+    "SM_Caliche_Surface": {
+      "triangles": 19568,
+      "bounds_local_m": [
+        [
+          -29.34113121032715,
+          -28.703702926635742,
+          4.067006587982178
+        ],
+        [
+          39.844078063964844,
+          39.099998474121094,
+          5.779888153076172
+        ]
+      ],
+      "slots": 15,
+      "used_materials": [
+        "M_CS_CalicheSoil",
+        "M_CS_CompactedUse",
+        "M_CS_ConcreteUse",
+        "M_CS_DrySilt",
+        "M_CS_DustFeather",
+        "M_CS_PeaGravel",
+        "M_CS_ShoulderBlend"
+      ]
+    },
+    "SM_Caliche_RoadWear": {
+      "triangles": 26838,
+      "bounds_local_m": [
+        [
+          -5.442420482635498,
+          -29.75,
+          4.249885082244873
+        ],
+        [
+          5.450954437255859,
+          39.75,
+          5.857419967651367
+        ]
+      ],
+      "slots": 13,
+      "used_materials": [
+        "M_CS_DustFeather",
+        "M_CS_OldAsphalt"
+      ]
+    },
+    "SM_Caliche_Rocks": {
+      "triangles": 11055,
+      "bounds_local_m": [
+        [
+          -29.651090621948242,
+          -29.76345443725586,
+          4.134025573730469
+        ],
+        [
+          39.562599182128906,
+          37.091835021972656,
+          5.8762125968933105
+        ]
+      ],
+      "slots": 13,
+      "used_materials": [
+        "M_CS_Limestone"
+      ]
+    },
+    "SM_Caliche_DryPlants": {
+      "triangles": 6828,
+      "bounds_local_m": [
+        [
+          -29.66736602783203,
+          -29.853469848632812,
+          4.149817943572998
+        ],
+        [
+          39.0820426940918,
+          36.307334899902344,
+          6.490347862243652
+        ]
+      ],
+      "slots": 13,
+      "used_materials": [
+        "M_CS_DryPlant",
+        "M_CS_GrassAtlas",
+        "M_CS_SageAtlas",
+        "M_CS_Yucca"
+      ]
+    }
+  },
+  "preservation": {
+    "status": "PASS",
+    "before_all_material_faces": {
+      "SM_Caliche_DryPlants": "a10afc7223e50e8058573d9a7e387c548a85c59a821282b80d2fc1ca7e0c88fb",
+      "SM_Caliche_RoadWear": "ffbe8c4f7ba44f0cfe89f47d97857059f88dd9064bf145d12c832c29029f1cdb",
+      "SM_Caliche_Rocks": "d4c41cdd366607bfac198cb472c18a8375897c5a5881e87761e1300f08e61fc3",
+      "SM_Caliche_Surface": "875e576738048da86258a058123cf55bce39a04645a837f846810e7023455792"
+    },
+    "after_all_material_faces": {
+      "SM_Caliche_DryPlants": "a10afc7223e50e8058573d9a7e387c548a85c59a821282b80d2fc1ca7e0c88fb",
+      "SM_Caliche_RoadWear": "ffbe8c4f7ba44f0cfe89f47d97857059f88dd9064bf145d12c832c29029f1cdb",
+      "SM_Caliche_Rocks": "d4c41cdd366607bfac198cb472c18a8375897c5a5881e87761e1300f08e61fc3",
+      "SM_Caliche_Surface": "875e576738048da86258a058123cf55bce39a04645a837f846810e7023455792"
+    },
+    "unchanged_contract_files": [
+      "model_contract.json",
+      "materials.json",
+      "wear_contact_samples.json",
+      "surface_samples.json"
+    ],
+    "all_packed_images_match_current_disk": [
+      "CalicheSoil_color.png",
+      "CalicheSoil_normal.png",
+      "CalicheSoil_roughness.png",
+      "CompactedUse_color.png",
+      "CompactedUse_normal.png",
+      "CompactedUse_roughness.png",
+      "ConcreteUse_color.png",
+      "ConcreteUse_normal.png",
+      "ConcreteUse_roughness.png",
+      "DryPlant_color.png",
+      "DryPlant_normal.png",
+      "DryPlant_roughness.png",
+      "DrySilt_color.png",
+      "DrySilt_normal.png",
+      "DrySilt_roughness.png",
+      "DustFeather_color.png",
+      "DustFeather_normal.png",
+      "DustFeather_roughness.png",
+      "GrassAtlas_color.png",
+      "GrassAtlas_normal.png",
+      "GrassAtlas_roughness.png",
+      "Limestone_color.png",
+      "Limestone_normal.png",
+      "Limestone_roughness.png",
+      "OldAsphalt_color.png",
+      "OldAsphalt_normal.png",
+      "OldAsphalt_roughness.png",
+      "PeaGravel_color.png",
+      "PeaGravel_normal.png",
+      "PeaGravel_roughness.png",
+      "SageAtlas_color.png",
+      "SageAtlas_normal.png",
+      "SageAtlas_roughness.png",
+      "ShoulderBlend_color.png",
+      "ShoulderBlend_normal.png",
+      "ShoulderBlend_roughness.png",
+      "TarRepair_color.png",
+      "TarRepair_normal.png",
+      "TarRepair_roughness.png",
+      "WornConcrete_color.png",
+      "WornConcrete_normal.png",
+      "WornConcrete_roughness.png",
+      "Yucca_color.png",
+      "Yucca_normal.png",
+      "Yucca_roughness.png"
+    ],
+    "atlas_times_vertexalpha": true
+  },
+  "PNG_and_embeddedGLB_proof": {
+    "status": "PASS",
+    "texture_stats": [
+      {
+        "name": "CompactedUse",
+        "alpha_gain": 2.2,
+        "alpha_cap": 0.88,
+        "alpha_byte_range": [
+          0,
+          224
+        ],
+        "nonzero_alpha_support_unchanged": true,
+        "RGB_unchanged": false,
+        "mean_alpha_before": 0.09621286579206878,
+        "mean_alpha_after": 0.21153097994187298,
+        "RGB_R85_105_alpha_over60_fraction": 0.04832577705383301
+      },
+      {
+        "name": "ConcreteUse",
+        "alpha_gain": 3.5,
+        "alpha_cap": 0.88,
+        "alpha_byte_range": [
+          0,
+          224
+        ],
+        "nonzero_alpha_support_unchanged": true,
+        "RGB_unchanged": true,
+        "mean_alpha_before": 0.04305444324717802,
+        "mean_alpha_after": 0.12282660054225547,
+        "RGB_R85_105_alpha_over60_fraction": 0.14882206916809082
+      }
+    ],
+    "all_other_texture_files_SHA256_unchanged": [
+      "textures/CalicheSoil_color.png",
+      "textures/CalicheSoil_normal.png",
+      "textures/CalicheSoil_roughness.png",
+      "textures/PeaGravel_color.png",
+      "textures/PeaGravel_normal.png",
+      "textures/PeaGravel_roughness.png",
+      "textures/OldAsphalt_color.png",
+      "textures/OldAsphalt_normal.png",
+      "textures/OldAsphalt_roughness.png",
+      "textures/DrySilt_color.png",
+      "textures/DrySilt_normal.png",
+      "textures/DrySilt_roughness.png",
+      "textures/Limestone_color.png",
+      "textures/Limestone_normal.png",
+      "textures/Limestone_roughness.png",
+      "textures/DryPlant_color.png",
+      "textures/DryPlant_normal.png",
+      "textures/DryPlant_roughness.png",
+      "textures/TarRepair_color.png",
+      "textures/TarRepair_normal.png",
+      "textures/TarRepair_roughness.png",
+      "textures/WornConcrete_color.png",
+      "textures/WornConcrete_normal.png",
+      "textures/WornConcrete_roughness.png",
+      "textures/ShoulderBlend_color.png",
+      "textures/ShoulderBlend_normal.png",
+      "textures/ShoulderBlend_roughness.png",
+      "textures/DustFeather_color.png",
+      "textures/DustFeather_normal.png",
+      "textures/DustFeather_roughness.png",
+      "textures/GrassAtlas_color.png",
+      "textures/GrassAtlas_normal.png",
+      "textures/GrassAtlas_roughness.png",
+      "textures/SageAtlas_color.png",
+      "textures/SageAtlas_normal.png",
+      "textures/SageAtlas_roughness.png",
+      "textures/Yucca_color.png",
+      "textures/Yucca_normal.png",
+      "textures/Yucca_roughness.png",
+      "textures/CompactedUse_normal.png",
+      "textures/CompactedUse_roughness.png",
+      "textures/ConcreteUse_normal.png",
+      "textures/ConcreteUse_roughness.png"
+    ],
+    "embedded_GLBRGBA": [
+      {
+        "file": "SM_Caliche_Surface.glb",
+        "material": "M_CS_CompactedUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      },
+      {
+        "file": "SM_Caliche_Surface.glb",
+        "material": "M_CS_ConcreteUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      },
+      {
+        "file": "Caliche_Ground_Assembly.glb",
+        "material": "M_CS_CompactedUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      },
+      {
+        "file": "Caliche_Ground_Assembly.glb",
+        "material": "M_CS_ConcreteUse",
+        "RGBA_pixel_identical": true,
+        "alpha_byte_range": [
+          0,
+          224
+        ]
+      }
+    ],
+    "expected_dither_coverage": [
+      {
+        "field": "east_radio_parking",
+        "drawn_area_m2": 145.07893698380568,
+        "expected_dither_area_fraction": 0.2176051056645825
+      },
+      {
+        "field": "east_shop_parking",
+        "drawn_area_m2": 90.56986078529494,
+        "expected_dither_area_fraction": 0.21232789727269927
+      },
+      {
+        "field": "service_gap",
+        "drawn_area_m2": 111.62124997362389,
+        "expected_dither_area_fraction": 0.21353951432796536
+      },
+      {
+        "field": "pump_west_lane",
+        "drawn_area_m2": 47.606678726503446,
+        "expected_dither_area_fraction": 0.11946563020387188
+      },
+      {
+        "field": "pump_east_lane",
+        "drawn_area_m2": 47.607622796003255,
+        "expected_dither_area_fraction": 0.11946464990245467
+      },
+      {
+        "field": "gas_turnout_scuff",
+        "drawn_area_m2": 30.43263660487083,
+        "expected_dither_area_fraction": 0.12652303791659694
+      }
+    ],
+    "native_visual_status": "PENDING: only source texture and previously proven native geometry integration."
+  },
+  "native_R6_diagnosis": {
+    "file": "r6_native_fbx_comparison.json",
+    "summary": "All7materialcounts,58704corners,position,UVandvertexalphamatch; no slot/height/transform/alpha-loss cause. Sourceimageswerevisuallytoo weak.",
+    "position_error_m": 3.814697265625e-06,
+    "vertex_alpha_error": 0.003921568393707275
+  },
+  "evidence_before_R7": "evidence/r6-before-r7",
+  "reproducible_scripts": [
+    "texture_detail.wear_atlas",
+    "build_ground.py",
+    "verify_ground.py",
+    "r7_source_probe.py",
+    "verify_wear_textures.py"
+  ],
+  "native_visual_acceptance": "Pending root review-seventh actualcamera captures; sourcePASS does not imply conceptualappearancePASS.",
+  "DCC_slot_released": true,
+  "no_unreal_or_render_jobs": true
+}

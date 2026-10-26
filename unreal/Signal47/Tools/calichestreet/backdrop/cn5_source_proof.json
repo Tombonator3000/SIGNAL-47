@@ -1,0 +1,301 @@
+{
+  "status": "CN5_SOURCE_AND_EXPORTED_TARGET_PROOF_PASS",
+  "utc": "2026-10-24T08:46:14.431035+00:00",
+  "preserved_CN4": "/home/tom/scratch-bm/Signal47-caliche-nature/evidence/CN4-rejected-oldroad-cap-20261024T084318Z",
+  "native_visual_status": "UNVERIFIED",
+  "unchanged": {
+    "road_mask_functions_AST_identical": true,
+    "all_source_XY_exactly_identical": true,
+    "belts_anchor_six_names": true,
+    "all_nine_PNGs_byte_identical": true,
+    "triangles": 103550
+  },
+  "localized_relief": {
+    "changed_source_points": 1253,
+    "unchanged_source_points": 51960,
+    "height_delta_minmax_m": [
+      -13.470027615872368,
+      11.551634580066008
+    ],
+    "all_changes_in_east_OldRoad_distance_m": [
+      286.0272399057197,
+      434.7319750739373
+    ],
+    "corridor_m": 180,
+    "road_protection_function": "unchanged;0 through280m,1 at420m; added relief only286..435m and fraction>.48"
+  },
+  "actual_GLB_material_triangle_counts": {
+    "CN4": {
+      "M_Caliche_Mesa_0": 17226,
+      "M_Caliche_Mesa_1": 9570,
+      "M_Caliche_Mesa_2": 42108,
+      "M_Caliche_Mesa_3": 3828,
+      "M_Caliche_Mesa_4": 13398,
+      "M_Caliche_Mesa_5": 17420
+    },
+    "CN5": {
+      "M_Caliche_Mesa_0": 17164,
+      "M_Caliche_Mesa_1": 9626,
+      "M_Caliche_Mesa_2": 40816,
+      "M_Caliche_Mesa_3": 4152,
+      "M_Caliche_Mesa_4": 14372,
+      "M_Caliche_Mesa_5": 17420
+    }
+  },
+  "actual_GLB_target_raymatches": [
+    {
+      "pixel_2560x1440": [
+        2450,
+        590
+      ],
+      "CN4": {
+        "material": "M_Caliche_Mesa_2",
+        "localThree_m": [
+          1239.0854212102147,
+          65.21739823891087,
+          -886.7025299518675
+        ],
+        "range_m": 1678.4390835373024,
+        "triangle_normal_three": [
+          0.3511456229119142,
+          0.48911576485781344,
+          0.7984124999505957
+        ],
+        "oldRoadDistance_m": 339.23285415491927
+      },
+      "CN5": {
+        "material": "M_Caliche_Mesa_3",
+        "localThree_m": [
+          1252.5641863415083,
+          65.77353673569165,
+          -899.11968486917
+        ],
+        "range_m": 1696.7740811029546,
+        "triangle_normal_three": [
+          0.4427704174244011,
+          0.6300303583789991,
+          0.6379781383203122
+        ],
+        "oldRoadDistance_m": 345.49604547147237
+      }
+    },
+    {
+      "pixel_2560x1440": [
+        2500,
+        625
+      ],
+      "CN4": {
+        "material": "M_Caliche_Mesa_2",
+        "localThree_m": [
+          1294.4253864310617,
+          27.770553253171926,
+          -886.1830653821646
+        ],
+        "range_m": 1718.486347372885,
+        "triangle_normal_three": [
+          0.3448370976420113,
+          0.5515900389341422,
+          0.7594970737524046
+        ],
+        "oldRoadDistance_m": 317.3887476588511
+      },
+      "CN5": {
+        "material": "M_Caliche_Mesa_3",
+        "localThree_m": [
+          1308.4532051846659,
+          27.917049161679994,
+          -898.5456594482159
+        ],
+        "range_m": 1737.1848738409558,
+        "triangle_normal_three": [
+          0.32615804715236146,
+          0.5998159645760462,
+          0.7306447405664844
+        ],
+        "oldRoadDistance_m": 323.35078457362715
+      }
+    },
+    {
+      "pixel_2560x1440": [
+        2390,
+        575
+      ],
+      "CN4": {
+        "material": "M_Caliche_Mesa_1",
+        "localThree_m": [
+          1144.2117680412,
+          79.53059257153635,
+          -857.1215068167573
+        ],
+        "range_m": 1589.7546898316432,
+        "triangle_normal_three": [
+          0.01743750801074626,
+          0.5475181881662988,
+          0.8366120767365653
+        ],
+        "oldRoadDistance_m": 348.2837194991596
+      },
+      "CN5": {
+        "material": "M_Caliche_Mesa_4",
+        "localThree_m": [
+          1144.4972694438904,
+          79.54694136403327,
+          -857.3990146986018
+        ],
+        "range_m": 1590.1531731543057,
+        "triangle_normal_three": [
+          0.019586861904210443,
+          0.52202778890289,
+          0.8527035489863434
+        ],
+        "oldRoadDistance_m": 348.43112559524934
+      }
+    },
+    {
+      "pixel_2560x1440": [
+        2430,
+        520
+      ],
+      "CN4": {
+        "material": "M_Caliche_Mesa_2",
+        "localThree_m": [
+          1297.3247031898154,
+          148.43111808394616,
+          -967.4998038761064
+        ],
+        "range_m": 1780.4160574295963,
+        "triangle_normal_three": [
+          0.28361360933710544,
+          0.6575276074100442,
+          0.6980120099915205
+        ],
+        "oldRoadDistance_m": 391.2186901557853
+      },
+      "CN5": {
+        "material": "M_Caliche_Mesa_4",
+        "localThree_m": [
+          1311.4899594359651,
+          149.90149046781687,
+          -980.8469650742222
+        ],
+        "range_m": 1799.934335824855,
+        "triangle_normal_three": [
+          0.2297340837699308,
+          0.5225616187398985,
+          0.8210673573917839
+        ],
+        "oldRoadDistance_m": 398.0080754488259
+      }
+    }
+  ],
+  "camera": {
+    "localThree_eye_m": [
+      5.2,
+      14.306860317421958,
+      250.0
+    ],
+    "yaw": 0.02,
+    "pitch": -0.08,
+    "vertical_fov": 70,
+    "resolution": [
+      2560,
+      1440
+    ],
+    "limit": "Source floor and requested camera; historical native package has no final-eye telemetry. No native CN5 capture or acceptance claimed."
+  },
+  "actual_independent_verification": {
+    "status": "PASS",
+    "checks": {
+      "single_editable_mesh": true,
+      "FBX_pivots_scale_bounds_triangles": true,
+      "six_stable_slots_all_used": true,
+      "UV_finite": true,
+      "UV_all_triangles_noncollapsed": true,
+      "outward_nondegenerate_faces": true,
+      "whole_triangle_protected_road_clearance": true,
+      "binary_GLB_bounds_triangles_materials": true,
+      "saved_Blend_current_packed_maps": true
+    },
+    "triangles": 103550,
+    "bounds_local_m": [
+      [
+        -3071.326904296875,
+        -1850.0,
+        -4.000612258911133
+      ],
+      [
+        2250.0,
+        3759.0615234375,
+        234.64971923828125
+      ]
+    ],
+    "FBX_bounds_error_m": 0.0006122589111328125,
+    "FBX_bounds_tolerance_m": 0.001,
+    "GLB_bounds_error_m": 0.0,
+    "minimum_UV_triangle_area": 0.0028857178612888834,
+    "raised_triangles": 85811,
+    "oldroad_clearance_lower_bound_m": 224.55525479441397,
+    "mainroad_clearance_lower_bound_m": 237.93414306640625,
+    "packed_textures": [
+      {
+        "name": "MesaCap_base_color.png",
+        "width": 2048,
+        "height": 2048,
+        "sha256": "8c60f15323dc0f45300e0ed52423601debed04db68c5dfc4dc78cab62c31ae0a"
+      },
+      {
+        "name": "MesaCap_normal.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "8decc02699068609fe2c762714323ad2d9156f3e5994f687e07e5c48729ab3c9"
+      },
+      {
+        "name": "MesaCap_roughness.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "0b40644ff1ad5798364dd376e59ff250a84e5c0c591292432dc9343912d7d3ec"
+      },
+      {
+        "name": "MesaRock_base_color.png",
+        "width": 2048,
+        "height": 2048,
+        "sha256": "524bc4f30e381129dd19bb4b5970fbe736de48e2d4ec0ecc187cc447ae167d00"
+      },
+      {
+        "name": "MesaRock_normal.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "98031c7f5225d00e6b1a401d8b444c925508560df0644a6046254ff1b4fab8e9"
+      },
+      {
+        "name": "MesaRock_roughness.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "c49d3dac80a4c2e556569f6fe91ea7f27aeb888038fce9a4b99459ee7f8014da"
+      },
+      {
+        "name": "MesaTalus_base_color.png",
+        "width": 2048,
+        "height": 2048,
+        "sha256": "2f34e2f7169c8a7b5911ecfaaabbbfc055a4e9f7407d88704cd1504f7c76e890"
+      },
+      {
+        "name": "MesaTalus_normal.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "fc07a63585190dca4b312573bf50a9ad66a0f4c452506f7051476a6fc49139b7"
+      },
+      {
+        "name": "MesaTalus_roughness.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "223319b71bc56744e35f0822c818debc467bac9538c610730917ebdd7cb9f5b0"
+      }
+    ]
+  },
+  "source_SHA256": {
+    "geology.py": "d24c5f3ff5a67029345aef1d69731baec369616b20110e6747f1e3a80e1b7274",
+    "build_backdrop.py": "a466fb686dc826c29f0668d543f9c09ee4c22a0114bf1f0bdfbd0f81556268e9",
+    "cn5_source_proof.py": "e468c9961bd02b526247a6866a72836dc5e313b30222868eab9f5bde8fe985cc"
+  }
+}

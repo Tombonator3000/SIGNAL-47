@@ -8,7 +8,10 @@
 #include "S47Three.h"
 #include "S47Inter.h"
 #include "S47Keys.h"
+#include "S47Gamepad.h"
 #include "S47Web.h"
+#include "S47Props.h"
+#include "S47Startup.h"
 
 using namespace S47Three;
 
@@ -19,6 +22,13 @@ namespace
 	// the jump: a modest one for a grown man in boots (about 0.45 m up), the eye's dip on landing
 	constexpr double GRAVITY = 9.8, JUMP_UP = 0.45, LAND_SECS = 0.28, LAND_DIP = 0.065;
 	const double JUMP_V = FMath::Sqrt(2 * GRAVITY * JUMP_UP);
+	bool InVehicle(const AS47Walker::FTruckBox& B, double X, double Z, double Radius)
+	{
+		const double C=FMath::Cos(B.Heading), S=FMath::Sin(B.Heading), Dx=X-B.X, Dz=Z-B.Z;
+		const double Lx=Dx*C-Dz*S, Lz=Dx*S+Dz*C;
+		const double Ox=FMath::Max(0.0,FMath::Abs(Lx)-B.HalfW), Oz=FMath::Max(0.0,FMath::Abs(Lz)-B.HalfL);
+		return Ox*Ox+Oz*Oz < Radius*Radius;
+	}
 }
 
 AS47Walker::AS47Walker()
@@ -102,9 +112,12 @@ void AS47Walker::Resolve(bool bX, double Old)
 	}
 	// (the truck here as it is turned, not the box round it)
 	const bool bTruck = TruckBox && TruckBox->Area == Web->Area();
+	const bool bPersonal = PersonalCarBox && PersonalCarBox->Area == Web->Area();
 	for (const FS47Rect& C : Web->Colliders())
 	{
 		if (bTruck && C.Id == TEXT("truck")) continue;
+		if (bPersonal && C.Id == TEXT("personalCar")) continue;
+		if (!C.bEnabled) continue; // (S47Props unblock: a building walked into now)
 		if (Pos.X + R <= C.MinX || Pos.X - R >= C.MaxX || Pos.Z + R <= C.MinZ || Pos.Z - R >= C.MaxZ) continue;
 		if (bX)
 		{
@@ -125,22 +138,29 @@ void AS47Walker::Resolve(bool bX, double Old)
 		V = Old;
 		if (InTruck(Pos.X, Pos.Z)) V = Was;
 	}
+	if (bPersonal)
+	{
+		if (InVehicle(*PersonalCarBox, Pos.X, Pos.Z, Radius))
+		{
+			double& V = bX ? Pos.X : Pos.Z;
+			const double Was = V; V = Old;
+			if (InVehicle(*PersonalCarBox, Pos.X, Pos.Z, Radius)) V = Was;
+		}
+	}
 }
 
 bool AS47Walker::InTruck(double X, double Z) const
 {
 	if (!TruckBox) return false;
 	// into the truck's terms (World.ts AboutUp turned back), and the distance from its box
-	const FTruckBox& B = *TruckBox;
-	const double C = FMath::Cos(B.Heading), S = FMath::Sin(B.Heading), Dx = X - B.X, Dz = Z - B.Z;
-	const double Lx = Dx * C - Dz * S, Lz = Dx * S + Dz * C;
-	const double Ox = FMath::Max(0.0, FMath::Abs(Lx) - B.HalfW), Oz = FMath::Max(0.0, FMath::Abs(Lz) - B.HalfL);
-	return Ox * Ox + Oz * Oz < Radius * Radius;
+	return InVehicle(*TruckBox, X, Z, Radius);
 }
 
 double AS47Walker::FloorAt(double X, double Z) const
 {
-	// the open land's ground (US47World), then Player.floor, supplied by World.enter for SARO and Caliche
+	// a prop's own floor first (Unreal only: the gas station one walks into, S47Props), then the open
+	// land's ground (US47World), then Player.floor, supplied by World.enter for SARO and Caliche
+	{ const double Y = AS47Props::FloorAt(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	if (LandFloor) { const double Y = LandFloor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	if (Floor) { const double Y = Floor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	// the highest surface under the player, up to a stair step over the current floor (a desk
@@ -160,10 +180,12 @@ void AS47Walker::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	const double Dt = DeltaSeconds;
 	APlayerController* PC = Cast<APlayerController>(GetController());
+	const bool bInput = bActive && !S47Startup::Blocking();
 	Focused.Reset();
 	// the keys and the look, as Input.ts gives them
 	double LookX = 0, LookY = 0, Mx = 0, Mz = 0;
-	if (PC && bActive)
+	FVector2D VehicleMove = FVector2D::ZeroVector;
+	if (PC && bInput)
 	{
 		float DX = 0, DY = 0;
 		PC->GetInputMouseDelta(DX, DY);
@@ -173,18 +195,25 @@ void AS47Walker::Tick(float DeltaSeconds)
 		// (the settings' look speed and invert, main.ts step: player.look(look.x, invertY ? -look.y : look.y))
 		LookX = FMath::Clamp(DX, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
 		LookY = (bInvertY ? 1.0 : -1.0) * FMath::Clamp(DY, -200.f, 200.f) * 0.0022 * 4.0 * Sensitivity;
+		const FVector2D PadLook = S47Gamepad::Look(Dt, PadLookSpeed, bPadInvertY);
+		LookX += PadLook.X; LookY += PadLook.Y;
+		const FVector2D PadMove = S47Gamepad::Move();
 		// (the keys as bound in Settings > Controls: S47Keys, W A S D and the arrows unless changed)
 		if (S47Keys::Down(PC, TEXT("forward"))) Mz -= 1;
 		if (S47Keys::Down(PC, TEXT("back"))) Mz += 1;
 		if (S47Keys::Down(PC, TEXT("left"))) Mx -= 1;
 		if (S47Keys::Down(PC, TEXT("right"))) Mx += 1;
-		if (TestMove) { Mx = TestMove->X; Mz = TestMove->Y; }
+		// Keep car controls separate before radial normalization of walking input.
+		const FVector2D PadDrive = S47Gamepad::Drive();
+		VehicleMove = FVector2D(Mx + PadDrive.X, Mz - PadDrive.Y);
+		Mx += PadMove.X; Mz += PadMove.Y;
+		if (TestMove) { Mx = TestMove->X; Mz = TestMove->Y; VehicleMove = *TestMove; }
 		const double L = FMath::Sqrt(Mx * Mx + Mz * Mz);
 		if (L > 1) { Mx /= L; Mz /= L; }
 	}
 	// the camera held by something else (the truck's cab): its eye, no walking and no picking
 	FS47View View;
-	if (CameraOverride && CameraOverride(Dt, FVector2D(Mx, Mz), FVector2D(LookX, LookY), View))
+	if (CameraOverride && CameraOverride(Dt, VehicleMove, FVector2D(LookX, LookY), View))
 	{
 		if (bAir) Land(true); // (no jump goes on in the truck)
 		SetActorLocationAndRotation(ToUE(View.Eye), CameraRotation(View.Yaw, View.Pitch, View.Roll));
@@ -194,7 +223,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 		if (Web.IsValid()) Web->SetPlayerEye(ToUE(View.Eye));
 		return;
 	}
-	if (PC && bActive)
+	if (PC && bInput)
 	{
 		Look(LookX * LookFine, LookY * LookFine);
 		const bool bRun = S47Keys::Down(PC, TEXT("run")) || (TestMove && bTestRun);
@@ -239,16 +268,16 @@ void AS47Walker::Tick(float DeltaSeconds)
 		else Dip = -LAND_DIP * LandK * FMath::Sin(UE_DOUBLE_PI * LandT / LAND_SECS);
 	}
 	Shake = FMath::Max(0.0, Shake - Dt * 1.4);
-	const double Sh = Shake * Shake;
-	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Dip + Eye + FMath::Sin(Bob) * 0.018 + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
-	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, FMath::Sin(Bob * 0.5) * 0.004));
+	const double Sh = bHeadMotion ? Shake * Shake : 0;
+	const FVector EyeThree(Pos.X + (FMath::FRand() - 0.5) * Sh * 0.08, FloorY + Lift + Eye + (bHeadMotion ? Dip + FMath::Sin(Bob) * 0.018 : 0) + (FMath::FRand() - 0.5) * Sh * 0.06, Pos.Z + (FMath::FRand() - 0.5) * Sh * 0.08);
+	SetActorLocationAndRotation(ToUE(EyeThree), CameraRotation(Yaw, Pitch + (FMath::FRand() - 0.5) * Sh * 0.02, bHeadMotion ? FMath::Sin(Bob * 0.5) * 0.004 : 0));
 	FVector2D Size(16, 9);
 	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
 	Camera->SetFieldOfView(HorizontalFov(Fov, float(Size.X / FMath::Max(1.0, Size.Y))));
 	if (Web.IsValid()) Web->SetPlayerEye(ToUE(EyeThree));
 
 	// Interaction.update: what the line of sight picks, within its range, with something to offer
-	if (!bActive || !Inter.IsValid()) return;
+	if (!bInput || !Inter.IsValid()) return;
 	Focused = Inter->Update(Camera->GetComponentLocation(), Camera->GetForwardVector());
 	if (!Focused.IsEmpty() && OnUse && PC && (S47Keys::Pressed(PC, TEXT("use")) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton)))
 	{
