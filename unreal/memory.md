@@ -1,7 +1,17 @@
 # Minne for unreal/
 
+## Miljøgrafikk levert, 26. oktober 2026
+
+- `ArtSource/EnvironmentGraphics` inneholder 48 originale JPG-flater: seks kinoplakater til Plazas to utvendige og fire innvendige rammer, avskjedsark og billett, 12 lokale annonser/menyer, ti emballasje-/småtrykkflater, seks hverdagspapirer, ni arbeidsplasskilt/-blanketter og tre nabolagslapper. De supplerer de 31 tidligere dokumentbildene, totalt 79 rekvisittmotiver.
+- Finalene bruker 23 425 648 byte mot PNG-originalenes 149 498 003 byte, 84,3 prosent mindre. Progressive sRGB-JPG med 4:4:4, kvalitet 82, 84 eller 86, maksimal langkant 2048 piksler og hver fil under 650 KiB. Originaler og absolutte genereringsstier beholdes utenfor Git. Katalog, fullprompter, oversikt, offlinegalleri og kontrollfiler følger pakken.
+- Teknisk kontroll av alle 48 JPG-er og uavhengig visuell nærlesing av 96 katalogpunkter består. Galleriets 48 bildefelt/lenker, sju gruppefiltre og åpning av trykktekst er prøvd i lokal nettleser; ingen ødelagte lastede bilder. Kontrollen bekrefter kildeassets, ikke senere bruk i Unreal.
+- Stedsnavn, priser, åpningstekster, 1420 AM og SAROs fullnavn følger eksisterende kilder. Kinoplakatene fastsetter ikke nedleggelsesår. Fiktive produktmerker oppretter ingen nye butikker. Blanketter er tomme, kvitteringer er bakgrunnstrykk, og veikartet er bare et omslag. Foreslåtte plasseringer og mål er importveiledning.
+- Leveransen er flate fargeteksturer til senere import. Nye 3D-modeller, UV-/materialbinding, fysisk plassering og runtimeprøve inngår ikke. Dokumentenes eksisterende lesegater og hele spillinstallasjonen er urørt.
+- Felles Documents-konvertering bruker nå en stabil sRGB-profil slik at identiske kilder gir identiske JPG-bytes mellom prosesser. Alle 31 tidligere JPG-er, katalog-/genereringsdata og historiske kontroller er bytebevart. Galleribyggeren støtter miljøpakkens egne gruppenavn og tekster med eksisterende standarder bevart.
+
 ## Dokumentbilder levert, 26. oktober 2026
 
+- To nye brukerleverte obduksjonsmotiver er logget separat i [Documents/References/DaleAutopsy](ArtSource/Documents/References/DaleAutopsy/README.md) til mulig senere bruk i Dales private filer. JPG-kopier, motivbeskrivelser og kildehasher er bevart. Opphav/dato/sted og autentisitet er uavklart; ingen hendelses- eller runtimekobling er opprettet. De to referansene inngår ikke i de 79 ferdige rekvisittmotivene.
 - `ArtSource/Documents` har 31 originale imagegen-rekvisitter som progressive sRGB-JPG: mappeomslag, alle sju EveningShift-ark og seks private Dale-utkast, 13 senere arkivark og fire nye valgfrie bakgrunnsark. Galleri, transkripsjoner, prompter, kildehasher og kontrollverktøy følger med.
 - JPG-filene bruker 12 143 169 byte mot PNG-originalenes 89 438 281 byte, 86,4 prosent mindre. Originalene er bevart utenfor Git. Konvertering endrer ikke tekst eller beskjæring.
 - 31 tekniske kontroller og uavhengig visuell nærlesing av alle finaler består. E15 følger crop B-komposisjonen som generert nytolkning; det er ikke en pikselidentisk kildebeskjæring. E09A er kvalitativ figur, ikke et nytt målsatt overlegg. E10 dateres i tittel/katalog; kildebrødteksten har ikke trykt årstall.

@@ -29,8 +29,11 @@ REPO = Path(__file__).resolve().parents[4]
 MAX_EDGE = 2048
 MAX_BYTES = 650 * 1024
 QUALITIES = (86, 84, 82, 80, 78)
-SRGB_PROFILE = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB"))
-SRGB_ICC = SRGB_PROFILE.tobytes()
+# Unmodified profile extracted from this delivery's original 01-dale-folder.jpg.
+# ImageCms.createProfile stamps its creation time, making otherwise identical
+# JPG bytes drift between processes. Reuse the checked-in, valid profile.
+SRGB_ICC = Path(__file__).with_name("sRGB.icc").read_bytes()
+SRGB_PROFILE = ImageCms.ImageCmsProfile(io.BytesIO(SRGB_ICC))
 
 
 def sha256(data: bytes) -> str:

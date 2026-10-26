@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "logged_at_utc": "2026-10-26T14:30:32+00:00",
+  "purpose_nb": "Brukerleverte bildereferanser til mulig senere bruk i Dales private filer.",
+  "status": "reference_only_not_integrated",
+  "authenticity": "not_established",
+  "notes_nb": [
+    "Motivbeskrivelsene bygger bare på det som er synlig i vedleggene.",
+    "Opphav, sted, dato og eventuell sammenheng mellom motivene er ukjent.",
+    "Ingen kobling til 1947, SARO eller eksisterende hendelsesbevis fastsettes av denne referanseloggen.",
+    "JPG-kopiene er formatkonvertert uten beskjæring, oppskalering, tegning eller tekstendring. PNG-originalene er arkivert utenfor Git."
+  ],
+  "images": [
+    {
+      "id": "DALE_AUTOPSY_REF_01",
+      "tool": "Pillow format conversion using Documents/Tools/prepare_assets.py",
+      "source": {
+        "basename": "codex-clipboard-13e76184-81c0-448d-84bd-2510176de5dd.png",
+        "sha256": "72cbde5b754772bdd9f8f33f51ab5bc3a8e729541813d6de752739017ba4478e",
+        "bytes": 1508894,
+        "format": "PNG",
+        "mode": "RGB",
+        "width": 1024,
+        "height": 1024
+      },
+      "jpg": {
+        "filename": "jpg/01-dale-autopsy-reference.jpg",
+        "sha256": "9630c4ab6e4596820857e3bc1ef5a129b3e908136db383afa2fbff5e9de1a2fd",
+        "bytes": 119082,
+        "width": 1024,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "processing": {
+        "operations": [
+          "PNG decoding",
+          "sRGB color management",
+          "downscale only if longest edge exceeds 2048",
+          "JPEG encoding"
+        ],
+        "color_management": "assumed sRGB; embedded sRGB profile",
+        "cropping": false,
+        "drawing": false,
+        "text_editing": false,
+        "upscaling": false
+      },
+      "origin": "user_attachment",
+      "reference_only": true,
+      "creator": "unknown",
+      "depicted_date": "unknown",
+      "creation_method": "unknown",
+      "description_nb": "Svart-hvitt motiv sett fra siden: humanoid skapning på operasjonsbord, to personer i kirurgiklær, hengende lampe og en mørkkledd observatør med hatt."
+    },
+    {
+      "id": "DALE_AUTOPSY_REF_02",
+      "tool": "Pillow format conversion using Documents/Tools/prepare_assets.py",
+      "source": {
+        "basename": "codex-clipboard-872aecbe-be99-4a98-867b-16887bc71524.png",
+        "sha256": "4d870cfd4f179d6cdb5aaf795e8d34d37880ce975e2c563fe62692845651eb76",
+        "bytes": 1701284,
+        "format": "PNG",
+        "mode": "RGB",
+        "width": 1184,
+        "height": 880
+      },
+      "jpg": {
+        "filename": "jpg/02-dale-autopsy-reference.jpg",
+        "sha256": "56c9004fd1d55984e088d2b07c1625013177cc589274207b76eea068eee5675d",
+        "bytes": 148723,
+        "width": 1184,
+        "height": 880,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "processing": {
+        "operations": [
+          "PNG decoding",
+          "sRGB color management",
+          "downscale only if longest edge exceeds 2048",
+          "JPEG encoding"
+        ],
+        "color_management": "assumed sRGB; embedded sRGB profile",
+        "cropping": false,
+        "drawing": false,
+        "text_editing": false,
+        "upscaling": false
+      },
+      "origin": "user_attachment",
+      "reference_only": true,
+      "creator": "unknown",
+      "depicted_date": "unknown",
+      "creation_method": "unknown",
+      "description_nb": "Svart-hvitt motiv sett skrått ovenfra: humanoid skapning på operasjonsbord, to personer i kirurgiklær, undersøkelseslampe og mørkkledde observatører med hatt."
+    }
+  ]
+}
