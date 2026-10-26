@@ -1,5 +1,9 @@
 # Minne for unreal/
 
+## SC01 overtatt og pakket kandidat under bygg, 26.10.2026 kl. 11:41 CET
+
+Aktiv gren er `codex/story-sc01` i `/home/tom/scratch-bm/wt/horror-h01`. Kodecommit `f935b237180af1cd5c1aca31cf683dcbc4338b82` har SC01-koordinator, alle manus-ID-er registrert, faktiske modeller og fem stemmetakes. Etter rettet filmreserve består editorprøven 120 kontroller, 17 disk-/Flow-restores og 139,99 m gange. Pakket kandidat `Signal47-sc01-20261026/candidate-r1/Linux` bygges fra 14 006 frosne kilde-/Content-filer, med før-/etterkontroll og separat byggekvittering. Ingen pakket eller installert SC01-aksept er ført. NP1 er fortsatt installert standard. Den gamle chatten stoppet med modellkapasitetsfeil; Tom ba denne chatten overta hele det autoriserte arbeidet.
+
 ## Godkjent historieplan og arbeidsstart, 26.10.2026 kl. 09:36 CET
 
 [HISTORIE_IMPLEMENTERINGSPLAN.md](HISTORIE_IMPLEMENTERINGSPLAN.md) er styrende gjennomføringsplan for alle13 hovedscenarioer og79 eksisterende enkeltscener. Tom valgte full produksjon, separat commit/PR/fletting og installasjon per SC, samt spillbar eksisterende fortsettelse mens senere scenarioer mangler. Hver lagret sak beholder sin innholdsrevisjon uten nye bakoverrettede krav. SC01 er under arbeid i isolert arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/horror-h01`, fra core `1c929b76`. Alle senere SC og alle samlede H-kort står åpne. H01 krever SC01/02, H02 SC02 til05, H04 SC07/08 og H05 SC08/09; øvrige lukkepunkter står i planen. Ingen planstatus er spillaksept; NP1 er fortsatt dokumentert installert standard.

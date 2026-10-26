@@ -538,3 +538,11 @@ Tom ba den nye chatten overta arbeidet fra `01a176f6-16a2-7b60-a50e-cde5bdea863b
 Root overtar integrasjon, sekvensielle Unreal-jobber og levering. Tre avgrensede hjelpere undersøker runtime, medier og installasjonsbevis. Kildegjennomgangen fant at en tømt friroll kunne sperre obligatorisk lampereferanse; siste ramme reserveres med tydelig spillertekst og negativ prøve før ny pakking. Pakket High/Low, begge faktiske ankomstruter, fersk Continue og leveringskvittering gjenstår. SC02 starter først etter levert og kvittert SC01.
 
 Prosjektbiblioteket er søkt med behov og Unreal-teknologi, inkludert ett bredere søk. UE 5.8-profilen `quodsoler/unreal-engine-skills` er kontrollert som tilleggsreferanse og merket UNVERIFIED i biblioteket. Ingen tredjepartkode er kopiert; prosjektets egne koordinator-, test-, guard- og installasjonsløyper brukes.
+
+## 26.10.2026 kl. 11:41 CET: SC01 kildecommittet og pakking startet
+
+Kode `f935b237` består editorens 120 kontroller/17 disk-/Flow-restores, manusets 24 kontrakter, ni eksportkontroller, stemmekatalog og 14 isolerte installasjonstester. Kandidat r1 bygges sekvensielt med nøyaktig kanonisk RunUAT-oppskrift, 14 006 frosne inputs og hashbundet før-/etterkontroll. Endret kilde etter koden er bare dokumentasjon. Ingen pakket PASS, PR/fletting eller installasjon hevdes ennå.
+
+## 26.10.2026 kl. 11:55 CET: R1 funksjon består, RT-minne feiler, native r2-proxy produsert
+
+R1s pakkede kontrakt består 120/17, men 80,7112 MiB er over uendret80 MiB-grense. R1 leveres ikke. Håndens separate RT-proxy er produsert via lokal UE5.8.4-profil, med full LOD0/fallback/kollisjon19388 og alle andre6 SC01-assets bytebevart. Native strukturert rapport består; bevisrot fører separat etterkontroll for manglende verbose-loggmarkør. R2 må pakkes og prøves før ny aksept.

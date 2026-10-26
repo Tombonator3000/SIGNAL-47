@@ -35,3 +35,11 @@ Ny kjøring `editor-live-takeover-01` består etter filmrettingen: 120 kontrolle
 Alle fem faktiske SC01-takes har i editorprøven fullført ekte telefonruting med positive source-/routed-samples. Manusets 24 Python-kontrakter, ni eksportkontroller, stemmekatalogen og installerens 14 isolerte prøver består. Generert stemmemanifest er presisert slik at hele forfatterpakkens status ikke forveksles med de fem importerte SC01-takesene. Streng ASR har fortsatt ett SARO/Sorrow-egennavnavvik; menneskelig lytting er UNVERIFIED.
 
 Dette ferdigmelder ingen pakket kandidat eller installasjon. Neste kontroll er samme kilderevisjon som pakket High/Low, usett-hånd-variant, begge komplette ankomstruter, fersk vanlig Continue og avgrenset regresjon.
+
+## R1 pakket prøve og lokal RT-retting
+
+R1 fra `f935b237` består den komplette pakkede SC01-prøven med 120 kontroller og 17 disk-/Flow-restores. Minnemålingen feiler separat: 80,7112 MiB AlwaysResident RT-geometri overstiger uendret grense på 80 MiB. R1 er derfor ikke leveringsakseptert. Byggekvitteringens første etterkontroll avviste Unreals to genererte FileOpenOrder-logger; disse er bevart og bare de opprinnelig rene kildeversjonene gjenopprettet. Full kontroll av alle 14 006 inputs og 40 uendrede pakkefiler består i `packaging-r1-complete`.
+
+Native r2-import består alle rapporterte kontroller. Bare håndasseten er endret: egen redusert RT-proxy, full synlig kilde/fallback og kollisjon på 19 388 trekanter. Blender/FBX og de andre seks SC01-assetene er bytebevart. Ingen global terskel eller RT-innstilling endres. Testhjelperen forventet en verbose loggmelding som ikke skrives på commandletens displaynivå; denne FAIL-rapporten beholdes. Faktisk vellykket Python-commandlet, exitcode0 og strukturert native PASS er kontrollert separat i `native-import-r2-audit.json`. Ny pakket minne-/bildeprøve er nødvendig.
+
+Bildedriveren venter nå på at merkene faktisk er tegnet før den etterfølgende se-bort-prøven. Dette retter tidsvalget for bevisbildet; inspeksjonsreglene er uendret.

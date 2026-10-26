@@ -371,7 +371,7 @@ Opprettet 26. oktober 2026. SC01 er tatt opp til arbeid; ingen av de nye scenari
 
 | SC-ID | Scenario | H-kort | Status | Kodecommit | Pakket test | PR | Mergecommit | Installasjon | Åpne begrensninger |
 |---|---|---|---|---|---|---|---|---|---|
-| SC01 | Den første overflygningen | H01 | Under arbeid | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Verdensintegrasjon, medier, lagring og pakket aksept |
+| SC01 | Den første overflygningen | H01 | Kilde ferdig | f935b237 | Under bygg, ikke akseptert | Ikke opprettet | Ikke flettet | Ikke utført | Pakket High/Low, usett hendelse, ankomster, fersk Continue og levering |
 | SC02 | Returen til bilen | H01/H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC01 og møte 1 |
 | SC03 | Hjelpen som kom | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC02, BY01 og Ortiz-produksjon |
 | SC04 | Sikre og kom i dekning | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC03, plansperre og møte 2/3 |

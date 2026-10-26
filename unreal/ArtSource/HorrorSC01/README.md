@@ -9,3 +9,28 @@ Spillgeometrien ligger ved østre nordrute i kontrollrommet. Glasset står ved z
 Sporene kontrolleres med faktisk sikt fra trygg side og to tilstander på en separat ekte romlampe. Å se gjennom et lesepanel gir ingen observasjon. `FS47HorrorVisual` produserer bare lokale verdensfakta; historiekoordinatoren eier scenetekst og progresjon.
 
 Blender-eksport er utført. Native import, pakket kjøring og pikselkontroll får egne faktiske kvitteringer i SC01-leveransen; kildegeometri alene attesterer ingen spilltest.
+
+## Lokal RT-proxy for hånden
+
+Første pakkede kandidat r1 målte 80,7112 MiB AlwaysResident RT-geometri mot uendret grense på 80 MiB. NP1 målte 79,3446 MiB. Importskriptet har derfor en avgrenset native profil bare for hånden. Original Blender-kilde, FBX, materialer og synlig modell beholdes. Rasterens fallback og den komplekse kollisjonen bruker hele LOD0 med 19 388 trekanter; koden for observasjon og kollisjon endres ikke.
+
+UE 5.8.4 har ikke `ray_tracing_min_lod` på StaticMesh. Denne egenskapen tilhører SkeletalMesh. `FMeshRayTracingProxySettings` gir i stedet en egen redusert RT-representasjon. Motorens `StaticMeshBuilder.cpp` bygger denne bare når håndasseten har Nanite aktivert. Importen beholder alle opprinnelige trekanter og en uredusert renderfallback, og setter bare den separate RT-proxyen til 25 prosent med prosentmålet eksplisitt valgt. Prosjektets eksisterende `r.Nanite.ProjectEnabled=True` støtter denne byggeløypa. Ingen global RT-/Nanite-innstilling eller minnegrense endres.
+
+Ved import rapporteres faktisk render-LOD0, materialspor, mål, kollisjons-LOD og native proxyinnstillinger. Antallet trekanter i den dedikerte RT-proxyen er ikke eksponert i editorens Python-API; 4 847 er et mål, ikke et målt resultat. Faktisk RT-bruk, minne og High/Low-piksler må verifiseres i den nye pakkede kandidaten før profilen får aksept.
+
+Integrasjonseieren kan oppdatere bare håndasseten med `S47_SC01_RT_ONLY=1`. Denne modusen laster eksisterende materialer uten omskriving og kontrollerer SHA256 før/etter for de to andre meshene og alle materialassetene. Originalgeometrien hashkontrolleres også. Kjør bare når andre Unreal-/spilljobber er avsluttet, og bruk ny rapportfil for å bevare r1-beviset:
+
+```sh
+python3 unreal/Signal47/Scripts/unreal_guard.py require-idle
+S47_SC01_RT_ONLY=1 \
+S47_SC01_IMPORT_REPORT=/home/tom/scratch-bm/Signal47-sc01-20261026/native-import-r2.json \
+/home/tom/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd \
+  /home/tom/scratch-bm/wt/horror-h01/unreal/Signal47/Signal47.uproject \
+  -run=pythonscript \
+  -script=/home/tom/scratch-bm/wt/horror-h01/unreal/ArtSource/HorrorSC01/import_assets.py \
+  -unattended -nullrhi -nosplash -NoSound \
+  '-ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0' \
+  > /home/tom/scratch-bm/Signal47-sc01-20261026/native-import-r2.log 2>&1
+```
+
+Dette kildearbeidet hevder ingen utført r2-import, minnegevinst eller pakket aksept. Skriptet kan kjøres på nytt med samme kilder og profil; det oppretter ingen vanlig redusert render-LOD og beholder full kollisjonsgeometri.

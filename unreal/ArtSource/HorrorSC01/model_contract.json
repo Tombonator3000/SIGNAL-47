@@ -1,6 +1,20 @@
 {
   "authorship": "Original procedural Blender geometry for SIGNAL / 47, no external model sources.",
   "axes": "Blender metric Z-up; native UE import x,-y,z in centimetres.",
+  "native_rt_profile": {
+    "mesh": "SM_SC01_Hand",
+    "engine": "UE 5.8.4",
+    "method": "Nanite-enabled static mesh with a dedicated quarter-triangle ray tracing proxy; full rendering fallback and complex collision LOD0 are retained.",
+    "rendering_lod0_triangles": 19388,
+    "rendering_lod_count": 1,
+    "rendering_fallback_percent_triangles": 1.0,
+    "collision_lod": 0,
+    "rt_proxy_percent_triangles": 0.25,
+    "rt_proxy_relative_error": 0.0,
+    "rt_proxy_triangles_approximate_target": 4847,
+    "rt_proxy_triangle_count_measured": null,
+    "limits": "Native import checks properties, exact full rendering LOD0, material slots and bounds. Dedicated proxy triangle count is not exposed by editor Python. Packaged RT residency and actual High/Low images are separate acceptance. No global cvar or warning threshold changes."
+  },
   "parts": {
     "SM_SC01_Hand": {
       "vertices": 9706,

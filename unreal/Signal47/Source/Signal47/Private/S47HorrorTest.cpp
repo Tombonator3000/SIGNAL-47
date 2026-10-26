@@ -531,8 +531,17 @@ void FS47HorrorTest::Step(double Dt)
 		if(!Check(V.MarksPresent() && V.HandSeen()!=T.bMissHand && !H.Complete(),T.bMissHand?
 		 TEXT("unwitnessed hand leaves physical exterior marks without a body sighting or completed inspection"):
 		 TEXT("actually observed hand leaves real exterior marks without granting completed inspection")))return;
-		Shot(TEXT("window-marks-before-check"));
-		// A call from across the room, looking away, is a refusal, not an observation.
+		Aim(Target(TEXT("horror:marks")));Stage(379,.3);return;
+	}
+	if(T.Stage==379)
+	{
+		// Screenshot requests are deferred until the frame renders. Keep the
+		// actual marks in view until that capture has finished before looking away.
+		Shot(TEXT("window-marks-before-check"));Stage(3791,.2);return;
+	}
+	if(T.Stage==3791)
+	{
+		// Looking at the marks alone never grants an inspection interaction.
 		Aim(FVector(-10,1.5,8));Stage(380,.3);return;
 	}
 	if(T.Stage==380)
