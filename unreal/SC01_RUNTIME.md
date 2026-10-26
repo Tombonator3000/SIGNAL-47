@@ -1,53 +1,53 @@
 # SC01: Den første overflygningen
 
-Arbeidsgren: `codex/story-sc01`. Gjennomføringen følger [den vedtatte planen](HISTORIE_IMPLEMENTERINGSPLAN.md). Dokumentasjonen av hovedplanen er flettet gjennom PR166 i `5f14e4ce`.
+SC01s lokale, pakkede tekniske aksept består. Testet kilde er `dbae31775d3690383417c0f3652de16fb8ac00ca` på `codex/story-sc01`, etter [den vedtatte gjennomføringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md). Runtime-PR, fletting og installasjon er ennå ikke utført. NP1 er fortsatt installert standard.
 
-## Omfang og sannhetsgrenser
+## Spillbar leveranse
 
-Ny kohort1 eier SC01 og fortsetter deretter gjennom eksisterende historie. Gamle saker og eksisterende innholdsrevisjoner får ingen nye bakoverrettede oppgaver. H01 forblir åpent til SC02 er levert. Alle79 manus-ID-er er eksportert, men bare SC01 får nye verdensprodusenter i denne leveransen.
+Nye saker får innholdsrevisjon 1 med normalrunde, kamera og faktisk instant-back-referanse. Normalprofilen er 1419.900 MHz, az 042, gain 55 og båndbredde 48. Spilleren prøver begge eksisterende utganger, sammenligner referanselampen direkte og gjennom glass og bruker en fysisk opak skjerm. En bevegelig original hånd/underarm kommer frem utenfor det kjente vinduet, trekkes bak veggkanten og etterlater fysisk glasspor. Undersøkelsen og dispatchrapporten beskriver bare faktiske observasjoner. Himmellyset kan overses.
 
-SC01 har fysisk normalrunde, kamera og faktisk instant-back-foto, kalibreringskvittering, begge eksisterende utganger, direkte/glasskontroll av referanselampen, opak skjerm, bevegelig original hånd utenfor glass, fysiske merker og en faktisk dispatchkontakt. Observasjoner følger kamera, sikt og verdenshandling; dialogpresentasjon gir ingen fysisk kontrollkvittering. Oversett hånd gir ingen påstand om sett kropp.
+Den siste av 36 frie eksponeringer reserveres for den nødvendige referansen. Feil motiv gir ingen credit og bruker ikke reserven. De 35 foregående albumoppføringene bevares; prøvebudsjettets syntetiske oppføringer regnes ikke som fotografiske bevis. En tidligere intern sak som allerede mangler denne eksponeringen, beholder bilder og eksisterende progresjon uten oppdiktet referanse.
 
-HorrorStory beholder sine kilder og alle 16 dokumenter. Det deterministiske SC-/H-registeret plasserer de seks tidligere ukoblede H01/H02-scenene. Senere SC-er er fortsatt produksjonsarbeid.
+Lagring har versjonert scenario-, verdens- og manusstatus. Gamle saker og tidligere innholdsrevisjoner får ingen nye bakoverrettede krav. Fullført SC01 gjenåpnes ikke ved ny døråpning, og en oversett hånd gir ingen sett-kropp- eller rapportcredit. Ved produsert grense fortsetter saken gjennom eksisterende historie. H01 forblir åpent til SC02 er levert. Registeret har alle 79 manus-ID-er, men senere scenarioer har fortsatt åpne verdensprodusenter.
 
-## Kontroller før pakket aksept
+## Kontroller på samme pakke
 
-- Manusgenerator og 24 Python-kontrakter består.
-- Editorbygg består etter retting av kompilatorfunn.
-- Native import består for original hånd, glasspor og skjermspile, med eksakte trekanttall, mål, akser og kildehash.
-- Fem faktiske SC01-takes er produsert og importert, 35,07 sekunder i 48 kHz PCM16 mono. Teknisk lyd/hash/timing består. Fire har eksakt ASR; SARO transkriberes som Sorrow i ett egennavn. Menneskelig lytting er UNVERIFIED.
-- Editorens samlede selvtest består 1501 kontroller. Dette er ikke pakket aksept.
+| Kontroll | Faktisk resultat |
+|---|---|
+| Kilde og medier | 24 manuskontrakter, ni eksportkontroller, stemmekatalog og 14 isolerte installerprøver består |
+| Pakket selvtest | 1 501 kontroller består |
+| SC01 High og Low | 120 kontroller og 17 disk-/Flow-restores hver, 140,00 m native gange |
+| Oversett hånd | 112 kontroller og 16 restores, uten oppdiktet kropp eller rapport |
+| Ankomst | Både direkte og burger, faktisk kjøring/parkering og overlevering; én ankomst per sak |
+| Eksisterende historie | Kontrollrom, T01 53/19, T02 65/15, Dale 191/5, LineLights 12/3, feltfoto/mørkerom og hele eksisterende finale består |
+| Fersk vanlig Continue | Fem separate prosesser fra før normalrunden, midt i vindushendelsen, etter den, før readback og etter fullføring/gjenåpnet dør |
+| Visuell kontroll | 32 originale PNG/JPEG-er er faktisk vurdert, inklusive High/Low, ankomster, Continue, feltprint og belyst bil nær/fjernt |
 
-Første liveprøve fant manglende tastaturfokus i samtalepanelene; produksjonsknappene får nå fokus etter linjeskifte. Videre faktisk kjøring har bestått innsamling/kalibrering, begge native utganger, utvendig og gjennom-glass-lampetest, faktisk foto, skjerming, modalpause og bevegelse av hånden samt disk-/Flow-restores. Prøven fant deretter at sikting mot tomrom mellom smale fingermerker ikke kunne velge inspeksjonen. En avgrenset fysisk inspeksjonsflate er lagt til, med separat siktkrav til synlig originalgeometri; ny kjøring pågår.
+Totalt 21 isolerte pakkekjøringer er gjennomført, inklusive to belyste bilopptak etter utilstrekkelige nattbilder. Prøvene bruker native gange/Resolve, faktiske siktråler, ordinær fotografering og fokuserte Slate-knapper der kontrakten krever det. Forberedte startposisjoner og senere kapittelhopp er testfixtures. Dette er ikke en menneskelig gjennomspilling av hele natten.
 
-Uavhengig kildegjennomgang fant og rettet gjenåpning av fullført SC01 ved senere døråpning, reserve-JPEG som falskt fotobevis, lydkvittering ved mute, senere lysoverskriving og ugyldige ventende scener. Manglende fotobevis eller ugyldig fysisk lagring beholder eksisterende saksprogresjon uten nye SC01-porter.
+Continue-kildene er faktiske FS47SaveStore-filer kopiert til egne profiler. Prosessene starter på tittelen med vanlig Continue, uten kapittel-, tilstands- eller kontraktdriver. Logg, skjermbilde og bevarte kildestorer kontrolleres. Bare uttrykkelig registrerte nye ordinære autosaves er bevis på fersk serialisert tilstand; uendrede inputfiler er ingen minnedump.
 
-## Leveringsstatus
+## Modeller, lyd og RT-minne
 
-**Ikke levert.** Pakket High/Low-aksept, komplette ankomstruter med ny kohort, avgrenset regresjon, bilde-/RT-kontroll, runtime-PR, fletting og installasjon gjenstår.
+Original Blender, tre FBX-er og produksjonsskript beholdes. Native hånd har full LOD0 på 19 388 og redusert LOD1 på 5 816 trekanter, uten Nanite eller separat RT-proxy. Glasspor, skjermspile og fire materialer er bytebevart.
 
-Bevisrot: `/home/tom/scratch-bm/Signal47-sc01-20261026`. Tidlige FAIL-kjøringer beholdes. Shader-/pluginmeldinger i editor og editorens RT-varsel er ikke bevis for pakket ytelse eller minne. Menneskelig frykt, forståelse, lytting, fysisk Xbox og helnatt er fortsatt egne prøver.
+Den eksisterende krediterte Fairheaven SW84-fullbilen får ordinære LOD-er 19 461/5 837. Full LOD0s 25 919 kildeposisjoner, trekanter og grenser er hashkontrollert uendret. Åtte materialbindinger, 18 glTF-/buffer-/teksturfiler og 25 øvrige native assets er bevart. Body/dør og kreditering er uendret. Samlet cullingboks omfatter LOD1s avvik under 2 cm. Reproduserbar import er avgrenset til fullbilens eksakte asset.
 
-## Overtatt kontroll 26. oktober 2026
+Endelig måling viser 79,8043 MiB AlwaysResident RT-geometri i 197 oppvarmede samples, under eksisterende 80 MiB-varselgrense. Pool 400 MiB, prosentgrense 20 og synlige varsler er uendret. Dette måler den aktuelle residensprøven, ikke total VRAM eller generell ytelse. R1 målte 80,7112 MiB og R2/R3 80,0648 MiB; de opprinnelige FAIL-bevisene er beholdt.
 
-Ny kjøring `editor-live-takeover-01` består etter filmrettingen: 120 kontroller, 17 disk-/Flow-restores og 139,99 m native gange. 35 eksplisitt syntetiske albumoppføringer er bare budsjettfixture; den siste referansen eksponeres faktisk gjennom vanlig Shutter. Feil motiv forbruker ikke reserven. Tidligere helt tom intern kohort beholder alle bilder og eksisterende progresjon uten oppdiktet referanse.
+Fem faktiske stemmetakes varer 35,07 sekunder i PCM16 mono 48 kHz. Alle fem fullfører telefonruting med positive source-/routed-samples i den pakkede High-prøven. Teknisk fil-, hash-, import- og avspillingskontroll består. Fire takes har eksakt ASR; ett egennavn gir SARO/Sorrow-avvik i streng ASR. Menneskelig lytting, stemmelikhet og emosjonell vurdering er UNVERIFIED.
 
-Alle fem faktiske SC01-takes har i editorprøven fullført ekte telefonruting med positive source-/routed-samples. Manusets 24 Python-kontrakter, ni eksportkontroller, stemmekatalogen og installerens 14 isolerte prøver består. Generert stemmemanifest er presisert slik at hele forfatterpakkens status ikke forveksles med de fem importerte SC01-takesene. Streng ASR har fortsatt ett SARO/Sorrow-egennavnavvik; menneskelig lytting er UNVERIFIED.
+Glassmerkene er svake ved bildets avstand og delvis dekket av interaksjonstekst. Toast dekker deler av hånden i enkelte bilder. Tidlige D01-telefonbilder er tatt mellom linjer; senere SC01-overlevering er lesbar. Fjernbilen er liten i bildet, så bare grov fjernvisning er visuelt attestert. Fysisk Xbox, menneskelig frykt/forståelse/tempo og ubrutt helnatt er egne åpne prøver.
 
-Dette ferdigmelder ingen pakket kandidat eller installasjon. Neste kontroll er samme kilderevisjon som pakket High/Low, usett-hånd-variant, begge komplette ankomstruter, fersk vanlig Continue og avgrenset regresjon.
+## Kilde- og bevisbinding
 
-## R1 pakket prøve og lokal RT-retting
+Bevisrot: `/home/tom/scratch-bm/Signal47-sc01-20261026`.
 
-R1 fra `f935b237` består den komplette pakkede SC01-prøven med 120 kontroller og 17 disk-/Flow-restores. Minnemålingen feiler separat: 80,7112 MiB AlwaysResident RT-geometri overstiger uendret grense på 80 MiB. R1 er derfor ikke leveringsakseptert. Byggekvitteringens første etterkontroll avviste Unreals to genererte FileOpenOrder-logger; disse er bevart og bare de opprinnelig rene kildeversjonene gjenopprettet. Full kontroll av alle 14 006 inputs og 40 uendrede pakkefiler består i `packaging-r1-complete`.
+- Kandidat: `candidate-r4/Linux`; 40 pakkefiler uten Saved.
+- Binær SHA256: `ecc5038c5d1f94e1afe00a5cd14d41c5a6b1ed5bcbb0b62f7f40c63a9e76956e`.
+- Payloadsnapshot SHA256: `6fbb03a9241828ac81cac09673eefdf601634e07ea15da7fff907817249c8af3`.
+- `packaging-r4/proof-fragment.json` binder faktisk BuildCookRun og alle 14 007 frosne kilde-/Content-inputs før og etter bygg, også lokale genererte/lisensierte avhengigheter.
+- `source-checks-r4.json`, `rt-memory-r4-final.json`, `media-runtime-r4.json`, `FINAL_VISUAL.json` og `continue-batch-1` fører de konkrete kontrollene og grensene.
+- `runtime-profile-archive-r4/manifest.json` verifiserer permanente, byteidentiske kopier av 21 fullførte testprofiler, 677 filer. Tidligere editor-/R1-/R2-/R3-bevis og FAIL-resultater bevares separat.
 
-Native r2-import består alle rapporterte kontroller. Bare håndasseten er endret: egen redusert RT-proxy, full synlig kilde/fallback og kollisjon på 19 388 trekanter. Blender/FBX og de andre seks SC01-assetene er bytebevart. Ingen global terskel eller RT-innstilling endres. Testhjelperen forventet en verbose loggmelding som ikke skrives på commandletens displaynivå; denne FAIL-rapporten beholdes. Faktisk vellykket Python-commandlet, exitcode0 og strukturert native PASS er kontrollert separat i `native-import-r2-audit.json`. Ny pakket minne-/bildeprøve er nødvendig.
-
-Bildedriveren venter nå på at merkene faktisk er tegnet før den etterfølgende se-bort-prøven. Dette retter tidsvalget for bevisbildet; inspeksjonsreglene er uendret.
-
-## Ordinære LOD-er etter målt R2/R3-grense
-
-R2 og R3 består hver den pakkede 120/17-kontrakten, men begge måler 80,0648 MiB AlwaysResident. Videre prosentjustering av den separate proxyen løste derfor ikke den gjenværende grensen. Motorens faktiske residensstyring beholder siste LOD obligatorisk; vanlige native LOD-er er valgt som enklere endelig løype.
-
-Native håndimport R4 består med full LOD0 på 19 388 og redusert LOD1 på 5 816 trekanter. Nanite og separat RT-proxy er av igjen. Glasspor, lamell og alle fire materialer er bytebevart. Fullbilens native kontroll består med LOD0 på 19 461 og LOD1 på 5 837, ved skjermgrense 0,15. Full LOD0s 25 919 kildeposisjoner, trekanttall og grenser er identiske før/etter; alle åtte materialbindinger, 18 glTF-/buffer-/teksturfiler, body-/dør-/material-/teksturassets og kreditering er bevart. Samlet cullingboks inkluderer LOD1s målte avvik under 2 cm og er kontrollert separat. MinLOD/NumStreamedLODs er ikke eksponert i denne Python-byggen; dette er ført uten oppdiktede standardverdier. Ingen globale strømme-/RT-/minneinnstillinger endres.
-
-Første native fullbilprøver avdekket Python-eksponering og forskjellen mellom LOD0-geometri og samlet LOD-boks. De opprinnelige FAIL-filene beholdes; endelig `free-rt-lods-r4d.json` og prosessrapporten består. R4s pakkede minne og High/Low-piksler må fortsatt prøves før levering.
+Byggets to genererte FileOpenOrder-logger bevares ved siden av kvitteringen før de opprinnelige rene kildebytesene restaureres. Ingen spillkode eller pakkefil endres i denne etterkontrollen. Endringer etter den testede kildecommitten skal være dokumentasjon frem til installasjon.

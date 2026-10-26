@@ -546,3 +546,11 @@ Kode `f935b237` består editorens 120 kontroller/17 disk-/Flow-restores, manuset
 ## 26.10.2026 kl. 11:55 CET: R1 funksjon består, RT-minne feiler, native r2-proxy produsert
 
 R1s pakkede kontrakt består 120/17, men 80,7112 MiB er over uendret80 MiB-grense. R1 leveres ikke. Håndens separate RT-proxy er produsert via lokal UE5.8.4-profil, med full LOD0/fallback/kollisjon19388 og alle andre6 SC01-assets bytebevart. Native strukturert rapport består; bevisrot fører separat etterkontroll for manglende verbose-loggmarkør. R2 må pakkes og prøves før ny aksept.
+
+## 26.10.2026 kl. 13:18 CET: SC01 R4 består lokal pakket teknisk aksept
+
+Testet kilde dbae3177 er pakket med faktisk BuildCookRun-kvittering, 14 007 frosne kilde-/Content-filer og 40 pakkefiler uten Saved. Alle 21 isolerte pakkekjøringer består, inklusive High/Low 120/17 hver, oversett hånd 112/16, begge native ankomster, fem ferske vanlige Continue, T01/T02/Dale/LineLights/felt/lab og eksisterende hel finale. Pakket selvtest 1 501. 32 originale bilder er faktisk vurdert; tekst-/avstands-/mørkegrenser er registrert, og for mørke bilprober er supplert med eksisterende diagnostisk noon-klokke. Dette endrer ingen spillets tidsregler.
+
+R1s RT 80,7112 og R2/R3s 80,0648 MiB var over uendret 80 MiB-grense. Endelige ordinære hånd- og bil-LOD-er gir 79,8043 MiB i 197 oppvarmede samples. Full LOD0, kildeposisjoner, Blender/FBX/glTF, materialer og kreditering er bevart; ingen global terskel er endret. Fem takes har faktisk fullført telefonruting med positive samples. Ett SARO/Sorrow-ASR-egennavnavvik og menneskelig lytting/frykt/tempo/fysisk Xbox/helnatt er fortsatt åpne. Gamle FAIL-bevis og alle kilder beholdes.
+
+21 fullførte testprofiler, 677 filer, er permanent kopiert og hashverifisert i runtime-profile-archive-r4. Personlige installerte Saved har egen lesende baseline med 40 filer/57 noder. Den eksterne aksepthjelperen er rettet til streng path/sha256-form uten å endre originale reviewrapporter. PR/fletting/installasjon gjenstår; NP1 er fortsatt standard og ingen senere SC eller H-kort ferdigmeldes.

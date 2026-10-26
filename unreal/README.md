@@ -1,6 +1,6 @@
 # SIGNAL / 47 i Unreal
 
-[Godkjent implementeringsplan for SC01 til SC13](HISTORIE_IMPLEMENTERINGSPLAN.md) styrer den nye historieintegrasjonen: full produksjon, test, PR/fletting og installasjon per scenario. SC01 er under arbeid; H-kort ferdigmeldes først når alle tilhørende scenarioer er levert. Tabellen i planen viser faktisk status.
+[Godkjent implementeringsplan for SC01 til SC13](HISTORIE_IMPLEMENTERINGSPLAN.md) styrer den nye historieintegrasjonen: full produksjon, test, PR/fletting og installasjon per scenario. [SC01s pakkede tekniske aksept består](SC01_RUNTIME.md); PR, fletting og installasjon gjenstår. H-kort ferdigmeldes først når alle tilhørende scenarioer er levert. Tabellen i planen viser faktisk status.
 
 Nyeste verifiserte standard er NP1: [kontorfunn, himmel og korrekt observasjonslagring](NIGHT_PRODUCTION_RUNTIME.md). Seks nye frivillige lesedokumenter, eget arrayserviceark, faktisk stor tekst/rulling og fem lagrede himmeltrinn er integrert. LineLights beholder reell observert del og gjenopptar korrekt. Installert ku-R2 er tatt med uendret. 17 pakkede kjøringer og28 vurderte originalbilder består. PR164 er flettet og samme pakke installert;40 payloadfiler og40 personlige Saved-filer er verifisert. Standardstarterens oppstart består. Den nye SC01 tilSC13-historien har produsert manusgrunnlag, mens kveldskoordinator, aktive møter og original VHS fortsatt står åpne.
 

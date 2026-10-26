@@ -2,9 +2,9 @@
 
 ## Godkjent gjennomføring: SC01 til SC13
 
-Følg [HISTORIE_IMPLEMENTERINGSPLAN.md](HISTORIE_IMPLEMENTERINGSPLAN.md), med scenariorekkefølge, H-koblinger, full produksjon og aksept-/leveringskrav. SC01 er under arbeid. Alle senere scenarioer er planlagt; ingen nye SC- eller H-leveranser er ferdigmeldt. Tidligere S-/I-/R2-/H-punkter er avhengigheter og kontrollgrunnlag for samme gjennomføring, ikke parallelle implementeringer.
+Følg [HISTORIE_IMPLEMENTERINGSPLAN.md](HISTORIE_IMPLEMENTERINGSPLAN.md), med scenariorekkefølge, H-koblinger, full produksjon og aksept-/leveringskrav. SC01s lokale pakkede tekniske aksept består; PR, fletting og installasjon gjenstår. Alle senere scenarioer er planlagt og alle H-kort er åpne. Tidligere S-/I-/R2-/H-punkter er avhengigheter og kontrollgrunnlag for samme gjennomføring, ikke parallelle implementeringer.
 
-- [ ] Lever SC01 med fysisk normalrunde, H01-dialog, vindushendelse, begrenset rapport, lagring og pakket aksept.
+- [ ] Lever SC01. Kilde `dbae3177` har normalrunde, H01-dialog, vindushendelse, rapport og lagring; 21 pakkekjøringer og 32 vurderte originalbilder består. Fletting og installasjon gjenstår; se [SC01_RUNTIME.md](SC01_RUNTIME.md).
 - [ ] Lever deretter SC02 til SC13 i rekkefølge, med egen testet PR/fletting og installasjon per SC.
 - [ ] Før separate H-kvitteringer ved SC02, SC05, SC06, SC08, SC09, SC10, SC11, SC12 og SC13 som angitt i planen.
 - [ ] Fullfør samlet helnatt-/kompatibilitetsaksept og før menneskelige UNVERIFIED-punkter ærlig.

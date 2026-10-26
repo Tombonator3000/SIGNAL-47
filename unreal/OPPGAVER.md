@@ -1,8 +1,8 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
-## SC01 overtatt etter avbrutt chat, 26.10.2026 kl. 11:30 CET
+## SC01 pakket teknisk aksept, 26.10.2026 kl. 13:18 CET
 
-Aktiv arbeidskopi er `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/story-sc01`. Root eier integrasjon, bygg, pakket test og levering. Hjelper `sc01_review` eier avgrenset retting av filmreserve i Horror/Chapter1 og kontraktdriver; `sc01_delivery_review` eier install-story.py og pakkekvittering; `sc01_media_review` eier lesende medie-/forfatterkontroll og fersk-Continue-forberedelse utenfor repoet. Alle Unreal-/GPU-jobber kjøres av root sekvensielt. Siste editorprøve bestod; ingen pakket eller installert SC01-aksept hevdes.
+Arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/story-sc01`, testet kilde `dbae3177`. Root eier integrasjon, alle sekvensielle Unreal-/GPU-jobber, PR/fletting og installasjon. `sc01_review` har kontrollert runtime og faktiske bilder, `sc01_delivery_review` har kontrollert pakke-/installasjonsbinding og `sc01_media_review` har kontrollert native modeller/lyd. Alle 21 pakkekjøringer består; 32 originalbilder er vurdert. [SC01_RUNTIME.md](SC01_RUNTIME.md) har faktiske resultater og åpne menneskelige prøver. NP1 er fortsatt standard inntil SC01 er flettet, installert og kvittert. H01 er åpent. SC02 har bare lesende forberedelse og starter ikke produksjon før SC01-kvitteringen.
 
 ## Historieintegrasjon SC01 til SC13, startet 26.10.2026 kl. 09:36 CET
 
