@@ -1,5 +1,62 @@
 # Todo for unreal/
 
+## Terreng og natur langs ruten, 26. oktober 2026
+
+- [x] Bryt opp de dominerende fjelltrappene og lag sammenhengende erosjon/skråningsfot i original Blender-geologi, med bevart vei/gangflate og områdetransform.
+- [x] Bruk åtte utvalgte eide Fab-modeller i sju grupper langs SARO-innkjøring, hovedvei og Caliche sør. Bind lavere stein til klippefot, gjør grus flekkvis og bevar åpne passasjer. Behold originalpakker og offentlig/private kildegrenser.
+- [x] Rett faktisk påviste R1-problemer og prøv R2: seks vurderte bilder, eksisterende selvtest, avgrenset RTCSV og én sammenhengende 2,62 km kjøre-/gangrute med ankomst, telefon og diskrestore. Ingen ny fullmatrise.
+- [x] Installer identisk R2 med 68 verifiserte payloadnoder og alle 70 Saved-noder/50 filer bevart. Se [TERRAIN_ROUTE_2026-10-26.md](TERRAIN_ROUTE_2026-10-26.md).
+- [x] Fullfør installert standardstarterkontroll: tolv kontroller PASS. Canonical prune har pensjonert tre gamle nærdetalj-payloadsett/21 filer, med gjeldende R2, to eldre pakker og særskilt beskyttet SC01 beholdt. Kilder/assets/Saved/bevis er bevart.
+
+## Detaljer tett på spilleren, 26. oktober 2026
+
+- [x] Modellér tre originale Blender-armaturer med tre LOD-er og bruk dem på tolv steder ved SARO. Rett innfesting, diffusorer, fysiske åpninger og kildeplassering; bevar inngang og kontor.
+- [x] Importer native assets, ta dem med i faktisk cook og fjern bare de erstattede gamle husene. Dagbilde ved inngangen og fløyskilt om natten er vurdert. Alle seks skyassets er bevart.
+- [x] Fullfør avgrenset R4-kontroll etter lokal justering av monumentlys: fem sluttbilder i tre kjøringer, faktisk strøm av/på og elleve kontroller i standardstarteren. Samme kandidat er installert med 68 verifiserte payloadnoder og alle 67 Saved-noder fra brukerens siste økt bevart. Se [NEAR_DETAILS_2026-10-26.md](NEAR_DETAILS_2026-10-26.md).
+- [x] Kjør canonical prune etter levert R4. Fire gamle payloadsett/28 genererte filer er pensjonert; R4 og eldre R3/R2 beholdes, med aktiv SC01-R4 særskilt beskyttet. Kilder, assets, lagringer og bevis er bevart.
+
+## Pure Sky på dagtid, 26. oktober 2026
+
+- [x] Integrer separat fotografisk daghimmel med CC0-kilde, repeterbar import og kreditering. Bevar originale nattassets, stjerner og hendelser.
+- [x] Samordne synlig himmel, solretning og skylight-capture. Bland ut fra 18:00 til 18:53 og bruk originalmaterialet direkte om natten.
+- [x] Bygg/pakk og sammenlign faktisk dag 17:20 og natt 03:00 mot R5. Kontroller mellomblanding 18:20, original himmel 18:53 og Low dag. Fem kandidatbilder er faktisk vurdert; ingen ny fullmatrise.
+- [x] Installer samme R1 og prøv faktisk standardstarter med isolert profil. Åtte kontroller består; 68 payloadnoder stemmer og 65 personlige Saved-noder er uendret. Se [SKY.md](SKY.md) for nøyaktig avgrensning og bevis.
+- [x] Kjør canonical prune etter levering. Gamle R4/R3-payloads er pensjonert; Pure Sky R1, to eldre R5-kopier og aktiv beskyttet SC01-R4 beholdes. Kilder, assets, lagringer og bevis er bevart.
+
+## Grafikkfunn til senere, 26. oktober 2026
+
+- [x] Vurder synlig kvalitetsløft per innsats og Poly Haven-videoen mot dagens sky-/lysrigg og RTX 3080 10 GB. Lagre anbefalt rekkefølge og første sammenhengende strekning i grafikknotatet. Ingen nye assets eller funksjoner implementert.
+- [x] Terrengformer og natur langs innkjøringen til SARO er levert i terreng-R2 med bevart dag-/nattehimmel og spillbare høyder. Se nyeste terrengstatus øverst.
+- [x] Lagre undersøkte Lumen-/FSSS-/skyggefunn og sammenhengen med terrengarbeidet i [RENDERING_RESEARCH_2026-10-26.md](RENDERING_RESEARCH_2026-10-26.md). Skill faktisk konfigurert bruk, Epic-påstander og uprøvde forslag. Ingen grafikkendring eller ny ytelsestest.
+- [ ] Ved senere optimalisering: vurder romlig oppdelte skyggegrenser for Caliche-sage/yucca og småstein, med fortsatt synlige modeller. Behold allerede shadowless gress og store lysblokkere; kontroller også distance-field-fallback.
+- [ ] Vurder eget Medium/Lumen Lite-nivå mellom dagens Low uten GI og High. Ikke anta at sg.GI=1 alene aktiverer GI, eller at Epics 2x-påstand betyr dobbelt FPS her.
+- [ ] Vurder svak innebygd FSSS på High/Ultra ved SARO i skumring/natt etter armaturretting. Definer Low av eksplisitt, og behold tetthet/eksponering i første avgrensede sammenligning.
+
+## Parkering, rampeinngang og kontor, R5, 26. oktober 2026
+
+- [x] Bytt tre store besøkstavler med to originale skilt på 46 × 60 cm, og lag faktisk Blender-inngangsparti ved vestre rampe med kort gangforbindelse.
+- [x] Registrer stopp hvor som helst i besøksområdet i enhver retning. Bevar faktisk bilstilling, vanlig stoppkontroll og reparasjon av gamle ventende ankomstlagringer.
+- [x] Åpne fysisk kontorrute allerede ved ankomst. Modellér rom, innredning, skap/skuff, nøkkel, dør, pult og stol ordentlig, og behold faktisk dokument-/lagrings- og strømtilstand.
+- [x] Bevar allerede installert NP1. Tilbakefør midlertidig R4 til verifisert NP1 før integrasjon; kombiner deretter NP1-tekster/lesestatus, skalering, himmel og LineLights med nye modeller i R5. SC01-kandidaten holdes separat.
+- [x] Gjennomfør seks fokuserte R5-kjøringer, 1 581 selvtester i samlet prøve, ni utvalgte bildevurderinger og målt RT maksimum 79,811 MiB. Ikke gjenta fullmatrisen uten konkret behov. Se [rapport](ARRIVAL_OFFICE_2026-10-26.md).
+- [x] Installer samme R5 med hash-/Saved-kvittering og prøv faktisk standardstarter: åtte kontroller PASS, 61 Saved-noder uendret. Canonical prune er anvendt på ti gamle pakker/70 genererte payloadfiler; R5, to eldre pakker og aktiv SC01-kandidat er bevart. R4-kvitteringen brukes ikke som R5-bevis.
+- [x] Modellér utvendige lampehus med feste, optikk og diffusor; rett monteringsgap bak fløylampene og parkeringsarmatur/emitter inne i veggen. Baldakinen har nå egen modell og én lyskilde. Modellarbeidet er ferdig; gjeldende leveringsstatus står i nærdetaljpunktet øverst.
+- [x] Installer offisiell Fab 0.0.13 i lokal UE og bruk faktisk plugin/innlogging til å importere ørkenpakken i separat FabStaging. 518 pakkefiler og 381 registrerte leverandørassets er kontrollert og bevart etter editorstopp.
+- [x] Last ned Old West Learning med offisiell Linux Epic Games Launcher Preview etter brukerens innlogging. Launcher viser Completed; prosjektet i FabLibrary har 3 227 filer og ingen eglpart. UE-pluginens tidligere «Install from launcher» er dermed fulgt gjennom riktig offisiell løype. Prosjektet er ikke åpnet/konvertert i UE.
+- [x] Velg og migrer nødvendige naturassets fra ørkenstaging og Old West Learning med opphavs-/avhengighetsbevis. Åtte modeller er plassert og kontrollert i terreng-R2. MetaHuman er separat. Den eldre Fab-editorens avslutningsfeil er historisk dokumentert i `fab-plugin/final-fab-report.json`.
+
+- [x] Vurder Epics Unreal Mesh Terrain mot gjeldende terreng. Lesende vurdering i `terrain-assessment.json` anbefaler eksisterende grunn pluss målrettede stein-/klippemesher; ingen ny implementering eller test er gjort.
+- [ ] Ved eventuell terrengproduksjon: sammenlign én avgrenset klippeprøve med innebygd Experimental Mesh Terrain. Bevar spillbare høydefunksjoner, historiegulv og delt SARO-/veitransform. Ingen full migrering eller kjøp er besluttet.
+
+NP1 har allerede levert de frivillige private dokumentene, separat arrayserviceark, tekstskalering og dagens femtrinns himmeladapter samt LineLights-lagring. Eldre åpne punkter nedenfor omfatter fortsatt den nye SC-koordinatoren, fysiske møter, VHS og fullnatt; de skal ikke brukes til å fjerne NP1-funksjoner eller utløse en dobbel implementering.
+
+## Fullført lokalt: levende/død ku, 26. oktober 2026
+
+- [x] Konsepter, redigerbar Blender-kilde, pakkede teksturer og FBX/glTF med tre LOD-er.
+- [x] Native import og kobling til eksisterende flokker og dødku, med beiting/frost/funn-/lagringslogikk beholdt.
+- [x] Bygg, 1 437 selvtester, ti pakkede scenarioer og ekstra Low-nærbilde. Se [avgrenset bildekontroll](COW_MODELS.md).
+- [x] R2 installert, standardstarter prøvd, 40 Saved-filer bevart og gjeldende pluss to eldre testpakker beholdt. Ingen ny PR/merge/push.
+
 ## Sammenflettet hovedscenario, randombevaring, himmel og Dale
 
 [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) er nå én hovedrekkefølge med 13 sammenhengende scenarioer. Tidligere revisjoner og alle 32 løsningskort ligger urørt i [MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md) som sekundært oppslagsverk. Oppgavene her presiserer eksisterende I-/R2-/H-arbeid; de er ikke en ekstra parallell implementering.

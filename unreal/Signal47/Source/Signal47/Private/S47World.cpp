@@ -839,7 +839,7 @@ void US47World::DriveToMotel(TFunction<void()> OnArrive)
 void US47World::DriveBack()
 {
 	FS47TripOpts O;
-	O.Hint = bCommuteVehicle ? TEXT("Park in any of the three VISITOR bays left of the SARO sign. Stop fully between the lines; either direction works.") : TEXT("The truck goes back on its pad by the service yard: up the ramp, and stop there.");
+	O.Hint = bCommuteVehicle ? TEXT("Park anywhere in the visitor parking area left of the SARO sign. Come to a full stop, then use the entrance by the ramp.") : TEXT("The truck goes back on its pad by the service yard: up the ramp, and stop there.");
 	O.OnArrive = [this]
 	{
 		if (OnArriveSaro) OnArriveSaro();
@@ -1004,7 +1004,7 @@ void US47World::TripStep(double Dt)
 	{
 		for (const TCHAR* Pl : PLACES)
 		{
-			if ((Pl == T.To || T.bLeft) && S47Legs::LegOf(Pl) == Id && (bCommuteVehicle && FString(Pl)==TEXT("saro") ? FS47EveningVisual::FitsArrivalBay(D.Pos,D.Heading) : InBox(ParkBox(Pl), D.Pos))) { Stop = Pl; break; }
+			if ((Pl == T.To || T.bLeft) && S47Legs::LegOf(Pl) == Id && (bCommuteVehicle && FString(Pl)==TEXT("saro") ? FS47EveningVisual::FitsArrivalArea(D.Pos,D.Heading) : InBox(ParkBox(Pl), D.Pos))) { Stop = Pl; break; }
 		}
 	}
 	if (!Stop.IsEmpty())
@@ -1017,7 +1017,7 @@ void US47World::TripStep(double Dt)
 
 TOptional<FS47Box2> US47World::ParkBox(const FString& Place) const
 {
-	if (Place == TEXT("saro") && bCommuteVehicle) return FS47Box2{-17.3,-8.3,11.55,17.05};
+	if (Place == TEXT("saro") && bCommuteVehicle) return FS47Box2{FS47EveningVisual::ArrivalMinX,FS47EveningVisual::ArrivalMaxX,FS47EveningVisual::ArrivalMinZ,FS47EveningVisual::ArrivalMaxZ};
 	if (Place == TEXT("diner")) return bLegsMade ? TOptional<FS47Box2>(DinerPark) : TOptional<FS47Box2>();
 	if (Place == TEXT("motel")) { const FLegRec* L = Legs.Find(TEXT("saro")); return L ? TOptional<FS47Box2>(static_cast<const FS47SaroDrive*>(L->Area.Get())->MotelPark) : TOptional<FS47Box2>(); }
 	const FLegRec* L = Legs.Find(Place);
@@ -1434,7 +1434,7 @@ bool US47World::TruckOnLot() const
 	const FS47Truck* T = TruckAt.IsEmpty() ? nullptr : TruckOf(TruckAt);
 	const TOptional<FS47Box2> B = TruckAt.IsEmpty() ? TOptional<FS47Box2>() : ParkBox(TruckAt);
 	if (!T || !B) return false;
-	if (bCommuteVehicle && TruckAt==TEXT("saro")) return FS47EveningVisual::FitsArrivalBay(T->Position,T->Rotation.Y);
+	if (bCommuteVehicle && TruckAt==TEXT("saro")) return FS47EveningVisual::FitsArrivalArea(T->Position,T->Rotation.Y);
 	const FVector& Q = T->Position;
 	return Q.X > B->MinX - 2 && Q.X < B->MaxX + 2 && Q.Z > B->MinZ - 2 && Q.Z < B->MaxZ + 2;
 }
@@ -1921,7 +1921,7 @@ void US47World::BeginCommute(const S47J::FObj& SavedCar)
  O.Leg = Leg0;
  O.AtPos = Saved ? FVector(S47J::Num(SavedCar,TEXT("x")), S47J::Num(SavedCar,TEXT("y")), S47J::Num(SavedCar,TEXT("z"))) : FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);
  O.AtHeading = Saved ? S47J::Num(SavedCar,TEXT("h")) : 0;
- O.Hint = TEXT("SARO: use any of the three VISITOR bays left of the sign. Supper at Mesa Diner is optional.");
+ O.Hint = TEXT("SARO: stop anywhere in the visitor parking area left of the sign. Supper at Mesa Diner is optional.");
  O.OnStart = [this] { Toast(S47Gamepad::UsingGamepad() ? TEXT("RT: throttle. LT: brake / reverse. LS: steer. D-pad down: radio. Stop and press A to get out. SARO is north through town; the diner stop is optional.") : TEXT("W/S: throttle and brake. A/D: steer. R: radio. Stop and press E to get out. SARO is north through town; the diner stop is optional."),9); };
  TruckAt = TEXT("saro");
  FString Route;

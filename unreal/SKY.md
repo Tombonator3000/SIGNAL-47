@@ -1,5 +1,40 @@
 # Volumetriske skyer og skumringslys (sky-pass)
 
+Den senere [R4-leveransen av nærdetaljer](NEAR_DETAILS_2026-10-26.md) viderefører hele dette dag-/nattoppsettet. Alle seks skyassets er byteidentiske med Pure Sky R1; ingen ny himmel- eller eksponeringsjustering inngår.
+
+## Pure Sky på dagtid, eksisterende natt bevart, 26. oktober 2026
+
+Tom godkjente første visuelle forbedring, med et uttrykkelig krav om å beholde nattehimmel, stjerner og hendelser som de er. En separat dagsvariant bruker [Kloppenheim 06 Pure Sky](https://polyhaven.com/a/kloppenheim_06_puresky), CC0, Greg Zaal og Jarod Guest. R1 er bygget, pakket og installert i den vanlige spillstarteren. Fem målrettede kandidatopptak, faktisk bildegjennomgang og installert oppstart består.
+
+Den gamle `M_Caliche_Sky` beholdes fysisk uendret. `/Game/Sky/PureSky/M_S47_PureSky` er en separat variant som blander fotografiet med hele den gamle himmeloppskriften. Ved dagsvekt null bytter selve komponenten tilbake til den gamle materialinstansen. Originale sky-, stjerne-, horisont- og cloudassets har identiske SHA-256 før og etter import. Det gamle nattpanoramaet blir ikke erstattet.
+
+- Full fotografisk daghimmel fra 07:00 til 18:00. Myk innblanding fra 06:00 til 07:00, etter eksisterende daggry og finale.
+- Myk utblanding fra 18:00 til 18:53. Eksisterende skumrings- og nattehimmel tar deretter hele bildet; den opprinnelige overgangen til full natt klokken 19:07 beholdes.
+- Sol, stjernefade, måne, komet, meteorer, stjernehull, lyn og historieklokker følger opprinnelig logikk. Den nye dagsvekten er en separat visuell kurve.
+- Fotohimmelens kompakte solflekk dempes lokalt i shaderen. Én sol tegnes ved spillets eksisterende solretning og går ned med den eksisterende solmasken. Original EXR er uendret. Horisonten vippes ikke.
+- De gamle volumskyene dempes bare så mye som fotografiet dekker. Vind/tid fortsetter, og alle nattverdier gjenopprettes ved null dagsvekt. Fotografiets egne skyer er statiske og er ikke et nytt værsystem.
+- Både synlig himmel og skylight-capture bruker fotografiet. Capture bruker lavere mip og utelater den smale solskiven, i tråd med eksisterende lavfrekvente capture. Low får også oppdatert fangst når dagsvekten endres, med den eksisterende tidsbegrensningen.
+- Manglende eller feil dagsasset gir gammel himmel som fallback. `-S47NoDaySky` velger samme gamle løsning for sammenligning. Natt bruker den gamle løsningen også uten dette flagget.
+
+Kilden, CC0-proveniens, SHA-256 og kalibrering ligger i `Signal47/Tools/sky/puresky/source.json`. `fetch.py` henter den fastlagte originalen; `import_assets.py` skriver bare de to nye dagsassetene. Ikke bruk den eldre brede `Tools/sky/import.sh` til dette passet, siden den også regenererer nattassets. Teksturen er 8192 x 4096, BC6H med mipkart; kildefilen ligger under `~/Assets/signal47-free/polyhaven/kloppenheim_06_puresky`. Fotografene er også lagt til i spillets kreditering.
+
+Bevisrot: `/home/tom/scratch-bm/Signal47-puresky-20261026`. R5-referansen er kontrollert mot 674 opprinnelige prosjektfiler og samme installerte binær. `baseline/accepted-baseline.json` har dag klokken 17:20 og natt klokken 03:00. `import-r3/result.json` dokumenterer bevaring av de fire opprinnelige skyassetene. `candidate-r1-proof.json` dokumenterer pakking og uendrede 686 filer i det frosne kandidatgrunnlaget. Dette er ikke en ny FPS-måling eller en full gjennomspilling.
+
+Avgrenset sluttkontroll:
+
+- PASS: fotografisk dag klokken 17:20, mellomblanding 18:20, tilbake på original himmel 18:53, natt 03:00 og dag på Low. Alle fem originalbilder er faktisk åpnet og vurdert. `runtime-r1/visual-acceptance.json` binder godkjenningen til bilder og pakket innhold. Ingen ny full testmatrise.
+- PASS: dag og natt sammenlignet med tilsvarende R5-utsnitt. Dagskyene har finere fotografisk struktur. Stjernefelt, Melkevei og stjernehull har beholdt sitt tidligere utseende. Komet er bevart i kilde, men ble ikke separat visuelt prøvd på nytt.
+- PASS: uavhengig, avgrenset kildegjennomgang mot eksakt R5. Etter at de nye Pure Sky-tilleggene skilles ut, er de fire berørte runtimefilene identiske med R5. `qa/review-source-final.json` dokumenterer opprinnelige funksjoner, natt-/hendelsesbevaring, tidsgrenser og fallback.
+- Avgrensning: overgangen er kontrollert med kildekurve og utvalgte stillbilder, ikke en hel 53-minutters sanntidskveld. HDR-teksturen og begge materialinstansene holdes tilgjengelige også om natten; dette er ikke en målt minne- eller FPS-optimalisering.
+
+Pakket R1-binær: `548d4633c7e1bb8a6487a6d108a7523c70bd9f7bafa33c08eaf637a103f8f8f6`. Dagbildet ligger i `runtime-r1/comparison/day-1720-saro/view.png` under bevisroten; nattbildet i `runtime-r1/comparison/night-0300-starhole/view.png`.
+
+`installation-r1.json` er `INSTALLED_VERIFIED`: alle 68 payloadnoder er kontrollert mot den prøvde kandidaten. De 65 faktiske personlige Saved-nodene, inkludert 46 regulære filer, er uendret. Forrige installerte R5 har verifisert reflinkbackup i `previous-installed-r1/Linux`. `installed-smoke-r1/result.json` har åtte beståtte kontroller gjennom faktisk standardstarter med isolert profil, korrekt Pure Sky, uendret payload og uendrede personlige lagringer. Også dette dagbildet er faktisk åpnet og vurdert. Dette er lokal levering, uten ny PR, merge, push eller ekstern spillutgivelse.
+
+Canonical prune er anvendt etter avsluttet kjøring: 14 genererte payloadfiler fra gamle ankomst/kontor R4/R3 er pensjonert, 7 658 657 522 logiske bytes uten påstand om fysisk diskgevinst. Gjeldende Pure Sky R1, R5-kandidat og R5-rollbackbackup beholdes, i tillegg til eksplisitt beskyttet aktiv SC01-R4. Kilder, assets, Saved og bevis er bevart. `delivery-r1.json` bekrefter riktig installert payload og uendrede lagringer også etter opprydding.
+
+## Historisk sky-pass fra 24. oktober
+
 24. oktober 2026, opprinnelig gren `sky-pass` fra `unreal-port-core` dc2820c2. Codex har overtatt sluttføringen etter Claudes limit på Toms bestilling; sky-koden er allerede integrert med natur/film i core1f471862. Toms bestilling: volumetriske skyer, få om natta og fritt om dagen, lys, skyer og stemning så nær konseptbildet (`~/scratch-bm/prompts/ref/dusk-concept.png`) som mulig. Codex eier natur (vegetasjon, terreng, mesaer) på `codex/caliche-nature`; dette passet rører bare himmel, skyer, sol/måne/skylight, tåke og eksponering.
 
 

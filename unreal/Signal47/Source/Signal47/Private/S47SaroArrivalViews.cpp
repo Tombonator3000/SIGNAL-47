@@ -41,6 +41,9 @@ void AS47Web::BeginSaroArrivalViews()
   static const FView Views[]={
    {TEXT("arrival"),FVector(-22.8,0,27),FVector(-11,1,14.8)},
    {TEXT("sign"),FVector(-11.3,0,20.8),FVector(-7.3,.9,15.5)},
+   {TEXT("visitor-sign"),FVector(-15.8,0,13.8),FVector(-15.8,.85,10.85)},
+   {TEXT("entrance"),FVector(-14,0,8.2),FVector(-6.7,1.25,5.7)},
+   {TEXT("entrance-close"),FVector(-9.9,0,5.7),FVector(-6.25,1.35,5.7)},
    {TEXT("windows"),FVector(-4,0,-8),FVector(0,1.8,-3.45)},
    {TEXT("room"),FVector(2.3,0,1.75),FVector(.2,1.5,-3.45)}};
   static const TCHAR* Lights[]={TEXT("day"),TEXT("dusk"),TEXT("night")};
@@ -71,6 +74,6 @@ void AS47Web::BeginSaroArrivalViews()
   FScreenshotRequest::RequestScreenshot(File,true,false);
   UE_LOG(LogS47ArrivalViews,Display,TEXT("S47: SARO arrival view %s floor=%.4f eye=%.4f clock=%.3f; camera fixture"),*Name,M->Player->FloorY,M->Player->FloorY+M->Player->Eye,M->Story->Clock());
   ++P->Index;P->Placed=false;
-  if(P->Index==UE_ARRAY_COUNT(Views)*UE_ARRAY_COUNT(Lights)){P->Done=true;UE_LOG(LogS47ArrivalViews,Display,TEXT("S47: SARO arrival views PASS 12 player-height fixtures; driving and input checked separately"));}
+  if(P->Index==UE_ARRAY_COUNT(Views)*UE_ARRAY_COUNT(Lights)){P->Done=true;UE_LOG(LogS47ArrivalViews,Display,TEXT("S47: SARO arrival views PASS %d player-height fixtures; driving and input checked separately"),P->Index);}
  },.1f,true);
 }

@@ -8,6 +8,7 @@
 #include "S47SaroSite.h"
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
+#include "S47RouteNature.h"
 
 #include "Components/BillboardComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -267,6 +268,8 @@ bool AS47Web::Load()
 		const TSharedPtr<FJsonObject> O = V->AsObject();
 		FDoor D;
 		D.Id = Str(O, TEXT("id")); D.Inter = Str(O, TEXT("inter")); D.Name = Str(O, TEXT("name")); D.Area = Str(O, TEXT("area")); D.Sound = Str(O, TEXT("sound"));
+		// The west ramp is SARO's visitor entrance. Keep the old IDs for saved doors/chapter routes.
+		if (D.Id == TEXT("exit") && D.Area == TEXT("saro")) D.Name = TEXT("visitor entrance");
 		D.Range = Num(O, TEXT("range"), 2.4); D.Proxy = int32(Num(O, TEXT("proxy"), -1));
 		for (const TSharedPtr<FJsonValue>& M : Arr(O, TEXT("moved")))
 		{
@@ -682,6 +685,7 @@ void AS47Web::BeginPlay()
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
 	BuildFieldModels();
+	RouteNature = FS47RouteNature::Build(this);
 	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)

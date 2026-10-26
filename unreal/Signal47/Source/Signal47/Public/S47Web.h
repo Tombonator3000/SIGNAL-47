@@ -24,6 +24,7 @@ class FS47SaroArrival;
 class FS47SaroSite;
 class FS47FleetParked;
 class FS47TownBuildings;
+class FS47RouteNature;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
 struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
@@ -68,7 +69,7 @@ public:
 	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
 	/** SKY.md: the volumetric cloud layer. Cover/cirrus 0..1 from the clock; clear directions (three's
 	 *  world terms, w = strength) keep story beats in open sky; Flash/FlashDir light them from inside. */
-	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time);
+	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight = 0.f);
 	float CloudCoverNow() const { return CloudCover; }
 	bool CloudsActive() const;
 	void SuppressFloodLight(int32 Set, int32 Index);
@@ -306,6 +307,7 @@ private:
 	TSharedPtr<FS47SaroSite> SaroSite;
 	TSharedPtr<FS47FleetParked> FleetParked;
 	TSharedPtr<FS47TownBuildings> TownBuildings;
+	TSharedPtr<FS47RouteNature> RouteNature;
 	void BeginProductionViews();
 	void UpdateHighwayLandscape();
 	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
@@ -365,8 +367,10 @@ private:
 		FVector At, Target;
 		float Reference = 1, Candela = 0, GlowReference = 1, LastK = -1;
 		bool bWasOn = false;
+		bool bAuthoredLens = false;
 		TWeakObjectPtr<USpotLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+		TWeakObjectPtr<UStaticMeshComponent> Fixture;
 	};
 	TArray<FExteriorLight> ExteriorLights;
 	void BuildExteriorLighting();
@@ -429,6 +433,7 @@ private:
 	URectLightComponent* SurfaceLight(int32 Node, const FVector& FacingThree, float Lumens, float Reach);
 	TArray<TArray<int32>> PoolRoots;
 	bool bSkyCaptured = false;
+	float PureSkyCaptureWeight = 0;
 	bool bLightingProfiled = false;
 	float CapturedDawn = 0;
 	float CapturedCaliche = 0;

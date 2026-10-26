@@ -5,6 +5,8 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "S47Three.h"
+#include "S47ExteriorFixtures.h"
+#include "S47SaroArrival.h"
 
 void AS47Web::BuildExteriorLighting()
 {
@@ -12,6 +14,8 @@ void AS47Web::BuildExteriorLighting()
 	ExteriorLights.Reset();
 	const int32 Site = FloodSet(TEXT("site")), Court = FloodSet(TEXT("court"));
 	const bool bLog = FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"));
+	const auto Fixtures = S47ExteriorFixtures::ReplaceLegacy(this);
+	if (Fixtures.Contains(TEXT("FireExit")) && SaroArrival) SaroArrival->RetireCanopyLight();
 	auto Add = [&](const TCHAR* Name, const TCHAR* OwnerPath, int32 Set, int32 Slot, const TCHAR* GlowPath, int32 GlowIndex,
 		const FVector& At, const FVector& Target, float Candela, float Reach, float Cone, float Source = 8.f, float SoftSource = 6.f)
 	{
@@ -19,6 +23,15 @@ void AS47Web::BuildExteriorLighting()
 		if (!Owner || Set < 0 || Slot < 0 || Slot >= FloodSlots(Set)) return;
 		FExteriorLight P;
 		P.Node = Owner.I; P.Set = Set; P.Slot = Slot; P.At = At; P.Target = Target; P.Candela = Candela;
+		if (const auto* Fixture = Fixtures.Find(Name))
+		{
+			P.At = Fixture->Aperture;
+			// The wall-pack optic spreads down within its broad beam; canopy points straight down.
+			const FVector Aim = FString(Name) == TEXT("FireExit") ? Fixture->Normal : (Fixture->Normal + FVector(0,-.6,0)).GetSafeNormal();
+			P.Target = P.At + Aim * 4;
+			P.Diffuser = Fixture->Lens; P.Fixture = Fixture->Mesh; P.bAuthoredLens = true;
+			Source = FMath::Min(Fixture->Width, Fixture->Height) * .5f; SoftSource = Source * .6f;
+		}
 		P.Reference = FMath::Max(0.001f, FloodPos(Set, Slot).A * FloodScaleOf(Set));
 		P.GlowNode = Handle(GlowPath); P.Glow = GlowIndex;
 		if (FS47GlowPoints* G = Glow(P.GlowNode); G && G->Col.IsValidIndex(GlowIndex))
@@ -28,13 +41,13 @@ void AS47Web::BuildExteriorLighting()
 			// A glint belongs to the aperture, not a metre-wide additive ball in front of it.
 			// The native light and fog supply the pool and the atmospheric halo.
 			const bool bPost = (Set == Site && ((Slot >= 5 && Slot <= 7) || (Slot >= 12 && Slot <= 15))) || (Set == Court && Slot >= 10);
-			G->SetSize(GlowIndex, bPost ? 0.4f : 0.22f);
-			G->SetPosition(GlowIndex, NodeWorldThree(G->Node).InverseTransformPosition(At));
+			G->SetSize(GlowIndex, P.bAuthoredLens ? 0.f : bPost ? 0.4f : 0.22f);
+			G->SetPosition(GlowIndex, NodeWorldThree(G->Node).InverseTransformPosition(P.At));
 		}
 		USpotLightComponent* L = NewObject<USpotLightComponent>(this, FName(*FString::Printf(TEXT("S47Exterior_%s"), Name)));
 		L->SetupAttachment(GetRootComponent()); L->SetMobility(EComponentMobility::Movable);
 		L->SetIntensityUnits(ELightUnits::Candelas); L->SetIntensity(0);
-		L->SetWorldLocationAndRotation(S47Three::ToUE(At), S47Three::DirToUE(Target - At).Rotation());
+		L->SetWorldLocationAndRotation(S47Three::ToUE(P.At), S47Three::DirToUE(P.Target - P.At).Rotation());
 		L->SetInnerConeAngle(Cone * 0.65f); L->SetOuterConeAngle(Cone);
 		L->SetAttenuationRadius(Reach * 100.f);
 		L->SetSourceRadius(Source); L->SetSoftSourceRadius(SoftSource);
@@ -56,7 +69,7 @@ void AS47Web::BuildExteriorLighting()
 			if (FVector(F.R, F.G, F.B).Equals(OldAt, 0.12)) SuppressFloodLight(S, I);
 		}
 		if (bLog) UE_LOG(LogTemp, Display, TEXT("S47: exterior %s set=%d slot=%d source=%s target=%s cd=%.2f reach=%.2fm"),
-			Name, Set, Slot, *At.ToString(), *Target.ToString(), Candela, Reach);
+			Name, Set, Slot, *P.At.ToString(), *P.Target.ToString(), Candela, Reach);
 	};
 	// Exterior.ts: the three old highway pools lie between eight separate armature heads.
 	// Fit all eight actual sources to their exported glows, preserving the existing power state.
@@ -239,7 +252,7 @@ void AS47Web::UpdateExteriorLighting()
 				K = FMath::Min(K, FMath::Max(0.f, GlowK));
 			}
 		}
-		if (UMaterialInstanceDynamic* D = P.Diffuser.Get()) Emission.FindOrAdd(D) = FMath::Max(Emission.FindRef(D), K);
+		if (UMaterialInstanceDynamic* D = P.Diffuser.Get(); D && !P.bAuthoredLens) Emission.FindOrAdd(D) = FMath::Max(Emission.FindRef(D), K);
 		const bool bOn = K > 0.0001f && FVector::DistSquared(Camera, P.At) < FMath::Square(200.f);
 		const bool bToggle = P.bWasOn != bOn;
 		if (bToggle) L->SetVisibility(bOn);
@@ -248,6 +261,11 @@ void AS47Web::UpdateExteriorLighting()
 		// Unreal's setters ignore unchanged values; colour-only HDR changes still update power.
 		L->SetIntensity(bOn ? P.Candela * K * Gain : 0.f);
 		L->SetLightColor(C / Gain);
+		if (P.bAuthoredLens)
+		{
+			if (auto* M = P.Fixture.Get()) M->SetVisibility(ObjAt(P.Node).Shown(), false);
+			if (auto* D = P.Diffuser.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), C * (1.5f * K));
+		}
 		if (bLog && bToggle) UE_LOG(LogTemp, Display, TEXT("S47: exterior %s %s k=%.4f cd=%.2f"), *L->GetName(), bOn ? TEXT("on") : TEXT("off"), K, L->Intensity);
 		P.LastK = K; P.bWasOn = bOn;
 	}

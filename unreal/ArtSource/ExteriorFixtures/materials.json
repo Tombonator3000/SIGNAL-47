@@ -1,0 +1,157 @@
+[
+  {
+    "name": "M_ExteriorFixtures_Bronze",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.62,
+    "roughness": 0.55,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.16,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_ExteriorFixtures_Bronze_base.png",
+      "roughness": "textures/M_ExteriorFixtures_Bronze_rough.png",
+      "normal": "textures/M_ExteriorFixtures_Bronze_normal.png"
+    }
+  },
+  {
+    "name": "M_ExteriorFixtures_Aluminium",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.82,
+    "roughness": 0.36,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.16,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_ExteriorFixtures_Aluminium_base.png",
+      "roughness": "textures/M_ExteriorFixtures_Aluminium_rough.png",
+      "normal": "textures/M_ExteriorFixtures_Aluminium_normal.png"
+    }
+  },
+  {
+    "name": "M_ExteriorFixtures_Steel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.84,
+    "roughness": 0.4,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.16,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_ExteriorFixtures_Steel_base.png",
+      "roughness": "textures/M_ExteriorFixtures_Steel_rough.png",
+      "normal": "textures/M_ExteriorFixtures_Steel_normal.png"
+    }
+  },
+  {
+    "name": "M_ExteriorFixtures_Gasket",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.02,
+    "roughness": 0.84,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.16,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_ExteriorFixtures_Gasket_base.png",
+      "roughness": "textures/M_ExteriorFixtures_Gasket_rough.png",
+      "normal": "textures/M_ExteriorFixtures_Gasket_normal.png"
+    }
+  },
+  {
+    "name": "M_ExteriorFixtures_Lens",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.34,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.3,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_ExteriorFixtures_Lens_base.png",
+      "roughness": "textures/M_ExteriorFixtures_Lens_rough.png",
+      "normal": "textures/M_ExteriorFixtures_Lens_normal.png"
+    }
+  }
+]

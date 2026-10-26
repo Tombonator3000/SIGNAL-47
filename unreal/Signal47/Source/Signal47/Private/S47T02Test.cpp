@@ -34,7 +34,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47T02Test, Log, All);
 
 struct FS47T02Test::FState
 {
- bool bEnabled = false, bDone = false, bNative = false, bNativeStarted = false, bReturn = false, bUnresolved = false;
+ bool bEnabled = false, bDone = false, bNative = false, bNativeStarted = false, bReturn = false, bUnresolved = false, bEarlyOffice = false, bArrivalOffice = false;
  bool bOutSaro = false, bOutRoad = false, bBackRoad = false, bBackSaro = false;
  int32 Stage = 0, Checks = 0, Loads = 0, StoreReads = 0, WalkIndex = 0;
  double Elapsed = 0, Since = 0, Hold = 3, WalkDistance = 0, LastProgress = 0;
@@ -44,17 +44,19 @@ struct FS47T02Test::FState
  FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector;
  FString LastLeg, LastFootArea;
  TArray<FVector> WalkPoints;
- FString Root, Baseline, FirstPhoto, LatestPhoto, FieldFilmBefore, PendingFailure;
+ FString Root, Baseline, FirstPhoto, LatestPhoto, FieldFilmBefore, PendingFailure, OfficePhase;
  int32 AlbumCount = 0, AlbumLeft = 0, FilingNotes = 0, FilingHistory = 0;
  S47J::FObj GoodOffice, GoodPhoto, PendingVerified, GoodFiled, FiledCard;
- FString FiledHistoryBytes;
+ FString FiledHistoryBytes, OfficeIndexTitle, OfficeIndexPage;
 };
 
 FS47T02Test::FS47T02Test(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
 {
+ State->bArrivalOffice = FParse::Param(FCommandLine::Get(), TEXT("S47OfficeArrival"));
+ State->bEarlyOffice = State->bArrivalOffice || FParse::Param(FCommandLine::Get(), TEXT("S47OfficeEarly"));
  State->bNative = FParse::Param(FCommandLine::Get(), TEXT("S47T02DriveContract"));
  State->bUnresolved = FParse::Param(FCommandLine::Get(), TEXT("S47T02UnresolvedContract"));
- State->bEnabled = State->bNative || State->bUnresolved || FParse::Param(FCommandLine::Get(), TEXT("S47T02Contract"));
+ State->bEnabled = State->bEarlyOffice || State->bNative || State->bUnresolved || FParse::Param(FCommandLine::Get(), TEXT("S47T02Contract"));
 }
 FS47T02Test::~FS47T02Test() = default;
 
@@ -182,7 +184,10 @@ bool FS47T02Test::SaveLoad(const FString& Name, const S47J::FObj& Source, bool W
  if (!Source) { Fail(TEXT("missing source state: ") + Name); return false; }
  const auto Input = S47J::Clone(Source);
  const FString Area = S47J::Str(Input, TEXT("area")); const auto Pose = S47J::Obj(Input, TEXT("pose"));
- const double Clock = S47J::Num(S47J::Obj(Input, TEXT("case")), TEXT("clock"));
+ // The opening snapshot intentionally has no chapter case. Its authoritative
+ // clock is evening.clock; later chapter saves retain case.clock.
+ const bool OpeningSave = S47J::Str(Input, TEXT("checkpoint")) == TEXT("evening");
+ const double Clock = S47J::Num(S47J::Obj(Input, OpeningSave ? TEXT("evening") : TEXT("case")), TEXT("clock"));
  const auto Office = S47J::Obj(Input, TEXT("office"));
  const auto Followup = S47J::Obj(S47J::Obj(Input, TEXT("substation")), TEXT("t02"));
  const auto Photo = S47J::Obj(Followup, TEXT("photo"));
@@ -218,6 +223,10 @@ bool FS47T02Test::SaveLoad(const FString& Name, const S47J::FObj& Source, bool W
  M->Flow->StartGame(Start); ++State->Loads;
  const bool PoseOk = Pose && FMath::Abs(M->Player->Pos.X - S47J::Num(Pose,TEXT("x"))) < .035 &&
   FMath::Abs(M->Player->Pos.Z - S47J::Num(Pose,TEXT("z"))) < .035;
+ UE_LOG(LogS47T02Test, Display, TEXT("S47: restore audit %s dev=%d case=%d area=%s/%s pose=%d clock=%.9f/%.9f key=%d/%d sheet=%d/%d verified=%d/%d filed=%d/%d"),
+  *Name, M->Flow->bDevRun, M->Flow->CaseId, *M->World->Area, *Area, PoseOk, M->Story->Clock(), Clock,
+  M->Office->HasKey(), S47J::Bool(Office,TEXT("key")), M->Office->HasFieldSheet(), S47J::Bool(Office,TEXT("hasFieldSheet")),
+  M->Substation->FollowupVerified(), WantVerified, M->Substation->FollowupFiled(), !RemovePhotoFile && S47J::Bool(Followup,TEXT("filed")));
  return Check(M->Flow->bDevRun && M->Flow->CaseId == 0 && M->World->Area == Area && PoseOk && M->Story->Clock() == Clock &&
   M->Office->HasKey() == S47J::Bool(Office,TEXT("key")) && M->Office->HasFieldSheet() == S47J::Bool(Office,TEXT("hasFieldSheet")) &&
   M->Substation->FollowupVerified() == WantVerified &&
@@ -314,17 +323,19 @@ void FS47T02Test::Step(double Dt)
 
  if (T.Stage == 0)
  {
-  const int32 DriverCount=int32(T.bNative)+int32(T.bUnresolved)+int32(FParse::Param(FCommandLine::Get(),TEXT("S47T02Contract")));
+  const int32 DriverCount=int32(T.bEarlyOffice)+int32(T.bNative)+int32(T.bUnresolved)+int32(FParse::Param(FCommandLine::Get(),TEXT("S47T02Contract")));
   if (DriverCount!=1) { Fail(TEXT("choose exactly one API/disk, unresolved or native T02 driver")); return; }
-  FString UserDir, Jump; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir); FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump);
+  FString UserDir, Jump, EveningMode; FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), EveningMode); FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir); FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump);
   UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
   if (!((UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) &&
-   FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir)) || Jump != TEXT("chapter2"))
-  { Fail(TEXT("requires explicit isolated /tmp UserDir and S47Jump=chapter2")); return; }
+   FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir)) || (T.bArrivalOffice ? (!Jump.IsEmpty() || EveningMode != TEXT("parking")) : Jump != (T.bEarlyOffice ? TEXT("chapter1") : TEXT("chapter2"))))
+  { Fail(TEXT("requires isolated /tmp UserDir and chapter2; OfficeEarly chapter1; OfficeArrival S47Evening=parking without Jump")); return; }
   for (const TCHAR* Flag : {TEXT("S47T01Contract"),TEXT("S47T01DriveContract"),TEXT("S47SmokeTest"),TEXT("S47SubstationTest"),TEXT("S47SubstationTestLoad")})
    if (FParse::Param(FCommandLine::Get(), Flag)) { Fail(TEXT("do not combine independent live control drivers")); return; }
-  T.Root = FPaths::ProjectSavedDir() / (T.bNative ? TEXT("T02NativeRoute") : T.bUnresolved ? TEXT("T02UnresolvedContract") : TEXT("T02Contract")) / FGuid::NewGuid().ToString(EGuidFormats::Digits);
+  T.Root = FPaths::ProjectSavedDir() / (T.bEarlyOffice ? TEXT("OfficeEarly") : T.bNative ? TEXT("T02NativeRoute") : T.bUnresolved ? TEXT("T02UnresolvedContract") : TEXT("T02Contract")) / FGuid::NewGuid().ToString(EGuidFormats::Digits);
   IFileManager::Get().MakeDirectory(*T.Root, true);
+  if (T.bArrivalOffice) { Stage(-4,.5); return; }
+
   // Isolated old-chapter fixture BEFORE physical Office/native START. StartGame's
   // explicit nonempty Jump selects timelineVersion1 and does not begin the opening.
   US47Flow::FStart Legacy; Legacy.Jump=TEXT("chapter1"); Legacy.bDev=true; Legacy.CaseId=0;
@@ -332,10 +343,28 @@ void FS47T02Test::Step(double Dt)
   UE_LOG(LogS47T02Test,Display,TEXT("S47: T02 contract fixture: isolated legacy chapter-one StartGame before physical Office/native START; no Office/T02 facts assigned"));
   Stage(-3,.5); return;
  }
+ if (T.Stage == -4)
+ {
+  if (!Check(M->Office->Ready() && M->Evening->Opening() && M->Story->bEveningTimeline && !M->Evening->Pack.Flag(TEXT("handover_done")) && !M->Story->Begun.Contains(TEXT("ch2")) && !M->Office->HasKey(), TEXT("actual arrival boot retains active opening, unfinished D01 and locked office"))) return;
+  T.OfficePhase = M->Evening->Pack.GetPhase();
+  M->UI->Close(true); M->Story->SetCinematic(false); M->Story->ClearTimers();
+  M->Player->Place(.45,5.75,0); Aim(Target(TEXT("office:door")));
+  Stage(1,.35); return;
+ }
  if (T.Stage == -3)
  {
   if(!Check(M->Story->ChapterKey==TEXT("ch1") && !M->Story->bEveningTimeline && !M->Evening->Enabled() &&
    !M->Office->RouteRequired() && !M->Office->HasKey() && !M->Office->HasFieldSheet(),TEXT("actual chapter-one StartGame retains legacy timeline with investigation disabled and no new Office route requirement")))return;
+  if (T.bEarlyOffice)
+  {
+   // Real chapter-one baseline: no archive, Ward or evening-pack prerequisites.
+   // Only the initial corridor pose is a fixture; keys, opening, walking and papers
+   // below use the same production interaction/ray route as the full T02 test.
+   M->UI->Close(true); M->Story->SetCinematic(false); M->Story->ClearTimers();
+   if (!Check(M->Office->Ready() && !M->Story->Begun.Contains(TEXT("ch2")), TEXT("early office is built before any archive chapter"))) return;
+   M->Player->Place(.45,5.75,0); Aim(Target(TEXT("office:door")));
+   Stage(1,.35); return;
+  }
   C2->BeginChapter2(nullptr); Stage(-2,.5); return;
  }
  if (T.Stage == -2)
@@ -367,12 +396,22 @@ void FS47T02Test::Step(double Dt)
  }
  if (T.Stage == 1)
  {
+  if (T.bEarlyOffice) Shot(T.bArrivalOffice ? TEXT("arrival-office-locked") : TEXT("early-office-locked"));
+  Stage(1001,.35); return;
+ }
+ if (T.Stage == 1001)
+ {
   if (!Pick(TEXT("office:door"),TEXT("officeDoor")) || !Check(!M->Office->WasUnlocked(),TEXT("physical locked door directs the player to its own service drawer"))) return;
   Aim(Target(TEXT("office:drawer"))); Stage(2); return;
  }
  if (T.Stage == 2) { if (!Pick(TEXT("office:drawer"))) return; Stage(3,.55); return; }
  if (T.Stage == 3) { Aim(Target(TEXT("office:key"))); Stage(4); return; }
  if (T.Stage == 4)
+ {
+  if (T.bEarlyOffice) Shot(TEXT("office-open-service-drawer"));
+  Stage(41,.35); return;
+ }
+ if (T.Stage == 41)
  {
   if (!Pick(TEXT("office:key")) || !Check(M->Office->HasKey(),TEXT("actual opened drawer key ray retains the independent Operations key"))) return;
   Aim(Target(TEXT("office:door"))); Stage(5); return;
@@ -387,7 +426,15 @@ void FS47T02Test::Step(double Dt)
  {
   if (!Walk()) return;
   if (!Check(M->Office->Contains(M->Player->Pos) && S47J::Bool(M->Office->Save(),TEXT("entered")) && T.WalkDistance > 2.5,TEXT("real Walker/Resolve movement crosses the opened threshold into Operations"))) return;
-  Shot(TEXT("office-entered")); Aim(Target(TEXT("office:folder"))); Stage(8); return;
+  Aim(FVector(.45,1.2,9.65)); Stage(71,.35); return;
+ }
+ if (T.Stage == 71)
+ {
+  Shot(TEXT("office-entered")); Stage(72,.35); return;
+ }
+ if (T.Stage == 72)
+ {
+  Aim(Target(TEXT("office:folder"))); Stage(8); return;
  }
  if (T.Stage == 8)
  {
@@ -395,11 +442,53 @@ void FS47T02Test::Step(double Dt)
  }
  if (T.Stage == 9)
  {
+  if (T.bEarlyOffice)
+  {
+   if (!Check((T.bArrivalOffice ? (M->Evening->Opening() && !M->Evening->Pack.Flag(TEXT("handover_done")) && M->Evening->Pack.GetPhase() == T.OfficePhase) : M->Story->ChapterKey == TEXT("ch1")) && M->Office->HasKey() && M->Office->DoorOpen() && M->Office->HasFieldSheet() && !M->Office->WantsDeparture() && !M->Office->DepartureReleased(), TEXT("early physical key, doorway and paper route works without chapter-two gate or premature departure"))) return;
+   const FS47Doc* Index = M->Story->Docs().FindByPredicate([](const FS47Doc& D) { return D.Id == TEXT("EV_DALE_INDEX"); });
+   if (!Check(Index && !Index->Page.IsEmpty(), TEXT("actual early field-sheet reading retained its authored document before save"))) return;
+   T.OfficeIndexTitle = Index->Title; T.OfficeIndexPage = Index->Page;
+   T.GoodOffice = S47J::Clone(M->Flow->GameState());
+   if (!SaveLoad(TEXT("early-office-field-sheet"), T.GoodOffice, false)) return;
+   Stage(94,.5); return;
+  }
   if (!Check(M->Office->HasFieldSheet() && M->Evening->Pack.Flag(TEXT("office_evidence_taken")) && !M->Evening->Pack.Flag(TEXT("vhs_seen")),TEXT("physical field folder commits real papers without VHS completion"))) return;
   T.GoodOffice=S47J::Clone(M->Flow->GameState());
   if (!SaveLoad(TEXT("office-field-sheet"),T.GoodOffice,false)) return;
   if (!T.bNative) {Stage(90,.4);return;}
   Stage(10,.7); return;
+ }
+ if (T.Stage == 94)
+ {
+  if (!Check((T.bArrivalOffice ? (M->Evening->Opening() && !M->Evening->Pack.Flag(TEXT("handover_done")) && M->Evening->Pack.GetPhase() == T.OfficePhase) : M->Story->ChapterKey == TEXT("ch1")) && M->Office->HasFieldSheet() && M->Office->DoorOpen() && M->Office->Contains(M->Player->Pos) && !M->Office->WantsDeparture() && !M->Evening->Pack.Flag(TEXT("vhs_seen")), TEXT("fresh disk and full Flow restore keeps early access, original field sheet and no video/departure credit"))) return;
+  const FS47Doc* Index = M->Story->Docs().FindByPredicate([](const FS47Doc& D) { return D.Id == TEXT("EV_DALE_INDEX"); });
+  const bool UnreadGranted = M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("EV_DALE_CLIPPINGS") || D.Id == TEXT("EV_DALE_NOTE") || D.Id == TEXT("EV_DALE_CONTACT"); });
+  if (!Check(Index && Index->Title == T.OfficeIndexTitle && Index->Page == T.OfficeIndexPage && !UnreadGranted && !M->ModalOpen(), TEXT("fresh early restore refiles the exact acquired field index nonmodally without granting unread office papers"))) return;
+  Aim(FVector(.45, 1.2, 9.65)); Stage(95,.35); return;
+ }
+ if (T.Stage == 95)
+ {
+  Shot(TEXT("early-office-restored")); Stage(96,.35); return;
+ }
+ if (T.Stage == 96)
+ {
+  // Screenshot-only camera fixture after the verified physical route and restore.
+  // This position is not counted as Walker movement or player-input evidence.
+  M->Player->Place(.35,7.35,0); Aim(FVector(.45,1.2,9.65));
+  UE_LOG(LogS47T02Test, Display, TEXT("S47: office overview camera fixture after completed physical/disk test, not extra walking evidence"));
+  Stage(97,.35); return;
+ }
+ if (T.Stage == 97)
+ {
+  Shot(TEXT("office-room-overview")); Stage(98,.5); return;
+ }
+ if (T.Stage == 98)
+ {
+  auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), T.bArrivalOffice ? TEXT("PASS_ARRIVAL_OFFICE_PHYSICAL_AND_DISK") : TEXT("PASS_EARLY_OFFICE_PHYSICAL_AND_DISK")); S47J::Set(Result, TEXT("checks"), T.Checks); S47J::Set(Result, TEXT("walkedMetres"), T.WalkDistance); S47J::Set(Result, TEXT("freshStoreFullFlowRestores"), T.Loads);
+  FFileHelper::SaveStringToFile(S47J::Write(Result,true), *(T.Root/TEXT("result.json")));
+  T.bDone = true; M->Player->TestMove.Reset();
+  UE_LOG(LogS47T02Test, Display, TEXT("S47: early office PASS COMPLETE: %d checks, real key/drawer/door/paper interaction, %.2f m Walker, fresh disk/full Flow restore, no premature departure or VHS credit; artifacts %s"), T.Checks, T.WalkDistance, *T.Root);
+  FPlatformMisc::RequestExit(false); return;
  }
  if (T.Stage == 90)
  {

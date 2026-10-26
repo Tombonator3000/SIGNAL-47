@@ -3,8 +3,10 @@
 #include "S47EveningVisual.h"
 #include "S47Flow.h"
 #include "S47Main.h"
+#include "S47Inter.h"
 #include "S47RecordedDialogue.h"
 #include "S47Story.h"
+#include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -20,7 +22,7 @@
 // the normal walker's movement and collision resolver, including after full-world loads.
 struct FS47Evening::FEntranceTest
 {
- bool bEnabled = false, bDone = false, bVehicles = false, bThresholdRestored = false, bParking = false, bSawWaitingService = false;
+ bool bEnabled = false, bDone = false, bVehicles = false, bThresholdRestored = false, bParking = false, bSawWaitingService = false, bSavedStop = false;
  int32 Condition = 0, Stage = 0, Waypoint = 0, Passes = 0, CloseRefusals = 0, OutsideToggles = 0;
  double Elapsed = 0, Since = 0, Hold = 3;
  FString Shots;
@@ -36,6 +38,7 @@ void FS47Evening::ControlEntranceTest(double Dt)
   EntranceTest = MakeShared<FEntranceTest>();
   EntranceTest->bVehicles = FParse::Param(FCommandLine::Get(), TEXT("S47EveningVehicles"));
   EntranceTest->bParking = FParse::Param(FCommandLine::Get(), TEXT("S47SaroParking"));
+  EntranceTest->bSavedStop = FParse::Param(FCommandLine::Get(), TEXT("S47ParkingSavedStop"));
   EntranceTest->bEnabled = EntranceTest->bParking || EntranceTest->bVehicles || FParse::Param(FCommandLine::Get(), TEXT("S47EveningEntrance"));
   if (!EntranceTest->bEnabled) return;
   FParse::Value(FCommandLine::Get(), TEXT("S47EveningShots="), EntranceTest->Shots);
@@ -90,6 +93,30 @@ void FS47Evening::ControlEntranceTest(double Dt)
  if (T.bParking)
  {
   // Only the starting fixture is placed. Travel, stop detection and arrival use normal gameplay.
+  const auto AimDoor=[this,&Fail](const FString& Id)
+  {
+   const FS47WebItem* Item=M->Web->Item(Id);
+   const FS47Obj Obj=Item?M->Web->ObjAt(Item->Node):FS47Obj();
+   const FBox Bounds=Obj.WorldBox();
+   if(!Obj || !Bounds.IsValid){Fail(TEXT("missing physical entrance target: ")+Id);return false;}
+   const FVector D=Bounds.GetCenter()-S47Three::ToThree(M->Player->EyeUE());
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);
+   M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   return true;
+  };
+  const auto UseAimedDoor=[this,&Fail](const FString& Id)
+  {
+   if(!M->Inter || !M->Player->OnUse){Fail(TEXT("ordinary entrance interaction unavailable"));return false;}
+   // Use the actual settled camera ray and normal gameplay callback. Pick enforces
+   // the existing reach and usable mesh; no direct door ID dispatch bypasses it.
+   const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+   if(Picked!=Id){Fail(FString::Printf(TEXT("aimed entrance ray expected %s, picked '%s'"),*Id,*Picked));return false;}
+   if(M->Web->IsDoorOpen(Id)){Fail(TEXT("entrance fixture unexpectedly already open: ")+Id);return false;}
+   M->Player->OnUse(Picked);
+   if(!M->Web->IsDoorOpen(Id)){Fail(TEXT("normal aimed entrance use did not open: ")+Id);return false;}
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS actual camera Pick and Player OnUse opened %s"),*Id);
+   return true;
+  };
   const auto CheckPark=[this,&T]()
   {
    const auto* Service=M->World->SaroTruck();const auto& Box=M->Player->PersonalCarBox;
@@ -110,14 +137,43 @@ void FS47Evening::ControlEntranceTest(double Dt)
    const bool BayFixture=FParse::Value(FCommandLine::Get(),TEXT("S47VisitorBay="),BayX);
    if(BayFixture)
    {
-    if(BayX!=-15.8 && BayX!=-12.8 && BayX!=-9.8){Fail(TEXT("invalid visitor bay fixture"));return;}
-    O.AtPos=FVector(BayX,-.6,14.3);
+    double ParkZ=14.3;FParse::Value(FCommandLine::Get(),TEXT("S47VisitorZ="),ParkZ);
+    O.AtPos=FVector(BayX,-.6,ParkZ);
     O.AtHeading=FParse::Param(FCommandLine::Get(),TEXT("S47ReverseParking"))?UE_DOUBLE_PI:0;
+    FParse::Value(FCommandLine::Get(),TEXT("S47VisitorHeading="),O.AtHeading);
+    if(!FS47EveningVisual::FitsArrivalArea(*O.AtPos,O.AtHeading)){Fail(TEXT("invalid visitor area fixture"));return;}
+   }
+   if(T.bSavedStop)
+   {
+    if(!BayFixture){Fail(TEXT("saved-stop recovery requires explicit visitor-area pose"));return;}
+    auto Pose=S47J::New();S47J::Set(Pose,TEXT("x"),O.AtPos->X);S47J::Set(Pose,TEXT("y"),O.AtPos->Y);S47J::Set(Pose,TEXT("z"),O.AtPos->Z);S47J::Set(Pose,TEXT("h"),O.AtHeading);S47J::Set(Pose,TEXT("at"),TEXT("saro"));
+    M->World->PlaceTruck(TEXT("saro"),Pose);M->World->Enter(TEXT("saro"));M->Player->Place(-19.5,21.5,0);
+    T.Park=*O.AtPos;T.Heading=O.AtHeading;Stage(20,.5);return;
    }
    M->World->Autopilot=BayFixture?TOptional<double>():TOptional<double>(3.5);
    M->World->StartTrip(TEXT("saro"),TEXT("saro"),O);
-   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking START ordinary controller/TripStep, fixture=%s x=%.2f z=%.2f heading=%.3f; no food purchased; human input UNVERIFIED"),BayFixture?TEXT("stationary visitor bay"):TEXT("entrance approach"),O.AtPos->X,O.AtPos->Z,O.AtHeading);
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking START ordinary controller/TripStep, fixture=%s x=%.2f z=%.2f heading=%.3f; no food purchased; human input UNVERIFIED"),BayFixture?TEXT("stationary visitor area"):TEXT("entrance approach"),O.AtPos->X,O.AtPos->Z,O.AtHeading);
    Stage(1,BayFixture?.05:1);return;
+  }
+  if(T.Stage==20)
+  {
+   // Reproduce an older save made on foot after the strict bay gate rejected the stop.
+   // Setup places the car; recovery must happen only through real disk/full-world load.
+   T.bSawWaitingService=Visual->ServiceWaitingVisible();
+   const auto* Car=M->World->TruckHere();
+   if(!Commute() || Pack.Flag(TEXT("intro_arrived")) || M->World->bDriving || !Car || !Car->Position.Equals(T.Park,.01) || !T.bSawWaitingService){Fail(TEXT("legacy pending-arrival fixture did not retain uncommitted parked car"));return;}
+   const FString Dir=FPaths::ProjectSavedDir()/TEXT("SaroPendingArrivalControl");
+   FS47SaveStore Writer(Dir);Writer.Init();FS47SaveCard Card;Card.Chapter=TEXT("Pending visitor arrival");Card.Place=TEXT("SARO");Card.Clock=M->Story->ClockText(false);
+   FString Error;const auto Meta=Writer.Save(1,TEXT("manual"),0,M->Flow->GameState(),Card,Error);
+   if(!Meta){Fail(TEXT("pending arrival disk write: ")+Error);return;}
+   FS47SaveStore Reader(Dir);Reader.Init();const auto Saved=Reader.Load(Meta->Id);
+   if(!Saved){Fail(TEXT("pending arrival fresh disk read failed"));return;}
+   if(!T.Shots.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(Saved,true),*(T.Shots/TEXT("saro-pending-arrival.disk-save.json")));
+   US47Flow::FStart Restore;Restore.State=Saved;Restore.CaseId=0;Restore.bDev=true;Restore.Playtime=M->Playtime;
+   M->Flow->StartGame(Restore);
+   if(Commute() || !Pack.Flag(TEXT("intro_arrived")) || Pack.Flag(TEXT("handover_done")) || !Visual->ParkedPosition().Equals(T.Park,.01) || !FMath::IsNearlyEqual(Visual->ParkedHeading(),T.Heading,.001)){Fail(TEXT("legacy stationary save did not recover arrival with exact pose and handover still pending"));return;}
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS pending stationary save recovered through fresh disk/full-world load without moving car or completing phone"));
+   Stage(7,.55);return;
   }
   if(T.Stage==1 || T.Stage==7)
   {
@@ -135,21 +191,73 @@ void FS47Evening::ControlEntranceTest(double Dt)
     Stage(7,.55);return;
    }
    if(M->World->bDriving || Commute() || !Pack.Flag(TEXT("intro_arrived")) || !T.bSawWaitingService){Fail(TEXT("ordinary TripStep failed to commit arrival with waiting service visible after normal handover"));return;}
-   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS normal delayed OnParked committed after %.3f s"),T.Elapsed-T.Since);
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS %s committed arrival after %.3f s"),T.bSavedStop?TEXT("pending stationary save recovery"):TEXT("normal delayed OnParked"),T.Elapsed-T.Since);
+   if(T.bSavedStop && (!Visual->ParkedPosition().Equals(T.Park,.01) || !FMath::IsNearlyEqual(Visual->ParkedHeading(),T.Heading,.001))){Fail(TEXT("recovered stationary save changed original car pose"));return;}
    T.Park=Visual->ParkedPosition();T.Heading=Visual->ParkedHeading();
-   if(!FS47EveningVisual::FitsArrivalBay(T.Park,T.Heading)||!CheckPark()){Fail(TEXT("arrival body/collider or distinct service pose invalid"));return;}
+   if(!FS47EveningVisual::FitsArrivalArea(T.Park,T.Heading)||!CheckPark()){Fail(TEXT("arrival body/collider or distinct service pose invalid"));return;}
    UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS actual arrival pos %.6f %.6f %.6f heading %.6f floor %.6f; waiting service persisted and original service restored"),T.Park.X,T.Park.Y,T.Park.Z,T.Heading,M->Player->FloorY);
-   // Ordinary GetOut placed the walker by the driver's door. Go around the rear,
-   // west of the sign, along the ground path and up the EXISTING truck ramp.
-   T.Path={FVector(-15.2,0,18.3),FVector(-8.3,0,18.3),FVector(-8.3,0,12.2),FVector(-6.1,0,13.5),FVector(2,0,14.3),FVector(6,0,18),FVector(11.5,0,18),FVector(11.5,0,12),FVector(11.5,0,4),FVector(9.8,0,4),FVector(9.8,0,1.6),FVector(7.5,0,1.6)};
+   // Ordinary GetOut supplies the initial foot pose. Clear the actual car, then
+   // join the north pedestrian opening at x=-11.6 and its short path to the ramp.
+   // The old fixed (-19.5,21.5) detour grazed the existing bollard at (-19,21.1).
+   const double C=FMath::Abs(FMath::Cos(T.Heading)),S=FMath::Abs(FMath::Sin(T.Heading));
+   const double HalfX=FS47EveningVisual::PersonalHalfWidth()*C+FS47EveningVisual::PersonalHalfLength()*S;
+   const double HalfZ=FS47EveningVisual::PersonalHalfWidth()*S+FS47EveningVisual::PersonalHalfLength()*C;
+   FVector Egress=M->Player->Pos;T.Path.Reset();
+   if(Egress.X>T.Park.X-HalfX-.27 && Egress.X<T.Park.X+HalfX+.27 && Egress.Z>T.Park.Z-HalfZ-.27 && Egress.Z<T.Park.Z+HalfZ+.27)
+   {
+    const double Cos=FMath::Cos(T.Heading),Sin=FMath::Sin(T.Heading);
+    const FVector Offset=Egress-T.Park;const double Side=Offset.X*Cos-Offset.Z*Sin<0?-1:1;
+    Egress=T.Park+FVector(Side*4*Cos-.3*Sin,0,-Side*4*Sin-.3*Cos);T.Path.Add(Egress);
+   }
+   if(Egress.X>T.Park.X-HalfX-.27)
+   {
+    const double GoZ=Egress.Z<T.Park.Z-HalfZ ? T.Park.Z-HalfZ-.8 : T.Park.Z+HalfZ+.8;
+    T.Path.Add(FVector(Egress.X,0,GoZ));Egress.Z=GoZ;
+   }
+   const double ClearX=FMath::Min(Egress.X,T.Park.X-HalfX-.8);
+   const double NorthZ=FMath::Min(10.9,T.Park.Z-HalfZ-.8);
+   T.Path.Append({FVector(ClearX,0,Egress.Z),FVector(ClearX,0,NorthZ),FVector(-11.6,0,NorthZ),FVector(-11.6,0,5.7),FVector(-9,0,5.7),FVector(-7.55,0,5.7)});
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking physical route clears car at x=%.3f z=%.3f, then uses north visitor path x=-11.6; original car and Walker pose retained"),ClearX,NorthZ);
    T.Waypoint=0;Stage(5);return;
   }
   if(T.Stage==5)
   {
    if(!CheckPark()){Fail(TEXT("walking to the entrance changed a parked car"));return;}
    if(!Walk())return;
-   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS actual egress-to-entrance walker route %.3f %.3f floor %.3f, no teleport or Walkable-only assertion"),M->Player->Pos.X,M->Player->Pos.Z,M->Player->FloorY);
-   Shot(TEXT("saro-walk-entrance"));Stage(6,1);return;
+   if(!M->Inter || !M->Inter->LabelOf(TEXT("exitDoor")).Contains(TEXT("visitor entrance"))){Fail(TEXT("west ramp door is not registered as visitor entrance"));return;}
+   if(!AimDoor(TEXT("exitDoor")))return;
+   Shot(TEXT("saro-walk-entrance"));Stage(8,1);return;
+  }
+  if(T.Stage==8)
+  {
+   if(!UseAimedDoor(TEXT("exitDoor")))return;
+   T.Path={FVector(-6.5,0,5.7),FVector(-5.2,0,5.7),FVector(-2.4,0,5.7)};T.Waypoint=0;Stage(9,.8);return;
+  }
+  if(T.Stage==9)
+  {
+   if(!CheckPark()){Fail(TEXT("entry through the visitor ramp changed the parked car"));return;}
+   if(!Walk())return;
+   if(!AimDoor(TEXT("doorSouth")))return;
+   Stage(12,.35);return;
+  }
+  if(T.Stage==12)
+  {
+   if(!UseAimedDoor(TEXT("doorSouth")))return;
+   T.Path={FVector(-2.4,0,5.2),FVector(-2.4,0,4.1),FVector(-2.4,0,3.5)};T.Waypoint=0;Stage(10,.8);return;
+  }
+  if(T.Stage==10)
+  {
+   if(!Walk())return;
+   if(!CheckPark() || Pack.Flag(TEXT("handover_done")) || !M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos)){Fail(TEXT("physical visitor entrance route failed to reach control room before handover"));return;}
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS actual egress/west ramp/visitor entrance/corridor/control-room walker route %.3f %.3f floor %.3f, no teleport or Walkable-only assertion"),M->Player->Pos.X,M->Player->Pos.Z,M->Player->FloorY);
+   Shot(TEXT("saro-entry-control-room"));
+   T.Path={FVector(-2.4,0,4.1),FVector(-2.4,0,5.7),FVector(-5.2,0,5.7),FVector(-6.5,0,5.7),FVector(-7.55,0,5.7),FVector(-9,0,5.7),FVector(-11.3,0,5.7)};T.Waypoint=0;Stage(11,1);return;
+  }
+  if(T.Stage==11)
+  {
+   if(!Walk())return;
+   if(!CheckPark() || !M->Web->IsDoorOpen(TEXT("exitDoor"))){Fail(TEXT("return through visitor entrance failed"));return;}
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS bidirectional visitor entrance and ramp movement before handover"));Stage(6);return;
   }
   if(T.Stage==6)
   {
@@ -175,7 +283,7 @@ void FS47Evening::ControlEntranceTest(double Dt)
   if(T.Stage==4)
   {
    T.bDone=true;
-   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS COMPLETE ordinary drive/controller/TripStep, full visitor-bay footprint, actual egress-to-entrance walk, stable white service during travel, distinct blue personal car after arrival and fresh disk/full-world reload; no phone shortcut or human-input claim"));
+   UE_LOG(LogTemp,Display,TEXT("S47: SARO parking PASS COMPLETE %s, whole visitor area regardless paint/heading, camera-ray entrance interaction and actual bidirectional west-entrance walk, waiting white service retained, distinct blue personal car after arrival and fresh disk/full-world reload; no phone shortcut or human-input claim"),T.bSavedStop?TEXT("pending stationary save recovery"):TEXT("ordinary drive/controller/TripStep"));
    FPlatformMisc::RequestExit(false);return;
   }
   return;

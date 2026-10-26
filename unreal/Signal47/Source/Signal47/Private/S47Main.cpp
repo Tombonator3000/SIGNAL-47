@@ -3,6 +3,8 @@
 #include "S47Substation.h"
 #include "S47Office.h"
 #include "S47T02Test.h"
+#include "S47SkyVisitors.h"
+#include "S47DaleDocumentsTest.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 #include "S47AnomalyTest.h"
@@ -142,6 +144,8 @@ void US47Main::Step(double Dt)
 	// main.ts: the sky, the lamps, the shared lights, the fog's colour, the painted horizon, the areas'
 	// glows and windows (and World.update's light in the air), the ground cover before the picture
 	if (Life) Life->Step(Dt);
+	if (SkyVisitors) SkyVisitors->Step(Dt);
+	if (DaleDocumentsTest) DaleDocumentsTest->Step(Dt);
 	if (AnomalyTest) AnomalyTest->Step(Dt);
 	if (T02Test) T02Test->Step(Dt);
 }

@@ -7,6 +7,10 @@ Signal47/.vscode/
 Signal47/*.code-workspace
 # Bought models and sounds, and all audio (big, rebuilt by the import scripts): never in the public repo.
 Signal47/Content/Licensed/
+# Selected local Fab dependencies retain their original package paths during migration.
+# Recipes/provenance belong in Tools/routenature; vendor binaries never enter this public repo.
+Signal47/Content/Northwood/
+Signal47/Content/JustBStudios/
 Signal47/Content/Audio/
 # The free models (CC BY and CC0, ~/Assets/signal47-free), rebuilt by Tools/freemodels/import_free.sh.
 Signal47/Content/Free/

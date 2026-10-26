@@ -230,12 +230,12 @@ void FS47EveningVisual::ParkPersonal(const FVector& Position, double Heading)
 {
 	PersonalPark = Position;
 	PersonalHeading = Heading;
-	// Repair unsafe arrival and restored poses without changing story/evidence state. The whole
-	// rotated body must clear SARO 07's pad, both entrance landings and the annex plinth.
+	// Preserve every accepted visitor-area stop exactly. The controller already checked
+	// physical obstacles; this repair is only for older poses on the building/service pad.
 	if (!FMath::IsFinite(Position.X)||!FMath::IsFinite(Position.Y)||!FMath::IsFinite(Position.Z)||!FMath::IsFinite(Heading)
-        || WagonOverlaps(PersonalPark, Heading, 6.6, 13, 2.7, 12.4)
+        || (!FitsArrivalArea(Position, Heading) && (WagonOverlaps(PersonalPark, Heading, 6.6, 13, 2.7, 12.4)
 		|| WagonOverlaps(PersonalPark, Heading, 5, 13, -0.6, 4.5)
-		|| WagonOverlaps(PersonalPark, Heading, -6, 6.6, 4.8, 10.8))
+		|| WagonOverlaps(PersonalPark, Heading, -6, 6.6, 4.8, 10.8))))
 	{
 		PersonalPark = ArrivalPark();
 		PersonalHeading = 0;
@@ -243,18 +243,13 @@ void FS47EveningVisual::ParkPersonal(const FVector& Position, double Heading)
 	bParked = true;
 }
 
-bool FS47EveningVisual::FitsArrivalBay(const FVector& P,double H)
+bool FS47EveningVisual::FitsArrivalArea(const FVector& P,double H)
 {
- if(!FMath::IsFinite(P.X)||!FMath::IsFinite(P.Z)||!FMath::IsFinite(H))return false;
- const double C=FMath::Abs(FMath::Cos(H)),S=FMath::Abs(FMath::Sin(H));
- const double X=PersonalHalfWidth()*C+PersonalHalfLength()*S,Z=PersonalHalfWidth()*S+PersonalHalfLength()*C;
- // All three painted visitor bays work, facing either end. Keep the body inside
- // one bay so the pedestrian strip and entrance remain clear.
- const double Alignment=FMath::Abs(FMath::Sin(H));
- if(Alignment>FMath::Sin(.40) || P.Z-Z<11.35 || P.Z+Z>17.25)return false;
- for(double Centre:{-15.8,-12.8,-9.8})
-  if(P.X-X>=Centre-1.65 && P.X+X<=Centre+1.65)return true;
- return false;
+ // Unreal arrival correction: stopping anywhere on this paved visitor area counts.
+ // The drive controller still enforces obstacles and a sustained stop; parking paint
+ // and heading are guidance, never a second hidden gameplay gate.
+ return FMath::IsFinite(P.X) && FMath::IsFinite(P.Y) && FMath::IsFinite(P.Z) && FMath::IsFinite(H)
+  && P.X>=ArrivalMinX && P.X<=ArrivalMaxX && P.Z>=ArrivalMinZ && P.Z<=ArrivalMaxZ;
 }
 void FS47EveningVisual::RestorePersonal(const FVector& P,double H,int32 Version)
 {

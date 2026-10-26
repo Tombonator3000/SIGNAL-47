@@ -159,7 +159,7 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("doorSouth"), TEXT("The corridor door, a square of wired glass at head height."));
 	// (Unreal only, on Tom's request: the lab is a darkroom here, S47Chapter1.cpp; the card is new)
 	Looks(TEXT("labDoor"), TEXT("The lab door. A red bulb over it for when the safelight is on, and a card: DARKROOM. KEEP THE DOOR SHUT WHILE DEVELOPING."));
-	Looks(TEXT("exitDoor"), TEXT("FIRE EXIT, stencilled in red on grey steel."));
+	Looks(TEXT("exitDoor"), TEXT("SARO ENTRANCE. The ramp leads into the south corridor; the control room is through the inner door."));
 	Looks(TEXT("recordsDoor"), TEXT("RECORDS, on a card in a brass holder."));
 	// ---------- the yard and the records room (Chapter1.ts, Chapter2.ts) ----------
 	Looks(TEXT("motorBus"), TEXT("S-03's motor bus cabinet. A sticker on the door: DO NOT RESET WITHOUT A LOG ENTRY."));

@@ -11,26 +11,26 @@
     "binary_GLB_bounds_triangles_materials": true,
     "saved_Blend_current_packed_maps": true
   },
-  "triangles": 103550,
+  "triangles": 179476,
   "bounds_local_m": [
     [
-      -3071.326904296875,
+      -3072.0556640625,
       -1850.0,
-      -4.000612258911133
+      -4.000612735748291
     ],
     [
       2250.0,
-      3759.0615234375,
-      234.64971923828125
+      3760.0595703125,
+      239.22003173828125
     ]
   ],
-  "FBX_bounds_error_m": 0.0006122589111328125,
+  "FBX_bounds_error_m": 0.0006127357482910156,
   "FBX_bounds_tolerance_m": 0.001,
   "GLB_bounds_error_m": 0.0,
-  "minimum_UV_triangle_area": 0.0028857178612888834,
-  "raised_triangles": 85811,
-  "oldroad_clearance_lower_bound_m": 224.55525479441397,
-  "mainroad_clearance_lower_bound_m": 237.93414306640625,
+  "minimum_UV_triangle_area": 0.0016714739388662414,
+  "raised_triangles": 144691,
+  "oldroad_clearance_lower_bound_m": 254.00120709758528,
+  "mainroad_clearance_lower_bound_m": 280.6914978027344,
   "packed_textures": [
     {
       "name": "MesaCap_base_color.png",

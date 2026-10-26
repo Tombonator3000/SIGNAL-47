@@ -53,6 +53,8 @@ public:
 	TSharedPtr<class FS47Substation> Substation; // local, persistent Caliche Junction inspection circuit
 	TSharedPtr<class FS47Office> Office; // physical Operations key, office and field-sheet route
 	TSharedPtr<class FS47T02Test> T02Test; // explicit isolated live-contract flag only
+	TSharedPtr<class FS47DaleDocumentsTest> DaleDocumentsTest;
+	TSharedPtr<class FS47SkyVisitors> SkyVisitors; // optional world-space sky progression, separately saved
 	TSharedPtr<class FS47Evening> Evening; // authored evening opening and persistent pack gates
 	TSharedPtr<class FS47CB> CB; // core/cb.ts: the CB under the truck's dash (main.ts const cb; made with chapter four)
 

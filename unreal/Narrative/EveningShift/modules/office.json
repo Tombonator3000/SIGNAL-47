@@ -32,6 +32,34 @@
     "office_field_lead_filed": {
       "default": false,
       "purpose_nb": "Det konkrete ståstedet ved trafostasjonen er lagt i saken."
+    },
+    "office_skylog_read": {
+      "default": false,
+      "purpose_nb": "Spilleren har faktisk åpnet EV_DALE_SKYLOG i dokumentvisningen. Menyåpning gir ikke leststatus."
+    },
+    "office_witness_read": {
+      "default": false,
+      "purpose_nb": "Spilleren har faktisk åpnet EV_DALE_WITNESS i dokumentvisningen. Menyåpning gir ikke leststatus."
+    },
+    "office_explanations_read": {
+      "default": false,
+      "purpose_nb": "Spilleren har faktisk åpnet EV_DALE_EXPLANATIONS i dokumentvisningen. Menyåpning gir ikke leststatus."
+    },
+    "office_frame18_read": {
+      "default": false,
+      "purpose_nb": "Spilleren har faktisk åpnet EV_DALE_FRAME18 i dokumentvisningen. Menyåpning gir ikke leststatus."
+    },
+    "office_tapeloan_read": {
+      "default": false,
+      "purpose_nb": "Spilleren har faktisk åpnet EV_DALE_TAPELOAN i dokumentvisningen. Menyåpning gir ikke leststatus."
+    },
+    "office_unsent_read": {
+      "default": false,
+      "purpose_nb": "Spilleren har faktisk åpnet EV_DALE_UNSENT i dokumentvisningen. Menyåpning gir ikke leststatus."
+    },
+    "office_array_service_read": {
+      "default": false,
+      "purpose_nb": "Spilleren har faktisk åpnet EV_DALE_ARRAY_SERVICE i dokumentvisningen. Menyåpning gir ikke leststatus."
     }
   },
   "scenes": [
@@ -1148,6 +1176,573 @@
           "EV_DALE_NOTE"
         ]
       }
+    },
+    {
+      "id": "D02_READ_SKYLOG",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_SKYLOG kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_skylog_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_skylog_read": true
+        },
+        "give_documents": [
+          "EV_DALE_SKYLOG"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_SKYLOG",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_SKYLOG kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_skylog_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_skylog_read": true
+        },
+        "give_documents": [
+          "EV_DALE_SKYLOG"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_SKYLOG",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_SKYLOG kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_skylog_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_skylog_read": true
+        },
+        "give_documents": [
+          "EV_DALE_SKYLOG"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_WITNESS",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_WITNESS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_witness_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_witness_read": true
+        },
+        "give_documents": [
+          "EV_DALE_WITNESS"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_WITNESS",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_WITNESS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_witness_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_witness_read": true
+        },
+        "give_documents": [
+          "EV_DALE_WITNESS"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_WITNESS",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_WITNESS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_witness_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_witness_read": true
+        },
+        "give_documents": [
+          "EV_DALE_WITNESS"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_EXPLANATIONS",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_EXPLANATIONS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_explanations_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_explanations_read": true
+        },
+        "give_documents": [
+          "EV_DALE_EXPLANATIONS"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_EXPLANATIONS",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_EXPLANATIONS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_explanations_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_explanations_read": true
+        },
+        "give_documents": [
+          "EV_DALE_EXPLANATIONS"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_EXPLANATIONS",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_EXPLANATIONS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_explanations_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_explanations_read": true
+        },
+        "give_documents": [
+          "EV_DALE_EXPLANATIONS"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_FRAME18",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_FRAME18 kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_frame18_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_frame18_read": true
+        },
+        "give_documents": [
+          "EV_DALE_FRAME18"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_FRAME18",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_FRAME18 kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_frame18_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_frame18_read": true
+        },
+        "give_documents": [
+          "EV_DALE_FRAME18"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_FRAME18",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_FRAME18 kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_frame18_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_frame18_read": true
+        },
+        "give_documents": [
+          "EV_DALE_FRAME18"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_TAPELOAN",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_TAPELOAN kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_tapeloan_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_tapeloan_read": true
+        },
+        "give_documents": [
+          "EV_DALE_TAPELOAN"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_TAPELOAN",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_TAPELOAN kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_tapeloan_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_tapeloan_read": true
+        },
+        "give_documents": [
+          "EV_DALE_TAPELOAN"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_TAPELOAN",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_TAPELOAN kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_tapeloan_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_tapeloan_read": true
+        },
+        "give_documents": [
+          "EV_DALE_TAPELOAN"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_UNSENT",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_UNSENT kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_unsent_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_unsent_read": true
+        },
+        "give_documents": [
+          "EV_DALE_UNSENT"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_UNSENT",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_UNSENT kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_unsent_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_unsent_read": true
+        },
+        "give_documents": [
+          "EV_DALE_UNSENT"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_UNSENT",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_UNSENT kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_unsent_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_unsent_read": true
+        },
+        "give_documents": [
+          "EV_DALE_UNSENT"
+        ]
+      }
+    },
+    {
+      "id": "D02_READ_ARRAY_SERVICE",
+      "phase": "archive",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_ARRAY_SERVICE kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_array_service_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_array_service_read": true
+        },
+        "give_documents": [
+          "EV_DALE_ARRAY_SERVICE"
+        ]
+      }
+    },
+    {
+      "id": "D02_FIELD_READ_ARRAY_SERVICE",
+      "phase": "field",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_ARRAY_SERVICE kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_array_service_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_array_service_read": true
+        },
+        "give_documents": [
+          "EV_DALE_ARRAY_SERVICE"
+        ]
+      }
+    },
+    {
+      "id": "D02_NIGHT_READ_ARRAY_SERVICE",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Kun vertens faktisk åpnete kontordokument EV_DALE_ARRAY_SERVICE kan kvittere denne handlingen; ikke ved mappe-/menyåpning.",
+      "requires": {
+        "all": [
+          "office_open"
+        ],
+        "none": [
+          "office_array_service_read"
+        ]
+      },
+      "direction_nb": "Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.",
+      "lines": [],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "office_array_service_read": true
+        },
+        "give_documents": [
+          "EV_DALE_ARRAY_SERVICE"
+        ]
+      }
     }
   ],
   "documents": [
@@ -1255,6 +1850,80 @@
         "If you take the sheet, leave me a note. If I am not on the telephone, try the service radio. Do not tell the others I have found something. I have found somewhere to look."
       ],
       "production_nb": "Gradvis fordypning etter et menneskelig, ordinært kontor. Dale har jobbet med spor og kjenner ståstedet, men vet ikke årsak, C, Nora eller finalen. Ingen talt opplesning med Kinski-profil; dokumenttekst er skriftlig."
+    },
+    {
+      "id": "EV_DALE_SKYLOG",
+      "title": "Lights above the ridge / 6 April",
+      "kind": "hand",
+      "stamp": "6 APR 1986 / personal observation",
+      "body": [
+        "6 APR. Kitchen clock about 20:40. One white light crossed above the ridge and stopped where there is no tower. I went outside. It moved again before I found the binoculars. Aircraft remain possible; I lost the horizon behind the roof. What bothers me is the dog. He kept watching the empty place for another ten minutes."
+      ],
+      "production_nb": "Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten."
+    },
+    {
+      "id": "EV_DALE_WITNESS",
+      "title": "Statement copied at the service desk / 29 March",
+      "kind": "typed",
+      "stamp": "29 MAR 1986 / copied by D.",
+      "body": [
+        "Mrs. Bell says she heard someone crossing the yard after the porch lamp failed. The shape stood beside the washing line, taller than her husband. She called his name. It bent toward the window without taking a step. Her husband was asleep upstairs. She asked me to write “person,” not “creature.” I have kept her wording. I did not see it."
+      ],
+      "production_nb": "Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten."
+    },
+    {
+      "id": "EV_DALE_EXPLANATIONS",
+      "title": "Explanations retained / working sheet",
+      "kind": "hand",
+      "stamp": "WORKING SHEET / D.",
+      "body": [
+        "Three reports were aircraft. One bright object was visible from the same chair on four clear evenings: a star, made strange by the window glass. Keep those pages. Crossing out an explanation does not make the next report true. The service-road account remains open because neither witness describes the same direction. Ask separately before showing either one the other statement."
+      ],
+      "production_nb": "Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten."
+    },
+    {
+      "id": "EV_DALE_FRAME18",
+      "title": "Photograph envelope / frame 18",
+      "kind": "hand",
+      "stamp": "FRAME 18 / envelope text only",
+      "body": [
+        "Envelope annotation. No photograph or negative is enclosed in this working copy.",
+        "Do not crop the left edge. The porch post is the only useful measure of height. The pale mark might be glare from the kitchen window; the negative needs checking. What I remember is a shape standing beyond the fence. What the photograph contains may be something else. Keep both sentences. I am starting to replace one with the other."
+      ],
+      "production_nb": "Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten."
+    },
+    {
+      "id": "EV_DALE_TAPELOAN",
+      "title": "Borrowed cassette / return sleeve",
+      "kind": "hand",
+      "stamp": "RETURN TUESDAY / borrowed cassette",
+      "body": [
+        "Public lecture, borrowed from a neighbor. Speakers describe visitors, contact and messages from elsewhere. No local recording. No connection established with the service-road tape. I kept it because people use these words when they call, and I need to know what they have heard already. Return it on Tuesday. Do not record over the label. There are family birthdays underneath."
+      ],
+      "production_nb": "Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten."
+    },
+    {
+      "id": "EV_DALE_UNSENT",
+      "title": "Unsent letter / no address",
+      "kind": "hand",
+      "stamp": "UNSENT / no address",
+      "body": [
+        "I was going to tell you about the lights, then I read this back and heard how it sounded. You would ask whether I am sleeping. Fair question. I still do the shopping. I still forget the milk. I would like one evening when the telephone rings and I expect an ordinary problem. Do not mail this. Get some sleep first."
+      ],
+      "production_nb": "Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten."
+    },
+    {
+      "id": "EV_DALE_ARRAY_SERVICE",
+      "title": "Array service / Row One sighting positions",
+      "kind": "typed",
+      "stamp": "SARO / ARRAY SERVICE / APR 1986",
+      "body": [
+        "FOOT ACCESS. Use the walk gate north of the control room. The cable trench is the north-south spine. Follow its gravel track to the first east-west service row; do not cross a pedestal or climb a reflector.",
+        "The small service boards mark A / ROW ONE WEST, seven metres west of the trench, and B / ROW ONE EAST, nineteen metres east of the trench. Both stand on the same continuous gravel row. The fixed REF / R1 board is at the trench junction. S-02 is south of the western side; S-03 is south of the eastern side; S-04 is north of the row.",
+        "For an ordinary sighting comparison, keep the reference board in place and note the reflector position against the same fixed features from A and B. Either standing position may be visited first. Return along the same row and spine to the walk gate. Check command history and the local drive state separately before attributing a movement to a source.",
+        "This is a service layout, not a recorded result or an instruction to energise a drive. A recording can establish sound and elapsed time; it cannot establish bearing. The Caliche culvert camera position remains on the separate FIELD CHECKS working index."
+      ],
+      "production_nb": "Ordinært feltvedlegg; A=(-8,-74), B=(18,-74), REF=(-1,-74) i eksisterende three-koordinater. Punktene er på fRow1, unngår fundament/collider, og nås fra gate/fSpine. Ingen ARRAY-01-fullføring gis; ny kontroll-/retrettlogikk er separat."
     }
   ],
   "media": [

@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47ExteriorFixtures.h"
 class AS47Web;
 class UStaticMeshComponent;
 class UMaterialInterface;
@@ -27,6 +28,7 @@ private:
  TWeakObjectPtr<UStaticMeshComponent> Stains;
  TWeakObjectPtr<UMaterialInterface> StainAtlas;
  TArray<TWeakObjectPtr<USpotLightComponent>> SignWash;
+ TArray<S47ExteriorFixtures::FFixture> SignFixtures;
  TArray<int32> PartNodes, RetiredNodes;
  int32 RemovedWalkFeet=0,RemovedDriveFeet=0;
  bool bShown=false;

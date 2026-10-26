@@ -2,6 +2,8 @@
 #include "S47NinthModel.h"
 
 #include "Components/PrimitiveComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "S47CowMeshes.h"
 #include "S47Main.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -15,6 +17,18 @@ FS47NinthModel::FS47NinthModel(US47Main* InM) : M(InM)
 	HeadHit = W->Obj(TEXT("world.site.ninth.hit.head")); BodyHit = W->Obj(TEXT("world.site.ninth.hit.body")); FrostHit = W->Obj(TEXT("world.site.ninth.hit.frost"));
 	for (const TCHAR* Part : { TEXT("head"), TEXT("body"), TEXT("middle") }) At.Add(Part, W->Vec(FString(TEXT("world.site.ninth.at.")) + Part));
 	Box = W->Rect(TEXT("world.site.ninth.box"));
+	FS47Obj Hide = Group.Find(TEXT("ninth:hide")), Cuts = Group.Find(TEXT("ninth:cuts"));
+	const auto* HideNode = W->Node(Hide.I);
+	auto* HideComponent = HideNode ? Cast<UStaticMeshComponent>(HideNode->Comp.Get()) : nullptr;
+	const auto Meshes = S47CowMeshes::Load();
+	if (Meshes && HideComponent && Cuts)
+	{
+		// The replacement is group-local in the original fallen pose. Keep the frost, head/
+		// flank proxies, footprints and photograph subjects; only retire the old cut decals.
+		S47CowMeshes::Replace(HideComponent, Meshes.Abducted);
+		Cuts.SetVisible(false);
+		UE_LOG(LogTemp, Display, TEXT("S47: cow models abducted ready; original frost and story proxies retained"));
+	}
 	for (const FString& P : W->PathsUnder(TEXT("world.site.occluders[")))
 	{
 		const FS47Obj O = W->Obj(P);

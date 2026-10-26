@@ -4,6 +4,7 @@
 #include "S47GroundCover.h"
 #include "S47Legs.h"
 #include "S47RoadTerrain.h"
+#include "S47RouteNature.h"
 #include "S47Three.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -123,5 +124,6 @@ bool AS47Web::AuditHighwayLandscape(TArray<FString>& Lines) const
   Check(C && C->GetComponentTransform().Equals(Want,.03),N?N->Name:TEXT("missing shared component"));
   Check(C && C->IsVisible()==(HighwayArea(CurrentArea)&&N->bVis),TEXT("component visibility follows continuous area"));
  }
+ if(RouteNature)Ok&=RouteNature->Audit(Lines);
  return Ok;
 }

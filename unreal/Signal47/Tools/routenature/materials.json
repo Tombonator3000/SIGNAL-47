@@ -1,0 +1,160 @@
+{
+  "native_channel_review": "PASS",
+  "proof": {
+    "engine": "5.8.4-58902052+++UE5+Release-5.8",
+    "native_inspection_sha256": "e56fecb9d29ca79bf79b59600f28b52f3ff8b1a00e541618cccb1559b5fe827f",
+    "source": "Tools/routenature/inspect_assets.py native material traversal, saved report native-source-inspection.json",
+    "opaque": "MM_Megascan_01a node11 Base Mask outputR ->node6 Multiply Base Roughness Multi ->node2 MakeMaterialAttributes. Actual per-instance Base Mask resolved; DpR filename is not used to infer channels.",
+    "grass": "MM_Foliage node1 2.ARM outputG ->MP_ROUGHNESS; node6 1.Albedo outputA ->node4 Multiply ->MP_OPACITY_MASK.",
+    "scrub": "M_MS_Foliage node26 ORT G ->node1 Multiply ->MP_ROUGHNESS, ORT R ->node3 Multiply ->MP_OPACITY_MASK. Billboard parent node56 uses same G/R.",
+    "base_normal": "Actual per-instance Base Color/Albedo and Base Normal/Normal texture values from native MaterialEditingLibrary. Direct RGB on original UV0; no upblend/wetness/detail-normal/world systems."
+  },
+  "materials": {
+    "M_RN_Boulder_A": {
+      "textures": {
+        "base": "/Game/Northwood/EpicContent/Megascans/Textures/Albedo_4K_ulcuajx",
+        "normal": "/Game/Northwood/EpicContent/Megascans/Textures/Normal_4K_LOD0_ulcuajx",
+        "roughness": "/Game/Northwood/EpicContent/Megascans/Textures/Roughness_4K_ulcuajx"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "roughness",
+          "R"
+        ]
+      }
+    },
+    "M_RN_Boulder_B": {
+      "textures": {
+        "base": "/Game/Northwood/EpicContent/Megascans/Textures/Albedo_4K_vbhtdixga",
+        "normal": "/Game/Northwood/EpicContent/Megascans/Textures/Normal_4K_LOD0_vbhtdixga",
+        "roughness": "/Game/Northwood/EpicContent/Megascans/Textures/Roughness_4K_vbhtdixga"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "roughness",
+          "R"
+        ]
+      }
+    },
+    "M_RN_Outcrop_A": {
+      "textures": {
+        "base": "/Game/Northwood/EpicContent/Megascans/Textures/Albedo_4K_ulqtdgx",
+        "normal": "/Game/Northwood/EpicContent/Megascans/Textures/Normal_4K_LOD0_ulqtdgx",
+        "roughness": "/Game/Northwood/EpicContent/Megascans/Textures/Roughness_4K_ulqtdgx"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "roughness",
+          "R"
+        ]
+      }
+    },
+    "M_RN_Cliff_A": {
+      "textures": {
+        "base": "/Game/Northwood/EpicContent/Megascans/Textures/T_Huge_Canyon_Sandstone_Cliff_vcepbapga_8K_D",
+        "normal": "/Game/Northwood/EpicContent/Megascans/Textures/T_Huge_Canyon_Sandstone_Cliff_vcepbapga_8K_N",
+        "roughness": "/Game/Northwood/EpicContent/Megascans/Textures/T_HugeCanyonSandstoneCliff_vcepbapga_8K_DpR"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "roughness",
+          "R"
+        ]
+      }
+    },
+    "M_RN_Pebble": {
+      "textures": {
+        "base": "/Game/Northwood/EpicContent/Megascans/Textures/T_Scattered_Granite_Rocks_phxuF_1K_D",
+        "normal": "/Game/Northwood/EpicContent/Megascans/Textures/T_Scattered_Granite_Rocks_phxuF_1K_N",
+        "packed": "/Game/Northwood/EpicContent/Megascans/Textures/T_ScatteredGraniteRocks_phxuF_1K_DpR"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "packed",
+          "R"
+        ]
+      }
+    },
+    "M_RN_DryGrass": {
+      "textures": {
+        "base": "/Game/JustBStudios/PostApo/Textures/T_WildGrass_01_B",
+        "normal": "/Game/JustBStudios/PostApo/Textures/T_WildGrass_01_N",
+        "packed": "/Game/JustBStudios/PostApo/Textures/T_WildGrass_01_ORM"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "packed",
+          "G"
+        ],
+        "MP_OPACITY_MASK": [
+          "base",
+          "A"
+        ]
+      },
+      "masked": true
+    },
+    "M_RN_DryScrub": {
+      "textures": {
+        "base": "/Game/Northwood/EpicContent/Megascans/Textures/T_Dead_Shrubs_vdknafgha_4K_D",
+        "normal": "/Game/Northwood/EpicContent/Megascans/Textures/T_Dead_Shrubs_vdknafgha_4K_N",
+        "packed": "/Game/Northwood/EpicContent/Megascans/Textures/T_DeadShrubs_vdknafgha_4K_ART"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "packed",
+          "G"
+        ],
+        "MP_OPACITY_MASK": [
+          "packed",
+          "R"
+        ]
+      },
+      "masked": true
+    },
+    "M_RN_DryScrub_Billboard": {
+      "textures": {
+        "base": "/Game/Northwood/EpicContent/Megascans/Textures/T_Dead_Shrubs_vdknafgha_Billboard_D",
+        "normal": "/Game/Northwood/EpicContent/Megascans/Textures/T_Dead_Shrubs_vdknafgha_Billboard_N",
+        "packed": "/Game/Northwood/EpicContent/Megascans/Textures/T_DeadShrubs_vdknafgha_4K_billboard_ART"
+      },
+      "channels": {
+        "MP_ROUGHNESS": [
+          "packed",
+          "G"
+        ],
+        "MP_OPACITY_MASK": [
+          "packed",
+          "R"
+        ]
+      },
+      "masked": true
+    }
+  },
+  "mesh_materials": {
+    "SM_RN_Cliff_A": [
+      "M_RN_Cliff_A"
+    ],
+    "SM_RN_Boulder_A": [
+      "M_RN_Boulder_A"
+    ],
+    "SM_RN_Boulder_B": [
+      "M_RN_Boulder_B"
+    ],
+    "SM_RN_Outcrop_A": [
+      "M_RN_Outcrop_A"
+    ],
+    "SM_RN_Pebble_A": [
+      "M_RN_Pebble"
+    ],
+    "SM_RN_Pebble_B": [
+      "M_RN_Pebble"
+    ],
+    "SM_RN_DryGrass_A": [
+      "M_RN_DryGrass"
+    ],
+    "SM_RN_DryScrub_A": [
+      "M_RN_DryScrub",
+      "M_RN_DryScrub_Billboard"
+    ]
+  }
+}

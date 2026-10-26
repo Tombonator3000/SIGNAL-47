@@ -365,8 +365,8 @@ void US47Chapter4::Begin(const S47J::FObj& Saved)
 	ApplyWorld();
 	if (!Saved.IsValid())
 	{
-		Note(FString::Printf(TEXT("%s. N. Vega is in room 6 at Sierra Motor Court, 650 metres down the highway south of SARO, on the right. She wants the original record and the prints. The truck is on its pad; on foot it is the fire exit at the west end of the south corridor, and the shoulder."), *Time()));
-		Toast(TEXT("Room 6 is at Sierra Motor Court, down the highway south. Take the truck, or walk the shoulder from the fire exit."), 4.6f);
+		Note(FString::Printf(TEXT("%s. N. Vega is in room 6 at Sierra Motor Court, 650 metres down the highway south of SARO, on the right. She wants the original record and the prints. The truck is on its pad; on foot it is the visitor entrance at the west end of the south corridor, and the shoulder."), *Time()));
+		Toast(TEXT("Room 6 is at Sierra Motor Court, down the highway south. Take the truck, or walk the shoulder from the visitor entrance."), 4.6f);
 	}
 	Save();
 	static bool bDriven = false;
@@ -453,7 +453,7 @@ FString US47Chapter4::Objective() const
 	const bool bRoom = InRoom();
 	if (S.Stage == TEXT("to-motel"))
 	{
-		if (!ExitOpen() && Area() == TEXT("saro")) return TEXT("SIERRA MOTOR COURT // ROOM 6, DOWN THE HIGHWAY SOUTH. THE TRUCK, OR THE FIRE EXIT AT THE END OF THE SOUTH CORRIDOR");
+		if (!ExitOpen() && Area() == TEXT("saro")) return TEXT("SIERRA MOTOR COURT // ROOM 6, DOWN THE HIGHWAY SOUTH. THE TRUCK, OR THE VISITOR ENTRANCE AT THE END OF THE SOUTH CORRIDOR");
 		return TEXT("SIERRA MOTOR COURT // DOWN THE HIGHWAY TO ROOM 6, THE LIT SIGN ON THE RIGHT");
 	}
 	if (S.Stage == TEXT("room"))
@@ -516,7 +516,7 @@ void US47Chapter4::DoorChanged(const FString& Id, bool bOpen)
 	if (Court) Court->Brick().SetVisible(bOpen);
 	if (!bActive || !bOpen || S.bExitOpen) return;
 	S.bExitOpen = true;
-	Toast(TEXT("The alarm on the push bar was disconnected years ago. A brick on the step holds the door."), 4.2f);
+	Toast(TEXT("A brick on the step holds the entrance door. The highway shoulder runs south to the motel."), 4.2f);
 	Save();
 }
 
@@ -1521,7 +1521,7 @@ bool US47Chapter4::SelfTest(TArray<FString>& Out)
 	C->BuildBook();
 	C->BeganCase = S47J::Read(TEXT("{\"s\":{\"stage\":\"complete\",\"filed\":true,\"method\":\"passive\"},\"ch2\":{\"read\":{\"original\":true,\"amended\":true}},\"ch3\":{\"stage\":\"complete\",\"dev\":3}}"));
 	C->bStarted = true; C->bActive = true;
-	Check(C->Objective() == TEXT("SIERRA MOTOR COURT // ROOM 6, DOWN THE HIGHWAY SOUTH. THE TRUCK, OR THE FIRE EXIT AT THE END OF THE SOUTH CORRIDOR") && C->Tasks().Num() == 1, TEXT("to the motel: the truck, or the fire exit"));
+	Check(C->Objective() == TEXT("SIERRA MOTOR COURT // ROOM 6, DOWN THE HIGHWAY SOUTH. THE TRUCK, OR THE VISITOR ENTRANCE AT THE END OF THE SOUTH CORRIDOR") && C->Tasks().Num() == 1, TEXT("to the motel: the truck, or the visitor entrance"));
 	Check(C->TruckTrip(TEXT("saro")).IsSet() && C->TruckTrip(TEXT("saro"))->Label == TEXT("Drive to Sierra Motor Court") && !C->TruckTrip(TEXT("motel")).IsSet(), TEXT("the truck's trip, not from the motel's lot"));
 	C->EnteredRoom();
 	Check(C->S.bArrived && C->S.Stage == TEXT("room") && C->Tasks().Num() == 7 && C->TestNotes.Num() == 1 && C->TruckTrip(TEXT("saro")).IsSet() == false, TEXT("into room 6"));

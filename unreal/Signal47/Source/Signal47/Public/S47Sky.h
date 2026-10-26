@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/StrongObjectPtr.h"
 
 class AS47Web;
 class UStaticMeshComponent;
@@ -39,6 +40,9 @@ public:
 	double Dawn = 0;                      // Morning-only curve; story gates keep their old meaning.
 	double Evening = 0;                   // Late afternoon -> sunset -> blue hour, independent of Dawn.
 	double Midday = 0;                    // Rendering only: full daylight 06:00-17:00; never a story Dawn gate.
+	/** Pure Sky is visual only: 06:00-07:00 in, 18:00-18:53 out; original night and dawn stay exact. */
+	double PureSkyWeight = 0;
+	static double PureSkyWeightAt(double Clock);
 	/** Rendering only (SKY.md): the volumetric layer's cover and the cirrus above it, from the clock.
 	 *  Day and dusk a broken 40-70 % layer; 18:50-21:00 it breaks up to a few night clouds (never
 	 *  overcast); 04:30-06:30 it builds back. Story beats keep open sky locally (Draw: clear directions). */
@@ -109,7 +113,9 @@ private:
 	bool bConceptLegacyMesasHidden = false;
 	TWeakObjectPtr<UStaticMeshComponent> DomeComp, CometComp, MeteorComp, BandComp;
 	TWeakObjectPtr<UInstancedStaticMeshComponent> StarsComp;
-	TWeakObjectPtr<UMaterialInstanceDynamic> DomeMid, BandMid, StarsMid, MeteorMid;
+	// The inactive dome must survive GC while the component holds the other day/night material.
+	TStrongObjectPtr<UMaterialInstanceDynamic> DomeMid, PureSkyMid;
+	TWeakObjectPtr<UMaterialInstanceDynamic> BandMid, StarsMid, MeteorMid;
 	FLinearColor HoleSky = FLinearColor(0.006f, 0.008f, 0.02f);
 
 public:

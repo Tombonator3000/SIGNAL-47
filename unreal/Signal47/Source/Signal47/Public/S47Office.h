@@ -30,6 +30,11 @@ public:
  bool RestoreDoorwayAt(const FVector& P, double Radius);
  bool Use(const FString& Id);
  FS47Obj Object(const FString& Id) const;
+ // Read means the actual text was opened; browsing the private folder is not a read.
+ bool ReadLibraryDocument(const FString& Id);
+ bool DocumentRead(const FString& Id) const;
+ static const TArray<FString>& LibraryDocumentIds();
+ static bool SelfTest(TArray<FString>& Lines);
  // The chapter host owns Nora, P04/P05, calls and its original end callback.
  TFunction<bool()> CanDepart;
  TFunction<void()> OnDepart;
@@ -43,11 +48,14 @@ private:
  bool bDeskSeen = false, bIndexRead = false, bClippingsRead = false;
  bool bNoteRead = false, bContactRead = false, bFieldSheet = false, bDeparted = false;
  double DoorK = 0, DrawerK = 0, FieldSheetAt = 0, SyncWait = 0;
+ TArray<FString> ReadDocuments;
  bool Here() const;
  bool InReach(const FString& Id) const;
- bool ArchiveAvailable() const;
+ bool AccessAvailable() const;
  void Apply();
  void SyncFacts();
- void OpenDocument(const FString& Id);
+ bool OpenDocument(const FString& Id);
+ void OpenLibrary();
+ void RefileReadDocuments();
  void Changed();
 };

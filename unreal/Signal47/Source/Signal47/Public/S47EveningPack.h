@@ -59,6 +59,7 @@ public:
 	bool EatTakeaway();
 	// Host reconciliation only removes credits which lack the current case's physical proof.
 	void ValidateWorldRestore(bool bOfficeKey, bool bOfficeUnlocked, bool bOfficeSheet, bool bReference, bool bFollowup);
+	void ValidateOfficeReadDocuments(const TArray<FString>& Read);
 	void ResetFollowupAttempt(); // only the actual physical new-attempt transaction calls this
 	bool CanStart(const FString& Id) const;
 	bool Start(const FString& Id);

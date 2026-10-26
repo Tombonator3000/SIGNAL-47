@@ -71,3 +71,15 @@ selvtestlinjen. Bruk isolert UserDir og maskinvakten som for rutene ovenfor.
 
 Sluttpakke, biler/inngang, bilder og avgrensninger føres i
 [takeaway-rapporten](../../EVENING_TAKEAWAY.md). Ingen menneskelig input påstås.
+
+
+## Dales frivillige lesestoff og servicevedlegg
+
+1. Ta bare feltmappen i det åpnete kontoret. Fortsett uten privatmappe, seks tekster eller VHS. T02-indeksen skal fortsatt vise kulverten, og ingen ny lesekvote skal sperre avreise.
+2. Åpne privatmappens liste og lukk den uten valg. Ingen av de seks tekstene er lest eller lagt til som nye dokumenter. Fortsett fra faktisk disk-save og kontroller samme tilstand.
+3. Åpne ett konkret dokument i vanlig tekstvisning. Bare dette blir lest/retained. Last fra disk og kontroller lest/ulest uavhengig; prøv vanlig og stor tekst med fullt synlig eller rullbar side.
+4. Bruk gamle kontorsaves uten `readDocuments`, og en isolert feiltypet liste. Ingen gratis ny leststatus. Behold kontornøkkel/feltmappe og eksisterende hovedrute.
+5. Åpne fotokonvolutten og låneomslaget. Ingen nye fotopiksler, VHS-transport eller `vhs_seen`. Kontaktforelesningen er ikke Dales feltopptak.
+6. Les det separate servicearket. Kontroller fysisk A/B/REF på Row One med fri gang fra port/spine og begge rekkefølger; ingen tur over antennefundament. Gjennomført lesing er ikke gjennomført ARRAY-01.
+
+`FS47DaleDocumentsTest` tilbyr avgrenset API/Walker/disk-kontroll. Root eier sekvensiell UE-/pakke-/bildeprøving; kildetestene her er ikke bevis på en ferdig bilde- eller filmrekvisitt.
