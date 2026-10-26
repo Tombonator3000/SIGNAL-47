@@ -1,0 +1,69 @@
+{
+  "authorship": "Original procedural Blender geometry for SIGNAL / 47, no external model sources.",
+  "axes": "Blender metric Z-up; native UE import x,-y,z in centimetres.",
+  "parts": {
+    "SM_SC01_Hand": {
+      "vertices": 9706,
+      "triangles": 19388,
+      "materials": [
+        "M_SC01_Skin",
+        "M_SC01_Nail"
+      ],
+      "bounds_local_m": [
+        [
+          -0.2128496766090393,
+          -0.04260137677192688,
+          -0.8313692212104797
+        ],
+        [
+          0.12256110459566116,
+          0.07066351920366287,
+          0.5427293181419373
+        ]
+      ]
+    },
+    "SM_SC01_ShutterSlat": {
+      "vertices": 168,
+      "triangles": 324,
+      "materials": [
+        "M_SC01_Steel"
+      ],
+      "bounds_local_m": [
+        [
+          -0.8650000095367432,
+          -0.01850000023841858,
+          -0.0364999994635582
+        ],
+        [
+          0.8650000095367432,
+          0.010499999858438969,
+          0.0364999994635582
+        ]
+      ]
+    },
+    "SM_SC01_GlassTraces": {
+      "vertices": 752,
+      "triangles": 1480,
+      "materials": [
+        "M_SC01_Grease"
+      ],
+      "bounds_local_m": [
+        [
+          -0.14962846040725708,
+          -0.0017999999690800905,
+          -0.08700000494718552
+        ],
+        [
+          0.08005005866289139,
+          0.0017999999690800905,
+          0.2197888344526291
+        ]
+      ]
+    }
+  },
+  "fbx_sha256": {
+    "SM_SC01_Hand.fbx": "0295de42f5c116361507f221f2e67d3e723f6865cd1b03ad80fa0da72ef5ff9d",
+    "SM_SC01_ShutterSlat.fbx": "a524fff0075685f82e6d3a0a4551ecd67f41ecee5d9dd5cc4f1eea61db8c33e2",
+    "SM_SC01_GlassTraces.fbx": "6860304354d4462b20eb8a740be0b4c98c3b24b8cdcf70f3bfef85b9fb838f2d"
+  }
+}

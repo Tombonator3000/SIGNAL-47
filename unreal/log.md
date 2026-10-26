@@ -530,3 +530,11 @@ Tom ba først om oversikt over13 SC-scenarioer og10 H-kort og deretter en detalj
 Hele den godkjente planen er lagret i HISTORIE_IMPLEMENTERINGSPLAN.md, med alle13 detaljerte SC-etapper, felles adapter-/lagrings-/tids-/farekontrakter, akseptkrav, leveringsrekkefølge og separate SC-/H-statustabeller. README/todo er koblet til planen og OPPGAVER/memory fører eierskap og status. SC01 står Under arbeid; SC02 til13 er Planlagt og alle samlede H-kort er åpne. Dokumentasjonen ferdigmelder ingen ny runtime, lyd, film, testpakke, merge eller installasjon. NP1 forblir siste dokumentert installerte standard.
 
 Arbeidskopien er /home/tom/scratch-bm/wt/horror-h01, gren codex/horror-h01, fra kontrollert core1c929b76. Root eier integrasjon, prøver og levering; manusagent eier HorrorPack/generator; dokumentasjonsagent eier plan og oversiktspekere. Unreal-jobber kjøres sekvensielt. Planleveransen skal committes av root før videre levering, uten å stage andre agenters arbeid.
+
+## 26.10.2026 kl. 11:30 CET: SC01 gjenopptatt etter avbrutt modellkjøring
+
+Tom ba den nye chatten overta arbeidet fra `01a176f6-16a2-7b60-a50e-cde5bdea863b`. Den gamle kjøringen stoppet med modellkapasitetsfeil. Arbeidskopien `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/story-sc01`, og alle ucommittede kilde-/modell-/lydendringer er bevart. Faktisk siste editorprøve `editor-live-r6` bestod 111 kontroller, 15 disk-/Flow-restores og 139,99 m native gange. Dette er editorbevis, ikke pakket eller installert aksept.
+
+Root overtar integrasjon, sekvensielle Unreal-jobber og levering. Tre avgrensede hjelpere undersøker runtime, medier og installasjonsbevis. Kildegjennomgangen fant at en tømt friroll kunne sperre obligatorisk lampereferanse; siste ramme reserveres med tydelig spillertekst og negativ prøve før ny pakking. Pakket High/Low, begge faktiske ankomstruter, fersk Continue og leveringskvittering gjenstår. SC02 starter først etter levert og kvittert SC01.
+
+Prosjektbiblioteket er søkt med behov og Unreal-teknologi, inkludert ett bredere søk. UE 5.8-profilen `quodsoler/unreal-engine-skills` er kontrollert som tilleggsreferanse og merket UNVERIFIED i biblioteket. Ingen tredjepartkode er kopiert; prosjektets egne koordinator-, test-, guard- og installasjonsløyper brukes.

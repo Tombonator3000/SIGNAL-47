@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "cues": {
+    "H01_BRIEF_003": {
+      "seed": 44,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "SC01 ASR: missing And / SARO rendered Sorrow / secured rendered secure; keep exact source text",
+          "utc": "2026-10-26T08:43:24.150642+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Dry your way out while the lights are good. A door on a plan is no use if you have never opened it.'",
+          "utc": "2026-10-26T08:43:32.226852+00:00"
+        }
+      ]
+    },
+    "SC01_FIRST_REPORT_001": {
+      "seed": 46,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "SC01 ASR: missing And / SARO rendered Sorrow / secured rendered secure; keep exact source text",
+          "utc": "2026-10-26T08:43:24.150658+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Sorrow control room window outside face of the glass you saw a moving hand or forearm i have your time and location.'",
+          "utc": "2026-10-26T08:43:35.995812+00:00"
+        },
+        {
+          "previous_seed": 44,
+          "reason": "ASR mismatch: 'Sorrow control room window outside face of the glass you saw a moving hand or forearm I have your time and location.'",
+          "utc": "2026-10-26T08:43:39.855717+00:00"
+        },
+        {
+          "previous_seed": 45,
+          "reason": "ASR mismatch: 'Sorrow control room window outside face of the glass you saw a moving hand or forearm I Have your time and location.'",
+          "utc": "2026-10-26T08:43:43.234301+00:00"
+        }
+      ]
+    },
+    "SC01_FIRST_REPORT_002": {
+      "seed": 44,
+      "history": [
+        {
+          "previous_seed": 42,
+          "reason": "SC01 ASR: missing And / SARO rendered Sorrow / secured rendered secure; keep exact source text",
+          "utc": "2026-10-26T08:43:24.150661+00:00"
+        },
+        {
+          "previous_seed": 43,
+          "reason": "ASR mismatch: 'Stay behind a secure door if you can. Call us if the person enters the building. This report is open. I cannot identify who you saw.'",
+          "utc": "2026-10-26T08:43:48.125442+00:00"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "scenario": "SC01",
+  "synthetic": true,
+  "human_listened": false,
+  "note_nb": "Kun fem SC01-cues. Identitet og referansehash kontrolleres mot eksisterende lokal VoiceStudio før syntese. Ingen navngitt NPC omcastes.",
+  "profiles": {
+    "kinski": {
+      "actors": [
+        "DALE"
+      ],
+      "profile_id": "3cf0d3a5",
+      "profile_name": "Klaus Kinski – sint parodi (Fitzcarraldo)",
+      "kind": "clone",
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
+      "source_provenance": "web/production/kinski/provenance.json",
+      "basis_nb": "Toms uttrykkelige valg: eksisterende godkjent Kinski-profil med samme innstillinger som Kinski-korpuset. Dale er bare fjernstemme (telefon, walkie, radio)."
+    },
+    "caliche_dispatch": {
+      "actors": [
+        "DISPATCH"
+      ],
+      "profile_id": "1a160d70",
+      "profile_name": "SIGNAL 47 fictional man caller (synthetic CC0 cast)",
+      "kind": "clone",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea",
+      "source_provenance": "web/production/radiocast/casting.json role man; Kyutai voice-donations/Butter.wav, CC0-1.0",
+      "basis_nb": "Eksisterende anonym CC0-innringerprofil uten navngitt karakterrolle. Egen DISPATCH-identitet caliche_dispatch; deler verken Dale/Kinski, Ward, Nora, Earl, servitrisen eller kveldslokalverten. Referansens dype register er ikke alders-/kjønnsverifikasjon; rolleprestasjon krever lytting."
+    }
+  }
+}

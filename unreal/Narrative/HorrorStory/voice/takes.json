@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "note_nb": "Kun SC01: fem faktisk produserte WAV-er. Tider og SHA er målt fra filene. Øvrige HorrorStory-opptak er ikke produsert; menneskelig lytting står åpen.",
+  "format": {
+    "sample_rate_hz": 48000,
+    "sample_format": "PCM16",
+    "channels": 1
+  },
+  "takes": {
+    "H01_BRIEF_001": {
+      "file": "HorrorStory/H01_BRIEF_001.wav",
+      "sha256": "ad8634adda98642cfc381ab7381d31f2d1e94472ba0a47e003f074654022e208",
+      "duration_seconds": 5.63,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 5.43
+    },
+    "H01_BRIEF_002": {
+      "file": "HorrorStory/H01_BRIEF_002.wav",
+      "sha256": "3ec01f4d794a78f2e5d50053d82db4899affb449c528fca94fbb221bcd04e517",
+      "duration_seconds": 3.75,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 3.54
+    },
+    "H01_BRIEF_003": {
+      "file": "HorrorStory/H01_BRIEF_003.wav",
+      "sha256": "0a896dbaae13848f3a5b2fa9e6a8dbfb65056a7ab1a8cde99f5804757c437a10",
+      "duration_seconds": 4.82,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 4.56
+    },
+    "SC01_FIRST_REPORT_001": {
+      "file": "HorrorStory/SC01_FIRST_REPORT_001.wav",
+      "sha256": "fe13c570a89dbf93b9ad8569394a4fbd5d328c031f25e8f892387433ce1ac61f",
+      "duration_seconds": 10.09,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 9.89
+    },
+    "SC01_FIRST_REPORT_002": {
+      "file": "HorrorStory/SC01_FIRST_REPORT_002.wav",
+      "sha256": "9098e9943126c2f4f63659b8f00ce87318e65440fbe3987415dab6530a4b176a",
+      "duration_seconds": 10.78,
+      "speech_start_seconds": 0.08,
+      "speech_end_seconds": 10.6
+    }
+  }
+}

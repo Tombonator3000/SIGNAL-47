@@ -1,0 +1,346 @@
+{
+  "takes": {
+    "H01_BRIEF_001": {
+      "line_id": "H01_BRIEF_001",
+      "actor": "DALE",
+      "channel": "phone",
+      "voice_profile": "kinski",
+      "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "3cf0d3a5",
+        "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "48f6a392",
+        "audio_path": "48f6a392.wav",
+        "duration": 5.72,
+        "gen_time": 2.95,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "raw_sha256": "ff54c299ef745c1b3d390619623eb4448b4196517c25b96ca34f5718ff11e72c",
+      "file": "H01_BRIEF_001.wav",
+      "audio": {
+        "duration_seconds": 5.63,
+        "peak_dbfs": -2.48500189701887,
+        "rms_dbfs": -20.585215481608394,
+        "nonsilent_rms_dbfs": -19.928878590230493,
+        "nonsilent_seconds": 4.84,
+        "speech_start_seconds": 0.08,
+        "speech_end_seconds": 5.43,
+        "longest_internal_pause_seconds": 0.41,
+        "first_2ms_peak": 6.103515625e-05,
+        "last_2ms_peak": 3.0517578125e-05,
+        "samples_at_or_above_full_scale": 0,
+        "trim_seconds": [
+          0.06,
+          5.69
+        ],
+        "raw_duration_seconds": 5.72,
+        "constant_gain_db": -0.5386,
+        "integrated_lufs": -19.5,
+        "bytes": 540524,
+        "sha256": "ad8634adda98642cfc381ab7381d31f2d1e94472ba0a47e003f074654022e208",
+        "ffprobe": {
+          "codec_name": "pcm_s16le",
+          "sample_rate": "48000",
+          "channels": 1,
+          "bits_per_sample": 16
+        }
+      },
+      "take_identity": "2446521e155b22bc",
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571"
+    },
+    "H01_BRIEF_002": {
+      "line_id": "H01_BRIEF_002",
+      "actor": "DALE",
+      "channel": "phone",
+      "voice_profile": "kinski",
+      "text": "The camera is beside the east door. Take a reference before you touch the fault.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 42,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "3cf0d3a5",
+        "text": "The camera is beside the east door. Take a reference before you touch the fault."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "659cad92",
+        "audio_path": "659cad92.wav",
+        "duration": 3.81,
+        "gen_time": 1.09,
+        "seed": 42,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "raw_sha256": "9a498b7662b1c0d7b3bae656c03d4862edac0e0018a9564e9f9e2d3df7530870",
+      "file": "H01_BRIEF_002.wav",
+      "audio": {
+        "duration_seconds": 3.75,
+        "peak_dbfs": -3.42390484805567,
+        "rms_dbfs": -20.71591123942735,
+        "nonsilent_rms_dbfs": -19.9450880273558,
+        "nonsilent_seconds": 3.14,
+        "speech_start_seconds": 0.08,
+        "speech_end_seconds": 3.54,
+        "longest_internal_pause_seconds": 0.14,
+        "first_2ms_peak": 6.103515625e-05,
+        "last_2ms_peak": 0.0,
+        "samples_at_or_above_full_scale": 0,
+        "trim_seconds": [
+          0.05,
+          3.8
+        ],
+        "raw_duration_seconds": 3.81,
+        "constant_gain_db": -1.5493,
+        "integrated_lufs": -19.9,
+        "bytes": 360044,
+        "sha256": "3ec01f4d794a78f2e5d50053d82db4899affb449c528fca94fbb221bcd04e517",
+        "ffprobe": {
+          "codec_name": "pcm_s16le",
+          "sample_rate": "48000",
+          "channels": 1,
+          "bits_per_sample": 16
+        }
+      },
+      "take_identity": "b5d23bc7651d1b0b",
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571"
+    },
+    "H01_BRIEF_003": {
+      "line_id": "H01_BRIEF_003",
+      "actor": "DALE",
+      "channel": "phone",
+      "voice_profile": "kinski",
+      "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "3cf0d3a5",
+        "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "79360e53",
+        "audio_path": "79360e53.wav",
+        "duration": 4.88,
+        "gen_time": 1.37,
+        "seed": 44,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "raw_sha256": "573e4271adf79d699fa100f4b75ffe799485572ea6157e92901b7ce6d8ce2568",
+      "file": "H01_BRIEF_003.wav",
+      "audio": {
+        "duration_seconds": 4.82,
+        "peak_dbfs": -4.888438813947892,
+        "rms_dbfs": -20.376221474262387,
+        "nonsilent_rms_dbfs": -19.88055584757273,
+        "nonsilent_seconds": 4.3,
+        "speech_start_seconds": 0.08,
+        "speech_end_seconds": 4.56,
+        "longest_internal_pause_seconds": 0.37,
+        "first_2ms_peak": 6.103515625e-05,
+        "last_2ms_peak": 0.0,
+        "samples_at_or_above_full_scale": 0,
+        "trim_seconds": [
+          0.04,
+          4.86
+        ],
+        "raw_duration_seconds": 4.88,
+        "constant_gain_db": -3.0803,
+        "integrated_lufs": -19.7,
+        "bytes": 462764,
+        "sha256": "0a896dbaae13848f3a5b2fa9e6a8dbfb65056a7ab1a8cde99f5804757c437a10",
+        "ffprobe": {
+          "codec_name": "pcm_s16le",
+          "sample_rate": "48000",
+          "channels": 1,
+          "bits_per_sample": 16
+        }
+      },
+      "take_identity": "359e0cf2f3924c47",
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571"
+    },
+    "SC01_FIRST_REPORT_001": {
+      "line_id": "SC01_FIRST_REPORT_001",
+      "actor": "DISPATCH",
+      "channel": "phone",
+      "voice_profile": "caliche_dispatch",
+      "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 46,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "54696bb1",
+        "audio_path": "54696bb1.wav",
+        "duration": 10.21,
+        "gen_time": 2.39,
+        "seed": 46,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "raw_sha256": "eb7e28b89df040a37cba005f5fa7ec7bc86202fa7825b7906ba32a47662ee3ba",
+      "file": "SC01_FIRST_REPORT_001.wav",
+      "audio": {
+        "duration_seconds": 10.09,
+        "peak_dbfs": -4.36911716579019,
+        "rms_dbfs": -21.042082808950227,
+        "nonsilent_rms_dbfs": -19.979489708767893,
+        "nonsilent_seconds": 7.9,
+        "speech_start_seconds": 0.08,
+        "speech_end_seconds": 9.89,
+        "longest_internal_pause_seconds": 0.71,
+        "first_2ms_peak": 3.0517578125e-05,
+        "last_2ms_peak": 0.0,
+        "samples_at_or_above_full_scale": 0,
+        "trim_seconds": [
+          0.12,
+          10.21
+        ],
+        "raw_duration_seconds": 10.21,
+        "constant_gain_db": -2.2766,
+        "integrated_lufs": -19.9,
+        "bytes": 968684,
+        "sha256": "fe13c570a89dbf93b9ad8569394a4fbd5d328c031f25e8f892387433ce1ac61f",
+        "ffprobe": {
+          "codec_name": "pcm_s16le",
+          "sample_rate": "48000",
+          "channels": 1,
+          "bits_per_sample": 16
+        }
+      },
+      "take_identity": "78bbe7cadf641894",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    },
+    "SC01_FIRST_REPORT_002": {
+      "line_id": "SC01_FIRST_REPORT_002",
+      "actor": "DISPATCH",
+      "channel": "phone",
+      "voice_profile": "caliche_dispatch",
+      "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.",
+      "request": {
+        "language": "en",
+        "engine": "omnivoice",
+        "num_step": 32,
+        "seed": 44,
+        "speed": 1,
+        "denoise": true,
+        "stream": true,
+        "effect_preset": "broadcast",
+        "profile_id": "1a160d70",
+        "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw."
+      },
+      "pronunciation_override": false,
+      "response": {
+        "type": "done",
+        "id": "ba7dff18",
+        "audio_path": "ba7dff18.wav",
+        "duration": 10.9,
+        "gen_time": 2.35,
+        "seed": 44,
+        "sample_rate": 24000,
+        "dropped_chunks": 0
+      },
+      "raw_sha256": "aac15b13bc83a615c1a03bd333932029e11607ba846ad18638ed30ef37f58292",
+      "file": "SC01_FIRST_REPORT_002.wav",
+      "audio": {
+        "duration_seconds": 10.78,
+        "peak_dbfs": -3.785559793410866,
+        "rms_dbfs": -21.253232007691484,
+        "nonsilent_rms_dbfs": -19.990450747625232,
+        "nonsilent_seconds": 8.06,
+        "speech_start_seconds": 0.08,
+        "speech_end_seconds": 10.6,
+        "longest_internal_pause_seconds": 0.97,
+        "first_2ms_peak": 6.103515625e-05,
+        "last_2ms_peak": 0.0,
+        "samples_at_or_above_full_scale": 0,
+        "trim_seconds": [
+          0.12,
+          10.9
+        ],
+        "raw_duration_seconds": 10.9,
+        "constant_gain_db": -1.7623,
+        "integrated_lufs": -19.7,
+        "bytes": 1034924,
+        "sha256": "9098e9943126c2f4f63659b8f00ce87318e65440fbe3987415dab6530a4b176a",
+        "ffprobe": {
+          "codec_name": "pcm_s16le",
+          "sample_rate": "48000",
+          "channels": 1,
+          "bits_per_sample": 16
+        }
+      },
+      "take_identity": "cef3ebcec41669f9",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
+    }
+  },
+  "base_settings": {
+    "language": "en",
+    "engine": "omnivoice",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast"
+  },
+  "profiles": {
+    "kinski": {
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
+      "cache_identity": "c57f23ec9ac7dd16",
+      "profile_id": "3cf0d3a5"
+    },
+    "caliche_dispatch": {
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea",
+      "cache_identity": "c46de0e2a570efdd",
+      "profile_id": "1a160d70"
+    }
+  },
+  "output_format": {
+    "sample_rate_hz": 48000,
+    "sample_format": "PCM16",
+    "channels": 1,
+    "container": "WAV"
+  },
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED",
+  "updated_utc": "2026-10-26T08:43:50.919115+00:00"
+}

@@ -1,0 +1,51 @@
+[
+  {
+    "name": "M_SC01_Skin",
+    "base_color_linear": [
+      0.59,
+      0.62,
+      0.54,
+      1
+    ],
+    "roughness": 0.74,
+    "specular": 0.26,
+    "metallic": 0
+  },
+  {
+    "name": "M_SC01_Nail",
+    "base_color_linear": [
+      0.29,
+      0.31,
+      0.25,
+      1
+    ],
+    "roughness": 0.48,
+    "specular": 0.31,
+    "metallic": 0
+  },
+  {
+    "name": "M_SC01_Steel",
+    "base_color_linear": [
+      0.18,
+      0.23,
+      0.22,
+      1
+    ],
+    "roughness": 0.48,
+    "specular": 0.42,
+    "metallic": 0.64
+  },
+  {
+    "name": "M_SC01_Grease",
+    "base_color_linear": [
+      0.36,
+      0.39,
+      0.32,
+      1
+    ],
+    "roughness": 0.27,
+    "specular": 0.58,
+    "metallic": 0,
+    "two_sided": true
+  }
+]
