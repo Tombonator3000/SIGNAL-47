@@ -1,5 +1,10 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+
+## NP1 levert og installert, 26.10.2026 kl. 01:26 CET
+
+PR164 er flettet i93edb7a4; testet kilde2c05e33d og samme pakke er installert.17 pakkede kjøringer,1 493 selvtester og28 vurderte originalbilder. Standardstarterens smoke,40 identiske payloadfiler,40 byteidentiske personlige Saved-filer/57 noder og full gammel ku-R2-backup består. Sluttpayload/Saved er kontrollert igjen etter smoke/pruning. Gjeldende NP1 pluss backup og original ku-R2 er tre komplette testpakker; gamle ku-R1/T02-payloads pensjonert med kilder/Engine/Saved/bevis bevart. S.1/R2.1 er produsert manusgrunnlag, S.6/S.3a/S.7a er avgrenset runtime. Ny kveldskoordinator, møter, VHS og menneskelig fullnatt står åpne. [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md) og bevisrotens NP1_DELIVERY_COMPLETE.json er nyeste sannhet.
+
 ## NP1 klar for integrasjon, 26.10.2026 kl. 01:12 CET
 
 Codex, `codex/night-production`, kilde `2c05e33d`. Samlet kontor/tekst/lesestatus, himmelbaner og LineLights-save er bygget og prøvd i17 faktiske pakkede kjøringer.1 493 selvtester og28 vurderte originalbilder. Tre avgrensede hjelpere og root har utført kilde-/kontrakt-/pixel-/installerreview; alle UE-jobber sekvensielt. Ku-R2 fra den allerede installerte standarden er tatt inn uendret. Manusdelen S.1/R2.1 er produsert, ikke runtime-koordinator eller nye aktive møter. PR/merge/installasjon gjenstår ved denne oppføringen.
