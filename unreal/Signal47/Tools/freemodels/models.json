@@ -23,6 +23,14 @@
   "category": "Vehicles",
   "size": 5.3,
   "keep_complete": true,
+  "runtime_lods": {
+   "asset_name": "fairheaven_sw84",
+   "lod0_triangles": 19461,
+   "material_count": 8,
+   "bounds_cm": {"min": [-251.4, -92.8, 0.0], "max": [251.4, 92.8, 139.8]},
+   "lod1_percent_triangles": 0.3,
+   "lod1_screen_size": 0.15
+  },
   "cuts": {
    "door_driver": {
     "box": [[-0.19, 0.31, -0.95], [0.89, 1.30, -0.54]],

@@ -4,16 +4,19 @@
   "native_rt_profile": {
     "mesh": "SM_SC01_Hand",
     "engine": "UE 5.8.4",
-    "method": "Nanite-enabled static mesh with a dedicated tenth-triangle ray tracing proxy; full rendering fallback and complex collision LOD0 are retained.",
+    "method": "Ordinary native LOD0 plus reduced LOD1; full near-view geometry and complex collision LOD0 retained. Existing RT manager keeps only the final LOD always resident.",
     "rendering_lod0_triangles": 19388,
-    "rendering_lod_count": 1,
-    "rendering_fallback_percent_triangles": 1.0,
+    "rendering_lod_count": 2,
+    "lod1_requested_fraction": 0.3,
+    "lod_screen_sizes_requested": [
+      1.0,
+      0.04
+    ],
+    "lod1_triangle_count_measured": null,
     "collision_lod": 0,
-    "rt_proxy_percent_triangles": 0.1,
-    "rt_proxy_relative_error": 0.0,
-    "rt_proxy_triangles_approximate_target": 1939,
-    "rt_proxy_triangle_count_measured": null,
-    "limits": "Native import checks properties, exact full rendering LOD0, material slots and bounds. Dedicated proxy triangle count is not exposed by editor Python. Packaged RT residency and actual High/Low images are separate acceptance. No global cvar or warning threshold changes."
+    "nanite_enabled": false,
+    "separate_rt_proxy_enabled": false,
+    "limits": "Native import measures both LOD triangle counts, material slots and bounds. Packaged RT residency and actual near-window High/Low pixels are separate acceptance. No global cvar or warning threshold change."
   },
   "parts": {
     "SM_SC01_Hand": {

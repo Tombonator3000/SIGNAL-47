@@ -38,65 +38,43 @@ def unchanged_asset_hashes():
 
 
 def hand_ray_tracing(mesh):
-    # UE 5.8.4 UStaticMesh has no RayTracingMinLOD (that property is skeletal).
-    # StaticMeshBuilder only builds a dedicated RT proxy for a Nanite-enabled
-    # mesh. Keep the complete rendering/collision fallback and reduce only the
-    # separately built ray_tracing_proxy_settings representation.
+    # Keep ordinary full-detail raster/collision LOD0. The existing RT manager
+    # retains the last LOD unconditionally; a genuine reduced LOD1 avoids
+    # keeping the full hand BLAS resident while the hand is hidden.
+    nanite = S.get_nanite_settings(mesh)
+    nanite.set_editor_property("enabled", False)
+    proxy = mesh.get_editor_property("ray_tracing_proxy_settings")
+    proxy.set_editor_property("enabled", False)
+    mesh.set_editor_property("ray_tracing_proxy_settings", proxy)
+    S.set_nanite_settings(mesh, nanite, True)
     options = unreal.StaticMeshReductionOptions()
     options.set_editor_property("auto_compute_lod_screen_size", False)
-    lod0 = unreal.StaticMeshReductionSettings()
-    lod0.set_editor_property("percent_triangles", 1.0)
-    lod0.set_editor_property("screen_size", 1.0)
-    options.set_editor_property("reduction_settings", [lod0])
-    R.check(HAND + " exactly one unreduced rendering LOD", S.set_lods(mesh, options) == 1)
-
-    target = unreal.NaniteFallbackTarget.PERCENT_TRIANGLES
-    nanite = S.get_nanite_settings(mesh)
-    nanite.set_editor_property("enabled", True)
-    nanite.set_editor_property("keep_percent_triangles", 1.0)
-    nanite.set_editor_property("trim_relative_error", 0.0)
-    nanite.set_editor_property("generate_fallback", unreal.NaniteGenerateFallback.ENABLED)
-    nanite.set_editor_property("fallback_target", target)
-    nanite.set_editor_property("fallback_percent_triangles", 1.0)
-    nanite.set_editor_property("fallback_relative_error", 0.0)
-    proxy = mesh.get_editor_property("ray_tracing_proxy_settings")
-    proxy.set_editor_property("enabled", True)
-    proxy.set_editor_property("fallback_target", target)
-    proxy.set_editor_property("fallback_percent_triangles", .10)
-    proxy.set_editor_property("fallback_relative_error", 0.0)
-    mesh.set_editor_property("ray_tracing_proxy_settings", proxy)
+    settings = []
+    for percent, screen in ((1.0, 1.0), (.30, .04)):
+        lod = unreal.StaticMeshReductionSettings()
+        lod.set_editor_property("percent_triangles", percent)
+        lod.set_editor_property("screen_size", screen)
+        settings.append(lod)
+    options.set_editor_property("reduction_settings", settings)
+    R.check(HAND + " full LOD0 and native reduced LOD1", S.set_lods(mesh, options) == 2)
     mesh.set_editor_property("lod_for_collision", 0)
-    S.set_nanite_settings(mesh, nanite, True)
 
 
 def verify_hand_ray_tracing(mesh):
     nanite = S.get_nanite_settings(mesh)
     proxy = mesh.get_editor_property("ray_tracing_proxy_settings")
-    target = unreal.NaniteFallbackTarget.PERCENT_TRIANGLES
-    R.check(HAND + " unreduced Nanite source and rendering fallback",
-            nanite.get_editor_property("enabled")
-            and nanite.get_editor_property("keep_percent_triangles") == 1.0
-            and nanite.get_editor_property("trim_relative_error") == 0.0
-            and nanite.get_editor_property("generate_fallback") == unreal.NaniteGenerateFallback.ENABLED
-            and nanite.get_editor_property("fallback_target") == target
-            and nanite.get_editor_property("fallback_percent_triangles") == 1.0
-            and nanite.get_editor_property("fallback_relative_error") == 0.0)
-    actual_rt_fraction = proxy.get_editor_property("fallback_percent_triangles")
-    R.check(HAND + " separate tenth-triangle hardware RT proxy",
-            proxy.get_editor_property("enabled")
-            and proxy.get_editor_property("fallback_target") == target
-            and abs(actual_rt_fraction - .10) < 1e-6
-            and proxy.get_editor_property("fallback_relative_error") == 0.0,
-            {"requested_fraction": .10, "actual_native_fraction": actual_rt_fraction})
+    triangles = [mesh.get_num_triangles(lod) for lod in range(S.get_lod_count(mesh))]
+    R.check(HAND + " ordinary full-detail rendering without Nanite or a separate proxy",
+            not nanite.get_editor_property("enabled") and not proxy.get_editor_property("enabled"))
+    R.check(HAND + " real reduced second LOD with full original LOD0",
+            len(triangles) == 2 and triangles[0] == 19388 and 0 < triangles[1] <= triangles[0] * .32,
+            triangles)
     R.check(HAND + " full-detail collision LOD0", mesh.get_editor_property("lod_for_collision") == 0)
     R.check(HAND + " complete CPU geometry retained", mesh.get_editor_property("allow_cpu_access"))
-    return {"nanite_enabled": True, "rendering_fallback_percent_triangles": 1.0,
-            "rendering_lod_count": S.get_lod_count(mesh), "collision_lod": 0,
-            "separate_rt_proxy_enabled": True, "rt_proxy_percent_triangles": actual_rt_fraction,
-            "rt_proxy_requested_percent_triangles": .10,
-            "rt_proxy_relative_error": 0.0,
-            "rt_proxy_triangle_count": None,
-            "measurement_limit": "Dedicated RT proxy triangle count is not exposed by editor Python. Native settings and full LOD0 are checked here; actual RT residency and pixels require the packaged run."}
+    return {"nanite_enabled": False, "separate_rt_proxy_enabled": False,
+            "rendering_lod_triangles": triangles, "collision_lod": 0,
+            "lod1_requested_fraction": .30, "lod_screen_sizes_requested": [1.0, .04],
+            "measurement_limit": "Exact native rendering triangle counts are measured. Existing RT policy keeps the last LOD always resident; actual packaged residency, near-window LOD0 and High/Low pixels are separate acceptance. No global setting is changed."}
 
 
 try:
@@ -148,7 +126,7 @@ try:
             R.check(name + " saved original", E.save_loaded_asset(mesh))
         R.check(name + " hardware RT retained", mesh.get_editor_property("support_ray_tracing"))
         triangles = [mesh.get_num_triangles(lod) for lod in range(S.get_lod_count(mesh))]
-        R.check(name + " single full-detail rendering LOD", len(triangles) == 1, triangles)
+        R.check(name + " expected rendering LOD count", len(triangles) == (2 if name == HAND else 1), triangles)
         R.check(name + " exact authored triangle count", mesh.get_num_triangles(0) == row["triangles"], mesh.get_num_triangles(0))
         bounds = mesh.get_bounds()
         center = [bounds.origin.x, bounds.origin.y, bounds.origin.z]

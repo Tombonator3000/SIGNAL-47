@@ -43,3 +43,11 @@ R1 fra `f935b237` består den komplette pakkede SC01-prøven med 120 kontroller 
 Native r2-import består alle rapporterte kontroller. Bare håndasseten er endret: egen redusert RT-proxy, full synlig kilde/fallback og kollisjon på 19 388 trekanter. Blender/FBX og de andre seks SC01-assetene er bytebevart. Ingen global terskel eller RT-innstilling endres. Testhjelperen forventet en verbose loggmelding som ikke skrives på commandletens displaynivå; denne FAIL-rapporten beholdes. Faktisk vellykket Python-commandlet, exitcode0 og strukturert native PASS er kontrollert separat i `native-import-r2-audit.json`. Ny pakket minne-/bildeprøve er nødvendig.
 
 Bildedriveren venter nå på at merkene faktisk er tegnet før den etterfølgende se-bort-prøven. Dette retter tidsvalget for bevisbildet; inspeksjonsreglene er uendret.
+
+## Ordinære LOD-er etter målt R2/R3-grense
+
+R2 og R3 består hver den pakkede 120/17-kontrakten, men begge måler 80,0648 MiB AlwaysResident. Videre prosentjustering av den separate proxyen løste derfor ikke den gjenværende grensen. Motorens faktiske residensstyring beholder siste LOD obligatorisk; vanlige native LOD-er er valgt som enklere endelig løype.
+
+Native håndimport R4 består med full LOD0 på 19 388 og redusert LOD1 på 5 816 trekanter. Nanite og separat RT-proxy er av igjen. Glasspor, lamell og alle fire materialer er bytebevart. Fullbilens native kontroll består med LOD0 på 19 461 og LOD1 på 5 837, ved skjermgrense 0,15. Full LOD0s 25 919 kildeposisjoner, trekanttall og grenser er identiske før/etter; alle åtte materialbindinger, 18 glTF-/buffer-/teksturfiler, body-/dør-/material-/teksturassets og kreditering er bevart. Samlet cullingboks inkluderer LOD1s målte avvik under 2 cm og er kontrollert separat. MinLOD/NumStreamedLODs er ikke eksponert i denne Python-byggen; dette er ført uten oppdiktede standardverdier. Ingen globale strømme-/RT-/minneinnstillinger endres.
+
+Første native fullbilprøver avdekket Python-eksponering og forskjellen mellom LOD0-geometri og samlet LOD-boks. De opprinnelige FAIL-filene beholdes; endelig `free-rt-lods-r4d.json` og prosessrapporten består. R4s pakkede minne og High/Low-piksler må fortsatt prøves før levering.
