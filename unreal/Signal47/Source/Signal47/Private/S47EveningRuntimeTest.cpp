@@ -3,6 +3,7 @@
 #include "S47Audio.h"
 
 #include "S47Flow.h"
+#include "S47Horror.h"
 #include "S47Inter.h"
 #include "S47Main.h"
 #include "S47RecordedDialogue.h"
@@ -23,12 +24,34 @@
 // rendered HUD captures. This is deliberately not a claim of human keyboard input.
 void FS47Evening::ControlTest(double Dt)
 {
+	const bool bHorrorArrival = FParse::Param(FCommandLine::Get(), TEXT("S47HorrorArrival"));
 	const auto Fail = [this](const FString& Why)
 	{
 		bRouteFailed = true; bRouteDone = true;
 		if (M && M->Player) M->Player->TestMove.Reset();
 		UE_LOG(LogTemp, Error, TEXT("S47: evening route %s FAIL stage %d at %.2f %.2f: %s"), *RouteName, RouteStage, M->Player->Pos.X, M->Player->Pos.Z, *Why);
-		FPlatformMisc::RequestExit(false);
+		if (FParse::Param(FCommandLine::Get(), TEXT("S47HorrorArrival"))) FPlatformMisc::RequestExitWithStatus(false, 1);
+		else FPlatformMisc::RequestExit(false);
+	};
+	const auto CheckHorrorCohort = [this, &Fail](const TCHAR* Where)
+	{
+		const auto H = M && M->Horror ? M->Horror->Save() : S47J::FObj();
+		const auto V = S47J::Obj(H, TEXT("visual"));
+		if (!M || !M->Horror || !M->Horror->Enabled() || !H || !V ||
+			S47J::Int(H, TEXT("schemaVersion"), -1) != 1 || S47J::Int(H, TEXT("contentRevision"), -1) != 1 ||
+			S47J::Str(H, TEXT("scenario")) != TEXT("SC01") ||
+			M->Horror->Complete() || M->Horror->NormalComplete() || M->Horror->BaselineChecked() ||
+			M->Horror->ReferencePhotographed() || M->Horror->DoorEastTried() || M->Horror->DoorCorridorTried() ||
+			M->Horror->ReportAcknowledged() || M->Horror->Pack.Flag(TEXT("hr_h01_recorded")) ||
+			S47J::Bool(V, TEXT("handSeen")) || S47J::Bool(V, TEXT("marksChecked")) || S47J::Bool(V, TEXT("screenChecked")) ||
+			S47J::Int(V, TEXT("phase"), -1) != 0 || S47J::Int(V, TEXT("directMask"), -1) != 0 ||
+			S47J::Int(V, TEXT("glassMask"), -1) != 0 || S47J::Int(V, TEXT("marksMask"), -1) != 0)
+		{
+			Fail(FString(TEXT("SC01 arrival cohort missing, changed revision or contains unsupported physical credit: ")) + Where);
+			return false;
+		}
+		UE_LOG(LogTemp, Display, TEXT("S47: horror arrival %s PASS new-case cohort retained at %s: revision1, no SC01 physical credits"), *RouteName, Where);
+		return true;
 	};
 	if (!bRouteInitialized)
 	{
@@ -38,6 +61,8 @@ void FS47Evening::ControlTest(double Dt)
 		{
 			Fail(TEXT("unknown route; expected direct, burger, sandwich or water")); return;
 		}
+		if (bHorrorArrival && RouteName != TEXT("direct") && RouteName != TEXT("burger"))
+		{ Fail(TEXT("S47HorrorArrival requires S47EveningRoute=direct or burger")); return; }
 		FString CaseArg, UserDir;
 		const bool bCase = FParse::Value(FCommandLine::Get(), TEXT("S47Case="), CaseArg);
 		bool bSafe = M->Flow && M->Flow->bDevRun && !bCase;
@@ -48,6 +73,16 @@ void FS47Evening::ControlTest(double Dt)
 			bSafe = UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"));
 		}
 		if (!bSafe) { Fail(TEXT("test requires devRun without S47Case, or explicit isolated -UserDir under /tmp/ or /var/tmp/")); return; }
+		if (bHorrorArrival)
+		{
+			if (bCase || !M->Flow->bDevRun || M->Flow->CaseId != 0 || !FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir))
+			{ Fail(TEXT("SC01 arrival requires case0 developer isolation and explicit /tmp or /var/tmp UserDir")); return; }
+			UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
+			if (!(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
+				!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir))
+			{ Fail(TEXT("SC01 arrival Saved directory is not inside the isolated UserDir")); return; }
+			if (!CheckHorrorCohort(TEXT("fresh ordinary Flow.StartGame"))) return;
+		}
 		FParse::Value(FCommandLine::Get(), TEXT("S47EveningShots="), RouteShots);
 		if (!RouteShots.IsEmpty()) IFileManager::Get().MakeDirectory(*RouteShots, true);
 		bRouteAudio = FParse::Param(FCommandLine::Get(), TEXT("S47EveningAudio"));
@@ -266,6 +301,7 @@ void FS47Evening::ControlTest(double Dt)
 			Restore.State = Loaded; Restore.CaseId = 0; Restore.bDev = true; Restore.Playtime = M->Playtime;
 			M->Flow->StartGame(Restore);
 			if (!bEnabled || !M->Flow->bDevRun || M->Flow->CaseId != 0 || M->World->Area != TEXT("diner") || M->World->bDriving || !M->Player->Pos.Equals(PlayerBefore, 0.015) || !Pack.Flag(TEXT("food_bought")) || Pack.GetPendingChoice() != Pending || !Pack.CurrentScene() || Pack.CurrentScene()->Id != Response || Pack.NextLine() != 0 || Pack.Flag(TEXT("arrival_order_burger")) != BurgerBefore || Pack.Flag(TEXT("arrival_order_sandwich")) != SandwichBefore || Pack.Documents().Num() != DocumentsBefore || Pack.Select(Pending)) { Fail(TEXT("full disk/world restore changed player, order, pending response or dev isolation")); return; }
+			if (bHorrorArrival && !CheckHorrorCohort(TEXT("paid reply disk/full Flow restore"))) return;
 			UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS isolated FS47SaveStore disk transaction + fresh store Load + full Flow.StartGame restore: purchase/pending cursor0 and diner pose retained, no duplicate purchase; store %s"), *RouteName, *StoreDir);
 			RouteHold = 0.8; return; // allow StartGame's fade-in before the HUD capture
 		}
@@ -338,6 +374,7 @@ void FS47Evening::ControlTest(double Dt)
 		M->Flow->StartGame(Restore);
 		if (!Pack.Flag(TEXT("intro_arrived")) || Commute() || !Pack.CurrentScene() || Pack.CurrentScene()->Id!=SceneBefore || Pack.NextLine()!=CursorBefore || M->Story->Clock()!=ClockBefore || !M->Player->Pos.Equals(PoseBefore,0.015) || !Pack.Documents().IsEmpty() || Pack.CanStart(TEXT("I11_SARO_ARRIVAL")))
 		{Fail(TEXT("phone restore changed arrival, clock, pose, scene, cursor or papers"));return;}
+		if (bHorrorArrival && !CheckHorrorCohort(TEXT("D01 phone disk/full Flow restore"))) return;
 		UE_LOG(LogTemp,Display,TEXT("S47: evening route %s PASS phone disk/full-world restore: arrival, clock, pose and D01 cursor retained"),*RouteName);
 		Stage(13,1); return;
 	}
@@ -363,8 +400,58 @@ void FS47Evening::ControlTest(double Dt)
 		const double Clock = M->Story->Clock(); Parked(TEXT("saro"));
 		if (Pack.CanStart(TEXT("D01_HANDOVER")) || M->Story->Clock() != Clock) { Fail(TEXT("completed arrival/phone can repeat")); return; }
 		UE_LOG(LogTemp, Display, TEXT("S47: evening route %s PASS D01 by phone, three stable papers once, old routine released; clock monotonic"), *RouteName);
+		if (bHorrorArrival)
+		{
+			if (!CheckHorrorCohort(TEXT("stable handover"))) return;
+			if (RouteName == TEXT("burger") && !bRoutePaidRestored)
+			{ Fail(TEXT("SC01 diner arrival did not exercise the paid-response disk restore")); return; }
+			Shot(TEXT("handover-sc01"));
+			// H01 may already own a new modal. Finish this opening driver before its
+			// old dusk walk, based on the completed EveningPack transaction alone.
+			Stage(18, 1.0); return;
+		}
 		RouteWalk = {FVector(5.2,0,1.6), FVector(7.5,0,1.6), FVector(8.5,0,2.2)}; RouteWalkIndex = 0;
 		Stage(14); return;
+	}
+	if (bHorrorArrival && RouteStage == 18)
+	{
+		if (!Pack.Flag(TEXT("handover_done")) || !Pack.Flag(TEXT("intro_completed")) || Opening() ||
+			M->Story->bOpeningHeld || M->World->Area != TEXT("saro") || M->World->bDriving || RouteArrivalCount != 1)
+		{ Fail(TEXT("SC01 handover changed while its final screenshot was rendered")); return; }
+		if (!CheckHorrorCohort(TEXT("arrival evidence"))) return;
+		if (!RouteShots.IsEmpty())
+		{
+			TArray<FString> Names = {TEXT("commute"), TEXT("parking"), TEXT("18-phone"), TEXT("handover-sc01")};
+			if (RouteName == TEXT("burger")) Names.Add(TEXT("diner-order"));
+			for (const FString& Name : Names)
+				if (IFileManager::Get().FileSize(*FPaths::Combine(RouteShots, RouteName + TEXT("-") + Name + TEXT(".png"))) < 1000)
+				{ Fail(TEXT("SC01 arrival screenshot missing/empty: ") + Name); return; }
+		}
+		if (bRouteAudio && (!bRouteAudioPauseChecked || !bRouteAudioRadioInterrupted || !bRouteAudioRadioLevels ||
+			!RouteAudioPlayedLines.Contains(TEXT("I02_DINER_HELLO_001")) || !RouteAudioPlayedLines.Contains(TEXT("D01_HANDOVER_001"))))
+		{ Fail(TEXT("SC01 audio arrival missing its actual host, waitress or phone playback controls")); return; }
+		const auto Arrival = M->Flow->GameState(); const auto H = S47J::Obj(Arrival, TEXT("horror"));
+		if (!H || S47J::Int(H, TEXT("contentRevision"), -1) != 1)
+		{ Fail(TEXT("actual arrival GameState dropped its SC01 cohort")); return; }
+		const FString Root = RouteShots.IsEmpty() ? FPaths::ProjectSavedDir() / TEXT("HorrorArrival") / RouteName : RouteShots;
+		IFileManager::Get().MakeDirectory(*Root, true);
+		const FString StatePath = Root / (RouteName + TEXT("-horror-arrival.state.json"));
+		if (!FFileHelper::SaveStringToFile(S47J::Write(Arrival, true), *StatePath))
+		{ Fail(TEXT("could not preserve actual arrival GameState")); return; }
+		auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), TEXT("PASS"));
+		S47J::Set(Result, TEXT("scenario"), TEXT("SC01 opening")); S47J::Set(Result, TEXT("route"), RouteName);
+		S47J::Set(Result, TEXT("contentRevision"), 1); S47J::Set(Result, TEXT("elapsed_seconds"), RouteElapsed);
+		S47J::Set(Result, TEXT("driven_metres"), RouteDistance); S47J::Set(Result, TEXT("arrival_count"), RouteArrivalCount);
+		S47J::Set(Result, TEXT("paid_reply_restore_verified"), bRoutePaidRestored);
+		S47J::Set(Result, TEXT("phone_restore_verified"), true); // Stage13 follows Stage17's real disk/full-Flow validation.
+		S47J::Set(Result, TEXT("no_sc01_physical_credit"), true); S47J::Set(Result, TEXT("audio_controls"), bRouteAudio);
+		S47J::Set(Result, TEXT("human_input_or_listening_verified"), false); S47J::Set(Result, TEXT("state_file"), StatePath);
+		if (!FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(Root / (RouteName + TEXT("-horror-arrival.result.json")))))
+		{ Fail(TEXT("could not preserve SC01 arrival result")); return; }
+		bRouteDone = true; M->Player->TestMove.Reset();
+		UE_LOG(LogTemp, Display, TEXT("S47: horror arrival %s PASS COMPLETE: %.1f s, %.1f driven m, arrivalCount=%d, paidRestore=%d, phoneRestore=1, revision1 and zero SC01 physical credits; actual state %s; human input/listening UNVERIFIED"),
+			*RouteName, RouteElapsed, RouteDistance, RouteArrivalCount, bRoutePaidRestored ? 1 : 0, *StatePath);
+		FPlatformMisc::RequestExitWithStatus(false, 0); return;
 	}
 	if (RouteStage == 14)
 	{

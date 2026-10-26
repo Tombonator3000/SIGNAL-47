@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "scenario": "SC01",
+  "synthetic": true,
+  "scope": "Five original SC01 recordings: H01_BRIEF_001/002/003 (DALE) and SC01_FIRST_REPORT_001/002 (DISPATCH). Later HorrorStory cues are pending.",
+  "generator": "VoiceStudio 0.5.6 / OmniVoice",
+  "voice_software": {
+    "name": "VoiceStudio",
+    "version": "0.5.6",
+    "license": "AGPL-3.0-only",
+    "url": "https://github.com/debpalash/VoiceStudio"
+  },
+  "model": {
+    "name": "k2-fsa/OmniVoice",
+    "revision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "url": "https://huggingface.co/k2-fsa/OmniVoice",
+    "code_license": "Apache-2.0",
+    "weights_license_as_stated_by_downloaded_model_card": "CC-BY-NC",
+    "license_reason_from_model_card": "Constraints from training data, e.g. Emilia",
+    "model_card_sha256": "b5d645a1874baa96a460a0e3a7d5a262811d682d04ce235878a16d5fed287fd3",
+    "model_card_license_lines": [
+      781,
+      783
+    ],
+    "license_statement": "Downloaded model card: code Apache-2.0; pre-trained model CC-BY-NC because of training-data constraints."
+  },
+  "production_pipeline": {
+    "source": "unreal/Narrative/EveningShift/voice/generate.py",
+    "sha256": "ff3ce1bcc50d82015d57aa3a7b2be8f624cb24acfa2fb7a51cf51d8c52a29b69",
+    "reuse": "Existing local synthesis, trimming, mastering, resampling and measurement; no new engine or paid service."
+  },
+  "request_settings": {
+    "engine": "omnivoice",
+    "language": "en",
+    "num_step": 32,
+    "seed": 42,
+    "speed": 1,
+    "denoise": true,
+    "stream": true,
+    "effect_preset": "broadcast (documented VoiceStudio default, same as the Kinski corpus: 80 Hz highpass, compressor, mild shelf EQ, limiter; a studio mastering chain, not a phone/radio channel filter)",
+    "seed_policy": "42 for every take; a broken take may be regenerated with the next seed, logged in retakes.json"
+  },
+  "roles": {
+    "DALE": {
+      "voice_profile": "kinski",
+      "profile_id": "3cf0d3a5",
+      "reference_sha256": "819b62b345935529d7a7b23ed8986363e16ae3fadebbe5393cdbc593d1dd6571",
+      "voice_profile_origin": "Original Klaus Kinski argument with Walter Saxer on the Fitzcarraldo set, reproduced in Werner Herzog's documentary Mein liebster Feind (1999). A locally selected 6.25-second excerpt conditions the synthetic parody voice; the original recording is not bundled.",
+      "reference_source_url": "https://www.dailymotion.com/video/x2siao8",
+      "reference_source_interval_seconds": [
+        156.42,
+        162.67
+      ],
+      "basis": "Tom's explicit instruction: same profile and settings as the existing Kinski corpus (web/production/kinski/provenance.json)."
+    },
+    "DISPATCH": {
+      "voice_profile": "caliche_dispatch",
+      "profile_id": "1a160d70",
+      "profile_name": "SIGNAL 47 fictional man caller (synthetic CC0 cast)",
+      "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea",
+      "source_recording": [
+        {
+          "role": "man",
+          "repository": "https://huggingface.co/kyutai/tts-voices",
+          "revision": "323332d33f997de8394f24a193e1a76df720e01a",
+          "file": "voice-donations/Butter.wav",
+          "source_url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/Butter.wav",
+          "original_bytes": 480044,
+          "license": "CC0-1.0 as explicitly stated for voice-donations in the pinned repository README",
+          "license_evidence": "https://huggingface.co/kyutai/tts-voices/blob/323332d33f997de8394f24a193e1a76df720e01a/README.md#voice-donations",
+          "readme_sha256": "47c610f38e0e0bfb4b353a2afa84a5277b748b1b808d5f77fb8ef74fb836689b",
+          "original_sha256": "b889e080eec3efa824bddaf875b4f531d75464f88128d08941ae648d9d3ade70",
+          "duration": 10.0,
+          "autocorrelation_f0_median_hz": 85.3339401524633,
+          "voiced_frames": 102,
+          "method": "40ms autocorrelation, RMS gate .015, lag40-230 at16k, normalized correlation >.5. Register estimate only; octave errors possible. Not age/gender verification.",
+          "selected_interval_seconds": [
+            1.45,
+            9.9
+          ],
+          "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea",
+          "conditioning_text": "Would like to buy an avocado one that is green on the outside and green."
+        }
+      ],
+      "basis": "Existing anonymous CC0 male caller reference. Distinct from Dale and every named character cast; previous anonymous caller use remains documented in radiocast provenance."
+    }
+  },
+  "postprocessing": {
+    "sample_rate_hz": 48000,
+    "sample_format": "PCM16",
+    "channels": 1,
+    "target_active_rms_dbfs": -20,
+    "peak_cap_dbfs": -2,
+    "lead_seconds": 0.08,
+    "tail_seconds": 0.2,
+    "fade_in_seconds": 0.01,
+    "fade_out_seconds": 0.03,
+    "time_stretching": false,
+    "pitch_shift": false,
+    "channel_filter": "Applied by runtime phone bus, not baked into masters."
+  },
+  "cache": "~/.cache/signal47-horror/sc01; raw sources, API responses and finished WAV outside Git.",
+  "human_listened": false,
+  "speaker_similarity": "UNVERIFIED",
+  "emotional_delivery": "UNVERIFIED"
+}

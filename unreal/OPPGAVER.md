@@ -1,5 +1,9 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## SC01 pakket teknisk aksept, 26.10.2026 kl. 13:18 CET
+
+Arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/story-sc01`, testet kilde `dbae3177`. Root eier integrasjon, alle sekvensielle Unreal-/GPU-jobber, PR/fletting og installasjon. `sc01_review` har kontrollert runtime og faktiske bilder, `sc01_delivery_review` har kontrollert pakke-/installasjonsbinding og `sc01_media_review` har kontrollert native modeller/lyd. Alle 21 pakkekjøringer består; 32 originalbilder er vurdert. [SC01_RUNTIME.md](SC01_RUNTIME.md) har faktiske resultater og åpne menneskelige prøver. NP1 er fortsatt standard inntil SC01 er flettet, installert og kvittert. H01 er åpent. SC02 har bare lesende forberedelse og starter ikke produksjon før SC01-kvitteringen.
+
 ## Historieintegrasjon SC01 til SC13, startet 26.10.2026 kl. 09:36 CET
 
 Tom har godkjent [den detaljerte implementeringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md) og bedt om gjennomføring. Arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/horror-h01`, kontrollert utgangspunkt `1c929b76` fra `unreal-port-core`. Root eier koordinator, Main/Flow-integrasjon, tester, sekvensielle Unreal-jobber og levering. Avgrenset manusagent eier ny HorrorPack-adapter, generator, eksporter og tilhørende datatester. Dokumentasjonsagent eier denne planleveransen og pekerne i README/todo/memory/log; øvrige filansvar avtales før endring.

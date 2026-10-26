@@ -1,8 +1,8 @@
 {
   "pack_id": "signal47_horror_story_h1",
-  "status": "pending",
+  "status": "partial",
   "runtime_status": "not_integrated",
-  "note_nb": "Kun opptaksplan. Ingen lydfiler er generert, målt eller importert.",
+  "note_nb": "Rene takes (48 kHz PCM16 mono, uten kanalfilter). audio_file er relativt til lydroten (se voice/README.md); varighet er målt fra filen. Runtime-status gjelder hele forfatterpakken. Delvis SC01-import og faktisk spillaksept føres separat i voice/README.md og SC01_RUNTIME.md.",
   "planned_format": {
     "sample_rate_hz": 48000,
     "sample_format": "PCM16",
@@ -10,7 +10,7 @@
   },
   "cue_count": 54,
   "required_recording_count": 53,
-  "recorded_count": 0,
+  "recorded_count": 5,
   "recordings": [
     {
       "line_id": "H01_BRIEF_001",
@@ -18,11 +18,11 @@
       "actor": "DALE",
       "channel": "phone",
       "voice_profile": "kinski",
-      "status": "pending",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "HorrorStory/H01_BRIEF_001.wav",
+      "duration_seconds": 5.63
     },
     {
       "line_id": "H01_BRIEF_002",
@@ -30,11 +30,11 @@
       "actor": "DALE",
       "channel": "phone",
       "voice_profile": "kinski",
-      "status": "pending",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "HorrorStory/H01_BRIEF_002.wav",
+      "duration_seconds": 3.75
     },
     {
       "line_id": "H01_BRIEF_003",
@@ -42,11 +42,11 @@
       "actor": "DALE",
       "channel": "phone",
       "voice_profile": "kinski",
-      "status": "pending",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "HorrorStory/H01_BRIEF_003.wav",
+      "duration_seconds": 4.82
     },
     {
       "line_id": "H02_BRIEF_001",
@@ -354,11 +354,11 @@
       "actor": "DISPATCH",
       "channel": "phone",
       "voice_profile": "caliche_dispatch",
-      "status": "pending",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "HorrorStory/SC01_FIRST_REPORT_001.wav",
+      "duration_seconds": 10.09
     },
     {
       "line_id": "SC01_FIRST_REPORT_002",
@@ -366,11 +366,11 @@
       "actor": "DISPATCH",
       "channel": "phone",
       "voice_profile": "caliche_dispatch",
-      "status": "pending",
+      "status": "recorded",
       "reuse_of": null,
       "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "HorrorStory/SC01_FIRST_REPORT_002.wav",
+      "duration_seconds": 10.78
     },
     {
       "line_id": "SC03_DISPATCH_RECEIPT_001",
@@ -534,11 +534,11 @@
       "actor": "DALE",
       "channel": "radio",
       "voice_profile": "kinski",
-      "status": "pending",
+      "status": "reuses_recording",
       "reuse_of": "H01_BRIEF_002",
       "recording_required": false,
-      "audio_file": null,
-      "duration_seconds": null
+      "audio_file": "HorrorStory/H01_BRIEF_002.wav",
+      "duration_seconds": 3.75
     },
     {
       "line_id": "SC04_SAFE_ROOM_AGREEMENT_001",

@@ -1,4 +1,6 @@
 #include "S47Main.h"
+#include "S47Horror.h"
+#include "S47HorrorTest.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
@@ -51,7 +53,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { return (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { return (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -65,6 +67,8 @@ void US47Main::Step(double Dt)
 	if (Flow) Flow->Step(Dt);
 	if (Evening) Evening->Step(Dt);
 	if (Office) Office->Step(Dt);
+	if (Horror) Horror->Step(Dt);
+	if (HorrorTest) HorrorTest->Step(Dt);
 	if (Substation) Substation->Step(Dt);
  // Opt-in live contract tests must also observe legacy restores with Evening disabled.
  if (Evening) Evening->ControlServiceTest(Dt);
