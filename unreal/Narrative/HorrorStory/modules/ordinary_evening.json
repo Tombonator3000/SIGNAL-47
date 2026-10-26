@@ -116,7 +116,7 @@
         {
           "id": "H01_BRIEF_001",
           "speaker": "DALE",
-          "text": "Keep the survey running. Write down anything you have to change, even if it fixes itself.",
+          "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
           "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
         },
         {
@@ -311,7 +311,7 @@
         {
           "id": "H02_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "The readings do not agree yet. You can finish the calibration, but the unattended survey needs the completed inspection filed at SARO. Keep the card and repeat the comparison at the marked control.",
+          "text": "The readings do not agree yet. Calibration can continue. Complete and file the lamp inspection, then follow the agreed safety work; do not restart an isolated automatic schedule.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],
@@ -494,7 +494,7 @@
         {
           "id": "H04_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "The notes specify a post and a standing place. They can be checked in the world.",
+          "text": "Dale's field index identifies the culvert camera place. The separate array service card describes a different controlled comparison. Neither record is the result of a test you have not performed.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         },
         {
