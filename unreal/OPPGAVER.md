@@ -1,5 +1,11 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Historieintegrasjon SC01 til SC13, startet 26.10.2026 kl. 09:36 CET
+
+Tom har godkjent [den detaljerte implementeringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md) og bedt om gjennomføring. Arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/horror-h01`, kontrollert utgangspunkt `1c929b76` fra `unreal-port-core`. Root eier koordinator, Main/Flow-integrasjon, tester, sekvensielle Unreal-jobber og levering. Avgrenset manusagent eier ny HorrorPack-adapter, generator, eksporter og tilhørende datatester. Dokumentasjonsagent eier denne planleveransen og pekerne i README/todo/memory/log; øvrige filansvar avtales før endring.
+
+SC01 er tatt opp til arbeid. Full produksjon av nødvendige verdenshandlinger, modeller, stemmer og medier kreves. Hvert SC testes, flettes og installeres før neste starter. Saker beholder innholdsrevisjonen sin og fortsetter via eksisterende historie ved grensen for nye scenarioer. H01 lukkes først etter SC02 og H02 først etter SC05. Ingen ny runtime-, pakke-, merge- eller installasjonsaksept er ført av denne dokumentasjonsleveransen. NP1 er fortsatt siste dokumentert installerte standard.
+
 
 ## NP1 levert og installert, 26.10.2026 kl. 01:26 CET
 
