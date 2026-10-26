@@ -1,0 +1,137 @@
+[
+  {
+    "name": "M_Arrival_PaintedMetal",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.62,
+    "metallic": 0.45,
+    "specular": 0.25,
+    "normal_strength": 0.18,
+    "textures": {
+      "base_color": "textures/M_Arrival_PaintedMetal_color.png",
+      "roughness": "textures/M_Arrival_PaintedMetal_rough.png",
+      "normal": "textures/M_Arrival_PaintedMetal_normal.png"
+    }
+  },
+  {
+    "name": "M_Arrival_Aluminium",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.43,
+    "metallic": 0.78,
+    "specular": 0.25,
+    "normal_strength": 0.18,
+    "textures": {
+      "base_color": "textures/M_Arrival_Aluminium_color.png",
+      "roughness": "textures/M_Arrival_Aluminium_rough.png",
+      "normal": "textures/M_Arrival_Aluminium_normal.png"
+    }
+  },
+  {
+    "name": "M_Arrival_Rubber",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.9,
+    "metallic": 0,
+    "specular": 0.25,
+    "normal_strength": 0.18,
+    "textures": {
+      "base_color": "textures/M_Arrival_Rubber_color.png",
+      "roughness": "textures/M_Arrival_Rubber_rough.png",
+      "normal": "textures/M_Arrival_Rubber_normal.png"
+    }
+  },
+  {
+    "name": "M_Arrival_Enamel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.55,
+    "metallic": 0.12,
+    "specular": 0.25,
+    "normal_strength": 0.18,
+    "textures": {
+      "base_color": "textures/M_Arrival_Enamel_color.png",
+      "roughness": "textures/M_Arrival_Enamel_rough.png",
+      "normal": "textures/M_Arrival_Enamel_normal.png"
+    }
+  },
+  {
+    "name": "M_Arrival_WeatheredSteel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.67,
+    "metallic": 0.7,
+    "specular": 0.25,
+    "normal_strength": 0.18,
+    "textures": {
+      "base_color": "textures/M_Arrival_WeatheredSteel_color.png",
+      "roughness": "textures/M_Arrival_WeatheredSteel_rough.png",
+      "normal": "textures/M_Arrival_WeatheredSteel_normal.png"
+    }
+  },
+  {
+    "name": "M_Arrival_VisitorPrint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.56,
+    "metallic": 0.12,
+    "specular": 0.23,
+    "textures": {
+      "base_color": "textures/M_Arrival_VisitorPrint.png"
+    }
+  },
+  {
+    "name": "M_Arrival_EntrancePrint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.56,
+    "metallic": 0.12,
+    "specular": 0.23,
+    "textures": {
+      "base_color": "textures/M_Arrival_EntrancePrint.png"
+    }
+  },
+  {
+    "name": "M_Arrival_ReceptionPrint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.56,
+    "metallic": 0.12,
+    "specular": 0.23,
+    "textures": {
+      "base_color": "textures/M_Arrival_ReceptionPrint.png"
+    }
+  }
+]

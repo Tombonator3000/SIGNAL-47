@@ -1,0 +1,232 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "units": "metres",
+  "mapping": "Three (x,y,z) -> Blender (x,-z,y) -> UE centimetres (x,z,y)*100",
+  "destination": "/Game/Signal47/Art/ExteriorFixtures",
+  "originality": "Original metric bpy geometry and procedural PBR textures. No third-party imagery or meshes.",
+  "lens_material": "M_ExteriorFixtures_Lens",
+  "lens_runtime_parameters": {
+    "EmissiveFactor": "linear RGB, zero when off, multiplies texture",
+    "TextureTint": "linear RGB, default one"
+  },
+  "parts": {
+    "SM_Exterior_WallPack": {
+      "bounds_local_m": [
+        [
+          -0.18000000715255737,
+          -0.2135717272758484,
+          -0.1494000107049942
+        ],
+        [
+          0.18000000715255737,
+          0.0,
+          0.14800000190734863
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -0.18000000715255737,
+          -0.1494000107049942,
+          -0.0
+        ],
+        [
+          0.18000000715255737,
+          0.14800000190734863,
+          0.2135717272758484
+        ]
+      ],
+      "materials": [
+        "M_ExteriorFixtures_Gasket",
+        "M_ExteriorFixtures_Bronze",
+        "M_ExteriorFixtures_Lens",
+        "M_ExteriorFixtures_Steel",
+        "M_ExteriorFixtures_Aluminium"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "mount_plane": {
+        "axis": "z",
+        "value": 0,
+        "solid_side": "+z"
+      },
+      "lens_center_three_m": [
+        0,
+        -0.035,
+        0.1775
+      ],
+      "lens_normal_three": [
+        0,
+        -0.287347886,
+        0.957826285
+      ],
+      "aperture_m": [
+        0.285,
+        0.18
+      ],
+      "emitter_three_m": [
+        0.0,
+        -0.037298783088000005,
+        0.18516261028
+      ],
+      "lod_triangles": [
+        4428,
+        1808,
+        480
+      ],
+      "editable_components": [
+        59,
+        38,
+        8
+      ]
+    },
+    "SM_Exterior_Canopy": {
+      "bounds_local_m": [
+        [
+          -0.30000001192092896,
+          -0.11999999731779099,
+          -0.09917499870061874
+        ],
+        [
+          0.30000001192092896,
+          0.11999999731779099,
+          0.0
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -0.30000001192092896,
+          -0.09917499870061874,
+          -0.11999999731779099
+        ],
+        [
+          0.30000001192092896,
+          0.0,
+          0.11999999731779099
+        ]
+      ],
+      "materials": [
+        "M_ExteriorFixtures_Gasket",
+        "M_ExteriorFixtures_Bronze",
+        "M_ExteriorFixtures_Lens",
+        "M_ExteriorFixtures_Aluminium",
+        "M_ExteriorFixtures_Steel"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "mount_plane": {
+        "axis": "y",
+        "value": 0,
+        "solid_side": "-y"
+      },
+      "lens_center_three_m": [
+        0,
+        -0.096,
+        0
+      ],
+      "lens_normal_three": [
+        0,
+        -1,
+        0
+      ],
+      "aperture_m": [
+        0.51,
+        0.18
+      ],
+      "emitter_three_m": [
+        0,
+        -0.105,
+        0
+      ],
+      "lod_triangles": [
+        2820,
+        1292,
+        508
+      ],
+      "editable_components": [
+        56,
+        35,
+        8
+      ]
+    },
+    "SM_Exterior_SignWash": {
+      "bounds_local_m": [
+        [
+          -0.10317499935626984,
+          -0.08808504790067673,
+          0.0
+        ],
+        [
+          0.10317499935626984,
+          0.0769425705075264,
+          0.14808504283428192
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -0.10317499935626984,
+          0.0,
+          -0.0769425705075264
+        ],
+        [
+          0.10317499935626984,
+          0.14808504283428192,
+          0.08808504790067673
+        ]
+      ],
+      "materials": [
+        "M_ExteriorFixtures_Gasket",
+        "M_ExteriorFixtures_Bronze",
+        "M_ExteriorFixtures_Steel",
+        "M_ExteriorFixtures_Aluminium",
+        "M_ExteriorFixtures_Lens"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "mount_plane": {
+        "axis": "y",
+        "value": 0,
+        "solid_side": "+y"
+      },
+      "lens_center_three_m": [
+        0,
+        0.11308326112068523,
+        0.05308326112068524
+      ],
+      "lens_normal_three": [
+        0,
+        0.7071067811865475,
+        0.7071067811865476
+      ],
+      "aperture_m": [
+        0.16,
+        0.068
+      ],
+      "emitter_three_m": [
+        0.0,
+        0.11732590180780451,
+        0.05732590180780452
+      ],
+      "head_tilt_degrees": 45,
+      "lod_triangles": [
+        3356,
+        1628,
+        692
+      ],
+      "editable_components": [
+        54,
+        36,
+        12
+      ]
+    }
+  },
+  "total_LOD0_triangles": 10604
+}

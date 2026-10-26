@@ -1,0 +1,24 @@
+{
+  "asset": "kloppenheim_06_puresky",
+  "title": "Kloppenheim 06 (Pure Sky)",
+  "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "authors": {
+    "Greg Zaal": "Original",
+    "Jarod Guest": "Sky Edits"
+  },
+  "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/8k/kloppenheim_06_puresky_8k.exr",
+  "bytes": 285656467,
+  "md5": "2c1019e9964b02e94866ee305840fd1f",
+  "sha256": "6a66b5b2b6c1cbf2acda46244e0b8eaabbc91f43307af13684ea1a949bdc61fb",
+  "local_source_relative": "Assets/signal47-free/polyhaven/kloppenheim_06_puresky/kloppenheim_06_puresky_8k.exr",
+  "radiance_gain": 0.43868152183843395,
+  "yaw_radians": 0.7037136864425378,
+  "calibration_note": "Photographic upper-hemisphere median mapped to0.25 at existing fixed exposure. Warm horizon tracks solar azimuth without tilting. Compact photographic sun suppressed locally in shader; the existing solar direction/mask draws one clock-driven sun. Original EXR unmodified.",
+  "brightest_elevation_degrees": 4.63623046875,
+  "sun_uv": [
+    0.61199951171875,
+    0.4742431640625
+  ]
+}

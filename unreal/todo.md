@@ -1,5 +1,62 @@
 # Todo for unreal/
 
+## Terreng og natur langs ruten, 26. oktober 2026
+
+- [x] Bryt opp de dominerende fjelltrappene og lag sammenhengende erosjon/skråningsfot i original Blender-geologi, med bevart vei/gangflate og områdetransform.
+- [x] Bruk åtte utvalgte eide Fab-modeller i sju grupper langs SARO-innkjøring, hovedvei og Caliche sør. Bind lavere stein til klippefot, gjør grus flekkvis og bevar åpne passasjer. Behold originalpakker og offentlig/private kildegrenser.
+- [x] Rett faktisk påviste R1-problemer og prøv R2: seks vurderte bilder, eksisterende selvtest, avgrenset RTCSV og én sammenhengende 2,62 km kjøre-/gangrute med ankomst, telefon og diskrestore. Ingen ny fullmatrise.
+- [x] Installer identisk R2 med 68 verifiserte payloadnoder og alle 70 Saved-noder/50 filer bevart. Se [TERRAIN_ROUTE_2026-10-26.md](TERRAIN_ROUTE_2026-10-26.md).
+- [x] Fullfør installert standardstarterkontroll: tolv kontroller PASS. Canonical prune har pensjonert tre gamle nærdetalj-payloadsett/21 filer, med gjeldende R2, to eldre pakker og særskilt beskyttet SC01 beholdt. Kilder/assets/Saved/bevis er bevart.
+
+## Detaljer tett på spilleren, 26. oktober 2026
+
+- [x] Modellér tre originale Blender-armaturer med tre LOD-er og bruk dem på tolv steder ved SARO. Rett innfesting, diffusorer, fysiske åpninger og kildeplassering; bevar inngang og kontor.
+- [x] Importer native assets, ta dem med i faktisk cook og fjern bare de erstattede gamle husene. Dagbilde ved inngangen og fløyskilt om natten er vurdert. Alle seks skyassets er bevart.
+- [x] Fullfør avgrenset R4-kontroll etter lokal justering av monumentlys: fem sluttbilder i tre kjøringer, faktisk strøm av/på og elleve kontroller i standardstarteren. Samme kandidat er installert med 68 verifiserte payloadnoder og alle 67 Saved-noder fra brukerens siste økt bevart. Se [NEAR_DETAILS_2026-10-26.md](NEAR_DETAILS_2026-10-26.md).
+- [x] Kjør canonical prune etter levert R4. Fire gamle payloadsett/28 genererte filer er pensjonert; R4 og eldre R3/R2 beholdes, med aktiv SC01-R4 særskilt beskyttet. Kilder, assets, lagringer og bevis er bevart.
+
+## Pure Sky på dagtid, 26. oktober 2026
+
+- [x] Integrer separat fotografisk daghimmel med CC0-kilde, repeterbar import og kreditering. Bevar originale nattassets, stjerner og hendelser.
+- [x] Samordne synlig himmel, solretning og skylight-capture. Bland ut fra 18:00 til 18:53 og bruk originalmaterialet direkte om natten.
+- [x] Bygg/pakk og sammenlign faktisk dag 17:20 og natt 03:00 mot R5. Kontroller mellomblanding 18:20, original himmel 18:53 og Low dag. Fem kandidatbilder er faktisk vurdert; ingen ny fullmatrise.
+- [x] Installer samme R1 og prøv faktisk standardstarter med isolert profil. Åtte kontroller består; 68 payloadnoder stemmer og 65 personlige Saved-noder er uendret. Se [SKY.md](SKY.md) for nøyaktig avgrensning og bevis.
+- [x] Kjør canonical prune etter levering. Gamle R4/R3-payloads er pensjonert; Pure Sky R1, to eldre R5-kopier og aktiv beskyttet SC01-R4 beholdes. Kilder, assets, lagringer og bevis er bevart.
+
+## Grafikkfunn til senere, 26. oktober 2026
+
+- [x] Vurder synlig kvalitetsløft per innsats og Poly Haven-videoen mot dagens sky-/lysrigg og RTX 3080 10 GB. Lagre anbefalt rekkefølge og første sammenhengende strekning i grafikknotatet. Ingen nye assets eller funksjoner implementert.
+- [x] Terrengformer og natur langs innkjøringen til SARO er levert i terreng-R2 med bevart dag-/nattehimmel og spillbare høyder. Se nyeste terrengstatus øverst.
+- [x] Lagre undersøkte Lumen-/FSSS-/skyggefunn og sammenhengen med terrengarbeidet i [RENDERING_RESEARCH_2026-10-26.md](RENDERING_RESEARCH_2026-10-26.md). Skill faktisk konfigurert bruk, Epic-påstander og uprøvde forslag. Ingen grafikkendring eller ny ytelsestest.
+- [ ] Ved senere optimalisering: vurder romlig oppdelte skyggegrenser for Caliche-sage/yucca og småstein, med fortsatt synlige modeller. Behold allerede shadowless gress og store lysblokkere; kontroller også distance-field-fallback.
+- [ ] Vurder eget Medium/Lumen Lite-nivå mellom dagens Low uten GI og High. Ikke anta at sg.GI=1 alene aktiverer GI, eller at Epics 2x-påstand betyr dobbelt FPS her.
+- [ ] Vurder svak innebygd FSSS på High/Ultra ved SARO i skumring/natt etter armaturretting. Definer Low av eksplisitt, og behold tetthet/eksponering i første avgrensede sammenligning.
+
+## Parkering, rampeinngang og kontor, R5, 26. oktober 2026
+
+- [x] Bytt tre store besøkstavler med to originale skilt på 46 × 60 cm, og lag faktisk Blender-inngangsparti ved vestre rampe med kort gangforbindelse.
+- [x] Registrer stopp hvor som helst i besøksområdet i enhver retning. Bevar faktisk bilstilling, vanlig stoppkontroll og reparasjon av gamle ventende ankomstlagringer.
+- [x] Åpne fysisk kontorrute allerede ved ankomst. Modellér rom, innredning, skap/skuff, nøkkel, dør, pult og stol ordentlig, og behold faktisk dokument-/lagrings- og strømtilstand.
+- [x] Bevar allerede installert NP1. Tilbakefør midlertidig R4 til verifisert NP1 før integrasjon; kombiner deretter NP1-tekster/lesestatus, skalering, himmel og LineLights med nye modeller i R5. SC01-kandidaten holdes separat.
+- [x] Gjennomfør seks fokuserte R5-kjøringer, 1 581 selvtester i samlet prøve, ni utvalgte bildevurderinger og målt RT maksimum 79,811 MiB. Ikke gjenta fullmatrisen uten konkret behov. Se [rapport](ARRIVAL_OFFICE_2026-10-26.md).
+- [x] Installer samme R5 med hash-/Saved-kvittering og prøv faktisk standardstarter: åtte kontroller PASS, 61 Saved-noder uendret. Canonical prune er anvendt på ti gamle pakker/70 genererte payloadfiler; R5, to eldre pakker og aktiv SC01-kandidat er bevart. R4-kvitteringen brukes ikke som R5-bevis.
+- [x] Modellér utvendige lampehus med feste, optikk og diffusor; rett monteringsgap bak fløylampene og parkeringsarmatur/emitter inne i veggen. Baldakinen har nå egen modell og én lyskilde. Modellarbeidet er ferdig; gjeldende leveringsstatus står i nærdetaljpunktet øverst.
+- [x] Installer offisiell Fab 0.0.13 i lokal UE og bruk faktisk plugin/innlogging til å importere ørkenpakken i separat FabStaging. 518 pakkefiler og 381 registrerte leverandørassets er kontrollert og bevart etter editorstopp.
+- [x] Last ned Old West Learning med offisiell Linux Epic Games Launcher Preview etter brukerens innlogging. Launcher viser Completed; prosjektet i FabLibrary har 3 227 filer og ingen eglpart. UE-pluginens tidligere «Install from launcher» er dermed fulgt gjennom riktig offisiell løype. Prosjektet er ikke åpnet/konvertert i UE.
+- [x] Velg og migrer nødvendige naturassets fra ørkenstaging og Old West Learning med opphavs-/avhengighetsbevis. Åtte modeller er plassert og kontrollert i terreng-R2. MetaHuman er separat. Den eldre Fab-editorens avslutningsfeil er historisk dokumentert i `fab-plugin/final-fab-report.json`.
+
+- [x] Vurder Epics Unreal Mesh Terrain mot gjeldende terreng. Lesende vurdering i `terrain-assessment.json` anbefaler eksisterende grunn pluss målrettede stein-/klippemesher; ingen ny implementering eller test er gjort.
+- [ ] Ved eventuell terrengproduksjon: sammenlign én avgrenset klippeprøve med innebygd Experimental Mesh Terrain. Bevar spillbare høydefunksjoner, historiegulv og delt SARO-/veitransform. Ingen full migrering eller kjøp er besluttet.
+
+NP1 har allerede levert de frivillige private dokumentene, separat arrayserviceark, tekstskalering og dagens femtrinns himmeladapter samt LineLights-lagring. Eldre åpne punkter nedenfor omfatter fortsatt den nye SC-koordinatoren, fysiske møter, VHS og fullnatt; de skal ikke brukes til å fjerne NP1-funksjoner eller utløse en dobbel implementering.
+
+## Fullført lokalt: levende/død ku, 26. oktober 2026
+
+- [x] Konsepter, redigerbar Blender-kilde, pakkede teksturer og FBX/glTF med tre LOD-er.
+- [x] Native import og kobling til eksisterende flokker og dødku, med beiting/frost/funn-/lagringslogikk beholdt.
+- [x] Bygg, 1 437 selvtester, ti pakkede scenarioer og ekstra Low-nærbilde. Se [avgrenset bildekontroll](COW_MODELS.md).
+- [x] R2 installert, standardstarter prøvd, 40 Saved-filer bevart og gjeldende pluss to eldre testpakker beholdt. Ingen ny PR/merge/push.
+
 ## Plakater, reklame og hverdagsting, 26. oktober 2026
 
 - [x] Lag en samlet JPG-pakke med seks originale kinoplakater, kinobillett/avskjedsark, butikkreklame, menyer, emballasjetrykk, kvitteringer, postkort, arbeidsplasskilt/-blanketter og hverdagslapper. [48 motiver med galleri og kildekatalog](ArtSource/EnvironmentGraphics/README.md) er produsert med plasseringstips og fullstendige bildeprompter.
@@ -9,20 +66,21 @@
 
 - [x] Logg Toms to nye obduksjonsbilder som [separate bildeforslag til Dales filer](ArtSource/Documents/References/DaleAutopsy/README.md), med kompakte JPG-kopier og kildehasher. Senere innpassing og eventuell bildetekst er fortsatt forfatter-/integrasjonsarbeid.
 - [x] Lag hele Dales dokumentsamling og gamle aviser/arkivark som komprimerte JPG. [ArtSource/Documents](ArtSource/Documents/README.md) har 31 bilder, engelsk kildetekst, promptsett, oversikt og offlinegalleri. Manuell bilde-/kanonkontroll og filkontroll er utført.
-- Videre bruk ligger under eksisterende S.7: registrer nye private ID-er i EveningShift og koble på tekstvisning/lesestatus. Vurder E15 mot eksisterende foto før utskifting; bruk opprinnelig geometrisk grunnlag for målsatte sammenligninger. Ingen ny runtimeoppgave er fullført av JPG-leveransen.
+- [x] S.7s private tekst-ID-er, tekstvisning/skalering og faktisk lesestatus er levert gjennom NP1 og bevart i installert R5/terreng-R2. Dette ble levert separat fra JPG-produksjonen.
+- [ ] Importer og bind de nye JPG-rekvisittene til faktiske flater eller dokumentvisning. Vurder E15 mot eksisterende foto før utskifting; bruk opprinnelig geometrisk grunnlag for målsatte sammenligninger. Ingen JPG-binding eller nytt fotobevis er fullført av tekstintegrasjonen.
 
 ## Sammenflettet hovedscenario, randombevaring, himmel og Dale
 
 [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) er nå én hovedrekkefølge med 13 sammenhengende scenarioer. Tidligere revisjoner og alle 32 løsningskort ligger urørt i [MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md) som sekundært oppslagsverk. Oppgavene her presiserer eksisterende I-/R2-/H-arbeid; de er ikke en ekstra parallell implementering.
 
 - [x] S.0: Flett kveld, tre Calichebesøk, arkiv/kontor, ekstra arrayoppdrag, STATION01, Nora, beleiring og fast finale til én årsakskjede. Bevar tidligere detaljkort og skriv seks frivillige engelske UFO-/humanoiddokumenter i [DALE_OFFICE_DOCUMENTS.md](DALE_OFFICE_DOCUMENTS.md). Inventer eksisterende randomfamilier og deres fase-/tidsvilkår. Dette er levert design, ikke runtime.
-- [ ] S.1: Oppdater engelske JSON-kilder og personkunnskap etter SC01 til SC13, i samarbeid med I.1/I.2/R2.1/R2.8/H1.5. Bevar eksisterende H-/P-/E-/T-ID-er og EveningShifts eierskap til overlevering/kontor/T01/T02. Hjelperens bortføring, første melding og sen nettverksvarsling må få forskjellig følge. Regenerer via generatorene.
+- [x] S.1, forfatterkilder: Engelske JSON-kilder/personkunnskap for SC01 til SC13 er levert som 79 scener og 16 dokumenter i HorrorStory, med eksisterende H-/P-/E-/T-ID-er og EveningShifts eierskap bevart. Sju lesefiler er byteidentiske ved generatorens --check; 20 kildekontraktprøver består. Dette fullfører kildearbeidet, ikke de nye verdenshandlingene, runtimekoordinatoren eller opptakene.
 - [ ] S.2: Implementer versjonert kveld-/tidskoordinator etter R2.2/H1.7. Gammel Survey/K3/dip/TimeSkip må vente til SC01 til04 og T01-returfiling er fullført. La residualen starte i passiv mottaking uten å oppheve SC04s plansperre. Lag fremoverbudsjett med faktiske transport-/felt-/mørkeromsbehov og vern av 00:13:47/04:04/05:29. Gamle saker beholder gammel mapping; nødvendig innhold hoppes ikke over ved tidsbortfall.
 - [ ] S.3: Produser SKY01 til05: ett tidlig kryssende lys, to i Caliche, flere sent på kvelden, ordnet feltbevegelse og større spredning før morgen. Verdensbaner, okklusjon, naturlige siktmuligheter og separat opptrådt/observert/fullført-status. Lagre global fase og faktisk sett; ingen kameratvang, fotoquota eller gratis journalbevis. Behold LineLights, komet, meteorer og StarHole.
 - [ ] S.4: Bevar hele eksisterende randominventar, odds som utgangspunkt, gjentakelsesgrenser, vinduer og saveflagg. Utvid eksisterende opptattvern til de nye møtene. Utsett ustartet kandidat uten å bruke opp engangsflagg; ingen hendelseskø etter dialog. Gi påbegynt hendelse en trygg avslutning før hovedtopp. Gammel ch1 til5-pool og bAnomalyBaseline krever eksplisitt kveldsmapping, ikke flytting av sene byvinduer til20:00. Samordnes med H5.3.
 - [ ] S.5: Behold gammel tilfeldig bortføring med varsel, maks3, minst40min avstand,17 til47min tap og etterspor. Utvid NextFixed-budsjettet for ny scenariorekkefølge uten å endre legacy. Skill dette fra lokal retry i de fem nye møtene og fra fast finale. Samordne betinget gammel STATION01-bortføring med kort ny lyspassasje; ingen lovet lykkeflukt som straks overstyres av Force.
 - [ ] S.6: Rett LineLights-observasjonskontrakten: start/avbrudd/manglende truck skal ikke skrive full observert lyssekvens eller permanent bruke opp en uopplevd sjanse. Behold legitim faktisk opplevd engangshendelse. Verifiser avbrudd/Continue i samme avgrensede arbeid som S.3/S.4.
-- [ ] S.7: Integrer Dales seks nye frivillige dokumenter i EveningShift med registrerte ID-er, faktisk tekstvisning/skalering og lesestatus. Behold de sju eksisterende dokumentene og én kort nødvendig feltmapperute. Lag eget ordinært arrayservicevedlegg for nye A/B-ståsteder; eksisterende indeks beholder T02s kulvert. Produser eventuelle skisser/foto som faktiske rekvisitter. VHS_DALE_FIELD_01 er fortsatt et72sek manus, ikke produsert film; egen video-/transport-/avbrudds-/saveoppgave. Ingen lesekvote eller tidlige sluttspoilere.
+- [ ] S.7, gjenstående bilde/film: NP1 har levert de seks private tekst-ID-ene, tekstvisning/skalering, lesestatus og ordinært arrayservicevedlegg. De sju eksisterende dokumentene og kort feltmapperute er bevart; R5 bevarer også faktisk lest innhold ved tidlig disk-/verdensrestore. JPG-rekvisittene er produsert, men import, UV-/materialbinding og eventuell bildebevisbruk gjenstår. VHS_DALE_FIELD_01 er fortsatt et72sek manus, ikke produsert film; egen video-/transport-/avbrudds-/saveoppgave. Ingen lesekvote eller tidlige sluttspoilere.
 - [ ] S.8: Produser SC04s begrensede sikkerhetsmål og SC12s konkrete rutegrunn. Lokal fysisk auto-/surveyplansperre stanser automatisk kjøring, ikke all passiv mottaking/avgrenset feltkontroll. Vis fungerende utvei og fysisk rute fra bilflukt til SAROs låsbare kontrollrom, med Reyes' avtalte loggsikring og Ward på linjen før SC05. Produser fersk sted-/tidsfestet utfartsobservasjon og bud ved10.4. Test at begge valgene om SARO og senere avreise fra trygg diner gir mening.
 - [ ] S.9: Prøv én hel reise uten tilfeldige funn og én med kvalifisert gammel bortføring/tidsbortfall. Ta med oversett tidlig lys, lest/ulest Dale-samling, avbrutt VHS, uavklart T02, alle fem møters lykkeflukt/lokal retry, faktisk kildekontroll, sen Earl-kilde, feltfilm før Nora, fjernark tidlig/sent, Ward-readback og gammel save. Mål faktisk transport, frykt og ro. Ingen PASS på menneskelig opplevelse fra manus alene.
 
@@ -94,7 +152,7 @@ Samlet plan: [HORROR_STORY_PLAN.md](HORROR_STORY_PLAN.md). Tom ba om at planen l
 - [x] H1.3: Skriv nødvendige, uavhengige hovedrutespor for kartlegging, reaktiv tilstedeværelse og samordnet kommende ankomst. Bevar Nora/Tomás/1947, avtrykksregelen og én slutt. Skill invasjonens nye forfatterfasit fra hva hver person faktisk vet.
 - [x] H1.4: Avklar troverdig varsling og formål/rute for siste kjøretur. Kartlegg C med dagens avis/kart; unngå en åpenbart selvdestruktiv frivillig kontroll etter beleiringen. Varslingen skal ha verdi før finalen.
 
-Produksjonsgrunnlaget for H1.2 til H1.4 er levert i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti oppdrag, 36 scener, fem dokumenter og kontrollert generator. Dette er forfatterkilder, ikke runtimeintegrasjon eller nye opptak. H1.1 er kildekartlagt; menneskelig måling står åpen.
+Produksjonsgrunnlaget for H1.2 til H1.4 er levert og senere utvidet i [Narrative/HorrorStory](Narrative/HorrorStory/README.md): ti oppdrag, 13 scenarioer, 79 scener, 16 dokumenter og kontrollert generator. Dette er forfatterkilder, ikke runtimeintegrasjon eller nye opptak. H1.1 er kildekartlagt; menneskelig måling står åpen.
 
 ### H2: Etterforskning og skyggemannintroduksjon
 

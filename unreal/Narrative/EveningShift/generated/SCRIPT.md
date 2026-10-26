@@ -1442,6 +1442,237 @@ APRIL 13, 1986
 
 **Ved fullføring:** `{"set_flags": {"office_evidence_taken": true, "office_field_lead_filed": true}, "give_documents": ["EV_DALE_INDEX", "EV_DALE_NOTE"]}`
 
+### D02_READ_SKYLOG (archive / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_SKYLOG kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_skylog_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_skylog_read": true}, "give_documents": ["EV_DALE_SKYLOG"]}`
+
+### D02_FIELD_READ_SKYLOG (field / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_SKYLOG kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_skylog_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_skylog_read": true}, "give_documents": ["EV_DALE_SKYLOG"]}`
+
+### D02_NIGHT_READ_SKYLOG (all_night / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_SKYLOG kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_skylog_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_skylog_read": true}, "give_documents": ["EV_DALE_SKYLOG"]}`
+
+### D02_READ_WITNESS (archive / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_WITNESS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_witness_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_witness_read": true}, "give_documents": ["EV_DALE_WITNESS"]}`
+
+### D02_FIELD_READ_WITNESS (field / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_WITNESS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_witness_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_witness_read": true}, "give_documents": ["EV_DALE_WITNESS"]}`
+
+### D02_NIGHT_READ_WITNESS (all_night / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_WITNESS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_witness_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_witness_read": true}, "give_documents": ["EV_DALE_WITNESS"]}`
+
+### D02_READ_EXPLANATIONS (archive / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_EXPLANATIONS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_explanations_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_explanations_read": true}, "give_documents": ["EV_DALE_EXPLANATIONS"]}`
+
+### D02_FIELD_READ_EXPLANATIONS (field / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_EXPLANATIONS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_explanations_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_explanations_read": true}, "give_documents": ["EV_DALE_EXPLANATIONS"]}`
+
+### D02_NIGHT_READ_EXPLANATIONS (all_night / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_EXPLANATIONS kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_explanations_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_explanations_read": true}, "give_documents": ["EV_DALE_EXPLANATIONS"]}`
+
+### D02_READ_FRAME18 (archive / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_FRAME18 kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_frame18_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_frame18_read": true}, "give_documents": ["EV_DALE_FRAME18"]}`
+
+### D02_FIELD_READ_FRAME18 (field / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_FRAME18 kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_frame18_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_frame18_read": true}, "give_documents": ["EV_DALE_FRAME18"]}`
+
+### D02_NIGHT_READ_FRAME18 (all_night / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_FRAME18 kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_frame18_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_frame18_read": true}, "give_documents": ["EV_DALE_FRAME18"]}`
+
+### D02_READ_TAPELOAN (archive / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_TAPELOAN kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_tapeloan_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_tapeloan_read": true}, "give_documents": ["EV_DALE_TAPELOAN"]}`
+
+### D02_FIELD_READ_TAPELOAN (field / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_TAPELOAN kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_tapeloan_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_tapeloan_read": true}, "give_documents": ["EV_DALE_TAPELOAN"]}`
+
+### D02_NIGHT_READ_TAPELOAN (all_night / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_TAPELOAN kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_tapeloan_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_tapeloan_read": true}, "give_documents": ["EV_DALE_TAPELOAN"]}`
+
+### D02_READ_UNSENT (archive / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_UNSENT kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_unsent_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_unsent_read": true}, "give_documents": ["EV_DALE_UNSENT"]}`
+
+### D02_FIELD_READ_UNSENT (field / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_UNSENT kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_unsent_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_unsent_read": true}, "give_documents": ["EV_DALE_UNSENT"]}`
+
+### D02_NIGHT_READ_UNSENT (all_night / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_UNSENT kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_unsent_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_unsent_read": true}, "give_documents": ["EV_DALE_UNSENT"]}`
+
+### D02_READ_ARRAY_SERVICE (archive / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_ARRAY_SERVICE kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_array_service_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_array_service_read": true}, "give_documents": ["EV_DALE_ARRAY_SERVICE"]}`
+
+### D02_FIELD_READ_ARRAY_SERVICE (field / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_ARRAY_SERVICE kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_array_service_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_array_service_read": true}, "give_documents": ["EV_DALE_ARRAY_SERVICE"]}`
+
+### D02_NIGHT_READ_ARRAY_SERVICE (all_night / physical / live)
+
+**Utløser:** Kun vertens faktisk åpnete kontordokument EV_DALE_ARRAY_SERVICE kan kvittere denne handlingen; ikke ved mappe-/menyåpning.
+
+**Regi:** Stille fysisk tekst, ingen forteller. Egen leststatus uten hovedport, VHS-kvittering eller fullført feltprøve.
+
+**Krav:** {"all": ["office_open"], "none": ["office_array_service_read"]}
+
+
+**Ved fullføring:** `{"set_flags": {"office_array_service_read": true}, "give_documents": ["EV_DALE_ARRAY_SERVICE"]}`
+
 ### EV_HANDOVER: Evening handover / Sunday, April 13
 
 typed / SARO / OPERATIONS / 13 APR 1986
@@ -1576,6 +1807,70 @@ I have put copies of the local notices behind this page. There may be something 
 If you take the sheet, leave me a note. If I am not on the telephone, try the service radio. Do not tell the others I have found something. I have found somewhere to look.
 
 **Produksjon:** Gradvis fordypning etter et menneskelig, ordinært kontor. Dale har jobbet med spor og kjenner ståstedet, men vet ikke årsak, C, Nora eller finalen. Ingen talt opplesning med Kinski-profil; dokumenttekst er skriftlig.
+
+### EV_DALE_SKYLOG: Lights above the ridge / 6 April
+
+hand / 6 APR 1986 / personal observation
+
+6 APR. Kitchen clock about 20:40. One white light crossed above the ridge and stopped where there is no tower. I went outside. It moved again before I found the binoculars. Aircraft remain possible; I lost the horizon behind the roof. What bothers me is the dog. He kept watching the empty place for another ten minutes.
+
+**Produksjon:** Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten.
+
+### EV_DALE_WITNESS: Statement copied at the service desk / 29 March
+
+typed / 29 MAR 1986 / copied by D.
+
+Mrs. Bell says she heard someone crossing the yard after the porch lamp failed. The shape stood beside the washing line, taller than her husband. She called his name. It bent toward the window without taking a step. Her husband was asleep upstairs. She asked me to write “person,” not “creature.” I have kept her wording. I did not see it.
+
+**Produksjon:** Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten.
+
+### EV_DALE_EXPLANATIONS: Explanations retained / working sheet
+
+hand / WORKING SHEET / D.
+
+Three reports were aircraft. One bright object was visible from the same chair on four clear evenings: a star, made strange by the window glass. Keep those pages. Crossing out an explanation does not make the next report true. The service-road account remains open because neither witness describes the same direction. Ask separately before showing either one the other statement.
+
+**Produksjon:** Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten.
+
+### EV_DALE_FRAME18: Photograph envelope / frame 18
+
+hand / FRAME 18 / envelope text only
+
+Envelope annotation. No photograph or negative is enclosed in this working copy.
+
+Do not crop the left edge. The porch post is the only useful measure of height. The pale mark might be glare from the kitchen window; the negative needs checking. What I remember is a shape standing beyond the fence. What the photograph contains may be something else. Keep both sentences. I am starting to replace one with the other.
+
+**Produksjon:** Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten.
+
+### EV_DALE_TAPELOAN: Borrowed cassette / return sleeve
+
+hand / RETURN TUESDAY / borrowed cassette
+
+Public lecture, borrowed from a neighbor. Speakers describe visitors, contact and messages from elsewhere. No local recording. No connection established with the service-road tape. I kept it because people use these words when they call, and I need to know what they have heard already. Return it on Tuesday. Do not record over the label. There are family birthdays underneath.
+
+**Produksjon:** Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten.
+
+### EV_DALE_UNSENT: Unsent letter / no address
+
+hand / UNSENT / no address
+
+I was going to tell you about the lights, then I read this back and heard how it sounded. You would ask whether I am sleeping. Fair question. I still do the shopping. I still forget the milk. I would like one evening when the telephone rings and I expect an ordinary problem. Do not mail this. Get some sleep first.
+
+**Produksjon:** Fiktiv frivillig tekst i faktisk kontormappe. Ingen bilde- eller lydfil eller målt hendelsesbevis tildeles fra teksten.
+
+### EV_DALE_ARRAY_SERVICE: Array service / Row One sighting positions
+
+typed / SARO / ARRAY SERVICE / APR 1986
+
+FOOT ACCESS. Use the walk gate north of the control room. The cable trench is the north-south spine. Follow its gravel track to the first east-west service row; do not cross a pedestal or climb a reflector.
+
+The small service boards mark A / ROW ONE WEST, seven metres west of the trench, and B / ROW ONE EAST, nineteen metres east of the trench. Both stand on the same continuous gravel row. The fixed REF / R1 board is at the trench junction. S-02 is south of the western side; S-03 is south of the eastern side; S-04 is north of the row.
+
+For an ordinary sighting comparison, keep the reference board in place and note the reflector position against the same fixed features from A and B. Either standing position may be visited first. Return along the same row and spine to the walk gate. Check command history and the local drive state separately before attributing a movement to a source.
+
+This is a service layout, not a recorded result or an instruction to energise a drive. A recording can establish sound and elapsed time; it cannot establish bearing. The Caliche culvert camera position remains on the separate FIELD CHECKS working index.
+
+**Produksjon:** Ordinært feltvedlegg; A=(-8,-74), B=(18,-74), REF=(-1,-74) i eksisterende three-koordinater. Punktene er på fRow1, unngår fundament/collider, og nås fra gate/fSpine. Ingen ARRAY-01-fullføring gis; ny kontroll-/retrettlogikk er separat.
 
 ### VHS_DALE_FIELD_01: Service Road / Field 01
 

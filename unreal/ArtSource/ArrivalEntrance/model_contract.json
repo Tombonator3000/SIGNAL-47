@@ -1,0 +1,102 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "mapping": "Three (x,y,z) -> Blender (x,-z,y) -> UE centimetres (x,z,y)*100",
+  "units": "metres",
+  "parts": {
+    "SM_Arrival_Entrance": {
+      "bounds_local_m": [
+        [
+          -4.256999969482422,
+          -2.0500001907348633,
+          -0.5799999833106995
+        ],
+        [
+          0.005000026896595955,
+          0.6074999570846558,
+          2.6399998664855957
+        ]
+      ],
+      "materials": [
+        "M_Arrival_WeatheredSteel",
+        "M_Arrival_Aluminium",
+        "M_Arrival_Rubber",
+        "M_Arrival_Enamel",
+        "M_Arrival_PaintedMetal",
+        "M_Arrival_EntrancePrint",
+        "M_Arrival_ReceptionPrint"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "lod_triangles": [
+        8964,
+        5252,
+        2020
+      ]
+    },
+    "SM_Arrival_DoorDetails": {
+      "bounds_local_m": [
+        [
+          -0.16292497515678406,
+          -0.9290000200271606,
+          0.004999995231628418
+        ],
+        [
+          -0.008000001311302185,
+          -0.0010000020265579224,
+          2.059000015258789
+        ]
+      ],
+      "materials": [
+        "M_Arrival_Aluminium",
+        "M_Arrival_WeatheredSteel",
+        "M_Arrival_Rubber"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "lod_triangles": [
+        2412,
+        1436,
+        620
+      ]
+    },
+    "SM_Arrival_VisitorSign": {
+      "bounds_local_m": [
+        [
+          -0.23000000417232513,
+          -0.017999999225139618,
+          0.0
+        ],
+        [
+          0.23000000417232513,
+          0.04800000041723251,
+          1.75
+        ]
+      ],
+      "materials": [
+        "M_Arrival_Enamel",
+        "M_Arrival_VisitorPrint",
+        "M_Arrival_WeatheredSteel",
+        "M_Arrival_Aluminium",
+        "M_Arrival_Rubber"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "lod_triangles": [
+        2606,
+        1518,
+        318
+      ]
+    }
+  },
+  "originality": "Original bpy geometry and procedural PBR/enamel artwork; no third-party imagery or meshes.",
+  "total_LOD0_triangles": 13982
+}

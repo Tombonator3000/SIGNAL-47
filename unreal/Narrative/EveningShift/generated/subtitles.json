@@ -1807,6 +1807,111 @@
       ]
     },
     {
+      "scene_id": "D02_READ_SKYLOG",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_FIELD_READ_SKYLOG",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_SKYLOG",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_READ_WITNESS",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_FIELD_READ_WITNESS",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_WITNESS",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_READ_EXPLANATIONS",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_FIELD_READ_EXPLANATIONS",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_EXPLANATIONS",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_READ_FRAME18",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_FIELD_READ_FRAME18",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_FRAME18",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_READ_TAPELOAN",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_FIELD_READ_TAPELOAN",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_TAPELOAN",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_READ_UNSENT",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_FIELD_READ_UNSENT",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_UNSENT",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_READ_ARRAY_SERVICE",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_FIELD_READ_ARRAY_SERVICE",
+      "channel": "physical",
+      "lines": []
+    },
+    {
+      "scene_id": "D02_NIGHT_READ_ARRAY_SERVICE",
+      "channel": "physical",
+      "lines": []
+    },
+    {
       "scene_id": "N01_ROUTINE",
       "channel": "ui",
       "lines": [

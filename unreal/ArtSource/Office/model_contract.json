@@ -1,0 +1,236 @@
+{
+  "units": "metres",
+  "mapping": "Blender (x,-z,y) to UE (100x,100z,100y)",
+  "authorship": "Original beveled furniture, joinery, hardware and procedural PBR, no downloaded geometry",
+  "parts": {
+    "SM_Office_ServiceCabinet": {
+      "triangles": 2944,
+      "bounds_local_m": [
+        [
+          -0.33500000834465027,
+          -0.2750000059604645,
+          -0.5249999761581421
+        ],
+        [
+          0.33500000834465027,
+          0.2915000021457672,
+          0.5409999489784241
+        ]
+      ],
+      "materials": [
+        "M_Office_CabinetEnamel",
+        "M_Office_BlackBakelite",
+        "M_Office_BrushedMetal",
+        "M_Office_Walnut"
+      ],
+      "original_components": 20,
+      "runtime_origin_three_m": [
+        -0.59,
+        0.525,
+        6.32
+      ]
+    },
+    "SM_Office_ServiceDrawer": {
+      "triangles": 2120,
+      "bounds_local_m": [
+        [
+          -0.2750000059604645,
+          -0.17599999904632568,
+          -0.08500000089406967
+        ],
+        [
+          0.2750000059604645,
+          0.2549999952316284,
+          0.08500000089406967
+        ]
+      ],
+      "materials": [
+        "M_Office_CabinetEnamel",
+        "M_Office_ChairFabric",
+        "M_Office_BrushedMetal",
+        "M_Office_Paper",
+        "M_Office_CreamEnamel",
+        "M_Office_Walnut"
+      ],
+      "original_components": 18,
+      "runtime_origin_three_m": [
+        -0.59,
+        0.85,
+        6.22
+      ]
+    },
+    "SM_Office_Door": {
+      "triangles": 3268,
+      "bounds_local_m": [
+        [
+          -0.5130000114440918,
+          -0.0990000069141388,
+          -1.034999966621399
+        ],
+        [
+          0.5049999952316284,
+          0.0990000069141388,
+          1.034999966621399
+        ]
+      ],
+      "materials": [
+        "M_Office_Walnut",
+        "M_Office_BrushedMetal",
+        "M_Office_AgedBrass",
+        "M_Office_CreamEnamel"
+      ],
+      "original_components": 27,
+      "runtime_origin_three_m": [
+        0.47,
+        1.035,
+        6.57
+      ]
+    },
+    "SM_Office_SpareKey": {
+      "triangles": 1712,
+      "bounds_local_m": [
+        [
+          -0.02499999850988388,
+          -0.07559999823570251,
+          -0.004999999888241291
+        ],
+        [
+          0.10899999737739563,
+          0.054999999701976776,
+          0.004999999888241291
+        ]
+      ],
+      "materials": [
+        "M_Office_AgedBrass",
+        "M_Office_BrushedMetal",
+        "M_Office_CreamEnamel"
+      ],
+      "original_components": 6,
+      "runtime_origin_three_m": [
+        -0.59,
+        0.805,
+        6.17
+      ]
+    },
+    "SM_Office_Room": {
+      "triangles": 20404,
+      "bounds_local_m": [
+        [
+          -0.9300000071525574,
+          -10.420000076293945,
+          -0.06749999523162842
+        ],
+        [
+          1.8799999952316284,
+          -6.570000171661377,
+          2.7799999713897705
+        ]
+      ],
+      "materials": [
+        "M_Office_BlackBakelite",
+        "M_Office_FloorLinoleum",
+        "M_Office_SageWall",
+        "M_Office_Walnut",
+        "M_Office_CreamEnamel",
+        "M_Office_CeilingTile",
+        "M_Office_AgedBrass",
+        "M_Office_BrushedMetal",
+        "M_Office_CabinetEnamel",
+        "M_Office_Diffuser"
+      ],
+      "original_components": 111,
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SM_Office_Desk": {
+      "triangles": 7308,
+      "bounds_local_m": [
+        [
+          -0.8100000023841858,
+          -0.4099999964237213,
+          0.015000000596046448
+        ],
+        [
+          0.8100000023841858,
+          0.4099999964237213,
+          0.7994999885559082
+        ]
+      ],
+      "materials": [
+        "M_Office_TankerGreen",
+        "M_Office_BlackBakelite",
+        "M_Office_BrushedMetal",
+        "M_Office_Paper"
+      ],
+      "original_components": 53,
+      "runtime_origin_three_m": [
+        0.37,
+        0,
+        9.73
+      ]
+    },
+    "SM_Office_Chair": {
+      "triangles": 4692,
+      "bounds_local_m": [
+        [
+          -0.30799999833106995,
+          -0.3263169527053833,
+          0.00599999725818634
+        ],
+        [
+          0.3269999921321869,
+          0.3263169527053833,
+          1.0049999952316284
+        ]
+      ],
+      "materials": [
+        "M_Office_BrushedMetal",
+        "M_Office_BlackBakelite",
+        "M_Office_ChairFabric"
+      ],
+      "original_components": 30,
+      "runtime_origin_three_m": [
+        1.19,
+        0,
+        8.73
+      ]
+    },
+    "SM_Office_Dressing": {
+      "triangles": 19728,
+      "bounds_local_m": [
+        [
+          -0.8400000333786011,
+          -10.333000183105469,
+          0.013000000268220901
+        ],
+        [
+          1.7549999952316284,
+          -7.454999923706055,
+          2.307500123977661
+        ]
+      ],
+      "materials": [
+        "M_Office_Walnut",
+        "M_Office_CabinetEnamel",
+        "M_Office_BinderBurgundy",
+        "M_Office_Paper",
+        "M_Office_AgedBrass",
+        "M_Office_BinderBlue",
+        "M_Office_Cork",
+        "M_Office_BlackBakelite",
+        "M_Office_CreamEnamel",
+        "M_Office_ChairFabric",
+        "M_Office_BrushedMetal"
+      ],
+      "original_components": 141,
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}

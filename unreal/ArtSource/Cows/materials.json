@@ -1,0 +1,314 @@
+[
+  {
+    "name": "M_Cow_RedHide",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.88,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_RedHide_base_color.png",
+      "normal": "textures/M_Cow_RedHide_normal.png",
+      "roughness": "textures/M_Cow_RedHide_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_WhiteHide",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.9,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_WhiteHide_base_color.png",
+      "normal": "textures/M_Cow_WhiteHide_normal.png",
+      "roughness": "textures/M_Cow_WhiteHide_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_Muzzle",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.68,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_Muzzle_base_color.png",
+      "normal": "textures/M_Cow_Muzzle_normal.png",
+      "roughness": "textures/M_Cow_Muzzle_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      0.45,
+      0.45,
+      0.45
+    ]
+  },
+  {
+    "name": "M_Cow_Hoof",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.72,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_Hoof_base_color.png",
+      "normal": "textures/M_Cow_Hoof_normal.png",
+      "roughness": "textures/M_Cow_Hoof_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_Horn",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.67,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_Horn_base_color.png",
+      "normal": "textures/M_Cow_Horn_normal.png",
+      "roughness": "textures/M_Cow_Horn_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  {
+    "name": "M_Cow_Eye",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.2,
+    "metallic": 0,
+    "specular": 0.5,
+    "textures": {
+      "base_color": "textures/M_Cow_Eye_base_color.png",
+      "normal": "textures/M_Cow_Eye_normal.png",
+      "roughness": "textures/M_Cow_Eye_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_EarInner",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.87,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_EarInner_base_color.png",
+      "normal": "textures/M_Cow_EarInner_normal.png",
+      "roughness": "textures/M_Cow_EarInner_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_YellowTag",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.58,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_YellowTag_base_color.png",
+      "normal": "textures/M_Cow_YellowTag_normal.png",
+      "roughness": "textures/M_Cow_YellowTag_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_DryBone",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.84,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_DryBone_base_color.png",
+      "normal": "textures/M_Cow_DryBone_normal.png",
+      "roughness": "textures/M_Cow_DryBone_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      0.32,
+      0.32,
+      0.32
+    ]
+  },
+  {
+    "name": "M_Cow_DryCut",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.95,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_DryCut_base_color.png",
+      "normal": "textures/M_Cow_DryCut_normal.png",
+      "roughness": "textures/M_Cow_DryCut_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_Frost",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.9,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_Frost_base_color.png",
+      "normal": "textures/M_Cow_Frost_normal.png",
+      "roughness": "textures/M_Cow_Frost_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "deterministic short-fibre height and colour field, seed47025",
+    "texture_tint_linear": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "name": "M_Cow_BodyHide",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.88,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_BodyHide_base_color.png",
+      "normal": "textures/M_Cow_RedHide_normal.png",
+      "roughness": "textures/M_Cow_RedHide_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "UV-authored Hereford markings with short-fibre PBR, seed47025",
+    "texture_tint_linear": [
+      0.32,
+      0.32,
+      0.32
+    ]
+  },
+  {
+    "name": "M_Cow_HeadHide",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.88,
+    "metallic": 0,
+    "specular": 0.28,
+    "textures": {
+      "base_color": "textures/M_Cow_HeadHide_base_color.png",
+      "normal": "textures/M_Cow_RedHide_normal.png",
+      "roughness": "textures/M_Cow_RedHide_roughness.png"
+    },
+    "normal_convention": "DirectX",
+    "original_generation": "UV-authored Hereford markings with short-fibre PBR, seed47025",
+    "texture_tint_linear": [
+      0.32,
+      0.32,
+      0.32
+    ]
+  }
+]

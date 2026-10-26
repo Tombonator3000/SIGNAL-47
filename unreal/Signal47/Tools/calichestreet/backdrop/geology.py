@@ -12,7 +12,7 @@ MATERIALS=['M_Caliche_Mesa_'+str(i) for i in range(6)]
 ROAD_BUFFER=180.0
 MAIN_BUFFER=180.0
 TOWN_BOX=[-180,180,-500,450]
-BUDGET=125000
+BUDGET=220000
 
 def smooth(a,b,x):
     t=max(0.0,min(1.0,(x-a)/(b-a)));return t*t*(3-2*t)
@@ -70,14 +70,16 @@ PROFILE=[(0,0,0),(55,.012,0),(110,.045,4),(160,.105,4),(195,.155,4),
  (258,.63,2),(260,.634,1),(275,.79,3),(279,.81,1),(287,.93,2),
  (288,.934,1),(300,1,2),(360,1,2),(610,.995,2),(830,.96,2),
  (1080,.83,0),(1270,.20,4),(1340,0,0)]
-DISTANT_PROFILE=[(0,0,5),(100,.025,5),(205,.13,5),(270,.22,5),
- (283,.48,5),(305,.51,5),(320,.76,5),(345,.79,5),(360,.99,5),
- (430,1,5),(650,.96,5),(830,.10,5),(900,0,5)]
+# One weathered headwall above a talus apron. The previous repeated shelf/wall
+# pairs read as giant parallel stairs from the highway and SARO entrance.
+DISTANT_PROFILE=[(0,0,5),(100,.025,5),(205,.13,5),(260,.24,5),
+ (280,.36,5),(295,.68,5),(325,.90,5),(360,1,5),(435,.985,5),
+ (570,.93,5),(720,.70,5),(830,.10,5),(900,0,5)]
 BELTS=[
  {'id':'western_escarpment','axis':'z','side':-1,'along':[-2300,1200],'toe':740,'height':117,'seed':81,'step':8,'profile':PROFILE,'layer':'middle','main_cliff_min_m':700},
  {'id':'eastern_north_escarpment','axis':'z','side':1,'along':[-2700,1450],'toe':620,'height':227,'seed':97,'step':8,'profile':PROFILE,'layer':'middle','main_cliff_min_m':700},
- {'id':'far_northern_ridges','axis':'x','side':-1,'along':[-2250,2250],'toe':2600,'height':151,'seed':137,'step':27,'profile':DISTANT_PROFILE,'layer':'far'},
- {'id':'far_western_ridges','axis':'z','side':-1,'along':[-2850,1850],'toe':1950,'height':171,'seed':173,'step':28,'profile':DISTANT_PROFILE,'layer':'far'},
+ {'id':'far_northern_ridges','axis':'x','side':-1,'along':[-2250,2250],'toe':2600,'height':151,'seed':137,'step':16,'profile':DISTANT_PROFILE,'layer':'far'},
+ {'id':'far_western_ridges','axis':'z','side':-1,'along':[-2850,1850],'toe':1950,'height':171,'seed':173,'step':20,'profile':DISTANT_PROFILE,'layer':'far'},
 ]
 
 def angular_noise(x,seed):
@@ -102,6 +104,27 @@ def oldroad_erosion(belt,s,setback,fraction,x,z):
     cross=angular_noise(setback/90+noise1(s/150,belt['seed']+49),belt['seed']+50)
     relief=zone*((ridge-.50)*22+(cross-.5)*6)
     return zone,relief,ridge
+
+def route_erosion(belt,s,setback,fraction):
+    """Connected drainage and worn shoulders at both visible distance scales.
+
+    The same warped channels cross the talus, wall and cap. Their amplitude
+    settles at the buried toe and backslope, leaving every route mask intact.
+    Broad cap relief breaks the former long, flat roof without vertex spikes.
+    """
+    seed=belt['seed']
+    warp=32*(noise1(setback/145,seed+71)-.5)
+    catchment=s+warp+24*(noise1(s/310,seed+72)-.5)
+    channel=1-abs(2*noise1(catchment/93,seed+73)-1)
+    channel=channel**4
+    ribs=noise1(catchment/37+setback/410,seed+74)-.5
+    broad=noise1(s/205+setback/310,seed+75)-.5
+    far=belt['layer']=='far'
+    contact=smooth(38,115,setback)*(1-smooth(720 if far else 1080,900 if far else 1340,setback))
+    fan=(1-smooth(.18,.36,fraction))*(ribs*5-channel*6)
+    wall=smooth(.18,.5,fraction)*(1-smooth(.86,1,fraction))*(ribs*12-channel*18)
+    cap=smooth(.72,.97,fraction)*(broad*(34 if far else 24)+ribs*8-channel*24)
+    return (fan+wall+cap)*contact
 
 def surface_point(belt,s,setback,fraction):
     seed=belt['seed'];a0,a1=belt['along']
@@ -137,12 +160,16 @@ def surface_point(belt,s,setback,fraction):
         h-=height*.008*gully
     x,z=(belt['side']*lateral,s) if belt['axis']=='z' else (s,belt['side']*lateral)
     zone,relief,ridge=oldroad_erosion(belt,s,setback,fraction,x,z)
+    h+=route_erosion(belt,s,setback,fraction)
     return x,z,max(0,h)*end*protection(x,z)-4+relief*end
 
 def split_profile(profile):
     result=[]
     for (d,h,m),(d1,h1,m1) in zip(profile,profile[1:]):
-        n=math.ceil((d1-d)/45)
+        # Resolve the channels on the visibly dominant northern ridge as well
+        # as the middle ground. Narrow authored ledges are never widened.
+        spacing=24
+        n=math.ceil((d1-d)/spacing)
         for i in range(n):
             t=i/n;result.append((d+(d1-d)*t,h+(h1-h)*t,m))
     result.append(profile[-1]);return result

@@ -2,7 +2,9 @@
 #include "S47Herd.h"
 
 #include "Components/MaterialBillboardComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "S47CowMeshes.h"
 #include "S47Main.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
@@ -36,6 +38,20 @@ FS47Herd::FS47Herd(US47Main* InM, const FString& InPath, const FString& InArea) 
 	{
 		Group = W->Obj(InPath + TEXT(".group")); Bodies = W->Obj(InPath + TEXT(".bodies"));
 		Heads = W->Obj(InPath + TEXT(".heads")); Ring = W->Obj(InPath + TEXT(".ring"));
+		const auto* BodyNode = W->Node(Bodies.I);
+		const auto* HeadNode = W->Node(Heads.I);
+		auto* BodyComponent = BodyNode ? Cast<UInstancedStaticMeshComponent>(BodyNode->Comp.Get()) : nullptr;
+		auto* HeadComponent = HeadNode ? Cast<UInstancedStaticMeshComponent>(HeadNode->Comp.Get()) : nullptr;
+		const auto Meshes = S47CowMeshes::Load();
+		if (Meshes && BodyComponent && HeadComponent && BodyComponent->GetInstanceCount() == Count() && HeadComponent->GetInstanceCount() == Count())
+		{
+			// Keep both original instance pools: grazing, 026, tags' look areas and missing #25
+			// continue to use exactly the same transforms and save state as before.
+			S47CowMeshes::Replace(BodyComponent, Meshes.Body);
+			S47CowMeshes::Replace(HeadComponent, Meshes.Head);
+			bNativeModels = true;
+			UE_LOG(LogTemp, Display, TEXT("S47: cow models alive ready: %s, %d bodies and heads"), *Area, Count());
+		}
 	}
 	for (int32 I = 0; I < Count(); ++I)
 	{
@@ -157,6 +173,8 @@ void FS47Herd::Update(double T, const TOptional<FS47HerdHeadlights>& Headlights)
 	else BeamPos.W = 0;
 	// Herd.beamLit: the material's small custom expression is in Tools/webexport/import_web.py.
 	for (const FS47Obj& O : { Bodies, Heads, Ring }) if (O.IsValid())
+		// Authored PBR hide uses native moon/flashlight/headlights; frost retains its old shader.
+		if (!bNativeModels || O == Ring)
 		for (UMaterialInstanceDynamic* D : O.W->NodeMids(O.I))
 		{
 			D->SetVectorParameterValue(TEXT("BeamPos"), FLinearColor(BeamPos.X, BeamPos.Y, BeamPos.Z, BeamPos.W));

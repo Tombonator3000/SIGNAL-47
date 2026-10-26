@@ -143,14 +143,19 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
  // Their grazing cross-aim lights the printed sign without emissive lettering.
  for(int32 I=0;I<2;++I)
  {
+  // A separate, wall-mounted sign optic replaces the old second light floating at a wall pack.
+  const auto Fixture=S47ExteriorFixtures::Make(W,I==0?TEXT("WingSignWest"):TEXT("WingSignEast"),S47ExteriorFixtures::EKind::SignWash,
+   FVector(I==0?24.4:27.2,3.30,5.50),S47Three::Euler(UE_DOUBLE_PI/2,0,0),Grounds);
+  const FVector At=Fixture?Fixture.Aperture:SignWashAt[I];
+  const FVector Target=Fixture?At+Fixture.Normal*3:SignWashTarget[I];
   auto* L=NewObject<USpotLightComponent>(W,*FString::Printf(TEXT("S47SaroSignWash%d"),I));
   L->SetupAttachment(W->GetRootComponent());L->SetMobility(EComponentMobility::Movable);
   L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1.f,.72f,.43f));
-  L->SetWorldLocationAndRotation(S47Three::ToUE(SignWashAt[I]),S47Three::DirToUE(SignWashTarget[I]-SignWashAt[I]).Rotation());
+  L->SetWorldLocationAndRotation(S47Three::ToUE(At),S47Three::DirToUE(Target-At).Rotation());
   L->SetInnerConeAngle(45.f);L->SetOuterConeAngle(70.f);L->SetAttenuationRadius(900.f);
-  L->SetSourceRadius(3.f);L->SetSoftSourceRadius(3.f);L->SetCastShadows(true);
+  L->SetSourceRadius(Fixture?Fixture.Height*.5f:3.f);L->SetSoftSourceRadius(3.f);L->SetCastShadows(true);
   L->SetVolumetricScatteringIntensity(0.f);L->SetIndirectLightingIntensity(1.f);
-  L->SetVisibility(false);L->RegisterComponent();S->SignWash.Add(L);
+  L->SetVisibility(false);L->RegisterComponent();S->SignWash.Add(L);S->SignFixtures.Add(Fixture);
  }
  // Unreal: a continuous paved east forecourt connects to the original service road.
  // Visual finish only: retain the existing -.600m walk/drive plane and every query floor.
@@ -212,6 +217,7 @@ void FS47SaroSite::Update()
  for(int32 I:RetiredNodes)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetVisibility(false,false);C->SetHiddenInGame(true,false);}
  const float Power=Shown?SignPower(W):0.f;
  for(const auto& P:SignWash)if(auto* L=P.Get()){L->SetIntensity(1200.f*Power);L->SetVisibility(Power>.0001f);}
+ for(const auto& F:SignFixtures)F.Update(Shown,Power,FLinearColor(1.f,.72f,.43f));
  bShown=Shown;
 }
 bool FS47SaroSite::Audit(TArray<FString>& Lines)const
@@ -236,7 +242,7 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
  auto* OldStains=Stains.Get();const bool StainsOK=OldStains&&OldStains->GetStaticMesh()&&OldStains->GetStaticMesh()->GetPathName()==TEXT("/Game/SaroSite/Trim/StaticMeshes/g455.g455")&&OldStains->GetStaticMesh()->GetNumTriangles(0)==1224&&OldStains->GetMaterial(0)==StainAtlas.Get();
  OK&=StainsOK;Lines.Add(FString::Printf(TEXT("SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; %s"),StainsOK?TEXT("PASS"):TEXT("FAIL")));
  const float WashPower=bShown?SignPower(W):0.f;bool WashOK=SignWash.Num()==2;
- for(int32 I=0;I<SignWash.Num();++I){const auto* L=SignWash[I].Get();WashOK&=L&&L->GetComponentLocation().Equals(S47Three::ToUE(SignWashAt[I]),.01)&&L->CastShadows&&L->IsVisible()==(WashPower>.0001f)&&FMath::IsNearlyEqual(L->Intensity,1200.f*WashPower,.1f);}
+ for(int32 I=0;I<SignWash.Num();++I){const auto* L=SignWash[I].Get();const FVector At=SignFixtures.IsValidIndex(I)&&SignFixtures[I]?SignFixtures[I].Aperture:SignWashAt[I];WashOK&=L&&L->GetComponentLocation().Equals(S47Three::ToUE(At),.01)&&L->CastShadows&&L->IsVisible()==(WashPower>.0001f)&&FMath::IsNearlyEqual(L->Intensity,1200.f*WashPower,.1f);}
  OK&=WashOK;Lines.Add(FString::Printf(TEXT("SARO_SITE sign wash=2 warm1200lm each, original site9/glow20/21 power=%.4f; %s"),WashPower,WashOK?TEXT("PASS"):TEXT("FAIL")));
  const auto Power=S47HighwayPower::Status(W);OK&=Power.bReady&&Power.SaroMainWithin100m==2&&Power.SaroServicePoles==1&&Power.SaroTotalWithin100m==3;
  Lines.Add(FString::Printf(TEXT("SARO_SITE retiredDraws=%d legacyWalkFeet=%d legacyDriveFeet=%d utilityWithin100m=%d (main=%d service=%d), field lights/proxies unchanged; %s"),RetiredNodes.Num(),RemovedWalkFeet,RemovedDriveFeet,Power.SaroTotalWithin100m,Power.SaroMainWithin100m,Power.SaroServicePoles,OK?TEXT("PASS"):TEXT("FAIL")));return OK;

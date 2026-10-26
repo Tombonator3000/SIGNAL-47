@@ -36,7 +36,7 @@ for row in rows:
 v,f,slots,uv,bands,filtered=build_geometry()
 mesh=bpy.data.meshes.new(NAME);mesh.from_pydata(v,[],f);mesh.update()
 for mat in mats:mesh.materials.append(mat)
-for poly,slot in zip(mesh.polygons,slots):poly.material_index=slot;poly.use_smooth=slot in [0,4]
+for poly,slot in zip(mesh.polygons,slots):poly.material_index=slot;poly.use_smooth=slot in [0,4,5]
 layer=mesh.uv_layers.new(name='UVMap')
 for poly,coords in zip(mesh.polygons,uv):
     for li,t in zip(poly.loop_indices,coords):layer.data[li].uv=t
@@ -64,7 +64,7 @@ desc={'status':'SOURCE_GENERATED','anchor_world_three_m':ANCHOR,'mapping':ob['ma
  'geology_belts':bands,'protected':{'old_road_m':ROAD_BUFFER,'main_road_m':MAIN_BUFFER,'town_box_local_xz':TOWN_BOX,
  'whole_triangle_oldroad_clearance_lower_bound_m':old_min,'whole_triangle_mainroad_clearance_lower_bound_m':main_min,
  'raised_triangles':raised,'filtered_near_protected_quads':filtered,'old_road_path_source':'roadShape.ts/oldRoadLayout.ts reproduced4m midpoint/backward integration','old_road_first4500m_local_xz':OLD_ROAD},
- 'materials':rows,'revision':'CN5 localized OldRoad cap erosion','notes':'CN5 replaces only the east OldRoad transition cap with angular erosion relief and rubble/rock material islands; the original road mask, XY positions, anchor and collision remain unchanged. Rock faces are flat-shaded to retain bed breaks; talus remains smooth. Low toes are buried at-4m and blend into existing terrain. Main escarpments beyond700m, middle/far ridges provide actual parallax and depth. No road/town floor or collision changes.'}
+ 'materials':rows,'revision':'RN2 eroded headwalls and connected talus','notes':'RN2 replaces the visibly dominant distant stair profiles with one eroded headwall and talus, varied shoulders and connected drainage. Far north uses 16m along sampling, far west 20m and all belts 24m cross-profile sampling. The original route masks, anchors, silhouette hierarchy and collision policy are retained. Existing OldRoad erosion is preserved. Main escarpments remain beyond700m. No road/town floor or collision changes.'}
 (R/'geology_descriptor.json').write_text(json.dumps(desc,indent=2)+'\n')
 for image in bpy.data.images:
     if image.source=='FILE':image.pack()

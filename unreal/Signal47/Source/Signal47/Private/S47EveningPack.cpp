@@ -292,6 +292,20 @@ void FS47EveningPack::ValidateWorldRestore(bool bOfficeKey, bool bOfficeUnlocked
 	{ ActiveScene.Reset(); PendingChoice.Reset(); Cursor = 0; }
 }
 
+
+void FS47EveningPack::ValidateOfficeReadDocuments(const TArray<FString>& Read)
+{
+ for (const TCHAR* Suffix : {TEXT("SKYLOG"), TEXT("WITNESS"), TEXT("EXPLANATIONS"), TEXT("FRAME18"), TEXT("TAPELOAN"), TEXT("UNSENT"), TEXT("ARRAY_SERVICE")})
+ {
+  const FString Id = FString(TEXT("EV_DALE_")) + Suffix;
+  const FString FlagId = FString(TEXT("office_")) + FString(Suffix).ToLower() + TEXT("_read");
+  // Reconcile from the physical controller. Scene/pack saves alone cannot fabricate a read.
+  const bool Actual = Read.Contains(Id);
+  if (Defaults.Contains(FlagId)) Flags.Add(FlagId, Actual);
+  if (Actual) OwnedDocuments.AddUnique(Id); else OwnedDocuments.Remove(Id);
+ }
+}
+
 void FS47EveningPack::ResetFollowupAttempt()
 {
 	for (const TCHAR* Id : {TEXT("field_reference_matched"), TEXT("field_followup_unresolved"), TEXT("trafo_anomaly_checked")}) Flags.Add(Id, false);

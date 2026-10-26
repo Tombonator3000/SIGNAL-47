@@ -1,0 +1,677 @@
+{
+  "status": "PASS",
+  "engine": "5.2.2 LTS",
+  "blender_source_sha256": "fbfaa3349f041e3a43e53710087c0650e2c46ce1fad4afc162234ab89566ab7a",
+  "checks": [
+    {
+      "name": "saved live body and neck-root head",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "head assembled at unchanged NECK",
+      "pass": true,
+      "detail": [
+        0.0,
+        0.7400000095367432,
+        1.1200000047683716
+      ]
+    },
+    {
+      "name": "live soles on exact ground pivot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "02_ABDUCTED_ALDERETE25_EDITABLE hidden in startup viewport",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "04_CONCEPT_REFERENCES hidden in startup viewport",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "05_EXPORTED_LODS hidden in startup viewport",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body explicit positive-area source triangles",
+      "pass": true,
+      "detail": 4.1947200770664494e-06
+    },
+    {
+      "name": "SM_Cow_Alive_Body no coincident FBX corners",
+      "pass": true,
+      "detail": 0.004682106050803589
+    },
+    {
+      "name": "SM_Cow_Alive_Body no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Head finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head explicit positive-area source triangles",
+      "pass": true,
+      "detail": 7.282282012965879e-07
+    },
+    {
+      "name": "SM_Cow_Alive_Head no coincident FBX corners",
+      "pass": true,
+      "detail": 0.0014502947882620142
+    },
+    {
+      "name": "SM_Cow_Alive_Head no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Abducted finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted explicit positive-area source triangles",
+      "pass": true,
+      "detail": 9.826180757954717e-09
+    },
+    {
+      "name": "SM_Cow_Abducted no coincident FBX corners",
+      "pass": true,
+      "detail": 1.0896611034519459e-05
+    },
+    {
+      "name": "SM_Cow_Abducted no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 4.1947200770664494e-06
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.004682106050803589
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body.001 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 4.622993401426356e-06
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.004379060503664277
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD1 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 3.288094376330264e-05
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.0033252899158313304
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Body_LOD2 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 7.282282012965879e-07
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.0014502947882620142
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head.001 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 2.4985788513731677e-06
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.002665547586578518
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD1 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 2.621457133500371e-05
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.00482646868121977
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Alive_Head_LOD2 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted.001 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted.001 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted.001 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted.001 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 9.826180757954717e-09
+    },
+    {
+      "name": "SM_Cow_Abducted.001 no coincident FBX corners",
+      "pass": true,
+      "detail": 1.0896611034519459e-05
+    },
+    {
+      "name": "SM_Cow_Abducted.001 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Abducted.001 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted.001 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 6.762498401258199e-07
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.0008519252406727921
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD1 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 finite vertex positions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 explicit triangles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 all material slots resolved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 explicit positive-area source triangles",
+      "pass": true,
+      "detail": 8.800507771411503e-07
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 no coincident FBX corners",
+      "pass": true,
+      "detail": 0.0009999179649902634
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 no collapsed tangent UV triangles",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 triangle contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_Cow_Abducted_LOD2 metric bounds contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "ku-dod-endelig.png embedded image",
+      "pass": true,
+      "detail": "//Concepts/ku-dod-endelig.png"
+    },
+    {
+      "name": "ku-levende.png embedded image",
+      "pass": true,
+      "detail": "//Concepts/ku-levende.png"
+    },
+    {
+      "name": "M_Cow_BodyHide_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_BodyHide_base_color.png"
+    },
+    {
+      "name": "M_Cow_DryBone_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_DryBone_base_color.png"
+    },
+    {
+      "name": "M_Cow_DryBone_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_DryBone_normal.png"
+    },
+    {
+      "name": "M_Cow_DryBone_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_DryBone_roughness.png"
+    },
+    {
+      "name": "M_Cow_DryCut_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_DryCut_base_color.png"
+    },
+    {
+      "name": "M_Cow_DryCut_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_DryCut_normal.png"
+    },
+    {
+      "name": "M_Cow_DryCut_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_DryCut_roughness.png"
+    },
+    {
+      "name": "M_Cow_EarInner_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_EarInner_base_color.png"
+    },
+    {
+      "name": "M_Cow_EarInner_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_EarInner_normal.png"
+    },
+    {
+      "name": "M_Cow_EarInner_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_EarInner_roughness.png"
+    },
+    {
+      "name": "M_Cow_Eye_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Eye_base_color.png"
+    },
+    {
+      "name": "M_Cow_Eye_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Eye_normal.png"
+    },
+    {
+      "name": "M_Cow_Eye_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Eye_roughness.png"
+    },
+    {
+      "name": "M_Cow_Frost_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Frost_base_color.png"
+    },
+    {
+      "name": "M_Cow_Frost_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Frost_normal.png"
+    },
+    {
+      "name": "M_Cow_Frost_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Frost_roughness.png"
+    },
+    {
+      "name": "M_Cow_HeadHide_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_HeadHide_base_color.png"
+    },
+    {
+      "name": "M_Cow_Hoof_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Hoof_base_color.png"
+    },
+    {
+      "name": "M_Cow_Hoof_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Hoof_normal.png"
+    },
+    {
+      "name": "M_Cow_Hoof_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Hoof_roughness.png"
+    },
+    {
+      "name": "M_Cow_Horn_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Horn_base_color.png"
+    },
+    {
+      "name": "M_Cow_Horn_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Horn_normal.png"
+    },
+    {
+      "name": "M_Cow_Horn_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Horn_roughness.png"
+    },
+    {
+      "name": "M_Cow_Muzzle_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Muzzle_base_color.png"
+    },
+    {
+      "name": "M_Cow_Muzzle_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Muzzle_normal.png"
+    },
+    {
+      "name": "M_Cow_Muzzle_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_Muzzle_roughness.png"
+    },
+    {
+      "name": "M_Cow_RedHide_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_RedHide_base_color.png"
+    },
+    {
+      "name": "M_Cow_RedHide_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_RedHide_normal.png"
+    },
+    {
+      "name": "M_Cow_RedHide_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_RedHide_roughness.png"
+    },
+    {
+      "name": "M_Cow_WhiteHide_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_WhiteHide_base_color.png"
+    },
+    {
+      "name": "M_Cow_WhiteHide_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_WhiteHide_normal.png"
+    },
+    {
+      "name": "M_Cow_WhiteHide_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_WhiteHide_roughness.png"
+    },
+    {
+      "name": "M_Cow_YellowTag_base_color.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_YellowTag_base_color.png"
+    },
+    {
+      "name": "M_Cow_YellowTag_normal.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_YellowTag_normal.png"
+    },
+    {
+      "name": "M_Cow_YellowTag_roughness.png embedded image",
+      "pass": true,
+      "detail": "//textures/M_Cow_YellowTag_roughness.png"
+    }
+  ],
+  "scope": "fresh saved Blender source, not native Unreal or packaged gameplay"
+}

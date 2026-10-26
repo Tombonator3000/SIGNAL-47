@@ -203,5 +203,488 @@
         "unreal/Signal47/Source/Signal47/Public/S47OldRoad.h"
       ]
     }
+  ],
+  "scenarios": [
+    {
+      "id": "SC01",
+      "title": "The first crossing",
+      "phase": "early_shift",
+      "mission_ids": [
+        "H01"
+      ],
+      "scene_ids": [
+        "SC01_WINDOW_CHECK",
+        "SC01_FIRST_REPORT"
+      ],
+      "result_scene_ids": [
+        "SC01_WINDOW_CHECK",
+        "SC01_FIRST_REPORT"
+      ],
+      "existing_evidence_ids": [
+        "EV_HANDOVER",
+        "N01"
+      ],
+      "shared_owner_contracts": [
+        "EveningShift owns arrival, optional diner, keys and handover."
+      ],
+      "world_contract": "A moving body outside glass and checked exterior marks permit a first limited report. A sky light can be missed without progress loss.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC02",
+      "title": "Back to the truck",
+      "phase": "early_shift",
+      "mission_ids": [
+        "H01",
+        "H02"
+      ],
+      "scene_ids": [
+        "SC02_RETURN_WARNING",
+        "SC02_ESCAPE",
+        "SC02_RETRY"
+      ],
+      "result_scene_ids": [
+        "SC02_ESCAPE"
+      ],
+      "existing_evidence_ids": [
+        "T01"
+      ],
+      "shared_owner_contracts": [
+        "EveningShift owns actual T01 and its single return filing."
+      ],
+      "world_contract": "Preserve the completed ordinary test during local retry. Real clear driving is a valid escape; no old missing-time contract.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC03",
+      "title": "The help that came",
+      "phase": "early_shift",
+      "mission_ids": [
+        "H02"
+      ],
+      "scene_ids": [
+        "SC03_DISPATCH_RECEIPT",
+        "SC03_RELIEF_CONTACT",
+        "SC03_SHADOW_RULE",
+        "SC03_ORTIZ_IDENTIFY",
+        "SC03_HELPER_TAKEN",
+        "SC03_HELPER_TRACES",
+        "SC03_MISSING_RECEIPT",
+        "SC03_LOCAL_ORDER_HOLD"
+      ],
+      "result_scene_ids": [
+        "SC03_DISPATCH_RECEIPT",
+        "SC03_HELPER_TAKEN",
+        "SC03_MISSING_RECEIPT",
+        "SC03_LOCAL_ORDER_HOLD"
+      ],
+      "existing_evidence_ids": [],
+      "shared_owner_contracts": [
+        "BY01; no replacement of existing Earl, sheriff, waitress or required witnesses."
+      ],
+      "world_contract": "Assignment, visible loss, traces and missing-person readback are different facts. Shadow rule is optional and distinct from the pale reactive actor.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC04",
+      "title": "Secure it and get under cover",
+      "phase": "early_shift",
+      "mission_ids": [
+        "H02"
+      ],
+      "scene_ids": [
+        "SC04_LIMITED_RETURN",
+        "SC04_LOCAL_HOLD",
+        "SC04_ANNEX_IMPRINT",
+        "SC04_ANNEX_LONG_ESCAPE",
+        "SC04_ANNEX_SOUND_ESCAPE",
+        "SC04_ANNEX_RETRY",
+        "SC04_CAR_READ",
+        "SC04_CAR_ESCAPE",
+        "SC04_CAR_RETRY",
+        "SC04_SAFE_ROOM_AGREEMENT"
+      ],
+      "result_scene_ids": [
+        "SC04_LOCAL_HOLD",
+        "SC04_CAR_ESCAPE",
+        "SC04_SAFE_ROOM_AGREEMENT"
+      ],
+      "existing_evidence_ids": [],
+      "shared_owner_contracts": [
+        "EveningShift owns existing shift/service originals. New coordinator owns physical isolation, two escape routes and safe-room transition."
+      ],
+      "world_contract": "One bounded return from actual refuge; automatic plan isolated, passive RX remains. Annex/cab encounters have separate success, calm and local retry. No normal-work order.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC05",
+      "title": "The call ahead of the room",
+      "phase": "signal",
+      "mission_ids": [
+        "H02"
+      ],
+      "scene_ids": [
+        "SC05_PASSIVE_RESIDUAL"
+      ],
+      "result_scene_ids": [
+        "SC05_PASSIVE_RESIDUAL"
+      ],
+      "existing_evidence_ids": [
+        "S-03"
+      ],
+      "shared_owner_contracts": [
+        "Existing receiver, phone and real 47-second room comparison remain their own world actions."
+      ],
+      "world_contract": "00:13:47 is first major instrumental residual, not first body. No phone panel chase or future document.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC06",
+      "title": "The second image",
+      "phase": "signal",
+      "mission_ids": [
+        "H03"
+      ],
+      "scene_ids": [
+        "H03_BRIEF",
+        "H03_CHECK",
+        "H03_INCOMPLETE"
+      ],
+      "result_scene_ids": [
+        "H03_CHECK"
+      ],
+      "existing_evidence_ids": [
+        "FRAME 01",
+        "FRAME 02",
+        "P01",
+        "P02",
+        "P03"
+      ],
+      "shared_owner_contracts": [
+        "Existing B-12 camera/darkroom controls and evidence IDs."
+      ],
+      "world_contract": "Either real passive lamp/motor isolation or active042 control is valid. Keep negative for a new print; no free photo from dialogue.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC07",
+      "title": "What Dale kept back",
+      "phase": "archive",
+      "mission_ids": [
+        "H04"
+      ],
+      "scene_ids": [
+        "H04_BRIEF",
+        "H04_CHECK",
+        "H04_INCOMPLETE"
+      ],
+      "result_scene_ids": [
+        "H04_CHECK"
+      ],
+      "existing_evidence_ids": [
+        "EV_DALE_INDEX",
+        "EV_DALE_NOTE",
+        "E06",
+        "E07",
+        "E08",
+        "P04",
+        "P05"
+      ],
+      "shared_owner_contracts": [
+        "EveningShift alone owns office key/door, documents, T02 and VHS."
+      ],
+      "world_contract": "A short field-folder route suffices. Optional lore and incomplete VHS never gate main progress; separate ordinary service card for array places.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC08",
+      "title": "They follow the place",
+      "phase": "field",
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "scene_ids": [
+        "BY02_REQUEST",
+        "BY02_REEL_IDENTIFY",
+        "BY02_TAPE_CHECK",
+        "BY02_LIVE_CHECK",
+        "BY02_SOURCE_COMPARE",
+        "BY02_LATE_COPY",
+        "BY02_INCOMPLETE",
+        "ARRAY_BRIEF",
+        "ARRAY_COMMAND_CHECK",
+        "ARRAY_FIXED_REFERENCE",
+        "ARRAY_POINT_A",
+        "ARRAY_POINT_B",
+        "ARRAY_RETURN",
+        "ARRAY_RESULT",
+        "ARRAY_RETREAT",
+        "ARRAY_EMPTY_HOLD",
+        "ARRAY_RETRY",
+        "ARRAY_INCOMPLETE"
+      ],
+      "result_scene_ids": [
+        "ARRAY_RESULT",
+        "ARRAY_RETREAT"
+      ],
+      "existing_evidence_ids": [
+        "EV_DALE_ARRAY_SERVICE"
+      ],
+      "shared_owner_contracts": [
+        "BY02 verifies original before04:00 or a produced legitimate late copy. EveningShift owns the separate ordinary array service card."
+      ],
+      "world_contract": "Fixed lamp, independent command check, free A/B order and return establish position response before threat4. Audio gives no bearing. Preserve work on local retreat retry. Ordinary board names: A / ROW 1 WEST, B / ROW 1 EAST, REF / R1. Static route clearance exists; native dynamic access remains unverified. Completed TAPE/LIVE samples are durable, separate from the mutually exclusive current source switch. Array command baseline precedes movement; command-history comparison follows the route.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC09",
+      "title": "The interrupted arrangement",
+      "phase": "field",
+      "mission_ids": [
+        "H05"
+      ],
+      "scene_ids": [
+        "H05_BRIEF",
+        "H05_CHECK",
+        "H05_INCOMPLETE",
+        "H05_FIXED_FRAGMENT"
+      ],
+      "result_scene_ids": [
+        "H05_CHECK"
+      ],
+      "existing_evidence_ids": [
+        "E09A",
+        "E10",
+        "FRAME 03",
+        "FRAME 04",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "T02"
+      ],
+      "shared_owner_contracts": [
+        "Existing STATION01 and optional T02 contracts remain separate."
+      ],
+      "world_contract": "Short light interception, no sixth full chase. Cable/date/control conclusions and both actual field prints precede Nora.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC10",
+      "title": "Room 6",
+      "phase": "field",
+      "mission_ids": [
+        "H06"
+      ],
+      "scene_ids": [
+        "H06_BRIEF",
+        "H06_CHECK",
+        "H06_INCOMPLETE"
+      ],
+      "result_scene_ids": [
+        "H06_CHECK"
+      ],
+      "existing_evidence_ids": [
+        "E11",
+        "E12",
+        "E13",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "shared_owner_contracts": [
+        "Existing Nora dialogue, letter and P10/P11/P12."
+      ],
+      "world_contract": "Emotional safety. Nora knows her cut and loss, not fresh remote measurements. Historical key in cup is not a new access gate.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC11",
+      "title": "The station is searched",
+      "phase": "field",
+      "mission_ids": [
+        "H07"
+      ],
+      "scene_ids": [
+        "H07_BRIEF",
+        "H07_CHECK",
+        "H07_INCOMPLETE",
+        "H07_FIRST_WARNING",
+        "H07_CAPTURE",
+        "H07_ESCAPE_COMPLETE"
+      ],
+      "result_scene_ids": [
+        "H07_ESCAPE_COMPLETE"
+      ],
+      "existing_evidence_ids": [
+        "E11",
+        "P12"
+      ],
+      "shared_owner_contracts": [
+        "New H3/H4 geometry, reactive senses and siege remain runtime work."
+      ],
+      "world_contract": "Secure actual originals and full remote sheets after04:04 before threat5. Physical escape produces the escape fact independently of report dialogue. Actual bundle acquisition after04:04 precedes scan start; later composite evidence requires secured original, real check and completed escape.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC12",
+      "title": "What you can send",
+      "phase": "all_night",
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "scene_ids": [
+        "H08_BRIEF",
+        "H08_CHECK",
+        "H08_INCOMPLETE",
+        "H08_COMPARE_RECORDS",
+        "H08_WARNING_ACK",
+        "H09_BRIEF",
+        "H09_CHECK",
+        "H09_INCOMPLETE",
+        "SC12_ROUTE_READBACK"
+      ],
+      "result_scene_ids": [
+        "H08_WARNING_ACK",
+        "H09_CHECK",
+        "SC12_ROUTE_READBACK"
+      ],
+      "existing_evidence_ids": [
+        "E09A",
+        "E14",
+        "E15",
+        "P13"
+      ],
+      "shared_owner_contracts": [
+        "BY03 is refuge, source comparison, warning, map and chosen handover; no new shop quota."
+      ],
+      "world_contract": "Independent source sheets and explicit readback establish network warning; local hold continues. Fresh named exit report/driver trip and courier support a choice without promising safety.",
+      "runtime_status": "authored_not_integrated"
+    },
+    {
+      "id": "SC13",
+      "title": "The road to Roswell",
+      "phase": "all_night",
+      "mission_ids": [
+        "H10"
+      ],
+      "scene_ids": [
+        "H10_BRIEF",
+        "H10_CHECK",
+        "H10_INCOMPLETE"
+      ],
+      "result_scene_ids": [
+        "H10_CHECK"
+      ],
+      "existing_evidence_ids": [
+        "P13",
+        "E14",
+        "photo1947"
+      ],
+      "shared_owner_contracts": [
+        "Existing Chapter6 and fixed ending05:29:00–05:29:47."
+      ],
+      "world_contract": "Plan is pass C8.15 without a reading, carry originals to10.4. Involuntary stall and single final image remain unchanged; handover is not reached.",
+      "runtime_status": "authored_not_integrated"
+    }
+  ],
+  "character_knowledge": [
+    {
+      "actor": "DALE",
+      "knows": [
+        "Own site faults, field folder, actual messages Reyes sent.",
+        "Earlier line can be played as fixed imprint; does not create a live Dale response."
+      ],
+      "does_not_know": [
+        "Nora's private action before her disclosure.",
+        "Final photograph or alien purpose."
+      ],
+      "gates": [
+        "ctx_hr_sc01_report_readback"
+      ]
+    },
+    {
+      "actor": "DISPATCH",
+      "knows": [
+        "Actual location/time/report readbacks, regional assignment, Ortiz's missing-person case."
+      ],
+      "does_not_know": [
+        "Nature or destination of disappearance.",
+        "Geometric array result unless later actually reported."
+      ],
+      "gates": [
+        "ctx_hr_sc01_report_readback",
+        "ctx_hr_sc03_dispatch_readback",
+        "ctx_hr_sc03_missing_readback"
+      ]
+    },
+    {
+      "actor": "ORTIZ",
+      "knows": [
+        "Her identity, wagon23, task from Ward and what Reyes actually reports at the public stop."
+      ],
+      "does_not_know": [
+        "1947/C or impending abduction."
+      ],
+      "gates": [
+        "ctx_hr_sc03_ortiz_identified"
+      ]
+    },
+    {
+      "actor": "WARD",
+      "knows": [
+        "Initial hazard as reported, local06:00 suspension, later actual independent source tables and readback.",
+        "Authenticated current patrol note: low lights crossing the northbound highway beyond the Caliche Junction turnoff; separate actual-time eastbound driver passage."
+      ],
+      "does_not_know": [
+        "Global fleet size/ETA or universal safe road.",
+        "Final image/outcome."
+      ],
+      "gates": [
+        "ctx_hr_sc03_local_order_suspended",
+        "ctx_hr_remote_sources_verified",
+        "ctx_hr_warning_acknowledged"
+      ]
+    },
+    {
+      "actor": "EARL",
+      "knows": [
+        "His separately kept1981 off-air reel/log and actual isolated playback path."
+      ],
+      "does_not_know": [
+        "Bearing from audio alone.",
+        "Any current result after departure04:00; late copy has no new Earl speech."
+      ],
+      "gates": [
+        "ctx_hr_by02_earl_present",
+        "ctx_hr_by02_reel_identity"
+      ]
+    },
+    {
+      "actor": "NORA",
+      "knows": [
+        "Her cable cut, Tomás, retained words and historical warning."
+      ],
+      "does_not_know": [
+        "Fresh remote sheets or new courier/road reports."
+      ],
+      "gates": [
+        "ctx_hr_h06_ready"
+      ]
+    },
+    {
+      "actor": "DRIVER",
+      "knows": [
+        "His own October stop and actual recent timed directional passage."
+      ],
+      "does_not_know": [
+        "Every route safe or current battery fault cause."
+      ],
+      "gates": [
+        "ctx_hr_sc12_driver_recent_passage"
+      ]
+    }
   ]
 }

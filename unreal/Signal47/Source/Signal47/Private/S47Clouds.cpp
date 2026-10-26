@@ -89,6 +89,7 @@ bool AS47Web::CloudsActive() const
 
 void AS47Web::BuildClouds()
 {
+	PureSkyCaptureWeight = 0;
 	UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Sky/M_S47_Clouds.M_S47_Clouds"));
 	if (!Base)
 	{
@@ -174,9 +175,22 @@ void AS47Web::ApplyCloudQuality()
 		Clouds->ViewSampleCountScale, NightSky && NightSky->bRealTimeCapture ? TEXT("real-time") : TEXT("on change"));
 }
 
-void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time)
+void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight)
 {
 	CloudCover = Cover; CloudCirrus = Cirrus;
+	const float PureWeight = FMath::Clamp(PureSkyWeight, 0.f, 1.f);
+	const float CloudWeight = 1.f - PureWeight;
+	// Low captures on change. Dawn is already constant through the 06:00-07:00 photograph
+	// fade, so track its own visual weight while retaining the existing two-second throttle.
+	const bool bPureBoundary = (PureWeight == 0.f && PureSkyCaptureWeight > 0.f) || (PureWeight == 1.f && PureSkyCaptureWeight < 1.f);
+	if (FMath::Abs(PureWeight - PureSkyCaptureWeight) > 0.08f || bPureBoundary)
+	{
+		bSkyCaptured = false;
+		PureSkyCaptureWeight = PureWeight;
+	}
+	// The photograph replaces the daytime clouds. Night takes the original exact values;
+	// keep the wind evolving and sky capture active throughout the visual transition.
+	if (PureSkyWeight > 0.f) { CloudCover *= CloudWeight; CloudCirrus *= CloudWeight; }
 	if (!Clouds || !CloudMid) return;
 	const bool bOn = CloudsActive();
 	if (Clouds->IsVisible() != bOn) Clouds->SetVisibility(bOn);
@@ -190,7 +204,7 @@ void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const
 	if (!bOn) return;
 	static const float CoverOverride = Tune(TEXT("S47CloudCover="), -1.f), Ext = Tune(TEXT("S47CloudExt="), 0.010f), AmbScale = Tune(TEXT("S47CloudAmb="), .55f);
 	if (CoverOverride >= 0.f) Cover = CoverOverride;
-	CloudMid->SetScalarParameterValue(TEXT("Ext"), Ext);
+	CloudMid->SetScalarParameterValue(TEXT("Ext"), PureSkyWeight > 0.f ? Ext * CloudWeight : Ext);
 	// The sky's light on the clouds: cool blue by day, dusty violet-grey through dusk, nearly
 	// nothing at night (the moon's edge light is the cloud light's job).
 	const float D = FMath::Clamp(SkyDawn, 0.f, 1.f);

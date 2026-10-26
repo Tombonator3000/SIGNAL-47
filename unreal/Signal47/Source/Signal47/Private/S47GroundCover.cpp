@@ -357,7 +357,8 @@ FS47FloraSpec SaroFlora(const TArray<FS47FloraRect>& Colliders, const TArray<FS4
 	// Unreal visitor paving: generate no procedural plants through the lot or its footpaths.
 	// Flora is created after the arrival meshes, so a one-off mesh cleanup cannot enforce this.
 	for (const FRect& P : { R(-18.3,-7.7,10.4,20.6), R(-16.5,-9.5,20.5,23.5),
-		R(-8.3,5.9,11.65,12.75), R(4.85,5.95,12.2,17.3), R(5.4,11.5,16.75,17.85) })
+		R(-8.3,5.9,11.65,12.75), R(4.85,5.95,12.2,17.3), R(5.4,11.5,16.75,17.85),
+		R(-12.2,-11.0,5.7,10.5), R(-12.2,-9.4,5.1,6.3) })
 		S.Blocks.Add(ToRoadRect(P));
 	// Match the actual paved east forecourt and its service-road connector exactly.
 	// This excludes grass, scrub and stones at generation, leaving the surrounding desert intact.

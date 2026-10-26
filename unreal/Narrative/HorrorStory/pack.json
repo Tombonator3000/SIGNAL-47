@@ -110,6 +110,33 @@
         "physical"
       ],
       "direction_nb": "Eksisterende lastebilsjåfør. Praktisk, lavmælt, bare egne veiopplevelser."
+    },
+    "DISPATCH": {
+      "display_name": "CALICHE DISPATCH",
+      "voice_profile": "caliche_dispatch",
+      "record": true,
+      "allowed_channels": [
+        "phone"
+      ],
+      "direction_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
+    },
+    "ORTIZ": {
+      "display_name": "MARA ORTIZ",
+      "voice_profile": "regional_ortiz",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes."
+    },
+    "EARL": {
+      "display_name": "EARL",
+      "voice_profile": "earl",
+      "record": true,
+      "allowed_channels": [
+        "physical"
+      ],
+      "direction_nb": "Eksisterende1420AM-vert. Uttaler bare eget1981-materiales opphav og faktiske valgt bånd/live-kontroll. Fysisk replikk krever tilstedeværelse før04:00."
     }
   },
   "flags": {},
@@ -151,7 +178,7 @@
       "purpose_nb": "H04: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
     },
     "ctx_hr_h05_ready": {
-      "purpose_nb": "H05: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+      "purpose_nb": "Ny scenariorute: datert BY02-original ELLER verifisert legitim kildekopi er kontrollert, faktisk ARRAY-01-sammenligning og retrett er fullført, og STATION01s eksisterende inngang er tilgjengelig. Gamle saker beholdes gjennom egen adaptermapping; tekst/presentasjon setter ikke dette."
     },
     "ctx_hr_h05_checked": {
       "purpose_nb": "H05: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
@@ -163,7 +190,7 @@
       "purpose_nb": "Den eksisterende receiveren spiller faktisk sitt bevarte Tomás-fragment."
     },
     "ctx_hr_h06_ready": {
-      "purpose_nb": "H06: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+      "purpose_nb": "Faktiske FRAME03/04 er fremkalt og sikret, felt-/kabelkontroll og eksisterende tilgang til Nora er tilgjengelig. Ingen framtidig kilde eller åpnet rapport erstatter dette."
     },
     "ctx_hr_h06_checked": {
       "purpose_nb": "H06: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
@@ -181,7 +208,7 @@
       "purpose_nb": "H07: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
     },
     "ctx_hr_h07_scan_started": {
-      "purpose_nb": "H07s eksterne avsøkning er faktisk startet, med lesbar geometri."
+      "purpose_nb": "Den faktiske eksterne avsøkningen har startet med lesbar geometri etter at dokumentbunten er sikret tidligst04:04. H07_BRIEF/rapporten starter ikke dette."
     },
     "ctx_hr_h07_captured": {
       "purpose_nb": "Faktisk fangst med dokumentert sanseårsak; flukt setter ikke dette."
@@ -196,7 +223,7 @@
       "purpose_nb": "H08: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
     },
     "ctx_hr_remote_sources_verified": {
-      "purpose_nb": "Tre faktiske kildeark finnes; to uavhengige fjernobservasjoner og klokker er kontrollert."
+      "purpose_nb": "SARO-original og begge faktisk fullstendige Hondo/Site11-kildeark etter04:04 finnes; deres uavhengige opphav, separate logger, klokker, råverdier og kontroll av frakoblet feed er virkelig undersøkt. Tekst/panel eller lik lyd alene setter ikke dette."
     },
     "ctx_hr_warning_acknowledged": {
       "purpose_nb": "Faktisk telefonkvittering og endret morgenjobb er gjennomført."
@@ -227,14 +254,191 @@
     },
     "ctx_hr_h10_stalled": {
       "purpose_nb": "Eksisterende kapittel6 har faktisk startet THE EVENT ved C med ufrivillig motorstopp; spilleren har ikke bare bekreftet avreisemappen."
+    },
+    "ctx_hr_sc01_window_seen": {
+      "purpose_nb": "Bevegelig blek hånd/underarm er faktisk sett på utsiden av kjent vindu Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc01_marks_checked": {
+      "purpose_nb": "Utvendige merker er kontrollert på riktig glasside; normal lampe/refleks er adskilt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc01_report_readback": {
+      "purpose_nb": "Første faktiske inntrengermelding er sendt til dispatch med sted/tid og lest tilbake Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc02_t01_complete": {
+      "purpose_nb": "T01s fysiske journal/kontroll/lampe er fullført og sikret før trusselmøte1 Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc02_threat_visible": {
+      "purpose_nb": "Spilleren har faktisk sett trusselmøte1s kropp bevege seg og vende seg mot ny lyd, med lesbart forvarsel og reaksjonsmargin Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_sc02_escape_complete": {
+      "purpose_nb": "Faktisk retrett til bilen gjennom klar fysisk rute med brutt sikt/lyd; søker trukket tilbake Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc02_local_retry": {
+      "purpose_nb": "Faktisk fangst i trusselmøte1 gjenoppretter lokalt sjekkpunkt og fullført T01 uten gammel bortføring Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_dispatch_readback": {
+      "purpose_nb": "Dispatch har kvittert konkret Caliche Junction-hendelse og faktisk sendt en regional hjelpekontakt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_ortiz_assigned": {
+      "purpose_nb": "Ward har avtalt Mara Ortiz/hvit servicevogn23 ved Caliche-bensinstasjonen Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_shadow_observed": {
+      "purpose_nb": "Svart figur faktisk observert stille under blikk og bare flyttet i uobserverte intervaller; panelvern består Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_ortiz_identified": {
+      "purpose_nb": "Mara Ortiz har faktisk ankommet med vogn23 og identifisert seg ved avtalt møte Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_lift_observed": {
+      "purpose_nb": "Spilleren har faktisk sett Ortiz bevege seg uten støtte i fremmed lys og forsvinne Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_safe_retreat": {
+      "purpose_nb": "Spilleren har nådd virkelig dekning/kontaktpunkt etter tapet, brutt kontakt og søker er faktisk trukket tilbake. Ingen fortsatt jakt gjenstår Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_sc03_traces_checked": {
+      "purpose_nb": "Etter trygg retrett er forlatt vogn og ordinær personlig navngitt gjenstand faktisk undersøkt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_missing_readback": {
+      "purpose_nb": "Dispatch har registrert og lest tilbake egen savnetsak for Ortiz, adskilt fra opprinnelig utkalling Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc03_local_order_suspended": {
+      "purpose_nb": "Ward har faktisk suspendert SAROs lokale06:00-serie; dette er ingen nettverksordre Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_return_agreed": {
+      "purpose_nb": "Trygt fra Caliche har Reyes og Ward avtalt avgrenset loggsikring og lokal plansperre med fungerende utvei Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_schedule_isolated": {
+      "purpose_nb": "Fysisk lokal auto/surveyplansperre er virkelig betjent og kontrollert; passiv RX og avgrenset kontroll er tilgjengelig Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_shift_originals_secured": {
+      "purpose_nb": "Daterte skift-/serviceoriginaler er faktisk sikret for savnetsaken Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_annex_imprint_playing": {
+      "purpose_nb": "Identisk tidligere Dale-fragment spiller faktisk fra feil annexretning; ingen levende Dale der Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_annex_long_escape": {
+      "purpose_nb": "Lang faktisk ganglinje bak opake flater er gjennomført; søk avsluttet Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_annex_sound_escape": {
+      "purpose_nb": "Vanlig lydkilde fra dekning har faktisk avledet enheten; kort faktisk ganglinje fullført og søk avsluttet Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_annex_local_retry": {
+      "purpose_nb": "Fangst i annexet har gitt lokalt sjekkpunkt med tidligere sikret arbeid bevart Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_after_annex_calm": {
+      "purpose_nb": "Faktisk ro og kontaktsamtale etter annexflukt før ny bilfare Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_car_route_known": {
+      "purpose_nb": "Fysisk rute fra skjermet parkering til SAROs låsbare kontrollrom er faktisk prøvd Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_car_escape": {
+      "purpose_nb": "Bilmøtet er unnsluppet med riktig kropp-/øyesikt eller klar kjøreflukt; bilen virker og søker er trukket tilbake Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_car_local_retry": {
+      "purpose_nb": "Faktisk fangst i bilmøte har gitt særskilt lokal retry uten gammel teller/tidstap Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_control_room_safe": {
+      "purpose_nb": "Reyes er fysisk i låsbart kontrollrom etter bilflukt, dør trygg, ingen fortsatt kontakt/søk Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc04_ward_on_line": {
+      "purpose_nb": "Faktisk telefonkontakt med Ward er etablert og følger loggsikring/dispatch Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc05_residual_passive": {
+      "purpose_nb": "Residual00:13:47 er faktisk mottatt passivt mens lokal automatisert plan fortsatt er isolert Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_dated_lead": {
+      "purpose_nb": "Arkivets daterte1981-henvisning er faktisk funnet og identifisert før kildekontroll Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_earl_present": {
+      "purpose_nb": "Earl er faktisk fysisk ved1420AM før sin04:00-avgang Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_reel_identity": {
+      "purpose_nb": "Merket1981-spole med lokal datert logg og opphav er faktisk undersøkt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_tape_isolated": {
+      "purpose_nb": "Valgt båndspillevei er fysisk isolert fra live-mating og gammel opptakelse faktisk avspilt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_live_selected": {
+      "purpose_nb": "Live-monitor er valgt og fysisk båndmating frakoblet; kilden er tydelig merket Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_question_compared": {
+      "purpose_nb": "Nytt konkret spørsmål og gjentatt gammelt fragment er faktisk sammenlignet uten responsendring Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_source_copy_verified": {
+      "purpose_nb": "Etter Earls avgang er den daterte utlånskonvoluttens identifiserte1981-kildekopi, off-air-logg og frakoblingsark kontrollert. Den samme identifiserte kopien er deretter faktisk avspilt på lobbydekket med live-mating fysisk frakoblet. Metadatakontroll alene er ikke nok. Nytt spørsmål/uendret fragment har egen faktisk question_compared-port. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_source_insufficient": {
+      "purpose_nb": "Kildeopphav eller valgt signalvei er faktisk uavklart; ingen positivt resultat Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_service_card_acquired": {
+      "purpose_nb": "Separat ordinært arrayservicevedlegg er faktisk plukket opp; T02s kulvertindeks endres ikke Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_command_checked": {
+      "purpose_nb": "Innledende baseline: nærgruppens faktisk navngitte antenner, eksisterende kommandoregister og lokale drivtilstand er kontrollert. Krever ingen fremtidig A/B/retur; sluttintervallet kontrolleres separat etter måling Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_array_reference_fixed": {
+      "purpose_nb": "Navngitt feltlykt står på fast merke med registrert uendret innstilling Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_a_observed": {
+      "purpose_nb": "Spilleren står faktisk på tilgjengelig merket ståstedA og har observert fysisk antennerespons mot faste landemerker Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_b_observed": {
+      "purpose_nb": "Spilleren står faktisk på tilgjengelig merket ståstedB og har observert fysisk antennerespons mot faste landemerker Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_return_observed": {
+      "purpose_nb": "Spilleren har faktisk returnert til først valgt A/B og sett tilsvarende fysisk respons Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_geometry_compared": {
+      "purpose_nb": "Begge ståsteder og kort retur er fysisk sammenlignet med fast lykt, landemerker og separat kommandoregister Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_escape_complete": {
+      "purpose_nb": "Trusselmøte4 ved arrayets passasje er fysisk unnsluppet; søker tilbaketrukket uten gammel Force Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_empty_hold_observed": {
+      "purpose_nb": "Etter retrett er faktisk hold på sist forlatte tomme ståsted og retur026 observert Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_local_retry": {
+      "purpose_nb": "Arrayfangst har gitt lokal retrettretry med geometri/kildearbeid bevart, uten gammel tapt-tid-kontrakt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_array_insufficient": {
+      "purpose_nb": "Faktisk geometri-/styringskontroll er ufullstendig; ingen bekreftet arraykonklusjon Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_sc12_driver_recent_passage": {
+      "purpose_nb": "Sjåførens faktiske ferske østgående gjennomkjøring på gamle Roswell Road har egen dato/tid. Oktoberstoppet er en separat historisk hendelse, ingen fersk måling Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_sc12_exit_sighting_readback": {
+      "purpose_nb": "Autentisert fersk datert Caliche-dispatchpatruljenote: lave lys krysser nordgående highway etter Caliche Junction-serviceavstikkeren. Faktisk sted/tid og begrenset observasjon er lest tilbake, ikke generell trygghetsgaranti Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_sc12_courier_104_confirmed": {
+      "purpose_nb": "Ward har faktisk avtalt bud/retning/møtepunkt10.4 etter kartlagt C8.15 uten ny observasjonsordre Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    "ctx_hr_by02_tape_sample_verified": {
+      "purpose_nb": "Vedvarende resultat etter faktisk identifisert originalspole i isolert TAPE-stilling med live frakoblet. Bevares når velgeren senere står LIVE, uten å hevde at TAPE fortsatt er valgt Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_by02_live_sample_verified": {
+      "purpose_nb": "Vedvarende resultat etter faktisk LIVE-monitorprøve med bånddekk frakoblet. Bevares etter nytt kildevalg, uten å hevde at LIVE fortsatt er valgt Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_array_command_history_compared": {
+      "purpose_nb": "Etter faktisk A/B/retur er historiske kommando-/drivregistreringer sammenlignet med de observerte vinkelendringene. Ingen vanlig kommando i prøveintervallet forklarer disse endringene. Dette er sluttkontroll, adskilt fra innledende baseline Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_sc01_dale_reference_heard": {
+      "purpose_nb": "Den tidligere Dale-linjen H01_BRIEF_002 er faktisk hørt før annexfragmentet; ikke bare scene startet, presentert eller skipset Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_sc04_car_threat_visible": {
+      "purpose_nb": "Bilmøtet har faktisk startet med lesbar nær passering/lyd fra reaktiv enhet utenfor kupeen. Ingen scene skaper dette ved bare å åpne tekst Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_h07_bundle_secured": {
+      "purpose_nb": "Etter04:04 er mottakeroriginal, påbegynt/tomt hendelsesark og begge faktisk ferdige Hondo/Site11-ark sikret før beleiring. Dette er innsamling, ikke senere HR_SARO_ORIGINAL-kompositt Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
     }
   },
   "modules": [
     "modules/ordinary_evening.json",
     "modules/retained_reference.json",
-    "modules/arrival.json"
+    "modules/arrival.json",
+    "modules/unified_scenarios.json"
   ],
-  "recording_aliases": {},
+  "recording_aliases": {
+    "SC04_ANNEX_IMPRINT_001": "H01_BRIEF_002"
+  },
   "production": {
     "audio_status": "pending",
     "video_status": "pending",
@@ -244,6 +448,6 @@
       "sample_format": "PCM16",
       "channels": 1
     },
-    "note_nb": "H1-produksjonsmanus, ikke runtimeintegrasjon. Ingen nye opptak eller målte spillertider. Eksisterende tale/video gjenbrukes bare etter eksplisitt ID- og tekstkontroll; denne pakken endrer ikke EveningShift."
+    "note_nb": "Oppdatert produksjonsmanus etter SC01 tilSC13. Nye scener, kildespor og personkunnskap er forfatterkilder; verdenshandlinger, nye personer/rekvisitter, opptak og hele runtimeadapteren er ikke integrert. EveningShift beholder overlevering/kontor/T01/T02/VHS."
   }
 }

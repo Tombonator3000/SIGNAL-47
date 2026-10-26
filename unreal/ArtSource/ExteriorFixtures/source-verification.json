@@ -1,0 +1,260 @@
+{
+  "status": "PASS",
+  "scope": "Fresh Blender source, not native Unreal or runtime",
+  "checks": [
+    {
+      "name": "SM_Exterior_WallPack LOD0 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD0 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD0 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD0 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD1 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD1 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD1 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD1 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD2 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD2 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD2 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack LOD2 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack three meaningful LODs",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack exact physical mounting plane",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack unit optical normal",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack emitter beyond glass",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_WallPack bounded opaque textured lens",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD0 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD0 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD0 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD0 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD1 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD1 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD1 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD1 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD2 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD2 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD2 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy LOD2 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy three meaningful LODs",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy exact physical mounting plane",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy unit optical normal",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy emitter beyond glass",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_Canopy bounded opaque textured lens",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD0 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD0 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD0 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD0 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD1 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD1 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD1 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD1 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD2 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD2 normal/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD2 lens slot",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash LOD2 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash three meaningful LODs",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash exact physical mounting plane",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash unit optical normal",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash emitter beyond glass",
+      "pass": true
+    },
+    {
+      "name": "SM_Exterior_SignWash bounded opaque textured lens",
+      "pass": true
+    },
+    {
+      "name": "three original assemblies",
+      "pass": true
+    },
+    {
+      "name": "bounded total topology",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Bronze maps packed and on disk",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Bronze DirectX normal contract",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Aluminium maps packed and on disk",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Aluminium DirectX normal contract",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Steel maps packed and on disk",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Steel DirectX normal contract",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Gasket maps packed and on disk",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Gasket DirectX normal contract",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Lens maps packed and on disk",
+      "pass": true
+    },
+    {
+      "name": "M_ExteriorFixtures_Lens DirectX normal contract",
+      "pass": true
+    }
+  ],
+  "passed": 63,
+  "total": 63
+}

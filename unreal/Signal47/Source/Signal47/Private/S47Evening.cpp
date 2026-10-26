@@ -204,7 +204,9 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
   bWorkStarted = Pack.Flag(TEXT("handover_done"));
  }
  Takeaway->Begin(S47J::Obj(Saved,TEXT("takeaway")));
- if(bMigratedArrival)Parked(TEXT("saro"));
+ // A previously rejected stationary save already on the visitor lot now completes
+ // the same arrival transaction. Keep its actual car pose; no diner/phone shortcut.
+ if(bMigratedArrival || (Saved && Commute() && !M->World->bDriving && M->World->Area==TEXT("saro") && M->World->TruckOnLot())) Parked(TEXT("saro"));
  Context(); Refile();
  if (Opening()) M->UI->Objective(Commute() ? TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. STOP AT MESA DINER IF YOU FEEL LIKE SUPPER.") : TEXT("SARO // ANSWER DALE'S CALL IN THE CONTROL ROOM"));
  if (Pack.CurrentScene()) Resume();
@@ -269,6 +271,9 @@ void FS47Evening::ValidateInvestigationRestore()
  Pack.ValidateWorldRestore(M->Office && M->Office->HasKey(), M->Office && M->Office->WasUnlocked(),
   bSheet, bSheet && M->Substation && M->Substation->ReferenceMatched(),
   bSheet && M->Substation && M->Substation->FollowupVerified());
+ TArray<FString> Read;
+ if (M->Office) for (const FString& Id : FS47Office::LibraryDocumentIds()) if (M->Office->DocumentRead(Id)) Read.Add(Id);
+ Pack.ValidateOfficeReadDocuments(Read);
  Context(); Refile();
 }
 
@@ -281,6 +286,7 @@ void FS47Evening::Refile()
   if (Id == TEXT("EV_TRAFO_FOLLOWUP")) continue;
   // Restore office credits only after the physical controller has validated this case.
   if (Id.StartsWith(TEXT("EV_DALE_")) && (!M->Office || !M->Office->WasUnlocked())) continue;
+  if (FS47Office::LibraryDocumentIds().Contains(Id) && (!M->Office || !M->Office->DocumentRead(Id))) continue;
   // Never replace an already saved paper/photo or its stamp when resuming a case.
   if (M->Story->Docs().ContainsByPredicate([&](const FS47Doc& Doc){return Doc.Id==Id;})) continue;
   FS47Doc Doc; Doc.Id=D->Id; Doc.Title=D->Title; Doc.Kind=D->Kind; Doc.Stamp=D->Stamp;
@@ -387,6 +393,9 @@ bool FS47Evening::Use(const FString& Id)
   // Do not consume this use: the existing shift-folder/N01 panel is the only panel opened.
  }
  if (Id==TEXT("evening:radio") && Commute()) {bRadioOn=!bRadioOn;M->UI->Toast(bRadioOn?TEXT("Local evening radio on"):TEXT("Radio off"),2); Changed();return true;}
+ // Physical Operations access is available during arrival too. The Office owns
+ // range, lock, drawer and document checks; the phone remains the opening goal.
+ if (Id.StartsWith(TEXT("office:")) || Id==TEXT("officeDoor")) return false;
  if (Opening())
  {
   if (!Commute() && Id==TEXT("phone")) { Answer(); return true; }
@@ -566,7 +575,7 @@ void FS47Evening::Step(double Dt)
  if(Commute())
  {
   if(M->World->Area==TEXT("saro") && Carrier && Carrier->Position.Z<120)
-   M->UI->Objective(TEXT("SARO // PARK IN ANY VISITOR BAY LEFT OF THE SIGN. STOP BETWEEN THE LINES, THEN WALK TO THE ENTRANCE."));
+   M->UI->Objective(TEXT("SARO // STOP ANYWHERE IN THE VISITOR PARKING AREA, THEN USE THE ENTRANCE BY THE RAMP."));
   else M->UI->Objective(M->World->bDriving?TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. STOP AT MESA DINER IF YOU FEEL LIKE SUPPER."):TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));
  }
  Visual->Tick(Commute(),M->World->bDriving,Carrier,Pack.Flag(TEXT("intro_arrived")),Pack.Flag(TEXT("food_bought")),Pack.Flag(TEXT("food_taken")),Pack.Flag(TEXT("food_eaten")),Pack.CurrentScene() && Pack.CurrentScene()->Id==TEXT("I08_WATER"),Pack.Flag(TEXT("arrival_order_burger")));
@@ -651,8 +660,18 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
   V.ParkPersonal(P,0.7);Check(V.ParkedPosition().Equals(Bay) && FMath::IsNearlyZero(V.ParkedHeading()),TEXT("unsafe old parking pose restores the clear visitor bay"));
  }
  for(double X:{-15.8,-12.8,-9.8})for(double H:{0.0,UE_DOUBLE_PI})
-  Check(FS47EveningVisual::FitsArrivalBay(FVector(X,-.6,14.3),H),TEXT("all three visitor bays accept forward and reverse parking without food"));
- Check(!FS47EveningVisual::FitsArrivalBay(FVector(8.9,0,8),0) && !FS47EveningVisual::FitsArrivalBay(Bay,UE_DOUBLE_PI/2) && !FS47EveningVisual::FitsArrivalBay(Bay+FVector(1,0,0),0),TEXT("service pad, sideways and protruding cars cannot complete arrival"));
+  Check(FS47EveningVisual::FitsArrivalArea(FVector(X,-.6,14.3),H),TEXT("all three visitor bays accept forward and reverse parking without food"));
+ for(double X:{-18.2,-16.8,-14.3,-11.3,-7.8})for(double Z:{10.5,14.3,18.8,20.5})for(double H:{0.0,.7,UE_DOUBLE_PI/2,UE_DOUBLE_PI})
+ {
+  const FVector P(X,-.6,Z);V.ParkPersonal(P,H);V.RestorePersonal(V.ParkedPosition(),V.ParkedHeading(),2);
+  Check(FS47EveningVisual::FitsArrivalArea(P,H) && V.ParkedPosition().Equals(P) && FMath::IsNearlyEqual(V.ParkedHeading(),H),TEXT("whole visitor area including paint, edges and transverse headings completes arrival and retains saved pose"));
+ }
+ for(const FVector& P:{FVector(-18.201,-.6,15),FVector(-7.799,-.6,15),FVector(-13,-.6,10.499),FVector(-13,-.6,20.501),FVector(8.9,0,8),FVector(-22.2,-.6,15),FVector(-9,-.3,5.7)})
+  Check(!FS47EveningVisual::FitsArrivalArea(P,0),TEXT("outside visitor area, highway, service pad and entrance ramp do not complete arrival"));
+ V.ParkPersonal(FVector(-14.3,-.6,18.5),UE_DOUBLE_PI/2);
+ Check(V.ParkedPosition().Equals(FVector(-14.3,-.6,18.5)) && FMath::IsNearlyEqual(V.ParkedHeading(),UE_DOUBLE_PI/2),TEXT("cross-line transverse arrival retains actual car pose"));
+ V.RestorePersonal(FVector(-14.3,-.6,18.5),UE_DOUBLE_PI/2,2);
+ Check(V.ParkedPosition().Equals(FVector(-14.3,-.6,18.5)) && FMath::IsNearlyEqual(V.ParkedHeading(),UE_DOUBLE_PI/2),TEXT("cross-line transverse arrival survives current save restore"));
  V.RestorePersonal(FVector(4.5,-.62,14),UE_DOUBLE_PI,0);Check(V.ParkedPosition().Equals(Bay)&&FMath::IsNearlyZero(V.ParkedHeading()),TEXT("legacy fallback save migrates to marked visitor parking"));
  V.RestorePersonal(Moved,.2,2);Check(V.ParkedPosition().Equals(Moved)&&FMath::IsNearlyEqual(V.ParkedHeading(),.2),TEXT("current safe custom pose survives restore"));
  FS47Truck T;T.SetPose(FVector(9,0.2,15),FVector(0.25,0.7,-0.18));T.SetParkPose(FVector(8.9,0,8),UE_DOUBLE_PI);

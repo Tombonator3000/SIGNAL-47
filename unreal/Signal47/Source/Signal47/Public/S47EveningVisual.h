@@ -22,7 +22,9 @@ public:
 	void SetParked(bool bOn);
 	void RestorePersonal(const FVector& Position,double Heading,int32 ParkingVersion);
 	static FVector ArrivalPark() { return FVector(-12.8,-.60,14.3); }
-	static bool FitsArrivalBay(const FVector& Position,double Heading);
+	// Arrival is based on the whole asphalt visitor area, not paint or car orientation.
+	static constexpr double ArrivalMinX=-18.2, ArrivalMaxX=-7.8, ArrivalMinZ=10.5, ArrivalMaxZ=20.5;
+	static bool FitsArrivalArea(const FVector& Position,double Heading);
 	bool ServiceWaitingVisible() const;
 	void Hide();
 	FVector ParkedPosition() const { return PersonalPark; }

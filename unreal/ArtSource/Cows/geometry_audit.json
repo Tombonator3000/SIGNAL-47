@@ -1,0 +1,113 @@
+{
+  "status": "PASS",
+  "minimum_area_m2": 5e-09,
+  "minimum_edge_m": 1e-06,
+  "objects": [
+    {
+      "object": "SM_Cow_Alive_Body",
+      "triangles_before": 17924,
+      "triangles_after": 17924,
+      "removed_by_material": {},
+      "minimum_area_m2": 4.194493158138357e-06,
+      "minimum_edge_m": 0.004682105965912342
+    },
+    {
+      "object": "SM_Cow_Alive_Head",
+      "triangles_before": 6838,
+      "triangles_after": 6808,
+      "removed_by_material": {
+        "M_Cow_YellowTag": 30
+      },
+      "minimum_area_m2": 7.282339424818929e-07,
+      "minimum_edge_m": 0.0014502947451546788
+    },
+    {
+      "object": "SM_Cow_Abducted",
+      "triangles_before": 28224,
+      "triangles_after": 28217,
+      "removed_by_material": {
+        "M_Cow_YellowTag": 6,
+        "M_Cow_DryCut": 1
+      },
+      "minimum_area_m2": 9.889016716613241e-09,
+      "minimum_edge_m": 1.0896611456701066e-05
+    },
+    {
+      "object": "SM_Cow_Alive_Body.001",
+      "triangles_before": 17924,
+      "triangles_after": 17924,
+      "removed_by_material": {},
+      "minimum_area_m2": 4.194493158138357e-06,
+      "minimum_edge_m": 0.004682105965912342
+    },
+    {
+      "object": "SM_Cow_Alive_Body_LOD1",
+      "triangles_before": 10036,
+      "triangles_after": 10036,
+      "removed_by_material": {},
+      "minimum_area_m2": 4.623134373105131e-06,
+      "minimum_edge_m": 0.004379060585051775
+    },
+    {
+      "object": "SM_Cow_Alive_Body_LOD2",
+      "triangles_before": 5376,
+      "triangles_after": 5376,
+      "removed_by_material": {},
+      "minimum_area_m2": 3.288095467723906e-05,
+      "minimum_edge_m": 0.0033252898138016462
+    },
+    {
+      "object": "SM_Cow_Alive_Head.001",
+      "triangles_before": 6838,
+      "triangles_after": 6808,
+      "removed_by_material": {
+        "M_Cow_YellowTag": 30
+      },
+      "minimum_area_m2": 7.282339424818929e-07,
+      "minimum_edge_m": 0.0014502947451546788
+    },
+    {
+      "object": "SM_Cow_Alive_Head_LOD1",
+      "triangles_before": 3828,
+      "triangles_after": 3828,
+      "removed_by_material": {},
+      "minimum_area_m2": 2.4985690743051236e-06,
+      "minimum_edge_m": 0.002665547654032707
+    },
+    {
+      "object": "SM_Cow_Alive_Head_LOD2",
+      "triangles_before": 2050,
+      "triangles_after": 2050,
+      "removed_by_material": {},
+      "minimum_area_m2": 2.621472958708182e-05,
+      "minimum_edge_m": 0.004826468415558338
+    },
+    {
+      "object": "SM_Cow_Abducted.001",
+      "triangles_before": 28224,
+      "triangles_after": 28217,
+      "removed_by_material": {
+        "M_Cow_YellowTag": 6,
+        "M_Cow_DryCut": 1
+      },
+      "minimum_area_m2": 9.889016716613241e-09,
+      "minimum_edge_m": 1.0896611456701066e-05
+    },
+    {
+      "object": "SM_Cow_Abducted_LOD1",
+      "triangles_before": 15804,
+      "triangles_after": 15804,
+      "removed_by_material": {},
+      "minimum_area_m2": 6.762764428458468e-07,
+      "minimum_edge_m": 0.0008519252296537161
+    },
+    {
+      "object": "SM_Cow_Abducted_LOD2",
+      "triangles_before": 8466,
+      "triangles_after": 8466,
+      "removed_by_material": {},
+      "minimum_area_m2": 8.800079172033293e-07,
+      "minimum_edge_m": 0.0009999179746955633
+    }
+  ]
+}

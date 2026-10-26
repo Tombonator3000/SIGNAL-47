@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "scope": "Blender authored assembly previews only, not Unreal runtime or lit-state validation",
+  "images": [
+    {
+      "path": "Preview/blender-wallpack-unlit.png",
+      "sha256": "b8fce0c8b10bfd5e9f50a5c3aa9b813c7c4ea4dac4256f22533238a4116e36f3",
+      "observation": "R2: four lens screws now mounted in the cast retaining ring, no floating screws; bevels, lip, gasket, glass flutes and conduit detail visible."
+    },
+    {
+      "path": "Preview/blender-canopy-signwash-unlit.png",
+      "sha256": "cda9ad7207a6c20c474e64b16037a539764fa4128e1a92a2c648d095a6eed514",
+      "observation": "R2: ceiling fixture touches context roof, diffuse lens visible from below; sign wash foot lies on curb, yoke/head and 45-degree upward optic visible. Context fixtures are not exported."
+    }
+  ]
+}

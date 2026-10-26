@@ -7,6 +7,7 @@
 # Usage: python3 -I credits.py
 import os
 import sys
+import json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -32,13 +33,25 @@ def main():
 	c = gltf_prep.read_credits()
 	by = sorted((v for v in c.values() if v['source'] == 'sketchfab'), key=lambda v: (v['author'].lower(), v['title'].lower()))
 	cc0 = sorted((v for v in c.values() if v['source'] == 'polyhaven'), key=lambda v: v['title'].lower())
-	# the roll: one model a line ("Title" by Author); the links are in CREDITS.txt
+	with open(os.path.join(PROJECT, 'Tools', 'sky', 'puresky', 'source.json'), encoding='utf-8') as source:
+		sky = json.load(source)
+	sky_credit = '"%s" by %s, CC0, %s' % (sky['title'], ' / '.join(sky['authors']), sky['source'])
+	# Public provenance contains names/links only; licensed model/texture bytes stay private.
+	with open(os.path.join(PROJECT, 'Tools', 'routenature', 'provenance.json'), encoding='utf-8') as source:
+		route_packs = json.load(source)['source_packs']
+	route_credits = ['"%s" by %s%s' % (pack['title'], pack['publisher'],
+		' (including Quixel Megascans)' if key == 'oldwest' else '')
+		for key, pack in route_packs.items()]
+	# Keep the four existing model-credit rows: Ending preserves its conditional
+	# SFX row and original roll order. New licensed packs join the licensed row;
+	# sky photography joins the CC0 row, with its own explicit label.
+	# One model per line ("Title" by Author); links remain in CREDITS.txt.
 	by_lines = ['"%s" by %s' % (v['title'], v['author']) for v in by]
 	rows = [
-		('3D models', LIMINAL),
+		('3D models', LIMINAL + '\nAdditional licensed environment assets (Fab):\n' + '\n'.join(route_credits)),
 		('3D models, CC BY 4.0 (sketchfab.com)', '\n'.join(by_lines)),
 		('', 'Links to every model: CREDITS.txt beside the game.'),
-		('3D models, CC0', 'Poly Haven (polyhaven.com): ' + ', '.join(v['title'] for v in cc0) + '.'),
+		('3D models, CC0', 'Poly Haven (polyhaven.com): ' + ', '.join(v['title'] for v in cc0) + '.' + '\nSky photography, CC0:\n' + sky_credit),
 	]
 	inl = ['// Made by Tools/freemodels/credits.py from ~/Assets/signal47-free/*/CREDITS.txt: do not edit.',
 		'// The bought and the free 3D models, for SS47Ending::CreditsRows (Unreal only: the web version',
@@ -59,6 +72,9 @@ def main():
 	txt += ['', 'Poly Haven, CC0 (public domain, https://creativecommons.org/publicdomain/zero/1.0/); credited by choice:', '']
 	for v in cc0:
 		txt.append('"%s" by %s, %s, %s' % (v['title'], v['author'], v['licence'], v['link']))
+	txt += ['', 'Daytime sky photography, CC0:', sky_credit,
+		'', 'Additional licensed environment assets (Fab):']
+	txt += [credit + ', ' + pack['url'] for credit, pack in zip(route_credits, route_packs.values())]
 	txt += ['', 'Music, sound and fonts are credited in the game\'s end credits.', '']
 	open(os.path.join(PROJECT, 'CREDITS.txt'), 'w', encoding='utf-8').write('\n'.join(txt))
 	print('S47FREE credits: %d CC BY, %d CC0' % (len(by), len(cc0)))

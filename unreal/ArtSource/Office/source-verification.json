@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "scope": "Blender source geometry, UVs, material and metric pivot contract",
+  "parts": [
+    {
+      "mesh": "SM_Office_ServiceCabinet",
+      "triangles": 2944,
+      "components": 20
+    },
+    {
+      "mesh": "SM_Office_ServiceDrawer",
+      "triangles": 2120,
+      "components": 18
+    },
+    {
+      "mesh": "SM_Office_Door",
+      "triangles": 3268,
+      "components": 27
+    },
+    {
+      "mesh": "SM_Office_SpareKey",
+      "triangles": 1712,
+      "components": 6
+    },
+    {
+      "mesh": "SM_Office_Room",
+      "triangles": 20404,
+      "components": 111
+    },
+    {
+      "mesh": "SM_Office_Desk",
+      "triangles": 7308,
+      "components": 53
+    },
+    {
+      "mesh": "SM_Office_Chair",
+      "triangles": 4692,
+      "components": 30
+    },
+    {
+      "mesh": "SM_Office_Dressing",
+      "triangles": 19728,
+      "components": 141
+    }
+  ]
+}

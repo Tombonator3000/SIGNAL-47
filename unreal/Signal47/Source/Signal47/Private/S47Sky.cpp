@@ -128,6 +128,7 @@ void FS47Sky::MeteorStep(double Dt)
 void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 {
 	const double S = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
+	PureSkyWeight = PureSkyWeightAt(Clock);
 	const double K = S > 12 * 3600 ? 0 : Clamp01((S - (4 * 3600 + 40 * 60)) / (50 * 60));
 	const double D = FMath::Pow(K, 1.6) * DawnLift;
 	Dawn = D;
@@ -183,6 +184,13 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 		// haze too; this blend is zero throughout the documented dawn and evening fades.
 		FogColor = FogColor + (FLinearColor(0.30f, 0.40f, 0.55f) - FogColor) * float(Midday);
 	}
+}
+
+double FS47Sky::PureSkyWeightAt(double Clock)
+{
+	const double S = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
+	// Independent of Dawn/Evening and story gates. Fade out before the night stars return.
+	return Smooth01((S - 6 * 3600) / 3600) * (1 - Smooth01((S - 18 * 3600) / (53 * 60)));
 }
 
 double FS47Sky::CloudCoverAt(double Clock)
@@ -286,8 +294,29 @@ bool FS47Sky::Build(AS47Web* W)
 		UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(DomeBase, W);
 		if (UTexture2D* P = Tex(int32(Num(TEXT("panorama"), -1)))) D->SetTextureParameterValue(TEXT("Pano"), P);
 		D->SetVectorParameterValue(TEXT("HoleSky"), HoleSky);
-		DomeMid = D;
+		DomeMid.Reset(D);
 		DomeComp = Part(W, N->Comp.Get(), W->GeoMesh(N->Geo), D, 0);
+		// A separate material preserves the original night asset and capture shader byte-for-byte.
+		// A partial import or the comparison flag keeps the original sky and cloud values all day.
+		PureSkyMid.Reset();
+		if (!FParse::Param(FCommandLine::Get(), TEXT("S47NoDaySky")))
+		{
+			UMaterialInterface* PureBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Sky/PureSky/M_S47_PureSky.M_S47_PureSky"));
+			UTexture2D* DayTex = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Sky/PureSky/T_S47_DaySky.T_S47_DaySky"));
+			UTexture* BoundTex = nullptr; float Weight = 0, Yaw = 0;
+			if (PureBase && DayTex && PureBase->GetTextureParameterValue(FMaterialParameterInfo(TEXT("PureSkyTexture")), BoundTex) && BoundTex == DayTex &&
+				PureBase->GetScalarParameterValue(FMaterialParameterInfo(TEXT("PureSkyWeight")), Weight) &&
+				PureBase->GetScalarParameterValue(FMaterialParameterInfo(TEXT("PureSkyYaw")), Yaw))
+			{
+				UMaterialInstanceDynamic* Pure = UMaterialInstanceDynamic::Create(PureBase, W);
+				if (UTexture2D* P = Tex(int32(Num(TEXT("panorama"), -1)))) Pure->SetTextureParameterValue(TEXT("Pano"), P);
+				Pure->SetVectorParameterValue(TEXT("HoleSky"), HoleSky);
+				Pure->SetScalarParameterValue(TEXT("PureSkyWeight"), 0.f);
+				// PureSkyYaw and radiance calibration belong to the imported asset, not world/story yaw.
+				PureSkyMid.Reset(Pure);
+			}
+			UE_LOG(LogS47Sky, Display, TEXT("S47: Pure Sky %s; original night material retained"), PureSkyMid.IsValid() ? TEXT("ready") : TEXT("unavailable, legacy fallback"));
+		}
 	}
 	// the stars: a quad each, turned to the eye (custom data: direction, colour, size, phase)
 	const int32 StarsNode = int32(Num(TEXT("stars"), -1));
@@ -362,6 +391,10 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 {
 	AS47Web* W = Web.Get();
 	if (!bLive || !W) return;
+	const float DayWeight = PureSkyMid.IsValid() ? float(PureSkyWeight) : 0.f;
+	UMaterialInstanceDynamic* ActiveDome = DayWeight > 0.f ? PureSkyMid.Get() : DomeMid.Get();
+	if (DomeComp.IsValid() && DomeComp->GetMaterial(0) != ActiveDome) DomeComp->SetMaterial(0, ActiveDome);
+	if (PureSkyMid.IsValid()) PureSkyMid->SetScalarParameterValue(TEXT("PureSkyWeight"), DayWeight);
 	// sky.group.rotation.y = world.skyYaw; group.position.copy(follow); ten times as far (SKY_SCALE)
 	W->SetLocal(GroupNode, Eye, S47Three::Euler(0, Yaw, 0), FVector(SKY_SCALE));
 	const FLinearColor Holes = V4(HoleDir), HoleRad(float(HoleR.X), float(HoleR.Y), 0.f, 0.f);
@@ -384,7 +417,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("SunDir"), V4(SunDir));
 		for (int32 k = 0; k < 3; ++k) D->SetVectorParameterValue(*FString::Printf(TEXT("Glow%d"), k), FLinearColor(float(Glow[k].X), float(Glow[k].Y), float(Glow[k].Z), float(Glow[k].W)));
 	};
-	if (UMaterialInstanceDynamic* D = DomeMid.Get())
+	for (UMaterialInstanceDynamic* D : { DomeMid.Get(), PureSkyMid.Get() }) if (D)
 	{
 		Sunny(D); Common(D);
 		D->SetScalarParameterValue(TEXT("Flash"), float(Flash));
@@ -396,7 +429,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	if (UMaterialInstanceDynamic* D = StarsMid.Get()) D->SetScalarParameterValue(TEXT("Dawn"), float(StarDimming()));
 	// SKY.md: the volumetric layer. Its own clouds replace the painted ones (Low keeps the painted).
 	const float Vol = W->CloudsActive() ? 1.f : 0.f;
-	if (UMaterialInstanceDynamic* D = DomeMid.Get())
+	for (UMaterialInstanceDynamic* D : { DomeMid.Get(), PureSkyMid.Get() }) if (D)
 	{
 		D->SetScalarParameterValue(TEXT("VolClouds"), Vol);
 		// The painted cirrus above the layer, drifting slowly with the same west-southwest wind.
@@ -422,7 +455,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 			Comet = SunDir.GetSafeNormal(); CometK = 0.85 * (1 - FMath::Clamp((SunDir.Y - 0.25) / 0.15, 0.0, 1.0));
 		}
 		W->SetClouds(float(CloudCover), float(Cirrus), FVector4(Hole.X, Hole.Y, Hole.Z, HoleK), FVector4(Comet.X, Comet.Y, Comet.Z, CometK),
-			float(Flash), Turn(FlashDir), Time);
+			float(Flash), Turn(FlashDir), Time, DayWeight);
 	}
 	if (CometComp.IsValid() && CometComp->IsVisible() != bComet) CometComp->SetVisibility(bComet);
 	if (MeteorComp.IsValid() && MeteorComp->IsVisible() != bMetVisible) MeteorComp->SetVisibility(bMetVisible);

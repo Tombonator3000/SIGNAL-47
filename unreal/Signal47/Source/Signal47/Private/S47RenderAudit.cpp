@@ -1,4 +1,5 @@
 #include "S47RenderAudit.h"
+#include "S47CowMeshes.h"
 #include "S47Web.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -75,6 +76,9 @@ void Tick(AS47Web* Web)
 	Report->SetStringField(TEXT("basis"), TEXT("Cooked LOD section material index -> component override/mesh interface -> CheckMaterialUsage_Concurrent. This predicts the engine's Default fallback; it is not a GPU pixel measurement."));
 	TArray<UStaticMeshComponent*> Components;
 	Web->GetComponents<UStaticMeshComponent>(Components);
+	// Only the complete, validated three-asset cow set replaces exported single-material
+	// geometry with authored PBR sections. Every other Web mesh keeps its old binding rule.
+	const auto CowMeshes = S47CowMeshes::Load();
 	TArray<TSharedPtr<FJsonValue>> Rows;
 	int32 ActiveFallbackSections = 0, ActiveMappingErrors = 0, InactiveFallbackSections = 0;
 	for (UStaticMeshComponent* Component : Components)
@@ -85,6 +89,7 @@ void Tick(AS47Web* Web)
 		UInstancedStaticMeshComponent* ISM = Cast<UInstancedStaticMeshComponent>(Component);
 		const FS47WebNode* Node = Web->Node(Web->NodeOf(Component));
 		const bool SingleMaterial = Node && Node->Geo >= 0 && Node->Mats.Num() == 1;
+		const bool AuthoredCow = CowMeshes && (Mesh == CowMeshes.Body || Mesh == CowMeshes.Head || Mesh == CowMeshes.Abducted);
 		if (!ISM && !(SingleMaterial && Component->GetNumMaterials() > 1)) continue;
 		const bool Active = Component->IsRegistered() && Component->IsVisible() && !Component->bHiddenInGame && !Web->IsHidden() && (!ISM || ISM->GetInstanceCount() > 0);
 		auto Row = MakeShared<FJsonObject>();
@@ -97,9 +102,11 @@ void Tick(AS47Web* Web)
 		Row->SetBoolField(TEXT("mesh_supports_ray_tracing"), Mesh->bSupportRayTracing);
 		Row->SetNumberField(TEXT("instances"), ISM ? ISM->GetInstanceCount() : 1);
 		Row->SetNumberField(TEXT("source_materials"), Node ? Node->Mats.Num() : 0);
+		Row->SetStringField(TEXT("binding_policy"), AuthoredCow ? TEXT("authored_cow_sections")
+			: SingleMaterial ? TEXT("exported_single_material") : TEXT("component_sections"));
 		bool MappingOk = true;
 		FString MappingDifference;
-		if (SingleMaterial) for (int32 Slot = 1; Slot < Component->GetNumMaterials(); ++Slot)
+		if (SingleMaterial && !AuthoredCow) for (int32 Slot = 1; Slot < Component->GetNumMaterials(); ++Slot)
 		{
 			FString Difference;
 			if (!SameMaterialState(Component->GetMaterial(Slot), Component->GetMaterial(0), Difference))

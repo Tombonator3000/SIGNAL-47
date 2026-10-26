@@ -127,7 +127,9 @@
         "all": [
           "ctx_hr_remote_sources_verified",
           "ctx_hr_h07_checked",
-          "ctx_hr_h07_escape_complete"
+          "ctx_hr_h07_escape_complete",
+          "ctx_hr_h07_original_secured",
+          "ctx_hr_h07_bundle_secured"
         ],
         "none": []
       },
@@ -220,7 +222,8 @@
       "requires": {
         "all": [
           "ctx_hr_h09_ready",
-          "ctx_hr_warning_acknowledged"
+          "ctx_hr_warning_acknowledged",
+          "ctx_hr_sc12_driver_recent_passage"
         ],
         "none": [
           "hr_h09_recorded",
@@ -267,7 +270,8 @@
         "all": [
           "ctx_hr_h09_ready",
           "ctx_hr_h09_checked",
-          "ctx_hr_warning_acknowledged"
+          "ctx_hr_warning_acknowledged",
+          "ctx_hr_sc12_courier_104_confirmed"
         ],
         "none": [
           "hr_h09_recorded"
@@ -341,7 +345,10 @@
       "requires": {
         "all": [
           "ctx_hr_h10_ready",
-          "ctx_hr_warning_acknowledged"
+          "ctx_hr_warning_acknowledged",
+          "ctx_hr_sc12_driver_recent_passage",
+          "ctx_hr_sc12_exit_sighting_readback",
+          "ctx_hr_sc12_courier_104_confirmed"
         ],
         "none": [
           "hr_h10_recorded",
@@ -510,7 +517,7 @@
       "body": [
         "RECEIVED / E. WARD. SARO original identified; local observations separated from receiver copy. Hondo and Site 11 originals requested and their source checks retained.",
         "The 06:00 morning series remains suspended after the earlier local safety report. No fresh observer is to close a reference or complete the old run. Other sites have now acknowledged the same instruction. This does not claim that the external activity has stopped.",
-        "The warning, source IDs and dictated measurement tables are retained in Ward's dated call log outside SARO. Photographs, negatives and complete source sheets remain in the transfer folder. The courier has the field map. The handover point is the existing survey bolt at mile 10.4 on the old Roswell road; it is not C.",
+        "The warning, source IDs and dictated measurement tables are retained in Ward's dated call log outside SARO. Photographs, negatives and complete source sheets remain in the transfer folder. The courier has the field map. A handover point is to be agreed after the diner map and current route checks; this receipt does not confirm one.",
         "Time of acknowledgement is entered when this call is actually completed. Do not preprint a successful acknowledgement before the line has been answered."
       ],
       "production_nb": "Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto."

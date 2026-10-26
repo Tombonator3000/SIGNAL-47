@@ -11,6 +11,8 @@
 #include "S47Chapter3.h"
 #include "S47Station.h"
 #include "S47Night.h"
+#include "S47SaroNight.h"
+#include "S47SaroPower.h"
 #include "S47Flashlight.h"
 #include "S47Truck.h"
 #include "S47Flow.h"
@@ -28,7 +30,10 @@
 namespace S47GraphicsReview
 {
 enum class EState { World, RackOnline, RackDark, IndicatorsOnline, IndicatorsDark, ReceiverOnline, ReceiverDark,
- FlashlightOff, FlashlightOn, HeadlightsOff, HeadlightsOn, MenuTitle, MenuPause, MenuSettings, MenuSave, MenuLoad, MenuNotebook };
+ FlashlightOff, FlashlightOn, HeadlightsOff, HeadlightsOn, MenuTitle, MenuPause, MenuSettings, MenuSave, MenuLoad, MenuNotebook,
+ ExteriorOnline, ExteriorCut, ExteriorRestored };
+static bool ExteriorPowerState(EState State)
+{ return State == EState::ExteriorOnline || State == EState::ExteriorCut || State == EState::ExteriorRestored; }
 struct FCamera { const TCHAR* Name; const TCHAR* Area; double X, Z, Yaw, Pitch; int32 Lab = -1; EState State = EState::World; };
 static constexpr int32 WorldCameraCount = 20;
 // three.js metres, yaw and pitch in radians. Kept identical for baseline, candidate and PSO recording.
@@ -72,6 +77,10 @@ static const FCamera Cameras[] = {
  { TEXT("menu-notebook"), TEXT("saro"), 2.8, 3.5, 0.22, -0.10, -1, EState::MenuNotebook },
  { TEXT("terminal-online"), TEXT("saro"), -0.05, 3.4, 2.5, -0.1, -1, EState::IndicatorsOnline },
  { TEXT("terminal-dark"), TEXT("saro"), -0.05, 3.4, 2.5, -0.1, -1, EState::IndicatorsDark },
+ // The real SARO outage feed drives both new fixture glass and native emitters.
+ { TEXT("fixtures-online"), TEXT("saro"), -11.4, 12.6, -1.6195, 0.14, -1, EState::ExteriorOnline },
+ { TEXT("fixtures-cut"), TEXT("saro"), -11.4, 12.6, -1.6195, 0.14, -1, EState::ExteriorCut },
+ { TEXT("fixtures-restored"), TEXT("saro"), -11.4, 12.6, -1.6195, 0.14, -1, EState::ExteriorRestored },
  // Original Blender asset review cameras; opt-in so historical review routes retain their views.
  { TEXT("array-front"), TEXT("saro"), 22, -68, 2.72, 0.38 },
  { TEXT("array-rear"), TEXT("saro"), -2, -20, -0.48, 0.42 },
@@ -191,6 +200,8 @@ void Tick(AS47Web* W, float)
  M->Player->Eye = TerminalFront ? 1.0 : S.InitialEye;
  const bool InCab = FString(V.Name) == TEXT("cab") || V.State == EState::HeadlightsOff || V.State == EState::HeadlightsOn;
  if (Next != S.Step) {
+  if (S.Step >= 0 && ExteriorPowerState(Cameras[S.Step].State) && !ExteriorPowerState(V.State)
+      && M->SaroNight && M->SaroNight->Power) M->SaroNight->Power->Restore();
   auto SaroPowerState = [](EState State) { return State == EState::RackOnline || State == EState::RackDark || State == EState::IndicatorsOnline || State == EState::IndicatorsDark; };
   if (S.Step >= 0 && SaroPowerState(Cameras[S.Step].State) && !SaroPowerState(V.State)) {
    M->Story->bPowered = true; M->Story->Rx.bPowered = true; M->Story->Rx.Stage = 3; M->Story->PowerOut(false);
@@ -205,6 +216,12 @@ void Tick(AS47Web* W, float)
   // StopDriving is synchronous (unlike Park); consecutive cab-light states reuse the cab.
   if (M->World->bDriving && !InCab) M->World->StopDriving();
   M->World->Enter(V.Area);
+  if (ExteriorPowerState(V.State) && M->SaroNight && M->SaroNight->Power) {
+   if (V.State == EState::ExteriorCut) M->SaroNight->Power->Cut();
+   else M->SaroNight->Power->Restore();
+   UE_LOG(LogTemp, Display, TEXT("S47: fixture review power %s inner=%.3f sodium=%.3f"),
+    V.Name, M->SaroNight->Power->Inner, M->SaroNight->Power->Sodium);
+  }
   if (InCab) {
    if (!M->World->bDriving) { M->World->PlaceTruck(TEXT("saro")); M->World->Roam(TEXT("saro")); }
    M->World->HoldTruck(1);

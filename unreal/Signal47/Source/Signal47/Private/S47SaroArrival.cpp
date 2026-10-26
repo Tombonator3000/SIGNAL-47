@@ -1,4 +1,4 @@
-// Native SARO visitor lot and relocated monument sign. No new imported assets.
+// Native SARO visitor lot, small Blender-authored signs and the ramp entrance.
 #include "S47SaroArrival.h"
 #include "S47Web.h"
 #include "S47Obj.h"
@@ -8,7 +8,6 @@
 #include "S47Story.h"
 #include "S47Timeline.h"
 #include "Components/RectLightComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -121,11 +120,18 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  if(!W)return {};
  const int32 Parent=W->Handle(TEXT("world.grounds.group")),Room=W->Handle(TEXT("room.group"));
  const FS47WebNode* G=W->Node(Parent);if(!G||!G->Comp.IsValid())return {};
+ USceneComponent* ParentComp=G->Comp.Get();
  UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
  UTexture* AsphaltRGB=LoadObject<UTexture>(nullptr,TEXT("/Game/MesaDiner/Materials/Textures/T_M_Mesa_Asphalt_base_color.T_M_Mesa_Asphalt_base_color"));
  UMaterialInterface* GlassBase=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/MesaDiner/Materials/M_Mesa_FacadeGlass.M_Mesa_FacadeGlass"));
  if(!Cube||!Base||Base->GetBlendMode()!=BLEND_Opaque||!AsphaltRGB||!GlassBase)return {};
+ UStaticMesh* EntranceMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/ArrivalEntrance/SM_Arrival_Entrance.SM_Arrival_Entrance"));
+ UStaticMesh* DoorMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/ArrivalEntrance/SM_Arrival_DoorDetails.SM_Arrival_DoorDetails"));
+ UStaticMesh* VisitorMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/ArrivalEntrance/SM_Arrival_VisitorSign.SM_Arrival_VisitorSign"));
+ const int32 Hinge=W->Handle(TEXT("annex.exitHinge"));
+ if(!EntranceMesh||!DoorMesh||!VisitorMesh||!W->Node(Hinge)||!W->Node(Hinge)->Comp.IsValid())
+ {UE_LOG(LogS47SaroArrival,Error,TEXT("S47: arrival entrance authored assets or original hinge missing"));return {};}
  auto Under=[W](int32 I,int32 P){for(;I>=0;I=W->Node(I)->Parent)if(I==P)return true;return false;};
  UStaticMeshComponent* Concrete=nullptr,*Face=nullptr,*Pane=nullptr;int32 FaceNode=-1;
  for(int32 I=0;I<W->PartCount();++I)
@@ -162,7 +168,7 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  Asphalt->SetVectorParameterValue(TEXT("MapV"),FLinearColor(0,.84,.08,0));
  auto Box=[&](const TCHAR* Name,const FVector& At,const FVector& Size,UMaterialInterface* Material,bool Floor=false)
  {
-  UStaticMeshComponent* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Material);C->SetupAttachment(G->Comp.Get());C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCastShadow(!Floor);C->SetHiddenInGame(true);C->RegisterComponent();
+  UStaticMeshComponent* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Material);C->SetupAttachment(ParentComp);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCastShadow(!Floor);C->SetHiddenInGame(true);C->RegisterComponent();
   C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldScale3D(S47Three::DirToUE(Size));
   const int32 I=W->AdoptNode(C,Parent,FString(TEXT("arrival:"))+Name);W->ObjAt(I).SetScale(Size);S->Parts.Add(C);if(Floor)Floors.Add(C);return C;
  };
@@ -170,7 +176,7 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  {
   UStaticMeshComponent* C=Box(Name,At+FVector(0,FinishOffset,0),Size,Material);C->SetCastShadow(false);
   // Keep the original physical plane: render offset is not a raised driving floor.
-  UBoxComponent* Q=NewObject<UBoxComponent>(W);Q->SetMobility(EComponentMobility::Movable);Q->SetupAttachment(G->Comp.Get());
+  UBoxComponent* Q=NewObject<UBoxComponent>(W);Q->SetMobility(EComponentMobility::Movable);Q->SetupAttachment(ParentComp);
   Q->SetBoxExtent(S47Three::DirToUE(Size*50));Q->SetCollisionEnabled(ECollisionEnabled::NoCollision);Q->SetCollisionResponseToAllChannels(ECR_Ignore);
   Q->SetHiddenInGame(true);Q->RegisterComponent();Q->SetWorldLocation(S47Three::ToUE(At));Floors.Add(Q);return C;
  };
@@ -182,30 +188,30 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
   Box(TEXT("bayEndLine"),FVector(X,-.597+FinishOffset,11.55),FVector(3,.004,.065),Paint);
   Box(TEXT("wheelStop"),FVector(X,-.54,11.2),FVector(1.8,.12,.18),Kerb);
  }
- // Ordinary site signage identifies every bay before the player has to stop.
- auto Label=[&](const FVector& At,const FString& Text,float Size)
+ // Original Blender meshes use the measured FBX mapping (x,-y,z). The original
+ // door and ramp retain all movement/query authority; detail follows its live hinge.
+ auto Authored=[&](const TCHAR* Name,UStaticMesh* Asset,const FVector& At,int32 Attach)
  {
-  UTextRenderComponent* C=NewObject<UTextRenderComponent>(W);
-  C->SetupAttachment(G->Comp.Get());C->SetMobility(EComponentMobility::Movable);
-  C->SetHorizontalAlignment(EHTA_Center);C->SetVerticalAlignment(EVRTA_TextCenter);
-  C->SetWorldSize(Size);C->SetTextRenderColor(FColor(245,225,167));C->SetText(FText::FromString(Text));
-  C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(false);C->RegisterComponent();
-  C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldRotation(FRotator(0,90,0));
-  W->AdoptNode(C,Parent,TEXT("arrival:visitorLabel"));S->Parts.Add(C);
+  auto* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);
+  C->SetupAttachment(W->Node(Attach)->Comp.Get());C->SetStaticMesh(Asset);
+  C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);
+  C->RegisterComponent();C->SetWorldTransform(FTransform(S47Three::ToUE(At)));
+  W->AdoptNode(C,Attach,FString(TEXT("arrival:"))+Name);S->Parts.Add(C);return C;
  };
- for(double X:{-15.8,-12.8,-9.8})
- {
-  Box(TEXT("visitorPost"),FVector(X,.04,10.85),FVector(.055,1.28,.055),Metal);
-  Box(TEXT("visitorBoard"),FVector(X,.82,10.85),FVector(2.30,.66,.06),Metal);
-  Label(FVector(X,.91,10.89),TEXT("VISITOR"),24);
-  Label(FVector(X,.66,10.89),TEXT("PARKING"),15);
- }
+ for(double X:{-15.8,-9.8})S->VisitorSigns.Add(Authored(TEXT("visitorSign"),VisitorMesh,FVector(X,-.6,10.85),Parent));
+ const FVector EntryRoot(-6.27,0,5.22);
+ S->Entrance=Authored(TEXT("rampEntrance"),EntranceMesh,EntryRoot,Parent);
+ S->EntranceDoor=Authored(TEXT("entranceDoorDetails"),DoorMesh,EntryRoot,Hinge);
  Box(TEXT("westKerb"),FVector(-18.25,-.57,15.5),FVector(.10,.18,10.10),Kerb);
- Box(TEXT("northKerb"),FVector(-13,-.57,10.45),FVector(10.6,.18,.10),Kerb);
+ // Leave a real opening where the short visitor path meets the entrance ramp.
+ for(const FVector& Span:{FVector(-18.3,-12.2,0),FVector(-11.0,-7.7,0)})
+  Box(TEXT("northKerb"),FVector((Span.X+Span.Y)*.5,-.57,10.45),FVector(Span.Y-Span.X,.18,.10),Kerb);
  for(const FVector& Span:{FVector(10.5,11.6,0),FVector(12.8,20.5,0)})Box(TEXT("eastKerb"),FVector(-7.75,-.57,(Span.X+Span.Y)*.5),FVector(.10,.18,Span.Y-Span.X),Kerb);
  for(const FVector& Span:{FVector(-18.2,-16.5,0),FVector(-9.5,-7.8,0)})Box(TEXT("entryKerb"),FVector((Span.X+Span.Y)*.5,-.57,20.55),FVector(Span.Y-Span.X,.18,.10),Kerb);
  // Clear pedestrian strip, then skirt the annex and join the original truck ramp at its foot.
  Surface(TEXT("pedestrianStrip"),FVector(-8.3,-.619,15.5),FVector(.85,.046,10),Gravel);
+ Surface(TEXT("entranceWalk"),FVector(-11.6,-.619,8.1),FVector(1.2,.046,4.8),Kerb);
+ Surface(TEXT("entranceRampApproach"),FVector(-10.8,-.619,5.7),FVector(2.8,.046,1.2),Kerb);
  Surface(TEXT("annexApproach"),FVector(-1.2,-.619,12.2),FVector(14.2,.046,1.1),Kerb);
  Surface(TEXT("rampApproachNorth"),FVector(5.4,-.619,14.75),FVector(1.1,.046,5.1),Kerb);
  Surface(TEXT("rampApproachEast"),FVector(8.45,-.619,17.3),FVector(6.1,.046,1.1),Kerb);
@@ -218,27 +224,40 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
   for(double Z:{13.91,17.09})Box(TEXT("signVerticalFrame"),FVector(X,.12,Z),FVector(.022,1.09,.035),Metal);
   for(double Y:{-.42,.66})Box(TEXT("signHorizontalFrame"),FVector(X,Y,15.5),FVector(.022,.035,3.21),Metal);
  }
- UStaticMeshComponent* Sign=NewObject<UStaticMeshComponent>(W);Sign->SetMobility(EComponentMobility::Movable);Sign->SetStaticMesh(Face->GetStaticMesh());Sign->SetMaterial(0,Face->GetMaterial(0));Sign->SetCollisionEnabled(ECollisionEnabled::NoCollision);Sign->SetCastShadow(false);Sign->SetHiddenInGame(true);Sign->SetupAttachment(G->Comp.Get());Sign->RegisterComponent();
+ UStaticMeshComponent* Sign=NewObject<UStaticMeshComponent>(W);Sign->SetMobility(EComponentMobility::Movable);Sign->SetStaticMesh(Face->GetStaticMesh());Sign->SetMaterial(0,Face->GetMaterial(0));Sign->SetCollisionEnabled(ECollisionEnabled::NoCollision);Sign->SetCastShadow(false);Sign->SetHiddenInGame(true);Sign->SetupAttachment(ParentComp);Sign->RegisterComponent();
  FTransform SignPose=Face->GetComponentTransform();SignPose.AddToTranslation(S47Three::ToUE(SignDelta));Sign->SetWorldTransform(SignPose);W->AdoptNode(Sign,Parent,TEXT("arrival:legibleSiteSign"));S->Parts.Add(Sign);
  // Shielded period-style sign lamps and one annex wall pack illuminate the new visitor ground.
- auto Lamp=[&](const FVector& At,const FVector& Target,float Lumens,float Width,float Reach)
+ auto Lamp=[&](const FVector& At,const FVector& Target,float Lumens,float Width,float Reach,const S47ExteriorFixtures::FFixture& Fixture=S47ExteriorFixtures::FFixture())
  {
-  URectLightComponent* L=NewObject<URectLightComponent>(W);L->SetupAttachment(G->Comp.Get());L->SetMobility(EComponentMobility::Movable);
+  URectLightComponent* L=NewObject<URectLightComponent>(W);L->SetupAttachment(ParentComp);L->SetMobility(EComponentMobility::Movable);
   L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1.f,.76f,.43f));
-  L->SetSourceWidth(Width);L->SetSourceHeight(12);L->SetAttenuationRadius(Reach);L->SetBarnDoorAngle(65);L->SetBarnDoorLength(15);
+  L->SetSourceWidth(Width);L->SetSourceHeight(Fixture?Fixture.Height:12);L->SetAttenuationRadius(Reach);L->SetBarnDoorAngle(65);L->SetBarnDoorLength(15);
   L->SetCastShadows(true);L->SetVolumetricScatteringIntensity(.15f);L->RegisterComponent();
   L->SetWorldLocationAndRotation(S47Three::ToUE(At),S47Three::DirToUE(Target-At).Rotation());
-  S->ArrivalLights.Add(L);S->ArrivalLightLumens.Add(Lumens);
+  S->ArrivalLights.Add(L);S->ArrivalLightLumens.Add(Lumens);S->LightFixtures.Add(Fixture);
  };
  for(double Z:{14.4,16.6})
  {
-  Box(TEXT("signLampStem"),FVector(-7.3,1.03,Z),FVector(.045,.55,.045),Metal);
-  Box(TEXT("signLampArm"),FVector(-7.70,1.30,Z),FVector(.80,.045,.045),Metal);
-  Box(TEXT("signLampHood"),FVector(-8.10,1.27,Z),FVector(.24,.10,.32),Metal);
-  Lamp(FVector(-8.10,1.21,Z),FVector(-7.52,.10,Z),65,90,450);
+  const auto Fixture=S47ExteriorFixtures::Make(W,Z<15?TEXT("MonumentSouth"):TEXT("MonumentNorth"),S47ExteriorFixtures::EKind::SignWash,
+   FVector(-8.10,-.576,Z),S47Three::Euler(0,UE_DOUBLE_PI/2,0),Parent);
+  if(Fixture)Lamp(Fixture.Aperture,Fixture.Aperture+Fixture.Normal*3,25,Fixture.Width,450,Fixture);
+  else
+  {
+   Box(TEXT("signLampStem"),FVector(-7.3,1.03,Z),FVector(.045,.55,.045),Metal);
+   Box(TEXT("signLampArm"),FVector(-7.70,1.30,Z),FVector(.80,.045,.045),Metal);
+   Box(TEXT("signLampHood"),FVector(-8.10,1.27,Z),FVector(.24,.10,.32),Metal);
+   Lamp(FVector(-8.10,1.21,Z),FVector(-7.52,.10,Z),65,90,450);
+  }
  }
- Box(TEXT("annexParkingWallPack"),FVector(-6.14,2.50,8.5),FVector(.22,.28,.42),Metal);
- Lamp(FVector(-6.28,2.42,8.5),FVector(-13,-.60,15.5),1400,70,1800);
+ const auto ParkingFixture=S47ExteriorFixtures::Make(W,TEXT("AnnexParking"),S47ExteriorFixtures::EKind::WallPack,
+  FVector(-6.30,2.50,8.5),S47Three::Euler(0,-UE_DOUBLE_PI/2,0),Parent);
+ if(ParkingFixture)Lamp(ParkingFixture.Aperture,ParkingFixture.Aperture+ParkingFixture.Normal*8,350,ParkingFixture.Width,1800,ParkingFixture);
+ else
+ {
+  Box(TEXT("annexParkingWallPack"),FVector(-6.14,2.50,8.5),FVector(.22,.28,.42),Metal);
+  Lamp(FVector(-6.28,2.42,8.5),FVector(-13,-.60,15.5),700,70,1800);
+ }
+ Lamp(FVector(-7.05,2.37,5.7),FVector(-7.5,0,5.7),60,45,600);
  // Existing glazing geometry keeps its exact aperture, with a restrained physically lit glass.
  UMaterialInstanceDynamic* Glass=UMaterialInstanceDynamic::Create(GlassBase,W);Glass->SetVectorParameterValue(TEXT("Color"),FLinearColor(.44,.52,.53,1));Glass->SetVectorParameterValue(TEXT("EmissiveFactor"),FLinearColor::Black);Glass->SetScalarParameterValue(TEXT("Opacity"),.045);Glass->SetScalarParameterValue(TEXT("Roughness"),.12);S->WindowGlass=Glass;
  for(int32 K=0;K<=6;++K)Box(TEXT("exteriorWindowBead"),FVector(-5.4+K*1.8,1.85,-4.685),FVector(.035,1.78,.04),Metal);
@@ -247,7 +266,7 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  // Exact old concrete collision is rebuilt as axis-aligned floor boxes, excluding only the sign.
  for(const FBounds& B:Physics)
  {
-  UBoxComponent* Q=NewObject<UBoxComponent>(W);Q->SetMobility(EComponentMobility::Movable);Q->SetBoxExtent(S47Three::DirToUE(FVector((B.X1-B.X0)*50,(B.Y1-B.Y0)*50,(B.Z1-B.Z0)*50)));Q->SetCollisionEnabled(ECollisionEnabled::NoCollision);Q->SetCollisionResponseToAllChannels(ECR_Ignore);Q->SetHiddenInGame(true);Q->SetupAttachment(G->Comp.Get());Q->RegisterComponent();Q->SetWorldLocation(S47Three::ToUE(FVector((B.X0+B.X1)*.5,(B.Y0+B.Y1)*.5,(B.Z0+B.Z1)*.5)));Floors.Add(Q);
+  UBoxComponent* Q=NewObject<UBoxComponent>(W);Q->SetMobility(EComponentMobility::Movable);Q->SetBoxExtent(S47Three::DirToUE(FVector((B.X1-B.X0)*50,(B.Y1-B.Y0)*50,(B.Z1-B.Z0)*50)));Q->SetCollisionEnabled(ECollisionEnabled::NoCollision);Q->SetCollisionResponseToAllChannels(ECR_Ignore);Q->SetHiddenInGame(true);Q->SetupAttachment(ParentComp);Q->RegisterComponent();Q->SetWorldLocation(S47Three::ToUE(FVector((B.X0+B.X1)*.5,(B.Y0+B.Y1)*.5,(B.Z0+B.Z1)*.5)));Floors.Add(Q);
  }
  // Commit only after exact source, both collision lists and all nine floor probes validated.
  Patch.Mesh->InitResources();Concrete->SetStaticMesh(Patch.Mesh);Concrete->SetCollisionEnabled(ECollisionEnabled::NoCollision);W->SetVisible(FaceNode,false);Face->SetCollisionEnabled(ECollisionEnabled::NoCollision);Pane->SetMaterial(0,Glass);
@@ -270,9 +289,18 @@ void FS47SaroArrival::Update()
  const US47Main* M=US47Main::Get(W);
  const double Hour=M&&M->Story?S47Timeline::Day(M->Story->Clock())/3600:12;
  const float Night=Hour<6?1.f:Hour<7?float(7-Hour):float(FMath::Clamp((Hour-17.5)/1.25,0.,1.));
- for(int32 I=0;I<ArrivalLights.Num();++I)if(URectLightComponent* L=ArrivalLights[I].Get())
- {L->SetVisibility(Shown&&Night>0);L->SetIntensity(ArrivalLightLumens[I]*Night);}
+ const float Power=Shown?Night*S47ExteriorFixtures::SaroPower(W):0.f;
+ for(int32 I=0;I<ArrivalLights.Num();++I)
+ {
+  if(URectLightComponent* L=ArrivalLights[I].Get()){L->SetVisibility(Power>.0001f);L->SetIntensity(ArrivalLightLumens[I]*Power);}
+  if(LightFixtures.IsValidIndex(I))LightFixtures[I].Update(Shown,Power,FLinearColor(1.f,.76f,.43f));
+ }
 
+}
+
+void FS47SaroArrival::RetireCanopyLight()
+{
+ if(ArrivalLights.IsValidIndex(3))if(auto* L=ArrivalLights[3].Get())L->DestroyComponent();
 }
 
 bool FS47SaroArrival::Audit(TArray<FString>& Lines)const
@@ -285,5 +313,12 @@ bool FS47SaroArrival::Audit(TArray<FString>& Lines)const
   if(FMath::Abs(Q->GetComponentLocation().X/100+13)<.0001&&FMath::Abs(Q->GetComponentLocation().Y/100-15.5)<.0001&&FMath::Abs(Q->Bounds.GetBox().Max.Z/100+.6)<.0001)QueryAtFloor=true;
  Check(QueryAtFloor,TEXT("separate actual visitor query box top remains -0.600 metres"));
  if(const AS47Web* W=Web.Get())for(double X:{-18.2,-12.8,-7.8})for(double Z:{10.5,14.3,20.5})Check(FMath::Abs(US47Night::SaroFloorAt(W,X,Z)+.6)<1e-8,TEXT("existing SARO floor equals new parking plane"));
- Check(WindowGlass.IsValid(),TEXT("restrained lit transparent window, no opaque/emissive backing"));return Ok;
+ Check(WindowGlass.IsValid(),TEXT("restrained lit transparent window, no opaque/emissive backing"));
+ Check(Entrance.IsValid()&&EntranceDoor.IsValid(),TEXT("Blender entrance canopy, surround and live door hardware present"));
+ Check(VisitorSigns.Num()==2,TEXT("two natural sized visitor signs replace three oversized boards"));
+ for(const auto& Weak:VisitorSigns)if(const auto* Sign=Weak.Get())
+  Check(Sign->GetStaticMesh()&&Sign->Bounds.BoxExtent.X<30&&Sign->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("visitor sign less than 60cm wide; original movement authority retained"));
+ if(AS47Web* W=Web.Get())if(const auto* Detail=EntranceDoor.Get())
+  Check(W->Obj(TEXT("annex.exitHinge")).IsValid()&&Detail->GetAttachParent()==W->Node(W->Handle(TEXT("annex.exitHinge")))->Comp.Get(),TEXT("entrance hardware follows original animated door hinge"));
+ return Ok;
 }

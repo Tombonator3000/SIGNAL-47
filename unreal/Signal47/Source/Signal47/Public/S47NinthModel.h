@@ -5,9 +5,8 @@
 
 class US47Main;
 
-// world/ninthCow.ts: buildNinthCow's meshes, pictures and hit areas are exported intact. The
-// native module binds that result; Station01.ts's setNinth/ninthAt keep its visibility, proxies
-// and footprint together. No hide, cuts, frost picture or geometry is rebuilt by hand.
+// world/ninthCow.ts: the authored fallen-cow mesh replaces only the old hide and cut decals.
+// Station01.ts's setNinth/ninthAt retain visibility, frost, proxies and footprint together.
 class SIGNAL47_API FS47NinthModel
 {
 public:

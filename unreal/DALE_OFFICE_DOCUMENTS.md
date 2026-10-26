@@ -1,8 +1,10 @@
 # Dales kontor: feltmappe, UFO-materiale og lesbare dokumenter
 
-Bilderekvisittene er produsert 26. oktober 2026: [Dokumentpakken](ArtSource/Documents/README.md) har alle sju eksisterende ark, alle seks frivillige utkast med skisser/foto, et mappeomslag og eldre arkivmateriale som JPG. Nye dokument-ID-er, lesestatus, fotoets bruk som bevis og eventuell runtimevisning er fortsatt integrasjonsarbeid. Denne leveransen produserer ingen VHS-film.
+Status 26. oktober 2026: De seks private dokumentene er registrert i EveningShift og integrert med individuell tekstvisning, tekstskalering og lagret lesestatus gjennom NP1. Den installerte R5-/terreng-R2-linjen bevarer dette, med fysisk kontoradgang allerede ved ankomst og lagring av faktisk lest innhold før overleveringen. Mappeåpning gir ingen uleste dokumenter eller gratis lesestatus. Se [ankomst-/kontorleveransen](ARRIVAL_OFFICE_2026-10-26.md).
 
-25. oktober 2026. Vedlegg til [hovedscenarioets SC07](MISSION_FLOW_1800_ROSWELL.md#sc07-det-dale-ikke-leverte-inn). Dette viderefører tidligere kontorideer i [ANOMALY_PLAN](ANOMALY_PLAN.md) og [EveningShift office.json](Narrative/EveningShift/modules/office.json), uten å erstatte deres eksisterende ID-er. De seks engelske tekstene nederst er nye fiktive manusutkast, ikke allerede registrerte spilldokumenter eller historiske kilder.
+Bilderekvisittene er produsert separat: [Dokumentpakken](ArtSource/Documents/README.md) har alle sju eksisterende ark, de seks private tekstmotivene med skisser/foto, et mappeomslag og eldre arkivmateriale som JPG. Import, UV-/materialbinding, bildevisning og eventuell kontrollert bruk som fotobevis gjenstår. Tekstintegrasjonen beviser ikke at bildene er synlige i spillet. Ingen VHS-film er produsert.
+
+25. oktober 2026. Vedlegg til [hovedscenarioets SC07](MISSION_FLOW_1800_ROSWELL.md#sc07-det-dale-ikke-leverte-inn). Dette viderefører tidligere kontorideer i [ANOMALY_PLAN](ANOMALY_PLAN.md) og [EveningShift office.json](Narrative/EveningShift/modules/office.json), uten å erstatte deres eksisterende ID-er. De seks engelske tekstene nedenfor var opprinnelig manusutkast og er senere integrert som spilldokumenter; de er fortsatt fiktive, ikke historiske kilder. Rom-/historieregien nedenfor beskriver SC07-målet, ikke en levert eller prøvd full SC01–13-rute.
 
 ## Et menneskes arbeidsrom
 
@@ -12,7 +14,7 @@ Tre lag i rommet:
 
 1. Vanlig jobb: kaffering, påminnelse om å kjøpe melk, skiftark, serviceskjema og radioskjema. Lesbare praktiske dokumenter skaper kontrast til det private materialet.
 2. Feltmappe: én tydelig, nødvendig servicehenvisning med navngitt kameraståsted. Kort hovedrute, uten dokumentjakt i alle skuffer.
-3. Privat samling: avisutklipp, daterte vitneark om lys og humanoider, fotokonvolutt, håndtegnet lysbane, et usendt brev og en lånt offentlig kontaktforelesning. Hvert objekt har opphav og begrensninger. Skisser/fotografier må produseres som faktiske rekvisitter; tekst sier ikke at nye bilder allerede finnes.
+3. Privat samling: avisutklipp, daterte vitneark om lys og humanoider, fotokonvolutt, håndtegnet lysbane, et usendt brev og en lånt offentlig kontaktforelesning. Hvert objekt har opphav og begrensninger. Skisser/fotografier finnes nå i den separate JPG-kildepakken; deres fysiske binding og bruk i spillet gjenstår.
 
 En leser kan bruke noen minutter her, en annen ta feltmappen og gå. Første lesing er beskyttet mot aktivt angrep. Etter at spilleren lukker materialet, kan et kjent vindusutsyn ha endret seg eller en lyd utenfor kreve oppmerksomhet. Ikke straff hver skuff med jumpscare. Læring og ubehag skal ha plass samtidig.
 
@@ -30,7 +32,7 @@ En leser kan bruke noen minutter her, en annen ta feltmappen og gå. Første les
 
 Operations-hovednøkkelen er hjemme hos Dale. Tydelig merket reserve ligger fysisk i serviceskuff ved arbeidsbenken. Den skal ikke blandes med brevets historiske opplysning om en nøkkel i et krus, som brukes i Nora/Tomás-sammenligningen og ikke er en ny nåværende rekvisitt. Ta feltmappen gir den nødvendige indeks-/notatkopien; øvrig samling er valgfri. Dale kan reagere på at spilleren fant reserven og innrømme samlingen gjennom telefon/radio/walkie. Han kommer ikke fysisk inn i rommet.
 
-ARRAY-01 trenger i tillegg et nytt ordinært arrayservicevedlegg med to navngitte ståsteder, referanse og faktisk adgang. Dette er en senere nødvendig rekvisitt, adskilt fra de seks frivillige loretekstene. Eksisterende EV_DALE_INDEX peker til T02s kulvert-/kameraståsted, ikke disse nye arraypunktene.
+Det separate ordinære `EV_DALE_ARRAY_SERVICE` er registrert og lesbart gjennom NP1, med A / ROW 1 WEST, B / ROW 1 EAST og REF / R1. Selve ARRAY-01-mekanikken og den nye sammenhengende scenarioruten gjenstår. Vedlegget er adskilt fra de seks frivillige loretekstene; eksisterende EV_DALE_INDEX peker fortsatt til T02s kulvert-/kameraståsted.
 
 ## VHS og opphav
 
@@ -40,7 +42,7 @@ Kameradatoen er feil; ikke avled presist hendelsestidspunkt fra den. Ingen Dale-
 
 ## Nye frivillige lesedokumenter
 
-Foreslåtte `EV_DALE_*`-ID-er nedenfor er ikke innført i JSON, opptaksplan eller runtime. Kortene skal være lesbare i vanlig dokumentvisning med tydelig dato/opphav og tekstskalering. De inneholder lokal UFO-/humanoiduro, ingen avsløring av Nora, Tomás, Reyes i 1947 eller tidspunktet for en invasjon. Ingen tekster trenger fortellerstemme.
+`EV_DALE_*`-ID-ene nedenfor er innført i EveningShift-JSON og runtime. Tekstene åpnes enkeltvis i vanlig dokumentvisning med tekstskalering og faktisk lesestatus. Det er ingen nye stemmeopptak knyttet til dem. De inneholder lokal UFO-/humanoiduro, ingen avsløring av Nora, Tomás, Reyes i 1947 eller tidspunktet for en invasjon. Ingen tekster trenger fortellerstemme.
 
 ### EV_DALE_SKYLOG: Lights above the ridge / 6 April
 
@@ -62,7 +64,7 @@ Plassering: flere kryssede saker foran de åpne. Gjør Dale troverdig og lar nor
 
 ### EV_DALE_FRAME18: Photograph envelope / frame 18
 
-Plassering: konvolutt med et planlagt dårlig eksponert fotografi/negativ. Fotoet må faktisk lages og granskes; ikke tildel et bildebevis som bare finnes i tekst. Vanlig sammenligningspunkt skal være synlig hvis fotoet brukes.
+Plassering: konvolutt med dårlig eksponert fotografi/negativ som motiv i JPG-kildepakken. Bildet må fortsatt bindes og granskes i spillet før det eventuelt brukes som bildebevis. Vanlig sammenligningspunkt skal være synlig hvis fotoet brukes.
 
 > Do not crop the left edge. The porch post is the only useful measure of height. The pale mark might be glare from the kitchen window; the negative needs checking. What I remember is a shape standing beyond the fence. What the photograph contains may be something else. Keep both sentences. I am starting to replace one with the other.
 
@@ -80,6 +82,6 @@ Plassering: under vanlige arbeidsark, ikke låst som en nødvendig hemmelighet. 
 
 ## Integrasjon og kontroll
 
-Legg eventuelle nye tekster i EveningShift-kildene først, fordi denne pakken allerede eier kontoret. HorrorStory skal referere til funnene og skrive hovedmotivasjon, ikke duplisere alle dokumentene eller overleveringen. Behold eksisterende ID-er, kjør tilhørende generator og registrer nye ID-er før runtime kobles på. Ikke rediger genererte manus som kilde.
+De seks tekstene og servicevedlegget har sine autoritative kilder i EveningShift, som allerede eier kontoret. Legg eventuelle senere tekstendringer der først. HorrorStory skal referere til funnene og skrive hovedmotivasjon, ikke duplisere alle dokumentene eller overleveringen. Behold eksisterende ID-er, kjør tilhørende generator og registrer nye ID-er før runtime kobles på. Ikke rediger genererte manus som kilde.
 
-Prøv kort hovedrute uten VHS, frivillig leserunde, avbrutt film, strøm av, Continue med åpnet mappe og tilgang fra gammel sak. Ingen ulest tekst markeres som lest; ingen film flagges sett fordi et panel ble åpnet. Først fysiske dokumenter/tekstvisning og lagring, deretter video og eventuelle foto-/skisserekvisitter. Dette vedlegget leverer tekstutkast og regi, ikke disse funksjonene.
+Avgrenset R5-kontroll har prøvd tidlig fysisk kontoradgang, frivillig lesing/skalering og diskrestore av faktisk leste dokumenter, også på Low. Kort feltmapperute er uavhengig av VHS. Ingen ulest tekst markeres som lest; ingen film flagges sett fordi et panel ble åpnet. Nye JPG-bindinger, faktisk avbrutt film, videoens transport-/strøm-/saveforløp og hele den nye SC-ruten er ikke levert av disse kontrollene. Nøyaktige bevis og begrensninger står i ankomst-/kontorrapporten.
