@@ -521,3 +521,12 @@ Canonical prune er tørrkjørt, planen gjennomgått og anvendt uten aktive UE-/s
 Sluttstatus er `NP1_DELIVERY_COMPLETE.json` i bevisroten. Uavhengig `final-acceptance-audit.json` bekrefter17 pakkede kjøringer/21 rapporter/28 vurderte bildereferanser,2 948 frosne inputs og komplett payload uten Saved. Fire tidlige resultater mangler eget per-run binaryhash-felt; samme-exe, akseptrad og full payloadbinding er kontrollert, og13 senere har eget felt. Endelig PR-nummer er bundet i en separat metadatakopi av aksepten uten å endre de auditerte casene. Ingen CI-jobber var rapportert for PR-head; dette er lokal aksept.
 
 Original VHS, ny SC-/kveldskoordinator, fem aktive møter og menneskelig helnatt/lytting/fysisk Xbox står fortsatt åpne. Ingen ny ekstern spillutgave er publisert. Den opprinnelige hovedmappen med den andre chatens lokale endringer er bevart; ny samlet kilde ligger på core og i denne arbeidskopien.
+
+
+## 26.10.2026 kl. 09:36 CET: godkjent implementeringsplan lagret og SC01 tatt opp
+
+Tom ba først om oversikt over13 SC-scenarioer og10 H-kort og deretter en detaljert Markdown-plan. Etter planavklaring valgte han full produksjon, separat PR/fletting og installasjon per scenario, samt videre spillbar gammel historie ved grensen for produsert innhold. Hver sak beholder sin innholdsrevisjon. Han har nå bedt om gjennomføring.
+
+Hele den godkjente planen er lagret i HISTORIE_IMPLEMENTERINGSPLAN.md, med alle13 detaljerte SC-etapper, felles adapter-/lagrings-/tids-/farekontrakter, akseptkrav, leveringsrekkefølge og separate SC-/H-statustabeller. README/todo er koblet til planen og OPPGAVER/memory fører eierskap og status. SC01 står Under arbeid; SC02 til13 er Planlagt og alle samlede H-kort er åpne. Dokumentasjonen ferdigmelder ingen ny runtime, lyd, film, testpakke, merge eller installasjon. NP1 forblir siste dokumentert installerte standard.
+
+Arbeidskopien er /home/tom/scratch-bm/wt/horror-h01, gren codex/horror-h01, fra kontrollert core1c929b76. Root eier integrasjon, prøver og levering; manusagent eier HorrorPack/generator; dokumentasjonsagent eier plan og oversiktspekere. Unreal-jobber kjøres sekvensielt. Planleveransen skal committes av root før videre levering, uten å stage andre agenters arbeid.
