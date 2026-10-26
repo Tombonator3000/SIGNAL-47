@@ -2,6 +2,8 @@
 
 31 ferdige, flate JPG-teksturer fra 26. oktober 2026. Åpne [GALLERI.html](GALLERI.html) for å filtrere samlingen, forstørre arkene og lese kildetekstene. [OVERSIKT.jpg](OVERSIKT.jpg) viser hele pakken.
 
+To senere brukerleverte motiver er logget separat som [bildereferanser til Dales private filer](References/DaleAutopsy/README.md). De har ukjent opphav/dato og inngår ikke i de 31 ferdige rekvisittene.
+
 ## Innhold
 
 | Filer | Innhold |

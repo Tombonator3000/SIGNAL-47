@@ -1,0 +1,907 @@
+{
+  "schema_version": 1,
+  "reviewer": "bildekontroll",
+  "reviewed_at_utc": "2026-10-26T14:23:33+00:00",
+  "scope": "Alle 48 finale JPG-er i EnvironmentGraphics er sett i full størrelse. All synlig tekst, tall/priser, enheter, blanke felt og nødvendige illustrasjonsdetaljer er nærlest. Bare assetvurdering; ingen runtime-, UV- eller galleriprøve.",
+  "ocr": "NOT_RUN; manual visual review",
+  "summary": {
+    "assets_reviewed": 48,
+    "key_checks_passed": 96,
+    "key_checks_failed": 0,
+    "previous37_hashes_unchanged": true
+  },
+  "notes_nb": [
+    "Endelig vurdering er bundet til nåværende JPG-SHA256 i hver rad. Tidligere vurderte bilder er ikke automatisk godkjent ved endret filhash.",
+    "De første 22 hashene ble tidligere migrert til fast sRGB-profil etter at kun ICC-tidsfeltet ble bevist endret; JPEG-bildeinnholdet var uendret. Alle senere grupper beholdt samme hash ved ny partial-konvertering.",
+    "Kinoens oppgitte tittel/undertittel kan være typografisk brutt over flere linjer; ingen ekstra tekstblokker er lagt til. Film- og turistreklame er vurdert som bakgrunnsmateriale, ikke hendelsesbevis."
+  ],
+  "issues": [],
+  "assets": [
+    {
+      "id": "CINEMA_DESERT_SKY",
+      "filename": "jpg/01-cinema-desert-sky.jpg",
+      "reviewed_jpg_sha256": "6b1db45bf4b4f8d5efc466f26f0d7b892da370e3ce3a4538111dffa73187fed7",
+      "previous_reviewed_jpg_sha256": "d12ff3e3a291e78ad3013decf23830564b5b773678c129c64811e1af1840e231",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Only two text lines: THE DESERT SKY / A PLAZA PRESENTATION; no tagline, year, credits or cast.",
+          "status": "PASS",
+          "notes_nb": "Nærsett plakat: kun THE DESERT SKY og A PLAZA PRESENTATION. Tittelen brytes over linjer; ingen ekstra promotekst, dato, år, kreditering eller navngitt figur. Flat fullflate, intet skap/glass eller perspektivmockup."
+        },
+        {
+          "check": "Original fictional cinema artwork; no copied film poster, actor portrait or main-route evidence.",
+          "status": "PASS",
+          "notes_nb": "Nærsett plakat: kun THE DESERT SKY og A PLAZA PRESENTATION. Tittelen brytes over linjer; ingen ekstra promotekst, dato, år, kreditering eller navngitt figur. Flat fullflate, intet skap/glass eller perspektivmockup."
+        }
+      ]
+    },
+    {
+      "id": "CINEMA_FRIDAY_MATINEE",
+      "filename": "jpg/02-cinema-friday-matinee.jpg",
+      "reviewed_jpg_sha256": "bf6dcbe8a86c1b4558c60cc1a218944d1107a5cae0849b21ef147603dfb70ed6",
+      "previous_reviewed_jpg_sha256": "849d31d64fd0fe01c647955dd39dbe0a80c6c18de34449948b1765d0fc92bb99",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Only two text lines: FRIDAY MATINEE / PLAZA THEATRE.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: FRIDAY MATINEE og PLAZA THEATRE, ingen annen tekst eller priser. Original illustrasjon med to barn, rakett og elefant; ingen dato/år eller gjenåpning. Flat fullflate med lesbar tekst."
+        },
+        {
+          "check": "No tagline, printed date, year, ticket price, credits, cast or reopening claim.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: FRIDAY MATINEE og PLAZA THEATRE, ingen annen tekst eller priser. Original illustrasjon med to barn, rakett og elefant; ingen dato/år eller gjenåpning. Flat fullflate med lesbar tekst."
+        }
+      ]
+    },
+    {
+      "id": "CINEMA_DUST_COUNTY",
+      "filename": "jpg/03-cinema-dust-county.jpg",
+      "reviewed_jpg_sha256": "6d3b7437e6540b6ee10f2c698ef5526551706136b3c54999a00bfd07fc8daf6b",
+      "previous_reviewed_jpg_sha256": "27f78cb82d4c4490f600f7446da961e9056c4aed8dec63765e3ec5424e505353",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "DUST COUNTY / EVERY ROAD LEADS HOME. is the only promotional copy; no year, credits or cast.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: DUST COUNTY og EVERY ROAD LEADS HOME. er hele teksten. Malt westernmiljø med rytter; ingen år, navn, rulletekst, landmålingssymboler eller stedsledetråder. Flat rektangulær trykkflate."
+        },
+        {
+          "check": "Fictional western art, without real actors, copied compositions or survey symbols.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: DUST COUNTY og EVERY ROAD LEADS HOME. er hele teksten. Malt westernmiljø med rytter; ingen år, navn, rulletekst, landmålingssymboler eller stedsledetråder. Flat rektangulær trykkflate."
+        }
+      ]
+    },
+    {
+      "id": "CINEMA_NIGHT_COACH",
+      "filename": "jpg/04-cinema-night-coach.jpg",
+      "reviewed_jpg_sha256": "fb725be2dd6dfc05fc6dd931423e6d35fc3190f5c11f66aa00a5111a3f2650ad",
+      "previous_reviewed_jpg_sha256": "55eb2c6da6a841d3cc6afabaa335c0a10e66ac0b6b1b5ac65444e8a57ef62d7d",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "THE NIGHT COACH / ONE NIGHT. NO STOPS. remains readable; no year, credits or cast.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: THE NIGHT COACH og ONE NIGHT. NO STOPS. står tydelig. Ingen annen lesbar tekst, rutestedsnavn, tallkode eller år. Malt buss/ansikt er plakatkunst på flat fullflate."
+        },
+        {
+          "check": "No real film branding, main-route destination or hidden clue.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: THE NIGHT COACH og ONE NIGHT. NO STOPS. står tydelig. Ingen annen lesbar tekst, rutestedsnavn, tallkode eller år. Malt buss/ansikt er plakatkunst på flat fullflate."
+        }
+      ]
+    },
+    {
+      "id": "CINEMA_BLUE_LAKE",
+      "filename": "jpg/05-cinema-blue-lake.jpg",
+      "reviewed_jpg_sha256": "f67297135afe6798fa4195714945ea5e83c941dcfe2281737f5a936968931b0f",
+      "previous_reviewed_jpg_sha256": "57c86cf2543c215fc0bb3ca1387c5ea9c558df754964025f300b2d2206a4f27b",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SUMMER AT BLUE LAKE / A SUMMER TO REMEMBER. is legible; no year, credits or cast.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: SUMMER AT BLUE LAKE og A SUMMER TO REMEMBER. står tydelig. Anonym malerisk romantikk, ingen navngitte vitner, hendelsesopplysninger, år eller ekstra credits. Flat fullflate."
+        },
+        {
+          "check": "A fictional romance poster; no actual local incident, witness or plot evidence.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: SUMMER AT BLUE LAKE og A SUMMER TO REMEMBER. står tydelig. Anonym malerisk romantikk, ingen navngitte vitner, hendelsesopplysninger, år eller ekstra credits. Flat fullflate."
+        }
+      ]
+    },
+    {
+      "id": "CINEMA_VISITORS",
+      "filename": "jpg/06-cinema-visitors.jpg",
+      "reviewed_jpg_sha256": "cfbbf0352468c5a59d48f96b58bbe626d4506db7becf1ff909c2bd4bb731e47e",
+      "previous_reviewed_jpg_sha256": "27d26c80f073ae2dadb4a03c1ac20fd5f5c09cf2cd03a5887f2064db3920fcc3",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "VISITORS FROM MARS / THEY CAME FOR THE WEEKEND! is legible; no year, credits or cast.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: VISITORS FROM MARS og THEY CAME FOR THE WEEKEND! riktige og hele teksten. To tegneseriemarsboere/saucer tydelig underholdningsplakat, ingen hendelsesdokumentasjon, år, navn eller kreditering. Flat fullflate."
+        },
+        {
+          "check": "Invented 1960s matinee artwork; no copied franchise or claimed extraterrestrial evidence.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: VISITORS FROM MARS og THEY CAME FOR THE WEEKEND! riktige og hele teksten. To tegneseriemarsboere/saucer tydelig underholdningsplakat, ingen hendelsesdokumentasjon, år, navn eller kreditering. Flat fullflate."
+        }
+      ]
+    },
+    {
+      "id": "CINEMA_CLOSED",
+      "filename": "jpg/07-cinema-closed.jpg",
+      "reviewed_jpg_sha256": "f527e9db8dfe33bd884da0cec4a20007c268a37ea6385f8b20d6eacad17979d2",
+      "previous_reviewed_jpg_sha256": "49723c7d9671efaa85d4ad913f0eadee2642b7933eed3d83bd645a7c8d8f0337",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Keep CLOSED. / THANK YOU CALICHE. / FOR 31 YEARS. intact.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: CLOSED. / THANK YOU CALICHE. / FOR 31 YEARS. er korrekte. Ingen stenge-/åpningsår, grunn for nedleggelse eller melding om gjenåpning. Flat avskjedsflate."
+        },
+        {
+          "check": "Do not invent a closure year, opening year or reopening notice.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: CLOSED. / THANK YOU CALICHE. / FOR 31 YEARS. er korrekte. Ingen stenge-/åpningsår, grunn for nedleggelse eller melding om gjenåpning. Flat avskjedsflate."
+        }
+      ]
+    },
+    {
+      "id": "CINEMA_TICKET",
+      "filename": "jpg/08-cinema-ticket.jpg",
+      "reviewed_jpg_sha256": "c6377ddb6c8707b359f94083d0f043b18681d4b4b8f88a16a5685c615a7d37e3",
+      "previous_reviewed_jpg_sha256": "3b995d10e286eb8f92418c08788998ba4a5cece659b199ceee3c577b1fefaa99",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "PLAZA THEATRE / ADMIT ONE / KEEP THIS HALF / No. 3186.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: PLAZA THEATRE, ADMIT ONE, KEEP THIS HALF og No. 3186 korrekt. Ingen billettpris eller dato. Rektangulær billettfront med trykt perforasjonslinje; ingen scenemockup."
+        },
+        {
+          "check": "No ticket price, date or implication that the closed cinema is operating.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: PLAZA THEATRE, ADMIT ONE, KEEP THIS HALF og No. 3186 korrekt. Ingen billettpris eller dato. Rektangulær billettfront med trykt perforasjonslinje; ingen scenemockup."
+        }
+      ]
+    },
+    {
+      "id": "DINER_MENU",
+      "filename": "jpg/09-diner-menu.jpg",
+      "reviewed_jpg_sha256": "ac22360214f710689a132079181617e5f960153d8e33701001226a5a61d3c4f1",
+      "previous_reviewed_jpg_sha256": "0cd0fe0cbd48884192a5a24a00a0b405e1ca9e487e966c29eb0a8ebb33838c4a",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "All nine item/price pairs match the catalog text; no omitted or added charge.",
+          "status": "PASS",
+          "notes_nb": "Alle ni par nærleses: COFFEE .35, PIE .95, HOTCAKES 1.75, GREEN CHILE STEW 2.95, TWO EGGS ANY STYLE 1.95, HAMBURGER 2.25, CHEESEBURGER 2.45, HAM SANDWICH 1.95, SOUP OF THE DAY 1.10. CASH ONLY og OPEN ALL NIGHT riktige, ingen ekstragebyr. Flat menyflate."
+        },
+        {
+          "check": "CASH ONLY and OPEN ALL NIGHT remain legible.",
+          "status": "PASS",
+          "notes_nb": "Alle ni par nærleses: COFFEE .35, PIE .95, HOTCAKES 1.75, GREEN CHILE STEW 2.95, TWO EGGS ANY STYLE 1.95, HAMBURGER 2.25, CHEESEBURGER 2.45, HAM SANDWICH 1.95, SOUP OF THE DAY 1.10. CASH ONLY og OPEN ALL NIGHT riktige, ingen ekstragebyr. Flat menyflate."
+        }
+      ]
+    },
+    {
+      "id": "DINER_COFFEE",
+      "filename": "jpg/10-diner-coffee.jpg",
+      "reviewed_jpg_sha256": "731eaa5264e84ef971d41dd14b4b8f434428b7fb57fee0d076ac7514b0c59a42",
+      "previous_reviewed_jpg_sha256": "1ac0210929f85d20b07c60feb8a13a2358fc761445d8b17d6bb319f852504abc",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "FRESH COFFEE / 35c / MESA DINER.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: FRESH COFFEE, 35c og MESA DINER korrekt. Ingen refillpåstand, ny menyavtale eller ekstra kaffemerke. Trykt koppillustrasjon er del av flat reklame, intet miljø rundt plakaten."
+        },
+        {
+          "check": "No new meal deal, refill price or coffee brand.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: FRESH COFFEE, 35c og MESA DINER korrekt. Ingen refillpåstand, ny menyavtale eller ekstra kaffemerke. Trykt koppillustrasjon er del av flat reklame, intet miljø rundt plakaten."
+        }
+      ]
+    },
+    {
+      "id": "DINER_PIE",
+      "filename": "jpg/11-diner-pie.jpg",
+      "reviewed_jpg_sha256": "91eeb713567a3ef572f6cdd7ae7b2f55e556590706ddf8e442ed8ad7b50a5556",
+      "previous_reviewed_jpg_sha256": "e572e267490832202c1ee47f7eac9ec548a2a1e5011dc20390af0f8189ac195f",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "HOMEMADE PIE / 95c / MESA DINER.",
+          "status": "PASS",
+          "notes_nb": "HOMEMADE PIE / 95c / MESA DINER nærleses riktig. Ingen annen pris eller datert kjøpshendelse. Flat fullflate."
+        },
+        {
+          "check": "Do not substitute a different price or suggest a dated player purchase.",
+          "status": "PASS",
+          "notes_nb": "HOMEMADE PIE / 95c / MESA DINER nærleses riktig. Ingen annen pris eller datert kjøpshendelse. Flat fullflate."
+        }
+      ]
+    },
+    {
+      "id": "GAS_AD",
+      "filename": "jpg/12-gas-ad.jpg",
+      "reviewed_jpg_sha256": "1df6ac21d6d77bb721f68f775a5e3a585dd94ae8c0cbe0b144d3e153b61c6a15",
+      "previous_reviewed_jpg_sha256": "1ff6232c00b313785459977c5758cce4cc224eed451f916dea31defd2567369b",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "REGULAR 89.9 CENTS PER GALLON; do not read 89.9 as dollars.",
+          "status": "PASS",
+          "notes_nb": "CALICHE SERVICE, GAS DIESEL TOWING og REGULAR 89.9 med eksplisitt CENTS PER GALLON er riktige. Ingen dollarsymbol eller ny butikkadresse. Flat annonse."
+        },
+        {
+          "check": "GAS / DIESEL / TOWING belongs to the existing service station, not a new shop.",
+          "status": "PASS",
+          "notes_nb": "CALICHE SERVICE, GAS DIESEL TOWING og REGULAR 89.9 med eksplisitt CENTS PER GALLON er riktige. Ingen dollarsymbol eller ny butikkadresse. Flat annonse."
+        }
+      ]
+    },
+    {
+      "id": "OIL_AD",
+      "filename": "jpg/13-oil-ad.jpg",
+      "reviewed_jpg_sha256": "7224ecf0f48eb2b6583d049a5e2541a732b2a2e354cf53eb39399846071652b1",
+      "previous_reviewed_jpg_sha256": "079f460df233f6f46b315674022228706b2965be976618e4fc60c0ff80a817ce",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "MESA MOTOR OIL / MADE FOR THE LONG ROAD.",
+          "status": "PASS",
+          "notes_nb": "MESA MOTOR OIL / MADE FOR THE LONG ROAD er hele teksten. Ingen ytelsesklasse, olje-spesifikasjon eller ny adresse. Fiktiv merkeillustrasjon på flat annonse."
+        },
+        {
+          "check": "Original fictional product brand; no new business location, real logo or oil specification.",
+          "status": "PASS",
+          "notes_nb": "MESA MOTOR OIL / MADE FOR THE LONG ROAD er hele teksten. Ingen ytelsesklasse, olje-spesifikasjon eller ny adresse. Fiktiv merkeillustrasjon på flat annonse."
+        }
+      ]
+    },
+    {
+      "id": "FEED_AD",
+      "filename": "jpg/14-feed-ad.jpg",
+      "reviewed_jpg_sha256": "b3a29569da00bea3fc836a56c7a93030360409a2fc06bbf60d03dd6ee1081493",
+      "previous_reviewed_jpg_sha256": "02547b4185e6af7154a44466daba3f5e8bc563a0bb9a48e4daff98bd8af8d946",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "FEED & SEED / FARM SUPPLIES / CALICHE, NEW MEXICO.",
+          "status": "PASS",
+          "notes_nb": "FEED & SEED / FARM SUPPLIES / CALICHE, NEW MEXICO korrekt. Ingen pris, adresse eller separat ny butikk. Flat annonse."
+        },
+        {
+          "check": "No invented price, new address or separate grocery/hardware store.",
+          "status": "PASS",
+          "notes_nb": "FEED & SEED / FARM SUPPLIES / CALICHE, NEW MEXICO korrekt. Ingen pris, adresse eller separat ny butikk. Flat annonse."
+        }
+      ]
+    },
+    {
+      "id": "LAUNDRY_RATES",
+      "filename": "jpg/15-laundry-rates.jpg",
+      "reviewed_jpg_sha256": "e6013c88b3d5efa216da5395f0dd71228924767b912fb9e908955c2dba7385c5",
+      "previous_reviewed_jpg_sha256": "8586abaa16204e3114dcb0cabb321bd0e4ddeae07f04113fd35c072f06c65648",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "WASH 75c / DRY 25c with OPEN 24 HOURS / COIN OPERATED.",
+          "status": "PASS",
+          "notes_nb": "OPEN 24 HOURS / COIN OPERATED / WASH 75c / DRY 25c / PLEASE REMOVE LINT korrekt. Ingen angitt maskinantall; to illustrasjoner viser vask/tørk-kategorier. Flat oppslagsoverflate."
+        },
+        {
+          "check": "No machine count; retain PLEASE REMOVE LINT.",
+          "status": "PASS",
+          "notes_nb": "OPEN 24 HOURS / COIN OPERATED / WASH 75c / DRY 25c / PLEASE REMOVE LINT korrekt. Ingen angitt maskinantall; to illustrasjoner viser vask/tørk-kategorier. Flat oppslagsoverflate."
+        }
+      ]
+    },
+    {
+      "id": "LAUNDRY_ETIQUETTE",
+      "filename": "jpg/16-laundry-etiquette.jpg",
+      "reviewed_jpg_sha256": "29be297a30d3599b850a668d9861357e81e607bb68dfe0d5fd154015a2c3987d",
+      "previous_reviewed_jpg_sha256": "273fbe2fba42713b0f4ef894d655a9a861482b13bb5dfcd043d97bc5c39d8ef7",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "All three courtesy instructions are clearly separated and readable.",
+          "status": "PASS",
+          "notes_nb": "PLEASE REMOVE LINT / REMOVE CLOTHES PROMPTLY / CHECK YOUR POCKETS nærleses riktig, tydelig hver sin rad. Ingen kode, maskinantall eller oppdragsinstruks. Flat tekstur."
+        },
+        {
+          "check": "No machine count, operating code or new quest instruction.",
+          "status": "PASS",
+          "notes_nb": "PLEASE REMOVE LINT / REMOVE CLOTHES PROMPTLY / CHECK YOUR POCKETS nærleses riktig, tydelig hver sin rad. Ingen kode, maskinantall eller oppdragsinstruks. Flat tekstur."
+        }
+      ]
+    },
+    {
+      "id": "MOTEL_AD",
+      "filename": "jpg/17-motel-ad.jpg",
+      "reviewed_jpg_sha256": "a7057c39b3ca09228ee821e56ef91e832e5a056e38134f69d2cff4094a5d6301",
+      "previous_reviewed_jpg_sha256": "34102ec1c5b4c0c41972ab59898908585a4d5ec51a83ca51a28343a6c11ebea4",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SINGLE $18.00 / DOUBLE $24.00; do not swap or alter rates.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / CLEAN ROOMS / CABLE TV / SINGLE $18.00 / DOUBLE $24.00 / REGISTER HERE korrekt. Prisene er ikke byttet. Flat illustrert annonse."
+        },
+        {
+          "check": "SIERRA MOTOR COURT / CLEAN ROOMS / CABLE TV / REGISTER HERE.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / CLEAN ROOMS / CABLE TV / SINGLE $18.00 / DOUBLE $24.00 / REGISTER HERE korrekt. Prisene er ikke byttet. Flat illustrert annonse."
+        }
+      ]
+    },
+    {
+      "id": "SOUVENIR_TOURS",
+      "filename": "jpg/18-souvenir-tours.jpg",
+      "reviewed_jpg_sha256": "6f38bdff84a6e92672fe18eec1af4eb602a75c50f43dca36368a4f382aee8176",
+      "previous_reviewed_jpg_sha256": "6ef260bf86e2c9242799a76052e35b200282d038bc66d673414c5bf90d0653fa",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SAUCER CRASH 1947 / TOURS / ASK INSIDE / OPENS 10 AM / TOURS SATURDAYS.",
+          "status": "PASS",
+          "notes_nb": "SAUCER CRASH 1947 / TOURS / ASK INSIDE / OPENS 10 AM / TOURS SATURDAYS korrekt. Munter turistannonse, ingen funn-/kilde-/bevispåstand eller ny hovedruteledetråd."
+        },
+        {
+          "check": "A tourist advertisement, not proof of a crash or a new main-route clue.",
+          "status": "PASS",
+          "notes_nb": "SAUCER CRASH 1947 / TOURS / ASK INSIDE / OPENS 10 AM / TOURS SATURDAYS korrekt. Munter turistannonse, ingen funn-/kilde-/bevispåstand eller ny hovedruteledetråd."
+        }
+      ]
+    },
+    {
+      "id": "RADIO_AD",
+      "filename": "jpg/19-radio-ad.jpg",
+      "reviewed_jpg_sha256": "23929d7efcc73b5849df38b6d1955cc7a65a8f5ffba81d0f0c15c2383eb36ceb",
+      "previous_reviewed_jpg_sha256": "a84dadc4b821f94588ef0067cdc003753cb9bc3ffbe69d51a82aef71541ca1e9",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "1420 AM, NIGHT LINE, EARL, MIDNIGHT TO FOUR.",
+          "status": "PASS",
+          "notes_nb": "1420 AM / NIGHT LINE / EARL / MIDNIGHT TO FOUR korrekt. Ingen MHz, kallesignal, telefonnummer eller ekstra frekvens. Flat annonse."
+        },
+        {
+          "check": "AM broadcast service only: no MHz, invented call sign or phone number.",
+          "status": "PASS",
+          "notes_nb": "1420 AM / NIGHT LINE / EARL / MIDNIGHT TO FOUR korrekt. Ingen MHz, kallesignal, telefonnummer eller ekstra frekvens. Flat annonse."
+        }
+      ]
+    },
+    {
+      "id": "CHURCH_NOTICE",
+      "filename": "jpg/20-church-notice.jpg",
+      "reviewed_jpg_sha256": "8ea4e2a5e147353e1a2b83136ef8452034ca00df1204bfa3c00daec0ea9a781b",
+      "previous_reviewed_jpg_sha256": "26553fd97e1505b01a2a3b4a11613d056832d0372ab6c1e019a5f4a9cfe1d49f",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "CALICHE CHAPEL / SUNDAY SERVICE 10 AM / ALL ARE WELCOME.",
+          "status": "PASS",
+          "notes_nb": "CALICHE CHAPEL / SUNDAY SERVICE 10 AM / ALL ARE WELCOME korrekt. Ingen lagt til dato, institusjon eller spillhendelsesbudskap. Flat oppslagsoverflate."
+        },
+        {
+          "check": "Retain the existing chapel name and time; no added date or plot message.",
+          "status": "PASS",
+          "notes_nb": "CALICHE CHAPEL / SUNDAY SERVICE 10 AM / ALL ARE WELCOME korrekt. Ingen lagt til dato, institusjon eller spillhendelsesbudskap. Flat oppslagsoverflate."
+        }
+      ]
+    },
+    {
+      "id": "FEED_SACK",
+      "filename": "jpg/21-feed-sack.jpg",
+      "reviewed_jpg_sha256": "af9136ea85880d77386c32833c313bceaac4d3b3ffa5ff7dd5d251d4e82fe0ee",
+      "previous_reviewed_jpg_sha256": "551231f1583f82806b171fb5f9cfad5fc7d99894f31ac398caa3895234d7c065",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "CALICHE FEED / NET WT 50 LB / GRAIN & SEED.",
+          "status": "PASS",
+          "notes_nb": "CALICHE FEED / GRAIN & SEED / NET WT 50 LB korrekt. Flat vevd sekkeflate rett forfra; ingen modell, perspektivside, pris eller saksnummer."
+        },
+        {
+          "check": "Keep 50 LB as package weight; no invented item price or case number.",
+          "status": "PASS",
+          "notes_nb": "CALICHE FEED / GRAIN & SEED / NET WT 50 LB korrekt. Flat vevd sekkeflate rett forfra; ingen modell, perspektivside, pris eller saksnummer."
+        }
+      ]
+    },
+    {
+      "id": "COFFEE_TIN",
+      "filename": "jpg/22-coffee-tin.jpg",
+      "reviewed_jpg_sha256": "ab126c6dafe107d0611cb08279e576f9502b3c57a442a9ae4a0b70f47ca623f3",
+      "previous_reviewed_jpg_sha256": "c3fc8521d0aca3408bf6abc56093933d432e8c0a6e78e82a0ee4c7c999ed1040",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "MESA BLEND / GROUND COFFEE / 1 LB (16 OZ).",
+          "status": "PASS",
+          "notes_nb": "MESA BLEND / GROUND COFFEE / 1 LB (16 OZ) korrekt. Flat bred omslagsetikett, ingen boksylinder, perspektivside eller fysisk produktmockup."
+        },
+        {
+          "check": "Original fictional brand and flat label artwork; no 3D asset or actual product claim.",
+          "status": "PASS",
+          "notes_nb": "MESA BLEND / GROUND COFFEE / 1 LB (16 OZ) korrekt. Flat bred omslagsetikett, ingen boksylinder, perspektivside eller fysisk produktmockup."
+        }
+      ]
+    },
+    {
+      "id": "COLA_LABEL",
+      "filename": "jpg/23-cola-label.jpg",
+      "reviewed_jpg_sha256": "c9426e4bc380e1e9e403f714b09fc7bc225ae1458884de19c94cd65a43b631dc",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SUNDOWN COLA / 12 FL OZ, with FL OZ retained as fluid volume.",
+          "status": "PASS",
+          "notes_nb": "SUNDOWN COLA /12FL OZ nærleses korrekt, FL beholdt som væskemål. Flat original merkeetikett med landskap/solmotiv, uten synlig fremmed produsentlogo."
+        },
+        {
+          "check": "Original fictional brand; do not copy a recognizable real cola logo.",
+          "status": "PASS",
+          "notes_nb": "SUNDOWN COLA /12FL OZ nærleses korrekt, FL beholdt som væskemål. Flat original merkeetikett med landskap/solmotiv, uten synlig fremmed produsentlogo."
+        }
+      ]
+    },
+    {
+      "id": "DETERGENT_BOX",
+      "filename": "jpg/24-detergent-box.jpg",
+      "reviewed_jpg_sha256": "836310cae82550e400522a0b48a6b5e0aba6f567da1c0a45202a1cfd5cd6a6a3",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "BLUE MESA / LAUNDRY POWDER / NET WT 32 OZ.",
+          "status": "PASS",
+          "notes_nb": "BLUE MESA / LAUNDRY POWDER / NET WT32OZ nærleses korrekt. Flat eske-frontgrafikk med skjorte/såpeillustrasjon, ingen maskinantall, ny butikk eller moderne ikoner."
+        },
+        {
+          "check": "Fictional product label; no new store, machine count or modern packaging iconography.",
+          "status": "PASS",
+          "notes_nb": "BLUE MESA / LAUNDRY POWDER / NET WT32OZ nærleses korrekt. Flat eske-frontgrafikk med skjorte/såpeillustrasjon, ingen maskinantall, ny butikk eller moderne ikoner."
+        }
+      ]
+    },
+    {
+      "id": "CRACKER_BOX",
+      "filename": "jpg/25-cracker-box.jpg",
+      "reviewed_jpg_sha256": "48596741b99a0b23b870fd1350b4baf515ef163814ffc42c43bc12fb49a328f1",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "DESERT SALT / SALTINE CRACKERS / NET WT 1 LB.",
+          "status": "PASS",
+          "notes_nb": "DESERT SALT / SALTINE CRACKERS / NET WT1LB nærleses korrekt. Flat matemballasjefront, original merkeillustrasjon uten synlig ekstern produsenttekst."
+        },
+        {
+          "check": "Original fictional food brand, without copied manufacturer marks.",
+          "status": "PASS",
+          "notes_nb": "DESERT SALT / SALTINE CRACKERS / NET WT1LB nærleses korrekt. Flat matemballasjefront, original merkeillustrasjon uten synlig ekstern produsenttekst."
+        }
+      ]
+    },
+    {
+      "id": "BATTERY_CARD",
+      "filename": "jpg/26-battery-card.jpg",
+      "reviewed_jpg_sha256": "930282cf6e63d4b552e495a72d93b9fde0bf4f8816e7fcc29e13deb0ea8019da",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "LONGWATCH / HEAVY DUTY / 2 C CELLS.",
+          "status": "PASS",
+          "notes_nb": "LONGWATCH / HEAVY DUTY /2C CELLS nærleses korrekt. Nøyaktig to illustrerte celler, ingen kapasitets-, lading- eller ekstravarepåstand. Flat trykt pappfront."
+        },
+        {
+          "check": "Exactly two C cells; no modern charging, capacity claim or real battery logo.",
+          "status": "PASS",
+          "notes_nb": "LONGWATCH / HEAVY DUTY /2C CELLS nærleses korrekt. Nøyaktig to illustrerte celler, ingen kapasitets-, lading- eller ekstravarepåstand. Flat trykt pappfront."
+        }
+      ]
+    },
+    {
+      "id": "MATCHBOOK",
+      "filename": "jpg/27-matchbook.jpg",
+      "reviewed_jpg_sha256": "2ad7f665932ebd5e490fd5653b143d9e588c768350c818b56b7714734882b87e",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SIERRA MOTOR COURT / CALICHE, NM / CLEAN ROOMS / CABLE TV.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / CALICHE, NM / CLEAN ROOMS / CABLE TV nærleses korrekt. Ingen telefonnummer, pris eller datert booking. Flat åpen omslagsflate med brettlinje."
+        },
+        {
+          "check": "No invented phone number, rate or actual booking event.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / CALICHE, NM / CLEAN ROOMS / CABLE TV nærleses korrekt. Ingen telefonnummer, pris eller datert booking. Flat åpen omslagsflate med brettlinje."
+        }
+      ]
+    },
+    {
+      "id": "TAKEAWAY_BAG",
+      "filename": "jpg/28-takeaway-bag.jpg",
+      "reviewed_jpg_sha256": "eceeb9aff742fa49fe1cfb2573cd25bdc5374926b09a85dd7751ae08f57d9938",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "MESA DINER / OPEN ALL NIGHT / CALICHE, NM.",
+          "status": "PASS",
+          "notes_nb": "MESA DINER / OPEN ALL NIGHT / CALICHE, NM nærleses korrekt. Flat brunpapirtrykkflate, ingen 3Dpose, kjøpstidspunkt, kvittering eller spesifikk matordre."
+        },
+        {
+          "check": "Flat packaging print; no new receipt, purchase time or food order.",
+          "status": "PASS",
+          "notes_nb": "MESA DINER / OPEN ALL NIGHT / CALICHE, NM nærleses korrekt. Flat brunpapirtrykkflate, ingen 3Dpose, kjøpstidspunkt, kvittering eller spesifikk matordre."
+        }
+      ]
+    },
+    {
+      "id": "FOOD_WRAPPER",
+      "filename": "jpg/29-food-wrapper.jpg",
+      "reviewed_jpg_sha256": "dce921784dd723c39ca53229d8401a2686c0b8155190c435de28c570d6a65655",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Repeat only MESA DINER / HOT FOOD TO GO in the pattern.",
+          "status": "PASS",
+          "notes_nb": "Alle fire gjentakelser nærleses som MESA DINER / HOT FOOD TO GO. Bare angitt tekst i mønsteret. Flat papirflate uten ordre, tidspunkt, brettet innpakning eller 3Dperspektiv."
+        },
+        {
+          "check": "Flat printed paper texture; no new order details or 3D wrapper.",
+          "status": "PASS",
+          "notes_nb": "Alle fire gjentakelser nærleses som MESA DINER / HOT FOOD TO GO. Bare angitt tekst i mønsteret. Flat papirflate uten ordre, tidspunkt, brettet innpakning eller 3Dperspektiv."
+        }
+      ]
+    },
+    {
+      "id": "CASSETTE_CARD",
+      "filename": "jpg/30-cassette-card.jpg",
+      "reviewed_jpg_sha256": "f7fa661f8cbcc37581f3a499c0fcbef344f9ea7a291c967d1dcf0448b929cc31",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "ROAD TAPES / C-60 / SIDE A / SIDE B; track lines remain blank.",
+          "status": "PASS",
+          "notes_nb": "ROAD TAPES / C-60 / SIDE A / SIDE B korrekt. Begge sider har fire blanke nummererte linjer, uten spor-/opptakstekst. Flat ordinær lydkassettkortflate uten Dale/VHS-evidens."
+        },
+        {
+          "check": "An ordinary audio-cassette card, not Dale's VHS or recorded evidence.",
+          "status": "PASS",
+          "notes_nb": "ROAD TAPES / C-60 / SIDE A / SIDE B korrekt. Begge sider har fire blanke nummererte linjer, uten spor-/opptakstekst. Flat ordinær lydkassettkortflate uten Dale/VHS-evidens."
+        }
+      ]
+    },
+    {
+      "id": "MOTEL_KEY",
+      "filename": "jpg/31-motel-key.jpg",
+      "reviewed_jpg_sha256": "72f3ccdb4552f79039e4a878408027165d01a65a8ad3a3a3c52edec43e58d0dd",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SIERRA MOTOR COURT / ROOM 8 / PLEASE RETURN KEY.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / ROOM 8 / PLEASE RETURN KEY nærleses korrekt. Bare rom8, ingen Nora, rom6, endret adgang eller avbildet ny funksjonsnøkkel. Flat etikettflate."
+        },
+        {
+          "check": "Room 8 only; no Nora identity, room 6 access change or new usable key.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / ROOM 8 / PLEASE RETURN KEY nærleses korrekt. Bare rom8, ingen Nora, rom6, endret adgang eller avbildet ny funksjonsnøkkel. Flat etikettflate."
+        }
+      ]
+    },
+    {
+      "id": "MOTEL_REGISTRATION",
+      "filename": "jpg/32-motel-registration.jpg",
+      "reviewed_jpg_sha256": "90933cb106058c8815c0d505726da47bd2d2267c28c1e1f049122a26fba6fe6b",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "NAME, ADDRESS, ARRIVAL and ROOM fields stay blank.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / GUEST REGISTRATION, NAME/ADDRESS/ARRIVAL/ROOM korrekt. Alle felt er tomme, ingen gjestenavn, signatur eller dato. Flat blank registreringsside."
+        },
+        {
+          "check": "No guest names, dates, signatures or replacement of the active story register.",
+          "status": "PASS",
+          "notes_nb": "SIERRA MOTOR COURT / GUEST REGISTRATION, NAME/ADDRESS/ARRIVAL/ROOM korrekt. Alle felt er tomme, ingen gjestenavn, signatur eller dato. Flat blank registreringsside."
+        }
+      ]
+    },
+    {
+      "id": "DINER_RECEIPT",
+      "filename": "jpg/33-diner-receipt.jpg",
+      "reviewed_jpg_sha256": "cc88dd508b0ea89617d9160964c2f142a8719124ee2f9fa1d92fe6f66e3ee184",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "COFFEE 0.35 + PIE 0.95 = TOTAL 1.30.",
+          "status": "PASS",
+          "notes_nb": "MESA DINER, COFFEE0.35, PIE0.95, TOTAL1.30 nærleses riktig.0.35+0.95=1.30. Ingen dato, spiller, skatt, gebyr eller transaksjonstillegg. Flat utskriftsflate."
+        },
+        {
+          "check": "No date, player name, tax, surcharge or recorded game purchase.",
+          "status": "PASS",
+          "notes_nb": "MESA DINER, COFFEE0.35, PIE0.95, TOTAL1.30 nærleses riktig.0.35+0.95=1.30. Ingen dato, spiller, skatt, gebyr eller transaksjonstillegg. Flat utskriftsflate."
+        }
+      ]
+    },
+    {
+      "id": "GAS_RECEIPT",
+      "filename": "jpg/34-gas-receipt.jpg",
+      "reviewed_jpg_sha256": "7edb326f5336eb4e7746b833b7640c963e8a1efaefa7f1795f80cd4e7694fa74",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "3.000 GAL @ $0.899 rounds to $2.70; $5.00 cash minus $2.70 gives $2.30 change.",
+          "status": "PASS",
+          "notes_nb": "CALICHE SERVICE,3.000GAL@$0.899, TOTAL$2.70, CASH$5.00, CHANGE$2.30 nærleses korrekt.2.697 avrundet til2.70 og5.00-2.70=2.30. Ingen dato, spilleridentitet eller ruteopplysning."
+        },
+        {
+          "check": "No player transaction, date, route clue or new business location.",
+          "status": "PASS",
+          "notes_nb": "CALICHE SERVICE,3.000GAL@$0.899, TOTAL$2.70, CASH$5.00, CHANGE$2.30 nærleses korrekt.2.697 avrundet til2.70 og5.00-2.70=2.30. Ingen dato, spilleridentitet eller ruteopplysning."
+        }
+      ]
+    },
+    {
+      "id": "POSTCARD",
+      "filename": "jpg/35-postcard.jpg",
+      "reviewed_jpg_sha256": "66f062cbc2424f3815970be98e788bfc359debfd37a73d34632dabcce9a19164",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "GREETINGS FROM CALICHE / NEW MEXICO.",
+          "status": "PASS",
+          "notes_nb": "GREETINGS FROM CALICHE / NEW MEXICO nærleses korrekt. Illustrert turistutsikt, uten koordinater, kartnøkler, saksfoto eller funksjonell feltplan. Flat postkortfront."
+        },
+        {
+          "check": "Tourist illustration only; no functional map, coordinates or case photograph.",
+          "status": "PASS",
+          "notes_nb": "GREETINGS FROM CALICHE / NEW MEXICO nærleses korrekt. Illustrert turistutsikt, uten koordinater, kartnøkler, saksfoto eller funksjonell feltplan. Flat postkortfront."
+        }
+      ]
+    },
+    {
+      "id": "MAP_COVER",
+      "filename": "jpg/36-map-cover.jpg",
+      "reviewed_jpg_sha256": "5f42dcba8330dce67c66be99b985725b1aab95a955819a562d2ba7283222c336",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "NEW MEXICO / ROAD MAP / 1985 / $1.95.",
+          "status": "PASS",
+          "notes_nb": "NEW MEXICO / ROAD MAP /1985/$1.95 nærleses korrekt. Kun illustrert omslag, ingen koordinater, C, boltmerker eller aktivt rutekart. Flat omslagsflate."
+        },
+        {
+          "check": "Cover only, without coordinates, C, survey bolts or replacement of the active service map.",
+          "status": "PASS",
+          "notes_nb": "NEW MEXICO / ROAD MAP /1985/$1.95 nærleses korrekt. Kun illustrert omslag, ingen koordinater, C, boltmerker eller aktivt rutekart. Flat omslagsflate."
+        }
+      ]
+    },
+    {
+      "id": "SARO_RADIO_QUIET",
+      "filename": "jpg/37-saro-radio-quiet.jpg",
+      "reviewed_jpg_sha256": "54a8cb4f73d9b626bbcbf653af9cd25c1fbe7c8aefb3370279d72ae03c351fd7",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "RADIO QUIET ZONE / NO TRANSMITTERS BEYOND THIS SIGN.",
+          "status": "PASS",
+          "notes_nb": "RADIO QUIET ZONE / NO TRANSMITTERS BEYOND THIS SIGN nærleses korrekt. Ingen tallfrekvens, MHz, kanal eller kode. Flat skiltflate; ingen runtimegrense prøvd eller hevdet."
+        },
+        {
+          "check": "No MHz value, channel, code or new boundary instruction.",
+          "status": "PASS",
+          "notes_nb": "RADIO QUIET ZONE / NO TRANSMITTERS BEYOND THIS SIGN nærleses korrekt. Ingen tallfrekvens, MHz, kanal eller kode. Flat skiltflate; ingen runtimegrense prøvd eller hevdet."
+        }
+      ]
+    },
+    {
+      "id": "SARO_AUTHORIZED",
+      "filename": "jpg/38-saro-authorized.jpg",
+      "reviewed_jpg_sha256": "ce6f74977c4e27464bd7a3e0b8ceff88630ddb9d65435323b44f2ea0e3c33626",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SERVICE YARD / AUTHORIZED PERSONNEL ONLY.",
+          "status": "PASS",
+          "notes_nb": "SERVICE YARD / AUTHORIZED PERSONNEL ONLY nærleses korrekt. Flat skiltflate, ingen sikkerhetsnivå, etatssegl, adgangskode eller annen tekst. Ingen runtimeadgang prøvd."
+        },
+        {
+          "check": "No new clearance tier, agency seal or access code.",
+          "status": "PASS",
+          "notes_nb": "SERVICE YARD / AUTHORIZED PERSONNEL ONLY nærleses korrekt. Flat skiltflate, ingen sikkerhetsnivå, etatssegl, adgangskode eller annen tekst. Ingen runtimeadgang prøvd."
+        }
+      ]
+    },
+    {
+      "id": "DARKROOM_SIGN",
+      "filename": "jpg/39-darkroom-sign.jpg",
+      "reviewed_jpg_sha256": "23ff9c60a342f3e9e4abec2ea15e9564e6d46aafc0019c8fa2e361811f14f88c",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "PHOTOGRAPHIC LAB / SHUT THE DOOR WHEN THE RED LIGHT IS ON.",
+          "status": "PASS",
+          "notes_nb": "PHOTOGRAPHIC LAB / SHUT THE DOOR WHEN THE RED LIGHT IS ON nærleses korrekt. Ingen tid, resultat, bevis-ID eller ekstra fremkallingsinstruks. Flat skiltflate."
+        },
+        {
+          "check": "No development times, film result, evidence ID or new gameplay instruction.",
+          "status": "PASS",
+          "notes_nb": "PHOTOGRAPHIC LAB / SHUT THE DOOR WHEN THE RED LIGHT IS ON nærleses korrekt. Ingen tid, resultat, bevis-ID eller ekstra fremkallingsinstruks. Flat skiltflate."
+        }
+      ]
+    },
+    {
+      "id": "MAINTENANCE_TAG",
+      "filename": "jpg/40-maintenance-tag.jpg",
+      "reviewed_jpg_sha256": "9a3b1a52208f1e026355d3f55237d1c5ad790cbf40affe6ad10ed9dc14f66f1b",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "OUT OF SERVICE / DO NOT OPERATE; equipment, date and reporter fields blank.",
+          "status": "PASS",
+          "notes_nb": "OUT OF SERVICE / DO NOT OPERATE korrekt. EQUIPMENT/DATE/REPORTED BY-linjene er helt blanke. Ingen navngitt apparat, feil eller fullført reparasjon. Flat etikettflate."
+        },
+        {
+          "check": "No named active device, fault, completed repair or newly disabled interaction.",
+          "status": "PASS",
+          "notes_nb": "OUT OF SERVICE / DO NOT OPERATE korrekt. EQUIPMENT/DATE/REPORTED BY-linjene er helt blanke. Ingen navngitt apparat, feil eller fullført reparasjon. Flat etikettflate."
+        }
+      ]
+    },
+    {
+      "id": "PARTS_LABEL",
+      "filename": "jpg/41-parts-label.jpg",
+      "reviewed_jpg_sha256": "d44337888bac9c1e78f5cff4efd99fb0e9462f1ae10aec61ff38f53273691780",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SARO MAINTENANCE / SPARE LAMPS / KEEP DRY.",
+          "status": "PASS",
+          "notes_nb": "SARO MAINTENANCE / SPARE LAMPS / KEEP DRY nærleses korrekt. Ingen antall, varenummer, elektrisk spesifikasjon eller rutereferanse. Flat kartongetikett."
+        },
+        {
+          "check": "No quantity, part code, electrical specification or main-route clue.",
+          "status": "PASS",
+          "notes_nb": "SARO MAINTENANCE / SPARE LAMPS / KEEP DRY nærleses korrekt. Ingen antall, varenummer, elektrisk spesifikasjon eller rutereferanse. Flat kartongetikett."
+        }
+      ]
+    },
+    {
+      "id": "SERVICE_FORM",
+      "filename": "jpg/42-service-form.jpg",
+      "reviewed_jpg_sha256": "ab7c9fe3087b55af9800614ba0d8fc013b125347396aea647aefcfbdf8e3af4f",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Equipment, date, fault and requester fields stay blank.",
+          "status": "PASS",
+          "notes_nb": "SARO MAINTENANCE / SERVICE REQUEST, EQUIPMENT/DATE/FAULT/REQUESTED BY korrekt. Alle felt inkludert ekstra feillinje er blanke. Ingen T01/T02-resultat eller faktisk utført service. Flat skjemaark."
+        },
+        {
+          "check": "No copied T01/T02 result, named fault, completed service or new evidence.",
+          "status": "PASS",
+          "notes_nb": "SARO MAINTENANCE / SERVICE REQUEST, EQUIPMENT/DATE/FAULT/REQUESTED BY korrekt. Alle felt inkludert ekstra feillinje er blanke. Ingen T01/T02-resultat eller faktisk utført service. Flat skjemaark."
+        }
+      ]
+    },
+    {
+      "id": "VISITOR_BADGE",
+      "filename": "jpg/43-visitor-badge.jpg",
+      "reviewed_jpg_sha256": "d700c8d8460e4d523bb312f6f49cfa3cedb04d307c6099abca845f67abb550b6",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY / VISITOR / RETURN TO OPERATIONS.",
+          "status": "PASS",
+          "notes_nb": "SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY / VISITOR / NAME / RETURN TO OPERATIONS nærleses korrekt; institusjonsnavnet samsvarer også med S47Looks.cpp. Navnelinjen er blank. Ingen tillegg om natt-/døradgang. Flat kortflate."
+        },
+        {
+          "check": "Name field blank; no permission to override NO VISITORS AFTER DARK or an active door.",
+          "status": "PASS",
+          "notes_nb": "SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY / VISITOR / NAME / RETURN TO OPERATIONS nærleses korrekt; institusjonsnavnet samsvarer også med S47Looks.cpp. Navnelinjen er blank. Ingen tillegg om natt-/døradgang. Flat kortflate."
+        }
+      ]
+    },
+    {
+      "id": "SUBSTATION_SIGN",
+      "filename": "jpg/44-substation-sign.jpg",
+      "reviewed_jpg_sha256": "f116697ee1d85506919cdf6fa50b74264eb4cf87a2c531b8461b4d304ab42b68",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "DANGER / HIGH VOLTAGE / KEEP OUT / CALICHE UTILITIES.",
+          "status": "PASS",
+          "notes_nb": "DANGER / HIGH VOLTAGE / KEEP OUT / CALICHE UTILITIES nærleses korrekt. Ingen koblingsinstruks, SARO-K3-merking, STATION01 eller ekstra site-ID. Flat varselsskiltflate."
+        },
+        {
+          "check": "No switching instruction, new site identity or SARO K3 / STATION 01 conflation.",
+          "status": "PASS",
+          "notes_nb": "DANGER / HIGH VOLTAGE / KEEP OUT / CALICHE UTILITIES nærleses korrekt. Ingen koblingsinstruks, SARO-K3-merking, STATION01 eller ekstra site-ID. Flat varselsskiltflate."
+        }
+      ]
+    },
+    {
+      "id": "PAYPHONE_CARD",
+      "filename": "jpg/45-payphone-card.jpg",
+      "reviewed_jpg_sha256": "8b2edc66d90bbff286b096cb6b7760476f96979435402d10f5fd51e262b3cc24",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "LOCAL CALLS 25 CENTS / PLEASE LIMIT CALLS TO THREE MINUTES.",
+          "status": "PASS",
+          "notes_nb": "LOCAL CALLS25CENTS / PLEASE LIMIT CALLS TO THREE MINUTES nærleses korrekt. Ingen telefonnummer, nødmelding eller egen kontaktkode. Flat telefonkortskiltflate."
+        },
+        {
+          "check": "No real phone number, emergency instruction or new contact action.",
+          "status": "PASS",
+          "notes_nb": "LOCAL CALLS25CENTS / PLEASE LIMIT CALLS TO THREE MINUTES nærleses korrekt. Ingen telefonnummer, nødmelding eller egen kontaktkode. Flat telefonkortskiltflate."
+        }
+      ]
+    },
+    {
+      "id": "LOST_DOG",
+      "filename": "jpg/46-lost-dog.jpg",
+      "reviewed_jpg_sha256": "252cedb4a790b01e5f340958fd7d05de0d1267ebdc15c9311033839a188ff165",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "LOST DOG / BROWN COAT / WHITE PAWS / ASK AT THE LAUNDROMAT.",
+          "status": "PASS",
+          "notes_nb": "LOST DOG / BROWN COAT / WHITE PAWS / ASK AT THE LAUNDROMAT nærleses korrekt. Fotokopiert hundetegning har tydelig lyse/hvite poter; brun pels er tekstlig beskrevet i svart-hvitt-oppslaget. Ingen telefonnummer, navn, belønning eller Dale-referanse."
+        },
+        {
+          "check": "Fictional inert community notice: no real phone number, quest or link to Dales sky-log dog.",
+          "status": "PASS",
+          "notes_nb": "LOST DOG / BROWN COAT / WHITE PAWS / ASK AT THE LAUNDROMAT nærleses korrekt. Fotokopiert hundetegning har tydelig lyse/hvite poter; brun pels er tekstlig beskrevet i svart-hvitt-oppslaget. Ingen telefonnummer, navn, belønning eller Dale-referanse."
+        }
+      ]
+    },
+    {
+      "id": "YARD_SALE",
+      "filename": "jpg/47-yard-sale.jpg",
+      "reviewed_jpg_sha256": "ba4132882fc9e784ebe50794ccf754e1632e90267033202c0b5fc004e1b81fea",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "SATURDAY APRIL 12 / 9 TO 2 / BY THE FEED STORE / CASH ONLY; context is April 12, 1986.",
+          "status": "PASS",
+          "notes_nb": "YARD SALE / SATURDAY APRIL12 /9TO2 / BY THE FEED STORE / HOUSEHOLD ITEMS / CLOTHES / CASH ONLY nærleses korrekt.12.april1986 er lørdag, dagen før spillnatten. Ingen trykt år, ny butikk eller påstand om salg under spillnatten. Flat plakat."
+        },
+        {
+          "check": "No printed closure year, new store, quest or sale scheduled during the game night.",
+          "status": "PASS",
+          "notes_nb": "YARD SALE / SATURDAY APRIL12 /9TO2 / BY THE FEED STORE / HOUSEHOLD ITEMS / CLOTHES / CASH ONLY nærleses korrekt.12.april1986 er lørdag, dagen før spillnatten. Ingen trykt år, ny butikk eller påstand om salg under spillnatten. Flat plakat."
+        }
+      ]
+    },
+    {
+      "id": "SHOPPING_LIST",
+      "filename": "jpg/48-shopping-list.jpg",
+      "reviewed_jpg_sha256": "0d974e9ee1884f80bbda5e664db1b713b6544a25f8386b39cbc83d04060a5d18",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "All five lowercase items remain readable: milk, bread, coffee, batteries, stamps.",
+          "status": "PASS",
+          "notes_nb": "Alle fem ord nærleses: milk, bread, coffee, batteries, stamps. Alle med små bokstaver. Ingen signatur, dato, kode, ekstra ord eller instruks. Flat notatarkflate."
+        },
+        {
+          "check": "No Dale signature, date, number code, hidden instruction or case evidence.",
+          "status": "PASS",
+          "notes_nb": "Alle fem ord nærleses: milk, bread, coffee, batteries, stamps. Alle med små bokstaver. Ingen signatur, dato, kode, ekstra ord eller instruks. Flat notatarkflate."
+        }
+      ]
+    }
+  ]
+}

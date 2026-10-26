@@ -1,7 +1,13 @@
 # Todo for unreal/
 
+## Plakater, reklame og hverdagsting, 26. oktober 2026
+
+- [x] Lag en samlet JPG-pakke med seks originale kinoplakater, kinobillett/avskjedsark, butikkreklame, menyer, emballasjetrykk, kvitteringer, postkort, arbeidsplasskilt/-blanketter og hverdagslapper. [48 motiver med galleri og kildekatalog](ArtSource/EnvironmentGraphics/README.md) er produsert med plasseringstips og fullstendige bildeprompter.
+- [ ] Ved senere miljøintegrasjon: bind teksturene til riktige flater og tilpass løse rekvisitter, UV-er og materialer. Kontroller sideforhold, lesbarhet, mipnivåer, lys og slitasje ved normal spillerhøyde. Behold eksisterende stedsnavn, priser, rom 6/Nora, aktive oppdrag og adgangsregler. Denne produksjonspakken oppfyller ikke runtime- eller spilltestdelen.
+
 ## Dokumentrekvisitter, 26. oktober 2026
 
+- [x] Logg Toms to nye obduksjonsbilder som [separate bildeforslag til Dales filer](ArtSource/Documents/References/DaleAutopsy/README.md), med kompakte JPG-kopier og kildehasher. Senere innpassing og eventuell bildetekst er fortsatt forfatter-/integrasjonsarbeid.
 - [x] Lag hele Dales dokumentsamling og gamle aviser/arkivark som komprimerte JPG. [ArtSource/Documents](ArtSource/Documents/README.md) har 31 bilder, engelsk kildetekst, promptsett, oversikt og offlinegalleri. Manuell bilde-/kanonkontroll og filkontroll er utført.
 - Videre bruk ligger under eksisterende S.7: registrer nye private ID-er i EveningShift og koble på tekstvisning/lesestatus. Vurder E15 mot eksisterende foto før utskifting; bruk opprinnelig geometrisk grunnlag for målsatte sammenligninger. Ingen ny runtimeoppgave er fullført av JPG-leveransen.
 
