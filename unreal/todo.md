@@ -1,5 +1,9 @@
 # Todo for unreal/
 
+## NP1 levert, 26. oktober 2026
+
+PR164 er flettet, og kontorfunn/tekstskalering/lesestatus, valgfri himmel og korrekt LineLights-lagring er installert med ku-R2 og personlige lagringer bevart.17 pakkede kjøringer/1 493 selvtester består. S.1/R2.1 gjelder produsert manus, ikke hele nyaktens runtime. [Leveringskvittering og gjenværende grenser](NIGHT_PRODUCTION_RUNTIME.md).
+
 ## Sammenflettet hovedscenario, randombevaring, himmel og Dale
 
 [MISSION_FLOW_1800_ROSWELL.md](MISSION_FLOW_1800_ROSWELL.md) er nå én hovedrekkefølge med 13 sammenhengende scenarioer. Tidligere revisjoner og alle 32 løsningskort ligger urørt i [MISSION_DETAILS_REFERENCE.md](MISSION_DETAILS_REFERENCE.md) som sekundært oppslagsverk. Oppgavene her presiserer eksisterende I-/R2-/H-arbeid; de er ikke en ekstra parallell implementering.
