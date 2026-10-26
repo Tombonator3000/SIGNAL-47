@@ -1,0 +1,829 @@
+{
+  "schema_version": 1,
+  "reviewer": "bildekontroll",
+  "reviewed_at_utc": "2026-10-26T11:38:56+00:00",
+  "scope": "Alle 31 finale JPG sett i full størrelse; alle kildeavsnitt og kritiske visuelle detaljer nærleses.01/06/E15 vurdert på nytt etter metadata-/bildefiks. Ingen runtime-/galleriprøve i denne kontrollen.",
+  "ocr": "BEST_EFFORT_ONLY; NOT_EXACT_PASS",
+  "notes_nb": [
+    "Tesseract psm3 er kun støtte; mange håndskrift-/spalte-/segmenteringsavvik. Manuell vurdering er uavhengig av OCR-resultatene.",
+    "E15 er dokumentert komposisjonell nytolkning av den historiske spillplaten, ikke pikselidentisk kildebilde.",
+    "E10 har ikke1947 trykt på arkflaten. Dette følger den eksakte kildebrødteksten; år er gitt i tittel/katalog og må beholdes ved senere bruk.",
+    "Tidligere omslagsmetadatafeil og fortellerord trykt inne i06avis er rettet og vurdert på nytt."
+  ],
+  "issues": [],
+  "assets": [
+    {
+      "id": "DALE_FOLDER",
+      "filename": "jpg/01-dale-folder.jpg",
+      "reviewed_jpg_sha256": "42a98fd95bbca403dea86ffc0acd76b54121bd661d95d3dd9990235c900360d3",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Cover text matches the approved SARO / FIELD MAINTENANCE / WORKING PAPERS production artwork.",
+          "status": "PASS",
+          "notes_nb": "Korrigert metadata samsvarer med nærsett omslag: SARO, FIELD MAINTENANCE, WORKING PAPERS, SERVICE ROAD / FIELD01, DALE, KEEP WITH INSPECTION SHEETS, PRIVATE WORKING COPY, Not a report., Leave the originals here. - D., WORKING COPY. Ingen FIELD CHECKS/TAKE A COPY eller nye sakspåstander."
+        },
+        {
+          "check": "Retain SERVICE ROAD / FIELD 01, DALE, KEEP WITH INSPECTION SHEETS and PRIVATE WORKING COPY.",
+          "status": "PASS",
+          "notes_nb": "Korrigert metadata samsvarer med nærsett omslag: SARO, FIELD MAINTENANCE, WORKING PAPERS, SERVICE ROAD / FIELD01, DALE, KEEP WITH INSPECTION SHEETS, PRIVATE WORKING COPY, Not a report., Leave the originals here. - D., WORKING COPY. Ingen FIELD CHECKS/TAKE A COPY eller nye sakspåstander."
+        },
+        {
+          "check": "Retain Not a report., Leave the originals here. - D., and WORKING COPY.",
+          "status": "PASS",
+          "notes_nb": "Korrigert metadata samsvarer med nærsett omslag: SARO, FIELD MAINTENANCE, WORKING PAPERS, SERVICE ROAD / FIELD01, DALE, KEEP WITH INSPECTION SHEETS, PRIVATE WORKING COPY, Not a report., Leave the originals here. - D., WORKING COPY. Ingen FIELD CHECKS/TAKE A COPY eller nye sakspåstander."
+        },
+        {
+          "check": "No FIELD CHECKS or TAKE A COPY label is present on this artwork.",
+          "status": "PASS",
+          "notes_nb": "Korrigert metadata samsvarer med nærsett omslag: SARO, FIELD MAINTENANCE, WORKING PAPERS, SERVICE ROAD / FIELD01, DALE, KEEP WITH INSPECTION SHEETS, PRIVATE WORKING COPY, Not a report., Leave the originals here. - D., WORKING COPY. Ingen FIELD CHECKS/TAKE A COPY eller nye sakspåstander."
+        },
+        {
+          "check": "A worn work folder; no new case facts, 1947 diagrams or destination coordinates.",
+          "status": "PASS",
+          "notes_nb": "Korrigert metadata samsvarer med nærsett omslag: SARO, FIELD MAINTENANCE, WORKING PAPERS, SERVICE ROAD / FIELD01, DALE, KEEP WITH INSPECTION SHEETS, PRIVATE WORKING COPY, Not a report., Leave the originals here. - D., WORKING COPY. Ingen FIELD CHECKS/TAKE A COPY eller nye sakspåstander."
+        },
+        {
+          "check": "Dale collects uncertain leads; he is not an omniscient intelligence officer.",
+          "status": "PASS",
+          "notes_nb": "Korrigert metadata samsvarer med nærsett omslag: SARO, FIELD MAINTENANCE, WORKING PAPERS, SERVICE ROAD / FIELD01, DALE, KEEP WITH INSPECTION SHEETS, PRIVATE WORKING COPY, Not a report., Leave the originals here. - D., WORKING COPY. Ingen FIELD CHECKS/TAKE A COPY eller nye sakspåstander."
+        }
+      ]
+    },
+    {
+      "id": "EV_HANDOVER",
+      "filename": "jpg/02-ev-handover.jpg",
+      "reviewed_jpg_sha256": "c83bbf65d2dc06f62ba9a306af856b1230c5088194430d74687685fec26af28c",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "18:00 on Sunday, April 13, 1986; operator Reyes, duty officer Ward.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 18:00, 13 APR 1986, Reyes/Ward/Dale, 27, 026 og reserve i serviceskuff er riktige."
+        },
+        {
+          "check": "27 antennas and azimuth reference 026.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 18:00, 13 APR 1986, Reyes/Ward/Dale, 27, 026 og reserve i serviceskuff er riktige."
+        },
+        {
+          "check": "Operations spare belongs in the service drawer at the workbench, not in a mug.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 18:00, 13 APR 1986, Reyes/Ward/Dale, 27, 026 og reserve i serviceskuff er riktige."
+        }
+      ]
+    },
+    {
+      "id": "EV_SERVICE_LOG",
+      "filename": "jpg/03-ev-service-log.jpg",
+      "reviewed_jpg_sha256": "8756f25d87656cd0b04b82f19d0d3ac76a80750bc6a322ee57d559e0c131a26d",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "April 12 at 19:06 and April 13 at 16:40 are entered civil times, not precision measurements.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 12. april19:06 og13. april16:40, ingen byomfattende feil, forsyningsforbehold og datert frigitt kopi står lesbart."
+        },
+        {
+          "check": "A lit lamp does not identify its supply; no town-wide interruption was entered.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 12. april19:06 og13. april16:40, ingen byomfattende feil, forsyningsforbehold og datert frigitt kopi står lesbart."
+        },
+        {
+          "check": "Do not add later test results or conflate the town circuit with SARO K3.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 12. april19:06 og13. april16:40, ingen byomfattende feil, forsyningsforbehold og datert frigitt kopi står lesbart."
+        }
+      ]
+    },
+    {
+      "id": "EV_RADIO_SCHEDULE",
+      "filename": "jpg/04-ev-radio-schedule.jpg",
+      "reviewed_jpg_sha256": "897e5d6cd19a38fe2623a6ad581f095e41d1d6e4a05d98edb3927fd396cdd702",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "AM broadcasting, separate from the observatory's 1420.405 MHz signal.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 1420 AM, 00:00 til04:00 Monday / EARL og forbehold om faktisk sending står lesbart."
+        },
+        {
+          "check": "Earl's Night Line runs 00:00 to 04:00 on Monday.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 1420 AM, 00:00 til04:00 Monday / EARL og forbehold om faktisk sending står lesbart."
+        },
+        {
+          "check": "A schedule is not proof of actual transmission; do not invent a call sign or tuning instruction.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: 1420 AM, 00:00 til04:00 Monday / EARL og forbehold om faktisk sending står lesbart."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_INDEX",
+      "filename": "jpg/05-ev-dale-index.jpg",
+      "reviewed_jpg_sha256": "2e0e861b193900848065e0f34f6b99b87d27a9aef49c1a49c6ee2fc2af3ca758",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "The T02 position is a low concrete culvert, road side of a post with two white bands, outside the substation fence.",
+          "status": "PASS",
+          "notes_nb": "Alle fem punkter nærleses: kulvert/tobånd/stolpe/lederpar/gjerdehjørne og feil kameradato bevart. Ikke STATION01 eller C."
+        },
+        {
+          "check": "View keeps nearest pole and its two outer conductors in frame; fence corner is lower left.",
+          "status": "PASS",
+          "notes_nb": "Alle fem punkter nærleses: kulvert/tobånd/stolpe/lederpar/gjerdehjørne og feil kameradato bevart. Ikke STATION01 eller C."
+        },
+        {
+          "check": "Camera date is wrong; no precise video time, STATION 01 identity or C crossing is established.",
+          "status": "PASS",
+          "notes_nb": "Alle fem punkter nærleses: kulvert/tobånd/stolpe/lederpar/gjerdehjørne og feil kameradato bevart. Ikke STATION01 eller C."
+        },
+        {
+          "check": "Do not add the separate future ARRAY-01 service positions to this index.",
+          "status": "PASS",
+          "notes_nb": "Alle fem punkter nærleses: kulvert/tobånd/stolpe/lederpar/gjerdehjørne og feil kameradato bevart. Ikke STATION01 eller C."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_CLIPPINGS",
+      "filename": "jpg/06-ev-dale-clippings.jpg",
+      "reviewed_jpg_sha256": "98d31418a547b572e594c12d3558983f18612c64d4c798f92b9923c1ce92a4cf",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Cutting A: PECOS VALLEY SENTINEL / OCTOBER 22, 1985.",
+          "status": "PASS",
+          "notes_nb": "Ny final nærleses: topputklipp22. oktober1985, alle avsnitt og tre blyantmerknader bevart. Udatert hjelpestrømklipp har date missing/remainder missing som blyant på bakgrunn og avsluttet revet nyhetskant. Ingen feil i ledetrådene."
+        },
+        {
+          "check": "Cutting B has no known date and describes an auxiliary lamp supply.",
+          "status": "PASS",
+          "notes_nb": "Ny final nærleses: topputklipp22. oktober1985, alle avsnitt og tre blyantmerknader bevart. Udatert hjelpestrømklipp har date missing/remainder missing som blyant på bakgrunn og avsluttet revet nyhetskant. Ingen feil i ledetrådene."
+        },
+        {
+          "check": "Dale's pencil notes retain ordinary explanations and uncertainty.",
+          "status": "PASS",
+          "notes_nb": "Ny final nærleses: topputklipp22. oktober1985, alle avsnitt og tre blyantmerknader bevart. Udatert hjelpestrømklipp har date missing/remainder missing som blyant på bakgrunn og avsluttet revet nyhetskant. Ingen feil i ledetrådene."
+        },
+        {
+          "check": "No coordinates, eight-mile clue or E15/1947 photo in these clippings.",
+          "status": "PASS",
+          "notes_nb": "Ny final nærleses: topputklipp22. oktober1985, alle avsnitt og tre blyantmerknader bevart. Udatert hjelpestrømklipp har date missing/remainder missing som blyant på bakgrunn og avsluttet revet nyhetskant. Ingen feil i ledetrådene."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_CONTACT",
+      "filename": "jpg/07-ev-dale-contact.jpg",
+      "reviewed_jpg_sha256": "bb68473ae88378d3b0a064f69c95cc1604cb5615bc074dc1479d2fcaf1758f1a",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Telephone or marked service-radio channel; do not invent a frequency or phone number.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av tre maskinskrevne avsnitt og blyanttillegg: telefon/tjenesteradio, Ward først, ingen oppdiktet tallfrekvens eller telefonnummer."
+        },
+        {
+          "check": "Ward is the duty officer and is notified first for immediate service problems.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av tre maskinskrevne avsnitt og blyanttillegg: telefon/tjenesteradio, Ward først, ingen oppdiktet tallfrekvens eller telefonnummer."
+        },
+        {
+          "check": "A contact instruction card, not a photographic contact sheet.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av tre maskinskrevne avsnitt og blyanttillegg: telefon/tjenesteradio, Ward først, ingen oppdiktet tallfrekvens eller telefonnummer."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_NOTE",
+      "filename": "jpg/08-ev-dale-note.jpg",
+      "reviewed_jpg_sha256": "31e2c8a9de21295c175c4d552a6091b0e67d936639019c8ccd0a5bfacaacad80",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Handwritten note beneath the inspection sheets; Dale has found somewhere to look, not a conclusion.",
+          "status": "PASS",
+          "notes_nb": "Alle seks avsnitt nærleses, inkludert siste avsnitt som OCR delvis overså. Ingen ny1947-/sluttavsløring."
+        },
+        {
+          "check": "Keep lamp supply tests and uncertain tape movement separate.",
+          "status": "PASS",
+          "notes_nb": "Alle seks avsnitt nærleses, inkludert siste avsnitt som OCR delvis overså. Ingen ny1947-/sluttavsløring."
+        },
+        {
+          "check": "No revelation of Nora, Tomas, 1947 identities, C, or the finale.",
+          "status": "PASS",
+          "notes_nb": "Alle seks avsnitt nærleses, inkludert siste avsnitt som OCR delvis overså. Ingen ny1947-/sluttavsløring."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_SKYLOG",
+      "filename": "jpg/09-ev-dale-skylog.jpg",
+      "reviewed_jpg_sha256": "e108fb998ae4406e2371344cc8bfa6b59f258c087e4c6fd32f023f6b0184f254",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "6 April; kitchen clock about 20:40, not a precision measurement.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:6APR/about20:40, ett hvitt lys, mulig fly, hunden. Skissen har tak foran horisont og usikker stiplet bane."
+        },
+        {
+          "check": "One white light above a ridge; aircraft remain possible.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:6APR/about20:40, ett hvitt lys, mulig fly, hunden. Skissen har tak foran horisont og usikker stiplet bane."
+        },
+        {
+          "check": "The horizon sketch is a witness memory, not measured flight geometry.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:6APR/about20:40, ett hvitt lys, mulig fly, hunden. Skissen har tak foran horisont og usikker stiplet bane."
+        },
+        {
+          "check": "Optional authoring draft; this asset does not register a new runtime document or unlock.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:6APR/about20:40, ett hvitt lys, mulig fly, hunden. Skissen har tak foran horisont og usikker stiplet bane."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_WITNESS",
+      "filename": "jpg/10-ev-dale-witness.jpg",
+      "reviewed_jpg_sha256": "5b7d40da90173d7ecf33444fb202f0f089e114546df800b909b8477d0e25b2e0",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "29 March; a copied statement with Dale's initials, not an official police finding.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:29MARCH1986, Mrs.Bell, person/creature, D.initial og I did not see it. Ubestemt ansiktsløs skisse."
+        },
+        {
+          "check": "Mrs. Bell requested the word person, not creature; Dale did not see the shape.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:29MARCH1986, Mrs.Bell, person/creature, D.initial og I did not see it. Ubestemt ansiktsløs skisse."
+        },
+        {
+          "check": "No confirmed species or identity.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:29MARCH1986, Mrs.Bell, person/creature, D.initial og I did not see it. Ubestemt ansiktsløs skisse."
+        },
+        {
+          "check": "Optional authoring draft; this asset does not register a new runtime document or unlock.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:29MARCH1986, Mrs.Bell, person/creature, D.initial og I did not see it. Ubestemt ansiktsløs skisse."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_EXPLANATIONS",
+      "filename": "jpg/11-ev-dale-explanations.jpg",
+      "reviewed_jpg_sha256": "ef01d02c6c979f9a2ff8fa29217ba38782e728b6e24e3714aff4a2f36119a0d4",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Three aircraft reports and one star/window-glass explanation remain in the file.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: tre AIRCRAFT-rader og én STAR-rad, full tekst med uenige retninger og forbehold."
+        },
+        {
+          "check": "The service-road witness directions disagree; keep that discrepancy.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: tre AIRCRAFT-rader og én STAR-rad, full tekst med uenige retninger og forbehold."
+        },
+        {
+          "check": "Do not convert a crossed-out explanation into positive proof.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: tre AIRCRAFT-rader og én STAR-rad, full tekst med uenige retninger og forbehold."
+        },
+        {
+          "check": "Optional authoring draft; this asset does not register a new runtime document or unlock.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: tre AIRCRAFT-rader og én STAR-rad, full tekst med uenige retninger og forbehold."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_FRAME18",
+      "filename": "jpg/12-ev-dale-frame18.jpg",
+      "reviewed_jpg_sha256": "1eb49b5ceef9c68a0704adeb6d1820fcb0662e663e350829b4d89d3afc28bbbc",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Preserve the LEFT edge and visible porch post as the only useful height reference.",
+          "status": "PASS",
+          "notes_nb": "Nærsett foto med hel venstre verandastolpe, gjerde og tvetydig lysfelt. Hele blyantteksten nærleses; ingen sikker arts-/tidsbestemmelse."
+        },
+        {
+          "check": "A pale mark may be kitchen-window glare; the photo is inconclusive.",
+          "status": "PASS",
+          "notes_nb": "Nærsett foto med hel venstre verandastolpe, gjerde og tvetydig lysfelt. Hele blyantteksten nærleses; ingen sikker arts-/tidsbestemmelse."
+        },
+        {
+          "check": "A photograph/negative, if illustrated, must be an actual visible prop rather than invented completed evidence.",
+          "status": "PASS",
+          "notes_nb": "Nærsett foto med hel venstre verandastolpe, gjerde og tvetydig lysfelt. Hele blyantteksten nærleses; ingen sikker arts-/tidsbestemmelse."
+        },
+        {
+          "check": "Optional authoring draft; this asset does not register a new runtime document or unlock.",
+          "status": "PASS",
+          "notes_nb": "Nærsett foto med hel venstre verandastolpe, gjerde og tvetydig lysfelt. Hele blyantteksten nærleses; ingen sikker arts-/tidsbestemmelse."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_TAPELOAN",
+      "filename": "jpg/13-ev-dale-tapeloan.jpg",
+      "reviewed_jpg_sha256": "9e14fee62e576086c8e12cb3483a81697c3b4e97885eeaee0ce09a3013e8a605",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "A borrowed public lecture, not Dale's local Service Road / Field 01 VHS.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: Public lecture, borrowed, ingen lokalopptaksforbindelse, Tuesday/family birthdays. Ingen tredjepartslogo."
+        },
+        {
+          "check": "Return Tuesday; family birthdays were recorded underneath.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: Public lecture, borrowed, ingen lokalopptaksforbindelse, Tuesday/family birthdays. Ingen tredjepartslogo."
+        },
+        {
+          "check": "Use fictional sleeve artwork; no actual third-party lecture footage or attribution is supplied.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: Public lecture, borrowed, ingen lokalopptaksforbindelse, Tuesday/family birthdays. Ingen tredjepartslogo."
+        },
+        {
+          "check": "Optional authoring draft; this asset does not register a new runtime document or unlock.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing: Public lecture, borrowed, ingen lokalopptaksforbindelse, Tuesday/family birthdays. Ingen tredjepartslogo."
+        }
+      ]
+    },
+    {
+      "id": "EV_DALE_UNSENT",
+      "filename": "jpg/14-ev-dale-unsent.jpg",
+      "reviewed_jpg_sha256": "12cca95449f8507f16f8c62224f240102189b354ca5f81661877e068edf2bd8d",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "An unsent, unaddressed personal letter beneath ordinary working sheets.",
+          "status": "PASS",
+          "notes_nb": "Hele håndskrevne brevet nærleses selv om OCR er svakt. Ingen adresse/signatur. Handling/melk/søvn står i teksten."
+        },
+        {
+          "check": "Keep the everyday shopping, forgotten milk and sleep details.",
+          "status": "PASS",
+          "notes_nb": "Hele håndskrevne brevet nærleses selv om OCR er svakt. Ingen adresse/signatur. Handling/melk/søvn står i teksten."
+        },
+        {
+          "check": "No all-knowing explanation or new plot revelation.",
+          "status": "PASS",
+          "notes_nb": "Hele håndskrevne brevet nærleses selv om OCR er svakt. Ingen adresse/signatur. Handling/melk/søvn står i teksten."
+        },
+        {
+          "check": "Optional authoring draft; this asset does not register a new runtime document or unlock.",
+          "status": "PASS",
+          "notes_nb": "Hele håndskrevne brevet nærleses selv om OCR er svakt. Ingen adresse/signatur. Handling/melk/søvn står i teksten."
+        }
+      ]
+    },
+    {
+      "id": "E15",
+      "filename": "jpg/15-e15-sentinel-1947.jpg",
+      "reviewed_jpg_sha256": "d19cc51f503dee59090bd10fd7eeb9b9ef4832309ae5dd2f909e64e72fc499ef",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Metadata date is July 1947; NO printed date appears on the clipping.",
+          "status": "PASS",
+          "notes_nb": "Ny key-check er komposisjonell: mesa, høyt stabilt lys, mindre kort halespor lavere til høyre og to ranchere ved gjerde er nærsett. Ingen trykt dato. Masthead/headline/deck/caption riktige. Generert nytolkning er uttrykkelig opplyst; ingen pikselidentitetsattest."
+        },
+        {
+          "check": "The separate frame pencil note July '47 is not printed newspaper content.",
+          "status": "PASS",
+          "notes_nb": "Ny key-check er komposisjonell: mesa, høyt stabilt lys, mindre kort halespor lavere til høyre og to ranchere ved gjerde er nærsett. Ingen trykt dato. Masthead/headline/deck/caption riktige. Generert nytolkning er uttrykkelig opplyst; ingen pikselidentitetsattest."
+        },
+        {
+          "check": "Photo: flat mesa, a steady light high above it, TWO RANCHERS at a fence.",
+          "status": "PASS",
+          "notes_nb": "Ny key-check er komposisjonell: mesa, høyt stabilt lys, mindre kort halespor lavere til høyre og to ranchere ved gjerde er nærsett. Ingen trykt dato. Masthead/headline/deck/caption riktige. Generert nytolkning er uttrykkelig opplyst; ingen pikselidentitetsattest."
+        },
+        {
+          "check": "Photo: low to the RIGHT of the mesa, a smudge with a SHORT TAIL; right edge trimmed close.",
+          "status": "PASS",
+          "notes_nb": "Ny key-check er komposisjonell: mesa, høyt stabilt lys, mindre kort halespor lavere til høyre og to ranchere ved gjerde er nærsett. Ingen trykt dato. Masthead/headline/deck/caption riktige. Generert nytolkning er uttrykkelig opplyst; ingen pikselidentitetsattest."
+        },
+        {
+          "check": "Composition follows the crop B relationships of photo_1947_master: flat mesa, steady high light, short-tailed smudge low to its right, two foreground ranchers at fence; generated reinterpretation, not a pixel-identical crop.",
+          "status": "PASS",
+          "notes_nb": "Ny key-check er komposisjonell: mesa, høyt stabilt lys, mindre kort halespor lavere til høyre og to ranchere ved gjerde er nærsett. Ingen trykt dato. Masthead/headline/deck/caption riktige. Generert nytolkning er uttrykkelig opplyst; ingen pikselidentitetsattest."
+        },
+        {
+          "check": "Source has stylized body-text rules, not a supplied verbatim article; do not invent a historical article transcription.",
+          "status": "PASS",
+          "notes_nb": "Ny key-check er komposisjonell: mesa, høyt stabilt lys, mindre kort halespor lavere til høyre og to ranchere ved gjerde er nærsett. Ingen trykt dato. Masthead/headline/deck/caption riktige. Generert nytolkning er uttrykkelig opplyst; ingen pikselidentitetsattest."
+        }
+      ]
+    },
+    {
+      "id": "E07",
+      "filename": "jpg/16-e07-original-survey-1947.jpg",
+      "reviewed_jpg_sha256": "ccfb37a9eee71c4a584c292b9f4c590c84962099408c3e5271809e08078cb434",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "1947, STATION 01, signed N. VEGA / FIELD TECHNICIAN.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av begge avsnitt, STATION01/1947/N.Vega, beholdt referanse og avbrutt sluttobservasjon. Diagram har A/B/C."
+        },
+        {
+          "check": "Original drawing MUST retain A, B and C.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av begge avsnitt, STATION01/1947/N.Vega, beholdt referanse og avbrutt sluttobservasjon. Diagram har A/B/C."
+        },
+        {
+          "check": "The retained mark survives local lamp isolation; the final observation is interrupted.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av begge avsnitt, STATION01/1947/N.Vega, beholdt referanse og avbrutt sluttobservasjon. Diagram har A/B/C."
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "filename": "jpg/17-e06-amended-survey-1947.jpg",
+      "reviewed_jpg_sha256": "1fc3126b176bbee5b782a6b92991d02750603379790fe0a9fec9bc673b3106e7",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "1947, STATION 01, same N. Vega signature as E07.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av amended avsnitt og No repeat observation. Samme A/B-plassering som original; ingen C-punkt, C-etikett eller stiplet linje i høyre felt."
+        },
+        {
+          "check": "Amended arrangement omits C; otherwise align the two diagrams for comparison.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av amended avsnitt og No repeat observation. Samme A/B-plassering som original; ingen C-punkt, C-etikett eller stiplet linje i høyre felt."
+        },
+        {
+          "check": "Do not redact the omission/development explanation or the No repeat observation line.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av amended avsnitt og No repeat observation. Samme A/B-plassering som original; ingen C-punkt, C-etikett eller stiplet linje i høyre felt."
+        }
+      ]
+    },
+    {
+      "id": "E08",
+      "filename": "jpg/18-e08-archive-sleeve.jpg",
+      "reviewed_jpg_sha256": "6641763d857c3287a1e1257e15701c00ad225966fac4dabfc974bc0ac3da17c9",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "STATION 01 / 1947 / B-12 / A - B - C.",
+          "status": "PASS",
+          "notes_nb": "Nærsett omrisset trekant med separat kort strek under.1947/STATION01/A-B-C/B-12/OLD SURVEY STATION og RETURN CHECK lesbare."
+        },
+        {
+          "check": "Fixed-point symbol is an outlined TRIANGLE with a SHORT HORIZONTAL BAR underneath.",
+          "status": "PASS",
+          "notes_nb": "Nærsett omrisset trekant med separat kort strek under.1947/STATION01/A-B-C/B-12/OLD SURVEY STATION og RETURN CHECK lesbare."
+        },
+        {
+          "check": "A triangle without the bar is explicitly not a matching reference.",
+          "status": "PASS",
+          "notes_nb": "Nærsett omrisset trekant med separat kort strek under.1947/STATION01/A-B-C/B-12/OLD SURVEY STATION og RETURN CHECK lesbare."
+        },
+        {
+          "check": "This is an archive sleeve index, not a player photograph.",
+          "status": "PASS",
+          "notes_nb": "Nærsett omrisset trekant med separat kort strek under.1947/STATION01/A-B-C/B-12/OLD SURVEY STATION og RETURN CHECK lesbare."
+        }
+      ]
+    },
+    {
+      "id": "B12_LINEAGE",
+      "filename": "jpg/19-b12-reference-lineage.jpg",
+      "reviewed_jpg_sha256": "75418eefa8337221efe46bf36fe326c98ba8fb2c4064506b6fafc8d4cff3802b",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "B-12 refers to STATION 01 / OLD SURVEY STATION.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av alle avsnitt inkludert footer. B-12/STATION01/OLD SURVEY STATION og trekant med separat strek under bevart."
+        },
+        {
+          "check": "Preserve the outlined triangle with short horizontal bar beneath it.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av alle avsnitt inkludert footer. B-12/STATION01/OLD SURVEY STATION og trekant med separat strek under bevart."
+        },
+        {
+          "check": "Do not turn this card into the unrelated T02 service-road index.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing av alle avsnitt inkludert footer. B-12/STATION01/OLD SURVEY STATION og trekant med separat strek under bevart."
+        }
+      ]
+    },
+    {
+      "id": "E09A",
+      "filename": "jpg/20-e09a-field-transit.jpg",
+      "reviewed_jpg_sha256": "5b8a930a78ff9820f4e9028f96d292819b17735bdc9dd79f2c1306f75d07ae24",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "A is in the concrete footing on the transit sight line; B is the fixed marker WEST.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: nordpil opp, A i symbolmerket fundament på transitlinjen, B til venstre/vest og C som linje med pil ut mot høyre.1947, hele tekstforklaringen og begge fotografimål lesbare."
+        },
+        {
+          "check": "C is a closing sight LINE from the original arrangement, not a separate movable marker.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: nordpil opp, A i symbolmerket fundament på transitlinjen, B til venstre/vest og C som linje med pil ut mot høyre.1947, hele tekstforklaringen og begge fotografimål lesbare."
+        },
+        {
+          "check": "Keep the north orientation and physical relations clear if including a diagram.",
+          "status": "PASS",
+          "notes_nb": "Nærsett: nordpil opp, A i symbolmerket fundament på transitlinjen, B til venstre/vest og C som linje med pil ut mot høyre.1947, hele tekstforklaringen og begge fotografimål lesbare."
+        }
+      ]
+    },
+    {
+      "id": "E10",
+      "filename": "jpg/21-e10-timing-record-1947.jpg",
+      "reviewed_jpg_sha256": "b98d5c100ec4ef2b8866c0fc8f1f31eb1c9ec5186f8bdcef5bfbc5e9d34fbbcb",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Carrier ceased at 02:17:00; relay impact/reference motion at 02:17:47, exactly 47 seconds later.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:02:17:00/02:17:47 er47sekunder fra hverandre. Hele west/No.East-korreksjonen og Final observation/Not entered står lesbart. Ingen1986-tillegg. Årstallet1947 står i katalog/DocTiming.Title, ikke selve kildebrødteksten eller bildet; dette er en kontekstmerknad, ingen motstridende datering."
+        },
+        {
+          "check": "Retain the correction Reference west. No. East. Hold the last reading.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:02:17:00/02:17:47 er47sekunder fra hverandre. Hele west/No.East-korreksjonen og Final observation/Not entered står lesbart. Ingen1986-tillegg. Årstallet1947 står i katalog/DocTiming.Title, ikke selve kildebrødteksten eller bildet; dette er en kontekstmerknad, ingen motstridende datering."
+        },
+        {
+          "check": "Final observation stays Not entered.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:02:17:00/02:17:47 er47sekunder fra hverandre. Hele west/No.East-korreksjonen og Final observation/Not entered står lesbart. Ingen1986-tillegg. Årstallet1947 står i katalog/DocTiming.Title, ikke selve kildebrødteksten eller bildet; dette er en kontekstmerknad, ingen motstridende datering."
+        },
+        {
+          "check": "Only the historical base page is printed; the conditional 1986 received-fragment addition is not part of this 1947 prop.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:02:17:00/02:17:47 er47sekunder fra hverandre. Hele west/No.East-korreksjonen og Final observation/Not entered står lesbart. Ingen1986-tillegg. Årstallet1947 står i katalog/DocTiming.Title, ikke selve kildebrødteksten eller bildet; dette er en kontekstmerknad, ingen motstridende datering."
+        }
+      ]
+    },
+    {
+      "id": "BINDER_NOTE",
+      "filename": "jpg/22-binder-systems-note.jpg",
+      "reviewed_jpg_sha256": "18439514f65b0ae20d10e909358eb0d7e34bde220657293037f837c6d76773db",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "Systems note dated 03/84; the unsigned-range explanation is retained.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:03/84, unsigned delay/range, INPUT ERROR, RECLASSIFY og full blyantspørsmål korrekt. Ingen negativ verdi lagt til systemnotatet."
+        },
+        {
+          "check": "Pencil question: Then why does it keep doing it?",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:03/84, unsigned delay/range, INPUT ERROR, RECLASSIFY og full blyantspørsmål korrekt. Ingen negativ verdi lagt til systemnotatet."
+        }
+      ]
+    },
+    {
+      "id": "BINDER_1981",
+      "filename": "jpg/23-binder-1981.jpg",
+      "reviewed_jpg_sha256": "2b4ee3e366efe9c5e8139b0ab79325dfa7aef1e0a9969ffcb09934c497aa88de",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "09/22/81 01:52:07; source distance -34 LY.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:09/22/81 01:52:07,1420.405MHz,4/7,-34LY, CHECK SOLVE INPUTS, INPUT ERROR, clock? korrekt."
+        },
+        {
+          "check": "1420.405 MHz, PULSE GROUP 4 / 7, INPUT ERROR; pencil clock?",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:09/22/81 01:52:07,1420.405MHz,4/7,-34LY, CHECK SOLVE INPUTS, INPUT ERROR, clock? korrekt."
+        }
+      ]
+    },
+    {
+      "id": "BINDER_1983",
+      "filename": "jpg/24-binder-1983.jpg",
+      "reviewed_jpg_sha256": "a5aaf15da02b921764c36f7ce8e80806a60b8abe988332646dd56f5bed3a7eb0",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "03/02/83 03:10:44; source distance -36 LY.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:03/02/83 03:10:44,1420.405MHz,4/7,-36LY, INPUT ERROR og baseline file reloaded korrekt."
+        },
+        {
+          "check": "1420.405 MHz, PULSE GROUP 4 / 7, INPUT ERROR; pencil baseline file reloaded.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:03/02/83 03:10:44,1420.405MHz,4/7,-36LY, INPUT ERROR og baseline file reloaded korrekt."
+        }
+      ]
+    },
+    {
+      "id": "BINDER_1985",
+      "filename": "jpg/25-binder-1985.jpg",
+      "reviewed_jpg_sha256": "1b5d969bfca6b934c149e07846394fda3db5a0a39eaa9a770345e2629fed10e9",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "10/19/85 23:58:31; source distance -38 LY.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:10/19/85 23:58:31,1420.405MHz,4/7,-38LY, INPUT ERROR og third time.Ask Systems. korrekt."
+        },
+        {
+          "check": "1420.405 MHz, PULSE GROUP 4 / 7, INPUT ERROR; pencil third time. Ask Systems.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:10/19/85 23:58:31,1420.405MHz,4/7,-38LY, INPUT ERROR og third time.Ask Systems. korrekt."
+        }
+      ]
+    },
+    {
+      "id": "BINDER_1947",
+      "filename": "jpg/26-binder-1947.jpg",
+      "reviewed_jpg_sha256": "d2cd6aa25b3f8eb7a5e2e2aa0f3ce958bbf61c8981054fcb6f088e8b7eb0c0fb",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "DATE 07/--/47 02:17:00; the day is intentionally unknown.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:07/--/47 02:17:00,1420.405MHz,4/7,-00LY. Gammelt gulnet fanfoldark uten stempel eller blyant. Den tilsiktede anakronismen forklares ikke bort."
+        },
+        {
+          "check": "1420.405 MHz, PULSE GROUP 4 / 7, source distance -00 LY.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:07/--/47 02:17:00,1420.405MHz,4/7,-00LY. Gammelt gulnet fanfoldark uten stempel eller blyant. Den tilsiktede anakronismen forklares ikke bort."
+        },
+        {
+          "check": "Old yellowed paper, NO stamp and NO pencil.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:07/--/47 02:17:00,1420.405MHz,4/7,-00LY. Gammelt gulnet fanfoldark uten stempel eller blyant. Den tilsiktede anakronismen forklares ikke bort."
+        },
+        {
+          "check": "The solver did not exist in 1947; preserve the contradiction without explaining it.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:07/--/47 02:17:00,1420.405MHz,4/7,-00LY. Gammelt gulnet fanfoldark uten stempel eller blyant. Den tilsiktede anakronismen forklares ikke bort."
+        }
+      ]
+    },
+    {
+      "id": "K3_SERVICE",
+      "filename": "jpg/27-k3-service-record.jpg",
+      "reviewed_jpg_sha256": "9f7f05093d0fc5380faa43269c8bf2b3f420eec2df0c8dce09e4078299f7f4ae",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "09/23/81, 03/03/83, 10/21/85 maintenance entries.",
+          "status": "PASS",
+          "notes_nb": "Alle tre poster nærleses:09/23/81,03/03/83,10/21/85; omtrent1min før, før dip,40sek før. M.O. og IT TRIPS BEFORE, NOT AFTER korrekt. Header identifiserer SARO RX BANK3."
+        },
+        {
+          "check": "K3 trips BEFORE the power loss: approximately 1 minute, then before the dip, then 40 seconds.",
+          "status": "PASS",
+          "notes_nb": "Alle tre poster nærleses:09/23/81,03/03/83,10/21/85; omtrent1min før, før dip,40sek før. M.O. og IT TRIPS BEFORE, NOT AFTER korrekt. Header identifiserer SARO RX BANK3."
+        },
+        {
+          "check": "Keep initials M.O. and the conclusion IT TRIPS BEFORE, NOT AFTER.",
+          "status": "PASS",
+          "notes_nb": "Alle tre poster nærleses:09/23/81,03/03/83,10/21/85; omtrent1min før, før dip,40sek før. M.O. og IT TRIPS BEFORE, NOT AFTER korrekt. Header identifiserer SARO RX BANK3."
+        },
+        {
+          "check": "SARO's internal RX Bank 3 / K3 only; do not merge with town feeder or STATION 01 circuits.",
+          "status": "PASS",
+          "notes_nb": "Alle tre poster nærleses:09/23/81,03/03/83,10/21/85; omtrent1min før, før dip,40sek før. M.O. og IT TRIPS BEFORE, NOT AFTER korrekt. Header identifiserer SARO RX BANK3."
+        }
+      ]
+    },
+    {
+      "id": "PROP_COUNTY_LIGHTS_1978",
+      "filename": "jpg/28-county-lights-1978.jpg",
+      "reviewed_jpg_sha256": "1940037e1c984a2c4459bde116aad1be05cbcb873309e736ab47e2d88894da36",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "August 14, 1978; a fictional county inquiry copy, without a federal seal or classification.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:14AUG1978, fire og bare fire svarte felt for navn/adresse. Hele observasjonsteksten og UNRESOLVED lesbare. To ulike høyder i ryggen stemmer med to skisser. Ingen føderalt segl, teknisk bevis eller forbindelse til hovedruten."
+        },
+        {
+          "check": "Two separate viewpoints disagree about the ridge line; object identity, distance and route remain unconfirmed.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:14AUG1978, fire og bare fire svarte felt for navn/adresse. Hele observasjonsteksten og UNRESOLVED lesbare. To ulike høyder i ryggen stemmer med to skisser. Ingen føderalt segl, teknisk bevis eller forbindelse til hovedruten."
+        },
+        {
+          "check": "Place dark redaction bars ONLY over the four [REDACTED] name/address values, never over observations or disposition.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:14AUG1978, fire og bare fire svarte felt for navn/adresse. Hele observasjonsteksten og UNRESOLVED lesbare. To ulike høyder i ryggen stemmer med to skisser. Ingen føderalt segl, teknisk bevis eller forbindelse til hovedruten."
+        },
+        {
+          "check": "No claimed link to SARO, STATION 01, C, 1947, or the invasion.",
+          "status": "PASS",
+          "notes_nb": "Nærlesing:14AUG1978, fire og bare fire svarte felt for navn/adresse. Hele observasjonsteksten og UNRESOLVED lesbare. To ulike høyder i ryggen stemmer med to skisser. Ingen føderalt segl, teknisk bevis eller forbindelse til hovedruten."
+        }
+      ]
+    },
+    {
+      "id": "PROP_SENTINEL_MISSING_HOURS_1974",
+      "filename": "jpg/29-sentinel-missing-hours-1974.jpg",
+      "reviewed_jpg_sha256": "d8b415e807ecae486fb566932a90734df2490c56e9cb921bb357b91544858bd9",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "November 9, 1974; an original fictional Pecos Valley Sentinel article, distinct from E15 and the 1985 cuttings.",
+          "status": "PASS",
+          "notes_nb": "Alle tre avsnitt nærleses sammen med masthead/headline/NOVEMBER9,1974. Stoppet dashboardklokke og omstilt kjøkkenklokke, intet sikkert tidsintervall eller bekreftet bortføring. Bakgrunnsfoto viser eldre sedan på skulder, ingen tilleggsspor."
+        },
+        {
+          "check": "The dashboard clock stopped and the kitchen clock was reset; no reliable departure time or measured missing interval.",
+          "status": "PASS",
+          "notes_nb": "Alle tre avsnitt nærleses sammen med masthead/headline/NOVEMBER9,1974. Stoppet dashboardklokke og omstilt kjøkkenklokke, intet sikkert tidsintervall eller bekreftet bortføring. Bakgrunnsfoto viser eldre sedan på skulder, ingen tilleggsspor."
+        },
+        {
+          "check": "A late return is reported, without confirmed abduction, injury or cause.",
+          "status": "PASS",
+          "notes_nb": "Alle tre avsnitt nærleses sammen med masthead/headline/NOVEMBER9,1974. Stoppet dashboardklokke og omstilt kjøkkenklokke, intet sikkert tidsintervall eller bekreftet bortføring. Bakgrunnsfoto viser eldre sedan på skulder, ingen tilleggsspor."
+        },
+        {
+          "check": "No C, eight-mile crossing, 1947 identity, invasion reference or new main-route clue.",
+          "status": "PASS",
+          "notes_nb": "Alle tre avsnitt nærleses sammen med masthead/headline/NOVEMBER9,1974. Stoppet dashboardklokke og omstilt kjøkkenklokke, intet sikkert tidsintervall eller bekreftet bortføring. Bakgrunnsfoto viser eldre sedan på skulder, ingen tilleggsspor."
+        }
+      ]
+    },
+    {
+      "id": "PROP_CATTLE_EXAM_1982",
+      "filename": "jpg/30-cattle-exam-1982.jpg",
+      "reviewed_jpg_sha256": "f317478548b6ab7f2c1061b41bfe44f1957b0ee328cfee7b2e495dc63a9ec99d",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "June 3, 1982; unsigned field examination of a dead adult Hereford cow.",
+          "status": "PASS",
+          "notes_nb": "Hele feltarket nærleses:3JUN1982, UNSIGNED, Hereford, NOT RECORDED, ufullført necropsy og UNDETERMINED. Foto har én tørr sirkulær flankflekk uten blod/organsyn, ingen øretag25 eller ALDERETE-identifikasjon. Ingen årsak påstås."
+        },
+        {
+          "check": "Owner, ranch and ear tag are NOT RECORDED; do not invent ALDERETE, tag 25, or another identification.",
+          "status": "PASS",
+          "notes_nb": "Hele feltarket nærleses:3JUN1982, UNSIGNED, Hereford, NOT RECORDED, ufullført necropsy og UNDETERMINED. Foto har én tørr sirkulær flankflekk uten blod/organsyn, ingen øretag25 eller ALDERETE-identifikasjon. Ingen årsak påstås."
+        },
+        {
+          "check": "If illustrated, show one circular dry flank area with restrained non-bloody forensic appearance; no fresh blood or exposed organs.",
+          "status": "PASS",
+          "notes_nb": "Hele feltarket nærleses:3JUN1982, UNSIGNED, Hereford, NOT RECORDED, ufullført necropsy og UNDETERMINED. Foto har én tørr sirkulær flankflekk uten blod/organsyn, ingen øretag25 eller ALDERETE-identifikasjon. Ingen årsak påstås."
+        },
+        {
+          "check": "CAUSE OF DEATH: UNDETERMINED remains legible; no completed necropsy or confirmed cause.",
+          "status": "PASS",
+          "notes_nb": "Hele feltarket nærleses:3JUN1982, UNSIGNED, Hereford, NOT RECORDED, ufullført necropsy og UNDETERMINED. Foto har én tørr sirkulær flankflekk uten blod/organsyn, ingen øretag25 eller ALDERETE-identifikasjon. Ingen årsak påstås."
+        },
+        {
+          "check": "A photograph is not evidence of a species, perpetrator or extraterrestrial origin.",
+          "status": "PASS",
+          "notes_nb": "Hele feltarket nærleses:3JUN1982, UNSIGNED, Hereford, NOT RECORDED, ufullført necropsy og UNDETERMINED. Foto har én tørr sirkulær flankflekk uten blod/organsyn, ingen øretag25 eller ALDERETE-identifikasjon. Ingen årsak påstås."
+        }
+      ]
+    },
+    {
+      "id": "PROP_CONTACT_FLYER_1984",
+      "filename": "jpg/31-sky-watch-flyer-1984.jpg",
+      "reviewed_jpg_sha256": "faa08feda94390f41be2959abe6b7e8529ed24327bb66ad9781b6691a89b2612",
+      "method": "visual inspection",
+      "checks": [
+        {
+          "check": "May 18, 1984; fictional local public lecture and stencil-copy appearance.",
+          "status": "PASS",
+          "notes_nb": "Hele plakaten nærleses: MAY18,1984, gratis offentlig møte, no confirmed contact og hele FIELD NOTE med sikkerhet/observasjon. Original lilla stensilstil uten tredjepartsbranding eller påstand om felt-VHS."
+        },
+        {
+          "check": "No confirmed contact will be presented; discussion is not an established finding.",
+          "status": "PASS",
+          "notes_nb": "Hele plakaten nærleses: MAY18,1984, gratis offentlig møte, no confirmed contact og hele FIELD NOTE med sikkerhet/observasjon. Original lilla stensilstil uten tredjepartsbranding eller påstand om felt-VHS."
+        },
+        {
+          "check": "Retain the safety and observation footer, including no entry into fenced sites or contact with electrical equipment.",
+          "status": "PASS",
+          "notes_nb": "Hele plakaten nærleses: MAY18,1984, gratis offentlig møte, no confirmed contact og hele FIELD NOTE med sikkerhet/observasjon. Original lilla stensilstil uten tredjepartsbranding eller påstand om felt-VHS."
+        },
+        {
+          "check": "No real Unarius name, lecturer portrait, institutional seal, branding or borrowed lecture footage.",
+          "status": "PASS",
+          "notes_nb": "Hele plakaten nærleses: MAY18,1984, gratis offentlig møte, no confirmed contact og hele FIELD NOTE med sikkerhet/observasjon. Original lilla stensilstil uten tredjepartsbranding eller påstand om felt-VHS."
+        },
+        {
+          "check": "This flyer is optional background and not Dale's Service Road / Field 01 VHS.",
+          "status": "PASS",
+          "notes_nb": "Hele plakaten nærleses: MAY18,1984, gratis offentlig møte, no confirmed contact og hele FIELD NOTE med sikkerhet/observasjon. Original lilla stensilstil uten tredjepartsbranding eller påstand om felt-VHS."
+        }
+      ]
+    }
+  ]
+}

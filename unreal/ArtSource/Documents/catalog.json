@@ -1,0 +1,1537 @@
+{
+  "schema_version": 1,
+  "language": "en",
+  "notes_nb": [
+    "31 rekvisittbilder til SIGNAL / 47. Spilltekst er engelsk; norske metadata forklarer bruk og begrensninger.",
+    "27 grunnrekvisitter bruker eksisterende forfatter-/runtimekilder. Fire ekstra bakgrunnsrekvisitter er nyskrevet fiksjon i supplemental.json, uten runtimekobling eller nye kanoniske bevis.",
+    "source.text_sha256 gjelder tekstfeltet, ikke bildefilen. De fire nye tekstene er under 150 ord hver; datoene ligger før spillnatten 13. april 1986.",
+    "authoring_existing betyr eksisterende EveningShift-forfatterkilde. runtime_reference betyr allerede definerte hovedrute-/arkivdokumenter. optional_prop betyr mappeomslag eller frivillige private manusutkast uten ny runtime-registrering.",
+    "De seks private utkastene registreres ikke som nye Narrative-JSON- eller runtime-dokumenter av denne assetleveransen.",
+    "Katalogens samlede arkivmateriale er ikke et påstått innhold i Dales private mappe; survey- og tidsprotokoller har egne steder og hovedruteporter.",
+    "Ingen kritiske kanonfelt, måleverdier eller sammenligningsforskjeller skal skjules av dekorativ sladding. Manusets ukjente datoer forblir ukjente.",
+    "E15s dato July 1947 er metadata. Avisutklippet har ingen trykt dato; separat blyantnotat på rammen er historisk datogrunnlag.",
+    "I den nye county-rapporten kan kun [REDACTED]-feltene for navn/adresse sladdes. Ingen observasjoner, konklusjonsbegrensninger eller ledetråder skjules.",
+    "Innebygde bildeprompter, bildehasher og størrelser kan legges til senere uten å endre de kildeuttrukne tekstfeltene."
+  ],
+  "assets": [
+    {
+      "id": "DALE_FOLDER",
+      "title": "SARO / Field maintenance / Working papers",
+      "filename": "jpg/01-dale-folder.jpg",
+      "group": "dale_office",
+      "status": "optional_prop",
+      "source": {
+        "path": "unreal/ArtSource/Documents/Tools/build_catalog.py",
+        "symbol": "DALE_FOLDER_COPY",
+        "text_sha256": "ba2d47049187db8b92468bde5a98b22ac09fbe0080d6c5aa78c2fefc8ac5fa47"
+      },
+      "text": "SARO\nFIELD MAINTENANCE\nWORKING PAPERS\nSERVICE ROAD / FIELD 01\nDALE\nKEEP WITH INSPECTION SHEETS\nPRIVATE WORKING COPY\nNot a report.\nLeave the originals here. - D.\nWORKING COPY",
+      "key_checks": [
+        "Cover text matches the approved SARO / FIELD MAINTENANCE / WORKING PAPERS production artwork.",
+        "Retain SERVICE ROAD / FIELD 01, DALE, KEEP WITH INSPECTION SHEETS and PRIVATE WORKING COPY.",
+        "Retain Not a report., Leave the originals here. - D., and WORKING COPY.",
+        "No FIELD CHECKS or TAKE A COPY label is present on this artwork.",
+        "A worn work folder; no new case facts, 1947 diagrams or destination coordinates.",
+        "Dale collects uncertain leads; he is not an omniscient intelligence officer."
+      ],
+      "intended_use_nb": "Nytt originalt produksjonsomslag til Dales feltmappe, uten nye kanonbevis.",
+      "image": {
+        "filename": "jpg/01-dale-folder.jpg",
+        "sha256": "42a98fd95bbca403dea86ffc0acd76b54121bd661d95d3dd9990235c900360d3",
+        "bytes": 381170,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat printable in-world document texture for SIGNAL / 47, not concept art.\nCreate ONE portrait manila file-folder front from a private maintenance worker's collection, New Mexico, April 1986. Authentic archive ephemera inspired by distressed investigation scrapbook pages: believable aged buff card, fine paper fibers, rub-worn edges, old staple holes, a faded rectangular red rubber stamp, restrained coffee halo, a thin paper inventory label. It should feel handled over years rather than theatrically burned.\nComposition: perfectly straight-on archival flatbed scan, rectangular full bleed surface, all four edges aligned with the image edges. Flat even neutral illumination. NO desk, NO book, NO hands, NO scene, NO camera perspective, NO drop shadow, NO backdrop, NO UI. Crisp authentic period typewriter text with sober institutional hierarchy; a few dark graphite handwritten additions.\nText verbatim on cover:\nSARO\nFIELD MAINTENANCE\nWORKING PAPERS\nSERVICE ROAD / FIELD 01\nDALE\nKEEP WITH INSPECTION SHEETS\nIn smaller type near bottom: PRIVATE WORKING COPY\nHandwritten on the inventory label: \"Not a report.\"\nSmall pencil note low on cover: \"Leave the originals here. - D.\"\nNo FBI seal, no X-Files branding, no decorative alien, no classified-level claims, no invented case numbers. Original fictional SARO paperwork. Subdued warm ochre and ink-black palette, faded oxblood stamp \"WORKING COPY\". Excellent subtle physical detail, no illegible fake microtext. Render around1536x2048 or equivalent portrait resolution. One coherent usable folder texture, not a collage of several pages.",
+        "source": {
+          "basename": "exec-c6d84965-c138-4e06-84b1-22581c81cfaa.png",
+          "sha256": "5f0e2def4d27edb5b613309f0f45db34818419ebe73a4cc18641fb2c5682c66a",
+          "bytes": 2970410,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      },
+      "source_state_nb": "Omslagsteksten følger det visuelt godkjente produksjonsbildet. Den er skrevet i denne generatoren og endrer ikke runtimeetiketten i S47Office.cpp."
+    },
+    {
+      "id": "EV_HANDOVER",
+      "title": "Evening handover / Sunday, April 13",
+      "filename": "jpg/02-ev-handover.jpg",
+      "group": "evening_documents",
+      "status": "authoring_existing",
+      "source": {
+        "path": "unreal/Narrative/EveningShift/modules/office.json",
+        "anchor": "/documents/0",
+        "text_sha256": "1aba94d95313320a822d78e2ef73522ba54a0fcd4874307ad5203433a7bca7cd"
+      },
+      "text": "18:00 HANDOVER\nEvening operator: Reyes. Duty officer: Ward. Field maintenance contact: Dale, by telephone or service radio.\n\nCarry out the ordinary room checks before starting the survey. There are 27 antennas on the installation list. The azimuth reference card remains 026. Record what the instruments say; do not adjust a reading simply to make it agree with the card.\n\nThe local service log and radio transmission schedule are in this handover folder. The day operator collected the copies. Keep them in the shift file. If an entry needs checking later, the service desk and station window in Caliche can help; there is no need to go down just to collect the same papers.\n\nIf the feeder complaint repeats, take the service-road route to the substation and use the marked inspection position. Follow the local isolation card. Do not enter the switching yard or work on exposed conductors.\n\nOperations spare: service drawer at the workbench. Please put it back when you have finished. The office latch needs lifting. Milk is in the small refrigerator. Leave the receipt with petty cash.",
+      "key_checks": [
+        "18:00 on Sunday, April 13, 1986; operator Reyes, duty officer Ward.",
+        "27 antennas and azimuth reference 026.",
+        "Operations spare belongs in the service drawer at the workbench, not in a mug."
+      ],
+      "intended_use_nb": "Ordinært overleveringsark fra mappen på SARO ved kveldsskiftets start.",
+      "kind": "typed",
+      "stamp": "SARO / OPERATIONS / 13 APR 1986",
+      "production_notes_nb": "Ordinær overlevering ved skiftstart 18:00, lenge før ny residual. D01_BRIEF gir EV_HANDOVER, EV_SERVICE_LOG og EV_RADIO_SCHEDULE fra mappen på SARO. Byvinduene er valgfrie oppfølginger og alternative kilder, ikke pålagt henteoppdrag. Dale er bare tilgjengelig via telefon/radio/walkie; Ward er egen vakthavende. Utstyrs- og K3-regler følger eksisterende spillkontrakt.",
+      "image": {
+        "filename": "jpg/02-ev-handover.jpg",
+        "sha256": "c83bbf65d2dc06f62ba9a306af856b1230c5088194430d74687685fec26af28c",
+        "bytes": 379729,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: US letter portrait administrative handover. Off-white paper, two old binder holes at left, small sober SARO header, fine black horizontal rules, faded oxblood date stamp at top right. Typewriter body in five generously separated paragraphs; 18:00 HANDOVER as bold title. Fold creases and one light coffee ring in an empty corner. The practical normal-work opening to the secret collection. Do not add signatures, handwritten advice or redactions.\nDocument title: Evening handover / Sunday, April 13\nSmall document stamp/header verbatim: SARO / OPERATIONS / 13 APR 1986\nFull page text verbatim, in this order:\n18:00 HANDOVER\nEvening operator: Reyes. Duty officer: Ward. Field maintenance contact: Dale, by telephone or service radio.\n\nCarry out the ordinary room checks before starting the survey. There are 27 antennas on the installation list. The azimuth reference card remains 026. Record what the instruments say; do not adjust a reading simply to make it agree with the card.\n\nThe local service log and radio transmission schedule are in this handover folder. The day operator collected the copies. Keep them in the shift file. If an entry needs checking later, the service desk and station window in Caliche can help; there is no need to go down just to collect the same papers.\n\nIf the feeder complaint repeats, take the service-road route to the substation and use the marked inspection position. Follow the local isolation card. Do not enter the switching yard or work on exposed conductors.\n\nOperations spare: service drawer at the workbench. Please put it back when you have finished. The office latch needs lifting. Milk is in the small refrigerator. Leave the receipt with petty cash.",
+        "source": {
+          "basename": "exec-66ee0bcd-d765-4868-b9d8-906a2cb21ea2.png",
+          "sha256": "d2b692244678a4caea47a9746637c04259142ab7401fb318ca1a08fc86f69b9c",
+          "bytes": 2701506,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_SERVICE_LOG",
+      "title": "Caliche service log / released copy",
+      "filename": "jpg/03-ev-service-log.jpg",
+      "group": "evening_documents",
+      "status": "authoring_existing",
+      "source": {
+        "path": "unreal/Narrative/EveningShift/modules/office.json",
+        "anchor": "/documents/1",
+        "text_sha256": "fb376d311e4e771df73111195216dab11e28a7e2354fe234b91f9ced207f6dde"
+      },
+      "text": "SERVICE COPY\nPrepared Sunday, April 13, 1986. Collected for SARO by the day operator; enclosed with the evening handover. Entries below are civil time as entered by the attendant; they are not precision timing records.\n\nApril 12, 19:06. Complaint: exterior lamp on service-road inspection circuit dimming intermittently. Other premises reported normal supply. No town-wide interruption entered.\n\nApril 13, 16:40. Maintenance inspection requested. Complaint remains open until the local test is completed and the result entered on the inspection card.\n\nSupply labels and the inspection-circuit identifier must be read at the marked service panel. A lamp lighting does not by itself prove which supply is carrying it. Compare the panel indication with the permitted local test and the actual lamp.\n\nNo entry in this book means no report was entered here. It does not establish that every circuit remained live. Retain this copy if a later occurrence needs to be compared with the service record.\n\nRELEASED COPY. Keep the original at the service desk. Later entries must be dated separately; do not add them to this sheet.",
+      "key_checks": [
+        "April 12 at 19:06 and April 13 at 16:40 are entered civil times, not precision measurements.",
+        "A lit lamp does not identify its supply; no town-wide interruption was entered.",
+        "Do not add later test results or conflate the town circuit with SARO K3."
+      ],
+      "intended_use_nb": "Datert frigitt journalkopi i overleveringsmappen; bakgrunn for T01/T02.",
+      "kind": "typed",
+      "stamp": "LOCAL SERVICE DESK / 13 APR 1986",
+      "production_notes_nb": "Ny ordinær kveldsreferanse i Dales overleveringsmappe på SARO. Dagens dagoperatør har hentet kopien; spilleren hentet den ikke på matstoppet. Tidligere lokal feil kan prøves i T01 og sammenlignes senere, men verken den feilen eller manglende nye journaloppføringer beviser årsak til residualen eller forsyningstilstanden i hele byen 00:13. Bruk egen inspeksjonskontroll for T01/T02; ingen reelle høyspenningsinstrukser og ingen kobling fra SAROs K3 til bynettet.",
+      "image": {
+        "filename": "jpg/03-ev-service-log.jpg",
+        "sha256": "8756f25d87656cd0b04b82f19d0d3ac76a80750bc6a322ee57d559e0c131a26d",
+        "bytes": 404702,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: US letter portrait released carbon-copy service desk log. Pale gray-yellow paper, faded blue ruled form, black typewriter text; title CALICHE SERVICE LOG above text, modest diagonal red stamp RELEASED COPY in empty footer. Make the dated entries clear with narrow date column beside each full paragraph, preserving all words. Old staple at top left and graphite filing check marks in outer margin, no writing over body. Do not black out any entry or add new dates.\nDocument title: Caliche service log / released copy\nSmall document stamp/header verbatim: LOCAL SERVICE DESK / 13 APR 1986\nFull page text verbatim, in this order:\nSERVICE COPY\nPrepared Sunday, April 13, 1986. Collected for SARO by the day operator; enclosed with the evening handover. Entries below are civil time as entered by the attendant; they are not precision timing records.\n\nApril 12, 19:06. Complaint: exterior lamp on service-road inspection circuit dimming intermittently. Other premises reported normal supply. No town-wide interruption entered.\n\nApril 13, 16:40. Maintenance inspection requested. Complaint remains open until the local test is completed and the result entered on the inspection card.\n\nSupply labels and the inspection-circuit identifier must be read at the marked service panel. A lamp lighting does not by itself prove which supply is carrying it. Compare the panel indication with the permitted local test and the actual lamp.\n\nNo entry in this book means no report was entered here. It does not establish that every circuit remained live. Retain this copy if a later occurrence needs to be compared with the service record.\n\nRELEASED COPY. Keep the original at the service desk. Later entries must be dated separately; do not add them to this sheet.",
+        "source": {
+          "basename": "exec-89db8440-1a4e-4734-a141-56e0497095dd.png",
+          "sha256": "b51ca2db76e0fd6d45afbf6247e10d07467c1bb191546c5890864663702c8596",
+          "bytes": 2949557,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_RADIO_SCHEDULE",
+      "title": "1420 AM / transmission schedule",
+      "filename": "jpg/04-ev-radio-schedule.jpg",
+      "group": "evening_documents",
+      "status": "authoring_existing",
+      "source": {
+        "path": "unreal/Narrative/EveningShift/modules/office.json",
+        "anchor": "/documents/2",
+        "text_sha256": "6c71fe255cb46995268662474e460033bc9fc1179537c9c703ddb9e50047e883"
+      },
+      "text": "1420 AM / LOCAL TRANSMISSION SCHEDULE\nSunday, April 13 into Monday, April 14. Station clock. Programs may be interrupted for local bulletins.\n\n18:00–20:00. Evening records, weather and local notices. Evening staff on duty. Public copies and messages at the station window.\n\n20:00–00:00. Music service. Recorded segments and local continuity. The person at the window may be covering other duties; leave a message if it is unattended.\n\n00:00–04:00 MONDAY. THE NIGHT LINE / EARL. Telephone calls and local reports. An open microphone or ON AIR lamp does not establish that any particular caller was connected.\n\n04:00. Night Line ends. Transmitter service and the scheduled morning program follow. An empty studio after four is normal; consult the actual program log for interruptions or changes.\n\nThis is a schedule, not proof of what was transmitted. For a disputed item, keep the date and approximate time and request the corresponding log entry or preserved program segment.\n\nThe station is an AM broadcast service. This sheet is not a tuning instruction for observatory equipment.",
+      "key_checks": [
+        "AM broadcasting, separate from the observatory's 1420.405 MHz signal.",
+        "Earl's Night Line runs 00:00 to 04:00 on Monday.",
+        "A schedule is not proof of actual transmission; do not invent a call sign or tuning instruction."
+      ],
+      "intended_use_nb": "Ordinær offentlig sendeskjemakopi vedlagt overleveringen.",
+      "kind": "typed",
+      "stamp": "PUBLIC COPY / SUNDAY 13 APRIL 1986",
+      "production_notes_nb": "Fysisk kveldskopi som dagoperatøren allerede har hentet, vedlagt Dales overleveringsmappe på SARO. Stasjonsvinduet er en valgfri senere kilde til supplerende materiale; ingen obligatorisk hentetur. Earl arbeider bare 00–04; kveldens innhold og bemanning er egne roller. Adapteren må synkronisere vindu, ON AIR og faktisk lyd. Sendeskjemaet dokumenterer planlagt normaldrift, ikke hva som faktisk ble sendt rundt residualen.",
+      "image": {
+        "filename": "jpg/04-ev-radio-schedule.jpg",
+        "sha256": "897e5d6cd19a38fe2623a6ad581f095e41d1d6e4a05d98edb3927fd396cdd702",
+        "bytes": 402278,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: US letter portrait local radio broadcast schedule, folded into quarters. Cream light newsprint, strong vintage condensed station header \"1420 AM\", title \"TRANSMISSION SCHEDULE\", black horizontal dividers around the four schedule time blocks. One modest muted-red \"PUBLIC COPY\" rubber stamp in empty margin. All seven paragraphs exactly, with THE NIGHT LINE / EARL the prominent midnight slot. Paper appears cleaner than old archive pages, authentic 1986 typed bulletin. No fabricated telephone numbers, no observatory frequency, no photographs.\nDocument title: 1420 AM / transmission schedule\nSmall document stamp/header verbatim: PUBLIC COPY / SUNDAY 13 APRIL 1986\nFull page text verbatim, in this order:\n1420 AM / LOCAL TRANSMISSION SCHEDULE\nSunday, April 13 into Monday, April 14. Station clock. Programs may be interrupted for local bulletins.\n\n18:00–20:00. Evening records, weather and local notices. Evening staff on duty. Public copies and messages at the station window.\n\n20:00–00:00. Music service. Recorded segments and local continuity. The person at the window may be covering other duties; leave a message if it is unattended.\n\n00:00–04:00 MONDAY. THE NIGHT LINE / EARL. Telephone calls and local reports. An open microphone or ON AIR lamp does not establish that any particular caller was connected.\n\n04:00. Night Line ends. Transmitter service and the scheduled morning program follow. An empty studio after four is normal; consult the actual program log for interruptions or changes.\n\nThis is a schedule, not proof of what was transmitted. For a disputed item, keep the date and approximate time and request the corresponding log entry or preserved program segment.\n\nThe station is an AM broadcast service. This sheet is not a tuning instruction for observatory equipment.",
+        "source": {
+          "basename": "exec-c94a51d7-5354-436a-9638-999954fc6058.png",
+          "sha256": "0076410bd9cc9dc098bd3e83551aa08e54e18ac584ea20cff10d69d9649d1e0a",
+          "bytes": 2835108,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_INDEX",
+      "title": "Field checks / working index",
+      "filename": "jpg/05-ev-dale-index.jpg",
+      "group": "evening_documents",
+      "status": "authoring_existing",
+      "source": {
+        "path": "unreal/Narrative/EveningShift/modules/office.json",
+        "anchor": "/documents/3",
+        "text_sha256": "b0123f0fd73a51b466c5939eea4e8750376382b203b5b3eb3d757cd0a35430cf"
+      },
+      "text": "FIELD CHECKS\nNot a report. Keep this with the maintenance forms. Some of these are ordinary faults. Some may be bad recordings.\n\n1. SERVICE ROAD / FIELD 01. VHS cassette in the desk unit. Environment sound only. The middle section contains the movement I could not account for. The recording date on the camera was not set correctly. Do not use it to establish a date or an exact time.\n\n2. CAMERA POSITION. Outside the substation fence. Low concrete culvert beside the service gate. Stand on the road side of the post with two white bands. Face the nearest pole so the two outer conductors and the top of the pole remain in frame. The fence corner should sit at the lower left.\n\n3. COMPARISON. First inspect the ordinary supply indication and the permitted lamp test. Return to the same position. Compare the nearest pole, the two outer conductors and the moving patch separately. Do not use camera shake as movement in the scene.\n\n4. LIMIT. The cassette cannot establish what supplied the lamp or whether the shape was in the air. It does establish where the camera stood. A fresh observation from that position would be more useful than another opinion about the tape.\n\n5. BACKGROUND. Two newspaper cuttings and a service note. Dates uncertain on one clipping. These are leads, not a map to a destination. The survey-station papers belong to their own file.\n\nLeave the originals here. Take this copy if you go out. Tell Ward where you are going.",
+      "key_checks": [
+        "The T02 position is a low concrete culvert, road side of a post with two white bands, outside the substation fence.",
+        "View keeps nearest pole and its two outer conductors in frame; fence corner is lower left.",
+        "Camera date is wrong; no precise video time, STATION 01 identity or C crossing is established.",
+        "Do not add the separate future ARRAY-01 service positions to this index."
+      ],
+      "intended_use_nb": "Den korte hovedruten fra Dales feltmappe til det faktiske kameraståstedet.",
+      "kind": "hand",
+      "stamp": "DALE / WORKING COPY / 13 APR",
+      "production_notes_nb": "Kort hovedspor som kan tas uten full VHS eller øvrig fordypning. T02 må bygge nøyaktig gjenkjennelig kulvert, to hvite bånd, stolpe, lederpar og gjerdehjørne som filmen viser. Gjenbruk ikke STATION 01-identitet eller C-kryss. Klippets dato er usikker med vilje og kan ikke brukes som fullført tidsbevis.",
+      "image": {
+        "filename": "jpg/05-ev-dale-index.jpg",
+        "sha256": "2e0e861b193900848065e0f34f6b99b87d27a9aef49c1a49c6ee2fc2af3ca758",
+        "bytes": 390257,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait pale ivory lined notebook leaf with a restrained \"DALE / WORKING COPY / 13 APR\" date rubber stamp. Entire body is legible, dark graphite neat hand printing by a practical maintenance worker, not ornamental cursive. Include all seven paragraphs, numbered1through5 exactly. Slightly uneven baselines, honest pencil pressure. No photograph, no diagram that substitutes for the precise verbal camera position. Reserve a narrow outer margin. This is a useful working index, not a classified report. Do not add1990s or2020s details.\nDocument title: Field checks / working index\nSmall stamp/header: DALE / WORKING COPY / 13 APR\nFull text to lay out, preserving all actual document wording:\nFIELD CHECKS\nNot a report. Keep this with the maintenance forms. Some of these are ordinary faults. Some may be bad recordings.\n\n1. SERVICE ROAD / FIELD 01. VHS cassette in the desk unit. Environment sound only. The middle section contains the movement I could not account for. The recording date on the camera was not set correctly. Do not use it to establish a date or an exact time.\n\n2. CAMERA POSITION. Outside the substation fence. Low concrete culvert beside the service gate. Stand on the road side of the post with two white bands. Face the nearest pole so the two outer conductors and the top of the pole remain in frame. The fence corner should sit at the lower left.\n\n3. COMPARISON. First inspect the ordinary supply indication and the permitted lamp test. Return to the same position. Compare the nearest pole, the two outer conductors and the moving patch separately. Do not use camera shake as movement in the scene.\n\n4. LIMIT. The cassette cannot establish what supplied the lamp or whether the shape was in the air. It does establish where the camera stood. A fresh observation from that position would be more useful than another opinion about the tape.\n\n5. BACKGROUND. Two newspaper cuttings and a service note. Dates uncertain on one clipping. These are leads, not a map to a destination. The survey-station papers belong to their own file.\n\nLeave the originals here. Take this copy if you go out. Tell Ward where you are going.",
+        "source": {
+          "basename": "exec-715ac8b0-d89c-428b-b42a-261afc5e4a62.png",
+          "sha256": "a79c2eafdf3bf652cea14797c46d9f35d472fc941bf72a99d6c09652a79e43e9",
+          "bytes": 2691242,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_CLIPPINGS",
+      "title": "Local cuttings / dates to check",
+      "filename": "jpg/06-ev-dale-clippings.jpg",
+      "group": "evening_documents",
+      "status": "authoring_existing",
+      "source": {
+        "path": "unreal/Narrative/EveningShift/modules/office.json",
+        "anchor": "/documents/4",
+        "text_sha256": "e509aa3826f09ce90416d992ab4675fd7e5bf84514b5d966c1c99e0fdfdbd66e"
+      },
+      "text": "CUTTING A\nPECOS VALLEY SENTINEL / OCTOBER 22, 1985\nDRIVERS REPORT STALLED ENGINES ON COUNTY ROAD\n\nTwo motorists reported brief electrical failures on a county road east of the highway over the weekend. Both vehicles restarted. A county spokesman said no general supply interruption had been reported. No cause was entered in the notice.\n\nDale, pencil: Cars are not supplied by the town feeder. Same evening is not the same cause. Ask for a location before putting this beside the service complaint.\n\nCUTTING B\nHEADLINE SAVED; DATE MISSING\nRANCHER FINDS FENCE LAMP BURNING AFTER LINE FAULT\n\nThe lamp had an auxiliary supply. The owner said the indicator had shown the main line was disconnected. The remainder of the item is missing.\n\nDale, pencil: Ordinary explanation. Keep it. A lit lamp is not evidence that a disconnected line is live. Need the whole page and the maintenance entry.\n\nIn the empty space below: I have two accounts of a movement near the service road. Neither witness agrees on the date. Do not make a pattern out of that yet.",
+      "key_checks": [
+        "Cutting A: PECOS VALLEY SENTINEL / OCTOBER 22, 1985.",
+        "Cutting B has no known date and describes an auxiliary lamp supply.",
+        "Dale's pencil notes retain ordinary explanations and uncertainty.",
+        "No coordinates, eight-mile clue or E15/1947 photo in these clippings."
+      ],
+      "intended_use_nb": "To fiktive lokale avisutklipp med Dales kritiske blyantmerknader i privatmappen.",
+      "kind": "hand",
+      "stamp": "FIELD CHECKS / BACKGROUND",
+      "production_notes_nb": "Nye fiktive diegetiske utklipp skrevet for denne pakken, ikke ekte avisgjengivelse. Ingen koordinater eller åttemilsreferanse som løser P13. Dales merknader avgrenser kunnskap og tilbyr vanlig forklaring; ingen bredere 1947-fotografi eller sluttspoiler.",
+      "image": {
+        "filename": "jpg/06-ev-dale-clippings.jpg",
+        "sha256": "98d31418a547b572e594c12d3558983f18612c64d4c798f92b9923c1ce92a4cf",
+        "bytes": 411380,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: EDIT the existing page minimally, preserve every other element and all other actual words. Improve the diegetic credibility of the LOWER newspaper clipping. REMOVE the printed dateline text \"HEADLINE SAVED; DATE MISSING\" from the lower clipping, leaving that narrow printed dateline area empty/torn. Handwrite instead a small graphite annotation \"date missing\" on the BACKING PAPER beside that clipping. In the lower newspaper body REMOVE the editorial sentence \"The remainder of the item is missing.\" from the printed article. It must end after \"the main line was disconnected.\" Replace its old location with a visibly torn bottom article edge, no new words in the newspaper. You may write \"remainder missing\" small in graphite on backing nearby. Keep headline, auxiliary supply, owner's main-line indication, every important observation, all of Dale's existing pencil annotations, top1985 clipping and layout unchanged. Do not create another photograph or replace any other text.",
+        "source": {
+          "basename": "exec-052d279e-f0bf-42c5-83f2-0a5045d79dc6.png",
+          "sha256": "94b48bf5a78ebf88fa5b7fd499780e2d8dd653139bdbcc4127b5de882cad9eeb",
+          "bytes": 2705113,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_CONTACT",
+      "title": "Field contact / keep with the radio",
+      "filename": "jpg/07-ev-dale-contact.jpg",
+      "group": "evening_documents",
+      "status": "authoring_existing",
+      "source": {
+        "path": "unreal/Narrative/EveningShift/modules/office.json",
+        "anchor": "/documents/5",
+        "text_sha256": "32f687436e01727d6a02c591492cd39c7cabef3f2c48c5d60293b1f41d543dc4"
+      },
+      "text": "FIELD MAINTENANCE CONTACT: DALE\nUse the SARO service telephone or the marked service-radio channel. Ask the operator for Dale / field maintenance. If the line is busy, leave the place you are calling from and the circuit label you copied.\n\nKeep the installation name, your position and the observation separate. Say what changed, what stayed still and what control you used. An uncertain reading is useful if you say it is uncertain.\n\nIf there is an immediate service problem, notify Ward, the duty officer, first. This card does not authorize switching or entry to a locked electrical yard.\n\nHandwritten addition: I may be on another line. Keep your note. Do not wait beside the gate just to get me on the radio. — D.",
+      "key_checks": [
+        "Telephone or marked service-radio channel; do not invent a frequency or phone number.",
+        "Ward is the duty officer and is notified first for immediate service problems.",
+        "A contact instruction card, not a photographic contact sheet."
+      ],
+      "intended_use_nb": "Fysisk kontaktkort under kontortelefonen, mulig å ta med.",
+      "kind": "typed",
+      "stamp": "OPERATIONS / CONTACT CARD",
+      "production_notes_nb": "Kortet gir kontaktinstruks, ikke ny oppdiktet tallfrekvens eller et telefonnummer som ikke finnes i spillet. Integrasjon må gi egne konkrete oppringings-/walkiehandlinger i egnet modul. Ingen fysisk Dale. Kan beholdes uten å utløse samtale eller blokkere hovedreise.",
+      "image": {
+        "filename": "jpg/07-ev-dale-contact.jpg",
+        "sha256": "bb68473ae88378d3b0a064f69c95cc1604cb5615bc074dc1479d2fcaf1758f1a",
+        "bytes": 391940,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE 4:3 cream contact card, brown tape remnants across the top corners, round hole at upper left. Sparse functional SARO OPERATIONS header, dark black typewritten four paragraphs. Put \"FIELD MAINTENANCE CONTACT: DALE\" as title, keep the rest readily readable. Last paragraph is a neat pencil handwritten addition; OMIT literal narrator prefix \"Handwritten addition:\" and keep its actual wording. Rounded worn corners, small coffee splash in otherwise empty bottom corner. No phone number, no numerical radio frequency, no photo.\nDocument title: Field contact / keep with the radio\nSmall stamp/header: OPERATIONS / CONTACT CARD\nFull text to lay out, preserving all actual document wording:\nFIELD MAINTENANCE CONTACT: DALE\nUse the SARO service telephone or the marked service-radio channel. Ask the operator for Dale / field maintenance. If the line is busy, leave the place you are calling from and the circuit label you copied.\n\nKeep the installation name, your position and the observation separate. Say what changed, what stayed still and what control you used. An uncertain reading is useful if you say it is uncertain.\n\nIf there is an immediate service problem, notify Ward, the duty officer, first. This card does not authorize switching or entry to a locked electrical yard.\n\nHandwritten addition: I may be on another line. Keep your note. Do not wait beside the gate just to get me on the radio. — D.",
+        "source": {
+          "basename": "exec-2c18da2c-4ef9-4d66-b333-b467d08a9cff.png",
+          "sha256": "0c82ca899fd38404efc65d89741c5d30b9a47905ec7acf3d8a2d0bfe37fb7d4b",
+          "bytes": 2753135,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_NOTE",
+      "title": "A note beneath the inspection sheets",
+      "filename": "jpg/08-ev-dale-note.jpg",
+      "group": "evening_documents",
+      "status": "authoring_existing",
+      "source": {
+        "path": "unreal/Narrative/EveningShift/modules/office.json",
+        "anchor": "/documents/6",
+        "text_sha256": "1e13b206c1747b904ad850cb240d00d9110283d0574b00ce84df5ebaa29e2d2e"
+      },
+      "text": "I started this folder because the service complaint kept coming back under different names. Weak lamp. Bad connection. Somebody seeing a shape out by the wire. It is tempting to put them all in the same box.\n\nThe first two have ordinary tests. The third may be a camera fault. I have watched that tape enough times to start anticipating the movement. That is not the same as understanding it.\n\nI marked the camera position because it is the one thing I could check afterwards. The culvert, the two white bands and the nearest pole are still there. Stand there before making a copy of my conclusion. I have not made one.\n\nOn the recording the lamp is visible. You cannot tell from the picture which supply feeds it. Check that before treating the lamp as a contradiction. Keep the actual supply test and the movement on the tape as separate observations.\n\nI have put copies of the local notices behind this page. There may be something worth comparing in the old survey papers, but I have not established a connection. Similar words in two accounts are a reason to check the originals, not permission to fill the gap.\n\nIf you take the sheet, leave me a note. If I am not on the telephone, try the service radio. Do not tell the others I have found something. I have found somewhere to look.",
+      "key_checks": [
+        "Handwritten note beneath the inspection sheets; Dale has found somewhere to look, not a conclusion.",
+        "Keep lamp supply tests and uncertain tape movement separate.",
+        "No revelation of Nora, Tomas, 1947 identities, C, or the finale."
+      ],
+      "intended_use_nb": "Privat forklaring under inspeksjonsarkene, frivillig fordypning.",
+      "kind": "hand",
+      "stamp": "DALE / UNSENT WORKING NOTE",
+      "production_notes_nb": "Gradvis fordypning etter et menneskelig, ordinært kontor. Dale har jobbet med spor og kjenner ståstedet, men vet ikke årsak, C, Nora eller finalen. Ingen talt opplesning med Kinski-profil; dokumenttekst er skriftlig.",
+      "image": {
+        "filename": "jpg/08-ev-dale-note.jpg",
+        "sha256": "31e2c8a9de21295c175c4d552a6091b0e67d936639019c8ccd0a5bfacaacad80",
+        "bytes": 410808,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait private pencil letter on aged cream notepaper, six full paragraphs in readily legible compact hand printing. Quiet experienced maintenance-worker hand, subtly irregular baselines, occasional natural retraced letter. Title at top \"A note beneath the inspection sheets\", smaller \"DALE / UNSENT WORKING NOTE\". A fold through blank paragraph spacing, a faint coffee ring near edge, staple shadow at upper left. Make every supplied word readable, no added claims, no seal, no diagrams.\nFull actual document text verbatim:\nI started this folder because the service complaint kept coming back under different names. Weak lamp. Bad connection. Somebody seeing a shape out by the wire. It is tempting to put them all in the same box.\n\nThe first two have ordinary tests. The third may be a camera fault. I have watched that tape enough times to start anticipating the movement. That is not the same as understanding it.\n\nI marked the camera position because it is the one thing I could check afterwards. The culvert, the two white bands and the nearest pole are still there. Stand there before making a copy of my conclusion. I have not made one.\n\nOn the recording the lamp is visible. You cannot tell from the picture which supply feeds it. Check that before treating the lamp as a contradiction. Keep the actual supply test and the movement on the tape as separate observations.\n\nI have put copies of the local notices behind this page. There may be something worth comparing in the old survey papers, but I have not established a connection. Similar words in two accounts are a reason to check the originals, not permission to fill the gap.\n\nIf you take the sheet, leave me a note. If I am not on the telephone, try the service radio. Do not tell the others I have found something. I have found somewhere to look.",
+        "source": {
+          "basename": "exec-2a1f138f-e023-4168-9a20-8247be86bf34.png",
+          "sha256": "90313b83e7888f5e4294afbc6ae777d02432bd80bc77ef5d18a84216a0ccedfb",
+          "bytes": 2770391,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_SKYLOG",
+      "title": "Lights above the ridge / 6 April",
+      "filename": "jpg/09-ev-dale-skylog.jpg",
+      "group": "dale_private_drafts",
+      "status": "optional_prop",
+      "source": {
+        "path": "unreal/DALE_OFFICE_DOCUMENTS.md",
+        "anchor": "### EV_DALE_SKYLOG: Lights above the ridge / 6 April",
+        "text_sha256": "ee019c1e6184e67f9eedfceaca7df8622b15dc89e56ae4d08c68243636e1eda3"
+      },
+      "text": "6 APR. Kitchen clock about 20:40. One white light crossed above the ridge and stopped where there is no tower. I went outside. It moved again before I found the binoculars. Aircraft remain possible; I lost the horizon behind the roof. What bothers me is the dog. He kept watching the empty place for another ten minutes.",
+      "key_checks": [
+        "6 April; kitchen clock about 20:40, not a precision measurement.",
+        "One white light above a ridge; aircraft remain possible.",
+        "The horizon sketch is a witness memory, not measured flight geometry.",
+        "Optional authoring draft; this asset does not register a new runtime document or unlock."
+      ],
+      "intended_use_nb": "håndskrevet ark med en enkel horisontskisse i privatmappen. Den planlagte skissen er et minne fra et vitne, ikke målt flygeometri. Gir gjenkjennelse til kveldens tidlige lys.",
+      "source_state_nb": "Eksisterende frivillig manusutkast, ikke registrert i Narrative-JSON eller runtime.",
+      "image": {
+        "filename": "jpg/09-ev-dale-skylog.jpg",
+        "sha256": "e108fb998ae4406e2371344cc8bfa6b59f258c087e4c6fd32f023f6b0184f254",
+        "bytes": 433341,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait leaf torn from a light-blue-ruled notebook, dark blue ballpoint handwriting. Heading \"6 APR / LIGHTS ABOVE THE RIDGE\". Put exact supplied paragraph in readable handwriting in upper half. Lower half has a plain, fragile graphite landscape sketch: a low distant ridge, a small roof edge in foreground partly blocking horizon, a single tiny white light marked with an uncertain curved dashed pencil trajectory, NOT a flying saucer. Ordinary witness recollection rather than technical map, no compass bearing, no measured flight-path coordinates. A gentle dog-eared corner and pencil smudges. This drawing does not reveal an alien or new facts.\nFull actual document text verbatim:\n6 APR. Kitchen clock about 20:40. One white light crossed above the ridge and stopped where there is no tower. I went outside. It moved again before I found the binoculars. Aircraft remain possible; I lost the horizon behind the roof. What bothers me is the dog. He kept watching the empty place for another ten minutes.",
+        "source": {
+          "basename": "exec-85e7c209-0b71-46a3-ad7b-415ae7fc267d.png",
+          "sha256": "55ccbdc7b4739c87ab0e088fabc9138a50d9a4de9402c6e6eefb85060d66dd8d",
+          "bytes": 3033440,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_WITNESS",
+      "title": "Statement copied at the service desk / 29 March",
+      "filename": "jpg/10-ev-dale-witness.jpg",
+      "group": "dale_private_drafts",
+      "status": "optional_prop",
+      "source": {
+        "path": "unreal/DALE_OFFICE_DOCUMENTS.md",
+        "anchor": "### EV_DALE_WITNESS: Statement copied at the service desk / 29 March",
+        "text_sha256": "d5ffc85090b546a876f21d2171d612ebfec870ac26825c5ae079312ed9744ff3"
+      },
+      "text": "Mrs. Bell says she heard someone crossing the yard after the porch lamp failed. The shape stood beside the washing line, taller than her husband. She called his name. It bent toward the window without taking a step. Her husband was asleep upstairs. She asked me to write “person,” not “creature.” I have kept her wording. I did not see it.",
+      "key_checks": [
+        "29 March; a copied statement with Dale's initials, not an official police finding.",
+        "Mrs. Bell requested the word person, not creature; Dale did not see the shape.",
+        "No confirmed species or identity.",
+        "Optional authoring draft; this asset does not register a new runtime document or unlock."
+      ],
+      "intended_use_nb": "avskrift med dato og Dales initialer, ikke et offisielt politibevis. Gir direkte, ubehagelig humanoidstoff uten å erklære art eller identitet.",
+      "source_state_nb": "Eksisterende frivillig manusutkast, ikke registrert i Narrative-JSON eller runtime.",
+      "image": {
+        "filename": "jpg/10-ev-dale-witness.jpg",
+        "sha256": "5b7d40da90173d7ecf33444fb202f0f089e114546df800b909b8477d0e25b2e0",
+        "bytes": 441805,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait March29,1986 witness transcription copied on thin pale cream service-desk form. Title \"STATEMENT COPIED AT THE SERVICE DESK\", date \"29 MARCH 1986\", subject \"Mrs. Bell\". Exact paragraph below in excellent black typewriting. Small graphite initials \"D.\" after the statement. Bottom half contains a rough human recollection sketch on the same sheet: a porch window edge, washing line across a normal backyard and an ambiguous very tall humanlike charcoal outline beyond it. It is an unmeasured pencil sketch, not a photograph or proof. The shape has no detailed face or mouth or eyes. A small pencil note \"I did not see it.\" can repeat the final sentence as annotation. No police seal, no false official case number, no sensational creature branding.\nFull actual document text verbatim:\nMrs. Bell says she heard someone crossing the yard after the porch lamp failed. The shape stood beside the washing line, taller than her husband. She called his name. It bent toward the window without taking a step. Her husband was asleep upstairs. She asked me to write “person,” not “creature.” I have kept her wording. I did not see it.",
+        "source": {
+          "basename": "exec-74895b30-0e5f-4f12-a60e-0700d2fc4d3f.png",
+          "sha256": "c7eb76697614170fee10b8b043c2e0eddd86ec31c150a336a55e5ca207fb4850",
+          "bytes": 3191087,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_EXPLANATIONS",
+      "title": "Explanations retained / working sheet",
+      "filename": "jpg/11-ev-dale-explanations.jpg",
+      "group": "dale_private_drafts",
+      "status": "optional_prop",
+      "source": {
+        "path": "unreal/DALE_OFFICE_DOCUMENTS.md",
+        "anchor": "### EV_DALE_EXPLANATIONS: Explanations retained / working sheet",
+        "text_sha256": "f641cc3a2d934032b53fac44289b23a482d0dcaa14925d583e1ddaa1a6cff3ff"
+      },
+      "text": "Three reports were aircraft. One bright object was visible from the same chair on four clear evenings: a star, made strange by the window glass. Keep those pages. Crossing out an explanation does not make the next report true. The service-road account remains open because neither witness describes the same direction. Ask separately before showing either one the other statement.",
+      "key_checks": [
+        "Three aircraft reports and one star/window-glass explanation remain in the file.",
+        "The service-road witness directions disagree; keep that discrepancy.",
+        "Do not convert a crossed-out explanation into positive proof.",
+        "Optional authoring draft; this asset does not register a new runtime document or unlock."
+      ],
+      "intended_use_nb": "flere kryssede saker foran de åpne. Gjør Dale troverdig og lar normale forklaringer fortsatt være sanne uten å bortforklare spillerens faktiske møter.",
+      "source_state_nb": "Eksisterende frivillig manusutkast, ikke registrert i Narrative-JSON eller runtime.",
+      "image": {
+        "filename": "jpg/11-ev-dale-explanations.jpg",
+        "sha256": "ef01d02c6c979f9a2ff8fa29217ba38782e728b6e24e3714aff4a2f36119a0d4",
+        "bytes": 334210,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait pale-gray office working sheet. Large typewritten heading \"EXPLANATIONS RETAINED\", subheading \"WORKING SHEET\". Top third has four plain ruled log rows: AIRCRAFT / AIRCRAFT / AIRCRAFT / STAR, each neatly struck through once in graphite with small check, not angry scribbling. These illustrate exactly the three aircraft and one star in supplied text. Below them write the full provided paragraph in comfortable, very legible graphite hand printing. Bottom small label \"SERVICE ROAD: OPEN\" and empty lines, no extra statements or made-up dates. Administrative skepticism rather than conspiracy, subdued light blue carbon-copy traces and old staple holes. White-gray toned paper rather than strong yellow. No sealed government classification.\nFull actual document text verbatim:\nThree reports were aircraft. One bright object was visible from the same chair on four clear evenings: a star, made strange by the window glass. Keep those pages. Crossing out an explanation does not make the next report true. The service-road account remains open because neither witness describes the same direction. Ask separately before showing either one the other statement.",
+        "source": {
+          "basename": "exec-e565f1b2-a282-41f7-8f79-151e51da2daa.png",
+          "sha256": "019e7cc649b9cf98c9c8220063221152b754e8253260121d79b766337ddca809",
+          "bytes": 2706017,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_FRAME18",
+      "title": "Photograph envelope / frame 18",
+      "filename": "jpg/12-ev-dale-frame18.jpg",
+      "group": "dale_private_drafts",
+      "status": "optional_prop",
+      "source": {
+        "path": "unreal/DALE_OFFICE_DOCUMENTS.md",
+        "anchor": "### EV_DALE_FRAME18: Photograph envelope / frame 18",
+        "text_sha256": "6837c5560997c79dbbca9cd84393c33dcf1d881f91871f09b1f5775a9da36ff6"
+      },
+      "text": "Do not crop the left edge. The porch post is the only useful measure of height. The pale mark might be glare from the kitchen window; the negative needs checking. What I remember is a shape standing beyond the fence. What the photograph contains may be something else. Keep both sentences. I am starting to replace one with the other.",
+      "key_checks": [
+        "Preserve the LEFT edge and visible porch post as the only useful height reference.",
+        "A pale mark may be kitchen-window glare; the photo is inconclusive.",
+        "A photograph/negative, if illustrated, must be an actual visible prop rather than invented completed evidence.",
+        "Optional authoring draft; this asset does not register a new runtime document or unlock."
+      ],
+      "intended_use_nb": "konvolutt med et planlagt dårlig eksponert fotografi/negativ. Fotoet må faktisk lages og granskes; ikke tildel et bildebevis som bare finnes i tekst. Vanlig sammenligningspunkt skal være synlig hvis fotoet brukes.",
+      "source_state_nb": "Eksisterende frivillig manusutkast, ikke registrert i Narrative-JSON eller runtime.",
+      "image": {
+        "filename": "jpg/12-ev-dale-frame18.jpg",
+        "sha256": "1eb49b5ceef9c68a0704adeb6d1820fcb0662e663e350829b4d89d3afc28bbbc",
+        "bytes": 383456,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait document assembly that is a FLAT scanned beige photographic envelope with a small original 1980s snapshot taped across its upper half, and Dale's exact pencil note in lower half. Envelope title in typewriter \"PHOTOGRAPH ENVELOPE / FRAME 18\", graphite \"18\" circled near the closure. The attached snapshot must be an unsettling, badly underexposed, grainy monochrome analog PHOTO taken from a porch at night: a clearly visible entire vertical ordinary porch post at the FAR LEFT photo edge, a rail fence across a dark rural yard, a pale ambiguous vertical mark just beyond the fence. The pale mark must plausibly be glare from a kitchen window, not a clearly recognizable alien or human. The porch post is the useful height reference and must not be cropped away. Photo has no legible camera date and no numbers other than frame18 on envelope. Keep photograph half and complete written note half distinct and readable. Subtle photo emulsion silvering, fine scratches; no fake horror monster. Write note exactly below photo, fully readable graphite. Do not add confirmed measurements or a second incident.\nFull actual document text verbatim:\nDo not crop the left edge. The porch post is the only useful measure of height. The pale mark might be glare from the kitchen window; the negative needs checking. What I remember is a shape standing beyond the fence. What the photograph contains may be something else. Keep both sentences. I am starting to replace one with the other.",
+        "source": {
+          "basename": "exec-d0b1e21e-e8ef-4d1e-9fb0-32a3401c2b6d.png",
+          "sha256": "c3d83010f94390b4b0a62a2c1fa1ff1a7aeffe3cd8b47ac71b0cfd6a6cbb9d69",
+          "bytes": 2908718,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_TAPELOAN",
+      "title": "Borrowed cassette / return sleeve",
+      "filename": "jpg/13-ev-dale-tapeloan.jpg",
+      "group": "dale_private_drafts",
+      "status": "optional_prop",
+      "source": {
+        "path": "unreal/DALE_OFFICE_DOCUMENTS.md",
+        "anchor": "### EV_DALE_TAPELOAN: Borrowed cassette / return sleeve",
+        "text_sha256": "47a53e716eba6ee33398193f12c44c2d85cef5884b4e20655001c737d113e9ba"
+      },
+      "text": "Public lecture, borrowed from a neighbor. Speakers describe visitors, contact and messages from elsewhere. No local recording. No connection established with the service-road tape. I kept it because people use these words when they call, and I need to know what they have heard already. Return it on Tuesday. Do not record over the label. There are family birthdays underneath.",
+      "key_checks": [
+        "A borrowed public lecture, not Dale's local Service Road / Field 01 VHS.",
+        "Return Tuesday; family birthdays were recorded underneath.",
+        "Use fictional sleeve artwork; no actual third-party lecture footage or attribution is supplied.",
+        "Optional authoring draft; this asset does not register a new runtime document or unlock."
+      ],
+      "intended_use_nb": "lånt offentlig kontaktforelesning, tydelig atskilt fra hans felt-VHS. Gir 1986-miljø og viser hvordan ord kan spre seg mellom vitner uten å skape uavhengige bevis.",
+      "source_state_nb": "Eksisterende frivillig manusutkast, ikke registrert i Narrative-JSON eller runtime.",
+      "image": {
+        "filename": "jpg/13-ev-dale-tapeloan.jpg",
+        "sha256": "9e14fee62e576086c8e12cb3483a81697c3b4e97885eeaee0ce09a3013e8a605",
+        "bytes": 434278,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE4:3 worn off-white paper cassette return sleeve, fullbleed flat surface, photocopied typography and a fading red \"RETURN\" rubber stamp. Title \"BORROWED CASSETTE / RETURN SLEEVE\", small handwritten label \"Public lecture\" and under it \"Return Tuesday\". Include entire supplied paragraph in large readable typewriter text with last two sentences underlined by Dale in pencil. A restrained simple printed rectangle representing the loan label, old tan adhesive and a faint blue carbon-copy corner. This is a borrowed PUBLIC CONTACT LECTURE, distinct from Dale's field VHS. No Unarius logo, no real-world lecturer photograph, no names or brands of third-party material, no VHS scenery still. No invented exact date.\nFull actual document text verbatim:\nPublic lecture, borrowed from a neighbor. Speakers describe visitors, contact and messages from elsewhere. No local recording. No connection established with the service-road tape. I kept it because people use these words when they call, and I need to know what they have heard already. Return it on Tuesday. Do not record over the label. There are family birthdays underneath.",
+        "source": {
+          "basename": "exec-0535d70d-44aa-4b81-99a9-fb99a4cfd0e4.png",
+          "sha256": "d5b77677e3153bd5b58d9f869736d28613b57db1dd354d7856c9936647ba37ca",
+          "bytes": 2982601,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "EV_DALE_UNSENT",
+      "title": "Unsent letter / no address",
+      "filename": "jpg/14-ev-dale-unsent.jpg",
+      "group": "dale_private_drafts",
+      "status": "optional_prop",
+      "source": {
+        "path": "unreal/DALE_OFFICE_DOCUMENTS.md",
+        "anchor": "### EV_DALE_UNSENT: Unsent letter / no address",
+        "text_sha256": "5ee259289ca78739439c8b0814839a33d2ec00f1ff62a9c807e3c0f0ae2e1072"
+      },
+      "text": "I was going to tell you about the lights, then I read this back and heard how it sounded. You would ask whether I am sleeping. Fair question. I still do the shopping. I still forget the milk. I would like one evening when the telephone rings and I expect an ordinary problem. Do not mail this. Get some sleep first.",
+      "key_checks": [
+        "An unsent, unaddressed personal letter beneath ordinary working sheets.",
+        "Keep the everyday shopping, forgotten milk and sleep details.",
+        "No all-knowing explanation or new plot revelation.",
+        "Optional authoring draft; this asset does not register a new runtime document or unlock."
+      ],
+      "intended_use_nb": "under vanlige arbeidsark, ikke låst som en nødvendig hemmelighet. Dale blir en person med søvn, handleliste og skam over hvordan opplevelsene høres ut.",
+      "source_state_nb": "Eksisterende frivillig manusutkast, ikke registrert i Narrative-JSON eller runtime.",
+      "image": {
+        "filename": "jpg/14-ev-dale-unsent.jpg",
+        "sha256": "12cca95449f8507f16f8c62224f240102189b354ca5f81661877e068edf2bd8d",
+        "bytes": 349757,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait small personal letter on lightly aged off-white unruled writing paper. No institutional header or stamp. All exact supplied text in easily read dark-blue ballpoint handwriting, natural adult hand with occasional retraced strokes. Keep generous negative space, slightly diagonal baselines, fold marks from a pocket. Small pencil words \"Do not mail this.\" underlined in the closing sentence only. No address or recipient, no signature added. This should look private, ordinary and human, with one tiny shopping reminder \"milk\" squeezed into an empty side margin.\nVerbatim actual document text:\nI was going to tell you about the lights, then I read this back and heard how it sounded. You would ask whether I am sleeping. Fair question. I still do the shopping. I still forget the milk. I would like one evening when the telephone rings and I expect an ordinary problem. Do not mail this. Get some sleep first.",
+        "source": {
+          "basename": "exec-debce87f-afad-4842-acb3-95117aa26aff.png",
+          "sha256": "1c5a85f67b05000cc9a6923baa5ad90fe1f44164845ed79cd1987e7c7f04fb93",
+          "bytes": 2734618,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "E15",
+      "title": "E15 / The Sentinel clipping",
+      "filename": "jpg/15-e15-sentinel-1947.jpg",
+      "group": "archive_newspaper",
+      "status": "runtime_reference",
+      "source": {
+        "path": "web/src/world/Diner.ts",
+        "symbol": "clipping canvas / masthead, headline, subtitle, photo caption",
+        "text_sha256": "3a47ab09597cd06189e8bff380f0f52b5f41685f546617ff745db7d3cbc9104c"
+      },
+      "text": "PECOS VALLEY SENTINEL\n\nLIGHT HELD OVER MESA\nFOR AN HOUR\n\nRanchers on the old survey road watched a steady\nglow; Army field office cites weather equipment\n\nSeen from the Kessler ranch, 3 a.m.",
+      "key_checks": [
+        "Metadata date is July 1947; NO printed date appears on the clipping.",
+        "The separate frame pencil note July '47 is not printed newspaper content.",
+        "Photo: flat mesa, a steady light high above it, TWO RANCHERS at a fence.",
+        "Photo: low to the RIGHT of the mesa, a smudge with a SHORT TAIL; right edge trimmed close.",
+        "Composition follows the crop B relationships of photo_1947_master: flat mesa, steady high light, short-tailed smudge low to its right, two foreground ranchers at fence; generated reinterpretation, not a pixel-identical crop.",
+        "Source has stylized body-text rules, not a supplied verbatim article; do not invent a historical article transcription."
+      ],
+      "intended_use_nb": "Gammelt fiktivt avisutklipp fra dinerens vegg, bevart som senere hovedrutebevis.",
+      "date_metadata": "July 1947",
+      "kind": "newspaper",
+      "stamp": "E15",
+      "transcript": "The Pecos Valley Sentinel, July 1947, cut out and framed by the diner door. LIGHT HELD OVER MESA FOR AN HOUR. Ranchers on the old survey road watched a steady glow; the Army field office cites weather equipment.\n\nThe photograph: a flat mesa, a steady light high over it, two ranchers at a fence. Low to the right of the mesa, a smudge with a short tail. The right-hand edge of the picture is trimmed close.",
+      "transcript_source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp",
+        "symbol": "US47Chapter5::DocClipping"
+      },
+      "historical_layout_reference_nb": "Nettkilden er historisk layoutreferanse; dagens Unreal DocClipping henter samme eksporterte avisflate.",
+      "image": {
+        "filename": "jpg/15-e15-sentinel-1947.jpg",
+        "sha256": "d19cc51f503dee59090bd10fd7eeb9b9ef4832309ae5dd2f909e64e72fc499ef",
+        "bytes": 593960,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Create a portrait1947 newspaper clipping around a crop of the supporting original black and white archive photo. The given image is a supporting original photographic plate, NOT the final layout. Use its LEFT74percent with two foreground ranchers at fence; exclude the three rightmost distant survey-team figures. Keep the flat mesa, bright steady light HIGH above it, and the smaller faint short-tailed smudge LOW TO ITS RIGHT. Preserve the scene relationships and photograph appearance as close to supplied plate as possible. No flying saucer. Original narrow fictional local paper masthead PECOS VALLEY SENTINEL, bold letterpress two-line headline, readable short subheading, then the photograph in the central half and its exact italic caption. Dark sepia-gray letterpress on yellowed1940s newsprint, subtle foxing, torn edges, close-trimmed right photo edge. NO date printed on the clipping, NO artificial body columns or fake microtext. No modern design, no added headline. It should be one complete flat clipping with the four provided text elements and supporting photograph, ready for the diner frame.\nVerbatim actual document text:\nPECOS VALLEY SENTINEL\n\nLIGHT HELD OVER MESA\nFOR AN HOUR\n\nRanchers on the old survey road watched a steady\nglow; Army field office cites weather equipment\n\nSeen from the Kessler ranch, 3 a.m.",
+        "source": {
+          "basename": "exec-dde576da-2cb4-4d47-87eb-17781eedf994.png",
+          "sha256": "cee9a50fd934198c58b8c8dc66adf9226799cb9091ef046fa60cd85ebe39e981",
+          "bytes": 3861460,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "E07",
+      "title": "E07 / Field survey record, 1947",
+      "filename": "jpg/16-e07-original-survey-1947.jpg",
+      "group": "survey_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Chapter2.cpp",
+        "symbol": "ORIGINAL",
+        "text_sha256": "beb11e888b365db7bb0087bf450742ef206179fe379fa3d52f3b705a201068a3"
+      },
+      "text": "FIELD SURVEY RECORD / STATION 01 / 1947\n\nThe reference remained visible in the plate after the lamp circuit was opened. A second plate was exposed with the local lamp isolated. The retained mark did not follow the new position of the physical vane.\n\nThe arrangement used three references: A, the fixed survey point; B, the optical comparison vane; and C, the closing sight line. The run was interrupted before the final observation was entered. Preserve the original plates and the complete arrangement drawing.\n\nN. VEGA / FIELD TECHNICIAN",
+      "key_checks": [
+        "1947, STATION 01, signed N. VEGA / FIELD TECHNICIAN.",
+        "Original drawing MUST retain A, B and C.",
+        "The retained mark survives local lamp isolation; the final observation is interrupted."
+      ],
+      "intended_use_nb": "Original feltprotokoll med komplett oppstilling, til sammenligning i arkivet.",
+      "kind": "typed",
+      "stamp": "E07",
+      "source_document_symbol": "US47Chapter2::DocOriginal",
+      "image": {
+        "filename": "jpg/16-e07-original-survey-1947.jpg",
+        "sha256": "ccfb37a9eee71c4a584c292b9f4c590c84962099408c3e5271809e08078cb434",
+        "bytes": 373773,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait1947 FIELD SURVEY RECORD, original institutional form, aged pale ivory rather than orange. Fine printed administrative rules and exact typewritten text below. Large sober header FIELD SURVEY RECORD / STATION 01 / 1947, small rubber stamp ORIGINAL in faded navy. Body with two complete paragraphs and a simple carefully ruled ATTACHED ARRANGEMENT box in bottom third: only three small labeled reference marks A, B and C connected schematically; no compass, map, coordinates, numbers or physical destination. Under the box render \"A - B - C\". Put signature block N. VEGA / FIELD TECHNICIAN below all. Subtle purple carbon-copy trace at far margin, two binder holes, faded ink, broad safe margins. Do NOT redact or obscure any supplied text. This original will be compared to a later amended copy with C removed. The full retained-reference finding is the readable key.\nVerbatim actual document text:\nFIELD SURVEY RECORD / STATION 01 / 1947\n\nThe reference remained visible in the plate after the lamp circuit was opened. A second plate was exposed with the local lamp isolated. The retained mark did not follow the new position of the physical vane.\n\nThe arrangement used three references: A, the fixed survey point; B, the optical comparison vane; and C, the closing sight line. The run was interrupted before the final observation was entered. Preserve the original plates and the complete arrangement drawing.\n\nN. VEGA / FIELD TECHNICIAN",
+        "source": {
+          "basename": "exec-d5f858d5-376e-423f-adca-3fd59df4a402.png",
+          "sha256": "80210b87e48559bbee9a34a4442cd7906572bf65767f47288c40c5ca9eec56ee",
+          "bytes": 2802180,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "E06",
+      "title": "E06 / Amended service copy, 1947",
+      "filename": "jpg/17-e06-amended-survey-1947.jpg",
+      "group": "survey_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Chapter2.cpp",
+        "symbol": "AMENDED",
+        "text_sha256": "5483bf03ce84f6a9a523e86237e4123ec7aee83463879598ec836e41522ccd45"
+      },
+      "text": "FIELD SURVEY RECORD / STATION 01 / 1947\nAMENDED COPY\n\nThe additional mark is attributed to a fault in plate development. The lamp and comparison vane are sufficient to describe the test. The incomplete closing sight line has been omitted from the service copy.\n\nNo repeat observation is required. Retain the amended copy with the routine reference records.\n\nN. VEGA / FIELD TECHNICIAN",
+      "key_checks": [
+        "1947, STATION 01, same N. Vega signature as E07.",
+        "Amended arrangement omits C; otherwise align the two diagrams for comparison.",
+        "Do not redact the omission/development explanation or the No repeat observation line."
+      ],
+      "intended_use_nb": "Revidert servicekopi som viser den konkrete forskjellen fra originalen.",
+      "kind": "typed",
+      "stamp": "E06",
+      "source_document_symbol": "US47Chapter2::DocAmended",
+      "image": {
+        "filename": "jpg/17-e06-amended-survey-1947.jpg",
+        "sha256": "1fc3126b176bbee5b782a6b92991d02750603379790fe0a9fec9bc673b3106e7",
+        "bytes": 288255,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: EDIT the supplied original1947 report into its directly comparable AMENDED SERVICE COPY. Preserve its portrait shape, header position, same print style, same ruled form and diagram box positions, binder-hole positions and paper material. Replace the blue ORIGINAL stamp with faded red AMENDED COPY. Completely REPLACE both original body paragraphs with the exact amended text below; absolutely no old retained-reference paragraph can remain visible or ghosted. In lower ATTACHED ARRANGEMENT diagram preserve A at left and B vane in center in exactly the original positions, but REMOVE C completely: no C letter, no right reference point, no dashed line beyond B. Below diagram change A - B - C to A - B. Keep N. VEGA / FIELD TECHNICIAN signature block. Do not use black redactions, explanatory editorial annotations or scribbled-over key sentences. The player must compare readable source texts. Maintain identical overall structure to original.\nActual complete source text verbatim:\nFIELD SURVEY RECORD / STATION 01 / 1947\nAMENDED COPY\n\nThe additional mark is attributed to a fault in plate development. The lamp and comparison vane are sufficient to describe the test. The incomplete closing sight line has been omitted from the service copy.\n\nNo repeat observation is required. Retain the amended copy with the routine reference records.\n\nN. VEGA / FIELD TECHNICIAN",
+        "source": {
+          "basename": "exec-3bbf03ca-f641-4040-a0e6-c98a3312f086.png",
+          "sha256": "30a79993d069bde319c9d8218280140fb1fd264f69ab4d7ca2d0d6b2cf9612c3",
+          "bytes": 2319863,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "E08",
+      "title": "E08 / Archive sleeve index",
+      "filename": "jpg/18-e08-archive-sleeve.jpg",
+      "group": "survey_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Chapter2.cpp",
+        "symbol": "INDEX",
+        "text_sha256": "c09a6bc0edd83ba4d18305c772f919bc63b317461886107f70d886aa1fe53738"
+      },
+      "text": "PLATE / 1947 / STATION 01\n\nFixed-point mark: outlined triangle with a short horizontal bar beneath it.\nArrangement: A - B - C.\nService index: B-12.\nField destination: OLD SURVEY STATION.\n\nRETURN CHECK: Match both STATION 01 and the fixed-point mark. A similar triangle without the bar is a general elevation symbol and is not a matching survey reference.",
+      "key_checks": [
+        "STATION 01 / 1947 / B-12 / A - B - C.",
+        "Fixed-point symbol is an outlined TRIANGLE with a SHORT HORIZONTAL BAR underneath.",
+        "A triangle without the bar is explicitly not a matching reference.",
+        "This is an archive sleeve index, not a player photograph."
+      ],
+      "intended_use_nb": "Gulnet arkivhylster med registerkort og korrekt fastpunktsmerke.",
+      "kind": "typed",
+      "stamp": "E08",
+      "source_document_symbol": "US47Chapter2::DocIndex",
+      "image": {
+        "filename": "jpg/18-e08-archive-sleeve.jpg",
+        "sha256": "6641763d857c3287a1e1257e15701c00ad225966fac4dabfc974bc0ac3da17c9",
+        "bytes": 429940,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait1947 manila plate ARCHIVE SLEEVE, not a typed page on a desk. A darker ochre folded paper sleeve with a fine burgundy rectangular printed archive label occupying its upper two thirds, old numbering slots but no invented numbers. Title PLATE / 1947 / STATION01 and complete exact supplied text in very legible typewriter. Below title place one large simple BLACK OUTLINED TRIANGLE with a SHORT HORIZONTAL BAR BENEATH IT separated by a little gap, not crossing the triangle and not within it. This exact symbol must be unmistakable. Arrange A - B - C, B-12 and OLD SURVEY STATION in clear labeled rows. In a separate small RETURN CHECK box keep all the final supplied words. Tattered sleeve corners, light abrasion and old tape, empty lower closure fold. No photo, no saucer, no extra destination or coordinates.\nActual complete source text verbatim:\nPLATE / 1947 / STATION 01\n\nFixed-point mark: outlined triangle with a short horizontal bar beneath it.\nArrangement: A - B - C.\nService index: B-12.\nField destination: OLD SURVEY STATION.\n\nRETURN CHECK: Match both STATION 01 and the fixed-point mark. A similar triangle without the bar is a general elevation symbol and is not a matching survey reference.",
+        "source": {
+          "basename": "exec-e56c5e4a-856e-422f-8bb6-aadb18e55a92.png",
+          "sha256": "56555aca860859896cae8f58986ef7b6393d61f0587613ddbf60b19061a586f1",
+          "bytes": 2976242,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "B12_LINEAGE",
+      "title": "B-12 / Reference lineage card",
+      "filename": "jpg/19-b12-reference-lineage.jpg",
+      "group": "survey_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Chapter2.cpp",
+        "symbol": "LINEAGE",
+        "text_sha256": "d9e4336b7e1c1deec20fbb4ed6fc19dd37c553dc51a244821e98709e45338037"
+      },
+      "text": "SARO / REFERENCE LINEAGE / B-12\n\nThe B-12 comparison vane retains the fixed-point survey identified as STATION 01. Fixed-point register mark: outlined triangle with a short horizontal bar beneath it. The archive sleeve contains the dated plate and fixed-point sheet used for this index. Match the survey identifier and fixed-point mark before selecting the field destination.\n\nSITE REGISTER: STATION 01 / OLD SURVEY STATION. The matching archive sleeve contains the field access sheet.",
+      "key_checks": [
+        "B-12 refers to STATION 01 / OLD SURVEY STATION.",
+        "Preserve the outlined triangle with short horizontal bar beneath it.",
+        "Do not turn this card into the unrelated T02 service-road index."
+      ],
+      "intended_use_nb": "Kartotekkort som kobler dagens B-12 til det gamle målefeltet.",
+      "kind": "typed",
+      "stamp": "B-12",
+      "source_document_symbol": "US47Chapter2::DocLineage",
+      "image": {
+        "filename": "jpg/19-b12-reference-lineage.jpg",
+        "sha256": "75418eefa8337221efe46bf36fe326c98ba8fb2c4064506b6fafc8d4cff3802b",
+        "bytes": 384801,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE4:3 vintage ivory reference index card from SARO file drawers, faint green horizontal ruling, rounded worn corners. Typed heading SARO / REFERENCE LINEAGE / B-12. A large simple black OUTLINED TRIANGLE with a SHORT HORIZONTAL BAR BELOW IT at upper right, with small gap between triangle and bar; this is the correct matching archive symbol. The two exact full paragraphs below fill card in readable dark typewriting; emphasize STATION01 only by underlining. B-12 as a small red filing stamp at top left. No extra numbers, map or plot. The card is lighter and greener than the manila sleeve.\nActual complete source text verbatim:\nSARO / REFERENCE LINEAGE / B-12\n\nThe B-12 comparison vane retains the fixed-point survey identified as STATION 01. Fixed-point register mark: outlined triangle with a short horizontal bar beneath it. The archive sleeve contains the dated plate and fixed-point sheet used for this index. Match the survey identifier and fixed-point mark before selecting the field destination.\n\nSITE REGISTER: STATION 01 / OLD SURVEY STATION. The matching archive sleeve contains the field access sheet.",
+        "source": {
+          "basename": "exec-b45bab52-ff79-43d9-b57c-9df21557f355.png",
+          "sha256": "ec4b1e1da9ba0274d81f1e2c452fb7969ecd9d6d4b84c6ce89bb89fd02f35b93",
+          "bytes": 2710213,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "E09A",
+      "title": "E09A / Field transit record",
+      "filename": "jpg/20-e09a-field-transit.jpg",
+      "group": "survey_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Chapter3.cpp",
+        "symbol": "TRANSIT",
+        "text_sha256": "06a34c566df4a716ade46d26fbfda1c72e0cdac00d17652c60049d81590c3260"
+      },
+      "text": "FIELD TRANSIT / STATION 01 / E09A\n\n1947 / A: triangle with bar; mounted in the concrete footing on the transit sight line. B: fixed comparison marker to the west. C: closing sight line, shown in the original arrangement.\n\nCompare the empty footing, present markers and this diagram. Photograph both the footing and the marked post before recording which position changed.",
+      "key_checks": [
+        "A is in the concrete footing on the transit sight line; B is the fixed marker WEST.",
+        "C is a closing sight LINE from the original arrangement, not a separate movable marker.",
+        "Keep the north orientation and physical relations clear if including a diagram."
+      ],
+      "intended_use_nb": "Felttransitark fra stålrammen ved målepilaren på STATION 01.",
+      "kind": "typed",
+      "stamp": "E09A",
+      "source_document_symbol": "US47Chapter3::DocTransit",
+      "image": {
+        "filename": "jpg/20-e09a-field-transit.jpg",
+        "sha256": "5b8a930a78ff9820f4e9028f96d292819b17735bdc9dd79f2c1306f75d07ae24",
+        "bytes": 325653,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE4:3 vintage1947 field transit record on pale-gray cream engineering paper, fine black ruling, all supplied text clearly readable in the top and bottom margins. Center is a simple PLAN diagram with a transit represented by circle and cross-hairs near lower center; A is in a small SQUARE concrete footing directly ABOVE/NORTH of transit on a dashed vertical sight line continuing slightly pastA, with an outlined triangle and small bar under it inside the footing. B is a plain fixed comparison marker at LEFT/WEST on the same level as transit, connected to it by a horizontal line. C is a CLOSING SIGHT LINE that starts at transit and goes horizontally RIGHT off the diagram edge, labeled C near edge; C has NO endpoint circle or invented physical destination. Small north arrow points UP. Preserve these exact relationships. No roads, no map, no eight-mile point, no arbitrary bearing degrees or coordinates. Under drawing \"FIELD COPY / KEEP WITH THE TRANSIT\". Old fold, steel-clip edge marks, an ordinary field document. This is not Dales service-road camera index.\nActual source text verbatim (tilde indicates handwritten annotation, do not print the tilde):\nFIELD TRANSIT / STATION 01 / E09A\n\n1947 / A: triangle with bar; mounted in the concrete footing on the transit sight line. B: fixed comparison marker to the west. C: closing sight line, shown in the original arrangement.\n\nCompare the empty footing, present markers and this diagram. Photograph both the footing and the marked post before recording which position changed.",
+        "source": {
+          "basename": "exec-cf4ffd7d-0d02-47f1-8a3d-4c8ac93e25f1.png",
+          "sha256": "63b5a600e0160ce10d124ae083ffc57bc5e2eb234984a8a065e81328cd351c53",
+          "bytes": 2750033,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "E10",
+      "title": "E10 / Field timing record, 1947",
+      "filename": "jpg/21-e10-timing-record-1947.jpg",
+      "group": "survey_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Chapter3.cpp",
+        "symbol": "TIMING_1947",
+        "text_sha256": "e1b7174fefbee392b7cc2d01d8685ad9088d528f14875422098400736f8d4cd2"
+      },
+      "text": "FIELD TIMING RECORD / STATION 01 / E10\n\n02:17:00 / Carrier ceased. Recorded voice: ‘Reference west. No. East. Hold the last reading.’\n02:17:47 / Local relay impact and reference motion observed.\nFinal observation / Not entered.",
+      "key_checks": [
+        "Carrier ceased at 02:17:00; relay impact/reference motion at 02:17:47, exactly 47 seconds later.",
+        "Retain the correction Reference west. No. East. Hold the last reading.",
+        "Final observation stays Not entered.",
+        "Only the historical base page is printed; the conditional 1986 received-fragment addition is not part of this 1947 prop."
+      ],
+      "intended_use_nb": "Blyantført gammel tidsprotokoll på hyttebenken, uten senere dynamisk spillerobservasjon.",
+      "kind": "hand",
+      "stamp": "E10",
+      "source_document_symbol": "US47Chapter3::DocTiming",
+      "image": {
+        "filename": "jpg/21-e10-timing-record-1947.jpg",
+        "sha256": "b98d5c100ec4ef2b8866c0fc8f1f31eb1c9ec5186f8bdcef5bfbc5e9d34fbbcb",
+        "bytes": 308911,
+        "width": 1087,
+        "height": 1447,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait1947 ruled field ledger leaf, warm dirty ivory paper with blue ledger rules, graphite numerals and entries, title FIELD TIMING RECORD / STATION01 / E10. Layout as a very readable two-column timing log, left TIME, right OBSERVATION. First row02:17:00 has complete carrier-cessation and recorded-voice sentence below. Second row02:17:47 has local relay impact and reference motion. Third Final observation row has \"Not entered.\" followed by empty rules all the way down; NEVER fill in a final observation, add a date day or add a1986 received fragment. Fine pencil line pressure, one erased smudge on an unused lower rule, no narrator signature, no stamped conclusion. Keep dates and seconds exact.\nActual source text verbatim (tilde indicates handwritten annotation, do not print the tilde):\nFIELD TIMING RECORD / STATION 01 / E10\n\n02:17:00 / Carrier ceased. Recorded voice: ‘Reference west. No. East. Hold the last reading.’\n02:17:47 / Local relay impact and reference motion observed.\nFinal observation / Not entered.",
+        "source": {
+          "basename": "exec-bcc47184-6473-41a5-93ea-1e45b8116398.png",
+          "sha256": "58c9c52cc2c0c0bc2c08d05f07c00ac387a777744c2cf817c5c64e1521528635",
+          "bytes": 2557610,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1087,
+          "height": 1447
+        }
+      }
+    },
+    {
+      "id": "BINDER_NOTE",
+      "title": "Direction solve / exceptions / Systems note",
+      "filename": "jpg/22-binder-systems-note.jpg",
+      "group": "saro_technical_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp",
+        "symbol": "BINDER_NOTE",
+        "text_sha256": "7e0a42ed177bb5d35346950db19598504e82a25cecaea48130803c1a74334ad1"
+      },
+      "text": "SARO RX/DSP\nDIRECTION SOLVE - EXCEPTIONS\nFILE COPIES. DO NOT REMOVE.\n\nFROM SYSTEMS, 03/84:\nNEGATIVE RANGES CANNOT BE GENERATED\nBY THE SOLVER. RANGE IS COMPUTED FROM\nDELAY AND IS UNSIGNED. ANY NEGATIVE\nRANGE IS AN INPUT ERROR.\nRECLASSIFY AND FILE HERE.\n~ Then why does it keep doing it?",
+      "key_checks": [
+        "Systems note dated 03/84; the unsigned-range explanation is retained.",
+        "Pencil question: Then why does it keep doing it?"
+      ],
+      "intended_use_nb": "Maskinskrevet systemnotat med kritisk blyantmerknad, først i avvikspermen.",
+      "kind": "typed",
+      "image": {
+        "filename": "jpg/22-binder-systems-note.jpg",
+        "sha256": "18439514f65b0ae20d10e909358eb0d7e34bde220657293037f837c6d76773db",
+        "bytes": 347257,
+        "width": 1086,
+        "height": 1449,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait administrative white-gray1984 Systems note, a severe institutional typed memo filed in a ring binder with two punched holes. Header SARO RX/DSP, DIRECTION SOLVE - EXCEPTIONS, red stamp FILE COPIES. DO NOT REMOVE. Exact machine-type body, loose typewriter spacing and horizontal rules. The final \"~ Then why does it keep doing it?\" should be written by Dale in graphite below the official note as \"Then why does it keep doing it?\" with a small curved arrow toward NEGATIVE RANGES. All upper-case typed body remains readable and unchanged; slight red stamp elsewhere \"EXCEPTIONS\". Light gray paper tones, thin carbon-copy ink, one old coffee drip outside main body, no photographs, no fake case details.\nActual source text verbatim (tilde indicates handwritten annotation, do not print the tilde):\nSARO RX/DSP\nDIRECTION SOLVE - EXCEPTIONS\nFILE COPIES. DO NOT REMOVE.\n\nFROM SYSTEMS, 03/84:\nNEGATIVE RANGES CANNOT BE GENERATED\nBY THE SOLVER. RANGE IS COMPUTED FROM\nDELAY AND IS UNSIGNED. ANY NEGATIVE\nRANGE IS AN INPUT ERROR.\nRECLASSIFY AND FILE HERE.\n~ Then why does it keep doing it?",
+        "source": {
+          "basename": "exec-e277415c-3b5a-4a6a-a5be-77f62b4d6e65.png",
+          "sha256": "b398bd531532965639f01c55750b926d82f4b514e205a91d24e1652bc3c8c35c",
+          "bytes": 2896629,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1449
+        }
+      }
+    },
+    {
+      "id": "BINDER_1981",
+      "title": "Direction solve / September 22, 1981",
+      "filename": "jpg/23-binder-1981.jpg",
+      "group": "saro_technical_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp",
+        "symbol": "BINDER_PRINT_1",
+        "text_sha256": "76600e7c2abb904cada0ceaaaa1b6886d42eae806c7104ebdcc5febf22fc4b9c"
+      },
+      "text": "DATE    09/22/81   01:52:07\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -34 LY\n** CHECK SOLVE INPUTS **\nRECLASSIFIED: INPUT ERROR\n~ clock?",
+      "key_checks": [
+        "09/22/81 01:52:07; source distance -34 LY.",
+        "1420.405 MHz, PULSE GROUP 4 / 7, INPUT ERROR; pencil clock?"
+      ],
+      "intended_use_nb": "Første eldre maskinutskrift, stemplet som inndatafeil.",
+      "kind": "typed",
+      "image": {
+        "filename": "jpg/23-binder-1981.jpg",
+        "sha256": "2b4ee3e366efe9c5e8139b0ab79325dfa7aef1e0a9969ffcb09934c497aa88de",
+        "bytes": 374170,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE4:3 single archival DOT-MATRIX printer sheet from SARO direction-solver exceptions binder. Warm yellowed fanfold paper, faint pale-green wide alternating horizontal bands, old punched sprocket feed strips at both sides. A fold across a blank lower area. Sept1981 print has darker age at edge. Graphite question under data: clock?\nMain output should use a highly readable black authentic monospaced pin-printer font; clear aligned DATE / FREQ / PATTERN / SOURCE DISTANCE fields. The negative distance must retain the minus sign and leading digits exactly. At upper right a modest faded red rubber stamp \"INPUT ERROR\". Include complete source text below exactly. Bottom annotation after tilde is in graphite handwriting, do not print the tilde. No chart, no waveforms, no invented diagnostic values, no additional dates or source positions, no arrows replacing characters. Fullbleed paper only, no binderrings or scene.\nExact source text:\nDATE    09/22/81   01:52:07\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -34 LY\n** CHECK SOLVE INPUTS **\nRECLASSIFIED: INPUT ERROR\n~ clock?",
+        "source": {
+          "basename": "exec-e2ff2818-40f6-4735-aa36-8d6192f6a91d.png",
+          "sha256": "93979667f4c209c4440013d412df6b968fd6631de9d721209e0f40c170b6138c",
+          "bytes": 2943670,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "BINDER_1983",
+      "title": "Direction solve / March 2, 1983",
+      "filename": "jpg/24-binder-1983.jpg",
+      "group": "saro_technical_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp",
+        "symbol": "BINDER_PRINT_2",
+        "text_sha256": "445708b1f25dbe1b7a78ad943ff0135ccfd22cd0e36844bf74d3b6bd5b068cb5"
+      },
+      "text": "DATE    03/02/83   03:10:44\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -36 LY\n** CHECK SOLVE INPUTS **\nRECLASSIFIED: INPUT ERROR\n~ baseline file reloaded",
+      "key_checks": [
+        "03/02/83 03:10:44; source distance -36 LY.",
+        "1420.405 MHz, PULSE GROUP 4 / 7, INPUT ERROR; pencil baseline file reloaded."
+      ],
+      "intended_use_nb": "Andre eldre maskinutskrift med Dales noterte kontrollforsøk.",
+      "kind": "typed",
+      "image": {
+        "filename": "jpg/24-binder-1983.jpg",
+        "sha256": "a5aaf15da02b921764c36f7ce8e80806a60b8abe988332646dd56f5bed3a7eb0",
+        "bytes": 336582,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE4:3 single archival DOT-MATRIX printer sheet from SARO direction-solver exceptions binder. Pale cream-green fanfold paper with faint alternating horizontal green bands, intact sprocket perforations along both vertical edges, slight abrasion at the fold. March1983 print has ordinary old office storage wear. Pencil note underneath: baseline file reloaded\nMain output should use a highly readable black authentic monospaced pin-printer font; clear aligned DATE / FREQ / PATTERN / SOURCE DISTANCE fields. The negative distance must retain the minus sign and leading digits exactly. At upper right a modest faded red rubber stamp \"INPUT ERROR\". Include complete source text below exactly. Bottom annotation after tilde is in graphite handwriting, do not print the tilde. No chart, no waveforms, no invented diagnostic values, no additional dates or source positions, no arrows replacing characters. Fullbleed paper only, no binderrings or scene.\nExact source text:\nDATE    03/02/83   03:10:44\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -36 LY\n** CHECK SOLVE INPUTS **\nRECLASSIFIED: INPUT ERROR\n~ baseline file reloaded",
+        "source": {
+          "basename": "exec-8e879f16-a013-42df-b11b-e71ffe4aa816.png",
+          "sha256": "94673fee07d84f8d98338b5ec3b179924ce3080f00876f6c95810e6643946940",
+          "bytes": 2847340,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "BINDER_1985",
+      "title": "Direction solve / October 19, 1985",
+      "filename": "jpg/25-binder-1985.jpg",
+      "group": "saro_technical_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp",
+        "symbol": "BINDER_PRINT_3",
+        "text_sha256": "8809a110156f6423c9957c46ded8a070845984e8abd6cba57249a8e7e7f2dd05"
+      },
+      "text": "DATE    10/19/85   23:58:31\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -38 LY\n** CHECK SOLVE INPUTS **\nRECLASSIFIED: INPUT ERROR\n~ third time. Ask Systems.",
+      "key_checks": [
+        "10/19/85 23:58:31; source distance -38 LY.",
+        "1420.405 MHz, PULSE GROUP 4 / 7, INPUT ERROR; pencil third time. Ask Systems."
+      ],
+      "intended_use_nb": "Tredje eldre maskinutskrift, med samme oppsett som de andre.",
+      "kind": "typed",
+      "image": {
+        "filename": "jpg/25-binder-1985.jpg",
+        "sha256": "1b5d969bfca6b934c149e07846394fda3db5a0a39eaa9a770345e2629fed10e9",
+        "bytes": 285467,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE4:3 single archival DOT-MATRIX printer sheet from SARO direction-solver exceptions binder. Paler ivory fanfold paper with the same faint green alternating horizontal bands and paired vertical sprocket feed strips. Minor bottom-edge tear, light file handling. Oct1985 print is comparatively newer. Pencil note under the block: third time. Ask Systems.\nMain output should use a highly readable black authentic monospaced pin-printer font; clear aligned DATE / FREQ / PATTERN / SOURCE DISTANCE fields. The negative distance must retain the minus sign and leading digits exactly. At upper right a modest faded red rubber stamp \"INPUT ERROR\". Include complete source text below exactly. Bottom annotation after tilde is in graphite handwriting, do not print the tilde. No chart, no waveforms, no invented diagnostic values, no additional dates or source positions, no arrows replacing characters. Fullbleed paper only, no binderrings or scene.\nExact source text:\nDATE    10/19/85   23:58:31\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -38 LY\n** CHECK SOLVE INPUTS **\nRECLASSIFIED: INPUT ERROR\n~ third time. Ask Systems.",
+        "source": {
+          "basename": "exec-5a1aef9c-596a-4ccf-aac3-f57c7745a374.png",
+          "sha256": "f097e8474c9859a1b39805d5d0dd10c48f519854308b03bdf63e2e2f2a93b197",
+          "bytes": 2588614,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "BINDER_1947",
+      "title": "Direction solve / July 1947 / undated day",
+      "filename": "jpg/26-binder-1947.jpg",
+      "group": "saro_technical_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp",
+        "symbol": "BINDER_1947",
+        "text_sha256": "602e2b7255df4ad4aa5f93f931cc47de0fc89dbceb3356df42a1494f5624bc1d"
+      },
+      "text": "DATE    07/--/47   02:17:00\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -00 LY",
+      "key_checks": [
+        "DATE 07/--/47 02:17:00; the day is intentionally unknown.",
+        "1420.405 MHz, PULSE GROUP 4 / 7, source distance -00 LY.",
+        "Old yellowed paper, NO stamp and NO pencil.",
+        "The solver did not exist in 1947; preserve the contradiction without explaining it."
+      ],
+      "intended_use_nb": "Permens siste, eldste ark med den bevisste tidsmessige motsigelsen.",
+      "kind": "typed",
+      "image": {
+        "filename": "jpg/26-binder-1947.jpg",
+        "sha256": "d2cd6aa25b3f8eb7a5e2e2aa0f3ce958bbf61c8981054fcb6f088e8b7eb0c0fb",
+        "bytes": 387601,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: LANDSCAPE4:3 very old yellowed fanfold computer paper from the solver exceptions binder. Only FOUR exact lines of machine-printed text, prominent and centered on the paper, all aligned in an authentic black monospaced dot-matrix style. Use DATE / FREQ / PATTERN / SOURCE DISTANCE fields exactly as below, including 07/--/47 and NEGATIVE ZERO -00 LY. This mysterious paper must have NO stamp of any kind, NO handwritten annotations, NO added title/header/footer, no logo, no extra dates, no explanatory sentence. Sprocket holes along two sides, aged golden stock, light fold lines, ink still very readable. It looks as if printed by the same later machine on inexplicably older paper; do not use1940s typewriting or add any origin story.\nActual complete source text verbatim, with specified redaction treatment only:\nDATE    07/--/47   02:17:00\nFREQ    1420.405 MHz\nPATTERN PULSE GROUP 4 / 7\nSOURCE DISTANCE:  -00 LY",
+        "source": {
+          "basename": "exec-b2d96836-1c88-40ec-b111-315461b629f4.png",
+          "sha256": "98d5237c5bfc2654d821ec51ee164fac1b63191ec9f48e97294ad2568c1e3e2c",
+          "bytes": 2981321,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "K3_SERVICE",
+      "title": "RX bank 3 / Service record",
+      "filename": "jpg/27-k3-service-record.jpg",
+      "group": "saro_technical_archive",
+      "status": "runtime_reference",
+      "source": {
+        "path": "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp",
+        "symbol": "SERVICE_PAGE",
+        "text_sha256": "81ffa237656a25afd47cd90151ae16a4a1d216db83c30d8539cb7dd4f4d265aa"
+      },
+      "text": "SARO / MAINTENANCE\nRX BANK 3 - SERVICE RECORD\n\n09/23/81  K3 RELAY REPLACED. TRIPPED\n          APPROX 1 MIN BEFORE LINE POWER\n          FAILURE 09/22. NO FAULT FOUND.\n\n03/03/83  K3 REPLACED. TRIPPED BEFORE\n          POWER DIP 03/02. RELAY TESTS\n          GOOD. REPLACED ANYWAY.\n\n10/21/85  K3 REPLACED (3RD). TRIPPED\n          40 SEC BEFORE OUTAGE 10/19.\n          RELAY IS NOT FAULTY.\n          IT TRIPS BEFORE, NOT AFTER.\n                              M.O.",
+      "key_checks": [
+        "09/23/81, 03/03/83, 10/21/85 maintenance entries.",
+        "K3 trips BEFORE the power loss: approximately 1 minute, then before the dip, then 40 seconds.",
+        "Keep initials M.O. and the conclusion IT TRIPS BEFORE, NOT AFTER.",
+        "SARO's internal RX Bank 3 / K3 only; do not merge with town feeder or STATION 01 circuits."
+      ],
+      "intended_use_nb": "Vedlikeholdsklipsark fra SAROs rack, til senere mønstersammenligning.",
+      "kind": "typed",
+      "image": {
+        "filename": "jpg/27-k3-service-record.jpg",
+        "sha256": "9f7f05093d0fc5380faa43269c8bf2b3f420eec2df0c8dce09e4078299f7f4ae",
+        "bytes": 397016,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait SARO maintenance clipboard record, off-white service form with fine faded blue borders and title SARO / MAINTENANCE / RX BANK3 - SERVICE RECORD. The three dated entries09/23/81,03/03/83,10/21/85 in a clear left date column, exact corresponding text in the right entry column. Strong readable black typewriter text. Last1985 entry's \"RELAY IS NOT FAULTY. IT TRIPS BEFORE, NOT AFTER.\" remains particularly clear, with a graphite underline below those actual words. Initials M.O. in lower right. Three faint checkbox ticks in outside margin, no added observations or relay dates. Slight rust spot from an ordinary clip at top edge, light carbon copy smearing away from body, twofoldcreases. This is SARO internal K3; do NOT mention town feeder or utility substation.\nActual complete source text verbatim, with specified redaction treatment only:\nSARO / MAINTENANCE\nRX BANK 3 - SERVICE RECORD\n\n09/23/81  K3 RELAY REPLACED. TRIPPED\n          APPROX 1 MIN BEFORE LINE POWER\n          FAILURE 09/22. NO FAULT FOUND.\n\n03/03/83  K3 REPLACED. TRIPPED BEFORE\n          POWER DIP 03/02. RELAY TESTS\n          GOOD. REPLACED ANYWAY.\n\n10/21/85  K3 REPLACED (3RD). TRIPPED\n          40 SEC BEFORE OUTAGE 10/19.\n          RELAY IS NOT FAULTY.\n          IT TRIPS BEFORE, NOT AFTER.\n                              M.O.",
+        "source": {
+          "basename": "exec-be30fc6e-d165-4f66-b00f-269db147baa8.png",
+          "sha256": "4e35bdc39113c7323f8a578782b42efafade9b04487e90d802de56d27e1631be",
+          "bytes": 2861211,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "PROP_COUNTY_LIGHTS_1978",
+      "title": "Light reports remain unresolved",
+      "filename": "jpg/28-county-lights-1978.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "typed",
+      "date_metadata": "August 14, 1978",
+      "text": "COUNTY INQUIRIES / RELEASED COPY\n14 AUG 1978\n\nLIGHT REPORTS REMAIN UNRESOLVED\n\nWitness A name: [REDACTED]\nAddress: [REDACTED]\nWitness B name: [REDACTED]\nAddress: [REDACTED]\n\nTwo residents described a white light from separate roadside positions. One placed it above the ridge; the other placed it below the ridge line. Statements were taken separately before either witness read the other account.\n\nThe sketches do not establish that both observers saw the same object. Distance, size and route remain unconfirmed. No instrument record accompanies this copy.\n\nDISPOSITION: UNRESOLVED.\nNames and addresses withheld. Observation text released without alteration.",
+      "key_checks": [
+        "August 14, 1978; a fictional county inquiry copy, without a federal seal or classification.",
+        "Two separate viewpoints disagree about the ridge line; object identity, distance and route remain unconfirmed.",
+        "Place dark redaction bars ONLY over the four [REDACTED] name/address values, never over observations or disposition.",
+        "No claimed link to SARO, STATION 01, C, 1947, or the invasion."
+      ],
+      "intended_use_nb": "Frivillig eldre saksark med troverdig personsladding, til mulig senere arkiv- eller miljøbruk.",
+      "notes_nb": "Nyskrevet fiksjon for produksjonen. Ingen eksisterende vitneidentitet eller kanonisk sammenheng fastslås.",
+      "source": {
+        "path": "unreal/ArtSource/Documents/supplemental.json",
+        "anchor": "/assets/0",
+        "text_sha256": "b81514517010e511dad30582d3b739a2ab7862229f02a0579fb6eb16d8468b5a"
+      },
+      "image": {
+        "filename": "jpg/28-county-lights-1978.jpg",
+        "sha256": "1940037e1c984a2c4459bde116aad1be05cbcb873309e736ab47e2d88894da36",
+        "bytes": 378912,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait1978 county inquiry released report, authentic gray photocopy on slightly yellowed white paper, a thin diagonal hatch border down one margin, a sober unbranded county clerical heading and faded red RELEASED COPY stamp. Exact text below, source paragraphs in readable black typewriter type. Replace ONLY the FOUR [REDACTED] placeholder values after Witness A name / Address / Witness B name / Address with dense irregular BLACK REDACTION BARS. Do not print the word REDACTED and do not hide any actual observation text. These four bars are the only redactions. Two tiny inset pencil horizon sketches in a narrow blank lower corner may illustrate inconsistent above/below ridge memories, without coordinates or confirmed trajectory. No photo evidence, no alien, no FBI or real official seal, no classified federal level. Keep date14AUG1978 clear and UNRESOLVED visible.\nActual complete source text verbatim, with specified redaction treatment only:\nCOUNTY INQUIRIES / RELEASED COPY\n14 AUG 1978\n\nLIGHT REPORTS REMAIN UNRESOLVED\n\nWitness A name: [REDACTED]\nAddress: [REDACTED]\nWitness B name: [REDACTED]\nAddress: [REDACTED]\n\nTwo residents described a white light from separate roadside positions. One placed it above the ridge; the other placed it below the ridge line. Statements were taken separately before either witness read the other account.\n\nThe sketches do not establish that both observers saw the same object. Distance, size and route remain unconfirmed. No instrument record accompanies this copy.\n\nDISPOSITION: UNRESOLVED.\nNames and addresses withheld. Observation text released without alteration.",
+        "source": {
+          "basename": "exec-2989a4c6-34d5-4a62-bf1b-0eec15bca935.png",
+          "sha256": "ee84586cbcf4eef6eb54ed00fce26a940769a349f7cc7ba2a5fe564b37f58695",
+          "bytes": 2903093,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "PROP_SENTINEL_MISSING_HOURS_1974",
+      "title": "Clocks disagree after late return",
+      "filename": "jpg/29-sentinel-missing-hours-1974.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "newspaper",
+      "date_metadata": "November 9, 1974",
+      "text": "PECOS VALLEY SENTINEL\nNOVEMBER 9, 1974\n\nCLOCKS DISAGREE AFTER LATE RETURN\n\nA local motorist arrived home long after his family expected him, saying he remembered an ordinary drive and no prolonged stop. His dashboard clock had stopped. The kitchen clock, according to his wife, had been reset that afternoon.\n\nNo departure time was written down. The driver declined to have his name printed. No collision or injury was reported, and the route has not been independently checked.\n\nNeighbors have offered explanations ranging from a wrong turn to sleep beside the road. None was confirmed. The Sentinel cannot establish a missing interval from the clocks described.",
+      "key_checks": [
+        "November 9, 1974; an original fictional Pecos Valley Sentinel article, distinct from E15 and the 1985 cuttings.",
+        "The dashboard clock stopped and the kitchen clock was reset; no reliable departure time or measured missing interval.",
+        "A late return is reported, without confirmed abduction, injury or cause.",
+        "No C, eight-mile crossing, 1947 identity, invasion reference or new main-route clue."
+      ],
+      "intended_use_nb": "Gammelt frivillig avisutklipp om tapt tidsfølelse, med motstridende klokker og åpent hendelsesforløp.",
+      "notes_nb": "Nyskrevet fiktiv avisartikkel. Den beskrevne bilisten er ikke en eksisterende figur, og artikkelen gir ikke målt tidsbortfall.",
+      "source": {
+        "path": "unreal/ArtSource/Documents/supplemental.json",
+        "anchor": "/assets/1",
+        "text_sha256": "edf8e794201fac97e8a3df9e9536f271173cdd968a6ad488d2c12c24e0b6bf74"
+      },
+      "image": {
+        "filename": "jpg/29-sentinel-missing-hours-1974.jpg",
+        "sha256": "d8b415e807ecae486fb566932a90734df2490c56e9cb921bb357b91544858bd9",
+        "bytes": 535600,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait1974 old local-newspaper cutting, Pecos Valley Sentinel masthead, dateline NOVEMBER9,1974, large condensed black headline CLOCKS DISAGREE AFTER LATE RETURN. Age-darkened cream newsprint with fine brown speckles, irregular torn edges and a fold through a blank gutter. All three exact paragraphs in two newspaper columns, crisp serifs, no fake filler text. Under or between columns place one restrained, small grainy monochrome1970s PHOTO of an unoccupied older sedan parked at the shoulder of an empty rural NewMexico road at dusk, no license plate legible, no person or light or UFO. It is a neutral period illustration, not a purported image of an abduction. Leave room for the exact final limitation sentence. No invented city, byline, family name, measured elapsed time, date or price.\nFull actual document text verbatim:\nPECOS VALLEY SENTINEL\nNOVEMBER 9, 1974\n\nCLOCKS DISAGREE AFTER LATE RETURN\n\nA local motorist arrived home long after his family expected him, saying he remembered an ordinary drive and no prolonged stop. His dashboard clock had stopped. The kitchen clock, according to his wife, had been reset that afternoon.\n\nNo departure time was written down. The driver declined to have his name printed. No collision or injury was reported, and the route has not been independently checked.\n\nNeighbors have offered explanations ranging from a wrong turn to sleep beside the road. None was confirmed. The Sentinel cannot establish a missing interval from the clocks described.",
+        "source": {
+          "basename": "exec-6e26c17d-2bac-4669-b25e-2280a1a748e0.png",
+          "sha256": "a155022e2da98aef9209af9ad87b4025eae44a3c36c629ffbd6fe97277671dfa",
+          "bytes": 3380530,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "PROP_CATTLE_EXAM_1982",
+      "title": "Field examination / cause undetermined",
+      "filename": "jpg/30-cattle-exam-1982.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "typed",
+      "date_metadata": "June 3, 1982",
+      "text": "VETERINARY FIELD EXAMINATION\n3 JUN 1982 / UNSIGNED FIELD COPY\n\nSUBJECT: ADULT HEREFORD COW, FOUND DEAD\nOwner / ranch / ear tag: NOT RECORDED\n\nEXTERNAL OBSERVATIONS\nOne circular, dry area of missing hair and hide on the upper flank. No fresh blood observed at that site. Photograph made before the carcass was moved. Exposure and scale were not entered on the print.\n\nLIMITS\nA complete necropsy was not performed. This sheet does not establish the time or cause of death. The photograph records an external appearance; it does not identify what produced it.\n\nCAUSE OF DEATH: UNDETERMINED.\nFurther examination required. Retain the original print with this sheet.",
+      "key_checks": [
+        "June 3, 1982; unsigned field examination of a dead adult Hereford cow.",
+        "Owner, ranch and ear tag are NOT RECORDED; do not invent ALDERETE, tag 25, or another identification.",
+        "If illustrated, show one circular dry flank area with restrained non-bloody forensic appearance; no fresh blood or exposed organs.",
+        "CAUSE OF DEATH: UNDETERMINED remains legible; no completed necropsy or confirmed cause.",
+        "A photograph is not evidence of a species, perpetrator or extraterrestrial origin."
+      ],
+      "intended_use_nb": "Frivillig eldre veterinærark med et nøkternt feltfotografi, til senere miljø- eller arkivbruk.",
+      "notes_nb": "Nyskrevet fiktivt feltark. Dyret er ikke identifisert som den eksisterende Alderete-kua; ingen ny kanonisk veterinærhendelse er koblet til runtime.",
+      "source": {
+        "path": "unreal/ArtSource/Documents/supplemental.json",
+        "anchor": "/assets/2",
+        "text_sha256": "f0bba39c3e70c86cb755b31a0cdeb4319a64d1948ff9df57ebb4625c7ef67cba"
+      },
+      "image": {
+        "filename": "jpg/30-cattle-exam-1982.jpg",
+        "sha256": "f317478548b6ab7f2c1061b41bfe44f1957b0ee328cfee7b2e495dc63a9ec99d",
+        "bytes": 391124,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait1982 veterinary field examination sheet, faded gray photocopy on off-white paper, typewritten institutional form with fields and fine rules. Display the title, date, subject and all supplied text legibly. At middle-left or lower center paste ONE landscape monochrome matte photograph occupying about a third of page: a dead adult Hereford cow lying heavily on its right side on dry scrub pasture, LEFT flank visible, with ONE small circular clean dry dark area of missing fur/hide on upper flank, no blood, no organs, no wet exposed tissue. Normal intact animal overall, no brand or ear tag, no unknown numbers. A simple old flash photo at night, restrained observational forensic mood, not a stylish rendering, no creature. Large clear CAUSE OF DEATH: UNDETERMINED in bottom field. Blank signature slot (unsigned field copy). No additional findings, no claimed alien cause, no medical advice. Keep upper subject identification NOT RECORDED clear.\nFull actual document text verbatim:\nVETERINARY FIELD EXAMINATION\n3 JUN 1982 / UNSIGNED FIELD COPY\n\nSUBJECT: ADULT HEREFORD COW, FOUND DEAD\nOwner / ranch / ear tag: NOT RECORDED\n\nEXTERNAL OBSERVATIONS\nOne circular, dry area of missing hair and hide on the upper flank. No fresh blood observed at that site. Photograph made before the carcass was moved. Exposure and scale were not entered on the print.\n\nLIMITS\nA complete necropsy was not performed. This sheet does not establish the time or cause of death. The photograph records an external appearance; it does not identify what produced it.\n\nCAUSE OF DEATH: UNDETERMINED.\nFurther examination required. Retain the original print with this sheet.",
+        "source": {
+          "basename": "exec-b282f854-4531-44af-af67-828a8d49ab5f.png",
+          "sha256": "e81b73146cb62114db885de07e19af16d02738cf9d8178c66817057939e571d6",
+          "bytes": 3012966,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "PROP_CONTACT_FLYER_1984",
+      "title": "Keep watch. Keep notes.",
+      "filename": "jpg/31-sky-watch-flyer-1984.jpg",
+      "group": "supplemental_archive",
+      "status": "optional_prop",
+      "kind": "stencil",
+      "date_metadata": "May 18, 1984",
+      "text": "KEEP WATCH. KEEP NOTES.\n\nSKY WATCH / AN OPEN EVENING\nMAY 18, 1984\nCOMMUNITY MEETING ROOM\nADMISSION FREE\n\nA public talk on distant lights, visitors in local stories, and the words people use when they describe the sky. Bring a pencil, a watch and questions.\n\nNo confirmed contact will be presented. A strange account can be discussed without accepting its explanation.\n\nFIELD NOTE\nObserve from a public place with permission. Do not climb towers, enter fenced sites, touch electrical equipment or shine lights at aircraft. Log time and direction. Compare observations with stars and aircraft before naming a cause.",
+      "key_checks": [
+        "May 18, 1984; fictional local public lecture and stencil-copy appearance.",
+        "No confirmed contact will be presented; discussion is not an established finding.",
+        "Retain the safety and observation footer, including no entry into fenced sites or contact with electrical equipment.",
+        "No real Unarius name, lecturer portrait, institutional seal, branding or borrowed lecture footage.",
+        "This flyer is optional background and not Dale's Service Road / Field 01 VHS."
+      ],
+      "intended_use_nb": "Frivillig sjablongkopiert foredragsplakat som gir folkelig UFO-miljø før spillnatten.",
+      "notes_nb": "Nyskrevet fiktivt arrangement, uten virkelig foreleser eller organisasjon. Ikke et bevis på kontakt eller lokal feltobservasjon.",
+      "source": {
+        "path": "unreal/ArtSource/Documents/supplemental.json",
+        "anchor": "/assets/3",
+        "text_sha256": "43ef70fcbdd8d4cfb07940ea8d4452cf9039daf1ece6a924b44e4b6712984d59"
+      },
+      "image": {
+        "filename": "jpg/31-sky-watch-flyer-1984.jpg",
+        "sha256": "faa08feda94390f41be2959abe6b7e8529ed24327bb66ad9781b6691a89b2612",
+        "bytes": 455036,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: historical-scene.\nAsset type: FINAL flat in-world readable game document JPG source for SIGNAL / 47, New Mexico, April 1986.\nProduce exactly ONE finished coherent paper artifact. Authentic 1980s institutional stationery, realistically aged paper, typewriter or period letterpress printing, physical patina and subtle small irregularities. Restrained serious investigative horror; worn archive material like the supplied investigation scrapbook references. Original fictional SARO paperwork.\nComposition: straight-on flatbed archival SCAN, no perspective distortion, full rectangular paper surface fills image edge to edge. Neutral even lighting. NO surrounding desk, book, hands, carpet, background, drop shadow or UI. Keep all text within generous safe margins. Portrait around1536x2048 for a full sheet unless card/landscape is requested. Physical stains and wear must not reduce legibility.\nExact wording below is essential: reproduce it verbatim, no additional narrative, no repeated or omitted paragraphs, no made-up numbers, no gibberish filler. Use crisp, dark, comfortably readable print. Do not add FBI/X-Files marks, modern logos, QR codes, modern fonts, visible monsters or UFO illustrations unless specifically asked.\nDesign: Portrait1984 home-made mimeograph community flyer. Distinctive faded PURPLE stencil ink on thin pale-white gray paper, uneven roller coverage, thumbtack hole at top center and fold marks, strong periodhandmadeprint rather than modern graphic. Huge headline KEEP WATCH. KEEP NOTES. Below it small SKY WATCH / AN OPEN EVENING and all event date/location/admission lines exactly. A small simple original line drawing of ordinary distant stars above a desert ridge in a circle in blank center; perhaps an ambiguous ringed star from a sky-watcher's imagination, no actual photograph or confirmed visitors. All supplied paragraphs and FIELD NOTE footer retained and readable, including no confirmed contact. Slight hand-ruled borders, no real organization or lecturer, no brand, no QR code, no borrowed logo. Keep all actual text in matching purple with dark readability.\nFull actual document text verbatim:\nKEEP WATCH. KEEP NOTES.\n\nSKY WATCH / AN OPEN EVENING\nMAY 18, 1984\nCOMMUNITY MEETING ROOM\nADMISSION FREE\n\nA public talk on distant lights, visitors in local stories, and the words people use when they describe the sky. Bring a pencil, a watch and questions.\n\nNo confirmed contact will be presented. A strange account can be discussed without accepting its explanation.\n\nFIELD NOTE\nObserve from a public place with permission. Do not climb towers, enter fenced sites, touch electrical equipment or shine lights at aircraft. Log time and direction. Compare observations with stars and aircraft before naming a cause.",
+        "source": {
+          "basename": "exec-7050fe4b-7200-42d6-8d94-234f427d30b4.png",
+          "sha256": "f64357d9f5bd22c8ab91c96fdcf3da41e6328babc3025d93ee0bb4820f135c80",
+          "bytes": 3112363,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    }
+  ]
+}

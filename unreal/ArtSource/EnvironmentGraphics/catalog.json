@@ -1,0 +1,2586 @@
+{
+  "schema_version": 1,
+  "language": "en",
+  "pack_id": "caliche-environment-graphics-1986",
+  "asset_count": 48,
+  "notes_nb": [
+    "48 originale trykkflater til SIGNAL / 47: seks selvstendige kinoplakater, lokalreklame, emballasjegrafikk, blanketter, skilt og hverdagslapper. Spilltekst er engelsk.",
+    "Dette er JPG/JPEG-grafikk for senere rekvisitt- og materialbruk. Ingen ny 3D-modell, runtimeintegrasjon, adgangsregel, oppgave eller kanonisk hovedrutebevis er produsert av katalogen.",
+    "Filmene og de nye produktmerkene Mesa Motor Oil, Mesa Blend, Sundown Cola, Blue Mesa, Desert Salt og Longwatch er originale fiktive produksjonsmerker. De etablerer ingen ny dagligvarebutikk, jernvarebutikk eller fysisk forretningsadresse.",
+    "Plaza-navn og eksisterende priser/tekster følger Unreal- og modellkildene. Kinoens nedleggelsesår er ukjent. FOR 31 YEARS angir driftstid og kan ikke omregnes til et kanonisk årstall.",
+    "De seks første plakatene svarer til to utvendige og fire innvendige fysiske plakatflater. Alle plakater er original fiktiv kunst, uten kopierte kjente filmplakater, skuespillerportretter eller kunstnersignaturer.",
+    "physical_size_m er omtrentlig bredde og høyde på en flat trykkflate, ikke mål på en ferdig 3D-gjenstand. Brukes som importveiledning og kontrolleres mot faktisk målflate senere.",
+    "Nye kvitteringer er inert bakgrunn, ikke dokumentasjon av spillerens kjøp. Alle navne-/dato-/feilfelt på blanketter er tomme. Ingen nye koordinater, C-kryss eller hovedrutefoto skal innføres.",
+    "12. april 1986 var lørdag og ligger dagen før spillnatten. YARD SALE er et eldre oppslag, ikke en ny tidsstyrt aktivitet. Kinoens matineplakat har ingen dato.",
+    "31 eksisterende Dale-/arkivbilder i Documents beholdes uendret og inngår ikke i denne separate miljøpakken."
+  ],
+  "group_names": {
+    "cinema_posters": "Kinoens filmplakater",
+    "cinema_ephemera": "Billettluke og gamle billetter",
+    "local_ads": "Lokalreklame og menyer",
+    "packaging": "Emballasje og småtrykksaker",
+    "everyday_paper": "Kvitteringer og hverdagspapirer",
+    "workplace_signage": "Arbeidsplass og service",
+    "community_paper": "Nabolag og hverdag"
+  },
+  "gallery": {
+    "title_nb": "Caliche: plakater, reklame og hverdagsting",
+    "browser_title_nb": "SIGNAL / 47 · Caliche miljøgrafikk",
+    "description_nb": "Originale filmplakater til Plaza, lokalreklame, emballasjetrykk og hverdagslapper fra New Mexico. Åpne et bilde i full størrelse eller brett ut trykkteksten.",
+    "item_noun_nb": "rekvisitter",
+    "text_toggle_nb": "Les trykkteksten",
+    "overview_label_nb": "CALICHE · MILJØGRAFIKK",
+    "footer_nb": "Produksjonsgalleri. Original fiktiv bakgrunnsgrafikk til SIGNAL / 47."
+  },
+  "assets": [
+    {
+      "id": "CINEMA_DESERT_SKY",
+      "title": "The Desert Sky",
+      "filename": "jpg/01-cinema-desert-sky.jpg",
+      "group": "cinema_posters",
+      "text": "THE DESERT SKY\nA PLAZA PRESENTATION",
+      "design_nb": "Original malt science fiction- og kunstskrekkplakat fra 1970-tallet: tom ørken, stor mørk himmel, stilisert fjern glød. Krem, blek cyan og utvasket indigo. Kun de to angitte tekstlinjene; ingen ekstra slaglinje, år, rulletekst, skuespillernavn eller kjent kunstnersignatur.",
+      "placement_nb": "Plazas venstre utvendige plakatskap. Én faktisk plakat til denne ene flaten.",
+      "intended_use_nb": "Plazas venstre utvendige plakatskap. Én faktisk plakat til denne ene flaten.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[11]",
+          "role": "Existing original title and subtitle on the current Unreal poster atlas; new original artwork with these two lines only."
+        }
+      ],
+      "key_checks": [
+        "Only two text lines: THE DESERT SKY / A PLAZA PRESENTATION; no tagline, year, credits or cast.",
+        "Original fictional cinema artwork; no copied film poster, actor portrait or main-route evidence."
+      ],
+      "physical_size_m": [
+        1.13,
+        1.77
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/01-cinema-desert-sky.jpg",
+        "sha256": "6b1db45bf4b4f8d5efc466f26f0d7b892da370e3ce3a4538111dffa73187fed7",
+        "bytes": 553870,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL printable vintage CINEMA POSTER texture for The Plaza, a shuttered picture house in Caliche, New Mexico, as seen in the game SIGNAL / 47 set in April1986.\nCreate one exceptionally atmospheric original1970s hand-painted science-fiction film poster. Film title is fictional in-world cinema material, not an actual historical film or a story clue.\nArt: a lonely highway leading toward a low flat desert mesa, a tiny warmly lit roadside building, one small anonymous traveler seen from behind, a vast indigo night sky with a strange pale luminous circle partially lost in a cloud. Quiet, elegiac and slightly ominous. Painterly airbrush and old offset-lithography grain, original art with no copied movie composition or recognizable actor. Fine cream and burnt-orange type against deep midnight blue, dusty muted cyan. Large painted title in upper third, beautiful period serif or hand-lettered display type, understated presentation credit below.\nOnly text, exactly:\nTHE DESERT SKY\nA PLAZA PRESENTATION\nNo tagline, no extra credits, no release date, no ratings panel, no movie logo, no billing-block gibberish.\nPhysical state: old poster abandoned behind glass for years; uneven sun-faded BLUE ink, thin vertical sun bleaching, tiny edge splits and slightly rubbed corners. It remains readable and attractive. Do NOT render any actual glass, reflections, frame, wall or scene around it.\nComposition: one perfectly rectangular portrait2:3 fullbleed flat scan, edge-to-edge artwork, straight-on with no perspective, margins fit the entire title. Native high-quality around1024x1536 or1536x2304. This must be a usable poster surface, not a mockup, collage or sheet of variations. No modern digital typography, no contemporary objects.",
+        "source": {
+          "basename": "exec-5ab22e97-f858-4f50-9825-89a864e84922.png",
+          "sha256": "a8c9b3e6d81aed35ad088f566e5a690d25c1aa9c0567c4563c5382cf4d6d3563",
+          "bytes": 3382408,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "CINEMA_FRIDAY_MATINEE",
+      "title": "Friday Matinee",
+      "filename": "jpg/02-cinema-friday-matinee.jpg",
+      "group": "cinema_posters",
+      "text": "FRIDAY MATINEE\nPLAZA THEATRE",
+      "design_nb": "Nostalgisk håndillustrert familieplakat med barn som ser fargerike ballonger over små hustak. Gammel silketrykkfølelse, gulnet krem og falmet blått. Ingen dato eller år, ingen filmkjendis eller moderne digitalfinish.",
+      "placement_nb": "Plazas høyre utvendige plakatskap. Én selvstendig familieplakat.",
+      "intended_use_nb": "Plazas høyre utvendige plakatskap. Én selvstendig familieplakat.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[12]",
+          "role": "Existing original matinee heading; original new illustration with these two lines only."
+        }
+      ],
+      "key_checks": [
+        "Only two text lines: FRIDAY MATINEE / PLAZA THEATRE.",
+        "No tagline, printed date, year, ticket price, credits, cast or reopening claim."
+      ],
+      "physical_size_m": [
+        1.13,
+        1.77
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/02-cinema-friday-matinee.jpg",
+        "sha256": "bf6dcbe8a86c1b4558c60cc1a218944d1107a5cae0849b21ef147603dfb70ed6",
+        "bytes": 613947,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 original cheerful1960s/1970s cinema family matinee poster. Warm butter-yellow, faded tomato-red, dusty sky-blue and cream. Large playful chunky hand-painted lettering at top, central original cartoon illustration of two children watching a tiny friendly rocket and a jolly marching elephant through a decorative starburst; simple mid-century shapes, no recognizable commercial cartoon character. A little popcorn cup and theatercurtain motif as printed graphics only. Highly charming, optimistic, slightly naive local picturehouse advertisement. Uneven fadedblue ink, old foldedpaper, pinholes, lightly cracked lower corner. No cinema tickets or individual movie frames, just one complete beautifully laid-out poster with the two exact text lines.\nOnly exact printed words:\nFRIDAY MATINEE\nPLAZA THEATRE",
+        "source": {
+          "basename": "exec-c54f0806-6791-45b1-a68f-4e409ab4dbe6.png",
+          "sha256": "211225a774c1db98887895ba5e5b4e210c9b8dd9a7f5d12cfe6cd1642360fb04",
+          "bytes": 3357122,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "CINEMA_DUST_COUNTY",
+      "title": "Dust County",
+      "filename": "jpg/03-cinema-dust-county.jpg",
+      "group": "cinema_posters",
+      "text": "DUST COUNTY\nEVERY ROAD LEADS HOME.",
+      "design_nb": "Original 1970-tallswestern: enslig rytter, varm støvsky, rustfarget dal og sterk tresnittaktig horisont. Slitt litografisk papir med solblek blå skygge. Kun tittel og kort slaglinje.",
+      "placement_nb": "Første av fire innvendige plakatrammer i Plazas foajé.",
+      "intended_use_nb": "Første av fire innvendige plakatrammer i Plazas foajé.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "CINEMA_DUST_COUNTY",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "DUST COUNTY / EVERY ROAD LEADS HOME. is the only promotional copy; no year, credits or cast.",
+        "Fictional western art, without real actors, copied compositions or survey symbols."
+      ],
+      "physical_size_m": [
+        1.15,
+        1.7
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/03-cinema-dust-county.jpg",
+        "sha256": "6d3b7437e6540b6ee10f2c698ef5526551706136b3c54999a00bfd07fc8daf6b",
+        "bytes": 593469,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 original1970s WESTERN movie poster. A lone rancher on horseback crossing a wide golden arid plain, tall distant windmill, dramatic sun behind mesa, a large anonymous weathered rancher's painted profile dissolving into the dusty ochre sky. Classic handmade western paperback/movie illustration, not a realactor likeness. Rough slab-serif main title, cream letters against a brick-red block at lower third; smalltaglineattop. Rustred, tobaccoochre, slateblue and palecream limited inks. Distressed sun-faded print from abandoned cinema display, thinoldfolds and rubbededges. No guns/actionviolence necessary, no institutional seals, no real film credits, no release dates.\nOnly exact printed words:\nDUST COUNTY\nEVERY ROAD LEADS HOME.",
+        "source": {
+          "basename": "exec-d2374a50-62e4-4d9e-b282-750189206eac.png",
+          "sha256": "c29a42b17d9f5a5f484e1c5cf0dbba7e75134194e2bb92b1d84d4152002df930",
+          "bytes": 3338591,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "CINEMA_NIGHT_COACH",
+      "title": "The Night Coach",
+      "filename": "jpg/04-cinema-night-coach.jpg",
+      "group": "cinema_posters",
+      "text": "THE NIGHT COACH\nONE NIGHT. NO STOPS.",
+      "design_nb": "Original thrillerplakat fra 1970-tallet: gammeldags rutebuss i regn, mørke vinduer og ett ravgult sete. Dempet petroleumblått og falmet krem, penslet filmplakatkunst fremfor fotografisk filmstill. Ingen tallkoder eller rutekart.",
+      "placement_nb": "Andre innvendige plakatramme i Plazas foajé.",
+      "intended_use_nb": "Andre innvendige plakatramme i Plazas foajé.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "CINEMA_NIGHT_COACH",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "THE NIGHT COACH / ONE NIGHT. NO STOPS. remains readable; no year, credits or cast.",
+        "No real film branding, main-route destination or hidden clue."
+      ],
+      "physical_size_m": [
+        1.15,
+        1.7
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/04-cinema-night-coach.jpg",
+        "sha256": "fb725be2dd6dfc05fc6dd931423e6d35fc3190f5c11f66aa00a5111a3f2650ad",
+        "bytes": 538070,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 original1970s psychological road-thriller cinema poster, strong bold slanted condensed red title, icy cyan and pitchblack illustration. A lone old1970s American long-distance coach driving a deserted night road, two headlights cutting narrow beams through dusty air. In upper half a large partially obscured anonymous woman's painted face in the dark windshield-like graphic; tense and cinematic, hand-painted giallo-influenced art, not a photo of a recognizableactor. No bloody horrororactualcreature, no visible passengers. Mood of unease in ordinary transport. Uneven longterm blue/red ink fading, crackedfoldsatcorner, excellent survivingtitlelegibility. Whole poster scan only, no actual glass or busmockup.\nOnly exact printed words:\nTHE NIGHT COACH\nONE NIGHT. NO STOPS.",
+        "source": {
+          "basename": "exec-bb87002d-5049-4129-84f5-3e5fc59b7c11.png",
+          "sha256": "f4fbe5feac20729574ffde200ba2c3b403dddbf45a5e3e6386eef67e142cd3c6",
+          "bytes": 3237267,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "CINEMA_BLUE_LAKE",
+      "title": "Summer at Blue Lake",
+      "filename": "jpg/05-cinema-blue-lake.jpg",
+      "group": "cinema_posters",
+      "text": "SUMMER AT BLUE LAKE\nA SUMMER TO REMEMBER.",
+      "design_nb": "Original romantisk 1970-tallsplakat: to voksne ved en brygge, siv og stille blå innsjø i malt duse pastellfarger. Alminnelig sentimental kinoreklame som kontrast til skrekk. Ingen identifiserbar ekte skuespiller eller kunstnersignatur.",
+      "placement_nb": "Tredje innvendige plakatramme i Plazas foajé.",
+      "intended_use_nb": "Tredje innvendige plakatramme i Plazas foajé.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "CINEMA_BLUE_LAKE",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "SUMMER AT BLUE LAKE / A SUMMER TO REMEMBER. is legible; no year, credits or cast.",
+        "A fictional romance poster; no actual local incident, witness or plot evidence."
+      ],
+      "physical_size_m": [
+        1.15,
+        1.7
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/05-cinema-blue-lake.jpg",
+        "sha256": "f67297135afe6798fa4195714945ea5e83c941dcfe2281737f5a936968931b0f",
+        "bytes": 564849,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 original1970s romantic summer-drama poster. Beautiful nostalgic hand-painted lake landscape: one tiny adult couple on an old timber jetty, distant pine-covered hills, apricot sunset reflected in calmbluewater; a large softly painted pair of anonymous young adult faces in the clouds or upper edge, not identifiableactors. Soft flowing cream display lettering, coral, dusty lake-teal, faded peach and warm dark green. Quiet human warmth and ordinary memories, no horrororcosmic imagery. Lightly bleached oldprint, oldfolds and subtle edgechips; do not overdistressfacesorletters. Single original theatricalposter, two exact textlines only.\nOnly exact printed words:\nSUMMER AT BLUE LAKE\nA SUMMER TO REMEMBER.",
+        "source": {
+          "basename": "exec-0fb2034e-bcd5-4b2b-a896-9a4974dfa833.png",
+          "sha256": "d06feebdaee3697cbc1b9b19669a72947ebf2052f7a1199068c933b17e6af3c5",
+          "bytes": 3193556,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "CINEMA_VISITORS",
+      "title": "Visitors from Mars",
+      "filename": "jpg/06-cinema-visitors.jpg",
+      "group": "cinema_posters",
+      "text": "VISITORS FROM MARS\nTHEY CAME FOR THE WEEKEND!",
+      "design_nb": "Original munter 1960-talls science fiction-plakat: malte leketøyaktige romskip, to overdrevent teatralske marsboere og kinosalens røde forteppe. Billig trykk i falmet turkis, gult og rødt. Tydelig fiksjonsplakat, ingen virkelig UFO-dokumentasjon.",
+      "placement_nb": "Fjerde innvendige plakatramme i Plazas foajé.",
+      "intended_use_nb": "Fjerde innvendige plakatramme i Plazas foajé.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "CINEMA_VISITORS",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "VISITORS FROM MARS / THEY CAME FOR THE WEEKEND! is legible; no year, credits or cast.",
+        "Invented 1960s matinee artwork; no copied franchise or claimed extraterrestrial evidence."
+      ],
+      "physical_size_m": [
+        1.15,
+        1.7
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/06-cinema-visitors.jpg",
+        "sha256": "cfbbf0352468c5a59d48f96b58bbe626d4506db7becf1ff909c2bd4bb731e47e",
+        "bytes": 644647,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 84,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 original campy late1950s/1960s flying-saucer comedy movie poster. Whimsical ORIGINAL bright hand-painted illustration of a little saucer touching down beside a sleepy smalltown drive-in, two funny lime-green Martians with different faces, a surprised ordinary couple, simple cartoonstars and comic motion lines. It is visibly absurd entertainment, not a document or photograph of real aliens. Scarletred, palelemonyellow, mintgreen and indigo oldlithographic inks with extremely playful retro hand-lettered title. Weathered fadedblueprint,smallcornertears. No recognizable copyrighted filmcharacter or actor, no existing film creditblock, no additional promotionaltext.\nOnly exact printed words:\nVISITORS FROM MARS\nTHEY CAME FOR THE WEEKEND!",
+        "source": {
+          "basename": "exec-31be2ccf-2bfd-4da1-a788-45a4fe637b77.png",
+          "sha256": "24ff970ff4ce7a1d8ceb35264304c654e1baf1954cd2434b2a84e036a7836359",
+          "bytes": 3487051,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "CINEMA_CLOSED",
+      "title": "Thank you, Caliche",
+      "filename": "jpg/07-cinema-closed.jpg",
+      "group": "cinema_ephemera",
+      "text": "CLOSED.\nTHANK YOU CALICHE.\nFOR 31 YEARS.",
+      "design_nb": "Enkelt gammelt avskjedsark med store svarte bokstaver på solbleket krempapir. Tørt og menneskelig, uten horrorpynt. Ingen åpningstider, dato eller nedleggelsesår.",
+      "placement_nb": "Løst avskjedsark ved Plazas stengte billettluke eller inngang, uten å endre selve marquee-modellen.",
+      "intended_use_nb": "Løst avskjedsark ved Plazas stengte billettluke eller inngang, uten å endre selve marquee-modellen.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp",
+          "anchor": "FS47Caliche::BindTown / marquee",
+          "role": "Exact existing farewell wording; the closure year is not established."
+        }
+      ],
+      "key_checks": [
+        "Keep CLOSED. / THANK YOU CALICHE. / FOR 31 YEARS. intact.",
+        "Do not invent a closure year, opening year or reopening notice."
+      ],
+      "physical_size_m": [
+        0.42,
+        0.59
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/07-cinema-closed.jpg",
+        "sha256": "f527e9db8dfe33bd884da0cec4a20007c268a37ea6385f8b20d6eacad17979d2",
+        "bytes": 423996,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 hand-lettered closure notice from an abandoned smalltown cinema. Old cream posterboard with a faded burgundy artdeco frame line and a tiny simple decorative fan motif, dignified letters. CLOSED. is largeandblack at upperthird, THANK YOU CALICHE. in central lines, FOR 31 YEARS. in lowerthird. Its ordinary gratitude should feel poignant, not ominous. Longterm sunbleaching, tide mark at bottomcorner, old pinholesandlightpaper curling renderedflat. Do not invent a closing date, openingyear, reasonforclosure, sale, demolition, owner'snameorphone. No alienornarrativehint.\nOnly exact printed words:\nCLOSED.\nTHANK YOU CALICHE.\nFOR 31 YEARS.",
+        "source": {
+          "basename": "exec-bf591e86-ceb4-44c4-b8d1-b49a08245fa0.png",
+          "sha256": "367f80b2221c0f9866d951ebe157468cc97c3ca2fb9fcadffe1904df18343ec2",
+          "bytes": 3128001,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "CINEMA_TICKET",
+      "title": "Plaza admission ticket",
+      "filename": "jpg/08-cinema-ticket.jpg",
+      "group": "cinema_ephemera",
+      "text": "PLAZA THEATRE\nADMIT ONE\nKEEP THIS HALF\nNo. 3186",
+      "design_nb": "Flat enkeltfront av gammel billett i falmet blå kartong, med perforert rivestripe, stort serienummer og enkel ramme. Ingen pris, kalenderdato eller faktisk kjøpshendelse.",
+      "placement_nb": "Løs gammel billett ved Plazas billettluke eller i foajéens papirløsøre.",
+      "intended_use_nb": "Løs gammel billett ved Plazas billettluke eller i foajéens papirløsøre.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "CINEMA_TICKET",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "PLAZA THEATRE / ADMIT ONE / KEEP THIS HALF / No. 3186.",
+        "No ticket price, date or implication that the closed cinema is operating."
+      ],
+      "physical_size_m": [
+        0.13,
+        0.06
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/08-cinema-ticket.jpg",
+        "sha256": "c6377ddb6c8707b359f94083d0f043b18681d4b4b8f88a16a5685c615a7d37e3",
+        "bytes": 508085,
+        "width": 1983,
+        "height": 793,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: WIDE LANDSCAPE5:2 single old cinema ticket. Entire rectangular yellowochre ticket face fills image. Fine oxblood engraved-like border, original small sunburst printmotif, bold condensedPLAZATHEATREonleft, ADMITONEcenter, perforationruleandshort KEEPTHISHALF stubatrightextent, redserialNo.3186. Worn edges, one faintfold, subtlepaperfibers. No price or date. Show the flat ticketgraphic itself, not a ticket lying on a surface. Keep all specified wordsreadable. Verticalperforationisprintedsubtleline, noalphacutouts.\nAll printed text exactly:\nPLAZA THEATRE\nADMIT ONE\nKEEP THIS HALF\nNo. 3186",
+        "source": {
+          "basename": "exec-45cfa39c-b886-47ad-8ebc-6c9316f926ec.png",
+          "sha256": "64a69801ec75d544401ea4453c162c6cb3f66706ad8f6ddf42cfada0607b5077",
+          "bytes": 3213402,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1983,
+          "height": 793
+        }
+      }
+    },
+    {
+      "id": "DINER_MENU",
+      "title": "Mesa Diner menu",
+      "filename": "jpg/09-diner-menu.jpg",
+      "group": "local_ads",
+      "text": "MESA DINER\nCOFFEE                         .35\nPIE                            .95\nHOTCAKES                      1.75\nGREEN CHILE STEW              2.95\nTWO EGGS ANY STYLE            1.95\nHAMBURGER                     2.25\nCHEESEBURGER                  2.45\nHAM SANDWICH                  1.95\nSOUP OF THE DAY               1.10\n\nCASH ONLY\nOPEN ALL NIGHT",
+      "design_nb": "Lesbar enkel amerikansk diner-meny i krempapir med falmet burgunderrød overskrift og mørke priskolonner. Litt fettmerker ved kanten, aldri over rettene eller prisene. Alle ni varer i et luftig oppsett.",
+      "placement_nb": "Bordmeny eller flat menyplakat ved disken i Mesa Diner.",
+      "intended_use_nb": "Bordmeny eller flat menyplakat ved disken i Mesa Diner.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/mesadiner/make_textures.py",
+          "anchor": "atlas / panel 0, panel 1 and panel 6",
+          "role": "All nine existing menu items/prices and CASH ONLY / OPEN ALL NIGHT."
+        }
+      ],
+      "key_checks": [
+        "All nine item/price pairs match the catalog text; no omitted or added charge.",
+        "CASH ONLY and OPEN ALL NIGHT remain legible."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.42
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/09-diner-menu.jpg",
+        "sha256": "ac22360214f710689a132079181617e5f960153d8e33701001226a5a61d3c4f1",
+        "bytes": 457872,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 original MesaDiner laminated/table menu PRINT SURFACE, cream stock, faded cherryred decorative border and forestgreen small linework. Clear honest1950s-1980s roadside diner design: MESA DINER in bold mid-century script at top, a tiny originaldrawn coffee cup and plateau motif. One clean vertically aligned list of ALL NINE food items with prices rightaligned, ample spacing so no price can be confused. Atbottom CASH ONLY and OPEN ALL NIGHT. A few light grease smudges along outer edges; no actual plastic reflections, plate, table or props. No additional menuitems, special prices, refill claims or invented logo. Every specified price must be accurate.\nAll printed text exactly:\nMESA DINER\nCOFFEE                         .35\nPIE                            .95\nHOTCAKES                      1.75\nGREEN CHILE STEW              2.95\nTWO EGGS ANY STYLE            1.95\nHAMBURGER                     2.25\nCHEESEBURGER                  2.45\nHAM SANDWICH                  1.95\nSOUP OF THE DAY               1.10\n\nCASH ONLY\nOPEN ALL NIGHT",
+        "source": {
+          "basename": "exec-68b94b2d-6b39-468c-935d-f32391ad3122.png",
+          "sha256": "288ae26f9fbc1811b45cb7a6c929e40fe1a3253bedd13d968db865b91f14543d",
+          "bytes": 2956156,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "DINER_COFFEE",
+      "title": "Fresh coffee, 35c",
+      "filename": "jpg/10-diner-coffee.jpg",
+      "group": "local_ads",
+      "text": "FRESH COFFEE\n35c\nMESA DINER",
+      "design_nb": "Gammeldags malt diskkort med enkel kremfarget kaffekopp, brun damp og falmet rød ramme. Pris og kopp er hovedmotivet; ikke moderne kaféestetikk.",
+      "placement_nb": "Lite reklamekort ved kaffekannen eller et av dinerens vinduer.",
+      "intended_use_nb": "Lite reklamekort ved kaffekannen eller et av dinerens vinduer.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/mesadiner/make_textures.py",
+          "anchor": "atlas / panel 0",
+          "role": "Existing coffee price .35."
+        }
+      ],
+      "key_checks": [
+        "FRESH COFFEE / 35c / MESA DINER.",
+        "No new meal deal, refill price or coffee brand."
+      ],
+      "physical_size_m": [
+        0.21,
+        0.3
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/10-diner-coffee.jpg",
+        "sha256": "731eaa5264e84ef971d41dd14b4b8f434428b7fb57fee0d076ac7514b0c59a42",
+        "bytes": 495478,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 nostalgic1980s roadside diner wall advertisement. Large appetizing original painted/airbrushed illustration of a thick ivory ceramic coffee mug filled with blackcoffee, rising curlsofsteam, small red saucer against warmcream and tomato-red shapes. FRESH COFFEE in a friendly brushlettering header, enormous35c inside a simple green price circle, MESA DINER as sober wordmark atbottom. Vintage screenprint/offset texture with a little surface scuffing and veryminor sunfading; still in everyday use, no heavy tears. No extra taglineorpricing. Flat printed illustration, not a productphoto scene.\nAll printed text exactly:\nFRESH COFFEE\n35c\nMESA DINER",
+        "source": {
+          "basename": "exec-e2fae6f0-6e59-4949-bf16-4ff33799258b.png",
+          "sha256": "4ae00d9b67f636aec7123aaab54ea826e0570e527de0621ce52fb30263561624",
+          "bytes": 3030826,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "DINER_PIE",
+      "title": "Homemade pie, 95c",
+      "filename": "jpg/11-diner-pie.jpg",
+      "group": "local_ads",
+      "text": "HOMEMADE PIE\n95c\nMESA DINER",
+      "design_nb": "Nøktern illustrert paikakereklame med et stykke gyllen pai på porselensfat, støvete mint og krem. Slitt men ren matreklame fra før 1987.",
+      "placement_nb": "Dinerens disk eller innvendige vindusreklame.",
+      "intended_use_nb": "Dinerens disk eller innvendige vindusreklame.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/mesadiner/make_textures.py",
+          "anchor": "atlas / panel 0",
+          "role": "Existing pie price .95."
+        }
+      ],
+      "key_checks": [
+        "HOMEMADE PIE / 95c / MESA DINER.",
+        "Do not substitute a different price or suggest a dated player purchase."
+      ],
+      "physical_size_m": [
+        0.21,
+        0.3
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/11-diner-pie.jpg",
+        "sha256": "91eeb713567a3ef572f6cdd7ae7b2f55e556590706ddf8e442ed8ad7b50a5556",
+        "bytes": 567602,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 MesaDiner wallad matching a real old roadside diner. Printed illustration of an inviting SLICE OF APPLE PIE withgolden flakycrust on an ivory plate, small redcherriesdecormotifattheedges, warm red/cream and dark greenlimitedink. HOMEMADE PIE in large friendly midcenturyhandlettering, huge95c price, MESA DINER below. Oldoffsetfoodillustration, lightgrainsmallgreasemarkinthemargin, stillwellkept. Do not add coffeeorcombodealorsmallerotherprices. One posterfaceedge toedge.\nAll printed text exactly:\nHOMEMADE PIE\n95c\nMESA DINER",
+        "source": {
+          "basename": "exec-91773803-33c4-4bd9-ad32-269b2430c908.png",
+          "sha256": "0ef161e1347ca149a3c7c1335e789e6c613acc6ddcbe13c492deb30d89199517",
+          "bytes": 3266553,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "GAS_AD",
+      "title": "Caliche service and fuel",
+      "filename": "jpg/12-gas-ad.jpg",
+      "group": "local_ads",
+      "text": "CALICHE SERVICE\nGAS  DIESEL  TOWING\nREGULAR 89.9\nCENTS PER GALLON",
+      "design_nb": "Enkel lokal verkstedreklame i skitten krem, dempet rød og sotblå. Liten tegnet bergingsbil, store lesbare drivstofford og desimalpris. CALICHE SERVICE er produksjonskortets generiske serviceoverskrift, ikke et nytt bygg.",
+      "placement_nb": "Flat reklame ved den eksisterende bensinstasjonens nattvindu eller servicedisk.",
+      "intended_use_nb": "Flat reklame ved den eksisterende bensinstasjonens nattvindu eller servicedisk.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp",
+          "anchor": "FS47Caliche::BindTown / pumps and gasSign",
+          "role": "Existing GAS / DIESEL and regular 89.9; the generic service/towing card is new background copy."
+        }
+      ],
+      "key_checks": [
+        "REGULAR 89.9 CENTS PER GALLON; do not read 89.9 as dollars.",
+        "GAS / DIESEL / TOWING belongs to the existing service station, not a new shop."
+      ],
+      "physical_size_m": [
+        0.42,
+        0.59
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/12-gas-ad.jpg",
+        "sha256": "1df6ac21d6d77bb721f68f775a5e3a585dd94ae8c0cbe0b144d3e153b61c6a15",
+        "bytes": 587693,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 original1980s smallrural gasstation WINDOW AD. Bold geometricred, navy and ivory blocks, understated lineillustration of an olderpickup beside a simpletwopumproadsidegarage. CALICHE SERVICE bigattop, GAS DIESEL TOWING obviouscenterline. REGULAR89.9 is a large clear pricewithCENTS PER GALLON immediatelyunderit, so itcannotbe readas89.9dollars. A tinyprinted towtruck silhouette canreinforcetheservice. Slight sunfade and scuffedposteredge, functionalmodestbusinessratherthanluxurymodernbrand. Noextra address,phone,decimals,pricesorcorporatefuellogo.\nAll printed text exactly:\nCALICHE SERVICE\nGAS  DIESEL  TOWING\nREGULAR 89.9\nCENTS PER GALLON",
+        "source": {
+          "basename": "exec-63be7772-7968-4d7a-ab07-948957cdadf0.png",
+          "sha256": "ae5f05bba534aae1a8ee49a1ac46f28ae5aed99d7c4c938b347ac07830de5f2a",
+          "bytes": 3153787,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "OIL_AD",
+      "title": "Mesa Motor Oil advertisement",
+      "filename": "jpg/13-oil-ad.jpg",
+      "group": "local_ads",
+      "text": "MESA MOTOR OIL\nMADE FOR THE LONG ROAD",
+      "design_nb": "Originalt fiktivt produktmerke med malt gammeldags oljekanne og stilisert fjellsol i rav, mørkegrønt og krem. Ingen ekte oljemerkelogo, ytelsesklassifikasjon eller ny forretningsadresse.",
+      "placement_nb": "Oljereklame ved den eksisterende bensinstasjonens servicevegg.",
+      "intended_use_nb": "Oljereklame ved den eksisterende bensinstasjonens servicevegg.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "OIL_AD",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "MESA MOTOR OIL / MADE FOR THE LONG ROAD.",
+        "Original fictional product brand; no new business location, real logo or oil specification."
+      ],
+      "physical_size_m": [
+        0.42,
+        0.59
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/13-oil-ad.jpg",
+        "sha256": "7224ecf0f48eb2b6583d049a5e2541a732b2a2e354cf53eb39399846071652b1",
+        "bytes": 560093,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait2:3 original1970s motor-oil advertisement for a FICTIONAL generic product MESA MOTOR OIL. Bold cream vintage slab-serif lettering with broad sienna/navy/cream racingstripes, a drawn oldsteelquartcan withunmarkedgenericmini-emblem matchingonlythefictionalbrand, a longroad disappearingbetweenmesas and smallclassicpickup silhouette. Strong simple vintage illustration thatfeelslikeitcouldhangyears in a servicegarage. TaglineMADEFORTHELONGROAD readable below. No additional technicalspecs, viscosity,certifications,price,dates,realbrandmarksorclaimnumbers. Moderatehandlingwearanddust along edge, inkstilllegible.\nAll printed text exactly:\nMESA MOTOR OIL\nMADE FOR THE LONG ROAD",
+        "source": {
+          "basename": "exec-3ebe5678-16c9-46fb-8570-40ee1d987be5.png",
+          "sha256": "0a25c586100f1018f3c4f8b50e1026e39d7373be7549ee45eaa0cf67ccd6aa8a",
+          "bytes": 3297740,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "FEED_AD",
+      "title": "Feed and seed advertisement",
+      "filename": "jpg/14-feed-ad.jpg",
+      "group": "local_ads",
+      "text": "FEED & SEED\nFARM SUPPLIES\nCALICHE, NEW MEXICO",
+      "design_nb": "Lokal bondebutikkreklame med illustrerte kornaks, en enkel sekk og falmet mørkerødt tresnittpreg på krempapir. Ingen priser eller ny butikkidentitet.",
+      "placement_nb": "Vindu eller oppslag ved eksisterende FEED & SEED.",
+      "intended_use_nb": "Vindu eller oppslag ved eksisterende FEED & SEED.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[2]",
+          "role": "Existing feed-store name and farm-supplies wording."
+        }
+      ],
+      "key_checks": [
+        "FEED & SEED / FARM SUPPLIES / CALICHE, NEW MEXICO.",
+        "No invented price, new address or separate grocery/hardware store."
+      ],
+      "physical_size_m": [
+        0.42,
+        0.59
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/14-feed-ad.jpg",
+        "sha256": "b3a29569da00bea3fc836a56c7a93030360409a2fc06bbf60d03dd6ee1081493",
+        "bytes": 633893,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 original rural feed-store advertising poster. Printed forestgreen and warmamber ink on lightivory stock, old woodcut-like drawings of wheatears, a healthy Hereford cow profile and a plain feed sack. Strong traditional FARM SUPPLIES hierarchy, a broad green band with FEED & SEED at top, CALICHE, NEW MEXICO as clear smallbottomline. Modest practical midcenturyranchsupplier graphic stillbeingused in1986. Slightdustandsunfadeatbottom, no contemporary retailstyle, no addedprices, addresses, phoneornamedranch. Beautifulsimpleagriculturalcomposition.\nAll printed text exactly:\nFEED & SEED\nFARM SUPPLIES\nCALICHE, NEW MEXICO",
+        "source": {
+          "basename": "exec-c34a4264-7507-4a81-a7d9-be656f59ea7e.png",
+          "sha256": "2a72586dff60fd6bbaaf35bd3f4464cc22573bb2acb3636d1634c3d23c29ac0d",
+          "bytes": 3431133,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "LAUNDRY_RATES",
+      "title": "Laundry rates",
+      "filename": "jpg/15-laundry-rates.jpg",
+      "group": "local_ads",
+      "text": "OPEN 24 HOURS\nCOIN OPERATED\nWASH 75c\nDRY 25c\nPLEASE REMOVE LINT",
+      "design_nb": "Faded blå og krem vaskeriplakat med enkle sirkulære vaskesymboler og store prissifrer. Ren praktisk oppslagstavletypografi, litt tape i hjørnene.",
+      "placement_nb": "Eksisterende vaskeris prisoppslag.",
+      "intended_use_nb": "Eksisterende vaskeris prisoppslag.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[1] and LABELS[9]",
+          "role": "Existing opening and price notice."
+        }
+      ],
+      "key_checks": [
+        "WASH 75c / DRY 25c with OPEN 24 HOURS / COIN OPERATED.",
+        "No machine count; retain PLEASE REMOVE LINT."
+      ],
+      "physical_size_m": [
+        0.6,
+        0.74
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/15-laundry-rates.jpg",
+        "sha256": "e6013c88b3d5efa216da5395f0dd71228924767b912fb9e908955c2dba7385c5",
+        "bytes": 408775,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 functional1970s/1980s laundromat rate poster, bright OFF-WHITE with deepCOBALTBLUE printing and a narrow fadedmintgreen frame. LargeOPEN24HOURS header, COINOPERATED subheading. Two huge easilycomparedpriceblocks WASH75c and DRY25c, smallplain outlinepictures of a washer and dryer, PLEASE REMOVE LINT as seriousreadablefooter. Cleanbusinesslikeblocklettering, verysubtlewearandfingerprintsmudgecorners only. No scaryimagery, heavyparchmentaging, timestamps or countofmachines.\nAll printed text exactly:\nOPEN 24 HOURS\nCOIN OPERATED\nWASH 75c\nDRY 25c\nPLEASE REMOVE LINT",
+        "source": {
+          "basename": "exec-76b5578d-2a4a-4200-9498-94545bf10858.png",
+          "sha256": "1b3efcdca7086aafbb3c76814ce5c6c5f0222148cd59901476f7879d2c67281f",
+          "bytes": 2503101,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "LAUNDRY_ETIQUETTE",
+      "title": "Laundry courtesy notice",
+      "filename": "jpg/16-laundry-etiquette.jpg",
+      "group": "local_ads",
+      "text": "PLEASE REMOVE LINT\nREMOVE CLOTHES PROMPTLY\nCHECK YOUR POCKETS",
+      "design_nb": "Maskinskrevet hvitt bruksskilt med blek blå ramme, et enkelt lommesymbol og vanlig høflig tone. Lett slitte kanter, ingen trussel eller horrorbudskap.",
+      "placement_nb": "Veggen ved vaskeriets maskiner eller brettbord.",
+      "intended_use_nb": "Veggen ved vaskeriets maskiner eller brettbord.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[9]",
+          "role": "Retains existing lint notice; other courtesy text is original ordinary background copy."
+        }
+      ],
+      "key_checks": [
+        "All three courtesy instructions are clearly separated and readable.",
+        "No machine count, operating code or new quest instruction."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.42
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/16-laundry-etiquette.jpg",
+        "sha256": "29be297a30d3599b850a668d9861357e81e607bb68dfe0d5fd154015a2c3987d",
+        "bytes": 498347,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE4:3 flat smalllaundromat notice with midblue ink on warmwhitestiffpaper, three simple clearlyseparatedinstructionrows. Each has one modestoriginal outlineicon: lintfilter besidePLEASE REMOVELINT, foldedshirt besideREMOVECLOTHESPROMPTLY, pocketandtwoordinarycoins besideCHECKYOURPOCKETS. Iconsareperiodprintedlinework,nofancyappdesign. Slightoffregisterblue ink, thumbtackholeatcorners and a smalloldtapeedge. Stillreadableandkeptinuse. No prices, logos,machinecountsornewinstructions.\nAll printed text exactly:\nPLEASE REMOVE LINT\nREMOVE CLOTHES PROMPTLY\nCHECK YOUR POCKETS",
+        "source": {
+          "basename": "exec-05d5db0b-28d8-4f85-895f-d43be96634b9.png",
+          "sha256": "229e2ffcb4672b1d5ba254ee41b3e95e84193ff760dfa008da8c2a716b9d70bf",
+          "bytes": 2921421,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "MOTEL_AD",
+      "title": "Sierra Motor Court rates",
+      "filename": "jpg/17-motel-ad.jpg",
+      "group": "local_ads",
+      "text": "SIERRA MOTOR COURT\nCLEAN ROOMS\nCABLE TV\nSINGLE $18.00\nDOUBLE $24.00\nREGISTER HERE",
+      "design_nb": "Turkis og krem motellreklame med enkel gul stjerne og beskjedent modernistisk 1950-tallspreg, slitt frem mot 1986. Priskort med store klare summer.",
+      "placement_nb": "Resepsjon eller oppslagsflate i eksisterende Sierra Motor Court.",
+      "intended_use_nb": "Resepsjon eller oppslagsflate i eksisterende Sierra Motor Court.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[7] and LABELS[8]",
+          "role": "Existing registration wording and $18/$24 rates."
+        },
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Looks.cpp",
+          "anchor": "motel sign look text",
+          "role": "Existing CLEAN ROOMS / CABLE TV."
+        }
+      ],
+      "key_checks": [
+        "SINGLE $18.00 / DOUBLE $24.00; do not swap or alter rates.",
+        "SIERRA MOTOR COURT / CLEAN ROOMS / CABLE TV / REGISTER HERE."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.42
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/17-motel-ad.jpg",
+        "sha256": "a7057c39b3ca09228ee821e56ef91e832e5a056e38134f69d2cff4094a5d6301",
+        "bytes": 539359,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait 3:4 vintage roadside motel advertisement on lightly worn cream stock. A stylish original mid-century travel illustration of a low adobe motor court, turquoise room doors, a distant desert mesa, a small tall roadside sign and a warm evening sky. Deep turquoise, burnt orange, butter yellow and cream, strong period geometric lettering. SIERRA MOTOR COURT prominent at top. Two clearly separated rate lines SINGLE $18.00 and DOUBLE $24.00 beneath the illustration, CLEAN ROOMS and CABLE TV as smaller amenities, REGISTER HERE at bottom. No pool, room count, room number, address, telephone, reservations promise or additional price. A practical modest ad in use in1986, minor scuffing only.\nAll printed text exactly:\nSIERRA MOTOR COURT\nCLEAN ROOMS\nCABLE TV\nSINGLE $18.00\nDOUBLE $24.00\nREGISTER HERE",
+        "source": {
+          "basename": "exec-3c9e1e2f-a818-4cec-94f4-f0a9f530c7e3.png",
+          "sha256": "09b326a4e04f472a3264a2ddfc7a0927f9fbcf818ced379269227c9ec92f7830",
+          "bytes": 2866118,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "SOUVENIR_TOURS",
+      "title": "Saucer Crash tours",
+      "filename": "jpg/18-souvenir-tours.jpg",
+      "group": "local_ads",
+      "text": "SAUCER CRASH 1947\nTOURS\nASK INSIDE\nOPENS 10 AM\nTOURS SATURDAYS",
+      "design_nb": "Muntren hjemmemalt turistplakat med komisk liten tallerken og ørkenkaktus, ujevnt rødt/grønt trykk og gulnet papir. Tydelig suvenirreklame, ingen ekte hendelsesdokumentasjon.",
+      "placement_nb": "Dør eller sidevindu i eksisterende suvenirbutikk.",
+      "intended_use_nb": "Dør eller sidevindu i eksisterende suvenirbutikk.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp",
+          "anchor": "souvenirSign and souvenir_man first dialogue",
+          "role": "Existing store heading, opening at ten and Saturday tours."
+        }
+      ],
+      "key_checks": [
+        "SAUCER CRASH 1947 / TOURS / ASK INSIDE / OPENS 10 AM / TOURS SATURDAYS.",
+        "A tourist advertisement, not proof of a crash or a new main-route clue."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.42
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/18-souvenir-tours.jpg",
+        "sha256": "6f38bdff84a6e92672fe18eec1af4eb602a75c50f43dca36368a4f382aee8176",
+        "bytes": 631137,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 82,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait 2:3 campy original local tourist attraction poster. SAUCER CRASH1947 is a humorous commercial roadside title, with large TOURS letters and a friendly brightly colored painted flying saucer above a generic desert butte. A small original cartoon cactus and starburst framing the text; turquoise, sun-yellow, rust-red and black ink. ASK INSIDE, OPENS10AM and TOURS SATURDAYS all clear and separate. No actual crash coordinates, maps, witnesses, wreckage photograph or proof of extraterrestrials. Cheerful kitschy1950s-through1980s tourist trade illustration, slightly sunfaded and rubbed, no real-world brand.\nAll printed text exactly:\nSAUCER CRASH 1947\nTOURS\nASK INSIDE\nOPENS 10 AM\nTOURS SATURDAYS",
+        "source": {
+          "basename": "exec-4630f936-d6fc-4379-869b-90b1ca641302.png",
+          "sha256": "cd572c6f205ca45af29c36219b7e6d3c22f9bc2f8534982f577812480caa55ba",
+          "bytes": 3565275,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "RADIO_AD",
+      "title": "1420 AM Night Line",
+      "filename": "jpg/19-radio-ad.jpg",
+      "group": "local_ads",
+      "text": "1420 AM\nNIGHT LINE\nEARL\nMIDNIGHT TO FOUR",
+      "design_nb": "Kopiert lokalradioreklame med enkel mikrofontegning, varm rød overskrift og svart trykk. Analoge 1980-tallsformer, ingen moderne bølgeapp eller ekstra telefonnummer.",
+      "placement_nb": "Oppslag ved studioet, bensinstasjonen eller dinerens fellestavle.",
+      "intended_use_nb": "Oppslag ved studioet, bensinstasjonen eller dinerens fellestavle.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp",
+          "anchor": "studio and amDoor",
+          "role": "Existing Earl / Night Line / midnight-to-four identity."
+        }
+      ],
+      "key_checks": [
+        "1420 AM, NIGHT LINE, EARL, MIDNIGHT TO FOUR.",
+        "AM broadcast service only: no MHz, invented call sign or phone number."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.42
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/19-radio-ad.jpg",
+        "sha256": "23929d7efcc73b5849df38b6d1955cc7a65a8f5ffba81d0f0c15c2383eb36ceb",
+        "bytes": 508003,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait 3:4 smalltown1980s late-night AM radio poster. Huge cream1420AM at top, a dramatic flat black/navy field with a narrow amber halo behind a beautiful original line-illustrated old broadcast microphone and simple radiating rings. NIGHT LINE below the frequency, EARL as modest host credit, MIDNIGHT TO FOUR at bottom. Sparse strong letterpress/screenprint hierarchy, muted burnt-orange accents, minimal handling wear. No portrait, phone number, call sign, extra frequencies, MHz, dates or fake wave data. Visually warm, intimate and analog, not modern podcast branding.\nAll printed text exactly:\n1420 AM\nNIGHT LINE\nEARL\nMIDNIGHT TO FOUR",
+        "source": {
+          "basename": "exec-c07fc1ea-4108-4f73-acc3-cf3124088169.png",
+          "sha256": "b345ec21103f89a70bb744ae4cc8cdee37e9f9ed9e09a414e1a0e23c6f13d069",
+          "bytes": 2930077,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "CHURCH_NOTICE",
+      "title": "Caliche Chapel Sunday notice",
+      "filename": "jpg/20-church-notice.jpg",
+      "group": "local_ads",
+      "text": "CALICHE CHAPEL\nSUNDAY SERVICE 10 AM\nALL ARE WELCOME",
+      "design_nb": "Stille enkel kirkebeskjed med krempapir, dypblå bokstaver og et lite avdempet strekornament. Behold eksisterende Caliche Chapel og søndagsgudstjeneste klokken 10; ingen forkynnelse om spillhendelser.",
+      "placement_nb": "Vanlig oppslag ved den eksisterende kirkeinngangen.",
+      "intended_use_nb": "Vanlig oppslag ved den eksisterende kirkeinngangen.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[13]",
+          "role": "Existing CALICHE CHAPEL / SUNDAY SERVICE 10 AM wording; ordinary ALL ARE WELCOME footer."
+        }
+      ],
+      "key_checks": [
+        "CALICHE CHAPEL / SUNDAY SERVICE 10 AM / ALL ARE WELCOME.",
+        "Retain the existing chapel name and time; no added date or plot message."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.42
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/20-church-notice.jpg",
+        "sha256": "8ea4e2a5e147353e1a2b83136ef8452034ca00df1204bfa3c00daec0ea9a781b",
+        "bytes": 513206,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 modest local chapel notice printed in pale blue and dark navy on slightly aged warm-white paper. CALICHE CHAPEL in sober serif at top, a very simple original small church-and-cottonwood line illustration or discreet cross with desert wildflowers, SUNDAY SERVICE10AM prominent beneath, ALL ARE WELCOME as friendly footer. A plain inexpensive community print, clean and sincere, one light fold and thumbtack marks only. No additional church name, scripture, pastor, telephone, address, date, cryptic text or plot hint.\nAll printed text exactly:\nCALICHE CHAPEL\nSUNDAY SERVICE 10 AM\nALL ARE WELCOME",
+        "source": {
+          "basename": "exec-d2b08ef3-b8ba-4b34-9f08-dfa7416ac87c.png",
+          "sha256": "04c57de50535f0141f8f5db35ef7eb948725bf92beeab583a9d830ec8448bf29",
+          "bytes": 3158181,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "FEED_SACK",
+      "title": "Caliche feed sack print",
+      "filename": "jpg/21-feed-sack.jpg",
+      "group": "packaging",
+      "text": "CALICHE FEED\nNET WT 50 LB\nGRAIN & SEED",
+      "design_nb": "Flatt sekketrykk på vevd striefarget underlag, matt grønt og svart med en enkel kornaksramme. Ingen tredimensjonal sekk, bare trykkflaten til en senere modell.",
+      "placement_nb": "Grafikk til eksisterende fôrsekker på butikkens pall eller lasterampe.",
+      "intended_use_nb": "Grafikk til eksisterende fôrsekker på butikkens pall eller lasterampe.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/make_textures.py",
+          "anchor": "LABELS[14]",
+          "role": "Existing sack name, 50 LB weight and contents wording."
+        }
+      ],
+      "key_checks": [
+        "CALICHE FEED / NET WT 50 LB / GRAIN & SEED.",
+        "Keep 50 LB as package weight; no invented item price or case number."
+      ],
+      "physical_size_m": [
+        0.45,
+        0.7
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/21-feed-sack.jpg",
+        "sha256": "af9136ea85880d77386c32833c313bceaac4d3b3ffa5ff7dd5d251d4e82fe0ee",
+        "bytes": 649518,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 84,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 FLAT FRONT PRINT PANEL for a woven feed sack, not a3D sack mockup. Natural off-white coarse burlap/canvas fibers fill the rectangle in even diffuse light, with faint stitched side edges but no bag silhouette or shadow. Bold forestgreen original agricultural logo centered: wheat ears over a simple Hereford cow head silhouette, CALICHE FEED large, GRAIN & SEED below, NET WT50LB clearly at bottom. Only those exact words. Ink slightly absorbed unevenly into fabric, faint ordinary floury grain dust in outer margins. No ranch name, animal ear tag, prices, nutritional analysis, numbers other than50LB or fantasy symbols.\nAll printed text exactly:\nCALICHE FEED\nNET WT 50 LB\nGRAIN & SEED",
+        "source": {
+          "basename": "exec-477997f4-559c-4ec1-9b54-3953fa138db0.png",
+          "sha256": "aa4530558a849a0296d16dbfa9f82f5a7a368f66afea0b669f0b2f6647662c03",
+          "bytes": 4256181,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "COFFEE_TIN",
+      "title": "Mesa Blend coffee tin label",
+      "filename": "jpg/22-coffee-tin.jpg",
+      "group": "packaging",
+      "text": "MESA BLEND\nGROUND COFFEE\n1 LB (16 OZ)",
+      "design_nb": "Flatt omslagsetikett til kaffeboks med originalt fiktivt merke, krem, brunrødt og ett lite fjellmotiv. Jevn frontvendt etikett, ingen boks i perspektiv.",
+      "placement_nb": "Etikett til vanlig kaffeboks i SARO-kjøkken eller på dinerens bakhylle.",
+      "intended_use_nb": "Etikett til vanlig kaffeboks i SARO-kjøkken eller på dinerens bakhylle.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "COFFEE_TIN",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "MESA BLEND / GROUND COFFEE / 1 LB (16 OZ).",
+        "Original fictional brand and flat label artwork; no 3D asset or actual product claim."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.13
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/22-coffee-tin.jpg",
+        "sha256": "ab126c6dafe107d0611cb08279e576f9502b3c57a442a9ae4a0b70f47ca623f3",
+        "bytes": 439064,
+        "width": 1774,
+        "height": 887,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: WIDE LANDSCAPE2:1 flat UNWRAPPED paper label for an ordinary1980s ground-coffee tin. Original fictional MESA BLEND brand, cream background, dark chestnut and brickred horizontal bands, one restrained circular illustration of a low desert mesa and coffee beans. Central large MESA BLEND, GROUND COFFEE beneath and exact net weight. Design extends cleanly to rectangular edges; no cylinder, metal lid, can illustration, perspective or cast shadow. Lightly handled contemporary stock for1986, not an antique burned poster. Clear vintage supermarket typography and modest two-color printing, no extra brand claims or modernbarcode.\nAll printed text exactly:\nMESA BLEND\nGROUND COFFEE\n1 LB (16 OZ)",
+        "source": {
+          "basename": "exec-13c01a6b-358e-44ac-a018-8c54cfab4228.png",
+          "sha256": "bce593da0b01ab51e5117de0ceff0266ef3cfb312c54af0479e7839afe0975b8",
+          "bytes": 2933469,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1774,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": "COLA_LABEL",
+      "title": "Sundown Cola label",
+      "filename": "jpg/23-cola-label.jpg",
+      "group": "packaging",
+      "text": "SUNDOWN COLA\n12 FL OZ",
+      "design_nb": "Original fiktiv bruslabel med retro solnedgangsirkel, blek rød, krem og turkis. Enkel lesbar emballasjetypografi fra før 1987. Flat etikettflate, uten realmerkelogo.",
+      "placement_nb": "Label til drikkeflaske eller drikkeboks ved butikk, diner eller motell.",
+      "intended_use_nb": "Label til drikkeflaske eller drikkeboks ved butikk, diner eller motell.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "COLA_LABEL",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "SUNDOWN COLA / 12 FL OZ, with FL OZ retained as fluid volume.",
+        "Original fictional brand; do not copy a recognizable real cola logo."
+      ],
+      "physical_size_m": [
+        0.21,
+        0.1
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/23-cola-label.jpg",
+        "sha256": "c9426e4bc380e1e9e403f714b09fc7bc225ae1458884de19c94cd65a43b631dc",
+        "bytes": 417960,
+        "width": 1774,
+        "height": 887,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: WIDE LANDSCAPE2:1 flat unwrapped1980s soda-can LABEL, not a can mockup. Original fictional SUNDOWN COLA in bold slanted cream letterforms across deep cherryred, warm gold setting-sun circle and simple angular dark desert ridge at center, black and cream borderstripes at top and bottom. 12 FL OZ small and clear near loweredge. A vivid modest regional soft-drink identity, absolutely no copied CocaCola script, Pepsi globe or other existing logo. Light print rubs only, no aged parchment, no heavy creases, no3D cylinder, lid, condensation or shadow. Rectangular design fills edge to edge for wrapping onto a cylinder.\nAll printed text exactly:\nSUNDOWN COLA\n12 FL OZ",
+        "source": {
+          "basename": "exec-38ff5319-985e-454d-b9ec-25c0efc1ea2e.png",
+          "sha256": "6406bb7f18974eb0e650b114aa5d73ecac1e0ae3847722245b7221b634c8176e",
+          "bytes": 2759609,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1774,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": "DETERGENT_BOX",
+      "title": "Blue Mesa laundry powder",
+      "filename": "jpg/24-detergent-box.jpg",
+      "group": "packaging",
+      "text": "BLUE MESA\nLAUNDRY POWDER\nNET WT 32 OZ",
+      "design_nb": "Flatt fronttrykk til vaskepulvereske med originalt fiktivt merke, himmelblå striper og hvit ørkenfjellform. Litt hylleslitasje, stor merkevare og klar vekt.",
+      "placement_nb": "Emballasjefront til vaskeriets eksisterende hyllevarer.",
+      "intended_use_nb": "Emballasjefront til vaskeriets eksisterende hyllevarer.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "DETERGENT_BOX",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "BLUE MESA / LAUNDRY POWDER / NET WT 32 OZ.",
+        "Fictional product label; no new store, machine count or modern packaging iconography."
+      ],
+      "physical_size_m": [
+        0.18,
+        0.25
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/24-detergent-box.jpg",
+        "sha256": "836310cae82550e400522a0b48a6b5e0aba6f567da1c0a45202a1cfd5cd6a6a3",
+        "bytes": 495651,
+        "width": 1122,
+        "height": 1402,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait4:5 flat FRONT PANEL art for a generic1980s laundry powder carton. Original fictional BLUE MESA brand, cobaltblue upperblock, bold bright-white lettering, pale aqua water-splash graphic and a clean white shirt represented as a simple printed illustration. LAUNDRY POWDER below brand and NET WT32OZ visible in lower blueband. Simple early1980s two/three-color supermarket printing, slightly imperfect registration and one light rubbed lowercorner, otherwise ordinary usable packaging. No box perspective, sidepanels, washingmachine counts, nutritionstylepanels, modern ecoicons or extra text.\nAll printed text exactly:\nBLUE MESA\nLAUNDRY POWDER\nNET WT 32 OZ",
+        "source": {
+          "basename": "exec-c0437561-f51e-470e-9b07-95e0d119b3bf.png",
+          "sha256": "541f9ff9c6a9587fcfefa6ba349fb991cb1c159f34215945ec2afbb5cbd4c739",
+          "bytes": 2746152,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1122,
+          "height": 1402
+        }
+      }
+    },
+    {
+      "id": "CRACKER_BOX",
+      "title": "Desert Salt saltine crackers",
+      "filename": "jpg/25-cracker-box.jpg",
+      "group": "packaging",
+      "text": "DESERT SALT\nSALTINE CRACKERS\nNET WT 1 LB",
+      "design_nb": "Original fiktiv kjekseske med kremfarget front, enkel malt saltkjeks og falmet mørkeblå ramme. Bare den flate trykkfronten.",
+      "placement_nb": "Hverdagsmat på SAROs pauserom eller dinerens bakhylle.",
+      "intended_use_nb": "Hverdagsmat på SAROs pauserom eller dinerens bakhylle.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "CRACKER_BOX",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "DESERT SALT / SALTINE CRACKERS / NET WT 1 LB.",
+        "Original fictional food brand, without copied manufacturer marks."
+      ],
+      "physical_size_m": [
+        0.18,
+        0.24
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/25-cracker-box.jpg",
+        "sha256": "48596741b99a0b23b870fd1350b4baf515ef163814ffc42c43bc12fb49a328f1",
+        "bytes": 488787,
+        "width": 1122,
+        "height": 1402,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait4:5 flat FRONT PANEL art for an inexpensive1980s saltine cracker carton. Fictional DESERT SALT brand in deep blue classic serif on cream with butter-yellow and brick-red accentbands. Original small illustration of a neat stack of pale square salted crackers, a few little wheat stalks, simple desert sun crest, SALTINE CRACKERS clearly below brand and NET WT1LB at bottom. Modest period grocery packaging, lightly scuffed corners, no dramatic aging. No3D box, shelf, productphoto backdrop, copiedmanufacturer mark, healthclaims, barcode or extra words.\nAll printed text exactly:\nDESERT SALT\nSALTINE CRACKERS\nNET WT 1 LB",
+        "source": {
+          "basename": "exec-ef8a00cf-61f0-45b7-9fcb-102cdff055a5.png",
+          "sha256": "c99845a67f47f9c3687087b1a9b8b8afe0e94e6405b15227ae916fe7397bff36",
+          "bytes": 2891849,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1122,
+          "height": 1402
+        }
+      }
+    },
+    {
+      "id": "BATTERY_CARD",
+      "title": "Longwatch battery card",
+      "filename": "jpg/26-battery-card.jpg",
+      "group": "packaging",
+      "text": "LONGWATCH\nHEAVY DUTY\n2 C CELLS",
+      "design_nb": "Flatt pappark til batteripakning med originalt fiktivt merke, svart, oker og krem. Enkel før-1987-grafikk; ingen støpt blister eller ferdig 3D-batteri.",
+      "placement_nb": "Trykk til batteripakning i serviceverktøy eller SAROs hverdagsløsøre.",
+      "intended_use_nb": "Trykk til batteripakning i serviceverktøy eller SAROs hverdagsløsøre.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "BATTERY_CARD",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "LONGWATCH / HEAVY DUTY / 2 C CELLS.",
+        "Exactly two C cells; no modern charging, capacity claim or real battery logo."
+      ],
+      "physical_size_m": [
+        0.12,
+        0.19
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/26-battery-card.jpg",
+        "sha256": "930282cf6e63d4b552e495a72d93b9fde0bf4f8816e7fcc29e13deb0ea8019da",
+        "bytes": 530207,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 FLAT printed backing card for an original1980s heavy-duty battery pack. Fictional LONGWATCH brand in big cream letters on deep charcoal with burnt-red and mustardyellow bands. HEAVY DUTY and2C CELLS clearly below brand. A simple printed illustration or reserved graphic slots for exactly TWO plain C-size cylindrical batteries in the lowerhalf, no actual plastic blister, metal objects or perspective. One small oval hanging-slot motif at topcenter can be a dark printed cutout representation, opaque. Slight shelf scuffing only. No capacity, rechargeable claims, modernicons, prices, extra numbers or realbatterybrand marks.\nAll printed text exactly:\nLONGWATCH\nHEAVY DUTY\n2 C CELLS",
+        "source": {
+          "basename": "exec-9834b959-7824-4554-bc49-2a07aea96b77.png",
+          "sha256": "05074b144400848043df4df8ee184390a2a4ef6d9bafb92c6a302ae9e4eb67fd",
+          "bytes": 3276438,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "MATCHBOOK",
+      "title": "Sierra Motor Court matchbook",
+      "filename": "jpg/27-matchbook.jpg",
+      "group": "packaging",
+      "text": "SIERRA MOTOR COURT\nCALICHE, NM\nCLEAN ROOMS\nCABLE TV",
+      "design_nb": "Flatt trykk til fyrstikkbokomslag med turkis stripe og liten gul stjerne, noe slitt kant. Ingen 3D-oppbretting eller oppdiktet telefonnummer.",
+      "placement_nb": "Lite motellsuvenir ved resepsjonsdisken eller på et nattbord.",
+      "intended_use_nb": "Lite motellsuvenir ved resepsjonsdisken eller på et nattbord.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Looks.cpp",
+          "anchor": "motel sign look text",
+          "role": "Existing motel name and amenity wording; new ordinary matchbook format."
+        }
+      ],
+      "key_checks": [
+        "SIERRA MOTOR COURT / CALICHE, NM / CLEAN ROOMS / CABLE TV.",
+        "No invented phone number, rate or actual booking event."
+      ],
+      "physical_size_m": [
+        0.04,
+        0.11
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/27-matchbook.jpg",
+        "sha256": "2ad7f665932ebd5e490fd5653b143d9e588c768350c818b56b7714734882b87e",
+        "bytes": 559127,
+        "width": 887,
+        "height": 1774,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Tall portrait1:2 flattened, UNFOLDED outer MATCHBOOK COVER for SierraMotorCourt. One coherent rectangular strip with upper frontcover area, narrow simple fold/hinge band, lower rearcover area and a short dark striking strip at the bottom. Period turquoise, burnt orange and cream ink on cardstock. Upperfront hasSIERRAMOTORCOURT with a small simple original sunrise over mesa graphic; lowerback hasCALICHE,NM, CLEANROOMS, CABLETV. Distribute the four exact textlines once each across this single cover. Verylight edge wear, flat even light. No actual matchsticks, 3Dfolding, perspective, phone number, date, price or otherwords.\nAll printed text exactly:\nSIERRA MOTOR COURT\nCALICHE, NM\nCLEAN ROOMS\nCABLE TV",
+        "source": {
+          "basename": "exec-bc068998-61f6-460a-9cf0-a07a17478eb1.png",
+          "sha256": "bc219aeab24a205627906e4d7e8969a0779d1415daeea6aa041d336428233efd",
+          "bytes": 3216465,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 887,
+          "height": 1774
+        }
+      }
+    },
+    {
+      "id": "TAKEAWAY_BAG",
+      "title": "Mesa Diner takeaway bag print",
+      "filename": "jpg/28-takeaway-bag.jpg",
+      "group": "packaging",
+      "text": "MESA DINER\nOPEN ALL NIGHT\nCALICHE, NM",
+      "design_nb": "Flat brun kraftpapirflate med enkelt mørkerødt dinertrykk og minimalt kaffekoppsymbol. Papirfiber og svake brukskrøller; ingen ferdig 3D-pose.",
+      "placement_nb": "Grafikk til eksisterende takeaway-pose fra Mesa Diner.",
+      "intended_use_nb": "Grafikk til eksisterende takeaway-pose fra Mesa Diner.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/mesadiner/make_textures.py",
+          "anchor": "atlas / panel 3 and panel 6",
+          "role": "Existing diner name, place and all-night wording; new package print."
+        }
+      ],
+      "key_checks": [
+        "MESA DINER / OPEN ALL NIGHT / CALICHE, NM.",
+        "Flat packaging print; no new receipt, purchase time or food order."
+      ],
+      "physical_size_m": [
+        0.26,
+        0.4
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/28-takeaway-bag.jpg",
+        "sha256": "eceeb9aff742fa49fe1cfb2573cd25bdc5374926b09a85dd7751ae08f57d9938",
+        "bytes": 463944,
+        "width": 1086,
+        "height": 1448,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: Portrait3:4 flat FRONT PRINT PANEL for a brown kraft takeaway paperbag from MesaDiner. Natural mediumtan kraft fibers and a verysubtle vertical paperfold, single dark oxblood/red ink. Big friendly MESA DINER wordmark, small original simple coffee-cup-and-mesa lineemblem, OPEN ALL NIGHT below and CALICHE,NM as the smallfooter. A plain inexpensive dinerbag identity, slightly softened ink, one light grease smudge at bottomedge. No actual bag silhouette, handles, sidepanels, perspective or floor, no printedorders, price, date or addedclaims. The entire rectangularpanel should be usable as a UV color texture.\nAll printed text exactly:\nMESA DINER\nOPEN ALL NIGHT\nCALICHE, NM",
+        "source": {
+          "basename": "exec-4b1c0f74-1790-4d74-9742-873a7c511864.png",
+          "sha256": "974519f87130152cbcc93da288763f1dd04e1a5f5c499bc5ccd0183565c6b52a",
+          "bytes": 3206987,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1086,
+          "height": 1448
+        }
+      }
+    },
+    {
+      "id": "FOOD_WRAPPER",
+      "title": "Mesa Diner food wrapper",
+      "filename": "jpg/29-food-wrapper.jpg",
+      "group": "packaging",
+      "text": "MESA DINER\nHOT FOOD TO GO",
+      "design_nb": "Flatt repeterende fettpapirmønster med to korte tekstlinjer i falmet burgunder på krempapir. Håndverksmessig 1980-tallstrykk, klar gjentakelse uten ekstra slagord eller moderne logo.",
+      "placement_nb": "Trykk til innpakningspapir for dinerens eksisterende mat.",
+      "intended_use_nb": "Trykk til innpakningspapir for dinerens eksisterende mat.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "FOOD_WRAPPER",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "Repeat only MESA DINER / HOT FOOD TO GO in the pattern.",
+        "Flat printed paper texture; no new order details or 3D wrapper."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.3
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/29-food-wrapper.jpg",
+        "sha256": "dce921784dd723c39ca53229d8401a2686c0b8155190c435de28c570d6a65655",
+        "bytes": 515346,
+        "width": 1254,
+        "height": 1254,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: SQUARE1:1 flat sheet of cheap off-white diner sandwich-wrapping paper. Sparse repeated pattern in single faded brick-red ink, four to six LARGE clearly separated repeats of MESA DINER and HOT FOOD TO GO. Small simple coffee cups, tiny plateaus and thin diamond lines between repeats. Every repeat must spell both phrases correctly and be large enough to read, not dense decorative fake microtext. An ordinary inexpensive1986 print, light translucent paper fibers and one faint grease stain near an outer corner. No actual wrapped sandwich or3D crumpling; just the flat printed surface. Do not claim perfect seamless tiling; artwork reaches all edges.\nAll printed text exactly:\nMESA DINER\nHOT FOOD TO GO",
+        "source": {
+          "basename": "exec-fa017991-1c4a-41a6-9a64-e63025160869.png",
+          "sha256": "964eabad2d960d3a5e33ec6eb572bb8eb87bba11f938594cef37e6916899acf4",
+          "bytes": 3129626,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1254,
+          "height": 1254
+        }
+      }
+    },
+    {
+      "id": "CASSETTE_CARD",
+      "title": "Road Tapes cassette inlay",
+      "filename": "jpg/30-cassette-card.jpg",
+      "group": "packaging",
+      "text": "ROAD TAPES\nC-60\n\nSIDE A\n1. ____________________\n2. ____________________\n3. ____________________\n4. ____________________\n\nSIDE B\n1. ____________________\n2. ____________________\n3. ____________________\n4. ____________________",
+      "design_nb": "Flat vanlig C-60 kassettinnlegg med brune og støvblå striper, tomme linjer og enkel maskinskrift. Ingen ferdigspilte musikkverk, bandnavn eller VHS-merke.",
+      "placement_nb": "Vanlig musikkassettkort ved bilradio, motell eller hverdagsbord, adskilt fra Dales felt-VHS.",
+      "intended_use_nb": "Vanlig musikkassettkort ved bilradio, motell eller hverdagsbord, adskilt fra Dales felt-VHS.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "CASSETTE_CARD",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "ROAD TAPES / C-60 / SIDE A / SIDE B; track lines remain blank.",
+        "An ordinary audio-cassette card, not Dale's VHS or recorded evidence."
+      ],
+      "physical_size_m": [
+        0.105,
+        0.065
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/30-cassette-card.jpg",
+        "sha256": "f7fa661f8cbcc37581f3a499c0fcbef344f9ea7a291c967d1dcf0448b929cc31",
+        "bytes": 340388,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE4:3 flat1980s AUDIO CASSETTE J-card/inlay. Warm white card with sober black type and a pair of mustard-and-rust diagonal stripes along top. ROAD TAPES at upperleft, C-60 at upperright. Lower area has two plainly ruled columns: SIDE A and SIDE B, exactly FOUR numbered blank track lines1 through4 under EACH. Track lines are empty, no song names or writing. Subtle fold lines appropriate to paper inlay, very light handled edges, no actual cassette shell, reels, plastic case or mockup. No VHS, video frame, Dale name, recording date, story case labels or extra text.\nAll printed text exactly:\nROAD TAPES\nC-60\n\nSIDE A\n1. ____________________\n2. ____________________\n3. ____________________\n4. ____________________\n\nSIDE B\n1. ____________________\n2. ____________________\n3. ____________________\n4. ____________________",
+        "source": {
+          "basename": "exec-45a2cbbb-3e4d-49c8-99e2-098f0ed009f5.png",
+          "sha256": "c3e4bcba83d0f6de52013dcdeb730c1890aefc526332a3f7d83700c09373b06a",
+          "bytes": 2676664,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "MOTEL_KEY",
+      "title": "Room 8 key envelope",
+      "filename": "jpg/31-motel-key.jpg",
+      "group": "everyday_paper",
+      "text": "SIERRA MOTOR COURT\nROOM 8\nPLEASE RETURN KEY",
+      "design_nb": "Lite flatt krempapirkonvolutt-trykk med stor turkis romangivelse og slitt resepsjonsstempelestetikk. Ingen vist nøkkelgeometri eller gjestenavn.",
+      "placement_nb": "Vanlig rom 8-konvolutt i motellets resepsjonsløsøre, uten å erstatte rom 6 eller eksisterende nøkler.",
+      "intended_use_nb": "Vanlig rom 8-konvolutt i motellets resepsjonsløsøre, uten å erstatte rom 6 eller eksisterende nøkler.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/motel_geometry.py",
+          "anchor": "court / room range(1,9)",
+          "role": "Existing eight-room motel numbering; new inert Room 8 envelope."
+        }
+      ],
+      "key_checks": [
+        "SIERRA MOTOR COURT / ROOM 8 / PLEASE RETURN KEY.",
+        "Room 8 only; no Nora identity, room 6 access change or new usable key."
+      ],
+      "physical_size_m": [
+        0.08,
+        0.12
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/31-motel-key.jpg",
+        "sha256": "72f3ccdb4552f79039e4a878408027165d01a65a8ad3a3a3c52edec43e58d0dd",
+        "bytes": 450962,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE4:3 flat front of a small cream paper key envelope. SierraMotorCourt wordmark in dark turquoise at top, tiny simple printed mesa/sun emblem, ROOM8 large in a thin outlined box, PLEASE RETURN KEY along bottom. Lightly worn cardstock, a faint sidefold and one small thumbmark, burgundy room-number ink. No actual key, keyring, floor, hands or perspective. ROOM8 must be unambiguous and not6. No name, date, phone number, price, hidden message, guest signature or evidence numbering.\nAll printed text exactly:\nSIERRA MOTOR COURT\nROOM 8\nPLEASE RETURN KEY",
+        "source": {
+          "basename": "exec-7a061f72-fefb-4297-8ed9-a313dd84c2b6.png",
+          "sha256": "8fbfe33426e1fa02e60fc2bd470b8af3fdd7b748cb26329af3e2a5c5c3fc38a5",
+          "bytes": 3137908,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "MOTEL_REGISTRATION",
+      "title": "Guest registration blank",
+      "filename": "jpg/32-motel-registration.jpg",
+      "group": "everyday_paper",
+      "text": "SIERRA MOTOR COURT\nGUEST REGISTRATION\n\nNAME ______________________________\nADDRESS ___________________________\n___________________________________\nARRIVAL ___________________________\nROOM ______________________________",
+      "design_nb": "Flat tom resepsjonsblankett med turkis toppregel og mørk enkel typewritertekst. Lufte tomme felt og vanlig karbonpapirfølelse; ikke utfylte persondata.",
+      "placement_nb": "Løst gjestekort på motellets resepsjonsdisk.",
+      "intended_use_nb": "Løst gjestekort på motellets resepsjonsdisk.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/townbuildings/motel_geometry.py",
+          "anchor": "court / reception counter",
+          "role": "Existing reception setting; new blank prop without changing its story register."
+        }
+      ],
+      "key_checks": [
+        "NAME, ADDRESS, ARRIVAL and ROOM fields stay blank.",
+        "No guest names, dates, signatures or replacement of the active story register."
+      ],
+      "physical_size_m": [
+        0.21,
+        0.15
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/32-motel-registration.jpg",
+        "sha256": "90933cb106058c8815c0d505726da47bd2d2267c28c1e1f049122a26fba6fe6b",
+        "bytes": 337837,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE4:3 flat blank registration form on cream white motel stationery. Turquoise SIERRA MOTOR COURT header with a tiny original mesa/sun emblem, GUEST REGISTRATION in black at upper center. Four clean generous blank fields below with ruled lines; ADDRESS has two lines. Warm lightly handled edges, ordinary inexpensive1980s letterpress stationery. Field names large and perfectly readable. Every field remains empty. No guest, date, signature, ID, actual register contents or extra text. Fill the whole image with the paper surface.\nAll printed text exactly:\nSIERRA MOTOR COURT\nGUEST REGISTRATION\n\nNAME ______________________________\nADDRESS ___________________________\n___________________________________\nARRIVAL ___________________________\nROOM ______________________________",
+        "source": {
+          "basename": "exec-f3864f34-e41e-4998-ba71-ee5ef7a530d6.png",
+          "sha256": "ec150a97a49c83c91f42cc74ed1793b9e1017c536466261d961d792ff7ab01ea",
+          "bytes": 2638029,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "DINER_RECEIPT",
+      "title": "Coffee and pie receipt",
+      "filename": "jpg/33-diner-receipt.jpg",
+      "group": "everyday_paper",
+      "text": "MESA DINER\n\nCOFFEE  0.35\nPIE     0.95\n------------\nTOTAL   1.30",
+      "design_nb": "Flat liten analog dinerblokk-kvittering med maskintrykk, tynn horisontal summeringsstrek og gulnet papir. Ingen dato, spillernavn eller moderne strekkode.",
+      "placement_nb": "Inert hverdagskvittering ved dinerens kasse eller i et papirfat.",
+      "intended_use_nb": "Inert hverdagskvittering ved dinerens kasse eller i et papirfat.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/mesadiner/make_textures.py",
+          "anchor": "atlas / panel 0",
+          "role": "Existing coffee .35 and pie .95; new inert sum 1.30."
+        }
+      ],
+      "key_checks": [
+        "COFFEE 0.35 + PIE 0.95 = TOTAL 1.30.",
+        "No date, player name, tax, surcharge or recorded game purchase."
+      ],
+      "physical_size_m": [
+        0.075,
+        0.14
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/33-diner-receipt.jpg",
+        "sha256": "cc88dd508b0ea89617d9160964c2f142a8719124ee2f9fa1d92fe6f66e3ee184",
+        "bytes": 412074,
+        "width": 887,
+        "height": 1774,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: NARROW PORTRAIT1:2 flat cream paper receipt with lightly fading black impact-printer type, authentic1986 diner till typography. MESA DINER centered at top. Two item rows COFFEE0.35 and PIE0.95 with aligned right price column. A dashed divider. TOTAL1.30 in a slightly heavier final row. Leave generous empty paper below. Modest horizontal fold and thumbwear, no dramatic scorching, coffee stain must not cover type. Exactly listed text, with correct totals and no date, tax, tip, guest, transaction number or extra message. No background or physical till.\nAll printed text exactly:\nMESA DINER\n\nCOFFEE  0.35\nPIE     0.95\n------------\nTOTAL   1.30",
+        "source": {
+          "basename": "exec-ead537fb-25fa-4664-9a7d-81a04027a52b.png",
+          "sha256": "9ae7d6f863f15396fdae4da04bb08220a5ca339aa86cd611ed4d898f40dc07c4",
+          "bytes": 3204037,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 887,
+          "height": 1774
+        }
+      }
+    },
+    {
+      "id": "GAS_RECEIPT",
+      "title": "Fuel cash receipt",
+      "filename": "jpg/34-gas-receipt.jpg",
+      "group": "everyday_paper",
+      "text": "CALICHE SERVICE\n\n3.000 GAL @ $0.899\nTOTAL  $2.70\nCASH   $5.00\nCHANGE $2.30",
+      "design_nb": "Flat gammel kvittering fra servicekasse i svart på gulnet papir, med tydelig volum, pris per gallon og aritmetikk. Ingen kjøper, registreringsnummer eller hendelsesdato.",
+      "placement_nb": "Ny inert kvitteringsrekvisitt ved eksisterende bensinstasjons disk.",
+      "intended_use_nb": "Ny inert kvitteringsrekvisitt ved eksisterende bensinstasjons disk.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp",
+          "anchor": "FS47Caliche::BindTown / pumps",
+          "role": "Existing regular price 89.9 cents per gallon; new fictional inert cash transaction."
+        }
+      ],
+      "key_checks": [
+        "3.000 GAL @ $0.899 rounds to $2.70; $5.00 cash minus $2.70 gives $2.30 change.",
+        "No player transaction, date, route clue or new business location."
+      ],
+      "physical_size_m": [
+        0.075,
+        0.15
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/34-gas-receipt.jpg",
+        "sha256": "7edb326f5336eb4e7746b833b7640c963e8a1efaefa7f1795f80cd4e7694fa74",
+        "bytes": 346236,
+        "width": 887,
+        "height": 1774,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: NARROW PORTRAIT1:2 flat inexpensive off-white service station receipt, black1980s impact-printer type with very slightly uneven ink. CALICHE SERVICE centered top, below3.000GAL@$0.899, then aligned TOTAL$2.70, CASH$5.00, CHANGE$2.30. Keep all decimals and currency symbols legible. A plain sensible till layout with blank paper around it, light handling and single faint fold. No date, name, pump number, tax, fuel route, barcode or extra text. Full image is the flat paper only.\nAll printed text exactly:\nCALICHE SERVICE\n\n3.000 GAL @ $0.899\nTOTAL  $2.70\nCASH   $5.00\nCHANGE $2.30",
+        "source": {
+          "basename": "exec-7f932ed0-4464-4015-88a2-2e1903cddea7.png",
+          "sha256": "6e4dd70c2797fa87259f0cb67817bab99bf847d3f2eadf30f438d63d3bfcd3bc",
+          "bytes": 2953500,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 887,
+          "height": 1774
+        }
+      }
+    },
+    {
+      "id": "POSTCARD",
+      "title": "Greetings from Caliche",
+      "filename": "jpg/35-postcard.jpg",
+      "group": "everyday_paper",
+      "text": "GREETINGS FROM CALICHE\nNEW MEXICO",
+      "design_nb": "Flatt frontmotiv til turistpostkort med stor nostalgisk bokstavillustrasjon, alminnelig ørkenlandskap, kaktus og varm sol. Ingen hovedrutegeometri, surveymerker eller UFO-bevis.",
+      "placement_nb": "Postkort på suvenirbutikkens stativ eller motellets resepsjon.",
+      "intended_use_nb": "Postkort på suvenirbutikkens stativ eller motellets resepsjon.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "POSTCARD",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "GREETINGS FROM CALICHE / NEW MEXICO.",
+        "Tourist illustration only; no functional map, coordinates or case photograph."
+      ],
+      "physical_size_m": [
+        0.15,
+        0.1
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/35-postcard.jpg",
+        "sha256": "66f062cbc2424f3815970be98e788bfc359debfd37a73d34632dabcce9a19164",
+        "bytes": 658959,
+        "width": 1536,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 82,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE3:2 original1980s illustrated tourist postcard FRONT. Cheerful flat offset-printed Caliche New Mexico travel illustration with a little low adobe roadside town, distant sandstone mesas, broad blue sky, one roadside diner canopy and desert plants. Warm ochre and turquoise, slightly sun-bleached card but clear friendly design. GREETINGS FROM CALICHE lettered large in arcing vintage travel-postcard style across upper half, NEW MEXICO below. Original tiny scenic buildings without any added words or logos. Not a real photographic location, no UFO or case evidence, no map or coordinates. Whole frame is the postcard printed face; no stamp, postage area, back, table or border drop shadow.\nAll printed text exactly:\nGREETINGS FROM CALICHE\nNEW MEXICO",
+        "source": {
+          "basename": "exec-11b42739-49b9-476d-b8c1-cccfa501efee.png",
+          "sha256": "85021f9ca193bd87e1e1f22afa5bf365e34aa56e0f1e8603b73e6dfcb88ad69d",
+          "bytes": 3785826,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "id": "MAP_COVER",
+      "title": "New Mexico road map cover",
+      "filename": "jpg/36-map-cover.jpg",
+      "group": "everyday_paper",
+      "text": "NEW MEXICO\nROAD MAP\n1985\n$1.95",
+      "design_nb": "Flat foldet-kart-omslagsgrafikk med enkel ørkenvei og geometrisk fjellillustrasjon. Bare omslag; intet lesbart veikart, ingen avstandslinjer eller destinasjonskryss.",
+      "placement_nb": "Forside til vanlig salgsveikart i suvenirbutikk eller motell, uten å erstatte E14.",
+      "intended_use_nb": "Forside til vanlig salgsveikart i suvenirbutikk eller motell, uten å erstatte E14.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/calichestreet/souvenir/make_merch_labels.py",
+          "anchor": "labels / ROAD MAPS",
+          "role": "Existing road-map sale price $1.95; fictional 1985 cover."
+        }
+      ],
+      "key_checks": [
+        "NEW MEXICO / ROAD MAP / 1985 / $1.95.",
+        "Cover only, without coordinates, C, survey bolts or replacement of the active service map."
+      ],
+      "physical_size_m": [
+        0.11,
+        0.23
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/36-map-cover.jpg",
+        "sha256": "5f42dcba8330dce67c66be99b985725b1aab95a955819a562d2ba7283222c336",
+        "bytes": 580708,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: PORTRAIT2:3 flat FRONT COVER of an inexpensive1985 state road map sold in a small New Mexico souvenir shop. Strong simple original offset-print design: dark red NEW MEXICO across top, cream ROAD MAP across wide blue horizontal band,1985 large lowerleft,$1.95 small but clear upperright in a simple circle. Lower illustration of a rural two-lane highway receding into orange desert mesas under pale blue sky. No readable road numbers, actual maps, coordinates, survey marks, arrows or routes. Slightly sunfaded folded cardstock with fine foldwear but no massive damage. No modern logos or extra text. Not a road-map interior or three-dimensional folded object.\nAll printed text exactly:\nNEW MEXICO\nROAD MAP\n1985\n$1.95",
+        "source": {
+          "basename": "exec-22caf4bb-3ec5-4b5d-937b-40e95ac57608.png",
+          "sha256": "7dc077f9a1f1db113a3d576cbfcc1147ed33a10eea7a65a6cc71a341b35cceb8",
+          "bytes": 3438857,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "SARO_RADIO_QUIET",
+      "title": "Radio quiet zone sign",
+      "filename": "jpg/37-saro-radio-quiet.jpg",
+      "group": "workplace_signage",
+      "text": "RADIO QUIET ZONE\nNO TRANSMITTERS BEYOND THIS SIGN",
+      "design_nb": "Flat slitt emaljeskilt med dempet grønn topp, svart instruks og krem bunn. Små rustpunkter ved skruehull, ingen ekstra frekvens eller radiosystemkode.",
+      "placement_nb": "Eksisterende radio quiet-grense ved SAROs innkjøring.",
+      "intended_use_nb": "Eksisterende radio quiet-grense ved SAROs innkjøring.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Looks.cpp",
+          "anchor": "quietSign",
+          "role": "Exact existing radio-quiet wording."
+        }
+      ],
+      "key_checks": [
+        "RADIO QUIET ZONE / NO TRANSMITTERS BEYOND THIS SIGN.",
+        "No MHz value, channel, code or new boundary instruction."
+      ],
+      "physical_size_m": [
+        0.6,
+        0.4
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/37-saro-radio-quiet.jpg",
+        "sha256": "54a8cb4f73d9b626bbcbf653af9cd25c1fbe7c8aefb3370279d72ae03c351fd7",
+        "bytes": 431316,
+        "width": 1536,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE3:2 flat institutional radio-quiet boundary sign. Deep desaturated forest-green enamel surface, large cream condensed sans serif RADIO QUIET ZONE at top and clean generous centered cream NO TRANSMITTERS BEYOND THIS SIGN in two or three lines below. A simple cream horizontal divider. Subtle sunfade and thin edge abrasion, real practical1980s observatory infrastructure typography. Essential text large and fully readable. No SARO acronym, no radio frequency, symbols, codes, access credentials, arrows, boltholes, frame, pole or landscape. Full image is the rectangular printed sign face.\nAll printed text exactly:\nRADIO QUIET ZONE\nNO TRANSMITTERS BEYOND THIS SIGN",
+        "source": {
+          "basename": "exec-b8e4d523-f454-42a5-88b9-55c46f50ab85.png",
+          "sha256": "bee4789cd59e8081e8b6d49e7ec0a9871329df8631e5a67da68323b484e0d60e",
+          "bytes": 2987468,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "id": "SARO_AUTHORIZED",
+      "title": "Service yard authorization sign",
+      "filename": "jpg/38-saro-authorized.jpg",
+      "group": "workplace_signage",
+      "text": "SERVICE YARD\nAUTHORIZED PERSONNEL ONLY",
+      "design_nb": "Flat falmet industriskilt med krem emalje og sorte blokkbokstaver. Ordinær arbeidsplassgrense uten dramatisk skrekkklassifisering.",
+      "placement_nb": "Eksisterende servicegårdsgrense ved SARO.",
+      "intended_use_nb": "Eksisterende servicegårdsgrense ved SARO.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Looks.cpp",
+          "anchor": "yardSign",
+          "role": "Exact existing yard authorization wording."
+        }
+      ],
+      "key_checks": [
+        "SERVICE YARD / AUTHORIZED PERSONNEL ONLY.",
+        "No new clearance tier, agency seal or access code."
+      ],
+      "physical_size_m": [
+        0.6,
+        0.4
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/38-saro-authorized.jpg",
+        "sha256": "ce6f74977c4e27464bd7a3e0b8ceff88630ddb9d65435323b44f2ea0e3c33626",
+        "bytes": 321029,
+        "width": 1536,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE3:2 flat utilitarian institutional sign face on warm ivory painted metal. SERVICE YARD in bold black sans serif across upper third. Thin muted red horizontal divider. AUTHORIZED PERSONNEL ONLY large black stacked in two centered lines below. A practical1980s research facility sign, slightly sun-weathered with fine edge scuffs, no film-style heavy distress. No padlock, arrows, badges, security levels, numbers, seal, screws, actual wall or frame. Whole image is a single rectangular sign face.\nAll printed text exactly:\nSERVICE YARD\nAUTHORIZED PERSONNEL ONLY",
+        "source": {
+          "basename": "exec-9fa52d73-3553-4ed2-94f4-9d598f751ece.png",
+          "sha256": "2ea30bae3907e21f9a05249e06b02f293b2d74af21bbc40da620ac2c99707ff0",
+          "bytes": 2430504,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "id": "DARKROOM_SIGN",
+      "title": "Photographic lab door sign",
+      "filename": "jpg/39-darkroom-sign.jpg",
+      "group": "workplace_signage",
+      "text": "PHOTOGRAPHIC LAB\nSHUT THE DOOR WHEN THE RED LIGHT IS ON",
+      "design_nb": "Flat enkelt mørkeromsskilt, krempapir bak gulnet klarplast med dyp rød toppstripe og tydelig svart instruks. Ingen bildetolkning eller ekstra kontrollprosedyre.",
+      "placement_nb": "Dørflaten ved eksisterende fotografisk laboratorium.",
+      "intended_use_nb": "Dørflaten ved eksisterende fotografisk laboratorium.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Looks.cpp",
+          "anchor": "labSign",
+          "role": "Existing lab name and red-light door instruction; no new procedure."
+        }
+      ],
+      "key_checks": [
+        "PHOTOGRAPHIC LAB / SHUT THE DOOR WHEN THE RED LIGHT IS ON.",
+        "No development times, film result, evidence ID or new gameplay instruction."
+      ],
+      "physical_size_m": [
+        0.42,
+        0.21
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/39-darkroom-sign.jpg",
+        "sha256": "23ff9c60a342f3e9e4abec2ea15e9564e6d46aafc0019c8fa2e361811f14f88c",
+        "bytes": 429726,
+        "width": 1536,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE3:2 flat printed darkroom door sign, warm ivory painted stock, sober black lettering. PHOTOGRAPHIC LAB across black header in ivory type. Below, red SHUT THE DOOR and black WHEN THE RED LIGHT IS ON arranged in clear short lines. Thin red rule at bottom, practical old laboratory sign, modest fingerwear at edge. Exact supplied sentence, clear letters, no extra instruction, no exposure times, sample numbers, lamp fixture, actual door or glowing light. Straight-on fullbleed printed surface.\nAll printed text exactly:\nPHOTOGRAPHIC LAB\nSHUT THE DOOR WHEN THE RED LIGHT IS ON",
+        "source": {
+          "basename": "exec-f000b712-fab6-4b5c-b6c4-034800591423.png",
+          "sha256": "386666fff665864c0b05e89a30ce37c1c1e70685ff98e68ad7926daf14595d55",
+          "bytes": 3005213,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "id": "MAINTENANCE_TAG",
+      "title": "Out of service blank tag",
+      "filename": "jpg/40-maintenance-tag.jpg",
+      "group": "workplace_signage",
+      "text": "OUT OF SERVICE\nDO NOT OPERATE\n\nEQUIPMENT ____________________\nDATE _________________________\nREPORTED BY __________________",
+      "design_nb": "Flat slitt pappmerkelapp med rød topp og sorte feltlinjer, et trykt hullsymbol i kanten uten løs snor eller 3D-objekt. Feltene er tomme.",
+      "placement_nb": "Generisk arbeidsrekvisitt for senere plassering ved ordinært utstyr, ikke festet til et aktivt spillapparat av denne leveransen.",
+      "intended_use_nb": "Generisk arbeidsrekvisitt for senere plassering ved ordinært utstyr, ikke festet til et aktivt spillapparat av denne leveransen.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "MAINTENANCE_TAG",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "OUT OF SERVICE / DO NOT OPERATE; equipment, date and reporter fields blank.",
+        "No named active device, fault, completed repair or newly disabled interaction."
+      ],
+      "physical_size_m": [
+        0.09,
+        0.18
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/40-maintenance-tag.jpg",
+        "sha256": "9a3b1a52208f1e026355d3f55237d1c5ad790cbf40affe6ad10ed9dc14f66f1b",
+        "bytes": 407391,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: PORTRAIT2:3 flat heavy kraft-cream maintenance warning tag PRINT FACE with broad muted red header containing OUT OF SERVICE, DO NOT OPERATE in clear heavy black below, three generous ruled blankfields in lower half labeled EQUIPMENT, DATE, REPORTED BY. Plain1980s industrial stationery, lightly handled cardboard fiber, one slim fold. Rectangular UV-ready face with no cutout, transparent area, string, hole, clipped corners or 3D shadow. No handfilled equipment name, dates, reported name, signature or extra numbers.\nAll printed text exactly:\nOUT OF SERVICE\nDO NOT OPERATE\n\nEQUIPMENT ____________________\nDATE _________________________\nREPORTED BY __________________",
+        "source": {
+          "basename": "exec-460c552c-303c-44c2-b092-6a2d108b87ae.png",
+          "sha256": "582e6b54b0d62d5c0905bea0b564fb41a840b58fc5cecf57a59e7f09a4e87dba",
+          "bytes": 3100260,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "PARTS_LABEL",
+      "title": "SARO spare lamps label",
+      "filename": "jpg/41-parts-label.jpg",
+      "group": "workplace_signage",
+      "text": "SARO MAINTENANCE\nSPARE LAMPS\nKEEP DRY",
+      "design_nb": "Flat enkel pappeskeetikett i oker og svart, med ordinært lagertrykk. Ingen lampetall, delnummer, wattstyrke eller pseudovitenskapelige symboler.",
+      "placement_nb": "Etikett til ordinær reservedelsboks i SAROs arbeidsmiljø.",
+      "intended_use_nb": "Etikett til ordinær reservedelsboks i SAROs arbeidsmiljø.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "PARTS_LABEL",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "SARO MAINTENANCE / SPARE LAMPS / KEEP DRY.",
+        "No quantity, part code, electrical specification or main-route clue."
+      ],
+      "physical_size_m": [
+        0.18,
+        0.1
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/41-parts-label.jpg",
+        "sha256": "d44337888bac9c1e78f5cff4efd99fb0e9462f1ae10aec61ff38f53273691780",
+        "bytes": 491983,
+        "width": 1536,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE3:2 flat warehouse cardboard BOX LABEL print. Pale kraft paper with simple black stencil SARO MAINTENANCE on top, SPARE LAMPS very large across middle, KEEP DRY below. Thin rectangle rule, small understated printed rain-umbrella icon allowed. Restrained ordinary1986 observatory supply-store typography, faint creases and handling. No brand marks, numbers, quantities, codes, voltage, shipping address, barcodes or additional words. No rendered box, perspective, tape or wall; a flat rectangular label face.\nAll printed text exactly:\nSARO MAINTENANCE\nSPARE LAMPS\nKEEP DRY",
+        "source": {
+          "basename": "exec-53db46a4-ad7a-44af-9e21-f443e2195fb2.png",
+          "sha256": "6016ff01864a90bb05f3c7dbfb974760c43a60f843607543d99d6b1ee4f1f43a",
+          "bytes": 3517867,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "id": "SERVICE_FORM",
+      "title": "SARO service request blank",
+      "filename": "jpg/42-service-form.jpg",
+      "group": "workplace_signage",
+      "text": "SARO MAINTENANCE\nSERVICE REQUEST\n\nEQUIPMENT ______________________________\nDATE ___________________________________\nFAULT __________________________________\n________________________________________\nREQUESTED BY ___________________________",
+      "design_nb": "Flat tom vedlikeholdsblankett med rettlinjet maskinskrift, falmet grågrønn topp og vanlig kopipapir. Ingen utfylte resultater, signaturer eller datostempler.",
+      "placement_nb": "Generisk ubrukt skjema på arbeidsbenk eller i servicegårdens papirholder.",
+      "intended_use_nb": "Generisk ubrukt skjema på arbeidsbenk eller i servicegårdens papirholder.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "SERVICE_FORM",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "Equipment, date, fault and requester fields stay blank.",
+        "No copied T01/T02 result, named fault, completed service or new evidence."
+      ],
+      "physical_size_m": [
+        0.21,
+        0.3
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/42-service-form.jpg",
+        "sha256": "ab7c9fe3087b55af9800614ba0d8fc013b125347396aea647aefcfbdf8e3af4f",
+        "bytes": 267399,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: PORTRAIT2:3 blank office maintenance request form. Slightly warm white paper, dark slate-blue1980s typewriter-style print. SARO MAINTENANCE and SERVICE REQUEST as clear two-line header, thin horizontal rule, generous blank labeled fields EQUIPMENT, DATE, FAULT (two lines), REQUESTED BY. Five wide writable lines in total below header. Fine paper fiber, very light corner handling. A practical clean form on flatpaper surface. All fields blank, no annotations, handwriting, dates, signatures, diagnoses, caseIDs, clocks or extra text. No fake unreadable microtext.\nAll printed text exactly:\nSARO MAINTENANCE\nSERVICE REQUEST\n\nEQUIPMENT ______________________________\nDATE ___________________________________\nFAULT __________________________________\n________________________________________\nREQUESTED BY ___________________________",
+        "source": {
+          "basename": "exec-a1096161-8949-4e0d-9e78-97c75ad94f31.png",
+          "sha256": "ff2707a2ddfeba5af1c9253129c9dfbc65d06cd605e0b9c6e9b77d2980a973c4",
+          "bytes": 2634440,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "VISITOR_BADGE",
+      "title": "SARO visitor badge blank",
+      "filename": "jpg/43-visitor-badge.jpg",
+      "group": "workplace_signage",
+      "text": "SOUTHWEST ASTRONOMICAL\nRESEARCH OBSERVATORY\n\nVISITOR\nNAME __________________\nRETURN TO OPERATIONS",
+      "design_nb": "Flat analog besøkskortfront med krempapp, sotgrønn topp og tydelig VISITOR, stor tom navnelinje. Ingen hologrammer, QR-koder eller ekte institusjonssegl.",
+      "placement_nb": "Ubrukt besøkskort ved ordinær Operations-mottaksplass, uten adgangsfunksjon.",
+      "intended_use_nb": "Ubrukt besøkskort ved ordinær Operations-mottaksplass, uten adgangsfunksjon.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Source/Signal47/Private/S47Looks.cpp",
+          "anchor": "siteSign and wingLetters",
+          "role": "Existing full SARO institution name; new blank inert visitor card."
+        }
+      ],
+      "key_checks": [
+        "SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY / VISITOR / RETURN TO OPERATIONS.",
+        "Name field blank; no permission to override NO VISITORS AFTER DARK or an active door."
+      ],
+      "physical_size_m": [
+        0.1,
+        0.07
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/43-visitor-badge.jpg",
+        "sha256": "d700c8d8460e4d523bb312f6f49cfa3cedb04d307c6099abca845f67abb550b6",
+        "bytes": 450083,
+        "width": 1448,
+        "height": 1086,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE4:3 flat printed temporary observatory visitor badge face. Warm white cardstock with broad faded orange band across center containing VISITOR in large black block letters. Above band place SOUTHWEST ASTRONOMICAL / RESEARCH OBSERVATORY in two clearly legible uppercase lines. Below, NAME with completely blank ruled line, and small readable RETURN TO OPERATIONS at bottom. Neat1986 institutional print, modest edge handling. Rectangular no clip, hole, lanyard, person, photo, dates, expiry, IDcode, seal, access level or extra text. Fullimage is printed card surface.\nAll printed text exactly:\nSOUTHWEST ASTRONOMICAL\nRESEARCH OBSERVATORY\n\nVISITOR\nNAME __________________\nRETURN TO OPERATIONS",
+        "source": {
+          "basename": "exec-1e6a7865-4e55-47d6-bceb-044112b352ec.png",
+          "sha256": "19dba7ef7593dc2c3e1fbd858bf9da6fed1a6897e1891157b362fbf4e3f0dc1d",
+          "bytes": 3053427,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1448,
+          "height": 1086
+        }
+      }
+    },
+    {
+      "id": "SUBSTATION_SIGN",
+      "title": "Caliche Utilities danger sign",
+      "filename": "jpg/44-substation-sign.jpg",
+      "group": "workplace_signage",
+      "text": "DANGER\nHIGH VOLTAGE\nKEEP OUT\nCALICHE UTILITIES",
+      "design_nb": "Flat ordinært værslitt fareskilt i dempet rød, svart og krem med store klare ord og skrueflekker. Ingen koblingsskjema eller fysisk håndteringsinstruks.",
+      "placement_nb": "Fareskilt ved eksisterende Caliche Junction Substation eller dens utstyrslager.",
+      "intended_use_nb": "Fareskilt ved eksisterende Caliche Junction Substation eller dens utstyrslager.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/substation/make_textures.py",
+          "anchor": "atlas / panels 0 and 1",
+          "role": "Existing Caliche Utilities identity and DANGER / HIGH VOLTAGE / KEEP OUT."
+        }
+      ],
+      "key_checks": [
+        "DANGER / HIGH VOLTAGE / KEEP OUT / CALICHE UTILITIES.",
+        "No switching instruction, new site identity or SARO K3 / STATION 01 conflation."
+      ],
+      "physical_size_m": [
+        0.6,
+        0.4
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/44-substation-sign.jpg",
+        "sha256": "f116697ee1d85506919cdf6fa50b74264eb4cf87a2c531b8461b4d304ab42b68",
+        "bytes": 457357,
+        "width": 1536,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE3:2 flat utility warning sign face, white enamel metal with a strong red header containing DANGER in large white block lettering. Black HIGH VOLTAGE and KEEP OUT stacked and centered below. CALICHE UTILITIES smaller but very readable at bottom. Simple practical1986 rural electrical substation sign, thin black border, slight sunfade and rusty abrasion confined to edges. No machinery, fence, pole, bolts, lightning diagram, numbers, switching instructions or extra text. Exactwords without symbols or fakefineprint; rectangular surface fillsimage.\nAll printed text exactly:\nDANGER\nHIGH VOLTAGE\nKEEP OUT\nCALICHE UTILITIES",
+        "source": {
+          "basename": "exec-bcd86532-563b-4d1b-8bab-460919bd620e.png",
+          "sha256": "9ca061727586584b334eaedeed00ee5c73daaaeb2c7f71da0984ee540149f172",
+          "bytes": 2917974,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "id": "PAYPHONE_CARD",
+      "title": "Local calls instruction card",
+      "filename": "jpg/45-payphone-card.jpg",
+      "group": "workplace_signage",
+      "text": "LOCAL CALLS 25 CENTS\nPLEASE LIMIT CALLS TO THREE MINUTES",
+      "design_nb": "Flat lite telefoninstruksjonskort i krem og sort med avrundet enkel ramme og slitte fingermerker i kanten. Ingen telefonnummer eller ekte telefonfirmalogo.",
+      "placement_nb": "Ved dinerens eller en vanlig eksisterende offentlig telefons instruksjonsfelt.",
+      "intended_use_nb": "Ved dinerens eller en vanlig eksisterende offentlig telefons instruksjonsfelt.",
+      "source_refs": [
+        {
+          "path": "unreal/Signal47/Tools/mesadiner/make_textures.py",
+          "anchor": "atlas / panel 4",
+          "role": "Exact existing local-call price and three-minute limit."
+        }
+      ],
+      "key_checks": [
+        "LOCAL CALLS 25 CENTS / PLEASE LIMIT CALLS TO THREE MINUTES.",
+        "No real phone number, emergency instruction or new contact action."
+      ],
+      "physical_size_m": [
+        0.16,
+        0.11
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/45-payphone-card.jpg",
+        "sha256": "8b2edc66d90bbff286b096cb6b7760476f96979435402d10f5fd51e262b3cc24",
+        "bytes": 428437,
+        "width": 1536,
+        "height": 1024,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: LANDSCAPE3:2 flat simple instructional paper card for a rural1986 diner payphone. Warm off-white heavy paper, thin dark-blue rectangular rule, LOCAL CALLS25CENTS in large dark-blue uppercase across top two lines. PLEASE LIMIT CALLS TO THREE MINUTES in three clear smaller lines below. Slight ink rub and mild handling at corners, sober practical print, adequate breathingroom. Do not draw a phone, dialing instructions, actual numbers, company logos, emergency message, tariffs, pricechanges or extra wording. Wholeframe is the flat card.\nAll printed text exactly:\nLOCAL CALLS 25 CENTS\nPLEASE LIMIT CALLS TO THREE MINUTES",
+        "source": {
+          "basename": "exec-a10aafd6-0333-4a2f-9f4d-3fe03769eb6b.png",
+          "sha256": "f240eb79ade11da7d150bc17da89c20fd844a8111a6f95f3d88170b5f20f51cd",
+          "bytes": 3051302,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "id": "LOST_DOG",
+      "title": "Lost dog notice",
+      "filename": "jpg/46-lost-dog.jpg",
+      "group": "community_paper",
+      "text": "LOST DOG\nBROWN COAT\nWHITE PAWS\nASK AT THE LAUNDROMAT",
+      "design_nb": "Vanlig kopiert nabolagslapp med håndtegnet brun hund med hvite poter, myk og hverdagslig. Enkel svart strek, dårlig kopiering, små tapehjørner. Ingen dramatisk forsvinningshistorie.",
+      "placement_nb": "Fiktiv bakgrunnslapp på eksisterende fellestavle eller ved vaskeriets vindu.",
+      "intended_use_nb": "Fiktiv bakgrunnslapp på eksisterende fellestavle eller ved vaskeriets vindu.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "LOST_DOG",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "LOST DOG / BROWN COAT / WHITE PAWS / ASK AT THE LAUNDROMAT.",
+        "Fictional inert community notice: no real phone number, quest or link to Dales sky-log dog."
+      ],
+      "physical_size_m": [
+        0.21,
+        0.3
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/46-lost-dog.jpg",
+        "sha256": "252cedb4a790b01e5f340958fd7d05de0d1267ebdc15c9311033839a188ff165",
+        "bytes": 443226,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: PORTRAIT2:3 flat inexpensive community notice flyer on slightly yellow-white copier paper. LOST DOG very large handlettered black at top. In middle an original modest black-and-white photocopied style illustration of an ordinary friendly medium-sized dog with dark brown-looking tonal coat and clearly WHITE PAWS, standing in neutral side threequarter view, no collarwriting, not a supernaturalanimal. Underdrawing clear handwritten uppercase BROWN COAT and WHITE PAWS, ASK AT THE LAUNDROMAT at bottom. Light tapededge discoloration printed into flatpaper, mild crease. No actual phone number, reward, date, ownername, tearofftabs, questID, footnotetext or message from Dale. Paper fillsimage; no wall.\nAll printed text exactly:\nLOST DOG\nBROWN COAT\nWHITE PAWS\nASK AT THE LAUNDROMAT",
+        "source": {
+          "basename": "exec-5df212b5-e90c-415f-b9d6-a78f01f11d81.png",
+          "sha256": "38007d54ee8346e9f9e7201fa456a936c7528c2127511a1bba8a23a353ed54ab",
+          "bytes": 3289432,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "YARD_SALE",
+      "title": "Saturday yard sale notice",
+      "filename": "jpg/47-yard-sale.jpg",
+      "group": "community_paper",
+      "text": "YARD SALE\nSATURDAY APRIL 12\n9 TO 2\nBY THE FEED STORE\nHOUSEHOLD ITEMS\nCLOTHES\nCASH ONLY",
+      "design_nb": "Hjemmelaget svart tusjplakat på lyst blekrosa kopipapir med enkel håndtegnet kaffekanne og to esker. Litt gammel tape; lørdagsannonsen er allerede fra dagen før spillstart, uten trykt årstall.",
+      "placement_nb": "Gammelt ordinært oppslag ved eksisterende fôrbutikk eller fellestavle.",
+      "intended_use_nb": "Gammelt ordinært oppslag ved eksisterende fôrbutikk eller fellestavle.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "YARD_SALE",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "SATURDAY APRIL 12 / 9 TO 2 / BY THE FEED STORE / CASH ONLY; context is April 12, 1986.",
+        "No printed closure year, new store, quest or sale scheduled during the game night."
+      ],
+      "physical_size_m": [
+        0.3,
+        0.42
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/47-yard-sale.jpg",
+        "sha256": "ba4132882fc9e784ebe50794ccf754e1632e90267033202c0b5fc004e1b81fea",
+        "bytes": 430532,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: PORTRAIT2:3 flat cheap handlettered neighborhood yard-sale flyer. Slightly faded pale yellow paper; YARD SALE huge red marker at top, all remaining words black felt-tip marker in clear ordinary human handlettering. SATURDAY APRIL12 on nextline,9TO2 large, BYTHEFEEDSTORE below, HOUSEHOLDITEMS and CLOTHES as two simple lines, CASHONLY bottom. Space words properly as supplied. Slightly crooked baseline and an underline add character, light fold and printed tape discoloration nearcorners. Exact supplied text only, no year, phone number, address, arrows, drawn actualproducts, quest clue or extra saleprices. Fullpaper coverscanvas.\nAll printed text exactly:\nYARD SALE\nSATURDAY APRIL 12\n9 TO 2\nBY THE FEED STORE\nHOUSEHOLD ITEMS\nCLOTHES\nCASH ONLY",
+        "source": {
+          "basename": "exec-a70237b2-3d93-4452-bdda-f50e7b084ffc.png",
+          "sha256": "e90025c335ab9bec9e2ac003f258537b4ef6e0cbf16696351a8dd340f0b5529b",
+          "bytes": 2933663,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    },
+    {
+      "id": "SHOPPING_LIST",
+      "title": "Ordinary shopping list",
+      "filename": "jpg/48-shopping-list.jpg",
+      "group": "community_paper",
+      "text": "milk\nbread\ncoffee\nbatteries\nstamps",
+      "design_nb": "Kort privat handleliste i vanlig blå kulepenn på gulnet ruteblokkark, en svak kaffeflekk langt fra ordene. Ingen underskrift, navn eller mystiske symboler.",
+      "placement_nb": "Alminnelig løs handleliste ved en vanlig hverdagsflate, ikke tilskrevet Dale.",
+      "intended_use_nb": "Alminnelig løs handleliste ved en vanlig hverdagsflate, ikke tilskrevet Dale.",
+      "source_refs": [
+        {
+          "path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+          "anchor": "SHOPPING_LIST",
+          "role": "Original fictional background copy written for this production pack; no runtime evidence."
+        }
+      ],
+      "key_checks": [
+        "All five lowercase items remain readable: milk, bread, coffee, batteries, stamps.",
+        "No Dale signature, date, number code, hidden instruction or case evidence."
+      ],
+      "physical_size_m": [
+        0.1,
+        0.16
+      ],
+      "status": "original_background_prop",
+      "image": {
+        "filename": "jpg/48-shopping-list.jpg",
+        "sha256": "0d974e9ee1884f80bbda5e664db1b713b6544a25f8386b39cbc83d04060a5d18",
+        "bytes": 338010,
+        "width": 1024,
+        "height": 1536,
+        "format": "JPEG",
+        "mode": "RGB",
+        "color_space": "sRGB",
+        "quality": 86,
+        "progressive": true,
+        "optimize": true,
+        "subsampling": "4:4:4"
+      },
+      "generation": {
+        "tool": "built-in imagegen",
+        "prompt": "Use case: ads-marketing.\nAsset type: FINAL FLAT PRINTED PROP texture for SIGNAL / 47, New Mexico, April1986. It will be used on actual surfaces in a grounded rural first-person game.\nRender exactly ONE coherent printed design per image, straight-on, fullbleed rectangular surface. No wall, frame, shop scene, glass reflections, perspective mockup, hands or surrounding backdrop. No drop shadow outside the surface. It should be directly usable as a color texture.\nAuthentic period lettering, offset printing, screenprint or hand lettering as specified. Natural wear varies with location: abandoned cinema posters are sun faded; ordinary shop ads remain readable; packaging is lightly handled rather than ancient burnt parchment.\nKeep every specified word, price and unit exactly. No extra words, gibberish microtext, contemporary QR codes, URLs, social media or modern payment logos. All graphic art and product brands are original in-world fiction. No copied real film poster or actor likeness.\nKeep essential text generously inside the edges. For posters use portrait2:3 around1024x1536; other aspect ratios as specified.\nDesign: PORTRAIT2:3 flat face of a small mundane torn notebook sheet. Warm offwhite paper with sparse pale blue horizontal rules, a faint red leftmargin, two small worn outercorners. Exactly five lowercase handwritten grocery-list items in blue ballpoint with natural human cursiveprint, one perline: milk,bread,coffee,batteries,stamps. Clear readily readable spelling, modest variedpenpressure, no ticks/crossouts, no numericcode, no signature, no date, no heading and no other writing. Large blank lowerhalf, light everyday handling, no massive agedparchment or burnt edges. No surrounding desk, shadows outsidepaper, notebookspiral orhand.\nAll printed text exactly:\nmilk\nbread\ncoffee\nbatteries\nstamps",
+        "source": {
+          "basename": "exec-5de99bb7-291e-47c4-b792-244a52d964ca.png",
+          "sha256": "7fb3fbf2a82983fd127efb876c73dc40e0b74de7506751fb297a6e6d97cf9cb8",
+          "bytes": 2907090,
+          "format": "PNG",
+          "mode": "RGB",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    }
+  ]
+}

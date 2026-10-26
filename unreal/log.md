@@ -480,6 +480,8 @@ Tom ba om å lagre arbeidet til repoet. Endringssettet er avgrenset til20 plan-/
 
 Designgrenen codex/unified-night-scenario er opprettet fra kontrollert d152fb6d, identisk med origin/unreal-port-core etter fetch. Arbeidet klargjøres som én samlet design-/manuscommit og sendes til GitHub. Ingen spillbygg, installasjon eller endring av repoets synlighet.
 
+
+
 ## 26.10.2026 kl. 00:09 CET: ku-konsepter, Blender, Unreal og installert spill
 
 Tom bestilte levende ku og død ku etter bortføring, fra konsept til spill. Biblioteket ble søkt først; SIGNAL-47:blender-mcp og prosjektets målte fieldintegration-import er brukt. Innebygd imagegen laget konseptene. Ekstern 3D-generering feilet, så alle tre kuassets er original bpy-geometri/PBR i Blender5.2.2. Tre hjelpere leverte modell/integrasjon, import/installer og uavhengig QA. Tunge UE-jobber ble kjørt sekvensielt; en CPU-render som startet ved gamebuild ble pauset til bygget var ferdig. Beiting,026,missing,frost,foto,proxyer og lagring beholdes.
@@ -492,6 +494,17 @@ Samme binær60e63f4e er installert med hashbundet proof, full reflinkbackup og S
 
 Bevis: COW_MODELS.md og /home/tom/scratch-bm/Signal47-cows-20261025, særlig final-install-proof.json, installed-smoke/result.json og final-post-install.json. Hovedprosjektets kode/nativeassets og den portable Blender-kopien stemmer med testet kilde. Konsepter/prompter og portabel Blender-fil er kopiert til samtalens arbeidsmappe. Lokale endringer, ingen ny PR, merge eller push; øvrig historie-/T02-arbeid er bevart.
 
+## 26.10.2026 kl. 12:45 CET: Dales dokumenter og gammelt arkiv som JPG
+
+Senere statuspresisering ved kildefletting: oppføringen nedenfor beskriver den separate JPG-produksjonen. NP1s private tekst-ID-er, visning og lesestatus ble bevart i R5; bildenes import/UV-/materialbinding og VHS er fortsatt egne åpne oppgaver. Tidsstempler og kontrollresultater nedenfor er historiske leveransebevis.
+
+Tom bestilte alle rare dokumenter Dale har gjemt, samt gamle aviser og dokumenter til senere bruk, med JPG fremfor store PNG. Ti referansebilder i to omganger styrte papir, sladding, fotografier, stempler og håndskrift. Prosjektbiblioteket ble søkt først; ingen kompatibel ferdig Unreal-løsning ble gjenbrukt. To hjelpere leverte kildekatalog/pakking og uavhengig bildekontroll. Arbeidet ligger i en ren separat gren codex/dale-document-assets-20261026, fra 41430ade; hovedarbeidsmappens lokale ku-/modellarbeid er ikke endret.
+
+ArtSource/Documents har 31 ferdige imagegen-motiver: omslag, sju EveningShift-ark, seks private Dale-tekster,13 gamle arkivark og fire nye fiktive bakgrunnsrekvisitter. 32 genereringer inkluderer en målrettet avisrevisjon som flyttet fortellermerknader til Dales blyant. Endelige JPG-er er progressive RGB/sRGB med 4:4:4 og kvalitet 86, 285 467 til 593 960 byte. Samlet 12 143 169 byte mot PNG 89 438 281 byte, 86,4 prosent reduksjon. PNG-originaler er bevart utenfor Git. Ingen oppskalering, beskjæring eller teksttegning ved formatkonvertering. Kilde-/genereringshistorikk og fullstendige prompter følger pakken.
+
+Kildekontroll 31/31, teknisk JPG-kontroll 31/31 og uavhengig nærlesing av 31 finaler og 113 kontrollpunkter PASS. Manuell vurdering er bundet til JPG-hasher; feil hash avvises i egen negativ kontroll. OCR ble bare brukt som ufullstendig støtte, ikke eksakt tekstattest. Galleriet er prøvd i lokal nettleser med 31 bildefelt/lenker, filter med seks av 31 dokumenter, fungerende transkripsjonsåpning og ingen ødelagte lastede bilder.
+
+Omslagets metadata er rettet etter QA. E15 er en komposisjonelt tro generert nytolkning av masterfotoets crop B, ikke pikselidentisk kildefoto. E09A er kvalitativ figur, ikke et nytt målsatt overlegg. E10 har år 1947 i tittel/katalog, som kildegrunnlaget, uten nytt år i brødteksten. Eksisterende spillkode og Narrative-JSON, nye lesegater, VHS, lyd, pakking og installasjon er urørt. S.7 beholder gjenstående runtimearbeid. README, Dale-oversikt, memory ogtodo peker til pakken.
 
 ## 26.10.2026 kl. 15:45 CET: parkering, inngang og kontor samlet med levert NP1
 
@@ -505,13 +518,11 @@ Tom uttrykte bekymring for testomfanget. Sluttrunden ble derfor seks fokuserte R
 
 R5-binær93e2fad3aa156325b8083159fc09828bc474731d9d05832263efb1c01cbfd890 var klar, og lokal installasjon ble startet. Leveringsresultatet føres nedenfor fra faktiske R5-kvitteringer. Rapport: ARRIVAL_OFFICE_2026-10-26.md; bevisrot /home/tom/scratch-bm/Signal47-arrival-office-20261026. Eldre lampehus trenger egen modellrunde. Offisiell Fab-plugin er nedlastet/kildekontrollert i scratch, men ingen Fab-assets er importert og pluginruntime er ikke attestert. VHS/SC-koordinator/nye aktive møter er fortsatt eget arbeid.
 
-
 ## 26.10.2026 kl. 15:48 CET: R5 installert, standardoppstart og opprydding bekreftet
 
 `installation-r5.json` er INSTALLED_VERIFIED for samme testede R5-binær93e2fad3. `installed-smoke-r5/result.json` er PASS på alle åtte kontroller gjennom faktisk standardstarter, inkludert oppstart, ankomst/kontor, bilde, ingen motorfeil og uendret payload/Saved. Før-/ettersnapshot har61Saved-noder, hvorav43regulære filer, og er identiske. Dette er R5s faktiske sluttall; tidligere tilbakeføringsrapport oppga44Saved-filer.
 
 Canonical prune er anvendt med R5 som gjeldende og SC01-R4 eksplisitt beskyttet. Ti gamle pakker/70genererte payloadfiler er pensjonert;38 233 681 084logiske bytes uten påstand om fysisk diskgevinst. R5, de to eldre R4/R3 og aktivSC01-R4 beholdes. R4/R3 mangler NP1-funksjoner og skal ikke brukes som ny standard. Kilder, Blender/nativeassets, personligeSaved, Enginefiler, logger/bilder/bevis er bevart. `prune-applied-r5.json` har både plan og faktisk utføringsresultat. Ingen ekstern spillutgivelse er publisert. Videre Fab-plugin-/assetarbeid er separat og ikke del av akseptertR5.
-
 
 ## 26.10.2026 kl. 16:11 CET: faktisk Fab-plugin og ørkenimport i staging
 
@@ -521,6 +532,27 @@ Old West Learning viser «Install from launcher» i faktisk plugin. Pakken er ik
 
 Lesende lampegjennomgang i exterior-light-audit.json bekrefter native lys i kilde, men grove hus og kildeberegnede monteringsgap/innfelt parkeringsarmatur. Ny baldakin mangler egen armaturmodell. Modellering, montering og senere runtimekontroll står åpne. Tidligere Fab-notater ovenfor er historikk før faktisk pluginimport.
 
+## 26.10.2026 kl. 16:26 CET: kinoplakater, lokalreklame og hverdagsting som JPG
+
+Tom utvidet bildebestillingen til nedlagte Plaza, eksisterende butikker og løsøre som gir mer innlevelse. Prosjektbiblioteket ble søkt etter Unreal-plakater/skilt/rekvisitter, også bredere; ingen relevante treff. Den allerede prøvde Documents-konverteringen og galleribyggeren er gjenbrukt. To hjelpere leverte katalog/pakking og uavhengig bildekontroll med tydelig filansvar. Arbeidet fortsetter i den isolerte grenen codex/dale-document-assets-20261026; hovedarbeidsmappens andre modellarbeid er urørt.
+
+ArtSource/EnvironmentGraphics har 48 originale motiver fra innebygd imagegen: seks filmplakater til Plazas to utvendige og fire innvendige rammer, avskjedsark/billett, 12 annonser/menyer, ti emballasje-/småtrykkflater, seks hverdagspapirer, ni arbeidsplasskilt/-blanketter og tre nabolagslapper. Dette gir totalt 79 rekvisittmotiver sammen med de tidligere 31 dokumentene. Stedsnavn og priser følger eksisterende kildekode/trykkatlas. Radio på 1420 AM forblir adskilt fra SARO på 1420.405 MHz. Ingen nytt kinoår, butikkbygg, tilgang til rom 6, aktiv kvitteringshendelse eller oppdragsbevis etableres.
+
+JPG-finalene er progressive RGB/sRGB med 4:4:4, kvalitet 82, 84 eller 86 og maksimal langkant 2048 piksler. De bruker 23 425 648 byte mot PNG-originalenes 149 498 003 byte, 84,3 prosent mindre; hver fil er 267 399 til 658 959 byte og under 650 KiB. Fullprompter, kildebasenavn, dimensjoner, filhasher, engelsk trykktekst, plasseringstips og omtrentlige fysiske mål følger pakken. Originaler og absolutte lokale kildestier beholdes utenfor Git. Konverteringen beskjærer, tekstredigerer eller oppskalerer ikke bildene.
+
+Teknisk kontroll 48/48 og uavhengig nærlesing 48/48 med 96 eksakte katalogkontrollpunkter PASS. Manuell kontroll er bundet til nåværende JPG-hasher. Ingen OCR-attest er hevdet. Galleriet er prøvd i lokal nettleser: 48 bildefelt/lenker, gruppefilter med 6/2/12/10/6/9/3 synlige kort, tilbake til 48 og fungerende trykktekst for Dust County. 44 bilder var lastet etter filterrunden; ingen av de lastede bildene var ødelagt. Alle 48 bildefiler er separat dekodet og teknisk kontrollert.
+
+Felles konvertering har fått en stabil sRGB.icc hentet uendret fra den tidligere første dokument-JPG-en. LittleCMS' opprettelsestid ga ellers ulike filhasher mellom prosesser. To prosesser gir nå samme JPG-hash; RGB-piksler er uendrede mot tidligere konvertering. Første 22 miljøbilder er bare bundet på nytt etter individuell bevisføring av ICC-tidsfeltet. Alle 31 tidligere dokument-JPG-er og deres katalog/generering/kontrollfiler er bytebevart, og eksisterende dokumentverifikasjon består fortsatt 31/31 med manuell PASS. Galleribyggeren støtter nye gruppetekster og trygg engangserstatning av malmarkører, slik at DUST COUNTY ikke skades av gammel COUNT-erstatning. Avgrensede fixturekontroller dekker 48 oppføringer, manglende input uten delvis overskriving og avvist feil reviewhash.
+
+Dette er ferdige flate fargeteksturer til senere import. Ny meshproduksjon, UV-/materialbinding, fysisk plassering, interaksjoner, motorbygg, pakking og installasjon inngår ikke. Runtime-/lesestatusarbeid er fortsatt åpent i todo. README, memory og todo viser til bildepakkens faktiske leveranse og kontrollgrunnlag.
+
+## 26.10.2026 kl. 16:30 CET: to nye bildereferanser til Dales filer
+
+Tom sendte to svart-hvitt motiver av en tilsynelatende humanoid obduksjon og ba om at de logges til Dales filer. Begge er arkivert i ArtSource/Documents/References/DaleAutopsy med egne motivbeskrivelser, kildebasenavn, oppløsning og SHA-256 for original og JPG. Opphav, dato, sted, fremstillingsmetode og autentisitet er ikke fastslått. Referansene etablerer ingen forbindelse til 1947, SARO eller eksisterende hendelsesbevis.
+
+JPG-kopiene er 119 082 og 148 723 byte, til sammen 267 805 byte mot PNG-vedleggenes 3 210 178 byte. Samme oppløsning, progressiv RGB/sRGB, 4:4:4 og kvalitet 86 er bekreftet ved dekoding. Konverteringen gjenbruker den prøvde Documents-funksjonen; ingen ny imagegen-kjøring, beskjæring, opptegning eller tekstendring. PNG-originalene er kopiert byteidentisk til varig lokal referansemappe utenfor Git.
+
+README foreslår mulig senere bruk som løse kopier i Dales private konvolutt og en nøktern engelsk bildetekst med ukjent kilde/dato. Dette er en referanselogg etter brukerens bestilling, ikke to nye integrerte dokumenter. De 31 dokumentfinalene, deres katalog-/genereringsdata og kontrollfiler er fortsatt uendrede; de nye referansene inngår ikke i de 79 ferdige motivene. Memory og todo viser til referanseloggen.
 
 ## 26.10.2026 kl. 16:55 CET: Old West fullført via offisiell Linux Launcher, terreng vurdert
 
@@ -530,7 +562,6 @@ Prosjektet ligger i /home/tom/.local/share/com.epicgames.eglv2/FabLibrary/Old We
 
 Toms spørsmål om Unreal Mesh Terrain er vurdert lesende i terrain-assessment.json. Anbefaling: behold sammenhengende grunn, forbedre lokale former og bruk utvalgte stein-/klippemesher. Innebygd Experimental Mesh Terrain kan vurderes i én avgrenset klippeprøve; ingen full migrering, kjøp eller implementering er besluttet. Eksakte høydefunksjoner, historiegulv og delte SARO-/veikoordinater må bevares. Tidligere lampeoppgave og faktisk plassering av naturassets står åpne.
 
-
 ## 26.10.2026 17:11 CET: Lumen Lite, FSSS og småobjektskygger dokumentert
 
 Tom ba om å vurdere probe-/Lumen-optimalisering, tåkespredning og å unngå unødvendige skygger fra fjerne småobjekter, og lagre funn i repoet. Prosjektbibliotekets lighting-rendering-referanse ble lest som uprøvd arbeidsflytreferanse; ingen ekstern kode gjenbrukt. Tre lesende kildegjennomganger og Epic-dokumentasjon er samlet i RENDERING_RESEARCH_2026-10-26.md, lenket fra README, memory, todo og OPPGAVER.
@@ -539,13 +570,11 @@ High/Ultra bruker vanlig sanntids-Lumen; Low overstyrer GI til None selv om Medi
 
 Bare dokumentfiler er endret i denne runden. Ingen UE-/Blender-/spillkjøring, benchmark, cook, plugininstallasjon, grafikkendring eller endring av installert R5. Gevinster og foreslåtte startverdier er uttrykkelig uprøvd.
 
-
 ## 26.10.2026 17:25 CET: visuell prioritering og Poly Haven-himmel vurdert
 
 Tom spurte om størst kvalitetsløft per innsats med dagens utstyr og assets. Grafikknotatet er utvidet med anbefalt rekkefølge, avgrenset innkjøring/SARO-runde og to Pure Sky-kandidater. RTX 3080 med 10 240 MiB er lest med nvidia-smi. Videoens beskrivelse og kapitler er lest; full transkripsjon og avspilling er ikke gjennomgått. Epic, Poly Haven, prosjektbibliotekets lighting-rendering-referanse og to lesende kildegjennomganger underbygger vurderingen.
 
 Dagens Unreal-himmel er egen kuppel og volumetriske skyer uten SkyAtmosphere. Unity-arkivets Qwantani er ikke aktiv himmel; separat skylight-capture krever samordnet tilpasning ved et HDRI-forsøk. Materialoverganger, utvalgte naturassets, armaturer og én komplett UE Optimized MetaHuman prioriteres som synlig produksjon. FSSS og full terrengmigrering kommer senere. README, memory, todo og OPPGAVER peker til rådene. Kun dokumentasjon er endret; ingen assetnedlasting, innstillingsendring, bygg eller nye UE-/Blender-/spilltester.
-
 
 ## 26.10.2026 kl. 18:15 CET: Pure Sky på dagtid, natt bevart og fem bilder kontrollert
 
@@ -557,13 +586,11 @@ Editorbygg, native import og pakket R1 består. Uavhengig kildegjennomgang viser
 
 Bevisrot: /home/tom/scratch-bm/Signal47-puresky-20261026. candidate-r1-proof.json binder 686 kilde-/assetfiler og binær548d4633c7e1bb8a6487a6d108a7523c70bd9f7bafa33c08eaf637a103f8f8f6. runtime-r1/visual-acceptance.json og qa/review-source-final.json har bilde- og kildegrunnlag. SKY.md, README, memory, todo, OPPGAVER og grafikknotatet er oppdatert. Lokal installasjon og etterkontroll føres separat etter faktisk resultat; ingen PR, merge, push eller ekstern utgivelse er gjort i denne runden.
 
-
 ## 26.10.2026 kl. 18:19 CET: Pure Sky R1 installert og opprydding fullført
 
 installation-r1.json er INSTALLED_VERIFIED. Samme prøvde R1 er installert i ~/Games/Signal47/Linux med alle 68 payloadnoder kontrollert. Alle 65 faktiske personlige Saved-noder, inklusive 46 regulære filer, er identiske før og etter. Full R5-payload har verifisert reflinkbackup i previous-installed-r1/Linux. Faktisk standardstarter med isolert profil består åtte kontroller; installert dagbilde er også åpnet og vurdert. Ingen ekstra spillmatrise.
 
 Canonical prune er anvendt etter inspisert plan og ledig jobbvern: gamle ankomst/kontor R4/R3 er pensjonert med 14 genererte payloadfiler, 7 658 657 522 logiske bytes. Ingen fysisk diskgevinst hevdes. Gjeldende Pure Sky R1, R5-kandidat og R5-rollbackbackup beholdes; aktiv SC01-R4 er særskilt beskyttet. Kilder, assets, Saved, logger og bilder er bevart. delivery-r1.json bekrefter identisk installert payload og uendrede personlige lagringer etter opprydding. SKY/README/memory/todo/OPPGAVER er oppdatert. Lokal levering, ingen ny PR, merge, push eller ekstern utgivelse.
-
 
 ## 26.10.2026 kl. 19:34 CET: nærdetaljer modellert, sluttkontroll venter på spillavslutning
 
@@ -572,7 +599,6 @@ Tom valgte punkt 2. Tre originale Blender-modeller med tre LOD-er og fem materia
 Blender-kilden er åpnet og kontrollert, native import består. R2 ble avvist fordi cook manglet den nye assetmappen; DefaultGame.ini er rettet. R3s faktiske arkiv har alle tre modeller, og runtime bekrefter sju gamle hus erstattet og 84 gamle trekanter fjernet fra separate kopier. Faktisk dagbilde ved inngangen og nattlig fløyskilt er åpnet og godkjent. Monumentbildet utløste lokal authored65→25lm; fallback65 og wing1200 er urørt. Ingen ny full testmatrise eller FPS-påstand.
 
 R4-bygg/pakking og avgrensede nær-/strømbilder er klargjort, men jobbvernet fant brukerens installerte spill åpent. Ingen brukerprosess er stoppet og ingen ny tungjobb startet. Brukeren er bedt om å lukke spillet. Pure Sky R1 er fortsatt installert; siste endring er ikke ferdig prøvd eller levert. NEAR_DETAILS_2026-10-26.md, README, memory, todo, OPPGAVER og grafikknotatet beskriver status. Bevisrot: /home/tom/scratch-bm/Signal47-neardetail-20261026. Ingen ny PR, merge, push eller ekstern utgivelse.
-
 
 ## 26.10.2026 kl. 19:48 CET: nærdetaljer R4 kontrollert og installert
 
