@@ -1,6 +1,8 @@
-## Motel V2, pågår
+## Motel V2, levert 27. oktober 2026
 
-Tom har bestilt modellen i Blender, integrasjon i Unreal og deretter fletting. Arbeid i `codex/motel-v2-main`, worktree `~/scratch-bm/wt/motel-v2-unreal`. 24 modelldeler, eksisterende TV/biler og nøyaktige terrengkutt er importert og kontrollert. Pakket prøve, full 110-matrise, installasjon og merge gjenstår. Se [motelrapport](MOTEL_V2.md). Tunge jobber venter på andre aktive Blender-renderinger.
+Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet.
+
+Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 kontroller, inklusive tre faktiske taleklipp, pause og diskrestore. Bildet etter restore er åpnet og vurdert. Alle 50 personlige Saved-filer er uendret fra oppdragets start. Dette er automatiserte kontroller og bildevurdering, ikke menneskelig gjennomspilling eller en helspill-/FPS-garanti. Se [motelrapport](MOTEL_V2.md). De eldre ventestatusene nedenfor er historikk.
 
 # Oppgaver og arbeidsdeling (Unreal)
 

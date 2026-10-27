@@ -827,3 +827,13 @@ Ny Blender-modell med keramikk, mørkt mottak og rompanel, korrigert bassengplas
 Original Blender-kilde og native MotelV2-assets er ferdige. R4 har korrigert vann, frie bassengstier, ett hovedskilt uten gamle lysgløder, tre gjenbrukte biler og eksisterende KELVORA-TV. 24 modelldeler, 689 Blender-kontroller, 1 369 endelige native kontroller og 1 601 selvtestsjekker består. 26-punkts rute, fem interaksjoner og tre kollisjonsprøver består. SC01 High/Low består 120 kontroller og 17 disk-/Flow-gjenopprettinger hver. Hele screenshots.sh består 110/110; ti matrisebilder og elleve målrettede bilder er vurdert. Ingen menneskelig input-/lytte- eller helspill-FPS-påstand.
 
 PR172s siste dokumentmerge er tatt inn med full ancestry; bare en manglende loggoppføring ble lagt til, og alle runtimefiler er fortsatt identiske med den testede R4-frysingen. PR178 går mot main. Installasjon utføres etter fletting med kontrollert backup og Saved-unntak. Bevis: ~/scratch-bm/Signal47-motel-v2-20261027.
+
+## 2026-10-27 kl. 23:19 CET: motel V2 flettet og installert
+
+Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet.
+
+Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 kontroller, inklusive tre faktiske taleklipp, pause og diskrestore. Bildet etter restore er åpnet og vurdert. Alle 50 personlige Saved-filer er uendret fra oppdragets start. Dette er automatiserte kontroller og bildevurdering, ikke menneskelig gjennomspilling eller en helspill-/FPS-garanti.
+
+Kanonisk opprydding er utført: fem gamle pakkepayloads er pensjonert, inklusive den midlertidige installasjonsbackupens kjørbare payload. Kilder, Blender/assets, Saved, logger og bilder er bevart. Motel R4 og to eldre motelpakker (R3/R2) beholdes, i tillegg til særskilt beskyttede SC01-R4 og PR174-kandidaten for andre oppgaver. TB2- og nedlastingsarbeid er også beskyttet, men hadde ingen komplette pakker i denne opptellingen. De særskilte unntakene må telles på nytt når de andre oppgavene frigir dem. Rapportert 21,49 GB gjelder logisk filstørrelse, ikke garantert frigjort plass ved reflinks.
+
+Bevis: `~/scratch-bm/Signal47-motel-v2-20261027`, spesielt `installed-verification.json`, `saved-request-to-installed-r4.json`, `prune-applied-final.json` og `post-prune-verification.json`. Denne statusoppdateringen endrer bare dokumentasjon. Spillets kilde og assets er identiske med testet og installert R4. Ingen ny spillrelease.

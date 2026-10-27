@@ -1,5 +1,12 @@
 # Todo for unreal/
 
+## Motel V2 levert, 27. oktober 2026
+
+- [x] Redigerbar Blender-modell, keramisk retrofasade, mørkt treinteriør og logisk mottak/basseng. Eksisterende TV og tre biler bevart.
+- [x] Native Unreal-import, målrettede tester og hele `screenshots.sh`, 110/110.
+- [x] PR178 og PR172 flettet, samlet R4 installert med 50 uendrede Saved-filer. Installert Low og bildekontroll består.
+- [x] Kanonisk opprydding utført; øvrige aktive kandidater beskyttet. Se [rapport](MOTEL_V2.md).
+
 ## Grenene, 27. oktober 2026
 
 - [x] Regel i `AGENTS.md`: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting.
@@ -13,7 +20,7 @@
 - [x] Samle designbibel, portable redigerbare kilder, konsepter og manglende kvitteringer med SHA-/lenkekontroll. Se [indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md).
 - [x] Bevar nyere MetaHuman-/atmosfærekilder og lenk separat SC01-kilde uten automatisk runtimeintegrasjon.
 - [x] Push og opprett [PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172); indeks/PDF kontrollert anonymt på GitHub.
-- [ ] Full 110-scenario-matrise før eventuell main-merge av samlet runtime. Ingen ny spillutgave inngår i arkiveringen.
+- [x] Full 110-scenario-matrise før main-merge av samlet runtime: R4 består 110/110, PR178 inkluderer PR172. Ingen ny spillutgave inngår i arkiveringen.
 
 ## MetaHuman-servitrisen, levert lokalt 27. oktober 2026
 
