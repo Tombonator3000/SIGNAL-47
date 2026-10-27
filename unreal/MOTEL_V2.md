@@ -1,6 +1,6 @@
 # Sierra Motor Court V2
 
-Status: Kandidat R4 er pakket og målrettede spilltester pågår. Full testmatrise, installasjon og fletting gjenstår.
+Status: Kandidat R4 består målrettede spilltester og hele testmatrisen, 110 av 110. Kilden ligger i PR #178 mot main. Standardinstallasjonen utføres etter fletting.
 
 Tom ba om et mer troverdig motell i New Mexico, keramiske retrodetaljer inspirert av referansebildet, mørkt trepanel, et logisk mottak og et bedre plassert basseng. Den eksisterende KELVORA-TV-en og de tre detaljerte bilene brukes videre.
 
@@ -29,10 +29,12 @@ Den nye kildegrenen er opprettet fra oppdatert `origin/main` og kombinerer SC01 
 - R4 har 18 ferdige motelbilder fra dag, skumring og natt. Fasade, mottak/TV, parkering og basseng er faktisk vurdert. Nattbassenget er mørkt i spillets eksisterende nattlys.
 - R4s gangrute består: 26 punkter, fem vanlige range-/raycast-interaksjoner, tre kollisjonsprøver, 123,74 meter. Register, nøkkel, telefon, TV og romdør kan nås. Dette er kontroller/API, ikke menneskelig input.
 - R4s avgrensede RT-minneutvalg måler 78,15 MiB alltid resident geometri under uendret varselgrense 80 MiB. Poolen er fortsatt 400 MiB, varselandelen 20 prosent og varsler er på. Ingen helspill-/FPS-påstand.
-- Rom 6: seks pakkede bilder består. SC01 High og Low: PASS, 120 kontroller og 17 disk-/Flow-gjenopprettinger per prøve. Den samlede selvtesten består med 1 601 kontroller. Hele `screenshots.sh` kjører nå; installert oppstart og merge gjenstår.
+- Rom 6: seks pakkede bilder består. SC01 High og Low: PASS, 120 kontroller og 17 disk-/Flow-gjenopprettinger per prøve. Den samlede selvtesten består med 1 601 kontroller. Hele `screenshots.sh`: PASS, 110 unike scenarioer, komplette logger/bilder og ingen motorfeil. Ti representative matrisebilder og elleve modell-/interiørbilder er faktisk vurdert. Installert oppstart og merge gjenstår.
 
 De første pakkede prøvene avdekket ustabile kollisjonsindekser, vegetasjon gjennom den nye bassengplassen, feil vannmateriale, gamle skiltgløder og rester fra den enkle bilen/bassenget. R4 retter dette med stabile kollider-ID-er, presise vegetasjonsunntak, farget ensidig vann og pensjonering av eksakte gamle noder. Det opprinnelige planteløvet beholdes. Fotoalbumets eksisterende skiltmotiv følger det nye skiltets bokstavfelt.
 
 Første RT-proxyforsøk lagret innstillinger uten å redusere faktisk geometri, fordi motoren bare bygger denne proxytypen gjennom Nanite-løypen. Dette ble avslørt i pakkede bilder og erstattet av ordinært ekstra LOD3. De 24 delene har samlet 19 905 trekanter i LOD3, mot 215 318 i tidligere siste LOD. Gamle feilbevis er beholdt.
 
 Lokale bevis: `/home/tom/scratch-bm/Signal47-motel-v2-20261027`. Kildepakken bevarer alle 150 forfatterfiler og alle 492 beskyttede MetaHuman-, himmel- og lisensierte assets fra den installerte atmosfæreversjonen. SC01 er med fra main. Personlige Saved-filer berøres ikke av testene.
+
+Testkvitteringen binder kandidatens komplette filinventar, kommandolinjer, SC01s målte binærhash og logg-/CSV-/bildesjekksummer. Første komplette pakkeinventar ble tatt under fullmatrisen, ikke før de første målrettede prøvene; denne begrensningen er bevart i leveransekvitteringen. Ingen endringer ble gjort i kandidatpakken etter byggingen.

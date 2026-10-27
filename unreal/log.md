@@ -821,3 +821,9 @@ Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2c
 ## 2026-10-27 kl. 20:46 CET: motel V2 importert, runtimeprøve gjenstår
 
 Ny Blender-modell med keramikk, mørkt mottak og rompanel, korrigert bassengplassering og gjenbruk av eksisterende biler/TV. Feil i bake-materialindekser og relative Blender-teksturstier ble funnet og rettet før levering. Rene kilder består 689 kontroller; Unreal-import 1 996 og uavhengig lagret verifikasjon 1 102. Terrengåpningen er presist klippet i begge lag. Editor bygger. Main med SC01 er kombinert med den installerte MetaHuman-/atmosfærekilden; 492 beskyttede assets er byteidentiske. Ingen installasjon, spillaksept eller merge er utført ennå. Se [rapport](MOTEL_V2.md).
+
+## 2026-10-27 kl. 23:08 CET: motel R4 består komplett pakket kontroll
+
+Original Blender-kilde og native MotelV2-assets er ferdige. R4 har korrigert vann, frie bassengstier, ett hovedskilt uten gamle lysgløder, tre gjenbrukte biler og eksisterende KELVORA-TV. 24 modelldeler, 689 Blender-kontroller, 1 369 endelige native kontroller og 1 601 selvtestsjekker består. 26-punkts rute, fem interaksjoner og tre kollisjonsprøver består. SC01 High/Low består 120 kontroller og 17 disk-/Flow-gjenopprettinger hver. Hele screenshots.sh består 110/110; ti matrisebilder og elleve målrettede bilder er vurdert. Ingen menneskelig input-/lytte- eller helspill-FPS-påstand.
+
+PR172s siste dokumentmerge er tatt inn med full ancestry; bare en manglende loggoppføring ble lagt til, og alle runtimefiler er fortsatt identiske med den testede R4-frysingen. PR178 går mot main. Installasjon utføres etter fletting med kontrollert backup og Saved-unntak. Bevis: ~/scratch-bm/Signal47-motel-v2-20261027.
