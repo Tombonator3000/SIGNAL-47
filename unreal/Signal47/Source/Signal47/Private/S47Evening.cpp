@@ -2,6 +2,7 @@
 #include "S47EveningVisual.h"
 #include "S47Takeaway.h"
 #include "S47Substation.h"
+#include "S47Horror.h"
 #include "S47Office.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -556,7 +557,9 @@ void FS47Evening::Step(double Dt)
  if (bResumeRequested && !M->ModalOpen() && !M->World->bBusy) { bResumeRequested=false; ShowDialogue(); }
 
  Context();
- if (ServicePending() && !M->World->bDriving) M->UI->Objective(ServiceObjective());
+ // SC02's active meeting at Caliche owns the objective line until contact is broken.
+ if (M->Horror && M->Horror->SC02Meeting()) {}
+ else if (ServicePending() && !M->World->bDriving) M->UI->Objective(ServiceObjective());
  else if (bEnabled && bServiceRoute && bServiceFiled && M->Story->bEveningTimeline && !M->World->bDriving)
  {
   // Continue must restore the next receiver action as well as the filed evidence.

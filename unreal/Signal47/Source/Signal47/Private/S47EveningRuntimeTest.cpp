@@ -38,7 +38,7 @@ void FS47Evening::ControlTest(double Dt)
 		const auto H = M && M->Horror ? M->Horror->Save() : S47J::FObj();
 		const auto V = S47J::Obj(H, TEXT("visual"));
 		if (!M || !M->Horror || !M->Horror->Enabled() || !H || !V ||
-			S47J::Int(H, TEXT("schemaVersion"), -1) != 1 || S47J::Int(H, TEXT("contentRevision"), -1) != 1 ||
+			S47J::Int(H, TEXT("schemaVersion"), -1) != 1 || S47J::Int(H, TEXT("contentRevision"), -1) != FS47Horror::InstalledRevision ||
 			S47J::Str(H, TEXT("scenario")) != TEXT("SC01") ||
 			M->Horror->Complete() || M->Horror->NormalComplete() || M->Horror->BaselineChecked() ||
 			M->Horror->ReferencePhotographed() || M->Horror->DoorEastTried() || M->Horror->DoorCorridorTried() ||
