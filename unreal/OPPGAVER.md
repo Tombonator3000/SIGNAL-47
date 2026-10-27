@@ -1,6 +1,6 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
-## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (kontrollert, flettes)
+## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (flettet)
 
 `unreal-port-core` var avtalt integrasjonsgren for SC01 til SC13 (`HISTORIE_IMPLEMENTERINGSPLAN.md`). PR #163, #164, #165, #166 og #168 ble flettet dit etter at PR #167 hadde tatt resten av grenen med til main, og de 17 commitene kom aldri videre. Det gjelder SC01-runtime (`S47Horror.cpp`, `S47HorrorPack.cpp`, `S47HorrorTest.cpp`, `S47HorrorVisual.cpp`), SC01-ressursene i `Content/Signal47/HorrorSC01` og `ArtSource/HorrorSC01`, den godkjente planen og rapportene `SC01_RUNTIME.md`, `T02_RUNTIME.md` og `NIGHT_PRODUCTION_RUNTIME.md`. SC01 har lokal pakket teknisk aksept fra før, men mot eldre main.
 
@@ -20,6 +20,8 @@ UNVERIFIED: kompilering, pakking, SC01-kontrollene og `screenshots.sh`. Det kan 
 6. Når `git rev-list --count origin/main..origin/unreal-port-core` er 0: slett `unreal-port-core` på GitHub og lokalt.
 
 Gjort 27.10 kl. 17:35 til 19:20 (Claude, Kubuntu): trinn 1 til 4 består, se `log.md` kl. 19:20. SC01-R4 hadde ingen rettelser i git utover `dbae3177`; eneste avvik var bilens RT-LOD i gitignorert `Content/Free`, som er tatt med lokalt i pakken. Editor og pakke bygget, 23 SC01-/regresjons-/lagringsprøver PASS, RT 76,29 MiB, hele `screenshots.sh` 110 av 110 OK. Trinn 5 og 6 følger etter denne commiten. SC01 installeres ikke som standard uten Toms ja.
+
+Flettet 27.10 kl. 19:16 (Claude, Kubuntu): trinn 5 og 6 er gjort. PR #174 hadde grunnlagsgren `main` og ble flettet med full head-SHA `79717d6929eb9b87041ea67f53d5b014d554d026`; flettecommiten er `a032ed0e2e10dac0d7946cb7ff12400a02d12398`. `git rev-list --count origin/main..origin/unreal-port-core` ga 0, og `unreal-port-core` er slettet på GitHub og lokalt. SC01 er ikke installert som standard; det venter på Tom.
 
 ## Terreng og natur langs ruten, 26.10.2026
 
