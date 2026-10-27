@@ -3,10 +3,10 @@
 ## Grenene, 27. oktober 2026
 
 - [x] Regel i `AGENTS.md`: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting.
-- [ ] Hele `screenshots.sh` mot main etter PR #170 (0 av 110 da den ble flettet).
+- [x] Hele `screenshots.sh` mot main etter PR #170: 110 av 110 OK på main pluss SC01 (27.10 kl. 19:15).
 - [x] Rett beskrivelsen: `unreal-port-core` var avtalt integrasjonsgren, ikke feil gren (27.10 kl. 17:25).
 - [x] Flett `unreal-port-core` inn i main på `ccr-30e38858-767d90`: 17 konflikter løst, HorrorStory-generatoren kjørt, 24 tester OK, PR mot main (skysesjon 27.10).
-- [ ] Bygg editor og pakke, kjør SC01-kontrollene og hele `screenshots.sh` på Kubuntu, flett PR-en og slett `unreal-port-core`. Trinnene står øverst i `OPPGAVER.md`.
+- [x] Bygg editor og pakke, kjør SC01-kontrollene og hele `screenshots.sh` på Kubuntu (alt PASS 27.10, se loggen kl. 19:20). PR #174 flettes med full head-SHA, og `unreal-port-core` slettes når den ikke har commits utenfor main.
 
 ## Terreng og natur langs ruten, 26. oktober 2026
 
@@ -78,9 +78,9 @@ NP1 har allerede levert de frivillige private dokumentene, separat arrayservicea
 - [ ] Importer og bind de nye JPG-rekvisittene til faktiske flater eller dokumentvisning. Vurder E15 mot eksisterende foto før utskifting; bruk opprinnelig geometrisk grunnlag for målsatte sammenligninger. Ingen JPG-binding eller nytt fotobevis er fullført av tekstintegrasjonen.
 ## Godkjent gjennomføring: SC01 til SC13
 
-Følg [HISTORIE_IMPLEMENTERINGSPLAN.md](HISTORIE_IMPLEMENTERINGSPLAN.md), med scenariorekkefølge, H-koblinger, full produksjon og aksept-/leveringskrav. SC01s lokale pakkede tekniske aksept består; koden er flettet mot main på `ccr-30e38858-767d90`, men bygg mot main, fletting og installasjon gjenstår. Alle senere scenarioer er planlagt og alle H-kort er åpne. Tidligere S-/I-/R2-/H-punkter er avhengigheter og kontrollgrunnlag for samme gjennomføring, ikke parallelle implementeringer.
+Følg [HISTORIE_IMPLEMENTERINGSPLAN.md](HISTORIE_IMPLEMENTERINGSPLAN.md), med scenariorekkefølge, H-koblinger, full produksjon og aksept-/leveringskrav. SC01s lokale pakkede tekniske aksept består; koden er bygget, pakket og prøvd mot main på `ccr-30e38858-767d90` (PR #174, 27.10). Installasjon som standard gjenstår og avgjøres av Tom. Alle senere scenarioer er planlagt og alle H-kort er åpne. Tidligere S-/I-/R2-/H-punkter er avhengigheter og kontrollgrunnlag for samme gjennomføring, ikke parallelle implementeringer.
 
-- [ ] Lever SC01. Kilde `dbae3177` har normalrunde, H01-dialog, vindushendelse, rapport og lagring; 21 pakkekjøringer og 32 vurderte originalbilder består. Koden er flettet mot main på `ccr-30e38858-767d90` (27.10), men ikke bygget eller prøvd der; fletting til main og installasjon gjenstår. Se [SC01_RUNTIME.md](SC01_RUNTIME.md).
+- [ ] Lever SC01. Kilde `dbae3177` har normalrunde, H01-dialog, vindushendelse, rapport og lagring; 21 pakkekjøringer og 32 vurderte originalbilder består. Koden er flettet mot main på `ccr-30e38858-767d90` og bygget, pakket og prøvd der 27.10: alle SC01-kontroller, HorrorStory-testene og hele `screenshots.sh` består. Installasjon som standard gjenstår og avgjøres av Tom. Se [SC01_RUNTIME.md](SC01_RUNTIME.md).
 - [ ] Lever deretter SC02 til SC13 i rekkefølge, med egen testet PR/fletting og installasjon per SC.
 - [ ] Før separate H-kvitteringer ved SC02, SC05, SC06, SC08, SC09, SC10, SC11, SC12 og SC13 som angitt i planen.
 - [ ] Fullfør samlet helnatt-/kompatibilitetsaksept og før menneskelige UNVERIFIED-punkter ærlig.

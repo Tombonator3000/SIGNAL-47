@@ -2,9 +2,9 @@
 
 ## Grenene, 27. oktober 2026
 
-- PR #170 ble flettet av Tom 26.10 kl. 22:15, etter avsnittet under som sier at den ikke er flettet. Hele `screenshots.sh` var ikke kjørt (0 av 110); det er ikke gjort senere.
+- PR #170 ble flettet av Tom 26.10 kl. 22:15, etter avsnittet under som sier at den ikke er flettet. Hele `screenshots.sh` var ikke kjørt (0 av 110) da; 27.10 kl. 19:15 består den 110 av 110 på main pluss SC01.
 - `unreal-port-core` var avtalt integrasjonsgren for historiearbeidet (`HISTORIE_IMPLEMENTERINGSPLAN.md`), så PR #147 til #166 og #168 gikk dit med vilje. Main fikk det meste fordi grenen til PR #167 var laget fra `unreal-port-core` (til `41430ade`). #163, #164, #165, #166 og #168 kom etter det, og ingen flettet grenen videre, så SC01, planen og rapportene for SC01, T02 og NP1 ble igjen der. Loggpunktet kl. 14:53 og første utgave av regelen kalte det feil gren. Det var feil, og er rettet kl. 17:25.
-- Toms beslutning: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting (`AGENTS.md`). Flettingen er gjort på `ccr-30e38858-767d90` med PR mot main (konflikter løst, generatoren kjørt). Bygg, SC01-kontroller og hele `screenshots.sh` gjenstår på Kubuntu før PR-en flettes; trinnene står i `OPPGAVER.md`.
+- Toms beslutning: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting (`AGENTS.md`). Flettingen er gjort på `ccr-30e38858-767d90` med PR mot main (konflikter løst, generatoren kjørt). 27.10 er editor og pakke bygget på Kubuntu, og SC01-kontrollene, HorrorStory-testene, hele `screenshots.sh` og gamle lagringer består (loggen kl. 19:20). SC01-R4 hadde ingen kode- eller assetrettelser i git utover `dbae3177`; bilens RT-LOD i gitignorert `Content/Free` må finnes lokalt ved pakking (lages av `Tools/freemodels/rt_lods.py`). SC01 er ikke installert som standard.
 
 ## GitHub-levering klargjort, 26. oktober 2026
 

@@ -51,3 +51,10 @@ Bevisrot: `/home/tom/scratch-bm/Signal47-sc01-20261026`.
 - `runtime-profile-archive-r4/manifest.json` verifiserer permanente, byteidentiske kopier av 21 fullførte testprofiler, 677 filer. Tidligere editor-/R1-/R2-/R3-bevis og FAIL-resultater bevares separat.
 
 Byggets to genererte FileOpenOrder-logger bevares ved siden av kvitteringen før de opprinnelige rene kildebytesene restaureres. Ingen spillkode eller pakkefil endres i denne etterkontrollen. Endringer etter den testede kildecommitten skal være dokumentasjon frem til installasjon.
+
+## Prøvd mot main, 27.10.2026
+
+Koden er flettet inn i main på `ccr-30e38858-767d90` (PR #174) og bygget og pakket på nytt fra den grenen. Kandidat `~/scratch-bm/Signal47-pr174-20261027/candidate/Linux`, binær SHA256 `754b33a0a3118fe9b97453afe372eef2d6bdacc958b6663dec51235e1657b6cf`. Lokale genererte/lisensierte mapper er hentet fra hovedarbeidskopien, med SC01-R4s RT-LOD for Fairheaven SW84 og H01/SC01-lydfilene lagt oppå.
+
+Samme 16 pakkede SC01-/regresjonsprøver som R4 består: High og Low 120 kontroller og 17 restores, oversett hånd 112/16, selvtest 1 589, begge ankomster, kontrollrom, T01 53/19, T02 65/15, Dale 191/5, LineLights, feltlab, finale og bilvisningene. RT AlwaysResident er 76,2925 MiB i 174 samples, under 80 MiB med uendret 400/20. Vanlig Continue fra fem SC01-R4-lagringer og to kopier av Toms installerte lagringer består. Hele `screenshots.sh` består 110 av 110. Ny visuell totalvurdering av alle bilder er ikke gjort; stikkprøver er sett. Installert standard er uendret, og SC01 er ikke installert som standard.
+
