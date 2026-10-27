@@ -39,3 +39,11 @@ importpolicy, isolerte rapporter og kontroll av faktisk lagret LOD er viderefør
 
 Kildeskript og ren geometriforberedelse kan kontrolleres uten motor. Native PASS
 krever faktisk kjøring; det er ikke underforstått av syntakskontroll eller eksport.
+
+## Avgrensede native rettelser
+
+`set_rt_lod.py` legger til ett svært fjernt, ordinært LOD3 på de 24 nye motelldelene. Alle tre forfattede LOD-er, materialer, kollisjon og opprinnelige skjermgrenser kontrolleres uendret. LOD3 bruker skjermgrense .005 og et redusert trekantmål; små flater kopierer allerede liten LOD2. Faktisk generert geometri verifiseres etter lagring. Trims/probe og globalt RT-budsjett berøres ikke.
+
+Første forsøk med egne RT-proxyinnstillinger var utilstrekkelig: Unreal 5.8 bygger disse bare innenfor Nanite-løypen. Disse modellene bruker ikke Nanite. At innstillingen var lagret, beviste derfor ikke at den påvirket den tegnede geometrien. De mislykkede spillprøvene er bevart som diagnostikk.
+
+`repair_water.py` korrigerer bare eksisterende `M_MotelV2_PoolWater`: ensidig gjennomskinnelig overflate med den oppgitte vannfargen som tint på atlaset. Ruhet, normaler, opacity og geometri beholdes. Begge skript bruker `S47_MOTEL_SOURCE` og `S47_MOTEL_REPORT`; LOD-skriptet bruker også `S47_MOTEL_TRIMS`. Etter endringer kjøres `verify_assets.py` i en ny Unreal-prosess og `stage_assembly.py` før pakking. Native PASS erstatter ikke visuell kontroll i det pakkede spillet.

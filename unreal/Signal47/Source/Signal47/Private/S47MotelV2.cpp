@@ -1,6 +1,7 @@
 // Unreal-only replacement of the motel presentation. Imported assets never own story interactions.
 #include "S47MotelV2.h"
 #include "S47Web.h"
+#include "S47Glow.h"
 #include "S47Three.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -17,6 +18,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47MotelV2,Log,All);
 TArray<FS47MotelV2::FFloor> FS47MotelV2::Floors;
+TWeakObjectPtr<UStaticMeshComponent> FS47MotelV2::PhotoSignComponent;
 namespace
 {
  using FValues=TArray<TSharedPtr<FJsonValue>>;
@@ -39,7 +41,7 @@ namespace
 
 TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
 {
- Floors.Reset();
+ Floors.Reset();PhotoSignComponent.Reset();
  if(!W||FParse::Param(FCommandLine::Get(),TEXT("S47MotelV2Off"))||FParse::Param(FCommandLine::Get(),TEXT("S47TownBuildingsOff"))||FParse::Param(FCommandLine::Get(),TEXT("S47PropsOff")))return {};
  FString Text;TSharedPtr<FJsonObject> J;
  if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("MotelV2/assembly.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),J)||!J.IsValid())
@@ -69,6 +71,34 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   if(!C||!C->GetStaticMesh()||C->GetStaticMesh()->GetName()!=Name){Reject(FString(TEXT("native predecessor "))+Name);return {};}
   Retired.Add(C);
  }
+ // Two dedicated legacy material leaves were outside the mixed structural trim recipes.
+ // court/paint contains the box-car body and obsolete parking stripes; V2 owns the new markings.
+ for(const FIntVector& Leaf:{FIntVector(673,458,322),FIntVector(688,473,337)})
+ {
+  const auto* N=W->Node(Leaf.X);auto* C=MeshAt(W,Leaf.X);
+  if(!N||!C||N->Parent!=663||N->Geo!=Leaf.Y||N->Mats.Num()!=1||N->Mats[0]!=Leaf.Z){Reject(TEXT("legacy car paint / pool water predecessor"));return {};}
+  Retired.AddUnique(C);
+ }
+ struct FSignGlow {int32 Node,Point;FVector Position;float Size;};
+ const FSignGlow SignGlows[]={
+  {36,23,{-32.9,3.7014316154,680.2},12},{36,24,{-31.5,1.9014316154,682},5},
+  {1125,53,{-8.9,3.7014316154,380.2},12},{1125,54,{-7.5,1.9014316154,382},5},
+  {1312,165,{-8.9,3.7014316154,380.2},12},{1312,166,{-7.5,1.9014316154,382},5}};
+ for(const auto& G:SignGlows)
+ {
+  const auto* P=W->Glow(G.Node);
+  if(!P||!P->Pos.IsValidIndex(G.Point)||!P->Size.IsValidIndex(G.Point)||!P->Pos[G.Point].Equals(G.Position,.002)||!FMath::IsNearlyEqual(P->Size[G.Point],G.Size,.001f))
+  {Reject(FString::Printf(TEXT("legacy sign glow node%d point%d"),G.Node,G.Point));return {};}
+ }
+ struct FSignPool {const TCHAR* Key;int32 Slot;FVector Position;};
+ const FSignPool SignPools[]={
+  {TEXT("site"),10,{-31.5,3.9014316154,682}},{TEXT("site"),11,{-31.5,1.9014316154,682}},
+  {TEXT("court"),8,{-33.4,2.5014316154,680}},{TEXT("court"),9,{-32.5,1.7014316154,680}}};
+ for(const auto& P:SignPools)
+ {
+  const int32 Set=W->FloodSet(P.Key);const FLinearColor At=W->FloodPos(Set,P.Slot);
+  if(Set<0||!FVector(At.R,At.G,At.B).Equals(P.Position,.002)){Reject(TEXT("legacy sign flood predecessor"));return {};}
+ }
  for(const auto& Pair:(*PartsJson)->Values)
  {
   const auto R=Pair.Value->AsObject();if(!R){Reject(TEXT("part object"));return {};}
@@ -86,6 +116,8 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   for(const auto& Slot:M->GetStaticMaterials())if(!Slot.MaterialInterface){Reject(Asset+TEXT(" missing material"));return {};}
   NewParts.Add({FString(Pair.Key.ToView()),M,P,Vec(*At)});
  }
+ int32 PhotoSignParts=0;for(const auto& P:NewParts)if(P.Name==TEXT("SM_Sierra_GlowSign"))++PhotoSignParts;
+ if(PhotoSignParts!=1){Reject(TEXT("single authored sign face for existing photo subject"));return {};}
  const FValues* Rows=nullptr;
  if(J->TryGetArrayField(TEXT("patches"),Rows))for(const auto& V:*Rows)
  {
@@ -141,12 +173,15 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
  // All validation ends before the first mutation. A missing cooked asset leaves the full predecessor visible.
  auto F=MakeShared<FS47MotelV2>();F->Web=W;F->ProtectedPositions=Protected;F->ExpectedPartCount=NewParts.Num()+1;
  for(const auto& Pair:Protected)F->ProtectedComponents.Add(Pair.Key,W->Node(Pair.Key)->Comp);
+ for(const auto& G:SignGlows)F->RetiredSignGlows.Add(FIntPoint(G.Node,G.Point));
+ for(const auto& P:SignPools){const int32 Set=W->FloodSet(P.Key);F->RetiredSignPools.Add(FIntPoint(Set,P.Slot));W->SuppressFloodLight(Set,P.Slot);}
  for(const FPart& P:NewParts)
  {
   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->Node(P.Parent)->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(P.Mesh);
   const bool Glass=P.Name.Contains(TEXT("Glass"))||P.Name.Contains(TEXT("Water"));C->SetCollisionEnabled(Glass?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryOnly);
   C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,Glass?ECR_Ignore:ECR_Block);C->SetCastShadow(!Glass);C->RegisterComponent();
   C->SetWorldLocation(S47Three::ToUE(P.At));C->SetWorldRotation(FRotator::ZeroRotator);W->AdoptNode(C,P.Parent,TEXT("motel-v2:")+P.Name);F->Parts.Add(C);
+  if(P.Name==TEXT("SM_Sierra_GlowSign"))PhotoSignComponent=C;
   const int32 Slot=P.Name.Contains(TEXT("GlowRoom06"))?6:P.Name.Contains(TEXT("GlowOffice"))?0:P.Name.Contains(TEXT("GlowSign"))?8:INDEX_NONE;
   if(Slot!=INDEX_NONE)for(int32 K=0;K<C->GetNumMaterials();++K)if(auto* Mid=C->CreateDynamicMaterialInstance(K))
    F->Glows.Add({Mid,Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor")),Slot,Slot==6?4.f:Slot==0?6.f:9.f});
@@ -168,7 +203,9 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
  for(int32 I=0;I<Colliders.Num();++I)for(const auto& R:Disable)if(Same(Colliders[I],R))
  {
   // SARO driving copies rectangle coordinates even when bEnabled=false. Preserve indices but remove both collisions.
-  Colliders[I].bEnabled=false;Colliders[I].MinX=Colliders[I].MinZ=1.e9;Colliders[I].MaxX=Colliders[I].MaxZ=1.e9+.01;F->DisabledColliders.AddUnique(I);break;
+  const FString StableId=FString::Printf(TEXT("motel-v2:retired-collider:%d"),I);
+  Colliders[I].Id=StableId;Colliders[I].bEnabled=false;Colliders[I].MinX=Colliders[I].MinZ=1.e9;Colliders[I].MaxX=Colliders[I].MaxZ=1.e9+.01;
+  F->DisabledColliderIds.AddUnique(StableId);break;
  }
  for(const FCar& Car:Cars)
  {
@@ -205,18 +242,96 @@ void FS47MotelV2::Update()
 {
  for(const auto& P:Retired)if(auto* C=P.Get())Retire(C);
  AS47Web* W=Web.Get();if(!W)return;const int32 Set=W->FloodSet(TEXT("court"));
+ // Retired sign halos are mirrored in SARO, the road and STATION01. Keep only these six points dark.
+ for(const auto& P:RetiredSignGlows)if(auto* G=W->Glow(P.X)){G->SetSize(P.Y,0);G->SetColor(P.Y,FLinearColor::Black);}
+ // Keep the historical flicker width as the new sign's emission feed, but remove the old coloured light.
+ for(const auto& P:RetiredSignPools)if(!W->FloodCol(P.X,P.Y).Equals(FLinearColor::Black))W->SetFloodColor(P.X,P.Y,FLinearColor::Black);
  for(const auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*FMath::Clamp(W->FloodPos(Set,G.Slot).A/G.Reference,0.f,1.f));
 }
 bool FS47MotelV2::Audit(TArray<FString>& Lines) const
 {
- AS47Web* W=Web.Get();bool Ok=W&&ExpectedPartCount>1&&Parts.Num()==ExpectedPartCount&&CarCount==3&&ProtectedComponents.Num()==8&&bInitialAnchorsPreserved;
- for(const auto& P:Parts)Ok&=P.IsValid()&&P->GetStaticMesh()&&Tris(P->GetStaticMesh())>0;
- for(const auto& P:Retired)Ok&=P.IsValid()&&!P->IsVisible()&&P->bHiddenInGame&&P->GetCollisionEnabled()==ECollisionEnabled::NoCollision;
- if(W){for(const auto& P:ProtectedComponents)Ok&=P.Value.IsValid()&&W->Node(P.Key)&&W->Node(P.Key)->Comp==P.Value;const auto& Cs=W->CollidersMutable(TEXT("saro"));for(int32 I:DisabledColliders)Ok&=Cs.IsValidIndex(I)&&!Cs[I].bEnabled&&Cs[I].MinX>=1.e9;}
- Lines.Add(FString::Printf(TEXT("motel V2 %s parts=%d/%d patches=%d retired=%d cars=%d/3 protected=%d/8 disabledColliders=%d addedColliders=%d floors=%d"),Ok?TEXT("PASS"):TEXT("FAIL"),Parts.Num(),ExpectedPartCount,PatchCount,Retired.Num(),CarCount,ProtectedComponents.Num(),DisabledColliders.Num(),AddedColliders,Floors.Num()));return Ok;
+ AS47Web* W=Web.Get();bool Ok=true;
+ auto Check=[&](bool Pass,const FString& Detail){if(!Pass){Ok=false;Lines.Add(TEXT("motel V2 audit FAIL ")+Detail);}};
+ Check(W!=nullptr,TEXT("world reference expired"));
+ Check(ExpectedPartCount>1&&Parts.Num()==ExpectedPartCount,FString::Printf(TEXT("part count actual=%d expected=%d"),Parts.Num(),ExpectedPartCount));
+ Check(CarCount==3,FString::Printf(TEXT("original car count=%d/3"),CarCount));
+ Check(ProtectedComponents.Num()==8,FString::Printf(TEXT("protected component count=%d/8"),ProtectedComponents.Num()));
+ Check(bInitialAnchorsPreserved,TEXT("protected anchors changed during installation"));
+ for(int32 I=0;I<Parts.Num();++I)
+ {
+  auto* C=Parts[I].Get();UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;const int32 Count=Tris(Mesh);
+  Check(C&&Mesh&&Count>0,FString::Printf(TEXT("part[%d] component=%s mesh=%s lod0Tris=%d lods=%d"),I,*GetNameSafe(C),*GetNameSafe(Mesh),Count,Mesh?Mesh->GetNumLODs():-1));
+ }
+ for(int32 I=0;I<Retired.Num();++I)
+ {
+  auto* C=Retired[I].Get();
+  Check(C&&!C->IsVisible()&&C->bHiddenInGame&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,
+   FString::Printf(TEXT("retired[%d] component=%s mesh=%s visible=%d hidden=%d collision=%d"),I,*GetNameSafe(C),*GetNameSafe(C?C->GetStaticMesh():nullptr),C?C->IsVisible():-1,C?int32(C->bHiddenInGame):-1,C?int32(C->GetCollisionEnabled()):-1));
+ }
+ if(W)
+ {
+  for(const auto& Pair:ProtectedComponents)
+  {
+   const auto* N=W->Node(Pair.Key);auto* Expected=Pair.Value.Get();auto* Actual=N?N->Comp.Get():nullptr;
+   Check(Expected&&Actual==Expected,FString::Printf(TEXT("protected node=%d expected=%s actual=%s expectedValid=%d"),Pair.Key,*GetNameSafe(Expected),*GetNameSafe(Actual),Pair.Value.IsValid()));
+  }
+  const auto& Cs=W->CollidersMutable(TEXT("saro"));
+  for(const FString& Id:DisabledColliderIds)
+  {
+   // SetDoorOpen removes/appends leaves in this array. A construction-time index is not an identity.
+   int32 Matches=0;
+   for(int32 I=0;I<Cs.Num();++I)if(Cs[I].Id==Id)
+   {
+    ++Matches;const auto& C=Cs[I];
+    Check(!C.bEnabled&&C.MinX>=1.e9&&C.MinZ>=1.e9,
+     FString::Printf(TEXT("retired collider id=%s currentIndex=%d enabled=%d rect=[%.3f,%.3f,%.3f,%.3f]"),*Id,I,C.bEnabled,C.MinX,C.MaxX,C.MinZ,C.MaxZ));
+   }
+   Check(Matches==1,FString::Printf(TEXT("retired collider id=%s matches=%d expected=1 sharedArraySize=%d"),*Id,Matches,Cs.Num()));
+  }
+ }
+ if(W)
+ {
+  Check(RetiredSignGlows.Num()==6&&RetiredSignPools.Num()==4,TEXT("legacy sign light retirement count"));
+  for(const auto& P:RetiredSignGlows)
+  {
+   const auto* G=W->Glow(P.X);
+   Check(G&&G->Size.IsValidIndex(P.Y)&&G->Col.IsValidIndex(P.Y)&&FMath::IsNearlyZero(G->Size[P.Y])&&G->Col[P.Y].Equals(FLinearColor::Black),FString::Printf(TEXT("legacy sign glow remains node%d point%d"),P.X,P.Y));
+  }
+  for(const auto& P:RetiredSignPools)Check(W->FloodCol(P.X,P.Y).Equals(FLinearColor::Black),FString::Printf(TEXT("legacy sign flood remains set%d slot%d"),P.X,P.Y));
+ }
+ const auto PhotoTarget=SignPhotoTarget();
+ Check(PhotoTarget.IsSet(),TEXT("authored sign photo target unavailable"));
+ if(PhotoTarget.IsSet())Check(PhotoTarget->Equals(FVector(-41.2320000172,2.1300242489,669.1897799015),.01),TEXT("authored sign photo target differs from verified sign-face bounds"));
+ const auto Landscape=LandscapeFootprints();
+ auto Cleared=[&Landscape](double X,double Z){for(const auto& B:Landscape)if(X>=B.X&&X<=B.Y&&Z>=B.Z&&Z<=B.W)return true;return false;};
+ // Integration boundary checks: the new paved/water surfaces are clear; neighbouring desert is untouched.
+ Check(Landscape.Num()==Floors.Num()+1&&!Floors.IsEmpty(),TEXT("landscape exclusion count does not match installed floors plus water"));
+ for(const FVector2D& P:{FVector2D(-63,674),FVector2D(-58.9,674),FVector2D(-53.2,680.6),FVector2D(-47,670.7)})
+  Check(Cleared(P.X,P.Y),FString::Printf(TEXT("landscape footprint misses built surface %.2f %.2f"),P.X,P.Y));
+ for(const FVector2D& P:{FVector2D(-65.2,674),FVector2D(-59,665.6),FVector2D(-52.2,680.6),FVector2D(-47,669.5)})
+  Check(!Cleared(P.X,P.Y),FString::Printf(TEXT("landscape footprint clears neighbouring desert %.2f %.2f"),P.X,P.Y));
+ Lines.Add(FString::Printf(TEXT("motel V2 %s parts=%d/%d patches=%d retired=%d cars=%d/3 protected=%d/8 disabledColliders=%d addedColliders=%d floors=%d"),Ok?TEXT("PASS"):TEXT("FAIL"),Parts.Num(),ExpectedPartCount,PatchCount,Retired.Num(),CarCount,ProtectedComponents.Num(),DisabledColliderIds.Num(),AddedColliders,Floors.Num()));return Ok;
 }
 double FS47MotelV2::FloorAt(double X,double Z)
 {
  for(const auto& F:Floors)if(X>=F.MinX&&X<=F.MaxX&&Z>=F.MinZ&&Z<=F.MaxZ)return F.Y;
  return std::numeric_limits<double>::quiet_NaN();
+}
+
+TArray<FVector4> FS47MotelV2::LandscapeFootprints()
+{
+ TArray<FVector4> Out;
+ if(Floors.IsEmpty())return Out; // Missing assets / explicit opt-out preserve the original desert.
+ for(const auto& F:Floors)Out.Add(FVector4(F.MinX,F.MaxX,F.MinZ,F.MaxZ));
+ // Water deliberately has no walking floor, but must also reject grass, scrub and stones.
+ Out.Add(FVector4(-61,-56.8,669.8,678));
+ return Out;
+}
+
+TOptional<FVector> FS47MotelV2::SignPhotoTarget()
+{
+ const auto* C=PhotoSignComponent.Get();const UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;
+ if(!C||!Mesh)return {};
+ // The illuminated lettering bounds exclude the long support posts; aim at the actual installed sign face.
+ return S47Three::ToThree(C->GetComponentTransform().TransformPosition(Mesh->GetBounds().Origin));
 }

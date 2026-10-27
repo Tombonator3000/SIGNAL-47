@@ -373,7 +373,8 @@
       "lod_triangles": [
         11756,
         5878,
-        2586
+        2586,
+        236
       ],
       "bounds_local_m": [
         [
@@ -399,6 +400,7 @@
       "lod_triangles": [
         188,
         94,
+        40,
         40
       ],
       "bounds_local_m": [
@@ -425,6 +427,7 @@
       "lod_triangles": [
         440,
         220,
+        96,
         96
       ],
       "bounds_local_m": [
@@ -451,7 +454,8 @@
       "lod_triangles": [
         1316,
         658,
-        288
+        288,
+        64
       ],
       "bounds_local_m": [
         [
@@ -477,6 +481,7 @@
       "lod_triangles": [
         376,
         188,
+        82,
         82
       ],
       "bounds_local_m": [
@@ -503,6 +508,7 @@
       "lod_triangles": [
         188,
         94,
+        40,
         40
       ],
       "bounds_local_m": [
@@ -529,7 +535,8 @@
       "lod_triangles": [
         20368,
         10184,
-        4480
+        4480,
+        408
       ],
       "bounds_local_m": [
         [
@@ -555,7 +562,8 @@
       "lod_triangles": [
         276425,
         138211,
-        60813
+        60813,
+        5529
       ],
       "bounds_local_m": [
         [
@@ -581,7 +589,8 @@
       "lod_triangles": [
         2408,
         1204,
-        529
+        529,
+        64
       ],
       "bounds_local_m": [
         [
@@ -607,7 +616,8 @@
       "lod_triangles": [
         58274,
         29136,
-        12820
+        12820,
+        1166
       ],
       "bounds_local_m": [
         [
@@ -633,7 +643,8 @@
       "lod_triangles": [
         21024,
         10511,
-        4625
+        4625,
+        420
       ],
       "bounds_local_m": [
         [
@@ -659,7 +670,8 @@
       "lod_triangles": [
         39520,
         19760,
-        8694
+        8694,
+        791
       ],
       "bounds_local_m": [
         [
@@ -685,6 +697,7 @@
       "lod_triangles": [
         12,
         6,
+        2,
         2
       ],
       "bounds_local_m": [
@@ -711,7 +724,8 @@
       "lod_triangles": [
         1504,
         752,
-        330
+        330,
+        64
       ],
       "bounds_local_m": [
         [
@@ -737,7 +751,8 @@
       "lod_triangles": [
         57964,
         28982,
-        12752
+        12752,
+        1160
       ],
       "bounds_local_m": [
         [
@@ -763,7 +778,8 @@
       "lod_triangles": [
         54176,
         27088,
-        11917
+        11917,
+        1083
       ],
       "bounds_local_m": [
         [
@@ -789,7 +805,8 @@
       "lod_triangles": [
         66512,
         33256,
-        14632
+        14632,
+        1330
       ],
       "bounds_local_m": [
         [
@@ -815,7 +832,8 @@
       "lod_triangles": [
         52364,
         26182,
-        11520
+        11520,
+        1048
       ],
       "bounds_local_m": [
         [
@@ -841,7 +859,8 @@
       "lod_triangles": [
         67488,
         33744,
-        14846
+        14846,
+        1350
       ],
       "bounds_local_m": [
         [
@@ -867,7 +886,8 @@
       "lod_triangles": [
         50068,
         25034,
-        11014
+        11014,
+        1002
       ],
       "bounds_local_m": [
         [
@@ -893,7 +913,8 @@
       "lod_triangles": [
         65168,
         32584,
-        14336
+        14336,
+        1304
       ],
       "bounds_local_m": [
         [
@@ -919,7 +940,8 @@
       "lod_triangles": [
         74362,
         37180,
-        16358
+        16358,
+        1488
       ],
       "bounds_local_m": [
         [
@@ -945,7 +967,8 @@
       "lod_triangles": [
         24640,
         12320,
-        5420
+        5420,
+        492
       ],
       "bounds_local_m": [
         [
@@ -971,7 +994,8 @@
       "lod_triangles": [
         32272,
         16136,
-        7098
+        7098,
+        646
       ],
       "bounds_local_m": [
         [
@@ -1118,6 +1142,6 @@
     "trim_manifest_sha256": "1923a4d085bd1d534f90794d89b6f156d26958e7b62c5ed69625f1ff6d6dc03c",
     "runtime_layout_sha256": "dd5e62af23da40b88a1dcfe4238ab18f1cf24dc8c4a0cbfe79b0deac9bda16e9",
     "native_import_report_sha256": "804e934dc17742531828acd931e08e43a6b0f194a6cad7f8507b3350b4f8dbce",
-    "saved_native_report_sha256": "f940c4b72b877d3e5d7a085531c227457fb183c9269eb5a76824effde52b69f3"
+    "saved_native_report_sha256": "4ccd813e9cd9684a6c79e496e2bc8b62a1e7c6444873c4457f590f0d21a4426d"
   }
 }

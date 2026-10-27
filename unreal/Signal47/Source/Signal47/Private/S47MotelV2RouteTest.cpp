@@ -22,14 +22,21 @@ void AS47Web::BeginMotelV2Route()
  struct FPoint {double X,Z;const TCHAR* Proxy;const TCHAR* Id;};
  static const FPoint Route[]={
   {-44.8,674.1,TEXT("register"),TEXT("court:register")},
-  {-44.8,672.9,nullptr,nullptr},{-46.1,672.9,TEXT("keyBoard"),TEXT("court:keyBoard")},
-  {-45.4,672.9,TEXT("officePhone"),TEXT("court:officePhone")},
-  {-44.8,672.9,nullptr,nullptr},{-44.8,675.8,TEXT("officeTv"),TEXT("court:officeTv")},
-  {-44.8,674.1,nullptr,nullptr},{-42,674.1,nullptr,nullptr},{-42,670.7,nullptr,nullptr},
-  {-53.2,670.7,nullptr,nullptr},{-53.2,680.6,nullptr,nullptr},{-55.5,680.6,nullptr,nullptr},
+  {-44.8,673.0,nullptr,nullptr},{-46.1,673.0,TEXT("keyBoard"),TEXT("court:keyBoard")},
+  {-45.4,673.0,TEXT("officePhone"),TEXT("court:officePhone")},
+  // The fixed-open office leaf spans x[-44.86,-43.7], z[674.81,674.90].
+  // Walk around its west tip through the existing aisle beside the counter; never disable its collider.
+  {-44.8,673.0,nullptr,nullptr},{-45.5,674.1,nullptr,nullptr},
+  {-45.5,675.8,TEXT("officeTv"),TEXT("court:officeTv")},
+  {-45.5,674.1,nullptr,nullptr},{-44.8,674.1,nullptr,nullptr},
+  {-42,674.1,nullptr,nullptr},{-42,671.1,nullptr,nullptr},
+  {-42.3,671.1,nullptr,nullptr},{-42.3,670.55,nullptr,nullptr},
+  {-53.2,670.55,nullptr,nullptr},{-53.2,680.6,nullptr,nullptr},{-55.5,680.6,nullptr,nullptr},
   {-55.5,667.3,nullptr,nullptr},{-55.5,680.6,nullptr,nullptr},{-53.2,680.6,nullptr,nullptr},
-  {-53.2,670.7,nullptr,nullptr},{-42,670.7,nullptr,nullptr},{-42,674.1,nullptr,nullptr},
-  {-42,705,TEXT("room6Door"),TEXT("room6Door")}
+  {-53.2,670.55,nullptr,nullptr},{-42.3,670.55,nullptr,nullptr},
+  {-42.3,671.1,nullptr,nullptr},{-42,671.1,nullptr,nullptr},{-42,674.1,nullptr,nullptr},
+  // Keep the walker's radius clear of the newspaper box near the office and the vending machine opposite.
+  {-42.25,674.1,nullptr,nullptr},{-42.25,705,TEXT("room6Door"),TEXT("room6Door")}
  };
  struct FState {bool Started=false,Done=false;int32 Index=0,Probe=0,Picks=0;double Since=0,Began=0,Distance=0;FVector Last=FVector::ZeroVector,ProbeStart=FVector::ZeroVector;FS47Rect Box;};
  const auto S=MakeShared<FState>();const TWeakObjectPtr<AS47Web> Self=this;FTimerHandle Timer;
@@ -55,7 +62,8 @@ void AS47Web::BeginMotelV2Route()
   if(S->Index<UE_ARRAY_COUNT(Route))
   {
    const FPoint& Goal=Route[S->Index];const double Dx=Goal.X-P->Pos.X,Dz=Goal.Z-P->Pos.Z;
-   if(FMath::Sqrt(Dx*Dx+Dz*Dz)<.16)
+   const double Distance=FMath::Sqrt(Dx*Dx+Dz*Dz);
+   if(Distance<.08)
    {
     P->TestMove.Reset();
     if(Goal.Proxy)
@@ -71,7 +79,8 @@ void AS47Web::BeginMotelV2Route()
     ++S->Index;S->Since=Now;return;
    }
    if(Now-S->Since>22){Fail(TEXT("waypoint stalled; do not bypass collision"));return;}
-   P->Yaw=FMath::Atan2(-Dx,-Dz);P->TestMove=FVector2D(0,-1);P->bTestRun=false;return;
+   // Analog approach slows inside50cm so the8cm waypoint tolerance does not cut a tight corner.
+   P->Yaw=FMath::Atan2(-Dx,-Dz);P->TestMove=FVector2D(0,-FMath::Clamp(Distance/.5,0.,1.));P->bTestRun=false;return;
   }
   // Independent collision fixtures use the same normal walker after one explicit placement each.
   if(S->Probe<6)

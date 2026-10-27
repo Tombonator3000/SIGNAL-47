@@ -47,6 +47,7 @@ def stage(args):
     expected_meshes = set(contract['parts']) | {name for name, row in trim['meshes'].items() if not row['hidden']}
     for proof in (imported, verified):
         assert {r['name'] for r in proof['meshes']} == expected_meshes
+    assert 0 < verified['resident_lod_budget']['actual_triangles'] <= 24000
     assert layout['version'] == 1
     assert set(layout['retire_native']) == {'SM_Town_Motel_Shell', 'SM_Town_Motel_Glass', 'SM_Town_Motel_Office', 'SM_Town_Motel_Fixtures'}
     assert {(r['node'], r['geo'], r['parent']) for r in layout['retire_nodes']} == {(26, 19, 25), (27, 20, 25), (28, 21, 25)}
@@ -64,6 +65,7 @@ def stage(args):
         rect(floor['rect'])
         assert math.isfinite(floor['y']) and overlap_area(floor['rect'], hole) < 1e-8, 'no floor across water'
     parts = {}
+    saved_meshes = {row['name']: row for row in verified['meshes']}
     for name, row in contract['parts'].items():
         assert name.startswith('SM_') and '/' not in name
         parent = row.get('parent_handle', 'world.motel.group')
@@ -71,8 +73,13 @@ def stage(args):
         assert parent in ('world.motel.group', 'world.room6.group')
         assert len(site) == 3 and all(isinstance(v, (int, float)) and math.isfinite(v) for v in site)
         assert len(row['lod_triangles']) == 3 and all(isinstance(n, int) and n > 0 for n in row['lod_triangles'])
+        native_lods = saved_meshes[name]['lods']
+        native_counts = [lod['triangles'] for lod in native_lods]
+        assert len(native_counts) == 4 and native_counts[:3] == row['lod_triangles']
+        assert native_counts[3] > 0 and native_lods[3]['generated_resident_lod'] is True
+        assert saved_meshes[name]['ray_tracing_proxy_settings']['enabled'] is False
         parts[name] = {'asset': f'/Game/MotelV2/{name}.{name}', 'parent_handle': parent,
-                       'site_world_three_m': site, 'lod_triangles': row['lod_triangles'],
+                       'site_world_three_m': site, 'lod_triangles': native_counts,
                        'bounds_local_m': row['bounds_local_m']}
     patches = trim['patches']
     assert len({r['node'] for r in patches}) == len(patches)

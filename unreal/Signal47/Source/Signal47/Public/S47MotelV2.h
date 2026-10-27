@@ -13,10 +13,15 @@ public:
  void Update();
  bool Audit(TArray<FString>& Lines) const;
  static double FloorAt(double X,double Z);
+ static TOptional<FVector> SignPhotoTarget();
+ // World Three XZ rectangles: [minX,maxX,minZ,maxZ]. Empty when the replacement is inactive.
+ static TArray<FVector4> LandscapeFootprints();
 private:
  TWeakObjectPtr<AS47Web> Web;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts,Retired;
- TArray<int32> DisabledColliders;
+ // Door leaves can remove earlier rows from the shared walk array. Identity must survive reindexing.
+ TArray<FString> DisabledColliderIds;
+ TArray<FIntPoint> RetiredSignGlows,RetiredSignPools;
  TMap<int32,FVector> ProtectedPositions;
  TMap<int32,TWeakObjectPtr<USceneComponent>> ProtectedComponents;
  bool bInitialAnchorsPreserved=false;
@@ -25,5 +30,6 @@ private:
  TArray<FGlow> Glows;
  struct FFloor { double MinX,MaxX,MinZ,MaxZ,Y; };
  static TArray<FFloor> Floors;
+ static TWeakObjectPtr<UStaticMeshComponent> PhotoSignComponent;
  int32 PatchCount=0,CarCount=0,AddedColliders=0;
 };

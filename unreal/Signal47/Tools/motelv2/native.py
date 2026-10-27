@@ -51,6 +51,78 @@ def expr(material, cls, **properties):
     return node
 
 
+
+def apply_water_policy(mat, row, report):
+    """Oversett klart kildevann til en ensidig, tonet overflate i Unreal.
+
+    Det lyse atlaset kom fra et materiale med Transmission=1. Det kan ikke
+    brukes alene som diffus farge i en vanlig gjennomskinnelig overflate.
+    Behold atlas, ORM, normaler og opacity; bruk vannfargen som multiplikator.
+    """
+    if not row.get('water_surface'):
+        return
+    name = row['name']
+    report.check(name + ' water policy targets exact pool material', name == 'M_MotelV2_PoolWater')
+    report.check(name + ' water opacity retained', 0 < float(row.get('alpha', 1)) < 1)
+    base_texture_path = DEST + '/Textures/T_' + name.removeprefix('M_') + '_base_color'
+    nodes = list(M.get_material_expressions(mat))
+    samples = [node for node in nodes if isinstance(node, unreal.MaterialExpressionTextureSample)
+               and node.get_editor_property('texture') is not None
+               and node.get_editor_property('texture').get_path_name().split('.')[0] == base_texture_path]
+    report.check(name + ' existing water colour atlas', len(samples) == 1)
+    # Gjenbruk bare noder fra denne avgrensede policyen ved gjentatt kjøring.
+    tints = [node for node in nodes if isinstance(node, unreal.MaterialExpressionVectorParameter)
+             and str(node.get_editor_property('parameter_name')) == 'WaterTint']
+    mixes = [node for node in nodes if isinstance(node, unreal.MaterialExpressionMultiply)
+             and str(node.get_editor_property('desc')) == 'MotelV2WaterTint']
+    report.check(name + ' unique water policy nodes', len(tints) <= 1 and len(mixes) <= 1)
+    tint = tints[0] if tints else expr(mat, unreal.MaterialExpressionVectorParameter, parameter_name='WaterTint')
+    tint.set_editor_property('default_value', unreal.LinearColor(*row['base_color_linear'][:3], 1))
+    mix = mixes[0] if mixes else expr(mat, unreal.MaterialExpressionMultiply, desc='MotelV2WaterTint')
+    report.check(name + ' water atlas into tint', M.connect_material_expressions(samples[0], 'RGB', mix, 'A'))
+    report.check(name + ' water tint multiplier', M.connect_material_expressions(tint, 'RGB', mix, 'B'))
+    report.check(name + ' tinted water base colour', M.connect_material_property(mix, '', unreal.MaterialProperty.MP_BASE_COLOR))
+    mat.set_editor_property('two_sided', False)
+    mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
+    mat.set_editor_property('shading_model', unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+    mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
+
+
+def verify_water_policy(mat, row, report):
+    """Kontroller lagret vannpolicy; visuell godkjenning krever et nytt spillbilde."""
+    if not row.get('water_surface'):
+        return
+    name = row['name']
+    check = report.check
+    check(name + ' water single sided prevents bottom layer', not mat.get_editor_property('two_sided'))
+    check(name + ' water remains translucent', mat.get_editor_property('blend_mode') == unreal.BlendMode.BLEND_TRANSLUCENT)
+    check(name + ' water supported lit shading', mat.get_editor_property('shading_model') == unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+    check(name + ' water surface per pixel lighting', mat.get_editor_property('translucency_lighting_mode') == unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
+    base = M.get_material_property_input_node(mat, unreal.MaterialProperty.MP_BASE_COLOR)
+    check(name + ' water base colour uses multiply', isinstance(base, unreal.MaterialExpressionMultiply))
+    inputs = list(M.get_inputs_for_material_expression(mat, base))
+    tints = [node for node in inputs if isinstance(node, unreal.MaterialExpressionVectorParameter)
+             and str(node.get_editor_property('parameter_name')) == 'WaterTint']
+    samples = [node for node in inputs if isinstance(node, unreal.MaterialExpressionTextureSample)]
+    check(name + ' water tint and atlas connected', len(tints) == 1 and len(samples) == 1)
+    value = tints[0].get_editor_property('default_value')
+    actual_tint = [value.r, value.g, value.b]
+    check(name + ' water authored tint', max(abs(a-b) for a,b in zip(actual_tint, row['base_color_linear'][:3])) < 1e-6, actual_tint)
+    expected_texture_prefix = DEST + '/Textures/T_' + name.removeprefix('M_') + '_'
+    check(name + ' water retains source colour atlas', samples[0].get_editor_property('texture').get_path_name().split('.')[0] == expected_texture_prefix + 'base_color')
+    opacity = M.get_material_property_input_node(mat, unreal.MaterialProperty.MP_OPACITY)
+    check(name + ' water opacity parameter connected', isinstance(opacity, unreal.MaterialExpressionScalarParameter)
+          and str(opacity.get_editor_property('parameter_name')) == 'Opacity')
+    check(name + ' water authored opacity retained', abs(float(opacity.get_editor_property('default_value'))-float(row['alpha'])) < 1e-6)
+    for role, prop, channel in [('normal', unreal.MaterialProperty.MP_NORMAL, 'RGB'),
+                                ('orm', unreal.MaterialProperty.MP_ROUGHNESS, 'G'),
+                                ('orm', unreal.MaterialProperty.MP_METALLIC, 'B')]:
+        node = M.get_material_property_input_node(mat, prop)
+        check(name + ' water retains ' + str(prop), isinstance(node, unreal.MaterialExpressionTextureSample)
+              and node.get_editor_property('texture').get_path_name().split('.')[0] == expected_texture_prefix + role)
+        check(name + ' water channel ' + str(prop), str(M.get_material_property_input_node_output_name(mat, prop)) == channel)
+
+
 def make_material(row, root, report):
     check = report.check
     name = row['name']
@@ -145,6 +217,7 @@ def make_material(row, root, report):
         mat.set_editor_property('translucency_lighting_mode', unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
         opacity = expr(mat, unreal.MaterialExpressionScalarParameter, parameter_name='Opacity', default_value=float(row['alpha']))
         M.connect_material_property(opacity, '', unreal.MaterialProperty.MP_OPACITY)
+    apply_water_policy(mat, row, report)
     errors = list(M.recompile_material(mat))
     check(name + ' material compilation', not errors, errors)
     check(name + ' saved material', E.save_loaded_asset(mat))
@@ -205,7 +278,109 @@ def finish_mesh(mesh, report):
         settings.set_editor_property('use_full_precision_u_vs', True)
         settings.set_editor_property('remove_degenerates', False)
         S.set_lod_build_settings(mesh, lod, settings)
+    if is_authored_motel_part(mesh):
+        set_resident_lod(mesh, report)
     report.check(mesh.get_name() + ' saved mesh', E.save_loaded_asset(mesh))
+
+
+def is_authored_motel_part(mesh):
+    return (mesh.get_name().startswith('SM_Sierra_') and
+            mesh.get_path_name().split('.')[0] == DEST + '/' + mesh.get_name())
+
+
+def rt_proxy_settings(mesh):
+    settings = mesh.get_editor_property('ray_tracing_proxy_settings')
+    return {'enabled': bool(settings.get_editor_property('enabled')),
+            'fallback_target': str(settings.get_editor_property('fallback_target')),
+            'fallback_percent_triangles': float(settings.get_editor_property('fallback_percent_triangles')),
+            'fallback_relative_error': float(settings.get_editor_property('fallback_relative_error')),
+            'support_ray_tracing': bool(mesh.get_editor_property('support_ray_tracing'))}
+
+
+def resident_lod_policy(mesh):
+    # Tiny single-plane water/glow pieces already have negligible residency.
+    # Preserve their authored LOD2 exactly instead of risking zero-face reduction.
+    small = mesh.get_num_triangles(0) < 1000
+    return {'source_lod': 2 if small else 0, 'percent_triangles': 1. if small else .02,
+            'screen_size': .005, 'lod': 3}
+
+
+def set_resident_lod(mesh, report):
+    """Append a distant ordinary LOD; retain all three authored LODs exactly.
+
+    UE5.8 only builds dedicated RT proxies inside the Nanite build gate. These
+    non-Nanite assets therefore need an actual final ordinary LOD to reduce the
+    engine's AlwaysResident member. No global policy or warning changes.
+    """
+    name = mesh.get_name()
+    report.check(name + ' owned authored resident LOD target', is_authored_motel_part(mesh))
+    report.check(name + ' initial three authored LODs or retry', S.get_lod_count(mesh) in (3, 4))
+    report.check(name + ' hardware RT remains supported', mesh.get_editor_property('support_ray_tracing'))
+    report.check(name + ' ordinary non-Nanite pipeline', not mesh.get_editor_property('nanite_settings').get_editor_property('enabled'))
+    # PostEditChange from even a proxy-only property can invalidate render data.
+    # Freeze both screen sizes AND the source-triangle-based policy beforehand.
+    policy = resident_lod_policy(mesh)
+    old_screens = list(S.get_lod_screen_sizes(mesh))[:3]
+    report.check(name + ' existing far transition permits appended LOD', len(old_screens) == 3 and old_screens[2] > .0051, old_screens)
+    report.data.setdefault('resident_lod_inputs', {})[name] = {
+        'original_screens': old_screens, 'original_lod0_render_triangles': mesh.get_num_triangles(0), 'policy': policy}
+    report.flush()
+    proxy = mesh.get_editor_property('ray_tracing_proxy_settings')
+    proxy.set_editor_property('enabled', False)
+    mesh.set_editor_property('ray_tracing_proxy_settings', proxy)
+    if S.get_lod_count(mesh) == 3:
+        report.check(name + ' append only LOD3 source model',
+                     S.set_lod_from_static_mesh(mesh, 3, mesh, policy['source_lod'], True) == 3)
+    reduction = S.get_lod_reduction_settings(mesh, 3)
+    reduction.set_editor_property('base_lod_model', 3)
+    reduction.set_editor_property('percent_triangles', policy['percent_triangles'])
+    reduction.set_editor_property('percent_vertices', 1.)
+    reduction.set_editor_property('max_deviation', 0.)
+    S.set_lod_reduction_settings(mesh, 3, reduction)
+    build = S.get_lod_build_settings(mesh, 3)
+    build.set_editor_property('use_full_precision_u_vs', True)
+    build.set_editor_property('remove_degenerates', False)
+    S.set_lod_build_settings(mesh, 3, build)
+    report.check(name + ' retain authored screens and append distant screen',
+                 S.set_lod_screen_sizes(mesh, old_screens + [policy['screen_size']]))
+    verify_rt_proxy(mesh, report)
+
+
+def verify_rt_proxy(mesh, report):
+    name = mesh.get_name()
+    state = rt_proxy_settings(mesh)
+    report.check(name + ' no ineffective non-Nanite dedicated proxy', not state['enabled'], state)
+    if is_authored_motel_part(mesh):
+        report.check(name + ' hardware RT support retained', state['support_ray_tracing'])
+        report.check(name + ' actual final ordinary resident LOD exists', S.get_lod_count(mesh) == 4)
+        report.check(name + ' saved non-Nanite pipeline', not mesh.get_editor_property('nanite_settings').get_editor_property('enabled'))
+    return state
+
+
+def verify_resident_lod(mesh, report):
+    name = mesh.get_name()
+    policy = resident_lod_policy(mesh)
+    actual = mesh.get_num_triangles(3)
+    source_count = mesh.get_num_triangles(policy['source_lod'])
+    target = source_count * policy['percent_triangles']
+    reduction = S.get_lod_reduction_settings(mesh, 3)
+    report.check(name + ' final LOD3 actual render triangles positive', actual > 0, actual)
+    if policy['source_lod'] == 2:
+        report.check(name + ' tiny final LOD retains authored LOD2 render count', actual == source_count)
+    else:
+        # Installed QuadricMeshReduction.cpp:277 clamps TargetNumTris to 64 to
+        # preserve silhouettes. The authored .02 is a target, not an exact count.
+        report.check(name + ' final LOD3 actual render triangle budget', actual <= max(64, target * 1.25),
+                     {'actual': actual, 'requested_target': target, 'engine_minimum': 64, 'LOD0': source_count})
+    report.check(name + ' final LOD3 reduction source', reduction.get_editor_property('base_lod_model') == 3)
+    report.check(name + ' final LOD3 saved reduction fraction',
+                 abs(float(reduction.get_editor_property('percent_triangles')) - policy['percent_triangles']) < 1e-6)
+    screens = list(S.get_lod_screen_sizes(mesh))
+    report.check(name + ' final LOD3 distant screen threshold', len(screens) == 4 and abs(screens[3] - .005) < 1e-6, screens)
+    desc = mesh.get_static_mesh_description(3)
+    report.check(name + ' final LOD3 copied source MeshDescription', desc is not None and desc.get_triangle_count() == source_count)
+    return {'triangles': actual, 'generated_resident_lod': True, 'source_lod': policy['source_lod'],
+            'source_triangles': source_count, 'reduction_fraction': policy['percent_triangles'], 'screen_size': screens[3]}
 
 
 def vertices(desc):
@@ -232,12 +407,13 @@ def expected_bounds(row):
 def verify_mesh(name, mesh, lods, expected_materials, report):
     check = report.check
     check(name + ' saved native mesh', isinstance(mesh, unreal.StaticMesh))
-    check(name + ' exact LOD count', S.get_lod_count(mesh) == len(lods))
+    check(name + ' exact LOD count', S.get_lod_count(mesh) == len(lods) + (1 if is_authored_motel_part(mesh) else 0))
     slots = list(mesh.get_editor_property('static_materials'))
     actual_materials = [str(slot.get_editor_property('material_slot_name')) for slot in slots]
     check(name + ' exact authored material slots', actual_materials == expected_materials,
           {'actual': actual_materials, 'expected': expected_materials})
-    row = {'name': name, 'asset': mesh.get_path_name(), 'materials': actual_materials, 'lods': []}
+    row = {'name': name, 'asset': mesh.get_path_name(), 'materials': actual_materials, 'lods': [],
+           'ray_tracing_proxy_settings': verify_rt_proxy(mesh, report)}
     for i, contract in enumerate(lods):
         label = name + ' LOD' + str(i)
         check(label + ' render triangles', mesh.get_num_triangles(i) == contract['triangles'],
@@ -257,6 +433,8 @@ def verify_mesh(name, mesh, lods, expected_materials, report):
         check(label + ' full precision UVs', build.get_editor_property('use_full_precision_u_vs'))
         check(label + ' preserve thin triangles', not build.get_editor_property('remove_degenerates'))
         row['lods'].append({'triangles': mesh.get_num_triangles(i), 'bounds_cm': actual})
+    if is_authored_motel_part(mesh):
+        row['lods'].append(verify_resident_lod(mesh, report))
     report.data['meshes'].append(row)
     report.flush()
 
@@ -298,6 +476,7 @@ def verify_probe(report):
     expected = [200, -400, 600, 20, 40, 60]
     report.check('Blender metre axes and handedness', max(abs(a - b) for a, b in zip(actual, expected)) < .15,
                  {'actual_cm': actual, 'expected_cm': expected})
+    verify_rt_proxy(probe, report)
 
 
 def verify_materials(rows, report):
@@ -305,6 +484,7 @@ def verify_materials(rows, report):
         name = row['name']
         mat = E.load_asset(DEST + '/Materials/' + name)
         report.check(name + ' saved material exists', isinstance(mat, unreal.Material))
+        verify_water_policy(mat, row, report)
         for role in row.get('textures', {}):
             tex = E.load_asset(DEST + '/Textures/T_' + name.removeprefix('M_') + '_' + role)
             report.check(name + ' saved texture ' + role, isinstance(tex, unreal.Texture2D))
@@ -325,6 +505,15 @@ def verify_all(root, trim_root, report):
             material = slot.get_editor_property('material_interface')
             expected = DEST + '/Materials/' + row['materials'][i]
             report.check(name + ' bound material slot ' + str(i), material is not None and material.get_path_name().split('.')[0] == expected)
+    generated = [row for row in report.data['meshes'] if row['name'] in contract['parts']]
+    total = sum(row['lods'][3]['triangles'] for row in generated)
+    report.check('complete actual final LOD budget population', len(generated) == len(contract['parts']))
+    report.check('aggregate actual final LOD triangles at most 24000', 0 < total <= 24000, total)
+    report.data['resident_lod_budget'] = {
+        'actual_triangles': total, 'maximum_triangles': 24000,
+        'previous_authored_final_lod_triangles': sum(row['lod_triangles'][2] for row in contract['parts'].values()),
+        'policy': 'Approximately 2% of LOD0, native reducer minimum64; tiny pieces retain LOD2',
+        'scope': 'Actual saved render triangle count. Packaged GPU allocation remains separate.'}
     if trim_root:
         trims = json.loads((trim_root / 'trim-manifest.json').read_text())
         report.data['source_sha256']['trim_manifest'] = sha(trim_root / 'trim-manifest.json')
