@@ -1,0 +1,59 @@
+{
+  "images": {
+    "title-bg.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "title.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "settings.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "pause.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "load.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "desk-bg.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "notebook.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "hud.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    },
+    "document.png": {
+      "date": null,
+      "original": "/home/tom/.claude/projects/-home-tom/3c32347d-240d-4adc-9b1a-757aeb6ab4e2.jsonl",
+      "source": "historical tool result image"
+    }
+  },
+  "html": [
+    "title.html",
+    "settings.html",
+    "pause.html",
+    "load.html",
+    "hud.html",
+    "notebook.html",
+    "document.html"
+  ],
+  "note": "Recovered original historical image outputs and Write payloads. HTML may need supporting backgrounds or edit history."
+}

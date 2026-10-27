@@ -37,6 +37,16 @@ FS47RecordedDialogue::~FS47RecordedDialogue() { Notify = {}; Stop(); Life->Owner
 
 void FS47RecordedDialogue::SetEnabled(bool bValue) { bOn = bValue; if (!bValue) Stop(); }
 FS47DialogueStatus FS47RecordedDialogue::Status() const { return { CurrentState, bOn, Text, Clips, Bank->BufferCount() }; }
+bool FS47RecordedDialogue::ActiveClip(FString& ClipId, double& Seconds) const
+{
+	ClipId.Reset(); Seconds = 0;
+	const US47Audio* A = Audio.Get();
+	if (!Playing() || !Source || !Plan.IsValidIndex(ActiveClipIndex) || !A || !A->Ctx) return false;
+	const double Elapsed = A->Ctx->CurrentTime() - SourceStartedAt;
+	if (Elapsed < 0) return false; // PlayNext schedules a short silent gap between sources.
+	ClipId = Plan[ActiveClipIndex].Id; Seconds = Elapsed;
+	return true;
+}
 bool FS47RecordedDialogue::Available(const FS47DialogueInput& Input) const { return ResolveInput && ResolveInput(Input, *Bank).IsSet(); }
 void FS47RecordedDialogue::StateTo(const FString& Value) { CurrentState = Value; const FNotify OnState = Notify; if (OnState) OnState(Value); }
 
@@ -44,6 +54,7 @@ void FS47RecordedDialogue::Stop()
 {
 	++Generation;
 	bPending = false; // The native bank loads synchronously, so the generation replaces AbortController.
+	ActiveClipIndex = INDEX_NONE;
 	ReportLevels(TEXT("stopped"));
 	if (Source)
 	{
@@ -117,6 +128,7 @@ void FS47RecordedDialogue::PlayNext(int32 Gen, int32 I)
 	if (Gen != Generation || !bPending) return;
 	if (I >= Plan.Num())
 	{
+		ActiveClipIndex = INDEX_NONE;
 		bPending = false; Text.Reset(); DisposeNodes();
 		Plan.Reset(); Buffers.Reset();
 		StateTo(TEXT("idle")); Notify = {}; return;
@@ -172,6 +184,7 @@ void FS47RecordedDialogue::PlayNext(int32 Gen, int32 I)
 		Self->ReportLevels(TEXT("ended")); Self->DisposeNodes();
 		Self->PlayNext(Gen, I + 1);
 	};
+	ActiveClipIndex = I;
 	SourceStartedAt = Ctx->CurrentTime() + (I ? 0.22 : 0);
 	Src->Start(SourceStartedAt);
 	StateTo(TEXT("playing"));
@@ -181,6 +194,7 @@ void FS47RecordedDialogue::Failed(int32 Gen)
 {
 	if (Gen != Generation || !bPending) return;
 	bPending = false;
+	ActiveClipIndex = INDEX_NONE;
 	ReportLevels(TEXT("error"));
 	if (Source) { Source->OnEnded = nullptr; Source->Stop(); Source->Disconnect(); Source.Reset(); }
 	Text.Reset(); Plan.Reset(); Buffers.Reset(); DisposeNodes();
@@ -203,12 +217,22 @@ bool FS47RecordedDialogue::SelfTest(TArray<FString>& Lines)
 	const auto B0 = A->Ctx->CreateBuffer(1, 480, 48000), B1 = A->Ctx->CreateBuffer(1, 480, 48000);
 	R.Buffers.Add(C0.Id, B0); R.Buffers.Add(C1.Id, B1);
 	R.PlayNext(R.Generation, 0); Check(R.Playing() && R.Status().Text == TOptional<FString>(C0.Text), TEXT("the first source starts with its exact text"));
+	FString ActiveId; double ActiveSeconds = 0;
+	Check(R.ActiveClip(ActiveId, ActiveSeconds) && ActiveId == C0.Id && FMath::IsNearlyZero(ActiveSeconds), TEXT("active clip reports the first audible source and its clock"));
 	TArray<float> Pcm; Pcm.SetNumZeroed(1024 * 2); A->Ctx->Render(Pcm.GetData(), 1024); A->Ctx->Tick(0.03);
 	Check(R.Playing() && R.Status().Text == TOptional<FString>(C1.Text), TEXT("onended advances to the next source"));
+	Check(!R.ActiveClip(ActiveId, ActiveSeconds) && ActiveId.IsEmpty(), TEXT("the scheduled inter-clip gap has no audible face take"));
 	Pcm.SetNumZeroed(4800 * 2); A->Ctx->Render(Pcm.GetData(), 4800); A->Ctx->Tick(0.1);
 	Check(R.Playing(), TEXT("the next source waits the authored 0.22 seconds"));
+	Pcm.SetNumZeroed(6000 * 2); A->Ctx->Render(Pcm.GetData(), 6000); A->Ctx->Tick(0.125);
+	Check(R.ActiveClip(ActiveId, ActiveSeconds) && ActiveId == C1.Id && ActiveSeconds >= 0 && ActiveSeconds < 0.01, TEXT("the second audible source reports its own id and source-relative time"));
+	const double BeforePause = ActiveSeconds;
+	A->Ctx->Suspend(true); Pcm.SetNumZeroed(480 * 2); A->Ctx->Render(Pcm.GetData(), 480); A->Ctx->Tick(0.01);
+	Check(R.ActiveClip(ActiveId, ActiveSeconds) && ActiveId == C1.Id && FMath::IsNearlyEqual(ActiveSeconds, BeforePause), TEXT("suspending audio freezes the active source clock"));
+	A->Ctx->Suspend(false);
 	R.Stop(); Pcm.SetNumZeroed(16000 * 2); A->Ctx->Render(Pcm.GetData(), 16000); A->Ctx->Tick(0.34);
 	Check(R.State() == TEXT("idle") && !R.Status().Text && R.Status().Clips.IsEmpty(), TEXT("stop invalidates the pending generation and clears its queue"));
+	Check(!R.ActiveClip(ActiveId, ActiveSeconds) && ActiveId.IsEmpty(), TEXT("stop clears the active face take"));
 	// Render the real routing graph, not just decoded buffers or source state.
 	struct FRendered { FS47DialogueAudioLevels Levels; double Rms = 0; };
 	auto RenderRoute = [](bool bPhone, bool bRadio, TOptional<FVector> At, double RadioGain, double SfxGain) -> FRendered

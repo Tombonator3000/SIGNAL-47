@@ -460,6 +460,7 @@ private:
 	int32 LightingReviewStep = -1, LightingReviewShot = -1;
 	bool bLightingReviewPower = false;
 	double LightingRunTime = 0, LightingLogTime = 0;
+	int32 AtmosphereReviewShot = 0; // opt-in two-frame wind evidence only
 	// lights, per area
 	struct FLightRef { TWeakObjectPtr<ULightComponent> L; FString Area; float Base = 0; FString Uuid; };
 	TArray<FLightRef> Lights;

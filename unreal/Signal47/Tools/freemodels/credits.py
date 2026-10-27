@@ -75,7 +75,9 @@ def main():
 	txt += ['', 'Daytime sky photography, CC0:', sky_credit,
 		'', 'Additional licensed environment assets (Fab):']
 	txt += [credit + ', ' + pack['url'] for credit, pack in zip(route_credits, route_packs.values())]
-	txt += ['', 'Music, sound and fonts are credited in the game\'s end credits.', '']
+	txt += ['', 'MetaHuman character and hair assets: Epic Games, https://www.metahuman.com/',
+		'Original waitress uniform and native integration: SIGNAL / 47.',
+		'', 'Music, sound and fonts are credited in the game\'s end credits.', '']
 	open(os.path.join(PROJECT, 'CREDITS.txt'), 'w', encoding='utf-8').write('\n'.join(txt))
 	print('S47FREE credits: %d CC BY, %d CC0' % (len(by), len(cc0)))
 

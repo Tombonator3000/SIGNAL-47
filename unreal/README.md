@@ -1,5 +1,11 @@
 # SIGNAL / 47 i Unreal
 
+[Samlet leveranseindeks og designbibel](../Docs/LOCAL_DELIVERIES_2026-10-27.md) bevarer lokale kilder, konsepter, bilder og historiekvitteringer. Samlingen publiseres på egen kildegren; den er ikke en ny spillutgave.
+
+Atmosfærepasset er lokalt installert i R1 med MetaHuman bevart: myk kveld/nattlyd, svak vind i detaljgress og færre småsteinskygger. FSSS er sammenlignet med faktiske bilder/GPU-tid og forblir av. Fem målrettede rendererprøver, installert Low med tale/pause/lasting og bevarte personlige lagringer består. [Atmosfærerapporten](ATMOSPHERE_2026-10-27.md) har presist omfang og begrensninger.
+
+MetaHuman-servitrisen på Mesa Diner er lokalt installert i R3 med egen uniform, synlig hår, blikk/blunk og taleanimasjon på den faktiske lydklokken. Pakket samtale, pause og diskrestore samt installert Low-oppstart består. Alle personlige lagringer er bevart. [MetaHuman-rapporten](METAHUMAN_WAITRESS.md) beskriver resultat, bilder og videre visuell polering. GitHub-nedlastingen er fortsatt forrige terrengutgave.
+
 Terreng- og naturpasset er installert som R2: eroderte fjellformer erstatter de store trappetrinnene, og sju sammensatte naturpartier langs ruten bruker utvalgte steiner, grus og tørre planter fra de eide Fab-pakkene. Seks faktiske sluttbilder og en 2,62 km kjøretur med inngang, telefon og lagring/lasting består. Godkjent dag-/nattehimmel og alle personlige lagringer er bevart. [Terrengrapporten](TERRAIN_ROUTE_2026-10-26.md) beskriver kilder, avgrensning og nøyaktig leveringsstatus.
 
 Andre visuelle steg er installert: tolv utvendige SARO-armaturer er erstattet med tre originale Blender-modeller, med detaljerte hus, fester og diffusorer. Faktiske Unreal-lys sitter i åpningene, og montering ved vegg/tak er rettet. Fem målrettede sluttbilder bekrefter nærutseende og strøm av/på. Dag-/nattehimmel og personlige lagringer er bevart. [Nærdetaljrapporten](NEAR_DETAILS_2026-10-26.md) beskriver R4 og nøyaktig leveringsstatus.
@@ -53,7 +59,7 @@ Xbox-styring er lagt til med analoge stikker, biltriggere og menyer/paneler. Se 
 
 ## Last ned på en annen Linux-maskin
 
-[Linux-testutgave 23. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-23). Repoet og utgivelsen er private; logg inn med en GitHub-konto som har tilgang. Last ned begge ZIP-filene under Assets, pakk dem ut i samme målmappe og start `Signal47-Linux/Play.sh`. `Play-Low.sh` gir 1280 x 720, Low og Clean. Utfyllende instruksjoner og kontrollsummer følger utgivelsen. Steam Deck/SteamOS og gamepad er ikke testet. Pakken inneholder ingen personlige lagringer, logger eller innstillinger.
+[Linux-testutgave 26. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-26) er offentlig og inneholder samme spillbinær og innhold som installert terreng-R2. Last ned begge ZIP-filene under Assets, pakk dem ut i samme målmappe og start `Signal47-Linux/Play.sh`. `Play-Low.sh` gir 1280 x 720, Low og Clean. Samlet nedlasting er 3,47 GB. Utfyllende instruksjoner og kontrollsummer følger utgivelsen. Andre PC-er og Steam Deck/SteamOS er ikke kontrollert med denne pakken. Ingen personlige lagringer, logger eller innstillinger følger med. MetaHuman er fortsatt separat arbeid.
 
 ## Kom i gang
 

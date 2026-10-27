@@ -67,6 +67,8 @@ public:
 	TOptional<FBreathing> Breathing() const;
 	/** Single crickets chirping now, near the listener (tests). */
 	int32 CricketsNow() const;
+	/** Circadian regression checks for the extended evening and restored daily clocks. */
+	static bool SelfTest(TArray<FString>& Lines);
 
 	/** Where the listener is: outside, indoors (muffled) or in the cab (under the engine). */
 	void SetSpace(const FString& InSpace);

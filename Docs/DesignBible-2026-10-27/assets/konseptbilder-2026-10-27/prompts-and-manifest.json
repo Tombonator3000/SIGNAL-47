@@ -1,0 +1,50 @@
+{
+  "tool": "built-in image_gen",
+  "purpose": "Konseptbilder for Toms bestilling om bedre motelleksteriør og dinerinteriør. Ikke runtimebilder eller ferdige spillmodeller.",
+  "library_reference": {
+    "path": "/home/tom/.local/share/prosjektbibliotek/ressurser/x-2096101381925114327.md",
+    "status": "UNVERIFIED",
+    "use": "Kun prinsippet om eksisterende spillbilde som utgangspunkt og konsept som visuelt mål. Ingen kode eller ytelsespåstander gjenbrukt."
+  },
+  "images": [
+    {
+      "name": "01-sierra-motor-court-eksterior.png",
+      "source": "/home/tom/.codex/generated_images/01a17837-cbb2-7a03-9f07-374f984d752a/exec-4335e2cb-78fb-494d-8c35-b79ccb2c6a18.png",
+      "reference": "/home/tom/scratch-bm/Signal47-production-models/M6-town-shots/day-motel-court.png",
+      "prompt": "Use case: historical-scene.\nAsset type: production environment concept art for SIGNAL / 47, intended as a precise visual target for original Blender modeling.\nCreate ONE highly realistic wide landscape architectural concept image of SIERRA MOTOR COURT, a small inexpensive eight-room roadside motel in rural New Mexico in 1986. Use the supplied game screenshot only as a reference for the building vocabulary: single storey, flat roof, warm faded cream stucco, a muted deep green/teal covered walkway and room door/window trim. This is a major realism redesign, with a NEW wide camera showing the whole usable courtyard from its entrance, at standing eye height, 28mm architectural lens, straight verticals.\nThe motel must make practical spatial sense: a clearly recognizable glass-fronted reception at the near end of one long eight-room accommodation wing; an uninterrupted covered concrete pedestrian walkway immediately outside all room doors, supported by narrow properly anchored steel columns; parking bays in front separated from the walkway by curb stops; a clear unobstructed vehicle drive aisle and a believable entrance from the roadside. Doors and paths never blocked by cars or props. A modest small existing motel pool can appear at the far side behind a low safe wire fence, only if it fits the courtyard naturally; keep architecture compact and economically plausible. A modest freestanding 1960s-style sign near the entrance reads exactly \"SIERRA MOTOR COURT\"; a small sign at reception reads \"OFFICE\". Room numbers are discrete plaques, including 6, never huge graphic labels.\nOne realistic ordinary late-1970s American four-door sedan is prominent in the near parking bay, sun-faded pale blue paint, believable stamped curved body panels, chrome bumpers, real inset headlamps, detailed rubber tires with simple hubcaps, clear window glass with a visible cabin, correct wheel spacing, dusty lower body and strong natural tire contact. No brand logos. It must look like a real parked car with restrained wear, not a low-poly prop, not a muscle car or pristine collector's vehicle. Another subdued period pickup may be far in the background only if it improves scale; do not crowd the court.\nRich restrained realism: slightly warped but sound fascia boards, roof flashing and downspouts where practical, patched sun-baked asphalt with subtle oil stains in parking bays, dusty seams and natural gravel shoulders, utility meters neatly placed on service wall, wall air-conditioning units under room windows with realistic grills and runoff staining, actual small shaded wall luminaires above doors, textured curtains behind real glazing, two simple metal chairs tucked beside an occupied room, a small ice machine alcove near reception, native sparse yucca/sage scrub growing in natural clusters at boundaries. Maintained but tired, open for business, no apocalypse, no abandoned junkyard, no decorative clutter.\nLate-afternoon natural desert light, readable soft shaded walkway, warm light visible in reception, clear blue sky with small believable high clouds, distant eroded New Mexico hills. Ground materials and buildings must feel tangible and scale-correct. Photorealistic location photograph quality with cinematic composition, subtle investigative-game atmosphere. No people required. No HUD, no debug text, no arrows, no split panels, no collage, no watermark. The image is a concept, not a screenshot.",
+      "modeling_priorities": [
+        "Troverdig perioderiktig sedan med ordentlig karosseri, glass, hjul og interiør",
+        "Tydelig resepsjon og sammenhengende overdekket gangvei",
+        "Parkering og kjørebane som fungerer sammen uten å sperre dørene",
+        "Materialdybde, slitasje, faktiske armaturer, AC-enheter og naturlige terrengkanter"
+      ],
+      "limitations": "Komposisjon og skiltplassering er et designforslag. Endelige mål, nummerrekkefølge og siktlinjer må bindes til eksisterende spillkoordinater ved modellering.",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "fae77786b2639bbca7f76e031ac8f7106c6c93dcc641fa747b9495f70ae123b5",
+      "saved_path": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder-2026-10-27/01-sierra-motor-court-eksterior.png"
+    },
+    {
+      "name": "02-mesa-diner-interior.png",
+      "source": "/home/tom/.codex/generated_images/01a17837-cbb2-7a03-9f07-374f984d752a/exec-36ebac9a-8a30-454f-be4c-696a87c4b544.png",
+      "reference": "/home/tom/scratch-bm/Signal47-mesa-diner/d2-test-interior.png",
+      "prompt": "Use case: historical-scene.\nAsset type: environment concept art as an original Blender modeling target for SIGNAL / 47.\nCreate ONE beautifully realistic wide landscape interior photograph concept of MESA DINER in rural New Mexico in 1986. The supplied game screenshot is the architectural layout reference, not a quality reference. Preserve its narrow rectangular room and clear spatial arrangement: full-height street windows and a line of red upholstered dining booths on the LEFT; a long counter with red round stools on the RIGHT; a generous continuous central aisle leading to the existing rear circulation doors. Preserve the recognizable teal tiled counter front, cream walls and black/off-white checkerboard floor. Rebuild the visual design at convincing real-world detail and scale. Camera from the entrance at eye level, 26–28mm lens, straight verticals, broad clear view of booths, counter, service area, ceiling and back wall. Single image, no collage or captions.\nThis is an operating inexpensive local diner, lived in and cared for, slightly tired, not a glamorous new restaurant and not an abandoned ruin. Give every fitting thickness, joints and credible assembly: red vinyl booth upholstery with rounded padded backs, sewn seams and mild creasing, dark timber booth bases, off-white laminate tabletops with aluminum edging, small metal wall coat hooks; fixed counter stools with realistic circular padded cushions and chrome stems/footrests screwed to the floor; a generous cream laminate countertop with a rounded metal edge; imperfect small teal ceramic wall tiles with believable grout, edges and localized repairs. Keep a usable service aisle behind the counter and a coherent pass-through to a compact kitchen with stainless surfaces, stacked white plates and cups, a coffee brewer with glass carafes, a pie dome and period mechanical/electromechanical cash register. Working coffee station near counter center; simple corded telephone at its own visible service-side spot. Nothing floats or blocks either aisle.\nBooth tables have sparse deliberately placed ceramic coffee cups, folded paper menus, napkin dispensers and salt/pepper shakers, no mess on every surface. A modest paper specials board behind the counter reads \"MESA DINER\", \"COFFEE\", \"PIE\", \"GREEN CHILE STEW\". Do not add modern electronics, flat screens, touchscreens, designer furniture, luxury fittings, neon everywhere or product logos. Avoid excessive nostalgic memorabilia and random decorative clutter.\nLight is the big improvement: soft warm late-afternoon desert daylight through the windows, grazing booth upholstery and checker floor; believable shaded glass pendant lights over the booths, warm opal counter pendants with realistic mounts, subtle ceiling fluorescent fixtures providing gentle service-area fill. The interior must be comfortably readable with natural contrast, detailed shadows, restrained highlights, no blown-out bulbs or black voids. Ceiling is real slightly aged acoustic tile with fine T-bar grid and modest vents. Street through glass remains a quiet small Southwestern main street and desert hills. Accurate material roughness, minor floor wear concentrated at foot traffic, subtle fingerprint/scratches on steel and glazing, clean but lived-in. No people, so the interior can be judged clearly. Photorealistic architectural/location photography, atmospheric restrained cinematic game art direction. No HUD, no debug text, no notes on screen, no watermark. This is concept art, not proof of a completed game model.",
+      "modeling_priorities": [
+        "Polstrede vinylbåser med sømmer, runde kanter og tydelige materialskiller",
+        "Troverdig disk, krakker, kaffestasjon og serviceområde",
+        "Lesbart dagslys og realistiske praktiske lys",
+        "Bevare vinduer til venstre, disk til høyre og fri gangakse samt eksisterende interaksjoner"
+      ],
+      "limitations": "Fotografisk material- og lysmål. Spillbar bredde, interaksjonspunkter, gulvruhet og eksakt menyplassering må verifiseres i modellen.",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "bbd4a3dc721525a43cc9f3e5b147101a47800535cd06149109206261f2fed6ba",
+      "saved_path": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder-2026-10-27/02-mesa-diner-interior.png"
+    }
+  ],
+  "created_at": "2026-10-27T10:36:51.514256+01:00"
+}

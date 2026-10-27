@@ -689,3 +689,12 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
  MealCheck(SupperRestored.Load(SupperSaved,SupperError) && SupperRestored.Flag(TEXT("food_taken")) && SupperRestored.Flag(TEXT("food_eaten")) && !SupperRestored.EatTakeaway(),TEXT("save restore cannot create a second serving"));
  return FS47Takeaway::SelfTest(Lines) && Valid;
 }
+
+bool FS47Evening::PhysicalSpeech(FString& Clip, double& Seconds) const
+{
+ Clip.Reset(); Seconds = 0;
+ const FS47EveningScene* S = bEnabled ? Pack.CurrentScene() : nullptr;
+ const FS47EveningLine* L = S ? Pack.CurrentLine() : nullptr;
+ if (!S || S->Channel != TEXT("physical") || !L || !L->bRecord || L->VoiceProfile != TEXT("waitress") || !Voice) return false;
+ return Voice->ActiveClip(Clip, Seconds);
+}

@@ -1,10 +1,28 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Reposamling, 2026-10-27 kl. 14:46 CET
+
+Tom ba om alle lokale leveranser og designbibelen fra `01a17d06-3c66-78f3-b21b-b784af2cc91a`. Samlet på `codex/local-deliveries-design-bible-20261027`, med [felles indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md), 42-siders PDF, redigerbare kilder og manglende konsepter/rapporter. MetaHuman-/atmosfærekildene er bevart. SC01-kilden finnes allerede eksternt på dbae3177; kvittering og kildeindeks er samlet, uten å overskrive nyere runtime. Ingen ny spillrelease, installasjon eller full merge-matrise inngår i arkiveringen.
+
+## Atmosfære og ytelsesrom levert lokalt, 2026-10-27 kl. 13:12 CET
+
+Punkt 5 er levert i samlet atmosfære-R1, med MetaHuman R3 bevart. 1 435 steiner under 12 cm er skilt i to skyggeløse batcher; øvrige skygger og alle modell-/LOD-avstander er bevart. Eget detaljgressmateriale gir svak vind uten ny tre-/busk-WPO. Lydens feil kveldskjøling og hopp ved kl. 21 er rettet med myk nattfase. FSSS er faktisk sammenlignet og forblir av: lite bildeutbytte for omtrent 0,34 ms ekstra GPU-tid i SARO-utsnittet. Fem avgrensede rendererprøver, sju kandidatbilder, 1 593 selvtester og installert Low med tre faktiske replikker/pause/diskrestore består. Identisk R1 er installert; alle 50 personlige Saved-filer er uendret. To eldre MetaHuman-mellompayloads er canonical-prunet med SC01-R4 beskyttet. [Rapporten](ATMOSPHERE_2026-10-27.md) skiller målte utsnitt fra uattestert helruteytelse. Fremdrift/bevis i `~/scratch-bm/Signal47-atmosphere-20261027/ownership.json`. Ingen ny offentlig release eller merge. Begge oppfølgingens leveranser er ferdige, og oppfølgingen er slettet i appen; samtalen beholdes. Ikke start dette eller Claude-bootstrap på nytt.
+
+## MetaHuman-servitrisen levert av Codex, 27.10.2026
+
+Tom ba uttrykkelig Codex overta. Claude-øktene og de gamle venteløkkene er avsluttet; kilder før overtakelse er sikret i `takeover-codex/baseline`. Talevalg/lydklokke, ansiktskurvekobling, tomgang og blikk er rettet. Original uniform V5 og rigid hårkortfrisyre er synlig i faktisk pakket R3. Tre reelle replikktakes, 1 586 selvtester, pause og diskrestore med én figur består; fem High-bilder er faktisk vurdert. R3 er lokalt installert med identisk payload og 50 personlige Saved-filer bevart. Standardstarter på Low består åtte kontroller. Canonical prune er utført med SC01 beskyttet. [MetaHuman-rapporten](METAHUMAN_WAITRESS.md) skiller levert figurpilot fra videre stoff-/portrett-/gestepolering. Ingen ny GitHub-spillutgave eller merge. Eierskap er `metahuman_delivered` i `takeover-codex/ownership.json`; punkt 5 er nå også levert som dokumentert øverst. Ikke start Claude, Creator eller gammel integrasjon igjen.
+
+## Avtalt videreføring etter MetaHuman, 26.10.2026 kl. 23:18 CET
+
+Tom har bedt Codex kontrollere jevnlig og fortsette automatisk når Claude er ferdig med MetaHuman. Aktiv oppfølging i denne samtalen, `fortsett-signal-47-etter-metahuman`, kontrollerer hvert 15. minutt. Faktisk ferdigmelding/leveringsbevis og frigitt Unreal kreves; et ledig øyeblikk mellom jobber teller ikke som ferdig. Neste avgrensede arbeid er punkt 5 «Atmosfære og ytelsesrom» i grafikknotatet, med bevaring av Claudes leveranse, godkjent himmel/natt og personlige lagringer. Oppfølgingen stopper når dette punktet er levert. Ingen ny spillutgave publiseres automatisk.
+
 ## Terreng og natur langs ruten, 26.10.2026
 
 Tom ba uttrykkelig om flere agenter for punkt 3. Runtimehjelperen leverte sju naturpartier, målt kontakt/kollisjon og terrengskjøt; assethjelperen valgte åtte eide Fab-modeller og leverte privat PBR-import/proveniens; QA kjørte alle tunge jobber sekvensielt og håndterte installasjon/opprydding. Codex eier original geologi, integrasjon, bildeaksept og dokumentasjon. R1 ble avvist etter faktiske bilder og konkrete UV-/kredittfeil. R2 har forbedret fjernprofil, varmere flekkgrus og sammenhengende klippefot. Seks faktiske bilder og 2,62 km kjøre-/gangkontroll består. Identisk R2 er installert med 68 payloadnoder og 70 Saved-noder/50 filer bevart. Standardstarter består tolv kontroller; canonical prune er utført med to eldre pakker og særskilt beskyttet SC01 beholdt. [Terrengrapporten](TERRAIN_ROUTE_2026-10-26.md) har nøyaktig sluttstatus. Ingen ny PR/push eller arbeid på separat SC01/MetaHuman.
 
-## Én ordentlig person (MetaHuman), Claude, startet 26.10.2026 kl. 20:40
+## Historisk MetaHuman-plan fra Claude, startet 26.10.2026 kl. 20:40
+
+Dette er opprinnelig arbeidsdeling. Den er overtatt og erstattet av Codex-leveransen øverst; ingen aktiv Claude-jobb gjenstår.
 
 Tom ba Claude hjelpe Codex med punkt 4 i prioriteringen: én MetaHuman med passende klær, blikk, pust, kroppsspråk og taleanimasjon i et faktisk møte. Claude eier dette punktet; Codex fortsetter terreng og natur (punkt 3) uforstyrret. Valgt person er servitrisen på Mesa Diner, fordi hun er den eneste personen spilleren møter ansikt til ansikt med innspilt stemme (43 takes, I02 til I15). Målbildet er det eksisterende portrettet `portrait_waitress`.
 

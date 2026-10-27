@@ -1,0 +1,64 @@
+SIGNAL / 47: UI og menyer, 24. oktober 2026
+
+Åpne GALLERI.html i en nettleser. Galleriet virker uten nett.
+Fem før/etter-glidebrytere sammenligner faktisk Unreal med nye konsepter.
+NYE-KONSEPTER.jpg er et samlet bilde av de fem nye forslagene.
+
+Leveranse
+  nye/: fem konsepter laget med innebygd image_gen.
+  skjermbilder/: 21 faktiske runtime-bilder med tilhørende opptakslogger.
+  tidligere/: sju gjenfunne UI-/menyutkast og eldre evidence UI-konsept.
+  prompts.json: alle fem fullstendige prompter og originalfiler med SHA-256.
+  capture-manifest.json: opprinnelse, tidspunkt og kontrollsummer for førbildene.
+  tidligere/recovery.json: kilde til de gjenopprettede arkivbildene.
+  tidligere/kildeutdrag/: historiske HTML-Write-utdrag. Disse er arkivfragmenter,
+  mangler enkelte støttefiler og senere redigeringer og er ikke en kjørbar prototype.
+
+Førbildene
+Den eksisterende testkjøringen tok disse bildene 24. oktober omtrent kl. 13:49 til
+14:04 lokal tid. De er kopiert fra Signal47-cloud-completion/screenshots-full.
+Dette oppdraget startet ikke en ny Unreal-prosess mens den testen brukte maskinen.
+Bildene kommer fra final-build-testpakken, ikke en ny opptaksøkt av installasjonen.
+Alle 21 tilhørende logger inneholder smoke test OK. Dette er automatiske
+runtime-opptak med scenariostyring, ikke bevis på menneskelig gjennomspilling.
+
+Gjenfunne bilder
+Startmeny, settings, pause, lasting, HUD, notatbok og dokumentvisning ble
+gjenopprettet fra opprinnelige bildeutdata i Claudes lokale samtalearkiv.
+Det eldre evidence UI-bildet kommer fra SIGNAL-47/Docs/VisualTargets/Concept11.
+Historiske datoer, innhold og UI-tilstander er bevart.
+
+Designretning
+Mer analogt arbeidsmiljø fra 1986, tydeligere hierarki, kremfarget skrift,
+dempet ravlys og sotgrønt metall. Behold rom og praktiske lyskilder. La mørke,
+fravær og motstridende fotografiske observasjoner skape uro.
+Legg filmtekstur i miljøet, og hold kritisk UI-tekst skarp.
+
+Bildene er konseptforslag. Ny forhåndsvisning, kalibreringsfelt, horisontale
+notatbokfaner og notatkort er ikke implementert. HUD-oppgavepåminnelsen er
+et forslag som må vurderes mot ønsket mengde spillerveiledning. SAVE/LOAD,
+opplesning og tilgjengelighetsvalg må ivaretas i et eventuelt senere UI-pass.
+Illustrerte eksempelverdier og tekster er ikke nye spillkonstanter eller manus.
+Ingen spillkode, modeller, lagringer, innstillinger eller installasjon er endret.
+
+Bibliotek
+Prosjektbiblioteket ble søkt før verktøyvalg. Profilen
+ressurser/x-2046816867034243134.md (genererte grensesnittutkast, UNVERIFIED)
+ble lest som referanse til konseptarbeidsformen. Ingen teknisk løsning ble gjenbrukt.
+losninger/testing/playwright-swiftshader-three-lokalt.md (PASS i opphavet)
+gjelder three.js, og ble ikke brukt til Unreal. Prosjektets eksisterende
+opptaksrutine og de ferske runtime-opptakene styrte førbildene.
+
+Kontroll
+Alle fem bildeutdata er visuelt gjennomgått. Galleriets lokale fillenker,
+førbildenes kontrollsummer og alle 21 smoke-markører er kontrollert.
+
+Tillegg: NPC-dialog, 24. oktober 2026
+  nye/06-npc-dialog.png: samtale med THE ATTENDANT i Caliche.
+  Replikk og samtaleemner fra eksisterende S47Caliche.cpp.
+  Samme ravlys, kremfargede skrift og dempede 1986-uttrykk som øvrige konsepter.
+  Sjette konsept ligger i galleriet. Samlebildet NYE-KONSEPTER.jpg viser fortsatt de fem opprinnelige.
+  Full prompt: npc-dialog-prompt.txt og prompts.json. Innebygd image_gen.
+  Bibliotekreferanse: ressurser/x-2046816867034243134.md, UNVERIFIED;
+  brukt som inspirasjon til bildebasert UI-konsept, ingen teknisk løsning gjenbrukt.
+  Dette er et generert forslag, ikke et nytt runtime-opptak.

@@ -1,0 +1,259 @@
+{
+  "mapping": [
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder-2026-10-27/01-sierra-motor-court-eksterior.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder-2026-10-27/01-sierra-motor-court-eksterior.png",
+      "sha256": "fae77786b2639bbca7f76e031ac8f7106c6c93dcc641fa747b9495f70ae123b5"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder-2026-10-27/02-mesa-diner-interior.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder-2026-10-27/02-mesa-diner-interior.png",
+      "sha256": "bbd4a3dc721525a43cc9f3e5b147101a47800535cd06149109206261f2fed6ba"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder-2026-10-27/prompts-and-manifest.json",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder-2026-10-27/prompts-and-manifest.json",
+      "sha256": "24cde2a22504cef7ac3a08364955a424590a9911133b7b567aea9ee57ac4fc56"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-23/Caliche-byen.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-23/Caliche-byen.png",
+      "sha256": "018ef5239fcd639f24520418be917011464f69f5ea2910d65f0d223b64f3e92c"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-23/Mesa-Diner.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-23/Mesa-Diner.png",
+      "sha256": "47fff1fecf2ee4b37c488a8a975e2ae5c4626057567e18a93a9ec1e36e0f3e3f"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-23/prompts.json",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-23/prompts.json",
+      "sha256": "e551ccb69730befa13ff54a1d7e2a9a21c09f80841f9a78a9b5cc6203922d6ae"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-25-ku/ku-dod-endelig.png",
+      "repo_path": "unreal/ArtSource/Cows/Concepts/ku-dod-endelig.png",
+      "sha256": "92123904f5f8fe80cf146974424af9e59970bce36507f4fc6f2e7d0997535fca"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-25-ku/ku-dod-etter-bortforing.png",
+      "repo_path": "unreal/ArtSource/Cows/Concepts/ku-dod-etter-bortforing.png",
+      "sha256": "fa7f3027fd330029b020416ff1ccee13759b4bd047eeab28c6fdda4f162605a4"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-25-ku/ku-levende.png",
+      "repo_path": "unreal/ArtSource/Cows/Concepts/ku-levende.png",
+      "sha256": "b673177cdbb4a1c4af2d92aa0e2a394b23f516ec6ae5ee1bc4d7870821626da8"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-25-ku/prompts.json",
+      "repo_path": "unreal/ArtSource/Cows/Concepts/prompts.json",
+      "sha256": "03f19ca3e99b3d32d0399ac0078df150868604c1a3e404ea4cebe8c4444246c5"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/resultater/ankomst-og-kontor/besoksparkering.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/resultater/ankomst-og-kontor/besoksparkering.png",
+      "sha256": "79cdc4bb7de435105a4516203789b43e2c793fac65b218ba48cabbf07d198e46"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/resultater/ankomst-og-kontor/dales-kontor.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/resultater/ankomst-og-kontor/dales-kontor.png",
+      "sha256": "14ea88a7e69e980b302eb588cfaf9cc3c0fb5ee0d65df2a21d018b43ccb6ca92"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/GALLERI.html",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/GALLERI.html",
+      "sha256": "3d88e698e5669f43344e9be102c6637a28bf4328d9f10e04775f717d575bac1f"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/capture-manifest.json",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/capture-manifest.json",
+      "sha256": "cd6e4435e0d1d1235e53f099dce44c8e879b2810e17c520273ea22113bb967f7"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/nye/01-startmeny.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/01-startmeny.png",
+      "sha256": "4ca6acf7440692f55a5c852e02e341ed25e23a0087aa5805721944f652eeb5ed"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/nye/02-options.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/02-options.png",
+      "sha256": "d7de0821fc042e0a32523b5578e7f4f7417bd295fb18d9efe8f963ac60dd0c5b"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/nye/03-gameplay-hud.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/03-gameplay-hud.png",
+      "sha256": "da3a3fc65e48949eacf95dd62b50dca5b775eb730a121a7b6f555fb3fa9967de"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/nye/04-notatbok.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/04-notatbok.png",
+      "sha256": "61c59bc477d7f6a6e3d80434fe637b5f77ab6fb35274f58619b70d0f7823c821"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/nye/05-pause.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/05-pause.png",
+      "sha256": "67991011180c3b892af203bb50407c1fe00521eacf40155edb6a1d41cb54eb55"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/nye/06-npc-dialog.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/06-npc-dialog.png",
+      "sha256": "1521fbe4379600e5acafaa14aff39133223bd7557e5b5dc3efeaf54fb84439b9"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/prompts.json",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/prompts.json",
+      "sha256": "006b3e08497d3ea698de022359c78324079b43ff91b3c277888f614bac6b29fc"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/board.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/board.png",
+      "sha256": "c5578890cb29276d88dccc85a27d1dcc6890c4449844f2dab60f255b5ea1495d"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/console.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/console.png",
+      "sha256": "0862b5be8fde74c26791ed4b62c5fbcf4bd819e5fe1b838f38ab07e198dc7df2"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/load.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/load.png",
+      "sha256": "dcd972042a750935147a58dbba1bdf655f69c9818b97d35ada4670f137bcfcda"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/notebook-findings.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-findings.png",
+      "sha256": "cc98f50265dc7374afc85fb88e2f094eee6724a82055e6ea5a3703b9ce645cdc"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/notebook-kit.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-kit.png",
+      "sha256": "0712ff0a1be34bc5406bae80d4cb472c00bcf316134d3c15a3e275d04ad98690"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/notebook-map.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-map.png",
+      "sha256": "5a71b1b4d3a529f83ad0d06e3386fac8a18543f25d44911b12478a809c0494fc"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/notebook-notes.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-notes.png",
+      "sha256": "479400dfd3b7a8136b4ce62e4d0c9122c0fe648982f6d31d22ea0220f897112d"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/notebook-photos.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-photos.png",
+      "sha256": "296a7ac19d0eb2c65566aa41e12284bfe3b11a880c6a5dc8ce828c3e4e6a2cf0"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/notebook-tasks.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-tasks.png",
+      "sha256": "9c99ac5a09675bffbcf57b0c50f9be6d9aba7587748bdd48013c0312d4454bdd"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/ops.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/ops.png",
+      "sha256": "44aae6ef9fb6ee7931ae984e21c4ee5d760a3d52db00229989309f7a29f455c1"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/paper-typed.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/paper-typed.png",
+      "sha256": "3320c77126912934e50d393d87838c70d7deb4f7fcc219601f841f897ef7610c"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/pause.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/pause.png",
+      "sha256": "712ed4fe521bf5b8eb6874c0cc9327b9e43a10ca453f9e84cf4453596639a5fb"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/room.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/room.png",
+      "sha256": "1a8f9595fbf023c26e15893b17b46ea6605185e8d88d7ec68211d4c2bacc5028"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/save.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/save.png",
+      "sha256": "02e375c362ffb041adf95b973cc5b62dc305efb041df06478d3d876e6a5c686f"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/settings-accessibility.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-accessibility.png",
+      "sha256": "7563d5cc3d987156870afea6a8cbc66e24cde39ce9ed7670c5fdc57c216031ac"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/settings-controls.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-controls.png",
+      "sha256": "14257170ee281666ba7b46f7aafbf035ca7997dffa7d9a7771289cc049dfde19"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/settings-game.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-game.png",
+      "sha256": "2d382adad2c4afcd0a056555d8cdaaf7f7f1e8302b5b41fc6350e288f60f0734"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/settings-picture.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-picture.png",
+      "sha256": "c166b495b95e02168666936218d9b7c684f8ac2cad0d72be16f002a11a7388a0"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/settings-sound.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-sound.png",
+      "sha256": "92671d7870463f4f288bba28bf3381800404c9164af8eefe833507399bda5ad7"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/settings-voices.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-voices.png",
+      "sha256": "658765abc4d0fd9d9c91b17a92f3049b1e7bf82187e734164811e8febd806047"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/skjermbilder/title.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/title.png",
+      "sha256": "e9067e2c3a6a51f101f7761a8ce34bbd343e71b0ea140171039fe21931f928c4"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/08-evidence-ui.png",
+      "repo_path": "Docs/VisualTargets/Concept11/08-evidence-ui.png",
+      "sha256": "372dccbfa2cc04d3e8aefcefac41c6c69d4445d4d24a380cfd4649d4fd4917c9"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/document.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/document.png",
+      "sha256": "cadd5ed43de881eea098cfb8d73ff92d8c0abe4effcc7537dc049c2bcc3b61f8"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/hud.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/hud.png",
+      "sha256": "06448d3d75d6ef88af5cc2132e84748bd236a22bd78da314585b328038a58fd0"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/load.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/load.png",
+      "sha256": "c2bae2c746170e3ece866bc6934f16bafffb83221ef341b831d1411d68bf94d0"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/notebook.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/notebook.png",
+      "sha256": "15bf997a958ccbaf873d28561f39c063a5225003941f476f77272996460525e4"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/pause.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/pause.png",
+      "sha256": "fc76849d83d06005517afa6cfe1d2437e43499457200e6382500c6e7a44cd058"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/recovery.json",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/recovery.json",
+      "sha256": "c5970178d7f8755871dab47a9c68c8db0d0bd023d8ec66976a29340da418f4f1"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/settings.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/settings.png",
+      "sha256": "2e436d433df3dff19993c9aea791f0f8e5d1202838d5f5427afdea707bc56267"
+    },
+    {
+      "source": "/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-24-ui/tidligere/title.png",
+      "repo_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/title.png",
+      "sha256": "9867cecfaa22d6f44cd28ef9ab9a63ac80a01352848174cafb7edbcb1c20336a"
+    }
+  ]
+}

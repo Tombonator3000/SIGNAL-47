@@ -1,5 +1,27 @@
 # Minne for unreal/
 
+## Atmosfærepass ferdig, 2026-10-27 kl. 13:12 CET
+
+- Gjeldende lokale standard er atmosfære-R1 med MetaHuman bevart. 1 435 sub-12cm steiner har ikke direkte skygge; større steiner/planter/bygg og modellavstander er beholdt. Grass_A/B bruker egen svak WPO, uten endring av den delte tre-/buskmatten eller eksisterende runtimeflora.
+- Kveldens lydmodell hadde feil kulde før kl. 21 og et temperaturhopp. Kontinuerlig kveld og myk nattfase er rettet; eksisterende nattkurve, innendørsdemping og historieporter beholdes. Sju nye regresjoner består i samlet 1 593-selvtest.
+- Fem målrettede Vulkan-prøver og sju kandidatbilder består. FSSS forblir av etter faktisk bilde-/GPU-sammenligning: omtrent 0,34 ms ekstra uten tydelig bildeutbytte. Småsteinssammenligningen ga bare 0,065 ms forskjell, ingen robust helrute-/FPS-gevinst hevdes. Se [rapport](ATMOSPHERE_2026-10-27.md).
+- R1 er installert byteidentisk. Standardstarter på Low består ni kontroller med tre faktiske replikkklipp, pause, ansiktsrigg og diskrestore. Alle 70 personlige Saved-noder/50 filer er uendret. Canonical prune har pensjonert to eldre mellompakker; R1, to gamle fungerende R3-kopier og beskyttet SC01-R4 beholdes. Kilder/assets/Saved/bevis bevares.
+- MetaHuman og punkt 5 er ferdig levert lokalt. Oppfølgingen er slettet i appen; samtalen er beholdt. Ikke gjenstart Claude, gjør dobbel implementering eller publiser ny spillutgave automatisk. Finere figur-/diner-/motelpolering og separat SC01 er egne senere arbeider.
+
+## MetaHuman levert lokalt, 27.10.2026 kl. 12:32 CET
+
+- Codex overtok etter Toms direkte bestilling. Gamle Claude-økter og ventere er avsluttet med kildene sikret. Gjeldende status er `metahuman_delivered` i `~/scratch-bm/Signal47-metahuman-20261026/takeover-codex/ownership.json`. Ingen annen motorjobb ble stoppet.
+- R3 har fungerende MetaHuman med egen uniform, synlig rigid hårkortfrisyre, pust/blikk/blunk og tale på riktig aktive lydklipp. Kurver kopieres fra Body til Face/RigLogic. Alle 43 takes er assetvalidert; tre faktiske velkomstreplikker, pause og diskrestore med én figur er målt i pakket spill. Se [rapporten](METAHUMAN_WAITRESS.md).
+- Samme R3 er installert i standardstarteren. 68 payloadnoder og alle 70 personlige Saved-noder/50 filer er kontrollert; installert Low-oppstart består åtte kontroller. Fem High-bilder er faktisk åpnet. Ingen menneskelig input-/lytte-/FPS-påstand, full merge-matrise, ny release eller GitHub-merge.
+- Fem eldre genererte payloadsett er canonical-prunet. R3 og to eldre MetaHuman-pakker beholdes; SC01-R4 er særskilt beskyttet. Originaler, råassets, Saved, logger og bilder er bevart.
+- Gammel `integrate.py --apply` er sperret for å hindre overskriving fra gammel staging. Videre klær-/portrett-/gestepolering er åpent. Avtalt automatisk neste arbeid er punkt 5 atmosfære og ytelsesrom, med SC01, historie, dag/natt og Saved bevart.
+
+## Linux-nedlasting publisert, 26. oktober 2026 kl. 22:54 CET
+
+- [Testutgave 26. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-26) er publisert etter Toms bestilling for andre Linux-PC-er. To vanlige ZIP-er pakkes ut til samme Signal47-Linux-mappe; Play.sh starter spillet, Play-Low.sh gir Low/Clean/720p. Begge arkivene og tre metadatafiler er faktisk tilgjengelige uten innlogging.
+- Kandidat og installert runtime er hashidentiske med terreng-R2. 43 leverte filer er dekomprimert og SHA256-kontrollert, og GitHubs fem assetdigester/størrelser stemmer. Arkiver: 1 468 082 463 og 2 003 099 541 byte. Ingen Saved, cache, debug eller råassets følger med. Ingen ny motorjobb eller mottakermaskinprøve. Bevis/leveringsverktøy: /home/tom/scratch-bm/Signal47-download-2026-10-26.
+- PR170 er faktisk flettet 26. oktober kl. 22:15 CET, merge 0ee7c248033773907d4113c454432a7534819b4b. Den tidligere ventestatusen nedenfor er historikk. Fullmatrisen ble ikke kjørt på nytt; MetaHuman-prioriteringen er bevart. Nedlastingstaggen peker til denne mergen.
+
 ## GitHub-levering klargjort, 26. oktober 2026
 
 - Tom ba om fletting til GitHub. Samlet kildeleveranse er pushet på `codex/saro-visual-route-20261026` i [PR170](https://github.com/Tombonator3000/SIGNAL-47/pull/170). Nyeste main med dokument-/miljøbilder er flettet inn uten endring av testet spillkode eller produksjonsassets. De seks private tekstene er integrert; JPG-/UV-binding er fortsatt separat arbeid.
@@ -472,3 +494,18 @@ Installert i ~/Games/Signal47/Linux med 40 kontrollerte payloadhash og 51 Saved-
 - Eksisterende flora-krymping beholdes; usynlige instanser utelates.57 hovedstolper mot 82; 65 m spenn med faste avgreninger. Ingen FPS-garanti.
 - P1 elleve forløp og P2 målrettet sluttkontroll/1405 selvtester/36 vurderte bilder PASS. P2 avviker bare i rendertrim/audit; øvrige testinnganger er hashkontrollert. Samme P2 installert, 40 payloadhash og 40 uendrede Saved-filer; installert smoke PASS. Se VISITOR_PARKING.md og scratch-bm/Signal47-visitor-fix.
 - AGENTS.md og prune-test-builds.py gir gjeldende+to eldre testpakker. To gamle payloadkopier pensjonert, kilder/Saved/bevis bevart. Fysisk Xbox, full 110 og menneskelig fullnatt/lytting er uprøvd.
+
+
+## Privat Windows-byggpakke, 27. oktober 2026
+
+Tom aksepterte bygging på jobb-PC med Windows. Privat kilde-/innholds-ZIP fra terreng-R2 er levert på egen Drive: https://drive.google.com/file/d/15j_9gE8UQdCMEnGH_thU4_An7YkHRcrY/view?usp=drivesdk . 6 526 897 000 byte, faktisk nedlastbar og eierprivat. Dette er IKKE en ferdig Windows-spillutgave. Windows-kompilering/cook/oppstart/spilling er ikke prøvd. Brukeren må installere Unreal Engine 5.8.4 og MSVC/Windows SDK og kjøre Build-Windows.cmd i utpakket mappe. Kilde og 463 frosne assets er kontrollert; bare leveringskopien har Win64/DX12 SM6-tilpasning. Uferdig MetaHuman er ikke med. Gjeldende Linux-spill og personlige lagringer er uendret. Detaljer i log.md og /home/tom/Documents/ChatGPT/Signal 47/windows-byggpakke/delivery.json.
+
+
+## Fotoreferanser fra Tom, mottatt 27. oktober 2026
+
+Samlingen ArtSource/References/NewMexico-1980s-2026-10-27 er ferdig mottatt foreløpig: 14 unike originaler fra 15 opplastinger, med README og manifest. Brukes til Sierra, Mesa Diner, Caliche-fasader, gatefunksjon og kjøretøydetaljer. Originaler er lokalt Git-ignorert og skal ikke publiseres eller brukes direkte som spillteksturer. Skill flatskjerm/1994-/©2015-detaljer fra 1986. Bevar tydelige innganger, overdekkede gangveier, praktisk parkering og faktiske materialoverganger.
+
+
+## Reposamling, 2026-10-27 kl. 14:46 CET
+
+Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2cc91a` er samlet på `codex/local-deliveries-design-bible-20261027`. Se [samlet indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md). PDF er byteidentisk; kilder/bildeavhengigheter er med og identiske assets deduplisert. Ny MetaHuman-/atmosfærekode, egne verktøy og runtimebilder inkluderes. NP1/T02/SC01-kvitteringer arkiveres; SC01s dbae3177 er allerede på GitHub, men er ikke integrert i dagens main-baserte bygg. Ingen eldre runtime overskriver nyere levering. Lisensierte råassets, rålogger/private chatter og Saved utelates. Filhash/lenker kontrolleres; ingen ny tung jobb eller spillrelease. Full 110-matrise gjenstår før main-merge av samlet runtime.
