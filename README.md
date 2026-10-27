@@ -4,6 +4,18 @@ Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
 **Spill i nettleseren: https://tombonator3000.github.io/SIGNAL-47/** (PC og mobil, ingenting å installere)
 
+## Last ned og spill på Linux
+
+Den nyeste ferdige Unreal-utgaven for Linux x86-64 med Vulkan ligger under [Releases](https://github.com/Tombonator3000/SIGNAL-47/releases). Du trenger ikke Unreal eller kildekoden.
+
+Enklest: klon eller last ned repoet og kjør
+
+```sh
+./Spill-SIGNAL47.sh
+```
+
+Første gang laster skriptet ned de tre ZIP-filene fra utgivelsen (om lag 3,7 GB), kontrollerer dem med SHA256, pakker dem ut i `Spill/` og starter spillet. Senere starter det rett. Det krever `curl`, `unzip` og `sha256sum`. Vil du gjøre det for hånd, last ned alle tre ZIP-filene fra utgivelsen, pakk dem ut i samme mappe og kjør `Signal47-Linux/Play.sh`, eller `Play-Low.sh` på svakere maskiner.
+
 ## Nettversjonen i `web/`
 
 Fra 3. oktober 2026 bygges spillet videre som nettspill i [`web/`](web/README.md), med three.js, TypeScript og Vite. Prologen «Night Shift», kapittel 1 «The Second Exposure» (servicegården, S-03, feltkameraet, fotolaben og B-12) og kapittel 2 «The Amended Record» (arkivet bak kontrollrommet) kan spilles fra start til sluttkort i nettleseren, med mus og tastatur eller berøringskontroller. Forslag til veien videre står i [`web/FORSLAG.md`](web/FORSLAG.md). Spill den på https://tombonator3000.github.io/SIGNAL-47/. Den publiseres automatisk fra main med `.github/workflows/pages.yml`. Ytelse og berøring på ekte telefon er ikke testet ennå. Arbeid i mappen følger [`web/AGENTS.md`](web/AGENTS.md), og status står i `web/memory.md`, `web/todo.md` og `web/log.md`. Unity-prosjektet som beskrives under, er arkiv og referanse.
@@ -12,13 +24,9 @@ Fra 3. oktober 2026 bygges spillet videre som nettspill i [`web/`](web/README.md
 
 Ny [NightSky12-testkandidat](Docs/NIGHT_SKY_12.md) er bygget med en katalogbasert 8K-himmel og publisert som [utkast til PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8). Full spillerreise og ny ytelsesmåling venter på opplåst Kubuntu-skjerm. Standardstarteren nedenfor åpner fortsatt den verifiserte Visual10-utgaven.
 
-## Spill på Kubuntu
+## Spill Unity-arkivet på Kubuntu
 
-Start `./Spill-SIGNAL47.sh` i denne prosjektmappen. Startfilen peker fast på kapittelpakken `Artifacts/Releases/Visual10-eb0748660027/`, slik at et senere utviklingsbygg ikke endrer hva du åpner.
-
-Pakken kan også flyttes: pakk ut `Artifacts/Releases/SIGNAL47-Visual10-eb0748660027-Linux.tar.gz` og kjør `./Start-SIGNAL47.sh` i den utpakkede mappen. Arkivet bevarer kjørerettigheter. Spillpakkene er lokale leveranser; de følger ikke med et rent Git-klon.
-
-Velg **START NIGHT SHIFT** eller **CONTINUE CHECKPOINT**. WASD beveger, mus ser rundt, E bruker fysiske ting, Tab åpner notatboken og Escape lukker eller pauser. C åpner kamerasøkeren; Space eksponerer. Filmen må framkalles i den nordlige fotolaben før bildet kan undersøkes. Lydnivå, musefølsomhet og fullskjerm finnes i SETTINGS og lagres. Fullskjerm bruker skjermens opprinnelige oppløsning; vindusstørrelsen huskes.
+Unity-utgaven Visual10 er en lokal pakke i `Artifacts/Releases/Visual10-eb0748660027/` og følger ikke med et Git-klon. Pakk ut `Artifacts/Releases/SIGNAL47-Visual10-eb0748660027-Linux.tar.gz` og kjør `./Start-SIGNAL47.sh` i den utpakkede mappen.
 
 ## Første kapittel: Den andre eksponeringen
 
