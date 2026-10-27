@@ -4,6 +4,7 @@
 #include "S47Keys.h"
 #include "S47Anomaly.h"
 #include "S47Evening.h"
+#include "S47Horror.h"
 
 #include "Components/PrimitiveComponent.h"
 #include "Engine/Texture2D.h"
@@ -1303,6 +1304,14 @@ void US47Chapter1::FreeLine(FS47Viewfinder& V) const
 	const int32 Left = Free->Left ? Free->Left() : 0;
 	const bool bHere = !Status.bOk && !Status.bNear;
 	V.bHasFree = true;
+	// Unreal SC01 requires one real reference exposure. Preserve its last frame
+	// while leaving all other free photographs and the 36-frame budget intact.
+	if (bHere && Left == 1 && M && M->Horror && M->Horror->ReferenceFrameReserved())
+	{
+		V.bFreeOk = M->Horror->ReferenceInPhotoView();
+		V.FreeText = V.bFreeOk ? TEXT("RESERVED LAMP REFERENCE // READY") : TEXT("LAST FRAME RESERVED // MARKED LAMP");
+		return;
+	}
 	V.FreeText = bHere ? (Left ? FString::Printf(TEXT("FREE FRAME // %d LEFT"), Left) : FString(TEXT("NO FREE FRAMES LEFT"))) : FString::Printf(TEXT("%d FREE FRAMES LEFT"), Left);
 	V.bFreeOk = bHere && Left > 0;
 }
@@ -1313,12 +1322,20 @@ void US47Chapter1::Shutter()
 	US47UI* U = Ui();
 	US47Audio* A = Au();
 	if (!F || !F->bRaised) return;
+	F->Sync();
 	if (FS47T02Photo::TryShutter(M)) return;
 	const FS47ShotCheck C = Check();
 	if (!C.bOk)
 	{
 		// away from the case's subjects the shutter takes a free frame (the album) while the roll lasts
 		const FS47FreeShots* FreeShots = !C.bNear && Free ? &*Free : nullptr;
+		if (FreeShots && FreeShots->Left && FreeShots->Left() == 1 && M && M->Horror &&
+			M->Horror->ReferenceFrameReserved() && !M->Horror->ReferenceInPhotoView())
+		{
+			if (A) A->Sfx(TEXT("click"), Snd(0.3f, 0.7f));
+			Toast(TEXT("The last instant-back frame is reserved for the marked-lamp reference. Switch the lamp on and frame it clearly."), 5);
+			return;
+		}
 		if (FreeShots && FreeShots->Left && FreeShots->Left() > 0) { if (FreeShots->Expose) FreeShots->Expose(); return; }
 		if (Field) { if (Field->Rejected) Field->Rejected(); } else S.Rejected++;
 		if (A) A->Sfx(TEXT("click"), Snd(0.3f, 0.7f));

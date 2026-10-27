@@ -1,4 +1,5 @@
 #include "S47Story.h"
+#include "S47Horror.h"
 #include "S47Evening.h"
 #include "S47Anomaly.h"
 #include "S47Walker.h"
@@ -267,6 +268,7 @@ TArray<FS47Task> AS47Story::Tasks() const
    {TEXT("Answer Dale on the control-room phone"),P.Flag(TEXT("handover_done"))}};
  }
 
+ if (const auto* M=US47Main::Get(this); M && M->Horror && M->Horror->Enabled() && !M->Horror->Complete()) return M->Horror->Tasks();
  if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->ServicePending()) return M->Evening->ServiceTasks();
 	if (const US47Chapter* C = Chapter(ChapterKey); C && C->bActive) return C->Tasks();
 	TArray<FS47Task> T;
@@ -545,6 +547,8 @@ void AS47Story::StagePassed()
  if (S == 1 && bEveningTimeline)
  {
   const US47Main* Main = US47Main::Get(this);
+  if (Main && Main->Horror && Main->Horror->Enabled() && !Main->Horror->Complete())
+  {Rx.Status=TEXT("FINISH THE EVENING ROUND BEFORE THE UNATTENDED SURVEY");Toast(Main->Horror->Objective(),5);return;}
   if (Main && Main->Evening && Main->Evening->ServicePending())
   {
    // Local calibration remains usable. Only the unattended overnight survey waits for T01.
@@ -553,6 +557,7 @@ void AS47Story::StagePassed()
    return;
   }
  }
+	if (S==0) if (const auto* Main=US47Main::Get(this); Main && Main->Horror) Main->Horror->CalibrationChecked();
 	Note(S47Signal::Profiles()[FMath::Min(S, 2)].Note);
 	Rx.Advance();
 	PointDishes(Rx.Azimuth, SurveyEl, 6);

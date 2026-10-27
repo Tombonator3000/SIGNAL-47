@@ -16,7 +16,7 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 
 - Alle PR-er for spillet går mot `main`. Lag nye grener fra oppdatert `origin/main`, ikke fra en annen arbeidsgren.
 - Sjekk grunnlagsgrenen før fletting, for eksempel med `gh pr view <nr> --json baseRefName`. Er den ikke `main`, rett den med `gh pr edit <nr> --base main` før fletting. Regelen om hele `screenshots.sh` før fletting gjelder alle PR-er som endrer spillet.
-- `unreal-port-core` er ikke en integrasjonsgren. Fra 23. til 26. oktober gikk 19 PR-er (#147 til #166 og #168) dit i stedet for til main, og SC01 og to kvitteringer ble igjen der. Flettingen inn i main står øverst i `OPPGAVER.md`. Grenen slettes når den er flettet.
+- `unreal-port-core` var avtalt integrasjonsgren for historiearbeidet fram til 26. oktober (`HISTORIE_IMPLEMENTERINGSPLAN.md`), og PR #147 til #166 og #168 gikk dit med vilje. Main fikk det meste via PR #167, men de 17 siste commitene (PR #163 til #166 og #168, med SC01) ble aldri flettet videre. Det er det regelen over skal hindre: ingen arbeid skal bli stående på en sidegren. Flettingen inn i main står øverst i `OPPGAVER.md`, og `unreal-port-core` slettes når den er flettet.
 
 ## Varig grense for lokale testbygg, bestemt 25. oktober 2026
 

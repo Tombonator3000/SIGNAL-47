@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
+import re
 import unittest
 
 import build_pack as author
@@ -156,6 +158,48 @@ class UnifiedContracts(unittest.TestCase):
         self.scene(modules, "H07_FIRST_WARNING")["requires"]["all"].remove("ctx_hr_h07_bundle_secured")
         with self.assertRaises(author.EV.PackError):
             author.validate_scenarios(pack, modules)
+
+    def test_runtime_registry_covers_all_authored_scenes_and_external_owners(self):
+        scenarios = author.validate_scenarios(*self.fresh())
+        registry = author.runtime_registry(self.pack, self.modules, scenarios)
+        authored = [s["id"] for m in self.modules for s in m["scenes"]]
+        self.assertEqual([s["id"] for s in registry["scenes"]], authored)
+        self.assertEqual(len(set(authored)), 79)
+        self.assertEqual({g["id"] for g in registry["external_flags"]}, set(self.pack["external_flags"]))
+        self.assertEqual(len(registry["external_flags"]), 96)
+        self.assertTrue(all(g["owner"] == "runtime_host" for g in registry["external_flags"]))
+        self.assertTrue(all(s["scenario_ids"] and s["mission_ids"] for s in registry["scenes"]))
+        self.assertEqual({sc for s in registry["scenes"] for sc in s["scenario_ids"]},
+                         {f"SC{i:02}" for i in range(1, 14)})
+
+    def test_six_original_h_cards_keep_scenario_and_authored_phase(self):
+        scenarios = author.validate_scenarios(*self.fresh())
+        registry = author.runtime_registry(self.pack, self.modules, scenarios)
+        rows = {s["id"]: s for s in registry["scenes"]}
+        for mission, scenario in (("H01", "SC01"), ("H02", "SC02")):
+            for suffix in ("_BRIEF", "_CHECK", "_INCOMPLETE"):
+                sid = mission + suffix
+                self.assertEqual(rows[sid]["scenario_ids"], [scenario])
+                self.assertEqual(rows[sid]["phase"], self.scene(self.modules, sid)["phase"])
+
+    def test_compiled_export_roundtrips_exact_source_and_registry(self):
+        scenarios = author.validate_scenarios(*self.fresh())
+        registry = author.runtime_registry(self.pack, self.modules, scenarios)
+        runtime = author.render_runtime(self.pack, self.modules, registry)
+        chunks = re.findall(r'TEXT\(R"S47HR\((.*?)\)S47HR"\)', runtime.decode("ascii"), re.S)
+        self.assertTrue(chunks)
+        self.assertTrue(all(len(chunk) <= 6000 for chunk in chunks))
+        decoded = json.loads("".join(chunks))
+        self.assertEqual(decoded, {"pack": self.pack, "modules": self.modules, "registry": registry})
+        self.assertEqual(author.render_runtime(self.pack, self.modules, registry), runtime)
+
+    def test_runtime_export_does_not_mark_future_gameplay_integrated(self):
+        scenarios = author.validate_scenarios(*self.fresh())
+        registry = author.runtime_registry(self.pack, self.modules, scenarios)
+        decoded = registry["status"]
+        self.assertEqual(decoded, "runtime_data_exported_gameplay_acceptance_separate")
+        self.assertTrue(all(s["runtime_status"] == "authored_not_integrated" for s in scenarios["scenarios"]))
+        self.assertEqual(self.pack["production"]["runtime_status"], "not_integrated")
 
 
 if __name__ == "__main__":

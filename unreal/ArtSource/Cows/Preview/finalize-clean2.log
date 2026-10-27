@@ -1,0 +1,80 @@
+00:00.240  blend            | Read blend: "/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Signal47_Cows.blend"
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Body.fbx'
+export finished in 0.0178 sec.
+INFO Draco is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+23:34:53 | INFO: Starting glTF 2.0 export
+23:34:53 | INFO: Extracting primitive: Body_anatomical_loft.002
+23:34:54 | INFO: Primitives created: 5
+23:34:54 | INFO: Finished glTF 2.0 export in 0.14936280250549316 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Body_LOD1.fbx'
+export finished in 0.0102 sec.
+23:34:54 | INFO: Starting glTF 2.0 export
+23:34:54 | INFO: Extracting primitive: Body_anatomical_loft.003
+23:34:54 | INFO: Primitives created: 5
+23:34:54 | INFO: Finished glTF 2.0 export in 0.06773734092712402 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Body_LOD2.fbx'
+export finished in 0.0081 sec.
+23:34:54 | INFO: Starting glTF 2.0 export
+23:34:54 | INFO: Extracting primitive: Body_anatomical_loft.004
+23:34:54 | INFO: Primitives created: 5
+23:34:54 | INFO: Finished glTF 2.0 export in 0.061348676681518555 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Head.fbx'
+export finished in 0.0092 sec.
+23:34:54 | INFO: Starting glTF 2.0 export
+23:34:54 | INFO: Extracting primitive: Head_neck_and_face.002
+23:34:54 | INFO: Primitives created: 8
+23:34:54 | INFO: Finished glTF 2.0 export in 0.1409318447113037 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Head_LOD1.fbx'
+export finished in 0.0070 sec.
+23:34:54 | INFO: Starting glTF 2.0 export
+23:34:54 | INFO: Extracting primitive: Head_neck_and_face.003
+23:34:54 | INFO: Primitives created: 8
+23:34:54 | INFO: Finished glTF 2.0 export in 0.09203481674194336 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Head_LOD2.fbx'
+export finished in 0.0061 sec.
+23:34:54 | INFO: Starting glTF 2.0 export
+23:34:54 | INFO: Extracting primitive: Head_neck_and_face.004
+23:34:54 | INFO: Primitives created: 8
+23:34:54 | INFO: Finished glTF 2.0 export in 0.09187889099121094 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Abducted.fbx'
+export finished in 0.0355 sec.
+23:34:54 | INFO: Starting glTF 2.0 export
+23:34:54 | INFO: Extracting primitive: Body_anatomical_loft.005
+23:34:55 | INFO: Primitives created: 13
+23:34:55 | INFO: Finished glTF 2.0 export in 0.1823253631591797 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Abducted_LOD1.fbx'
+export finished in 0.0227 sec.
+23:34:55 | INFO: Starting glTF 2.0 export
+23:34:55 | INFO: Extracting primitive: Body_anatomical_loft.006
+23:34:55 | INFO: Primitives created: 13
+23:34:55 | INFO: Finished glTF 2.0 export in 0.15417003631591797 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Abducted_LOD2.fbx'
+export finished in 0.0153 sec.
+23:34:55 | INFO: Starting glTF 2.0 export
+23:34:55 | INFO: Extracting primitive: Body_anatomical_loft.007
+23:34:55 | INFO: Primitives created: 13
+23:34:55 | INFO: Finished glTF 2.0 export in 0.15105152130126953 s
+
+Info: Saved as "Signal47_Cows.blend"
+COW SOURCE FINALIZED 12 source/LOD objects; no collapsed UV triangles
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+
+Blender quit

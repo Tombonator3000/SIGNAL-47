@@ -1,0 +1,91 @@
+{
+  "horror": {
+    "folder": "/Game/Audio/Voice/Horror",
+    "catalog": {
+      "clips": [
+        {
+          "id": "H01_BRIEF_001",
+          "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
+          "voice": "kinski",
+          "file": "H01_BRIEF_001.wav",
+          "asset": "v_H01_BRIEF_001",
+          "raw": "voice/horror/H01_BRIEF_001.wav",
+          "duration": 5.63,
+          "frames": 270240,
+          "sha256": "ad8634adda98642cfc381ab7381d31f2d1e94472ba0a47e003f074654022e208",
+          "speech_start_seconds": 0.08,
+          "speech_end_seconds": 5.43,
+          "reuse_of": null
+        },
+        {
+          "id": "H01_BRIEF_002",
+          "text": "The camera is beside the east door. Take a reference before you touch the fault.",
+          "voice": "kinski",
+          "file": "H01_BRIEF_002.wav",
+          "asset": "v_H01_BRIEF_002",
+          "raw": "voice/horror/H01_BRIEF_002.wav",
+          "duration": 3.75,
+          "frames": 180000,
+          "sha256": "3ec01f4d794a78f2e5d50053d82db4899affb449c528fca94fbb221bcd04e517",
+          "speech_start_seconds": 0.08,
+          "speech_end_seconds": 3.54,
+          "reuse_of": null
+        },
+        {
+          "id": "H01_BRIEF_003",
+          "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it.",
+          "voice": "kinski",
+          "file": "H01_BRIEF_003.wav",
+          "asset": "v_H01_BRIEF_003",
+          "raw": "voice/horror/H01_BRIEF_003.wav",
+          "duration": 4.82,
+          "frames": 231360,
+          "sha256": "0a896dbaae13848f3a5b2fa9e6a8dbfb65056a7ab1a8cde99f5804757c437a10",
+          "speech_start_seconds": 0.08,
+          "speech_end_seconds": 4.56,
+          "reuse_of": null
+        },
+        {
+          "id": "SC01_FIRST_REPORT_001",
+          "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.",
+          "voice": "caliche_dispatch",
+          "file": "SC01_FIRST_REPORT_001.wav",
+          "asset": "v_SC01_FIRST_REPORT_001",
+          "raw": "voice/horror/SC01_FIRST_REPORT_001.wav",
+          "duration": 10.09,
+          "frames": 484320,
+          "sha256": "fe13c570a89dbf93b9ad8569394a4fbd5d328c031f25e8f892387433ce1ac61f",
+          "speech_start_seconds": 0.08,
+          "speech_end_seconds": 9.89,
+          "reuse_of": null
+        },
+        {
+          "id": "SC01_FIRST_REPORT_002",
+          "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.",
+          "voice": "caliche_dispatch",
+          "file": "SC01_FIRST_REPORT_002.wav",
+          "asset": "v_SC01_FIRST_REPORT_002",
+          "raw": "voice/horror/SC01_FIRST_REPORT_002.wav",
+          "duration": 10.78,
+          "frames": 517440,
+          "sha256": "9098e9943126c2f4f63659b8f00ce87318e65440fbe3987415dab6530a4b176a",
+          "speech_start_seconds": 0.08,
+          "speech_end_seconds": 10.6,
+          "reuse_of": null
+        }
+      ]
+    },
+    "validation": {
+      "pack_id": "signal47_horror_story_h1",
+      "scenario": "SC01",
+      "cue_count": 5,
+      "sample_rate_hz": 48000,
+      "sample_format": "PCM16",
+      "channels": 1,
+      "technical_status": "PASS",
+      "word_status": "ASR_DIFFERENCES_UNRESOLVED",
+      "human_listened": false,
+      "scope": "Five measured SC01 takes only; later story cues remain pending."
+    }
+  }
+}

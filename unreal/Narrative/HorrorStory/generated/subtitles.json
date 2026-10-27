@@ -2,7 +2,7 @@
   "pack_id": "signal47_horror_story_h1",
   "language": "en-US",
   "status": "authored_not_integrated",
-  "note_nb": "Dialogtider venter på lyd. Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
+  "note_nb": "Dialogtider er målt fra de ferdige opptakene: start/slutt for tale, i sekunder fra starten av hvert klipp. Stille undersøkelsestekst styres av interaksjon. VHS-tider er kun planlagte.",
   "scenes": [
     {
       "scene_id": "H01_BRIEF",
@@ -13,27 +13,27 @@
           "speaker": "DALE",
           "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 5.43,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "H01_BRIEF_002",
           "speaker": "DALE",
           "text": "The camera is beside the east door. Take a reference before you touch the fault.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.54,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "H01_BRIEF_003",
           "speaker": "DALE",
           "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.56,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -919,18 +919,18 @@
           "speaker": "DISPATCH",
           "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 9.89,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "SC01_FIRST_REPORT_002",
           "speaker": "DISPATCH",
           "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 10.6,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1255,9 +1255,9 @@
           "speaker": "DALE",
           "text": "The camera is beside the east door. Take a reference before you touch the fault.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.54,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },

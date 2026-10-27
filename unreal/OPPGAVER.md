@@ -1,16 +1,25 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
-## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (åpen)
+## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (kontrollert, flettes)
 
-Gjøres når Tom er ved Kubuntu. PR #163, #164, #165, #166 og #168 ble flettet til `unreal-port-core`, ikke til main (se regelen i `AGENTS.md`). Grenen er 17 commits foran main. Det meste av NP1 kom til main med PR #170, men SC01-runtime (`S47Horror.cpp`, `S47HorrorPack.cpp`, `S47HorrorTest.cpp`, `S47HorrorVisual.cpp`), den godkjente SC01 til SC13-planen (`df868211`) og kvitteringene for T02 og NP1-installasjonen finnes bare der. SC01 har lokal pakket teknisk aksept (`SC01_RUNTIME.md` på grenen), men er ikke flettet eller installert.
+`unreal-port-core` var avtalt integrasjonsgren for SC01 til SC13 (`HISTORIE_IMPLEMENTERINGSPLAN.md`). PR #163, #164, #165, #166 og #168 ble flettet dit etter at PR #167 hadde tatt resten av grenen med til main, og de 17 commitene kom aldri videre. Det gjelder SC01-runtime (`S47Horror.cpp`, `S47HorrorPack.cpp`, `S47HorrorTest.cpp`, `S47HorrorVisual.cpp`), SC01-ressursene i `Content/Signal47/HorrorSC01` og `ArtSource/HorrorSC01`, den godkjente planen og rapportene `SC01_RUNTIME.md`, `T02_RUNTIME.md` og `NIGHT_PRODUCTION_RUNTIME.md`. SC01 har lokal pakket teknisk aksept fra før, men mot eldre main.
 
-1. Sjekk at ingen Unreal-, spill- eller pakkejobb kjører (`unreal_guard.py require-idle`), og at MetaHuman-arbeidet ikke er midt i noe.
-2. Kjør hele `Scripts/screenshots.sh` mot det som er på main nå (PR #170, installert terreng-R2). Den sto på 0 av 110 da PR #170 ble flettet. Da finnes et kontrollert utgangspunkt før SC01 kommer inn.
-3. Lag en ny gren fra `origin/main`. Finn ut om den beskyttede lokale kandidaten «SC01-R4» i `~/scratch-bm` er SC01 tilpasset nyere main. Bruk den i så fall som kilde, ellers `origin/unreal-port-core`.
-4. En prøvefletting 27.10 (`git merge-tree`, ingenting endret eller pushet) ga 17 konflikter: kode i `Source/Signal47/Private/S47Flow.cpp`, `S47HUD.cpp`, `S47Office.cpp`, `Public/S47Main.h`, `S47Office.h` og `Config/DefaultGame.ini`; data i `Narrative/HorrorStory` (`build_pack.py`, `test_pack.py`, `generated/recording_manifest.json`, `generated/subtitles.json`, `generated/voice_lines.csv`); dokumenter (`README.md`, `OPPGAVER.md`, `COW_MODELS.md`, `log.md`, `memory.md`, `todo.md`). Behold begge sider i dokumentene, og lag de genererte filene på nytt med generatoren i stedet for å flette dem for hånd.
-5. Bygg editor og pakke. Kjør SC01-kontrollene fra `SC01_RUNTIME.md`, HorrorStory-testene og hele `screenshots.sh`. Gamle lagringer skal fortsatt laste.
-6. PR mot main, sjekk at grunnlagsgrenen er `main`, flett. Installer bare hvis Tom vil ha SC01 som standard, etter vanlig rutine med bevarte lagringer.
-7. Når `git rev-list --count origin/main..origin/unreal-port-core` er 0: slett `unreal-port-core` på GitHub og lokalt.
+Gjort 27.10 kl. 17:25 (Claude, skysesjon): `origin/unreal-port-core` er flettet inn i `origin/main` (`c603d1ba`) på grenen `ccr-30e38858-767d90`, med PR mot main. Alle 17 konflikter er løst:
+
+- Kode: begge sider i `Public/S47Main.h`, `Private/S47Flow.cpp` og `Private/S47HUD.cpp`, det vil si at Horror-feltene, lagringen av `horror` og selvtesten kommer i tillegg til det main har. Mains versjon i `Public/S47Office.h`, `Private/S47Office.cpp` (R5-hylla, TV-en, `RefileReadDocuments`, `AccessAvailable`) og `Config/DefaultGame.ini`, som allerede pakker `/Game/Signal47/HorrorSC01`.
+- HorrorStory: `build_pack.py` og `test_pack.py` har begge sider. De genererte filene er laget på nytt med generatoren, ikke flettet for hånd. `build_pack.py --check` PASS (10 oppdrag, 13 scenarioer, 79 scener, 9 eksporter byte-identiske), `test_pack.py` 24 tester OK, EveningShift `--check` PASS.
+- Dokumenter: begge sider, `log.md` sortert etter tid.
+
+UNVERIFIED: kompilering, pakking, SC01-kontrollene og `screenshots.sh`. Det kan ikke kjøres i skyen. PR-en skal ikke flettes før dette er gjort på Kubuntu:
+
+1. Sjekk at ingen Unreal-, spill- eller pakkejobb kjører (`unreal_guard.py require-idle`), og at ingen annen økt er midt i en Unreal-jobb.
+2. Se om den beskyttede lokale kandidaten «SC01-R4» i `~/scratch-bm` har rettelser som ikke finnes på `unreal-port-core` (sammenlign med `dbae3177`). Ta dem i så fall inn på `ccr-30e38858-767d90`.
+3. Hent grenen og bygg editor og pakke. Ikke bygg editormålet mens editoren er åpen.
+4. Kjør SC01-kontrollene fra `SC01_RUNTIME.md`, HorrorStory-testene og hele `Scripts/screenshots.sh`. Gamle lagringer skal fortsatt laste. Hele `screenshots.sh` er ikke kjørt mot main siden PR #170 (0 av 110), så en feil kan stamme fra main; kjør den mot main først hvis noe ser rart ut.
+5. Sjekk at PR-ens grunnlagsgren er `main`, og flett med full head-SHA. Installer bare hvis Tom vil ha SC01 som standard, etter vanlig rutine med bevarte lagringer.
+6. Når `git rev-list --count origin/main..origin/unreal-port-core` er 0: slett `unreal-port-core` på GitHub og lokalt.
+
+Gjort 27.10 kl. 17:35 til 19:20 (Claude, Kubuntu): trinn 1 til 4 består, se `log.md` kl. 19:20. SC01-R4 hadde ingen rettelser i git utover `dbae3177`; eneste avvik var bilens RT-LOD i gitignorert `Content/Free`, som er tatt med lokalt i pakken. Editor og pakke bygget, 23 SC01-/regresjons-/lagringsprøver PASS, RT 76,29 MiB, hele `screenshots.sh` 110 av 110 OK. Trinn 5 og 6 følger etter denne commiten. SC01 installeres ikke som standard uten Toms ja.
 
 ## Terreng og natur langs ruten, 26.10.2026
 
@@ -43,6 +52,32 @@ Modeller, fysisk adgang og områdebasert ankomst er integrert. To små Blender-s
 ## Hereford-kyr og død ku etter bortføring, levert lokalt 26.10.2026
 
 Codex med modell-, import-/installer- og QA-hjelpere. Konsepter, original Blender-kilde og tre native kuassets med tre LOD-er er integrert i begge flokker og på funnstedet. R2 består 1 437 selvtester, ti pakkede scenarioer, ekstra Low-nærbilde og avgrenset RT-måling på 79,3446 MiB under uendret 80 MiB-grense. Samme pakke er installert og startet gjennom standardstarteren; 40 personlige Saved-filer er identiske også etter canonical pruning. [COW_MODELS.md](COW_MODELS.md) skiller synlig modellaksept fra mørke oversiktsfixtures og uattesterte nærpiksler av øremerke/kjeve. Beiting, 026, frost, funn/foto og lagring bruker eksisterende logikk. Kilder og bevis er bevart. Lokale endringer, ingen ny PR/merge/push.
+## SC01 pakket teknisk aksept, 26.10.2026 kl. 13:18 CET
+
+Arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/story-sc01`, testet kilde `dbae3177`. Root eier integrasjon, alle sekvensielle Unreal-/GPU-jobber, PR/fletting og installasjon. `sc01_review` har kontrollert runtime og faktiske bilder, `sc01_delivery_review` har kontrollert pakke-/installasjonsbinding og `sc01_media_review` har kontrollert native modeller/lyd. Alle 21 pakkekjøringer består; 32 originalbilder er vurdert. [SC01_RUNTIME.md](SC01_RUNTIME.md) har faktiske resultater og åpne menneskelige prøver. NP1 er fortsatt standard inntil SC01 er flettet, installert og kvittert. H01 er åpent. SC02 har bare lesende forberedelse og starter ikke produksjon før SC01-kvitteringen.
+
+## Historieintegrasjon SC01 til SC13, startet 26.10.2026 kl. 09:36 CET
+
+Tom har godkjent [den detaljerte implementeringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md) og bedt om gjennomføring. Arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/horror-h01`, kontrollert utgangspunkt `1c929b76` fra `unreal-port-core`. Root eier koordinator, Main/Flow-integrasjon, tester, sekvensielle Unreal-jobber og levering. Avgrenset manusagent eier ny HorrorPack-adapter, generator, eksporter og tilhørende datatester. Dokumentasjonsagent eier denne planleveransen og pekerne i README/todo/memory/log; øvrige filansvar avtales før endring.
+
+SC01 er tatt opp til arbeid. Full produksjon av nødvendige verdenshandlinger, modeller, stemmer og medier kreves. Hvert SC testes, flettes og installeres før neste starter. Saker beholder innholdsrevisjonen sin og fortsetter via eksisterende historie ved grensen for nye scenarioer. H01 lukkes først etter SC02 og H02 først etter SC05. Ingen ny runtime-, pakke-, merge- eller installasjonsaksept er ført av denne dokumentasjonsleveransen. NP1 er fortsatt siste dokumentert installerte standard.
+
+
+## NP1 levert og installert, 26.10.2026 kl. 01:26 CET
+
+PR164 er flettet i93edb7a4; testet kilde2c05e33d og samme pakke er installert.17 pakkede kjøringer,1 493 selvtester og28 vurderte originalbilder. Standardstarterens smoke,40 identiske payloadfiler,40 byteidentiske personlige Saved-filer/57 noder og full gammel ku-R2-backup består. Sluttpayload/Saved er kontrollert igjen etter smoke/pruning. Gjeldende NP1 pluss backup og original ku-R2 er tre komplette testpakker; gamle ku-R1/T02-payloads pensjonert med kilder/Engine/Saved/bevis bevart. S.1/R2.1 er produsert manusgrunnlag, S.6/S.3a/S.7a er avgrenset runtime. Ny kveldskoordinator, møter, VHS og menneskelig fullnatt står åpne. [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md) og bevisrotens NP1_DELIVERY_COMPLETE.json er nyeste sannhet.
+
+## NP1 klar for integrasjon, 26.10.2026 kl. 01:12 CET
+
+Codex, `codex/night-production`, kilde `2c05e33d`. Samlet kontor/tekst/lesestatus, himmelbaner og LineLights-save er bygget og prøvd i17 faktiske pakkede kjøringer.1 493 selvtester og28 vurderte originalbilder. Tre avgrensede hjelpere og root har utført kilde-/kontrakt-/pixel-/installerreview; alle UE-jobber sekvensielt. Ku-R2 fra den allerede installerte standarden er tatt inn uendret. Manusdelen S.1/R2.1 er produsert, ikke runtime-koordinator eller nye aktive møter. PR/merge/installasjon gjenstår ved denne oppføringen.
+
+## Kontorfunn, himmel og observasjonslagring, startet 26.10.2026 kl. 00:42 CET
+
+Codex på `codex/night-production`, separat arbeidskopi i `/home/tom/scratch-bm/wt/night-production`. Avgrensede hjelpere eier HorrorStory-kilder, Dales kontorpapirer og LineLights; root eier himmellys, integrasjon, sekvensielle bygg/prøver og levering. S.1/R2.1 produseres som engelske forfatterkilder; S.7s seks tekster og separat arrayserviceark får faktisk kontor-/lese-/lagringsflyt, S.6 retter usette/avbrutte lys, S.3 får fem verdensbaner med egen faktisk observasjon. Dagens kapitteladapter erstatter ikke S.2s nye kveldskoordinator. Original VHS, fem aktive møter og fullnatt er fortsatt åpne. Installert ku-R2 er oppdaget i leveringskontrollen og bevares byteidentisk fra testet kilde-/assetsnapshot før ny pakking. Se [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md).
+
+## T02 runtime levert, 25. oktober 2026
+
+Codex fullførte den sammenhengende kontor-/Caliche-/returreisen på `codex/t02-field-followup`, kilde `5b9fcb3c`, PR162 flettet i `d152fb6d`. Avgrensede hjelpere leverte kontor/geometri, feltcontroller, foto/test og uavhengige kode-, bilde-, aksept- og installerreviews. Alle UE-/pakke-/spilljobber ble kjørt sekvensielt. 15 pakkede prøver, 23 bundne akseptrapporter og 25 faktisk vurderte originaler består. Samme pakke er installert; 40 payloadfiler og 40 personlige Saved-filer er verifisert, installert standardstarter-smoke og canonical pruning består. Ingen øvrige forfatterdokumenter fra parallelt arbeid er tatt inn i denne runtime-leveransen. Se [T02_RUNTIME.md](T02_RUNTIME.md). VHS, nye forfatterfunn, stealth og menneskelig helnatt står åpne.
 
 ## Én sammenhengende natt, random, himmel og Dale, 25.10.2026
 

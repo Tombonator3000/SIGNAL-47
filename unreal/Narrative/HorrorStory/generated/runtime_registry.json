@@ -1,0 +1,1647 @@
+{
+  "schema_version": 1,
+  "pack_id": "signal47_horror_story_h1",
+  "status": "runtime_data_exported_gameplay_acceptance_separate",
+  "note_nb": "Alle forfatterscener er registrert. Verdensporter og per-SC aksept eies av runtime-verten.",
+  "external_flags": [
+    {
+      "id": "ctx_hr_array_a_observed",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren står faktisk på tilgjengelig merket ståstedA og har observert fysisk antennerespons mot faste landemerker Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_b_observed",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren står faktisk på tilgjengelig merket ståstedB og har observert fysisk antennerespons mot faste landemerker Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_command_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "Innledende baseline: nærgruppens faktisk navngitte antenner, eksisterende kommandoregister og lokale drivtilstand er kontrollert. Krever ingen fremtidig A/B/retur; sluttintervallet kontrolleres separat etter måling Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_command_history_compared",
+      "owner": "runtime_host",
+      "provenance_nb": "Etter faktisk A/B/retur er historiske kommando-/drivregistreringer sammenlignet med de observerte vinkelendringene. Ingen vanlig kommando i prøveintervallet forklarer disse endringene. Dette er sluttkontroll, adskilt fra innledende baseline Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_empty_hold_observed",
+      "owner": "runtime_host",
+      "provenance_nb": "Etter retrett er faktisk hold på sist forlatte tomme ståsted og retur026 observert Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_escape_complete",
+      "owner": "runtime_host",
+      "provenance_nb": "Trusselmøte4 ved arrayets passasje er fysisk unnsluppet; søker tilbaketrukket uten gammel Force Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_geometry_compared",
+      "owner": "runtime_host",
+      "provenance_nb": "Begge ståsteder og kort retur er fysisk sammenlignet med fast lykt, landemerker og separat kommandoregister Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk geometri-/styringskontroll er ufullstendig; ingen bekreftet arraykonklusjon Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_local_retry",
+      "owner": "runtime_host",
+      "provenance_nb": "Arrayfangst har gitt lokal retrettretry med geometri/kildearbeid bevart, uten gammel tapt-tid-kontrakt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_reference_fixed",
+      "owner": "runtime_host",
+      "provenance_nb": "Navngitt feltlykt står på fast merke med registrert uendret innstilling Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_return_observed",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren har faktisk returnert til først valgt A/B og sett tilsvarende fysisk respons Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_array_service_card_acquired",
+      "owner": "runtime_host",
+      "provenance_nb": "Separat ordinært arrayservicevedlegg er faktisk plukket opp; T02s kulvertindeks endres ikke Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_dated_lead",
+      "owner": "runtime_host",
+      "provenance_nb": "Arkivets daterte1981-henvisning er faktisk funnet og identifisert før kildekontroll Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_earl_present",
+      "owner": "runtime_host",
+      "provenance_nb": "Earl er faktisk fysisk ved1420AM før sin04:00-avgang Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_live_sample_verified",
+      "owner": "runtime_host",
+      "provenance_nb": "Vedvarende resultat etter faktisk LIVE-monitorprøve med bånddekk frakoblet. Bevares etter nytt kildevalg, uten å hevde at LIVE fortsatt er valgt Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_live_selected",
+      "owner": "runtime_host",
+      "provenance_nb": "Live-monitor er valgt og fysisk båndmating frakoblet; kilden er tydelig merket Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_question_compared",
+      "owner": "runtime_host",
+      "provenance_nb": "Nytt konkret spørsmål og gjentatt gammelt fragment er faktisk sammenlignet uten responsendring Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_reel_identity",
+      "owner": "runtime_host",
+      "provenance_nb": "Merket1981-spole med lokal datert logg og opphav er faktisk undersøkt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_source_copy_verified",
+      "owner": "runtime_host",
+      "provenance_nb": "Etter Earls avgang er den daterte utlånskonvoluttens identifiserte1981-kildekopi, off-air-logg og frakoblingsark kontrollert. Den samme identifiserte kopien er deretter faktisk avspilt på lobbydekket med live-mating fysisk frakoblet. Metadatakontroll alene er ikke nok. Nytt spørsmål/uendret fragment har egen faktisk question_compared-port. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_source_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "Kildeopphav eller valgt signalvei er faktisk uavklart; ingen positivt resultat Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_tape_isolated",
+      "owner": "runtime_host",
+      "provenance_nb": "Valgt båndspillevei er fysisk isolert fra live-mating og gammel opptakelse faktisk avspilt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_by02_tape_sample_verified",
+      "owner": "runtime_host",
+      "provenance_nb": "Vedvarende resultat etter faktisk identifisert originalspole i isolert TAPE-stilling med live frakoblet. Bevares når velgeren senere står LIVE, uten å hevde at TAPE fortsatt er valgt Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_h01_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "H01: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    {
+      "id": "ctx_hr_h01_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H01: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h01_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H01: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h02_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "H02: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    {
+      "id": "ctx_hr_h02_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H02: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h02_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H02: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h03_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "H03: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    {
+      "id": "ctx_hr_h03_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H03: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h03_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H03: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h04_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "H04: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    {
+      "id": "ctx_hr_h04_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H04: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h04_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H04: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h05_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "H05: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    {
+      "id": "ctx_hr_h05_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H05: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h05_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "Ny scenariorute: datert BY02-original ELLER verifisert legitim kildekopi er kontrollert, faktisk ARRAY-01-sammenligning og retrett er fullført, og STATION01s eksisterende inngang er tilgjengelig. Gamle saker beholdes gjennom egen adaptermapping; tekst/presentasjon setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h05_receiver_playing",
+      "owner": "runtime_host",
+      "provenance_nb": "Den eksisterende receiveren spiller faktisk sitt bevarte Tomás-fragment."
+    },
+    {
+      "id": "ctx_hr_h06_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "H06: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    {
+      "id": "ctx_hr_h06_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H06: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h06_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktiske FRAME03/04 er fremkalt og sikret, felt-/kabelkontroll og eksisterende tilgang til Nora er tilgjengelig. Ingen framtidig kilde eller åpnet rapport erstatter dette."
+    },
+    {
+      "id": "ctx_hr_h07_bundle_secured",
+      "owner": "runtime_host",
+      "provenance_nb": "Etter04:04 er mottakeroriginal, påbegynt/tomt hendelsesark og begge faktisk ferdige Hondo/Site11-ark sikret før beleiring. Dette er innsamling, ikke senere HR_SARO_ORIGINAL-kompositt Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_h07_captured",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk fangst med dokumentert sanseårsak; flukt setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h07_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "Ekstern lysflate, lokal lampe og opak skjerm er faktisk kontrollert. En ny lydendring er virkelig etterfulgt av en sanset inntrengerreaksjon mens separat gammelt fragment går uendret. Dette er ingen kvittering for sikret original eller fullført flukt."
+    },
+    {
+      "id": "ctx_hr_h07_escape_complete",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren er faktisk ved det definerte sikre servicebilpunktet, inntrengeren har mistet kontakt og avsluttet søk/tilbaketrekning. Ingen fangst eller ny obligatorisk hendelse gjenstår."
+    },
+    {
+      "id": "ctx_hr_h07_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H07: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h07_original_secured",
+      "owner": "runtime_host",
+      "provenance_nb": "Måleoriginalen er faktisk plukket opp og plassert/sikret for transport. Kontroll av lys/radio setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h07_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H07: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h07_scan_started",
+      "owner": "runtime_host",
+      "provenance_nb": "Den faktiske eksterne avsøkningen har startet med lesbar geometri etter at dokumentbunten er sikret tidligst04:04. H07_BRIEF/rapporten starter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h08_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren har faktisk sammenlignet SARO-original, de to lokale fjernkildene, klokker, råverdier og sendeplan. Det er trukket en avgrenset kildekonklusjon. Dette setter ikke varselkvittering."
+    },
+    {
+      "id": "ctx_hr_h08_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H08: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h08_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H08: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h09_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "H09: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+    },
+    {
+      "id": "ctx_hr_h09_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H09: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h09_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H09: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h10_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "Før avreise er sikrede originaler, Ward-kvittering og adskilte kartpunkter C8.15 og overlevering10.4 faktisk kontrollert. Dette setter ikke motorstopp eller finalestatus."
+    },
+    {
+      "id": "ctx_hr_h10_insufficient",
+      "owner": "runtime_host",
+      "provenance_nb": "H10: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+    },
+    {
+      "id": "ctx_hr_h10_ready",
+      "owner": "runtime_host",
+      "provenance_nb": "H10: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_h10_stalled",
+      "owner": "runtime_host",
+      "provenance_nb": "Eksisterende kapittel6 har faktisk startet THE EVENT ved C med ufrivillig motorstopp; spilleren har ikke bare bekreftet avreisemappen."
+    },
+    {
+      "id": "ctx_hr_remote_sources_verified",
+      "owner": "runtime_host",
+      "provenance_nb": "SARO-original og begge faktisk fullstendige Hondo/Site11-kildeark etter04:04 finnes; deres uavhengige opphav, separate logger, klokker, råverdier og kontroll av frakoblet feed er virkelig undersøkt. Tekst/panel eller lik lyd alene setter ikke dette."
+    },
+    {
+      "id": "ctx_hr_sc01_dale_reference_heard",
+      "owner": "runtime_host",
+      "provenance_nb": "Den tidligere Dale-linjen H01_BRIEF_002 er faktisk hørt før annexfragmentet; ikke bare scene startet, presentert eller skipset Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc01_marks_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "Utvendige merker er kontrollert på riktig glasside; normal lampe/refleks er adskilt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc01_report_readback",
+      "owner": "runtime_host",
+      "provenance_nb": "Første faktiske inntrengermelding er sendt til dispatch med sted/tid og lest tilbake Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc01_window_seen",
+      "owner": "runtime_host",
+      "provenance_nb": "Bevegelig blek hånd/underarm er faktisk sett på utsiden av kjent vindu Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc02_escape_complete",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk retrett til bilen gjennom klar fysisk rute med brutt sikt/lyd; søker trukket tilbake Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc02_local_retry",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk fangst i trusselmøte1 gjenoppretter lokalt sjekkpunkt og fullført T01 uten gammel bortføring Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc02_t01_complete",
+      "owner": "runtime_host",
+      "provenance_nb": "T01s fysiske journal/kontroll/lampe er fullført og sikret før trusselmøte1 Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc02_threat_visible",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren har faktisk sett trusselmøte1s kropp bevege seg og vende seg mot ny lyd, med lesbart forvarsel og reaksjonsmargin Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_dispatch_readback",
+      "owner": "runtime_host",
+      "provenance_nb": "Dispatch har kvittert konkret Caliche Junction-hendelse og faktisk sendt en regional hjelpekontakt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_lift_observed",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren har faktisk sett Ortiz bevege seg uten støtte i fremmed lys og forsvinne Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_local_order_suspended",
+      "owner": "runtime_host",
+      "provenance_nb": "Ward har faktisk suspendert SAROs lokale06:00-serie; dette er ingen nettverksordre Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_missing_readback",
+      "owner": "runtime_host",
+      "provenance_nb": "Dispatch har registrert og lest tilbake egen savnetsak for Ortiz, adskilt fra opprinnelig utkalling Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_ortiz_assigned",
+      "owner": "runtime_host",
+      "provenance_nb": "Ward har avtalt Mara Ortiz/hvit servicevogn23 ved Caliche-bensinstasjonen Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_ortiz_identified",
+      "owner": "runtime_host",
+      "provenance_nb": "Mara Ortiz har faktisk ankommet med vogn23 og identifisert seg ved avtalt møte Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_safe_retreat",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren har nådd virkelig dekning/kontaktpunkt etter tapet, brutt kontakt og søker er faktisk trukket tilbake. Ingen fortsatt jakt gjenstår Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_shadow_observed",
+      "owner": "runtime_host",
+      "provenance_nb": "Svart figur faktisk observert stille under blikk og bare flyttet i uobserverte intervaller; panelvern består Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_traces_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "Etter trygg retrett er forlatt vogn og ordinær personlig navngitt gjenstand faktisk undersøkt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_after_annex_calm",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk ro og kontaktsamtale etter annexflukt før ny bilfare Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_annex_imprint_playing",
+      "owner": "runtime_host",
+      "provenance_nb": "Identisk tidligere Dale-fragment spiller faktisk fra feil annexretning; ingen levende Dale der Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_annex_local_retry",
+      "owner": "runtime_host",
+      "provenance_nb": "Fangst i annexet har gitt lokalt sjekkpunkt med tidligere sikret arbeid bevart Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_annex_long_escape",
+      "owner": "runtime_host",
+      "provenance_nb": "Lang faktisk ganglinje bak opake flater er gjennomført; søk avsluttet Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_annex_sound_escape",
+      "owner": "runtime_host",
+      "provenance_nb": "Vanlig lydkilde fra dekning har faktisk avledet enheten; kort faktisk ganglinje fullført og søk avsluttet Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_car_escape",
+      "owner": "runtime_host",
+      "provenance_nb": "Bilmøtet er unnsluppet med riktig kropp-/øyesikt eller klar kjøreflukt; bilen virker og søker er trukket tilbake Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_car_local_retry",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk fangst i bilmøte har gitt særskilt lokal retry uten gammel teller/tidstap Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_car_route_known",
+      "owner": "runtime_host",
+      "provenance_nb": "Fysisk rute fra skjermet parkering til SAROs låsbare kontrollrom er faktisk prøvd Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_car_threat_visible",
+      "owner": "runtime_host",
+      "provenance_nb": "Bilmøtet har faktisk startet med lesbar nær passering/lyd fra reaktiv enhet utenfor kupeen. Ingen scene skaper dette ved bare å åpne tekst Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_control_room_safe",
+      "owner": "runtime_host",
+      "provenance_nb": "Reyes er fysisk i låsbart kontrollrom etter bilflukt, dør trygg, ingen fortsatt kontakt/søk Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_return_agreed",
+      "owner": "runtime_host",
+      "provenance_nb": "Trygt fra Caliche har Reyes og Ward avtalt avgrenset loggsikring og lokal plansperre med fungerende utvei Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_schedule_isolated",
+      "owner": "runtime_host",
+      "provenance_nb": "Fysisk lokal auto/surveyplansperre er virkelig betjent og kontrollert; passiv RX og avgrenset kontroll er tilgjengelig Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_shift_originals_secured",
+      "owner": "runtime_host",
+      "provenance_nb": "Daterte skift-/serviceoriginaler er faktisk sikret for savnetsaken Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc04_ward_on_line",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk telefonkontakt med Ward er etablert og følger loggsikring/dispatch Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc05_residual_passive",
+      "owner": "runtime_host",
+      "provenance_nb": "Residual00:13:47 er faktisk mottatt passivt mens lokal automatisert plan fortsatt er isolert Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc12_courier_104_confirmed",
+      "owner": "runtime_host",
+      "provenance_nb": "Ward har faktisk avtalt bud/retning/møtepunkt10.4 etter kartlagt C8.15 uten ny observasjonsordre Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc12_driver_recent_passage",
+      "owner": "runtime_host",
+      "provenance_nb": "Sjåførens faktiske ferske østgående gjennomkjøring på gamle Roswell Road har egen dato/tid. Oktoberstoppet er en separat historisk hendelse, ingen fersk måling Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc12_exit_sighting_readback",
+      "owner": "runtime_host",
+      "provenance_nb": "Autentisert fersk datert Caliche-dispatchpatruljenote: lave lys krysser nordgående highway etter Caliche Junction-serviceavstikkeren. Faktisk sted/tid og begrenset observasjon er lest tilbake, ikke generell trygghetsgaranti Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_warning_acknowledged",
+      "owner": "runtime_host",
+      "provenance_nb": "Faktisk telefonkvittering og endret morgenjobb er gjennomført."
+    }
+  ],
+  "scenes": [
+    {
+      "id": "H01_BRIEF",
+      "phase": "handover",
+      "scenario_ids": [
+        "SC01"
+      ],
+      "mission_ids": [
+        "H01"
+      ],
+      "external_requirements": [
+        "ctx_hr_h01_ready"
+      ]
+    },
+    {
+      "id": "H01_CHECK",
+      "phase": "handover",
+      "scenario_ids": [
+        "SC01"
+      ],
+      "mission_ids": [
+        "H01"
+      ],
+      "external_requirements": [
+        "ctx_hr_h01_ready",
+        "ctx_hr_h01_checked"
+      ]
+    },
+    {
+      "id": "H01_INCOMPLETE",
+      "phase": "handover",
+      "scenario_ids": [
+        "SC01"
+      ],
+      "mission_ids": [
+        "H01"
+      ],
+      "external_requirements": [
+        "ctx_hr_h01_ready",
+        "ctx_hr_h01_insufficient"
+      ]
+    },
+    {
+      "id": "H02_BRIEF",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC02"
+      ],
+      "mission_ids": [
+        "H01",
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_h02_ready"
+      ]
+    },
+    {
+      "id": "H02_CHECK",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC02"
+      ],
+      "mission_ids": [
+        "H01",
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_h02_ready",
+        "ctx_hr_h02_checked"
+      ]
+    },
+    {
+      "id": "H02_INCOMPLETE",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC02"
+      ],
+      "mission_ids": [
+        "H01",
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_h02_ready",
+        "ctx_hr_h02_insufficient"
+      ]
+    },
+    {
+      "id": "H03_BRIEF",
+      "phase": "signal",
+      "scenario_ids": [
+        "SC06"
+      ],
+      "mission_ids": [
+        "H03"
+      ],
+      "external_requirements": [
+        "ctx_hr_h03_ready"
+      ]
+    },
+    {
+      "id": "H03_CHECK",
+      "phase": "signal",
+      "scenario_ids": [
+        "SC06"
+      ],
+      "mission_ids": [
+        "H03"
+      ],
+      "external_requirements": [
+        "ctx_hr_h03_ready",
+        "ctx_hr_h03_checked"
+      ]
+    },
+    {
+      "id": "H03_INCOMPLETE",
+      "phase": "signal",
+      "scenario_ids": [
+        "SC06"
+      ],
+      "mission_ids": [
+        "H03"
+      ],
+      "external_requirements": [
+        "ctx_hr_h03_ready",
+        "ctx_hr_h03_insufficient"
+      ]
+    },
+    {
+      "id": "H04_BRIEF",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC07"
+      ],
+      "mission_ids": [
+        "H04"
+      ],
+      "external_requirements": [
+        "ctx_hr_h04_ready"
+      ]
+    },
+    {
+      "id": "H04_CHECK",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC07"
+      ],
+      "mission_ids": [
+        "H04"
+      ],
+      "external_requirements": [
+        "ctx_hr_h04_ready",
+        "ctx_hr_h04_checked"
+      ]
+    },
+    {
+      "id": "H04_INCOMPLETE",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC07"
+      ],
+      "mission_ids": [
+        "H04"
+      ],
+      "external_requirements": [
+        "ctx_hr_h04_ready",
+        "ctx_hr_h04_insufficient"
+      ]
+    },
+    {
+      "id": "H05_BRIEF",
+      "phase": "field",
+      "scenario_ids": [
+        "SC09"
+      ],
+      "mission_ids": [
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_h05_ready"
+      ]
+    },
+    {
+      "id": "H05_CHECK",
+      "phase": "field",
+      "scenario_ids": [
+        "SC09"
+      ],
+      "mission_ids": [
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_h05_ready",
+        "ctx_hr_h05_checked"
+      ]
+    },
+    {
+      "id": "H05_INCOMPLETE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC09"
+      ],
+      "mission_ids": [
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_h05_ready",
+        "ctx_hr_h05_insufficient"
+      ]
+    },
+    {
+      "id": "H05_FIXED_FRAGMENT",
+      "phase": "field",
+      "scenario_ids": [
+        "SC09"
+      ],
+      "mission_ids": [
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_h05_receiver_playing"
+      ]
+    },
+    {
+      "id": "H06_BRIEF",
+      "phase": "field",
+      "scenario_ids": [
+        "SC10"
+      ],
+      "mission_ids": [
+        "H06"
+      ],
+      "external_requirements": [
+        "ctx_hr_h06_ready"
+      ]
+    },
+    {
+      "id": "H06_CHECK",
+      "phase": "field",
+      "scenario_ids": [
+        "SC10"
+      ],
+      "mission_ids": [
+        "H06"
+      ],
+      "external_requirements": [
+        "ctx_hr_h06_ready",
+        "ctx_hr_h06_checked"
+      ]
+    },
+    {
+      "id": "H06_INCOMPLETE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC10"
+      ],
+      "mission_ids": [
+        "H06"
+      ],
+      "external_requirements": [
+        "ctx_hr_h06_ready",
+        "ctx_hr_h06_insufficient"
+      ]
+    },
+    {
+      "id": "H07_BRIEF",
+      "phase": "field",
+      "scenario_ids": [
+        "SC11"
+      ],
+      "mission_ids": [
+        "H07"
+      ],
+      "external_requirements": [
+        "ctx_hr_h07_ready"
+      ]
+    },
+    {
+      "id": "H07_CHECK",
+      "phase": "field",
+      "scenario_ids": [
+        "SC11"
+      ],
+      "mission_ids": [
+        "H07"
+      ],
+      "external_requirements": [
+        "ctx_hr_h07_ready",
+        "ctx_hr_h07_checked",
+        "ctx_hr_h07_escape_complete",
+        "ctx_hr_h07_bundle_secured"
+      ]
+    },
+    {
+      "id": "H07_INCOMPLETE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC11"
+      ],
+      "mission_ids": [
+        "H07"
+      ],
+      "external_requirements": [
+        "ctx_hr_h07_ready",
+        "ctx_hr_h07_insufficient"
+      ]
+    },
+    {
+      "id": "H07_FIRST_WARNING",
+      "phase": "field",
+      "scenario_ids": [
+        "SC11"
+      ],
+      "mission_ids": [
+        "H07"
+      ],
+      "external_requirements": [
+        "ctx_hr_h07_scan_started",
+        "ctx_hr_h07_bundle_secured"
+      ]
+    },
+    {
+      "id": "H07_CAPTURE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC11"
+      ],
+      "mission_ids": [
+        "H07"
+      ],
+      "external_requirements": [
+        "ctx_hr_h07_captured"
+      ]
+    },
+    {
+      "id": "H07_ESCAPE_COMPLETE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC11"
+      ],
+      "mission_ids": [
+        "H07"
+      ],
+      "external_requirements": [
+        "ctx_hr_h07_original_secured",
+        "ctx_hr_h07_escape_complete",
+        "ctx_hr_h07_bundle_secured"
+      ]
+    },
+    {
+      "id": "H08_BRIEF",
+      "phase": "field",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_h08_ready"
+      ]
+    },
+    {
+      "id": "H08_CHECK",
+      "phase": "field",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_h08_ready",
+        "ctx_hr_h08_checked",
+        "ctx_hr_remote_sources_verified"
+      ]
+    },
+    {
+      "id": "H08_INCOMPLETE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_h08_ready",
+        "ctx_hr_h08_insufficient"
+      ]
+    },
+    {
+      "id": "H08_COMPARE_RECORDS",
+      "phase": "field",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_remote_sources_verified",
+        "ctx_hr_h07_checked",
+        "ctx_hr_h07_escape_complete",
+        "ctx_hr_h07_original_secured",
+        "ctx_hr_h07_bundle_secured"
+      ]
+    },
+    {
+      "id": "H08_WARNING_ACK",
+      "phase": "field",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_warning_acknowledged",
+        "ctx_hr_remote_sources_verified"
+      ]
+    },
+    {
+      "id": "H09_BRIEF",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_h09_ready",
+        "ctx_hr_warning_acknowledged",
+        "ctx_hr_sc12_driver_recent_passage"
+      ]
+    },
+    {
+      "id": "H09_CHECK",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_h09_ready",
+        "ctx_hr_h09_checked",
+        "ctx_hr_warning_acknowledged",
+        "ctx_hr_sc12_courier_104_confirmed"
+      ]
+    },
+    {
+      "id": "H09_INCOMPLETE",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_h09_ready",
+        "ctx_hr_h09_insufficient"
+      ]
+    },
+    {
+      "id": "H10_BRIEF",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC13"
+      ],
+      "mission_ids": [
+        "H10"
+      ],
+      "external_requirements": [
+        "ctx_hr_h10_ready",
+        "ctx_hr_warning_acknowledged",
+        "ctx_hr_sc12_driver_recent_passage",
+        "ctx_hr_sc12_exit_sighting_readback",
+        "ctx_hr_sc12_courier_104_confirmed"
+      ]
+    },
+    {
+      "id": "H10_CHECK",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC13"
+      ],
+      "mission_ids": [
+        "H10"
+      ],
+      "external_requirements": [
+        "ctx_hr_h10_ready",
+        "ctx_hr_h10_checked",
+        "ctx_hr_h10_stalled"
+      ]
+    },
+    {
+      "id": "H10_INCOMPLETE",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC13"
+      ],
+      "mission_ids": [
+        "H10"
+      ],
+      "external_requirements": [
+        "ctx_hr_h10_ready",
+        "ctx_hr_h10_insufficient"
+      ]
+    },
+    {
+      "id": "SC01_WINDOW_CHECK",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC01"
+      ],
+      "mission_ids": [
+        "H01"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc01_window_seen",
+        "ctx_hr_sc01_marks_checked"
+      ]
+    },
+    {
+      "id": "SC01_FIRST_REPORT",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC01"
+      ],
+      "mission_ids": [
+        "H01"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc01_window_seen",
+        "ctx_hr_sc01_report_readback"
+      ]
+    },
+    {
+      "id": "SC02_RETURN_WARNING",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC02"
+      ],
+      "mission_ids": [
+        "H01",
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc02_t01_complete",
+        "ctx_hr_sc02_threat_visible"
+      ]
+    },
+    {
+      "id": "SC02_ESCAPE",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC02"
+      ],
+      "mission_ids": [
+        "H01",
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc02_t01_complete",
+        "ctx_hr_sc02_escape_complete"
+      ]
+    },
+    {
+      "id": "SC02_RETRY",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC02"
+      ],
+      "mission_ids": [
+        "H01",
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc02_local_retry"
+      ]
+    },
+    {
+      "id": "SC03_DISPATCH_RECEIPT",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc02_escape_complete",
+        "ctx_hr_sc03_dispatch_readback",
+        "ctx_hr_sc01_report_readback",
+        "ctx_hr_sc03_ortiz_assigned"
+      ]
+    },
+    {
+      "id": "SC03_RELIEF_CONTACT",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_dispatch_readback",
+        "ctx_hr_sc03_ortiz_assigned"
+      ]
+    },
+    {
+      "id": "SC03_SHADOW_RULE",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_shadow_observed"
+      ]
+    },
+    {
+      "id": "SC03_ORTIZ_IDENTIFY",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_ortiz_assigned",
+        "ctx_hr_sc03_ortiz_identified"
+      ]
+    },
+    {
+      "id": "SC03_HELPER_TAKEN",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_ortiz_identified",
+        "ctx_hr_sc03_lift_observed",
+        "ctx_hr_sc03_safe_retreat"
+      ]
+    },
+    {
+      "id": "SC03_HELPER_TRACES",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_safe_retreat",
+        "ctx_hr_sc03_traces_checked"
+      ]
+    },
+    {
+      "id": "SC03_MISSING_RECEIPT",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_lift_observed",
+        "ctx_hr_sc03_safe_retreat",
+        "ctx_hr_sc03_missing_readback",
+        "ctx_hr_sc03_ortiz_identified",
+        "ctx_hr_sc03_dispatch_readback"
+      ]
+    },
+    {
+      "id": "SC03_LOCAL_ORDER_HOLD",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_missing_readback",
+        "ctx_hr_sc03_local_order_suspended"
+      ]
+    },
+    {
+      "id": "SC04_LIMITED_RETURN",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_local_order_suspended",
+        "ctx_hr_sc04_return_agreed"
+      ]
+    },
+    {
+      "id": "SC04_LOCAL_HOLD",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_schedule_isolated",
+        "ctx_hr_sc04_shift_originals_secured"
+      ]
+    },
+    {
+      "id": "SC04_ANNEX_IMPRINT",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_schedule_isolated",
+        "ctx_hr_sc04_annex_imprint_playing",
+        "ctx_hr_sc01_dale_reference_heard"
+      ]
+    },
+    {
+      "id": "SC04_ANNEX_LONG_ESCAPE",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_annex_long_escape"
+      ]
+    },
+    {
+      "id": "SC04_ANNEX_SOUND_ESCAPE",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_annex_sound_escape"
+      ]
+    },
+    {
+      "id": "SC04_ANNEX_RETRY",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_annex_local_retry"
+      ]
+    },
+    {
+      "id": "SC04_CAR_READ",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_after_annex_calm",
+        "ctx_hr_sc04_car_route_known",
+        "ctx_hr_sc04_car_threat_visible"
+      ]
+    },
+    {
+      "id": "SC04_CAR_ESCAPE",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_car_escape",
+        "ctx_hr_sc04_car_route_known"
+      ]
+    },
+    {
+      "id": "SC04_CAR_RETRY",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_car_local_retry"
+      ]
+    },
+    {
+      "id": "SC04_SAFE_ROOM_AGREEMENT",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC04"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_car_escape",
+        "ctx_hr_sc04_control_room_safe",
+        "ctx_hr_sc04_ward_on_line",
+        "ctx_hr_sc04_schedule_isolated",
+        "ctx_hr_sc04_shift_originals_secured"
+      ]
+    },
+    {
+      "id": "SC05_PASSIVE_RESIDUAL",
+      "phase": "signal",
+      "scenario_ids": [
+        "SC05"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc04_schedule_isolated",
+        "ctx_hr_sc05_residual_passive"
+      ]
+    },
+    {
+      "id": "BY02_REQUEST",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_by02_dated_lead",
+        "ctx_hr_by02_earl_present"
+      ]
+    },
+    {
+      "id": "BY02_REEL_IDENTIFY",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_by02_earl_present",
+        "ctx_hr_by02_reel_identity"
+      ]
+    },
+    {
+      "id": "BY02_TAPE_CHECK",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_by02_reel_identity",
+        "ctx_hr_by02_tape_isolated"
+      ]
+    },
+    {
+      "id": "BY02_LIVE_CHECK",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_by02_reel_identity",
+        "ctx_hr_by02_live_selected"
+      ]
+    },
+    {
+      "id": "BY02_SOURCE_COMPARE",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_by02_reel_identity",
+        "ctx_hr_by02_question_compared",
+        "ctx_hr_by02_tape_sample_verified",
+        "ctx_hr_by02_live_sample_verified"
+      ]
+    },
+    {
+      "id": "BY02_LATE_COPY",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_by02_dated_lead",
+        "ctx_hr_by02_source_copy_verified",
+        "ctx_hr_by02_question_compared"
+      ]
+    },
+    {
+      "id": "BY02_INCOMPLETE",
+      "phase": "archive",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_by02_source_insufficient"
+      ]
+    },
+    {
+      "id": "ARRAY_BRIEF",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_service_card_acquired"
+      ]
+    },
+    {
+      "id": "ARRAY_COMMAND_CHECK",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_command_checked"
+      ]
+    },
+    {
+      "id": "ARRAY_FIXED_REFERENCE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_reference_fixed"
+      ]
+    },
+    {
+      "id": "ARRAY_POINT_A",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_command_checked",
+        "ctx_hr_array_reference_fixed",
+        "ctx_hr_array_a_observed"
+      ]
+    },
+    {
+      "id": "ARRAY_POINT_B",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_command_checked",
+        "ctx_hr_array_reference_fixed",
+        "ctx_hr_array_b_observed"
+      ]
+    },
+    {
+      "id": "ARRAY_RETURN",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_a_observed",
+        "ctx_hr_array_b_observed",
+        "ctx_hr_array_return_observed"
+      ]
+    },
+    {
+      "id": "ARRAY_RESULT",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_command_checked",
+        "ctx_hr_array_reference_fixed",
+        "ctx_hr_array_a_observed",
+        "ctx_hr_array_b_observed",
+        "ctx_hr_array_return_observed",
+        "ctx_hr_array_geometry_compared",
+        "ctx_hr_array_command_history_compared"
+      ]
+    },
+    {
+      "id": "ARRAY_RETREAT",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_geometry_compared",
+        "ctx_hr_array_escape_complete"
+      ]
+    },
+    {
+      "id": "ARRAY_EMPTY_HOLD",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_escape_complete",
+        "ctx_hr_array_empty_hold_observed"
+      ]
+    },
+    {
+      "id": "ARRAY_RETRY",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_local_retry"
+      ]
+    },
+    {
+      "id": "ARRAY_INCOMPLETE",
+      "phase": "field",
+      "scenario_ids": [
+        "SC08"
+      ],
+      "mission_ids": [
+        "H04",
+        "H05"
+      ],
+      "external_requirements": [
+        "ctx_hr_array_insufficient"
+      ]
+    },
+    {
+      "id": "SC12_ROUTE_READBACK",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08",
+        "H09"
+      ],
+      "external_requirements": [
+        "ctx_hr_warning_acknowledged",
+        "ctx_hr_h09_checked",
+        "ctx_hr_sc12_driver_recent_passage",
+        "ctx_hr_sc12_exit_sighting_readback",
+        "ctx_hr_sc12_courier_104_confirmed"
+      ]
+    }
+  ],
+  "source_sha256": "e730371e26aa06c43a89ea81dfd6a06f7534daf744e004c647cc8c3f1ba63016"
+}

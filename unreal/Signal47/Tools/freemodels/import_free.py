@@ -17,6 +17,8 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from material_usage import ensure_mesh_material_usage
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from rt_lods import apply_configured_lods
 
 eal = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -162,6 +164,7 @@ for entry in plan:
 			'tris': tris_of(sm), 'nanite': part['nanite'], 'scale': round(entry['scale'], 6),
 			'materials': len(sm.get_editor_property('static_materials')),
 		})
+		apply_configured_lods(sm, rows[-1])
 		log('OK %s %s tris %d size %s cm%s' % (entry['category'], sm.get_path_name(), rows[-1]['tris'], rows[-1]['bounds_cm']['size'], ' NANITE' if part['nanite'] else ''))
 	# the exported meshes it replaces, cut (trim_web.py): the default glTF import, as the web's own
 	# geometry came in, one static mesh per g<id>; S47Props swaps them in, keeping their materials
