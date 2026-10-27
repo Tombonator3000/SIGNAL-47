@@ -355,8 +355,8 @@
     },
     {
       "path": "pdf-produksjon/bygg_pdf.py",
-      "bytes": 11519,
-      "sha256": "6c49669db6fb04c488a272819c2a4adf5c66bdba8cbe0ea28fdcdece3da1a804",
+      "bytes": 11518,
+      "sha256": "dbf85f84d9e16eb92fb936db791d6c004fa099d8296e983a63b83f0be3c8738e",
       "modified_for_repo": true
     },
     {

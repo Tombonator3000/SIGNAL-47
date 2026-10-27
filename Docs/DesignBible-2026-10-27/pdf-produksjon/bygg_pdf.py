@@ -22,7 +22,7 @@ if out == (b/'SIGNAL-47-Designbibel.pdf').resolve():
 out.parent.mkdir(parents=True,exist_ok=True)
 cache_dir=b/'build/cache';cache_dir.mkdir(parents=True,exist_ok=True)
 root=b/'assets'
-v=b/'visuell-retning' 
+v=b/'visuell-retning'
 pdfmetrics.registerFont(TTFont('DejaVu','/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'));pdfmetrics.registerFont(TTFont('DejaVuBold','/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'));pdfmetrics.registerFontFamily('DejaVu',normal='DejaVu',bold='DejaVuBold',italic='DejaVu',boldItalic='DejaVuBold')
 styles=getSampleStyleSheet();styles.add(ParagraphStyle(name='TitleS',fontName='DejaVuBold',fontSize=25,leading=30,textColor=colors.HexColor('#294640'),spaceAfter=15));styles.add(ParagraphStyle(name='SubS',fontName='DejaVu',fontSize=11,leading=16,textColor=colors.HexColor('#58685f'),spaceAfter=12));styles.add(ParagraphStyle(name='H1S',fontName='DejaVuBold',fontSize=17,leading=22,textColor=colors.HexColor('#294640'),spaceBefore=12,spaceAfter=7,keepWithNext=True));styles.add(ParagraphStyle(name='H2S',fontName='DejaVuBold',fontSize=12,leading=16,textColor=colors.HexColor('#9b5139'),spaceBefore=10,spaceAfter=5,keepWithNext=True));styles.add(ParagraphStyle(name='BodyS',fontName='DejaVu',fontSize=9,leading=13.8,spaceAfter=6,splitLongWords=True));styles.add(ParagraphStyle(name='SmallS',fontName='DejaVu',fontSize=8,leading=11.5,textColor=colors.HexColor('#56615a'),spaceAfter=5));styles.add(ParagraphStyle(name='BulletS',parent=styles['BodyS'],leftIndent=13,firstLineIndent=-9));styles.add(ParagraphStyle(name='MonoS',fontName='DejaVu',fontSize=7.5,leading=10,leftIndent=10,spaceAfter=4))
 story=[]
