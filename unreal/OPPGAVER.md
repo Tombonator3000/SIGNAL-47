@@ -1,5 +1,11 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Byens bygninger mer detaljert i Blender (TB2), Claude, 27.10.2026 (Blender ferdig, Unreal gjenstår)
+
+Sheriffkontoret, vaskeriet, fôrbutikken, kinoen og kirken er bygget på nytt i `Tools/townbuildings/tb2/` på grenen `claude/townbuildings-tb2`. Kildekontrollen består (966 av 966). Se `Tools/townbuildings/README.md` og `log.md` kl. 22:35. Motellet og rom 6 er Codex sitt arbeid og er uendret.
+
+Neste: native import av de fem familiene med nye `M_Town_<Bygning>`-materialer, ny `assembly.json` med trekanttallene, ekte lyskilder ved lampene, pakking og bilder fra spillet ved Caliche. Dette må samordnes med Codex sin motellimport, som bruker de samme byområdene.
+
 ## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (flettet)
 
 `unreal-port-core` var avtalt integrasjonsgren for SC01 til SC13 (`HISTORIE_IMPLEMENTERINGSPLAN.md`). PR #163, #164, #165, #166 og #168 ble flettet dit etter at PR #167 hadde tatt resten av grenen med til main, og de 17 commitene kom aldri videre. Det gjelder SC01-runtime (`S47Horror.cpp`, `S47HorrorPack.cpp`, `S47HorrorTest.cpp`, `S47HorrorVisual.cpp`), SC01-ressursene i `Content/Signal47/HorrorSC01` og `ArtSource/HorrorSC01`, den godkjente planen og rapportene `SC01_RUNTIME.md`, `T02_RUNTIME.md` og `NIGHT_PRODUCTION_RUNTIME.md`. SC01 har lokal pakket teknisk aksept fra før, men mot eldre main.

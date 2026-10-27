@@ -1,0 +1,453 @@
+[
+ {
+  "name": "M_Town_CinemaFinRed",
+  "base_color_linear": [
+   0.3,
+   0.085,
+   0.045,
+   1
+  ],
+  "roughness": 0.88,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.3,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.3,
+   0.085,
+   0.045,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaEnamelRed",
+  "base_color_linear": [
+   0.2,
+   0.022,
+   0.018,
+   1
+  ],
+  "roughness": 0.5,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/MetalPaint_base_color.png",
+   "roughness": "textures/MetalPaint_roughness.png",
+   "normal": "textures/MetalPaint_normal.png"
+  },
+  "texture_tint_linear": [
+   0.2,
+   0.022,
+   0.018,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaBlackTile",
+  "base_color_linear": [
+   0.018,
+   0.024,
+   0.021,
+   1
+  ],
+  "roughness": 0.22,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.12,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/FloorTile_base_color.png",
+   "roughness": "textures/FloorTile_roughness.png",
+   "normal": "textures/FloorTile_normal.png"
+  },
+  "texture_tint_linear": [
+   0.018,
+   0.024,
+   0.021,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaTerrazzoRed",
+  "base_color_linear": [
+   0.26,
+   0.065,
+   0.04,
+   1
+  ],
+  "roughness": 0.5,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.065,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/FloorTile_base_color.png",
+   "roughness": "textures/FloorTile_roughness.png",
+   "normal": "textures/FloorTile_normal.png"
+  },
+  "texture_tint_linear": [
+   0.26,
+   0.065,
+   0.04,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaTerrazzoCream",
+  "base_color_linear": [
+   0.58,
+   0.5,
+   0.36,
+   1
+  ],
+  "roughness": 0.5,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.065,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/FloorTile_base_color.png",
+   "roughness": "textures/FloorTile_roughness.png",
+   "normal": "textures/FloorTile_normal.png"
+  },
+  "texture_tint_linear": [
+   0.58,
+   0.5,
+   0.36,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaRoofTar",
+  "base_color_linear": [
+   0.055,
+   0.052,
+   0.046,
+   1
+  ],
+  "roughness": 0.92,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.4,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.055,
+   0.052,
+   0.046,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaVelvet",
+  "base_color_linear": [
+   0.19,
+   0.012,
+   0.014,
+   1
+  ],
+  "roughness": 0.7,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.25,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Cloth_base_color.png",
+   "roughness": "textures/Cloth_roughness.png",
+   "normal": "textures/Cloth_normal.png"
+  },
+  "texture_tint_linear": [
+   0.19,
+   0.012,
+   0.014,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaAluminium",
+  "base_color_linear": [
+   0.62,
+   0.62,
+   0.6,
+   1
+  ],
+  "roughness": 0.33,
+  "metallic": 0.9,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0
+ },
+ {
+  "name": "M_Town_CinemaBrass",
+  "base_color_linear": [
+   0.56,
+   0.37,
+   0.13,
+   1
+  ],
+  "roughness": 0.38,
+  "metallic": 1.0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0
+ },
+ {
+  "name": "M_Town_CinemaBulb",
+  "base_color_linear": [
+   1.0,
+   0.8,
+   0.5,
+   1
+  ],
+  "roughness": 0.3,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.8,
+   0.5,
+   1
+  ],
+  "emission_strength": 7.0
+ },
+ {
+  "name": "M_Town_CinemaReaderGlow",
+  "base_color_linear": [
+   0.92,
+   0.88,
+   0.76,
+   1
+  ],
+  "roughness": 0.45,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0.92,
+   0.88,
+   0.76,
+   1
+  ],
+  "emission_strength": 2.8
+ },
+ {
+  "name": "M_Town_CinemaNeonRed",
+  "base_color_linear": [
+   1.0,
+   0.055,
+   0.02,
+   1
+  ],
+  "roughness": 0.3,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.055,
+   0.02,
+   1
+  ],
+  "emission_strength": 11.0
+ },
+ {
+  "name": "M_Town_CinemaStucco",
+  "base_color_linear": [
+   0.64,
+   0.45,
+   0.28,
+   1
+  ],
+  "roughness": 0.93,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.38,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.64,
+   0.45,
+   0.28,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaStain",
+  "base_color_linear": [
+   0.53,
+   0.37,
+   0.23,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.38,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.53,
+   0.37,
+   0.23,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_CinemaBronze",
+  "base_color_linear": [
+   0.16,
+   0.1,
+   0.06,
+   1
+  ],
+  "roughness": 0.36,
+  "metallic": 0.85,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0
+ },
+ {
+  "name": "M_Town_CinemaDeadBulb",
+  "base_color_linear": [
+   0.55,
+   0.52,
+   0.45,
+   1
+  ],
+  "roughness": 0.25,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0
+ }
+]
