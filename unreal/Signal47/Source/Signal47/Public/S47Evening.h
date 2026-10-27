@@ -48,6 +48,8 @@ public:
  void ControlServiceDriveTest(double Dt);
  S47J::FObj Save() const;
  FS47EveningPack Pack;
+ // The diner waitress speaking now: take id and seconds into it on the audio clock.
+ bool PhysicalSpeech(FString& Clip, double& Seconds) const;
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M = nullptr;

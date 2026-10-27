@@ -1,5 +1,7 @@
 # Lumen Lite, tåkespredning og avstandsstyrte skygger
 
+Oppdatert status 27. oktober: punkt 5 er faktisk levert lokalt. [Atmosfærerapporten](ATMOSPHERE_2026-10-27.md) dokumenterer småsteinskygger, gressvind, lydretting og FSSS som forblir av etter måling. Eldre kartlegging nedenfor beskriver tilstanden før de senere terreng-/MetaHuman-leveransene.
+
 Senere oppfølging samme dag: Tom godkjente de to første visuelle stegene. Pure Sky er installert for dagtid med overgang til uendret eksisterende natt, se [SKY.md](SKY.md). Tolv utvendige armaturer har fått originale Blender-modeller og rettet montering/lys; [NEAR_DETAILS_2026-10-26.md](NEAR_DETAILS_2026-10-26.md) har gjeldende sluttkontroll og leveringsstatus. Vurderingen nedenfor beskriver grunnlaget før dette arbeidet. Terreng og natur er senere gjennomført i R2, se [TERRAIN_ROUTE_2026-10-26.md](TERRAIN_ROUTE_2026-10-26.md). Lumen Lite og FSSS er fortsatt uprøvde forslag.
 
 Vurdert 26. oktober 2026 for SIGNAL / 47, Unreal Engine 5.8.4 på Linux/Vulkan. Bestilt av Tom for senere bruk. Dette er kildeundersøkelse og anbefalinger, ikke implementerte grafikkendringer eller nye ytelsesmålinger.

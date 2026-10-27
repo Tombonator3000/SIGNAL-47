@@ -1,5 +1,7 @@
 # SIGNAL / 47
 
+Gjeldende spillutgave utvikles i [Unreal](unreal/README.md). [Samlede lokale leveranser og designbibel, 27. oktober 2026](Docs/LOCAL_DELIVERIES_2026-10-27.md). Omtalen av nettspill og Unity nedenfor er historikk.
+
 Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
 **Spill i nettleseren: https://tombonator3000.github.io/SIGNAL-47/** (PC og mobil, ingenting å installere)

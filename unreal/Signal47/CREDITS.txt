@@ -86,4 +86,7 @@ Additional licensed environment assets (Fab):
 "Modular Post Apocalyptic Desert Environment (Desert City,Desert Village)" by JustB Studios, https://www.fab.com/listings/be5ed72e-f542-41f4-b747-bdb343eef609
 "Old West Learning" by Epic Education Learning and Training (including Quixel Megascans), https://www.fab.com/listings/785da98f-3c56-4736-b898-826116d8f06f
 
+MetaHuman character and hair assets: Epic Games, https://www.metahuman.com/
+Original waitress uniform and native integration: SIGNAL / 47.
+
 Music, sound and fonts are credited in the game's end credits.

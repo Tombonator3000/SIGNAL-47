@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "checks": [
+    "197 original workspace source hashes verified unchanged before raw-log copies were excluded; originals retained",
+    "173 stored copied/existing-pointer hashes verified after excluding21rawlogs",
+    "Four archived receipt hashes match exact Git blobs",
+    "Relocated main UI gallery local dependencies resolve"
+  ],
+  "local_html_references_checked": 116,
+  "historical_fragment_missing_dependencies": [
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/title.html",
+      "reference": "base.css"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/settings.html",
+      "reference": "base.css"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/settings.html",
+      "reference": "thumb-dish.jpg"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/settings.html",
+      "reference": "thumb-dish.jpg"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/pause.html",
+      "reference": "base.css"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/load.html",
+      "reference": "base.css"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/load.html",
+      "reference": "thumb-room.jpg"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/load.html",
+      "reference": "thumb-outside.jpg"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/hud.html",
+      "reference": "base.css"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "base.css"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "kit_notebook.png"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "kit_jacket.png"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "kit_camera.png"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "kit_keys.png"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "kit_papers.png"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "kit_flashlight.png"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "reference": "kit_camera.png"
+    },
+    {
+      "file": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/document.html",
+      "reference": "base.css"
+    }
+  ],
+  "historical_fragment_note": "18 missing references already belonged to incomplete recovered HTML fragments, documented in original LES_MEG.txt; preserved as historical sources, not claimed runnable.",
+  "issues": [],
+  "heavy_jobs_started": false,
+  "raw_logs_excluded": 21
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "file": "dales-kontor.png",
+    "source": "/home/tom/scratch-bm/Signal47-arrival-office-20261026/runtime-r5/office-arrival/profile-evidence/Saved/OfficeEarly/01A1789F3D287393B43AF9A8640F4AA3/office-room-overview.png",
+    "sha256": "14ea88a7e69e980b302eb588cfaf9cc3c0fb5ee0d65df2a21d018b43ccb6ca92",
+    "package": "R5 integrated NP1+arrival+office",
+    "review": "PASS selected actual pixels"
+  },
+  {
+    "file": "inngang.png",
+    "source": "/home/tom/scratch-bm/Signal47-arrival-office-20261026/runtime-r5/final-smoke/shots/dusk-entrance.png",
+    "sha256": "0431834ea0ccdf14b28e43979782f2178ffa2d6c9d51ee3fc4104b1e97475cef",
+    "package": "R5 integrated NP1+arrival+office",
+    "review": "PASS selected actual pixels"
+  },
+  {
+    "file": "besoksparkering.png",
+    "source": "/home/tom/scratch-bm/Signal47-arrival-office-20261026/runtime-r5/final-smoke/shots/dusk-visitor-sign.png",
+    "sha256": "79cdc4bb7de435105a4516203789b43e2c793fac65b218ba48cabbf07d198e46",
+    "package": "R5 integrated NP1+arrival+office",
+    "review": "PASS selected actual pixels"
+  }
+]

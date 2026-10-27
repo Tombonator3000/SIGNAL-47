@@ -2,3 +2,6 @@
 unreal/**/*.uasset filter=lfs diff=lfs merge=lfs -text
 unreal/**/*.umap filter=lfs diff=lfs merge=lfs -text
 unreal/**/*.ttf filter=lfs diff=lfs merge=lfs -text
+
+# Preserve the archived PDF byte-for-byte; do not treat PDF syntax as text.
+Docs/DesignBible-2026-10-27/SIGNAL-47-Designbibel.pdf binary

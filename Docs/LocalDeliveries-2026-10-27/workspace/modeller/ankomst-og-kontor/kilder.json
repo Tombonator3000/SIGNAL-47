@@ -1,0 +1,12 @@
+[
+  {
+    "source": "/home/tom/SIGNAL-47/unreal/ArtSource/ArrivalEntrance/SARO_ArrivalEntrance.blend",
+    "copy": "/home/tom/Documents/ChatGPT/Signal 47/modeller/ankomst-og-kontor/SARO_ArrivalEntrance.blend",
+    "sha256": "073d6d0a6ade5720557a6d419e9bcfa53be4dfb5c44cd0191e0d0c372065b697"
+  },
+  {
+    "source": "/home/tom/SIGNAL-47/unreal/ArtSource/Office/Signal47_Operations.blend",
+    "copy": "/home/tom/Documents/ChatGPT/Signal 47/modeller/ankomst-og-kontor/Signal47_Operations.blend",
+    "sha256": "af9d4dfd27a81578bfe4c68d8efea6831475502ee77de7732e25ee08cd08b167"
+  }
+]

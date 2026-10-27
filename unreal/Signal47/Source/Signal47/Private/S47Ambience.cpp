@@ -6,6 +6,19 @@ namespace
 	double Rnd(double A, double B) { return A + FMath::FRand() * (B - A); }
 	template <typename T> const T& Pick(const TArray<T>& A) { return A[FMath::Min(A.Num() - 1, int32(FMath::FRand() * A.Num()))]; }
 	constexpr double Pi = 3.14159265358979323846;
+	struct FTimeOfDay { double Hour, Temp, Dawn, Night; };
+	FTimeOfDay TimeOfDay(double Clock)
+	{
+		const double Hour = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0) / 3600;
+		// Unreal's extended evening starts before 21:00. The old modulo treated
+		// 17:20 as twenty hours into a freezing night, then jumped warm at 21:00.
+		// Keep the established 21:00-to-dawn cooling, with a continuous evening.
+		const double CoolingHours = Hour < 12 ? Hour + 3 : FMath::Max(Hour - 21, 0.0);
+		const double Dawn = FMath::Clamp((Hour - 4.9) / 0.6, 0.0, 1.0) * (Hour < 12 ? 1 : 0);
+		const double Evening = FMath::Clamp(Hour - 18, 0.0, 1.0);
+		const double Night = Hour < 12 ? 1 - Dawn : Evening * Evening * (3 - 2 * Evening);
+		return { Hour, 16 - 1.2 * CoolingHours, Dawn, Night };
+	}
 }
 
 // ---------- Drift ----------
@@ -181,6 +194,39 @@ int32 FS47Ambience::CricketsNow() const
 	return N;
 }
 
+bool FS47Ambience::SelfTest(TArray<FString>& Lines)
+{
+	bool bAll = true;
+	auto Check = [&](bool bPass, const TCHAR* Why)
+	{
+		Lines.Add(FString::Printf(TEXT("%s ambience %s"), bPass ? TEXT("OK") : TEXT("FAIL"), Why));
+		bAll &= bPass;
+	};
+	const FTimeOfDay Afternoon = TimeOfDay((17 + 20.0 / 60) * 3600);
+	Check(Afternoon.Temp > 6.3 && Afternoon.Night == 0, TEXT("17:20 is a warm afternoon without nocturnal insects"));
+	const FTimeOfDay Dusk = TimeOfDay(18.5 * 3600);
+	Check(Dusk.Night > 0 && Dusk.Night < 1, TEXT("insects fade in during dusk instead of waiting for 21:00"));
+	Check(TimeOfDay(19 * 3600).Night == 1, TEXT("night ambience is available after dusk"));
+	const FTimeOfDay Before = TimeOfDay(21 * 3600 - .01), After = TimeOfDay(21 * 3600 + .01);
+	Check(FMath::Abs(Before.Temp - After.Temp) < .001 && Before.Night == After.Night,
+		TEXT("temperature and nocturnal envelope stay continuous across 21:00"));
+	bool bNightUnchanged = true;
+	for (double Hour = 21; Hour <= 29.5; Hour += .25)
+	{
+		const FTimeOfDay P = TimeOfDay(Hour * 3600);
+		const double ExpectedDawn = Hour < 24 ? 0 : FMath::Clamp((Hour - 24 - 4.9) / .6, 0.0, 1.0);
+		bNightUnchanged &= FMath::IsNearlyEqual(P.Temp, 16 - 1.2 * (Hour - 21), 1e-9) &&
+			FMath::IsNearlyEqual(P.Dawn, ExpectedDawn, 1e-9) && FMath::IsNearlyEqual(P.Night, 1 - ExpectedDawn, 1e-9);
+	}
+	Check(bNightUnchanged, TEXT("established full-night cooling and dawn envelope are preserved"));
+	const FTimeOfDay Yesterday = TimeOfDay(-2 * 3600), Today = TimeOfDay(22 * 3600), Tomorrow = TimeOfDay(46 * 3600);
+	Check(Yesterday.Temp == Today.Temp && Today.Temp == Tomorrow.Temp && Yesterday.Night == Today.Night && Today.Night == Tomorrow.Night,
+		TEXT("negative and next-day restored clocks use the same daily phase"));
+	Check(FMath::IsNearlyZero(TimeOfDay(5.5 * 3600).Night, 1e-9) && TimeOfDay(12 * 3600).Night == 0,
+		TEXT("the nocturnal envelope is silent after dawn and at noon"));
+	return bAll;
+}
+
 void FS47Ambience::SetSpace(const FString& InSpace)
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
@@ -206,10 +252,8 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 		if (Wk > 0 && WinK <= 0) T.Birds = FMath::Min(T.Birds, Rnd(2, 6));
 		WinK = Wk; Win->Gain.SetTargetAtTime(0.2 * Wk, Now, 0.6);
 	}
-	const double Hour = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0) / 3600;
-	const double SinceDusk = FMath::Fmod(Hour - 21 + 24, 24.0);   // 21:00 is 0
-	const double Temp = 16 - 1.2 * SinceDusk;                        // about 13 C at midnight, 6 at dawn
-	const double Dawn = FMath::Clamp((Hour - 4.9) / 0.6, 0.0, 1.0) * (Hour < 12 ? 1 : 0);
+	const FTimeOfDay Day = TimeOfDay(Clock);
+	const double Hour = Day.Hour, Temp = Day.Temp, Dawn = Day.Dawn;
 	// ---------- how much is going on ----------
 	if ((T.Mood -= Dt) <= 0)
 	{
@@ -231,7 +275,7 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 	Wind.Colour->Step(Dt, Now);
 	if ((T.Gust -= Dt) <= 0) { T.Gust = Rnd(14, 55) / (0.4 + M); Gust(); }
 	// ---------- crickets: fewer and slower as it cools, gone by dawn ----------
-	const double Active = FMath::Clamp((Temp - 6.3) / 5, 0.0, 1.0) * (1 - Dawn) * (1 - FMath::Clamp(Thin, 0.0, 1.0));
+	const double Active = FMath::Clamp((Temp - 6.3) / 5, 0.0, 1.0) * Day.Night * (1 - FMath::Clamp(Thin, 0.0, 1.0));
 	const double Rate = FMath::Max(0.2, (Temp - 4) / 7.5);
 	if (BugRec) BugRec->Level->Step(Dt, Now, Active * (0.5 + 0.5 * M));
 	if (Held)
@@ -266,14 +310,14 @@ void FS47Ambience::Update(double Dt, const FVector& At, double Clock)
 		T.Life = Rnd(25, 70) / Busy;
 		const double R = FMath::FRand();
 		const FString Name = R < 0.35 ? TEXT("owl") : R < 0.6 ? Pick(TArray<FString>{ TEXT("dog0"), TEXT("dog1") }) : TEXT("gust");
-		if (!(Name == TEXT("owl") && Dawn > 0.6)) Far(Name, At, Name == TEXT("gust") ? 0.3 : Name == TEXT("owl") ? 0.26 : 0.18, Name == TEXT("owl") ? Rnd(0.9, 1.05) : Rnd(0.95, 1.05));
+		if (Name != TEXT("owl") || Day.Night >= 0.4) Far(Name, At, Name == TEXT("gust") ? 0.3 : Name == TEXT("owl") ? 0.26 : 0.18, Name == TEXT("owl") ? Rnd(0.9, 1.05) : Rnd(0.95, 1.05));
 	}
 	if ((T.Poorwill -= Dt) <= 0)
 	{
 		// they call most in the grey before dawn
 		const double Keen = Hour >= 3.5 && Hour < 5.3 ? 1 : 0.35;
 		T.Poorwill = Rnd(90, 260) / (Keen * Busy);
-		if (Temp > 5 && Dawn < 0.9) Poorwill(At);
+		if (Temp > 5 && Day.Night > 0.1) Poorwill(At);
 	}
 	if ((T.Coyote -= Dt) <= 0)
 	{
