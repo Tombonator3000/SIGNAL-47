@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Gjeldende levering, 27. oktober 2026 kl. 23:19 CET
+
+Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet.
+
+Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 kontroller, inklusive tre faktiske taleklipp, pause og diskrestore. Bildet etter restore er åpnet og vurdert. Alle 50 personlige Saved-filer er uendret fra oppdragets start. Dette er automatiserte kontroller og bildevurdering, ikke menneskelig gjennomspilling eller en helspill-/FPS-garanti. Se [motelrapporten](MOTEL_V2.md). Tidligere utsagn nedenfor om at SC01 ikke er standard eller at PR172 venter, er historikk. Ingen ny spillutgave er publisert.
+
 ## Grenene, 27. oktober 2026
 
 - PR #170 ble flettet av Tom 26.10 kl. 22:15, etter avsnittet under som sier at den ikke er flettet. Hele `screenshots.sh` var ikke kjørt (0 av 110) da; 27.10 kl. 19:15 består den 110 av 110 på main pluss SC01.
