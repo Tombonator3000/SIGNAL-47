@@ -1,5 +1,17 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (åpen)
+
+Gjøres når Tom er ved Kubuntu. PR #163, #164, #165, #166 og #168 ble flettet til `unreal-port-core`, ikke til main (se regelen i `AGENTS.md`). Grenen er 17 commits foran main. Det meste av NP1 kom til main med PR #170, men SC01-runtime (`S47Horror.cpp`, `S47HorrorPack.cpp`, `S47HorrorTest.cpp`, `S47HorrorVisual.cpp`), den godkjente SC01 til SC13-planen (`df868211`) og kvitteringene for T02 og NP1-installasjonen finnes bare der. SC01 har lokal pakket teknisk aksept (`SC01_RUNTIME.md` på grenen), men er ikke flettet eller installert.
+
+1. Sjekk at ingen Unreal-, spill- eller pakkejobb kjører (`unreal_guard.py require-idle`), og at ingen annen økt er midt i en Unreal-jobb.
+2. Kjør hele `Scripts/screenshots.sh` mot det som er på main nå (PR #170; installert standard er nå atmosfære-R1 med MetaHuman R3, se avsnittene under). Den sto på 0 av 110 da PR #170 ble flettet. Da finnes et kontrollert utgangspunkt før SC01 kommer inn.
+3. Lag en ny gren fra `origin/main`. Finn ut om den beskyttede lokale kandidaten «SC01-R4» i `~/scratch-bm` er SC01 tilpasset nyere main. Bruk den i så fall som kilde, ellers `origin/unreal-port-core`.
+4. En prøvefletting 27.10 (`git merge-tree`, ingenting endret eller pushet) ga 17 konflikter: kode i `Source/Signal47/Private/S47Flow.cpp`, `S47HUD.cpp`, `S47Office.cpp`, `Public/S47Main.h`, `S47Office.h` og `Config/DefaultGame.ini`; data i `Narrative/HorrorStory` (`build_pack.py`, `test_pack.py`, `generated/recording_manifest.json`, `generated/subtitles.json`, `generated/voice_lines.csv`); dokumenter (`README.md`, `OPPGAVER.md`, `COW_MODELS.md`, `log.md`, `memory.md`, `todo.md`). Behold begge sider i dokumentene, og lag de genererte filene på nytt med generatoren i stedet for å flette dem for hånd.
+5. Bygg editor og pakke. Kjør SC01-kontrollene fra `SC01_RUNTIME.md`, HorrorStory-testene og hele `screenshots.sh`. Gamle lagringer skal fortsatt laste.
+6. PR mot main, sjekk at grunnlagsgrenen er `main`, flett. Installer bare hvis Tom vil ha SC01 som standard, etter vanlig rutine med bevarte lagringer.
+7. Når `git rev-list --count origin/main..origin/unreal-port-core` er 0: slett `unreal-port-core` på GitHub og lokalt.
+
 ## Reposamling, 2026-10-27 kl. 14:46 CET
 
 Tom ba om alle lokale leveranser og designbibelen fra `01a17d06-3c66-78f3-b21b-b784af2cc91a`. Samlet på `codex/local-deliveries-design-bible-20261027`, med [felles indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md), 42-siders PDF, redigerbare kilder og manglende konsepter/rapporter. MetaHuman-/atmosfærekildene er bevart. SC01-kilden finnes allerede eksternt på dbae3177; kvittering og kildeindeks er samlet, uten å overskrive nyere runtime. Ingen ny spillrelease, installasjon eller full merge-matrise inngår i arkiveringen.

@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Grenene, 27. oktober 2026
+
+- PR #170 ble flettet av Tom 26.10 kl. 22:15 uten at hele `screenshots.sh` var kjørt (0 av 110), og den er ikke kjørt senere (se også Linux-nedlastingen under).
+- PR #147 til #166 og #168 gikk mot `unreal-port-core`, ikke main. Main fikk det meste likevel fordi grenen til PR #167 var laget fra `unreal-port-core` (til `41430ade`) og tok det med seg. #163, #164, #165, #166 og #168 kom etter det og ble igjen: SC01, SC01 til SC13-planen og to kvitteringer finnes bare på `unreal-port-core`.
+- Toms beslutning: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting (`AGENTS.md`). Flettingen av SC01 står i `OPPGAVER.md` og gjøres når Tom er ved Kubuntu.
+
 ## Atmosfærepass ferdig, 2026-10-27 kl. 13:12 CET
 
 - Gjeldende lokale standard er atmosfære-R1 med MetaHuman bevart. 1 435 sub-12cm steiner har ikke direkte skygge; større steiner/planter/bygg og modellavstander er beholdt. Grass_A/B bruker egen svak WPO, uten endring av den delte tre-/buskmatten eller eksisterende runtimeflora.

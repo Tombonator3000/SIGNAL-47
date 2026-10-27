@@ -684,6 +684,17 @@ Identisk R1 er installert i standardstarteren. Installert Low består ni kontrol
 Oppfølgingskvittering: appen bekrefter deleteStatus=deleted for fortsett-signal-47-etter-metahuman. Samtalen er ikke arkivert. Etter canonical prune består identisk installert payload, alle personlige Saved og kildeverktøyenes syntaks-/diffkontroll.
 
 
+## 2026-10-27 kl. 14:36 CET: statussjekk av hele repoet og lokalt (Claude, skysesjon)
+
+- Tom spurte om status, hele repoet og lokalt. Bare lesing: ingen kilde, bygg, installasjon eller lagring er endret.
+- main er `0ee7c24` (PR #170, 26.10 kl. 22:15 CET), 621 commits og PR #99 til #170 etter forrige nettleveranse 17.10. Ingen åpne PR-er.
+- Grenen `unreal-port-core` er 17 commits foran main: PR #163, #164, #165, #166 og #168 ble flettet dit, ikke til main. NP1-innholdet kom senere til main gjennom PR #170 (43 av 49 filer fra `2c05e33d` er like), men SC01-runtime (`S47Horror.cpp`, `S47HorrorPack.cpp`, `S47HorrorTest.cpp`, `S47HorrorVisual.cpp`), den godkjente SC01 til SC13-planen (`df868211`) og kvitteringene for T02 og NP1-installasjonen finnes bare der.
+- PR #170 ble flettet etter oppføringen over, der den påkrevde `screenshots.sh`-matrisen sto på 0 av 110 startet. Ingen senere oppføring sier at den er kjørt: UNVERIFIED.
+- Nettversjonen: GitHub Pages svarer 404, og siste Pages-bygg (22.10, PR #146) feilet. Det stemmer med beslutningen 22. oktober om at `web/` ikke publiseres.
+- Repoet svarer som offentlig mot GitHub-API-et uten innlogging, mens README-en i `unreal/` omtaler repoet og testutgivelsen som private.
+- Lokalt i skysesjonen: klonen av SIGNAL-47 sto på arbeidsgrenen fra 17.10 (`759eb68`, allerede i main) uten ulagrede endringer; main er hentet. Klonen av prosjektbibliotek er 8 commits bak sin main. Toms Kubuntu-maskin (installert bygg i `~/Games/Signal47`, Saved og bevismapper under `~/scratch-bm`) kan ikke nås herfra og er ikke kontrollert.
+
+
 ## Reposamling, 2026-10-27 kl. 14:46 CET
 
 Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2cc91a` er samlet på `codex/local-deliveries-design-bible-20261027`. Se [samlet indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md). PDF er byteidentisk; kilder/bildeavhengigheter er med og identiske assets deduplisert. Ny MetaHuman-/atmosfærekode, egne verktøy og runtimebilder inkluderes. NP1/T02/SC01-kvitteringer arkiveres; SC01s dbae3177 er allerede på GitHub, men er ikke integrert i dagens main-baserte bygg. Ingen eldre runtime overskriver nyere levering. Lisensierte råassets, rålogger/private chatter og Saved utelates. Filhash/lenker kontrolleres; ingen ny tung jobb eller spillrelease. Full 110-matrise gjenstår før main-merge av samlet runtime.
@@ -692,3 +703,16 @@ Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2c
 ## Reposamling publisert, 2026-10-27 kl. 14:48 CET
 
 [PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172) er opprettet som utkast og knyttet til samtalen. Kildegren er pushet. Indeks og 42-siders PDF er anonymt nedlastet fra GitHub med HTTP 200; PDF-hash er identisk etter overføring. Python/JSON, 68 designmanifest-hash, 173 tilleggspekere/kopier og inngangslenker består. Full 110-matrise/main-merge og ny spillutgave er ikke utført. Kun rå testlogger og axis_probe-diagnostikk står igjen lokalt ustaget.
+
+
+## 2026-10-27 kl. 14:53 CET: hvorfor PR-er havnet på `unreal-port-core`, regel og oppgave (Claude, skysesjon)
+
+- Tom spurte om flettingen av `unreal-port-core` bør gjøres nå, og hvordan dette kunne skje. Prøvefletting med `git merge-tree` (ingenting endret eller pushet): 17 konflikter, sju av dem i kode (`S47Flow.cpp`, `S47HUD.cpp`, `S47Office.cpp`, `S47Main.h`, `S47Office.h`, `DefaultGame.ini`). Anbefalt å gjøre det på Kubuntu med bygg og `screenshots.sh`, ikke fra skyen. Tom: ordner det når han er ved Kubuntu.
+- Årsak, fra grunnlagsgrenen på hver PR hos GitHub: PR #144 til #146 (22.10) flettet `unreal-port-core` til main som de skulle. PR #147 til #166 og #168 (23. til 26.10) gikk mot `unreal-port-core`, fordi øktene fortsatte å lage grener fra den. Ingen regel sa hvilken gren en PR skal gå mot, og regelen om `screenshots.sh` gjaldt bare fletting til main. PR #167 gikk mot main med en gren laget fra `unreal-port-core` ved `41430ade` og tok med seg alt til da; #163 til #166 og #168 kom senere og ble igjen. Standardgrenen på GitHub er `main`.
+- Etter Toms ja: regelen «PR-er går mot main» i `AGENTS.md`, oppgaven med trinn og konfliktlista øverst i `OPPGAVER.md`, punkter i `todo.md` og avsnittet i `memory.md` (der også at PR #170 ble flettet uten hele `screenshots.sh`). Bare dokumenter; ingen kilde, bygg, installasjon eller lagring er endret.
+
+
+## 2026-10-27 kl. 17:14 CET: main flettet inn i PR 172 (Claude, skysesjon)
+
+- Tom ba om at konfliktene i `todo.md`, `memory.md` og `log.md` rettes; `OPPGAVER.md` hadde også konflikt. Main (`c603d1ba`, med PR #171 og #173) er flettet inn i `codex/local-deliveries-design-bible-20261027` med en vanlig merge-commit, ingen omskriving av grenens historikk.
+- Begge sider er beholdt. Loggen står i tidsrekkefølge. I `OPPGAVER.md`, `todo.md` og `memory.md` står den åpne SC01-oppgaven og grenregelen øverst, så avsnittene fra reposamlingen, atmosfæren, MetaHuman og Linux-nedlastingen. To setninger i SC01-oppgaven og ett punkt i `memory.md` er rettet fordi MetaHuman nå er levert og installert standard er atmosfære-R1. Bare disse fire dokumentene er rørt; ingen kilde, asset, bygg eller installasjon.

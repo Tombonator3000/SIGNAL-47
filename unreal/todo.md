@@ -1,5 +1,11 @@
 # Todo for unreal/
 
+## Grenene, 27. oktober 2026
+
+- [x] Regel i `AGENTS.md`: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting.
+- [ ] Hele `screenshots.sh` mot main etter PR #170 (0 av 110 da den ble flettet).
+- [ ] Flett SC01 og resten av `unreal-port-core` inn i main, og slett grenen. Trinnene står øverst i `OPPGAVER.md`. Venter på at Tom er ved Kubuntu.
+
 ## Samle lokale leveranser til repo, 27. oktober 2026
 
 - [x] Samle designbibel, portable redigerbare kilder, konsepter og manglende kvitteringer med SHA-/lenkekontroll. Se [indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md).

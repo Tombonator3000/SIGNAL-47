@@ -12,6 +12,12 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 - Felles oppgaveliste og arbeidsdeling med Codex: `OPPGAVER.md`.
 - Logg alt i `log.md` med dato og klokkeslett (Europe/Oslo). Hold `memory.md` og `todo.md` oppdatert.
 
+## PR-er går mot main, bestemt 27. oktober 2026
+
+- Alle PR-er for spillet går mot `main`. Lag nye grener fra oppdatert `origin/main`, ikke fra en annen arbeidsgren.
+- Sjekk grunnlagsgrenen før fletting, for eksempel med `gh pr view <nr> --json baseRefName`. Er den ikke `main`, rett den med `gh pr edit <nr> --base main` før fletting. Regelen om hele `screenshots.sh` før fletting gjelder alle PR-er som endrer spillet.
+- `unreal-port-core` er ikke en integrasjonsgren. Fra 23. til 26. oktober gikk 19 PR-er (#147 til #166 og #168) dit i stedet for til main, og SC01 og to kvitteringer ble igjen der. Flettingen inn i main står øverst i `OPPGAVER.md`. Grenen slettes når den er flettet.
+
 ## Varig grense for lokale testbygg, bestemt 25. oktober 2026
 
 - Behold gjeldende verifiserte bygg og maksimalt **to eldre komplette testbygg** lokalt. Installerte standardfiler beholdes alltid. Aktive pakkekjøringer, testkandidater som fortsatt undersøkes og nødvendige sammenligningsbygg beskyttes til oppgaven er avsluttet; tell og rydd dem når de frigis.
