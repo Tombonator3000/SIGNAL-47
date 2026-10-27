@@ -743,3 +743,14 @@ PR170 er opprettet som draft og vedlagt samtalen: https://github.com/Tombonator3
 - `git rev-list --count origin/main..origin/unreal-port-core` ga 0, og ingen åpne PR-er hadde `unreal-port-core` som grunnlag. Grenen er slettet på GitHub og lokalt (den sto på `797bed4c`).
 - Ikke gjort: SC01 er ikke installert som standard i det installerte spillet; det venter på Tom. Kandidaten ligger i `~/scratch-bm/Signal47-pr174-20261027/candidate/Linux`. Oppryddingen med `prune-test-builds.py` er ikke kjørt, fordi tillatelsessystemet i økta avviste tørrkjøringen.
 - Denne oppføringen er ført i en egen dokumentcommit etter flettingen, fordi kl. 19:20-oppføringen lå i PR-en som ble flettet.
+
+## 2026-10-27 kl. 21:30 til 00:22 CET: forberedelse av SC02 til SC13 (Claude, skysesjon)
+
+- Tom hadde ikke tilgang til Kubuntu og ba om å forberede SC02 og resten til SC13. Grenen `ccr-20021313-mfplx9` er laget fra `origin/main` (`1c309d11`). Skyen har verken Unreal eller GPU; alt runtimearbeid her er UNVERIFIED.
+- Prosjektbiblioteket ble søkt først (stealth, persepsjon, Unreal-AI, dialoglagring). Eneste relevante treff var The Dark Mod (GPL), brukt bare som designreferanse for syn, lyd og søk. Ingen kode er gjenbrukt derfra.
+- Tre hjelpere kartla koden for SC01 til SC05, SC06 til SC09 og SC10 til SC13. Resultatet er `Narrative/HorrorStory/world_producers.json`: produsent for alle 96 flagg (12 finnes, 48 delvis, 36 nye), 79 matriserader, 117 prøver og 13 arbeidspakker. `build_pack.py` validerer det og lager `generated/SCENE_MATRIX.md`. Sju nye negative prøver; `test_pack.py` 31 OK, `build_pack.py --check` PASS med 10 eksporter, EveningShift `--check` PASS. `HorrorPackData.inl` og de andre runtimeeksportene er byteidentiske.
+- `voice/generate.py --scenario SCnn` velger cuene for ett scenario. Prøvd uten syntese: SC01 gir de fem som før, SC02 tre Dale-cues, SC03, SC08 og SC12 stopper på manglende profiler for Ward, Ortiz, Earl og sjåføren.
+- SC02: én hjelper skrev runtimekoden (revisjon 2, `horror.sc02`, `FS47HorrorThreat`, rutegraf ved trafoen, lokal retry), én bygget modellen med bpy 5.1.2 i skyen (13 660 trekanter LOD0, 4 098 LOD1, renderbilder sett). En tredje hjelper gjennomgikk koden uavhengig: ingen sikre kompileringsfeil, ingen endring for revisjon 1, én alvorlig logisk feil (møtet kunne bli stående fast) og fem mindre. Alle seks er rettet i `6966b644`. To kjente begrensninger er ført i forberedelsesdokumentet.
+- Motstrider mellom manus, plan og kode er samlet som 16 avklaringer for Tom i `SC02_TIL_SC13_FORBEREDELSE.md`. Ingen av dem er løst på egen hånd.
+- Planens statustabell: SC02 «Under arbeid» med ukompilert kandidat. Todo og memory er oppdatert. Løsningskort om bpy i skyøkter er lagt i prosjektbiblioteket (`blender-bpy-i-skyokt-uten-gpu`, PASS).
+- Ikke gjort: kompilering, Unreal-import, pakkede prøver, bilder i spillet, RT-minne, stemmeopptak, `screenshots.sh` og PR. Ingen PR er opprettet.

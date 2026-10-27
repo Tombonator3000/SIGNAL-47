@@ -60,9 +60,33 @@ Hjelperne som leste koden, fant disse motstridene mellom manus, plan og dagens k
 **Stemmer**
 16. Ward, Ortiz, Earl, Nora og sjåføren har ingen profil i HorrorStorys `casting.json`. Hvilke eksisterende profiler skal de bruke? Ward er kvinne (memory.md). Ingen navngitt rolle får ny stemme uten Toms valg.
 
-## SC02 i denne økta
+## SC02-kandidat i denne økta
 
-Se avsnittet SC02-kandidat nedenfor når koden og modellen er ført inn.
+SC02 er skrevet som kilde, men ikke kompilert, pakket eller prøvd. Status i planen er «Under arbeid».
+
+**Kode** (commit `3c560e3e` og rettelsene i `6966b644`):
+
+- `FS47Horror` har innholdsrevisjon 2. Nye saker går fra SC01 videre til SC02 i stedet for `legacyContinuation`. Saker med revisjon 1 skal oppføre seg som før; en uavhengig gjennomgang av diffen fant ingen endring der.
+- Nytt versjonert lagringsfelt `horror.sc02` med fasene `sc01`, `t01`, `encounter`, `escaped`, `unwitnessed` og `legacy`. Gamle lagringer uten feltet laster uendret. Continue midt i møtet gir sikkert punkt ved skuret, ikke halv jakt.
+- Sju verdensflagg settes fra faktiske fakta: T01 fra `FS47Substation::HasNormalResult`, synlig aktør fra gjengitt kropp i ubrutt siktstråle i 0,35 s mens den vender hodet, flukt fra brutt kontakt og kjøring, lokal retry fra faktisk fangst.
+- Ny `FS47HorrorThreat` (`S47HorrorThreat.h/.cpp`): tilstandene Idle, Warn, Investigate, Search, Chase, Capture og Withdrawn. Forvarsel med 1,6 s stillstand og hodevending mot faktisk lydkilde (skritt og SARO 07). Sikt med siktstråle mot spillerens øye, stoppet av opake flater. Rutegraf med 16 punkter rundt trafogården, målt fra gjerdekollideren i `substation.json`, kontrollskapet og skuret. Rute A langs vestgjerdet, rute B rundt nord og øst, og ingen kant gjennom gården. Fangst gir lokal gjenopptakelse ved skuret uten tidstap og uten de gamle bortføringssystemene.
+- `Busy()` holder gamle hendelser unna mens møtet pågår. Returarkiveringen i skiftmappen er urørt og skjer fortsatt én gang. SC02_ESCAPE gir `HR_TRAFO_ENCOUNTER`.
+- Selvtester for revisjon 1 uendret, overgang til SC02, lagring rundtur, at SC02-scenene bare leser vertens flagg, rutegrafen og tilstandsovergangene.
+- `Config/DefaultGame.ini` pakker `/Game/Signal47/HorrorSC02`.
+
+**Uavhengig gjennomgang.** En egen hjelper leste diffen som en kompilator og en kritisk kollega. Den fant ingen sikre kompileringsfeil og ingen endring for revisjon 1. Disse funnene er rettet: møtet kunne bli stående fast hvis spilleren satt i bilen før aktøren viste seg; ventende H02-scener kunne gå tapt ved Continue fordi posisjonen gjenopprettes etter `Horror::Begin`; aktørens bakkehøyde ble regnet ut før posisjonen var gjenopprettet; SC02-scener kunne starte langt fra stedet; målteksten manglet under kjøring på stedet; og en sak i et bygg uten meshene ble lagret som permanent `legacy`. Ikke rettet: hvis T01 arkiveres før SC01 er ferdig, får spilleren ingen egen måltekst tilbake til Caliche; møtet starter når spilleren likevel kommer til fronten. Det lagrede `checkpoint`-feltet leses ikke, sjekkpunktet regnes ut på nytt.
+
+**Modell.** `ArtSource/HorrorSC02`: original prosedyrisk Blender-kilde med seks leddede deler og to LOD-er, bygget og rendret med bpy 5.1.2 i skyen. Hele kroppen 13 660 trekanter i LOD0 og 4 098 i LOD1. Forhåndsvisninger i `ArtSource/HorrorSC02/Previews`. Ansiktet og magerheten fungerer; hoftepartiet ligner fortsatt en utstillingsdukke, og hodet minner om en klassisk «grey» fra siden. Prosjektets Blender er 4.5 LTS; skriptet må kjøres der før endelig eksport.
+
+**Må prøves først på Kubuntu:**
+
+1. Kjør `build_scene.py` i Blender 4.5 og `import_assets.py` i UnrealEditor-Cmd, så `/Game/Signal47/HorrorSC02` finnes før bygget. Uten meshene slår SC02 seg av og saken fortsetter i eksisterende historie.
+2. Bygg editor og Linux og rett kompileringsfeil. Mest usikre punkter ifølge forfatteren: `FVector2D::Equals`, `TPair`-initialisering med klammer og negativ skala på barnekomponenter.
+3. Selvtesten: linjene «SC02 route» og «SC02 threat» skal være PASS.
+4. SC01-kontrakten og en gammel revisjon 1-lagring: fortsatt `legacyContinuation` og ikke noe `sc02`-felt.
+5. Ny sak til Caliche: loggen «SC02 route graph» viser hvilke punkter som faktisk er farbare. Deretter rute A, rute B, direkte kjøring, fangst med retry ved skuret, pause og panel under jakt, Continue midt i møtet og etter flukt, og at T01 arkiveres én gang.
+6. Bilder av aktøren i spillet (ledd, speilet høyre side, hodevending, bakkehøyde), T01- og T02-regresjon, RT-minne under 80 MiB og hele `screenshots.sh` før fletting.
+7. Stemmer: `voice/generate.py --scenario SC02` for de tre H02-replikkene med Dales profil.
 
 ## Slik brukes dette på Kubuntu
 

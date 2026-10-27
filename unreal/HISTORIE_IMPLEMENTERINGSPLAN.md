@@ -367,12 +367,12 @@ Etter hver levert installasjon brukes prosjektets eksisterende prune-rutine. Gje
 
 ## 6. Løpende gjennomføringsstatus
 
-Opprettet 26. oktober 2026. SC01s lokale pakkede tekniske aksept består. PR, fletting og installasjon er fortsatt åpne. Senere scenarioer er planlagt. `Ikke utført` er en faktisk status, ikke en planlagt kvittering.
+Opprettet 26. oktober 2026. Oppdatert 27. oktober: SC01 er flettet i main via PR #174 og prøvd der; installasjon som standard venter på Tom. SC02 er skrevet som ukompilert kandidat, og verdensprodusenter, scenematrise og testsett for SC01 til SC13 ligger i `Narrative/HorrorStory/world_producers.json`. SC01s lokale pakkede tekniske aksept består. PR, fletting og installasjon er fortsatt åpne. Senere scenarioer er planlagt. `Ikke utført` er en faktisk status, ikke en planlagt kvittering.
 
 | SC-ID | Scenario | H-kort | Status | Kodecommit | Pakket test | PR | Mergecommit | Installasjon | Åpne begrensninger |
 |---|---|---|---|---|---|---|---|---|---|
 | SC01 | Den første overflygningen | H01 | Pakket teknisk aksept | dbae3177 | 21 kjøringer PASS, 32 vurderte bilder | Ikke opprettet | Ikke flettet | Ikke utført | PR/installasjon; menneskelig lytting/tempo/Xbox/helnatt UNVERIFIED |
-| SC02 | Returen til bilen | H01/H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC01 og møte 1 |
+| SC02 | Returen til bilen | H01/H02 | Under arbeid | 6966b644 (ukompilert kandidat) | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Bygg, import av aktøren, pakkede prøver og stemmer på Kubuntu; se SC02_TIL_SC13_FORBEREDELSE.md |
 | SC03 | Hjelpen som kom | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC02, BY01 og Ortiz-produksjon |
 | SC04 | Sikre og kom i dekning | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC03, plansperre og møte 2/3 |
 | SC05 | Samtalen som ligger foran | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC04 og passiv residualovergang |
