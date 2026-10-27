@@ -736,3 +736,10 @@ PR170 er opprettet som draft og vedlagt samtalen: https://github.com/Tombonator3
 - Hele `Scripts/screenshots.sh`: 110 av 110 OK på 53 minutter. Ni bilder og fem SC01-bilder er sett som stikkprøver; ingen full visuell vurdering av alle 110.
 - Ikke gjort: installasjon som standard (venter på Tom), menneskelig gjennomspilling, Xbox. MetaHuman og atmosfære fra PR #172 er ikke på main og ikke med i prøven.
 - Commiten med denne oppføringen endrer bare dokumenter; den prøvde koden er `562bcf90`. Neste: PR #174 settes klar, grunnlagsgren `main` sjekkes, flettes med full head-SHA, og `unreal-port-core` slettes når `git rev-list --count origin/main..origin/unreal-port-core` er 0.
+
+## 2026-10-27 kl. 19:16 CET: PR #174 flettet og `unreal-port-core` slettet (Claude)
+
+- Grunnlagsgrenen for PR #174 var `main`, og `origin/main` sto fortsatt på `c603d1ba`, det samme grunnlaget som prøven i oppføringen kl. 19:20. PR-en ble satt klar og flettet med full head-SHA `79717d6929eb9b87041ea67f53d5b014d554d026`. Flettecommit på main: `a032ed0e2e10dac0d7946cb7ff12400a02d12398`.
+- `git rev-list --count origin/main..origin/unreal-port-core` ga 0, og ingen åpne PR-er hadde `unreal-port-core` som grunnlag. Grenen er slettet på GitHub og lokalt (den sto på `797bed4c`).
+- Ikke gjort: SC01 er ikke installert som standard i det installerte spillet; det venter på Tom. Kandidaten ligger i `~/scratch-bm/Signal47-pr174-20261027/candidate/Linux`. Oppryddingen med `prune-test-builds.py` er ikke kjørt, fordi tillatelsessystemet i økta avviste tørrkjøringen.
+- Denne oppføringen er ført i en egen dokumentcommit etter flettingen, fordi kl. 19:20-oppføringen lå i PR-en som ble flettet.
