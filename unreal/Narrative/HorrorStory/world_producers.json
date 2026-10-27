@@ -1,0 +1,4876 @@
+{
+  "schema_version": 1,
+  "status": "planned_not_integrated",
+  "note_nb": "Planlagte verdensprodusenter, scenematrise, testsett og arbeidspakker for SC01 til SC13, kartlagt mot koden på main 27. oktober 2026. Ingen rad betyr at noe er integrert eller prøvd i spillet. Status existing betyr at koden allerede produserer faktumet, men flagget er fortsatt bare koblet inn for SC01.",
+  "flags": [
+    {
+      "flag": "ctx_hr_h01_ready",
+      "scenario": "SC01",
+      "status": "existing",
+      "producer": "FS47Horror::Context via FS47Evening::Pack (handover_done)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "ctx_hr_h01_ready",
+        "handover_done",
+        "FS47Horror::Context"
+      ],
+      "world_action_nb": "Spilleren har faktisk tatt Dales telefonoverlevering ved SARO etter ankomst og parkering; Evening setter handover_done.",
+      "new_work_nb": "",
+      "tests": [
+        "SC01-T01",
+        "SC01-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h01_checked",
+      "scenario": "SC01",
+      "status": "existing",
+      "producer": "FS47Horror::NormalComplete via FS47HorrorVisual (lampe/skjerm) og FS47Horror::DoorChanged",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorVisual.cpp"
+      ],
+      "symbols": [
+        "ctx_hr_h01_checked",
+        "FS47Horror::NormalComplete",
+        "LampChangeChecked",
+        "ScreenChecked",
+        "FS47Horror::DoorChanged"
+      ],
+      "world_action_nb": "Kamera hentet, østdør og annexutgang faktisk åpnet innenfra, kalibrering 1419.900 MHz bestått, lampe sammenlignet direkte og gjennom glass, referansefoto tatt og opak skjerm prøvd.",
+      "new_work_nb": "",
+      "tests": [
+        "SC01-T01",
+        "SC01-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h01_insufficient",
+      "scenario": "SC01",
+      "status": "existing",
+      "producer": "FS47Horror::Context (Ready && !NormalComplete)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "ctx_hr_h01_insufficient",
+        "FS47Horror::NormalComplete"
+      ],
+      "world_action_nb": "Overlevering gjort, men minst én fysisk del av normalrunden mangler når spilleren bruker skiftmappen.",
+      "new_work_nb": "",
+      "tests": [
+        "SC01-T02",
+        "SC01-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc01_marks_checked",
+      "scenario": "SC01",
+      "status": "existing",
+      "producer": "FS47HorrorVisual::MarksChecked via FS47Horror::Context",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorVisual.cpp"
+      ],
+      "symbols": [
+        "ctx_hr_sc01_marks_checked",
+        "MarksChecked",
+        "FS47HorrorVisual::InReach"
+      ],
+      "world_action_nb": "Spilleren har sett glassmerkene fra riktig side med romlampen av og på, med faktisk siktstråle til merkegeometrien.",
+      "new_work_nb": "",
+      "tests": [
+        "SC01-T01",
+        "SC01-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc01_report_readback",
+      "scenario": "SC01",
+      "status": "existing",
+      "producer": "FS47Horror::FinishCall (bReport)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "ctx_hr_sc01_report_readback",
+        "FS47Horror::FinishCall",
+        "bReport"
+      ],
+      "world_action_nb": "Spilleren ringer dispatch fra kontrollromstelefonen etter faktisk sett hånd og fullfører hele readback-samtalen.",
+      "new_work_nb": "",
+      "tests": [
+        "SC01-T01",
+        "SC01-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc01_window_seen",
+      "scenario": "SC01",
+      "status": "existing",
+      "producer": "FS47HorrorVisual::Step (bHandSeen) via FS47Horror::Context",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorVisual.cpp"
+      ],
+      "symbols": [
+        "ctx_hr_sc01_window_seen",
+        "HandSeen",
+        "FS47HorrorVisual::VisiblePoint"
+      ],
+      "world_action_nb": "Den bevegelige hånden har vært gjengitt og i ubrutt sikt i minst 0,2 sekunder utenfor nordvinduet.",
+      "new_work_nb": "",
+      "tests": [
+        "SC01-T01",
+        "SC01-T02",
+        "SC01-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h02_ready",
+      "scenario": "SC02",
+      "status": "partial",
+      "producer": "FS47Horror::Context (ny SC02-fase) via FS47Substation::Here og bComplete",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Substation.cpp"
+      ],
+      "symbols": [
+        "FS47Substation::Here",
+        "bComplete",
+        "handover_done"
+      ],
+      "world_action_nb": "SC01 er fullført og spilleren står faktisk til fots ved Caliche Junctions merkede kontrollfront utenfor gjerdet.",
+      "new_work_nb": "FS47Horror må få en SC02-fase etter bComplete i stedet for scenario legacyContinuation, og sette flagget fra SC01 fullført pluss FS47Substation::Here (offentliggjøres som Present() eller tilsvarende). Trigger og Context må godta SC02-registreringer.",
+      "tests": [
+        "SC02-T01",
+        "SC02-T02",
+        "SC02-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h02_checked",
+      "scenario": "SC02",
+      "status": "existing",
+      "producer": "FS47Substation::HasNormalResult via FS47Horror::Context",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Substation.cpp"
+      ],
+      "symbols": [
+        "HasNormalResult",
+        "FS47Substation::Observe",
+        "FS47Substation::RenderedResult",
+        "ctx_trafo_service_ok"
+      ],
+      "world_action_nb": "Journal lest, tresekunders servicekontroll kjørt ferdig og den faktisk gjengitte lampen sammenlignet med panelresultatet.",
+      "new_work_nb": "",
+      "tests": [
+        "SC02-T02",
+        "SC02-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h02_insufficient",
+      "scenario": "SC02",
+      "status": "partial",
+      "producer": "FS47Horror::Context via FS47Substation (journal uten normalresultat, avbrutt kontroll)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Substation.cpp",
+        "unreal/Signal47/Source/Signal47/Public/S47Substation.h"
+      ],
+      "symbols": [
+        "HasJournal",
+        "FS47Substation::StartCheck",
+        "No completed comparison to file"
+      ],
+      "world_action_nb": "Spilleren har lest journalen eller startet kontrollen, men forsøker å avslutte eller sammenligne uten fullført, gjengitt resultat.",
+      "new_work_nb": "Substation har ingen lagret tilstand for et faktisk uavklart forsøk. Legg til et avgrenset 'attempted' faktum (Observe uten RenderedResult, eller avbrutt Running) og eksponer det; flagget må aldri bli sant samtidig med h02_checked.",
+      "tests": [
+        "SC02-T05",
+        "SC02-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc02_t01_complete",
+      "scenario": "SC02",
+      "status": "existing",
+      "producer": "FS47Substation::HasNormalResult (lagret med RequestAutosave i FS47Substation::Observe)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Substation.cpp"
+      ],
+      "symbols": [
+        "HasNormalResult",
+        "FS47Substation::Save",
+        "T01_NORMAL_RESULT"
+      ],
+      "world_action_nb": "Fysisk T01: journal, kontroll og observert lampe er fullført og autolagret før møtet starter.",
+      "new_work_nb": "",
+      "tests": [
+        "SC02-T02",
+        "SC02-T04",
+        "SC02-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc02_threat_visible",
+      "scenario": "SC02",
+      "status": "new",
+      "producer": "Ny FS47HorrorThreat (blek reaktiv aktør) eid av FS47Horror",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorVisual.cpp"
+      ],
+      "symbols": [
+        "FS47HorrorVisual::VisiblePoint",
+        "FS47HorrorVisual::ClearLine"
+      ],
+      "world_action_nb": "Etter sikret T01 ser spilleren den bleke kroppen gjengitt i ubrutt sikt, bevege seg og vende seg mot en ny lyd, før noen fangst er mulig.",
+      "new_work_nb": "Bygg aktøren med rutegraf, siste sansede sted, søk og tilbaketrekning. Sett flagget bare når kroppen er gjengitt (WasRecentlyRendered), i siktstråle uten opak blokk i en målt tid, mens den utfører vendingen.",
+      "tests": [
+        "SC02-T02",
+        "SC02-T07",
+        "SC02-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc02_escape_complete",
+      "scenario": "SC02",
+      "status": "new",
+      "producer": "FS47HorrorThreat sin tilstandsmaskin (Withdrawn) pluss US47World kjøring",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47World.cpp"
+      ],
+      "symbols": [
+        "US47World::StartEngine",
+        "US47World::DrivingSpeed",
+        "bDriving"
+      ],
+      "world_action_nb": "Spilleren når SARO 07 via en av to ganglinjer utenfor gjerdet med brutt sikt og lyd, eller kjører bort på klar rute; aktøren mister kontakt og trekker seg tilbake.",
+      "new_work_nb": "Ny tilstand i trusselaktøren; kontakt tapt i målt tid og aktør i Withdrawn, kombinert med spiller i bil med motor i gang eller kjørt over en avstandsterskel. Ikke kreditt ved passasje gjennom høyspenningsgården.",
+      "tests": [
+        "SC02-T02",
+        "SC02-T03",
+        "SC02-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc02_local_retry",
+      "scenario": "SC02",
+      "status": "new",
+      "producer": "FS47Horror lokalt sjekkpunkt (ny) med FS47HorrorThreat fangst",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)"
+      ],
+      "symbols": [
+        "FS47Horror::Save"
+      ],
+      "world_action_nb": "Spilleren blir faktisk fanget i møte 1; spillet gjenoppretter lokalt dekningspunkt ved skuret med T01 bevart, uten gammel bortføring eller tidstap.",
+      "new_work_nb": "Lag sikkert sjekkpunkt i horror-feltet (posisjon, bilposisjon via US47World::TruckSave/PlaceTruck, Substation-snapshot). Fangst må ikke gå gjennom FS47Abduction eller FS47TruckTaken.",
+      "tests": [
+        "SC02-T04",
+        "SC02-T06",
+        "SC02-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_dispatch_readback",
+      "scenario": "SC03",
+      "status": "partial",
+      "producer": "FS47Horror verdenssamtale (bWorldCall-mønsteret) startet fra Caliche-betalingstelefonen",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::FinishCall",
+        "bWorldCall",
+        "payphone"
+      ],
+      "world_action_nb": "Etter SC02-flukt bruker spilleren betalingstelefonen i Caliche og fullfører meldingen med sted, tid og readback.",
+      "new_work_nb": "Generaliser FinishCall til navngitte samtaler, og koble town:payphone i FS47Caliche::BindTown til FS47Horror når SC03 er aktiv.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_ortiz_assigned",
+      "scenario": "SC03",
+      "status": "partial",
+      "producer": "FS47Horror Ward-samtale (samme samtaleport) i Caliche",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::FinishCall",
+        "payphone"
+      ],
+      "world_action_nb": "Ward-samtalen fullføres faktisk i telefonen og Ortiz med vogn 23 avtales ved bensinstasjonen.",
+      "new_work_nb": "Ny samtaletilstand etter dispatch; flagget settes først ved fullført samtale, ikke ved valg.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_ortiz_identified",
+      "scenario": "SC03",
+      "status": "new",
+      "producer": "Ny FS47HorrorWorld Ortiz-aktør og vogn 23",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorWorld.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47Figures.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Fleet.cpp"
+      ],
+      "symbols": [
+        "FS47JacketWalker::Pose",
+        "FS47FleetParked::Build"
+      ],
+      "world_action_nb": "Ortiz ankommer synlig med hvit vogn 23 ved bensinstasjonen og spilleren bruker henne fysisk (Talk) innen rekkevidde.",
+      "new_work_nb": "Produser Ortiz (original modell) og vogn 23, kjør ankomst langs vei, interaksjon 'Talk to the technician' som setter flagget ved fullført identifikasjon.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06",
+        "SC03-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_shadow_observed",
+      "scenario": "SC03",
+      "status": "partial",
+      "producer": "Ny skyggeregel i FS47HorrorWorld med siktlogikk fra FS47Glimpses og FS47AnomalyWorld",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Glimpses.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47AnomalyWorld.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorWorld.cpp (ny)"
+      ],
+      "symbols": [
+        "FS47Glimpses::Sight",
+        "FS47Glimpses::Hide",
+        "FS47AnomalyWorld::MayMove"
+      ],
+      "world_action_nb": "Spilleren holder den svarte formen i blikk (stille) og ser bort; den har flyttet seg to ganger bare i usette intervaller.",
+      "new_work_nb": "Eksisterende Glimpses skjuler seg når den sees, det motsatte av regelen. Lag egen figur med to kontrollerte usette flyttinger, panel, perifert syn, zoom, lykt og fotosøker som 'sett', og ingen oppspart flytting under pause.",
+      "tests": [
+        "SC03-T03",
+        "SC03-T05",
+        "SC03-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_lift_observed",
+      "scenario": "SC03",
+      "status": "new",
+      "producer": "FS47HorrorWorld løftesekvens (lys, Ortiz uten støtte) med siktprøve",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorWorld.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47Abduction.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Figures.cpp"
+      ],
+      "symbols": [
+        "FS47Abduction::LightStep",
+        "FS47JacketWalker::Pose"
+      ],
+      "world_action_nb": "Spilleren ser Ortiz i ubrutt sikt løftes i fremmed lys og forsvinne ved vogn 23.",
+      "new_work_nb": "Ny sekvens som venter til spilleren har sikt (som SC01-hånden armeres), gjengir løftet med siktdwell og setter flagget først ved observert forsvinning. Lyd alene gir ikke flagget.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06",
+        "SC03-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_safe_retreat",
+      "scenario": "SC03",
+      "status": "new",
+      "producer": "FS47HorrorWorld nærværstilstand (kontakt tapt) pluss dekningssone ved telefon/bil",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorWorld.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Etter tapet når spilleren opak dekning eller kjent telefon eller egen bil, og nærværet i utkanten mister kontakt og trekker seg tilbake.",
+      "new_work_nb": "Definer dekningssoner i Caliche og bruk samme kontakt/tilbaketrekkingsmodell som FS47HorrorThreat, uten fangstkrav.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_traces_checked",
+      "scenario": "SC03",
+      "status": "new",
+      "producer": "FS47HorrorWorld rekvisitter (vogn 23 og Ortiz' håndsett) via FS47Interactable",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorWorld.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Etter trygg retrett undersøker spilleren den tomme vognen og håndsettet med navnelapp.",
+      "new_work_nb": "To nye interaksjoner med ExamineRange; flagget settes når begge er brukt etter safe_retreat.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_missing_readback",
+      "scenario": "SC03",
+      "status": "partial",
+      "producer": "FS47Horror samtaleport (ny savnetsak) fra telefon",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::FinishCall",
+        "ReportStamp"
+      ],
+      "world_action_nb": "Spilleren melder Ortiz savnet fra fungerende telefon og hører hele readback, adskilt fra første utkalling.",
+      "new_work_nb": "Ny samtale med egen stempel og egen lagringsnøkkel; krever lift_observed og safe_retreat.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_local_order_suspended",
+      "scenario": "SC03",
+      "status": "partial",
+      "producer": "FS47Horror Ward-samtale; ny horror-tilstand localOrderSuspended",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::FinishCall"
+      ],
+      "world_action_nb": "Spilleren fullfører Ward-samtalen etter savnetsaken; Ward suspenderer den lokale 06:00-serien.",
+      "new_work_nb": "Lagre som eget faktum; senere AS47Story-tekster om morgenserien må lese det.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T09"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc01_dale_reference_heard",
+      "scenario": "SC04",
+      "status": "existing",
+      "producer": "FS47Horror::ObserveVoice (bReferenceHeard)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "ctx_hr_sc01_dale_reference_heard",
+        "FS47Horror::ObserveVoice",
+        "H01_BRIEF_002"
+      ],
+      "world_action_nb": "Spilleren har faktisk hørt hele H01_BRIEF_002 med lyd på, positive source- og routed-samples og full varighet.",
+      "new_work_nb": "",
+      "tests": [
+        "SC04-T06",
+        "SC04-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_return_agreed",
+      "scenario": "SC04",
+      "status": "partial",
+      "producer": "FS47Horror Ward-samtale fra Caliche-telefon",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Caliche.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::FinishCall",
+        "payphone"
+      ],
+      "world_action_nb": "Fra trygg posisjon i Caliche fullfører spilleren samtalen med Ward om avgrenset retur.",
+      "new_work_nb": "Ny navngitt samtale; krever local_order_suspended og at spilleren er i Caliche (Area diner).",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_schedule_isolated",
+      "scenario": "SC04",
+      "status": "partial",
+      "producer": "Ny fysisk plansperre i kontrollrommet (FS47HorrorVisual prop) koblet til AS47Story::StagePassed",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Story.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorVisual.cpp"
+      ],
+      "symbols": [
+        "AS47Story::StagePassed",
+        "SetPhase(ES47Phase::Survey)",
+        "SurveyModeText"
+      ],
+      "world_action_nb": "Spilleren betjener en fysisk lokal auto/surveyplansperre i kontrollrommet og ser kontrollresultatet (lampe/merke) bekreftet.",
+      "new_work_nb": "StagePassed starter i dag Survey direkte. Ny bryter og visuelt resultat, og en passiv mottaksmodus som ikke setter Survey.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06",
+        "SC05-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_shift_originals_secured",
+      "scenario": "SC04",
+      "status": "partial",
+      "producer": "FS47Evening::Use (skiftmappe/logbook) utvidet med sikring av originaler",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Evening.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp"
+      ],
+      "symbols": [
+        "FS47Evening::Use",
+        "bServiceFiled",
+        "ShiftLog"
+      ],
+      "world_action_nb": "Spilleren tar de daterte skift- og serviceoriginalene fra skiftmappen i kontrollrommet.",
+      "new_work_nb": "Eksisterende mappe arkiverer T01 én gang. Legg til egen sikring som ikke gjentar arkiveringen og som lagrer hvilke originaler som er tatt.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_annex_imprint_playing",
+      "scenario": "SC04",
+      "status": "partial",
+      "producer": "Ny annexavspilling med FS47RecordedDialogue-take H01_BRIEF_002 og US47Audio::Spatial",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Audio.cpp"
+      ],
+      "symbols": [
+        "FS47RecordedDialogue",
+        "H01_BRIEF_002",
+        "US47Audio::Spatial"
+      ],
+      "world_action_nb": "Mens spilleren er i annexet spiller det samme Dale-fragmentet fra feil dørretning.",
+      "new_work_nb": "Romlig avspilling av samme fil med samme pause; flagget gjelder bare mens den faktisk spiller med positive samples.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_annex_long_escape",
+      "scenario": "SC04",
+      "status": "new",
+      "producer": "FS47HorrorThreat annexinstans",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47Web.cpp"
+      ],
+      "symbols": [
+        "AS47Web::DoorStates"
+      ],
+      "world_action_nb": "Spilleren lukker kjent dør, bryter sikt bak opak vegg og fullfører den lange passasjen; søket avsluttes.",
+      "new_work_nb": "Rutegraf for annexet, dørtilstand som påvirker søk, og sporing av faktisk gått linje.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_annex_sound_escape",
+      "scenario": "SC04",
+      "status": "new",
+      "producer": "FS47HorrorThreat lydavledning fra vanlig lydkilde",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47Audio.cpp"
+      ],
+      "symbols": [
+        "US47Audio::Spatial"
+      ],
+      "world_action_nb": "Fra dekning slår spilleren på en vanlig radio; enheten undersøker lyden og spilleren krysser kort rute.",
+      "new_work_nb": "Lydkilde med faktisk posisjon som trusselen sanser; kort passasje registreres.",
+      "tests": [
+        "SC04-T03",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_annex_local_retry",
+      "scenario": "SC04",
+      "status": "new",
+      "producer": "FS47Horror lokalt sjekkpunkt (annex)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)"
+      ],
+      "symbols": [
+        "FS47Horror::Save"
+      ],
+      "world_action_nb": "Spilleren fanges i annexet og gjenopptar ved siste dekningspunkt med sperre og papirer bevart.",
+      "new_work_nb": "Gjenbruk SC02-sjekkpunktet med egen nøkkel.",
+      "tests": [
+        "SC04-T04",
+        "SC04-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_after_annex_calm",
+      "scenario": "SC04",
+      "status": "new",
+      "producer": "FS47Horror fasetilstand etter annexflukt",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [],
+      "world_action_nb": "Etter annexflukt har spilleren hatt en faktisk rolig periode og fullført kontaktsamtale før bilfaren kan starte.",
+      "new_work_nb": "Ny ro-timer som bare teller utenfor modal og pause og krever fullført samtale.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_car_route_known",
+      "scenario": "SC04",
+      "status": "partial",
+      "producer": "FS47Horror::DoorChanged-mønster pluss ny skjermet parkeringssone",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47World.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::DoorChanged",
+        "US47World::ParkBox"
+      ],
+      "world_action_nb": "Spilleren går fysisk ruten fra skjermet parkering til kontrollrommets låsbare dør og åpner den.",
+      "new_work_nb": "Ny sone og registrering av gått rute; eksisterende dørprøve dekker bare dør, ikke rute.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_car_threat_visible",
+      "scenario": "SC04",
+      "status": "new",
+      "producer": "FS47HorrorThreat bilinstans",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47TruckTaken.cpp"
+      ],
+      "symbols": [
+        "FS47TruckTaken::WarningStep"
+      ],
+      "world_action_nb": "Mens spilleren sitter i bilen passerer enheten tett utenfor kupeen, synlig og hørbar.",
+      "new_work_nb": "Ny bilfase; mønsteret i TruckTaken (varsel i kupe) kan studeres, men tidstapet derfra skal ikke brukes.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_car_escape",
+      "scenario": "SC04",
+      "status": "new",
+      "producer": "FS47HorrorThreat bilinstans pluss ny huking i AS47Walker",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47Walker.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47World.cpp"
+      ],
+      "symbols": [
+        "AS47Walker::EyeUE",
+        "US47World::StartEngine"
+      ],
+      "world_action_nb": "Spilleren kommer under vinduslinjen (huking) eller kjører bort på klar rute; enheten mister kontakt og bilen virker etterpå.",
+      "new_work_nb": "Huking finnes ikke i AS47Walker; legg til øyehøyde og kroppseksponering, også i kupe.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T03",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_car_local_retry",
+      "scenario": "SC04",
+      "status": "new",
+      "producer": "FS47Horror lokalt sjekkpunkt (bil)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorThreat.cpp (ny)"
+      ],
+      "symbols": [
+        "FS47Horror::Save"
+      ],
+      "world_action_nb": "Spilleren fanges ved bilen og gjenopptar ved skjermet tilkjøring med brukbar bil og bevart arbeid.",
+      "new_work_nb": "Eget sjekkpunkt med bilposisjon.",
+      "tests": [
+        "SC04-T04",
+        "SC04-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_control_room_safe",
+      "scenario": "SC04",
+      "status": "partial",
+      "producer": "FS47Horror::DoorsSecured pluss trusseltilstand",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Web.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::DoorsSecured",
+        "AS47Web::DoorStates",
+        "room.bounds"
+      ],
+      "world_action_nb": "Spilleren er inne i kontrollrommet med østdør og annexutgang lukket, uten aktiv kontakt eller søk.",
+      "new_work_nb": "DoorsSecured krever i dag bEast og bCorridor fra SC01; legg til trusseltilstand og posisjonskrav.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc04_ward_on_line",
+      "scenario": "SC04",
+      "status": "partial",
+      "producer": "FS47Horror::Telephone (kontrollromstelefon)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "FS47Horror::Telephone",
+        "bWorldCall"
+      ],
+      "world_action_nb": "Spilleren ringer Ward fra kontrollromstelefonen og samtalen er faktisk koblet opp.",
+      "new_work_nb": "Ny telefonrad og samtaletilstand.",
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc05_residual_passive",
+      "scenario": "SC05",
+      "status": "partial",
+      "producer": "AS47Story::EnterResidual i ny passiv modus, styrt av FS47Horror",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Story.cpp"
+      ],
+      "symbols": [
+        "AS47Story::EnterResidual",
+        "AS47Story::TimeSkip",
+        "bResidualVisible"
+      ],
+      "world_action_nb": "Residualen 00:13:47 vises i passiv mottaking mens plansperren fortsatt er på; spilleren er i kontrollrommet.",
+      "new_work_nb": "I dag nås residualen bare via Survey, RelayFirst, LightsDip og TimeSkip. Lag passiv vei som ikke starter Survey.",
+      "tests": [
+        "SC05-T02",
+        "SC05-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h03_ready",
+      "scenario": "SC06",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter1 (Started) og SC05-resultatet",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Chapter1.h",
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "bool Started() const { return Active; }",
+        "void FS47Horror::Context()"
+      ],
+      "world_action_nb": "SC05 er faktisk fullført (H02 registrert av verden), residualen 00:13:47 har gått, og spilleren har kapittel ens B-12/S-03-sak i gang ved SARO.",
+      "new_work_nb": "Legg H03-gren i FS47Horror::Context som leser US47Chapter1::Started() og SC05s lagrede fullføring. Dialogvalg i H02 skal ikke kunne sette den; Context må også godta SC06 i scenegyldighetssjekken som i dag bare tillater SC01.",
+      "tests": [
+        "SC06-T01",
+        "SC06-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h03_checked",
+      "scenario": "SC06",
+      "status": "existing",
+      "producer": "FS47Horror::Context via US47Chapter1::S (FS47CaseState)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Chapter1.h",
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter1.cpp"
+      ],
+      "symbols": [
+        "TOptional<FS47Photo> F1, F2;",
+        "FString Method;",
+        "bool bConcluded = false, bFiled = false;",
+        "StageTo(TEXT(\"complete\"));"
+      ],
+      "world_action_nb": "To faktiske eksponeringer fra B-12-siktlinjen (FRAME 01 og FRAME 02 under passiv lampe/motorisolering eller aktiv 042-kontroll), begge fremkalt og hentet (Dev1 og Dev2 = 3), direkte observasjon registrert og samme detalj sammenlignet på begge kopier.",
+      "new_work_nb": "",
+      "tests": [
+        "SC06-T01",
+        "SC06-T02",
+        "SC06-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h03_insufficient",
+      "scenario": "SC06",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter1 mørkeromstilstand (Fog1/Fog2) og sammenligningsfeil",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Chapter1.h",
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter1.cpp"
+      ],
+      "symbols": [
+        "int32 Fog1 = 0, Fog2 = 0;",
+        "THE PRINT FOGGED: SHUT THE DOOR, PRINT AGAIN FROM THE NEGATIVE"
+      ],
+      "world_action_nb": "En kopi er faktisk ødelagt av lys gjennom mørkeromsdøren (negativet beholdes), eller den kontrollerte detaljen er ikke lesbar på kopien som skal sammenlignes.",
+      "new_work_nb": "Definer uttrykket: Ready && !checked && (Dev==0 med Fog>0 for aktuell ramme, eller kontrollkopi uten lesbart merke). Flagget må falle når gyldig ny kopi er hentet. Ingen egen leselighetsvurdering finnes i dag utover Near()/Mark2; avklar terskel.",
+      "tests": [
+        "SC06-T03",
+        "SC06-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h04_ready",
+      "scenario": "SC07",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter2 og FS47Office",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Chapter2.h",
+        "unreal/Signal47/Source/Signal47/Public/S47Office.h"
+      ],
+      "symbols": [
+        "bool bStarted = false;",
+        "bool Ready() const { return bReady; }"
+      ],
+      "world_action_nb": "H03 er registrert etter faktisk fotokontroll, kapittel to er i gang ved SARO, og kontorruten (serviceskuff, reservenøkkel, kontordør) er fysisk tilgjengelig.",
+      "new_work_nb": "Les hr_h03_recorded, US47Chapter2::bStarted og FS47Office::Ready() i Context. Kontrakten sier at EveningShift alene eier kontor, nøkkel og dokumenter: H04 skal bare lese tilstanden, ikke duplisere den.",
+      "tests": [
+        "SC07-T01",
+        "SC07-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h04_checked",
+      "scenario": "SC07",
+      "status": "partial",
+      "producer": "FS47Horror::Context via FS47Office (feltmappe) og US47Chapter2 (P04/P05) pluss ny vindu/stolpekontroll",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Office.h",
+        "unreal/Signal47/Source/Signal47/Private/S47Office.cpp",
+        "unreal/Signal47/Source/Signal47/Public/S47Chapter2.h"
+      ],
+      "symbols": [
+        "bool HasFieldSheet() const;",
+        "D02_TAKE_FIELD_FOLDER",
+        "bool bP04 = false, bP05 = false;"
+      ],
+      "world_action_nb": "Spilleren har tatt feltmappen fra kontoret med faktisk reservenøkkel og åpnet dør, og har holdt Dales daterte ståstedsnotat mot faktisk vindusutsyn og referansestolpe.",
+      "new_work_nb": "Feltmappe og arkivfunn finnes. Vindus/stolpesammenligningen fra H04_CHECK finnes ikke: bygg en navngitt interaksjon ved kontorvinduet som krever HasFieldSheet() og faktisk sikt til stolpen (siktstråle), og lagre den i FS47Office.",
+      "tests": [
+        "SC07-T01",
+        "SC07-T02",
+        "SC07-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h04_insufficient",
+      "scenario": "SC07",
+      "status": "partial",
+      "producer": "FS47Horror::Context via FS47Office og ny VHS-avspillingstilstand",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Office.cpp"
+      ],
+      "symbols": [
+        "There is no produced 72-second tape",
+        "office:tape"
+      ],
+      "world_action_nb": "Feltmappen er tatt, men VHS-filmen er ikke sett til ende (strømløs spiller, pause eller avbrutt avspilling).",
+      "new_work_nb": "Krever settstatus fra et faktisk VHS-program (FIELD 01, 72 sekunder) bygd på FS47TvProgramme. I dag finnes ingen film og ingen vhs_seen; uttrykket blir HasFieldSheet() && !VhsSeen, og må aldri gjøre H04 fullført.",
+      "tests": [
+        "SC07-T03",
+        "SC07-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_dated_lead",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "FS47Horror::Context via FS47LostNights (1981-natten bundet på saksbrettet)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47LostNights.cpp"
+      ],
+      "symbols": [
+        "ln:81",
+        "09/22/81  01:52:07  -34 LY",
+        "bool FS47LostNights::ReelReady() const"
+      ],
+      "world_action_nb": "Spilleren har funnet arkivbinderens 09/22/81-utskrift og bundet den til et lokalt 1981-spor på saksbrettet.",
+      "new_work_nb": "Les TownSeen 'ln:81' i Context. Avklar at binderutskriften regnes som arkivets daterte henvisning, og at den må finnes før kildekontroll. Dialogtemaet med Earl skal ikke kunne sette den.",
+      "tests": [
+        "SC08-T01",
+        "SC08-T09"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_earl_present",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "FS47Horror::Context via S47Timeline::EarlOnDuty og spillerposisjon i 1420 AM-lobbyen",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Timeline.h",
+        "unreal/Signal47/Source/Signal47/Private/S47RadioStation.cpp"
+      ],
+      "symbols": [
+        "inline bool EarlOnDuty(double C)",
+        "radio:lobbyDoor"
+      ],
+      "world_action_nb": "Spilleren står fysisk i den offentlige lobbyen på 1420 AM før 04:00 mens Earl er på vakt.",
+      "new_work_nb": "Legg til lobbysone (Contains) i radiostasjonen og kombiner med EarlOnDuty(Day(Clock)). Ingen studioadgang; Earl snakker ikke etter 04:00.",
+      "tests": [
+        "SC08-T01",
+        "SC08-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_reel_identity",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny lobbyutlevering i S47By02 med eksisterende FS47ReelTape som innhold",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47ReelTape.h",
+        "unreal/Signal47/Source/Signal47/Private/S47LostNights.cpp"
+      ],
+      "symbols": [
+        "class SIGNAL47_API FS47ReelTape",
+        "REEL, 9/22/81"
+      ],
+      "world_action_nb": "Spilleren undersøker den merkede 1981-spolen i lobbyen: eske, off-air-logg og Earls initialer sammen.",
+      "new_work_nb": "Spolens lydinnhold finnes (FS47ReelTape). Bygg fysisk spoleeske, logg og initialmerke som objekter i lobbyen med egen undersøkt-tilstand i ny S47By02.cpp; gamle dialogtemaet 'reel' i FS47Caliche skal ikke telle.",
+      "tests": [
+        "SC08-T01",
+        "SC08-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_tape_isolated",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny kildevelger i S47By02 som spiller FS47ReelTape med live-mating fysisk frakoblet",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47ReelTape.h",
+        "unreal/Signal47/Source/Signal47/Private/S47ReelTape.cpp"
+      ],
+      "symbols": [
+        "void Play(TFunction<void(const FS47TapeCue&)> Cue, TFunction<void(bool)> Done);",
+        "FS47ReelTape::Plan() const"
+      ],
+      "world_action_nb": "Spilleren setter den merkede velgeren på TAPE, ser at live-monitorens kabel er frakoblet og starter den identifiserte spolen på lobbydekket.",
+      "new_work_nb": "Avspillingen finnes. Bygg velger TAPE/LIVE med gjensidig utelukkende stilling, synlig frakobling og lagret stilling. Flagget er sant bare mens TAPE er valgt og avspillingen faktisk går.",
+      "tests": [
+        "SC08-T02",
+        "SC08-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_live_selected",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny kildevelger i S47By02 mot eksisterende 1420 AM-monitor",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47By02.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Spilleren setter velgeren på LIVE MONITOR; bånddekket er synlig frakoblet og kilden er merket.",
+      "new_work_nb": "Bygg LIVE-stilling som ruter nattens monitor (FS47Radio-kilden) til lobbyhøyttaleren og kobler dekket fra. Sant bare mens LIVE er valgt.",
+      "tests": [
+        "SC08-T02",
+        "SC08-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_question_compared",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny spørsmål/gjentaksport i S47By02",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47By02.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Spilleren trykker på lobbyens talkback og stiller et nytt konkret spørsmål, spiller deretter samme isolerte kilde (original eller kopi) på nytt og hører at fragmentet er uendret.",
+      "new_work_nb": "Registrer spørsmålet som tidsstemplet handling (ikke dialogvalg som bevis) og krev en fullført ny avspilling etter spørsmålet med identisk cueplan (Plan()).",
+      "tests": [
+        "SC08-T02",
+        "SC08-T09"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_tape_sample_verified",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny varig prøvelogg i S47By02",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47By02.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "En fullført TAPE-avspilling av den identifiserte originalspolen med live frakoblet, lagret som eget resultat.",
+      "new_work_nb": "Lagre fullført prøve separat fra nåværende velgerstilling slik at den består når velgeren senere står på LIVE. Avbrutt avspilling (Done(false)) gir ingen prøve.",
+      "tests": [
+        "SC08-T02",
+        "SC08-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_live_sample_verified",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny varig prøvelogg i S47By02",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47By02.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "En fullført LIVE-lytteperiode med bånddekket frakoblet, lagret som eget resultat.",
+      "new_work_nb": "Definer minste lyttetid for LIVE og lagre resultatet varig, uavhengig av senere velgerstilling.",
+      "tests": [
+        "SC08-T02",
+        "SC08-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_source_copy_verified",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny utleveringskonvolutt og lobbydekk i S47By02 etter 04:00",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47By02.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Etter Earls avgang åpner spilleren den daterte utleveringskonvolutten, kontrollerer kildekopi, off-air-logg og frakoblingsark, og spiller samme kopi isolert på lobbydekket.",
+      "new_work_nb": "Bygg konvolutt med tre dokumenter, krav om at metadata og en fullført isolert avspilling av samme kopi begge er gjort. Metadata alene gir ikke flagget.",
+      "tests": [
+        "SC08-T05",
+        "SC08-T09"
+      ]
+    },
+    {
+      "flag": "ctx_hr_by02_source_insufficient",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny utfallsvurdering i S47By02",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47By02.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Spilleren har prøvd å avspille uten identifisert kilde, med begge kilder koblet, eller avbrutt prøven slik at opphav eller signalvei er uavklart.",
+      "new_work_nb": "Avled flagget fra faktisk forsøk uten gyldig kombinasjon og fjern det når en gyldig prøve er fullført. Gir aldri dokument.",
+      "tests": [
+        "SC08-T09",
+        "SC08-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_service_card_acquired",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "FS47Horror::Context via FS47Office (EV_DALE_ARRAY_SERVICE)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Office.h",
+        "unreal/Signal47/Source/Signal47/Private/S47Office.cpp"
+      ],
+      "symbols": [
+        "bool DocumentRead(const FString& Id) const;",
+        "office:arrayService",
+        "EV_DALE_ARRAY_SERVICE"
+      ],
+      "world_action_nb": "Spilleren åpner det ordinære arrayservicearket i kontorets skap, og kopien legges i notatboken.",
+      "new_work_nb": "Lesing finnes. Avklar om faktisk åpnet dokument (DocumentRead) regnes som plukket opp, eller legg til egen take-handling som skjuler arket. T02s EV_DALE_INDEX skal ikke endres.",
+      "tests": [
+        "SC08-T06",
+        "SC08-T11"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_command_checked",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny konsollkontroll i S47ArrayService som leser FS47ArrayBack::History",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47ArrayBack.h",
+        "unreal/Signal47/Source/Signal47/Private/S47SaroNight.cpp"
+      ],
+      "symbols": [
+        "TOptional<FHistory> History() const;",
+        "C1->S03Since"
+      ],
+      "world_action_nb": "Ved operasjonsterminalen identifiserer spilleren nærgruppens antenner (S-02, S-03, S-04) og kontrollerer kommandoregister og lokal drivtilstand før feltet.",
+      "new_work_nb": "Kommandoregisteret finnes. Bygg navngitt baseline-handling på konsollen som lagrer identifiserte antenner, antall kommandoer og tidspunkt. Ingen ARRAY RESUME og ingen ny 47-sekunders forløp.",
+      "tests": [
+        "SC08-T06",
+        "SC08-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_reference_fixed",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny feltlykt i S47ArrayService ved eksisterende REF / R1-tavle",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Office.cpp"
+      ],
+      "symbols": [
+        "REF / R1",
+        "office:arrayBoard:"
+      ],
+      "world_action_nb": "Spilleren setter den navngitte feltlykten på REF / R1-merket med registrert innstilling og lar den stå.",
+      "new_work_nb": "Tavlene finnes. Bygg lykt som rekvisitt med plassering og innstilling i lagring; flagget faller hvis lykten flyttes eller innstillingen endres før resultatet.",
+      "tests": [
+        "SC08-T06",
+        "SC08-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_a_observed",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny ståstedslogikk i S47ArrayService med siktelogikk fra FS47DishesFollow",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47DishesFollow.h",
+        "unreal/Signal47/Source/Signal47/Private/S47Office.cpp"
+      ],
+      "symbols": [
+        "void Choose(const FVector& Eye, double W0);",
+        "A / ROW 1 WEST"
+      ],
+      "world_action_nb": "Spilleren står på A / ROW 1 WEST og ser nærgruppen vende seg mot ståstedet, målt mot faste landemerker.",
+      "new_work_nb": "DishesFollow kan rette antenner mot spillerens øye, men er knyttet til gammel advarsel. Lag egen ARRAY-01-modus som bruker samme rigg uten Warning/Force, og krev at spilleren står i A-sonen og har sikt til minst én responderende antenne.",
+      "tests": [
+        "SC08-T06",
+        "SC08-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_b_observed",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny ståstedslogikk i S47ArrayService med siktelogikk fra FS47DishesFollow",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47DishesFollow.h",
+        "unreal/Signal47/Source/Signal47/Private/S47Office.cpp"
+      ],
+      "symbols": [
+        "void Choose(const FVector& Eye, double W0);",
+        "B / ROW 1 EAST"
+      ],
+      "world_action_nb": "Spilleren står på B / ROW 1 EAST og ser nærgruppen vende seg mot ståstedet, målt mot faste landemerker.",
+      "new_work_nb": "Som A. Rekkefølgen er fri; samme klokke med ulikt ståsted skal gi ulik stilling.",
+      "tests": [
+        "SC08-T06",
+        "SC08-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_return_observed",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny returlogikk i S47ArrayService",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47DishesFollow.h"
+      ],
+      "symbols": [
+        "void Follow(double Dt, const FS47FollowIn& S);",
+        "FVector LockAt = FVector::ZeroVector;"
+      ],
+      "world_action_nb": "Spilleren går tilbake til ståstedet som ble valgt først og ser antennene vende tilbake mot det.",
+      "new_work_nb": "Lagre rekkefølgen A→B eller B→A og krev retur til første ståsted med observert respons. Ingen klokkestyrt animasjon.",
+      "tests": [
+        "SC08-T07",
+        "SC08-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_geometry_compared",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny sammenligning i S47ArrayService",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47ArrayService.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Etter A, B og retur sammenligner spilleren de observerte vinklene mot fast lykt og landemerker på servicearket.",
+      "new_work_nb": "Bygg sammenligningshandling som bare er tilgjengelig når A, B, retur og fast referanse er lagret, og som lagrer de målte vinklene.",
+      "tests": [
+        "SC08-T07",
+        "SC08-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_command_history_compared",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "Ny sluttkontroll i S47ArrayService mot FS47ArrayBack::History",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47ArrayBack.h",
+        "unreal/Signal47/Source/Signal47/Private/S47ArrayBack.cpp"
+      ],
+      "symbols": [
+        "struct FHistory { int32 Cmds = 0; FString Text; };",
+        "FS47ArrayBack::History() const"
+      ],
+      "world_action_nb": "Etter ruten kontrollerer spilleren kommandohistorikken igjen og ser at ingen vanlig kommando i prøveintervallet forklarer vinkelendringene.",
+      "new_work_nb": "Les History() etter retur og sammenlign med baseline og intervallet A til retur. Må være adskilt fra innledende baseline.",
+      "tests": [
+        "SC08-T07",
+        "SC08-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_escape_complete",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny trusselmøte 4-kontroller i S47ArrayService med felles inntrengeraktør",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47ArrayService.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Etter sammenligningen kommer en søkende figur inn i passasjen. Spilleren bryter kontakt bak opake fundament/skapflater eller krysser etter lest avsøkning, og figuren trekker seg tilbake.",
+      "new_work_nb": "Bygg møte med to retrettveier, faktisk sikt, siste sansede sted og tilbaketrekning, uten gammel Warning/Force eller US47Abduction. Reserver nattkurven og ArchiveDishes/ArrayBack under møtet.",
+      "tests": [
+        "SC08-T08",
+        "SC08-T10"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_empty_hold_observed",
+      "scenario": "SC08",
+      "status": "partial",
+      "producer": "FS47DishesFollow HoldPlace/GoHome i ny ARRAY-01-modus",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47DishesFollow.h",
+        "unreal/Signal47/Source/Signal47/Private/S47DishesFollow.cpp"
+      ],
+      "symbols": [
+        "void HoldPlace(const FS47FollowIn& S);",
+        "void GoHome(const FS47FollowIn& S);",
+        "const double HOLD = 5.5, WATCH = 7;"
+      ],
+      "world_action_nb": "Fra trygg dekning ser spilleren antennene holde kort på det sist forlatte tomme ståstedet og deretter vende tilbake til 026.",
+      "new_work_nb": "Hold og hjemgang finnes, men startes av advarselsforløpet. Kall dem fra ARRAY-01 etter vellykket retrett og krev faktisk sikt til hold og 026-retur.",
+      "tests": [
+        "SC08-T08",
+        "SC08-T10"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_local_retry",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Nytt lokalt sjekkpunkt i S47ArrayService",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47ArrayService.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Figuren fanger spilleren i passasjen; spillet gjenoppretter dekket punkt før passasjen med kommando, kilde og geometri bevart.",
+      "new_work_nb": "Bygg lokal fangst og sjekkpunkt i horror-lagringen. Ingen tapt tid, teller eller gjenganger fra gammel bortføring.",
+      "tests": [
+        "SC08-T10",
+        "SC08-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_array_insufficient",
+      "scenario": "SC08",
+      "status": "new",
+      "producer": "Ny utfallsvurdering i S47ArrayService",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47ArrayService.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Spilleren forlater feltet eller flytter lykten før A, B, retur og kommandokontroll er gjort.",
+      "new_work_nb": "Avled flagget fra lagrede delmålinger når prøven er brutt, bevar delmålinger og fjern det når en full prøve fullføres.",
+      "tests": [
+        "SC08-T09",
+        "SC08-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h05_ready",
+      "scenario": "SC09",
+      "status": "partial",
+      "producer": "FS47Horror::Context via FS47Office::DepartureReleased og SC08-resultatene",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Office.h"
+      ],
+      "symbols": [
+        "bool DepartureReleased() const"
+      ],
+      "world_action_nb": "BY02-original eller verifisert kopi er kontrollert, ARRAY-01-sammenligning og retrett er fullført, og spilleren drar fra kontoret med STATION 01-filen.",
+      "new_work_nb": "Kombiner SC08-resultatene (hr_array_result_presented, hr_array_retreat_presented og BY02 source_compare eller late_copy) med DepartureReleased() i Context. Gamle saker trenger egen adaptermapping.",
+      "tests": [
+        "SC09-T01",
+        "SC09-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h05_checked",
+      "scenario": "SC09",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter3::S (FS47Ch3State)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Chapter3.h"
+      ],
+      "symbols": [
+        "bool bP06 = false, bP07 = false, bP08 = false, bP09 = false;",
+        "TOptional<FS47Photo> F3, F4;",
+        "int32 Dev = 0;"
+      ],
+      "world_action_nb": "Ved STATION 01 har spilleren gjort fastmerke A, lokal nulltest, kabelundersøkelse og receiver/E10, tatt FRAME 03 og FRAME 04 og fremkalt dem på SARO før Nora.",
+      "new_work_nb": "Tilstanden finnes. Krev Dev==3 før checked, og sørg for at ARRAY-01 ikke kan erstatte P06. Rekkefølgen mot Noras feltringing må avklares.",
+      "tests": [
+        "SC09-T01",
+        "SC09-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h05_insufficient",
+      "scenario": "SC09",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter3 og FS47Substation (T02 uavklart)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47Chapter3.h",
+        "unreal/Signal47/Source/Signal47/Public/S47Substation.h"
+      ],
+      "symbols": [
+        "int32 Wrong06 = 0, Wrong08 = 0, Wrong09 = 0, Rejected = 0;",
+        "FiledResolution == TEXT(\"unresolved\")"
+      ],
+      "world_action_nb": "Feltkopien er feil eller ubrukelig, eller T02s lampeoppfølging er arkivert som uavklart.",
+      "new_work_nb": "Chapter3 har ingen ødelagt kopi og ny utskrift fra negativet; bygg det som i Chapter1 (Fog). Les T02s unresolved som utilstrekkelig uten å sperre hovedløpet.",
+      "tests": [
+        "SC09-T03",
+        "SC09-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h05_receiver_playing",
+      "scenario": "SC09",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter3::UseReceiver og US47Station",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter3.cpp",
+        "unreal/Signal47/Source/Signal47/Public/S47Station.h"
+      ],
+      "symbols": [
+        "void US47Chapter3::UseReceiver()",
+        "Reference west. No. East. Hold the last reading.",
+        "void SetReceiver(bool bOn);"
+      ],
+      "world_action_nb": "Spilleren slår på receiveren i hytta og det bevarte Tomás-fragmentet spilles faktisk.",
+      "new_work_nb": "Avspillingen finnes, men vinduet er privat (bRadioOn, After-timer). Legg til offentlig FragmentPlaying() som er sant bare mens fragmentet spiller.",
+      "tests": [
+        "SC09-T05",
+        "SC09-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h06_ready",
+      "scenario": "SC10",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter3 (feltrull hentet) og US47Chapter4 (Rom 6 nådd)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter3.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter4.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "S.Dev >= 3 && S.F3 && S.F4",
+        "void US47Chapter4::EnteredRoom()",
+        "S.bArrived",
+        "FS47Horror::Context"
+      ],
+      "world_action_nb": "FRAME03/04 er fremkalt, fiksert og faktisk hentet på våtbenken (Dev 3 med F3 og F4), og spilleren går inn gjennom døren til Rom 6 med PHOTO01/02 og E07 tilgjengelig.",
+      "new_work_nb": "Legg en SC10-gren i FS47Horror::Context som leser Ch3-tilstand (Dev, F3, F4) og Ch4 S.bArrived, samt valgt B-12-metode fra Chapter1 S.Method. Hoppede saker (JumpChapter4/BeganCase) skal ikke gi flagget uten lagret feltrull. Ingen dialogvei.",
+      "tests": [
+        "SC10-T01",
+        "SC10-T02",
+        "SC10-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h06_checked",
+      "scenario": "SC10",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter4 (P10 kontroll, returlinje, P12 og brevregelen)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter4.cpp"
+      ],
+      "symbols": [
+        "S.bP10 = true",
+        "S.bLine = true",
+        "S.bP12 = true",
+        "void US47Chapter4::AnswerControl",
+        "TEXT(\"n.key\")"
+      ],
+      "world_action_nb": "Spilleren legger begge B-12-kopiene og E07 på Noras bord, kontrollsvaret må stemme med faktisk brukt metode (passiv eller aktiv), returlinjen får nytt spørsmål og gir samme 1947-fragment, og linjen sammenlignes med brevet (nøkkelen i kruset) på saksbrettet.",
+      "new_work_nb": "Utled flagget fra S.bP10 && S.bLine && S.bP12 pluss notatet n.key (r6.line mot e13.key), ikke fra at panelet åpnes. Krev at alle tre P11-emner (record, tomas, cable) er gjennomgått. Bevar AnswerControl sin metodeavhengige respons. Lagre et sammenligningsstempel i horror-feltet slik at Continue avleder samme verdi.",
+      "tests": [
+        "SC10-T02",
+        "SC10-T03",
+        "SC10-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h06_insufficient",
+      "scenario": "SC10",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter4 (feil plassering, feil kontrollsvar eller forlatt rom uten funn)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter4.cpp"
+      ],
+      "symbols": [
+        "S.Wrong10++",
+        "void US47Chapter4::LeftRoom()"
+      ],
+      "world_action_nb": "Spilleren legger feil kopier på bordet, svarer feil kildefjerning for kontrollen, eller går ut av Rom 6 før P10, P11 og P12 er ført.",
+      "new_work_nb": "Registrer et reelt utilstrekkelig utfall (Wrong10 over null siden siste korrekte svar, eller LeftRoom uten P10/P12) som eget horror-felt. Nullstill når h06_checked blir sann. Aldri satt bare fordi Ready er sann, ulikt SC01-mønsteret Ready && !NormalComplete.",
+      "tests": [
+        "SC10-T03",
+        "SC10-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_ready",
+      "scenario": "SC11",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter4 (Rom 6 fullført) og fortellerklokken",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter4.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [
+        "void US47Chapter4::Finish()",
+        "S.Stage = TEXT(\"complete\")"
+      ],
+      "world_action_nb": "Rom 6 er avsluttet (Ch4 Stage complete etter at spilleren har gått ut), og spilleren er tilbake på SARO-området.",
+      "new_work_nb": "Koble Ch4 Stage complete og h06_checked til SC11-grenen. Klokken alene gir ikke ready; bunten har egen 04:04-port. Lagre overgangen i horror-feltet.",
+      "tests": [
+        "SC11-T01",
+        "SC11-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_bundle_secured",
+      "scenario": "SC11",
+      "status": "partial",
+      "producer": "FS47HorrorSiege (ny) med AS47Story telexrull og FilePaper",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Story.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Docs.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSiege.cpp (ny)"
+      ],
+      "symbols": [
+        "void AS47Story::HondoTelex",
+        "void AS47Story::FilePaper",
+        "TelexHondo"
+      ],
+      "world_action_nb": "Tidligst 04:04 river spilleren av mottakeroriginalen fra racket, tar påbegynt hendelsesark og begge ferdige Hondo- og Site11-ark fra telexen og legger alt i overføringsmappen før avsøkningen.",
+      "new_work_nb": "Bygg fire fysiske plukkobjekter i kontrollrommet og en telexutskrift av komplette fjernark som ikke finnes før 04:04 fortellertid (tidlig ankomst gir bare kildekontroll og klargjøring). Gjenbruk HondoTelex/TelexRoll-mønsteret for utskrift og FilePaper for arkivering. Bunten er sikret når alle fire ligger i mappen; lagres atomisk.",
+      "tests": [
+        "SC11-T01",
+        "SC11-T02",
+        "SC11-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_scan_started",
+      "scenario": "SC11",
+      "status": "new",
+      "producer": "FS47HorrorSiege (ny) med FS47WindowLights for ytre lysbånd",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSiege.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47WindowLight.cpp"
+      ],
+      "symbols": [
+        "void FS47WindowLights::SetLevel"
+      ],
+      "world_action_nb": "Etter sikret bunt starter den eksterne avsøkningen: et hvitt bånd vandrer over vindusflatene med lesbar geometri, ventilasjonen stopper.",
+      "new_work_nb": "Ny siege-tilstandsmaskin som starter kun når bundle_secured er sann og spilleren er inne. Ytre lysbånd som egen lyskilde (ikke SARO-strøm), styrt per vindu via FS47WindowLights. Reserver tilfeldige hendelser (Glimpses, Abduction, NightEvents) bort under avsøkningen.",
+      "tests": [
+        "SC11-T02",
+        "SC11-T05",
+        "SC11-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_checked",
+      "scenario": "SC11",
+      "status": "partial",
+      "producer": "FS47HorrorSiege (ny) som gjenbruker SC01-lyskontrollen i FS47HorrorVisual og inntrengeren fra SC02",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Public/S47HorrorVisual.h",
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorVisual.cpp"
+      ],
+      "symbols": [
+        "bool LampChangeChecked() const",
+        "bool ScreenChecked() const",
+        "ClearLine"
+      ],
+      "world_action_nb": "Spilleren slår av lokal lampe og ser at båndet fortsatt krysser glasset, ser at opak skjerm kutter det, og lager en ny radiolyd som inntrengeren faktisk sanser og undersøker mens det gamle fragmentet går uendret.",
+      "new_work_nb": "SC01 har mønsteret for lampe-/glass-/skjermkontroll med siktlinje. Utvid til SC11-geometri (flere vinduer, ytre bånd) og legg til sanset reaksjon fra inntrengeren (lydkilde, siste sansede sted) fra SC02-systemet. Krev at kontrollen gjøres før eller utenfor aktiv jakt.",
+      "tests": [
+        "SC11-T02",
+        "SC11-T03",
+        "SC11-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_insufficient",
+      "scenario": "SC11",
+      "status": "new",
+      "producer": "FS47HorrorSiege (ny)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSiege.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Avsøkningen er nådd uten sikret original, lyskontrollen er avbrutt, eller spilleren ble fanget før kontroll.",
+      "new_work_nb": "Utled fra reelle utfall: fangst, manglende original ved scan, eller avbrutt kontroll. Ikke fra tid alene. Gir H07_INCOMPLETE med lokal neste handling; bevarer sikrede funn.",
+      "tests": [
+        "SC11-T03",
+        "SC11-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_captured",
+      "scenario": "SC11",
+      "status": "new",
+      "producer": "Inntrengersystem fra SC02 (FS47HorrorEncounter, ny) via FS47HorrorSiege",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorEncounter.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Inntrengeren når spilleren etter faktisk sikt eller hørt lyd (dokumentert sanseårsak).",
+      "new_work_nb": "Fangst skal logge sanseårsak, stoppe møtet, vise H07_CAPTURE og gjenopprette sikkert lokalt sjekkpunkt før inspeksjonen med bunten bevart. Ingen tapt tid i fiksjonen og ingen ny Abduction-gren. Avhenger av møtesystemet fra SC02/SC04.",
+      "tests": [
+        "SC11-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_escape_complete",
+      "scenario": "SC11",
+      "status": "new",
+      "producer": "FS47HorrorSiege (ny) med inntrengerens kontakttap fra SC02-systemet",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSiege.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Spilleren når det målte sikre servicebilpunktet via en av to fysisk gyldige ruter, inntrengeren har mistet kontakt og avsluttet søk.",
+      "new_work_nb": "Definer sikkert servicebilpunkt og to ruter (lang skjermet, kort eksponert) med kollisjon og dørtilstand. Sett flagget i verdenstikket når alle tre vilkår holder; uavhengig av rapportsamtale. Etterfølg med ro: sperr gammel bortføring og truckhendelser på utgangen.",
+      "tests": [
+        "SC11-T02",
+        "SC11-T03",
+        "SC11-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h07_original_secured",
+      "scenario": "SC11",
+      "status": "new",
+      "producer": "FS47HorrorSiege (ny), overføringsmappe i servicebilen",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSiege.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Måleoriginalen er plukket opp og ligger i overføringsmappen som er lagt i servicebilen.",
+      "new_work_nb": "Ny bærbar mappe med faktisk plassering i bilen (bilens hit-område). Lys- eller radiokontroll setter ikke dette. Lagres og vises senere av H10-kontrollen.",
+      "tests": [
+        "SC11-T02",
+        "SC11-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h08_ready",
+      "scenario": "SC12",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter5 (ankomst Mesa Diner) og h07_escape_complete",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "void US47Chapter5::ArrivedDiner()",
+        "S.bArrived"
+      ],
+      "world_action_nb": "Spilleren har kjørt fra SARO etter fullført flukt og stiger ut på dinerens parkering.",
+      "new_work_nb": "Koble ArrivedDiner/S.bArrived og h07_escape_complete til SC12-grenen. Sørg for at kapittel fem kan starte fra SC11 sin flukt i stedet for fra Rom 6.",
+      "tests": [
+        "SC12-T01",
+        "SC12-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h08_checked",
+      "scenario": "SC12",
+      "status": "new",
+      "producer": "FS47HorrorSources (ny) på bordet i båsen, bygget på FS47RuleBook",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSources.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Public/S47BoardRules.h"
+      ],
+      "symbols": [
+        "class SIGNAL47_API FS47RuleBook"
+      ],
+      "world_action_nb": "Spilleren legger SARO-original, Hondo- og Site11-ark ved siden av hverandre, sammenligner opphav, klokker, faseorden (03:56:55 mot 03:56:56 bevart), råverdier og sendeplan, og fører en avgrenset konklusjon.",
+      "new_work_nb": "Ny sammenligningsflate med eksplisitte koblinger (som P10 til P13-reglene) der riktige par gir konklusjon og feil par gir svar uten bevis. Flagget settes når konklusjonen er ført, ikke ved åpning.",
+      "tests": [
+        "SC12-T02",
+        "SC12-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h08_insufficient",
+      "scenario": "SC12",
+      "status": "new",
+      "producer": "FS47HorrorSources (ny)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSources.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "En fjernkilde mangler eller er uverifisert når spilleren prøver å føre nettverkskonklusjon.",
+      "new_work_nb": "Sett ved reelt forsøk på konklusjon med manglende eller uverifisert kilde. Tilby bevart telexkopi ved sen ankomst og lokal varsling straks.",
+      "tests": [
+        "SC12-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_remote_sources_verified",
+      "scenario": "SC12",
+      "status": "new",
+      "producer": "FS47HorrorSources (ny), med kildeark fra SC11-bunten",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSources.cpp (ny)"
+      ],
+      "symbols": [],
+      "world_action_nb": "Spilleren kontrollerer på hvert fjernark lokal logger, eget klokkegrunnlag, råverdier og at Site11-mottakeren var frakoblet lydmatingen.",
+      "new_work_nb": "Krev at begge ferdige fjernark fra bundle_secured finnes og at hver av fire kontrollpunkter er utført per ark. Lik lyd eller tekst alene godkjennes ikke.",
+      "tests": [
+        "SC12-T02",
+        "SC12-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_warning_acknowledged",
+      "scenario": "SC12",
+      "status": "partial",
+      "producer": "US47Chapter5 betalingstelefon med ny dikteringsfase (FS47HorrorSources)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "void US47Chapter5::UsePayphone()",
+        "TEXT(\"PAYPHONE / E. WARD\")"
+      ],
+      "world_action_nb": "Spilleren ringer Ward fra betalingstelefonen, dikterer valgte kilde-ID-er og måletabeller, Ward leser kritiske verdier tilbake og bekrefter suspendert 06:00-serie.",
+      "new_work_nb": "Payphone og Ward-panel finnes, men dagens S.bWard betyr en annen samtale. Bygg dikteringsfase der hvert valgt ark faktisk leses opp, readback som må bekreftes, og en datert loggpost. Avbrutt samtale gir ingen kvittering. Oppdater Ward-replikken om 06:00.",
+      "tests": [
+        "SC12-T02",
+        "SC12-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h09_ready",
+      "scenario": "SC12",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter5 (i dineren) og warning_acknowledged",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "S.bArrived",
+        "bool US47Chapter5::InDiner() const"
+      ],
+      "world_action_nb": "Spilleren er inne i Mesa Diner etter kvittert varsel.",
+      "new_work_nb": "Koble InDiner og warning_acknowledged; ikke krev E15-lesing eller noe tidspunkt.",
+      "tests": [
+        "SC12-T01",
+        "SC12-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h09_checked",
+      "scenario": "SC12",
+      "status": "existing",
+      "producer": "US47Chapter5::Answer (P13 på kartet)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "S.bP13 = true",
+        "bool US47Chapter5::Aligned() const",
+        "FS47Result US47Chapter5::Answer"
+      ],
+      "world_action_nb": "Spilleren legger E09A-tracingen med transit på STATION 01, nord mot nord, og velger bolten ved 8.15.",
+      "new_work_nb": "",
+      "tests": [
+        "SC12-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h09_insufficient",
+      "scenario": "SC12",
+      "status": "partial",
+      "producer": "US47Chapter5::Answer (feil bolt eller ikke justert)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "S.Wrong13++",
+        "Lay the tracing on STATION 01 first"
+      ],
+      "world_action_nb": "Spilleren prøver å svare uten justert tracing eller velger feil bolt.",
+      "new_work_nb": "Lagre et eget utfall for ujustert forsøk (i dag returneres bare tekst). Gir H09_INCOMPLETE; nullstilles ved bP13.",
+      "tests": [
+        "SC12-T04"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc12_driver_recent_passage",
+      "scenario": "SC12",
+      "status": "new",
+      "producer": "Sjåførens daterte kjørelogg (ny) i US47Chapter5 sin DriverMore-krok",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47LostNights.cpp"
+      ],
+      "symbols": [
+        "DriverMore"
+      ],
+      "world_action_nb": "Spilleren leser sjåførens daterte kjørebok eller bensinkvittering på disken som viser østgående passering på gamle Roswell Road denne morgenen.",
+      "new_work_nb": "Nytt fysisk dokument med egen dato og tid, skilt fra oktoberstoppet (bOctober) og 1985-slepekvitteringen i LostNights. Sjåførens replikk i H09_BRIEF kan ikke sette flagget.",
+      "tests": [
+        "SC12-T04",
+        "SC12-T08"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc12_courier_104_confirmed",
+      "scenario": "SC12",
+      "status": "new",
+      "producer": "Ward-samtale med kartvalg (FS47HorrorSources, ny) etter P13",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSources.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "S.bP13"
+      ],
+      "world_action_nb": "Etter kartlagt C ved 8.15 markerer spilleren 10.4 på kartet og avtaler bud og retning med Ward på betalingstelefonen; Ward bekrefter i datert logg.",
+      "new_work_nb": "Krev bP13, kvittert varsel og markert 10.4-punkt separat fra C. Ingen ny observasjonsordre. Lagre som horror-felt med tidsstempel.",
+      "tests": [
+        "SC12-T04",
+        "SC12-T05"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h10_ready",
+      "scenario": "SC13",
+      "status": "partial",
+      "producer": "FS47Horror::Context via US47Chapter5 (Stage road) og bilen på dinerens plass",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "S.Stage == TEXT(\"road\") && Place == TEXT(\"diner\")",
+        "void US47Chapter5::BindDinerTruck"
+      ],
+      "world_action_nb": "Spilleren går ut til servicebilen på dinerens parkering etter løst P13.",
+      "new_work_nb": "Koble Stage road og bilens hit-område. Endre turvalg-etiketten til overlevering ved 10.4.",
+      "tests": [
+        "SC13-T01",
+        "SC13-T02"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h10_checked",
+      "scenario": "SC13",
+      "status": "new",
+      "producer": "Avreisekontroll i servicebilen (FS47Horror SC13-gren, ny)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Horror.cpp"
+      ],
+      "symbols": [],
+      "world_action_nb": "Ved bilen kontrollerer spilleren at overføringsmappen med originalene ligger i førerhuset, at Ward-kvitteringen finnes, og at kartet viser C 8.15 og overlevering 10.4 som adskilte punkter.",
+      "new_work_nb": "Ny kontrollhandling ved bilen med tre faktiske kontrollpunkter mot lagrede fakta (original_secured, warning_acknowledged, courier_104_confirmed). Setter ikke motorstopp eller finalestatus.",
+      "tests": [
+        "SC13-T02",
+        "SC13-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h10_insufficient",
+      "scenario": "SC13",
+      "status": "partial",
+      "producer": "US47Chapter5::TruckTrip og ny avreisekontroll",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp"
+      ],
+      "symbols": [
+        "TOptional<US47Chapter5::FTrip> US47Chapter5::TruckTrip"
+      ],
+      "world_action_nb": "Spilleren prøver å kjøre før kart, kvittering eller originaler er i orden.",
+      "new_work_nb": "TruckTrip sperrer allerede kjøring før Stage road. Legg til utfall for manglende kvittering eller original, med konkret neste handling.",
+      "tests": [
+        "SC13-T03"
+      ]
+    },
+    {
+      "flag": "ctx_hr_h10_stalled",
+      "scenario": "SC13",
+      "status": "existing",
+      "producer": "US47Chapter6::StartEvent og Event (motorstopp ved C)",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47Chapter6.cpp"
+      ],
+      "symbols": [
+        "void US47Chapter6::StartEvent()",
+        "Stage = TEXT(\"event\")",
+        "EngineSound()->Stall()"
+      ],
+      "world_action_nb": "Spilleren kjører gamle Roswell Road og når C ved 8.15; motoren stopper ufrivillig og THE EVENT starter.",
+      "new_work_nb": "",
+      "tests": [
+        "SC13-T02",
+        "SC13-T06"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc12_exit_sighting_readback",
+      "scenario": "SC13",
+      "status": "new",
+      "producer": "Ward/dispatch-samtale i SC12 (FS47HorrorSources, ny) med Caliche-patruljenotat fra byen",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSources.cpp (ny)",
+        "unreal/Signal47/Source/Signal47/Private/S47Town.cpp"
+      ],
+      "symbols": [
+        "bDeputyIn"
+      ],
+      "world_action_nb": "Etter 04:30 (deputy tilbake) finnes en datert patruljenote om lave lys nord for Caliche Junction-avstikkeren; spilleren får den lest tilbake av Ward med faktisk sted og tid.",
+      "new_work_nb": "Nytt datert notat knyttet til byens deputy-tilstand, og readback-steg i Ward-samtalen i SC12. Gir begrenset observasjon, ingen trygghetsgaranti.",
+      "tests": [
+        "SC12-T04",
+        "SC13-T01"
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "scene": "H01_BRIEF",
+      "scenario": "SC01",
+      "start_nb": "Første opphold i saro etter handover_done; også fra telefonens rad 'Ask Dale about the evening round'.",
+      "normal_nb": "Dale gir tre korte linjer om referanse, kamera ved østdøren og utgangene.",
+      "interrupt_nb": "Ved pause eller panel stopper stemmen; scenen gjenopptas med bResumeRequested og tidligere linje vises igjen uten dobbel kreditt.",
+      "alternative_nb": "Ingen: scenen er orientering og har ingen valg.",
+      "models": [
+        "Eksisterende SARO-kontrollrom og telefon"
+      ],
+      "audio": [
+        "Telefonkanal for Dale"
+      ],
+      "documents": [],
+      "tests": [
+        "SC01-T01",
+        "SC01-T03",
+        "SC01-T07"
+      ]
+    },
+    {
+      "scene": "H01_CHECK",
+      "scenario": "SC01",
+      "start_nb": "Bruk skiftmappen (logbook) i kontrollrommet etter fullført normalrunde.",
+      "normal_nb": "Beskrivelse bekrefter lampe og prøvde dører; hr_h01_recorded settes.",
+      "interrupt_nb": "Lukket panel gir ingen kreditt; Context avbryter scenen hvis kravet ikke lenger gjelder.",
+      "alternative_nb": "H01_INCOMPLETE vises i stedet ved manglende del.",
+      "models": [
+        "Skiftmappe"
+      ],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC01-T01",
+        "SC01-T05"
+      ]
+    },
+    {
+      "scene": "H01_INCOMPLETE",
+      "scenario": "SC01",
+      "start_nb": "Bruk skiftmappen før normalrunden er fullført.",
+      "normal_nb": "Viser neste gjennomførbare handling uten å markere fullført.",
+      "interrupt_nb": "Kan åpnes på nytt; ingen lagret progresjon endres.",
+      "alternative_nb": "Spilleren fullfører runden og får H01_CHECK.",
+      "models": [
+        "Skiftmappe"
+      ],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC01-T02",
+        "SC01-T05"
+      ]
+    },
+    {
+      "scene": "SC01_WINDOW_CHECK",
+      "scenario": "SC01",
+      "start_nb": "Automatisk i saro etter sett hånd og kontrollerte merker.",
+      "normal_nb": "To linjer om hånd og merker på utsiden; hr_sc01_window_check_presented.",
+      "interrupt_nb": "Utsettes mens panel er åpent; vises når modal er lukket.",
+      "alternative_nb": "Oversett hånd: scenen vises ikke, SC01 kan fullføres uten.",
+      "models": [
+        "SM_SC01_Hand",
+        "glassmerker",
+        "opak skjerm"
+      ],
+      "audio": [
+        "Romtone"
+      ],
+      "documents": [],
+      "tests": [
+        "SC01-T01",
+        "SC01-T02",
+        "SC01-T06"
+      ]
+    },
+    {
+      "scene": "SC01_FIRST_REPORT",
+      "scenario": "SC01",
+      "start_nb": "Telefonrad 'Report the person outside the window to dispatch' etter sett hånd.",
+      "normal_nb": "Dispatch leser tilbake sted og tid; HR_INITIAL_REPORT arkiveres med ReportStamp.",
+      "interrupt_nb": "Avbrutt samtale lagres med callActive og callCursor og gjenopptas; ingen readback før siste linje.",
+      "alternative_nb": "Uten sett hånd finnes ikke raden.",
+      "models": [
+        "Kontrollromstelefon"
+      ],
+      "audio": [
+        "Telefonkanal, dispatch"
+      ],
+      "documents": [
+        "HR_INITIAL_REPORT"
+      ],
+      "tests": [
+        "SC01-T01",
+        "SC01-T04",
+        "SC01-T07"
+      ]
+    },
+    {
+      "scene": "H02_BRIEF",
+      "scenario": "SC02",
+      "start_nb": "Spilleren går ut av SARO 07 til fots ved Caliche Junctions kontrollfront etter fullført SC01.",
+      "normal_nb": "Dale over walkie: klagen gjelder inspeksjonslampen, bruk merket kontroll utenfor gjerdet.",
+      "interrupt_nb": "Pause eller panel stopper walkie-stemmen; gjenopptas ved neste frie øyeblikk uten å starte på nytt.",
+      "alternative_nb": "Spiller som allerede har lest journalen får briefen én gang uten å miste T01-fremdrift.",
+      "models": [
+        "Eksisterende trafostasjon (prop:substation*)",
+        "SARO 07"
+      ],
+      "audio": [
+        "Walkie-kanal med eksisterende FS47WalkieSound-klikk"
+      ],
+      "documents": [
+        "EV_TRAFO_CARD"
+      ],
+      "tests": [
+        "SC02-T02",
+        "SC02-T05",
+        "SC02-T09"
+      ]
+    },
+    {
+      "scene": "H02_CHECK",
+      "scenario": "SC02",
+      "start_nb": "Etter FS47Substation::Observe med gjengitt resultat (bekreftelsen kommer ved kontrollfronten).",
+      "normal_nb": "Beskrivelsen sier at lampe og indikator stemmer og at byforsyningen ikke er fastslått; hr_h02_recorded.",
+      "interrupt_nb": "Hvis panel er åpent ved fullført kontroll utsettes scenen; T01-resultatet beholdes.",
+      "alternative_nb": "H02_INCOMPLETE ved uavklart forsøk.",
+      "models": [
+        "substationStatusLamp",
+        "substationLever"
+      ],
+      "audio": [
+        "Relé/klikk fra servicekontroll"
+      ],
+      "documents": [
+        "EV_TRAFO_CHECK"
+      ],
+      "tests": [
+        "SC02-T02",
+        "SC02-T07"
+      ]
+    },
+    {
+      "scene": "H02_INCOMPLETE",
+      "scenario": "SC02",
+      "start_nb": "Faktisk forsøk ved kontrollfronten uten fullført gjengitt resultat.",
+      "normal_nb": "Viser at kalibrering kan fortsette og at kontrollen kan tas opp igjen.",
+      "interrupt_nb": "Ingen tilstand går tapt; kan vises igjen.",
+      "alternative_nb": "Spilleren fullfører og får H02_CHECK.",
+      "models": [
+        "substationStatusLamp"
+      ],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC02-T05",
+        "SC02-T07"
+      ]
+    },
+    {
+      "scene": "SC02_RETURN_WARNING",
+      "scenario": "SC02",
+      "start_nb": "Etter sikret T01 når den bleke kroppen er faktisk sett mellom kontrollfronten og SARO 07.",
+      "normal_nb": "Beskrivelsen peker på opak skurvegg og ruten utenfor gjerdet; spilleren trekker seg bak SiteShed.",
+      "interrupt_nb": "Pause eller panel fryser aktøren uten oppspart tilnærming; scenen vises først når modal er lukket og ikke under aktiv jakt.",
+      "alternative_nb": "Spilleren kan løpe direkte til bilen dersom kryssingen er klar.",
+      "models": [
+        "Ny blek reaktiv aktør (original Blender)",
+        "prop:substationSiteShed",
+        "gjerde og porter"
+      ],
+      "audio": [
+        "Aktørens fottrinn og vending (romlig SFX)",
+        "Fremmed lys over stolpene (lav drone)"
+      ],
+      "documents": [],
+      "tests": [
+        "SC02-T02",
+        "SC02-T05",
+        "SC02-T08"
+      ]
+    },
+    {
+      "scene": "SC02_ESCAPE",
+      "scenario": "SC02",
+      "start_nb": "Når escape_complete settes etter gang eller kjøring.",
+      "normal_nb": "Bilen starter, søket er borte; HR_TRAFO_ENCOUNTER arkiveres, neste mål er Caliche.",
+      "interrupt_nb": "Hvis spilleren er i kjøring vises teksten etter stopp; lagring etter flukt gir ingen ny jakt.",
+      "alternative_nb": "Rute A, rute B eller direkte kjøring gir samme scene.",
+      "models": [
+        "SARO 07",
+        "blek aktør"
+      ],
+      "audio": [
+        "Motorstart, avtagende aktørlyd"
+      ],
+      "documents": [
+        "HR_TRAFO_ENCOUNTER"
+      ],
+      "tests": [
+        "SC02-T02",
+        "SC02-T03",
+        "SC02-T06"
+      ]
+    },
+    {
+      "scene": "SC02_RETRY",
+      "scenario": "SC02",
+      "start_nb": "Etter faktisk fangst i møte 1.",
+      "normal_nb": "Spilleren står ved dekningspunktet før kryssingen; T01 bevart.",
+      "interrupt_nb": "Fangst under modal er umulig; Continue etter fangst starter på sjekkpunktet.",
+      "alternative_nb": "Gjentatt fangst gir samme sjekkpunkt uten teller.",
+      "models": [
+        "dekningspunkt ved skuret"
+      ],
+      "audio": [
+        "Kort fangstlyd, ingen bortføringstone"
+      ],
+      "documents": [],
+      "tests": [
+        "SC02-T04",
+        "SC02-T06"
+      ]
+    },
+    {
+      "scene": "SC03_DISPATCH_RECEIPT",
+      "scenario": "SC03",
+      "start_nb": "Betalingstelefonen i Caliche (town:payphone) etter SC02-flukt.",
+      "normal_nb": "Dispatch kvitterer hendelsen og sender hjelp; HR_DISPATCH_RECEIPT.",
+      "interrupt_nb": "Avbrutt samtale gjenopptas på samme linje; ingen readback før slutt.",
+      "alternative_nb": "Ingen: samtalen er nødvendig for hjelpen.",
+      "models": [
+        "Eksisterende payphone-proxy"
+      ],
+      "audio": [
+        "Telefonkanal"
+      ],
+      "documents": [
+        "HR_DISPATCH_RECEIPT"
+      ],
+      "tests": [
+        "SC03-T02",
+        "SC03-T04",
+        "SC03-T08"
+      ]
+    },
+    {
+      "scene": "SC03_RELIEF_CONTACT",
+      "scenario": "SC03",
+      "start_nb": "Etterfølgende Ward-samtale på samme telefon.",
+      "normal_nb": "Ward avtaler Ortiz og vogn 23 ved bensinstasjonen.",
+      "interrupt_nb": "Som over.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "payphone"
+      ],
+      "audio": [
+        "Telefonkanal"
+      ],
+      "documents": [],
+      "tests": [
+        "SC03-T02",
+        "SC03-T08"
+      ]
+    },
+    {
+      "scene": "SC03_SHADOW_RULE",
+      "scenario": "SC03",
+      "start_nb": "Spilleren ser den svarte formen ved sidevindu eller verkstedåpning mens hun venter.",
+      "normal_nb": "Formen står stille i blikk og flytter seg to ganger usett.",
+      "interrupt_nb": "Panel eller pause gir ingen flytting.",
+      "alternative_nb": "Overses helt: scenen vises ikke og progresjon blokkeres ikke.",
+      "models": [
+        "Svart figur (eksisterende glimpse-silhuett kan gjenbrukes visuelt)"
+      ],
+      "audio": [
+        "Svak skrapelyd ved flytting"
+      ],
+      "documents": [],
+      "tests": [
+        "SC03-T03",
+        "SC03-T05"
+      ]
+    },
+    {
+      "scene": "SC03_ORTIZ_IDENTIFY",
+      "scenario": "SC03",
+      "start_nb": "Ortiz ankommer med vogn 23; spilleren bruker 'Talk'.",
+      "normal_nb": "Ortiz identifiserer seg og ber om å bli vist stedet.",
+      "interrupt_nb": "Samtalen kan avbrytes; Ortiz venter ved vognen.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "Ortiz (ny)",
+        "vogn 23 (ny eller ServiceFleet-variant)"
+      ],
+      "audio": [
+        "Fysisk kanal, romlig"
+      ],
+      "documents": [],
+      "tests": [
+        "SC03-T02",
+        "SC03-T07",
+        "SC03-T08"
+      ]
+    },
+    {
+      "scene": "SC03_HELPER_TAKEN",
+      "scenario": "SC03",
+      "start_nb": "Etter observert løft og trygg retrett.",
+      "normal_nb": "Beskrivelse av løftet og oppfordring til savnetmelding.",
+      "interrupt_nb": "Vises ikke under aktiv kontakt; utsatt til ro.",
+      "alternative_nb": "Spiller som ikke ser: løftet venter på sikt.",
+      "models": [
+        "Lyssøyle",
+        "Ortiz"
+      ],
+      "audio": [
+        "Fremmed lys, lav tone"
+      ],
+      "documents": [],
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "scene": "SC03_HELPER_TRACES",
+      "scenario": "SC03",
+      "start_nb": "Undersøk vogn 23 og håndsettet.",
+      "normal_nb": "Beskrivelse av tom vogn og navnelapp; HR_HELPER_TRACE_NOTE.",
+      "interrupt_nb": "Ingen tidsfrist.",
+      "alternative_nb": "Kan gjøres etter savnetmeldingen.",
+      "models": [
+        "vogn 23 med åpen dør",
+        "håndsett med navnelapp"
+      ],
+      "audio": [],
+      "documents": [
+        "HR_HELPER_TRACE_NOTE"
+      ],
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "scene": "SC03_MISSING_RECEIPT",
+      "scenario": "SC03",
+      "start_nb": "Telefon etter trygg retrett.",
+      "normal_nb": "Dispatch registrerer savnetsak; HR_MISSING_RECEIPT.",
+      "interrupt_nb": "Avbrutt samtale gjenopptas.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "payphone"
+      ],
+      "audio": [
+        "Telefonkanal"
+      ],
+      "documents": [
+        "HR_MISSING_RECEIPT"
+      ],
+      "tests": [
+        "SC03-T02",
+        "SC03-T08"
+      ]
+    },
+    {
+      "scene": "SC03_LOCAL_ORDER_HOLD",
+      "scenario": "SC03",
+      "start_nb": "Ward-samtale etter savnetsaken.",
+      "normal_nb": "Ward suspenderer 06:00-serien; HR_LOCAL_HOLD_RECEIPT.",
+      "interrupt_nb": "Avbrutt samtale gjenopptas.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "payphone"
+      ],
+      "audio": [
+        "Telefonkanal"
+      ],
+      "documents": [
+        "HR_LOCAL_HOLD_RECEIPT"
+      ],
+      "tests": [
+        "SC03-T02",
+        "SC03-T09"
+      ]
+    },
+    {
+      "scene": "SC04_LIMITED_RETURN",
+      "scenario": "SC04",
+      "start_nb": "Ward-samtale fra Caliche etter SC03.",
+      "normal_nb": "Avtale om avgrenset retur, sikring av plan og skiftlogg.",
+      "interrupt_nb": "Avbrutt samtale gjenopptas.",
+      "alternative_nb": "Spilleren kan bli i Caliche; ingen global reisesperre.",
+      "models": [
+        "payphone"
+      ],
+      "audio": [
+        "Telefonkanal"
+      ],
+      "documents": [],
+      "tests": [
+        "SC04-T02",
+        "SC04-T08"
+      ]
+    },
+    {
+      "scene": "SC04_LOCAL_HOLD",
+      "scenario": "SC04",
+      "start_nb": "Etter fysisk plansperre og sikrede originaler i kontrollrommet.",
+      "normal_nb": "Bekreftelse; HR_LOCAL_ISOLATION_NOTE.",
+      "interrupt_nb": "Utsettes ved panel.",
+      "alternative_nb": "Rekkefølgen sperre og originaler er fri.",
+      "models": [
+        "Ny plansperrebryter",
+        "skiftmappe"
+      ],
+      "audio": [
+        "Bryterklikk"
+      ],
+      "documents": [
+        "HR_LOCAL_ISOLATION_NOTE",
+        "log"
+      ],
+      "tests": [
+        "SC04-T02",
+        "SC04-T06"
+      ]
+    },
+    {
+      "scene": "SC04_ANNEX_IMPRINT",
+      "scenario": "SC04",
+      "start_nb": "Spilleren går gjennom annexet etter sperre.",
+      "normal_nb": "Identisk Dale-fragment fra feil dør.",
+      "interrupt_nb": "Pause stopper avspillingen; ingen hørt-kvittering ved hopp.",
+      "alternative_nb": "Uten tidligere hørt referanse spilles ikke avtrykket.",
+      "models": [
+        "annex"
+      ],
+      "audio": [
+        "Romlig radiokanal, feil dørretning"
+      ],
+      "documents": [],
+      "tests": [
+        "SC04-T02",
+        "SC04-T08"
+      ]
+    },
+    {
+      "scene": "SC04_ANNEX_LONG_ESCAPE",
+      "scenario": "SC04",
+      "start_nb": "Etter lang passasje fullført.",
+      "normal_nb": "Kontakt brutt.",
+      "interrupt_nb": "Pause fryser søk.",
+      "alternative_nb": "Kort rute via lyd.",
+      "models": [
+        "blek aktør",
+        "annexdører"
+      ],
+      "audio": [
+        "Fottrinn, dørlyd"
+      ],
+      "documents": [],
+      "tests": [
+        "SC04-T02",
+        "SC04-T05"
+      ]
+    },
+    {
+      "scene": "SC04_ANNEX_SOUND_ESCAPE",
+      "scenario": "SC04",
+      "start_nb": "Etter lydavledning og kort passasje.",
+      "normal_nb": "Kontakt brutt.",
+      "interrupt_nb": "Pause fryser søk.",
+      "alternative_nb": "Lang rute.",
+      "models": [
+        "vanlig radio i annexet"
+      ],
+      "audio": [
+        "Radio som romlig lydkilde"
+      ],
+      "documents": [],
+      "tests": [
+        "SC04-T03",
+        "SC04-T05"
+      ]
+    },
+    {
+      "scene": "SC04_ANNEX_RETRY",
+      "scenario": "SC04",
+      "start_nb": "Etter fangst i annexet.",
+      "normal_nb": "Tilbake til siste dekningspunkt.",
+      "interrupt_nb": "Continue starter på sjekkpunktet.",
+      "alternative_nb": "Gjentatt fangst gir samme punkt.",
+      "models": [
+        "annex"
+      ],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC04-T04",
+        "SC04-T05"
+      ]
+    },
+    {
+      "scene": "SC04_CAR_READ",
+      "scenario": "SC04",
+      "start_nb": "Etter ro og prøvd rute, når bilenheten passerer.",
+      "normal_nb": "Instruks om skjerm eller kjøring.",
+      "interrupt_nb": "Utsettes ved modal.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "SARO 07",
+        "skjermet parkering"
+      ],
+      "audio": [
+        "Passering utenfor kupe"
+      ],
+      "documents": [],
+      "tests": [
+        "SC04-T02",
+        "SC04-T08"
+      ]
+    },
+    {
+      "scene": "SC04_CAR_ESCAPE",
+      "scenario": "SC04",
+      "start_nb": "Etter huking eller kjøreflukt.",
+      "normal_nb": "Enheten har mistet kontakt; bilen virker.",
+      "interrupt_nb": "Som over.",
+      "alternative_nb": "Huking eller kjøring.",
+      "models": [
+        "SARO 07"
+      ],
+      "audio": [
+        "Motor"
+      ],
+      "documents": [],
+      "tests": [
+        "SC04-T02",
+        "SC04-T03"
+      ]
+    },
+    {
+      "scene": "SC04_CAR_RETRY",
+      "scenario": "SC04",
+      "start_nb": "Etter fangst ved bilen.",
+      "normal_nb": "Tilbake til skjermet tilkjøring.",
+      "interrupt_nb": "Continue starter på sjekkpunktet.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "SARO 07"
+      ],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC04-T04",
+        "SC04-T05"
+      ]
+    },
+    {
+      "scene": "SC04_SAFE_ROOM_AGREEMENT",
+      "scenario": "SC04",
+      "start_nb": "Kontrollromstelefon når rommet er trygt.",
+      "normal_nb": "Ward på linjen; avtale om loggsikring.",
+      "interrupt_nb": "Avbrutt samtale gjenopptas.",
+      "alternative_nb": "Spilleren kan forlate rommet via prøvd rute.",
+      "models": [
+        "Kontrollromstelefon"
+      ],
+      "audio": [
+        "Telefonkanal"
+      ],
+      "documents": [],
+      "tests": [
+        "SC04-T02",
+        "SC04-T08"
+      ]
+    },
+    {
+      "scene": "SC05_PASSIVE_RESIDUAL",
+      "scenario": "SC05",
+      "start_nb": "Kort fremoverovergang i kontrollrommet etter SC04-avtalen.",
+      "normal_nb": "Residual 00:13:47 i passiv mottaking; spilleren finner 1420.405 MHz, gain 82, BW 12, az 083.",
+      "interrupt_nb": "Pause og panel stopper ikke klokken feil; Continue gjenoppretter residual.",
+      "alternative_nb": "Gamle lagringer går via eksisterende Survey.",
+      "models": [
+        "Eksisterende konsoll"
+      ],
+      "audio": [
+        "Alarm"
+      ],
+      "documents": [],
+      "tests": [
+        "SC05-T02",
+        "SC05-T05"
+      ]
+    },
+    {
+      "scene": "H03_BRIEF",
+      "scenario": "SC06",
+      "start_nb": "Spilleren tar opp feltkameraet ved S-03/B-12 etter at SC05 er fullført.",
+      "normal_nb": "Startteksten vises én gang og peker på FRAME 01 og B-12.",
+      "interrupt_nb": "Pause, panel eller dialog stanser visningen uten konklusjon; scenen gjenopptas fra lagret pakkestatus etter at verdensflaggene er gjenopprettet. Områdebytte avbryter uten å sette flagg.",
+      "alternative_nb": "Ingen: briefen har ett faktisk startpunkt.",
+      "models": [
+        "Eksisterende B-12, S-03-skap, feltkamera"
+      ],
+      "audio": [
+        "Ingen ny effekt; UI-kanal"
+      ],
+      "documents": [],
+      "tests": [
+        "SC06-T01",
+        "SC06-T07"
+      ]
+    },
+    {
+      "scene": "H03_CHECK",
+      "scenario": "SC06",
+      "start_nb": "Spilleren henter FRAME 02 fra fikseringen og sammenligner samme detalj på begge kopier.",
+      "normal_nb": "Resultatet vises etter faktisk kontroll og H03 registreres.",
+      "interrupt_nb": "Mørkeromsdør åpnet midt i fremkalling tåkelegger kopien; resultatet utsettes. Lagring midt i fremkalling gjenopprettes uten gratis kopi.",
+      "alternative_nb": "Passiv lampe/motorisolering eller aktiv 042-kontroll; begge gir samme sluttscene med ulik observasjon.",
+      "models": [
+        "Eksisterende mørkerom, vått bord, FRAME 01/02-kopier"
+      ],
+      "audio": [
+        "Lukker, motor/vinge og mørkeromslyd på verdenskanal"
+      ],
+      "documents": [
+        "P01",
+        "P02",
+        "P03"
+      ],
+      "tests": [
+        "SC06-T01",
+        "SC06-T02",
+        "SC06-T06"
+      ]
+    },
+    {
+      "scene": "H03_INCOMPLETE",
+      "scenario": "SC06",
+      "start_nb": "Spilleren henter en kopi som er tåkelagt av lys eller ulesbar.",
+      "normal_nb": "Teksten viser at negativet beholdes og at ny kopi lages med lukket dør.",
+      "interrupt_nb": "Kan vises igjen etter Continue så lenge kopien er ugyldig; forsvinner når gyldig kopi finnes.",
+      "alternative_nb": "Ulesbar detalj på ellers fremkalt kopi gir samme scene.",
+      "models": [
+        "Eksisterende mørkeromsdør og negativ"
+      ],
+      "audio": [
+        "Ingen feil-lyd"
+      ],
+      "documents": [],
+      "tests": [
+        "SC06-T03",
+        "SC06-T04"
+      ]
+    },
+    {
+      "scene": "H04_BRIEF",
+      "scenario": "SC07",
+      "start_nb": "Spilleren undersøker den låste kontordøren eller serviceskuffen etter H03.",
+      "normal_nb": "Dale på telefon peker på reservenøkkelen og feltmappen.",
+      "interrupt_nb": "Telefonen kan avbrytes; uopplevde replikker gir ingen nøkkel. Dialog setter ingen verdensfakta.",
+      "alternative_nb": "Spilleren kan finne nøkkelen før briefen; briefen vises da fortsatt én gang uten å gjenta nøkkelutdeling.",
+      "models": [
+        "Eksisterende kontor, serviceskuff, messingnøkkel"
+      ],
+      "audio": [
+        "Telefonkanal for Dale; skuff og lås på verdenskanal"
+      ],
+      "documents": [
+        "EV_DALE_INDEX",
+        "EV_DALE_NOTE"
+      ],
+      "tests": [
+        "SC07-T01",
+        "SC07-T06"
+      ]
+    },
+    {
+      "scene": "H04_CHECK",
+      "scenario": "SC07",
+      "start_nb": "Spilleren holder Dales ståstedsnotat ved kontorvinduet mot referansestolpen.",
+      "normal_nb": "Resultatet skiller kulvertplassen (T02) fra arrayservicekortet og STATION 01s historie.",
+      "interrupt_nb": "Lesepanel åpent stanser kontrollen; vindusendringen skjer først etter at panelet er lukket.",
+      "alternative_nb": "Spilleren kan ha sett VHS først eller hoppe over den; feltmappen alene bærer hovedløpet.",
+      "models": [
+        "Kontorvindu, referansestolpe, feltmappe (ny vindu/stolpeinteraksjon)"
+      ],
+      "audio": [
+        "Romlyd i kontoret"
+      ],
+      "documents": [
+        "EV_DALE_INDEX",
+        "E06",
+        "E07",
+        "P04",
+        "P05"
+      ],
+      "tests": [
+        "SC07-T02",
+        "SC07-T05"
+      ]
+    },
+    {
+      "scene": "H04_INCOMPLETE",
+      "scenario": "SC07",
+      "start_nb": "Spilleren har feltmappen men har ikke sett VHS-filmen til ende.",
+      "normal_nb": "Teksten fører filmen som usett og viser at feltkontrollen kan gjøres.",
+      "interrupt_nb": "Strømbrudd eller pause i VHS lagrer avspillingssted; Continue gjenopptar derfra.",
+      "alternative_nb": "Spilleren ser filmen senere; flagget faller da uten å gi bevis i seg selv.",
+      "models": [
+        "Eksisterende VHS-spiller office:fieldDeck, ny film FIELD 01"
+      ],
+      "audio": [
+        "VHS-lyd fra spillerens høyttaler (romkanal)"
+      ],
+      "documents": [
+        "EV_DALE_INDEX"
+      ],
+      "tests": [
+        "SC07-T03",
+        "SC07-T04"
+      ]
+    },
+    {
+      "scene": "BY02_REQUEST",
+      "scenario": "SC08",
+      "start_nb": "Spilleren står i 1420 AM-lobbyen før 04:00 med dateret 1981-spor.",
+      "normal_nb": "Earl knytter datoen til off-air-spolen og skiller 1420 AM fra 1420.405 MHz.",
+      "interrupt_nb": "Lukket panel avbryter Earl uten konklusjon; han gjentar ikke etter 04:00.",
+      "alternative_nb": "Spilleren kommer etter 04:00: scenen vises ikke og BY02_LATE_COPY overtar.",
+      "models": [
+        "Eksisterende 1420 AM-stasjon og lobbydør; Earl som figur i lobbyen"
+      ],
+      "audio": [
+        "Romkanal for Earl; lobbyens summer og bærebølge"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T01",
+        "SC08-T03"
+      ]
+    },
+    {
+      "scene": "BY02_REEL_IDENTIFY",
+      "scenario": "SC08",
+      "start_nb": "Spilleren undersøker spoleeske, off-air-logg og initialer i lobbyen.",
+      "normal_nb": "Earl forklarer velgerens to stillinger.",
+      "interrupt_nb": "Avbrudd før undersøkelsen er ferdig gir ingen identitet.",
+      "alternative_nb": "Ingen: spolen må identifiseres før begge prøvene.",
+      "models": [
+        "Ny spoleeske, off-air-logg, merket TAPE/LIVE-velger"
+      ],
+      "audio": [
+        "Romkanal for Earl"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T01",
+        "SC08-T02"
+      ]
+    },
+    {
+      "scene": "BY02_TAPE_CHECK",
+      "scenario": "SC08",
+      "start_nb": "Spilleren setter velgeren på TAPE og starter spolen.",
+      "normal_nb": "Teksten bekrefter avspillingens kilde uten peiling.",
+      "interrupt_nb": "Avbrutt avspilling gir ingen tape-prøve; velgerstilling lagres.",
+      "alternative_nb": "LIVE først, så TAPE, er like gyldig.",
+      "models": [
+        "Lobbydekk, frakoblet monitorledning"
+      ],
+      "audio": [
+        "Spolens hiss, hull og klikk fra FS47ReelTape på lobbyhøyttaler; velgerklikk"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T02",
+        "SC08-T03"
+      ]
+    },
+    {
+      "scene": "BY02_LIVE_CHECK",
+      "scenario": "SC08",
+      "start_nb": "Spilleren setter velgeren på LIVE MONITOR.",
+      "normal_nb": "Teksten holder kildene adskilt.",
+      "interrupt_nb": "Bytte tilbake til TAPE før minste lyttetid gir ingen live-prøve.",
+      "alternative_nb": "Rekkefølgen er fri.",
+      "models": [
+        "Lobbymonitor, frakoblet dekk"
+      ],
+      "audio": [
+        "Nattens 1420 AM-monitor på lobbyhøyttaler"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T02",
+        "SC08-T03"
+      ]
+    },
+    {
+      "scene": "BY02_SOURCE_COMPARE",
+      "scenario": "SC08",
+      "start_nb": "Begge prøvene er lagret og spilleren har stilt nytt spørsmål og spilt spolen igjen.",
+      "normal_nb": "Kildesjekken gis som dokument.",
+      "interrupt_nb": "Dokumentet gis atomisk; lasting gjentar ikke utdeling.",
+      "alternative_nb": "Sen kopi via BY02_LATE_COPY gir parallell vei til H05.",
+      "models": [
+        "Som over"
+      ],
+      "audio": [
+        "Ingen ny"
+      ],
+      "documents": [
+        "HR_EARL_SOURCE_CHECK"
+      ],
+      "tests": [
+        "SC08-T02",
+        "SC08-T04"
+      ]
+    },
+    {
+      "scene": "BY02_LATE_COPY",
+      "scenario": "SC08",
+      "start_nb": "Etter 04:00 åpner spilleren utleveringskonvolutten i lobbyen.",
+      "normal_nb": "Kopien kontrolleres og spilles isolert; nytt spørsmål gir uendret fragment.",
+      "interrupt_nb": "Avbrutt avspilling bevarer metadata, men gir ikke resultat.",
+      "alternative_nb": "Original før 04:00 er den andre gyldige veien.",
+      "models": [
+        "Ny datert konvolutt, kildekopi, off-air-loggkopi, frakoblingsark"
+      ],
+      "audio": [
+        "Kopiavspilling på lobbydekk"
+      ],
+      "documents": [
+        "HR_EARL_SOURCE_COPY"
+      ],
+      "tests": [
+        "SC08-T05",
+        "SC08-T09"
+      ]
+    },
+    {
+      "scene": "BY02_INCOMPLETE",
+      "scenario": "SC08",
+      "start_nb": "Spilleren avspiller uten identifisert kilde eller med begge kilder koblet.",
+      "normal_nb": "Teksten viser neste konkrete kontroll.",
+      "interrupt_nb": "Vises igjen etter Continue til gyldig prøve finnes.",
+      "alternative_nb": "Ingen: dette er selve det uavklarte utfallet.",
+      "models": [
+        "Som over"
+      ],
+      "audio": [
+        "Ingen feil-lyd"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T09"
+      ]
+    },
+    {
+      "scene": "ARRAY_BRIEF",
+      "scenario": "SC08",
+      "start_nb": "Spilleren har åpnet arrayservicearket i kontoret.",
+      "normal_nb": "Teksten forklarer A, B og REF.",
+      "interrupt_nb": "Ingen effekt ved avbrudd; arket beholdes i notatboken.",
+      "alternative_nb": "Ingen: arket er eneste inngang.",
+      "models": [
+        "Eksisterende office:arrayServiceSheet og feltavlene"
+      ],
+      "audio": [
+        "Ingen"
+      ],
+      "documents": [
+        "EV_DALE_ARRAY_SERVICE"
+      ],
+      "tests": [
+        "SC08-T06"
+      ]
+    },
+    {
+      "scene": "ARRAY_COMMAND_CHECK",
+      "scenario": "SC08",
+      "start_nb": "Spilleren gjør baseline på operasjonsterminalen.",
+      "normal_nb": "Teksten bekrefter nærgruppe og kommandoregister.",
+      "interrupt_nb": "Panel lukket før registrering gir ingen baseline.",
+      "alternative_nb": "Baseline kan gjøres før eller etter at lykten settes ut, men før A/B.",
+      "models": [
+        "Eksisterende operasjonsterminal"
+      ],
+      "audio": [
+        "Konsollpip på verdenskanal"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T06",
+        "SC08-T07"
+      ]
+    },
+    {
+      "scene": "ARRAY_FIXED_REFERENCE",
+      "scenario": "SC08",
+      "start_nb": "Spilleren setter feltlykten på REF / R1.",
+      "normal_nb": "Teksten minner om å flytte seg selv, ikke lykten.",
+      "interrupt_nb": "Å flytte lykten etterpå fjerner flagget.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "Ny feltlykt, eksisterende REF / R1-tavle"
+      ],
+      "audio": [
+        "Lyktklikk"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T06",
+        "SC08-T07"
+      ]
+    },
+    {
+      "scene": "ARRAY_POINT_A",
+      "scenario": "SC08",
+      "start_nb": "Spilleren står på A / ROW 1 WEST etter baseline og fast referanse.",
+      "normal_nb": "Nærgruppen vender seg mot A og teksten ber spilleren registrere det.",
+      "interrupt_nb": "Pause fryser antennene; ingen oppspart bevegelse.",
+      "alternative_nb": "Første eller andre ståsted.",
+      "models": [
+        "Eksisterende antenner og A-tavle"
+      ],
+      "audio": [
+        "Servomotorer og bremser fra antennene (posisjonert verdenslyd)"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T07"
+      ]
+    },
+    {
+      "scene": "ARRAY_POINT_B",
+      "scenario": "SC08",
+      "start_nb": "Spilleren står på B / ROW 1 EAST.",
+      "normal_nb": "Nærgruppen vender seg mot B.",
+      "interrupt_nb": "Som A.",
+      "alternative_nb": "Første eller andre ståsted.",
+      "models": [
+        "Eksisterende antenner og B-tavle"
+      ],
+      "audio": [
+        "Servomotorer og bremser"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T07"
+      ]
+    },
+    {
+      "scene": "ARRAY_RETURN",
+      "scenario": "SC08",
+      "start_nb": "Spilleren går tilbake til første ståsted.",
+      "normal_nb": "Antennene vender tilbake mot første ståsted.",
+      "interrupt_nb": "Avbrudd før retur gir ingen retur.",
+      "alternative_nb": "A→B→A eller B→A→B.",
+      "models": [
+        "Som over"
+      ],
+      "audio": [
+        "Servomotorer"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T07",
+        "SC08-T08"
+      ]
+    },
+    {
+      "scene": "ARRAY_RESULT",
+      "scenario": "SC08",
+      "start_nb": "Spilleren sammenligner geometri og kommandohistorikk etter retur.",
+      "normal_nb": "Resultatnotatet gis.",
+      "interrupt_nb": "Dokumentet gis atomisk.",
+      "alternative_nb": "Ingen: krever full prøve.",
+      "models": [
+        "Serviceark, konsoll"
+      ],
+      "audio": [
+        "Ingen"
+      ],
+      "documents": [
+        "HR_ARRAY_CONTROL_NOTE"
+      ],
+      "tests": [
+        "SC08-T07",
+        "SC08-T08"
+      ]
+    },
+    {
+      "scene": "ARRAY_RETREAT",
+      "scenario": "SC08",
+      "start_nb": "Spilleren bryter kontakt med den søkende figuren i passasjen.",
+      "normal_nb": "Teksten bekrefter retrett og bevart sammenligning.",
+      "interrupt_nb": "Pause gir ingen tilnærming; fangst går til ARRAY_RETRY.",
+      "alternative_nb": "Lang vei bak opake flater eller kort kryssing etter lest avsøkning.",
+      "models": [
+        "Ny søkende figur, opake fundament- og skapflater"
+      ],
+      "audio": [
+        "Fotsteg og søkelyd fra figuren (posisjonert)"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T08",
+        "SC08-T10"
+      ]
+    },
+    {
+      "scene": "ARRAY_EMPTY_HOLD",
+      "scenario": "SC08",
+      "start_nb": "Spilleren ser feltet fra dekning etter retrett.",
+      "normal_nb": "Antennene holder på tomt sted og går til 026.",
+      "interrupt_nb": "Ser spilleren bort, utsettes scenen til faktisk observasjon.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "Eksisterende antenner"
+      ],
+      "audio": [
+        "Bremser og stillhet"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T08",
+        "SC08-T10"
+      ]
+    },
+    {
+      "scene": "ARRAY_RETRY",
+      "scenario": "SC08",
+      "start_nb": "Figuren fanger spilleren.",
+      "normal_nb": "Spillet går tilbake til dekket punkt med bevart arbeid.",
+      "interrupt_nb": "Lagring under fangst gjenoppretter sjekkpunktet.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "Ingen nye"
+      ],
+      "audio": [
+        "Ingen feil-lyd"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T10"
+      ]
+    },
+    {
+      "scene": "ARRAY_INCOMPLETE",
+      "scenario": "SC08",
+      "start_nb": "Spilleren forlater feltet med ufullstendig prøve.",
+      "normal_nb": "Teksten viser hva som mangler.",
+      "interrupt_nb": "Vises igjen etter Continue til prøven er fullført.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "Ingen nye"
+      ],
+      "audio": [
+        "Ingen feil-lyd"
+      ],
+      "documents": [],
+      "tests": [
+        "SC08-T09"
+      ]
+    },
+    {
+      "scene": "H05_BRIEF",
+      "scenario": "SC09",
+      "start_nb": "Spilleren ankommer STATION 01 etter SC08.",
+      "normal_nb": "Startteksten skiller A, C og arraypunktene.",
+      "interrupt_nb": "Pause, panel eller dialog stanser visningen uten konklusjon; scenen gjenopptas fra lagret pakkestatus etter at verdensflaggene er gjenopprettet. Områdebytte avbryter uten å sette flagg.",
+      "alternative_nb": "Spilleren kjører hovedvei eller surveyspor.",
+      "models": [
+        "Eksisterende STATION 01, E09A-transitt"
+      ],
+      "audio": [
+        "Ingen"
+      ],
+      "documents": [
+        "E09A"
+      ],
+      "tests": [
+        "SC09-T01"
+      ]
+    },
+    {
+      "scene": "H05_CHECK",
+      "scenario": "SC09",
+      "start_nb": "Spilleren har P06 til P09 og begge feltkopier fremkalt.",
+      "normal_nb": "Resultatet peker videre til Nora.",
+      "interrupt_nb": "Kort lysavskjæring under hjemreisen stopper ikke registrert arbeid.",
+      "alternative_nb": "T02 kan være uavklart uten å sperre.",
+      "models": [
+        "Eksisterende hytte, kabel, lampe, receiver, ny opak dekning for lysavskjæring"
+      ],
+      "audio": [
+        "Lysavskjæringens lyd (posisjonert)"
+      ],
+      "documents": [
+        "E10",
+        "FRAME 03",
+        "FRAME 04",
+        "P06",
+        "P07",
+        "P08",
+        "P09"
+      ],
+      "tests": [
+        "SC09-T01",
+        "SC09-T02"
+      ]
+    },
+    {
+      "scene": "H05_INCOMPLETE",
+      "scenario": "SC09",
+      "start_nb": "Feil eller ødelagt feltkopi, eller T02 uavklart.",
+      "normal_nb": "Teksten viser at negativet beholdes.",
+      "interrupt_nb": "Vises igjen etter Continue til ny kopi finnes.",
+      "alternative_nb": "T02 uavklart gir SARO-kontroll i H07.",
+      "models": [
+        "Eksisterende vått bord"
+      ],
+      "audio": [
+        "Ingen feil-lyd"
+      ],
+      "documents": [
+        "T02"
+      ],
+      "tests": [
+        "SC09-T03",
+        "SC09-T04"
+      ]
+    },
+    {
+      "scene": "H05_FIXED_FRAGMENT",
+      "scenario": "SC09",
+      "start_nb": "Spilleren slår på receiveren i hytta.",
+      "normal_nb": "Det eksisterende fragmentet spilles med eksisterende timing.",
+      "interrupt_nb": "Pause holder avspillingen; avbrudd gir ingen ny replikk.",
+      "alternative_nb": "Ingen: fast avtrykk.",
+      "models": [
+        "Eksisterende receiver"
+      ],
+      "audio": [
+        "Eksisterende Tomás-take via PhoneCall på radiokanal; bærebølge"
+      ],
+      "documents": [],
+      "tests": [
+        "SC09-T05"
+      ]
+    },
+    {
+      "scene": "H06_BRIEF",
+      "scenario": "SC10",
+      "start_nb": "Spilleren går inn døren til Rom 6 med feltkopiene (EnteredRoom), Nora ved bordet.",
+      "normal_nb": "Nora forteller kort om Tomás, kuttet og returlinjen. Én gang per inngang.",
+      "interrupt_nb": "Pause, notatbok eller brev stanser linjene; ingen nye farer i Rom 6 (Night holdes). Ved lagring midt i spilles briefen ikke på nytt etter Continue.",
+      "alternative_nb": "Ingen alternativ; kommer spilleren uten FRAME03/04 sendes han tilbake til fotolaben via objektivet.",
+      "models": [
+        "world.room6 (eksisterende)",
+        "Nora og noraHead (eksisterende)"
+      ],
+      "audio": [
+        "romtone motel, TV-sus fra apparatet (eksisterende)"
+      ],
+      "documents": [
+        "E11",
+        "E12",
+        "E13"
+      ],
+      "tests": [
+        "SC10-T02",
+        "SC10-T04"
+      ]
+    },
+    {
+      "scene": "H06_CHECK",
+      "scenario": "SC10",
+      "start_nb": "Etter korrekt P10-kontroll, returlinjen og P12 i samtalen eller på saksbrettet.",
+      "normal_nb": "Nora gir C østover fra STATION 01, ber om å bevare originalen og ikke stoppe på linjen.",
+      "interrupt_nb": "Avbrudd før siste linje gir ingen hr_h06_recorded; Continue gjenopptar fra samme node uten dobbel dokumentutdeling.",
+      "alternative_nb": "Begge B-12-metoder (passiv: lampen, aktiv: ingen) gir riktig variant av kontrollsvaret.",
+      "models": [
+        "field card, letter, correction på bordet (eksisterende)"
+      ],
+      "audio": [
+        "telefonklikk og bærebølge fra nattbordstelefonen, romkanal"
+      ],
+      "documents": [
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "tests": [
+        "SC10-T02",
+        "SC10-T03",
+        "SC10-T06"
+      ]
+    },
+    {
+      "scene": "H06_INCOMPLETE",
+      "scenario": "SC10",
+      "start_nb": "Feil kopier på bordet, feil kontrollsvar eller ut av rommet uten P10/P12.",
+      "normal_nb": "Stille tekst viser at brev og feltkort fortsatt ligger; spilleren går tilbake til bordet.",
+      "interrupt_nb": "Teksten forsvinner ved panel og vises på nytt bare ved nytt utilstrekkelig utfall.",
+      "alternative_nb": "Ingen; brevet er aldri tidsprøve og nøkkelen i kruset er ingen adgangsport.",
+      "models": [],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC10-T03"
+      ]
+    },
+    {
+      "scene": "H07_BRIEF",
+      "scenario": "SC11",
+      "start_nb": "Spilleren er tilbake på SARO etter Rom 6 og tar kontrolltelefonen eller går inn i kontrollrommet.",
+      "normal_nb": "Ward ber om original og fjernark; ventilasjonen stopper og et hvitt bånd går over yttervegg.",
+      "interrupt_nb": "Avbrudd før siste linje lar briefen stå åpen; ingen avsøkning starter av briefen.",
+      "alternative_nb": "Før 04:04 gir samtalen klargjøring og kildekontroll uten ferdige fjernark.",
+      "models": [
+        "kontrollrom SARO (eksisterende)",
+        "telex (eksisterende)"
+      ],
+      "audio": [
+        "ventilasjonsstopp, rombus SARO, ytre båndsurr fra vindusretning"
+      ],
+      "documents": [],
+      "tests": [
+        "SC11-T02",
+        "SC11-T03"
+      ]
+    },
+    {
+      "scene": "H07_CHECK",
+      "scenario": "SC11",
+      "start_nb": "Etter fullført flukt, i ro ved servicebilen.",
+      "normal_nb": "Stille tekst oppsummerer lampe av, bånd over glasset, opak skjerm, og samordnet søk.",
+      "interrupt_nb": "Vises ikke under jakt; panel stopper ikke noe aktivt møte fordi scenen kommer etter flukt.",
+      "alternative_nb": "Uten fullført flukt eller kontroll vises H07_INCOMPLETE i stedet.",
+      "models": [],
+      "audio": [],
+      "documents": [
+        "HR_SARO_ORIGINAL (gis først i H08_COMPARE_RECORDS)"
+      ],
+      "tests": [
+        "SC11-T02",
+        "SC11-T05"
+      ]
+    },
+    {
+      "scene": "H07_INCOMPLETE",
+      "scenario": "SC11",
+      "start_nb": "Fangst, manglende original ved scan eller avbrutt kontroll.",
+      "normal_nb": "Peker til dekket sjekkpunkt før inspeksjonen; ingen fotoport.",
+      "interrupt_nb": "Vises etter gjenopptakelse, ikke midt i jakt.",
+      "alternative_nb": "Spilleren kan gjenta kontrollen før faren uten å måtte bruke avledning.",
+      "models": [],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC11-T03",
+        "SC11-T04"
+      ]
+    },
+    {
+      "scene": "H07_FIRST_WARNING",
+      "scenario": "SC11",
+      "start_nb": "Første avsøkning starter etter sikret bunt, før inntrengerkontakt.",
+      "normal_nb": "Tekst om bånd mot neste vindu og serviceruten bak skjermen; spilleren beholder kontroll.",
+      "interrupt_nb": "Pause fryser båndet; ingen oppspart tilnærming etter panel.",
+      "alternative_nb": "Ingen; scenen er én reaksjonsmulighet.",
+      "models": [
+        "ytre søkelysrigg (ny, egen Blender-kilde)",
+        "opak skjerm (fra SC01)"
+      ],
+      "audio": [
+        "ytre bånd, posisjonell lyd utenfor vinduene"
+      ],
+      "documents": [],
+      "tests": [
+        "SC11-T02",
+        "SC11-T06"
+      ]
+    },
+    {
+      "scene": "H07_CAPTURE",
+      "scenario": "SC11",
+      "start_nb": "Inntrengeren når spilleren med logget sanseårsak.",
+      "normal_nb": "Kort overgang og gjenopptakelse fra sjekkpunkt før inspeksjonen med bunten bevart.",
+      "interrupt_nb": "Lagring under jakt er sperret; Continue går til sjekkpunktet.",
+      "alternative_nb": "Ingen tapt tid eller ny Abduction-gren.",
+      "models": [
+        "inntrenger (fra SC02, egen Blender-kilde)"
+      ],
+      "audio": [
+        "fangststikk, kort, ikke blendende"
+      ],
+      "documents": [],
+      "tests": [
+        "SC11-T04"
+      ]
+    },
+    {
+      "scene": "H07_ESCAPE_COMPLETE",
+      "scenario": "SC11",
+      "start_nb": "Spilleren når det sikre servicebilpunktet med original i mappen og inntrengeren har mistet kontakt.",
+      "normal_nb": "Rolig tekst: original sikret, kontakt tapt, søket avsluttet.",
+      "interrupt_nb": "Lagres én gang med fluktresultatet; Continue viser den ikke igjen.",
+      "alternative_nb": "Nås via begge ruter (lang skjermet og kort eksponert).",
+      "models": [
+        "servicebil (eksisterende)",
+        "overføringsmappe (ny)"
+      ],
+      "audio": [
+        "motor tomgang, natt utendørs"
+      ],
+      "documents": [],
+      "tests": [
+        "SC11-T02",
+        "SC11-T03"
+      ]
+    },
+    {
+      "scene": "H08_BRIEF",
+      "scenario": "SC12",
+      "start_nb": "Spilleren tar betalingstelefonen i dineren etter ankomst fra SARO.",
+      "normal_nb": "Ward skiller Hondos strøm fra SAROs mørklegging og ber om sammenligning.",
+      "interrupt_nb": "Lagt på før slutt gir ingen brief-flagg; Continue gjenopptar ved telefonen.",
+      "alternative_nb": "Sen ankomst: Ward peker på bevart telexkopi.",
+      "models": [
+        "betalingstelefon (eksisterende)"
+      ],
+      "audio": [
+        "myntinnkast og klikk, telefonkanal"
+      ],
+      "documents": [],
+      "tests": [
+        "SC12-T02",
+        "SC12-T05"
+      ]
+    },
+    {
+      "scene": "H08_CHECK",
+      "scenario": "SC12",
+      "start_nb": "Kildearkene er sammenlignet og verifisert ved båsbordet.",
+      "normal_nb": "Tekst om felles faseorden og fortsatt tilnærming; ring Ward med begrensningene.",
+      "interrupt_nb": "Panelavbrudd lar sammenligningen stå; ingen konklusjon uten ført kobling.",
+      "alternative_nb": "Én kilde mangler gir H08_INCOMPLETE.",
+      "models": [
+        "tre kildeark på bordet (nye props)"
+      ],
+      "audio": [
+        "papir, dinerens kjøler dempet"
+      ],
+      "documents": [
+        "HR_HONDO_LOCAL",
+        "HR_SITE11_LOCAL"
+      ],
+      "tests": [
+        "SC12-T02",
+        "SC12-T03"
+      ]
+    },
+    {
+      "scene": "H08_INCOMPLETE",
+      "scenario": "SC12",
+      "start_nb": "Forsøk på nettverkskonklusjon med uverifisert kilde.",
+      "normal_nb": "Send lokal varsling straks og be Ward om originalark.",
+      "interrupt_nb": "Vises på nytt bare ved nytt forsøk.",
+      "alternative_nb": "Sen ankomst bruker bevart lokalt stempel på telex.",
+      "models": [],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC12-T03"
+      ]
+    },
+    {
+      "scene": "H08_COMPARE_RECORDS",
+      "scenario": "SC12",
+      "start_nb": "Etter remote_sources_verified og fullført SC11.",
+      "normal_nb": "Tekst om ulike lokale målinger og samme rekkefølge; dokumentene utdeles.",
+      "interrupt_nb": "Utdeling skjer én gang; lasting gjentar ikke dokumenter.",
+      "alternative_nb": "Ingen; uten flukt finnes ingen komplett SARO-kilde.",
+      "models": [],
+      "audio": [],
+      "documents": [
+        "HR_SARO_ORIGINAL",
+        "HR_HONDO_LOCAL",
+        "HR_SITE11_LOCAL",
+        "HR_NETWORK_CHECK"
+      ],
+      "tests": [
+        "SC12-T02",
+        "SC12-T05"
+      ]
+    },
+    {
+      "scene": "H08_WARNING_ACK",
+      "scenario": "SC12",
+      "start_nb": "Etter fullført diktering og readback på betalingstelefonen.",
+      "normal_nb": "Ward bekrefter varsel, suspendert 06:00-serie, loggførte kilde-ID-er og budet øst for referansen.",
+      "interrupt_nb": "Avbrutt samtale før readback gir ingen kvittering.",
+      "alternative_nb": "Ingen tidsutløp kan erstatte kvitteringen.",
+      "models": [
+        "betalingstelefon (eksisterende)"
+      ],
+      "audio": [
+        "telefonkanal, klikk ved avslutning"
+      ],
+      "documents": [
+        "HR_WARNING_RECEIPT"
+      ],
+      "tests": [
+        "SC12-T02",
+        "SC12-T05",
+        "SC12-T07"
+      ]
+    },
+    {
+      "scene": "H09_BRIEF",
+      "scenario": "SC12",
+      "start_nb": "Spilleren snakker med sjåføren ved disken etter kvittert varsel og lest kjørelogg.",
+      "normal_nb": "Sjåføren skiller oktoberstoppet fra morgenens tur; beskrivelse om løs tracing.",
+      "interrupt_nb": "Pause og panel stanser linjene; ingen ny fare i dineren (Night holdt i ch5-diner).",
+      "alternative_nb": "Uten ny kjørelogg vises ikke briefen.",
+      "models": [
+        "sjåfør (eksisterende)",
+        "kjørebok på disken (ny prop)"
+      ],
+      "audio": [
+        "dinerrom, kaffe, kjøler"
+      ],
+      "documents": [
+        "E15"
+      ],
+      "tests": [
+        "SC12-T04",
+        "SC12-T07"
+      ]
+    },
+    {
+      "scene": "H09_CHECK",
+      "scenario": "SC12",
+      "start_nb": "Etter P13 og avtalt 10.4 på betalingstelefonen.",
+      "normal_nb": "Ward bekrefter C 8.15 og overlevering 10.4, og gir kjøreinstruks uten avlesning.",
+      "interrupt_nb": "Avbrudd lar avtalen stå om den er loggført; ellers ny samtale.",
+      "alternative_nb": "Ingen alternativ overleveringsrute.",
+      "models": [
+        "kartoverlegg (eksisterende)"
+      ],
+      "audio": [
+        "telefonkanal"
+      ],
+      "documents": [
+        "P13"
+      ],
+      "tests": [
+        "SC12-T04",
+        "SC12-T05"
+      ]
+    },
+    {
+      "scene": "H09_INCOMPLETE",
+      "scenario": "SC12",
+      "start_nb": "Svar uten justert tracing eller feil bolt.",
+      "normal_nb": "Tekst om å legge transit på STATION 01 først.",
+      "interrupt_nb": "Kartposisjon er lagret (S.Tracing) og bevares.",
+      "alternative_nb": "E15 har ingen 04:45-port.",
+      "models": [],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC12-T04"
+      ]
+    },
+    {
+      "scene": "SC12_ROUTE_READBACK",
+      "scenario": "SC12",
+      "start_nb": "Ny samtale med Ward etter H09_CHECK med patruljenote, kjørelogg og budavtale på plass.",
+      "normal_nb": "Ward leser tilbake patruljenote, sjåførens tur og budet ved 10.4; dineren er fortsatt tilflukt.",
+      "interrupt_nb": "Lagt på før slutt: ingen dokument; Continue tilbyr samtalen igjen.",
+      "alternative_nb": "Spilleren kan bli i dineren; reisen er et valg.",
+      "models": [
+        "betalingstelefon (eksisterende)"
+      ],
+      "audio": [
+        "telefonkanal"
+      ],
+      "documents": [
+        "HR_ROUTE_READBACK"
+      ],
+      "tests": [
+        "SC12-T04",
+        "SC12-T09"
+      ]
+    },
+    {
+      "scene": "H10_BRIEF",
+      "scenario": "SC13",
+      "start_nb": "Spilleren åpner servicebilen på dinerens plass etter readback.",
+      "normal_nb": "Tekst: originalene i førerhuset, overlevering 10.4, C 8.15, passér uten stopp.",
+      "interrupt_nb": "Panel lukkes uten å starte kjøring; turvalget står.",
+      "alternative_nb": "Ingen.",
+      "models": [
+        "servicebil og mappe i førerhus (ny prop)"
+      ],
+      "audio": [
+        "bildør, motor start"
+      ],
+      "documents": [
+        "HR_WARNING_RECEIPT",
+        "HR_ROUTE_READBACK"
+      ],
+      "tests": [
+        "SC13-T02"
+      ]
+    },
+    {
+      "scene": "H10_CHECK",
+      "scenario": "SC13",
+      "start_nb": "THE EVENT har startet ved C etter fullført avreisekontroll.",
+      "normal_nb": "Tekst om ufrivillig motorstopp og at varslet allerede er sendt, uten å bryte den faste finalen.",
+      "interrupt_nb": "Kapittel seks lagrer ingenting; Continue går til dineren med avreisekontroll bevart.",
+      "alternative_nb": "Ingen alternativ slutt.",
+      "models": [
+        "eksisterende old road, truck, Ending"
+      ],
+      "audio": [
+        "motorstopp, solenoid, pust (eksisterende)"
+      ],
+      "documents": [],
+      "tests": [
+        "SC13-T02",
+        "SC13-T04",
+        "SC13-T06"
+      ]
+    },
+    {
+      "scene": "H10_INCOMPLETE",
+      "scenario": "SC13",
+      "start_nb": "Kjøreforsøk uten kvittering, original eller ferdig kart.",
+      "normal_nb": "Tekst om konkret handling før avreise (betalingstelefon).",
+      "interrupt_nb": "Ingen tekst under finalen.",
+      "alternative_nb": "Ingen falsk redningsgren.",
+      "models": [],
+      "audio": [],
+      "documents": [],
+      "tests": [
+        "SC13-T03"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "id": "SC01-T01",
+      "scenario": "SC01",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Eksisterende pakket S47HorrorTest High og Low: native gange, begge dører, kalibrering, lampe direkte og gjennom glass, referansefoto, skjerm, sett hånd, merker og dispatchrapport. FAIL hvis en av 120 kontroller eller 17 restores feiler."
+    },
+    {
+      "id": "SC01-T02",
+      "scenario": "SC01",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Kjøring med -S47HorrorMissHand: hånden oversees. Må gi window_seen=false, ingen telefonrad for rapport, report_readback=false, og SC01 kan likevel fullføres. FAIL ved oppdiktet kropp eller rapport."
+    },
+    {
+      "id": "SC01-T03",
+      "scenario": "SC01",
+      "kind": "api",
+      "covers": [
+        "interrupt"
+      ],
+      "description_nb": "Pause, panel og dialog midt i vindushendelsen og H01_BRIEF. Scenen kanselleres av Context ved ugyldige krav og gjenopptas uten dobbel kreditt. FAIL hvis flagg settes under modal."
+    },
+    {
+      "id": "SC01-T04",
+      "scenario": "SC01",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Fem separate prosesser med vanlig Continue fra før normalrunden, midt i vindushendelsen, etter den, før readback og etter fullføring. FAIL ved tapt eller oppdiktet tilstand."
+    },
+    {
+      "id": "SC01-T05",
+      "scenario": "SC01",
+      "kind": "api",
+      "covers": [
+        "negative",
+        "regression"
+      ],
+      "description_nb": "Dialogvalg kan ikke sette noe ctx_hr-flagg; H01_CHECK kan ikke starte før NormalComplete; FinishCall uten HandSeen gir ikke bReport. Gamle saker uten horror-felt får ingen nye krav."
+    },
+    {
+      "id": "SC01-T06",
+      "scenario": "SC01",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "32 vurderte originalbilder High/Low fra spillerhøyde av hånd, merker, skjerm og ankomster. FAIL hvis hånd eller merker ikke er lesbare der kontrakten krever det."
+    },
+    {
+      "id": "SC01-T07",
+      "scenario": "SC01",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "De fem opptakene (H01_BRIEF_001 til 003, SC01_FIRST_REPORT_001 og 002) ruter telefonkanal med positive source- og routed-samples; daleReferenceHeard settes bare etter full H01_BRIEF_002 med lyd på. FAIL ved hoppet linje som gir hørt."
+    },
+    {
+      "id": "SC01-T08",
+      "scenario": "SC01",
+      "kind": "input",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Regresjon på samme pakke: kontrollrom, T01 53/19, T02 65/15, Dale 191/5, LineLights, feltlab og finale."
+    },
+    {
+      "id": "SC01-T09",
+      "scenario": "SC01",
+      "kind": "human",
+      "covers": [
+        "audio",
+        "image"
+      ],
+      "description_nb": "Menneskelig lytting, stemmelikhet, frykt og tempo samt fysisk Xbox. Står UNVERIFIED til Tom har prøvd."
+    },
+    {
+      "id": "SC02-T01",
+      "scenario": "SC02",
+      "kind": "data",
+      "covers": [
+        "regression",
+        "negative"
+      ],
+      "description_nb": "Pakke og register: H02_BRIEF, H02_CHECK, H02_INCOMPLETE og SC02_* er registrert til SC02; ingen on_complete setter ctx_hr-flagg; FS47Horror::Trigger avviser SC02-scener i innholdsrevisjon 1. FAIL ved avvik."
+    },
+    {
+      "id": "SC02-T02",
+      "scenario": "SC02",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Pakket native reise: SC01 fullført, kjør SARO 07 til Caliche Junction, les journal, kjør kontroll, observer lampe, se blek aktør vende seg mot lyd, trekk bak SiteShed og gå rute A utenfor gjerdet til bilen, start og kjør. Må gi h02_checked, t01_complete, threat_visible og escape_complete i den rekkefølgen og HR_TRAFO_ENCOUNTER én gang. FAIL ved teleport eller flytt etter START."
+    },
+    {
+      "id": "SC02-T03",
+      "scenario": "SC02",
+      "kind": "input",
+      "covers": [
+        "alternative"
+      ],
+      "description_nb": "To separate pakkede reiser: rute B rundt motsatt side av gjerdet, og direkte kjøreflukt når kryssingen er klar. Begge gir escape_complete uten fangst. FAIL hvis en klar kjørerute blokkeres av usynlig regi."
+    },
+    {
+      "id": "SC02-T04",
+      "scenario": "SC02",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Bevisst eksponering til fangst. Må gi local_retry, gjenoppretting ved dekningspunkt, T01 bevart (HasNormalResult uendret, CompletedStamp uendret), ingen FS47Abduction- eller FS47TruckTaken-fase, ingen klokketap. Senere arkivering i skiftmappen skjer nøyaktig én gang. FAIL ved dobbel arkivering eller tidstap."
+    },
+    {
+      "id": "SC02-T05",
+      "scenario": "SC02",
+      "kind": "api",
+      "covers": [
+        "interrupt"
+      ],
+      "description_nb": "Pause, journalpanel, H02-dialog, walkie og områdebytte midt i møtet og midt i servicekontrollen. Aktøren får ingen oppspart tilnærming, fangst kan ikke skje under modal, Running pauses som i dag. FAIL ved flagg satt under panel."
+    },
+    {
+      "id": "SC02-T06",
+      "scenario": "SC02",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Separate prosesser med vanlig Continue fra: etter journal, etter T01 før møtet, midt i møtet, etter fangst og etter flukt. Midt i møtet skal gjenopprette sikkert punkt, ikke halv jakt. FAIL ved tapt T01 eller ny jakt etter flukt."
+    },
+    {
+      "id": "SC02-T07",
+      "scenario": "SC02",
+      "kind": "api",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "Negative prøver: ingen threat_visible uten gjengitt kropp i fri siktlinje; skurveggen blokkerer; dialog kan ikke sette noe; passasje gjennom høyspenningsgården er umulig (kolliderer) og gir ingen flukt; escape_complete ikke mens søk er aktivt; retry gir ingen bevis; h02_insufficient og h02_checked aldri samtidig."
+    },
+    {
+      "id": "SC02-T08",
+      "scenario": "SC02",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High/Low fra spillerhøyde: aktøren ved forvarsel, skurets opake side, begge ruter, gjerde og porter, bil. Originaler vurderes visuelt. FAIL ved usynlig aktør i forvarsel eller dekning som bare er visuell."
+    },
+    {
+      "id": "SC02-T09",
+      "scenario": "SC02",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "H02_BRIEF_001 til 003 på walkie-kanal når takes finnes; inntil da tekst uten registrert avspilling. Aktørens fottrinn og vending har romlig kilde ved aktøren. FAIL hvis manglende take registreres som avspilt."
+    },
+    {
+      "id": "SC02-T10",
+      "scenario": "SC02",
+      "kind": "input",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Regresjon: S47EveningServiceTest, S47EveningServiceDriveTest (T01 R2), T02-followup, SC01 High og at tilfeldig bortføring og TruckTaken er reservert bort mens møtet pågår (US47Main::OneAtATime)."
+    },
+    {
+      "id": "SC02-T11",
+      "scenario": "SC02",
+      "kind": "human",
+      "covers": [
+        "image",
+        "audio"
+      ],
+      "description_nb": "Menneskelig prøve av lesbart forvarsel, reaksjonsmargin, frykt og Xbox. UNVERIFIED til prøvd."
+    },
+    {
+      "id": "SC03-T01",
+      "scenario": "SC03",
+      "kind": "data",
+      "covers": [
+        "regression",
+        "negative"
+      ],
+      "description_nb": "Register: alle åtte SC03-scener er SC03; ORTIZ er ny aktør; ingen eksisterende Earl, sheriff eller servitrise fjernes i kildene."
+    },
+    {
+      "id": "SC03-T02",
+      "scenario": "SC03",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Pakket reise fra SC02-flukt: kjør til Caliche, ring dispatch og Ward fra betalingstelefonen, vent ved lys stopp, møt Ortiz, se løftet, nå dekning, undersøk vogn og håndsett, meld savnet, motta lokal ordre. Alle ni flagg i riktig rekkefølge og fire dokumenter én gang."
+    },
+    {
+      "id": "SC03-T03",
+      "scenario": "SC03",
+      "kind": "input",
+      "covers": [
+        "alternative"
+      ],
+      "description_nb": "To kjøringer: skyggeregelen fulgt (to usette flyttinger observert) og helt oversett. Begge fullfører SC03. FAIL hvis skyggeregelen blokkerer."
+    },
+    {
+      "id": "SC03-T04",
+      "scenario": "SC03",
+      "kind": "api",
+      "covers": [
+        "interrupt"
+      ],
+      "description_nb": "Pause og panel under telefon, ventetid, skyggefigur og løft. Ingen flytting av svart figur i panel; løftet starter ikke under modal."
+    },
+    {
+      "id": "SC03-T05",
+      "scenario": "SC03",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Vanlig Continue etter dispatch, etter identifikasjon, etter løft før retrett og etter savnetsak. FAIL ved dobbelt dokument eller tapt fakta."
+    },
+    {
+      "id": "SC03-T06",
+      "scenario": "SC03",
+      "kind": "api",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "Lyd uten sikt gir ikke lift_observed; samtale uten fullført readback gir ingen kvittering; traces krever safe_retreat; dialogvalg setter ikke assigned eller identified."
+    },
+    {
+      "id": "SC03-T07",
+      "scenario": "SC03",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High/Low av Ortiz, vogn 23, løftet og etterspor i Caliche om natten."
+    },
+    {
+      "id": "SC03-T08",
+      "scenario": "SC03",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Dispatch, Ward og Ortiz takes: telefonkanal og fysisk kanal; manglende takes registreres ikke som avspilt."
+    },
+    {
+      "id": "SC03-T09",
+      "scenario": "SC03",
+      "kind": "input",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Regresjon: Caliche-personer (Earl, sheriff, betjent), Glimpses, AnomalyWorld, tilfeldig bortføring reservert under løft, og at senere morgenserie-tekst ikke motsier lokal ordre."
+    },
+    {
+      "id": "SC03-T10",
+      "scenario": "SC03",
+      "kind": "human",
+      "covers": [
+        "image",
+        "audio"
+      ],
+      "description_nb": "Menneskelig vurdering av Ortiz som person, løftets virkning og skyggeregelens forståelighet. UNVERIFIED til prøvd."
+    },
+    {
+      "id": "SC04-T01",
+      "scenario": "SC04",
+      "kind": "data",
+      "covers": [
+        "regression",
+        "negative"
+      ],
+      "description_nb": "Register: ti SC04-scener; SC04_ANNEX_IMPRINT gjenbruker H01_BRIEF_002 uten nytt opptak; ingen scene ber spilleren oppheve plansperren."
+    },
+    {
+      "id": "SC04-T02",
+      "scenario": "SC04",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Pakket reise: Ward-avtale i Caliche, kjøring til SARO, plansperre, originaler, annexavtrykk, lang flukt, ro og samtale, prøvd rute fra skjermet parkering, bilmøte med kjøreflukt, trygt kontrollrom, Ward på linje."
+    },
+    {
+      "id": "SC04-T03",
+      "scenario": "SC04",
+      "kind": "input",
+      "covers": [
+        "alternative"
+      ],
+      "description_nb": "Separate kjøringer: annex via lydavledning og kort rute; bilmøte via huking under vinduslinjen og skjerming."
+    },
+    {
+      "id": "SC04-T04",
+      "scenario": "SC04",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Fangst i annex og fangst ved bil gir hver sitt lokale sjekkpunkt med sperre og originaler bevart; ingen gammel teller eller tidstap."
+    },
+    {
+      "id": "SC04-T05",
+      "scenario": "SC04",
+      "kind": "input",
+      "covers": [
+        "continue",
+        "interrupt"
+      ],
+      "description_nb": "Vanlig Continue og pause/panel midt i annexmøtet, etter annexflukt, midt i bilmøtet og i trygt rom. Mid-møte gir sikkert punkt."
+    },
+    {
+      "id": "SC04-T06",
+      "scenario": "SC04",
+      "kind": "api",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "Imprint ikke uten dale_reference_heard; flukt ikke mens søk er aktivt; glass skjuler ikke kropp uten huking; control_room_safe ikke med åpen dør; dialog setter ingenting."
+    },
+    {
+      "id": "SC04-T07",
+      "scenario": "SC04",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High/Low av plansperre, annexruter, hånd i dørkarm, bilmøte fra kupe med og uten huking."
+    },
+    {
+      "id": "SC04-T08",
+      "scenario": "SC04",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Imprint spiller samme fil fra feil retning med positive samples; Ward-takes på telefonkanal; radio som lydkilde har posisjon."
+    },
+    {
+      "id": "SC04-T09",
+      "scenario": "SC04",
+      "kind": "input",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Regresjon: T01-arkivering én gang, kontrollrom, SaroDark og TruckTaken reservert, eksisterende annexdører."
+    },
+    {
+      "id": "SC04-T10",
+      "scenario": "SC04",
+      "kind": "human",
+      "covers": [
+        "image",
+        "audio"
+      ],
+      "description_nb": "Menneskelig vurdering av jumpscare, ro, tro på valget om å bli i rommet og Xbox. UNVERIFIED til prøvd."
+    },
+    {
+      "id": "SC05-T01",
+      "scenario": "SC05",
+      "kind": "data",
+      "covers": [
+        "regression",
+        "negative"
+      ],
+      "description_nb": "Kanon: residual 00:13:47, 1420.405 MHz, gain 82, BW 12, az 083; notch 1420.110 MHz, gain 55, BW 12."
+    },
+    {
+      "id": "SC05-T02",
+      "scenario": "SC05",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Fra SC04-avtalen: fremoverovergang, residual i passiv modus, eksisterende utskrift, telefon og romkontroll 47 spillsekunder senere."
+    },
+    {
+      "id": "SC05-T03",
+      "scenario": "SC05",
+      "kind": "input",
+      "covers": [
+        "alternative"
+      ],
+      "description_nb": "Gammel lagring uten SC04 går via eksisterende Survey-vei; spilleren utenfor rommet ved overgangen."
+    },
+    {
+      "id": "SC05-T04",
+      "scenario": "SC05",
+      "kind": "api",
+      "covers": [
+        "interrupt"
+      ],
+      "description_nb": "Telefonpaneler er beskyttet; pause under residual og samtale."
+    },
+    {
+      "id": "SC05-T05",
+      "scenario": "SC05",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Continue fra residual og fra etter samtale i separat prosess."
+    },
+    {
+      "id": "SC05-T06",
+      "scenario": "SC05",
+      "kind": "api",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "Survey-fasen settes ikke; residual_passive er false hvis plansperren er opphevet."
+    },
+    {
+      "id": "SC05-T07",
+      "scenario": "SC05",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High/Low av konsoll med residual og sperrelampe."
+    },
+    {
+      "id": "SC05-T08",
+      "scenario": "SC05",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Alarm og telefon som i dag; ingen nye stemmer kreves."
+    },
+    {
+      "id": "SC05-T09",
+      "scenario": "SC05",
+      "kind": "input",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Regresjon: eksisterende residual til finale, S-03-avvik 042 og 026."
+    },
+    {
+      "id": "SC05-T10",
+      "scenario": "SC05",
+      "kind": "human",
+      "covers": [
+        "image",
+        "audio"
+      ],
+      "description_nb": "Menneskelig gjennomspilling SC01 til SC05 uten utviklerhopp. UNVERIFIED til prøvd."
+    },
+    {
+      "id": "SC06-T01",
+      "scenario": "SC06",
+      "kind": "api",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Kjør kapittel én med passiv metode til to hentede kopier og sammenligning. Context må gi ctx_hr_h03_ready og ctx_hr_h03_checked, og H03_BRIEF og H03_CHECK starter én gang. FAIL hvis checked er sann før Dev2 er 3."
+    },
+    {
+      "id": "SC06-T02",
+      "scenario": "SC06",
+      "kind": "input",
+      "covers": [
+        "alternative"
+      ],
+      "description_nb": "Samme prøve med aktiv 042-kontroll via native input i den pakkede kandidaten. Begge metoder skal gi H03_CHECK; FAIL hvis bare én metode registreres."
+    },
+    {
+      "id": "SC06-T03",
+      "scenario": "SC06",
+      "kind": "input",
+      "covers": [
+        "interrupt",
+        "negative"
+      ],
+      "description_nb": "Åpne mørkeromsdøren under fremkalling av FRAME 02. Forvent insufficient sann, checked usann og H03_INCOMPLETE. Lukk døren og lag ny kopi fra negativet; forvent checked. FAIL hvis dialog eller panel kan sette checked."
+    },
+    {
+      "id": "SC06-T04",
+      "scenario": "SC06",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Lagre under fremkalling og etter tåkelagt kopi, start ny prosess med vanlig Continue. Tilstand, negativ og dokumenter må være uendret og ikke deles ut på nytt."
+    },
+    {
+      "id": "SC06-T05",
+      "scenario": "SC06",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High og Low fra spillerhøyde ved B-12, mørkerommet og begge kopier. FAIL ved uleselig merke eller lys i mørkerommet."
+    },
+    {
+      "id": "SC06-T06",
+      "scenario": "SC06",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Kontroller at lukker, vinge/motor og mørkeromslyd rutes på verdenskanal og at H03 ikke krever stemmetakes."
+    },
+    {
+      "id": "SC06-T07",
+      "scenario": "SC06",
+      "kind": "data",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Kjør Chapter1 SelfTest og SC01-prøvene. Eksisterende kapittel ens darkroom-kontroller og SC01-referanserammen må bestå."
+    },
+    {
+      "id": "SC06-T08",
+      "scenario": "SC06",
+      "kind": "data",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "Pakkeprøve: H03_CHECK kan ikke startes med checked usann, og ingen scene setter ctx_hr_h03_*."
+    },
+    {
+      "id": "SC07-T01",
+      "scenario": "SC07",
+      "kind": "api",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Kjør skuff, nøkkel, dør og feltmappe. Forvent ready og etter vindu/stolpe checked. FAIL hvis H04_BRIEF gir nøkkel."
+    },
+    {
+      "id": "SC07-T02",
+      "scenario": "SC07",
+      "kind": "input",
+      "covers": [
+        "alternative"
+      ],
+      "description_nb": "Ta feltmappen uten å se VHS og fullfør vindu/stolpe. Forvent at hovedløpet går videre."
+    },
+    {
+      "id": "SC07-T03",
+      "scenario": "SC07",
+      "kind": "input",
+      "covers": [
+        "interrupt",
+        "negative"
+      ],
+      "description_nb": "Avbryt VHS med strømbrudd, pause og spoling. Forvent at settstatus ikke gis og at insufficient er sann. FAIL hvis spoling eller transkript gir settstatus."
+    },
+    {
+      "id": "SC07-T04",
+      "scenario": "SC07",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Lagre midt i VHS og etter feltmappen; fersk Continue gjenopptar fra lagret sted."
+    },
+    {
+      "id": "SC07-T05",
+      "scenario": "SC07",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High og Low av kontoret, vindusendringen etter lukket panel og VHS-bildet."
+    },
+    {
+      "id": "SC07-T06",
+      "scenario": "SC07",
+      "kind": "human",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Lytt til Dales tre H04_BRIEF-takes på telefonkanal og VHS-miljølyden. Menneskelig vurdering."
+    },
+    {
+      "id": "SC07-T07",
+      "scenario": "SC07",
+      "kind": "data",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Kjør FS47Office SelfTest, EveningShift-pakkeprøver og T02-prøver."
+    },
+    {
+      "id": "SC07-T08",
+      "scenario": "SC07",
+      "kind": "data",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "H04_CHECK kan ikke starte uten checked; ingen dialog setter ctx_hr_h04_*."
+    },
+    {
+      "id": "SC08-T01",
+      "scenario": "SC08",
+      "kind": "api",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Datert spor, lobby før 04:00 og spoleundersøkelse gir dated_lead, earl_present og reel_identity. FAIL hvis gammel dialogtema 'reel' setter noen av dem."
+    },
+    {
+      "id": "SC08-T02",
+      "scenario": "SC08",
+      "kind": "input",
+      "covers": [
+        "normal",
+        "alternative"
+      ],
+      "description_nb": "Velg TAPE og LIVE i begge rekkefølger, still spørsmål, spill igjen. Forvent begge prøver lagret og BY02_SOURCE_COMPARE."
+    },
+    {
+      "id": "SC08-T03",
+      "scenario": "SC08",
+      "kind": "input",
+      "covers": [
+        "interrupt"
+      ],
+      "description_nb": "Bytt velger midt i avspilling, lukk panel, forlat lobbyen. Ingen prøve uten fullført avspilling."
+    },
+    {
+      "id": "SC08-T04",
+      "scenario": "SC08",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Lagre med TAPE-prøve fullført og velger på LIVE; fersk Continue viser prøven bevart og velger LIVE."
+    },
+    {
+      "id": "SC08-T05",
+      "scenario": "SC08",
+      "kind": "input",
+      "covers": [
+        "alternative"
+      ],
+      "description_nb": "Ankomst etter 04:00: konvolutt og isolert kopi gir BY02_LATE_COPY; Earl sier ingenting."
+    },
+    {
+      "id": "SC08-T06",
+      "scenario": "SC08",
+      "kind": "api",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Servicekort, baseline og lykt gir service_card_acquired, command_checked og reference_fixed."
+    },
+    {
+      "id": "SC08-T07",
+      "scenario": "SC08",
+      "kind": "input",
+      "covers": [
+        "normal",
+        "alternative"
+      ],
+      "description_nb": "A→B→A og B→A→B ved samme klokke gir ulike riktige stillinger og ARRAY_RESULT. FAIL hvis tid alene består."
+    },
+    {
+      "id": "SC08-T08",
+      "scenario": "SC08",
+      "kind": "input",
+      "covers": [
+        "normal",
+        "interrupt"
+      ],
+      "description_nb": "Trusselmøte 4 med begge retrettveier, deretter tomt hold og 026."
+    },
+    {
+      "id": "SC08-T09",
+      "scenario": "SC08",
+      "kind": "data",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "Uten identifisert kilde, uten retur eller med flyttet lykt gir ingen positiv scene, bare INCOMPLETE."
+    },
+    {
+      "id": "SC08-T10",
+      "scenario": "SC08",
+      "kind": "input",
+      "covers": [
+        "continue",
+        "interrupt"
+      ],
+      "description_nb": "Fangst i passasjen gir lokal retry med bevart arbeid; Continue fra retry-sjekkpunkt."
+    },
+    {
+      "id": "SC08-T11",
+      "scenario": "SC08",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High og Low av lobbyen, velgeren, A/B/REF-tavlene, antennene og passasjen."
+    },
+    {
+      "id": "SC08-T12",
+      "scenario": "SC08",
+      "kind": "human",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Lytt til Earls fire takes, spolen og antennemotorene. Menneskelig vurdering."
+    },
+    {
+      "id": "SC08-T13",
+      "scenario": "SC08",
+      "kind": "data",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Kjør ArrayBack, DishesFollow, ArchiveDishes, LostNights og ReelTape-prøvene."
+    },
+    {
+      "id": "SC09-T01",
+      "scenario": "SC09",
+      "kind": "api",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Fullfør SC08 og dra fra kontoret med STATION 01-filen. Gjør fastmerke A, nulltest, kabel, receiver/E10 og fremkall begge kopier. Forvent ready, checked og H05_CHECK. FAIL hvis ARRAY-resultatet erstatter P06."
+    },
+    {
+      "id": "SC09-T02",
+      "scenario": "SC09",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "interrupt"
+      ],
+      "description_nb": "Kjør hjemreisen fra STATION 01 med kort lysavskjæring: bryt sikt bak hyttas opake sidevegg og fullfør. Arkiver T02 som uavklart. Forvent at registrert kabel og nullarbeid består og at H05 kan fullføres. FAIL hvis gammel US47StationTaken overstyrer en vellykket retrett."
+    },
+    {
+      "id": "SC09-T03",
+      "scenario": "SC09",
+      "kind": "input",
+      "covers": [
+        "negative"
+      ],
+      "description_nb": "Lag feil eller ødelagt feltkopi. Forvent insufficient sann, H05_INCOMPLETE og ingen H05_CHECK før ny kopi fra negativet. FAIL hvis case board eller dialog kan sette checked."
+    },
+    {
+      "id": "SC09-T04",
+      "scenario": "SC09",
+      "kind": "input",
+      "covers": [
+        "continue"
+      ],
+      "description_nb": "Lagre ved hytta, under hjemkjøring og mellom fremkalling av FRAME 03 og FRAME 04. Fersk Continue i separat prosess bevarer P06 til P09 og kopiene uten ny dokumentutdeling."
+    },
+    {
+      "id": "SC09-T05",
+      "scenario": "SC09",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Slå på receiveren. receiver_playing skal være sann bare mens det eksisterende fragmentet spiller, og H05_FIXED_FRAGMENT starter én gang. Kontroller radiokanal og bærebølge. FAIL ved ny timing eller ny replikk."
+    },
+    {
+      "id": "SC09-T06",
+      "scenario": "SC09",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High og Low fra spillerhøyde ved fastmerke A, kabelkuttet, hytta i mørke under lysavskjæringen og begge feltkopier på SARO."
+    },
+    {
+      "id": "SC09-T07",
+      "scenario": "SC09",
+      "kind": "data",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Kjør Chapter3, Station og StationTaken SelfTest, T02-prøvene og SC01/SC06-prøvene for delt kamera og mørkerom."
+    },
+    {
+      "id": "SC10-T01",
+      "scenario": "SC10",
+      "kind": "data",
+      "covers": [
+        "negative",
+        "regression"
+      ],
+      "description_nb": "Kontraktprøve i FS47HorrorPack: H06_BRIEF/CHECK/INCOMPLETE kan ikke starte når ctx_hr_h06_ready eller checked er usann, og ingen on_complete i H06 setter et ctx_hr-flagg. FAIL hvis Start lykkes uten flagg."
+    },
+    {
+      "id": "SC10-T02",
+      "scenario": "SC10",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "-S47HorrorContract=SC10: fremkall og hent FRAME03/04, kjør til motellet, gå inn i Rom 6, legg PHOTO01/02 og E07, svar kontrollen etter faktisk metode, gjennomgå tre emner, returlinjen, P11 og P12. Krev h06_ready, deretter h06_checked og H06_BRIEF/H06_CHECK i rekkefølge. FAIL ved flagg før handling."
+    },
+    {
+      "id": "SC10-T03",
+      "scenario": "SC10",
+      "kind": "api",
+      "covers": [
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Kjør med passiv og aktiv B-12-metode: riktig svar (lamp, none) gir P10, feil svar øker Wrong10, gir h06_insufficient og H06_INCOMPLETE, og aldri h06_checked. Forlat rommet uten P12 gir insufficient. FAIL hvis brev/nøkkel åpner noe."
+    },
+    {
+      "id": "SC10-T04",
+      "scenario": "SC10",
+      "kind": "input",
+      "covers": [
+        "interrupt",
+        "continue"
+      ],
+      "description_nb": "Åpne brev, notatbok, saksbrett og pause midt i samtalen; gå ut og inn. Lagre i Rom 6 og start Continue i ny prosess med vanlig lagringsløype. Flagg avledes likt, ingen dokumenter deles ut på nytt, briefen gjentas ikke."
+    },
+    {
+      "id": "SC10-T05",
+      "scenario": "SC10",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High og Low fra spillerhøyde: bordet med kopier og brev, Nora, telefonen, PHOTO03 snudd. Vurder lesbarhet. FAIL ved manglende modeller eller uleselige papirer."
+    },
+    {
+      "id": "SC10-T06",
+      "scenario": "SC10",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Noras nye cues spilles på physical-kanal fra hennes posisjon med undertekst; returlinjens fragment ruter som linjestemme; ingen Night-hendelser eller telefon over replikkene (Night bHeld i room6). Manglende takes registreres ikke som avspilt."
+    },
+    {
+      "id": "SC10-T07",
+      "scenario": "SC10",
+      "kind": "api",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Kjør US47Chapter4::SelfTest og -S47Ch4Drive=talk/p10/line/end samt TheThird face-down. FAIL ved endret eksisterende kapittelfire-atferd."
+    },
+    {
+      "id": "SC11-T01",
+      "scenario": "SC11",
+      "kind": "data",
+      "covers": [
+        "negative",
+        "regression"
+      ],
+      "description_nb": "Registry: H07_CHECK krever checked, escape_complete og bundle_secured; H07_FIRST_WARNING krever bundle_secured. Bunt kan ikke bli sikret før 04:04. FAIL hvis noen scene starter uten flagg."
+    },
+    {
+      "id": "SC11-T02",
+      "scenario": "SC11",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "-S47HorrorContract=SC11: etter Rom 6 og 04:04 sikre fire bunt-elementer, avsøkning starter, slå av lokal lampe, se bånd og skjerm, lag radiolyd som inntrengeren sanser, ta lang skjermet rute til servicebilpunktet. Krev escape_complete før H07_CHECK, og HR_SARO_ORIGINAL først etter flukt."
+    },
+    {
+      "id": "SC11-T03",
+      "scenario": "SC11",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Ta kort eksponert rute; ankom før 04:04 og kontroller at ingen ferdige fjernark finnes; prøv scan uten original. Krev insufficient og H07_INCOMPLETE i negative tilfeller."
+    },
+    {
+      "id": "SC11-T04",
+      "scenario": "SC11",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "continue"
+      ],
+      "description_nb": "Bli sett med vilje: captured med logget sanseårsak, H07_CAPTURE, gjenopptakelse fra sjekkpunkt før inspeksjonen med bunten bevart, ingen tapt tid eller bortføring."
+    },
+    {
+      "id": "SC11-T05",
+      "scenario": "SC11",
+      "kind": "input",
+      "covers": [
+        "interrupt",
+        "continue"
+      ],
+      "description_nb": "Pause, panel og områdebytte under avsøkning gir ingen oppspart tilnærming. Lagre etter flukt og Continue i ny prosess: escape_complete og original_secured består, ingen ny jakt."
+    },
+    {
+      "id": "SC11-T06",
+      "scenario": "SC11",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High/Low fra stående og huket øyehøyde: bånd over vinduer, lokal lampe av, opak skjerm, begge ruter, servicebilpunkt."
+    },
+    {
+      "id": "SC11-T07",
+      "scenario": "SC11",
+      "kind": "human",
+      "covers": [
+        "audio",
+        "normal"
+      ],
+      "description_nb": "Menneskelig lytting og gjennomspilling: ventilasjonsstopp, bånd, radiolyd, uendret fragment og Ward på telefonkanal er forståelige; to ruter oppleves lesbare."
+    },
+    {
+      "id": "SC11-T08",
+      "scenario": "SC11",
+      "kind": "api",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "Kjør SC01-kontrakten, SaroDark 02:29, Glimpses og Abduction selvtester; bekreft at tilfeldige hendelser holdes borte under møtet og etter flukt."
+    },
+    {
+      "id": "SC12-T01",
+      "scenario": "SC12",
+      "kind": "data",
+      "covers": [
+        "negative",
+        "regression"
+      ],
+      "description_nb": "Registry: H08_CHECK krever remote_sources_verified, H09_BRIEF krever driver_recent_passage, ingen H08/H09-scene setter ctx_hr-flagg. E15 har ingen tidsport."
+    },
+    {
+      "id": "SC12-T02",
+      "scenario": "SC12",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "-S47HorrorContract=SC12: ankom diner, sammenlign tre kilder, verifiser fjernark, ring Ward, dikter kilde-ID-er, bekreft readback. Krev checked, verified og warning_acknowledged i rekkefølge, og HR_WARNING_RECEIPT én gang."
+    },
+    {
+      "id": "SC12-T03",
+      "scenario": "SC12",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Bare ett fjernark eller sen ankomst: verified forblir usann, H08_INCOMPLETE vises, lokal varsling kan sendes, ingen nettverkskonklusjon."
+    },
+    {
+      "id": "SC12-T04",
+      "scenario": "SC12",
+      "kind": "input",
+      "covers": [
+        "normal",
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Les kjøreloggen, legg tracing feil og svar (h09_insufficient), juster og velg 8.15 (h09_checked), avtal 10.4, hent patruljenote etter 04:30, gjennomfør SC12_ROUTE_READBACK. Sjåførens replikk alene gir ingen driver_recent_passage."
+    },
+    {
+      "id": "SC12-T05",
+      "scenario": "SC12",
+      "kind": "input",
+      "covers": [
+        "interrupt",
+        "continue"
+      ],
+      "description_nb": "Legg på midt i dikteringen: ingen kvittering. Pause og kartpanel under arbeid. Lagre i dineren og Continue i ny prosess: flagg og dokumenter bevart uten duplisering."
+    },
+    {
+      "id": "SC12-T06",
+      "scenario": "SC12",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High/Low: båsbord med tre ark, kartoverlegg med 8.15 og 10.4, betalingstelefon, disk med kjørebok."
+    },
+    {
+      "id": "SC12-T07",
+      "scenario": "SC12",
+      "kind": "api",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Ward på telefonkanal fra rør, sjåfør physical ved disken, kjøler og MorningHolds dukker ikke over dialog. Manglende takes registreres ikke som avspilt."
+    },
+    {
+      "id": "SC12-T08",
+      "scenario": "SC12",
+      "kind": "api",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "US47Chapter5::SelfTest, -S47Ch5Drive=map/p13/truck, LostNights (1985-kvittering forblir historisk), Town-timer (deputy 04:30)."
+    },
+    {
+      "id": "SC12-T09",
+      "scenario": "SC12",
+      "kind": "human",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "Menneskelig vurdering: spilleren forstår hvorfor reisen velges fremfor å bli, og at ruteopplysningene ikke er trygghetsgaranti."
+    },
+    {
+      "id": "SC13-T01",
+      "scenario": "SC13",
+      "kind": "data",
+      "covers": [
+        "negative",
+        "regression"
+      ],
+      "description_nb": "Registry: H10_BRIEF krever readback-flaggene, H10_CHECK krever stalled; ingen H10-scene setter ctx_hr-flagg."
+    },
+    {
+      "id": "SC13-T02",
+      "scenario": "SC13",
+      "kind": "input",
+      "covers": [
+        "normal"
+      ],
+      "description_nb": "-S47HorrorContract=SC13 på High og Low: avreisekontroll ved bilen, kjør gamle vei, CB forbi sju mil, ufrivillig stopp ved C 8.15, THE EVENT, uttrekk, 1947-bildet og sluttmeny. Klokken går ikke bakover."
+    },
+    {
+      "id": "SC13-T03",
+      "scenario": "SC13",
+      "kind": "input",
+      "covers": [
+        "alternative",
+        "negative"
+      ],
+      "description_nb": "Kjøreforsøk uten kvittering eller original gir H10_INCOMPLETE; stopp og rygg før C; ingen alternativ slutt eller redningsgren."
+    },
+    {
+      "id": "SC13-T04",
+      "scenario": "SC13",
+      "kind": "input",
+      "covers": [
+        "interrupt",
+        "continue"
+      ],
+      "description_nb": "Pause under kjøring og i THE EVENT; lagring blokkert på veien. Continue i ny prosess starter ved dineren med h10_checked bevart og h10_stalled usann."
+    },
+    {
+      "id": "SC13-T05",
+      "scenario": "SC13",
+      "kind": "image",
+      "covers": [
+        "image"
+      ],
+      "description_nb": "High/Low bilder av førerhus med mappe, kart med adskilte punkter og finalens nøkkelbilder."
+    },
+    {
+      "id": "SC13-T06",
+      "scenario": "SC13",
+      "kind": "human",
+      "covers": [
+        "audio"
+      ],
+      "description_nb": "Lytt: motorstopp, solenoid, pust og CB er uendret og hørbare; ingen ny stemme over finalen."
+    },
+    {
+      "id": "SC13-T07",
+      "scenario": "SC13",
+      "kind": "api",
+      "covers": [
+        "regression"
+      ],
+      "description_nb": "US47Chapter6::SelfTest, SS47Ending og Flow Finale kjøres uendret."
+    }
+  ],
+  "work_packages": [
+    {
+      "scenario": "SC01",
+      "summary_nb": "SC01 er levert med pakket teknisk aksept og flettet i main (PR #174). Alle seks SC01-flagg og dale_reference_heard produseres allerede i FS47Horror::Context. Gjenstår PR til installasjon og menneskelige prøver.",
+      "code_nb": [
+        "Ingen ny kode for SC01. FS47Horror::Save skriver i dag scenario legacyContinuation når bComplete; dette må endres i SC02-pakken, ikke her."
+      ],
+      "assets_nb": [
+        "Ingen nye. SM_SC01_Hand, glassmerker og skjermspiler er egne Blender-kilder."
+      ],
+      "voice_nb": "Alle fem SC01/H01-cues er tatt opp (voice/takes.json). Menneskelig lytting er UNVERIFIED.",
+      "dependencies_nb": [
+        "Ingen."
+      ],
+      "kubuntu_only_nb": [
+        "Installasjon som standard, menneskelig lytting, Xbox, helnatt."
+      ],
+      "risks_nb": [
+        "SARO/Sorrow-avvik i streng ASR for ett egennavn."
+      ]
+    },
+    {
+      "scenario": "SC02",
+      "summary_nb": "Utvid FS47Horror fra én SC01-fase til en SC02-fase etter bComplete med ny innholdsrevisjon 2, og koble H02-scenene til den eksisterende fysiske T01-kontrollen i FS47Substation. Bygg møte 1: en ny blek reaktiv aktør med sikt, lyd, siste sansede sted, søk og tilbaketrekning ved Caliche Junction, to farbare ganglinjer utenfor gjerdet, kjøreflukt og lokal gjenopptakelse som bevarer T01. Gammel bortføring og TruckTaken reserveres bort under møtet.",
+      "code_nb": [
+        "S47Horror.cpp/S47Horror.h: InstalledRevision 2; FS47Horror::Begin og FS47Horror::Save får feltene sc02Phase, threat-snapshot og safeCheckpoint; Save skriver scenario SC02 i stedet for legacyContinuation når SC01 er ferdig og revisjon er 2. Revisjon 1-saker beholder dagens overgang.",
+        "S47Horror.cpp: FS47Horror::Context og FS47Horror::Trigger sjekker i dag R->ScenarioIds.Contains(TEXT(\"SC01\")); gjør dette til aktivt scenario (SC01 eller SC02). Context setter ctx_hr_h02_ready (bComplete og spiller ved FS47Substation::Here), ctx_hr_h02_checked og ctx_hr_sc02_t01_complete fra FS47Substation::HasNormalResult, ctx_hr_h02_insufficient fra nytt attempted-faktum, samt threat/escape/retry fra ny aktør.",
+        "T01-eierskap (uendret, bare lest): journal = FS47Substation::ReadJournal (EV_TRAFO_CARD, substation:journal); servicekontroll og separat indikator = FS47Substation::StartCheck, Running i FS47Substation::Step (3 s), spak og panel i FS47Substation::Apply og panelteksten i Install (substation:service, 'PANEL: CHECK COMPLETE'); lampeprøve = FS47Substation::Observe med FS47Substation::RenderedResult (substation:lamp); normalresultat = HasNormalResult, FS47Substation::SyncFacts (ctx_trafo_service_ok, T01_NORMAL_RESULT, T02_BASELINE_RESULT) og FS47Substation::Refile (EV_TRAFO_CHECK); lagring = FS47Substation::Save/Begin. Den senere separate T02-indikatoren er FS47Substation::CompareIndicator i S47SubstationFollowup.cpp og skal ikke blandes inn.",
+        "Returarkivering (én gang): FS47Evening::Use på logbook i kontrollrommet (AtShiftFolder, bServiceFiled, Note og FiledRoutineObjective), FS47Evening::ValidateServiceRestore, ServicePending, ServiceObjective og ServiceTasks i S47Evening.cpp; survey-porten i AS47Story::StagePassed (S47Story.cpp). Lokal retry må aldri kalle Use eller nullstille bServiceFiled.",
+        "Gjerde og porter: prop:substationFence, prop:substationGate_L og prop:substationGate_R kreves i FS47Substation::Install og står i FS47Substation::FollowupOccluders sammen med SiteShed, SitePole_* og SiteEquipment. Gange blokkeres av AS47Web::Colliders brukt i AS47Walker::Resolve og AS47Walker::Walkable; AS47Web::BuildHighwayPower (S47HighwayPower.cpp) bevarer gjerdet. Høyspenningsgården forblir lukket; ruter A og B må måles mot disse kolliderne.",
+        "Servicebil: SARO 07 er FS47Truck (S47Truck.cpp, FS47Truck::SetDriving). Kjøring og inn/ut: US47World::StartEngine, US47World::StopDriving, US47World::FreeDrive, US47World::DrivingSpeed, US47World::CanGetOut, US47World::GetOutHere, US47World::GetOut, US47World::DoorSpot, TruckChoice-lambdaen satt i US47World::Init, US47World::TruckSave og US47World::PlaceTruck for sjekkpunkt; FS47DriveController::Update og FS47DriveController::Hit (S47Drive.cpp) for kollisjon under kjøreflukt.",
+        "Siktlinjer: gjenbruk FS47HorrorVisual::ClearLine og FS47HorrorVisual::VisiblePoint (LineTraceSingleByChannel med opasitet og proxy-unntak), US47FieldCamera::ClearLine med FS47Substation::FollowupOccluders, FS47Substation::FollowupVisible, FS47Cam::Of og FS47Cam::Project (S47Seen.cpp), AS47Walker::EyeUE/ForwardUE. Dørtilstand fra AS47Web::DoorStates og AS47Web::SetDoor (S47Web.cpp). Aktørens sikt mot spilleren må bruke samme opake-regel.",
+        "Ny fil S47HorrorThreat.cpp/.h: FS47HorrorThreat med tilstandene Idle, Warn, Investigate, Search, Chase, Capture, Withdrawn; rutegraf for trafostedet; lydhendelser fra faktiske kilder (US47Audio::Spatial); Step kalles fra FS47Horror::Step og fryses når M->ModalOpen() eller bPausedByMenu.",
+        "Fangst og bortføring: FS47Abduction (S47Abduction.cpp: MayBegin, Calm, Begin, Warning, LightStep, Taken), FS47TruckTaken (S47TruckTaken.cpp: WarningStep, UseKey, Wake) og US47StationTaken (S47StationTaken.cpp: Update, TryTruck) er alle tidstapsfangster og skal ikke brukes. Sørg for at FS47Horror::Busy returnerer true under møtet slik at US47Main::OneAtATime og US47Away::AbductIn holder dem borte. Forvarselets lydseng kan låne mønsteret D.Hush og D.Audio->Pressure() fra FS47Abduction::Begin.",
+        "Figurer: FS47JacketWalker (S47Figures.cpp, Pose med Swing/Wide/Lean/Roll/Lift) er en leddet mannekeng som kan bære en blek kropp for prototyping; FS47CardSilhouette og FS47Glimpses (glimpse-silhuetten) er svarte figurer og reserveres for SC03-skyggen. Den bleke hudmaterialen og LOD-oppsettet fra FS47HorrorVisual::Build (SM_SC01_Hand) gjenbrukes til den nye kroppen.",
+        "S47HorrorPack.cpp: FS47HorrorPack::SelfTest utvides med at SC02-scenene bare får ctx-flagg fra host.",
+        "Ny S47HorrorTest-driver (eller egen S47HorrorSC02Test) med native gange og kjøring etter mønsteret i S47EveningServiceDriveTest.cpp, uten Place/MoveDriven etter START."
+      ],
+      "assets_nb": [
+        "Blek reaktiv aktør: original Blender-kilde, FBX med LOD0/LOD1, enkel rigg eller stive ledd; eget hudmateriale avledet fra SC01-hånden. Egen kilde, ingen tredjepartsmodell.",
+        "Lyd: fottrinn på grus, vending og lav pust, egen syntese eller CC0 med kilde ført.",
+        "Eventuell ekstra dekningsflate ved skuret bare hvis rutemåling viser behov; må være faktisk kollisjon."
+      ],
+      "voice_nb": "H02_BRIEF_001, H02_BRIEF_002 og H02_BRIEF_003 (DALE, walkie) har status pending i recording_manifest.json og finnes ikke i voice/takes.json. Ingen andre SC02-scener har stemmer.",
+      "dependencies_nb": [
+        "SC01 flettet (PR #174) og T01 R2 i main.",
+        "Innholdsrevisjon 2 og lagringsformat avtalt.",
+        "Rutemåling av to farbare linjer utenfor gjerdet."
+      ],
+      "kubuntu_only_nb": [
+        "Blender-modell og FBX-import.",
+        "Editor- og Linux-pakkebygg.",
+        "Pakkede native reiser, High/Low-bilder, Continue i separate prosesser.",
+        "RT-minnemåling etter ny aktør (under 80 MiB AlwaysResident)."
+      ],
+      "risks_nb": [
+        "H02_INCOMPLETE sier at T01 og fysisk SARO-arkivering kreves før overgang til ubetjent survey, mens SC04 og SC05 krever at automatisk plan forblir sperret. Avklar med Tom hvordan T01-arkiveringen kobles til passiv residual.",
+        "SC02 legger aktøren 'mellom servicefronten og SARO 07'; dagens parkering for T01 er fri. Bilens parkeringsplass må kunne fastsettes eller aktøren plasseres dynamisk.",
+        "FS47Horror er i dag hardkodet til SC01 (Trigger, Context, Telephone, FinishCall); generalisering berører levert kode og må regresjonstestes.",
+        "AS47Walker mangler huking; trengs ikke i SC02, men SC04 krever det.",
+        "H02_BRIEF er walkie fra Dale, mens T01 i dag har ingen walkie-samtale; walkiekanal må rutes via FS47RecordedDialogue."
+      ]
+    },
+    {
+      "scenario": "SC03",
+      "summary_nb": "Bygg BY01 i Caliche: betalingstelefonen blir en faktisk samtaleport til dispatch og Ward, Ortiz og vogn 23 produseres som ny person og kjøretøy, og løftet skjer bare i spillerens sikt. Skyggeregelen bygges som valgfritt spor, og savnetsak og lokal ordre lagres som egne fakta.",
+      "code_nb": [
+        "S47Horror.cpp: generaliser FS47Horror::FinishCall og bWorldCall til en liste navngitte samtaler (dispatch, ward, missing, ward_hold) med egen stempel.",
+        "S47Caliche.cpp: town:payphone i FS47Caliche::BindTown ruter til FS47Horror når SC03 er aktiv; Town->bRinging/OnAnswer beholdes.",
+        "Ny S47HorrorWorld.cpp: Ortiz (FS47JacketWalker-basert eller ny mesh), vogn 23 (FS47FleetParked::Build-mønster), løftesekvens, nærvær, dekningssoner, etterspor-interaksjoner, skyggefigur med regel fra FS47Glimpses::Sight og FS47AnomalyWorld::MayMove."
+      ],
+      "assets_nb": [
+        "Ortiz: original modell og klær, egen Blender-kilde.",
+        "Vogn 23: hvit servicevogn, egen modell eller ServiceFleet-variant med kontrollert lisens.",
+        "Håndsett med navnelapp.",
+        "Lyssøyle og løftelyd (egen eller CC0)."
+      ],
+      "voice_nb": "Mangler opptak: SC03_DISPATCH_RECEIPT_001/002, SC03_RELIEF_CONTACT_001/002, SC03_ORTIZ_IDENTIFY_001/002/003, SC03_MISSING_RECEIPT_001/002, SC03_LOCAL_ORDER_HOLD_001/002 (alle pending). ORTIZ er ny stemme.",
+      "dependencies_nb": [
+        "SC02 levert.",
+        "Samtaleport generalisert.",
+        "Ortiz-produksjon og casting."
+      ],
+      "kubuntu_only_nb": [
+        "Blender, stemmeopptak, pakkede reiser og bilder i Caliche."
+      ],
+      "risks_nb": [
+        "Tidslinjen (19:30 til 21:15) må passe med eksisterende Caliche-hendelser og Earls vakt.",
+        "Eksisterende sheriffbil-hendelse (bCarOut) ligner det etterlatte kjøretøyet; må ikke forveksles.",
+        "Glimpses har motsatt regel (gjemmer seg når sett) og må holdes atskilt."
+      ]
+    },
+    {
+      "scenario": "SC04",
+      "summary_nb": "Bygg avgrenset retur, fysisk plansperre og sikring av originaler i kontrollrommet, deretter møte 2 i annexet med to løsninger og møte 3 ved bilen med huking og kjøreflukt. Etterpå trygt kontrollrom og Ward på linjen.",
+      "code_nb": [
+        "S47Story.cpp: AS47Story::StagePassed får passiv modus når plansperren er på; Survey settes ikke.",
+        "S47HorrorVisual.cpp: ny plansperrebryter med synlig resultat.",
+        "S47Evening.cpp: FS47Evening::Use utvides med sikring av originaler uten ny T01-arkivering.",
+        "S47HorrorThreat.cpp: annex- og bilinstans; lydavledning fra vanlig radio.",
+        "S47Walker.cpp: huking (øyehøyde, kropp) og ny tast/gamepad-binding.",
+        "S47Horror.cpp: avtrykksavspilling av H01_BRIEF_002 romlig fra feil dør; ro-timer; DoorsSecured utvidet."
+      ],
+      "assets_nb": [
+        "Plansperrebryter og merke (egen modell).",
+        "Radio i annexet (eksisterende eller egen).",
+        "Blek hånd i dørkarm (gjenbruk SM_SC01_Hand)."
+      ],
+      "voice_nb": "Mangler: SC04_LIMITED_RETURN_001/002 og SC04_SAFE_ROOM_AGREEMENT_001/002/003 (WARD, pending). SC04_ANNEX_IMPRINT_001 gjenbruker H01_BRIEF_002 og trenger ikke nytt opptak.",
+      "dependencies_nb": [
+        "SC03 levert.",
+        "FS47HorrorThreat fra SC02.",
+        "Huking."
+      ],
+      "kubuntu_only_nb": [
+        "Pakkede reiser, bilder fra kupe, lyttprøve av avtrykk."
+      ],
+      "risks_nb": [
+        "Bilmøtet må ikke kopiere finalens motorstopp eller TruckTaken.",
+        "Plansperre mot eksisterende survey-kjede: SC05 avhenger av ny passiv vei."
+      ]
+    },
+    {
+      "scenario": "SC05",
+      "summary_nb": "Lag en passiv residualovergang fra trygt kontrollrom som ikke starter Survey, og behold eksisterende utskrift, telefon og romhandling 47 spillsekunder senere. Gamle lagringer beholder dagens kjede.",
+      "code_nb": [
+        "S47Story.cpp: ny passiv vei til AS47Story::EnterResidual uten SetPhase(ES47Phase::Survey), RelayFirst og LightsDip; AS47Story::TimeSkip-teksten 'Routine survey completed' må ikke vises i ny rute.",
+        "S47Horror.cpp: SC05-fase setter ctx_hr_sc05_residual_passive når residual vises og sperren er på."
+      ],
+      "assets_nb": [
+        "Ingen nye."
+      ],
+      "voice_nb": "SC05_PASSIVE_RESIDUAL har ingen stemmecues.",
+      "dependencies_nb": [
+        "SC04 levert med plansperre."
+      ],
+      "kubuntu_only_nb": [
+        "Sammenhengende pakket gjennomspilling SC01 til SC05."
+      ],
+      "risks_nb": [
+        "Eksisterende residual er bundet til Survey og TimeSkip; omlegging berører finalekjeden.",
+        "Tekstene 'Babysit the survey until 06:00' i AS47Story::Tasks motsier lokal ordre."
+      ]
+    },
+    {
+      "scenario": "SC06",
+      "summary_nb": "H03 er i hovedsak kapittel én (US47Chapter1) som allerede har B-12, passiv og aktiv kontroll, to eksponeringer, fremkalling og tåkelagt kopi. Arbeidet er å koble tilstanden inn i FS47Horror::Context og la H03-scenene starte fra faktiske handlinger.",
+      "code_nb": [
+        "Utvid FS47Horror::Context med H03-gren som leser US47Chapter1::S (F1, F2, Dev1, Dev2, Fog1, Fog2, Method, bObserved, bConcluded)",
+        "Generaliser scenegyldighetssjekken i FS47Horror::Context fra SC01 til aktivt scenario",
+        "Legg H03-start ved navngitt handling ved B-12 i FS47Horror::Use",
+        "Utvid S47HorrorTest med passiv, aktiv og tåkelagt kopi"
+      ],
+      "assets_nb": [
+        "Ingen nye modeller; eksisterende B-12, mørkerom og feltkamera gjenbrukes"
+      ],
+      "voice_nb": "H03-scenene er DESCRIPTION uten stemmecues; ingen opptak mangler.",
+      "dependencies_nb": [
+        "SC05 levert med H02 registrert",
+        "Felles horror-lagring fra SC01"
+      ],
+      "kubuntu_only_nb": [
+        "Pakket bygg og High/Low-bilder av mørkerom og kopier",
+        "Fersk Continue i separat prosess"
+      ],
+      "risks_nb": [
+        "Rammebudsjettet: SC01 reserverer siste eksponering; H03 trenger to frie rammer",
+        "Leselighetsterskel for kontrollert detalj er ikke definert i koden"
+      ]
+    },
+    {
+      "scenario": "SC07",
+      "summary_nb": "Kontoret, skuffen, reservenøkkelen og feltmappen finnes i FS47Office, og arkivet (E06/E07/E08, P04/P05) i US47Chapter2. Det mangler vindus/stolpekontroll, den faktiske VHS-filmen og settstatus.",
+      "code_nb": [
+        "Utvid FS47Horror::Context med H04-gren som leser FS47Office og US47Chapter2",
+        "Legg vindus/stolpekontroll i FS47Office med siktstråle og lagring",
+        "Bygg VHS-program for office:fieldDeck på FS47TvProgramme med spill, pause, stopp, spoling, strøm og lagret avspillingssted",
+        "Sett vhs_seen bare fra faktisk avspilte bilder"
+      ],
+      "assets_nb": [
+        "Originalfilmen Service Road / Field 01, 72 sekunder, egen produksjon etter VHS_DALE_FIELD_01-storyboardet, med miljølyd; egne Blender-kilder eller CC0",
+        "Vindusendring etter undersøkelsen"
+      ],
+      "voice_nb": "H04_BRIEF_001 til 003 (Dale, telefon, kinski) står som pending i recording_manifest.json og finnes ikke i voice/takes.json.",
+      "dependencies_nb": [
+        "SC06 levert",
+        "EveningShift-eierskapet til kontor og VHS"
+      ],
+      "kubuntu_only_nb": [
+        "Render av VHS-filmen",
+        "Pakket bygg og bilder",
+        "Lytteprøve"
+      ],
+      "risks_nb": [
+        "Kontrakten sier at EveningShift alene eier kontor, dokumenter og VHS, mens FS47Office ligger i Main: koordiner eierskap",
+        "MISSION_FLOW sier arrayvedlegget ligger i feltmappen, mens koden har det som eget ark i kontorskapet"
+      ]
+    },
+    {
+      "scenario": "SC08",
+      "summary_nb": "BY02 og ARRAY-01 er nesten helt nytt spill. Råvare finnes: Earls reel (FS47ReelTape, FS47LostNights), Earls vakttid (S47Timeline), lobbydøren, arrayservicearket og A/B/REF-tavlene i FS47Office, kommandoregisteret i FS47ArrayBack og følge/hold-logikken i FS47DishesFollow. Trusselmøte 4 og lokal retry må bygges.",
+      "code_nb": [
+        "Ny S47By02.cpp: lobbyutlevering, spoleeske, TAPE/LIVE-velger med frakobling, varige prøver, spørsmål/gjentak, konvolutt etter 04:00",
+        "Ny S47ArrayService.cpp: baseline på terminal, feltlykt, A/B-soner, retur, sammenligning, sluttkontroll, trusselmøte 4, hold og lokal retry",
+        "Egen ARRAY-01-modus i FS47DishesFollow uten Warning/Force",
+        "Reservasjon i nattkurven (S47Night/S47Away) og ArchiveDishes/ArrayBack under prøven",
+        "Utvid FS47Horror::Context med alle 22 SC08-flagg"
+      ],
+      "assets_nb": [
+        "Spoleeske, off-air-logg, velger, frakoblingskabel, konvolutt, feltlykt og søkende figur; egne Blender-kilder eller CC0"
+      ],
+      "voice_nb": "BY02_REQUEST_001 og 002 og BY02_REEL_IDENTIFY_001 og 002 (Earl) er pending.",
+      "dependencies_nb": [
+        "SC07 levert",
+        "Felles inntrengeraktør fra SC02/SC04",
+        "Felles lokalt sjekkpunkt"
+      ],
+      "kubuntu_only_nb": [
+        "Pakket bygg, native gange på arrayet, High/Low-bilder",
+        "Blender-render av nye rekvisitter",
+        "Lytteprøve av Earl og motorer"
+      ],
+      "risks_nb": [
+        "Eksisterende reel spilles fra dialogtema i FS47Caliche; det kan ikke telle som tape_isolated",
+        "Kanon sier antennene står på 026 fra 02:15, mens SC08 ligger 01:15 til 02:15 og forutsetter retur til 026",
+        "Tavlene står på z -75.3 i koden, mens servicearket oppgir z -74 for ståstedene",
+        "Dynamisk tilgang i feltet er uverifisert"
+      ]
+    },
+    {
+      "scenario": "SC09",
+      "summary_nb": "STATION 01 er i stor grad ferdig i US47Chapter3 og US47Station. Arbeidet er å koble H05 til SC08, legge inn kort lysavskjæring og ny utskrift fra negativet, og eksponere receiverens avspillingsvindu.",
+      "code_nb": [
+        "Utvid FS47Horror::Context med H05-gren",
+        "Legg FragmentPlaying() i US47Chapter3",
+        "Legg tåkelagt kopi og ny utskrift i US47Chapter3 som i US47Chapter1",
+        "Bygg kort lysavskjæring med opak dekning og samordne US47StationTaken"
+      ],
+      "assets_nb": [
+        "Ingen nye modeller utover dekning ved hytta"
+      ],
+      "voice_nb": "H05-scenene er DESCRIPTION og eksisterende receiverfragment; ingen nye cues.",
+      "dependencies_nb": [
+        "SC08 levert"
+      ],
+      "kubuntu_only_nb": [
+        "Pakket bygg, feltreise og bilder"
+      ],
+      "risks_nb": [
+        "Eksisterende Noras feltringing kommer før fremkalling; kontrakten sier begge kopier før Nora",
+        "US47StationTaken er ikke startet i Unreal i dag"
+      ]
+    },
+    {
+      "scenario": "SC10",
+      "summary_nb": "SC10 bygger på eksisterende kapittel fire. FS47Horror får en SC10-gren som avleder h06-flaggene fra Ch3/Ch4-tilstand. Returlinjen og brevet knyttes som faktisk sammenligning.",
+      "code_nb": [
+        "Utvid FS47Horror::Context med SC10-gren for h06-flaggene",
+        "Legg utilstrekkelig-felt i US47Chapter4 (Wrong10, LeftRoom)",
+        "Utvid Chapter4 Ending-replikk slik at den ikke inviterer til eksperiment på linjen"
+      ],
+      "assets_nb": [
+        "Ingen nye modeller; eksisterende Rom 6 brukes"
+      ],
+      "voice_nb": "Alle seks NORA-cues i H06 mangler opptak (pending i recording_manifest.json, ikke i voice/takes.json). Samme stemme som eksisterende Nora.",
+      "dependencies_nb": [
+        "SC09 levert med FRAME03/04",
+        "Lagringsfeltet horror fra SC01"
+      ],
+      "kubuntu_only_nb": [
+        "Bygg og pakket test",
+        "High/Low-bilder",
+        "Opptak av Nora-cues"
+      ],
+      "risks_nb": [
+        "Chapter4 Ending sier 'drive the road' mot H06_CHECK 'Do not finish his observation'",
+        "Hoppede saker (JumpChapter4) må ikke gi ready"
+      ]
+    },
+    {
+      "scenario": "SC11",
+      "summary_nb": "Hovedarbeidet er nytt: bunt etter 04:04, ytre avsøkning, møte 5 med to ruter og fluktfaktum. SC01-lyskontrollen og telexrullen gjenbrukes.",
+      "code_nb": [
+        "Ny FS47HorrorSiege (S47HorrorSiege.cpp)",
+        "Gjenbruk FS47WindowLights::SetLevel for ytre bånd",
+        "Gjenbruk SC01 FS47HorrorVisual-lyskontroll",
+        "Utvid AS47Story telex med fjernark etter 04:04"
+      ],
+      "assets_nb": [
+        "Ytre søkelysrigg, mottakeroriginal, hendelsesark, telexark og overføringsmappe som egne Blender-kilder eller CC0"
+      ],
+      "voice_nb": "H07_BRIEF_001 og 002 (WARD) mangler opptak.",
+      "dependencies_nb": [
+        "Inntrengersystem fra SC02/SC04",
+        "SC10 levert"
+      ],
+      "kubuntu_only_nb": [
+        "Blender-eksport",
+        "Pakket møteprøve",
+        "High/Low-bilder"
+      ],
+      "risks_nb": [
+        "Story sier at veilederlinjen er stille i ch4/ch5, mens H07_BRIEF er telefon med Ward",
+        "Ingen inntrenger finnes i koden i dag"
+      ]
+    },
+    {
+      "scenario": "SC12",
+      "summary_nb": "Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sjåførens daterte kjørelogg, patruljenote og budavtale må bygges.",
+      "code_nb": [
+        "Ny FS47HorrorSources (S47HorrorSources.cpp) bygget på FS47RuleBook",
+        "Utvid US47Chapter5 Ward-samtale med diktering og readback",
+        "Ny kjørelogg i DriverMore-kroken"
+      ],
+      "assets_nb": [
+        "Tre kildeark, kjørebok og patruljenote som egne props"
+      ],
+      "voice_nb": "Alle WARD-, DRIVER- og SC12_ROUTE_READBACK-cues mangler opptak.",
+      "dependencies_nb": [
+        "SC11 levert med bunt og flukt"
+      ],
+      "kubuntu_only_nb": [
+        "Pakket test",
+        "High/Low-bilder",
+        "Opptak"
+      ],
+      "risks_nb": [
+        "Ward sier i dag 'Six o'clock, Reyes' mot allerede suspendert 06:00-serie",
+        "H09_BRIEF lar sjåføren si turen før flagget finnes"
+      ]
+    },
+    {
+      "scenario": "SC13",
+      "summary_nb": "Finalen finnes og skal ikke endres. Det nye er avreisekontroll, oppdatert turvalg og kobling av h10_stalled.",
+      "code_nb": [
+        "Ny avreisekontroll i FS47Horror SC13-gren",
+        "Koble US47Chapter6::StartEvent til h10_stalled",
+        "Endre TruckTrip-etikett til overlevering 10.4"
+      ],
+      "assets_nb": [
+        "Mappe i førerhus som prop"
+      ],
+      "voice_nb": "Ingen stemmecues i H10.",
+      "dependencies_nb": [
+        "SC12 levert"
+      ],
+      "kubuntu_only_nb": [
+        "Pakket test av hele finalen på High og Low"
+      ],
+      "risks_nb": [
+        "Kapittel seks lagrer ingenting, så h10_stalled finnes bare under hendelsen",
+        "10.4 ligger utenfor veien som finnes"
+      ]
+    }
+  ]
+}
