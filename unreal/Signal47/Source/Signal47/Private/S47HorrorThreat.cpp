@@ -348,19 +348,19 @@ TArray<FVector2D> FS47HorrorThreat::Plan(const FVector2D& From, const FVector2D&
  return Out;
 }
 
-bool FS47HorrorThreat::Move(const FVector2D& Target, double Speed, double Dt, double Stop)
+bool FS47HorrorThreat::Move(const FVector2D& Target, double Speed, double Dt, double StopDist)
 {
- if (FVector2D::Distance(Pos, Target) <= Stop) return true;
+ if (FVector2D::Distance(Pos, Target) <= StopDist) return true;
  Replan -= Dt;
  if (Path.IsEmpty() || FVector2D::Distance(PathGoal, Target) > .6 || Replan <= 0) { Path = Plan(Pos, Target); PathGoal = Target; Replan = .4; }
  if (Path.IsEmpty()) { TurnBody(ThreatYaw(Target - Pos), BodyRate, Dt); return false; }
  const bool bLast = Path.Num() == 1;
  const FVector2D D = Path[0] - Pos; const double L = D.Size();
- const double Room = bLast ? FMath::Max(0.0, L - Stop) : L;
+ const double Room = bLast ? FMath::Max(0.0, L - StopDist) : L;
  const double Advance = FMath::Min(Room, Speed * Dt);
  if (L > 1e-4) { Pos += D * (Advance / L); TurnBody(ThreatYaw(D), BodyRate, Dt); }
  if (!bLast && L - Advance < .05) Path.RemoveAt(0);
- return FVector2D::Distance(Pos, Target) <= Stop + 1e-3;
+ return FVector2D::Distance(Pos, Target) <= StopDist + 1e-3;
 }
 
 void FS47HorrorThreat::Think(const FSense& In, double Dt)

@@ -149,7 +149,10 @@ void FS47Horror::Context()
   bool Valid=SceneAllowed(R);
   for(const auto& K:S->Requires.All)Valid=Valid && Pack.Flag(K);
   for(const auto& K:S->Requires.None)Valid=Valid && !Pack.Flag(K);
-  if(!Valid){Pack.Cancel();bDialogueOpen=false;Spoken.Empty();if(Voice)Voice->Stop();}
+  // Flow restores the pose after Horror::Begin. A pending SC02 scene is judged once the
+  // case has started; SC01 scenes keep today's immediate check.
+  const bool Restoring=Revision>=2 && R && R->ScenarioIds.Contains(TEXT("SC02")) && M->Flow && M->Flow->bStarting;
+  if(!Valid && !Restoring){Pack.Cancel();bDialogueOpen=false;Spoken.Empty();if(Voice)Voice->Stop();}
  }
 }
 void FS47Horror::Refile()
@@ -322,7 +325,7 @@ void FS47Horror::Step(double Dt)
   else if(bComplete && SC02Live()) TriggerSC02();
  }
  if(!bComplete && !M->World->bDriving && !M->Evening->Opening())M->UI->Objective(Objective());
- else if(SC02Meeting() && !M->World->bDriving)M->UI->Objective(Objective());
+ else if(SC02Meeting())M->UI->Objective(Objective());
 }
 FString FS47Horror::Objective() const
 {
@@ -330,6 +333,7 @@ FString FS47Horror::Objective() const
  if(bComplete)
  {
   if(!SC02Meeting()) return FString();
+  if(M->World && M->World->bDriving) return TEXT("CALICHE JUNCTION // DRIVE CLEAR OF THE SERVICE FRONT");
   if(!bThreatSeen) return TEXT("CALICHE JUNCTION // RETURN TO SARO 07 ON THE GROUND OUTSIDE THE FENCE");
   if(Threat->State()==FS47HorrorThreat::EState::Chase) return TEXT("CALICHE JUNCTION // BREAK THE LINE OF SIGHT BEHIND SOLID COVER");
   return TEXT("CALICHE JUNCTION // KEEP SOLID COVER BETWEEN YOU AND THE BODY. REACH SARO 07 OUTSIDE THE FENCE AND DRIVE");
@@ -376,7 +380,7 @@ S47J::FObj FS47Horror::Save() const
  if(Revision>=2)
  {
   // A meeting in progress is saved as its safe checkpoint, never as a half chase.
-  FSC02Save S;S.Phase=SC02;S.bAttempt=bH02Attempt;S.bRetry=bRetry;S.bSeen=bThreatSeen;S.EscapeStamp=EscapeStamp;
+  FSC02Save S;S.Phase=SC02==ESC02::Legacy && Threat && Threat->Unavailable()?ESC02::T01:SC02;S.bAttempt=bH02Attempt;S.bRetry=bRetry;S.bSeen=bThreatSeen;S.EscapeStamp=EscapeStamp;
   S.Checkpoint=Threat?Threat->CheckpointId():FString();S47J::Set(O,TEXT("sc02"),WriteSC02(S));
  }
  return O;
@@ -518,17 +522,20 @@ void FS47Horror::StepSC02(double Dt)
    // Continue in the middle of the meeting resumes at its safe checkpoint, never in a half chase.
    bCheckpointPending=false;
    if(!M->World->bDriving && AtSite()){const FVector2D P=Threat->Checkpoint();M->Player->Place(P.X,P.Y,0);M->Player->Pitch=-.06;}
+   Threat->Start(bThreatSeen); // ground height and route checks read the restored world, not the pre-restore pose
   }
   Threat->Step(Dt);
   if(Threat->Seen() && !bThreatSeen){bThreatSeen=true;Changed();}
   if(Threat->ConsumeCapture())LocalRetry(TEXT("capture"));
   else if(!M->World->bDriving && AtSite() && FS47HorrorThreat::InYard(FVector2D(M->Player->Pos.X,M->Player->Pos.Z)))LocalRetry(TEXT("closed yard"));
   if(bRetryShowing && (!Pack.CurrentScene() || Pack.CurrentScene()->Id!=TEXT("SC02_RETRY"))){bRetryShowing=false;bRetry=false;Changed();}
-  if(Threat->Withdrawn() && M->World->bDriving)
+  // Driving clear also ends a meeting whose body never appeared (for example after Continue in the cab).
+  if(M->World->bDriving && (Threat->Withdrawn() || (!Threat->Appeared() && !AtSite())))
   {
    if(bThreatSeen)
    {
     SC02=ESC02::Escaped;EscapeStamp=M->Story->ClockText(true);bRetry=bRetryShowing=false;
+    if(!Threat->Appeared())Threat->Stop(); // nothing to withdraw; it must not appear behind the departed truck
     M->Story->Note(TEXT("Caliche Junction: a pale body moved at the service front and turned towards sound. Reached SARO 07 outside the closed yard and drove clear. The completed lamp check remains on its card."));
    }
    else {SC02=ESC02::Unwitnessed;Threat->Stop();} // no sighting, no encounter paper
@@ -544,7 +551,7 @@ void FS47Horror::TriggerSC02()
  if(SC02==ESC02::Escaped){if(!Driving || FMath::Abs(M->World->DrivingSpeed())<.5)Trigger(TEXT("SC02_ESCAPE"));return;}
  if(SC02==ESC02::Encounter)
  {
-  if(Driving)return;
+  if(Driving || !AtSite())return;
   if(bRetry){if(Trigger(TEXT("SC02_RETRY")))bRetryShowing=true;return;}
   const auto State=Threat->State();
   if(bThreatSeen && State!=FS47HorrorThreat::EState::Chase && State!=FS47HorrorThreat::EState::Capture)Trigger(TEXT("SC02_RETURN_WARNING"));

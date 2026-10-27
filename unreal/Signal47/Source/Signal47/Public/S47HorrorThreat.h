@@ -81,7 +81,7 @@ private:
  TArray<FS47Rect> Near;
  void Enter(EState Next);
  void Warn(const FVector2D& At, bool bChase);
- bool Move(const FVector2D& Target, double Speed, double Dt, double Stop);
+ bool Move(const FVector2D& Target, double Speed, double Dt, double StopDist);
  void TurnBody(double Yaw, double Rate, double Dt);
  bool Clear(const FVector2D& A, const FVector2D& B) const;
  bool Sampled(const FVector2D& A, const FVector2D& B) const;
