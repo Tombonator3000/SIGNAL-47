@@ -1,0 +1,493 @@
+[
+  {
+    "name": "M_MotelV2_CourtDetail",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_CourtDetail_base_color.png",
+      "orm": "textures/T_SM_Sierra_CourtDetail_orm.png",
+      "normal": "textures/T_SM_Sierra_CourtDetail_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_CourtSurface",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.94,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_Sierra_Asphalt.jpg"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX",
+    "texture_tint_linear": [
+      0.24,
+      0.25,
+      0.25,
+      1
+    ]
+  },
+  {
+    "name": "M_MotelV2_Glass",
+    "base_color_linear": [
+      0.16,
+      0.23,
+      0.21,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.08,
+    "specular": 0.35,
+    "textures": {},
+    "two_sided": true,
+    "normal_convention": "DIRECTX",
+    "alpha": 0.18
+  },
+  {
+    "name": "M_MotelV2_GlowExterior",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_GlowExterior_base_color.png",
+      "orm": "textures/T_SM_Sierra_GlowExterior_orm.png",
+      "normal": "textures/T_SM_Sierra_GlowExterior_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX",
+    "emission_strength": 2.5,
+    "emission": [
+      1,
+      0.65,
+      0.35,
+      1
+    ],
+    "emission_from_base_color": true
+  },
+  {
+    "name": "M_MotelV2_GlowOffice",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_GlowOffice_base_color.png",
+      "orm": "textures/T_SM_Sierra_GlowOffice_orm.png",
+      "normal": "textures/T_SM_Sierra_GlowOffice_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX",
+    "emission_strength": 2.5,
+    "emission": [
+      1,
+      0.65,
+      0.35,
+      1
+    ],
+    "emission_from_base_color": true
+  },
+  {
+    "name": "M_MotelV2_GlowRoom06",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_GlowRoom06_base_color.png",
+      "orm": "textures/T_SM_Sierra_GlowRoom06_orm.png",
+      "normal": "textures/T_SM_Sierra_GlowRoom06_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX",
+    "emission_strength": 2.5,
+    "emission": [
+      1,
+      0.65,
+      0.35,
+      1
+    ],
+    "emission_from_base_color": true
+  },
+  {
+    "name": "M_MotelV2_GlowSign",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_GlowSign_base_color.png",
+      "orm": "textures/T_SM_Sierra_GlowSign_orm.png",
+      "normal": "textures/T_SM_Sierra_GlowSign_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX",
+    "emission_strength": 2.5,
+    "emission": [
+      1,
+      0.65,
+      0.35,
+      1
+    ],
+    "emission_from_base_color": true
+  },
+  {
+    "name": "M_MotelV2_Office",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Office_base_color.png",
+      "orm": "textures/T_SM_Sierra_Office_orm.png",
+      "normal": "textures/T_SM_Sierra_Office_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Planting",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Planting_base_color.png",
+      "orm": "textures/T_SM_Sierra_Planting_orm.png",
+      "normal": "textures/T_SM_Sierra_Planting_normal.png"
+    },
+    "two_sided": true,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_PoolDeck",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_PoolDeck_base_color.png",
+      "orm": "textures/T_SM_Sierra_PoolDeck_orm.png",
+      "normal": "textures/T_SM_Sierra_PoolDeck_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_PoolFence",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_PoolFence_base_color.png",
+      "orm": "textures/T_SM_Sierra_PoolFence_orm.png",
+      "normal": "textures/T_SM_Sierra_PoolFence_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_PoolFurniture",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_PoolFurniture_base_color.png",
+      "orm": "textures/T_SM_Sierra_PoolFurniture_orm.png",
+      "normal": "textures/T_SM_Sierra_PoolFurniture_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_PoolWater",
+    "base_color_linear": [
+      0.08,
+      0.26,
+      0.24,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.07,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_PoolWater_base_color.png",
+      "orm": "textures/T_SM_Sierra_PoolWater_orm.png",
+      "normal": "textures/T_SM_Sierra_PoolWater_normal.png"
+    },
+    "two_sided": true,
+    "normal_convention": "DIRECTX",
+    "alpha": 0.55,
+    "water_surface": true
+  },
+  {
+    "name": "M_MotelV2_RoofShell",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_RoofShell_base_color.png",
+      "orm": "textures/T_SM_Sierra_RoofShell_orm.png",
+      "normal": "textures/T_SM_Sierra_RoofShell_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room01",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room01_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room01_orm.png",
+      "normal": "textures/T_SM_Sierra_Room01_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room02",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room02_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room02_orm.png",
+      "normal": "textures/T_SM_Sierra_Room02_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room03",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room03_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room03_orm.png",
+      "normal": "textures/T_SM_Sierra_Room03_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room04",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room04_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room04_orm.png",
+      "normal": "textures/T_SM_Sierra_Room04_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room05",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room05_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room05_orm.png",
+      "normal": "textures/T_SM_Sierra_Room05_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room06",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room06_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room06_orm.png",
+      "normal": "textures/T_SM_Sierra_Room06_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room07",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room07_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room07_orm.png",
+      "normal": "textures/T_SM_Sierra_Room07_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room08",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room08_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room08_orm.png",
+      "normal": "textures/T_SM_Sierra_Room08_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Room6Lining",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Room6Lining_base_color.png",
+      "orm": "textures/T_SM_Sierra_Room6Lining_orm.png",
+      "normal": "textures/T_SM_Sierra_Room6Lining_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  },
+  {
+    "name": "M_MotelV2_Sign",
+    "base_color_linear": [
+      0.5,
+      0.5,
+      0.5,
+      1
+    ],
+    "metallic": 0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "textures": {
+      "base_color": "textures/T_SM_Sierra_Sign_base_color.png",
+      "orm": "textures/T_SM_Sierra_Sign_orm.png",
+      "normal": "textures/T_SM_Sierra_Sign_normal.png"
+    },
+    "two_sided": false,
+    "normal_convention": "DIRECTX"
+  }
+]

@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.bg{filter:blur(6px) brightness(.45);transform:scale(1.04)}
+.tint{position:absolute;inset:0;background:rgba(4,6,11,.62)}
+.frame{position:absolute;left:90px;top:64px;right:90px;bottom:84px;border:1px solid rgba(255,176,82,.28);background:linear-gradient(180deg,rgba(8,11,19,.92),rgba(5,7,13,.96));box-shadow:0 0 0 1px rgba(0,0,0,.6),0 30px 80px rgba(0,0,0,.6)}
+.head{position:absolute;left:48px;top:30px;right:48px;display:flex;align-items:baseline}
+.head h2{font-family:Oswald;font-weight:500;font-size:54px;letter-spacing:2px;color:#f1ecdf}
+.head .id{margin-left:auto;font-family:VT;font-size:22px;color:#6f8f78;letter-spacing:2px}
+.tabs{position:absolute;left:48px;top:118px;right:48px;display:flex;gap:6px;border-bottom:1px solid rgba(235,227,207,.12)}
+.tab{font-family:VT;font-size:27px;letter-spacing:2px;color:#8f8a7e;padding:6px 18px 10px}
+.tab.on{color:var(--amber);border-bottom:3px solid var(--amber);margin-bottom:-1px}
+.tab.k{color:#5d584e;font-size:22px;padding-top:10px}
+.rows{position:absolute;left:48px;top:186px;width:840px}
+.row{display:flex;align-items:center;height:58px;padding:0 18px;border-left:3px solid transparent;font-family:VT;font-size:30px;letter-spacing:1px;color:rgba(235,227,207,.86)}
+.row.sel{background:linear-gradient(90deg,rgba(255,176,82,.16),rgba(255,176,82,.03));border-left-color:var(--amber);color:#f6ecd8}
+.row .v{margin-left:auto;display:flex;align-items:center;gap:12px;color:var(--amber)}
+.row .v .a{color:#6c665b}
+.row.sel .v .a{color:var(--amber)}
+.seg{display:flex;gap:3px}
+.seg i{display:block;width:13px;height:20px;background:rgba(235,227,207,.12)}
+.seg i.f{background:var(--amber)}
+.num{width:64px;text-align:right}
+.tog{display:flex;font-size:24px}
+.tog span{padding:0 12px;border:1px solid #4d483f;color:#6c665b}
+.tog span.on{background:var(--amber);color:#1b1408;border-color:var(--amber)}
+.sep{height:1px;background:rgba(235,227,207,.08);margin:10px 18px}
+.side{position:absolute;right:48px;top:186px;width:470px}
+.side .lbl{font-family:VT;font-size:22px;color:#6f8f78;letter-spacing:2px;margin-bottom:10px}
+.side h3{font-family:Oswald;font-weight:500;font-size:32px;color:#f1ecdf;letter-spacing:1px;margin-bottom:12px}
+.side p{font-size:17px;line-height:1.6;color:#cfc8b7}
+.cmp{display:flex;gap:10px;margin-top:22px}
+.cmp div{flex:1}
+.cmp img{width:100%;display:block;border:1px solid rgba(235,227,207,.18)}
+.cmp span{display:block;font-family:VT;font-size:20px;color:#8f8a7e;margin-top:6px;letter-spacing:1px}
+.vhs img{filter:contrast(1.1) saturate(1.25) blur(.6px)}
+.clean img{filter:contrast(1.02)}
+.foot{position:absolute;left:48px;right:48px;bottom:22px;display:flex;align-items:center}
+.foot .keys{position:static}
+.btn{margin-left:auto;font-family:VT;font-size:26px;letter-spacing:2px;padding:6px 22px;border:1px solid var(--amber);color:var(--amber)}
+.btn.g{border-color:#4d483f;color:#8f8a7e;margin-left:12px}
+</style></head><body>
+<div class="bg" style="background-image:url(title-bg.png)"></div><div class="tint"></div>
+<div class="frame">
+ <div class="head"><h2>SETTINGS</h2><div class="id">SARO OPS // TERMINAL 3 // SETUP</div></div>
+ <div class="tabs"><div class="tab k">Q</div><div class="tab">GAME</div><div class="tab on">PICTURE</div><div class="tab">SOUND</div><div class="tab">VOICES</div><div class="tab">CONTROLS</div><div class="tab">ACCESSIBILITY</div><div class="tab k">E</div></div>
+ <div class="rows">
+  <div class="row">Display mode<div class="v"><span class="a">◀</span>FULLSCREEN<span class="a">▶</span></div></div>
+  <div class="row">Resolution<div class="v"><span class="a">◀</span>2560 × 1440<span class="a">▶</span></div></div>
+  <div class="row">Frame limit<div class="v"><span class="a">◀</span>144 FPS<span class="a">▶</span></div></div>
+  <div class="row">V-sync<div class="v"><div class="tog"><span class="on">ON</span><span>OFF</span></div></div></div>
+  <div class="sep"></div>
+  <div class="row">Quality<div class="v"><span class="a">◀</span>HIGH<span class="a">▶</span></div></div>
+  <div class="row sel">Picture<div class="v"><span class="a">◀</span>VHS TAPE<span class="a">▶</span></div></div>
+  <div class="row">Brightness<div class="v"><div class="seg"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="num">50%</span></div></div>
+  <div class="row">Field of view<div class="v"><div class="seg"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="num">70°</span></div></div>
+ </div>
+ <div class="side">
+  <div class="lbl">PICTURE</div>
+  <h3>VHS tape</h3>
+  <p>The night as it was taped in 1986: the soft band, the colour bleeding at the edges, the tracking line now and then. Off shows the same scene clean, with the game's own grade.</p>
+  <div class="cmp"><div class="vhs"><img src="thumb-dish.jpg"><span>VHS TAPE</span></div><div class="clean"><img src="thumb-dish.jpg"><span>CLEAN</span></div></div>
+ </div>
+ <div class="foot"><div class="keys"><span><b>↑ ↓</b>SELECT</span><span><b>← →</b>CHANGE</span><span><b>Q E</b>TAB</span><span><b>R</b>DEFAULT</span><span><b>ESC</b>BACK</span></div><div class="btn">APPLY</div><div class="btn g">REVERT</div></div>
+</div>
+<div class="scan"></div>
+</body></html>

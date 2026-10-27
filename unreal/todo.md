@@ -8,6 +8,29 @@
 - [x] Flett `unreal-port-core` inn i main på `ccr-30e38858-767d90`: 17 konflikter løst, HorrorStory-generatoren kjørt, 24 tester OK, PR mot main (skysesjon 27.10).
 - [x] Bygg editor og pakke, kjør SC01-kontrollene og hele `screenshots.sh` på Kubuntu (alt PASS 27.10, se loggen kl. 19:20). PR #174 flettes med full head-SHA, og `unreal-port-core` slettes når den ikke har commits utenfor main.
 
+## Samle lokale leveranser til repo, 27. oktober 2026
+
+- [x] Samle designbibel, portable redigerbare kilder, konsepter og manglende kvitteringer med SHA-/lenkekontroll. Se [indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md).
+- [x] Bevar nyere MetaHuman-/atmosfærekilder og lenk separat SC01-kilde uten automatisk runtimeintegrasjon.
+- [x] Push og opprett [PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172); indeks/PDF kontrollert anonymt på GitHub.
+- [ ] Full 110-scenario-matrise før eventuell main-merge av samlet runtime. Ingen ny spillutgave inngår i arkiveringen.
+
+## MetaHuman-servitrisen, levert lokalt 27. oktober 2026
+
+- [x] Overta fra Claude, sikre kilder og avslutte gamle task-økter/ventere uten å stoppe andre motorjobber.
+- [x] Rett faktisk aktivt lydklipp, Body/Face-uttrykkskurver, tomgangsløkketid og stabil blikkfjær.
+- [x] Lag/importer original uniform V5 på samme skjelett; erstatt usynlig pakket groom-frisyre med authored hårkort og vanlig coverage-materiale.
+- [x] Kontroller 43 ansiktstakes; mål tre faktiske velkomstreplikker, pause og diskrestore i identisk pakket R3. Fem High-bilder vurdert, 1 586 selvtester PASS.
+- [x] Installer R3, prøv standardstarter på Low og bevar alle 50 personlige Saved-filer. Canonical prune anvendt med SC01-R4 beskyttet.
+- [ ] Senere visuell polering: finere stoff, portrettets alder/utseende, blyant og egne servicegester. Dette hindrer ikke levert figurpilot. Se [rapport](METAHUMAN_WAITRESS.md).
+- [x] Avtalt punkt 5 atmosfære/ytelsesrom er levert lokalt i R1. Se [rapport](ATMOSPHERE_2026-10-27.md). Oppfølgingen avsluttes; ingen ny spillutgave publisert.
+
+
+## Linux-nedlasting, 26. oktober 2026
+
+- [x] Publiser samme testede terreng-R2 som nedlastbar Linux-testutgave med to ZIP-er, portable startskript, kontrollsummer og bruksanvisning. 43 arkivfiler og fem opplastinger er verifisert; alle lenker virker anonymt. [Last ned](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-26).
+- [ ] Prøv kompatibilitet og ytelse på mottakermaskinene. Den nye leveringen utførte ingen ny Unreal-kjøring eller Steam Deck-prøve.
+
 ## Terreng og natur langs ruten, 26. oktober 2026
 
 - [x] Bryt opp de dominerende fjelltrappene og lag sammenhengende erosjon/skråningsfot i original Blender-geologi, med bevart vei/gangflate og områdetransform.
@@ -36,9 +59,9 @@
 - [x] Vurder synlig kvalitetsløft per innsats og Poly Haven-videoen mot dagens sky-/lysrigg og RTX 3080 10 GB. Lagre anbefalt rekkefølge og første sammenhengende strekning i grafikknotatet. Ingen nye assets eller funksjoner implementert.
 - [x] Terrengformer og natur langs innkjøringen til SARO er levert i terreng-R2 med bevart dag-/nattehimmel og spillbare høyder. Se nyeste terrengstatus øverst.
 - [x] Lagre undersøkte Lumen-/FSSS-/skyggefunn og sammenhengen med terrengarbeidet i [RENDERING_RESEARCH_2026-10-26.md](RENDERING_RESEARCH_2026-10-26.md). Skill faktisk konfigurert bruk, Epic-påstander og uprøvde forslag. Ingen grafikkendring eller ny ytelsestest.
-- [ ] Ved senere optimalisering: vurder romlig oppdelte skyggegrenser for Caliche-sage/yucca og småstein, med fortsatt synlige modeller. Behold allerede shadowless gress og store lysblokkere; kontroller også distance-field-fallback.
+- [ ] Ved videre optimalisering etter den leverte sub-12cm-småsteinsrunden: vurder romlig oppdelte skyggegrenser for Caliche-sage/yucca og småstein, med fortsatt synlige modeller. Behold allerede shadowless gress og store lysblokkere; kontroller også distance-field-fallback.
 - [ ] Vurder eget Medium/Lumen Lite-nivå mellom dagens Low uten GI og High. Ikke anta at sg.GI=1 alene aktiverer GI, eller at Epics 2x-påstand betyr dobbelt FPS her.
-- [ ] Vurder svak innebygd FSSS på High/Ultra ved SARO i skumring/natt etter armaturretting. Definer Low av eksplisitt, og behold tetthet/eksponering i første avgrensede sammenligning.
+- [x] Vurder svak innebygd FSSS ved SARO. Faktisk High-natt A/B og GPU-profil er dokumentert i atmosfærerapporten. Ingen tydelig bildegevinst for ekstrakostnaden, så standard forblir av; Low er eksplisitt av.
 
 ## Parkering, rampeinngang og kontor, R5, 26. oktober 2026
 
@@ -568,3 +591,10 @@ Kilder fra vurderingen: [Quixels Moab-opptak](https://www.youtube.com/watch?v=ND
 - [x] Bekreftet faktisk motell/Rom6-modellintegrasjon i pakket spill.
 - [x] Varig grense: gjeldende+to eldre testbygg; vedlikehold utført med kilder/Saved/bevis bevart.
 - [x] Editor/pakke, fokuserte runtimeforløp, bilde-QA og installasjon med 40 uendrede Saved-filer. VISITOR_PARKING.md skiller P1/P2 og uprøvde forhold.
+
+
+## Windows-test på jobb-PC, 27. oktober 2026
+
+- [x] Privat byggpakke fra utgitt terreng-R2, alle nødvendige kilde-/innholdsfiler og Windows-startfiler levert på egen Drive. ZIP og tilgang kontrollert. Se log.md.
+- [ ] Brukeren installerer UE 5.8.4 og C++-verktøy på Windows og kjører Build-Windows.cmd; innhent faktisk byggelogg ved feil.
+- [ ] Kontroller Win64-kompilering, cook, oppstart, lagring/lasting og normal/Low-spilling før eventuell ferdig Windows-utgivelse. Ingen Windows-binær er hevdet levert nå.

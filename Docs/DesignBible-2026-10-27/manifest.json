@@ -1,0 +1,423 @@
+{
+  "thread_id": "01a17d06-3c66-78f3-b21b-b784af2cc91a",
+  "archive_date": "2026-10-27",
+  "pdf": {
+    "path": "SIGNAL-47-Designbibel.pdf",
+    "pages": 42,
+    "byte_identical_to_source": true,
+    "sha256": "f8cc0f2d7784098ec7dc8c4eaa633d72aadca0da76d053e2827b72163087fda5"
+  },
+  "validation": {
+    "local_links": "155 checked; all resolve, including existing cow concepts",
+    "python": "AST parsed; no PDF/cartography job executed",
+    "svg": "XML parsed",
+    "runtime": "No game changes or runtime validation performed",
+    "dependencies": "All 51 mapped files and 13 builder-loop image inputs exist; mapped SHA-256 values match"
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 26,
+      "sha256": "6cf68f361ed9af9c89f8304b81604d87347c3d38348e90f1e5bef55ea8fa99a5"
+    },
+    {
+      "path": "01-caliche-na.svg",
+      "bytes": 5050,
+      "sha256": "8f15c4c5dbd4d80235ed01432d345ce485d72c107fb53981952ed4551d271e8b",
+      "modified_for_repo": false
+    },
+    {
+      "path": "02-saro-na.svg",
+      "bytes": 7540,
+      "sha256": "be3cc789f2e0ae12439b29a4291e85f0083a0b1a697777484c98c394dc51360a",
+      "modified_for_repo": false
+    },
+    {
+      "path": "03-layoutforslag.svg",
+      "bytes": 3458,
+      "sha256": "faec6ebfe234e71fa224d233a54964d08ebea1d31ed123595e3a7809359bf686",
+      "modified_for_repo": false
+    },
+    {
+      "path": "DESIGNBIBEL.md",
+      "bytes": 62344,
+      "sha256": "32080f1102a95f0454cbfcca5de1a8cef1de8cd769d08827e594797044c7f9fb",
+      "modified_for_repo": true
+    },
+    {
+      "path": "KART.md",
+      "bytes": 4315,
+      "sha256": "e37686b53b663834a67d7860654b95fd3624d4c4f8564150070f5213fd469469",
+      "modified_for_repo": false
+    },
+    {
+      "path": "README.md",
+      "bytes": 3879,
+      "sha256": "f79556ae721b2e07ca0108b8a0920df8cac11c358192d831ada143d9124eb336"
+    },
+    {
+      "path": "SIGNAL-47-Designbibel.pdf",
+      "bytes": 10988346,
+      "sha256": "f8cc0f2d7784098ec7dc8c4eaa633d72aadca0da76d053e2827b72163087fda5",
+      "modified_for_repo": false
+    },
+    {
+      "path": "archive-source-manifest.json",
+      "bytes": 19713,
+      "sha256": "1e17034b094b32a9a18eea0ecb087b0a2ba291d9c7988d4b8c0e014f838f95f9"
+    },
+    {
+      "path": "asset-dependencies.json",
+      "bytes": 15830,
+      "sha256": "68e77a8b51ad1e33184d814912fc9c6b81f4fa67785d8d22ad5e4497ba2d668d"
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-23/Caliche-byen.png",
+      "bytes": 2640736,
+      "sha256": "018ef5239fcd639f24520418be917011464f69f5ea2910d65f0d223b64f3e92c",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-23/Mesa-Diner.png",
+      "bytes": 2664098,
+      "sha256": "47fff1fecf2ee4b37c488a8a975e2ae5c4626057567e18a93a9ec1e36e0f3e3f",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-23/prompts.json",
+      "bytes": 135,
+      "sha256": "e551ccb69730befa13ff54a1d7e2a9a21c09f80841f9a78a9b5cc6203922d6ae",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/GALLERI.html",
+      "bytes": 15881,
+      "sha256": "3d88e698e5669f43344e9be102c6637a28bf4328d9f10e04775f717d575bac1f",
+      "modified_for_repo": true
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/capture-manifest.json",
+      "bytes": 10351,
+      "sha256": "cd6e4435e0d1d1235e53f099dce44c8e879b2810e17c520273ea22113bb967f7",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/nye/01-startmeny.png",
+      "bytes": 1951935,
+      "sha256": "4ca6acf7440692f55a5c852e02e341ed25e23a0087aa5805721944f652eeb5ed",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/nye/02-options.png",
+      "bytes": 1761827,
+      "sha256": "d7de0821fc042e0a32523b5578e7f4f7417bd295fb18d9efe8f963ac60dd0c5b",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/nye/03-gameplay-hud.png",
+      "bytes": 1809045,
+      "sha256": "da3a3fc65e48949eacf95dd62b50dca5b775eb730a121a7b6f555fb3fa9967de",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/nye/04-notatbok.png",
+      "bytes": 2400520,
+      "sha256": "61c59bc477d7f6a6e3d80434fe637b5f77ab6fb35274f58619b70d0f7823c821",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/nye/05-pause.png",
+      "bytes": 1672562,
+      "sha256": "67991011180c3b892af203bb50407c1fe00521eacf40155edb6a1d41cb54eb55",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/nye/06-npc-dialog.png",
+      "bytes": 1936270,
+      "sha256": "1521fbe4379600e5acafaa14aff39133223bd7557e5b5dc3efeaf54fb84439b9",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/prompts.json",
+      "bytes": 18130,
+      "sha256": "006b3e08497d3ea698de022359c78324079b43ff91b3c277888f614bac6b29fc",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/board.png",
+      "bytes": 1889611,
+      "sha256": "c5578890cb29276d88dccc85a27d1dcc6890c4449844f2dab60f255b5ea1495d",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/console.png",
+      "bytes": 1518419,
+      "sha256": "0862b5be8fde74c26791ed4b62c5fbcf4bd819e5fe1b838f38ab07e198dc7df2",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/load.png",
+      "bytes": 288951,
+      "sha256": "dcd972042a750935147a58dbba1bdf655f69c9818b97d35ada4670f137bcfcda",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-findings.png",
+      "bytes": 348194,
+      "sha256": "cc98f50265dc7374afc85fb88e2f094eee6724a82055e6ea5a3703b9ce645cdc",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-kit.png",
+      "bytes": 374845,
+      "sha256": "0712ff0a1be34bc5406bae80d4cb472c00bcf316134d3c15a3e275d04ad98690",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-map.png",
+      "bytes": 300555,
+      "sha256": "5a71b1b4d3a529f83ad0d06e3386fac8a18543f25d44911b12478a809c0494fc",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-notes.png",
+      "bytes": 291566,
+      "sha256": "479400dfd3b7a8136b4ce62e4d0c9122c0fe648982f6d31d22ea0220f897112d",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-photos.png",
+      "bytes": 228628,
+      "sha256": "296a7ac19d0eb2c65566aa41e12284bfe3b11a880c6a5dc8ce828c3e4e6a2cf0",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-tasks.png",
+      "bytes": 311629,
+      "sha256": "9c99ac5a09675bffbcf57b0c50f9be6d9aba7587748bdd48013c0312d4454bdd",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/ops.png",
+      "bytes": 954479,
+      "sha256": "44aae6ef9fb6ee7931ae984e21c4ee5d760a3d52db00229989309f7a29f455c1",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/paper-typed.png",
+      "bytes": 408078,
+      "sha256": "3320c77126912934e50d393d87838c70d7deb4f7fcc219601f841f897ef7610c",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/pause.png",
+      "bytes": 557502,
+      "sha256": "712ed4fe521bf5b8eb6874c0cc9327b9e43a10ca453f9e84cf4453596639a5fb",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/room.png",
+      "bytes": 1955103,
+      "sha256": "1a8f9595fbf023c26e15893b17b46ea6605185e8d88d7ec68211d4c2bacc5028",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/save.png",
+      "bytes": 309749,
+      "sha256": "02e375c362ffb041adf95b973cc5b62dc305efb041df06478d3d876e6a5c686f",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-accessibility.png",
+      "bytes": 161294,
+      "sha256": "7563d5cc3d987156870afea6a8cbc66e24cde39ce9ed7670c5fdc57c216031ac",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-controls.png",
+      "bytes": 170409,
+      "sha256": "14257170ee281666ba7b46f7aafbf035ca7997dffa7d9a7771289cc049dfde19",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-game.png",
+      "bytes": 153828,
+      "sha256": "2d382adad2c4afcd0a056555d8cdaaf7f7f1e8302b5b41fc6350e288f60f0734",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-picture.png",
+      "bytes": 185619,
+      "sha256": "c166b495b95e02168666936218d9b7c684f8ac2cad0d72be16f002a11a7388a0",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-sound.png",
+      "bytes": 145031,
+      "sha256": "92671d7870463f4f288bba28bf3381800404c9164af8eefe833507399bda5ad7",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-voices.png",
+      "bytes": 163759,
+      "sha256": "658765abc4d0fd9d9c91b17a92f3049b1e7bf82187e734164811e8febd806047",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/skjermbilder/title.png",
+      "bytes": 1026829,
+      "sha256": "e9067e2c3a6a51f101f7761a8ce34bbd343e71b0ea140171039fe21931f928c4",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/document.png",
+      "bytes": 367641,
+      "sha256": "cadd5ed43de881eea098cfb8d73ff92d8c0abe4effcc7537dc049c2bcc3b61f8",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/hud.png",
+      "bytes": 276787,
+      "sha256": "06448d3d75d6ef88af5cc2132e84748bd236a22bd78da314585b328038a58fd0",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/load.png",
+      "bytes": 470238,
+      "sha256": "c2bae2c746170e3ece866bc6934f16bafffb83221ef341b831d1411d68bf94d0",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/notebook.png",
+      "bytes": 378998,
+      "sha256": "15bf997a958ccbaf873d28561f39c063a5225003941f476f77272996460525e4",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/pause.png",
+      "bytes": 178956,
+      "sha256": "fc76849d83d06005517afa6cfe1d2437e43499457200e6382500c6e7a44cd058",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/recovery.json",
+      "bytes": 2056,
+      "sha256": "c5970178d7f8755871dab47a9c68c8db0d0bd023d8ec66976a29340da418f4f1",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/settings.png",
+      "bytes": 378318,
+      "sha256": "2e436d433df3dff19993c9aea791f0f8e5d1202838d5f5427afdea707bc56267",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder/2026-10-24-ui/tidligere/title.png",
+      "bytes": 243679,
+      "sha256": "9867cecfaa22d6f44cd28ef9ab9a63ac80a01352848174cafb7edbcb1c20336a",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder-2026-10-27/01-sierra-motor-court-eksterior.png",
+      "bytes": 2606389,
+      "sha256": "fae77786b2639bbca7f76e031ac8f7106c6c93dcc641fa747b9495f70ae123b5",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder-2026-10-27/02-mesa-diner-interior.png",
+      "bytes": 2437499,
+      "sha256": "bbd4a3dc721525a43cc9f3e5b147101a47800535cd06149109206261f2fed6ba",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/konseptbilder-2026-10-27/prompts-and-manifest.json",
+      "bytes": 9732,
+      "sha256": "24cde2a22504cef7ac3a08364955a424590a9911133b7b567aea9ee57ac4fc56",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/resultater/ankomst-og-kontor/besoksparkering.png",
+      "bytes": 1558198,
+      "sha256": "79cdc4bb7de435105a4516203789b43e2c793fac65b218ba48cabbf07d198e46",
+      "modified_for_repo": false
+    },
+    {
+      "path": "assets/resultater/ankomst-og-kontor/dales-kontor.png",
+      "bytes": 1838199,
+      "sha256": "14ea88a7e69e980b302eb588cfaf9cc3c0fb5ee0d65df2a21d018b43ccb6ca92",
+      "modified_for_repo": false
+    },
+    {
+      "path": "lag_kart.py",
+      "bytes": 7096,
+      "sha256": "a39fc7d09f6ba9d2bbd6189f2c73d807b5fe736f0ff2c30798fe803c782cd766",
+      "modified_for_repo": true
+    },
+    {
+      "path": "pdf-produksjon/bygg_pdf.py",
+      "bytes": 11518,
+      "sha256": "dbf85f84d9e16eb92fb936db791d6c004fa099d8296e983a63b83f0be3c8738e",
+      "modified_for_repo": true
+    },
+    {
+      "path": "visuell-retning/BILDEPROMPTER.md",
+      "bytes": 3103,
+      "sha256": "595803da6d2dc016c29696ea2e9fa2942d78bf3dfac7c0316341d15435ccba3c",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/VISUELL-BIBEL.md",
+      "bytes": 8241,
+      "sha256": "0354b72410bf1b2ee87b855c8ebfc950ce99f7289bde8846120a3f42a0f5a0e6",
+      "modified_for_repo": true
+    },
+    {
+      "path": "visuell-retning/caliche-kveld.png",
+      "bytes": 2473341,
+      "sha256": "add44fd2d5ebd3fe3a72ec72349deedf2d04e8408561a98f11913f9e0037cd21",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/caliche-luftperspektiv.png",
+      "bytes": 3763197,
+      "sha256": "bc0b170d3765919f64c92d1e96501d342c872a7d04f841efcc26b92d492fad0a",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/fargepalett.svg",
+      "bytes": 3604,
+      "sha256": "96e240dcb9cc5603a7e10464a4219a054b5777f397a0190539352f3324aad738",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/saro-luftperspektiv.png",
+      "bytes": 3269259,
+      "sha256": "cc6d05f0f6d456c585656cbb6425e57e5ac8be0b18be148e143124296aeb2f13",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/tillegg/motell-rom6.png",
+      "bytes": 2307009,
+      "sha256": "4b38fbe7502d87e6e979ad56b01c624d55ee6ecd52cd4cb8e60f6ad8f94c35ff",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/tillegg/saro-interior.png",
+      "bytes": 2290120,
+      "sha256": "6da02a6eebc1d15e7f610d176119466030dd0eaccddab9e69cac32ab28176423",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/tillegg/station01.png",
+      "bytes": 2742581,
+      "sha256": "5c5fb29f0db7d498ceb070875ec913646bfc99775274ad7797a2eb6c4592894d",
+      "modified_for_repo": false
+    },
+    {
+      "path": "visuell-retning/tillegg/veier-og-service.png",
+      "bytes": 2885854,
+      "sha256": "95e67044074431cb02c093c6b35b2d3c8b4fbd8574e63a637c1941bfe75b7a74",
+      "modified_for_repo": false
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "status": "SOURCE_PROVENANCE_DOCUMENTED_FINAL_PACKAGE_FREEZE_PENDING",
+  "scope": "Original project geometry/material work plus two CC0 Poly Haven material inputs; excluded original runtime assets remain in the game separately.",
+  "raw_local_authoring_source": {
+    "path": "../test-v2/Sierra_Motor_Court_Test_V2_Kelvora.blend",
+    "sha256": "43f4cb62a8b15117b4b765ec07bb298ea9a19fd214e17d8610e666ee361a3bd4",
+    "distributed_in_clean_package": false,
+    "reason": "Local presentation scene also contains three credited CC-BY car models and a presentation HDRI."
+  },
+  "included_material_inputs": [
+    {
+      "asset": "painted_plaster_wall",
+      "role": "diff",
+      "local_repository_path": "Unity/Assets/Signal47/Art/Visual10/Textures/painted_plaster_wall/painted_plaster_wall_diff_2k.jpg",
+      "sha256": "6fd812ed8dd5be1873c29aeef38ce9bf1fb30a22c6d4b3a12db725e98c26a1be",
+      "recorded_source_sha256": "6fd812ed8dd5be1873c29aeef38ce9bf1fb30a22c6d4b3a12db725e98c26a1be",
+      "source": "https://polyhaven.com/a/painted_plaster_wall",
+      "authors": {
+        "Amal Kumar": "All"
+      },
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "source_manifest": "Unity/Assets/Signal47/Art/Visual10/source-manifest.json"
+    },
+    {
+      "asset": "painted_plaster_wall",
+      "role": "rough",
+      "local_repository_path": "Unity/Assets/Signal47/Art/Visual10/Textures/painted_plaster_wall/painted_plaster_wall_rough_2k.jpg",
+      "sha256": "35aad595469533cc3b7cc209cc6c7e065d660211f02c867f4492d3b371b1fee1",
+      "recorded_source_sha256": "35aad595469533cc3b7cc209cc6c7e065d660211f02c867f4492d3b371b1fee1",
+      "source": "https://polyhaven.com/a/painted_plaster_wall",
+      "authors": {
+        "Amal Kumar": "All"
+      },
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "source_manifest": "Unity/Assets/Signal47/Art/Visual10/source-manifest.json"
+    },
+    {
+      "asset": "concrete_floor_02",
+      "role": "diff",
+      "local_repository_path": "Unity/Assets/Signal47/Art/Visual10/Textures/concrete_floor_02/concrete_floor_02_diff_2k.jpg",
+      "sha256": "b08a20dcb306d08ee7f4a05ec216b19b7fd37e95745998ec5f81ecedaac1f0e9",
+      "recorded_source_sha256": "b08a20dcb306d08ee7f4a05ec216b19b7fd37e95745998ec5f81ecedaac1f0e9",
+      "source": "https://polyhaven.com/a/concrete_floor_02",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "source_manifest": "Unity/Assets/Signal47/Art/Visual10/source-manifest.json"
+    },
+    {
+      "asset": "concrete_floor_02",
+      "role": "rough",
+      "local_repository_path": "Unity/Assets/Signal47/Art/Visual10/Textures/concrete_floor_02/concrete_floor_02_rough_2k.jpg",
+      "sha256": "cb539b0f8fdc8c63241683e01c923eb040fa701ec4c60cff27b674294746ae67",
+      "recorded_source_sha256": "cb539b0f8fdc8c63241683e01c923eb040fa701ec4c60cff27b674294746ae67",
+      "source": "https://polyhaven.com/a/concrete_floor_02",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "source_manifest": "Unity/Assets/Signal47/Art/Visual10/source-manifest.json"
+    },
+    {
+      "asset": "original SIGNAL / 47 road asphalt",
+      "role": "tiled base color",
+      "local_repository_path": "web/src/assets/art/road/tex_oldroad_asphalt.jpg",
+      "sha256": "fa3de283b8232146eb55dcb5ce80696cc5d514bfc7b9ae83d9a9f5fa24f7d106",
+      "authorship": "Original project image generated with built-in ChatGPT image generator, with project export/verification",
+      "license": "Project original; not claimed CC0",
+      "notice": "web/THIRD_PARTY_NOTICES.md, Round 11",
+      "source_manifest": "web/src/assets/art/production/round11_manifest.json"
+    }
+  ],
+  "excluded_asset_groups": [
+    "three Daniel Zhabotinsky CC-BY cars and their textures",
+    "existing KELVORA TV/media",
+    "existing live props, handset, key6, evidence and doors",
+    "original bed and characters",
+    "presentation HDRI, camera/light rigs, test terrain and road",
+    "reference photographs"
+  ],
+  "clean_package_policy": {
+    "geometry": "Project-authored geometry only",
+    "textures": "Project-original asphalt and baked original/CC0 material graphs only",
+    "runtime_bindings": "Existing actors and gameplay anchors retained separately",
+    "production_blend": "Joined LOD0 geometry with portable packed textures; higher-level authoring modifiers/procedural graphs remain in excluded local source"
+  },
+  "verification_limit": "Input provenance only. Native acceptance and frozen output hashes must come from the coordinating task after the full export and Unreal verification; this file does not assert those results."
+}

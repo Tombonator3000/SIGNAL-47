@@ -2,6 +2,7 @@
 #include "S47Web.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
+#include "S47GrassWind.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
@@ -160,40 +161,70 @@ void AS47Web::BuildCalicheNature()
 		UE_LOG(LogS47CalicheNature, Error, TEXT("S47: nature rejected: prototype LOD, placement or protected route mismatch"));
 		return;
 	}
+	// Unreal-only: sub-12cm contact gravel does not need a separate direct shadow.
+	// Split only those small instances, preserving every larger stone and plant caster,
+	// the existing model/LOD distances and RT visibility. No per-frame repartitioning.
+	const bool bLegacyShadows = FParse::Param(FCommandLine::Get(), TEXT("S47LegacySmallShadows"));
+	constexpr double TinyHeightCm = 12.0;
+	int32 Components = 0, TinyShadowless = 0;
 	for (const FFamily& Family : Ready)
 	{
-		UHierarchicalInstancedStaticMeshComponent* C = NewObject<UHierarchicalInstancedStaticMeshComponent>(this, *FString::Printf(TEXT("Nature_%s"), *Family.Id));
-		C->SetMobility(EComponentMobility::Movable);
-		C->SetStaticMesh(Family.Mesh);
-		C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		C->SetCastShadow(Family.bShadow);
-		C->SetCullDistances(FMath::RoundToInt(Family.Cull * .82), Family.Cull);
-		C->bAutoRebuildTreeOnInstanceChanges = false;
-		C->RegisterComponent();
-		C->AttachToComponent(Nodes[Parent].Comp.IsValid() ? Nodes[Parent].Comp.Get() : GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-		// Keep the GPU instance offsets near Caliche rather than storing 8 km
-		// absolute translations in each float instance matrix (millimetre leaves).
-		C->SetWorldTransform(FTransform(S47Three::ToUE(8000, 0, 2060)));
-		AdoptNode(C, Parent, TEXT("nature:") + Family.Id);
-		for (const FTransform& Transform : Family.Instances) C->AddInstance(Transform, true);
-		C->BuildTreeIfOutdated(false, true);
-		int32 StartCull = 0, EndCull = 0;
-		C->GetCullDistances(StartCull, EndCull);
-		bool bActual = C->GetInstanceCount() == Family.Instances.Num() && EndCull == Family.Cull &&
-			StartCull == FMath::RoundToInt(Family.Cull * .82) && C->GetCollisionEnabled() == ECollisionEnabled::NoCollision;
-		// Inspect the component's actual world transforms after parent adoption
-		// and tree construction, including the last inserted instance.
-		for (int32 Index : {0, Family.Instances.Num()-1})
+		TArray<FTransform> Normal, Tiny;
+		const bool bSplit = !bLegacyShadows && Family.bShadow &&
+			(Family.Id == TEXT("Caliche_B") || Family.Id == TEXT("Sandstone_A"));
+		const double HeightCm = Family.Mesh->GetBoundingBox().GetSize().Z;
+		for (const FTransform& Transform : Family.Instances)
+			if (bSplit && HeightCm * FMath::Abs(Transform.GetScale3D().Z) < TinyHeightCm) Tiny.Add(Transform);
+			else Normal.Add(Transform);
+		auto BuildBatch = [&](const TArray<FTransform>& Instances, bool bTiny, bool bShadow)
 		{
-			FTransform Actual;
-			bActual &= C->GetInstanceTransform(Index, Actual, true) && Actual.Equals(Family.Instances[Index], .01);
-		}
-		UE_LOG(LogS47CalicheNature, Display, TEXT("S47: nature component %s: instances=%d cull_cm=%d,%d world_transform_checks=%s"),
-			*Family.Id, C->GetInstanceCount(), StartCull, EndCull, bActual ? TEXT("PASS") : TEXT("FAIL"));
+			if (Instances.IsEmpty()) return 0;
+			const FString Id = Family.Id + (bTiny ? TEXT(":tiny") : TEXT(""));
+			UHierarchicalInstancedStaticMeshComponent* C = NewObject<UHierarchicalInstancedStaticMeshComponent>(this,
+				*FString::Printf(TEXT("Nature_%s%s"), *Family.Id, bTiny ? TEXT("_Tiny") : TEXT("")));
+			C->SetMobility(EComponentMobility::Movable);
+			C->SetStaticMesh(Family.Mesh);
+			C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			C->SetCastShadow(bShadow);
+			S47GrassWind::Apply(C, Family.Id);
+			C->SetCullDistances(FMath::RoundToInt(Family.Cull * .82), Family.Cull);
+			C->bAutoRebuildTreeOnInstanceChanges = false;
+			C->RegisterComponent();
+			C->AttachToComponent(Nodes[Parent].Comp.IsValid() ? Nodes[Parent].Comp.Get() : GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+			// Keep the GPU instance offsets near Caliche, not 8km absolute translations.
+			C->SetWorldTransform(FTransform(S47Three::ToUE(8000, 0, 2060)));
+			AdoptNode(C, Parent, TEXT("nature:") + Id);
+			for (const FTransform& Transform : Instances) C->AddInstance(Transform, true);
+			C->BuildTreeIfOutdated(false, true);
+			++Components;
+			int32 StartCull = 0, EndCull = 0;
+			C->GetCullDistances(StartCull, EndCull);
+			bool bActual = C->GetInstanceCount() == Instances.Num() && EndCull == Family.Cull &&
+				StartCull == FMath::RoundToInt(Family.Cull * .82) && C->GetCollisionEnabled() == ECollisionEnabled::NoCollision &&
+				bool(C->CastShadow) == bShadow;
+			// Check each batch after parent adoption and tree construction, including its final transform.
+			for (int32 Index : {0, Instances.Num()-1})
+			{
+				FTransform Actual;
+				bActual &= C->GetInstanceTransform(Index, Actual, true) && Actual.Equals(Instances[Index], .01);
+			}
+			UE_LOG(LogS47CalicheNature, Display, TEXT("S47: nature component %s: instances=%d cull_cm=%d,%d world_transform_checks=%s shadow=%d"),
+				*Id, C->GetInstanceCount(), StartCull, EndCull, bActual ? TEXT("PASS") : TEXT("FAIL"), bShadow);
+			if (!bActual) UE_LOG(LogS47CalicheNature, Error, TEXT("S47: nature runtime component mismatch: %s"), *Id);
+			return C->GetInstanceCount();
+		};
+		const int32 NormalCount = BuildBatch(Normal, false, Family.bShadow);
+		const int32 TinyCount = BuildBatch(Tiny, true, false);
+		TinyShadowless += TinyCount;
+		UE_LOG(LogS47CalicheNature, Display, TEXT("S47: nature family %s: authored=%d normal=%d tiny=%d summed_count_checks=%s"),
+			*Family.Id, Family.Instances.Num(), NormalCount, TinyCount,
+			NormalCount + TinyCount == Family.Instances.Num() ? TEXT("PASS") : TEXT("FAIL"));
+		if (NormalCount + TinyCount != Family.Instances.Num())
+			UE_LOG(LogS47CalicheNature, Error, TEXT("S47: nature family lost instances: %s"), *Family.Id);
 		UE_LOG(LogS47CalicheNature, Display, TEXT("S47: nature cooked LOD screens %s: %.5f,%.5f,%.5f"), *Family.Id,
 			Family.Mesh->GetRenderData()->ScreenSize[0].GetValue(), Family.Mesh->GetRenderData()->ScreenSize[1].GetValue(), Family.Mesh->GetRenderData()->ScreenSize[2].GetValue());
-		if (!bActual)
-			UE_LOG(LogS47CalicheNature, Error, TEXT("S47: nature runtime component mismatch: %s"), *Family.Id);
 	}
-	UE_LOG(LogS47CalicheNature, Display, TEXT("S47: Caliche nature ready: %d authored instances in %d HISM families, 3 LODs, no collision; road/story/photo exclusions preserved"), Total, Ready.Num());
+	UE_LOG(LogS47CalicheNature, Display, TEXT("S47: small-object shadow policy: mode=%s threshold_cm=%.1f tiny_shadowless=%d"),
+		bLegacyShadows ? TEXT("legacy") : TEXT("contact-gravel"), TinyHeightCm, TinyShadowless);
+	UE_LOG(LogS47CalicheNature, Display, TEXT("S47: Caliche nature ready: %d authored instances in %d prototypes, %d HISM components, 3 LODs, no collision; road/story/photo exclusions preserved"), Total, Ready.Num(), Components);
 }

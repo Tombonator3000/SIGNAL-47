@@ -1,0 +1,7 @@
+SIGNAL / 47: 48 plakater, reklame- og rekvisittflater
+
+Åpne GALLERI.html for hele samlingen, gruppefilter og trykktekst. Alle finaler ligger i jpg/. OVERSIKT.jpg viser hele pakken. Fullstendige bildeprompter ligger i generation.json; katalog, kildehasher og kontrollrapporter følger med.
+
+Dette er kontrollerte fargeteksturer til senere plassering og materialbinding i spillet. De seks kinoplakatene er originale fiktive motiver. De 48 bildene bruker 23,4 MB totalt.
+
+Repo og verktøy: https://github.com/Tombonator3000/SIGNAL-47/tree/codex/dale-document-assets-20261026/unreal/ArtSource/EnvironmentGraphics

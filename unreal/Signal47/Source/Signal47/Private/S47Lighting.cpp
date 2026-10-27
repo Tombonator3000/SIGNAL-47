@@ -16,6 +16,11 @@
 #include "RenderTimer.h"
 #include "S47Three.h"
 #include "S47Sky.h"
+#include "S47Wind.h"
+#include "Materials/MaterialParameterCollectionInstance.h"
+#include "HAL/FileManager.h"
+#include "Misc/Paths.h"
+#include "UnrealClient.h"
 
 namespace
 {
@@ -181,6 +186,11 @@ void AS47Web::BuildNativeLighting()
 	LightingFog->SetVolumetricFogAlbedo(FColor(210, 220, 235));
 	LightingFog->SetVolumetricFogDistance(14000.f);
 	LightingFog->SetFogMaxOpacity(0.92f);
+	// Bounded experimental comparison only. Keep the approved atmosphere by default.
+	LightingFog->FSSSSceneColorScatteringAmountScale = .07f;
+	LightingFog->FSSSSceneColorScatteringAmountPower = 1.5f;
+	LightingFog->FSSSSpreadScale = .3f;
+	LightingFog->FSSSBlurControl = .15f;
 	NightSky = NewObject<USkyLightComponent>(this);
 	NightSky->SetupAttachment(GetRootComponent());
 	NightSky->SetMobility(EComponentMobility::Movable);
@@ -313,6 +323,13 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 void AS47Web::UpdateNativeFog()
 {
 	if (!LightingFog) return;
+	const bool bScattering = FParse::Param(FCommandLine::Get(), TEXT("S47FogScattering")) &&
+		LightingQuality > 0 && CurrentArea == TEXT("saro") && SkyDawn < .65f;
+	if (LightingFog->bEnableFSSS != bScattering)
+	{
+		LightingFog->bEnableFSSS = bScattering;
+		LightingFog->MarkRenderStateDirty();
+	}
 	// FogExp2 is not a physical extinction coefficient. Match its thin night air near eye level,
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
 	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
@@ -418,6 +435,15 @@ void AS47Web::SampleLightingPerformance(float Dt)
 {
 	LightingRunTime += Dt;
 	ReviewLighting();
+	FString AtmosphereDirectory;
+	if (AtmosphereReviewShot < 2 && LightingRunTime > 8 + AtmosphereReviewShot * 2 &&
+		FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")) &&
+		FParse::Value(FCommandLine::Get(), TEXT("S47AtmosphereReview="), AtmosphereDirectory))
+	{
+		IFileManager::Get().MakeDirectory(*AtmosphereDirectory, true);
+		FScreenshotRequest::RequestScreenshot(FPaths::Combine(AtmosphereDirectory,
+			FString::Printf(TEXT("wind-%d.png"), ++AtmosphereReviewShot)), false, false);
+	}
 	if (!bLightingProfiled && LightingRunTime > 7 && FParse::Param(FCommandLine::Get(), TEXT("S47GpuProfile")))
 	{
 		bLightingProfiled = true;
@@ -430,6 +456,15 @@ void AS47Web::SampleLightingPerformance(float Dt)
 	PerfGpu.Add(FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()));
 	if (LightingRunTime - LightingLogTime < 1) return;
 	LightingLogTime = LightingRunTime;
+	if (FParse::Param(FCommandLine::Get(), TEXT("S47AtmosphereLog")))
+	{
+		float WindTime = 0, WindAmp = 0;
+		UMaterialParameterCollectionInstance* Collection = Env ? GetWorld()->GetParameterCollectionInstance(Env) : nullptr;
+		const bool bWind = Collection && Collection->GetScalarParameterValue(TEXT("WindTime"), WindTime) &&
+			Collection->GetScalarParameterValue(TEXT("WindAmp"), WindAmp);
+		UE_LOG(LogTemp, Display, TEXT("S47: atmosphere MPCwind=%d time=%.3f amplitude_m=%.5f driver_m=%.5f FSSS=%d area=%s"),
+			bWind, WindTime, WindAmp, S47Wind::Wind().Strength, LightingFog && LightingFog->bEnableFSSS, *CurrentArea);
+	}
 	auto Mean = [](const TArray<float>& V) { double Sum = 0; for (float X : V) Sum += X; return Sum / V.Num(); };
 	TArray<float> Ordered = PerfFrames; Ordered.Sort();
 	UE_LOG(LogTemp, Display, TEXT("S47: lightperf t=%.2f n=%d frame=%.3f p95=%.3f game=%.3f draw=%.3f gpu=%.3f ms quality=%d"), LightingRunTime, PerfFrames.Num(), Mean(PerfFrames), Ordered[FMath::Min(Ordered.Num() - 1, int32(Ordered.Num() * 0.95))], Mean(PerfGame), Mean(PerfDraw), Mean(PerfGpu), LightingQuality);

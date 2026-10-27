@@ -24,6 +24,7 @@ class FS47SaroArrival;
 class FS47SaroSite;
 class FS47FleetParked;
 class FS47TownBuildings;
+class FS47MotelV2;
 class FS47RouteNature;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
@@ -307,8 +308,10 @@ private:
 	TSharedPtr<FS47SaroSite> SaroSite;
 	TSharedPtr<FS47FleetParked> FleetParked;
 	TSharedPtr<FS47TownBuildings> TownBuildings;
+	TSharedPtr<FS47MotelV2> MotelV2;
 	TSharedPtr<FS47RouteNature> RouteNature;
 	void BeginProductionViews();
+	void BeginMotelV2Route();
 	void UpdateHighwayLandscape();
 	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
 	TMap<int32, FTransform> HighwayVisuals;
@@ -460,6 +463,7 @@ private:
 	int32 LightingReviewStep = -1, LightingReviewShot = -1;
 	bool bLightingReviewPower = false;
 	double LightingRunTime = 0, LightingLogTime = 0;
+	int32 AtmosphereReviewShot = 0; // opt-in two-frame wind evidence only
 	// lights, per area
 	struct FLightRef { TWeakObjectPtr<ULightComponent> L; FString Area; float Base = 0; FString Uuid; };
 	TArray<FLightRef> Lights;

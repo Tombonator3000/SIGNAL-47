@@ -6,6 +6,7 @@
 #include "S47RoadTerrain.h"
 #include "S47RouteNature.h"
 #include "S47Three.h"
+#include "S47GrassWind.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -82,6 +83,7 @@ void AS47Web::BuildHighwayLandscape()
   UHierarchicalInstancedStaticMeshComponent* C=NewObject<UHierarchicalInstancedStaticMeshComponent>(this);
   C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Mesh);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
   C->SetCastShadow(Ki==2);C->SetCullDistances(int32(K.Cull*.82),K.Cull);C->bAutoRebuildTreeOnInstanceChanges=false;
+  S47GrassWind::Apply(C, K.Id);
   C->SetupAttachment(Shared);C->RegisterComponent();
   C->SetRelativeLocation(S47Three::ToUE(8000,0,Seam));
   FRandomStream Random(472610+Ki*719);

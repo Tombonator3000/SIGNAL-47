@@ -12,6 +12,8 @@ Signal47/Content/Licensed/
 Signal47/Content/Northwood/
 Signal47/Content/JustBStudios/
 Signal47/Content/Audio/
+# MetaHuman assets are licensed: rebuilt locally by Tools/metahuman, never committed.
+Signal47/Content/MetaHumans/
 # The free models (CC BY and CC0, ~/Assets/signal47-free), rebuilt by Tools/freemodels/import_free.sh.
 Signal47/Content/Free/
 # The web game's scene, rebuilt by Tools/webexport (export.py then import_web.py); holds the bought models too.
