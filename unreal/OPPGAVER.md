@@ -1,5 +1,11 @@
 # Oppgaver og arbeidsdeling (Unreal)
 
+## SC01 som standard bare via samlet bygg med PR #172, Tom 27.10.2026 (venter)
+
+Tom vil ha SC01 som standard i det installerte spillet. Det installerte spillet i `~/Games/Signal47/Linux` er atmosfære-R1 med MetaHuman-servitrisen, og det ligger i PR #172, som ikke er flettet. Kandidaten fra PR #174 (`~/scratch-bm/Signal47-pr174-20261027/candidate/Linux`) er bygget fra main og mangler begge, så den skal ikke installeres.
+
+Tom valgte å vente: når PR #172 er flettet til main, bygges og pakkes main på nytt med SC01, MetaHuman og atmosfære. Kjør SC01-kontrollene fra `SC01_RUNTIME.md`, kontrollene for servitrisen og atmosfæren, og sjekk at gamle lagringer laster. Installer først når alt er PASS, etter vanlig rutine med bevarte lagringer og mulighet for å rulle tilbake. Ingen må installere et bygg som bare har main før det.
+
 ## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (flettet)
 
 `unreal-port-core` var avtalt integrasjonsgren for SC01 til SC13 (`HISTORIE_IMPLEMENTERINGSPLAN.md`). PR #163, #164, #165, #166 og #168 ble flettet dit etter at PR #167 hadde tatt resten av grenen med til main, og de 17 commitene kom aldri videre. Det gjelder SC01-runtime (`S47Horror.cpp`, `S47HorrorPack.cpp`, `S47HorrorTest.cpp`, `S47HorrorVisual.cpp`), SC01-ressursene i `Content/Signal47/HorrorSC01` og `ArtSource/HorrorSC01`, den godkjente planen og rapportene `SC01_RUNTIME.md`, `T02_RUNTIME.md` og `NIGHT_PRODUCTION_RUNTIME.md`. SC01 har lokal pakket teknisk aksept fra før, men mot eldre main.

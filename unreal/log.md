@@ -743,3 +743,8 @@ PR170 er opprettet som draft og vedlagt samtalen: https://github.com/Tombonator3
 - `git rev-list --count origin/main..origin/unreal-port-core` ga 0, og ingen åpne PR-er hadde `unreal-port-core` som grunnlag. Grenen er slettet på GitHub og lokalt (den sto på `797bed4c`).
 - Ikke gjort: SC01 er ikke installert som standard i det installerte spillet; det venter på Tom. Kandidaten ligger i `~/scratch-bm/Signal47-pr174-20261027/candidate/Linux`. Oppryddingen med `prune-test-builds.py` er ikke kjørt, fordi tillatelsessystemet i økta avviste tørrkjøringen.
 - Denne oppføringen er ført i en egen dokumentcommit etter flettingen, fordi kl. 19:20-oppføringen lå i PR-en som ble flettet.
+
+## 2026-10-27 kl. 20:00 CET: SC01 som standard venter på samlet bygg (Claude)
+
+- Tom sa ja til SC01 som standard. Før installasjon ble det installerte spillet sjekket: det er atmosfære-R1 med MetaHuman-servitrisen (binær-SHA256 `cbd04755…`), fra PR #172, som ikke er flettet. Kandidaten fra PR #174 (`754b33a0…`) er bygget fra main og mangler begge.
+- Tom valgte å beholde dagens installasjon og vente på et samlet bygg av main med PR #172. Ingenting er installert, og ingen filer i `~/Games/Signal47` eller lagringer er endret. Oppgaven står øverst i `OPPGAVER.md`.
