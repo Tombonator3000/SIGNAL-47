@@ -44,3 +44,9 @@ Etterkontroll26. oktober: to semantiske porter er delt. Aktuell TAPE/LIVE-velger
 En uavhengig lesekontroll fra LineLights-hjelperen bekreftet de to rettede portdelingene og fant at navngitt utkallingskvittering kunne foregripe Ortiz-avtalen. `SC03_DISPATCH_RECEIPT` krever nå den faktiske navngitte oppdragsavtalen i tillegg til meldingsreadback; egen negativ prøve dekker dette. Ingen runtime er prøvd av denne kildekontrollen.
 
 Siste kildekorreksjon: sen BY02-kopi krever faktisk isolert avspilling av den identifiserte kopien og egen `ctx_hr_by02_question_compared`. Konvolutt-/loggmetadata alene gir ingen påstand om hørt fragment eller manglende nytt svar. Den tjuende kontraktprøven avviser manglende faktisk spørsmålssammenligning.
+
+## Verdensprodusenter og scenematrise, 27. oktober 2026
+
+`world_producers.json` er en ny planleggingskilde. Den navngir produsenten i spillkoden for alle 96 eksterne flagg, med fil og symbol som `build_pack.py` kontrollerer ordrett mot kilden. Den har også én matriserad per scene (79), 117 navngitte prøver og en arbeidspakke per SC. `generated/SCENE_MATRIX.md` er lesbar versjon; stemmecues og opptaksstatus hentes fra opptaksmanifestet. Dette er planleggingsdata og endrer ingen runtimeeksport. `test_pack.py` har nå 31 prøver, sju av dem for produsentkartet. Se [forberedelsen av SC02 til SC13](../../SC02_TIL_SC13_FORBEREDELSE.md) for status og avklaringer.
+
+`voice/generate.py --scenario SCnn` velger cuene for ett scenario. Uten valget lages de fem SC01-opptakene som før. Roller uten profil i `casting.json` stopper kjøringen.
