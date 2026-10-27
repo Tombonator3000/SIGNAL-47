@@ -1,0 +1,299 @@
+{
+  "authorship": "Original procedural Blender geometry for SIGNAL / 47, no external model sources.",
+  "axes": "Blender metric Z-up, facing +X; native UE import x,-y,z in centimetres.",
+  "blender_version": "5.1.2",
+  "origin": "Each mesh has its proximal joint at local (0,0,0). Limbs are the left side (+Y); the right side is the same mesh with scale Y = -1.",
+  "joint_offsets_cm_ue": {
+    "hip_centre": [
+      0,
+      0,
+      102
+    ],
+    "neck": [
+      0,
+      0,
+      170
+    ],
+    "shoulder": [
+      0,
+      -21,
+      160
+    ],
+    "elbow": "shoulder + (0,0,-36)",
+    "hip": [
+      0,
+      -10,
+      100
+    ],
+    "knee": "hip + (0,0,-49)",
+    "note": "UE y is negated Blender y; the left (+Y Blender) limb sits at UE y -21/-10."
+  },
+  "native_lod_profile": {
+    "lod_count": 2,
+    "lod1_source": "authored *_LOD1.fbx, Blender collapse decimate",
+    "lod1_fraction": 0.3,
+    "lod_screen_sizes_requested": [
+      1.0,
+      0.04
+    ],
+    "nanite_enabled": false,
+    "separate_rt_proxy_enabled": false,
+    "collision": "none on the mesh; gameplay uses its own capsule"
+  },
+  "parts": {
+    "SM_SC02_PaleTorso": {
+      "vertices": 1802,
+      "triangles": 3600,
+      "materials": [
+        "M_SC02_PaleSkin"
+      ],
+      "bounds_local_m": [
+        [
+          -0.111996,
+          -0.222844,
+          -0.104969
+        ],
+        [
+          0.100517,
+          0.223503,
+          0.693884
+        ]
+      ],
+      "origin_world_m": [
+        0,
+        0,
+        1.02
+      ],
+      "mirrored_pair": false,
+      "lod1_vertices": 542,
+      "lod1_triangles": 1080,
+      "lod1_bounds_local_m": [
+        [
+          -0.111728,
+          -0.222209,
+          -0.104754
+        ],
+        [
+          0.101376,
+          0.22397,
+          0.691745
+        ]
+      ]
+    },
+    "SM_SC02_PaleHead": {
+      "vertices": 1152,
+      "triangles": 2300,
+      "materials": [
+        "M_SC02_PaleSkin"
+      ],
+      "bounds_local_m": [
+        [
+          -0.107504,
+          -0.067768,
+          -0.106449
+        ],
+        [
+          0.081576,
+          0.067774,
+          0.296973
+        ]
+      ],
+      "origin_world_m": [
+        0,
+        0,
+        1.7
+      ],
+      "mirrored_pair": false,
+      "lod1_vertices": 347,
+      "lod1_triangles": 690,
+      "lod1_bounds_local_m": [
+        [
+          -0.107618,
+          -0.067771,
+          -0.106017
+        ],
+        [
+          0.081676,
+          0.067672,
+          0.296655
+        ]
+      ]
+    },
+    "SM_SC02_PaleUpperArm": {
+      "vertices": 262,
+      "triangles": 520,
+      "materials": [
+        "M_SC02_PaleSkin"
+      ],
+      "bounds_local_m": [
+        [
+          -0.037453,
+          -0.041575,
+          -0.381054
+        ],
+        [
+          0.037453,
+          0.03648,
+          0.041569
+        ]
+      ],
+      "origin_world_m": [
+        0,
+        0.21,
+        1.6
+      ],
+      "mirrored_pair": true,
+      "lod1_vertices": 80,
+      "lod1_triangles": 156,
+      "lod1_bounds_local_m": [
+        [
+          -0.03638,
+          -0.04159,
+          -0.381054
+        ],
+        [
+          0.03678,
+          0.036402,
+          0.041326
+        ]
+      ]
+    },
+    "SM_SC02_PaleLowerArm": {
+      "vertices": 862,
+      "triangles": 1720,
+      "materials": [
+        "M_SC02_PaleSkin"
+      ],
+      "bounds_local_m": [
+        [
+          -0.048891,
+          -0.03057,
+          -0.440349
+        ],
+        [
+          0.076643,
+          0.03057,
+          0.02796
+        ]
+      ],
+      "origin_world_m": [
+        0,
+        0.21,
+        1.24
+      ],
+      "mirrored_pair": true,
+      "lod1_vertices": 260,
+      "lod1_triangles": 516,
+      "lod1_bounds_local_m": [
+        [
+          -0.049106,
+          -0.03061,
+          -0.439343
+        ],
+        [
+          0.076195,
+          0.030531,
+          0.027841
+        ]
+      ]
+    },
+    "SM_SC02_PaleThigh": {
+      "vertices": 282,
+      "triangles": 560,
+      "materials": [
+        "M_SC02_PaleSkin"
+      ],
+      "bounds_local_m": [
+        [
+          -0.052273,
+          -0.04876,
+          -0.514264
+        ],
+        [
+          0.059613,
+          0.054004,
+          0.049498
+        ]
+      ],
+      "origin_world_m": [
+        0,
+        0.1,
+        1.0
+      ],
+      "mirrored_pair": true,
+      "lod1_vertices": 86,
+      "lod1_triangles": 168,
+      "lod1_bounds_local_m": [
+        [
+          -0.052422,
+          -0.048654,
+          -0.515142
+        ],
+        [
+          0.060068,
+          0.054896,
+          0.050106
+        ]
+      ]
+    },
+    "SM_SC02_PaleShin": {
+      "vertices": 542,
+      "triangles": 1080,
+      "materials": [
+        "M_SC02_PaleSkin"
+      ],
+      "bounds_local_m": [
+        [
+          -0.06909,
+          -0.043782,
+          -0.509763
+        ],
+        [
+          0.202041,
+          0.043491,
+          0.035883
+        ]
+      ],
+      "origin_world_m": [
+        0,
+        0.1,
+        0.51
+      ],
+      "mirrored_pair": true,
+      "lod1_vertices": 164,
+      "lod1_triangles": 324,
+      "lod1_bounds_local_m": [
+        [
+          -0.069223,
+          -0.04309,
+          -0.509403
+        ],
+        [
+          0.200303,
+          0.044758,
+          0.035818
+        ]
+      ]
+    }
+  },
+  "body_totals": {
+    "lod0_triangles": 13660,
+    "lod1_triangles": 4098,
+    "lod0_budget": 14000,
+    "counting": "torso + head + two of each limb part"
+  },
+  "fbx_sha256": {
+    "SM_SC02_PaleHead.fbx": "4a42749305b9229e09c2ced442627a4876f7a497cfe92e450157443a04d75c8c",
+    "SM_SC02_PaleHead_LOD1.fbx": "5c577a2b219cce652be8a5df01a68cf0b3b3bcaeeadaa7e4f4b9e49345c67547",
+    "SM_SC02_PaleLowerArm.fbx": "c5ea919faf98fd2e8ba94206102c8750da6acc1a5ad5447a7e8aaf5070a17509",
+    "SM_SC02_PaleLowerArm_LOD1.fbx": "cdb93790a299312e25c5d9b1f8eeca859deb1da71db8cf9d33c8252c4abf89f3",
+    "SM_SC02_PaleShin.fbx": "04ca4aa9505a05f2ffa0257a39172c257694a8607cee6a11513dc845e312eaf9",
+    "SM_SC02_PaleShin_LOD1.fbx": "89f7c061375e2665423f6bd1d4ab94de73239a65fe503dbc01d9a4a34915816c",
+    "SM_SC02_PaleThigh.fbx": "8d4ed63cb2c475a7eefe54da3bd5593a2dcd9ee595b67f8be090e2279b10edba",
+    "SM_SC02_PaleThigh_LOD1.fbx": "29a25100a9517d9b3795eb68df1b5953bbf59460c9bfa58e6b2d4df85b9efef0",
+    "SM_SC02_PaleTorso.fbx": "13ccfc04b9ca86ccc60bc469011400d816c9d50036d1ba54fb3750b5d7c388e2",
+    "SM_SC02_PaleTorso_LOD1.fbx": "105736a15b17cb2aa0d35d00d281a0d14ece961510ac22785ec24ca707592a96",
+    "SM_SC02_PaleUpperArm.fbx": "6eaacd4171573bd76eb9fb0573c091e35887dab4e65f95cecf11de490f7eb0a8",
+    "SM_SC02_PaleUpperArm_LOD1.fbx": "eb9778d1dc4e3b8d3dbf4e3520a762d7bbb200ca8999cc21a39f4e4935d8748c"
+  }
+}
