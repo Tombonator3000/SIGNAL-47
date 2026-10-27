@@ -1,5 +1,11 @@
 # Todo for unreal/
 
+## Grenene, 27. oktober 2026
+
+- [x] Regel i `AGENTS.md`: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting.
+- [ ] Hele `screenshots.sh` mot main etter PR #170 (0 av 110 da den ble flettet).
+- [ ] Flett SC01 og resten av `unreal-port-core` inn i main, og slett grenen. Trinnene står øverst i `OPPGAVER.md`. Venter på at Tom er ved Kubuntu.
+
 ## Terreng og natur langs ruten, 26. oktober 2026
 
 - [x] Bryt opp de dominerende fjelltrappene og lag sammenhengende erosjon/skråningsfot i original Blender-geologi, med bevart vei/gangflate og områdetransform.

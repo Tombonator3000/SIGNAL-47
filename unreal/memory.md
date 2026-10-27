@@ -1,5 +1,11 @@
 # Minne for unreal/
 
+## Grenene, 27. oktober 2026
+
+- PR #170 ble flettet av Tom 26.10 kl. 22:15, etter avsnittet under som sier at den ikke er flettet. Hele `screenshots.sh` var ikke kjørt (0 av 110); det er ikke gjort senere.
+- PR #147 til #166 og #168 gikk mot `unreal-port-core`, ikke main. Main fikk det meste likevel fordi grenen til PR #167 var laget fra `unreal-port-core` (til `41430ade`) og tok det med seg. #163, #164, #165, #166 og #168 kom etter det og ble igjen: SC01, SC01 til SC13-planen og to kvitteringer finnes bare på `unreal-port-core`.
+- Toms beslutning: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting (`AGENTS.md`). Flettingen av SC01 står i `OPPGAVER.md` og gjøres når Tom er ved Kubuntu.
+
 ## GitHub-levering klargjort, 26. oktober 2026
 
 - Tom ba om fletting til GitHub. Samlet kildeleveranse er pushet på `codex/saro-visual-route-20261026` i [PR170](https://github.com/Tombonator3000/SIGNAL-47/pull/170). Nyeste main med dokument-/miljøbilder er flettet inn uten endring av testet spillkode eller produksjonsassets. De seks private tekstene er integrert; JPG-/UV-binding er fortsatt separat arbeid.
