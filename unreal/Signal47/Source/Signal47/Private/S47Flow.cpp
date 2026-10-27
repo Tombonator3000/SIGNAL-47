@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47Horror.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
@@ -378,6 +379,15 @@ void US47Flow::Boot()
 		if (FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),RouteGuard)) CaseId=0; // route controls never mutate a real case
 
 		bDevRun = CaseId == 0;
+		// Opt-in arrival acceptance uses the ordinary new-night lifecycle, including
+		// its SC content cohort. Old developer fixtures retain their original route.
+		FString HorrorArrivalRoute;
+		if (FParse::Param(FCommandLine::Get(),TEXT("S47HorrorArrival")) &&
+		 FParse::Value(FCommandLine::Get(),TEXT("S47EveningRoute="),HorrorArrivalRoute) &&
+		 (HorrorArrivalRoute==TEXT("direct") || HorrorArrivalRoute==TEXT("burger")))
+		{
+		 FStart Start;Start.CaseId=0;Start.bDev=true;StartGame(Start);return;
+		}
 		if (CaseId) Saves.SetActive(CaseId);
 		M->Mode = EMode::Play;
 		M->Playtime = 0;
@@ -408,12 +418,14 @@ void US47Flow::Boot()
 		if (M->Anomaly) M->Anomaly->Begin(nullptr);
 		if (M->AnomalyWorld) M->AnomalyWorld->Begin();
 		if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
+
 		M->ResetRadio(M->Story ? M->Story->Clock() : 0);
 		return;
 	}
 	// the first title: nothing of the night is heard yet (the room tone starts with the night), and
 	// the station behind it is as the night begins (the Prologue's constructor resets it)
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
+	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
@@ -599,6 +611,7 @@ void US47Flow::StartGame(const FStart& O)
 {
 	if (bStarting) return;
 	bStarting = true;
+	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
 	const auto EveningSaved = S47J::Obj(O.State,TEXT("evening"));
@@ -696,6 +709,8 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
 	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
+ if (M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
+
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
 	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player)
@@ -769,6 +784,7 @@ void US47Flow::LeavePlay()
 	if (M->Away) M->Away->Leave(false);
 	// motelTv, roadside, townEvents (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(false);
+	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
@@ -797,6 +813,7 @@ void US47Flow::ToTitle()
 	if (M->Away) M->Away->Leave(true);
 	// motelTv, roadside (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(true);
+	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
 	if (M->Story) M->Story->Reset();
@@ -1124,6 +1141,7 @@ void US47Flow::DoorChanged(const FString& Id, bool bOpen)
 	{
 		for (const TCHAR* K : { TEXT("ch1"), TEXT("ch2"), TEXT("ch4") }) if (US47Chapter* C = M->Story->Chapter(K)) C->DoorChanged(Id, bOpen);
 	}
+	if (M->Horror) M->Horror->DoorChanged(Id,bOpen);
 	if (M->Mode == EMode::Play && !bRestoringNow) RequestAutosave(false);
 }
 
@@ -1188,6 +1206,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
 	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
+	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
 	if (Checkpoint == TEXT("routine")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);

@@ -482,6 +482,18 @@ Designgrenen codex/unified-night-scenario er opprettet fra kontrollert d152fb6d,
 
 
 
+## 25.10.2026 kl. 23:12 CET: T02 runtime levert og installert
+
+Kilde `5b9fcb3c31c56cb125d10e08756e548067413c44`, PR162 flettet i `d152fb6d6cb7b034d51604a18bf21c4eb94c0017`. Den faktiske kontor-/felt-/returreisen har egen nøkkel, fysisk dør/gange, feltmappe, normalreferanse, åtte geometriske referansepunkter, fire observerte kontroller, original instant-print og én permanent arkivering. Legacy beholder opprinnelig rute; uavklart blokkerer ikke STATION 01/Nora. VHS er fortsatt uprodusert og gir ingen sett-credit.
+
+Samme binær `7531698e9695c595ddba2868ab37e2f839c16a82d7e47b77e42f8c2cfdbaa86b` består 15 pakkede kjøringer og 25 faktisk vurderte originalbilder, samlet i 23 hashbundne akseptrapporter. Selvtester 1 437; T02 High/Low 65/15 hver; uavklart 30/6; T01 53/19; native 41 kontroller/fire Writer/fresh-reader-stores uten Flow-mellomlast, 932,2 m ut/966,7 m retur/124,1 m gange. RT-målingen er 78,8071 MiB av uendret 80 MiB varselgrense i 629 aktive frames, ikke hele turens topp eller FPS. Aktuelle materialaudits har null fallback/mappingfeil. Tomme CI-checks er ikke CI-PASS.
+
+Kontrollene avdekket og rettet skjulte hvite bånd, flytende referansemarkører, snapshot-alias, gjenåpning/tittel/lokal HUD, ekte UE bool-til-tall-koersjon, manglende Notebook-refiling og dobbelarkivering etter tap av foto. Endelige tester dekker disse. Ferske Continue-storer er faktiske Writer-filer i egne profiler; ingen minnedump eller ny positiv-flaggsletting påstås fra uendrede inputfiler. Mørke leder-/lampedetaljer og full previewside er ikke selvstendig pixelgodkjent; separate faktiske kontrollresponser og metadata bærer sitt eget bevis.
+
+Gjennomgått installer med full payloadbackup og Saved-eksklusjon har installert samme pakke. 40 payloadfiler og alle 40 personlige Saved-filer (57 noder) stemmer også etter isolert smoke via standard shellstarter og pruning. To eldre genererte payloads ble pensjonert, 7 621 635 760 logiske bytes; gjeldende T02 og to T01 R2-kopier beholdes som tre komplette pakker. Planhjelperen sammenlignet først feil action-navn, men canonical apply fulgte de to konkret riktige stiene; korrigert parsing, faktisk fjerningsliste og sluttinventar er bevart. Kilder, Saved, Engine og bevis er bevart. Ingen fysisk diskgevinst garanteres.
+
+Bevis: `T02_RUNTIME.md` og `/home/tom/scratch-bm/Signal47-t02-20261025`, med byteidentiske permanente kopier av 295 controllerfiler og sju diagnostikkfiler. Parallelt forfatterarbeid i samme checkout er bevart og ikke staged i runtime-kvitteringen. H2.1b er levert; VHS, øvrig forteller-/helruteintegrasjon, skyggemann/stealth og menneskelig Roam/Xbox/lyd/fullnatt står åpne.
+
 ## 26.10.2026 kl. 00:09 CET: ku-konsepter, Blender, Unreal og installert spill
 
 Tom bestilte levende ku og død ku etter bortføring, fra konsept til spill. Biblioteket ble søkt først; SIGNAL-47:blender-mcp og prosjektets målte fieldintegration-import er brukt. Innebygd imagegen laget konseptene. Ekstern 3D-generering feilet, så alle tre kuassets er original bpy-geometri/PBR i Blender5.2.2. Tre hjelpere leverte modell/integrasjon, import/installer og uavhengig QA. Tunge UE-jobber ble kjørt sekvensielt; en CPU-render som startet ved gamebuild ble pauset til bygget var ferdig. Beiting,026,missing,frost,foto,proxyer og lagring beholdes.
@@ -494,6 +506,58 @@ Samme binær60e63f4e er installert med hashbundet proof, full reflinkbackup og S
 
 Bevis: COW_MODELS.md og /home/tom/scratch-bm/Signal47-cows-20261025, særlig final-install-proof.json, installed-smoke/result.json og final-post-install.json. Hovedprosjektets kode/nativeassets og den portable Blender-kopien stemmer med testet kilde. Konsepter/prompter og portabel Blender-fil er kopiert til samtalens arbeidsmappe. Lokale endringer, ingen ny PR, merge eller push; øvrig historie-/T02-arbeid er bevart.
 
+## 26.10.2026 kl. 01:12 CET: kontorfunn, fem himmelbaner, LineLights og manusintegrasjon, NP1
+
+Tom ba om å få inn resterende todo. Arbeidet er isolert i night-production-worktreet slik at den andre chatens ku-/dokumentarbeid og opprinnelige gren bevares. Prosjektbibliotekskillen og START_HER er lest først; søk med bredere forsøk ga generisk Unreal_mcp, UE5.0 til5.8/MIT/UNVERIFIED. Ingen ekstern kode, ny motor eller kjøpte assets er introdusert. Egen kontor-/material-/generator-/lagringsløype er videreført. Tre avgrensede hjelpere fikk HorrorStory, kontorfunn og LineLights; root eier sky og sekvensiell bygg/pakke/runtime.
+
+Kilde2c05e33d har seks nye lesbare Dale-tekster og eget arrayserviceark, fysisk privatmappe/ark og navngitte A/B/REF-boards. Lesestatus krever faktisk registrert tekstvisning, korrupte beholdte nye kopier erstattes fra kilden, legacy får ingen gratis lesing, og T02/VHS/bevis-ID-er består. Stor tekst1,35 og PageDown/PageUp/Escape er fysisk prøvd; reelt rawoffset-overshoot ved gjentatt PageDown er rettet til intervallet0 til scrollend. Separat arrayark erstatter ikke T02s kulvert, reference-lampe, antennefølging eller retrett.
+
+SkyVisitors gir fem fysiske verdensbaner med versjonert opptrådt/observert/fullført og faktisk kamera, tegnede billboards og opaquesikt. Ingen kameratvang/kvote, ingen fase-replay ved dør, og gamle saves uten denne tilstanden beholder gammel flyt. Én ekstra tidlig mulighet ved første trafotur er avgrenset. Dagens chapteradapter er ikke ny SC-kveldskoordinator. Kritisk review rettet overtolkede øyeblikksnotater, skjulte/proxyblokker, usynlige points og videreført blikkdwell gjennom room6/skjult fase. LineLights skiller start/syn/fullført; avbrudd gir presis delnote, uopplevd anledning brukes ikke opp, og aktive/legacy saves samt modalpause er prøvd.
+
+HorrorStory har10 hovedkort,13 scenarioer,79 scener/16 dokumenter og20 kontraktprøver. Alle115 gamle scene-/linje-/dokument-ID-er og gamle bevis-ID-er består. Review/mutasjon rettet eksklusivt TAPE/LIVE mot varige samples, arraybaseline mot posttest kontroll, tidlig falsk filing/merkeobservasjon, tidligere hørt Dale, navngitt utkalling, sen isolert deckprøve og etter04:04-sikring. EveningShift har101 scener/17 dokumenter og uendrede109 takes. Dette er forfattergrunnlag for nye møter, ikke levert hovedruntime/lyd/film.
+
+Første editorbygg PASS; senere ny driver brukte feilaktig privat UI-Hud og er rettet til Main-Hud. Arbeidskopiens lokale Free-avhengighet manglet først og er kopiert før kontorprøven. Første LineLights-native test var for streng om Flows legitime legacy-migreringsnotat; ny prøve kontrollerer eksakt lagret notatliste pluss den ene tillatte migreringen. Native-sky-kontraktens fasebytte skjedde før debugbilde-render; de opprinnelige bildene brukes ikke som fasebestemt pikselbevis. Seks nye fixed-phase-opptak er gjort. Cookens to sporede FileOpenOrder-logger er bevart separat og restaurert til opprinnelige frosne bytes; alle2 948 sporede inputs er kontrollert.
+
+Leveringskontrollen oppdaget at installert standard allerede var ku-R2, binær60e63f4e. Dens140 filbytes er bevart fra original testkilde;9 C++/config-filer var byteidentiske med hovedmappen. Egen bevaringscommit110bc476 tar med original Blender, eksport/teksturer/nativeassets og nødvendig kode. Ingen andre chat-filer er resatt/stashet eller endret. Ingen ny kugeometri er produsert her.
+
+Pakket NP1 fullførte BuildCookRun237s.17 sekvensielle kjøringer PASS:1 493 selvtester; Dale High/Low191/5 hver med native kontorinnsteg og faktiske fokuserte Slate-taster; Line12/3; Sky16/full Flow per High/Low; T0153/19; T0265/15 og38,89m gange; FRAME03/04/lab; hel05:29-finale til tittel; kuLow og seks målrettede retakes. Uavhengig Dale-review har18 faktisk leste originaler; root har10 scoped himmel/ku/finalebilder, samlet28. Mindre opptakshint klippes ved noen store trelinjers titler; utgang er synlig. High-lys mot lys sky og LineLights-nærpiksler er uttrykkelig avgrenset. Ingen menneskelig frykt/tempo/lytting/Xbox/fullnatt eller FPS-påstand.
+
+RT har625 verdensaktive samples i en fullført900-frame CSV:79,3446MiB fast geometri, uendret400MiB-pool og80MiB-varselgrense. Ingen materialfallback/bindingsfeil i aktuell native audit. np1-acceptance binder21 rapporter til samme binær/kilde. S.1/R2.1 er krysset som forfattergrunnlag, S.6 og avgrensede runtime S.3a/S.7a er krysset; S.2, eksakt scenariomapping, fem aktive møter, original VHS og helnatt står åpne. Git-/installasjonkvittering føres separat etter faktisk gjennomføring.
+
+## NP1 levert og installert, 26.10.2026 kl. 01:26 CET
+
+[PR164](https://github.com/Tombonator3000/SIGNAL-47/pull/164) er flettet fra kontrollert head56d8a4a2 til core93edb7a4. Samme testede pakke er installert gjennom den gjennomgåtte NP1-tilpasningen av T02-installerens backup/Saved-/rollback-løype. Alle40 payloadfiler/68 noder stemmer; alle40 personlige Saved-filer/57 noder er byteidentiske. Oppstart gjennom faktisk standard shellstarter med isolert profil består selvtester, nye skygrupper, begge ku-modeller og kontrollert avslutning. Full payload og Saved er etterkontrollert også etter opprydding. Binærens SHA256 er `5621b29d756e17bff053f25b111bff04053e9fc396d2402ff6f189fe5b46db5a`.
+
+Canonical prune er tørrkjørt, planen gjennomgått og anvendt uten aktive UE-/spilljobber. Ku-R1 og den gamle T02-kandidatens genererte tunge payloads er pensjonert,7 632 442 921 logiske bytes. Gjeldende NP1, full tidligere ku-R2-backup og original ku-R2-kandidat beholdes som gjeldende pluss to eldre komplette pakker. Kilder, Blender, Saved, Engine, logger, bilder, testbevis og lette mappeskall er bevart; ingen fysisk diskgevinst påstås.
+
+Sluttstatus er `NP1_DELIVERY_COMPLETE.json` i bevisroten. Uavhengig `final-acceptance-audit.json` bekrefter17 pakkede kjøringer/21 rapporter/28 vurderte bildereferanser,2 948 frosne inputs og komplett payload uten Saved. Fire tidlige resultater mangler eget per-run binaryhash-felt; samme-exe, akseptrad og full payloadbinding er kontrollert, og13 senere har eget felt. Endelig PR-nummer er bundet i en separat metadatakopi av aksepten uten å endre de auditerte casene. Ingen CI-jobber var rapportert for PR-head; dette er lokal aksept.
+
+Original VHS, ny SC-/kveldskoordinator, fem aktive møter og menneskelig helnatt/lytting/fysisk Xbox står fortsatt åpne. Ingen ny ekstern spillutgave er publisert. Den opprinnelige hovedmappen med den andre chatens lokale endringer er bevart; ny samlet kilde ligger på core og i denne arbeidskopien.
+
+## 26.10.2026 kl. 09:36 CET: godkjent implementeringsplan lagret og SC01 tatt opp
+
+Tom ba først om oversikt over13 SC-scenarioer og10 H-kort og deretter en detaljert Markdown-plan. Etter planavklaring valgte han full produksjon, separat PR/fletting og installasjon per scenario, samt videre spillbar gammel historie ved grensen for produsert innhold. Hver sak beholder sin innholdsrevisjon. Han har nå bedt om gjennomføring.
+
+Hele den godkjente planen er lagret i HISTORIE_IMPLEMENTERINGSPLAN.md, med alle13 detaljerte SC-etapper, felles adapter-/lagrings-/tids-/farekontrakter, akseptkrav, leveringsrekkefølge og separate SC-/H-statustabeller. README/todo er koblet til planen og OPPGAVER/memory fører eierskap og status. SC01 står Under arbeid; SC02 til13 er Planlagt og alle samlede H-kort er åpne. Dokumentasjonen ferdigmelder ingen ny runtime, lyd, film, testpakke, merge eller installasjon. NP1 forblir siste dokumentert installerte standard.
+
+Arbeidskopien er /home/tom/scratch-bm/wt/horror-h01, gren codex/horror-h01, fra kontrollert core1c929b76. Root eier integrasjon, prøver og levering; manusagent eier HorrorPack/generator; dokumentasjonsagent eier plan og oversiktspekere. Unreal-jobber kjøres sekvensielt. Planleveransen skal committes av root før videre levering, uten å stage andre agenters arbeid.
+
+## 26.10.2026 kl. 11:30 CET: SC01 gjenopptatt etter avbrutt modellkjøring
+
+Tom ba den nye chatten overta arbeidet fra `01a176f6-16a2-7b60-a50e-cde5bdea863b`. Den gamle kjøringen stoppet med modellkapasitetsfeil. Arbeidskopien `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/story-sc01`, og alle ucommittede kilde-/modell-/lydendringer er bevart. Faktisk siste editorprøve `editor-live-r6` bestod 111 kontroller, 15 disk-/Flow-restores og 139,99 m native gange. Dette er editorbevis, ikke pakket eller installert aksept.
+
+Root overtar integrasjon, sekvensielle Unreal-jobber og levering. Tre avgrensede hjelpere undersøker runtime, medier og installasjonsbevis. Kildegjennomgangen fant at en tømt friroll kunne sperre obligatorisk lampereferanse; siste ramme reserveres med tydelig spillertekst og negativ prøve før ny pakking. Pakket High/Low, begge faktiske ankomstruter, fersk Continue og leveringskvittering gjenstår. SC02 starter først etter levert og kvittert SC01.
+
+Prosjektbiblioteket er søkt med behov og Unreal-teknologi, inkludert ett bredere søk. UE 5.8-profilen `quodsoler/unreal-engine-skills` er kontrollert som tilleggsreferanse og merket UNVERIFIED i biblioteket. Ingen tredjepartkode er kopiert; prosjektets egne koordinator-, test-, guard- og installasjonsløyper brukes.
+
+## 26.10.2026 kl. 11:41 CET: SC01 kildecommittet og pakking startet
+
+Kode `f935b237` består editorens 120 kontroller/17 disk-/Flow-restores, manusets 24 kontrakter, ni eksportkontroller, stemmekatalog og 14 isolerte installasjonstester. Kandidat r1 bygges sekvensielt med nøyaktig kanonisk RunUAT-oppskrift, 14 006 frosne inputs og hashbundet før-/etterkontroll. Endret kilde etter koden er bare dokumentasjon. Ingen pakket PASS, PR/fletting eller installasjon hevdes ennå.
+
+## 26.10.2026 kl. 11:55 CET: R1 funksjon består, RT-minne feiler, native r2-proxy produsert
+
+R1s pakkede kontrakt består 120/17, men 80,7112 MiB er over uendret80 MiB-grense. R1 leveres ikke. Håndens separate RT-proxy er produsert via lokal UE5.8.4-profil, med full LOD0/fallback/kollisjon19388 og alle andre6 SC01-assets bytebevart. Native strukturert rapport består; bevisrot fører separat etterkontroll for manglende verbose-loggmarkør. R2 må pakkes og prøves før ny aksept.
+
 ## 26.10.2026 kl. 12:45 CET: Dales dokumenter og gammelt arkiv som JPG
 
 Senere statuspresisering ved kildefletting: oppføringen nedenfor beskriver den separate JPG-produksjonen. NP1s private tekst-ID-er, visning og lesestatus ble bevart i R5; bildenes import/UV-/materialbinding og VHS er fortsatt egne åpne oppgaver. Tidsstempler og kontrollresultater nedenfor er historiske leveransebevis.
@@ -505,6 +569,14 @@ ArtSource/Documents har 31 ferdige imagegen-motiver: omslag, sju EveningShift-ar
 Kildekontroll 31/31, teknisk JPG-kontroll 31/31 og uavhengig nærlesing av 31 finaler og 113 kontrollpunkter PASS. Manuell vurdering er bundet til JPG-hasher; feil hash avvises i egen negativ kontroll. OCR ble bare brukt som ufullstendig støtte, ikke eksakt tekstattest. Galleriet er prøvd i lokal nettleser med 31 bildefelt/lenker, filter med seks av 31 dokumenter, fungerende transkripsjonsåpning og ingen ødelagte lastede bilder.
 
 Omslagets metadata er rettet etter QA. E15 er en komposisjonelt tro generert nytolkning av masterfotoets crop B, ikke pikselidentisk kildefoto. E09A er kvalitativ figur, ikke et nytt målsatt overlegg. E10 har år 1947 i tittel/katalog, som kildegrunnlaget, uten nytt år i brødteksten. Eksisterende spillkode og Narrative-JSON, nye lesegater, VHS, lyd, pakking og installasjon er urørt. S.7 beholder gjenstående runtimearbeid. README, Dale-oversikt, memory ogtodo peker til pakken.
+
+## 26.10.2026 kl. 13:18 CET: SC01 R4 består lokal pakket teknisk aksept
+
+Testet kilde dbae3177 er pakket med faktisk BuildCookRun-kvittering, 14 007 frosne kilde-/Content-filer og 40 pakkefiler uten Saved. Alle 21 isolerte pakkekjøringer består, inklusive High/Low 120/17 hver, oversett hånd 112/16, begge native ankomster, fem ferske vanlige Continue, T01/T02/Dale/LineLights/felt/lab og eksisterende hel finale. Pakket selvtest 1 501. 32 originale bilder er faktisk vurdert; tekst-/avstands-/mørkegrenser er registrert, og for mørke bilprober er supplert med eksisterende diagnostisk noon-klokke. Dette endrer ingen spillets tidsregler.
+
+R1s RT 80,7112 og R2/R3s 80,0648 MiB var over uendret 80 MiB-grense. Endelige ordinære hånd- og bil-LOD-er gir 79,8043 MiB i 197 oppvarmede samples. Full LOD0, kildeposisjoner, Blender/FBX/glTF, materialer og kreditering er bevart; ingen global terskel er endret. Fem takes har faktisk fullført telefonruting med positive samples. Ett SARO/Sorrow-ASR-egennavnavvik og menneskelig lytting/frykt/tempo/fysisk Xbox/helnatt er fortsatt åpne. Gamle FAIL-bevis og alle kilder beholdes.
+
+21 fullførte testprofiler, 677 filer, er permanent kopiert og hashverifisert i runtime-profile-archive-r4. Personlige installerte Saved har egen lesende baseline med 40 filer/57 noder. Den eksterne aksepthjelperen er rettet til streng path/sha256-form uten å endre originale reviewrapporter. PR/fletting/installasjon gjenstår; NP1 er fortsatt standard og ingen senere SC eller H-kort ferdigmeldes.
 
 ## 26.10.2026 kl. 15:45 CET: parkering, inngang og kontor samlet med levert NP1
 
@@ -640,3 +712,13 @@ PR170 er opprettet som draft og vedlagt samtalen: https://github.com/Tombonator3
 - Tom spurte om flettingen av `unreal-port-core` bør gjøres nå, og hvordan dette kunne skje. Prøvefletting med `git merge-tree` (ingenting endret eller pushet): 17 konflikter, sju av dem i kode (`S47Flow.cpp`, `S47HUD.cpp`, `S47Office.cpp`, `S47Main.h`, `S47Office.h`, `DefaultGame.ini`). Anbefalt å gjøre det på Kubuntu med bygg og `screenshots.sh`, ikke fra skyen. Tom: ordner det når han er ved Kubuntu.
 - Årsak, fra grunnlagsgrenen på hver PR hos GitHub: PR #144 til #146 (22.10) flettet `unreal-port-core` til main som de skulle. PR #147 til #166 og #168 (23. til 26.10) gikk mot `unreal-port-core`, fordi øktene fortsatte å lage grener fra den. Ingen regel sa hvilken gren en PR skal gå mot, og regelen om `screenshots.sh` gjaldt bare fletting til main. PR #167 gikk mot main med en gren laget fra `unreal-port-core` ved `41430ade` og tok med seg alt til da; #163 til #166 og #168 kom senere og ble igjen. Standardgrenen på GitHub er `main`.
 - Etter Toms ja: regelen «PR-er går mot main» i `AGENTS.md`, oppgaven med trinn og konfliktlista øverst i `OPPGAVER.md`, punkter i `todo.md` og avsnittet i `memory.md` (der også at PR #170 ble flettet uten hele `screenshots.sh`). Bare dokumenter; ingen kilde, bygg, installasjon eller lagring er endret.
+
+## 2026-10-27 kl. 17:27 CET: `unreal-port-core` flettet inn i main på egen gren, og rettelse av forklaringen (Claude, skysesjon)
+
+- Rettelse til punktet kl. 14:53: `unreal-port-core` var ikke feil gren. Den godkjente `HISTORIE_IMPLEMENTERINGSPLAN.md` sier at den er integrasjonsgrenen, så PR #147 til #166 og #168 gikk dit med vilje. Feilen var at grenen ikke ble flettet videre etter PR #167, så de 17 siste commitene (PR #163 til #166 og #168) ble stående. Regelen i `AGENTS.md`, oppgaven i `OPPGAVER.md` og avsnittet i `memory.md` er rettet. Selve regelen, at PR-er går mot main, står.
+- Tom ba om å rette og flette alt fra PR #163 til #168. `origin/unreal-port-core` er flettet inn i `origin/main` (`c603d1ba`) på `ccr-30e38858-767d90`, i en sparsom arbeidskopi uten LFS-nedlasting. 17 konflikter løst for hånd, hunk for hunk:
+  - Begge sider i `S47Main.h`, `S47Flow.cpp` og `S47HUD.cpp` (Horror-feltene, lagring av `horror`, `FS47Horror::SelfTest` og opprettelsen i HUD). Mains versjon i `S47Office.h`, `S47Office.cpp` og `DefaultGame.ini`; mains `DefaultGame.ini` pakker allerede `/Game/Signal47/HorrorSC01`.
+  - HorrorStory: `build_pack.py` og `test_pack.py` med begge sider, generatoren kjørt på nytt. `build_pack.py --check` PASS (10 oppdrag, 13 scenarioer, 79 scener, 9 eksporter byte-identiske), `test_pack.py` 24 tester OK, EveningShift `build_pack.py --check` PASS (4 moduler, 101 scener, 5 eksporter).
+  - `README.md`, `OPPGAVER.md`, `COW_MODELS.md`, `memory.md`, `todo.md` og denne loggen med begge sider, loggen sortert etter tid.
+- Flettingen tar inn 61 filer fra grenen, blant dem SC01-koden, SC01-ressursene, planen og rapportene for SC01, T02 og NP1.
+- UNVERIFIED: kompilering, pakking, SC01-kontrollene og hele `screenshots.sh`. Skyen kommer ikke til Kubuntu-maskinen. PR-en mot main flettes ikke før det er kjørt der; trinnene står øverst i `OPPGAVER.md`.

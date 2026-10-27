@@ -55,3 +55,7 @@ Canonical testbygg-vedlikehold er tørrkjørt, gjennomgått og anvendt uten akti
 Arbeidet er levert lokalt og installert; kilde-/assetendringene er ikke flettet eller pushet som del av denne bestillingen.
 
 En selvstendig Blender-kopi med pakkede teksturer ligger også i `/home/tom/Documents/ChatGPT/Signal 47/modeller/ku/Signal47_Cows.blend`. Konseptbildene og promptsettet er kopiert til `/home/tom/Documents/ChatGPT/Signal 47/konseptbilder/2026-10-25-ku`.
+
+## Videreført i NP1, 26. oktober 2026
+
+Den allerede installerte R2-koden, native assetene og redigerbare kildene er tatt med uendret i PR164 og den senere NP1-pakken.40 payloadfiler og de personlige lagringene er verifisert ved ny installasjon. [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md) fører denne videreleveransen; den opprinnelige ku-leveransens modell- og pikselgrenser ovenfor består.

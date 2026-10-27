@@ -3,8 +3,8 @@
 ## Grenene, 27. oktober 2026
 
 - PR #170 ble flettet av Tom 26.10 kl. 22:15, etter avsnittet under som sier at den ikke er flettet. Hele `screenshots.sh` var ikke kjørt (0 av 110); det er ikke gjort senere.
-- PR #147 til #166 og #168 gikk mot `unreal-port-core`, ikke main. Main fikk det meste likevel fordi grenen til PR #167 var laget fra `unreal-port-core` (til `41430ade`) og tok det med seg. #163, #164, #165, #166 og #168 kom etter det og ble igjen: SC01, SC01 til SC13-planen og to kvitteringer finnes bare på `unreal-port-core`.
-- Toms beslutning: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting (`AGENTS.md`). Flettingen av SC01 står i `OPPGAVER.md` og gjøres når Tom er ved Kubuntu.
+- `unreal-port-core` var avtalt integrasjonsgren for historiearbeidet (`HISTORIE_IMPLEMENTERINGSPLAN.md`), så PR #147 til #166 og #168 gikk dit med vilje. Main fikk det meste fordi grenen til PR #167 var laget fra `unreal-port-core` (til `41430ade`). #163, #164, #165, #166 og #168 kom etter det, og ingen flettet grenen videre, så SC01, planen og rapportene for SC01, T02 og NP1 ble igjen der. Loggpunktet kl. 14:53 og første utgave av regelen kalte det feil gren. Det var feil, og er rettet kl. 17:25.
+- Toms beslutning: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting (`AGENTS.md`). Flettingen er gjort på `ccr-30e38858-767d90` med PR mot main (konflikter løst, generatoren kjørt). Bygg, SC01-kontroller og hele `screenshots.sh` gjenstår på Kubuntu før PR-en flettes; trinnene står i `OPPGAVER.md`.
 
 ## GitHub-levering klargjort, 26. oktober 2026
 
@@ -80,6 +80,42 @@
 - JPG-filene bruker 12 143 169 byte mot PNG-originalenes 89 438 281 byte, 86,4 prosent mindre. Originalene er bevart utenfor Git. Konvertering endrer ikke tekst eller beskjæring.
 - 31 tekniske kontroller og uavhengig visuell nærlesing av alle finaler består. E15 følger crop B-komposisjonen som generert nytolkning; det er ikke en pikselidentisk kildebeskjæring. E09A er kvalitativ figur, ikke et nytt målsatt overlegg. E10 dateres i tittel/katalog; kildebrødteksten har ikke trykt årstall.
 - Dette er bildeassetproduksjon; den utførte ingen bygg, pakking eller installasjon. Den separate NP1-/R5-leveransen har allerede registrert de seks private dokumentene i EveningShift, med tekstvisning, skalering og faktisk lagret lesestatus. Det som gjenstår for JPG-pakken er import, UV-/materialbinding og eventuell bildevisning eller dokumentert bruk som fotobevis. VHS72sek er fortsatt en separat, uprodusert filmoppgave.
+## SC01 pakket teknisk aksept, 26.10.2026 kl. 13:18 CET
+
+Kilde `dbae3177` på `codex/story-sc01` har 21 isolerte pakkekjøringer og 32 faktisk vurderte originalbilder. High/Low 120/17 hver, oversett hånd 112/16, begge komplette ankomstruter, fem ferske vanlige Continue og fokuserte T01/T02/kontor/LineLights/felt/lab/finale-regresjoner består. Pakket selvtest 1 501. RT 79,8043 MiB i 197 oppvarmede samples, uendret 80 MiB-grense. Full hånd-/bil-LOD0 og originalressurser er bevart, med ordinære reduserte LOD1. Fem takes fullfører faktisk telefonruting; SARO/Sorrow-ASR og menneskelig lytting står separat. [SC01_RUNTIME.md](SC01_RUNTIME.md) fører kilde-/binær-/bevisbinding og bildegrenser. PR, fletting og installasjon gjenstår; NP1 er fortsatt standard. H01 forblir åpent til SC02. Senere scenarioer er ikke produsert.
+
+## SC01 overtatt og pakket kandidat under bygg, 26.10.2026 kl. 11:41 CET
+
+Aktiv gren er `codex/story-sc01` i `/home/tom/scratch-bm/wt/horror-h01`. Kodecommit `f935b237180af1cd5c1aca31cf683dcbc4338b82` har SC01-koordinator, alle manus-ID-er registrert, faktiske modeller og fem stemmetakes. Etter rettet filmreserve består editorprøven 120 kontroller, 17 disk-/Flow-restores og 139,99 m gange. Pakket kandidat `Signal47-sc01-20261026/candidate-r1/Linux` bygges fra 14 006 frosne kilde-/Content-filer, med før-/etterkontroll og separat byggekvittering. Ingen pakket eller installert SC01-aksept er ført. NP1 er fortsatt installert standard. Den gamle chatten stoppet med modellkapasitetsfeil; Tom ba denne chatten overta hele det autoriserte arbeidet.
+
+## Godkjent historieplan og arbeidsstart, 26.10.2026 kl. 09:36 CET
+
+[HISTORIE_IMPLEMENTERINGSPLAN.md](HISTORIE_IMPLEMENTERINGSPLAN.md) er styrende gjennomføringsplan for alle13 hovedscenarioer og79 eksisterende enkeltscener. Tom valgte full produksjon, separat commit/PR/fletting og installasjon per SC, samt spillbar eksisterende fortsettelse mens senere scenarioer mangler. Hver lagret sak beholder sin innholdsrevisjon uten nye bakoverrettede krav. SC01 er under arbeid i isolert arbeidskopi `/home/tom/scratch-bm/wt/horror-h01`, gren `codex/horror-h01`, fra core `1c929b76`. Alle senere SC og alle samlede H-kort står åpne. H01 krever SC01/02, H02 SC02 til05, H04 SC07/08 og H05 SC08/09; øvrige lukkepunkter står i planen. Ingen planstatus er spillaksept; NP1 er fortsatt dokumentert installert standard.
+
+
+## NP1 er gjeldende installert standard, 26.10.2026 kl. 01:26 CET
+
+PR164 er flettet i93edb7a4; testet kilde2c05e33d og samme pakke er installert.17 pakkede kjøringer,1 493 selvtester og28 vurderte originalbilder. Standardstarterens smoke,40 identiske payloadfiler,40 byteidentiske personlige Saved-filer/57 noder og full gammel ku-R2-backup består. Sluttpayload/Saved er kontrollert igjen etter smoke/pruning. Gjeldende NP1 pluss backup og original ku-R2 er tre komplette testpakker; gamle ku-R1/T02-payloads pensjonert med kilder/Engine/Saved/bevis bevart. S.1/R2.1 er produsert manusgrunnlag, S.6/S.3a/S.7a er avgrenset runtime. Ny kveldskoordinator, møter, VHS og menneskelig fullnatt står åpne. [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md) og bevisrotens NP1_DELIVERY_COMPLETE.json er nyeste sannhet.
+
+## NP1 pakket aksept, 26.10.2026 kl. 01:12 CET
+
+Kilde `2c05e33d18156c85df174c5afcc0f4030de38878` har17 pakkede kjøringer,1 493 selvtester og28 faktisk vurderte originalbilder. Dales High/Low har191/5 hver; LineLights12/3, Sky16+full Flow per High/Low, T0153/19, T0265/15 og38,89m gange. Feltfilm/mørkerom og hele finalen består. RT79,3446MiB i625 aktive samples ligger under uendret80MiB-varselgrense. Akseptfilen binder21 rapporter. S.1/R2.1 er forfattergrunnlag, S.6 og runtime-delene S.3a/S.7a er levert kandidat. Nye SC-/kveldsporter, fem aktive møter og original VHS er fortsatt åpne. Ku-R2 er bytebevart. Installering av NP1 skal fortsatt verifiseres; ikke anta at en pakket kandidat allerede er standard.
+
+## Kontorfunn og himmelkandidat, 26.10.2026 kl. 00:42 CET
+
+Nyeste arbeid foregår isolert på `codex/night-production`. HorrorStory har nå10 hovedoppdrag,13 scenarioer,79 scener og16 dokumenter med20 kildekontraktprøver. EveningShift har101 scener/17 dokumenter og uendrede109 takes. Seks frivillige loretekster og et separat arrayserviceark er faktisk lesbare i kontoret; lesestatus og legacy/T02/VHS-grenser bevares. Dokumentets store tekst er1,35 med fysisk rulling. LineLights skiller opptrådt, faktisk sett og avsluttet, og gjenopptar fra disk. Fem optional himmeltrinn bruker fysiske baner, siktsjekk og separat versjonert lagring. De knyttes foreløpig til faktisk kapittelprogresjon, ikke en ferdig SC01 tilSC13-koordinator.
+
+Gjeldende installasjon ved oppstart av leveringskontrollen var allerede ku-R2, binær `60e63f4e7cac1afd5097534cdf885d009f73705dbe892d41c63fc991949da4c9`. Dens140 kilde-/assetfiler er tatt inn uendret fra verifisert snapshot, uten å redigere den andre chatens arbeidsmappe. Ny kandidat må testes og inkludere disse før standard erstattes. [NIGHT_PRODUCTION_RUNTIME.md](NIGHT_PRODUCTION_RUNTIME.md) fører gjeldende test-/leveringsstatus.
+
+## T02 levert og installert, 25. oktober 2026
+
+Kilde `5b9fcb3c` er flettet i PR162 (`d152fb6d`) og samme Linux-pakke er installert via standardstarteren. Den fysiske serviceskuffen, egen Operations-nøkkel, dør/terskel, D02-papirer og feltmappe leder til T02s faktiske normalreferanse, ståsted, fire kontroller, eget originalfoto og én SARO-arkivering. Uavklart utfall beholder hovedruten. Kontoret krever ingen sett VHS; STATION 01, Nora, K3, C og byforsyning beholder sine roller.
+
+15 pakkede kjøringer består: 1 437 selvtester, T02 High/Low 65 API/15 diskrestores hver, uavklart 30/6, eksisterende T01 53/19, sammenhengende native tur 41 kontroller/fire lagerlesere uten mellomlast, fokuserte kapittelprøver og fem vanlige ferske Continue. Native målte 932,2 m ut, 966,7 m retur og 124,1 m gange. De fire native lagerleserne er Writer/fresh-reader, uten Flow-omlasting. 23 akseptrapporter og 25 faktisk sette originalbilder er hashbundet. Endelig binær er `7531698e9695c595ddba2868ab37e2f839c16a82d7e47b77e42f8c2cfdbaa86b`. Ingen CI-jobber var rapportert for eksakt PR-head; dette er lokal aksept.
+
+Arkivkortets originale tittel, stempel og side gjenopprettes fra faktisk historikk. Manglende fotofil gir ikke bekreftet credit, erstatter ikke originalbildet og tillater ikke ny arkivering av samme forsøk. 40 installerte payloadfiler og alle 40 personlige Saved-filer (57 noder) er etterkontrollert uendret også etter installert smoke og pruning. Gjeldende T02, full T01 R2-backup og T01 R2-kandidat er de tre komplette testpakkene som beholdes. To eldre payloads er pensjonert, 7 621 635 760 logiske bytes; kilder/Saved/Engine/logger/bilder/bevis er bevart.
+
+[T02_RUNTIME.md](T02_RUNTIME.md) og `/home/tom/scratch-bm/Signal47-t02-20261025` har bevis og grenser. Fersk Continue beviser normal last, bevarte kildestorer og scene/HUD, ikke en fersk minnedump eller sletting av tidligere positivt flagg. Foto identifiserer ståsted/utsnitt; mørke ledere og lampestatus avledes ikke fra print alene. Previewbildene er delvise sider. Original 72-sekunders VHS, nye forfatterfunn, samordnet helrute, skyggemann/stealth og menneskelig Roam/Xbox/lytting/fullnatt står fortsatt åpne.
 
 ## Sammenflettet hovedscenario, 25. oktober 2026
 

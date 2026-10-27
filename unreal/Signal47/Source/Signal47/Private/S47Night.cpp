@@ -1,6 +1,7 @@
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
+#include "S47Horror.h"
 #include "S47Evening.h"
 #include "S47Keys.h"
 #include "S47StationTaken.h"
@@ -187,13 +188,14 @@ void US47Night::Init(US47Main* InM)
 		// (Caliche's own ground by the diner's lot, world/Town.ts floorAt, is the town's: the road's ground here)
 		return G.Ground;
 	};
-	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); };
+	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid()) { if(Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); if(Self->M->Horror)Self->M->Horror->TagPhoto(Shot); } };
 	A.Small = [Self] { return Self.IsValid() && Self->M->Flow && Self->M->Flow->Saves.bFallback; };
 	A.Done = [Self](const FS47AlbumShot& Shot, bool bFirst, int32 Left)
 	{
 		if (!Self.IsValid()) return;
 		US47Main* Mn = Self->M;
 		if (Mn->Anomaly) Mn->Anomaly->Photo(Shot);
+		if (Mn->Horror) Mn->Horror->Photo(Shot);
 		if (Mn->Audio) Mn->Audio->Shutter();
 		Mn->UI->ShutterFlash();
 		// the patch with no stars in it, on the print (story/starHole.ts)
@@ -359,6 +361,7 @@ FString US47Night::SurfaceAt() const
 
 bool US47Night::OneAtATime() const
 {
+	if (M && M->Horror && M->Horror->Busy()) return true;
 	if (M && M->Evening && M->Evening->MealBusy()) return true;
 	if (M && M->AnomalyWorld && M->AnomalyWorld->Busy()) return true;
 	// one of the night's things is going: nothing else starts (the one-at-a-time rule; each of them

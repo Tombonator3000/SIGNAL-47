@@ -1,0 +1,89 @@
+/home/tom/SIGNAL-47/unreal/ArtSource/Cows/build_cows.py:55: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.use_nodes=True;p=m.node_tree.nodes.get('Principled BSDF')
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Body.fbx'
+export finished in 0.0136 sec.
+INFO Draco is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at /home/tom/.local/opt/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+23:29:35 | INFO: Starting glTF 2.0 export
+23:29:35 | INFO: Extracting primitive: Body_anatomical_loft.002
+23:29:35 | INFO: Primitives created: 5
+23:29:35 | INFO: Finished glTF 2.0 export in 0.11941361427307129 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Body_LOD1.fbx'
+export finished in 0.0109 sec.
+23:29:35 | INFO: Starting glTF 2.0 export
+23:29:35 | INFO: Extracting primitive: Body_anatomical_loft.003
+23:29:35 | INFO: Primitives created: 5
+23:29:35 | INFO: Finished glTF 2.0 export in 0.06923508644104004 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Body_LOD2.fbx'
+export finished in 0.0073 sec.
+23:29:35 | INFO: Starting glTF 2.0 export
+23:29:35 | INFO: Extracting primitive: Body_anatomical_loft.004
+23:29:35 | INFO: Primitives created: 5
+23:29:35 | INFO: Finished glTF 2.0 export in 0.06300497055053711 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Head.fbx'
+export finished in 0.0084 sec.
+23:29:35 | INFO: Starting glTF 2.0 export
+23:29:35 | INFO: Extracting primitive: Head_neck_and_face.002
+23:29:36 | INFO: Primitives created: 8
+23:29:36 | INFO: Finished glTF 2.0 export in 0.14208149909973145 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Head_LOD1.fbx'
+export finished in 0.0072 sec.
+23:29:36 | INFO: Starting glTF 2.0 export
+23:29:36 | INFO: Extracting primitive: Head_neck_and_face.003
+23:29:36 | INFO: Primitives created: 8
+23:29:36 | INFO: Finished glTF 2.0 export in 0.10007262229919434 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Alive_Head_LOD2.fbx'
+export finished in 0.0061 sec.
+23:29:36 | INFO: Starting glTF 2.0 export
+23:29:36 | INFO: Extracting primitive: Head_neck_and_face.004
+23:29:36 | INFO: Primitives created: 8
+23:29:36 | INFO: Finished glTF 2.0 export in 0.09316587448120117 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Abducted.fbx'
+export finished in 0.0350 sec.
+23:29:36 | INFO: Starting glTF 2.0 export
+23:29:36 | INFO: Extracting primitive: Body_anatomical_loft.005
+23:29:36 | INFO: Primitives created: 13
+23:29:36 | INFO: Finished glTF 2.0 export in 0.18298029899597168 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Abducted_LOD1.fbx'
+export finished in 0.0223 sec.
+23:29:36 | INFO: Starting glTF 2.0 export
+23:29:36 | INFO: Extracting primitive: Body_anatomical_loft.006
+23:29:37 | INFO: Primitives created: 13
+23:29:37 | INFO: Finished glTF 2.0 export in 0.15718460083007812 s
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/SM_Cow_Abducted_LOD2.fbx'
+export finished in 0.0147 sec.
+23:29:37 | INFO: Starting glTF 2.0 export
+23:29:37 | INFO: Extracting primitive: Body_anatomical_loft.007
+23:29:37 | INFO: Primitives created: 13
+23:29:37 | INFO: Finished glTF 2.0 export in 0.16496014595031738 s
+/home/tom/SIGNAL-47/unreal/ArtSource/Cows/build_cows.py:368: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new('Preview_ground_only');m.diffuse_color=(.11,.13,.145,1);m.use_nodes=True;p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(.11,.13,.145,1);p.inputs['Roughness'].default_value=.8;return m
+00:51.741  render           | Saved: '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Preview/cow-abducted.png'
+
+
+FBX export starting... '/home/tom/SIGNAL-47/unreal/ArtSource/Cows/Export/axis_probe.fbx'
+export finished in 0.0018 sec.
+Warning: Cannot set relative paths with an unsaved blend file
+Info: Saved as "Signal47_Cows.blend"
+Info: Saved as "Signal47_Cows.blend"
+COW SOURCE READY {"SM_Cow_Alive_Body": [17924, 10036, 5376], "SM_Cow_Alive_Head": [6838, 3828, 2050], "SM_Cow_Abducted": [28224, 15804, 8466]}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+
+Blender quit
