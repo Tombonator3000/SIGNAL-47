@@ -713,6 +713,11 @@ PR170 er opprettet som draft og vedlagt samtalen: https://github.com/Tombonator3
 - Årsak, fra grunnlagsgrenen på hver PR hos GitHub: PR #144 til #146 (22.10) flettet `unreal-port-core` til main som de skulle. PR #147 til #166 og #168 (23. til 26.10) gikk mot `unreal-port-core`, fordi øktene fortsatte å lage grener fra den. Ingen regel sa hvilken gren en PR skal gå mot, og regelen om `screenshots.sh` gjaldt bare fletting til main. PR #167 gikk mot main med en gren laget fra `unreal-port-core` ved `41430ade` og tok med seg alt til da; #163 til #166 og #168 kom senere og ble igjen. Standardgrenen på GitHub er `main`.
 - Etter Toms ja: regelen «PR-er går mot main» i `AGENTS.md`, oppgaven med trinn og konfliktlista øverst i `OPPGAVER.md`, punkter i `todo.md` og avsnittet i `memory.md` (der også at PR #170 ble flettet uten hele `screenshots.sh`). Bare dokumenter; ingen kilde, bygg, installasjon eller lagring er endret.
 
+## 2026-10-27 kl. 17:14 CET: main flettet inn i PR 172 (Claude, skysesjon)
+
+- Tom ba om at konfliktene i `todo.md`, `memory.md` og `log.md` rettes; `OPPGAVER.md` hadde også konflikt. Main (`c603d1ba`, med PR #171 og #173) er flettet inn i `codex/local-deliveries-design-bible-20261027` med en vanlig merge-commit, ingen omskriving av grenens historikk.
+- Begge sider er beholdt. Loggen står i tidsrekkefølge. I `OPPGAVER.md`, `todo.md` og `memory.md` står den åpne SC01-oppgaven og grenregelen øverst, så avsnittene fra reposamlingen, atmosfæren, MetaHuman og Linux-nedlastingen. To setninger i SC01-oppgaven og ett punkt i `memory.md` er rettet fordi MetaHuman nå er levert og installert standard er atmosfære-R1. Bare disse fire dokumentene er rørt; ingen kilde, asset, bygg eller installasjon.
+
 ## 2026-10-27 kl. 17:27 CET: `unreal-port-core` flettet inn i main på egen gren, og rettelse av forklaringen (Claude, skysesjon)
 
 - Rettelse til punktet kl. 14:53: `unreal-port-core` var ikke feil gren. Den godkjente `HISTORIE_IMPLEMENTERINGSPLAN.md` sier at den er integrasjonsgrenen, så PR #147 til #166 og #168 gikk dit med vilje. Feilen var at grenen ikke ble flettet videre etter PR #167, så de 17 siste commitene (PR #163 til #166 og #168) ble stående. Regelen i `AGENTS.md`, oppgaven i `OPPGAVER.md` og avsnittet i `memory.md` er rettet. Selve regelen, at PR-er går mot main, står.
