@@ -90,3 +90,11 @@ MetaHuman character and hair assets: Epic Games, https://www.metahuman.com/
 Original waitress uniform and native integration: SIGNAL / 47.
 
 Music, sound and fonts are credited in the game's end credits.
+
+SIERRA MOTOR COURT V2 (2026-10-27)
+Original Blender geometry, geometric facade ornament, reception, pool and walnut lining made for SIGNAL / 47.
+Painted Plaster Wall and Concrete Floor 02: Rob Tuytel, Poly Haven, CC0.
+https://polyhaven.com/a/painted_plaster_wall
+https://polyhaven.com/a/concrete_floor_02
+https://polyhaven.com/license
+The three existing Daniel Zhabotinsky cars and their credits above remain in use.

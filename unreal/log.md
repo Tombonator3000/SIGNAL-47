@@ -811,3 +811,8 @@ Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2c
 ## Reposamling publisert, 2026-10-27 kl. 14:48 CET
 
 [PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172) er opprettet som utkast og knyttet til samtalen. Kildegren er pushet. Indeks og 42-siders PDF er anonymt nedlastet fra GitHub med HTTP 200; PDF-hash er identisk etter overføring. Python/JSON, 68 designmanifest-hash, 173 tilleggspekere/kopier og inngangslenker består. Full 110-matrise/main-merge og ny spillutgave er ikke utført. Kun rå testlogger og axis_probe-diagnostikk står igjen lokalt ustaget.
+
+
+## 2026-10-27 kl. 20:46 CET: motel V2 importert, runtimeprøve gjenstår
+
+Ny Blender-modell med keramikk, mørkt mottak og rompanel, korrigert bassengplassering og gjenbruk av eksisterende biler/TV. Feil i bake-materialindekser og relative Blender-teksturstier ble funnet og rettet før levering. Rene kilder består 689 kontroller; Unreal-import 1 996 og uavhengig lagret verifikasjon 1 102. Terrengåpningen er presist klippet i begge lag. Editor bygger. Main med SC01 er kombinert med den installerte MetaHuman-/atmosfærekilden; 492 beskyttede assets er byteidentiske. Ingen installasjon, spillaksept eller merge er utført ennå. Se [rapport](MOTEL_V2.md).

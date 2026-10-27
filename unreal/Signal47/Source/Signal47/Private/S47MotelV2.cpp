@@ -31,7 +31,7 @@ namespace
   while(!Pending.IsEmpty()){const int32 I=Pending.Pop(EAllowShrinking::No);const auto* N=W->Node(I);if(!N)continue;if(N->Name==Name)return I;Pending.Append(N->Children);}
   return INDEX_NONE;
  }
- FS47Rect Rect(const FValues& A){FS47Rect R;R.MinX=A[0]->AsNumber();R.MaxX=A[1]->AsNumber();R.MinZ=A[2]->AsNumber();R.MaxZ=A[3]->AsNumber();return R;}
+ FS47Rect ParseMotelRect(const FValues& A){FS47Rect R;R.MinX=A[0]->AsNumber();R.MaxX=A[1]->AsNumber();R.MinZ=A[2]->AsNumber();R.MaxZ=A[3]->AsNumber();return R;}
  bool Same(const FS47Rect& A,const FS47Rect& B){return FMath::Abs(A.MinX-B.MinX)<.06&&FMath::Abs(A.MaxX-B.MaxX)<.06&&FMath::Abs(A.MinZ-B.MinZ)<.06&&FMath::Abs(A.MaxZ-B.MaxZ)<.06;}
  bool ValidRect(const FValues& A){return VectorValid(A,4)&&A[0]->AsNumber()<A[1]->AsNumber()&&A[2]->AsNumber()<A[3]->AsNumber();}
  FValues RectValues(const FS47Rect& R){return {MakeShared<FJsonValueNumber>(R.MinX),MakeShared<FJsonValueNumber>(R.MaxX),MakeShared<FJsonValueNumber>(R.MinZ),MakeShared<FJsonValueNumber>(R.MaxZ)};}
@@ -115,13 +115,13 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   if(auto* C=MeshAt(W,FindChild(W,Motel,FString(TEXT("prop:"))+Prop)))Retired.AddUnique(C);
   for(const auto& R:W->CollidersMutable(TEXT("saro")))if(R.Id==FString(TEXT("prop:"))+Prop)Disable.Add(R);
  }
- auto ReadRects=[&](const TCHAR* Field,TArray<FS47Rect>& Out){const FValues* A=nullptr;if(J->TryGetArrayField(Field,A))for(const auto& V:*A){const auto& Q=V->AsArray();if(!ValidRect(Q))return false;Out.Add(Rect(Q));}return true;};
+ auto ReadRects=[&](const TCHAR* Field,TArray<FS47Rect>& Out){const FValues* A=nullptr;if(J->TryGetArrayField(Field,A))for(const auto& V:*A){const auto& Q=V->AsArray();if(!ValidRect(Q))return false;Out.Add(ParseMotelRect(Q));}return true;};
  if(!ReadRects(TEXT("disable_colliders"),Disable)||!ReadRects(TEXT("add_colliders"),Add)||!ReadRects(TEXT("add_zones"),Zones)){Reject(TEXT("collision rectangles"));return {};}
  if(J->TryGetArrayField(TEXT("floors"),Rows))for(const auto& V:*Rows)
  {
   const auto R=V->AsObject();const FValues* A=nullptr;double Y;
   if(!R||!R->TryGetArrayField(TEXT("rect"),A)||!ValidRect(*A)||!R->TryGetNumberField(TEXT("y"),Y)||!FMath::IsFinite(Y)){Reject(TEXT("floor metadata"));return {};}
-  const auto Q=Rect(*A);NewFloors.Add({Q.MinX,Q.MaxX,Q.MinZ,Q.MaxZ,Y});
+  const auto Q=ParseMotelRect(*A);NewFloors.Add({Q.MinX,Q.MaxX,Q.MinZ,Q.MaxZ,Y});
  }
  for(const auto& R:Disable)
  {
@@ -187,7 +187,7 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
    const auto& A=V->AsArray();bool Remove=false,Moved=false;
    if(ValidRect(A))
    {
-    const FS47Rect Old=Rect(A);for(const auto& R:Disable)Remove|=Same(Old,R);
+    const FS47Rect Old=ParseMotelRect(A);for(const auto& R:Disable)Remove|=Same(Old,R);
     if(!Remove)for(const auto& Pair:CarRects)if(Same(Old,Pair.Key)){Out.Add(MakeShared<FJsonValueArray>(RectValues(Pair.Value)));Moved=true;break;}
    }
    if(!Remove&&!Moved)Out.Add(V);

@@ -5,3 +5,8 @@ unreal/**/*.ttf filter=lfs diff=lfs merge=lfs -text
 
 # Preserve the archived PDF byte-for-byte; do not treat PDF syntax as text.
 Docs/DesignBible-2026-10-27/SIGNAL-47-Designbibel.pdf binary
+
+# Editable Sierra motel source and exports.
+unreal/ArtSource/MotelV2/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/MotelV2/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/MotelV2/textures/*.png filter=lfs diff=lfs merge=lfs -text

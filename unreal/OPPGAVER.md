@@ -1,3 +1,7 @@
+## Motel V2, pågår
+
+Tom har bestilt modellen i Blender, integrasjon i Unreal og deretter fletting. Arbeid i `codex/motel-v2-main`, worktree `~/scratch-bm/wt/motel-v2-unreal`. 24 modelldeler, eksisterende TV/biler og nøyaktige terrengkutt er importert og kontrollert. Pakket prøve, full 110-matrise, installasjon og merge gjenstår. Se [motelrapport](MOTEL_V2.md). Tunge jobber venter på andre aktive Blender-renderinger.
+
 # Oppgaver og arbeidsdeling (Unreal)
 
 ## Flett SC01 og resten av `unreal-port-core` inn i main, Tom 27.10.2026 (flettet)
