@@ -1,3 +1,7 @@
+## Fotolab nattpass, 28. oktober 2026 kl.00:10 CET
+
+Ti originale detaljdeler er laget i Blender og importert i Unreal med tre LOD. Kilde48/native56, editor/pakke og målrettet fremkalling/lys/strøm består. Fem faktiske spillbilder er vurdert. Kandidat R1 gjennomgår nå den ene fullmatrisen før PR; ingen fletting eller installasjon ennå. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Motel R4, SC01, MetaHuman og atmosfære er bevart. Claudes TB2-kilder er separate og ikke endret.
+
 ## Motel V2, levert 27. oktober 2026
 
 Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet.

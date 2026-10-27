@@ -837,3 +837,9 @@ Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 ko
 Kanonisk opprydding er utført: fem gamle pakkepayloads er pensjonert, inklusive den midlertidige installasjonsbackupens kjørbare payload. Kilder, Blender/assets, Saved, logger og bilder er bevart. Motel R4 og to eldre motelpakker (R3/R2) beholdes, i tillegg til særskilt beskyttede SC01-R4 og PR174-kandidaten for andre oppgaver. TB2- og nedlastingsarbeid er også beskyttet, men hadde ingen komplette pakker i denne opptellingen. De særskilte unntakene må telles på nytt når de andre oppgavene frigir dem. Rapportert 21,49 GB gjelder logisk filstørrelse, ikke garantert frigjort plass ved reflinks.
 
 Bevis: `~/scratch-bm/Signal47-motel-v2-20261027`, spesielt `installed-verification.json`, `saved-request-to-installed-r4.json`, `prune-applied-final.json` og `post-prune-verification.json`. Denne statusoppdateringen endrer bare dokumentasjon. Spillets kilde og assets er identiske med testet og installert R4. Ingen ny spillrelease.
+
+## 2026-10-28 kl.00:10 CET: fotolab R1 i fullmatrise
+
+Ti originale detaljdeler er laget i Blender og importert i Unreal med tre LOD. Kilde48/native56, editor/pakke og målrettet fremkalling/lys/strøm består. Fem faktiske spillbilder er vurdert. Kandidat R1 gjennomgår nå den ene fullmatrisen før PR; ingen fletting eller installasjon ennå. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Motel R4, SC01, MetaHuman og atmosfære er bevart. Claudes TB2-kilder er separate og ikke endret.
+
+Kilden har 23 616 trekanter, native LOD 23 616/11 808/4 725. Første importkontroll avdekket UE5.8-wrapperens ekstra triangle-vertex-elementer; kontrollen bruker indekserte vertex-instances, ingen motorendring. Rapportprøvens forventede logglinje finnes ikke; faktisk rapportbilde består, feil parserkvittering er bevart uten omkjøring. Lydankre og strømgater er uendret. Ingen ny release. Lokale bevis: `/home/tom/scratch-bm/Signal47-photolab-night-20261027`.

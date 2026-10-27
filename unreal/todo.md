@@ -1,3 +1,10 @@
+## Fotolab nattpass, 28. oktober 2026
+
+- [x] Original Blender-kilde, PBR og ti native deler med tre LOD.
+- [x] Målrettet lys/strøm/fremkalling og faktisk bildevurdering.
+- [ ] Én fullmatrise på kandidat R1, deretter PR mot main og installasjon med Saved bevart.
+- [ ] Kort installert kontroll og kanonisk opprydding.
+
 # Todo for unreal/
 
 ## Motel V2 levert, 27. oktober 2026
