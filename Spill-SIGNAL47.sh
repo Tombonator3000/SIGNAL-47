@@ -21,7 +21,7 @@ if [[ ! -x "$play" ]]; then
   curl -fL --retry 3 -o SHA256SUMS.txt "$base/SHA256SUMS.txt"
   for name in "${archives[@]}"; do
     # Hopp over et arkiv som allerede er lastet ned og stemmer.
-    if ! grep " $name\$" SHA256SUMS.txt | sha256sum -c --status 2>/dev/null; then
+    if ! grep " $name\$" SHA256SUMS.txt | sha256sum -c --status >/dev/null 2>&1; then
       curl -fL --retry 3 -C - -o "$name" "$base/$name"
     fi
   done
