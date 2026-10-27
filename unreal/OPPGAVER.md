@@ -217,3 +217,8 @@ Valgfritt matstopp, tre fungerende besøksfelt begge veier, skilt/kontekstmål, 
 ## Pågår 2026-10-25 kl. 17:04 CET: QA-retting og H1-produksjon
 
 Codex eier `codex/qa-fixes-horror-production` i `/home/tom/SIGNAL-47`. Tre hjelpere har levert avgrenset UI-/lagrings-/kartkode, material-/blitsretting og H1-manus. Root eier all sekvensiell Unreal-bygging og GPU-undersøkelse. Kildeendringer er ikke installert. QA00-finalekrasjet er fortsatt åpent; ingen normal spillstandard er erstattet. Bevis og løpende planer ligger i `/home/tom/scratch-bm/Signal47-qa-fixes-20261025`.
+
+
+## Reposamling publisert, 2026-10-27 kl. 14:48 CET
+
+[PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172) er opprettet som utkast og knyttet til samtalen. Kildegren er pushet. Indeks og 42-siders PDF er anonymt nedlastet fra GitHub med HTTP 200; PDF-hash er identisk etter overføring. Python/JSON, 68 designmanifest-hash, 173 tilleggspekere/kopier og inngangslenker består. Full 110-matrise/main-merge og ny spillutgave er ikke utført. Kun rå testlogger og axis_probe-diagnostikk står igjen lokalt ustaget.

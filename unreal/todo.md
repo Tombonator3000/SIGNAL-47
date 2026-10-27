@@ -4,6 +4,7 @@
 
 - [x] Samle designbibel, portable redigerbare kilder, konsepter og manglende kvitteringer med SHA-/lenkekontroll. Se [indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md).
 - [x] Bevar nyere MetaHuman-/atmosfærekilder og lenk separat SC01-kilde uten automatisk runtimeintegrasjon.
+- [x] Push og opprett [PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172); indeks/PDF kontrollert anonymt på GitHub.
 - [ ] Full 110-scenario-matrise før eventuell main-merge av samlet runtime. Ingen ny spillutgave inngår i arkiveringen.
 
 ## MetaHuman-servitrisen, levert lokalt 27. oktober 2026

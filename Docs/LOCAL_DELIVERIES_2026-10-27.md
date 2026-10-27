@@ -1,6 +1,6 @@
 # Lokale leveranser samlet til GitHub, 27. oktober 2026
 
-Samlingen omfatter ferdige lokale kilder, konsepter, bilder og leveringsrapporter. Kildegrenen er `codex/local-deliveries-design-bible-20261027`, basert på `main` ved `0ee7c248`. Den er en reposamling, ikke en ny nedlastbar spillutgave. Fletting til main føres separat etter prosjektets påkrevde skjermbildematrise.
+Samlingen omfatter ferdige lokale kilder, konsepter, bilder og leveringsrapporter. Kildegrenen er `codex/local-deliveries-design-bible-20261027`, basert på `main` ved `0ee7c248`. Den er en reposamling, ikke en ny nedlastbar spillutgave. Opplastet og kontrollert på GitHub i [PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172). Indeks og PDF er hentet anonymt med HTTP 200, og PDF-hashen er verifisert etter nedlasting. PR-en er et utkast; fletting til main føres separat etter prosjektets påkrevde skjermbildematrise.
 
 ## Designbibel og visuelle leveranser
 
