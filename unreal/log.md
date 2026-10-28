@@ -955,3 +955,15 @@ Tom ba om detaljert analyse med kode. [Detaljstudien](GREYHILL_DOOR_CODE_ANALYSI
 [DoorStudy](Research/Greyhill/DoorStudy/README.md) har ny, selvstendig C++17-referansekode med eierskap, faser, epoch/generasjon i tickets og stabil checkpoint-policy. MSVC 14.44 /W4 /WX kompilering/linking PASS, exit0. 16 scenarioer skrevet, 0 kjørt. Windows nektet native start med «Ingen tilgang»; ingen omgåelse forsøkt. Unreal, geometri, navigasjon og disk-I/O er UNVERIFIED. Ingen endring i spillets Source, Config, Content eller installasjon; ingen ny Unreal-bygging eller spillmatrise.
 
 Rekonstruert lesekode og bytekodebevis beholdes privat lokalt utenfor repoet; bare egen analyse, referansekode og kontrollstatus publiseres. Den lokale instruksjonsvisningen har fått funksjonsavgrensede entry-etiketter; originale data/adresser er uendret. Reviewrettelser omfatter stopp av flere overlappende aktører, hostens restore-sperre og persistent-frame-semantikk for delte latente callbacks.
+
+## 2026-10-28 kl. 14:30 CET: cloud tank-UFO lagret som finaleønske
+
+Tom ønsker et episk, langsomt øyeblikk der en gigantisk UFO kommer frem bak voksende cloud tank-skyer i siste eller nest siste scenario. [Designnotatet](FINALE_CLOUD_TANK_UFO.md) lagrer oppskrift, ideer og mulig gjennomføring. Anbefaling: hovedavsløring i SC13 ved motorstopp C 8.15; SC12 får høyst et svakt varsel etter varsling/ruteplanlegging. THE EVENT 05:29:00 til 05:29:47 og 1947-bildet bevares. Dette er ønsket innhold for senere produksjon; effekt, spilltest og 60+ FPS er UNVERIFIED.
+
+Oppdraget omfatter dokumentasjon. Ingen Source, Config, Content, genererte manusfiler, installasjon eller spillutgave er endret. Dokumentkontroll dekker lenker, bevart eksisterende tekst, scenario-/tidskontrakter og tydelig skille mellom ønsket innhold og levert runtime. Unreal-bygg og screenshots.sh kjøres ikke for denne dokumentendringen.
+
+## 2026-10-28 kl. 14:44 CET: tre cloud tank-konseptbilder bevart
+
+Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.
+
+Tom ba om å legge bildene i repoet som konseptbilder. Tre originale PNG-filer på 1672 x 941 er lastet opp byteidentisk; lokale Git-blob-ID-er samsvarer med opplastede objekter. Galleri, prompter og manifest følger med, og finaleønsket/README/arbeidsminne/oppgavelister peker til dem. Filmreferansene er ikke lagt ved. Kontroll: filstørrelse, PNG-dimensjoner, Git-blob-ID, dokumentlenker og tydelig konseptstatus. Ingen Source, Config, Content, genererte manusfiler eller spillinstallasjon er endret; bygg og spillmatrise er ikke kjørt for denne konseptleveransen.

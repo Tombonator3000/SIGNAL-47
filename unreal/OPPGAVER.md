@@ -1,6 +1,19 @@
-## Elektrisk lysbue ved trafo, Codex 28.10.2026 kl.15:20 CET
+## Elektrisk lysbue ved trafo, Codex 28.10.2026
 
 Tom bestiller lysbuen planlagt i NIAGARA_FORSLAG.md. Codex eier codex/substation-electric-arc i motel-v2-unreal-worktree fra main6c63a350. Bygger videre på kopi av Claudes uferdige niagara-sparks-kilder uten å endre originalarbeidskopien. Omfang: fysisk forankret blåhvit lysbue, gnister/lyspuls ved SC02s første fremkomst, rolig blinking, T01/T02/lagring/pause bevart. Én tung jobb gjennom guard. Bevis: ~/scratch-bm/Signal47-electric-arc-20261028.
+
+## Cloud tank-konseptbilder lagret, 28. oktober 2026
+
+Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.
+
+- [x] Bevar de tre bildene i repoet som konseptbilder, med originalfiler, galleri og genereringsgrunnlag.
+
+## Finaleønske: cloud tank-UFO, 28. oktober 2026
+
+Tom ønsker et episk, langsomt øyeblikk der en gigantisk UFO kommer frem bak voksende cloud tank-skyer i siste eller nest siste scenario. [Designnotatet](FINALE_CLOUD_TANK_UFO.md) lagrer oppskrift, ideer og mulig gjennomføring. Anbefaling: hovedavsløring i SC13 ved motorstopp C 8.15; SC12 får høyst et svakt varsel etter varsling/ruteplanlegging. THE EVENT 05:29:00 til 05:29:47 og 1947-bildet bevares. Dette er ønsket innhold for senere produksjon; effekt, spilltest og 60+ FPS er UNVERIFIED.
+
+- [x] Lagre bestilling, plasseringsvurdering, korrigert Unreal-oppskrift og produksjons-/akseptplan.
+- [ ] Produser og spilltest avsløringen som del av SC13/akt 4. Mål High/Low og bevar eksisterende slutt, tidsvindu og lagringskontrakter.
 
 ## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
 

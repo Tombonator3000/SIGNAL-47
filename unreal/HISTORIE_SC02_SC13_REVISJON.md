@@ -184,6 +184,8 @@ Kuttet: sjåføren og dikteringen av måletabeller.
 
 Lagring ved avreise. Lysene holder posisjon over horisonten. Ved C 8.15 stopper motoren av seg selv, og den faste finalen tar over: tomt førersete, uttrekk og 1947-bildet med Reyes som tredje silhuett. 10.4 nås aldri.
 
+**Nytt finaleønske fra Tom, 28. oktober 2026:** En gigantisk UFO skal langsomt komme frem bak voksende cloud tank-skyer sent i historien. Hovedavsløringen anbefales her i SC13 ved motorstoppet; SC12 beholder dinerpausen og får høyst et svakt forvarsel. Avsløringen legges inn i eksisterende finale: THE EVENT 05:29:00 til 05:29:47 og deretter det eksisterende 34-sekunders kamerauttrekket. Faste overganger og 1947-bildets siste virkning bevares. Se [regi, oppskrift og mulig gjennomføring](FINALE_CLOUD_TANK_UFO.md). Ønsket innhold, ikke implementert eller spilltestet.
+
 ## Levering i fire akter
 
 | Akt | Scenarioer | Slutter med |
