@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "baseline": "469335b1ceee680e338829692d95e0027fcb7e68",
+  "original_paths_accounted": 1585,
+  "moved_original_paths": 323,
+  "byte_identical": 1482,
+  "navigation_markdown_changed": 103,
+  "binary_or_text_payload_changes": [],
+  "hash_bound_original_changes": [],
+  "missing": [],
+  "scope": "Documentation relocation/navigation only; game code, engine assets, saves and packages untouched",
+  "link_baseline_issues": 34,
+  "new_link_issues": 0
+}

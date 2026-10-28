@@ -3,7 +3,7 @@
 import hashlib,json,urllib.request,zipfile
 from pathlib import Path,PurePosixPath
 ROOT=Path(__file__).resolve().parents[1];dest=ROOT/'Artifacts/Resources19/Incoming';dest.mkdir(parents=True,exist_ok=True)
-for item in json.loads((ROOT/'Docs/Resources19/downloads.json').read_text()):
+for item in json.loads((ROOT/'Docs/Archive/Unity/Resources19/downloads.json').read_text()):
  p=dest/item['file']
  if p.exists():data=p.read_bytes()
  else:

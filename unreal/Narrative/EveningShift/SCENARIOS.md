@@ -33,7 +33,7 @@ JSON-validering og eksport kan vise sammenheng i manusdata. Scenariene nedenfor 
 - Ny og gammel tidslinje prøves separat. Ingen masseflytting av 1947-tid eller finalens 05:29.
 - Genererte filer må være byteidentiske etter `build_pack.py --check`.
 
-Forfatterkontrollene ovenfor beviser ikke runtime. Faktiske reise-, bilde- og lagringsresultater for trinn 1 og 2 føres i [runtime-rapporten](../../EVENING_RUNTIME.md). Hørbar ny stemme, senere filmbevegelse og målt total spilletid må prøves separat. Ingen Unreal-bygg er nødvendig for å lese eller kontrollere manuspakken.
+Forfatterkontrollene ovenfor beviser ikke runtime. Faktiske reise-, bilde- og lagringsresultater for trinn 1 og 2 føres i [runtime-rapporten](../../../Docs/Evidence/UnrealDeliveries/EVENING_RUNTIME.md). Hørbar ny stemme, senere filmbevegelse og målt total spilletid må prøves separat. Ingen Unreal-bygg er nødvendig for å lese eller kontrollere manuspakken.
 
 
 ## Runtimekontroller for trinn 1 og 2
@@ -46,10 +46,10 @@ Forfatterkontrollene ovenfor beviser ikke runtime. Faktiske reise-, bilde- og la
 
 `-S47EveningTimeline -S47Jump=<eksisterende hopp>` prøver den nye tidsplanen ved de gamle regresjonspunktene. Uten `-S47EveningTimeline` beholder de eksisterende hoppene sin legacy-tidslinje.
 
-Aktuelle runtimebevis og gjenstående menneskelige tester står i [runtime-rapporten](../../EVENING_RUNTIME.md).
+Aktuelle runtimebevis og gjenstående menneskelige tester står i [runtime-rapporten](../../../Docs/Evidence/UnrealDeliveries/EVENING_RUNTIME.md).
 
 
-`-S47EveningAudio -S47EveningRoute=burger` utvider ruten med hele faktiske takes, målte PCM-varigheter, kanal-/filter- og nivåkontroll, radio av/på, 0,5 s frosset lydkontekst og disk-/verdenslasting under aktiv D01. Bruk for eksempel `-S47Seconds=920`; kontrollen avslutter selv. Vanlige rutekontroller beholder rask dialog. `-S47VoiceLevels` logger faktisk trukne source-/kanalsamples, RMS, peak og bussgain. Dette beviser avspilling i grafen, ikke menneskelig lytting. Se [lydrapporten](../../EVENING_AUDIO.md).
+`-S47EveningAudio -S47EveningRoute=burger` utvider ruten med hele faktiske takes, målte PCM-varigheter, kanal-/filter- og nivåkontroll, radio av/på, 0,5 s frosset lydkontekst og disk-/verdenslasting under aktiv D01. Bruk for eksempel `-S47Seconds=920`; kontrollen avslutter selv. Vanlige rutekontroller beholder rask dialog. `-S47VoiceLevels` logger faktisk trukne source-/kanalsamples, RMS, peak og bussgain. Dette beviser avspilling i grafen, ikke menneskelig lytting. Se [lydrapporten](../../../Docs/Evidence/UnrealDeliveries/EVENING_AUDIO.md).
 
 
 ## Takeaway etter åpningen
@@ -70,7 +70,7 @@ Krev `takeaway PASS COMPLETE`, normal exit og ingen FAIL/fatal/assert, ikke bare
 selvtestlinjen. Bruk isolert UserDir og maskinvakten som for rutene ovenfor.
 
 Sluttpakke, biler/inngang, bilder og avgrensninger føres i
-[takeaway-rapporten](../../EVENING_TAKEAWAY.md). Ingen menneskelig input påstås.
+[takeaway-rapporten](../../../Docs/Evidence/UnrealDeliveries/EVENING_TAKEAWAY.md). Ingen menneskelig input påstås.
 
 
 ## Dales frivillige lesestoff og servicevedlegg

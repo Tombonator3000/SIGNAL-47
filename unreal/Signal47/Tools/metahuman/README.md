@@ -1,6 +1,6 @@
 # MetaHuman-servitrisen
 
-Gjeldende runtime ligger i `Source/Signal47`, ikke i scratch-mappens gamle `runtime`-utkast. Se [leveringsrapporten](../../../METAHUMAN_WAITRESS.md) før nye jobber.
+Gjeldende runtime ligger i `Source/Signal47`, ikke i scratch-mappens gamle `runtime`-utkast. Se [leveringsrapporten](../../../../Docs/Evidence/UnrealDeliveries/METAHUMAN_WAITRESS.md) før nye jobber.
 
 - `prepare_runtime.py` importerer den originale uniformen på eksisterende kroppsskjelett og kontrollerer alle 43 ansiktstakes. Miljøvariablene `S47_UNIFORM_FBX` og `S47_METAHUMAN_REPORT` peker til private arbeidsfiler.
 - `prepare_hair.py` lager et vanlig maskert, tosidig materiale for frisyrenes eksisterende hårkort. Materialet bruker UV0 og coverage-atlasets alfa. Det bruker ikke Groom-spesifikke vertex-attributter.
