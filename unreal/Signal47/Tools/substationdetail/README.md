@@ -1,6 +1,6 @@
 # Caliche, lampefester og bakkekontakt
 
-Status 28. oktober 2026: Blender-kilde og eksport, 76 kildekontroller, native import, editorbygg og Linux-pakke består. Begge Blender-forhåndsvisningene og pakkede bilder av oversikten og svak/sterk inspeksjonslampe er vurdert. T01 og T02 består. Den ene fullmatrisen med 110 scenarioer kjører; fletting og installasjon er ikke utført for dette passet.
+Status 28. oktober 2026: Blender-kilde og eksport, 76 kildekontroller, native import, editorbygg og Linux-pakke består. Begge Blender-forhåndsvisningene og pakkede bilder av oversikten og svak/sterk inspeksjonslampe er vurdert. T01 og T02 består. Den ene fullmatrisen består 110 av 110 scenarioer. PR184 er klar for fletting; installasjon følger deretter.
 
 Første kildekontroll stoppet på en lokal UV-variabel som overskrev bounds i rapportskriptet. Variabelen er rettet, og kontrollen ble kjørt på nytt med uendret geometri. Den faktiske kildekvitteringen er `verification.json`; råforsøk og runtimebevis ligger i `/home/tom/scratch-bm/Signal47-substation-environment-20261028`.
 
