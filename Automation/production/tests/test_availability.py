@@ -76,6 +76,15 @@ class AvailabilityTests(unittest.TestCase):
             receipt = json.loads(Path(result["receipt"]).read_text())
             self.assertEqual(receipt["availability"], "CLAUDE_QUOTA_UNAVAILABLE")
             self.assertNotEqual(receipt["status"], "passed")
+            # One quota result pauses every Claude job, not just the first ID.
+            second = Task.from_dict({**task.to_dict(), "id": "QUOTA-02"})
+            store.enqueue(second, root)
+            self.assertIsNone(store.claim())
+            self.assertEqual(store.get(second.id)["attempts"], 0)
+            # Pure tool jobs can still make progress without another API call.
+            command = Task.from_dict({**task.to_dict(), "id": "TOOLS-01", "kind": "command"})
+            store.enqueue(command, root)
+            self.assertEqual(store.claim()["id"], command.id)
 
 
 if __name__ == "__main__":

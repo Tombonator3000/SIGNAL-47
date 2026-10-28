@@ -280,7 +280,8 @@ class Runner:
                 receipt["source_snapshot_error"] = str(exc)
             write_json(receipt_path, receipt)
             self.store.finish(task.id, row["run_id"], status, cost=charged, receipt=receipt_path,
-                              error=error, defer=deferred, retry_after_seconds=retry_delay)
+                              error=error, defer=deferred, retry_after_seconds=retry_delay,
+                              provider_cooldown=retry_delay if receipt.get("availability") == "CLAUDE_QUOTA_UNAVAILABLE" else 0)
         return {"task_id": task.id, "status": status, "receipt": str(receipt_path),
                 "summary": receipt.get("summary"), "error": error}
 

@@ -160,6 +160,8 @@ USD-estimat. Ingen ny API-nøkkel er nødvendig med eksisterende innlogging.
 
 En bekreftet kvotefeil med null rapportert modellbruk setter oppgaven til
 `blocked`, bevarer forsøksbudsjettet og venter minst 15 minutter før nytt forsøk.
+Samme kvotepause gjelder alle Claude-jobber i den delte køen; rene verktøyjobber
+kan fortsatt kjøre. Nye oppgaver utløser dermed ikke nye kvoteforespørsler.
 En worker som avsluttes ved idle-grensen må startes igjen når kvoten er ledig.
 `doctor` kontrollerer installasjon/innlogging; ledig Claude-kvote avgjøres først
 av den faktiske modellforespørselen.

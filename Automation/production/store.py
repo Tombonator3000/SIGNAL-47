@@ -56,6 +56,9 @@ class Store:
                     workspace TEXT PRIMARY KEY, task_id TEXT NOT NULL,
                     run_id TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS provider_cooldowns (
+                    name TEXT PRIMARY KEY, not_before REAL NOT NULL, reason TEXT NOT NULL
+                );
             """)
 
     @contextmanager
@@ -142,6 +145,11 @@ class Store:
                 if row["id"] in excluded or task_id and row["id"] != task_id:
                     continue
                 task = Task.from_dict(json.loads(row["spec"]))
+                cooldown = db.execute("SELECT not_before,reason FROM provider_cooldowns WHERE name='claude'").fetchone()
+                if task.kind != "command" and cooldown and cooldown["not_before"] > time.time():
+                    db.execute("UPDATE tasks SET status='blocked',error=?,next_run=?,updated=? WHERE id=?",
+                               (cooldown["reason"], cooldown["not_before"], time.time(), task.id))
+                    continue
                 pending = [x for x in task.depends_on if statuses.get(x) != "passed"]
                 reason = "Waiting for dependencies: " + ", ".join(pending) if pending else None
                 if row["attempts"] >= task.max_attempts or row["cost"] >= task.budget_usd:
@@ -186,7 +194,7 @@ class Store:
             db.execute("UPDATE attempts SET receipt=? WHERE run_id=?", (str(receipt), run_id))
 
     def finish(self, task_id: str, run_id: str, status: str, *, cost=0.0, receipt=None, error=None, defer=False,
-               retry_after_seconds=3.0):
+               retry_after_seconds=3.0, provider_cooldown=0.0):
         if status not in ("passed", "review", "failed", "queued", "blocked"):
             raise ProductionError("Invalid final attempt status")
         if isinstance(cost, bool) or not isinstance(cost, (int, float)) or not 0 <= cost <= 1_000_000 or not math.isfinite(cost):
@@ -195,11 +203,17 @@ class Store:
             raise ProductionError("Only an unstarted blocked attempt can be deferred")
         if isinstance(retry_after_seconds, bool) or not isinstance(retry_after_seconds, (int, float)) or not 0 <= retry_after_seconds <= 86400:
             raise ProductionError("Invalid retry delay")
+        if isinstance(provider_cooldown, bool) or not isinstance(provider_cooldown, (int, float)) or not 0 <= provider_cooldown <= 86400:
+            raise ProductionError("Invalid provider cooldown")
         with self.transaction() as db:
             row = db.execute("SELECT * FROM tasks WHERE id=? AND run_id=? AND status='running'", (task_id, run_id)).fetchone()
             if row is None:
                 raise ProductionError("Stale attempt cannot finalize a task")
             now = time.time()
+            if provider_cooldown:
+                db.execute("INSERT INTO provider_cooldowns(name,not_before,reason) VALUES('claude',?,?) "
+                           "ON CONFLICT(name) DO UPDATE SET not_before=MAX(not_before,excluded.not_before),reason=excluded.reason",
+                           (now + provider_cooldown, error or "Claude availability cooldown"))
             db.execute("UPDATE tasks SET status=?,cost=cost+?,receipt=?,error=?,owner_pid=NULL,owner_identity=NULL,updated=?,next_run=?,attempts=attempts-? WHERE id=?",
                        (status, cost, str(receipt) if receipt else None, error, now,
                         now + retry_after_seconds if status in ("queued", "blocked") else 0, int(defer), task_id))
