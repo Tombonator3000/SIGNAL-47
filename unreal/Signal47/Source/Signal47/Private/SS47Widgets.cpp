@@ -1289,7 +1289,7 @@ void SS47Console::Construct(const FArguments& InArgs)
 				+ SHorizontalBox::Slot().FillWidth(1.f)[RxText(FText::FromString(TEXT("SARO / RX CONTROL 03")), 30.f, RxPhos(), RxGlow(), 1.2f)]
 				+ SHorizontalBox::Slot().AutoWidth()
 				[
-					RxText(RxStr([this] { const double Q = !Story ? 0 : Story->Rx.Stage >= 3 ? 1.0 : Story->SurveyOnly() ? 0.0 : Story->Rx.Quality(); return FString::Printf(TEXT("CARRIER %d%%"), FMath::RoundToInt(Q * 100)); }), 22.f)
+					RxText(RxStr([this] { const double Q = !Story ? 0 : Story->Rx.Stage >= 3 ? 1.0 : Story->SurveyOnly() ? 0.0 : Story->ConsoleQuality(); return FString::Printf(TEXT("CARRIER %d%%"), FMath::RoundToInt(Q * 100)); }), 22.f)
 				]
 			]
 			// .status: the receiver's line, with the terminal's cursor after it
@@ -1322,9 +1322,9 @@ void SS47Console::Construct(const FArguments& InArgs)
 					if (!Story) return FString();
 					if (Story->Rx.Stage >= 3) return FString(TEXT("Pattern repeats every 5.2 s: four pulses, a gap, seven pulses. Run a direction solve on the tracking terminal."));
 					if (Story->SurveyOnly()) return FString(TEXT("Survey runs unattended. Nothing scheduled until 06:00."));
-					return Story->Rx.Profile().Card;
+					return Story->ConsoleProfile().Card;
 				})
-				.Taped_Lambda([this] { return Usable() && Story->Rx.Profile().bCardIsTaped; })
+				.Taped_Lambda([this] { return Usable() && Story->ConsoleProfile().bCardIsTaped; })
 			]
 		]
 		// .rcol
@@ -1339,7 +1339,7 @@ void SS47Console::Construct(const FArguments& InArgs)
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 			[
 				SNew(SRxKey).bPrimary(true).Px(26.f)
-				.Label_Lambda([this] { return FString(!Story ? TEXT("") : Story->Rx.Stage >= 3 ? TEXT("LOCKED") : Story->SurveyOnly() ? TEXT("SWEEP RUNNING") : *Story->Rx.Profile().Action); })
+				.Label_Lambda([this] { return FString(!Story ? TEXT("") : Story->Rx.Stage >= 3 ? TEXT("LOCKED") : Story->SurveyOnly() ? TEXT("SWEEP RUNNING") : *Story->ConsoleProfile().Action); })
 				.Usable_Lambda([this] { return Usable(); })
 				.OnClick([this] { if (OnClick) OnClick(); if (Story) Story->ConsoleAction(); })
 			]
