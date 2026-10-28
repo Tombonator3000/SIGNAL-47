@@ -337,7 +337,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   // Base room props are exported Web items, while authored additions use Inter registrations.
   FS47Obj Phone;
   if (const auto* Item = M->Inter->Get(TEXT("phone")); Item && Item->Object) Phone = Item->Object;
-  else if (const auto* Item = M->Web->Item(TEXT("phone"))) Phone = M->Web->ObjAt(Item->Node);
+  else if (const auto* ExportedPhone = M->Web->Item(TEXT("phone"))) Phone = M->Web->ObjAt(ExportedPhone->Node);
   if (!Phone) { Fail(TEXT("telefonens fysiske mål mangler i både Inter og eksporten")); return; }
   const FBox B = Phone.WorldBox(); const FVector At = B.IsValid ? B.GetCenter() : Phone.WorldPosition();
   if (!Pick(TEXT("phone"), At)) return;
