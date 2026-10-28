@@ -32,6 +32,8 @@ blender_bin=/home/tom/.local/opt/blender-5.2.2-linux-x64/blender
 editor_bin=/home/tom/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd
 
 python3 "$proof_dir/run_job.py" blender-r1 "$blender_bin" -b -t 2 --python-exit-code 1 --python "$project_dir/Tools/substationdetail/build_detail.py"
+python3 "$project_dir/Tools/substationdetail/generate_runtime.py"
+python3 "$project_dir/Tools/substationdetail/generate_runtime.py" --check
 python3 "$proof_dir/run_job.py" source-verify-r2 "$blender_bin" -b -t 2 --python-exit-code 1 --python "$project_dir/Tools/substationdetail/verify_source.py"
 python3 "$proof_dir/run_job.py" preview-r1 "$blender_bin" -b -t 2 --python-exit-code 1 --python "$project_dir/Tools/substationdetail/preview.py"
 

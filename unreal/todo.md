@@ -1,6 +1,6 @@
 ## Trafostasjonens detaljer, 28. oktober 2026 kl.07:39 CET
 
-Codex har laget fem originale Blender-detaljdeler for eksisterende Caliche-trafo: fysisk lampehette, kabelinnføring, fundamentdetaljer og målt grusskråning. Native import/editor/pakke består; faktisk før/etterbilde og kort T01-service/diskreload består. T02 består 65 kontroller og 15 diskrestores; full110 pågår én gang før vanlig PR mot main. Ikke installert ennå. Claude beholder TB2 PR179. Se [rapport](SUBSTATION_DETAIL.md).
+Codex har laget fem originale Blender-detaljdeler for eksisterende Caliche-trafo: fysisk lampehette, kabelinnføring, fundamentdetaljer og målt grusskråning. Native import/editor/pakke består; faktisk før/etterbilde og kort T01-service/diskreload består. T02 består 65 kontroller og 15 diskrestores; full110 består 110/110 etter én kjøring; PR184 er klar for vanlig fletting til main. Ikke installert ennå. Claude beholder TB2 PR179. Se [rapport](SUBSTATION_DETAIL.md).
 
 ## Fotolab nattpass, 28. oktober 2026
 

@@ -863,3 +863,7 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 ## Trafostasjonens detaljer, 28. oktober 2026 kl.07:39 CET
 
 Codex har laget fem originale Blender-detaljdeler for eksisterende Caliche-trafo: fysisk lampehette, kabelinnføring, fundamentdetaljer og målt grusskråning. Native import/editor/pakke består; faktisk før/etterbilde og kort T01-service/diskreload består. T02 består 65 kontroller og 15 diskrestores; full110 pågår én gang før vanlig PR mot main. Ikke installert ennå. Claude beholder TB2 PR179. Se [rapport](SUBSTATION_DETAIL.md).
+
+## 2026-10-28 kl.08:35 CET: trafostasjonens detaljpass godkjent for fletting
+
+Fem originale Blender/native deler, 6 406/3 344/1 754 trekanter. Kilde76 og native import, editor/pakke, faktisk før/etteroversikt og to lampestyrker består. T01 fysisk bruk/gangadgang/diskreload og T02 65 kontroller/15 faktiske restores består. Hele screenshots.sh består 110/110 etter én kjøring, uten motorfeil eller prosesskonflikt. Runtime er byteidentisk med frysingen også etter main-merge med Claudes TB2-kilder og launcher/dokumentasjon. PR184 går mot main; installasjon følger fletting. Ingen ny release. Se [rapport](SUBSTATION_DETAIL.md).
