@@ -462,7 +462,7 @@ void FS47Evening::AfterDialogue()
   M->Audio->Play(TEXT("handset_down"),0.5f,M->Web->PropLocation(TEXT("phone")));
   M->Story->BeginEveningShift(); Refile(); Context();
   // The handover's archived day copy becomes available now, just as on Continue.
-  if (M->Anomaly) M->Anomaly->Refile();
+  if (M->Anomaly) M->Anomaly->Changed();
   M->UI->Objective(ServicePending() ? ServiceObjective() : FString(TEXT("CONTROL ROOM // POWER THE RACK AND START THE ROUTINE SURVEY"))); Changed();
  }
  else if (Commute()) M->UI->Objective(TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));

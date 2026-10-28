@@ -423,7 +423,11 @@ bool SS47Ending::SelfTest(TArray<FString>& Lines)
 	E->Advance(100);
 	Check(E->Disposed() && Done == 4 && !E->Skip(), TEXT("dispose cancels pending callbacks and the overlay"));
 	const TArray<TPair<FString, FString>> Free = CreditsRows(false), Bought = CreditsRows(true);
-	Check(Free.Num() == 18 && Bought.Num() == 19 && Bought[11].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and in the original order"));
+	Check(Free.Num() == 19 && Bought.Num() == 20 && Bought[12].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and in the original order"));
+ const auto* Observatory = Free.FindByPredicate([](const TPair<FString,FString>& Row) { return Row.Key == TEXT("Radio observatory sounds"); });
+ Check(Observatory && Observatory->Value.Contains(TEXT("5570222")) && Observatory->Value.Contains(TEXT("CC BY 4.0")) &&
+  Observatory->Value.Contains(TEXT("Felix Blume")) && Observatory->Value.Contains(TEXT("awg")) && Observatory->Value.Contains(TEXT("Priwo")),
+  TEXT("recorded observatory sounds retain their data source, creators and licences"));
 	const TPair<FString, FString>* Models = Free.FindByPredicate([](const TPair<FString, FString>& R) { return R.Key.StartsWith(TEXT("3D models, CC BY")); });
 	TArray<FString> ModelLines;
 	if (Models) Models->Value.ParseIntoArray(ModelLines, TEXT("\n"));

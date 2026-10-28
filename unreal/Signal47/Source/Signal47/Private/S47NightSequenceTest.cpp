@@ -334,9 +334,12 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
  }
  if (T.Stage == 7)
  {
-  const auto* Item = M->Inter->Get(TEXT("phone"));
-  if (!Item || !Item->Object) { Fail(TEXT("telefonens fysiske mål mangler")); return; }
-  const FBox B = Item->Object.WorldBox(); const FVector At = B.IsValid ? B.GetCenter() : Item->Object.WorldPosition();
+  // Base room props are exported Web items, while authored additions use Inter registrations.
+  FS47Obj Phone;
+  if (const auto* Item = M->Inter->Get(TEXT("phone")); Item && Item->Object) Phone = Item->Object;
+  else if (const auto* Item = M->Web->Item(TEXT("phone"))) Phone = M->Web->ObjAt(Item->Node);
+  if (!Phone) { Fail(TEXT("telefonens fysiske mål mangler i både Inter og eksporten")); return; }
+  const FBox B = Phone.WorldBox(); const FVector At = B.IsValid ? B.GetCenter() : Phone.WorldPosition();
   if (!Pick(TEXT("phone"), At)) return;
   if (!Check(M->ModalOpen() && !FeederCallAnswered() && FeederOutage(),
       TEXT("åpnet telefonsamtale kvitterer ikke matingen før faktisk dokumentlukking"))) return;
@@ -364,6 +367,8 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
  }
  if (T.Stage == 9)
  {
+  // On the new route the H02 briefing is presented at the junction, after the county call.
+  if (M->Horror->Pack.CurrentScene()) { M->UI->Close(true); M->Horror->Pack.Advance(); T.Hold = .1; return; }
   RecordFault(TEXT("field-before-service")); if (T.bDone || !FaultOn(TEXT("field-before-service"))) return;
   if (!Pick(TEXT("substation:service"), FS47Substation::Site(FVector(5.52, -9.10, 1.42)))) return;
   if (!Check(!M->Substation->HasJournal() && !M->Substation->HasNormalResult() && FeederOutage(), TEXT("servicekontrollen krever fortsatt fysisk journal"))) return;
