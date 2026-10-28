@@ -1,6 +1,6 @@
-## Elektrisk lysbue ved trafo, kandidat 28. oktober 2026
+## Elektrisk lysbue ved trafo, levert 28. oktober 2026
 
-SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02 på endelig R4 består 65 kontroller og 15 disk-/Flow-restores uten lysbue. Hele matrisen består 110/110 i to deler (54 + 56) etter en guard-pause for Claudes jobb. Ingen bestått prøve gjentas. Fletting og installasjon gjenstår ved denne kildeinnsjekkingen.
+SC02-lysbuen er flettet via [PR195](https://github.com/Tombonator3000/SIGNAL-47/pull/195), merge `66ae5948e262586e4c26c621dc6d109e6d950552`, og den identiske, aksepterte R4-pakken er installert i `/home/tom/Games/Signal47/Linux`. Hele matrisen består 110/110; den installerte Low-kontrollen består 14 kontroller og to disk-/Flow-restores. Bildet fra installert spill er vurdert. Alle 60 personlige Saved-filer (79 noder) er uendret. Ingen ny offentlig release. Se [lysbuerapporten](FX_ARC_2026-10-28.md).
 
 ## Konseptbilder til cloud tank-UFO, 28. oktober 2026
 
