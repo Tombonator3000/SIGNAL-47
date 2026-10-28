@@ -749,7 +749,6 @@ PR170 er opprettet som draft og vedlagt samtalen: https://github.com/Tombonator3
 - Ikke gjort: SC01 er ikke installert som standard i det installerte spillet; det venter på Tom. Kandidaten ligger i `~/scratch-bm/Signal47-pr174-20261027/candidate/Linux`. Oppryddingen med `prune-test-builds.py` er ikke kjørt, fordi tillatelsessystemet i økta avviste tørrkjøringen.
 - Denne oppføringen er ført i en egen dokumentcommit etter flettingen, fordi kl. 19:20-oppføringen lå i PR-en som ble flettet.
 
-
 ## 2026-10-26 kl. 22:54 CET: ny Linux-nedlasting publisert
 
 Tom ba om nedlasting fra repoet for andre Linux-PC-er, senere presisert som én gh-kommando for nedlasting, kontroll, utpakking og oppstart. PR170 er kontrollert faktisk flettet kl. 22:15 CET til 0ee7c248. Samme allerede testede og installerte terreng-R2 er pakket uten nye motorjobber. MetaHuman-arbeidet er urørt.
@@ -852,3 +851,12 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 
 - Tom sa ja til SC01 som standard. Før installasjon ble det installerte spillet sjekket: det er atmosfære-R1 med MetaHuman-servitrisen (binær-SHA256 `cbd04755…`), fra PR #172, som ikke er flettet. Kandidaten fra PR #174 (`754b33a0…`) er bygget fra main og mangler begge.
 - Tom valgte å beholde dagens installasjon og vente på et samlet bygg av main med PR #172. Ingenting er installert, og ingen filer i `~/Games/Signal47` eller lagringer er endret. Oppgaven står øverst i `OPPGAVER.md`.
+
+## 2026-10-27 kl. 22:35 CET: byens fem bygninger mer detaljert i Blender (TB2, Claude)
+
+- Tom ba om at byens bygninger blir mer detaljerte og realistiske i Blender i løpet av natten. Sheriffkontoret, vaskeriet, fôrbutikken, kinoen og kirken er bygget på nytt i `Tools/townbuildings/tb2/`, én agent per bygning, sammenlignet med konseptarkene og fotoreferansene. Sheriffkontoret, fôrbutikken og kirken fikk en ekstra runde etter gjennomgang (varmere puss, malt skrift, varme vinduer i skumringen). Motellet og rom 6 er Codex sitt arbeid og er uendret.
+- Fotavtrykk, vegghøyder, dører og vinduer er uendret, og dørene er lukket. Fôrbutikkens eksisterende lasterampe på 0,95 m er beholdt fordi gulvet inne står på den.
+- `check_source_plan.py`, `build_townbuildings.py` og `verify_source.py` består, med 966 av 966 kontroller. LOD0 for alle 28 deler er 170 678 trekanter (TB1: 65 154). Motellfilene er satt tilbake til de opprinnelige og kontrollert på nytt.
+- Før og etter: `Tools/townbuildings/tb2/TB1_mot_TB2.jpg`. Alle bilder: `~/scratch-bm/Signal47-townbuildings-tb2-20261027/`.
+- Ikke gjort: nativeimport, native materialer for de nye radene, ny `assembly.json`, pakket spill og bilder fra spillet. Det installerte spillet og spillets innhold er uendret.
+

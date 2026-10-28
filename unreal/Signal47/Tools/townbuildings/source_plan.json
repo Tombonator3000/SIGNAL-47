@@ -1,31 +1,47 @@
 {
   "status": "SOURCE_PLAN_PASS_EXPORT_UNVERIFIED",
-  "source_revision": "TB1-original-six-building-production",
+  "source_revision": "TB2-detailed-five-landmarks-tb1-motel",
   "scope": "Light mathematical geometry/UV/material and coordinate gates only; Blender triangulation/weld/export/native are separate",
   "parts": {
     "SM_Town_Sheriff_Shell": {
-      "planned_triangles": 1034,
-      "minimum_raw_triangle_area": 2.5257823682601487e-05,
-      "minimum_raw_UV_area": 2.5257823682601487e-05,
+      "planned_triangles": 9691,
+      "minimum_raw_triangle_area": 1.0103129473035907e-06,
+      "minimum_raw_UV_area": 1.0103129473035907e-06,
       "raw_bounds_local_m": [
         [
-          -10.125,
-          -6.125,
+          -10.69,
+          -6.69,
           -0.7
         ],
         [
-          0.835,
-          6.125,
-          4.37
+          1.31,
+          6.69,
+          15.0
         ]
       ],
       "materials": [
+        "M_Town_Burlap",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_Metal",
+        "M_Town_Paper",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
+        "M_Town_RoofShingle",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffCoping",
+        "M_Town_SheriffCork",
+        "M_Town_SheriffCrack",
+        "M_Town_SheriffLetters",
+        "M_Town_SheriffRoofing",
+        "M_Town_SheriffStreak",
+        "M_Town_SheriffStucco",
+        "M_Town_SheriffStuccoBase",
+        "M_Town_SheriffStuccoPatch",
+        "M_Town_SheriffWeatheredWood",
         "M_Town_Timber"
       ],
       "building": "Sheriff",
@@ -44,19 +60,19 @@
       "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
     },
     "SM_Town_Sheriff_Glass": {
-      "planned_triangles": 4,
-      "minimum_raw_triangle_area": 0.328,
-      "minimum_raw_UV_area": 0.5,
+      "planned_triangles": 100,
+      "minimum_raw_triangle_area": 2.881581281687087e-05,
+      "minimum_raw_UV_area": 2.7749999999998804e-05,
       "raw_bounds_local_m": [
         [
-          0.035,
-          -3.1,
-          0.8000000000000002
+          -4.9799999999999995,
+          -5.99,
+          0.89
         ],
         [
-          0.04,
-          4.8100000000000005,
-          2.4
+          0.195,
+          6.3500000000000005,
+          2.33
         ]
       ],
       "materials": [
@@ -78,18 +94,18 @@
       "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
     },
     "SM_Town_Sheriff_Interior": {
-      "planned_triangles": 5188,
+      "planned_triangles": 7560,
       "minimum_raw_triangle_area": 9.452730142946785e-06,
       "minimum_raw_UV_area": 9.452730142946785e-06,
       "raw_bounds_local_m": [
         [
           -9.9,
-          -5.9,
+          -5.905,
           -0.11
         ],
         [
           -0.09999999999999964,
-          6.2,
+          5.905,
           3.46
         ]
       ],
@@ -98,17 +114,23 @@
         "M_Town_Ceiling",
         "M_Town_Ceramic",
         "M_Town_CinemaRedGlow",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_FloorTile",
+        "M_Town_LampFabric",
         "M_Town_Metal",
         "M_Town_OliveEnamel",
         "M_Town_Paper",
         "M_Town_PrintAtlas",
         "M_Town_Rubber",
+        "M_Town_SheriffShadeGlow",
+        "M_Town_SheriffWainscot",
         "M_Town_Stucco",
         "M_Town_Timber",
-        "M_Town_Upholstery"
+        "M_Town_Upholstery",
+        "M_Town_WarmGlow",
+        "M_Town_WasherGlass"
       ],
       "building": "Sheriff",
       "chunk": "Interior",
@@ -126,26 +148,30 @@
       "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
     },
     "SM_Town_Sheriff_Fixtures": {
-      "planned_triangles": 428,
-      "minimum_raw_triangle_area": 3.637126610294571e-05,
-      "minimum_raw_UV_area": 3.637126610294571e-05,
+      "planned_triangles": 1734,
+      "minimum_raw_triangle_area": 1.3354503637352158e-05,
+      "minimum_raw_UV_area": 1.3225168176579125e-05,
       "raw_bounds_local_m": [
         [
-          -8.26,
-          -1.9,
-          0.9
+          -9.21,
+          -5.109999999999999,
+          0.12
         ],
         [
-          0.55,
-          4.75,
-          3.125
+          0.75,
+          6.2,
+          11.759999999999998
         ]
       ],
       "materials": [
+        "M_Town_CinemaRedGlow",
         "M_Town_DarkMetal",
         "M_Town_Metal",
-        "M_Town_TubeGlow",
-        "M_Town_WarmGlow"
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffLampGlow",
+        "M_Town_SheriffShadeGlow",
+        "M_Town_SheriffTubeGlow",
+        "M_Town_TubeGlow"
       ],
       "building": "Sheriff",
       "chunk": "Fixtures",
@@ -163,30 +189,44 @@
       "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
     },
     "SM_Town_Laundry_Shell": {
-      "planned_triangles": 830,
-      "minimum_raw_triangle_area": 0.0001620000000000043,
-      "minimum_raw_UV_area": 0.0001620000000000043,
+      "planned_triangles": 9935,
+      "minimum_raw_triangle_area": 2.6217037594635873e-05,
+      "minimum_raw_UV_area": 2.545584412271492e-05,
       "raw_bounds_local_m": [
         [
-          -10.125,
-          -7.125,
+          -10.309999999999999,
+          -7.62,
           -0.7
         ],
         [
-          0.835,
-          7.125,
-          4.27
+          0.807,
+          7.62,
+          4.85
         ]
       ],
       "materials": [
-        "M_Town_BluePaint",
+        "M_Town_Burlap",
         "M_Town_Concrete",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
-        "M_Town_DarkWood",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryBlockPaint",
+        "M_Town_LaundryDirt",
+        "M_Town_LaundryFadedBlue",
+        "M_Town_LaundryGrime",
+        "M_Town_LaundryLint",
+        "M_Town_LaundryMortar",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRawBlock",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryStreak",
         "M_Town_Metal",
+        "M_Town_Paper",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
-        "M_Town_Timber"
+        "M_Town_RoofShingle",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_TealPaint"
       ],
       "building": "Laundry",
       "chunk": "Shell",
@@ -204,19 +244,19 @@
       "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
     },
     "SM_Town_Laundry_Glass": {
-      "planned_triangles": 6,
-      "minimum_raw_triangle_area": 0.3679999999999999,
+      "planned_triangles": 10,
+      "minimum_raw_triangle_area": 0.6932249999999992,
       "minimum_raw_UV_area": 0.5,
       "raw_bounds_local_m": [
         [
-          0.035,
-          -4.86,
-          0.6000000000000001
+          0.03,
+          -4.795,
+          0.28000000000000014
         ],
         [
-          0.04,
-          5.6499999999999995,
-          2.3
+          0.0325,
+          5.6,
+          2.25
         ]
       ],
       "materials": [
@@ -238,32 +278,44 @@
       "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
     },
     "SM_Town_Laundry_Interior": {
-      "planned_triangles": 14782,
-      "minimum_raw_triangle_area": 2.9999999999998276e-05,
-      "minimum_raw_UV_area": 2.9999999999998276e-05,
+      "planned_triangles": 21552,
+      "minimum_raw_triangle_area": 2.4000000000002708e-05,
+      "minimum_raw_UV_area": 2.400000000000004e-05,
       "raw_bounds_local_m": [
         [
-          -9.9,
-          -6.9,
+          -9.940000000000001,
+          -6.890000000000001,
           -0.11
         ],
         [
-          -0.09999999999999964,
-          6.9,
-          3.36
+          0.018000000000000002,
+          6.890000000000001,
+          3.05
         ]
       ],
       "materials": [
+        "M_Town_Bedding",
+        "M_Town_BluePaint",
+        "M_Town_BookCloth",
+        "M_Town_Burlap",
         "M_Town_Ceiling",
         "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
-        "M_Town_FloorTile",
+        "M_Town_LampFabric",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryOrangePlastic",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryTileCream",
+        "M_Town_LaundryTileGreen",
+        "M_Town_LaundryWallCream",
         "M_Town_Metal",
         "M_Town_OliveEnamel",
         "M_Town_Paper",
         "M_Town_PrintAtlas",
         "M_Town_Rubber",
+        "M_Town_TealPaint",
         "M_Town_Timber",
         "M_Town_Upholstery",
         "M_Town_WasherGlass"
@@ -284,26 +336,34 @@
       "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
     },
     "SM_Town_Laundry_Fixtures": {
-      "planned_triangles": 496,
-      "minimum_raw_triangle_area": 3.637126610294571e-05,
-      "minimum_raw_UV_area": 3.637126610294571e-05,
+      "planned_triangles": 2572,
+      "minimum_raw_triangle_area": 1.599999999999825e-05,
+      "minimum_raw_UV_area": 1.599999999999825e-05,
       "raw_bounds_local_m": [
         [
-          -3.11,
-          -4.769119017293313,
-          0.9
+          -10.319999999999999,
+          -7.411982412032509,
+          -0.05
         ],
         [
-          0.55,
-          4.75,
-          3.1149999999999998
+          0.7652546165868799,
+          6.0,
+          4.65
         ]
       ],
       "materials": [
+        "M_Town_Ceramic",
+        "M_Town_CinemaRedGlow",
         "M_Town_DarkMetal",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryTubeLens",
         "M_Town_Metal",
-        "M_Town_TubeGlow",
-        "M_Town_WarmGlow"
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_WarmGlow",
+        "M_Town_WasherGlass"
       ],
       "building": "Laundry",
       "chunk": "Fixtures",
@@ -321,19 +381,19 @@
       "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
     },
     "SM_Town_Feed_Shell": {
-      "planned_triangles": 2658,
-      "minimum_raw_triangle_area": 4.9000000000000087e-05,
-      "minimum_raw_UV_area": 4.9000000000000087e-05,
+      "planned_triangles": 24026,
+      "minimum_raw_triangle_area": 6.049747291484838e-06,
+      "minimum_raw_UV_area": 6.049747291484838e-06,
       "raw_bounds_local_m": [
         [
-          -16.125,
-          -12.125,
-          -0.7
+          -16.494999999999997,
+          -12.68,
+          -0.35
         ],
         [
-          2.6,
-          12.125,
-          6.069999999999999
+          2.6000000000000005,
+          12.68,
+          8.423333333333334
         ]
       ],
       "materials": [
@@ -341,11 +401,24 @@
         "M_Town_Concrete",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
+        "M_Town_FeedAdobe",
+        "M_Town_FeedGalv",
+        "M_Town_FeedGrain",
+        "M_Town_FeedGrime",
+        "M_Town_FeedHay",
+        "M_Town_FeedLetterPaint",
+        "M_Town_FeedMineral",
+        "M_Town_FeedRustTin",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedSalt",
+        "M_Town_FeedStucco",
+        "M_Town_FeedStuccoBase",
+        "M_Town_FeedStuccoPatch",
         "M_Town_Metal",
-        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
         "M_Town_RustTin",
-        "M_Town_Stucco",
-        "M_Town_Timber"
+        "M_Town_Timber",
+        "M_Town_WhitePaint"
       ],
       "building": "Feed",
       "chunk": "Shell",
@@ -363,19 +436,19 @@
       "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
     },
     "SM_Town_Feed_Glass": {
-      "planned_triangles": 8,
-      "minimum_raw_triangle_area": 0.6380000000000001,
+      "planned_triangles": 14,
+      "minimum_raw_triangle_area": 0.38849999999999996,
       "minimum_raw_UV_area": 0.5,
       "raw_bounds_local_m": [
         [
-          0.035,
-          -7.1,
-          1.1999999999999997
+          -0.05500000000000001,
+          -7.0,
+          1.28
         ],
         [
-          0.17,
-          7.7,
-          3.2
+          -0.05,
+          7.6000000000000005,
+          3.5
         ]
       ],
       "materials": [
@@ -397,28 +470,38 @@
       "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
     },
     "SM_Town_Feed_Interior": {
-      "planned_triangles": 16216,
-      "minimum_raw_triangle_area": 4.8999999999996976e-05,
-      "minimum_raw_UV_area": 4.8999999999996976e-05,
+      "planned_triangles": 22464,
+      "minimum_raw_triangle_area": 4.396376701050174e-06,
+      "minimum_raw_UV_area": 4.326237921246017e-06,
       "raw_bounds_local_m": [
         [
-          -15.9,
-          -11.9,
-          0.0
+          -15.89,
+          -11.890893765387586,
+          0.8499999999999999
         ],
         [
-          -0.09999999999999964,
-          11.9,
-          5.16
+          -0.10999999999999943,
+          11.89,
+          5.1
         ]
       ],
       "materials": [
         "M_Town_Burlap",
-        "M_Town_Ceiling",
         "M_Town_Ceramic",
+        "M_Town_Clapboard",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
+        "M_Town_FeedGalv",
+        "M_Town_FeedGrain",
+        "M_Town_FeedHay",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedWallGlow",
         "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
         "M_Town_Timber"
       ],
       "building": "Feed",
@@ -437,24 +520,33 @@
       "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
     },
     "SM_Town_Feed_Fixtures": {
-      "planned_triangles": 1316,
-      "minimum_raw_triangle_area": 3.637126610294534e-05,
-      "minimum_raw_UV_area": 3.637126610294534e-05,
+      "planned_triangles": 5954,
+      "minimum_raw_triangle_area": 2.0710678118682704e-07,
+      "minimum_raw_UV_area": 2.0710678118682704e-07,
       "raw_bounds_local_m": [
         [
-          -14.26,
-          -4.26,
-          0.9
+          -14.799999999999999,
+          -12.917439959870666,
+          0.0
         ],
         [
-          0.55,
-          4.26,
-          4.9
+          2.307304038432324,
+          12.917439959870666,
+          6.68
         ]
       ],
       "materials": [
+        "M_Town_Ceramic",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
+        "M_Town_FeedBulbGlow",
+        "M_Town_FeedGalv",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedShadeGlow",
         "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
         "M_Town_WarmGlow"
       ],
       "building": "Feed",
@@ -473,29 +565,45 @@
       "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
     },
     "SM_Town_Cinema_Shell": {
-      "planned_triangles": 1848,
-      "minimum_raw_triangle_area": 9.100000000000083e-05,
-      "minimum_raw_UV_area": 9.100000000000083e-05,
+      "planned_triangles": 9922,
+      "minimum_raw_triangle_area": 3.507402885326892e-05,
+      "minimum_raw_UV_area": 3.507402885326853e-05,
       "raw_bounds_local_m": [
         [
-          -14.125,
-          -10.125,
+          -14.600000000000001,
+          -10.61,
           -0.7
         ],
         [
-          2.569,
-          10.125,
-          7.8
+          2.5700000000000003,
+          10.61,
+          9.66
         ]
       ],
       "materials": [
+        "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaFinRed",
+        "M_Town_CinemaRoofTar",
+        "M_Town_CinemaStain",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaTerrazzoRed",
         "M_Town_Concrete",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_Metal",
-        "M_Town_PinkPlaster",
+        "M_Town_OliveEnamel",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_TealPaint",
+        "M_Town_Terrazzo",
         "M_Town_Timber"
       ],
       "building": "Cinema",
@@ -514,19 +622,19 @@
       "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
     },
     "SM_Town_Cinema_Glass": {
-      "planned_triangles": 12,
-      "minimum_raw_triangle_area": 0.1643000000000001,
-      "minimum_raw_UV_area": 0.5,
+      "planned_triangles": 50,
+      "minimum_raw_triangle_area": 0.09321593529322818,
+      "minimum_raw_UV_area": 0.07381285681488556,
       "raw_bounds_local_m": [
         [
-          -3.11,
-          -7.575,
-          0.10000000000000009
+          -4.67,
+          -7.58,
+          0.2599999999999999
         ],
         [
-          0.285,
-          8.115,
-          2.395
+          0.5599999999999999,
+          8.25,
+          2.33
         ]
       ],
       "materials": [
@@ -548,31 +656,44 @@
       "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
     },
     "SM_Town_Cinema_Interior": {
-      "planned_triangles": 1036,
-      "minimum_raw_triangle_area": 8.487048957086832e-05,
-      "minimum_raw_UV_area": 8.487048957086832e-05,
+      "planned_triangles": 3426,
+      "minimum_raw_triangle_area": 4.6599025766974016e-05,
+      "minimum_raw_UV_area": 4.4194173824154266e-05,
       "raw_bounds_local_m": [
         [
-          -13.9,
-          -9.9,
+          -6.2,
+          -9.89,
           -0.11
         ],
         [
-          -0.09999999999999964,
-          9.9,
-          6.16
+          -0.18999999999999995,
+          9.89,
+          3.68
         ]
       ],
       "materials": [
         "M_Town_Ceiling",
         "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaVelvet",
+        "M_Town_Concrete",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
         "M_Town_DarkWood",
-        "M_Town_Metal",
+        "M_Town_LampFabric",
         "M_Town_OliveEnamel",
+        "M_Town_Paper",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
+        "M_Town_Rubber",
+        "M_Town_TealPaint",
         "M_Town_Terrazzo",
-        "M_Town_Upholstery"
+        "M_Town_Timber"
       ],
       "building": "Cinema",
       "chunk": "Interior",
@@ -590,23 +711,30 @@
       "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
     },
     "SM_Town_Cinema_Fixtures": {
-      "planned_triangles": 1852,
-      "minimum_raw_triangle_area": 3.637126610294571e-05,
-      "minimum_raw_UV_area": 3.637126610294571e-05,
+      "planned_triangles": 7534,
+      "minimum_raw_triangle_area": 2.100000000000037e-05,
+      "minimum_raw_UV_area": 2.100000000000037e-05,
       "raw_bounds_local_m": [
         [
-          -2.76,
-          -5.26,
-          0.9
+          -12.05,
+          -10.34,
+          0.975
         ],
         [
-          2.285,
-          4.6850000000000005,
-          7.65
+          2.603,
+          10.34,
+          9.602020630109617
         ]
       ],
       "materials": [
-        "M_Town_CinemaRedGlow",
+        "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaBulb",
+        "M_Town_CinemaDeadBulb",
+        "M_Town_CinemaNeonRed",
+        "M_Town_CinemaReaderGlow",
         "M_Town_DarkMetal",
         "M_Town_Metal",
         "M_Town_WarmGlow"
@@ -627,27 +755,31 @@
       "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
     },
     "SM_Town_Church_Shell": {
-      "planned_triangles": 3614,
-      "minimum_raw_triangle_area": 0.00021292110040824037,
-      "minimum_raw_UV_area": 0.00021292110040824037,
+      "planned_triangles": 20182,
+      "minimum_raw_triangle_area": 6.240562699331986e-05,
+      "minimum_raw_UV_area": 6.240562699331986e-05,
       "raw_bounds_local_m": [
         [
-          -1.2,
-          -4.85,
-          -0.56
+          -1.08,
+          -5.0,
+          -0.5
         ],
         [
-          14.3,
-          4.85,
-          9.77
+          14.385,
+          5.0,
+          11.939999999999998
         ]
       ],
       "materials": [
-        "M_Town_Clapboard",
+        "M_Town_ChurchBrick",
+        "M_Town_ChurchOldPaper",
+        "M_Town_ChurchShingleFaded",
+        "M_Town_ChurchStone",
+        "M_Town_ChurchTrim",
+        "M_Town_ChurchWhiteBoard",
+        "M_Town_ChurchWornBoard",
         "M_Town_Concrete",
-        "M_Town_DarkMetal",
         "M_Town_DarkWood",
-        "M_Town_Metal",
         "M_Town_RoofShingle",
         "M_Town_Timber"
       ],
@@ -667,23 +799,23 @@
       "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
     },
     "SM_Town_Church_Glass": {
-      "planned_triangles": 24,
-      "minimum_raw_triangle_area": 0.16087499999999993,
-      "minimum_raw_UV_area": 0.175,
+      "planned_triangles": 136,
+      "minimum_raw_triangle_area": 0.00038352707961853495,
+      "minimum_raw_UV_area": 0.00038352707961853495,
       "raw_bounds_local_m": [
         [
-          -0.015,
-          -4.515,
+          -0.020000000000000004,
+          -4.52,
           1.25
         ],
         [
           11.65,
-          4.515,
+          4.52,
           3.95
         ]
       ],
       "materials": [
-        "M_Town_Glass"
+        "M_Town_ChurchGlass"
       ],
       "building": "Church",
       "chunk": "Glass",
@@ -701,28 +833,32 @@
       "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
     },
     "SM_Town_Church_Interior": {
-      "planned_triangles": 2800,
-      "minimum_raw_triangle_area": 3.7069298006084125e-05,
-      "minimum_raw_UV_area": 3.7069298006077755e-05,
+      "planned_triangles": 8552,
+      "minimum_raw_triangle_area": 3.599999999999613e-05,
+      "minimum_raw_UV_area": 3.342516087186594e-05,
       "raw_bounds_local_m": [
         [
           0.09999999999999964,
-          -4.4,
-          -0.1
+          -4.435380616000645,
+          -0.06
         ],
         [
-          13.91,
-          4.4,
-          6.327480520920261
+          13.900000000000002,
+          4.435380616000645,
+          5.916
         ]
       ],
       "materials": [
+        "M_Town_BookCloth",
+        "M_Town_Burlap",
+        "M_Town_Carpet",
+        "M_Town_Ceramic",
         "M_Town_Clapboard",
+        "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_LampFabric",
         "M_Town_Metal",
         "M_Town_Paper",
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_Upholstery"
       ],
@@ -742,25 +878,35 @@
       "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
     },
     "SM_Town_Church_Fixtures": {
-      "planned_triangles": 1320,
-      "minimum_raw_triangle_area": 3.781092057177341e-05,
-      "minimum_raw_UV_area": 3.781092057177341e-05,
+      "planned_triangles": 5584,
+      "minimum_raw_triangle_area": 1.7320508075679257e-06,
+      "minimum_raw_UV_area": 1.7320508075679257e-06,
       "raw_bounds_local_m": [
         [
-          -0.11800000000000001,
-          -2.3600000000000003,
-          1.05
+          -0.442,
+          -5.18,
+          -0.04000000000000001
         ],
         [
-          11.26,
-          2.3600000000000003,
-          4.800000000000001
+          14.35,
+          5.18,
+          12.749999999999996
         ]
       ],
       "materials": [
+        "M_Town_Burlap",
+        "M_Town_ChurchBrass",
+        "M_Town_ChurchBronze",
+        "M_Town_ChurchFlameGlow",
+        "M_Town_ChurchGalv",
+        "M_Town_ChurchLampGlow",
+        "M_Town_ChurchPorchGlow",
+        "M_Town_Concrete",
         "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
         "M_Town_Metal",
-        "M_Town_WarmGlow"
+        "M_Town_Paper"
       ],
       "building": "Church",
       "chunk": "Fixtures",
@@ -1090,28 +1236,44 @@
   "lods": {
     "0": {
       "SM_Town_Sheriff_Shell": {
-        "planned_triangles": 1034,
-        "minimum_raw_triangle_area": 2.5257823682601487e-05,
-        "minimum_raw_UV_area": 2.5257823682601487e-05,
+        "planned_triangles": 9691,
+        "minimum_raw_triangle_area": 1.0103129473035907e-06,
+        "minimum_raw_UV_area": 1.0103129473035907e-06,
         "raw_bounds_local_m": [
           [
-            -10.125,
-            -6.125,
+            -10.69,
+            -6.69,
             -0.7
           ],
           [
-            0.835,
-            6.125,
-            4.37
+            1.31,
+            6.69,
+            15.0
           ]
         ],
         "materials": [
+          "M_Town_Burlap",
+          "M_Town_Ceramic",
           "M_Town_Concrete",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_Metal",
+          "M_Town_Paper",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_RoofShingle",
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_SheriffBrass",
+          "M_Town_SheriffCoping",
+          "M_Town_SheriffCork",
+          "M_Town_SheriffCrack",
+          "M_Town_SheriffLetters",
+          "M_Town_SheriffRoofing",
+          "M_Town_SheriffStreak",
+          "M_Town_SheriffStucco",
+          "M_Town_SheriffStuccoBase",
+          "M_Town_SheriffStuccoPatch",
+          "M_Town_SheriffWeatheredWood",
           "M_Town_Timber"
         ],
         "building": "Sheriff",
@@ -1130,19 +1292,19 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
       },
       "SM_Town_Sheriff_Glass": {
-        "planned_triangles": 4,
-        "minimum_raw_triangle_area": 0.328,
-        "minimum_raw_UV_area": 0.5,
+        "planned_triangles": 100,
+        "minimum_raw_triangle_area": 2.881581281687087e-05,
+        "minimum_raw_UV_area": 2.7749999999998804e-05,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -3.1,
-            0.8000000000000002
+            -4.9799999999999995,
+            -5.99,
+            0.89
           ],
           [
-            0.04,
-            4.8100000000000005,
-            2.4
+            0.195,
+            6.3500000000000005,
+            2.33
           ]
         ],
         "materials": [
@@ -1164,18 +1326,18 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
       },
       "SM_Town_Sheriff_Interior": {
-        "planned_triangles": 5188,
+        "planned_triangles": 7560,
         "minimum_raw_triangle_area": 9.452730142946785e-06,
         "minimum_raw_UV_area": 9.452730142946785e-06,
         "raw_bounds_local_m": [
           [
             -9.9,
-            -5.9,
+            -5.905,
             -0.11
           ],
           [
             -0.09999999999999964,
-            6.2,
+            5.905,
             3.46
           ]
         ],
@@ -1184,17 +1346,23 @@
           "M_Town_Ceiling",
           "M_Town_Ceramic",
           "M_Town_CinemaRedGlow",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_FloorTile",
+          "M_Town_LampFabric",
           "M_Town_Metal",
           "M_Town_OliveEnamel",
           "M_Town_Paper",
           "M_Town_PrintAtlas",
           "M_Town_Rubber",
+          "M_Town_SheriffShadeGlow",
+          "M_Town_SheriffWainscot",
           "M_Town_Stucco",
           "M_Town_Timber",
-          "M_Town_Upholstery"
+          "M_Town_Upholstery",
+          "M_Town_WarmGlow",
+          "M_Town_WasherGlass"
         ],
         "building": "Sheriff",
         "chunk": "Interior",
@@ -1212,26 +1380,30 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
       },
       "SM_Town_Sheriff_Fixtures": {
-        "planned_triangles": 428,
-        "minimum_raw_triangle_area": 3.637126610294571e-05,
-        "minimum_raw_UV_area": 3.637126610294571e-05,
+        "planned_triangles": 1734,
+        "minimum_raw_triangle_area": 1.3354503637352158e-05,
+        "minimum_raw_UV_area": 1.3225168176579125e-05,
         "raw_bounds_local_m": [
           [
-            -8.26,
-            -1.9,
-            0.9
+            -9.21,
+            -5.109999999999999,
+            0.12
           ],
           [
-            0.55,
-            4.75,
-            3.125
+            0.75,
+            6.2,
+            11.759999999999998
           ]
         ],
         "materials": [
+          "M_Town_CinemaRedGlow",
           "M_Town_DarkMetal",
           "M_Town_Metal",
-          "M_Town_TubeGlow",
-          "M_Town_WarmGlow"
+          "M_Town_SheriffBrass",
+          "M_Town_SheriffLampGlow",
+          "M_Town_SheriffShadeGlow",
+          "M_Town_SheriffTubeGlow",
+          "M_Town_TubeGlow"
         ],
         "building": "Sheriff",
         "chunk": "Fixtures",
@@ -1249,30 +1421,44 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
       },
       "SM_Town_Laundry_Shell": {
-        "planned_triangles": 830,
-        "minimum_raw_triangle_area": 0.0001620000000000043,
-        "minimum_raw_UV_area": 0.0001620000000000043,
+        "planned_triangles": 9935,
+        "minimum_raw_triangle_area": 2.6217037594635873e-05,
+        "minimum_raw_UV_area": 2.545584412271492e-05,
         "raw_bounds_local_m": [
           [
-            -10.125,
-            -7.125,
+            -10.309999999999999,
+            -7.62,
             -0.7
           ],
           [
-            0.835,
-            7.125,
-            4.27
+            0.807,
+            7.62,
+            4.85
           ]
         ],
         "materials": [
-          "M_Town_BluePaint",
+          "M_Town_Burlap",
           "M_Town_Concrete",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
-          "M_Town_DarkWood",
+          "M_Town_LaundryAluminum",
+          "M_Town_LaundryBlockPaint",
+          "M_Town_LaundryDirt",
+          "M_Town_LaundryFadedBlue",
+          "M_Town_LaundryGrime",
+          "M_Town_LaundryLint",
+          "M_Town_LaundryMortar",
+          "M_Town_LaundryPaleGreen",
+          "M_Town_LaundryRawBlock",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_LaundryStreak",
           "M_Town_Metal",
+          "M_Town_Paper",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
-          "M_Town_Timber"
+          "M_Town_RoofShingle",
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_TealPaint"
         ],
         "building": "Laundry",
         "chunk": "Shell",
@@ -1290,19 +1476,19 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
       },
       "SM_Town_Laundry_Glass": {
-        "planned_triangles": 6,
-        "minimum_raw_triangle_area": 0.3679999999999999,
+        "planned_triangles": 10,
+        "minimum_raw_triangle_area": 0.6932249999999992,
         "minimum_raw_UV_area": 0.5,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -4.86,
-            0.6000000000000001
+            0.03,
+            -4.795,
+            0.28000000000000014
           ],
           [
-            0.04,
-            5.6499999999999995,
-            2.3
+            0.0325,
+            5.6,
+            2.25
           ]
         ],
         "materials": [
@@ -1324,32 +1510,44 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
       },
       "SM_Town_Laundry_Interior": {
-        "planned_triangles": 14782,
-        "minimum_raw_triangle_area": 2.9999999999998276e-05,
-        "minimum_raw_UV_area": 2.9999999999998276e-05,
+        "planned_triangles": 21552,
+        "minimum_raw_triangle_area": 2.4000000000002708e-05,
+        "minimum_raw_UV_area": 2.400000000000004e-05,
         "raw_bounds_local_m": [
           [
-            -9.9,
-            -6.9,
+            -9.940000000000001,
+            -6.890000000000001,
             -0.11
           ],
           [
-            -0.09999999999999964,
-            6.9,
-            3.36
+            0.018000000000000002,
+            6.890000000000001,
+            3.05
           ]
         ],
         "materials": [
+          "M_Town_Bedding",
+          "M_Town_BluePaint",
+          "M_Town_BookCloth",
+          "M_Town_Burlap",
           "M_Town_Ceiling",
           "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_FloorTile",
+          "M_Town_LampFabric",
+          "M_Town_LaundryAluminum",
+          "M_Town_LaundryOrangePlastic",
+          "M_Town_LaundryPaleGreen",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_LaundryTileCream",
+          "M_Town_LaundryTileGreen",
+          "M_Town_LaundryWallCream",
           "M_Town_Metal",
           "M_Town_OliveEnamel",
           "M_Town_Paper",
           "M_Town_PrintAtlas",
           "M_Town_Rubber",
+          "M_Town_TealPaint",
           "M_Town_Timber",
           "M_Town_Upholstery",
           "M_Town_WasherGlass"
@@ -1370,26 +1568,34 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
       },
       "SM_Town_Laundry_Fixtures": {
-        "planned_triangles": 496,
-        "minimum_raw_triangle_area": 3.637126610294571e-05,
-        "minimum_raw_UV_area": 3.637126610294571e-05,
+        "planned_triangles": 2572,
+        "minimum_raw_triangle_area": 1.599999999999825e-05,
+        "minimum_raw_UV_area": 1.599999999999825e-05,
         "raw_bounds_local_m": [
           [
-            -3.11,
-            -4.769119017293313,
-            0.9
+            -10.319999999999999,
+            -7.411982412032509,
+            -0.05
           ],
           [
-            0.55,
-            4.75,
-            3.1149999999999998
+            0.7652546165868799,
+            6.0,
+            4.65
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
+          "M_Town_CinemaRedGlow",
           "M_Town_DarkMetal",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_LaundryTubeLens",
           "M_Town_Metal",
-          "M_Town_TubeGlow",
-          "M_Town_WarmGlow"
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_WarmGlow",
+          "M_Town_WasherGlass"
         ],
         "building": "Laundry",
         "chunk": "Fixtures",
@@ -1407,19 +1613,19 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
       },
       "SM_Town_Feed_Shell": {
-        "planned_triangles": 2658,
-        "minimum_raw_triangle_area": 4.9000000000000087e-05,
-        "minimum_raw_UV_area": 4.9000000000000087e-05,
+        "planned_triangles": 24026,
+        "minimum_raw_triangle_area": 6.049747291484838e-06,
+        "minimum_raw_UV_area": 6.049747291484838e-06,
         "raw_bounds_local_m": [
           [
-            -16.125,
-            -12.125,
-            -0.7
+            -16.494999999999997,
+            -12.68,
+            -0.35
           ],
           [
-            2.6,
-            12.125,
-            6.069999999999999
+            2.6000000000000005,
+            12.68,
+            8.423333333333334
           ]
         ],
         "materials": [
@@ -1427,11 +1633,24 @@
           "M_Town_Concrete",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
+          "M_Town_FeedAdobe",
+          "M_Town_FeedGalv",
+          "M_Town_FeedGrain",
+          "M_Town_FeedGrime",
+          "M_Town_FeedHay",
+          "M_Town_FeedLetterPaint",
+          "M_Town_FeedMineral",
+          "M_Town_FeedRustTin",
+          "M_Town_FeedSackPrint",
+          "M_Town_FeedSalt",
+          "M_Town_FeedStucco",
+          "M_Town_FeedStuccoBase",
+          "M_Town_FeedStuccoPatch",
           "M_Town_Metal",
-          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
           "M_Town_RustTin",
-          "M_Town_Stucco",
-          "M_Town_Timber"
+          "M_Town_Timber",
+          "M_Town_WhitePaint"
         ],
         "building": "Feed",
         "chunk": "Shell",
@@ -1449,19 +1668,19 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
       },
       "SM_Town_Feed_Glass": {
-        "planned_triangles": 8,
-        "minimum_raw_triangle_area": 0.6380000000000001,
+        "planned_triangles": 14,
+        "minimum_raw_triangle_area": 0.38849999999999996,
         "minimum_raw_UV_area": 0.5,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -7.1,
-            1.1999999999999997
+            -0.05500000000000001,
+            -7.0,
+            1.28
           ],
           [
-            0.17,
-            7.7,
-            3.2
+            -0.05,
+            7.6000000000000005,
+            3.5
           ]
         ],
         "materials": [
@@ -1483,28 +1702,38 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
       },
       "SM_Town_Feed_Interior": {
-        "planned_triangles": 16216,
-        "minimum_raw_triangle_area": 4.8999999999996976e-05,
-        "minimum_raw_UV_area": 4.8999999999996976e-05,
+        "planned_triangles": 22464,
+        "minimum_raw_triangle_area": 4.396376701050174e-06,
+        "minimum_raw_UV_area": 4.326237921246017e-06,
         "raw_bounds_local_m": [
           [
-            -15.9,
-            -11.9,
-            0.0
+            -15.89,
+            -11.890893765387586,
+            0.8499999999999999
           ],
           [
-            -0.09999999999999964,
-            11.9,
-            5.16
+            -0.10999999999999943,
+            11.89,
+            5.1
           ]
         ],
         "materials": [
           "M_Town_Burlap",
-          "M_Town_Ceiling",
           "M_Town_Ceramic",
+          "M_Town_Clapboard",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
+          "M_Town_FeedGalv",
+          "M_Town_FeedGrain",
+          "M_Town_FeedHay",
+          "M_Town_FeedRedPaint",
+          "M_Town_FeedSackPrint",
+          "M_Town_FeedWallGlow",
           "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
           "M_Town_Timber"
         ],
         "building": "Feed",
@@ -1523,24 +1752,33 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
       },
       "SM_Town_Feed_Fixtures": {
-        "planned_triangles": 1316,
-        "minimum_raw_triangle_area": 3.637126610294534e-05,
-        "minimum_raw_UV_area": 3.637126610294534e-05,
+        "planned_triangles": 5954,
+        "minimum_raw_triangle_area": 2.0710678118682704e-07,
+        "minimum_raw_UV_area": 2.0710678118682704e-07,
         "raw_bounds_local_m": [
           [
-            -14.26,
-            -4.26,
-            0.9
+            -14.799999999999999,
+            -12.917439959870666,
+            0.0
           ],
           [
-            0.55,
-            4.26,
-            4.9
+            2.307304038432324,
+            12.917439959870666,
+            6.68
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
+          "M_Town_FeedBulbGlow",
+          "M_Town_FeedGalv",
+          "M_Town_FeedRedPaint",
+          "M_Town_FeedShadeGlow",
           "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
           "M_Town_WarmGlow"
         ],
         "building": "Feed",
@@ -1559,29 +1797,45 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
       },
       "SM_Town_Cinema_Shell": {
-        "planned_triangles": 1848,
-        "minimum_raw_triangle_area": 9.100000000000083e-05,
-        "minimum_raw_UV_area": 9.100000000000083e-05,
+        "planned_triangles": 9922,
+        "minimum_raw_triangle_area": 3.507402885326892e-05,
+        "minimum_raw_UV_area": 3.507402885326853e-05,
         "raw_bounds_local_m": [
           [
-            -14.125,
-            -10.125,
+            -14.600000000000001,
+            -10.61,
             -0.7
           ],
           [
-            2.569,
-            10.125,
-            7.8
+            2.5700000000000003,
+            10.61,
+            9.66
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBlackTile",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaBronze",
+          "M_Town_CinemaEnamelRed",
+          "M_Town_CinemaFinRed",
+          "M_Town_CinemaRoofTar",
+          "M_Town_CinemaStain",
+          "M_Town_CinemaStucco",
+          "M_Town_CinemaTerrazzoCream",
+          "M_Town_CinemaTerrazzoRed",
           "M_Town_Concrete",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_Metal",
-          "M_Town_PinkPlaster",
+          "M_Town_OliveEnamel",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_TealPaint",
+          "M_Town_Terrazzo",
           "M_Town_Timber"
         ],
         "building": "Cinema",
@@ -1600,19 +1854,19 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
       },
       "SM_Town_Cinema_Glass": {
-        "planned_triangles": 12,
-        "minimum_raw_triangle_area": 0.1643000000000001,
-        "minimum_raw_UV_area": 0.5,
+        "planned_triangles": 50,
+        "minimum_raw_triangle_area": 0.09321593529322818,
+        "minimum_raw_UV_area": 0.07381285681488556,
         "raw_bounds_local_m": [
           [
-            -3.11,
-            -7.575,
-            0.10000000000000009
+            -4.67,
+            -7.58,
+            0.2599999999999999
           ],
           [
-            0.285,
-            8.115,
-            2.395
+            0.5599999999999999,
+            8.25,
+            2.33
           ]
         ],
         "materials": [
@@ -1634,31 +1888,44 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
       },
       "SM_Town_Cinema_Interior": {
-        "planned_triangles": 1036,
-        "minimum_raw_triangle_area": 8.487048957086832e-05,
-        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "planned_triangles": 3426,
+        "minimum_raw_triangle_area": 4.6599025766974016e-05,
+        "minimum_raw_UV_area": 4.4194173824154266e-05,
         "raw_bounds_local_m": [
           [
-            -13.9,
-            -9.9,
+            -6.2,
+            -9.89,
             -0.11
           ],
           [
-            -0.09999999999999964,
-            9.9,
-            6.16
+            -0.18999999999999995,
+            9.89,
+            3.68
           ]
         ],
         "materials": [
           "M_Town_Ceiling",
           "M_Town_Ceramic",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBlackTile",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaEnamelRed",
+          "M_Town_CinemaStucco",
+          "M_Town_CinemaTerrazzoCream",
+          "M_Town_CinemaTerrazzoRed",
+          "M_Town_CinemaVelvet",
+          "M_Town_Concrete",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_Metal",
+          "M_Town_LampFabric",
           "M_Town_OliveEnamel",
+          "M_Town_Paper",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_Rubber",
+          "M_Town_TealPaint",
           "M_Town_Terrazzo",
-          "M_Town_Upholstery"
+          "M_Town_Timber"
         ],
         "building": "Cinema",
         "chunk": "Interior",
@@ -1676,23 +1943,30 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
       },
       "SM_Town_Cinema_Fixtures": {
-        "planned_triangles": 1852,
-        "minimum_raw_triangle_area": 3.637126610294571e-05,
-        "minimum_raw_UV_area": 3.637126610294571e-05,
+        "planned_triangles": 7534,
+        "minimum_raw_triangle_area": 2.100000000000037e-05,
+        "minimum_raw_UV_area": 2.100000000000037e-05,
         "raw_bounds_local_m": [
           [
-            -2.76,
-            -5.26,
-            0.9
+            -12.05,
+            -10.34,
+            0.975
           ],
           [
-            2.285,
-            4.6850000000000005,
-            7.65
+            2.603,
+            10.34,
+            9.602020630109617
           ]
         ],
         "materials": [
-          "M_Town_CinemaRedGlow",
+          "M_Town_Ceramic",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaBronze",
+          "M_Town_CinemaBulb",
+          "M_Town_CinemaDeadBulb",
+          "M_Town_CinemaNeonRed",
+          "M_Town_CinemaReaderGlow",
           "M_Town_DarkMetal",
           "M_Town_Metal",
           "M_Town_WarmGlow"
@@ -1713,27 +1987,31 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
       },
       "SM_Town_Church_Shell": {
-        "planned_triangles": 3614,
-        "minimum_raw_triangle_area": 0.00021292110040824037,
-        "minimum_raw_UV_area": 0.00021292110040824037,
+        "planned_triangles": 20182,
+        "minimum_raw_triangle_area": 6.240562699331986e-05,
+        "minimum_raw_UV_area": 6.240562699331986e-05,
         "raw_bounds_local_m": [
           [
-            -1.2,
-            -4.85,
-            -0.56
+            -1.08,
+            -5.0,
+            -0.5
           ],
           [
-            14.3,
-            4.85,
-            9.77
+            14.385,
+            5.0,
+            11.939999999999998
           ]
         ],
         "materials": [
-          "M_Town_Clapboard",
+          "M_Town_ChurchBrick",
+          "M_Town_ChurchOldPaper",
+          "M_Town_ChurchShingleFaded",
+          "M_Town_ChurchStone",
+          "M_Town_ChurchTrim",
+          "M_Town_ChurchWhiteBoard",
+          "M_Town_ChurchWornBoard",
           "M_Town_Concrete",
-          "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_Metal",
           "M_Town_RoofShingle",
           "M_Town_Timber"
         ],
@@ -1753,23 +2031,23 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
       },
       "SM_Town_Church_Glass": {
-        "planned_triangles": 24,
-        "minimum_raw_triangle_area": 0.16087499999999993,
-        "minimum_raw_UV_area": 0.175,
+        "planned_triangles": 136,
+        "minimum_raw_triangle_area": 0.00038352707961853495,
+        "minimum_raw_UV_area": 0.00038352707961853495,
         "raw_bounds_local_m": [
           [
-            -0.015,
-            -4.515,
+            -0.020000000000000004,
+            -4.52,
             1.25
           ],
           [
             11.65,
-            4.515,
+            4.52,
             3.95
           ]
         ],
         "materials": [
-          "M_Town_Glass"
+          "M_Town_ChurchGlass"
         ],
         "building": "Church",
         "chunk": "Glass",
@@ -1787,28 +2065,32 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
       },
       "SM_Town_Church_Interior": {
-        "planned_triangles": 2800,
-        "minimum_raw_triangle_area": 3.7069298006084125e-05,
-        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "planned_triangles": 8552,
+        "minimum_raw_triangle_area": 3.599999999999613e-05,
+        "minimum_raw_UV_area": 3.342516087186594e-05,
         "raw_bounds_local_m": [
           [
             0.09999999999999964,
-            -4.4,
-            -0.1
+            -4.435380616000645,
+            -0.06
           ],
           [
-            13.91,
-            4.4,
-            6.327480520920261
+            13.900000000000002,
+            4.435380616000645,
+            5.916
           ]
         ],
         "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Burlap",
+          "M_Town_Carpet",
+          "M_Town_Ceramic",
           "M_Town_Clapboard",
+          "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_LampFabric",
           "M_Town_Metal",
           "M_Town_Paper",
-          "M_Town_Stucco",
           "M_Town_Timber",
           "M_Town_Upholstery"
         ],
@@ -1828,25 +2110,35 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
       },
       "SM_Town_Church_Fixtures": {
-        "planned_triangles": 1320,
-        "minimum_raw_triangle_area": 3.781092057177341e-05,
-        "minimum_raw_UV_area": 3.781092057177341e-05,
+        "planned_triangles": 5584,
+        "minimum_raw_triangle_area": 1.7320508075679257e-06,
+        "minimum_raw_UV_area": 1.7320508075679257e-06,
         "raw_bounds_local_m": [
           [
-            -0.11800000000000001,
-            -2.3600000000000003,
-            1.05
+            -0.442,
+            -5.18,
+            -0.04000000000000001
           ],
           [
-            11.26,
-            2.3600000000000003,
-            4.800000000000001
+            14.35,
+            5.18,
+            12.749999999999996
           ]
         ],
         "materials": [
+          "M_Town_Burlap",
+          "M_Town_ChurchBrass",
+          "M_Town_ChurchBronze",
+          "M_Town_ChurchFlameGlow",
+          "M_Town_ChurchGalv",
+          "M_Town_ChurchLampGlow",
+          "M_Town_ChurchPorchGlow",
+          "M_Town_Concrete",
           "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
           "M_Town_Metal",
-          "M_Town_WarmGlow"
+          "M_Town_Paper"
         ],
         "building": "Church",
         "chunk": "Fixtures",
@@ -2175,28 +2467,44 @@
     },
     "1": {
       "SM_Town_Sheriff_Shell": {
-        "planned_triangles": 778,
-        "minimum_raw_triangle_area": 9.742785792574787e-05,
-        "minimum_raw_UV_area": 9.742785792574787e-05,
+        "planned_triangles": 5892,
+        "minimum_raw_triangle_area": 3.89711431703014e-06,
+        "minimum_raw_UV_area": 3.89711431703014e-06,
         "raw_bounds_local_m": [
           [
-            -10.125,
-            -6.125,
+            -10.69,
+            -6.69,
             -0.7
           ],
           [
-            0.835,
-            6.125,
-            4.37
+            1.31,
+            6.69,
+            15.0
           ]
         ],
         "materials": [
+          "M_Town_Burlap",
+          "M_Town_Ceramic",
           "M_Town_Concrete",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_Metal",
+          "M_Town_Paper",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_RoofShingle",
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_SheriffBrass",
+          "M_Town_SheriffCoping",
+          "M_Town_SheriffCork",
+          "M_Town_SheriffCrack",
+          "M_Town_SheriffLetters",
+          "M_Town_SheriffRoofing",
+          "M_Town_SheriffStreak",
+          "M_Town_SheriffStucco",
+          "M_Town_SheriffStuccoBase",
+          "M_Town_SheriffStuccoPatch",
+          "M_Town_SheriffWeatheredWood",
           "M_Town_Timber"
         ],
         "building": "Sheriff",
@@ -2215,19 +2523,19 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
       },
       "SM_Town_Sheriff_Glass": {
-        "planned_triangles": 4,
-        "minimum_raw_triangle_area": 0.328,
-        "minimum_raw_UV_area": 0.5,
+        "planned_triangles": 64,
+        "minimum_raw_triangle_area": 5.0350645477488825e-05,
+        "minimum_raw_UV_area": 4.806440991003371e-05,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -3.1,
-            0.8000000000000002
+            -4.9799999999999995,
+            -5.99,
+            0.89
           ],
           [
-            0.04,
-            4.8100000000000005,
-            2.4
+            0.195,
+            6.3500000000000005,
+            2.33
           ]
         ],
         "materials": [
@@ -2249,18 +2557,18 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
       },
       "SM_Town_Sheriff_Interior": {
-        "planned_triangles": 4256,
+        "planned_triangles": 4940,
         "minimum_raw_triangle_area": 1.3499999999999855e-05,
         "minimum_raw_UV_area": 1.1691342951089989e-05,
         "raw_bounds_local_m": [
           [
             -9.9,
-            -5.9,
+            -5.905,
             -0.11
           ],
           [
             -0.09999999999999964,
-            6.2,
+            5.905,
             3.46
           ]
         ],
@@ -2269,6 +2577,7 @@
           "M_Town_Ceiling",
           "M_Town_Ceramic",
           "M_Town_CinemaRedGlow",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_FloorTile",
@@ -2277,9 +2586,13 @@
           "M_Town_Paper",
           "M_Town_PrintAtlas",
           "M_Town_Rubber",
+          "M_Town_SheriffShadeGlow",
+          "M_Town_SheriffWainscot",
           "M_Town_Stucco",
           "M_Town_Timber",
-          "M_Town_Upholstery"
+          "M_Town_Upholstery",
+          "M_Town_WarmGlow",
+          "M_Town_WasherGlass"
         ],
         "building": "Sheriff",
         "chunk": "Interior",
@@ -2297,26 +2610,30 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
       },
       "SM_Town_Sheriff_Fixtures": {
-        "planned_triangles": 316,
-        "minimum_raw_triangle_area": 7.476554800833518e-05,
-        "minimum_raw_UV_area": 7.476554800833518e-05,
+        "planned_triangles": 982,
+        "minimum_raw_triangle_area": 1.9715159142142064e-05,
+        "minimum_raw_UV_area": 1.948557158514955e-05,
         "raw_bounds_local_m": [
           [
-            -8.26,
-            -1.9,
-            0.9
+            -9.21,
+            -5.101961524227066,
+            0.12
           ],
           [
-            0.55,
-            4.75,
-            3.125
+            0.75,
+            6.2,
+            11.759999999999998
           ]
         ],
         "materials": [
+          "M_Town_CinemaRedGlow",
           "M_Town_DarkMetal",
           "M_Town_Metal",
-          "M_Town_TubeGlow",
-          "M_Town_WarmGlow"
+          "M_Town_SheriffBrass",
+          "M_Town_SheriffLampGlow",
+          "M_Town_SheriffShadeGlow",
+          "M_Town_SheriffTubeGlow",
+          "M_Town_TubeGlow"
         ],
         "building": "Sheriff",
         "chunk": "Fixtures",
@@ -2334,30 +2651,44 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
       },
       "SM_Town_Laundry_Shell": {
-        "planned_triangles": 718,
-        "minimum_raw_triangle_area": 0.0001620000000000043,
-        "minimum_raw_UV_area": 0.0001620000000000043,
+        "planned_triangles": 5463,
+        "minimum_raw_triangle_area": 3.599999999999888e-05,
+        "minimum_raw_UV_area": 2.545584412271492e-05,
         "raw_bounds_local_m": [
           [
-            -10.125,
-            -7.125,
+            -10.309999999999999,
+            -7.62,
             -0.7
           ],
           [
-            0.835,
-            7.125,
-            4.27
+            0.807,
+            7.62,
+            4.85
           ]
         ],
         "materials": [
-          "M_Town_BluePaint",
+          "M_Town_Burlap",
           "M_Town_Concrete",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
-          "M_Town_DarkWood",
+          "M_Town_LaundryAluminum",
+          "M_Town_LaundryBlockPaint",
+          "M_Town_LaundryDirt",
+          "M_Town_LaundryFadedBlue",
+          "M_Town_LaundryGrime",
+          "M_Town_LaundryLint",
+          "M_Town_LaundryMortar",
+          "M_Town_LaundryPaleGreen",
+          "M_Town_LaundryRawBlock",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_LaundryStreak",
           "M_Town_Metal",
+          "M_Town_Paper",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
-          "M_Town_Timber"
+          "M_Town_RoofShingle",
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_TealPaint"
         ],
         "building": "Laundry",
         "chunk": "Shell",
@@ -2375,19 +2706,19 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
       },
       "SM_Town_Laundry_Glass": {
-        "planned_triangles": 6,
-        "minimum_raw_triangle_area": 0.3679999999999999,
+        "planned_triangles": 10,
+        "minimum_raw_triangle_area": 0.6932249999999992,
         "minimum_raw_UV_area": 0.5,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -4.86,
-            0.6000000000000001
+            0.03,
+            -4.795,
+            0.28000000000000014
           ],
           [
-            0.04,
-            5.6499999999999995,
-            2.3
+            0.0325,
+            5.6,
+            2.25
           ]
         ],
         "materials": [
@@ -2409,32 +2740,44 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
       },
       "SM_Town_Laundry_Interior": {
-        "planned_triangles": 10262,
-        "minimum_raw_triangle_area": 2.9999999999998276e-05,
-        "minimum_raw_UV_area": 2.9999999999998276e-05,
+        "planned_triangles": 13908,
+        "minimum_raw_triangle_area": 2.4000000000002708e-05,
+        "minimum_raw_UV_area": 2.400000000000004e-05,
         "raw_bounds_local_m": [
           [
-            -9.9,
-            -6.9,
+            -9.940000000000001,
+            -6.890000000000001,
             -0.11
           ],
           [
-            -0.09999999999999964,
-            6.9,
-            3.36
+            0.018000000000000002,
+            6.890000000000001,
+            3.05
           ]
         ],
         "materials": [
+          "M_Town_Bedding",
+          "M_Town_BluePaint",
+          "M_Town_BookCloth",
+          "M_Town_Burlap",
           "M_Town_Ceiling",
           "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_FloorTile",
+          "M_Town_LampFabric",
+          "M_Town_LaundryAluminum",
+          "M_Town_LaundryOrangePlastic",
+          "M_Town_LaundryPaleGreen",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_LaundryTileCream",
+          "M_Town_LaundryTileGreen",
+          "M_Town_LaundryWallCream",
           "M_Town_Metal",
           "M_Town_OliveEnamel",
           "M_Town_Paper",
           "M_Town_PrintAtlas",
           "M_Town_Rubber",
+          "M_Town_TealPaint",
           "M_Town_Timber",
           "M_Town_Upholstery",
           "M_Town_WasherGlass"
@@ -2455,26 +2798,32 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
       },
       "SM_Town_Laundry_Fixtures": {
-        "planned_triangles": 384,
-        "minimum_raw_triangle_area": 7.476554800833941e-05,
-        "minimum_raw_UV_area": 7.476554800833941e-05,
+        "planned_triangles": 1644,
+        "minimum_raw_triangle_area": 1.599999999999825e-05,
+        "minimum_raw_UV_area": 1.599999999999825e-05,
         "raw_bounds_local_m": [
           [
-            -3.11,
-            -4.76758845726812,
-            0.9
+            -10.319999999999999,
+            -7.405,
+            -0.05
           ],
           [
-            0.55,
-            4.75,
-            3.1149999999999998
+            0.7657705435934632,
+            6.0,
+            4.65
           ]
         ],
         "materials": [
+          "M_Town_CinemaRedGlow",
           "M_Town_DarkMetal",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_LaundryTubeLens",
           "M_Town_Metal",
-          "M_Town_TubeGlow",
-          "M_Town_WarmGlow"
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_RustTin",
+          "M_Town_WarmGlow",
+          "M_Town_WasherGlass"
         ],
         "building": "Laundry",
         "chunk": "Fixtures",
@@ -2492,19 +2841,19 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
       },
       "SM_Town_Feed_Shell": {
-        "planned_triangles": 1866,
-        "minimum_raw_triangle_area": 4.9000000000000087e-05,
-        "minimum_raw_UV_area": 4.9000000000000087e-05,
+        "planned_triangles": 15190,
+        "minimum_raw_triangle_area": 1.8000000000002186e-05,
+        "minimum_raw_UV_area": 1.7879408097271077e-05,
         "raw_bounds_local_m": [
           [
-            -16.125,
-            -12.125,
-            -0.7
+            -16.494999999999997,
+            -12.68,
+            -0.35
           ],
           [
-            2.6,
-            12.125,
-            6.069999999999999
+            2.6000000000000005,
+            12.68,
+            8.423333333333334
           ]
         ],
         "materials": [
@@ -2512,11 +2861,24 @@
           "M_Town_Concrete",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
+          "M_Town_FeedAdobe",
+          "M_Town_FeedGalv",
+          "M_Town_FeedGrain",
+          "M_Town_FeedGrime",
+          "M_Town_FeedHay",
+          "M_Town_FeedLetterPaint",
+          "M_Town_FeedMineral",
+          "M_Town_FeedRustTin",
+          "M_Town_FeedSackPrint",
+          "M_Town_FeedSalt",
+          "M_Town_FeedStucco",
+          "M_Town_FeedStuccoBase",
+          "M_Town_FeedStuccoPatch",
           "M_Town_Metal",
-          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
           "M_Town_RustTin",
-          "M_Town_Stucco",
-          "M_Town_Timber"
+          "M_Town_Timber",
+          "M_Town_WhitePaint"
         ],
         "building": "Feed",
         "chunk": "Shell",
@@ -2534,19 +2896,19 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
       },
       "SM_Town_Feed_Glass": {
-        "planned_triangles": 8,
-        "minimum_raw_triangle_area": 0.6380000000000001,
+        "planned_triangles": 14,
+        "minimum_raw_triangle_area": 0.38849999999999996,
         "minimum_raw_UV_area": 0.5,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -7.1,
-            1.1999999999999997
+            -0.05500000000000001,
+            -7.0,
+            1.28
           ],
           [
-            0.17,
-            7.7,
-            3.2
+            -0.05,
+            7.6000000000000005,
+            3.5
           ]
         ],
         "materials": [
@@ -2568,28 +2930,37 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
       },
       "SM_Town_Feed_Interior": {
-        "planned_triangles": 10312,
-        "minimum_raw_triangle_area": 4.8999999999996976e-05,
-        "minimum_raw_UV_area": 4.8999999999996976e-05,
+        "planned_triangles": 14304,
+        "minimum_raw_triangle_area": 7.11861520610815e-06,
+        "minimum_raw_UV_area": 6.999999999995833e-06,
         "raw_bounds_local_m": [
           [
-            -15.9,
-            -11.9,
-            0.0
+            -15.89,
+            -11.890893765387586,
+            0.8499999999999999
           ],
           [
-            -0.09999999999999964,
-            11.9,
-            5.16
+            -0.10999999999999943,
+            11.89,
+            5.1
           ]
         ],
         "materials": [
           "M_Town_Burlap",
-          "M_Town_Ceiling",
-          "M_Town_Ceramic",
+          "M_Town_Clapboard",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
+          "M_Town_FeedGalv",
+          "M_Town_FeedGrain",
+          "M_Town_FeedHay",
+          "M_Town_FeedRedPaint",
+          "M_Town_FeedSackPrint",
+          "M_Town_FeedWallGlow",
           "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
           "M_Town_Timber"
         ],
         "building": "Feed",
@@ -2608,24 +2979,33 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
       },
       "SM_Town_Feed_Fixtures": {
-        "planned_triangles": 820,
-        "minimum_raw_triangle_area": 8.487048957086988e-05,
-        "minimum_raw_UV_area": 8.487048957086988e-05,
+        "planned_triangles": 3462,
+        "minimum_raw_triangle_area": 4.330127018918704e-07,
+        "minimum_raw_UV_area": 4.330127018918704e-07,
         "raw_bounds_local_m": [
           [
-            -14.26,
-            -4.26,
-            0.9
+            -14.799999999999999,
+            -12.917439959870666,
+            0.0
           ],
           [
-            0.55,
-            4.26,
-            4.9
+            2.308021188888889,
+            12.917439959870666,
+            6.68
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
+          "M_Town_FeedBulbGlow",
+          "M_Town_FeedGalv",
+          "M_Town_FeedRedPaint",
+          "M_Town_FeedShadeGlow",
           "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
           "M_Town_WarmGlow"
         ],
         "building": "Feed",
@@ -2644,29 +3024,45 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
       },
       "SM_Town_Cinema_Shell": {
-        "planned_triangles": 1548,
-        "minimum_raw_triangle_area": 9.100000000000083e-05,
-        "minimum_raw_UV_area": 9.100000000000083e-05,
+        "planned_triangles": 6352,
+        "minimum_raw_triangle_area": 9.799999999999707e-05,
+        "minimum_raw_UV_area": 9.799999999999707e-05,
         "raw_bounds_local_m": [
           [
-            -14.125,
-            -10.125,
+            -14.600000000000001,
+            -10.61,
             -0.7
           ],
           [
-            2.569,
-            10.125,
-            7.8
+            2.5500000000000003,
+            10.61,
+            9.66
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBlackTile",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaBronze",
+          "M_Town_CinemaEnamelRed",
+          "M_Town_CinemaFinRed",
+          "M_Town_CinemaRoofTar",
+          "M_Town_CinemaStain",
+          "M_Town_CinemaStucco",
+          "M_Town_CinemaTerrazzoCream",
+          "M_Town_CinemaTerrazzoRed",
           "M_Town_Concrete",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_Metal",
-          "M_Town_PinkPlaster",
+          "M_Town_OliveEnamel",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_TealPaint",
+          "M_Town_Terrazzo",
           "M_Town_Timber"
         ],
         "building": "Cinema",
@@ -2685,19 +3081,19 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
       },
       "SM_Town_Cinema_Glass": {
-        "planned_triangles": 12,
-        "minimum_raw_triangle_area": 0.1643000000000001,
-        "minimum_raw_UV_area": 0.5,
+        "planned_triangles": 42,
+        "minimum_raw_triangle_area": 0.1396502425968662,
+        "minimum_raw_UV_area": 0.11562448151996751,
         "raw_bounds_local_m": [
           [
-            -3.11,
-            -7.575,
-            0.10000000000000009
+            -4.67,
+            -7.58,
+            0.2599999999999999
           ],
           [
-            0.285,
-            8.115,
-            2.395
+            0.5599999999999999,
+            8.25,
+            2.33
           ]
         ],
         "materials": [
@@ -2719,31 +3115,43 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
       },
       "SM_Town_Cinema_Interior": {
-        "planned_triangles": 876,
-        "minimum_raw_triangle_area": 8.487048957086832e-05,
-        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "planned_triangles": 1866,
+        "minimum_raw_triangle_area": 6.235382907246769e-05,
+        "minimum_raw_UV_area": 6.235382907246769e-05,
         "raw_bounds_local_m": [
           [
-            -13.9,
-            -9.9,
+            -6.2,
+            -9.89,
             -0.11
           ],
           [
-            -0.09999999999999964,
-            9.9,
-            6.16
+            -0.18999999999999995,
+            9.89,
+            3.68
           ]
         ],
         "materials": [
           "M_Town_Ceiling",
           "M_Town_Ceramic",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBlackTile",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaEnamelRed",
+          "M_Town_CinemaStucco",
+          "M_Town_CinemaTerrazzoCream",
+          "M_Town_CinemaTerrazzoRed",
+          "M_Town_CinemaVelvet",
+          "M_Town_Concrete",
+          "M_Town_CreamEnamel",
+          "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_Metal",
+          "M_Town_LampFabric",
           "M_Town_OliveEnamel",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_Rubber",
+          "M_Town_TealPaint",
           "M_Town_Terrazzo",
-          "M_Town_Upholstery"
+          "M_Town_Timber"
         ],
         "building": "Cinema",
         "chunk": "Interior",
@@ -2761,23 +3169,29 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
       },
       "SM_Town_Cinema_Fixtures": {
-        "planned_triangles": 1196,
-        "minimum_raw_triangle_area": 8.487048957086832e-05,
-        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "planned_triangles": 4338,
+        "minimum_raw_triangle_area": 8.487048957087469e-05,
+        "minimum_raw_UV_area": 7.838367176906142e-05,
         "raw_bounds_local_m": [
           [
-            -2.76,
-            -5.26,
-            0.9
+            -12.05,
+            -10.34,
+            0.986143593539449
           ],
           [
-            2.285,
-            4.6850000000000005,
-            7.65
+            2.603,
+            10.34,
+            9.603058951248194
           ]
         ],
         "materials": [
-          "M_Town_CinemaRedGlow",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaBronze",
+          "M_Town_CinemaBulb",
+          "M_Town_CinemaDeadBulb",
+          "M_Town_CinemaNeonRed",
+          "M_Town_CinemaReaderGlow",
           "M_Town_DarkMetal",
           "M_Town_Metal",
           "M_Town_WarmGlow"
@@ -2798,27 +3212,31 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
       },
       "SM_Town_Church_Shell": {
-        "planned_triangles": 3550,
-        "minimum_raw_triangle_area": 0.00021292110040824037,
-        "minimum_raw_UV_area": 0.00021292110040824037,
+        "planned_triangles": 12574,
+        "minimum_raw_triangle_area": 0.0002219360197224761,
+        "minimum_raw_UV_area": 0.0002219360197224761,
         "raw_bounds_local_m": [
           [
-            -1.2,
-            -4.85,
-            -0.56
+            -1.08,
+            -5.0,
+            -0.5
           ],
           [
-            14.3,
-            4.85,
-            9.77
+            14.385,
+            5.0,
+            11.939999999999998
           ]
         ],
         "materials": [
-          "M_Town_Clapboard",
+          "M_Town_ChurchBrick",
+          "M_Town_ChurchOldPaper",
+          "M_Town_ChurchShingleFaded",
+          "M_Town_ChurchStone",
+          "M_Town_ChurchTrim",
+          "M_Town_ChurchWhiteBoard",
+          "M_Town_ChurchWornBoard",
           "M_Town_Concrete",
-          "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_Metal",
           "M_Town_RoofShingle",
           "M_Town_Timber"
         ],
@@ -2838,23 +3256,23 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
       },
       "SM_Town_Church_Glass": {
-        "planned_triangles": 24,
-        "minimum_raw_triangle_area": 0.16087499999999993,
-        "minimum_raw_UV_area": 0.175,
+        "planned_triangles": 88,
+        "minimum_raw_triangle_area": 0.0015636474889505004,
+        "minimum_raw_UV_area": 0.0015636474889505004,
         "raw_bounds_local_m": [
           [
-            -0.015,
-            -4.515,
+            -0.020000000000000004,
+            -4.52,
             1.25
           ],
           [
             11.65,
-            4.515,
+            4.52,
             3.95
           ]
         ],
         "materials": [
-          "M_Town_Glass"
+          "M_Town_ChurchGlass"
         ],
         "building": "Church",
         "chunk": "Glass",
@@ -2872,28 +3290,32 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
       },
       "SM_Town_Church_Interior": {
-        "planned_triangles": 2736,
-        "minimum_raw_triangle_area": 3.7069298006084125e-05,
-        "minimum_raw_UV_area": 3.7069298006077755e-05,
+        "planned_triangles": 5428,
+        "minimum_raw_triangle_area": 3.600000000000061e-05,
+        "minimum_raw_UV_area": 3.3425160871872904e-05,
         "raw_bounds_local_m": [
           [
             0.09999999999999964,
-            -4.4,
-            -0.1
+            -4.435380616000645,
+            -0.06
           ],
           [
-            13.91,
-            4.4,
-            6.327480520920261
+            13.900000000000002,
+            4.435380616000645,
+            5.916
           ]
         ],
         "materials": [
+          "M_Town_BookCloth",
+          "M_Town_Burlap",
+          "M_Town_Carpet",
+          "M_Town_Ceramic",
           "M_Town_Clapboard",
+          "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_LampFabric",
           "M_Town_Metal",
           "M_Town_Paper",
-          "M_Town_Stucco",
           "M_Town_Timber",
           "M_Town_Upholstery"
         ],
@@ -2913,25 +3335,35 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
       },
       "SM_Town_Church_Fixtures": {
-        "planned_triangles": 840,
-        "minimum_raw_triangle_area": 8.487048957087099e-05,
-        "minimum_raw_UV_area": 8.487048957087067e-05,
+        "planned_triangles": 3544,
+        "minimum_raw_triangle_area": 1.7320508075679257e-06,
+        "minimum_raw_UV_area": 1.7320508075679257e-06,
         "raw_bounds_local_m": [
           [
-            -0.11800000000000001,
-            -2.3600000000000003,
-            1.05
+            -0.442,
+            -5.18,
+            -0.04000000000000001
           ],
           [
-            11.26,
-            2.3600000000000003,
-            4.800000000000001
+            14.35,
+            5.18,
+            12.749999999999996
           ]
         ],
         "materials": [
+          "M_Town_Burlap",
+          "M_Town_ChurchBrass",
+          "M_Town_ChurchBronze",
+          "M_Town_ChurchFlameGlow",
+          "M_Town_ChurchGalv",
+          "M_Town_ChurchLampGlow",
+          "M_Town_ChurchPorchGlow",
+          "M_Town_Concrete",
           "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
           "M_Town_Metal",
-          "M_Town_WarmGlow"
+          "M_Town_Paper"
         ],
         "building": "Church",
         "chunk": "Fixtures",
@@ -3260,27 +3692,40 @@
     },
     "2": {
       "SM_Town_Sheriff_Shell": {
-        "planned_triangles": 506,
-        "minimum_raw_triangle_area": 0.0001478618752835059,
-        "minimum_raw_UV_area": 0.0001478618752835059,
+        "planned_triangles": 2916,
+        "minimum_raw_triangle_area": 4.8999999999995424e-05,
+        "minimum_raw_UV_area": 4.542042674488412e-05,
         "raw_bounds_local_m": [
           [
-            -10.125,
-            -6.125,
+            -10.15,
+            -6.665000000000001,
             -0.7
           ],
           [
-            0.835,
-            6.125,
-            3.8200000000000003
+            1.31,
+            6.665000000000001,
+            15.0
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
           "M_Town_Concrete",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
+          "M_Town_Metal",
+          "M_Town_Paper",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_RustTin",
+          "M_Town_SheriffBrass",
+          "M_Town_SheriffCoping",
+          "M_Town_SheriffCork",
+          "M_Town_SheriffLetters",
+          "M_Town_SheriffRoofing",
+          "M_Town_SheriffStreak",
+          "M_Town_SheriffStucco",
+          "M_Town_SheriffStuccoBase",
+          "M_Town_SheriffStuccoPatch",
+          "M_Town_SheriffWeatheredWood",
           "M_Town_Timber"
         ],
         "building": "Sheriff",
@@ -3299,19 +3744,19 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Shell"
       },
       "SM_Town_Sheriff_Glass": {
-        "planned_triangles": 4,
-        "minimum_raw_triangle_area": 0.328,
+        "planned_triangles": 28,
+        "minimum_raw_triangle_area": 0.03796000000000004,
         "minimum_raw_UV_area": 0.5,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -3.1,
-            0.8000000000000002
+            -4.9799999999999995,
+            -5.99,
+            0.89
           ],
           [
-            0.04,
-            4.8100000000000005,
-            2.4
+            0.195,
+            5.99,
+            2.33
           ]
         ],
         "materials": [
@@ -3333,18 +3778,18 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Glass"
       },
       "SM_Town_Sheriff_Interior": {
-        "planned_triangles": 2420,
-        "minimum_raw_triangle_area": 1.3499999999999855e-05,
-        "minimum_raw_UV_area": 1.1691342951089989e-05,
+        "planned_triangles": 2020,
+        "minimum_raw_triangle_area": 3.706929800607474e-05,
+        "minimum_raw_UV_area": 3.7069298006077755e-05,
         "raw_bounds_local_m": [
           [
             -9.9,
-            -5.9,
+            -5.905,
             -0.11
           ],
           [
             -0.09999999999999964,
-            6.2,
+            5.905,
             3.46
           ]
         ],
@@ -3352,6 +3797,7 @@
           "M_Town_BookCloth",
           "M_Town_Ceiling",
           "M_Town_CinemaRedGlow",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_FloorTile",
@@ -3360,9 +3806,12 @@
           "M_Town_Paper",
           "M_Town_PrintAtlas",
           "M_Town_Rubber",
+          "M_Town_SheriffShadeGlow",
+          "M_Town_SheriffWainscot",
           "M_Town_Stucco",
           "M_Town_Timber",
-          "M_Town_Upholstery"
+          "M_Town_Upholstery",
+          "M_Town_WasherGlass"
         ],
         "building": "Sheriff",
         "chunk": "Interior",
@@ -3380,26 +3829,30 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Interior"
       },
       "SM_Town_Sheriff_Fixtures": {
-        "planned_triangles": 260,
-        "minimum_raw_triangle_area": 7.476554800833518e-05,
-        "minimum_raw_UV_area": 7.476554800833518e-05,
+        "planned_triangles": 562,
+        "minimum_raw_triangle_area": 8.444080767021791e-05,
+        "minimum_raw_UV_area": 6.617620650279915e-05,
         "raw_bounds_local_m": [
           [
-            -8.26,
-            -1.9,
-            0.9
+            -9.21,
+            -5.107063390977709,
+            0.12
           ],
           [
-            0.55,
-            4.75,
-            3.125
+            0.75,
+            6.2,
+            11.759999999999998
           ]
         ],
         "materials": [
+          "M_Town_CinemaRedGlow",
           "M_Town_DarkMetal",
           "M_Town_Metal",
-          "M_Town_TubeGlow",
-          "M_Town_WarmGlow"
+          "M_Town_SheriffBrass",
+          "M_Town_SheriffLampGlow",
+          "M_Town_SheriffShadeGlow",
+          "M_Town_SheriffTubeGlow",
+          "M_Town_TubeGlow"
         ],
         "building": "Sheriff",
         "chunk": "Fixtures",
@@ -3417,29 +3870,41 @@
         "role": "weathered tan mineral courthouse, barred oak office and records room / Fixtures"
       },
       "SM_Town_Laundry_Shell": {
-        "planned_triangles": 470,
-        "minimum_raw_triangle_area": 0.0034999999999999923,
-        "minimum_raw_UV_area": 0.0034999999999999953,
+        "planned_triangles": 2584,
+        "minimum_raw_triangle_area": 0.00017320508075688486,
+        "minimum_raw_UV_area": 8.118988160479131e-05,
         "raw_bounds_local_m": [
           [
-            -10.125,
-            -7.125,
+            -10.309999999999999,
+            -7.62,
             -0.7
           ],
           [
-            0.835,
-            7.125,
-            3.72
+            0.807,
+            7.62,
+            4.85
           ]
         ],
         "materials": [
-          "M_Town_BluePaint",
           "M_Town_Concrete",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
-          "M_Town_DarkWood",
+          "M_Town_LaundryAluminum",
+          "M_Town_LaundryBlockPaint",
+          "M_Town_LaundryDirt",
+          "M_Town_LaundryFadedBlue",
+          "M_Town_LaundryGrime",
+          "M_Town_LaundryLint",
+          "M_Town_LaundryMortar",
+          "M_Town_LaundryPaleGreen",
+          "M_Town_LaundryRawBlock",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_Metal",
+          "M_Town_Paper",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
-          "M_Town_Timber"
+          "M_Town_RoofShingle",
+          "M_Town_RustTin",
+          "M_Town_TealPaint"
         ],
         "building": "Laundry",
         "chunk": "Shell",
@@ -3457,19 +3922,19 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Shell"
       },
       "SM_Town_Laundry_Glass": {
-        "planned_triangles": 6,
-        "minimum_raw_triangle_area": 0.3679999999999999,
+        "planned_triangles": 10,
+        "minimum_raw_triangle_area": 0.6932249999999992,
         "minimum_raw_UV_area": 0.5,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -4.86,
-            0.6000000000000001
+            0.03,
+            -4.795,
+            0.28000000000000014
           ],
           [
-            0.04,
-            5.6499999999999995,
-            2.3
+            0.0325,
+            5.6,
+            2.25
           ]
         ],
         "materials": [
@@ -3491,34 +3956,39 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Glass"
       },
       "SM_Town_Laundry_Interior": {
-        "planned_triangles": 6462,
-        "minimum_raw_triangle_area": 2.9999999999998276e-05,
-        "minimum_raw_UV_area": 2.9999999999998276e-05,
+        "planned_triangles": 7342,
+        "minimum_raw_triangle_area": 3.999999999997698e-05,
+        "minimum_raw_UV_area": 3.999999999997698e-05,
         "raw_bounds_local_m": [
           [
-            -9.9,
-            -6.9,
+            -9.89,
+            -6.890000000000001,
             -0.11
           ],
           [
-            -0.09999999999999964,
-            6.9,
-            3.36
+            0.018,
+            6.890000000000001,
+            3.05
           ]
         ],
         "materials": [
+          "M_Town_BluePaint",
+          "M_Town_Burlap",
           "M_Town_Ceiling",
           "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
-          "M_Town_DarkWood",
-          "M_Town_FloorTile",
+          "M_Town_LaundryAluminum",
+          "M_Town_LaundryOrangePlastic",
+          "M_Town_LaundryPaleGreen",
+          "M_Town_LaundryRedEnamel",
+          "M_Town_LaundryTileCream",
+          "M_Town_LaundryWallCream",
           "M_Town_Metal",
           "M_Town_OliveEnamel",
           "M_Town_Paper",
           "M_Town_PrintAtlas",
           "M_Town_Rubber",
           "M_Town_Timber",
-          "M_Town_Upholstery",
           "M_Town_WasherGlass"
         ],
         "building": "Laundry",
@@ -3537,26 +4007,29 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Interior"
       },
       "SM_Town_Laundry_Fixtures": {
-        "planned_triangles": 328,
-        "minimum_raw_triangle_area": 7.476554800833941e-05,
-        "minimum_raw_UV_area": 7.476554800833941e-05,
+        "planned_triangles": 892,
+        "minimum_raw_triangle_area": 4.3301270189221214e-05,
+        "minimum_raw_UV_area": 4.3301270189221214e-05,
         "raw_bounds_local_m": [
           [
-            -3.11,
-            -4.7700000000000005,
-            0.9
+            -10.319999999999999,
+            -7.4,
+            -0.05
           ],
           [
-            0.55,
-            4.75,
-            3.1149999999999998
+            0.7660675086018467,
+            6.0,
+            4.65
           ]
         ],
         "materials": [
+          "M_Town_CinemaRedGlow",
           "M_Town_DarkMetal",
+          "M_Town_LaundryTubeLens",
           "M_Town_Metal",
-          "M_Town_TubeGlow",
-          "M_Town_WarmGlow"
+          "M_Town_OliveEnamel",
+          "M_Town_WarmGlow",
+          "M_Town_WasherGlass"
         ],
         "building": "Laundry",
         "chunk": "Fixtures",
@@ -3574,19 +4047,19 @@
         "role": "chipped cream concrete block, faded blue enamel and coin operated washing machines / Fixtures"
       },
       "SM_Town_Feed_Shell": {
-        "planned_triangles": 982,
-        "minimum_raw_triangle_area": 0.0013307568775515234,
-        "minimum_raw_UV_area": 0.0013307568775515234,
+        "planned_triangles": 7289,
+        "minimum_raw_triangle_area": 1.8000000000002186e-05,
+        "minimum_raw_UV_area": 1.7879408097271077e-05,
         "raw_bounds_local_m": [
           [
-            -16.125,
-            -12.125,
-            -0.7
+            -16.494999999999997,
+            -12.68,
+            -0.35
           ],
           [
-            2.6,
-            12.125,
-            5.5200000000000005
+            2.6000000000000005,
+            12.68,
+            8.423333333333334
           ]
         ],
         "materials": [
@@ -3594,10 +4067,24 @@
           "M_Town_Concrete",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_PrintAtlas",
+          "M_Town_FeedAdobe",
+          "M_Town_FeedGalv",
+          "M_Town_FeedGrain",
+          "M_Town_FeedGrime",
+          "M_Town_FeedHay",
+          "M_Town_FeedLetterPaint",
+          "M_Town_FeedMineral",
+          "M_Town_FeedRustTin",
+          "M_Town_FeedSackPrint",
+          "M_Town_FeedSalt",
+          "M_Town_FeedStucco",
+          "M_Town_FeedStuccoBase",
+          "M_Town_FeedStuccoPatch",
+          "M_Town_Metal",
+          "M_Town_Rubber",
           "M_Town_RustTin",
-          "M_Town_Stucco",
-          "M_Town_Timber"
+          "M_Town_Timber",
+          "M_Town_WhitePaint"
         ],
         "building": "Feed",
         "chunk": "Shell",
@@ -3615,19 +4102,19 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Shell"
       },
       "SM_Town_Feed_Glass": {
-        "planned_triangles": 8,
-        "minimum_raw_triangle_area": 0.6380000000000001,
+        "planned_triangles": 14,
+        "minimum_raw_triangle_area": 0.38849999999999996,
         "minimum_raw_UV_area": 0.5,
         "raw_bounds_local_m": [
           [
-            0.035,
-            -7.1,
-            1.1999999999999997
+            -0.05500000000000001,
+            -7.0,
+            1.28
           ],
           [
-            0.17,
-            7.7,
-            3.2
+            -0.05,
+            7.6000000000000005,
+            3.5
           ]
         ],
         "materials": [
@@ -3649,27 +4136,37 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Glass"
       },
       "SM_Town_Feed_Interior": {
-        "planned_triangles": 1672,
-        "minimum_raw_triangle_area": 0.0001402961154130613,
-        "minimum_raw_UV_area": 0.00014004823346493178,
+        "planned_triangles": 5896,
+        "minimum_raw_triangle_area": 1.008271616357282e-05,
+        "minimum_raw_UV_area": 9.899494936611871e-06,
         "raw_bounds_local_m": [
           [
-            -15.9,
-            -11.9,
-            0.0
+            -15.89,
+            -11.890893765387586,
+            0.8499999999999999
           ],
           [
-            -0.09999999999999964,
-            11.9,
-            5.16
+            -0.10999999999999943,
+            11.89,
+            5.1
           ]
         ],
         "materials": [
           "M_Town_Burlap",
-          "M_Town_Ceiling",
+          "M_Town_Clapboard",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
+          "M_Town_FeedGalv",
+          "M_Town_FeedGrain",
+          "M_Town_FeedHay",
+          "M_Town_FeedRedPaint",
+          "M_Town_FeedSackPrint",
+          "M_Town_FeedWallGlow",
           "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_Paper",
+          "M_Town_PrintAtlas",
           "M_Town_Timber"
         ],
         "building": "Feed",
@@ -3688,24 +4185,33 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Interior"
       },
       "SM_Town_Feed_Fixtures": {
-        "planned_triangles": 572,
-        "minimum_raw_triangle_area": 8.487048957086988e-05,
-        "minimum_raw_UV_area": 8.487048957086988e-05,
+        "planned_triangles": 2006,
+        "minimum_raw_triangle_area": 6.57163890148396e-07,
+        "minimum_raw_UV_area": 6.57163890148396e-07,
         "raw_bounds_local_m": [
           [
-            -14.26,
-            -4.26,
-            0.9
+            -14.799999999999999,
+            -12.912426966734465,
+            0.0
           ],
           [
-            0.55,
-            4.26,
-            4.9
+            2.308433977110147,
+            12.912426966734465,
+            6.68
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
+          "M_Town_FeedBulbGlow",
+          "M_Town_FeedGalv",
+          "M_Town_FeedRedPaint",
+          "M_Town_FeedShadeGlow",
           "M_Town_Metal",
+          "M_Town_OliveEnamel",
+          "M_Town_PrintAtlas",
+          "M_Town_Rubber",
           "M_Town_WarmGlow"
         ],
         "building": "Feed",
@@ -3724,30 +4230,43 @@
         "role": "false-front stucco mercantile, corrugated awning, timber stock room and loading dock / Fixtures"
       },
       "SM_Town_Cinema_Shell": {
-        "planned_triangles": 1080,
-        "minimum_raw_triangle_area": 9.100000000000083e-05,
-        "minimum_raw_UV_area": 9.100000000000083e-05,
+        "planned_triangles": 3770,
+        "minimum_raw_triangle_area": 9.799999999999707e-05,
+        "minimum_raw_UV_area": 9.799999999999707e-05,
         "raw_bounds_local_m": [
           [
-            -14.125,
-            -10.125,
+            -14.17,
+            -10.61,
             -0.7
           ],
           [
-            2.569,
-            10.125,
-            7.8
+            2.5500000000000003,
+            10.61,
+            9.66
           ]
         ],
         "materials": [
+          "M_Town_Ceramic",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBlackTile",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaBronze",
+          "M_Town_CinemaEnamelRed",
+          "M_Town_CinemaFinRed",
+          "M_Town_CinemaRoofTar",
+          "M_Town_CinemaStucco",
+          "M_Town_CinemaTerrazzoCream",
+          "M_Town_CinemaTerrazzoRed",
           "M_Town_Concrete",
+          "M_Town_CreamEnamel",
           "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_Metal",
-          "M_Town_PinkPlaster",
+          "M_Town_OliveEnamel",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
-          "M_Town_Timber"
+          "M_Town_Rubber",
+          "M_Town_RustTin",
+          "M_Town_Terrazzo"
         ],
         "building": "Cinema",
         "chunk": "Shell",
@@ -3765,19 +4284,19 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Shell"
       },
       "SM_Town_Cinema_Glass": {
-        "planned_triangles": 12,
-        "minimum_raw_triangle_area": 0.1643000000000001,
-        "minimum_raw_UV_area": 0.5,
+        "planned_triangles": 38,
+        "minimum_raw_triangle_area": 0.1781999999999997,
+        "minimum_raw_UV_area": 0.1442872141718258,
         "raw_bounds_local_m": [
           [
-            -3.11,
-            -7.575,
-            0.10000000000000009
+            -4.67,
+            -7.58,
+            0.2599999999999999
           ],
           [
-            0.285,
-            8.115,
-            2.395
+            0.5599999999999999,
+            8.25,
+            2.33
           ]
         ],
         "materials": [
@@ -3799,31 +4318,38 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Glass"
       },
       "SM_Town_Cinema_Interior": {
-        "planned_triangles": 276,
-        "minimum_raw_triangle_area": 8.487048957086832e-05,
-        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "planned_triangles": 934,
+        "minimum_raw_triangle_area": 8.284271247461383e-05,
+        "minimum_raw_UV_area": 8.284271247461383e-05,
         "raw_bounds_local_m": [
           [
-            -13.9,
-            -9.9,
+            -6.2,
+            -9.89,
             -0.11
           ],
           [
-            -0.09999999999999964,
-            9.9,
-            6.16
+            -0.18999999999999995,
+            9.89,
+            3.68
           ]
         ],
         "materials": [
           "M_Town_Ceiling",
-          "M_Town_Ceramic",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBlackTile",
+          "M_Town_CinemaEnamelRed",
+          "M_Town_CinemaStucco",
+          "M_Town_CinemaTerrazzoCream",
+          "M_Town_CinemaTerrazzoRed",
+          "M_Town_CinemaVelvet",
+          "M_Town_Concrete",
+          "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_Metal",
-          "M_Town_OliveEnamel",
+          "M_Town_LampFabric",
           "M_Town_PrintAtlas",
-          "M_Town_Stucco",
+          "M_Town_Rubber",
           "M_Town_Terrazzo",
-          "M_Town_Upholstery"
+          "M_Town_Timber"
         ],
         "building": "Cinema",
         "chunk": "Interior",
@@ -3841,23 +4367,29 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Interior"
       },
       "SM_Town_Cinema_Fixtures": {
-        "planned_triangles": 736,
-        "minimum_raw_triangle_area": 8.487048957086832e-05,
-        "minimum_raw_UV_area": 8.487048957086832e-05,
+        "planned_triangles": 2326,
+        "minimum_raw_triangle_area": 9.742785792575184e-05,
+        "minimum_raw_UV_area": 7.838367176906142e-05,
         "raw_bounds_local_m": [
           [
-            -2.76,
-            -5.26,
-            0.9
+            -12.05,
+            -10.34,
+            0.986143593539449
           ],
           [
-            2.285,
-            4.6850000000000005,
-            7.65
+            2.603,
+            10.34,
+            9.603522961568046
           ]
         ],
         "materials": [
-          "M_Town_CinemaRedGlow",
+          "M_Town_CinemaAluminium",
+          "M_Town_CinemaBrass",
+          "M_Town_CinemaBronze",
+          "M_Town_CinemaBulb",
+          "M_Town_CinemaDeadBulb",
+          "M_Town_CinemaNeonRed",
+          "M_Town_CinemaReaderGlow",
           "M_Town_DarkMetal",
           "M_Town_Metal",
           "M_Town_WarmGlow"
@@ -3878,27 +4410,29 @@
         "role": "stepped Art Deco mineral facade, physical marquee, shuttered ticket booth and terrazzo lobby / Fixtures"
       },
       "SM_Town_Church_Shell": {
-        "planned_triangles": 1886,
-        "minimum_raw_triangle_area": 0.00021292110040824037,
-        "minimum_raw_UV_area": 0.00021292110040824037,
+        "planned_triangles": 4954,
+        "minimum_raw_triangle_area": 0.0004199999999999937,
+        "minimum_raw_UV_area": 0.0004199999999999941,
         "raw_bounds_local_m": [
           [
-            -1.2,
-            -4.85,
-            -0.56
+            -1.08,
+            -5.0,
+            -0.5
           ],
           [
-            14.3,
-            4.85,
-            9.77
+            14.385,
+            5.0,
+            11.939999999999998
           ]
         ],
         "materials": [
-          "M_Town_Clapboard",
+          "M_Town_ChurchBrick",
+          "M_Town_ChurchShingleFaded",
+          "M_Town_ChurchStone",
+          "M_Town_ChurchTrim",
+          "M_Town_ChurchWhiteBoard",
           "M_Town_Concrete",
-          "M_Town_DarkMetal",
           "M_Town_DarkWood",
-          "M_Town_Metal",
           "M_Town_RoofShingle",
           "M_Town_Timber"
         ],
@@ -3918,23 +4452,23 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Shell"
       },
       "SM_Town_Church_Glass": {
-        "planned_triangles": 24,
-        "minimum_raw_triangle_area": 0.16087499999999993,
-        "minimum_raw_UV_area": 0.175,
+        "planned_triangles": 40,
+        "minimum_raw_triangle_area": 0.023469401697649345,
+        "minimum_raw_UV_area": 0.023469401697649345,
         "raw_bounds_local_m": [
           [
-            -0.015,
-            -4.515,
+            -0.020000000000000004,
+            -4.52,
             1.25
           ],
           [
             11.65,
-            4.515,
+            4.52,
             3.95
           ]
         ],
         "materials": [
-          "M_Town_Glass"
+          "M_Town_ChurchGlass"
         ],
         "building": "Church",
         "chunk": "Glass",
@@ -3952,27 +4486,30 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Glass"
       },
       "SM_Town_Church_Interior": {
-        "planned_triangles": 2468,
+        "planned_triangles": 2430,
         "minimum_raw_triangle_area": 3.7069298006084125e-05,
         "minimum_raw_UV_area": 3.7069298006077755e-05,
         "raw_bounds_local_m": [
           [
             0.09999999999999964,
-            -4.4,
-            -0.1
+            -4.435380616000645,
+            -0.06
           ],
           [
-            13.91,
-            4.4,
-            6.327480520920261
+            13.900000000000002,
+            4.435380616000645,
+            5.916
           ]
         ],
         "materials": [
+          "M_Town_Carpet",
+          "M_Town_Ceramic",
           "M_Town_Clapboard",
+          "M_Town_DarkMetal",
           "M_Town_DarkWood",
           "M_Town_LampFabric",
+          "M_Town_Metal",
           "M_Town_Paper",
-          "M_Town_Stucco",
           "M_Town_Timber",
           "M_Town_Upholstery"
         ],
@@ -3992,25 +4529,33 @@
         "role": "small weathered timber church, pitched shingle roof, real bell tower, pointed windows, pews and sacristy / Interior"
       },
       "SM_Town_Church_Fixtures": {
-        "planned_triangles": 600,
-        "minimum_raw_triangle_area": 8.487048957087099e-05,
-        "minimum_raw_UV_area": 8.487048957087067e-05,
+        "planned_triangles": 1736,
+        "minimum_raw_triangle_area": 1.7320508075679257e-06,
+        "minimum_raw_UV_area": 1.7320508075679257e-06,
         "raw_bounds_local_m": [
           [
-            -0.11800000000000001,
-            -2.3600000000000003,
-            1.05
+            -0.44,
+            -5.14,
+            0.032350465954472246
           ],
           [
-            11.26,
-            2.3600000000000003,
-            4.800000000000001
+            14.35,
+            5.14,
+            12.749999999999996
           ]
         ],
         "materials": [
+          "M_Town_ChurchBrass",
+          "M_Town_ChurchBronze",
+          "M_Town_ChurchFlameGlow",
+          "M_Town_ChurchGalv",
+          "M_Town_ChurchLampGlow",
+          "M_Town_ChurchPorchGlow",
           "M_Town_DarkMetal",
+          "M_Town_DarkWood",
+          "M_Town_LampFabric",
           "M_Town_Metal",
-          "M_Town_WarmGlow"
+          "M_Town_Paper"
         ],
         "building": "Church",
         "chunk": "Fixtures",
@@ -4339,9 +4884,9 @@
     }
   },
   "lod_totals": {
-    "0": 65154,
-    "1": 48610,
-    "2": 27450
+    "0": 170680,
+    "1": 108203,
+    "2": 54465
   },
   "building_contract": {
     "Sheriff": {

@@ -8,16 +8,32 @@
     {
       "name": "SM_Town_Sheriff_Shell metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 1034,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 9691,
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Burlap",
+        "M_Town_RoofShingle",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_SheriffStucco",
+        "M_Town_SheriffStuccoBase",
+        "M_Town_SheriffStuccoPatch",
+        "M_Town_SheriffStreak",
+        "M_Town_SheriffCrack",
+        "M_Town_SheriffCoping",
+        "M_Town_SheriffRoofing",
+        "M_Town_SheriffLetters",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffCork",
+        "M_Town_SheriffWeatheredWood"
       ]
     },
     {
@@ -31,7 +47,7 @@
     {
       "name": "SM_Town_Sheriff_Shell finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 2.52577854749636e-05
+      "minimum_uv_area": 1.0102889262952885e-06
     },
     {
       "name": "SM_Town_Sheriff_Glass single exported chunk",
@@ -40,8 +56,8 @@
     {
       "name": "SM_Town_Sheriff_Glass metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 3.501772880554199e-07,
-      "triangles": 4,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 100,
       "materials": [
         "M_Town_Glass"
       ]
@@ -57,7 +73,7 @@
     {
       "name": "SM_Town_Sheriff_Glass finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.5
+      "minimum_uv_area": 2.7749009028354976e-05
     },
     {
       "name": "SM_Town_Sheriff_Interior single exported chunk",
@@ -67,10 +83,11 @@
       "name": "SM_Town_Sheriff_Interior metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 5188,
+      "triangles": 7560,
       "materials": [
         "M_Town_Stucco",
         "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Metal",
@@ -80,10 +97,15 @@
         "M_Town_FloorTile",
         "M_Town_Upholstery",
         "M_Town_BookCloth",
+        "M_Town_LampFabric",
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_CinemaRedGlow"
+        "M_Town_WasherGlass",
+        "M_Town_WarmGlow",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffWainscot",
+        "M_Town_SheriffShadeGlow"
       ]
     },
     {
@@ -106,13 +128,17 @@
     {
       "name": "SM_Town_Sheriff_Fixtures metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 428,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1734,
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_TubeGlow",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffLampGlow",
+        "M_Town_SheriffTubeGlow",
+        "M_Town_SheriffShadeGlow"
       ]
     },
     {
@@ -126,7 +152,7 @@
     {
       "name": "SM_Town_Sheriff_Fixtures finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 3.6371211007385496e-05
+      "minimum_uv_area": 1.322479210630334e-05
     },
     {
       "name": "SM_Town_Laundry_Shell single exported chunk",
@@ -135,17 +161,31 @@
     {
       "name": "SM_Town_Laundry_Shell metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 830,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 9935,
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_BluePaint",
-        "M_Town_Timber",
-        "M_Town_DarkWood",
+        "M_Town_TealPaint",
+        "M_Town_CreamEnamel",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Burlap",
+        "M_Town_RoofShingle",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_LaundryBlockPaint",
+        "M_Town_LaundryMortar",
+        "M_Town_LaundryRawBlock",
+        "M_Town_LaundryFadedBlue",
+        "M_Town_LaundryGrime",
+        "M_Town_LaundryLint",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryDirt",
+        "M_Town_LaundryStreak"
       ]
     },
     {
@@ -159,7 +199,7 @@
     {
       "name": "SM_Town_Laundry_Shell finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.00016199958372098422
+      "minimum_uv_area": 2.5455681996078283e-05
     },
     {
       "name": "SM_Town_Laundry_Glass single exported chunk",
@@ -168,8 +208,8 @@
     {
       "name": "SM_Town_Laundry_Glass metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.954636096954346e-07,
-      "triangles": 6,
+      "maximum_error_m": 4.898756742477417e-07,
+      "triangles": 10,
       "materials": [
         "M_Town_Glass"
       ]
@@ -195,8 +235,10 @@
       "name": "SM_Town_Laundry_Interior metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 14782,
+      "triangles": 21552,
       "materials": [
+        "M_Town_BluePaint",
+        "M_Town_TealPaint",
         "M_Town_OliveEnamel",
         "M_Town_CreamEnamel",
         "M_Town_Timber",
@@ -204,12 +246,22 @@
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Rubber",
-        "M_Town_FloorTile",
         "M_Town_Upholstery",
+        "M_Town_BookCloth",
+        "M_Town_Bedding",
+        "M_Town_LampFabric",
+        "M_Town_Burlap",
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_WasherGlass"
+        "M_Town_WasherGlass",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryTileGreen",
+        "M_Town_LaundryTileCream",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryWallCream",
+        "M_Town_LaundryOrangePlastic",
+        "M_Town_LaundryRedEnamel"
       ]
     },
     {
@@ -223,7 +275,7 @@
     {
       "name": "SM_Town_Laundry_Interior finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 2.999988317498037e-05
+      "minimum_uv_area": 2.4000037670113272e-05
     },
     {
       "name": "SM_Town_Laundry_Fixtures single exported chunk",
@@ -233,12 +285,20 @@
       "name": "SM_Town_Laundry_Fixtures metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 496,
+      "triangles": 2572,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
+        "M_Town_Paper",
+        "M_Town_WasherGlass",
         "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_CinemaRedGlow",
+        "M_Town_LaundryTubeLens",
+        "M_Town_LaundryRedEnamel"
       ]
     },
     {
@@ -252,7 +312,7 @@
     {
       "name": "SM_Town_Laundry_Fixtures finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 3.6371205199614565e-05
+      "minimum_uv_area": 1.6000031846108605e-05
     },
     {
       "name": "SM_Town_Feed_Shell single exported chunk",
@@ -262,17 +322,30 @@
       "name": "SM_Town_Feed_Shell metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.9073486328125e-06,
-      "triangles": 2658,
+      "triangles": 24026,
       "materials": [
-        "M_Town_Stucco",
+        "M_Town_WhitePaint",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Concrete",
         "M_Town_Burlap",
-        "M_Town_PrintAtlas"
+        "M_Town_FeedStuccoBase",
+        "M_Town_FeedAdobe",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedSalt",
+        "M_Town_FeedMineral",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedStucco",
+        "M_Town_FeedStuccoPatch",
+        "M_Town_FeedGrime",
+        "M_Town_FeedLetterPaint",
+        "M_Town_FeedRustTin"
       ]
     },
     {
@@ -286,7 +359,7 @@
     {
       "name": "SM_Town_Feed_Shell finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 4.899978137018479e-05
+      "minimum_uv_area": 6.049608357372449e-06
     },
     {
       "name": "SM_Town_Feed_Glass single exported chunk",
@@ -295,8 +368,8 @@
     {
       "name": "SM_Town_Feed_Glass metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 6.742775440216064e-07,
-      "triangles": 8,
+      "maximum_error_m": 6.109476089477539e-07,
+      "triangles": 14,
       "materials": [
         "M_Town_Glass"
       ]
@@ -322,15 +395,25 @@
       "name": "SM_Town_Feed_Interior metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.043081283569336e-06,
-      "triangles": 16216,
+      "triangles": 22464,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_Clapboard",
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Ceramic",
         "M_Town_Burlap",
-        "M_Town_Ceiling"
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedWallGlow"
       ]
     },
     {
@@ -344,7 +427,7 @@
     {
       "name": "SM_Town_Feed_Interior finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 4.899978137018479e-05
+      "minimum_uv_area": 4.3254792014835175e-06
     },
     {
       "name": "SM_Town_Feed_Fixtures single exported chunk",
@@ -353,12 +436,21 @@
     {
       "name": "SM_Town_Feed_Fixtures metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 1316,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 5954,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
+        "M_Town_PrintAtlas",
+        "M_Town_WarmGlow",
+        "M_Town_FeedGalv",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedBulbGlow",
+        "M_Town_FeedShadeGlow"
       ]
     },
     {
@@ -372,7 +464,7 @@
     {
       "name": "SM_Town_Feed_Fixtures finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 3.637120309263331e-05
+      "minimum_uv_area": 2.0711121617722483e-07
     },
     {
       "name": "SM_Town_Cinema_Shell single exported chunk",
@@ -382,16 +474,32 @@
       "name": "SM_Town_Cinema_Shell metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 1848,
+      "triangles": 9920,
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_PinkPlaster",
+        "M_Town_TealPaint",
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Terrazzo",
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaFinRed",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaRoofTar",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaStain",
+        "M_Town_CinemaBronze"
       ]
     },
     {
@@ -405,7 +513,7 @@
     {
       "name": "SM_Town_Cinema_Shell finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 9.099965357783901e-05
+      "minimum_uv_area": 3.5073821015529916e-05
     },
     {
       "name": "SM_Town_Cinema_Glass single exported chunk",
@@ -414,8 +522,8 @@
     {
       "name": "SM_Town_Cinema_Glass metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 7.152557373046875e-07,
-      "triangles": 12,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 50,
       "materials": [
         "M_Town_Glass"
       ]
@@ -431,7 +539,7 @@
     {
       "name": "SM_Town_Cinema_Glass finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.5
+      "minimum_uv_area": 0.07381286093549716
     },
     {
       "name": "SM_Town_Cinema_Interior single exported chunk",
@@ -441,17 +549,30 @@
       "name": "SM_Town_Cinema_Interior metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 1036,
+      "triangles": 3426,
       "materials": [
-        "M_Town_Stucco",
+        "M_Town_TealPaint",
         "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
+        "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Ceramic",
+        "M_Town_Concrete",
         "M_Town_Terrazzo",
-        "M_Town_Upholstery",
+        "M_Town_LampFabric",
+        "M_Town_Paper",
         "M_Town_Ceiling",
-        "M_Town_PrintAtlas"
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaVelvet",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaStucco"
       ]
     },
     {
@@ -465,7 +586,7 @@
     {
       "name": "SM_Town_Cinema_Interior finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.486993863243697e-05
+      "minimum_uv_area": 4.419385632736805e-05
     },
     {
       "name": "SM_Town_Cinema_Fixtures single exported chunk",
@@ -474,13 +595,20 @@
     {
       "name": "SM_Town_Cinema_Fixtures metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 1852,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 7534,
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Ceramic",
         "M_Town_WarmGlow",
-        "M_Town_CinemaRedGlow"
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBulb",
+        "M_Town_CinemaReaderGlow",
+        "M_Town_CinemaNeonRed",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaDeadBulb"
       ]
     },
     {
@@ -494,7 +622,7 @@
     {
       "name": "SM_Town_Cinema_Fixtures finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 3.637124453498286e-05
+      "minimum_uv_area": 2.1000055312470067e-05
     },
     {
       "name": "SM_Town_Church_Shell single exported chunk",
@@ -504,15 +632,19 @@
       "name": "SM_Town_Church_Shell metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.430511474609375e-06,
-      "triangles": 3614,
+      "triangles": 20182,
       "materials": [
         "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Clapboard",
-        "M_Town_Metal",
-        "M_Town_DarkMetal",
         "M_Town_Concrete",
-        "M_Town_RoofShingle"
+        "M_Town_RoofShingle",
+        "M_Town_ChurchWhiteBoard",
+        "M_Town_ChurchTrim",
+        "M_Town_ChurchStone",
+        "M_Town_ChurchBrick",
+        "M_Town_ChurchWornBoard",
+        "M_Town_ChurchShingleFaded",
+        "M_Town_ChurchOldPaper"
       ]
     },
     {
@@ -526,7 +658,7 @@
     {
       "name": "SM_Town_Church_Shell finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.00021292086789204134
+      "minimum_uv_area": 6.23993706900805e-05
     },
     {
       "name": "SM_Town_Church_Glass single exported chunk",
@@ -536,9 +668,9 @@
       "name": "SM_Town_Church_Glass metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 24,
+      "triangles": 136,
       "materials": [
-        "M_Town_Glass"
+        "M_Town_ChurchGlass"
       ]
     },
     {
@@ -552,7 +684,7 @@
     {
       "name": "SM_Town_Church_Glass finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.15000000596046448
+      "minimum_uv_area": 0.0035157594214076937
     },
     {
       "name": "SM_Town_Church_Interior single exported chunk",
@@ -561,16 +693,20 @@
     {
       "name": "SM_Town_Church_Interior metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 1.430511474609375e-06,
-      "triangles": 2800,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 8552,
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Clapboard",
         "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Ceramic",
+        "M_Town_Carpet",
         "M_Town_Upholstery",
+        "M_Town_BookCloth",
         "M_Town_LampFabric",
+        "M_Town_Burlap",
         "M_Town_Paper"
       ]
     },
@@ -585,7 +721,7 @@
     {
       "name": "SM_Town_Church_Interior finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 5.4332121247835374e-05
+      "minimum_uv_area": 3.3425054015268074e-05
     },
     {
       "name": "SM_Town_Church_Fixtures single exported chunk",
@@ -594,12 +730,22 @@
     {
       "name": "SM_Town_Church_Fixtures metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 7.152557373046875e-07,
-      "triangles": 1320,
+      "maximum_error_m": 1.430511474609375e-06,
+      "triangles": 5584,
       "materials": [
+        "M_Town_DarkWood",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_Concrete",
+        "M_Town_LampFabric",
+        "M_Town_Burlap",
+        "M_Town_Paper",
+        "M_Town_ChurchLampGlow",
+        "M_Town_ChurchFlameGlow",
+        "M_Town_ChurchBronze",
+        "M_Town_ChurchBrass",
+        "M_Town_ChurchGalv",
+        "M_Town_ChurchPorchGlow"
       ]
     },
     {
@@ -613,7 +759,7 @@
     {
       "name": "SM_Town_Church_Fixtures finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 3.781012540926554e-05
+      "minimum_uv_area": 1.7320548826305071e-06
     },
     {
       "name": "SM_Town_Motel_Shell single exported chunk",
@@ -867,16 +1013,32 @@
     {
       "name": "SM_Town_Sheriff_Shell_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 778,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 5892,
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Burlap",
+        "M_Town_RoofShingle",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_SheriffStucco",
+        "M_Town_SheriffStuccoBase",
+        "M_Town_SheriffStuccoPatch",
+        "M_Town_SheriffStreak",
+        "M_Town_SheriffCrack",
+        "M_Town_SheriffCoping",
+        "M_Town_SheriffRoofing",
+        "M_Town_SheriffLetters",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffCork",
+        "M_Town_SheriffWeatheredWood"
       ]
     },
     {
@@ -890,7 +1052,7 @@
     {
       "name": "SM_Town_Sheriff_Shell_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 9.742774091092699e-05
+      "minimum_uv_area": 3.897098139304944e-06
     },
     {
       "name": "SM_Town_Sheriff_Glass_LOD1 single exported chunk",
@@ -899,8 +1061,8 @@
     {
       "name": "SM_Town_Sheriff_Glass_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 3.501772880554199e-07,
-      "triangles": 4,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 64,
       "materials": [
         "M_Town_Glass"
       ]
@@ -916,7 +1078,7 @@
     {
       "name": "SM_Town_Sheriff_Glass_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.5
+      "minimum_uv_area": 4.806387486411268e-05
     },
     {
       "name": "SM_Town_Sheriff_Interior_LOD1 single exported chunk",
@@ -926,10 +1088,11 @@
       "name": "SM_Town_Sheriff_Interior_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 4256,
+      "triangles": 4940,
       "materials": [
         "M_Town_Stucco",
         "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Metal",
@@ -942,7 +1105,11 @@
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_CinemaRedGlow"
+        "M_Town_WasherGlass",
+        "M_Town_WarmGlow",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffWainscot",
+        "M_Town_SheriffShadeGlow"
       ]
     },
     {
@@ -965,13 +1132,17 @@
     {
       "name": "SM_Town_Sheriff_Fixtures_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 316,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 982,
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_TubeGlow",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffLampGlow",
+        "M_Town_SheriffTubeGlow",
+        "M_Town_SheriffShadeGlow"
       ]
     },
     {
@@ -985,7 +1156,7 @@
     {
       "name": "SM_Town_Sheriff_Fixtures_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 7.476515118831628e-05
+      "minimum_uv_area": 1.9485244055372775e-05
     },
     {
       "name": "SM_Town_Laundry_Shell_LOD1 single exported chunk",
@@ -994,17 +1165,31 @@
     {
       "name": "SM_Town_Laundry_Shell_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 718,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 5463,
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_BluePaint",
-        "M_Town_Timber",
-        "M_Town_DarkWood",
+        "M_Town_TealPaint",
+        "M_Town_CreamEnamel",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Burlap",
+        "M_Town_RoofShingle",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_LaundryBlockPaint",
+        "M_Town_LaundryMortar",
+        "M_Town_LaundryRawBlock",
+        "M_Town_LaundryFadedBlue",
+        "M_Town_LaundryGrime",
+        "M_Town_LaundryLint",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryDirt",
+        "M_Town_LaundryStreak"
       ]
     },
     {
@@ -1018,7 +1203,7 @@
     {
       "name": "SM_Town_Laundry_Shell_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.00016199958372098422
+      "minimum_uv_area": 2.5455681996078283e-05
     },
     {
       "name": "SM_Town_Laundry_Glass_LOD1 single exported chunk",
@@ -1027,8 +1212,8 @@
     {
       "name": "SM_Town_Laundry_Glass_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.954636096954346e-07,
-      "triangles": 6,
+      "maximum_error_m": 4.898756742477417e-07,
+      "triangles": 10,
       "materials": [
         "M_Town_Glass"
       ]
@@ -1054,8 +1239,10 @@
       "name": "SM_Town_Laundry_Interior_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 10262,
+      "triangles": 13908,
       "materials": [
+        "M_Town_BluePaint",
+        "M_Town_TealPaint",
         "M_Town_OliveEnamel",
         "M_Town_CreamEnamel",
         "M_Town_Timber",
@@ -1063,12 +1250,22 @@
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Rubber",
-        "M_Town_FloorTile",
         "M_Town_Upholstery",
+        "M_Town_BookCloth",
+        "M_Town_Bedding",
+        "M_Town_LampFabric",
+        "M_Town_Burlap",
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_WasherGlass"
+        "M_Town_WasherGlass",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryTileGreen",
+        "M_Town_LaundryTileCream",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryWallCream",
+        "M_Town_LaundryOrangePlastic",
+        "M_Town_LaundryRedEnamel"
       ]
     },
     {
@@ -1082,7 +1279,7 @@
     {
       "name": "SM_Town_Laundry_Interior_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 2.999988317498037e-05
+      "minimum_uv_area": 2.4000037670113272e-05
     },
     {
       "name": "SM_Town_Laundry_Fixtures_LOD1 single exported chunk",
@@ -1091,13 +1288,19 @@
     {
       "name": "SM_Town_Laundry_Fixtures_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 384,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 1644,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Paper",
+        "M_Town_WasherGlass",
         "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_CinemaRedGlow",
+        "M_Town_LaundryTubeLens",
+        "M_Town_LaundryRedEnamel"
       ]
     },
     {
@@ -1111,7 +1314,7 @@
     {
       "name": "SM_Town_Laundry_Fixtures_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 7.476498533875997e-05
+      "minimum_uv_area": 1.6000031846108605e-05
     },
     {
       "name": "SM_Town_Feed_Shell_LOD1 single exported chunk",
@@ -1121,17 +1324,30 @@
       "name": "SM_Town_Feed_Shell_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.9073486328125e-06,
-      "triangles": 1866,
+      "triangles": 15190,
       "materials": [
-        "M_Town_Stucco",
+        "M_Town_WhitePaint",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Concrete",
         "M_Town_Burlap",
-        "M_Town_PrintAtlas"
+        "M_Town_FeedStuccoBase",
+        "M_Town_FeedAdobe",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedSalt",
+        "M_Town_FeedMineral",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedStucco",
+        "M_Town_FeedStuccoPatch",
+        "M_Town_FeedGrime",
+        "M_Town_FeedLetterPaint",
+        "M_Town_FeedRustTin"
       ]
     },
     {
@@ -1145,7 +1361,7 @@
     {
       "name": "SM_Town_Feed_Shell_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 4.899978137018479e-05
+      "minimum_uv_area": 1.787937390496097e-05
     },
     {
       "name": "SM_Town_Feed_Glass_LOD1 single exported chunk",
@@ -1154,8 +1370,8 @@
     {
       "name": "SM_Town_Feed_Glass_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 6.742775440216064e-07,
-      "triangles": 8,
+      "maximum_error_m": 6.109476089477539e-07,
+      "triangles": 14,
       "materials": [
         "M_Town_Glass"
       ]
@@ -1181,15 +1397,24 @@
       "name": "SM_Town_Feed_Interior_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.043081283569336e-06,
-      "triangles": 10312,
+      "triangles": 14304,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_Clapboard",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_Ceramic",
         "M_Town_Burlap",
-        "M_Town_Ceiling"
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedWallGlow"
       ]
     },
     {
@@ -1203,7 +1428,7 @@
     {
       "name": "SM_Town_Feed_Interior_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 4.899978137018479e-05
+      "minimum_uv_area": 6.999261783491306e-06
     },
     {
       "name": "SM_Town_Feed_Fixtures_LOD1 single exported chunk",
@@ -1212,12 +1437,21 @@
     {
       "name": "SM_Town_Feed_Fixtures_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 820,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 3462,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
+        "M_Town_PrintAtlas",
+        "M_Town_WarmGlow",
+        "M_Town_FeedGalv",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedBulbGlow",
+        "M_Town_FeedShadeGlow"
       ]
     },
     {
@@ -1231,7 +1465,7 @@
     {
       "name": "SM_Town_Feed_Fixtures_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.487009134938717e-05
+      "minimum_uv_area": 4.3300726826345226e-07
     },
     {
       "name": "SM_Town_Cinema_Shell_LOD1 single exported chunk",
@@ -1241,16 +1475,32 @@
       "name": "SM_Town_Cinema_Shell_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 1548,
+      "triangles": 6350,
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_PinkPlaster",
+        "M_Town_TealPaint",
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Terrazzo",
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaFinRed",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaRoofTar",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaStain",
+        "M_Town_CinemaBronze"
       ]
     },
     {
@@ -1264,7 +1514,7 @@
     {
       "name": "SM_Town_Cinema_Shell_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 9.099965357783901e-05
+      "minimum_uv_area": 9.799997997284038e-05
     },
     {
       "name": "SM_Town_Cinema_Glass_LOD1 single exported chunk",
@@ -1273,8 +1523,8 @@
     {
       "name": "SM_Town_Cinema_Glass_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 7.152557373046875e-07,
-      "triangles": 12,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 42,
       "materials": [
         "M_Town_Glass"
       ]
@@ -1290,7 +1540,7 @@
     {
       "name": "SM_Town_Cinema_Glass_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.5
+      "minimum_uv_area": 0.11562448711220458
     },
     {
       "name": "SM_Town_Cinema_Interior_LOD1 single exported chunk",
@@ -1300,17 +1550,29 @@
       "name": "SM_Town_Cinema_Interior_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 876,
+      "triangles": 1866,
       "materials": [
-        "M_Town_Stucco",
+        "M_Town_TealPaint",
         "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
+        "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Ceramic",
+        "M_Town_Concrete",
         "M_Town_Terrazzo",
-        "M_Town_Upholstery",
+        "M_Town_LampFabric",
         "M_Town_Ceiling",
-        "M_Town_PrintAtlas"
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaVelvet",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaStucco"
       ]
     },
     {
@@ -1324,7 +1586,7 @@
     {
       "name": "SM_Town_Cinema_Interior_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.486993863243697e-05
+      "minimum_uv_area": 6.235382091723807e-05
     },
     {
       "name": "SM_Town_Cinema_Fixtures_LOD1 single exported chunk",
@@ -1333,13 +1595,19 @@
     {
       "name": "SM_Town_Cinema_Fixtures_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 1196,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 4338,
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_WarmGlow",
-        "M_Town_CinemaRedGlow"
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBulb",
+        "M_Town_CinemaReaderGlow",
+        "M_Town_CinemaNeonRed",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaDeadBulb"
       ]
     },
     {
@@ -1353,7 +1621,7 @@
     {
       "name": "SM_Town_Cinema_Fixtures_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.487027201553587e-05
+      "minimum_uv_area": 7.838360458833904e-05
     },
     {
       "name": "SM_Town_Church_Shell_LOD1 single exported chunk",
@@ -1363,15 +1631,19 @@
       "name": "SM_Town_Church_Shell_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.430511474609375e-06,
-      "triangles": 3550,
+      "triangles": 12574,
       "materials": [
         "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Clapboard",
-        "M_Town_Metal",
-        "M_Town_DarkMetal",
         "M_Town_Concrete",
-        "M_Town_RoofShingle"
+        "M_Town_RoofShingle",
+        "M_Town_ChurchWhiteBoard",
+        "M_Town_ChurchTrim",
+        "M_Town_ChurchStone",
+        "M_Town_ChurchBrick",
+        "M_Town_ChurchWornBoard",
+        "M_Town_ChurchShingleFaded",
+        "M_Town_ChurchOldPaper"
       ]
     },
     {
@@ -1385,7 +1657,7 @@
     {
       "name": "SM_Town_Church_Shell_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.00021292086789204134
+      "minimum_uv_area": 0.00022193734548370259
     },
     {
       "name": "SM_Town_Church_Glass_LOD1 single exported chunk",
@@ -1395,9 +1667,9 @@
       "name": "SM_Town_Church_Glass_LOD1 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 24,
+      "triangles": 88,
       "materials": [
-        "M_Town_Glass"
+        "M_Town_ChurchGlass"
       ]
     },
     {
@@ -1411,7 +1683,7 @@
     {
       "name": "SM_Town_Church_Glass_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.15000000596046448
+      "minimum_uv_area": 0.009005619098783058
     },
     {
       "name": "SM_Town_Church_Interior_LOD1 single exported chunk",
@@ -1420,16 +1692,20 @@
     {
       "name": "SM_Town_Church_Interior_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 1.430511474609375e-06,
-      "triangles": 2736,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 5428,
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Clapboard",
         "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Ceramic",
+        "M_Town_Carpet",
         "M_Town_Upholstery",
+        "M_Town_BookCloth",
         "M_Town_LampFabric",
+        "M_Town_Burlap",
         "M_Town_Paper"
       ]
     },
@@ -1444,7 +1720,7 @@
     {
       "name": "SM_Town_Church_Interior_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 6.235348724636935e-05
+      "minimum_uv_area": 3.3425054015268074e-05
     },
     {
       "name": "SM_Town_Church_Fixtures_LOD1 single exported chunk",
@@ -1453,12 +1729,22 @@
     {
       "name": "SM_Town_Church_Fixtures_LOD1 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 7.152557373046875e-07,
-      "triangles": 840,
+      "maximum_error_m": 1.430511474609375e-06,
+      "triangles": 3544,
       "materials": [
+        "M_Town_DarkWood",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_Concrete",
+        "M_Town_LampFabric",
+        "M_Town_Burlap",
+        "M_Town_Paper",
+        "M_Town_ChurchLampGlow",
+        "M_Town_ChurchFlameGlow",
+        "M_Town_ChurchBronze",
+        "M_Town_ChurchBrass",
+        "M_Town_ChurchGalv",
+        "M_Town_ChurchPorchGlow"
       ]
     },
     {
@@ -1472,7 +1758,7 @@
     {
       "name": "SM_Town_Church_Fixtures_LOD1 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.487009134938717e-05
+      "minimum_uv_area": 1.7320548826305071e-06
     },
     {
       "name": "SM_Town_Motel_Shell_LOD1 single exported chunk",
@@ -1727,14 +2013,27 @@
       "name": "SM_Town_Sheriff_Shell_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 506,
+      "triangles": 2916,
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
+        "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_SheriffStucco",
+        "M_Town_SheriffStuccoBase",
+        "M_Town_SheriffStuccoPatch",
+        "M_Town_SheriffStreak",
+        "M_Town_SheriffCoping",
+        "M_Town_SheriffRoofing",
+        "M_Town_SheriffLetters",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffCork",
+        "M_Town_SheriffWeatheredWood"
       ]
     },
     {
@@ -1748,7 +2047,7 @@
     {
       "name": "SM_Town_Sheriff_Shell_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.00014786185219201053
+      "minimum_uv_area": 4.5420394503281614e-05
     },
     {
       "name": "SM_Town_Sheriff_Glass_LOD2 single exported chunk",
@@ -1757,8 +2056,8 @@
     {
       "name": "SM_Town_Sheriff_Glass_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 3.501772880554199e-07,
-      "triangles": 4,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 28,
       "materials": [
         "M_Town_Glass"
       ]
@@ -1784,10 +2083,11 @@
       "name": "SM_Town_Sheriff_Interior_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 2420,
+      "triangles": 2020,
       "materials": [
         "M_Town_Stucco",
         "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Metal",
@@ -1799,7 +2099,10 @@
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_CinemaRedGlow"
+        "M_Town_WasherGlass",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffWainscot",
+        "M_Town_SheriffShadeGlow"
       ]
     },
     {
@@ -1813,7 +2116,7 @@
     {
       "name": "SM_Town_Sheriff_Interior_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 1.1691422941328966e-05
+      "minimum_uv_area": 6.235366605977788e-05
     },
     {
       "name": "SM_Town_Sheriff_Fixtures_LOD2 single exported chunk",
@@ -1822,13 +2125,17 @@
     {
       "name": "SM_Town_Sheriff_Fixtures_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 260,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 562,
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_TubeGlow",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffLampGlow",
+        "M_Town_SheriffTubeGlow",
+        "M_Town_SheriffShadeGlow"
       ]
     },
     {
@@ -1842,7 +2149,7 @@
     {
       "name": "SM_Town_Sheriff_Fixtures_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 7.476515118831628e-05
+      "minimum_uv_area": 6.61753687820621e-05
     },
     {
       "name": "SM_Town_Laundry_Shell_LOD2 single exported chunk",
@@ -1851,16 +2158,28 @@
     {
       "name": "SM_Town_Laundry_Shell_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 470,
+      "maximum_error_m": 4.76837158203125e-07,
+      "triangles": 2584,
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_BluePaint",
-        "M_Town_Timber",
-        "M_Town_DarkWood",
+        "M_Town_TealPaint",
+        "M_Town_CreamEnamel",
+        "M_Town_RustTin",
+        "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_RoofShingle",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_LaundryBlockPaint",
+        "M_Town_LaundryMortar",
+        "M_Town_LaundryRawBlock",
+        "M_Town_LaundryFadedBlue",
+        "M_Town_LaundryGrime",
+        "M_Town_LaundryLint",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryDirt"
       ]
     },
     {
@@ -1874,7 +2193,7 @@
     {
       "name": "SM_Town_Laundry_Shell_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.0035000006631016323
+      "minimum_uv_area": 8.118979340565602e-05
     },
     {
       "name": "SM_Town_Laundry_Glass_LOD2 single exported chunk",
@@ -1883,8 +2202,8 @@
     {
       "name": "SM_Town_Laundry_Glass_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.954636096954346e-07,
-      "triangles": 6,
+      "maximum_error_m": 4.898756742477417e-07,
+      "triangles": 10,
       "materials": [
         "M_Town_Glass"
       ]
@@ -1910,21 +2229,26 @@
       "name": "SM_Town_Laundry_Interior_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 6462,
+      "triangles": 7342,
       "materials": [
+        "M_Town_BluePaint",
         "M_Town_OliveEnamel",
         "M_Town_CreamEnamel",
         "M_Town_Timber",
-        "M_Town_DarkWood",
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Rubber",
-        "M_Town_FloorTile",
-        "M_Town_Upholstery",
+        "M_Town_Burlap",
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_WasherGlass"
+        "M_Town_WasherGlass",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryTileCream",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryWallCream",
+        "M_Town_LaundryOrangePlastic",
+        "M_Town_LaundryRedEnamel"
       ]
     },
     {
@@ -1938,7 +2262,7 @@
     {
       "name": "SM_Town_Laundry_Interior_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 2.999988317498037e-05
+      "minimum_uv_area": 3.99998939037971e-05
     },
     {
       "name": "SM_Town_Laundry_Fixtures_LOD2 single exported chunk",
@@ -1947,13 +2271,16 @@
     {
       "name": "SM_Town_Laundry_Fixtures_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 328,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 892,
       "materials": [
+        "M_Town_OliveEnamel",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_WasherGlass",
         "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_CinemaRedGlow",
+        "M_Town_LaundryTubeLens"
       ]
     },
     {
@@ -1967,7 +2294,7 @@
     {
       "name": "SM_Town_Laundry_Fixtures_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 7.476498533875997e-05
+      "minimum_uv_area": 4.3301009518437183e-05
     },
     {
       "name": "SM_Town_Feed_Shell_LOD2 single exported chunk",
@@ -1977,16 +2304,30 @@
       "name": "SM_Town_Feed_Shell_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.9073486328125e-06,
-      "triangles": 982,
+      "triangles": 7289,
       "materials": [
-        "M_Town_Stucco",
+        "M_Town_WhitePaint",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_RustTin",
+        "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Concrete",
         "M_Town_Burlap",
-        "M_Town_PrintAtlas"
+        "M_Town_FeedStuccoBase",
+        "M_Town_FeedAdobe",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedSalt",
+        "M_Town_FeedMineral",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedStucco",
+        "M_Town_FeedStuccoPatch",
+        "M_Town_FeedGrime",
+        "M_Town_FeedLetterPaint",
+        "M_Town_FeedRustTin"
       ]
     },
     {
@@ -2000,7 +2341,7 @@
     {
       "name": "SM_Town_Feed_Shell_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.0013307562758839708
+      "minimum_uv_area": 1.787937390496097e-05
     },
     {
       "name": "SM_Town_Feed_Glass_LOD2 single exported chunk",
@@ -2009,8 +2350,8 @@
     {
       "name": "SM_Town_Feed_Glass_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 6.742775440216064e-07,
-      "triangles": 8,
+      "maximum_error_m": 6.109476089477539e-07,
+      "triangles": 14,
       "materials": [
         "M_Town_Glass"
       ]
@@ -2036,14 +2377,24 @@
       "name": "SM_Town_Feed_Interior_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.043081283569336e-06,
-      "triangles": 1672,
+      "triangles": 5896,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_Clapboard",
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Burlap",
-        "M_Town_Ceiling"
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedWallGlow"
       ]
     },
     {
@@ -2057,7 +2408,7 @@
     {
       "name": "SM_Town_Feed_Interior_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.00014004809808731977
+      "minimum_uv_area": 9.899257602086209e-06
     },
     {
       "name": "SM_Town_Feed_Fixtures_LOD2 single exported chunk",
@@ -2066,12 +2417,21 @@
     {
       "name": "SM_Town_Feed_Fixtures_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 572,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2006,
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
+        "M_Town_PrintAtlas",
+        "M_Town_WarmGlow",
+        "M_Town_FeedGalv",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedBulbGlow",
+        "M_Town_FeedShadeGlow"
       ]
     },
     {
@@ -2085,7 +2445,7 @@
     {
       "name": "SM_Town_Feed_Fixtures_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.487009134938717e-05
+      "minimum_uv_area": 6.571447772607542e-07
     },
     {
       "name": "SM_Town_Cinema_Shell_LOD2 single exported chunk",
@@ -2095,16 +2455,29 @@
       "name": "SM_Town_Cinema_Shell_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 1080,
+      "triangles": 3770,
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_PinkPlaster",
-        "M_Town_Timber",
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Terrazzo",
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaFinRed",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaRoofTar",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaBronze"
       ]
     },
     {
@@ -2118,7 +2491,7 @@
     {
       "name": "SM_Town_Cinema_Shell_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 9.099986219407441e-05
+      "minimum_uv_area": 9.799997997284038e-05
     },
     {
       "name": "SM_Town_Cinema_Glass_LOD2 single exported chunk",
@@ -2127,8 +2500,8 @@
     {
       "name": "SM_Town_Cinema_Glass_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 7.152557373046875e-07,
-      "triangles": 12,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 38,
       "materials": [
         "M_Town_Glass"
       ]
@@ -2144,7 +2517,7 @@
     {
       "name": "SM_Town_Cinema_Glass_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.5
+      "minimum_uv_area": 0.1442871923859077
     },
     {
       "name": "SM_Town_Cinema_Interior_LOD2 single exported chunk",
@@ -2154,17 +2527,24 @@
       "name": "SM_Town_Cinema_Interior_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 276,
+      "triangles": 934,
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_OliveEnamel",
+        "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Metal",
-        "M_Town_Ceramic",
+        "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Concrete",
         "M_Town_Terrazzo",
-        "M_Town_Upholstery",
+        "M_Town_LampFabric",
         "M_Town_Ceiling",
-        "M_Town_PrintAtlas"
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaVelvet",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaStucco"
       ]
     },
     {
@@ -2178,7 +2558,7 @@
     {
       "name": "SM_Town_Cinema_Interior_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.486993863243697e-05
+      "minimum_uv_area": 8.284294521310187e-05
     },
     {
       "name": "SM_Town_Cinema_Fixtures_LOD2 single exported chunk",
@@ -2187,13 +2567,19 @@
     {
       "name": "SM_Town_Cinema_Fixtures_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 4.76837158203125e-07,
-      "triangles": 736,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2326,
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_WarmGlow",
-        "M_Town_CinemaRedGlow"
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBulb",
+        "M_Town_CinemaReaderGlow",
+        "M_Town_CinemaNeonRed",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaDeadBulb"
       ]
     },
     {
@@ -2207,7 +2593,7 @@
     {
       "name": "SM_Town_Cinema_Fixtures_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.487027201553587e-05
+      "minimum_uv_area": 7.838360458833904e-05
     },
     {
       "name": "SM_Town_Church_Shell_LOD2 single exported chunk",
@@ -2217,15 +2603,17 @@
       "name": "SM_Town_Church_Shell_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 1.430511474609375e-06,
-      "triangles": 1886,
+      "triangles": 4954,
       "materials": [
         "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Clapboard",
-        "M_Town_Metal",
-        "M_Town_DarkMetal",
         "M_Town_Concrete",
-        "M_Town_RoofShingle"
+        "M_Town_RoofShingle",
+        "M_Town_ChurchWhiteBoard",
+        "M_Town_ChurchTrim",
+        "M_Town_ChurchStone",
+        "M_Town_ChurchBrick",
+        "M_Town_ChurchShingleFaded"
       ]
     },
     {
@@ -2239,7 +2627,7 @@
     {
       "name": "SM_Town_Church_Shell_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.00021292086789204134
+      "minimum_uv_area": 0.0004199999737739546
     },
     {
       "name": "SM_Town_Church_Glass_LOD2 single exported chunk",
@@ -2249,9 +2637,9 @@
       "name": "SM_Town_Church_Glass_LOD2 metric pivot, triangles and slots",
       "passed": true,
       "maximum_error_m": 9.5367431640625e-07,
-      "triangles": 24,
+      "triangles": 40,
       "materials": [
-        "M_Town_Glass"
+        "M_Town_ChurchGlass"
       ]
     },
     {
@@ -2265,7 +2653,7 @@
     {
       "name": "SM_Town_Church_Glass_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 0.15000000596046448
+      "minimum_uv_area": 0.05364435148102231
     },
     {
       "name": "SM_Town_Church_Interior_LOD2 single exported chunk",
@@ -2274,13 +2662,16 @@
     {
       "name": "SM_Town_Church_Interior_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 1.430511474609375e-06,
-      "triangles": 2468,
+      "maximum_error_m": 9.5367431640625e-07,
+      "triangles": 2428,
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Clapboard",
+        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Ceramic",
+        "M_Town_Carpet",
         "M_Town_Upholstery",
         "M_Town_LampFabric",
         "M_Town_Paper"
@@ -2306,12 +2697,20 @@
     {
       "name": "SM_Town_Church_Fixtures_LOD2 metric pivot, triangles and slots",
       "passed": true,
-      "maximum_error_m": 7.152557373046875e-07,
-      "triangles": 600,
+      "maximum_error_m": 1.430511474609375e-06,
+      "triangles": 1722,
       "materials": [
+        "M_Town_DarkWood",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_LampFabric",
+        "M_Town_Paper",
+        "M_Town_ChurchLampGlow",
+        "M_Town_ChurchFlameGlow",
+        "M_Town_ChurchBronze",
+        "M_Town_ChurchBrass",
+        "M_Town_ChurchGalv",
+        "M_Town_ChurchPorchGlow"
       ]
     },
     {
@@ -2325,7 +2724,7 @@
     {
       "name": "SM_Town_Church_Fixtures_LOD2 finite noncollapsed UVs",
       "passed": true,
-      "minimum_uv_area": 8.487009134938717e-05
+      "minimum_uv_area": 1.7320548826305071e-06
     },
     {
       "name": "SM_Town_Motel_Shell_LOD2 single exported chunk",
@@ -2601,10 +3000,74 @@
       "passed": true
     },
     {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Shell glTF UV present",
+      "passed": true
+    },
+    {
       "name": "SM_Town_Sheriff_Shell GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 1034
+      "triangles": 9691
     },
     {
       "name": "SM_Town_Sheriff_Glass glTF UV present",
@@ -2614,7 +3077,31 @@
       "name": "SM_Town_Sheriff_Glass GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 4
+      "triangles": 100
+    },
+    {
+      "name": "SM_Town_Sheriff_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Interior glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Sheriff_Interior glTF UV present",
@@ -2680,7 +3167,23 @@
       "name": "SM_Town_Sheriff_Interior GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 5188
+      "triangles": 7560
+    },
+    {
+      "name": "SM_Town_Sheriff_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Sheriff_Fixtures glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Sheriff_Fixtures glTF UV present",
@@ -2702,7 +3205,63 @@
       "name": "SM_Town_Sheriff_Fixtures GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 428
+      "triangles": 1734
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Shell glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Laundry_Shell glTF UV present",
@@ -2740,7 +3299,7 @@
       "name": "SM_Town_Laundry_Shell GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 830
+      "triangles": 9935
     },
     {
       "name": "SM_Town_Laundry_Glass glTF UV present",
@@ -2750,7 +3309,55 @@
       "name": "SM_Town_Laundry_Glass GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 6
+      "triangles": 10
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Interior glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Laundry_Interior glTF UV present",
@@ -2808,7 +3415,39 @@
       "name": "SM_Town_Laundry_Interior GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 14782
+      "triangles": 21552
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Laundry_Fixtures glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Laundry_Fixtures glTF UV present",
@@ -2830,7 +3469,59 @@
       "name": "SM_Town_Laundry_Fixtures GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 496
+      "triangles": 2572
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Shell glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Feed_Shell glTF UV present",
@@ -2872,7 +3563,7 @@
       "name": "SM_Town_Feed_Shell GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 2658
+      "triangles": 24026
     },
     {
       "name": "SM_Town_Feed_Glass glTF UV present",
@@ -2882,7 +3573,47 @@
       "name": "SM_Town_Feed_Glass GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 8
+      "triangles": 14
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Interior glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Feed_Interior glTF UV present",
@@ -2916,7 +3647,43 @@
       "name": "SM_Town_Feed_Interior GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 16216
+      "triangles": 22464
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Feed_Fixtures glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Feed_Fixtures glTF UV present",
@@ -2934,7 +3701,71 @@
       "name": "SM_Town_Feed_Fixtures GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 1316
+      "triangles": 5954
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Shell glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Cinema_Shell glTF UV present",
@@ -2972,7 +3803,7 @@
       "name": "SM_Town_Cinema_Shell GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 1848
+      "triangles": 9920
     },
     {
       "name": "SM_Town_Cinema_Glass glTF UV present",
@@ -2982,7 +3813,59 @@
       "name": "SM_Town_Cinema_Glass GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 12
+      "triangles": 50
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Interior glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Cinema_Interior glTF UV present",
@@ -3024,7 +3907,35 @@
       "name": "SM_Town_Cinema_Interior GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 1036
+      "triangles": 3426
+    },
+    {
+      "name": "SM_Town_Cinema_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Cinema_Fixtures glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Cinema_Fixtures glTF UV present",
@@ -3046,7 +3957,23 @@
       "name": "SM_Town_Cinema_Fixtures GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 1852
+      "triangles": 7534
+    },
+    {
+      "name": "SM_Town_Church_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Shell glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Shell glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Church_Shell glTF UV present",
@@ -3080,7 +4007,7 @@
       "name": "SM_Town_Church_Shell GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 3614
+      "triangles": 20182
     },
     {
       "name": "SM_Town_Church_Glass glTF UV present",
@@ -3090,7 +4017,23 @@
       "name": "SM_Town_Church_Glass GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 24
+      "triangles": 136
+    },
+    {
+      "name": "SM_Town_Church_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Interior glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Interior glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Church_Interior glTF UV present",
@@ -3128,7 +4071,47 @@
       "name": "SM_Town_Church_Interior GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 2800
+      "triangles": 8552
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
+    },
+    {
+      "name": "SM_Town_Church_Fixtures glTF UV present",
+      "passed": true
     },
     {
       "name": "SM_Town_Church_Fixtures glTF UV present",
@@ -3146,7 +4129,7 @@
       "name": "SM_Town_Church_Fixtures GLB matches actual FBX contract",
       "passed": true,
       "maximum_error_m": 0.0,
-      "triangles": 1320
+      "triangles": 5584
     },
     {
       "name": "SM_Town_Motel_Shell glTF UV present",
@@ -3477,6 +4460,30 @@
       "passed": true
     },
     {
+      "name": "Sheriff RoofShingle_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Sheriff RoofShingle_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Sheriff RoofShingle_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Sheriff RustTin_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Sheriff RustTin_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Sheriff RustTin_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
       "name": "Sheriff Stucco_base_color.png packed original pixels",
       "passed": true
     },
@@ -3503,8 +4510,8 @@
     {
       "name": "Sheriff all actually used original PBR packed",
       "passed": true,
-      "required": 18,
-      "packed": 18
+      "required": 24,
+      "packed": 24
     },
     {
       "name": "Laundry actual original Blender exists",
@@ -3599,6 +4606,30 @@
       "passed": true
     },
     {
+      "name": "Laundry RoofShingle_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Laundry RoofShingle_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Laundry RoofShingle_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Laundry RustTin_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Laundry RustTin_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Laundry RustTin_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
       "name": "Laundry Stucco_base_color.png packed original pixels",
       "passed": true
     },
@@ -3625,8 +4656,8 @@
     {
       "name": "Laundry all actually used original PBR packed",
       "passed": true,
-      "required": 18,
-      "packed": 18
+      "required": 24,
+      "packed": 24
     },
     {
       "name": "Feed actual original Blender exists",
@@ -3685,6 +4716,18 @@
       "passed": true
     },
     {
+      "name": "Feed MetalPaint_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Feed MetalPaint_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Feed MetalPaint_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
       "name": "Feed PrintAtlas_base_color.png packed original pixels",
       "passed": true
     },
@@ -3735,8 +4778,8 @@
     {
       "name": "Feed all actually used original PBR packed",
       "passed": true,
-      "required": 15,
-      "packed": 15
+      "required": 18,
+      "packed": 18
     },
     {
       "name": "Cinema actual original Blender exists",
@@ -3831,6 +4874,18 @@
       "passed": true
     },
     {
+      "name": "Cinema RustTin_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Cinema RustTin_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Cinema RustTin_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
       "name": "Cinema Stucco_base_color.png packed original pixels",
       "passed": true
     },
@@ -3857,8 +4912,8 @@
     {
       "name": "Cinema all actually used original PBR packed",
       "passed": true,
-      "required": 18,
-      "packed": 18
+      "required": 21,
+      "packed": 21
     },
     {
       "name": "Church actual original Blender exists",
@@ -3905,6 +4960,18 @@
       "passed": true
     },
     {
+      "name": "Church Carpet_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Church Carpet_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Church Carpet_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
       "name": "Church Cloth_base_color.png packed original pixels",
       "passed": true
     },
@@ -3917,6 +4984,18 @@
       "passed": true
     },
     {
+      "name": "Church MetalPaint_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Church MetalPaint_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Church MetalPaint_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
       "name": "Church RoofShingle_base_color.png packed original pixels",
       "passed": true
     },
@@ -3926,6 +5005,18 @@
     },
     {
       "name": "Church RoofShingle_roughness.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Church RustTin_base_color.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Church RustTin_normal.png packed original pixels",
+      "passed": true
+    },
+    {
+      "name": "Church RustTin_roughness.png packed original pixels",
       "passed": true
     },
     {
@@ -3955,8 +5046,8 @@
     {
       "name": "Church all actually used original PBR packed",
       "passed": true,
-      "required": 12,
-      "packed": 12
+      "required": 21,
+      "packed": 21
     },
     {
       "name": "Motel actual original Blender exists",
@@ -4133,6 +5224,6 @@
       "passed": true
     }
   ],
-  "source_revision": "TB1-original-six-building-production",
+  "source_revision": "TB2-detailed-five-landmarks-tb1-motel",
   "scope": "Actual FBX, GLB, source scene and packed original pixels. Native and visual acceptance are separate."
 }
