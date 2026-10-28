@@ -210,6 +210,11 @@ bool AS47Story::FeederOutage() const
  const auto* M = US47Main::Get(this);
  return M && M->Evening && M->Evening->FeederOutage();
 }
+bool AS47Story::FeederFaultVisible() const
+{
+ const auto* M = US47Main::Get(this);
+ return M && M->Evening && M->Evening->FeederFaultVisible();
+}
 void AS47Story::AdvanceClockTo(double Target, const FString& Reason)
 {
  const double Before = ClockSec;
@@ -1345,10 +1350,17 @@ TSharedPtr<FJsonObject> AS47Story::SaveRoutine() const
 {
  using namespace S47J;
  auto O=New(); Set(O,TEXT("clock"),ClockSec); Set(O,TEXT("notes"),NotesList);
- Set(O,TEXT("routineVersion"),2); Set(O,TEXT("phase"),CurrentPhase == ES47Phase::Residual ? TEXT("residual") : TEXT("shift"));
+ Set(O,TEXT("routineVersion"),2);
+ // Resume at a stable action boundary if a solve or printer feed was in progress.
+ const FString Stable = CurrentPhase == ES47Phase::Printing || CurrentPhase == ES47Phase::Printed ? TEXT("printed")
+  : CurrentPhase == ES47Phase::Locked || CurrentPhase == ES47Phase::Solving ? TEXT("locked")
+  : CurrentPhase == ES47Phase::Residual ? TEXT("residual") : TEXT("shift");
+ Set(O,TEXT("phase"),Stable); Set(O,TEXT("solved"),Rx.bSolved);
+ if (NS.SolveAt) Set(O,TEXT("solveAt"),*NS.SolveAt);
+ if (NS.PrintoutAt) Set(O,TEXT("printoutAt"),*NS.PrintoutAt);
  Set(O,TEXT("residualVisible"),bResidualVisible);
  Set(O,TEXT("coffee"),int32(Coffee)); Set(O,TEXT("radioOn"),bRadioOn); Set(O,TEXT("radioHeard"),bRadioHeard); Set(O,TEXT("opsLines"),OpsLines);
- Set(O,TEXT("powered"),bPowered); Set(O,TEXT("k3"),NS.bK3Open); Set(O,TEXT("papers"),NS.Papers); Set(O,TEXT("jacket"),NS.bJacket);
+ Set(O,TEXT("powered"),bPowered); Set(O,TEXT("k3"),NS.bK3Open); Set(O,TEXT("papers"),NS.Papers); Set(O,TEXT("jacket"),NS.bJacket); Set(O,TEXT("tapeA"),NS.bTapeA);
  Set(O,TEXT("rxStage"),Rx.Stage); Set(O,TEXT("f"),Rx.Frequency); Set(O,TEXT("g"),Rx.Gain); Set(O,TEXT("bw"),Rx.Bandwidth); Set(O,TEXT("az"),Rx.Azimuth); Set(O,TEXT("status"),Rx.Status);
  TArray<TSharedPtr<FJsonValue>> Log, Docs;
  for (const auto& L:NS.Log) { auto V=New(); Set(V,TEXT("clock"),L.Clock); Set(V,TEXT("text"),L.Text); Log.Add(MakeShared<FJsonValueObject>(V)); }
@@ -1358,19 +1370,29 @@ TSharedPtr<FJsonObject> AS47Story::SaveRoutine() const
   TArray<TSharedPtr<FJsonValue>> Sheets; for (const auto& Sheet:D.Sheets) { auto Q=New(); Set(Q,TEXT("page"),Sheet.Page); Set(Q,TEXT("paper"),Sheet.Paper); Set(Q,TEXT("strip"),Sheet.Strip); Set(Q,TEXT("term"),Sheet.Term); Sheets.Add(MakeShared<FJsonValueObject>(Q)); } V->SetArrayField(TEXT("sheets"),Sheets);
   Docs.Add(MakeShared<FJsonValueObject>(V));
  }
- O->SetArrayField(TEXT("log"),Log); O->SetArrayField(TEXT("docs"),Docs); return O;
+ O->SetArrayField(TEXT("log"),Log); O->SetArrayField(TEXT("docs"),Docs);
+ TArray<TSharedPtr<FJsonValue>> Pointing;
+ if (Saro.IsValid()) for (int32 I=0; I<Saro->DishCount(); ++I)
+  Pointing.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{MakeShared<FJsonValueNumber>(Saro->DishAz(I)),MakeShared<FJsonValueNumber>(Saro->DishEl(I))}));
+ O->SetArrayField(TEXT("pointing"),Pointing); return O;
 }
 void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
 {
  if (!Saved) return;
  using namespace S47J;
  ClearTimers(); CurrentPhase=ES47Phase::Shift; bOpeningHeld=false; bCinematic=false; bLogRead=true;
- const bool bNightResidual = NightSequence() && Int(Saved,TEXT("routineVersion")) == 2 && Str(Saved,TEXT("phase")) == TEXT("residual");
- if (bNightResidual) CurrentPhase = ES47Phase::Residual;
+ const FString Stable = Str(Saved,TEXT("phase"));
+ const bool bNightResidual = NightSequence() && Int(Saved,TEXT("routineVersion")) == 2 &&
+  (Stable == TEXT("residual") || Stable == TEXT("locked") || Stable == TEXT("printed"));
+ if (bNightResidual) CurrentPhase = Stable == TEXT("printed") ? ES47Phase::Printed : Stable == TEXT("locked") ? ES47Phase::Locked : ES47Phase::Residual;
+ NS.SolveAt.Reset(); NS.PrintoutAt.Reset();
+ if (bNightResidual && Has(Saved,TEXT("solveAt"))) NS.SolveAt=Num(Saved,TEXT("solveAt"));
+ if (bNightResidual && Has(Saved,TEXT("printoutAt"))) NS.PrintoutAt=Num(Saved,TEXT("printoutAt"));
+ Rx.bSolved = bNightResidual && CurrentPhase == ES47Phase::Printed && Bool(Saved,TEXT("solved"));
  bResidualVisible = bNightResidual && Bool(Saved,TEXT("residualVisible"));
  bAlarmOn = false; bSkipQueued = bNightResidual;
  ClockSec=Num(Saved,TEXT("clock"),S47Timeline::ShiftStart); NotesList=Strs(Saved,TEXT("notes"));
- NS.Papers=Strs(Saved,TEXT("papers")); NS.bJacket=Bool(Saved,TEXT("jacket")); NS.Log.Reset();
+ NS.Papers=Strs(Saved,TEXT("papers")); NS.bJacket=Bool(Saved,TEXT("jacket")); NS.bTapeA=Bool(Saved,TEXT("tapeA")); NS.Log.Reset();
  Coffee=ECoffee(FMath::Clamp(Int(Saved,TEXT("coffee")),0,2)); bRadioOn=Bool(Saved,TEXT("radioOn")); bRadioHeard=Bool(Saved,TEXT("radioHeard")); OpsLines=Strs(Saved,TEXT("opsLines"));
  if (Saro.IsValid()) { Saro->SetJacketVisible(!NS.bJacket); Saro->SetCoffee(Coffee!=ECoffee::None); Saro->SetCoffeeLevel(Coffee==ECoffee::Drunk?.05:.088); }
  if (Audio.IsValid() && bRadioOn) Audio->AmRadio(true,Saro.IsValid()?Saro->PropLocation(TEXT("radio")):FVector::ZeroVector);
@@ -1383,8 +1405,16 @@ void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
  }
  if (Bool(Saved,TEXT("powered"))) PowerUp(true);
  NS.bK3Open=Bool(Saved,TEXT("k3")); if(bPowered) ApplyK3(NS.bK3Open);
- Rx.Stage=FMath::Clamp(Int(Saved,TEXT("rxStage")),0,bNightResidual?2:1); Rx.Frequency=Num(Saved,TEXT("f"),Rx.Frequency); Rx.Gain=Num(Saved,TEXT("g"),Rx.Gain); Rx.Bandwidth=Num(Saved,TEXT("bw"),Rx.Bandwidth); Rx.Azimuth=Num(Saved,TEXT("az"),Rx.Azimuth); Rx.Status=Str(Saved,TEXT("status"),Rx.Status);
+ Rx.Stage=bNightResidual && CurrentPhase != ES47Phase::Residual ? 3 : FMath::Clamp(Int(Saved,TEXT("rxStage")),0,bNightResidual?2:1); Rx.Frequency=Num(Saved,TEXT("f"),Rx.Frequency); Rx.Gain=Num(Saved,TEXT("g"),Rx.Gain); Rx.Bandwidth=Num(Saved,TEXT("bw"),Rx.Bandwidth); Rx.Azimuth=Num(Saved,TEXT("az"),Rx.Azimuth); Rx.Status=Str(Saved,TEXT("status"),Rx.Status);
  PointDishes(Rx.Azimuth,SurveyEl,99);
+ const auto Pointing=Arr(Saved,TEXT("pointing"));
+ if (Saro.IsValid() && Pointing.Num()==Saro->DishCount()) for (int32 I=0; I<Pointing.Num(); ++I)
+ {
+  if (!Pointing[I] || Pointing[I]->Type!=EJson::Array) continue;
+  const auto& P=Pointing[I]->AsArray(); double Az=0,El=0;
+  if(P.Num()==2 && P[0]->TryGetNumber(Az) && P[1]->TryGetNumber(El) && FMath::IsFinite(Az) && FMath::IsFinite(El)) Saro->SnapDish(I,Az,El);
+ }
+ if (Saro.IsValid() && CurrentPhase==ES47Phase::Printed) Saro->SetPrinterPaper(1.f);
  // An interrupted external snapshot before the transient must still deliver the scheduled fault.
- if (bNightResidual && !bResidualVisible) EnterResidual();
+ if (bNightResidual && CurrentPhase==ES47Phase::Residual && !bResidualVisible) EnterResidual();
 }

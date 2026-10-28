@@ -173,6 +173,8 @@ void FS47Substation::StartCheck()
  if (!Here() || !M->UI || Running > 0) return;
  if (M->Story && M->Story->NightSequence() && !M->Story->FeederOutage() && !bComplete)
  { M->UI->Toast(TEXT("The circuit is stable. No feeder fault is assigned; keep the service controls at normal."), 4); return; }
+ if (M->Story && M->Story->NightSequence() && M->Evening && !M->Evening->FeederCallAnswered() && !bComplete)
+ { M->UI->Toast(TEXT("The county dispatcher needs to confirm the feeder assignment. Answer the control-room telephone before operating the service check."), 5); return; }
  if (!AttemptId.IsEmpty() && FollowupRecordValid()) { M->UI->Toast(TEXT("The normal baseline keeps its original completion time. Use the separate enclosed follow-up and auxiliary controls for the current comparison."), 4); return; }
  if (!bJournal) { M->UI->Toast(TEXT("Read the service journal and match the inspection-circuit label first."), 3.5); return; }
  if (bComplete) { M->UI->Toast(TEXT("The panel check is complete. Compare the marked lamp, then retain the result."), 3.5); return; }

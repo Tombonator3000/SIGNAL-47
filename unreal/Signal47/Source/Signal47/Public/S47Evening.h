@@ -30,6 +30,7 @@ public:
  bool ServicePending() const;
  // Route 2 moves the first field assignment after the signal-induced feeder fault.
  bool NightSequence() const { return bEnabled && bNightSequence; }
+ bool FeederFaultVisible() const { return NightSequence() && bFeederFailed; }
  bool FeederOutage() const { return NightSequence() && bFeederFailed && !bFeederRestored; }
  bool FeederCallAnswered() const { return bFeederCallAnswered; }
  bool DriveTimeSkipped() const { return bServiceDriveSkipped; }

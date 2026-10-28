@@ -165,7 +165,7 @@ void FS47Evening::AnswerFeederCall()
  {
   bDialogueOpen = false; bFeederCallAnswered = true; M->Web->SetHandsetVisible(true);
   if (M->Audio) M->Audio->Play(TEXT("handset_down"), .5f, M->Web->PropLocation(TEXT("phone")));
-  M->Story->FilePaper(D); M->Story->Note(TEXT("County dispatch confirmed the SARO feeder fault at Caliche Junction. Take SARO 07 and restore the supply before trying to track the signal."));
+  M->Story->AddDoc(D); M->Story->Note(TEXT("County dispatch confirmed the SARO feeder fault at Caliche Junction. Take SARO 07 and restore the supply before trying to track the signal."));
   M->UI->Objective(ServiceObjective()); M->RequestAutosave();
  });
 }
@@ -191,6 +191,13 @@ void FS47Evening::NightStep()
  }
  if (FeederOutage() && bFeederCallAnswered && M->Substation && M->Substation->HasNormalResult())
  {
+  // Reaching and physically checking the junction on foot is also a valid journey.
+  // It must not leave a restored feeder with an unreachable missing drive milestone.
+  if (!bServiceDriveSkipped)
+  {
+   bServiceDriveSkipped = true;
+   M->Story->AdvanceClockTo(S47Timeline::FeederDrive, TEXT("Caliche Junction reached on foot"));
+  }
   bFeederRestored = true; StopRing();
   M->Story->ApplyFeederPower(false);
   M->Story->ConsoleLog(TEXT("CALICHE FEEDER STABLE / SARO SUPPLY RESTORED / K3 CLOSED"));
@@ -475,8 +482,8 @@ bool FS47Evening::Use(const FString& Id)
   bServiceFiled = true;
   M->Story->Note(FString::Printf(TEXT("%s. Back at SARO, filed the Caliche Junction inspection card. The local panel and marked lamp agreed at %s. This records that circuit, not the town supply or SARO K3."),
    *M->Story->ClockText(false), *M->Substation->NormalCompletionStamp()));
-  M->UI->Toast(TEXT("Local inspection card filed. The receiver calibration and overnight survey can continue."), 4);
-  M->UI->Objective(FiledRoutineObjective(*M->Story));
+  M->UI->Toast(NightSequence() ? TEXT("Feeder restoration record filed. The unlogged residual can now be tracked.") : TEXT("Local inspection card filed. The receiver calibration and overnight survey can continue."), 4);
+  M->UI->Objective(NightSequence() ? TEXT("CONTROL ROOM // TRACK THE UNLOGGED RESIDUAL NEAR 1420.4 MHz") : FiledRoutineObjective(*M->Story));
   Changed();
   // Do not consume this use: the existing shift-folder/N01 panel is the only panel opened.
  }

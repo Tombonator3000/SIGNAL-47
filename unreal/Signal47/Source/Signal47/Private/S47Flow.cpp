@@ -1375,7 +1375,7 @@ FString US47Flow::CheckpointName() const
 	if (M->Evening && M->Evening->Opening()) return TEXT("evening");
 	if (!S) return TEXT("start");
 	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift) return TEXT("routine");
- if (S->NightSequence() && S->Phase() == ES47Phase::Residual) return TEXT("nightService");
+ if (S->NightSequence() && S->ChapterKey == TEXT("prologue") && S->At(ES47Phase::Residual)) return TEXT("nightService");
 	const FString& K = S->ChapterKey;
 	if (K == TEXT("ch5") || K == TEXT("ch6")) return TEXT("chapter5");
 	if (K == TEXT("ch4")) return TEXT("chapter4");

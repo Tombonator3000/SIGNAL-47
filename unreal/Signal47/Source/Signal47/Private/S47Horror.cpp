@@ -623,6 +623,7 @@ void FS47Horror::TriggerSC02()
  }
  if(SC02==ESC02::T01)
  {
+  if (M->Story->NightSequence() && (Driving || !AtServiceFront() || !M->Evening || !M->Evening->FeederCallAnswered() || !M->Evening->DriveTimeSkipped())) return;
   if(Trigger(TEXT("H02_INCOMPLETE"))){bAttemptShowing=true;return;}
   if(Trigger(TEXT("H02_CHECK")))return;
   Trigger(TEXT("H02_BRIEF"));

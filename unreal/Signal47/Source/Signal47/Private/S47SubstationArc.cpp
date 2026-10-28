@@ -19,7 +19,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47SubstationArc, Log, All);
 
-// The feeder outage has a quiet sustained arc and fixed fault beacons until T01 restores it.
+// The quiet site arc and fixed fault beacons persist after T01 restores SARO's supply.
 // SC02 keeps its separate short strike with sparks when the pale body first appears at the post.
 // Runtime only: Story owns the saved outage, and Horror/T01 own the strike's existing gate.
 namespace
@@ -133,7 +133,7 @@ bool FS47Substation::FaultReady() const
 
 FS47Substation::FFaultSnapshot FS47Substation::FaultSnapshot() const
 {
- FFaultSnapshot S; S.bRequested = M && M->Story && M->Story->FeederOutage();
+ FFaultSnapshot S; S.bRequested = M && M->Story && M->Story->FeederFaultVisible();
  S.bReady = FaultReady(); S.bActive = bFaultShown; S.bSafe = ArcSafe(); S.Age = FaultTime;
  if (const UInstancedStaticMeshComponent* C = FaultArcMesh.Get())
  { S.bArcVisible = C->IsVisible(); S.ArcInstances = C->GetInstanceCount(); S.Origin = C->GetComponentLocation(); }
@@ -179,7 +179,7 @@ void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder
   Previous = Next;
  }
  UInstancedStaticMeshComponent* Lenses = Mesh(TEXT("SubstationFaultBeacons"), FaultLampMid.Get()); FaultLampMesh = Lenses;
- auto Light = [&](const TCHAR* Name, const FVector& P, const FLinearColor& Color, float Radius, float Source)
+ auto MakeFaultLight = [&](const TCHAR* Name, const FVector& P, const FLinearColor& Color, float Radius, float Source)
  {
   UPointLightComponent* L = NewObject<UPointLightComponent>(M->Web.Get(), Name);
   L->SetMobility(EComponentMobility::Movable); L->SetupAttachment(Parent); L->SetIntensityUnits(ELightUnits::Lumens);
@@ -187,7 +187,7 @@ void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder
   L->SetCastShadows(false); L->SetIndirectLightingIntensity(0); L->SetVolumetricScatteringIntensity(0);
   L->SetVisibility(false); L->RegisterComponent(); L->SetWorldLocation(P); return L;
  };
- FaultArcLight = Light(TEXT("SubstationFaultArcLight"), At + FVector(-32, -40, -35), ArcColor, 1400, 8);
+ FaultArcLight = MakeFaultLight(TEXT("SubstationFaultArcLight"), At + FVector(-32, -40, -35), ArcColor, 1400, 8);
  // Both lenses are bolted to the front of the existing portal's outer steel legs, 6.43 m high.
  // Their fixed faces sit above the transformer for the approach and the enclosed service.
  const FQuat Face = FQuat::FindBetweenNormals(FVector::UpVector, FVector(0, -1, 0));
@@ -204,7 +204,7 @@ void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder
   Mount->SetWorldTransform(FTransform(Face, S47Three::ToUE(Site(FVector(X, 3.11, 6.43))), FVector(.26, .26, .08)));
   FaultLampMounts[I] = Mount; S47Fx::Precache(Mount);
   Lenses->AddInstance(FTransform(Face, P, FVector(.20, .20, .04)));
-  FaultLampLights[I] = Light(I == 0 ? TEXT("SubstationFaultBeaconLeft") : TEXT("SubstationFaultBeaconRight"),
+  FaultLampLights[I] = MakeFaultLight(I == 0 ? TEXT("SubstationFaultBeaconLeft") : TEXT("SubstationFaultBeaconRight"),
    P + FVector(0, -6, 0), FaultLampColor, 900, 10);
  }
  S47Fx::Precache(Filament); S47Fx::Precache(Lenses);
@@ -223,9 +223,9 @@ void FS47Substation::ClearFault()
 
 void FS47Substation::StepFault(double Dt)
 {
- const bool bOutage = M && M->Story && M->Story->FeederOutage();
+ const bool bFaultRequested = M && M->Story && M->Story->FeederFaultVisible();
  const bool bLoading = !M || !M->World || M->World->bBusy || (M->Flow && M->Flow->bStarting);
- const bool bShow = bOutage && bReady && FaultReady() && M->Mode == US47Main::EMode::Play && Root.Shown() && !bLoading;
+ const bool bShow = bFaultRequested && bReady && FaultReady() && M->Mode == US47Main::EMode::Play && Root.Shown() && !bLoading;
  if (!bShow) { ClearFault(); return; }
  const UWorld* World = M->Web ? M->Web->GetWorld() : nullptr;
  const bool bHeld = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic() || (World && World->IsPaused());
@@ -238,7 +238,7 @@ void FS47Substation::StepFault(double Dt)
  FaultLampMid->SetScalarParameterValue(TEXT("ArcIntensity"), 9.f * LampLevel);
  FaultArcLight->SetIntensity(ArcPeakLumens * Arc); FaultArcLight->SetVisibility(true);
  for (const auto& W : FaultLampLights) if (UPointLightComponent* L = W.Get()) { L->SetIntensity(FaultLampLumens * LampLevel); L->SetVisibility(true); }
- if (!bFaultShown) UE_LOG(LogS47SubstationArc, Display, TEXT("S47: sustained feeder fault shown until T01 restores supply; %s, arc %.0f lm, no sparks"), bCalm ? TEXT("calm steady beacons") : TEXT("slow 4 s beacons"), ArcPeakLumens * Arc);
+ if (!bFaultShown) UE_LOG(LogS47SubstationArc, Display, TEXT("S47: sustained site fault shown independently of restored SARO supply; %s, arc %.0f lm, no sparks"), bCalm ? TEXT("calm steady beacons") : TEXT("slow 4 s beacons"), ArcPeakLumens * Arc);
  bFaultShown = true;
 }
 

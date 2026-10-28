@@ -54,6 +54,7 @@ public:
  void BeginEveningShift();
  bool NightSequence() const;
  bool FeederOutage() const;
+ bool FeederFaultVisible() const;
  void ApplyFeederPower(bool bOut);
  // Completed work can advance a new night, never rewind a later clock or miss a reserved beat.
  void AdvanceClockTo(double Target, const FString& Reason);
