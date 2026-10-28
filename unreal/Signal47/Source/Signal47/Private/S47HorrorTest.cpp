@@ -39,6 +39,8 @@ struct FS47HorrorTest::FState
 	double Elapsed = 0, Since = 0, Hold = 3, WalkMetres = 0, LastProgress = 0, PausedHandTime = 0;
 	double LineAt = 0, SC02Clock = 0, SC02Seen = 0, SC02RunMetres = 0;
 	bool bCaptured = false, bRunPath = false, bSC02Escape = false, bSC02EscapeRouteDone = false;
+	int32 ArcBursts = 0;
+	FS47Substation::FArcSnapshot PausedArc;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
 	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector;
 	TArray<FVector> Points;
@@ -176,7 +178,7 @@ bool FS47HorrorTest::Walk()
 	return false;
 }
 
-bool FS47HorrorTest::StoreRestore(const FString& Name, const S47J::FObj& Snapshot)
+bool FS47HorrorTest::StoreRestore(const FString& Name, const S47J::FObj& Snapshot, bool bRestore)
 {
 	FS47SaveStore Writer(State->Root / Name); Writer.Init(); FS47SaveCard Card;
 	Card.Chapter = TEXT("SC01 live contract"); Card.Place = TEXT("SARO"); Card.Clock = M->Story->ClockText(true);
@@ -186,6 +188,7 @@ bool FS47HorrorTest::StoreRestore(const FString& Name, const S47J::FObj& Snapsho
 	FS47SaveStore Reader(State->Root / Name); Reader.Init(); const auto Disk = Reader.Load(Meta->Id);
 	if (!Check(Disk.IsValid(), TEXT("fresh isolated disk reader: ") + Name)) return false;
 	FFileHelper::SaveStringToFile(S47J::Write(Disk, true), *(State->Root / (Name + TEXT(".loaded.json"))));
+	if (!bRestore) return true;
 	++State->Stores;
 	// A loaded checkpoint starts a new route; never reuse waypoints from the pre-load pose.
 	M->Player->TestMove.Reset(); M->Player->bTestRun = false;
@@ -242,7 +245,7 @@ void FS47HorrorTest::Step(double Dt)
 	};
 	auto Drain = [this, &T, &H, &Enter](int32 Next)
 	{
-		if (!H.Pack.CurrentScene()) { T.LastLine.Empty(); Stage(Next); return; }
+		if (!H.Pack.CurrentScene()) { T.LastLine.Empty(); Stage(Next, Next==107?0:.2); return; }
 		const auto* Line = H.Pack.CurrentLine();
 		if (!Line) { Fail(TEXT("unexpected choice or missing live line in baseline SC01 scene")); return; }
 		if (T.LastLine != Line->Id)
@@ -251,7 +254,7 @@ void FS47HorrorTest::Step(double Dt)
 		// description lines use normal manual acknowledgement, with no fake takes.
 		if (T.Elapsed - T.LineAt < FMath::Max(.5, Line->Duration + 1.0)) return;
 		if (!Enter()) return;
-		T.LastLine.Empty(); T.Hold = .25;
+		T.LastLine.Empty(); T.Hold = Next==107?0:.25;
 	};
 
 	if (T.Stage == 900)
@@ -272,9 +275,9 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		FString UserDir; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
 		UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
-		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
+		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("Arc") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
 			!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir))
-		{ Fail(TEXT("S47HorrorContract=SC01, SC02, SC02Resume or Navigation and explicit isolated /tmp UserDir required")); return; }
+		{ Fail(TEXT("S47HorrorContract=SC01, SC02, SC02Resume, Arc or Navigation and explicit isolated /tmp UserDir required")); return; }
 		for (const TCHAR* Flag : {TEXT("S47T01Contract"), TEXT("S47T02Contract"), TEXT("S47T02DriveContract"), TEXT("S47DaleDocumentsContract"), TEXT("S47EveningEntrance"), TEXT("S47SmokeTest")})
 			if (FParse::Param(FCommandLine::Get(), Flag)) { Fail(TEXT("do not combine independent live test drivers")); return; }
 		T.Root = FPaths::ProjectSavedDir() / TEXT("HorrorContract") / T.Mode;
@@ -295,6 +298,25 @@ void FS47HorrorTest::Step(double Dt)
 			FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(T.Root / TEXT("result.json")));
 			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror native navigation PASS COMPLETE: %d checks"), T.Checks);
 			FPlatformMisc::RequestExit(false); return;
+		}
+		if (T.Mode == TEXT("Arc"))
+		{
+			if (!FParse::Value(FCommandLine::Get(), TEXT("S47HorrorRestore="), T.RestoreSource))
+			{ Fail(TEXT("Arc requires an actual pre-meeting snapshot via -S47HorrorRestore=")); return; }
+			T.RestoreSource = FPaths::ConvertRelativePathToFull(T.RestoreSource);
+			FString Text;
+			if (!FFileHelper::LoadFileToString(Text, *T.RestoreSource)) { Fail(TEXT("Arc source snapshot cannot be read")); return; }
+			const auto Saved = S47J::Read(Text), Horror = S47J::Obj(Saved, TEXT("horror"));
+			const auto Meeting = S47J::Obj(Horror, TEXT("sc02")), Service = S47J::Obj(Saved, TEXT("substation"));
+			T.T01Stamp = S47J::Str(Service, TEXT("completedStamp"));
+			if (!Check(Saved && S47J::Int(Horror, TEXT("contentRevision")) >= 2 && S47J::Bool(Horror, TEXT("sc01Complete")) &&
+				S47J::Str(Meeting, TEXT("phase")) == TEXT("t01") && !S47J::Bool(Meeting, TEXT("threatSeen")) &&
+				S47J::Bool(Service, TEXT("journal")) && S47J::Bool(Service, TEXT("complete")) && S47J::Bool(Service, TEXT("observed")) && !T.T01Stamp.IsEmpty(),
+				TEXT("Arc source is an actual completed T01 checkpoint before the SC02 meeting"))) return;
+			if(FParse::Param(FCommandLine::Get(),TEXT("S47ArcCalm")))M->Flow->bCalmFlash=true;
+			if (!StoreRestore(TEXT("arc-pre-meeting"), Saved)) return;
+			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Arc focused contract restores %s; SC01 and T01 actions are retained source evidence, not rerun"), *T.RestoreSource);
+			Stage(107, .4); return;
 		}
 		if (T.Mode == TEXT("SC02Resume"))
 		{
@@ -819,6 +841,9 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		T.FieldEgress=M->Player->Pos;
 		if(!Check(!Th.Active() && Sc02()==TEXT("t01"),TEXT("no pale body before the T01 result is secured")))return;
+		const auto A=M->Substation->ArcSnapshot();
+		if(!Check(A.Bursts==0 && !A.bNiagaraActive && !A.bMeshVisible && A.FlashLumens==0 && A.MaterialIntensity==0,
+			TEXT("arc geometry, particles and flash remain inert before T01")))return;
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC02 parked truck %.2f %.2f, egress %.2f %.2f"),T.FieldTruck.X,T.FieldTruck.Z,T.FieldEgress.X,T.FieldEgress.Z);
 		// The gravel shoulder east of the track is too steep to walk across; stay on the low
 		// side, then go up the service track itself as the T01 drive contract does.
@@ -838,7 +863,10 @@ void FS47HorrorTest::Step(double Dt)
 		if(!AimPick(TEXT("substation:lamp"),FS47Substation::Site(FVector(4.62,-9.01,1.70)),true))return;
 		M->UI->Close(true);
 		if(!Check(M->Substation->HasNormalResult(),TEXT("actual panel and lamp comparison give the T01 normal result")))return;
-		T.T01Stamp=M->Substation->NormalCompletionStamp();Stage(107,.4);return;
+		T.T01Stamp=M->Substation->NormalCompletionStamp();
+		// Persist this real pre-meeting result for bounded High/Low/calm/off comparisons.
+		if(!StoreRestore(TEXT("arc-pre-meeting"),M->Flow->GameState(),false))return;
+		Stage(107,.4);return;
 	}
 	if(T.Stage==107)
 	{
@@ -847,14 +875,99 @@ void FS47HorrorTest::Step(double Dt)
 		if(!H.Pack.Flag(TEXT("hr_h02_recorded"))){if(T.Elapsed-T.Since>20)Fail(TEXT("H02 record was not presented after the real T01 result"));return;}
 		if(Sc02()!=TEXT("encounter")){if(T.Elapsed-T.Since>25)Fail(TEXT("meeting 1 did not start after the presented T01 record"));return;}
 		if(!Check(Th.Active() && M->Substation->HasNormalResult(),TEXT("meeting 1 starts only after the secured, presented T01 result")))return;
-		T.SC02Clock=M->Story->Clock();Stage(108,.2);return;
+		T.SC02Clock=M->Story->Clock();Stage(108,0);return;
 	}
 	if(T.Stage==108)
 	{
 		// The body appears only at the unseen post; look away towards the yard, then back at the crossing.
 		Aim(Node(TEXT("shed"))+FVector(0,1.4,0));
 		if(!Th.Appeared()){if(T.Elapsed-T.Since>20)Fail(TEXT("pale body never appeared at its post"));return;}
-		Stage(109,.2);return;
+		// Substation::Step runs after this controller; inspect the real appearance edge next frame.
+		Stage(1080,0);return;
+	}
+	if(T.Stage>=1080 && T.Stage<=1087)
+	{
+		const auto A=M->Substation->ArcSnapshot();
+		const bool Off=FParse::Param(FCommandLine::Get(),TEXT("S47FxOff")) || FParse::Param(FCommandLine::Get(),TEXT("S47ArcMissingAsset"));
+		auto Record=[&](const TCHAR* Label)
+		{
+			auto R=S47J::New();S47J::Set(R,TEXT("arcReadback"),Label);S47J::Set(R,TEXT("elapsed"),T.Elapsed);
+			S47J::Set(R,TEXT("age"),A.Age);S47J::Set(R,TEXT("niagaraAge"),A.NiagaraAge);S47J::Set(R,TEXT("bursts"),A.Bursts);
+			S47J::Set(R,TEXT("sparkCount"),A.SparkCount);S47J::Set(R,TEXT("instances"),A.Instances);S47J::Set(R,TEXT("safe"),A.bSafe);
+			S47J::Set(R,TEXT("niagaraActive"),A.bNiagaraActive);S47J::Set(R,TEXT("niagaraPaused"),A.bNiagaraPaused);
+			S47J::Set(R,TEXT("meshVisible"),A.bMeshVisible);S47J::Set(R,TEXT("flashLumens"),A.FlashLumens);
+			S47J::Set(R,TEXT("materialIntensity"),A.MaterialIntensity);S47J::Set(R,TEXT("lampLumens"),A.LampLumens);
+			T.Evidence.Add(MakeShared<FJsonValueObject>(R));
+		};
+		if(T.Stage==1080)
+		{
+			Record(TEXT("appearance"));
+			if(Off)
+			{
+				if(!Check(!A.bReady && A.Bursts==0 && !A.bNiagaraActive && !A.bMeshVisible && A.FlashLumens==0 && A.MaterialIntensity==0 && FMath::IsNearlyEqual(A.LampLumens,95.f,.02f),
+					TEXT("disabled or missing Niagara asset leaves geometry, particles, flash and lamp dip wholly inert")))return;
+				T.ArcBursts=A.Bursts;Aim(FS47Substation::Site(FVector(1.04,3.25,7.34)));Stage(1085,2.7);return;
+			}
+			const int32 Count=FS47Substation::ArcSparks(M->Flow->Quality==TEXT("low"),M->Flow->bCalmFlash);
+			if(!Check(A.bReady && A.bSafe && A.Bursts==T.ArcBursts+1 && A.SparkCount==Count && A.Instances==16 && A.bMaterialAssigned &&
+				A.bNiagaraActive && A.bMeshVisible && A.bFlashVisible && A.FlashLumens>0 && A.MaterialIntensity>0,
+				TEXT("first real SC02 appearance activates one safe native arc, assigned material, light and quality-scaled Niagara burst")))return;
+			if(!Check(FMath::IsNearlyEqual(A.LampLumens,95.f*FS47Substation::ArcDip(A.Age,M->Flow->bCalmFlash),.05f),
+				TEXT("actual marked lamp follows the arc dip without changing T01 state")))return;
+			T.ArcBursts=A.Bursts;Aim(S47Three::ToThree(A.Origin)-FVector(0,.35,0));Stage(1081,.15);return;
+		}
+		if(T.Stage==1081){Shot(TEXT("sc02-arc-live"));Stage(1082,0);return;}
+		if(T.Stage==1082)
+		{
+			M->UI->Open(S47Kit::Shell(M->UI,TEXT("ISOLATED ARC PAUSE CONTROL"),S47Kit::Text(TEXT("The arc and particles must remain still while this panel is open."))));
+			Stage(1087,0);return;
+		}
+		if(T.Stage==1087)
+		{
+			// Settle the prior Niagara frame, then measure the held simulation interval.
+			T.PausedArc=A;Stage(1083,.35);return;
+		}
+		if(T.Stage==1083)
+		{
+			Record(TEXT("modal-held"));
+			if(!Check(M->ModalOpen() && A.bNiagaraPaused && FMath::IsNearlyEqual(A.Age,T.PausedArc.Age,.0001) &&
+				A.NiagaraAge>=0 && FMath::Abs(A.NiagaraAge-T.PausedArc.NiagaraAge)<.05 && A.Bursts==T.ArcBursts &&
+				FMath::IsNearlyEqual(A.FlashLumens,T.PausedArc.FlashLumens,.01f),
+				TEXT("actual document panel freezes arc age, Niagara simulation and flash without elapsed drift")))return;
+			M->UI->Close(true);Stage(1084,.12);return;
+		}
+		if(T.Stage==1084)
+		{
+			Record(TEXT("modal-resumed"));
+			if(!Check(!A.bNiagaraPaused && A.Age>T.PausedArc.Age && A.NiagaraAge>T.PausedArc.NiagaraAge && A.Bursts==T.ArcBursts,
+				TEXT("closing the actual document resumes the same burst and both effect clocks")))return;
+			Stage(1085,2.7);return;
+		}
+		if(T.Stage==1085)
+		{
+			Record(TEXT("finished"));
+			if(Off)Shot(TEXT("sc02-arc-disabled"));
+			if(!Check(A.Bursts==T.ArcBursts && !A.bNiagaraActive && !A.bMeshVisible && A.FlashLumens==0 && A.MaterialIntensity==0 && FMath::IsNearlyEqual(A.LampLumens,95.f,.02f),
+				TEXT("arc and particle tail finish, restore the actual lamp, and do not replay while the meeting continues")))return;
+			if(T.Mode!=TEXT("Arc")){Stage(109,.2);return;}
+			if(!StoreRestore(TEXT("arc-after-appearance"),M->Flow->GameState()))return;
+			Stage(1086,2.7);return;
+		}
+		if(T.Stage==1086)
+		{
+			Record(TEXT("restored-meeting"));
+			if(!Check(A.Bursts==T.ArcBursts && !A.bNiagaraActive && !A.bMeshVisible && A.FlashLumens==0 && A.MaterialIntensity==0,
+				TEXT("fresh disk/full Flow Continue inside the meeting remains quiet without an arc replay")))return;
+			T.bDone=true;M->Player->TestMove.Reset();
+			auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("Arc"));
+			S47J::Set(Result,TEXT("sourceSnapshot"),T.RestoreSource);S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);
+			S47J::Set(Result,TEXT("quality"),M->Flow->Quality);S47J::Set(Result,TEXT("calmFlash"),M->Flow->bCalmFlash);S47J::Set(Result,TEXT("disabledFixture"),Off);
+			Result->SetArrayField(TEXT("evidence"),T.Evidence);
+			S47J::Set(Result,TEXT("limits"),TEXT("Focused runtime VFX contract from the named real T01 snapshot. Actual SC02 appearance, component readbacks, document pause and isolated disk/Flow Continue run here. Prior SC01/T01/travel, human input, listening, particle-by-particle visual quality and whole-game performance are not asserted."));
+			FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));
+			UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Horror Arc PASS COMPLETE: %d checks"),T.Checks);FPlatformMisc::RequestExit(false);return;
+		}
+		return;
 	}
 	if(T.Stage==109)
 	{
@@ -904,6 +1017,9 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if(T.Stage==111)
 	{
+		const auto Arc=M->Substation->ArcSnapshot();
+		if(!Check(Arc.Bursts==T.ArcBursts && !Arc.bNiagaraActive && !Arc.bMeshVisible && Arc.FlashLumens==0 && Arc.MaterialIntensity==0,
+			TEXT("SC02 Continue/capture/escape preserves arc silence and the cumulative burst count")))return;
 		const FVector2D At(M->Player->Pos.X,M->Player->Pos.Z);
 		if(!Check(Sc02()==TEXT("encounter") && FVector2D::Distance(At,Th.Checkpoint())<1.0 && M->Substation->HasNormalResult() && M->Substation->NormalCompletionStamp()==T.T01Stamp,
 			TEXT("Continue in the middle of the meeting resumes at the shed checkpoint with T01 kept, never in a half chase")))return;
@@ -923,6 +1039,9 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if(T.Stage==113)
 	{
+		const auto Arc=M->Substation->ArcSnapshot();
+		if(!Check(Arc.Bursts==T.ArcBursts && !Arc.bNiagaraActive && !Arc.bMeshVisible && Arc.FlashLumens==0 && Arc.MaterialIntensity==0,
+			TEXT("SC02 Continue/capture/escape preserves arc silence and the cumulative burst count")))return;
 		M->Player->TestMove.Reset();
 		const FVector2D At(M->Player->Pos.X,M->Player->Pos.Z);
 		if(!Check(T.bCaptured && Sc02()==TEXT("encounter") && FVector2D::Distance(At,Th.Checkpoint())<1.0,TEXT("capture gives a local retry at the shed checkpoint")))return;
@@ -977,6 +1096,9 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if(T.Stage==119)
 	{
+		const auto Arc=M->Substation->ArcSnapshot();
+		if(!Check(Arc.Bursts==T.ArcBursts && !Arc.bNiagaraActive && !Arc.bMeshVisible && Arc.FlashLumens==0 && Arc.MaterialIntensity==0,
+			TEXT("SC02 Continue/capture/escape preserves arc silence and the cumulative burst count")))return;
 		if(!Check(H.SC02Escaped() && M->Substation->HasNormalResult() && !Th.Active(),TEXT("escaped meeting and T01 survive Continue without restarting the body")))return;
 		T.bDone=true;M->Player->TestMove.Reset();M->Player->bTestRun=false;
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),T.Mode==TEXT("SC02Resume")?TEXT("SC02Resume"):TEXT("SC02"));

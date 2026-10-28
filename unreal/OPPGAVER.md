@@ -1,3 +1,7 @@
+## Elektrisk lysbue ved trafo, Codex 28.10.2026 kl.15:20 CET
+
+Tom bestiller lysbuen planlagt i NIAGARA_FORSLAG.md. Codex eier codex/substation-electric-arc i motel-v2-unreal-worktree fra main6c63a350. Bygger videre på kopi av Claudes uferdige niagara-sparks-kilder uten å endre originalarbeidskopien. Omfang: fysisk forankret blåhvit lysbue, gnister/lyspuls ved SC02s første fremkomst, rolig blinking, T01/T02/lagring/pause bevart. Én tung jobb gjennom guard. Bevis: ~/scratch-bm/Signal47-electric-arc-20261028.
+
 ## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
 
 Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.

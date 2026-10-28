@@ -28,6 +28,6 @@ private:
 	bool Pick(const FString& Id, const FString& Alternate = FString(), bool bUse = true);
 	void Path(const TArray<FVector>& Points);
 	bool Walk();
-	bool StoreRestore(const FString& Name, const S47J::FObj& Snapshot);
+	bool StoreRestore(const FString& Name, const S47J::FObj& Snapshot, bool bRestore = true);
 	void Shot(const FString& Name);
 };
