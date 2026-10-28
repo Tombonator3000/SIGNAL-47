@@ -28,6 +28,13 @@ public:
  // New nights complete the local inspection before launching the unattended survey.
  // Existing saves and developer chapter starts never gain a retroactive assignment.
  bool ServicePending() const;
+ // Route 2 moves the first field assignment after the signal-induced feeder fault.
+ bool NightSequence() const { return bEnabled && bNightSequence; }
+ bool FeederFaultVisible() const { return NightSequence() && bFeederFailed; }
+ bool FeederOutage() const { return NightSequence() && bFeederFailed && !bFeederRestored; }
+ bool FeederCallAnswered() const { return bFeederCallAnswered; }
+ bool DriveTimeSkipped() const { return bServiceDriveSkipped; }
+ void SignalOutage();
  FString ServiceObjective() const;
  TArray<FS47Task> ServiceTasks() const;
  // Flow calls after the new case's local controller and routine have both restored.
@@ -46,6 +53,7 @@ public:
  void ControlTakeawayTest(double Dt);
  void ControlServiceTest(double Dt);
  void ControlServiceDriveTest(double Dt);
+ void ControlNightSequenceTest(double Dt);
  S47J::FObj Save() const;
  FS47EveningPack Pack;
  // The diner waitress speaking now: take id and seconds into it on the audio clock.
@@ -58,6 +66,8 @@ private:
  struct FTakeawayTest;
  struct FServiceTest;
  struct FServiceDriveTest;
+ struct FNightSequenceTest;
+ TSharedPtr<FNightSequenceTest> NightSequenceTest;
  TSharedPtr<FTakeawayTest> TakeawayTest;
  TSharedPtr<FServiceTest> ServiceTest;
  TSharedPtr<FServiceDriveTest> ServiceDriveTest;
@@ -70,6 +80,10 @@ private:
  TSharedPtr<FS47GainNode> MusicGain;
  bool bResumeRequested = false, bBindings = false;
  bool bServiceRoute = false, bServiceFiled = false, bInvestigationOnly = false;
+ bool bNightSequence = false, bFeederFailed = false, bFeederRestored = false;
+ bool bFeederCallAnswered = false, bServiceDriveSkipped = false;
+ void NightStep();
+ void AnswerFeederCall();
  bool AtShiftFolder() const;
  bool bEnabled = false, bRing = false, bDialogueOpen = false, bRadioOn = true, bWorkStarted = false;
  bool bRadioRecorded = false;

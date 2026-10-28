@@ -4,8 +4,8 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
-| SC01 og SC03 | Claude, egen SC03-arbeidskopi | Arrayarbeidet er kildeflettet via PR206. Videre SC01 klask/avtrykk/lampetest og SC03-regi/timing; koordiner konkrete kildefiler før fletting. |
-| Ny nattsekvens | Codex, `codex/night-sequence-20261028` i `motel-v2-unreal` | Story/Evening, signal/strøm/trafo, SkyVisitors og SC02-rekkefølge. Pågående arbeidskilder er ikke endret av dokumentryddingen. |
+| SC01 og SC03 | Claude, egen SC03-arbeidskopi | Arrayarbeid, SC01 klask/lampetest, lyder og aggregat/port er kildeflettet via PR206, PR208 og PR210. Videre stemme ved døren og SC03-regi/timing; koordiner konkrete kildefiler før fletting. |
+| Ny nattsekvens | Codex, `codex/night-sequence-20261028` i `motel-v2-unreal` | PR209, testet kilde b68d3a08 og kandidat R2. Natt 74/8, Arc/calm 14, SKY01 24 og fersk Continue High/Low-calm er kontrollert. Tunge prøver er ferdige og vinduet er frigitt. Lokal pakkeopprydding følger den etablerte regelen. Ingen installasjon/release. Felles hjerteslag i lokal HANDOFF. |
 | Dokumentrydding | Codex, `codex/docs-organization-20261028` i `docs-organization` | Docs, dokumentinnganger, lenker og arkivmetadata. Ingen motorjobb eller installasjon. |
 
 Én tung Blender-/Unreal-/pakkejobb om gangen. Reservasjonen gjelder hele den avtalte serien, også opphold mellom prosesser. Ikke stopp andres prosesser eller start tester samtidig med Toms spilløkt. Meld aktiv kandidat og når vinduet er frigitt her, uten å kopiere hele leveringsrapporten.

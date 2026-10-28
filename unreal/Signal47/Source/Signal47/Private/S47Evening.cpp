@@ -3,6 +3,8 @@
 #include "S47Takeaway.h"
 #include "S47Substation.h"
 #include "S47Horror.h"
+#include "S47Observing.h"
+#include "S47Anomaly.h"
 #include "S47Office.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -80,6 +82,7 @@ bool FS47Evening::MealBusy() const { return bEnabled && Takeaway && Takeaway->Me
 
 bool FS47Evening::ServicePending() const
 {
+ if (NightSequence()) return FeederOutage() && Pack.Flag(TEXT("handover_done"));
  return bEnabled && bServiceRoute && !bServiceFiled && Pack.Flag(TEXT("handover_done")) &&
   M && M->Story && M->Story->bEveningTimeline && M->Story->Phase() == ES47Phase::Shift;
 }
@@ -94,6 +97,13 @@ bool FS47Evening::AtShiftFolder() const
 FString FS47Evening::ServiceObjective() const
 {
  if (!ServicePending()) return FString();
+ if (NightSequence())
+ {
+  if (!bFeederCallAnswered) return TEXT("SARO // ANSWER THE COUNTY CALL. CALICHE JUNCTION FEEDER IS OUT; K3 WILL NOT HOLD");
+  return M->World && M->World->Area == TEXT("saro")
+   ? TEXT("CALICHE JUNCTION // TAKE SARO 07 TO THE SIGNED GRAVEL TURNOFF. RESTORE THE FEEDER TO BRING THE ARRAY BACK")
+   : TEXT("CALICHE JUNCTION // READ THE JOURNAL, RUN THE ENCLOSED CHECK AND VERIFY THE MARKED LAMP TO RESTORE THE FEEDER");
+ }
  if (M->Substation && M->Substation->HasNormalResult())
   return AtShiftFolder() ? TEXT("SHIFT FOLDER // FILE THE COMPLETED INSPECTION CARD, THEN START THE ROUTINE SURVEY")
    : TEXT("SARO // RETURN TO THE CONTROL-ROOM SHIFT FOLDER WITH THE COMPLETED INSPECTION CARD");
@@ -105,6 +115,10 @@ FString FS47Evening::ServiceObjective() const
 TArray<FS47Task> FS47Evening::ServiceTasks() const
 {
  if (!ServicePending()) return {};
+ if (NightSequence()) return {
+  {TEXT("Answer the county call about the failed Caliche Junction feeder"), bFeederCallAnswered},
+  {TEXT("Drive SARO 07 to Caliche Junction after midnight"), bServiceDriveSkipped},
+  {TEXT("Read the local journal, run the check and verify the marked lamp to restore SARO power"), false}};
  const bool Journal = M->Substation && M->Substation->HasJournal();
  const bool Compared = M->Substation && M->Substation->HasNormalResult();
  return {{TEXT("Read the service journal at Caliche Junction's marked inspection front"), Journal},
@@ -113,12 +127,89 @@ TArray<FS47Task> FS47Evening::ServiceTasks() const
 }
 void FS47Evening::ValidateServiceRestore()
 {
+ if (NightSequence())
+ {
+  // Only this route's actual T01 result can restore its feeder. A missing result resumes the repair.
+  if (bFeederRestored && (!M || !M->Substation || !M->Substation->HasNormalResult())) bFeederRestored = false;
+  if (M && M->Story) M->Story->ApplyFeederPower(FeederOutage());
+  return;
+ }
  if (!bEnabled || !bServiceRoute || !bServiceFiled) return;
  if (!M || !M->Substation || !M->Substation->HasNormalResult() || !Pack.Flag(TEXT("trafo_normal_checked")))
  {
   // Begin runs before Substation::Begin. Never borrow the previous case's result.
   bServiceFiled = false;
   UE_LOG(LogTemp, Warning, TEXT("S47: T01 filed credit rejected after restore: current case has no complete physical inspection record"));
+ }
+}
+
+void FS47Evening::SignalOutage()
+{
+ if (!NightSequence() || bFeederFailed || !M || !M->Story) return;
+ bFeederFailed = true; bFeederRestored = bFeederCallAnswered = bServiceDriveSkipped = false;
+ M->Story->ApplyFeederPower(true);
+ M->Story->ConsoleLog(TEXT("00:13:47 SIGNAL TRANSIENT / CALICHE FEEDER LOST / K3 OPEN / ARRAY DRIVE OFF"), S47Timeline::Residual(true));
+ M->Story->Note(TEXT("00:13:47. The residual struck at the same instant as the feeder failed. K3 stays open. The array cannot move. Emergency illumination only."));
+ RingAt = M->T + .8;
+ M->UI->Objective(ServiceObjective());
+ M->RequestAutosave();
+}
+void FS47Evening::AnswerFeederCall()
+{
+ if (!FeederOutage() || bFeederCallAnswered || bDialogueOpen) return;
+ StopRing(); bDialogueOpen = true;
+ if (M->Audio) M->Audio->Play(TEXT("handset_up"), .5f, M->Web->PropLocation(TEXT("phone")));
+ M->Web->SetHandsetVisible(false);
+ FS47Doc D; D.Id = TEXT("EV_FEEDER_CALL"); D.Title = TEXT("County power dispatch / Caliche Junction"); D.Kind = TEXT("Telephone transcript"); D.Stamp = M->Story->ClockText(true);
+ D.Page = TEXT("COUNTY POWER DISPATCH\n\nThe Caliche Junction feeder opened at thirteen minutes past midnight. We have lost the SARO branch. Your emergency circuit will hold the room lights, but it cannot drive the array.\n\nTake SARO 07 south to the signed gravel turnoff. Read the station journal, run the enclosed service check and verify the marked lamp. Keep outside the fence. When the circuit is stable, the feeder can be brought back.\n\nDo not keep forcing K3. It will not hold until the supply is restored.");
+ D.Transcript = D.Page;
+ M->UI->Document(D, [this, D]
+ {
+  bDialogueOpen = false; bFeederCallAnswered = true; M->Web->SetHandsetVisible(true);
+  if (M->Audio) M->Audio->Play(TEXT("handset_down"), .5f, M->Web->PropLocation(TEXT("phone")));
+  M->Story->AddDoc(D); M->Story->Note(TEXT("County dispatch confirmed the SARO feeder fault at Caliche Junction. Take SARO 07 and restore the supply before trying to track the signal."));
+  M->UI->Objective(ServiceObjective()); M->RequestAutosave();
+ });
+}
+void FS47Evening::NightStep()
+{
+ if (!NightSequence() || !M || !M->Story || !M->World || M->bPausedByMenu) return;
+ // The measured lamp result commits the supply change even while its record is open.
+ // H02 presentation still owns the separate SC02 gate in Horror::StepSC02.
+ if (FeederOutage() && bFeederCallAnswered && M->Substation && M->Substation->HasNormalResult())
+ {
+  // A physical journey on foot must not leave the later encounter unreachable.
+  if (!bServiceDriveSkipped)
+  {
+   bServiceDriveSkipped = true;
+   M->Story->AdvanceClockTo(S47Timeline::FeederDrive, TEXT("Caliche Junction reached on foot"));
+  }
+  bFeederRestored = true; StopRing();
+  M->Story->ApplyFeederPower(false);
+  M->Story->ConsoleLog(TEXT("CALICHE FEEDER STABLE / SARO SUPPLY RESTORED / K3 CLOSED"));
+  M->Story->Note(M->Story->ClockText(true) + TEXT(". The checked circuit held. SARO power and the array drive are back. The unlogged residual is still waiting at the receiver."));
+  M->UI->Toast(TEXT("Feeder stable. SARO power restored. K3 holds and the array can move again."), 6);
+  M->UI->Objective(TEXT("CALICHE JUNCTION // KEEP THE COMPLETED FEEDER RECORD. RETURN TO SARO 07"));
+  M->RequestAutosave();
+ }
+ if (M->ModalOpen() || M->Story->IsCinematic()) return;
+ if (!bFeederFailed)
+ {
+  if (M->Horror && M->Horror->BaselineChecked()) M->Story->AdvanceClockTo(S47Timeline::Calibration, TEXT("receiver reference complete"));
+  if (M->Observing && M->Observing->Done()) M->Story->AdvanceClockTo(-3600, TEXT("evening schedule filed / north-window round"));
+  return;
+ }
+ if (FeederOutage() && !bFeederCallAnswered && M->World->Area == TEXT("saro") && !bRing && M->T >= RingAt)
+ {
+  bRing = true;
+  M->Audio->Loop(TEXT("evening:ring"), TEXT("phone_ring"), .8f, M->Web->PropLocation(TEXT("phone")));
+ }
+ if (FeederOutage() && bFeederCallAnswered && !bServiceDriveSkipped && M->World->bDriving && M->World->Area == TEXT("road"))
+ {
+  bServiceDriveSkipped = true;
+  M->Story->AdvanceClockTo(S47Timeline::FeederDrive, TEXT("drive to Caliche Junction"));
+  M->Story->Toast(TEXT("14 APRIL 1986 / 01:35. Caliche Junction feeder call."), 5);
+  M->RequestAutosave();
  }
 }
 
@@ -141,6 +232,8 @@ void FS47Evening::Stop()
  if (MusicGain) { MusicGain->Disconnect(); MusicGain.Reset(); }
  bEnabled = false; bDialogueOpen = false; bRadioRecorded = false; SpokenLine.Empty(); RadioSpokenLine.Empty();
  bServiceRoute = bServiceFiled = bInvestigationOnly = false;
+ bNightSequence = bFeederFailed = bFeederRestored = bFeederCallAnswered = bServiceDriveSkipped = false;
+ if (M && M->Story) M->Story->ApplyFeederPower(false);
  if (M && M->Web) M->Web->SetHandsetVisible(true);
  if (M && M->Story) M->Story->bOpeningHeld = false;
  if (M && M->World) M->World->bCommuteVehicle = false;
@@ -152,12 +245,18 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
  Stop(); Pack.Reset(); RadioPack.Reset(); bEnabled = true;
  // Versioned opt-in belongs only to new nights. Missing/unknown versions retain the old route.
  bServiceRoute = !Saved && !bPastOpening; bServiceFiled = false;
+ bNightSequence = !Saved && !bPastOpening;
  bWorkStarted = false; bRadioOn = true; RadioHold = RadioRest = MusicPosition = 0;
  FString Error;
  if (Saved)
  {
   if (!Pack.Load(S47J::Obj(Saved,TEXT("pack")),Error)) { bEnabled=false; M->Story->bOpeningHeld=false; M->UI->Toast(TEXT("The evening state could not be restored: ")+Error,12); UE_LOG(LogTemp, Error,TEXT("S47: evening restore: %s"),*Error); return; }
-  bServiceRoute = S47J::Int(Saved,TEXT("serviceRouteVersion")) == 1;
+  const int32 RouteVersion = S47J::Int(Saved,TEXT("serviceRouteVersion"));
+  bNightSequence = RouteVersion == 2; bServiceRoute = RouteVersion == 1 || bNightSequence;
+  bFeederFailed = bNightSequence && S47J::Bool(Saved, TEXT("feederFailed"));
+  bFeederRestored = bFeederFailed && S47J::Bool(Saved, TEXT("feederRestored"));
+  bFeederCallAnswered = bFeederFailed && S47J::Bool(Saved, TEXT("feederCallAnswered"));
+  bServiceDriveSkipped = bFeederCallAnswered && S47J::Bool(Saved, TEXT("serviceDriveSkipped"));
   bServiceFiled = bServiceRoute && S47J::Bool(Saved,TEXT("serviceFiled")) && Pack.Flag(TEXT("trafo_normal_checked"));
   if (S47J::Has(Saved,TEXT("radioPack"))) RadioPack.Load(S47J::Obj(Saved,TEXT("radioPack")),Error);
   bRadioOn = S47J::Bool(Saved,TEXT("radioOn"),true);
@@ -364,6 +463,8 @@ void FS47Evening::AfterDialogue()
   bWorkStarted=true; StopRing(); M->Web->SetHandsetVisible(true);
   M->Audio->Play(TEXT("handset_down"),0.5f,M->Web->PropLocation(TEXT("phone")));
   M->Story->BeginEveningShift(); Refile(); Context();
+  // The handover's archived day copy becomes available now, just as on Continue.
+  if (M->Anomaly) M->Anomaly->Changed();
   M->UI->Objective(ServicePending() ? ServiceObjective() : FString(TEXT("CONTROL ROOM // POWER THE RACK AND START THE ROUTINE SURVEY"))); Changed();
  }
  else if (Commute()) M->UI->Objective(TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));
@@ -379,17 +480,18 @@ bool FS47Evening::Use(const FString& Id)
 {
  if (!bEnabled) return false;
  if (MealBusy()) return true;
+ if (Id == TEXT("phone") && FeederOutage() && !bFeederCallAnswered) { AnswerFeederCall(); return true; }
  if (Id == TEXT("logbook") && M->Substation) M->Substation->TryFileFollowup();
  if (Takeaway->Use(Id)) return true;
- if (ServicePending() && Id == TEXT("logbook") && AtShiftFolder() && M->Substation &&
+ if ((ServicePending() || (NightSequence() && bFeederRestored && !bServiceFiled)) && Id == TEXT("logbook") && AtShiftFolder() && M->Substation &&
      M->Substation->HasNormalResult() && Pack.Flag(TEXT("trafo_normal_checked")) && !Pack.CurrentScene())
  {
   // One physical filing in the existing folder. Its normal comparison view still opens below.
   bServiceFiled = true;
   M->Story->Note(FString::Printf(TEXT("%s. Back at SARO, filed the Caliche Junction inspection card. The local panel and marked lamp agreed at %s. This records that circuit, not the town supply or SARO K3."),
    *M->Story->ClockText(false), *M->Substation->NormalCompletionStamp()));
-  M->UI->Toast(TEXT("Local inspection card filed. The receiver calibration and overnight survey can continue."), 4);
-  M->UI->Objective(FiledRoutineObjective(*M->Story));
+  M->UI->Toast(NightSequence() ? TEXT("Feeder restoration record filed. The unlogged residual can now be tracked.") : TEXT("Local inspection card filed. The receiver calibration and overnight survey can continue."), 4);
+  M->UI->Objective(NightSequence() ? TEXT("CONTROL ROOM // TRACK THE UNLOGGED RESIDUAL NEAR 1420.4 MHz") : FiledRoutineObjective(*M->Story));
   Changed();
   // Do not consume this use: the existing shift-folder/N01 panel is the only panel opened.
  }
@@ -556,10 +658,13 @@ void FS47Evening::Step(double Dt)
  }
  if (bResumeRequested && !M->ModalOpen() && !M->World->bBusy) { bResumeRequested=false; ShowDialogue(); }
 
- Context();
+ Context(); NightStep();
  // SC02's active meeting at Caliche owns the objective line until contact is broken.
  if (M->Horror && M->Horror->SC02Meeting()) {}
  else if (ServicePending() && !M->World->bDriving) M->UI->Objective(ServiceObjective());
+ else if (NightSequence() && bFeederRestored && M->World->Area == TEXT("saro") && !M->World->bDriving &&
+          (!M->Horror || !M->Horror->HasTasks()) && M->Story->Phase() == ES47Phase::Residual)
+  M->UI->Objective(TEXT("CONTROL ROOM // TRACK THE UNLOGGED RESIDUAL NEAR 1420.4 MHz"));
  else if (bEnabled && bServiceRoute && bServiceFiled && M->Story->bEveningTimeline && !M->World->bDriving)
  {
   // Continue must restore the next receiver action as well as the filed evidence.
@@ -588,13 +693,16 @@ void FS47Evening::Step(double Dt)
  Takeaway->Step(Dt);
  ControlEntranceTest(Dt);
  ControlTakeawayTest(Dt);
+ ControlNightSequenceTest(Dt);
 }
 S47J::FObj FS47Evening::Save() const
 {
  auto O=S47J::New(); S47J::Set(O,TEXT("takeaway"),Takeaway->Save()); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
  S47J::Set(O,TEXT("arrivalParkingVersion"),2);
  S47J::Set(O,TEXT("investigationOnly"),bInvestigationOnly);
- S47J::Set(O,TEXT("serviceRouteVersion"),bServiceRoute ? 1 : 0);
+ S47J::Set(O,TEXT("serviceRouteVersion"),bNightSequence ? 2 : bServiceRoute ? 1 : 0);
+ S47J::Set(O,TEXT("feederFailed"),bFeederFailed); S47J::Set(O,TEXT("feederRestored"),bFeederRestored);
+ S47J::Set(O,TEXT("feederCallAnswered"),bFeederCallAnswered); S47J::Set(O,TEXT("serviceDriveSkipped"),bServiceDriveSkipped);
  S47J::Set(O,TEXT("serviceFiled"),bServiceRoute && bServiceFiled);
  S47J::Set(O,TEXT("clock"),M->Story->Clock()); S47J::Set(O,TEXT("area"),M->World->Area);
  S47J::Set(O,TEXT("radioOn"),bRadioOn); S47J::Set(O,TEXT("radioHold"),RadioHold); S47J::Set(O,TEXT("radioRest"),RadioRest);

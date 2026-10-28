@@ -1,6 +1,6 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 28. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 29. oktober 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
@@ -8,8 +8,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
 | --- | --- | --- |
-| Kildekode på `main` | Kontrollgrunnlag ved ryddestart: `469335b1ceee680e338829692d95e0027fcb7e68`; samordnet med main `38717ff502a83cdde5a7066f53339ff87179b465` før levering. SC02/aliennavigasjon, motel R4, fotolab, trafo/lysbue og grafikkmeny er flettet. | Kildekode, modeller og planer på main er ikke i seg selv en ny spillpakke. |
-| Akseptert og testet kandidat | Grafikk-R2 fra [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), feature-head `2bb2640fd60dff8975d917ee875db9995e680fd4`. | Samme frosne pakke består målrettet meny-/lagringskontroll og én full 111/111-matrise. |
+| Kildekode på `main` | Ny nattsekvens gjennom [PR209](https://github.com/Tombonator3000/SIGNAL-47/pull/209), testet kilde `b68d3a08`, med main/PR206, PR208 og PR210 integrert. Tidligere SC02/aliennavigasjon, motel R4, fotolab, trafo/lysbue og grafikkmeny beholdes. | Kildekode, modeller og planer på main er ikke i seg selv en ny spillpakke. |
+| Akseptert og testet kandidat | Grafikk-R2 fra [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), feature-head `2bb2640fd60dff8975d917ee875db9995e680fd4`. Ny [nattkandidat R2](../Evidence/UnrealDeliveries/NATTSEKVENS_2026-10-28.md) fra PR209 har egen avgrenset aksept. | Grafikk-R2 består én full 111/111-matrise. Natt-R2 består målrettet natt 74/8 og Arc/calm 14, med separate himmel-/Continue-kontroller. Natt-R2 har ingen fullmatrise eller installasjon. |
 | Lokal installasjon | Den identiske grafikk-R2-pakken i `/home/tom/Games/Signal47/Linux`, bekreftet gjennom installasjonskvittering og etterkontroll. | Ny grafikkmeny og tidligere leverte lokale forbedringer finnes her. Personlige lagringer er bevart. |
 | Offentlig nedlasting | [Linux-testutgave 28. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-28), publisert som prerelease kl. 08:44 Europe/Oslo. | Denne nedlastingen er fotolab-R1 fra PR181, med SC01. Den er eldre enn lokal grafikk-R2 og inneholder ikke den senere SC02-/trafo-/grafikkleveransen. |
 
@@ -21,9 +21,10 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Nedlastingssiden har
 | --- | --- | --- |
 | Unreal som spillutgave | Gjeldende utviklingsløype. Web og Unity er historikk/referanse. | [Arbeidsregler](../../unreal/AGENTS.md). |
 | Grafikkmeny | Flettet, pakket og lokalt installert. Fem presets, Custom og elleve individuelle kontroller. | [Grafikkrapport](Guides/GRAPHICS_SETTINGS.md). |
-| SC01 | Spillbar og lokalt installert; finnes også i den offentlige fotolab-R1-pakken. | Nye ønsker om klask/avtrykk og enklere lampetest er et eget pågående pass. |
-| SC02 og aliennavigasjon | Flettet via [PR190](https://github.com/Tombonator3000/SIGNAL-47/pull/190), pakket kontrollert og videreført i den lokale R2-kilden/pakken. | [SC02-overlevering](../Evidence/UnrealDeliveries/SC02_AI_HANDOFF.md). Ny kveldsrekkefølge er fortsatt eget arbeid. |
+| SC01 | Spillbar og lokalt installert; finnes også i den offentlige fotolab-R1-pakken. | Klask/avtrykk og enklere lampetest er kildeflettet i PR208; den installerte og offentlige pakken har den tidligere SC01-versjonen. |
+| SC02 og aliennavigasjon | Flettet via [PR190](https://github.com/Tombonator3000/SIGNAL-47/pull/190), pakket kontrollert og videreført i den lokale R2-kilden/pakken. | [SC02-overlevering](../Evidence/UnrealDeliveries/SC02_AI_HANDOFF.md). Den nye nattsekvensen har egen avgrenset rapport nedenfor. |
 | Arrayarbeid i den rolige kvelden | Ny kilde er flettet via [PR206](https://github.com/Tombonator3000/SIGNAL-47/pull/206): fire observasjoner 19:00 til 22:50 med papirer og hint. | Kildeendring, ikke en ny installert/offentlig pakke. Separat leveringskvittering kreves før pakkestatus endres. |
+| Ny nattsekvens og SKY01 | Implementert gjennom PR209 og målrettet pakket i nattkandidat R2. Strømbrudd 00:13, trafotur 01:35, T01-strømrestore, SC02 ca. 02:00 og SC03-grense ca. 02:15. | [Leveringsrapport og bevisgrenser](../Evidence/UnrealDeliveries/NATTSEKVENS_2026-10-28.md). Ingen installasjon eller offentlig release. |
 | SC03 og resten av historien | Produksjon pågår. Ingen bekreftet ferdig aktleveranse eller lokal installasjon av SC03 til SC13 i dette kontrollgrunnlaget. | [Kveldsplan](../Design/Story/KVELD_PLAN_2026-10-28.md), [revidert historie](../Design/Story/HISTORIE_SC02_SC13_REVISJON.md). |
 | Motel, fotolab, trafo og lysbue | Tidligere leveranser er flettet og lokalt installert. Nye spillerfunn ved motellet og trafoen er fortsatt åpne. | [Motel](../Evidence/UnrealDeliveries/MOTEL_V2.md), [fotolab](../Evidence/UnrealDeliveries/PHOTOLAB_DETAIL.md), [trafo](../Evidence/UnrealDeliveries/SUBSTATION_DETAIL.md), [lysbue](../Evidence/UnrealDeliveries/FX_ARC_2026-10-28.md). |
 | MetaHuman-servitrise | Én fungerende figur er lokalt installert, med uniform, hårkort og taleanimasjon. | [Figurpilot](../Evidence/UnrealDeliveries/METAHUMAN_WAITRESS.md). Videre visuell polering gjenstår. |
@@ -35,7 +36,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Nedlastingssiden har
 
 ## Pågående arbeid og kjente feil
 
-Nattsekvensen og SC03 arbeides med i separate arbeidskopier. Den lokale arbeidsdelingen føres i [OPPGAVER](../../unreal/OPPGAVER.md). En arbeidsgren, en kjørende test eller en manusendring er ikke en ferdig leveranse. Neste statusoppdatering må vise nøyaktig testet kandidat, merge og eventuell installasjon hver for seg.
+Codex sin nattsekvens er målrettet levert gjennom PR209. Claudes videre kvelds-/SC03-arbeid har egen arbeidskopi. Den lokale arbeidsdelingen føres i [OPPGAVER](../../unreal/OPPGAVER.md). En arbeidsgren, en kjørende test eller en manusendring er ikke en ferdig leveranse. Neste statusoppdatering må vise nøyaktig testet kandidat, merge og eventuell installasjon hver for seg.
 
 [Toms feilrapport med seks originalbilder og to krasjvedlegg](Reports/PLAYTEST_TODO_2026-10-28.md) står åpen: diner-krasj, motellnivå/kollisjon/TV/basseng, SARO-dialog/dørhint, trafodeler, Caliche og trafikksignal. Begge krasjutdrag peker mot Vulkan-bufferallokering. Vedleggene alene beviser ikke samtidig editor eller endelig rotårsak. Tidligere beståtte matriser lukker ikke disse nye funnene.
 

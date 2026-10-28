@@ -4,6 +4,7 @@
 #include "S47HorrorSC03.h"
 #include "S47Main.h"
 #include "S47Evening.h"
+#include "S47Timeline.h"
 #include "S47Story.h"
 #include "S47Walker.h"
 #include "S47World.h"
@@ -573,8 +574,10 @@ void FS47Horror::StepSC02(double Dt)
   if(bAttemptShowing && (!Pack.CurrentScene() || Pack.CurrentScene()->Id!=TEXT("H02_INCOMPLETE"))){bAttemptShowing=false;bH02Attempt=false;Changed();}
   if(Result && bH02Attempt){bH02Attempt=false;Changed();}
   // Meeting 1 starts only after the T01 result is secured, its record presented and every panel closed.
-  if(Result && Threat->Ready() && Pack.Flag(TEXT("hr_h02_recorded")) && AtServiceFront() && !M->ModalOpen() && !bDialogueOpen && !bWorldCall && !Pack.CurrentScene())
-  {SC02=ESC02::Encounter;Threat->Start(false);UE_LOG(LogTemp,Display,TEXT("S47: SC02 meeting 1 starts after secured T01 result %s"),*M->Substation->NormalCompletionStamp());Changed();}
+  const bool NightReady = !M->Story->NightSequence() ||
+   (M->Evening && M->Evening->FeederCallAnswered() && M->Evening->DriveTimeSkipped() && !M->Story->FeederOutage());
+  if(Result && NightReady && Threat->Ready() && Pack.Flag(TEXT("hr_h02_recorded")) && AtServiceFront() && !M->ModalOpen() && !bDialogueOpen && !bWorldCall && !Pack.CurrentScene())
+  {if(M->Story->NightSequence())M->Story->AdvanceClockTo(S47Timeline::FirstEncounter,TEXT("first encounter after feeder restoration"));SC02=ESC02::Encounter;Threat->Start(false);UE_LOG(LogTemp,Display,TEXT("S47: SC02 meeting 1 starts after secured T01 result %s"),*M->Substation->NormalCompletionStamp());Changed();}
  }
  else if(SC02==ESC02::Encounter)
  {
@@ -620,6 +623,7 @@ void FS47Horror::TriggerSC02()
  }
  if(SC02==ESC02::T01)
  {
+  if (M->Story->NightSequence() && (Driving || !AtServiceFront() || !M->Evening || !M->Evening->FeederCallAnswered() || !M->Evening->DriveTimeSkipped())) return;
   if(Trigger(TEXT("H02_INCOMPLETE"))){bAttemptShowing=true;return;}
   if(Trigger(TEXT("H02_CHECK")))return;
   Trigger(TEXT("H02_BRIEF"));
@@ -688,7 +692,7 @@ void FS47Horror::StepSC03(double Dt)
  if(Revision<3 || !SC03)return;
  // SC02's escape presented in full: the report from Caliche is owed.
  if(SC02==ESC02::Escaped && SC03->Phase()==FS47HorrorSC03::EPhase::Off && Pack.Flag(TEXT("hr_sc02_escape_presented")) && !Pack.CurrentScene())
- {SC03->Start();UE_LOG(LogTemp,Display,TEXT("S47: SC02 escape presented; revision %d continues with SC03"),Revision);}
+ {if(M->Story->NightSequence())M->Story->AdvanceClockTo(S47Timeline::TownReport,TEXT("Caliche report after escape"));SC03->Start();UE_LOG(LogTemp,Display,TEXT("S47: SC02 escape presented; revision %d continues with SC03"),Revision);}
  if(!SC03->Live())return;
  SC03->Step(Dt);
  if(Pack.Flag(TEXT("hr_sc03_receiver_question_presented")) && !Pack.CurrentScene())SC03->ScenePresented(TEXT("SC03_RECEIVER_QUESTION"));

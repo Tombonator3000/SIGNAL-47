@@ -16,6 +16,16 @@ namespace S47Timeline
   const double Limit = bBeforeResidual ? Residual(true) - 6 : Departure;
   return FMath::Max(Current, FMath::Min(Current + Dt, Limit));
  }
+ // Authored short jumps on the same signed night axis. Only completed work requests them.
+ inline constexpr double Calibration = -5 * 3600 - 30 * 60;
+ inline constexpr double Sky01 = -2 * 3600 - 30 * 60, EveningFiled = -20 * 60;
+ inline constexpr double FeederDrive = 1 * 3600 + 35 * 60, FirstEncounter = 2 * 3600, TownReport = 2 * 3600 + 15 * 60;
+ inline double AdvanceMilestone(double Current, double Requested, bool bBeforeResidual)
+ {
+  if (!FMath::IsFinite(Requested)) return Current;
+  const double Limit = bBeforeResidual ? Residual(true) - 6 : Departure;
+  return FMath::Max(Current, FMath::Min(Requested, Limit));
+ }
  inline double Chapter3(bool E) { return E ? 2 * 3600 + 20 * 60 : 3 * 3600 + 40 * 60; }
  inline double Chapter4(bool E) { return E ? 3 * 3600 + 20 * 60 : 4 * 3600 + 35 * 60; }
  inline double Chapter5(bool E) { return E ? 4 * 3600 + 10 * 60 : 5 * 3600; }

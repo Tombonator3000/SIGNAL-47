@@ -52,6 +52,12 @@ public:
  bool bEveningTimeline = false;
  bool bOpeningHeld = false;
  void BeginEveningShift();
+ bool NightSequence() const;
+ bool FeederOutage() const;
+ bool FeederFaultVisible() const;
+ void ApplyFeederPower(bool bOut);
+ // Completed work can advance a new night, never rewind a later clock or miss a reserved beat.
+ void AdvanceClockTo(double Target, const FString& Reason);
  // Stable early-shift checkpoint: before the timed survey starts.
  TSharedPtr<class FJsonObject> SaveRoutine() const;
  void RestoreRoutine(const TSharedPtr<class FJsonObject>& Saved);
@@ -209,6 +215,7 @@ private:
 	TArray<FTimer> Timers;
 	float Flicker = 0.f, DipT = 0.f, LedT = 0.f, LookAssist = 0.f;
 	bool bMugFalling = false;
+ bool bFeederPowerHeld = false;
 
 	void SetPhase(ES47Phase P) { CurrentPhase = P; }
 	void Log(const FString& Text);

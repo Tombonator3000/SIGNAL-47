@@ -1022,6 +1022,10 @@ Prosjektbiblioteket og festede primærkilder er gjennomgått for Nanite, lys, sk
 
 Toms siste bestilling er ført som egne åpne punkter for lys/skygger, FX, lyd, materialer/farger og målrettet ytelse, sammen med MetaHuman-mannekenger og Nanite. Eksisterende oppgaver er beholdt. Samlet hovedoversikt gis i chatten; gamle portnotater er historikk som må statusavklares før de behandles som nye feil. Ingen motorjobb eller spilltest.
 
+## 2026-10-28 kl. 22:58 CET: Codex starter nattsekvensen
+
+HANDOFF og gjeldende origin/main er lest. Egen gren fra 469335b1 i ledig bygget Codex-worktree med generert Content. Tidligere genererte OpenOrder-logger er bevart i bevismappen før grenskiftet. Story/Evening og klokkekoordinator eies av root; SubstationArc, SkyVisitors og lesende testkartlegging er fordelt med adskilt filansvar. Bibliotekssøk ga generelle Unreal-referanser merket UNVERIFIED; prosjektets eksisterende implementasjon brukes. Målrettet native/pakket test planlegges, ingen ny fullmatrise per delsteg. Ingen installasjon eller offentlig release.
+
 ## 2026-10-28 kl. 23:17 CET: dokumentasjon samlet og historikk klassifisert
 
 Docs/README er én inngang, med Active/STATUS, TODO og DECISIONS som eneste samlede hovedfiler. Design, Research, Evidence og Archive skiller plan, undersøkelse, bevis og erstattede innganger. 323 opprinnelige stier er flyttet og 1585 tidligere dokument-/payloadfiler er redegjort for i dokumentkartet; alle binære/tekstlige bevispayloads og de frosne kildepakkene er uendret. Tidligere lange README/memory/todo og arbeidsdelingshistorikk er bevart. Fire historiske Automation-skript har bare fått riktige arkivstier; Unity- og Unreal-spillkode er urørt. Lenkekontroll etter flytting har null nye feil; 34 opprinnelige historiske mangler er registrert separat. Ingen motorjobb, spilltest, installasjon eller release inngår. Aktive nattsekvens-/SC03-arbeidskopier er ikke endret.
@@ -1029,6 +1033,10 @@ Docs/README er én inngang, med Active/STATUS, TODO og DECISIONS som eneste saml
 ## 2026-10-28 kl. 23:01 CET: Arbeid ved arrayet 19:00 til 22:50 (S47Observing)
 
 Tom godkjente kvelden 18 til 24 og ba om mer array- og dataarbeid som ved et ekte radioobservatorium, med hint om lyder og lys. Ny modul S47Observing gir fire ekte kjøringer på konsollen etter mottakerreferansen: pekekontroll 3C 286 (19:00), pulsar B1133+16 (19:50), hydrogenlinjen stripe 12 (20:45) og Virgo A (22:05). Posisjonene er regnet ut for stedet 13.04.1986. Papirene hentes ved skriveren, driftsterminalen og venstre PC (statusterminalen, drivloggen). Hint: ekstra pulsartikk fire, pause, sju; 38 s bredbåndsstøy; cricketene stopper og drivmotor 14 går uten kommando. SC01-vinduet blir ikke klart før timeplanen er ferdig. Gamle lagringer får ingen timeplan. Self-test OK (1696). SC01-kontrakt PASS COMPLETE, 154 kontroller, 18 disk/Flow-gjenopprettinger, inkludert gjenoppretting midt i pulsarintegrasjonen. SC02/SC03-kontrakter, pakket bygg og ekte lydkilder er ikke kjørt (UNVERIFIED). Bevis: ~/scratch-bm/Signal47-evening-array-20261028.
+
+## 2026-10-28 kl. 23:32 CET: nattsekvensens første native kontroll
+
+Editor R2 og 1 708 native selvtester består etter to avgrensede kompileringsrettelser. Første nattkontrakt bekrefter fire faktiske observasjoner, SC01-porten, surveytimer, strømbrudd 00:13, åpen K3 og 27 motorer som avviser nye kommandoer. Første disk/Flow-restore feiler en samlet kontroll; ingen årsak er ferdigkonkludert. Testen får feltvis expected/actual-diagnostikk og en eksplisitt walkable telefonfixture. SKY01-starten brukte et ugyldig bevismål utenfor /tmp og ble avvist; native bildeaksept gjenstår. Loggene bevares. Ny kontroll er køet via guard, ingen fremmed prosess stoppet. Dokumentryddingen fra main/PR207 er samordnet; Docs/Active er nå hovedinngangen, og arbeidsrapporten ligger under Docs/Evidence/UnrealDeliveries. Lenkekontrollen finner null nye feil. Ingen pakke, installasjon eller release ferdigmeldes.
 
 ## 2026-10-28 kl. 23:32 CET: SC01 med klask, enklere lampetest og ekte observatorielyder
 
@@ -1041,3 +1049,13 @@ Timeplanen har fått to oppgaver mellom kjøringene. 19:35: ukentlig aggregattes
 ## 2026-10-29 kl. 00:25 CET: produksjonskoordinator med Claude
 
 Tom bestilte systemet for automatisert produksjon. Automation/production samler varig SQLite-kø, avhengigheter, filansvar, Claude Code-forslag, kildeindeks, budsjett/forsøk, global tungjobb-reservasjon og kontrollkvitteringer. Claude implementerte adapteren og rettelser; Codex og avgrensede hjelpere integrerte kø, oppslag og prosesskontroll. Egen køkjøring bestod 166 raske tester og git diff-kontroll. Faktisk Claude-probe ble korrekt avvist som kvoteutilgjengelig, med backoff og null brukt forsøksbudsjett. Normal live-worker og tung motorserie er UNVERIFIED; ingen gameplay-aksept. Se Docs/Active/Guides/PRODUCTION_SYSTEM.md og Docs/Evidence/ProductionCoordinator/verification.json. Ingen ny spillinstallasjon eller offentlig spillrelease.
+
+## 2026-10-29 00:33 Europe/Oslo: ny nattrekkefølge, vedvarende trafofeil og SKY01
+
+PR209 fra `codex/night-sequence-20261028`, med main/PR206, PR208 og PR210 integrert og alle Story-kroker beholdt. Kilde `b68d3a08`; pakket kandidat R2 i lokal `Signal47-night-20261028/candidate-r2/Linux`. Ny route2 gir signal/strømbrudd 00:13, telefon, veihopp 01:35, faktisk T01-strømrestore, SC02 ca. 02:00 og SC03-grense ca. 02:15. Gamle lagringer beholder ruten sin. `nightService` bevarer klokke, pose, mottaker, dokumenter og antenner. Rolig trafoeffekt fortsetter etter T01; kort kraftig utbrudd beholder kroppsgaten.
+
+PASS: editor R11, pakking uten materialfeil, 1709 pakkede selvtester, 74 nattkontroller med åtte fulle diskrestores, originalfarger på alle 27 antennebeacons og én vanlig glød gjennom hver restore, samt 14 pakkede Arc/calm-kontroller. Naturlig SKY01-adapter inngår; separat grafisk SKY R7 består 24 kontroller med faktisk feltkamera-pikselforskjell. Fersk ordinær Continue fra faktisk journallagring består High og Low-calm, og bildene er åpnet. 36 narrative Python-tester består. Pakke/kilde er hashbundet i lokal `candidate-r2-manifest.json` og `candidate-r2-acceptance.json`.
+
+R1 ble avvist etter konkret funn i SaroPower::Settle: settled-flagget hindret glødens tilbakeføring og kunne akkumulere dimming gjennom Continue. R2 retter rekkefølgen og måler faktiske farger. T01s strømtransaksjon skjer nå før resultatmodalen slipper, mens SC02 fortsatt venter på presentasjon. Tidligere SKY-testståsted var skjult av opak portstang; produksjonssikten ble beholdt og både blokkering og vanlig sikt ble prøvd.
+
+UNVERIFIED: fullmatrise, fersk menneskelig SC01/SC02/SC03, manuell helkjøring, fysisk gamepad, subjektiv lytting og helspilltid. Native trafobilder viser RT-geometribudsjettvarsel (83.495/400 MiB, over 20 prosent), uten krasj; FIX-01s diner-krasj er ikke avklart. Ingen installasjon i Games eller offentlig release. [Rapport og presise grenser](../Docs/Evidence/UnrealDeliveries/NATTSEKVENS_2026-10-28.md).

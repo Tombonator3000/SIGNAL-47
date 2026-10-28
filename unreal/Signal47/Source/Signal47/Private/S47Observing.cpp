@@ -205,7 +205,7 @@ void FS47Observing::Start()
  AS47Story& S = *M->Story;
  HeldStatus = S.Rx.Status;
  // The source rises on the schedule's time. Earlier work does not wait in real time for it.
- S.SetClock(FMath::Max(S.Clock(), R.Slot));
+ S.AdvanceClockTo(R.Slot, TEXT("scheduled observation start"));
  S.AimArray((R.P.Az[0] + R.P.Az[1]) / 2, R.El, 9);
  if (M->Audio && !Recorded(M->Audio, TEXT("obsArraySlew"), .45f)) M->Audio->Servo(2.4f, TOptional<FVector>());
  S.Rx.Status = FString::Printf(TEXT("INTEGRATING %s"), R.Source).ToUpper();
@@ -318,7 +318,7 @@ void FS47Observing::File()
  S.Note(R.P.Note);
  if (M->Audio) M->Audio->Play(R.Data == FString(TEXT("printer")) ? TEXT("paper0") : TEXT("click"), .5f);
  // The run's own length passes on the clock; the next source waits for its slot.
- S.SetClock(FMath::Max(S.Clock(), R.Slot + R.Minutes * 60));
+ S.AdvanceClockTo(R.Slot + R.Minutes * 60, TEXT("observation data filed"));
  ++Run; StepNow = EStep::Tune; Elapsed = 0;
  S.Rx.Status = Run < Runs().Num() ? FString::Printf(TEXT("NEXT  /  %s"), Runs()[Run].Source).ToUpper() : HeldStatus;
  M->UI->Document(Doc);
