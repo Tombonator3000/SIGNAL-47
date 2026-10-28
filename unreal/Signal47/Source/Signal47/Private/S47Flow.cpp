@@ -708,7 +708,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
-	if (Checkpoint == TEXT("routine")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
+	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
  // Both restored systems now belong to this case; validate T01 filing against its actual record.
  if (M->Evening) M->Evening->ValidateServiceRestore();
  if (M->Evening) M->Evening->ValidateInvestigationRestore();
@@ -756,7 +756,7 @@ void US47Flow::StartStory(const FString& Checkpoint)
 	// Prologue.start(checkpoint): back to the start of the night, the player at the spawn, then the
 	// checkpoint's beat, or the night from 23:41
 	if (!M->Story) return;
-	if (Checkpoint.IsEmpty() || Checkpoint == TEXT("routine")) { M->Story->Start(); return; }
+	if (Checkpoint.IsEmpty() || Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) { M->Story->Start(); return; }
 	if (M->Web && M->Player) { const FVector Sp = M->Web->SpawnThree(); M->Player->Place(Sp.X, Sp.Z, Sp.Y); }
 	M->Story->Jump(Checkpoint);
 }
@@ -1232,7 +1232,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
 	if (M->Observing && M->Observing->Enabled()) S47J::Set(State,TEXT("observing"),M->Observing->Save()); else State->RemoveField(TEXT("observing"));
 	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
-	if (Checkpoint == TEXT("routine")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
+	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
@@ -1375,6 +1375,7 @@ FString US47Flow::CheckpointName() const
 	if (M->Evening && M->Evening->Opening()) return TEXT("evening");
 	if (!S) return TEXT("start");
 	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift) return TEXT("routine");
+ if (S->NightSequence() && S->ChapterKey == TEXT("prologue") && S->At(ES47Phase::Residual)) return TEXT("nightService");
 	const FString& K = S->ChapterKey;
 	if (K == TEXT("ch5") || K == TEXT("ch6")) return TEXT("chapter5");
 	if (K == TEXT("ch4")) return TEXT("chapter4");
@@ -1393,6 +1394,8 @@ FString US47Flow::GameSaveBlock() const
 	if (M->Evening && M->Evening->Opening()) return M->World && M->World->bBusy ? TEXT("Let the car finish parking first.") : FString();
 	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift && !S->IsCinematic() && (S->BootT < 0 || S->Gt()-S->BootT > 2)) return FString();
 	if (!S->At(ES47Phase::Residual)) return S->bEveningTimeline ? TEXT("The survey saves when the routine interval finishes at 00:13. The opening can be saved before the handover.") : TEXT("The night can be saved from 02:13, once the survey has been running for a while.");
+ if (S->NightSequence() && S->Phase() == ES47Phase::Residual && !S->bResidualVisible)
+  return TEXT("Let the signal transient and emergency switchover finish before saving.");
 	if (S->IsCinematic()) return TEXT("Not right now. Let the moment finish first.");
 	if (S->At(ES47Phase::Ringing) && ChapterNo(S) == 0) return TEXT("Not during the call and what follows it. The game saves again when the night moves on.");
 	for (const TCHAR* K : { TEXT("ch3"), TEXT("ch4"), TEXT("ch5"), TEXT("ch6") })

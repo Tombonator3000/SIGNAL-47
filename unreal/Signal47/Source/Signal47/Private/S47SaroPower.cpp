@@ -129,9 +129,10 @@ void FS47SaroPower::Set(double InInner, double InSodium)
 void FS47SaroPower::Settle()
 {
 	if (!Snap || Snap->bSettled) return;
-	Inside(*Snap, 1);
-	Snap->bSettled = true;
+	// Restore inner glows and antenna beacons before Set starts leaving them alone.
+	// Otherwise an emergency level becomes the next cut's baseline after Continue.
 	Set(1, Sodium);
+	Snap->bSettled = true;
 }
 
 void FS47SaroPower::Inside(FSnap& S, double InInner)

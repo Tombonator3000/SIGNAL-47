@@ -24,6 +24,7 @@ struct FS47SkyVisitorState
  static double Duration(int32 Stage);
  static int32 Count(int32 Stage);
  static int32 RequiredVisible(int32 Stage);
+ static int32 ScheduledStage(double Clock, int32 Chapter, bool bHandoverDone);
  static FVector MapPosition(int32 Stage, int32 Light, double Seconds);
 };
 

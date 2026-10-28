@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "PROD-BOOTSTRAP",
+  "title": "Lag en gjenbrukbar kontrolloppgave for gjeldende produksjonsgrunnlag",
+  "description": "Lag filen Automation/production/examples/PROJECT-AUDIT.json som en gyldig JSON-oppgavekontrakt for dette systemet. Les models.py og eksisterende eksempler. Oppgaven skal ha schema_version 1, id PROD-PROJECT-AUDIT, kind command, role qa, requires_review false, max_attempts 1, ingen avhengigheter og ingen skrivbare paths. Skriv norsk tittel/beskrivelse som forklarer at dette bare kontrollerer produksjonsgrunnlaget. checks skal være nøyaktig tre: files med paths [Docs/Active/STATUS.md, Docs/Active/TODO.md, Docs/Active/DECISIONS.md]; python_compile med paths [Automation/production/runner.py, Automation/production/claude.py, Automation/production/cli.py]; git_diff med params {}. Ingen timeout_seconds trengs i disse check-objektene. Oppgaven skal ikke starte motoren, endre spillkode eller godkjenne gameplay. Returner filinnholdet som én change med base_sha256 null hvis filen er ny. Ikke hev testkjøring; koordinatoren utfører kontrollene.",
+  "kind": "edit",
+  "role": "producer",
+  "depends_on": ["PROD-SELFTEST"],
+  "allowed_paths": ["Automation/production/examples/PROJECT-AUDIT.json"],
+  "context_query": "produksjonskoordinator gjeldende status beslutninger oppgaver",
+  "checks": [
+    {"tool": "task_contract", "params": {"path": "Automation/production/examples/PROJECT-AUDIT.json"}},
+    {"tool": "json_assert", "params": {"path": "Automation/production/examples/PROJECT-AUDIT.json", "equals": {
+      "id": "PROD-PROJECT-AUDIT", "kind": "command", "role": "qa", "requires_review": false,
+      "checks": [
+        {"tool": "files", "params": {"paths": ["Docs/Active/STATUS.md", "Docs/Active/TODO.md", "Docs/Active/DECISIONS.md"]}},
+        {"tool": "python_compile", "params": {"paths": ["Automation/production/runner.py", "Automation/production/claude.py", "Automation/production/cli.py"]}},
+        {"tool": "git_diff", "params": {}}
+      ]
+    }}},
+    {"tool": "git_diff", "params": {}}
+  ],
+  "artifacts": ["Automation/production/examples/PROJECT-AUDIT.json"],
+  "requires_review": false,
+  "max_attempts": 2,
+  "budget_usd": 1.0,
+  "timeout_seconds": 240
+}

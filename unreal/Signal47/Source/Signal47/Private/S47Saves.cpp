@@ -125,6 +125,7 @@ FString S47State::CheckpointTitle(const FString& Checkpoint)
 {
 	// state.ts CHAPTERS
 	if (Checkpoint == TEXT("routine")) return TEXT("Evening Shift: Reference Round");
+ if (Checkpoint == TEXT("nightService")) return TEXT("Night Shift: Caliche Feeder / Residual");
 	if (Checkpoint == TEXT("residual")) return TEXT("Prologue: Night Shift");
 	if (Checkpoint == TEXT("chapter1")) return TEXT("Chapter 1: The Second Exposure");
 	if (Checkpoint == TEXT("chapter2")) return TEXT("Chapter 2: The Amended Record");

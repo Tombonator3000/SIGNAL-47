@@ -11,6 +11,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystemInstanceController.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/PointLightComponent.h"
@@ -18,18 +19,27 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47SubstationArc, Log, All);
 
-// SC02: a short arc with sparks at the bus-support insulators the moment the pale body first
-// appears at the post (unreal/NIAGARA_FORSLAG.md). Runtime only: nothing is saved, everything is
-// derived from the existing SC02 and T01 state. Never during T01, T02 or a legacy case.
+// The quiet site arc and fixed fault beacons persist after T01 restores SARO's supply.
+// SC02 keeps its separate short strike with sparks when the pale body first appears at the post.
+// Runtime only: Story owns the saved outage, and Horror/T01 own the strike's existing gate.
 namespace
 {
  const TCHAR* ArcSystem = TEXT("/Game/Signal47/FX/NS_S47_ArcSparks.NS_S47_ArcSparks");
  const double InsulatorX[3] = {-1.04, 0, 1.04}; // Tools/substation/geometry.py: bus supports at (x, 3.25, 7.69)
  constexpr double InsulatorY = 3.25, InsulatorZ = 7.69, GravelTop = -.08;
  constexpr float ArcPeakLumens = 1800.f, CalmPeak = .45f;
+ constexpr float FaultLampLumens = 120.f;
  constexpr int32 MaxSparks = 40; // Tools/fx/fx_contract.json maxSparks
  const FLinearColor ArcColor(.36f, .64f, 1.f), SparkColor(1.f, .74f, .42f, 1.f);
+ const FLinearColor FaultLampColor(1.f, .24f, .035f);
  FVector Insulator(int32 I) { return FS47Substation::Site(FVector(InsulatorX[FMath::Clamp(I, 0, 2)], InsulatorY, InsulatorZ)); }
+ float FaultArcLevel(bool bLow, bool bCalm) { return bCalm ? .065f : bLow ? .08f : .10f; }
+ bool SafeMesh(const UStaticMeshComponent* C)
+ {
+  return !C || (!C->bVisibleInRayTracing && !C->CastShadow && !C->bAffectDistanceFieldLighting &&
+   !C->bAffectDynamicIndirectLighting && !C->CanEverAffectNavigation() && C->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
+ }
+ bool SafeLight(const UPointLightComponent* L) { return !L || (!L->CastShadows && L->IndirectLightingIntensity == 0.f); }
  // Gravel top under the portal beam, relative to the insulator: the sparks' analytic bounce plane (cm, UE Z).
  double GroundZ() { return (FS47Substation::Site(FVector(0, InsulatorY, GravelTop)).Y - Insulator(1).Y) * 100.0; }
  int32 Nearest(const FVector2D& Body)
@@ -75,11 +85,10 @@ bool FS47Substation::ArcReady() const
 
 bool FS47Substation::ArcSafe() const
 {
- const UInstancedStaticMeshComponent* C = ArcMesh.Get();
- const UPointLightComponent* L = ArcLight.Get();
  return (!Sparks.IsValid() || S47Fx::Safe(Sparks.Get())) &&
-  (!C || (!C->bVisibleInRayTracing && !C->CastShadow && !C->bAffectDistanceFieldLighting && C->GetCollisionEnabled() == ECollisionEnabled::NoCollision)) &&
-  (!L || (!L->CastShadows && L->IndirectLightingIntensity == 0.f));
+  SafeMesh(ArcMesh.Get()) && SafeLight(ArcLight.Get()) && SafeMesh(FaultArcMesh.Get()) &&
+  SafeMesh(FaultLampMesh.Get()) && SafeMesh(FaultLampMounts[0].Get()) && SafeMesh(FaultLampMounts[1].Get()) && SafeLight(FaultArcLight.Get()) &&
+  SafeLight(FaultLampLights[0].Get()) && SafeLight(FaultLampLights[1].Get());
 }
 
 FS47Substation::FArcSnapshot FS47Substation::ArcSnapshot() const
@@ -102,6 +111,135 @@ FS47Substation::FArcSnapshot FS47Substation::ArcSnapshot() const
  if (const UPointLightComponent* L = Light.Get()) S.LampLumens = L->Intensity;
  if (!LampMids.IsEmpty()) if (UMaterialInstanceDynamic* D = LampMids[0].Get()) S.LampEmissive = D->K2_GetVectorParameterValue(TEXT("EmissiveFactor"));
  return S;
+}
+
+float FS47Substation::FaultLampLevel(double T, bool bCalm)
+{
+ // A slow fixed warning, not random electrical flicker. Calm flash holds one dim level.
+ if (bCalm) return .35f;
+ if (!FMath::IsFinite(T) || T < 0) return .10f;
+ const double Phase = FMath::Fmod(T, 4.0);
+ const double Pulse = Phase < .8 ? FMath::SmoothStep(0.0, .8, Phase) :
+  Phase < 1.4 ? 1.0 : 1.0 - FMath::SmoothStep(1.4, 2.2, Phase);
+ return .10f + .90f * float(Pulse);
+}
+
+bool FS47Substation::FaultReady() const
+{
+ return ArcReady() && FaultArcMesh.IsValid() && FaultLampMesh.IsValid() && FaultLampMounts[0].IsValid() && FaultLampMounts[1].IsValid() &&
+  FaultArcMid.IsValid() && FaultLampMid.IsValid() && FaultArcLight.IsValid() &&
+  FaultLampLights[0].IsValid() && FaultLampLights[1].IsValid();
+}
+
+FS47Substation::FFaultSnapshot FS47Substation::FaultSnapshot() const
+{
+ FFaultSnapshot S; S.bRequested = M && M->Story && M->Story->FeederFaultVisible();
+ S.bReady = FaultReady(); S.bActive = bFaultShown; S.bSafe = ArcSafe(); S.Age = FaultTime;
+ if (const UInstancedStaticMeshComponent* C = FaultArcMesh.Get())
+ { S.bArcVisible = C->IsVisible(); S.ArcInstances = C->GetInstanceCount(); S.Origin = C->GetComponentLocation(); }
+ if (const UInstancedStaticMeshComponent* C = FaultLampMesh.Get())
+ { S.bLampsVisible = C->IsVisible(); S.LampInstances = C->GetInstanceCount(); }
+ S.bMaterialAssigned = FaultArcMesh.IsValid() && FaultLampMesh.IsValid() &&
+  FaultArcMesh->GetMaterial(0) == FaultArcMid.Get() && FaultLampMesh->GetMaterial(0) == FaultLampMid.Get();
+ if (UMaterialInstanceDynamic* D = FaultArcMid.Get()) S.ArcIntensity = D->K2_GetScalarParameterValue(TEXT("ArcIntensity"));
+ if (UMaterialInstanceDynamic* D = FaultLampMid.Get()) S.LampIntensity = D->K2_GetScalarParameterValue(TEXT("ArcIntensity"));
+ if (const UPointLightComponent* L = FaultArcLight.Get()) S.ArcLumens = L->Intensity;
+ for (const auto& W : FaultLampLights) if (const UPointLightComponent* L = W.Get()) S.LampLumens += L->Intensity;
+ return S;
+}
+
+void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder, UMaterialInterface* Material)
+{
+ UMaterialInterface* Steel = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Substation/Materials/M_Substation_DarkSteel.M_Substation_DarkSteel"));
+ if (!Steel) { UE_LOG(LogS47SubstationArc, Warning, TEXT("S47: substation fault beacon mounts absent; sustained fault effect inert")); return; }
+ auto Mid = [&](const FLinearColor& Color)
+ {
+  UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Material, M->Web.Get());
+  D->SetVectorParameterValue(TEXT("ArcColor"), Color); D->SetScalarParameterValue(TEXT("ArcIntensity"), 0.f); return D;
+ };
+ FaultArcMid = Mid(ArcColor); FaultLampMid = Mid(FaultLampColor);
+ auto Mesh = [&](const TCHAR* Name, UMaterialInterface* Mat)
+ {
+  UInstancedStaticMeshComponent* C = NewObject<UInstancedStaticMeshComponent>(M->Web.Get(), Name);
+  C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(Parent); C->SetStaticMesh(Cylinder); C->SetMaterial(0, Mat);
+  C->SetCastShadow(false); C->SetVisibleInRayTracing(false); C->bAffectDistanceFieldLighting = false; C->bAffectDynamicIndirectLighting = false;
+  C->SetReceivesDecals(false); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCanEverAffectNavigation(false);
+  C->SetVisibility(false); C->RegisterComponent(); C->SetWorldTransform(FTransform::Identity); return C;
+ };
+ UInstancedStaticMeshComponent* Filament = Mesh(TEXT("SubstationFaultArc"), FaultArcMid.Get()); FaultArcMesh = Filament;
+ const FVector At = S47Three::ToUE(Insulator(1)); Filament->SetWorldLocation(At);
+ // One stable bow along the porcelain. No timed shape changes, branches, particles or strikes.
+ FVector Previous = FVector::ZeroVector;
+ for (int32 I = 1; I <= 12; ++I)
+ {
+  const double T = double(I) / 12, S = FMath::Sin(PI * T);
+  const FVector Next(-32 * S, -25 * S, -75 * T), Delta = Next - Previous;
+  Filament->AddInstance(FTransform(FQuat::FindBetweenNormals(FVector::UpVector, Delta.GetSafeNormal()),
+   (Previous + Next) * .5, FVector(.7 / 50, .7 / 50, Delta.Size() / 100)));
+  Previous = Next;
+ }
+ UInstancedStaticMeshComponent* Lenses = Mesh(TEXT("SubstationFaultBeacons"), FaultLampMid.Get()); FaultLampMesh = Lenses;
+ auto MakeFaultLight = [&](const TCHAR* Name, const FVector& P, const FLinearColor& Color, float Radius, float Source)
+ {
+  UPointLightComponent* L = NewObject<UPointLightComponent>(M->Web.Get(), Name);
+  L->SetMobility(EComponentMobility::Movable); L->SetupAttachment(Parent); L->SetIntensityUnits(ELightUnits::Lumens);
+  L->SetIntensity(0); L->SetLightColor(Color); L->SetAttenuationRadius(Radius); L->SetSourceRadius(Source);
+  L->SetCastShadows(false); L->SetIndirectLightingIntensity(0); L->SetVolumetricScatteringIntensity(0);
+  L->SetVisibility(false); L->RegisterComponent(); L->SetWorldLocation(P); return L;
+ };
+ FaultArcLight = MakeFaultLight(TEXT("SubstationFaultArcLight"), At + FVector(-32, -40, -35), ArcColor, 1400, 8);
+ // Both lenses are bolted to the front of the existing portal's outer steel legs, 6.43 m high.
+ // Their fixed faces sit above the transformer for the approach and the enclosed service.
+ const FQuat Face = FQuat::FindBetweenNormals(FVector::UpVector, FVector(0, -1, 0));
+ for (int32 I = 0; I < 2; ++I)
+ {
+  const double X = I == 0 ? -3.45 : 3.45;
+  const FVector P = S47Three::ToUE(Site(FVector(X, 3.05, 6.43)));
+  // Use ordinary components for the original steel material, which has no instancing shader usage.
+  UStaticMeshComponent* Mount = NewObject<UStaticMeshComponent>(M->Web.Get(), I == 0 ? TEXT("SubstationFaultMountLeft") : TEXT("SubstationFaultMountRight"));
+  Mount->SetMobility(EComponentMobility::Movable); Mount->SetupAttachment(Parent); Mount->SetStaticMesh(Cylinder); Mount->SetMaterial(0, Steel);
+  Mount->SetCastShadow(false); Mount->SetVisibleInRayTracing(false); Mount->bAffectDistanceFieldLighting = false; Mount->bAffectDynamicIndirectLighting = false;
+  Mount->SetReceivesDecals(false); Mount->SetCollisionEnabled(ECollisionEnabled::NoCollision); Mount->SetCanEverAffectNavigation(false);
+  Mount->SetVisibility(false); Mount->RegisterComponent();
+  Mount->SetWorldTransform(FTransform(Face, S47Three::ToUE(Site(FVector(X, 3.11, 6.43))), FVector(.26, .26, .08)));
+  FaultLampMounts[I] = Mount; S47Fx::Precache(Mount);
+  Lenses->AddInstance(FTransform(Face, P, FVector(.20, .20, .04)));
+  FaultLampLights[I] = MakeFaultLight(I == 0 ? TEXT("SubstationFaultBeaconLeft") : TEXT("SubstationFaultBeaconRight"),
+   P + FVector(0, -6, 0), FaultLampColor, 900, 10);
+ }
+ S47Fx::Precache(Filament); S47Fx::Precache(Lenses);
+ UE_LOG(LogS47SubstationArc, Display, TEXT("S47: sustained feeder fault ready: stable 12-segment arc, two mounted amber beacons; safe=%d"), ArcSafe());
+}
+
+void FS47Substation::ClearFault()
+{
+ bFaultShown = false;
+ for (const auto& W : {FaultArcMesh, FaultLampMesh}) if (UInstancedStaticMeshComponent* C = W.Get()) C->SetVisibility(false);
+ for (const auto& W : FaultLampMounts) if (UStaticMeshComponent* C = W.Get()) C->SetVisibility(false);
+ for (const auto& W : {FaultArcMid, FaultLampMid}) if (UMaterialInstanceDynamic* D = W.Get()) D->SetScalarParameterValue(TEXT("ArcIntensity"), 0.f);
+ for (const auto& W : {FaultArcLight, FaultLampLights[0], FaultLampLights[1]})
+  if (UPointLightComponent* L = W.Get()) { L->SetIntensity(0); L->SetVisibility(false); }
+}
+
+void FS47Substation::StepFault(double Dt)
+{
+ const bool bFaultRequested = M && M->Story && M->Story->FeederFaultVisible();
+ const bool bLoading = !M || !M->World || M->World->bBusy || (M->Flow && M->Flow->bStarting);
+ const bool bShow = bFaultRequested && bReady && FaultReady() && M->Mode == US47Main::EMode::Play && Root.Shown() && !bLoading;
+ if (!bShow) { ClearFault(); return; }
+ const UWorld* World = M->Web ? M->Web->GetWorld() : nullptr;
+ const bool bHeld = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic() || (World && World->IsPaused());
+ if (!bHeld && FMath::IsFinite(Dt) && Dt > 0) FaultTime += FMath::Min(Dt, .1);
+ const bool bCalm = M->Flow && M->Flow->bCalmFlash, bLow = M->Flow && M->Flow->Graphics.Effects == 0;
+ const float Arc = FaultArcLevel(bLow, bCalm), LampLevel = FaultLampLevel(FaultTime, bCalm);
+ FaultArcMesh->SetVisibility(true); FaultLampMesh->SetVisibility(true);
+ for (const auto& W : FaultLampMounts) if (UStaticMeshComponent* C = W.Get()) C->SetVisibility(true);
+ FaultArcMid->SetScalarParameterValue(TEXT("ArcIntensity"), 18.f * Arc);
+ FaultLampMid->SetScalarParameterValue(TEXT("ArcIntensity"), 9.f * LampLevel);
+ FaultArcLight->SetIntensity(ArcPeakLumens * Arc); FaultArcLight->SetVisibility(true);
+ for (const auto& W : FaultLampLights) if (UPointLightComponent* L = W.Get()) { L->SetIntensity(FaultLampLumens * LampLevel); L->SetVisibility(true); }
+ if (!bFaultShown) UE_LOG(LogS47SubstationArc, Display, TEXT("S47: sustained site fault shown independently of restored SARO supply; %s, arc %.0f lm, no sparks"), bCalm ? TEXT("calm steady beacons") : TEXT("slow 4 s beacons"), ArcPeakLumens * Arc);
+ bFaultShown = true;
 }
 
 void FS47Substation::InstallArc()
@@ -131,6 +269,7 @@ void FS47Substation::InstallArc()
  L->SetMobility(EComponentMobility::Movable); L->SetupAttachment(Parent);
  L->SetIntensityUnits(ELightUnits::Lumens); L->SetIntensity(0); L->SetLightColor(ArcColor); L->SetAttenuationRadius(1800); L->SetSourceRadius(8);
  L->SetCastShadows(false); L->SetIndirectLightingIntensity(0); L->SetVolumetricScatteringIntensity(.5f); L->SetVisibility(false); L->RegisterComponent(); L->SetWorldLocation(At); ArcLight = L;
+ InstallFault(Parent, Cylinder, Material);
  UE_LOG(LogS47SubstationArc, Display, TEXT("S47: substation arc ready: porcelain top 7.69 to mount 6.94 m, gravel %.0f cm, native filaments+Niagara, safe=%d"), GroundZ(), ArcSafe());
 }
 
@@ -146,6 +285,7 @@ void FS47Substation::CancelArc()
 void FS47Substation::ResetArc()
 {
  CancelArc(); bArcSpent = false; bArcCalm = false; bArcWasAppeared = false;
+ ClearFault(); FaultTime = 0;
  // Substation Begin precedes Horror Begin. Never inspect the previous case's Threat here.
  // Continue inside a meeting is deliberately quiet, including a pre-witness checkpoint.
  // A save before the meeting still gets its first appearance. No new saved effect field.
@@ -207,6 +347,7 @@ void FS47Substation::FireArc(int32 At, const TCHAR* Why)
 
 void FS47Substation::StepArc(double Dt)
 {
+ StepFault(Dt); // Independent of the SC02 meeting: visible before and during the T01 check.
  const FS47HorrorThreat* Th = M && M->Horror ? M->Horror->Threat.Get() : nullptr;
  const bool bMeeting = M && M->Horror && M->Horror->SC02Meeting();
  const bool bLoading = !M || !M->World || M->World->bBusy || (M->Flow && M->Flow->bStarting);
@@ -264,6 +405,15 @@ bool FS47Substation::ArcSelfTest(TArray<FString>& Lines)
  Check(ArcLevel(-.01, false) == 0 && ArcLevel(ArcDuration, false) == 0 && ArcLevel(ArcDuration, true) == 0, TEXT("envelope is deterministic and zero outside its 1.2 s"));
  Check(ArcDip(-1, false) == 1.f && ArcDip(ArcDuration + 1, true) == 1.f && ArcDip(0, false) >= .19f && ArcDip(.6, true) < 1.f, TEXT("the lamp dips only during the arc and is exactly normal outside it"));
  Check(ArcSparks(false, false) == MaxSparks && ArcSparks(true, false) == MaxSparks / 2 && ArcSparks(true, true) < ArcSparks(true, false) && ArcSparks(false, true) <= MaxSparks / 2, TEXT("40 sparks, 20 on Low, fewer with calm flash"));
+ Check(FaultArcLevel(false, false) > 0 && FaultArcLevel(false, false) <= .1f &&
+  FaultArcLevel(true, false) > 0 && FaultArcLevel(true, false) <= FaultArcLevel(false, false) &&
+  FaultArcLevel(true, true) <= FaultArcLevel(true, false), TEXT("sustained fault stays weak and visible on Low, further reduced by calm flash"));
+ Check(FaultLampLevel(0, false) == FaultLampLevel(4, false) && FaultLampLevel(1, false) > .99f && FaultLampLevel(3, false) < .11f &&
+  FaultLampLevel(.4, false) > FaultLampLevel(.1, false) && FaultLampLevel(1.8, false) > FaultLampLevel(2.1, false),
+  TEXT("fixed fault beacons use a slow four-second rise, hold and fade, with no random flicker"));
+ Check(FaultLampLevel(0, true) == FaultLampLevel(1, true) && FaultLampLevel(1, true) == FaultLampLevel(30, true) &&
+  FaultLampLevel(0, true) > 0 && FaultLampLevel(0, true) < .5f,
+  TEXT("calm flash holds the fixed beacons at a steady dim level"));
  Check(FMath::IsNearlyEqual(GroundZ(), -777.0, .5) && Nearest(FS47HorrorThreat::Nodes()[2].At) == 2 && FS47HorrorThreat::InYard(FVector2D(Insulator(0).X, Insulator(0).Z)) && FS47HorrorThreat::InYard(FVector2D(Insulator(2).X, Insulator(2).Z)),
   TEXT("insulators inside the closed yard, bounce plane on the gravel 7.77 m below, the post's nearest support picked"));
  return Ok;

@@ -6,6 +6,11 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Stabilitet og feil fra spillprøven
 
+Produksjonsverktøy: første versjon av [koordinatoren med Claude](Guides/PRODUCTION_SYSTEM.md)
+er implementert. Den ordinære live-workerprøven og en faktisk tung verktøyserie
+står som avgrensede kontroller når henholdsvis Claude-kvote og et konkret
+produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
+
 | ID | Åpen oppgave | Underlag |
 | --- | --- | --- |
 | FIX-01 | [ ] Undersøk diner-krasjene og rett dokumentert årsak. Bevar riktig binær-/logggrunnlag og avklar eventuell ressurskonkurranse. | [Begge krasjvedlegg](Reports/PLAYTEST_TODO_2026-10-28.md). Vulkan-allokering er et spor, ikke bevist rotårsak. |
@@ -42,12 +47,14 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 ## Historie og samlet spillerreise
 
 - [ ] **STORY-01:** Fullfør den nye kveldsrekkefølgen: forenklet SC01, signal/strømsvikt kl. 00:13, mørk trafotur, senere SC02 og sammenhengende retur. Claude/Codex-fordeling står i [kveldsplanen](../Design/Story/KVELD_PLAN_2026-10-28.md).
+- [x] **STORY-01A, Codex-del:** Ny nattrekkefølge, vedvarende trafofeil og SKY01 gjennom PR209. Pakket R2 består 74 nattkontroller med åtte diskrestores og 14 Arc/calm-kontroller; naturlig SKY01, grafisk sikt og fersk Continue er prøvd separat. [Rapport og gjenværende bevisgrenser](../Evidence/UnrealDeliveries/NATTSEKVENS_2026-10-28.md). Samlet STORY-01 og faktisk SC03 er fortsatt åpne.
 - [ ] **STORY-02:** Fullfør faktisk SC03 med telefonmelding, Ortiz, servicevogn 23, termose, bortføring og etterspor. Deretter SC04/SC05 som samlet aktleveranse etter [revidert regi](../Design/Story/HISTORIE_SC02_SC13_REVISJON.md).
 - [ ] **STORY-03:** Produser SC06 til SC13 med nødvendige verdenshandlinger, modeller, stemmer, lagring og progresjon. Bruk [implementeringsplanen](../Design/Story/HISTORIE_IMPLEMENTERINGSPLAN.md) under de senere revisjonene, ikke gamle antakelser om ferdig spilletid.
 - [x] **STORY-04A, kilde:** Fire ekte arrayobservasjoner 19:00 til 22:50 med papirer og hint er flettet i PR206. Pakket/installert levering føres separat i STATUS.
 - [x] **STORY-04B, kilde:** SC01 med klask mot ruta i stedet for hånd, avtrykk når skjermen heves, og lampetest bare innenfra. Fem ekte observatorielyder med kreditering i arrayarbeidet (PR208). SC01-kontrakt PASS, 157 kontroller.
 - [x] **STORY-04C, kilde:** Aggregattest 19:35 på fjernpanel og runde til arraygjerdet 21:40 der porten står åpen igjen (PR210). SC01-kontrakt PASS, 176 kontroller.
-- [ ] **STORY-04:** Viderefør kveldsarbeidet: stemmen ved feil dør og SKY01-himmelbanen. Nye dispatchopptak for SC01_FIRST_REPORT_001/002 (ny tekst). Ikke legg inn tidlige alienmøter som bryter den nye regien.
+- [ ] **STORY-04:** Viderefør kveldsarbeidet: stemmen ved feil dør. Nye dispatchopptak for SC01_FIRST_REPORT_001/002 (ny tekst). Ikke legg inn tidlige alienmøter som bryter den nye regien.
+- [x] **STORY-04D, kilde og målrettet kontroll:** Ett SKY01-lys starter naturlig ved 21:30 og fortsetter over kveldens korte hopp. Fem himmeltrinn består 24 grafiske sikt-/lagringskontroller med faktisk feltkamerabilde. Inngår i PR209, uten installasjon.
 - [ ] **FX-01:** Produser den korte meteorpassasjen ved stjernehullet med riktig hendelsestid og engangsavspilling. [Design og kilder](../Design/Proposals/NIAGARA_VFX_2026-10-28.md).
 - [ ] **FX-02:** Produser den store UFO-avsløringen med cloud tank-skyer som del av finalen, med bevart THE EVENT og 1947-bilde. [Finaleretning](../Design/Proposals/FINALE_CLOUD_TANK_UFO.md).
 - [ ] **ART-01:** Integrer ferdige plakater, bilder og dokumentrekvisitter på riktige flater med lesbare UV-/materialbindinger. Bevar fungerende dokument-ID-er og bevisgrunnlag.

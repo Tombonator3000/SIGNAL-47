@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-29T00:25:45.831533+01:00",
+  "source_sha256": {
+    "Automation/production/__init__.py": "474d49c353c3c0f26902cdb738ba2acb84faed2627389909b9c24a5083297b70",
+    "Automation/production/__main__.py": "0dd072ac4488f65bf8c5864ce7a52efa1498fe3fe980353e07f148507de7c735",
+    "Automation/production/claude.py": "f5802a41ea901caeedfce0c0e7d294f0a998696789566e6db5f01a4771aa6d49",
+    "Automation/production/cli.py": "6c53b671115fa64e2c860b6e4d4686f771e9630f9b71a81bdd30ee68b97a0d7c",
+    "Automation/production/context.py": "88f2d4154a89f6ee85a19153db15b1e106b9917bc98c16ad279536aa212bc46a",
+    "Automation/production/models.py": "a3b0981eaa8f48c2798160723328164119c9418de7fd326fa2e80126655d8476",
+    "Automation/production/process.py": "d83ae7a009b151398ea7920aa01ad6bfbc9106ea27b5089563cdf0db530a7291",
+    "Automation/production/runner.py": "11c04fdfa3faa18d5d2ec3721b495fd123f6842dcaa346a9b6ac6987756c9ebe",
+    "Automation/production/store.py": "116f9ed535285037d21cab5dbe59de6f080d3ad741fc34c0f1da55df169fe332",
+    "Automation/production/supervise.py": "9ac55c4e50f4334202810c239077da73ce229edd4a558cebf50213bdce2e7c3c",
+    "Automation/production/tools.py": "d6e8b67b1c1359444d88d0520ba0ee708f0465fcce2f8dc15aed1494e9aff869",
+    "unreal/Signal47/Scripts/production.py": "2c401e0ddd0ae03a459960e3576a04d603e1c59afffe38b2cf3d300aa348203d",
+    "unreal/Signal47/Scripts/production_lease.py": "b0c47d3d3143117948a8031d319412561253833917e84ef5cababfa76fb688f5",
+    "unreal/Signal47/Scripts/unreal_guard.py": "b23454fcc53b8cde7b1a0a8c7cccb948d88aeb89e854651920acbfbe6c1d57c7"
+  },
+  "python": "3.14.4",
+  "checks": {
+    "unit_and_process_tests": {
+      "status": "PASS",
+      "count": 166
+    },
+    "queued_selftest": {
+      "status": "PASS",
+      "run_id": "d7464c267c7b48a78be51299ef236524",
+      "task_fingerprint": "d1dc6368f631138c17c4670945330ebc1cb6992afc4b3ded541ec1f1fc24ffbf"
+    },
+    "actual_claude_availability": {
+      "status": "PASS",
+      "provider_outcome": "CLAUDE_QUOTA_UNAVAILABLE",
+      "false_success_rejected": true,
+      "budget_consumed_usd": 0.0,
+      "run_id": "e5918a4798054fd5af8d375636cf8c0f"
+    },
+    "actual_successful_claude_worker": "UNVERIFIED_QUOTA_LIMIT",
+    "heavy_blender_unreal_series": "UNVERIFIED_NOT_RUN",
+    "gameplay_acceptance": "NOT_CLAIMED",
+    "shared_provider_cooldown": "PASS_SYNTHETIC_ZERO_COST_AND_TOOL_PROGRESS"
+  },
+  "claude_collaboration": {
+    "provider_implementation": "Claude Code",
+    "review_fixes": "Claude Code and Codex"
+  },
+  "local_evidence": "Local coordinator state runs/ contains raw request, response, check logs and hash-bound receipts. Development queue R1 is archived with its whitespace rejection and quota receipts; no user production jobs were removed.",
+  "source_base_commit": "4e9b657bb7f990d3dd60551c9cc9d8be8a949dc0",
+  "source_delta_sha256": "4d1b71df689be66a433006a8cac353b55208a990aa878b04670a46b898c7aa33"
+}

@@ -7,9 +7,12 @@
 
 class US47Main;
 class UMaterialInstanceDynamic;
+class UMaterialInterface;
 class UInstancedStaticMeshComponent;
 class UNiagaraComponent;
 class UPointLightComponent;
+class USceneComponent;
+class UStaticMesh;
 class UStaticMeshComponent;
 struct FS47Doc;
 struct FS47Task;
@@ -74,6 +77,19 @@ public:
   FVector Origin = FVector::ZeroVector;
  };
  FArcSnapshot ArcSnapshot() const; // measured live component state, not expected envelope values
+ // The sustained feeder fault is separate from the short SC02 strike and the inspection lamp.
+ // Its state derives from Story's saved outage; it never creates a spark burst on Continue.
+ static float FaultLampLevel(double T, bool bCalm);
+ struct FFaultSnapshot
+ {
+  bool bRequested = false, bReady = false, bActive = false, bArcVisible = false, bLampsVisible = false;
+  bool bMaterialAssigned = false, bSafe = false;
+  int32 ArcInstances = 0, LampInstances = 0;
+  double Age = 0;
+  float ArcLumens = 0, LampLumens = 0, ArcIntensity = 0, LampIntensity = 0;
+  FVector Origin = FVector::ZeroVector;
+ };
+ FFaultSnapshot FaultSnapshot() const;
 private:
  US47Main* M = nullptr;
  bool bBuilt = false, bReady = false, bJournal = false, bComplete = false, bObserved = false;
@@ -142,6 +158,12 @@ private:
  TWeakObjectPtr<UPointLightComponent> ArcLight;
  TWeakObjectPtr<UInstancedStaticMeshComponent> ArcMesh;
  TWeakObjectPtr<UMaterialInstanceDynamic> ArcMid;
+ TWeakObjectPtr<UInstancedStaticMeshComponent> FaultArcMesh, FaultLampMesh;
+ TWeakObjectPtr<UStaticMeshComponent> FaultLampMounts[2];
+ TWeakObjectPtr<UMaterialInstanceDynamic> FaultArcMid, FaultLampMid;
+ TWeakObjectPtr<UPointLightComponent> FaultArcLight, FaultLampLights[2];
+ double FaultTime = 0;
+ bool bFaultShown = false;
  double ArcT = -1;
  bool bArcSpent = false, bArcCalm = false, bArcWasAppeared = false;
  int32 ArcFired = 0, ArcSite = 1, ArcSparkCount = 0, ArcShape = -1;
@@ -153,5 +175,9 @@ private:
  void ResetArc();
  void FireArc(int32 At, const TCHAR* Why);
  void StepArc(double Dt);
+ bool FaultReady() const;
+ void InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder, UMaterialInterface* Material);
+ void ClearFault();
+ void StepFault(double Dt);
  static bool ArcSelfTest(TArray<FString>& Lines);
 };
