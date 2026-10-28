@@ -12,6 +12,10 @@ Status: **ønsket og registrert for senere produksjon**. Plasseringen i SC13 er 
 
 Dette dokumentet er et nytt regitillegg til [historierevisjonen](HISTORIE_SC02_SC13_REVISJON.md), [implementeringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md) og [hovedforløpet](MISSION_FLOW_1800_ROSWELL.md). Det erstatter ikke slutten eller innfører et nytt scenario. Avvik fra den tidligere regien er den tydeligere, fysiske fartøyavsløringen i SC13. Genererte manusfiler er ikke endret.
 
+## Konseptbilder og presisert skyretning
+
+Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.
+
 ## Hvorfor SC13 gir sterkest effekt
 
 SC12 er Mesa Diners trygge pusterom: kjente mennesker, kildekontroll, vellykket varsel til Ward og en begrunnet reise med originalene. En full UFO-avsløring der ville brukt opp forventningen før siste kjøretur og konkurrert med spillerens forståelse av hvorfor Reyes reiser.

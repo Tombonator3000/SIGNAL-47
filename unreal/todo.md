@@ -1,3 +1,7 @@
+## Cloud tank-konseptbilder, 28. oktober 2026
+
+- [x] Bevar SARO v1/v2 og Caliche v1 med galleri, prompter og kontrollsummer. [Gjeldende skyretning](Concepts/CloudTankUFO-2026-10-28/README.md): to skybanker velter fremover fra hver sin side. Implementering og spilltest gjenstår i eksisterende finaleoppgave.
+
 ## Cloud tank-UFO i siste scenario, 28. oktober 2026
 
 - [x] Lagre Toms finaleønske med ideer, oppskrift og mulig gjennomføring i [FINALE_CLOUD_TANK_UFO.md](FINALE_CLOUD_TANK_UFO.md). Hovedavsløring anbefales i SC13, med kun mulig forvarsel i SC12.
