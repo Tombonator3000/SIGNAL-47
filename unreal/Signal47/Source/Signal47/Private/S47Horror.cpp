@@ -19,6 +19,7 @@
 #include "S47Album.h"
 #include "S47Night.h"
 #include "S47Substation.h"
+#include "S47Observing.h"
 #include "Framework/Application/SlateApplication.h"
 
 namespace
@@ -118,8 +119,9 @@ void FS47Horror::Begin(const S47J::FObj& Saved,bool bNewCase)
 }
 bool FS47Horror::NormalComplete() const
 {
+ // A new evening's schedule is part of the normal work: the window is not armed before 23:00.
  return bEnabled && M && M->FieldCamera && M->FieldCamera->bHave && !ReferencePhoto.IsEmpty() && bEast && bCorridor && bBaseline &&
-  Visual && Visual->LampChangeChecked() && Visual->ScreenChecked();
+  Visual && Visual->LampChangeChecked() && Visual->ScreenChecked() && !(M->Observing && M->Observing->Pending());
 }
 // The SC02 meeting holds the night's older events (abduction, truck taking) while the player is at the site.
 bool FS47Horror::Busy() const {return bEnabled && Visual && (Visual->WindowPhase()==1 || bWorldCall || Pack.CurrentScene() || (SC02==ESC02::Encounter && AtSite()) || (SC03 && SC03->Busy()));}
@@ -387,6 +389,7 @@ FString FS47Horror::Objective() const
  if(!M->FieldCamera || !M->FieldCamera->bHave)return TEXT("EVENING ROUND // COLLECT THE CAMERA BESIDE THE EAST DOOR");
  if(!bEast || !bCorridor)return TEXT("EVENING ROUND // FROM INSIDE, OPEN THE EAST SERVICE DOOR AND THE VISITOR ENTRANCE AT THE WEST END OF THE CORRIDOR");
  if(!bBaseline)return TEXT("CONTROL ROOM // CHECK 1419.900 MHz / AZ 042 / GAIN 55 / BW 48");
+ if(M->Observing && M->Observing->Active())return M->Observing->Objective();
  if(!Visual->LampChangeChecked())return TEXT("NORTH WINDOW // FROM INSIDE, SWITCH THE MARKED LAMP OFF AND ON WHILE WATCHING IT THROUGH THE GLASS");
  if(ReferencePhoto.IsEmpty())return TEXT("NORTH WINDOW // TAKE AN INSTANT-BACK REFERENCE OF THE MARKED LAMP WHILE IT IS ON");
  if(!Visual->ScreenChecked())return TEXT("NORTH WINDOW // CLOSE THE OPAQUE SHUTTER AND CHECK THAT IT BLOCKS THE LAMP");
@@ -406,12 +409,14 @@ TArray<FS47Task> FS47Horror::Tasks() const
   {TEXT("Reach SARO 07 by a route outside the fence"),M->World && M->World->bDriving},
   {TEXT("Drive clear of Caliche Junction"),false}};
  }
- return {{TEXT("Collect the field camera"),M->FieldCamera && M->FieldCamera->bHave},
+ TArray<FS47Task> Out={{TEXT("Collect the field camera"),M->FieldCamera && M->FieldCamera->bHave},
  {TEXT("Open the service door and the visitor entrance from inside"),bEast && bCorridor},
- {TEXT("Check the normal receiver reference"),bBaseline},
- {TEXT("Take an instant-back reference of the marked lamp"),!ReferencePhoto.IsEmpty()},
+ {TEXT("Check the normal receiver reference"),bBaseline}};
+ if(M->Observing && bBaseline)Out.Append(M->Observing->Tasks());
+ Out.Append({{TEXT("Take an instant-back reference of the marked lamp"),!ReferencePhoto.IsEmpty()},
  {TEXT("Switch the lamp off and on through the glass, then check it behind the shade"),Visual->LampChangeChecked() && Visual->ScreenChecked()},
- {TEXT("Check the window and its outside marks"),Visual->MarksChecked()}};
+ {TEXT("Check the window and its outside marks"),Visual->MarksChecked()}});
+ return Out;
 }
 S47J::FObj FS47Horror::Save() const
 {

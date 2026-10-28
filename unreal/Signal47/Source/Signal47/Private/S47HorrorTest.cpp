@@ -31,6 +31,10 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
+#include "S47Observing.h"
+#include "S47Audio.h"
+#include "S47Ambience.h"
+#include "S47Docs.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47HorrorTest, Log, All);
 
@@ -45,6 +49,7 @@ struct FS47HorrorTest::FState
 	bool bArcCloseup = false;
 	float ArcOriginalFov = 0;
 	FS47Substation::FArcSnapshot PausedArc;
+	bool bObservingRestored = false, bObservingResumed = false;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
 	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector, Door3 = FVector::ZeroVector;
 	double DoorOut = 1;
@@ -228,7 +233,7 @@ void FS47HorrorTest::Step(double Dt)
 	// Story pause also covers the modal panels that this controller must acknowledge.
 	if (M->Story->IsPaused()) M->Player->TestMove.Reset();
 	T.Elapsed += FMath::Clamp(Dt, 0., .2);
-	if (T.Elapsed > (T.Mode == TEXT("SC03") ? 1800 : T.Mode == TEXT("SC03Resume") ? 900 : (T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 420)) { Fail(TEXT("live horror contract control timeout")); return; }
+	if (T.Elapsed > (T.Mode == TEXT("SC03") ? 1800 : T.Mode == TEXT("SC03Resume") ? 900 : (T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 600)) { Fail(TEXT("live horror contract control timeout")); return; }
 	if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("developer case zero required; never write a player case")); return; }
 	if (M->Flow->bStarting || M->World->bBusy)
 	{
@@ -388,7 +393,7 @@ void FS47HorrorTest::Step(double Dt)
 		M->World->StopDriving(); M->World->bCommuteVehicle = false; M->World->PlaceTruck(TEXT("saro")); M->World->Enter(TEXT("saro"));
 		M->Evening->Begin(nullptr, true); M->Story->BeginEveningShift(); M->Story->SetClock(-21600);
 		M->Web->SetDoorOpen(TEXT("doorEast"), false); M->Web->SetDoorOpen(TEXT("doorSouth"), false); M->Web->SetDoorOpen(TEXT("exitDoor"), false);
-		M->Player->Place(4.2, 1.6, 0); H.Begin(nullptr, true);
+		M->Player->Place(4.2, 1.6, 0); if (M->Observing) M->Observing->Begin(nullptr, true); H.Begin(nullptr, true);
 		UE_LOG(LogS47HorrorTest, Display, TEXT("S47: SC01 START: post-handover evening fixture and one initial room placement; later film-budget checks use explicitly synthetic album entries. All SC01 door/lamp/camera/window/report facts use real production controls, camera rays and Walker/Resolve thereafter. No human input/listening claim."));
 		if (!Check(H.Enabled() && !H.NormalComplete() && !H.Complete(), TEXT("new cohort begins with no SC01 physical completion"))) return;
 		Stage(1, .5); return;
@@ -429,7 +434,82 @@ void FS47HorrorTest::Step(double Dt)
 	if (T.Stage == 9)
 	{
 		if (!Check(H.BaselineChecked(), TEXT("coordinator witnesses the calibrated normal receiver"))) return;
-		Go({FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.2,0,1.6)}, 10); return;
+		if (!Check(M->Observing && M->Observing->Active() && M->Observing->RunIndex() == 0 && !H.NormalComplete(), TEXT("new evening opens the observing schedule after the receiver reference"))) return;
+		Stage(600, .4); return;
+	}
+	// Evening observing schedule (S47Observing): four real runs on the console, each reduced on paper.
+	if (T.Stage >= 600 && T.Stage <= 605)
+	{
+		FS47Observing& O = *M->Observing;
+		const int32 R = O.RunIndex();
+		const FString DataId = R < FS47Observing::Runs().Num() ? FString(FS47Observing::Runs()[R].Data) : FString();
+		const bool bTerminal = DataId == TEXT("opsTerminal"), bStatus = DataId == TEXT("crtLeft");
+		if (T.Stage == 600)
+		{
+			if (!Check(M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("obs_schedule"); }), TEXT("the observing schedule is filed with the papers"))) return;
+			Aim(Target(TEXT("crtCenter"))); Stage(601); return;
+		}
+		if (T.Stage == 601)
+		{
+			const auto& Run = FS47Observing::Runs()[R];
+			if (!Pick(TEXT("crtCenter")) || !Check(M->Story->bConsoleOpen && M->Story->ConsoleProfile().Card == Run.P.Card, TEXT("the console shows the scheduled run's card"))) return;
+			auto& Rx = M->Story->Rx; const double Clock = M->Story->Clock();
+			Rx.Frequency = Run.P.F; Rx.Gain = (Run.P.Gain[0] + Run.P.Gain[1]) / 2; Rx.Bandwidth = (Run.P.Bw[0] + Run.P.Bw[1]) / 2; Rx.Azimuth = Run.P.Az[1] + 8;
+			M->Story->ConsoleAction();
+			if (!Check(O.Phase() == FS47Observing::EStep::Tune && Rx.Stage == 1 && M->Story->Clock() == Clock, TEXT("off-source settings start no run and keep the clock"))) return;
+			Rx.Azimuth = (Run.P.Az[0] + Run.P.Az[1]) / 2; M->Story->ConsoleAzimuth();
+			M->Story->ConsoleAction();
+			if (!Check(O.Phase() == FS47Observing::EStep::Integrating && Rx.Stage == 1 && M->Story->Clock() >= Run.Slot, TEXT("the scheduled settings start the run at its source's time"))) return;
+			M->UI->Close(true); M->Story->ConsoleClosed(); Stage(602, .3); return;
+		}
+		if (T.Stage == 602)
+		{
+			if (R == 1 && !T.bObservingRestored && O.Phase() == FS47Observing::EStep::Integrating && O.Integrated() >= 12.8)
+			{
+				T.bObservingRestored = true;
+				if (!Check(O.Hints() & 1, TEXT("the pulsar's stray ticks played during the integration"))) return;
+				if (!StoreRestore(TEXT("observing-mid-pulsar"), M->Flow->GameState())) return;
+				Stage(602, .5); return;
+			}
+			if (T.bObservingRestored && !T.bObservingResumed)
+			{
+				T.bObservingResumed = true;
+				if (!Check(R == 1 && O.Phase() != FS47Observing::EStep::Tune && O.Integrated() >= 12.5 && (O.Hints() & 1) && H.BaselineChecked(),
+					TEXT("fresh disk restore resumes the same integration and keeps the heard hint"))) return;
+			}
+			if (O.Phase() != FS47Observing::EStep::Data) return;
+			if (bTerminal) Go({FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-4.2,0,1.0), FVector(-4.2,0,2.0)}, 603);
+			else if (bStatus) Go({FVector(0,0,-1.2), FVector(-2.15,0,-1.2), FVector(-2.15,0,-2.0)}, 603);
+			else Go({FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.5,0,-.4)}, 603);
+			return;
+		}
+		if (T.Stage == 603) { Aim(Target(DataId)); Stage(604); return; }
+		if (T.Stage == 604)
+		{
+			const auto& Run = FS47Observing::Runs()[R];
+			if (!Pick(DataId)) return;
+			const FString DocId = FS47Observing::Chart(R).Id;
+			static const int32 Expect[] = { 0, 1, 3, 15 };
+			if (!Check(O.RunIndex() == R + 1 && M->Story->Clock() >= Run.Slot + Run.Minutes * 60 &&
+				M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D) { return D.Id == DocId; }) && O.Hints() == Expect[R],
+				TEXT("data step files the run's paper, advances the clock and keeps exactly the expected hints"))) return;
+			M->UI->Close(true);
+			if (O.Pending())
+			{
+				if (bTerminal) Go({FVector(-4.2,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600);
+				else Go({FVector(3.8,0,-1.2), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600);
+				return;
+			}
+			Stage(605, .3); return;
+		}
+		if (T.Stage == 605)
+		{
+			int32 DoneRows = 0; for (const auto& Row : H.Tasks()) DoneRows += Row.bDone && Row.Text.Contains(TEXT(":")) ? 1 : 0;
+			if (!Check(O.Done() && !O.Active() && M->Story->Rx.Stage == 1 && DoneRows == 4 && M->Story->Clock() < -3600 && M->Story->Clock() >= -4200 &&
+				!(M->Audio && M->Audio->Night && M->Audio->Night->IsStill()),
+				TEXT("schedule complete by 22:50 with four filed runs; the desert sound is back"))) return;
+			Go({FVector(-2.15,0,-1.2), FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.2,0,1.6)}, 10); return;
+		}
 	}
 	if (T.Stage == 10) { Aim(Target(TEXT("doorEast"))); Stage(11); return; }
 	if (T.Stage == 11)

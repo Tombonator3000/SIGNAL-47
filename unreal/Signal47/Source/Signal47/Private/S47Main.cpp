@@ -1,5 +1,6 @@
 #include "S47Main.h"
 #include "S47Horror.h"
+#include "S47Observing.h"
 #include "S47HorrorTest.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
@@ -68,6 +69,7 @@ void US47Main::Step(double Dt)
 	if (Flow) Flow->Step(Dt);
 	if (Evening) Evening->Step(Dt);
 	if (Office) Office->Step(Dt);
+	if (Observing) Observing->Step(Dt);
 	if (Horror) Horror->Step(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
 	if (Substation) Substation->Step(Dt);
