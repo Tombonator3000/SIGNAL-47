@@ -12,6 +12,7 @@
 #include "S47Night.h"
 #include "S47Observing.h"
 #include "S47RecordedDialogue.h"
+#include "S47SkyVisitors.h"
 #include "S47Story.h"
 #include "S47Substation.h"
 #include "S47Three.h"
@@ -37,6 +38,7 @@ struct FS47Evening::FNightSequenceTest
  bool bEnabled = false, bDone = false, bSC03Probe = false;
  int32 Stage = 0, Checks = 0, Loads = 0, ObserveRun = -1;
  double Elapsed = 0, Since = 0, Hold = 3, BeforeDrive = 0, SC02Clock = 0, SC03Clock = 0, LockedClock = 0, PrintedClock = 0;
+ double SkyAfterHI = -1, SkyAfterGate = -1, SkyAfterVirgoStart = -1;
  FString Root, FixtureSource, EscapeSource, NormalStamp;
  S47J::FObj Fixture;
  TArray<double> DishAz, DishEl;
@@ -66,7 +68,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   FPlatformMisc::RequestExit(false);
  };
  if (!M || !M->Flow || !M->Story || !M->World || !M->Player || !M->Web || !M->UI || !M->Inter ||
-     !M->Substation || !M->Horror || !M->Night || !M->Night->Album || !M->FieldCamera || !M->Anomaly || !M->Observing)
+     !M->Substation || !M->Horror || !M->Night || !M->Night->Album || !M->FieldCamera || !M->Anomaly || !M->Observing || !M->SkyVisitors)
  { Fail(TEXT("mangler runtimeavhengighet")); return; }
  if (!M->Flow->bDevRun || M->Flow->CaseId != 0)
  { Fail(TEXT("krever utviklerkjøring uten S47Case; personlige saker skal aldri brukes")); return; }
@@ -206,6 +208,12 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
    TEXT("fast feillys og rolig lysbue er aktive uten kraftig SC02-utladning: ") + Name);
  };
  const auto ThreatActive = [this] { return M->Horror->Threat && M->Horror->Threat->Active(); };
+ const auto NaturalSingleSky = [this]
+ {
+  const auto& S = M->SkyVisitors->Data(); bool Single = S.bEnabled && S.Stage == 1 && S.Occurred[0] && !S.bSecondEarlyPass;
+  for (int32 I = 1; I < 5; ++I) Single &= !S.Occurred[I];
+  return Single;
+ };
 
  if (T.Stage == 0)
  {
@@ -215,7 +223,9 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
       !FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir))
   { Fail(TEXT("krever eksplisitt isolert UserDir under /tmp eller /var/tmp")); return; }
   FString OtherHorror;
+  FString SkyOverride;
   if (FParse::Value(FCommandLine::Get(), TEXT("S47HorrorContract="), OtherHorror) ||
+      FParse::Value(FCommandLine::Get(), TEXT("S47SkyVisit="), SkyOverride) || FParse::Param(FCommandLine::Get(), TEXT("S47SkyVisitContract")) ||
       FParse::Param(FCommandLine::Get(), TEXT("S47T01Contract")) || FParse::Param(FCommandLine::Get(), TEXT("S47T01DriveContract")) ||
       FParse::Param(FCommandLine::Get(), TEXT("S47SubstationTest")) || FParse::Param(FCommandLine::Get(), TEXT("S47SubstationTestLoad")))
   { Fail(TEXT("skal ikke kombineres med en annen kontraktdriver")); return; }
@@ -271,6 +281,13 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   const auto& R = FS47Observing::Runs()[O.RunIndex()];
   if (O.Phase() == FS47Observing::EStep::Tune)
   {
+   if (O.RunIndex() == 3 && T.SkyAfterHI < 0)
+   {
+    const auto& S = M->SkyVisitors->Data();
+    if (!Check(M->Story->Clock() >= S47Timeline::Sky01 && NaturalSingleSky() && S.Elapsed > 0,
+        TEXT("HI-papirets faktiske 21:30-hopp og produksjons-Step starter naturlig ett SKY01-lys uten override"))) return;
+    T.SkyAfterHI = S.Elapsed;
+   }
    if (O.ChorePending())
    {
     Dials(R.P); M->Story->ConsoleAction();
@@ -298,7 +315,9 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
    Dials(R.P); M->Story->ConsoleAction();
    if (!Check(O.Phase() == FS47Observing::EStep::Integrating && M->Story->Rx.Stage == 1,
        FString::Printf(TEXT("observasjon %d startet via beholdt ConsoleAction-krok"), O.RunIndex() + 1))) return;
-   T.ObserveRun = O.RunIndex(); T.Hold = .2; return;
+   T.ObserveRun = O.RunIndex();
+   if (O.RunIndex() == 3) { Stage(42, .2); return; }
+   T.Hold = .2; return;
   }
   if (O.Phase() == FS47Observing::EStep::Integrating) return;
   if (!Check(O.RunIndex() == T.ObserveRun && O.Use(R.Data) && O.RunIndex() == T.ObserveRun + 1,
@@ -356,8 +375,19 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   { if (T.Elapsed - T.Since > 3) Fail(TEXT("faktisk returavstand fullførte ikke porterunden")); return; }
   if (!Check(M->Web->IsDoorOpen(TEXT("fieldGate")) && (M->Observing->Hints() & 32) && !M->Observing->ChorePending(),
       TEXT("faktisk returtrigger åpner porten igjen og fullfører runden før Virgo A"))) return;
+  T.SkyAfterGate = M->SkyVisitors->Data().Elapsed;
+  if (!Check(NaturalSingleSky() && T.SkyAfterGate >= T.SkyAfterHI,
+      TEXT("21:40-porterunden beholder samme naturlige SKY01 og forløpt tid uten reset eller flere lys"))) return;
   M->Player->Place(4.2, 1.6, 0); M->Player->Pitch = -.08;
   Stage(3, .2); return;
+ }
+ if (T.Stage == 42)
+ {
+  T.SkyAfterVirgoStart = M->SkyVisitors->Data().Elapsed;
+  if (!Check(M->Story->Clock() >= FS47Observing::Runs()[3].Slot && NaturalSingleSky() &&
+      T.SkyAfterVirgoStart >= T.SkyAfterGate,
+      TEXT("22:05-Virgo-hopp og ny produksjons-Step fortsetter samme naturlige SKY01 uten reset eller flerlys"))) return;
+  Stage(3, .1); return;
  }
  if (T.Stage == 4)
  {
@@ -603,6 +633,8 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   S47J::Set(R, TEXT("diskFlowRestores"), T.Loads); S47J::Set(R, TEXT("sc01FixtureSource"), T.FixtureSource);
   S47J::Set(R, TEXT("actualObservationRuns"), FS47Observing::Runs().Num()); S47J::Set(R, TEXT("t01Stamp"), T.NormalStamp);
   S47J::Set(R, TEXT("actualGeneratorStep"), M->Observing->GeneratorStep()); S47J::Set(R, TEXT("actualYardStep"), M->Observing->YardStep());
+  S47J::Set(R, TEXT("naturalSky01ElapsedAfterHI"), T.SkyAfterHI); S47J::Set(R, TEXT("naturalSky01ElapsedAfterGate"), T.SkyAfterGate);
+  S47J::Set(R, TEXT("naturalSky01ElapsedAfterVirgoStart"), T.SkyAfterVirgoStart);
   S47J::Set(R, TEXT("sc02Clock"), T.SC02Clock); S47J::Set(R, TEXT("sc03RevisionProbe"), T.bSC03Probe);
   if (T.bSC03Probe)
   {
