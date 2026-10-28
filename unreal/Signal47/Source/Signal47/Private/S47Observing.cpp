@@ -7,6 +7,13 @@
 #include "S47Audio.h"
 #include "S47Ambience.h"
 #include "S47Web.h"
+#include "S47Inter.h"
+#include "S47Three.h"
+#include "S47World.h"
+#include "S47Walker.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 namespace
 {
@@ -17,7 +24,9 @@ namespace
   return P;
  }
  // Hint bits, in the order the evening reaches them.
- constexpr int32 HintTicks = 1, HintBroadband = 2, HintStill = 4, HintDrive = 8;
+ constexpr int32 HintTicks = 1, HintBroadband = 2, HintStill = 4, HintDrive = 8, HintTube = 16, HintGate = 32;
+ const FVector GeneratorAt(4.3, .6, 8.4); // three.js, the standby generator in the pocket behind the control room
+ constexpr double GenStart = -4 * 3600. - 25 * 60, GenDone = -4 * 3600. - 15 * 60, YardStart = -2 * 3600. - 20 * 60;
  // PSR B1133+16 folds at 1.18791 s. The stray ticks fall four, a gap, then seven.
  constexpr double PulsarPeriod = 1.18791;
  const double StrayTicks[] = { 9.30, 9.55, 9.80, 10.05, 11.10, 11.35, 11.60, 11.85, 12.10, 12.35, 12.60 };
@@ -140,7 +149,7 @@ FS47Doc FS47Observing::Chart(int32 I)
 
 void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
- bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = 0; StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
+ bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Yard = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -150,6 +159,10 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
   if (Run >= Runs().Num()) StepNow = EStep::Tune;
   Elapsed = FMath::Clamp(S47J::Num(Saved, TEXT("elapsed")), 0., 600.);
   HintMask = S47J::Int(Saved, TEXT("hints")); HeldStatus = S47J::Str(Saved, TEXT("status"));
+  // A save on generator power comes back running on line power: the room lights are not saved here.
+  GenStep = FMath::Clamp(S47J::Int(Saved, TEXT("generator")), 0, 3); if (GenStep == 2) GenStep = 1;
+  Yard = FMath::Clamp(S47J::Int(Saved, TEXT("yard")), 0, 2);
+  if (GenStep == 1 && M && M->Audio) { FS47Sound S; S.Gain = .3f; S.At = GeneratorAt; S.bLoop = true; M->Audio->LoopSfx(TEXT("obsGenerator"), TEXT("engineIdle"), S); }
   // The stillness belongs to an unfinished Virgo A run only.
   if (StepNow == EStep::Integrating && Run == 3 && (HintMask & HintStill) && M && M->Audio && M->Audio->Night) M->Audio->Night->Still();
   return;
@@ -162,6 +175,7 @@ S47J::FObj FS47Observing::Save() const
  if (!bEnabled) return nullptr;
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version); S47J::Set(O, TEXT("run"), Run); S47J::Set(O, TEXT("step"), int32(StepNow));
  S47J::Set(O, TEXT("elapsed"), Elapsed); S47J::Set(O, TEXT("hints"), HintMask); S47J::Set(O, TEXT("schedule"), bScheduleFiled); S47J::Set(O, TEXT("status"), HeldStatus);
+ S47J::Set(O, TEXT("generator"), GenStep); S47J::Set(O, TEXT("yard"), Yard);
  return O;
 }
 
@@ -179,6 +193,7 @@ bool FS47Observing::ConsoleAction()
  FS47Rx& Rx = M->Story->Rx;
  if (StepNow == EStep::Integrating) { Rx.Status = FString::Printf(TEXT("INTEGRATING %s  /  HOLD"), Runs()[Run].Source).ToUpper(); return true; }
  if (StepNow == EStep::Data) { Rx.Status = TEXT("RUN COMPLETE  /  SEE THE OBJECTIVE"); return true; }
+ if (ChorePending()) { Rx.Status = Run == 1 ? TEXT("GENERATOR TEST DUE  /  REMOTE PANEL BY THE EAST DOOR") : TEXT("ROUND DUE  /  ARRAY GATE"); return true; }
  if (!Rx.Pass(Runs()[Run].P)) { Rx.Status = TEXT("OFF SOURCE  /  CHECK THE SCHEDULE CARD"); return true; }
  Start();
  return true;
@@ -210,6 +225,7 @@ void FS47Observing::Step(double Dt)
   M->UI->Toast(TEXT("Dale's observing schedule is clipped under the console card: four runs before the 23:00 window round."), 5);
   Changed();
  }
+ StepChores(Dt);
  if (StepNow != EStep::Integrating) return;
  const FRun& R = Runs()[Run];
  const double Was = Elapsed;
@@ -247,6 +263,7 @@ void FS47Observing::Hint(int32 Bit)
   if (M->Audio && M->Audio->Night) M->Audio->Night->Still();
   M->UI->Toast(TEXT("Outside, the crickets stop. All of them at once."), 4);
  }
+ if (Bit == HintGate) M->UI->Toast(TEXT("Behind you, chain-link rattles. The array gate you chained stands open. Nobody on the field."), 5);
  if (Bit == HintDrive)
  {
   if (M->Audio && !Recorded(M->Audio, TEXT("obsArrayDrive"), .55f)) M->Audio->Servo(3.f, TOptional<FVector>());
@@ -272,6 +289,13 @@ void FS47Observing::Finish()
 
 FString FS47Observing::Label(const FString& Id) const
 {
+ if (Id == TEXT("obs:generator"))
+ {
+  if (!Active() || Run != 1 || StepNow != EStep::Tune || GenStep >= 3) return FString(TEXT("Generator remote panel"));
+  if (GenStep == 0) return TEXT("Start the weekly generator test");
+  if (GenStep == 1) return GenT >= 4 ? TEXT("Transfer the load to the generator") : FString(TEXT("Generator warming up"));
+  return GenT >= 3 ? TEXT("Transfer back to line power") : FString(TEXT("On generator power"));
+ }
  if (!Active() || StepNow != EStep::Data || Id != Runs()[Run].Data) return FString();
  if (Id == TEXT("printer")) return FString::Printf(TEXT("Tear off the %s strip chart"), Runs()[Run].Source);
  return Id == TEXT("crtLeft") ? FString(TEXT("Read the array drive log")) : FString(TEXT("Reduce the hydrogen drift scan"));
@@ -279,6 +303,7 @@ FString FS47Observing::Label(const FString& Id) const
 
 bool FS47Observing::Use(const FString& Id)
 {
+ if (Id == TEXT("obs:generator")) { UseGenerator(); return true; }
  if (Label(Id).IsEmpty()) return false;
  File();
  return true;
@@ -307,6 +332,12 @@ FString FS47Observing::Objective() const
 {
  if (!Active()) return FString();
  const FRun& R = Runs()[Run];
+ if (Run == 1 && StepNow == EStep::Tune && GenStep < 3)
+  return GenStep == 0 ? TEXT("CONTROL ROOM // 19:35 WEEKLY GENERATOR TEST ON THE REMOTE PANEL BY THE EAST DOOR")
+   : GenStep == 1 ? TEXT("CONTROL ROOM // WHEN THE DIESEL SETTLES, TRANSFER THE LOAD TO THE GENERATOR") : TEXT("CONTROL ROOM // CHECK THE EMERGENCY LIGHTING, THEN TRANSFER BACK TO LINE POWER");
+ if (Run == 3 && StepNow == EStep::Tune && Yard < 2)
+  return Yard == 0 ? (M->Web && M->Web->IsDoorOpen(TEXT("fieldGate")) ? TEXT("ARRAY GATE // 21:40 ROUND: THE ARRAY GATE IS OPEN. CLOSE IT") : TEXT("ARRAY GATE // 21:40 ROUND: WALK OUT TO THE ARRAY GATE AND CHECK THE CHAIN"))
+   : TEXT("ARRAY GATE // RETURN TO THE CONTROL ROOM");
  if (StepNow == EStep::Integrating) return FString::Printf(TEXT("CONTROL ROOM // %s INTEGRATING. LISTEN TO THE MONITOR AND WATCH THE CHART"), R.Source).ToUpper();
  if (StepNow == EStep::Data) return R.Data == FString(TEXT("printer")) ? FString::Printf(TEXT("PRINTER // TEAR OFF THE %s STRIP CHART"), R.Source).ToUpper()
   : R.Data == FString(TEXT("crtLeft")) ? FString(TEXT("STATUS TERMINAL // READ THE ARRAY DRIVE LOG")) : FString(TEXT("OPERATIONS TERMINAL // REDUCE THE HYDROGEN DRIFT SCAN"));
@@ -317,8 +348,121 @@ TArray<FS47Task> FS47Observing::Tasks() const
 {
  TArray<FS47Task> Out;
  if (!bEnabled) return Out;
- for (int32 I = 0; I < Runs().Num(); ++I) Out.Add({ Runs()[I].Task, Run > I });
+ for (int32 I = 0; I < Runs().Num(); ++I)
+ {
+  if (I == 1) Out.Add({ TEXT("19:35 weekly generator test and transfer"), GenStep >= 3 });
+  if (I == 3) Out.Add({ TEXT("21:40 round to the array gate"), Yard >= 2 });
+  Out.Add({ Runs()[I].Task, Run > I });
+ }
  return Out;
+}
+
+bool FS47Observing::ChorePending() const
+{
+ return StepNow == EStep::Tune && ((Run == 1 && GenStep < 3) || (Run == 3 && Yard < 2));
+}
+
+void FS47Observing::BuildPanel()
+{
+ if (bPanelBuilt || !M || !M->Web || !M->Inter || !M->Web->IsLoaded()) return;
+ AS47Web* W = M->Web;
+ const int32 Parent = W->Handle(TEXT("room.group"));
+ const auto* ParentNode = W->Node(Parent);
+ USceneComponent* ParentComp = ParentNode ? ParentNode->Comp.Get() : nullptr;
+ auto* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+ auto* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ if (!ParentComp || !Cube || !Base) return;
+ bPanelBuilt = true;
+ auto* Mat = UMaterialInstanceDynamic::Create(Base, W);
+ Mat->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(0x34473b)); Mat->SetScalarParameterValue(TEXT("Roughness"), .6f);
+ Mat->SetScalarParameterValue(TEXT("NativeLighting"), 1); Mat->SetScalarParameterValue(TEXT("EmissivePower"), 0);
+ auto* C = NewObject<UStaticMeshComponent>(W, TEXT("ObsGeneratorPanel"));
+ C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(ParentComp); C->SetStaticMesh(Cube); C->SetMaterial(0, Mat);
+ C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
+ C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+ C->RegisterComponent(); C->SetWorldLocation(S47Three::ToUE(PanelPoint()));
+ const FVector Scale(.05, .46, .34); C->SetWorldScale3D(S47Three::DirToUE(Scale));
+ FS47Obj Obj = W->ObjAt(W->AdoptNode(C, Parent, TEXT("obs:generatorPanel"))); Obj.SetScale(Scale);
+ auto* Text = NewObject<UTextRenderComponent>(W, TEXT("ObsGeneratorPanelText"));
+ Text->SetMobility(EComponentMobility::Movable); Text->SetupAttachment(ParentComp);
+ Text->SetText(FText::FromString(TEXT("STANDBY GEN\nREMOTE / ATS"))); Text->SetWorldSize(2.2f);
+ Text->SetHorizontalAlignment(EHTA_Center); Text->SetVerticalAlignment(EVRTA_TextCenter);
+ Text->SetTextRenderColor(FColor(214, 206, 176)); Text->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ Text->RegisterComponent(); Text->SetWorldLocation(S47Three::ToUE(PanelPoint() + FVector(-.03, .08, 0)));
+ Text->SetWorldRotation(FRotator(0, 90, 0)); W->AdoptNode(Text, Parent, TEXT("obs:generatorPanelText"));
+ FS47Interactable It; It.Id = TEXT("obs:generator"); It.Object = Obj; It.Range = 2.4;
+ It.Label = [this]() { return Label(TEXT("obs:generator")); };
+ It.Use = [this] { UseGenerator(); };
+ It.Examine = [] { return FString(TEXT("Remote start and automatic transfer switch for the standby diesel behind the control room. A clipboard on a nail: weekly test, start, transfer, log.")); };
+ M->Inter->Add(It);
+}
+
+void FS47Observing::UseGenerator()
+{
+ if (Label(TEXT("obs:generator")).IsEmpty() || !Active() || Run != 1 || GenStep >= 3) { M->UI->Toast(TEXT("Standby generator remote panel. The weekly test is on the evening schedule."), 3); return; }
+ AS47Story& S = *M->Story;
+ if (GenStep == 0)
+ {
+  S.SetClock(FMath::Max(S.Clock(), GenStart));
+  FS47Sound O; O.Gain = .5f; O.At = GeneratorAt; if (M->Audio) M->Audio->Sfx(TEXT("engineStart"), O);
+  O.Gain = .3f; O.bLoop = true; O.When = 1.2f; if (M->Audio) M->Audio->LoopSfx(TEXT("obsGenerator"), TEXT("engineIdle"), O);
+  GenStep = 1; GenT = 0;
+  M->UI->Toast(FString::Printf(TEXT("%s. Remote start. Behind the wall the standby diesel turns over and settles."), *S.ClockText(false)), 4);
+ }
+ else if (GenStep == 1)
+ {
+  if (GenT < 4) { M->UI->Toast(TEXT("Wait for the diesel to settle."), 2); return; }
+  HeldTubes.Reset();
+  if (M->Web) { for (int32 K = 0; K < M->Web->TubeCount(); ++K) HeldTubes.Add(M->Web->TubeLit(K)); M->Web->SetTubes(false); if (M->Web->TubeCount()) M->Web->SetTube(0, true); }
+  if (M->Audio) M->Audio->Play(TEXT("rack_switch"), .6f, M->Web ? M->Web->PropLocation(TEXT("rack")) : FVector::ZeroVector);
+  GenStep = 2; GenT = 0;
+  M->UI->Toast(TEXT("The transfer switch clunks. The room drops to the single emergency tube. Generator power: 120 V, 60 Hz."), 4);
+ }
+ else
+ {
+  if (GenT < 3) { M->UI->Toast(TEXT("Give the emergency lighting a moment on generator power."), 2); return; }
+  if (M->Web) for (int32 K = 0; K < HeldTubes.Num() && K < M->Web->TubeCount(); ++K) M->Web->SetTube(K, HeldTubes[K]);
+  if (M->Audio) { M->Audio->Play(TEXT("rack_switch"), .6f, M->Web ? M->Web->PropLocation(TEXT("rack")) : FVector::ZeroVector); M->Audio->Stop(TEXT("obsGenerator"), 1.5f); }
+  GenStep = 3; FlickerT = 1.1;
+  S.SetClock(FMath::Max(S.Clock(), GenDone));
+  S.Note(TEXT("19:35. Weekly generator test: remote start, 120 V / 60 Hz, transfer to emergency lighting and back to line power. Normal."));
+  M->UI->Toast(FString::Printf(TEXT("%s. Back on line power. Test logged. Next on the schedule: PSR B1133+16."), *S.ClockText(false)), 4);
+ }
+ Changed();
+}
+
+void FS47Observing::StepChores(double Dt)
+{
+ BuildPanel();
+ if (GenStep == 1 || GenStep == 2) GenT += FMath::Min(Dt, .1);
+ // After the transfer back, the emergency tube drops out for a moment on its own.
+ if (FlickerT >= 0)
+ {
+  const double Was = FlickerT; FlickerT -= FMath::Min(Dt, .1);
+  if (M->Web && M->Web->TubeCount() && HeldTubes.Num())
+  {
+   if (Was > .9 && FlickerT <= .9) { M->Web->SetTube(0, false); Hint(HintTube); }
+   if (FlickerT < 0) M->Web->SetTube(0, HeldTubes[0]);
+  }
+ }
+ if (Run != 3 || StepNow != EStep::Tune || Yard >= 2 || !M->Player || !M->World || M->World->Area != TEXT("saro") || !M->Web) return;
+ const FVector P = M->Player->Pos;
+ const double ToGate = FVector2D(P.X - GatePoint().X, P.Z - GatePoint().Z).Size();
+ if (Yard == 0 && ToGate < 4.5 && !M->Web->IsDoorOpen(TEXT("fieldGate")))
+ {
+  Yard = 1; M->Story->SetClock(FMath::Max(M->Story->Clock(), YardStart));
+  if (M->Audio && M->Audio->Night) M->Audio->Night->Hush(30, .02);
+  M->UI->Toast(FString::Printf(TEXT("%s. The chain is through the gate and the cable trench covers are seated. Along the fence the insects stop."), *M->Story->ClockText(false)), 5);
+  Changed();
+ }
+ else if (Yard == 1 && ToGate > 9)
+ {
+  M->Web->SetDoorById(TEXT("gate"), true, false);
+  if (M->Audio) { FS47Sound O; O.Gain = .7f; O.At = GatePoint() + FVector(0, 1, 0); M->Audio->Sfx(TEXT("doorMetal"), O); }
+  Yard = 2; Hint(HintGate);
+  M->Story->Note(TEXT("21:45. Round to the array gate. Chained it. Walking back I heard chain-link behind me: the gate stood open again. No one on the field."));
+  Changed();
+ }
 }
 
 void FS47Observing::Changed() { if (M) M->RequestAutosave(); }
