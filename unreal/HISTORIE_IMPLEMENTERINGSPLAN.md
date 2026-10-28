@@ -367,11 +367,11 @@ Etter hver levert installasjon brukes prosjektets eksisterende prune-rutine. Gje
 
 ## 6. Løpende gjennomføringsstatus
 
-Opprettet 26. oktober 2026. SC01s lokale pakkede tekniske aksept består. PR, fletting og installasjon er fortsatt åpne. Senere scenarioer er planlagt. `Ikke utført` er en faktisk status, ikke en planlagt kvittering.
+Opprettet 26. oktober 2026. SC01s lokale pakkede tekniske aksept består. SC01 er flettet via PR #174 og installert som standard 27. oktober 2026, og er med i Linux-testutgaven 28. oktober 2026. Senere scenarioer er planlagt. `Ikke utført` er en faktisk status, ikke en planlagt kvittering.
 
 | SC-ID | Scenario | H-kort | Status | Kodecommit | Pakket test | PR | Mergecommit | Installasjon | Åpne begrensninger |
 |---|---|---|---|---|---|---|---|---|---|
-| SC01 | Den første overflygningen | H01 | Pakket teknisk aksept | dbae3177 | 21 kjøringer PASS, 32 vurderte bilder | Ikke opprettet | Ikke flettet | Ikke utført | PR/installasjon; menneskelig lytting/tempo/Xbox/helnatt UNVERIFIED |
+| SC01 | Den første overflygningen | H01 | Flettet og installert | dbae3177 | 21 kjøringer PASS, 32 vurderte bilder; full matrise 110/110 mot main | PR #174 | `a032ed0e` | Installert standard | Menneskelig lytting/tempo/Xbox/helnatt UNVERIFIED |
 | SC02 | Returen til bilen | H01/H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC01 og møte 1 |
 | SC03 | Hjelpen som kom | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC02, BY01 og Ortiz-produksjon |
 | SC04 | Sikre og kom i dekning | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC03, plansperre og møte 2/3 |

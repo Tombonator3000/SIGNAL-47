@@ -1,6 +1,6 @@
 # SC01: Den første overflygningen
 
-SC01s lokale, pakkede tekniske aksept består. Testet kilde er `dbae31775d3690383417c0f3652de16fb8ac00ca` på `codex/story-sc01`, etter [den vedtatte gjennomføringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md). Runtime-PR, fletting og installasjon er ennå ikke utført. NP1 er fortsatt installert standard.
+SC01s lokale, pakkede tekniske aksept består. Testet kilde er `dbae31775d3690383417c0f3652de16fb8ac00ca` på `codex/story-sc01`, etter [den vedtatte gjennomføringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md). Status 28. oktober 2026: SC01 er flettet til main via PR #174 (merge `a032ed0e`) og er med i den installerte standardversjonen og i [Linux-testutgaven 28. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-28).
 
 ## Spillbar leveranse
 

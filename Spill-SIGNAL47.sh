@@ -3,9 +3,9 @@
 # fra GitHub, kontrolleres med SHA256 og pakkes ut ved siden av dette skriptet.
 set -euo pipefail
 
-tag='playtest-linux-2026-10-27'
+tag='playtest-linux-2026-10-28'
 base="https://github.com/Tombonator3000/SIGNAL-47/releases/download/$tag"
-archives=(Signal47-Linux-2026-10-27.zip Signal47-Linux-2026-10-27-Data1.zip Signal47-Linux-2026-10-27-Data2.zip)
+archives=(Signal47-Linux-2026-10-28.zip Signal47-Linux-2026-10-28-Data1.zip Signal47-Linux-2026-10-28-Data2.zip)
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 game_dir="$repo_dir/Spill/$tag"
@@ -15,7 +15,10 @@ if [[ ! -x "$play" ]]; then
   for tool in curl unzip sha256sum; do
     command -v "$tool" >/dev/null || { printf 'Mangler %s. Installer det og prøv igjen.\n' "$tool" >&2; exit 1; }
   done
-  printf 'Laster ned SIGNAL / 47 (%s), om lag 3,7 GB. Det skjer bare første gang.\n' "$tag"
+  printf 'Laster ned SIGNAL / 47 (%s), om lag 3,9 GB. Det skjer bare første gang.\n' "$tag"
+  for old in "$repo_dir"/Spill/playtest-linux-*; do
+    [[ -d "$old" && "$old" != "$game_dir" ]] && printf 'Eldre utgave i %s kan slettes. Flytt Linux/Signal47/Saved derfra hvis du vil beholde lagringene.\n' "$old"
+  done
   mkdir -p "$game_dir/nedlasting"
   cd "$game_dir/nedlasting"
   curl -fL --retry 3 -o SHA256SUMS.txt "$base/SHA256SUMS.txt"

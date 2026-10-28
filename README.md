@@ -8,7 +8,9 @@ Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986.
 
 ## Last ned og spill på Linux
 
-Den nyeste ferdige Unreal-utgaven for Linux x86-64 med Vulkan ligger under [Releases](https://github.com/Tombonator3000/SIGNAL-47/releases). Du trenger ikke Unreal eller kildekoden.
+Den nyeste ferdige Unreal-utgaven for Linux x86-64 med Vulkan er [testutgaven 28. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-28). Du trenger ikke Unreal eller kildekoden.
+
+Den er samme bygg som den nyeste installerte versjonen på utviklingsmaskinen (fotolab R1) og har SC01, den første skrekknatten i den nye historien, det nye Sierra Motor Court-motellet, den detaljerte fotolaben, den nye atmosfæren med lys, tåke og kveldslyd, MetaHuman-servitrisen på Mesa Diner, daghimmel, terreng og natur langs ruten. SC02 til SC13 er planlagt, men ikke laget. De mer detaljerte bygningene i Caliche finnes som Blender-kilder og er ikke i spillet ennå.
 
 Enklest: klon eller last ned repoet og kjør
 
@@ -16,7 +18,7 @@ Enklest: klon eller last ned repoet og kjør
 ./Spill-SIGNAL47.sh
 ```
 
-Første gang laster skriptet ned de tre ZIP-filene fra utgivelsen (om lag 3,7 GB), kontrollerer dem med SHA256, pakker dem ut i `Spill/` og starter spillet. Senere starter det rett. Det krever `curl`, `unzip` og `sha256sum`. Vil du gjøre det for hånd, last ned alle tre ZIP-filene fra utgivelsen, pakk dem ut i samme mappe og kjør `Signal47-Linux/Play.sh`, eller `Play-Low.sh` på svakere maskiner.
+Første gang laster skriptet ned de tre ZIP-filene fra utgivelsen (om lag 3,9 GB), kontrollerer dem med SHA256, pakker dem ut i `Spill/` og starter spillet. Senere starter det rett. Det krever `curl`, `unzip` og `sha256sum`. Vil du gjøre det for hånd, last ned alle tre ZIP-filene fra utgivelsen, pakk dem ut i samme mappe og kjør `Signal47-Linux/Play.sh`, eller `Play-Low.sh` på svakere maskiner.
 
 ## Nettversjonen i `web/`
 

@@ -1,12 +1,14 @@
 # SIGNAL / 47 i Unreal
 
+Status 28. oktober 2026: main og den installerte fotolab R1 har samme spillkode. [Linux-testutgaven 28. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-28) er samme bygg og lastes ned med `./Spill-SIGNAL47.sh` i roten av repoet. Den har SC01, Sierra Motor Court V2, [fotolabens detaljpass](PHOTOLAB_DETAIL.md), atmosfære-R1 og MetaHuman-servitrisen. Av den nye historien er bare SC01 levert; SC02 til SC13 er planlagt i [implementeringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md). De fem mer detaljerte bygningene i Caliche (TB2, `Signal47/Tools/townbuildings/tb2/`) er flettet som Blender-kilder, men ikke importert til Unreal. Trafostasjonens lamper og naturkontakt er under arbeid hos Codex.
+
 Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet. Se [motelrapporten](MOTEL_V2.md) for modell, testing og installasjon. Eldre versjons- og installasjonsoppføringer nedenfor er historikk. Dette oppdraget publiserer ingen ny nedlastbar spillutgave.
 
 [Samlet leveranseindeks og designbibel](../Docs/LOCAL_DELIVERIES_2026-10-27.md) bevarer lokale kilder, konsepter, bilder og historiekvitteringer. Samlingen er flettet via PR #172/#178; den er ikke en ny spillutgave.
 
 Atmosfærepasset er lokalt installert i R1 med MetaHuman bevart: myk kveld/nattlyd, svak vind i detaljgress og færre småsteinskygger. FSSS er sammenlignet med faktiske bilder/GPU-tid og forblir av. Fem målrettede rendererprøver, installert Low med tale/pause/lasting og bevarte personlige lagringer består. [Atmosfærerapporten](ATMOSPHERE_2026-10-27.md) har presist omfang og begrensninger.
 
-MetaHuman-servitrisen på Mesa Diner er lokalt installert i R3 med egen uniform, synlig hår, blikk/blunk og taleanimasjon på den faktiske lydklokken. Pakket samtale, pause og diskrestore samt installert Low-oppstart består. Alle personlige lagringer er bevart. [MetaHuman-rapporten](METAHUMAN_WAITRESS.md) beskriver resultat, bilder og videre visuell polering. GitHub-nedlastingen er fortsatt forrige terrengutgave.
+MetaHuman-servitrisen på Mesa Diner er lokalt installert i R3 med egen uniform, synlig hår, blikk/blunk og taleanimasjon på den faktiske lydklokken. Pakket samtale, pause og diskrestore samt installert Low-oppstart består. Alle personlige lagringer er bevart. [MetaHuman-rapporten](METAHUMAN_WAITRESS.md) beskriver resultat, bilder og videre visuell polering.
 
 Terreng- og naturpasset er installert som R2: eroderte fjellformer erstatter de store trappetrinnene, og sju sammensatte naturpartier langs ruten bruker utvalgte steiner, grus og tørre planter fra de eide Fab-pakkene. Seks faktiske sluttbilder og en 2,62 km kjøretur med inngang, telefon og lagring/lasting består. Godkjent dag-/nattehimmel og alle personlige lagringer er bevart. [Terrengrapporten](TERRAIN_ROUTE_2026-10-26.md) beskriver kilder, avgrensning og nøyaktig leveringsstatus.
 
@@ -63,7 +65,7 @@ Xbox-styring er lagt til med analoge stikker, biltriggere og menyer/paneler. Se 
 
 ## Last ned på en annen Linux-maskin
 
-[Linux-testutgave 26. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-26) er offentlig og inneholder samme spillbinær og innhold som installert terreng-R2. Last ned begge ZIP-filene under Assets, pakk dem ut i samme målmappe og start `Signal47-Linux/Play.sh`. `Play-Low.sh` gir 1280 x 720, Low og Clean. Samlet nedlasting er 3,47 GB. Utfyllende instruksjoner og kontrollsummer følger utgivelsen. Andre PC-er og Steam Deck/SteamOS er ikke kontrollert med denne pakken. Ingen personlige lagringer, logger eller innstillinger følger med. MetaHuman er fortsatt separat arbeid.
+[Linux-testutgave 28. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-28) er offentlig og inneholder samme spillbinær og innhold som installert fotolab R1. Enklest er `./Spill-SIGNAL47.sh` i roten av repoet, som laster ned, kontrollerer, pakker ut og starter den. For hånd: last ned alle tre ZIP-filene under Assets, pakk dem ut i samme målmappe og start `Signal47-Linux/Play.sh`, som første gang setter sammen den delte datafilen. `Play-Low.sh` gir 1280 x 720, Low og Clean. Samlet nedlasting er om lag 3,9 GB. Andre PC-er og Steam Deck/SteamOS er ikke kontrollert med denne pakken. Ingen personlige lagringer, logger eller innstillinger følger med. Eldre utgaver ligger under [Releases](https://github.com/Tombonator3000/SIGNAL-47/releases).
 
 ## Kom i gang
 
