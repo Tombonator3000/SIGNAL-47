@@ -4,8 +4,10 @@
 #include "GameFramework/Actor.h"
 #include "S47Obj.h"
 #include "S47Glow.h"
+#include "S47Graphics.h"
 #include "S47Web.generated.h"
 
+struct FPostProcessSettings;
 class UStaticMeshComponent;
 class UInstancedStaticMeshComponent;
 class UMaterialInterface;
@@ -67,6 +69,10 @@ public:
 
 	bool IsLoaded() const { return bLoaded; }
 	void SetLightingQuality(const FString& Quality);
+	void ApplyGraphicsSettings(const FS47GraphicsSettings& Settings);
+	const FS47GraphicsSettings& GetGraphicsSettings() const { return Graphics; }
+	const FPostProcessSettings* GetGraphicsPostProcess() const;
+	TSharedPtr<FJsonObject> GraphicsReadback() const;
 	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
 	/** SKY.md: the volumetric cloud layer. Cover/cirrus 0..1 from the clock; clear directions (three's
 	 *  world terms, w = strength) keep story beats in open sky; Flash/FlashDir light them from inside. */
@@ -444,6 +450,7 @@ private:
 	TArray<float> PerfFrames, PerfGame, PerfDraw, PerfGpu;
 	TSet<uint64> SuppressedPools;
 	int32 LightingQuality = 1;
+	FS47GraphicsSettings Graphics;
 	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0;
 	// SKY.md: volumetric clouds, their cloud-only light (set sun from below / moon) and drift.
 	UPROPERTY() TObjectPtr<class UVolumetricCloudComponent> Clouds;

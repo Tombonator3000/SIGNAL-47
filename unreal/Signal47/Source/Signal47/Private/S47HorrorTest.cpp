@@ -921,7 +921,7 @@ void FS47HorrorTest::Step(double Dt)
 					TEXT("disabled or missing Niagara asset leaves geometry, particles, flash and lamp dip wholly inert")))return;
 				T.ArcBursts=A.Bursts;Aim(FS47Substation::Site(FVector(1.04,3.25,7.34)));Stage(1085,2.7);return;
 			}
-			const int32 Count=FS47Substation::ArcSparks(M->Flow->Quality==TEXT("low"),M->Flow->bCalmFlash);
+			const int32 Count=FS47Substation::ArcSparks(M->Flow->Graphics.Effects==0,M->Flow->bCalmFlash);
 			if(!Check(A.bReady && A.bSafe && A.Bursts==T.ArcBursts+1 && A.SparkCount==Count && A.Instances==16 && A.bMaterialAssigned &&
 				A.bNiagaraActive && A.bMeshVisible && A.bFlashVisible && A.FlashLumens>0 && A.MaterialIntensity>0,
 				TEXT("first real SC02 appearance activates one safe native arc, assigned material, light and quality-scaled Niagara burst")))return;

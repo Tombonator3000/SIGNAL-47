@@ -1,3 +1,7 @@
+## Grafikkinnstillinger klare for levering, Codex 28.10.2026
+
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er ferdig i [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197). Den endelige R2-pakken består 47 meny-/renderersjekker, 15 sjekker ved ny oppstart og hele 111-matrisen. Menyen er visuelt kontrollert ved 720p og 900p. Fletting og lokal installasjon gjenstår. Se [grafikkrapport](GRAPHICS_SETTINGS.md). Den endelige R2-pakken er fryst og akseptert. Codex fullfører PR/main-fletting, lokal installasjon med Saved bevart og kanonisk opprydding. Claudes SC03-filer er urørt. Tungt vindu holdes til den korte installerte kontrollen er ferdig.
+
 ## SC02-lysbue levert, 2026-10-28 kl.16:42 CET
 
 SC02-lysbuen er flettet via [PR195](https://github.com/Tombonator3000/SIGNAL-47/pull/195), merge `66ae5948e262586e4c26c621dc6d109e6d950552`, og den identiske, aksepterte R4-pakken er installert i `/home/tom/Games/Signal47/Linux`. Hele matrisen består 110/110; den installerte Low-kontrollen består 14 kontroller og to disk-/Flow-restores. Bildet fra installert spill er vurdert. Alle 60 personlige Saved-filer (79 noder) er uendret. Ingen ny offentlig release. Tungt kjørevindu er frigitt; ingen ytterligere VFX-testjobb er planlagt. Claudes SC03-kilder er urørt.

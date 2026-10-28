@@ -6,6 +6,7 @@
 #include "Components/RectLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/SpotLightComponent.h"
+#include "Components/VolumetricCloudComponent.h"
 #include "Engine/ExponentialHeightFog.h"
 #include "Engine/Engine.h"
 #include "Engine/PostProcessVolume.h"
@@ -43,7 +44,15 @@ namespace
 	FVector ArrayBowlTarget(const AS47Web& W, int32 Slot) { return DishBowlTarget(W, ArrayDishes[Slot]); }
 	void Cvar(const TCHAR* Name, int32 Value)
 	{
-		if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(Name)) V->Set(Value, ECVF_SetByGameSetting);
+		if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(Name))
+		{
+			// User overrides must outrank renderer project settings (notably Lumen HWRT),
+			// but still yield to explicit command-line/console experiments. Do not recreate
+			// every component for an unchanged HWRT value while moving a different slider.
+			if (V->GetInt() != Value || (V->GetFlags() & ECVF_SetByMask) < ECVF_SetByGameOverride)
+				V->Set(Value, ECVF_SetByGameOverride);
+		}
+		else UE_LOG(LogTemp, Warning, TEXT("S47: graphics CVar missing: %s"), Name);
 	}
 	// Diagnostic A/B uses the previous night fill with identical geometry and materials.
 	bool PreviousNight() { return FParse::Param(FCommandLine::Get(), TEXT("S47PreviousNight")); }
@@ -132,7 +141,7 @@ void AS47Web::UpdateArrayLighting()
 		L->SetWorldRotation(S47Three::DirToUE(DishBowlTarget(*this, P.Dish) - P.At).Rotation());
 		L->SetLightColor(C / ColorGain);
 		L->SetIntensity(480.f * K * ColorGain * (bRed ? 1.f : FMath::Max3(GlowColor.R, GlowColor.G, GlowColor.B)));
-		L->SetCastShadows(LightingQuality > 0 || Dist < 37.f);
+		L->SetCastShadows(Graphics.Shadows > 0 && (LightingQuality > 0 || Dist < 37.f));
 	}
 }
 
@@ -225,52 +234,114 @@ void AS47Web::BuildNativeLighting()
 
 void AS47Web::SetLightingQuality(const FString& Quality)
 {
-	LightingQuality = Quality == TEXT("low") ? 0 : Quality == TEXT("ultra") ? 2 : 1;
+	ApplyGraphicsSettings(FS47GraphicsSettings::ForPreset(Quality));
+}
+
+const FPostProcessSettings* AS47Web::GetGraphicsPostProcess() const
+{
+	return LightingPost ? &LightingPost->Settings : nullptr;
+}
+
+TSharedPtr<FJsonObject> AS47Web::GraphicsReadback() const
+{
+	auto O = MakeShared<FJsonObject>();
+	for (const TCHAR* Name : { TEXT("r.ScreenPercentage"), TEXT("sg.ShadowQuality"), TEXT("sg.AntiAliasingQuality"),
+		TEXT("sg.GlobalIlluminationQuality"), TEXT("sg.ReflectionQuality"), TEXT("r.Lumen.HardwareRayTracing"),
+		TEXT("r.ShadowQuality"), TEXT("r.ContactShadows"), TEXT("r.Lumen.ScreenProbeGather.ShortRangeAO"),
+		TEXT("r.VolumetricFog"), TEXT("r.VolumetricFog.GridPixelSize"), TEXT("r.VolumetricFog.GridSizeZ"),
+		TEXT("r.Streaming.MipBias"), TEXT("r.MaxAnisotropy"), TEXT("r.Streaming.PoolSize"),
+		TEXT("r.Shadow.Virtual.SMRT.RayCountLocal"), TEXT("r.Shadow.Virtual.SMRT.RayCountDirectional"),
+		TEXT("r.Shadow.Virtual.SMRT.SamplesPerRayLocal"), TEXT("r.Shadow.Virtual.SMRT.SamplesPerRayDirectional"),
+		TEXT("r.Shadow.Virtual.MarkPixelPagesMipModeLocal"), TEXT("r.Shadow.Virtual.ResolutionLodBiasLocal"),
+		TEXT("r.SSR.Quality"), TEXT("r.Lumen.Reflections.Allow"), TEXT("r.MaterialQualityLevel"),
+		TEXT("r.PSOPrecache.Components"), TEXT("r.PSOPrecache.GlobalShaders") })
+		if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(Name)) O->SetNumberField(Name, V->GetFloat());
+	if (const FPostProcessSettings* P = GetGraphicsPostProcess())
+	{
+		O->SetNumberField(TEXT("giMethod"), int32(P->DynamicGlobalIlluminationMethod));
+		O->SetNumberField(TEXT("reflectionMethod"), int32(P->ReflectionMethod));
+		O->SetNumberField(TEXT("lumenSceneQuality"), P->LumenSceneLightingQuality);
+		O->SetNumberField(TEXT("lumenGatherQuality"), P->LumenFinalGatherQuality);
+		O->SetNumberField(TEXT("lumenReflectionQuality"), P->LumenReflectionQuality);
+		O->SetNumberField(TEXT("lumenRayLightingMode"), int32(P->LumenRayLightingMode));
+		O->SetNumberField(TEXT("aoIntensity"), P->AmbientOcclusionIntensity);
+		O->SetNumberField(TEXT("ssrQuality"), P->ScreenSpaceReflectionQuality);
+	}
+	O->SetNumberField(TEXT("requestedReflectionTier"), Graphics.Reflections);
+	O->SetNumberField(TEXT("resolvedReflectionTier"), Graphics.ResolvedReflections());
+	O->SetBoolField(TEXT("reflectionFallback"), Graphics.Reflections != Graphics.ResolvedReflections());
+	O->SetNumberField(TEXT("fogTier"), Graphics.Fog);
+	O->SetNumberField(TEXT("cloudTier"), Graphics.Clouds);
+	O->SetBoolField(TEXT("cloudVisible"), Clouds && Clouds->IsVisible());
+	O->SetNumberField(TEXT("cloudSamples"), Clouds ? Clouds->ViewSampleCountScale : 0.f);
+	O->SetBoolField(TEXT("skyRealtimeCapture"), NightSky && NightSky->bRealTimeCapture);
+	return O;
+}
+
+void AS47Web::ApplyGraphicsSettings(const FS47GraphicsSettings& Settings)
+{
+	Graphics = Settings; Graphics.Normalize();
+	LightingQuality = Graphics.Detail; // Existing local-lamp/decorative budgets keep their meaning.
+	const int32 Shadow = Graphics.Shadows, GI = Graphics.IndirectLighting, Reflection = Graphics.ResolvedReflections();
+	// Broad scalability groups come first: shadows also write volumetric-fog variables.
+	// Independent controls below then restore the requested combinations. Effects/material
+	// scalability and the project's PSO policy are deliberately never changed here.
+	Cvar(TEXT("sg.ShadowQuality"), Shadow);
+	Cvar(TEXT("sg.AntiAliasingQuality"), Graphics.AntiAliasing);
+	Cvar(TEXT("sg.GlobalIlluminationQuality"), GI + 1);
+	Cvar(TEXT("sg.ReflectionQuality"), FMath::Min(Reflection, 2));
 	Cvar(TEXT("r.Shadow.Virtual.OnePassProjection.MaxLightsPerPixel"), 32);
-	Cvar(TEXT("r.ScreenPercentage"), LightingQuality < 2 ? 60 : 100);
-	Cvar(TEXT("sg.ShadowQuality"), LightingQuality == 0 ? 1 : LightingQuality == 1 ? 2 : 3);
-	Cvar(TEXT("sg.AntiAliasingQuality"), LightingQuality == 0 ? 1 : LightingQuality == 1 ? 2 : 3);
-	// Non-Nanite export meshes benefit from fewer mip duplicates. Keep the coarse pages
-	// and volumetric occlusion, but spend fewer SMRT samples on the desktop 60 fps profile.
-	Cvar(TEXT("r.Shadow.Virtual.MarkPixelPagesMipModeLocal"), LightingQuality == 2 ? 0 : 2);
-	Cvar(TEXT("r.Shadow.Virtual.SMRT.RayCountLocal"), LightingQuality == 2 ? 8 : LightingQuality == 1 ? 4 : 2);
-	Cvar(TEXT("r.Shadow.Virtual.SMRT.RayCountDirectional"), LightingQuality == 2 ? 8 : LightingQuality == 1 ? 4 : 2);
-	Cvar(TEXT("r.Shadow.Virtual.SMRT.SamplesPerRayLocal"), LightingQuality == 2 ? 4 : 2);
-	Cvar(TEXT("r.Shadow.Virtual.SMRT.SamplesPerRayDirectional"), LightingQuality == 2 ? 4 : 2);
-	Cvar(TEXT("sg.GlobalIlluminationQuality"), LightingQuality == 0 ? 1 : LightingQuality == 1 ? 2 : 3);
-	Cvar(TEXT("sg.ReflectionQuality"), LightingQuality == 0 ? 1 : 2);
-	Cvar(TEXT("r.ContactShadows"), LightingQuality > 0);
-	Cvar(TEXT("r.Lumen.ScreenProbeGather.ShortRangeAO"), LightingQuality > 0);
-	Cvar(TEXT("r.VolumetricFog"), LightingQuality > 0);
-	Cvar(TEXT("r.VolumetricFog.GridPixelSize"), LightingQuality == 2 ? 8 : 16);
-	Cvar(TEXT("r.VolumetricFog.GridSizeZ"), LightingQuality == 2 ? 96 : 64);
-	Cvar(TEXT("r.Shadow.Virtual.ResolutionLodBiasLocal"), LightingQuality == 2 ? 0 : 1);
+	Cvar(TEXT("r.ScreenPercentage"), Graphics.RenderScale);
+	Cvar(TEXT("r.Shadow.Virtual.MarkPixelPagesMipModeLocal"), Shadow == 3 ? 0 : 2);
+	Cvar(TEXT("r.Shadow.Virtual.SMRT.RayCountLocal"), Shadow == 3 ? 8 : Shadow == 2 ? 4 : 2);
+	Cvar(TEXT("r.Shadow.Virtual.SMRT.RayCountDirectional"), Shadow == 3 ? 8 : Shadow == 2 ? 4 : 2);
+	Cvar(TEXT("r.Shadow.Virtual.SMRT.SamplesPerRayLocal"), Shadow == 3 ? 4 : 2);
+	Cvar(TEXT("r.Shadow.Virtual.SMRT.SamplesPerRayDirectional"), Shadow == 3 ? 4 : 2);
+	Cvar(TEXT("r.Shadow.Virtual.ResolutionLodBiasLocal"), Shadow == 3 ? 0 : 1);
+	Cvar(TEXT("r.ContactShadows"), Shadow >= 2);
+	Cvar(TEXT("r.Lumen.ScreenProbeGather.ShortRangeAO"), GI > 0);
+	Cvar(TEXT("r.Lumen.HardwareRayTracing"), Graphics.bHardwareRayTracing ? 1 : 0);
+	Cvar(TEXT("r.VolumetricFog"), Graphics.Fog > 0);
+	Cvar(TEXT("r.VolumetricFog.GridPixelSize"), Graphics.Fog == 2 ? 8 : 16);
+	Cvar(TEXT("r.VolumetricFog.GridSizeZ"), Graphics.Fog == 2 ? 96 : 64);
+	// Avoid the engine's low texture preset (bias16 and a fixed small pool). Keep the
+	// current pool policy, allowing modest per-texture reductions under memory pressure.
+	static const int32 TextureBias[] = { 2, 1, 0, 0 }, Anisotropy[] = { 2, 4, 4, 8 };
+	Cvar(TEXT("r.Streaming.MipBias"), TextureBias[Graphics.Textures]);
+	Cvar(TEXT("r.MaxAnisotropy"), Anisotropy[Graphics.Textures]);
 	if (LightingPost)
 	{
 		FPostProcessSettings& P = LightingPost->Settings;
 		P.bOverride_DynamicGlobalIlluminationMethod = true;
-		P.DynamicGlobalIlluminationMethod = LightingQuality == 0 ? EDynamicGlobalIlluminationMethod::None : EDynamicGlobalIlluminationMethod::Lumen;
-		P.bOverride_LumenSceneLightingQuality = true; P.LumenSceneLightingQuality = LightingQuality == 2 ? 1.f : 0.5f;
-		P.bOverride_LumenFinalGatherQuality = true; P.LumenFinalGatherQuality = LightingQuality == 2 ? 1.f : 0.5f;
-		// Lumen owns local occlusion on High/Ultra. Low retains a small, inexpensive SSAO
-		// radius so paper, cables and furniture keep their contact with the surface below.
+		P.DynamicGlobalIlluminationMethod = GI == 0 ? EDynamicGlobalIlluminationMethod::None : EDynamicGlobalIlluminationMethod::Lumen;
+		P.bOverride_LumenSceneLightingQuality = true; P.LumenSceneLightingQuality = GI == 2 ? 1.f : 0.5f;
+		P.bOverride_LumenFinalGatherQuality = true; P.LumenFinalGatherQuality = GI == 2 ? 1.f : 0.5f;
 		P.bOverride_LumenAmbientOcclusionIntensity = true; P.LumenAmbientOcclusionIntensity = 0.7f;
 		P.bOverride_LumenSkylightLeaking = true; P.LumenSkylightLeaking = 0.f;
-		P.bOverride_AmbientOcclusionIntensity = true; P.AmbientOcclusionIntensity = LightingQuality == 0 ? 0.55f : 0.f;
+		P.bOverride_AmbientOcclusionIntensity = true; P.AmbientOcclusionIntensity = GI == 0 ? 0.55f : 0.f;
 		P.bOverride_AmbientOcclusionRadius = true; P.AmbientOcclusionRadius = 35.f;
 		P.bOverride_AmbientOcclusionRadiusInWS = true; P.AmbientOcclusionRadiusInWS = true;
 		P.bOverride_AmbientOcclusionPower = true; P.AmbientOcclusionPower = 1.1f;
 		P.bOverride_AmbientOcclusionQuality = true; P.AmbientOcclusionQuality = 40.f;
-		P.bOverride_ReflectionMethod = true; P.ReflectionMethod = LightingQuality == 0 ? EReflectionMethod::ScreenSpace : EReflectionMethod::Lumen;
-		P.bOverride_LumenReflectionQuality = true; P.LumenReflectionQuality = LightingQuality == 2 ? 1.f : 0.5f;
+		P.bOverride_ReflectionMethod = true;
+		P.ReflectionMethod = Reflection == 0 ? EReflectionMethod::None : Reflection == 1 ? EReflectionMethod::ScreenSpace : EReflectionMethod::Lumen;
+		P.bOverride_LumenReflectionQuality = true; P.LumenReflectionQuality = Reflection == 3 ? 1.f : 0.5f;
 		P.bOverride_LumenReflectionsScreenTraces = true; P.LumenReflectionsScreenTraces = true;
 		P.bOverride_LumenMaxReflectionBounces = true; P.LumenMaxReflectionBounces = 1;
 		P.bOverride_LumenMaxRoughnessToTraceReflections = true; P.LumenMaxRoughnessToTraceReflections = 0.35f;
-		// Surface cache reflections fit the 60 fps profile; hit lighting remains an Ultra option.
-		P.bOverride_LumenRayLightingMode = true; P.LumenRayLightingMode = LightingQuality == 2 ? ELumenRayLightingModeOverride::HitLightingForReflections : ELumenRayLightingModeOverride::SurfaceCache;
+		P.bOverride_LumenRayLightingMode = true; P.LumenRayLightingMode = Reflection == 3 ? ELumenRayLightingModeOverride::HitLightingForReflections : ELumenRayLightingModeOverride::SurfaceCache;
 	}
 	ApplyCloudQuality();
-	UE_LOG(LogTemp, Display, TEXT("S47: lighting quality %s, Lumen %s, volumetrics %s"), *Quality, LightingQuality ? TEXT("on") : TEXT("off"), LightingQuality ? TEXT("on") : TEXT("off"));
+	if (Reflection != Graphics.Reflections)
+		UE_LOG(LogTemp, Display, TEXT("S47: graphics reflections requested=%d resolved=screen-space because indirect lighting is off; Lumen preference retained"), Graphics.Reflections);
+	UE_LOG(LogTemp, Display, TEXT("S47: lighting quality %s, Lumen %s, volumetrics %s"), *Graphics.LegacyQuality(), GI > 0 ? TEXT("on") : TEXT("off"), Graphics.Fog > 0 ? TEXT("on") : TEXT("off"));
+	const auto Readback = GraphicsReadback();
+	UE_LOG(LogTemp, Display, TEXT("S47: graphics %s actual scale=%.0f shadows=%.0f GI=%.0f reflection=%.0f HWRT=%.0f fog=%.0f texBias=%.0f anisotropy=%.0f clouds=%d samples=%.2f"),
+		*Graphics.PresetId(), Readback->GetNumberField(TEXT("r.ScreenPercentage")), Readback->GetNumberField(TEXT("sg.ShadowQuality")),
+		Readback->GetNumberField(TEXT("sg.GlobalIlluminationQuality")), Readback->GetNumberField(TEXT("sg.ReflectionQuality")),
+		Readback->GetNumberField(TEXT("r.Lumen.HardwareRayTracing")), Readback->GetNumberField(TEXT("r.VolumetricFog")),
+		Readback->GetNumberField(TEXT("r.Streaming.MipBias")), Readback->GetNumberField(TEXT("r.MaxAnisotropy")),
+		Readback->GetBoolField(TEXT("cloudVisible")), Readback->GetNumberField(TEXT("cloudSamples")));
 }
 
 void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
@@ -324,7 +395,7 @@ void AS47Web::UpdateNativeFog()
 {
 	if (!LightingFog) return;
 	const bool bScattering = FParse::Param(FCommandLine::Get(), TEXT("S47FogScattering")) &&
-		LightingQuality > 0 && CurrentArea == TEXT("saro") && SkyDawn < .65f;
+		Graphics.Fog > 0 && CurrentArea == TEXT("saro") && SkyDawn < .65f;
 	if (LightingFog->bEnableFSSS != bScattering)
 	{
 		LightingFog->bEnableFSSS = bScattering;
@@ -383,7 +454,7 @@ void AS47Web::SyncFloodLights()
 		L->SetAttenuationRadius((bArray ? ArrayRadii[P.Slot] : FMath::Min(Limit, P.Reach * 1.6f + 8.f)) * 100.f);
 		// A light that reaches the eye retains its occlusion, including walls behind the camera.
 		const float Reach = L->AttenuationRadius * 0.01f;
-		L->SetCastShadows(LightingQuality > 0 || Dist < Reach + 5.f);
+		L->SetCastShadows(Graphics.Shadows > 0 && (LightingQuality > 0 || Dist < Reach + 5.f));
 	}
 }
 

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 #include "S47Docs.h"
+#include "S47Graphics.h"
 #include "UObject/Object.h"
 #include "S47UI.generated.h"
 
@@ -40,6 +41,9 @@ struct FS47PauseOpts
 	TFunction<void()> OnSave, OnLoad;     // unset: not offered
 	FString Quality = TEXT("high");       // 'ultra' | 'high' | 'low'
 	TFunction<void(const FString&)> OnQuality;
+	FS47GraphicsSettings Graphics;
+	TFunction<void(const FS47GraphicsSettings&)> OnGraphics;
+	TFunction<void()> OnReapplyGraphics; // display ApplySettings also resets scalability CVars
 	bool bUltraOk = false;
 	FString Title;                        // empty: 'Paused'
 	bool bSettingsOnly = false;
@@ -59,7 +63,7 @@ struct FS47PauseOpts
 	// bound in Settings > Controls (S47Keys; the store keeps them)
 	float Brightness = 0.5f; TFunction<void(float)> OnBrightness;
 	TFunction<void()> OnKeys;
-	FString Tab;                          // the settings' tab to open at: game, picture, sound, voices, controls, accessibility
+	FString Tab;                          // the settings' tab to open at: game, picture, sound, voices, controls, accessibility, graphics
 	// the pause menu's status and tonight's card
 	FString Chapter;                      // "Chapter 2: The Amended Record"
 	FString Place;                        // "Control room, SARO"

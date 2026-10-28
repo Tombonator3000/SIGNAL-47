@@ -22,7 +22,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Settings, Log, All);
 
 namespace S47SettingsLocal
 {
-	const TCHAR* TabNames[] = { TEXT("GAME"), TEXT("PICTURE"), TEXT("SOUND"), TEXT("VOICES"), TEXT("CONTROLS"), TEXT("ACCESSIBILITY") };
+	const TCHAR* TabNames[] = { TEXT("GAME"), TEXT("PICTURE"), TEXT("SOUND"), TEXT("VOICES"), TEXT("CONTROLS"), TEXT("ACCESSIBILITY"), TEXT("GRAPHICS") };
 	const float FrameRates[] = { 30.f, 60.f, 90.f, 120.f, 144.f, 0.f };
 	const TCHAR* ModeNames[] = { TEXT("FULLSCREEN"), TEXT("BORDERLESS"), TEXT("WINDOWED") };
 
@@ -32,11 +32,13 @@ namespace S47SettingsLocal
 
 const TArray<FString>& SS47Settings::TabIds()
 {
-	static const TArray<FString> Ids = { TEXT("game"), TEXT("picture"), TEXT("sound"), TEXT("voices"), TEXT("controls"), TEXT("accessibility") };
+	static const TArray<FString> Ids = { TEXT("game"), TEXT("picture"), TEXT("sound"), TEXT("voices"), TEXT("controls"), TEXT("accessibility"), TEXT("graphics") };
 	return Ids;
 }
 
 int32 SS47Settings::TabIndex(const FString& Id) { return TabIds().IndexOfByKey(Id.ToLower()); }
+FString SS47Settings::ActiveTabId() const { return TabIds().IsValidIndex(Tab) ? TabIds()[Tab] : FString(); }
+FString SS47Settings::SelectedRowLabel() const { const FRow* R = Current(); return R ? R->Label : FString(); }
 
 void SS47Settings::Construct(const FArguments& InArgs)
 {
@@ -263,12 +265,11 @@ void SS47Settings::BuildRows()
 		}
 		AddSep();
 		{
-			// Ultra (shadows, occlusion, bloom) is offered on a computer; phones keep High and Low
-			TArray<FString> Ids = P->bUltraOk ? TArray<FString>{ TEXT("low"), TEXT("high"), TEXT("ultra") } : TArray<FString>{ TEXT("low"), TEXT("high") };
-			TArray<FString> Names = P->bUltraOk ? TArray<FString>{ TEXT("LOW"), TEXT("HIGH"), TEXT("ULTRA") } : TArray<FString>{ TEXT("LOW"), TEXT("HIGH") };
-			AddChoice(TEXT("Quality"), Names, [P, Ids] { return FMath::Max(0, Ids.IndexOfByKey(P->Quality)); },
-				[P, Ids](int32 I) { if (!Ids.IsValidIndex(I) || P->Quality == Ids[I]) return; P->Quality = Ids[I]; if (P->OnQuality) P->OnQuality(P->Quality); }, Ids.Num() - 1,
-				Says(TEXT("Quality")), Says(TEXT("Low keeps direct lighting and simpler shadows. High adds reflected light and mist. Ultra draws finer shadows and mist.")));
+			FRow R; R.Kind = FRow::EKind::Action; R.Label = TEXT("Graphics and performance");
+			R.Activate = [this] { SetTab(TabIndex(TEXT("graphics"))); };
+			R.Title = Says(TEXT("Graphics and performance"));
+			R.Text = Says(TEXT("Open Graphics for presets, render scale, lighting, shadows and scene detail. Graphics changes apply immediately and are saved automatically. Display mode and screen resolution use APPLY here."));
+			Push(MoveTemp(R));
 		}
 		AddChoice(TEXT("Picture"), S47Picture::Labels(), [P] { return S47Picture::Ids().IndexOfByKey(S47Picture::Normalize(P->Picture)); },
 			[P](int32 I)
@@ -373,6 +374,104 @@ void SS47Settings::BuildRows()
 		AddToggle(TEXT("Still shots at the end"), &FS47PauseOpts::bStillShots, &FS47PauseOpts::OnStillShots, false,
 			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances. The same setting as on the Game tab."));
 		break;
+	case 6: // GRAPHICS, desktop rendering controls separate from film/tape looks
+	{
+		const FS47GraphicsSettings Defaults = FS47GraphicsSettings::ForPreset(TEXT("high"));
+		auto SetGraphics = [this, P](FS47GraphicsSettings G)
+		{
+			G.Normalize();
+			if (P->Graphics == G) return;
+			P->Graphics = G;
+			if (P->OnGraphics) P->OnGraphics(G);
+			Status = TEXT("Applied. Saved automatically.");
+		};
+		auto GraphicsChoice = [&](const FString& Label, int32 FS47GraphicsSettings::*Field, int32 Min,
+			TArray<FString> Names, const FString& Help)
+		{
+			AddChoice(Label, Names, [P, Field, Min] { return P->Graphics.*Field - Min; },
+				[P, Field, Min, SetGraphics](int32 I) { FS47GraphicsSettings G = P->Graphics; G.*Field = I + Min; SetGraphics(G); },
+				Defaults.*Field - Min, Says(Label), Says(Help + TEXT("\n\nApplies immediately and saves automatically. R restores this setting to High's default.")));
+		};
+		{
+			const TArray<FString> Ids = { TEXT("verylow"), TEXT("low"), TEXT("medium"), TEXT("high"), TEXT("ultra") };
+			FRow R; R.Kind = FRow::EKind::Choice; R.Label = TEXT("Graphics preset");
+			R.Value = [P] { const FString Id = P->Graphics.PresetId(); return Id == TEXT("verylow") ? FString(TEXT("VERY LOW")) : Id.ToUpper(); };
+			R.Step = [P, Ids, SetGraphics](int32 Dir)
+			{
+				const int32 I = Ids.IndexOfByKey(P->Graphics.PresetId());
+				const int32 Next = I == INDEX_NONE ? (Dir < 0 ? Ids.Num() - 1 : 0) : (I + Dir + Ids.Num()) % Ids.Num();
+				SetGraphics(FS47GraphicsSettings::ForPreset(Ids[Next]));
+			};
+			R.Activate = [Step = R.Step] { Step(1); };
+			R.Default = [Defaults, SetGraphics] { SetGraphics(Defaults); };
+			R.Title = Says(TEXT("Choose a starting point"));
+			R.Text = Says(TEXT("Very Low reduces the most expensive rendering for weaker computers. Low and Medium keep simpler lighting; High is the game's normal balance. Ultra spends more on sharpness and lighting. Changing one of the controls below shows Custom.\n\nChanges apply immediately and save automatically. Display size, frame limit and V-sync are on Picture. A preset does not change those or your film/tape look."));
+			Push(MoveTemp(R));
+		}
+		{
+			FRow R; R.Kind = FRow::EKind::Slider; R.Label = TEXT("Render scale");
+			auto Set = [P, SetGraphics](float V) { FS47GraphicsSettings G = P->Graphics; G.RenderScale = FMath::RoundToInt32(S47SettingsLocal::Snap(V, 50.f, 100.f, 5.f)); SetGraphics(G); };
+			R.Frac = [P] { return (P->Graphics.RenderScale - 50.f) / 50.f; };
+			R.SetFrac = [Set](float F) { Set(50.f + F * 50.f); };
+			R.Value = [P] { return FString::Printf(TEXT("%d%%"), P->Graphics.RenderScale); };
+			R.Step = [P, Set](int32 Dir) { Set(float(P->Graphics.RenderScale + Dir * 5)); };
+			R.Default = [Set, Defaults] { Set(float(Defaults.RenderScale)); };
+			R.Title = Says(TEXT("Render scale"));
+			R.Text = Says(TEXT("Draw the 3D scene at a lower resolution, then reconstruct it to fit the screen. Lower values reduce GPU work but soften fine details. Menus and text keep their screen resolution. This is often the first setting to lower on a weaker GPU.\n\n50% draws half the width and height. Changes apply immediately and save automatically."));
+			Push(MoveTemp(R));
+		}
+		AddSep(TEXT("LIGHTING"));
+		GraphicsChoice(TEXT("Shadows"), &FS47GraphicsSettings::Shadows, 0,
+			{ TEXT("OFF"), TEXT("LOW"), TEXT("HIGH"), TEXT("ULTRA") },
+			TEXT("Lower settings simplify dynamic shadows and reduce GPU work. Off removes dynamic shadows, so objects can look flatter. Lights still illuminate the scene."));
+		GraphicsChoice(TEXT("Indirect lighting"), &FS47GraphicsSettings::IndirectLighting, 0,
+			{ TEXT("OFF"), TEXT("LUMEN HIGH"), TEXT("LUMEN ULTRA") },
+			TEXT("Lumen adds light bouncing from nearby surfaces. It can be expensive, especially indoors with many lights. Off keeps direct lights and a simpler ambient fill; rooms can look less natural."));
+		GraphicsChoice(TEXT("Reflections"), &FS47GraphicsSettings::Reflections, 0,
+			{ TEXT("OFF"), TEXT("SCREEN SPACE"), TEXT("LUMEN HIGH"), TEXT("LUMEN ULTRA") },
+			TEXT("Screen Space reflects what is already on screen and costs less than Lumen, but reflections can disappear at the edges. Lumen can include surfaces outside the view. Off removes these dynamic reflections.\n\nWith Indirect lighting Off, a Lumen choice uses Screen Space instead. Your Lumen preference is kept and returns automatically when indirect lighting is enabled."));
+		Rows.Last().Value = [P]
+		{
+			if (P->Graphics.IndirectLighting == 0 && P->Graphics.Reflections >= 2) return FString(TEXT("SSR (GI OFF)"));
+			const TCHAR* Names[] = { TEXT("OFF"), TEXT("SCREEN SPACE"), TEXT("LUMEN HIGH"), TEXT("LUMEN ULTRA") };
+			return FString(Names[FMath::Clamp(P->Graphics.Reflections, 0, 3)]);
+		};
+		{
+			AddChoice(TEXT("Lumen tracing"), { TEXT("SOFTWARE"), TEXT("HARDWARE IF AVAILABLE") }, [P] { return P->Graphics.bHardwareRayTracing ? 1 : 0; },
+				[P, SetGraphics](int32 I) { FS47GraphicsSettings G = P->Graphics; G.bHardwareRayTracing = I == 1; SetGraphics(G); }, Defaults.bHardwareRayTracing ? 1 : 0,
+				Says(TEXT("Lumen tracing")), Says(TEXT("Hardware uses ray-tracing support when the GPU and driver provide it; otherwise Lumen uses its software path. Software can suit older cards, but which runs faster depends on the scene and GPU.\n\nThis affects Lumen lighting and reflections only. It has no effect when neither lighting nor reflections uses Lumen. Changes apply immediately and save automatically.")));
+		}
+		AddSep(TEXT("SCENE DETAIL"));
+		GraphicsChoice(TEXT("Streamed textures"), &FS47GraphicsSettings::Textures, 0,
+			{ TEXT("LOW"), TEXT("MEDIUM"), TEXT("HIGH"), TEXT("ULTRA") },
+			TEXT("Lower settings allow less detailed streamed textures under memory pressure and use lighter surface filtering. Textures can become softer. Fixed-resolution assets, interface text and some special materials are unaffected; this is not a cap on total GPU memory."));
+		GraphicsChoice(TEXT("Anti-aliasing"), &FS47GraphicsSettings::AntiAliasing, 1,
+			{ TEXT("LOW"), TEXT("HIGH"), TEXT("ULTRA") },
+			TEXT("Controls the quality of temporal reconstruction and smoothing on fine edges. Lower values reduce GPU work but can leave more shimmer on wires, fences and distant details, especially at a low render scale."));
+		GraphicsChoice(TEXT("Volumetric fog"), &FS47GraphicsSettings::Fog, 0,
+			{ TEXT("OFF"), TEXT("STANDARD"), TEXT("HIGH") },
+			TEXT("Adds light beams and illuminated mist in the air. Off reduces GPU work while keeping the scene's basic distance haze. High uses a finer volume and costs more."));
+		GraphicsChoice(TEXT("Volumetric clouds"), &FS47GraphicsSettings::Clouds, 0,
+			{ TEXT("OFF"), TEXT("STANDARD"), TEXT("HIGH") },
+			TEXT("Controls the moving volume clouds and their shadows. Off uses the photographic sky fallback, saving GPU work. High samples the cloud volume more finely. Story events in the sky remain enabled."));
+		GraphicsChoice(TEXT("Effect detail"), &FS47GraphicsSettings::Effects, 0,
+			{ TEXT("REDUCED"), TEXT("FULL") },
+			TEXT("Reduced uses fewer sparks in supported effects and reduces optional particles. Important event cues remain visible. This is separate from Slow Fades on Accessibility, which controls flashing."));
+		// Legacy Ultra keeps internal tier 2 for compatibility, but flora/decor currently
+		// have only two real budgets. Do not offer a separate Dense option with no effect.
+		AddChoice(TEXT("Scenery detail"), { TEXT("REDUCED"), TEXT("STANDARD") },
+			[P] { return FMath::Min(P->Graphics.Detail, 1); },
+			[P, SetGraphics](int32 I) { FS47GraphicsSettings G = P->Graphics; G.Detail = I; SetGraphics(G); }, 1,
+			Says(TEXT("Scenery detail")),
+			Says(TEXT("Reduced simplifies optional distant vegetation and scenery details. Lower detail can reduce drawing and scene work; it does not remove story objects or change interaction distances.")));
+		AddSep();
+		FRow R; R.Kind = FRow::EKind::Action; R.Label = TEXT("Restore High defaults");
+		R.Activate = [Defaults, SetGraphics] { SetGraphics(Defaults); }; R.Default = R.Activate;
+		R.Title = Says(TEXT("Restore graphics defaults"));
+		R.Text = Says(TEXT("Restore every control on this tab to the High preset. Your display size, frame limit, V-sync, film/tape look and accessibility settings stay as you chose them.\n\nChanges apply immediately and save automatically."));
+		Push(MoveTemp(R));
+		break;
+	}
 	default: break;
 	}
 
@@ -466,7 +565,7 @@ TSharedRef<SWidget> SS47Settings::Side()
 	return SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10 * U)
 		[
-			SNew(STextBlock).Font(Term(22, 2)).ColorAndOpacity(Sage()).Text_Lambda([this] { return FText::FromString(S47SettingsLocal::TabNames[FMath::Clamp(Tab, 0, 5)]); })
+			SNew(STextBlock).Font(Term(22, 2)).ColorAndOpacity(Sage()).Text_Lambda([this] { return FText::FromString(S47SettingsLocal::TabNames[FMath::Clamp(Tab, 0, TabIds().Num() - 1)]); })
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12 * U)
 		[
@@ -505,7 +604,7 @@ TSharedRef<SWidget> SS47Settings::Side()
 TSharedRef<SWidget> SS47Settings::Hints()
 {
 	S47_USING_THEME
-	auto Next = [this](int32 Dir) { if (Listening.IsNone() && ConfirmLeft < 0) SetTab((Tab + Dir + 6) % 6); };
+	auto Next = [this](int32 Dir) { if (Listening.IsNone() && ConfirmLeft < 0) SetTab((Tab + Dir + TabIds().Num()) % TabIds().Num()); };
 	auto Default = [this] { if (const FRow* R = Current(); R && R->Default && Listening.IsNone()) R->Default(); };
 	TSharedRef<SWidget> Normal = KeyHints({
 		{ TEXT("UP DOWN"), TEXT("SELECT"), nullptr }, { TEXT("LEFT RIGHT"), TEXT("CHANGE"), nullptr }, { TEXT("Q E"), TEXT("TAB"), [Next] { Next(1); } },
@@ -536,7 +635,7 @@ TSharedRef<SWidget> SS47Settings::Hints()
 
 void SS47Settings::SetTab(int32 T)
 {
-	Tab = FMath::Clamp(T, 0, 5);
+	Tab = FMath::Clamp(T, 0, TabIds().Num() - 1);
 	Status.Reset();
 	Listening = NAME_None;
 	KeySlot = 0;
@@ -624,8 +723,8 @@ FReply SS47Settings::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 		else if (R && R->Activate && (!R->Usable || R->Usable())) R->Activate();
 		return FReply::Handled();
 	}
-	if (K == EKeys::Q || K == EKeys::Gamepad_LeftShoulder || (K == EKeys::Tab && E.IsShiftDown())) { SetTab((Tab + 5) % 6); return FReply::Handled(); }
-	if (K == EKeys::E || K == EKeys::Gamepad_RightShoulder || K == EKeys::Tab) { SetTab((Tab + 1) % 6); return FReply::Handled(); }
+	if (K == EKeys::Q || K == EKeys::Gamepad_LeftShoulder || (K == EKeys::Tab && E.IsShiftDown())) { SetTab((Tab + TabIds().Num() - 1) % TabIds().Num()); return FReply::Handled(); }
+	if (K == EKeys::E || K == EKeys::Gamepad_RightShoulder || K == EKeys::Tab) { SetTab((Tab + 1) % TabIds().Num()); return FReply::Handled(); }
 	if (K == EKeys::R || K == EKeys::Gamepad_FaceButton_Left)
 	{
 		if (R && R->Default && (!R->Usable || R->Usable())) R->Default();
@@ -734,6 +833,9 @@ void SS47Settings::ApplyDisplay(const FDisplay& D)
 	GS->SetVSyncEnabled(D.bVSync);
 	// (ApplySettings writes GameUserSettings.ini as well)
 	GS->ApplySettings(false);
+	// ApplySettings resets scalability groups even for a frame-limit or window change.
+	// Restore this device's independent graphics choices after both Apply and rollback.
+	if (O->OnReapplyGraphics) O->OnReapplyGraphics();
 	Applied = D;
 }
 

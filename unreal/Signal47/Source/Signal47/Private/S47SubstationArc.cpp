@@ -190,7 +190,7 @@ void FS47Substation::FireArc(int32 At, const TCHAR* Why)
  if (!ArcReady()) return;
  bArcSpent = true; ArcT = 0; ArcSite = At; ++ArcFired;
  bArcCalm = M && M->Flow && M->Flow->bCalmFlash;
- const bool bLow = M && M->Flow && M->Flow->Quality == TEXT("low");
+ const bool bLow = M && M->Flow && M->Flow->Graphics.Effects == 0;
  const FVector P = S47Three::ToUE(Insulator(At));
  ArcSparkCount = ArcSparks(bLow, bArcCalm);
  ArcLight->SetWorldLocation(P + FVector(-32, -40, -35));

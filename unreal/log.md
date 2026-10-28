@@ -983,3 +983,15 @@ SC02-lysbuen er flettet via [PR195](https://github.com/Tombonator3000/SIGNAL-47/
 Canonical prune er kjørt med `--apply`: ingen filer skulle slettes. Gjeldende VFX-kandidat og to eldre payloads beholdes. SC01-R4, PR174 og Claudes aktive SC02-R2/R5 under SC03-arbeidet er uttrykkelig beskyttet. Kilder, assets, Saved og testbevis er bevart.
 
 Fullmatrisen ble fullført som 54+56 etter guard-pause, uten gjentakelse av beståtte prøver. Lokal installasjon ventet trygt på brukerens spillvinduer og SC03-editor. Installasjonskontrollen var isolert fra personlige lagringer. Denne oppfølgingen endrer bare dokumentasjon; ingen ny bygging eller fullmatrise er kjørt.
+
+## 2026-10-28 kl.17:09 CET: individuell grafikkmeny
+
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+
+## 2026-10-28 kl. 17:29 CET: grafikkmeny PR197 kontrollert i pakket spill
+
+Editor og Linux-pakke består. Faktisk Slate-navigasjon, native renderer-verdier, skjerm-Apply og ny prosess med innstillingsreload består (47+15). Visuelt kontrollert ved 900p og 720p. Very Low beholder lysbuen og lagring (14 sjekker, to disk-/Flow-gjenopprettinger). Én kanonisk 111-matrise kjører før fletting; installasjonen er foreløpig PR195. Bevis i `~/scratch-bm/Signal47-graphics-settings-20261028`.
+
+## 2026-10-28 kl. 19:04 CET: grafikkmeny R2 klar for levering
+
+Final R2-pakke består 47 produksjons-/Slate-sjekker, 15 sjekker ved ny prosess og full 111/111-matrise uten konkurrerende jobb. 720p/900p-meny, natt og daggry er visuelt vurdert. R1 Very Low-lysbuebevis beholdes fordi R2 kun endrer scenery-menyvalget. PR197 går mot main; installasjon gjenstår. Bevis: `~/scratch-bm/Signal47-graphics-settings-20261028`.

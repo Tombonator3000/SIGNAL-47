@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47Saves.h"
+#include "S47Graphics.h"
 #include "S47UI.h"
 #include "UObject/Object.h"
 #include "S47Flow.generated.h"
@@ -97,6 +98,7 @@ public:
 	bool bInvertY = false, bPadInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bHeadMotion = true, bAbductOn = true;
 	bool bCharacters = true, bSerling = true, bKinski = false, bArtBell = true, bRadioCast = true;
 	FString Quality = TEXT("high"), Picture = TEXT("carpenter");
+	FS47GraphicsSettings Graphics; // device preferences, separate from case saves
 	float PictureStrength = 1.f;   // film/tape blend; zero keeps the selected look for later
 	float Brightness = 0.5f;        // the Unreal version's own: the light into the tone curve (0..1, .5 as made)
 
@@ -126,6 +128,7 @@ private:
 	void StoreSet(const TCHAR* K, const FString& V);
 	// the settings applied (applyQuality, applyPicture, resize, the levels)
 	void ApplyQuality(const FString& Q);
+	void ApplyGraphics(const FS47GraphicsSettings& Settings, bool bSave = true);
 	void ApplyPicture(const FString& P, bool bChosen = true);
 	void ApplyLook();
 	void ApplyBrightness();
