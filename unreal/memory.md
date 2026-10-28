@@ -1,3 +1,7 @@
+## Fotolab nattpass, 28. oktober 2026 kl.00:10 CET
+
+Ti originale detaljdeler er laget i Blender og importert i Unreal med tre LOD. Kilde48/native56, editor/pakke og målrettet fremkalling/lys/strøm består. Fem faktiske spillbilder er vurdert. Kandidat R1 gjennomgår nå den ene fullmatrisen før PR; ingen fletting eller installasjon ennå. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Motel R4, SC01, MetaHuman og atmosfære er bevart. Claudes TB2-kilder er separate og ikke endret.
+
 # Minne for unreal/
 
 ## Gjeldende levering, 27. oktober 2026 kl. 23:19 CET
