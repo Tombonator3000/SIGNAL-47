@@ -1015,3 +1015,7 @@ Alle ni punktene er lagt i todo og PLAYTEST_TODO_2026-10-28.md. Seks originale b
 ## 2026-10-28 kl. 21:09 CET: Unreal-ferdigheter og MetaHuman-mannekenger undersøkt
 
 Prosjektbiblioteket og festede primærkilder er gjennomgått for Nanite, lys, skygger, VFX, ytelse og lyd. Tre avgrensede subagenter har lest prosjektkode og kilder. Nanite finnes allerede på fire rutenaturmodeller; nye solide bygnings-/trafodeler er kandidater etter reell import og plasseringsrettelser. Quodsolers MIT-ferdigheter for lyd/materialer er vurdert med utvalgte API-er kontrollert i lokale UE5.8.4-headere. Scenario-helpers har bare offline-/fake-bevis; Kevin Buckley har uavklart lisens. Ingen blind installasjon. Første mannequin-kontrakt er radio-kvinne, røykende mann og diner-sjåfør med bakte stående/sittende statiske positurer, egne klær, delte materialer og bevart proxy/timer. Kun én ferdig kvinnelig MetaHuman er lokal; mannlig preset og alle nye positurer/baking gjenstår. Rapport og maskinlesbar plan er dokumentasjon, ikke ferdig runtime. Ingen ny motorjobb, modellbaking, spilltest, installasjon eller endring av Saved.
+
+## 2026-10-28 kl. 22:40 CET: todo presisert etter Unreal-undersøkelsen
+
+Toms siste bestilling er ført som egne åpne punkter for lys/skygger, FX, lyd, materialer/farger og målrettet ytelse, sammen med MetaHuman-mannekenger og Nanite. Eksisterende oppgaver er beholdt. Samlet hovedoversikt gis i chatten; gamle portnotater er historikk som må statusavklares før de behandles som nye feil. Ingen motorjobb eller spilltest.
