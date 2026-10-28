@@ -5,6 +5,7 @@
 #include "S47Seen.h"
 #include "S47Story.h"
 #include "S47Three.h"
+#include "S47Audio.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -22,6 +23,9 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47HorrorVisual, Log, All);
 namespace
 {
  constexpr double PassDuration = 9.5;
+ // Tom 28.10.2026: no visible hand. With the shade down and the player inside, a slap on the
+ // outside of the glass after this long; the marks are there when the shade goes up.
+ constexpr double SlapDelay = 2.2;
  bool Bool(const S47J::FObj& O, const TCHAR* K, bool& Out)
  {
   const auto V = O.IsValid() ? O->TryGetField(K) : nullptr;
@@ -202,7 +206,7 @@ bool FS47HorrorVisual::Build()
 
 void FS47HorrorVisual::Begin(const S47J::FObj& Saved, bool bInEnabled)
 {
- bEnabled = bInEnabled; bWindowArmed = false; bHandSeen = false; bMarksChecked = false;
+ bEnabled = bInEnabled; bWindowArmed = false; bHandSeen = false; bMarksChecked = false; bClearSeen = false;
  bLightingCaptured = M && M->Web && M->Web->TubeCount() > 1;
  bOriginalRoomLamp = bLightingCaptured ? M->Web->TubeLit(1) : true; bLightingReleased = false;
  bLampOn = bRoomLampOn = true; bScreenTarget = false; bScreenChecked = false;
@@ -377,7 +381,7 @@ void FS47HorrorVisual::Apply()
  if (!bBuilt || !M || !M->Web) return;
  const bool Shown = bEnabled && M->Mode == US47Main::EMode::Play && M->World && M->World->Area == TEXT("saro");
  Visual->Root.SetVisible(Shown);
- Visual->Hand.SetVisible(Shown && HandPhase == 1);
+ Visual->Hand.SetVisible(false);
  if (Visual->AppliedHand != HandT)
  {
   Visual->Hand.SetPosition(PassPosition(HandT)); Visual->AppliedHand = HandT;
@@ -410,6 +414,9 @@ void FS47HorrorVisual::Step(double Dt)
  const double Before = ScreenK;
  ScreenK = FMath::Clamp(ScreenK + (bScreenTarget ? 1 : -1) * Sample / .85,0.,1.);
  if ((Before > 0 && ScreenK == 0) || (Before < 1 && ScreenK == 1)) Changed();
+ // Only a close that starts from the open shade after arming, never one resumed from a save mid-close.
+ if (bWindowArmed && ScreenK == 0) bClearSeen = true;
+ const bool JustClosed = bClearSeen && Before < 1 && ScreenK == 1;
  Apply();
  // Completed SC01 retains useful physical props, including the working shade,
  // but no longer samples the room or competes with later story lighting.
@@ -443,33 +450,22 @@ void FS47HorrorVisual::Step(double Dt)
    bScreenChecked = true; Changed();
    UE_LOG(LogS47HorrorVisual, Display, TEXT("S47: SC01 actual opaque shade blocks reference-lamp sight"));
   }
-  if (bWindowArmed && HandPhase == 0 && ScreenK <= .005 && Inside)
+  // The shade lowered again for the night after the clear-glass look, never the checking close.
+  if (bWindowArmed && HandPhase == 0 && JustClosed && Inside)
   {
-   const FVector P = Cam.Project(PassPosition(0));
-   if (P.Z < 1 && FMath::Abs(P.X) < .78 && FMath::Abs(P.Y) < .78 && ClearLine(Cam.Pos,PassPosition(0),Visual->Hand))
+   HandPhase = 1; HandT = 0; Changed();
+   UE_LOG(LogS47HorrorVisual, Display, TEXT("S47: SC01 window event armed behind the closed shade"));
+  }
+  if (HandPhase == 1 && ScreenClosed() && Inside)
+  {
+   HandT = FMath::Min(HandT + Sample, SlapDelay);
+   if (HandT >= SlapDelay)
    {
-    HandPhase = 1; HandT = 0; Apply(); Changed();
-    UE_LOG(LogS47HorrorVisual, Display, TEXT("S47: SC01 hand pass started outside glass"));
+    const FVector At = S47Three::ToUE(WindowPoint());
+    if (M->Audio) { M->Audio->Play(TEXT("thud_soft"), 1.f, At, 1.75f); M->Audio->Play(TEXT("thud_soft"), .55f, At + FVector(0, 0, -20), 2.4f); M->Audio->HoldRoomTone(.25f); }
+    bHandSeen = true; HandPhase = 2; HandT = PassDuration; Apply(); Changed();
+    UE_LOG(LogS47HorrorVisual, Display, TEXT("S47: SC01 slap heard on the outside of the shaded glass; exterior traces now present"));
    }
-  }
- }
- if (HandPhase == 1)
- {
-  HandT = FMath::Min(PassDuration,HandT + Sample);
-  Apply();
-  const auto* N = M->Web->Node(Visual->Hand.I);
-  const auto* C = N ? Cast<UPrimitiveComponent>(N->Comp.Get()) : nullptr;
-  const bool Rendered = C && C->IsRegistered() && C->IsVisible() && C->WasRecentlyRendered(.25f);
-  if (Rendered && VisiblePoint(PassPosition(HandT),Visual->Hand,8)) HandDwell += Sample; else HandDwell = 0;
-  if (!bHandSeen && HandDwell >= .20)
-  {
-   bHandSeen = true; Changed();
-   UE_LOG(LogS47HorrorVisual, Display, TEXT("S47: SC01 moving exterior hand actually observed with opaque sight check"));
-  }
-  if (HandT >= PassDuration)
-  {
-   HandPhase = 2; HandDwell = 0; Apply(); Changed();
-   UE_LOG(LogS47HorrorVisual, Display, TEXT("S47: SC01 hand crossed behind existing wall; exterior traces remain"));
   }
  }
 }

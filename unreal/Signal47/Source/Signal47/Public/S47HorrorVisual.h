@@ -22,14 +22,15 @@ public:
  S47J::FObj Save() const;
  bool Ready() const { return bBuilt; }
  bool Enabled() const { return bEnabled; }
- bool HandSeen() const { return bHandSeen; }
+ bool HandSeen() const { return bHandSeen; } // the slap on the glass was heard (no hand is shown)
  bool MarksPresent() const { return HandPhase == 2; }
  bool MarksChecked() const { return bMarksChecked; }
  bool ScreenClosed() const { return ScreenK >= .995; }
  bool ScreenChecked() const { return bScreenChecked; }
  bool LampDirectChecked() const { return DirectMask == 3; }
  bool LampGlassChecked() const { return GlassMask == 3; }
- bool LampChangeChecked() const { return DirectMask == 3 && GlassMask == 3; }
+ // Tom 28.10.2026: one inside comparison through the glass. Directly outside is optional.
+ bool LampChangeChecked() const { return GlassMask == 3; }
  bool LampOn() const { return bLampOn; }
  bool RoomLampOn() const { return bRoomLampOn; }
  bool ReferenceInView() const;
@@ -48,7 +49,7 @@ private:
  US47Main* M = nullptr;
  bool bBuilt = false, bBuildFailed = false, bEnabled = false, bWindowArmed = false;
  bool bHandSeen = false, bMarksChecked = false, bLampOn = true, bRoomLampOn = true;
- bool bScreenTarget = false, bScreenChecked = false;
+ bool bScreenTarget = false, bScreenChecked = false, bClearSeen = false;
  bool bLightingCaptured = false, bLightingReleased = false, bOriginalRoomLamp = true;
  int32 HandPhase = 0, DirectMask = 0, GlassMask = 0, MarksMask = 0;
  double HandT = 0, ScreenK = 0, HandDwell = 0, LampDwell = 0;

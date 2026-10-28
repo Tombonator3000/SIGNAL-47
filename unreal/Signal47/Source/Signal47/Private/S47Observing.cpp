@@ -21,6 +21,17 @@ namespace
  // PSR B1133+16 folds at 1.18791 s. The stray ticks fall four, a gap, then seven.
  constexpr double PulsarPeriod = 1.18791;
  const double StrayTicks[] = { 9.30, 9.55, 9.80, 10.05, 11.10, 11.35, 11.60, 11.85, 12.10, 12.35, 12.60 };
+ const FVector PrinterAt(5.62, .74, -.4); // three.js, the dot matrix printer on the east wall
+ // Recorded sounds (web/src/assets/audio/obs_*, THIRD_PARTY_NOTICES.md); false when the build lacks them.
+ bool Recorded(US47Audio* A, const TCHAR* Name, float Gain, float Rate = 1.f, TOptional<FVector> At = {})
+ {
+  if (!A) return false;
+  FS47Sound S; S.Gain = Gain; S.Rate = Rate; S.At = At;
+  const bool bPlayed = bool(A->Sfx(Name, S));
+  static TSet<FString> Logged;
+  if (bPlayed && !Logged.Contains(Name)) { Logged.Add(Name); UE_LOG(LogTemp, Display, TEXT("S47: observing recording %s played"), Name); }
+  return bPlayed;
+ }
 }
 
 // Positions are for the site on 13 April 1986 (MST): 3C 286 az 69 el 25 at 19:00,
@@ -181,7 +192,7 @@ void FS47Observing::Start()
  // The source rises on the schedule's time. Earlier work does not wait in real time for it.
  S.AdvanceClockTo(R.Slot, TEXT("scheduled observation start"));
  S.AimArray((R.P.Az[0] + R.P.Az[1]) / 2, R.El, 9);
- if (M->Audio) M->Audio->Servo(2.4f, TOptional<FVector>());
+ if (M->Audio && !Recorded(M->Audio, TEXT("obsArraySlew"), .45f)) M->Audio->Servo(2.4f, TOptional<FVector>());
  S.Rx.Status = FString::Printf(TEXT("INTEGRATING %s"), R.Source).ToUpper();
  StepNow = EStep::Integrating; Elapsed = 0; Tick = 0; Ticks = 0;
  M->UI->Toast(FString::Printf(TEXT("%s. The array swings onto %s. The chart pen starts its line."), *S.ClockText(false), R.Source), 4);
@@ -209,8 +220,9 @@ void FS47Observing::Step(double Dt)
  {
   // The pulsar is audible on the monitor speaker; its beat never changes.
   Tick += Elapsed - Was;
-  while (Tick >= PulsarPeriod) { Tick -= PulsarPeriod; M->Audio->Beep(820, .012f, .16f, 0, TEXT("square")); ++Ticks; }
-  for (double At : StrayTicks) if (Crossed(At)) M->Audio->Beep(1240, .008f, .07f, 0, TEXT("square"));
+  // Real audified pulses of PSR B0329+54 (Green Bank), retimed to this pulsar's period.
+  while (Tick >= PulsarPeriod) { Tick -= PulsarPeriod; if (!Recorded(M->Audio, TEXT("obsPulsarPulse"), .4f)) M->Audio->Beep(820, .012f, .16f, 0, TEXT("square")); ++Ticks; }
+  for (double At : StrayTicks) if (Crossed(At) && !Recorded(M->Audio, TEXT("obsPulsarPulse"), .14f, 1.7f)) M->Audio->Beep(1240, .008f, .07f, 0, TEXT("square"));
   if (Crossed(StrayTicks[0])) Hint(HintTicks);
  }
  if (Run == 2 && Crossed(8)) Hint(HintBroadband);
@@ -227,6 +239,7 @@ void FS47Observing::Hint(int32 Bit)
  if (Bit == HintBroadband)
  {
   M->Story->Rx.Status = TEXT("BROADBAND RFI  /  ALL CHANNELS  /  FLAGGED");
+  Recorded(M->Audio, TEXT("obsBroadband"), .35f);
   M->UI->Toast(TEXT("The chart pen jumps across every channel and stays up. Like something bright passing through the beam. No engine sound outside."), 5);
  }
  if (Bit == HintStill)
@@ -236,7 +249,7 @@ void FS47Observing::Hint(int32 Bit)
  }
  if (Bit == HintDrive)
  {
-  if (M->Audio) M->Audio->Servo(3.f, TOptional<FVector>());
+  if (M->Audio && !Recorded(M->Audio, TEXT("obsArrayDrive"), .55f)) M->Audio->Servo(3.f, TOptional<FVector>());
   M->UI->Toast(TEXT("Out in the array a drive motor runs for three seconds. Nothing on the console asked it to."), 5);
  }
  UE_LOG(LogTemp, Display, TEXT("S47: observing hint %d during run %d"), Bit, Run + 1);
@@ -250,7 +263,8 @@ void FS47Observing::Finish()
  if (Run == 3 && M->Audio && M->Audio->Night && M->Audio->Night->IsStill()) M->Audio->Night->Back(3);
  const bool Printer = R.Data == FString(TEXT("printer")), Status = R.Data == FString(TEXT("crtLeft"));
  M->Story->Rx.Status = Printer ? TEXT("RUN COMPLETE  /  CHART AT THE PRINTER") : Status ? TEXT("RUN COMPLETE  /  DRIVE LOG ON THE STATUS TERMINAL") : TEXT("RUN COMPLETE  /  REDUCE ON THE OPS TERMINAL");
- if (M->Audio && Printer) M->Audio->Play(TEXT("printer"), .35f, M->Web ? M->Web->PropLocation(TEXT("printer")) : FVector::ZeroVector, 1.2f);
+ if (M->Audio && Printer && !Recorded(M->Audio, TEXT("obsChartPrinter"), .5f, 1.f, PrinterAt))
+  M->Audio->Play(TEXT("printer"), .35f, M->Web ? M->Web->PropLocation(TEXT("printer")) : FVector::ZeroVector, 1.2f);
  M->UI->Toast(Printer ? FString::Printf(TEXT("%s done. The printer chatters out the strip chart."), R.Source) : Status ? FString(TEXT("Virgo A done. The status terminal on the left has logged a drive event.")) : FString(TEXT("Drift scan done. Reduce it on the operations terminal.")), 4);
  UE_LOG(LogTemp, Display, TEXT("S47: observing run %d %s integrated"), Run + 1, R.Id);
  Changed();

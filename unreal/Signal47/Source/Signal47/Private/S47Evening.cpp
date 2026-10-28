@@ -4,6 +4,7 @@
 #include "S47Substation.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
+#include "S47Anomaly.h"
 #include "S47Office.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -460,6 +461,8 @@ void FS47Evening::AfterDialogue()
   bWorkStarted=true; StopRing(); M->Web->SetHandsetVisible(true);
   M->Audio->Play(TEXT("handset_down"),0.5f,M->Web->PropLocation(TEXT("phone")));
   M->Story->BeginEveningShift(); Refile(); Context();
+  // The handover's archived day copy becomes available now, just as on Continue.
+  if (M->Anomaly) M->Anomaly->Refile();
   M->UI->Objective(ServicePending() ? ServiceObjective() : FString(TEXT("CONTROL ROOM // POWER THE RACK AND START THE ROUTINE SURVEY"))); Changed();
  }
  else if (Commute()) M->UI->Objective(TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));

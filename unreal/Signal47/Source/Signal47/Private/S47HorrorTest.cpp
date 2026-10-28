@@ -63,7 +63,8 @@ struct FS47HorrorTest::FState
 FS47HorrorTest::FS47HorrorTest(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
 {
 	State->bEnabled = FParse::Value(FCommandLine::Get(), TEXT("S47HorrorContract="), State->Mode);
-	State->bMissHand = FParse::Param(FCommandLine::Get(), TEXT("S47HorrorMissHand"));
+	// The window event is now a slap heard behind the shade; it cannot be missed by looking away.
+	State->bMissHand = false;
 	State->bArcCloseup = State->Mode == TEXT("Arc") && FParse::Param(FCommandLine::Get(), TEXT("S47ArcCloseup"));
 }
 FS47HorrorTest::~FS47HorrorTest() = default;
@@ -715,56 +716,50 @@ void FS47HorrorTest::Step(double Dt)
 	if (T.Stage == 33)
 	{
 		if (!Pick(TEXT("horror:screen"))) return;
-		Aim(FS47HorrorVisual::WindowPoint()); Stage(34,T.bMissHand?0:.75); return;
+		Aim(FS47HorrorVisual::WindowPoint()); Stage(330,1.3); return;
+	}
+	if (T.Stage == 330)
+	{
+		if (!Check(!V.ScreenClosed() && V.WindowArmed() && V.WindowPhase()==0 && !V.MarksPresent() && !V.HandSeen(),
+		 TEXT("raising the checked shade shows clear glass and starts no window event"))) return;
+		Aim(Target(TEXT("horror:screen"))); Stage(331); return;
+	}
+	if (T.Stage == 331)
+	{
+		if (!Pick(TEXT("horror:screen"))) return;
+		Aim(FS47HorrorVisual::WindowPoint()); Stage(34,.2); return;
 	}
 	if (T.Stage == 34)
 	{
-		if (V.WindowPhase()!=1) { if(T.Elapsed-T.Since>8)Fail(TEXT("armed physical window failed to start in an actual camera view"));return; }
-		if(T.bMissHand)
-		{
-			if(!Check(!V.HandSeen(),TEXT("brief initial window glance does not award the moving-hand witness")))return;
-			T.FirstHand=V.HandPosition();Aim(FVector(-10,1.5,8));Stage(340,.5);return;
-		}
-		T.FirstHand=V.HandPosition();T.PausedHandTime=V.WindowTime();Shot(TEXT("window-hand-first"));
+		if (V.WindowPhase()!=1) { if(T.Elapsed-T.Since>8)Fail(TEXT("lowering the shade for the night did not arm the slap behind it"));return; }
+		if (!Check(!V.HandSeen() && !V.MarksPresent(),TEXT("closing the shade for the night arms the slap without hearing or marks yet")))return;
+		T.PausedHandTime=V.WindowTime();
 		M->UI->Open(S47Kit::Shell(M->UI,TEXT("ISOLATED MODAL PAUSE CONTROL"),S47Kit::Text(TEXT("The world must remain paused while this panel is open."))));
 		Stage(35,1.1);return;
 	}
-	if(T.Stage==340)
-	{
-		if(!Check(V.WindowPhase()==1 && !V.HandSeen() && !V.HandPosition().Equals(T.FirstHand,.015),TEXT("hand moves while player looks away without granting a body sighting")))return;
-		if(!StoreRestore(TEXT("mid-unwitnessed-window"),M->Flow->GameState()))return;
-		Stage(341,.6);return;
-	}
-	if(T.Stage==341)
-	{
-		if(!Check(V.WindowArmed() && !V.HandSeen() && V.WindowPhase()>=1,TEXT("full Flow restores the unwitnessed live window without inventing a body sighting")))return;
-		Aim(FVector(-10,1.5,8));Stage(38,.2);return;
-	}
 	if(T.Stage==35)
 	{
-		if(!Check(M->ModalOpen() && FMath::IsNearlyEqual(V.WindowTime(),T.PausedHandTime,.002) && V.HandPosition().Equals(T.FirstHand,.002),TEXT("actual modal freezes the hand's world time and position without accrued motion")))return;
-		M->UI->Close(true);Aim(FS47HorrorVisual::WindowPoint());Stage(36,.6);return;
-	}
-	if(T.Stage==36)
-	{
-		if(!Check(V.WindowPhase()==1 && !V.HandPosition().Equals(T.FirstHand,.015),TEXT("rendered physical hand moves while the player keeps viewing the glass")))return;
-		Shot(TEXT("window-hand-moved"));
+		if(!Check(M->ModalOpen() && V.WindowPhase()==1 && FMath::IsNearlyEqual(V.WindowTime(),T.PausedHandTime,.002),TEXT("actual modal holds the pending slap without accrued time")))return;
+		M->UI->Close(true);
 		if(!StoreRestore(TEXT("mid-window"),M->Flow->GameState()))return;
 		Stage(37,.5);return;
 	}
 	if(T.Stage==37)
 	{
-		if(!Check(V.WindowArmed() && V.WindowPhase()>=1,TEXT("fresh disk/full Flow preserves an armed window instead of replaying the ordinary round")))return;
+		if(!Check(V.WindowArmed() && V.WindowPhase()>=1 && V.ScreenClosed(),TEXT("fresh disk/full Flow keeps the pending slap behind the closed shade")))return;
 		Aim(FS47HorrorVisual::WindowPoint());Stage(38,.2);return;
 	}
 	if(T.Stage==38)
 	{
-		if(T.bMissHand)Aim(FVector(-10,1.5,8));else Aim(V.HandPosition());
-		if(V.WindowPhase()!=2)return;
-		if(!Check(V.MarksPresent() && V.HandSeen()!=T.bMissHand && !H.Complete(),T.bMissHand?
-		 TEXT("unwitnessed hand leaves physical exterior marks without a body sighting or completed inspection"):
-		 TEXT("actually observed hand leaves real exterior marks without granting completed inspection")))return;
-		Aim(Target(TEXT("horror:marks")));Stage(379,.3);return;
+		if(V.WindowPhase()!=2){if(T.Elapsed-T.Since>8)Fail(TEXT("pending slap never sounded"));return;}
+		if(!Check(V.MarksPresent() && V.HandSeen() && V.ScreenClosed() && !H.Complete(),TEXT("the slap is heard behind the closed shade and leaves real exterior marks without completing the inspection")))return;
+		Shot(TEXT("window-slap-shade-down"));
+		Aim(Target(TEXT("horror:screen")));Stage(381,.3);return;
+	}
+	if(T.Stage==381)
+	{
+		if(!Pick(TEXT("horror:screen")))return;
+		Aim(Target(TEXT("horror:marks")));Stage(379,1.3);return;
 	}
 	if(T.Stage==379)
 	{
