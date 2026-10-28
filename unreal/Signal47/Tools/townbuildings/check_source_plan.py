@@ -2,12 +2,15 @@
 import sys,json,math
 from pathlib import Path
 R=Path(__file__).resolve().parent;sys.path.insert(0,str(R))
-import town_geometry,motel_geometry
+import town_geometry,motel_geometry,importlib.util
+TB2={}
+for family in ['Sheriff','Laundry','Feed','Cinema','Church']:
+ spec=importlib.util.spec_from_file_location('tb2_'+family.lower(),R/'tb2'/(family.lower()+'.py'));TB2[family]=importlib.util.module_from_spec(spec);spec.loader.exec_module(TB2[family])
 from design import PARTS,BUILDINGS,REVISION
 from materials import material_rows
-checks=[];stats={};materials={r['name']for r in material_rows()}
+checks=[];stats={};materials={r['name']for r in material_rows()}|{r['name']for p in sorted((R/'tb2').glob('materials_*.json'))for r in json.loads(p.read_text())}
 for lod in range(3):
- out={**town_geometry.build(lod),**motel_geometry.build(lod)};assert set(out)==set(PARTS);stats[str(lod)]={}
+ out={**{k:v for f in TB2.values()for k,v in f.build(lod).items()},**motel_geometry.build(lod)};assert set(out)==set(PARTS);stats[str(lod)]={}
  for name,m in out.items():
   minimum=math.inf;minuv=math.inf;tris=0
   for f,uv in zip(m.f,m.uv):

@@ -2,7 +2,7 @@
 Coordinates are Blender metres/Z up; worldThree=(rootX+Bx,rootY+Bz,rootZ-By).
 Floors taken from immutable CORE gameplay proxy heights, not guessed terrain.
 """
-REVISION='TB1-original-six-building-production'
+REVISION='TB2-detailed-five-landmarks-tb1-motel'
 PREFIX='SM_Town_'
 BUILDINGS={
  'Sheriff':dict(root=[7984,7.192696381179047,2106],footprint=[-10,0,-6,6],height=3.5,front=1,door=[4.4,1.0,2.15],windows=[[-1.3,3.6,.8,2.4]],style='weathered tan mineral courthouse, barred oak office and records room'),

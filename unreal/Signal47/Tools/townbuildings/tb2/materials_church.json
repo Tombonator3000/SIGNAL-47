@@ -1,0 +1,412 @@
+[
+ {
+  "name": "M_Town_ChurchWhiteBoard",
+  "base_color_linear": [
+   0.67,
+   0.595,
+   0.465,
+   1
+  ],
+  "roughness": 0.86,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.32,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Wood_base_color.png",
+   "roughness": "textures/Wood_roughness.png",
+   "normal": "textures/Wood_normal.png"
+  },
+  "texture_tint_linear": [
+   0.67,
+   0.595,
+   0.465,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_ChurchTrim",
+  "base_color_linear": [
+   0.72,
+   0.66,
+   0.54,
+   1
+  ],
+  "roughness": 0.8,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.16,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/MetalPaint_base_color.png",
+   "roughness": "textures/MetalPaint_roughness.png",
+   "normal": "textures/MetalPaint_normal.png"
+  },
+  "texture_tint_linear": [
+   0.72,
+   0.66,
+   0.54,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_ChurchGlass",
+  "base_color_linear": [
+   0.62,
+   0.42,
+   0.18,
+   1
+  ],
+  "roughness": 0.2,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.58,
+   0.24,
+   1
+  ],
+  "emission_strength": 1.8,
+  "alpha": 0.38,
+  "alpha_mode": "translucent",
+  "two_sided": true
+ },
+ {
+  "name": "M_Town_ChurchLampGlow",
+  "base_color_linear": [
+   1.0,
+   0.8,
+   0.5,
+   1
+  ],
+  "roughness": 0.4,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.7,
+   0.36,
+   1
+  ],
+  "emission_strength": 10.0
+ },
+ {
+  "name": "M_Town_ChurchFlameGlow",
+  "base_color_linear": [
+   1.0,
+   0.62,
+   0.22,
+   1
+  ],
+  "roughness": 0.5,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.52,
+   0.16,
+   1
+  ],
+  "emission_strength": 10.0
+ },
+ {
+  "name": "M_Town_ChurchBronze",
+  "base_color_linear": [
+   0.34,
+   0.24,
+   0.12,
+   1
+  ],
+  "roughness": 0.48,
+  "metallic": 0.85,
+  "specular": 0.28,
+  "normal_strength": 0.3,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/RustTin_base_color.png",
+   "roughness": "textures/RustTin_roughness.png",
+   "normal": "textures/RustTin_normal.png"
+  },
+  "texture_tint_linear": [
+   0.34,
+   0.24,
+   0.12,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_ChurchBrass",
+  "base_color_linear": [
+   0.55,
+   0.4,
+   0.16,
+   1
+  ],
+  "roughness": 0.36,
+  "metallic": 1.0,
+  "specular": 0.28,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0
+ },
+ {
+  "name": "M_Town_ChurchGalv",
+  "base_color_linear": [
+   0.3,
+   0.31,
+   0.29,
+   1
+  ],
+  "roughness": 0.64,
+  "metallic": 0.7,
+  "specular": 0.28,
+  "normal_strength": 0.25,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/RustTin_base_color.png",
+   "roughness": "textures/RustTin_roughness.png",
+   "normal": "textures/RustTin_normal.png"
+  },
+  "texture_tint_linear": [
+   0.3,
+   0.31,
+   0.29,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_ChurchStone",
+  "base_color_linear": [
+   0.36,
+   0.32,
+   0.27,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.55,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.36,
+   0.32,
+   0.27,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_ChurchBrick",
+  "base_color_linear": [
+   0.3,
+   0.11,
+   0.06,
+   1
+  ],
+  "roughness": 0.92,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.45,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.3,
+   0.11,
+   0.06,
+   1
+  ]
+ },
+ {
+  "specular": 0.28,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "metallic": 0,
+  "name": "M_Town_ChurchWornBoard",
+  "base_color_linear": [
+   0.5,
+   0.45,
+   0.36,
+   1
+  ],
+  "roughness": 0.9,
+  "normal_strength": 0.42,
+  "textures": {
+   "base_color": "textures/Wood_base_color.png",
+   "roughness": "textures/Wood_roughness.png",
+   "normal": "textures/Wood_normal.png"
+  },
+  "texture_tint_linear": [
+   0.5,
+   0.45,
+   0.36,
+   1
+  ]
+ },
+ {
+  "specular": 0.28,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "metallic": 0,
+  "name": "M_Town_ChurchShingleFaded",
+  "base_color_linear": [
+   0.085,
+   0.074,
+   0.056,
+   1
+  ],
+  "roughness": 0.96,
+  "normal_strength": 0.34,
+  "textures": {
+   "base_color": "textures/RoofShingle_base_color.png",
+   "roughness": "textures/RoofShingle_roughness.png",
+   "normal": "textures/RoofShingle_normal.png"
+  },
+  "texture_tint_linear": [
+   0.085,
+   0.074,
+   0.056,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_ChurchOldPaper",
+  "base_color_linear": [
+   0.5,
+   0.44,
+   0.3,
+   1
+  ],
+  "roughness": 0.93,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.1,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Cloth_base_color.png",
+   "roughness": "textures/Cloth_roughness.png",
+   "normal": "textures/Cloth_normal.png"
+  },
+  "texture_tint_linear": [
+   0.5,
+   0.44,
+   0.3,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_ChurchPorchGlow",
+  "base_color_linear": [
+   1,
+   0.82,
+   0.55,
+   1
+  ],
+  "roughness": 0.4,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.68,
+   0.34,
+   1
+  ],
+  "emission_strength": 110.0
+ }
+]

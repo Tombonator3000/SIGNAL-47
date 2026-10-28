@@ -1,5 +1,32 @@
 # Caliche, seks originale bygningsfamilier
 
+## TB2, 27. til 28. oktober 2026: fem mer detaljerte bygninger
+
+Sheriffkontoret, vaskeriet, fôrbutikken, kinoen og kirken er bygget på nytt med langt mer detalj, etter konseptarkene i `unreal/Concepts/Caliche-2026-10-23` og fotoreferansene i `ArtSource/References/NewMexico-1980s-2026-10-27`. Motellet og rom 6 er uendret TB1; Codex lager et nytt motell separat (Sierra Motor Court). `tb2/TB1_mot_TB2.jpg` viser før og etter.
+
+| Bygning | Kilde | LOD0 trekanter (Shell, Glass, Interior, Fixtures) | Viktigst nytt |
+|---|---|---|---|
+| Sheriff | `tb2/sheriff.py` | 9 691, 100, 7 560, 1 734 | varm puss med avrundede hjørner, trinnet takkant, SHERIFF med stjerne, gitter, overdekket inngang, radiomast, kjøleanlegg |
+| Laundry | `tb2/laundry.py` | 9 935, 10, 21 552, 2 572 | blokkmur i relieff, falmet LAUNDROMAT, butikkvinduer med maskiner, OPEN i neon, tørketrommelventiler, telefonkiosk |
+| Feed | `tb2/feed.py` | 24 026, 14, 22 464, 5 954 | falsk front i tre trinn, malt FEED & SEED, rusten markise, lasterampe med sekker, lagerhall i bølgeblikk |
+| Cinema | `tb2/cinema.py` | 9 922, 50, 3 426, 7 534 | art deco-fasade, PLAZA-skilt i neon, marquee med 85 pærer, billettluke, foajé med kiosk |
+| Church | `tb2/church.py` | 20 182, 136, 8 552, 5 584 | panelbord, bratt spontak, klokketårn med klokke, spisse vinduer som gløder, inngangsparti, innredet skip |
+
+Fotavtrykk, vegghøyder, dører og vinduer fra `design.py` er uendret, og dørene er fortsatt lukket. Under 2,3 m stikker ingenting mer enn 0,6 m ut fra veggen, bortsett fra trinn under 0,2 m og fôrbutikkens eksisterende lasterampe på 0,95 m, som gulvet inne står på. Spillets kollisjon og adgang er derfor de samme.
+
+Nye materialer ligger i `tb2/materials_<bygning>.json`, heter `M_Town_<Bygning>...` og bruker bare de eksisterende teksturene i `textures/`. `build_townbuildings.py`, `check_source_plan.py`, `verify_source.py` og `tb2/preview.py` leser dem i tillegg til `materials.json`. `tb2/<bygning>_NOTAT.md` beskriver hver bygning med svakheter.
+
+Forhåndsvisning av én bygning (Cycles, fem faste kameraer):
+
+```sh
+blender -b -t 3 --python-exit-code 1 --python tb2/preview.py -- Cinema tb2 /tmp/cinema 0 street,oblique,door,roof,dusk
+```
+
+Faktisk kontroll: `check_source_plan.py` består (170 678 / 108 201 / 54 449 trekanter i LOD0/1/2 for alle 28 deler), `build_townbuildings.py` består, og `verify_source.py` består med 966 av 966 kontroller mot de lagrede FBX-, GLB- og Blender-filene. Motellfilene er de samme som før.
+
+Ikke gjort: nativeimport, nye native materialer for radene i `tb2/`, ny `assembly.json`, pakket spill og bilder fra spillet. Lys i Unreal må settes som ekte lyskilder ved lampene; glødestyrkene er justert for Cycles og må justeres i spillet.
+
+
 TB1 er generert som redigerbare Blender-originaler med tre egne geometriske LOD-er, fysisk meterskala og ni delte originale 2048-PBR-sett. Siste faktiske kildekontroll består 793 sjekker. Native import, belysning, kontakt med bakken og visuell konseptlikhet må godkjennes fra den pakkede kandidaten hos integrator. En vellykket kildetest er ikke visuell godkjenning.
 
 | Blender-original | Innhold | Deler |

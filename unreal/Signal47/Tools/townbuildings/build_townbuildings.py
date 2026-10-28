@@ -7,8 +7,14 @@ from pathlib import Path
 from mathutils import Vector
 R=Path(__file__).resolve().parent;sys.path.insert(0,str(R))
 from design import BUILDINGS,PARTS,REVISION,PROTECTED_RUNTIME,ROOM6_ROOT,ROOM6_PROTECTED,MOTEL_PROTECTED
-import town_geometry,motel_geometry
-ROWS=json.loads((R/'materials.json').read_text());ROW={r['name']:r for r in ROWS};OUT=R/'exports';OUT.mkdir(exist_ok=True)
+import town_geometry,motel_geometry,importlib.util
+# TB2: the five town landmarks come from tb2/<family>.py; the motel stays on motel_geometry.
+TB2={}
+for _family in ['Sheriff','Laundry','Feed','Cinema','Church']:
+ _spec=importlib.util.spec_from_file_location('tb2_'+_family.lower(),R/'tb2'/(_family.lower()+'.py'));TB2[_family]=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(TB2[_family])
+ROWS=json.loads((R/'materials.json').read_text())
+for _extra in sorted((R/'tb2').glob('materials_*.json')):ROWS+=json.loads(_extra.read_text())
+ROW={r['name']:r for r in ROWS};OUT=R/'exports';OUT.mkdir(exist_ok=True)
 parts={};lodstats={str(k):{}for k in range(3)};families={}
 def clear():
  for ob in list(bpy.data.objects):bpy.data.objects.remove(ob,do_unlink=True)
@@ -52,7 +58,7 @@ for family in BUILDINGS:
   roomsrc=bpy.data.collections.new('EDITABLE_ORIGINAL_ROOM6');roomscene.collection.children.link(roomsrc);roomsrc.hide_render=True;roomsrc.hide_viewport=True
  family_names=[]
  for lod in range(3):
-  data=motel_geometry.build(lod)if family=='Motel'else getattr(town_geometry,family.lower())(lod)
+  data=motel_geometry.build(lod)if family=='Motel'else TB2[family].build(lod)
   for name,shape in data.items():
    spec=PARTS[name];isroom=spec['site_world_three_m']==ROOM6_ROOT;target=roomscene if isroom else scene;bpy.context.window.scene=target
    suffix=''if lod==0 else'_LOD'+str(lod);mesh=bpy.data.meshes.new(name+suffix);mesh.from_pydata(shape.v,[],shape.f);mesh.update()
@@ -98,5 +104,5 @@ for name,row in parts.items():row['lod_triangles']=[lodstats[str(k)][name]['tria
 # Identical measured pivot probe to every accepted original-model import.
 bpy.context.window.scene=scene;bpy.ops.object.select_all(action='DESELECT');bpy.ops.mesh.primitive_cube_add(size=1,location=(2,4,6));probe=bpy.context.object;probe.dimensions=(.2,.4,.6);bpy.ops.object.transform_apply(location=False,rotation=False,scale=True);export_fbx(OUT/'axis_probe.fbx');bpy.data.objects.remove(probe,do_unlink=True)
 contract={'status':'SOURCE_GENERATED_NATIVE_UNVERIFIED','source_revision':REVISION,'units':'metres','blender_up':'Z','mapping':'worldThree=(part.rootX+Bx,part.rootY+Bz,part.rootZ-By), runtime yaw0','native_import_policy':{'force_front_x_axis':True,'coordinate_system_policy':'MATCH_UP_FORWARD_AXES','import_rotation_yaw':90},'parts':parts,'lods':lodstats,'families':families,'total_LOD0_triangles':sum(r['triangles']for r in parts.values()),'axis_probe_source_center_m':[2,4,6],'axis_probe_source_dimensions_m':[.2,.4,.6],'axis_probe_expected_UE_center_cm':[200,-400,600],'protected_runtime':PROTECTED_RUNTIME,'room6_protected_blender_m':ROOM6_PROTECTED,'motel_protected_blender_m':MOTEL_PROTECTED,'top_authorities_m':{'Town':0,'Feed_dock_and_interior':.95,'Motel_Court':0,'Room6':0,'Room6_table':.810,'Motel_counter':1.020},'collision':'No new game admission; original floor/collider/proxy remains authority. Shell/Interior usable as complex visibility queries only when integration explicitly opts in.','originality':'All authored geometry and nine shared procedural PBR families original. Read-only reuse of our own substation mesh primitives. Existing own bed and live media/phone/lamp/NPC are retained, not duplicated.'}
-assert len(parts)==28;assert contract['total_LOD0_triangles']<125000
+assert len(parts)==28;assert contract['total_LOD0_triangles']<250000
 (R/'model_contract.json').write_text(json.dumps(contract,indent=2)+'\n');print('TOWNBUILDINGS_BUILD_PASS',json.dumps({'parts':len(parts),'families':len(families),'triangles':contract['total_LOD0_triangles'],'lod_totals':{k:sum(r['triangles']for r in d.values())for k,d in lodstats.items()}}))
