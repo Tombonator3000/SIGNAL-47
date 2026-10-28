@@ -457,9 +457,13 @@ void SS47Settings::BuildRows()
 		GraphicsChoice(TEXT("Effect detail"), &FS47GraphicsSettings::Effects, 0,
 			{ TEXT("REDUCED"), TEXT("FULL") },
 			TEXT("Reduced uses fewer sparks in supported effects and reduces optional particles. Important event cues remain visible. This is separate from Slow Fades on Accessibility, which controls flashing."));
-		GraphicsChoice(TEXT("Scenery detail"), &FS47GraphicsSettings::Detail, 0,
-			{ TEXT("REDUCED"), TEXT("STANDARD"), TEXT("DENSE") },
-			TEXT("Reduced simplifies optional distant vegetation and scenery details. Dense adds the extra decorative layer. Lower detail can reduce drawing and scene work; it does not remove story objects or change interaction distances."));
+		// Legacy Ultra keeps internal tier 2 for compatibility, but flora/decor currently
+		// have only two real budgets. Do not offer a separate Dense option with no effect.
+		AddChoice(TEXT("Scenery detail"), { TEXT("REDUCED"), TEXT("STANDARD") },
+			[P] { return FMath::Min(P->Graphics.Detail, 1); },
+			[P, SetGraphics](int32 I) { FS47GraphicsSettings G = P->Graphics; G.Detail = I; SetGraphics(G); }, 1,
+			Says(TEXT("Scenery detail")),
+			Says(TEXT("Reduced simplifies optional distant vegetation and scenery details. Lower detail can reduce drawing and scene work; it does not remove story objects or change interaction distances.")));
 		AddSep();
 		FRow R; R.Kind = FRow::EKind::Action; R.Label = TEXT("Restore High defaults");
 		R.Activate = [Defaults, SetGraphics] { SetGraphics(Defaults); }; R.Default = R.Activate;

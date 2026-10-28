@@ -18,7 +18,7 @@ Fem startpunkter: Very Low, Low, Medium, High og Ultra. Individuelle endringer v
 | Volumetric fog | Av, Standard eller High; vanlig avstandståke beholdes. |
 | Volumetric clouds | Av med fotografisk himmelfallback, Standard eller High. Historiens himmelhendelser beholdes. |
 | Effect detail | Redusert eller full mengde for støttede gnister og valgfrie lufteffekter. Historietriggere beholdes. |
-| Scenery detail | Redusert, Standard eller Dense for eksisterende vegetasjons-/dekorbudsjett. Interaksjoner og historieobjekter fjernes ikke. |
+| Scenery detail | Redusert eller Standard for eksisterende vegetasjons-/dekorbudsjett. Interaksjoner og historieobjekter fjernes ikke. |
 
 Lumen-refleksjoner uten indirekte Lumen-lys er ikke en bærbar kombinasjon med software tracing. Kandidaten bruker derfor Screen Space når indirekte lys er av, viser **SSR (GI OFF)** og beholder brukerens Lumen-valg til indirekte lys slås på igjen.
 
@@ -34,7 +34,7 @@ Grafikkvalg brukes og lagres med en gang. Skjermoppløsning/-modus beholder Appl
 
 Arbeidsgren `codex/graphics-settings`, fra main `d5206af5`. Bevismappe: `/home/tom/scratch-bm/Signal47-graphics-settings-20261028`.
 
-Kildearbeidet, editorbygg og Linux-pakking er gjennomført. Faktisk menybilde, ny prosess med innstillingsreload, fullmatrise, fletting og installasjon gjenstår. Ingen FPS-forbedring eller støtte for alle svake GPU-er hevdes. Dette er justeringer innenfor prosjektets eksisterende renderer og plattformkrav.
+Editorbygg og Linux-pakking består. Pakket kontroll består med 47 produksjons-/menysjekker og 15 sjekker i en ny prosess som leser de lagrede Custom-valgene. Menybilder ved 1600 × 900 og 1280 × 720 er visuelt kontrollert, inkludert siste rullelinje og lengste valgtekst. Very Low beholder trafoens lysbue og lagring: 14 kontroller og to faktiske disk-/Flow-gjenopprettinger. R1-matrisen ble stoppet etter at statisk gjennomgang fant at et eget Dense-valg ikke hadde forskjellig virkning fra Standard. R2 viser bare de to faktiske dekorbudsjettene; ny meny-/lagringskontroll og én fullført 111-matrise kreves før fletting/installasjon. Ingen FPS-forbedring eller støtte for alle svake GPU-er hevdes. Dette er justeringer innenfor prosjektets eksisterende renderer og plattformkrav.
 
 ## Kildegrunnlag
 

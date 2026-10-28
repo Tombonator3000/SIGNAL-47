@@ -987,3 +987,7 @@ Fullmatrisen ble fullført som 54+56 etter guard-pause, uten gjentakelse av best
 ## 2026-10-28 kl.17:09 CET: individuell grafikkmeny
 
 Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+
+## 2026-10-28 kl. 17:29 CET: grafikkmeny PR197 kontrollert i pakket spill
+
+Editor og Linux-pakke består. Faktisk Slate-navigasjon, native renderer-verdier, skjerm-Apply og ny prosess med innstillingsreload består (47+15). Visuelt kontrollert ved 900p og 720p. Very Low beholder lysbuen og lagring (14 sjekker, to disk-/Flow-gjenopprettinger). Én kanonisk 111-matrise kjører før fletting; installasjonen er foreløpig PR195. Bevis i `~/scratch-bm/Signal47-graphics-settings-20261028`.
